@@ -361,7 +361,7 @@ void GameViewDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("hdr_state_received", PropertyInfo(Variant::ARRAY, "hdr_state")));
 }
 
-bool GameViewDebugger::add_screenshot_callback(const Callable &p_callaback, const Rect2i &p_rect, bool p_hdr) {
+bool GameViewDebugger::add_screenshot_callback(const Callable &p_callaback, const Rect2i &p_rect) {
 	bool found = false;
 	for (Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
@@ -372,7 +372,6 @@ bool GameViewDebugger::add_screenshot_callback(const Callable &p_callaback, cons
 
 			Array arr;
 			arr.append(scr_rq_id);
-			arr.append(p_hdr);
 			I->send_message("scene:rq_screenshot", arr);
 			scr_rq_id++;
 			found = true;
@@ -488,12 +487,12 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 	_update_arguments_for_instance(p_idx, r_arguments);
 }
 
-bool GameView::_instance_rq_screenshot_static(const Callable &p_callback, bool p_hdr) {
+bool GameView::_instance_rq_screenshot_static(const Callable &p_callback) {
 	ERR_FAIL_NULL_V(singleton, false);
-	return singleton->_instance_rq_screenshot(p_callback, p_hdr);
+	return singleton->_instance_rq_screenshot(p_callback);
 }
 
-bool GameView::_instance_rq_screenshot(const Callable &p_callback, bool p_hdr) {
+bool GameView::_instance_rq_screenshot(const Callable &p_callback) {
 	if (debugger.is_null() || window_wrapper->get_window_enabled() || !embedded_process || !embedded_process->is_embedding_completed()) {
 		return false;
 	}
@@ -502,7 +501,7 @@ bool GameView::_instance_rq_screenshot(const Callable &p_callback, bool p_hdr) {
 #ifndef MACOS_ENABLED
 	r.position -= embedded_process->get_window()->get_position();
 #endif
-	return debugger->add_screenshot_callback(p_callback, r, p_hdr);
+	return debugger->add_screenshot_callback(p_callback, r);
 }
 
 void GameView::_show_update_window_wrapper() {
