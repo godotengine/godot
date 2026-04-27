@@ -119,7 +119,7 @@ layout(std140) uniform MaterialUniforms{ //ubo:3
 #endif
 
 #ifdef USE_MULTIVIEW
-layout(std140) uniform MultiviewData { // ubo:11
+layout(std140) uniform MultiviewData { // ubo:12
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
