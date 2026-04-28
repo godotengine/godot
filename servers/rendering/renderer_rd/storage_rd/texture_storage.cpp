@@ -3495,7 +3495,7 @@ void TextureStorage::update_area_light_atlas() {
 			Texture *src_tex = get_texture(E.key);
 			Rect2 uv_rect = t->uv_rect;
 
-			copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm0.fb, uv_rect, draw_list);
+			copy_effects->copy_to_atlas_fb(src_tex->rd_texture_srgb, mm0.fb, uv_rect, draw_list);
 		}
 		RD::get_singleton()->draw_list_end();
 
