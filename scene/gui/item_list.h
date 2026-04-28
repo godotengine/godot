@@ -145,6 +145,7 @@ private:
 	Size2 fixed_tag_icon_size;
 
 	int defer_select_single = -1;
+	int defer_select_multi = -1;
 	bool allow_rmb_select = false;
 	bool allow_reselect = false;
 
