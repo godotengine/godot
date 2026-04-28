@@ -34,6 +34,9 @@
 #include "core/math/random_pcg.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#ifdef DEBUG_ENABLED
+#include "scene/3d/label_3d.h"
+#endif // DEBUG_ENABLED
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #include "servers/rendering/rendering_server.h"
@@ -623,12 +626,24 @@ void NavigationRegion3D::_update_debug_mesh() {
 		if (debug_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(debug_instance, false);
 		}
+
+		Node *debug_holder = find_child("_debug_holder", false, true);
+		if (debug_holder != nullptr) {
+			remove_child(debug_holder);
+			debug_holder->queue_free();
+		}
 		return;
 	}
 
 	if (navigation_mesh.is_null()) {
 		if (debug_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(debug_instance, false);
+		}
+
+		Node *debug_holder = find_child("_debug_holder", false, true);
+		if (debug_holder != nullptr) {
+			remove_child(debug_holder);
+			debug_holder->queue_free();
 		}
 		return;
 	}
@@ -645,11 +660,21 @@ void NavigationRegion3D::_update_debug_mesh() {
 
 	Vector<Vector3> vertices = navigation_mesh->get_vertices();
 	if (vertices.is_empty()) {
+		Node *debug_holder = find_child("_debug_holder", false, true);
+		if (debug_holder != nullptr) {
+			remove_child(debug_holder);
+			debug_holder->queue_free();
+		}
 		return;
 	}
 
 	int polygon_count = navigation_mesh->get_polygon_count();
 	if (polygon_count == 0) {
+		Node *debug_holder = find_child("_debug_holder", false, true);
+		if (debug_holder != nullptr) {
+			remove_child(debug_holder);
+			debug_holder->queue_free();
+		}
 		return;
 	}
 
@@ -777,6 +802,12 @@ void NavigationRegion3D::_update_debug_mesh() {
 				RS::get_singleton()->instance_set_surface_override_material(debug_instance, 1, NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_material()->get_rid());
 			}
 		}
+
+		Node *debug_holder = find_child("_debug_holder", false, true);
+		if (debug_holder != nullptr) {
+			remove_child(debug_holder);
+			debug_holder->queue_free();
+		}
 	} else {
 		if (debug_mesh.is_valid()) {
 			if (debug_mesh->get_surface_count() > 0) {
@@ -785,6 +816,40 @@ void NavigationRegion3D::_update_debug_mesh() {
 			if (debug_mesh->get_surface_count() > 1) {
 				RS::get_singleton()->instance_set_surface_override_material(debug_instance, 1, RID());
 			}
+		}
+
+		Array debug_data = navigation_mesh->_get_debug_data();
+		Node3D *debug_holder = Object::cast_to<Node3D>(find_child("_debug_holder", false, true));
+		if (debug_holder == nullptr) {
+			debug_holder = memnew(Node3D);
+			debug_holder->set_name("_debug_holder");
+			add_child(debug_holder, false, Node::INTERNAL_MODE_BACK);
+			debug_holder->set_owner(this);
+			// FIXME: delete node when scene gets saved
+		} else {
+			TypedArray<Node> nodes = debug_holder->get_children(true);
+			if (nodes.size() > 0) {
+				for (Variant &v : nodes) {
+					Node *node = Object::cast_to<Node>(v);
+					if (node) {
+						node->queue_free();
+						debug_holder->remove_child(node);
+					}
+				}
+			}
+		}
+		for (int i = 0; i < debug_data.size(); i++) {
+			Vector3 pos = debug_data[i];
+
+			Label3D *area_index_label = memnew(Label3D);
+			area_index_label->set_text(vformat("%d", i));
+			area_index_label->set_draw_flag(Label3D::DrawFlags::FLAG_DISABLE_DEPTH_TEST, true);
+			area_index_label->set_font_size(200);
+			area_index_label->set_outline_size(40);
+			area_index_label->set_position(pos);
+			area_index_label->rotate_x(-(Math::PI / 2)); // -90 degrees.
+			debug_holder->add_child(area_index_label);
+			area_index_label->set_owner(debug_holder);
 		}
 	}
 }

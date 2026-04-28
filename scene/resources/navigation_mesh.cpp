@@ -581,7 +581,7 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 
 	// if enabled add vertex colors to colorize each face individually
 	// NOTE: Cannot color faces, that were generated because of area meshes, differently using vertex colors - no access to region's navigation layers.
-	// FIXME: colour faces if areas are used.
+	// FIXME: colour faces if areas are used. and add Label3D for areas.
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	if (enabled_geometry_face_random_color) {
 		RandomPCG rand;
