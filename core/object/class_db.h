@@ -52,6 +52,11 @@ struct is_class_enabled<T, std::enable_if_t<std::is_base_of_v<Object, T>>> {
 };
 
 template <typename T>
+struct is_class_enabled<T, std::enable_if_t<!std::is_base_of_v<Object, T>>> {
+	static_assert(std::is_base_of_v<Object, T>, "T needs to be a subclass of Object. Note that there are CoreBind versions of some symbols, in which case use GD_IS_CLASS_ENABLED(CoreBind::<T>) instead of GD_IS_CLASS_ENABLED(<T>).");
+};
+
+template <typename T>
 inline constexpr bool is_class_enabled_v = is_class_enabled<T>::value;
 
 #define GD_IS_CLASS_ENABLED(m_class) is_class_enabled_v<m_class>
