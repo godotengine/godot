@@ -78,10 +78,12 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 	ERR_FAIL_COND(p_name == StringName());
 #endif
 
+	ERR_FAIL_COND(p_name.is_empty() || String(p_name).contains_char('.') || String(p_name).contains_char('/'));
+	ERR_FAIL_COND_MSG(find_blend_point_by_name(p_name) != -1, "Blend point name must be unique.");
 	if (p_at_index == -1 || p_at_index == blend_points_used) {
 		p_at_index = blend_points_used;
 	} else {
-		for (int i = blend_points_used - 1; i > p_at_index; i--) {
+		for (int i = blend_points_used; i > p_at_index; i--) {
 			blend_points[i] = blend_points[i - 1];
 		}
 		for (int i = 0; i < triangles.size(); i++) {
@@ -126,12 +128,12 @@ void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<Anim
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_blend_point_position(int p_point) const {
-	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, Vector2());
+	ERR_FAIL_INDEX_V(p_point, blend_points_used, Vector2());
 	return blend_points[p_point].position;
 }
 
 Ref<AnimationRootNode> AnimationNodeBlendSpace2D::get_blend_point_node(int p_point) const {
-	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, Ref<AnimationRootNode>());
+	ERR_FAIL_INDEX_V(p_point, blend_points_used, Ref<AnimationRootNode>());
 	return blend_points[p_point].node;
 }
 
@@ -139,6 +141,8 @@ void AnimationNodeBlendSpace2D::set_blend_point_name(int p_point, const StringNa
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 	String new_name = p_name;
 	ERR_FAIL_COND(new_name.is_empty() || new_name.contains_char('.') || new_name.contains_char('/'));
+	int existing_index = find_blend_point_by_name(p_name);
+	ERR_FAIL_COND_MSG(existing_index != -1 && existing_index != p_point, "Blend point name must be unique.");
 
 	String old_name = blend_points[p_point].name;
 	if (new_name != old_name) {
@@ -166,6 +170,7 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
 	ERR_FAIL_COND(blend_points[p_point].node.is_null());
+	String removed_name = blend_points[p_point].name;
 	_remove_node(blend_points[p_point].node);
 
 	for (int i = 0; i < triangles.size(); i++) {
@@ -190,10 +195,12 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 	}
 	blend_points_used--;
 
-	blend_points[blend_points_used].name = StringName();
+	blend_points[blend_points_used].reset();
 	lengths_dirty = true;
 
-	emit_signal(SNAME("animation_node_removed"), get_instance_id(), itos(p_point));
+	_queue_auto_triangles();
+
+	emit_signal(SNAME("animation_node_removed"), get_instance_id(), removed_name);
 	_tree_changed();
 }
 
@@ -293,6 +300,7 @@ void AnimationNodeBlendSpace2D::add_triangle(int p_x, int p_y, int p_z, int p_at
 	} else {
 		triangles.insert(p_at_index, t);
 	}
+	_node_updated(get_instance_id());
 }
 
 int AnimationNodeBlendSpace2D::get_triangle_point(int p_triangle, int p_point) {
@@ -307,6 +315,7 @@ void AnimationNodeBlendSpace2D::remove_triangle(int p_triangle) {
 	ERR_FAIL_INDEX(p_triangle, triangles.size());
 
 	triangles.remove_at(p_triangle);
+	_node_updated(get_instance_id());
 }
 
 int AnimationNodeBlendSpace2D::get_triangle_count() const {
@@ -458,6 +467,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 	triangles.clear();
 	if (blend_points_used < 3) {
 		emit_signal(SNAME("triangles_updated"));
+		_node_updated(get_instance_id());
 		return;
 	}
 
@@ -473,6 +483,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 		add_triangle(tr[i].points[0], tr[i].points[1], tr[i].points[2]);
 	}
 	emit_signal(SNAME("triangles_updated"));
+	_node_updated(get_instance_id());
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {

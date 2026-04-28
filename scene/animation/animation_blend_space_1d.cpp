@@ -166,10 +166,12 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 #else
 	ERR_FAIL_COND(p_name == StringName());
 #endif
+	ERR_FAIL_COND(p_name.is_empty() || String(p_name).contains_char('.') || String(p_name).contains_char('/'));
+	ERR_FAIL_COND_MSG(find_blend_point_by_name(p_name) != -1, "Blend point name must be unique.");
 	if (p_at_index == -1 || p_at_index == blend_points_used) {
 		p_at_index = blend_points_used;
 	} else {
-		for (int i = blend_points_used - 1; i > p_at_index; i--) {
+		for (int i = blend_points_used; i > p_at_index; i--) {
 			blend_points[i] = blend_points[i - 1];
 		}
 	}
@@ -207,12 +209,12 @@ void AnimationNodeBlendSpace1D::set_blend_point_node(int p_point, const Ref<Anim
 }
 
 float AnimationNodeBlendSpace1D::get_blend_point_position(int p_point) const {
-	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, 0);
+	ERR_FAIL_INDEX_V(p_point, blend_points_used, 0);
 	return blend_points[p_point].position;
 }
 
 Ref<AnimationRootNode> AnimationNodeBlendSpace1D::get_blend_point_node(int p_point) const {
-	ERR_FAIL_INDEX_V(p_point, MAX_BLEND_POINTS, Ref<AnimationRootNode>());
+	ERR_FAIL_INDEX_V(p_point, blend_points_used, Ref<AnimationRootNode>());
 	return blend_points[p_point].node;
 }
 
@@ -220,6 +222,8 @@ void AnimationNodeBlendSpace1D::set_blend_point_name(int p_point, const StringNa
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 	String new_name = p_name;
 	ERR_FAIL_COND(new_name.is_empty() || new_name.contains_char('.') || new_name.contains_char('/'));
+	int existing_index = find_blend_point_by_name(p_name);
+	ERR_FAIL_COND_MSG(existing_index != -1 && existing_index != p_point, "Blend point name must be unique.");
 
 	String old_name = blend_points[p_point].name;
 	if (new_name != old_name) {
@@ -247,6 +251,7 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
 	ERR_FAIL_COND(blend_points[p_point].node.is_null());
+	String removed_name = blend_points[p_point].name;
 	_remove_node(blend_points[p_point].node);
 
 	for (int i = p_point; i < blend_points_used - 1; i++) {
@@ -255,10 +260,10 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 
 	blend_points_used--;
 
-	blend_points[blend_points_used].name = StringName();
+	blend_points[blend_points_used].reset();
 	lengths_dirty = true;
 
-	emit_signal(SNAME("animation_node_removed"), get_instance_id(), itos(p_point));
+	emit_signal(SNAME("animation_node_removed"), get_instance_id(), removed_name);
 	_tree_changed();
 }
 
@@ -556,8 +561,9 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_
 	}
 
 	// Special case for discrete carry.
-	AnimationNodeInstance *instance_current_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(cur_closest));
 	if (new_closest != cur_closest && new_closest != -1 && cur_closest != -1 && blend_mode == BLEND_MODE_DISCRETE_CARRY && sync_mode < SYNC_MODE_CYCLIC_MUTABLE) {
+		// I don't even think these can (or should) ever be null.
+		AnimationNodeInstance *instance_current_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(cur_closest));
 		AnimationNodeInstance *instance_new_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(new_closest));
 		NodeTimeInfo from;
 		// For ping-pong loop.

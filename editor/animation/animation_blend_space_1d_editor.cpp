@@ -408,7 +408,8 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 }
 
 void AnimationNodeBlendSpace1DEditor::_update_space() {
-	if (updating) {
+	// edge case when undoing action after editor has changed
+	if (updating || !blend_space.is_valid()) {
 		return;
 	}
 
