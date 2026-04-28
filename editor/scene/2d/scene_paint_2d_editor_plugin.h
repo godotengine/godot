@@ -43,6 +43,8 @@ class OptionButton;
 class ScenePaint2DEditor : public Control {
 	GDCLASS(ScenePaint2DEditor, Control);
 
+	inline static ScenePaint2DEditor *singleton = nullptr;
+
 	friend class ScenePaint2DEditorPlugin;
 
 	enum PaintMode {
@@ -56,6 +58,7 @@ class ScenePaint2DEditor : public Control {
 		PICK_SCENE_TREE,
 		PICK_CANVAS_ITEM,
 		PICK_RECENT_LIST,
+		PICK_CUSTOM_SOURCE,
 	};
 
 	enum InputTool {
@@ -109,6 +112,8 @@ class ScenePaint2DEditor : public Control {
 
 	Node2D *selected_scene = nullptr;
 
+	HashMap<Control *, Callable> custom_sources;
+
 	void _can_handle(bool p_is_node_2d, bool p_edit);
 
 	void _edit(Object *p_object);
@@ -135,10 +140,12 @@ class ScenePaint2DEditor : public Control {
 	void _scene_changed();
 
 	void _scene_picker_toggled(bool p_pressed);
-	void _update_scene_picker(int p_mode);
+	void _update_scene_picker(int p_mode, Control *p_control);
 	void _file_system_input(const Ref<InputEvent> &p_event);
 	void _scene_tree_input(const Ref<InputEvent> &p_event);
 	void _recent_item_selected(int p_idx);
+	void _custom_source_input(const Ref<InputEvent> &p_event, Control *p_control);
+	Node2D *_get_scene_from_path(const String &p_path);
 	void _set_picked_scene(Node2D *p_scene);
 
 	void _add_to_recent_scenes(const String &p_scene);
@@ -160,10 +167,19 @@ class ScenePaint2DEditor : public Control {
 	void _grid_step_changed();
 
 protected:
+	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
+	static ScenePaint2DEditor *get_singleton() { return singleton; }
+
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
+
+	void register_scene_provider(Control *p_control, const Callable &p_callback);
+	void unregister_scene_provider(Control *p_control);
+
+	void set_painted_scene(Node2D *p_scene);
+	Node2D *get_painted_scene() const;
 
 	ScenePaint2DEditor();
 };
