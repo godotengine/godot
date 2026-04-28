@@ -1653,8 +1653,8 @@ void AnimationTimelineEdit::_notification(int p_what) {
 						float pos = get_value() + double(i) / scale;
 						float prev = get_value() + (double(i) - 1.0) / scale;
 
-						int frame = pos / step_size;
-						int prev_frame = prev / step_size;
+						int frame = int(Math::floor(pos / step_size));
+						int prev_frame = int(Math::floor(prev / step_size));
 
 						bool sub = Math::floor(prev) == Math::floor(pos);
 

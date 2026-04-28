@@ -199,7 +199,7 @@ void GraphFrame::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tint_color_enabled"), "set_tint_color_enabled", "is_tint_color_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
 
-	ADD_SIGNAL(MethodInfo(SNAME("autoshrink_changed")));
+	ADD_SIGNAL(MethodInfo("autoshrink_changed"));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphFrame, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphFrame, panel_selected);
@@ -350,12 +350,14 @@ Size2 GraphFrame::get_minimum_size() const {
 GraphFrame::GraphFrame() {
 	titlebar_hbox = memnew(HBoxContainer);
 	titlebar_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	titlebar_hbox->set_use_parent_material(true);
 	add_child(titlebar_hbox, false, INTERNAL_MODE_FRONT);
 
 	title_label = memnew(Label);
 	title_label->set_theme_type_variation("GraphFrameTitleLabel");
 	title_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	title_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	title_label->set_use_parent_material(true);
 	titlebar_hbox->add_child(title_label);
 
 	set_mouse_filter(MOUSE_FILTER_STOP);

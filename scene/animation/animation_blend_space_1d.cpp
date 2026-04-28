@@ -556,8 +556,8 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_
 	}
 
 	// Special case for discrete carry.
-	AnimationNodeInstance *instance_current_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(cur_closest));
 	if (new_closest != cur_closest && new_closest != -1 && cur_closest != -1 && blend_mode == BLEND_MODE_DISCRETE_CARRY && sync_mode < SYNC_MODE_CYCLIC_MUTABLE) {
+		AnimationNodeInstance *instance_current_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(cur_closest));
 		AnimationNodeInstance *instance_new_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(new_closest));
 		NodeTimeInfo from;
 		// For ping-pong loop.

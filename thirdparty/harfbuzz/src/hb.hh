@@ -138,6 +138,7 @@
 
 /* Ignored intentionally. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
+#pragma GCC diagnostic ignored "-Warray-bounds" // https://github.com/harfbuzz/harfbuzz/issues/5738
 #pragma GCC diagnostic ignored "-Wclass-memaccess"
 #pragma GCC diagnostic ignored "-Wcast-function-type-strict" // https://github.com/harfbuzz/harfbuzz/pull/3859#issuecomment-1295409126
 #pragma GCC diagnostic ignored "-Wdangling-reference" // https://github.com/harfbuzz/harfbuzz/issues/4043
@@ -568,6 +569,13 @@ extern "C" void  hb_free_impl(void *ptr);
 #include "hb-array.hh"	// Requires: hb-algs hb-iter hb-null
 #include "hb-vector.hh"	// Requires: hb-array hb-null
 #include "hb-object.hh"	// Requires: hb-atomic hb-mutex hb-vector
+
+
+/* Library-internal alias for hb::unique_ptr defined in hb-cplusplus.hh.
+ * Unique-ownership RAII wrapper around an HB object; destroys on scope exit
+ * via the type's hb_*_destroy() function.  Usage: hb_unique_ptr_t<hb_blob_t>.
+ * Matches the hb_*_t naming used elsewhere in internal code. */
+template <typename T> using hb_unique_ptr_t = hb::unique_ptr<T>;
 
 
 /* Our src/test-*.cc use hb_assert(), such that it's not compiled out under NDEBUG.

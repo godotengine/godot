@@ -311,9 +311,6 @@ def configure(env: "SConsEnvironment"):
     if env["proxy_to_pthread"]:
         env.Append(LINKFLAGS=["-sPROXY_TO_PTHREAD=1"])
         env.Append(CPPDEFINES=["PROXY_TO_PTHREAD_ENABLED"])
-        env["EXPORTED_RUNTIME_METHODS"] += ["_emscripten_proxy_main"]
-        # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
-        env.Append(LINKFLAGS=["-sTEXTDECODER=0"])
 
     # Enable WebAssembly SIMD
     if env["wasm_simd"]:

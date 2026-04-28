@@ -77,9 +77,9 @@ static_assert (OT_VPst == M_Cat(VPst), "");
 
 #define _OT_A    OT_A            /*  53 chars; A */
 #define _OT_As   OT_As           /*   1 chars; As */
-#define _OT_C    OT_C            /* 478 chars; C */
+#define _OT_C    OT_C            /* 476 chars; C */
 #define _OT_CM   OT_CM           /*   1 chars; CM */
-#define _OT_CS   OT_CS           /*   2 chars; CS */
+#define _OT_CS   OT_CS           /*   4 chars; CS */
 #define _OT_DC   OT_DOTTEDCIRCLE /*   1 chars; DOTTEDCIRCLE */
 #define _OT_H    OT_H            /*  11 chars; H */
 #define _OT_M    OT_M            /* 142 chars; M */
@@ -218,7 +218,7 @@ static const uint8_t _hb_indic_u8[1220]=
     2, 24, 31, 35, 33, 34,  0, 32, 29,  9,  1, 21, 19, 20, 16,  2,
    21, 21, 17,  2, 23,  2,  2, 35, 32,  2, 20, 35, 34, 32, 32, 29,
     2, 29, 29, 32, 32, 35, 35, 34, 34, 34, 38, 39, 39, 26,  9, 39,
-   27, 39,  0, 37,  0, 27, 27,  0,  0,  2,  2,  0, 41, 40,  5, 37,
+   27, 39,  0, 37,  0, 27, 27,  0,  0,  4,  4,  0, 41, 40,  5, 37,
    31, 12,  2, 23,
 };
 

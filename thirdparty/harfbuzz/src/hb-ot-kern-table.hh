@@ -126,7 +126,7 @@ struct KernSubTableFormat3
 template <typename KernSubTableHeader>
 struct KernSubTable
 {
-  unsigned int get_size () const { return u.header.length; }
+  size_t get_size () const { return u.header.length; }
   unsigned int get_type () const { return u.header.format; }
 
   int get_kerning (hb_codepoint_t left, hb_codepoint_t right) const

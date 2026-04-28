@@ -469,7 +469,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 13.1.1 (70b812d8d2fb4a2b6386c04bfd8565a0fcc05f9b, 2026)
+- Version: 14.2.0 (b0ffab42d473eb380ad0fcf42730e0f1868cbc97, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -477,13 +477,13 @@ Files extracted from upstream source:
 - `AUTHORS`, `COPYING`, `THANKS`
 - From the `src` folder, recursively:
   - All the `.cc`, `.h`, `.hh` files
-  - Except `main.cc`, `harfbuzz*.cc`, `harfrust.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`, `hb-harfrust.cc`, `wasm/*`, `ms-use/*`, `rust/*`
+  - Except `main.cc`, `harfbuzz*.cc`, `harfrust.cc`, `failing-alloc.c`, `test*.cc`, `hb-gpu*.*`, `hb-wasm*.*`, `hb-harfrust.cc`, `wasm/*`, `ms-use/*`, `rust/*`
 
 
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 78.1 (049e0d6a420629ac7db77256987d083a563287b5, 2025)
+- Version: 78.3 (21d1eb0f306e1141c10931e914dfc038c06121da, 2026)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -608,7 +608,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.55 (c3e304954a9cfd154bc0dfbfea2b01cd61d6546d, 2026)
+- Version: 1.6.58 (3061454d980de7d53608f594194cfac722721d2a, 2026)
 - License: libpng/zlib
 
 Files extracted from upstream source:

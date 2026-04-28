@@ -349,16 +349,23 @@ void AnimationNode::set_filter_path(const NodePath &p_path, bool p_enable) {
 	} else {
 		filter.erase(p_path);
 	}
-	filters_dirty = true;
+	_mark_filters_dirty();
 }
 
 void AnimationNode::set_filter_enabled(bool p_enable) {
 	filter_enabled = p_enable;
-	filters_dirty = true;
+	_mark_filters_dirty();
 }
 
 bool AnimationNode::is_filter_enabled() const {
 	return filter_enabled;
+}
+
+void AnimationNode::_mark_filters_dirty() {
+	filters_version++;
+	if (unlikely(filters_version == 0)) {
+		filters_version = 1;
+	}
 }
 
 void AnimationNode::set_deletable(bool p_closable) {
@@ -408,6 +415,7 @@ void AnimationNode::_set_filters(const Array &p_filters) {
 }
 
 void AnimationNode::_update_filter_cache(const ProcessState &p_process_state, const AnimationNodeInstance &p_instance) {
+	bool filters_dirty = p_instance.filters_version != filters_version;
 	if (!p_process_state.track_map_updated && !filters_dirty) {
 		return; // Cache is valid.
 	}
@@ -422,7 +430,7 @@ void AnimationNode::_update_filter_cache(const ProcessState &p_process_state, co
 			p_instance.filtered_track_indices_cache.push_back(*p);
 		}
 	}
-	filters_dirty = false;
+	p_instance.filters_version = filters_version;
 }
 
 void AnimationNode::_validate_property(PropertyInfo &p_property) const {
@@ -1154,7 +1162,7 @@ void AnimationTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 
-	ADD_SIGNAL(MethodInfo(SNAME("animation_player_changed")));
+	ADD_SIGNAL(MethodInfo("animation_player_changed"));
 }
 
 AnimationTree::AnimationTree() {

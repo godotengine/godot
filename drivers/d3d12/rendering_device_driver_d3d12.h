@@ -464,7 +464,7 @@ private:
 		LocalVector<AttachmentLayout> attachment_layouts;
 
 		const VertexFormatInfo *vf_info = nullptr;
-		D3D12_VERTEX_BUFFER_VIEW vertex_buffer_views[8] = {};
+		D3D12_VERTEX_BUFFER_VIEW vertex_buffer_views[D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT] = {};
 		uint32_t vertex_buffer_count = 0;
 	};
 
@@ -490,6 +490,9 @@ private:
 
 		ID3D12PipelineState *graphics_pso = nullptr;
 		ID3D12PipelineState *compute_pso = nullptr;
+
+		uint32_t nir_graphics_runtime_data_root_param_idx = UINT32_MAX;
+		uint32_t nir_compute_runtime_data_root_param_idx = UINT32_MAX;
 
 		DynParams dyn_params;
 		bool pending_dyn_params = true;
