@@ -37,6 +37,7 @@
 #include "scene/gui/box_container.h"
 
 class Button;
+class CheckButton;
 class ConfirmationDialog;
 class FilterLineEdit;
 class HSlider;
@@ -66,6 +67,13 @@ class GridMapEditor : public EditorDock {
 	enum DisplayMode {
 		DISPLAY_THUMBNAIL,
 		DISPLAY_LIST
+	};
+
+	enum CellOriginMaterial {
+		ORIGIN_CURSOR,
+		ORIGIN_NEAR_CURSOR,
+		ORIGIN_SELECTED,
+		ORIGIN_COUNT,
 	};
 
 	InputAction input_action = INPUT_NONE;
@@ -103,6 +111,8 @@ class GridMapEditor : public EditorDock {
 	ConfirmationDialog *settings_dialog = nullptr;
 	VBoxContainer *settings_vbc = nullptr;
 	SpinBox *settings_pick_distance = nullptr;
+	CheckButton *settings_show_cell_origins = nullptr;
+	SpinBox *settings_cell_origin_area = nullptr;
 	Label *spin_box_label = nullptr;
 
 	struct SetItem {
@@ -123,6 +133,7 @@ class GridMapEditor : public EditorDock {
 	Vector3::Axis edit_axis;
 	int edit_floor[3];
 	Vector3 grid_ofs;
+	float cell_origin_scale = 0;
 
 	RID grid[3];
 	RID grid_instance[3];
@@ -134,6 +145,8 @@ class GridMapEditor : public EditorDock {
 	RID selection_level_instance[3];
 	RID paste_mesh;
 	RID paste_instance;
+	RID cell_origin_mesh;
+	Vector<RID> cell_origin_instance;
 
 	struct ClipboardItem {
 		int cell_item = 0;
@@ -154,6 +167,7 @@ class GridMapEditor : public EditorDock {
 	Ref<StandardMaterial3D> inner_mat;
 	Ref<StandardMaterial3D> outer_mat;
 	Ref<StandardMaterial3D> selection_floor_mat;
+	Ref<StandardMaterial3D> cell_origin_mat[ORIGIN_COUNT];
 
 	bool updating = false;
 
@@ -230,7 +244,11 @@ class GridMapEditor : public EditorDock {
 	void _item_selected_cbk(int idx);
 	void _update_cursor_transform();
 	void _update_cursor_instance();
+	void _update_cell_origin_scale();
+	void _update_cell_origins();
+	int _fill_area_with_origins(AABB p_area, CellOriginMaterial p_material, const Vector<AABB> &p_ignore_areas = Vector<AABB>(), int p_from = 0);
 	void _on_tool_mode_changed();
+	void _settings_changed();
 	void _update_theme();
 
 	void _text_changed(const String &p_text);
