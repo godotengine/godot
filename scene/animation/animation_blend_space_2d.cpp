@@ -195,6 +195,7 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 
 	emit_signal(SNAME("animation_node_removed"), get_instance_id(), itos(p_point));
 	_tree_changed();
+	_queue_auto_triangles();
 }
 
 int AnimationNodeBlendSpace2D::get_blend_point_count() const {
