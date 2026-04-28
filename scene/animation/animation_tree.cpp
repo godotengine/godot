@@ -790,7 +790,7 @@ void AnimationTree::_animation_node_renamed(const ObjectID &p_oid, const String 
 
 void AnimationTree::_animation_node_removed(const ObjectID &p_oid, const StringName &p_node) {
 	for (const StringName &parent_path : instance_paths[p_oid]) {
-		String base_path = String(parent_path) + String(p_node);
+		String base_path = String(parent_path) + String(p_node) + "/";
 
 		for (const PropertyInfo &E : properties) {
 			if (E.name.begins_with(base_path)) {
