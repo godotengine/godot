@@ -781,12 +781,28 @@ void AnimationTree::_animation_node_renamed(const ObjectID &p_oid, const String 
 }
 
 void AnimationTree::_animation_node_removed(const ObjectID &p_oid, const StringName &p_node) {
+	Object *obj = ObjectDB::get_instance(p_oid);
+	bool is_blend_space = obj && (obj->is_class("AnimationNodeBlendSpace1D") || obj->is_class("AnimationNodeBlendSpace2D"));
+
 	for (const StringName &parent_path : instance_paths[p_oid]) {
 		String base_path = String(parent_path) + String(p_node);
 
 		for (const PropertyInfo &E : properties) {
 			if (E.name.begins_with(base_path)) {
 				property_map.erase(E.name);
+			}
+		}
+
+		// When a child is removed from the blend space, the indices may shift,
+		// so the "closest" parameter may point to the wrong child or be out of bounds.
+		//
+		// The proper fix is to change the "closest" parameter from the child's index to the child's name.
+		// At the moment, we have to reset it even if the closest child was not the one that changed.
+		//
+		// TODO: In a future release consider removing "closest" (int) and replacing it with "closest_name" (StringName).
+		if (is_blend_space) {
+			if (Pair<Variant, bool> *closest_param = property_map.getptr(String(parent_path) + "closest")) {
+				closest_param->first = -1;
 			}
 		}
 	}
