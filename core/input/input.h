@@ -99,6 +99,8 @@ public:
 
 		virtual bool has_joy_motion_sensors() const { return false; }
 		virtual void set_joy_motion_sensors_enabled(bool p_enable) {}
+
+		virtual int get_joy_num_touchpads() const { return 0; }
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -191,6 +193,18 @@ private:
 	};
 
 	HashMap<int, MotionInfo> joy_motion;
+
+	struct TouchpadFingerInfo {
+		Vector2 position;
+		float pressure;
+	};
+
+	struct TouchpadInfo {
+		int num_touchpads = 0;
+		HashMap<uint16_t, TouchpadFingerInfo> finger_info;
+	};
+
+	HashMap<int, TouchpadInfo> joy_touch;
 
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
@@ -385,6 +399,12 @@ public:
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
 
+	Vector2 get_joy_touchpad_finger_position(int p_device, int p_finger, int p_touchpad = 0) const;
+	float get_joy_touchpad_finger_pressure(int p_device, int p_finger, int p_touchpad = 0) const;
+	PackedInt32Array get_joy_touchpad_fingers(int p_device, int p_touchpad = 0) const;
+
+	int get_joy_num_touchpads(int p_device) const;
+
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
 	Vector2 get_last_mouse_screen_velocity();
@@ -457,6 +477,7 @@ public:
 	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
 	void joy_hat(int p_device, BitField<HatMask> p_val);
 	void joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, const Vector3 &p_gyroscope);
+	void joy_touchpad(int p_device, int p_touchpad, int p_finger, const Vector2 &p_position, float p_pressure);
 
 	void add_joy_mapping(const String &p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(const String &p_guid);

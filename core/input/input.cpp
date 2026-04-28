@@ -179,6 +179,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_joy_motion_sensors_calibration", "device", "calibration_info"), &Input::set_joy_motion_sensors_calibration);
 	ClassDB::bind_method(D_METHOD("is_joy_motion_sensors_calibrated", "device"), &Input::is_joy_motion_sensors_calibrated);
 	ClassDB::bind_method(D_METHOD("is_joy_motion_sensors_calibrating", "device"), &Input::is_joy_motion_sensors_calibrating);
+	ClassDB::bind_method(D_METHOD("get_joy_touchpad_finger_position", "device", "finger", "touchpad"), &Input::get_joy_touchpad_finger_position, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_joy_touchpad_finger_pressure", "device", "finger", "touchpad"), &Input::get_joy_touchpad_finger_pressure, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_joy_touchpad_fingers", "device", "touchpad"), &Input::get_joy_touchpad_fingers, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_joy_num_touchpads", "device"), &Input::get_joy_num_touchpads);
 	ClassDB::bind_method(D_METHOD("set_gravity", "value"), &Input::set_gravity);
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
@@ -796,6 +800,64 @@ Vector3 Input::get_gyroscope() const {
 #endif
 
 	return gyroscope;
+}
+
+Vector2 Input::get_joy_touchpad_finger_position(int p_device, int p_finger, int p_touchpad) const {
+	_THREAD_SAFE_METHOD_
+	const TouchpadInfo *touch = joy_touch.getptr(p_device);
+	if (touch == nullptr) {
+		return Vector2();
+	}
+
+	uint16_t index = p_finger | (p_touchpad << 8);
+	const TouchpadFingerInfo *finger_info = touch->finger_info.getptr(index);
+	if (finger_info == nullptr) {
+		return Vector2();
+	}
+
+	return finger_info->position;
+}
+
+float Input::get_joy_touchpad_finger_pressure(int p_device, int p_finger, int p_touchpad) const {
+	_THREAD_SAFE_METHOD_
+	const TouchpadInfo *touch = joy_touch.getptr(p_device);
+	if (touch == nullptr) {
+		return 0.0f;
+	}
+
+	uint16_t index = p_finger | (p_touchpad << 8);
+	const TouchpadFingerInfo *finger_info = touch->finger_info.getptr(index);
+	if (finger_info == nullptr) {
+		return 0.0f;
+	}
+
+	return finger_info->pressure;
+}
+
+PackedInt32Array Input::get_joy_touchpad_fingers(int p_device, int p_touchpad) const {
+	_THREAD_SAFE_METHOD_
+	const TouchpadInfo *touch = joy_touch.getptr(p_device);
+	if (touch == nullptr) {
+		return PackedInt32Array();
+	}
+
+	PackedInt32Array result;
+	for (const KeyValue<uint16_t, TouchpadFingerInfo> &index : touch->finger_info) {
+		int touchpad = index.key >> 8;
+		if (touchpad == p_touchpad) {
+			result.append(index.key & 0xFF);
+		}
+	}
+	return result;
+}
+
+int Input::get_joy_num_touchpads(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const TouchpadInfo *touch = joy_touch.getptr(p_device);
+	if (touch == nullptr) {
+		return 0;
+	}
+	return touch->num_touchpads;
 }
 
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
@@ -1620,6 +1682,9 @@ void Input::release_pressed_events() {
 
 		for (int device : get_connected_joypads()) {
 			stop_joy_vibration(device);
+
+			TouchpadInfo &touch = joy_touch[device];
+			touch.finger_info.clear();
 		}
 	} else {
 		for (KeyValue<StringName, Input::ActionState> &E : action_states) {
@@ -1823,6 +1888,22 @@ void Input::joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, con
 	motion->gamepad_motion->ProcessMotion(gyro_degrees.x, gyro_degrees.y, gyro_degrees.z, accel_g.x, accel_g.y, accel_g.z, delta_time);
 }
 
+void Input::joy_touchpad(int p_device, int p_touchpad, int p_finger, const Vector2 &p_position, float p_pressure) {
+	_THREAD_SAFE_METHOD_
+
+	if (_should_ignore_joypad_events()) {
+		return;
+	}
+
+	TouchpadInfo &touch = joy_touch[p_device];
+	uint16_t index = p_finger | (p_touchpad << 8);
+	if (p_pressure > 0.0) {
+		touch.finger_info[index] = TouchpadFingerInfo{ p_position, p_pressure };
+	} else {
+		touch.finger_info.erase(index);
+	}
+}
+
 void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed) {
 	Ref<InputEventJoypadButton> ievent;
 	ievent.instantiate();
@@ -1886,6 +1967,9 @@ void Input::_update_joypad_features(int p_device) {
 			motion.gamepad_motion->Reset();
 		}
 		motion.last_timestamp = OS::get_singleton()->get_ticks_msec();
+	}
+	if (joypad->features->get_joy_num_touchpads() > 0) {
+		joy_touch[p_device].num_touchpads = joypad->features->get_joy_num_touchpads();
 	}
 }
 
