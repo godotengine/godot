@@ -1996,6 +1996,42 @@ const Variant GDScriptInstance::get_rpc_config() const {
 	return script->get_rpc_config();
 }
 
+#ifdef DEBUG_ENABLED
+// Mirrors GDScriptFunction::_get_default_variant_for_data_type() for newly
+// introduced members during hot reload.
+static Variant _get_default_variant_for_reload(const GDScriptDataType &p_data_type) {
+	if (p_data_type.kind != GDScriptDataType::BUILTIN) {
+		return Variant();
+	}
+
+	if (p_data_type.builtin_type == Variant::ARRAY) {
+		Array array;
+		if (p_data_type.has_container_element_type(0)) {
+			const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
+			array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+		}
+		return array;
+	}
+
+	if (p_data_type.builtin_type == Variant::DICTIONARY) {
+		Dictionary dictionary;
+		if (p_data_type.has_container_element_types()) {
+			const GDScriptDataType &key_type = p_data_type.get_container_element_type_or_variant(0);
+			const GDScriptDataType &value_type = p_data_type.get_container_element_type_or_variant(1);
+			dictionary.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type, value_type.builtin_type, value_type.native_type, value_type.script_type);
+		}
+		return dictionary;
+	}
+
+	Callable::CallError err;
+	Variant default_value;
+	Variant::construct(p_data_type.builtin_type, default_value, nullptr, 0, err);
+	ERR_FAIL_COND_V(err.error != Callable::CallError::CALL_OK, Variant());
+	return default_value;
+}
+
+#endif
+
 void GDScriptInstance::reload_members() {
 #ifdef DEBUG_ENABLED
 
@@ -2007,6 +2043,28 @@ void GDScriptInstance::reload_members() {
 		if (member_indices_cache.has(E.key)) {
 			Variant value = members[member_indices_cache[E.key]];
 			new_members.write[E.value.index] = value;
+		} else {
+#ifdef TOOLS_ENABLED
+			Variant default_value;
+			bool has_default_value = false;
+			for (GDScript *script_ptr = script.ptr(); script_ptr; script_ptr = script_ptr->base.ptr()) {
+				if (!script_ptr->members.has(E.key)) {
+					continue;
+				}
+				if (HashMap<StringName, Variant>::ConstIterator member_default_value = script_ptr->member_default_values.find(E.key)) {
+					default_value = member_default_value->value;
+					has_default_value = true;
+				}
+				break;
+			}
+
+			if (has_default_value) {
+				new_members.write[E.value.index] = default_value;
+			} else
+#endif
+			{
+				new_members.write[E.value.index] = _get_default_variant_for_reload(E.value.data_type);
+			}
 		}
 	}
 

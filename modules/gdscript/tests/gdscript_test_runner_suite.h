@@ -91,6 +91,98 @@ func _init():
 	CHECK_MESSAGE(int(ref_counted->get_meta("result")) == 42, "The script should assign object metadata successfully.");
 }
 
+#ifdef DEBUG_ENABLED
+TEST_CASE("[Modules][GDScript] Hot reload initializes newly added member defaults") {
+	GDScriptLanguage::get_singleton()->init();
+	Ref<GDScript> gdscript = memnew(GDScript);
+	gdscript->set_source_code(R"(
+extends RefCounted
+
+func describe() -> String:
+	return "v1"
+)");
+
+	ERR_PRINT_OFF;
+	Error error = gdscript->reload();
+	ERR_PRINT_ON;
+	REQUIRE_MESSAGE(error == OK, "The v1 script should parse successfully.");
+
+	Callable::CallError call_error;
+	Variant instance_a = gdscript->_new(nullptr, 0, call_error);
+	REQUIRE(call_error.error == Callable::CallError::CALL_OK);
+	Ref<RefCounted> ref_a = instance_a;
+	REQUIRE(ref_a.is_valid());
+
+	call_error = Callable::CallError();
+	Variant instance_b = gdscript->_new(nullptr, 0, call_error);
+	REQUIRE(call_error.error == Callable::CallError::CALL_OK);
+	Ref<RefCounted> ref_b = instance_b;
+	REQUIRE(ref_b.is_valid());
+
+	gdscript->set_source_code(R"(
+extends RefCounted
+
+var injected_dict: Dictionary = {}
+var injected_array: Array = []
+
+func describe() -> String:
+	return "dict=%d array=%d" % [injected_dict.keys().size(), injected_array.size()]
+)");
+
+	ERR_PRINT_OFF;
+	error = gdscript->reload(true);
+	ERR_PRINT_ON;
+	REQUIRE_MESSAGE(error == OK, "The v2 script should hot-reload successfully.");
+
+	Object *object_a = ref_a.ptr();
+	List<PropertyInfo> property_list;
+	object_a->get_property_list(&property_list);
+
+	bool has_injected_dict = false;
+	bool has_injected_array = false;
+	for (const PropertyInfo &property : property_list) {
+		if (property.name == StringName("injected_dict")) {
+			has_injected_dict = true;
+		} else if (property.name == StringName("injected_array")) {
+			has_injected_array = true;
+		}
+	}
+	CHECK(has_injected_dict);
+	CHECK(has_injected_array);
+
+	bool valid = false;
+	Variant dict_value = object_a->get(StringName("injected_dict"), &valid);
+	CHECK(valid);
+	REQUIRE(dict_value.get_type() == Variant::DICTIONARY);
+	Dictionary dict_value_as_dictionary = dict_value;
+	CHECK_EQ(dict_value_as_dictionary.size(), 0);
+
+	valid = false;
+	Variant array_value = object_a->get(StringName("injected_array"), &valid);
+	CHECK(valid);
+	REQUIRE(array_value.get_type() == Variant::ARRAY);
+	Array array_value_as_array = array_value;
+	CHECK_EQ(array_value_as_array.size(), 0);
+
+	call_error = Callable::CallError();
+	Variant result = object_a->callp(StringName("describe"), nullptr, 0, call_error);
+	REQUIRE(call_error.error == Callable::CallError::CALL_OK);
+	String result_string = result;
+	CHECK_EQ(result_string, "dict=0 array=0");
+
+	Dictionary dict_a = object_a->get(StringName("injected_dict"));
+	dict_a[String("key")] = 1;
+	Array array_a = object_a->get(StringName("injected_array"));
+	array_a.push_back(1);
+
+	Object *object_b = ref_b.ptr();
+	Dictionary dict_b = object_b->get(StringName("injected_dict"));
+	Array array_b = object_b->get(StringName("injected_array"));
+	CHECK_EQ(dict_b.size(), 0);
+	CHECK_EQ(array_b.size(), 0);
+}
+#endif // DEBUG_ENABLED
+
 TEST_CASE("[Modules][GDScript] Loading keeps ResourceCache and GDScriptCache in sync") {
 	const String path = TestUtils::get_temp_path("gdscript_load_test.gd");
 
