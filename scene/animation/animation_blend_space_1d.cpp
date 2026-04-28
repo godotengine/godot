@@ -169,7 +169,7 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 	if (p_at_index == -1 || p_at_index == blend_points_used) {
 		p_at_index = blend_points_used;
 	} else {
-		for (int i = blend_points_used - 1; i > p_at_index; i--) {
+		for (int i = blend_points_used; i > p_at_index; i--) {
 			blend_points[i] = blend_points[i - 1];
 		}
 	}
