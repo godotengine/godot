@@ -58,6 +58,12 @@ protected:
 		StringName name;
 		Ref<AnimationRootNode> node;
 		Vector2 position;
+
+		void reset() {
+			name = StringName();
+			node = Ref<AnimationRootNode>();
+			position = Vector2();
+		}
 	};
 
 	BlendPoint blend_points[MAX_BLEND_POINTS];
