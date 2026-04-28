@@ -508,9 +508,8 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	uint8_t next_free_area_config_id = 1; // Config ID for unique bitmask configuration, i.e. some areas can share the same ID.
 	uint8_t AREA_CONFIG_ID_MAX = RC_WALKABLE_AREA; // Recast unsigned char RC_WALKABLE_AREA = 63 is maximum allowed area config id.
 
-	Vector<NavigationMeshSourceGeometryData3D::ProjectedArea> usable_projected_areas;
-	Vector<uint32_t> nav_area_navlayers = Vector<uint32_t>();
-	Array area_origins;
+	Vector<NavigationMeshSourceGeometryData3D::ProjectedArea> usable_projected_areas; // Usable, but does not mean it affects the navmesh.
+	Array usable_area_origins;
 
 	// TODO: Use areas for cutting/carving mesh. Then, deprecate those features in obstacle.
 
@@ -581,8 +580,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 			}
 
 			usable_projected_areas.push_back(projected_area);
-			nav_area_navlayers.push_back(area_navigation_layers);
-			area_origins.push_back(center); // FIXME: better get y-axis value further below, when we loop over our valid and baked projected areas.
+			usable_area_origins.push_back(center); // FIXME: better get y-axis value further below, when we loop over our valid and baked projected areas.
 		}
 	}
 
@@ -660,8 +658,8 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 
 	Vector<Vector<int>> nav_polygons;
 	Vector<uint32_t> nav_polygons_layers;
-	Vector<Vector<int>> nav_area_indices;
-	nav_area_indices.resize(usable_projected_areas.size());
+	Vector<Vector<int>> usable_nav_area_indices;
+	usable_nav_area_indices.resize(usable_projected_areas.size());
 
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
 		// If the polygon is not affected by an area, it gets the RC_WALKABLE_AREA area config id, i.e. we get the default navigation layers set above.
@@ -712,7 +710,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 						}
 						if (contains_tris) {
 							match = true;
-							nav_area_indices.write[area_index].push_back(nav_polygons_layers.size() - 1);
+							usable_nav_area_indices.write[area_index].push_back(nav_polygons_layers.size() - 1);
 							break;
 						}
 
@@ -722,6 +720,20 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				}
 			}
 		}
+	}
+
+	// Filter to the areas that actually affected the navigation mesh.
+	Vector<uint32_t> nav_area_navlayers = Vector<uint32_t>();
+	Vector<Vector<int>> nav_area_indices = Vector<Vector<int>>();
+	Array area_origins;
+	int i = 0;
+	for (Vector<int> area : usable_nav_area_indices) {
+		if (area.size() > 0) {
+			nav_area_navlayers.push_back(usable_projected_areas[i].navigation_layers);
+			nav_area_indices.push_back(area);
+			area_origins.push_back(usable_area_origins[i]);
+		}
+		i++;
 	}
 
 	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_layers, nav_area_navlayers, nav_area_indices);
