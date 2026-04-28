@@ -5129,8 +5129,12 @@ void Tree::_notification(int p_what) {
 		case NOTIFICATION_DRAG_BEGIN: {
 			single_select_defer = nullptr;
 			if (theme_cache.scroll_speed > 0) {
-				scrolling = true;
-				set_process_internal(true);
+				const Dictionary drag_data = get_viewport()->gui_get_drag_data();
+				// Enable scrolling, unless dragging a tab.
+				if (drag_data.get("type", "").operator String() != "tab") {
+					scrolling = true;
+					set_process_internal(true);
+				}
 			}
 		} break;
 

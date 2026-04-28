@@ -525,7 +525,11 @@ void ScrollContainer::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_BEGIN: {
 			if (scroll_on_drag_hover && is_visible_in_tree()) {
-				set_process_internal(true);
+				const Dictionary drag_data = get_viewport()->gui_get_drag_data();
+				// Enable scrolling, unless dragging a tab.
+				if (drag_data.get("type", "").operator String() != "tab") {
+					set_process_internal(true);
+				}
 			}
 		} break;
 
