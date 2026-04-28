@@ -63,6 +63,19 @@ JoypadSDL::~JoypadSDL() {
 Error JoypadSDL::initialize() {
 	SDL_SetHint(SDL_HINT_JOYSTICK_THREAD, "1");
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+
+#ifdef WINDOWS_ENABLED
+	/*
+	 * GameCube controllers on Windows require libusb (so we would have to
+	 * compile it ourselves in Godot's build system) and HID driver detachment
+	 * via Zadig, without that the GameCube HIDAPI driver causes engine freezing.
+	 * For now the users of GameCube controller adapters on Windows will need
+	 * to use their PC mode (DirectInput) to use them.
+	 * See GH-119033 for more details.
+	 */
+	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE, "0");
+#endif
+
 	ERR_FAIL_COND_V_MSG(!SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD), FAILED, SDL_GetError());
 
 	// Add Godot's mapping database from memory
