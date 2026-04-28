@@ -310,15 +310,6 @@ void NavRegion3D::_build_iteration() {
 	new_iteration->transform = get_transform();
 	new_iteration->owner_use_edge_connections = get_use_edge_connections();
 
-	// Flush potential changes to navigation layers of area-created polygons from navigation mesh to iteration:
-	int i = 0;
-	for (uint32_t _navlayers : iteration_build.navmesh_data.area_navlayers) {
-		for (int polygon_index : iteration_build.navmesh_data.area_indices[i]) {
-			iteration_build.navmesh_data.polygons_meta.write[polygon_index] = _navlayers;
-		}
-		i++;
-	}
-
 	iteration_build.region_iteration = new_iteration;
 
 	if (use_async_iterations) {

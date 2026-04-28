@@ -433,6 +433,7 @@ bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) 
 			return false;
 		}
 		NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, (uint16_t)which, p_value);
+		_update_debug_mesh();
 		notify_property_list_changed(); // Make areas in navigation_mesh (in)visible in inspector.
 		return true;
 	}

@@ -217,6 +217,7 @@ public:
 	Vector<Vector<int>> get_polygons() const;
 	uint16_t get_area_count() const;
 	void set_area_navigation_layers(uint16_t p_area_index, uint32_t p_navigation_layers);
+	void _apply_area_navlayers();
 	uint32_t get_area_navigation_layers(uint16_t p_area_index) const;
 
 	int get_polygon_meta_count() const;

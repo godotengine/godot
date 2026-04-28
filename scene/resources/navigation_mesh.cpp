@@ -466,6 +466,17 @@ Array NavigationMesh::_get_area_indices() const {
 	return ret;
 }
 
+void NavigationMesh::_apply_area_navlayers() {
+	// Flush potential changes to navigation layers of area-created polygons from navigation mesh to iteration:
+	int i = 0;
+	for (uint32_t _navlayers : area_navlayers) {
+		for (int polygon_index : area_indices[i]) {
+			polygons_meta.write[polygon_index] = _navlayers;
+		}
+		i++;
+	}
+}
+
 void NavigationMesh::set_area_navigation_layers(uint16_t p_area_index, uint32_t p_navigation_layers) {
 	RWLockWrite write_lock(rwlock);
 	if (p_area_index >= area_navlayers.size()) {
@@ -473,7 +484,11 @@ void NavigationMesh::set_area_navigation_layers(uint16_t p_area_index, uint32_t 
 	}
 
 	area_navlayers.write[p_area_index] = p_navigation_layers;
-	// notify_property_list_changed(); // FIXME: is this needed?
+
+	// Apply (short version of _apply_area_navlayers()).
+	for (int polygon_index : area_indices[p_area_index]) {
+		polygons_meta.write[polygon_index] = p_navigation_layers;
+	}
 }
 
 uint32_t NavigationMesh::get_area_navigation_layers(uint16_t p_area_index) const {
@@ -510,6 +525,7 @@ void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Ve
 	polygons_meta = p_polygons_meta;
 	area_navlayers = p_area_navlayers;
 	area_indices = p_area_indices;
+	_apply_area_navlayers();
 }
 
 void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint32_t> &r_area_navlayers, Vector<Vector<int>> &r_area_indices) {
