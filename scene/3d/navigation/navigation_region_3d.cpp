@@ -359,7 +359,7 @@ void NavigationRegion3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int16_t i = 0; i < navigation_mesh->get_area_count(); i++) {
 		const String prep = vformat("areas/%d/", i);
 		// Navigation layers overwrites.
-		p_list->push_back(PropertyInfo(Variant::INT, prep + "layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::INT, prep + "layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION, "", PROPERTY_USAGE_EDITOR));
 	}
 }
 

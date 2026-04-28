@@ -214,6 +214,7 @@ void NavigationRegion3DEditor::_clear_pressed() {
 		for (NavigationRegion3D *region : selected_regions) {
 			if (region->get_navigation_mesh().is_valid()) {
 				region->get_navigation_mesh()->clear();
+				region->notify_property_list_changed(); // In order to trigger NavigationRegion3D::_get_property_list();
 				region->update_gizmos();
 			}
 		}

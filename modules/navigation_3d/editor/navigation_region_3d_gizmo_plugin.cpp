@@ -255,7 +255,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 		for (int i = 0; i < debug_data.size(); i++) {
 			Vector3 pos = debug_data[i];
-			
+
 			Label3D *area_index_label = memnew(Label3D);
 			area_index_label->set_text(vformat("%d", i));
 			area_index_label->set_draw_flag(Label3D::DrawFlags::FLAG_DISABLE_DEPTH_TEST, true);
