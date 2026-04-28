@@ -1018,8 +1018,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		ERR_FAIL(); //bug?
 	}
 
-	// Set subsampled images as not allowed on this render target, if we are using incompatible rendering features.
-	texture_storage->render_target_set_subsampled_allowed(render_target, using_subpass_post_process);
+	if (render_target.is_valid()) {
+		// Set subsampled images as not allowed on this render target, if we are using incompatible rendering features.
+		texture_storage->render_target_set_subsampled_allowed(render_target, using_subpass_post_process);
+	}
 
 	if (p_render_data->scene_data->view_count > 1) {
 		global_pipeline_data_required.use_multiview = true;
