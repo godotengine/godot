@@ -34,6 +34,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
+#include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
@@ -53,10 +54,11 @@ void ScriptEditorBase::_bind_methods() {
 
 	// First use in ScriptTextEditor.
 	ADD_SIGNAL(MethodInfo("request_save_history"));
+	ADD_SIGNAL(MethodInfo("_request_save_new_history", PropertyInfo(Variant::DICTIONARY, "state")));
+	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
 	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "topic")));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
-	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::STRING, "method")));
 }
@@ -174,7 +176,9 @@ void TextEditorBase::EditMenus::_bookmark_item_pressed(int p_idx) {
 	if (p_idx < 4) { // Any item before the separator.
 		script_text_editor->_edit_option(bookmarks_menu->get_item_id(p_idx));
 	} else {
+		ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 		script_text_editor->code_editor->goto_line_centered(bookmarks_menu->get_item_metadata(p_idx));
+		ScriptEditorNavigationMarker::get_singleton()->locate_end();
 	}
 }
 
@@ -488,10 +492,14 @@ bool TextEditorBase::_edit_option(int p_op) {
 			code_editor->toggle_bookmark();
 		} break;
 		case BOOKMARK_GOTO_NEXT: {
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 			code_editor->goto_next_bookmark();
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		} break;
 		case BOOKMARK_GOTO_PREV: {
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 			code_editor->goto_prev_bookmark();
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		} break;
 		case BOOKMARK_REMOVE_ALL: {
 			code_editor->remove_all_bookmarks();
@@ -522,6 +530,20 @@ void TextEditorBase::_load_theme_settings() {
 void TextEditorBase::_validate_script() {
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
+}
+
+void TextEditorBase::_emit_request_save_new_history() {
+	Dictionary state = get_edit_state();
+	state["ensure_caret_visible"] = true;
+	previous_history_line = state["row"];
+	emit_signal(SNAME("_request_save_new_history"), state);
+}
+
+void TextEditorBase::_emit_request_save_previous_state() {
+	Dictionary state = get_edit_state();
+	state["ensure_caret_visible"] = true;
+	previous_history_line = state["row"];
+	emit_signal(SNAME("request_save_previous_state"), state);
 }
 
 void TextEditorBase::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
@@ -631,6 +653,9 @@ void TextEditorBase::set_edit_state(const Variant &p_state) {
 	code_editor->set_edit_state(p_state);
 
 	Dictionary state = p_state;
+	if (state.has("row")) {
+		previous_history_line = state["row"];
+	}
 	if (state.has("syntax_highlighter")) {
 		for (const Ref<EditorSyntaxHighlighter> &highlighter : highlighters) {
 			if (highlighter->_get_name() == String(state["syntax_highlighter"])) {
@@ -653,6 +678,7 @@ TextEditorBase::TextEditorBase() {
 	code_editor->connect("validate_script", callable_mp(this, &TextEditorBase::_validate_script));
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditorBase::_load_theme_settings));
 	code_editor->connect("show_goto_popup", callable_mp(this, &TextEditorBase::_edit_option).bind(SEARCH_GOTO_LINE));
+	code_editor->connect("_request_save_new_history", callable_mp(this, &TextEditorBase::_emit_request_save_new_history));
 
 	context_menu = memnew(PopupMenu);
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditorBase::_edit_option));

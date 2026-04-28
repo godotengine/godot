@@ -93,7 +93,6 @@ class ScriptTextEditor : public CodeEditorBase {
 	Color marked_line_color = Color(1, 1, 1);
 	Color warning_line_color = Color(1, 1, 1);
 	Color folded_code_region_color = Color(1, 1, 1);
-	int previous_line = -1; // Previous caret line number when user continuously operates in this editor. Affects history state. Reset to -1 on editor switch.
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
@@ -203,7 +202,7 @@ protected:
 
 	String _get_absolute_path(const String &rel_path);
 
-	void _goto_line(int p_line) { goto_line(p_line); }
+	void _goto_line(int p_line);
 
 	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, const Vector2 &p_pos);
 
