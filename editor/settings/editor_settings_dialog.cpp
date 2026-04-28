@@ -43,19 +43,23 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/inspector/editor_sectioned_inspector.h"
-#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_event_search_bar.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/settings/input_event_configuration_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "scene/main/timer.h"
+
+#ifndef _3D_DISABLED
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "scene/debugger/view_3d_controller.h"
+#endif // _3D_DISABLED
 
 void EditorSettingsDialog::ok_pressed() {
 	if (!EditorSettings::get_singleton()) {
@@ -86,14 +90,17 @@ void EditorSettingsDialog::_settings_property_edited() {
 		EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", "Custom");
 	} else if (full_name.begins_with("editors/visual_editors/connection_colors") || full_name.begins_with("editors/visual_editors/category_colors")) {
 		EditorSettings::get_singleton()->set_manually("editors/visual_editors/color_theme", "Custom");
+#ifndef _3D_DISABLED
 	} else if (full_name == "editors/3d/navigation/orbit_mouse_button" || full_name == "editors/3d/navigation/pan_mouse_button" || full_name == "editors/3d/navigation/zoom_mouse_button" || full_name == "editors/3d/navigation/emulate_3_button_mouse") {
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
 	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
 		update_navigation_preset();
 		_update_shortcuts();
+#endif // _3D_DISABLED
 	}
 }
 
+#ifndef _3D_DISABLED
 void EditorSettingsDialog::update_navigation_preset() {
 	View3DController::NavigationScheme nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 	View3DController::NavigationMouseButton set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
@@ -183,6 +190,7 @@ void EditorSettingsDialog::update_navigation_preset() {
 		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_2", orbit_snap_mod_key_2);
 	}
 }
+#endif // _3D_DISABLED
 
 void EditorSettingsDialog::_set_shortcut_input(const String &p_name, Ref<InputEventKey> &p_event) {
 	Array sc_events;
@@ -217,7 +225,9 @@ void EditorSettingsDialog::popup_edit_settings() {
 
 	EditorSettings::get_singleton()->update_text_editor_themes_list(); // Make sure we have an up to date list of themes.
 
+#ifndef _3D_DISABLED
 	_update_dynamic_property_hints();
+#endif // _3D_DISABLED
 
 	inspector->edit(EditorSettings::get_singleton());
 	inspector->get_inspector()->update_tree();
@@ -295,11 +305,13 @@ void EditorSettingsDialog::_notification(int p_what) {
 				_update_shortcuts();
 			}
 
+#ifndef _3D_DISABLED
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d/navigation")) {
 				// Shortcuts may have changed, so dynamic hint values must update.
 				_update_dynamic_property_hints();
 				inspector->get_inspector()->update_tree();
 			}
+#endif // _3D_DISABLED
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localization/localize_settings")) {
 				inspector->update_category_list();
@@ -429,12 +441,14 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 		undo_redo->commit_action();
 	}
 
+#ifndef _3D_DISABLED
 	bool path_is_orbit_mod = p_path == "spatial_editor/viewport_orbit_modifier_1" || p_path == "spatial_editor/viewport_orbit_modifier_2";
 	bool path_is_pan_mod = p_path == "spatial_editor/viewport_pan_modifier_1" || p_path == "spatial_editor/viewport_pan_modifier_2";
 	bool path_is_zoom_mod = p_path == "spatial_editor/viewport_zoom_modifier_1" || p_path == "spatial_editor/viewport_zoom_modifier_2";
 	if (path_is_orbit_mod || path_is_pan_mod || path_is_zoom_mod) {
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
 	}
+#endif // _3D_DISABLED
 }
 
 Array EditorSettingsDialog::_event_list_to_array_helper(const List<Ref<InputEvent>> &p_events) {
@@ -878,11 +892,14 @@ void EditorSettingsDialog::drop_data_fw(const Point2 &p_point, const Variant &p_
 void EditorSettingsDialog::_tabs_tab_changed(int p_tab) {
 	_focus_current_search_box();
 
+#ifndef _3D_DISABLED
 	// When tab has switched, shortcuts may have changed.
 	_update_dynamic_property_hints();
+#endif // _3D_DISABLED
 	inspector->get_inspector()->update_tree();
 }
 
+#ifndef _3D_DISABLED
 void EditorSettingsDialog::_update_dynamic_property_hints() {
 	// Calling add_property_hint overrides the existing hint.
 	EditorSettings *settings = EditorSettings::get_singleton();
@@ -890,6 +907,7 @@ void EditorSettingsDialog::_update_dynamic_property_hints() {
 	settings->add_property_hint(_create_mouse_shortcut_property_info("editors/3d/navigation/pan_mouse_button", "spatial_editor/viewport_pan_modifier_1", "spatial_editor/viewport_pan_modifier_2"));
 	settings->add_property_hint(_create_mouse_shortcut_property_info("editors/3d/navigation/zoom_mouse_button", "spatial_editor/viewport_zoom_modifier_1", "spatial_editor/viewport_zoom_modifier_2"));
 }
+#endif // _3D_DISABLED
 
 PropertyInfo EditorSettingsDialog::_create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name) {
 	String hint_string;

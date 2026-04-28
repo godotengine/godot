@@ -109,7 +109,9 @@ public:
 	void report_window_focused(bool p_focused);
 
 	void reset_camera_2d_position();
+#ifndef _3D_DISABLED
 	void reset_camera_3d_position();
+#endif // _3D_DISABLED
 
 	virtual void setup_session(int p_session_id) override;
 
@@ -121,7 +123,9 @@ class GameView : public VBoxContainer {
 
 	enum {
 		CAMERA_RESET_2D,
+#ifndef _3D_DISABLED
 		CAMERA_RESET_3D,
+#endif // _3D_DISABLED
 		CAMERA_MODE_INGAME,
 		CAMERA_MODE_EDITORS,
 		SELECTION_AVOID_LOCKED,

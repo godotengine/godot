@@ -49,8 +49,8 @@ void World3D::_remove_camera(Camera3D *p_camera) {
 	cameras.erase(p_camera);
 }
 
-RID World3D::get_space() const {
 #ifndef PHYSICS_3D_DISABLED
+RID World3D::get_space() const {
 	if (space.is_null()) {
 		space = PhysicsServer3D::get_singleton()->space_create();
 		PhysicsServer3D::get_singleton()->space_set_active(space, true);
@@ -59,9 +59,9 @@ RID World3D::get_space() const {
 		PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_LINEAR_DAMP, GLOBAL_GET("physics/3d/default_linear_damp"));
 		PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_GET("physics/3d/default_angular_damp"));
 	}
-#endif // PHYSICS_3D_DISABLED
 	return space;
 }
+#endif // PHYSICS_3D_DISABLED
 
 #ifndef NAVIGATION_3D_DISABLED
 RID World3D::get_navigation_map() const {
@@ -155,7 +155,10 @@ PhysicsDirectSpaceState3D *World3D::get_direct_space_state() {
 #endif // PHYSICS_3D_DISABLED
 
 void World3D::_bind_methods() {
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_space"), &World3D::get_space);
+	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World3D::get_direct_space_state);
+#endif // PHYSICS_3D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &World3D::get_navigation_map);
 #endif // NAVIGATION_3D_DISABLED
@@ -166,20 +169,17 @@ void World3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback_environment"), &World3D::get_fallback_environment);
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "attributes"), &World3D::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &World3D::get_camera_attributes);
-#ifndef PHYSICS_3D_DISABLED
-	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World3D::get_direct_space_state);
-#endif // PHYSICS_3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, Environment::get_class_static()), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, Environment::get_class_static()), "set_fallback_environment", "get_fallback_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "scenario", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_scenario");
+#ifndef PHYSICS_3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, PhysicsDirectSpaceState3D::get_class_static(), PROPERTY_USAGE_NONE), "", "get_direct_space_state");
+#endif // PHYSICS_3D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_navigation_map");
 #endif // NAVIGATION_3D_DISABLED
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "scenario", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_scenario");
-#ifndef PHYSICS_3D_DISABLED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, PhysicsDirectSpaceState3D::get_class_static(), PROPERTY_USAGE_NONE), "", "get_direct_space_state");
-#endif // PHYSICS_3D_DISABLED
 }
 
 World3D::World3D() {

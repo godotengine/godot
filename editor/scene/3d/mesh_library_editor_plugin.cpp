@@ -46,8 +46,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/navigation/navigation_region_3d.h"
-#include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
@@ -56,6 +54,13 @@
 #include "scene/main/timer.h"
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/packed_scene.h"
+
+#ifndef NAVIGATION_3D_DISABLED
+#include "scene/3d/navigation/navigation_region_3d.h"
+#endif // NAVIGATION_3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
+#include "scene/3d/physics/static_body_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 bool MeshLibraryEditor::MeshLibraryItem::_set(const StringName &p_name, const Variant &p_value) {
 	ERR_FAIL_COND_V(mesh_library.is_null(), false);
@@ -564,6 +569,7 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 	}
 	p_library->set_item_mesh_transform(item_id, item_mesh_transform);
 
+#ifndef PHYSICS_3D_DISABLED
 	Vector<MeshLibrary::ShapeData> collisions;
 	for (int i = 0; i < mesh_instance_node->get_child_count(); i++) {
 		StaticBody3D *static_body_node = Object::cast_to<StaticBody3D>(mesh_instance_node->get_child(i));
@@ -594,7 +600,9 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 		}
 	}
 	p_library->set_item_shapes(item_id, collisions);
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef NAVIGATION_3D_DISABLED
 	for (int i = 0; i < mesh_instance_node->get_child_count(); i++) {
 		NavigationRegion3D *navigation_region_node = Object::cast_to<NavigationRegion3D>(mesh_instance_node->get_child(i));
 		if (!navigation_region_node) {
@@ -608,6 +616,7 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 			break;
 		}
 	}
+#endif // NAVIGATION_3D_DISABLED
 }
 
 void MeshLibraryEditor::_icon_size_changed(float p_value) {

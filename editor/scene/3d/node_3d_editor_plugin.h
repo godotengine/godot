@@ -835,8 +835,10 @@ private:
 	void _selection_changed();
 	void _refresh_menu_icons();
 
+#ifndef PHYSICS_3D_DISABLED
 	bool do_snap_selected_nodes_to_floor = false;
 	void _snap_selected_nodes_to_floor();
+#endif // PHYSICS_3D_DISABLED
 
 	// Preview Sun and Environment
 
