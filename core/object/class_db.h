@@ -40,16 +40,14 @@
 
 #include <type_traits>
 
-template <typename T, typename = void>
-struct is_class_enabled;
+template <typename T>
+struct is_class_enabled {
+	static_assert(std::is_base_of_v<Object, T>, "T needs to be a subclass of Object. Note that there are CoreBind versions of some symbols, in which case use GD_IS_CLASS_ENABLED(CoreBind::<T>) instead of GD_IS_CLASS_ENABLED(<T>).");
+	static constexpr bool value = is_class_enabled<typename T::super_type>::value;
+};
 
 template <>
 struct is_class_enabled<Object> : std::true_type {};
-
-template <typename T>
-struct is_class_enabled<T, std::enable_if_t<std::is_base_of_v<Object, T>>> {
-	static constexpr bool value = is_class_enabled<typename T::super_type>::value;
-};
 
 template <typename T>
 inline constexpr bool is_class_enabled_v = is_class_enabled<T>::value;
