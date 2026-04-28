@@ -148,8 +148,11 @@ class EditorHelp : public VBoxContainer {
 	} theme_cache;
 
 	int scroll_to = -1;
+	bool need_save_new_history = false;
 
 	void _help_callback(const String &p_topic);
+	void _class_desc_scroll_to_paragraph(int p_line, bool p_save_history);
+	bool _need_save_new_history() const;
 
 	void _add_text(const String &p_bbcode);
 	bool scroll_locked = false;
@@ -175,7 +178,7 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_resized(bool p_force_update_theme);
 	int display_margin = 0;
 
-	Error _goto_desc(const String &p_class);
+	Error _goto_desc(const String &p_class, bool p_can_trigger_save_history);
 	//void _update_history_buttons();
 	void _update_method_list(MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
 	void _update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
@@ -249,6 +252,8 @@ public:
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class);
 	void update_doc();
+	void trigger_history_save_on_navigate();
+	Dictionary get_state();
 
 	Vector<Pair<String, int>> get_sections();
 	void scroll_to_section(int p_section_index);
