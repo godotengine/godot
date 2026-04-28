@@ -31,6 +31,7 @@
 #include "navigation_region_3d_gizmo_plugin.h"
 
 #include "core/math/random_pcg.h"
+#include "scene/3d/label_3d.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 
@@ -63,6 +64,11 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 	Ref<NavigationMesh> navigationmesh = navigationregion->get_navigation_mesh();
 	if (navigationmesh.is_null()) {
+		Node *debug_holder = navigationregion->find_child("_debug_holder", false, true);
+		if (debug_holder != nullptr) {
+			navigationregion->remove_child(debug_holder);
+			debug_holder->queue_free();
+		}
 		return;
 	}
 
@@ -93,6 +99,11 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	if (faces.is_empty()) {
+		Node *debug_holder = navigationregion->find_child("_debug_holder", false, true);
+		if (debug_holder != nullptr) {
+			navigationregion->remove_child(debug_holder);
+			debug_holder->queue_free();
+		}
 		return;
 	}
 
@@ -212,5 +223,48 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 
 		p_gizmo->add_lines(line_vertex_array, navigationregion->is_enabled() ? get_material("edge_material", p_gizmo) : get_material("edge_material_disabled", p_gizmo));
+	}
+
+	// FIXME: Is there a better solution?
+	if (get_state() == EditorNode3DGizmoPlugin::HIDDEN || !p_gizmo->is_selected()) {
+		Node *debug_holder = navigationregion->find_child("_debug_holder", false, true);
+		if (debug_holder != nullptr) {
+			navigationregion->remove_child(debug_holder);
+			debug_holder->queue_free();
+		}
+	} else {
+		Array debug_data = navigationmesh->_get_debug_data();
+		Node3D *debug_holder = Object::cast_to<Node3D>(navigationregion->find_child("_debug_holder", false, true));
+		if (debug_holder == nullptr) {
+			debug_holder = memnew(Node3D);
+			debug_holder->set_name("_debug_holder");
+			navigationregion->add_child(debug_holder, false, Node::INTERNAL_MODE_BACK);
+			debug_holder->set_owner(navigationregion);
+			// FIXME: delete node when scene gets saved
+		} else {
+			TypedArray<Node> nodes = debug_holder->get_children(true);
+			if (nodes.size() > 0) {
+				for (Variant &v : nodes) {
+					Node *node = Object::cast_to<Node>(v);
+					if (node) {
+						node->queue_free();
+						debug_holder->remove_child(node);
+					}
+				}
+			}
+		}
+		for (int i = 0; i < debug_data.size(); i++) {
+			Vector3 pos = debug_data[i];
+			
+			Label3D *area_index_label = memnew(Label3D);
+			area_index_label->set_text(vformat("%d", i));
+			area_index_label->set_draw_flag(Label3D::DrawFlags::FLAG_DISABLE_DEPTH_TEST, true);
+			area_index_label->set_font_size(200);
+			area_index_label->set_outline_size(40);
+			area_index_label->set_position(pos);
+			area_index_label->rotate_x(-(Math::PI / 2)); // -90 degrees.
+			debug_holder->add_child(area_index_label);
+			area_index_label->set_owner(debug_holder);
+		}
 	}
 }

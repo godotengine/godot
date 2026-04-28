@@ -49,6 +49,7 @@ class NavigationMesh : public Resource {
 	Vector<Vector<int>> area_indices; // Each element in the outer vector represents a ProjectedArea. The inner vector is a collection of `polygons_meta` indices. Assigned during baking process.
 
 	Ref<ArrayMesh> debug_mesh;
+	Vector<Vector3> debug_area_origins;
 
 protected:
 	static void _bind_methods();
@@ -229,6 +230,8 @@ public:
 
 #ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> get_debug_mesh();
+	void _set_debug_data(const Array &p_area_origins);
+	Array _get_debug_data() const;
 #endif // DEBUG_ENABLED
 };
 

@@ -618,9 +618,34 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 
 	return debug_mesh;
 }
+
+void NavigationMesh::_set_debug_data(const Array &p_area_origins) {
+	RWLockWrite write_lock(rwlock);
+
+	debug_area_origins.resize(p_area_origins.size());
+	for (int i = 0; i < p_area_origins.size(); i++) {
+		debug_area_origins.write[i] = p_area_origins[i];
+	}
+}
+
+Array NavigationMesh::_get_debug_data() const {
+	RWLockRead read_lock(rwlock);
+	Array ret;
+	ret.resize(debug_area_origins.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret[i] = debug_area_origins[i];
+	}
+
+	return ret;
+}
 #endif // DEBUG_ENABLED
 
 void NavigationMesh::_bind_methods() {
+#ifdef DEBUG_ENABLED
+	ClassDB::bind_method(D_METHOD("_set_debug_data", "debug_area_origins"), &NavigationMesh::_set_debug_data);
+	ClassDB::bind_method(D_METHOD("_get_debug_data"), &NavigationMesh::_get_debug_data);
+#endif // DEBUG_ENABLED
+
 	ClassDB::bind_method(D_METHOD("_set_navigation_layers", "navigation_layers"), &NavigationMesh::_set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("_get_navigation_layers"), &NavigationMesh::_get_navigation_layers);
 
@@ -719,6 +744,10 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_area_indices"), &NavigationMesh::_get_area_indices);
 
 	ClassDB::bind_method(D_METHOD("clear"), &NavigationMesh::clear);
+
+#ifdef DEBUG_ENABLED
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "debug_area_origins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_debug_data", "_get_debug_data");
+#endif // DEBUG_ENABLED
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_navigation_layers", "_get_navigation_layers");
 

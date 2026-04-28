@@ -510,6 +510,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 
 	Vector<NavigationMeshSourceGeometryData3D::ProjectedArea> usable_projected_areas;
 	Vector<uint32_t> nav_area_navlayers = Vector<uint32_t>();
+	Array area_origins;
 
 	// TODO: Use areas for cutting/carving mesh. Then, deprecate those features in obstacle.
 
@@ -521,8 +522,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 			}
 
 			unsigned char recast_areaId = RC_WALKABLE_AREA;
-			usable_projected_areas.push_back(projected_area);
-			nav_area_navlayers.push_back(area_navigation_layers);
+			Vector3 center;
 
 			HashMap<uint32_t, uint8_t>::Iterator existing_layer = navigation_layers_to_area_config_id.find(area_navigation_layers);
 			if (!existing_layer) {
@@ -554,6 +554,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				const float *area_bmax = area_v_bmax.ptr();
 
 				rcMarkBoxArea(&ctx, area_bmin, area_bmax, recast_areaId, *chf);
+				center = projected_area.aabb.get_center();
 
 			} else if (projected_area.shape_type == NavigationMeshSourceGeometryData3D::ProjectedArea::CYLINDER) {
 				const Vector<float> area_v_pos = { float(projected_area.position.x), float(projected_area.position.y), float(projected_area.position.z) };
@@ -563,6 +564,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				const float area_h = projected_area.height;
 
 				rcMarkCylinderArea(&ctx, area_pos, area_r, area_h, recast_areaId, *chf);
+				center = projected_area.position;
 
 			} else if (projected_area.shape_type == NavigationMeshSourceGeometryData3D::ProjectedArea::POLYGON) {
 				if (projected_area.vertices.is_empty() || projected_area.vertices.size() % 3 != 0) {
@@ -575,7 +577,12 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				const float area_hmax = projected_area.elevation + projected_area.height;
 
 				rcMarkConvexPolyArea(&ctx, area_verts, area_nverts, area_hmin, area_hmax, recast_areaId, *chf);
+				center = projected_area.aabb.get_center();
 			}
+
+			usable_projected_areas.push_back(projected_area);
+			nav_area_navlayers.push_back(area_navigation_layers);
+			area_origins.push_back(center); // FIXME: better get y-axis value further below, when we loop over our valid and baked projected areas.
 		}
 	}
 
@@ -718,6 +725,9 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	}
 
 	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_layers, nav_area_navlayers, nav_area_indices);
+#ifdef DEBUG_ENABLED
+	p_navigation_mesh->_set_debug_data(area_origins);
+#endif // DEBUG_ENABLED
 
 	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_BAKE_CLEANUP; // step #11
 
