@@ -42,13 +42,12 @@ class Joint3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 	void incremental_update_gizmos();
 
-	struct JointStateHistory
-	{
+	struct JointStateHistory {
 		Vector3 node_a_last_global_pos;
 		Vector3 node_b_last_global_pos;
 	};
 
-	HashMap<EditorNode3DGizmo*, JointStateHistory> gizmo_histories;
+	HashMap<EditorNode3DGizmo *, JointStateHistory> gizmo_histories;
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
