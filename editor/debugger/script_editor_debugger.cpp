@@ -2490,7 +2490,7 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 			info_left->add_child(lehb);
 		}
 
-		misc->add_child(memnew(VSeparator));
+		misc->add_child(memnew(HSeparator));
 
 		HBoxContainer *buttons = memnew(HBoxContainer);
 
