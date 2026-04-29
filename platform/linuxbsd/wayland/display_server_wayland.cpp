@@ -141,6 +141,11 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 
 		// Send to a single window.
 		if (windows.has(window_id)) {
+			Ref<InputEventMouse> iev_mouse = p_event;
+			if (iev_mouse.is_valid()) {
+				mouse_pos = iev_mouse->get_position() + windows[window_id].rect.position;
+			}
+
 			Callable callable = windows[window_id].input_event_callback;
 			if (callable.is_valid()) {
 				callable.call(p_event);
@@ -559,15 +564,7 @@ void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 Point2i DisplayServerWayland::mouse_get_position() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	DisplayServerEnums::WindowID pointed_id = wayland_thread.pointer_get_pointed_window_id();
-
-	if (pointed_id != DisplayServerEnums::INVALID_WINDOW_ID && windows.has(pointed_id)) {
-		return Input::get_singleton()->get_mouse_position() + windows[pointed_id].rect.position;
-	}
-
-	// We can't properly implement this method by design.
-	// This is the best we can do unfortunately.
-	return Input::get_singleton()->get_mouse_position();
+	return mouse_pos;
 }
 
 BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {
