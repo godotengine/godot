@@ -528,12 +528,10 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 #endif // MODE_LIGHT_PROBES
 	}
 
-//#ifndef MODE_LIGHT_PROBES
 	//attenuation *= max(0.0, dot(p_normal, r_light_dir));
 	if (attenuation * light_data.energy <= 0.0001) {
 		return;
 	}
-//#endif // MODE_LIGHT_PROBES
 
 	float penumbra = 0.0;
 	vec3 penumbra_color = vec3(0.0);
