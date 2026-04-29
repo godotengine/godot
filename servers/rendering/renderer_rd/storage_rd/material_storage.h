@@ -265,6 +265,7 @@ private:
 	struct Material;
 
 	struct Shader {
+		Mutex *mutex = nullptr;
 		ShaderData *data = nullptr;
 		String code;
 		String path_hint;
