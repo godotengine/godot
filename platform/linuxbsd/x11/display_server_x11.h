@@ -221,6 +221,8 @@ class DisplayServerX11 : public DisplayServer {
 	void _create_xic(WindowData &wd);
 	DisplayServerEnums::WindowID _create_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, Window p_parent_window);
 
+	DisplayServerEnums::NotificationID noti_id = 0;
+
 	String internal_clipboard;
 	String internal_clipboard_primary;
 	Window xdnd_source_window = 0;
@@ -550,6 +552,9 @@ public:
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
 	virtual DisplayServerEnums::CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape, const Vector2 &p_hotspot) override;
+
+	virtual DisplayServerEnums::NotificationID send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) override;
+	virtual void hide_toast_notification(DisplayServerEnums::NotificationID p_id) override;
 
 	virtual bool get_swap_cancel_ok() override;
 
