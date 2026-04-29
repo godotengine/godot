@@ -1536,12 +1536,18 @@ void DisplayServerWayland::_window_update_hdr_state(WindowData &p_window) {
 bool DisplayServerWayland::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window_id) const {
 	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
 	bool renderer_supports_hdr_output = false;
+	bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
 	if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
 		renderer_supports_hdr_output = true;
+		surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window_id);
 	}
 #endif
 	if (!renderer_supports_hdr_output) {
+		return false;
+	}
+
+	if (!surface_supports_hdr_output) {
 		return false;
 	}
 
@@ -1553,13 +1559,20 @@ bool DisplayServerWayland::window_is_hdr_output_supported(DisplayServerEnums::Wi
 void DisplayServerWayland::window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window_id) {
 	if (p_enabled) {
 		bool renderer_supports_hdr_output = false;
+		bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
 		if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
 			renderer_supports_hdr_output = true;
+			surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window_id);
 		}
 #endif
 		if (!renderer_supports_hdr_output) {
 			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
+			return;
+		}
+
+		if (!surface_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but the window does not support an HDR format.");
 			return;
 		}
 	}
@@ -1893,41 +1906,6 @@ void DisplayServerWayland::process_events() {
 	wayland_thread.mutex.lock();
 
 	wayland_thread.keyboard_echo_keys();
-
-#if defined(RD_ENABLED)
-	// Enabling HDR may have failed, in which case we need to clear the color profile.
-	// NOTE: this happens _before_ reading events because the rendering driver is only updated the frame _after_ we try to enable HDR.
-	if (rendering_device && (!OS::get_singleton()->is_in_low_processor_usage_mode() || RS::get_singleton()->has_changed())) {
-		for (KeyValue<DisplayServerEnums::WindowID, WindowData> &pair : windows) {
-			const RD::ColorSpace color_space = rendering_device->screen_get_color_space(pair.key);
-
-			bool dirty_srgb = color_space == RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB && pair.value.color_profile.named_transfer_function != WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
-			bool dirty_linear = color_space == RDD::COLOR_SPACE_REC709_LINEAR && pair.value.color_profile.named_transfer_function != WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
-
-			if (dirty_srgb) {
-				pair.value.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
-				pair.value.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
-
-				if (pair.value.visible) {
-					wayland_thread.window_set_color_profile(pair.key, pair.value.color_profile);
-				}
-
-				rendering_context->window_set_hdr_output_enabled(pair.key, false);
-				_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, pair.key);
-			} else if (dirty_linear) {
-				pair.value.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
-				pair.value.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
-
-				if (pair.value.visible) {
-					wayland_thread.window_set_color_profile(pair.key, pair.value.color_profile);
-				}
-
-				rendering_context->window_set_hdr_output_enabled(pair.key, true);
-				_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, pair.key);
-			}
-		}
-	}
-#endif
 
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
