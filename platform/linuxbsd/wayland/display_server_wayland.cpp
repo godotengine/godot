@@ -1883,9 +1883,10 @@ void DisplayServerWayland::process_events() {
 			const RD::ColorSpace color_space = rendering_device->screen_get_color_space(pair.key);
 
 			bool dirty_srgb = color_space == RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB && pair.value.color_profile.named_transfer_function != WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+			bool alt_srgb = color_space == RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB && pair.value.color_profile.named_transfer_function == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
 			bool dirty_linear = color_space == RDD::COLOR_SPACE_REC709_LINEAR && pair.value.color_profile.named_transfer_function != WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
 
-			if (dirty_srgb) {
+			if (dirty_srgb && !alt_srgb) {
 				pair.value.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
 				pair.value.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
 

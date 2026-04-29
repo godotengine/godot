@@ -4675,7 +4675,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 	RenderingServer::get_singleton()->sdfgi_reset();
 
 	// Request HDR on scene change
-	_refresh_hdr_request();
+	// _refresh_hdr_request();
 }
 
 bool EditorNode::is_changing_scene() const {
