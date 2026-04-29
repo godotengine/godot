@@ -32,6 +32,7 @@
 
 #include "core/object/class_db.h"
 
+///TODO: change the dictionary to a specialised struct meant for ferrying this data
 static Variant _encode_nested_array_type(const GDScriptDataType& p_type) {
 	Dictionary descriptor;
 	descriptor["builtin_type"] = int(p_type.builtin_type);
@@ -44,6 +45,14 @@ static Variant _encode_nested_array_type(const GDScriptDataType& p_type) {
 		}
 	}
 	descriptor["nested_types"] = nested;
+	return descriptor;
+}
+
+///TODO: same  here, read above
+static Variant _encode_nested_dictionary_type(const GDScriptDataType& p_key_type, const GDScriptDataType& p_value_type) {
+	Dictionary descriptor;
+	descriptor["key_type"] = _encode_nested_array_type(p_key_type);
+	descriptor["value_type"] = _encode_nested_array_type(p_value_type);
 	return descriptor;
 }
 
@@ -941,7 +950,8 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 			} else if (p_target.type.builtin_type == Variant::DICTIONARY && p_target.type.has_container_element_types()) {
 				const GDScriptDataType &key_type = p_target.type.get_container_element_type_or_variant(0);
 				const GDScriptDataType &value_type = p_target.type.get_container_element_type_or_variant(1);
-				append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_DICTIONARY);
+				const bool nested_typed = key_type.has_container_element_types() || value_type.has_container_element_types();
+				append_opcode(nested_typed ? GDScriptFunction::OPCODE_ASSIGN_TYPED_DICTIONARY_NESTED : GDScriptFunction::OPCODE_ASSIGN_TYPED_DICTIONARY);
 				append(p_target);
 				append(p_source);
 				append(get_constant_pos(key_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
@@ -950,6 +960,9 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 				append(key_type.native_type);
 				append(value_type.builtin_type);
 				append(value_type.native_type);
+				if (nested_typed) {
+					append(get_constant_pos(_encode_nested_dictionary_type(key_type, value_type)) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+				}
 			} else {
 				append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN);
 				append(p_target);
@@ -1003,7 +1016,8 @@ void GDScriptByteCodeGenerator::write_assign(const Address &p_target, const Addr
 	} else if (p_target.type.kind == GDScriptDataType::BUILTIN && p_target.type.builtin_type == Variant::DICTIONARY && p_target.type.has_container_element_types()) {
 		const GDScriptDataType &key_type = p_target.type.get_container_element_type_or_variant(0);
 		const GDScriptDataType &value_type = p_target.type.get_container_element_type_or_variant(1);
-		append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_DICTIONARY);
+		const bool nested_typed = key_type.has_container_element_types() || value_type.has_container_element_types();
+		append_opcode(nested_typed ? GDScriptFunction::OPCODE_ASSIGN_TYPED_DICTIONARY_NESTED : GDScriptFunction::OPCODE_ASSIGN_TYPED_DICTIONARY);
 		append(p_target);
 		append(p_source);
 		append(get_constant_pos(key_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
@@ -1012,6 +1026,9 @@ void GDScriptByteCodeGenerator::write_assign(const Address &p_target, const Addr
 		append(key_type.native_type);
 		append(value_type.builtin_type);
 		append(value_type.native_type);
+		if (nested_typed) {
+			append(get_constant_pos(_encode_nested_dictionary_type(key_type, value_type)) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+		}
 	} else if (p_target.type.kind == GDScriptDataType::BUILTIN && p_source.type.kind == GDScriptDataType::BUILTIN && p_target.type.builtin_type != p_source.type.builtin_type) {
 		// Need conversion.
 		append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN);
@@ -1880,18 +1897,19 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value, bool
 				append(get_constant_pos(element_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
 				append(element_type.builtin_type);
 				append(element_type.native_type);
-			} else if (function->return_type.builtin_type == Variant::DICTIONARY && function->return_type.has_container_element_types()) {
-				const GDScriptDataType &key_type = function->return_type.get_container_element_type_or_variant(0);
-				const GDScriptDataType &value_type = function->return_type.get_container_element_type_or_variant(1);
-				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_DICTIONARY);
-				append(p_return_value);
-				append(get_constant_pos(key_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
-				append(get_constant_pos(value_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
-				append(key_type.builtin_type);
-				append(key_type.native_type);
-				append(value_type.builtin_type);
-				append(value_type.native_type);
-			} else {
+				} else if (function->return_type.builtin_type == Variant::DICTIONARY && function->return_type.has_container_element_types()) {
+					const GDScriptDataType &key_type = function->return_type.get_container_element_type_or_variant(0);
+					const GDScriptDataType &value_type = function->return_type.get_container_element_type_or_variant(1);
+					append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_DICTIONARY_NESTED);
+					append(p_return_value);
+					append(get_constant_pos(key_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+					append(get_constant_pos(value_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+					append(key_type.builtin_type);
+					append(key_type.native_type);
+					append(value_type.builtin_type);
+					append(value_type.native_type);
+					append(get_constant_pos(_encode_nested_dictionary_type(key_type, value_type)) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+				} else {
 				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_BUILTIN);
 				append(p_return_value);
 				append(function->return_type.builtin_type);

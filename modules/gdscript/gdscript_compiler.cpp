@@ -2178,9 +2178,21 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				if (return_n->void_return) {
 					// Always return `null`, even if the expression is a call to a `void` function.
 					gen->write_return(codegen.add_constant(Variant()), false);
+
+				///always force typed return for dicts
 				} else {
-					gen->write_return(return_value, return_n->use_conversion);
+					bool use_conversion = return_n->use_conversion;
+					if (codegen.function_node) {
+						const GDScriptDataType function_return_type = _gdtype_from_datatype(codegen.function_node->get_datatype(), codegen.script);
+						if (function_return_type.kind == GDScriptDataType::BUILTIN &&
+								function_return_type.builtin_type == Variant::DICTIONARY &&
+								function_return_type.has_container_element_types()) {
+							use_conversion = true;
+						}
+					}
+					gen->write_return(return_value, use_conversion);
 				}
+
 				if (return_value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
