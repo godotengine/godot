@@ -334,7 +334,7 @@ void Joint3DGizmoPlugin::incremental_update_gizmos() {
 		}
 
 		last_drawn = *E;
-		
+
 		if (!perform_redraw) {
 			return;
 		}
