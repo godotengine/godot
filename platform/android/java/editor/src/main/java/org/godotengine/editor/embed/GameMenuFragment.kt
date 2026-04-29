@@ -31,6 +31,7 @@
 package org.godotengine.editor.embed
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.LayoutInflater
@@ -185,7 +186,9 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		PopupMenu(context, optionsButton).apply {
 			setOnMenuItemClickListener(this@GameMenuFragment)
 			inflate(R.menu.options_menu)
-			menu.setGroupDividerEnabled(true)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+				menu.setGroupDividerEnabled(true)
+			}
 		}
 	}
 

@@ -1433,7 +1433,8 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 
 	if (p_check_recursive && parent_counter <= 1) {
 		List<Ref<Resource>> nested_resources;
-		en->gather_resources(edited_resource, nested_resources, true, true);
+		HashSet<Object *> scanned_objects;
+		en->gather_resources(edited_resource, nested_resources, scanned_objects, true, true);
 
 		for (Ref<Resource> R : nested_resources) {
 			// Take into account Nested External Resources.

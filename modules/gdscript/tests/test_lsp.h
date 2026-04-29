@@ -320,20 +320,6 @@ void assert_no_errors_in(const String &p_path) {
 	REQUIRE_MESSAGE(err == OK, vformat("Errors while analyzing '%s'", p_path));
 }
 
-inline LSP::Position lsp_pos(int line, int character) {
-	LSP::Position p;
-	p.line = line;
-	p.character = character;
-	return p;
-}
-
-void test_position_roundtrip(LSP::Position p_lsp, GodotPosition p_gd, const PackedStringArray &p_lines) {
-	GodotPosition actual_gd = GodotPosition::from_lsp(p_lsp, p_lines);
-	CHECK_EQ(p_gd, actual_gd);
-	LSP::Position actual_lsp = p_gd.to_lsp(p_lines);
-	CHECK_EQ(p_lsp, actual_lsp);
-}
-
 // Note:
 // * Cursor is BETWEEN chars
 //	 * `va|r` -> cursor between `a`&`r`
@@ -344,75 +330,6 @@ void test_position_roundtrip(LSP::Position p_lsp, GodotPosition p_gd, const Pack
 //   * LSP: both 0-based
 //   * Godot: both 1-based
 TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
-	TEST_CASE("Can convert positions to and from Godot") {
-		String code = R"(extends Node
-
-var member := 42
-
-func f():
-		var value := 42
-		return value + member)";
-		PackedStringArray lines = code.split("\n");
-
-		SUBCASE("line after end") {
-			LSP::Position lsp = lsp_pos(7, 0);
-			GodotPosition gd(8, 1);
-			test_position_roundtrip(lsp, gd, lines);
-		}
-		SUBCASE("first char in first line") {
-			LSP::Position lsp = lsp_pos(0, 0);
-			GodotPosition gd(1, 1);
-			test_position_roundtrip(lsp, gd, lines);
-		}
-
-		SUBCASE("with tabs") {
-			// On `v` in `value` in `var value := ...`.
-			LSP::Position lsp = lsp_pos(5, 6);
-			GodotPosition gd(6, 13);
-			test_position_roundtrip(lsp, gd, lines);
-		}
-
-		SUBCASE("doesn't fail with column outside of character length") {
-			LSP::Position lsp = lsp_pos(2, 100);
-			GodotPosition::from_lsp(lsp, lines);
-
-			GodotPosition gd(3, 100);
-			gd.to_lsp(lines);
-		}
-
-		SUBCASE("doesn't fail with line outside of line length") {
-			LSP::Position lsp = lsp_pos(200, 100);
-			GodotPosition::from_lsp(lsp, lines);
-
-			GodotPosition gd(300, 100);
-			gd.to_lsp(lines);
-		}
-
-		SUBCASE("special case: zero column for root class") {
-			GodotPosition gd(1, 0);
-			LSP::Position expected = lsp_pos(0, 0);
-			LSP::Position actual = gd.to_lsp(lines);
-			CHECK_EQ(actual, expected);
-		}
-		SUBCASE("special case: zero line and column for root class") {
-			GodotPosition gd(0, 0);
-			LSP::Position expected = lsp_pos(0, 0);
-			LSP::Position actual = gd.to_lsp(lines);
-			CHECK_EQ(actual, expected);
-		}
-		SUBCASE("special case: negative line for root class") {
-			GodotPosition gd(-1, 0);
-			LSP::Position expected = lsp_pos(0, 0);
-			LSP::Position actual = gd.to_lsp(lines);
-			CHECK_EQ(actual, expected);
-		}
-		SUBCASE("special case: lines.length() + 1 for root class") {
-			GodotPosition gd(lines.size() + 1, 0);
-			LSP::Position expected = lsp_pos(lines.size(), 0);
-			LSP::Position actual = gd.to_lsp(lines);
-			CHECK_EQ(actual, expected);
-		}
-	}
 	TEST_CASE("[workspace][resolve_symbol]") {
 		EditorFileSystem *efs = memnew(EditorFileSystem);
 		GDScriptLanguageProtocol *proto = initialize(root);

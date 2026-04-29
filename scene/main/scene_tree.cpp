@@ -2153,10 +2153,7 @@ SceneTree::SceneTree() {
 		if (load_err) {
 			ERR_PRINT("Non-existing or invalid VRS texture at '" + vrs_texture_path + "'.");
 		} else {
-			Ref<ImageTexture> vrs_texture;
-			vrs_texture.instantiate();
-			vrs_texture->create_from_image(vrs_image);
-			root->set_vrs_texture(vrs_texture);
+			root->set_vrs_texture(ImageTexture::create_from_image(vrs_image));
 		}
 	}
 

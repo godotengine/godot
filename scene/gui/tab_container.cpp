@@ -147,21 +147,7 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_READY: {
-			for (int i = 0; i < pending_tabs.size(); i++) {
-				const CachedTab &tab = pending_tabs[i];
-				if (tab.has_title) {
-					set_tab_title(i, tab.title);
-				}
-				set_tab_icon(i, tab.icon);
-				set_tab_disabled(i, tab.disabled);
-				set_tab_hidden(i, tab.hidden);
-			}
-			pending_tabs.clear();
-
-			[[fallthrough]];
-		}
-
+		case NOTIFICATION_READY:
 		case NOTIFICATION_RESIZED: {
 			_update_margins();
 		} break;
@@ -598,7 +584,23 @@ void TabContainer::add_child_notify(Node *p_child) {
 	c->hide();
 
 	tab_bar->add_tab(p_child->get_meta("_tab_name", p_child->get_name()));
-	c->set_meta("_tab_index", tab_bar->get_tab_count() - 1);
+	int idx = tab_bar->get_tab_count() - 1;
+	c->set_meta("_tab_index", idx);
+
+	if (idx < pending_tabs.size()) {
+		const CachedTab &tab = pending_tabs[idx];
+		if (tab.has_title) {
+			set_tab_title(idx, tab.title);
+		}
+		set_tab_icon(idx, tab.icon);
+		set_tab_disabled(idx, tab.disabled);
+		set_tab_hidden(idx, tab.hidden);
+
+		if (idx == pending_tabs.size() - 1) {
+			// Last tab was assigned.
+			pending_tabs.clear();
+		}
+	}
 
 	_update_margins();
 	if (get_tab_count() == 1) {
