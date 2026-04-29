@@ -1067,7 +1067,7 @@ Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::get_gizmo(Node3D *p_spatial) {
 	ref->set_node_3d(p_spatial);
 	ref->set_hidden(current_state == HIDDEN);
 
-	current_gizmos.insert(ref.ptr());
+	register_gizmo(ref.ptr());
 	return ref;
 }
 
@@ -1218,6 +1218,10 @@ void EditorNode3DGizmoPlugin::set_state(int p_state) {
 
 int EditorNode3DGizmoPlugin::get_state() const {
 	return current_state;
+}
+
+void EditorNode3DGizmoPlugin::register_gizmo(EditorNode3DGizmo *p_gizmo) {
+	current_gizmos.insert(p_gizmo);
 }
 
 void EditorNode3DGizmoPlugin::unregister_gizmo(EditorNode3DGizmo *p_gizmo) {
