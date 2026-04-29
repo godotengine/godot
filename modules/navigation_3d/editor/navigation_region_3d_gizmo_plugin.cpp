@@ -225,7 +225,6 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(line_vertex_array, navigationregion->is_enabled() ? get_material("edge_material", p_gizmo) : get_material("edge_material_disabled", p_gizmo));
 	}
 
-	// FIXME: Is there a better solution?
 	if (get_state() == EditorNode3DGizmoPlugin::HIDDEN || !p_gizmo->is_selected()) {
 		Node *debug_holder = navigationregion->find_child("_debug_holder", false, true);
 		if (debug_holder != nullptr) {
@@ -239,8 +238,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			debug_holder = memnew(Node3D);
 			debug_holder->set_name("_debug_holder");
 			navigationregion->add_child(debug_holder, false, Node::INTERNAL_MODE_BACK);
-			debug_holder->set_owner(navigationregion);
-			// FIXME: delete node when scene gets saved
+			// NOTE: not setting any owner to prevent these debug nodes from being saved.
 		} else {
 			TypedArray<Node> nodes = debug_holder->get_children(true);
 			if (nodes.size() > 0) {

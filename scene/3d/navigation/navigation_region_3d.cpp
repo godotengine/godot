@@ -829,8 +829,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 			debug_holder = memnew(Node3D);
 			debug_holder->set_name("_debug_holder");
 			add_child(debug_holder, false, Node::INTERNAL_MODE_BACK);
-			debug_holder->set_owner(this);
-			// FIXME: delete node when scene gets saved
+			// NOTE: not setting any owner to prevent these debug nodes from being saved.
 		} else {
 			TypedArray<Node> nodes = debug_holder->get_children(true);
 			if (nodes.size() > 0) {
