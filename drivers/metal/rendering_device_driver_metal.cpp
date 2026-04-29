@@ -983,6 +983,11 @@ RDD::ColorSpace RenderingDeviceDriverMetal::swap_chain_get_color_space(SwapChain
 	return swap_chain->color_space;
 }
 
+bool RenderingDeviceDriverMetal::swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) {
+	// Our minimum supported version of metal requires support for EDR.
+	return true;
+}
+
 void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	RenderingContextDriverMetal::Surface *metal_surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);

@@ -5467,6 +5467,15 @@ RenderingDevice::ColorSpace RenderingDevice::screen_get_color_space(DisplayServe
 	return color_space;
 }
 
+bool RenderingDevice::screen_get_hdr_output_supported(DisplayServerEnums::WindowID p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), false, "Screen was never prepared.");
+
+	return driver->swap_chain_get_hdr_output_supported(it->value);
+}
+
 Error RenderingDevice::screen_free(DisplayServerEnums::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 

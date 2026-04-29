@@ -2977,6 +2977,11 @@ RDD::ColorSpace RenderingDeviceDriverD3D12::swap_chain_get_color_space(SwapChain
 	return swap_chain->color_space;
 }
 
+bool RenderingDeviceDriverD3D12::swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) {
+	// Our minimum supported version of D3D12 requires support for our HDR colorspaces.
+	return true;
+}
+
 void RenderingDeviceDriverD3D12::swap_chain_free(SwapChainID p_swap_chain) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	_swap_chain_release(swap_chain);

@@ -4008,6 +4008,58 @@ RDD::ColorSpace RenderingDeviceDriverVulkan::swap_chain_get_color_space(SwapChai
 	return swap_chain->rdd_color_space;
 }
 
+bool RenderingDeviceDriverVulkan::swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) {
+	DEV_ASSERT(p_swap_chain.id != 0);
+
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	RenderingContextDriverVulkan::Surface *surface = (RenderingContextDriverVulkan::Surface *)(swap_chain->surface);
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+
+	// Retrieve the formats supported by the surface.
+	uint32_t format_count = 0;
+	VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
+
+	TightLocalVector<VkSurfaceFormatKHR> formats;
+	formats.resize(format_count);
+	err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
+	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
+
+	// If the format list includes just one entry of VK_FORMAT_UNDEFINED, the surface has no preferred format.
+	// Just to be safe, we assume this means HDR will not be supported.
+	if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
+		return false;
+	}
+
+	bool colorspace_supported = context_driver->is_colorspace_supported();
+
+	// Determine which formats to prefer based on the requested capabilities.
+	// Our preferred HDR format is 16-bit float + extended linear.
+	FixedVector<FormatCandidate, 2> hdr_formats;
+	if (context_driver->is_colorspace_externally_managed()) {
+		// When the colorspace is managed externally to the driver we need to disable its color management.
+		// The colorspace which disables color management is VK_COLOR_SPACE_PASS_THROUGH_EXT.
+		hdr_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_PASS_THROUGH_EXT, COLOR_SPACE_REC709_LINEAR });
+
+		// SRGB_NONLINEAR_KHR is required for some NVIDIA drivers that support HDR output but do not support PASS_THROUGH_EXT.
+		hdr_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR, COLOR_SPACE_REC709_LINEAR });
+	} else if (colorspace_supported) {
+		hdr_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT, COLOR_SPACE_REC709_LINEAR });
+	} else {
+		return false;
+	}
+
+	for (const FormatCandidate &candidate : hdr_formats) {
+		for (uint32_t i = 0; i < format_count; i++) {
+			if (formats[i].format == candidate.format && formats[i].colorSpace == candidate.colorspace) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void RenderingDeviceDriverVulkan::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
 	DEV_ASSERT(p_swap_chain.id != 0);
 
