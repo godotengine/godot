@@ -121,6 +121,8 @@ class DisplayServerWayland : public DisplayServer {
 		CAPABILITY, // New "suspended" wm_capability flag.
 	};
 
+	Point2 mouse_pos;
+
 	DisplayServerEnums::CursorShape cursor_shape = DisplayServerEnums::CURSOR_ARROW;
 	DisplayServerEnums::MouseMode mouse_mode = DisplayServerEnums::MOUSE_MODE_VISIBLE;
 	DisplayServerEnums::MouseMode mouse_mode_base = DisplayServerEnums::MOUSE_MODE_VISIBLE;
