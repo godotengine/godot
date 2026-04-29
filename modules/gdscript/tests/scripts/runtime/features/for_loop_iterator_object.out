@@ -1,0 +1,89 @@
+GDTEST_OK
+Test typed exp 2,16
+1
+2
+4
+8
+16
+Test variant exp 2,16
+1
+2
+4
+8
+16
+Test typed exp 3,-27
+1
+-3
+9
+-27
+Test typed exp 3,-27
+1
+-3
+9
+-27
+Test typed nested same str iterator
+aa
+ab
+ac
+ba
+bb
+bc
+ca
+cb
+cc
+Test nested variant same str iterator
+aa
+ab
+ac
+ba
+bb
+bc
+ca
+cb
+cc
+Test break from typed str
+w
+Test break from variant str
+w
+Test break from nested diff typed
+a1
+a2
+a4
+a8
+a16
+a32
+a64
+21
+22
+24
+28
+216
+232
+z1
+z2
+z4
+z8
+z16
+z32
+z64
+Test break from nested diff variant
+a1
+a2
+a4
+a8
+a16
+a32
+a64
+21
+22
+24
+28
+216
+232
+z1
+z2
+z4
+z8
+z16
+z32
+z64
