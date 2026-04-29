@@ -54,7 +54,6 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
-#include "core/variant/container_type_validate.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 
@@ -64,19 +63,6 @@
 #endif
 
 ///////////////////////////
-
-static ContainerTypeValidate _get_array_type_validator_from_datatype(const GDScriptDataType& p_type) {
-	ContainerTypeValidate type;
-	type.type = p_type.builtin_type;
-	type.class_name = p_type.native_type;
-	type.script = p_type.script_type;
-	type.where = "TypedArray";
-	type.nested_types.resize(p_type.container_element_types.size());
-	for (int i = 0; i < p_type.container_element_types.size(); i++) {
-		type.nested_types.write[i] = _get_array_type_validator_from_datatype(p_type.container_element_types[i]);
-	}
-	return type;
-}
 
 GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
 	name = p_name;
@@ -706,11 +692,7 @@ void GDScript::_static_default_init() {
 		if (type.builtin_type == Variant::ARRAY && type.has_container_element_type(0)) {
 			const GDScriptDataType element_type = type.get_container_element_type(0);
 			Array default_value;
-			ContainerTypeValidate array_type;
-			array_type.type = Variant::ARRAY;
-			array_type.where = "TypedArray";
-			array_type.nested_types.push_back(_get_array_type_validator_from_datatype(element_type));
-			default_value.set_typed_nested(array_type);
+			default_value.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
 			static_variables.write[E.value.index] = default_value;
 		} else if (type.builtin_type == Variant::DICTIONARY && type.has_container_element_types()) {
 			const GDScriptDataType key_type = type.get_container_element_type_or_variant(0);

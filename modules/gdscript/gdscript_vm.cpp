@@ -35,7 +35,6 @@
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
-#include "core/variant/container_type_validate.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -59,52 +58,6 @@ static String _get_element_type(Variant::Type builtin_type, const StringName &na
 		return Variant::get_type_name(builtin_type);
 	}
 }
-
-static bool _decode_array_element_type_info(const Variant& p_encoded, ContainerTypeValidate& r_type) {
-	if (p_encoded.get_type() != Variant::ARRAY) {
-		return false;
-	}
-	Array encoded = p_encoded;
-	if (encoded.size() < 4) {
-		return false;
-	}
-	r_type.type = Variant::Type((int)encoded[0]);
-	r_type.class_name = encoded[1];
-	r_type.script = encoded[2];
-	r_type.nested_types.clear();
-	r_type.where = "TypedArray";
-
-	Array nested = encoded[3];
-	r_type.nested_types.resize(nested.size());
-	for (int i = 0; i < nested.size(); i++) {
-		if (!_decode_array_element_type_info(nested[i], r_type.nested_types.write[i])) {
-			return false;
-		}
-	}
-	return true;
-}
-
-static bool _build_typed_array_validator(const Variant& p_encoded, ContainerTypeValidate& r_array_type) {
-	r_array_type = ContainerTypeValidate();
-	r_array_type.type = Variant::ARRAY;
-	r_array_type.where = "TypedArray";
-	r_array_type.nested_types.resize(1);
-	return _decode_array_element_type_info(p_encoded, r_array_type.nested_types.write[0]);
-}
-
-static ContainerTypeValidate _get_array_type_validator_from_datatype(const GDScriptDataType& p_type) {
-	ContainerTypeValidate type;
-	type.type = p_type.builtin_type;
-	type.class_name = p_type.native_type;
-	type.script = p_type.script_type;
-	type.where = "TypedArray";
-	type.nested_types.resize(p_type.container_element_types.size());
-	for (int i = 0; i < p_type.container_element_types.size(); i++) {
-		type.nested_types.write[i] = _get_array_type_validator_from_datatype(p_type.container_element_types[i]);
-	}
-	return type;
-}
-
 
 static String _get_var_type(const Variant *p_var) {
 	String basestr;
@@ -171,11 +124,7 @@ Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataT
 			// Typed array.
 			if (p_data_type.has_container_element_type(0)) {
 				const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
-				ContainerTypeValidate array_type;
-				array_type.type = Variant::ARRAY;
-				array_type.where = "TypedArray";
-				array_type.nested_types.push_back(_get_array_type_validator_from_datatype(element_type));
-				array.set_typed_nested(array_type);
+				array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
 			}
 
 			return array;
@@ -928,7 +877,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_TYPE_TEST_ARRAY) {
-				CHECK_SPACE(7);
+				CHECK_SPACE(6);
 
 				GET_VARIANT_PTR(dst, 0);
 				GET_VARIANT_PTR(value, 1);
@@ -938,26 +887,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int native_type_idx = _code_ptr[ip + 5];
 				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 				const StringName native_type = _global_names_ptr[native_type_idx];
-				GET_VARIANT_PTR(encoded_type_info, 5);
 
 				bool result = false;
 				if (value->get_type() == Variant::ARRAY) {
 					Array *array = VariantInternal::get_array(value);
 					result = array->get_typed_builtin() == ((uint32_t)builtin_type) && array->get_typed_class_name() == native_type && array->get_typed_script() == *script_type;
-
-					///
-					if (result) {
-						ContainerTypeValidate expected_type;
-						if (_build_typed_array_validator(*encoded_type_info, expected_type)) {
-							Array expected_array;
-							expected_array.set_typed_nested(expected_type);
-							result = array->is_same_typed(expected_array);
-						}
-					}
 				}
 
 				*dst = result;
-				ip += 7;
+				ip += 6;
 			}
 			DISPATCH_OPCODE;
 
@@ -1514,7 +1452,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ASSIGN_TYPED_ARRAY) {
-				CHECK_SPACE(7);
+				CHECK_SPACE(6);
 				GET_VARIANT_PTR(dst, 0);
 				GET_VARIANT_PTR(src, 1);
 
@@ -1523,7 +1461,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int native_type_idx = _code_ptr[ip + 5];
 				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 				const StringName native_type = _global_names_ptr[native_type_idx];
-				GET_VARIANT_PTR(encoded_type_info, 5);
 
 				if (src->get_type() != Variant::ARRAY) {
 #ifdef DEBUG_ENABLED
@@ -1535,18 +1472,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				Array *array = VariantInternal::get_array(src);
 
-				///
-				bool is_type_match = array->get_typed_builtin() == ((uint32_t)builtin_type) && array->get_typed_class_name() == native_type && array->get_typed_script() == *script_type;
-				if (is_type_match) {
-					ContainerTypeValidate expected_type;
-					if (_build_typed_array_validator(*encoded_type_info, expected_type)) {
-						Array expected_array;
-						expected_array.set_typed_nested(expected_type);
-						is_type_match = array->is_same_typed(expected_array);
-					}
-				}
-
-				if (!is_type_match) {
+				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to assign an array of type "%s" to a variable of type "Array[%s]".)",
 							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
@@ -1556,7 +1482,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				*dst = *src;
 
-				ip += 7;
+				ip += 6;
 			}
 			DISPATCH_OPCODE;
 
@@ -1880,7 +1806,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 			OPCODE(OPCODE_CONSTRUCT_TYPED_ARRAY) {
 				LOAD_INSTRUCTION_ARGS
-				CHECK_SPACE(4 + instr_arg_count);
+				CHECK_SPACE(3 + instr_arg_count);
 				ip += instr_arg_count;
 
 				int argc = _code_ptr[ip + 1];
@@ -1890,18 +1816,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int native_type_idx = _code_ptr[ip + 3];
 				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 				const StringName native_type = _global_names_ptr[native_type_idx];
-				GET_INSTRUCTION_ARG(encoded_type_info, argc + 2);
 
 				Array array;
-
-				///
-				ContainerTypeValidate array_type;
-				if (_build_typed_array_validator(*encoded_type_info, array_type)) {
-					array.set_typed_nested(array_type);
-				} else {
-					array.set_typed(builtin_type, native_type, *script_type);
-				}
-
+				array.set_typed(builtin_type, native_type, *script_type);
 				array.resize(argc);
 				for (int i = 0; i < argc; i++) {
 					// Use .set instead of operator[] to handle type conversion / validation.
@@ -1913,7 +1830,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				*dst = array;
 
-				ip += 5;
+				ip += 4;
 			}
 			DISPATCH_OPCODE;
 
@@ -2924,7 +2841,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 
 			OPCODE(OPCODE_RETURN_TYPED_ARRAY) {
-				CHECK_SPACE(6);
+				CHECK_SPACE(5);
 				GET_VARIANT_PTR(r, 0);
 
 				GET_VARIANT_PTR(script_type, 1);
@@ -2932,7 +2849,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int native_type_idx = _code_ptr[ip + 4];
 				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 				const StringName native_type = _global_names_ptr[native_type_idx];
-				GET_VARIANT_PTR(encoded_type_info, 4);
 
 				if (r->get_type() != Variant::ARRAY) {
 #ifdef DEBUG_ENABLED
@@ -2944,18 +2860,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				Array *array = VariantInternal::get_array(r);
 
-				///
-				bool is_type_match = array->get_typed_builtin() == ((uint32_t)builtin_type) && array->get_typed_class_name() == native_type && array->get_typed_script() == *script_type;
-				if (is_type_match) {
-					ContainerTypeValidate expected_type;
-					if (_build_typed_array_validator(*encoded_type_info, expected_type)) {
-						Array expected_array;
-						expected_array.set_typed_nested(expected_type);
-						is_type_match = array->is_same_typed(expected_array);
-					}
-				}
-
-				if (!is_type_match) {
+				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "Array[%s]".)",
 							_get_var_type(r), _get_element_type(builtin_type, native_type, *script_type));
