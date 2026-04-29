@@ -581,6 +581,8 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
 	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KeyModifierMask::SHIFT | Key::ENTER));
+	inputs.push_back(InputEventKey::create_reference(KeyModifierMask::SHIFT | Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_newline", inputs);
 
 	inputs = List<Ref<InputEvent>>();
