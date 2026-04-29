@@ -220,7 +220,8 @@ void ScriptCreateDialog::set_inheritance_base_type(const String &p_base) {
 
 bool ScriptCreateDialog::_validate_parent(const String &p_string) {
 	if (p_string.length() == 0) {
-		return true;
+		ScriptLanguage *lang = ScriptServer::get_language(language_menu->get_selected());
+		return lang && lang->get_name() == "GDScript";
 	}
 
 	if (can_inherit_from_file && p_string.is_quoted()) {
@@ -633,6 +634,10 @@ void ScriptCreateDialog::_update_dialog() {
 
 	if (!is_parent_name_valid && is_new_script_created) {
 		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Invalid inherited parent name or path."), EditorValidationPanel::MSG_ERROR);
+	}
+
+	if (is_parent_name_valid && is_new_script_created && parent_name->get_text().is_empty()) {
+		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("GDScript only: Script will implicitly extend RefCounted."), EditorValidationPanel::MSG_INFO, false);
 	}
 
 	if (validation_panel->is_valid() && !is_new_script_created) {
