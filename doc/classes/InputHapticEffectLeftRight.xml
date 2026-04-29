@@ -4,7 +4,7 @@
 		A haptic effect for direct control over high/low frequency motors.
 	</brief_description>
 	<description>
-		A haptic effect for direct control over high/low frequency motors (with type of [constant InputHapticEffect.HAPTIC_EFFECT_LEFT_RIGHT]).
+		A haptic effect for direct control over high/low frequency motors (with a type of [constant InputHapticEffect.HAPTIC_EFFECT_LEFT_RIGHT]).
 	</description>
 	<tutorials>
 	</tutorials>

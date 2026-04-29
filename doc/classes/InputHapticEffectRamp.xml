@@ -4,7 +4,7 @@
 		A haptic effect that represents a ramp force.
 	</brief_description>
 	<description>
-		A haptic effect that represents a ramp force (with type of [constant InputHapticEffect.HAPTIC_EFFECT_RAMP]).
+		A haptic effect that represents a ramp force (with a type of [constant InputHapticEffect.HAPTIC_EFFECT_RAMP]).
 		A ramp force is a force with defined starting and ending magnitudes and a finite duration. A ramp force can continue in a single direction, or it can start as a strong push in one direction, weaken, stop, and then strengthen in the opposite direction.
 		[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418773(v=vs.85)]DirectInput documentation[/url] for more information.
 	</description>

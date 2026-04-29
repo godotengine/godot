@@ -4,7 +4,7 @@
 		A haptic effect that represents a custom force.
 	</brief_description>
 	<description>
-		A haptic effect that represents a custom force (with type of [constant InputHapticEffect.HAPTIC_EFFECT_CUSTOM]).
+		A haptic effect that represents a custom force (with a type of [constant InputHapticEffect.HAPTIC_EFFECT_CUSTOM]).
 		[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416371(v=vs.85)]DirectInput documentation[/url] and [url=https://wiki.libsdl.org/SDL3/SDL_HapticCustom]SDL documentation[/url] for more information.
 	</description>
 	<tutorials>
@@ -32,7 +32,7 @@
 			Period of the effect, in seconds.
 		</member>
 		<member name="samples" type="int" setter="set_samples" getter="get_samples" default="0">
-			Amount of samples.
+			Number of samples.
 		</member>
 	</members>
 </class>

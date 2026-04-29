@@ -4,8 +4,8 @@
 		A haptic effect that represents a periodic force.
 	</brief_description>
 	<description>
-		A haptic effect that represents a periodic force. The type can be one either [constant InputHapticEffect.HAPTIC_EFFECT_SINE], [constant InputHapticEffect.HAPTIC_EFFECT_SQUARE], [constant InputHapticEffect.HAPTIC_EFFECT_TRIANGLE], [constant InputHapticEffect.HAPTIC_EFFECT_SAWTOOTH_UP], or [constant InputHapticEffect.HAPTIC_EFFECT_SAWTOOTH_DOWN].
-		You can apply an envelope to a constant force to give it shape, see also [member attack_length], [member attack_level], [member fade_length] and [member fade_level].
+		A haptic effect that represents a periodic force. The type can be one of either [constant InputHapticEffect.HAPTIC_EFFECT_SINE], [constant InputHapticEffect.HAPTIC_EFFECT_SQUARE], [constant InputHapticEffect.HAPTIC_EFFECT_TRIANGLE], [constant InputHapticEffect.HAPTIC_EFFECT_SAWTOOTH_UP], or [constant InputHapticEffect.HAPTIC_EFFECT_SAWTOOTH_DOWN].
+		You can apply an envelope to a constant force to give it shape, see also [member attack_length], [member attack_level], [member fade_length], and [member fade_level].
 		[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418719(v=vs.85)]DirectInput documentation[/url] for more information.
 	</description>
 	<tutorials>
