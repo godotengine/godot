@@ -153,6 +153,10 @@ public:
 		DisplayServerEnums::WindowEvent event;
 	};
 
+	class WindowHoverMessage : public WindowMessage {
+		GDSOFTCLASS(WindowHoverMessage, WindowMessage);
+	};
+
 	class InputEventMessage : public Message {
 		GDSOFTCLASS(InputEventMessage, Message);
 
@@ -713,6 +717,11 @@ private:
 	struct wl_seat *wl_seat_current = nullptr;
 	bool has_touch = false;
 
+	// We got plenty of different pointing devices but Godot can only hover a
+	// single window at a time. This helps track that and gives us a way to avoid
+	// invalid mouse enter/leave event combinations.
+	DisplayServerEnums::WindowID hovered_window_id = DisplayServerEnums::INVALID_WINDOW_ID;
+
 	bool frame = true;
 
 	RegistryState registry;
@@ -1209,6 +1218,9 @@ private:
 
 	void _set_current_seat(struct wl_seat *p_seat);
 
+	void _window_hover(DisplayServerEnums::WindowID p_window_id);
+	void _window_hover();
+
 	bool _load_cursor_theme(int p_cursor_size);
 
 	void _update_scale(int p_scale);
@@ -1265,7 +1277,7 @@ public:
 
 	// Checks if a window exists for this ID (NOT if its data is valid). Useful to
 	// detect deleted windows.
-	bool window_exists(DisplayServerEnums::WindowID p_window_id);
+	bool window_exists(DisplayServerEnums::WindowID p_window_id) const;
 
 	void window_set_parent(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id);
 
