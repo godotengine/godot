@@ -777,35 +777,20 @@ elif methods.using_clang(env):
                 env["debug_paths_relative"] = False
 
 elif env.msvc:
-    # Ensure latest minor builds of Visual Studio 2017/2019.
-    # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
-    if env.get("winrt"):
-        if cc_version_major < 16 or (cc_version_major == 16 and cc_version_minor < 11):
-            print_error(
-                "Detected Visual Studio 2019 version older than 16.11, which does not fully support "
-                "C++20. Use a newer VS2019 version, or VS2022, or disable WinRT support by passing "
-                '"winrt=no" to the SCons command line.'
-            )
-            Exit(255)
-    else:
-        if cc_version_major == 16 and cc_version_minor < 11:
-            print_error(
-                "Detected Visual Studio 2019 version older than 16.11, which has bugs "
-                "when compiling Godot. Use a newer VS2019 version, or VS2022."
-            )
-            Exit(255)
-        if cc_version_major == 15 and cc_version_minor < 9:
-            print_error(
-                "Detected Visual Studio 2017 version older than 15.9, which has bugs "
-                "when compiling Godot. Use a newer VS2017 version, or VS2019/VS2022."
-            )
-            Exit(255)
-        if cc_version_major < 15:
-            print_error(
-                "Detected Visual Studio 2015 or earlier, which is unsupported in Godot. "
-                "Supported versions are Visual Studio 2017 and later."
-            )
-            Exit(255)
+    if cc_version_major == 16 and cc_version_minor < 11:
+        # Ensure latest minor build of Visual Studio 2019.
+        # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
+        print_error(
+            "Detected Visual Studio 2019 version older than 16.11, which has bugs "
+            "when compiling Godot. Use a newer VS2019 version, or VS2022+."
+        )
+        Exit(255)
+    elif cc_version_major < 16:
+        print_error(
+            "Detected Visual Studio 2017 or earlier, which is unsupported in Godot. "
+            "Supported versions are Visual Studio 2019 and later."
+        )
+        Exit(255)
 
 # Set x86 CPU instruction sets to use by the compiler's autovectorization.
 if env["arch"] == "x86_64":
@@ -931,12 +916,9 @@ if not env.msvc:
     env.Prepend(CXXFLAGS=["-std=gnu++17"])
 else:
     # MSVC started offering C standard support with Visual Studio 2019 16.8, which covers all
-    # of our supported VS2019 & VS2022 versions; VS2017 will only pass the C++ standard.
+    # of our supported Visual Studio versions.
+    env.Prepend(CFLAGS=["/std:c17"])
     env.Prepend(CXXFLAGS=["/std:c++17"])
-    if cc_version_major < 16:
-        print_warning("Visual Studio 2017 cannot specify a C-Standard.")
-    else:
-        env.Prepend(CFLAGS=["/std:c17"])
     # MSVC is non-conforming with the C++ standard by default, so we enable more conformance.
     # Note that this is still not complete conformance, as certain Windows-related headers
     # don't compile under complete conformance.
