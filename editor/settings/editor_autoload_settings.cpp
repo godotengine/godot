@@ -40,12 +40,15 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/scene/scene_create_dialog.h"
 #include "editor/settings/project_settings_editor.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
 #define PREVIEW_LIST_MAX_SIZE 10
@@ -131,6 +134,14 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	}
 
 	return true;
+}
+
+void EditorAutoloadSettings::_validate_autoload_name() {
+	String error;
+	bool is_valid = _autoload_name_is_valid(name_edit->get_text(), &error);
+	if (!is_valid) {
+		name_validator->set_message(0, error, EditorValidationPanel::MSG_ERROR);
+	}
 }
 
 void EditorAutoloadSettings::_autoload_selected() {
@@ -402,7 +413,7 @@ void EditorAutoloadSettings::init_autoloads() {
 }
 
 void EditorAutoloadSettings::_autoload_file_selected(const String &p_path) {
-	_add_autoload(p_path.get_file().get_basename(), p_path);
+	_try_add_autoload(p_path.get_file().get_basename(), p_path);
 }
 
 void EditorAutoloadSettings::_scene_file_selected(const String &p_path) {
@@ -418,7 +429,7 @@ void EditorAutoloadSettings::_scene_file_selected(const String &p_path) {
 void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
 	FileSystemDock::get_singleton()->get_script_create_dialog()->hide();
 	path = p_script->get_path().get_base_dir();
-	_add_autoload(p_script->get_path().get_file().get_basename(), p_script->get_path());
+	_try_add_autoload(p_script->get_path().get_file().get_basename(), p_script->get_path());
 }
 
 void EditorAutoloadSettings::_scene_created() {
@@ -434,7 +445,7 @@ void EditorAutoloadSettings::_scene_created() {
 		return;
 	}
 
-	_add_autoload(scene_create_dialog->get_root_name(), scene_create_dialog->get_scene_path());
+	_try_add_autoload(scene_create_dialog->get_root_name(), scene_create_dialog->get_scene_path());
 }
 
 void EditorAutoloadSettings::_add_autoload(const String &p_name, const String &p_path) {
@@ -449,6 +460,22 @@ void EditorAutoloadSettings::_add_autoload(const String &p_name, const String &p
 
 	autoload_name = autoload_name.validate_ascii_identifier();
 	autoload_add(autoload_name, p_path);
+}
+
+void EditorAutoloadSettings::_try_add_autoload(const String &p_name, const String &p_path) {
+	if (_autoload_name_is_valid(p_name)) {
+		_add_autoload(p_name, p_path);
+		return;
+	}
+	pending_autoload_path = p_path;
+
+	name_edit->set_text(p_name);
+	name_validator->update();
+	name_dialog->popup_centered(Vector2i(600 * EDSCALE, 0));
+}
+
+void EditorAutoloadSettings::_confirm_autoload_name() {
+	_add_autoload(name_edit->get_text(), pending_autoload_path);
 }
 
 void EditorAutoloadSettings::update_autoload() {
@@ -944,6 +971,25 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->connect("item_activated", callable_mp(this, &EditorAutoloadSettings::_autoload_activated));
 
 	mc->add_child(tree, true);
+
+	name_dialog = memnew(ConfirmationDialog);
+	name_dialog->set_title(TTRC("Enter Autoload Name"));
+	add_child(name_dialog);
+	name_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorAutoloadSettings::_confirm_autoload_name));
+
+	VBoxContainer *name_vbox = memnew(VBoxContainer);
+	name_dialog->add_child(name_vbox);
+
+	name_edit = memnew(LineEdit);
+	name_vbox->add_child(name_edit);
+	name_dialog->register_text_enter(name_edit);
+
+	name_validator = memnew(EditorValidationPanel);
+	name_validator->set_accept_button(name_dialog->get_ok_button());
+	name_validator->set_update_callback(callable_mp(this, &EditorAutoloadSettings::_validate_autoload_name));
+	name_validator->add_line(0, TTRC("Autoload name is valid."));
+	name_vbox->add_child(name_validator);
+	name_edit->connect(SceneStringName(text_changed), callable_mp(name_validator, &EditorValidationPanel::update).unbind(1));
 }
 
 EditorAutoloadSettings::~EditorAutoloadSettings() {
