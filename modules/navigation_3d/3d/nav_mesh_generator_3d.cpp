@@ -513,8 +513,6 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	Vector<NavigationMeshSourceGeometryData3D::ProjectedArea> usable_projected_areas; // Usable, but does not mean it affects the navmesh.
 	Array usable_area_origins;
 
-	// TODO: Use areas for cutting/carving mesh. Then, deprecate those features in obstacle.
-
 	if (!projected_areas.is_empty()) {
 		for (const NavigationMeshSourceGeometryData3D::ProjectedArea &projected_area : projected_areas) {
 			uint32_t area_navigation_layers = projected_area.navigation_layers;
@@ -659,7 +657,8 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	}
 
 	Vector<Vector<int>> nav_polygons;
-	Vector<uint32_t> nav_polygons_layers;
+	Vector<uint32_t> nav_polygons_layers; // NOTE: Will remain empty, if no areas are baked.
+	bool has_usuable_areas = usable_projected_areas.size() > 0;
 	Vector<Vector<int>> usable_nav_area_indices;
 	usable_nav_area_indices.resize(usable_projected_areas.size());
 
@@ -685,41 +684,47 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 			nav_indices.write[2] = recast_index_to_native_index[index3];
 
 			nav_polygons.push_back(nav_indices);
+			if (!has_usuable_areas) {
+				continue; // Quick skip for area-less navmesh.
+			}
+
 			nav_polygons_layers.push_back(navigation_layers);
-			if (navigation_layers != default_navlayers) {
-				// This polygon is part of an area.
-				const float *v1 = &detail_mesh->verts[index1 * 3];
-				const float *v2 = &detail_mesh->verts[index2 * 3];
-				const float *v3 = &detail_mesh->verts[index3 * 3];
-				const Vector<Vector3> vertices = { Vector3(v1[0], v1[1], v1[2]), Vector3(v2[0], v2[1], v2[2]), Vector3(v3[0], v3[1], v3[2]) };
-				bool match = false;
-				float grow = 1.0; // Necessary for vertices created by cylinder shape. Using for everybody for good measure.
-				const float grow_incr = 0.05;
-				while (!match) {
-					int area_index = 0;
-					for (NavigationMeshSourceGeometryData3D::ProjectedArea &area : usable_projected_areas) {
-						if (navigation_layers != area.navigation_layers) {
-							area_index++;
-							continue;
-						}
-						AABB bounds = area.aabb.grow(grow);
-						bool contains_tris = true;
-						for (const Vector3 vertex : vertices) {
-							if (!bounds.has_point(vertex)) {
-								contains_tris = false;
-								break;
-							}
-						}
-						if (contains_tris) {
-							match = true;
-							usable_nav_area_indices.write[area_index].push_back(nav_polygons_layers.size() - 1);
+
+			if (navigation_layers == default_navlayers) {
+				continue; // Early abort for polygons that are not part of an area.
+			}
+
+			const float *v1 = &detail_mesh->verts[index1 * 3];
+			const float *v2 = &detail_mesh->verts[index2 * 3];
+			const float *v3 = &detail_mesh->verts[index3 * 3];
+			const Vector<Vector3> vertices = { Vector3(v1[0], v1[1], v1[2]), Vector3(v2[0], v2[1], v2[2]), Vector3(v3[0], v3[1], v3[2]) };
+			bool match = false;
+			float grow = 1.0; // Necessary for vertices created by cylinder shape. Using for everybody for good measure.
+			const float grow_incr = 0.05;
+			while (!match) {
+				int area_index = 0;
+				for (NavigationMeshSourceGeometryData3D::ProjectedArea &area : usable_projected_areas) {
+					if (navigation_layers != area.navigation_layers) {
+						area_index++;
+						continue;
+					}
+					AABB bounds = area.aabb.grow(grow);
+					bool contains_tris = true;
+					for (const Vector3 vertex : vertices) {
+						if (!bounds.has_point(vertex)) {
+							contains_tris = false;
 							break;
 						}
-
-						area_index++;
 					}
-					grow += grow_incr;
+					if (contains_tris) {
+						match = true;
+						usable_nav_area_indices.write[area_index].push_back(nav_polygons_layers.size() - 1);
+						break;
+					}
+
+					area_index++;
 				}
+				grow += grow_incr;
 			}
 		}
 	}
@@ -736,6 +741,9 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 			area_origins.push_back(usable_area_origins[i]);
 		}
 		i++;
+	}
+	if (nav_area_navlayers.size() == 0) {
+		nav_polygons_layers.clear();
 	}
 
 	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_layers, nav_area_navlayers, nav_area_indices);

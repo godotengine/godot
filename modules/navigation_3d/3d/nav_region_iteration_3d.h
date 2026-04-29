@@ -50,7 +50,7 @@ struct NavRegionIterationBuild3D {
 	struct NavMeshData {
 		Vector<Vector3> vertices;
 		Vector<Vector<int>> polygons;
-		Vector<uint32_t> polygons_meta; // Will be stored in `Nav3D::Polygon` later on.
+		Vector<uint32_t> polygons_meta; // Each polygon's navigation layers. Will be stored in `Nav3D::Polygon` later on. Is empty if no areas are baked.
 		Vector<uint32_t> area_navlayers; // Holds the changes that need to be written to polygons_meta.
 		Vector<Vector<int>> area_indices;
 

@@ -57,7 +57,7 @@ void NavRegionBuilder3D::build_iteration(NavRegionIterationBuild3D &r_build) {
 void NavRegionBuilder3D::_build_step_process_navmesh_data(NavRegionIterationBuild3D &r_build) {
 	Vector<Vector3> _navmesh_vertices = r_build.navmesh_data.vertices;
 	Vector<Vector<int>> _navmesh_polygons = r_build.navmesh_data.polygons;
-	Vector<uint32_t> _navmesh_polygons_meta = r_build.navmesh_data.polygons_meta; // The areas' polygons' navigation layers may have changed.
+	Vector<uint32_t> _navmesh_polygons_meta = r_build.navmesh_data.polygons_meta;
 
 	if (_navmesh_vertices.is_empty() || _navmesh_polygons.is_empty()) {
 		return;

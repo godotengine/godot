@@ -40,8 +40,9 @@ class NavigationMesh : public Resource {
 
 	Vector<Vector3> vertices;
 	Vector<Vector<int>> polygons;
-	// FIXME: leave this empty if no areas are used!
-	Vector<uint32_t> polygons_meta; // The navigation layer bitmask per polygon. See `NavMeshGenerator3D::generator_bake_from_source_geometry_data`.
+	// The navigation layer bitmask per polygon. See `NavMeshGenerator3D::generator_bake_from_source_geometry_data`.
+	// Is empty if no navigation area is baked.
+	Vector<uint32_t> polygons_meta;
 
 	// Allows changing area's navigation_layers in `polygons_meta` (only those generated from areas) at runtime.
 	Vector<uint32_t> area_navlayers; // Saves `ProjectedArea::navigation_layers`.
