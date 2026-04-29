@@ -128,6 +128,8 @@ class DisplayServerWayland : public DisplayServer {
 	bool mouse_mode_override_enabled = false;
 	void _mouse_update_mode();
 
+	DisplayServerEnums::WindowID hovered_window_id = DisplayServerEnums::INVALID_WINDOW_ID;
+
 	HashMap<DisplayServerEnums::CursorShape, CustomCursor> custom_cursors;
 
 	HashMap<DisplayServerEnums::WindowID, WindowData> windows;
@@ -183,6 +185,7 @@ class DisplayServerWayland : public DisplayServer {
 
 	void _delete_window(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID);
 	void _update_window_rect(const Rect2i &p_rect, DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID);
+	void _hover_window(DisplayServerEnums::WindowID p_window_id);
 
 	void _window_update_hdr_state(WindowData &p_window);
 
