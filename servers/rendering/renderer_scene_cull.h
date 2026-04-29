@@ -510,7 +510,8 @@ public:
 				} break;
 				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE:
 				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR:
-				case Dependency::DEPENDENCY_CHANGED_CULL_MASK: {
+				case Dependency::DEPENDENCY_CHANGED_CULL_MASK:
+				case Dependency::DEPENDENCY_CHANGED_BAKE_MODE: {
 					//requires repairing
 					if (instance->indexer_id.is_valid()) {
 						singleton->_unpair_instance(instance);

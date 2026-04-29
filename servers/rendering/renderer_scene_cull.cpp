@@ -188,13 +188,12 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 		if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
 			return;
 		}
-
-		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
-
 		if (!(light->cull_mask & A->layer_mask)) {
 			// Early return if the object's layer mask doesn't match the light's cull mask.
 			return;
 		}
+
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 
 		geom->lights.insert(B);
 		light->geometries.insert(A);
@@ -321,13 +320,12 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
 			return;
 		}
-
-		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
-
 		if (!(light->cull_mask & A->layer_mask)) {
 			// Early return if the object's layer mask doesn't match the light's cull mask.
 			return;
 		}
+
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
 
 		geom->lights.erase(B);
 		light->geometries.erase(A);
@@ -854,7 +852,6 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 		switch (instance->base_type) {
 			case RSE::INSTANCE_LIGHT: {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
-				//if (RSG::light_storage->light_get_bake_mode(instance->base) != RSE::LIGHT_BAKE_STATIC_BAKED) {
 				if (instance->visible && RSG::light_storage->light_get_type(instance->base) != RSE::LIGHT_DIRECTIONAL && light->bake_mode == RSE::LIGHT_BAKE_DYNAMIC) {
 					instance->scenario->dynamic_lights.erase(light->instance);
 				}
@@ -868,7 +865,6 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 					instance->scenario->directional_lights.erase(light->D);
 					light->D = nullptr;
 				}
-				//}
 			} break;
 			case RSE::INSTANCE_REFLECTION_PROBE: {
 				InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(instance->base_data);
@@ -919,11 +915,9 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 		switch (instance->base_type) {
 			case RSE::INSTANCE_LIGHT: {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
-				//if (RSG::light_storage->light_get_bake_mode(instance->base) != RSE::LIGHT_BAKE_STATIC_BAKED) {
 				if (RSG::light_storage->light_get_type(instance->base) == RSE::LIGHT_DIRECTIONAL) {
 					light->D = scenario->directional_lights.push_back(instance);
 				}
-				//}
 			} break;
 			case RSE::INSTANCE_VOXEL_GI: {
 				InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(instance->base_data);
@@ -1085,9 +1079,6 @@ void RendererSceneCull::instance_set_visible(RID p_instance, bool p_visible) {
 
 	if (instance->base_type == RSE::INSTANCE_LIGHT) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
-		//if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
-		//	return;
-		//}
 		if (instance->scenario && RSG::light_storage->light_get_type(instance->base) != RSE::LIGHT_DIRECTIONAL && light->bake_mode == RSE::LIGHT_BAKE_DYNAMIC) {
 			if (p_visible) {
 				instance->scenario->dynamic_lights.push_back(light->instance);
@@ -1644,11 +1635,6 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 	if (p_instance->base_type == RSE::INSTANCE_LIGHT) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 		
-		//if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) { // this one
-		//	return;
-		//}
-		//if (light->bake_mode != RSE::LIGHT_BAKE_STATIC_BAKED) {
-
 		RSG::light_storage->light_instance_set_transform(light->instance, *instance_xform);
 		RSG::light_storage->light_instance_set_aabb(light->instance, instance_xform->xform(p_instance->aabb));
 		light->make_shadow_dirty();
@@ -1671,11 +1657,6 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 			light->max_sdfgi_cascade = max_sdfgi_cascade; //should most likely make sdfgi dirty in scenario
 		}
 		light->cull_mask = RSG::light_storage->light_get_cull_mask(p_instance->base);
-
-		if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) { // this one
-			return;
-		}
-		//}
 	} else if (p_instance->base_type == RSE::INSTANCE_REFLECTION_PROBE) {
 		InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(p_instance->base_data);
 
@@ -1825,9 +1806,6 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 			} break;
 			case RSE::INSTANCE_LIGHT: {
 				InstanceLightData *light_data = static_cast<InstanceLightData *>(p_instance->base_data);
-				//if (light_data->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
-				//	return;
-				//}
 				idata.instance_data_rid = light_data->instance.get_id();
 				light_data->uses_projector = RSG::light_storage->light_has_projector(p_instance->base);
 				light_data->uses_softshadow = RSG::light_storage->light_get_type(p_instance->base) == RSE::LIGHT_AREA || RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE) > CMP_EPSILON;
@@ -2183,9 +2161,9 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
-	//if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
-	//	return;
-	//}
+	if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+		return;
+	}
 
 	Transform3D light_transform = p_instance->transform;
 	light_transform.orthonormalize(); //scale does not count on lights
@@ -2405,9 +2383,9 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers) {
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
-	//if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
-	//	return false;
-	//}
+	if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+		return false;
+	}
 
 	Transform3D light_transform = p_instance->transform;
 	light_transform.orthonormalize(); //scale does not count on lights

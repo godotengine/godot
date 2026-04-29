@@ -346,7 +346,7 @@ void LightStorage::light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mo
 	light->bake_mode = p_bake_mode;
 
 	light->version++;
-	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_BAKE_MODE);
 }
 
 void LightStorage::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) {
