@@ -534,59 +534,6 @@ TEST_SUITE("[Navigation3D]") {
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 	}
 
-#ifndef DISABLE_DEPRECATED
-	// This test case uses only public APIs on purpose - other test cases use simplified baking.
-	// FIXME: Remove once deprecated `region_bake_navigation_mesh()` is removed.
-	TEST_CASE("[NavigationServer3D][SceneTree][DEPRECATED] Server should be able to bake map correctly") {
-		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
-
-		// Prepare scene tree with simple mesh to serve as an input geometry.
-		Node3D *node_3d = memnew(Node3D);
-		SceneTree::get_singleton()->get_root()->add_child(node_3d);
-		Ref<PlaneMesh> plane_mesh = memnew(PlaneMesh);
-		plane_mesh->set_size(Size2(10.0, 10.0));
-		MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
-		mesh_instance->set_mesh(plane_mesh);
-		node_3d->add_child(mesh_instance);
-
-		// Prepare anything necessary to bake navigation mesh.
-		RID map = navigation_server->map_create();
-		RID region = navigation_server->region_create();
-		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
-		navigation_server->map_set_use_async_iterations(map, false);
-		navigation_server->map_set_active(map, true);
-		navigation_server->region_set_use_async_iterations(region, false);
-		navigation_server->region_set_map(region, map);
-		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
-		navigation_server->physics_process(0.0); // Give server some cycles to commit.
-
-		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
-		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
-
-		ERR_PRINT_OFF;
-		navigation_server->region_bake_navigation_mesh(navigation_mesh, node_3d);
-		ERR_PRINT_ON;
-		navigation_server->region_set_navigation_mesh(region, navigation_mesh); // Force update.
-		CHECK_EQ(navigation_mesh->get_polygon_count(), 2);
-		CHECK_EQ(navigation_mesh->get_vertices().size(), 4);
-
-		SUBCASE("Map should emit signal and take newly baked navigation mesh into account") {
-			SIGNAL_WATCH(navigation_server, "map_changed");
-			SIGNAL_CHECK_FALSE("map_changed");
-			navigation_server->physics_process(0.0); // Give server some cycles to commit.
-			SIGNAL_CHECK("map_changed", { { map } });
-			SIGNAL_UNWATCH(navigation_server, "map_changed");
-			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
-		}
-
-		navigation_server->free_rid(region);
-		navigation_server->free_rid(map);
-		navigation_server->physics_process(0.0); // Give server some cycles to commit.
-		memdelete(mesh_instance);
-		memdelete(node_3d);
-	}
-#endif // DISABLE_DEPRECATED
-
 	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to parse geometry and areas") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 
@@ -756,7 +703,7 @@ TEST_SUITE("[Navigation3D]") {
 
 		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
 		navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, node_3d);
-		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
+		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, 1, Callable());
 		// FIXME: The above line should trigger the update (line below) under the hood.
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh); // Force update.
 
@@ -794,7 +741,7 @@ TEST_SUITE("[Navigation3D]") {
 		arr.resize(RSE::ARRAY_MAX);
 		BoxMesh::create_mesh_array(arr, Vector3(10.0, 0.001, 10.0));
 		source_geometry->add_mesh_array(arr, Transform3D());
-		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
+		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, 1, Callable());
 		CHECK_NE(navigation_mesh->get_polygon_count(), 0);
 		CHECK_NE(navigation_mesh->get_vertices().size(), 0);
 

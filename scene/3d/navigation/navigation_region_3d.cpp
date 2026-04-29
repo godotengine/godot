@@ -107,6 +107,8 @@ void NavigationRegion3D::set_navigation_layers(uint32_t p_navigation_layers) {
 	navigation_layers = p_navigation_layers;
 
 	NavigationServer3D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
+
+	update_configuration_warnings();
 }
 
 uint32_t NavigationRegion3D::get_navigation_layers() const {
@@ -320,9 +322,9 @@ void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
 	NavigationServer3D::get_singleton()->parse_source_geometry_data(navigation_mesh, source_geometry_data, this);
 
 	if (p_on_thread) {
-		NavigationServer3D::get_singleton()->bake_from_source_geometry_data_async(navigation_mesh, source_geometry_data, callable_mp(this, &NavigationRegion3D::_bake_finished));
+		NavigationServer3D::get_singleton()->bake_from_source_geometry_data_async(navigation_mesh, source_geometry_data, navigation_layers, callable_mp(this, &NavigationRegion3D::_bake_finished));
 	} else {
-		NavigationServer3D::get_singleton()->bake_from_source_geometry_data(navigation_mesh, source_geometry_data, callable_mp(this, &NavigationRegion3D::_bake_finished));
+		NavigationServer3D::get_singleton()->bake_from_source_geometry_data(navigation_mesh, source_geometry_data, navigation_layers, callable_mp(this, &NavigationRegion3D::_bake_finished));
 	}
 }
 
@@ -345,6 +347,9 @@ PackedStringArray NavigationRegion3D::get_configuration_warnings() const {
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (navigation_mesh.is_null()) {
 			warnings.push_back(RTR("A NavigationMesh resource must be set or created for this node to work."));
+		}
+		if (navigation_layers == 0) {
+			warnings.push_back(RTR("At least one navigation layers flag in the region must be active."));
 		}
 	}
 

@@ -302,18 +302,20 @@
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
-			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="2" name="navigation_layers" type="int" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<description>
-				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data]. After the process is finished the optional [param callback] will be called.
+				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data]. [param navigation_layers] are the baked polygon's default navigation layers and should equal your region's navigation layers. After the process is finished the optional [param callback] will be called.
 			</description>
 		</method>
 		<method name="bake_from_source_geometry_data_async">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
-			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="2" name="navigation_layers" type="int" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<description>
-				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data] as an async task running on a background thread. After the process is finished the optional [param callback] will be called.
+				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data] as an async task running on a background thread. [param navigation_layers] are the baked polygon's default navigation layers and should equal your region's navigation layers. After the process is finished the optional [param callback] will be called.
 			</description>
 		</method>
 		<method name="free_rid">
@@ -917,14 +919,6 @@
 			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<description>
 				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters3D]. Updates the provided [NavigationPathQueryResult3D] result object with the path among other results requested by the query. After the process is finished the optional [param callback] will be called.
-			</description>
-		</method>
-		<method name="region_bake_navigation_mesh" deprecated="This method is deprecated due to core threading changes. To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the [SceneTree] for nodes that should contribute to the navigation mesh baking. The [SceneTree] parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.">
-			<return type="void" />
-			<param index="0" name="navigation_mesh" type="NavigationMesh" />
-			<param index="1" name="root_node" type="Node" />
-			<description>
-				Bakes the [param navigation_mesh] with bake source geometry collected starting from the [param root_node].
 			</description>
 		</method>
 		<method name="region_create">

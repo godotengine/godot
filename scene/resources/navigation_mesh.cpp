@@ -78,16 +78,6 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	}
 }
 
-void NavigationMesh::_set_navigation_layers(uint32_t p_navigation_layers) {
-	RWLockWrite write_lock(rwlock);
-	navigation_layers = p_navigation_layers;
-}
-
-uint32_t NavigationMesh::_get_navigation_layers() const {
-	RWLockRead read_lock(rwlock);
-	return navigation_layers;
-}
-
 void NavigationMesh::set_sample_partition_type(SamplePartitionType p_value) {
 	ERR_FAIL_INDEX(p_value, SAMPLE_PARTITION_MAX);
 	partition_type = p_value;
@@ -662,9 +652,6 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_debug_data"), &NavigationMesh::_get_debug_data);
 #endif // DEBUG_ENABLED
 
-	ClassDB::bind_method(D_METHOD("_set_navigation_layers", "navigation_layers"), &NavigationMesh::_set_navigation_layers);
-	ClassDB::bind_method(D_METHOD("_get_navigation_layers"), &NavigationMesh::_get_navigation_layers);
-
 	ClassDB::bind_method(D_METHOD("set_sample_partition_type", "sample_partition_type"), &NavigationMesh::set_sample_partition_type);
 	ClassDB::bind_method(D_METHOD("get_sample_partition_type"), &NavigationMesh::get_sample_partition_type);
 
@@ -764,8 +751,6 @@ void NavigationMesh::_bind_methods() {
 #ifdef DEBUG_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "debug_area_origins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_debug_data", "_get_debug_data");
 #endif // DEBUG_ENABLED
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_navigation_layers", "_get_navigation_layers");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");

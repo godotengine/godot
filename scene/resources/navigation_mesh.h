@@ -38,7 +38,6 @@ class NavigationMesh : public Resource {
 	GDCLASS(NavigationMesh, Resource);
 	RWLock rwlock;
 
-	uint32_t navigation_layers = 1; // Default value. Inherited by region. Can be overwritten in area_navlayers. Required for NavMeshGenerator3D.
 	Vector<Vector3> vertices;
 	Vector<Vector<int>> polygons;
 	// FIXME: leave this empty if no areas are used!
@@ -125,10 +124,6 @@ protected:
 
 public:
 	// Recast settings
-	// Navigation layers are controlled by region.
-	void _set_navigation_layers(uint32_t p_navigation_layers);
-	uint32_t _get_navigation_layers() const;
-
 	void set_sample_partition_type(SamplePartitionType p_value);
 	SamplePartitionType get_sample_partition_type() const;
 

@@ -159,7 +159,7 @@ void NavMeshGenerator3D::parse_source_geometry_data(Ref<NavigationMesh> p_naviga
 	}
 }
 
-void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback) {
+void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, uint32_t p_navigation_layers, const Callable &p_callback) {
 	ERR_FAIL_COND(p_navigation_mesh.is_null());
 	ERR_FAIL_COND(p_source_geometry_data.is_null());
 
@@ -180,6 +180,7 @@ void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_na
 	baking_navmeshes.insert(p_navigation_mesh, &generator_task);
 	baking_navmesh_mutex.unlock();
 
+	generator_task.navigation_layers = p_navigation_layers;
 	generator_task.navigation_mesh = p_navigation_mesh;
 	generator_task.source_geometry_data = p_source_geometry_data;
 	generator_task.status = NavMeshGeneratorTask3D::TaskStatus::BAKING_STARTED;
@@ -197,7 +198,7 @@ void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_na
 	p_navigation_mesh->emit_changed();
 }
 
-void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback) {
+void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, uint32_t p_navigation_layers, const Callable &p_callback) {
 	ERR_FAIL_COND(p_navigation_mesh.is_null());
 	ERR_FAIL_COND(p_source_geometry_data.is_null());
 
@@ -211,7 +212,7 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 	}
 
 	if (!use_threads) {
-		bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data, p_callback);
+		bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data, p_navigation_layers, p_callback);
 		return;
 	}
 
@@ -224,6 +225,7 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 	baking_navmeshes.insert(p_navigation_mesh, generator_task);
 	baking_navmesh_mutex.unlock();
 
+	generator_task->navigation_layers = p_navigation_layers;
 	generator_task->navigation_mesh = p_navigation_mesh;
 	generator_task->source_geometry_data = p_source_geometry_data;
 	generator_task->callback = p_callback;
@@ -498,8 +500,8 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	HashMap<uint32_t, uint8_t> navigation_layers_to_area_config_id;
 	HashMap<uint8_t, uint32_t> area_config_id_to_navigation_layers;
 
-	navigation_layers_to_area_config_id[0] = RC_NULL_AREA; // Recast unsigned char RC_NULL_AREA = 0.
-	uint32_t default_navlayers = p_navigation_mesh->_get_navigation_layers();
+	navigation_layers_to_area_config_id[0] = RC_NULL_AREA; // Navigation layers == 0 will be considered as removing navmesh. NOTE: Recast unsigned char RC_NULL_AREA = 0.
+	uint32_t default_navlayers = p_generator_task->navigation_layers;
 	navigation_layers_to_area_config_id[default_navlayers] = RC_WALKABLE_AREA;
 
 	area_config_id_to_navigation_layers[static_cast<uint8_t>(RC_NULL_AREA)] = 0;
