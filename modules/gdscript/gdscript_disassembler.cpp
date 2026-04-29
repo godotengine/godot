@@ -467,6 +467,13 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 9;
 			} break;
+			case OPCODE_ASSIGN_TYPED_DICTIONARY_NESTED: {
+				text += "assign typed nested dictionary ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+				incr += 10;
+			} break;
 			case OPCODE_ASSIGN_TYPED_NATIVE: {
 				text += "assign typed native (";
 				text += DADDR(3);
@@ -1105,6 +1112,11 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(1);
 
 				incr += 8;
+			} break;
+			case OPCODE_RETURN_TYPED_DICTIONARY_NESTED: {
+				text += "return typed nested dictionary ";
+				text += DADDR(1);
+				incr += 9;
 			} break;
 			case OPCODE_RETURN_TYPED_NATIVE: {
 				text += "return typed native (";
