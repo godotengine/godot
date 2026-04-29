@@ -451,6 +451,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 6;
 			} break;
+			case OPCODE_ASSIGN_TYPED_ARRAY_NESTED: {
+				text += "assign typed nested array ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+
+				incr += 7;
+			} break;
 			case OPCODE_ASSIGN_TYPED_DICTIONARY: {
 				text += "assign typed dictionary ";
 				text += DADDR(1);
