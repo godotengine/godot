@@ -3292,9 +3292,6 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 				if (base_type == RSE::INSTANCE_LIGHT) {
 					InstanceLightData *instance_light = (InstanceLightData *)idata.instance->base_data;
-					//if (instance_light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) { // Seems unnecessary
-					//	continue;
-					//}
 					if (instance_light->bake_mode == RSE::LIGHT_BAKE_STATIC && cull_data.cull->sdfgi.region_cascade[j] <= instance_light->max_sdfgi_cascade) {
 						if (sdfgi_last_light_index != i || sdfgi_last_light_cascade != cull_data.cull->sdfgi.region_cascade[j]) {
 							sdfgi_last_light_index = i;
