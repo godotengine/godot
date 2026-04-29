@@ -180,7 +180,7 @@ void NavMeshQueries3D::map_query_path(NavMap3D *map, const Ref<NavigationPathQue
 
 	query_task.start_position = p_query_parameters->get_start_position();
 	query_task.target_position = p_query_parameters->get_target_position();
-	query_task.navigation_layers = p_query_parameters->get_navigation_layers();
+	query_task.navigation_layers = p_query_parameters->get_navigation_layers(); // The navigation layers our agent can walk on.
 	query_task.callback = p_callback;
 
 	const TypedArray<RID> &_excluded_regions = p_query_parameters->get_excluded_regions();
@@ -266,14 +266,14 @@ void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 	const LocalVector<Ref<NavRegionIteration3D>> &regions = p_map_iteration.region_iterations;
 
 	for (const Ref<NavRegionIteration3D> &region : regions) {
-		if (!_query_task_is_connection_owner_usable(p_query_task, region.ptr())) {
+		if (!_query_task_is_connection_owner_usable(p_query_task, region.ptr(), region->get_navigation_layers())) {
 			continue;
 		}
 
 		// Find the initial poly and the end poly on this map.
 		for (const Polygon &p : region->get_navmesh_polygons()) {
-			// Only consider the polygon if it is in a region with compatible layers.
-			if ((p_query_task.navigation_layers & p.navigation_layers) == 0) { // FIXME: check if this means that the start or end position cannot be within an area that has navlayers incompatible with the agent.
+			// Only consider the polygon if there's _any_ overlapping layer.
+			if ((p_query_task.navigation_layers & p.navigation_layers) == 0) {
 				continue;
 			}
 
@@ -307,7 +307,7 @@ void NavMeshQueries3D::_query_task_search_polygon_connections(NavMeshPathQueryTa
 
 	const NavBaseIteration3D *connection_owner = p_connection.polygon->owner;
 	ERR_FAIL_NULL(connection_owner);
-	const bool owner_is_usable = _query_task_is_connection_owner_usable(p_query_task, connection_owner);
+	const bool owner_is_usable = _query_task_is_connection_owner_usable(p_query_task, connection_owner, p_connection.polygon->navigation_layers);
 	if (!owner_is_usable) {
 		return;
 	}
@@ -359,8 +359,11 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 		polygon.reset();
 	}
 
+	uint32_t least_cost_id = p_query_task.path_query_slot->poly_to_id[begin_poly];
+	bool found_route = false;
+
 	// Initialize the matching navigation polygon.
-	NavigationPoly &begin_navigation_poly = navigation_polys[p_query_task.path_query_slot->poly_to_id[begin_poly]];
+	NavigationPoly &begin_navigation_poly = navigation_polys[least_cost_id];
 	begin_navigation_poly.poly = begin_poly;
 	begin_navigation_poly.entry = begin_point;
 	begin_navigation_poly.back_navigation_edge_pathway_start = begin_point;
@@ -368,9 +371,6 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 	begin_navigation_poly.traveled_distance = 0.f;
 
 	// This is an implementation of the A* algorithm.
-	uint32_t least_cost_id = p_query_task.path_query_slot->poly_to_id[begin_poly];
-	bool found_route = false;
-
 	const Polygon *reachable_end = nullptr;
 	real_t distance_to_reachable_end = FLT_MAX;
 	bool is_reachable = true;
@@ -1298,7 +1298,7 @@ void NavMeshQueries3D::_query_task_clip_path(NavMeshPathQueryTask3D &p_query_tas
 	}
 }
 
-bool NavMeshQueries3D::_query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner) {
+bool NavMeshQueries3D::_query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner, uint32_t p_navigation_layers) {
 	ERR_FAIL_NULL_V(p_owner, false);
 
 	bool owner_usable = true; // Check if navigation region or link is usable.
@@ -1308,8 +1308,8 @@ bool NavMeshQueries3D::_query_task_is_connection_owner_usable(const NavMeshPathQ
 		return owner_usable;
 	}
 
-	if ((p_query_task.navigation_layers & p_owner->get_navigation_layers()) == 0) {
-		// Not usable. No matching bit between task filter bitmask and owner bitmask.
+	if ((p_query_task.navigation_layers & p_navigation_layers) == 0) {
+		// Not usable. No matching bit between task filter bitmask and owner/polygon bitmask.
 		owner_usable = false;
 		return owner_usable;
 	}
