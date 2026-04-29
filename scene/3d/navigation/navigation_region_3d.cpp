@@ -733,6 +733,9 @@ void NavigationRegion3D::_update_debug_mesh() {
 		}
 
 		if (has_polygon_meta && navigation_mesh->get_polygon_meta(polygon_index) != navigation_layers) {
+			if (navigation_mesh->get_polygon_meta(polygon_index) == 0) {
+				continue; // Temporary hole.
+			}
 			// Color faces that were generated because of area meshes differently using vertex colors.
 			polygon_color = debug_navigation_geometry_face_area_color;
 		} else if (enabled_geometry_face_random_color) {

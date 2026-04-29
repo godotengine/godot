@@ -173,6 +173,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	// Face coloring.
 	Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
 	Color debug_navigation_geometry_face_area_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_area_color();
+	Color hole_color = Color(0, 0, 0, 0);
 	Color polygon_color = debug_navigation_geometry_face_color;
 
 	Vector<Color> face_color_array;
@@ -185,8 +186,12 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	for (int i = 0; i < polygon_count; i++) {
 		if (has_polygon_meta && navigationmesh->get_polygon_meta(i) != default_navigation_layers) {
-			// Color faces that were generated because of area meshes differently using vertex colors.
-			polygon_color = debug_navigation_geometry_face_area_color;
+			if (navigationmesh->get_polygon_meta(i) == 0) {
+				polygon_color = hole_color; // Temporary hole.
+			} else {
+				// Color faces that were generated because of area meshes differently using vertex colors.
+				polygon_color = debug_navigation_geometry_face_area_color;
+			}
 		} else if (enabled_geometry_face_random_color) {
 			// If enabled add vertex colors to colorize all other faces differently.
 			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
