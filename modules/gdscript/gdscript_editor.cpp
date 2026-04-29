@@ -801,7 +801,9 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 	if (p_just_args) {
 		arghint = "(";
 	} else {
-		if (p_function->get_datatype().builtin_type == Variant::NIL) {
+		if (p_function->get_datatype().is_variant()) {
+			arghint = "Variant " + p_function->identifier->name + "(";
+		} else if (p_function->get_datatype().builtin_type == Variant::NIL) {
 			arghint = "void " + p_function->identifier->name + "(";
 		} else {
 			arghint = p_function->get_datatype().to_string() + " " + p_function->identifier->name + "(";
