@@ -35,6 +35,7 @@
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
+#include "core/variant/container_type_validate.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -117,6 +118,48 @@ void GDScriptFunction::_profile_native_call(uint64_t p_t_taken, const String &p_
 
 #endif // DEBUG_ENABLED
 
+static ContainerTypeValidate _to_container_type_validate(const GDScriptDataType& p_type) {
+	ContainerTypeValidate ct;
+	ct.type = p_type.builtin_type;
+	ct.class_name = p_type.native_type;
+	ct.script = p_type.script_type;
+
+	if (p_type.kind != GDScriptDataType::BUILTIN || !p_type.has_container_element_types()) {
+		return ct;
+	}
+
+	int nested_count = p_type.container_element_types.size();
+	ct.nested_types.resize(nested_count);
+	ContainerTypeValidate* nested_ptr = ct.nested_types.ptrw();
+	for (int i = 0; i < nested_count; i++) {
+		nested_ptr[i] = _to_container_type_validate(p_type.container_element_types[i]);
+	}
+
+	return ct;
+}
+
+static bool _decode_nested_array_type(const Variant& p_variant, ContainerTypeValidate& r_type) {
+	if (p_variant.get_type() != Variant::DICTIONARY) {
+		return false;
+	}
+	Dictionary descriptor = p_variant;
+	if (!descriptor.has("builtin_type") || !descriptor.has("nested_types")) {
+		return false;
+	}
+	r_type.type = (Variant::Type)(int64_t)descriptor["builtin_type"];
+	r_type.class_name = descriptor.get("native_type", StringName());
+	r_type.script = descriptor.get("script_type", Variant());
+	Array nested = descriptor["nested_types"];
+	r_type.nested_types.resize(nested.size());
+	ContainerTypeValidate* nested_ptr = r_type.nested_types.ptrw();
+	for (int i = 0; i < nested.size(); i++) {
+		if (!_decode_nested_array_type(nested[i], nested_ptr[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
 Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataType &p_data_type) {
 	if (p_data_type.kind == GDScriptDataType::BUILTIN) {
 		if (p_data_type.builtin_type == Variant::ARRAY) {
@@ -124,7 +167,11 @@ Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataT
 			// Typed array.
 			if (p_data_type.has_container_element_type(0)) {
 				const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
-				array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+				if (element_type.has_container_element_types()) {
+					array.set_typed_nested(_to_container_type_validate(element_type));
+				} else {
+					array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+				}
 			}
 
 			return array;
@@ -281,6 +328,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ASSIGN_FALSE, \
 		&&OPCODE_ASSIGN_TYPED_BUILTIN, \
 		&&OPCODE_ASSIGN_TYPED_ARRAY, \
+		&&OPCODE_ASSIGN_TYPED_ARRAY_NESTED, \
 		&&OPCODE_ASSIGN_TYPED_DICTIONARY, \
 		&&OPCODE_ASSIGN_TYPED_NATIVE, \
 		&&OPCODE_ASSIGN_TYPED_SCRIPT, \
@@ -1483,6 +1531,94 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*dst = *src;
 
 				ip += 6;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ASSIGN_TYPED_ARRAY_NESTED) {
+				CHECK_SPACE(6);
+				GET_VARIANT_PTR(dst, 0);
+				GET_VARIANT_PTR(src, 1);
+
+				GET_VARIANT_PTR(script_type, 2);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
+				int native_type_idx = _code_ptr[ip + 5];
+				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[native_type_idx];
+
+				if (src->get_type() != Variant::ARRAY) {
+#ifdef DEBUG_ENABLED
+					err_text = vformat(R"(Trying to assign a value of type "%s" to a variable of type "Array[%s]".)",
+							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
+#endif // DEBUG_ENABLED
+					OPCODE_BREAK;
+				}
+
+				Array src_array = *src;
+				if (src_array.get_typed_builtin() != ((uint32_t)builtin_type) || src_array.get_typed_class_name() != native_type || src_array.get_typed_script() != *script_type) {
+#ifdef DEBUG_ENABLED
+					err_text = vformat(R"(Trying to assign an array of type "%s" to a variable of type "Array[%s]".)",
+							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
+#endif // DEBUG_ENABLED
+					OPCODE_BREAK;
+				}
+
+				bool has_nested_descriptor = false;
+				if (ip + 6 < _code_size) {
+					const int descriptor_address = _code_ptr[ip + 6];
+					const int descriptor_addr_type = (descriptor_address & ADDR_TYPE_MASK) >> ADDR_BITS;
+					const int descriptor_addr_index = descriptor_address & ADDR_MASK;
+					if (descriptor_addr_type == ADDR_TYPE_CONSTANT && descriptor_addr_index >= 0 && descriptor_addr_index < _constant_count) {
+						const Variant& descriptor_variant = _constants_ptr[descriptor_addr_index];
+						if (descriptor_variant.get_type() == Variant::DICTIONARY) {
+							Dictionary descriptor_dict = descriptor_variant;
+							has_nested_descriptor = descriptor_dict.has("builtin_type") && descriptor_dict.has("nested_types");
+						}
+					}
+				}
+// #ifdef DEBUG_ENABLED
+// 				print_line(vformat("[OPCODE_ASSIGN_TYPED_ARRAY_NESTED] ip=%d op=[%d,%d,%d,%d,%d,%d] has_descriptor=%s",
+// 						ip,
+// 						(ip + 1 < _code_size) ? _code_ptr[ip + 1] : -1,
+// 						(ip + 2 < _code_size) ? _code_ptr[ip + 2] : -1,
+// 						(ip + 3 < _code_size) ? _code_ptr[ip + 3] : -1,
+// 						(ip + 4 < _code_size) ? _code_ptr[ip + 4] : -1,
+// 						(ip + 5 < _code_size) ? _code_ptr[ip + 5] : -1,
+// 						(ip + 6 < _code_size) ? _code_ptr[ip + 6] : -1,
+// 						has_nested_descriptor ? "true" : "false"));
+// #endif
+				if (dst->get_type() == Variant::ARRAY) {
+					Array dst_array = *dst;
+					ContainerTypeValidate expected_type;
+					if (has_nested_descriptor) {
+						GET_VARIANT_PTR(expected_type_descriptor, 5);
+						if (!_decode_nested_array_type(*expected_type_descriptor, expected_type)) {
+							has_nested_descriptor = false;
+						}
+					}
+					if (has_nested_descriptor) {
+						Variant src_variant = *src;
+						if (!expected_type.validate(src_variant, "assign")) {
+#ifdef DEBUG_ENABLED
+							err_text = vformat(R"(Trying to assign an array of type "%s" to a variable of type "Array[%s]".)",
+									_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
+#endif
+							OPCODE_BREAK;
+						}
+						Array validated_src = src_variant;
+						dst_array.assign(validated_src);
+						*dst = dst_array;
+					} else {
+						dst_array.assign(src_array); /// fallback to previously available runtime behavior
+						*dst = dst_array;
+					}
+				} else {
+					*dst = src_array;
+				}
+
+// #ifdef DEBUG_ENABLED
+// 				print_line(vformat("[OPCODE_ASSIGN_TYPED_ARRAY_NESTED] ip_advance=%d", has_nested_descriptor ? 7 : 6));
+// #endif
+				ip += has_nested_descriptor ? 7 : 6;
 			}
 			DISPATCH_OPCODE;
 
@@ -3982,7 +4118,16 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 		int err_line = line;
 		if (err_text.is_empty()) {
-			err_text = "Internal script error! Opcode: " + itos(last_opcode) + " (please report).";
+			int debug_ip_start = MAX(0, ip - 12);
+			int debug_ip_end = MIN(_code_size - 1, ip + 12);
+			String debug_ip_window;
+			for (int i = debug_ip_start; i <= debug_ip_end; i++) {
+				debug_ip_window += (i == ip ? "[" : "") + itos(_code_ptr[i]) + (i == ip ? "]" : "");
+				if (i < debug_ip_end) {
+					debug_ip_window += ", ";
+				}
+			}
+			err_text = "Internal script error! Opcode: " + itos(last_opcode) + " please report with this data:" + vformat(" [opcode=%d ip=%d window(%d..%d)={%s}]", last_opcode, ip, debug_ip_start, debug_ip_end, debug_ip_window);
 		}
 
 		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
