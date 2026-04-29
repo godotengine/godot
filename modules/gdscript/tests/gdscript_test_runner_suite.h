@@ -141,9 +141,9 @@ func describe() -> String:
 	bool has_injected_dict = false;
 	bool has_injected_array = false;
 	for (const PropertyInfo &property : property_list) {
-		if (property.name == StringName("injected_dict")) {
+		if (property.name == "injected_dict") {
 			has_injected_dict = true;
-		} else if (property.name == StringName("injected_array")) {
+		} else if (property.name == "injected_array") {
 			has_injected_array = true;
 		}
 	}
@@ -151,33 +151,33 @@ func describe() -> String:
 	CHECK(has_injected_array);
 
 	bool valid = false;
-	Variant dict_value = object_a->get(StringName("injected_dict"), &valid);
+	Variant dict_value = object_a->get("injected_dict", &valid);
 	CHECK(valid);
 	REQUIRE(dict_value.get_type() == Variant::DICTIONARY);
 	Dictionary dict_value_as_dictionary = dict_value;
 	CHECK_EQ(dict_value_as_dictionary.size(), 0);
 
 	valid = false;
-	Variant array_value = object_a->get(StringName("injected_array"), &valid);
+	Variant array_value = object_a->get("injected_array", &valid);
 	CHECK(valid);
 	REQUIRE(array_value.get_type() == Variant::ARRAY);
 	Array array_value_as_array = array_value;
 	CHECK_EQ(array_value_as_array.size(), 0);
 
 	call_error = Callable::CallError();
-	Variant result = object_a->callp(StringName("describe"), nullptr, 0, call_error);
+	Variant result = object_a->callp("describe", nullptr, 0, call_error);
 	REQUIRE(call_error.error == Callable::CallError::CALL_OK);
 	String result_string = result;
 	CHECK_EQ(result_string, "dict=0 array=0");
 
-	Dictionary dict_a = object_a->get(StringName("injected_dict"));
+	Dictionary dict_a = object_a->get("injected_dict");
 	dict_a[String("key")] = 1;
-	Array array_a = object_a->get(StringName("injected_array"));
+	Array array_a = object_a->get("injected_array");
 	array_a.push_back(1);
 
 	Object *object_b = ref_b.ptr();
-	Dictionary dict_b = object_b->get(StringName("injected_dict"));
-	Array array_b = object_b->get(StringName("injected_array"));
+	Dictionary dict_b = object_b->get("injected_dict");
+	Array array_b = object_b->get("injected_array");
 	CHECK_EQ(dict_b.size(), 0);
 	CHECK_EQ(array_b.size(), 0);
 }
