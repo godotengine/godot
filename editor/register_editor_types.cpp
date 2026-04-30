@@ -338,6 +338,7 @@ void unregister_editor_types() {
 	TextureLayeredEditor::finish_shaders();
 	TexturePreview::finish_shaders();
 
+	EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::EMPTY, Variant());
 	EditorNode::cleanup();
 	EditorInterface::free();
 
