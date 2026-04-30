@@ -1634,7 +1634,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 
 	if (p_instance->base_type == RSE::INSTANCE_LIGHT) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
-		
+
 		RSG::light_storage->light_instance_set_transform(light->instance, *instance_xform);
 		RSG::light_storage->light_instance_set_aabb(light->instance, instance_xform->xform(p_instance->aabb));
 		light->make_shadow_dirty();
@@ -3390,7 +3390,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			if (RSG::light_storage->light_get_bake_mode(E->base) == RSE::LIGHT_BAKE_STATIC_BAKED) {
 				continue;
 			}
-			
+
 			if (directional_lights.size() >= RendererSceneRender::MAX_DIRECTIONAL_LIGHTS) {
 				break;
 			}
@@ -4000,7 +4000,7 @@ void RendererSceneCull::render_probes() {
 				if (instance_light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
 					continue;
 				}
-				
+
 				if (cache_dirty) {
 					//do nothing, since idx must count all visible lights anyway
 				} else if (idx >= light_cache_size) {
@@ -4083,7 +4083,7 @@ void RendererSceneCull::render_probes() {
 					InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
 					if (instance_light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
 						continue;
-					}		
+					}
 
 					InstanceVoxelGIData::LightCache *cache = &caches[idx];
 

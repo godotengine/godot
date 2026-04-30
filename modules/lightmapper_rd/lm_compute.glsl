@@ -1161,7 +1161,6 @@ void main() {
 		}
 	}
 
-
 	for (uint j = 0; j < 9; j++) { //accum from existing
 		light_probes.data[probe_index * 9 + j] = probe_sh_accum[j];
 	}
