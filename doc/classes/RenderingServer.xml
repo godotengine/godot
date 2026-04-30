@@ -5111,6 +5111,9 @@
 		<constant name="LIGHT_BAKE_DYNAMIC" value="2" enum="LightBakeMode">
 			Light is taken into account in dynamic baking ([VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) only). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant LIGHT_BAKE_STATIC]. This has a greater performance cost compared to [constant LIGHT_BAKE_STATIC]. When using SDFGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
 		</constant>
+		<constant name="LIGHT_BAKE_STATIC_BAKED" value="3" enum="LightBakeMode">
+			Light is fully baked into account in static lightmap and probes ([LightmapGI]). The light doesn't take part in real time rendering. These lights have no effect on performance at all.
+		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
 			Use a dual paraboloid shadow map for omni lights.
 		</constant>
