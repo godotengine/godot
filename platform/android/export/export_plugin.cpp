@@ -2106,11 +2106,6 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (!enabled_deprecated_plugins_names.is_empty() && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
 			}
-#ifdef ANDROID_ENABLED
-			if (gradle_build_enabled) {
-				return TTR("Support for \"Use Gradle Build\" on Android is currently experimental.");
-			}
-#endif // ANDROID_ENABLED
 		} else if (p_name == "gradle_build/compress_native_libraries") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (bool(p_preset->get("gradle_build/compress_native_libraries")) && !gradle_build_enabled) {
