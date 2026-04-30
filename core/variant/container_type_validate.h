@@ -160,7 +160,7 @@ private:
 	}
 
 	///[Monarch] validates internal containers, and stuff passed inside the containers might mutate to accomodate the given type
-	_FORCE_INLINE_ bool _validate_nested(Variant& inout_variant, const char* p_operation, bool p_output_errors) const {
+	bool _validate_nested(Variant& inout_variant, const char* p_operation, bool p_output_errors) const {
 		if (type == Variant::ARRAY && !nested_types.is_empty()) {
 			Array arr = inout_variant;
 			
