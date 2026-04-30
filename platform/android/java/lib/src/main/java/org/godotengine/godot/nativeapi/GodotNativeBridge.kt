@@ -31,7 +31,10 @@
 package org.godotengine.godot.nativeapi
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.VibrationEffect
@@ -40,9 +43,10 @@ import android.util.Log
 import android.util.Rational
 import android.util.TypedValue
 import androidx.annotation.Keep
+import androidx.core.net.toUri
 import org.godotengine.godot.Godot
 import org.godotengine.godot.GodotActivity
-import org.godotengine.godot.GodotLib
+import org.godotengine.godot.R
 import org.godotengine.godot.error.Error
 import org.godotengine.godot.feature.PictureInPictureProvider
 import org.godotengine.godot.io.FilePicker
@@ -306,8 +310,29 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun nativeBuildEnvConnect(callback: GodotCallable): Boolean {
 		try {
-			val buildProvider = godot.primaryHost?.getBuildProvider()
-			return buildProvider?.buildEnvConnect(callback) ?: false
+			val buildProvider = godot.primaryHost?.buildProvider
+			val success = buildProvider?.buildEnvConnect(callback) ?: false
+			if (!success) {
+				val activity = godot.getActivity() ?: return false
+				godot.runOnHostThread {
+					val builder = AlertDialog.Builder(activity)
+						.setMessage(activity.getString(R.string.gabe_connection_error_message))
+						.setTitle(activity.getString(R.string.gabe_connection_error_title))
+						.setCancelable(false)
+						.setPositiveButton(activity.getString(R.string.dialog_download)) { dialog: DialogInterface, _: Int ->
+							val intent = Intent(Intent.ACTION_VIEW, "https://godotengine.org/download/android/".toUri())
+							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+							activity.startActivity(intent)
+							dialog.cancel()
+						}
+						.setNegativeButton(activity.getString(R.string.dialog_cancel)) { dialog: DialogInterface, _: Int ->
+							dialog.dismiss()
+						}
+					val dialog = builder.create()
+					dialog.show()
+				}
+			}
+			return success
 		} catch (e: Exception) {
 			Log.e(TAG, "Unable to connect to build environment", e)
 			return false
@@ -316,7 +341,7 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun nativeBuildEnvDisconnect() {
 		try {
-			val buildProvider = godot.primaryHost?.getBuildProvider()
+			val buildProvider = godot.primaryHost?.buildProvider
 			buildProvider?.buildEnvDisconnect()
 		} catch (e: Exception) {
 			Log.e(TAG, "Unable to disconnect from build environment", e)
@@ -332,7 +357,7 @@ internal class GodotNativeBridge(private val godot: Godot) {
 		resultCallback: GodotCallable
 	): Int {
 		try {
-			val buildProvider = godot.primaryHost?.getBuildProvider()
+			val buildProvider = godot.primaryHost?.buildProvider
 			return buildProvider?.buildEnvExecute(
 				buildTool,
 				arguments,
@@ -349,7 +374,7 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun nativeBuildEnvCancel(jobId: Int) {
 		try {
-			val buildProvider = godot.primaryHost?.getBuildProvider()
+			val buildProvider = godot.primaryHost?.buildProvider
 			buildProvider?.buildEnvCancel(jobId)
 		} catch (e: Exception) {
 			Log.e(TAG, "Unable to cancel command in build environment", e)
@@ -358,7 +383,7 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun nativeBuildEnvCleanProject(projectPath: String, buildDir: String, callback: GodotCallable) {
 		try {
-			val buildProvider = godot.primaryHost?.getBuildProvider()
+			val buildProvider = godot.primaryHost?.buildProvider
 			buildProvider?.buildEnvCleanProject(projectPath, buildDir, callback)
 		} catch (e: Exception) {
 			Log.e(TAG, "Unable to clean project in build environment", e)
