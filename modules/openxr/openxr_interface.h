@@ -80,6 +80,12 @@ private:
 	XRPose::TrackingConfidence head_confidence;
 	Transform3D transform_for_view[2]; // We currently assume 2, but could be 4 for VARJO which we do not support yet
 
+	// Capture next frame
+	bool capture_next_frame = false;
+	bool capture_complete = false;
+	bool capture_convert_to_srgb = false;
+	RID capture_rd_texture; // Caller-owned RD texture that receives the blit
+
 	XRVRS xr_vrs;
 
 	void _load_action_map();
@@ -154,6 +160,8 @@ public:
 	float get_display_refresh_rate() const;
 	void set_display_refresh_rate(float p_refresh_rate);
 	Array get_available_display_refresh_rates() const;
+
+	void capture_frame(RID p_rd_texture, bool convert_to_srgb);
 
 	bool is_action_set_active(const String &p_action_set) const;
 	void set_action_set_active(const String &p_action_set, bool p_active);
