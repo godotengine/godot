@@ -32,6 +32,7 @@
 
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
 
 struct ContainerType {
@@ -57,6 +58,11 @@ struct ContainerTypeValidate {
 	const char *where = "container";
 
 private:
+	struct TypePair {
+		const ContainerTypeValidate* lhs = nullptr;
+		const ContainerTypeValidate* rhs = nullptr;
+	};
+
 	_FORCE_INLINE_ bool _internal_validate(Variant &inout_variant, const char *p_operation, bool p_output_errors) const {
 		if (type == Variant::NIL) {
 			return true;
@@ -154,7 +160,7 @@ private:
 	}
 
 	///[Monarch] validates internal containers, and stuff passed inside the containers might mutate to accomodate the given type
-	bool _validate_nested(Variant& inout_variant, const char* p_operation, bool p_output_errors) const {
+	_FORCE_INLINE_ bool _validate_nested(Variant& inout_variant, const char* p_operation, bool p_output_errors) const {
 		if (type == Variant::ARRAY && !nested_types.is_empty()) {
 			Array arr = inout_variant;
 			
@@ -207,7 +213,7 @@ public:
 	}
 
 	///was made out of necessity because both the vm and the validation layer outputted errors, leading to noise
-	bool validate_silent(Variant& inout_variant, const char* p_operation = "use") const {
+	_FORCE_INLINE_ bool validate_silent(Variant& inout_variant, const char* p_operation = "use") const {
 		if (!_internal_validate(inout_variant, p_operation, false)) {
 			return false;
 		}
@@ -223,61 +229,80 @@ public:
 		return _internal_validate(tmp, "", false);
 	}
 
-	bool can_reference(const ContainerTypeValidate &p_type) const {
-		if (type != p_type.type) {
-			return false;
-		} else if (type != Variant::OBJECT) {
-			return true;
-		}
+	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
+		LocalVector<TypePair> stack;
+		stack.push_back({ this, &p_type });
 
-		///
-		if (nested_types.size() != p_type.nested_types.size()) {
-			return false;
-		}
+		while (!stack.is_empty()) {
+			const TypePair current = stack[stack.size() - 1];
+			stack.resize(stack.size() - 1);
 
-		for (int i = 0; i < nested_types.size(); i++) {
-			if (!nested_types[i].can_reference(p_type.nested_types[i])) {
+			const ContainerTypeValidate &lhs = *current.lhs;
+			const ContainerTypeValidate &rhs = *current.rhs;
+
+			if (lhs.type != rhs.type) {
 				return false;
 			}
-		}
+			if (lhs.type != Variant::OBJECT) {
+				continue;
+			}
 
-		if (class_name == StringName()) {
-			return true;
-		} else if (p_type.class_name == StringName()) {
-			return false;
-		} else if (class_name != p_type.class_name && !ClassDB::is_parent_class(p_type.class_name, class_name)) {
-			return false;
-		}
-
-		if (script.is_null()) {
-			return true;
-		} else if (p_type.script.is_null()) {
-			return false;
-		} else if (script != p_type.script && !p_type.script->inherits_script(script)) {
-			return false;
-		}
-
-		return true;
-	}
-
-	bool operator==(const ContainerTypeValidate &p_type) const {
-		bool is_same_class = (type == p_type.type && class_name == p_type.class_name && script == p_type.script);
-		if (!is_same_class) {
-			return false;
-		}
-		if (nested_types.size() != p_type.nested_types.size()) {
-			return false;
-		}
-		for (int i = 0; i < nested_types.size(); i++) {
-			if (nested_types[i] != p_type.nested_types[i]) {
+			if (lhs.nested_types.size() != rhs.nested_types.size()) {
 				return false;
+			}
+			for (int i = 0; i < lhs.nested_types.size(); i++) {
+				stack.push_back({ &lhs.nested_types[i], &rhs.nested_types[i] });
+			}
+
+			if (lhs.class_name != StringName()) {
+				if (rhs.class_name == StringName()) {
+					return false;
+				}
+				if (lhs.class_name != rhs.class_name && !ClassDB::is_parent_class(rhs.class_name, lhs.class_name)) {
+					return false;
+				}
+			}
+
+			if (!lhs.script.is_null()) {
+				if (rhs.script.is_null()) {
+					return false;
+				}
+				if (lhs.script != rhs.script && !rhs.script->inherits_script(lhs.script)) {
+					return false;
+				}
 			}
 		}
 
 		return true;
 	}
 
-	bool operator!=(const ContainerTypeValidate &p_type) const {
+	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
+		LocalVector<TypePair> stack;
+		stack.push_back({ this, &p_type });
+
+		while (!stack.is_empty()) {
+			const TypePair current = stack[stack.size() - 1];
+			stack.resize(stack.size() - 1);
+
+			const ContainerTypeValidate &lhs = *current.lhs;
+			const ContainerTypeValidate &rhs = *current.rhs;
+
+			if (lhs.type != rhs.type || lhs.class_name != rhs.class_name || lhs.script != rhs.script) {
+				return false;
+			}
+			if (lhs.nested_types.size() != rhs.nested_types.size()) {
+				return false;
+			}
+
+			for (int i = 0; i < lhs.nested_types.size(); i++) {
+				stack.push_back({ &lhs.nested_types[i], &rhs.nested_types[i] });
+			}
+		}
+
+		return true;
+	}
+
+	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
 		return !(*this == p_type);
 	}
 };
