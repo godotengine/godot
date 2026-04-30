@@ -30,9 +30,6 @@
 
 #include "gdscript_analyzer.h"
 
-#include "core/string/ustring.h"
-#include "core/templates/hash_set.h"
-#include "core/variant/variant.h"
 #include "gdscript.h"
 #include "gdscript_utility_callable.h"
 #include "gdscript_utility_functions.h"
@@ -43,10 +40,6 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
-#include "core/object/script_language.h"
-#include "core/templates/hash_map.h"
-#include "modules/gdscript/gdscript_cache.h"
-#include "modules/gdscript/gdscript_parser.h"
 #include "scene/main/node.h"
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
@@ -344,6 +337,14 @@ bool is_script_or_class(const GDScriptParser::DataType p_datatype) {
 	return p_datatype.kind == GDScriptParser::DataType::CLASS || p_datatype.kind == GDScriptParser::DataType::SCRIPT;
 }
 
+_FORCE_INLINE_ static GDScriptParser::DataType generic_binding_type_from_expression(const GDScriptParser::DataType& p_type) {
+	GDScriptParser::DataType result = p_type;
+	///force this binding to lose everything but its structure to prevent it from being treated like a pseudo-literal 
+	result.is_constant = false;
+	result.is_read_only = false;
+	return result;
+}
+
 /// [Monarch] Given a binding parameter to infer, `Stuff[T]`, 
 /// match it against a given provided argument `Stuff[int]` to infer its proper binding.
 static bool infer_generic_bindings_from_types(
@@ -359,11 +360,13 @@ static bool infer_generic_bindings_from_types(
 			return true; /// don't bind from a weak type, throw this downstream for further inferrence
 		}
 
+		const GDScriptParser::DataType normalised_provided_arg = generic_binding_type_from_expression(p_provided_arg);
+
 		if (const GDScriptParser::DataType* existing_binding = p_bindings.getptr(p_param_to_infer.generic_param)) {
-			return *existing_binding == p_provided_arg; /// to make sure multiple occurences of the same generic are consistent
+			return *existing_binding == normalised_provided_arg; /// to make sure multiple occurences of the same generic are consistent
 		}
 
-		p_bindings[p_param_to_infer.generic_param] = p_provided_arg;
+		p_bindings[p_param_to_infer.generic_param] = normalised_provided_arg;
 		return true;
 
 	}
