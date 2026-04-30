@@ -269,6 +269,13 @@
 			The text of the item at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
 		</member>
+		<member name="search_bar_fuzzy_search_enabled" type="bool" setter="set_search_bar_fuzzy_search_enabled" getter="is_search_bar_fuzzy_search_enabled" default="true">
+			If [code]true[/code], enables fuzzy searching in the [PopupMenu] search bar. This allows the search results to include items that almost match the search query, as well items that match the individual characters of the search query, but not in sequence.
+			Use [member search_bar_fuzzy_search_max_misses] to set the maximum number of mismatches allowed in the search results.
+		</member>
+		<member name="search_bar_fuzzy_search_max_misses" type="int" setter="set_search_bar_fuzzy_search_max_misses" getter="get_search_bar_fuzzy_search_max_misses" default="2">
+			Sets the maximum number of mismatches allowed in each search result when fuzzy searching is enabled for the [PopupMenu] search bar. Any item with more mismatches will be hidden from the search results.
+		</member>
 		<member name="selected" type="int" setter="_select_int" getter="get_selected" default="-1">
 			The index of the currently selected item, or [code]-1[/code] if no item is selected.
 		</member>

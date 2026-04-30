@@ -180,6 +180,8 @@ class PopupMenu : public Popup {
 	String search_string = "";
 
 	int search_bar_enabled_on_item_count = 0;
+	bool search_bar_fuzzy_search_enabled = true;
+	int search_bar_fuzzy_search_max_misses = 2;
 	PanelContainer *panel = nullptr;
 	VBoxContainer *vbox_container = nullptr;
 	LineEdit *search_bar = nullptr;
@@ -271,6 +273,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 	virtual String _get_accessibility_name() const override;
@@ -391,6 +394,12 @@ public:
 
 	void set_search_bar_enabled_on_item_count(int p_count);
 	int get_search_bar_enabled_on_item_count() const;
+
+	void set_search_bar_fuzzy_search_enabled(bool p_enabled);
+	bool is_search_bar_fuzzy_search_enabled() const;
+
+	void set_search_bar_fuzzy_search_max_misses(int p_max_misses);
+	int get_search_bar_fuzzy_search_max_misses() const;
 
 	bool is_native_menu() const;
 
