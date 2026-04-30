@@ -34,6 +34,10 @@
 #include "scene/resources/mesh.h"
 #include "servers/navigation_3d/navigation_constants_3d.h"
 
+#ifdef DEBUG_ENABLED
+class Node3D;
+#endif // DEBUG_ENABLED
+
 class NavigationMesh : public Resource {
 	GDCLASS(NavigationMesh, Resource);
 	RWLock rwlock;
@@ -48,8 +52,10 @@ class NavigationMesh : public Resource {
 	Vector<uint32_t> area_navlayers; // Saves `ProjectedArea::navigation_layers`.
 	Vector<Vector<int>> area_indices; // Each element in the outer vector represents a ProjectedArea. The inner vector is a collection of `polygons_meta` indices. Assigned during baking process.
 
+#ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> debug_mesh;
 	Vector<Vector3> debug_area_origins;
+#endif // DEBUG_ENABLED
 
 protected:
 	static void _bind_methods();
@@ -226,7 +232,7 @@ public:
 	void get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint32_t> &r_area_navlayers, Vector<Vector<int>> &r_area_indices);
 
 #ifdef DEBUG_ENABLED
-	Ref<ArrayMesh> get_debug_mesh();
+	Ref<ArrayMesh> get_debug_mesh(Node *p_parent, uint32_t p_navigation_layers);
 	void _set_debug_data(const Array &p_area_origins);
 	Array _get_debug_data() const;
 #endif // DEBUG_ENABLED

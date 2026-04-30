@@ -127,9 +127,6 @@ public:
 	void set_projected_areas(const Array &p_array);
 	Array get_projected_areas() const;
 
-	// void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions);
-	// void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions);
-
 	void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions, Vector<ProjectedArea> &p_projected_areas);
 	void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions, Vector<ProjectedArea> &p_projected_areas);
 

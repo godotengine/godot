@@ -632,7 +632,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 			RS::get_singleton()->instance_set_visible(debug_instance, false);
 		}
 
-		Node *debug_holder = find_child("_debug_holder", false, true);
+		Node *debug_holder = find_child("_debug_holder", false, false);
 		if (debug_holder != nullptr) {
 			remove_child(debug_holder);
 			debug_holder->queue_free();
@@ -645,7 +645,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 			RS::get_singleton()->instance_set_visible(debug_instance, false);
 		}
 
-		Node *debug_holder = find_child("_debug_holder", false, true);
+		Node *debug_holder = find_child("_debug_holder", false, false);
 		if (debug_holder != nullptr) {
 			remove_child(debug_holder);
 			debug_holder->queue_free();
@@ -665,7 +665,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 
 	Vector<Vector3> vertices = navigation_mesh->get_vertices();
 	if (vertices.is_empty()) {
-		Node *debug_holder = find_child("_debug_holder", false, true);
+		Node *debug_holder = find_child("_debug_holder", false, false);
 		if (debug_holder != nullptr) {
 			remove_child(debug_holder);
 			debug_holder->queue_free();
@@ -675,7 +675,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 
 	int polygon_count = navigation_mesh->get_polygon_count();
 	if (polygon_count == 0) {
-		Node *debug_holder = find_child("_debug_holder", false, true);
+		Node *debug_holder = find_child("_debug_holder", false, false);
 		if (debug_holder != nullptr) {
 			remove_child(debug_holder);
 			debug_holder->queue_free();
@@ -811,7 +811,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 			}
 		}
 
-		Node *debug_holder = find_child("_debug_holder", false, true);
+		Node *debug_holder = find_child("_debug_holder", false, false);
 		if (debug_holder != nullptr) {
 			remove_child(debug_holder);
 			debug_holder->queue_free();
@@ -827,7 +827,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 		}
 
 		Array debug_data = navigation_mesh->_get_debug_data();
-		Node3D *debug_holder = Object::cast_to<Node3D>(find_child("_debug_holder", false, true));
+		Node3D *debug_holder = Object::cast_to<Node3D>(find_child("_debug_holder", false, false));
 		if (debug_holder == nullptr) {
 			debug_holder = memnew(Node3D);
 			debug_holder->set_name("_debug_holder");

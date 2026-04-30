@@ -64,7 +64,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 	Ref<NavigationMesh> navigationmesh = navigationregion->get_navigation_mesh();
 	if (navigationmesh.is_null()) {
-		Node *debug_holder = navigationregion->find_child("_debug_holder", false, true);
+		Node *debug_holder = navigationregion->find_child("_debug_holder", false, false);
 		if (debug_holder != nullptr) {
 			navigationregion->remove_child(debug_holder);
 			debug_holder->queue_free();
@@ -99,7 +99,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	if (faces.is_empty()) {
-		Node *debug_holder = navigationregion->find_child("_debug_holder", false, true);
+		Node *debug_holder = navigationregion->find_child("_debug_holder", false, false);
 		if (debug_holder != nullptr) {
 			navigationregion->remove_child(debug_holder);
 			debug_holder->queue_free();
@@ -170,42 +170,44 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	face_mesh_array.resize(Mesh::ARRAY_MAX);
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
 
-	// Face coloring.
-	Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
-	Color debug_navigation_geometry_face_area_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_area_color();
-	Color hole_color = Color(0, 0, 0, 0);
-	Color polygon_color = debug_navigation_geometry_face_color;
-
-	Vector<Color> face_color_array;
-	face_color_array.resize(polygon_count * 3);
-
-	RandomPCG rand;
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	bool has_polygon_meta = navigationmesh->get_polygon_meta_count() == polygon_count;
-	uint32_t default_navigation_layers = navigationregion->get_navigation_layers();
 
-	for (int i = 0; i < polygon_count; i++) {
-		if (has_polygon_meta && navigationmesh->get_polygon_meta(i) != default_navigation_layers) {
-			if (navigationmesh->get_polygon_meta(i) == 0) {
-				polygon_color = hole_color; // Temporary hole.
+	if (enabled_geometry_face_random_color || has_polygon_meta) {
+		// Face coloring.
+		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+		Color debug_navigation_geometry_face_area_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_area_color();
+		Color hole_color = Color(0, 0, 0, 0);
+		Color polygon_color = debug_navigation_geometry_face_color;
+
+		RandomPCG rand;
+		Vector<Color> face_color_array;
+		face_color_array.resize(polygon_count * 3);
+		uint32_t default_navigation_layers = navigationregion->get_navigation_layers();
+
+		for (int i = 0; i < polygon_count; i++) {
+			if (has_polygon_meta && navigationmesh->get_polygon_meta(i) != default_navigation_layers) {
+				if (navigationmesh->get_polygon_meta(i) == 0) {
+					polygon_color = hole_color; // Temporary hole.
+				} else {
+					// Color faces that were generated because of area meshes differently using vertex colors.
+					polygon_color = debug_navigation_geometry_face_area_color;
+				}
+			} else if (enabled_geometry_face_random_color) {
+				// If enabled add vertex colors to colorize all other faces differently.
+				polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+				polygon_color.a = debug_navigation_geometry_face_color.a;
 			} else {
-				// Color faces that were generated because of area meshes differently using vertex colors.
-				polygon_color = debug_navigation_geometry_face_area_color;
+				polygon_color = debug_navigation_geometry_face_color;
 			}
-		} else if (enabled_geometry_face_random_color) {
-			// If enabled add vertex colors to colorize all other faces differently.
-			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
-			polygon_color.a = debug_navigation_geometry_face_color.a;
-		} else {
-			polygon_color = debug_navigation_geometry_face_color;
+
+			face_color_array.push_back(polygon_color);
+			face_color_array.push_back(polygon_color);
+			face_color_array.push_back(polygon_color);
 		}
 
-		face_color_array.push_back(polygon_color);
-		face_color_array.push_back(polygon_color);
-		face_color_array.push_back(polygon_color);
+		face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
 	}
-
-	face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
 	p_gizmo->add_mesh(debug_mesh, navigationregion->is_enabled() ? get_material("face_material", p_gizmo) : get_material("face_material_disabled", p_gizmo));
@@ -231,14 +233,14 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	if (get_state() == EditorNode3DGizmoPlugin::HIDDEN || !p_gizmo->is_selected()) {
-		Node *debug_holder = navigationregion->find_child("_debug_holder", false, true);
+		Node *debug_holder = navigationregion->find_child("_debug_holder", false, false);
 		if (debug_holder != nullptr) {
 			navigationregion->remove_child(debug_holder);
 			debug_holder->queue_free();
 		}
 	} else {
 		Array debug_data = navigationmesh->_get_debug_data();
-		Node3D *debug_holder = Object::cast_to<Node3D>(navigationregion->find_child("_debug_holder", false, true));
+		Node3D *debug_holder = Object::cast_to<Node3D>(navigationregion->find_child("_debug_holder", false, false));
 		if (debug_holder == nullptr) {
 			debug_holder = memnew(Node3D);
 			debug_holder->set_name("_debug_holder");

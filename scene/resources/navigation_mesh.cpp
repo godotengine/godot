@@ -34,6 +34,7 @@
 
 #ifdef DEBUG_ENABLED
 #include "core/math/random_pcg.h"
+#include "scene/3d/label_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
 
@@ -528,7 +529,7 @@ void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &
 }
 
 #ifdef DEBUG_ENABLED
-Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
+Ref<ArrayMesh> NavigationMesh::get_debug_mesh(Node *p_parent, uint32_t p_navigation_layers) {
 	if (debug_mesh.is_valid()) {
 		// Blocks further updates for now, code below is intended for dynamic updates e.g. when settings change.
 		return debug_mesh;
@@ -571,19 +572,34 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 
 	// if enabled add vertex colors to colorize each face individually
 	// NOTE: Cannot color faces, that were generated because of area meshes, differently using vertex colors - no access to region's navigation layers.
-	// FIXME: colour faces if areas are used. and add Label3D for areas.
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
-	if (enabled_geometry_face_random_color) {
-		RandomPCG rand;
+	bool has_polygon_meta = get_polygon_meta_count() == polygon_count;
+	if (enabled_geometry_face_random_color || has_polygon_meta) {
+		// Face coloring.
 		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+		Color debug_navigation_geometry_face_area_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_area_color();
+		Color hole_color = Color(0, 0, 0, 0);
 		Color polygon_color = debug_navigation_geometry_face_color;
 
+		RandomPCG rand;
 		Vector<Color> face_color_array;
 		face_color_array.resize(polygon_count * 3);
 
 		for (int i = 0; i < polygon_count; i++) {
-			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
-			polygon_color.a = debug_navigation_geometry_face_color.a;
+			if (has_polygon_meta && get_polygon_meta(i) != p_navigation_layers) {
+				if (get_polygon_meta(i) == 0) {
+					polygon_color = hole_color; // Temporary hole.
+				} else {
+					// Color faces that were generated because of area meshes differently using vertex colors.
+					polygon_color = debug_navigation_geometry_face_area_color;
+				}
+			} else if (enabled_geometry_face_random_color) {
+				// If enabled add vertex colors to colorize all other faces differently.
+				polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+				polygon_color.a = debug_navigation_geometry_face_color.a;
+			} else {
+				polygon_color = debug_navigation_geometry_face_color;
+			}
 
 			face_color_array.push_back(polygon_color);
 			face_color_array.push_back(polygon_color);
@@ -593,7 +609,8 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	}
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
-	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material(enabled_geometry_face_random_color);
+	bool use_vertex_color = enabled_geometry_face_random_color || has_polygon_meta;
+	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material(use_vertex_color);
 	debug_mesh->surface_set_material(0, debug_geometry_face_material);
 
 	// if enabled build geometry edge line surface
@@ -620,6 +637,39 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, line_mesh_array);
 		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_material();
 		debug_mesh->surface_set_material(1, debug_geometry_edge_material);
+	}
+
+	Array debug_data = _get_debug_data();
+	Node3D *debug_holder = Object::cast_to<Node3D>(p_parent->find_child("_debug_holder", false, false));
+	if (debug_holder == nullptr) {
+		debug_holder = memnew(Node3D);
+		debug_holder->set_name("_debug_holder");
+		p_parent->add_child(debug_holder, false, Node::INTERNAL_MODE_BACK);
+		// NOTE: not setting any owner to prevent these debug nodes from being saved.
+	} else {
+		TypedArray<Node> nodes = debug_holder->get_children(true);
+		if (nodes.size() > 0) {
+			for (Variant &v : nodes) {
+				Node *node = Object::cast_to<Node>(v);
+				if (node) {
+					node->queue_free();
+					debug_holder->remove_child(node);
+				}
+			}
+		}
+	}
+	for (int i = 0; i < debug_data.size(); i++) {
+		Vector3 pos = debug_data[i];
+
+		Label3D *area_index_label = memnew(Label3D);
+		area_index_label->set_text(vformat("%d", i));
+		area_index_label->set_draw_flag(Label3D::DrawFlags::FLAG_DISABLE_DEPTH_TEST, true);
+		area_index_label->set_font_size(200);
+		area_index_label->set_outline_size(40);
+		area_index_label->set_position(pos);
+		area_index_label->rotate_x(-(Math::PI / 2)); // -90 degrees.
+		debug_holder->add_child(area_index_label);
+		area_index_label->set_owner(debug_holder);
 	}
 
 	return debug_mesh;
