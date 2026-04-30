@@ -737,7 +737,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 		switch (light->type) {
 			case RSE::LIGHT_DIRECTIONAL: {
-				if (r_directional_light_count >= max_directional_lights || light->directional_sky_mode == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+				if (r_directional_light_count >= max_directional_lights || light->directional_sky_mode == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY || light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 					continue;
 				}
 

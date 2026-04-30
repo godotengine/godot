@@ -1912,7 +1912,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			RID light = light_storage->light_instance_get_base_light(light_instance);
 			Transform3D light_transform = light_storage->light_instance_get_base_transform(light_instance);
 
-			if (RSG::light_storage->light_directional_get_sky_mode(light) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+			if (RSG::light_storage->light_directional_get_sky_mode(light) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY || RSG::light_storage->light_get_bake_mode(light) == RSE::LIGHT_BAKE_FULL) {
 				continue;
 			}
 
@@ -2997,7 +2997,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				RID light = light_storage->light_instance_get_base_light(light_instance);
 
 				l.type = RSG::light_storage->light_get_type(light);
-				if (l.type == RSE::LIGHT_DIRECTIONAL && RSG::light_storage->light_directional_get_sky_mode(light) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+				if (l.type == RSE::LIGHT_DIRECTIONAL && (RSG::light_storage->light_directional_get_sky_mode(light) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY || RSG::light_storage->light_get_bake_mode(light) == RSE::LIGHT_BAKE_FULL)) {
 					light_count--;
 					continue;
 				}

@@ -1721,7 +1721,8 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		RSE::LightType type = light_storage->light_get_type(base);
 		switch (type) {
 			case RSE::LIGHT_DIRECTIONAL: {
-				if (r_directional_light_count >= RendererSceneRender::MAX_DIRECTIONAL_LIGHTS || light_storage->light_directional_get_sky_mode(base) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+				if (r_directional_light_count >= RendererSceneRender::MAX_DIRECTIONAL_LIGHTS || light_storage->light_directional_get_sky_mode(base) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY ||
+						light_storage->light_get_bake_mode(base) == RSE::LIGHT_BAKE_FULL ) {
 					continue;
 				}
 

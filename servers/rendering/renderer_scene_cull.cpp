@@ -3387,9 +3387,6 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			if (!E->visible || !(E->layer_mask & p_visible_layers)) {
 				continue;
 			}
-			if (RSG::light_storage->light_get_bake_mode(E->base) == RSE::LIGHT_BAKE_FULL) {
-				continue;
-			}
 
 			if (directional_lights.size() >= RendererSceneRender::MAX_DIRECTIONAL_LIGHTS) {
 				break;
@@ -3400,7 +3397,8 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			//check shadow..
 
 			if (light) {
-				if (p_using_shadows && p_shadow_atlas.is_valid() && RSG::light_storage->light_has_shadow(E->base) && !(RSG::light_storage->light_get_type(E->base) == RSE::LIGHT_DIRECTIONAL && RSG::light_storage->light_directional_get_sky_mode(E->base) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY)) {
+				if (p_using_shadows && p_shadow_atlas.is_valid() && RSG::light_storage->light_has_shadow(E->base) && !(RSG::light_storage->light_get_type(E->base) == RSE::LIGHT_DIRECTIONAL &&
+					(RSG::light_storage->light_directional_get_sky_mode(E->base) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY || RSG::light_storage->light_get_bake_mode(E->base) != RSE::LIGHT_BAKE_FULL))) {
 					lights_with_shadow.push_back(E);
 				}
 				//add to list
