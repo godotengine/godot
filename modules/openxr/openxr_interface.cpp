@@ -41,6 +41,7 @@
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server_types.h"
 
 #include <openxr/openxr.h>
@@ -56,6 +57,7 @@ void OpenXRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("instance_exiting"));
 	ADD_SIGNAL(MethodInfo("pose_recentered"));
 	ADD_SIGNAL(MethodInfo("refresh_rate_changed", PropertyInfo(Variant::FLOAT, "refresh_rate")));
+	ADD_SIGNAL(MethodInfo("frame_captured", PropertyInfo(Variant::RID, "rd_texture")));
 
 	ADD_SIGNAL(MethodInfo("cpu_level_changed", PropertyInfo(Variant::INT, "sub_domain"), PropertyInfo(Variant::INT, "from_level"), PropertyInfo(Variant::INT, "to_level")));
 	ADD_SIGNAL(MethodInfo("gpu_level_changed", PropertyInfo(Variant::INT, "sub_domain"), PropertyInfo(Variant::INT, "from_level"), PropertyInfo(Variant::INT, "to_level")));
@@ -120,6 +122,9 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_hand_tracking_supported"), &OpenXRInterface::is_hand_tracking_supported);
 	ClassDB::bind_method(D_METHOD("is_hand_interaction_supported"), &OpenXRInterface::is_hand_interaction_supported);
 	ClassDB::bind_method(D_METHOD("is_eye_gaze_interaction_supported"), &OpenXRInterface::is_eye_gaze_interaction_supported);
+
+	// Frame Capture
+	ClassDB::bind_method(D_METHOD("capture_frame", "rd_texture", "convert_to_srgb"), &OpenXRInterface::capture_frame);
 
 	// VRS
 	ClassDB::bind_method(D_METHOD("get_vrs_min_radius"), &OpenXRInterface::get_vrs_min_radius);
@@ -1255,6 +1260,11 @@ void OpenXRInterface::process() {
 		head->set_pose("default", head_transform, head_linear_velocity, head_angular_velocity, head_confidence);
 	}
 
+	if (capture_complete) {
+		capture_complete = false;
+		emit_signal(SNAME("frame_captured"), capture_rd_texture);
+	}
+
 	if (reference_stage_changing) {
 		// Now that we have updated tracking information in our updated reference space, trigger our pose recentered signal.
 		emit_signal(SNAME("pose_recentered"));
@@ -1308,6 +1318,19 @@ Vector<RenderingServerTypes::BlitToScreen> OpenXRInterface::post_draw_viewport(R
 	}
 #endif
 
+	if (capture_next_frame) {
+		capture_next_frame = false;
+
+		RID color = get_color_texture();
+		if (color.is_valid() && capture_rd_texture.is_valid()) {
+			RendererCompositor *compositor = RendererCompositor::get_singleton();
+			if (compositor) {
+				compositor->blit_to_texture(color, capture_rd_texture, /*layer*/ 0, capture_convert_to_srgb);
+				capture_complete = true;
+			}
+		}
+	}
+
 	if (openxr_api) {
 		openxr_api->post_draw_viewport(p_render_target);
 	}
@@ -1319,6 +1342,14 @@ void OpenXRInterface::end_frame() {
 	if (openxr_api) {
 		openxr_api->end_frame();
 	}
+}
+
+void OpenXRInterface::capture_frame(RID p_rd_texture, bool p_convert_to_srgb) {
+	ERR_FAIL_NULL_MSG(openxr_api, "OpenXR not initialized.");
+	ERR_FAIL_COND_MSG(!p_rd_texture.is_valid(), "Invalid RD texture RID supplied.");
+	capture_rd_texture = p_rd_texture;
+	capture_next_frame = true;
+	capture_convert_to_srgb = p_convert_to_srgb;
 }
 
 bool OpenXRInterface::is_passthrough_supported() {
