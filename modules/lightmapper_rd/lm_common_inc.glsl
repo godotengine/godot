@@ -72,7 +72,7 @@ triangle_indices;
 #define LIGHT_BAKE_DISABLED 0
 #define LIGHT_BAKE_STATIC 1
 #define LIGHT_BAKE_DYNAMIC 2
-#define LIGHT_BAKE_STATIC_BAKED 3
+#define LIGHT_BAKE_FULL 3
 
 struct Light {
 	vec3 position;

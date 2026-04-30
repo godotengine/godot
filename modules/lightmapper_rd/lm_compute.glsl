@@ -938,7 +938,7 @@ void main() {
 		float shadow;
 		trace_direct_light(position, normal, i, true, light, light_dir, noise, texel_size_world_space, shadow);
 
-		if (lights.data[i].bake_mode == LIGHT_BAKE_STATIC || lights.data[i].bake_mode == LIGHT_BAKE_STATIC_BAKED) {
+		if (lights.data[i].bake_mode == LIGHT_BAKE_STATIC || lights.data[i].bake_mode == LIGHT_BAKE_FULL) {
 			light_for_texture += light;
 
 #ifdef USE_SH_LIGHTMAPS
@@ -1151,7 +1151,7 @@ void main() {
 		}
 
 		for (uint i = 0; i < bake_params.light_count; i++) {
-			if (lights.data[i].bake_mode == LIGHT_BAKE_STATIC_BAKED) {
+			if (lights.data[i].bake_mode == LIGHT_BAKE_FULL) {
 				vec3 light_dir;
 				vec3 light;
 				float shadow;

@@ -185,7 +185,7 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 
 	if (B->base_type == RSE::INSTANCE_LIGHT && ((1 << A->base_type) & RSE::INSTANCE_GEOMETRY_MASK)) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(B->base_data);
-		if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+		if (light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 			return;
 		}
 		if (!(light->cull_mask & A->layer_mask)) {
@@ -291,7 +291,7 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 
 	} else if (B->base_type == RSE::INSTANCE_VOXEL_GI && A->base_type == RSE::INSTANCE_LIGHT) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(B->base_data);
-		if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+		if (light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 			return;
 		}
 		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(B->base_data);
@@ -317,7 +317,7 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 
 	if (B->base_type == RSE::INSTANCE_LIGHT && ((1 << A->base_type) & RSE::INSTANCE_GEOMETRY_MASK)) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(B->base_data);
-		if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+		if (light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 			return;
 		}
 		if (!(light->cull_mask & A->layer_mask)) {
@@ -427,7 +427,7 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 
 	} else if (B->base_type == RSE::INSTANCE_VOXEL_GI && A->base_type == RSE::INSTANCE_LIGHT) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(B->base_data);
-		if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+		if (light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 			return;
 		}
 		InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(B->base_data);
@@ -630,7 +630,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 					ERR_PRINT("BUG, indexing did not unpair geometries from light.");
 				}
 #endif
-				if (light->bake_mode != RSE::LIGHT_BAKE_STATIC_BAKED) {
+				if (light->bake_mode != RSE::LIGHT_BAKE_FULL) {
 					if (scenario && light->D) {
 						scenario->directional_lights.erase(light->D);
 						light->D = nullptr;
@@ -723,7 +723,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 			}
 			case RSE::INSTANCE_LIGHT: {
 				InstanceLightData *light = memnew(InstanceLightData);
-				if (RSG::light_storage->light_get_bake_mode(p_base) != RSE::LIGHT_BAKE_STATIC_BAKED) {
+				if (RSG::light_storage->light_get_bake_mode(p_base) != RSE::LIGHT_BAKE_FULL) {
 					if (scenario && RSG::light_storage->light_get_type(p_base) == RSE::LIGHT_DIRECTIONAL) {
 						light->D = scenario->directional_lights.push_back(instance);
 					}
@@ -2161,7 +2161,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
-	if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+	if (light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 		return;
 	}
 
@@ -2383,7 +2383,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers) {
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
-	if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+	if (light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 		return false;
 	}
 
@@ -2951,7 +2951,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 				uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
 				if (base_type == RSE::INSTANCE_LIGHT) {
 					InstanceLightData *light = static_cast<InstanceLightData *>(idata.instance->base_data);
-					if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+					if (light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 						continue;
 					}
 					cull_result.lights.push_back(idata.instance);
@@ -3387,7 +3387,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			if (!E->visible || !(E->layer_mask & p_visible_layers)) {
 				continue;
 			}
-			if (RSG::light_storage->light_get_bake_mode(E->base) == RSE::LIGHT_BAKE_STATIC_BAKED) {
+			if (RSG::light_storage->light_get_bake_mode(E->base) == RSE::LIGHT_BAKE_FULL) {
 				continue;
 			}
 
@@ -3958,7 +3958,7 @@ void RendererSceneCull::render_probes() {
 					continue;
 				}
 				InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
-				if (instance_light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+				if (instance_light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 					continue;
 				}
 
@@ -3997,7 +3997,7 @@ void RendererSceneCull::render_probes() {
 					continue;
 				}
 				InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
-				if (instance_light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+				if (instance_light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 					continue;
 				}
 
@@ -4053,7 +4053,7 @@ void RendererSceneCull::render_probes() {
 						continue;
 					}
 					InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
-					if (instance_light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+					if (instance_light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 						continue;
 					}
 
@@ -4081,7 +4081,7 @@ void RendererSceneCull::render_probes() {
 						continue;
 					}
 					InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
-					if (instance_light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+					if (instance_light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 						continue;
 					}
 
