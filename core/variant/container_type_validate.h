@@ -161,7 +161,16 @@ private:
 
 	///[Monarch] validates internal containers, and stuff passed inside the containers might mutate to accomodate the given type
 	bool _validate_nested(Variant& inout_variant, const char* p_operation, bool p_output_errors) const {
-		if (type == Variant::ARRAY && !nested_types.is_empty()) {
+
+		if (nested_types.is_empty()) {
+			return true;
+		}
+
+		if (type != Variant::ARRAY && type != Variant::DICTIONARY) {
+			return true;
+		}
+
+		if (type == Variant::ARRAY) {
 			Array arr = inout_variant;
 			
 			const ContainerTypeValidate& elem_type = nested_types[0];
