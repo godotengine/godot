@@ -166,7 +166,9 @@ void RotatedFileLogger::rotate_file() {
 	}
 
 	file = FileAccess::open(base_path, FileAccess::WRITE);
-	file->detach_from_objectdb(); // Note: This FileAccess instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
+	if (file.is_valid()) {
+		file->detach_from_objectdb(); // Note: This FileAccess instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
+	}
 }
 
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
