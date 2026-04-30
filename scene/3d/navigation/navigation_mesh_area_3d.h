@@ -48,6 +48,7 @@ protected:
 	bool bounds_dirty = true;
 
 	virtual void _update_bounds();
+	static AABB _xform_bounds(const Vector<Vector3> &p_vertices, const Transform3D &p_gt, float p_height);
 
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -88,7 +89,6 @@ private:
 public:
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
-	static AABB _xform_bounds(const Vector<Vector3> &p_vertices, const Transform3D &p_gt, float p_height);
 };
 
 class NavigationMeshAreaBox3D : public NavigationMeshArea3D {

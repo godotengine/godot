@@ -126,6 +126,7 @@ void NavigationMeshArea3D::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			bounds_dirty = true;
 			update_gizmos();
+			update_configuration_warnings();
 #ifdef DEBUG_ENABLED
 			_update_debug();
 #endif // DEBUG_ENABLED
@@ -231,8 +232,9 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 	{
 		NavigationMeshAreaBox3D *node = Object::cast_to<NavigationMeshAreaBox3D>(p_node);
 		if (node) {
-			// FIXME: there's no safe_scale like in NavigationMeshAreaBox3D::_update_bounds or below.
-			p_source_geometry_data->add_projected_area_box(node->get_size(), node->get_global_transform(), area_navigation_layers, area_priority);
+			const Vector3 safe_scale = node->get_global_basis().get_scale().abs().maxf(0.001);
+			const Transform3D gt = Transform3D(Basis().scaled(safe_scale), node->get_global_position());
+			p_source_geometry_data->add_projected_area_box(safe_scale * node->get_size(), gt, area_navigation_layers, area_priority);
 			return;
 		}
 	}
@@ -257,14 +259,14 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 	{
 		NavigationMeshAreaPolygon3D *node = Object::cast_to<NavigationMeshAreaPolygon3D>(p_node);
 		if (node) {
-			const float elevation = node->get_global_position().y;
+			const Vector3 gp = node->get_global_position();
 			const Vector3 safe_scale = node->get_global_basis().get_scale().abs().maxf(0.001);
-			const Transform3D node_xform = Transform3D(Basis().scaled(safe_scale).rotated(Vector3(0.0, 1.0, 0.0), node->get_global_rotation().y), node->get_global_position());
+			const Transform3D node_xform = Transform3D(Basis().scaled(safe_scale).rotated(Vector3(0.0, 1.0, 0.0), node->get_global_rotation().y), gp);
 
 			const Vector<Vector3> &area_vertices = node->get_vertices();
 
 			if (!area_vertices.is_empty()) {
-				p_source_geometry_data->add_projected_area_polygon(area_vertices, elevation, safe_scale.y * node->get_height(), node_xform, area_navigation_layers, area_priority);
+				p_source_geometry_data->add_projected_area_polygon(area_vertices, gp.y, safe_scale.y * node->get_height(), node_xform, area_navigation_layers, area_priority);
 			}
 			return;
 		}

@@ -32,7 +32,6 @@
 
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
-#include "scene/3d/navigation/navigation_mesh_area_3d.h"
 
 void NavigationMeshSourceGeometryData3D::set_vertices(const Vector<float> &p_vertices) {
 	RWLockWrite write_lock(geometry_rwlock);
@@ -350,10 +349,18 @@ int NavigationMeshSourceGeometryData3D::add_projected_area_box(const Vector3 &si
 	box_vertices.write[3] = Vector3(-size.x * 0.5, 0.0, size.z * 0.5);
 
 	const Transform3D gt = root_node_transform * p_xform;
-	AABB box_bounds = NavigationMeshArea3D::_xform_bounds(box_vertices, gt, size.y);
+
+	// Copied from NavigationMeshArea3D::_xform_bounds():
+	AABB box_bounds;
+	box_bounds.position = gt.xform(box_vertices[0]);
+
+	const Vector3 height_offset = Vector3(0.0, size.y, 0.0);
+	for (const Vector3 &vertex : box_vertices) {
+		box_bounds.expand_to(gt.xform(vertex));
+		box_bounds.expand_to(gt.xform(vertex + height_offset));
+	}
 
 	ProjectedArea projected_area;
-
 	projected_area.aabb = box_bounds;
 	projected_area.navigation_layers = p_navigation_layers;
 	projected_area.priority = p_priority;
