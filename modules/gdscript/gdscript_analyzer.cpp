@@ -356,6 +356,10 @@ static bool infer_generic_bindings_from_types(
 	/// case 1, a direct generic parameter T is given
 	if (p_param_to_infer.kind == GDScriptParser::DataType::GENERIC_TYPE) {
 
+		if (p_provided_arg.kind == GDScriptParser::DataType::BUILTIN && p_provided_arg.builtin_type == Variant::NIL) {
+			return false;
+		}
+
 		if (!p_provided_arg.is_set() || p_provided_arg.has_no_type()) {
 			return true; /// don't bind from a weak type, throw this downstream for further inferrence
 		}
