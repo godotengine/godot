@@ -5,17 +5,8 @@ is the absolute worst thing about it. But instead of adding a whole new language
 be fucking braindead if I said GDScript was completely useless. It is EXTREMELY good for rapid-fucking-iteration. So I don't want to give up
 on this language yet.
 
-Why not contribute to Godot itself? Well, I WANT to. But I have a few issues with that...
-
-0. GDScript dev team and I will probably never see eye-to-eye. We are solar systems apart with our philosophy towards languages. I want traits, sum types, exhaustive matching, structs (and not in the "just make object leaner" way), PROPER ERROR HANDLING, tuples, stronger static guarantees, hell I'd even be delighted if GDScript dropped dynamic typing altogether. I am very glad that the Godot project is at least open-source, so that I may leech off of upstream and add my own changes. 
-1. Godot PR review is GLACIAL. By glacial I do mean INSANELY GLACIAL. New features take YEARS to be accepted. The dev team actually just hates it when you touch `core`. I won't pretend they're evil and do it just because they're lazy or something (cough cough Redot), but obviously I'm unhappy with the pace, so I'll go ahead implementing some of these myself.
-2. I want the freedom to make mistakes with my PRs. I don't like C++ as a language and how much it relies to on me being completely fucking omniscient. Speaking of which...
-3. If I had a Rust dependency later on (something the Godot team will never accept), I want a platform to be able to do that.
-4. I also just want to have fun adding silly little things! Professionalism is the antithesis of fun. I want the freedom to add a little life to the engine.
-5. This fork will never fucking take off, so it'll be a little retreat for me and my friends. Yes this is just point 4 restated. I can do whatever I want and that's fun.
-
 ## Who is this for?
-certainly not for everyone! that's pretty intentional. 
+certainly not for everyone! that's pretty intentional.
 
 this fork is, first and foremost, for me, and my group of friends i hang out with and make games with.
 
@@ -27,15 +18,21 @@ this fork will NOT aim to preserve GDScript as an extremely simplistic dynamic s
 
 i strongly recommend turning on the static typing error in the project settings. you know which one, riiiight?
 
-## Shit I want to add
+## Get started
+Compile the engine by `git clone`ing this repository, use `pip install scons` to install `scons`, then compile by typing in just `scons`. Should take a little bit of time. 
 
-- array type conversion not being horrendous
-- array type graph not being flat
+If you don't want to go through the hassle of all that, I periodically throw a few prebuilt binaries in the releases section on the right. Ideally, there should be backwards compatibility with projects that use strongly typed GDScript, but back-compat is not the biggest prio for me, even if it *is* a priority.
+
+## Shit I want to add
 - type unifier
 - traits (holy shit!!!)
+- structs
+- sum types
+- errors as values
+- exhaustive pattern matching
 
 ## Shit I added
-- generics
+- generics (currently only type-erased)
 - nested types
 - completely optional braces {} based scoping
 
@@ -45,7 +42,7 @@ i strongly recommend turning on the static typing error in the project settings.
 
 a feature that lets you specify the type of a variable with a placeholder, usually `T`, where that `T` is usually meant to be replaced later on with a 'concrete type'. 
 
-currently, generics are TYPE-ERASED, which means they reduce to `Variant` in the actual runtime. all of the correctness heavywork is done by cranking static analysis up to the max. soon i intend to monomorph them, so correctness extends to runtime too.
+currently, generics are TYPE-ERASED, which means they reduce to `Variant` in the actual runtime. all of the correctness heavywork is done by cranking static analysis up to the max. soon i intend to reify them, so correctness extends to runtime too.
 
 #### Class-level Generics
 
@@ -95,6 +92,8 @@ func balls(x: T) -> void:
 	if x is int: print(x)
 ```
 
+!!however!! because generics are type-erased as of now, `if x is Box[int]` gets erased to `if x is Box` during the runtime. Please match on the actual value like such: `if x is Box and x.val is int` for now. Yes, this is a problem, and I will address this soon.
+
 #### Function-level generics
 
 to declare function-level generics, you can list them after the function name identifier in `[brackets]`:
@@ -128,9 +127,8 @@ the reins are unlocked and you can go batshit crazy with your type tetris now:
 var x: Array[Dictionary[Node2D, Array[Dictionary[Resource, StringName]]]]
 #(please don't actually go that crazy for the sake of future you)
 ```
-the biggest caveat with this is that deep types (types beyond depth=1) are not actually enforced during runtime, owing to deep architectural flaws within godot's `core`. this is something i intend to fix soon, and i am only one unemployed college kid, so it'll take a little bit of time.
 
-another caveat is that arrays/dicts that are typed to generics `[T]` don't have methods that take in `T`. they still want a `Variant` like in vanilla GDScript. of course, all these are planned to be addressed, but that's how it is for now.
+a caveat is that arrays/dicts that are typed to generics `[T]` don't have methods that take in `T`. they still want a `Variant` like in vanilla GDScript. of course, all these are planned to be addressed, but that's how it is for now.
 
 ### completely optional braces{} based scoping
 
@@ -166,22 +164,36 @@ func _ready() -> void {
 }
 ```
 
-have fun with that.
+have fuuun with that!
 
 
 ### Some more caveats
 - Godot's `core` is rotten. Generics can LIE to you at runtime because static analysis is turned off for Variant-typed variables!!! (I didn't add this, this is Godot's default behaviour) Use static typing everywhere lest you want to run into undefined behaviour with generics.
 - Do not inherit from a generic class, that behaviour is currently UNDEFINED because I haven't added it in yet lol sorry about that
-- Nested types can ALSO lie to you because the runtime is genuinely unaware of what goes inside a nested type. MAKE SURE TO USE STATIC TYPING EVERYWHERE, because at least STATIC ANALYSIS is aware of types!! (i added that in, heh)
+- Static analysis for Dictionaries right now is not as good as Arrays, so that needs some work.
 - I'm not fucking omniscient bro. There might be bugs, and I ask you to REPORT THEM!! catch my ass on discord at monarch_zero or open an issue here.
 
 
-## call for help
-I hate c++ but my spite is greater. contribute and I'll be in your eternal debt 🙏
+## Backwards compat breaks
+Currently, this specific syntax is broken:
+```gdscript
+class InnerClass:
+	extends Object
+```
+I didn't even know this was possible until making this project. But it looks so cursed I'm not fixing it just yet.
 
-## clarification
-i don't hate the godot dev team, i fucking love them!!!
-i just don't like the whole 'approachability over correctness' philosophy that is used to explain away the absence of BASIC fucking language features. that's it. 
+
+## Motivation
+
+Why not contribute to Godot upstream itself? Well, I WANT to. But I have a few issues with that...
+
+0. GDScript dev team and I will probably never see eye-to-eye. We are solar systems apart with our philosophy towards languages. In what way, you ask? Ah, let me ramble a bit. I generally believe that beginner-friendliness should not come at the cost of correctness or large-scale scalability. The language should *let you grow.* I also think that this difference in interests is fine, that's what the magic of open source is. 
+1. I want traits, sum types, exhaustive matching, structs (and not in the "just make object leaner" way), PROPER ERROR HANDLING, tuples, stronger static guarantees, hell I'd even be delighted if GDScript dropped dynamic typing altogether, as I largely consider that to be a beginner trap. I am very glad that the Godot project is at least open-source, so that I may leech off of upstream and add my own changes. This project exists as a 'here you go!' for people who want the same rapid-iteration power GDScript is known for while allowing expression of stronger invariants, without bending knees to C#.
+2. Godot PR review is GLACIAL. By glacial I do mean INSANELY GLACIAL. New features take YEARS to be accepted. The dev team actually just hates it when you touch `core`. I won't pretend they're evil and do it just because they're lazy or something (cough cough Redot), they have very real reasons to take as much time as they take, Godot being the backbone of millions of indie gamedevs around. but obviously I'm unhappy with the pace, so I'll go ahead implementing some of these myself.
+3. I want the freedom to make mistakes with my PRs. I don't like C++ as a language and how much it relies to on me being completely fucking omniscient. Speaking of which...
+4. If I had a Rust dependency (something the Godot team will never accept) later on like Cranelift to enable JITs, I want a platform to be able to do that.
+5. I also just want to have fun adding silly little things! Professionalism is the antithesis of fun. I want the freedom to add a little life to the engine.
+6. Lastly, I have an amazing group of gamedev friends who have a vested interest in this specific project. 
 
 ## Lmao why not c#
 because i don't wanna. if you want to, good! go ahead.
