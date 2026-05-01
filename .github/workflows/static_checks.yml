@@ -31,9 +31,9 @@ jobs:
           echo "CHANGED_FILES=$files" >> $GITHUB_ENV
 
       - name: Style checks via pre-commit
-        uses: ./.github/actions/pre-commit
+        uses: j178/prek-action@v2
         with:
-          extra_args: --files ${{ env.CHANGED_FILES }}
+          extra-args: --files ${{ env.CHANGED_FILES }}
 
       - name: Class reference schema checks
         run: |
