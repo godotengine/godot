@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/vector4.h"
 #include "core/templates/local_vector.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server_enums.h"
@@ -49,9 +50,8 @@ public:
 		uint32_t smooth_group = 0; // Must be first.
 
 		Color color;
-		Vector3 normal; // normal, binormal, tangent.
-		Vector3 binormal;
-		Vector3 tangent;
+		Vector3 normal;
+		Vector4 tangent; // xyz tangent, w orientation.
 		Vector2 uv;
 		Vector2 uv2;
 		Color custom[RSE::ARRAY_CUSTOM_COUNT];
@@ -164,7 +164,7 @@ private:
 	Vector2 last_uv2;
 	Vector<int> last_bones;
 	Vector<float> last_weights;
-	Plane last_tangent;
+	Vector4 last_tangent;
 	uint32_t last_smooth_group = 0;
 
 	SkinWeightCount skin_weights = SKIN_4_WEIGHTS;
