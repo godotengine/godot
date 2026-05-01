@@ -31,7 +31,7 @@ jobs:
           files=$(echo "$files" | xargs -I {} sh -c 'echo "\"./{}\""' | tr '\n' ' ')
           echo "CHANGED_FILES=$files" >> $GITHUB_ENV
 
-      - name: Style checks via pre-commit
-        uses: ./.github/actions/pre-commit
+      - name: Style checks via prek
+        uses: j178/prek-action@v2
         with:
-          extra_args: --files ${{ env.CHANGED_FILES }}
+          extra-args: --files ${{ env.CHANGED_FILES }}
