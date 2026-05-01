@@ -613,19 +613,19 @@
 				[b]Note:[/b] This method generates an [InputEventMouseMotion] to update cursor immediately.
 			</description>
 		</method>
-		<method name="set_gravity">
-			<return type="void" />
-			<param index="0" name="value" type="Vector3" />
-			<description>
-				Sets the gravity value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
-				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
-			</description>
-		</method>
 		<method name="set_device_orientation">
 			<return type="void" />
 			<param index="0" name="value" type="Quaternion" />
 			<description>
 				Sets the device orientation quaternion. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_gravity">
+			<return type="void" />
+			<param index="0" name="value" type="Vector3" />
+			<description>
+				Sets the gravity value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
 			</description>
 		</method>

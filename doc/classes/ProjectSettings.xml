@@ -1707,12 +1707,12 @@
 		<member name="input_devices/sensors/enable_accelerometer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the accelerometer sensor is enabled and [method Input.get_accelerometer] returns valid data.
 		</member>
-		<member name="input_devices/sensors/enable_gravity" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the gravity sensor is enabled and [method Input.get_gravity] returns valid data.
-		</member>
 		<member name="input_devices/sensors/enable_device_orientation" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the device orientation sensor is enabled and [method Input.get_device_orientation] returns valid data. This uses hardware-level sensor fusion (rotation vector on Android, [code]CMDeviceMotion.attitude[/code] on iOS) to provide a stable device orientation quaternion without drift.
 			[b]Note:[/b] On Android, this registers [code]TYPE_GAME_ROTATION_VECTOR[/code] (preferred, no magnetometer) or [code]TYPE_ROTATION_VECTOR[/code] (fallback). On iOS, the attitude is read from the already-active [code]CMMotionManager.deviceMotion[/code].
+		</member>
+		<member name="input_devices/sensors/enable_gravity" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the gravity sensor is enabled and [method Input.get_gravity] returns valid data.
 		</member>
 		<member name="input_devices/sensors/enable_gyroscope" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the gyroscope sensor is enabled and [method Input.get_gyroscope] returns valid data.
