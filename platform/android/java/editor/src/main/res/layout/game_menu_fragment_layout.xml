@@ -3,6 +3,8 @@
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:orientation="horizontal"
+	android:gravity="center_vertical"
+	android:paddingHorizontal="4dp"
 	android:background="@android:color/black">
 
 	<HorizontalScrollView
@@ -14,142 +16,159 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:gravity="center_vertical"
-			android:minHeight="48dp"
+			android:paddingVertical="4dp"
 			android:orientation="horizontal">
 
 			<ImageButton
 				android:id="@+id/game_menu_suspend_button"
 				style="?android:attr/borderlessButtonStyle"
-				android:layout_width="48dp"
-				android:layout_height="48dp"
+				android:layout_width="36dp"
+				android:layout_height="36dp"
+				android:padding="6dp"
 				android:background="@drawable/game_menu_button_bg"
-				android:src="@drawable/suspend" />
+				android:src="@drawable/pause" />
 
 			<ImageButton
 				android:id="@+id/game_menu_next_frame_button"
 				style="?android:attr/borderlessButtonStyle"
-				android:layout_width="48dp"
-				android:layout_height="48dp"
+				android:layout_width="36dp"
+				android:layout_height="36dp"
+				android:padding="6dp"
 				android:background="@drawable/game_menu_button_bg"
 				android:src="@drawable/next_frame" />
+
+			<View
+				android:layout_width="1dp"
+				android:layout_height="24dp"
+				android:layout_marginHorizontal="4dp"
+				android:background="#262626" />
 
 			<Button
 				android:id="@+id/game_menu_set_time_scale_button"
 				style="?android:attr/borderlessButtonStyle"
-				android:layout_width="48dp"
-				android:layout_height="48dp"
+				android:layout_width="wrap_content"
+				android:layout_height="36dp"
 				android:background="@drawable/game_menu_button_bg"
-				android:text="1.0x"/>
-
-			<ImageButton
-				android:id="@+id/game_menu_reset_time_scale_button"
-				style="?android:attr/borderlessButtonStyle"
-				android:layout_width="48dp"
-				android:layout_height="48dp"
-				android:background="@drawable/game_menu_button_bg"
-				android:src="@drawable/reset" />
+				android:text="1.0x"
+				android:textColor="#CCCCCC"
+				android:textSize="12sp"
+				android:paddingHorizontal="4dp"
+				android:minWidth="0dp"
+				android:minHeight="0dp" />
 
 			<View
 				android:layout_width="1dp"
-				android:layout_height="match_parent"
-				android:layout_marginHorizontal="@dimen/game_menu_vseparator_horizontal_margin"
-				android:layout_marginVertical="@dimen/game_menu_vseparator_vertical_margin"
-				android:background="@color/game_menu_divider_color" />
+				android:layout_height="24dp"
+				android:layout_marginHorizontal="4dp"
+				android:background="#262626" />
 
 			<RadioGroup
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
+				android:background="@drawable/button_group_background"
+				android:padding="2dp"
 				android:orientation="horizontal">
 
 				<RadioButton
 					android:id="@+id/game_menu_unselect_nodes_button"
 					style="?android:attr/borderlessButtonStyle"
 					android:layout_width="wrap_content"
-					android:layout_height="48dp"
-					android:background="@drawable/game_menu_button_bg"
+					android:layout_height="32dp"
+					android:background="@drawable/button_group_item_bg"
 					android:button="@null"
 					android:checked="true"
+					android:textColor="@color/button_group_item_text"
 					android:drawableStart="@drawable/input_event_joypad_motion"
-					android:padding="5dp"
+					android:drawablePadding="4dp"
+					android:paddingHorizontal="8dp"
+					android:textSize="12sp"
 					android:text="@string/game_menu_input_event_joypad_motion_label" />
 
 				<RadioButton
 					android:id="@+id/game_menu_select_2d_nodes_button"
 					style="?android:attr/borderlessButtonStyle"
-					android:layout_width="48dp"
-					android:layout_height="48dp"
-					android:background="@drawable/game_menu_button_bg"
+					android:layout_width="54dp"
+					android:layout_height="32dp"
+					android:background="@drawable/button_group_item_bg"
 					android:button="@null"
 					android:drawableStart="@drawable/nodes_2d"
-					android:padding="5dp"
-					android:text="@string/game_menu_nodes_2d_button_label" />
+					android:drawablePadding="4dp"
+					android:paddingHorizontal="8dp"
+					android:text="@string/game_menu_nodes_2d_button_label"
+					android:textColor="@color/button_group_item_text"
+					android:textSize="12sp" />
 
 				<RadioButton
 					android:id="@+id/game_menu_select_3d_nodes_button"
 					style="?android:attr/borderlessButtonStyle"
-					android:layout_width="48dp"
-					android:layout_height="48dp"
-					android:background="@drawable/game_menu_button_bg"
+					android:layout_width="54dp"
+					android:layout_height="32dp"
+					android:background="@drawable/button_group_item_bg"
 					android:button="@null"
+					android:textColor="@color/button_group_item_text"
 					android:drawableStart="@drawable/node_3d"
-					android:padding="5dp"
+					android:drawablePadding="4dp"
+					android:paddingHorizontal="8dp"
+					android:textSize="12sp"
 					android:text="@string/game_menu_node_3d_button_label" />
 			</RadioGroup>
 
 			<View
 				android:layout_width="1dp"
-				android:layout_height="match_parent"
-				android:layout_marginHorizontal="@dimen/game_menu_vseparator_horizontal_margin"
-				android:layout_marginVertical="@dimen/game_menu_vseparator_vertical_margin"
-				android:background="@color/game_menu_divider_color" />
-
-			<ImageButton
-				android:id="@+id/game_menu_gui_visibility_button"
-				style="?android:attr/borderlessButtonStyle"
-				android:layout_width="48dp"
-				android:layout_height="48dp"
-				android:background="@drawable/game_menu_button_bg"
-				android:src="@drawable/gui_visibility_selector" />
-
-			<View
-				android:layout_width="1dp"
-				android:layout_height="match_parent"
-				android:layout_marginHorizontal="@dimen/game_menu_vseparator_horizontal_margin"
-				android:layout_marginVertical="@dimen/game_menu_vseparator_vertical_margin"
-				android:background="@color/game_menu_divider_color" />
+				android:layout_height="24dp"
+				android:layout_marginHorizontal="4dp"
+				android:background="#262626" />
 
 			<RadioGroup
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
+				android:background="@drawable/button_group_background"
+				android:padding="2dp"
 				android:orientation="horizontal">
 
 				<RadioButton
 					android:id="@+id/game_menu_tool_select_button"
 					style="?android:attr/borderlessButtonStyle"
-					android:layout_width="48dp"
-					android:layout_height="48dp"
-					android:background="@drawable/game_menu_button_bg"
+					android:layout_width="32dp"
+					android:layout_height="32dp"
+					android:background="@drawable/button_group_item_bg"
 					android:button="@null"
 					android:checked="true"
 					android:drawableStart="@drawable/tool_select"
-					android:padding="15dp" />
+					android:paddingHorizontal="8dp" />
 
 				<RadioButton
 					android:id="@+id/game_menu_list_select_button"
 					style="?android:attr/borderlessButtonStyle"
-					android:layout_width="48dp"
-					android:layout_height="48dp"
-					android:background="@drawable/game_menu_button_bg"
+					android:layout_width="32dp"
+					android:layout_height="32dp"
+					android:background="@drawable/button_group_item_bg"
 					android:button="@null"
 					android:drawableStart="@drawable/list_select"
-					android:padding="15dp" />
+					android:paddingHorizontal="8dp" />
+
+				<ImageButton
+					android:id="@+id/game_menu_select_dropdown_button"
+					style="?android:attr/borderlessButtonStyle"
+					android:layout_width="24dp"
+					android:layout_height="32dp"
+					android:background="@drawable/game_menu_button_bg"
+					android:src="@drawable/baseline_expand_more_16"
+					android:padding="6dp" />
 			</RadioGroup>
+
+			<View
+				android:layout_width="1dp"
+				android:layout_height="24dp"
+				android:layout_marginHorizontal="4dp"
+				android:background="#262626" />
 
 			<ImageButton
 				android:id="@+id/game_menu_audio_mute_button"
 				style="?android:attr/borderlessButtonStyle"
-				android:layout_width="48dp"
-				android:layout_height="48dp"
+				android:layout_width="36dp"
+				android:layout_height="36dp"
+				android:padding="6dp"
 				android:background="@drawable/game_menu_button_bg"
 				android:src="@drawable/audio_player_icon_selector" />
 
@@ -159,8 +178,8 @@
 	<ImageButton
 		android:id="@+id/game_menu_options_button"
 		style="?android:attr/borderlessButtonStyle"
-		android:layout_width="48dp"
-		android:layout_height="48dp"
+		android:layout_width="36dp"
+		android:layout_height="36dp"
 		android:background="@drawable/game_menu_button_bg"
 		android:src="@drawable/gui_tab_menu" />
 
@@ -175,50 +194,48 @@
 	<ImageButton
 		android:id="@+id/game_menu_collapse_button"
 		style="?android:attr/borderlessButtonStyle"
-		android:layout_width="48dp"
-		android:layout_height="48dp"
+		android:layout_width="36dp"
+		android:layout_height="36dp"
 		android:background="@drawable/game_menu_selected_button_bg"
-		android:src="@drawable/baseline_expand_less_24"
-		/>
+		android:src="@drawable/baseline_expand_less_24"/>
 
 	<ImageButton
 		android:id="@+id/game_menu_drag_button"
 		style="?android:attr/borderlessButtonStyle"
-		android:layout_width="48dp"
-		android:layout_height="48dp"
+		android:layout_width="36dp"
+		android:layout_height="36dp"
 		android:background="@drawable/game_menu_selected_button_bg"
-		android:src="@drawable/drag_pan_24px"
-		/>
+		android:src="@drawable/drag_pan_24px"/>
 
 	<ImageButton
 		android:id="@+id/game_menu_minimize_button"
 		style="?android:attr/borderlessButtonStyle"
-		android:layout_width="48dp"
-		android:layout_height="48dp"
+		android:layout_width="36dp"
+		android:layout_height="36dp"
 		android:background="@drawable/game_menu_button_bg"
 		android:src="@drawable/baseline_minimize_24"/>
 
 	<ImageButton
 		android:id="@+id/game_menu_pip_button"
 		style="?android:attr/borderlessButtonStyle"
-		android:layout_width="48dp"
-		android:layout_height="48dp"
+		android:layout_width="36dp"
+		android:layout_height="36dp"
 		android:background="@drawable/game_menu_selected_button_bg"
 		android:src="@drawable/baseline_picture_in_picture_alt_24"/>
 
 	<ImageButton
 		android:id="@+id/game_menu_fullscreen_button"
 		style="?android:attr/borderlessButtonStyle"
-		android:layout_width="48dp"
-		android:layout_height="48dp"
+		android:layout_width="36dp"
+		android:layout_height="36dp"
 		android:background="@drawable/game_menu_selected_button_bg"
 		android:src="@drawable/baseline_fullscreen_selector"/>
 
 	<ImageButton
 		android:id="@+id/game_menu_close_button"
 		style="?android:attr/borderlessButtonStyle"
-		android:layout_width="48dp"
-		android:layout_height="48dp"
+		android:layout_width="36dp"
+		android:layout_height="36dp"
 		android:background="@drawable/game_menu_button_bg"
 		android:src="@drawable/baseline_close_24"/>
 </LinearLayout>
