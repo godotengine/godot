@@ -146,6 +146,7 @@ public:
 	void update_accelerometer(const Vector3 &p_accelerometer);
 	void update_magnetometer(const Vector3 &p_magnetometer);
 	void update_gyroscope(const Vector3 &p_gyroscope);
+	void update_device_orientation(const Quaternion &p_orientation);
 
 	// MARK: -
 

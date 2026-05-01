@@ -143,6 +143,12 @@ class Godot private constructor(val context: Context) {
 	private val gyroscopeEnabled = AtomicBoolean(false)
 	private val mGyroscope: Sensor? by lazy { mSensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
 
+	private val deviceOrientationEnabled = AtomicBoolean(false)
+	private val mRotationVector: Sensor? by lazy {
+		mSensorManager?.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
+			?: mSensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+	}
+
 	val isXrRuntime: Boolean by lazy { hasFeature("xr_runtime") }
 
 	val tts = GodotTTS(context)
@@ -681,6 +687,9 @@ class Godot private constructor(val context: Context) {
 		if (gyroscopeEnabled.get() && mGyroscope != null) {
 			mSensorManager?.registerListener(godotInputHandler, mGyroscope, SensorManager.SENSOR_DELAY_GAME)
 		}
+		if (deviceOrientationEnabled.get() && mRotationVector != null) {
+			mSensorManager?.registerListener(godotInputHandler, mRotationVector, SensorManager.SENSOR_DELAY_GAME)
+		}
 	}
 
 	internal fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
@@ -835,6 +844,7 @@ class Godot private constructor(val context: Context) {
 		gravityEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_gravity")))
 		gyroscopeEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_gyroscope")))
 		magnetometerEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_magnetometer")))
+		deviceOrientationEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_device_orientation")))
 
 		runOnHostThread {
 			registerSensorsIfNeeded()

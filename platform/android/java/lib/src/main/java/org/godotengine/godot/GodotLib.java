@@ -147,6 +147,12 @@ public class GodotLib {
 	public static native void gyroscope(float x, float y, float z);
 
 	/**
+	 * Forward device orientation (rotation vector) events as a quaternion.
+	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
+	 */
+	public static native void deviceOrientation(float x, float y, float z, float w);
+
+	/**
 	 * Forward regular key events.
 	 */
 	public static native void key(int p_physical_keycode, int p_unicode, int p_key_label, boolean p_pressed, boolean p_echo);

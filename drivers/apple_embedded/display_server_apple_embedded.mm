@@ -352,6 +352,10 @@ void DisplayServerAppleEmbedded::update_gyroscope(const Vector3 &p_gyroscope) {
 	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
+void DisplayServerAppleEmbedded::update_device_orientation(const Quaternion &p_orientation) {
+	Input::get_singleton()->set_device_orientation(p_orientation);
+}
+
 // MARK: -
 
 bool DisplayServerAppleEmbedded::has_feature(DisplayServerEnums::Feature p_feature) const {

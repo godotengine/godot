@@ -41,6 +41,7 @@ import android.content.res.Configuration;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.hardware.input.InputManager;
 import android.os.Build;
 import android.util.Log;
@@ -794,10 +795,30 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		}
 	}
 
+	// Pre-computed screen rotation correction quaternions (around Z axis).
+	// Format: { w, x, y, z }
+	private static final float[] ROTATION_CORRECTION_0   = { 1.0f, 0.0f, 0.0f, 0.0f };
+	private static final float[] ROTATION_CORRECTION_90  = { 0.7071068f, 0.0f, 0.0f, 0.7071068f };  // +90° around Z
+	private static final float[] ROTATION_CORRECTION_180 = { 0.0f, 0.0f, 0.0f, 1.0f };              // 180° around Z
+	private static final float[] ROTATION_CORRECTION_270 = { 0.7071068f, 0.0f, 0.0f, -0.7071068f }; // -90° around Z
+
+	/**
+	 * Multiply two quaternions: result = a * b.
+	 * Each quaternion is { w, x, y, z }.
+	 */
+	private static float[] quaternionMultiply(float[] a, float[] b) {
+		return new float[] {
+			a[0]*b[0] - a[1]*b[1] - a[2]*b[2] - a[3]*b[3],
+			a[0]*b[1] + a[1]*b[0] + a[2]*b[3] - a[3]*b[2],
+			a[0]*b[2] - a[1]*b[3] + a[2]*b[0] + a[3]*b[1],
+			a[0]*b[3] + a[1]*b[2] - a[2]*b[1] + a[3]*b[0]
+		};
+	}
+
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		final float[] values = event.values;
-		if (values == null || values.length != 3) {
+		if (values == null) {
 			return;
 		}
 
@@ -808,6 +829,47 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 		if (cachedRotation == -1) {
 			updateCachedRotation();
+		}
+
+		int sensorType = event.sensor.getType();
+
+		// Rotation vector sensors return 4~5 values (quaternion), handle before the length==3 check.
+		if (sensorType == Sensor.TYPE_GAME_ROTATION_VECTOR
+				|| sensorType == Sensor.TYPE_ROTATION_VECTOR) {
+			if (values.length < 4) {
+				return;
+			}
+			float[] quaternion = new float[4];
+			SensorManager.getQuaternionFromVector(quaternion, values);
+			// quaternion from Android: [w, x, y, z]
+
+			// Apply screen rotation correction via quaternion multiplication.
+			float[] correction;
+			switch (cachedRotation) {
+				case Surface.ROTATION_90:
+					correction = ROTATION_CORRECTION_90;
+					break;
+				case Surface.ROTATION_180:
+					correction = ROTATION_CORRECTION_180;
+					break;
+				case Surface.ROTATION_270:
+					correction = ROTATION_CORRECTION_270;
+					break;
+				default:
+					correction = ROTATION_CORRECTION_0;
+					break;
+			}
+			float[] corrected = quaternionMultiply(correction, quaternion);
+
+			// Pass to JNI as (x, y, z, w) matching Godot's Quaternion constructor order.
+			runnable.setOrientationEvent(corrected[1], corrected[2], corrected[3], corrected[0]);
+			godot.runOnRenderThread(runnable);
+			return;
+		}
+
+		// 3-component sensors (accelerometer, gravity, magnetometer, gyroscope).
+		if (values.length != 3) {
+			return;
 		}
 
 		float rotatedValue0 = 0f;

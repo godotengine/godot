@@ -103,6 +103,20 @@
 				Returns the currently assigned cursor shape.
 			</description>
 		</method>
+		<method name="get_device_orientation" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
+				Returns the device's orientation as a [Quaternion], using hardware-level sensor fusion for stable, drift-free results. If the device does not support orientation sensing, the method returns [constant Quaternion.IDENTITY].
+				The returned quaternion represents the rotation from the device coordinate frame to the world coordinate frame. In portrait mode, the device's coordinate system is: X→right, Y→up, Z→towards viewer.
+				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Quaternion.IDENTITY].
+				[b]Note:[/b] [member ProjectSettings.input_devices/sensors/enable_device_orientation] must be enabled for this method to return valid data.
+				[codeblock]
+				var orientation := Input.get_device_orientation()
+				var euler := orientation.get_euler()
+				var roll := euler.z  # Device roll angle in radians
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_gravity" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -604,6 +618,14 @@
 			<param index="0" name="value" type="Vector3" />
 			<description>
 				Sets the gravity value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
+				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_device_orientation">
+			<return type="void" />
+			<param index="0" name="value" type="Quaternion" />
+			<description>
+				Sets the device orientation quaternion. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
 			</description>
 		</method>
