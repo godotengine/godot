@@ -124,6 +124,8 @@ private:
 	Vector3 magnetometer;
 	bool gyroscope_enabled = false;
 	Vector3 gyroscope;
+	bool device_orientation_enabled = false;
+	Quaternion device_orientation;
 	Vector2 mouse_pos;
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
@@ -398,6 +400,7 @@ public:
 	Vector3 get_accelerometer() const;
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
+	Quaternion get_device_orientation() const;
 
 	int get_joy_num_touchpads(int p_device) const;
 
@@ -415,6 +418,7 @@ public:
 	void set_accelerometer(const Vector3 &p_accel);
 	void set_magnetometer(const Vector3 &p_magnetometer);
 	void set_gyroscope(const Vector3 &p_gyroscope);
+	void set_device_orientation(const Quaternion &p_orientation);
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
 	void set_joy_features(int p_device, JoypadFeatures *p_features);
