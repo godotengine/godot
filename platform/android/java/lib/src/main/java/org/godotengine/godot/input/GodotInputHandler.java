@@ -834,8 +834,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		int sensorType = event.sensor.getType();
 
 		// Rotation vector sensors return 4~5 values (quaternion), handle before the length==3 check.
-		if (sensorType == Sensor.TYPE_GAME_ROTATION_VECTOR
-				|| sensorType == Sensor.TYPE_ROTATION_VECTOR) {
+		if (sensorType == Sensor.TYPE_GAME_ROTATION_VECTOR || sensorType == Sensor.TYPE_ROTATION_VECTOR) {
 			if (values.length < 4) {
 				return;
 			}
