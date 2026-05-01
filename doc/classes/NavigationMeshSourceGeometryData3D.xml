@@ -42,7 +42,7 @@
 			<param index="3" name="priority" type="int" />
 			<description>
 				Adds a new projected area of shape type box to the source geometry.
-				[b]Note:[/b] The box [param xform] must be axis-aligned. Returns the index in the list of projected areas, or [code]-1[/code] if insertion fails.
+				[b]Note:[/b] The box [param xform] must be axis-aligned (i.e. rotation is not supported). Returns an area ID, which will be baked to the navigation mesh later on, or [code]-1[/code] if insertion fails.
 			</description>
 		</method>
 		<method name="add_projected_area_cylinder">
@@ -54,7 +54,7 @@
 			<param index="4" name="priority" type="int" />
 			<description>
 				Adds a new projected area of shape type cylinder to the source geometry. The cylinder is created at [param position] with [param radius] and extruded by [param height] along the y-axis.
-				[b]Note:[/b] Returns the index in the list of projected areas, or [code]-1[/code] if insertion fails.
+				[b]Note:[/b] Returns an area ID, which will be baked to the navigation mesh later on, or [code]-1[/code] if insertion fails.
 			</description>
 		</method>
 		<method name="add_projected_area_polygon">
@@ -67,7 +67,8 @@
 			<param index="5" name="priority" type="int" />
 			<description>
 				Adds a new projected area of shape type polygon to the source geometry. The [param vertices] are considered projected on a xz-axes plane, placed at the global y-axis [param elevation] and extruded by [param height].
-				[b]Note:[/b] Returns the index in the list of projected areas, or [code]-1[/code] if insertion fails.
+				[b]Note:[/b] The [param xform] supports rotation on the y-axis only.
+				[b]Note:[/b] Returns an area ID, which will be baked to the navigation mesh later on, or [code]-1[/code] if insertion fails.
 			</description>
 		</method>
 		<method name="add_projected_obstruction">
@@ -122,6 +123,7 @@
 			<return type="Array" />
 			<description>
 				Returns the projected areas as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
+				- [code]id[/code] - An ID unique to this resource and the navigation mesh it is baked to.
 				- [code]vertices[/code] - A [PackedVector3Array] that defines the outline points of the projected shape. Used by areas of type [enum NavigationServer3D.AreaShapeType3D] [constant NavigationServer3D.AREA_SHAPE_POLYGON].
 				- [code]aabb[/code] - A global [AABB] of the projected shape. Used by all area types.
 				- [code]position[/code] - A [Vector3] that defines the global position of the area shape. Used by all area types.
@@ -160,6 +162,7 @@
 			<param index="0" name="other_geometry" type="NavigationMeshSourceGeometryData3D" />
 			<description>
 				Adds the geometry data of another [NavigationMeshSourceGeometryData3D] to the navigation mesh baking data.
+				[b]Note:[/b]: This creates new ids for all incoming projected areas.
 			</description>
 		</method>
 		<method name="set_indices">
@@ -177,6 +180,7 @@
 				Sets the projected areas with an Array of Dictionaries with the following key value pairs:
 				[codeblocks]
 				[gdscript]
+				"id": int
 				"vertices" : PackedFloat32Array
 				"aabb" : AABB
 				"position" : Vector3

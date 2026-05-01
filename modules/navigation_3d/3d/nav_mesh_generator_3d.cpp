@@ -658,7 +658,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	Vector<Vector<int>> nav_polygons;
 	Vector<uint32_t> nav_polygons_layers; // NOTE: Will remain empty, if no areas are baked.
 	bool has_usuable_areas = usable_projected_areas.size() > 0;
-	Vector<Vector<int>> usable_nav_area_indices;
+	Vector<Vector<int>> usable_nav_area_indices; // See NavigationMesh::area_indices.
 	usable_nav_area_indices.resize(usable_projected_areas.size());
 
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
@@ -729,23 +729,34 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	}
 
 	// Filter to the areas that actually affected the navigation mesh.
+	Vector<uint16_t> nav_area_ids = Vector<uint16_t>();
+	Vector<String> nav_area_bake_ids = Vector<String>();
 	Vector<uint32_t> nav_area_navlayers = Vector<uint32_t>();
 	Vector<Vector<int>> nav_area_indices = Vector<Vector<int>>();
 	Array area_origins;
+	bool has_baked_ids = false;
 	int i = 0;
-	for (Vector<int> area : usable_nav_area_indices) {
-		if (area.size() > 0) {
-			nav_area_navlayers.push_back(usable_projected_areas[i].navigation_layers);
-			nav_area_indices.push_back(area);
+	for (Vector<int> polygon_indices : usable_nav_area_indices) {
+		if (polygon_indices.size() > 0) {
+			const NavigationMeshSourceGeometryData3D::ProjectedArea area = usable_projected_areas[i];
+			nav_area_ids.push_back(area.id);
+			if (!has_baked_ids) {
+				has_baked_ids = !area.bake_id.is_empty();
+			}
+			nav_area_bake_ids.push_back(area.bake_id); // If there are baked ids from area nodes, bake them to navmesh.
+			nav_area_navlayers.push_back(area.navigation_layers);
+			nav_area_indices.push_back(polygon_indices);
 			area_origins.push_back(usable_area_origins[i]);
 		}
 		i++;
 	}
 	if (nav_area_navlayers.size() == 0) {
 		nav_polygons_layers.clear();
+	} else if (!has_baked_ids) {
+		nav_area_bake_ids.clear(); // We don't need to remember empty strings.
 	}
 
-	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_layers, nav_area_navlayers, nav_area_indices);
+	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_layers, nav_area_ids, nav_area_bake_ids, nav_area_navlayers, nav_area_indices);
 #ifdef DEBUG_ENABLED
 	p_navigation_mesh->_set_debug_data(area_origins);
 #endif // DEBUG_ENABLED

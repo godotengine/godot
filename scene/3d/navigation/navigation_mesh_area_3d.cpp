@@ -110,6 +110,14 @@ int NavigationMeshArea3D::get_bake_priority() const {
 	return bake_priority;
 }
 
+void NavigationMeshArea3D::set_bake_id(String p_id) {
+	bake_id = p_id;
+}
+
+String NavigationMeshArea3D::get_bake_id() const {
+	return bake_id;
+}
+
 AABB NavigationMeshArea3D::get_bounds() {
 	if (bounds_dirty) {
 		bounds_dirty = false;
@@ -169,7 +177,12 @@ void NavigationMeshAreaCylinder3D::_update_bounds() {
 
 	const Vector3 gp = is_inside_tree() ? get_global_position() : get_position();
 	const Basis basis = is_inside_tree() ? get_global_basis() : get_basis();
-	const Vector3 safe_scale = basis.get_scale().abs().maxf(0.001);
+	Vector3 safe_scale = basis.get_scale().abs().maxf(0.001);
+	if (safe_scale.x > safe_scale.z) {
+		safe_scale.z = safe_scale.x;
+	} else if (safe_scale.z > safe_scale.x) {
+		safe_scale.x = safe_scale.z;
+	}
 	const Transform3D gt = Transform3D(Basis().scaled(safe_scale), gp);
 
 	bounds = _xform_bounds(vertices, gt, height);
@@ -234,7 +247,7 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 		if (node) {
 			const Vector3 safe_scale = node->get_global_basis().get_scale().abs().maxf(0.001);
 			const Transform3D gt = Transform3D(Basis().scaled(safe_scale), node->get_global_position());
-			p_source_geometry_data->add_projected_area_box(safe_scale * node->get_size(), gt, area_navigation_layers, area_priority);
+			p_source_geometry_data->_add_projected_area_box(safe_scale * node->get_size(), gt, area_navigation_layers, node->get_bake_id(), area_priority);
 			return;
 		}
 	}
@@ -251,7 +264,7 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 				safe_scale.x = safe_scale.z;
 			}
 
-			p_source_geometry_data->add_projected_area_cylinder(position, safe_scale.x * node->get_radius(), safe_scale.y * node->get_height(), area_navigation_layers, area_priority);
+			p_source_geometry_data->_add_projected_area_cylinder(position, safe_scale.x * node->get_radius(), safe_scale.y * node->get_height(), area_navigation_layers, node->get_bake_id(), area_priority);
 			return;
 		}
 	}
@@ -266,7 +279,7 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 			const Vector<Vector3> &area_vertices = node->get_vertices();
 
 			if (!area_vertices.is_empty()) {
-				p_source_geometry_data->add_projected_area_polygon(area_vertices, gp.y, safe_scale.y * node->get_height(), node_xform, area_navigation_layers, area_priority);
+				p_source_geometry_data->_add_projected_area_polygon(area_vertices, gp.y, safe_scale.y * node->get_height(), node_xform, area_navigation_layers, node->get_bake_id(), area_priority);
 			}
 			return;
 		}
@@ -297,12 +310,15 @@ void NavigationMeshArea3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bake_priority", "bake_priority"), &NavigationMeshArea3D::set_bake_priority);
 	ClassDB::bind_method(D_METHOD("get_bake_priority"), &NavigationMeshArea3D::get_bake_priority);
+	ClassDB::bind_method(D_METHOD("set_bake_id", "bake_id"), &NavigationMeshArea3D::set_bake_id);
+	ClassDB::bind_method(D_METHOD("get_bake_id"), &NavigationMeshArea3D::get_bake_id);
 
 	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationMeshArea3D::get_bounds);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_priority", PROPERTY_HINT_RANGE, "0,100000,1,or_greater,or_less"), "set_bake_priority", "get_bake_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bake_id"), "set_bake_id", "get_bake_id");
 }
 
 NavigationMeshArea3D::NavigationMeshArea3D() {

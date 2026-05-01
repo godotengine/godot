@@ -137,6 +137,12 @@ bool NavigationRegion3D::get_navigation_layer_value(int p_layer_number) const {
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
+uint32_t NavigationRegion3D::get_area_id(String p_bake_id) const {
+	ERR_FAIL_COND_V_MSG(!navigation_mesh.is_valid(), 0, "Navigation mesh must be set.");
+
+	return navigation_mesh->get_area_id(p_bake_id);
+}
+
 bool NavigationRegion3D::_has_area(uint16_t p_area) const {
 	const int area_count = navigation_mesh->get_area_count();
 	ERR_FAIL_COND_V_MSG(p_area >= area_count, false, vformat("Unknown navigation area: '%d'.", int(p_area)));
@@ -391,6 +397,8 @@ void NavigationRegion3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationRegion3D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationRegion3D::get_navigation_layer_value);
+
+	ClassDB::bind_method(D_METHOD("get_area_id", "bake_id"), &NavigationRegion3D::get_area_id);
 
 	ClassDB::bind_method(D_METHOD("set_area_navigation_layers", "area", "navigation_layers"), &NavigationRegion3D::set_area_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_area_navigation_layers", "area"), &NavigationRegion3D::get_area_navigation_layers);

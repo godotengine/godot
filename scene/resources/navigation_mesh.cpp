@@ -45,6 +45,8 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	vertices = Vector<Vector3>();
 	polygons.clear();
 	polygons_meta.clear();
+	area_ids.clear();
+	area_bake_ids.clear();
 	area_navlayers.clear();
 	area_indices.clear();
 
@@ -345,6 +347,8 @@ void NavigationMesh::set_polygons(const Vector<Vector<int>> &p_polygons) {
 	RWLockWrite write_lock(rwlock);
 	polygons = p_polygons;
 	polygons_meta = Vector<uint32_t>();
+	area_ids = Vector<uint16_t>();
+	area_bake_ids = Vector<String>();
 	area_navlayers = Vector<uint32_t>();
 	area_indices = Vector<Vector<int>>();
 	notify_property_list_changed();
@@ -376,6 +380,8 @@ void NavigationMesh::clear_polygons() {
 	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 	polygons_meta.clear();
+	area_ids.clear();
+	area_bake_ids.clear();
 	area_navlayers.clear();
 	area_indices.clear();
 }
@@ -412,9 +418,62 @@ Array NavigationMesh::_get_polygons_meta() const {
 	return ret;
 }
 
+uint16_t NavigationMesh::get_area_id(String p_bake_id) const {
+	RWLockRead read_lock(rwlock);
+
+	// print_line("looking for bake id: ", p_bake_id);
+	for (int i = 0; i < area_bake_ids.size(); i++) {
+		// print_line("checking bake id: ", area_bake_ids[i]);
+		if (area_bake_ids[i] == p_bake_id) {
+			return area_ids[i];
+		}
+	}
+	return 0;
+}
+
 uint16_t NavigationMesh::get_area_count() const {
 	RWLockRead read_lock(rwlock);
 	return area_navlayers.size();
+}
+
+void NavigationMesh::_set_area_ids(const Array &p_area_ids) {
+	RWLockWrite write_lock(rwlock);
+
+	area_ids.resize(p_area_ids.size());
+	for (int i = 0; i < p_area_ids.size(); i++) {
+		area_ids.write[i] = p_area_ids[i];
+	}
+}
+
+Array NavigationMesh::_get_area_ids() const {
+	RWLockRead read_lock(rwlock);
+	Array ret;
+	ret.resize(area_ids.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret[i] = area_ids[i];
+	}
+
+	return ret;
+}
+
+void NavigationMesh::_set_area_bake_ids(const Array &p_area_bake_ids) {
+	RWLockWrite write_lock(rwlock);
+
+	area_bake_ids.resize(p_area_bake_ids.size());
+	for (int i = 0; i < p_area_bake_ids.size(); i++) {
+		area_bake_ids.write[i] = p_area_bake_ids[i];
+	}
+}
+
+Array NavigationMesh::_get_area_bake_ids() const {
+	RWLockRead read_lock(rwlock);
+	Array ret;
+	ret.resize(area_bake_ids.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret[i] = area_bake_ids[i];
+	}
+
+	return ret;
 }
 
 void NavigationMesh::_set_area_navlayers(const Array &p_area_navlayers) {
@@ -495,6 +554,8 @@ void NavigationMesh::clear() {
 	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 	polygons_meta.clear();
+	area_ids.clear();
+	area_bake_ids.clear();
 	area_navlayers.clear();
 	area_indices.clear();
 	vertices.clear();
@@ -505,15 +566,19 @@ void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Ve
 	vertices = p_vertices;
 	polygons = p_polygons;
 	polygons_meta = Vector<uint32_t>();
+	area_ids = Vector<uint16_t>();
+	area_bake_ids = Vector<String>();
 	area_navlayers = Vector<uint32_t>();
 	area_indices = Vector<Vector<int>>();
 }
 
-void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint32_t> &p_area_navlayers, const Vector<Vector<int>> &p_area_indices) {
+void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint16_t> &p_area_ids, const Vector<String> &p_area_bake_ids, const Vector<uint32_t> &p_area_navlayers, const Vector<Vector<int>> &p_area_indices) {
 	RWLockWrite write_lock(rwlock);
 	vertices = p_vertices;
 	polygons = p_polygons;
 	polygons_meta = p_polygons_meta;
+	area_ids = p_area_ids;
+	area_bake_ids = p_area_bake_ids;
 	area_navlayers = p_area_navlayers;
 	area_indices = p_area_indices;
 	_apply_area_navlayers();
@@ -791,6 +856,10 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_polygons_meta", "polygons_meta"), &NavigationMesh::_set_polygons_meta);
 	ClassDB::bind_method(D_METHOD("_get_polygons_meta"), &NavigationMesh::_get_polygons_meta);
 
+	ClassDB::bind_method(D_METHOD("_set_area_ids", "area_baking_ids"), &NavigationMesh::_set_area_ids);
+	ClassDB::bind_method(D_METHOD("_get_area_ids"), &NavigationMesh::_get_area_ids);
+	ClassDB::bind_method(D_METHOD("_set_area_bake_ids", "area_baking_ids"), &NavigationMesh::_set_area_bake_ids);
+	ClassDB::bind_method(D_METHOD("_get_area_bake_ids"), &NavigationMesh::_get_area_bake_ids);
 	ClassDB::bind_method(D_METHOD("_set_area_navlayers", "area_navlayers"), &NavigationMesh::_set_area_navlayers);
 	ClassDB::bind_method(D_METHOD("_get_area_navlayers"), &NavigationMesh::_get_area_navlayers);
 	ClassDB::bind_method(D_METHOD("_set_area_indices", "area_indices"), &NavigationMesh::_set_area_indices);
@@ -806,6 +875,8 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons_meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons_meta", "_get_polygons_meta");
 
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_ids", "_get_area_ids");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_baking_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_bake_ids", "_get_area_bake_ids");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_navlayers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_navlayers", "_get_area_navlayers");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_indices", "_get_area_indices");
 

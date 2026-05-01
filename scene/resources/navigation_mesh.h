@@ -46,9 +46,12 @@ class NavigationMesh : public Resource {
 	Vector<Vector<int>> polygons;
 	// The navigation layer bitmask per polygon. See `NavMeshGenerator3D::generator_bake_from_source_geometry_data`.
 	// Is empty if no navigation area is baked.
-	Vector<uint32_t> polygons_meta;
+	Vector<uint32_t> polygons_meta; // Has same length as the vectors above.
 
 	// Allows changing area's navigation_layers in `polygons_meta` (only those generated from areas) at runtime.
+	// All vectors must have equal length. Or are empty.
+	Vector<uint16_t> area_ids;
+	Vector<String> area_bake_ids; // Helpers to find area id after baking. For nodes only, see NavigationMeshArea3D::bake_id. Is empty if unused.
 	Vector<uint32_t> area_navlayers; // Saves `ProjectedArea::navigation_layers`.
 	Vector<Vector<int>> area_indices; // Each element in the outer vector represents a ProjectedArea. The inner vector is a collection of `polygons_meta` indices. Assigned during baking process.
 
@@ -71,6 +74,12 @@ protected:
 
 	void _set_polygons_meta(const Array &p_polygons_meta);
 	Array _get_polygons_meta() const;
+
+	void _set_area_ids(const Array &p_area_ids);
+	Array _get_area_ids() const;
+
+	void _set_area_bake_ids(const Array &p_area_bake_ids);
+	Array _get_area_bake_ids() const;
 
 	void _set_area_navlayers(const Array &p_area_navlayers);
 	Array _get_area_navlayers() const;
@@ -217,6 +226,7 @@ public:
 	void clear_polygons();
 	void set_polygons(const Vector<Vector<int>> &p_polygons);
 	Vector<Vector<int>> get_polygons() const;
+	uint16_t get_area_id(String p_bake_id) const;
 	uint16_t get_area_count() const;
 	void set_area_navigation_layers(uint16_t p_area_index, uint32_t p_navigation_layers);
 	void _apply_area_navlayers();
@@ -228,7 +238,7 @@ public:
 	void clear();
 
 	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons);
-	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint32_t> &p_area_navlayers, const Vector<Vector<int>> &p_area_indices);
+	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint16_t> &p_area_ids, const Vector<String> &p_area_bake_ids, const Vector<uint32_t> &p_area_navlayers, const Vector<Vector<int>> &p_area_indices);
 	void get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint32_t> &r_area_navlayers, Vector<Vector<int>> &r_area_indices);
 
 #ifdef DEBUG_ENABLED
