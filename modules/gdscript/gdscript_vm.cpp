@@ -777,20 +777,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #define GET_VARIANT_PTR(m_v, m_code_ofs) \
 	Variant *m_v; \
 	{ \
-		const int code_ofs = (m_code_ofs); \
-		int address = _code_ptr[ip + 1 + code_ofs]; \
-		String code_ptr_text = String::num_uint64((uint64_t)(uintptr_t)_code_ptr); \
+		const int code_ofset = (m_code_ofs); \
+		int address = _code_ptr[ip+1 + code_ofset]; \
 		int address_type = (address & ADDR_TYPE_MASK) >> ADDR_BITS; \
 		if (unlikely(address_type < 0 || address_type >= ADDR_TYPE_MAX)) { \
-			err_text = vformat("Bad address type (opcode=%d ip=%d code_ofs=%d raw=%d addr_type=%d addr_index=%d code_ptr=%s).", _code_ptr[ip], ip, code_ofs, address, address_type, address & ADDR_MASK, code_ptr_text); \
 			OPCODE_BREAK; \
 		} \
 		int address_index = address & ADDR_MASK; \
 		if (unlikely(address_index < 0 || address_index >= variant_address_limits[address_type])) { \
 			if (address_type == ADDR_TYPE_MEMBER && !p_instance) { \
-				err_text = vformat("Cannot access member without instance (opcode=%d ip=%d code_ofs=%d raw=%d addr_type=%d addr_index=%d limit=%d code_ptr=%s).", _code_ptr[ip], ip, code_ofs, address, address_type, address_index, variant_address_limits[address_type], code_ptr_text); \
+				err_text = "Cannot access member without instance."; \
 			} else { \
-				err_text = vformat("Bad address index (opcode=%d ip=%d code_ofs=%d raw=%d addr_type=%d addr_index=%d limit=%d code_ptr=%s).", _code_ptr[ip], ip, code_ofs, address, address_type, address_index, variant_address_limits[address_type], code_ptr_text); \
+				err_text = "Bad address index."; \
 			} \
 			OPCODE_BREAK; \
 		} \
