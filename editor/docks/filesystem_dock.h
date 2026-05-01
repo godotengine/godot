@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/string/fuzzy_search.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/file_system/editor_file_system.h"
@@ -177,6 +178,7 @@ private:
 	LineEdit *file_list_search_box = nullptr;
 	MenuButton *file_list_button_sort = nullptr;
 
+	FuzzySearch fuzzy_search;
 	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
 
