@@ -87,6 +87,7 @@ public:
 	void completion(const LSP::CompletionParams &p_params, List<ScriptLanguage::CodeCompletionOption> *r_options);
 
 	const LSP::DocumentSymbol *resolve_symbol(const LSP::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name = "", bool p_func_required = false);
+	bool resolve_resource_path(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::Hover &r_hover);
 
 	const LSP::DocumentSymbol *resolve_native_symbol(const LSP::NativeSymbolInspectParams &p_params);
 	void resolve_document_links(const String &p_uri, List<LSP::DocumentLink> &r_list);
