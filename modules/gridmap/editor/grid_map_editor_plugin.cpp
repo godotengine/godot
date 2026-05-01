@@ -35,6 +35,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -1384,7 +1385,8 @@ void GridMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			floor->set_tooltip_text(
-					vformat(TTR("Change Grid Floor:\nPrevious Plane (%s)\nNext Plane (%s)"),
+					vformat(TTR("Change Grid Floor (%s + Mouse Wheel):\nPrevious Plane (%s)\nNext Plane (%s)\nCan be done while selecting for multi-floor selections."),
+							keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL),
 							ED_GET_SHORTCUT("grid_map/previous_floor")->get_as_text(),
 							ED_GET_SHORTCUT("grid_map/next_floor")->get_as_text()));
 		} break;
