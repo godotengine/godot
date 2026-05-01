@@ -797,9 +797,9 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 	// Pre-computed screen rotation correction quaternions (around Z axis).
 	// Format: { w, x, y, z }
-	private static final float[] ROTATION_CORRECTION_0   = { 1.0f, 0.0f, 0.0f, 0.0f };
-	private static final float[] ROTATION_CORRECTION_90  = { 0.7071068f, 0.0f, 0.0f, 0.7071068f };  // +90° around Z
-	private static final float[] ROTATION_CORRECTION_180 = { 0.0f, 0.0f, 0.0f, 1.0f };              // 180° around Z
+	private static final float[] ROTATION_CORRECTION_0 = { 1.0f, 0.0f, 0.0f, 0.0f };
+	private static final float[] ROTATION_CORRECTION_90 = { 0.7071068f, 0.0f, 0.0f, 0.7071068f }; // +90° around Z
+	private static final float[] ROTATION_CORRECTION_180 = { 0.0f, 0.0f, 0.0f, 1.0f }; // 180° around Z
 	private static final float[] ROTATION_CORRECTION_270 = { 0.7071068f, 0.0f, 0.0f, -0.7071068f }; // -90° around Z
 
 	/**
@@ -808,10 +808,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	 */
 	private static float[] quaternionMultiply(float[] a, float[] b) {
 		return new float[] {
-			a[0]*b[0] - a[1]*b[1] - a[2]*b[2] - a[3]*b[3],
-			a[0]*b[1] + a[1]*b[0] + a[2]*b[3] - a[3]*b[2],
-			a[0]*b[2] - a[1]*b[3] + a[2]*b[0] + a[3]*b[1],
-			a[0]*b[3] + a[1]*b[2] - a[2]*b[1] + a[3]*b[0]
+			a[0] * b[0] - a[1] * b[1] - a[2] * b[2] - a[3] * b[3],
+			a[0] * b[1] + a[1] * b[0] + a[2] * b[3] - a[3] * b[2],
+			a[0] * b[2] - a[1] * b[3] + a[2] * b[0] + a[3] * b[1],
+			a[0] * b[3] + a[1] * b[2] - a[2] * b[1] + a[3] * b[0]
 		};
 	}
 
