@@ -973,80 +973,54 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 				value = missing_resource_properties[E.name];
 			}
 		} else if (E.type == Variant::ARRAY && E.hint == PROPERTY_HINT_TYPE_STRING) {
-			int hint_subtype_separator = E.hint_string.find_char(':');
-			if (hint_subtype_separator >= 0) {
-				String subtype_string = E.hint_string.substr(0, hint_subtype_separator);
-				int slash_pos = subtype_string.find_char('/');
-				PropertyHint subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
-				if (slash_pos >= 0) {
-					subtype_hint = PropertyHint(subtype_string.get_slicec('/', 1).to_int());
-					subtype_string = subtype_string.substr(0, slash_pos);
-				}
-				Variant::Type subtype = Variant::Type(subtype_string.to_int());
-
-				if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE) {
-					use_deferred_node_path_bit = true;
-					Array array = value;
-					Array new_array;
-					for (int i = 0; i < array.size(); i++) {
-						Variant elem = array[i];
-						if (elem.get_type() == Variant::OBJECT) {
-							if (Node *n = Object::cast_to<Node>(elem)) {
-								new_array.push_back(p_node->get_path_to(n));
-								continue;
-							}
+			Variant::Type subtype;
+			PropertyHint subtype_hint;
+			PropertyUtils::parse_array_hint_string(E.hint_string, subtype, subtype_hint);
+			if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE) {
+				use_deferred_node_path_bit = true;
+				Array array = value;
+				Array new_array;
+				for (int i = 0; i < array.size(); i++) {
+					Variant elem = array[i];
+					if (elem.get_type() == Variant::OBJECT) {
+						if (Node *n = Object::cast_to<Node>(elem)) {
+							new_array.push_back(p_node->get_path_to(n));
+							continue;
 						}
-						new_array.push_back(elem);
 					}
-					value = new_array;
+					new_array.push_back(elem);
 				}
+				value = new_array;
 			}
 		} else if (E.type == Variant::DICTIONARY && E.hint == PROPERTY_HINT_TYPE_STRING) {
-			int key_value_separator = E.hint_string.find_char(';');
-			if (key_value_separator >= 0) {
-				int key_subtype_separator = E.hint_string.find_char(':');
-				String key_subtype_string = E.hint_string.substr(0, key_subtype_separator);
-				int key_slash_pos = key_subtype_string.find_char('/');
-				PropertyHint key_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
-				if (key_slash_pos >= 0) {
-					key_subtype_hint = PropertyHint(key_subtype_string.get_slicec('/', 1).to_int());
-					key_subtype_string = key_subtype_string.substr(0, key_slash_pos);
-				}
-				Variant::Type key_subtype = Variant::Type(key_subtype_string.to_int());
-				bool convert_key = key_subtype == Variant::OBJECT && key_subtype_hint == PROPERTY_HINT_NODE_TYPE;
+			Variant::Type key_subtype;
+			PropertyHint key_subtype_hint;
+			Variant::Type value_subtype;
+			PropertyHint value_subtype_hint;
+			PropertyUtils::parse_dictionary_hint_string(E.hint_string, key_subtype, key_subtype_hint, value_subtype, value_subtype_hint);
 
-				int value_subtype_separator = E.hint_string.find_char(':', key_value_separator) - (key_value_separator + 1);
-				String value_subtype_string = E.hint_string.substr(key_value_separator + 1, value_subtype_separator);
-				int value_slash_pos = value_subtype_string.find_char('/');
-				PropertyHint value_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
-				if (value_slash_pos >= 0) {
-					value_subtype_hint = PropertyHint(value_subtype_string.get_slicec('/', 1).to_int());
-					value_subtype_string = value_subtype_string.substr(0, value_slash_pos);
-				}
-				Variant::Type value_subtype = Variant::Type(value_subtype_string.to_int());
-				bool convert_value = value_subtype == Variant::OBJECT && value_subtype_hint == PROPERTY_HINT_NODE_TYPE;
-
-				if (convert_key || convert_value) {
-					use_deferred_node_path_bit = true;
-					Dictionary dict = value;
-					Dictionary new_dict;
-					for (const KeyValue<Variant, Variant> &kv : dict) {
-						Variant new_key = kv.key;
-						if (convert_key && new_key.get_type() == Variant::OBJECT) {
-							if (Node *n = Object::cast_to<Node>(new_key)) {
-								new_key = p_node->get_path_to(n);
-							}
+			bool convert_key = key_subtype == Variant::OBJECT && key_subtype_hint == PROPERTY_HINT_NODE_TYPE;
+			bool convert_value = value_subtype == Variant::OBJECT && value_subtype_hint == PROPERTY_HINT_NODE_TYPE;
+			if (convert_key || convert_value) {
+				use_deferred_node_path_bit = true;
+				Dictionary dict = value;
+				Dictionary new_dict;
+				for (const KeyValue<Variant, Variant> &kv : dict) {
+					Variant new_key = kv.key;
+					if (convert_key && new_key.get_type() == Variant::OBJECT) {
+						if (Node *n = Object::cast_to<Node>(new_key)) {
+							new_key = p_node->get_path_to(n);
 						}
-						Variant new_value = kv.value;
-						if (convert_value && new_value.get_type() == Variant::OBJECT) {
-							if (Node *n = Object::cast_to<Node>(new_value)) {
-								new_value = p_node->get_path_to(n);
-							}
-						}
-						new_dict[new_key] = new_value;
 					}
-					value = new_dict;
+					Variant new_value = kv.value;
+					if (convert_value && new_value.get_type() == Variant::OBJECT) {
+						if (Node *n = Object::cast_to<Node>(new_value)) {
+							new_value = p_node->get_path_to(n);
+						}
+					}
+					new_dict[new_key] = new_value;
 				}
+				value = new_dict;
 			}
 		}
 
