@@ -2,8 +2,10 @@ name: komm64 Windows Build
 
 # komm64 fork 専用の Windows editor binary build workflow.
 # 公式の windows_builds.yml は msvc + clang-cl + template_release + mingw の
-# 4 ビルド matrix で重いので、ここでは MSVC editor binary 1 個のみに絞る。
+# 4 ビルド matrix で重いので、ここでは MSVC editor binary 1 個に絞る。
 # template_release は配布フェーズが進んでから別 workflow で追加する想定。
+# その他の build flag (D3D12 / ANGLE / WinRT / AccessKit) は公式と同等にして、
+# 後で「dev binary と production binary で挙動差があった」debug 困難を避ける。
 #
 # Trigger:
 #   - workflow_dispatch: 手動 trigger (ad-hoc 検証用)
@@ -20,17 +22,9 @@ on:
       - 'v*-komm64*'
 
 env:
-  # d3d12=no: D3D12 driver は dev binary には不要 (Vulkan + GL で動く)。
-  #   有効化するなら misc/scripts/install_d3d12_sdk_windows.py の step が
-  #   要るが、minimum 版方針なので driver を落とす。
-  # accesskit=no: AccessKit (accessibility) も dev binary には不要。
-  # angle=no: ANGLE (OpenGL ES) は dev binary には不要。
   SCONS_FLAGS: >-
     module_text_server_fb_enabled=yes
     debug_symbols=no
-    d3d12=no
-    accesskit=no
-    angle=no
   SCONS_CACHE_MSVC_CONFIG: true
   PYTHONIOENCODING: utf8
 
@@ -53,10 +47,54 @@ jobs:
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
+      # Following 4 SDK download steps mirror the official windows_builds.yml.
+      # Each is `continue-on-error: true` (or wraps with try/fallback) so a
+      # missing SDK falls back to building without that component instead of
+      # failing the whole build.
+
+      - name: Download Direct3D 12 SDK components
+        shell: sh
+        id: d3d12-sdk
+        run: |
+          if python ./misc/scripts/install_d3d12_sdk_windows.py; then
+            echo "D3D12_ENABLED=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Windows: Direct3D 12 SDK installation failed, building without Direct3D 12 support."
+            echo "D3D12_ENABLED=no" >> "$GITHUB_OUTPUT"
+          fi
+        continue-on-error: true
+
+      - name: Download pre-built ANGLE
+        shell: sh
+        id: angle-sdk
+        run: |
+          if python ./misc/scripts/install_angle.py; then
+            echo "ANGLE_ENABLED=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::ANGLE SDK installation failed, building without ANGLE support."
+            echo "ANGLE_ENABLED=no" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download WinRT components
+        shell: sh
+        run: python ./misc/scripts/install_winrt.py
+        continue-on-error: true
+
+      - name: Download pre-built AccessKit
+        shell: sh
+        id: accesskit-sdk
+        run: |
+          if python ./misc/scripts/install_accesskit.py; then
+            echo "ACCESSKIT_ENABLED=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::AccessKit SDK installation failed, building without AccessKit support."
+            echo "ACCESSKIT_ENABLED=no" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }}
+          scons-flags: ${{ env.SCONS_FLAGS }} d3d12=${{ steps.d3d12-sdk.outputs.D3D12_ENABLED }} accesskit=${{ steps.accesskit-sdk.outputs.ACCESSKIT_ENABLED }} angle=${{ steps.angle-sdk.outputs.ANGLE_ENABLED }}
           platform: windows
           target: editor
 
