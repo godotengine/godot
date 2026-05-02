@@ -32,7 +32,6 @@
 
 #include "core/io/config_file.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/settings/editor_settings.h"
 #include "scene/main/timer.h"
 

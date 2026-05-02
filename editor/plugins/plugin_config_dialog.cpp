@@ -34,7 +34,6 @@
 #include "core/io/dir_access.h"
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
