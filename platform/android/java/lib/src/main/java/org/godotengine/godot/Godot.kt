@@ -144,7 +144,7 @@ class Godot private constructor(val context: Context) {
 	private val mGyroscope: Sensor? by lazy { mSensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
 
 	private val deviceOrientationEnabled = AtomicBoolean(false)
-	private val mRotationVector: Sensor? by lazy {
+	private val rotationVector: Sensor? by lazy {
 		mSensorManager?.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
 			?: mSensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 	}
