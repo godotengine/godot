@@ -589,7 +589,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(ProcessState &p_
 	deltas.resize_initialized(blend_points_used);
 	if (sync_mode == SYNC_MODE_NONE) {
 		for (int i = 0; i < blend_points_used; i++) {
-			deltas[i] = -1; // Not process.
+			deltas[i] = NAN; // Not process.
 		}
 	}
 
@@ -736,12 +736,12 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(ProcessState &p_
 		pi.seeked = true;
 		pi.weight = 1.0;
 		mind = blend_node(p_process_state, p_instance, instance_new_closest, pi, FILTER_IGNORE, true, p_test_only);
-		deltas[new_closest] = -1; // No more blend new_closest point.
+		deltas[new_closest] = NAN; // No more blend new_closest point.
 	}
 
 	// Normal case, blend all points.
 	for (int i = 0; i < blend_points_used; i++) {
-		if (std::signbit(deltas[i])) {
+		if (Math::is_nan(deltas[i])) {
 			continue;
 		}
 		pi = p_playback_info;

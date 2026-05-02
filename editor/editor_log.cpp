@@ -47,7 +47,6 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/flow_container.h"
-#include "scene/gui/separator.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
 #include "servers/display/display_server.h"
@@ -110,7 +109,7 @@ void EditorLog::_update_theme() {
 	log->add_theme_font_size_override("mono_font_size", font_size);
 	log->end_bulk_theme_override();
 
-	const String wide_text = "MMM";
+	const String wide_text = "MM";
 
 	Button *button = type_filter_map[MSG_TYPE_STD]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("Popup")));
@@ -527,46 +526,40 @@ EditorLog::EditorLog() {
 	vb_left->add_child(log);
 
 	HFlowContainer *bottom_hf = memnew(HFlowContainer);
+	bottom_hf->set_alignment(FlowContainer::ALIGNMENT_END);
 	vb_left->add_child(bottom_hf);
-
-	HBoxContainer *hbox = memnew(HBoxContainer);
-	hbox->set_h_size_flags(SIZE_EXPAND_FILL);
-	bottom_hf->add_child(hbox);
-
-	// Search box
-	search_box = memnew(LineEdit);
-	search_box->set_custom_minimum_size(Vector2(200 * EDSCALE, 0));
-	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTRC("Filter Messages"));
-	search_box->set_accessibility_name(TTRC("Filter Messages"));
-	search_box->set_clear_button_enabled(true);
-	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
-	hbox->add_child(search_box);
 
 	// Clear.
 	clear_button = memnew(Button);
 	clear_button->set_accessibility_name(TTRC("Clear Log"));
-	clear_button->set_theme_type_variation(SceneStringName(FlatButton));
+	clear_button->set_theme_type_variation("BottomPanelButton");
 	clear_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTRC("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_clear_request));
-	hbox->add_child(clear_button);
-
-	// Separate toggle buttons from normal buttons.
-	hbox->add_child(memnew(VSeparator));
-
-	hbox = memnew(HBoxContainer);
-	bottom_hf->add_child(hbox);
+	bottom_hf->add_child(clear_button);
 
 	// Collapse.
 	collapse_button = memnew(Button);
-	collapse_button->set_theme_type_variation(SceneStringName(FlatButton));
+	collapse_button->set_theme_type_variation("BottomPanelButton");
 	collapse_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
-	hbox->add_child(collapse_button);
+	bottom_hf->add_child(collapse_button);
+
+	// Search box
+	search_box = memnew(LineEdit);
+	search_box->set_custom_minimum_size(Vector2(150 * EDSCALE, 0));
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_box->set_placeholder(TTRC("Filter Messages"));
+	search_box->set_accessibility_name(TTRC("Filter Messages"));
+	search_box->set_clear_button_enabled(true);
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
+	bottom_hf->add_child(search_box);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	bottom_hf->add_child(hbox);
 
 	// Message Type Filters.
 	LogFilter *std_filter = memnew(LogFilter(MSG_TYPE_STD));
