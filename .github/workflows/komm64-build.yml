@@ -1,0 +1,76 @@
+name: komm64 Windows Build
+
+# komm64 fork 専用の Windows editor binary build workflow.
+# 公式の windows_builds.yml は msvc + clang-cl + template_release + mingw の
+# 4 ビルド matrix で重いので、ここでは MSVC editor binary 1 個のみに絞る。
+# template_release は配布フェーズが進んでから別 workflow で追加する想定。
+#
+# Trigger:
+#   - workflow_dispatch: 手動 trigger (ad-hoc 検証用)
+#   - tag push (v*-komm64*): 自動 build + Release 作成
+#
+# Output:
+#   - artifact: komm64-godot-windows-editor (60-day retention)
+#   - tag push 時のみ: GitHub Release に exe を添付
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*-komm64*'
+
+env:
+  SCONS_FLAGS: >-
+    module_text_server_fb_enabled=yes
+    debug_symbols=no
+  SCONS_CACHE_MSVC_CONFIG: true
+  PYTHONIOENCODING: utf8
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Restore build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: komm64-windows-editor
+        continue-on-error: true
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          scons-flags: ${{ env.SCONS_FLAGS }}
+          platform: windows
+          target: editor
+
+      - name: Save build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: komm64-windows-editor
+        continue-on-error: true
+
+      - name: Prepare artifact
+        run: |
+          Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: komm64-godot-windows-editor
+          path: bin/godot.windows.editor.x86_64.exe
+
+      - name: Create Release (tag push only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: bin/godot.windows.editor.x86_64.exe
+          generate_release_notes: true
