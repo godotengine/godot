@@ -36,7 +36,7 @@
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h" // IWYU pragma: keep. Needed to get the mouse position from the root window.
+#include "scene/main/window.h"
 
 using namespace View3DControllerConsts;
 

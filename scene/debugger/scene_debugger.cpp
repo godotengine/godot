@@ -49,7 +49,7 @@
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h" // SceneTree:get_root()
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
