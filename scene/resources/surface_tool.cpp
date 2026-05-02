@@ -1054,10 +1054,17 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 	}
 }
 
-static void _propagate_tangents_or_split(LocalVector<SurfaceTool::Vertex> &r_vertex_array, LocalVector<int> &r_index_array, const LocalVector<Vector4> &p_tangents, bool p_split) {
+struct TangentVertex {
+	float position[3];
+	float normal[3];
+	float uv[2];
+};
+
+static void _propagate_tangents_or_split(LocalVector<SurfaceTool::Vertex> &r_vertex_array, LocalVector<int> &r_index_array, const float *p_tangents, bool p_split) {
 	// Seed each vertex with one of its corner tangents; the loop below fixes any mismatches.
-	for (uint32_t i = 0; i < r_index_array.size(); i++) {
-		r_vertex_array[r_index_array[i]].tangent = p_tangents[i];
+	for (size_t i = 0; i < r_index_array.size(); i++) {
+		Vector4 tangent(p_tangents[i * 4 + 0], p_tangents[i * 4 + 1], p_tangents[i * 4 + 2], p_tangents[i * 4 + 3]);
+		r_vertex_array[r_index_array[i]].tangent = Vector4(p_tangents[i * 4 + 0], p_tangents[i * 4 + 1], p_tangents[i * 4 + 2], p_tangents[i * 4 + 3]);
 	}
 
 	if (!p_split) {
@@ -1068,10 +1075,11 @@ static void _propagate_tangents_or_split(LocalVector<SurfaceTool::Vertex> &r_ver
 	splits.resize(r_vertex_array.size());
 	memset(splits.ptr(), -1, splits.size() * sizeof(uint32_t)); // ~0u means "no split copy"
 
-	for (uint32_t i = 0; i < r_index_array.size(); i++) {
+	for (size_t i = 0; i < r_index_array.size(); i++) {
 		// Walk the chain of split copies looking for a vertex whose tangent matches.
+		Vector4 tangent(p_tangents[i * 4 + 0], p_tangents[i * 4 + 1], p_tangents[i * 4 + 2], p_tangents[i * 4 + 3]);
 		uint32_t v = r_index_array[i];
-		while (v != ~0u && r_vertex_array[v].tangent != p_tangents[i]) {
+		while (v != ~0u && r_vertex_array[v].tangent != tangent) {
 			v = splits[v];
 		}
 
@@ -1079,7 +1087,7 @@ static void _propagate_tangents_or_split(LocalVector<SurfaceTool::Vertex> &r_ver
 		if (v == ~0u) {
 			v = r_vertex_array.size();
 			r_vertex_array.push_back(r_vertex_array[r_index_array[i]]);
-			r_vertex_array[v].tangent = p_tangents[i];
+			r_vertex_array[v].tangent = tangent;
 			splits.push_back(splits[r_index_array[i]]);
 			splits[r_index_array[i]] = v;
 		}
@@ -1102,22 +1110,42 @@ void SurfaceTool::generate_tangents(bool p_split) {
 	size_t corner_count = index_array.size() > 0 ? index_array.size() : vertex_array.size();
 	ERR_FAIL_COND(corner_count % 3 != 0);
 
-	const Vertex *vertices = vertex_array.ptr();
+	// We can't operate on SurfaceTool::Vertex directly because in double-precision builds, vectors use double components
+	// So we convert the inputs to single precision floats before generating tangents.
+	LocalVector<TangentVertex> tangent_vertices;
+	tangent_vertices.resize(vertex_array.size());
 
-	LocalVector<Vector4> tangents;
-	tangents.resize(corner_count);
+	for (size_t i = 0; i < vertex_array.size(); i++) {
+		const Vertex &vertex = vertex_array[i];
+		TangentVertex &tangent_vertex = tangent_vertices[i];
 
-	generate_tangents_func(&tangents.ptr()->x,
+		tangent_vertex.position[0] = vertex.vertex.x;
+		tangent_vertex.position[1] = vertex.vertex.y;
+		tangent_vertex.position[2] = vertex.vertex.z;
+		tangent_vertex.normal[0] = vertex.normal.x;
+		tangent_vertex.normal[1] = vertex.normal.y;
+		tangent_vertex.normal[2] = vertex.normal.z;
+		tangent_vertex.uv[0] = vertex.uv.x;
+		tangent_vertex.uv[1] = vertex.uv.y;
+	}
+
+	const TangentVertex *vertices = tangent_vertices.ptr();
+
+	LocalVector<float> tangents;
+	tangents.resize(corner_count * 4);
+
+	generate_tangents_func(tangents.ptr(),
 			index_array.size() > 0 ? reinterpret_cast<const unsigned int *>(index_array.ptr()) : nullptr, corner_count,
-			&vertices->vertex.x, vertex_array.size(), sizeof(Vertex),
-			&vertices->normal.x, sizeof(Vertex),
-			&vertices->uv.x, sizeof(Vertex), 0);
+			vertices->position, tangent_vertices.size(), sizeof(TangentVertex),
+			vertices->normal, sizeof(TangentVertex),
+			vertices->uv, sizeof(TangentVertex), 0);
 
 	if (index_array.size() > 0) {
-		_propagate_tangents_or_split(vertex_array, index_array, tangents, p_split);
+		_propagate_tangents_or_split(vertex_array, index_array, tangents.ptr(), p_split);
 	} else {
-		for (uint32_t i = 0; i < corner_count; i++) {
-			vertex_array[i].tangent = tangents[i];
+		for (size_t i = 0; i < corner_count; i++) {
+			Vector4 tangent(tangents[i * 4 + 0], tangents[i * 4 + 1], tangents[i * 4 + 2], tangents[i * 4 + 3]);
+			vertex_array[i].tangent = tangent;
 		}
 	}
 
