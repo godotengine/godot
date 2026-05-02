@@ -687,8 +687,8 @@ class Godot private constructor(val context: Context) {
 		if (gyroscopeEnabled.get() && mGyroscope != null) {
 			mSensorManager?.registerListener(godotInputHandler, mGyroscope, SensorManager.SENSOR_DELAY_GAME)
 		}
-		if (deviceOrientationEnabled.get() && mRotationVector != null) {
-			mSensorManager?.registerListener(godotInputHandler, mRotationVector, SensorManager.SENSOR_DELAY_GAME)
+		if (deviceOrientationEnabled.get() && rotationVector != null) {
+			mSensorManager?.registerListener(godotInputHandler, rotationVector, SensorManager.SENSOR_DELAY_GAME)
 		}
 	}
 
