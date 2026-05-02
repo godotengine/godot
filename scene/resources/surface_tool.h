@@ -35,8 +35,6 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server_enums.h"
 
-#include <thirdparty/misc/mikktspace.h>
-
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);
 
@@ -179,15 +177,6 @@ private:
 
 	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
 	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
-
-	//mikktspace callbacks
-	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
-	static int mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace);
-	static void mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert);
-	static void mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert);
-	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
-	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
-			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
 	void _add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const TypedArray<Plane> &p_tangents = TypedArray<Plane>());
 

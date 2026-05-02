@@ -1054,17 +1054,7 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 	}
 }
 
-//mikktspace callbacks
-namespace {
-
-static const bool use_meshoptimizer_tangent_generation = true;
-
-struct TangentGenerationContextUserData {
-	LocalVector<SurfaceTool::Vertex> *vertices;
-	LocalVector<int> *indices;
-};
-
-void _propagate_tangents_or_split(LocalVector<SurfaceTool::Vertex> &r_vertex_array, LocalVector<int> &r_index_array, const LocalVector<Vector4> &p_tangents, bool p_split) {
+static void _propagate_tangents_or_split(LocalVector<SurfaceTool::Vertex> &r_vertex_array, LocalVector<int> &r_index_array, const LocalVector<Vector4> &p_tangents, bool p_split) {
 	// Seed each vertex with one of its corner tangents; the loop below fixes any mismatches.
 	for (uint32_t i = 0; i < r_index_array.size(); i++) {
 		r_vertex_array[r_index_array[i]].tangent = p_tangents[i];
@@ -1097,91 +1087,9 @@ void _propagate_tangents_or_split(LocalVector<SurfaceTool::Vertex> &r_vertex_arr
 		r_index_array[i] = int(v);
 	}
 }
-} // namespace
-
-int SurfaceTool::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
-	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-
-	if (triangle_data.indices->size() > 0) {
-		return triangle_data.indices->size() / 3;
-	} else {
-		return triangle_data.vertices->size() / 3;
-	}
-}
-
-int SurfaceTool::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
-	return 3; //always 3
-}
-
-void SurfaceTool::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
-	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vector3 v;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			v = triangle_data.vertices->operator[](index).vertex;
-		}
-	} else {
-		v = triangle_data.vertices->operator[](iFace * 3 + iVert).vertex;
-	}
-
-	fvPosOut[0] = v.x;
-	fvPosOut[1] = v.y;
-	fvPosOut[2] = v.z;
-}
-
-void SurfaceTool::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
-	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vector3 v;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			v = triangle_data.vertices->operator[](index).normal;
-		}
-	} else {
-		v = triangle_data.vertices->operator[](iFace * 3 + iVert).normal;
-	}
-
-	fvNormOut[0] = v.x;
-	fvNormOut[1] = v.y;
-	fvNormOut[2] = v.z;
-}
-
-void SurfaceTool::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
-	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vector2 v;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			v = triangle_data.vertices->operator[](index).uv;
-		}
-	} else {
-		v = triangle_data.vertices->operator[](iFace * 3 + iVert).uv;
-	}
-
-	fvTexcOut[0] = v.x;
-	fvTexcOut[1] = v.y;
-}
-
-void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
-		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
-	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vertex *vtx = nullptr;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			vtx = &triangle_data.vertices->operator[](index);
-		}
-	} else {
-		vtx = &triangle_data.vertices->operator[](iFace * 3 + iVert);
-	}
-
-	if (vtx != nullptr) {
-		vtx->tangent = Vector4(fvTangent[0], fvTangent[1], fvTangent[2], bIsOrientationPreserving ? 1.0f : -1.0f);
-	}
-}
 
 void SurfaceTool::generate_tangents(bool p_split) {
+	ERR_FAIL_COND_MSG(!generate_tangents_func, "Meshoptimizer library is not initialized.");
 	ERR_FAIL_COND_MSG(!(format & Mesh::ARRAY_FORMAT_TEX_UV), "UVs are required to generate tangents.");
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
@@ -1194,55 +1102,25 @@ void SurfaceTool::generate_tangents(bool p_split) {
 	size_t corner_count = index_array.size() > 0 ? index_array.size() : vertex_array.size();
 	ERR_FAIL_COND(corner_count % 3 != 0);
 
-	if (use_meshoptimizer_tangent_generation) {
-		ERR_FAIL_COND_MSG(!generate_tangents_func, "Meshoptimizer library is not initialized.");
+	const Vertex *vertices = vertex_array.ptr();
 
-		const Vertex *vertices = vertex_array.ptr();
+	LocalVector<Vector4> tangents;
+	tangents.resize(corner_count);
 
-		LocalVector<Vector4> tangents;
-		tangents.resize(corner_count);
+	generate_tangents_func(&tangents.ptr()->x,
+			index_array.size() > 0 ? reinterpret_cast<const unsigned int *>(index_array.ptr()) : nullptr, corner_count,
+			&vertices->vertex.x, vertex_array.size(), sizeof(Vertex),
+			&vertices->normal.x, sizeof(Vertex),
+			&vertices->uv.x, sizeof(Vertex), 0);
 
-		generate_tangents_func(&tangents.ptr()->x,
-				index_array.size() > 0 ? reinterpret_cast<const unsigned int *>(index_array.ptr()) : nullptr, corner_count,
-				&vertices->vertex.x, vertex_array.size(), sizeof(Vertex),
-				&vertices->normal.x, sizeof(Vertex),
-				&vertices->uv.x, sizeof(Vertex), 0);
-
-		if (index_array.size() > 0) {
-			_propagate_tangents_or_split(vertex_array, index_array, tangents, p_split);
-		} else {
-			for (uint32_t i = 0; i < corner_count; i++) {
-				vertex_array[i].tangent = tangents[i];
-			}
+	if (index_array.size() > 0) {
+		_propagate_tangents_or_split(vertex_array, index_array, tangents, p_split);
+	} else {
+		for (uint32_t i = 0; i < corner_count; i++) {
+			vertex_array[i].tangent = tangents[i];
 		}
-
-		format |= Mesh::ARRAY_FORMAT_TANGENT;
-		return;
 	}
 
-	SMikkTSpaceInterface mkif;
-	mkif.m_getNormal = mikktGetNormal;
-	mkif.m_getNumFaces = mikktGetNumFaces;
-	mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
-	mkif.m_getPosition = mikktGetPosition;
-	mkif.m_getTexCoord = mikktGetTexCoord;
-	mkif.m_setTSpace = mikktSetTSpaceDefault;
-	mkif.m_setTSpaceBasic = nullptr;
-
-	SMikkTSpaceContext msc;
-	msc.m_pInterface = &mkif;
-
-	TangentGenerationContextUserData triangle_data;
-	triangle_data.vertices = &vertex_array;
-	for (Vertex &vertex : vertex_array) {
-		vertex.tangent = Vector4();
-	}
-	triangle_data.indices = &index_array;
-	msc.m_pUserData = &triangle_data;
-
-	bool res = genTangSpaceDefault(&msc);
-
-	ERR_FAIL_COND(!res);
 	format |= Mesh::ARRAY_FORMAT_TANGENT;
 }
 
