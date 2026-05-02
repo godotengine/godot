@@ -43,6 +43,7 @@ SurfaceTool::SimplifyScaleFunc SurfaceTool::simplify_scale_func = nullptr;
 SurfaceTool::GenerateRemapFunc SurfaceTool::generate_remap_func = nullptr;
 SurfaceTool::RemapVertexFunc SurfaceTool::remap_vertex_func = nullptr;
 SurfaceTool::RemapIndexFunc SurfaceTool::remap_index_func = nullptr;
+SurfaceTool::GenerateTangentsFunc SurfaceTool::generate_tangents_func = nullptr;
 
 void SurfaceTool::strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices) {
 	ERR_FAIL_COND_MSG(!generate_remap_func || !remap_vertex_func || !remap_index_func, "Meshoptimizer library is not initialized.");
@@ -1055,10 +1056,47 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 
 //mikktspace callbacks
 namespace {
+
+static const bool use_meshoptimizer_tangent_generation = true;
+
 struct TangentGenerationContextUserData {
 	LocalVector<SurfaceTool::Vertex> *vertices;
 	LocalVector<int> *indices;
 };
+
+void _propagate_tangents_or_split(LocalVector<SurfaceTool::Vertex> &r_vertex_array, LocalVector<int> &r_index_array, const LocalVector<Vector4> &p_tangents, bool p_split) {
+	// Seed each vertex with one of its corner tangents; the loop below fixes any mismatches.
+	for (uint32_t i = 0; i < r_index_array.size(); i++) {
+		r_vertex_array[r_index_array[i]].tangent = p_tangents[i];
+	}
+
+	if (!p_split) {
+		return;
+	}
+
+	LocalVector<uint32_t> splits;
+	splits.resize(r_vertex_array.size());
+	memset(splits.ptr(), -1, splits.size() * sizeof(uint32_t)); // ~0u means "no split copy"
+
+	for (uint32_t i = 0; i < r_index_array.size(); i++) {
+		// Walk the chain of split copies looking for a vertex whose tangent matches.
+		uint32_t v = r_index_array[i];
+		while (v != ~0u && r_vertex_array[v].tangent != p_tangents[i]) {
+			v = splits[v];
+		}
+
+		// No match in chain: append a new split copy with the target tangent and chain it.
+		if (v == ~0u) {
+			v = r_vertex_array.size();
+			r_vertex_array.push_back(r_vertex_array[r_index_array[i]]);
+			r_vertex_array[v].tangent = p_tangents[i];
+			splits.push_back(splits[r_index_array[i]]);
+			splits[r_index_array[i]] = v;
+		}
+
+		r_index_array[i] = int(v);
+	}
+}
 } // namespace
 
 int SurfaceTool::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
@@ -1143,9 +1181,44 @@ void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, cons
 	}
 }
 
-void SurfaceTool::generate_tangents() {
+void SurfaceTool::generate_tangents(bool p_split) {
 	ERR_FAIL_COND_MSG(!(format & Mesh::ARRAY_FORMAT_TEX_UV), "UVs are required to generate tangents.");
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
+	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
+
+	if (vertex_array.is_empty()) {
+		format |= Mesh::ARRAY_FORMAT_TANGENT;
+		return;
+	}
+
+	size_t corner_count = index_array.size() > 0 ? index_array.size() : vertex_array.size();
+	ERR_FAIL_COND(corner_count % 3 != 0);
+
+	if (use_meshoptimizer_tangent_generation) {
+		ERR_FAIL_COND_MSG(!generate_tangents_func, "Meshoptimizer library is not initialized.");
+
+		const Vertex *vertices = vertex_array.ptr();
+
+		LocalVector<Vector4> tangents;
+		tangents.resize(corner_count);
+
+		generate_tangents_func(&tangents.ptr()->x,
+				index_array.size() > 0 ? reinterpret_cast<const unsigned int *>(index_array.ptr()) : nullptr, corner_count,
+				&vertices->vertex.x, vertex_array.size(), sizeof(Vertex),
+				&vertices->normal.x, sizeof(Vertex),
+				&vertices->uv.x, sizeof(Vertex), 0);
+
+		if (index_array.size() > 0) {
+			_propagate_tangents_or_split(vertex_array, index_array, tangents, p_split);
+		} else {
+			for (uint32_t i = 0; i < corner_count; i++) {
+				vertex_array[i].tangent = tangents[i];
+			}
+		}
+
+		format |= Mesh::ARRAY_FORMAT_TANGENT;
+		return;
+	}
 
 	SMikkTSpaceInterface mkif;
 	mkif.m_getNormal = mikktGetNormal;
@@ -1355,7 +1428,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("index"), &SurfaceTool::index);
 	ClassDB::bind_method(D_METHOD("deindex"), &SurfaceTool::deindex);
 	ClassDB::bind_method(D_METHOD("generate_normals", "flip"), &SurfaceTool::generate_normals, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("generate_tangents"), &SurfaceTool::generate_tangents);
+	ClassDB::bind_method(D_METHOD("generate_tangents", "split"), &SurfaceTool::generate_tangents, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("optimize_indices_for_cache"), &SurfaceTool::optimize_indices_for_cache);
 

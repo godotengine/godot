@@ -146,8 +146,9 @@
 		</method>
 		<method name="generate_tangents">
 			<return type="void" />
+			<param index="0" name="split" type="bool" default="false" />
 			<description>
-				Generates a tangent vector for each vertex. Requires that each vertex already has UVs and normals set (see [method generate_normals]).
+				Generates a tangent vector for each vertex. Requires that each vertex already has UVs and normals set (see [method generate_normals]). If [param split] is [code]true[/code], the vertices are split as required to maintain correct tangents for mirrored UV mapping.
 			</description>
 		</method>
 		<method name="get_aabb" qualifiers="const">

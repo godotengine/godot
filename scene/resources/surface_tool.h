@@ -95,6 +95,8 @@ public:
 		SIMPLIFY_REGULARIZE = 1 << 4, // From meshopt_SimplifyRegularize
 		/* Allow collapses across attribute discontinuities, except for vertices that are tagged with 0x02 in vertex_lock. */
 		SIMPLIFY_PERMISSIVE = 1 << 5, // From meshopt_SimplifyPermissive
+		/* Produce tangents compatible with MikkTSpace (same weighting and fallbacks) at the cost of reduced quality. Not recommended unless normal maps are baked. */
+		TANGENT_COMPATIBLE = 1 << 0, // From meshopt_TangentCompatible
 	};
 
 	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
@@ -113,6 +115,8 @@ public:
 	static RemapVertexFunc remap_vertex_func;
 	typedef void (*RemapIndexFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const unsigned int *remap);
 	static RemapIndexFunc remap_index_func;
+	typedef void (*GenerateTangentsFunc)(float *result, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, const float *vertex_normals, size_t vertex_normals_stride, const float *vertex_uvs, size_t vertex_uvs_stride, unsigned int options);
+	static GenerateTangentsFunc generate_tangents_func;
 	static void strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
 
 private:
@@ -220,7 +224,7 @@ public:
 	void index();
 	void deindex();
 	void generate_normals(bool p_flip = false);
-	void generate_tangents();
+	void generate_tangents(bool p_split = false);
 
 	void optimize_indices_for_cache();
 	AABB get_aabb() const;
