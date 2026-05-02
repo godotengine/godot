@@ -1834,8 +1834,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			}
 			mesh_surface_tool->index();
 			if (generate_tangents && a.has("TEXCOORD_0")) {
-				//must generate mikktspace tangents.. ergh..
-				mesh_surface_tool->generate_tangents();
+				mesh_surface_tool->generate_tangents(/*split*/ !mesh_prim.has("targets"));
 			}
 			array = mesh_surface_tool->commit_to_arrays();
 
@@ -1974,7 +1973,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					}
 					blend_surface_tool->index();
 					if (generate_tangents) {
-						blend_surface_tool->generate_tangents();
+						blend_surface_tool->generate_tangents(/*split*/ false);
 					}
 					array_copy = blend_surface_tool->commit_to_arrays();
 
