@@ -21,6 +21,12 @@ on:
     tags:
       - 'v*-komm64*'
 
+# softprops/action-gh-release@v2 needs contents:write to create the release.
+# Default GITHUB_TOKEN permission (contents:read) caused 403 on the first
+# tag-trigger run (run #25262508341).
+permissions:
+  contents: write
+
 env:
   SCONS_FLAGS: >-
     module_text_server_fb_enabled=yes
