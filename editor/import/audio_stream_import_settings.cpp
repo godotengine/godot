@@ -475,6 +475,7 @@ void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p
 			int beats = config_file->get_value("params", "beat_count", 0);
 			bpm_edit->set_value(bpm > 0 ? bpm : 120);
 			bpm_enabled->set_pressed(bpm > 0);
+			beats_edit->set_max(99999); // Temporarily disable `max` in case current `beat_count` > previously set `beat_max`. It will be set to the appropriate value in `_settings_changed()` right afterwards.
 			beats_edit->set_value(beats);
 			beats_enabled->set_pressed(beats > 0);
 			loop->set_pressed(config_file->get_value("params", "loop", false));
