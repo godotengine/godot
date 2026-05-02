@@ -45,6 +45,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/filter_line_edit.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
@@ -144,8 +145,18 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->add_undo_method(n, "set_meta", "_edit_lock_", true);
 		undo_redo->add_do_method(this, "emit_signal", "node_changed");
 		undo_redo->add_undo_method(this, "emit_signal", "node_changed");
-		undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
-		undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+		if (Object::cast_to<CanvasItem>(n)) {
+			undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+			undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+		} else if (Object::cast_to<Node3D>(n)) {
+			Node3DEditor *node_3d_editor = Node3DEditor::get_singleton();
+			undo_redo->add_do_method(node_3d_editor, "emit_signal", "item_lock_status_changed");
+			undo_redo->add_undo_method(node_3d_editor, "emit_signal", "item_lock_status_changed");
+			undo_redo->add_do_method(node_3d_editor, "_refresh_menu_icons");
+			undo_redo->add_undo_method(node_3d_editor, "_refresh_menu_icons");
+			undo_redo->add_do_method(node_3d_editor, "update_transform_gizmo");
+			undo_redo->add_undo_method(node_3d_editor, "update_transform_gizmo");
+		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
 		if (n->is_class("AnimationMixer")) {

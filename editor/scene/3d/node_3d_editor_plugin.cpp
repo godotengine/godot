@@ -599,6 +599,17 @@ int Node3DEditorViewport::get_selected_count() const {
 	return count;
 }
 
+bool Node3DEditorViewport::_has_unlocked_selection() const {
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	for (Node *E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
+		if (sp && !_is_node_locked(sp)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void Node3DEditorViewport::cancel_transform() {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
@@ -2732,7 +2743,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				bool is_select_mode = (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM);
 				bool is_clicked_selected = editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked));
 
-				if (_edit.mode == TRANSFORM_NONE && (is_select_mode || is_clicked_selected)) {
+				if (_edit.mode == TRANSFORM_NONE && (is_select_mode || is_clicked_selected) && _has_unlocked_selection()) {
 					_compute_edit(_edit.original_mouse_pos);
 					clicked = ObjectID();
 					_edit.mode = TRANSFORM_TRANSLATE;
@@ -3002,7 +3013,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					begin_transform(TRANSFORM_SCALE, true);
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", event_mod) && editor_selection->get_top_selected_node_list().size() == 1 && !collision_reposition) {
+			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", event_mod) && editor_selection->get_top_selected_node_list().size() == 1 && !collision_reposition && _has_unlocked_selection()) {
 				if (_edit.mode == TRANSFORM_NONE || _edit.instant) {
 					if (_edit.mode == TRANSFORM_NONE) {
 						_compute_edit(_edit.mouse_pos);
@@ -6109,6 +6120,10 @@ void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 	}
 
 	if (get_selected_count() > 0) {
+		if (!_has_unlocked_selection()) {
+			return;
+		}
+
 		_edit.children_original_globals.clear();
 
 		_edit.mode = p_mode;
@@ -8196,6 +8211,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			undo_redo->add_do_method(this, "_refresh_menu_icons");
 			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->add_do_method(this, "update_transform_gizmo");
+			undo_redo->add_undo_method(this, "update_transform_gizmo");
 			undo_redo->commit_action();
 		} break;
 		case MENU_UNLOCK_SELECTED: {
@@ -8217,6 +8234,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			undo_redo->add_do_method(this, "_refresh_menu_icons");
 			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->add_do_method(this, "update_transform_gizmo");
+			undo_redo->add_undo_method(this, "update_transform_gizmo");
 			undo_redo->commit_action();
 		} break;
 		case MENU_GROUP_SELECTED: {
