@@ -1096,6 +1096,10 @@ static void _propagate_tangents_or_split(LocalVector<SurfaceTool::Vertex> &r_ver
 	}
 }
 
+void SurfaceTool::_generate_tangents_bind() {
+	generate_tangents(/*split*/ false);
+}
+
 void SurfaceTool::generate_tangents(bool p_split) {
 	ERR_FAIL_COND_MSG(!generate_tangents_func, "Meshoptimizer library is not initialized.");
 	ERR_FAIL_COND_MSG(!(format & Mesh::ARRAY_FORMAT_TEX_UV), "UVs are required to generate tangents.");
@@ -1334,7 +1338,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("index"), &SurfaceTool::index);
 	ClassDB::bind_method(D_METHOD("deindex"), &SurfaceTool::deindex);
 	ClassDB::bind_method(D_METHOD("generate_normals", "flip"), &SurfaceTool::generate_normals, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("generate_tangents", "split"), &SurfaceTool::generate_tangents, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("generate_tangents"), &SurfaceTool::_generate_tangents_bind);
 
 	ClassDB::bind_method(D_METHOD("optimize_indices_for_cache"), &SurfaceTool::optimize_indices_for_cache);
 
