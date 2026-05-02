@@ -20,9 +20,17 @@ on:
       - 'v*-komm64*'
 
 env:
+  # d3d12=no: D3D12 driver は dev binary には不要 (Vulkan + GL で動く)。
+  #   有効化するなら misc/scripts/install_d3d12_sdk_windows.py の step が
+  #   要るが、minimum 版方針なので driver を落とす。
+  # accesskit=no: AccessKit (accessibility) も dev binary には不要。
+  # angle=no: ANGLE (OpenGL ES) は dev binary には不要。
   SCONS_FLAGS: >-
     module_text_server_fb_enabled=yes
     debug_symbols=no
+    d3d12=no
+    accesskit=no
+    angle=no
   SCONS_CACHE_MSVC_CONFIG: true
   PYTHONIOENCODING: utf8
 
