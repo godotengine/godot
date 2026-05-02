@@ -795,24 +795,66 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		}
 	}
 
-	// Pre-computed screen rotation correction quaternions (around Z axis).
-	// Format: { w, x, y, z }
+	// Pre-computed screen rotation correction quaternions, applied to the raw device
+	// orientation reported by TYPE_(GAME_)ROTATION_VECTOR so that the quaternion we
+	// forward to Godot is expressed in the *current display* frame rather than the
+	// device's natural orientation. This is the quaternion analog of the axis
+	// remap performed for 3-component sensors in the `switch (cachedRotation)`
+	// block further down in onSensorChanged() (accelerometer / gyroscope / ...);
+	// that block is the ground truth for the sign convention used here, and any
+	// change to one should be mirrored in the other.
+	//
+	// Conceptually:
+	//     Android reports q_device_in_world (device pose relative to the world,
+	//     in the device's natural frame), but the game wants q_screen_in_world
+	//     (same pose expressed in the current screen/display frame). The two
+	//     differ by the screen's rotation relative to the device around the Z
+	//     axis (the axis perpendicular to the display), so:
+	//         q_screen_in_world = q_screen_in_device * q_device_in_world
+	//     The tables below are exactly q_screen_in_device for each
+	//     Surface.ROTATION_* value.
+	//
+	// The unit quaternion for a rotation of angle θ around Z is:
+	//     q(θ) = ( cos(θ/2), 0, 0, sin(θ/2) )   // { w, x, y, z }
+	//
+	// Plugging in the four Surface.ROTATION_* values:
+	//     θ =    0° ->  ( 1,           0, 0,  0           )
+	//     θ =   90° ->  ( cos 45°,     0, 0,  sin 45°     ) = ( √2/2, 0, 0,  √2/2 )
+	//     θ =  180° ->  ( 0,           0, 0,  1           )
+	//     θ =  270° ->  ( cos 135°,    0, 0,  sin 135°    ) = (-√2/2, 0, 0,  √2/2 )
+	//
+	// NOTE: Surface.ROTATION_270 is equivalent to -90°, so an alternative (and
+	// numerically identical up to a global sign, which does not affect the
+	// rotation it represents) form is ( √2/2, 0, 0, -√2/2 ). We use that form to
+	// keep `w` non-negative for consistency with ROTATION_90.
+	//
+	// Format: { w, x, y, z }. √2/2 ≈ 0.7071068.
 	private static final float[] ROTATION_CORRECTION_0 = { 1.0f, 0.0f, 0.0f, 0.0f };
-	private static final float[] ROTATION_CORRECTION_90 = { 0.7071068f, 0.0f, 0.0f, 0.7071068f }; // +90° around Z
-	private static final float[] ROTATION_CORRECTION_180 = { 0.0f, 0.0f, 0.0f, 1.0f }; // 180° around Z
-	private static final float[] ROTATION_CORRECTION_270 = { 0.7071068f, 0.0f, 0.0f, -0.7071068f }; // -90° around Z
+	private static final float[] ROTATION_CORRECTION_90 = { 0.7071068f, 0.0f, 0.0f, 0.7071068f };
+	private static final float[] ROTATION_CORRECTION_180 = { 0.0f, 0.0f, 0.0f, 1.0f };
+	private static final float[] ROTATION_CORRECTION_270 = { 0.7071068f, 0.0f, 0.0f, -0.7071068f };
+
+	// Scratch buffers reused by onSensorChanged() to avoid per-event allocations
+	// on the sensor callback, which can fire at 50-200 Hz. Sensor events are
+	// dispatched serially to a single listener, so these do not need to be
+	// synchronized.
+	private final float[] orientationQuaternion = new float[4];
+	private final float[] correctedOrientation = new float[4];
 
 	/**
-	 * Multiply two quaternions: result = a * b.
-	 * Each quaternion is { w, x, y, z }.
+	 * Multiply two quaternions and store the result into {@code out}: out = a * b.
+	 * Each quaternion is { w, x, y, z }. {@code out} may alias {@code a} or {@code b}.
 	 */
-	private static float[] quaternionMultiply(float[] a, float[] b) {
-		return new float[] {
-			a[0] * b[0] - a[1] * b[1] - a[2] * b[2] - a[3] * b[3],
-			a[0] * b[1] + a[1] * b[0] + a[2] * b[3] - a[3] * b[2],
-			a[0] * b[2] - a[1] * b[3] + a[2] * b[0] + a[3] * b[1],
-			a[0] * b[3] + a[1] * b[2] - a[2] * b[1] + a[3] * b[0]
-		};
+	private static void quaternionMultiply(float[] a, float[] b, float[] out) {
+		// Compute into locals first so that out == a or out == b is safe.
+		final float w = a[0] * b[0] - a[1] * b[1] - a[2] * b[2] - a[3] * b[3];
+		final float x = a[0] * b[1] + a[1] * b[0] + a[2] * b[3] - a[3] * b[2];
+		final float y = a[0] * b[2] - a[1] * b[3] + a[2] * b[0] + a[3] * b[1];
+		final float z = a[0] * b[3] + a[1] * b[2] - a[2] * b[1] + a[3] * b[0];
+		out[0] = w;
+		out[1] = x;
+		out[2] = y;
+		out[3] = z;
 	}
 
 	@Override
@@ -838,9 +880,13 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			if (values.length < 4) {
 				return;
 			}
-			float[] quaternion = new float[4];
-			SensorManager.getQuaternionFromVector(quaternion, values);
-			// quaternion from Android: [w, x, y, z]
+			SensorManager.getQuaternionFromVector(orientationQuaternion, values);
+			// quaternion from Android: [w, x, y, z], expressed in the device's
+			// natural frame. Identity pose per Android's reference frame:
+			// device lying flat, screen up, with the long edge pointing toward
+			// magnetic north. Holding the device upright is therefore *not*
+			// identity; callers should not be surprised if the quaternion is
+			// non-trivial even when the device feels "still".
 
 			// Apply screen rotation correction via quaternion multiplication.
 			float[] correction;
@@ -858,10 +904,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 					correction = ROTATION_CORRECTION_0;
 					break;
 			}
-			float[] corrected = quaternionMultiply(correction, quaternion);
+			quaternionMultiply(correction, orientationQuaternion, correctedOrientation);
 
 			// Pass to JNI as (x, y, z, w) matching Godot's Quaternion constructor order.
-			runnable.setOrientationEvent(corrected[1], corrected[2], corrected[3], corrected[0]);
+			runnable.setOrientationEvent(correctedOrientation[1], correctedOrientation[2], correctedOrientation[3], correctedOrientation[0]);
 			godot.runOnRenderThread(runnable);
 			return;
 		}
