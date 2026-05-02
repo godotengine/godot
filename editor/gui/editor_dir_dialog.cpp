@@ -135,7 +135,7 @@ void EditorDirDialog::_notification(int p_what) {
 				}
 
 				tree->deselect_all();
-				const PackedStringArray parts = base_directory_path.trim_prefix("res://").split("/");
+				const PackedStringArray parts = base_directory_path.trim_prefix("res://").split("/", false);
 				if (parts.is_empty()) {
 					break;
 				}
