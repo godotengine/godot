@@ -53,6 +53,12 @@ protected:
 	virtual Vector3 _collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const;
 
 public:
+	enum CollideMode {
+		COLLIDE_MODE_JOINT,
+		COLLIDE_MODE_INSIDE,
+		COLLIDE_MODE_CHAIN
+	};
+
 	Skeleton3D *get_skeleton() const;
 
 	void set_bone_name(const String &p_name);
@@ -70,3 +76,5 @@ public:
 
 	Vector3 collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const;
 };
+
+VARIANT_ENUM_CAST(SpringBoneCollision3D::CollideMode);

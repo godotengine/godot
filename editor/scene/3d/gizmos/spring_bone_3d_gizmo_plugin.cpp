@@ -309,7 +309,7 @@ Ref<ArrayMesh> SpringBoneCollision3DGizmoPlugin::get_collision_mesh(SpringBoneCo
 
 	SpringBoneCollisionSphere3D *sphere = Object::cast_to<SpringBoneCollisionSphere3D>(p_collision);
 	if (sphere) {
-		draw_sphere(surface_tool, sphere->get_radius(), sphere->is_inside() ? inside_collision_color : collision_color);
+		draw_sphere(surface_tool, sphere->get_radius(), sphere->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_INSIDE ? inside_collision_color : collision_color);
 		return surface_tool->commit();
 	}
 
