@@ -182,6 +182,10 @@ void SpringBoneCollision3D::_bind_methods() {
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position_offset"), "set_position_offset", "get_position_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "rotation_offset"), "set_rotation_offset", "get_rotation_offset");
+
+	BIND_ENUM_CONSTANT(COLLIDE_MODE_JOINT);
+	BIND_ENUM_CONSTANT(COLLIDE_MODE_INSIDE);
+	BIND_ENUM_CONSTANT(COLLIDE_MODE_CHAIN);
 }
 
 void SpringBoneCollision3D::_notification(int p_what) {
