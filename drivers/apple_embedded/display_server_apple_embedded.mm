@@ -479,7 +479,11 @@ void DisplayServerAppleEmbedded::emit_system_theme_changed() {
 	}
 }
 
-Rect2i DisplayServerAppleEmbedded::get_display_safe_area() const {
+Rect2i DisplayServerAppleEmbedded::get_display_safe_area(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	UIEdgeInsets insets = UIEdgeInsetsZero;
 	UIView *view = GDTAppDelegateService.viewController.godotView;
 	if ([view respondsToSelector:@selector(safeAreaInsets)]) {

@@ -254,13 +254,21 @@ Color DisplayServerAndroid::get_base_color() const {
 	return godot_java->get_base_color();
 }
 
-TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts() const {
+TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, TypedArray<Rect2>());
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Array());
 	return godot_io_java->get_display_cutouts();
 }
 
-Rect2i DisplayServerAndroid::get_display_safe_area() const {
+Rect2i DisplayServerAndroid::get_display_safe_area(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Rect2i());
 	return godot_io_java->get_display_safe_area();
