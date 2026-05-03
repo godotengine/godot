@@ -3731,6 +3731,8 @@ Window::Window() {
 		max_size_used = max_size; // Update max_size_used.
 	}
 
+	title_auto_translate_mode = TITLE_AUTO_TRANSLATE_MODE_INHERIT;
+
 	theme_owner = memnew(ThemeOwner(this));
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
 }
