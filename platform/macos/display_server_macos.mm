@@ -1534,6 +1534,84 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	return Rect2i();
 }
 
+TypedArray<Rect2> DisplayServerMacOS::get_display_cutouts(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	TypedArray<Rect2> ret = TypedArray<Rect2>();
+
+	ERR_FAIL_INDEX_V(p_screen, screen_count, ret);
+
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		const float scale = screen_get_max_scale();
+		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
+		NSEdgeInsets safeAreaInsets = [[screenArray objectAtIndex:p_screen] safeAreaInsets];
+
+		float inset_left = safeAreaInsets.left * scale;
+		float inset_top = safeAreaInsets.top * scale;
+		float inset_right = safeAreaInsets.right * scale;
+		float inset_bottom = safeAreaInsets.bottom * scale;
+
+		float screen_width = nsrect.size.width * scale;
+		float screen_height = nsrect.size.height * scale;
+
+		if (inset_left > 0) {
+			Rect2 rect = Rect2(0.0, 0.0, inset_left, screen_height);
+			ret.push_back(rect);
+		}
+
+		if (inset_top > 0) {
+			Rect2 rect = Rect2(0.0, 0.0, screen_width, inset_top);
+			ret.push_back(rect);
+		}
+
+		if (inset_bottom > 0) {
+			Rect2 rect = Rect2(0.0, screen_height - inset_bottom, screen_width, inset_bottom);
+			ret.push_back(rect);
+		}
+
+		if (inset_right > 0) {
+			Rect2 rect = Rect2(screen_width - inset_right, 0.0, inset_right, screen_width);
+			ret.push_back(rect);
+		}
+	}
+
+	return ret;
+}
+
+Rect2i DisplayServerMacOS::get_display_safe_area(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		const float scale = screen_get_max_scale();
+		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
+		NSEdgeInsets safeAreaInsets = [[screenArray objectAtIndex:p_screen] safeAreaInsets];
+
+		int inset_left = safeAreaInsets.left * scale;
+		int inset_top = safeAreaInsets.top * scale;
+		int inset_right = safeAreaInsets.right * scale;
+		int inset_bottom = safeAreaInsets.bottom * scale;
+
+		int screen_width = nsrect.size.width * scale;
+		int screen_height = nsrect.size.height * scale;
+
+		return Rect2i(
+				inset_left,
+				inset_top,
+				screen_width - (inset_left + inset_right),
+				screen_height - (inset_top + inset_bottom));
+	}
+
+	return Rect2i();
+}
+
 Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 	HashSet<CGWindowID> exclude_windows;
 	for (HashMap<DisplayServerEnums::WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
