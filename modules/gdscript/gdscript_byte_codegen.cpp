@@ -933,6 +933,16 @@ void GDScriptByteCodeGenerator::write_get_static_variable(const Address &p_targe
 }
 
 void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_target, const Address &p_source) {
+
+	///[Monarch] the user only hits this case if there is a generic parameter as the function param
+	///so basically if you write `e: E = null` in your function param, the analyser sees the default value = null
+	///and sets use_conversion_assign to true, but since E is basically typeless at runtime, there's nothing to convert to.
+	///this branch merely assigns without conversion and exits if that case is hit.
+	if (!p_target.type.has_type()) {
+		write_assign(p_target, p_source);
+		return;
+	}
+
 	switch (p_target.type.kind) {
 		case GDScriptDataType::BUILTIN: {
 			if (p_target.type.builtin_type == Variant::ARRAY && p_target.type.has_container_element_type(0)) {
