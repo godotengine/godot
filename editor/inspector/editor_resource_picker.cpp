@@ -159,18 +159,18 @@ void EditorResourcePicker::_update_resource() {
 		}
 
 		if (!editable) {
-			tooltip += "\n" + vformat(TTR("The %s cannot be edited in the inspector and can't be made unique directly."), resource_name) + "\n";
+			tooltip += "\n" + vformat(TTR("The %s cannot be edited in the inspector and can't be made unique directly."), resource_name);
 		} else {
 			if (unique_enable) {
-				tooltip += "\n" + TTR("Left-click to make it unique.") + "\n";
+				tooltip += "\n" + TTR("Left-click to make it unique.");
 			}
 
 			if (unique_recursive_enabled) {
-				tooltip += TTR("It is possible to make its subresources unique.") + "\n" + TTR("Right-click to make them unique.");
+				tooltip += "\n" + TTR("It is possible to make its subresources unique.") + "\n" + TTR("Right-click to make them unique.");
 			}
 
 			if (!unique_enable && EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size() == 1) {
-				tooltip += TTR("In order to duplicate it, make its parent Resource unique.") + "\n";
+				tooltip += "\n" + TTR("In order to duplicate it, make its parent Resource unique.");
 			}
 		}
 
