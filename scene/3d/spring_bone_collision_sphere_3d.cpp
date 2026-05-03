@@ -84,25 +84,25 @@ Vector3 SpringBoneCollisionSphere3D::_collide_sphere_taper(const Vector3 &p_orig
 	float taper_fore = (p_bone_origin_radius - p_bone_radius) / p_bone_length;
 	
 	// send the troublesome inside mode and short taper case into old implementation
-	if (p_inside || (fabs(taper_fore) >= 1.0)) { 
+	if (p_inside || (Math::abs(taper_fore) >= 1.0)) { 
 		return _collide_sphere(p_origin, p_radius, p_inside, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 	}
 
 	Vector3 diff = p_current - p_origin;
 	Vector3 bone_axis = p_current - p_current_origin;  // should be length p_bone_radius due to calls to limit_length()
-	float taper_side = sqrt(1.0 - taper_fore * taper_fore);
+	float taper_side = Math::sqrt(1.0 - taper_fore * taper_fore);
 	float bone_axis_sq = bone_axis.dot(bone_axis);
 	float lam = 1.0 - bone_axis.dot(diff) / bone_axis_sq;  // calculated from the tail end
 	Vector3 vecside = p_origin - (p_current_origin + bone_axis * lam);
 	// printf(" zz=%f ", vecside.dot(bone_axis)); // should be zero
 	float radial_distance = vecside.length();
-	if (radial_distance > std::max(p_bone_origin_radius, p_bone_radius) + p_radius) {
+	if (radial_distance > MAX(p_bone_origin_radius, p_bone_radius) + p_radius) {
 		return p_current;
 	}
-	float bone_axis_length = sqrt(bone_axis_sq);
+	float bone_axis_length = Math::sqrt(bone_axis_sq);
 
 	// limit contact with the cone close to the root where it gets twitchy
-	float gapdistance = p_bone_radius * 0.5 + p_bone_origin_radius * 0.5 + p_radius * sqrt(0.5);
+	float gapdistance = p_bone_radius * 0.5 + p_bone_origin_radius * 0.5 + p_radius * Math::sqrt(0.5);
 	float lamconemin = gapdistance / bone_axis_length * 0.5;
 
 	// case of collide sphere being very large.
@@ -157,7 +157,7 @@ Vector3 SpringBoneCollisionSphere3D::_collide_sphere_taper(const Vector3 &p_orig
 	// projection out to the end point of the cone as though it were a lever
 	// (this isn't necessary since the change it makes is masked by the limit_length() function)
 	// also limit the size of the multiplier to avoid extreme movement when near the joint
-	Vector3 p_current_new = p_current_origin + (p_coneaxispointnew - p_current_origin) / std::max<float>(0.1, lamcone);
+	Vector3 p_current_new = p_current_origin + (p_coneaxispointnew - p_current_origin) / MAX(0.1f, lamcone);
 	
 	return p_current_new;
 }
