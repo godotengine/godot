@@ -2643,13 +2643,16 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 		}
 
 		// Batch buffer, texture, draw lists and compute operations together.
-		const uint32_t PriorityTable[RecordedCommand::TYPE_MAX] = {
+		const uint32_t PriorityTable[] = {
 			0, // TYPE_NONE
+			6, // TYPE_BOTTOM_LEVEL_ACCELERATION_STRUCTURE_BUILD
+			6, // TYPE_TOP_LEVEL_ACCELERATION_STRUCTURE_BUILD
 			1, // TYPE_BUFFER_CLEAR
 			1, // TYPE_BUFFER_COPY
 			1, // TYPE_BUFFER_GET_DATA
 			1, // TYPE_BUFFER_UPDATE
 			4, // TYPE_COMPUTE_LIST
+			7, // TYPE_RAYTRACING_LIST
 			3, // TYPE_DRAW_LIST
 			2, // TYPE_TEXTURE_CLEAR_COLOR
 			2, // TYPE_TEXTURE_CLEAR_DEPTH_STENCIL
@@ -2660,6 +2663,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 			2, // TYPE_CAPTURE_TIMESTAMP
 			5, // TYPE_DRIVER_CALLBACK
 		};
+		static_assert(std_size(PriorityTable) == RecordedCommand::TYPE_MAX, "PriorityTable must have one entry per RecordedCommand::Type");
 
 		commands_sorted.clear();
 		commands_sorted.resize(command_count);
