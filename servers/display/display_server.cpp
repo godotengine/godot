@@ -1462,8 +1462,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
 	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
 
-	ClassDB::bind_method(D_METHOD("get_display_cutouts"), &DisplayServer::get_display_cutouts);
-	ClassDB::bind_method(D_METHOD("get_display_safe_area"), &DisplayServer::get_display_safe_area);
+	ClassDB::bind_method(D_METHOD("get_display_cutouts", "screen"), &DisplayServer::get_display_cutouts);
+	ClassDB::bind_method(D_METHOD("get_display_safe_area", "screen"), &DisplayServer::get_display_safe_area);
 
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &DisplayServer::get_screen_count);
 	ClassDB::bind_method(D_METHOD("get_primary_screen"), &DisplayServer::get_primary_screen);
