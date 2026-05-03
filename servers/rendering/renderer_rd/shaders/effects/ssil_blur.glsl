@@ -42,6 +42,7 @@ layout(set = 0, binding = 0) uniform sampler2D source_ssil;
 
 layout(rgba16, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
 
+//layout(set = 2, binding = 0) uniform restrict readonly normal_buffer;
 layout(set = 2, binding = 0) uniform sampler2D depth_buffer;
 
 layout(push_constant, std430) uniform Params {
@@ -65,6 +66,7 @@ vec4 bilateral_blur(vec2 p_uv) {
 	for (int i = 0; i < 5; ++i) {
 		vec2 sample_uv = p_uv + (OFFSETS[i] * blur_step);
 
+		// Hardcoded 0.2 threshold for ease of use on the user's end
 		float sample_depth = textureLod(depth_buffer, sample_uv, 0.0).r;
 		if (abs(sample_depth - center_depth) >= (1.0 - params.edge_threshold)) {
 			continue;

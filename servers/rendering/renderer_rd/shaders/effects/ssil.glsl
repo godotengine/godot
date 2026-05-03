@@ -25,11 +25,11 @@
 #VERSION_DEFINES
 
 #define PI 3.14159265359
+#define SSIL_DEPTH_MIPS_GLOBAL_OFFSET (-4.3)
 
 // Sample count is num_slices * num_samples.
 const int num_samples[5] = { 2, 3, 4, 8, 8 };
 const int num_slices[5] = { 2, 3, 4, 4, 6 };
-const uint lcgM = 2891336453u; // ideal for 32 bits with odd c
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
@@ -145,7 +145,7 @@ uint CountBits(uint v) {
 float ign(vec2 p_uv, uint p_n) {
 	p_uv += 5.588238 * float(p_n);
 
-	return fract(52.9829189 * fract(dot(p_uv, vec2(0.06711056, 0.00583715))));
+	return mod(52.9829189 * mod(0.06711056 * p_uv.x + 0.00583715 * p_uv.y, 1.0), 1.0);
 }
 
 vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
@@ -218,6 +218,9 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 		vec3 gi0 = vec3(0.0);
 		uint occ_bits = 0u;
 
+		const float global_mip_offset = SSIL_DEPTH_MIPS_GLOBAL_OFFSET;
+		float mip_offset = (log2(s) + global_mip_offset);
+
 		vec2 rnd01_vc2 = vec2(randf(uvi.x, uvi.y), randf(uvi.y, uvi.x));
 
 		for (float d = -1.0; d <= 1.0; d += 2.0) {
@@ -241,7 +244,7 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 
 				vec2 sample_uv = sample_pos / vec2(params.screen_size);
 
-				float sample_depth = textureLod(depth_buffer, sample_uv, 0.0).r;
+				float sample_depth = textureLod(depth_buffer, sample_uv, mip_offset).r;
 
 				if (sample_depth <= 0.001) {
 					continue;
