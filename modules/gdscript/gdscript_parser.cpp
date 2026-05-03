@@ -2566,7 +2566,9 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 		push_error(R"(Expected iterable after "in".)");
 	}
 
-	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "for" condition.)");
+	if (!check(GDScriptTokenizer::Token::BRACE_OPEN)) {
+		consume(GDScriptTokenizer::Token::COLON, R"([Reginleif] Expected ":" or "{" after "for" condition.)");
+	}
 
 	// Save break/continue state.
 	bool could_break = can_break;
