@@ -633,6 +633,7 @@ void Node3DEditorViewport::cancel_transform() {
 	}
 
 	collision_reposition = false;
+	_reset_placement_rotation();
 	finish_transform();
 	set_message(TTRC("Transform Aborted."), 3);
 }
@@ -2062,7 +2063,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	}
 
 	if (get_viewport()->gui_get_drag_data()) {
-		// Disable all input actions during drag-and-drop.
+		if (preview_node->is_inside_tree() && _handle_placement_rotate_input(p_event)) {
+			update_preview_node = true;
+		}
+		return;
+	}
+
+	if (collision_reposition && _handle_placement_rotate_input(p_event)) {
 		return;
 	}
 
@@ -2231,7 +2238,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	// Several parts of the 3D navigation are handled here.
 	bool was_navigating = view_3d_controller->is_navigating();
-	view_3d_controller->gui_input(p_event, surface->get_global_rect());
+	if (!collision_reposition) {
+		view_3d_controller->gui_input(p_event, surface->get_global_rect());
+	}
 	if (was_navigating && !view_3d_controller->is_navigating()) {
 		return;
 	}
@@ -2561,6 +2570,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						ruler_label_y->set_visible(false);
 						ruler_label_z->set_visible(false);
 						collision_reposition = false;
+						_reset_placement_rotation();
 						break;
 					}
 
@@ -3778,10 +3788,17 @@ void Node3DEditorViewport::_notification(int p_what) {
 					if (!ruler->is_inside_tree()) {
 						double snap = EDITOR_GET("interface/inspector/default_float_step");
 						int snap_step_decimals = Math::range_step_decimals(snap);
-						set_message(vformat(TTR("Translating: %s"), vformat("%.*v", snap_step_decimals, selected_node->get_global_position())));
+						set_message(vformat(TTR("Translating: %s (Rotate %s: %s degrees)"),
+								vformat("%.*v", snap_step_decimals, selected_node->get_global_position()),
+								placement_rotate_axis.x != 0 ? "X" : (placement_rotate_axis.z != 0 ? "Z" : "Y"),
+								String::num(Math::rad_to_deg(placement_rotate_angle), 1)));
 					}
 
 					selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
+
+					if (Node3DEditorSelectedItem *se_selected = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected_node)) {
+						selected_node->set_global_basis(placement_rotation * se_selected->original.basis);
+					}
 
 					if (ruler->is_inside_tree() && !ruler_start_point->is_visible()) {
 						ruler_end_point->set_global_position(ruler_start_point->get_global_position());
@@ -3802,8 +3819,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
 				double snap = EDITOR_GET("interface/inspector/default_float_step");
 				int snap_step_decimals = Math::range_step_decimals(snap);
-				set_message(vformat(TTR("Instantiating: %s"), vformat("%.*v", snap_step_decimals, preview_node_pos)));
-				Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
+				set_message(vformat(TTR("Instantiating: %s (Rotate %s: %s degrees)"),
+						vformat("%.*v", snap_step_decimals, preview_node_pos),
+						placement_rotate_axis.x != 0 ? "X" : (placement_rotate_axis.z != 0 ? "Z" : "Y"),
+						String::num(Math::rad_to_deg(placement_rotate_angle), 1)));
+				Transform3D preview_gl_transform = Transform3D(placement_rotation, preview_node_pos);
 				preview_node->set_global_transform(preview_gl_transform);
 				if (!preview_node->is_visible()) {
 					preview_node->show();
@@ -3921,6 +3941,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_remove_preview_material();
 			} else {
 				_remove_preview_node();
+				_reset_placement_rotation();
 			}
 		} break;
 
@@ -5597,6 +5618,45 @@ void Node3DEditorViewport::_remove_preview_node() {
 	}
 }
 
+void Node3DEditorViewport::_reset_placement_rotation() {
+	placement_rotation = Basis();
+	placement_rotate_axis = Vector3(0, 1, 0);
+	placement_rotate_angle = 0.0;
+}
+
+bool Node3DEditorViewport::_handle_placement_rotate_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		switch (k->get_keycode()) {
+			case Key::X:
+				placement_rotate_axis = Vector3(1, 0, 0);
+				placement_rotate_angle = 0.0;
+				return true;
+			case Key::Y:
+				placement_rotate_axis = Vector3(0, 1, 0);
+				placement_rotate_angle = 0.0;
+				return true;
+			case Key::Z:
+				placement_rotate_axis = Vector3(0, 0, 1);
+				placement_rotate_angle = 0.0;
+				return true;
+			default:
+				break;
+		}
+	}
+	const Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed()) {
+		const MouseButton btn = mb->get_button_index();
+		if (btn == MouseButton::WHEEL_UP || btn == MouseButton::WHEEL_DOWN) {
+			const real_t step = (btn == MouseButton::WHEEL_UP ? 1 : -1) * Math::deg_to_rad(spatial_editor->get_rotate_snap());
+			placement_rotation = Basis(placement_rotate_axis, step) * placement_rotation;
+			placement_rotate_angle += step;
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Node3DEditorViewport::_apply_preview_material(ObjectID p_target, const Point2 &p_point) const {
 	_reset_preview_material();
 
@@ -5777,9 +5837,11 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 		Transform3D new_tf = node3d->get_transform();
 		if (node3d->is_set_as_top_level()) {
 			new_tf.origin += preview_node_pos;
+			new_tf.basis = placement_rotation * new_tf.basis;
 		} else {
-			new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + node3d->get_position());
-			new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
+			const Transform3D parent_inverse = parent_tf.affine_inverse();
+			new_tf.origin = parent_inverse.xform(preview_node_pos + node3d->get_position());
+			new_tf.basis = parent_inverse.basis * placement_rotation * new_tf.basis;
 		}
 
 		undo_redo->add_do_method(instantiated_scene, "set_transform", new_tf);
@@ -6183,6 +6245,7 @@ void Node3DEditorViewport::commit_transform() {
 	undo_redo->commit_action();
 
 	collision_reposition = false;
+	_reset_placement_rotation();
 	finish_transform();
 	_reset_follow_mode_count();
 	set_message("");

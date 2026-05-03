@@ -244,6 +244,9 @@ private:
 	bool transforming = false;
 	bool transform_gizmo_visible = true;
 	bool collision_reposition = false;
+	Basis placement_rotation;
+	Vector3 placement_rotate_axis = Vector3(0, 1, 0);
+	real_t placement_rotate_angle = 0.0;
 	real_t gizmo_scale;
 
 	bool vertex_snap_mode = false;
@@ -461,6 +464,8 @@ private:
 
 	void _create_preview_node(const Vector<String> &files) const;
 	void _remove_preview_node();
+	void _reset_placement_rotation();
+	bool _handle_placement_rotate_input(const Ref<InputEvent> &p_event);
 	bool _apply_preview_material(ObjectID p_target, const Point2 &p_point) const;
 	void _reset_preview_material() const;
 	void _remove_preview_material();
