@@ -47,9 +47,10 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		// If there is already a binding set, let enter or escape confirm/cancel the popup.
 		if (event.is_valid()) {
 			Ref<InputEventKey> current_key = p_event;
+			Ref<InputEventWithModifiers> modifiers = p_event;
 			// Without this is_visible() check, the gui would not open if the already bound
 			// keybind was escape.
-			if (current_key.is_valid() && is_visible()) {
+			if (current_key.is_valid() && is_visible() && event_listener->has_focus() && !modifiers->get_modifiers_mask()) {
 				if (current_key->get_physical_keycode() == Key::ENTER) {
 					_ok_pressed();
 					return;
