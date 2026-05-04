@@ -794,7 +794,8 @@
 		<method name="is_queued_for_deletion" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the [method Node.queue_free] method was called for the object.
+				Returns [code]true[/code] if the methods [method Node.queue_free] or [method SceneTree.queue_delete] was called for the object.
+				[b]Note:[/b] This method does not return [code]true[/code] on children of the node that [method Node.queue_free] has been called on, even though they will be freed together with the parent.
 			</description>
 		</method>
 		<method name="notification">
