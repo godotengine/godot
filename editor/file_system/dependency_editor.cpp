@@ -972,12 +972,17 @@ void DependencyErrorDialog::show(const String &p_for_file, const HashMap<String,
 	for (const KeyValue<String, HashSet<String>> &E : missing_to_owners) {
 		const String &missing_path = E.key.get_slice("::", 0);
 		const String &missing_type = E.key.get_slice("::", 1);
+		const String &missing_line = E.key.get_slice("::", 2); // May be empty.
 
 		// Check if this specific item is part of a cycle.
 		bool is_cyclic = has_cycles && p_report.has(missing_path);
 
 		TreeItem *missing_ti = root->create_child();
-		missing_ti->set_text(0, missing_path);
+		if (!missing_line.is_empty()) {
+			missing_ti->set_text(0, vformat("%s (line %s)", missing_path, missing_line));
+		} else {
+			missing_ti->set_text(0, missing_path);
+		}
 		missing_ti->set_metadata(0, E.key);
 		missing_ti->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		missing_ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(missing_type));

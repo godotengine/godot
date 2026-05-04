@@ -158,7 +158,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 						_printerr();
 						err = error;
 					} else {
-						ResourceLoader::notify_dependency_error(local_path, path, type);
+						ResourceLoader::notify_dependency_error(local_path, path, type, line);
 					}
 				}
 			} else {
@@ -532,7 +532,7 @@ Error ResourceLoaderText::load() {
 				_printerr();
 				return error;
 			} else {
-				ResourceLoader::notify_dependency_error(local_path, path, type);
+				ResourceLoader::notify_dependency_error(local_path, path, type, lines);
 			}
 		}
 

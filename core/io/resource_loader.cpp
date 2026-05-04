@@ -831,12 +831,12 @@ void ResourceLoader::notify_load_error(const String &p_err) {
 	}
 }
 
-void ResourceLoader::notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type) {
+void ResourceLoader::notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type, int p_line) {
 	if (dep_err_notify) {
 		if (Thread::get_caller_id() == Thread::get_main_id()) {
-			dep_err_notify(p_path, p_dependency, p_type);
+			dep_err_notify(p_path, p_dependency, p_type, p_line);
 		} else {
-			MessageQueue::get_main_singleton()->push_callable(callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type));
+			MessageQueue::get_main_singleton()->push_callable(callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type, p_line));
 		}
 	}
 }

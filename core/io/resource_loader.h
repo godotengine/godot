@@ -95,7 +95,7 @@ public:
 };
 
 typedef void (*ResourceLoadErrorNotify)(const String &p_text);
-typedef void (*DependencyErrorNotify)(const String &p_loading, const String &p_which, const String &p_type);
+typedef void (*DependencyErrorNotify)(const String &p_loading, const String &p_which, const String &p_type, int p_line);
 
 typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
@@ -281,7 +281,7 @@ public:
 	}
 
 	// Loaders can safely use this regardless which thread they are running on.
-	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type);
+	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type, int p_line = -1);
 
 	static void set_dependency_error_notify_func(DependencyErrorNotify p_err_notify) {
 		dep_err_notify = p_err_notify;

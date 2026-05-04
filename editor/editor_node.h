@@ -501,12 +501,16 @@ private:
 
 	String _get_system_info() const;
 
-	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
+	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type, int p_line) {
 		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 		if (!singleton->dependency_errors.has(p_path)) {
 			singleton->dependency_errors[p_path] = HashSet<String>();
 		}
-		singleton->dependency_errors[p_path].insert(p_dep + "::" + p_type);
+		String entry = p_dep + "::" + p_type;
+		if (p_line > 0) {
+			entry += "::" + itos(p_line);
+		}
+		singleton->dependency_errors[p_path].insert(entry);
 	}
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
