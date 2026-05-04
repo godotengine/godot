@@ -86,6 +86,7 @@
 #define WL_KEYBOARD_ENTER 1
 #define WL_KEYBOARD_LEAVE 2
 #define WL_KEYBOARD_KEY 3
+#define WL_KEYBOARD_MODIFIERS 4
 
 #define WL_POINTER_ENTER 0
 #define WL_POINTER_LEAVE 1
@@ -967,6 +968,9 @@ void WaylandEmbedder::seat_name_enter_surface(uint32_t p_seat_name, uint32_t p_w
 
 	DEBUG_LOG_WAYLAND_EMBED(vformat("KB: Entering surface g0x%x", p_wl_surface_id));
 
+	WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[p_seat_name].data;
+	ERR_FAIL_NULL(global_seat_data);
+
 	for (uint32_t local_seat_id : client->registry_globals_instances[p_seat_name]) {
 		WaylandSeatInstanceData *seat_data = (WaylandSeatInstanceData *)client->get_object(local_seat_id)->data;
 		CRASH_COND(seat_data == nullptr);
@@ -978,7 +982,10 @@ void WaylandEmbedder::seat_name_enter_surface(uint32_t p_seat_name, uint32_t p_w
 			// don't use that in the engine, although we should.
 
 			// wl_keyboard::enter(serial, surface, keys) - keys will be empty for now
-			send_wayland_message(client->socket, local_keyboard_id, 1, { serial_counter++, local_surface_id, 0 });
+			send_wayland_message(client->socket, local_keyboard_id, WL_KEYBOARD_ENTER, { serial_counter++, local_surface_id, 0 });
+
+			// wl_keyboard::modifiers
+			send_wayland_message(client->socket, local_keyboard_id, WL_KEYBOARD_MODIFIERS, { serial_counter++, global_seat_data->mods_depressed, global_seat_data->mods_latched, global_seat_data->mods_locked, global_seat_data->group });
 		}
 	}
 
@@ -2228,6 +2235,11 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 			if (global_seat_data->focused_surface_id == surface) {
 				global_seat_data->focused_surface_id = INVALID_ID;
 			}
+
+			global_seat_data->mods_depressed = 0;
+			global_seat_data->mods_latched = 0;
+			global_seat_data->mods_locked = 0;
+			global_seat_data->group = 0;
 		} else if (p_opcode == WL_KEYBOARD_KEY) {
 			// NOTE: modifiers event can be sent even without focus, according to the
 			// spec, so there's no need to skip it.
@@ -2235,6 +2247,12 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Skipped wl_keyboard event due to unfocused surface 0x%x", global_seat_data->focused_surface_id));
 				return MessageStatus::HANDLED;
 			}
+		} else if (p_opcode == WL_KEYBOARD_MODIFIERS) {
+			// uint32_t serial = body[0];
+			global_seat_data->mods_depressed = body[1];
+			global_seat_data->mods_latched = body[2];
+			global_seat_data->mods_locked = body[3];
+			global_seat_data->group = body[4];
 		}
 
 		return MessageStatus::UNHANDLED;

@@ -231,6 +231,12 @@ class WaylandEmbedder {
 
 		uint32_t pointed_surface_id = INVALID_ID;
 		uint32_t focused_surface_id = INVALID_ID;
+
+		// Keyboard stuff.
+		uint32_t mods_depressed = 0;
+		uint32_t mods_latched = 0;
+		uint32_t mods_locked = 0;
+		uint32_t group = 0;
 	};
 
 	struct WaylandKeyboardData : WaylandObjectData {
