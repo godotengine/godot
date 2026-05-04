@@ -14,7 +14,7 @@ import uuid
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_dir, ".."))
 
-import methods
+import methods  # noqa E402
 
 
 def hash(buffer):
@@ -88,7 +88,9 @@ def make_translations(target, source):
     target_h, target_cpp = str(target[0]), str(target[1])
 
     category = os.path.basename(target_h).split("_")[0]
-    sorted_paths = sorted([os.path.abspath(src) for src in source], key=lambda path: os.path.splitext(os.path.basename(path))[0])
+    sorted_paths = sorted(
+        [os.path.abspath(src) for src in source], key=lambda path: os.path.splitext(os.path.basename(path))[0]
+    )
 
     xl_names = []
     msgfmt = shutil.which("msgfmt")
@@ -170,39 +172,37 @@ extern const EditorTranslationList _{category}_translations[];
 """)
 
 
-
 def main():
 
+    parser = argparse.ArgumentParser(description="Editor build tools")
+    parser.add_argument(
+        "--method",
+        required=True,
+        choices=["doc_data_class_path_builder", "register_exporters_builder", "make_doc_header", "make_translations"],
+        help="Builder method to execute",
+    )
+    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
 
-    parser = argparse.ArgumentParser(description='Editor build tools')
-    parser.add_argument('--method', required=True, 
-                       choices=['doc_data_class_path_builder', 'register_exporters_builder', 'make_doc_header', 'make_translations'],
-                       help='Builder method to execute')
-    parser.add_argument('--target', nargs='+', required=True,
-                       help='Target file(s)')
-    parser.add_argument('--source', nargs='+', required=True,
-                       help='Source file(s)')
-    
     args = parser.parse_args()
-    
+
     # Create mock objects
     target = args.target
     source = args.source
-    
 
     # Call the appropriate function
-    if args.method == 'doc_data_class_path_builder':
+    if args.method == "doc_data_class_path_builder":
         doc_data_class_path_builder(target, source)
-    elif args.method == 'register_exporters_builder':
+    elif args.method == "register_exporters_builder":
         register_exporters_builder(target, source)
-    elif args.method == 'make_doc_header':
+    elif args.method == "make_doc_header":
         make_doc_header(target, source)
-    elif args.method == 'make_translations':
+    elif args.method == "make_translations":
         make_translations(target, source)
     else:
         print(f"Unknown method: {args.method}", file=sys.stderr)
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
