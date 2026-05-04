@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "navigation_mesh_generator.h"
+#include "navigation_mesh_generator.compat.inc"
 
 #include "core/object/class_db.h"
 #include "scene/main/node.h"

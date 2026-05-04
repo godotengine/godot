@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_mesh_generator.h                                           */
+/*  nav_mesh_generator_3d.compat.inc                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,34 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
-
-#include "scene/resources/navigation_mesh.h"
-
-class NavigationMeshSourceGeometryData3D;
-
-class NavigationMeshGenerator : public Object {
-	GDCLASS(NavigationMeshGenerator, Object);
-
-	static NavigationMeshGenerator *singleton;
-
-protected:
-	static void _bind_methods();
-
 #ifndef DISABLE_DEPRECATED
-	void _bake_from_source_geometry_data_bind_compat_118005(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable());
-	static void _bind_compatibility_methods();
-#endif
 
-public:
-	static NavigationMeshGenerator *get_singleton();
+#include "navigation_mesh_generator.h"
 
-	NavigationMeshGenerator();
-	~NavigationMeshGenerator();
+#include "core/object/class_db.h"
 
-	void bake(const Ref<NavigationMesh> &p_navigation_mesh, Node *p_root_node);
-	void clear(Ref<NavigationMesh> p_navigation_mesh);
+void NavigationMeshGenerator::_bake_from_source_geometry_data_bind_compat_118005(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
+	bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data, 1, p_callback);
+}
 
-	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
-	void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, uint32_t p_navigation_layers, const Callable &p_callback = Callable());
-};
+void NavigationMeshGenerator::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "callback"), &NavigationMeshGenerator::_bake_from_source_geometry_data_bind_compat_118005, DEFVAL(Callable()));
+}
+
+#endif // DISABLE_DEPRECATED
