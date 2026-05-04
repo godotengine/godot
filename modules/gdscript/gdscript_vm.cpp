@@ -285,6 +285,8 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ASSIGN_TYPED_NATIVE, \
 		&&OPCODE_ASSIGN_TYPED_SCRIPT, \
 		&&OPCODE_CAST_TO_BUILTIN, \
+		&&OPCODE_CAST_TO_ARRAY, \
+		&&OPCODE_CAST_TO_DICTIONARY, \
 		&&OPCODE_CAST_TO_NATIVE, \
 		&&OPCODE_CAST_TO_SCRIPT, \
 		&&OPCODE_CONSTRUCT, \
@@ -1644,12 +1646,103 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
-					err_text = "Invalid cast: could not convert value to '" + Variant::get_type_name(to_type) + "'.";
+					err_text = vformat(R"(Invalid cast. Could not convert value to "%s".)", Variant::get_type_name(to_type));
 					OPCODE_BREAK;
 				}
 #endif
 
 				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CAST_TO_ARRAY) {
+				CHECK_SPACE(6);
+
+				GET_VARIANT_PTR(src, 0);
+				GET_VARIANT_PTR(dst, 1);
+
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 3];
+				int native_type_idx = _code_ptr[ip + 4];
+				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[native_type_idx];
+				GET_VARIANT_PTR(script_type, 4);
+
+				bool valid = true;
+				if (src->get_type() == Variant::ARRAY) {
+					Array *array = VariantInternal::get_array(src);
+					if (array->get_typed_builtin() == ((uint32_t)builtin_type) &&
+							array->get_typed_class_name() == native_type &&
+							array->get_typed_script() == *script_type) {
+						*dst = *src;
+					} else {
+						valid = false;
+					}
+				} else if (src->get_type() >= Variant::PACKED_BYTE_ARRAY) {
+					Array array;
+					array.set_typed(builtin_type, native_type, *script_type);
+					array.assign(*src);
+					*dst = array;
+				} else {
+					valid = false;
+				}
+
+				if (!valid) {
+#ifdef DEBUG_ENABLED
+					const String elem_type = _get_element_type(builtin_type, native_type, Ref<Script>(*script_type));
+					err_text = vformat(R"(Invalid cast. Could not convert value to "Array[%s]".)", elem_type);
+#endif // DEBUG_ENABLED
+					OPCODE_BREAK;
+				}
+
+				ip += 6;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CAST_TO_DICTIONARY) {
+				CHECK_SPACE(9);
+
+				GET_VARIANT_PTR(src, 0);
+				GET_VARIANT_PTR(dst, 1);
+
+				Variant::Type key_builtin_type = (Variant::Type)_code_ptr[ip + 3];
+				int key_native_type_idx = _code_ptr[ip + 4];
+				GD_ERR_BREAK(key_native_type_idx < 0 || key_native_type_idx >= _global_names_count);
+				const StringName key_native_type = _global_names_ptr[key_native_type_idx];
+				GET_VARIANT_PTR(key_script_type, 4);
+
+				Variant::Type value_builtin_type = (Variant::Type)_code_ptr[ip + 6];
+				int value_native_type_idx = _code_ptr[ip + 7];
+				GD_ERR_BREAK(value_native_type_idx < 0 || value_native_type_idx >= _global_names_count);
+				const StringName value_native_type = _global_names_ptr[value_native_type_idx];
+				GET_VARIANT_PTR(value_script_type, 7);
+
+				bool valid = true;
+				if (src->get_type() == Variant::DICTIONARY) {
+					Dictionary *dict = VariantInternal::get_dictionary(src);
+					if (dict->get_typed_key_builtin() == ((uint32_t)key_builtin_type) &&
+							dict->get_typed_key_class_name() == key_native_type &&
+							dict->get_typed_key_script() == *key_script_type &&
+							dict->get_typed_value_builtin() == ((uint32_t)value_builtin_type) &&
+							dict->get_typed_value_class_name() == value_native_type &&
+							dict->get_typed_value_script() == *value_script_type) {
+						*dst = *src;
+					} else {
+						valid = false;
+					}
+				} else {
+					valid = false;
+				}
+
+				if (!valid) {
+#ifdef DEBUG_ENABLED
+					const String key_type = _get_element_type(key_builtin_type, key_native_type, Ref<Script>(*key_script_type));
+					const String value_type = _get_element_type(value_builtin_type, value_native_type, Ref<Script>(*value_script_type));
+					err_text = vformat(R"(Invalid cast. Could not convert value to "Dictionary[%s, %s]".)", key_type, value_type);
+#endif // DEBUG_ENABLED
+					OPCODE_BREAK;
+				}
+
+				ip += 9;
 			}
 			DISPATCH_OPCODE;
 
@@ -1668,7 +1761,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
-					err_text = "Invalid cast: can't convert a non-object value to an object type.";
+					err_text = "Invalid cast. Can't convert a non-object value to an object type.";
 					OPCODE_BREAK;
 				}
 #endif
@@ -1700,7 +1793,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
-					err_text = "Trying to assign a non-object value to a variable of type '" + base_type->get_path().get_file() + "'.";
+					err_text = vformat(R"(Trying to assign a non-object value to a variable of type "%s".)", base_type->get_path().get_file());
 					OPCODE_BREAK;
 				}
 #endif
