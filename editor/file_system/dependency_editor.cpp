@@ -1146,17 +1146,17 @@ DependencyErrorDialog::DependencyErrorDialog() {
 void DependencyErrorDialog::_update_hint_label(bool p_has_cycles, const HashSet<String> &p_cycle_types) {
 	if (p_has_cycles) {
 		String hint_text = TTR("[b]Cyclic reference detected[/b]\n\n"
-				"[b]To fix the affected scene(s):[/b]\n"
-				"1. Create a new empty scene (e.g., [code]placeholder.tscn[/code])\n"
-				"2. Click the edit icon next to a listed file to open the dependency editor\n"
-				"3. Replace one of the cyclic references with the placeholder scene\n"
-				"4. Open the scene and fix the underlying issue\n\n");
+							   "[b]To fix the affected scene(s):[/b]\n"
+							   "1. Create a new empty scene (e.g., [code]placeholder.tscn[/code])\n"
+							   "2. Click the edit icon next to a listed file to open the dependency editor\n"
+							   "3. Replace one of the cyclic references with the placeholder scene\n"
+							   "4. Open the scene and fix the underlying issue\n\n");
 
 		if (p_cycle_types.has("PackedScene")) {
 			hint_text += TTR("[b]To prevent this in future:[/b]\n"
-					"Scenes cannot reference each other as [code]@export var scene: PackedScene[/code].\n"
-					"Use [code]@export_file(\"*.tscn\") var scene_path: String[/code] instead,\n"
-					"then load dynamically: [code]var scene = load(scene_path)[/code]");
+							 "Scenes cannot reference each other as [code]@export var scene: PackedScene[/code].\n"
+							 "Use [code]@export_file(\"*.tscn\") var scene_path: String[/code] instead,\n"
+							 "then load dynamically: [code]var scene = load(scene_path)[/code]");
 		}
 
 		hint_label->set_text(hint_text);
