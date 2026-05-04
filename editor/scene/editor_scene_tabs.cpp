@@ -42,6 +42,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/run/editor_run_bar.h"
+#include "editor/run/game_view_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -107,7 +108,7 @@ void EditorSceneTabs::_scene_tab_hovered(int p_tab) {
 	// Currently the tab previews are displayed under the running game process when embed.
 	// Right now, the easiest technique to fix that is to prevent displaying the tab preview
 	// when the user is in the Game View.
-	if (EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index() == EditorMainScreen::EDITOR_GAME && EditorRunBar::get_singleton()->is_playing()) {
+	if (EditorNode::get_singleton()->get_editor_main_screen()->get_current_tab_control() == GameView::get_dock() && EditorRunBar::get_singleton()->is_playing()) {
 		return;
 	}
 
@@ -425,10 +426,6 @@ void EditorSceneTabs::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void EditorSceneTabs::add_extra_button(Button *p_button) {
-	tabbar_container->add_child(p_button);
-}
-
 void EditorSceneTabs::set_current_tab(int p_tab) {
 	scene_tabs->set_current_tab(p_tab);
 }
@@ -461,6 +458,8 @@ EditorSceneTabs::EditorSceneTabs() {
 
 	scene_tabs = memnew(TabBar);
 	scene_tabs->add_tab("unsaved");
+	scene_tabs->set_theme_type_variation("MainScreenContainer");
+	scene_tabs->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
 	scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
@@ -508,6 +507,7 @@ EditorSceneTabs::EditorSceneTabs() {
 
 	Control *tab_preview_anchor = memnew(Control);
 	tab_preview_anchor->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	tab_preview_anchor->set_z_index(1);
 	add_child(tab_preview_anchor);
 
 	tab_preview_panel = memnew(Panel);

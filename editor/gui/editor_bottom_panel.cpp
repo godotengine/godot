@@ -34,6 +34,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
@@ -215,14 +216,13 @@ void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
 	EditorNode::get_top_split()->set_visible(!p_pressed);
 
 	Button *distraction_free = EditorNode::get_singleton()->get_distraction_free_button();
-	distraction_free->set_meta("_scene_tabs_owned", !p_pressed);
+	distraction_free->set_meta("_distraction_free_owned", !p_pressed);
 	EditorNode::get_singleton()->update_distraction_free_button_theme();
 	if (p_pressed) {
 		distraction_free->reparent(bottom_hbox);
 		bottom_hbox->move_child(distraction_free, -3);
 	} else {
-		distraction_free->get_parent()->remove_child(distraction_free);
-		EditorSceneTabs::get_singleton()->add_extra_button(distraction_free);
+		distraction_free->reparent(EditorNode::get_editor_main_screen()->get_internal_container());
 	}
 	_theme_changed();
 }

@@ -33,6 +33,7 @@
 #include "core/object/callable_mp.h"
 #include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/window_wrapper.h"
@@ -997,17 +998,6 @@ void DockSlotGrid::_update_rect_cache() {
 		rect.size = rect.size * CELL_SIZE * EDSCALE + (rect.size - Vector2i(1, 1)) * MARGINS * EDSCALE;
 		rect_cache[i] = rect;
 	}
-
-	// Temporarily hard-coded, until main screen is registered as a slot.
-	{
-		Rect2 rect = Rect2i(2, 0, 4, 4);
-		if (is_layout_rtl()) {
-			rect.position.x = GRID_SIZE.x - rect.position.x - rect.size.x;
-		}
-		rect.position = rect.position * CELL_SIZE * EDSCALE + (rect.position + Vector2i(0, 1)) * MARGINS * EDSCALE;
-		rect.size = rect.size * CELL_SIZE * EDSCALE + (rect.size - Vector2i(1, 1)) * MARGINS * EDSCALE;
-		main_screen_rect = rect;
-	}
 }
 
 void DockSlotGrid::_bind_methods() {
@@ -1080,7 +1070,6 @@ void DockSlotGrid::_notification(int p_what) {
 					}
 				}
 			}
-			draw_rect(main_screen_rect, unusable_dock_color);
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {

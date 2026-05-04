@@ -239,6 +239,17 @@ EditorDock *DockTabContainer::get_dock(int p_idx) const {
 	return Object::cast_to<EditorDock>(get_tab_control(p_idx));
 }
 
+EditorDock *DockTabContainer::get_dock_by_name(const String &p_name) const {
+	for (int i = 0; i < get_tab_count(); i++) {
+		EditorDock *dock = get_dock(i);
+		ERR_CONTINUE(!dock);
+		if (dock->get_display_title() == p_name) {
+			return dock;
+		}
+	}
+	return nullptr;
+}
+
 void DockTabContainer::show_drag_hint() {
 	if (!is_visible_in_tree()) {
 		return;
