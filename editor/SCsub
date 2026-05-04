@@ -22,14 +22,13 @@ if env.editor_build:
     # Register exporters
     gen_exporters = env.CommandNoCache(
         "export/register_exporters.gen.cpp",
-        env.Value(env['PLATFORM_EXPORTERS']),
-        Action(f"{sys.executable} editor/editor_builders.py --method register_exporters_builder --target $TARGET --source \"$PLATFORM_EXPORTERS\""
-        # ,
-        # "Generating $TARGET"
+        env.Value(env["PLATFORM_EXPORTERS"]),
+        Action(
+            f'{sys.executable} editor/editor_builders.py --method register_exporters_builder --target $TARGET --source "$PLATFORM_EXPORTERS"',
+            "Generating $TARGET",
         ),
-        # env.Run(editor_builders.register_exporters_builder),
     )
-    for e in env['PLATFORM_EXPORTERS']:
+    for e in env["PLATFORM_EXPORTERS"]:
         # Add all .cpp files in export folder
         env.add_source_files(env.editor_sources, f"../platform/{e}/export/*.cpp")
 
