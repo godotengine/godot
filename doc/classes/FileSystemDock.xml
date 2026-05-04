@@ -33,7 +33,7 @@
 		</method>
 	</methods>
 	<signals>
-		<signal name="display_mode_changed">
+		<signal name="layout_changed">
 			<description>
 				Emitted when the user switches file display mode or split mode.
 			</description>

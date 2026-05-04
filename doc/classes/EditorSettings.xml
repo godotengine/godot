@@ -820,6 +820,21 @@
 		<member name="filesystem/directories/default_project_path" type="String" setter="" getter="">
 			The folder where new projects should be created by default when clicking the project manager's [b]New Project[/b] button. This can be set to the same value as [member filesystem/directories/autoscan_project_path] for convenience.
 		</member>
+		<member name="filesystem/theme/general/toolbar_buttons" type="int" setter="" getter="">
+			The toolbar buttons to show in the FileSystem dock.
+		</member>
+		<member name="filesystem/theme/general/display_mode" type="int" setter="" getter="">
+			The display mode of the FileSystem dock.
+		</member>
+		<member name="filesystem/theme/file_list/toolbar_buttons" type="int" setter="" getter="">
+			The toolbar buttons to show in the file list.
+		</member>
+		<member name="filesystem/theme/file_list/display_mode" type="int" setter="" getter="">
+			The display mode of the file list.
+		</member>
+		<member name="filesystem/theme/file_list/position" type="int" setter="" getter="">
+			The position of the file list.
+		</member>
 		<member name="filesystem/external_programs/3d_model_editor" type="String" setter="" getter="">
 			The program that opens 3D model scene files when clicking "Open in External Program" option in Filesystem Dock. If not specified, the file will be opened in the system's default program.
 		</member>
