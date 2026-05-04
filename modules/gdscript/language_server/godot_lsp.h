@@ -1702,6 +1702,63 @@ struct Workspace {
 	}
 };
 
+
+struct WorkspaceSymbol {
+	/**
+	 * name of this symbol.
+	 */
+	String name;
+
+	/**
+	 * The kind of this symbol
+	 */
+	int kind;
+
+	/**
+	 * The symbol containing this symbol
+	 */
+	String containerName;
+
+	/**
+	 * The location of this symbol
+	 */
+	Location location;
+
+	/**
+	 * Takes information from a document symbol and presents it as a workspace symbol
+	 */
+	static WorkspaceSymbol from_doc_symbol(const DocumentSymbol &p_ds) {
+		WorkspaceSymbol ws;
+		ws.name = p_ds.name;
+		ws.kind = p_ds.kind;
+		ws.location.uri = p_ds.uri;
+		ws.location.range = p_ds.range;
+		return ws;
+	}
+
+	/**
+	 * Creates a workspace symbol for all the child symbols in the script
+	 */
+	static WorkspaceSymbol from_doc_symbol(const DocumentSymbol &p_ds, const String &p_container) {
+		WorkspaceSymbol ws = from_doc_symbol(p_ds);
+		ws.containerName = p_container;
+		return ws;
+	}
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["name"] = name;
+		dict["kind"] = kind;
+		if (!containerName.is_empty()) {
+			dict["containerName"] = containerName;
+		}
+		dict["location"] = location.to_json();
+
+		return dict;
+	}
+};
+
 struct ServerCapabilities {
 	/**
 	 * Defines how text documents are synced. Is either a detailed structure defining each notification or
@@ -1761,7 +1818,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides workspace symbol support.
 	 */
-	bool workspaceSymbolProvider = false;
+	bool workspaceSymbolProvider = true;
 
 	/**
 	 * The server supports workspace folder.
