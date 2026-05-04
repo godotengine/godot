@@ -73,5 +73,5 @@ void JNISingleton::add_signal(const StringName &p_name, const Vector<Variant::Ty
 	for (int i = 0; i < p_args.size(); i++) {
 		mi.arguments.push_back(PropertyInfo(p_args[i], "arg" + itos(i + 1)));
 	}
-	ADD_SIGNAL(mi);
+	add_user_signal(mi);
 }
