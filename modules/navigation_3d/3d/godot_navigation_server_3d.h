@@ -179,6 +179,9 @@ public:
 	COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform);
 	virtual Transform3D region_get_transform(RID p_region) const override;
 	COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navigation_mesh);
+#ifndef DISABLE_DEPRECATED
+	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) override;
+#endif // DISABLE_DEPRECATED
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;

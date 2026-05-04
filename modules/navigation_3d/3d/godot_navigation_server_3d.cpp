@@ -560,6 +560,21 @@ COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navi
 	region->set_navigation_mesh(p_navigation_mesh);
 }
 
+#ifndef DISABLE_DEPRECATED
+void GodotNavigationServer3D::region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) {
+	ERR_FAIL_COND(p_navigation_mesh.is_null());
+	ERR_FAIL_NULL(p_root_node);
+
+	WARN_PRINT_ONCE("NavigationServer3D::region_bake_navigation_mesh() is deprecated due to core threading changes. To upgrade existing code, first create a NavigationMeshSourceGeometryData3D resource. Use this resource with method parse_source_geometry_data() to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with method bake_from_source_geometry_data() to bake a navigation mesh..");
+
+	p_navigation_mesh->clear();
+	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
+	source_geometry_data.instantiate();
+	parse_source_geometry_data(p_navigation_mesh, source_geometry_data, p_root_node);
+	bake_from_source_geometry_data(p_navigation_mesh, source_geometry_data, 1);
+}
+#endif // DISABLE_DEPRECATED
+
 int GodotNavigationServer3D::region_get_connections_count(RID p_region) const {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, 0);
