@@ -32,8 +32,10 @@
 
 #include "core/object/callable_mp.h"
 #include "editor/editor_data.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/inspector/editor_inspector.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/margin_container.h"
 
@@ -41,6 +43,10 @@ Size2 EditorObjectSelector::get_minimum_size() const {
 	Ref<Font> font = get_theme_font(SceneStringName(font));
 	int font_size = get_theme_font_size(SceneStringName(font_size));
 	return Button::get_minimum_size() + Size2(0, font->get_height(font_size));
+}
+
+bool EditorObjectSelector::has_object() const {
+	return !get_tooltip_text().is_empty();
 }
 
 void EditorObjectSelector::_add_children_to_popup(Object *p_obj, int p_depth) {
@@ -89,12 +95,14 @@ void EditorObjectSelector::_add_children_to_popup(Object *p_obj, int p_depth) {
 }
 
 void EditorObjectSelector::_show_popup() {
-	if (sub_objects_menu->is_visible()) {
-		sub_objects_menu->hide();
-		return;
-	}
+	if (!EditorInterface::get_singleton()->get_inspector()->is_pinned()) {
+		if (sub_objects_menu->is_visible()) {
+			sub_objects_menu->hide();
+			return;
+		}
 
-	sub_objects_menu->clear();
+		sub_objects_menu->clear();
+	}
 
 	Rect2 rect = get_screen_rect();
 	rect.position.y += rect.size.height;
@@ -105,14 +113,16 @@ void EditorObjectSelector::_show_popup() {
 }
 
 void EditorObjectSelector::_about_to_show() {
-	Object *obj = ObjectDB::get_instance(history->get_path_object(history->get_path_size() - 1));
-	if (!obj) {
-		return;
+	if (!EditorInterface::get_singleton()->get_inspector()->is_pinned()) {
+		Object *obj = ObjectDB::get_instance(history->get_path_object(history->get_path_size() - 1));
+		if (!obj) {
+			return;
+		}
+
+		objects.clear();
+
+		_add_children_to_popup(obj);
 	}
-
-	objects.clear();
-
-	_add_children_to_popup(obj);
 	if (sub_objects_menu->get_item_count() == 0) {
 		sub_objects_menu->add_item(TTR("No sub-resources found."));
 		sub_objects_menu->set_item_disabled(0, true);
@@ -120,6 +130,10 @@ void EditorObjectSelector::_about_to_show() {
 }
 
 void EditorObjectSelector::update_path() {
+	if (EditorInterface::get_singleton()->get_inspector()->is_pinned()) {
+		return;
+	}
+
 	for (int i = 0; i < history->get_path_size(); i++) {
 		Object *obj = ObjectDB::get_instance(history->get_path_object(i));
 		if (!obj) {
@@ -163,6 +177,10 @@ void EditorObjectSelector::update_path() {
 }
 
 void EditorObjectSelector::clear_path() {
+	if (EditorInterface::get_singleton()->get_inspector()->is_pinned()) {
+		return;
+	}
+
 	set_disabled(true);
 	set_tooltip_text("");
 

@@ -2951,7 +2951,9 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 	}
 
 	// Preview color change, bypassing undo/redo.
-	get_edited_object()->set(get_edited_property(), p_color);
+	if (Object *object = get_edited_object()) {
+		object->set(get_edited_property(), p_color);
+	}
 }
 
 void EditorPropertyColor::_picker_created() {
@@ -2968,9 +2970,11 @@ void EditorPropertyColor::_popup_opening() {
 }
 
 void EditorPropertyColor::_popup_closed() {
-	get_edited_object()->set(get_edited_property(), was_checked ? Variant(last_color) : Variant());
-	if (!picker->get_pick_color().is_equal_approx(last_color)) {
-		emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
+	if (Object *object = get_edited_object()) {
+		object->set(get_edited_property(), was_checked ? Variant(last_color) : Variant());
+		if (!picker->get_pick_color().is_equal_approx(last_color)) {
+			emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
+		}
 	}
 }
 
@@ -3020,9 +3024,11 @@ void EditorPropertyNodePath::_set_read_only(bool p_read_only) {
 }
 
 Variant EditorPropertyNodePath::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
-	if (p_prop == get_edited_property()) {
-		r_valid = true;
-		return const_cast<EditorPropertyNodePath *>(this)->get_edited_object()->get(get_edited_property(), &r_valid);
+	if (Object *object = const_cast<EditorPropertyNodePath *>(this)->get_edited_object()) {
+		if (p_prop == get_edited_property()) {
+			r_valid = true;
+			return object->get(get_edited_property(), &r_valid);
+		}
 	}
 	return Variant();
 }
@@ -3289,8 +3295,10 @@ Node *EditorPropertyNodePath::get_base_node() {
 	Node *base_node = Object::cast_to<Node>(get_edited_object());
 
 	// For proxy objects, specifies the node to which the path is relative.
-	if (!base_node && get_edited_object()->has_meta("__base_node_relative")) {
-		base_node = Object::cast_to<Node>(get_edited_object()->get_meta("__base_node_relative"));
+	if (Object *object = get_edited_object()) {
+		if (!base_node && object->has_meta("__base_node_relative")) {
+			base_node = Object::cast_to<Node>(object->get_meta("__base_node_relative"));
+		}
 	}
 
 	if (!base_node) {
@@ -3309,9 +3317,10 @@ Node *EditorPropertyNodePath::get_base_node() {
 	if (!use_path_from_scene_root) {
 		return base_node;
 	}
-
-	if (get_edited_object()->has_method("get_root_path")) {
-		return Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
+	if (Object *object = get_edited_object()) {
+		if (object->has_method("get_root_path")) {
+			return Object::cast_to<Node>(object->call("get_root_path"));
+		}
 	}
 
 	if (!base_node) {
@@ -3408,9 +3417,11 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 	}
 
 	if (!p_inspect && use_sub_inspector) {
-		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
-		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
-		update_property();
+		if (Object *object = get_edited_object()) {
+			bool unfold = !object->editor_is_section_unfolded(get_edited_property());
+			object->editor_set_section_unfold(get_edited_property(), unfold);
+			update_property();
+		}
 	} else if (!is_checkable() || is_checked()) {
 		emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
 	}
@@ -3446,10 +3457,12 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 	// Changing the value of Script-type exported variables of the main script should not trigger saving/reloading properties.
 	bool is_script = false;
 	Ref<Script> s = p_resource;
-	if (get_edited_object() && s.is_valid() && get_edited_property() == CoreStringName(script)) {
-		is_script = true;
-		InspectorDock::get_singleton()->store_script_properties(get_edited_object());
-		s->call("set_instance_base_type", get_edited_object()->get_class());
+	if (Object *object = get_edited_object()) {
+		if (object && s.is_valid() && get_edited_property() == CoreStringName(script)) {
+			is_script = true;
+			InspectorDock::get_singleton()->store_script_properties(object);
+			s->call("set_instance_base_type", object->get_class());
+		}
 	}
 
 	// Prevent the creation of invalid ViewportTextures when possible.
@@ -3760,11 +3773,13 @@ void EditorPropertyResource::set_use_filter(bool p_use) {
 }
 
 void EditorPropertyResource::fold_resource() {
-	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
-	if (unfolded) {
-		resource_picker->set_toggle_pressed(false);
-		get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
-		update_property();
+	if (Object *object = get_edited_object()) {
+		bool unfolded = object->editor_is_section_unfolded(get_edited_property());
+		if (unfolded) {
+			resource_picker->set_toggle_pressed(false);
+			object->editor_set_section_unfold(get_edited_property(), false);
+			update_property();
+		}
 	}
 }
 
