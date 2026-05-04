@@ -14,7 +14,9 @@ set(OPENXR_INCLUDE_DIR "${GODOT_ROOT_DIR}/thirdparty/openxr/include" CACHE STRIN
 file(GLOB_RECURSE SOURCES ${GODOT_ROOT_DIR}/*.c**)
 file(GLOB_RECURSE HEADERS ${GODOT_ROOT_DIR}/*.h**)
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS}
+        ../../../../tests/scene/test_node_3d_editor_plugin.cpp
+)
 target_include_directories(${PROJECT_NAME}
         SYSTEM PUBLIC
         ${GODOT_ROOT_DIR}
