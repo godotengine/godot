@@ -36,6 +36,7 @@ class EditorFileDialog;
 class EditorFileSystemDirectory;
 class ItemList;
 class PopupMenu;
+class RichTextLabel;
 class Tree;
 class TreeItem;
 class VBoxContainer;
