@@ -520,7 +520,7 @@ for tool in custom_tools:
 env.Prepend(CPPPATH=["#"])
 
 # configure ENV for platform
-env.platform_exporters = platform_exporters
+env['PLATFORM_EXPORTERS'] = platform_exporters
 env.platform_apis = platform_apis
 
 # Configuration of build targets:

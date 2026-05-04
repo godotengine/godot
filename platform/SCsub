@@ -11,7 +11,7 @@ env.platform_sources = []
 
 
 # Generate export icons
-for platform in env.platform_exporters:
+for platform in env['PLATFORM_EXPORTERS']:
     for path in glob(f"{platform}/export/*.svg"):
         env.CommandNoCache(path.replace(".svg", "_svg.gen.h"), path, env.Run(platform_builders.export_icon_builder))
 
