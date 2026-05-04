@@ -1572,7 +1572,7 @@ void EditorNode::_scan_external_changes() {
 	}
 
 	String project_settings_path = ProjectSettings::get_singleton()->get_resource_path().path_join("project.godot");
-	if (FileAccess::get_modified_time(project_settings_path) > ProjectSettings::get_singleton()->get_last_saved_time()) {
+	if (FileAccess::get_modified_time(project_settings_path) > ProjectSettings::get_singleton()->get_last_saved_time() && FileAccess::get_md5(project_settings_path) != ProjectSettings::get_singleton()->get_last_saved_md5()) {
 		TreeItem *ti = disk_changed_list->create_item(r);
 		ti->set_text(0, "project.godot");
 		need_reload = true;
