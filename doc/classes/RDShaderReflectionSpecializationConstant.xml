@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDShaderReflectionSpecializationConstant" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Specialization constant reflected from SPIR-V bytecode.
+	</brief_description>
+	<description>
+		Describes a specialization constant declared by SPIR-V bytecode reflected with [method RenderingDevice.shader_reflect_spirv].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="constant_id" type="int" setter="" getter="get_constant_id" default="0">
+			The specialization constant ID declared by the shader.
+		</member>
+		<member name="default_value" type="Variant" setter="" getter="get_default_value">
+			The default value declared by the shader.
+		</member>
+		<member name="name" type="String" setter="" getter="get_name" default="&quot;&quot;">
+			The reflected constant name, if present in the SPIR-V bytecode.
+		</member>
+		<member name="stages" type="int" setter="" getter="get_stages" default="0">
+			Bitmask of shader stages that use this specialization constant. Use the [code]RenderingDevice.SHADER_STAGE_*_BIT[/code] constants to test the returned value.
+		</member>
+		<member name="value_type" type="int" setter="" getter="get_value_type" default="0">
+			The [enum RenderingDevice.PipelineSpecializationConstantType] value type.
+		</member>
+	</members>
+</class>

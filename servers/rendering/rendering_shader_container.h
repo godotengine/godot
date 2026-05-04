@@ -167,12 +167,14 @@ protected:
 	};
 
 	struct ReflectUniform : ReflectSymbol<SpvReflectDescriptorBinding> {
+		String name;
 		RDC::UniformType type = RDC::UniformType::UNIFORM_TYPE_MAX;
 		uint32_t binding = 0;
 
 		ReflectImageTraits image;
 
 		uint32_t length = 0; // Size of arrays (in total elements), or ubos (in bytes * total elements).
+		Vector<RDC::ShaderMember> members;
 		bool writable = false;
 
 		bool operator<(const ReflectUniform &p_other) const {
@@ -196,6 +198,7 @@ protected:
 	};
 
 	struct ReflectSpecializationConstant : ReflectSymbol<SpvReflectSpecializationConstant> {
+		String name;
 		RDC::PipelineSpecializationConstantType type = {};
 		uint32_t constant_id = 0xffffffff;
 		union {
@@ -229,7 +232,9 @@ protected:
 		uint64_t vertex_input_mask = 0;
 		uint32_t fragment_output_mask = 0;
 		uint32_t compute_local_size[3] = {};
+		String push_constant_name;
 		uint32_t push_constant_size = 0;
+		Vector<RDC::ShaderMember> push_constant_members;
 		bool has_multiview = false;
 		bool has_dynamic_buffers = false;
 		RDC::PipelineType pipeline_type = RDC::PIPELINE_TYPE_RASTERIZATION;
@@ -277,7 +282,8 @@ protected:
 	virtual bool _set_code_from_spirv(const ReflectShader &p_shader) = 0;
 
 	void set_from_shader_reflection(const ReflectShader &p_reflection);
-	Error reflect_spirv(const String &p_shader_name, Span<RDC::ShaderStageSPIRVData> p_spirv, ReflectShader &r_shader);
+	RDC::ShaderReflection make_shader_reflection(const ReflectShader &p_reflection) const;
+	Error reflect_spirv(const String &p_shader_name, Span<RDC::ShaderStageSPIRVData> p_spirv, ReflectShader &r_shader, bool p_full_reflection = false);
 
 public:
 	enum CompressionFlags {
@@ -295,6 +301,8 @@ public:
 	Vector<Shader> shaders;
 
 	bool set_code_from_spirv(const String &p_shader_name, Span<RDC::ShaderStageSPIRVData> p_spirv);
+	bool set_reflection_from_spirv(const String &p_shader_name, Span<RDC::ShaderStageSPIRVData> p_spirv);
+	RDC::ShaderReflection get_reflection_from_spirv(const String &p_shader_name, Span<RDC::ShaderStageSPIRVData> p_spirv);
 	RDC::ShaderReflection get_shader_reflection() const;
 	bool from_bytes(const PackedByteArray &p_bytes);
 	PackedByteArray to_bytes() const;

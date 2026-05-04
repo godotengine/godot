@@ -1103,12 +1103,30 @@ public:
 
 	static const char *SHADER_STAGE_NAMES[SHADER_STAGE_MAX];
 
+	struct ShaderMember {
+		String name;
+		uint32_t offset = 0;
+		uint32_t size = 0;
+		uint32_t padded_size = 0;
+		uint32_t type = 0;
+		uint32_t numeric_width = 0;
+		uint32_t numeric_signedness = 0;
+		uint32_t vector_component_count = 0;
+		uint32_t matrix_column_count = 0;
+		uint32_t matrix_row_count = 0;
+		uint32_t matrix_stride = 0;
+		PackedInt32Array array_dimensions;
+		Vector<ShaderMember> members;
+	};
+
 	struct ShaderUniform {
+		String name;
 		UniformType type = UniformType::UNIFORM_TYPE_MAX;
 		bool writable = false;
 		uint32_t binding = 0;
 		BitField<ShaderStage> stages = {};
 		uint32_t length = 0; // Size of arrays (in total elements), or ubos (in bytes * total elements).
+		Vector<ShaderMember> members;
 
 		bool operator!=(const ShaderUniform &p_other) const {
 			return binding != p_other.binding || type != p_other.type || writable != p_other.writable || stages != p_other.stages || length != p_other.length;
@@ -1135,6 +1153,7 @@ public:
 	};
 
 	struct ShaderSpecializationConstant : public PipelineSpecializationConstant {
+		String name;
 		BitField<ShaderStage> stages = {};
 
 		bool operator<(const ShaderSpecializationConstant &p_other) const { return constant_id < p_other.constant_id; }
@@ -1147,7 +1166,9 @@ public:
 		bool has_multiview = false;
 		bool has_dynamic_buffers = false;
 		uint32_t compute_local_size[3] = {};
+		String push_constant_name;
 		uint32_t push_constant_size = 0;
+		Vector<ShaderMember> push_constant_members;
 
 		Vector<Vector<ShaderUniform>> uniform_sets;
 		Vector<ShaderSpecializationConstant> specialization_constants;

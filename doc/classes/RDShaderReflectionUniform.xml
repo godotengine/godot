@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDShaderReflectionUniform" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Uniform resource reflected from SPIR-V bytecode.
+	</brief_description>
+	<description>
+		Describes a uniform resource declared by SPIR-V bytecode reflected with [method RenderingDevice.shader_reflect_spirv].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="binding" type="int" setter="" getter="get_binding" default="0">
+			The binding number declared by the shader.
+		</member>
+		<member name="descriptor_set" type="int" setter="" getter="get_descriptor_set" default="0">
+			The descriptor set number declared by the shader.
+		</member>
+		<member name="length" type="int" setter="" getter="get_length" default="0">
+			Array length, or buffer size in bytes for buffer resources.
+		</member>
+		<member name="members" type="RDShaderReflectionMember[]" setter="" getter="get_members" default="[]">
+			Members of this uniform or storage buffer block. Empty for resources that do not declare a block layout.
+		</member>
+		<member name="name" type="String" setter="" getter="get_name" default="&quot;&quot;">
+			The reflected resource name, if present in the SPIR-V bytecode.
+		</member>
+		<member name="resource_type" type="int" setter="" getter="get_resource_type" default="13">
+			The [enum RenderingDevice.UniformType] resource type.
+		</member>
+		<member name="stages" type="int" setter="" getter="get_stages" default="0">
+			Bitmask of shader stages that use this uniform. Use the [code]RenderingDevice.SHADER_STAGE_*_BIT[/code] constants to test the returned value.
+		</member>
+		<member name="writable" type="bool" setter="" getter="get_writable" default="false">
+			Whether the resource is writable by the shader.
+		</member>
+	</members>
+</class>

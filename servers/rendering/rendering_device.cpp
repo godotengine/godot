@@ -9060,6 +9060,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_compile_binary_from_spirv, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_create_from_spirv, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("shader_reflect_spirv", "spirv_data", "name"), &RenderingDevice::_shader_reflect_spirv, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data", "placeholder_rid"), &RenderingDevice::shader_create_from_bytecode, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("shader_create_placeholder"), &RenderingDevice::shader_create_placeholder);
 
@@ -10025,6 +10026,131 @@ RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv
 		stage_data.push_back(sd);
 	}
 	return shader_create_from_spirv(stage_data);
+}
+
+static Ref<RDShaderReflectionMember> _make_reflection_member(const RenderingDeviceCommons::ShaderMember &p_member) {
+	Ref<RDShaderReflectionMember> member;
+	member.instantiate();
+	member->set_name(p_member.name);
+	member->set_offset(p_member.offset);
+	member->set_size(p_member.size);
+	member->set_padded_size(p_member.padded_size);
+	member->set_type_op(p_member.type);
+	member->set_numeric_width(p_member.numeric_width);
+	member->set_numeric_signedness(p_member.numeric_signedness);
+	member->set_vector_component_count(p_member.vector_component_count);
+	member->set_matrix_column_count(p_member.matrix_column_count);
+	member->set_matrix_row_count(p_member.matrix_row_count);
+	member->set_matrix_stride(p_member.matrix_stride);
+	member->set_array_dimensions(p_member.array_dimensions);
+
+	TypedArray<RDShaderReflectionMember> members;
+	for (int i = 0; i < p_member.members.size(); i++) {
+		members.push_back(_make_reflection_member(p_member.members[i]));
+	}
+	member->set_members(members);
+
+	return member;
+}
+
+Ref<RDShaderReflection> RenderingDevice::_shader_reflect_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name) {
+	ERR_FAIL_COND_V(p_spirv.is_null(), Ref<RDShaderReflection>());
+
+	Vector<ShaderStageSPIRVData> stage_data;
+	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
+		ShaderStage stage = ShaderStage(i);
+		ShaderStageSPIRVData sd;
+		sd.shader_stage = stage;
+		String error = p_spirv->get_stage_compile_error(stage);
+		ERR_FAIL_COND_V_MSG(!error.is_empty(), Ref<RDShaderReflection>(), "Can't reflect an errored bytecode. Check errors in source bytecode.");
+		sd.spirv = p_spirv->get_stage_bytecode(stage);
+		if (sd.spirv.is_empty()) {
+			continue;
+		}
+		stage_data.push_back(sd);
+	}
+
+	ERR_FAIL_COND_V(stage_data.is_empty(), Ref<RDShaderReflection>());
+
+	const RenderingShaderContainerFormat &container_format = driver->get_shader_container_format();
+	Ref<RenderingShaderContainer> shader_container = container_format.create_container();
+	ERR_FAIL_COND_V(shader_container.is_null(), Ref<RDShaderReflection>());
+
+	ShaderReflection shader_reflection = shader_container->get_reflection_from_spirv(p_shader_name, stage_data);
+	ERR_FAIL_COND_V_MSG(shader_reflection.stages_vector.is_empty(), Ref<RDShaderReflection>(), "Failed to reflect SPIR-V shader.");
+
+	Ref<RDShaderReflection> reflection;
+	reflection.instantiate();
+	reflection->set_vertex_input_mask(shader_reflection.vertex_input_mask);
+	reflection->set_fragment_output_mask(shader_reflection.fragment_output_mask);
+	reflection->set_pipeline_type(shader_reflection.pipeline_type);
+	reflection->set_has_multiview(shader_reflection.has_multiview);
+	reflection->set_has_dynamic_buffers(shader_reflection.has_dynamic_buffers);
+	reflection->set_compute_local_size(Vector3i(shader_reflection.compute_local_size[0], shader_reflection.compute_local_size[1], shader_reflection.compute_local_size[2]));
+	reflection->set_push_constant_name(shader_reflection.push_constant_name);
+	reflection->set_push_constant_size(shader_reflection.push_constant_size);
+	reflection->set_push_constant_stages(uint32_t(shader_reflection.push_constant_stages));
+
+	TypedArray<RDShaderReflectionMember> push_constant_members;
+	for (int i = 0; i < shader_reflection.push_constant_members.size(); i++) {
+		push_constant_members.push_back(_make_reflection_member(shader_reflection.push_constant_members[i]));
+	}
+	reflection->set_push_constant_members(push_constant_members);
+
+	reflection->set_stages(uint32_t(shader_reflection.stages_bits));
+
+	TypedArray<RDShaderReflectionUniform> uniforms;
+	for (int set_index = 0; set_index < shader_reflection.uniform_sets.size(); set_index++) {
+		const Vector<ShaderUniform> &uniform_set = shader_reflection.uniform_sets[set_index];
+		for (int uniform_index = 0; uniform_index < uniform_set.size(); uniform_index++) {
+			const ShaderUniform &shader_uniform = uniform_set[uniform_index];
+			Ref<RDShaderReflectionUniform> uniform;
+			uniform.instantiate();
+			uniform->set_descriptor_set(set_index);
+			uniform->set_binding(shader_uniform.binding);
+			uniform->set_resource_type(shader_uniform.type);
+			uniform->set_stages(uint32_t(shader_uniform.stages));
+			uniform->set_length(shader_uniform.length);
+			uniform->set_writable(shader_uniform.writable);
+			uniform->set_name(shader_uniform.name);
+
+			TypedArray<RDShaderReflectionMember> uniform_members;
+			for (int i = 0; i < shader_uniform.members.size(); i++) {
+				uniform_members.push_back(_make_reflection_member(shader_uniform.members[i]));
+			}
+			uniform->set_members(uniform_members);
+			uniforms.push_back(uniform);
+		}
+	}
+	reflection->set_uniforms(uniforms);
+
+	TypedArray<RDShaderReflectionSpecializationConstant> specialization_constants;
+	for (int i = 0; i < shader_reflection.specialization_constants.size(); i++) {
+		const ShaderSpecializationConstant &shader_specialization_constant = shader_reflection.specialization_constants[i];
+		Ref<RDShaderReflectionSpecializationConstant> specialization_constant;
+		specialization_constant.instantiate();
+		specialization_constant->set_name(shader_specialization_constant.name);
+		specialization_constant->set_constant_id(shader_specialization_constant.constant_id);
+		specialization_constant->set_value_type(shader_specialization_constant.type);
+		specialization_constant->set_stages(uint32_t(shader_specialization_constant.stages));
+
+		switch (shader_specialization_constant.type) {
+			case PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL:
+				specialization_constant->set_default_value(shader_specialization_constant.bool_value);
+				break;
+			case PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT:
+				specialization_constant->set_default_value(shader_specialization_constant.int_value);
+				break;
+			case PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT:
+				specialization_constant->set_default_value(shader_specialization_constant.float_value);
+				break;
+		}
+
+		specialization_constants.push_back(specialization_constant);
+	}
+	reflection->set_specialization_constants(specialization_constants);
+
+	return reflection;
 }
 
 RID RenderingDevice::_uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {

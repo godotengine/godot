@@ -1056,6 +1056,14 @@
 				Returns the internal vertex input mask. Internally, the vertex input mask is an unsigned integer consisting of the locations (specified in GLSL via. [code]layout(location = ...)[/code]) of the input variables (specified in GLSL by the [code]in[/code] keyword).
 			</description>
 		</method>
+		<method name="shader_reflect_spirv">
+			<return type="RDShaderReflection" />
+			<param index="0" name="spirv_data" type="RDShaderSPIRV" />
+			<param index="1" name="name" type="String" default="&quot;&quot;" />
+			<description>
+				Returns reflection information for SPIR-V intermediate code without creating a shader RID. This can be used to inspect uniforms, specialization constants, and push constant layout before creating pipelines.
+			</description>
+		</method>
 		<method name="storage_buffer_create">
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />

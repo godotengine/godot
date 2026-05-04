@@ -470,6 +470,284 @@ protected:
 	}
 };
 
+class RDShaderReflectionMember : public RefCounted {
+	GDCLASS(RDShaderReflectionMember, RefCounted)
+
+	String name;
+	uint32_t offset = 0;
+	uint32_t size = 0;
+	uint32_t padded_size = 0;
+	uint32_t type_op = 0;
+	uint32_t numeric_width = 0;
+	uint32_t numeric_signedness = 0;
+	uint32_t vector_component_count = 0;
+	uint32_t matrix_column_count = 0;
+	uint32_t matrix_row_count = 0;
+	uint32_t matrix_stride = 0;
+	PackedInt32Array array_dimensions;
+	TypedArray<RDShaderReflectionMember> members;
+
+public:
+	void set_name(const String &p_name) { name = p_name; }
+	String get_name() const { return name; }
+
+	void set_offset(uint32_t p_offset) { offset = p_offset; }
+	uint32_t get_offset() const { return offset; }
+
+	void set_size(uint32_t p_size) { size = p_size; }
+	uint32_t get_size() const { return size; }
+
+	void set_padded_size(uint32_t p_padded_size) { padded_size = p_padded_size; }
+	uint32_t get_padded_size() const { return padded_size; }
+
+	void set_type_op(uint32_t p_type_op) { type_op = p_type_op; }
+	uint32_t get_type_op() const { return type_op; }
+
+	void set_numeric_width(uint32_t p_numeric_width) { numeric_width = p_numeric_width; }
+	uint32_t get_numeric_width() const { return numeric_width; }
+
+	void set_numeric_signedness(uint32_t p_numeric_signedness) { numeric_signedness = p_numeric_signedness; }
+	uint32_t get_numeric_signedness() const { return numeric_signedness; }
+
+	void set_vector_component_count(uint32_t p_vector_component_count) { vector_component_count = p_vector_component_count; }
+	uint32_t get_vector_component_count() const { return vector_component_count; }
+
+	void set_matrix_column_count(uint32_t p_matrix_column_count) { matrix_column_count = p_matrix_column_count; }
+	uint32_t get_matrix_column_count() const { return matrix_column_count; }
+
+	void set_matrix_row_count(uint32_t p_matrix_row_count) { matrix_row_count = p_matrix_row_count; }
+	uint32_t get_matrix_row_count() const { return matrix_row_count; }
+
+	void set_matrix_stride(uint32_t p_matrix_stride) { matrix_stride = p_matrix_stride; }
+	uint32_t get_matrix_stride() const { return matrix_stride; }
+
+	void set_array_dimensions(const PackedInt32Array &p_array_dimensions) { array_dimensions = p_array_dimensions; }
+	PackedInt32Array get_array_dimensions() const { return array_dimensions; }
+
+	void set_members(const TypedArray<RDShaderReflectionMember> &p_members) { members = p_members; }
+	TypedArray<RDShaderReflectionMember> get_members() const { return members; }
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("get_name"), &RDShaderReflectionMember::get_name);
+		ClassDB::bind_method(D_METHOD("get_offset"), &RDShaderReflectionMember::get_offset);
+		ClassDB::bind_method(D_METHOD("get_size"), &RDShaderReflectionMember::get_size);
+		ClassDB::bind_method(D_METHOD("get_padded_size"), &RDShaderReflectionMember::get_padded_size);
+		ClassDB::bind_method(D_METHOD("get_type_op"), &RDShaderReflectionMember::get_type_op);
+		ClassDB::bind_method(D_METHOD("get_numeric_width"), &RDShaderReflectionMember::get_numeric_width);
+		ClassDB::bind_method(D_METHOD("get_numeric_signedness"), &RDShaderReflectionMember::get_numeric_signedness);
+		ClassDB::bind_method(D_METHOD("get_vector_component_count"), &RDShaderReflectionMember::get_vector_component_count);
+		ClassDB::bind_method(D_METHOD("get_matrix_column_count"), &RDShaderReflectionMember::get_matrix_column_count);
+		ClassDB::bind_method(D_METHOD("get_matrix_row_count"), &RDShaderReflectionMember::get_matrix_row_count);
+		ClassDB::bind_method(D_METHOD("get_matrix_stride"), &RDShaderReflectionMember::get_matrix_stride);
+		ClassDB::bind_method(D_METHOD("get_array_dimensions"), &RDShaderReflectionMember::get_array_dimensions);
+		ClassDB::bind_method(D_METHOD("get_members"), &RDShaderReflectionMember::get_members);
+
+		ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_name");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_offset");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_size");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "padded_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_padded_size");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "type_op", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_type_op");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "numeric_width", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_numeric_width");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "numeric_signedness", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_numeric_signedness");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "vector_component_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_vector_component_count");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "matrix_column_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_matrix_column_count");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "matrix_row_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_matrix_row_count");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "matrix_stride", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_matrix_stride");
+		ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "array_dimensions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_array_dimensions");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "members", PROPERTY_HINT_ARRAY_TYPE, "RDShaderReflectionMember", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_members");
+	}
+};
+
+class RDShaderReflectionUniform : public RefCounted {
+	GDCLASS(RDShaderReflectionUniform, RefCounted)
+
+	String name;
+	uint32_t descriptor_set = 0;
+	uint32_t binding = 0;
+	uint32_t resource_type = RD::UNIFORM_TYPE_MAX;
+	uint32_t stages = 0;
+	uint32_t length = 0;
+	bool writable = false;
+	TypedArray<RDShaderReflectionMember> members;
+
+public:
+	void set_name(const String &p_name) { name = p_name; }
+	String get_name() const { return name; }
+
+	void set_descriptor_set(uint32_t p_descriptor_set) { descriptor_set = p_descriptor_set; }
+	uint32_t get_descriptor_set() const { return descriptor_set; }
+
+	void set_binding(uint32_t p_binding) { binding = p_binding; }
+	uint32_t get_binding() const { return binding; }
+
+	void set_resource_type(uint32_t p_resource_type) { resource_type = p_resource_type; }
+	uint32_t get_resource_type() const { return resource_type; }
+
+	void set_stages(uint32_t p_stages) { stages = p_stages; }
+	uint32_t get_stages() const { return stages; }
+
+	void set_length(uint32_t p_length) { length = p_length; }
+	uint32_t get_length() const { return length; }
+
+	void set_writable(bool p_writable) { writable = p_writable; }
+	bool get_writable() const { return writable; }
+
+	void set_members(const TypedArray<RDShaderReflectionMember> &p_members) { members = p_members; }
+	TypedArray<RDShaderReflectionMember> get_members() const { return members; }
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("get_name"), &RDShaderReflectionUniform::get_name);
+		ClassDB::bind_method(D_METHOD("get_descriptor_set"), &RDShaderReflectionUniform::get_descriptor_set);
+		ClassDB::bind_method(D_METHOD("get_binding"), &RDShaderReflectionUniform::get_binding);
+		ClassDB::bind_method(D_METHOD("get_resource_type"), &RDShaderReflectionUniform::get_resource_type);
+		ClassDB::bind_method(D_METHOD("get_stages"), &RDShaderReflectionUniform::get_stages);
+		ClassDB::bind_method(D_METHOD("get_length"), &RDShaderReflectionUniform::get_length);
+		ClassDB::bind_method(D_METHOD("get_writable"), &RDShaderReflectionUniform::get_writable);
+		ClassDB::bind_method(D_METHOD("get_members"), &RDShaderReflectionUniform::get_members);
+
+		ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_name");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "descriptor_set", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_descriptor_set");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "binding", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_binding");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "resource_type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_resource_type");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "stages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_stages");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "length", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_length");
+		ADD_PROPERTY(PropertyInfo(Variant::BOOL, "writable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_writable");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "members", PROPERTY_HINT_ARRAY_TYPE, "RDShaderReflectionMember", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_members");
+	}
+};
+
+class RDShaderReflectionSpecializationConstant : public RefCounted {
+	GDCLASS(RDShaderReflectionSpecializationConstant, RefCounted)
+
+	String name;
+	uint32_t constant_id = 0;
+	uint32_t value_type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+	Variant default_value = false;
+	uint32_t stages = 0;
+
+public:
+	void set_name(const String &p_name) { name = p_name; }
+	String get_name() const { return name; }
+
+	void set_constant_id(uint32_t p_constant_id) { constant_id = p_constant_id; }
+	uint32_t get_constant_id() const { return constant_id; }
+
+	void set_value_type(uint32_t p_value_type) { value_type = p_value_type; }
+	uint32_t get_value_type() const { return value_type; }
+
+	void set_default_value(const Variant &p_default_value) { default_value = p_default_value; }
+	Variant get_default_value() const { return default_value; }
+
+	void set_stages(uint32_t p_stages) { stages = p_stages; }
+	uint32_t get_stages() const { return stages; }
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("get_name"), &RDShaderReflectionSpecializationConstant::get_name);
+		ClassDB::bind_method(D_METHOD("get_constant_id"), &RDShaderReflectionSpecializationConstant::get_constant_id);
+		ClassDB::bind_method(D_METHOD("get_value_type"), &RDShaderReflectionSpecializationConstant::get_value_type);
+		ClassDB::bind_method(D_METHOD("get_default_value"), &RDShaderReflectionSpecializationConstant::get_default_value);
+		ClassDB::bind_method(D_METHOD("get_stages"), &RDShaderReflectionSpecializationConstant::get_stages);
+
+		ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_name");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "constant_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_constant_id");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "value_type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_value_type");
+		ADD_PROPERTY(PropertyInfo(Variant::NIL, "default_value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT | PROPERTY_USAGE_READ_ONLY), "", "get_default_value");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "stages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_stages");
+	}
+};
+
+class RDShaderReflection : public RefCounted {
+	GDCLASS(RDShaderReflection, RefCounted)
+
+	uint64_t vertex_input_mask = 0;
+	uint32_t fragment_output_mask = 0;
+	uint32_t pipeline_type = RD::PIPELINE_TYPE_RASTERIZATION;
+	bool has_multiview = false;
+	bool has_dynamic_buffers = false;
+	Vector3i compute_local_size;
+	String push_constant_name;
+	uint32_t push_constant_size = 0;
+	uint32_t push_constant_stages = 0;
+	uint32_t stages = 0;
+	TypedArray<RDShaderReflectionUniform> uniforms;
+	TypedArray<RDShaderReflectionSpecializationConstant> specialization_constants;
+	TypedArray<RDShaderReflectionMember> push_constant_members;
+
+public:
+	void set_vertex_input_mask(uint64_t p_vertex_input_mask) { vertex_input_mask = p_vertex_input_mask; }
+	uint64_t get_vertex_input_mask() const { return vertex_input_mask; }
+
+	void set_fragment_output_mask(uint32_t p_fragment_output_mask) { fragment_output_mask = p_fragment_output_mask; }
+	uint32_t get_fragment_output_mask() const { return fragment_output_mask; }
+
+	void set_pipeline_type(uint32_t p_pipeline_type) { pipeline_type = p_pipeline_type; }
+	uint32_t get_pipeline_type() const { return pipeline_type; }
+
+	void set_has_multiview(bool p_has_multiview) { has_multiview = p_has_multiview; }
+	bool get_has_multiview() const { return has_multiview; }
+
+	void set_has_dynamic_buffers(bool p_has_dynamic_buffers) { has_dynamic_buffers = p_has_dynamic_buffers; }
+	bool get_has_dynamic_buffers() const { return has_dynamic_buffers; }
+
+	void set_compute_local_size(const Vector3i &p_compute_local_size) { compute_local_size = p_compute_local_size; }
+	Vector3i get_compute_local_size() const { return compute_local_size; }
+
+	void set_push_constant_name(const String &p_push_constant_name) { push_constant_name = p_push_constant_name; }
+	String get_push_constant_name() const { return push_constant_name; }
+
+	void set_push_constant_size(uint32_t p_push_constant_size) { push_constant_size = p_push_constant_size; }
+	uint32_t get_push_constant_size() const { return push_constant_size; }
+
+	void set_push_constant_stages(uint32_t p_push_constant_stages) { push_constant_stages = p_push_constant_stages; }
+	uint32_t get_push_constant_stages() const { return push_constant_stages; }
+
+	void set_stages(uint32_t p_stages) { stages = p_stages; }
+	uint32_t get_stages() const { return stages; }
+
+	void set_uniforms(const TypedArray<RDShaderReflectionUniform> &p_uniforms) { uniforms = p_uniforms; }
+	TypedArray<RDShaderReflectionUniform> get_uniforms() const { return uniforms; }
+
+	void set_specialization_constants(const TypedArray<RDShaderReflectionSpecializationConstant> &p_specialization_constants) { specialization_constants = p_specialization_constants; }
+	TypedArray<RDShaderReflectionSpecializationConstant> get_specialization_constants() const { return specialization_constants; }
+
+	void set_push_constant_members(const TypedArray<RDShaderReflectionMember> &p_push_constant_members) { push_constant_members = p_push_constant_members; }
+	TypedArray<RDShaderReflectionMember> get_push_constant_members() const { return push_constant_members; }
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("get_vertex_input_mask"), &RDShaderReflection::get_vertex_input_mask);
+		ClassDB::bind_method(D_METHOD("get_fragment_output_mask"), &RDShaderReflection::get_fragment_output_mask);
+		ClassDB::bind_method(D_METHOD("get_pipeline_type"), &RDShaderReflection::get_pipeline_type);
+		ClassDB::bind_method(D_METHOD("get_has_multiview"), &RDShaderReflection::get_has_multiview);
+		ClassDB::bind_method(D_METHOD("get_has_dynamic_buffers"), &RDShaderReflection::get_has_dynamic_buffers);
+		ClassDB::bind_method(D_METHOD("get_compute_local_size"), &RDShaderReflection::get_compute_local_size);
+		ClassDB::bind_method(D_METHOD("get_push_constant_name"), &RDShaderReflection::get_push_constant_name);
+		ClassDB::bind_method(D_METHOD("get_push_constant_size"), &RDShaderReflection::get_push_constant_size);
+		ClassDB::bind_method(D_METHOD("get_push_constant_stages"), &RDShaderReflection::get_push_constant_stages);
+		ClassDB::bind_method(D_METHOD("get_stages"), &RDShaderReflection::get_stages);
+		ClassDB::bind_method(D_METHOD("get_uniforms"), &RDShaderReflection::get_uniforms);
+		ClassDB::bind_method(D_METHOD("get_specialization_constants"), &RDShaderReflection::get_specialization_constants);
+		ClassDB::bind_method(D_METHOD("get_push_constant_members"), &RDShaderReflection::get_push_constant_members);
+
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "vertex_input_mask", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_vertex_input_mask");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "fragment_output_mask", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_fragment_output_mask");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "pipeline_type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_pipeline_type");
+		ADD_PROPERTY(PropertyInfo(Variant::BOOL, "has_multiview", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_has_multiview");
+		ADD_PROPERTY(PropertyInfo(Variant::BOOL, "has_dynamic_buffers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_has_dynamic_buffers");
+		ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "compute_local_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_compute_local_size");
+		ADD_PROPERTY(PropertyInfo(Variant::STRING, "push_constant_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_push_constant_name");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "push_constant_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_push_constant_size");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "push_constant_stages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_push_constant_stages");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "stages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_stages");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "uniforms", PROPERTY_HINT_ARRAY_TYPE, "RDShaderReflectionUniform", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_uniforms");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "specialization_constants", PROPERTY_HINT_ARRAY_TYPE, "RDShaderReflectionSpecializationConstant", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_specialization_constants");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "push_constant_members", PROPERTY_HINT_ARRAY_TYPE, "RDShaderReflectionMember", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "", "get_push_constant_members");
+	}
+};
+
 class RDUniform : public RefCounted {
 	GDCLASS(RDUniform, RefCounted)
 	friend class RenderingDevice;
