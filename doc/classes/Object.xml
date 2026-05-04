@@ -98,7 +98,7 @@
 				var numbers = PackedInt32Array([0, 0, 0])
 
 				func _get_property_list():
-					var properties = []
+					var properties: Array[Dictionary] = []
 
 					for i in range(number_count):
 						properties.append({
