@@ -178,6 +178,7 @@ class DependencyErrorDialog : public ConfirmationDialog {
 	bool errors_fixed = false;
 
 	Tree *files = nullptr;
+	Label *files_label = nullptr;
 
 	EditorFileDialog *replacement_file_dialog = nullptr;
 	DependencyEditor *deps_editor = nullptr;
