@@ -767,6 +767,8 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
+	RENDER_TIMESTAMP("Setup Shadows");
+
 	p_render_data->cube_shadows.clear();
 	p_render_data->shadows.clear();
 	p_render_data->directional_shadows.clear();

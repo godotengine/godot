@@ -1527,6 +1527,8 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
 	}
 
+	RENDER_TIMESTAMP("Setup Shadows");
+
 	if (rb.is_valid() && p_use_gi && rb->has_custom_data(RB_SCOPE_SDFGI)) {
 		Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
 		sdfgi->store_probes();
@@ -1556,10 +1558,12 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			}
 		}
 
-		RENDER_TIMESTAMP("Render OmniLight Shadows");
-		// Cube shadows are rendered in their own way.
-		for (const int &index : p_render_data->cube_shadows) {
-			_render_shadow_pass(p_render_data->render_shadows[index].light, p_render_data->shadow_atlas, p_render_data->render_shadows[index].pass, p_render_data->render_shadows[index].instances, lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, true, true, true, p_render_data->render_info, viewport_size, p_render_data->scene_data->cam_transform);
+		if (p_render_data->cube_shadows.size()) {
+			RENDER_TIMESTAMP("Render OmniLight Shadows");
+			// Cube shadows are rendered in their own way.
+			for (const int &index : p_render_data->cube_shadows) {
+				_render_shadow_pass(p_render_data->render_shadows[index].light, p_render_data->shadow_atlas, p_render_data->render_shadows[index].pass, p_render_data->render_shadows[index].instances, lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, true, true, true, p_render_data->render_info, viewport_size, p_render_data->scene_data->cam_transform);
+			}
 		}
 
 		if (p_render_data->directional_shadows.size()) {
@@ -1576,9 +1580,9 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	bool render_gi = rb.is_valid() && p_use_gi;
 
 	if (render_shadows && render_gi) {
-		RENDER_TIMESTAMP("Render GI + Render Shadows (Parallel)");
+		RENDER_TIMESTAMP("Render GI + Render Directional/SpotLight Shadows (Parallel)");
 	} else if (render_shadows) {
-		RENDER_TIMESTAMP("Render Shadows");
+		RENDER_TIMESTAMP("Render Directional/SpotLight Shadows");
 	} else if (render_gi) {
 		RENDER_TIMESTAMP("Render GI");
 	}
