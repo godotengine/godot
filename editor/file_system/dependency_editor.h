@@ -179,6 +179,7 @@ class DependencyErrorDialog : public ConfirmationDialog {
 
 	Tree *files = nullptr;
 	Label *files_label = nullptr;
+	RichTextLabel *hint_label = nullptr;
 
 	EditorFileDialog *replacement_file_dialog = nullptr;
 	DependencyEditor *deps_editor = nullptr;
@@ -188,6 +189,7 @@ class DependencyErrorDialog : public ConfirmationDialog {
 	void _on_files_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
 	void _on_replacement_file_selected(const String &p_path);
 	void _check_for_resolved();
+	void _update_hint_label(bool p_has_cycles, const HashSet<String> &p_cycle_types);
 
 public:
 	void show(const String &p_for_file, const HashMap<String, HashSet<String>> &p_report);

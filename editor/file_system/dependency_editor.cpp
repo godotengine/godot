@@ -941,23 +941,20 @@ void DependencyErrorDialog::show(const String &p_for_file, const HashMap<String,
 	// A cycle exists when a "missing" resource is also an owner of another missing resource
 	// that points back to it (A references B, B references A).
 	bool has_cycles = false;
+	HashSet<String> cycle_types;
 	for (const KeyValue<String, HashSet<String>> &E : missing_to_owners) {
 		const String &missing_path = E.key.get_slice("::", 0);
+		const String &missing_type = E.key.get_slice("::", 1);
 		if (p_report.has(missing_path)) {
 			for (const String &owner_path : E.value) {
 				for (const String &owner_missing : p_report[missing_path]) {
 					if (owner_missing.get_slice("::", 0) == owner_path) {
 						has_cycles = true;
+						cycle_types.insert(missing_type);
 						break;
 					}
 				}
-				if (has_cycles) {
-					break;
-				}
 			}
-		}
-		if (has_cycles) {
-			break;
 		}
 	}
 
@@ -1006,6 +1003,8 @@ void DependencyErrorDialog::show(const String &p_for_file, const HashMap<String,
 			owner_ti->add_button(1, files->get_editor_theme_icon(SNAME("Edit")), BUTTON_ID_OPEN_DEPS_EDITOR, false, TTRC("Fix Dependencies"));
 		}
 	}
+
+	_update_hint_label(has_cycles, cycle_types);
 
 	set_ok_button_text(TTRC("Open Anyway"));
 	popup_centered();
@@ -1123,12 +1122,42 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	vb->add_child(mc);
 	files->set_accessibility_name(files_label->get_text());
 
+	hint_label = memnew(RichTextLabel);
+	hint_label->set_use_bbcode(true);
+	hint_label->set_fit_content(true);
+	hint_label->set_scroll_active(false);
+	hint_label->hide();
+	vb->add_child(hint_label);
+
 	set_min_size(Size2(500, 320) * EDSCALE);
 	set_cancel_button_text(TTRC("Close"));
 
 	Label *text = memnew(Label(TTRC("Which action should be taken?")));
 	text->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(text);
+}
+
+void DependencyErrorDialog::_update_hint_label(bool p_has_cycles, const HashSet<String> &p_cycle_types) {
+	if (p_has_cycles) {
+		String hint_text = TTR("[b]Cyclic reference detected[/b]\n\n"
+				"[b]To fix the affected scene(s):[/b]\n"
+				"1. Create a new empty scene (e.g., [code]placeholder.tscn[/code])\n"
+				"2. Click the edit icon next to a listed file to open the dependency editor\n"
+				"3. Replace one of the cyclic references with the placeholder scene\n"
+				"4. Open the scene and fix the underlying issue\n\n");
+
+		if (p_cycle_types.has("PackedScene")) {
+			hint_text += TTR("[b]To prevent this in future:[/b]\n"
+					"Scenes cannot reference each other as [code]@export var scene: PackedScene[/code].\n"
+					"Use [code]@export_file(\"*.tscn\") var scene_path: String[/code] instead,\n"
+					"then load dynamically: [code]var scene = load(scene_path)[/code]");
+		}
+
+		hint_label->set_text(hint_text);
+		hint_label->show();
+	} else {
+		hint_label->hide();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
