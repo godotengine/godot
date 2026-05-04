@@ -113,7 +113,7 @@
 				[codeblock]
 				var orientation := Input.get_device_orientation()
 				var euler := orientation.get_euler()
-				var roll := euler.z  # Device roll angle in radians
+				var roll := euler.z  # Device roll angle in radians.
 				[/codeblock]
 			</description>
 		</method>
