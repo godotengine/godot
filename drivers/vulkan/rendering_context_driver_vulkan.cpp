@@ -475,7 +475,7 @@ Error RenderingContextDriverVulkan::_initialize_instance_extensions() {
 
 #ifdef DEV_ENABLED
 	for (uint32_t i = 0; i < instance_extension_count; i++) {
-		print_verbose(String("VULKAN: Found instance extension ") + String::utf8(instance_extensions[i].extensionName) + String("."));
+		print_verbose(String("Vulkan: Found instance extension ") + String::utf8(instance_extensions[i].extensionName) + String("."));
 	}
 #endif
 
@@ -491,9 +491,9 @@ Error RenderingContextDriverVulkan::_initialize_instance_extensions() {
 	for (KeyValue<CharString, bool> &requested_extension : requested_instance_extensions) {
 		if (!enabled_instance_extension_names.has(requested_extension.key)) {
 			if (requested_extension.value) {
-				ERR_FAIL_V_MSG(ERR_BUG, String("Required extension ") + String::utf8(requested_extension.key) + String(" not found."));
+				ERR_FAIL_V_MSG(ERR_BUG, String("Required Vulkan instance extension ") + String::utf8(requested_extension.key) + String(" not found."));
 			} else {
-				print_verbose(String("Optional extension ") + String::utf8(requested_extension.key) + String(" not found."));
+				print_verbose(String("Optional Vulkan instance extension ") + String::utf8(requested_extension.key) + String(" not found."));
 			}
 		}
 	}
