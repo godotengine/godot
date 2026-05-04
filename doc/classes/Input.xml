@@ -107,7 +107,7 @@
 			<return type="Quaternion" />
 			<description>
 				Returns the device's orientation as a [Quaternion], using hardware-level sensor fusion for stable, drift-free results. If the device does not support orientation sensing, the method returns [constant Quaternion.IDENTITY].
-				The returned quaternion represents the rotation from the device coordinate frame to the world coordinate frame. In portrait mode, the device's coordinate system is: X→right, Y→up, Z→towards viewer.
+				The returned quaternion represents the rotation from the device coordinate frame to the world coordinate frame. In portrait mode, the device's coordinate system is: X right, Y up, Z towards viewer.
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Quaternion.IDENTITY].
 				[b]Note:[/b] [member ProjectSettings.input_devices/sensors/enable_device_orientation] must be enabled for this method to return valid data.
 				[codeblock]
