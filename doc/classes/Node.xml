@@ -898,6 +898,7 @@
 				- [code]call_local[/code]: if [code]true[/code], the method will also be called locally;
 				- [code]channel[/code]: an [int] representing the channel to send the RPC on.
 				[b]Note:[/b] In GDScript, this method corresponds to the [annotation @GDScript.@rpc] annotation, with various parameters passed ([code]@rpc(any)[/code], [code]@rpc(authority)[/code]...). See also the [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]high-level multiplayer[/url] tutorial.
+				[b]Note:[/b] If the same [param method] is configured both with [annotation @GDScript.@rpc] in a script and with this method, the script-level configuration takes precedence; the configuration set here is only used for methods that do not have an [annotation @GDScript.@rpc] annotation. Use [method Script.get_rpc_config] to inspect the script-level configuration and [method get_node_rpc_config] for the configuration set via this method.
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
