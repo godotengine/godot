@@ -132,6 +132,7 @@ private:
 	bool focused = false;
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 	bool force_native = false;
+	bool fit_to_parent = true;
 
 	mutable bool hdr_output_requested = false;
 
@@ -327,6 +328,9 @@ public:
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
 	void reset_size();
+
+	void set_fit_to_parent(bool p_enabled);
+	bool get_fit_to_parent() const;
 
 	Point2i get_position_with_decorations() const;
 	Size2i get_size_with_decorations() const;

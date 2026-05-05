@@ -376,6 +376,15 @@ void Window::set_position(const Point2i &p_position) {
 	ERR_MAIN_THREAD_GUARD;
 
 	position = p_position;
+	if (fit_to_parent && is_in_edited_scene_root()) {
+		Rect2i rect = Rect2i(position, size);
+		Rect2i new_rect = fit_rect_in_parent(rect, get_parent_rect());
+		if (rect != new_rect) {
+			position = new_rect.position;
+			size = new_rect.size;
+			_update_window_size();
+		}
+	}
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
@@ -420,6 +429,18 @@ void Window::set_size(const Size2i &p_size) {
 #endif
 
 	size = p_size;
+	if (fit_to_parent && is_in_edited_scene_root()) {
+		Rect2i rect = Rect2i(position, size);
+		Rect2i new_rect = fit_rect_in_parent(rect, get_parent_rect());
+		if (rect != new_rect) {
+			position = new_rect.position;
+			size = new_rect.size;
+			if (embedder) {
+				embedder->_sub_window_update(this);
+			}
+		}
+	}
+
 	_update_window_size();
 	_settings_changed();
 }
@@ -432,6 +453,30 @@ Size2i Window::get_size() const {
 void Window::reset_size() {
 	ERR_MAIN_THREAD_GUARD;
 	set_size(Size2i());
+}
+
+void Window::set_fit_to_parent(bool p_enabled) {
+	if (fit_to_parent == p_enabled) {
+		return;
+	}
+	fit_to_parent = p_enabled;
+
+	if (fit_to_parent && is_in_edited_scene_root()) {
+		Rect2i rect = Rect2i(position, size);
+		Rect2i new_rect = fit_rect_in_parent(rect, get_parent_rect());
+		if (rect != new_rect) {
+			position = new_rect.position;
+			size = new_rect.size;
+			_update_window_size();
+			if (embedder) {
+				embedder->_sub_window_update(this);
+			}
+		}
+	}
+}
+
+bool Window::get_fit_to_parent() const {
+	return fit_to_parent;
 }
 
 Point2i Window::get_position_with_decorations() const {
@@ -1634,6 +1679,14 @@ void Window::_notification(int p_what) {
 			if (is_in_edited_scene_root()) {
 				if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
 					ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Window::_settings_changed));
+				}
+				if (fit_to_parent) {
+					Rect2i rect = Rect2i(position, size);
+					Rect2i new_rect = fit_rect_in_parent(rect, get_parent_rect());
+					if (rect != new_rect) {
+						position = new_rect.position;
+						size = new_rect.size;
+					}
 				}
 			} else if (get_parent() && get_tree()->get_root()->is_embedding_subwindows()) {
 				// Is not the main window and main window is embedding.
@@ -3370,6 +3423,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);
 	ClassDB::bind_method(D_METHOD("reset_size"), &Window::reset_size);
 
+	ClassDB::bind_method(D_METHOD("set_fit_to_parent", "enabled"), &Window::set_fit_to_parent);
+	ClassDB::bind_method(D_METHOD("get_fit_to_parent"), &Window::get_fit_to_parent);
+
 	ClassDB::bind_method(D_METHOD("get_position_with_decorations"), &Window::get_position_with_decorations);
 	ClassDB::bind_method(D_METHOD("get_size_with_decorations"), &Window::get_size_with_decorations);
 
@@ -3553,6 +3609,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_current_screen", "get_current_screen");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2I, "nonclient_area", PROPERTY_HINT_NONE, ""), "set_nonclient_area", "get_nonclient_area");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_parent"), "set_fit_to_parent", "get_fit_to_parent");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "mouse_passthrough_polygon"), "set_mouse_passthrough_polygon", "get_mouse_passthrough_polygon");
 

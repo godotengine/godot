@@ -1191,11 +1191,13 @@ bool Viewport::_set_size(const Size2i &p_size, const int p_view_count, const Siz
 	Rect2i limit = get_visible_rect();
 	for (int i = 0; i < gui.sub_windows.size(); ++i) {
 		Window *sw = gui.sub_windows[i].window;
-		Rect2i rect = Rect2i(sw->position, sw->size);
-		Rect2i new_rect = sw->fit_rect_in_parent(rect, limit);
-		if (new_rect != rect) {
-			sw->set_position(new_rect.position);
-			sw->set_size(new_rect.size);
+		if (sw->get_fit_to_parent()) {
+			Rect2i rect = Rect2i(sw->position, sw->size);
+			Rect2i new_rect = sw->fit_rect_in_parent(rect, limit);
+			if (new_rect != rect) {
+				sw->set_position(new_rect.position);
+				sw->set_size(new_rect.size);
+			}
 		}
 	}
 	return true;

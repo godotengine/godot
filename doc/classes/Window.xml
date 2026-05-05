@@ -678,6 +678,10 @@
 			[b]Note:[/b] This property is implemented only on macOS.
 			[b]Note:[/b] This property only works with native windows.
 		</member>
+		<member name="fit_to_parent" type="bool" setter="set_fit_to_parent" getter="get_fit_to_parent" default="true">
+			If [code]true[/code], embedded window size and position are fitted to the parent window.
+			[b]Note:[/b] This property has no effect on native windows.
+		</member>
 		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
 		</member>
