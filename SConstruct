@@ -1259,7 +1259,6 @@ env.Append(BUILDERS=GLSL_BUILDERS)
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
-
 SConscript("core/SCsub")
 SConscript("servers/SCsub")
 SConscript("scene/SCsub")
