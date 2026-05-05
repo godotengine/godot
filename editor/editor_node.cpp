@@ -1750,7 +1750,7 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 		if (ResourceLoader::is_imported(p_resource->get_path())) {
 			show_accept(vformat(TTR("Cannot save resource at path \"%s\", as it is imported.\nImported resources can't be saved. Instead, modify the source file or change options in the Import dock."), path), TTR("OK"));
 		} else {
-			show_accept(vformat(TTR("Error saving resource at path \"%s\": %s."), path, error_names[err]), TTR("OK"));
+			show_accept(vformat(TTR("Error saving resource at path \"%s\": %s."), path, TTR(error_names[err])), TTR("OK"));
 		}
 
 		saving_resources_in_path.erase(p_resource);
