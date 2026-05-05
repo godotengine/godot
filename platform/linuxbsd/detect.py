@@ -297,6 +297,9 @@ def configure(env: "SConsEnvironment"):
         if env["arch"] in ["x86_64", "x86_32"]:
             env["x86_libtheora_opt_gcc"] = True
 
+    if not env["builtin_libvpx"]:
+        env.ParseConfig("pkg-config vpx --cflags --libs")
+
     if not env["builtin_libvorbis"]:
         env["builtin_libogg"] = False  # Needed to link against system libvorbis
         if env.editor_build:

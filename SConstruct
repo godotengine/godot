@@ -332,6 +332,7 @@ opts.Add(BoolVariable("builtin_libjpeg_turbo", "Use the built-in libjpeg-turbo l
 opts.Add(BoolVariable("builtin_libogg", "Use the built-in libogg library", True))
 opts.Add(BoolVariable("builtin_libpng", "Use the built-in libpng library", True))
 opts.Add(BoolVariable("builtin_libtheora", "Use the built-in libtheora library", True))
+opts.Add(BoolVariable("builtin_libvpx", "Use the built-in libvpx library", True))
 opts.Add(BoolVariable("builtin_libvorbis", "Use the built-in libvorbis library", True))
 opts.Add(BoolVariable("builtin_libopus", "Use the built-in libopus library", True))
 opts.Add(BoolVariable("builtin_libwebp", "Use the built-in libwebp library", True))

@@ -643,6 +643,17 @@ Files extracted from upstream source:
 - `LICENSE`
 
 
+## libsimplewebm
+
+- Upstream: https://github.com/zaps166/libsimplewebm
+- Version: git (fe57fd3cfe6c0af4c6af110b1f84a90cf191d943, 2019)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `*`
+
+
 ## libtheora
 
 - Upstream: https://www.theora.org
@@ -667,6 +678,17 @@ Files extracted from upstream source:
 - `lib/*` except from: `lookups.pl`, `Makefile.*`
 - `include/vorbis/*.h` as `vorbis/`
 - `COPYING`
+
+
+## libvpx
+
+- Upstream: https://github.com/webmproject/libvpx
+- Version: 1.16.0 (1024874c5919305883187e2953de8fcb4c3d7fa6, 2026)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `*`
 
 
 ## libwebp
