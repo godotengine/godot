@@ -50,6 +50,9 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	static Vector3 _collide_sphere(const Vector3 &p_origin, float p_radius, bool p_inside, float p_bone_radius, const Vector3 &p_current);
+	static Vector3 _collide_sphere_taper(const Vector3 &p_origin, float p_radius, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current);
+
 	virtual Vector3 _collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const;
 
 public:
