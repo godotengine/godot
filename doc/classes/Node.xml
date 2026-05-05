@@ -849,7 +849,7 @@
 			<param index="1" name="keep_global_transform" type="bool" default="true" />
 			<description>
 				Changes the parent of this [Node] to the [param new_parent]. The node needs to already have a parent. The node's [member owner] is preserved if its owner is still reachable from the new location (i.e., the node is still a descendant of the new parent after the operation).
-				If [param keep_global_transform] is [code]true[/code], the node's global transform will be preserved if supported. [Node2D], [Node3D] and [Control] support this argument (but [Control] keeps only position).
+				If [param keep_global_transform] is [code]true[/code], the node's global transform will be preserved if supported. [Node2D], [Node3D] and [Control] support this argument (but [Control] keeps only position). This does not override the behavior of the new parent node (i.e., reparenting a [Control] to a [Container] will still override the position to preserve its layout).
 			</description>
 		</method>
 		<method name="replace_by">
