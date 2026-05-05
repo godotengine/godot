@@ -2333,6 +2333,7 @@ ColorPicker::ColorPicker() {
 	perm_link->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_req_permission));
 	perm_hb->add_child(perm_link);
 	real_vbox->add_child(perm_hb);
+	perm_hb->set_visible(false);
 }
 
 void ColorPicker::_req_permission() {
