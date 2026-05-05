@@ -199,8 +199,8 @@ opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", Tru
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
 opts.Add(BoolVariable("metal", "Enable the Metal rendering driver on supported platforms (Apple arm64 only)", False))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
-opts.Add(BoolVariable("accesskit", "Use AccessKit C SDK", True))
-opts.Add(("accesskit_sdk_path", "Path to the AccessKit C SDK", ""))
+opts.Add(BoolVariable("accesskit", "Enable the AccessKit driver for screen reader support", True))
+opts.Add(BoolVariable("angle", "Enable the ANGLE rendering driver for OpenGL ES 3.0 on supported platforms", True))
 opts.Add(BoolVariable("sdl", "Enable the SDL3 input driver", True))
 opts.Add(
     EnumVariable(
@@ -220,6 +220,13 @@ opts.Add(
         "profiler_track_memory",
         "Profile memory allocations, if the profiler supports it.",
         False,
+    )
+)
+opts.Add(
+    BoolVariable(
+        "profiler_record_on_demand",
+        "Record only when the profiler is connected, if the profiler supports it. In Tracy, this configures TRACY_ON_DEMAND, which has a performance impact if enabled.",
+        True,
     )
 )
 
@@ -713,15 +720,26 @@ if cc_version_major == -1:
         "Build may fail if the compiler doesn't support C++17 fully."
     )
 elif methods.using_gcc(env):
-    if cc_version_major < 9:
-        print_error(
-            "Detected GCC version older than 9, which does not fully support "
-            "C++17, or has bugs when compiling Godot. Supported versions are 9 "
-            "and later. Use a newer GCC version, or Clang 6 or later by passing "
-            '"use_llvm=yes" to the SCons command line.'
-        )
-        Exit(255)
-    elif cc_version_metadata1 == "win32":
+    if env.get("winrt"):
+        if cc_version_major < 11:
+            print_error(
+                "Detected GCC version older than 11, which does not fully support "
+                "C++20, or has bugs when compiling Godot. Supported versions are 12 "
+                "and later. Use a newer GCC version, or Clang 14 or later by passing "
+                '"use_llvm=yes" to the SCons command line, or disable WinRT support by '
+                'passing "winrt=no" to the SCons command line.'
+            )
+            Exit(255)
+    else:
+        if cc_version_major < 9:
+            print_error(
+                "Detected GCC version older than 9, which does not fully support "
+                "C++17, or has bugs when compiling Godot. Supported versions are 9 "
+                "and later. Use a newer GCC version, or Clang 6 or later by passing "
+                '"use_llvm=yes" to the SCons command line.'
+            )
+            Exit(255)
+    if cc_version_metadata1 == "win32":
         print_error(
             "Detected mingw version is not using posix threads. Only posix "
             "version of mingw is supported. "
@@ -739,35 +757,38 @@ elif methods.using_clang(env):
             )
             Exit(255)
     else:
-        if cc_version_major < 6:
-            print_error(
-                "Detected Clang version older than 6, which does not fully support "
-                "C++17. Supported versions are Clang 6 and later."
-            )
-            Exit(255)
-        elif env["debug_paths_relative"] and cc_version_major < 10:
-            print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
-            env["debug_paths_relative"] = False
+        if env.get("winrt"):
+            if cc_version_major < 13:
+                print_error(
+                    "Detected Clang version older than 13, which does not fully support "
+                    "C++20. Supported versions are Clang 14 and later, or disable WinRT "
+                    'support by passing "winrt=no" to the SCons command line.'
+                )
+                Exit(255)
+        else:
+            if cc_version_major < 6:
+                print_error(
+                    "Detected Clang version older than 6, which does not fully support "
+                    "C++17. Supported versions are Clang 6 and later."
+                )
+                Exit(255)
+            elif env["debug_paths_relative"] and cc_version_major < 10:
+                print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+                env["debug_paths_relative"] = False
 
 elif env.msvc:
-    # Ensure latest minor builds of Visual Studio 2017/2019.
-    # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
     if cc_version_major == 16 and cc_version_minor < 11:
+        # Ensure latest minor build of Visual Studio 2019.
+        # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
         print_error(
             "Detected Visual Studio 2019 version older than 16.11, which has bugs "
-            "when compiling Godot. Use a newer VS2019 version, or VS2022."
+            "when compiling Godot. Use a newer VS2019 version, or VS2022+."
         )
         Exit(255)
-    if cc_version_major == 15 and cc_version_minor < 9:
+    elif cc_version_major < 16:
         print_error(
-            "Detected Visual Studio 2017 version older than 15.9, which has bugs "
-            "when compiling Godot. Use a newer VS2017 version, or VS2019/VS2022."
-        )
-        Exit(255)
-    if cc_version_major < 15:
-        print_error(
-            "Detected Visual Studio 2015 or earlier, which is unsupported in Godot. "
-            "Supported versions are Visual Studio 2017 and later."
+            "Detected Visual Studio 2017 or earlier, which is unsupported in Godot. "
+            "Supported versions are Visual Studio 2019 and later."
         )
         Exit(255)
 
@@ -895,12 +916,9 @@ if not env.msvc:
     env.Prepend(CXXFLAGS=["-std=gnu++17"])
 else:
     # MSVC started offering C standard support with Visual Studio 2019 16.8, which covers all
-    # of our supported VS2019 & VS2022 versions; VS2017 will only pass the C++ standard.
+    # of our supported Visual Studio versions.
+    env.Prepend(CFLAGS=["/std:c17"])
     env.Prepend(CXXFLAGS=["/std:c++17"])
-    if cc_version_major < 16:
-        print_warning("Visual Studio 2017 cannot specify a C-Standard.")
-    else:
-        env.Prepend(CFLAGS=["/std:c17"])
     # MSVC is non-conforming with the C++ standard by default, so we enable more conformance.
     # Note that this is still not complete conformance, as certain Windows-related headers
     # don't compile under complete conformance.

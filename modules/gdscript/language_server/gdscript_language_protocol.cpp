@@ -30,14 +30,17 @@
 
 #include "gdscript_language_protocol.h"
 
+#include "godot_lsp.h"
+
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/settings/editor_settings.h"
-#include "modules/gdscript/language_server/godot_lsp.h"
 
 #define LSP_CLIENT_V(m_ret_val) \
 	ERR_FAIL_COND_V(latest_client_id == LSP_NO_CLIENT, m_ret_val); \
@@ -189,7 +192,26 @@ void GDScriptLanguageProtocol::_bind_methods() {
 #endif // !DISABLE_DEPRECATED
 }
 
-Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
+template <typename T>
+Variant get_deep(Variant p_dict, Variant p_default, T p_key) {
+	if (p_dict.get_type() != Variant::DICTIONARY) {
+		return p_default;
+	}
+	return p_dict.operator Dictionary().get(p_key, p_default);
+}
+
+template <typename T1, typename... T2>
+Variant get_deep(Variant p_dict, Variant p_default, T1 p_key1, T2... p_key2) {
+	if (p_dict.get_type() != Variant::DICTIONARY || !p_dict.operator Dictionary().has(p_key1)) {
+		return p_default;
+	}
+
+	return get_deep(p_dict.operator Dictionary()[p_key1], p_default, p_key2...);
+}
+
+Variant GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
+	LSP_CLIENT_V(Variant());
+
 	LSP::InitializeResult ret;
 
 	{
@@ -248,6 +270,11 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 		workspace->initialize();
 		_initialized = true;
 	}
+
+	// Handle client capabilities.
+	Dictionary capabilities = p_params["capabilities"];
+	client->behavior.use_snippets_for_brace_completion = get_deep(capabilities, false,
+			"textDocument", "completion", "completionItem", "snippetSupport");
 
 	return ret.to_json();
 }
@@ -508,6 +535,90 @@ void GDScriptLanguageProtocol::lsp_did_close(const Dictionary &p_params) {
 	scene_cache.unload(path);
 }
 
+Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
+	Array arr;
+	LSP_CLIENT_V(arr);
+
+	LSP::CompletionParams params;
+	params.load(p_params);
+	Dictionary request_data = params.to_json();
+
+	List<ScriptLanguage::CodeCompletionOption> options;
+	get_workspace()->completion(params, &options);
+
+	if (!options.is_empty()) {
+		int i = 0;
+		arr.resize(options.size());
+
+		for (const ScriptLanguage::CodeCompletionOption &option : options) {
+			LSP::CompletionItem item;
+			item.label = option.display;
+			item.data = request_data;
+			item.insertText = option.insert_text;
+
+			// LSP clients won't autoclose brackets.
+			if (client->behavior.use_snippets_for_brace_completion) {
+				// Use snippet insert mode to insert closing brace as well.
+				if (item.insertText.ends_with("(")) {
+					item.insertText += "$1)";
+					item.insertTextFormat = LSP::InsertTextFormat::Snippet;
+				}
+			} else {
+				// Trim braces.
+				item.insertText = item.insertText.trim_suffix("(");
+			}
+
+			if (option.text_edit.is_set()) {
+				GodotRange range(GodotPosition(option.text_edit.start_line, option.text_edit.start_column), GodotPosition(option.text_edit.end_line, option.text_edit.end_column));
+				item.textEdit.newText = option.text_edit.new_text;
+				item.textEdit.range = range.to_lsp();
+			}
+
+			switch (option.kind) {
+				case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
+					item.kind = LSP::CompletionItemKind::Enum;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_CLASS:
+					item.kind = LSP::CompletionItemKind::Class;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
+					item.kind = LSP::CompletionItemKind::Property;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
+					item.kind = LSP::CompletionItemKind::Method;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
+					item.kind = LSP::CompletionItemKind::Event;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
+					item.kind = LSP::CompletionItemKind::Constant;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
+					item.kind = LSP::CompletionItemKind::Variable;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
+					item.kind = LSP::CompletionItemKind::File;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
+					item.kind = LSP::CompletionItemKind::Snippet;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
+					item.kind = LSP::CompletionItemKind::Text;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD:
+					item.kind = LSP::CompletionItemKind::Keyword;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_MAX: {
+				}
+			}
+
+			arr[i] = item.to_json();
+			i++;
+		}
+	}
+	return arr;
+}
+
 void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPositionParams &p_doc_pos, List<const LSP::DocumentSymbol *> &r_list) {
 	LSP_CLIENT;
 
@@ -518,12 +629,12 @@ void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPo
 		return;
 	}
 
-	String symbol_identifier;
+	String symbol_name;
 	LSP::Range range;
-	symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, range);
+	symbol_name = parser->get_symbol_name_under_position(p_doc_pos.position, range);
 
 	for (const KeyValue<StringName, ClassMembers> &E : workspace->native_members) {
-		if (const LSP::DocumentSymbol *const *symbol = E.value.getptr(symbol_identifier)) {
+		if (const LSP::DocumentSymbol *const *symbol = E.value.getptr(symbol_name)) {
 			r_list.push_back(*symbol);
 		}
 	}
@@ -531,13 +642,13 @@ void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPo
 	for (const KeyValue<String, ExtendGDScriptParser *> &E : client->parse_results) {
 		const ExtendGDScriptParser *scr = E.value;
 		const ClassMembers &members = scr->get_members();
-		if (const LSP::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
+		if (const LSP::DocumentSymbol *const *symbol = members.getptr(symbol_name)) {
 			r_list.push_back(*symbol);
 		}
 
 		for (const KeyValue<String, ClassMembers> &F : scr->get_inner_classes()) {
 			const ClassMembers *inner_class = &F.value;
-			if (const LSP::DocumentSymbol *const *symbol = inner_class->getptr(symbol_identifier)) {
+			if (const LSP::DocumentSymbol *const *symbol = inner_class->getptr(symbol_name)) {
 				r_list.push_back(*symbol);
 			}
 		}

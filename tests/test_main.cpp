@@ -30,16 +30,19 @@
 
 #include "test_main.h"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
+#include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
-#include "servers/rendering/rendering_server_default.h"
 #include "tests/display_server_mock.h"
 #include "tests/force_link.gen.h"
 #include "tests/signal_watcher.h"
@@ -171,8 +174,6 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		String suite_name = String(p_in.m_test_suite);
 
 		if (name.contains("[SceneTree]") || name.contains("[Editor]")) {
-			memnew(MessageQueue);
-
 			memnew(Input);
 			Input::get_singleton()->set_use_accumulated_input(false);
 
@@ -188,13 +189,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				if (String("mock") == DisplayServer::get_create_function_name(i)) {
-					DisplayServer::create(i, "", DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServer::VSyncMode::VSYNC_ENABLED, 0, nullptr, Vector2i(0, 0), DisplayServer::SCREEN_PRIMARY, DisplayServer::CONTEXT_EDITOR, 0, err);
+					DisplayServer::create(i, "", DisplayServerEnums::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServerEnums::VSyncMode::VSYNC_ENABLED, 0, nullptr, Vector2i(0, 0), DisplayServerEnums::SCREEN_PRIMARY, DisplayServerEnums::CONTEXT_EDITOR, 0, err);
 					break;
 				}
 			}
-			memnew(RenderingServerDefault());
-			RenderingServerDefault::get_singleton()->init();
-			RenderingServerDefault::get_singleton()->set_render_loop_enabled(false);
 
 			// ThemeDB requires RenderingServer to initialize the default theme.
 			// So we have to do this for each test case. Also make sure there is
@@ -232,7 +230,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			memnew(SceneTree);
 			SceneTree::get_singleton()->initialize();
-			if (!DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
+			if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS)) {
 				SceneTree::get_singleton()->get_root()->set_embedding_subwindows(true);
 			}
 
@@ -337,14 +335,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 
 		if (RenderingServer::get_singleton()) {
-			// ThemeDB requires RenderingServer to finalize the default theme.
-			// So we have to do this for each test case.
 			ThemeDB::get_singleton()->finalize_theme();
-
-			RenderingServer::get_singleton()->sync();
-			RenderingServer::get_singleton()->global_shader_parameters_clear();
-			RenderingServer::get_singleton()->finish();
-			memdelete(RenderingServer::get_singleton());
 		}
 
 		if (AccessibilityServer::get_singleton()) {
@@ -357,11 +348,6 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 		if (InputMap::get_singleton()) {
 			memdelete(InputMap::get_singleton());
-		}
-
-		if (MessageQueue::get_singleton()) {
-			MessageQueue::get_singleton()->flush();
-			memdelete(MessageQueue::get_singleton());
 		}
 
 		if (AudioServer::get_singleton()) {

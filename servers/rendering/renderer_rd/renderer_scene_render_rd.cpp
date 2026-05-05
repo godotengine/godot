@@ -33,10 +33,11 @@
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/decal_data_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/light_data_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/scene_data_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_enums.h"
@@ -481,7 +482,10 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		}
 	}
 
+	bool use_fxaa = rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_FXAA;
 	bool use_smaa = smaa && rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_SMAA;
+	// If doing bilinear or nearest scaling + FXAA / SMAA, the framebuffer must be scaled in a framebuffer copy after AA is applied.
+	bool using_scaling_pass = spatial_upscaler || ((use_fxaa || use_smaa) && (scale_mode == RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR || scale_mode == RSE::VIEWPORT_SCALING_3D_MODE_NEAREST));
 
 	RID render_target = rb->get_render_target();
 	RID color_texture = use_upscaled_texture ? rb->get_upscaled_texture() : rb->get_internal_texture();
@@ -716,10 +720,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
-		if (rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
-			tonemap.use_fxaa = true;
-		}
-
+		tonemap.use_fxaa = use_fxaa;
 		tonemap.texture_size = Vector2i(color_size.x, color_size.y);
 
 		if (p_render_data->environment.is_valid()) {
@@ -767,7 +768,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		RID dest_fb;
 		RD::DataFormat dest_fb_format;
-		if (spatial_upscaler != nullptr || use_smaa) {
+		if (using_scaling_pass || use_smaa) {
 			// If we use a spatial upscaler to upscale or SMAA to antialias we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
 			dest_fb_format = rb->get_base_data_format();
@@ -775,7 +776,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 			tonemap.dest_texture_size = rb->get_internal_size();
 		} else {
-			// If we do a bilinear upscale we just render into our render target and our shader will upscale automatically.
+			// If we do a nearest or bilinear upscale, we just render into our render target and our shader will upscale automatically.
 			// Target size in this case is lying as we never get our real target size communicated.
 			// Bit nasty but...
 
@@ -785,7 +786,9 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			} else {
 				dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
 			}
+
 			tonemap.dest_texture_size = texture_storage->render_target_get_size(render_target);
+			tonemap.bilinear_filtering = scale_mode != RSE::VIEWPORT_SCALING_3D_MODE_NEAREST;
 		}
 
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
@@ -820,7 +823,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		bool using_hdr = texture_storage->render_target_is_using_hdr(render_target);
 
 		RID dest_fb;
-		if (spatial_upscaler) {
+		if (using_scaling_pass) {
 			rb->create_texture(SNAME("SMAA"), SNAME("destination"), rb->get_base_data_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 		}
 		if (rb->get_view_count() > 1) {
@@ -828,7 +831,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				RID source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
 
 				RID dest_texture;
-				if (spatial_upscaler) {
+				if (using_scaling_pass) {
 					dest_texture = rb->get_texture_slice(SNAME("SMAA"), SNAME("destination"), v, 0);
 				} else {
 					dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
@@ -840,7 +843,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		} else {
 			RID source_texture = rb->get_texture(SNAME("Tonemapper"), SNAME("destination"));
 
-			if (spatial_upscaler) {
+			if (using_scaling_pass) {
 				RID dest_texture = rb->create_texture(SNAME("SMAA"), SNAME("destination"), rb->get_base_data_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 				dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 			} else {
@@ -858,21 +861,25 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_end_label();
 	}
 
-	if (rb.is_valid() && spatial_upscaler) {
-		spatial_upscaler->ensure_context(rb);
+	if (rb.is_valid() && using_scaling_pass) {
+		RD::get_singleton()->draw_command_begin_label(spatial_upscaler ? spatial_upscaler->get_label() : "3D Viewport Scaling");
 
-		RD::get_singleton()->draw_command_begin_label(spatial_upscaler->get_label());
+		if (spatial_upscaler) {
+			spatial_upscaler->ensure_context(rb);
 
-		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-			RID source_texture;
-			if (use_smaa) {
-				source_texture = rb->get_texture_slice(SNAME("SMAA"), SNAME("destination"), v, 0);
-			} else {
-				source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				RID source_texture = rb->get_texture_slice(use_smaa ? SNAME("SMAA") : SNAME("Tonemapper"), SNAME("destination"), v, 0);
+				RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
+
+				spatial_upscaler->process(rb, source_texture, dest_texture);
 			}
-			RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
-
-			spatial_upscaler->process(rb, source_texture, dest_texture);
+		} else {
+			// If no spatial upscaler is set, we are using bilinear or nearest filtering for scaling.
+			// This is only necessary if screen-space antialiasing is active, otherwise this happens automatically during tonemapping.
+			RID source_texture = rb->get_texture(use_smaa ? SNAME("SMAA") : SNAME("Tonemapper"), SNAME("destination"));
+			RID dest_texture = texture_storage->render_target_get_rd_texture(render_target);
+			RID dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
+			copy_effects->copy_to_fb_rect(source_texture, dest_fb, Rect2i(Point2i(), rb->get_target_size()), false, false, false, false, RID(), rb->get_view_count() > 1, false, false, false, Rect2(), 1.0, scale_mode != RSE::VIEWPORT_SCALING_3D_MODE_NEAREST);
 		}
 
 		if (dest_is_msaa_2d) {
@@ -1002,6 +1009,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p
 		case RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO:
 		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS:
 		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS:
+		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_AREA_LIGHTS:
 		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS:
 		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES:
 		case RSE::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER:
@@ -1011,6 +1019,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p
 		case RSE::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS:
 		case RSE::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS:
 		case RSE::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS:
+		case RSE::VIEWPORT_DEBUG_DRAW_AREA_LIGHT_ATLAS:
 		case RSE::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS:
 		// Modes that draws a buffer over viewport needs camera effects because if the buffer is not available it will be equivalent to normal draw mode.
 		case RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
@@ -1095,6 +1104,16 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);
 
 			copy_effects->copy_to_fb_rect(decal_atlas, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2(), rtsize / 2), false, false, true);
+		}
+	}
+
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_AREA_LIGHT_ATLAS) {
+		RID area_light_atlas = RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture();
+
+		if (area_light_atlas.is_valid()) {
+			Size2i rtsize = texture_storage->render_target_get_size(render_target);
+
+			copy_effects->copy_to_fb_rect(area_light_atlas, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2(), rtsize / 2), false, false, true);
 		}
 	}
 
@@ -1353,7 +1372,6 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		scene_data.cam_transform = p_camera_data->main_transform;
 		scene_data.cam_projection = p_camera_data->main_projection;
 		scene_data.cam_orthogonal = p_camera_data->is_orthogonal;
-		scene_data.cam_frustum = p_camera_data->is_frustum;
 		scene_data.camera_visible_layers = p_camera_data->visible_layers;
 		scene_data.taa_jitter = p_camera_data->taa_jitter;
 		scene_data.taa_frame_count = p_camera_data->taa_frame_count;
@@ -1655,6 +1673,86 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Typed
 	RD::get_singleton()->free_rid(depth_tex);
 
 	return ret;
+}
+
+PackedByteArray RendererSceneRenderRD::bake_render_area_light_atlas(const TypedArray<RID> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps) {
+	PackedByteArray data;
+	ERR_FAIL_COND_V_MSG(p_mipmaps <= 0, data, "Mipmaps must be greater than 0");
+	ERR_FAIL_COND_V_MSG(p_size.width < pow(2, p_mipmaps), data, "Image width must be greater than mipmaps to power of 2");
+	ERR_FAIL_COND_V_MSG(p_size.height < pow(2, p_mipmaps), data, "Image height must be greater than mipmaps to power of 2");
+	ERR_FAIL_COND_V_MSG(p_size.width != Math::nearest_power_of_2_templated(p_size.width) || p_size.height != Math::nearest_power_of_2_templated(p_size.height), data, "Image size must be a power of 2");
+	ERR_FAIL_COND_V_MSG(p_area_light_textures.size() != p_area_light_atlas_texture_rects.size(), data, "Number of Texture2Ds and number of Rect2s must match");
+
+	RD::TextureFormat tf;
+	tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	tf.width = p_size.width;
+	tf.height = p_size.height;
+	tf.mipmaps = p_mipmaps;
+	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tf.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
+	RID area_light_atlas_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	RD::get_singleton()->texture_clear(area_light_atlas_texture, Color(0, 0, 0, 0), 0, p_mipmaps, 0, 1);
+
+	for (int t_idx = 0; t_idx < p_area_light_textures.size(); t_idx++) {
+		RID texture = p_area_light_textures[t_idx];
+		Rect2 uv_rect = p_area_light_atlas_texture_rects[t_idx];
+		uv_rect.position = uv_rect.position.clampf(0.0, 1.0);
+		uv_rect.size = uv_rect.size.clamp(Vector2(0.0, 0.0), Vector2(1.0 - uv_rect.position.x, 1.0 - uv_rect.position.y));
+		Vector<RID> blur_textures;
+		RID prev_blur_texture;
+
+		for (int i = 0; i < p_mipmaps; i++) {
+			RID mip_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), area_light_atlas_texture, 0, i);
+			Vector<RID> fb;
+			fb.push_back(mip_tex);
+			RID mip_fb = RD::get_singleton()->framebuffer_create(fb);
+
+			Vector2i mip_size = p_size / pow(2, i);
+			Vector2i mip_tex_size = uv_rect.size * mip_size;
+			Rect2i uv_recti = Rect2i(uv_rect.position * mip_size, uv_rect.size * mip_size);
+			RID rd_texture = RendererRD::TextureStorage::get_singleton()->texture_get_rd_texture(texture);
+
+			RD::TextureFormat tf_blur;
+			tf_blur.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			tf_blur.width = mip_tex_size.width;
+			tf_blur.height = mip_tex_size.height;
+			tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
+			tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+			RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
+			blur_textures.push_back(blur_tex);
+
+			if (i == 0) {
+				Vector<Color> cc;
+				cc.push_back(Color(0, 0, 0, 0));
+				RID shared_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), blur_tex, 0, 0);
+				Vector<RID> fb_vec;
+				fb_vec.push_back(shared_tex);
+				RID blur_fb = RD::get_singleton()->framebuffer_create(fb_vec);
+				RD::DrawListID rescale_draw_list = RD::get_singleton()->draw_list_begin(blur_fb, RD::DRAW_CLEAR_ALL, cc);
+				copy_effects->copy_to_atlas_fb(rd_texture, blur_fb, Rect2(Vector2(0.0, 0.0), Vector2(1.0, 1.0)), rescale_draw_list);
+				RD::get_singleton()->draw_list_end();
+
+				copy_effects->copy_to_fb_rect(blur_tex, mip_fb, uv_recti);
+				prev_blur_texture = blur_tex;
+			} else {
+				Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
+				if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+					copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size, true);
+				} else {
+					copy_effects->gaussian_blur_raster(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
+				}
+				copy_effects->copy_to_fb_rect(blur_tex, mip_fb, uv_recti, false, false, false, false, RID(), false, false, true);
+				prev_blur_texture = blur_tex;
+			}
+		}
+		for (int i = 0; i < blur_textures.size(); i++) { // start at one, don't free original texture
+			RD::get_singleton()->free_rid(blur_textures[i]);
+		}
+	}
+
+	data = RD::get_singleton()->texture_get_data(area_light_atlas_texture, 0);
+	RD::get_singleton()->free_rid(area_light_atlas_texture);
+	return data;
 }
 
 void RendererSceneRenderRD::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {

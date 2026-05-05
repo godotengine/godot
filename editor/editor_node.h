@@ -31,11 +31,12 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/os/process_id.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/settings/editor_folding.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -216,10 +217,11 @@ public:
 
 		// Non-menu options.
 		SCENE_TAB_CLOSE,
-		SCENE_TAB_SET_AS_MAIN_SCENE,
+		SCENE_TAB_SAVE_SCENE,
+		SCENE_TAB_SAVE_AS_AND_RUN,
+		SCENE_TAB_SAVE_AS_MAIN_SCENE,
 		SAVE_AND_RUN,
 		SAVE_AND_RUN_MAIN_SCENE,
-		SAVE_AND_SET_MAIN_SCENE,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
 		SETTINGS_PICK_MAIN_SCENE,
@@ -317,7 +319,7 @@ private:
 	bool exiting = false;
 	bool dimmed = false;
 
-	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+	DisplayServerEnums::WindowMode prev_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
 	Control *vp_base = nullptr;
@@ -372,6 +374,7 @@ private:
 
 	ConfirmationDialog *confirmation = nullptr;
 	bool stop_project_confirmation = false;
+	bool stop_download_confirmation = false;
 	Button *confirmation_button = nullptr;
 	ConfirmationDialog *save_confirmation = nullptr;
 	ConfirmationDialog *import_confirmation = nullptr;
@@ -557,7 +560,7 @@ private:
 	void _palette_quick_open_dialog();
 
 	void _remove_plugin_from_enabled(const String &p_name);
-	void _plugin_over_edit(EditorPlugin *p_plugin, Object *p_object);
+	void _plugin_over_edit(EditorPlugin *p_plugin, Object *p_object, bool p_set_current = true);
 	void _plugin_over_self_own(EditorPlugin *p_plugin);
 
 	void _fs_changed();
@@ -632,8 +635,6 @@ private:
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
-
-	bool has_main_screen() const { return true; }
 
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);
@@ -733,9 +734,10 @@ protected:
 	void _notification(int p_what);
 
 public:
-	// Public for use with callable_mp.
-	void init_plugins();
+	// Public for use as signal callback.
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+
+	void init_plugins();
 
 	bool call_build();
 	void call_run_scene(const String &p_scene, Vector<String> &r_args);
@@ -824,7 +826,7 @@ public:
 	void save_resource(const Ref<Resource> &p_resource);
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
 	bool is_resource_internal_to_scene(Ref<Resource> p_resource);
-	void gather_resources(const Variant &p_variant, List<Ref<Resource>> &r_list, bool p_subresources = false, bool p_allow_external = false);
+	void gather_resources(const Variant &p_variant, List<Ref<Resource>> &r_list, HashSet<Object *> &r_scanned_objects, bool p_subresources = false, bool p_allow_external = false);
 	void update_resource_count(Node *p_node, bool p_remove = false);
 	void update_node_reference(const Variant &p_value, Node *p_node, bool p_remove = false);
 	void clear_node_reference(Ref<Resource> p_res);
@@ -836,7 +838,7 @@ public:
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void push_item_no_inspector(Object *p_object);
 	void edit_previous_item();
-	void edit_item(Object *p_object, Object *p_editing_owner);
+	void edit_item(Object *p_object, Object *p_editing_owner, bool p_set_current = true);
 	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);
 
@@ -951,8 +953,8 @@ public:
 
 	void notify_all_debug_sessions_exited();
 
-	OS::ProcessID has_child_process(OS::ProcessID p_pid) const;
-	void stop_child_process(OS::ProcessID p_pid);
+	ProcessID has_child_process(ProcessID p_pid) const;
+	void stop_child_process(ProcessID p_pid);
 
 	Ref<Theme> get_editor_theme() const { return theme; }
 	void update_preview_themes(int p_mode);

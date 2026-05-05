@@ -30,10 +30,9 @@
 
 #pragma once
 
-#include "editor/script/script_editor_base.h"
-#include "script_editor_plugin.h"
-
 #include "editor/gui/code_editor.h"
+#include "editor/script/script_editor_base.h"
+#include "editor/script/script_editor_plugin.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
@@ -94,7 +93,7 @@ class ScriptTextEditor : public CodeEditorBase {
 	Color marked_line_color = Color(1, 1, 1);
 	Color warning_line_color = Color(1, 1, 1);
 	Color folded_code_region_color = Color(1, 1, 1);
-	int previous_line = 0;
+	int previous_line = -1; // Previous caret line number when user continuously operates in this editor. Affects history state. Reset to -1 on editor switch.
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;

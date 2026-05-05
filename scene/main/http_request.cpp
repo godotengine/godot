@@ -30,9 +30,12 @@
 
 #include "http_request.h"
 
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/stream_peer_gzip.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/os/thread.h"
 #include "scene/main/timer.h"
 
@@ -202,13 +205,20 @@ void HTTPRequest::cancel_request() {
 		}
 	}
 
-	file.unref();
+	if (file.is_valid()) {
+		file.unref();
+		if (!download_complete) {
+			DirAccess::remove_absolute(download_to_file);
+		}
+	}
+
 	decompressor.unref();
 	client->close();
 	body.clear();
 	got_response = false;
 	response_code = -1;
 	request_sent = false;
+	download_complete = false;
 	requesting = false;
 }
 
@@ -380,6 +390,7 @@ bool HTTPRequest::_update_connection() {
 				}
 				if (body_len < 0) {
 					// Chunked transfer is done.
+					download_complete = true;
 					_defer_done(RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
 				}
@@ -499,6 +510,7 @@ bool HTTPRequest::_update_connection() {
 
 			if (body_len >= 0) {
 				if (downloaded.get() == body_len) {
+					download_complete = true;
 					_defer_done(RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
 				}

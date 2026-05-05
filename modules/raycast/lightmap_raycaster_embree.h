@@ -69,7 +69,7 @@ public:
 	virtual void set_mesh_filter(const HashSet<int> &p_mesh_ids) override;
 	virtual void clear_mesh_filter() override;
 
-	static LightmapRaycaster *create_embree_raycaster();
+	static Ref<LightmapRaycaster> create_embree_raycaster();
 	static void make_default_raycaster();
 
 	LightmapRaycasterEmbree();

@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "../nav_rid_3d.h"
 #include "../nav_utils_3d.h"
 #include "nav_mesh_queries_3d.h"
 

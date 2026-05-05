@@ -4,6 +4,10 @@
         <meta-data
             android:name="org.godotengine.plugin.v2.GodotAppInstrumentedTestPlugin"
             android:value="com.godot.game.test.GodotAppInstrumentedTestPlugin"/>
+
+        <meta-data
+            android:name="org.godotengine.plugin.v2.SignalTestPlugin"
+            android:value="com.godot.game.test.SignalTestPlugin"/>
     </application>
 
 </manifest>

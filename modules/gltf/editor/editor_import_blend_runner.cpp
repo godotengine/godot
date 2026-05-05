@@ -31,7 +31,9 @@
 #include "editor_import_blend_runner.h"
 
 #include "core/io/http_client.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/io/xml_parser.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
@@ -180,6 +182,10 @@ Error EditorImportBlendRunner::start_blender(const String &p_python_script, bool
 	return err;
 }
 
+bool EditorImportBlendRunner::is_running() {
+	return blender_pid != 0 && OS::get_singleton()->is_process_running(blender_pid);
+}
+
 Error EditorImportBlendRunner::do_import(const Dictionary &p_options) {
 	if (is_using_rpc()) {
 		Error err = do_import_rpc(p_options);
@@ -211,6 +217,7 @@ HTTPClient::Status EditorImportBlendRunner::connect_blender_rpc(const Ref<HTTPCl
 	bool done = false;
 	while (!done) {
 		OS::get_singleton()->delay_usec(wait_usecs);
+		attempts++;
 		status = p_client->get_status();
 		switch (status) {
 			case HTTPClient::STATUS_RESOLVING:

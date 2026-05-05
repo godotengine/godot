@@ -34,7 +34,10 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_importer.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
@@ -46,7 +49,9 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display/display_server.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 int EditorFileSystem::nb_files_total = 0;
@@ -915,15 +920,26 @@ bool EditorFileSystem::_update_scan_actions() {
 				const String new_file_path = ia.dir->get_file_path(idx);
 				const ResourceUID::ID existing_id = ResourceLoader::get_resource_uid(new_file_path);
 				if (existing_id != ResourceUID::INVALID_ID) {
-					const String old_path = ResourceUID::get_singleton()->get_id_path(existing_id);
-					if (old_path != new_file_path && FileAccess::exists(old_path)) {
+					const bool id_known = ResourceUID::get_singleton()->has_id(existing_id);
+					const String old_path = id_known ? ResourceUID::get_singleton()->get_id_path(existing_id) : String();
+
+					if (id_known && old_path != new_file_path && FileAccess::exists(old_path)) {
 						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
 						ResourceUID::get_singleton()->add_id(new_id, new_file_path);
 						ResourceSaver::set_uid(new_file_path, new_id);
 						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", new_file_path, old_path));
+						ia.new_file->uid = new_id;
 					} else {
 						// Re-assign the UID to file, just in case it was pulled from cache.
 						ResourceSaver::set_uid(new_file_path, existing_id);
+
+						if (id_known) {
+							ResourceUID::get_singleton()->set_id(existing_id, new_file_path);
+						} else {
+							ResourceUID::get_singleton()->add_id(existing_id, new_file_path);
+						}
+
+						ia.new_file->uid = existing_id;
 					}
 				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
 					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
@@ -3031,6 +3047,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		fs->files[cpos]->import_dest_paths = dest_paths;
 		fs->files[cpos]->deps = _get_dependencies(p_file);
 		fs->files[cpos]->type = importer->get_resource_type();
+		fs->files[cpos]->resource_script_class = ResourceLoader::get_resource_script_class(p_file);
 		fs->files[cpos]->uid = uid;
 		fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
 	}
@@ -3137,7 +3154,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		Error err = OK;
 		Ref<Resource> res = ResourceCache::get_ref(p_from);
 		if (res.is_null()) {
-			res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+			res = ResourceLoader::load(p_from, "", ResourceLoaderConstants::CACHE_MODE_REUSE, &err);
 		} else {
 			bool edited = false;
 			List<Ref<Resource>> cached;
@@ -3242,9 +3259,9 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	// this could lead to a slow import process, especially when the editor is unfocused.
 	// Temporarily disabling VSync and low_processor_usage_mode while reimporting fixes this.
 	const bool old_low_processor_usage_mode = OS::get_singleton()->is_in_low_processor_usage_mode();
-	const DisplayServer::VSyncMode old_vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServer::MAIN_WINDOW_ID);
+	const DisplayServerEnums::VSyncMode old_vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID);
 	OS::get_singleton()->set_low_processor_usage_mode(false);
-	DisplayServer::get_singleton()->window_set_vsync_mode(DisplayServer::VSyncMode::VSYNC_DISABLED);
+	DisplayServer::get_singleton()->window_set_vsync_mode(DisplayServerEnums::VSyncMode::VSYNC_DISABLED);
 
 	Vector<ImportFile> reimport_files;
 
@@ -3438,7 +3455,7 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 	return OK;
 }
 
-Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode) {
+Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceLoaderConstants::CacheMode p_cache_mode) {
 	ERR_FAIL_NULL_V(p_importer, Ref<Resource>());
 
 	if (!FileAccess::exists(p_path)) {

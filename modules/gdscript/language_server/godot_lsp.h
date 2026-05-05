@@ -110,6 +110,9 @@ struct Position {
 		dict["character"] = character;
 		return dict;
 	}
+
+	Position() = default;
+	Position(int p_line, int p_character) : line(p_line), character(p_character) {}
 };
 
 /**
@@ -160,6 +163,10 @@ struct Range {
 		dict["end"] = end.to_json();
 		return dict;
 	}
+
+	Range() = default;
+	Range(Position p_start, Position p_end) : start(p_start), end(p_end) {}
+	Range(int p_start_line, int p_start_column, int p_end_line, int p_end_column) : start(p_start_line, p_start_column), end(p_end_line, p_end_column) {}
 };
 
 /**
@@ -319,6 +326,13 @@ struct TextEdit {
 	 * empty string.
 	 */
 	String newText;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["newText"] = newText;
+		dict["range"] = range.to_json();
+		return dict;
+	}
 };
 
 /**
@@ -1076,6 +1090,12 @@ struct CompletionItem {
 		if (!insertText.is_empty()) {
 			dict["insertText"] = insertText;
 		}
+		if (insertTextFormat) {
+			dict["insertTextFormat"] = insertTextFormat;
+		}
+		if (!textEdit.newText.is_empty()) {
+			dict["textEdit"] = textEdit.to_json();
+		}
 		if (resolved) {
 			if (!detail.is_empty()) {
 				dict["detail"] = detail;
@@ -1135,6 +1155,7 @@ struct CompletionItem {
 		if (p_dict.has("insertText")) {
 			insertText = p_dict["insertText"];
 		}
+		insertTextFormat = p_dict.get("insertTextFormat", 0);
 		if (p_dict.has("data")) {
 			data = p_dict["data"];
 		}
@@ -1297,48 +1318,6 @@ struct DocumentSymbol {
 			markdown.value += "Defined in [" + script_path + "](" + uri + ")";
 		}
 		return markdown;
-	}
-
-	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
-		LSP::CompletionItem item;
-		item.label = name;
-
-		if (resolved) {
-			item.documentation = render();
-		}
-
-		switch (kind) {
-			case LSP::SymbolKind::Enum:
-				item.kind = LSP::CompletionItemKind::Enum;
-				break;
-			case LSP::SymbolKind::Class:
-				item.kind = LSP::CompletionItemKind::Class;
-				break;
-			case LSP::SymbolKind::Property:
-				item.kind = LSP::CompletionItemKind::Property;
-				break;
-			case LSP::SymbolKind::Method:
-			case LSP::SymbolKind::Function:
-				item.kind = LSP::CompletionItemKind::Method;
-				break;
-			case LSP::SymbolKind::Event:
-				item.kind = LSP::CompletionItemKind::Event;
-				break;
-			case LSP::SymbolKind::Constant:
-				item.kind = LSP::CompletionItemKind::Constant;
-				break;
-			case LSP::SymbolKind::Variable:
-				item.kind = LSP::CompletionItemKind::Variable;
-				break;
-			case LSP::SymbolKind::File:
-				item.kind = LSP::CompletionItemKind::File;
-				break;
-			default:
-				item.kind = LSP::CompletionItemKind::Text;
-				break;
-		}
-
-		return item;
 	}
 };
 

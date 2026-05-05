@@ -30,15 +30,15 @@
 
 #pragma once
 
-#include "scene/gui/margin_container.h"
-#include "tile_atlas_view.h"
-
+#include "core/math/random_pcg.h"
 #include "core/os/thread.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/scene/2d/tiles/tile_atlas_view.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
@@ -181,6 +181,9 @@ private:
 	TypedArray<Vector2i> _get_tile_map_selection() const;
 
 	RBSet<TileMapCell> tile_set_selection;
+
+	RandomPCG pattern_rng;
+	uint32_t rng_base_state = 0;
 
 	void _update_selection_pattern_from_tilemap_selection();
 	void _update_selection_pattern_from_tileset_tiles_selection();

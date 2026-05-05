@@ -41,7 +41,6 @@
 #include "drivers/gles3/environment/gi.h"
 #include "drivers/gles3/rasterizer_canvas_gles3.h"
 #include "drivers/gles3/rasterizer_scene_gles3.h"
-#include "drivers/gles3/rasterizer_util_gles3.h"
 #include "drivers/gles3/storage/config.h"
 #include "drivers/gles3/storage/light_storage.h"
 #include "drivers/gles3/storage/material_storage.h"
@@ -81,7 +80,7 @@ protected:
 	RasterizerSceneGLES3 *scene = nullptr;
 	static RasterizerGLES3 *singleton;
 
-	void _blit_render_target_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen &p_blit, bool p_first = true);
+	void _blit_render_target_to_screen(DisplayServerEnums::WindowID p_screen, const RenderingServerTypes::BlitToScreen &p_blit, bool p_first = true);
 
 public:
 	RendererUtilities *get_utilities() { return utilities; }
@@ -100,7 +99,7 @@ public:
 	void initialize();
 	void begin_frame(double frame_step);
 
-	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount);
+	void blit_render_targets_to_screen(DisplayServerEnums::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount);
 
 	bool is_opengl() { return true; }
 	void gl_end_frame(bool p_swap_buffers);
@@ -112,12 +111,7 @@ public:
 		return memnew(RasterizerGLES3);
 	}
 
-	static void make_current(bool p_gles_over_gl) {
-		RasterizerUtilGLES3::set_gles_over_gl(p_gles_over_gl);
-		OS::get_singleton()->set_gles_over_gl(p_gles_over_gl);
-		_create_func = _create_current;
-		low_end = true;
-	}
+	static void make_current(bool p_gles_over_gl);
 
 #ifdef WINDOWS_ENABLED
 	static void set_screen_flipped_y(bool p_flipped) {

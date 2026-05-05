@@ -115,6 +115,10 @@ public:
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
 
+	/* AREA LIGHT ATLAS API */
+	virtual void texture_add_to_area_light_atlas(RID p_texture) = 0;
+	virtual void texture_remove_from_area_light_atlas(RID p_texture) = 0;
+
 	/* Decal API */
 	virtual RID decal_allocate() = 0;
 	virtual void decal_initialize(RID p_rid) = 0;
@@ -194,6 +198,12 @@ public:
 
 	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) = 0;
 	virtual Rect2i render_target_get_render_region(RID p_render_target) const = 0;
+
+	virtual void render_target_set_subsampled_enabled(RID p_render_target, bool p_enabled) = 0;
+	virtual bool render_target_is_subsampled_enabled(RID p_render_target) const = 0;
+
+	virtual void render_target_set_subsampled_allowed(RID p_render_target, bool p_allowed) = 0;
+	virtual bool render_target_is_subsampled_allowed(RID p_render_target) const = 0;
 
 	// get textures
 	virtual RID render_target_get_texture(RID p_render_target) = 0;

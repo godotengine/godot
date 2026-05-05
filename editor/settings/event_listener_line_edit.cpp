@@ -31,7 +31,8 @@
 #include "event_listener_line_edit.h"
 
 #include "core/input/input_map.h"
-#include "core/object/class_db.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "scene/gui/dialogs.h"
 #include "servers/display/accessibility_server.h"
 
@@ -188,7 +189,7 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	accept_event();
-	if (!event_to_check->is_pressed() || event_to_check->is_echo() || event_to_check->is_match(event) || !_is_event_allowed(event_to_check)) {
+	if (event_to_check.is_null() || !event_to_check->is_pressed() || event_to_check->is_echo() || event_to_check->is_match(event) || !_is_event_allowed(event_to_check)) {
 		return;
 	}
 

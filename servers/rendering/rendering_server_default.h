@@ -481,6 +481,7 @@ public:
 	FUNCRIDSPLIT(directional_light)
 	FUNCRIDSPLIT(omni_light)
 	FUNCRIDSPLIT(spot_light)
+	FUNCRIDSPLIT(area_light)
 
 	FUNC2(light_set_color, RID, const Color &)
 	FUNC3(light_set_param, RID, RSE::LightParam, float)
@@ -499,6 +500,10 @@ public:
 	FUNC2(light_directional_set_shadow_mode, RID, RSE::LightDirectionalShadowMode)
 	FUNC2(light_directional_set_blend_splits, RID, bool)
 	FUNC2(light_directional_set_sky_mode, RID, RSE::LightDirectionalSkyMode)
+
+	FUNC2(light_area_set_size, RID, const Vector2 &)
+	FUNC2(light_area_set_normalize_energy, RID, bool)
+	FUNC2(light_area_set_texture, RID, RID)
 
 	/* PROBE API */
 
@@ -617,7 +622,7 @@ public:
 	FUNC2(particles_set_lifetime, RID, double)
 	FUNC2(particles_set_one_shot, RID, bool)
 	FUNC2(particles_set_pre_process_time, RID, double)
-	FUNC2(particles_request_process_time, RID, real_t)
+	FUNC3(particles_request_process_time, RID, real_t, real_t)
 	FUNC2(particles_set_explosiveness_ratio, RID, float)
 	FUNC2(particles_set_randomness_ratio, RID, float)
 	FUNC2(particles_set_seed, RID, uint32_t)
@@ -639,6 +644,8 @@ public:
 	FUNC2(particles_set_collision_base_size, RID, float)
 
 	FUNC2(particles_set_transform_align, RID, RSE::ParticlesTransformAlign)
+	FUNC2(particles_set_transform_align_channel_filter, RID, RSE::ParticlesTransformAlignCustomSrc)
+	FUNC2(particles_set_transform_align_axis, RID, RSE::ParticlesTransformAlignAxis)
 
 	FUNC2(particles_set_draw_order, RID, RSE::ParticlesDrawOrder)
 
@@ -794,9 +801,9 @@ public:
 	FUNC2(viewport_set_measure_render_time, RID, bool)
 	FUNC1RC(double, viewport_get_measured_render_time_cpu, RID)
 	FUNC1RC(double, viewport_get_measured_render_time_gpu, RID)
-	FUNC1RC(RID, viewport_find_from_screen_attachment, DisplayServer::WindowID)
+	FUNC1RC(RID, viewport_find_from_screen_attachment, DisplayServerEnums::WindowID)
 
-	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
+	FUNC2(call_set_vsync_mode, DisplayServerEnums::VSyncMode, DisplayServerEnums::WindowID)
 
 	FUNC2(viewport_set_vrs_mode, RID, RSE::ViewportVRSMode)
 	FUNC2(viewport_set_vrs_update_mode, RID, RSE::ViewportVRSUpdateMode)
@@ -968,6 +975,7 @@ public:
 	FUNC2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	FUNC3R(TypedArray<Image>, bake_render_uv2, RID, const TypedArray<RID> &, const Size2i &)
+	FUNC4R(PackedByteArray, bake_render_area_light_atlas, const TypedArray<RID> &, const TypedArray<Rect2> &, const Size2i &, int)
 
 	FUNC1(gi_set_use_half_resolution, bool)
 

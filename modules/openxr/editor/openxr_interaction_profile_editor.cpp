@@ -32,6 +32,7 @@
 
 #include "../openxr_api.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 
@@ -62,6 +63,10 @@ void OpenXRInteractionProfileEditorBase::_do_update_interaction_profile() {
 		is_dirty = true;
 		callable_mp(this, &OpenXRInteractionProfileEditorBase::_update_interaction_profile).call_deferred();
 	}
+}
+
+void OpenXRInteractionProfileEditorBase::_set_dirty() {
+	is_dirty = true;
 }
 
 void OpenXRInteractionProfileEditorBase::_add_binding(const String &p_action, const String &p_path) {

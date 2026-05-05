@@ -31,8 +31,10 @@
 #include "navigation_agent_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/2d/navigation/navigation_link_2d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/rendering/rendering_server.h"

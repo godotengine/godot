@@ -31,6 +31,7 @@
 #include "script_editor_base.h"
 
 #include "core/io/json.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/script/script_editor_plugin.h"
@@ -39,6 +40,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "servers/display/display_server.h"
 
 void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("name_changed"));
@@ -131,8 +133,6 @@ void TextEditorBase::EditMenus::_change_syntax_highlighter(int p_idx) {
 }
 
 void TextEditorBase::EditMenus::_update_bookmark_list() {
-	TextEditorBase *script_text_editor = _get_active_editor();
-	ERR_FAIL_NULL(script_text_editor);
 	bookmarks_menu->clear();
 	bookmarks_menu->reset_size();
 
@@ -140,6 +140,11 @@ void TextEditorBase::EditMenus::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
+
+	TextEditorBase *script_text_editor = _get_active_editor();
+	if (script_text_editor == nullptr) {
+		return;
+	}
 
 	PackedInt32Array bookmark_list = script_text_editor->code_editor->get_text_editor()->get_bookmarked_lines();
 	if (bookmark_list.is_empty()) {
@@ -270,11 +275,14 @@ TextEditorBase::EditMenus::EditMenus() {
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &EditMenus::_bookmark_item_pressed));
 
 	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditMenus::_edit_option));
+
+	// Update immediately for shortcuts.
+	_update_bookmark_list();
 }
 
 void TextEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position, bool p_show) {
 	context_menu->clear();
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
 		context_menu->add_separator();
 	}

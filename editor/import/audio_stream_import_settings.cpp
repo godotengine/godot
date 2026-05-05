@@ -30,6 +30,7 @@
 
 #include "audio_stream_import_settings.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -277,7 +278,9 @@ void AudioStreamImportSettingsDialog::_play() {
 }
 
 void AudioStreamImportSettingsDialog::_stop() {
-	_load_master_state();
+	if (_player->is_playing()) {
+		_load_master_state();
+	}
 
 	_player->stop();
 	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
@@ -287,6 +290,8 @@ void AudioStreamImportSettingsDialog::_stop() {
 }
 
 void AudioStreamImportSettingsDialog::_on_finished() {
+	_load_master_state();
+
 	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	if (!_pausing) {
 		_current = 0;

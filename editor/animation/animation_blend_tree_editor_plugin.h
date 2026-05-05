@@ -37,7 +37,6 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/graph_edit.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/tree.h"
 
 class AcceptDialog;
@@ -47,6 +46,7 @@ class EditorFileDialog;
 class EditorProperty;
 class MenuButton;
 class PanelContainer;
+class RichTextLabel;
 class EditorInspectorPluginAnimationNodeAnimation;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
@@ -60,9 +60,6 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	MenuButton *add_node = nullptr;
 	Vector2 position_from_popup_menu;
 	bool use_position_from_popup_menu;
-
-	PanelContainer *error_panel = nullptr;
-	Label *error_label = nullptr;
 
 	AcceptDialog *filter_dialog = nullptr;
 	Tree *filters = nullptr;
@@ -95,16 +92,18 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _add_node(int p_idx);
 	void _update_options_menu(bool p_has_input_ports = false);
 
+	StringName animation_node_name_meta = StringName("_animation_node_name");
 	static AnimationNodeBlendTreeEditor *singleton;
 
 	void _node_dragged(const Vector2 &p_from, const Vector2 &p_to, const StringName &p_which);
-	void _node_renamed(const String &p_text, Ref<AnimationNode> p_node);
-	void _node_renamed_focus_out(Ref<AnimationNode> p_node);
+	void _node_renamed(const String &p_text, Ref<AnimationNode> p_node, const StringName &p_name);
+	void _node_renamed_focus_out(Ref<AnimationNode> p_node, const StringName &p_name);
 	void _node_rename_lineedit_changed(const String &p_text);
 	void _node_changed(const StringName &p_node_name);
 
 	String current_node_rename_text;
-	bool updating;
+	bool graph_update_queued = false;
+	bool updating = false;
 
 	void _connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
 	void _disconnection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
@@ -150,6 +149,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	};
 
 	Ref<EditorInspectorPluginAnimationNodeAnimation> animation_node_inspector_plugin;
+	Ref<Tween> pan_to_tween;
 
 protected:
 	void _notification(int p_what);
@@ -167,7 +167,9 @@ public:
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
 
 	void update_graph();
+	void update_graph_immediately();
 
+	void pan_to_node(const StringName &p_node_name, int p_input_index = -1);
 	AnimationNodeBlendTreeEditor();
 };
 

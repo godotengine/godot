@@ -167,6 +167,17 @@ public:
 
 	virtual void run() = 0;
 
+	virtual String get_platform_string(PlatformString p_platform_string) const override {
+		switch (p_platform_string) {
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in Finder");
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in Finder");
+			default:
+				return OS::get_platform_string(p_platform_string);
+		}
+	}
+
 	OS_MacOS(const char *p_execpath, int p_argc, char **p_argv);
 };
 

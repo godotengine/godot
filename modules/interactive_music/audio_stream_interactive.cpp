@@ -30,6 +30,7 @@
 
 #include "audio_stream_interactive.h"
 
+#include "core/config/engine.h"
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
 
@@ -521,6 +522,7 @@ void AudioStreamInteractive::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(TRANSITION_TO_TIME_SAME_POSITION);
 	BIND_ENUM_CONSTANT(TRANSITION_TO_TIME_START);
+	BIND_ENUM_CONSTANT(TRANSITION_TO_TIME_PREVIOUS_POSITION);
 
 	BIND_ENUM_CONSTANT(FADE_DISABLED);
 	BIND_ENUM_CONSTANT(FADE_IN);

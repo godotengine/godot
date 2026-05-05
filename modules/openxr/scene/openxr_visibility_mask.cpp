@@ -33,12 +33,9 @@
 #include "../extensions/openxr_visibility_mask_extension.h"
 #include "../openxr_interface.h"
 
-#include "core/object/class_db.h"
+#include "core/object/callable_mp.h"
 #include "scene/3d/xr/xr_nodes.h"
 #include "servers/rendering/rendering_server.h"
-
-void OpenXRVisibilityMask::_bind_methods() {
-}
 
 void OpenXRVisibilityMask::_notification(int p_what) {
 	switch (p_what) {

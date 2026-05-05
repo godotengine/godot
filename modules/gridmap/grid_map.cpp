@@ -30,9 +30,12 @@
 
 #include "grid_map.h"
 
+#include "core/config/engine.h"
 #include "core/io/marshalls.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/a_hash_map.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/surface_tool.h"
@@ -40,7 +43,6 @@
 
 #ifndef PHYSICS_3D_DISABLED
 #include "core/math/convex_hull.h"
-#include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
@@ -260,6 +262,24 @@ Array GridMap::get_collision_shapes() const {
 	}
 
 	return shapes;
+}
+
+RID GridMap::get_physics_body_from_octant_coord(const Vector3i &p_octant_coords) const {
+	OctantKey octantkey;
+	octantkey.x = p_octant_coords.x;
+	octantkey.y = p_octant_coords.y;
+	octantkey.z = p_octant_coords.z;
+
+	const HashMap<OctantKey, Octant *, OctantKey>::ConstIterator octant_kv = octant_map.find(octantkey);
+
+	if (!octant_kv) {
+		return RID();
+	}
+
+	Octant *g = octant_kv->value;
+	RID body_rid = g->static_body;
+
+	return body_rid;
 }
 #endif // PHYSICS_3D_DISABLED
 
@@ -1264,6 +1284,17 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
 	ClassDB::bind_method(D_METHOD("get_used_cells_by_item", "item"), &GridMap::get_used_cells_by_item);
 
+	ClassDB::bind_method(D_METHOD("get_used_octants"), &GridMap::get_used_octants);
+	ClassDB::bind_method(D_METHOD("get_used_octants_by_item", "item"), &GridMap::get_used_octants_by_item);
+
+	ClassDB::bind_method(D_METHOD("get_used_cells_in_octant", "octant_coords"), &GridMap::get_used_cells_in_octant);
+	ClassDB::bind_method(D_METHOD("get_used_cells_in_octant_by_item", "octant_coords", "item"), &GridMap::get_used_cells_in_octant_by_item);
+
+	ClassDB::bind_method(D_METHOD("get_octants_in_bounds", "bounds"), &GridMap::get_octants_in_bounds);
+	ClassDB::bind_method(D_METHOD("get_used_octants_in_bounds", "bounds"), &GridMap::get_used_octants_in_bounds);
+
+	ClassDB::bind_method(D_METHOD("get_octant_coords_from_cell_coords", "cell_coords"), &GridMap::get_octant_coords_from_cell_coords);
+
 	ClassDB::bind_method(D_METHOD("get_meshes"), &GridMap::get_meshes);
 	ClassDB::bind_method(D_METHOD("get_bake_meshes"), &GridMap::get_bake_meshes);
 	ClassDB::bind_method(D_METHOD("get_bake_mesh_instance", "idx"), &GridMap::get_bake_mesh_instance);
@@ -1333,6 +1364,193 @@ TypedArray<Vector3i> GridMap::get_used_cells_by_item(int p_item) const {
 	}
 
 	return a;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants() const {
+	TypedArray<Vector3i> octant_coords;
+	octant_coords.resize(octant_map.size());
+	int i = 0;
+	for (const KeyValue<OctantKey, Octant *> &octant_kv : octant_map) {
+		const OctantKey &octant_key = octant_kv.key;
+		Vector3i octant_coord(octant_key.x, octant_key.y, octant_key.z);
+		octant_coords[i++] = octant_coord;
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants_by_item(int p_item) const {
+	TypedArray<Vector3i> octant_coords;
+	for (const KeyValue<OctantKey, Octant *> &octant_kv : octant_map) {
+		const OctantKey &octant_key = octant_kv.key;
+		const Octant &octant = *octant_kv.value;
+		for (const IndexKey &cell_key : octant.cells) {
+			const Cell &cell = cell_map[cell_key];
+			if ((int)cell.item == p_item) {
+				Vector3i octant_coord(octant_key.x, octant_key.y, octant_key.z);
+				octant_coords.push_back(octant_coord);
+				break;
+			}
+		}
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_cells_in_octant(const Vector3i &p_octant_coords) const {
+	TypedArray<Vector3i> cell_coords;
+
+	const OctantKey octantkey = get_octant_key_from_cell_coords(p_octant_coords);
+	if (!octant_map.has(octantkey)) {
+		return cell_coords;
+	}
+
+	const Octant &octant = *octant_map[octantkey];
+
+	for (const IndexKey &cell_key : octant.cells) {
+		Vector3i cell_coord(cell_key.x, cell_key.y, cell_key.z);
+		cell_coords.push_back(cell_coord);
+	}
+
+	return cell_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_cells_in_octant_by_item(const Vector3i &p_octant_coords, int p_item) const {
+	TypedArray<Vector3i> cell_coords;
+
+	const OctantKey octantkey = get_octant_key_from_cell_coords(p_octant_coords);
+	if (!octant_map.has(octantkey)) {
+		return cell_coords;
+	}
+
+	const Octant &octant = *octant_map[octantkey];
+
+	for (const IndexKey &cell_key : octant.cells) {
+		const Cell &cell = cell_map[cell_key];
+		if ((int)cell.item == p_item) {
+			Vector3i cell_coord(cell_key.x, cell_key.y, cell_key.z);
+			cell_coords.push_back(cell_coord);
+		}
+	}
+
+	return cell_coords;
+}
+
+Vector3i GridMap::get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const {
+	return Vector3i(
+			p_cell_coords.x > 0 ? p_cell_coords.x / octant_size : (p_cell_coords.x - (octant_size - 1)) / octant_size,
+			p_cell_coords.y > 0 ? p_cell_coords.y / octant_size : (p_cell_coords.y - (octant_size - 1)) / octant_size,
+			p_cell_coords.z > 0 ? p_cell_coords.z / octant_size : (p_cell_coords.z - (octant_size - 1)) / octant_size);
+}
+
+LocalVector<GridMap::IndexKey> GridMap::get_index_keys_in_bounds(const AABB &p_bounds, bool p_used_only) const {
+	LocalVector<IndexKey> index_keys;
+	if (!p_bounds.has_volume()) {
+		return index_keys;
+	}
+
+	Vector3i cell_coords_start = (p_bounds.position / cell_size).floor();
+	// -CMP_EPSILON because we don't want the octants that are just starting at the edge of the bounds.
+	Vector3i cell_coords_end = ((p_bounds.get_end() - Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON)) / cell_size).floor();
+
+	for (int z = cell_coords_start.z; z < cell_coords_end.z + 1; z++) {
+		for (int y = cell_coords_start.y; y < cell_coords_end.y + 1; y++) {
+			for (int x = cell_coords_start.x; x < cell_coords_end.x + 1; x++) {
+				IndexKey index_key;
+				index_key.x = x;
+				index_key.y = y;
+				index_key.z = z;
+
+				if (p_used_only) {
+					const HashMap<IndexKey, Cell, IndexKey>::ConstIterator index_key_kv = cell_map.find(index_key);
+
+					if (index_key_kv) {
+						index_keys.push_back(index_key);
+					}
+				} else {
+					index_keys.push_back(index_key);
+				}
+			}
+		}
+	}
+
+	return index_keys;
+}
+
+LocalVector<GridMap::OctantKey> GridMap::get_octant_keys_in_bounds(const AABB &p_bounds, bool p_used_only) const {
+	LocalVector<OctantKey> octant_keys;
+	if (!p_bounds.has_volume()) {
+		return octant_keys;
+	}
+
+	Vector3i cell_coords_start = (p_bounds.position / cell_size).floor();
+	// -CMP_EPSILON because we don't want the octants that are just starting at the edge of the bounds.
+	Vector3i cell_coords_end = ((p_bounds.get_end() - Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON)) / cell_size).floor();
+
+	OctantKey octant_coords_start = get_octant_key_from_cell_coords(cell_coords_start);
+	OctantKey octant_coords_end = get_octant_key_from_cell_coords(cell_coords_end);
+
+	for (int z = octant_coords_start.z; z < octant_coords_end.z + 1; z++) {
+		for (int y = octant_coords_start.y; y < octant_coords_end.y + 1; y++) {
+			for (int x = octant_coords_start.x; x < octant_coords_end.x + 1; x++) {
+				OctantKey octant_key;
+				octant_key.x = x;
+				octant_key.y = y;
+				octant_key.z = z;
+
+				if (p_used_only) {
+					const HashMap<OctantKey, Octant *, OctantKey>::ConstIterator octant_kv = octant_map.find(octant_key);
+
+					if (octant_kv) {
+						Vector3i octant_coord(x, y, z);
+						octant_keys.push_back(octant_key);
+					}
+				} else {
+					octant_keys.push_back(octant_key);
+				}
+			}
+		}
+	}
+
+	return octant_keys;
+}
+
+TypedArray<Vector3i> GridMap::get_octants_in_bounds(const AABB &p_bounds) const {
+	TypedArray<Vector3i> octant_coords;
+	if (!p_bounds.has_volume()) {
+		return octant_coords;
+	}
+
+	bool used_only = false;
+
+	const LocalVector<OctantKey> &octant_keys = get_octant_keys_in_bounds(p_bounds, used_only);
+
+	octant_coords.resize(octant_keys.size());
+
+	for (uint32_t i = 0; i < octant_keys.size(); i++) {
+		octant_coords[i] = Vector3i(octant_keys[i].x, octant_keys[i].y, octant_keys[i].z);
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants_in_bounds(const AABB &p_bounds) const {
+	TypedArray<Vector3i> octant_coords;
+	if (!p_bounds.has_volume()) {
+		return octant_coords;
+	}
+
+	bool used_only = true;
+
+	const LocalVector<OctantKey> &octant_keys = get_octant_keys_in_bounds(p_bounds, used_only);
+
+	octant_coords.resize(octant_keys.size());
+
+	for (uint32_t i = 0; i < octant_keys.size(); i++) {
+		octant_coords[i] = Vector3i(octant_keys[i].x, octant_keys[i].y, octant_keys[i].z);
+	}
+
+	return octant_coords;
 }
 
 Array GridMap::get_meshes() const {
@@ -1531,7 +1749,34 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 	}
 #ifndef PHYSICS_3D_DISABLED
 	else if ((parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) && (gridmap->get_collision_layer() & parsed_collision_mask)) {
-		Array shapes = gridmap->get_collision_shapes();
+		Array shapes;
+
+		// If we have a baking AABB set we can skip wasting time on parsing the entire GridMap.
+		AABB baking_aabb = p_navigation_mesh->get_filter_baking_aabb();
+		if (baking_aabb.has_volume()) {
+			Vector3 baking_aabb_offset = p_navigation_mesh->get_filter_baking_aabb_offset();
+			baking_aabb.position = baking_aabb.position + baking_aabb_offset;
+
+			const TypedArray<Vector3i> octant_coords = gridmap->get_used_octants_in_bounds(baking_aabb);
+			for (const Vector3i octant_coord : octant_coords) {
+				RID body = gridmap->get_physics_body_from_octant_coord(octant_coord);
+				if (body.is_null()) {
+					continue;
+				}
+				const Transform3D body_xform = PhysicsServer3D::get_singleton()->body_get_state(body, PhysicsServer3D::BODY_STATE_TRANSFORM);
+				int nshapes = PhysicsServer3D::get_singleton()->body_get_shape_count(body);
+				for (int i = 0; i < nshapes; i++) {
+					RID shape = PhysicsServer3D::get_singleton()->body_get_shape(body, i);
+					Transform3D shape_xform = PhysicsServer3D::get_singleton()->body_get_shape_transform(body, i);
+					Transform3D xform = body_xform * shape_xform;
+					shapes.push_back(xform);
+					shapes.push_back(shape);
+				}
+			}
+		} else {
+			shapes = gridmap->get_collision_shapes();
+		}
+
 		for (int i = 0; i < shapes.size(); i += 2) {
 			RID shape = shapes[i + 1];
 			PhysicsServer3D::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);

@@ -30,7 +30,6 @@
 
 #include "margin_container.h"
 
-#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
 Size2 MarginContainer::get_minimum_size() const {
@@ -42,7 +41,7 @@ Size2 MarginContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2 s = c->get_combined_minimum_size();
+		Size2 s = c->get_bound_minimum_size();
 		if (s.width > max.width) {
 			max.width = s.width;
 		}
@@ -55,6 +54,15 @@ Size2 MarginContainer::get_minimum_size() const {
 	max.height += (theme_cache.margin_top + theme_cache.margin_bottom);
 
 	return max;
+}
+
+Size2 MarginContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	ms.width -= (theme_cache.margin_left + theme_cache.margin_right);
+	ms.height -= (theme_cache.margin_top + theme_cache.margin_bottom);
+
+	return ms;
 }
 
 Vector<int> MarginContainer::get_allowed_size_flags_horizontal() const {

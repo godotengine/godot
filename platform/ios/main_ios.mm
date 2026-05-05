@@ -36,6 +36,7 @@
 #include "main/main.h"
 
 #import <UIKit/UIKit.h>
+
 #include <cstdio>
 
 static OS_IOS *os = nullptr;

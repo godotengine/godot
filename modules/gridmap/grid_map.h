@@ -32,7 +32,6 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/mesh_library.h"
-#include "scene/resources/multimesh.h"
 
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
@@ -312,6 +311,25 @@ public:
 
 	TypedArray<Vector3i> get_used_cells() const;
 	TypedArray<Vector3i> get_used_cells_by_item(int p_item) const;
+
+	TypedArray<Vector3i> get_used_octants() const;
+	TypedArray<Vector3i> get_used_octants_by_item(int p_item) const;
+
+	TypedArray<Vector3i> get_used_cells_in_octant(const Vector3i &p_octant_coords) const;
+	TypedArray<Vector3i> get_used_cells_in_octant_by_item(const Vector3i &p_octant_coords, int p_item) const;
+
+	// Fastpath functions for native modules that do not use Variant/TypedArray.
+	LocalVector<IndexKey> get_index_keys_in_bounds(const AABB &p_bounds, bool p_used_only = true) const;
+	LocalVector<OctantKey> get_octant_keys_in_bounds(const AABB &p_bounds, bool p_used_only = true) const;
+
+	TypedArray<Vector3i> get_octants_in_bounds(const AABB &p_bounds) const;
+	TypedArray<Vector3i> get_used_octants_in_bounds(const AABB &p_bounds) const;
+
+	Vector3i get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const;
+
+#ifndef PHYSICS_3D_DISABLED
+	RID get_physics_body_from_octant_coord(const Vector3i &p_octant_coords) const;
+#endif
 
 	Array get_meshes() const;
 

@@ -58,8 +58,8 @@ public:
 	void driver_free(RenderingDeviceDriver *p_driver) final override;
 	SurfaceID surface_create(const void *p_platform_data) final override;
 	void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) final override;
-	void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) final override;
-	DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const final override;
+	void surface_set_vsync_mode(SurfaceID p_surface, DisplayServerEnums::VSyncMode p_vsync_mode) final override;
+	DisplayServerEnums::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const final override;
 	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) final override;
 	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const final override;
 	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) final override;
@@ -90,7 +90,7 @@ public:
 	public:
 		uint32_t width = 0;
 		uint32_t height = 0;
-		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
+		DisplayServerEnums::VSyncMode vsync_mode = DisplayServerEnums::VSYNC_ENABLED;
 		double present_minimum_duration = 0.0;
 		MTL::PixelFormat pixel_format = MTL::PixelFormatBGRA8Unorm;
 
@@ -98,6 +98,8 @@ public:
 		// to be a more pleasant player-facing value.
 		float hdr_reference_luminance = 200.0f;
 		float hdr_max_luminance = 1000.0f;
+		// linear_luminance_scale must always equal hdr_reference_luminance on Apple platforms.
+		float hdr_linear_luminance_scale = 200.0f;
 		bool needs_resize = false;
 		bool hdr_output = false;
 

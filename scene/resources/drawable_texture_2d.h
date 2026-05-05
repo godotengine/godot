@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "scene/resources/atlas_texture.h"
-#include "scene/resources/image_texture.h"
-#include "scene/resources/material.h"
+#include "scene/resources/texture.h"
+
+class Material;
 
 class DrawableTexture2D : public Texture2D {
 	GDCLASS(DrawableTexture2D, Texture2D);
@@ -63,9 +63,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_width(int p_width);
 	int get_width() const override;
-	void set_height(int p_height);
 	int get_height() const override;
 
 	void set_drawable_format(DrawableFormat p_format);

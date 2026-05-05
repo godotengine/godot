@@ -30,7 +30,9 @@
 
 #include "light_2d.h"
 
+#include "core/config/engine.h"
 #include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "servers/rendering/rendering_server.h"
 
 void Light2D::owner_changed_notify() {

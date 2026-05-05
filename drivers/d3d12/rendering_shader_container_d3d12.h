@@ -38,7 +38,7 @@
 #undef NIR_ENABLED
 #endif
 
-#include "d3d12_godot_nir_bridge.h"
+#include "drivers/d3d12/d3d12_godot_nir_bridge.h"
 
 #define D3D12_BITCODE_OFFSETS_NUM_STAGES 3
 

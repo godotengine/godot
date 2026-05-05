@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_types.h"
@@ -80,7 +80,7 @@ public:
 		bool use_occlusion_culling = false;
 		bool occlusion_buffer_dirty = false;
 
-		DisplayServer::WindowID viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID viewport_to_screen = DisplayServerEnums::INVALID_WINDOW_ID;
 		Rect2 viewport_to_screen_rect;
 		bool viewport_render_direct_to_screen = false;
 
@@ -162,7 +162,7 @@ public:
 			use_hdr_2d = false;
 			window_output_max_value = 1.0;
 
-			viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
+			viewport_to_screen = DisplayServerEnums::INVALID_WINDOW_ID;
 			shadow_atlas_size = 0;
 			measure_render_time = false;
 
@@ -210,7 +210,7 @@ private:
 	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
 	void _draw_viewport(Viewport *p_viewport);
-	DisplayServer::WindowID _get_containing_window(Viewport *p_viewport);
+	DisplayServerEnums::WindowID _get_containing_window(Viewport *p_viewport);
 
 	int occlusion_rays_per_thread = 512;
 
@@ -226,7 +226,7 @@ public:
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height, int p_view_count = 1);
 
-	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
+	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID);
 	void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable);
 
 	void viewport_set_active(RID p_viewport, bool p_active);
@@ -301,7 +301,7 @@ public:
 
 	void viewport_set_sdf_oversize_and_scale(RID p_viewport, RSE::ViewportSDFOversize p_over_size, RSE::ViewportSDFScale p_scale);
 
-	virtual RID viewport_find_from_screen_attachment(DisplayServer::WindowID p_id = DisplayServer::MAIN_WINDOW_ID) const;
+	virtual RID viewport_find_from_screen_attachment(DisplayServerEnums::WindowID p_id = DisplayServerEnums::MAIN_WINDOW_ID) const;
 
 	void viewport_set_vrs_mode(RID p_viewport, RSE::ViewportVRSMode p_mode);
 	void viewport_set_vrs_update_mode(RID p_viewport, RSE::ViewportVRSUpdateMode p_mode);
@@ -319,7 +319,7 @@ public:
 	int get_num_viewports_with_motion_vectors() const;
 
 	// Workaround for setting this on thread.
-	void call_set_vsync_mode(DisplayServer::VSyncMode p_mode, DisplayServer::WindowID p_window);
+	void call_set_vsync_mode(DisplayServerEnums::VSyncMode p_mode, DisplayServerEnums::WindowID p_window);
 
 	RendererViewport();
 	virtual ~RendererViewport() {}

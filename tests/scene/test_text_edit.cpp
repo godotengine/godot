@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_text_edit)
 
 #include "core/input/input_map.h"
 #include "scene/gui/text_edit.h"
+#include "scene/main/scene_tree.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"
 
@@ -6794,7 +6795,7 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 
 	// Should this work?
 	text_edit->set_caret_column(5);
-	CHECK(text_edit->get_word_under_caret() == "");
+	CHECK(text_edit->get_word_under_caret() == "Lorem");
 
 	text_edit->set_caret_column(6);
 	CHECK(text_edit->get_word_under_caret() == "");
@@ -7874,7 +7875,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 
 	text_edit->set_h_scroll(10000000);
 	CHECK(text_edit->get_h_scroll() == 307);
-	CHECK(text_edit->get_h_scroll_bar()->get_combined_minimum_size().x == 8);
+	CHECK(text_edit->get_h_scroll_bar()->get_bound_minimum_size().x == 8);
 
 	text_edit->set_h_scroll(-100);
 	CHECK(text_edit->get_h_scroll() == 0);
@@ -8040,6 +8041,46 @@ TEST_CASE("[SceneTree][TextEdit] small height value") {
 
 	text_edit->set_v_scroll(100);
 	CHECK(text_edit->get_v_scroll() < 3);
+
+	memdelete(text_edit);
+}
+
+TEST_CASE("[SceneTree][TextEdit] fit content scrollbar behavior") {
+	TextEdit *text_edit = memnew(TextEdit);
+	SceneTree::get_singleton()->get_root()->add_child(text_edit);
+
+	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+	text_edit->set_fit_content_width_enabled(true);
+	text_edit->set_fit_content_height_enabled(true);
+
+	const String long_line = "0123456789012345678901234567890123456789012345678901234567890123456789";
+	String content;
+	for (int i = 0; i < 40; i++) {
+		if (i > 0) {
+			content += "\n";
+		}
+		content += long_line;
+	}
+	text_edit->set_text(content);
+	MessageQueue::get_singleton()->flush();
+
+	SUBCASE("[TextEdit] fit content without maximum size") {
+		text_edit->set_custom_maximum_size(Size2(-1, -1));
+		text_edit->set_size(text_edit->get_combined_minimum_size());
+		MessageQueue::get_singleton()->flush();
+
+		CHECK_FALSE(text_edit->get_h_scroll_bar()->is_visible());
+		CHECK_FALSE(text_edit->get_v_scroll_bar()->is_visible());
+	}
+
+	SUBCASE("[TextEdit] fit content with maximum size") {
+		text_edit->set_custom_maximum_size(Size2(180, 120));
+		text_edit->set_size(text_edit->get_combined_maximum_size());
+		MessageQueue::get_singleton()->flush();
+
+		CHECK(text_edit->get_h_scroll_bar()->is_visible());
+		CHECK(text_edit->get_v_scroll_bar()->is_visible());
+	}
 
 	memdelete(text_edit);
 }
@@ -8303,13 +8344,13 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 
 		// Defaults to none.
 		CHECK(text_edit->get_hovered_gutter() == Vector2i(-1, -1));
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 		// Hover over gutter.
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(5, line_height + line_height / 2), MouseButtonMask::NONE, Key::NONE);
 		CHECK(text_edit->get_hovered_gutter() == Vector2i(0, 1));
 		SIGNAL_CHECK_FALSE("gutter_clicked");
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_POINTING_HAND);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_POINTING_HAND);
 
 		// Click on gutter.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(5, line_height / 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
@@ -8325,19 +8366,19 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(15, line_height + line_height / 2), MouseButtonMask::NONE, Key::NONE);
 		CHECK(text_edit->get_hovered_gutter() == Vector2i(1, 1));
 		SIGNAL_CHECK_FALSE("gutter_clicked");
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 		// Unclickable gutter can be clicked.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(15, line_height * 2 + line_height / 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 		CHECK(text_edit->get_hovered_gutter() == Vector2i(1, 2));
 		SIGNAL_CHECK("gutter_clicked", Array({ { 2, 1 } }));
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 		// Hover past last line.
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2(5, line_height * 5), MouseButtonMask::NONE, Key::NONE);
 		CHECK(text_edit->get_hovered_gutter() == Vector2i(-1, -1));
 		SIGNAL_CHECK_FALSE("gutter_clicked");
-		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+		CHECK(DS->get_cursor_shape() == DisplayServerEnums::CURSOR_ARROW);
 
 		// Click on gutter past last line.
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(5, line_height * 5), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);

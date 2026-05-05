@@ -30,9 +30,8 @@
 
 #include "text_shader_language_plugin.h"
 
-#include "text_shader_editor.h"
-
 #include "core/string/string_builder.h"
+#include "editor/shader/text_shader_editor.h"
 #include "servers/rendering/shader_types.h"
 
 bool TextShaderLanguagePlugin::handles_shader(const Ref<Shader> &p_shader) const {

@@ -100,6 +100,7 @@ public:
 	bool has_nothing_selected() const;
 	ResourceUID::ID get_selected() const;
 	String get_selected_path() const;
+	const Vector<StringName> &get_base_types() const;
 
 	bool is_instant_preview_enabled() const;
 	void set_instant_preview_toggle_visible(bool p_visible);
@@ -260,13 +261,14 @@ class EditorQuickOpenDialog : public AcceptDialog {
 	GDCLASS(EditorQuickOpenDialog, AcceptDialog);
 
 public:
-	void popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback);
+	void popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback, bool p_allow_type_switching = false);
 	void popup_dialog_for_property(const Vector<StringName> &p_base_types, Object *p_obj, const StringName &p_path, const Callable &p_item_selected_callback);
 	EditorQuickOpenDialog();
 
 protected:
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void item_pressed(bool p_double_click);
 	void selection_changed();
 
@@ -282,6 +284,8 @@ private:
 	StringName property_path;
 	Variant initial_property_value;
 	bool initial_selection_performed = false;
+	bool allow_type_switching = false;
+	bool is_cycling_items = false;
 	bool _is_instant_preview_active() const;
 	void _search_box_text_changed(const String &p_query);
 	void _finish_dialog_setup(const Vector<StringName> &p_base_types);

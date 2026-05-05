@@ -31,6 +31,7 @@
 #include "bone_map.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 bool BoneMap::_set(const StringName &p_path, const Variant &p_value) {

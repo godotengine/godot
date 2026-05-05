@@ -34,10 +34,10 @@
 
 #include "core/error/error_macros.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Collision/Shape/ConvexShape.h"
-#include "Jolt/Physics/Collision/TransformedShape.h"
+#include <Jolt/Physics/Collision/Shape/ConvexShape.h>
+#include <Jolt/Physics/Collision/TransformedShape.h>
 
 class JoltCustomMotionShape final : public JPH::ConvexShape {
 	mutable JPH::ConvexShape::SupportBuffer inner_support_buffer;

@@ -30,14 +30,11 @@
 
 #pragma once
 
-#include "../jolt_project_settings.h"
-#include "jolt_space_3d.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Jolt.h"
-
-#include "Jolt/Core/STLLocalAllocator.h"
-#include "Jolt/Physics/Collision/InternalEdgeRemovingCollector.h"
-#include "Jolt/Physics/Collision/Shape/Shape.h"
+#include <Jolt/Core/STLLocalAllocator.h>
+#include <Jolt/Physics/Collision/InternalEdgeRemovingCollector.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
 
 template <typename TBase, int TDefaultCapacity>
 class JoltQueryCollectorAll final : public TBase {

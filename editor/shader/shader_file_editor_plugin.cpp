@@ -30,6 +30,7 @@
 
 #include "shader_file_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -38,12 +39,9 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/split_container.h"
-#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device_binds.h"
 
 /*** SHADER SCRIPT EDITOR ****/
-
-/*** SCRIPT EDITOR ******/
 
 void ShaderFileEditor::_update_version(const StringName &p_version_txt, const RD::ShaderStage p_stage) {
 }

@@ -34,6 +34,7 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/time.h"
 #include "editor/editor_node.h"
@@ -41,6 +42,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/editor_plugin.h"
+#include "scene/main/scene_tree.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
@@ -269,9 +271,9 @@ EditorPlugin *EditorData::get_handling_main_editor(Object *p_object) {
 
 Vector<EditorPlugin *> EditorData::get_handling_sub_editors(Object *p_object) {
 	Vector<EditorPlugin *> sub_plugins;
-	for (int i = editor_plugins.size() - 1; i > -1; i--) {
-		if (!editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
-			sub_plugins.push_back(editor_plugins[i]);
+	for (EditorPlugin *plugin : editor_plugins) {
+		if (!plugin->has_main_screen() && plugin->handles(p_object)) {
+			sub_plugins.push_back(plugin);
 		}
 	}
 	return sub_plugins;
@@ -1330,16 +1332,20 @@ void EditorSelection::_update_node_list() {
 	node_list_changed = false;
 }
 
-void EditorSelection::update() {
+void EditorSelection::update(bool p_deferred) {
 	_update_node_list();
 
 	if (!changed) {
 		return;
 	}
 	changed = false;
-	if (!emitted) {
-		emitted = true;
-		callable_mp(this, &EditorSelection::_emit_change).call_deferred();
+	if (p_deferred) {
+		if (!emitted) {
+			emitted = true;
+			callable_mp(this, &EditorSelection::_emit_change).call_deferred();
+		}
+	} else {
+		_emit_change();
 	}
 }
 

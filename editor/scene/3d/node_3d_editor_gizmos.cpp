@@ -37,6 +37,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -70,6 +71,7 @@ void EditorNode3DGizmo::clear() {
 	billboard_handle = false;
 	collision_segments.clear();
 	collision_meshes.clear();
+	collision_meshes_are_snap_source = false;
 	instances.clear();
 	handles.clear();
 	handle_ids.clear();

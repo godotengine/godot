@@ -376,8 +376,12 @@ hb_unicode_funcs_set_##name##_func (hb_unicode_funcs_t		   *ufuncs,	\
 				    void			   *user_data,	\
 				    hb_destroy_func_t		    destroy)	\
 {										\
+  auto destroy_guard = hb_make_scope_guard ([&]() {				\
+    if (destroy) destroy (user_data);						\
+  });										\
+										\
   if (hb_object_is_immutable (ufuncs))						\
-    goto fail;									\
+    return;									\
 										\
   if (!func)									\
   {										\
@@ -396,11 +400,7 @@ hb_unicode_funcs_set_##name##_func (hb_unicode_funcs_t		   *ufuncs,	\
     ufuncs->func.name = ufuncs->parent->func.name;				\
   ufuncs->user_data.name = user_data;						\
   ufuncs->destroy.name = destroy;						\
-  return;									\
-										\
-fail:										\
-  if (destroy)									\
-    destroy (user_data);							\
+  destroy_guard.release ();							\
 }
 
 HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS

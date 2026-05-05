@@ -31,8 +31,9 @@
 #include "camera_3d_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/foldable_container.h"
 #include "scene/gui/subviewport_container.h"

@@ -1266,8 +1266,7 @@ struct StateTableDriver
 				  next_state == StateTableT::STATE_START_OF_TEXT &&
 				  start_state_safe_to_break_eot &&
 				  is_not_actionable &&
-				  is_not_epsilon_transition &&
-				  !last_range;
+				  is_not_epsilon_transition;
 
 	if (is_null_transition)
 	{

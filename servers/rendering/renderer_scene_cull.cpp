@@ -30,22 +30,23 @@
 
 #include "renderer_scene_cull.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_3d.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #include "core/object/worker_thread_pool.h"
 #include "servers/rendering/rendering_light_culler.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_default.h"
 
-#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-// This is used only to obtain node paths for user-friendly physics interpolation warnings.
-#include "scene/main/node.h"
-#endif
-
 #ifndef XR_DISABLED
 #include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_server.h"
+#endif
+
+//#define DEBUG_CULL_TIME
+#ifdef DEBUG_CULL_TIME
+#include "core/os/os.h"
 #endif
 
 /* HALTON SEQUENCE */
@@ -1791,8 +1792,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 				InstanceLightData *light_data = static_cast<InstanceLightData *>(p_instance->base_data);
 				idata.instance_data_rid = light_data->instance.get_id();
 				light_data->uses_projector = RSG::light_storage->light_has_projector(p_instance->base);
-				light_data->uses_softshadow = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE) > CMP_EPSILON;
-
+				light_data->uses_softshadow = RSG::light_storage->light_get_type(p_instance->base) == RSE::LIGHT_AREA || RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE) > CMP_EPSILON;
 			} break;
 			case RSE::INSTANCE_REFLECTION_PROBE: {
 				idata.instance_data_rid = static_cast<InstanceReflectionProbeData *>(p_instance->base_data)->instance.get_id();
@@ -2592,6 +2592,72 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 			shadow_data.pass = 0;
 
 		} break;
+		case RSE::LIGHT_AREA: {
+			if (max_shadows_used + 1 > MAX_UPDATE_SHADOWS) {
+				return true;
+			}
+			RENDER_TIMESTAMP("Cull AreaLight3D Shadow Paraboloid");
+
+			real_t radius = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_RANGE);
+			Vector2 half_size = RSG::light_storage->light_area_get_size(p_instance->base) / 2.0;
+
+			real_t z = -1;
+			Vector<Plane> planes;
+			planes.resize(6);
+			planes.write[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
+			planes.write[1] = light_transform.xform(Plane(Vector3(1, 0, 0).normalized(), radius + half_size.x));
+			planes.write[2] = light_transform.xform(Plane(Vector3(-1, 0, 0).normalized(), radius + half_size.x));
+			planes.write[3] = light_transform.xform(Plane(Vector3(0, 1, 0).normalized(), radius + half_size.y));
+			planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, 0).normalized(), radius + half_size.y));
+			planes.write[5] = light_transform.xform(Plane(Vector3(0, 0, -z), 0));
+
+			instance_shadow_cull_result.clear();
+
+			Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&planes[0], planes.size());
+
+			struct CullConvex {
+				PagedArray<Instance *> *result;
+				_FORCE_INLINE_ bool operator()(void *p_data) {
+					Instance *p_instance = (Instance *)p_data;
+					result->push_back(p_instance);
+					return false;
+				}
+			};
+
+			CullConvex cull_convex;
+			cull_convex.result = &instance_shadow_cull_result;
+
+			p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
+
+			RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
+
+			if (!light->is_shadow_update_full()) {
+				light_culler->cull_regular_light(instance_shadow_cull_result);
+			}
+
+			for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
+				Instance *instance = instance_shadow_cull_result[j];
+				if (!instance->visible || !((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask & RSG::light_storage->light_get_shadow_caster_mask(p_instance->base))) {
+					continue;
+				} else {
+					if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
+						animated_material_found = true;
+					}
+
+					if (instance->mesh_instance.is_valid()) {
+						RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
+					}
+				}
+
+				shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
+			}
+
+			RSG::mesh_storage->update_mesh_instances();
+
+			RSG::light_storage->light_instance_set_shadow_transform(light->instance, Projection(), light_transform, radius, 0, 0, 0);
+			shadow_data.light = light->instance;
+			shadow_data.pass = 0;
+		}
 	}
 
 	return animated_material_found;
@@ -2630,7 +2696,6 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		Projection projection;
 		bool vaspect = camera->vaspect;
 		bool is_orthogonal = false;
-		bool is_frustum = false;
 
 		switch (camera->type) {
 			case Camera::ORTHOGONAL: {
@@ -2659,11 +2724,10 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 						camera->znear,
 						camera->zfar,
 						camera->vaspect);
-				is_frustum = true;
 			} break;
 		}
 
-		camera_data.set_camera(transform, projection, is_orthogonal, is_frustum, vaspect, jitter, taa_frame_count, camera->visible_layers);
+		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, taa_frame_count, camera->visible_layers);
 #ifndef XR_DISABLED
 	} else {
 		XRServer *xr_server = XRServer::get_singleton();
@@ -2696,9 +2760,9 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		}
 
 		if (view_count == 1) {
-			camera_data.set_camera(transforms[0], projections[0], false, false, camera->vaspect, jitter, p_jitter_phase_count, camera->visible_layers);
+			camera_data.set_camera(transforms[0], projections[0], false, camera->vaspect, jitter, p_jitter_phase_count, camera->visible_layers);
 		} else if (view_count == 2) {
-			camera_data.set_multiview_camera(view_count, transforms, projections, false, false, camera->vaspect, camera->visible_layers);
+			camera_data.set_multiview_camera(view_count, transforms, projections, false, camera->vaspect, camera->visible_layers);
 		} else {
 			// this won't be called (see fail check above) but keeping this comment to indicate we may support more then 2 views in the future...
 		}
@@ -2832,9 +2896,10 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 	// Minimize allocations when picking the most relevant lights per mesh.
 	// We need to track the score and current index of the best N lights.
-	thread_local LocalVector<Pair<float, uint32_t>> omni_score_idx, spot_score_idx;
+	thread_local LocalVector<Pair<float, uint32_t>> omni_score_idx, spot_score_idx, area_score_idx;
 	omni_score_idx.clear();
 	spot_score_idx.clear();
+	area_score_idx.clear();
 	uint32_t max_lights_per_mesh = scene_render->get_max_lights_per_mesh();
 	uint32_t max_lights_total = scene_render->get_max_lights_total();
 
@@ -2954,18 +3019,20 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						geom->geometry_instance->clear_light_instances();
 						if ((max_lights_per_mesh > 0) && (max_lights_total > 0)) {
 							// For the top N lights, track the score and the index into the internal light storage array.
-							uint32_t total_omni_count = 0, total_spot_count = 0;
-							bool omni_needs_heap = true, spot_needs_heap = true;
-							uint32_t omni_count = 0, spot_count = 0;
+							uint32_t total_omni_count = 0, total_spot_count = 0, total_area_count = 0;
+							bool omni_needs_heap = true, spot_needs_heap = true, area_needs_heap = true;
+							uint32_t omni_count = 0, spot_count = 0, area_count = 0;
 							omni_score_idx.clear();
 							spot_score_idx.clear();
+							area_score_idx.clear();
 							SortArray<Pair<float, uint32_t>> heapify; // SortArray has heap functions, but no local storage.
 							// Iterate over the lights (possibly > max_renderable_lights), keeping the closest to the mesh center.
 							Vector3 mesh_center = idata.instance->transformed_aabb.get_center();
 							for (const Instance *E : geom->lights) {
 								RSE::LightType light_type = RSG::light_storage->light_get_type(E->base);
 								if (((RSE::LIGHT_OMNI == light_type) && (total_omni_count++ < max_lights_total)) ||
-										((RSE::LIGHT_SPOT == light_type) && (total_spot_count++ < max_lights_total))) {
+										((RSE::LIGHT_SPOT == light_type) && (total_spot_count++ < max_lights_total)) ||
+										((RSE::LIGHT_AREA == light_type) && (total_area_count++ < max_lights_total))) {
 									// Perform culling.
 									if (!(RSG::light_storage->light_get_cull_mask(E->base) & idata.layer_mask)) {
 										continue;
@@ -3043,6 +3110,32 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 													uint32_t replace_index = spot_score_idx[0].second;
 													geom->geometry_instance->pair_light_instance(light->instance, light_type, replace_index);
 													heapify.adjust_heap(0, 0, spot_count, Pair(light_inst_score, replace_index), &spot_score_idx[0]);
+												}
+											}
+										} break;
+										case RSE::LIGHT_AREA: {
+											if (area_count < max_lights_per_mesh) {
+												// We have room to just add it, and track the score and where it goes.
+												area_score_idx.push_back(Pair(light_inst_score, area_count));
+												geom->geometry_instance->pair_light_instance(light->instance, light_type, area_count++);
+											} else {
+												if (area_needs_heap) {
+													// We need to make this a heap one time.
+													heapify.make_heap(0, area_count, &area_score_idx[0]);
+													area_needs_heap = false;
+												}
+												if (light_inst_score < area_score_idx[0].first) {
+#if VERIFY_RELEVANT_LIGHT_HEAP
+													// The [0] element should have the max score.
+													for (uint32_t vi = 1; vi < max_lights_per_mesh; ++vi) {
+														if (area_score_idx[vi].first > area_score_idx[0].first) {
+															ERR_PRINT_ONCE("Relevant Area Light Heap Error");
+														}
+													}
+#endif
+													uint32_t replace_index = area_score_idx[0].second;
+													geom->geometry_instance->pair_light_instance(light->instance, light_type, replace_index);
+													heapify.adjust_heap(0, 0, area_count, Pair(light_inst_score, replace_index), &area_score_idx[0]);
 												}
 											}
 										} break;
@@ -3179,7 +3272,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						}
 					}
 				} else if ((1 << base_type) & RSE::INSTANCE_GEOMETRY_MASK) {
-					if (idata.flags & InstanceData::FLAG_USES_BAKED_LIGHT) {
+					if ((idata.flags & InstanceData::FLAG_USES_BAKED_LIGHT) && (cull_data.visible_layers & idata.layer_mask)) {
 						cull_result.sdfgi_region_geometry_instances[j].push_back(idata.instance_geometry);
 						mesh_visible = true;
 					}
@@ -3334,7 +3427,6 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		cull_data.occlusion_buffer = RendererSceneOcclusionCull::get_singleton()->buffer_get_ptr(p_viewport);
 		cull_data.camera_matrix = &p_camera_data->main_projection;
 		cull_data.visibility_viewport_mask = scenario->viewport_visibility_masks.has(p_viewport) ? scenario->viewport_visibility_masks[p_viewport] : 0;
-//#define DEBUG_CULL_TIME
 #ifdef DEBUG_CULL_TIME
 		uint64_t time_from = OS::get_singleton()->get_ticks_usec();
 #endif
@@ -3473,6 +3565,30 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 						float screen_diameter = points[0].distance_to(points[1]) * 2;
 						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
 
+					} break;
+					case RSE::LIGHT_AREA: {
+						float diagonal = RSG::light_storage->light_area_get_size(ins->base).length();
+						float radius = RSG::light_storage->light_get_param(ins->base, RSE::LIGHT_PARAM_RANGE) + diagonal;
+
+						//get two points parallel to near plane
+						Vector3 points[2] = {
+							ins->transform.origin,
+							ins->transform.origin + cam_xf.basis.get_column(0) * radius
+						};
+
+						if (!p_camera_data->is_orthogonal) {
+							//if using perspetive, map them to near plane
+							for (int j = 0; j < 2; j++) {
+								if (p.distance_to(points[j]) < 0) {
+									points[j].z = -zn; //small hack to keep size constant when hitting the screen
+								}
+
+								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
+							}
+						}
+
+						float screen_diameter = points[0].distance_to(points[1]) * 2;
+						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
 					} break;
 					default: {
 						ERR_PRINT("Invalid Light Type");
@@ -3648,7 +3764,7 @@ void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_rend
 	RENDER_TIMESTAMP("Render Empty 3D Scene");
 
 	RendererSceneRender::CameraData camera_data;
-	camera_data.set_camera(Transform3D(), Projection(), true, false, false);
+	camera_data.set_camera(Transform3D(), Projection(), true, false);
 
 	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), compositor, p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, p_window_output_max_value, nullptr);
 #endif
@@ -3714,7 +3830,7 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 
 			RendererSceneRender::CameraData camera_data;
 			Transform3D xform = p_instance->transform * local_view;
-			camera_data.set_camera(xform, cm, false, false, false);
+			camera_data.set_camera(xform, cm, false, false);
 
 			RENDER_TIMESTAMP("Render ReflectionProbe, Face " + itos(face));
 			_render_scene(&camera_data, render_buffers, environment, RID(), RID(), RSG::light_storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, RID(), shadow_atlas, reflection_probe->instance, face, mesh_lod_threshold, use_shadows);
@@ -3830,7 +3946,10 @@ void RendererSceneCull::render_probes() {
 							cache->radius != RSG::light_storage->light_get_param(instance->base, RSE::LIGHT_PARAM_RANGE) ||
 							cache->attenuation != RSG::light_storage->light_get_param(instance->base, RSE::LIGHT_PARAM_ATTENUATION) ||
 							cache->spot_angle != RSG::light_storage->light_get_param(instance->base, RSE::LIGHT_PARAM_SPOT_ANGLE) ||
-							cache->spot_attenuation != RSG::light_storage->light_get_param(instance->base, RSE::LIGHT_PARAM_SPOT_ATTENUATION)) {
+							cache->spot_attenuation != RSG::light_storage->light_get_param(instance->base, RSE::LIGHT_PARAM_SPOT_ATTENUATION) ||
+							cache->area_size != RSG::light_storage->light_area_get_size(instance->base) ||
+							cache->area_normalize_energy != RSG::light_storage->light_area_get_normalize_energy(instance->base) ||
+							cache->area_texture != RSG::light_storage->light_area_get_texture(instance->base)) {
 						cache_dirty = true;
 					}
 				}
@@ -3910,7 +4029,9 @@ void RendererSceneCull::render_probes() {
 					cache->attenuation = RSG::light_storage->light_get_param(instance->base, RSE::LIGHT_PARAM_ATTENUATION);
 					cache->spot_angle = RSG::light_storage->light_get_param(instance->base, RSE::LIGHT_PARAM_SPOT_ANGLE);
 					cache->spot_attenuation = RSG::light_storage->light_get_param(instance->base, RSE::LIGHT_PARAM_SPOT_ATTENUATION);
-
+					cache->area_size = RSG::light_storage->light_area_get_size(instance->base);
+					cache->area_normalize_energy = RSG::light_storage->light_area_get_normalize_energy(instance->base);
+					cache->area_texture = RSG::light_storage->light_area_get_texture(instance->base);
 					idx++;
 				}
 				for (const Instance *instance : probe->owner->scenario->directional_lights) {
@@ -4310,6 +4431,10 @@ bool RendererSceneCull::free(RID p_rid) {
 
 TypedArray<Image> RendererSceneCull::bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) {
 	return scene_render->bake_render_uv2(p_base, p_material_overrides, p_image_size);
+}
+
+PackedByteArray RendererSceneCull::bake_render_area_light_atlas(const TypedArray<RID> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps) {
+	return scene_render->bake_render_area_light_atlas(p_area_light_textures, p_area_light_atlas_texture_rects, p_size, p_mipmaps);
 }
 
 void RendererSceneCull::update_visibility_notifiers() {

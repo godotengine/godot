@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/export/editor_export.h"
 #include "editor/settings/editor_settings.h"
 
@@ -599,10 +600,14 @@ String EditorExportPreset::get_version(const StringName &p_preset_string, bool p
 		// Split and validate version number components.
 		const PackedStringArray result_split = result.split(".", false);
 		bool valid_version = !result_split.is_empty();
-		for (const String &E : result_split) {
-			if (!_check_digits(E)) {
-				valid_version = false;
-				break;
+
+		// Android supports non-numeric characters for version name.
+		if (!platform->is_class("EditorExportPlatformAndroid")) {
+			for (const String &E : result_split) {
+				if (!_check_digits(E)) {
+					valid_version = false;
+					break;
+				}
 			}
 		}
 

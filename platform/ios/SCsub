@@ -22,6 +22,9 @@ ios_lib = env_ios.add_library("ios", ios_lib)
 # (iOS) Enable module support
 env_ios.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 
+if "LIBS_EXTERNAL" in env_ios:
+    env_ios.Depends(ios_lib, env_ios["LIBS_EXTERNAL"])
+
 combine_command = env_ios.CommandNoCache(
     "#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib] + env_ios["LIBS"], env.Run(combine_libs_apple_embedded)
 )

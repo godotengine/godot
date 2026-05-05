@@ -32,6 +32,7 @@
 
 #include "scene_debugger_object.h"
 
+#include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
 #include "scene/main/node.h"
@@ -53,6 +54,11 @@ SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 	}
 
 	if (Node *node = Object::cast_to<Node>(p_obj)) {
+		{
+			PropertyInfo pi(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
+			properties.push_back(SceneDebuggerProperty(pi, node->get_name()));
+		}
+
 		// For debugging multiplayer.
 		{
 			PropertyInfo pi(Variant::INT, String("Node/multiplayer_authority"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
@@ -75,9 +81,15 @@ SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 	// Add base object properties.
 	List<PropertyInfo> pinfo;
 	p_obj->get_property_list(&pinfo, true);
-	for (const PropertyInfo &E : pinfo) {
-		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-			properties.push_back(SceneDebuggerProperty(E, p_obj->get(E.name)));
+	for (PropertyInfo &E : pinfo) {
+		const Variant &m = p_obj->get(E.name);
+
+		if (!m.is_null() && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE && E.usage & PROPERTY_USAGE_EDITOR) {
+			E.hint_string = DebuggerMarshalls::parse_type_from_variant(m);
+		}
+
+		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_CATEGORY)) {
+			properties.push_back(SceneDebuggerProperty(E, m));
 		}
 	}
 }
@@ -139,30 +151,35 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 			Variant m;
 			if (p_instance->get(E, m)) {
 				const String script_path = sm.key == p_script ? "" : sm.key->get_path().get_file() + "/";
-
-				PropertyInfo pi;
-				const PropertyInfo *pi_ptr = non_exported_members.getptr(E);
-				if (pi_ptr == nullptr) {
-					pi.type = m.get_type();
+				if (!m.is_null() && m.get_type() == Variant::OBJECT) {
+					PropertyInfo pi(m.get_type(), "Members/" + script_path + E, PROPERTY_HINT_OBJECT_ID, DebuggerMarshalls::parse_type_from_variant(m));
+					properties.push_back(SceneDebuggerProperty(pi, m));
 				} else {
-					pi = *pi_ptr;
-				}
-				pi.name = "Members/" + script_path + E;
+					PropertyInfo pi;
+					const PropertyInfo *pi_ptr = non_exported_members.getptr(E);
+					if (pi_ptr == nullptr) {
+						pi.type = m.get_type();
+					} else {
+						pi = *pi_ptr;
+					}
+					pi.name = "Members/" + script_path + E;
 
-				properties.push_back(SceneDebuggerProperty(pi, m));
+					properties.push_back(SceneDebuggerProperty(pi, m));
+				}
 			}
 		}
 	}
 	// Constants
 	for (KeyValue<const Script *, HashMap<StringName, Variant>> &sc : constants) {
 		for (const KeyValue<StringName, Variant> &E : sc.value) {
-			String script_path = sc.key == p_script ? "" : sc.key->get_path().get_file() + "/";
-			if (E.value.get_type() == Variant::OBJECT) {
-				Variant inst_id = ((Object *)E.value)->get_instance_id();
-				PropertyInfo pi(inst_id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, "Object");
-				properties.push_back(SceneDebuggerProperty(pi, inst_id));
+			const String script_path = sc.key == p_script ? "" : sc.key->get_path().get_file() + "/";
+			if (!E.value.is_null() && E.value.get_type() == Variant::OBJECT) {
+				PropertyInfo pi(E.value.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, DebuggerMarshalls::parse_type_from_variant(E.value), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
+				properties.push_back(SceneDebuggerProperty(pi, E.value));
 			} else {
 				PropertyInfo pi(E.value.get_type(), "Constants/" + script_path + E.key);
+				pi.usage |= PROPERTY_USAGE_READ_ONLY;
+
 				properties.push_back(SceneDebuggerProperty(pi, E.value));
 			}
 		}
@@ -248,7 +265,9 @@ void SceneDebuggerObject::deserialize(uint64_t p_id, const String &p_class_name,
 					var = Object::cast_to<EncodedObjectAsID>(var)->get_object_id();
 					pinfo.type = var.get_type();
 					pinfo.hint = PROPERTY_HINT_OBJECT_ID;
-					pinfo.hint_string = "Object";
+					if (pinfo.hint_string.is_empty()) {
+						pinfo.hint_string = "Object";
+					}
 				}
 			}
 		}

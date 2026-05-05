@@ -33,11 +33,11 @@
 #include "core/math/math_funcs_binary.h"
 
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Walloc-zero")
-#include "thirdparty/clipper2/include/clipper2/clipper.h"
+#include <thirdparty/clipper2/include/clipper2/clipper.h>
 GODOT_GCC_WARNING_POP
-#include "thirdparty/misc/polypartition.h"
+#include <thirdparty/misc/polypartition.h>
 #define STB_RECT_PACK_IMPLEMENTATION
-#include "thirdparty/misc/stb_rect_pack.h"
+#include <thirdparty/misc/stb_rect_pack.h>
 
 const int clipper_precision = 5; // Based on CMP_EPSILON.
 

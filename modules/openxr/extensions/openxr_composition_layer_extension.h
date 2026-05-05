@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include "openxr_extension_wrapper.h"
-
 #include "../openxr_api.h"
+#include "openxr_extension_wrapper.h"
 
 #ifdef ANDROID_ENABLED
 #include <jni.h>

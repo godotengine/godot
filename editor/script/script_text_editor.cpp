@@ -34,7 +34,10 @@
 #include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
+#include "core/io/resource_loader.h"
 #include "core/math/expression.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/editor_help.h"
@@ -54,6 +57,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/style_box_flat.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -132,8 +136,6 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void ScriptTextEditor::EditMenusSTE::_update_breakpoint_list() {
-	TextEditorBase *script_text_editor = _get_active_editor();
-	ERR_FAIL_NULL(script_text_editor);
 	breakpoints_menu->clear();
 	breakpoints_menu->reset_size();
 
@@ -141,6 +143,11 @@ void ScriptTextEditor::EditMenusSTE::_update_breakpoint_list() {
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_breakpoints"), DEBUG_REMOVE_ALL_BREAKPOINTS);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
+
+	TextEditorBase *script_text_editor = _get_active_editor();
+	if (script_text_editor == nullptr) {
+		return;
+	}
 
 	PackedInt32Array breakpoint_list = script_text_editor->get_code_editor()->get_text_editor()->get_breakpointed_lines();
 	if (breakpoint_list.is_empty()) {
@@ -193,6 +200,9 @@ ScriptTextEditor::EditMenusSTE::EditMenusSTE() {
 	goto_menu->get_popup()->add_submenu_node_item(TTRC("Breakpoints"), breakpoints_menu);
 	breakpoints_menu->connect("about_to_popup", callable_mp(this, &EditMenusSTE::_update_breakpoint_list));
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &EditMenusSTE::_breakpoint_item_pressed));
+
+	// Update immediately for shortcuts.
+	_update_breakpoint_list();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -372,7 +382,7 @@ bool ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 		return true;
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
-		const int line = meta["line"].operator int64_t() - 1;
+		const int line = meta["line"].operator int64_t();
 		const String code = meta["code"].operator String();
 		const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
@@ -414,16 +424,7 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 			if (scr.is_null()) {
 				EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
 			} else {
-				int corrected_column = column;
-
-				const String line_text = code_editor->get_text_editor()->get_line(line);
-				const int indent_size = code_editor->get_text_editor()->get_indent_size();
-				if (indent_size > 1) {
-					const int tab_count = line_text.length() - line_text.lstrip("\t").length();
-					corrected_column -= tab_count * (indent_size - 1);
-				}
-
-				ScriptEditor::get_singleton()->edit(scr, line, corrected_column);
+				ScriptEditor::get_singleton()->edit(scr, line, column);
 			}
 		}
 	}
@@ -828,6 +829,15 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 	return Ref<Texture2D>();
 }
 
+struct ScriptErrorLineComparator {
+	bool operator()(const ScriptLanguage::ScriptError &p_a, const ScriptLanguage::ScriptError &p_b) const {
+		if (p_a.line != p_b.line) {
+			return p_a.line < p_b.line;
+		}
+		return p_a.column < p_b.column;
+	}
+};
+
 void ScriptTextEditor::_validate_script() {
 	CodeEdit *te = code_editor->get_text_editor();
 
@@ -841,6 +851,8 @@ void ScriptTextEditor::_validate_script() {
 
 	Ref<Script> script = edited_res;
 	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
+		errors.sort_custom<ScriptErrorLineComparator>();
+
 		List<ScriptLanguage::ScriptError>::Element *E = errors.front();
 		while (E) {
 			List<ScriptLanguage::ScriptError>::Element *next_E = E->next();
@@ -852,12 +864,11 @@ void ScriptTextEditor::_validate_script() {
 		}
 
 		if (errors.size() > 0) {
-			const int line = errors.front()->get().line;
-			const int column = errors.front()->get().column;
+			code_editor->set_error_pos(errors.front()->get().line - 1, errors.front()->get().column - 1);
 			const String message = errors.front()->get().message.replace("[", "[lb]");
-			const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), line, column, line, column) + " " + message;
+			const Point2i display_pos = code_editor->get_pos_for_display(code_editor->get_error_pos());
+			const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), display_pos.x, display_pos.y, display_pos.x, display_pos.y) + " " + message;
 			code_editor->set_error(error_text);
-			code_editor->set_error_pos(line - 1, column - 1);
 		}
 		script_is_valid = false;
 	} else {
@@ -924,7 +935,7 @@ void ScriptTextEditor::_update_warnings() {
 	warnings_panel->push_table(3);
 	for (const ScriptLanguage::Warning &w : warnings) {
 		Dictionary ignore_meta;
-		ignore_meta["line"] = w.start_line;
+		ignore_meta["line"] = w.start_line - 1;
 		ignore_meta["code"] = w.string_code.to_lower();
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(ignore_meta);
@@ -957,10 +968,6 @@ void ScriptTextEditor::_update_errors() {
 	errors_panel->clear();
 	errors_panel->push_table(2);
 	for (const ScriptLanguage::ScriptError &err : errors) {
-		Dictionary click_meta;
-		click_meta["line"] = err.line;
-		click_meta["column"] = err.column;
-
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.line - 1);
 		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -977,13 +984,13 @@ void ScriptTextEditor::_update_errors() {
 	errors_panel->pop(); // Table
 
 	for (const KeyValue<String, List<ScriptLanguage::ScriptError>> &KV : depended_errors) {
-		Dictionary click_meta;
-		click_meta["path"] = KV.key;
-		click_meta["line"] = 1;
+		Dictionary click_meta_script;
+		click_meta_script["path"] = KV.key;
+		click_meta_script["line"] = 0;
 
 		errors_panel->add_newline();
 		errors_panel->add_newline();
-		errors_panel->push_meta(click_meta);
+		errors_panel->push_meta(click_meta_script);
 		errors_panel->add_text(vformat(R"(%s:)", KV.key));
 		errors_panel->pop(); // Meta goto.
 		errors_panel->add_newline();
@@ -992,8 +999,10 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->push_table(2);
 		String filename = KV.key.get_file();
 		for (const ScriptLanguage::ScriptError &err : KV.value) {
-			click_meta["line"] = err.line;
-			click_meta["column"] = err.column;
+			Dictionary click_meta;
+			click_meta["path"] = KV.key;
+			click_meta["line"] = err.line - 1;
+			click_meta["column"] = err.column - 1;
 
 			errors_panel->push_cell();
 			errors_panel->push_meta(click_meta);
@@ -1160,11 +1169,18 @@ void ScriptTextEditor::_on_caret_moved() {
 	if (code_editor->is_previewing_navigation_change()) {
 		return;
 	}
+	if (is_layout_pending_in_tree()) {
+		call_on_all_layout_pending_finished(callable_mp(this, &ScriptTextEditor::_on_caret_moved));
+		return;
+	}
+	// When previous_line < 0, it means the user has just switched to this editor from a different one
+	// (which already saved a state in the history). In this case, we should not save this editor's previous state.
 	int current_line = code_editor->get_text_editor()->get_caret_line();
-	if (Math::abs(current_line - previous_line) >= 10) {
+	if (previous_line >= 0 && Math::abs(current_line - previous_line) >= 10) {
 		Dictionary nav_state = get_navigation_state();
 		nav_state["row"] = previous_line;
 		nav_state["scroll_position"] = -1;
+		nav_state["ensure_caret_visible"] = true;
 		emit_signal(SNAME("request_save_previous_state"), nav_state);
 		store_previous_state();
 	}
@@ -1572,7 +1588,7 @@ void ScriptTextEditor::_update_connected_methods() {
 				if (base_class_ptr == nullptr) {
 					break;
 				}
-				base_class = base_class_ptr->name;
+				base_class = base_class_ptr->gdtype->get_name();
 			}
 		}
 
@@ -1886,6 +1902,11 @@ void ScriptTextEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAG_END: {
 			drag_info_label->hide();
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				previous_line = -1;
+			}
 		} break;
 	}
 }

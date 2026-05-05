@@ -31,6 +31,7 @@
 #include "connections_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/hash_set.h"
 #include "editor/doc/editor_help.h"
@@ -55,6 +56,8 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
+#include "scene/main/scene_tree.h"
+#include "servers/display/display_server.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
@@ -1614,6 +1617,18 @@ void ConnectionsDock::update_tree() {
 			}
 
 			ClassDB::get_signal_list(native_base, &class_signals, true);
+
+			// Hide underscored native signals as they are meant to be private.
+			for (List<MethodInfo>::Element *E = class_signals.front(); E;) {
+				List<MethodInfo>::Element *N = E->next();
+				const MethodInfo &mi = E->get();
+
+				if (mi.name.is_empty() || mi.name[0] == '_') {
+					class_signals.erase(E);
+				}
+
+				E = N;
+			}
 
 			native_base = ClassDB::get_parent_class(native_base);
 		}

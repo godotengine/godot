@@ -61,10 +61,10 @@ private:
 	VisibilityMode visibility = VISIBILITY_ALWAYS;
 
 	struct ThemeCache {
-		Color ring_normal_color;
-		Color tip_normal_color;
-		Color ring_pressed_color;
-		Color tip_pressed_color;
+		Ref<StyleBox> normal_joystick;
+		Ref<StyleBox> normal_tip;
+		Ref<StyleBox> pressed_joystick;
+		Ref<StyleBox> pressed_tip;
 	} theme_cache;
 
 	bool is_pressed = false;
@@ -77,9 +77,6 @@ private:
 
 	Vector2 joystick_pos;
 	Vector2 tip_pos;
-
-	Ref<Texture2D> joystick_texture;
-	Ref<Texture2D> tip_texture;
 
 	void _update_joystick(const Vector2 &p_pos);
 	void _handle_input_actions();
@@ -122,11 +119,6 @@ public:
 
 	void set_visibility_mode(VisibilityMode p_mode);
 	VisibilityMode get_visibility_mode() const;
-
-	void set_joystick_texture(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_joystick_texture() const;
-	void set_tip_texture(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_tip_texture() const;
 };
 
 VARIANT_ENUM_CAST(VirtualJoystick::JoystickMode);

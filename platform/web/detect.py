@@ -36,14 +36,16 @@ def get_tools(env: "SConsEnvironment"):
 
 
 def get_opts():
-    from SCons.Variables import BoolVariable
+    from SCons.Variables import BoolVariable, EnumVariable
 
     return [
         ("initial_memory", "Initial WASM memory (in MiB)", 32),
         # Matches default values from before Emscripten 3.1.27. New defaults are too low for Godot.
         ("stack_size", "WASM stack size (in KiB)", 5120),
         ("default_pthread_stack_size", "WASM pthread default stack size (in KiB)", 2048),
-        BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
+        EnumVariable(
+            "use_assertions", "Use Emscripten runtime assertions", "auto", ["auto", "no", "yes", "extra"], ignorecase=2
+        ),
         BoolVariable("use_ubsan", "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use Emscripten address sanitizer (ASAN)", False),
         BoolVariable("use_lsan", "Use Emscripten leak sanitizer (LSAN)", False),
@@ -139,16 +141,19 @@ def configure(env: "SConsEnvironment"):
     emscripten_include_path = emcc_path.parent.joinpath("cache", "sysroot", "include")
     env.Append(CPPPATH=[emscripten_include_path])
 
-    ## Build type
+    ## Configure assertions.
+    if env["use_assertions"] == "auto":
+        env["use_assertions"] = "yes" if env.debug_features else "no"
+    if env["use_assertions"] == "yes":
+        print_info("Building with runtime assertions.")
+        env.Append(LINKFLAGS=["-sASSERTIONS=1"])
+    elif env["use_assertions"] == "extra":
+        print_info("Building with runtime assertions with extra tests.")
+        env.Append(LINKFLAGS=["-sASSERTIONS=2"])
 
-    if env.debug_features:
+    if env["debug_symbols"]:
         # Retain function names for backtraces at the cost of file size.
         env.Append(LINKFLAGS=["--profiling-funcs"])
-    else:
-        env["use_assertions"] = True
-
-    if env["use_assertions"]:
-        env.Append(LINKFLAGS=["-sASSERTIONS=1"])
 
     if env.editor_build and env["initial_memory"] < 64:
         print_info("Forcing `initial_memory=64` as it is required for the web editor.")
@@ -306,9 +311,6 @@ def configure(env: "SConsEnvironment"):
     if env["proxy_to_pthread"]:
         env.Append(LINKFLAGS=["-sPROXY_TO_PTHREAD=1"])
         env.Append(CPPDEFINES=["PROXY_TO_PTHREAD_ENABLED"])
-        env["EXPORTED_RUNTIME_METHODS"] += ["_emscripten_proxy_main"]
-        # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
-        env.Append(LINKFLAGS=["-sTEXTDECODER=0"])
 
     # Enable WebAssembly SIMD
     if env["wasm_simd"]:

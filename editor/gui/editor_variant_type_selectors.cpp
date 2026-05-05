@@ -176,4 +176,5 @@ void EditorVariantTypePopupMenu::_popup_base(const Rect2i &p_bounds) {
 
 EditorVariantTypePopupMenu::EditorVariantTypePopupMenu(bool p_remove_item) {
 	remove_item = p_remove_item;
+	set_search_bar_enabled_on_item_count(10);
 }

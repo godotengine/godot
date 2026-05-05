@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "godot_broad_phase_2d_bvh.h"
+
 #include "godot_collision_object_2d.h"
 
 GodotBroadPhase2D::ID GodotBroadPhase2DBVH::create(GodotCollisionObject2D *p_object, int p_subindex, const Rect2 &p_aabb, bool p_static) {

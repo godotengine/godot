@@ -37,6 +37,7 @@
 
 class CanvasLayer;
 class Font;
+class Material;
 class Mesh;
 class MultiMesh;
 class StyleBox;
@@ -210,7 +211,7 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED, //unique
+		NOTIFICATION_TRANSFORM_CHANGED = 2000, // Keep in sync with SceneTree.
 		NOTIFICATION_DRAW = 30,
 		NOTIFICATION_VISIBILITY_CHANGED = 31,
 		NOTIFICATION_ENTER_CANVAS = 32,

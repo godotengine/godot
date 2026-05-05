@@ -37,6 +37,7 @@ class RefCounted : public Object {
 	GDCLASS(RefCounted, Object);
 	SafeRefCount refcount;
 	SafeRefCount refcount_init;
+	SafeNumeric<uint32_t> dereference_count;
 
 protected:
 	static void _bind_methods();
@@ -46,6 +47,7 @@ public:
 
 	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() != 1; }
 	bool init_ref();
+	void deinit_ref(); // Effectively decrements refcount by increasing refcount_init by one.
 	bool reference(); // returns false if refcount is at zero and didn't get increased
 	bool unreference();
 	int get_reference_count() const;
@@ -212,7 +214,9 @@ public:
 
 	template <typename... VarArgs>
 	void instantiate(VarArgs... p_params) {
-		ref(memnew(T(p_params...)));
+		Ref<T> ref = memnew(T(p_params...));
+		// Appropriate the new Ref, and if the previous one was set, free it.
+		SWAP(reference, ref.reference);
 	}
 
 	uint32_t hash() const { return HashMapHasherDefault::hash(reference); }
@@ -223,6 +227,16 @@ public:
 		unref();
 	}
 };
+
+template <typename T>
+struct memnew_result<T, std::enable_if_t<std::is_base_of_v<RefCounted, T>>> {
+	using class_name = Ref<T>;
+};
+
+template <typename T>
+void postinitialize_handler(Ref<T> &p_object) {
+	postinitialize_handler(p_object.ptr());
+}
 
 class WeakRef : public RefCounted {
 	GDCLASS(WeakRef, RefCounted);

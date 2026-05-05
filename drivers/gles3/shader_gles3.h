@@ -38,7 +38,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/rendering_server_types.h"
 
-#include "platform_gl.h"
+#include <platform_gl.h>
 
 class StringBuilder;
 

@@ -30,14 +30,18 @@
 
 #include "renderer_viewport.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/math/transform_interpolator.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_canvas_cull.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_scene_cull.h"
+#include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_method.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/texture_storage.h"
 
@@ -149,10 +153,16 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
 			}
 
-			if (scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+			if (scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR && scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_NEAREST && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 				scaling_type = RSE::scaling_3d_mode_type(scaling_3d_mode);
 				WARN_PRINT_ONCE("MetalFX and FSR upscaling are not supported in the Compatibility renderer. Falling back to bilinear scaling.");
+			}
+
+			if ((scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_FSR || scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_FSR2 || scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) && OS::get_singleton()->get_current_rendering_method() == "mobile") {
+				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+				scaling_type = RSE::scaling_3d_mode_type(scaling_3d_mode);
+				WARN_PRINT_ONCE("MetalFX temporal and FSR upscaling are not supported in the Mobile renderer. Falling back to bilinear scaling.");
 			}
 
 			if (scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL)) {
@@ -191,15 +201,15 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			bool scaling_3d_is_not_bilinear = scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			bool use_taa = p_viewport->use_taa;
 
-			if (scaling_3d_is_not_bilinear && (scaling_3d_scale >= (1.0 + EPSILON))) {
-				// FSR and MetalFX is not designed for downsampling.
+			if (scaling_3d_is_not_bilinear && scaling_3d_scale >= (1.0 + EPSILON)) {
+				// FSR, MetalFX, and nearest-neighbor scaling are not designed for downsampling.
 				// Fall back to bilinear scaling.
-				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
+				WARN_PRINT_ONCE("FSR, MetalFX, and nearest-neighbor 3D resolution scaling are not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 				scaling_type = RSE::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
-			if (scaling_3d_is_not_bilinear && !upscaler_available) {
+			if (scaling_3d_is_not_bilinear && scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_NEAREST && !upscaler_available) {
 				// FSR is not actually available.
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not available. Falling back to bilinear 3D resolution scaling.");
@@ -207,7 +217,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				scaling_type = RSE::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
-			if (use_taa && (scaling_type == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
+			if (use_taa && scaling_type == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) {
 				// Temporal upscalers can't be used with TAA.
 				// Turn it off and prefer using the temporal upscaler.
 				WARN_PRINT_ONCE("FSR 2 or MetalFX Temporal is not compatible with TAA. Disabling TAA internally.");
@@ -221,6 +231,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 
 			switch (scaling_3d_mode) {
 				case RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR:
+				case RSE::VIEWPORT_SCALING_3D_MODE_NEAREST:
 					// Clamp 3D rendering resolution to reasonable values supported on most hardware.
 					// This prevents freezing the engine or outright crashing on lower-end GPUs.
 					target_width = p_viewport->size.width;
@@ -362,8 +373,8 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 
 		p_viewport->window_output_max_value = 1.0;
-		DisplayServer::WindowID parent_window = _get_containing_window(p_viewport);
-		if (RD::get_singleton() && parent_window != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServerEnums::WindowID parent_window = _get_containing_window(p_viewport);
+		if (RD::get_singleton() && parent_window != DisplayServerEnums::INVALID_WINDOW_ID) {
 			RenderingContextDriver *context_driver = RD::get_singleton()->get_context_driver();
 			if (context_driver->window_get_hdr_output_enabled(parent_window)) {
 				p_viewport->window_output_max_value = context_driver->window_get_output_max_linear_value(parent_window);
@@ -671,6 +682,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			scenario_draw_canvas_bg = false;
 		}
 
+		int canvas_idx = 0;
 		for (const KeyValue<Viewport::CanvasKey, Viewport::CanvasData *> &E : canvas_map) {
 			RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value->canvas);
 
@@ -697,7 +709,12 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				ptr = ptr->filter_next_ptr;
 			}
 
+			RENDER_TIMESTAMP("> Render Canvas " + itos(canvas_idx));
+
 			RSG::canvas->render_canvas(p_viewport->render_target, canvas, xform, canvas_lights, canvas_directional_lights, clip_rect, p_viewport->texture_filter, p_viewport->texture_repeat, p_viewport->snap_2d_transforms_to_pixel, p_viewport->snap_2d_vertices_to_pixel, p_viewport->canvas_cull_mask, &p_viewport->render_info);
+
+			RENDER_TIMESTAMP("< Render Canvas " + itos(canvas_idx));
+
 			if (RSG::canvas->was_sdf_used()) {
 				p_viewport->sdf_active = true;
 			}
@@ -714,6 +731,8 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 				scenario_draw_canvas_bg = false;
 			}
+
+			canvas_idx++;
 		}
 
 		if (scenario_draw_canvas_bg) {
@@ -745,8 +764,8 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	}
 }
 
-DisplayServer::WindowID RendererViewport::_get_containing_window(Viewport *p_viewport) {
-	if (p_viewport->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
+DisplayServerEnums::WindowID RendererViewport::_get_containing_window(Viewport *p_viewport) {
+	if (p_viewport->viewport_to_screen != DisplayServerEnums::INVALID_WINDOW_ID) {
 		return p_viewport->viewport_to_screen;
 	}
 
@@ -757,7 +776,7 @@ DisplayServer::WindowID RendererViewport::_get_containing_window(Viewport *p_vie
 		}
 	}
 
-	return DisplayServer::INVALID_WINDOW_ID;
+	return DisplayServerEnums::INVALID_WINDOW_ID;
 }
 
 void RendererViewport::draw_viewports(bool p_swap_buffers) {
@@ -784,7 +803,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 		sorted_active_viewports_dirty = false;
 	}
 
-	HashMap<DisplayServer::WindowID, Vector<RenderingServerTypes::BlitToScreen>> blit_to_screen_list;
+	HashMap<DisplayServerEnums::WindowID, Vector<RenderingServerTypes::BlitToScreen>> blit_to_screen_list;
 	//draw viewports
 	RENDER_TIMESTAMP("> Render Viewports");
 
@@ -884,7 +903,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 
 				// commit our eyes
 				Vector<RenderingServerTypes::BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
-				if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
+				if (vp->viewport_to_screen != DisplayServerEnums::INVALID_WINDOW_ID) {
 					if (RSG::rasterizer->is_opengl()) {
 						if (blits.size() > 0) {
 							RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
@@ -909,7 +928,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 			// render standard mono camera
 			_draw_viewport(vp);
 
-			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !RSG::rasterizer->is_low_end())) {
+			if (vp->viewport_to_screen != DisplayServerEnums::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !RSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such
 				RenderingServerTypes::BlitToScreen blit;
 				blit.render_target = vp->render_target;
@@ -1132,11 +1151,11 @@ void RendererViewport::viewport_set_clear_mode(RID p_viewport, RSE::ViewportClea
 	viewport->clear_mode = p_clear_mode;
 }
 
-void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect, DisplayServer::WindowID p_screen) {
+void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect, DisplayServerEnums::WindowID p_screen) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
 
-	if (p_screen != DisplayServer::INVALID_WINDOW_ID) {
+	if (p_screen != DisplayServerEnums::INVALID_WINDOW_ID) {
 		// If using OpenGL we can optimize this operation by rendering directly to system_fbo
 		// instead of rendering to fbo and copying to system_fbo after
 		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
@@ -1154,7 +1173,7 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 		}
 
 		viewport->viewport_to_screen_rect = Rect2();
-		viewport->viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
+		viewport->viewport_to_screen = DisplayServerEnums::INVALID_WINDOW_ID;
 	}
 }
 
@@ -1604,7 +1623,7 @@ void RendererViewport::viewport_set_sdf_oversize_and_scale(RID p_viewport, RSE::
 	RSG::texture_storage->render_target_set_sdf_size_and_scale(viewport->render_target, p_size, p_scale);
 }
 
-RID RendererViewport::viewport_find_from_screen_attachment(DisplayServer::WindowID p_id) const {
+RID RendererViewport::viewport_find_from_screen_attachment(DisplayServerEnums::WindowID p_id) const {
 	RID *rids = nullptr;
 	uint32_t rid_count = viewport_owner.get_rid_count();
 	rids = (RID *)alloca(sizeof(RID) * rid_count);
@@ -1704,7 +1723,7 @@ void RendererViewport::viewport_set_canvas_cull_mask(RID p_viewport, uint32_t p_
 }
 
 // Workaround for setting this on thread.
-void RendererViewport::call_set_vsync_mode(DisplayServer::VSyncMode p_mode, DisplayServer::WindowID p_window) {
+void RendererViewport::call_set_vsync_mode(DisplayServerEnums::VSyncMode p_mode, DisplayServerEnums::WindowID p_window) {
 	DisplayServer::get_singleton()->window_set_vsync_mode(p_mode, p_window);
 }
 

@@ -223,10 +223,11 @@ void ParticlesStorage::particles_set_pre_process_time(RID p_particles, double p_
 	particles->pre_process_time = p_time;
 }
 
-void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time) {
+void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time, real_t p_request_process_time_residual) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 	particles->request_process_time = p_request_process_time;
+	particles->request_process_time_residual = p_request_process_time_residual;
 }
 
 void ParticlesStorage::particles_set_seed(RID p_particles, uint32_t p_seed) {
@@ -321,6 +322,20 @@ void ParticlesStorage::particles_set_transform_align(RID p_particles, RSE::Parti
 	ERR_FAIL_NULL(particles);
 
 	particles->transform_align = p_transform_align;
+}
+
+void ParticlesStorage::particles_set_transform_align_channel_filter(RID p_particles, RSE::ParticlesTransformAlignCustomSrc p_channel_filter) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_channel_filter = p_channel_filter;
+}
+
+void ParticlesStorage::particles_set_transform_align_axis(RID p_particles, RSE::ParticlesTransformAlignAxis p_rotation_axis) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_axis = p_rotation_axis;
 }
 
 void ParticlesStorage::particles_set_process_material(RID p_particles, RID p_material) {
@@ -792,7 +807,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
-	if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+	if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD) {
 		return;
 	}
 
@@ -960,6 +975,8 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_MODE, uint32_t(particles->transform_align), particles_shader.copy_shader_version, variant, specialization);
 	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_UP, p_up_axis, particles_shader.copy_shader_version, variant, specialization);
 	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::SORT_DIRECTION, p_axis, particles_shader.copy_shader_version, variant, specialization);
+	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_AXIS, uint32_t(particles->transform_align_axis), particles_shader.copy_shader_version, variant, specialization);
+	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_CHANNEL_FILTER, uint32_t(particles->transform_align_channel_filter), particles_shader.copy_shader_version, variant, specialization);
 
 	glBindVertexArray(particles->back_vertex_array);
 	glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, 0, particles->front_instance_buffer, 0, particles->instance_buffer_size_cache);
@@ -1047,6 +1064,7 @@ void ParticlesStorage::update_particles() {
 			particles->prev_phase = 0;
 			particles->clear = true;
 			particles->restart_request = false;
+			particles->frame_remainder = 0.0;
 		}
 
 		if (particles->inactive && !particles->emitting) {
@@ -1096,20 +1114,50 @@ void ParticlesStorage::update_particles() {
 			fixed_fps = particles->fixed_fps;
 		}
 
-		if (particles->clear && particles->pre_process_time > 0.0) {
-			double frame_time;
-			if (fixed_fps > 0) {
-				frame_time = 1.0 / fixed_fps;
-			} else {
-				frame_time = 1.0 / 30.0;
+		// Request process and pre-process block
+		{
+			float todo = particles->clear ? particles->pre_process_time : 0;
+			todo = todo > particles->request_process_time ? todo : particles->request_process_time;
+			todo = todo > particles->request_process_time_residual ? todo : particles->request_process_time_residual;
+
+			if (todo > 0.0) {
+				real_t frame_time;
+				if (fixed_fps > 0) {
+					frame_time = 1.0 / fixed_fps;
+				} else {
+					frame_time = 1.0 / 30.0;
+				}
+
+				float tmp_scale = particles->speed_scale;
+				// We need this otherwise the speed scale of the particle system influences the `todo`.
+				particles->speed_scale = 1.0;
+				if (particles->clear) {
+					todo = particles->pre_process_time;
+					while (todo > 0.00001) {
+						_particles_process(particles, frame_time > todo ? todo : frame_time);
+						todo -= frame_time;
+					}
+				}
+				if (particles->request_process_time > 0.0) {
+					todo = particles->request_process_time;
+					while (todo > 0.0) {
+						_particles_process(particles, frame_time > todo ? todo : frame_time);
+						todo -= frame_time;
+					}
+				}
+				if (particles->request_process_time_residual > 0.0) {
+					particles->emitting = false;
+					todo = particles->request_process_time_residual;
+					while (todo > 0.0) {
+						_particles_process(particles, frame_time > todo ? todo : frame_time);
+						todo -= frame_time;
+					}
+				}
+				particles->speed_scale = tmp_scale;
 			}
 
-			double todo = particles->pre_process_time;
-
-			while (todo >= 0) {
-				_particles_process(particles, frame_time);
-				todo -= frame_time;
-			}
+			particles->request_process_time = 0.0;
+			particles->request_process_time_residual = 0.0;
 		}
 
 		double time_scale = MAX(particles->speed_scale, 0.0);
@@ -1119,8 +1167,8 @@ void ParticlesStorage::update_particles() {
 			double delta = RSG::rasterizer->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
-			} else if (delta <= 0.0) { //unlikely but..
-				delta = 0.001;
+			} else if (delta < 0.0) {
+				delta = 0.0;
 			}
 			double todo = particles->frame_remainder + delta * time_scale;
 
@@ -1155,7 +1203,8 @@ void ParticlesStorage::update_particles() {
 
 		// Copy particles to instance buffer and pack Color/Custom.
 		// We don't have camera information here, so don't copy here if we need camera information for view depth or align mode.
-		if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+
+		if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD) {
 			_particles_update_instance_buffer(particles, Vector3(0.0, 0.0, 0.0), Vector3(0.0, 0.0, 0.0));
 
 			if (particles->draw_order == RSE::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME && particles->sort_buffer_filled) {

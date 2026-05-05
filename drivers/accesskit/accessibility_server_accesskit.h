@@ -35,19 +35,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/display/accessibility_server.h"
 
-#ifdef ACCESSKIT_DYNAMIC
-#ifdef LINUXBSD_ENABLED
-#include "drivers/accesskit/dynwrappers/accesskit-so_wrap.h"
-#endif
-#ifdef MACOS_ENABLED
-#include "drivers/accesskit/dynwrappers/accesskit-dylib_wrap.h"
-#endif
-#ifdef WINDOWS_ENABLED
-#include "drivers/accesskit/dynwrappers/accesskit-dll_wrap.h"
-#endif
-#else
 #include <accesskit.h>
-#endif
 
 class AccessibilityServerAccessKit : public AccessibilityServer {
 	GDSOFTCLASS(AccessibilityServerAccessKit, AccessibilityServer);
@@ -57,7 +45,7 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 	struct AccessibilityElement {
 		HashMap<accesskit_action, Callable> actions;
 
-		DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
+		DisplayServerEnums::WindowID window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		RID parent;
 		LocalVector<RID> children;
 		Vector3i run;
@@ -70,7 +58,7 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 		accesskit_role role = ACCESSKIT_ROLE_UNKNOWN;
 		accesskit_node *node = nullptr;
 	};
-	mutable RID_PtrOwner<AccessibilityElement> rid_owner;
+	mutable RID_PtrOwner<AccessibilityElement> rid_owner{ 65536, 1048576 };
 
 	struct WindowData {
 		// Adapter.
@@ -94,7 +82,7 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 
 	RID focus;
 
-	HashMap<DisplayServer::WindowID, WindowData> windows;
+	HashMap<DisplayServerEnums::WindowID, WindowData> windows;
 
 	HashMap<AccessibilityServerEnums::AccessibilityRole, accesskit_role> role_map;
 	HashMap<AccessibilityServerEnums::AccessibilityAction, accesskit_action> action_map;
@@ -116,10 +104,10 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 public:
 	bool is_supported() const override { return true; }
 
-	bool window_create(DisplayServer::WindowID p_window_id, void *p_handle) override;
-	void window_destroy(DisplayServer::WindowID p_window_id) override;
+	bool window_create(DisplayServerEnums::WindowID p_window_id, void *p_handle) override;
+	void window_destroy(DisplayServerEnums::WindowID p_window_id) override;
 
-	RID create_element(DisplayServer::WindowID p_window_id, AccessibilityServerEnums::AccessibilityRole p_role) override;
+	RID create_element(DisplayServerEnums::WindowID p_window_id, AccessibilityServerEnums::AccessibilityRole p_role) override;
 	RID create_sub_element(const RID &p_parent_rid, AccessibilityServerEnums::AccessibilityRole p_role, int p_insert_pos = -1) override;
 	virtual RID create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false) override;
 	bool has_element(const RID &p_id) const override;
@@ -131,13 +119,13 @@ public:
 	void update_if_active(const Callable &p_callable) override;
 
 	void update_set_focus(const RID &p_id) override;
-	RID get_window_root(DisplayServer::WindowID p_window_id) const override;
+	RID get_window_root(DisplayServerEnums::WindowID p_window_id) const override;
 
-	void set_window_rect(DisplayServer::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in) override;
-	void set_window_focused(DisplayServer::WindowID p_window_id, bool p_focused) override;
-	void set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) override;
-	void window_activation_completed(DisplayServer::WindowID p_window_id) override;
-	void window_deactivation_completed(DisplayServer::WindowID p_window_id) override;
+	void set_window_rect(DisplayServerEnums::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in) override;
+	void set_window_focused(DisplayServerEnums::WindowID p_window_id, bool p_focused) override;
+	void set_window_callbacks(DisplayServerEnums::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) override;
+	void window_activation_completed(DisplayServerEnums::WindowID p_window_id) override;
+	void window_deactivation_completed(DisplayServerEnums::WindowID p_window_id) override;
 
 	void update_set_role(const RID &p_id, AccessibilityServerEnums::AccessibilityRole p_role) override;
 	void update_set_name(const RID &p_id, const String &p_name) override;

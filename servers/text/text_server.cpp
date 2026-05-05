@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -275,8 +276,16 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font_rid", "force_autohinter"), &TextServer::font_set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("font_is_force_autohinter", "font_rid"), &TextServer::font_is_force_autohinter);
 
-	ClassDB::bind_method(D_METHOD("font_set_modulate_color_glyphs", "font_rid", "force_autohinter"), &TextServer::font_set_modulate_color_glyphs);
+	ClassDB::bind_method(D_METHOD("font_set_modulate_color_glyphs", "font_rid", "modulate"), &TextServer::font_set_modulate_color_glyphs);
 	ClassDB::bind_method(D_METHOD("font_is_modulate_color_glyphs", "font_rid"), &TextServer::font_is_modulate_color_glyphs);
+
+	ClassDB::bind_method(D_METHOD("font_get_palette_count", "font_rid"), &TextServer::font_get_palette_count);
+	ClassDB::bind_method(D_METHOD("font_get_palette_name", "font_rid", "index"), &TextServer::font_get_palette_name);
+	ClassDB::bind_method(D_METHOD("font_get_palette_colors", "font_rid", "index"), &TextServer::font_get_palette_colors);
+	ClassDB::bind_method(D_METHOD("font_set_palette_custom_colors", "font_rid", "colors"), &TextServer::font_set_palette_custom_colors);
+	ClassDB::bind_method(D_METHOD("font_get_palette_custom_colors", "font_rid"), &TextServer::font_get_palette_custom_colors);
+	ClassDB::bind_method(D_METHOD("font_get_used_palette", "font_rid"), &TextServer::font_get_used_palette);
+	ClassDB::bind_method(D_METHOD("font_set_used_palette", "font_rid", "index"), &TextServer::font_set_used_palette);
 
 	ClassDB::bind_method(D_METHOD("font_set_hinting", "font_rid", "hinting"), &TextServer::font_set_hinting);
 	ClassDB::bind_method(D_METHOD("font_get_hinting", "font_rid"), &TextServer::font_get_hinting);
@@ -452,6 +461,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_get_run_count", "shaped"), &TextServer::shaped_get_run_count);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_text", "shaped", "index"), &TextServer::shaped_get_run_text);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_range", "shaped", "index"), &TextServer::shaped_get_run_range);
+	ClassDB::bind_method(D_METHOD("shaped_get_run_glyph_range", "shaped", "index"), &TextServer::shaped_get_run_glyph_range);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_font_rid", "shaped", "index"), &TextServer::shaped_get_run_font_rid);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_font_size", "shaped", "index"), &TextServer::shaped_get_run_font_size);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_language", "shaped", "index"), &TextServer::shaped_get_run_language);

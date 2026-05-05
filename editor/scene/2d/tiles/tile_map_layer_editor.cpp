@@ -30,13 +30,18 @@
 
 #include "tile_map_layer_editor.h"
 
+#include "core/input/input.h"
+#include "core/math/geometry_2d.h"
+#include "core/math/random_pcg.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "tiles_editor_plugin.h"
-
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/scene/2d/tiles/tiles_editor_plugin.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -45,11 +50,7 @@
 #include "scene/2d/tile_map_layer.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/split_container.h"
-
-#include "core/input/input.h"
-#include "core/math/geometry_2d.h"
-#include "core/math/random_pcg.h"
-#include "core/os/keyboard.h"
+#include "scene/main/scene_tree.h"
 
 void SwitchSeparator::set_vertical(bool p_vertical) {
 	h_separator->set_visible(p_vertical);
@@ -655,6 +656,11 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 		Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * edited_layer->get_global_transform_with_canvas();
 		Vector2 mpos = xform.affine_inverse().xform(mm->get_position());
 
+		if (edited_layer->local_to_map(drag_last_mouse_pos) != edited_layer->local_to_map(mpos)) {
+			pattern_rng.seed(Math::rand());
+			rng_base_state = Math::rand();
+		}
+
 		switch (drag_type) {
 			case DRAG_TYPE_PAINT: {
 				HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_last_mouse_pos, mpos, drag_erasing);
@@ -963,39 +969,35 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 				Transform2D tile_xform;
 				tile_xform.set_origin(tile_set->map_to_local(E.key));
 				tile_xform.set_scale(tile_set->get_tile_size());
-				if (!(drag_erasing || erase_button->is_pressed()) && random_tile_toggle->is_pressed()) {
-					tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0, 0.5), true);
-				} else {
-					if (tile_set->has_source(E.value.source_id)) {
-						TileSetSource *source = *tile_set->get_source(E.value.source_id);
-						TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-						if (atlas_source) {
-							// Get tile data.
-							TileData *tile_data = atlas_source->get_tile_data(E.value.get_atlas_coords(), E.value.alternative_tile);
-							if (!tile_data) {
-								continue;
-							}
-
-							Rect2i source_rect = atlas_source->get_tile_texture_region(E.value.get_atlas_coords());
-
-							// Compute the destination rectangle in the CanvasItem.
-							Rect2 dest_rect;
-							bool transpose;
-							TileMapLayer::compute_transformed_tile_dest_rect(dest_rect, transpose, tile_set->map_to_local(E.key), source_rect.size, tile_data, E.value.alternative_tile);
-
-							// Get the tile modulation.
-							Color modulate = tile_data->get_modulate() * edited_layer->get_modulate_in_tree() * edited_layer->get_self_modulate();
-
-							// Draw the tile.
-							p_overlay->draw_set_transform_matrix(xform);
-							p_overlay->draw_texture_rect_region(atlas_source->get_texture(), dest_rect, source_rect, modulate * Color(1.0, 1.0, 1.0, 0.5), transpose, tile_set->is_uv_clipping());
-							p_overlay->draw_set_transform_matrix(Transform2D());
-						} else {
-							tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0, 0.5), true);
+				if (tile_set->has_source(E.value.source_id)) {
+					TileSetSource *source = *tile_set->get_source(E.value.source_id);
+					TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+					if (atlas_source) {
+						// Get tile data.
+						TileData *tile_data = atlas_source->get_tile_data(E.value.get_atlas_coords(), E.value.alternative_tile);
+						if (!tile_data) {
+							continue;
 						}
+
+						Rect2i source_rect = atlas_source->get_tile_texture_region(E.value.get_atlas_coords());
+
+						// Compute the destination rectangle in the CanvasItem.
+						Rect2 dest_rect;
+						bool transpose;
+						TileMapLayer::compute_transformed_tile_dest_rect(dest_rect, transpose, tile_set->map_to_local(E.key), source_rect.size, tile_data, E.value.alternative_tile);
+
+						// Get the tile modulation.
+						Color modulate = tile_data->get_modulate() * edited_layer->get_modulate_in_tree() * edited_layer->get_self_modulate();
+
+						// Draw the tile.
+						p_overlay->draw_set_transform_matrix(xform);
+						p_overlay->draw_texture_rect_region(atlas_source->get_texture(), dest_rect, source_rect, modulate * Color(1.0, 1.0, 1.0, 0.5), transpose, tile_set->is_uv_clipping());
+						p_overlay->draw_set_transform_matrix(Transform2D());
 					} else {
-						tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(0.0, 0.0, 0.0, 0.5), true);
+						tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0, 0.5), true);
 					}
+				} else {
+					tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(0.0, 0.0, 0.0, 0.5), true);
 				}
 			}
 		}
@@ -1040,7 +1042,7 @@ TileMapCell TileMapLayerEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern>
 
 	double empty_probability = sum * scattering;
 	double current = 0.0;
-	double rand = Math::random(0.0, sum + empty_probability);
+	double rand = pattern_rng.random(0.0, sum + empty_probability);
 	for (int i = 0; i < used_cells.size(); i++) {
 		int source_id = p_pattern->get_cell_source_id(used_cells[i]);
 		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords(used_cells[i]);
@@ -1079,6 +1081,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_line(Vector2
 	if (!pattern->is_empty()) {
 		// Paint the tiles on the tile map.
 		if (!p_erase && random_tile_toggle->is_pressed()) {
+			pattern_rng.set_state(rng_base_state);
 			// Paint a random tile.
 			Vector<Vector2i> line = TileMapLayerEditor::get_line(edited_layer, tile_set->local_to_map(p_from_mouse_pos), tile_set->local_to_map(p_to_mouse_pos));
 			for (int i = 0; i < line.size(); i++) {
@@ -1135,6 +1138,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 	HashMap<Vector2i, TileMapCell> output;
 	if (!pattern->is_empty()) {
 		if (!p_erase && random_tile_toggle->is_pressed()) {
+			pattern_rng.set_state(rng_base_state);
 			// Paint a random tile.
 			for (int x = 0; x < rect.size.x; x++) {
 				for (int y = 0; y < rect.size.y; y++) {
@@ -1187,6 +1191,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_bucket_fill(
 			boundaries = edited_layer->get_used_rect();
 		}
 
+		pattern_rng.set_state(rng_base_state);
 		if (p_contiguous) {
 			// Replace continuous tiles like the source.
 			RBSet<Vector2i> already_checked;
@@ -3741,6 +3746,14 @@ void TileMapLayerEditor::_notification(int p_what) {
 				toggle_grid_button->set_pressed_no_signal(EDITOR_GET("editors/tiles_editor/display_grid"));
 				toggle_highlight_selected_layer_button->set_pressed_no_signal(EDITOR_GET("editors/tiles_editor/highlight_selected_layer"));
 			}
+		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			// Simulate mouse released event to stop drawing when editor focus exits.
+			Ref<InputEventMouseButton> release;
+			release.instantiate();
+			release->set_button_index(MouseButton::LEFT);
+			forward_canvas_gui_input(release);
 		} break;
 	}
 }

@@ -30,9 +30,11 @@
 
 #include "range.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "servers/display/accessibility_server.h"
-#include "thirdparty/misc/r128.h"
+
+#include <thirdparty/misc/r128.h>
 
 double Range::_snapped_r128(double p_value, double p_step) {
 	if (p_step == 0.0) {
@@ -160,6 +162,8 @@ void Range::Shared::redraw_owners() {
 		if (!r->is_inside_tree()) {
 			continue;
 		}
+
+		r->_value_changed(val);
 		r->queue_accessibility_update();
 		r->queue_redraw();
 	}

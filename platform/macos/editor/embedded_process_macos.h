@@ -30,8 +30,11 @@
 
 #pragma once
 
+#include "core/object/class_db.h"
+#include "core/os/process_id.h"
 #include "editor/run/embedded_process.h"
-#include "servers/display/display_server.h"
+#include "scene/gui/control.h"
+#include "servers/display/display_server_enums.h"
 
 class DisplayServerMacOS;
 class EmbeddedProcessMacOS;
@@ -52,7 +55,7 @@ class LayerHost final : public Control {
 			hotspot = p_hotspot;
 		}
 	};
-	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
+	HashMap<DisplayServerEnums::CursorShape, CustomCursor> custom_cursors;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -60,7 +63,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void cursor_set_custom_image(const Ref<Image> &p_image, DisplayServer::CursorShape p_shape, const Vector2 &p_hotspot);
+	void cursor_set_custom_image(const Ref<Image> &p_image, DisplayServerEnums::CursorShape p_shape, const Vector2 &p_hotspot);
 	void set_script_debugger(ScriptEditorDebugger *p_debugger) {
 		script_debugger = p_debugger;
 	}
@@ -83,12 +86,12 @@ class EmbeddedProcessMacOS final : public EmbeddedProcessBase {
 	uint32_t context_id = 0;
 	ScriptEditorDebugger *script_debugger = nullptr;
 	LayerHost *layer_host = nullptr;
-	OS::ProcessID current_process_id = 0;
+	ProcessID current_process_id = 0;
 
 	// Embedded process state.
 
 	// The last mouse mode sent by the embedded process.
-	DisplayServer::MouseMode mouse_mode = DisplayServer::MOUSE_MODE_VISIBLE;
+	DisplayServerEnums::MouseMode mouse_mode = DisplayServerEnums::MOUSE_MODE_VISIBLE;
 
 	// Helper functions.
 
@@ -102,7 +105,7 @@ public:
 	// MARK: - Message Handlers
 
 	void set_context_id(uint32_t p_context_id);
-	void mouse_set_mode(DisplayServer::MouseMode p_mode);
+	void mouse_set_mode(DisplayServerEnums::MouseMode p_mode);
 
 	uint32_t get_context_id() const { return context_id; }
 	void set_script_debugger(ScriptEditorDebugger *p_debugger) override;
@@ -116,7 +119,7 @@ public:
 	}
 
 	bool is_process_focused() const override { return layer_host->has_focus(); }
-	void embed_process(OS::ProcessID p_pid) override;
+	void embed_process(ProcessID p_pid) override;
 	int get_embedded_pid() const override { return current_process_id; }
 	void reset() override;
 	void reset_timers() override {}
@@ -130,7 +133,7 @@ public:
 	void display_state_changed();
 
 	// MARK: - Embedded process state
-	_FORCE_INLINE_ DisplayServer::MouseMode get_mouse_mode() const { return mouse_mode; }
+	_FORCE_INLINE_ DisplayServerEnums::MouseMode get_mouse_mode() const { return mouse_mode; }
 
 	EmbeddedProcessMacOS();
 	~EmbeddedProcessMacOS() override;

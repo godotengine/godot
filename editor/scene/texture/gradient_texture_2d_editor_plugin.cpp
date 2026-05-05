@@ -31,6 +31,7 @@
 #include "gradient_texture_2d_editor_plugin.h"
 
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/themes/editor_scale.h"

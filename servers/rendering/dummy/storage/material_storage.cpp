@@ -214,9 +214,6 @@ void MaterialStorage::get_shader_parameter_list(RID p_shader, List<PropertyInfo>
 		const ShaderLanguage::ShaderNode::Uniform &uniform = shader->uniforms[uniform_name];
 
 		String group = uniform.group;
-		if (!uniform.subgroup.is_empty()) {
-			group += "::" + uniform.subgroup;
-		}
 
 		if (group != last_group) {
 			PropertyInfo pi;

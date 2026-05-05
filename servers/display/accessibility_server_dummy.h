@@ -43,10 +43,10 @@ protected:
 	}
 
 public:
-	virtual bool window_create(DisplayServer::WindowID p_window_id, void *p_handle) override { return true; }
-	virtual void window_destroy(DisplayServer::WindowID p_window_id) override {}
+	virtual bool window_create(DisplayServerEnums::WindowID p_window_id, void *p_handle) override { return true; }
+	virtual void window_destroy(DisplayServerEnums::WindowID p_window_id) override {}
 
-	virtual RID create_element(DisplayServer::WindowID p_window_id, AccessibilityServerEnums::AccessibilityRole p_role) override { return RID(); }
+	virtual RID create_element(DisplayServerEnums::WindowID p_window_id, AccessibilityServerEnums::AccessibilityRole p_role) override { return RID(); }
 	virtual RID create_sub_element(const RID &p_parent_rid, AccessibilityServerEnums::AccessibilityRole p_role, int p_insert_pos = -1) override { return RID(); }
 	virtual RID create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false) override { return RID(); }
 	virtual bool has_element(const RID &p_id) const override { return false; }
@@ -57,14 +57,14 @@ public:
 
 	virtual void update_if_active(const Callable &p_callable) override {}
 
-	virtual RID get_window_root(DisplayServer::WindowID p_window_id) const override { return RID(); }
+	virtual RID get_window_root(DisplayServerEnums::WindowID p_window_id) const override { return RID(); }
 	virtual void update_set_focus(const RID &p_id) override {}
 
-	virtual void set_window_rect(DisplayServer::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in) override {}
-	virtual void set_window_focused(DisplayServer::WindowID p_window_id, bool p_focused) override {}
-	virtual void set_window_callbacks(DisplayServer::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) override {}
-	virtual void window_activation_completed(DisplayServer::WindowID p_window_id) override {}
-	virtual void window_deactivation_completed(DisplayServer::WindowID p_window_id) override {}
+	virtual void set_window_rect(DisplayServerEnums::WindowID p_window_id, const Rect2 &p_rect_out, const Rect2 &p_rect_in) override {}
+	virtual void set_window_focused(DisplayServerEnums::WindowID p_window_id, bool p_focused) override {}
+	virtual void set_window_callbacks(DisplayServerEnums::WindowID p_window_id, const Callable &p_activate_callable, const Callable &p_deativate_callable) override {}
+	virtual void window_activation_completed(DisplayServerEnums::WindowID p_window_id) override {}
+	virtual void window_deactivation_completed(DisplayServerEnums::WindowID p_window_id) override {}
 
 	virtual void update_set_role(const RID &p_id, AccessibilityServerEnums::AccessibilityRole p_role) override {}
 	virtual void update_set_name(const RID &p_id, const String &p_name) override {}

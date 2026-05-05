@@ -193,6 +193,9 @@ struct hb_atomic_t<T *>
   T *get_acquire () const { return v.load (std::memory_order_acquire); }
   bool cmpexch (T *old, T *new_) { return v.compare_exchange_weak (old, new_, std::memory_order_acq_rel, std::memory_order_relaxed); }
 
+  hb_atomic_t &operator= (const hb_atomic_t& o) { set_relaxed (o.get_relaxed ()); return *this; }
+  hb_atomic_t &operator= (hb_atomic_t&& o){ set_relaxed (o.get_relaxed ()); o.set_relaxed ({}); return *this; }
+
   operator bool () const { return get_acquire () != nullptr; }
   T *operator->() const { return get_acquire (); }
   template <typename C>

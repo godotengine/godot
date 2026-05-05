@@ -52,6 +52,7 @@ protected:
 public:
 	TypedArray<uint64_t> remote_object_ids;
 	String type_name;
+	String node_name; // For human-readable name.
 	List<PropertyInfo> prop_list;
 	HashMap<StringName, TypedDictionary<uint64_t, Variant>> prop_values;
 

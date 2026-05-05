@@ -41,11 +41,11 @@ struct LigatureSet : public OT::Layout::GSUB_impl::LigatureSet<SmallTypes>
 {
   bool sanitize (graph_t::vertex_t& vertex) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < OT::Layout::GSUB_impl::LigatureSet<SmallTypes>::min_size) return false;
     hb_barrier ();
 
-    int64_t total_len = ligature.get_size() + OT::Layout::GSUB_impl::LigatureSet<SmallTypes>::min_size - ligature.len.get_size();
+    size_t total_len = ligature.get_size() + OT::Layout::GSUB_impl::LigatureSet<SmallTypes>::min_size - ligature.len.get_size();
     if (vertex_len < total_len) {
       return false;
     }
@@ -57,7 +57,7 @@ struct LigatureSubstFormat1 : public OT::Layout::GSUB_impl::LigatureSubstFormat1
 {
   bool sanitize (graph_t::vertex_t& vertex) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     unsigned min_size = OT::Layout::GSUB_impl::LigatureSubstFormat1_2<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
     hb_barrier ();
@@ -492,7 +492,7 @@ struct LigatureSubst : public OT::Layout::GSUB_impl::LigatureSubst
 
   bool sanitize (graph_t::vertex_t& vertex) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < u.format.v.get_size ()) return false;
     hb_barrier ();
 

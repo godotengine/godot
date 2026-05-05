@@ -421,6 +421,7 @@ class EditorPropertyObjectID : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
 
 public:
 	virtual void update_property() override;
@@ -747,6 +748,7 @@ class EditorPropertyResource : public EditorProperty {
 	EditorInspector *sub_inspector = nullptr;
 	bool opened_editor = false;
 	bool use_filter = false;
+	bool user_opened_editor = false;
 
 	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
 	void _resource_changed(const Ref<Resource> &p_resource);
@@ -779,6 +781,8 @@ public:
 	void set_use_sub_inspector(bool p_enable);
 	void set_use_filter(bool p_use);
 	void fold_resource();
+
+	virtual void set_keying(bool p_keying) override;
 
 	virtual bool is_colored(ColorationMode p_mode) override;
 

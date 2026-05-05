@@ -30,15 +30,16 @@
 
 #include "image_compress_betsy.h"
 
-#include "betsy_bc1.h"
-
 #include "alpha_stitch.glsl.gen.h"
 #include "bc1.glsl.gen.h"
 #include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
+#include "betsy_bc1.h"
 #include "rgb_to_rgba.glsl.gen.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device.h"

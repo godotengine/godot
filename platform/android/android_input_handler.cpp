@@ -30,10 +30,10 @@
 
 #include "android_input_handler.h"
 
-#include "core/input/input.h"
-
 #include "android_keys_utils.h"
 #include "display_server_android.h"
+
+#include "core/input/input.h"
 
 void AndroidInputHandler::process_joy_event(AndroidInputHandler::JoypadEvent p_event) {
 	switch (p_event.type) {
@@ -134,7 +134,7 @@ void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicod
 
 	if (p_physical_keycode == AKEYCODE_BACK && p_pressed) {
 		if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
-			dsa->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST, true);
+			dsa->send_window_event(DisplayServerEnums::WINDOW_EVENT_GO_BACK_REQUEST, true);
 		}
 	}
 

@@ -205,6 +205,7 @@ private:
 	String full_dir;
 
 	bool is_invalidating = false;
+	bool ensure_visible_after_invalidating = false;
 
 	VBoxContainer *main_vbox = nullptr;
 
@@ -213,7 +214,8 @@ private:
 	Button *dir_up = nullptr;
 
 	HBoxContainer *drives_container = nullptr;
-	OptionButton *drives = nullptr;
+	MenuButton *drives = nullptr;
+	int selected_drive = 0;
 	LineEdit *directory_edit = nullptr;
 	HBoxContainer *shortcuts_container = nullptr;
 

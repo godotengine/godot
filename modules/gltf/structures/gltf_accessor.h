@@ -31,7 +31,6 @@
 #pragma once
 
 #include "../gltf_defines.h"
-
 #include "gltf_buffer_view.h"
 
 class GLTFAccessor : public Resource {

@@ -1543,7 +1543,7 @@ void fragment_shader(in SceneData scene_data) {
 
 	{ // process decals
 
-		uint cluster_decal_offset = cluster_offset + implementation_data.cluster_type_size * 2;
+		uint cluster_decal_offset = cluster_offset + implementation_data.cluster_type_size * 3;
 
 		uint item_min;
 		uint item_max;
@@ -2032,10 +2032,10 @@ void fragment_shader(in SceneData scene_data) {
 		vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
 #ifdef LIGHT_CLEARCOAT_USED
-		vec3 cc_reflection_accum = vec3(0.0, 0.0, 0.0);
+		vec4 cc_reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 #endif
 
-		uint cluster_reflection_offset = cluster_offset + implementation_data.cluster_type_size * 3;
+		uint cluster_reflection_offset = cluster_offset + implementation_data.cluster_type_size * 4;
 
 		uint item_min;
 		uint item_max;
@@ -2079,13 +2079,19 @@ void fragment_shader(in SceneData scene_data) {
 					continue; //not masked
 				}
 
+#ifndef LIGHT_CLEARCOAT_USED
 				if (reflection_accum.a >= 1.0 && ambient_accum.a >= 1.0) {
 					break;
 				}
+#else
+				if (reflection_accum.a >= 1.0 && cc_reflection_accum.a >= 1.0 && ambient_accum.a >= 1.0) {
+					break;
+				}
+#endif // LIGHT_CLEARCOAT_USED
 
-				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, indirect_specular_light,
+				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light,
 #ifdef LIGHT_CLEARCOAT_USED
-						cc_specular_light, cc_ref_vec, mix(0.001, 0.1, clearcoat_roughness), cc_reflection_accum,
+						cc_ref_vec, mix(0.001, 0.1, clearcoat_roughness), cc_reflection_accum,
 #endif
 						ambient_accum, reflection_accum);
 			}
@@ -2099,12 +2105,21 @@ void fragment_shader(in SceneData scene_data) {
 			reflection_accum.rgb = indirect_specular_light * (1.0 - reflection_accum.a) + reflection_accum.rgb;
 		}
 
+#ifdef LIGHT_CLEARCOAT_USED
+		if (cc_reflection_accum.a < 1.0) {
+			cc_reflection_accum.rgb = cc_specular_light * (1.0 - cc_reflection_accum.a) + cc_reflection_accum.rgb;
+		}
+#endif
+
 		if (reflection_accum.a > 0.0) {
 			indirect_specular_light = reflection_accum.rgb;
-#ifdef LIGHT_CLEARCOAT_USED
-			cc_specular_light = cc_reflection_accum.rgb;
-#endif
 		}
+
+#ifdef LIGHT_CLEARCOAT_USED
+		if (cc_reflection_accum.a > 0.0) {
+			cc_specular_light = cc_reflection_accum.rgb;
+		}
+#endif
 
 #if !defined(USE_LIGHTMAP)
 		if (ambient_accum.a > 0.0) {
@@ -2786,6 +2801,67 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_CLEARCOAT_USED
 						clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
+#ifdef LIGHT_ANISOTROPY_USED
+						binormal, tangent, anisotropy,
+#endif
+						diffuse_light, direct_specular_light);
+			}
+		}
+	}
+
+	{ // area lights
+
+		uint cluster_area_offset = cluster_offset + implementation_data.cluster_type_size * 2;
+
+		uint item_min;
+		uint item_max;
+		uint item_from;
+		uint item_to;
+
+		cluster_get_item_range(cluster_area_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+
+		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
+		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
+
+		for (uint i = item_from; i < item_to; i++) {
+			uint mask = cluster_buffer.data[cluster_area_offset + i];
+			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+
+			uint merged_mask = subgroupBroadcastFirst(subgroupOr(mask));
+			while (merged_mask != 0) {
+				uint bit = findMSB(merged_mask);
+				merged_mask &= ~(1u << bit);
+
+				if (((1u << bit) & mask) == 0) { //do not process if not originally here
+					continue;
+				}
+
+				uint light_index = 32 * i + bit;
+
+				if (!bool(area_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
+					continue; //not masked
+				}
+
+				if (area_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+					continue; // Statically baked light and object uses lightmap, skip
+				}
+
+				light_process_area(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
+#ifdef LIGHT_BACKLIGHT_USED
+						backlight,
+#endif
+#ifdef LIGHT_TRANSMITTANCE_USED
+						transmittance_color,
+						transmittance_depth,
+						transmittance_boost,
+#endif
+#ifdef LIGHT_RIM_USED
+						rim,
+						rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+						clearcoat, clearcoat_roughness, geo_normal,
+#endif
 #ifdef LIGHT_ANISOTROPY_USED
 						binormal, tangent, anisotropy,
 #endif
