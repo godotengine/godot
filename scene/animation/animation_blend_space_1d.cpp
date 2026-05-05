@@ -67,6 +67,12 @@ void AnimationNodeBlendSpace1D::_tree_changed() {
 }
 
 void AnimationNodeBlendSpace1D::_animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) {
+	for (int at_index = 0; at_index < blend_points_used; at_index++) {
+		if (blend_points[at_index].name == p_old_name) {
+			blend_points[at_index].name = p_new_name;
+			break;
+		}
+	}
 	AnimationRootNode::_animation_node_renamed(p_oid, p_old_name, p_new_name);
 }
 

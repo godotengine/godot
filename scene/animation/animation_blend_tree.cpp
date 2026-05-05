@@ -39,12 +39,16 @@ void AnimationNodeAnimation::set_animation(const StringName &p_name) {
 	if (animation == p_name) {
 		return;
 	}
+	StringName p_old_name = animation;
 	animation = p_name;
 	animation_version++;
 	if (unlikely(animation_version == 0)) {
 		animation_version = 1;
 	}
 	_node_updated(get_instance_id());
+	if (p_old_name != p_name) {
+		_animation_node_renamed(get_instance_id(), p_old_name, p_name);
+	}
 }
 
 StringName AnimationNodeAnimation::get_animation() const {
