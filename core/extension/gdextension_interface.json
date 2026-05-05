@@ -7950,7 +7950,11 @@
             "description": [
                 "Casts an Object to a different type."
             ],
-            "since": "4.1"
+            "since": "4.1",
+            "deprecated": {
+                "since": "4.7",
+                "message": "Use the `is_class` method on `Object` to check if an object can be cast instead. If true, the previous pointer can be reinterpreted as a pointer to the target type."
+            }
         },
         {
             "name": "object_get_instance_from_id",
@@ -8560,7 +8564,11 @@
             "description": [
                 "Gets a pointer uniquely identifying the given built-in class in the ClassDB."
             ],
-            "since": "4.1"
+            "since": "4.1",
+            "deprecated": {
+                "since": "4.7",
+                "message": "No longer needed. Use the `is_class` method on `Object` instead."
+            }
         },
         {
             "name": "classdb_register_extension_class",
