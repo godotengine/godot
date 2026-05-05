@@ -50,9 +50,9 @@ if env["debug_symbols"] and env["separate_debug_symbols"]:
         prog,
         Action(
             [
-                "objcopy --only-keep-debug \"$TARGET\" \"${TARGET}.debugsymbols\"",
-                "strip --strip-debug --strip-unneeded \"$TARGET\"",
-                "objcopy --add-gnu-debuglink=\"${TARGET}.debugsymbols\" \"$TARGET\"",
+                'objcopy --only-keep-debug "$TARGET" "${TARGET}.debugsymbols"',
+                'strip --strip-debug --strip-unneeded "$TARGET"',
+                'objcopy --add-gnu-debuglink="${TARGET}.debugsymbols" "$TARGET"',
             ],
             "Generating debug symbols for $TARGET",
         ),

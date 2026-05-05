@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
+import sys
 
-import input_builders
+Import("env", "py_builder_env")
 
 # Order matters here. Higher index controller database files write on top of lower index database files.
 controller_databases = [
@@ -11,10 +11,13 @@ controller_databases = [
     "godotcontrollerdb.txt",
 ]
 
-gensource = env.CommandNoCache(
+gensource = py_builder_env.Command(
     "default_controller_mappings.gen.cpp",
     controller_databases,
-    env.Run(input_builders.make_default_controller_mappings),
+    Action(
+        f"{sys.executable} core/input/input_builders.py --method make_default_controller_mappings --target $TARGET --source $SOURCES",
+        "Generating $TARGET",
+    ),
 )
 
 env.add_source_files(env.core_sources, "*.cpp")

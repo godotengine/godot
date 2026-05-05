@@ -11,10 +11,14 @@ import tempfile
 import uuid
 
 # Add parent directory to path so we can import methods
-script_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(script_dir, ".."))
+# script_dir = os.path.dirname(os.path.realpath(__file__))
+# sys.path.append(os.path.join(script_dir, ".."))
 
-import methods  # noqa E402
+sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+
+import methods
+
+# noqa E402
 
 
 def hash(buffer):
