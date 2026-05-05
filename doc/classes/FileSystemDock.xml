@@ -33,11 +33,6 @@
 		</method>
 	</methods>
 	<signals>
-		<signal name="layout_changed">
-			<description>
-				Emitted when the user switches file display mode or split mode.
-			</description>
-		</signal>
 		<signal name="file_removed">
 			<param index="0" name="file" type="String" />
 			<description>
@@ -79,6 +74,11 @@
 			<param index="0" name="files" type="PackedStringArray" />
 			<description>
 				Emitted when the given scenes are being instantiated in the editor.
+			</description>
+		</signal>
+		<signal name="layout_changed">
+			<description>
+				Emitted when the user switches file display mode or split mode.
 			</description>
 		</signal>
 		<signal name="resource_removed">
