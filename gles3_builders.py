@@ -1,8 +1,14 @@
 """Functions used to generate source files during build time"""
 
+import argparse
 import os.path
+import sys
 
-from methods import generated_wrapper, print_error, to_raw_cstring
+# Add parent directory to path so we can import methods
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(script_dir, ".."))
+
+from methods import generated_wrapper, print_error, to_raw_cstring  # noqa E402
 
 
 class GLES3HeaderStruct:
@@ -569,7 +575,33 @@ protected:
 """)
 
 
-def build_gles3_headers(target, source, env):
-    env.NoCache(target)
+def build_gles3_headers(target, source):
     for src in source:
         build_gles3_header(f"{src}.gen.h", str(src))
+
+
+def main():
+    parser = argparse.ArgumentParser(description="GLES3 build tools")
+    parser.add_argument(
+        "--method",
+        required=True,
+        choices=["build_gles3_headers"],
+        help="Builder method to execute",
+    )
+    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+
+    args = parser.parse_args()
+
+    target = args.target
+    source = args.source
+
+    if args.method == "build_gles3_headers":
+        build_gles3_headers(target, source)
+    else:
+        print(f"Unknown method: {args.method}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

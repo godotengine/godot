@@ -14,6 +14,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
 
 from SCons import __version__ as scons_raw_version
+from SCons.Action import Action
 from SCons.Builder import ListEmitter
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
@@ -54,8 +55,6 @@ _helper_module("main.main_builders", "main/main_builders.py")
 _helper_module("misc.utility.color", "misc/utility/color.py")
 
 # Local
-import gles3_builders
-import glsl_builders
 import methods
 import scu_builders
 from misc.utility.color import is_stderr_color, print_error, print_info, print_warning
@@ -1188,25 +1187,6 @@ env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
 
-GLSL_BUILDERS = {
-    "RD_GLSL": env.Builder(
-        action=env.Run(glsl_builders.build_rd_headers),
-        suffix="glsl.gen.h",
-        src_suffix=".glsl",
-    ),
-    "GLSL_HEADER": env.Builder(
-        action=env.Run(glsl_builders.build_raw_headers),
-        suffix="glsl.gen.h",
-        src_suffix=".glsl",
-    ),
-    "GLES3_GLSL": env.Builder(
-        action=env.Run(gles3_builders.build_gles3_headers),
-        suffix="glsl.gen.h",
-        src_suffix=".glsl",
-    ),
-}
-env.Append(BUILDERS=GLSL_BUILDERS)
-
 if env["compiledb"]:
     env.Tool("compilation_db")
     env.NoCache(env.CompilationDatabase())
@@ -1242,13 +1222,44 @@ if "c_compiler_launcher" in env:
 if "cpp_compiler_launcher" in env:
     env["CXX"] = " ".join([env["cpp_compiler_launcher"], env["CXX"]])
 
-# Build subdirs, the build order is dependent on link order.
-Export("env")
 
 # Create a cloned environment where it will add implicit dependencies for the first
 # two items in the Command's action string.
 py_builder_env = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES=2)
 Export("py_builder_env")
+
+GLSL_BUILDERS = {
+    "RD_GLSL": py_builder_env.Builder(
+        action=Action(
+            f"{sys.executable} glsl_builders.py --method build_rd_headers --target $TARGET --source $SOURCE",
+            "Generating $TARGET",
+        ),
+        suffix="glsl.gen.h",
+        src_suffix=".glsl",
+    ),
+    "GLSL_HEADER": py_builder_env.Builder(
+        action=Action(
+            f"{sys.executable} glsl_builders.py --method build_raw_headers --target $TARGET --source $SOURCE",
+            "Generating $TARGET",
+        ),
+        suffix="glsl.gen.h",
+        src_suffix=".glsl",
+    ),
+    "GLES3_GLSL": py_builder_env.Builder(
+        action=Action(
+            f"{sys.executable} gles3_builders.py --method build_gles3_headers --target $TARGET --source $SOURCE",
+            "Generating $TARGET",
+        ),
+        suffix="glsl.gen.h",
+        src_suffix=".glsl",
+    ),
+}
+env.Append(BUILDERS=GLSL_BUILDERS)
+
+# Build subdirs, the build order is dependent on link order.
+Export("env")
+
+
 
 SConscript("core/SCsub")
 SConscript("servers/SCsub")
