@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
+import sys
 
-import default_theme_icons_builders
+Import("env", "py_builder_env")
 
-env.CommandNoCache(
+py_builder_env.Command(
     "#scene/theme/default_theme_icons.gen.h",
     Glob("*.svg"),
-    env.Run(default_theme_icons_builders.make_default_theme_icons_action),
+    Action(
+        f"{sys.executable} scene/theme/icons/default_theme_icons_builders.py --method make_default_theme_icons_action --target $TARGET --source $SOURCES",
+        "Generating $TARGET",
+    ),
 )

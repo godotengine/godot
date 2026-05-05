@@ -1,12 +1,18 @@
 """Functions used to generate source files during build time"""
 
+import argparse
 import os
+import sys
 
-import methods
+# Add parent directory to path so we can import methods
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(script_dir, "..", "..", ".."))
+
+import methods  # noqa E402
 
 
 # See also `editor/icons/editor_icons_builders.py`.
-def make_default_theme_icons_action(target, source, env):
+def make_default_theme_icons_action(target, source):
     icons_names = []
     icons_raw = []
 
@@ -31,3 +37,30 @@ inline constexpr const char *default_theme_icons_names[] = {{
 	{icons_names_str}
 }};
 """)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Default theme icons build tools")
+    parser.add_argument(
+        "--method",
+        required=True,
+        choices=["make_default_theme_icons_action"],
+        help="Builder method to execute",
+    )
+    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+
+    args = parser.parse_args()
+
+    target = args.target
+    source = args.source
+
+    if args.method == "make_default_theme_icons_action":
+        make_default_theme_icons_action(target, source)
+    else:
+        print(f"Unknown method: {args.method}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
