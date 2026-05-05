@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
+import sys
 
-import editor_theme_builders
+Import("env", "py_builder_env")
 
 # Fonts
 flist = Glob("#thirdparty/fonts/*.ttf")
@@ -11,10 +11,13 @@ flist.extend(Glob("#thirdparty/fonts/*.otf"))
 flist.extend(Glob("#thirdparty/fonts/*.woff"))
 flist.extend(Glob("#thirdparty/fonts/*.woff2"))
 flist.sort()
-env.CommandNoCache(
+py_builder_env.Command(
     "#editor/themes/builtin_fonts.gen.h",
     flist,
-    env.Run(editor_theme_builders.make_fonts_header),
+    Action(
+        f"{sys.executable} editor/themes/editor_theme_builders.py --method make_fonts_header --target $TARGET --source $SOURCES",
+        "Generating $TARGET",
+    ),
 )
 
 env.add_source_files(env.editor_sources, "*.cpp")
