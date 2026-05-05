@@ -4358,10 +4358,12 @@ void FileSystemDock::_update_toolbar_buttons() {
 	display_mode_btn->set_visible(general_toolbar_buttons & (1 << 3));
 
 	// File list toolbar: Bit 0 = Display Mode, Bit 1 = Position.
+	// Only relevant (and visible) when the file list is actually shown.
+	const bool file_list_visible = (display_mode == DISPLAY_MODE_TREE_AND_LIST);
 	const int file_list_toolbar_buttons = EDITOR_GET("filesystem/theme/file_list/toolbar_buttons");
-	file_list_display_mode_btn->set_visible(file_list_toolbar_buttons & (1 << 0));
+	file_list_display_mode_btn->set_visible(file_list_visible && (file_list_toolbar_buttons & (1 << 0)));
 
-	const bool show_file_list_position = file_list_toolbar_buttons & (1 << 1);
+	const bool show_file_list_position = file_list_visible && (file_list_toolbar_buttons & (1 << 1));
 	file_list_position_btn->set_visible(show_file_list_position);
 	if (show_file_list_position) {
 		if (file_list_position == FILE_LIST_POSITION_VERTICAL) {
@@ -4446,7 +4448,7 @@ FileSystemDock::FileSystemDock() {
 			create_new_btn = memnew(MenuButton);
 			create_new_btn->set_flat(false);
 			create_new_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
-			create_new_btn->set_theme_type_variation(SceneStringName(FlatMenuButton));
+			create_new_btn->set_theme_type_variation("FlatMenuButton");
 			create_new_btn->set_tooltip_text(TTRC("Create New..."));
 			PopupMenu *add_pm = create_new_btn->get_popup();
 			add_pm->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_generic_rmb_option_selected));
@@ -4465,28 +4467,28 @@ FileSystemDock::FileSystemDock() {
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 			open_folder_btn = memnew(Button);
 			open_folder_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
-			open_folder_btn->set_theme_type_variation(SceneStringName(FlatMenuButton));
+			open_folder_btn->set_theme_type_variation("FlatMenuButton");
 			open_folder_btn->set_tooltip_text(TTRC("Open in File Manager"));
 			primary_toolbar_hbc->add_child(open_folder_btn);
 #endif
 
 			save_all_btn = memnew(Button);
 			save_all_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
-			save_all_btn->set_theme_type_variation(SceneStringName(FlatMenuButton));
+			save_all_btn->set_theme_type_variation("FlatMenuButton");
 			save_all_btn->set_tooltip_text(TTRC("Save All Scenes"));
 			primary_toolbar_hbc->add_child(save_all_btn);
 
 			history_previous_btn = memnew(Button);
 			history_previous_btn->set_disabled(true);
 			history_previous_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
-			history_previous_btn->set_theme_type_variation(SceneStringName(FlatMenuButton));
+			history_previous_btn->set_theme_type_variation("FlatMenuButton");
 			history_previous_btn->set_tooltip_text(TTRC("Go to previous selected folder/file."));
 			primary_toolbar_hbc->add_child(history_previous_btn);
 
 			history_next_btn = memnew(Button);
 			history_next_btn->set_disabled(true);
 			history_next_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
-			history_next_btn->set_theme_type_variation(SceneStringName(FlatMenuButton));
+			history_next_btn->set_theme_type_variation("FlatMenuButton");
 			history_next_btn->set_tooltip_text(TTRC("Go to next selected folder/file."));
 			primary_toolbar_hbc->add_child(history_next_btn);
 
@@ -4500,7 +4502,7 @@ FileSystemDock::FileSystemDock() {
 			display_mode_btn = memnew(Button);
 			display_mode_btn->connect(SceneStringName(toggled), callable_mp(this, &FileSystemDock::_change_display_mode));
 			display_mode_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
-			display_mode_btn->set_theme_type_variation(SceneStringName(FlatMenuButton));
+			display_mode_btn->set_theme_type_variation("FlatMenuButton");
 			display_mode_btn->set_toggle_mode(true);
 			display_mode_btn->set_tooltip_text(TTRC("Toggle Display Mode"));
 			primary_toolbar_hbc->add_child(display_mode_btn);
@@ -4522,7 +4524,7 @@ FileSystemDock::FileSystemDock() {
 			file_list_sort_mb = memnew(MenuButton);
 			file_list_sort_mb->set_accessibility_name(TTRC("Sort Files"));
 			file_list_sort_mb->set_flat(false);
-			file_list_sort_mb->set_theme_type_variation(SceneStringName(FlatMenuButton));
+			file_list_sort_mb->set_theme_type_variation("FlatMenuButton");
 			file_list_sort_mb->set_tooltip_text(TTRC("Sort Files"));
 			secondary_toolbar_hbc->add_child(file_list_sort_mb);
 
@@ -4539,14 +4541,14 @@ FileSystemDock::FileSystemDock() {
 			file_list_display_mode_btn = memnew(Button);
 			file_list_display_mode_btn->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_toggle_file_display));
 			file_list_display_mode_btn->set_accessibility_name(TTRC("File List Display Mode"));
-			file_list_display_mode_btn->set_theme_type_variation(SceneStringName(FlatMenuButton));
+			file_list_display_mode_btn->set_theme_type_variation("FlatMenuButton");
 			secondary_toolbar_hbc->add_child(file_list_display_mode_btn);
 
 			file_list_position_btn = memnew(Button);
 			file_list_position_btn->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_file_list_position));
 			file_list_position_btn->set_accessibility_name(TTRC("File List Position"));
 			file_list_position_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
-			file_list_position_btn->set_theme_type_variation(SceneStringName(FlatMenuButton));
+			file_list_position_btn->set_theme_type_variation("FlatMenuButton");
 			secondary_toolbar_hbc->add_child(file_list_position_btn);
 		}
 
