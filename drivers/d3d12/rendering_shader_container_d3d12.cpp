@@ -1013,6 +1013,10 @@ RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatD3D12::
 	return SHADER_SPIRV_VERSION_1_5;
 }
 
-RenderingShaderContainerFormatD3D12::RenderingShaderContainerFormatD3D12() {}
+RenderingShaderContainerFormatD3D12::RenderingShaderContainerFormatD3D12() {
+	glsl_type_singleton_init_or_ref();
+}
 
-RenderingShaderContainerFormatD3D12::~RenderingShaderContainerFormatD3D12() {}
+RenderingShaderContainerFormatD3D12::~RenderingShaderContainerFormatD3D12() {
+	glsl_type_singleton_decref();
+}
