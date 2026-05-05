@@ -249,6 +249,7 @@ private:
 	String symbol_tooltip_word;
 	Timer *symbol_tooltip_timer = nullptr;
 	void _on_symbol_tooltip_timer_timeout();
+	String last_symbol_tooltip_word;
 
 	/* Visual */
 	struct ThemeCache {
@@ -368,6 +369,8 @@ public:
 
 	void indent_lines();
 	void unindent_lines();
+
+	bool can_show_symbol_tooltip = true;
 
 	void convert_indent(int p_from_line = -1, int p_to_line = -1);
 
