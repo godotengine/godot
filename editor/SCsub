@@ -6,7 +6,7 @@ import sys
 
 import editor_builders
 
-Import("env")
+Import("env", "py_builder_env")
 
 env.editor_sources = []
 
@@ -19,7 +19,7 @@ if env.editor_build:
     )
 
     # Register exporters
-    gen_exporters = env.CommandNoCache(
+    gen_exporters = py_builder_env.Command(
         "export/register_exporters.gen.cpp",
         env.Value(env["PLATFORM_EXPORTERS"]),
         Action(
@@ -48,10 +48,13 @@ if env.editor_build:
             docs += Glob(d + "/*.xml")  # Custom.
 
     docs = sorted(docs)
-    env.CommandNoCache(
+    py_builder_env.Command(
         "#editor/doc/doc_data_compressed.gen.h",
         docs,
-        f"{sys.executable} editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES",
+        Action(
+            f"{sys.executable} editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES",
+            "Generating $TARGET",
+        ),
     )
 
     # Editor interface and class reference translations incur a significant size
@@ -68,10 +71,13 @@ if env.editor_build:
     }
     for target_cpp, sources in translation_targets.items():
         target_h = os.path.splitext(target_cpp)[0] + ".h"
-        env.CommandNoCache(
+        py_builder_env.Command(
             [target_h, target_cpp],
             sources,
-            f"{sys.executable} editor/editor_builders.py --method make_translations --target $TARGETS --source $SOURCES",
+            Action(
+                f"{sys.executable} editor/editor_builders.py --method make_translations --target $TARGETS --source $SOURCES",
+                "Generating $TARGETS",
+            ),
         )
 
     env.add_source_files(env.editor_sources, "*.cpp")

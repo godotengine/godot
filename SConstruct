@@ -1245,6 +1245,11 @@ if "cpp_compiler_launcher" in env:
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
+# Create a cloned environment where it will add implicit dependencies for the first
+# two items in the Command's action string.
+py_builder_env = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES=2)
+Export("py_builder_env")
+
 SConscript("core/SCsub")
 SConscript("servers/SCsub")
 SConscript("scene/SCsub")
