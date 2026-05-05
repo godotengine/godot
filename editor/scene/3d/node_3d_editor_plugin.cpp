@@ -8774,7 +8774,7 @@ void Node3DEditor::update_grid() {
 	bool changed_y_signature = ((grid_camera_last_update_position.y >= 0.0f && camera_position.y <= 0.0f) || (grid_camera_last_update_position.y <= 0.0f && camera_position.y >= 0.0f));
 	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f || changed_y_signature) {
 		_finish_grid();
-		if (camera_position.y >= 0.0f || grid_bottom_enabled) {
+		if (should_draw_bottom_grid(camera_position.y)) {
 			_init_grid();
 			grid_init_draw = true;
 		}
@@ -8782,10 +8782,10 @@ void Node3DEditor::update_grid() {
 	}
 }
 
-bool Node3DEditor::should_draw_bottom_grid(float camera_y) const {
-	if ((camera_y >= 0.0f) || grid_bottom_enabled) {
+bool Node3DEditor::should_draw_bottom_grid(float p_camera_y) const {
+	if ((p_camera_y >= 0.0f) || grid_bottom_enabled) {
 		return true;
-	};
+	}
 
 	return false;
 }
