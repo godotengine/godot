@@ -315,7 +315,7 @@ Ref<ArrayMesh> SpringBoneCollision3DGizmoPlugin::get_collision_mesh(SpringBoneCo
 
 	SpringBoneCollisionCapsule3D *capsule = Object::cast_to<SpringBoneCollisionCapsule3D>(p_collision);
 	if (capsule) {
-		draw_capsule(surface_tool, capsule->get_radius(), capsule->get_height(), capsule->is_inside() ? inside_collision_color : collision_color);
+		draw_capsule(surface_tool, capsule->get_radius(), capsule->get_height(), capsule->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_INSIDE ? inside_collision_color : collision_color);
 		return surface_tool->commit();
 	}
 

@@ -9,8 +9,8 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="inside" type="bool" setter="set_inside" getter="is_inside" default="false">
-			If [code]true[/code], the collision acts to trap the joint within the collision.
+		<member name="collide_mode" type="int" enum="SpringBoneCollision3D.CollideMode" setter="set_collide_mode" getter="get_collide_mode" default="SpringBoneCollision3D.COLLIDE_MODE_JOINT">
+			Sets whether the collides or traps the joint spheres, or interacts with the tapered cones between them.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.1">
 			The sphere's radius.

@@ -33,4 +33,15 @@
 			The offset of the rotation from [Skeleton3D]'s [member bone] pose rotation.
 		</member>
 	</members>
+	<constants>
+		<constant name="COLLIDE_MODE_JOINT" value="0" enum="CollideMode">
+			Collision is only with spheres around the joints.
+		</constant>
+		<constant name="COLLIDE_MODE_INSIDE" value="1" enum="CollideMode">
+			Collision acts to trap the spheres around the joints within the collision.
+		</constant>
+		<constant name="COLLIDE_MODE_CHAIN" value="2" enum="CollideMode">
+			Collision is against the joint spheres and the tapered cones between them.
+		</constant>
+	</constants>
 </class>
