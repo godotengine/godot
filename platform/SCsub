@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
+import sys
 from glob import glob
 
 import platform_builders
 
-Import("env")
+Import("env", "py_builder_env")
 
 env.platform_sources = []
 
@@ -13,11 +14,18 @@ env.platform_sources = []
 # Generate export icons
 for platform in env["PLATFORM_EXPORTERS"]:
     for path in glob(f"{platform}/export/*.svg"):
-        env.CommandNoCache(path.replace(".svg", "_svg.gen.h"), path, env.Run(platform_builders.export_icon_builder))
+        py_builder_env.Command(
+            path.replace(".svg", "_svg.gen.h"),
+            path,
+            Action(
+                f"{sys.executable} platform/platform_builders.py --method export_icon_builder --target $TARGET --source $SOURCE",
+                "Generating $TARGET",
+            ),
+        )
 
 
 # Register platform-exclusive APIs
-register_platform_apis = env.CommandNoCache(
+register_platform_apis = env.Command(
     "register_platform_apis.gen.cpp",
     env.Value(env.platform_apis),
     env.Run(platform_builders.register_platform_apis_builder),

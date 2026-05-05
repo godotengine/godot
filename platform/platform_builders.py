@@ -1,11 +1,18 @@
 """Functions used to generate source files during build time"""
 
+import argparse
+import os
+import sys
 from pathlib import Path
 
-import methods
+# Add parent directory to path so we can import methods
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(script_dir, ".."))
+
+import methods  # noqa E402
 
 
-def export_icon_builder(target, source, env):
+def export_icon_builder(target, source):
     src_path = Path(str(source[0]))
     src_name = src_path.stem
     platform = src_path.parent.parent.stem
@@ -42,3 +49,30 @@ void unregister_platform_apis() {{
 }}
 """
         )
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Platform build tools")
+    parser.add_argument(
+        "--method",
+        required=True,
+        choices=["export_icon_builder"],
+        help="Builder method to execute",
+    )
+    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+
+    args = parser.parse_args()
+
+    target = args.target
+    source = args.source
+
+    if args.method == "export_icon_builder":
+        export_icon_builder(target, source)
+    else:
+        print(f"Unknown method: {args.method}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
