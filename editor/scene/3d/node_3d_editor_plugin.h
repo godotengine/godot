@@ -1012,6 +1012,8 @@ public:
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
 	real_t get_scale_snap() const;
+	bool is_grid_bottom_enabled() const { return grid_bottom_enabled; }
+	void set_grid_bottom_enabled(bool is_enabled) { grid_bottom_enabled = is_enabled; }
 
 	bool is_trackball_enabled() const { return trackball_enabled; }
 
@@ -1023,6 +1025,7 @@ public:
 	Ref<ArrayMesh> get_scale_plane_gizmo(int idx) const { return scale_plane_gizmo[idx]; }
 	Ref<ArrayMesh> get_trackball_sphere_gizmo() const { return trackball_sphere_gizmo; }
 
+	bool should_draw_bottom_grid(float camera_y) const;
 	void update_grid();
 	void update_transform_gizmo();
 	void update_all_gizmos(Node *p_node = nullptr);

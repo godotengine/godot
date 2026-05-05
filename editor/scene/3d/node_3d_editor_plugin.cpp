@@ -8772,15 +8772,22 @@ void Node3DEditor::update_grid() {
 	const Vector3 camera_position = get_editor_viewport(0)->camera->get_position();
 
 	bool changed_y_signature = ((grid_camera_last_update_position.y >= 0.0f && camera_position.y <= 0.0f) || (grid_camera_last_update_position.y <= 0.0f && camera_position.y >= 0.0f));
-	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f ||  changed_y_signature)  {
+	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f || changed_y_signature) {
 		_finish_grid();
 		if (camera_position.y >= 0.0f || grid_bottom_enabled) {
 			_init_grid();
 			grid_init_draw = true;
-
 		}
 		grid_camera_last_update_position = camera_position;
 	}
+}
+
+bool Node3DEditor::should_draw_bottom_grid(float camera_y) const {
+	if ((camera_y >= 0.0f) || grid_bottom_enabled) {
+		return true;
+	};
+
+	return false;
 }
 
 void Node3DEditor::_selection_changed() {

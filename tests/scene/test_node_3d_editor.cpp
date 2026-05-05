@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_node_3d_editor_plugin.cpp                                        */
+/*  test_node_3d_editor.cpp                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,13 +30,32 @@
 
 #pragma once
 
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "tests/test_macros.h"
+TEST_FORCE_LINK(test_node_3d_editor)
 
-namespace TestNode3dEditorPlugin {
+#include "scene/main/window.h"
 
-TEST_CASE("[Node3dEditorPlugin] Bottom grid should not be drawn if the bottom grid is deactivated") {
-	String hello = "Hello World!";
-	CHECK(hello == "Hello World!");
+namespace TestNode3dEditor {
+
+TEST_CASE("[Node3dEditor][Bottom grid]") {
+	SUBCASE("[Bottom grid] Bottom grid should not be drawn when camera is under y=0 and the bottom grid is deactivated") {
+		Node3DEditor node_3d_editor;
+		node_3d_editor.set_grid_bottom_enabled(false);
+		CHECK(node_3d_editor.should_draw_bottom_grid(-1.0f) == false);
+	}
+
+	SUBCASE("[Bottom grid] Bottom grid should be drawn when camera is over y=0 and the bottom grid is deactivated") {
+		Node3DEditor node_3d_editor;
+		node_3d_editor.set_grid_bottom_enabled(false);
+		CHECK(node_3d_editor.should_draw_bottom_grid(1.0f) == true);
+	}
+
+	SUBCASE("[Bottom grid] Bottom grid should be drawn when camera is under y=0 and the bottom grid is activated") {
+		Node3DEditor node_3d_editor;
+		node_3d_editor.set_grid_bottom_enabled(true);
+		CHECK(node_3d_editor.should_draw_bottom_grid(-1.0f) == true);
+	}
 }
 
-} //namespace TestNode3dEditorPlugin
+} // namespace TestNode3dEditor
