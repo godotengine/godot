@@ -522,7 +522,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 
 			case DISPLAY_MODE_TREE_AND_LIST: {
 				file_list_position_btn->show();
-				
+
 				const bool is_vertical = file_list_position == FILE_LIST_POSITION_VERTICAL;
 				split_box_sc->set_vertical(is_vertical);
 
