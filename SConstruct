@@ -1260,7 +1260,6 @@ env.Append(BUILDERS=GLSL_BUILDERS)
 Export("env")
 
 
-
 SConscript("core/SCsub")
 SConscript("servers/SCsub")
 SConscript("scene/SCsub")
