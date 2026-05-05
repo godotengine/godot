@@ -155,6 +155,8 @@
 /modules/theora/**/SCsub                      @godotengine/audio @godotengine/buildsystem
 /modules/theora/doc_classes/                  @godotengine/audio @godotengine/documentation
 /modules/theora/editor/                       @godotengine/audio @godotengine/editor
+/modules/webm/                                @godotengine/audio
+/modules/webm/doc_classes/                    @godotengine/audio @godotengine/documentation
 /modules/vorbis/                              @godotengine/audio
 /modules/vorbis/**/*.py                       @godotengine/audio @godotengine/buildsystem
 /modules/vorbis/**/SCsub                      @godotengine/audio @godotengine/buildsystem

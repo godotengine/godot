@@ -1,0 +1,11 @@
+Name: nalloc
+URL: https://github.com/catenacyber/nallocfuzz
+Version: dc351a94bbded5ede5b7550d6d08e78e0cc6dcef
+License: MIT
+License File: LICENSE
+
+Description:
+Nalloc is a tool to inject allocation failures while fuzzing.
+
+Local Modifications:
+None

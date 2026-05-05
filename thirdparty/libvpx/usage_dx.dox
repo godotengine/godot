@@ -1,0 +1,64 @@
+/*! \page usage_decode Decoding
+
+    The vpx_codec_decode() function is at the core of the decode loop. It
+    processes packets of compressed data passed by the application, producing
+    decoded images. The decoder expects packets to comprise exactly one image
+    frame of data. Packets \ref MUST be passed in decode order. If the
+    application wishes to associate some data with the frame, the
+    <code>user_priv</code> member may be set. The <code>deadline</code>
+    parameter controls the amount of time in microseconds the decoder should
+    spend working on the frame. This is typically used to support adaptive
+    \ref usage_postproc based on the amount of free CPU time. For more
+    information on the <code>deadline</code> parameter, see \ref usage_deadline.
+
+    \if samples
+    \ref samples
+    \endif
+
+
+    \section usage_cb Callback Based Decoding
+    There are two methods for the application to access decoded frame data. Some
+    codecs support asynchronous (callback-based) decoding \ref usage_features
+    that allow the application to register a callback to be invoked by the
+    decoder when decoded data becomes available. Decoders are not required to
+    support this feature, however. Like all \ref usage_features, support can be
+    determined by calling vpx_codec_get_caps(). Callbacks are available in both
+    frame-based and slice-based variants. Frame based callbacks conform to the
+    signature of #vpx_codec_put_frame_cb_fn_t and are invoked once the entire
+    frame has been decoded. Slice based callbacks conform to the signature of
+    #vpx_codec_put_slice_cb_fn_t and are invoked after a subsection of the frame
+    is decoded. For example, a slice callback could be issued for each
+    macroblock row. However, the number and size of slices to return is
+    implementation specific. Also, the image data passed in a slice callback is
+    not necessarily in the same memory segment as the data will be when it is
+    assembled into a full frame. For this reason, the application \ref MUST
+    examine the rectangles that describe what data is valid to access and what
+    data has been updated in this call. For all their additional complexity,
+    slice based decoding callbacks provide substantial speed gains to the
+    overall application in some cases, due to improved cache behavior.
+
+
+    \section usage_frame_iter Frame Iterator Based Decoding
+    If the codec does not support callback based decoding, or the application
+    chooses not to make use of that feature, decoded frames are made available
+    through the vpx_codec_get_frame() iterator. The application initializes the
+    iterator storage (of type #vpx_codec_iter_t) to NULL, then calls
+    vpx_codec_get_frame repeatedly until it returns NULL, indicating that all
+    images have been returned. This process may result in zero, one, or many
+    frames that are ready for display, depending on the codec.
+
+
+    \section usage_postproc Postprocessing
+    Postprocessing is a process that is applied after a frame is decoded to
+    enhance the image's appearance by removing artifacts introduced in the
+    compression process. It is not required to properly decode the frame, and
+    is generally done only when there is enough spare CPU time to execute
+    the required filters. Codecs may support a number of different
+    postprocessing filters, and the available filters may differ from platform
+    to platform. Embedded devices often do not have enough CPU to implement
+    postprocessing in software. The filter selection is generally handled
+    automatically by the codec, depending on the amount of time remaining before
+    hitting the user-specified \ref usage_deadline after decoding the frame.
+
+
+*/
