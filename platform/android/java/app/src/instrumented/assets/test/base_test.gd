@@ -9,7 +9,7 @@ var _test_assert_failures := 0
 
 func __exec_test(test_func: Callable):
 	_test_started += 1
-	var ret = test_func.call()
+	var ret = await test_func.call()
 	if ret == true:
 		_test_completed += 1
 

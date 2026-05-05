@@ -785,6 +785,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
+			for (const Node *node : editor_selection->get_top_selected_node_list()) {
+				if (node == edited_scene) {
+					EditorNode::get_singleton()->show_warning(TTR("This operation can't be done on the tree root."));
+					return;
+				}
+			}
+
 			paste_node_as_replacement();
 		} break;
 		case TOOL_CHANGE_TYPE: {

@@ -604,6 +604,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	version = memnew(Label);
 	version->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	version->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	version->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	contents->add_child(version);
 
@@ -611,6 +612,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	version_list->set_fit_to_longest_item(false);
 	version_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	version_list->set_tooltip_text(TTRC("Download other versions."));
+	version_list->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	version_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	version_list->hide(); // Will be shown if multiple versions are available.
 	contents->add_child(version_list);
@@ -1441,10 +1443,9 @@ void EditorAssetLibrary::_search(int p_page) {
 
 	args += "&require_release=true";
 
-	Dictionary version = Engine::get_singleton()->get_version_info();
-	args += "&compatibility=" + (String)version["major"] + (String)version["minor"];
-	if ((int)version["patch"] > 0) {
-		args += (String)version["patch"];
+	args += "&compatibility=" + itos(GODOT_VERSION_MAJOR) + "." + itos(GODOT_VERSION_MINOR);
+	if (GODOT_VERSION_PATCH > 0) {
+		args += "." + itos(GODOT_VERSION_PATCH);
 	}
 
 	args += String() + "&sort=" + sort_key[sort->get_selected()];
@@ -1885,6 +1886,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				return;
 			}
 
+			LocalVector<int> engine_version = { GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR, GODOT_VERSION_PATCH };
 			Array arr = dt;
 			// Iterate backwards, so the newer releases are added first.
 			for (int i = arr.size() - 1; i >= 0; i--) {
@@ -1893,7 +1895,47 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				ERR_FAIL_COND(!d.has("download_url"));
 				ERR_FAIL_COND(!d.has("version"));
 				ERR_FAIL_COND(!d.has("stable"));
+				ERR_FAIL_COND(!d.has("min_godot_version"));
+				ERR_FAIL_COND(!d.has("max_godot_version"));
 				ERR_FAIL_COND(!d.has("changes_bbcode"));
+
+				if (d["min_godot_version"].get_type() != Variant::NIL) {
+					Vector<String> compat_version = String(d["min_godot_version"]).split(".", false);
+					compat_version.resize_initialized(3);
+
+					bool is_compat = true;
+					for (int j = 0; j < compat_version.size(); j++) {
+						const int number = compat_version[j].to_int();
+						if (number != engine_version[j]) {
+							if (number > engine_version[j]) {
+								is_compat = false;
+							}
+							break;
+						}
+					}
+					if (!is_compat) {
+						continue; // This release is for an older version of Godot.
+					}
+				}
+
+				if (d["max_godot_version"].get_type() != Variant::NIL) {
+					Vector<String> compat_version = String(d["max_godot_version"]).split(".", false);
+					compat_version.resize_initialized(3);
+
+					bool is_compat = true;
+					for (int j = 0; j < compat_version.size(); j++) {
+						const int number = compat_version[j].to_int();
+						if (number != engine_version[j]) {
+							if (number < engine_version[j]) {
+								is_compat = false;
+							}
+							break;
+						}
+					}
+					if (!is_compat) {
+						continue; // This release is for a newer version of Godot.
+					}
+				}
 
 				String version = d["version"];
 				if (!d["stable"]) {
