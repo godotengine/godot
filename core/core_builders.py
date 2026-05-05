@@ -1,9 +1,16 @@
 """Functions used to generate source files during build time"""
 
+import argparse
+import os
+import sys
 from collections import OrderedDict
 from io import TextIOWrapper
 
-import methods
+# Add parent directory to path so we can import methods
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(script_dir, ".."))
+
+import methods  # noqa E402
 
 
 # Generate disabled classes
@@ -46,8 +53,12 @@ const unsigned long long GODOT_VERSION_TIMESTAMP = {git_timestamp};
         )
 
 
-def encryption_key_builder(target, source, env):
-    src = source[0].read() or "0" * 64
+def encryption_key_builder(target, source):
+    # source[0] is the encryption key, or None
+    if source[0] == "None":
+        src = "0" * 64
+    else:
+        src = source[0]
     try:
         buffer = bytes.fromhex(src)
         if len(buffer) != 32:
@@ -71,15 +82,15 @@ uint8_t script_encryption_key[32] = {{
         )
 
 
-def make_certs_header(target, source, env):
+def make_certs_header(target, source):
     buffer = methods.get_buffer(str(source[0]))
     decomp_size = len(buffer)
     buffer = methods.compress_buffer(buffer)
 
     with methods.generated_wrapper(str(target[0])) as file:
         # System certs path. Editor will use them if defined. (for package maintainers)
-        file.write('#define _SYSTEM_CERTS_PATH "{}"\n'.format(source[2].read() or ""))
-        if source[1].read():
+        file.write('#define _SYSTEM_CERTS_PATH "{}"\n'.format(source[2] or ""))
+        if source[1] == "True":
             # Defined here and not in env so changing it does not trigger a full rebuild.
             file.write(f"""\
 #define BUILTIN_CERTS_ENABLED
@@ -92,7 +103,7 @@ inline constexpr unsigned char _certs_compressed[] = {{
 """)
 
 
-def make_authors_header(target, source, env):
+def make_authors_header(target, source):
     SECTIONS = {
         "Project Founders": "AUTHORS_FOUNDERS",
         "Lead Developer": "AUTHORS_LEAD_DEVELOPERS",
@@ -123,7 +134,7 @@ def make_authors_header(target, source, env):
             close_section()
 
 
-def make_donors_header(target, source, env):
+def make_donors_header(target, source):
     SECTIONS = {
         "Patrons": "DONORS_PATRONS",
         "Platinum sponsors": "DONORS_SPONSORS_PLATINUM",
@@ -289,3 +300,36 @@ struct ComponentCopyright {{
                     to_raw += [line]
             file.write(f"{methods.to_raw_cstring(to_raw)},\n\n")
         file.write("};\n\n")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Core build tools")
+    parser.add_argument(
+        "--method",
+        required=True,
+        choices=["make_authors_header", "make_donors_header", "encryption_key_builder", "make_certs_header"],
+        help="Builder method to execute",
+    )
+    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+
+    args = parser.parse_args()
+
+    target = args.target
+    source = args.source
+
+    if args.method == "make_authors_header":
+        make_authors_header(target, source)
+    elif args.method == "make_donors_header":
+        make_donors_header(target, source)
+    elif args.method == "encryption_key_builder":
+        encryption_key_builder(target, source)
+    elif args.method == "make_certs_header":
+        make_certs_header(target, source)
+    else:
+        print(f"Unknown method: {args.method}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

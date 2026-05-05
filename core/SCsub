@@ -2,12 +2,13 @@
 from misc.utility.scons_hints import *
 
 import os
+import sys
 
 import core_builders
 
 import methods
 
-Import("env")
+Import("env", "py_builder_env")
 
 env.core_sources = []
 
@@ -193,25 +194,46 @@ if encryption_key:
         "\n*** IMPORTANT: Compiling Godot with custom `SCRIPT_AES256_ENCRYPTION_KEY` set as environment variable."
         "\n*** Make sure to use templates compiled with this key when exporting a project with encryption.\n"
     )
-gen_encrypt = env.CommandNoCache(
+gen_encrypt = py_builder_env.Command(
     "script_encryption_key.gen.cpp",
     env.Value(encryption_key),
-    env.Run(core_builders.encryption_key_builder),
+    Action(
+        f"{sys.executable} core/core_builders.py --method encryption_key_builder --target $TARGET --source {encryption_key}",
+        "Generating $TARGET",
+    ),
 )
 env.add_source_files(env.core_sources, gen_encrypt)
 
 # Certificates
-env.CommandNoCache(
+py_builder_env.Command(
     "#core/io/certs_compressed.gen.h",
     ["#thirdparty/certs/ca-bundle.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
-    env.Run(core_builders.make_certs_header),
+    Action(
+        sys.executable
+        + ' core/core_builders.py --method make_certs_header --target $TARGET --source ${SOURCES[0]} ${builtin_certs} "${system_certs_path}"',
+        "Generating $TARGET",
+    ),
 )
 
 # Authors
-env.CommandNoCache("#core/authors.gen.h", "#AUTHORS.md", env.Run(core_builders.make_authors_header))
+py_builder_env.Command(
+    "#core/authors.gen.h",
+    "#AUTHORS.md",
+    Action(
+        f"{sys.executable} core/core_builders.py --method make_authors_header --target $TARGET --source $SOURCE",
+        "Generating $TARGET",
+    ),
+)
 
 # Donors
-env.CommandNoCache("#core/donors.gen.h", "#DONORS.md", env.Run(core_builders.make_donors_header))
+py_builder_env.Command(
+    "#core/donors.gen.h",
+    "#DONORS.md",
+    Action(
+        f"{sys.executable} core/core_builders.py --method make_donors_header --target $TARGET --source $SOURCE",
+        "Generating $TARGET",
+    ),
+)
 
 # License
 env.CommandNoCache(
