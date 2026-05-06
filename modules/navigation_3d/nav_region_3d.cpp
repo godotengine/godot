@@ -226,7 +226,7 @@ uint32_t NavRegion3D::get_area_navigation_layers(uint16_t p_area_id) const {
 }
 
 void NavRegion3D::set_area_navigation_layers_at_index(uint16_t p_area_index, uint32_t layers) {
-	if (!navmesh.is_valid() || navmesh->get_area_navigation_layers(p_area_index) == layers) {
+	if (!navmesh.is_valid() || navmesh->get_area_navigation_layers_at_index(p_area_index) == layers) {
 		return;
 	}
 	navmesh->set_area_navigation_layers_at_index(p_area_index, layers);

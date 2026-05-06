@@ -482,11 +482,8 @@ bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 		if (which < 0 || which >= navigation_mesh->get_area_count()) {
 			return false;
 		}
-		Vector<int> area_ids = NavigationServer3D::get_singleton()->region_get_area_ids(region);
-		if (which < area_ids.size()) {
-			r_ret = (int)area_ids[which];
-			return true;
-		}
+		r_ret = (int)navigation_mesh->get_area_ids()[which];
+		return true;
 	}
 	return false;
 }
