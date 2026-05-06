@@ -537,6 +537,14 @@ public:
 	void duplicate_selection();
 	void duplicate_lines();
 
+#ifdef DEBUG_ENABLED
+public:
+	void _test_set_code_completion_rect(const Rect2i &p_rect) { code_completion_rect = p_rect; }
+	void _test_set_code_completion_active(bool p_active) { code_completion_active = p_active; }
+	bool _test_is_code_completion_active() { return code_completion_active; }
+	void _test_set_local_mouse_position(Vector2 p_position) { mouse_pos = p_position; }
+#endif
+
 	CodeEdit();
 	~CodeEdit();
 };
