@@ -418,17 +418,15 @@ Array NavigationMesh::_get_polygons_meta() const {
 	return ret;
 }
 
-uint16_t NavigationMesh::get_area_id(String p_bake_id) const {
+int NavigationMesh::get_area_index(String p_bake_id) const {
 	RWLockRead read_lock(rwlock);
 
-	// print_line("looking for bake id: ", p_bake_id);
 	for (int i = 0; i < area_bake_ids.size(); i++) {
-		// print_line("checking bake id: ", area_bake_ids[i]);
 		if (area_bake_ids[i] == p_bake_id) {
-			return area_ids[i];
+			return i;
 		}
 	}
-	return 0;
+	return -1;
 }
 
 uint16_t NavigationMesh::get_area_count() const {

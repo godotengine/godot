@@ -771,9 +771,9 @@ TEST_SUITE("[Navigation3D]") {
 		CHECK_EQ(area_navlayers.size(), 3);
 		CHECK_EQ(area_indices.size(), 3);
 		CHECK_EQ(navigation_mesh->get_area_bake_ids(), Array({ "box", "cylinder", "poly" }));
-		CHECK_EQ(navigation_mesh->get_area_id("box"), 1);
-		CHECK_EQ(navigation_mesh->get_area_id("cylinder"), 2);
-		CHECK_EQ(navigation_mesh->get_area_id("poly"), 3);
+		CHECK_EQ(navigation_mesh->get_area_index("box"), 0);
+		CHECK_EQ(navigation_mesh->get_area_index("cylinder"), 1);
+		CHECK_EQ(navigation_mesh->get_area_index("poly"), 2);
 		CHECK_EQ(navigation_server->region_get_area_ids(region), Vector<int>({ 1, 2, 3 }));
 
 		CHECK_EQ(navigation_mesh->get_area_navigation_layers(1), 2);

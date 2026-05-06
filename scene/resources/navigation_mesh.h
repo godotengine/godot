@@ -227,7 +227,7 @@ public:
 	void clear_polygons();
 	void set_polygons(const Vector<Vector<int>> &p_polygons);
 	Vector<Vector<int>> get_polygons() const;
-	uint16_t get_area_id(String p_bake_id) const;
+	int get_area_index(String p_bake_id) const;
 	Vector<uint16_t> get_area_ids() const;
 	Array get_area_bake_ids() const;
 	uint16_t get_area_count() const;

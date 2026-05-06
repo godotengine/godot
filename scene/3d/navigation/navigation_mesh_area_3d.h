@@ -44,7 +44,7 @@ protected:
 	bool enabled = true;
 	uint32_t navigation_layers = 1;
 	int bake_priority = 0;
-	String bake_id; // Baked into NavigationMesh for runtime updates, see NavigationRegion3D::get_area_id.
+	String bake_id; // Baked into NavigationMesh for runtime updates, see NavigationRegion3D::get_area_index.
 	AABB bounds;
 	bool bounds_dirty = true;
 

@@ -137,31 +137,23 @@ bool NavigationRegion3D::get_navigation_layer_value(int p_layer_number) const {
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
-uint32_t NavigationRegion3D::get_area_id(String p_bake_id) const {
+int NavigationRegion3D::get_area_index(String p_bake_id) const {
 	ERR_FAIL_COND_V_MSG(!navigation_mesh.is_valid(), 0, "Navigation mesh must be set.");
 
-	return navigation_mesh->get_area_id(p_bake_id);
+	return navigation_mesh->get_area_index(p_bake_id);
 }
 
-bool NavigationRegion3D::_has_area(uint16_t p_area) const {
-	const int area_count = navigation_mesh->get_area_count();
-	ERR_FAIL_COND_V_MSG(p_area >= area_count, false, vformat("Unknown navigation area: '%d'.", int(p_area)));
-
-	return true;
-}
-
-void NavigationRegion3D::set_area_navigation_layers(uint16_t p_area_id, uint32_t p_navigation_layers) {
+void NavigationRegion3D::set_area_navigation_layers(uint16_t p_area_index, uint32_t p_navigation_layers) {
 	ERR_FAIL_COND_MSG(!navigation_mesh.is_valid(), "Navigation mesh must be set.");
-	if (!_has_area(p_area_id)) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(p_area_index >= NavigationServer3D::get_singleton()->region_get_area_count(region), "Invalid navigation area index.");
 
-	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area_id);
+
+	uint32_t _navigation_layers = NavigationServer3D::get_singleton()->region_get_area_navigation_layers_at_index(region, p_area_index);
 	if (_navigation_layers == p_navigation_layers) {
 		return;
 	}
 
-	NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, p_area_id, p_navigation_layers);
+	NavigationServer3D::get_singleton()->region_set_area_navigation_layers_at_index(region, p_area_index, p_navigation_layers);
 
 #ifdef DEBUG_ENABLED
 	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
@@ -173,24 +165,19 @@ void NavigationRegion3D::set_area_navigation_layers(uint16_t p_area_id, uint32_t
 	update_gizmos();
 }
 
-uint32_t NavigationRegion3D::get_area_navigation_layers(uint16_t p_area) const {
+uint32_t NavigationRegion3D::get_area_navigation_layers(uint16_t p_area_index) const {
 	ERR_FAIL_COND_V_MSG(!navigation_mesh.is_valid(), 0, "Navigation mesh must be set.");
-	if (!_has_area(p_area)) {
-		return 0;
-	}
-
-	return navigation_mesh->get_area_navigation_layers(p_area);
+	ERR_FAIL_COND_V_MSG(p_area_index >= NavigationServer3D::get_singleton()->region_get_area_count(region), 0, "get_area_navigation_layers: Invalid navigation area index.");
+	return NavigationServer3D::get_singleton()->region_get_area_navigation_layers_at_index(region, p_area_index);
 }
 
-void NavigationRegion3D::set_area_navigation_layer_value(uint16_t p_area_id, int p_layer_number, bool p_value) {
+void NavigationRegion3D::set_area_navigation_layer_value(uint16_t p_area_index, int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(!navigation_mesh.is_valid(), "Navigation mesh must be set.");
-	if (!_has_area(p_area_id)) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(p_area_index >= NavigationServer3D::get_singleton()->region_get_area_count(region), "Invalid navigation area index.");
 
-	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area_id);
+	uint32_t _navigation_layers = NavigationServer3D::get_singleton()->region_get_area_navigation_layers_at_index(region, p_area_index);
 
 	if (p_value) {
 		_navigation_layers |= 1 << (p_layer_number - 1);
@@ -198,7 +185,7 @@ void NavigationRegion3D::set_area_navigation_layer_value(uint16_t p_area_id, int
 		_navigation_layers &= ~(1 << (p_layer_number - 1));
 	}
 
-	NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, p_area_id, _navigation_layers);
+	NavigationServer3D::get_singleton()->region_set_area_navigation_layers_at_index(region, p_area_index, _navigation_layers);
 
 #ifdef DEBUG_ENABLED
 	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
@@ -210,16 +197,13 @@ void NavigationRegion3D::set_area_navigation_layer_value(uint16_t p_area_id, int
 	update_gizmos();
 }
 
-bool NavigationRegion3D::get_area_navigation_layer_value(uint16_t p_area_id, int p_layer_number) const {
+bool NavigationRegion3D::get_area_navigation_layer_value(uint16_t p_area_index, int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(!navigation_mesh.is_valid(), false, "Navigation mesh must be set.");
-	if (!_has_area(p_area_id)) {
-		return false;
-	}
+	ERR_FAIL_COND_V_MSG(p_area_index >= NavigationServer3D::get_singleton()->region_get_area_count(region), 0, "Invalid navigation area index.");
 
-	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area_id);
-
+	uint32_t _navigation_layers = NavigationServer3D::get_singleton()->region_get_area_navigation_layers_at_index(region, p_area_index);
 	return _navigation_layers & (1 << (p_layer_number - 1));
 }
 
@@ -286,6 +270,7 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_naviga
 	}
 
 	navigation_mesh = p_navigation_mesh;
+	print_line("navigation_mesh");
 
 	if (navigation_mesh.is_valid()) {
 		navigation_mesh->connect_changed(callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
@@ -367,9 +352,9 @@ void NavigationRegion3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		return;
 	}
 
-	for (int16_t i = 0; i < navigation_mesh->get_area_count(); i++) {
+	for (int16_t i = 0; i < NavigationServer3D::get_singleton()->region_get_area_count(region); i++) {
 		const String prep = vformat("areas/%d/", i);
-		// Navigation layers overwrites.
+		// Navigation layers overwrites. // FIXME: actually, if debug mode, we can get bake id!
 		p_list->push_back(PropertyInfo(Variant::STRING, prep + "id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
 		p_list->push_back(PropertyInfo(Variant::INT, prep + "layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION, "", PROPERTY_USAGE_EDITOR));
 	}
@@ -396,7 +381,7 @@ void NavigationRegion3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationRegion3D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationRegion3D::get_navigation_layer_value);
 
-	ClassDB::bind_method(D_METHOD("get_area_id", "bake_id"), &NavigationRegion3D::get_area_id);
+	ClassDB::bind_method(D_METHOD("get_area_index", "bake_id"), &NavigationRegion3D::get_area_index);
 
 	ClassDB::bind_method(D_METHOD("set_area_navigation_layers", "area_id", "navigation_layers"), &NavigationRegion3D::set_area_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_area_navigation_layers", "area_id"), &NavigationRegion3D::get_area_navigation_layers);
@@ -434,6 +419,7 @@ void NavigationRegion3D::_bind_methods() {
 
 bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
+	// print_line(path);
 #ifndef DISABLE_DEPRECATED
 	// Compatibility with earlier 4.0 betas.
 	if (path == "navmesh") {
@@ -443,17 +429,11 @@ bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) 
 #endif // DISABLE_DEPRECATED
 	if (path.begins_with("areas/") && path.ends_with("layers") && navigation_mesh.is_valid()) {
 		int which = path.get_slicec('/', 1).to_int();
-		if (which < 0 || which >= navigation_mesh->get_area_count()) {
+		if (which < 0 || which >= NavigationServer3D::get_singleton()->region_get_area_count(region)) {
 			return false;
 		}
-		NavigationServer3D::get_singleton()->region_set_area_navigation_layers_at_index(region, (uint16_t)which, p_value);
-#ifdef DEBUG_ENABLED
-		if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
-			if (navigation_mesh.is_valid()) {
-				_update_debug_mesh();
-			}
-		}
-#endif // DEBUG_ENABLED
+		set_area_navigation_layers(which, p_value);
+		// FIXME: not visible if selected on scene open.
 		notify_property_list_changed(); // Make areas in navigation_mesh (in)visible in inspector.
 		return true;
 	}
@@ -462,6 +442,7 @@ bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) 
 
 bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 	String path = p_path;
+	print_line(path);
 #ifndef DISABLE_DEPRECATED
 	// Compatibility with earlier 4.0 betas.
 	if (path == "navmesh") {
@@ -471,18 +452,18 @@ bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 #endif // DISABLE_DEPRECATED
 	if (path.begins_with("areas/") && path.ends_with("layers") && navigation_mesh.is_valid()) {
 		int which = path.get_slicec('/', 1).to_int();
-		if (which < 0 || which >= navigation_mesh->get_area_count()) {
+		if (which < 0 || which >= NavigationServer3D::get_singleton()->region_get_area_count(region)) {
 			return false;
 		}
-		r_ret = (int)NavigationServer3D::get_singleton()->region_get_area_navigation_layers_at_index(region, (uint16_t)which);
+		r_ret = (int)get_area_navigation_layers((uint16_t)which);
 		return true;
 	}
 	if (path.begins_with("areas/") && path.ends_with("id") && navigation_mesh.is_valid()) {
 		int which = path.get_slicec('/', 1).to_int();
-		if (which < 0 || which >= navigation_mesh->get_area_count()) {
+		if (which < 0 || which >= NavigationServer3D::get_singleton()->region_get_area_count(region)) {
 			return false;
 		}
-		r_ret = (int)navigation_mesh->get_area_ids()[which];
+		r_ret = (int)NavigationServer3D::get_singleton()->region_get_area_ids(region)[which];
 		return true;
 	}
 	return false;
@@ -492,6 +473,7 @@ void NavigationRegion3D::_navigation_mesh_changed() {
 	_update_bounds();
 
 	NavigationServer3D::get_singleton()->region_set_navigation_mesh(region, navigation_mesh);
+	print_line("_navigation_mesh_changed");
 
 #ifdef DEBUG_ENABLED
 	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
