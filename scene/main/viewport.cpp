@@ -5700,6 +5700,14 @@ void SubViewport::set_clear_mode(ClearMode p_mode) {
 	RS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), RSE::ViewportClearMode(p_mode));
 }
 
+void SubViewport::force_clear_now() {
+	ERR_MAIN_THREAD_GUARD;
+	if (!is_inside_tree()) {
+		return;
+	}
+	RS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), RS::VIEWPORT_CLEAR_ONLY_NEXT_FRAME);
+}
+
 SubViewport::ClearMode SubViewport::get_clear_mode() const {
 	ERR_READ_THREAD_GUARD_V(CLEAR_MODE_ALWAYS);
 	return clear_mode;
@@ -5789,6 +5797,8 @@ void SubViewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_clear_mode", "mode"), &SubViewport::set_clear_mode);
 	ClassDB::bind_method(D_METHOD("get_clear_mode"), &SubViewport::get_clear_mode);
+
+	ClassDB::bind_method(D_METHOD("force_clear_now"), &SubViewport::force_clear_now);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size_2d_override", PROPERTY_HINT_NONE, "suffix:px"), "set_size_2d_override", "get_size_2d_override");
