@@ -276,6 +276,26 @@ Error AudioDriverPulseAudio::init_output_device() {
 	return OK;
 }
 
+Error AudioDriverPulseAudio::connect_context() {
+	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), pa_context_name.utf8().ptr());
+	ERR_FAIL_NULL_V(pa_ctx, ERR_CANT_OPEN);
+
+	pa_ready = 0;
+	pa_context_set_state_callback(pa_ctx, pa_state_cb, (void *)this);
+
+	int ret = pa_context_connect(pa_ctx, nullptr, PA_CONTEXT_NOFLAGS, nullptr);
+	if (ret < 0) {
+		ERR_PRINT("PulseAudio: pa_context_connect error: " + String(pa_strerror(pa_context_errno(pa_ctx))));
+		if (pa_ctx) {
+			pa_context_unref(pa_ctx);
+			pa_ctx = nullptr;
+		}
+		return ERR_CANT_OPEN;
+	}
+
+	return OK;
+}
+
 Error AudioDriverPulseAudio::init() {
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
@@ -311,29 +331,16 @@ Error AudioDriverPulseAudio::init() {
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_NULL_V(pa_ml, ERR_CANT_OPEN);
 
-	String context_name;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		context_name = GODOT_VERSION_NAME " Editor";
+		pa_context_name = GODOT_VERSION_NAME " Editor";
 	} else {
-		context_name = GLOBAL_GET("application/config/name");
-		if (context_name.is_empty()) {
-			context_name = GODOT_VERSION_NAME " Project";
+		pa_context_name = GLOBAL_GET("application/config/name");
+		if (pa_context_name.is_empty()) {
+			pa_context_name = GODOT_VERSION_NAME " Project";
 		}
 	}
 
-	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), context_name.utf8().ptr());
-	ERR_FAIL_NULL_V(pa_ctx, ERR_CANT_OPEN);
-
-	pa_ready = 0;
-	pa_context_set_state_callback(pa_ctx, pa_state_cb, (void *)this);
-
-	int ret = pa_context_connect(pa_ctx, nullptr, PA_CONTEXT_NOFLAGS, nullptr);
-	if (ret < 0) {
-		if (pa_ctx) {
-			pa_context_unref(pa_ctx);
-			pa_ctx = nullptr;
-		}
-
+	if (connect_context() != OK) {
 		if (pa_ml) {
 			pa_mainloop_free(pa_ml);
 			pa_ml = nullptr;
@@ -343,7 +350,7 @@ Error AudioDriverPulseAudio::init() {
 	}
 
 	while (pa_ready == 0) {
-		ret = pa_mainloop_iterate(pa_ml, 1, nullptr);
+		int ret = pa_mainloop_iterate(pa_ml, 1, nullptr);
 		if (ret < 0) {
 			ERR_PRINT("pa_mainloop_iterate error");
 		}

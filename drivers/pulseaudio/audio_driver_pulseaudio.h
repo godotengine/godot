@@ -54,6 +54,8 @@ class AudioDriverPulseAudio : public AudioDriver {
 	pa_channel_map pa_map = {};
 	pa_channel_map pa_rec_map = {};
 
+	String pa_context_name;
+
 	String output_device_name = "Default";
 	String new_output_device = "Default";
 	String default_output_device;
@@ -85,6 +87,8 @@ class AudioDriverPulseAudio : public AudioDriver {
 	static void pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata);
 	static void pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);
 	static void pa_sourcelist_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata);
+
+	Error connect_context();
 
 	Error init_output_device();
 	void finish_output_device();
