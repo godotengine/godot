@@ -33,7 +33,7 @@
 		</method>
 	</methods>
 	<signals>
-		<signal name="display_mode_changed">
+		<signal name="display_mode_changed" deprecated="Use [signal layout_changed] instead.">
 			<description>
 				Deprecated. Use [signal layout_changed] instead.
 			</description>
