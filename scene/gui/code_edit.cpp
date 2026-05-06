@@ -2777,8 +2777,8 @@ bool CodeEdit::is_mouse_over_code_completion_popup() const {
 		return false;
 	}
 
-	Vector2 global_mouse = get_local_mouse_position();
-	return code_completion_rect.has_point(global_mouse);
+	Vector2 p_mouse_position = get_local_mouse_position();
+	return code_completion_rect.has_point(p_mouse_position);
 }
 /* Text manipulation */
 void CodeEdit::move_lines_up() {
