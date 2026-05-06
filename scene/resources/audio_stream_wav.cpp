@@ -223,7 +223,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 		return 0;
 	}
 
-	uint64_t len = base->data_bytes;
+	uint64_t len = base->data.size();
 	switch (base->format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			len /= 1;
@@ -487,7 +487,7 @@ Dictionary AudioStreamWAV::get_tags() const {
 }
 
 double AudioStreamWAV::get_length() const {
-	uint64_t len = data_bytes;
+	uint64_t len = data.size();
 	switch (format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			len /= 1;
@@ -500,7 +500,7 @@ double AudioStreamWAV::get_length() const {
 			break;
 		case AudioStreamWAV::FORMAT_QOA:
 			qoa_desc desc = {};
-			qoa_decode_header(data.ptr(), data_bytes, &desc);
+			qoa_decode_header(data.ptr(), len, &desc);
 			len = desc.samples * desc.channels;
 			break;
 	}
@@ -520,7 +520,6 @@ void AudioStreamWAV::set_data(const Vector<uint8_t> &p_data) {
 	AudioServer::get_singleton()->lock();
 
 	data = p_data;
-	data_bytes = p_data.size();
 
 	AudioServer::get_singleton()->unlock();
 }
@@ -535,7 +534,8 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 		return ERR_UNAVAILABLE;
 	}
 
-	int sub_chunk_2_size = data_bytes; //Subchunk2Size = Size of data in bytes
+	uint64_t sub_chunk_2_size = data.size(); // Subchunk2Size = Size of data in bytes
+	ERR_FAIL_COND_V_MSG(sub_chunk_2_size > UINT32_MAX - 36, ERR_FILE_CANT_WRITE, "Data size exceeds maximum WAV file size of 4 GiB.");
 
 	// Format code
 	// 1:PCM format (for 8 or 16 bit)
@@ -571,7 +571,7 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 
 	// Create WAV Header
 	file->store_string("RIFF"); //ChunkID
-	file->store_32(sub_chunk_2_size + 36); //ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bits for this and previous header)
+	file->store_32(sub_chunk_2_size + 36); // ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bytes for this and previous header)
 	file->store_string("WAVE"); //Format
 	file->store_string("fmt "); //Subchunk1ID
 	file->store_32(16); //Subchunk1Size = 16
@@ -588,14 +588,14 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	const uint8_t *read_data = data.ptr();
 	switch (format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
-			for (uint64_t i = 0; i < data_bytes; i++) {
+			for (uint64_t i = 0; i < sub_chunk_2_size; i++) {
 				uint8_t data_point = (read_data[i] + 128);
 				file->store_8(data_point);
 			}
 			break;
 		case AudioStreamWAV::FORMAT_16_BITS:
 		case AudioStreamWAV::FORMAT_QOA:
-			for (uint64_t i = 0; i < data_bytes / 2; i++) {
+			for (uint64_t i = 0; i < sub_chunk_2_size / 2; i++) {
 				uint16_t data_point = decode_uint16(&read_data[i * 2]);
 				file->store_16(data_point);
 			}
@@ -614,7 +614,7 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 	sample->base = Ref<AudioStreamWAV>(this);
 
 	if (format == AudioStreamWAV::FORMAT_QOA) {
-		uint32_t ffp = qoa_decode_header(data.ptr(), data_bytes, &sample->qoa.desc);
+		uint32_t ffp = qoa_decode_header(data.ptr(), data.size(), &sample->qoa.desc);
 		ERR_FAIL_COND_V(ffp != 8, Ref<AudioStreamPlaybackWAV>());
 		sample->qoa.frame_len = qoa_max_frame_size(&sample->qoa.desc);
 		uint32_t samples_len = MIN(sample->qoa.desc.samples + 1, (uint32_t)QOA_FRAME_LEN);
