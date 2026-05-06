@@ -150,18 +150,18 @@ bool NavigationRegion3D::_has_area(uint16_t p_area) const {
 	return true;
 }
 
-void NavigationRegion3D::set_area_navigation_layers(uint16_t p_area, uint32_t p_navigation_layers) {
+void NavigationRegion3D::set_area_navigation_layers(uint16_t p_area_id, uint32_t p_navigation_layers) {
 	ERR_FAIL_COND_MSG(!navigation_mesh.is_valid(), "Navigation mesh must be set.");
-	if (!_has_area(p_area)) {
+	if (!_has_area(p_area_id)) {
 		return;
 	}
 
-	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area);
+	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area_id);
 	if (_navigation_layers == p_navigation_layers) {
 		return;
 	}
 
-	NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, p_area, p_navigation_layers);
+	NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, p_area_id, p_navigation_layers);
 
 #ifdef DEBUG_ENABLED
 	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
@@ -182,15 +182,15 @@ uint32_t NavigationRegion3D::get_area_navigation_layers(uint16_t p_area) const {
 	return navigation_mesh->get_area_navigation_layers(p_area);
 }
 
-void NavigationRegion3D::set_area_navigation_layer_value(uint16_t p_area, int p_layer_number, bool p_value) {
+void NavigationRegion3D::set_area_navigation_layer_value(uint16_t p_area_id, int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(!navigation_mesh.is_valid(), "Navigation mesh must be set.");
-	if (!_has_area(p_area)) {
+	if (!_has_area(p_area_id)) {
 		return;
 	}
 
-	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area);
+	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area_id);
 
 	if (p_value) {
 		_navigation_layers |= 1 << (p_layer_number - 1);
@@ -198,7 +198,7 @@ void NavigationRegion3D::set_area_navigation_layer_value(uint16_t p_area, int p_
 		_navigation_layers &= ~(1 << (p_layer_number - 1));
 	}
 
-	NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, p_area, _navigation_layers);
+	NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, p_area_id, _navigation_layers);
 
 #ifdef DEBUG_ENABLED
 	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
@@ -210,15 +210,15 @@ void NavigationRegion3D::set_area_navigation_layer_value(uint16_t p_area, int p_
 	update_gizmos();
 }
 
-bool NavigationRegion3D::get_area_navigation_layer_value(uint16_t p_area, int p_layer_number) const {
+bool NavigationRegion3D::get_area_navigation_layer_value(uint16_t p_area_id, int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(!navigation_mesh.is_valid(), false, "Navigation mesh must be set.");
-	if (!_has_area(p_area)) {
+	if (!_has_area(p_area_id)) {
 		return false;
 	}
 
-	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area);
+	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area_id);
 
 	return _navigation_layers & (1 << (p_layer_number - 1));
 }
@@ -398,11 +398,11 @@ void NavigationRegion3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_area_id", "bake_id"), &NavigationRegion3D::get_area_id);
 
-	ClassDB::bind_method(D_METHOD("set_area_navigation_layers", "area", "navigation_layers"), &NavigationRegion3D::set_area_navigation_layers);
-	ClassDB::bind_method(D_METHOD("get_area_navigation_layers", "area"), &NavigationRegion3D::get_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("set_area_navigation_layers", "area_id", "navigation_layers"), &NavigationRegion3D::set_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_area_navigation_layers", "area_id"), &NavigationRegion3D::get_area_navigation_layers);
 
-	ClassDB::bind_method(D_METHOD("set_area_navigation_layer_value", "area", "layer_number", "value"), &NavigationRegion3D::set_area_navigation_layer_value);
-	ClassDB::bind_method(D_METHOD("get_area_navigation_layer_value", "area", "layer_number"), &NavigationRegion3D::get_area_navigation_layer_value);
+	ClassDB::bind_method(D_METHOD("set_area_navigation_layer_value", "area_id", "layer_number", "value"), &NavigationRegion3D::set_area_navigation_layer_value);
+	ClassDB::bind_method(D_METHOD("get_area_navigation_layer_value", "area_id", "layer_number"), &NavigationRegion3D::get_area_navigation_layer_value);
 
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion3D::get_region_rid);
 

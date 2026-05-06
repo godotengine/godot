@@ -96,11 +96,11 @@ public:
 
 	uint32_t get_area_id(String p_bake_id) const;
 
-	void set_area_navigation_layers(uint16_t p_area, uint32_t p_navigation_layers);
-	uint32_t get_area_navigation_layers(uint16_t p_area) const;
+	void set_area_navigation_layers(uint16_t p_area_id, uint32_t p_navigation_layers);
+	uint32_t get_area_navigation_layers(uint16_t p_area_id) const;
 
-	void set_area_navigation_layer_value(uint16_t p_area, int p_layer_number, bool p_value);
-	bool get_area_navigation_layer_value(uint16_t p_area, int p_layer_number) const;
+	void set_area_navigation_layer_value(uint16_t p_area_id, int p_layer_number, bool p_value);
+	bool get_area_navigation_layer_value(uint16_t p_area_id, int p_layer_number) const;
 
 	RID get_region_rid() const;
 
