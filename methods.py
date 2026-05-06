@@ -526,12 +526,7 @@ def find_visual_c_batch_file(env):
     from SCons.Tool.MSCommon.vc import find_batch_file, find_vc_pdir, get_default_version, get_host_target
 
     msvc_version = get_default_version(env)
-
-    # Syntax changed in SCons 4.4.0.
-    if env.scons_version >= (4, 4, 0):
-        (host_platform, target_platform, _) = get_host_target(env, msvc_version)
-    else:
-        (host_platform, target_platform, _) = get_host_target(env)
+    host_platform, target_platform, _ = get_host_target(env, msvc_version)
 
     if env.scons_version < (4, 6, 0):
         return find_batch_file(env, msvc_version, host_platform, target_platform)[0]
