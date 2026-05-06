@@ -658,7 +658,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Theme
 	// General
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_FLAGS, "filesystem/theme/general/toolbar_buttons", 0, "Create New,Open Folder,Save All, Display Mode");
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_FLAGS, "filesystem/theme/general/toolbar_buttons", 0, "Create New,Open Folder,Save All,Display Mode");
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/theme/general/display_mode", 0, "Tree Only,Tree and List")
 
 	// File list
