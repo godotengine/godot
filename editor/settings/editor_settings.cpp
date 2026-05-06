@@ -662,7 +662,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/theme/general/display_mode", 0, "Tree Only,Tree and List")
 
 	// File list
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_FLAGS, "filesystem/theme/file_list/toolbar_buttons", 0, "Display Mode, Position");
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_FLAGS, "filesystem/theme/file_list/toolbar_buttons", 0, "Display Mode,Position");
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/theme/file_list/display_mode", 0, "Thumbnails,List")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/theme/file_list/position", 1, "Vertical,Horizontal")
 
