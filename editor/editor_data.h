@@ -242,6 +242,7 @@ public:
 	void notify_edited_scene_changed();
 	void notify_resource_saved(const Ref<Resource> &p_resource);
 	void notify_scene_saved(const String &p_path);
+	void notify_editor_ready();
 
 	bool script_class_is_parent(const String &p_class, const String &p_inherits);
 	Variant script_class_instance(const String &p_class);

@@ -45,6 +45,12 @@
 				[param object] can be [code]null[/code] if the plugin was editing an object, but there is no longer any selected object handled by this plugin. It can be used to cleanup editing state.
 			</description>
 		</method>
+		<method name="_editor_ready" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the editor has fully initialized. Override this method to perform actions that require the entire editor to be ready.
+			</description>
+		</method>
 		<method name="_enable_plugin" qualifiers="virtual">
 			<return type="void" />
 			<description>
