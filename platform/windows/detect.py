@@ -128,15 +128,66 @@ def detect_build_env_arch():
     return ""
 
 
+def check_mssdk_version(env, version, msvc_ver):
+    from SCons.Tool.MSCommon.MSVC.WinSDK import get_msvc_sdk_version_list
+
+    def int_or_zero(i):
+        try:
+            return int(i)
+        except (TypeError, ValueError):
+            return 0
+
+    def ver_parse(a):
+        return [int_or_zero(i) for i in a.split(".")]
+
+    mssdk = version
+    mssdk_list = get_msvc_sdk_version_list(msvc_ver, False)
+    if not mssdk_list:
+        return ""
+
+    if mssdk == "":
+        mssdk = mssdk_list[0]
+    if mssdk not in mssdk_list:
+        print_error(f"Specified Windows SDK version {mssdk} is not installed, installed versions are: {mssdk_list}.")
+        sys.exit(255)
+
+    if env["winrt"]:
+        if msvc_ver == "14.2":  # Visual Studio 2019, force supported SDK.
+            if "10.0.22621.0" in mssdk_list:
+                mssdk = "10.0.22621.0"
+            else:
+                print_error(
+                    "Visual Studio 2019 require Windows SDK 10.0.22621.0 to use WinRT, install supported Windows SDK version "
+                    'or disable WinRT support by passing "winrt=no" to the SCons command line.'
+                )
+                sys.exit(255)
+        elif ver_parse(mssdk)[2] < 22621:
+            print_error(
+                "Windows SDK 10.0.22621.0 or newer is required to use WinRT, install supported Windows SDK version "
+                'or disable WinRT support by passing "winrt=no" to the SCons command line.'
+            )
+            sys.exit(255)
+
+    print(f"Using Visual Studio {msvc_ver} with Windows SDK {mssdk}.")
+    return mssdk
+
+
 def get_tools(env: "SConsEnvironment"):
     from SCons.Tool.MSCommon import msvc_exists
+    from SCons.Tool.MSCommon.vc import get_default_version
 
     if os.name != "nt" or env.get("use_mingw") or not msvc_exists():
         return ["mingw"]
     else:
         msvc_arch_aliases = {"x86_32": "x86", "arm32": "arm"}
+        msvc_ver = get_default_version(env)
+        if env.get("msvc_version"):
+            msvc_ver = env.get("msvc_version")
+
         env["TARGET_ARCH"] = msvc_arch_aliases.get(env["arch"], env["arch"])
         env["MSVC_VERSION"] = env["MSVS_VERSION"] = env.get("msvc_version")
+        env["MSVC_SDK_VERSION"] = check_mssdk_version(env, env.get("mssdk_version"), msvc_ver)
+
         return ["msvc", "mslink", "mslib"]
 
 
@@ -165,6 +216,7 @@ def get_opts():
         ("mingw_prefix", "MinGW prefix", mingw),
         EnumVariable("windows_subsystem", "Windows subsystem", "gui", ["gui", "console"], ignorecase=2),
         ("msvc_version", "MSVC version to use. Handled automatically by SCons if omitted.", ""),
+        ("mssdk_version", "Windows SDK version to use. Handled automatically by SCons if omitted.", ""),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
