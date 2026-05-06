@@ -76,6 +76,11 @@
 				Emitted when the given scenes are being instantiated in the editor.
 			</description>
 		</signal>
+		<signal name="display_mode_changed">
+			<description>
+				Deprecated. Use [signal layout_changed] instead.
+			</description>
+		</signal>
 		<signal name="layout_changed">
 			<description>
 				Emitted when the user switches file display mode or split mode.

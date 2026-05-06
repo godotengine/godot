@@ -4325,6 +4325,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selection_changed"));
 
 	ADD_SIGNAL(MethodInfo("layout_changed"));
+	ADD_SIGNAL(MethodInfo("display_mode_changed")); // Deprecated, use layout_changed.
 }
 
 void FileSystemDock::_update_toolbar_buttons() {
