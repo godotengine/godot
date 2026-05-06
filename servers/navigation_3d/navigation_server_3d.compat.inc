@@ -34,11 +34,11 @@
 
 #include "core/object/class_db.h"
 
-void NavigationServer3D::_bake_from_source_geometry_data_bind_compat_118005(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) const {
+void NavigationServer3D::_bake_from_source_geometry_data_bind_compat_118005(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
 	return const_cast<NavigationServer3D *>(this)->bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data, 1, p_callback);
 }
 
-void NavigationServer3D::_bake_from_source_geometry_data_async_bind_compat_118005(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) const {
+void NavigationServer3D::_bake_from_source_geometry_data_async_bind_compat_118005(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
 	return const_cast<NavigationServer3D *>(this)->bake_from_source_geometry_data_async(p_navigation_mesh, p_source_geometry_data, 1, p_callback);
 }
 
