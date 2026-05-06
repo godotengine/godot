@@ -436,7 +436,7 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 		RID depth_back_texture = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, v, 0);
 
 		if (can_use_storage) {
-			copy_effects->copy_to_rect(depth_texture, depth_back_texture, Rect2i(0, 0, size.x, size.y));
+			copy_effects->copy_depth_to_rect(depth_texture, depth_back_texture, Rect2i(0, 0, size.x, size.y));
 		} else {
 			RID depth_back_fb = FramebufferCacheRD::get_singleton()->get_cache(depth_back_texture);
 			if (p_use_msaa) {

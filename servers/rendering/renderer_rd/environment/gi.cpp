@@ -3667,7 +3667,7 @@ void GI::init(SkyRD *p_sky) {
 		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
 		defines += "\n#define SH_SIZE " + itos(SDFGI::SH_SIZE) + "\n";
 		if (p_sky->sky_use_octmap_array) {
-			defines += "\n#define USE_OCTMAP_ARRAY\n";
+			defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY\n";
 		}
 
 		Vector<String> integrate_modes;
