@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RichTextEdit" inherits="TextEdit" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Multiline rich text editor with BBCode import and export.
+	</brief_description>
+	<description>
+		[RichTextEdit] is an editable text control that stores source text together with formatting spans. When [member bbcode_enabled] is enabled, [member TextEdit.text] is parsed as BBCode and the editable scene preview shows the parsed result. When [member bbcode_enabled] is disabled, [member TextEdit.text] is displayed literally.
+		Read [member bbcode_text] to export the current text and formatting as BBCode.
+		Formatting methods apply to the current selection. If there is no selection, they update the typing style used for text inserted at the caret. Visible formatting changes are recorded in the undo history.
+		Supported inline styles are:
+		- [code skip-lint][b][/code] for bold text.
+		- [code skip-lint][i][/code] for italic text.
+		- [code skip-lint][u][/code] for underlined text.
+		- [code skip-lint][s][/code] for strikethrough text.
+		- [code skip-lint][color][/code] for foreground color.
+		- [code skip-lint][font_size][/code] and [code skip-lint][size][/code] for font size.
+		- [code skip-lint][font][/code] and [code skip-lint][code][/code] for font selection.
+		- [code skip-lint][bgcolor][/code], [code skip-lint][fgcolor][/code], [code skip-lint][outline_color][/code], and [code skip-lint][outline_size][/code] for additional style metadata.
+		- [code skip-lint][url][/code] for URL metadata. URL ranges use the [theme_item link_color] theme color and are underlined by default when no explicit color or underline style is set. The [code skip-lint][url][/code] tag supports URL values, plus [code skip-lint]tooltip[/code], [code]visited[/code], and [code]underline[/code] attributes. URL tooltips use the default [Control] tooltip, and can be styled with the [code]TooltipPanel[/code] and [code]TooltipLabel[/code] theme types.
+		- [code skip-lint][img][/code] for inline image objects.
+		Supported block styles include [code skip-lint][quote][/code], [code skip-lint][left][/code], [code skip-lint][center][/code], [code skip-lint][right][/code], [code skip-lint][indent][/code], [code skip-lint][ul][/code], and [code skip-lint][ol][/code]. Ordered lists support [code skip-lint][ol start=][/code] to reset numbering to a custom value.
+		Pressing [kbd]Enter[/kbd] inserts a line break that preserves the current style. Pressing [kbd]Shift[/kbd] + [kbd]Enter[/kbd] inserts a line break outside the current style.
+		URL metadata activation is controlled by [member link_activation_mode]. By default, editable controls require [kbd]Ctrl[/kbd] + click ([kbd]Cmd[/kbd] + click on macOS), while non-editable controls activate links with a normal click. If [signal meta_clicked] is connected, the signal is emitted and no default action is taken. If it is not connected, [RichTextEdit] opens [code]http://[/code] and [code]https://[/code] URLs with [method OS.shell_open].
+		Use [RichTextEditToolbar] to add a standard formatting toolbar, you can also build a custom toolbar by calling the formatting APIs which RichTextEdit provides.
+		[codeblocks]
+		[gdscript skip-lint]
+		@onready var editor: RichTextEdit = $RichTextEdit
+
+		func _ready():
+		    editor.bbcode_enabled = true
+		    editor.text = "Hello [b]bold[/b] and [color=red]red[/color] text"
+
+		func save_text():
+		    var stored_bbcode := editor.get_bbcode_text()
+		[/gdscript]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="begin_selection_color_preview">
+			<return type="void" />
+			<description>
+				Starts a color preview by saving the current formatting state. Use this before repeatedly calling [method preview_selection_color] from a custom color picker or toolbar.
+			</description>
+		</method>
+		<method name="clear_bold">
+			<return type="void" />
+			<description>
+				Removes bold formatting from the current selection. If there is no selection, removes bold from the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="clear_italic">
+			<return type="void" />
+			<description>
+				Removes italic formatting from the current selection. If there is no selection, removes italic from the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="clear_ordered_list">
+			<return type="void" />
+			<description>
+				Removes ordered list formatting from the selected lines, or the current line if there is no selection.
+			</description>
+		</method>
+		<method name="clear_quote">
+			<return type="void" />
+			<description>
+				Removes quote formatting from the selected lines, or the current line if there is no selection.
+			</description>
+		</method>
+		<method name="clear_selection_bg_color">
+			<return type="void" />
+			<description>
+				Removes explicit background color metadata from the current selection, or the typing style if there is no selection.
+			</description>
+		</method>
+		<method name="clear_selection_color">
+			<return type="void" />
+			<description>
+				Removes explicit foreground color from the current selection. If there is no selection, clears the foreground color from the typing style.
+			</description>
+		</method>
+		<method name="clear_selection_font">
+			<return type="void" />
+			<description>
+				Removes explicit font metadata from the current selection, or the typing style if there is no selection.
+			</description>
+		</method>
+		<method name="clear_selection_font_size">
+			<return type="void" />
+			<description>
+				Removes explicit font size from the current selection. If there is no selection, clears the font size from the typing style.
+			</description>
+		</method>
+		<method name="clear_selection_outline_color">
+			<return type="void" />
+			<description>
+				Removes explicit outline color metadata from the current selection, or the typing style if there is no selection.
+			</description>
+		</method>
+		<method name="clear_selection_outline_size">
+			<return type="void" />
+			<description>
+				Removes explicit outline size metadata from the current selection, or the typing style if there is no selection.
+			</description>
+		</method>
+		<method name="clear_selection_url">
+			<return type="void" />
+			<description>
+				Removes URL metadata from the current selection. If there is no selection, clears URL metadata from the typing style.
+			</description>
+		</method>
+		<method name="clear_selection_url_tooltip">
+			<return type="void" />
+			<description>
+				Removes the [code skip-lint]tooltip[/code] attribute from URL ranges touched by the selection. If there is no selection, removes it from the URL range at the caret, if any.
+			</description>
+		</method>
+		<method name="clear_selection_url_visited">
+			<return type="void" />
+			<description>
+				Removes the [code]visited[/code] attribute from URL ranges touched by the selection. If there is no selection, removes it from the URL range at the caret, if any.
+			</description>
+		</method>
+		<method name="clear_strikethrough">
+			<return type="void" />
+			<description>
+				Removes strikethrough formatting from the current selection. If there is no selection, removes strikethrough from the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="clear_underline">
+			<return type="void" />
+			<description>
+				Removes underline formatting from the current selection. If there is no selection, removes underline from the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="clear_unordered_list">
+			<return type="void" />
+			<description>
+				Removes unordered list formatting from the selected lines, or the current line if there is no selection.
+			</description>
+		</method>
+		<method name="copy_rich_text">
+			<return type="void" />
+			<description>
+				Copies the current selection to the system clipboard, preserving formatting so it can be restored with [method paste_rich_text]. If there is no selection, this behaves like a regular plain-text copy.
+			</description>
+		</method>
+		<method name="decrease_indent">
+			<return type="void" />
+			<description>
+				Removes BBCode block indentation, list, or alignment metadata from the selected lines, or the current line if there is no selection.
+			</description>
+		</method>
+		<method name="end_selection_color_preview">
+			<return type="void" />
+			<param index="0" name="commit" type="bool" />
+			<description>
+				Ends the active color preview. If [param commit] is [code]true[/code], the previewed color change is kept as one undoable formatting action when text is selected. If [param commit] is [code]false[/code], the saved formatting state is restored.
+			</description>
+		</method>
+		<method name="get_current_font_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the font size at the current editing position. If text is selected, this uses the first selected character. If the caret is at the beginning of a non-empty line, this uses the first character in that line. Otherwise, this uses the character before the caret. If no explicit font size is set, the default editor font size is returned.
+			</description>
+		</method>
+		<method name="get_document_protobuf" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns a serialized snapshot of the current document (text, formatting spans, inline images, and raw inline content) encoded in a compact binary format. Use [method set_document_protobuf] to restore the document from the returned data.
+			</description>
+		</method>
+		<method name="increase_indent">
+			<return type="void" />
+			<description>
+				Applies BBCode indentation to the selected lines, or the current line if there is no selection.
+			</description>
+		</method>
+		<method name="insert_image">
+			<return type="void" />
+			<param index="0" name="source" type="String" />
+			<param index="1" name="width" type="int" default="-1" />
+			<param index="2" name="height" type="int" default="-1" />
+			<param index="3" name="alt" type="String" default="&quot;&quot;" />
+			<description>
+				Inserts an inline image object at the caret using [param source] as the image resource path. Supported paths include project resources such as [code]res://icon.svg[/code], user data paths such as [code]user://image.png[/code], and local absolute paths such as [code]C:/images/photo.jpg[/code] on Windows or [code]/home/user/photo.png[/code] on Unix-like platforms. [param width] and [param height] allow [code]0[/code]. If one size is negative, only the other size is written and the missing size is resolved from the image ratio. If both sizes are negative, no size attributes are written. If [param alt] is empty, no [code skip-lint]alt[/code] attribute is written. The image is exported as an [code skip-lint][img][/code] BBCode tag.
+			</description>
+		</method>
+		<method name="paste_rich_text">
+			<return type="bool" />
+			<description>
+				Pastes the rich text selection previously copied with [method copy_rich_text] at the caret, preserving formatting, replacing the current selection if any. This only succeeds if the system clipboard still contains the plain text that was copied alongside it; otherwise, it does nothing and returns [code]false[/code] so the caller can fall back to a regular plain-text paste. Returns [code]true[/code] if the rich text data was pasted.
+			</description>
+		</method>
+		<method name="preview_selection_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Previews [param color] on the current selection, or on the typing style if there is no selection, without adding an undo history entry. If no preview is active, this method starts one automatically.
+			</description>
+		</method>
+		<method name="set_alignment">
+			<return type="void" />
+			<param index="0" name="alignment" type="int" enum="HorizontalAlignment" />
+			<description>
+				Applies paragraph alignment to the selected lines, or the current line if there is no selection.
+			</description>
+		</method>
+		<method name="set_bold">
+			<return type="void" />
+			<description>
+				Adds bold formatting to the current selection. If there is no selection, adds bold to the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="set_document_protobuf">
+			<return type="bool" />
+			<param index="0" name="data" type="PackedByteArray" />
+			<description>
+				Replaces the current text and formatting with the document encoded in [param data], as previously returned by [method get_document_protobuf]. Returns [code]true[/code] if [param data] was parsed and applied successfully, [code]false[/code] otherwise. The applied change is recorded in the undo history.
+			</description>
+		</method>
+		<method name="set_italic">
+			<return type="void" />
+			<description>
+				Adds italic formatting to the current selection. If there is no selection, adds italic to the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="set_ordered_list">
+			<return type="void" />
+			<description>
+				Formats the selected lines, or the current line if there is no selection, as an ordered list.
+			</description>
+		</method>
+		<method name="set_quote">
+			<return type="void" />
+			<description>
+				Formats the selected lines, or the current line if there is no selection, as a quote block.
+			</description>
+		</method>
+		<method name="set_selection_bg_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets background color metadata for the current selection, or the typing style if there is no selection.
+			</description>
+		</method>
+		<method name="set_selection_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets the foreground color for the current selection. If there is no selection, changes the color used for newly inserted text.
+			</description>
+		</method>
+		<method name="set_selection_font">
+			<return type="void" />
+			<param index="0" name="font" type="String" />
+			<description>
+				Sets a font resource path for the current selection, or the typing style if there is no selection.
+			</description>
+		</method>
+		<method name="set_selection_font_size">
+			<return type="void" />
+			<param index="0" name="font_size" type="int" />
+			<description>
+				Sets the font size for the current selection. If there is no selection, changes the font size used for newly inserted text.
+			</description>
+		</method>
+		<method name="set_selection_image_size">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<description>
+				Sets the size of selected inline images. [param width] and [param height] allow [code]0[/code]. If one size is negative, only the other size is written and the missing size is resolved from the image ratio. If both sizes are negative, this method does nothing.
+			</description>
+		</method>
+		<method name="set_selection_outline_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets outline color metadata for the current selection, or the typing style if there is no selection.
+			</description>
+		</method>
+		<method name="set_selection_outline_size">
+			<return type="void" />
+			<param index="0" name="size" type="int" />
+			<description>
+				Sets outline size metadata for the current selection, or the typing style if there is no selection.
+			</description>
+		</method>
+		<method name="set_selection_url">
+			<return type="void" />
+			<param index="0" name="url" type="String" />
+			<description>
+				Sets URL metadata for the current selection. If there is no selection, changes the URL metadata used for newly inserted text. Non-empty URLs are underlined by default, but underline can still be toggled independently.
+			</description>
+		</method>
+		<method name="set_selection_url_tooltip">
+			<return type="void" />
+			<param index="0" name="tooltip" type="String" />
+			<description>
+				Sets the [code skip-lint]tooltip[/code] attribute on URL ranges touched by the selection. If there is no selection, sets it on the URL range at the caret, if any.
+			</description>
+		</method>
+		<method name="set_selection_url_visited">
+			<return type="void" />
+			<description>
+				Sets the [code]visited[/code] attribute on URL ranges touched by the selection. If there is no selection, sets it on the URL range at the caret, if any.
+			</description>
+		</method>
+		<method name="set_strikethrough">
+			<return type="void" />
+			<description>
+				Adds strikethrough formatting to the current selection. If there is no selection, adds strikethrough to the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="set_underline">
+			<return type="void" />
+			<description>
+				Adds underline formatting to the current selection. If there is no selection, adds underline to the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="set_unordered_list">
+			<return type="void" />
+			<description>
+				Formats the selected lines, or the current line if there is no selection, as an unordered list.
+			</description>
+		</method>
+		<method name="toggle_bold">
+			<return type="void" />
+			<description>
+				Toggles bold formatting on the current selection. If there is no selection, toggles bold in the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="toggle_code">
+			<return type="void" />
+			<description>
+				Toggles code font formatting on the current selection. If there is no selection, toggles code formatting in the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="toggle_italic">
+			<return type="void" />
+			<description>
+				Toggles italic formatting on the current selection. If there is no selection, toggles italic in the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="toggle_ordered_list">
+			<return type="void" />
+			<description>
+				Toggles ordered list formatting on the selected lines, or the current line if there is no selection.
+			</description>
+		</method>
+		<method name="toggle_quote">
+			<return type="void" />
+			<description>
+				Toggles quote formatting on the selected lines, or the current line if there is no selection.
+			</description>
+		</method>
+		<method name="toggle_strikethrough">
+			<return type="void" />
+			<description>
+				Toggles strikethrough formatting on the current selection. If there is no selection, toggles strikethrough in the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="toggle_underline">
+			<return type="void" />
+			<description>
+				Toggles underline formatting on the current selection. If there is no selection, toggles underline in the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="toggle_unordered_list">
+			<return type="void" />
+			<description>
+				Toggles unordered list formatting on the selected lines, or the current line if there is no selection.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
+			If [code]true[/code], [member TextEdit.text] is parsed as BBCode and supported tags are previewed in the editor. If [code]false[/code], [member TextEdit.text] is displayed literally.
+		</member>
+		<member name="bbcode_text" type="String" setter="set_bbcode_text" getter="get_bbcode_text" default="&quot;&quot;">
+			The current contents as BBCode. Setting this property parses the assigned BBCode and replaces the editor contents with the resulting plain text, formatting, and inline objects.
+		</member>
+		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" overrides="TextEdit" default="false" />
+		<member name="link_activation_mode" type="int" setter="set_link_activation_mode" getter="get_link_activation_mode" enum="RichTextEdit.LinkActivationMode" default="0">
+			Controls how URL metadata is activated. In [constant LINK_ACTIVATION_AUTO], editable controls require [kbd]Ctrl[/kbd] + click ([kbd]Cmd[/kbd] + click on macOS), while non-editable controls activate links with a normal click.
+		</member>
+	</members>
+	<signals>
+		<signal name="meta_clicked">
+			<param index="0" name="meta" type="Variant" />
+			<description>
+				Emitted when the user activates URL metadata according to [member link_activation_mode]. For BBCode [code skip-lint][url][/code] tags, [param meta] is the URL string.
+			</description>
+		</signal>
+		<signal name="meta_hover_ended">
+			<param index="0" name="meta" type="Variant" />
+			<description>
+				Emitted when the mouse exits URL metadata.
+			</description>
+		</signal>
+		<signal name="meta_hover_started">
+			<param index="0" name="meta" type="Variant" />
+			<description>
+				Emitted when the mouse enters URL metadata.
+			</description>
+		</signal>
+		<signal name="text_style_changed">
+			<description>
+				Emitted when rich text formatting metadata changes. This can happen without changing the plain text contents.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="LINK_ACTIVATION_AUTO" value="0" enum="LinkActivationMode">
+			Activates URL metadata with [kbd]Ctrl[/kbd] + click ([kbd]Cmd[/kbd] + click on macOS) when [member TextEdit.editable] is [code]true[/code], and with a normal click when [member TextEdit.editable] is [code]false[/code].
+		</constant>
+		<constant name="LINK_ACTIVATION_CTRL_CLICK" value="1" enum="LinkActivationMode">
+			Activates URL metadata only with [kbd]Ctrl[/kbd] + click ([kbd]Cmd[/kbd] + click on macOS).
+		</constant>
+		<constant name="LINK_ACTIVATION_CLICK" value="2" enum="LinkActivationMode">
+			Activates URL metadata with a normal click.
+		</constant>
+		<constant name="LINK_ACTIVATION_DISABLED" value="3" enum="LinkActivationMode">
+			Disables URL metadata activation.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="link_active_color" data_type="color" type="Color" default="Color(1, 0, 0, 1)">
+			Default text color for URL metadata while it is being activated.
+		</theme_item>
+		<theme_item name="link_color" data_type="color" type="Color" default="Color(0.3764706, 0.64705884, 0.98039216, 1)">
+			Default text color for URL metadata when the range has no explicit text color.
+		</theme_item>
+		<theme_item name="link_hover_color" data_type="color" type="Color" default="Color(0.23137255, 0.50980395, 0.9647059, 1)">
+			Default text color for URL metadata while the mouse is hovering it.
+		</theme_item>
+		<theme_item name="link_visited_color" data_type="color" type="Color" default="Color(0.654902, 0.54509807, 0.98039216, 1)">
+			Default text color for URL metadata after the URL has been activated.
+		</theme_item>
+		<theme_item name="quote_border_color" data_type="color" type="Color" default="Color(0.8509804, 0.8509804, 0.8509804, 1)">
+			Border color for [code skip-lint][quote][/code] block paragraphs.
+		</theme_item>
+		<theme_item name="quote_color" data_type="color" type="Color" default="Color(0.54901963, 0.54901963, 0.54901963, 1)">
+			Default text color for [code skip-lint][quote][/code] block paragraphs when the range has no explicit text color.
+		</theme_item>
+		<theme_item name="tooltip_font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			Text color used by URL metadata tooltips.
+		</theme_item>
+		<theme_item name="quote_border_width" data_type="constant" type="int" default="3">
+			Width of the left border for [code skip-lint][quote][/code] block paragraphs.
+		</theme_item>
+		<theme_item name="quote_margin_bottom" data_type="constant" type="int" default="6">
+			Additional bottom margin for [code skip-lint][quote][/code] block paragraphs.
+		</theme_item>
+		<theme_item name="quote_margin_top" data_type="constant" type="int" default="6">
+			Additional top margin for [code skip-lint][quote][/code] block paragraphs.
+		</theme_item>
+		<theme_item name="quote_padding" data_type="constant" type="int" default="16">
+			Horizontal padding between the quote border and quote text.
+		</theme_item>
+		<theme_item name="tooltip_font" data_type="font" type="Font">
+			Font used by URL metadata tooltips.
+		</theme_item>
+		<theme_item name="tooltip_font_size" data_type="font_size" type="int">
+			Font size used by URL metadata tooltips.
+		</theme_item>
+		<theme_item name="tooltip_panel" data_type="style" type="StyleBox">
+			Panel style used by URL metadata tooltips.
+		</theme_item>
+	</theme_items>
+</class>
