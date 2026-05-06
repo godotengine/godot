@@ -282,7 +282,6 @@ void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) const {
 	r_features->push_back("pc"); // Identify PC platforms as such.
-	r_features->push_back(get_os_name().to_lower()); // OS name is a feature.
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {

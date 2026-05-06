@@ -79,6 +79,8 @@ public:
 	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) override;
 	virtual bool is_executable(const String &p_path) const override;
 
+	virtual void get_platform_features(List<String> *r_features) const override;
+
 	virtual Ref<Texture2D> get_run_icon() const override;
 	virtual bool poll_export() override;
 	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
