@@ -606,9 +606,7 @@ void ScenePaint2DEditor::_update_scene_picker(int p_mode) {
 		case PICK_RECENT_LIST: {
 			String scene_path = recent_scenes_button->get_item_metadata(recent_idx);
 			if (!ResourceLoader::exists(scene_path)) {
-				EditorNode::get_singleton()->show_accept(
-						TTR("The selected scene could not be found. It may have been moved or deleted."),
-						TTR("OK"));
+				EditorNode::get_singleton()->show_warning(TTR("The selected scene could not be found. It may have been moved or deleted."));
 				PackedStringArray rc = EditorSettings::get_singleton()->get_project_metadata("scene_paint_2d_editor", "recent_scenes", PackedStringArray());
 				rc.erase(scene_path);
 				EditorSettings::get_singleton()->set_project_metadata("scene_paint_2d_editor", "recent_scenes", rc);
