@@ -754,6 +754,12 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 			scene_state.lightmaps[i].exposure_normalization = enf / baked_exposure;
 		}
 
+		// Modulate
+		Color m = light_storage->lightmap_get_modulate(lightmap);
+		scene_state.lightmaps[i].modulate[0] = m.r;
+		scene_state.lightmaps[i].modulate[1] = m.g;
+		scene_state.lightmaps[i].modulate[2] = m.b;
+
 		scene_state.lightmap_ids[i] = p_lightmaps[i];
 		scene_state.lightmap_has_sh[i] = light_storage->lightmap_uses_spherical_harmonics(lightmap);
 

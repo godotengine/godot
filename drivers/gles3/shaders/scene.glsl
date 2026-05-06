@@ -1441,6 +1441,7 @@ uniform lowp sampler2DArray shadowmask_textures; //texunit:-5
 uniform lowp uint lightmap_slice;
 uniform highp vec4 lightmap_uv_scale;
 uniform float lightmap_exposure_normalization;
+uniform vec3 lightmap_modulate;
 uniform uint lightmap_shadowmask_mode;
 
 #define SHADOWMASK_MODE_NONE uint(0)
@@ -2543,15 +2544,18 @@ void main() {
 
 		vec3 n = normalize(lightmap_normal_xform * indirect_normal);
 
-		ambient_light += lm_light_l0 * lightmap_exposure_normalization;
-		ambient_light += lm_light_l1n1 * n.y * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
-		ambient_light += lm_light_l1_0 * n.z * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
-		ambient_light += lm_light_l1p1 * n.x * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+		vec3 al = vec3(0.0, 0.0, 0.0);
+		al += lm_light_l0 * lightmap_exposure_normalization;
+		al += lm_light_l1n1 * n.y * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+		al += lm_light_l1_0 * n.z * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+		al += lm_light_l1p1 * n.x * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+
+		ambient_light += al * lightmap_modulate;
 #else
 #ifdef LIGHTMAP_BICUBIC_FILTER
-		ambient_light += textureArray_bicubic(lightmap_textures, uvw, lightmap_texture_size).rgb * lightmap_exposure_normalization;
+		ambient_light += textureArray_bicubic(lightmap_textures, uvw, lightmap_texture_size).rgb * lightmap_exposure_normalization * lightmap_modulate;
 #else
-		ambient_light += textureLod(lightmap_textures, uvw, 0.0).rgb * lightmap_exposure_normalization;
+		ambient_light += textureLod(lightmap_textures, uvw, 0.0).rgb * lightmap_exposure_normalization * lightmap_modulate;
 #endif
 #endif
 	}

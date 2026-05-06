@@ -1745,15 +1745,19 @@ void main() {
 			hvec3 n = hvec3(normalize(lightmaps.data[ofs].normal_xform * indirect_normal));
 			half exposure_normalization = half(lightmaps.data[ofs].exposure_normalization);
 
-			ambient_light += lm_light_l0 * exposure_normalization;
-			ambient_light += lm_light_l1n1 * n.y * lm_light_l0 * exposure_normalization * half(4.0);
-			ambient_light += lm_light_l1_0 * n.z * lm_light_l0 * exposure_normalization * half(4.0);
-			ambient_light += lm_light_l1p1 * n.x * lm_light_l0 * exposure_normalization * half(4.0);
+			hvec3 al = hvec3(0.0, 0.0, 0.0);
+			al += lm_light_l0 * exposure_normalization;
+			al += lm_light_l1n1 * n.y * lm_light_l0 * exposure_normalization * half(4.0);
+			al += lm_light_l1_0 * n.z * lm_light_l0 * exposure_normalization * half(4.0);
+			al += lm_light_l1p1 * n.x * lm_light_l0 * exposure_normalization * half(4.0);
+
+			ambient_light += al * hvec3(lightmaps.data[ofs].modulate);
+
 		} else {
 			if (sc_use_lightmap_bicubic_filter()) {
-				ambient_light += hvec3(textureArray_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb * lightmaps.data[ofs].exposure_normalization);
+				ambient_light += hvec3(textureArray_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb * lightmaps.data[ofs].exposure_normalization * lightmaps.data[ofs].modulate);
 			} else {
-				ambient_light += hvec3(textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization);
+				ambient_light += hvec3(textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization * lightmaps.data[ofs].modulate);
 			}
 		}
 	}

@@ -1857,16 +1857,19 @@ void fragment_shader(in SceneData scene_data) {
 			vec3 n = normalize(lightmaps.data[ofs].normal_xform * indirect_normal);
 			float en = lightmaps.data[ofs].exposure_normalization;
 
-			ambient_light += lm_light_l0 * en;
-			ambient_light += lm_light_l1n1 * n.y * (lm_light_l0 * en * 4.0);
-			ambient_light += lm_light_l1_0 * n.z * (lm_light_l0 * en * 4.0);
-			ambient_light += lm_light_l1p1 * n.x * (lm_light_l0 * en * 4.0);
+			vec3 al = vec3(0.0, 0.0, 0.0);
+			al += lm_light_l0 * en;
+			al += lm_light_l1n1 * n.y * (lm_light_l0 * en * 4.0);
+			al += lm_light_l1_0 * n.z * (lm_light_l0 * en * 4.0);
+			al += lm_light_l1p1 * n.x * (lm_light_l0 * en * 4.0);
+
+			ambient_light += al * lightmaps.data[ofs].modulate;
 
 		} else {
 			if (sc_use_lightmap_bicubic_filter()) {
-				ambient_light += textureArray_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb * lightmaps.data[ofs].exposure_normalization;
+				ambient_light += textureArray_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb * lightmaps.data[ofs].exposure_normalization * lightmaps.data[ofs].modulate;
 			} else {
-				ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
+				ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization * lightmaps.data[ofs].modulate;
 			}
 		}
 	}
