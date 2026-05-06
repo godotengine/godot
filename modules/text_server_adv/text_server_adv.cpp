@@ -1402,7 +1402,9 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 
 		FT_GlyphSlot slot = p_font_data->face->glyph;
 		bool fix_edge = (slot->format == FT_GLYPH_FORMAT_SVG); // Need to check before FT_Render_Glyph as it will change format to bitmap.
+#if HB_VERSION_ATLEAST(13, 0, 0)
 		bool from_bitmap = (slot->format == FT_GLYPH_FORMAT_BITMAP);
+#endif
 		if (!outline) {
 			if (p_font_data->msdf) {
 #ifdef MODULE_MSDFGEN_ENABLED
