@@ -1020,9 +1020,6 @@ void EditorNode::_notification(int p_what) {
 			if (warning) {
 				warning->queue_free();
 			}
-			if (accept) {
-				accept->queue_free();
-			}
 			if (save_accept) {
 				save_accept->queue_free();
 			}
@@ -1790,9 +1787,9 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 
 	if (err != OK) {
 		if (ResourceLoader::is_imported(p_resource->get_path())) {
-			show_accept(vformat(TTR("Cannot save resource at path \"%s\", as it is imported.\nImported resources can't be saved. Instead, modify the source file or change options in the Import dock."), path), TTR("OK"));
+			show_warning(vformat(TTR("Cannot save resource at path \"%s\", as it is imported.\nImported resources can't be saved. Instead, modify the source file or change options in the Import dock."), path));
 		} else {
-			show_accept(vformat(TTR("Error saving resource at path \"%s\": %s."), path, TTR(error_names[err])), TTR("OK"));
+			show_warning(vformat(TTR("Error saving resource at path \"%s\": %s."), path, TTR(error_names[err])));
 		}
 
 		saving_resources_in_path.erase(p_resource);
@@ -2117,13 +2114,13 @@ void EditorNode::_dialog_display_save_error(String p_file, Error p_error) {
 	if (p_error) {
 		switch (p_error) {
 			case ERR_FILE_CANT_WRITE: {
-				show_accept(TTR("Can't open file for writing:") + " " + p_file.get_extension(), TTR("OK"));
+				show_warning(TTR("Can't open file for writing:") + " " + p_file.get_extension());
 			} break;
 			case ERR_FILE_UNRECOGNIZED: {
-				show_accept(TTR("Requested file format unknown:") + " " + p_file.get_extension(), TTR("OK"));
+				show_warning(TTR("Requested file format unknown:") + " " + p_file.get_extension());
 			} break;
 			default: {
-				show_accept(TTR("Error while saving."), TTR("OK"));
+				show_warning(TTR("Error while saving."));
 			} break;
 		}
 	}
@@ -2133,22 +2130,22 @@ void EditorNode::_dialog_display_load_error(String p_file, Error p_error) {
 	if (p_error) {
 		switch (p_error) {
 			case ERR_CANT_OPEN: {
-				show_accept(vformat(TTR("Can't open file '%s'. The file could have been moved or deleted."), p_file.get_file()), TTR("OK"));
+				show_warning(vformat(TTR("Can't open file '%s'. The file could have been moved or deleted."), p_file.get_file()));
 			} break;
 			case ERR_PARSE_ERROR: {
-				show_accept(vformat(TTR("Error while parsing file '%s'."), p_file.get_file()), TTR("OK"));
+				show_warning(vformat(TTR("Error while parsing file '%s'."), p_file.get_file()));
 			} break;
 			case ERR_FILE_CORRUPT: {
-				show_accept(vformat(TTR("Scene file '%s' appears to be invalid/corrupt."), p_file.get_file()), TTR("OK"));
+				show_warning(vformat(TTR("Scene file '%s' appears to be invalid/corrupt."), p_file.get_file()));
 			} break;
 			case ERR_FILE_NOT_FOUND: {
-				show_accept(vformat(TTR("Missing file '%s' or one of its dependencies."), p_file.get_file()), TTR("OK"));
+				show_warning(vformat(TTR("Missing file '%s' or one of its dependencies."), p_file.get_file()));
 			} break;
 			case ERR_FILE_UNRECOGNIZED: {
-				show_accept(vformat(TTR("File '%s' is saved in a format that is newer than the formats supported by this version of Godot, so it can't be opened."), p_file.get_file()), TTR("OK"));
+				show_warning(vformat(TTR("File '%s' is saved in a format that is newer than the formats supported by this version of Godot, so it can't be opened."), p_file.get_file()));
 			} break;
 			default: {
-				show_accept(vformat(TTR("Error while loading file '%s'."), p_file.get_file()), TTR("OK"));
+				show_warning(vformat(TTR("Error while loading file '%s'."), p_file.get_file()));
 			} break;
 		}
 	}
@@ -2508,12 +2505,12 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
 	if (!scene) {
-		show_accept(TTR("This operation can't be done without a tree root."), TTR("OK"));
+		show_warning(TTR("This operation can't be done without a tree root."));
 		return;
 	}
 
 	if (!scene->get_scene_file_path().is_empty() && _validate_scene_recursive(scene->get_scene_file_path(), scene)) {
-		show_accept(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
+		show_warning(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."));
 		return;
 	}
 
@@ -2544,7 +2541,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	Error err = sdata->pack(scene);
 
 	if (err != OK) {
-		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("OK"));
+		show_warning(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."));
 		return;
 	}
 
@@ -2815,7 +2812,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = ResourceLoader::load(p_file, "MeshLibrary");
 
 				if (ml.is_null()) {
-					show_accept(TTR("Can't load MeshLibrary for merging!"), TTR("OK"));
+					show_warning(TTR("Can't load MeshLibrary for merging!"));
 					return;
 				}
 			}
@@ -2828,7 +2825,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 			Error err = ResourceSaver::save(ml, p_file);
 			if (err) {
-				show_accept(TTR("Error saving MeshLibrary!"), TTR("OK"));
+				show_warning(TTR("Error saving MeshLibrary!"));
 				return;
 			} else if (ResourceCache::has(p_file)) {
 				// Make sure MeshLibrary is updated in the editor.
@@ -3507,7 +3504,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 					save_editor_layout_delayed();
 				} else {
-					show_save_accept(vformat(TTR("%s no longer exists! Please specify a new save location."), scene->get_scene_file_path().get_base_dir()), TTR("OK"));
+					show_save_accept(vformat(TTR("%s no longer exists! Please specify a new save location."), scene->get_scene_file_path().get_base_dir()));
 				}
 				break;
 			}
@@ -3536,9 +3533,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					EditorToaster::get_singleton()->popup_str(vformat(TTR("The current scene has no root node, but %d modified external resource(s) and/or plugin data were saved anyway."), saved), EditorToaster::SEVERITY_INFO);
 				} else if (p_option == SCENE_SAVE_AS_SCENE) {
 					// Don't show this dialog when pressing Ctrl + S to avoid interfering with script saving.
-					show_accept(
-							TTR("A root node is required to save the scene. You can add a root node using the Scene tree dock."),
-							TTR("OK"));
+					show_warning(TTR("A root node is required to save the scene. You can add a root node using the Scene dock."));
 				}
 
 				break;
@@ -3887,7 +3882,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case SPINNER_UPDATE_CONTINUOUSLY: {
 			EditorSettings::get_singleton()->set("interface/editor/display/update_continuously", true);
 			_update_update_spinner();
-			show_accept(TTR("This option is deprecated. Situations where refresh must be forced are now considered a bug. Please report."), TTR("OK"));
+			show_warning(TTR("This option is deprecated. Situations where refresh must be forced are now considered a bug. Please report."));
 		} break;
 		case SPINNER_UPDATE_WHEN_CHANGED: {
 			EditorSettings::get_singleton()->set("interface/editor/display/update_continuously", false);
@@ -4172,7 +4167,7 @@ void EditorNode::_export_as_menu_option(int p_idx) {
 		current_menu_option = FILE_EXPORT_MESH_LIBRARY;
 
 		if (!editor_data.get_edited_scene_root()) {
-			show_accept(TTR("This operation can't be done without a scene."), TTR("OK"));
+			show_warning(TTR("This operation can't be done without a scene."));
 			return;
 		}
 
@@ -4915,7 +4910,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	}
 
 	if (!lpath.begins_with("res://")) {
-		show_accept(TTR("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."), TTR("OK"));
+		show_warning(TTR("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."));
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -5776,7 +5771,7 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
-			show_accept(TTR("There is no defined scene to run."), TTR("OK"));
+			show_warning(TTR("There is no defined scene to run."));
 			return;
 		}
 
@@ -6282,22 +6277,11 @@ bool EditorNode::is_project_exporting() const {
 	return project_export && project_export->is_exporting();
 }
 
-void EditorNode::show_accept(const String &p_text, const String &p_title) {
-	current_menu_option = -1;
-	if (accept) {
-		_close_save_scene_progress();
-		accept->set_ok_button_text(p_title);
-		accept->set_text(p_text);
-		accept->reset_size();
-		EditorInterface::get_singleton()->popup_dialog_centered_clamped(accept, Size2i(), 0.0);
-	}
-}
-
-void EditorNode::show_save_accept(const String &p_text, const String &p_title) {
+void EditorNode::show_save_accept(const String &p_text, const String &p_ok_text) {
 	current_menu_option = -1;
 	if (save_accept) {
 		_close_save_scene_progress();
-		save_accept->set_ok_button_text(p_title);
+		save_accept->set_ok_button_text(p_ok_text);
 		save_accept->set_text(p_text);
 		save_accept->reset_size();
 		EditorInterface::get_singleton()->popup_dialog_centered_clamped(save_accept, Size2i(), 0.0);
@@ -8942,11 +8926,6 @@ EditorNode::EditorNode() {
 	scene_root->set_disable_3d(true);
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
-
-	accept = memnew(AcceptDialog);
-	accept->set_autowrap(true);
-	accept->set_min_size(Vector2i(600, 0));
-	accept->set_unparent_when_invisible(true);
 
 	save_accept = memnew(AcceptDialog);
 	save_accept->set_unparent_when_invisible(true);
