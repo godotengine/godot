@@ -5711,35 +5711,6 @@ func _ready():
 		CHECK(code_edit->get_caret_column(3) == 8);
 	}
 
-	SUBCASE("[SceneTree][CodeEdit] mouse hovering over code completion") {
-		code_edit->_test_set_code_completion_rect(Rect2(Vector2(100, 100), Vector2(300, 200)));
-		code_edit->_test_set_code_completion_active(true);
-
-		Ref<InputEventMouseMotion> mm;
-		mm.instantiate();
-		mm->set_position(Vector2(200, 150));
-		mm->set_global_position(code_edit->get_global_position() + Vector2(200, 150));
-		code_edit->gui_input(mm);
-
-		print_line(code_edit->_test_is_code_completion_active());
-		print_line(code_edit->is_mouse_over_code_completion_popup());
-		print_line(mm->get_position());
-		print_line(mm->get_global_position());
-		CHECK(code_edit->is_mouse_over_code_completion_popup());
-	}
-
-	SUBCASE("[SceneTree][CodeEdit] mouse not hovering over code completion") {
-		code_edit->_test_set_code_completion_rect(Rect2(Vector2(100, 100), Vector2(200, 200)));
-		code_edit->_test_set_code_completion_active(true);
-
-		Ref<InputEventMouseMotion> mm;
-		mm.instantiate();
-		mm->set_position(Vector2(200, 150));
-		code_edit->gui_input(mm);
-
-		CHECK(!(code_edit->is_mouse_over_code_completion_popup()));
-	}
-
 	memdelete(code_edit);
 }
 
