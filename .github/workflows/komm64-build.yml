@@ -18,6 +18,8 @@ name: komm64 Windows Build
 on:
   workflow_dispatch:
   push:
+    branches:
+      - 'komm64/**'
     tags:
       - 'v*-komm64*'
 
