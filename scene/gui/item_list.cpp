@@ -788,6 +788,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_or_control_pressed()) {
 				deselect(i);
 				emit_signal(SNAME("multi_selected"), i, false);
+				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 
 			} else if (select_mode == SELECT_MULTI && mb->is_shift_pressed() && current >= 0 && current < items.size() && current != i) {
 				// Range selection.
