@@ -161,9 +161,11 @@ jobs:
             --type instrumentation \
             --app "$APP_APK" \
             --test "$TEST_APK" \
-            --device model=pa3q,version=35,orientation=landscape \
-            --device model=java,version=30,orientation=landscape \
-            --device model=MediumPhone.arm,version=26,orientation=landscape \
+            --device model=MediumPhone.arm,version=26 \
+            --device model=starlte,version=29 \
+            --device model=MediumPhone.arm,version=32 \
+            --device model=MediumTablet.arm,version=35 \
+            --device model=rango,version=36 \
             --use-orchestrator \
             --timeout 2m 2>&1)
           exit_code=$?
