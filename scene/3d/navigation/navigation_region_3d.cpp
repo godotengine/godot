@@ -362,9 +362,6 @@ PackedStringArray NavigationRegion3D::get_configuration_warnings() const {
 	return warnings;
 }
 
-// void NavigationRegion3D::_validate_property(PropertyInfo &property) const {
-// }
-
 void NavigationRegion3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (!navigation_mesh.is_valid()) {
 		return;
@@ -373,6 +370,7 @@ void NavigationRegion3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int16_t i = 0; i < navigation_mesh->get_area_count(); i++) {
 		const String prep = vformat("areas/%d/", i);
 		// Navigation layers overwrites.
+		p_list->push_back(PropertyInfo(Variant::STRING, prep + "id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
 		p_list->push_back(PropertyInfo(Variant::INT, prep + "layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION, "", PROPERTY_USAGE_EDITOR));
 	}
 }
@@ -448,7 +446,7 @@ bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) 
 		if (which < 0 || which >= navigation_mesh->get_area_count()) {
 			return false;
 		}
-		NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, (uint16_t)which, p_value);
+		NavigationServer3D::get_singleton()->region_set_area_navigation_layers_at_index(region, (uint16_t)which, p_value);
 #ifdef DEBUG_ENABLED
 		if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 			if (navigation_mesh.is_valid()) {
@@ -476,7 +474,15 @@ bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 		if (which < 0 || which >= navigation_mesh->get_area_count()) {
 			return false;
 		}
-		r_ret = (int)NavigationServer3D::get_singleton()->region_get_area_navigation_layers(region, (uint16_t)which);
+		r_ret = (int)NavigationServer3D::get_singleton()->region_get_area_navigation_layers_at_index(region, (uint16_t)which);
+		return true;
+	}
+	if (path.begins_with("areas/") && path.ends_with("id") && navigation_mesh.is_valid()) {
+		int which = path.get_slicec('/', 1).to_int();
+		if (which < 0 || which >= navigation_mesh->get_area_count()) {
+			return false;
+		}
+		r_ret = (int)NavigationServer3D::get_singleton()->region_get_area_ids(region)[which];
 		return true;
 	}
 	return false;
