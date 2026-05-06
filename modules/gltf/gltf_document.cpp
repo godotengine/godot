@@ -6075,11 +6075,29 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene
 }
 
 GLTFNodeIndex GLTFDocument::_node_and_or_bone_to_gltf_node_index(Ref<GLTFState> p_state, const Vector<StringName> &p_node_subpath, const Node *p_godot_node) {
-	const Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_godot_node);
-	if (skeleton && p_node_subpath.size() == 1) {
+	const Skeleton3D *skeleton = nullptr;
+	String bone_name;
+	if (const BoneAttachment3D *bone_attachment = Object::cast_to<BoneAttachment3D>(p_godot_node); bone_attachment) {
+		// Special case: Handle an animation track animating a property on a bone (e.g. 'visible')
+		// Find the skeleton that the bone attachment is attached to
+		if (bone_attachment->get_use_external_skeleton()) {
+			if (NodePath ext_path = bone_attachment->get_external_skeleton(); !ext_path.is_empty()) {
+				if (Node *external_skeleton_node = p_godot_node->get_node_or_null(ext_path); external_skeleton_node) {
+					skeleton = Object::cast_to<Skeleton3D>(external_skeleton_node);
+				}
+			}
+		} else {
+			skeleton = Object::cast_to<Skeleton3D>(p_godot_node->get_parent());
+		}
+		ERR_FAIL_COND_V_MSG(skeleton == nullptr, -1, vformat("glTF: Unable to find Skeleton3D for bone attachment %s", bone_attachment->get_path()));
+		bone_name = bone_attachment->get_bone_name();
+	} else if (skeleton = Object::cast_to<Skeleton3D>(p_godot_node); skeleton && p_node_subpath.size() == 1) {
+		bone_name = p_node_subpath[0];
+	}
+
+	if (skeleton && !bone_name.is_empty()) {
 		// Special case: Handle skeleton bone TRS tracks. They use the format `A/B/C/Skeleton3D:bone_name`.
 		// We have a Skeleton3D, check if it has a bone with the same name as this subpath.
-		const String &bone_name = p_node_subpath[0];
 		const int32_t bone_index = skeleton->find_bone(bone_name);
 		if (bone_index != -1) {
 			// A bone was found! But we still need to figure out which glTF node it corresponds to.
