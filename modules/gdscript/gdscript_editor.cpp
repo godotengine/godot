@@ -4297,6 +4297,17 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	return ERR_CANT_RESOLVE;
 }
 
+static Error _lookup_symbol_from_outer_classes(const GDScriptParser::DataType &p_base, const String &p_symbol, GDScriptLanguage::LookupResult &r_result) {
+	GDScriptParser::DataType outer_class = p_base;
+	while (outer_class.class_type->outer != nullptr) {
+		outer_class = outer_class.class_type->outer->datatype;
+		if (_lookup_symbol_from_base(outer_class, p_symbol, r_result) == OK) {
+			return OK;
+		}
+	}
+	return ERR_CANT_RESOLVE;
+}
+
 ::Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) {
 	// Before parsing, try the usual stuff.
 	if (GDScriptAnalyzer::class_exists(p_symbol)) {
@@ -4560,6 +4571,10 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					return OK;
 				}
 			}
+
+			if (_lookup_symbol_from_outer_classes(base_type, p_symbol, r_result) == OK) {
+				return OK;
+			}
 		} break;
 		case GDScriptParser::COMPLETION_ATTRIBUTE_METHOD:
 		case GDScriptParser::COMPLETION_ATTRIBUTE: {
@@ -4627,6 +4642,10 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			GDScriptParser::DataType base_type = context.current_class->get_datatype();
 
 			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
+				return OK;
+			}
+
+			if (_lookup_symbol_from_outer_classes(base_type, p_symbol, r_result) == OK) {
 				return OK;
 			}
 		} break;
