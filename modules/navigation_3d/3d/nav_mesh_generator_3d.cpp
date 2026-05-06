@@ -510,7 +510,9 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	uint8_t AREA_CONFIG_ID_MAX = RC_WALKABLE_AREA; // Recast unsigned char RC_WALKABLE_AREA = 63 is maximum allowed area config id.
 
 	Vector<NavigationMeshSourceGeometryData3D::ProjectedArea> usable_projected_areas; // Usable, but does not mean it affects the navmesh.
+#ifdef DEBUG_ENABLED
 	Array usable_area_origins;
+#endif // DEBUG_ENABLED
 
 	if (!projected_areas.is_empty()) {
 		for (const NavigationMeshSourceGeometryData3D::ProjectedArea &projected_area : projected_areas) {
@@ -520,7 +522,9 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 			}
 
 			unsigned char recast_areaId = RC_WALKABLE_AREA;
+#ifdef DEBUG_ENABLED
 			Vector3 center;
+#endif // DEBUG_ENABLED
 
 			HashMap<uint32_t, uint8_t>::Iterator existing_layer = navigation_layers_to_area_config_id.find(area_navigation_layers);
 			if (!existing_layer) {
@@ -552,7 +556,10 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				const float *area_bmax = area_v_bmax.ptr();
 
 				rcMarkBoxArea(&ctx, area_bmin, area_bmax, recast_areaId, *chf);
+#ifdef DEBUG_ENABLED
 				center = projected_area.aabb.get_center();
+				center.y = aabb_pos.y;
+#endif // DEBUG_ENABLED
 
 			} else if (projected_area.shape_type == NavigationMeshSourceGeometryData3D::ProjectedArea::CYLINDER) {
 				const Vector<float> area_v_pos = { float(projected_area.position.x), float(projected_area.position.y), float(projected_area.position.z) };
@@ -562,7 +569,9 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				const float area_h = projected_area.height;
 
 				rcMarkCylinderArea(&ctx, area_pos, area_r, area_h, recast_areaId, *chf);
+#ifdef DEBUG_ENABLED
 				center = projected_area.position;
+#endif // DEBUG_ENABLED
 
 			} else if (projected_area.shape_type == NavigationMeshSourceGeometryData3D::ProjectedArea::POLYGON) {
 				if (projected_area.vertices.is_empty() || projected_area.vertices.size() % 3 != 0) {
@@ -575,11 +584,15 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				const float area_hmax = projected_area.elevation + projected_area.height;
 
 				rcMarkConvexPolyArea(&ctx, area_verts, area_nverts, area_hmin, area_hmax, recast_areaId, *chf);
+#ifdef DEBUG_ENABLED
 				center = projected_area.aabb.get_center();
+#endif // DEBUG_ENABLED
 			}
 
 			usable_projected_areas.push_back(projected_area);
-			usable_area_origins.push_back(center); // FIXME: better get y-axis value further below, when we loop over our valid and baked projected areas.
+#ifdef DEBUG_ENABLED
+			usable_area_origins.push_back(center);
+#endif // DEBUG_ENABLED
 		}
 	}
 
@@ -709,15 +722,34 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 					}
 					AABB bounds = area.aabb.grow(grow);
 					bool contains_tris = true;
+#ifdef DEBUG_ENABLED
+					float max_y_offset = vertices[0].y;
+#endif // DEBUG_ENABLED
 					for (const Vector3 vertex : vertices) {
 						if (!bounds.has_point(vertex)) {
 							contains_tris = false;
 							break;
 						}
+#ifdef DEBUG_ENABLED
+						if (vertex.y > max_y_offset) {
+							max_y_offset = vertex.y;
+						}
+#endif // DEBUG_ENABLED
 					}
 					if (contains_tris) {
 						match = true;
 						usable_nav_area_indices.write[area_index].push_back(nav_polygons_layers.size() - 1);
+
+#ifdef DEBUG_ENABLED
+						Vector3 origin = usable_area_origins[area_index];
+
+						if (max_y_offset > origin.y) {
+							// Adjust height offset:
+							origin.y = max_y_offset;
+							usable_area_origins[area_index] = origin;
+						}
+#endif // DEBUG_ENABLED
+
 						break;
 					}
 
@@ -733,7 +765,9 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	Vector<String> nav_area_bake_ids = Vector<String>();
 	Vector<uint32_t> nav_area_navlayers = Vector<uint32_t>();
 	Vector<Vector<int>> nav_area_indices = Vector<Vector<int>>();
+#ifdef DEBUG_ENABLED
 	Array area_origins;
+#endif // DEBUG_ENABLED
 	bool has_baked_ids = false;
 	int i = 0;
 	for (Vector<int> polygon_indices : usable_nav_area_indices) {
@@ -746,7 +780,9 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 			nav_area_bake_ids.push_back(area.bake_id); // If there are baked ids from area nodes, bake them to navmesh.
 			nav_area_navlayers.push_back(area.navigation_layers);
 			nav_area_indices.push_back(polygon_indices);
+#ifdef DEBUG_ENABLED
 			area_origins.push_back(usable_area_origins[i]);
+#endif // DEBUG_ENABLED
 		}
 		i++;
 	}
