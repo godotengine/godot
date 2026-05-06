@@ -227,6 +227,12 @@ bool EditorExportPlatformLinuxBSD::is_executable(const String &p_path) const {
 	return is_elf(p_path) || is_shebang(p_path);
 }
 
+void EditorExportPlatformLinuxBSD::get_platform_features(List<String> *r_features) const {
+	EditorExportPlatformPC::get_platform_features(r_features);
+	r_features->push_back("linux");
+	r_features->push_back("linuxbsd");
+}
+
 bool EditorExportPlatformLinuxBSD::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates, p_debug);

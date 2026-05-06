@@ -919,6 +919,11 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 	return OK;
 }
 
+void EditorExportPlatformWindows::get_platform_features(List<String> *r_features) const {
+	EditorExportPlatformPC::get_platform_features(r_features);
+	r_features->push_back("windows");
+}
+
 Ref<Texture2D> EditorExportPlatformWindows::get_run_icon() const {
 	return run_icon;
 }
