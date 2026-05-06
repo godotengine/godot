@@ -1626,11 +1626,12 @@ Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPres
 Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
-	const String base_dir = p_path.get_base_dir();
-
-	if (!DirAccess::exists(base_dir)) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
-		return ERR_FILE_BAD_PATH;
+	// Allow exporting to `res://` and `user://` for convenience, but ensure the export folder exists beforehand.
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	const String base_dir = ProjectSettings::get_singleton()->globalize_path(p_path.get_base_dir());
+	Error err = ensure_folder(da, base_dir);
+	if (err != OK) {
+		return err;
 	}
 
 	EditorProgress ep("export", TTR("Exporting for macOS"), 3, true);
@@ -1643,10 +1644,10 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	}
 
 	if (src_pkg_name.is_empty()) {
-		String err;
-		src_pkg_name = find_export_template("macos.zip", &err);
+		String error_string;
+		src_pkg_name = find_export_template("macos.zip", &error_string);
 		if (src_pkg_name.is_empty()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found.") + "\n" + err);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found.") + "\n" + error_string);
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
@@ -1710,7 +1711,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	print_verbose("Exporting to " + tmp_app_path_name);
 
-	Error err = OK;
+	err = OK;
 
 	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_base_path_name);
 	if (tmp_app_dir.is_null()) {
@@ -2294,7 +2295,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if ((err == OK) && helpers.size() > 0) {
-			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < helpers.size(); i++) {
 				String hlp_path = helpers[i];
 				err = da->copy(hlp_path, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file());
@@ -2311,7 +2311,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (err == OK) {
-			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
 				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
 				if (shared_objects[i].target.is_empty()) {
@@ -2341,7 +2340,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			if (dist_type == 2) {
 				String pprof = p_preset->get_or_env("codesign/provisioning_profile", ENV_MAC_CODESIGN_PROFILE).operator String();
 				if (!pprof.is_empty()) {
-					Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 					err = da->copy(pprof, tmp_app_path_name + "/Contents/embedded.provisionprofile");
 				}
 			}

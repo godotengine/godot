@@ -2072,6 +2072,20 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 	da->list_dir_end();
 }
 
+Error EditorExportPlatform::ensure_folder(Ref<DirAccess> &p_da, const String &p_folder) {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (da.is_valid() && !DirAccess::exists(p_folder)) {
+		if (FileAccess::exists(p_folder)) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("A file with the same name as the export destination directory \"%s\" already exists. Remove it or select another destination."), p_folder));
+			return ERR_CANT_CREATE;
+		}
+		da->make_dir_recursive(p_folder);
+		print_line(vformat("Creating folder for export: %s", p_folder));
+	}
+
+	return OK;
+}
+
 Dictionary EditorExportPlatform::_save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, bool p_embed) {
 	Vector<SharedObject> so_files;
 	int64_t embedded_start = 0;
