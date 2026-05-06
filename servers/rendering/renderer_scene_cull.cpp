@@ -1602,6 +1602,17 @@ void RendererSceneCull::instance_geometry_get_shader_parameter_list(RID p_instan
 	instance->instance_uniforms.get_property_list(*p_parameters);
 }
 
+void RendererSceneCull::instance_lightmap_update_geometries_captures(RID p_lightmap) {
+	Instance *lightmap_instance = instance_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap_instance);
+	if (lightmap_instance->base_type == RSE::INSTANCE_LIGHTMAP) {
+		InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(lightmap_instance->base_data);
+		for (Instance *geom : lightmap_data->geometries) {
+			_instance_queue_update(geom, false, false);
+		}
+	}
+}
+
 void RendererSceneCull::_update_instance(Instance *p_instance) const {
 	p_instance->version++;
 

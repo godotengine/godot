@@ -2708,6 +2708,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lightmap_get_probe_capture_tetrahedra", "lightmap"), &RenderingServer::lightmap_get_probe_capture_tetrahedra);
 	ClassDB::bind_method(D_METHOD("lightmap_get_probe_capture_bsp_tree", "lightmap"), &RenderingServer::lightmap_get_probe_capture_bsp_tree);
 	ClassDB::bind_method(D_METHOD("lightmap_set_baked_exposure_normalization", "lightmap", "baked_exposure"), &RenderingServer::lightmap_set_baked_exposure_normalization);
+	ClassDB::bind_method(D_METHOD("lightmap_set_modulate", "lightmap", "energy_color"), &RenderingServer::lightmap_set_modulate);
 
 	ClassDB::bind_method(D_METHOD("lightmap_set_probe_capture_update_speed", "speed"), &RenderingServer::lightmap_set_probe_capture_update_speed);
 
@@ -3254,6 +3255,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instances_cull_aabb", "aabb", "scenario"), &RenderingServer::_instances_cull_aabb_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_ray", "from", "to", "scenario"), &RenderingServer::_instances_cull_ray_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_convex", "convex", "scenario"), &RenderingServer::_instances_cull_convex_bind, DEFVAL(RID()));
+
+	ClassDB::bind_method(D_METHOD("instance_lightmap_update_geometries_captures", "lightmap"), &RenderingServer::instance_lightmap_update_geometries_captures);
 
 	BIND_ENUM_CONSTANT(RSE::INSTANCE_NONE);
 	BIND_ENUM_CONSTANT(RSE::INSTANCE_MESH);

@@ -295,6 +295,8 @@ struct Lightmap {
 	mat3 normal_xform;
 	vec2 light_texture_size;
 	float exposure_normalization;
+	float pad;
+	vec3 modulate;
 	uint flags;
 };
 

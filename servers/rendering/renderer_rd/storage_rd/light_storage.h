@@ -351,11 +351,13 @@ private:
 	struct Lightmap {
 		RID light_texture;
 		RID shadow_texture;
+		HashSet<RID> lightmap_instances;
 		RSE::ShadowmaskMode shadowmask_mode = RSE::SHADOWMASK_MODE_NONE;
 		bool uses_spherical_harmonics = false;
 		bool interior = false;
 		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
 		float baked_exposure = 1.0;
+		Color modulate = Color(1, 1, 1, 1); // in linear space.
 		Vector2i light_texture_size;
 		int32_t array_index = -1; //unassigned
 		PackedVector3Array points;
@@ -1023,6 +1025,7 @@ public:
 	virtual void lightmap_set_probe_interior(RID p_lightmap, bool p_interior) override;
 	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) override;
 	virtual void lightmap_set_baked_exposure_normalization(RID p_lightmap, float p_exposure) override;
+	virtual void lightmap_set_modulate(RID p_lightmap, const Color &p_color) override;
 	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const override;
 	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const override;
 	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const override;
@@ -1031,6 +1034,9 @@ public:
 	virtual bool lightmap_is_interior(RID p_lightmap) const override;
 	virtual void lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) override;
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override;
+
+	virtual void lightmap_insert_to_lightmap_instances(RID p_lightmap, RID p_instance) override;
+	virtual void lightmap_erase_from_lightmap_instances(RID p_lightmap, RID p_instance) override;
 
 	Dependency *lightmap_get_dependency(RID p_lightmap) const;
 
@@ -1050,6 +1056,11 @@ public:
 		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		ERR_FAIL_NULL_V(lm, 1.0);
 		return lm->baked_exposure;
+	}
+	_FORCE_INLINE_ Color lightmap_get_modulate(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		ERR_FAIL_NULL_V(lm, Color(1, 1, 1, 1));
+		return lm->modulate;
 	}
 	_FORCE_INLINE_ int32_t lightmap_get_array_index(RID p_lightmap) const {
 		ERR_FAIL_COND_V(!using_lightmap_array, -1); //only for arrays

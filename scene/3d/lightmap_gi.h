@@ -70,6 +70,7 @@ private:
 	RID lightmap;
 	AABB bounds;
 	float baked_exposure = 1.0;
+	Color modulate = Color(1, 1, 1, 1);
 	uint32_t lightprobe_hash = 0;
 
 	struct User {
@@ -120,6 +121,9 @@ public:
 
 	bool is_interior() const;
 	float get_baked_exposure() const;
+
+	void set_modulate(const Color &p_color);
+	Color get_modulate() const;
 
 	void set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure, uint32_t p_lightprobe_hash);
 	PackedVector3Array get_capture_points() const;

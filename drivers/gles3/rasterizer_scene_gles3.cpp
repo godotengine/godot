@@ -3799,6 +3799,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						}
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_EXPOSURE_NORMALIZATION, exposure_normalization, shader->version, instance_variant, spec_constants);
 
+						Vector3 lightmap_modulate(lm->modulate.r, lm->modulate.g, lm->modulate.b);
+						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_MODULATE, lightmap_modulate, shader->version, instance_variant, spec_constants);
+
 						if (lm->uses_spherical_harmonics) {
 							Basis to_lm = li->transform.basis.inverse() * p_render_data->cam_transform.basis;
 							to_lm = to_lm.inverse().transposed();
