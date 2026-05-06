@@ -282,15 +282,15 @@ void ScenePaint2DEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (!node) {
 					EditorNode::get_singleton()->show_warning(
-							"No target node selected. Please select a Node2D compatible node in the SceneTree where painted scenes will be added.");
+							TTR("No target node selected. Please select a Node2D compatible node in the SceneTree where painted scenes will be added."));
 					return;
 				} else if (!selected_scene) {
 					EditorNode::get_singleton()->show_warning(
-							"No scene selected for painting. Use the Scene Picker from the toolbar to choose a scene before painting.");
+							TTR("No scene selected for painting. Use the Scene Picker from the toolbar to choose a scene before painting."));
 					return;
 				} else if (!FileAccess::exists(selected_scene->get_scene_file_path())) {
 					EditorNode::get_singleton()->show_warning(
-							vformat("The selected scene '%s' no longer exists on disk. Please select a valid scene to paint.",
+							vformat(TTR("The selected scene '%s' no longer exists on disk. Please select a valid scene to paint."),
 									selected_scene->get_scene_file_path()));
 					_set_picked_scene(nullptr);
 					return;

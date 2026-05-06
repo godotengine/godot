@@ -1027,7 +1027,7 @@ void ScriptEditor::_file_dialog_action(const String &p_file) {
 				Error err = _save_text_file(resource, path);
 
 				if (err != OK) {
-					EditorNode::get_singleton()->show_accept(TTR("Error saving file!"), TTR("OK"));
+					EditorNode::get_singleton()->show_warning(TTR("Error saving file!"));
 					return;
 				}
 
