@@ -619,6 +619,36 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 	return arr;
 }
 
+void collect_workspace_symbols(Array &p_arr, const LSP::DocumentSymbol &p_ds, const String &p_query) {
+	for (const LSP::DocumentSymbol &child_symbol : p_ds.children) {
+		if (p_query.is_empty() || child_symbol.name.matchn(p_query)) {
+			p_arr.push_back(LSP::WorkspaceSymbol::from_doc_symbol(child_symbol, p_ds.name).to_json());
+		}
+
+		if (child_symbol.kind == LSP::SymbolKind::Class) {
+			collect_workspace_symbols(p_arr, child_symbol, p_query);
+		}
+	}
+}
+
+Array GDScriptLanguageProtocol::lsp_symbol(const Dictionary &p_params) {
+	Array arr;
+	LSP_CLIENT_V(arr);
+	String query = p_params["query"];
+	List<String> all_scripts;
+	workspace->list_script_files("res://", all_scripts);
+
+	for (const String &path : all_scripts) {
+		const LSP::DocumentSymbol &class_symbol = get_parse_result(path)->get_symbols();
+		if (query.is_empty() || class_symbol.name.matchn(query)) {
+			arr.push_back(LSP::WorkspaceSymbol::from_doc_symbol(class_symbol).to_json());
+		}
+
+		collect_workspace_symbols(arr, class_symbol, query);
+	}
+	return arr;
+}
+
 void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPositionParams &p_doc_pos, List<const LSP::DocumentSymbol *> &r_list) {
 	LSP_CLIENT;
 

@@ -67,10 +67,6 @@ protected:
 
 	void reload_all_workspace_scripts();
 
-	void list_script_files(const String &p_root_dir, List<String> &r_files);
-
-	void collect_workspace_symbols(Array &p_arr, const LSP::DocumentSymbol &p_ds, const String &p_query);
-
 	void apply_new_signal(Object *obj, String function, PackedStringArray args);
 
 public:
@@ -98,6 +94,7 @@ public:
 	bool can_rename(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::DocumentSymbol &r_symbol, LSP::Range &r_range);
 	Vector<LSP::Location> find_usages_in_file(const LSP::DocumentSymbol &p_symbol, const String &p_file_path);
 	Vector<LSP::Location> find_all_usages(const LSP::DocumentSymbol &p_symbol);
+	void list_script_files(const String &p_root_dir, List<String> &r_files);
 
 	Array symbol(const Dictionary &p_params);
 

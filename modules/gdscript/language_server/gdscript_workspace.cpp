@@ -783,37 +783,9 @@ Error GDScriptWorkspace::resolve_signature(const LSP::TextDocumentPositionParams
 	return ERR_METHOD_NOT_FOUND;
 }
 
-void GDScriptWorkspace::collect_workspace_symbols(Array &p_arr, const LSP::DocumentSymbol &p_ds, const String &p_query) {
-	for (const LSP::DocumentSymbol &child_symbol : p_ds.children) {
-		if (p_query.is_empty() || child_symbol.name.matchn(p_query)) {
-			p_arr.push_back(LSP::WorkspaceSymbol::from_doc_symbol(child_symbol, p_ds.name).to_json());
-		}
-
-		if (child_symbol.kind == LSP::SymbolKind::Class) {
-			collect_workspace_symbols(p_arr, child_symbol, p_query);
-		}
-	}
-}
 
 Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
-	List<String> paths;
-	list_script_files("res://", paths);
-	String query = p_params["query"];
-	Array arr;
-	for (const String &path : paths) {
-		ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
-		if (!parser) {
-			continue;
-		}
-
-		const LSP::DocumentSymbol &script_symbols = parser->get_symbols();
-		if (query.is_empty() || script_symbols.name.matchn(query)) {
-			arr.push_back(LSP::WorkspaceSymbol::from_doc_symbol(script_symbols).to_json());
-		}
-		collect_workspace_symbols(arr, script_symbols, query);
-	}
-
-	return arr;
+	return GDScriptLanguageProtocol::get_singleton()->lsp_symbol(p_params);
 }
 
 GDScriptWorkspace::GDScriptWorkspace() {}

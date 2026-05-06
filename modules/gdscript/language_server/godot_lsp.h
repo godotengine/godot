@@ -1702,7 +1702,6 @@ struct Workspace {
 	}
 };
 
-
 struct WorkspaceSymbol {
 	/**
 	 * name of this symbol.
