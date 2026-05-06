@@ -1033,7 +1033,7 @@ void DependencyErrorDialog::_check_for_resolved() {
 
 				LocalVector<String> &stored_paths = owner_deps[owner_path];
 				for (const String &dep : deps) {
-					if (!errors_fixed && !FileAccess::exists(_get_resolved_dep_path(dep))) {
+					if (errors_fixed && !FileAccess::exists(_get_resolved_dep_path(dep))) {
 						errors_fixed = false;
 					}
 					stored_paths.push_back(_get_stored_dep_path(dep));
