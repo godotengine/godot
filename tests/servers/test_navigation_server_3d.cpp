@@ -774,11 +774,11 @@ TEST_SUITE("[Navigation3D]") {
 		CHECK_EQ(navigation_mesh->get_area_id("box"), 1);
 		CHECK_EQ(navigation_mesh->get_area_id("cylinder"), 2);
 		CHECK_EQ(navigation_mesh->get_area_id("poly"), 3);
-		CHECK_EQ(navigation_mesh->get_area_ids(), Array({ 1, 2, 3 }));
+		CHECK_EQ(navigation_server->region_get_area_ids(region), Vector<int>({ 1, 2, 3 }));
 
-		CHECK_EQ(navigation_mesh->get_area_navigation_layers(0), 2);
-		navigation_mesh->set_area_navigation_layers(0, 3);
-		CHECK_EQ(navigation_mesh->get_area_navigation_layers(0), 3);
+		CHECK_EQ(navigation_mesh->get_area_navigation_layers(1), 2);
+		navigation_mesh->set_area_navigation_layers(1, 3);
+		CHECK_EQ(navigation_mesh->get_area_navigation_layers(1), 3);
 
 		SUBCASE("Map should emit signal and take newly baked navigation mesh into account") {
 			SIGNAL_WATCH(navigation_server, "map_changed");

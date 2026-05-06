@@ -942,12 +942,27 @@
 				Returns the number of areas created for the given [param region] during the baking process of the [NavigationMesh].
 			</description>
 		</method>
+		<method name="region_get_area_ids" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns an array of all area IDs that were generated during the source geometry parsing step and affected the final navigation mesh during the baking process.
+			</description>
+		</method>
 		<method name="region_get_area_navigation_layers" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="region" type="RID" />
-			<param index="1" name="area" type="int" />
+			<param index="1" name="area_id" type="int" />
 			<description>
-				Returns all navigation layers (a bitmask) the [param area] inside [param region] belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
+				Returns all navigation layers (a bitmask) the [param area_id] inside [param region] belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
+			</description>
+		</method>
+		<method name="region_get_area_navigation_layers_at_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="area_index" type="int" />
+			<description>
+				Same as [method region_get_area_navigation_layers], but faster. Takes the area's index as a paramter instead.
 			</description>
 		</method>
 		<method name="region_get_bounds" qualifiers="const">
@@ -1102,10 +1117,19 @@
 		<method name="region_set_area_navigation_layers">
 			<return type="void" />
 			<param index="0" name="region" type="RID" />
-			<param index="1" name="area" type="int" />
+			<param index="1" name="area_id" type="int" />
 			<param index="2" name="navigation_layers" type="int" />
 			<description>
-				Sets all navigation layers (a bitmask) the [param area] inside [param region] belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
+				Sets all navigation layers (a bitmask) the [param area_id] inside [param region] belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
+			</description>
+		</method>
+		<method name="region_set_area_navigation_layers_at_index">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="area_index" type="int" />
+			<param index="2" name="navigation_layers" type="int" />
+			<description>
+				Same as [method region_set_area_navigation_layers], but faster. Takes the area's index as a paramter instead.
 			</description>
 		</method>
 		<method name="region_set_enabled">

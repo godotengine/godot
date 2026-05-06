@@ -105,9 +105,12 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_map", "region"), &NavigationServer3D::region_get_map);
 	ClassDB::bind_method(D_METHOD("region_set_navigation_layers", "region", "navigation_layers"), &NavigationServer3D::region_set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("region_get_navigation_layers", "region"), &NavigationServer3D::region_get_navigation_layers);
-	ClassDB::bind_method(D_METHOD("region_set_area_navigation_layers", "region", "area", "navigation_layers"), &NavigationServer3D::region_set_area_navigation_layers);
-	ClassDB::bind_method(D_METHOD("region_get_area_navigation_layers", "region", "area"), &NavigationServer3D::region_get_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("region_get_area_ids", "region"), &NavigationServer3D::region_get_area_ids);
 	ClassDB::bind_method(D_METHOD("region_get_area_count", "region"), &NavigationServer3D::region_get_area_count);
+	ClassDB::bind_method(D_METHOD("region_set_area_navigation_layers", "region", "area_id", "navigation_layers"), &NavigationServer3D::region_set_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("region_get_area_navigation_layers", "region", "area_id"), &NavigationServer3D::region_get_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("region_set_area_navigation_layers_at_index", "region", "area_index", "navigation_layers"), &NavigationServer3D::region_set_area_navigation_layers_at_index);
+	ClassDB::bind_method(D_METHOD("region_get_area_navigation_layers_at_index", "region", "area_index"), &NavigationServer3D::region_get_area_navigation_layers_at_index);
 	ClassDB::bind_method(D_METHOD("region_set_transform", "region", "transform"), &NavigationServer3D::region_set_transform);
 	ClassDB::bind_method(D_METHOD("region_get_transform", "region"), &NavigationServer3D::region_get_transform);
 	ClassDB::bind_method(D_METHOD("region_set_navigation_mesh", "region", "navigation_mesh"), &NavigationServer3D::region_set_navigation_mesh);

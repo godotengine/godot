@@ -532,6 +532,27 @@ uint32_t GodotNavigationServer3D::region_get_navigation_layers(RID p_region) con
 	return region->get_navigation_layers();
 }
 
+Vector<int> GodotNavigationServer3D::region_get_area_ids(RID p_region) const {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, Vector<int>());
+
+	Vector<uint16_t> area_ids = region->get_area_ids(); // NOTE: Because bindings don't support Vector<uint16_t>.
+	Vector<int> ret;
+	ret.resize(area_ids.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret.write[i] = area_ids[i];
+	}
+
+	return ret;
+}
+
+int GodotNavigationServer3D::region_get_area_count(RID p_region) const {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, 0);
+
+	return region->get_area_count();
+}
+
 void GodotNavigationServer3D::region_set_area_navigation_layers(RID p_region, uint16_t p_area, uint32_t p_navigation_layers) {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
@@ -546,11 +567,18 @@ uint32_t GodotNavigationServer3D::region_get_area_navigation_layers(RID p_region
 	return region->get_area_navigation_layers(p_area);
 }
 
-int GodotNavigationServer3D::region_get_area_count(RID p_region) const {
+void GodotNavigationServer3D::region_set_area_navigation_layers_at_index(RID p_region, uint16_t p_area_index, uint32_t p_navigation_layers) {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL(region);
+
+	region->set_area_navigation_layers_at_index(p_area_index, p_navigation_layers);
+}
+
+uint32_t GodotNavigationServer3D::region_get_area_navigation_layers_at_index(RID p_region, uint16_t p_area_index) const {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, 0);
 
-	return region->get_area_count();
+	return region->get_area_navigation_layers_at_index(p_area_index);
 }
 
 COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navigation_mesh) {

@@ -188,21 +188,14 @@ void NavRegion3D::set_owner_id(ObjectID p_owner_id) {
 	request_sync();
 }
 
-void NavRegion3D::set_area_navigation_layers(uint16_t p_area, uint32_t layers) {
-	if (!navmesh.is_valid() || navmesh->get_area_navigation_layers(p_area) == layers) {
-		return;
-	}
-	navmesh->set_area_navigation_layers(p_area, layers);
-	iteration_dirty = true;
+Vector<uint16_t> NavRegion3D::get_area_ids() const {
+	RWLockRead read_lock(iteration_rwlock);
 
-	request_sync();
-}
-
-uint32_t NavRegion3D::get_area_navigation_layers(uint16_t p_area) const {
 	if (navmesh.is_valid()) {
-		return navmesh->get_area_navigation_layers(p_area);
+		return navmesh->get_area_ids();
 	}
-	return 0;
+
+	return Vector<uint16_t>();
 }
 
 int NavRegion3D::get_area_count() const {
@@ -212,6 +205,40 @@ int NavRegion3D::get_area_count() const {
 		return navmesh->get_area_count();
 	}
 
+	return 0;
+}
+
+void NavRegion3D::set_area_navigation_layers(uint16_t p_area_id, uint32_t layers) {
+	if (!navmesh.is_valid() || navmesh->get_area_navigation_layers(p_area_id) == layers) {
+		return;
+	}
+	navmesh->set_area_navigation_layers(p_area_id, layers);
+	iteration_dirty = true;
+
+	request_sync();
+}
+
+uint32_t NavRegion3D::get_area_navigation_layers(uint16_t p_area_id) const {
+	if (navmesh.is_valid()) {
+		return navmesh->get_area_navigation_layers(p_area_id);
+	}
+	return 0;
+}
+
+void NavRegion3D::set_area_navigation_layers_at_index(uint16_t p_area_index, uint32_t layers) {
+	if (!navmesh.is_valid() || navmesh->get_area_navigation_layers(p_area_index) == layers) {
+		return;
+	}
+	navmesh->set_area_navigation_layers_at_index(p_area_index, layers);
+	iteration_dirty = true;
+
+	request_sync();
+}
+
+uint32_t NavRegion3D::get_area_navigation_layers_at_index(uint16_t p_area_index) const {
+	if (navmesh.is_valid()) {
+		return navmesh->get_area_navigation_layers_at_index(p_area_index);
+	}
 	return 0;
 }
 

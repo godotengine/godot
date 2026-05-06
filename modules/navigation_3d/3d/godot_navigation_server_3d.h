@@ -172,10 +172,13 @@ public:
 	COMMAND_2(region_set_map, RID, p_region, RID, p_map);
 	virtual RID region_get_map(RID p_region) const override;
 	COMMAND_2(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers);
-	virtual uint32_t region_get_navigation_layers(RID p_region) const override;
-	virtual void region_set_area_navigation_layers(RID p_region, uint16_t p_area, uint32_t p_navigation_layers) override;
-	virtual uint32_t region_get_area_navigation_layers(RID p_region, uint16_t p_area) const override;
+	virtual Vector<int> region_get_area_ids(RID p_region) const override;
 	virtual int region_get_area_count(RID p_region) const override;
+	virtual uint32_t region_get_navigation_layers(RID p_region) const override;
+	virtual void region_set_area_navigation_layers(RID p_region, uint16_t p_area_id, uint32_t p_navigation_layers) override;
+	virtual uint32_t region_get_area_navigation_layers(RID p_region, uint16_t p_area_id) const override;
+	virtual void region_set_area_navigation_layers_at_index(RID p_region, uint16_t p_area_index, uint32_t p_navigation_layers) override;
+	virtual uint32_t region_get_area_navigation_layers_at_index(RID p_region, uint16_t p_area_index) const override;
 	COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform);
 	virtual Transform3D region_get_transform(RID p_region) const override;
 	COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navigation_mesh);

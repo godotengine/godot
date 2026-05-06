@@ -445,7 +445,7 @@ void NavigationMesh::_set_area_ids(const Array &p_area_ids) {
 	}
 }
 
-Array NavigationMesh::get_area_ids() const {
+Array NavigationMesh::_get_area_ids() const {
 	RWLockRead read_lock(rwlock);
 	Array ret;
 	ret.resize(area_ids.size());
@@ -454,6 +454,11 @@ Array NavigationMesh::get_area_ids() const {
 	}
 
 	return ret;
+}
+
+Vector<uint16_t> NavigationMesh::get_area_ids() const {
+	RWLockRead read_lock(rwlock);
+	return area_ids;
 }
 
 void NavigationMesh::_set_area_bake_ids(const Array &p_area_bake_ids) {
@@ -527,7 +532,41 @@ void NavigationMesh::_apply_area_navlayers() {
 	}
 }
 
-void NavigationMesh::set_area_navigation_layers(uint16_t p_area_index, uint32_t p_navigation_layers) {
+void NavigationMesh::set_area_navigation_layers(uint16_t p_area_id, uint32_t p_navigation_layers) {
+	RWLockWrite write_lock(rwlock);
+	int index = -1;
+
+	for (int i = 0; i < area_ids.size(); i++) {
+		if (area_ids[i] == p_area_id) {
+			index = i;
+			break;
+		}
+	}
+	if (index < 0) {
+		return;
+	}
+
+	area_navlayers.write[index] = p_navigation_layers;
+
+	// Apply (short version of _apply_area_navlayers()).
+	for (int polygon_id : area_indices[index]) {
+		polygons_meta.write[polygon_id] = p_navigation_layers;
+	}
+}
+
+uint32_t NavigationMesh::get_area_navigation_layers(uint16_t p_area_id) const {
+	RWLockRead read_lock(rwlock);
+
+	for (int i = 0; i < area_ids.size(); i++) {
+		if (area_ids[i] == p_area_id) {
+			return area_navlayers[i];
+		}
+	}
+
+	return 0;
+}
+
+void NavigationMesh::set_area_navigation_layers_at_index(uint16_t p_area_index, uint32_t p_navigation_layers) {
 	RWLockWrite write_lock(rwlock);
 	if (p_area_index >= area_navlayers.size()) {
 		return;
@@ -541,7 +580,7 @@ void NavigationMesh::set_area_navigation_layers(uint16_t p_area_index, uint32_t 
 	}
 }
 
-uint32_t NavigationMesh::get_area_navigation_layers(uint16_t p_area_index) const {
+uint32_t NavigationMesh::get_area_navigation_layers_at_index(uint16_t p_area_index) const {
 	RWLockRead read_lock(rwlock);
 	if (p_area_index >= area_navlayers.size()) {
 		return 0;
@@ -857,7 +896,7 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_polygons_meta"), &NavigationMesh::_get_polygons_meta);
 
 	ClassDB::bind_method(D_METHOD("_set_area_ids", "area_baking_ids"), &NavigationMesh::_set_area_ids);
-	ClassDB::bind_method(D_METHOD("get_area_ids"), &NavigationMesh::get_area_ids);
+	ClassDB::bind_method(D_METHOD("_get_area_ids"), &NavigationMesh::_get_area_ids);
 	ClassDB::bind_method(D_METHOD("_set_area_bake_ids", "area_baking_ids"), &NavigationMesh::_set_area_bake_ids);
 	ClassDB::bind_method(D_METHOD("get_area_bake_ids"), &NavigationMesh::get_area_bake_ids);
 	ClassDB::bind_method(D_METHOD("_set_area_navlayers", "area_navlayers"), &NavigationMesh::_set_area_navlayers);
@@ -875,7 +914,7 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons_meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons_meta", "_get_polygons_meta");
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_ids", "get_area_ids");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_ids", "_get_area_ids");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_baking_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_bake_ids", "get_area_bake_ids");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_navlayers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_navlayers", "_get_area_navlayers");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_indices", "_get_area_indices");

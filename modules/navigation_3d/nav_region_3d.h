@@ -116,9 +116,12 @@ public:
 #endif // DISABLE_DEPRECATED
 	virtual void set_owner_id(ObjectID p_owner_id) override;
 
-	void set_area_navigation_layers(uint16_t p_area, uint32_t layers);
-	uint32_t get_area_navigation_layers(uint16_t p_area) const;
+	Vector<uint16_t> get_area_ids() const;
 	int get_area_count() const;
+	void set_area_navigation_layers(uint16_t p_area_id, uint32_t layers);
+	uint32_t get_area_navigation_layers(uint16_t p_area_id) const;
+	void set_area_navigation_layers_at_index(uint16_t p_area_index, uint32_t layers);
+	uint32_t get_area_navigation_layers_at_index(uint16_t p_area_index) const;
 
 	// Called by map, see `NavMap3D::sync()`:
 	bool sync();

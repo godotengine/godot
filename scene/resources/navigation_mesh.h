@@ -78,6 +78,7 @@ protected:
 	Array _get_polygons_meta() const;
 
 	void _set_area_ids(const Array &p_area_ids);
+	Array _get_area_ids() const;
 
 	void _set_area_bake_ids(const Array &p_area_bake_ids);
 
@@ -227,11 +228,13 @@ public:
 	void set_polygons(const Vector<Vector<int>> &p_polygons);
 	Vector<Vector<int>> get_polygons() const;
 	uint16_t get_area_id(String p_bake_id) const;
-	Array get_area_ids() const;
+	Vector<uint16_t> get_area_ids() const;
 	Array get_area_bake_ids() const;
 	uint16_t get_area_count() const;
-	void set_area_navigation_layers(uint16_t p_area_index, uint32_t p_navigation_layers);
-	uint32_t get_area_navigation_layers(uint16_t p_area_index) const;
+	void set_area_navigation_layers(uint16_t p_area_id, uint32_t p_navigation_layers);
+	uint32_t get_area_navigation_layers(uint16_t p_area_id) const;
+	void set_area_navigation_layers_at_index(uint16_t p_area_index, uint32_t p_navigation_layers);
+	uint32_t get_area_navigation_layers_at_index(uint16_t p_area_index) const;
 
 	int get_polygon_meta_count() const;
 	uint32_t get_polygon_meta(int p_idx); // Returns the navigation layers for the polygon at the given index.

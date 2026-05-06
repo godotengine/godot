@@ -47,12 +47,6 @@
 				Returns an array of all unique [member NavigationMeshArea3D.bake_id] from all areas that affected the final navigation mesh during the baking process.
 			</description>
 		</method>
-		<method name="get_area_ids" qualifiers="const">
-			<return type="Array" />
-			<description>
-				Returns an array of all area IDs that were generated during the source geometry parsing step and affected the final navigation mesh during the baking process.
-			</description>
-		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
