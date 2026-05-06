@@ -80,7 +80,6 @@ protected:
 	void _set_area_ids(const Array &p_area_ids);
 
 	void _set_area_bake_ids(const Array &p_area_bake_ids);
-	Array _get_area_bake_ids() const;
 
 	void _set_area_navlayers(const Array &p_area_navlayers);
 	Array _get_area_navlayers() const;
@@ -229,6 +228,7 @@ public:
 	Vector<Vector<int>> get_polygons() const;
 	uint16_t get_area_id(String p_bake_id) const;
 	Array get_area_ids() const;
+	Array get_area_bake_ids() const;
 	uint16_t get_area_count() const;
 	void set_area_navigation_layers(uint16_t p_area_index, uint32_t p_navigation_layers);
 	uint32_t get_area_navigation_layers(uint16_t p_area_index) const;

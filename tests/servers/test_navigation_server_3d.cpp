@@ -770,6 +770,7 @@ TEST_SUITE("[Navigation3D]") {
 		// CHECK_EQ(polygons_meta.size(), ??);
 		CHECK_EQ(area_navlayers.size(), 3);
 		CHECK_EQ(area_indices.size(), 3);
+		CHECK_EQ(navigation_mesh->get_area_bake_ids(), Array({ "box", "cylinder", "poly" }));
 		CHECK_EQ(navigation_mesh->get_area_id("box"), 1);
 		CHECK_EQ(navigation_mesh->get_area_id("cylinder"), 2);
 		CHECK_EQ(navigation_mesh->get_area_id("poly"), 3);

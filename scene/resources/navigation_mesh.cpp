@@ -465,7 +465,7 @@ void NavigationMesh::_set_area_bake_ids(const Array &p_area_bake_ids) {
 	}
 }
 
-Array NavigationMesh::_get_area_bake_ids() const {
+Array NavigationMesh::get_area_bake_ids() const {
 	RWLockRead read_lock(rwlock);
 	Array ret;
 	ret.resize(area_bake_ids.size());
@@ -859,7 +859,7 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_area_ids", "area_baking_ids"), &NavigationMesh::_set_area_ids);
 	ClassDB::bind_method(D_METHOD("get_area_ids"), &NavigationMesh::get_area_ids);
 	ClassDB::bind_method(D_METHOD("_set_area_bake_ids", "area_baking_ids"), &NavigationMesh::_set_area_bake_ids);
-	ClassDB::bind_method(D_METHOD("_get_area_bake_ids"), &NavigationMesh::_get_area_bake_ids);
+	ClassDB::bind_method(D_METHOD("get_area_bake_ids"), &NavigationMesh::get_area_bake_ids);
 	ClassDB::bind_method(D_METHOD("_set_area_navlayers", "area_navlayers"), &NavigationMesh::_set_area_navlayers);
 	ClassDB::bind_method(D_METHOD("_get_area_navlayers"), &NavigationMesh::_get_area_navlayers);
 	ClassDB::bind_method(D_METHOD("_set_area_indices", "area_indices"), &NavigationMesh::_set_area_indices);
@@ -876,7 +876,7 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons_meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons_meta", "_get_polygons_meta");
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_ids", "get_area_ids");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_baking_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_bake_ids", "_get_area_bake_ids");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_baking_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_bake_ids", "get_area_bake_ids");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_navlayers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_navlayers", "_get_area_navlayers");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_indices", "_get_area_indices");
 
