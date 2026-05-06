@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RichTextEditToolbar" inherits="HBoxContainer" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Toolbar with common formatting controls for [RichTextEdit].
+	</brief_description>
+	<description>
+		[RichTextEditToolbar] provides common formatting controls for a [RichTextEdit]. It includes controls for bold, italic, underline, strikethrough, font size, foreground color, background color, outline color and width, quote blocks, alignment, indentation, URL links, lists, image insertion, and CSS-compatible line height.
+		Assign [member rich_text_edit_path] to the [RichTextEdit] to format. If the path is empty, the toolbar looks for a sibling [RichTextEdit] when it enters the scene tree.
+		The controls follow the target editor's caret position: the font size field shows the size at the caret, and the formatting toggles, the list buttons and the alignment dropdown show the formatting that is already applied there.
+		The three color buttons each open a [ColorPicker]. The font and background color buttons preview the color on the selection while the picker is open and commit the final color as a single undoable formatting action when the popup closes. The background color button starts out with no color, and its picker is headed by a [b]No Color[/b] row that returns to that state.
+		Applying an empty URL in the link dropdown removes the link from the selection.
+		The image button opens a [FileDialog] using the native system picker when available. Project-local images are stored as [code]res://[/code] paths; external images keep their absolute path and are not copied into the project. Newly inserted images use their original size and an empty alt text. The existing link dropdown also applies a URL to a selected image.
+		The line-height dropdown applies the chosen CSS [code]normal[/code], unitless, percentage, or [code]px[/code] value to every paragraph touched by the selection. It provides common presets and a custom input field.
+		Adjusting a number field's spinner arrows repeatedly, or dragging the outline color picker, collapses the whole burst into a single undo step. Editing anything else, retargeting the selection, or moving the caret starts a new one.
+		[codeblock]
+		# Scene tree:
+		# VBoxContainer
+		#   RichTextEditToolbar
+		#   RichTextEdit
+		#
+		# If both nodes are siblings, RichTextEditToolbar can find RichTextEdit automatically.
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_rich_text_edit" qualifiers="const">
+			<return type="RichTextEdit" />
+			<description>
+				Returns the [RichTextEdit] currently controlled by this toolbar, or [code]null[/code] if no target is available.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" overrides="Control" default="Vector2(0, 40)" />
+		<member name="rich_text_edit_path" type="NodePath" setter="set_rich_text_edit_path" getter="get_rich_text_edit_path" default="NodePath(&quot;&quot;)">
+			Path to the [RichTextEdit] controlled by this toolbar. Leave this empty to use the first sibling [RichTextEdit] found in the scene tree.
+		</member>
+		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="0" />
+	</members>
+	<theme_items>
+		<theme_item name="accent_color" data_type="color" type="Color" default="Color(0.37254903, 0.69803923, 0.9411765, 1)">
+			Color used to mark the selected state of the formatting toggles, the caret of text fields, and the [b]Apply[/b] button of the URL dropdown.
+		</theme_item>
+		<theme_item name="apply_button_font_color" data_type="color" type="Color" default="Color(0.07058824, 0.09411765, 0.10980392, 1)">
+			Font color of the [b]Apply[/b] button in the URL dropdown, which is drawn on top of [theme_item accent_color].
+		</theme_item>
+		<theme_item name="button_font_color" data_type="color" type="Color" default="Color(0.8745098, 0.88235295, 0.89411765, 1)">
+			Font and icon color of the toolbar buttons. Selected buttons use [theme_item accent_color] instead.
+		</theme_item>
+		<theme_item name="dropdown_font_color" data_type="color" type="Color" default="Color(0.8745098, 0.88235295, 0.89411765, 1)">
+			Font color of the controls inside the dropdown panels.
+		</theme_item>
+		<theme_item name="dropdown_label_color" data_type="color" type="Color" default="Color(0.6039216, 0.61960787, 0.6392157, 1)">
+			Font color of the small caption above the URL field in the link dropdown.
+		</theme_item>
+		<theme_item name="muted_font_color" data_type="color" type="Color" default="Color(0.6039216, 0.61960787, 0.6392157, 1)">
+			Font and icon color of secondary elements: the dropdown carets, the spinner arrows of the number fields, and the [b]Cancel[/b] button of the URL dropdown.
+		</theme_item>
+		<theme_item name="tooltip_font_color" data_type="color" type="Color" default="Color(0.90588236, 0.9137255, 0.92156863, 1)">
+			Font color of the toolbar's tooltips.
+		</theme_item>
+		<theme_item name="button_size" data_type="constant" type="int" default="28">
+			Width and height of the toolbar buttons. Buttons that open a dropdown are wider to make room for their caret.
+		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="16">
+			Maximum width the button icons are scaled down to.
+		</theme_item>
+		<theme_item name="separator_height" data_type="constant" type="int" default="20">
+			Height of the separators that divide the toolbar into groups.
+		</theme_item>
+		<theme_item name="action_button_font_size" data_type="font_size" type="int">
+			Font size of the [b]Cancel[/b] and [b]Apply[/b] buttons in the URL dropdown.
+		</theme_item>
+		<theme_item name="dropdown_label_font_size" data_type="font_size" type="int">
+			Font size of the small caption above the URL field in the link dropdown.
+		</theme_item>
+		<theme_item name="input_font_size" data_type="font_size" type="int">
+			Font size of the number fields and of the URL field.
+		</theme_item>
+		<theme_item name="menu_item_font_size" data_type="font_size" type="int">
+			Font size of the rows inside the alignment dropdown.
+		</theme_item>
+		<theme_item name="tooltip_font_size" data_type="font_size" type="int">
+			Font size of the toolbar's tooltips.
+		</theme_item>
+		<theme_item name="align" data_type="icon" type="Texture2D">
+			Icon for the alignment dropdown button.
+		</theme_item>
+		<theme_item name="align_center" data_type="icon" type="Texture2D">
+			Icon for the center alignment dropdown item.
+		</theme_item>
+		<theme_item name="align_left" data_type="icon" type="Texture2D">
+			Icon for the left alignment dropdown item.
+		</theme_item>
+		<theme_item name="align_right" data_type="icon" type="Texture2D">
+			Icon for the right alignment dropdown item.
+		</theme_item>
+		<theme_item name="background_color" data_type="icon" type="Texture2D">
+			Icon for the background color button. The picked color is previewed as a swatch drawn below the icon.
+		</theme_item>
+		<theme_item name="bold" data_type="icon" type="Texture2D">
+			Icon for the bold formatting button.
+		</theme_item>
+		<theme_item name="color_checkerboard" data_type="icon" type="Texture2D">
+			Texture tiled behind the background color swatch while no background color is set.
+		</theme_item>
+		<theme_item name="dropdown_caret" data_type="icon" type="Texture2D">
+			Icon drawn at the right edge of the buttons that open a dropdown.
+		</theme_item>
+		<theme_item name="font_color" data_type="icon" type="Texture2D">
+			Icon for the font color button. The picked color is previewed as a bar drawn below the icon.
+		</theme_item>
+		<theme_item name="indent_decrease" data_type="icon" type="Texture2D">
+			Icon for the decrease indent button.
+		</theme_item>
+		<theme_item name="indent_increase" data_type="icon" type="Texture2D">
+			Icon for the increase indent button.
+		</theme_item>
+		<theme_item name="image" data_type="icon" type="Texture2D">
+			Icon for the insert image button.
+		</theme_item>
+		<theme_item name="italic" data_type="icon" type="Texture2D">
+			Icon for the italic formatting button.
+		</theme_item>
+		<theme_item name="link" data_type="icon" type="Texture2D">
+			Icon for the URL link button.
+		</theme_item>
+		<theme_item name="line_height" data_type="icon" type="Texture2D">
+			Icon for the CSS line-height dropdown button.
+		</theme_item>
+		<theme_item name="ordered_list" data_type="icon" type="Texture2D">
+			Icon for the ordered list button.
+		</theme_item>
+		<theme_item name="outline" data_type="icon" type="Texture2D">
+			Icon for the outline color button. The picked color is previewed as a bar drawn below the icon.
+		</theme_item>
+		<theme_item name="quote" data_type="icon" type="Texture2D">
+			Icon for the quote button.
+		</theme_item>
+		<theme_item name="strikethrough" data_type="icon" type="Texture2D">
+			Icon for the strikethrough formatting button.
+		</theme_item>
+		<theme_item name="underline" data_type="icon" type="Texture2D">
+			Icon for the underline formatting button.
+		</theme_item>
+		<theme_item name="unordered_list" data_type="icon" type="Texture2D">
+			Icon for the unordered list button.
+		</theme_item>
+		<theme_item name="apply_button_hover" data_type="style" type="StyleBox">
+			StyleBox for the [b]Apply[/b] button of the URL dropdown while hovered.
+		</theme_item>
+		<theme_item name="apply_button_normal" data_type="style" type="StyleBox">
+			StyleBox for the [b]Apply[/b] button of the URL dropdown in its normal state.
+		</theme_item>
+		<theme_item name="button_focus" data_type="style" type="StyleBox">
+			StyleBox drawn on top of a toolbar button that holds the keyboard focus.
+		</theme_item>
+		<theme_item name="button_hover" data_type="style" type="StyleBox">
+			StyleBox for toolbar buttons while hovered.
+		</theme_item>
+		<theme_item name="button_normal" data_type="style" type="StyleBox">
+			StyleBox for toolbar buttons in their normal state.
+		</theme_item>
+		<theme_item name="button_pressed" data_type="style" type="StyleBox">
+			StyleBox for toolbar buttons while pressed. It also marks the selected state of the formatting toggles and the button whose dropdown is open.
+		</theme_item>
+		<theme_item name="cancel_button_hover" data_type="style" type="StyleBox">
+			StyleBox for the [b]Cancel[/b] button of the URL dropdown while hovered.
+		</theme_item>
+		<theme_item name="cancel_button_normal" data_type="style" type="StyleBox">
+			StyleBox for the [b]Cancel[/b] button of the URL dropdown in its normal state.
+		</theme_item>
+		<theme_item name="dropdown_panel" data_type="style" type="StyleBox">
+			StyleBox for toolbar dropdown panels.
+		</theme_item>
+		<theme_item name="field_focus" data_type="style" type="StyleBox">
+			StyleBox drawn on top of a number field or of the URL field while it holds the keyboard focus.
+		</theme_item>
+		<theme_item name="field_panel" data_type="style" type="StyleBox">
+			StyleBox framing the number fields, which hold a text box and a pair of spinner buttons.
+		</theme_item>
+		<theme_item name="field_separator" data_type="style" type="StyleBox">
+			StyleBox for the thin lines that separate a number field's text box from its spinner buttons, and the two spinner buttons from each other.
+		</theme_item>
+		<theme_item name="menu_item_hover" data_type="style" type="StyleBox">
+			StyleBox for the rows inside the alignment dropdown while hovered.
+		</theme_item>
+		<theme_item name="menu_item_normal" data_type="style" type="StyleBox">
+			StyleBox for the rows inside the alignment dropdown in their normal state.
+		</theme_item>
+		<theme_item name="menu_item_pressed" data_type="style" type="StyleBox">
+			StyleBox marking the selected row inside the alignment dropdown.
+		</theme_item>
+		<theme_item name="menu_panel" data_type="style" type="StyleBox">
+			StyleBox for the alignment dropdown's panel.
+		</theme_item>
+		<theme_item name="menu_separator" data_type="style" type="StyleBox">
+			StyleBox for the divider that separates the [b]No Color[/b] row from the [ColorPicker] in the background color picker.
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			StyleBox for the toolbar background.
+		</theme_item>
+		<theme_item name="separator" data_type="style" type="StyleBox">
+			StyleBox for the separators that divide the toolbar into groups.
+		</theme_item>
+		<theme_item name="text_field_panel" data_type="style" type="StyleBox">
+			StyleBox for the URL field inside the link dropdown.
+		</theme_item>
+		<theme_item name="tooltip_panel" data_type="style" type="StyleBox">
+			StyleBox for the toolbar's tooltips.
+		</theme_item>
+	</theme_items>
+</class>

@@ -150,6 +150,8 @@ private:
 			String data;
 			Array bidi_override;
 			Ref<TextParagraph> data_buf;
+			Ref<TextParagraph> data_buf_disp;
+			Array style_infos;
 			Vector<RID> accessibility_text_root_element;
 
 			String ime_data;
@@ -184,6 +186,7 @@ private:
 		bool use_default_word_separators = true;
 		bool use_custom_word_separators = false;
 		Callable inline_object_parser;
+		Callable style_parser;
 
 		mutable bool max_line_width_dirty = true;
 		mutable bool max_line_height_dirty = true;
@@ -191,10 +194,12 @@ private:
 		mutable int max_line_height = 0;
 		mutable int total_visible_line_count = 0;
 		int width = -1;
+		int fit_width = -1;
 
 		int tab_size = 4;
 		int gutter_count = 0;
 		bool indent_wrapped_lines = false;
+		int visible_character_limit = -1;
 
 	public:
 		void set_tab_size(int p_tab_size);
@@ -207,8 +212,11 @@ private:
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_enabled);
 		void set_inline_object_parser(const Callable &p_parser);
+		void set_style_parser(const Callable &p_parser);
+		void set_visible_character_limit(int p_visible_characters);
 
 		int get_line_height() const;
+		int get_line_wrap_height(int p_line, int p_wrap_index) const;
 		int get_line_width(int p_line, int p_wrap_index = -1) const;
 		int get_max_width() const;
 		int get_total_visible_line_count() const;
@@ -226,6 +234,7 @@ private:
 
 		void set_width(float p_width);
 		float get_width() const;
+		void set_fit_width(float p_width);
 		void set_brk_flags(BitField<TextServer::LineBreakFlag> p_flags);
 		BitField<TextServer::LineBreakFlag> get_brk_flags() const;
 		int get_line_wrap_amount(int p_line) const;
@@ -240,6 +249,8 @@ private:
 
 		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
 		const Ref<TextParagraph> get_line_data(int p_line) const;
+		const Ref<TextParagraph> get_full_line_data(int p_line) const;
+		const Array &get_line_style_infos(int p_line) const;
 		float get_indent_offset(int p_line, bool p_rtl) const;
 
 		void set(int p_line, const String &p_text, const Array &p_bidi_override);
@@ -288,6 +299,9 @@ private:
 	Text text;
 	RID text_ci;
 	bool setting_text = false;
+	int visible_characters = -1;
+	float visible_ratio = 1.0;
+	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 
 	enum AltInputMode {
 		ALT_INPUT_NONE,
@@ -369,7 +383,8 @@ private:
 		enum Type {
 			TYPE_NONE,
 			TYPE_INSERT,
-			TYPE_REMOVE
+			TYPE_REMOVE,
+			TYPE_CUSTOM,
 		};
 		Vector<Caret> start_carets;
 		Vector<Caret> end_carets;
@@ -380,6 +395,9 @@ private:
 		int to_line = 0;
 		int to_column = 0;
 		String text;
+		StringName custom_type;
+		Variant custom_before;
+		Variant custom_after;
 		uint32_t prev_version = 0;
 		uint32_t version = 0;
 		bool chain_forward = false;
@@ -395,6 +413,7 @@ private:
 
 	int complex_operation_count = 0;
 	bool next_operation_is_complex = false;
+	bool skip_next_complex_end_marker = false;
 
 	TextOperation current_op;
 	List<TextOperation> undo_stack;
@@ -546,13 +565,20 @@ private:
 	// Scrolling.
 	int first_visible_line = 0;
 	int first_visible_line_wrap_ofs = 0;
+	double first_visible_line_scroll_ofs = 0.0;
 	int first_visible_col = 0;
 
 	bool scrolling = false;
 	bool updating_scrolls = false;
+	mutable bool visible_content_height_cache_dirty = true;
+	mutable int visible_content_height_cache = 0;
 
 	void _update_scrollbars();
 	int _get_control_height() const;
+	int _get_default_line_height() const;
+	int _get_line_extra_top_margin(int p_line, int p_wrap_index) const;
+	int _get_line_extra_bottom_margin(int p_line, int p_wrap_index) const;
+	int _get_visible_content_height() const;
 
 	void _v_scroll_input();
 	void _scroll_moved(double p_to_val);
@@ -695,8 +721,23 @@ private:
 	bool _clear_carets_and_selection();
 
 protected:
+	void _set_visible_characters(int p_visible);
+	int _get_visible_characters() const;
+	void _set_visible_ratio(float p_ratio);
+	float _get_visible_ratio() const;
+	void _set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
+	TextServer::VisibleCharactersBehavior _get_visible_characters_behavior() const;
+	int _get_total_character_count() const;
+	int _get_line_character_offset(int p_line) const;
+	int _get_total_glyph_count() const;
+	int _get_glyph_offset(int p_line, int p_wrap_index) const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
+	void push_custom_undo_operation(const StringName &p_type, const Variant &p_before, const Variant &p_after);
+	void push_custom_undo_operation_isolated(const StringName &p_type, const Variant &p_before, const Variant &p_after);
+	bool amend_custom_undo_operation(const StringName &p_type, const Variant &p_after);
+	virtual void _apply_custom_undo_operation(const StringName &p_type, const Variant &p_data) {}
 
 #ifndef DISABLE_DEPRECATED
 	void _set_selection_mode_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
@@ -706,6 +747,12 @@ protected:
 
 	virtual void _draw_guidelines() {}
 	virtual void _update_theme_item_cache() override;
+	virtual int _get_visual_line_wrap_height(int p_line, int p_wrap_index) const;
+	// Returns the line box and paragraph margins without the global theme
+	// line-spacing constant. RichTextEdit uses this as the CSS line-height base.
+	int _get_visual_line_wrap_content_height(int p_line, int p_wrap_index) const;
+	int _get_visual_line_wrap_top_margin(int p_line, int p_wrap_index) const;
+	int _get_visual_line_wrap_bottom_margin(int p_line, int p_wrap_index) const;
 
 	virtual String _get_accessibility_name() const override;
 
@@ -738,6 +785,7 @@ protected:
 
 	int _get_wrapped_indent_level(int p_line, int &r_first_wrap) const;
 	float _get_wrap_indent_offset(int p_line, int p_wrap_index, bool p_rtl) const;
+	float _get_line_style_visual_offset(int p_line, int p_wrap_index, bool p_rtl) const;
 
 	// Symbol lookup.
 	String lookup_symbol_word;
@@ -856,8 +904,8 @@ public:
 	void clear();
 
 	void _set_text(const String &p_text, bool p_emit_signal = false);
-	void set_text(const String &p_text);
-	String get_text() const;
+	virtual void set_text(const String &p_text);
+	virtual String get_text() const;
 
 	int get_line_count() const;
 
@@ -888,6 +936,7 @@ public:
 	Point2i get_next_visible_line_index_offset_from(int p_line_from, int p_wrap_index_from, int p_visible_amount) const;
 
 	void set_inline_object_handlers(const Callable &p_parser, const Callable &p_drawer, const Callable &p_click_handler);
+	void set_style_parser(const Callable &p_parser);
 
 	// Overridable actions
 	void handle_unicode_input(const uint32_t p_unicode, int p_caret = -1);
