@@ -284,8 +284,9 @@ class Godot private constructor(val context: Context) {
 				} else if (commandLine[i] == "--fullscreen") {
 					useImmersive.set(true)
 					newArgs.add(commandLine[i])
-				} else if (commandLine[i] == "--background_color") {
+				} else if (hasExtra && commandLine[i] == "--background_color") {
 					setWindowColor(commandLine[i + 1])
+					i++
 				} else if (commandLine[i] == "--disable_godot_splash") {
 					disableGodotSplash = true
 				} else if (commandLine[i] == "--benchmark") {
@@ -301,13 +302,17 @@ class Godot private constructor(val context: Context) {
 
 					i++
 				} else if (hasExtra && commandLine[i] == "--main-pack") {
+					newArgs.add(commandLine[i])
+
 					val mainPackPath = commandLine[i + 1]
+					newArgs.add(commandLine[i + 1])
 					// Check the storage scope of the main pack path. For template builds, `useApkExpansion` is enabled
 					// if the storage scope is APP.
 					val storageScope = fileAccessHandler.storageScopeIdentifier.identifyStorageScope(mainPackPath)
 					if (isTemplateBuild()) {
 						useApkExpansion = storageScope == StorageScope.APP
 					}
+					i++
 				} else if (commandLine[i].trim().isNotEmpty()) { // This block should always be last!
 					newArgs.add(commandLine[i])
 				}
@@ -329,6 +334,7 @@ class Godot private constructor(val context: Context) {
 			}
 
 			if (nativeLayerInitializeCompleted && !nativeLayerSetupCompleted) {
+				Log.v(TAG, "Setting up native layer with params: $commandLine")
 				nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), tts)
 				if (!nativeLayerSetupCompleted) {
 					throw IllegalStateException("Unable to setup the Godot engine! Aborting...")
