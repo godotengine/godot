@@ -488,11 +488,25 @@ void ShaderMaterial::_check_material_rid() const {
 	}
 }
 
+Array ShaderMaterial::get_shader_parameter_list() const {
+	Array ret;
+	if (shader.is_null()) {
+		return ret;
+	}
+	List<PropertyInfo> uniforms;
+	shader->get_shader_uniform_list(&uniforms);
+	for (const PropertyInfo &pi : uniforms) {
+		ret.push_back(pi.operator Dictionary());
+	}
+	return ret;
+}
+
 void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shader", "shader"), &ShaderMaterial::set_shader);
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_parameter", "param", "value"), &ShaderMaterial::set_shader_parameter);
 	ClassDB::bind_method(D_METHOD("get_shader_parameter", "param"), &ShaderMaterial::get_shader_parameter);
+	ClassDB::bind_method(D_METHOD("get_shader_parameter_list"), &ShaderMaterial::get_shader_parameter_list);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, Shader::get_class_static()), "set_shader", "get_shader");
 }

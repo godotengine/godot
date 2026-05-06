@@ -126,6 +126,8 @@ public:
 	void set_shader_parameter(const StringName &p_param, const Variant &p_value);
 	Variant get_shader_parameter(const StringName &p_param) const;
 
+	Array get_shader_parameter_list() const;
+
 	virtual Shader::Mode get_shader_mode() const override;
 
 	virtual RID get_rid() const override;
