@@ -370,7 +370,8 @@ public:
 	void indent_lines();
 	void unindent_lines();
 
-	bool can_show_symbol_tooltip = true;
+	bool is_mouse_over_code_completion_popup() const;
+	bool symbol_tooltip_cancelled = true;
 
 	void convert_indent(int p_from_line = -1, int p_to_line = -1);
 
