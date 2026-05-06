@@ -8311,7 +8311,13 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	print_verbose("Devices:");
 	int32_t device_index = Engine::get_singleton()->get_gpu_index();
 	const uint32_t device_count = context->device_get_count();
-	const bool detect_device = (device_index < 0) || (device_index >= int32_t(device_count));
+	const bool device_index_out_of_range = (device_index >= int32_t(device_count));
+	const bool detect_device = (device_index < 0) || device_index_out_of_range;
+
+	if (device_index_out_of_range) {
+		WARN_PRINT(vformat("The specified GPU index %d is out of range on this system (0-%d). Falling back to automatic device selection.", device_index, device_count - 1));
+	}
+
 	uint32_t device_type_score = 0;
 	for (uint32_t i = 0; i < device_count; i++) {
 		RenderingContextDriver::Device device_option = context->device_get(i);
