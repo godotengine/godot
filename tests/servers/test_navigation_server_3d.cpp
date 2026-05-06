@@ -698,6 +698,7 @@ TEST_SUITE("[Navigation3D]") {
 			mesh_instance->add_child(area_box);
 			area_box->set_position(Vector3(4, 0, 0));
 			area_box->set_size(Vector3(2, 1.0, 2));
+			area_box->set_bake_id("box");
 			area_box->set_navigation_layers(0);
 			area_box->set_navigation_layer_value(2, true);
 			CHECK_EQ(area_box->get_size(), Vector3(2, 1.0, 2));
@@ -710,6 +711,7 @@ TEST_SUITE("[Navigation3D]") {
 			area_cyl->set_position(Vector3(-4, 0, 0));
 			area_cyl->set_height(2.5);
 			area_cyl->set_radius(2);
+			area_cyl->set_bake_id("cylinder");
 			area_cyl->set_navigation_layers(0);
 			area_cyl->set_navigation_layer_value(2, true);
 			CHECK_EQ(area_cyl->get_height(), 2.5);
@@ -726,6 +728,7 @@ TEST_SUITE("[Navigation3D]") {
 			poly_vertices.push_back(Vector3(-0.5, 0, 4));
 			poly_vertices.push_back(Vector3(-1, 0, 0));
 			area_poly->set_vertices(poly_vertices);
+			area_poly->set_bake_id("poly");
 			area_poly->set_navigation_layers(0);
 			area_poly->set_navigation_layer_value(2, true);
 			CHECK_EQ(area_poly->get_height(), 2);
@@ -767,6 +770,14 @@ TEST_SUITE("[Navigation3D]") {
 		// CHECK_EQ(polygons_meta.size(), ??);
 		CHECK_EQ(area_navlayers.size(), 3);
 		CHECK_EQ(area_indices.size(), 3);
+		CHECK_EQ(navigation_mesh->get_area_id("box"), 1);
+		CHECK_EQ(navigation_mesh->get_area_id("cylinder"), 2);
+		CHECK_EQ(navigation_mesh->get_area_id("poly"), 3);
+		CHECK_EQ(navigation_mesh->get_area_ids(), Array({ 1, 2, 3 }));
+
+		CHECK_EQ(navigation_mesh->get_area_navigation_layers(0), 2);
+		navigation_mesh->set_area_navigation_layers(0, 3);
+		CHECK_EQ(navigation_mesh->get_area_navigation_layers(0), 3);
 
 		SUBCASE("Map should emit signal and take newly baked navigation mesh into account") {
 			SIGNAL_WATCH(navigation_server, "map_changed");
