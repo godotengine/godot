@@ -797,6 +797,12 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 					}
 
 				} break;
+				case GLES3::CanvasShaderData::BLEND_MODE_PMALPHA_SEPARATE: {
+					// Color: premultiplied accumulation. Alpha: multiply remaining background transparency.
+					// Lets one buffer mix premultiplied translucent and additive draws with correct order.
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+				} break;
 			}
 			last_blend_mode = blend_mode;
 			last_blend_color = blend_color;

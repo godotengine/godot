@@ -706,6 +706,17 @@ RD::PipelineColorBlendState::Attachment MaterialStorage::ShaderData::blend_mode_
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		} break;
+		case BLEND_MODE_PREMULTIPLIED_ALPHA_SEPARATE: {
+			// Color: premultiplied accumulation. Alpha: multiply remaining background transparency.
+			// Lets one buffer mix premultiplied translucent and additive draws with correct order.
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		} break;
 		case BLEND_MODE_DISABLED:
 		default: {
 			// Use default attachment values.
@@ -728,6 +739,8 @@ bool MaterialStorage::ShaderData::blend_mode_uses_blend_alpha(BlendMode p_mode) 
 		case BLEND_MODE_ALPHA_TO_COVERAGE:
 			return false;
 		case BLEND_MODE_PREMULTIPLIED_ALPHA:
+			return true;
+		case BLEND_MODE_PREMULTIPLIED_ALPHA_SEPARATE:
 			return true;
 		case BLEND_MODE_DISABLED:
 		default:
