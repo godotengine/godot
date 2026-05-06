@@ -505,11 +505,21 @@ void SkyRD::ReflectionData::update_reflection_mipmaps(int p_start, int p_end) {
 ////////////////////////////////////////////////////////////////////////////////
 // SkyRD::Sky
 
-void SkyRD::Sky::free() {
+void SkyRD::Sky::free_radiance() {
 	if (radiance.is_valid()) {
 		RD::get_singleton()->free_rid(radiance);
 		radiance = RID();
 	}
+	if (radiance_first_layer_slice.is_valid()) {
+		if (RD::get_singleton()->texture_is_valid(radiance_first_layer_slice)) {
+			RD::get_singleton()->free_rid(radiance_first_layer_slice);
+		}
+		radiance_first_layer_slice = RID();
+	}
+}
+
+void SkyRD::Sky::free() {
+	free_radiance();
 	reflection.clear_reflection_data();
 
 	if (uniform_buffer.is_valid()) {
@@ -533,7 +543,7 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 0;
 		if (radiance.is_valid() && p_version <= SKY_TEXTURE_SET_QUARTER_RES) {
-			u.append_id(radiance);
+			u.append_id(radiance_first_layer_slice.is_valid() ? radiance_first_layer_slice : radiance);
 		} else {
 			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK));
 		}
@@ -595,10 +605,7 @@ bool SkyRD::Sky::set_radiance_size(int p_radiance_size) {
 		radiance_size = REAL_TIME_SIZE;
 	}
 
-	if (radiance.is_valid()) {
-		RD::get_singleton()->free_rid(radiance);
-		radiance = RID();
-	}
+	free_radiance();
 	reflection.clear_reflection_data();
 
 	return true;
@@ -620,10 +627,7 @@ bool SkyRD::Sky::set_mode(RSE::SkyMode p_mode) {
 		set_radiance_size(REAL_TIME_SIZE);
 	}
 
-	if (radiance.is_valid()) {
-		RD::get_singleton()->free_rid(radiance);
-		radiance = RID();
-	}
+	free_radiance();
 	reflection.clear_reflection_data();
 
 	return true;
@@ -897,7 +901,7 @@ void sky() {
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 0;
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK));
 			uniforms.push_back(u);
 		}
 		{
@@ -1014,10 +1018,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 			if (sky_mode != sky->internal_mode) {
 				sky->internal_mode = sky_mode;
 
-				if (sky->radiance.is_valid()) {
-					RD::get_singleton()->free_rid(sky->radiance);
-					sky->radiance = RID();
-				}
+				sky->free_radiance();
 				sky->reflection.clear_reflection_data();
 			}
 		} else {
@@ -1573,6 +1574,9 @@ void SkyRD::update_dirty_skys() {
 
 				sky->radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
+				// Create view into the first layer slice for user shaders.
+				sky->radiance_first_layer_slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), sky->radiance, 0, 0, mipmaps, RD::TEXTURE_SLICE_2D, 1);
+
 				sky->reflection.update_reflection_data(w, mipmaps, true, sky->radiance, 0, use_realtime, roughness_layers, texture_format, sky->uv_border_size);
 			} else {
 				// Double size to approximate texel density of cubemaps + add border for proper filtering/mipmapping.
@@ -1593,6 +1597,8 @@ void SkyRD::update_dirty_skys() {
 				}
 
 				sky->radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+				DEV_ASSERT(sky->radiance_first_layer_slice.is_null());
 
 				sky->reflection.update_reflection_data(w, MIN(mipmaps, layers), false, sky->radiance, 0, use_realtime, roughness_layers, texture_format, sky->uv_border_size);
 			}
