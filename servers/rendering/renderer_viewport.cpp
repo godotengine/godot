@@ -1445,7 +1445,7 @@ bool RendererViewport::viewport_get_preserve_alpha(RID p_viewport) const {
 	return viewport->preserve_alpha;
 }
 
-void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode) {
+void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RSE::ViewportScreenSpaceAA p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
 #ifdef DEBUG_ENABLED
