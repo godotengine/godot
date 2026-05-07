@@ -733,6 +733,35 @@ double AnimationPlayer::get_current_animation_position() const {
 	return playback.current.pos;
 }
 
+Dictionary AnimationPlayer::_save_state() const {
+	Dictionary state;
+	state["playing"] = is_playing();
+	state["speed_scale"] = get_speed_scale();
+	if (is_playing()) {
+		state["current_animation"] = get_current_animation();
+		state["current_animation_position"] = get_current_animation_position();
+	}
+	return state;
+}
+
+void AnimationPlayer::_load_state(const Dictionary &p_state) {
+	if (p_state.has("speed_scale")) {
+		set_speed_scale(p_state["speed_scale"]);
+	}
+	const bool was_playing = p_state.has("playing") && (bool)p_state["playing"];
+	if (was_playing && p_state.has("current_animation")) {
+		const StringName anim = p_state["current_animation"];
+		if (anim != StringName()) {
+			play(anim);
+			if (p_state.has("current_animation_position")) {
+				seek(p_state["current_animation_position"], true);
+			}
+		}
+	} else {
+		stop();
+	}
+}
+
 double AnimationPlayer::get_current_animation_length() const {
 	ERR_FAIL_COND_V_MSG(!playback.current.is_enabled, 0, "AnimationPlayer has no current animation.");
 	return playback.current.animation_length;
@@ -1040,6 +1069,9 @@ void AnimationPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_current_animation_position"), &AnimationPlayer::get_current_animation_position);
 	ClassDB::bind_method(D_METHOD("get_current_animation_length"), &AnimationPlayer::get_current_animation_length);
+
+	ClassDB::bind_method(D_METHOD("_save_state"), &AnimationPlayer::_save_state);
+	ClassDB::bind_method(D_METHOD("_load_state", "state"), &AnimationPlayer::_load_state);
 
 	ClassDB::bind_method(D_METHOD("set_section_with_markers", "start_marker", "end_marker"), &AnimationPlayer::set_section_with_markers, DEFVAL(StringName()), DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("set_section", "start_time", "end_time"), &AnimationPlayer::set_section, DEFVAL(-1), DEFVAL(-1));
