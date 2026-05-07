@@ -240,36 +240,53 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 	} else {
 		Array debug_data = navigationmesh->_get_debug_data();
-		Node3D *debug_holder = Object::cast_to<Node3D>(navigationregion->find_child("_debug_holder", false, false));
-		if (debug_holder == nullptr) {
-			debug_holder = memnew(Node3D);
-			debug_holder->set_name("_debug_holder");
-			navigationregion->add_child(debug_holder, false, Node::INTERNAL_MODE_BACK);
-			// NOTE: not setting any owner to prevent these debug nodes from being saved.
-		} else {
-			TypedArray<Node> nodes = debug_holder->get_children(true);
-			if (nodes.size() > 0) {
-				for (Variant &v : nodes) {
-					Node *node = Object::cast_to<Node>(v);
-					if (node) {
-						node->queue_free();
-						debug_holder->remove_child(node);
+
+		if (debug_data.size() > 0) {
+			Node3D *debug_holder = Object::cast_to<Node3D>(navigationregion->find_child("_debug_holder", false, false));
+			if (debug_holder == nullptr) {
+				debug_holder = memnew(Node3D);
+				debug_holder->set_name("_debug_holder");
+				navigationregion->add_child(debug_holder, false, Node::INTERNAL_MODE_BACK);
+				// NOTE: not setting any owner to prevent these debug nodes from being saved.
+			} else {
+				TypedArray<Node> nodes = debug_holder->get_children(true);
+				if (nodes.size() > 0) {
+					for (Variant &v : nodes) {
+						Node *node = Object::cast_to<Node>(v);
+						if (node) {
+							node->queue_free();
+							debug_holder->remove_child(node);
+						}
 					}
 				}
 			}
-		}
-		for (int i = 0; i < debug_data.size(); i++) {
-			Vector3 pos = debug_data[i];
 
-			Label3D *area_index_label = memnew(Label3D);
-			area_index_label->set_text(vformat("%d", i));
-			area_index_label->set_draw_flag(Label3D::DrawFlags::FLAG_DISABLE_DEPTH_TEST, true);
-			area_index_label->set_font_size(200);
-			area_index_label->set_outline_size(40);
-			area_index_label->set_position(pos);
-			area_index_label->rotate_x(-(Math::PI / 2)); // -90 degrees.
-			debug_holder->add_child(area_index_label);
-			area_index_label->set_owner(debug_holder);
+			Array bake_ids = navigationmesh->get_area_bake_ids();
+			bool use_bake_id = bake_ids.size() == debug_data.size();
+
+			for (int i = 0; i < debug_data.size(); i++) {
+				Vector3 pos = debug_data[i];
+
+				Label3D *area_index_label = memnew(Label3D);
+				String text;
+				if (use_bake_id) {
+					text = bake_ids[i];
+					if (!text.is_empty()) {
+						text = vformat("%s (%d)", text, i);
+					}
+				}
+				if (text.is_empty()) {
+					text = vformat("%d", i);
+				}
+				area_index_label->set_text(text);
+				area_index_label->set_draw_flag(Label3D::DrawFlags::FLAG_DISABLE_DEPTH_TEST, true);
+				area_index_label->set_font_size(200);
+				area_index_label->set_outline_size(40);
+				area_index_label->set_position(pos);
+				area_index_label->rotate_x(-(Math::PI / 2)); // -90 degrees.
+				debug_holder->add_child(area_index_label);
+				area_index_label->set_owner(debug_holder);
+			}
 		}
 	}
 }

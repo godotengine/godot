@@ -354,8 +354,8 @@ void NavigationRegion3D::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (int16_t i = 0; i < NavigationServer3D::get_singleton()->region_get_area_count(region); i++) {
 		const String prep = vformat("areas/%d/", i);
-		// Navigation layers overwrites. // FIXME: actually, if debug mode, we can get bake id!
-		p_list->push_back(PropertyInfo(Variant::STRING, prep + "id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
+		// Navigation layers overwrites.
+		p_list->push_back(PropertyInfo(Variant::STRING, prep + "bake_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
 		p_list->push_back(PropertyInfo(Variant::INT, prep + "layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION, "", PROPERTY_USAGE_EDITOR));
 	}
 }
@@ -383,11 +383,11 @@ void NavigationRegion3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_area_index", "bake_id"), &NavigationRegion3D::get_area_index);
 
-	ClassDB::bind_method(D_METHOD("set_area_navigation_layers", "area_id", "navigation_layers"), &NavigationRegion3D::set_area_navigation_layers);
-	ClassDB::bind_method(D_METHOD("get_area_navigation_layers", "area_id"), &NavigationRegion3D::get_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("set_area_navigation_layers", "area_index", "navigation_layers"), &NavigationRegion3D::set_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_area_navigation_layers", "area_index"), &NavigationRegion3D::get_area_navigation_layers);
 
-	ClassDB::bind_method(D_METHOD("set_area_navigation_layer_value", "area_id", "layer_number", "value"), &NavigationRegion3D::set_area_navigation_layer_value);
-	ClassDB::bind_method(D_METHOD("get_area_navigation_layer_value", "area_id", "layer_number"), &NavigationRegion3D::get_area_navigation_layer_value);
+	ClassDB::bind_method(D_METHOD("set_area_navigation_layer_value", "area_index", "layer_number", "value"), &NavigationRegion3D::set_area_navigation_layer_value);
+	ClassDB::bind_method(D_METHOD("get_area_navigation_layer_value", "area_index", "layer_number"), &NavigationRegion3D::get_area_navigation_layer_value);
 
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion3D::get_region_rid);
 
@@ -458,13 +458,19 @@ bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = (int)get_area_navigation_layers((uint16_t)which);
 		return true;
 	}
-	if (path.begins_with("areas/") && path.ends_with("id") && navigation_mesh.is_valid()) {
+	if (path.begins_with("areas/") && path.ends_with("bake_id") && navigation_mesh.is_valid()) {
 		int which = path.get_slicec('/', 1).to_int();
-		if (which < 0 || which >= NavigationServer3D::get_singleton()->region_get_area_count(region)) {
+		if (which < 0) {
 			return false;
 		}
-		r_ret = (int)NavigationServer3D::get_singleton()->region_get_area_ids(region)[which];
-		return true;
+		Array bake_ids = navigation_mesh->get_area_bake_ids();
+		if (bake_ids.size() > which) {
+			String bake_id = bake_ids[which];
+			if (!bake_id.is_empty()) {
+				r_ret = bake_id;
+				return true;
+			}
+		}
 	}
 	return false;
 }
@@ -823,36 +829,53 @@ void NavigationRegion3D::_update_debug_mesh() {
 		}
 
 		Array debug_data = navigation_mesh->_get_debug_data();
-		Node3D *debug_holder = Object::cast_to<Node3D>(find_child("_debug_holder", false, false));
-		if (debug_holder == nullptr) {
-			debug_holder = memnew(Node3D);
-			debug_holder->set_name("_debug_holder");
-			add_child(debug_holder, false, Node::INTERNAL_MODE_BACK);
-			// NOTE: not setting any owner to prevent these debug nodes from being saved.
-		} else {
-			TypedArray<Node> nodes = debug_holder->get_children(true);
-			if (nodes.size() > 0) {
-				for (Variant &v : nodes) {
-					Node *node = Object::cast_to<Node>(v);
-					if (node) {
-						node->queue_free();
-						debug_holder->remove_child(node);
+
+		if (debug_data.size() > 0) {
+			Node3D *debug_holder = Object::cast_to<Node3D>(find_child("_debug_holder", false, false));
+			if (debug_holder == nullptr) {
+				debug_holder = memnew(Node3D);
+				debug_holder->set_name("_debug_holder");
+				add_child(debug_holder, false, Node::INTERNAL_MODE_BACK);
+				// NOTE: not setting any owner to prevent these debug nodes from being saved.
+			} else {
+				TypedArray<Node> nodes = debug_holder->get_children(true);
+				if (nodes.size() > 0) {
+					for (Variant &v : nodes) {
+						Node *node = Object::cast_to<Node>(v);
+						if (node) {
+							node->queue_free();
+							debug_holder->remove_child(node);
+						}
 					}
 				}
 			}
-		}
-		for (int i = 0; i < debug_data.size(); i++) {
-			Vector3 pos = debug_data[i];
 
-			Label3D *area_index_label = memnew(Label3D);
-			area_index_label->set_text(vformat("%d", i));
-			area_index_label->set_draw_flag(Label3D::DrawFlags::FLAG_DISABLE_DEPTH_TEST, true);
-			area_index_label->set_font_size(200);
-			area_index_label->set_outline_size(40);
-			area_index_label->set_position(pos);
-			area_index_label->rotate_x(-(Math::PI / 2)); // -90 degrees.
-			debug_holder->add_child(area_index_label);
-			area_index_label->set_owner(debug_holder);
+			Array bake_ids = navigation_mesh->get_area_bake_ids();
+			bool use_bake_id = bake_ids.size() == debug_data.size();
+
+			for (int i = 0; i < debug_data.size(); i++) {
+				Vector3 pos = debug_data[i];
+
+				Label3D *area_index_label = memnew(Label3D);
+				String text;
+				if (use_bake_id) {
+					text = bake_ids[i];
+					if (!text.is_empty()) {
+						text = vformat("%s (%d)", text, i);
+					}
+				}
+				if (text.is_empty()) {
+					text = vformat("%d", i);
+				}
+				area_index_label->set_text(text);
+				area_index_label->set_draw_flag(Label3D::DrawFlags::FLAG_DISABLE_DEPTH_TEST, true);
+				area_index_label->set_font_size(200);
+				area_index_label->set_outline_size(40);
+				area_index_label->set_position(pos);
+				area_index_label->rotate_x(-(Math::PI / 2)); // -90 degrees.
+				debug_holder->add_child(area_index_label);
+				area_index_label->set_owner(debug_holder);
+			}
 		}
 	}
 }
