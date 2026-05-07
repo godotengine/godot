@@ -40,6 +40,7 @@
 
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
+
 	if (prop_name.begins_with("item/")) {
 		int idx = prop_name.get_slicec('/', 1).to_int();
 		String what = prop_name.get_slicec('/', 2);
@@ -49,6 +50,8 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 
 		if (what == "name") {
 			set_item_name(idx, p_value);
+		} else if (what == "category") {
+			set_item_category(idx, p_value);
 		} else if (what == "mesh") {
 			set_item_mesh(idx, p_value);
 		} else if (what == "mesh_transform") {
@@ -98,45 +101,52 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			return false;
 		}
-
-		return true;
+	} else {
+		return false;
 	}
 
-	return false;
+	return true;
 }
 
 bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 	String prop_name = p_name;
-	int idx = prop_name.get_slicec('/', 1).to_int();
-	ERR_FAIL_COND_V(!item_map.has(idx), false);
-	String what = prop_name.get_slicec('/', 2);
 
-	if (what == "name") {
-		r_ret = get_item_name(idx);
-	} else if (what == "mesh") {
-		r_ret = get_item_mesh(idx);
-	} else if (what == "mesh_transform") {
-		r_ret = get_item_mesh_transform(idx);
-	} else if (what == "mesh_cast_shadow") {
-		r_ret = (int)get_item_mesh_cast_shadow(idx);
+	if (prop_name.begins_with("item/")) {
+		int idx = prop_name.get_slicec('/', 1).to_int();
+		ERR_FAIL_COND_V(!item_map.has(idx), false);
+		String what = prop_name.get_slicec('/', 2);
+
+		if (what == "name") {
+			r_ret = get_item_name(idx);
+		} else if (what == "category") {
+			r_ret = get_item_category(idx);
+		} else if (what == "mesh") {
+			r_ret = get_item_mesh(idx);
+		} else if (what == "mesh_transform") {
+			r_ret = get_item_mesh_transform(idx);
+		} else if (what == "mesh_cast_shadow") {
+			r_ret = (int)get_item_mesh_cast_shadow(idx);
 #ifndef PHYSICS_3D_DISABLED
-	} else if (what == "shapes") {
-		r_ret = _get_item_shapes(idx);
+		} else if (what == "shapes") {
+			r_ret = _get_item_shapes(idx);
 #endif // PHYSICS_3D_DISABLED
-	} else if (what == "navigation_mesh") {
-		r_ret = get_item_navigation_mesh(idx);
-	} else if (what == "navigation_mesh_transform") {
-		r_ret = get_item_navigation_mesh_transform(idx);
+		} else if (what == "navigation_mesh") {
+			r_ret = get_item_navigation_mesh(idx);
+		} else if (what == "navigation_mesh_transform") {
+			r_ret = get_item_navigation_mesh_transform(idx);
 #ifndef DISABLE_DEPRECATED
-	} else if (what == "navmesh") { // Renamed in 4.0 beta 9.
-		r_ret = get_item_navigation_mesh(idx);
-	} else if (what == "navmesh_transform") { // Renamed in 4.0 beta 9.
-		r_ret = get_item_navigation_mesh_transform(idx);
+		} else if (what == "navmesh") { // Renamed in 4.0 beta 9.
+			r_ret = get_item_navigation_mesh(idx);
+		} else if (what == "navmesh_transform") { // Renamed in 4.0 beta 9.
+			r_ret = get_item_navigation_mesh_transform(idx);
 #endif // DISABLE_DEPRECATED
-	} else if (what == "navigation_layers") {
-		r_ret = get_item_navigation_layers(idx);
-	} else if (what == "preview") {
-		r_ret = get_item_preview(idx);
+		} else if (what == "navigation_layers") {
+			r_ret = get_item_navigation_layers(idx);
+		} else if (what == "preview") {
+			r_ret = get_item_preview(idx);
+		} else {
+			return false;
+		}
 	} else {
 		return false;
 	}
@@ -148,6 +158,7 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<int, Item> &E : item_map) {
 		String prop_name = vformat("%s/%d/", PNAME("item"), E.key);
 		p_list->push_back(PropertyInfo(Variant::STRING, prop_name + PNAME("name"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, prop_name + PNAME("category"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static(), PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("mesh_cast_shadow"), PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only", PROPERTY_USAGE_NO_EDITOR));
@@ -170,6 +181,12 @@ void MeshLibrary::create_item(int p_item) {
 void MeshLibrary::set_item_name(int p_item, const String &p_name) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].name = p_name;
+	emit_changed();
+}
+
+void MeshLibrary::set_item_category(int p_item, const StringName &p_category) {
+	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	item_map[p_item].category = p_category;
 	emit_changed();
 }
 
@@ -227,6 +244,11 @@ void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) 
 String MeshLibrary::get_item_name(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), "", "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].name;
+}
+
+StringName MeshLibrary::get_item_category(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), StringName(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	return item_map[p_item].category;
 }
 
 Ref<Mesh> MeshLibrary::get_item_mesh(int p_item) const {
@@ -371,9 +393,11 @@ Array MeshLibrary::_get_item_shapes(int p_item) const {
 void MeshLibrary::reset_state() {
 	clear();
 }
+
 void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_item", "id"), &MeshLibrary::create_item);
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);
+	ClassDB::bind_method(D_METHOD("set_item_category", "id", "category"), &MeshLibrary::set_item_category);
 	ClassDB::bind_method(D_METHOD("set_item_mesh", "id", "mesh"), &MeshLibrary::set_item_mesh);
 	ClassDB::bind_method(D_METHOD("set_item_mesh_transform", "id", "mesh_transform"), &MeshLibrary::set_item_mesh_transform);
 	ClassDB::bind_method(D_METHOD("set_item_mesh_cast_shadow", "id", "shadow_casting_setting"), &MeshLibrary::set_item_mesh_cast_shadow);
@@ -385,6 +409,7 @@ void MeshLibrary::_bind_methods() {
 #endif // PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
+	ClassDB::bind_method(D_METHOD("get_item_category", "id"), &MeshLibrary::get_item_category);
 	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_transform", "id"), &MeshLibrary::get_item_mesh_transform);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_cast_shadow", "id"), &MeshLibrary::get_item_mesh_cast_shadow);
@@ -402,10 +427,4 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_list"), &MeshLibrary::get_item_list);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &MeshLibrary::get_item_count);
 	ClassDB::bind_method(D_METHOD("get_last_unused_item_id"), &MeshLibrary::get_last_unused_item_id);
-}
-
-MeshLibrary::MeshLibrary() {
-}
-
-MeshLibrary::~MeshLibrary() {
 }
