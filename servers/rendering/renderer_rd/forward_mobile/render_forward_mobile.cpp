@@ -2120,6 +2120,10 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		} else {
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.transform);
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.prev_transform);
+#ifdef REAL_T_IS_DOUBLE
+			memset(instance_data.model_precision, 0, sizeof(instance_data.model_precision));
+			memset(instance_data.prev_model_precision, 0, sizeof(instance_data.prev_model_precision));
+#endif
 		}
 
 		instance_data.flags = inst->flags_cache;
