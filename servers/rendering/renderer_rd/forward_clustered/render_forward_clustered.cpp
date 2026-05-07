@@ -1455,8 +1455,18 @@ void RenderForwardClustered::_process_ssil(Ref<RenderSceneBuffersRD> p_render_bu
 	settings.radius = environment_get_ssil_radius(p_environment);
 	settings.intensity = environment_get_ssil_intensity(p_environment);
 	settings.sharpness = environment_get_ssil_sharpness(p_environment);
+	settings.thickness = environment_get_ssil_thickness(p_environment);
+	settings.backface_rejection = environment_get_ssil_backface_rejection_enabled(p_environment);
 	settings.normal_rejection = environment_get_ssil_normal_rejection(p_environment);
 	settings.full_screen_size = p_render_buffers->get_internal_size();
+	settings.frame_index = 0u;
+
+	bool using_taa = p_render_buffers->get_use_taa();
+	bool using_fsr2 = p_render_buffers->get_scaling_3d_mode() == RSE::VIEWPORT_SCALING_3D_MODE_FSR2;
+
+	if (using_taa || using_fsr2) {
+		settings.frame_index = uint32_t(RSG::rasterizer->get_frame_number() % 64u); // frame % 64 based on author recommendation: https://blog.demofox.org/2022/01/01/interleaved-gradient-noise-a-different-kind-of-low-discrepancy-sequence/
+	}
 
 	ss_effects->ssil_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssil, settings);
 
@@ -1467,9 +1477,8 @@ void RenderForwardClustered::_process_ssil(Ref<RenderSceneBuffersRD> p_render_bu
 		Projection correction;
 		correction.set_depth_correction(true);
 		Projection projection = correction * p_projections[v];
-		Projection last_frame_projection = rb_data->ss_effects_data.ssil_last_frame_projections[v] * Projection(rb_data->ss_effects_data.ssil_last_frame_transform.affine_inverse()) * Projection(transform) * projection.inverse();
-
-		ss_effects->screen_space_indirect_lighting(p_render_buffers, rb_data->ss_effects_data.ssil, v, p_normal_buffers[v], p_projections[v], last_frame_projection, settings);
+		Projection last_frame_reprojection = rb_data->ss_effects_data.ssil_last_frame_projections[v] * Projection(rb_data->ss_effects_data.ssil_last_frame_transform.affine_inverse()) * Projection(transform) * projection.inverse();
+		ss_effects->screen_space_indirect_lighting(p_render_buffers, rb_data->ss_effects_data.ssil, v, p_normal_buffers[v], p_projections[v], last_frame_reprojection, settings);
 
 		rb_data->ss_effects_data.ssil_last_frame_projections[v] = projection;
 	}
@@ -3983,10 +3992,10 @@ void RenderForwardClustered::environment_set_ssao_quality(RSE::EnvironmentSSAOQu
 	ss_effects->ssao_set_quality(p_quality, p_half_size, p_adaptive_target, p_blur_passes, p_fadeout_from, p_fadeout_to);
 }
 
-void RenderForwardClustered::environment_set_ssil_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+void RenderForwardClustered::environment_set_ssil_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size, [[maybe_unused]] float p_adaptive_target, [[maybe_unused]] int p_blur_passes, [[maybe_unused]] float p_fadeout_from, [[maybe_unused]] float p_fadeout_to) {
 	ERR_FAIL_NULL(ss_effects);
 	ERR_FAIL_COND(p_quality < RSE::EnvironmentSSILQuality::ENV_SSIL_QUALITY_VERY_LOW || p_quality > RSE::EnvironmentSSILQuality::ENV_SSIL_QUALITY_ULTRA);
-	ss_effects->ssil_set_quality(p_quality, p_half_size, p_adaptive_target, p_blur_passes, p_fadeout_from, p_fadeout_to);
+	ss_effects->ssil_set_quality(p_quality, p_half_size);
 }
 
 void RenderForwardClustered::environment_set_ssr_half_size(bool p_half_size) {
