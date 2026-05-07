@@ -410,6 +410,9 @@ public:
 	void set_bus_bypass_effects(int p_bus, bool p_enable);
 	bool is_bus_bypassing_effects(int p_bus) const;
 
+	Dictionary export_state() const;
+	void import_state(const Dictionary &p_state);
+
 	void add_bus_effect(int p_bus, const Ref<AudioEffect> &p_effect, int p_at_pos = -1);
 	void remove_bus_effect(int p_bus, int p_effect);
 

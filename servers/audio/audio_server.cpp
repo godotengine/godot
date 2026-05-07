@@ -1037,6 +1037,36 @@ float AudioServer::get_bus_volume_linear(int p_bus) const {
 	return Math::db_to_linear(get_bus_volume_db(p_bus));
 }
 
+Dictionary AudioServer::export_state() const {
+	Dictionary state;
+	Array buses_state;
+	for (int i = 0; i < get_bus_count(); i++) {
+		Dictionary bus;
+		bus["name"] = get_bus_name(i);
+		bus["volume_db"] = get_bus_volume_db(i);
+		buses_state.push_back(bus);
+	}
+	state["buses"] = buses_state;
+	return state;
+}
+
+void AudioServer::import_state(const Dictionary &p_state) {
+	if (!p_state.has("buses")) {
+		return;
+	}
+	Array buses_state = p_state["buses"];
+	int count = MIN((int)buses_state.size(), get_bus_count());
+	for (int i = 0; i < count; i++) {
+		Dictionary bus = buses_state[i];
+		if (bus.has("volume_db")) {
+			set_bus_volume_db(i, bus["volume_db"]);
+		}
+		if (bus.has("name")) {
+			set_bus_name(i, bus["name"]);
+		}
+	}
+}
+
 int AudioServer::get_bus_channels(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	return buses[p_bus]->channels.size();
@@ -2050,6 +2080,9 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_volume_linear", "bus_idx", "volume_linear"), &AudioServer::set_bus_volume_linear);
 	ClassDB::bind_method(D_METHOD("get_bus_volume_linear", "bus_idx"), &AudioServer::get_bus_volume_linear);
+
+	ClassDB::bind_method(D_METHOD("export_state"), &AudioServer::export_state);
+	ClassDB::bind_method(D_METHOD("import_state", "state"), &AudioServer::import_state);
 
 	ClassDB::bind_method(D_METHOD("set_bus_send", "bus_idx", "send"), &AudioServer::set_bus_send);
 	ClassDB::bind_method(D_METHOD("get_bus_send", "bus_idx"), &AudioServer::get_bus_send);
