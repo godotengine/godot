@@ -200,7 +200,7 @@ void AudioStreamOpus::clear_data() {
 void AudioStreamOpus::set_data(const Vector<uint8_t> &p_data) {
 	// Open file to fetch metadata
 	OggOpusFile *opus_file = op_open_memory(p_data.ptr(), p_data.size(), nullptr);
-	ERR_FAIL_COND_MSG(opus_file == nullptr, "Could not open opus stream.");
+	ERR_FAIL_NULL_MSG(opus_file, "Could not open opus stream.");
 
 	int64_t length_i = op_pcm_total(opus_file, -1);
 	length = (length_i > 0) ? (double(length_i) / OPUS_SAMPLERATE) : 0;
