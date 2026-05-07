@@ -270,7 +270,6 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_naviga
 	}
 
 	navigation_mesh = p_navigation_mesh;
-	print_line("navigation_mesh");
 
 	if (navigation_mesh.is_valid()) {
 		navigation_mesh->connect_changed(callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
@@ -352,7 +351,7 @@ void NavigationRegion3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		return;
 	}
 
-	for (int16_t i = 0; i < NavigationServer3D::get_singleton()->region_get_area_count(region); i++) {
+	for (int16_t i = 0; i < navigation_mesh->get_area_count(); i++) {
 		const String prep = vformat("areas/%d/", i);
 		// Navigation layers overwrites.
 		p_list->push_back(PropertyInfo(Variant::STRING, prep + "bake_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
@@ -419,7 +418,6 @@ void NavigationRegion3D::_bind_methods() {
 
 bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
-	// print_line(path);
 #ifndef DISABLE_DEPRECATED
 	// Compatibility with earlier 4.0 betas.
 	if (path == "navmesh") {
@@ -433,7 +431,6 @@ bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) 
 			return false;
 		}
 		set_area_navigation_layers(which, p_value);
-		// FIXME: not visible if selected on scene open.
 		notify_property_list_changed(); // Make areas in navigation_mesh (in)visible in inspector.
 		return true;
 	}
@@ -442,7 +439,6 @@ bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) 
 
 bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 	String path = p_path;
-	print_line(path);
 #ifndef DISABLE_DEPRECATED
 	// Compatibility with earlier 4.0 betas.
 	if (path == "navmesh") {
@@ -452,10 +448,10 @@ bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 #endif // DISABLE_DEPRECATED
 	if (path.begins_with("areas/") && path.ends_with("layers") && navigation_mesh.is_valid()) {
 		int which = path.get_slicec('/', 1).to_int();
-		if (which < 0 || which >= NavigationServer3D::get_singleton()->region_get_area_count(region)) {
+		if (which < 0 || which >= navigation_mesh->get_area_count()) {
 			return false;
 		}
-		r_ret = (int)get_area_navigation_layers((uint16_t)which);
+		r_ret = (int)navigation_mesh->get_area_navigation_layers_at_index((uint16_t)which);
 		return true;
 	}
 	if (path.begins_with("areas/") && path.ends_with("bake_id") && navigation_mesh.is_valid()) {
@@ -479,7 +475,6 @@ void NavigationRegion3D::_navigation_mesh_changed() {
 	_update_bounds();
 
 	NavigationServer3D::get_singleton()->region_set_navigation_mesh(region, navigation_mesh);
-	print_line("_navigation_mesh_changed");
 
 #ifdef DEBUG_ENABLED
 	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {

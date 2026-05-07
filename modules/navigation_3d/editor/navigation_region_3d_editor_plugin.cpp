@@ -219,8 +219,8 @@ void NavigationRegion3DEditor::_clear_pressed() {
 		for (NavigationRegion3D *region : selected_regions) {
 			if (region->get_navigation_mesh().is_valid()) {
 				region->get_navigation_mesh()->clear();
-				// TODO: limit to last in selection. or find alternative.
-				region->notify_property_list_changed(); // In order to trigger NavigationRegion3D::_get_property_list();
+				// Region's inspector has custom properties. While the clear()-call above also notifies a change, it does not propagate to the region.
+				region->notify_property_list_changed();
 				region->update_gizmos();
 			}
 		}
