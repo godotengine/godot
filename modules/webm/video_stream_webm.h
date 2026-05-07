@@ -111,14 +111,14 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<VideoStreamPlayback> instantiate_playback() override {
+	virtual Ref<VideoStreamPlayback> instantiate_playback() override {
 		Ref<VideoStreamPlaybackWebm> pb = memnew(VideoStreamPlaybackWebm);
 		pb->set_audio_track(audio_track);
 		pb->set_file(file);
 		return pb;
 	}
 
-	void set_audio_track(int p_track) override { audio_track = p_track; }
+	virtual void set_audio_track(int p_track) override { audio_track = p_track; }
 
 	VideoStreamWebm() { audio_track = 0; }
 };
