@@ -241,13 +241,13 @@ extern void CrashHandlerException(int signal) {
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 
-	String _execpath = OS::get_singleton()->get_executable_path();
+	String exec_path = OS::get_singleton()->get_executable_path();
 
 	// Load process and image info to determine ASLR addresses offset.
 	MODULEINFO mi;
 	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &mi, sizeof(mi));
 	int64_t image_mem_base = reinterpret_cast<int64_t>(mi.lpBaseOfDll);
-	int64_t image_file_base = get_image_base(_execpath);
+	int64_t image_file_base = get_image_base(exec_path);
 	data.offset = image_mem_base - image_file_base;
 
 	std::vector<module_data> modules;
@@ -268,12 +268,12 @@ extern void CrashHandlerException(int signal) {
 
 	print_error(vformat("Load address: %x\n", (uint64_t)data.offset));
 
-	if (FileAccess::exists(_execpath + ".debugsymbols")) {
-		_execpath = _execpath + ".debugsymbols";
+	if (FileAccess::exists(exec_path + ".debugsymbols")) {
+		exec_path = exec_path + ".debugsymbols";
 	}
-	_execpath = _execpath.replace_char('/', '\\');
+	exec_path = exec_path.replace_char('/', '\\');
 
-	CharString cs = _execpath.utf8(); // Note: should remain in scope during backtrace_simple call.
+	CharString cs = exec_path.utf8(); // Note: should remain in scope during backtrace_simple call.
 	data.state = backtrace_create_state(cs.get_data(), 0, &error_callback, reinterpret_cast<void *>(&data));
 	if (data.state != nullptr) {
 		data.index = 1;
