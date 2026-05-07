@@ -114,6 +114,7 @@ RID PopupMenu::bind_global_menu() {
 		global_menu = nmenu->create_menu();
 	}
 
+	nmenu->set_search_bar_enabled_on_item_count(global_menu, search_bar_enabled_on_item_count);
 	nmenu->set_interface_direction(global_menu, control->is_layout_rtl());
 	nmenu->set_popup_open_callback(global_menu, callable_mp(this, &PopupMenu::_about_to_popup));
 	nmenu->set_popup_close_callback(global_menu, callable_mp(this, &PopupMenu::_about_to_close));
@@ -3220,6 +3221,9 @@ bool PopupMenu::is_search_bar_enabled() const {
 
 void PopupMenu::set_search_bar_enabled_on_item_count(int p_count) {
 	search_bar_enabled_on_item_count = p_count;
+	if (global_menu.is_valid()) {
+		NativeMenu::get_singleton()->set_search_bar_enabled_on_item_count(global_menu, search_bar_enabled_on_item_count);
+	}
 }
 
 int PopupMenu::get_search_bar_enabled_on_item_count() const {

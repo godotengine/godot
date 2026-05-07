@@ -42,11 +42,14 @@ class NativeMenuMacOS : public NativeMenu {
 
 	struct MenuData {
 		NSMenu *menu = nullptr;
+		NSMenuItem *search_item = nullptr;
 
 		Callable open_cb;
 		Callable close_cb;
 		bool is_open = false;
 		bool is_system = false;
+
+		int search_bar_enabled_on_item_count = 0;
 	};
 
 	mutable RID_PtrOwner<MenuData> menus;
@@ -64,6 +67,7 @@ class NativeMenuMacOS : public NativeMenu {
 	RID help_menu;
 	RID dock_menu;
 
+	void _update_search(MenuData *p_menu_data);
 	int _get_system_menu_start(const NSMenu *p_menu) const;
 	int _get_system_menu_count(const NSMenu *p_menu) const;
 	bool _is_menu_opened(NSMenu *p_menu) const;
@@ -102,6 +106,9 @@ public:
 	virtual Callable get_popup_close_callback(const RID &p_rid) const override;
 	virtual void set_minimum_width(const RID &p_rid, float p_width) override;
 	virtual float get_minimum_width(const RID &p_rid) const override;
+
+	virtual void set_search_bar_enabled_on_item_count(const RID &p_rid, int p_count) override;
+	virtual int get_search_bar_enabled_on_item_count(const RID &p_rid) const override;
 
 	virtual bool is_opened(const RID &p_rid) const override;
 

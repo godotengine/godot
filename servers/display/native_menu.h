@@ -92,6 +92,9 @@ public:
 	virtual void set_minimum_width(const RID &p_rid, float p_width);
 	virtual float get_minimum_width(const RID &p_rid) const;
 
+	virtual void set_search_bar_enabled_on_item_count(const RID &p_rid, int p_count);
+	virtual int get_search_bar_enabled_on_item_count(const RID &p_rid) const;
+
 	virtual bool is_opened(const RID &p_rid) const;
 
 	virtual int add_submenu_item(const RID &p_rid, const String &p_label, const RID &p_submenu_rid, const Variant &p_tag = Variant(), int p_index = -1);

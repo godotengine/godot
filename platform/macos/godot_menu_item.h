@@ -64,3 +64,12 @@ enum GlobalMenuCheckType {
 }
 
 @end
+
+@interface GodotSearchField : NSSearchField {
+@public
+	NSMenu *host_menu;
+}
+
+- (void)filterItems:(NSMenu *)p_menu filterQuery:(const String &)p_queue;
+
+@end

@@ -30,6 +30,8 @@
 
 #import "godot_menu_item.h"
 
+#include "core/string/fuzzy_search.h"
+
 @implementation GodotMenuItem
 
 - (id)init {
@@ -45,6 +47,62 @@
 	self->accel = Key::NONE;
 
 	return self;
+}
+
+@end
+
+@implementation GodotSearchField
+
+- (id)init {
+	self = [super init];
+
+	self->host_menu = nullptr;
+
+	return self;
+}
+
+- (void)filterItems:(NSMenu *)p_menu filterQuery:(const String &)p_query {
+	PackedStringArray search_names;
+
+	for (NSInteger i = 1; i < [p_menu numberOfItems]; i++) {
+		const NSMenuItem *menu_item = [p_menu itemAtIndex:i];
+		search_names.append(String::utf8([[menu_item title] UTF8String]));
+	}
+
+	Vector<FuzzySearchResult> results;
+	FuzzySearch fuzzy;
+	fuzzy.set_query(p_query);
+	fuzzy.search_all(search_names, results);
+
+	for (NSInteger i = 1; i < [p_menu numberOfItems]; i++) {
+		const NSMenuItem *menu_item = [p_menu itemAtIndex:i];
+
+		bool submenu_visible = false;
+		NSMenu *sub_menu = [menu_item submenu];
+		if (sub_menu) {
+			[self filterItems:sub_menu filterQuery:p_query];
+			for (NSInteger j = 1; j < [sub_menu numberOfItems]; j++) {
+				if (![sub_menu itemAtIndex:j].hidden) {
+					submenu_visible = true;
+					break;
+				}
+			}
+		}
+
+		menu_item.hidden = !(p_query.length() == 0 || submenu_visible);
+	}
+
+	for (const FuzzySearchResult &res : results) {
+		const NSMenuItem *menu_item = [p_menu itemAtIndex:res.original_index + 1];
+		menu_item.hidden = res.score <= 0;
+	}
+}
+
+- (void)textDidChange:(NSNotification *)notification {
+	if (host_menu) {
+		String query = String::utf8([[self stringValue] UTF8String]);
+		[self filterItems:host_menu filterQuery:query];
+	}
 }
 
 @end

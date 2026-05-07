@@ -173,7 +173,10 @@ int NativeMenuMacOS::_get_system_menu_start(const NSMenu *p_menu) const {
 			}
 		}
 	}
-	return 0;
+	if (p_menu == dock_menu_ns) {
+		return 0;
+	}
+	return 1;
 }
 
 int NativeMenuMacOS::_get_system_menu_count(const NSMenu *p_menu) const {
@@ -193,7 +196,10 @@ int NativeMenuMacOS::_get_system_menu_count(const NSMenu *p_menu) const {
 			}
 		}
 	}
-	return [p_menu numberOfItems];
+	if (p_menu == dock_menu_ns) {
+		return [p_menu numberOfItems];
+	}
+	return [p_menu numberOfItems] - 1;
 }
 
 bool NativeMenuMacOS::has_feature(Feature p_feature) const {
@@ -288,6 +294,17 @@ RID NativeMenuMacOS::create_menu() {
 	if (ds) {
 		ds->set_menu_delegate(md->menu);
 	}
+	md->search_item = [md->menu insertItemWithTitle:@"_search_" action:nil keyEquivalent:@"" atIndex:0];
+	NSStackView *subview = [[NSStackView alloc] initWithFrame:NSMakeRect(0, 0, 120, 42)];
+	subview.autoresizingMask = NSViewWidthSizable;
+	subview.edgeInsets = NSEdgeInsetsMake(5, 10, 5, 10);
+	GodotSearchField *search = [[GodotSearchField alloc] initWithFrame:NSMakeRect(0, 0, 100, 32)];
+	search->host_menu = md->menu;
+	[subview addView:search inGravity:NSStackViewGravityCenter];
+	search.autoresizingMask = NSViewWidthSizable;
+	md->search_item.view = subview;
+	md->search_item.hidden = true;
+
 	RID rid = menus.make_rid(md);
 	menu_lookup[md->menu] = rid;
 	return rid;
@@ -391,6 +408,29 @@ float NativeMenuMacOS::get_minimum_width(const RID &p_rid) const {
 	return md->menu.minimumWidth * DisplayServer::get_singleton()->screen_get_max_scale();
 }
 
+void NativeMenuMacOS::_update_search(MenuData *p_menu_data) {
+	if (p_menu_data->search_item) {
+		p_menu_data->search_item.hidden = !(p_menu_data->search_bar_enabled_on_item_count > 0 && [p_menu_data->menu numberOfItems] - 1 >= p_menu_data->search_bar_enabled_on_item_count);
+	}
+}
+
+void NativeMenuMacOS::set_search_bar_enabled_on_item_count(const RID &p_rid, int p_count) {
+	MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL(md);
+
+	if (md->search_bar_enabled_on_item_count != p_count) {
+		md->search_bar_enabled_on_item_count = p_count;
+		_update_search(md);
+	}
+}
+
+int NativeMenuMacOS::get_search_bar_enabled_on_item_count(const RID &p_rid) const {
+	const MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, 0);
+
+	return md->search_bar_enabled_on_item_count;
+}
+
 bool NativeMenuMacOS::is_opened(const RID &p_rid) const {
 	const MenuData *md = menus.get_or_null(p_rid);
 	ERR_FAIL_NULL_V(md, false);
@@ -423,6 +463,7 @@ int NativeMenuMacOS::add_submenu_item(const RID &p_rid, const String &p_label, c
 
 	[md_sub->menu setTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()]];
 	[md->menu setSubmenu:md_sub->menu forItem:menu_item];
+	_update_search(md);
 
 	return p_index - item_start;
 }
@@ -460,6 +501,7 @@ int NativeMenuMacOS::add_item(const RID &p_rid, const String &p_label, const Cal
 		obj->accel = p_accel;
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
+		_update_search(md);
 	}
 	return out;
 }
@@ -479,6 +521,7 @@ int NativeMenuMacOS::add_check_item(const RID &p_rid, const String &p_label, con
 		obj->accel = p_accel;
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
+		_update_search(md);
 	}
 	return out;
 }
@@ -508,6 +551,7 @@ int NativeMenuMacOS::add_icon_item(const RID &p_rid, const Ref<Texture2D> &p_ico
 		}
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
+		_update_search(md);
 	}
 	return out;
 }
@@ -538,6 +582,7 @@ int NativeMenuMacOS::add_icon_check_item(const RID &p_rid, const Ref<Texture2D> 
 		}
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
+		_update_search(md);
 	}
 	return out;
 }
@@ -557,6 +602,7 @@ int NativeMenuMacOS::add_radio_check_item(const RID &p_rid, const String &p_labe
 		obj->accel = p_accel;
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
+		_update_search(md);
 	}
 	return out;
 }
@@ -587,6 +633,7 @@ int NativeMenuMacOS::add_icon_radio_check_item(const RID &p_rid, const Ref<Textu
 		}
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
+		_update_search(md);
 	}
 	return out;
 }
@@ -607,6 +654,7 @@ int NativeMenuMacOS::add_multistate_item(const RID &p_rid, const String &p_label
 		obj->accel = p_accel;
 		[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_accel)];
 		[menu_item setRepresentedObject:obj];
+		_update_search(md);
 	}
 	return out;
 }
@@ -627,6 +675,7 @@ int NativeMenuMacOS::add_separator(const RID &p_rid, int p_index) {
 		p_index = CLAMP(p_index, item_start, item_start + item_count);
 	}
 	[md->menu insertItem:[NSMenuItem separatorItem] atIndex:p_index];
+	_update_search(md);
 	return p_index - item_start;
 }
 
@@ -1372,6 +1421,7 @@ void NativeMenuMacOS::remove_item(const RID &p_rid, int p_idx) {
 		return;
 	}
 	[md->menu removeItemAtIndex:p_idx];
+	_update_search(md);
 }
 
 void NativeMenuMacOS::clear(const RID &p_rid) {
@@ -1379,7 +1429,7 @@ void NativeMenuMacOS::clear(const RID &p_rid) {
 	ERR_FAIL_NULL(md);
 	ERR_FAIL_COND_MSG(_is_menu_opened(md->menu), "Can't remove open menu!");
 
-	if (p_rid == application_menu || p_rid == window_menu || p_rid == help_menu) {
+	if (p_rid != dock_menu && p_rid != main_menu) {
 		int start = _get_system_menu_start(md->menu);
 		int count = _get_system_menu_count(md->menu);
 		for (int i = start + count - 1; i >= start; i--) {
@@ -1388,6 +1438,7 @@ void NativeMenuMacOS::clear(const RID &p_rid) {
 	} else {
 		[md->menu removeAllItems];
 	}
+	_update_search(md);
 
 	if (p_rid == main_menu) {
 		// Restore Apple, Window and Help menu.
