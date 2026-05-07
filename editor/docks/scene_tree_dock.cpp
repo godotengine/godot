@@ -69,6 +69,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/missing_node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
@@ -4573,13 +4574,14 @@ void SceneTreeDock::paste_node_as_replacement() {
 		}
 
 		Variant selected_pos;
-		if (selected->has_method("get_position")) {
+		bool is_missing_node = Object::cast_to<MissingNode>(selected) != nullptr;
+		if (!is_missing_node && selected->has_method("get_position")) {
 			selected_pos = selected->call("get_position");
 		}
-		_replace_node(selected, new_node, false);
+		_replace_node(selected, new_node, is_missing_node);
 		new_node->set_scene_file_path(new_scene_file_path);
 
-		if (new_node->has_method("set_position")) {
+		if (!is_missing_node && new_node->has_method("set_position")) {
 			new_node->call("set_position", selected_pos);
 		}
 
