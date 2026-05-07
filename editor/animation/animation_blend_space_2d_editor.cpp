@@ -43,6 +43,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
@@ -1192,8 +1193,9 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	singleton = this;
 	updating = false;
 
-	HBoxContainer *top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	HFlowContainer *top_hf = memnew(HFlowContainer);
+	top_hf->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(top_hf);
 
 	Ref<ButtonGroup> bg;
 	bg.instantiate();
@@ -1202,7 +1204,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_select->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
-	top_hb->add_child(tool_select);
+	top_hf->add_child(tool_select);
 	tool_select->set_pressed(true);
 	tool_select->set_tooltip_text(TTR("Select and move points.\nRMB: Create point at position clicked.\nShift+LMB+Drag: Set the blending position within the space.\nScroll: Increment or decrement index."));
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(0));
@@ -1211,7 +1213,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_create->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
-	top_hb->add_child(tool_create);
+	top_hf->add_child(tool_create);
 	tool_create->set_tooltip_text(TTR("Create points."));
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(1));
 
@@ -1219,7 +1221,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_blend->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_blend->set_toggle_mode(true);
 	tool_blend->set_button_group(bg);
-	top_hb->add_child(tool_blend);
+	top_hf->add_child(tool_blend);
 	tool_blend->set_tooltip_text(TTR("Set the blending position within the space."));
 	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(2));
 
@@ -1227,40 +1229,40 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_triangle->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_triangle->set_toggle_mode(true);
 	tool_triangle->set_button_group(bg);
-	top_hb->add_child(tool_triangle);
+	top_hf->add_child(tool_triangle);
 	tool_triangle->set_tooltip_text(TTR("Create triangles by connecting points."));
 	tool_triangle->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(3));
 
 	tool_erase_sep = memnew(VSeparator);
-	top_hb->add_child(tool_erase_sep);
+	top_hf->add_child(tool_erase_sep);
 	tool_erase = memnew(Button);
 	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(tool_erase);
+	top_hf->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points and triangles."));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
 	tool_erase->set_disabled(true);
 
-	top_hb->add_child(memnew(VSeparator));
+	top_hf->add_child(memnew(VSeparator));
 
 	auto_triangles = memnew(Button);
 	auto_triangles->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(auto_triangles);
+	top_hf->add_child(auto_triangles);
 	auto_triangles->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled));
 	auto_triangles->set_toggle_mode(true);
 	auto_triangles->set_tooltip_text(TTR("Generate blend triangles automatically (instead of manually)"));
 
-	top_hb->add_child(memnew(VSeparator));
+	top_hf->add_child(memnew(VSeparator));
 
 	snap = memnew(Button);
 	snap->set_theme_type_variation(SceneStringName(FlatButton));
 	snap->set_toggle_mode(true);
-	top_hb->add_child(snap);
+	top_hf->add_child(snap);
 	snap->set_pressed(true);
 	snap->set_tooltip_text(TTR("Enable snap and show grid."));
 	snap->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_snap_toggled));
 
 	snap_x = memnew(SpinBox);
-	top_hb->add_child(snap_x);
+	top_hf->add_child(snap_x);
 	snap_x->set_prefix("x:");
 	snap_x->set_min(0.01);
 	snap_x->set_step(0.01);
@@ -1268,22 +1270,22 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	snap_x->set_accessibility_name(TTRC("Grid X Step"));
 
 	snap_y = memnew(SpinBox);
-	top_hb->add_child(snap_y);
+	top_hf->add_child(snap_y);
 	snap_y->set_prefix("y:");
 	snap_y->set_min(0.01);
 	snap_y->set_step(0.01);
 	snap_y->set_max(1000);
 	snap_y->set_accessibility_name(TTRC("Grid Y Step"));
 
-	top_hb->add_child(memnew(VSeparator));
+	top_hf->add_child(memnew(VSeparator));
 
-	top_hb->add_child(memnew(Label(TTR("Sync"))));
+	top_hf->add_child(memnew(Label(TTR("Sync"))));
 	sync = memnew(OptionButton);
 	sync->add_item(TTR("None"));
 	sync->add_item(TTR("Independent"));
 	sync->add_item(TTR("Cyclic Mutable"));
 	sync->add_item(TTR("Cyclic Constant"));
-	top_hb->add_child(sync);
+	top_hf->add_child(sync);
 	sync->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
 	cyclic_length_value = memnew(SpinBox);
@@ -1294,20 +1296,22 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	cyclic_length_value->set_suffix("s");
 	cyclic_length_value->set_accessibility_name(TTRC("Cyclic Length"));
 	cyclic_length_value->set_tooltip_text(TTR("Cycle length in seconds for cyclic sync. All animations are time-scaled to complete one cycle in this duration."));
-	top_hb->add_child(cyclic_length_value);
+	top_hf->add_child(cyclic_length_value);
 	cyclic_length_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
-	top_hb->add_child(memnew(VSeparator));
+	top_hf->add_child(memnew(VSeparator));
 
-	top_hb->add_child(memnew(Label(TTR("Blend"))));
+	top_hf->add_child(memnew(Label(TTR("Blend"))));
 	interpolation = memnew(OptionButton);
-	top_hb->add_child(interpolation);
+	top_hf->add_child(interpolation);
 	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
-	top_hb->add_spacer();
+	Control *top_spacer = memnew(Control);
+	top_spacer->set_h_size_flags(SIZE_EXPAND_FILL);
+	top_hf->add_child(top_spacer);
 
 	edit_hb = memnew(HBoxContainer);
-	top_hb->add_child(edit_hb);
+	top_hf->add_child(edit_hb);
 
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
