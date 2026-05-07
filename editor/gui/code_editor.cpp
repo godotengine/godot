@@ -979,6 +979,13 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 				return;
 			}
+			if (code_complete_on_period && text_editor->is_code_completion_active()) {
+				if (k->get_keycode() == Key::PERIOD) {
+					_code_complete_on_period();
+					accept_event();
+					return;
+				}
+			}
 		}
 	}
 }
@@ -1161,6 +1168,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_auto_brace_completion_enabled(EDITOR_GET("text_editor/completion/auto_brace_complete"));
 	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
+	code_complete_on_period = EDITOR_GET("text_editor/completion/code_complete_on_period");
 	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
 	idle_time = EDITOR_GET("text_editor/completion/idle_parse_delay");
 	idle_time_with_errors = EDITOR_GET("text_editor/completion/idle_parse_delay_with_errors_found");
@@ -1897,6 +1905,16 @@ void CodeTextEditor::_zoom_to(float p_zoom_factor) {
 	}
 }
 
+void CodeTextEditor::_code_complete_on_period() {
+	text_editor->confirm_code_completion(false);
+	if (!text_editor->is_in_parentheses(
+				text_editor->get_caret_line(),
+				text_editor->get_caret_column())) {
+		text_editor->insert_text_at_caret(".");
+	}
+	text_editor->request_code_completion();
+}
+
 void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
 	zoom_factor = CLAMP(p_zoom_factor, 0.25f, 3.0f);
 	int neutral_font_size = int(EDITOR_GET("interface/editor/fonts/code_font_size")) * EDSCALE;
@@ -1973,6 +1991,7 @@ CodeTextEditor::CodeTextEditor() {
 	idle->set_one_shot(true);
 
 	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
+	code_complete_on_period = EDITOR_GET("text_editor/completion/code_complete_on_period");
 	code_complete_timer = memnew(Timer);
 	add_child(code_complete_timer);
 	code_complete_timer->set_one_shot(true);
