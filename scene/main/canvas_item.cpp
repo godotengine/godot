@@ -644,6 +644,10 @@ bool CanvasItem::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void CanvasItem::_get_property_list(List<PropertyInfo> *p_list) const {
+#ifdef TOOLS_ENABLED
+	instance_parameter_cache.clear();
+#endif
+
 	List<PropertyInfo> pinfo;
 	RS::get_singleton()->canvas_item_get_instance_shader_parameter_list(get_canvas_item(), &pinfo);
 
@@ -659,10 +663,28 @@ void CanvasItem::_get_property_list(List<PropertyInfo> *p_list) const {
 			pi.usage = PROPERTY_USAGE_EDITOR | (has_def_value ? PROPERTY_USAGE_CHECKABLE : PROPERTY_USAGE_NONE); // Do not save if not changed.
 		}
 
+#ifdef TOOLS_ENABLED
+		instance_parameter_cache.insert("instance_shader_parameters/" + pi.name, pi.name);
+#endif
 		pi.name = "instance_shader_parameters/" + pi.name;
 		p_list->push_back(pi);
 	}
 }
+
+#ifdef TOOLS_ENABLED
+bool CanvasItem::_property_can_revert(const StringName &p_name) const {
+	return instance_parameter_cache.has(p_name);
+}
+
+bool CanvasItem::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	const StringName *param_name = instance_parameter_cache.getptr(p_name);
+	if (param_name) {
+		r_property = RS::get_singleton()->canvas_item_get_instance_shader_parameter_default_value(canvas_item, *param_name);
+		return true;
+	}
+	return false;
+}
+#endif
 
 void CanvasItem::item_rect_changed(bool p_size_changed) {
 	ERR_MAIN_THREAD_GUARD;
