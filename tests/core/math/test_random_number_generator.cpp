@@ -271,4 +271,30 @@ TEST_CASE_MAY_FAIL("[RandomNumberGenerator] randi_range bias check") {
 	}
 }
 
+TEST_CASE("[RandomNumberGenerator] back-to-back instances yield independent seeds") {
+	// Construct many RNGs in a tight loop and collect their first outputs.
+	// Before the OS-entropy seeding fix, this loop produced many byte-identical
+	// first outputs because consecutive constructions read the same microsecond
+	// from the timing-based seed formula. With OS entropy seeding, the rate of
+	// pairwise collisions should match what is expected for a fair 32-bit RNG,
+	// which over N draws is (N - 1) / 2^32 and rounds to zero for N << 2^16.
+	constexpr int N = 1000;
+	Vector<uint32_t> firsts;
+	firsts.resize(N);
+	for (int i = 0; i < N; i++) {
+		Ref<RandomNumberGenerator> rng;
+		rng.instantiate();
+		firsts.write[i] = rng->randi();
+	}
+
+	int collisions = 0;
+	for (int i = 1; i < N; i++) {
+		if (firsts[i] == firsts[i - 1]) {
+			collisions++;
+		}
+	}
+	CHECK_MESSAGE(collisions == 0,
+			"Consecutive RandomNumberGenerator instances should produce independent first outputs.");
+}
+
 } // namespace TestRandomNumberGenerator
