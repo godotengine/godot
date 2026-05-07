@@ -209,10 +209,10 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 		}
 	}
 
-	const bool hasAudio = (audio && mix_callback);
-	while ((hasAudio && !audio_buffer_full && !has_enough_video_frames()) ||
-			(!hasAudio && video_frames_pos == 0)) {
-		if (hasAudio && !audio_buffer_full && audio_frame->isValid() &&
+	const bool has_audio = (audio && mix_callback);
+	while ((has_audio && !audio_buffer_full && !has_enough_video_frames()) ||
+			(!has_audio && video_frames_pos == 0)) {
+		if (has_audio && !audio_buffer_full && audio_frame->isValid() &&
 				audio->getPCMF(*audio_frame, pcm.ptr(), num_decoded_samples) && num_decoded_samples > 0) {
 			const int mixed = mix_callback(mix_udata, pcm.ptr(), num_decoded_samples);
 
@@ -236,7 +236,7 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 		if (video_frame->isValid()) {
 			++video_frames_pos;
 		}
-	};
+	}
 
 	bool video_frame_done = false;
 	while (video_frames_pos > 0 && !video_frame_done) {
