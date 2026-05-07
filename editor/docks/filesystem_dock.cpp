@@ -501,36 +501,33 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 	if (p_force || old_display_mode != display_mode) {
 		switch (display_mode) {
 			case DISPLAY_MODE_TREE_ONLY: {
-				button_toggle_display_mode->set_button_icon(get_editor_theme_icon(SNAME("Panels1")));
+				file_list_position_btn->hide();
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
 				tree->set_theme_type_variation("");
 				if (horizontal) {
-					toolbar2_hbc->hide();
-
 					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 					tree_mc->set_theme_type_variation("NoBorderBottomPanel");
 				} else {
-					toolbar2_hbc->show();
-
 					tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 					tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 				}
-				button_file_list_display_mode->hide();
+				file_list_display_mode_btn->hide();
 
 				_update_tree(get_uncollapsed_paths());
 				file_list_vb->hide();
+				secondary_toolbar_hbc->reparent(main_vbc);
+				main_vbc->move_child(secondary_toolbar_hbc, 1);
 			} break;
 
-			case DISPLAY_MODE_HSPLIT:
-			case DISPLAY_MODE_VSPLIT: {
-				const bool is_vertical = display_mode == DISPLAY_MODE_VSPLIT;
-				split_box->set_vertical(is_vertical);
+			case DISPLAY_MODE_TREE_AND_LIST: {
+				file_list_position_btn->show();
+
+				const bool is_vertical = file_list_position == FILE_LIST_POSITION_VERTICAL;
+				split_box_sc->set_vertical(is_vertical);
 
 				const int actual_offset = is_vertical ? split_box_offset_v : split_box_offset_h;
-				split_box->set_split_offset(actual_offset);
-				const StringName icon = is_vertical ? SNAME("Panels2") : SNAME("Panels2Alt");
-				button_toggle_display_mode->set_button_icon(get_editor_theme_icon(icon));
+				split_box_sc->set_split_offset(actual_offset);
 
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -553,16 +550,19 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				}
 				tree->ensure_cursor_is_visible();
 
-				toolbar2_hbc->hide();
-				button_file_list_display_mode->show();
+				file_list_display_mode_btn->show();
 				_update_tree(get_uncollapsed_paths());
 
 				file_list_vb->show();
+				secondary_toolbar_hbc->reparent(file_list_vb);
+				file_list_vb->move_child(secondary_toolbar_hbc, 0);
+
 				_update_file_list(true);
 			} break;
 		}
 
 		old_display_mode = display_mode;
+		_update_toolbar_buttons();
 	}
 }
 
@@ -573,13 +573,17 @@ void FileSystemDock::_notification(int p_what) {
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &FileSystemDock::_fs_changed));
 			EditorResourcePreview::get_singleton()->connect("preview_invalidated", callable_mp(this, &FileSystemDock::_preview_invalidated));
 
-			button_file_list_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_toggle_file_display));
 			files->connect("item_activated", callable_mp(this, &FileSystemDock::_file_list_activate_file));
-			button_hist_next->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_fw_history));
-			button_hist_prev->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_bw_history));
+			history_next_btn->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_fw_history));
+			history_previous_btn->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_bw_history));
 			file_list_popup->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_file_list_rmb_option));
 			tree_popup->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_tree_rmb_option));
-			current_path_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false, true));
+			current_path_le->connect(SceneStringName(text_submitted), callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false, true));
+
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+			open_folder_btn->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_open_current_path_in_file_manager));
+#endif
+			save_all_btn->connect(SceneStringName(pressed), callable_mp(EditorInterface::get_singleton(), &EditorInterface::save_all_scenes));
 
 			always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 			thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
@@ -597,7 +601,7 @@ void FileSystemDock::_notification(int p_what) {
 
 		case NOTIFICATION_PROCESS: {
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
-				scanning_progress->set_value(EditorFileSystem::get_singleton()->get_scanning_progress() * 100.0f);
+				scanning_pb->set_value(EditorFileSystem::get_singleton()->get_scanning_progress() * 100.0f);
 			}
 		} break;
 
@@ -636,33 +640,39 @@ void FileSystemDock::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_display_mode(true);
 
-			StringName mode_icon = "Panels1";
-			if (display_mode == DISPLAY_MODE_VSPLIT) {
-				mode_icon = "Panels2";
-			} else if (display_mode == DISPLAY_MODE_HSPLIT) {
-				mode_icon = "Panels2Alt";
-			}
-			button_toggle_display_mode->set_button_icon(get_editor_theme_icon(mode_icon));
+			display_mode_btn->set_button_icon(get_editor_theme_icon(SNAME("Panels1")));
 
 			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
-				button_file_list_display_mode->set_button_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
+				file_list_display_mode_btn->set_button_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
 			} else {
-				button_file_list_display_mode->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
+				file_list_display_mode_btn->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
 			}
 
-			tree_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			tree_button_sort->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
-
-			file_list_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			file_list_button_sort->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
+			file_list_search_le->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			file_list_sort_mb->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
 
 			if (is_layout_rtl()) {
-				button_hist_next->set_button_icon(get_editor_theme_icon(SNAME("Back")));
-				button_hist_prev->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
+				history_next_btn->set_button_icon(get_editor_theme_icon(SNAME("Back")));
+				history_previous_btn->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			} else {
-				button_hist_next->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
-				button_hist_prev->set_button_icon(get_editor_theme_icon(SNAME("Back")));
+				history_next_btn->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
+				history_previous_btn->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 			}
+
+			// New toolbar buttons.
+			create_new_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			{
+				PopupMenu *add_pm = create_new_btn->get_popup();
+				add_pm->set_item_icon(add_pm->get_item_index(FILE_MENU_NEW_FOLDER), get_editor_theme_icon(SNAME("Folder")));
+				add_pm->set_item_icon(add_pm->get_item_index(FILE_MENU_NEW_SCENE), get_editor_theme_icon(SNAME("PackedScene")));
+				add_pm->set_item_icon(add_pm->get_item_index(FILE_MENU_NEW_SCRIPT), get_editor_theme_icon(SNAME("Script")));
+				add_pm->set_item_icon(add_pm->get_item_index(FILE_MENU_NEW_RESOURCE), get_editor_theme_icon(SNAME("Object")));
+				add_pm->set_item_icon(add_pm->get_item_index(FILE_MENU_NEW_TEXTFILE), get_editor_theme_icon(SNAME("TextFile")));
+			}
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+			open_folder_btn->set_button_icon(get_editor_theme_icon(SNAME("Filesystem")));
+#endif
+			save_all_btn->set_button_icon(get_editor_theme_icon(SNAME("Save")));
 
 			overwrite_dialog_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "Tree"));
 		} break;
@@ -693,9 +703,30 @@ void FileSystemDock::_notification(int p_what) {
 				update_all();
 			}
 
+			// Apply layout settings changed from the Editor Settings UI.
+			const DisplayMode new_display_mode = DisplayMode(int(EDITOR_GET("filesystem/theme/general/display_mode")));
+			if (new_display_mode != display_mode) {
+				set_display_mode(new_display_mode);
+				display_mode_btn->set_pressed(new_display_mode == DISPLAY_MODE_TREE_AND_LIST);
+			}
+
+			const FileListDisplayMode new_file_list_display_mode = FileListDisplayMode(int(EDITOR_GET("filesystem/theme/file_list/display_mode")));
+			if (new_file_list_display_mode != file_list_display_mode) {
+				set_file_list_display_mode(new_file_list_display_mode);
+			}
+
+			const FileListPosition new_file_list_position = FileListPosition(int(EDITOR_GET("filesystem/theme/file_list/position")));
+			if (new_file_list_position != file_list_position) {
+				file_list_position = new_file_list_position;
+				_update_display_mode(true);
+			}
+
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				// Change full tree mode.
 				_update_display_mode();
+			} else {
+				// Still update button state (e.g. toolbar_buttons visibility).
+				_update_toolbar_buttons();
 			}
 		} break;
 	}
@@ -761,9 +792,9 @@ String FileSystemDock::get_current_directory() const {
 
 void FileSystemDock::_set_current_path_line_edit_text(const String &p_path) {
 	if (p_path == "Favorites") {
-		current_path_line_edit->set_text(TTR("Favorites"));
+		current_path_le->set_text(TTR("Favorites"));
 	} else {
-		current_path_line_edit->set_text(current_path);
+		current_path_le->set_text(current_path);
 	}
 }
 
@@ -864,7 +895,7 @@ bool FileSystemDock::_update_filtered_items(TreeItem *p_tree_item) {
 }
 
 void FileSystemDock::navigate_to_path(const String &p_path) {
-	file_list_search_box->clear();
+	file_list_search_le->clear();
 	// Try to set the FileSystem dock visible.
 	EditorDockManager::get_singleton()->focus_dock(this);
 	_navigate_to_path(p_path, false, is_visible_in_tree());
@@ -927,18 +958,19 @@ Ref<Texture2D> FileSystemDock::_apply_thumbnail_filter(const Ref<Texture2D> &p_t
 
 void FileSystemDock::_toggle_file_display() {
 	_set_file_display(file_list_display_mode != FILE_LIST_DISPLAY_LIST);
-	emit_signal(SNAME("display_mode_changed"));
+	EditorSettings::get_singleton()->set("filesystem/theme/file_list/display_mode", int(file_list_display_mode));
+	emit_signal(SNAME("layout_changed"));
 }
 
 void FileSystemDock::_set_file_display(bool p_active) {
 	if (p_active) {
 		file_list_display_mode = FILE_LIST_DISPLAY_LIST;
-		button_file_list_display_mode->set_button_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
-		button_file_list_display_mode->set_tooltip_text(TTRC("View items as a grid of thumbnails."));
+		file_list_display_mode_btn->set_button_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
+		file_list_display_mode_btn->set_tooltip_text(TTRC("View items as a grid of thumbnails."));
 	} else {
 		file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
-		button_file_list_display_mode->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
-		button_file_list_display_mode->set_tooltip_text(TTRC("View items as a list."));
+		file_list_display_mode_btn->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
+		file_list_display_mode_btn->set_tooltip_text(TTRC("View items as a list."));
 	}
 
 	_update_file_list(true);
@@ -1406,10 +1438,10 @@ void FileSystemDock::_preview_invalidated(const String &p_path) {
 }
 
 void FileSystemDock::_fs_changed() {
-	button_hist_prev->set_disabled(history_pos == 0);
-	button_hist_next->set_disabled(history_pos == history.size() - 1);
+	history_previous_btn->set_disabled(history_pos == 0);
+	history_next_btn->set_disabled(history_pos == history.size() - 1);
 	scanning_vb->hide();
-	split_box->show();
+	split_box_sc->show();
 
 	update_all();
 
@@ -1428,15 +1460,15 @@ void FileSystemDock::_fs_changed() {
 }
 
 void FileSystemDock::_set_scanning_mode() {
-	button_hist_prev->set_disabled(true);
-	button_hist_next->set_disabled(true);
-	split_box->hide();
+	history_previous_btn->set_disabled(true);
+	history_next_btn->set_disabled(true);
+	split_box_sc->hide();
 	scanning_vb->show();
 	set_process(true);
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
-		scanning_progress->set_value(EditorFileSystem::get_singleton()->get_scanning_progress() * 100);
+		scanning_pb->set_value(EditorFileSystem::get_singleton()->get_scanning_progress() * 100);
 	} else {
-		scanning_progress->set_value(0);
+		scanning_pb->set_value(0);
 	}
 }
 
@@ -1469,8 +1501,8 @@ void FileSystemDock::_update_history() {
 		_update_file_list(false);
 	}
 
-	button_hist_prev->set_disabled(history_pos == 0);
-	button_hist_next->set_disabled(history_pos == history.size() - 1);
+	history_previous_btn->set_disabled(history_pos == 0);
+	history_next_btn->set_disabled(history_pos == history.size() - 1);
 }
 
 void FileSystemDock::_push_to_history() {
@@ -1485,8 +1517,8 @@ void FileSystemDock::_push_to_history() {
 		}
 	}
 
-	button_hist_prev->set_disabled(history_pos == 0);
-	button_hist_next->set_disabled(history_pos == history.size() - 1);
+	history_previous_btn->set_disabled(history_pos == 0);
+	history_next_btn->set_disabled(history_pos == history.size() - 1);
 }
 
 void FileSystemDock::_get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Vector<String> &r_files, Vector<String> &r_folders) const {
@@ -1811,7 +1843,7 @@ void FileSystemDock::_file_removed(const String &p_file) {
 		current_path = current_path.get_base_dir();
 	}
 
-	current_path_line_edit->set_text(current_path);
+	current_path_le->set_text(current_path);
 }
 
 void FileSystemDock::_folder_removed(const String &p_folder) {
@@ -1838,7 +1870,7 @@ void FileSystemDock::_folder_removed(const String &p_folder) {
 		_update_folder_colors_setting();
 	}
 
-	current_path_line_edit->set_text(current_path);
+	current_path_le->set_text(current_path);
 	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(current_path);
 	if (efd) {
 		efd->force_update();
@@ -1924,7 +1956,7 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	if (ti) {
 		current_path = new_path;
-		current_path_line_edit->set_text(current_path);
+		current_path_le->set_text(current_path);
 	}
 
 	print_verbose("FileSystem: calling rescan.");
@@ -2092,7 +2124,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			_rescan();
 
 			current_path = p_to_path;
-			current_path_line_edit->set_text(current_path);
+			current_path_le->set_text(current_path);
 		}
 	}
 }
@@ -2848,14 +2880,8 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 
 	searched_tokens = searched_string.split(" ", false);
 
-	if (p_from == tree_search_box) {
-		file_list_search_box->set_text(searched_string);
-	} else { // File_list_search_box.
-		tree_search_box->set_text(searched_string);
-	}
-
 	_update_filtered_items();
-	if (display_mode == DISPLAY_MODE_HSPLIT || display_mode == DISPLAY_MODE_VSPLIT) {
+	if (display_mode == DISPLAY_MODE_TREE_AND_LIST) {
 		_update_file_list(false);
 	}
 	if (searched_tokens.is_empty()) {
@@ -2887,20 +2913,22 @@ void FileSystemDock::_rescan() {
 	EditorFileSystem::get_singleton()->scan();
 }
 
-void FileSystemDock::_change_split_mode() {
-	DisplayMode next_mode = DISPLAY_MODE_TREE_ONLY;
-	if (display_mode == DISPLAY_MODE_VSPLIT) {
-		next_mode = DISPLAY_MODE_HSPLIT;
-	} else if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-		next_mode = DISPLAY_MODE_VSPLIT;
-	}
+void FileSystemDock::_change_display_mode(bool p_pressed) {
+	const DisplayMode new_mode = p_pressed ? DISPLAY_MODE_TREE_AND_LIST : DISPLAY_MODE_TREE_ONLY;
+	set_display_mode(new_mode);
+	EditorSettings::get_singleton()->set("filesystem/theme/general/display_mode", int(new_mode));
+	emit_signal(SNAME("layout_changed"));
+}
 
-	set_display_mode(next_mode);
-	emit_signal(SNAME("display_mode_changed"));
+void FileSystemDock::_change_file_list_position() {
+	file_list_position = (file_list_position == FILE_LIST_POSITION_VERTICAL) ? FILE_LIST_POSITION_HORIZONTAL : FILE_LIST_POSITION_VERTICAL;
+	_update_display_mode(true);
+	EditorSettings::get_singleton()->set("filesystem/theme/file_list/position", int(file_list_position));
+	emit_signal(SNAME("layout_changed"));
 }
 
 void FileSystemDock::_split_dragged(int p_offset) {
-	if (split_box->is_vertical()) {
+	if (split_box_sc->is_vertical()) {
 		split_box_offset_v = p_offset;
 	} else {
 		split_box_offset_h = p_offset;
@@ -2922,22 +2950,13 @@ void FileSystemDock::update_all() {
 }
 
 void FileSystemDock::focus_on_path() {
-	current_path_line_edit->grab_focus();
-	current_path_line_edit->select_all();
+	current_path_le->grab_focus();
+	current_path_le->select_all();
 }
 
 void FileSystemDock::focus_on_filter() {
-	LineEdit *current_search_box = nullptr;
-	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-		current_search_box = tree_search_box;
-	} else {
-		current_search_box = file_list_search_box;
-	}
-
-	if (current_search_box) {
-		current_search_box->grab_focus();
-		current_search_box->select_all();
-	}
+	file_list_search_le->grab_focus();
+	file_list_search_le->select_all();
 }
 
 void FileSystemDock::create_directory(const String &p_path, const String &p_base_dir) {
@@ -3715,7 +3734,7 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 void FileSystemDock::_tree_empty_selected() {
 	tree->deselect_all();
 	current_path = "";
-	current_path_line_edit->set_text(current_path);
+	current_path_le->set_text(current_path);
 	if (file_list_vb->is_visible()) {
 		_update_file_list(false);
 	}
@@ -3761,7 +3780,7 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 		return;
 	}
 
-	current_path = current_path_line_edit->get_text();
+	current_path = current_path_le->get_text();
 
 	// Favorites isn't a directory so don't show menu.
 	if (current_path == "Favorites") {
@@ -4114,8 +4133,7 @@ void FileSystemDock::_project_settings_changed() {
 
 void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
 	for (int i = 0; i != (int)FileSortOption::FILE_SORT_MAX; i++) {
-		tree_button_sort->get_popup()->set_item_checked(i, (i == (int)p_file_sort));
-		file_list_button_sort->get_popup()->set_item_checked(i, (i == (int)p_file_sort));
+		file_list_sort_mb->get_popup()->set_item_checked(i, (i == (int)p_file_sort));
 	}
 	file_sort = p_file_sort;
 
@@ -4159,25 +4177,6 @@ Dictionary FileSystemDock::get_assigned_folder_colors() const {
 	return assigned_folder_colors;
 }
 
-MenuButton *FileSystemDock::_create_file_menu_button() {
-	MenuButton *button = memnew(MenuButton);
-	button->set_flat(false);
-	button->set_theme_type_variation("FlatMenuButton");
-	button->set_tooltip_text(TTRC("Sort Files"));
-	button->set_accessibility_name(TTRC("Sort Files"));
-
-	PopupMenu *p = button->get_popup();
-	p->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_file_sort_popup));
-	p->add_radio_check_item(TTRC("Sort by Name (Ascending)"), (int)FileSortOption::FILE_SORT_NAME);
-	p->add_radio_check_item(TTRC("Sort by Name (Descending)"), (int)FileSortOption::FILE_SORT_NAME_REVERSE);
-	p->add_radio_check_item(TTRC("Sort by Type (Ascending)"), (int)FileSortOption::FILE_SORT_TYPE);
-	p->add_radio_check_item(TTRC("Sort by Type (Descending)"), (int)FileSortOption::FILE_SORT_TYPE_REVERSE);
-	p->add_radio_check_item(TTRC("Sort by Last Modified"), (int)FileSortOption::FILE_SORT_MODIFIED_TIME);
-	p->add_radio_check_item(TTRC("Sort by First Modified"), (int)FileSortOption::FILE_SORT_MODIFIED_TIME_REVERSE);
-	p->set_item_checked((int)file_sort, true);
-	return button;
-}
-
 void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
 	bool new_horizontal = (p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL);
 	if (horizontal == new_horizontal) {
@@ -4186,39 +4185,46 @@ void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
 	horizontal = new_horizontal;
 
 	if (horizontal) {
-		path_hb->reparent(toolbar_hbc);
-		toolbar_hbc->move_child(path_hb, 2);
 		set_meta("_dock_display_mode", get_display_mode());
+		set_meta("_dock_file_list_position", file_list_position);
 		set_meta("_dock_file_display_mode", get_file_list_display_mode());
 
-		FileSystemDock::DisplayMode new_display_mode = FileSystemDock::DisplayMode(int(get_meta("_bottom_display_mode", int(FileSystemDock::DISPLAY_MODE_HSPLIT))));
+		FileSystemDock::DisplayMode new_display_mode = FileSystemDock::DisplayMode(int(get_meta("_bottom_display_mode", int(FileSystemDock::DISPLAY_MODE_TREE_AND_LIST))));
+		FileSystemDock::FileListPosition new_file_list_position = FileSystemDock::FileListPosition(int(get_meta("_bottom_file_list_position", int(FileSystemDock::FILE_LIST_POSITION_HORIZONTAL))));
 		FileSystemDock::FileListDisplayMode new_file_display_mode = FileSystemDock::FileListDisplayMode(int(get_meta("_bottom_file_display_mode", int(FileSystemDock::FILE_LIST_DISPLAY_THUMBNAILS))));
 
+		file_list_position = new_file_list_position;
 		set_display_mode(new_display_mode);
+		display_mode_btn->set_pressed(new_display_mode == DISPLAY_MODE_TREE_AND_LIST);
 		set_file_list_display_mode(new_file_display_mode);
 		set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	} else {
-		path_hb->reparent(file_list_vb);
-		file_list_vb->move_child(path_hb, 0);
 		set_meta("_bottom_display_mode", get_display_mode());
+		set_meta("_bottom_file_list_position", file_list_position);
 		set_meta("_bottom_file_display_mode", get_file_list_display_mode());
 
 		FileSystemDock::DisplayMode new_display_mode = FileSystemDock::DISPLAY_MODE_TREE_ONLY;
+		FileSystemDock::FileListPosition new_file_list_position = FileSystemDock::FILE_LIST_POSITION_VERTICAL;
 		FileSystemDock::FileListDisplayMode new_file_display_mode = FileSystemDock::FILE_LIST_DISPLAY_LIST;
 
 		new_display_mode = FileSystemDock::DisplayMode(int(get_meta("_dock_display_mode", new_display_mode)));
+		new_file_list_position = FileSystemDock::FileListPosition(int(get_meta("_dock_file_list_position", new_file_list_position)));
 		new_file_display_mode = FileSystemDock::FileListDisplayMode(int(get_meta("_dock_file_display_mode", new_file_display_mode)));
 
+		file_list_position = new_file_list_position;
 		set_display_mode(new_display_mode);
+		display_mode_btn->set_pressed(new_display_mode == DISPLAY_MODE_TREE_AND_LIST);
 		set_file_list_display_mode(new_file_display_mode);
 		set_custom_minimum_size(Size2(0, 0));
 	}
+	_update_toolbar_buttons();
 }
 
 void FileSystemDock::save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const {
 	p_layout->set_value(p_section, "h_split_offset", get_h_split_offset());
 	p_layout->set_value(p_section, "v_split_offset", get_v_split_offset());
 	p_layout->set_value(p_section, "display_mode", get_display_mode());
+	p_layout->set_value(p_section, "file_list_position", file_list_position);
 	p_layout->set_value(p_section, "file_sort", (int)get_file_sort());
 	p_layout->set_value(p_section, "file_list_display_mode", get_file_list_display_mode());
 	PackedStringArray selected_files = get_selected_paths();
@@ -4239,8 +4245,19 @@ void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, co
 	}
 
 	if (p_layout->has_section_key(p_section, "display_mode")) {
-		DisplayMode dock_filesystem_display_mode = DisplayMode(int(p_layout->get_value(p_section, "display_mode")));
-		set_display_mode(dock_filesystem_display_mode);
+		int mode = p_layout->get_value(p_section, "display_mode");
+		if (mode == 2) {
+			mode = DISPLAY_MODE_TREE_AND_LIST;
+			file_list_position = FILE_LIST_POSITION_HORIZONTAL;
+		} else if (mode == 1 && !p_layout->has_section_key(p_section, "file_list_position")) {
+			file_list_position = FILE_LIST_POSITION_VERTICAL;
+		}
+		set_display_mode(DisplayMode(mode));
+		display_mode_btn->set_pressed(mode == DISPLAY_MODE_TREE_AND_LIST);
+	}
+
+	if (p_layout->has_section_key(p_section, "file_list_position")) {
+		file_list_position = FileListPosition(int(p_layout->get_value(p_section, "file_list_position")));
 	}
 
 	if (p_layout->has_section_key(p_section, "file_sort")) {
@@ -4307,8 +4324,71 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("folder_color_changed"));
 	ADD_SIGNAL(MethodInfo("selection_changed"));
 
-	ADD_SIGNAL(MethodInfo("display_mode_changed"));
+	ADD_SIGNAL(MethodInfo("layout_changed"));
+#ifndef DISABLE_DEPRECATED
+	ADD_SIGNAL(MethodInfo("display_mode_changed")); // Deprecated, use layout_changed.
+#endif
 }
+
+void FileSystemDock::_update_toolbar_buttons() {
+	// Show/hide toolbar buttons based on the editor setting flags, and we only
+	// apply text/icon/tooltip when the button is actually visible.
+	const bool show_text = horizontal;
+
+	// General toolbar: Bit 0 = Create New, Bit 1 = Open Folder, Bit 2 = Save All, Bit 3 = Display Mode.
+	const int general_toolbar_buttons = EDITOR_GET("filesystem/theme/general/toolbar_buttons");
+
+	const bool show_create_new = general_toolbar_buttons & (1 << 0);
+	create_new_btn->set_visible(show_create_new);
+	if (show_create_new) {
+		create_new_btn->set_text(show_text ? TTRC("Create New") : "");
+	}
+
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+	const bool show_open_folder = general_toolbar_buttons & (1 << 1);
+	open_folder_btn->set_visible(show_open_folder);
+	if (show_open_folder) {
+		open_folder_btn->set_text(show_text ? TTRC("Open Folder") : "");
+	}
+#endif
+
+	const bool show_save_all = general_toolbar_buttons & (1 << 2);
+	save_all_btn->set_visible(show_save_all);
+	if (show_save_all) {
+		save_all_btn->set_text(show_text ? TTRC("Save All") : "");
+	}
+
+	display_mode_btn->set_visible(general_toolbar_buttons & (1 << 3));
+
+	// File list toolbar: Bit 0 = Display Mode, Bit 1 = Position.
+	// Only relevant (and visible) when the file list is actually shown.
+	const bool file_list_visible = (display_mode == DISPLAY_MODE_TREE_AND_LIST);
+	const int file_list_toolbar_buttons = EDITOR_GET("filesystem/theme/file_list/toolbar_buttons");
+	file_list_display_mode_btn->set_visible(file_list_visible && (file_list_toolbar_buttons & (1 << 0)));
+
+	const bool show_file_list_position = file_list_visible && (file_list_toolbar_buttons & (1 << 1));
+	file_list_position_btn->set_visible(show_file_list_position);
+	if (show_file_list_position) {
+		if (file_list_position == FILE_LIST_POSITION_VERTICAL) {
+			file_list_position_btn->set_button_icon(get_editor_theme_icon(SNAME("Panels2Alt")));
+			file_list_position_btn->set_tooltip_text(TTRC("Change File List to Horizontal"));
+		} else {
+			file_list_position_btn->set_button_icon(get_editor_theme_icon(SNAME("Panels2")));
+			file_list_position_btn->set_tooltip_text(TTRC("Change File List to Vertical"));
+		}
+	}
+}
+
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+void FileSystemDock::_open_current_path_in_file_manager() {
+	String fpath = current_path;
+	if (fpath == "Favorites") {
+		fpath = "res://";
+	}
+	String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
+	OS::get_singleton()->shell_show_in_file_manager(dir, true);
+}
+#endif
 
 FileSystemDock::FileSystemDock() {
 	singleton = this;
@@ -4360,155 +4440,204 @@ FileSystemDock::FileSystemDock() {
 
 	editor_is_dark_icon_and_font = EditorThemeManager::is_dark_icon_and_font();
 
-	VBoxContainer *main_vb = memnew(VBoxContainer);
-	add_child(main_vb);
+	main_vbc = memnew(VBoxContainer);
+	add_child(main_vbc);
 
-	VBoxContainer *top_vbc = memnew(VBoxContainer);
-	main_vb->add_child(top_vbc);
+	{
+		HBoxContainer *primary_toolbar_hbc = memnew(HBoxContainer);
+		main_vbc->add_child(primary_toolbar_hbc);
 
-	toolbar_hbc = memnew(HBoxContainer);
-	top_vbc->add_child(toolbar_hbc);
+		{
+			create_new_btn = memnew(MenuButton);
+			create_new_btn->set_flat(false);
+			create_new_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
+			create_new_btn->set_theme_type_variation("FlatMenuButton");
+			create_new_btn->set_tooltip_text(TTRC("Create New..."));
+			PopupMenu *add_pm = create_new_btn->get_popup();
+			add_pm->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_generic_rmb_option_selected));
+			add_pm->add_item(TTRC("Folder..."), FILE_MENU_NEW_FOLDER);
+			add_pm->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_folder"));
+			add_pm->add_item(TTRC("Scene..."), FILE_MENU_NEW_SCENE);
+			add_pm->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
+			add_pm->add_item(TTRC("Script..."), FILE_MENU_NEW_SCRIPT);
+			add_pm->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
+			add_pm->add_item(TTRC("Resource..."), FILE_MENU_NEW_RESOURCE);
+			add_pm->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
+			add_pm->add_item(TTRC("TextFile..."), FILE_MENU_NEW_TEXTFILE);
+			add_pm->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
+			primary_toolbar_hbc->add_child(create_new_btn);
 
-	HBoxContainer *nav_hbc = memnew(HBoxContainer);
-	nav_hbc->add_theme_constant_override("separation", 0);
-	toolbar_hbc->add_child(nav_hbc);
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+			open_folder_btn = memnew(Button);
+			open_folder_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
+			open_folder_btn->set_theme_type_variation("FlatMenuButton");
+			open_folder_btn->set_tooltip_text(TTRC("Open in File Manager"));
+			primary_toolbar_hbc->add_child(open_folder_btn);
+#endif
 
-	button_hist_prev = memnew(Button);
-	button_hist_prev->set_theme_type_variation(SceneStringName(FlatButton));
-	button_hist_prev->set_disabled(true);
-	button_hist_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
-	button_hist_prev->set_tooltip_text(TTRC("Go to previous selected folder/file."));
-	nav_hbc->add_child(button_hist_prev);
+			save_all_btn = memnew(Button);
+			save_all_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
+			save_all_btn->set_theme_type_variation("FlatMenuButton");
+			save_all_btn->set_tooltip_text(TTRC("Save All Scenes"));
+			primary_toolbar_hbc->add_child(save_all_btn);
 
-	button_hist_next = memnew(Button);
-	button_hist_next->set_theme_type_variation(SceneStringName(FlatButton));
-	button_hist_next->set_disabled(true);
-	button_hist_next->set_focus_mode(FOCUS_ACCESSIBILITY);
-	button_hist_next->set_tooltip_text(TTRC("Go to next selected folder/file."));
-	nav_hbc->add_child(button_hist_next);
+			history_previous_btn = memnew(Button);
+			history_previous_btn->set_disabled(true);
+			history_previous_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
+			history_previous_btn->set_theme_type_variation("FlatMenuButton");
+			history_previous_btn->set_tooltip_text(TTRC("Go to previous selected folder/file."));
+			primary_toolbar_hbc->add_child(history_previous_btn);
 
-	current_path_line_edit = memnew(LineEdit);
-	current_path_line_edit->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
-	current_path_line_edit->set_accessibility_name(TTRC("Path"));
-	current_path_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	_set_current_path_line_edit_text(current_path);
-	toolbar_hbc->add_child(current_path_line_edit);
+			history_next_btn = memnew(Button);
+			history_next_btn->set_disabled(true);
+			history_next_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
+			history_next_btn->set_theme_type_variation("FlatMenuButton");
+			history_next_btn->set_tooltip_text(TTRC("Go to next selected folder/file."));
+			primary_toolbar_hbc->add_child(history_next_btn);
 
-	button_toggle_display_mode = memnew(Button);
-	button_toggle_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_split_mode));
-	button_toggle_display_mode->set_focus_mode(FOCUS_ACCESSIBILITY);
-	button_toggle_display_mode->set_tooltip_text(TTRC("Change Split Mode"));
-	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");
-	toolbar_hbc->add_child(button_toggle_display_mode);
+			current_path_le = memnew(LineEdit);
+			_set_current_path_line_edit_text(current_path);
+			current_path_le->set_accessibility_name(TTRC("Path"));
+			current_path_le->set_h_size_flags(SIZE_EXPAND_FILL);
+			current_path_le->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
+			primary_toolbar_hbc->add_child(current_path_le);
 
-	toolbar2_hbc = memnew(HBoxContainer);
-	top_vbc->add_child(toolbar2_hbc);
+			display_mode_btn = memnew(Button);
+			display_mode_btn->connect(SceneStringName(toggled), callable_mp(this, &FileSystemDock::_change_display_mode));
+			display_mode_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
+			display_mode_btn->set_theme_type_variation("FlatMenuButton");
+			display_mode_btn->set_toggle_mode(true);
+			display_mode_btn->set_tooltip_text(TTRC("Toggle Display Mode"));
+			primary_toolbar_hbc->add_child(display_mode_btn);
+		}
 
-	tree_search_box = memnew(LineEdit);
-	tree_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	tree_search_box->set_placeholder(TTRC("Filter Files"));
-	tree_search_box->set_clear_button_enabled(true);
-	tree_search_box->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(tree_search_box));
-	toolbar2_hbc->add_child(tree_search_box);
+		secondary_toolbar_hbc = memnew(HBoxContainer);
+		secondary_toolbar_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
+		main_vbc->add_child(secondary_toolbar_hbc);
 
-	tree_button_sort = _create_file_menu_button();
-	toolbar2_hbc->add_child(tree_button_sort);
+		{
+			file_list_search_le = memnew(LineEdit);
+			file_list_search_le->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(file_list_search_le));
+			file_list_search_le->set_accessibility_name(TTRC("Filter Files"));
+			file_list_search_le->set_clear_button_enabled(true);
+			file_list_search_le->set_h_size_flags(SIZE_EXPAND_FILL);
+			file_list_search_le->set_placeholder(TTRC("Filter Files"));
+			secondary_toolbar_hbc->add_child(file_list_search_le);
+
+			file_list_sort_mb = memnew(MenuButton);
+			file_list_sort_mb->set_accessibility_name(TTRC("Sort Files"));
+			file_list_sort_mb->set_flat(false);
+			file_list_sort_mb->set_theme_type_variation("FlatMenuButton");
+			file_list_sort_mb->set_tooltip_text(TTRC("Sort Files"));
+			secondary_toolbar_hbc->add_child(file_list_sort_mb);
+
+			PopupMenu *sort_pm = file_list_sort_mb->get_popup();
+			sort_pm->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_file_sort_popup));
+			sort_pm->add_radio_check_item(TTRC("Sort by Name (Ascending)"), (int)FileSortOption::FILE_SORT_NAME);
+			sort_pm->add_radio_check_item(TTRC("Sort by Name (Descending)"), (int)FileSortOption::FILE_SORT_NAME_REVERSE);
+			sort_pm->add_radio_check_item(TTRC("Sort by Type (Ascending)"), (int)FileSortOption::FILE_SORT_TYPE);
+			sort_pm->add_radio_check_item(TTRC("Sort by Type (Descending)"), (int)FileSortOption::FILE_SORT_TYPE_REVERSE);
+			sort_pm->add_radio_check_item(TTRC("Sort by Last Modified"), (int)FileSortOption::FILE_SORT_MODIFIED_TIME);
+			sort_pm->add_radio_check_item(TTRC("Sort by First Modified"), (int)FileSortOption::FILE_SORT_MODIFIED_TIME_REVERSE);
+			sort_pm->set_item_checked((int)file_sort, true);
+
+			file_list_display_mode_btn = memnew(Button);
+			file_list_display_mode_btn->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_toggle_file_display));
+			file_list_display_mode_btn->set_accessibility_name(TTRC("File List Display Mode"));
+			file_list_display_mode_btn->set_theme_type_variation("FlatMenuButton");
+			secondary_toolbar_hbc->add_child(file_list_display_mode_btn);
+
+			file_list_position_btn = memnew(Button);
+			file_list_position_btn->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_file_list_position));
+			file_list_position_btn->set_accessibility_name(TTRC("File List Position"));
+			file_list_position_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
+			file_list_position_btn->set_theme_type_variation("FlatMenuButton");
+			secondary_toolbar_hbc->add_child(file_list_position_btn);
+		}
+
+		split_box_sc = memnew(SplitContainer);
+		split_box_offset_h = 240 * EDSCALE;
+		split_box_sc->connect("dragged", callable_mp(this, &FileSystemDock::_split_dragged));
+		split_box_sc->set_v_size_flags(SIZE_EXPAND_FILL);
+		main_vbc->add_child(split_box_sc);
+
+		{
+			tree_mc = memnew(MarginContainer);
+			tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+			tree_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			split_box_sc->add_child(tree_mc);
+
+			{
+				tree = memnew(FileSystemTree);
+				SET_DRAG_FORWARDING_GCD(tree, FileSystemDock);
+				tree->connect("empty_clicked", callable_mp(this, &FileSystemDock::_tree_empty_click));
+				tree->connect("item_activated", callable_mp(this, &FileSystemDock::_tree_activate_file));
+				tree->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
+				tree->connect("item_mouse_selected", callable_mp(this, &FileSystemDock::_tree_rmb_select));
+				tree->connect("multi_selected", callable_mp(this, &FileSystemDock::_tree_multi_selected));
+				tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
+				tree->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_tree_gui_input));
+				tree->connect(SceneStringName(mouse_exited), callable_mp(this, &FileSystemDock::_tree_mouse_exited));
+				tree->set_accessibility_name(TTRC("Directories"));
+				tree->set_allow_rmb_select(true);
+				tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+				tree->set_column_clip_content(0, true);
+				tree->set_custom_minimum_size(Size2(40 * EDSCALE, 15 * EDSCALE));
+				tree->set_hide_root(true);
+				tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
+				tree->set_select_mode(Tree::SELECT_MULTI);
+				tree_mc->add_child(tree);
+			}
+
+			file_list_vb = memnew(VBoxContainer);
+			file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+			split_box_sc->add_child(file_list_vb);
+
+			{
+				files_mc = memnew(MarginContainer);
+				files_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+				files_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+				file_list_vb->add_child(files_mc);
+
+				{
+					files = memnew(FileSystemList);
+					files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
+					files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_item_clicked));
+					files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
+					files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
+					files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
+					files->set_accessibility_name(TTRC("Files"));
+					files->set_allow_rmb_select(true);
+					files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
+					files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
+					files->set_select_mode(ItemList::SELECT_MULTI);
+					SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
+					files_mc->add_child(files);
+				}
+			}
+		}
+
+		scanning_vb = memnew(VBoxContainer);
+		scanning_vb->hide();
+		main_vbc->add_child(scanning_vb);
+
+		{
+			Label *scanning_lbl = memnew(Label);
+			scanning_lbl->set_text(TTRC("Scanning Files,\nPlease Wait..."));
+			scanning_lbl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+			scanning_vb->add_child(scanning_lbl);
+
+			scanning_pb = memnew(ProgressBar);
+			scanning_pb->set_accessibility_name(TTRC("Filesystem Scan"));
+			scanning_vb->add_child(scanning_pb);
+		}
+	}
 
 	file_list_popup = memnew(PopupMenu);
-
 	add_child(file_list_popup);
 
 	tree_popup = memnew(PopupMenu);
-
 	add_child(tree_popup);
-
-	split_box = memnew(SplitContainer);
-	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
-	split_box->connect("dragged", callable_mp(this, &FileSystemDock::_split_dragged));
-	split_box_offset_h = 240 * EDSCALE;
-	main_vb->add_child(split_box);
-
-	tree_mc = memnew(MarginContainer);
-	split_box->add_child(tree_mc);
-	tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
-	tree_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
-	tree = memnew(FileSystemTree);
-	tree->set_accessibility_name(TTRC("Directories"));
-	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	tree->set_hide_root(true);
-	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
-	SET_DRAG_FORWARDING_GCD(tree, FileSystemDock);
-	tree->set_allow_rmb_select(true);
-	tree->set_select_mode(Tree::SELECT_MULTI);
-	tree->set_custom_minimum_size(Size2(40 * EDSCALE, 15 * EDSCALE));
-	tree->set_column_clip_content(0, true);
-	tree_mc->add_child(tree);
-
-	tree->connect("item_activated", callable_mp(this, &FileSystemDock::_tree_activate_file));
-	tree->connect("multi_selected", callable_mp(this, &FileSystemDock::_tree_multi_selected));
-	tree->connect("item_mouse_selected", callable_mp(this, &FileSystemDock::_tree_rmb_select));
-	tree->connect("empty_clicked", callable_mp(this, &FileSystemDock::_tree_empty_click));
-	tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
-	tree->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_tree_gui_input));
-	tree->connect(SceneStringName(mouse_exited), callable_mp(this, &FileSystemDock::_tree_mouse_exited));
-	tree->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
-
-	file_list_vb = memnew(VBoxContainer);
-	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
-	split_box->add_child(file_list_vb);
-
-	path_hb = memnew(HBoxContainer);
-	path_hb->set_h_size_flags(SIZE_EXPAND_FILL);
-	file_list_vb->add_child(path_hb);
-
-	file_list_search_box = memnew(LineEdit);
-	file_list_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	file_list_search_box->set_placeholder(TTRC("Filter Files"));
-	file_list_search_box->set_accessibility_name(TTRC("Filter Files"));
-	file_list_search_box->set_clear_button_enabled(true);
-	file_list_search_box->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(file_list_search_box));
-	path_hb->add_child(file_list_search_box);
-
-	file_list_button_sort = _create_file_menu_button();
-	path_hb->add_child(file_list_button_sort);
-
-	button_file_list_display_mode = memnew(Button);
-	button_file_list_display_mode->set_accessibility_name(TTRC("Display Mode"));
-	button_file_list_display_mode->set_theme_type_variation("FlatMenuButton");
-	path_hb->add_child(button_file_list_display_mode);
-
-	files_mc = memnew(MarginContainer);
-	file_list_vb->add_child(files_mc);
-	files_mc->set_theme_type_variation("NoBorderHorizontalBottom");
-	files_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
-	files = memnew(FileSystemList);
-	files->set_accessibility_name(TTRC("Files"));
-	files->set_select_mode(ItemList::SELECT_MULTI);
-	files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
-	SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
-	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_item_clicked));
-	files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
-	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
-	files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
-	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
-	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
-	files->set_allow_rmb_select(true);
-	files_mc->add_child(files);
-
-	scanning_vb = memnew(VBoxContainer);
-	scanning_vb->hide();
-	main_vb->add_child(scanning_vb);
-
-	Label *slabel = memnew(Label);
-	slabel->set_text(TTRC("Scanning Files,\nPlease Wait..."));
-	slabel->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	scanning_vb->add_child(slabel);
-
-	scanning_progress = memnew(ProgressBar);
-	scanning_progress->set_accessibility_name(TTRC("Filesystem Scan"));
-	scanning_vb->add_child(scanning_progress);
 
 	deps_editor = memnew(DependencyEditor);
 	add_child(deps_editor);

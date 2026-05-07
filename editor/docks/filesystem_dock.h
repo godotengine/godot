@@ -89,15 +89,19 @@ class FileSystemDock : public EditorDock {
 	GDCLASS(FileSystemDock, EditorDock);
 
 public:
+	enum DisplayMode {
+		DISPLAY_MODE_TREE_ONLY,
+		DISPLAY_MODE_TREE_AND_LIST,
+	};
+
 	enum FileListDisplayMode {
 		FILE_LIST_DISPLAY_THUMBNAILS,
 		FILE_LIST_DISPLAY_LIST
 	};
 
-	enum DisplayMode {
-		DISPLAY_MODE_TREE_ONLY,
-		DISPLAY_MODE_VSPLIT,
-		DISPLAY_MODE_HSPLIT,
+	enum FileListPosition {
+		FILE_LIST_POSITION_VERTICAL,
+		FILE_LIST_POSITION_HORIZONTAL,
 	};
 
 	enum Overwrite {
@@ -152,8 +156,8 @@ private:
 	FileSortOption file_sort = FileSortOption::FILE_SORT_NAME;
 
 	VBoxContainer *scanning_vb = nullptr;
-	ProgressBar *scanning_progress = nullptr;
-	SplitContainer *split_box = nullptr;
+	ProgressBar *scanning_pb = nullptr;
+	SplitContainer *split_box_sc = nullptr;
 	MarginContainer *tree_mc = nullptr;
 	MarginContainer *files_mc = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
@@ -163,28 +167,32 @@ private:
 
 	HashSet<String> favorites;
 
-	Button *button_toggle_display_mode = nullptr;
-	Button *button_file_list_display_mode = nullptr;
-	Button *button_hist_next = nullptr;
-	Button *button_hist_prev = nullptr;
-	LineEdit *current_path_line_edit = nullptr;
+	Button *display_mode_btn = nullptr;
+	Button *file_list_position_btn = nullptr;
+	Button *file_list_display_mode_btn = nullptr;
+	Button *history_next_btn = nullptr;
+	Button *history_previous_btn = nullptr;
+	LineEdit *current_path_le = nullptr;
 
-	HBoxContainer *toolbar_hbc = nullptr;
-	HBoxContainer *toolbar2_hbc = nullptr;
-	LineEdit *tree_search_box = nullptr;
-	MenuButton *tree_button_sort = nullptr;
+	LineEdit *file_list_search_le = nullptr;
+	MenuButton *file_list_sort_mb = nullptr;
 
-	LineEdit *file_list_search_box = nullptr;
-	MenuButton *file_list_button_sort = nullptr;
+	MenuButton *create_new_btn = nullptr;
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+	Button *open_folder_btn = nullptr;
+#endif
+	Button *save_all_btn = nullptr;
 
 	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
 
-	HBoxContainer *path_hb = nullptr;
+	VBoxContainer *main_vbc = nullptr;
+	HBoxContainer *secondary_toolbar_hbc = nullptr;
 
 	FileListDisplayMode file_list_display_mode;
 	DisplayMode display_mode;
 	DisplayMode old_display_mode;
+	FileListPosition file_list_position = FILE_LIST_POSITION_VERTICAL;
 
 	bool horizontal = false;
 
@@ -272,6 +280,11 @@ private:
 
 	void _update_selection_changed();
 
+	void _update_toolbar_buttons();
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+	void _open_current_path_in_file_manager();
+#endif
+
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
@@ -343,13 +356,13 @@ private:
 	void _set_scanning_mode();
 	void _rescan();
 
-	void _change_split_mode();
+	void _change_display_mode(bool p_pressed);
+	void _change_file_list_position();
 	void _split_dragged(int p_offset);
 
 	void _search_changed(const String &p_text, const Control *p_from);
 	bool _matches_all_search_tokens(const String &p_text);
 
-	MenuButton *_create_file_menu_button();
 	void _file_sort_popup(int p_id);
 
 	void _folder_color_index_pressed(int p_index, PopupMenu *p_menu);

@@ -934,6 +934,21 @@
 		<member name="filesystem/quick_open_dialog/show_search_highlight" type="bool" setter="" getter="">
 			If [code]true[/code], results will be highlighted with their search matches.
 		</member>
+		<member name="filesystem/theme/file_list/display_mode" type="int" setter="" getter="">
+			The display mode of the file list.
+		</member>
+		<member name="filesystem/theme/file_list/position" type="int" setter="" getter="">
+			The position of the file list.
+		</member>
+		<member name="filesystem/theme/file_list/toolbar_buttons" type="int" setter="" getter="">
+			The toolbar buttons to show in the file list.
+		</member>
+		<member name="filesystem/theme/general/display_mode" type="int" setter="" getter="">
+			The display mode of the FileSystem dock.
+		</member>
+		<member name="filesystem/theme/general/toolbar_buttons" type="int" setter="" getter="">
+			The toolbar buttons to show in the FileSystem dock.
+		</member>
 		<member name="filesystem/tools/oidn/oidn_denoise_path" type="String" setter="" getter="">
 			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
 			To enable this feature for your specific project, use [member ProjectSettings.rendering/lightmapping/denoising/denoiser].

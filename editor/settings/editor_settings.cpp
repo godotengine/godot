@@ -656,6 +656,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	/* Filesystem */
 
+	// Theme
+	// General
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_FLAGS, "filesystem/theme/general/toolbar_buttons", 0, "Create New,Open Folder,Save All,Display Mode");
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/theme/general/display_mode", 0, "Tree Only,Tree and List")
+
+	// File list
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_FLAGS, "filesystem/theme/file_list/toolbar_buttons", 0, "Display Mode,Position");
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/theme/file_list/display_mode", 0, "Thumbnails,List")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/theme/file_list/position", 1, "Vertical,Horizontal")
+
 	// External Programs
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/external_programs/raster_image_editor", "", "")
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/external_programs/vector_image_editor", "", "")
