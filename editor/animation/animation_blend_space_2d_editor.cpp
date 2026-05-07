@@ -48,6 +48,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/main/timer.h"
@@ -1196,8 +1197,13 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	singleton = this;
 	updating = false;
 
+	ScrollContainer *top_scroll = memnew(ScrollContainer);
+	top_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	add_child(top_scroll);
+
 	HBoxContainer *top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	top_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	top_scroll->add_child(top_hb);
 
 	Ref<ButtonGroup> bg;
 	bg.instantiate();
