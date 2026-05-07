@@ -545,6 +545,9 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 		// Treat the priority child as not expanded, so it doesn't shrink with other expanded children.
 		if (i != p_priority_index && child->get_stretch_ratio() > 0 && (vertical ? child->get_v_size_flags() : child->get_h_size_flags()).has_flag(SIZE_EXPAND)) {
 			sdata.stretch_ratio = child->get_stretch_ratio();
+			if ((vertical ? child->get_v_size_flags() : child->get_h_size_flags()).has_flag(SIZE_MAXIMIZE)) {
+				sdata.stretch_ratio *= MAXIMIZE_STRETCH_FACTOR;
+			}
 			stretch_total += sdata.stretch_ratio;
 		}
 		stretch_data.push_back(sdata);
@@ -742,6 +745,9 @@ void SplitContainer::_update_default_dragger_positions() {
 		sdata.final_size = sdata.min_size;
 		if ((vertical ? child->get_v_size_flags() : child->get_h_size_flags()).has_flag(SIZE_EXPAND) && child->get_stretch_ratio() > 0) {
 			sdata.stretch_ratio = child->get_stretch_ratio();
+			if ((vertical ? child->get_v_size_flags() : child->get_h_size_flags()).has_flag(SIZE_MAXIMIZE)) {
+				sdata.stretch_ratio *= MAXIMIZE_STRETCH_FACTOR;
+			}
 			stretch_total += sdata.stretch_ratio;
 			sdata.expand_flag = true;
 			sdata.will_stretch = true;
@@ -1078,16 +1084,24 @@ Size2 SplitContainer::get_minimum_size() const {
 	const int axis = vertical ? 1 : 0;
 	const int other_axis = vertical ? 0 : 1;
 
-	Size2i minimum;
-
-	if (valid_children.size() >= 2u) {
-		minimum[axis] += sep * ((int)valid_children.size() - 1);
-	}
+	Size2 minimum;
 
 	for (const Control *child : valid_children) {
 		const Size2 min_size = child->get_bound_minimum_size();
-		minimum[axis] += (int)min_size[axis];
-		minimum[other_axis] = (int)MAX(minimum[other_axis], min_size[other_axis]);
+		const Size2 max_size = child->get_custom_maximum_size();
+
+		const bool maximize_axis = vertical ? child->get_v_size_flags().has_flag(SIZE_MAXIMIZE) : child->get_h_size_flags().has_flag(SIZE_MAXIMIZE);
+		const bool maximize_other_axis = vertical ? child->get_h_size_flags().has_flag(SIZE_MAXIMIZE) : child->get_v_size_flags().has_flag(SIZE_MAXIMIZE);
+
+		const real_t axis_size = maximize_axis && max_size[axis] >= 0 ? max_size[axis] : min_size[axis];
+		const real_t other_axis_size = maximize_other_axis && max_size[other_axis] >= 0 ? max_size[other_axis] : min_size[other_axis];
+
+		minimum[axis] += axis_size;
+		minimum[other_axis] = MAX(minimum[other_axis], other_axis_size);
+	}
+
+	if (!valid_children.is_empty()) {
+		minimum[axis] += sep * (valid_children.size() - 1u);
 	}
 
 	return minimum;
@@ -1604,6 +1618,7 @@ Vector<int> SplitContainer::get_allowed_size_flags_horizontal() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 
@@ -1616,6 +1631,7 @@ Vector<int> SplitContainer::get_allowed_size_flags_vertical() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 

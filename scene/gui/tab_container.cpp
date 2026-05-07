@@ -1016,8 +1016,13 @@ Size2 TabContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2 cms = c->get_bound_minimum_size();
-		largest_child_min_size = largest_child_min_size.max(cms);
+		Size2 min_size = c->get_bound_minimum_size();
+		Size2 max_size = c->get_custom_maximum_size();
+
+		real_t width = (max_size.x >= 0 && c->get_h_size_flags().has_flag(Control::SIZE_MAXIMIZE)) ? max_size.x : min_size.x;
+		real_t height = (max_size.y >= 0 && c->get_v_size_flags().has_flag(Control::SIZE_MAXIMIZE)) ? max_size.y : min_size.y;
+
+		largest_child_min_size = largest_child_min_size.max(Size2(width, height));
 	}
 	ms.height += largest_child_min_size.height;
 
@@ -1164,11 +1169,15 @@ bool TabContainer::get_use_hidden_tabs_for_min_size() const {
 }
 
 Vector<int> TabContainer::get_allowed_size_flags_horizontal() const {
-	return Vector<int>();
+	Vector<int> flags;
+	flags.append(SIZE_MAXIMIZE);
+	return flags;
 }
 
 Vector<int> TabContainer::get_allowed_size_flags_vertical() const {
-	return Vector<int>();
+	Vector<int> flags;
+	flags.append(SIZE_MAXIMIZE);
+	return flags;
 }
 
 void TabContainer::_bind_methods() {
