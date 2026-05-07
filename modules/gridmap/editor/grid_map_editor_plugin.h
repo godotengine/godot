@@ -47,6 +47,8 @@ class ButtonGroup;
 class EditorZoomWidget;
 class BaseButton;
 class SpinBox;
+class Tree;
+class TreeItem;
 
 class GridMapEditor : public EditorDock {
 	GDCLASS(GridMapEditor, EditorDock);
@@ -216,6 +218,8 @@ class GridMapEditor : public EditorDock {
 		RID instance;
 	};
 
+	Tree *categories = nullptr;
+	MarginContainer *item_palette_mc = nullptr;
 	ItemList *mesh_library_palette = nullptr;
 	Label *info_message = nullptr;
 
@@ -265,6 +269,16 @@ class GridMapEditor : public EditorDock {
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
 
 	friend class GridMapEditorPlugin;
+
+	struct ItemCategoryMapping {
+		AHashMap<StringName, HashSet<StringName>> category_to_category_children;
+		AHashMap<StringName, HashSet<int>> category_to_items;
+	};
+
+	void _on_categories_item_activated();
+
+	void _rebuild_categories();
+	void _add_child_categories_recursive(Tree *p_categories, TreeItem *p_ti_parent, const StringName &p_category, const ItemCategoryMapping &p_mapping);
 
 protected:
 	void _notification(int p_what);
