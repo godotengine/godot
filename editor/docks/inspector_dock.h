@@ -34,7 +34,6 @@
 #include "editor/editor_data.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/inspector/editor_inspector.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
@@ -102,6 +101,7 @@ class InspectorDock : public EditorDock {
 	ConfirmationDialog *unique_resources_confirmation = nullptr;
 	Label *unique_resources_label = nullptr;
 	Tree *unique_resources_list_tree = nullptr;
+	LocalVector<StringName> properties_to_unique;
 
 	EditorPropertyNameProcessor::Style property_name_style;
 	List<Pair<StringName, Variant>> stored_properties;

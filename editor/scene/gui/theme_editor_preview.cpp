@@ -31,6 +31,8 @@
 #include "theme_editor_preview.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -55,8 +57,6 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
 
-constexpr double REFRESH_TIMER = 1.5;
-
 void ThemeEditorPreview::set_preview_theme(const Ref<Theme> &p_theme) {
 	preview_content->set_theme(p_theme);
 }
@@ -64,30 +64,6 @@ void ThemeEditorPreview::set_preview_theme(const Ref<Theme> &p_theme) {
 void ThemeEditorPreview::add_preview_overlay(Control *p_overlay) {
 	preview_overlay->add_child(p_overlay);
 	p_overlay->hide();
-}
-
-void ThemeEditorPreview::_propagate_redraw(Control *p_at) {
-	p_at->notification(NOTIFICATION_THEME_CHANGED);
-	p_at->update_minimum_size();
-	p_at->queue_redraw();
-	for (int i = 0; i < p_at->get_child_count(); i++) {
-		Control *a = Object::cast_to<Control>(p_at->get_child(i));
-		if (a) {
-			_propagate_redraw(a);
-		}
-	}
-}
-
-void ThemeEditorPreview::_refresh_interval() {
-	// In case the project settings have changed.
-	preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
-
-	_propagate_redraw(preview_bg);
-	_propagate_redraw(preview_content);
-}
-
-void ThemeEditorPreview::_preview_visibility_changed() {
-	set_process(is_visible_in_tree());
 }
 
 void ThemeEditorPreview::_picker_button_cbk() {
@@ -199,19 +175,17 @@ void ThemeEditorPreview::_reset_picker_overlay() {
 	picker_overlay->queue_redraw();
 }
 
+void ThemeEditorPreview::_update_preview_bg() {
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/environment/defaults/default_clear_color")) {
+		preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
+	}
+}
+
 void ThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_POSTINITIALIZE: {
-			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
-		} break;
-
-		case NOTIFICATION_ENTER_TREE: {
-			if (is_visible_in_tree()) {
-				set_process(true);
-			}
-		} break;
-
-		case NOTIFICATION_READY: {
+		// Due to NOTIFICATION_READY being called only once, and theme contexts being destroyed on node removal,
+		// this is the notification needed, as it can be triggered indefinitely.
+		case NOTIFICATION_POST_ENTER_TREE: {
 			Vector<Ref<Theme>> preview_themes;
 			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
 			ThemeDB::get_singleton()->create_theme_context(preview_root, preview_themes);
@@ -225,14 +199,6 @@ void ThemeEditorPreview::_notification(int p_what) {
 			theme_cache.preview_picker_label = get_theme_stylebox(SNAME("preview_picker_label"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
 			theme_cache.font_size = get_theme_default_font_size();
-		} break;
-
-		case NOTIFICATION_PROCESS: {
-			time_left -= get_process_delta_time();
-			if (time_left < 0) {
-				time_left = REFRESH_TIMER;
-				_refresh_interval();
-			}
 		} break;
 	}
 }
@@ -288,6 +254,8 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	picker_overlay->connect(SceneStringName(draw), callable_mp(this, &ThemeEditorPreview::_draw_picker_overlay));
 	picker_overlay->connect(SceneStringName(gui_input), callable_mp(this, &ThemeEditorPreview::_gui_input_picker_overlay));
 	picker_overlay->connect(SceneStringName(mouse_exited), callable_mp(this, &ThemeEditorPreview::_reset_picker_overlay));
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ThemeEditorPreview::_update_preview_bg));
 }
 
 void DefaultThemeEditorPreview::_notification(int p_what) {

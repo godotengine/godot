@@ -36,6 +36,7 @@
 // Disassembler for SPIR-V.
 //
 
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
@@ -47,6 +48,7 @@
 
 #include "disassemble.h"
 #include "doc.h"
+#include "spvUtil.h"
 
 namespace spv {
     extern "C" {
@@ -59,7 +61,7 @@ namespace spv {
         #include "GLSL.ext.QCOM.h"
     }
 }
-const char* GlslStd450DebugNames[spv::GLSLstd450Count];
+static const char* GlslStd450DebugNames[spv::GLSLstd450Count];
 
 namespace spv {
 
@@ -96,7 +98,7 @@ public:
 protected:
     SpirvStream(const SpirvStream&);
     SpirvStream& operator=(const SpirvStream&);
-    Op getOpCode(int id) const { return idInstruction[id] ? (Op)(stream[idInstruction[id]] & OpCodeMask) : OpNop; }
+    Op getOpCode(int id) const { return idInstruction[id] ? (Op)(stream[idInstruction[id]] & OpCodeMask) : Op::OpNop; }
 
     // Output methods
     void outputIndent();
@@ -186,14 +188,14 @@ void SpirvStream::processInstructions()
 
         // Type <id>
         Id typeId = 0;
-        if (InstructionDesc[opCode].hasType()) {
+        if (InstructionDesc[enumCast(opCode)].hasType()) {
             typeId = stream[word++];
             --numOperands;
         }
 
         // Result <id>
         Id resultId = 0;
-        if (InstructionDesc[opCode].hasResult()) {
+        if (InstructionDesc[enumCast(opCode)].hasResult()) {
             resultId = stream[word++];
             --numOperands;
 
@@ -338,26 +340,38 @@ int SpirvStream::disassembleString()
     return decoderes.first;
 }
 
+static uint32_t popcount(uint32_t mask)
+{
+    uint32_t count = 0;
+    while (mask) {
+        if (mask & 1) {
+            count++;
+        }
+        mask >>= 1;
+    }
+    return count;
+}
+
 void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, int numOperands)
 {
     // Process the opcode
 
-    out << (OpcodeString(opCode) + 2);  // leave out the "Op"
+    out << (OpcodeString((int)opCode) + 2);  // leave out the "Op"
 
-    if (opCode == OpLoopMerge || opCode == OpSelectionMerge)
+    if (opCode == Op::OpLoopMerge || opCode == Op::OpSelectionMerge)
         nextNestedControl = stream[word];
-    else if (opCode == OpBranchConditional || opCode == OpSwitch) {
+    else if (opCode == Op::OpBranchConditional || opCode == Op::OpSwitch) {
         if (nextNestedControl) {
             nestedControl.push(nextNestedControl);
             nextNestedControl = 0;
         }
-    } else if (opCode == OpExtInstImport) {
+    } else if (opCode == Op::OpExtInstImport) {
         idDescriptor[resultId] = decodeString().second;
     }
     else {
         if (resultId != 0 && idDescriptor[resultId].size() == 0) {
             switch (opCode) {
-            case OpTypeInt:
+            case Op::OpTypeInt:
                 switch (stream[word]) {
                 case 8:  idDescriptor[resultId] = "int8_t"; break;
                 case 16: idDescriptor[resultId] = "int16_t"; break;
@@ -366,26 +380,49 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
                 case 64: idDescriptor[resultId] = "int64_t"; break;
                 }
                 break;
-            case OpTypeFloat:
+            case Op::OpTypeFloat:
                 switch (stream[word]) {
-                case 16: idDescriptor[resultId] = "float16_t"; break;
+                case 8:
+                case 16:
+                    if (numOperands > 1) {
+                        switch (stream[word+1]) {
+                        default:
+                            assert(0); [[fallthrough]];
+                        case (int)spv::FPEncoding::BFloat16KHR:
+                            idDescriptor[resultId] = "bfloat16_t";
+                            break;
+                        case (int)spv::FPEncoding::Float8E4M3EXT:
+                            idDescriptor[resultId] = "floate4m3_t";
+                            break;
+                        case (int)spv::FPEncoding::Float8E5M2EXT:
+                            idDescriptor[resultId] = "floate5m2_t";
+                            break;
+                        }
+                    } else {
+                        idDescriptor[resultId] = "float16_t";
+                    }
+                    break;
                 default: assert(0); [[fallthrough]];
                 case 32: idDescriptor[resultId] = "float"; break;
                 case 64: idDescriptor[resultId] = "float64_t"; break;
                 }
                 break;
-            case OpTypeBool:
+            case Op::OpTypeBool:
                 idDescriptor[resultId] = "bool";
                 break;
-            case OpTypeStruct:
+            case Op::OpTypeStruct:
                 idDescriptor[resultId] = "struct";
                 break;
-            case OpTypePointer:
+            case Op::OpTypePointer:
                 idDescriptor[resultId] = "ptr";
                 break;
-            case OpTypeVector:
+            case Op::OpTypeVector:
                 if (idDescriptor[stream[word]].size() > 0) {
-                    idDescriptor[resultId].append(idDescriptor[stream[word]].begin(), idDescriptor[stream[word]].begin() + 1);
+                    if (idDescriptor[stream[word]].substr(0,2) == "bf") {
+                        idDescriptor[resultId].append(idDescriptor[stream[word]].begin(), idDescriptor[stream[word]].begin() + 2);
+                    } else {
+                        idDescriptor[resultId].append(idDescriptor[stream[word]].begin(), idDescriptor[stream[word]].begin() + 1);
+                    }
                     if (strstr(idDescriptor[stream[word]].c_str(), "8")) {
                         idDescriptor[resultId].append("8");
                     }
@@ -417,10 +454,10 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
     // swapped in mid-traversal.
 
     // Handle images specially, so can put out helpful strings.
-    if (opCode == OpTypeImage) {
+    if (opCode == Op::OpTypeImage) {
         out << " ";
         disassembleIds(1);
-        out << " " << DimensionString((Dim)stream[word++]);
+        out << " " << DimensionString((int)(Dim)stream[word++]);
         out << (stream[word++] != 0 ? " depth" : "");
         out << (stream[word++] != 0 ? " array" : "");
         out << (stream[word++] != 0 ? " multi-sampled" : "");
@@ -429,7 +466,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
         case 1: out << " sampled";    break;
         case 2: out << " nonsampled"; break;
         }
-        out << " format:" << ImageFormatString((ImageFormat)stream[word++]);
+        out << " format:" << ImageFormatString((int)(ImageFormat)stream[word++]);
 
         if (numOperands == 8) {
             out << " " << AccessQualifierString(stream[word++]);
@@ -438,9 +475,9 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
     }
 
     // Handle all the parameterized operands
-    for (int op = 0; op < InstructionDesc[opCode].operands.getNum() && numOperands > 0; ++op) {
+    for (int op = 0; op < InstructionDesc[enumCast(opCode)].operands.getNum() && numOperands > 0; ++op) {
         out << " ";
-        OperandClass operandClass = InstructionDesc[opCode].operands.getClass(op);
+        OperandClass operandClass = InstructionDesc[enumCast(opCode)].operands.getClass(op);
         switch (operandClass) {
         case OperandId:
         case OperandScope:
@@ -448,7 +485,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
             disassembleIds(1);
             --numOperands;
             // Get names for printing "(XXX)" for readability, *after* this id
-            if (opCode == OpName)
+            if (opCode == Op::OpName)
                 idDescriptor[stream[word - 1]] = decodeString().second;
             break;
         case OperandVariableIds:
@@ -461,8 +498,8 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
             return;
         case OperandOptionalLiteral:
         case OperandVariableLiterals:
-            if ((opCode == OpDecorate && stream[word - 1] == DecorationBuiltIn) ||
-                (opCode == OpMemberDecorate && stream[word - 1] == DecorationBuiltIn)) {
+            if ((opCode == Op::OpDecorate && stream[word - 1] == Decoration::BuiltIn) ||
+                (opCode == Op::OpMemberDecorate && stream[word - 1] == Decoration::BuiltIn)) {
                 out << BuiltInString(stream[word++]);
                 --numOperands;
                 ++op;
@@ -498,7 +535,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
         case OperandLiteralNumber:
             disassembleImmediates(1);
             --numOperands;
-            if (opCode == OpExtInst) {
+            if (opCode == Op::OpExtInst) {
                 ExtInstSet extInstSet = GLSL450Inst;
                 const char* name = idDescriptor[stream[word - 2]].c_str();
                 if (strcmp("OpenCL.std", name) == 0) {
@@ -552,18 +589,41 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
                 numOperands -= disassembleString();
             return;
         case OperandMemoryAccess:
-            outputMask(OperandMemoryAccess, stream[word++]);
-            --numOperands;
-            // Aligned is the only memory access operand that uses an immediate
-            // value, and it is also the first operand that uses a value at all.
-            if (stream[word-1] & MemoryAccessAlignedMask) {
-                disassembleImmediates(1);
-                numOperands--;
-                if (numOperands)
+            {
+                outputMask(OperandMemoryAccess, stream[word++]);
+                --numOperands;
+                // Put a space after "None" if there are any remaining operands
+                if (numOperands && stream[word-1] == 0) {
                     out << " ";
+                }
+                uint32_t mask = stream[word-1];
+                // Aligned is the only memory access operand that uses an immediate
+                // value, and it is also the first operand that uses a value at all.
+                if (mask & (uint32_t)MemoryAccessMask::Aligned) {
+                    disassembleImmediates(1);
+                    numOperands--;
+                    if (numOperands)
+                        out << " ";
+                }
+
+                uint32_t bitCount = popcount(mask & (uint32_t)(MemoryAccessMask::MakePointerAvailable | MemoryAccessMask::MakePointerVisible));
+                disassembleIds(bitCount);
+                numOperands -= bitCount;
             }
-            disassembleIds(numOperands);
-            return;
+            break;
+        case OperandTensorAddressingOperands:
+            {
+                outputMask(OperandTensorAddressingOperands, stream[word++]);
+                --numOperands;
+                // Put a space after "None" if there are any remaining operands
+                if (numOperands && stream[word-1] == 0) {
+                    out << " ";
+                }
+                uint32_t bitCount = popcount(stream[word-1]);
+                disassembleIds(bitCount);
+                numOperands -= bitCount;
+            }
+            break;
         default:
             assert(operandClass >= OperandSource && operandClass < OperandOpcode);
 
@@ -721,41 +781,41 @@ static const char* GLSLextNVGetDebugNames(const char* name, unsigned entrypoint)
         strcmp(name, spv::E_SPV_NV_shader_image_footprint) == 0) {
         switch (entrypoint) {
         // NV builtins
-        case BuiltInViewportMaskNV:                 return "ViewportMaskNV";
-        case BuiltInSecondaryPositionNV:            return "SecondaryPositionNV";
-        case BuiltInSecondaryViewportMaskNV:        return "SecondaryViewportMaskNV";
-        case BuiltInPositionPerViewNV:              return "PositionPerViewNV";
-        case BuiltInViewportMaskPerViewNV:          return "ViewportMaskPerViewNV";
-        case BuiltInBaryCoordNV:                    return "BaryCoordNV";
-        case BuiltInBaryCoordNoPerspNV:             return "BaryCoordNoPerspNV";
-        case BuiltInTaskCountNV:                    return "TaskCountNV";
-        case BuiltInPrimitiveCountNV:               return "PrimitiveCountNV";
-        case BuiltInPrimitiveIndicesNV:             return "PrimitiveIndicesNV";
-        case BuiltInClipDistancePerViewNV:          return "ClipDistancePerViewNV";
-        case BuiltInCullDistancePerViewNV:          return "CullDistancePerViewNV";
-        case BuiltInLayerPerViewNV:                 return "LayerPerViewNV";
-        case BuiltInMeshViewCountNV:                return "MeshViewCountNV";
-        case BuiltInMeshViewIndicesNV:              return "MeshViewIndicesNV";
+        case (unsigned)BuiltIn::ViewportMaskNV:                 return "ViewportMaskNV";
+        case (unsigned)BuiltIn::SecondaryPositionNV:            return "SecondaryPositionNV";
+        case (unsigned)BuiltIn::SecondaryViewportMaskNV:        return "SecondaryViewportMaskNV";
+        case (unsigned)BuiltIn::PositionPerViewNV:              return "PositionPerViewNV";
+        case (unsigned)BuiltIn::ViewportMaskPerViewNV:          return "ViewportMaskPerViewNV";
+        case (unsigned)BuiltIn::BaryCoordNV:                    return "BaryCoordNV";
+        case (unsigned)BuiltIn::BaryCoordNoPerspNV:             return "BaryCoordNoPerspNV";
+        case (unsigned)BuiltIn::TaskCountNV:                    return "TaskCountNV";
+        case (unsigned)BuiltIn::PrimitiveCountNV:               return "PrimitiveCountNV";
+        case (unsigned)BuiltIn::PrimitiveIndicesNV:             return "PrimitiveIndicesNV";
+        case (unsigned)BuiltIn::ClipDistancePerViewNV:          return "ClipDistancePerViewNV";
+        case (unsigned)BuiltIn::CullDistancePerViewNV:          return "CullDistancePerViewNV";
+        case (unsigned)BuiltIn::LayerPerViewNV:                 return "LayerPerViewNV";
+        case (unsigned)BuiltIn::MeshViewCountNV:                return "MeshViewCountNV";
+        case (unsigned)BuiltIn::MeshViewIndicesNV:              return "MeshViewIndicesNV";
 
         // NV Capabilities
-        case CapabilityGeometryShaderPassthroughNV: return "GeometryShaderPassthroughNV";
-        case CapabilityShaderViewportMaskNV:        return "ShaderViewportMaskNV";
-        case CapabilityShaderStereoViewNV:          return "ShaderStereoViewNV";
-        case CapabilityPerViewAttributesNV:         return "PerViewAttributesNV";
-        case CapabilityFragmentBarycentricNV:       return "FragmentBarycentricNV";
-        case CapabilityMeshShadingNV:               return "MeshShadingNV";
-        case CapabilityImageFootprintNV:            return "ImageFootprintNV";
-        case CapabilitySampleMaskOverrideCoverageNV:return "SampleMaskOverrideCoverageNV";
+        case (unsigned)Capability::GeometryShaderPassthroughNV: return "GeometryShaderPassthroughNV";
+        case (unsigned)Capability::ShaderViewportMaskNV:        return "ShaderViewportMaskNV";
+        case (unsigned)Capability::ShaderStereoViewNV:          return "ShaderStereoViewNV";
+        case (unsigned)Capability::PerViewAttributesNV:         return "PerViewAttributesNV";
+        case (unsigned)Capability::FragmentBarycentricNV:       return "FragmentBarycentricNV";
+        case (unsigned)Capability::MeshShadingNV:               return "MeshShadingNV";
+        case (unsigned)Capability::ImageFootprintNV:            return "ImageFootprintNV";
+        case (unsigned)Capability::SampleMaskOverrideCoverageNV:return "SampleMaskOverrideCoverageNV";
 
         // NV Decorations
-        case DecorationOverrideCoverageNV:          return "OverrideCoverageNV";
-        case DecorationPassthroughNV:               return "PassthroughNV";
-        case DecorationViewportRelativeNV:          return "ViewportRelativeNV";
-        case DecorationSecondaryViewportRelativeNV: return "SecondaryViewportRelativeNV";
-        case DecorationPerVertexNV:                 return "PerVertexNV";
-        case DecorationPerPrimitiveNV:              return "PerPrimitiveNV";
-        case DecorationPerViewNV:                   return "PerViewNV";
-        case DecorationPerTaskNV:                   return "PerTaskNV";
+        case (unsigned)Decoration::OverrideCoverageNV:          return "OverrideCoverageNV";
+        case (unsigned)Decoration::PassthroughNV:               return "PassthroughNV";
+        case (unsigned)Decoration::ViewportRelativeNV:          return "ViewportRelativeNV";
+        case (unsigned)Decoration::SecondaryViewportRelativeNV: return "SecondaryViewportRelativeNV";
+        case (unsigned)Decoration::PerVertexNV:                 return "PerVertexNV";
+        case (unsigned)Decoration::PerPrimitiveNV:              return "PerPrimitiveNV";
+        case (unsigned)Decoration::PerViewNV:                   return "PerViewNV";
+        case (unsigned)Decoration::PerTaskNV:                   return "PerTaskNV";
 
         default:                                    return "Bad";
         }
@@ -825,4 +885,4 @@ void Disassemble(std::ostream& out, const std::vector<unsigned int>& stream)
     SpirvStream.processInstructions();
 }
 
-}; // end namespace spv
+} // end namespace spv

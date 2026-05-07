@@ -13,9 +13,6 @@ Other parts, outside of glslang proper, include:
 - update_glslang_sources.py, which is not part of the project proper and does
   not need to be used.
 
-- the SPIR-V "remapper", which is optional, but has the same license as
-  glslang proper
-
 - Google tests and SPIR-V tools, and anything in the external subdirectory
   are external and optional; see them for their respective licenses.
 

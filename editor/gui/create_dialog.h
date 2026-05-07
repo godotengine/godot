@@ -30,12 +30,17 @@
 
 #pragma once
 
-#include "editor/doc/editor_help.h"
-#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/tree.h"
+
+class Button;
+class EditorHelpBit;
+class FilterLineEdit;
+class ItemList;
+class Tree;
+class TreeItem;
+
+class HBoxContainer;
+class MenuButton;
 
 class CreateDialog : public ConfirmationDialog {
 	GDCLASS(CreateDialog, ConfirmationDialog);
@@ -46,12 +51,21 @@ class CreateDialog : public ConfirmationDialog {
 		OTHER_TYPE
 	};
 
+	enum TypeGroup {
+		TYPE_BUILT_IN,
+		TYPE_CUSTOM,
+		TYPE_EDITOR,
+		TYPE_MAX,
+	};
+
 	struct TypeInfo {
 		StringName type_name;
 		PackedStringArray search_keywords;
 	};
 
-	LineEdit *search_box = nullptr;
+	bool types_enabled[TYPE_MAX];
+
+	FilterLineEdit *search_box = nullptr;
 	Tree *search_options = nullptr;
 
 	String base_type;
@@ -63,6 +77,8 @@ class CreateDialog : public ConfirmationDialog {
 	Button *favorite = nullptr;
 	Vector<String> favorite_list;
 	Tree *favorites = nullptr;
+	Button *reset_filters_button = nullptr;
+	MenuButton *filters_button = nullptr;
 	ItemList *recent = nullptr;
 	EditorHelpBit *help_bit = nullptr;
 
@@ -72,7 +88,10 @@ class CreateDialog : public ConfirmationDialog {
 	List<TypeInfo> type_info_list;
 	HashSet<StringName> type_blacklist;
 	HashSet<StringName> custom_type_blocklist;
+	HashSet<StringName> selectable_types;
 
+	void _reset_filters();
+	void _update_filter_button_state();
 	void _update_search();
 	bool _should_hide_type(const StringName &p_type) const;
 	void _add_type(const StringName &p_type, TypeCategory p_type_category, const String &p_match_keyword);
@@ -93,6 +112,7 @@ class CreateDialog : public ConfirmationDialog {
 	void _confirmed();
 	virtual void cancel_pressed() override;
 
+	void _type_filter_toggled(int p_type, bool p_search);
 	void _favorite_toggled();
 
 	void _history_selected(int p_idx);
@@ -117,6 +137,7 @@ protected:
 public:
 	Variant instantiate_selected();
 	String get_selected_type();
+	String get_selected_type_name();
 
 	void set_base_type(const String &p_base);
 	String get_base_type() const { return base_type; }

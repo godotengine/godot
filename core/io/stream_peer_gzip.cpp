@@ -31,6 +31,8 @@
 #include "core/io/stream_peer_gzip.h"
 
 #include "core/io/zip_io.h"
+#include "core/object/class_db.h"
+
 #include <zlib.h>
 
 void StreamPeerGZIP::_bind_methods() {
@@ -76,7 +78,7 @@ Error StreamPeerGZIP::_start(bool p_compress, bool p_is_deflate, int buffer_size
 	ERR_FAIL_COND_V_MSG(buffer_size <= 0, ERR_INVALID_PARAMETER, "Invalid buffer size. It should be a positive integer.");
 	clear();
 	compressing = p_compress;
-	rb.resize(nearest_shift(uint32_t(buffer_size - 1)));
+	rb.resize(Math::nearest_shift(uint32_t(buffer_size - 1)));
 	buffer.resize(1024);
 
 	// Create ctx.

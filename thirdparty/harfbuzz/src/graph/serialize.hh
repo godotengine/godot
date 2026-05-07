@@ -108,7 +108,7 @@ inline bool
 will_overflow (graph_t& graph,
                hb_vector_t<overflow_record_t>* overflows = nullptr)
 {
-  if (overflows) overflows->resize (0);
+  if (overflows) overflows->clear ();
   graph.update_positions ();
 
   hb_hashmap_t<overflow_record_t*, bool> record_set;

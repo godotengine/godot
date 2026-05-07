@@ -501,9 +501,6 @@
         {
             "name": "GDExtensionVariantFromTypeConstructorFunc",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "type": "GDExtensionUninitializedVariantPtr"
@@ -516,9 +513,6 @@
         {
             "name": "GDExtensionTypeFromVariantConstructorFunc",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "type": "GDExtensionUninitializedTypePtr"
@@ -543,9 +537,6 @@
         {
             "name": "GDExtensionPtrOperatorEvaluator",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_left",
@@ -564,9 +555,6 @@
         {
             "name": "GDExtensionPtrBuiltInMethod",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -589,9 +577,6 @@
         {
             "name": "GDExtensionPtrConstructor",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -606,9 +591,6 @@
         {
             "name": "GDExtensionPtrDestructor",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -619,9 +601,6 @@
         {
             "name": "GDExtensionPtrSetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -636,9 +615,6 @@
         {
             "name": "GDExtensionPtrGetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -653,9 +629,6 @@
         {
             "name": "GDExtensionPtrIndexedSetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -674,9 +647,6 @@
         {
             "name": "GDExtensionPtrIndexedGetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -695,9 +665,6 @@
         {
             "name": "GDExtensionPtrKeyedSetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -716,9 +683,6 @@
         {
             "name": "GDExtensionPtrKeyedGetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -754,9 +718,6 @@
         {
             "name": "GDExtensionPtrUtilityFunction",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_return",
@@ -800,9 +761,6 @@
         {
             "name": "GDExtensionInstanceBindingFreeCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_token",
@@ -1019,9 +977,6 @@
         {
             "name": "GDExtensionClassFreePropertyList",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1031,14 +986,15 @@
                     "name": "p_list",
                     "type": "const GDExtensionPropertyInfo*"
                 }
-            ]
+            ],
+            "deprecated": {
+                "since": "4.3",
+                "replace_with": "GDExtensionClassFreePropertyList2"
+            }
         },
         {
             "name": "GDExtensionClassFreePropertyList2",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1112,9 +1068,6 @@
         {
             "name": "GDExtensionClassNotification",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1133,9 +1086,6 @@
         {
             "name": "GDExtensionClassNotification2",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1154,9 +1104,6 @@
         {
             "name": "GDExtensionClassToString",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1175,9 +1122,6 @@
         {
             "name": "GDExtensionClassReference",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1188,9 +1132,6 @@
         {
             "name": "GDExtensionClassUnreference",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1201,9 +1142,6 @@
         {
             "name": "GDExtensionClassCallVirtual",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1230,7 +1168,15 @@
                     "name": "p_class_userdata",
                     "type": "void*"
                 }
-            ]
+            ],
+            "description": [
+                "Called to construct an instance of the class.",
+                "For classes descending from RefCounted, the reference count should be zero."
+            ],
+            "deprecated": {
+                "since": "4.4",
+                "replace_with": "GDExtensionClassCreateInstance3"
+            }
         },
         {
             "name": "GDExtensionClassCreateInstance2",
@@ -1247,14 +1193,40 @@
                     "name": "p_notify_postinitialize",
                     "type": "GDExtensionBool"
                 }
+            ],
+            "description": [
+                "Called to construct an instance of the class.",
+                "For classes descending from RefCounted, the reference count should be zero."
+            ],
+            "deprecated": {
+                "since": "4.7",
+                "replace_with": "GDExtensionClassCreateInstance3"
+            }
+        },
+        {
+            "name": "GDExtensionClassCreateInstance3",
+            "kind": "function",
+            "return_value": {
+                "type": "GDExtensionObjectPtr"
+            },
+            "arguments": [
+                {
+                    "name": "p_class_userdata",
+                    "type": "void*"
+                },
+                {
+                    "name": "p_notify_postinitialize",
+                    "type": "GDExtensionBool"
+                }
+            ],
+            "description": [
+                "Called to construct an instance of the class.",
+                "For classes descending from RefCounted, the reference count should already be incremented by 1."
             ]
         },
         {
             "name": "GDExtensionClassFreeInstance",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_class_userdata",
@@ -1298,7 +1270,11 @@
                     "name": "p_name",
                     "type": "GDExtensionConstStringNamePtr"
                 }
-            ]
+            ],
+            "deprecated": {
+                "since": "4.4",
+                "replace_with": "GDExtensionClassGetVirtual2"
+            }
         },
         {
             "name": "GDExtensionClassGetVirtual2",
@@ -1336,7 +1312,11 @@
                     "name": "p_name",
                     "type": "GDExtensionConstStringNamePtr"
                 }
-            ]
+            ],
+            "deprecated": {
+                "since": "4.4",
+                "replace_with": "GDExtensionClassGetVirtualCallData2"
+            }
         },
         {
             "name": "GDExtensionClassGetVirtualCallData2",
@@ -1362,9 +1342,6 @@
         {
             "name": "GDExtensionClassCallVirtualWithData",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1444,7 +1421,7 @@
                     "name": "create_instance_func",
                     "type": "GDExtensionClassCreateInstance",
                     "description": [
-                        "(Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract."
+                        "Class constructor. Required unless the class is virtual or abstract."
                     ]
                 },
                 {
@@ -1475,7 +1452,7 @@
             ],
             "deprecated": {
                 "since": "4.2",
-                "replace_with": "GDExtensionClassCreationInfo4"
+                "replace_with": "GDExtensionClassCreationInfo6"
             }
         },
         {
@@ -1542,7 +1519,7 @@
                     "name": "create_instance_func",
                     "type": "GDExtensionClassCreateInstance",
                     "description": [
-                        "(Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract."
+                        "Class constructor. Required unless the class is virtual or abstract."
                     ]
                 },
                 {
@@ -1596,7 +1573,7 @@
             ],
             "deprecated": {
                 "since": "4.3",
-                "replace_with": "GDExtensionClassCreationInfo4"
+                "replace_with": "GDExtensionClassCreationInfo6"
             }
         },
         {
@@ -1667,7 +1644,7 @@
                     "name": "create_instance_func",
                     "type": "GDExtensionClassCreateInstance",
                     "description": [
-                        "(Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract."
+                        "Class constructor. Required unless the class is virtual or abstract."
                     ]
                 },
                 {
@@ -1721,7 +1698,7 @@
             ],
             "deprecated": {
                 "since": "4.4",
-                "replace_with": "GDExtensionClassCreationInfo4"
+                "replace_with": "GDExtensionClassCreationInfo6"
             }
         },
         {
@@ -1796,7 +1773,141 @@
                     "name": "create_instance_func",
                     "type": "GDExtensionClassCreateInstance2",
                     "description": [
-                        "(Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract."
+                        "Class constructor. Required unless the class is virtual or abstract."
+                    ]
+                },
+                {
+                    "name": "free_instance_func",
+                    "type": "GDExtensionClassFreeInstance",
+                    "description": [
+                        "Destructor; mandatory."
+                    ]
+                },
+                {
+                    "name": "recreate_instance_func",
+                    "type": "GDExtensionClassRecreateInstance"
+                },
+                {
+                    "name": "get_virtual_func",
+                    "type": "GDExtensionClassGetVirtual2",
+                    "description": [
+                        "Queries a virtual function by name and returns a callback to invoke the requested virtual function."
+                    ]
+                },
+                {
+                    "name": "get_virtual_call_data_func",
+                    "type": "GDExtensionClassGetVirtualCallData2",
+                    "description": [
+                        "Paired with `call_virtual_with_data_func`, this is an alternative to `get_virtual_func` for extensions that",
+                        "need or benefit from extra data when calling virtual functions.",
+                        "Returns user data that will be passed to `call_virtual_with_data_func`.",
+                        "Returning `NULL` from this function signals to Godot that the virtual function is not overridden.",
+                        "Data returned from this function should be managed by the extension and must be valid until the extension is deinitialized.",
+                        "You should supply either `get_virtual_func`, or `get_virtual_call_data_func` with `call_virtual_with_data_func`."
+                    ]
+                },
+                {
+                    "name": "call_virtual_with_data_func",
+                    "type": "GDExtensionClassCallVirtualWithData",
+                    "description": [
+                        "Used to call virtual functions when `get_virtual_call_data_func` is not null."
+                    ]
+                },
+                {
+                    "name": "class_userdata",
+                    "type": "void*",
+                    "description": [
+                        "Per-class user data, later accessible in instance bindings."
+                    ]
+                }
+            ],
+            "deprecated": {
+                "since": "4.5",
+                "replace_with": "GDExtensionClassCreationInfo6"
+            }
+        },
+        {
+            "name": "GDExtensionClassCreationInfo5",
+            "kind": "alias",
+            "type": "GDExtensionClassCreationInfo4",
+            "deprecated": {
+                "since": "4.7",
+                "replace_with": "GDExtensionClassCreationInfo6"
+            }
+        },
+        {
+            "name": "GDExtensionClassCreationInfo6",
+            "kind": "struct",
+            "members": [
+                {
+                    "name": "is_virtual",
+                    "type": "GDExtensionBool"
+                },
+                {
+                    "name": "is_abstract",
+                    "type": "GDExtensionBool"
+                },
+                {
+                    "name": "is_exposed",
+                    "type": "GDExtensionBool"
+                },
+                {
+                    "name": "is_runtime",
+                    "type": "GDExtensionBool"
+                },
+                {
+                    "name": "icon_path",
+                    "type": "GDExtensionConstStringPtr"
+                },
+                {
+                    "name": "set_func",
+                    "type": "GDExtensionClassSet"
+                },
+                {
+                    "name": "get_func",
+                    "type": "GDExtensionClassGet"
+                },
+                {
+                    "name": "get_property_list_func",
+                    "type": "GDExtensionClassGetPropertyList"
+                },
+                {
+                    "name": "free_property_list_func",
+                    "type": "GDExtensionClassFreePropertyList2"
+                },
+                {
+                    "name": "property_can_revert_func",
+                    "type": "GDExtensionClassPropertyCanRevert"
+                },
+                {
+                    "name": "property_get_revert_func",
+                    "type": "GDExtensionClassPropertyGetRevert"
+                },
+                {
+                    "name": "validate_property_func",
+                    "type": "GDExtensionClassValidateProperty"
+                },
+                {
+                    "name": "notification_func",
+                    "type": "GDExtensionClassNotification2"
+                },
+                {
+                    "name": "to_string_func",
+                    "type": "GDExtensionClassToString"
+                },
+                {
+                    "name": "reference_func",
+                    "type": "GDExtensionClassReference"
+                },
+                {
+                    "name": "unreference_func",
+                    "type": "GDExtensionClassUnreference"
+                },
+                {
+                    "name": "create_instance_func",
+                    "type": "GDExtensionClassCreateInstance3",
+                    "description": [
+                        "Class constructor. Required unless the class is virtual or abstract."
                     ]
                 },
                 {
@@ -1846,20 +1957,12 @@
             ]
         },
         {
-            "name": "GDExtensionClassCreationInfo5",
-            "kind": "alias",
-            "type": "GDExtensionClassCreationInfo4"
-        },
-        {
             "name": "GDExtensionClassLibraryPtr",
             "kind": "handle"
         },
         {
             "name": "GDExtensionEditorGetClassesUsedCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_packed_string_array",
@@ -1974,9 +2077,6 @@
         {
             "name": "GDExtensionClassMethodCall",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "method_userdata",
@@ -2007,9 +2107,6 @@
         {
             "name": "GDExtensionClassMethodValidatedCall",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "method_userdata",
@@ -2032,9 +2129,6 @@
         {
             "name": "GDExtensionClassMethodPtrCall",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "method_userdata",
@@ -2169,9 +2263,6 @@
         {
             "name": "GDExtensionCallableCustomCall",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "callable_userdata",
@@ -2211,9 +2302,6 @@
         {
             "name": "GDExtensionCallableCustomFree",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "callable_userdata",
@@ -2271,9 +2359,6 @@
         {
             "name": "GDExtensionCallableCustomToString",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "callable_userdata",
@@ -2505,9 +2590,6 @@
         {
             "name": "GDExtensionScriptInstanceFreePropertyList",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2526,9 +2608,6 @@
         {
             "name": "GDExtensionScriptInstanceFreePropertyList2",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2653,9 +2732,6 @@
         {
             "name": "GDExtensionScriptInstancePropertyStateAdd",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_name",
@@ -2674,9 +2750,6 @@
         {
             "name": "GDExtensionScriptInstanceGetPropertyState",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2712,9 +2785,6 @@
         {
             "name": "GDExtensionScriptInstanceFreeMethodList",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2733,9 +2803,6 @@
         {
             "name": "GDExtensionScriptInstanceFreeMethodList2",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2792,9 +2859,6 @@
         {
             "name": "GDExtensionScriptInstanceCall",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -2825,9 +2889,6 @@
         {
             "name": "GDExtensionScriptInstanceNotification",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2846,9 +2907,6 @@
         {
             "name": "GDExtensionScriptInstanceNotification2",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2867,9 +2925,6 @@
         {
             "name": "GDExtensionScriptInstanceToString",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2888,9 +2943,6 @@
         {
             "name": "GDExtensionScriptInstanceRefCountIncremented",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2957,9 +3009,6 @@
         {
             "name": "GDExtensionScriptInstanceFree",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -3305,9 +3354,6 @@
         {
             "name": "GDExtensionWorkerThreadPoolGroupTask",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "",
@@ -3321,9 +3367,6 @@
         {
             "name": "GDExtensionWorkerThreadPoolTask",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "",
@@ -3360,9 +3403,6 @@
         {
             "name": "GDExtensionInitializeCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_userdata",
@@ -3377,9 +3417,6 @@
         {
             "name": "GDExtensionDeinitializeCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_userdata",
@@ -3426,9 +3463,6 @@
         {
             "name": "GDExtensionInterfaceFunctionPtr",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": []
         },
         {
@@ -3519,7 +3553,11 @@
                     "name": "string",
                     "type": "const char*"
                 }
-            ]
+            ],
+            "deprecated": {
+                "since": "4.5",
+                "replace_with": "GDExtensionGodotVersion2"
+            }
         },
         {
             "name": "GDExtensionGodotVersion2",
@@ -3584,9 +3622,6 @@
         {
             "name": "GDExtensionMainLoopStartupCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [],
             "description": [
                 "Called when starting the main loop."
@@ -3595,9 +3630,6 @@
         {
             "name": "GDExtensionMainLoopShutdownCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [],
             "description": [
                 "Called when shutting down the main loop."
@@ -3606,9 +3638,6 @@
         {
             "name": "GDExtensionMainLoopFrameCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [],
             "description": [
                 "Called for every frame iteration of the main loop."
@@ -3646,9 +3675,6 @@
     "interface": [
         {
             "name": "get_godot_version",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_godot_version",
@@ -3669,9 +3695,6 @@
         },
         {
             "name": "get_godot_version2",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_godot_version",
@@ -3749,9 +3772,6 @@
         },
         {
             "name": "mem_free",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_ptr",
@@ -3838,9 +3858,6 @@
         },
         {
             "name": "mem_free2",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_ptr",
@@ -3864,9 +3881,6 @@
         },
         {
             "name": "print_error",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -3911,9 +3925,6 @@
         },
         {
             "name": "print_error_with_message",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -3965,9 +3976,6 @@
         },
         {
             "name": "print_warning",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -4012,9 +4020,6 @@
         },
         {
             "name": "print_warning_with_message",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -4066,9 +4071,6 @@
         },
         {
             "name": "print_script_error",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -4113,9 +4115,6 @@
         },
         {
             "name": "print_script_error_with_message",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -4189,9 +4188,6 @@
         },
         {
             "name": "variant_new_copy",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -4215,9 +4211,6 @@
         },
         {
             "name": "variant_new_nil",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -4234,9 +4227,6 @@
         },
         {
             "name": "variant_destroy",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4253,9 +4243,6 @@
         },
         {
             "name": "variant_call",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4310,9 +4297,6 @@
         },
         {
             "name": "variant_call_static",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_type",
@@ -4367,9 +4351,6 @@
         },
         {
             "name": "variant_evaluate",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_op",
@@ -4417,9 +4398,6 @@
         },
         {
             "name": "variant_set",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4460,9 +4438,6 @@
         },
         {
             "name": "variant_set_named",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4503,9 +4478,6 @@
         },
         {
             "name": "variant_set_keyed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4546,9 +4518,6 @@
         },
         {
             "name": "variant_set_indexed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4593,9 +4562,6 @@
         },
         {
             "name": "variant_get",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4633,9 +4599,6 @@
         },
         {
             "name": "variant_get_named",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4673,9 +4636,6 @@
         },
         {
             "name": "variant_get_keyed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4713,9 +4673,6 @@
         },
         {
             "name": "variant_get_indexed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4838,9 +4795,6 @@
         },
         {
             "name": "variant_iter_get",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4992,9 +4946,6 @@
         },
         {
             "name": "variant_duplicate",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -5025,9 +4976,6 @@
         },
         {
             "name": "variant_stringify",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -5191,9 +5139,6 @@
         },
         {
             "name": "variant_get_type_name",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_type",
@@ -5214,6 +5159,28 @@
                 "Gets the name of a Variant type."
             ],
             "since": "4.1"
+        },
+        {
+            "name": "variant_get_type_by_name",
+            "return_value": {
+                "type": "GDExtensionVariantType",
+                "description": [
+                    "The variant type for the given name; otherwise VARIANT_MAX if name is invalid."
+                ]
+            },
+            "arguments": [
+                {
+                    "name": "p_type_name",
+                    "type": "GDExtensionConstStringPtr",
+                    "description": [
+                        "The variant type name."
+                    ]
+                }
+            ],
+            "description": [
+                "Gets the Variant type by name."
+            ],
+            "since": "4.7"
         },
         {
             "name": "variant_can_convert",
@@ -5470,9 +5437,6 @@
         },
         {
             "name": "variant_construct",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_type",
@@ -5685,9 +5649,6 @@
         },
         {
             "name": "variant_get_constant_value",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_type",
@@ -5747,9 +5708,6 @@
         },
         {
             "name": "string_new_with_latin1_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5773,9 +5731,6 @@
         },
         {
             "name": "string_new_with_utf8_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5799,9 +5754,6 @@
         },
         {
             "name": "string_new_with_utf16_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5825,9 +5777,6 @@
         },
         {
             "name": "string_new_with_utf32_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5851,9 +5800,6 @@
         },
         {
             "name": "string_new_with_wide_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5877,9 +5823,6 @@
         },
         {
             "name": "string_new_with_latin1_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5910,9 +5853,6 @@
         },
         {
             "name": "string_new_with_utf8_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5983,9 +5923,6 @@
         },
         {
             "name": "string_new_with_utf16_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6063,9 +6000,6 @@
         },
         {
             "name": "string_new_with_utf32_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6096,9 +6030,6 @@
         },
         {
             "name": "string_new_with_wide_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6132,7 +6063,7 @@
             "return_value": {
                 "type": "GDExtensionInt",
                 "description": [
-                    "The resulting encoded string length in characters (not bytes), not including a null terminator."
+                    "The resulting encoded string length in characters, not including a null terminator. Characters that cannot be converted to Latin-1 are replaced with a space."
                 ]
             },
             "arguments": [
@@ -6169,7 +6100,7 @@
             "return_value": {
                 "type": "GDExtensionInt",
                 "description": [
-                    "The resulting encoded string length in characters (not bytes), not including a null terminator."
+                    "The resulting encoded string length in bytes (not characters), not including a null terminator."
                 ]
             },
             "arguments": [
@@ -6206,7 +6137,7 @@
             "return_value": {
                 "type": "GDExtensionInt",
                 "description": [
-                    "The resulting encoded string length in characters (not bytes), not including a null terminator."
+                    "The resulting encoded string length in 16-bit code units (not bytes or characters), not including a null terminator."
                 ]
             },
             "arguments": [
@@ -6280,7 +6211,7 @@
             "return_value": {
                 "type": "GDExtensionInt",
                 "description": [
-                    "The resulting encoded string length in characters (not bytes), not including a null terminator."
+                    "The resulting encoded string length in characters (for UTF-32) or 16-bit code units (for UTF-16), depending on the wchar_t representation. Does not include a null terminator."
                 ]
             },
             "arguments": [
@@ -6372,9 +6303,6 @@
         },
         {
             "name": "string_operator_plus_eq_string",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -6398,9 +6326,6 @@
         },
         {
             "name": "string_operator_plus_eq_char",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -6424,9 +6349,6 @@
         },
         {
             "name": "string_operator_plus_eq_cstr",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -6450,9 +6372,6 @@
         },
         {
             "name": "string_operator_plus_eq_wcstr",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -6476,9 +6395,6 @@
         },
         {
             "name": "string_operator_plus_eq_c32str",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -6536,9 +6452,6 @@
         },
         {
             "name": "string_name_new_with_latin1_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6575,9 +6488,6 @@
         },
         {
             "name": "string_name_new_with_utf8_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6601,9 +6511,6 @@
         },
         {
             "name": "string_name_new_with_utf8_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6673,9 +6580,6 @@
         },
         {
             "name": "file_access_store_buffer",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -7550,9 +7454,6 @@
         },
         {
             "name": "array_ref",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -7580,9 +7481,6 @@
         },
         {
             "name": "array_set_typed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -7678,9 +7576,6 @@
         },
         {
             "name": "dictionary_set_typed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -7739,9 +7634,6 @@
         },
         {
             "name": "object_method_bind_call",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_method_bind",
@@ -7793,9 +7685,6 @@
         },
         {
             "name": "object_method_bind_ptrcall",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_method_bind",
@@ -7833,9 +7722,6 @@
         },
         {
             "name": "object_destroy",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_o",
@@ -7910,9 +7796,6 @@
         },
         {
             "name": "object_set_instance_binding",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_o",
@@ -7950,9 +7833,6 @@
         },
         {
             "name": "object_free_instance_binding",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_o",
@@ -7976,9 +7856,6 @@
         },
         {
             "name": "object_set_instance",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_o",
@@ -8073,7 +7950,11 @@
             "description": [
                 "Casts an Object to a different type."
             ],
-            "since": "4.1"
+            "since": "4.1",
+            "deprecated": {
+                "since": "4.7",
+                "message": "Use the `is_class` method on `Object` to check if an object can be cast instead. If true, the previous pointer can be reinterpreted as a pointer to the target type."
+            }
         },
         {
             "name": "object_get_instance_from_id",
@@ -8150,9 +8031,6 @@
         },
         {
             "name": "object_call_script_method",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_object",
@@ -8226,9 +8104,6 @@
         },
         {
             "name": "ref_set_object",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_ref",
@@ -8385,9 +8260,6 @@
         },
         {
             "name": "placeholder_script_instance_update",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_placeholder",
@@ -8450,9 +8322,6 @@
         },
         {
             "name": "object_set_script_instance",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_object",
@@ -8476,9 +8345,6 @@
         },
         {
             "name": "callable_custom_create",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_callable",
@@ -8507,9 +8373,6 @@
         },
         {
             "name": "callable_custom_create2",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_callable",
@@ -8587,7 +8450,7 @@
             "since": "4.1",
             "deprecated": {
                 "since": "4.4",
-                "replace_with": "classdb_construct_object2"
+                "replace_with": "classdb_construct_object3"
             }
         },
         {
@@ -8613,7 +8476,37 @@
                 "",
                 "\"NOTIFICATION_POSTINITIALIZE\" must be sent after construction."
             ],
-            "since": "4.4"
+            "since": "4.4",
+            "deprecated": {
+                "since": "4.7",
+                "replace_with": "classdb_construct_object3"
+            }
+        },
+        {
+            "name": "classdb_construct_object3",
+            "return_value": {
+                "type": "GDExtensionObjectPtr",
+                "description": [
+                    "A pointer to the newly created Object."
+                ]
+            },
+            "arguments": [
+                {
+                    "name": "p_classname",
+                    "type": "GDExtensionConstStringNamePtr",
+                    "description": [
+                        "A pointer to a StringName with the class name."
+                    ]
+                }
+            ],
+            "description": [
+                "Constructs an Object of the requested class.",
+                "The passed class must be a built-in godot class, or an already-registered extension class. In both cases, object_set_instance() should be called to fully initialize the object.",
+                "If the type is a subtype of RefCounted, it already has a refcount of 1. The caller must take ownership the refcount and is responsible for decrementing it again when the object is no longer needed.",
+                "",
+                "\"NOTIFICATION_POSTINITIALIZE\" must be sent after construction."
+            ],
+            "since": "4.7"
         },
         {
             "name": "classdb_get_method_bind",
@@ -8671,13 +8564,14 @@
             "description": [
                 "Gets a pointer uniquely identifying the given built-in class in the ClassDB."
             ],
-            "since": "4.1"
+            "since": "4.1",
+            "deprecated": {
+                "since": "4.7",
+                "message": "No longer needed. Use the `is_class` method on `Object` instead."
+            }
         },
         {
             "name": "classdb_register_extension_class",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8715,14 +8609,11 @@
             "since": "4.1",
             "deprecated": {
                 "since": "4.2",
-                "replace_with": "classdb_register_extension_class5"
+                "replace_with": "classdb_register_extension_class6"
             }
         },
         {
             "name": "classdb_register_extension_class2",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8760,14 +8651,11 @@
             "since": "4.2",
             "deprecated": {
                 "since": "4.3",
-                "replace_with": "classdb_register_extension_class5"
+                "replace_with": "classdb_register_extension_class6"
             }
         },
         {
             "name": "classdb_register_extension_class3",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8805,14 +8693,11 @@
             "since": "4.3",
             "deprecated": {
                 "since": "4.4",
-                "replace_with": "classdb_register_extension_class5"
+                "replace_with": "classdb_register_extension_class6"
             }
         },
         {
             "name": "classdb_register_extension_class4",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8850,14 +8735,11 @@
             "since": "4.4",
             "deprecated": {
                 "since": "4.5",
-                "replace_with": "classdb_register_extension_class5"
+                "replace_with": "classdb_register_extension_class6"
             }
         },
         {
             "name": "classdb_register_extension_class5",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8892,13 +8774,52 @@
                 "Registers an extension class in the ClassDB.",
                 "Provided struct can be safely freed once the function returns."
             ],
-            "since": "4.5"
+            "since": "4.5",
+            "deprecated": {
+                "since": "4.7",
+                "replace_with": "classdb_register_extension_class6"
+            }
+        },
+        {
+            "name": "classdb_register_extension_class6",
+            "arguments": [
+                {
+                    "name": "p_library",
+                    "type": "GDExtensionClassLibraryPtr",
+                    "description": [
+                        "A pointer the library received by the GDExtension's entry point function."
+                    ]
+                },
+                {
+                    "name": "p_class_name",
+                    "type": "GDExtensionConstStringNamePtr",
+                    "description": [
+                        "A pointer to a StringName with the class name."
+                    ]
+                },
+                {
+                    "name": "p_parent_class_name",
+                    "type": "GDExtensionConstStringNamePtr",
+                    "description": [
+                        "A pointer to a StringName with the parent class name."
+                    ]
+                },
+                {
+                    "name": "p_extension_funcs",
+                    "type": "const GDExtensionClassCreationInfo6*",
+                    "description": [
+                        "A pointer to a GDExtensionClassCreationInfo6 struct."
+                    ]
+                }
+            ],
+            "description": [
+                "Registers an extension class in the ClassDB.",
+                "Provided struct can be safely freed once the function returns."
+            ],
+            "since": "4.7"
         },
         {
             "name": "classdb_register_extension_class_method",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8930,9 +8851,6 @@
         },
         {
             "name": "classdb_register_extension_class_virtual_method",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8964,9 +8882,6 @@
         },
         {
             "name": "classdb_register_extension_class_integer_constant",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9021,9 +8936,6 @@
         },
         {
             "name": "classdb_register_extension_class_property",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9069,9 +8981,6 @@
         },
         {
             "name": "classdb_register_extension_class_property_indexed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9124,9 +9033,6 @@
         },
         {
             "name": "classdb_register_extension_class_property_group",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9164,9 +9070,6 @@
         },
         {
             "name": "classdb_register_extension_class_property_subgroup",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9204,9 +9107,6 @@
         },
         {
             "name": "classdb_register_extension_class_signal",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9252,9 +9152,6 @@
         },
         {
             "name": "classdb_unregister_extension_class",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9279,9 +9176,6 @@
         },
         {
             "name": "get_library_path",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9305,9 +9199,6 @@
         },
         {
             "name": "editor_add_plugin",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_class_name",
@@ -9325,9 +9216,6 @@
         },
         {
             "name": "editor_remove_plugin",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_class_name",
@@ -9344,9 +9232,6 @@
         },
         {
             "name": "editor_help_load_xml_from_utf8_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_data",
@@ -9365,9 +9250,6 @@
         },
         {
             "name": "editor_help_load_xml_from_utf8_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_data",
@@ -9393,9 +9275,6 @@
         },
         {
             "name": "editor_register_get_classes_used_callback",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9423,9 +9302,6 @@
         },
         {
             "name": "register_main_loop_callbacks",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",

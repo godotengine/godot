@@ -100,7 +100,7 @@ SSEffects::SSEffects() {
 	}
 
 	// Initialize Screen Space Indirect Lighting (SSIL)
-	ssil_set_quality(RS::EnvironmentSSILQuality(int(GLOBAL_GET("rendering/environment/ssil/quality"))), GLOBAL_GET("rendering/environment/ssil/half_size"), GLOBAL_GET("rendering/environment/ssil/adaptive_target"), GLOBAL_GET("rendering/environment/ssil/blur_passes"), GLOBAL_GET("rendering/environment/ssil/fadeout_from"), GLOBAL_GET("rendering/environment/ssil/fadeout_to"));
+	ssil_set_quality(RSE::EnvironmentSSILQuality(int(GLOBAL_GET("rendering/environment/ssil/quality"))), GLOBAL_GET("rendering/environment/ssil/half_size"), GLOBAL_GET("rendering/environment/ssil/adaptive_target"), GLOBAL_GET("rendering/environment/ssil/blur_passes"), GLOBAL_GET("rendering/environment/ssil/fadeout_from"), GLOBAL_GET("rendering/environment/ssil/fadeout_to"));
 
 	{
 		Vector<String> ssil_modes;
@@ -177,7 +177,7 @@ SSEffects::SSEffects() {
 	}
 
 	// Initialize Screen Space Ambient Occlusion (SSAO)
-	ssao_set_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
+	ssao_set_quality(RSE::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
 
 	{
 		RD::SamplerState sampler;
@@ -343,7 +343,7 @@ SSEffects::SSEffects() {
 	}
 
 	// Subsurface scattering
-	sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
+	sss_quality = RSE::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
 	sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
 	sss_depth_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale");
 
@@ -518,9 +518,9 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
 	int downsample_mode = SS_EFFECTS_DOWNSAMPLE;
-	bool use_mips = ssao_quality > RS::ENV_SSAO_QUALITY_MEDIUM || ssil_quality > RS::ENV_SSIL_QUALITY_MEDIUM;
+	bool use_mips = ssao_quality > RSE::ENV_SSAO_QUALITY_MEDIUM || ssil_quality > RSE::ENV_SSIL_QUALITY_MEDIUM;
 
-	if (ssao_quality == RS::ENV_SSAO_QUALITY_VERY_LOW && ssil_quality == RS::ENV_SSIL_QUALITY_VERY_LOW) {
+	if (ssao_quality == RSE::ENV_SSAO_QUALITY_VERY_LOW && ssil_quality == RSE::ENV_SSIL_QUALITY_VERY_LOW) {
 		downsample_mode = SS_EFFECTS_DOWNSAMPLE_HALF;
 	} else if (use_mips) {
 		downsample_mode = SS_EFFECTS_DOWNSAMPLE_MIPMAP;
@@ -594,7 +594,7 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 	ss_effects.downsample_push_constant.pixel_size[1] = 1.0 / full_screen_size.y;
 	ss_effects.downsample_push_constant.radius_sq = 1.0;
 
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	RID depth_texture = p_render_buffers->get_depth_texture(p_view);
 	RID depth_mipmap = p_render_buffers->get_texture_slice(RB_SCOPE_SSDS, RB_LINEAR_DEPTH, p_view * 4, depth_index, 4, 1);
@@ -627,7 +627,7 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 
 /* SSIL */
 
-void SSEffects::ssil_set_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+void SSEffects::ssil_set_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 	ssil_quality = p_quality;
 	ssil_half_size = p_half_size;
 	ssil_adaptive_target = p_adaptive_target;
@@ -641,7 +641,7 @@ void SSEffects::gather_ssil(RD::ComputeListID p_compute_list, const RID *p_ssil_
 	ERR_FAIL_NULL(uniform_set_cache);
 
 	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, p_gather_uniform_set, 0);
-	if ((ssil_quality == RS::ENV_SSIL_QUALITY_ULTRA) && !p_adaptive_base_pass) {
+	if ((ssil_quality == RSE::ENV_SSIL_QUALITY_ULTRA) && !p_adaptive_base_pass) {
 		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, p_importance_map_uniform_set, 1);
 	}
 	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, p_projection_uniform_set, 3);
@@ -649,7 +649,7 @@ void SSEffects::gather_ssil(RD::ComputeListID p_compute_list, const RID *p_ssil_
 	RID shader = ssil.gather_shader.version_get_shader(ssil.gather_shader_version, 0);
 
 	for (int i = 0; i < 4; i++) {
-		if ((ssil_quality == RS::ENV_SSIL_QUALITY_VERY_LOW) && ((i == 1) || (i == 2))) {
+		if ((ssil_quality == RSE::ENV_SSIL_QUALITY_VERY_LOW) && ((i == 1) || (i == 2))) {
 			continue;
 		}
 
@@ -754,8 +754,8 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 	memset(&ssil.gather_push_constant, 0, sizeof(SSILGatherPushConstant));
 
 	RID shader = ssil.gather_shader.version_get_shader(ssil.gather_shader_version, SSIL_GATHER);
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	{
@@ -783,10 +783,10 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 		ssil.gather_push_constant.radius = p_settings.radius;
 		float radius_near_limit = (p_settings.radius * 1.2f);
-		if (ssil_quality <= RS::ENV_SSIL_QUALITY_LOW) {
+		if (ssil_quality <= RSE::ENV_SSIL_QUALITY_LOW) {
 			radius_near_limit *= 1.50f;
 
-			if (ssil_quality == RS::ENV_SSIL_QUALITY_VERY_LOW) {
+			if (ssil_quality == RSE::ENV_SSIL_QUALITY_VERY_LOW) {
 				ssil.gather_push_constant.radius *= 0.8f;
 			}
 		}
@@ -869,7 +869,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			importance_map_uniform_set = uniform_set_cache->get_cache(shader_adaptive, 1, u_pong, u_importance_map, u_load_counter);
 		}
 
-		if (ssil_quality == RS::ENV_SSIL_QUALITY_ULTRA) {
+		if (ssil_quality == RSE::ENV_SSIL_QUALITY_ULTRA) {
 			RD::get_singleton()->draw_command_begin_label("Generate Importance Map");
 			ssil.importance_map_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssil_buffers.buffer_width;
 			ssil.importance_map_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssil_buffers.buffer_height;
@@ -932,13 +932,13 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		ssil.blur_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssil_buffers.buffer_width;
 		ssil.blur_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssil_buffers.buffer_height;
 
-		int blur_passes = ssil_quality > RS::ENV_SSIL_QUALITY_VERY_LOW ? ssil_blur_passes : 1;
+		int blur_passes = ssil_quality > RSE::ENV_SSIL_QUALITY_VERY_LOW ? ssil_blur_passes : 1;
 
 		shader = ssil.blur_shader.version_get_shader(ssil.blur_shader_version, 0);
 
 		for (int pass = 0; pass < blur_passes; pass++) {
 			int blur_pipeline = SSIL_BLUR_PASS;
-			if (ssil_quality > RS::ENV_SSIL_QUALITY_VERY_LOW) {
+			if (ssil_quality > RSE::ENV_SSIL_QUALITY_VERY_LOW) {
 				blur_pipeline = SSIL_BLUR_PASS_SMART;
 				if (pass < blur_passes - 2) {
 					blur_pipeline = SSIL_BLUR_PASS_WIDE;
@@ -948,13 +948,13 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			RID blur_shader = ssil.blur_shader.version_get_shader(ssil.blur_shader_version, blur_pipeline - SSIL_BLUR_PASS);
 
 			for (int i = 0; i < 4; i++) {
-				if ((ssil_quality == RS::ENV_SSIL_QUALITY_VERY_LOW) && ((i == 1) || (i == 2))) {
+				if ((ssil_quality == RSE::ENV_SSIL_QUALITY_VERY_LOW) && ((i == 1) || (i == 2))) {
 					continue;
 				}
 
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_pipeline].get_rid());
 				if (pass % 2 == 0) {
-					if (ssil_quality == RS::ENV_SSIL_QUALITY_VERY_LOW) {
+					if (ssil_quality == RSE::ENV_SSIL_QUALITY_VERY_LOW) {
 						RD::Uniform u_ssil_slice(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, deinterleaved_slices[i] }));
 						RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(blur_shader, 0, u_ssil_slice), 0);
 					} else {
@@ -965,7 +965,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 					RD::Uniform u_ssil_pong_slice(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ deinterleaved_pong_slices[i] }));
 					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(blur_shader, 1, u_ssil_pong_slice), 1);
 				} else {
-					if (ssil_quality == RS::ENV_SSIL_QUALITY_VERY_LOW) {
+					if (ssil_quality == RSE::ENV_SSIL_QUALITY_VERY_LOW) {
 						RD::Uniform u_ssil_pong_slice(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, deinterleaved_pong_slices[i] }));
 						RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(blur_shader, 0, u_ssil_pong_slice), 0);
 					} else {
@@ -1003,9 +1003,9 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		ssil.interleave_push_constant.size_modifier = uint32_t(ssil_half_size ? 4 : 2);
 
 		int interleave_pipeline = SSIL_INTERLEAVE_HALF;
-		if (ssil_quality == RS::ENV_SSIL_QUALITY_LOW) {
+		if (ssil_quality == RSE::ENV_SSIL_QUALITY_LOW) {
 			interleave_pipeline = SSIL_INTERLEAVE;
-		} else if (ssil_quality >= RS::ENV_SSIL_QUALITY_MEDIUM) {
+		} else if (ssil_quality >= RSE::ENV_SSIL_QUALITY_MEDIUM) {
 			interleave_pipeline = SSIL_INTERLEAVE_SMART;
 		}
 
@@ -1017,7 +1017,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		RD::Uniform u_destination(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ final }));
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_destination), 0);
 
-		if (ssil_quality > RS::ENV_SSIL_QUALITY_VERY_LOW && ssil_blur_passes % 2 == 0) {
+		if (ssil_quality > RSE::ENV_SSIL_QUALITY_VERY_LOW && ssil_blur_passes % 2 == 0) {
 			RD::Uniform u_ssil(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, deinterleaved }));
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_ssil), 1);
 		} else {
@@ -1045,7 +1045,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 /* SSAO */
 
-void SSEffects::ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+void SSEffects::ssao_set_quality(RSE::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 	ssao_quality = p_quality;
 	ssao_half_size = p_half_size;
 	ssao_adaptive_target = p_adaptive_target;
@@ -1059,14 +1059,14 @@ void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_sl
 	ERR_FAIL_NULL(uniform_set_cache);
 
 	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, p_gather_uniform_set, 0);
-	if ((ssao_quality == RS::ENV_SSAO_QUALITY_ULTRA) && !p_adaptive_base_pass) {
+	if ((ssao_quality == RSE::ENV_SSAO_QUALITY_ULTRA) && !p_adaptive_base_pass) {
 		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, p_importance_map_uniform_set, 1);
 	}
 
 	RID shader = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, 1); //
 
 	for (int i = 0; i < 4; i++) {
-		if ((ssao_quality == RS::ENV_SSAO_QUALITY_VERY_LOW) && ((i == 1) || (i == 2))) {
+		if ((ssao_quality == RSE::ENV_SSAO_QUALITY_VERY_LOW) && ((i == 1) || (i == 2))) {
 			continue;
 		}
 
@@ -1152,7 +1152,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 	/* FIRST PASS */
 
 	RID shader = ssao.gather_shader.version_get_shader(ssao.gather_shader_version, SSAO_GATHER);
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	RD::get_singleton()->draw_command_begin_label("Process Screen-Space Ambient Occlusion");
 	/* SECOND PASS */
@@ -1180,10 +1180,10 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 
 		ssao.gather_push_constant.radius = p_settings.radius;
 		float radius_near_limit = (p_settings.radius * 1.2f);
-		if (ssao_quality <= RS::ENV_SSAO_QUALITY_LOW) {
+		if (ssao_quality <= RSE::ENV_SSAO_QUALITY_LOW) {
 			radius_near_limit *= 1.50f;
 
-			if (ssao_quality == RS::ENV_SSAO_QUALITY_VERY_LOW) {
+			if (ssao_quality == RSE::ENV_SSAO_QUALITY_VERY_LOW) {
 				ssao.gather_push_constant.radius *= 0.8f;
 			}
 		}
@@ -1252,7 +1252,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 			importance_map_uniform_set = uniform_set_cache->get_cache(shader_adaptive, 1, u_pong, u_importance_map, u_load_counter);
 		}
 
-		if (ssao_quality == RS::ENV_SSAO_QUALITY_ULTRA) {
+		if (ssao_quality == RSE::ENV_SSAO_QUALITY_ULTRA) {
 			RD::get_singleton()->draw_command_begin_label("Generate Importance Map");
 			ssao.importance_map_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssao_buffers.buffer_width;
 			ssao.importance_map_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssao_buffers.buffer_height;
@@ -1323,13 +1323,13 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		ssao.blur_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssao_buffers.buffer_width;
 		ssao.blur_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssao_buffers.buffer_height;
 
-		int blur_passes = ssao_quality > RS::ENV_SSAO_QUALITY_VERY_LOW ? ssao_blur_passes : 1;
+		int blur_passes = ssao_quality > RSE::ENV_SSAO_QUALITY_VERY_LOW ? ssao_blur_passes : 1;
 
 		shader = ssao.blur_shader.version_get_shader(ssao.blur_shader_version, 0);
 
 		for (int pass = 0; pass < blur_passes; pass++) {
 			int blur_pipeline = SSAO_BLUR_PASS;
-			if (ssao_quality > RS::ENV_SSAO_QUALITY_VERY_LOW) {
+			if (ssao_quality > RSE::ENV_SSAO_QUALITY_VERY_LOW) {
 				if (pass < blur_passes - 2) {
 					blur_pipeline = SSAO_BLUR_PASS_WIDE;
 				} else {
@@ -1338,14 +1338,14 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 			}
 
 			for (int i = 0; i < 4; i++) {
-				if ((ssao_quality == RS::ENV_SSAO_QUALITY_VERY_LOW) && ((i == 1) || (i == 2))) {
+				if ((ssao_quality == RSE::ENV_SSAO_QUALITY_VERY_LOW) && ((i == 1) || (i == 2))) {
 					continue;
 				}
 
 				RID blur_shader = ssao.blur_shader.version_get_shader(ssao.blur_shader_version, blur_pipeline - SSAO_BLUR_PASS);
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[blur_pipeline].get_rid());
 				if (pass % 2 == 0) {
-					if (ssao_quality == RS::ENV_SSAO_QUALITY_VERY_LOW) {
+					if (ssao_quality == RSE::ENV_SSAO_QUALITY_VERY_LOW) {
 						RD::Uniform u_ao_slices_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, ao_deinterleaved_slices[i] }));
 						RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(blur_shader, 0, u_ao_slices_with_sampler), 0);
 					} else {
@@ -1356,7 +1356,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 					RD::Uniform u_ao_pong_slices(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ ao_pong_slices[i] }));
 					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(blur_shader, 1, u_ao_pong_slices), 1);
 				} else {
-					if (ssao_quality == RS::ENV_SSAO_QUALITY_VERY_LOW) {
+					if (ssao_quality == RSE::ENV_SSAO_QUALITY_VERY_LOW) {
 						RD::Uniform u_ao_pong_slices_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, ao_pong_slices[i] }));
 						RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(blur_shader, 0, u_ao_pong_slices_with_sampler), 0);
 					} else {
@@ -1390,9 +1390,9 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		shader = ssao.interleave_shader.version_get_shader(ssao.interleave_shader_version, 0);
 
 		int interleave_pipeline = SSAO_INTERLEAVE_HALF;
-		if (ssao_quality == RS::ENV_SSAO_QUALITY_LOW) {
+		if (ssao_quality == RSE::ENV_SSAO_QUALITY_LOW) {
 			interleave_pipeline = SSAO_INTERLEAVE;
-		} else if (ssao_quality >= RS::ENV_SSAO_QUALITY_MEDIUM) {
+		} else if (ssao_quality >= RSE::ENV_SSAO_QUALITY_MEDIUM) {
 			interleave_pipeline = SSAO_INTERLEAVE_SMART;
 		}
 
@@ -1402,7 +1402,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		RD::Uniform u_upscale_buffer(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ ao_final }));
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(interleave_shader, 0, u_upscale_buffer), 0);
 
-		if (ssao_quality > RS::ENV_SSAO_QUALITY_VERY_LOW && ssao_blur_passes % 2 == 0) {
+		if (ssao_quality > RSE::ENV_SSAO_QUALITY_VERY_LOW && ssao_blur_passes % 2 == 0) {
 			RD::Uniform u_ao(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, ao_deinterleaved }));
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(interleave_shader, 1, u_ao), 1);
 		} else {
@@ -1501,8 +1501,8 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 		RD::get_singleton()->buffer_update(ssr.ubo, 0, sizeof(ScreenSpaceReflectionSceneData), &scene_data);
 	}
 
-	RID linear_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-	RID nearest_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID linear_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID nearest_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	if (ssr_half_size) {
 		RD::get_singleton()->draw_command_begin_label("SSR Downsample");
@@ -1733,11 +1733,11 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 
 /* Subsurface scattering */
 
-void SSEffects::sss_set_quality(RS::SubSurfaceScatteringQuality p_quality) {
+void SSEffects::sss_set_quality(RSE::SubSurfaceScatteringQuality p_quality) {
 	sss_quality = p_quality;
 }
 
-RS::SubSurfaceScatteringQuality SSEffects::sss_get_quality() const {
+RSE::SubSurfaceScatteringQuality SSEffects::sss_get_quality() const {
 	return sss_quality;
 }
 
@@ -1752,7 +1752,7 @@ void SSEffects::sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffer
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	// Our intermediate buffer is only created if we haven't created it already.
 	RD::DataFormat format = p_render_buffers->get_base_data_format();

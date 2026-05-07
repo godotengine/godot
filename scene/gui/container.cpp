@@ -30,6 +30,10 @@
 
 #include "container.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "servers/display/accessibility_server.h"
+
 void Container::_child_minsize_changed() {
 	update_minimum_size();
 	queue_sort();
@@ -45,6 +49,7 @@ void Container::add_child_notify(Node *p_child) {
 
 	control->connect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
 	control->connect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SceneStringName(maximum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->connect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
 
 	update_minimum_size();
@@ -72,6 +77,7 @@ void Container::remove_child_notify(Node *p_child) {
 
 	control->disconnect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
 	control->disconnect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->disconnect(SceneStringName(maximum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->disconnect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
 
 	update_minimum_size();
@@ -90,6 +96,7 @@ void Container::_sort_children() {
 	notification(NOTIFICATION_SORT_CHILDREN);
 	emit_signal(SceneStringName(sort_children));
 	pending_sort = false;
+	layout_pending_finish();
 }
 
 void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &p_rect) {
@@ -98,27 +105,36 @@ void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &
 
 	bool rtl = is_layout_rtl();
 	Size2 minsize = p_child->get_combined_minimum_size();
+	Size2 maxsize = p_child->get_combined_maximum_size();
 	Rect2 r = p_rect;
+	BitField<SizeFlags> h_size_flags = p_child->get_h_size_flags();
+	BitField<SizeFlags> v_size_flags = p_child->get_v_size_flags();
 
-	if (!(p_child->get_h_size_flags().has_flag(SIZE_FILL))) {
-		r.size.x = minsize.width;
-		if (p_child->get_h_size_flags().has_flag(SIZE_SHRINK_END)) {
-			r.position.x += rtl ? 0 : (p_rect.size.width - minsize.width);
-		} else if (p_child->get_h_size_flags().has_flag(SIZE_SHRINK_CENTER)) {
-			r.position.x += Math::floor((p_rect.size.x - minsize.width) / 2);
+	if (!h_size_flags.has_flag(SIZE_FILL)) {
+		float final_width = minsize.width;
+		if (maxsize.width >= 0) {
+			final_width = MIN(final_width, maxsize.width);
+		}
+		r.size.x = final_width;
+		if (h_size_flags.has_flag(SIZE_SHRINK_END)) {
+			r.position.x += rtl ? 0 : (p_rect.size.width - final_width);
+		} else if (h_size_flags.has_flag(SIZE_SHRINK_CENTER)) {
+			r.position.x += Math::floor((p_rect.size.x - final_width) / 2);
 		} else {
-			r.position.x += rtl ? (p_rect.size.width - minsize.width) : 0;
+			r.position.x += rtl ? (p_rect.size.width - final_width) : 0;
 		}
 	}
 
-	if (!(p_child->get_v_size_flags().has_flag(SIZE_FILL))) {
-		r.size.y = minsize.y;
-		if (p_child->get_v_size_flags().has_flag(SIZE_SHRINK_END)) {
-			r.position.y += p_rect.size.height - minsize.height;
-		} else if (p_child->get_v_size_flags().has_flag(SIZE_SHRINK_CENTER)) {
-			r.position.y += Math::floor((p_rect.size.y - minsize.height) / 2);
-		} else {
-			r.position.y += 0;
+	if (!v_size_flags.has_flag(SIZE_FILL)) {
+		float final_height = minsize.y;
+		if (maxsize.height >= 0) {
+			final_height = MIN(final_height, maxsize.height);
+		}
+		r.size.y = final_height;
+		if (v_size_flags.has_flag(SIZE_SHRINK_END)) {
+			r.position.y += p_rect.size.height - final_height;
+		} else if (v_size_flags.has_flag(SIZE_SHRINK_CENTER)) {
+			r.position.y += Math::floor((p_rect.size.y - final_height) / 2);
 		}
 	}
 
@@ -136,6 +152,7 @@ void Container::queue_sort() {
 		return;
 	}
 
+	layout_pending_start();
 	callable_mp(this, &Container::_sort_children).call_deferred();
 	pending_sort = true;
 }
@@ -188,7 +205,11 @@ void Container::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+			if (accessibility_region) {
+				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_REGION);
+			} else {
+				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
+			}
 		} break;
 
 		case NOTIFICATION_RESIZED:
@@ -204,6 +225,18 @@ void Container::_notification(int p_what) {
 	}
 }
 
+void Container::set_accessibility_region(bool p_region) {
+	ERR_MAIN_THREAD_GUARD;
+	if (accessibility_region != p_region) {
+		accessibility_region = p_region;
+		queue_accessibility_update();
+	}
+}
+
+bool Container::is_accessibility_region() const {
+	return accessibility_region;
+}
+
 PackedStringArray Container::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
 
@@ -217,6 +250,8 @@ PackedStringArray Container::get_configuration_warnings() const {
 void Container::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
 	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);
+	ClassDB::bind_method(D_METHOD("set_accessibility_region", "region"), &Container::set_accessibility_region);
+	ClassDB::bind_method(D_METHOD("is_accessibility_region"), &Container::is_accessibility_region);
 
 	GDVIRTUAL_BIND(_get_allowed_size_flags_horizontal);
 	GDVIRTUAL_BIND(_get_allowed_size_flags_vertical);
@@ -226,9 +261,13 @@ void Container::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("pre_sort_children"));
 	ADD_SIGNAL(MethodInfo("sort_children"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accessibility_region"), "set_accessibility_region", "is_accessibility_region");
 }
 
 Container::Container() {
 	// All containers should let mouse events pass by default.
 	set_mouse_filter(MOUSE_FILTER_PASS);
+	// All containers should contain their children within their maximum size by default.
+	set_propagate_maximum_size(true);
 }

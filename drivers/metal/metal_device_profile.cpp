@@ -30,7 +30,7 @@
 
 #include "metal_device_profile.h"
 
-#include "metal_utils.h"
+#include "drivers/metal/metal_utils.h"
 
 Mutex MetalDeviceProfile::profiles_lock;
 HashMap<MetalDeviceProfile::ProfileKey, MetalDeviceProfile> MetalDeviceProfile::profiles;

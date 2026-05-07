@@ -32,9 +32,9 @@ inline const char *GetConfigurationString()
 #else
 	#error Unknown CPU architecture
 #endif
-#if JPH_CPU_ADDRESS_BITS == 64
+#if JPH_CPU_ARCH_BITS == 64
 		"64-bit "
-#elif JPH_CPU_ADDRESS_BITS == 32
+#elif JPH_CPU_ARCH_BITS == 32
 		"32-bit "
 #endif
 		"with instructions: "

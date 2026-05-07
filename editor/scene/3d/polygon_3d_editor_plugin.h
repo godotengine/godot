@@ -31,13 +31,14 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/physics/collision_polygon_3d.h"
 #include "scene/gui/box_container.h"
-#include "scene/resources/immediate_mesh.h"
 
+class ArrayMesh;
 class CanvasItemEditor;
+class ImmediateMesh;
 class MenuButton;
+class MeshInstance3D;
+class StandardMaterial3D;
 
 class Polygon3DEditor : public HBoxContainer {
 	GDCLASS(Polygon3DEditor, HBoxContainer);
@@ -102,7 +103,6 @@ public:
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return polygon_editor->forward_3d_gui_input(p_camera, p_event); }
 
 	virtual String get_plugin_name() const override { return "Polygon3DEditor"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

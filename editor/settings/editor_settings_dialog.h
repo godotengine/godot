@@ -79,7 +79,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	virtual void ok_pressed() override;
 
 	void _settings_changed();
-	void _settings_property_edited(const String &p_name);
+	void _settings_property_edited();
 	void _settings_save();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -107,7 +107,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	PropertyInfo _create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name);
 	String _get_shortcut_button_string(const String &p_shortcut_name);
 
-	bool _should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const;
+	bool _should_display_shortcut(const String &p_path, const Array &p_events, const String &p_name = String()) const;
 
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
@@ -131,6 +131,8 @@ protected:
 public:
 	void popup_edit_settings();
 	static void update_navigation_preset();
+	void set_current_section(const String &p_section);
+	void set_advanced_mode_enabled(bool p_enabled);
 
 	EditorSettingsDialog();
 };

@@ -114,13 +114,16 @@
 # Timeo Buergler <buergler.timeo@gmail.com>, 2025.
 # gebirgsbaerbel <reichart.barbara@gmail.com>, 2025.
 # IDontPutRealNames <scriptoblox@gmail.com>, 2025.
+# Albert Sobral <albertsobral610@gmail.com>, 2025.
+# clride <david.g.schilcher@gmail.com>, 2025.
+# Maximilian Wey <wey.maximilian@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-06 11:00+0000\n"
-"Last-Translator: IDontPutRealNames <scriptoblox@gmail.com>\n"
+"PO-Revision-Date: 2026-01-11 23:26+0000\n"
+"Last-Translator: Maximilian Wey <wey.maximilian@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
 "Language: de\n"
@@ -128,7 +131,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -177,6 +180,9 @@ msgstr "Eigener Nutzerverzeichnisname"
 
 msgid "Project Settings Override"
 msgstr "Projekteinstellungen überschreiben"
+
+msgid "Disable Project Settings Override"
+msgstr "Überschreiben der Projekteinstellungen deaktivieren"
 
 msgid "Main Loop Type"
 msgstr "Typ der Hauptschleife"
@@ -279,6 +285,9 @@ msgstr "Winkelinterpolationstyp-Konflikt prüfen"
 
 msgid "Compatibility"
 msgstr "Kompatibilität"
+
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "Standart Elternteil-Skelett im Netz-Beispiel 3D"
 
 msgid "Audio"
 msgstr "Audio"
@@ -436,6 +445,9 @@ msgstr "Allgemein"
 msgid "Snap Controls to Pixels"
 msgstr "Control-Vectices auf Pixeln einrasten"
 
+msgid "Show Focus State on Pointer Event"
+msgstr "Zeige fokussierten Zustand auf Zeiger Event"
+
 msgid "Fonts"
 msgstr "Schriftarten"
 
@@ -573,6 +585,9 @@ msgstr "Backen benutzt mehrere Threads"
 
 msgid "Baking Use High Priority Threads"
 msgstr "Backen benutzt mehrere Threads mit hoher Priorität"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "NaviNetz Rand zusammenführen Fehler"
 
 msgid "NavMesh Cell Size Mismatch"
 msgstr "NavMesh Cellen Grösen stimmen nich überein"
@@ -865,6 +880,9 @@ msgstr "TCP"
 msgid "Connect Timeout Seconds"
 msgstr "Verbindungszeit-Überschreitung in Sekunden"
 
+msgid "Unix"
+msgstr "Unix"
+
 msgid "Packet Peer Stream"
 msgstr "Paket-Peer-Stream"
 
@@ -978,6 +996,9 @@ msgstr "Sync-Haltepunkte"
 
 msgid "Title"
 msgstr "Titel"
+
+msgid "Global"
+msgstr "Global"
 
 msgid "Transient"
 msgstr "Flüchtig"
@@ -2003,6 +2024,9 @@ msgstr "Hauptschriftart Fett"
 msgid "Code Font"
 msgstr "Quellcodeschriftart"
 
+msgid "Dragging Hover Wait Seconds"
+msgstr "Ziehen schweben warte Sekunde/n"
+
 msgid "Separate Distraction Mode"
 msgstr "Separater ablenkungsfreier Modus"
 
@@ -2061,7 +2085,7 @@ msgid "Scene Tree"
 msgstr "Szenenbaum"
 
 msgid "Ask Before Revoking Unique Name"
-msgstr "Fragen, bevor eindeutiger Name abgelehnt wird"
+msgstr "Vor dem Wiederrufen einzigartiger Namen fragen"
 
 msgid "Inspector"
 msgstr "Inspektor"
@@ -2239,6 +2263,9 @@ msgstr "Binäre Ressourcen komprimieren"
 
 msgid "Safe Save on Backup then Rename"
 msgstr "Sicheres Speichern beim Backup, dann umbenennen"
+
+msgid "Warn on Saving Large Text Resources"
+msgstr "Warnung beim Speichern großer Textressourcen"
 
 msgid "File Server"
 msgstr "Dateiserver"
@@ -2699,6 +2726,9 @@ msgstr "CSG"
 msgid "GridMap Grid"
 msgstr "GridMap-Raster"
 
+msgid "IK Chain"
+msgstr "IK Kette"
+
 msgid "Gizmo Settings"
 msgstr "Gizmo-Einstellungen"
 
@@ -2887,6 +2917,9 @@ msgstr "Bézier-Tracks erstellen als Default"
 
 msgid "Default Create Reset Tracks"
 msgstr "Reset-Tracks erstellen als Default"
+
+msgid "Insert at Current Time"
+msgstr "Einsetzen wenn aktuelle Uhrzeit"
 
 msgid "Onion Layers Past Color"
 msgstr "Farbe der vorigen Zwiebelschicht"

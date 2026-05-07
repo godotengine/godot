@@ -21,6 +21,9 @@ class DebugRenderer;
 using Constraints = Array<Ref<Constraint>>;
 
 /// A constraint manager manages all constraints of the same type
+///
+/// WARNING: This class is an internal part of PhysicsSystem, it has no functions that can be called by users of the library.
+/// Its functionality is exposed through PhysicsSystem and BodyInterface.
 class JPH_EXPORT ConstraintManager : public NonCopyable
 {
 public:

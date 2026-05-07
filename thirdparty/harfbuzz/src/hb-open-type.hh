@@ -62,7 +62,7 @@ struct NumType
   typedef Type type;
   /* For reason we define cast out operator for signed/unsigned, instead of Type, see:
    * https://github.com/harfbuzz/harfbuzz/pull/2875/commits/09836013995cab2b9f07577a179ad7b024130467 */
-  typedef typename std::conditional<std::is_integral<Type>::value,
+  typedef typename std::conditional<std::is_integral<Type>::value && sizeof (Type) <= sizeof(int),
 				     typename std::conditional<std::is_signed<Type>::value, signed, unsigned>::type,
 				     Type>::type WideType;
 
@@ -118,6 +118,8 @@ typedef NumType<true, uint16_t> HBUINT16;	/* 16-bit big-endian unsigned integer.
 typedef NumType<true, int16_t>  HBINT16;	/* 16-bit big-endian signed integer. */
 typedef NumType<true, uint32_t> HBUINT32;	/* 32-bit big-endian unsigned integer. */
 typedef NumType<true, int32_t>  HBINT32;	/* 32-bit big-endian signed integer. */
+typedef NumType<true, uint64_t> HBUINT64;	/* 64-bit big-endian unsigned integer. */
+typedef NumType<true, int64_t>  HBINT64;	/* 64-bit big-endian signed integer. */
 /* Note: we cannot defined a signed HBINT24 because there's no corresponding C type.
  * Works for unsigned, but not signed, since we rely on compiler for sign-extension. */
 typedef NumType<true, uint32_t, 3> HBUINT24;	/* 24-bit big-endian unsigned integer. */
@@ -126,6 +128,8 @@ typedef NumType<false, uint16_t> HBUINT16LE;	/* 16-bit little-endian unsigned in
 typedef NumType<false, int16_t>  HBINT16LE;	/* 16-bit little-endian signed integer. */
 typedef NumType<false, uint32_t> HBUINT32LE;	/* 32-bit little-endian unsigned integer. */
 typedef NumType<false, int32_t>  HBINT32LE;	/* 32-bit little-endian signed integer. */
+typedef NumType<false, uint64_t> HBUINT64LE;	/* 64-bit little-endian unsigned integer. */
+typedef NumType<false, int64_t>  HBINT64LE;	/* 64-bit little-endian signed integer. */
 
 typedef NumType<true,  float>  HBFLOAT32BE;	/* 32-bit little-endian floating point number. */
 typedef NumType<true,  double> HBFLOAT64BE;	/* 64-bit little-endian floating point number. */
@@ -144,7 +148,7 @@ struct HBUINT15 : HBUINT16
 /* 32-bit unsigned integer with variable encoding. */
 struct HBUINT32VAR
 {
-  unsigned get_size () const
+  size_t get_size () const
   {
     unsigned b0 = v[0];
     if (b0 < 0x80)
@@ -159,7 +163,7 @@ struct HBUINT32VAR
       return 5;
   }
 
-  static unsigned get_size (uint32_t v)
+  static size_t get_size (uint32_t v)
   {
     if (v < 0x80)
       return 1;
@@ -522,16 +526,9 @@ struct OffsetTo : Offset<OffsetType, has_null>
     return_trace (sanitize_shallow (c, base) &&
 		  hb_barrier () &&
 		  (this->is_null () ||
-		   c->dispatch (StructAtOffset<Type> (base, *this), std::forward<Ts> (ds)...) ||
-		   neuter (c)));
+		   c->dispatch (StructAtOffset<Type> (base, *this), std::forward<Ts> (ds)...)));
   }
 
-  /* Set the offset to Null */
-  bool neuter (hb_sanitize_context_t *c) const
-  {
-    if (!has_null) return false;
-    return c->try_set (this, 0);
-  }
   DEFINE_SIZE_STATIC (sizeof (OffsetType));
 };
 /* Partial specializations. */
@@ -566,7 +563,7 @@ struct UnsizedArrayOf
     return arrayZ[i];
   }
 
-  static unsigned int get_size (unsigned int len)
+  static size_t get_size (unsigned int len)
   { return len * Type::static_size; }
 
   template <typename T> operator T * () { return arrayZ; }
@@ -728,7 +725,7 @@ struct ArrayOf
     return arrayZ[i];
   }
 
-  unsigned int get_size () const
+  size_t get_size () const
   { return len.static_size + len * Type::static_size; }
 
   explicit operator bool () const { return len; }
@@ -912,7 +909,7 @@ struct HeadlessArrayOf
     hb_barrier ();
     return arrayZ[i-1];
   }
-  unsigned int get_size () const
+  size_t get_size () const
   { return lenP1.static_size + get_length () * Type::static_size; }
 
   unsigned get_length () const { return lenP1 ? lenP1 - 1 : 0; }
@@ -1006,7 +1003,7 @@ struct ArrayOfM1
     hb_barrier ();
     return arrayZ[i];
   }
-  unsigned int get_size () const
+  size_t get_size () const
   { return lenM1.static_size + (lenM1 + 1) * Type::static_size; }
 
   template <typename ...Ts>
@@ -1200,7 +1197,7 @@ struct VarSizedBinSearchArrayOf
   }
   unsigned int get_length () const
   { return header.nUnits - last_is_terminator (); }
-  unsigned int get_size () const
+  size_t get_size () const
   { return header.static_size + header.nUnits * header.unitSize; }
 
   template <typename ...Ts>
@@ -1278,11 +1275,22 @@ struct CFFIndex
     if (unlikely (!serialize_header (c, +it, data_size, min_off_size))) return_trace (false);
     unsigned char *ret = c->allocate_size<unsigned char> (data_size, false);
     if (unlikely (!ret)) return_trace (false);
+    unsigned remaining = data_size;
     for (const auto &_ : +it)
     {
       unsigned len = _.length;
+
       if (!len)
 	continue;
+
+      if (unlikely (len > remaining)) {
+        // We have more bytes to write then the computed data size, so the size calculation
+        // must have encountered overflow.
+        return_trace (c->check_success (false, HB_SERIALIZE_ERROR_INT_OVERFLOW));
+      }
+
+      remaining -= len;
+
       if (len <= 1)
       {
 	*ret++ = *_.arrayZ;
@@ -1453,7 +1461,7 @@ struct CFFIndex
     return hb_ubytes_t (data_base () + offset0, offset1 - offset0);
   }
 
-  unsigned int get_size () const
+  size_t get_size () const
   {
     if (count)
       return min_size + offSize.static_size + offset_array_size () + (offset_at (count) - 1);
@@ -1718,6 +1726,9 @@ struct TupleValues
   }
 
   template <typename T>
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
   static bool decompile (const HBUINT8 *&p /* IN/OUT */,
 			 hb_vector_t<T> &values /* IN/OUT */,
 			 const HBUINT8 *end,
@@ -1746,8 +1757,8 @@ struct TupleValues
 
       if ((control & VALUES_SIZE_MASK) == VALUES_ARE_ZEROS)
       {
-        for (; i < stop; i++)
-          values.arrayZ[i] = 0;
+	hb_memset (&values.arrayZ[i], 0, (stop - i) * sizeof (T));
+	i = stop;
       }
       else if ((control & VALUES_SIZE_MASK) ==  VALUES_ARE_WORDS)
       {
@@ -1806,7 +1817,7 @@ struct TupleValues
   {
     iter_t (const unsigned char *p_, unsigned len_)
 	    : p (p_), endp (p_ + len_)
-    { if (ensure_run ()) read_value (); }
+    { if (likely (ensure_run ())) read_value (); }
 
     private:
     const unsigned char *p;
@@ -1815,10 +1826,14 @@ struct TupleValues
     signed run_count = 0;
     unsigned width = 0;
 
+    HB_ALWAYS_INLINE
     bool ensure_run ()
     {
       if (likely (run_count > 0)) return true;
-
+      return _ensure_run ();
+    }
+    bool _ensure_run ()
+    {
       if (unlikely (p >= endp))
       {
         run_count = 0;
@@ -1908,10 +1923,15 @@ struct TupleValues
     signed run_count = 0;
     unsigned width = 0;
 
+    HB_ALWAYS_INLINE
     bool ensure_run ()
     {
-      if (run_count > 0) return true;
+      if (likely (run_count > 0)) return true;
+      return _ensure_run ();
+    }
 
+    bool _ensure_run ()
+    {
       if (unlikely (p >= end))
       {
         run_count = 0;
@@ -1939,6 +1959,7 @@ struct TupleValues
       return true;
     }
 
+    public:
     void skip (unsigned n)
     {
       while (n)
@@ -1952,6 +1973,7 @@ struct TupleValues
       }
     }
 
+    private:
     template <bool scaled>
     void _add_to (hb_array_t<float> out, float scale = 1.0f)
     {
@@ -2026,16 +2048,11 @@ struct TupleValues
     public:
     void add_to (hb_array_t<float> out, float scale = 1.0f)
     {
-      unsigned n = out.length;
-
-      if (scale == 0.0f)
-      {
-        skip (n);
-	return;
-      }
-
 #ifndef HB_OPTIMIZE_SIZE
-      if (scale == 1.0f)
+      // The following branch is supposed to speed things up by avoiding
+      // the multiplication in _add_to<> if scale is 1.0f.
+      // But in practice it seems to bloat the code and slow things down.
+      if (false && scale == 1.0f)
         _add_to<false> (out);
       else
 #endif
@@ -2065,7 +2082,7 @@ struct TupleList : CFF2Index
 template <unsigned int alignment>
 struct Align
 {
-  unsigned get_size (const void *base) const
+  size_t get_size (const void *base) const
   {
     unsigned offset = (const char *) this - (const char *) base;
     return (alignment - offset) & (alignment - 1);

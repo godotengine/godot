@@ -157,6 +157,10 @@ public:
 		Color button_border_hover_color;
 		Color button_border_pressed_color;
 
+		Color flat_button_pressed_color;
+		Color flat_button_hover_pressed_color;
+		Color flat_button_hover_color;
+
 		Color shadow_color;
 		Color selection_color;
 		Color disabled_border_color;
@@ -176,6 +180,7 @@ public:
 
 		Ref<StyleBoxFlat> flat_button;
 		Ref<StyleBoxFlat> flat_button_pressed;
+		Ref<StyleBoxFlat> flat_button_hover_pressed;
 		Ref<StyleBoxFlat> flat_button_hover;
 
 		Ref<StyleBoxFlat> popup_style;

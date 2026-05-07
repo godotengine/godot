@@ -30,11 +30,10 @@
 
 #pragma once
 
-#include "editor/plugins/editor_plugin.h"
-#include "editor/scene/3d/node_3d_editor_plugin.h"
-#include "scene/3d/iterate_ik_3d.h"
+#include "editor/scene/3d/node_3d_editor_gizmos.h"
 
-#include "scene/resources/surface_tool.h"
+class ChainIK3D;
+class SurfaceTool;
 
 class ChainIK3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(ChainIK3DGizmoPlugin, EditorNode3DGizmoPlugin);
@@ -46,7 +45,7 @@ class ChainIK3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	static SelectionMaterials selection_materials;
 
 public:
-	static Ref<ArrayMesh> get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_ik, bool p_is_selected);
+	static void get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_ik, bool p_is_selected, Ref<ArrayMesh> &r_skinned_mesh, Ref<ArrayMesh> &r_mesh);
 	static void draw_line(Ref<SurfaceTool> &p_surface_tool, const Vector3 &p_begin_pos, const Vector3 &p_end_pos, const Color &p_color);
 
 	bool has_gizmo(Node3D *p_spatial) override;

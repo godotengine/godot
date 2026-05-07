@@ -30,13 +30,12 @@
 
 #pragma once
 
-#include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
-#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 #define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 #define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 
@@ -53,6 +52,13 @@
 #define MAIN_THREAD_SYNC_WARN
 #endif
 #endif
+
+#define ServerName PhysicsServer3D
+#define ServerNameWrapMT PhysicsServer3DWrapMT
+#define server_name physics_server_3d
+#define WRITE_ACTION
+
+#include "servers/server_wrap_mt_common.h"
 
 class PhysicsServer3DWrapMT : public PhysicsServer3D {
 	GDSOFTCLASS(PhysicsServer3DWrapMT, PhysicsServer3D);
@@ -74,13 +80,6 @@ class PhysicsServer3DWrapMT : public PhysicsServer3D {
 	void _thread_sync();
 
 public:
-#define ServerName PhysicsServer3D
-#define ServerNameWrapMT PhysicsServer3DWrapMT
-#define server_name physics_server_3d
-#define WRITE_ACTION
-
-#include "servers/server_wrap_mt_common.h"
-
 	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(world_boundary_shape)
 	FUNCRID(separation_ray_shape)
@@ -414,12 +413,12 @@ public:
 
 	PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool p_create_thread);
 	~PhysicsServer3DWrapMT();
+};
 
 #undef ServerNameWrapMT
 #undef ServerName
 #undef server_name
 #undef WRITE_ACTION
-};
 
 #ifdef DEBUG_SYNC
 #undef DEBUG_SYNC

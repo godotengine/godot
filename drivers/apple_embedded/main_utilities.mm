@@ -31,8 +31,8 @@
 #include "core/string/ustring.h"
 
 #import <UIKit/UIKit.h>
-
 #include <unistd.h>
+
 #include <cstdio>
 
 void change_to_launch_dir(char **p_args) {

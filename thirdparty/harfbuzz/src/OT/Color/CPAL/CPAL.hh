@@ -172,7 +172,7 @@ struct CPAL
 
   bool has_data () const { return numPalettes; }
 
-  unsigned int get_size () const
+  size_t get_size () const
   { return min_size + numPalettes * sizeof (colorRecordIndicesZ[0]); }
 
   unsigned int get_palette_count () const { return numPalettes; }

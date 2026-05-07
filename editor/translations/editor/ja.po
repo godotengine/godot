@@ -82,7 +82,7 @@
 # Yu Tanaka <yrk00337@gmail.com>, 2024.
 # 喜多山真護 <shingo.kitayama@gmail.com>, 2025.
 # UtanoSchell <utano.mayonaka@gmail.com>, 2025.
-# Myeongjin Lee <aranet100@gmail.com>, 2025.
+# Myeongjin Lee <aranet100@gmail.com>, 2025, 2026.
 # Viktor Jagebrant <vjagebrant@gmail.com>, 2025.
 # RockHopperPenguin64 <ryo1108820@gmail.com>, 2025.
 # Septian Ganendra Savero Kurniawan <mail@init.id>, 2025.
@@ -97,8 +97,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-18 20:24+0000\n"
-"Last-Translator: Amir Sabbagh <amir420c@gmail.com>\n"
+"PO-Revision-Date: 2026-01-15 02:11+0000\n"
+"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -106,7 +106,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Locked"
+msgstr "ロック済み"
+
+msgid "Help"
+msgstr "ヘルプ"
+
+msgid "Printer on fire"
+msgstr "プリンター発火"
 
 msgid "Physical"
 msgstr "物理"
@@ -4620,9 +4632,6 @@ msgstr "エディター ウィンドウの再描画時にスピンします。"
 msgid "Imported resources can't be saved."
 msgstr "インポートされたリソースを保存できません。"
 
-msgid "OK"
-msgstr "OK"
-
 msgid "Error saving resource!"
 msgstr "リソースを保存する際にエラーが発生しました！"
 
@@ -5366,9 +5375,6 @@ msgstr "前のエディターを開く"
 
 msgid "Project"
 msgstr "プロジェクト"
-
-msgid "Help"
-msgstr "ヘルプ"
 
 msgid "Update Mode"
 msgstr "更新モード"
@@ -8487,6 +8493,9 @@ msgstr "クイック設定"
 msgid "Language"
 msgstr "言語:"
 
+msgid "Style"
+msgstr "スタイル"
+
 msgid "Custom preset can be further configured in the editor."
 msgstr "カスタムプリセットは、エディタで詳細に設定できます。"
 
@@ -10777,9 +10786,6 @@ msgstr "後面 透視投影"
 msgid "[auto]"
 msgstr "[自動]"
 
-msgid "Locked"
-msgstr "ロック済み"
-
 msgid "Grouped"
 msgstr "グループ化済み"
 
@@ -10808,24 +10814,6 @@ msgstr ""
 "ドラッグ＆ドロップで任意のジオメトリノードのマテリアルをオーバーライドできま"
 "す。\n"
 "%sを押しながらドロップすると、特定のサーフェスをオーバーライドできます。"
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "サイズ: %s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "オブジェクト数: %d\n"
-
-msgid "Primitives: %d\n"
-msgstr "プリミティブ数: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "ドローコール数: %d"
@@ -13390,9 +13378,6 @@ msgstr "カウンターの最小桁数です。"
 
 msgid "Post-Process"
 msgstr "ポストプロセス"
-
-msgid "Style"
-msgstr "スタイル"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalCaseからsnake_caseへ"
@@ -19374,14 +19359,6 @@ msgstr ""
 "ス」に設定します。"
 
 msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"GraphEdit と GraphNode は、将来の 4.x バージョンで、互換性に影響がある API 変"
-"更を含む広範なリファクタリングを受ける予定であることに注意してください。"
-
-msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
 "to work correctly inside a container."
 msgstr ""
@@ -19749,15 +19726,6 @@ msgstr "'%s' に一致する関数が見つかりません。"
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""
 "このコンテキストでは、Varying '%s' を '%s' の引数として渡すことはできません。"
-
-msgid ""
-"Unable to pass a multiview texture sampler as a parameter to custom function. "
-"Consider to sample it in the main function and then pass the vector result to "
-"it."
-msgstr ""
-"マルチビュー テクスチャ サンプラーをパラメータとしてカスタム関数に渡すことがで"
-"きません。main 関数でそれをサンプリングしてから、ベクトルの結果を main 関数に"
-"渡すことを検討してください。"
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "式に不明な識別子があります: '%s'。"

@@ -41,10 +41,11 @@ class PropertyListHelper {
 		MethodBind *getter = nullptr;
 	};
 
-	static Vector<PropertyListHelper *> base_helpers;
+	static HashMap<StringName, Vector<PropertyListHelper *>> base_helpers;
 
 	String prefix;
 	MethodBind *array_length_getter = nullptr;
+	MethodBind *property_filter = nullptr;
 	HashMap<String, Property> property_list;
 	Object *object = nullptr;
 
@@ -57,12 +58,18 @@ class PropertyListHelper {
 
 public:
 	static void clear_base_helpers();
-	static void register_base_helper(PropertyListHelper *p_helper);
+	static void register_base_helper(const StringName &p_class_name, PropertyListHelper *p_helper);
+
+	static Vector<PropertyListHelper *> get_helpers_for_class(const StringName &p_class_name);
 
 	void set_prefix(const String &p_prefix);
 	template <typename G>
 	void set_array_length_getter(G p_array_length_getter) {
 		array_length_getter = create_method_bind(p_array_length_getter);
+	}
+	template <typename F>
+	void set_property_filter(F p_property_filter) {
+		property_filter = create_method_bind(p_property_filter);
 	}
 
 	// Register property without setter/getter. Only use when you don't need PropertyListHelper for _set/_get logic.
@@ -88,6 +95,12 @@ public:
 	bool property_set_value(const String &p_property, const Variant &p_value) const;
 	bool property_can_revert(const String &p_property) const;
 	bool property_get_revert(const String &p_property, Variant &r_value) const;
+
+#ifdef TOOLS_ENABLED
+	void documentation_get_property_list(List<PropertyInfo> *r_list) const;
+	bool documentation_has_property(const String &p_property) const;
+	Variant documentation_get_default_value(const String &p_property) const;
+#endif
 
 	void enable_out_of_bounds_assign() { allow_oob_assign = true; }
 

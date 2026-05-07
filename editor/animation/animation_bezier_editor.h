@@ -30,8 +30,10 @@
 
 #pragma once
 
-#include "animation_track_editor.h"
 #include "core/templates/hashfuncs.h"
+#include "core/templates/rb_map.h"
+#include "core/templates/rb_set.h"
+#include "editor/animation/animation_track_editor.h"
 
 class ViewPanner;
 

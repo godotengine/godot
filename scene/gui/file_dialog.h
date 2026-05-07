@@ -205,6 +205,7 @@ private:
 	String full_dir;
 
 	bool is_invalidating = false;
+	bool ensure_visible_after_invalidating = false;
 
 	VBoxContainer *main_vbox = nullptr;
 
@@ -213,7 +214,8 @@ private:
 	Button *dir_up = nullptr;
 
 	HBoxContainer *drives_container = nullptr;
-	OptionButton *drives = nullptr;
+	MenuButton *drives = nullptr;
+	int selected_drive = 0;
 	LineEdit *directory_edit = nullptr;
 	HBoxContainer *shortcuts_container = nullptr;
 
@@ -279,6 +281,13 @@ private:
 		Ref<Texture2D> favorite_down;
 		Ref<Texture2D> file_thumbnail;
 		Ref<Texture2D> folder_thumbnail;
+
+		Ref<Texture2D> menu_copy_path;
+		Ref<Texture2D> menu_delete;
+		Ref<Texture2D> menu_refresh;
+		Ref<Texture2D> menu_new_folder;
+		Ref<Texture2D> menu_show_in_file_manager;
+		Ref<Texture2D> menu_open_bundle;
 
 		Color folder_icon_color;
 		Color file_icon_color;
@@ -366,6 +375,9 @@ private:
 protected:
 	Ref<DirAccess> dir_access;
 
+	bool favorites_changed = false;
+	bool recents_changed = false;
+
 	bool _can_use_native_popup() const;
 	virtual void _item_menu_id_pressed(int p_option);
 	virtual void _dir_contents_changed() {}
@@ -373,8 +385,10 @@ protected:
 	virtual bool _should_use_native_popup() const;
 	virtual bool _should_hide_file(const String &p_file) const { return false; }
 	virtual Color _get_folder_color(const String &p_path) const { return theme_cache.folder_icon_color; }
+	virtual Vector2i _get_list_mode_icon_size() const;
 
 	virtual void _popup_base(const Rect2i &p_screen_rect = Rect2i()) override;
+	void _clear_changed_status();
 
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);

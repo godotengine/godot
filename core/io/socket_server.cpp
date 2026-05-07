@@ -30,6 +30,8 @@
 
 #include "socket_server.h"
 
+#include "core/object/class_db.h"
+
 void SocketServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &SocketServer::is_connection_available);
 	ClassDB::bind_method(D_METHOD("is_listening"), &SocketServer::is_listening);

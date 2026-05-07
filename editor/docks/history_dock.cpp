@@ -31,11 +31,11 @@
 #include "history_dock.h"
 
 #include "core/io/config_file.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/settings/editor_command_palette.h"
-#include "editor/settings/editor_settings.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/item_list.h"
 
@@ -239,7 +239,7 @@ HistoryDock::HistoryDock() {
 	set_name(TTRC("History"));
 	set_icon_name("History");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_history", TTRC("Open History Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_LEFT_BR);
+	set_default_slot(EditorDock::DOCK_SLOT_LEFT_BR);
 
 	ur_manager = EditorUndoRedoManager::get_singleton();
 	ur_manager->connect("history_changed", callable_mp(this, &HistoryDock::on_history_changed));

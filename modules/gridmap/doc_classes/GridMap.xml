@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GridMap" inherits="Node3D" keywords="tilemap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="GridMap" inherits="Node3D" api_type="core" keywords="tilemap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Node for 3D tile-based maps.
 	</brief_description>
@@ -97,6 +97,20 @@
 				This function returns always the map set on the GridMap node and not the map on the NavigationServer. If the map is changed directly with the NavigationServer API the GridMap node will not be aware of the map change.
 			</description>
 		</method>
+		<method name="get_octant_coords_from_cell_coords" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="cell_coords" type="Vector3i" />
+			<description>
+				Returns the [Vector3i] octant coordinates of the octant that the cell at [param cell_coords] belongs to.
+			</description>
+		</method>
+		<method name="get_octants_in_bounds" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="bounds" type="AABB" />
+			<description>
+				Returns an array of [Vector3i] octant coordinates that are inside the given [param bounds], including octants that have no cells in use.
+			</description>
+		</method>
 		<method name="get_orthogonal_index_from_basis" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="basis" type="Basis" />
@@ -115,6 +129,41 @@
 			<param index="0" name="item" type="int" />
 			<description>
 				Returns an array of all cells with the given item index specified in [param item].
+			</description>
+		</method>
+		<method name="get_used_cells_in_octant" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="octant_coords" type="Vector3i" />
+			<description>
+				Returns an array of [Vector3i]s with the cell coordinates of non-empty cells inside the octant at [param octant_coords].
+			</description>
+		</method>
+		<method name="get_used_cells_in_octant_by_item" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="octant_coords" type="Vector3i" />
+			<param index="1" name="item" type="int" />
+			<description>
+				Returns an array of [Vector3i]s with the cell coordinates of cells inside the octant at [param octant_coords] that use the specified cell [param item].
+			</description>
+		</method>
+		<method name="get_used_octants" qualifiers="const">
+			<return type="Vector3i[]" />
+			<description>
+				Returns an array of [Vector3i]s with the octant coordinates of the non-empty octants in the grid map.
+			</description>
+		</method>
+		<method name="get_used_octants_by_item" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="item" type="int" />
+			<description>
+				Returns an array of [Vector3i]s with the octant coordinates of the octants that use the specified [param item] in the grid map.
+			</description>
+		</method>
+		<method name="get_used_octants_in_bounds" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="bounds" type="AABB" />
+			<description>
+				Returns an array of [Vector3i]s with the octant coordinates of non-empty octants that are inside the local [param bounds].
 			</description>
 		</method>
 		<method name="local_to_map" qualifiers="const">
@@ -216,6 +265,9 @@
 		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
 			The priority used to solve colliding when occurring penetration. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
 		</member>
+		<member name="collision_visibility_mode" type="int" setter="set_collision_visibility_mode" getter="get_collision_visibility_mode" enum="GridMap.DebugVisibilityMode" default="0">
+			Show or hide the [GridMap]'s collision shapes. If set to [constant DEBUG_VISIBILITY_MODE_DEFAULT], this depends on the show collision debug settings.
+		</member>
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
 		</member>
@@ -239,6 +291,15 @@
 	<constants>
 		<constant name="INVALID_CELL_ITEM" value="-1">
 			Invalid cell item that can be used in [method set_cell_item] to clear cells (or represent an empty cell in [method get_cell_item]).
+		</constant>
+		<constant name="DEBUG_VISIBILITY_MODE_DEFAULT" value="0" enum="DebugVisibilityMode">
+			Hide the collisions debug shapes in the editor, and use the debug settings to determine their visibility in game (i.e. [member SceneTree.debug_collisions_hint] or [member SceneTree.debug_navigation_hint]).
+		</constant>
+		<constant name="DEBUG_VISIBILITY_MODE_FORCE_SHOW" value="1" enum="DebugVisibilityMode">
+			Always show the collisions debug shapes.
+		</constant>
+		<constant name="DEBUG_VISIBILITY_MODE_FORCE_HIDE" value="2" enum="DebugVisibilityMode">
+			Always hide the collisions debug shapes.
 		</constant>
 	</constants>
 </class>

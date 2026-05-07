@@ -363,7 +363,7 @@
 			UTType *ut = [type_filters objectAtIndex:0];
 			String ext = String::utf8([[ut preferredFilenameExtension] UTF8String]);
 			Vector<String> pref_ext = preferred_types[cur_index];
-			if (!pref_ext.is_empty() && !pref_ext.has(ext) && p_path.has_extension(ext)) {
+			if (!pref_ext.is_empty() && !pref_ext.has(ext) && p_path.has_extension(ext) && pref_ext[0] != "*") {
 				return p_path.get_basename() + "." + pref_ext[0];
 			}
 		}

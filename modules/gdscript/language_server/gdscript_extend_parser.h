@@ -42,14 +42,6 @@
 #define COLUMN_NUMBER_TO_INDEX(p_column) ((p_column) - 1)
 #endif
 
-#ifndef SYMBOL_SEPARATOR
-#define SYMBOL_SEPARATOR "::"
-#endif
-
-#ifndef JOIN_SYMBOLS
-#define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPARATOR + (name))
-#endif
-
 typedef HashMap<String, const LSP::DocumentSymbol *> ClassMembers;
 
 /**
@@ -79,8 +71,8 @@ struct GodotPosition {
 	GodotPosition(int p_line, int p_column) :
 			line(p_line), column(p_column) {}
 
-	LSP::Position to_lsp(const Vector<String> &p_lines) const;
-	static GodotPosition from_lsp(const LSP::Position p_pos, const Vector<String> &p_lines);
+	LSP::Position to_lsp() const;
+	static GodotPosition from_lsp(const LSP::Position p_pos);
 
 	bool operator==(const GodotPosition &p_other) const {
 		return line == p_other.line && column == p_other.column;
@@ -98,8 +90,8 @@ struct GodotRange {
 	GodotRange(GodotPosition p_start, GodotPosition p_end) :
 			start(p_start), end(p_end) {}
 
-	LSP::Range to_lsp(const Vector<String> &p_lines) const;
-	static GodotRange from_lsp(const LSP::Range &p_range, const Vector<String> &p_lines);
+	LSP::Range to_lsp() const;
+	static GodotRange from_lsp(const LSP::Range &p_range);
 
 	bool operator==(const GodotRange &p_other) const {
 		return start == p_other.start && end == p_other.end;
@@ -134,8 +126,6 @@ class ExtendGDScriptParser : public GDScriptParser {
 
 	const LSP::DocumentSymbol *search_symbol_defined_at_line(int p_line, const LSP::DocumentSymbol &p_parent, const String &p_symbol_name = "") const;
 
-	Array member_completions;
-
 public:
 	_FORCE_INLINE_ const String &get_path() const { return path; }
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }
@@ -149,7 +139,13 @@ public:
 
 	String get_text_for_completion(const LSP::Position &p_cursor) const;
 	String get_text_for_lookup_symbol(const LSP::Position &p_cursor, const String &p_symbol = "", bool p_func_required = false) const;
-	String get_identifier_under_position(const LSP::Position &p_position, LSP::Range &r_range) const;
+	/**
+	 * Parses the symbol name at the given position. Returns that name and its full range.
+	 *
+	 * The returned name might be a false positive and not translate to an actual symbol e.g. it might be a language keyword.
+	 * The results of this method are not equivalent to identifier AST nodes. Instead it returns results that are compatible with `LSP::DocumentSymbol::name` i.e. includes `@` for annotations.
+	 */
+	String get_symbol_name_under_position(const LSP::Position &p_position, LSP::Range &r_range) const;
 	String get_uri() const;
 
 	/**

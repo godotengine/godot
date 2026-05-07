@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/variant/typed_array.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/export/editor_export_preset.h"

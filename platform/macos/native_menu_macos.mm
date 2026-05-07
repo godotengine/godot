@@ -34,6 +34,7 @@
 #import "godot_menu_item.h"
 #import "key_mapping_macos.h"
 
+#include "core/object/callable_mp.h"
 #include "scene/resources/image_texture.h"
 
 void NativeMenuMacOS::_register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu) {
@@ -1317,6 +1318,29 @@ void NativeMenuMacOS::set_item_indentation_level(const RID &p_rid, int p_idx, in
 	if (menu_item) {
 		[menu_item setIndentationLevel:p_level];
 	}
+}
+
+int NativeMenuMacOS::set_item_index(const RID &p_rid, int p_idx, int p_target_idx) {
+	ERR_FAIL_COND_V(p_idx < 0, -1);
+
+	MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, -1);
+	int item_start = _get_system_menu_start(md->menu);
+	int item_count = _get_system_menu_count(md->menu);
+	p_idx += item_start;
+	ERR_FAIL_COND_V(p_idx >= item_start + item_count, -1);
+	ERR_FAIL_INDEX_V(p_target_idx, item_count, -1);
+	p_target_idx += item_start;
+
+	NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
+	if ([menu_item submenu] && _is_menu_opened([menu_item submenu])) {
+		ERR_FAIL_V_MSG(-1, "Can't move open menu!");
+	}
+	if (menu_item) {
+		[md->menu removeItemAtIndex:p_idx];
+		[md->menu insertItem:menu_item atIndex:p_target_idx];
+	}
+	return p_target_idx - item_start;
 }
 
 int NativeMenuMacOS::get_item_count(const RID &p_rid) const {

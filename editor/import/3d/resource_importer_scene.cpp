@@ -32,7 +32,9 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
@@ -49,12 +51,14 @@
 #include "scene/animation/animation_player.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/3d/separation_ray_shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/bone_map.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/physics_material.h"
 #include "scene/resources/resource_format_text.h"
 
 void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const {
@@ -107,13 +111,13 @@ void EditorSceneFormatImporter::_bind_methods() {
 	GDVIRTUAL_BIND(_get_import_options, "path");
 	GDVIRTUAL_BIND(_get_option_visibility, "path", "for_animation", "option");
 
-	BIND_CONSTANT(IMPORT_SCENE);
-	BIND_CONSTANT(IMPORT_ANIMATION);
-	BIND_CONSTANT(IMPORT_FAIL_ON_MISSING_DEPENDENCIES);
-	BIND_CONSTANT(IMPORT_GENERATE_TANGENT_ARRAYS);
-	BIND_CONSTANT(IMPORT_USE_NAMED_SKIN_BINDS);
-	BIND_CONSTANT(IMPORT_DISCARD_MESHES_AND_MATERIALS);
-	BIND_CONSTANT(IMPORT_FORCE_DISABLE_MESH_COMPRESSION);
+	BIND_BITFIELD_FLAG(IMPORT_SCENE);
+	BIND_BITFIELD_FLAG(IMPORT_ANIMATION);
+	BIND_BITFIELD_FLAG(IMPORT_FAIL_ON_MISSING_DEPENDENCIES);
+	BIND_BITFIELD_FLAG(IMPORT_GENERATE_TANGENT_ARRAYS);
+	BIND_BITFIELD_FLAG(IMPORT_USE_NAMED_SKIN_BINDS);
+	BIND_BITFIELD_FLAG(IMPORT_DISCARD_MESHES_AND_MATERIALS);
+	BIND_BITFIELD_FLAG(IMPORT_FORCE_DISABLE_MESH_COMPRESSION);
 }
 
 /////////////////////////////////
@@ -259,6 +263,8 @@ String ResourceImporterScene::get_visible_name() const {
 	// This is displayed on the UI. Friendly names here are nice but not vital, so fall back to the type.
 	if (_scene_import_type == "PackedScene") {
 		return "Scene";
+	} else if (_scene_import_type == "ArrayMesh") {
+		return "Single Mesh";
 	}
 	return _scene_import_type.capitalize();
 }
@@ -283,6 +289,12 @@ int ResourceImporterScene::get_format_version() const {
 }
 
 bool ResourceImporterScene::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+	if (p_option.begins_with("mesh_library/")) {
+		return _scene_import_type == "MeshLibrary";
+	}
+	if (p_option.begins_with("array_mesh/")) {
+		return _scene_import_type == "ArrayMesh";
+	}
 	if (_scene_import_type == "PackedScene") {
 		if (p_option.begins_with("animation/")) {
 			if (p_option != "animation/import" && !bool(p_options["animation/import"])) {
@@ -293,8 +305,22 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 		if (p_option == "animation/import") { // Option ignored, animation always imported.
 			return false;
 		}
-		if (p_option == "nodes/root_type" || p_option == "nodes/root_name" || p_option.begins_with("meshes/") || p_option.begins_with("skins/")) {
+		if (p_option == "nodes/root_type" || p_option == "nodes/root_name" || p_option == "nodes/root_script" || p_option.begins_with("meshes/") || p_option.begins_with("skins/")) {
 			return false; // Nothing to do here for animations.
+		}
+	} else if (_scene_import_type == "MeshLibrary") {
+		if (p_option.begins_with("animation/") || p_option.begins_with("skins/") || p_option.begins_with("import_script/")) {
+			return false;
+		}
+		if (p_option.begins_with("nodes/")) {
+			return p_option == "nodes/root_scale";
+		}
+	} else if (_scene_import_type == "ArrayMesh") {
+		if (p_option.begins_with("animation/") || p_option.begins_with("skins/") || p_option.begins_with("import_script/")) {
+			return false;
+		}
+		if (p_option.begins_with("nodes/")) {
+			return p_option == "nodes/root_scale";
 		}
 	}
 
@@ -615,7 +641,7 @@ void _populate_scalable_nodes_collection(Node *p_node, ScalableNodeCollection &p
 	}
 	AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(p_node);
 	if (animation_player) {
-		List<StringName> animation_list;
+		LocalVector<StringName> animation_list;
 		animation_player->get_animation_list(&animation_list);
 
 		for (const StringName &E : animation_list) {
@@ -701,7 +727,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 
 		bool nodes_were_renamed = r_node_renames.size() != 0;
 
-		List<StringName> anims;
+		LocalVector<StringName> anims;
 		ap->get_animation_list(&anims);
 		for (const StringName &E : anims) {
 			Ref<Animation> anim = ap->get_animation(E);
@@ -825,19 +851,23 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			p_node = sb;
 			CollisionShape3D *colshape = memnew(CollisionShape3D);
 			if (empty_draw_type == "CUBE") {
-				BoxShape3D *boxShape = memnew(BoxShape3D);
+				Ref<BoxShape3D> boxShape;
+				boxShape.instantiate();
 				boxShape->set_size(Vector3(2, 2, 2));
 				colshape->set_shape(boxShape);
 			} else if (empty_draw_type == "SINGLE_ARROW") {
-				SeparationRayShape3D *rayShape = memnew(SeparationRayShape3D);
+				Ref<SeparationRayShape3D> rayShape;
+				rayShape.instantiate();
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
 				Object::cast_to<Node3D>(sb)->rotate_x(Math::PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
-				WorldBoundaryShape3D *world_boundary_shape = memnew(WorldBoundaryShape3D);
+				Ref<WorldBoundaryShape3D> world_boundary_shape;
+				world_boundary_shape.instantiate();
 				colshape->set_shape(world_boundary_shape);
 			} else {
-				SphereShape3D *sphereShape = memnew(SphereShape3D);
+				Ref<SphereShape3D> sphereShape;
+				sphereShape.instantiate();
 				sphereShape->set_radius(1);
 				colshape->set_shape(sphereShape);
 			}
@@ -1078,7 +1108,7 @@ Node *ResourceImporterScene::_pre_fix_animations(Node *p_node, Node *p_root, con
 
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
-		List<StringName> anims;
+		LocalVector<StringName> anims;
 		ap->get_animation_list(&anims);
 
 		AnimationImportTracks import_tracks_mode[TRACK_CHANNEL_MAX] = {
@@ -1126,7 +1156,7 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
-		List<StringName> anims;
+		LocalVector<StringName> anims;
 		ap->get_animation_list(&anims);
 
 		if (p_remove_immutable_tracks) {
@@ -1503,10 +1533,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 				for (int node_i = 0; node_i < children.size(); node_i++) {
 					AnimationPlayer *anim_player = cast_to<AnimationPlayer>(children[node_i]);
 					ERR_CONTINUE(anim_player == nullptr);
-					List<StringName> anim_list;
+					LocalVector<StringName> anim_list;
 					anim_player->get_animation_list(&anim_list);
 					if (anim_list.size() == 1) {
-						selected_animation_name = anim_list.front()->get();
+						selected_animation_name = anim_list[0];
 					}
 					rest_animation = anim_player->get_animation(selected_animation_name);
 					if (rest_animation.is_valid()) {
@@ -1519,10 +1549,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 				if (rest_animation.is_null()) {
 					Ref<AnimationLibrary> library(external_object);
 					if (library.is_valid()) {
-						List<StringName> anim_list;
+						LocalVector<StringName> anim_list;
 						library->get_animation_list(&anim_list);
 						if (anim_list.size() == 1) {
-							selected_animation_name = String(anim_list.front()->get());
+							selected_animation_name = String(anim_list[0]);
 						}
 						rest_animation = library->get_animation(selected_animation_name);
 					}
@@ -1579,70 +1609,67 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 			if (!r_scanned_meshes.has(m)) {
 				for (int i = 0; i < m->get_surface_count(); i++) {
 					Ref<Material> mat = m->get_surface_material(i);
-					if (mat.is_valid()) {
-						String mat_id = mat->get_meta("import_id", mat->get_name());
-						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
-							Dictionary matdata = p_material_data[mat_id];
-							{
-								//fill node settings for this node with default values
-								List<ImportOption> iopts;
-								get_internal_import_options(INTERNAL_IMPORT_CATEGORY_MATERIAL, &iopts);
-								for (const ImportOption &E : iopts) {
-									if (!matdata.has(E.option.name)) {
-										matdata[E.option.name] = E.default_value;
-									}
-								}
-							}
-
-							for (int j = 0; j < post_importer_plugins.size(); j++) {
-								post_importer_plugins.write[j]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL, p_root, p_node, mat, matdata);
+					if (mat.is_null()) {
+						continue;
+					}
+					const String mat_id = mat->get_meta("import_id", mat->get_name());
+					if (mat_id.is_empty() || !p_material_data.has(mat_id)) {
+						continue;
+					}
+					Dictionary matdata = p_material_data[mat_id];
+					{
+						//fill node settings for this node with default values
+						List<ImportOption> iopts;
+						get_internal_import_options(INTERNAL_IMPORT_CATEGORY_MATERIAL, &iopts);
+						for (const ImportOption &E : iopts) {
+							if (!matdata.has(E.option.name)) {
+								matdata[E.option.name] = E.default_value;
 							}
 						}
-						if (!mat_id.is_empty() && extract_mat != 0) {
-							String ext = material_extension[p_options.has("materials/extract_format") ? (int)p_options["materials/extract_format"] : 0];
-							String path = spath.path_join(mat_id.validate_filename() + ext);
-							String uid_path = ResourceUID::path_to_uid(path);
+					}
+					for (int j = 0; j < post_importer_plugins.size(); j++) {
+						post_importer_plugins.write[j]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL, p_root, p_node, mat, matdata);
+					}
+					if (extract_mat != 0) {
+						const String ext = material_extension[p_options.has("materials/extract_format") ? (int)p_options["materials/extract_format"] : 0];
+						const String path = spath.path_join(mat_id.validate_filename() + ext);
+						const String uid_path = ResourceUID::path_to_uid(path);
 
-							Dictionary matdata = p_material_data[mat_id];
-							matdata["use_external/enabled"] = true;
-							matdata["use_external/path"] = uid_path;
-							matdata["use_external/fallback_path"] = path;
-							if (!FileAccess::exists(path) || extract_mat == 2 /*overwrite*/) {
-								ResourceSaver::save(mat, path);
-							}
+						matdata["use_external/enabled"] = true;
+						matdata["use_external/path"] = uid_path;
+						matdata["use_external/fallback_path"] = path;
+						if (!FileAccess::exists(path) || extract_mat == 2 /*overwrite*/) {
+							ResourceSaver::save(mat, path);
+						}
 
-							Ref<Material> external_mat = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
-							if (external_mat.is_valid()) {
-								m->set_surface_material(i, external_mat);
+						Ref<Material> external_mat = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
+						if (external_mat.is_valid()) {
+							m->set_surface_material(i, external_mat);
+						}
+					}
+					if (matdata.has("use_external/enabled") && bool(matdata["use_external/enabled"]) && matdata.has("use_external/path")) {
+						String path = matdata["use_external/path"];
+						Ref<Material> external_mat = ResourceLoader::load(path);
+						if (external_mat.is_null()) {
+							if (matdata.has("use_external/fallback_path")) {
+								const String fallback_save_path = matdata["use_external/fallback_path"];
+								if (!fallback_save_path.is_empty()) {
+									external_mat = ResourceLoader::load(fallback_save_path);
+									if (external_mat.is_valid()) {
+										path = fallback_save_path;
+									}
+								}
 							}
 						}
-						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
-							Dictionary matdata = p_material_data[mat_id];
-							if (matdata.has("use_external/enabled") && bool(matdata["use_external/enabled"]) && matdata.has("use_external/path")) {
-								String path = matdata["use_external/path"];
-								Ref<Material> external_mat = ResourceLoader::load(path);
-								if (external_mat.is_null()) {
-									if (matdata.has("use_external/fallback_path")) {
-										String fallback_save_path = matdata["use_external/fallback_path"];
-										if (!fallback_save_path.is_empty()) {
-											external_mat = ResourceLoader::load(fallback_save_path);
-											if (external_mat.is_valid()) {
-												path = fallback_save_path;
-											}
-										}
-									}
-								}
-								if (external_mat.is_valid()) {
-									m->set_surface_material(i, external_mat);
-									if (!path.begins_with("uid://")) {
-										const ResourceUID::ID id = ResourceLoader::get_resource_uid(path);
-										if (id != ResourceUID::INVALID_ID) {
-											matdata["use_external/path"] = ResourceUID::get_singleton()->id_to_text(id);
-										}
-									}
-									matdata["use_external/fallback_path"] = external_mat->get_path();
+						if (external_mat.is_valid()) {
+							m->set_surface_material(i, external_mat);
+							if (!path.begins_with("uid://")) {
+								const ResourceUID::ID id = ResourceLoader::get_resource_uid(path);
+								if (id != ResourceUID::INVALID_ID) {
+									matdata["use_external/path"] = ResourceUID::get_singleton()->id_to_text(id);
 								}
 							}
+							matdata["use_external/fallback_path"] = external_mat->get_path();
 						}
 					}
 				}
@@ -1872,7 +1899,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		}
 
 		if (post_importer_plugins.size()) {
-			List<StringName> anims;
+			LocalVector<StringName> anims;
 			ap->get_animation_list(&anims);
 			for (const StringName &name : anims) {
 				if (p_animation_data.has(name)) {
@@ -2097,7 +2124,7 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 }
 
 void ResourceImporterScene::_optimize_animations(AnimationPlayer *anim, float p_max_vel_error, float p_max_ang_error, int p_prc_error) {
-	List<StringName> anim_names;
+	LocalVector<StringName> anim_names;
 	anim->get_animation_list(&anim_names);
 	for (const StringName &E : anim_names) {
 		Ref<Animation> a = anim->get_animation(E);
@@ -2106,7 +2133,7 @@ void ResourceImporterScene::_optimize_animations(AnimationPlayer *anim, float p_
 }
 
 void ResourceImporterScene::_compress_animations(AnimationPlayer *anim, int p_page_size_kb) {
-	List<StringName> anim_names;
+	LocalVector<StringName> anim_names;
 	anim->get_animation_list(&anim_names);
 	for (const StringName &E : anim_names) {
 		Ref<Animation> a = anim->get_animation(E);
@@ -2114,21 +2141,88 @@ void ResourceImporterScene::_compress_animations(AnimationPlayer *anim, int p_pa
 	}
 }
 
+Error ResourceImporterScene::_save_scene_as_mesh_library(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags) {
+	TypedArray<Node> mesh_instances = p_godot_scene->find_children("*", "MeshInstance3D", true, false);
+	const int mesh_inst_count = mesh_instances.size();
+	HashSet<Ref<Mesh>> unique_meshes;
+	const bool use_node_names_as_mesh_names = p_options.has("mesh_library/use_node_names_as_mesh_names") && p_options["mesh_library/use_node_names_as_mesh_names"];
+	for (int mesh_inst_i = 0; mesh_inst_i < mesh_inst_count; mesh_inst_i++) {
+		MeshInstance3D *mesh_inst = Object::cast_to<MeshInstance3D>(mesh_instances[mesh_inst_i]);
+		Ref<Mesh> mesh = mesh_inst->get_mesh();
+		if (mesh.is_valid()) {
+			if (unique_meshes.has(mesh)) {
+				continue;
+			}
+			if (use_node_names_as_mesh_names) {
+				mesh->set_name(mesh_inst->get_name());
+			}
+			unique_meshes.insert(mesh);
+		}
+	}
+	Ref<MeshLibrary> mesh_library;
+	mesh_library.instantiate();
+	for (Ref<Mesh> mesh : unique_meshes) {
+		// The scene importers guarantee mesh names to be unique and non-empty, so we can use it safely without fallback.
+		const String mesh_name = mesh->get_name();
+		const int id = mesh_library->get_last_unused_item_id();
+		mesh_library->create_item(id);
+		mesh_library->set_item_name(id, mesh_name);
+		mesh_library->set_item_mesh(id, mesh);
+	}
+	return ResourceSaver::save(mesh_library, p_save_path + ".res", p_flags);
+}
+
+Error ResourceImporterScene::_save_scene_as_single_mesh(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags) {
+	TypedArray<Node> mesh_instance_nodes = p_godot_scene->find_children("*", "MeshInstance3D", true, false);
+	const int mesh_inst_count = mesh_instance_nodes.size();
+	ERR_FAIL_COND_V_MSG(mesh_inst_count == 0, ERR_INVALID_DATA, "Cannot import GLTF file " + p_source_file + " as a single mesh, because it contains no meshes.");
+	const String save_file_path = p_save_path + ".res";
+	// If there is just one mesh, we can save it directly, preserving that one mesh exactly as it is.
+	if (mesh_inst_count == 1) {
+		MeshInstance3D *mesh_inst_node = Object::cast_to<MeshInstance3D>(mesh_instance_nodes[0]);
+		Ref<ArrayMesh> array_mesh = mesh_inst_node->get_mesh();
+		if (array_mesh.is_valid()) {
+			array_mesh->set_path(save_file_path, true);
+			return ResourceSaver::save(array_mesh, save_file_path, p_flags);
+		}
+	}
+	// If the file contains multiple meshes, we have to merge them into a single mesh, based on their positions in the scene.
+	TypedArray<ImporterMesh> importer_mesh_instances;
+	TypedArray<Transform3D> relative_transforms;
+	for (int i = 0; i < mesh_inst_count; i++) {
+		MeshInstance3D *mesh_inst_node = Object::cast_to<MeshInstance3D>(mesh_instance_nodes[i]);
+		Ref<ArrayMesh> array_mesh = mesh_inst_node->get_mesh();
+		if (array_mesh.is_valid()) {
+			Transform3D global_transform = mesh_inst_node->get_transform();
+			Node3D *parent = Object::cast_to<Node3D>(mesh_inst_node->get_parent());
+			while (parent != nullptr) {
+				global_transform = parent->get_transform() * global_transform;
+				parent = Object::cast_to<Node3D>(parent->get_parent());
+			}
+			importer_mesh_instances.append(ImporterMesh::from_mesh(array_mesh));
+			relative_transforms.append(global_transform);
+		}
+	}
+	const bool deduplicate_surfaces = p_options.has("array_mesh/deduplicate_surfaces") && p_options["array_mesh/deduplicate_surfaces"];
+	Ref<ImporterMesh> merged_mesh = ImporterMesh::merge_importer_meshes(importer_mesh_instances, relative_transforms, deduplicate_surfaces);
+	return ResourceSaver::save(merged_mesh->get_mesh(), save_file_path, p_flags);
+}
+
 void ResourceImporterScene::get_internal_import_options(InternalImportCategory p_category, List<ImportOption> *r_options) const {
 	switch (p_category) {
 		case INTERNAL_IMPORT_CATEGORY_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "node/node_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "StaticBody3D,RigidBody3D,Area3D"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex (Slow),Single Convex (Average),Trimesh (Slow),Box (Fast),Sphere (Fast),Cylinder (Average),Capsule (Fast),Automatic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 7));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, PhysicsMaterial::get_class_static()), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 
@@ -2203,7 +2297,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE: {
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimizer/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_velocity_error", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.01));
@@ -2216,7 +2310,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/scale", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Never"), 1));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rest_pose/load_pose", PROPERTY_HINT_ENUM, "Default Pose,Use AnimationPlayer,Load External Animation", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "rest_pose/external_animation_library", PROPERTY_HINT_RESOURCE_TYPE, "Animation,AnimationLibrary", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
@@ -2246,7 +2340,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 							Variant::STRING, U"rest_pose//no_animation_chosen",
 							PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY),
 					Variant(no_animation_warning)));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "retarget/bone_map", PROPERTY_HINT_RESOURCE_TYPE, "BoneMap", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "retarget/bone_map", PROPERTY_HINT_RESOURCE_TYPE, BoneMap::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
 		} break;
 		default: {
 		}
@@ -2383,10 +2477,10 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 					Ref<AnimationLibrary> library(res);
 					String selected_animation_name = p_options["rest_pose/selected_animation"];
 					if (library.is_valid()) {
-						List<StringName> anim_list;
+						LocalVector<StringName> anim_list;
 						library->get_animation_list(&anim_list);
 						if (anim_list.size() == 1) {
-							selected_animation_name = String(anim_list.front()->get());
+							selected_animation_name = String(anim_list[0]);
 						}
 						if (library->has_animation(selected_animation_name)) {
 							anim = library->get_animation(selected_animation_name);
@@ -2501,7 +2595,7 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 void ResourceImporterScene::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), ""));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "nodes/root_script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "nodes/root_script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
 
 	List<String> script_extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &script_extensions);
@@ -2516,6 +2610,8 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	}
 	bool trimming_defaults_on = p_path.has_extension("fbx");
 
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mesh_library/use_node_names_as_mesh_names"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "array_mesh/deduplicate_surfaces"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/import_as_skeleton_bones"), false));
@@ -2817,7 +2913,7 @@ void ResourceImporterScene::_copy_meta(Object *p_src_object, Object *p_dst_objec
 }
 
 void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, AnimationImportTracks *p_track_actions) {
-	List<StringName> anims;
+	LocalVector<StringName> anims;
 	p_player->get_animation_list(&anims);
 	Node *parent = p_player->get_parent();
 	ERR_FAIL_NULL(parent);
@@ -3155,6 +3251,9 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	bool apply_root = true;
 	if (p_options.has("nodes/apply_root_scale")) {
 		apply_root = p_options["nodes/apply_root_scale"];
+		if (_scene_import_type == "ArrayMesh" || _scene_import_type == "MeshLibrary") {
+			apply_root = true;
+		}
 	}
 	real_t root_scale = 1;
 	if (p_options.has("nodes/root_scale")) {
@@ -3332,10 +3431,10 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		for (int i = 0; i < scene->get_child_count(); i++) {
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(scene->get_child(i));
 			if (ap) {
-				List<StringName> libs;
+				LocalVector<StringName> libs;
 				ap->get_animation_library_list(&libs);
 				if (libs.size()) {
-					library = ap->get_animation_library(libs.front()->get());
+					library = ap->get_animation_library(libs[0]);
 					break;
 				}
 			}
@@ -3355,6 +3454,10 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		err = ResourceSaver::save(packer, p_save_path + ".scn", flags); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
 		EditorInterface::get_singleton()->make_scene_preview(p_source_file, scene, 1024);
+	} else if (_scene_import_type == "ArrayMesh") {
+		_save_scene_as_single_mesh(p_source_file, p_save_path, scene, p_options, flags);
+	} else if (_scene_import_type == "MeshLibrary") {
+		_save_scene_as_mesh_library(p_source_file, p_save_path, scene, p_options, flags);
 	} else {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown scene import type: " + _scene_import_type);
 	}

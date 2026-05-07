@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor_export_platform.h"
+#include "editor/export/editor_export_platform.h"
 
 class ImageTexture;
 

@@ -12,6 +12,7 @@ layout(set = 0, binding = 1) uniform restrict writeonly image2D dest;
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	uint mip_level;
+	int pad;
 }
 params;
 

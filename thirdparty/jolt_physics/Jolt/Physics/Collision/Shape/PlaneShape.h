@@ -22,7 +22,7 @@ public:
 									PlaneShapeSettings() = default;
 
 	/// Create a plane shape.
-									PlaneShapeSettings(const Plane &inPlane, const PhysicsMaterial *inMaterial = nullptr, float inHalfExtent = cDefaultHalfExtent) : mPlane(inPlane), mMaterial(inMaterial), mHalfExtent(inHalfExtent) { }
+	explicit						PlaneShapeSettings(const Plane &inPlane, const PhysicsMaterial *inMaterial = nullptr, float inHalfExtent = cDefaultHalfExtent) : mPlane(inPlane), mMaterial(inMaterial), mHalfExtent(inHalfExtent) { }
 
 	// See: ShapeSettings
 	virtual ShapeResult				Create() const override;
@@ -46,7 +46,7 @@ public:
 
 	/// Constructor
 									PlaneShape() : Shape(EShapeType::Plane, EShapeSubType::Plane) { }
-									PlaneShape(const Plane &inPlane, const PhysicsMaterial *inMaterial = nullptr, float inHalfExtent = PlaneShapeSettings::cDefaultHalfExtent) : Shape(EShapeType::Plane, EShapeSubType::Plane), mPlane(inPlane), mMaterial(inMaterial), mHalfExtent(inHalfExtent) { CalculateLocalBounds(); }
+	explicit						PlaneShape(const Plane &inPlane, const PhysicsMaterial *inMaterial = nullptr, float inHalfExtent = PlaneShapeSettings::cDefaultHalfExtent) : Shape(EShapeType::Plane, EShapeSubType::Plane), mPlane(inPlane), mMaterial(inMaterial), mHalfExtent(inHalfExtent) { CalculateLocalBounds(); }
 									PlaneShape(const PlaneShapeSettings &inSettings, ShapeResult &outResult);
 
 	/// Get the plane

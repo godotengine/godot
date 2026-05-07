@@ -32,10 +32,13 @@ package org.godotengine.godot.plugin
 
 import android.content.Intent
 import android.util.Log
+import androidx.annotation.Keep
 import androidx.core.net.toUri
 
 import org.godotengine.godot.Godot
 import org.godotengine.godot.variant.Callable
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Proxy
 
 /**
  * Built-in Godot Android plugin used to provide access to the Android runtime capabilities.
@@ -43,7 +46,76 @@ import org.godotengine.godot.variant.Callable
  * @see <a href="https://docs.godotengine.org/en/latest/tutorials/platform/android/javaclasswrapper_and_androidruntimeplugin.html">Integrating with Android APIs</a>
  */
 class AndroidRuntimePlugin(godot: Godot) : GodotPlugin(godot) {
-	private val TAG = AndroidRuntimePlugin::class.java.simpleName
+
+	companion object {
+		private val TAG = AndroidRuntimePlugin::class.java.simpleName
+
+		/**
+		 * Helper method used to generate Godot Proxy instances.
+		 */
+		@JvmStatic
+		@Keep
+		private fun generateProxyInstance(interfaces: Array<String>, invocationHandler: InvocationHandler): Any? {
+			try {
+				val interfaceClasses = interfaces.map { Class.forName(it) }.toTypedArray()
+
+				val proxy = Proxy.newProxyInstance(invocationHandler.javaClass.classLoader, interfaceClasses, invocationHandler)
+				return proxy
+			} catch (e: Exception) {
+				Log.w(TAG, "Error generating Godot proxy for interfaces ${interfaces.joinToString(",")}", e)
+			}
+			return null
+		}
+
+		/**
+		 * Utility method used to create [java.lang.reflect.Proxy] instance wrapping a given Godot [Callable].
+		 *
+		 * The [Proxy] instance is used to implement one SAM interface with the [Callable] serving as the delegate
+		 * implementation for the SAM interface overridden methods.
+		 */
+		@JvmStatic
+		@Keep
+		private fun createProxyFromGodotCallable(interfaceName: String, godotCallable: Callable): Any? {
+			return generateProxyInstance(arrayOf(interfaceName)) { proxy, method, args ->
+				when (method.name) {
+					// We automatically handle 'toString', 'equals' and 'hashCode' to simplify the task of the caller
+					// and provide consistency.
+					"toString" -> "Godot Callable Proxy for $interfaceName"
+					"equals" -> proxy == args[0]
+					"hashCode" -> godotCallable.hashCode()
+
+					// Invocation for the interface single abstract method falls here and is dispatched to the
+					// Godot [Callable].
+					else -> godotCallable.call(*args)
+				}
+			}
+		}
+
+		/**
+		 * Utility method used to create [java.lang.reflect.Proxy] instance wrapping a given Godot Object represented by
+		 * its ObjectID.
+		 *
+		 * The [Proxy] instance is used to implement one or multiple interfaces with the Object represented by
+		 * [godotObjectID] serving as the delegate implementation for the interface(s) overridden methods.
+		 */
+		@JvmStatic
+		@Keep
+		private fun createProxyFromGodotObjectID(godotObjectID: Long, interfaces: Array<String>): Any? {
+			return generateProxyInstance(interfaces) { proxy, method, args ->
+				when (val methodName = method.name) {
+					// We automatically handle 'toString', 'equals' and 'hashCode' to simplify the task of the caller
+					// and provide consistency.
+					"toString" -> "Godot Object Proxy for ${interfaces.joinToString(",")}"
+					"equals" -> proxy == args[0]
+					"hashCode" -> godotObjectID
+
+					// Invocation for the remaining interface(s) methods falls here and is dispatched to the
+					// Godot Object.
+					else -> Callable.call(godotObjectID, methodName, *args)
+				}
+			}
+		}
+	}
 
 	override fun getPluginName() = "AndroidRuntime"
 

@@ -40,12 +40,17 @@ private:
 		uint32_t field32[4];
 	};
 
+	enum {
+		IPV4_MAX_STRING_LENGTH = 16,
+		IPV6_MAX_STRING_LENGTH = 40,
+	};
+
 	bool valid;
 	bool wildcard;
 
 protected:
-	void _parse_ipv6(const String &p_string);
-	void _parse_ipv4(const String &p_string, int p_start, uint8_t *p_ret);
+	static bool _parse_ipv6(const String &p_string, IPAddress &r_ip);
+	static bool _parse_ipv4(const String &p_string, int p_start, uint8_t *r_dest);
 
 public:
 	//operator Variant() const;
@@ -78,6 +83,8 @@ public:
 		}
 		return false;
 	}
+
+	static bool is_valid_ip_address(const String &p_string);
 
 	void clear();
 	bool is_wildcard() const { return wildcard; }

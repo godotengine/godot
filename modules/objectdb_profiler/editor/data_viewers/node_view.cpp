@@ -30,6 +30,7 @@
 
 #include "node_view.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
@@ -103,6 +104,7 @@ NodeTreeElements SnapshotNodeView::_make_node_tree(const String &p_tree_name) {
 	elements.tree->set_column_expand(0, true);
 	elements.tree->set_column_clip_content(0, false);
 	elements.tree->set_column_custom_minimum_width(0, 150 * EDSCALE);
+	elements.tree->set_theme_type_variation("TreeSecondary");
 	elements.tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotNodeView::_node_selected).bind(elements.tree));
 	elements.tree->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	elements.tree->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);

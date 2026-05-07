@@ -28,10 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "copy_effects.h"
+
 #ifdef GLES3_ENABLED
 
-#include "copy_effects.h"
-#include "../storage/texture_storage.h"
+#include "drivers/gles3/storage/texture_storage.h"
 
 using namespace GLES3;
 
@@ -67,8 +68,8 @@ CopyEffects::CopyEffects() {
 		glGenVertexArrays(1, &screen_triangle_array);
 		glBindVertexArray(screen_triangle_array);
 		glBindBuffer(GL_ARRAY_BUFFER, screen_triangle);
-		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+		glVertexAttribPointer(RSE::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glEnableVertexAttribArray(RSE::ARRAY_VERTEX);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
@@ -99,8 +100,8 @@ CopyEffects::CopyEffects() {
 		glGenVertexArrays(1, &quad_array);
 		glBindVertexArray(quad_array);
 		glBindBuffer(GL_ARRAY_BUFFER, quad);
-		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+		glVertexAttribPointer(RSE::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glEnableVertexAttribArray(RSE::ARRAY_VERTEX);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
@@ -187,6 +188,18 @@ void CopyEffects::copy_screen(float p_multiply) {
 	}
 
 	copy.shader.version_set_uniform(CopyShaderGLES3::MULTIPLY, p_multiply, copy.shader_version, CopyShaderGLES3::MODE_SCREEN);
+
+	draw_screen_triangle();
+}
+
+void CopyEffects::copy_with_exposure(float p_exposure, float p_multiply) {
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_APPLY_LINEAR_EXPOSURE_TO_SRGB);
+	if (!success) {
+		return;
+	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::EXPOSURE, p_exposure, copy.shader_version, CopyShaderGLES3::MODE_APPLY_LINEAR_EXPOSURE_TO_SRGB);
+	copy.shader.version_set_uniform(CopyShaderGLES3::MULTIPLY, p_multiply, copy.shader_version, CopyShaderGLES3::MODE_APPLY_LINEAR_EXPOSURE_TO_SRGB);
 
 	draw_screen_triangle();
 }

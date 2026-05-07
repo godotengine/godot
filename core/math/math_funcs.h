@@ -34,7 +34,6 @@
 #include "core/math/math_defs.h"
 #include "core/typedefs.h"
 
-#include <cfloat>
 #include <cmath>
 
 namespace Math {

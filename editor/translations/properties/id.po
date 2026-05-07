@@ -57,13 +57,14 @@
 # Fungki <fungki4444@gmail.com>, 2025.
 # Muhammad Affan Fahrozi <m.affanfahrozi@protonmail.com>, 2025.
 # Dandihk <n00b38d@gmail.com>, 2025.
+# Belang Sumerlang <belangsumerlang@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-26 15:03+0000\n"
-"Last-Translator: ProgrammerIndonesia 44 <elo.jhy@gmail.com>\n"
+"PO-Revision-Date: 2026-01-05 13:02+0000\n"
+"Last-Translator: Belang Sumerlang <belangsumerlang@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/id/>\n"
 "Language: id\n"
@@ -71,7 +72,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.14.1-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 msgid "Application"
 msgstr "Aplikasi"
@@ -222,6 +223,9 @@ msgstr "Periksa Jenis Interpolasi Sudut yang Bertentangan"
 
 msgid "Compatibility"
 msgstr "Kecocokan"
+
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "Skeleton Induk(Parent) Bawaan pada Mesh Instance 3D"
 
 msgid "Audio"
 msgstr "Suara"

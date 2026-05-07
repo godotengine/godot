@@ -146,6 +146,8 @@ public:
 
 		String to_string() const;
 		_FORCE_INLINE_ String to_string_strict() const { return is_hard_type() ? to_string() : "Variant"; }
+
+		String to_property_info_hint_string() const;
 		PropertyInfo to_property_info(const String &p_name) const;
 
 		_FORCE_INLINE_ static DataType get_variant_type() { // Default DataType for container elements.
@@ -269,7 +271,10 @@ public:
 		// };
 		// Type type = NO_ERROR;
 		String message;
-		int line = 0, column = 0;
+		int start_line;
+		int start_column;
+		int end_line;
+		int end_column;
 	};
 
 #ifdef TOOLS_ENABLED
@@ -337,8 +342,11 @@ public:
 		};
 
 		Type type = NONE;
-		int start_line = 0, end_line = 0;
-		int start_column = 0, end_column = 0;
+		// Negative values indicate a node which was used for sentence level recovery.
+		int start_line = -1;
+		int start_column = -1;
+		int end_line = -1;
+		int end_column = -1;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
 
@@ -1042,6 +1050,7 @@ public:
 	struct ReturnNode : public Node {
 		ExpressionNode *return_value = nullptr;
 		bool void_return = false;
+		bool use_conversion = false;
 
 		ReturnNode() {
 			type = RETURN;
@@ -1108,8 +1117,10 @@ public:
 			StringName name;
 			FunctionNode *source_function = nullptr;
 
-			int start_line = 0, end_line = 0;
-			int start_column = 0, end_column = 0;
+			int start_line = 0;
+			int start_column = 0;
+			int end_line = 0;
+			int end_column = 0;
 
 			DataType get_datatype() const;
 			String get_name() const;
@@ -1290,7 +1301,7 @@ public:
 		COMPLETION_ATTRIBUTE_METHOD, // After id.| to look for methods.
 		COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, // Constants inside a built-in type (e.g. Color.BLUE) or static methods (e.g. Color.html).
 		COMPLETION_CALL_ARGUMENTS, // Complete with nodes, input actions, enum values (or usual expressions).
-		// TODO: COMPLETION_DECLARATION, // Potential declaration (var, const, func).
+		COMPLETION_DECLARATION, // Potential declaration (var, const, class, etc.).
 		COMPLETION_GET_NODE, // Get node with $ notation.
 		COMPLETION_IDENTIFIER, // List available identifiers in scope.
 		COMPLETION_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
@@ -1492,6 +1503,8 @@ private:
 	void clear();
 
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
+	void push_error(const String &p_message, const GDScriptTokenizer::Token &p_origin);
+
 #ifdef DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
 	template <typename... Symbols>

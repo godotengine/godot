@@ -30,11 +30,10 @@
 
 package org.godotengine.godot.io
 
-import android.content.ContentResolver
 import android.content.Context
 import android.os.Build
 import android.os.Environment
-import androidx.core.net.toUri
+import org.godotengine.godot.Godot
 import java.io.File
 import org.godotengine.godot.GodotLib
 
@@ -70,6 +69,7 @@ internal enum class StorageScope {
 	class Identifier(context: Context) {
 
 		companion object {
+			internal const val ACCESS_RESOURCES_PREFIX = "res://"
 			internal const val ASSETS_PREFIX = "assets://"
 			internal const val CONTENT_PREFIX = "content://"
 		}
@@ -77,7 +77,7 @@ internal enum class StorageScope {
 		private val internalAppDir: String? = context.filesDir.canonicalPath
 		private val internalCacheDir: String? = context.cacheDir.canonicalPath
 		private val externalAppDir: String? = context.getExternalFilesDir(null)?.canonicalPath
-		private val obbDir: String? = context.obbDir.canonicalPath
+		private val obbDir: String? = context.obbDir?.canonicalPath
 		private val sharedDir : String? = Environment.getExternalStorageDirectory().canonicalPath
 		private val downloadsSharedDir: String? = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).canonicalPath
 		private val documentsSharedDir: String? = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).canonicalPath
@@ -99,6 +99,10 @@ internal enum class StorageScope {
 			}
 
 			if (path.startsWith(ASSETS_PREFIX)) {
+				return ASSETS
+			}
+
+			if (Godot.isTemplateBuild() && path.startsWith(ACCESS_RESOURCES_PREFIX)) {
 				return ASSETS
 			}
 

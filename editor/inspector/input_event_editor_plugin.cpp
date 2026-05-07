@@ -30,6 +30,7 @@
 
 #include "input_event_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/settings/input_event_configuration_dialog.h"

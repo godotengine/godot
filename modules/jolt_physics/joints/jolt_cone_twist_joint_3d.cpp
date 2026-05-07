@@ -34,7 +34,7 @@
 #include "../objects/jolt_body_3d.h"
 #include "../spaces/jolt_space_3d.h"
 
-#include "Jolt/Physics/Constraints/SwingTwistConstraint.h"
+#include <Jolt/Physics/Constraints/SwingTwistConstraint.h>
 
 namespace {
 

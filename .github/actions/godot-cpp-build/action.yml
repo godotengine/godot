@@ -22,7 +22,7 @@ runs:
   using: composite
   steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         submodules: recursive
         repository: godotengine/godot-cpp
@@ -35,4 +35,6 @@ runs:
 
     - name: SCons Build
       shell: sh
+      env:
+        SCONS_CACHE: ${{ inputs.scons-cache }}
       run: scons --directory=./godot-cpp/test "gdextension_dir=${{ github.workspace }}" ${{ inputs.scons-flags }}

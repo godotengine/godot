@@ -37,10 +37,24 @@ uniform highp uint align_mode;
 
 uniform highp mat4 inv_emission_transform;
 
-#define TRANSFORM_ALIGN_DISABLED uint(0)
-#define TRANSFORM_ALIGN_Z_BILLBOARD uint(1)
-#define TRANSFORM_ALIGN_Y_TO_VELOCITY uint(2)
-#define TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY uint(3)
+uniform uint align_channel_filter;
+uniform uint align_axis;
+
+#define ALIGN_DISABLED uint(0)
+#define ALIGN_BILLBOARD uint(1)
+#define ALIGN_Y_TO_VELOCITY uint(2)
+#define ALIGN_Z_BILLBOARD_Y_TO_VELOCITY uint(3)
+#define ALIGN_LOCAL_BILLBOARD uint(4)
+
+#define CHANNEL_FILTER_NONE uint(0)
+#define CHANNEL_FILTER_X uint(1)
+#define CHANNEL_FILTER_Y uint(2)
+#define CHANNEL_FILTER_Z uint(3)
+#define CHANNEL_FILTER_W uint(4)
+
+#define ALIGN_AXIS_X uint(0)
+#define ALIGN_AXIS_Y uint(1)
+#define ALIGN_AXIS_Z uint(2)
 
 #define PARTICLE_FLAG_ACTIVE uint(1)
 
@@ -57,15 +71,46 @@ void main() {
 		txform = transpose(mat4(xform_1, xform_2, vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)));
 #endif
 
-		if (align_mode == TRANSFORM_ALIGN_DISABLED) {
+		if (align_mode == ALIGN_DISABLED) {
 			// nothing
-		} else if (align_mode == TRANSFORM_ALIGN_Z_BILLBOARD) {
-			mat3 local = mat3(normalize(cross(align_up, sort_direction)), align_up, sort_direction);
-			local = local * mat3(txform);
-			txform[0].xyz = local[0];
-			txform[1].xyz = local[1];
-			txform[2].xyz = local[2];
-		} else if (align_mode == TRANSFORM_ALIGN_Y_TO_VELOCITY) {
+		} else if (align_mode == ALIGN_BILLBOARD) {
+			float angle = 0.;
+			if (align_channel_filter == CHANNEL_FILTER_NONE) {
+				mat3 local = mat3(normalize(cross(align_up, sort_direction)), align_up, sort_direction);
+				local = local * mat3(txform);
+				txform[0].xyz = local[0];
+				txform[1].xyz = local[1];
+				txform[2].xyz = local[2];
+			} else {
+				if (align_channel_filter == CHANNEL_FILTER_X) {
+					angle = custom.x;
+
+				} else if (align_channel_filter == CHANNEL_FILTER_Y) {
+					angle = custom.y;
+
+				} else if (align_channel_filter == CHANNEL_FILTER_Z) {
+					angle = custom.z;
+
+				} else if (align_channel_filter == CHANNEL_FILTER_W) {
+					angle = custom.w;
+				}
+
+				vec3 axis = normalize(sort_direction);
+				float s = sin(angle);
+				float c = cos(angle);
+				float oc = 1.0 - c;
+				mat3 rotated = mat3(
+						oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s,
+						oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s,
+						oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c);
+				vec3 new_up = rotated * align_up;
+				mat3 local = mat3(normalize(cross(new_up, sort_direction)), new_up, sort_direction);
+				local = local * mat3(txform);
+				txform[0].xyz = local[0];
+				txform[1].xyz = local[1];
+				txform[2].xyz = local[2];
+			}
+		} else if (align_mode == ALIGN_Y_TO_VELOCITY) {
 			vec3 v = velocity_flags.xyz;
 			float s = (length(txform[0]) + length(txform[1]) + length(txform[2])) / 3.0;
 			if (length(v) > 0.0) {
@@ -78,7 +123,7 @@ void main() {
 			txform[2].xyz = vec3(0.0, 0.0, 1.0) * s;
 			txform[0].xyz *= s;
 			txform[1].xyz *= s;
-		} else if (align_mode == TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+		} else if (align_mode == ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
 			vec3 sv = velocity_flags.xyz - sort_direction * dot(sort_direction, velocity_flags.xyz); //screen velocity
 
 			if (length(sv) == 0.0) {
@@ -90,6 +135,32 @@ void main() {
 			txform[0].xyz = normalize(cross(sv, sort_direction)) * length(txform[0]);
 			txform[1].xyz = sv * length(txform[1]);
 			txform[2].xyz = sort_direction * length(txform[2]);
+		} else if (align_mode == ALIGN_LOCAL_BILLBOARD) {
+			if (align_axis == ALIGN_AXIS_X) {
+				vec3 len = vec3(
+						length(txform[0].xyz),
+						length(txform[1].xyz),
+						length(txform[2].xyz));
+				txform[0].xyz = normalize(txform[0].xyz);
+				txform[1].xyz = normalize(cross(sort_direction, txform[0].xyz));
+				txform[2].xyz = cross(txform[0].xyz, txform[1].xyz);
+
+				txform[0].xyz *= len.x;
+				txform[1].xyz *= len.y;
+				txform[2].xyz *= len.z;
+			} else if (align_axis == ALIGN_AXIS_Y) {
+				vec3 len = vec3(
+						length(txform[0].xyz),
+						length(txform[1].xyz),
+						length(txform[2].xyz));
+				txform[1].xyz = normalize(txform[1].xyz);
+				txform[0].xyz = normalize(cross(txform[1].xyz, sort_direction));
+				txform[2].xyz = cross(txform[0].xyz, txform[1].xyz);
+
+				txform[0].xyz *= len.x;
+				txform[1].xyz *= len.y;
+				txform[2].xyz *= len.z;
+			}
 		}
 
 		txform[3].xyz += velocity_flags.xyz * frame_remainder;

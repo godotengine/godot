@@ -409,6 +409,12 @@ hb_coretext_get_glyph_name (hb_font_t *font,
   if (!cf_name)
     return false;
 
+  if (!size)
+  {
+    CFRelease (cf_name);
+    return true;
+  }
+
   CFIndex len = CFStringGetLength (cf_name);
   if (len > (CFIndex)size - 1)
     len = (CFIndex)size - 1;

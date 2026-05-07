@@ -12,7 +12,7 @@ struct PairPos
 {
   protected:
   union {
-  HBUINT16			format;         /* Format identifier */
+  struct { HBUINT16 v; }	format;         /* Format identifier */
   PairPosFormat1_3<SmallTypes>	format1;
   PairPosFormat2_4<SmallTypes>	format2;
 #ifndef HB_NO_BEYOND_64K
@@ -25,9 +25,9 @@ struct PairPos
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
-    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
-    TRACE_DISPATCH (this, u.format);
-    switch (u.format) {
+    if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format.v);
+    switch (u.format.v) {
     case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
 #ifndef HB_NO_BEYOND_64K

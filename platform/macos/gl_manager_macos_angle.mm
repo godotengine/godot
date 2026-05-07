@@ -32,10 +32,10 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
+#import <EGL/eglext_angle.h>
+
 #include <cstdio>
 #include <cstdlib>
-
-#import <EGL/eglext_angle.h>
 
 const char *GLManagerANGLE_MacOS::_get_platform_extension_name() const {
 	return "EGL_ANGLE_platform_angle";

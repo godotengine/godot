@@ -31,6 +31,10 @@
 #include "bone_attachment_3d.h"
 #include "bone_attachment_3d.compat.inc"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
 void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "bone_name") {
 		// Because it is a constant function, we cannot use the get_skeleton function.
@@ -50,6 +54,7 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 			p_property.hint = PROPERTY_HINT_NONE;
 			p_property.hint_string = "";
 		}
+		return;
 	}
 
 	if (p_property.name == "external_skeleton" && !use_external_skeleton) {

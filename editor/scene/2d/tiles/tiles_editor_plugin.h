@@ -30,10 +30,10 @@
 
 #pragma once
 
+#include "core/os/semaphore.h"
 #include "editor/plugins/editor_plugin.h"
-
-#include "tile_map_layer_editor.h"
-#include "tile_set_editor.h"
+#include "editor/scene/2d/tiles/tile_map_layer_editor.h"
+#include "editor/scene/2d/tiles/tile_set_editor.h"
 
 class TilesEditorUtils : public Object {
 	GDCLASS(TilesEditorUtils, Object);
@@ -164,8 +164,8 @@ public:
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
+	void open_editor();
 
-	void make_visible_no_focus();
 	ObjectID get_edited_tileset() const;
 
 	TileSetEditorPlugin();

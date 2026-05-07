@@ -1,0 +1,28 @@
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/Constraints/ContactConstraintManager.cpp b/thirdparty/jolt_physics/Jolt/Physics/Constraints/ContactConstraintManager.cpp
+index 972fc13583..09dfab4921 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/Constraints/ContactConstraintManager.cpp
++++ b/thirdparty/jolt_physics/Jolt/Physics/Constraints/ContactConstraintManager.cpp
+@@ -70,7 +70,10 @@ JPH_INLINE void ContactConstraintManager::WorldContactPoint::TemplatedCalculateF
+ 	else if constexpr (Type2 != EMotionType::Static)
+ 		relative_velocity = mp2->GetPointVelocityCOM(r2);
+ 	else
+-		static_assert(false, "Static vs static makes no sense");
++	{
++		JPH_ASSERT(false, "Static vs static makes no sense");
++		relative_velocity = Vec3::sZero();
++	}
+ 	float normal_velocity = relative_velocity.Dot(inWorldSpaceNormal);
+ 
+ 	// How much the shapes are penetrating (> 0 if penetrating, < 0 if separated)
+@@ -109,7 +112,10 @@ JPH_INLINE void ContactConstraintManager::WorldContactPoint::TemplatedCalculateF
+ 			else if constexpr (Type2 != EMotionType::Static)
+ 				relative_acceleration = inGravity * mp2->GetGravityFactor();
+ 			else
+-				static_assert(false, "Static vs static makes no sense");
++			{
++				JPH_ASSERT(false, "Static vs static makes no sense");
++				relative_acceleration = Vec3::sZero();
++			}
+ 
+ 			// Calculate effect of accumulated forces
+ 			if constexpr (Type1 == EMotionType::Dynamic)

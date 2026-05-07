@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 #include "scene/gui/control.h"
 
 class ScriptEditorDebugger;
@@ -45,7 +47,6 @@ private:
 	void _breaked(bool p_really_did, bool p_can_debug, const String &p_message, bool p_has_stackdump);
 	void _started();
 	void _stopped();
-	void _debugger_gone_away();
 
 protected:
 	static void _bind_methods();

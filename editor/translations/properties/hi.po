@@ -20,13 +20,13 @@
 # "Rudra Harsh V.Singh" <rudraHarsh45@proton.me>, 2023.
 # Arpit T <devlinker.arptiw@gmail.com>, 2023.
 # Priyanshu Dutt <priyanshudutt720@gmail.com>, 2023.
-# VKing9 <vaibhavrathod2282@gmail.com>, 2024, 2025.
+# VKing9 <vaibhavrathod2282@gmail.com>, 2024, 2025, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-16 18:00+0000\n"
+"PO-Revision-Date: 2026-01-12 20:12+0000\n"
 "Last-Translator: VKing9 <vaibhavrathod2282@gmail.com>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/hi/>\n"
@@ -35,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1-dev\n"
+"X-Generator: Weblate 5.15.2-dev\n"
 
 msgid "Application"
 msgstr "अनुप्रयोग"
@@ -84,6 +84,9 @@ msgstr "खुदसे बनाई हुई उपयोगकर्ता �
 
 msgid "Project Settings Override"
 msgstr "प्रोजेक्ट सेटिंग्स ओवरराइड"
+
+msgid "Disable Project Settings Override"
+msgstr "प्रोजेक्ट सेटिंग्स ओवरराइड निष्क्रिय करे"
 
 msgid "Main Loop Type"
 msgstr "मुख्य लूप प्रकार"
@@ -187,6 +190,9 @@ msgstr "एंगल इंटरपोलेशन टाइप के वि�
 msgid "Compatibility"
 msgstr "अनुकूलता"
 
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "मेश इनस्टन्स 3डी में प्रायिक पैरेंट स्केलेटन"
+
 msgid "Audio"
 msgstr "ऑडियो"
 
@@ -213,6 +219,9 @@ msgstr "iOS"
 
 msgid "Session Category"
 msgstr "सेशन श्रेणी"
+
+msgid "Mix with Others"
+msgstr "दूसरों के साथ मिलाएं"
 
 msgid "Subwindows"
 msgstr "छोटे विंडो"
@@ -340,8 +349,14 @@ msgstr "टूलटिप विलंब (सेकंड)"
 msgid "Common"
 msgstr "साधारण"
 
+msgid "Drag Threshold"
+msgstr "ड्रैग थ्रेसहोल्ड"
+
 msgid "Snap Controls to Pixels"
 msgstr "नियंत्रणों को पिक्सल पर स्नैप करें"
+
+msgid "Show Focus State on Pointer Event"
+msgstr "पॉइंटर इवेंट पर फोकस स्थिति दिखाएँ"
 
 msgid "Fonts"
 msgstr "लिपि"
@@ -396,6 +411,12 @@ msgstr "प्रति पूल अधिकतम विवरण"
 
 msgid "D3D12"
 msgstr "D3D12"
+
+msgid "Max Resource Descriptors"
+msgstr "अधिकतम संसाधन वर्णनकर्ता"
+
+msgid "Max Sampler Descriptors"
+msgstr "अधिकतम सैंपलर वर्णनकर्ता"
 
 msgid "Agility SDK Version"
 msgstr "चपलता SDK संस्करण"
@@ -486,6 +507,9 @@ msgstr "नवमेश एज मर्ज त्रुटियाँ"
 
 msgid "NavMesh Cell Size Mismatch"
 msgstr "नेवमेश सेल आकार बेमेल"
+
+msgid "Editor Overrides"
+msgstr "एडीटर ओवरराइड"
 
 msgid "Low Processor Usage Mode"
 msgstr "कम प्रोसेसर प्रयोग मोड"
@@ -775,6 +799,9 @@ msgstr "TCP"
 msgid "Connect Timeout Seconds"
 msgstr "कनेक्ट टाइमआउट सेकंड"
 
+msgid "Unix"
+msgstr "यूनिक्स"
+
 msgid "Packet Peer Stream"
 msgstr "पैकेट पीयर स्ट्रीम"
 
@@ -799,6 +826,9 @@ msgstr "कम प्राथमिकता थ्रेड अनुपात
 msgid "Locale"
 msgstr "लोकेल"
 
+msgid "Plural Rules Override"
+msgstr "बहुवचन नियम ओवरराइड"
+
 msgid "Test"
 msgstr "टेस्ट"
 
@@ -810,6 +840,9 @@ msgstr "छद्म स्थानीयकरण"
 
 msgid "Use Pseudolocalization"
 msgstr "छद्मस्थानीकरण का उपयोग करें"
+
+msgid "Replace with Accents"
+msgstr "उच्चारण चिह्नों से बदलें"
 
 msgid "Double Vowels"
 msgstr "दोहरा स्वर"
@@ -888,6 +921,36 @@ msgstr "सिंक ब्रेकपॉइंट"
 
 msgid "Title"
 msgstr "शीर्षक"
+
+msgid "Layout Key"
+msgstr "लेआउट कुंजी"
+
+msgid "Global"
+msgstr "वैश्विक"
+
+msgid "Closable"
+msgstr "बंद करने योग्य"
+
+msgid "Icon Name"
+msgstr "दृश्यचिन्ह नाम"
+
+msgid "Dock Icon"
+msgstr "डौक दृश्यचिन्ह"
+
+msgid "Force Show Icon"
+msgstr "फोर्स शो आइकन"
+
+msgid "Title Color"
+msgstr "शीर्षक रंग"
+
+msgid "Dock Shortcut"
+msgstr "डॉक शॉर्टकट"
+
+msgid "Default Slot"
+msgstr "डिफ़ॉल्ट स्लॉट"
+
+msgid "Available Layouts"
+msgstr "उपलब्ध लेआउट"
 
 msgid "Distraction Free Mode"
 msgstr "व्याकुलता मुक्त मोड"
@@ -1065,6 +1128,9 @@ msgstr "केवल पढ़ने के लिए"
 
 msgid "Flat"
 msgstr "समतल"
+
+msgid "Control State"
+msgstr "नियंत्रण स्थिति"
 
 msgid "Hide Slider"
 msgstr "स्लाइडर छिपाएँ"
@@ -1287,6 +1353,9 @@ msgstr "सरलीकरण दूरी"
 
 msgid "Save to File"
 msgstr "नत्थी में सहेजें"
+
+msgid "Shadow Meshes"
+msgstr "छाया मेष"
 
 msgid "Lightmap UV"
 msgstr "लाइटमैप UV"
@@ -1512,6 +1581,12 @@ msgstr "स्केलिंग मोड"
 
 msgid "Delimiter"
 msgstr "सीमान्तक"
+
+msgid "Unescape Keys"
+msgstr "अनस्केप कीज़"
+
+msgid "Unescape Translations"
+msgstr "अनएस्केप अनुवाद"
 
 msgid "Character Ranges"
 msgstr "अक्षरों की सीमा"
@@ -1907,6 +1982,9 @@ msgstr "मुख्य लिपि बोल्ड"
 msgid "Code Font"
 msgstr "कोड फ़ॉन्ट"
 
+msgid "Dragging Hover Wait Seconds"
+msgstr "ड्रेगिंग होवर प्रतीक्षा सेकंड"
+
 msgid "Separate Distraction Mode"
 msgstr "अलग करना मोड"
 
@@ -2143,6 +2221,9 @@ msgstr "बाइनरी संसाधनों को संपीड़ि
 
 msgid "Safe Save on Backup then Rename"
 msgstr "बैकअप पर सुरक्षित सहेजें फिर नाम बदलें"
+
+msgid "Warn on Saving Large Text Resources"
+msgstr "बड़े टेक्स्ट संसाधनों को सहेजने के बारे में चेतावनी"
 
 msgid "File Server"
 msgstr "फ़ाइल सर्वर"
@@ -2441,6 +2522,9 @@ msgstr "ग्रिडमैप ग्रिड"
 msgid "Spring Bone Inside Collision"
 msgstr "स्प्रिंग बोन के अंदर टक्कर"
 
+msgid "IK Chain"
+msgstr "IK चेन"
+
 msgid "Primary Grid Steps"
 msgstr "प्राथमिक ग्रिड चरण"
 
@@ -2545,6 +2629,9 @@ msgstr "ट्रैक डालने की पुष्टि करें"
 
 msgid "Default Create Bezier Tracks"
 msgstr "डिफ़ॉल्ट बेज़ियर ट्रैक बनाएँ"
+
+msgid "Insert at Current Time"
+msgstr "वर्तमान समय में सम्मिलित करें"
 
 msgid "Minimap Opacity"
 msgstr "मिनिमैप अपारदर्शिता"
@@ -2710,6 +2797,15 @@ msgstr "फोवेशन डायनेमिक"
 
 msgid "Submit Depth Buffer"
 msgstr "गहराई बफर सबमिट करें"
+
+msgid "Frame Synthesis"
+msgstr "फ्रेम संश्लेषण"
+
+msgid "Aruco Dict"
+msgstr "अरुको डिक्ट"
+
+msgid "April Tag Dict"
+msgstr "अप्रैल टैग डिक्ट"
 
 msgid "Analog Threshold"
 msgstr "एनालॉग थ्रेशोल्ड"
@@ -3293,6 +3389,12 @@ msgstr "दहलीज पर"
 msgid "Off Threshold"
 msgstr "दहलीज से बाहर"
 
+msgid "April Dict"
+msgstr "अप्रैल डिक्ट"
+
+msgid "Marker ID"
+msgstr "मार्कर ID"
+
 msgid "Next"
 msgstr "अ‍गला"
 
@@ -3364,6 +3466,9 @@ msgstr "एक्सपोर्टेड एपीके इंस्टॉल 
 
 msgid "Java SDK Path"
 msgstr "जावा SDK पथ"
+
+msgid "scrcpy"
+msgstr "स्क्रैपी"
 
 msgid "Force System User"
 msgstr "फोर्स सिस्टम उपयोगकर्ता"
@@ -3478,6 +3583,9 @@ msgstr "वास्तुकला"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Liquid Glass Icon"
+msgstr "तरल ग्लास दृश्यचिन्ह"
 
 msgid "High Res"
 msgstr "उच्च Res"
@@ -4174,6 +4282,9 @@ msgstr "प्रकाश डेटा"
 
 msgid "Exclude"
 msgstr "निकालना"
+
+msgid "Chains"
+msgstr "चेन"
 
 msgid "Use Secondary Rotation"
 msgstr "द्वितीयक घुमाव का उपयोग करें"
@@ -5615,6 +5726,9 @@ msgstr "विभाजक रूपरेखा आकार"
 msgid "Item End Padding"
 msgstr "आइटम अंत पैडिंग"
 
+msgid "Gutter Compact"
+msgstr "गटर कॉम्पैक्ट"
+
 msgid "Slot"
 msgstr "slot"
 
@@ -5632,6 +5746,12 @@ msgstr "कस्टम बटन लिपि हाइलाइट"
 
 msgid "Parent HL Line Margin"
 msgstr "मूल HL लाइन मार्जिन"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "खींचकर खोलें, कुछ मिलीसेकंड प्रतीक्षा करें"
+
+msgid "Hover Switch Wait Msec"
+msgstr "होवर स्विच प्रतीक्षा Msec"
 
 msgid "Center Slider Grabbers"
 msgstr "सेंटर स्लाइडर ग्रैबर्स"

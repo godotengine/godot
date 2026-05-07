@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Shader" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Shader" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A shader implemented in the Godot shading language.
 	</brief_description>
@@ -73,6 +73,9 @@
 		</constant>
 		<constant name="MODE_FOG" value="4" enum="Mode">
 			Mode used for setting the color and density of volumetric fog effect.
+		</constant>
+		<constant name="MODE_TEXTURE_BLIT" value="5" enum="Mode">
+			Mode used for drawing to DrawableTexture resources via blit calls.
 		</constant>
 	</constants>
 </class>

@@ -68,7 +68,7 @@ def get_android_ndk_root(env: "SConsEnvironment"):
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_ndk_version():
-    return "28.1.13356709"
+    return "29.0.14206865"
 
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
@@ -112,6 +112,21 @@ def detect_swappy():
         if not os.path.isfile(f"thirdparty/swappy-frame-pacing/{arch}/libswappy_static.a"):
             has_swappy = False
     return has_swappy
+
+
+def should_enable_perfetto(env: "SConsEnvironment"):
+    from SCons.Script import ARGUMENTS
+
+    cmdline_val = ARGUMENTS.get("profiler")
+    if cmdline_val is not None:
+        return cmdline_val == "perfetto"
+    elif env.debug_features and not (env["store_release"]) and not (env["production"]):
+        return True
+    return False
+
+
+def detect_perfetto():
+    return os.path.exists("thirdparty/perfetto")
 
 
 def configure(env: "SConsEnvironment"):
@@ -188,10 +203,20 @@ def configure(env: "SConsEnvironment"):
         CCFLAGS=(["-fpic", "-ffunction-sections", "-funwind-tables", "-fstack-protector-strong", "-fvisibility=hidden"])
     )
 
+    if should_enable_perfetto(env):
+        has_perfetto = detect_perfetto()
+        if not has_perfetto:
+            print_warning(
+                f"Perfetto not detected! It is recommended you run `python {os.path.join('misc', 'scripts', 'install_perfetto.py')}` to download and install Perfetto before compiling.\n"
+            )
+        else:
+            env["profiler"] = "perfetto"
+            env["profiler_path"] = os.path.abspath("thirdparty/perfetto")
+
     has_swappy = detect_swappy()
     if not has_swappy:
         print_warning(
-            "Swappy Frame Pacing not detected! It is strongly recommended you run `python misc/scripts/install_swappy_android.py` to download and install Swappy before compiling.\n"
+            f"Swappy Frame Pacing not detected! It is strongly recommended you run `python {os.path.join('misc', 'scripts', 'install_swappy_android.py')}` to download and install Swappy before compiling.\n"
             + "Without Swappy, Godot apps on Android will inevitably suffer stutter and struggle to keep a consistent framerate. Although Swappy cannot guarantee your app will be stutter-free, not having Swappy will guarantee there will be stutter even on the best phones and the most simple of scenes."
         )
         if env["swappy"]:

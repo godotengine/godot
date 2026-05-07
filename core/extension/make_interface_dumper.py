@@ -17,7 +17,7 @@ def run(target, source, env):
 inline constexpr int _gdextension_interface_data_compressed_size = {len(buffer)};
 inline constexpr int _gdextension_interface_data_uncompressed_size = {decomp_size};
 inline constexpr unsigned char _gdextension_interface_data_compressed[] = {{
-	{methods.format_buffer(buffer, 1)}
+{methods.format_buffer(buffer, 1)}
 }};
 
 class GDExtensionInterfaceDump {{

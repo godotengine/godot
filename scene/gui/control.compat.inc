@@ -30,6 +30,11 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "control.h"
+
+#include "core/object/class_db.h"
+#include "servers/display/display_server.h" // IWYU pragma: keep // Needed to bind DisplayServerEnums enums.
+
 bool Control::_has_focus_bind_compat_110250() const {
 	return has_focus(false);
 }
@@ -41,6 +46,9 @@ void Control::_grab_focus_bind_compat_110250() {
 void Control::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("has_focus"), &Control::_has_focus_bind_compat_110250);
 	ClassDB::bind_compatibility_method(D_METHOD("grab_focus"), &Control::_grab_focus_bind_compat_110250);
+
+	ClassDB::bind_compatibility_method(D_METHOD("set_accessibility_live", "mode"), (void (Control::*)(DisplayServerEnums::AccessibilityLiveMode))&Control::set_accessibility_live);
+	ClassDB::bind_compatibility_method(D_METHOD("get_accessibility_live"), (DisplayServerEnums::AccessibilityLiveMode (Control::*)() const) & Control::get_accessibility_live);
 }
 
 #endif // DISABLE_DEPRECATED

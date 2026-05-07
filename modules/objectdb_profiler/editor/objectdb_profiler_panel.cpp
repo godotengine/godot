@@ -38,6 +38,8 @@
 #include "data_viewers/summary_view.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -50,6 +52,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
+#include "scene/main/scene_tree.h"
 
 // ObjectDB snapshots are very large. In remote_debugger_peer.cpp, the max in_buf and out_buf size is 8mb.
 // Snapshots are typically larger than that, so we send them 6mb at a time. Leaving 2mb for other data.
@@ -88,7 +91,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 		partial_snapshots[request_id] = PartialSnapshot();
 		partial_snapshots[request_id].total_size = total_size;
 		Array args = { request_id, 0, SNAPSHOT_CHUNK_SIZE };
-		take_snapshot->set_text(vformat(TTRC("Receiving Snapshot (0/%s MiB)"), _to_mb(total_size)));
+		take_snapshot->set_text(vformat(TTR("Receiving Snapshot (0/%s MiB)"), _to_mb(total_size)));
 		EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_snapshot_chunk", args);
 		return true;
 	}
@@ -96,7 +99,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 		int request_id = p_data[0];
 		PartialSnapshot &chunk = partial_snapshots[request_id];
 		chunk.data.append_array(p_data[1]);
-		take_snapshot->set_text(vformat(TTRC("Receiving Snapshot (%s/%s MiB)"), _to_mb(chunk.data.size()), _to_mb(chunk.total_size)));
+		take_snapshot->set_text(vformat(TTR("Receiving Snapshot (%s/%s MiB)"), _to_mb(chunk.data.size()), _to_mb(chunk.total_size)));
 		if (chunk.data.size() != chunk.total_size) {
 			Array args = { request_id, chunk.data.size(), chunk.data.size() + SNAPSHOT_CHUNK_SIZE };
 			EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_snapshot_chunk", args);
@@ -270,7 +273,7 @@ void ObjectDBProfilerPanel::_snapshot_rmb(const Vector2 &p_pos, MouseButton p_bu
 	rmb_menu->clear(false);
 
 	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Rename")), TTRC("Rename"), OdbProfilerMenuOptions::ODB_MENU_RENAME);
-	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("Show in File Manager"), OdbProfilerMenuOptions::ODB_MENU_SHOW_IN_FOLDER);
+	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN), OdbProfilerMenuOptions::ODB_MENU_SHOW_IN_FOLDER);
 	rmb_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTRC("Delete"), OdbProfilerMenuOptions::ODB_MENU_DELETE);
 
 	rmb_menu->set_position(snapshot_list->get_screen_position() + p_pos);
@@ -404,6 +407,7 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 
 	// Tabs of various views right for each snapshot.
 	view_tabs = memnew(TabContainer);
+	view_tabs->set_theme_type_variation("TabContainerInner");
 	root_container->add_child(view_tabs);
 	view_tabs->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	view_tabs->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);

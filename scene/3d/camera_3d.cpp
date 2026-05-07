@@ -30,9 +30,13 @@
 
 #include "camera_3d.h"
 
+#include "core/config/engine.h"
 #include "core/math/projection.h"
 #include "core/math/transform_interpolator.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 
 void Camera3D::_update_audio_listener_state() {
 }
@@ -66,22 +70,28 @@ void Camera3D::fti_update_servers_property() {
 	if (camera.is_valid()) {
 		float f = Engine::get_singleton()->get_physics_interpolation_fraction();
 
+		bool update_fov = fov.interpolate(f);
+		bool update_near = _near.interpolate(f);
+		bool update_far = _far.interpolate(f);
+		bool update_size = size.interpolate(f);
+		bool update_frustum_offset = frustum_offset.interpolate(f);
+
+		// If there have been changes due to interpolated values, OR we are forcing an update, update the servers.
 		switch (mode) {
 			default:
 				break;
 			case PROJECTION_PERSPECTIVE: {
-				// If there have been changes due to interpolation, update the servers.
-				if (fov.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_fov || update_near || update_far) {
 					RS::get_singleton()->camera_set_perspective(camera, fov.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
 			case PROJECTION_ORTHOGONAL: {
-				if (size.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_size || update_near || update_far) {
 					RS::get_singleton()->camera_set_orthogonal(camera, size.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
 			case PROJECTION_FRUSTUM: {
-				if (size.interpolate(f) || frustum_offset.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_size || update_frustum_offset || update_near || update_far) {
 					RS::get_singleton()->camera_set_frustum(camera, size.interpolated(), frustum_offset.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
@@ -122,14 +132,17 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			if (mode != PROJECTION_PERSPECTIVE) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		} else if (p_property.name == "size") {
 			if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		} else if (p_property.name == "frustum_offset") {
 			if (mode != PROJECTION_FRUSTUM) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		}
 	}
 
@@ -671,9 +684,9 @@ void Camera3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keep_aspect", PROPERTY_HINT_ENUM, "Keep Width,Keep Height"), "set_keep_aspect_mode", "get_keep_aspect_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, Environment::get_class_static()), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_attributes", "get_attributes");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "compositor", PROPERTY_HINT_RESOURCE_TYPE, "Compositor"), "set_compositor", "get_compositor");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "compositor", PROPERTY_HINT_RESOURCE_TYPE, Compositor::get_class_static()), "set_compositor", "get_compositor");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");

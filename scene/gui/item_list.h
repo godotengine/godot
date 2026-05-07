@@ -188,6 +188,7 @@ protected:
 		Color guide_color;
 
 		Ref<Texture2D> scroll_hint;
+		Color scroll_hint_color;
 	} theme_cache;
 
 	void _notification(int p_what);
@@ -318,11 +319,13 @@ public:
 	bool get_allow_search() const;
 
 	void ensure_current_is_visible();
+	void center_on_current(bool p_center_verically = true, bool p_center_horizontally = true);
 
 	void sort_items_by_text();
 	int find_metadata(const Variant &p_metadata) const;
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
+	virtual AutoTranslateMode get_tooltip_auto_translate_mode_at(const Point2 &p_at) const override;
 	int get_item_at_position(const Point2 &p_pos, bool p_exact = false) const;
 	bool is_pos_at_end_of_items(const Point2 &p_pos) const;
 

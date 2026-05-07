@@ -53,6 +53,7 @@ typedef struct joystick_hwdata
     bool is_switch_joycon_pair;
     bool is_switch_joyconL;
     bool is_switch_joyconR;
+    bool is_shield;
     bool is_stadia;
     bool is_backbone_one;
     int is_siri_remote;

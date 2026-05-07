@@ -59,7 +59,7 @@ public:
 	CollisionGroup		mCollisionGroup;					///< The collision group this body belongs to (determines if two objects can collide)
 
 	uint32				mNumIterations = 5;					///< Number of solver iterations
-	float				mLinearDamping = 0.1f;				///< Linear damping: dv/dt = -mLinearDamping * v
+	float				mLinearDamping = 0.1f;				///< Linear damping: dv/dt = -mLinearDamping * v. Value should be zero or positive and is usually close to 0.
 	float				mMaxLinearVelocity = 500.0f;		///< Maximum linear velocity that a vertex can reach (m/s)
 	float				mRestitution = 0.0f;				///< Restitution when colliding
 	float				mFriction = 0.2f;					///< Friction coefficient when colliding
