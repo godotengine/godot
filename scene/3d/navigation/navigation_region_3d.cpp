@@ -147,7 +147,6 @@ void NavigationRegion3D::set_area_navigation_layers(uint16_t p_area_index, uint3
 	ERR_FAIL_COND_MSG(!navigation_mesh.is_valid(), "Navigation mesh must be set.");
 	ERR_FAIL_COND_MSG(p_area_index >= NavigationServer3D::get_singleton()->region_get_area_count(region), "Invalid navigation area index.");
 
-
 	uint32_t _navigation_layers = NavigationServer3D::get_singleton()->region_get_area_navigation_layers_at_index(region, p_area_index);
 	if (_navigation_layers == p_navigation_layers) {
 		return;
@@ -201,7 +200,7 @@ bool NavigationRegion3D::get_area_navigation_layer_value(uint16_t p_area_index, 
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(!navigation_mesh.is_valid(), false, "Navigation mesh must be set.");
-	ERR_FAIL_COND_V_MSG(p_area_index >= NavigationServer3D::get_singleton()->region_get_area_count(region), 0, "Invalid navigation area index.");
+	ERR_FAIL_COND_V_MSG(p_area_index >= NavigationServer3D::get_singleton()->region_get_area_count(region), false, "Invalid navigation area index.");
 
 	uint32_t _navigation_layers = NavigationServer3D::get_singleton()->region_get_area_navigation_layers_at_index(region, p_area_index);
 	return _navigation_layers & (1 << (p_layer_number - 1));

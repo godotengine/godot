@@ -38,7 +38,7 @@
 	</methods>
 	<members>
 		<member name="bake_id" type="String" setter="set_bake_id" getter="get_bake_id" default="&quot;&quot;">
-			This id is baked to the navigation mesh, provided this area affected the baking process. Can be used together with [method NavigationRegion3D.get_area_id].
+			This id is baked to the navigation mesh, provided this area affected the baking process. Can be used together with [method NavigationRegion3D.get_area_index].
 		</member>
 		<member name="bake_priority" type="int" setter="set_bake_priority" getter="get_bake_priority" default="0">
 			The priority of the area during the baking process. If multiple areas overlap for the same polygons the area with the highest [member bake_priority] wins.

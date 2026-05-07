@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_mesh_generator_3d.compat.inc                                      */
+/*  navigation_mesh_generator.compat.inc                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */

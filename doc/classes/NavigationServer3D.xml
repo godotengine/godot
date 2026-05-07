@@ -962,7 +962,7 @@
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="area_index" type="int" />
 			<description>
-				Same as [method region_get_area_navigation_layers], but faster. Takes the area's index as a paramter instead.
+				Same as [method region_get_area_navigation_layers], but faster. Takes the area's index as a parameter instead.
 			</description>
 		</method>
 		<method name="region_get_bounds" qualifiers="const">
@@ -1129,7 +1129,7 @@
 			<param index="1" name="area_index" type="int" />
 			<param index="2" name="navigation_layers" type="int" />
 			<description>
-				Same as [method region_set_area_navigation_layers], but faster. Takes the area's index as a paramter instead.
+				Same as [method region_set_area_navigation_layers], but faster. Takes the area's index as a parameter instead.
 			</description>
 		</method>
 		<method name="region_set_enabled">
