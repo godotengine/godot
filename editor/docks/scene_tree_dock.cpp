@@ -69,6 +69,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/missing_node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
@@ -4572,15 +4573,35 @@ void SceneTreeDock::paste_node_as_replacement() {
 			}
 		}
 
-		Variant selected_pos;
-		if (selected->has_method("get_position")) {
-			selected_pos = selected->call("get_position");
+		const bool is_missing_node_selected = Object::cast_to<MissingNode>(selected) != nullptr;
+		const CanvasItem *selected_canvas_item = Object::cast_to<CanvasItem>(selected);
+		const Node3D *selected_node_3d = Object::cast_to<Node3D>(selected);
+		Transform2D selected_transform_2d;
+		Transform3D selected_transform_3d;
+		if (selected_canvas_item) {
+			selected_transform_2d = selected_canvas_item->get_transform();
+		} else if (selected_node_3d) {
+			selected_transform_3d = selected_node_3d->get_transform();
 		}
-		_replace_node(selected, new_node, false);
+
+		_replace_node(selected, new_node, is_missing_node_selected);
 		new_node->set_scene_file_path(new_scene_file_path);
 
-		if (new_node->has_method("set_position")) {
-			new_node->call("set_position", selected_pos);
+		if (selected_canvas_item) {
+			Node2D *new_node_2d = Object::cast_to<Node2D>(new_node);
+			Control *new_control = Object::cast_to<Control>(new_node);
+			if (new_node_2d) {
+				new_node_2d->set_transform(selected_transform_2d);
+			} else if (new_control) {
+				new_control->set_position(selected_transform_2d.get_origin());
+				new_control->set_rotation(selected_transform_2d.get_rotation());
+				new_control->set_scale(selected_transform_2d.get_scale());
+			}
+		} else if (selected_node_3d) {
+			Node3D *new_node_3d = Object::cast_to<Node3D>(new_node);
+			if (new_node_3d) {
+				new_node_3d->set_transform(selected_transform_3d);
+			}
 		}
 
 		if (new_is_scene) {
