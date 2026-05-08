@@ -188,7 +188,6 @@ public:
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const = 0;
 #ifdef TOOLS_ENABLED
 	virtual String get_property_display_name(const StringName &p_property) const {
-		(void)p_property;
 		return String();
 	}
 #endif
