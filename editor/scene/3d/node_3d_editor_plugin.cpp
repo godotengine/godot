@@ -3039,7 +3039,9 @@ void Node3DEditorViewport::_cursor_interpolated() {
 	last_camera_transform = view_3d_controller->interp_to_camera_transform();
 
 	if (previewing_camera && previewing && pilot_preview_enabled) {
+		_pilot_ensure_undo_session();
 		previewing->set_global_transform(last_camera_transform);
+		pilot_undo_idle_time = 0.0;
 	} else if (!previewing_camera) {
 		camera->set_global_transform(last_camera_transform);
 	}
@@ -3070,6 +3072,45 @@ void Node3DEditorViewport::_cursor_distance_scaled() {
 
 void Node3DEditorViewport::_freelook_changed() {
 	spatial_editor->set_freelook_viewport(view_3d_controller->is_freelook_enabled() ? this : nullptr);
+}
+
+void Node3DEditorViewport::_pilot_ensure_undo_session() {
+	if (pilot_undo_session_active || !previewing) {
+		return;
+	}
+	pilot_undo_initial_transform = previewing->get_global_transform();
+	pilot_undo_session_active = true;
+	pilot_undo_idle_time = 0.0;
+}
+
+void Node3DEditorViewport::_pilot_commit_undo_session() {
+	if (!pilot_undo_session_active) {
+		return;
+	}
+	pilot_undo_session_active = false;
+	pilot_undo_idle_time = 0.0;
+	if (!previewing) {
+		return;
+	}
+	const Transform3D current_transform = previewing->get_global_transform();
+	if (current_transform.is_equal_approx(pilot_undo_initial_transform)) {
+		return;
+	}
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Move Camera \"%s\""), previewing->get_name()), UndoRedo::MERGE_ENDS);
+	undo_redo->add_do_method(previewing, "set_global_transform", current_transform);
+	undo_redo->add_undo_method(previewing, "set_global_transform", pilot_undo_initial_transform);
+	undo_redo->commit_action(false);
+}
+
+void Node3DEditorViewport::_pilot_tick_undo_session(real_t p_delta) {
+	if (!pilot_undo_session_active) {
+		return;
+	}
+	pilot_undo_idle_time += p_delta;
+	if (pilot_undo_idle_time > 0.15) {
+		_pilot_commit_undo_session();
+	}
 }
 
 void Node3DEditorViewport::_freelook_speed_scaled() {
@@ -3244,6 +3285,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_update_name();
 			} else {
 				view_3d_controller->set_freelook_enabled(false);
+				_pilot_commit_undo_session();
 			}
 			callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view).call_deferred();
 		} break;
@@ -3570,6 +3612,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				if (cam != nullptr && cam != previewing) {
 					//then switch the viewport's camera to the scene's viewport camera
 					if (previewing != nullptr) {
+						_pilot_commit_undo_session();
 						previewing->disconnect(SceneStringName(tree_exited), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 						previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 					}
@@ -3583,11 +3626,15 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			if (_camera_moved_externally()) {
 				// If camera moved after this plugin last set it, presumably a tool script has moved it, accept the new camera transform as the cursor position.
+				pilot_undo_session_active = false;
+				pilot_undo_idle_time = 0.0;
 				_apply_camera_transform_to_cursor();
 				view_3d_controller->update_camera();
 			} else {
 				view_3d_controller->update_camera(delta);
 			}
+
+			_pilot_tick_undo_session(delta);
 
 			const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
@@ -4856,6 +4903,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	_update_navigation_controls_visibility();
 
 	if (!p_activate) {
+		_pilot_commit_undo_session();
 		previewing->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 		previewing = nullptr;
@@ -4893,6 +4941,9 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 }
 
 void Node3DEditorViewport::_toggle_pilot_preview(bool p_activate) {
+	if (!p_activate) {
+		_pilot_commit_undo_session();
+	}
 	pilot_preview_enabled = p_activate;
 	if (p_activate && previewing) {
 		_sync_cursor_from_transform(previewing->get_global_transform());
@@ -4955,6 +5006,8 @@ void Node3DEditorViewport::switch_preview_camera(Camera3D *p_new_camera) {
 	if (!previewing_camera || !previewing || !p_new_camera || p_new_camera == previewing) {
 		return;
 	}
+
+	_pilot_commit_undo_session();
 
 	previewing->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 	previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
