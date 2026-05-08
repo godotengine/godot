@@ -66,8 +66,9 @@ public:
 };
 
 TEST_CASE("[AStar2D] ABC path") {
-	ABCX abcx;
-	Vector<int64_t> path = abcx.get_id_path(ABCX::A, ABCX::C);
+	Ref<ABCX> abcx;
+	abcx.instantiate();
+	Vector<int64_t> path = abcx->get_id_path(ABCX::A, ABCX::C);
 	REQUIRE(path.size() == 3);
 	CHECK(path[0] == ABCX::A);
 	CHECK(path[1] == ABCX::B);
@@ -75,8 +76,9 @@ TEST_CASE("[AStar2D] ABC path") {
 }
 
 TEST_CASE("[AStar2D] ABCX path") {
-	ABCX abcx;
-	Vector<int64_t> path = abcx.get_id_path(ABCX::X, ABCX::C);
+	Ref<ABCX> abcx;
+	abcx.instantiate();
+	Vector<int64_t> path = abcx->get_id_path(ABCX::X, ABCX::C);
 	REQUIRE(path.size() == 4);
 	CHECK(path[0] == ABCX::X);
 	CHECK(path[1] == ABCX::A);
@@ -85,61 +87,62 @@ TEST_CASE("[AStar2D] ABCX path") {
 }
 
 TEST_CASE("[AStar2D] Add/Remove") {
-	AStar2D a;
+	Ref<AStar2D> a;
+	a.instantiate();
 
 	// Manual tests.
-	a.add_point(1, Vector2(0, 0));
-	a.add_point(2, Vector2(0, 1));
-	a.add_point(3, Vector2(1, 1));
-	a.add_point(4, Vector2(2, 0));
-	a.connect_points(1, 2, true);
-	a.connect_points(1, 3, true);
-	a.connect_points(1, 4, false);
+	a->add_point(1, Vector2(0, 0));
+	a->add_point(2, Vector2(0, 1));
+	a->add_point(3, Vector2(1, 1));
+	a->add_point(4, Vector2(2, 0));
+	a->connect_points(1, 2, true);
+	a->connect_points(1, 3, true);
+	a->connect_points(1, 4, false);
 
-	CHECK(a.are_points_connected(2, 1));
-	CHECK(a.are_points_connected(4, 1));
-	CHECK(a.are_points_connected(2, 1, false));
-	CHECK_FALSE(a.are_points_connected(4, 1, false));
+	CHECK(a->are_points_connected(2, 1));
+	CHECK(a->are_points_connected(4, 1));
+	CHECK(a->are_points_connected(2, 1, false));
+	CHECK_FALSE(a->are_points_connected(4, 1, false));
 
-	a.disconnect_points(1, 2, true);
-	CHECK(a.get_point_connections(1).size() == 2); // 3, 4
-	CHECK(a.get_point_connections(2).size() == 0);
+	a->disconnect_points(1, 2, true);
+	CHECK(a->get_point_connections(1).size() == 2); // 3, 4
+	CHECK(a->get_point_connections(2).size() == 0);
 
-	a.disconnect_points(4, 1, false);
-	CHECK(a.get_point_connections(1).size() == 2); // 3, 4
-	CHECK(a.get_point_connections(4).size() == 0);
+	a->disconnect_points(4, 1, false);
+	CHECK(a->get_point_connections(1).size() == 2); // 3, 4
+	CHECK(a->get_point_connections(4).size() == 0);
 
-	a.disconnect_points(4, 1, true);
-	CHECK(a.get_point_connections(1).size() == 1); // 3
-	CHECK(a.get_point_connections(4).size() == 0);
+	a->disconnect_points(4, 1, true);
+	CHECK(a->get_point_connections(1).size() == 1); // 3
+	CHECK(a->get_point_connections(4).size() == 0);
 
-	a.connect_points(2, 3, false);
-	CHECK(a.get_point_connections(2).size() == 1); // 3
-	CHECK(a.get_point_connections(3).size() == 1); // 1
+	a->connect_points(2, 3, false);
+	CHECK(a->get_point_connections(2).size() == 1); // 3
+	CHECK(a->get_point_connections(3).size() == 1); // 1
 
-	a.connect_points(2, 3, true);
-	CHECK(a.get_point_connections(2).size() == 1); // 3
-	CHECK(a.get_point_connections(3).size() == 2); // 1, 2
+	a->connect_points(2, 3, true);
+	CHECK(a->get_point_connections(2).size() == 1); // 3
+	CHECK(a->get_point_connections(3).size() == 2); // 1, 2
 
-	a.disconnect_points(2, 3, false);
-	CHECK(a.get_point_connections(2).size() == 0);
-	CHECK(a.get_point_connections(3).size() == 2); // 1, 2
+	a->disconnect_points(2, 3, false);
+	CHECK(a->get_point_connections(2).size() == 0);
+	CHECK(a->get_point_connections(3).size() == 2); // 1, 2
 
-	a.connect_points(4, 3, true);
-	CHECK(a.get_point_connections(3).size() == 3); // 1, 2, 4
-	CHECK(a.get_point_connections(4).size() == 1); // 3
+	a->connect_points(4, 3, true);
+	CHECK(a->get_point_connections(3).size() == 3); // 1, 2, 4
+	CHECK(a->get_point_connections(4).size() == 1); // 3
 
-	a.disconnect_points(3, 4, false);
-	CHECK(a.get_point_connections(3).size() == 2); // 1, 2
-	CHECK(a.get_point_connections(4).size() == 1); // 3
+	a->disconnect_points(3, 4, false);
+	CHECK(a->get_point_connections(3).size() == 2); // 1, 2
+	CHECK(a->get_point_connections(4).size() == 1); // 3
 
-	a.remove_point(3);
-	CHECK(a.get_point_connections(1).size() == 0);
-	CHECK(a.get_point_connections(2).size() == 0);
-	CHECK(a.get_point_connections(4).size() == 0);
+	a->remove_point(3);
+	CHECK(a->get_point_connections(1).size() == 0);
+	CHECK(a->get_point_connections(2).size() == 0);
+	CHECK(a->get_point_connections(4).size() == 0);
 
-	a.add_point(0, Vector2(0, -1));
-	a.add_point(3, Vector2(2, 1));
+	a->add_point(0, Vector2(0, -1));
+	a->add_point(3, Vector2(2, 1));
 	// 0: (0, -1)
 	// 1: (0, 0)
 	// 2: (0, 1)
@@ -147,19 +150,19 @@ TEST_CASE("[AStar2D] Add/Remove") {
 	// 4: (2, 0)
 
 	// Tests for get_closest_position_in_segment.
-	a.connect_points(2, 3);
-	CHECK(a.get_closest_position_in_segment(Vector2(0.5, 0.5)) == Vector2(0.5, 1));
+	a->connect_points(2, 3);
+	CHECK(a->get_closest_position_in_segment(Vector2(0.5, 0.5)) == Vector2(0.5, 1));
 
-	a.connect_points(3, 4);
-	a.connect_points(0, 3);
-	a.connect_points(1, 4);
-	a.disconnect_points(1, 4, false);
-	a.disconnect_points(4, 3, false);
-	a.disconnect_points(3, 4, false);
+	a->connect_points(3, 4);
+	a->connect_points(0, 3);
+	a->connect_points(1, 4);
+	a->disconnect_points(1, 4, false);
+	a->disconnect_points(4, 3, false);
+	a->disconnect_points(3, 4, false);
 	// Remaining edges: <2, 3>, <0, 3>, <1, 4> (directed).
-	CHECK(a.get_closest_position_in_segment(Vector2(2, 0.5)) == Vector2(1.75, 0.75));
-	CHECK(a.get_closest_position_in_segment(Vector2(-1, 0.2)) == Vector2(0, 0));
-	CHECK(a.get_closest_position_in_segment(Vector2(3, 2)) == Vector2(2, 1));
+	CHECK(a->get_closest_position_in_segment(Vector2(2, 0.5)) == Vector2(1.75, 0.75));
+	CHECK(a->get_closest_position_in_segment(Vector2(-1, 0.2)) == Vector2(0, 0));
+	CHECK(a->get_closest_position_in_segment(Vector2(3, 2)) == Vector2(2, 1));
 
 	Math::seed(0);
 
@@ -172,20 +175,20 @@ TEST_CASE("[AStar2D] Add/Remove") {
 		}
 		if (Math::rand() % 2 == 1) {
 			// Add a (possibly existing) directed edge and confirm connectivity.
-			a.connect_points(u, v, false);
-			CHECK(a.are_points_connected(u, v, false));
+			a->connect_points(u, v, false);
+			CHECK(a->are_points_connected(u, v, false));
 		} else {
 			// Remove a (possibly nonexistent) directed edge and confirm disconnectivity.
-			a.disconnect_points(u, v, false);
-			CHECK_FALSE(a.are_points_connected(u, v, false));
+			a->disconnect_points(u, v, false);
+			CHECK_FALSE(a->are_points_connected(u, v, false));
 		}
 	}
 
 	// Random tests for point removal.
 	for (int i = 0; i < 20000; i++) {
-		a.clear();
+		a->clear();
 		for (int j = 0; j < 5; j++) {
-			a.add_point(j, Vector2(0, 0));
+			a->add_point(j, Vector2(0, 0));
 		}
 
 		// Add or remove random edges.
@@ -196,110 +199,116 @@ TEST_CASE("[AStar2D] Add/Remove") {
 				v = 4;
 			}
 			if (Math::rand() % 2 == 1) {
-				a.connect_points(u, v, false);
+				a->connect_points(u, v, false);
 			} else {
-				a.disconnect_points(u, v, false);
+				a->disconnect_points(u, v, false);
 			}
 		}
 
 		// Remove point 0.
-		a.remove_point(0);
+		a->remove_point(0);
 		// White box: this will check all edges remaining in the segments set.
 		for (int j = 1; j < 5; j++) {
-			CHECK_FALSE(a.are_points_connected(0, j, true));
+			CHECK_FALSE(a->are_points_connected(0, j, true));
 		}
 	}
 }
 
 TEST_CASE("[AStar2D] Path from disabled point is empty") {
-	AStar2D a;
+	Ref<AStar2D> a;
+	a.instantiate();
 	Vector2 p1(0, 0);
 	Vector2 p2(0, 1);
-	a.add_point(1, p1);
-	a.add_point(2, p2);
-	a.connect_points(1, 2);
+	a->add_point(1, p1);
+	a->add_point(2, p2);
+	a->connect_points(1, 2);
 
-	CHECK_EQ(a.get_id_path(1, 1), Vector<int64_t>{ 1 });
-	CHECK_EQ(a.get_id_path(1, 2), Vector<int64_t>{ 1, 2 });
+	CHECK_EQ(a->get_id_path(1, 1), Vector<int64_t>{ 1 });
+	CHECK_EQ(a->get_id_path(1, 2), Vector<int64_t>{ 1, 2 });
 
-	CHECK_EQ(a.get_point_path(1, 1), Vector<Vector2>{ p1 });
-	CHECK_EQ(a.get_point_path(1, 2), Vector<Vector2>{ p1, p2 });
+	CHECK_EQ(a->get_point_path(1, 1), Vector<Vector2>{ p1 });
+	CHECK_EQ(a->get_point_path(1, 2), Vector<Vector2>{ p1, p2 });
 
-	a.set_point_disabled(1, true);
+	a->set_point_disabled(1, true);
 
-	CHECK(a.get_id_path(1, 1).is_empty());
-	CHECK(a.get_id_path(1, 2).is_empty());
+	CHECK(a->get_id_path(1, 1).is_empty());
+	CHECK(a->get_id_path(1, 2).is_empty());
 
-	CHECK(a.get_point_path(1, 1).is_empty());
-	CHECK(a.get_point_path(1, 2).is_empty());
+	CHECK(a->get_point_path(1, 1).is_empty());
+	CHECK(a->get_point_path(1, 2).is_empty());
 }
 
 TEST_CASE("[AStar2D] Empty graph has no path and no points") {
-	AStar2D a;
-	CHECK(a.get_point_count() == 0);
-	CHECK_FALSE(a.has_point(1));
-	CHECK(a.get_point_ids().is_empty());
-	CHECK(a.get_id_path(1, 2).is_empty());
-	CHECK(a.get_point_path(1, 2).is_empty());
+	Ref<AStar2D> a;
+	a.instantiate();
+	CHECK(a->get_point_count() == 0);
+	CHECK_FALSE(a->has_point(1));
+	CHECK(a->get_point_ids().is_empty());
+	CHECK(a->get_id_path(1, 2).is_empty());
+	CHECK(a->get_point_path(1, 2).is_empty());
 }
 
 TEST_CASE("[AStar2D] Point properties") {
-	AStar2D a;
-	a.add_point(1, Vector2(2, 3));
-	a.add_point(2, Vector2(-1, 4), 2.5);
+	Ref<AStar2D> a;
+	a.instantiate();
+	a->add_point(1, Vector2(2, 3));
+	a->add_point(2, Vector2(-1, 4), 2.5);
 
-	CHECK(a.has_point(1));
-	CHECK(a.has_point(2));
-	CHECK_FALSE(a.has_point(3));
-	CHECK(a.get_point_count() == 2);
+	CHECK(a->has_point(1));
+	CHECK(a->has_point(2));
+	CHECK_FALSE(a->has_point(3));
+	CHECK(a->get_point_count() == 2);
 
-	CHECK(a.get_point_position(1) == Vector2(2, 3));
-	CHECK(a.get_point_position(2) == Vector2(-1, 4));
-	CHECK(a.get_point_weight_scale(1) == doctest::Approx(1.0));
-	CHECK(a.get_point_weight_scale(2) == doctest::Approx(2.5));
+	CHECK(a->get_point_position(1) == Vector2(2, 3));
+	CHECK(a->get_point_position(2) == Vector2(-1, 4));
+	CHECK(a->get_point_weight_scale(1) == doctest::Approx(1.0));
+	CHECK(a->get_point_weight_scale(2) == doctest::Approx(2.5));
 
-	a.set_point_position(1, Vector2(5, 6));
-	CHECK(a.get_point_position(1) == Vector2(5, 6));
+	a->set_point_position(1, Vector2(5, 6));
+	CHECK(a->get_point_position(1) == Vector2(5, 6));
 
-	a.set_point_weight_scale(2, 4.0);
-	CHECK(a.get_point_weight_scale(2) == doctest::Approx(4.0));
+	a->set_point_weight_scale(2, 4.0);
+	CHECK(a->get_point_weight_scale(2) == doctest::Approx(4.0));
 
-	CHECK_FALSE(a.is_point_disabled(1));
-	a.set_point_disabled(1, true);
-	CHECK(a.is_point_disabled(1));
-	a.set_point_disabled(1, false);
-	CHECK_FALSE(a.is_point_disabled(1));
+	CHECK_FALSE(a->is_point_disabled(1));
+	a->set_point_disabled(1, true);
+	CHECK(a->is_point_disabled(1));
+	a->set_point_disabled(1, false);
+	CHECK_FALSE(a->is_point_disabled(1));
 }
 
 TEST_CASE("[AStar2D] Re-adding existing point updates its data") {
-	AStar2D a;
-	a.add_point(1, Vector2(0, 0), 1.0);
-	a.add_point(1, Vector2(10, 20), 3.0);
+	Ref<AStar2D> a;
+	a.instantiate();
+	a->add_point(1, Vector2(0, 0), 1.0);
+	a->add_point(1, Vector2(10, 20), 3.0);
 
-	CHECK(a.get_point_count() == 1);
-	CHECK(a.get_point_position(1) == Vector2(10, 20));
-	CHECK(a.get_point_weight_scale(1) == doctest::Approx(3.0));
+	CHECK(a->get_point_count() == 1);
+	CHECK(a->get_point_position(1) == Vector2(10, 20));
+	CHECK(a->get_point_weight_scale(1) == doctest::Approx(3.0));
 }
 
 TEST_CASE("[AStar2D] get_available_point_id returns unused ids") {
-	AStar2D a;
-	CHECK(a.get_available_point_id() == 0);
-	a.add_point(0, Vector2(0, 0));
-	CHECK(a.get_available_point_id() == 1);
-	a.add_point(1, Vector2(1, 0));
-	CHECK(a.get_available_point_id() == 2);
-	a.remove_point(0);
+	Ref<AStar2D> a;
+	a.instantiate();
+	CHECK(a->get_available_point_id() == 0);
+	a->add_point(0, Vector2(0, 0));
+	CHECK(a->get_available_point_id() == 1);
+	a->add_point(1, Vector2(1, 0));
+	CHECK(a->get_available_point_id() == 2);
+	a->remove_point(0);
 	// Lowest unused id should now be 0 again.
-	CHECK(a.get_available_point_id() == 0);
+	CHECK(a->get_available_point_id() == 0);
 }
 
 TEST_CASE("[AStar2D] get_point_ids returns all added ids") {
-	AStar2D a;
-	a.add_point(10, Vector2(0, 0));
-	a.add_point(20, Vector2(1, 0));
-	a.add_point(30, Vector2(0, 1));
+	Ref<AStar2D> a;
+	a.instantiate();
+	a->add_point(10, Vector2(0, 0));
+	a->add_point(20, Vector2(1, 0));
+	a->add_point(30, Vector2(0, 1));
 
-	PackedInt64Array ids = a.get_point_ids();
+	PackedInt64Array ids = a->get_point_ids();
 	REQUIRE(ids.size() == 3);
 	// Order is not guaranteed; check via membership.
 	CHECK(ids.has(10));
@@ -308,44 +317,48 @@ TEST_CASE("[AStar2D] get_point_ids returns all added ids") {
 }
 
 TEST_CASE("[AStar2D] get_closest_point honors include_disabled flag") {
-	AStar2D a;
-	a.add_point(1, Vector2(0, 0));
-	a.add_point(2, Vector2(10, 0));
-	a.add_point(3, Vector2(20, 0));
+	Ref<AStar2D> a;
+	a.instantiate();
+	a->add_point(1, Vector2(0, 0));
+	a->add_point(2, Vector2(10, 0));
+	a->add_point(3, Vector2(20, 0));
 
-	CHECK(a.get_closest_point(Vector2(11, 0)) == 2);
+	CHECK(a->get_closest_point(Vector2(11, 0)) == 2);
 
-	a.set_point_disabled(2, true);
+	a->set_point_disabled(2, true);
 	// Disabled point 2 is skipped; nearest enabled is 1 (distance 11) or 3 (distance 9).
-	CHECK(a.get_closest_point(Vector2(11, 0)) == 3);
+	CHECK(a->get_closest_point(Vector2(11, 0)) == 3);
 	// When include_disabled is true, the disabled point can still win.
-	CHECK(a.get_closest_point(Vector2(11, 0), true) == 2);
+	CHECK(a->get_closest_point(Vector2(11, 0), true) == 2);
 }
 
 TEST_CASE("[AStar2D] get_closest_point on empty graph returns -1") {
-	AStar2D a;
-	CHECK(a.get_closest_point(Vector2(0, 0)) == -1);
+	Ref<AStar2D> a;
+	a.instantiate();
+	CHECK(a->get_closest_point(Vector2(0, 0)) == -1);
 }
 
 TEST_CASE("[AStar2D] clear removes all points and edges") {
-	AStar2D a;
-	a.add_point(1, Vector2(0, 0));
-	a.add_point(2, Vector2(1, 0));
-	a.connect_points(1, 2);
-	CHECK(a.get_point_count() == 2);
+	Ref<AStar2D> a;
+	a.instantiate();
+	a->add_point(1, Vector2(0, 0));
+	a->add_point(2, Vector2(1, 0));
+	a->connect_points(1, 2);
+	CHECK(a->get_point_count() == 2);
 
-	a.clear();
-	CHECK(a.get_point_count() == 0);
-	CHECK_FALSE(a.has_point(1));
-	CHECK_FALSE(a.has_point(2));
-	CHECK(a.get_point_ids().is_empty());
+	a->clear();
+	CHECK(a->get_point_count() == 0);
+	CHECK_FALSE(a->has_point(1));
+	CHECK_FALSE(a->has_point(2));
+	CHECK(a->get_point_ids().is_empty());
 }
 
 TEST_CASE("[AStar2D] reserve_space increases capacity") {
-	AStar2D a;
-	int64_t initial_capacity = a.get_point_capacity();
-	a.reserve_space(initial_capacity + 128);
-	CHECK(a.get_point_capacity() >= initial_capacity + 128);
+	Ref<AStar2D> a;
+	a.instantiate();
+	int64_t initial_capacity = a->get_point_capacity();
+	a->reserve_space(initial_capacity + 128);
+	CHECK(a->get_point_capacity() >= initial_capacity + 128);
 }
 
 TEST_CASE("[AStar2D] Path uses point weight scale") {
@@ -353,17 +366,18 @@ TEST_CASE("[AStar2D] Path uses point weight scale") {
 	// Upper route: 0 -> 1 -> 3 with point 1 having a high weight_scale.
 	// Lower route: 0 -> 2 -> 3 with point 2 having default weight_scale.
 	// The lower route should be chosen.
-	AStar2D a;
-	a.add_point(0, Vector2(0, 0));
-	a.add_point(1, Vector2(1, 1), 100.0);
-	a.add_point(2, Vector2(1, -1), 1.0);
-	a.add_point(3, Vector2(2, 0));
-	a.connect_points(0, 1);
-	a.connect_points(1, 3);
-	a.connect_points(0, 2);
-	a.connect_points(2, 3);
+	Ref<AStar2D> a;
+	a.instantiate();
+	a->add_point(0, Vector2(0, 0));
+	a->add_point(1, Vector2(1, 1), 100.0);
+	a->add_point(2, Vector2(1, -1), 1.0);
+	a->add_point(3, Vector2(2, 0));
+	a->connect_points(0, 1);
+	a->connect_points(1, 3);
+	a->connect_points(0, 2);
+	a->connect_points(2, 3);
 
-	Vector<int64_t> path = a.get_id_path(0, 3);
+	Vector<int64_t> path = a->get_id_path(0, 3);
 	REQUIRE(path.size() == 3);
 	CHECK(path[0] == 0);
 	CHECK(path[1] == 2);
@@ -371,34 +385,36 @@ TEST_CASE("[AStar2D] Path uses point weight scale") {
 }
 
 TEST_CASE("[AStar2D] Disconnected components have no path") {
-	AStar2D a;
-	a.add_point(1, Vector2(0, 0));
-	a.add_point(2, Vector2(1, 0));
-	a.add_point(3, Vector2(10, 10));
-	a.add_point(4, Vector2(11, 10));
-	a.connect_points(1, 2);
-	a.connect_points(3, 4);
+	Ref<AStar2D> a;
+	a.instantiate();
+	a->add_point(1, Vector2(0, 0));
+	a->add_point(2, Vector2(1, 0));
+	a->add_point(3, Vector2(10, 10));
+	a->add_point(4, Vector2(11, 10));
+	a->connect_points(1, 2);
+	a->connect_points(3, 4);
 
-	CHECK(a.get_id_path(1, 4).is_empty());
-	CHECK(a.get_point_path(1, 4).is_empty());
+	CHECK(a->get_id_path(1, 4).is_empty());
+	CHECK(a->get_point_path(1, 4).is_empty());
 }
 
 TEST_CASE("[AStar2D] Partial path returns closest reachable point") {
-	AStar2D a;
-	a.add_point(1, Vector2(0, 0));
-	a.add_point(2, Vector2(1, 0));
-	a.add_point(3, Vector2(10, 10));
-	a.connect_points(1, 2);
+	Ref<AStar2D> a;
+	a.instantiate();
+	a->add_point(1, Vector2(0, 0));
+	a->add_point(2, Vector2(1, 0));
+	a->add_point(3, Vector2(10, 10));
+	a->connect_points(1, 2);
 	// Point 3 is unreachable from 1.
 
-	CHECK(a.get_id_path(1, 3, false).is_empty());
+	CHECK(a->get_id_path(1, 3, false).is_empty());
 
-	Vector<int64_t> partial = a.get_id_path(1, 3, true);
+	Vector<int64_t> partial = a->get_id_path(1, 3, true);
 	REQUIRE(partial.size() == 2);
 	CHECK(partial[0] == 1);
 	CHECK(partial[1] == 2);
 
-	Vector<Vector2> partial_points = a.get_point_path(1, 3, true);
+	Vector<Vector2> partial_points = a->get_point_path(1, 3, true);
 	REQUIRE(partial_points.size() == 2);
 	CHECK(partial_points[0] == Vector2(0, 0));
 	CHECK(partial_points[1] == Vector2(1, 0));
@@ -407,19 +423,20 @@ TEST_CASE("[AStar2D] Partial path returns closest reachable point") {
 TEST_CASE("[AStar2D] Path through disabled intermediate point is skipped") {
 	// A direct route 0 -> 1 -> 3 exists, plus a detour 0 -> 2 -> 3.
 	// Disabling point 1 should force the detour through 2.
-	AStar2D a;
-	a.add_point(0, Vector2(0, 0));
-	a.add_point(1, Vector2(1, 0));
-	a.add_point(2, Vector2(1, 5));
-	a.add_point(3, Vector2(2, 0));
-	a.connect_points(0, 1);
-	a.connect_points(1, 3);
-	a.connect_points(0, 2);
-	a.connect_points(2, 3);
+	Ref<AStar2D> a;
+	a.instantiate();
+	a->add_point(0, Vector2(0, 0));
+	a->add_point(1, Vector2(1, 0));
+	a->add_point(2, Vector2(1, 5));
+	a->add_point(3, Vector2(2, 0));
+	a->connect_points(0, 1);
+	a->connect_points(1, 3);
+	a->connect_points(0, 2);
+	a->connect_points(2, 3);
 
-	a.set_point_disabled(1, true);
+	a->set_point_disabled(1, true);
 
-	Vector<int64_t> path = a.get_id_path(0, 3);
+	Vector<int64_t> path = a->get_id_path(0, 3);
 	REQUIRE(path.size() == 3);
 	CHECK(path[0] == 0);
 	CHECK(path[1] == 2);
@@ -427,68 +444,70 @@ TEST_CASE("[AStar2D] Path through disabled intermediate point is skipped") {
 }
 
 TEST_CASE("[AStar2D] Neighbor filter toggle") {
-	AStar2D a;
-	CHECK_FALSE(a.is_neighbor_filter_enabled());
-	a.set_neighbor_filter_enabled(true);
-	CHECK(a.is_neighbor_filter_enabled());
-	a.set_neighbor_filter_enabled(false);
-	CHECK_FALSE(a.is_neighbor_filter_enabled());
+	Ref<AStar2D> a;
+	a.instantiate();
+	CHECK_FALSE(a->is_neighbor_filter_enabled());
+	a->set_neighbor_filter_enabled(true);
+	CHECK(a->is_neighbor_filter_enabled());
+	a->set_neighbor_filter_enabled(false);
+	CHECK_FALSE(a->is_neighbor_filter_enabled());
 }
 
 TEST_CASE("[AStar2D] Invalid input is rejected without modifying state") {
-	AStar2D a;
-	a.add_point(1, Vector2(0, 0));
-	a.add_point(2, Vector2(1, 0));
-	a.connect_points(1, 2);
+	Ref<AStar2D> a;
+	a.instantiate();
+	a->add_point(1, Vector2(0, 0));
+	a->add_point(2, Vector2(1, 0));
+	a->connect_points(1, 2);
 
 	ERR_PRINT_OFF;
 
 	// Negative id is rejected by add_point.
-	a.add_point(-1, Vector2(5, 5));
-	CHECK(a.get_point_count() == 2);
-	CHECK_FALSE(a.has_point(-1));
+	a->add_point(-1, Vector2(5, 5));
+	CHECK(a->get_point_count() == 2);
+	CHECK_FALSE(a->has_point(-1));
 
 	// Negative weight scale is rejected by add_point.
-	a.add_point(3, Vector2(2, 0), -1.0);
-	CHECK_FALSE(a.has_point(3));
-	CHECK(a.get_point_count() == 2);
+	a->add_point(3, Vector2(2, 0), -1.0);
+	CHECK_FALSE(a->has_point(3));
+	CHECK(a->get_point_count() == 2);
 
 	// Negative weight scale is rejected by set_point_weight_scale; existing scale is preserved.
-	a.set_point_weight_scale(1, -2.5);
-	CHECK(a.get_point_weight_scale(1) == doctest::Approx(1.0));
+	a->set_point_weight_scale(1, -2.5);
+	CHECK(a->get_point_weight_scale(1) == doctest::Approx(1.0));
 
 	// Operations on non-existent points return safe defaults / no-op.
-	CHECK(a.get_point_position(999) == Vector2());
-	CHECK(a.get_point_weight_scale(999) == doctest::Approx(0.0));
-	CHECK(a.get_point_connections(999).is_empty());
-	CHECK_FALSE(a.is_point_disabled(999));
+	CHECK(a->get_point_position(999) == Vector2());
+	CHECK(a->get_point_weight_scale(999) == doctest::Approx(0.0));
+	CHECK(a->get_point_connections(999).is_empty());
+	CHECK_FALSE(a->is_point_disabled(999));
 
-	a.set_point_position(999, Vector2(7, 7)); // No-op.
-	a.set_point_weight_scale(999, 5.0); // No-op.
-	a.set_point_disabled(999, true); // No-op.
-	a.remove_point(999); // No-op.
-	CHECK(a.get_point_count() == 2);
+	a->set_point_position(999, Vector2(7, 7)); // No-op.
+	a->set_point_weight_scale(999, 5.0); // No-op.
+	a->set_point_disabled(999, true); // No-op.
+	a->remove_point(999); // No-op.
+	CHECK(a->get_point_count() == 2);
 
 	// Self-connection is rejected.
-	a.connect_points(1, 1);
-	CHECK_FALSE(a.are_points_connected(1, 1, false));
+	a->connect_points(1, 1);
+	CHECK_FALSE(a->are_points_connected(1, 1, false));
 
 	// Connecting/disconnecting with a non-existent point is rejected; existing edge survives.
-	a.connect_points(1, 999);
-	a.disconnect_points(1, 999);
-	CHECK(a.are_points_connected(1, 2));
+	a->connect_points(1, 999);
+	a->disconnect_points(1, 999);
+	CHECK(a->are_points_connected(1, 2));
 
 	// Pathfinding with invalid endpoints returns an empty result.
-	CHECK(a.get_id_path(1, 999).is_empty());
-	CHECK(a.get_id_path(999, 2).is_empty());
-	CHECK(a.get_point_path(1, 999).is_empty());
-	CHECK(a.get_point_path(999, 2).is_empty());
+	CHECK(a->get_id_path(1, 999).is_empty());
+	CHECK(a->get_id_path(999, 2).is_empty());
+	CHECK(a->get_point_path(1, 999).is_empty());
+	CHECK(a->get_point_path(999, 2).is_empty());
 
 	// reserve_space rejects non-positive capacity (capacity unchanged).
-	int64_t cap = a.get_point_capacity();
-	a.reserve_space(0);
-	a.reserve_space(-10);
-	CHECK(a.get_point_capacity() == cap);
+	int64_t cap = a->get_point_capacity();
+	a->reserve_space(0);
+	a->reserve_space(-10);
+	CHECK(a->get_point_capacity() == cap);
 
 	ERR_PRINT_ON;
 }
