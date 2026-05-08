@@ -3725,6 +3725,14 @@ RID Node::get_focused_accessibility_element() const {
 	}
 }
 
+Transform2D Node::get_accessibility_transform() const {
+	if (is_inside_tree() && data.parent) {
+		return data.parent->get_accessibility_transform();
+	} else {
+		return Transform2D();
+	}
+}
+
 void Node::queue_accessibility_update() {
 	if (is_inside_tree() && !is_part_of_edited_scene()) {
 		data.tree->_accessibility_notify_change(this);

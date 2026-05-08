@@ -457,6 +457,8 @@ public:
 
 	void accessibility_announcement(const String &p_announcement);
 
+	virtual Transform2D get_accessibility_transform() const override;
+
 	// Internationalization.
 
 	void set_layout_direction(LayoutDirection p_direction);
