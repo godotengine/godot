@@ -10,6 +10,14 @@ name: komm64 Windows Build
 # Trigger:
 #   - workflow_dispatch: 手動 trigger (ad-hoc 検証用)
 #   - tag push (v*-komm64*): 自動 build + Release 作成
+#   - 4.6 push (= 通常 PR merge): build + cache populate (Release は作らない)
+#   - komm64/** branch push: feature branch 検証用 build
+#
+# 4.6 を trigger に含めるのは godot-cache-restore が default_branch (= 4.6)
+# の cache を fallback key として使うため。 4.6 を build しないと cache が
+# 一度も save されず、 全 cycle が cache miss で fully clean build (~50 min)
+# になる。 merge 後に 4.6 build を 1 回走らせて cache を populate しておくと、
+# 以降の branch CI / tag build が default_branch fallback で hit して数分。
 #
 # Output:
 #   - artifact: komm64-godot-windows-editor (60-day retention)
@@ -20,6 +28,7 @@ on:
   push:
     branches:
       - 'komm64/**'
+      - '4.6'
     tags:
       - 'v*-komm64*'
 
@@ -121,6 +130,38 @@ jobs:
         with:
           name: komm64-godot-windows-editor
           path: bin/godot.windows.editor.x86_64.exe
+
+      # Headless smoke gate for komm64 fork-specific render_modes / features.
+      # Catches the class of bug fixed in #26 — a parser whitelist out of sync
+      # with backend render_mode_values mappings. Each new komm64 render_mode
+      # / shader feature should add a line under the test_shader.gdshader.
+      - name: Shader compile gate
+        shell: bash
+        run: |
+          set -e
+          mkdir -p shader_gate_test
+          cat > shader_gate_test/project.godot <<'EOF'
+          config_version=5
+
+          [application]
+
+          config/name="shader-gate-test"
+          EOF
+          cat > shader_gate_test/test_shader.gdshader <<'EOF'
+          shader_type canvas_item;
+          render_mode unshaded, blend_premul_alpha_separate;
+          void fragment() { COLOR = vec4(0.0); }
+          EOF
+          # --import scans assets and triggers shader compile; --headless
+          # avoids GPU init. Use || true so editor's exit code (which can be
+          # non-zero on import-only paths) doesn't mask grep result.
+          ./bin/godot.windows.editor.x86_64.exe --headless --path shader_gate_test --import 2>&1 | tee shader_gate.log || true
+          if grep -qi "Invalid render mode\|Invalid stencil mode\|Shader compilation failed" shader_gate.log; then
+            echo "::error::Shader compile gate FAILED — see shader_gate.log"
+            grep -iE "Invalid render mode|Invalid stencil mode|Shader compilation failed|SHADER ERROR" shader_gate.log || true
+            exit 1
+          fi
+          echo "Shader compile gate PASS"
 
       - name: Create Release (tag push only)
         if: startsWith(github.ref, 'refs/tags/')
