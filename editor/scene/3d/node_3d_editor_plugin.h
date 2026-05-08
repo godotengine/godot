@@ -438,6 +438,14 @@ private:
 	bool previewing_cinema = false;
 	int times_focused_consecutively = 0;
 	bool pilot_preview_enabled = false;
+
+	bool pilot_undo_session_active = false;
+	real_t pilot_undo_idle_time = 0.0;
+	Transform3D pilot_undo_initial_transform;
+	void _pilot_ensure_undo_session();
+	void _pilot_commit_undo_session();
+	void _pilot_tick_undo_session(real_t p_delta);
+
 	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _preview_camera_property_changed();
