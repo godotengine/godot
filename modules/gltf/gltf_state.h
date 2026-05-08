@@ -46,6 +46,8 @@
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 
+class MeshConvexDecompositionSettings;
+
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
@@ -78,8 +80,11 @@ protected:
 	bool create_animations = true;
 	bool force_disable_compression = false;
 	bool import_as_skeleton_bones = false;
+	bool import_as_rigid = false;
 
 	HandleBinaryImageMode handle_binary_image_mode = HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES;
+
+	Ref<MeshConvexDecompositionSettings> convex_decomposition_settings;
 
 	Vector<Ref<GLTFNode>> nodes;
 	Vector<Vector<uint8_t>> buffers;
@@ -210,6 +215,12 @@ public:
 
 	bool get_discard_meshes_and_materials() const;
 	void set_discard_meshes_and_materials(bool p_discard_meshes_and_materials);
+
+	bool get_import_as_rigid() const { return import_as_rigid; }
+	void set_import_as_rigid(bool p_import_as_rigid) { import_as_rigid = p_import_as_rigid; }
+
+	Ref<MeshConvexDecompositionSettings> get_convex_decomposition_settings() const { return convex_decomposition_settings; }
+	void set_convex_decomposition_settings(const Ref<MeshConvexDecompositionSettings> &p_settings) { convex_decomposition_settings = p_settings; }
 
 	const Vector<Ref<GLTFNode>> &get_nodes() const { return nodes; }
 	void set_nodes(const Vector<Ref<GLTFNode>> &p_nodes) { nodes = p_nodes; }

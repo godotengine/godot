@@ -55,6 +55,12 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#ifndef PHYSICS_3D_DISABLED
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/rigid_body_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
+#include "scene/resources/mesh.h"
+#endif
 #include "scene/animation/animation_player.h"
 #include "scene/resources/3d/skin.h"
 #include "scene/resources/image_texture.h"
@@ -4602,7 +4608,47 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	// If none of our GLTFDocumentExtension classes generated us a node, try using built-in glTF types.
 	if (!current_node) {
 		if (gltf_node->mesh >= 0) {
-			current_node = _generate_mesh_instance(p_state, p_node_index);
+#ifndef PHYSICS_3D_DISABLED
+			if (p_state->import_as_rigid && gltf_node->skin < 0) {
+				RigidBody3D *rigid_body = memnew(RigidBody3D);
+
+				ImporterMeshInstance3D *mesh_instance = _generate_mesh_instance(p_state, p_node_index);
+				mesh_instance->set_name(String(gltf_node->get_name()) + "_mesh");
+				mesh_instance->set_transform(Transform3D());
+				rigid_body->add_child(mesh_instance, true);
+
+				Ref<ImporterMesh> importer_mesh = mesh_instance->get_mesh();
+				if (importer_mesh.is_valid()) {
+					Ref<ArrayMesh> array_mesh = importer_mesh->get_mesh();
+					if (array_mesh.is_valid()) {
+						Ref<MeshConvexDecompositionSettings> settings = p_state->convex_decomposition_settings;
+						Vector<Ref<Shape3D>> convex_shapes;
+						if (settings.is_valid()) {
+							convex_shapes = array_mesh->convex_decompose(settings);
+						}
+						if (!convex_shapes.is_empty()) {
+							for (int i = 0; i < convex_shapes.size(); i++) {
+								CollisionShape3D *collision_part = memnew(CollisionShape3D);
+								collision_part->set_shape(convex_shapes[i]);
+								rigid_body->add_child(collision_part, true);
+							}
+						} else {
+							Ref<ConvexPolygonShape3D> convex_shape = array_mesh->create_convex_shape();
+							if (convex_shape.is_valid()) {
+								CollisionShape3D *collision_shape = memnew(CollisionShape3D);
+								collision_shape->set_shape(convex_shape);
+								rigid_body->add_child(collision_shape, true);
+							}
+						}
+					}
+				}
+
+				current_node = rigid_body;
+			} else
+#endif // PHYSICS_3D_DISABLED
+			{
+				current_node = _generate_mesh_instance(p_state, p_node_index);
+			}
 			// glTF specifies that skinned meshes should ignore their node transforms,
 			// only being controlled by the skeleton, so Godot will reparent a skinned
 			// mesh to its skeleton. However, we still need to ensure any child nodes

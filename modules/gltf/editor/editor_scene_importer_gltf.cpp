@@ -35,6 +35,8 @@
 
 #include "core/io/resource_importer.h"
 
+#include "scene/resources/mesh.h"
+
 void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("gltf");
 	r_extensions->push_back("glb");
@@ -66,6 +68,23 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 		gltf_state->set_extract_path(p_options["extract_path"]);
 	}
 	gltf_state->set_bake_fps(p_options["animation/fps"]);
+	if (p_options.has("physics/is_rigid")) {
+		gltf_state->set_import_as_rigid((bool)p_options["physics/is_rigid"]);
+	}
+	if (gltf_state->get_import_as_rigid()) {
+		const int64_t max_convex_hulls = p_options.has("physics/max_convex_hulls") ? (int64_t)p_options["physics/max_convex_hulls"] : (int64_t)8;
+		const double max_concavity = p_options.has("physics/max_concavity") ? (double)p_options["physics/max_concavity"] : 0.5;
+		const int64_t resolution = p_options.has("physics/resolution") ? (int64_t)p_options["physics/resolution"] : (int64_t)10000;
+		const double min_volume_per_convex_hull = p_options.has("physics/min_volume_per_convex_hull") ? (double)p_options["physics/min_volume_per_convex_hull"] : 0.0001;
+
+		Ref<MeshConvexDecompositionSettings> settings;
+		settings.instantiate();
+		settings->set_max_convex_hulls((uint32_t)MAX((int64_t)1, max_convex_hulls));
+		settings->set_max_concavity((real_t)max_concavity);
+		settings->set_resolution((uint32_t)MAX((int64_t)1, resolution));
+		settings->set_min_volume_per_convex_hull((real_t)min_volume_per_convex_hull);
+		gltf_state->set_convex_decomposition_settings(settings);
+	}
 	Error err = gltf_doc->append_from_file(p_path, gltf_state, p_flags);
 	if (err != OK) {
 		if (r_err) {
@@ -93,6 +112,12 @@ void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_map_mode", PROPERTY_HINT_ENUM, "Do Not Remap,Remap to StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFDocument::TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL));
+
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::BOOL, "physics/is_rigid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "physics/max_convex_hulls", PROPERTY_HINT_RANGE, "1,64,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 8));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::FLOAT, "physics/max_concavity", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0.5));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "physics/resolution", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 10000));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::FLOAT, "physics/min_volume_per_convex_hull", PROPERTY_HINT_RANGE, "0,1,0.000001,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0.0001));
 	}
 }
 
