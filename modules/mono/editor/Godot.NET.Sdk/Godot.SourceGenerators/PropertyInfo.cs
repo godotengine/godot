@@ -3,11 +3,11 @@ namespace Godot.SourceGenerators
     internal readonly struct PropertyInfo
     {
         public PropertyInfo(VariantType type, string name, PropertyHint hint,
-            string? hintString, PropertyUsageFlags usage, bool exported)
-            : this(type, name, hint, hintString, usage, className: null, exported) { }
+            string? hintString, PropertyUsageFlags usage, bool exported, string? displayName = null)
+            : this(type, name, hint, hintString, usage, className: null, exported, displayName) { }
 
         public PropertyInfo(VariantType type, string name, PropertyHint hint,
-            string? hintString, PropertyUsageFlags usage, string? className, bool exported)
+            string? hintString, PropertyUsageFlags usage, string? className, bool exported, string? displayName = null)
         {
             Type = type;
             Name = name;
@@ -16,6 +16,7 @@ namespace Godot.SourceGenerators
             Usage = usage;
             ClassName = className;
             Exported = exported;
+            DisplayName = displayName;
         }
 
         public VariantType Type { get; }
@@ -25,5 +26,6 @@ namespace Godot.SourceGenerators
         public PropertyUsageFlags Usage { get; }
         public string? ClassName { get; }
         public bool Exported { get; }
+        public string? DisplayName { get; }
     }
 }
