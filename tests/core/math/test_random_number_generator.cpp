@@ -272,14 +272,8 @@ TEST_CASE_MAY_FAIL("[RandomNumberGenerator] randi_range bias check") {
 }
 
 TEST_CASE("[RandomNumberGenerator] back-to-back instances yield independent seeds") {
-	// Construct many RNGs in a tight loop and read the seed assigned to each by
-	// the implicit randomize() call in the constructor. Before the OS-entropy
-	// seeding fix, consecutive constructions on machines fast enough to build
-	// an RNG in under a microsecond would land in the same timestamp bucket
-	// from the previous formula and receive identical seeds. With OS-entropy
-	// seeding the seeds are 64-bit values from the kernel CSPRNG; the
-	// probability of two adjacent draws colliding is 1/2^64, so the count
-	// should be zero on every realistic platform.
+	// Two RNGs created in the same microsecond used to collide on identical
+	// seeds before the OS-entropy seeding fix.
 	constexpr int N = 1000;
 	Vector<uint64_t> seeds;
 	seeds.resize(N);

@@ -41,22 +41,11 @@ RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
 }
 
 void RandomPCG::randomize() {
-	// Pull 8 bytes from the OS cryptographic randomness source. The platform
-	// implementations live next to the rest of their per-platform code: the
-	// Unix family (Linux, macOS, iOS, Android, BSDs, Web via Emscripten) is in
-	// drivers/unix/os_unix.cpp, which uses getentropy() on platforms that
-	// expose it and falls back to /dev/urandom otherwise. Windows is in
-	// platform/windows/os_windows.cpp, which uses BCryptGenRandom. Each call
-	// to randomize() (and therefore every default-constructed
-	// RandomNumberGenerator, since its constructor routes through here) thus
-	// receives an independent 64-bit seed; two RNG instances created in the
-	// same microsecond are statistically independent.
+	// OS::get_entropy() dispatches to getentropy() or /dev/urandom in
+	// drivers/unix/os_unix.cpp, and BCryptGenRandom in
+	// platform/windows/os_windows.cpp.
 	uint8_t buf[8];
 	if (likely(OS::get_singleton()->get_entropy(buf, sizeof(buf)) == OK)) {
-		// Compose the byte array into a uint64 in a portable, alignment-safe
-		// way. Using memcpy or a reinterpret_cast would be equivalent on every
-		// architecture Godot supports, but the explicit shift makes the intent
-		// unambiguous and avoids relying on host endianness.
 		uint64_t entropy = 0;
 		for (int i = 0; i < 8; i++) {
 			entropy |= ((uint64_t)buf[i]) << (i * 8);
@@ -65,41 +54,16 @@ void RandomPCG::randomize() {
 		return;
 	}
 
-	// Fallback path. OS::get_entropy() reports failure only on platforms that
-	// neither define UNIX_GET_ENTROPY (i.e. no getentropy()) nor have
-	// /dev/urandom available (i.e. NO_URANDOM is defined). No platform Godot
-	// currently ships on falls into that bucket; this branch exists as
-	// defense in depth so unrecognised builds still produce uncorrelated
-	// seeds for back-to-back calls instead of regressing to the previous
-	// timing-only behavior.
-	//
-	// Mix:
-	//   1. Wall-clock seconds (varies across runs).
-	//   2. Monotonic microsecond ticks (varies within a run, with
-	//      sub-microsecond ambiguity in tight loops).
-	//   3. A process-wide atomic counter that increments per call,
-	//      guaranteeing distinctness even when the clock has poor resolution.
-	//
-	// The mix is run through the SplitMix64 finalizer, a bijective hash that
-	// diffuses small input differences across all output bits. Without
-	// diffusion, two seeds that differ by only their low bits could produce
-	// PCG streams that look correlated in their first few outputs.
+	// Fallback for platforms with neither getentropy() nor /dev/urandom.
+	// The atomic counter keeps seeds distinct when the clock has poor
+	// resolution; SplitMix64 diffuses the result.
 	static SafeNumeric<uint64_t> fallback_counter;
 	uint64_t mix = (uint64_t)OS::get_singleton()->get_unix_time();
 	mix ^= OS::get_singleton()->get_ticks_usec();
-	// Multiply the counter by SplitMix64's golden-ratio constant before
-	// XORing in. This spreads its low bits across the full 64-bit range,
-	// preventing partial cancellation against the timing mix when the counter
-	// is small and increments by 1.
 	mix ^= fallback_counter.postincrement() * 0x9E3779B97F4A7C15ULL;
-
-	// SplitMix64 finalizer. Constants from Steele/Lea/Flood, "Fast Splittable
-	// Pseudorandom Number Generators" (OOPSLA 2014). Bijective hash over
-	// uint64, guaranteeing distinct inputs produce distinct outputs.
 	mix = (mix ^ (mix >> 30)) * 0xBF58476D1CE4E5B9ULL;
 	mix = (mix ^ (mix >> 27)) * 0x94D049BB133111EBULL;
 	mix = mix ^ (mix >> 31);
-
 	seed(mix);
 }
 
