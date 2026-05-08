@@ -151,7 +151,9 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 					if (ResourceLoader::get_abort_on_missing_resources()) {
 						error = ERR_FILE_MISSING_DEPENDENCIES;
 						if (err == ERR_BUSY) {
-							error_text = "[ext_resource] cyclic reference while loading: " + path;
+							// At runtime, this also surfaces as later "null instance" errors
+							// in script code that uses the property — make the link explicit.
+							error_text = "[ext_resource] cyclic reference while loading: " + path + "; the reference will be null at runtime";
 						} else {
 							error_text = "[ext_resource] referenced non-existent resource at: " + path;
 						}
@@ -294,7 +296,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 					if (error == ERR_FILE_MISSING_DEPENDENCIES) {
 						// Resource loading error, just skip it.
 					} else if (error == ERR_BUSY) {
-						ERR_PRINT(vformat("Cyclic resource reference detected. [Resource file %s:%d]", res_path, lines));
+						ERR_PRINT(vformat("Cyclic resource reference detected, scene will fail to load. [Resource file %s:%d]", res_path, lines));
 						return Ref<PackedScene>();
 					} else if (error != ERR_FILE_EOF) {
 						ERR_PRINT(vformat("Parse Error: %s. [Resource file %s:%d]", error_names[error], res_path, lines));
