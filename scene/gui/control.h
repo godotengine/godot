@@ -763,6 +763,8 @@ public:
 	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
 	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
 
+	virtual Transform2D get_accessibility_transform() const override { return get_transform(); }
+
 	// Rendering.
 
 	void set_default_cursor_shape(CursorShape p_shape);
