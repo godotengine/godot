@@ -4915,6 +4915,9 @@ void DisplayServerX11::process_events() {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
 				app_focused = false;
+
+				// Release pressed events here instead of FocusOut because it's a no-op until NOTIFICATION_APPLICATION_FOCUS_OUT is processed.
+				Input::get_singleton()->release_pressed_events();
 			}
 		} else {
 			time_since_no_focus = OS::get_singleton()->get_ticks_msec();
@@ -5274,8 +5277,6 @@ void DisplayServerX11::process_events() {
 					OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 				}
 				wd.focused = false;
-
-				Input::get_singleton()->release_pressed_events();
 
 				AccessibilityServer::get_singleton()->set_window_focused(window_id, false);
 				_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
