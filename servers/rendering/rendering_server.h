@@ -39,6 +39,11 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device.h"
 
+// DEAD MONEY: forward-declare so viewport_get_aux_texture2d's signature
+// resolves without dragging scene/resources/texture_rd.h into rendering_server.h
+// (would invert the scene→servers dependency layering).
+class Texture2DRD;
+
 // Helper macros for code outside of the rendering server, but that is
 // called by the rendering server.
 #ifdef DEBUG_ENABLED
@@ -157,6 +162,10 @@ public:
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
+
+	// DEAD MONEY: in-place RD rid swap on a server-side wrapper. See
+	// TextureStorage::texture_set_external_rd_rid for semantics.
+	virtual void texture_set_external_rd_rid(RID p_texture, RID p_rd_rid) {}
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
@@ -1036,6 +1045,11 @@ public:
 	// sampling the i-th aux attachment from a downstream pass shader.
 	virtual void viewport_set_mrt_attachments(RID p_viewport, const Vector<int> &p_formats, const Vector<Color> &p_clear_colors) = 0;
 	virtual RID viewport_get_aux_texture(RID p_viewport, int p_index) const = 0;
+	// Returns a stable Texture2DRD wrapper around aux[index]. Engine refreshes
+	// the wrapper's underlying RD rid across viewport resizes so consumers
+	// can cache the Ref<> safely (e.g. ShaderMaterial uniforms). Returns
+	// null on non-RD renderers.
+	virtual Ref<Texture2DRD> viewport_get_aux_texture2d(RID p_viewport, int p_index) = 0;
 
 	enum ViewportEnvironmentMode {
 		VIEWPORT_ENVIRONMENT_DISABLED,

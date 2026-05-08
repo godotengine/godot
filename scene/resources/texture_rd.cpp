@@ -38,6 +38,9 @@
 void Texture2DRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_rd_rid", "texture_rd_rid"), &Texture2DRD::set_texture_rd_rid);
 	ClassDB::bind_method(D_METHOD("get_texture_rd_rid"), &Texture2DRD::get_texture_rd_rid);
+	// DEAD MONEY
+	ClassDB::bind_method(D_METHOD("set_owns_rid", "owns_rid"), &Texture2DRD::set_owns_rid);
+	ClassDB::bind_method(D_METHOD("get_owns_rid"), &Texture2DRD::get_owns_rid);
 
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "texture_rd_rid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_texture_rd_rid", "get_texture_rd_rid");
 }
@@ -78,8 +81,15 @@ void Texture2DRD::set_texture_rd_rid(RID p_texture_rd_rid) {
 	if (p_texture_rd_rid.is_valid()) {
 		RS::get_singleton()->call_on_render_thread(callable_mp(this, &Texture2DRD::_set_texture_rd_rid).bind(p_texture_rd_rid));
 	} else if (texture_rid.is_valid()) {
+		// DEAD MONEY: when the underlying RD rid is engine-owned, detach the
+		// server-side wrapper from the RD rid before freeing the wrapper so
+		// its cleanup() doesn't free a rid that the engine manages.
+		if (!owns_rid) {
+			RS::get_singleton()->texture_set_external_rd_rid(texture_rid, RID());
+		}
 		RS::get_singleton()->free_rid(texture_rid);
 		texture_rid = RID();
+		texture_rd_rid = RID();
 		size = Size2i();
 
 		notify_property_list_changed();
@@ -102,12 +112,61 @@ void Texture2DRD::_set_texture_rd_rid(RID p_texture_rd_rid) {
 	texture_rd_rid = p_texture_rd_rid;
 
 	if (texture_rid.is_valid()) {
-		RS::get_singleton()->texture_replace(texture_rid, RS::get_singleton()->texture_rd_create(p_texture_rd_rid));
+		// DEAD MONEY: in non-owning mode, swap the RD rid in place via
+		// texture_set_external_rd_rid (no free) instead of texture_replace
+		// (which frees the previous rd_texture and would double-free an
+		// engine-managed aux rid).
+		if (!owns_rid) {
+			RS::get_singleton()->texture_set_external_rd_rid(texture_rid, p_texture_rd_rid);
+		} else {
+			RS::get_singleton()->texture_replace(texture_rid, RS::get_singleton()->texture_rd_create(p_texture_rd_rid));
+		}
 	} else {
 		texture_rid = RS::get_singleton()->texture_rd_create(p_texture_rd_rid);
 	}
 
 	notify_property_list_changed();
+	emit_changed();
+}
+
+// DEAD MONEY
+void Texture2DRD::set_owns_rid(bool p_owns) {
+	owns_rid = p_owns;
+}
+
+bool Texture2DRD::get_owns_rid() const {
+	return owns_rid;
+}
+
+// DEAD MONEY
+// Engine-only path used by render-target aux wrapper management. Mutates
+// the wrapper's underlying RD rid in place (no allocation, no free) while
+// preserving the server-side texture_rid so consumers' uniform sets stay
+// valid across viewport resizes.
+void Texture2DRD::_engine_set_external_rd_rid(RID p_rd_rid) {
+	ERR_FAIL_COND(owns_rid);
+	ERR_FAIL_NULL(RS::get_singleton());
+
+	texture_rd_rid = p_rd_rid;
+
+	if (p_rd_rid.is_valid()) {
+		ERR_FAIL_NULL(RD::get_singleton());
+		ERR_FAIL_COND(!RD::get_singleton()->texture_is_valid(p_rd_rid));
+		RD::TextureFormat tf = RD::get_singleton()->texture_get_format(p_rd_rid);
+		size.width = tf.width;
+		size.height = tf.height;
+		if (texture_rid.is_valid()) {
+			RS::get_singleton()->texture_set_external_rd_rid(texture_rid, p_rd_rid);
+		} else {
+			texture_rid = RS::get_singleton()->texture_rd_create(p_rd_rid);
+		}
+	} else {
+		size = Size2i();
+		if (texture_rid.is_valid()) {
+			RS::get_singleton()->texture_set_external_rd_rid(texture_rid, RID());
+		}
+	}
+
 	emit_changed();
 }
 
@@ -122,6 +181,11 @@ Texture2DRD::Texture2DRD() {
 Texture2DRD::~Texture2DRD() {
 	if (texture_rid.is_valid()) {
 		ERR_FAIL_NULL(RS::get_singleton());
+		// DEAD MONEY: detach engine-managed RD rid before freeing the server
+		// wrapper so its cleanup() doesn't free a rid the engine owns.
+		if (!owns_rid) {
+			RS::get_singleton()->texture_set_external_rd_rid(texture_rid, RID());
+		}
 		RS::get_singleton()->free_rid(texture_rid);
 		texture_rid = RID();
 	}

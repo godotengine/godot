@@ -37,6 +37,7 @@
 #include "renderer_canvas_cull.h"
 #include "renderer_viewport.h"
 #include "rendering_server_globals.h"
+#include "scene/resources/texture_rd.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/server_wrap_mt_common.h"
@@ -213,6 +214,8 @@ public:
 	FUNC1RC(Vector<Ref<Image>>, texture_3d_get, RID)
 
 	FUNC2(texture_replace, RID, RID)
+	// DEAD MONEY
+	FUNC2(texture_set_external_rd_rid, RID, RID)
 
 	FUNC3(texture_set_size_override, RID, int, int)
 // FIXME: Disabled during Vulkan refactoring, should be ported.
@@ -723,6 +726,8 @@ public:
 	// DEAD MONEY: canvas_item MRT API forwarders.
 	FUNC3(viewport_set_mrt_attachments, RID, const Vector<int> &, const Vector<Color> &)
 	FUNC2RC(RID, viewport_get_aux_texture, RID, int)
+	// DEAD MONEY
+	FUNC2R(Ref<Texture2DRD>, viewport_get_aux_texture2d, RID, int)
 
 	FUNC2(viewport_set_disable_2d, RID, bool)
 	FUNC2(viewport_set_environment_mode, RID, ViewportEnvironmentMode)

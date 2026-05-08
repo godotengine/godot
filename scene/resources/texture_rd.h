@@ -44,6 +44,12 @@ class Texture2DRD : public Texture2D {
 	mutable RID texture_rid;
 	RID texture_rd_rid;
 	Size2i size;
+	// DEAD MONEY: when false, the underlying RD rid is owned by an external
+	// system (e.g. the engine's MRT aux pool) and Texture2DRD must not free
+	// it on destruction or rid reassignment. Used by viewport_get_aux_texture2d
+	// so wrappers survive viewport resize without double-freeing aux rids
+	// that the render-target lifecycle independently manages.
+	bool owns_rid = true;
 
 protected:
 	static void _bind_methods();
@@ -61,6 +67,13 @@ public:
 
 	// Internal function that should only be called from the rendering thread.
 	void _set_texture_rd_rid(RID p_texture_rd_rid);
+
+	// DEAD MONEY: non-owning mode plumbing. Engine-only API — must be called
+	// on the render thread. Skips the texture_replace / free_rid paths that
+	// would double-free engine-managed RD rids.
+	void set_owns_rid(bool p_owns);
+	bool get_owns_rid() const;
+	void _engine_set_external_rd_rid(RID p_rd_rid);
 
 	Texture2DRD();
 	~Texture2DRD();

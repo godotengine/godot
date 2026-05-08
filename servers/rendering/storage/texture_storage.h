@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "scene/resources/texture_rd.h"
 #include "servers/rendering/rendering_server.h"
 
 class RendererTextureStorage {
@@ -88,6 +89,11 @@ public:
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
+
+	// DEAD MONEY: in-place RD rid swap on a server-side wrapper, no free.
+	// Used by Texture2DRD's non-owning mode for engine-managed aux textures
+	// (render-target lifecycle owns the RD rid). Non-RD renderers no-op.
+	virtual void texture_set_external_rd_rid(RID p_texture, RID p_rd_rid) {}
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
@@ -194,6 +200,10 @@ public:
 	// dummy) no-op these; canvas_item MRT is Vulkan/Forward+ only by design.
 	virtual void render_target_set_mrt_attachments(RID p_render_target, const Vector<int> &p_formats, const Vector<Color> &p_clear_colors) {}
 	virtual RID render_target_get_aux_color(RID p_render_target, int p_index) { return RID(); }
+	// DEAD MONEY: stable Texture2DRD wrapper around aux[index]. Default
+	// returns null; only the RD storage hands out wrappers that survive
+	// viewport resize.
+	virtual Ref<Texture2DRD> render_target_get_aux_texture2d(RID p_render_target, int p_index) { return Ref<Texture2DRD>(); }
 
 	// get textures
 	virtual RID render_target_get_texture(RID p_render_target) = 0;

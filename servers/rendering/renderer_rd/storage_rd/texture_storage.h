@@ -35,6 +35,7 @@
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/forward_id_storage.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "scene/resources/texture_rd.h"
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
@@ -409,6 +410,12 @@ private:
 		Vector<RD::DataFormat> mrt_formats;
 		Vector<RID> mrt_aux_color;
 		Vector<Color> mrt_clear_colors;
+		// DEAD MONEY: per-aux Texture2DRD wrappers handed out via
+		// viewport_get_aux_texture2d(). The wrappers run in non-owning mode
+		// and the render target refreshes their underlying RD rid through
+		// every _update_render_target so consumer ShaderMaterial bindings
+		// survive viewport resize. Lazily populated on first call.
+		Vector<Ref<Texture2DRD>> mrt_aux_wrappers;
 
 		// overridden textures
 		struct RTOverridden {
@@ -557,6 +564,8 @@ public:
 	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override;
+	// DEAD MONEY
+	virtual void texture_set_external_rd_rid(RID p_texture, RID p_rd_rid) override;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) override;
@@ -851,6 +860,11 @@ public:
 		const Vector<RD::DataFormat> &p_formats,
 		const Vector<Color> &p_clear_colors);
 	virtual RID render_target_get_aux_color(RID p_render_target, int p_index) override;
+	// DEAD MONEY: stable Texture2DRD wrapper around aux[index]. Wrapper is
+	// engine-managed across viewport resizes — its underlying RD rid is
+	// refreshed in place by _update_render_target. Caller may safely cache
+	// the Ref<Texture2DRD> in shader materials etc.
+	Ref<Texture2DRD> render_target_get_aux_texture2d(RID p_render_target, int p_index);
 	int render_target_get_aux_count(RID p_render_target);
 	const Vector<Color> &render_target_get_mrt_clear_colors(RID p_render_target);
 };

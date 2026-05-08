@@ -247,6 +247,7 @@ public:
 	// DEAD MONEY: canvas_item MRT API.
 	void viewport_set_mrt_attachments(RID p_viewport, const Vector<int> &p_formats, const Vector<Color> &p_clear_colors);
 	RID viewport_get_aux_texture(RID p_viewport, int p_index) const;
+	Ref<Texture2DRD> viewport_get_aux_texture2d(RID p_viewport, int p_index);
 
 	void viewport_set_prev_camera_data(RID p_viewport, const RendererSceneRender::CameraData *p_camera_data);
 	const RendererSceneRender::CameraData *viewport_get_prev_camera_data(RID p_viewport);

@@ -1644,6 +1644,30 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	decal_atlas_mark_dirty_on_texture(p_texture);
 }
 
+// DEAD MONEY
+// Swap a server-side wrapper's underlying RD rid in place. No frees on either
+// side: the OLD rd_texture is engine-managed (caller will free or has freed
+// via the render-target lifecycle); the NEW rd_texture will be freed the same
+// way. Used by Texture2DRD's non-owning mode for MRT aux wrappers that must
+// survive viewport resize without double-freeing the aux pool.
+void TextureStorage::texture_set_external_rd_rid(RID p_texture, RID p_rd_rid) {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(tex);
+
+	tex->rd_texture = p_rd_rid;
+
+	if (p_rd_rid.is_valid()) {
+		RD::TextureFormat tf = RD::get_singleton()->texture_get_format(p_rd_rid);
+		tex->width = tf.width;
+		tex->height = tf.height;
+		tex->width_2d = tf.width;
+		tex->height_2d = tf.height;
+		tex->depth = tf.depth;
+		tex->layers = tf.array_layers;
+		tex->mipmaps = tf.mipmaps;
+	}
+}
+
 void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p_height) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(tex);
@@ -3545,7 +3569,19 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		RD::get_singleton()->free_rid(rt->color_multisample);
 	}
 
-	// DEAD MONEY: free MRT aux attachment textures.
+	// DEAD MONEY: detach any cached Texture2DRD wrappers BEFORE freeing the
+	// aux RD rids — the wrappers are non-owning, but their server-side
+	// texture's `rd_texture` field still points at the about-to-be-freed
+	// aux. Clearing it first keeps Texture::cleanup()'s `texture_is_valid`
+	// guard from triggering a double-free if the wrapper is freed later
+	// while these aux rids are gone.
+	for (int i = 0; i < rt->mrt_aux_wrappers.size(); i++) {
+		Ref<Texture2DRD> &w = rt->mrt_aux_wrappers.write[i];
+		if (w.is_valid()) {
+			w->_engine_set_external_rd_rid(RID());
+		}
+	}
+	// Free MRT aux attachment textures.
 	for (RID aux : rt->mrt_aux_color) {
 		if (aux.is_valid()) {
 			RD::get_singleton()->free_rid(aux);
@@ -3648,6 +3684,24 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		RID aux = RD::get_singleton()->texture_create(aux_fmt, RD::TextureView());
 		ERR_CONTINUE(aux.is_null());
 		rt->mrt_aux_color.push_back(aux);
+	}
+
+	// DEAD MONEY: refresh any cached Texture2DRD wrappers handed out via
+	// render_target_get_aux_texture2d so consumer ShaderMaterial bindings
+	// survive the resize without rebinding. Wrappers run in non-owning mode;
+	// _engine_set_external_rd_rid mutates the wrapper's underlying RD rid in
+	// place. Wrappers for slots that no longer exist (mrt_formats shrunk)
+	// are detached but kept — the user's Ref<> may still be live.
+	for (int i = 0; i < rt->mrt_aux_wrappers.size(); i++) {
+		Ref<Texture2DRD> &w = rt->mrt_aux_wrappers.write[i];
+		if (w.is_null()) {
+			continue;
+		}
+		if (i < rt->mrt_aux_color.size()) {
+			w->_engine_set_external_rd_rid(rt->mrt_aux_color[i]);
+		} else {
+			w->_engine_set_external_rd_rid(RID());
+		}
 	}
 
 	if (rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
@@ -4069,6 +4123,32 @@ int TextureStorage::render_target_get_aux_count(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, 0);
 	return rt->mrt_aux_color.size();
+}
+
+// DEAD MONEY
+// Lazy-create a non-owning Texture2DRD wrapper around aux[index]. The same
+// wrapper instance is returned across calls and its underlying RD rid is
+// refreshed by _update_render_target on every viewport resize, so caller
+// caches (e.g. ShaderMaterial uniforms) survive resize without rebinding.
+Ref<Texture2DRD> TextureStorage::render_target_get_aux_texture2d(RID p_render_target, int p_index) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, Ref<Texture2DRD>());
+	ERR_FAIL_INDEX_V(p_index, rt->mrt_aux_color.size(), Ref<Texture2DRD>());
+
+	if (rt->mrt_aux_wrappers.size() <= p_index) {
+		rt->mrt_aux_wrappers.resize(p_index + 1);
+	}
+	Ref<Texture2DRD> &slot = rt->mrt_aux_wrappers.write[p_index];
+	if (slot.is_null()) {
+		slot.instantiate();
+		slot->set_owns_rid(false);
+		slot->_engine_set_external_rd_rid(rt->mrt_aux_color[p_index]);
+	} else if (slot->get_texture_rd_rid() != rt->mrt_aux_color[p_index]) {
+		// Defensive: refresh in case _update_render_target ran between the
+		// last get and this one (shouldn't happen, but cheap to verify).
+		slot->_engine_set_external_rd_rid(rt->mrt_aux_color[p_index]);
+	}
+	return slot;
 }
 
 const Vector<Color> &TextureStorage::render_target_get_mrt_clear_colors(RID p_render_target) {

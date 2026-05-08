@@ -1209,6 +1209,12 @@ RID RendererViewport::viewport_get_aux_texture(RID p_viewport, int p_index) cons
 	return RSG::texture_storage->render_target_get_aux_color(viewport->render_target, p_index);
 }
 
+Ref<Texture2DRD> RendererViewport::viewport_get_aux_texture2d(RID p_viewport, int p_index) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL_V(viewport, Ref<Texture2DRD>());
+	return RSG::texture_storage->render_target_get_aux_texture2d(viewport->render_target, p_index);
+}
+
 RID RendererViewport::viewport_get_occluder_debug_texture(RID p_viewport) const {
 	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL_V(viewport, RID());
