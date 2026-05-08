@@ -1269,6 +1269,20 @@ void GI::SDFGI::update_light() {
 	push_constant.y_mult = y_mult;
 	push_constant.use_occlusion = uses_occlusion;
 
+	RID area_light_atlas_dynamic_uniform_set;
+	{
+		thread_local LocalVector<RD::Uniform> uniforms;
+		uniforms.clear();
+		{
+			RD::Uniform u;
+			u.binding = 0;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
+			uniforms.push_back(u);
+		}
+		area_light_atlas_dynamic_uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_DYNAMIC), 1, uniforms);
+	}
+
 	for (uint32_t i = 0; i < cascades.size(); i++) {
 		SDFGI::Cascade &cascade = cascades[i];
 		push_constant.light_count = cascade_dynamic_light_count[i];
@@ -1290,7 +1304,7 @@ void GI::SDFGI::update_light() {
 		cascades[i].all_dynamic_lights_dirty = false;
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascade.sdf_direct_light_dynamic_uniform_set, 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascade.sdf_direct_light_dynamic_render_uniform_set, 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, area_light_atlas_dynamic_uniform_set, 1);
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::DirectLightPushConstant));
 		RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascade.solid_cell_dispatch_buffer_call, 0);
 	}
@@ -2045,18 +2059,6 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		}
 
 		cascade_dynamic_light_count[i] = idx;
-
-		thread_local LocalVector<RD::Uniform> uniforms;
-		uniforms.clear();
-		{
-			RD::Uniform u;
-			u.binding = 0;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.append_id(texture_storage->area_light_atlas_get_texture());
-			uniforms.push_back(u);
-		}
-		cascade.sdf_direct_light_static_render_uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_STATIC), 1, uniforms);
-		cascade.sdf_direct_light_dynamic_render_uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_DYNAMIC), 1, uniforms);
 	}
 }
 
@@ -2580,6 +2582,20 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 	dl_push_constant.process_offset = 0;
 	dl_push_constant.process_increment = 1;
 
+	RID area_light_atlas_static_uniform_set;
+	{
+		thread_local LocalVector<RD::Uniform> uniforms;
+		uniforms.clear();
+		{
+			RD::Uniform u;
+			u.binding = 0;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.append_id(texture_storage->area_light_atlas_get_texture());
+			uniforms.push_back(u);
+		}
+		area_light_atlas_static_uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_STATIC), 1, uniforms);
+	}
+
 	for (uint32_t i = 0; i < p_cascade_count; i++) {
 		ERR_CONTINUE(p_cascade_indices[i] >= cascades.size());
 
@@ -2590,7 +2606,7 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 
 		if (dl_push_constant.light_count > 0) {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cc.sdf_direct_light_static_uniform_set, 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cc.sdf_direct_light_static_render_uniform_set, 1);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, area_light_atlas_static_uniform_set, 1);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &dl_push_constant, sizeof(SDFGIShader::DirectLightPushConstant));
 			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cc.solid_cell_dispatch_buffer_call, 0);
 		}
