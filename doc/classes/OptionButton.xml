@@ -140,12 +140,6 @@
 				Returns [code]true[/code] if the item at index [param idx] is marked as a separator.
 			</description>
 		</method>
-		<method name="is_search_bar_enabled" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the search bar is enabled.
-			</description>
-		</method>
 		<method name="remove_item">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
@@ -239,9 +233,6 @@
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
 			If [code]true[/code], the currently selected item can be selected again.
 		</member>
-		<member name="enable_search_bar_on_item_count" type="int" setter="set_search_bar_enabled_on_item_count" getter="get_search_bar_enabled_on_item_count" default="0">
-			Enables the [PopupMenu] search bar if the item count is greater than [code]0[/code].
-		</member>
 		<member name="fit_to_longest_item" type="bool" setter="set_fit_to_longest_item" getter="is_fit_to_longest_item" default="true">
 			If [code]true[/code], minimum size will be determined by the longest item's text, instead of the currently selected one's.
 			[b]Note:[/b] For performance reasons, the minimum size doesn't update immediately when adding, removing or modifying items.
@@ -269,12 +260,18 @@
 			The text of the item at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
 		</member>
+		<member name="search_bar_enabled" type="bool" setter="set_search_bar_enabled" getter="is_search_bar_enabled" default="false">
+			If [code]true[/code], shows a search bar at the top of the [PopupMenu] for filtering items. See [member search_bar_min_item_count] for dynamically controlling its visibility based on the number of items.
+		</member>
 		<member name="search_bar_fuzzy_search_enabled" type="bool" setter="set_search_bar_fuzzy_search_enabled" getter="is_search_bar_fuzzy_search_enabled" default="true">
 			If [code]true[/code], enables fuzzy searching in the [PopupMenu] search bar. This allows the search results to include items that almost match the search query, as well items that match the individual characters of the search query, but not in sequence.
 			Use [member search_bar_fuzzy_search_max_misses] to set the maximum number of mismatches allowed in the search results.
 		</member>
 		<member name="search_bar_fuzzy_search_max_misses" type="int" setter="set_search_bar_fuzzy_search_max_misses" getter="get_search_bar_fuzzy_search_max_misses" default="2">
 			Sets the maximum number of mismatches allowed in each search result when fuzzy searching is enabled for the [PopupMenu] search bar. Any item with more mismatches will be hidden from the search results.
+		</member>
+		<member name="search_bar_min_item_count" type="int" setter="set_search_bar_min_item_count" getter="get_search_bar_min_item_count" default="0">
+			Sets the minimum number of items required for the [PopupMenu] search bar to be visible. [member search_bar_enabled] must be [code]true[/code] for this to have any effect.
 		</member>
 		<member name="selected" type="int" setter="_select_int" getter="get_selected" default="-1">
 			The index of the currently selected item, or [code]-1[/code] if no item is selected.
