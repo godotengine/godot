@@ -272,29 +272,31 @@ TEST_CASE_MAY_FAIL("[RandomNumberGenerator] randi_range bias check") {
 }
 
 TEST_CASE("[RandomNumberGenerator] back-to-back instances yield independent seeds") {
-	// Construct many RNGs in a tight loop and collect their first outputs.
-	// Before the OS-entropy seeding fix, this loop produced many byte-identical
-	// first outputs because consecutive constructions read the same microsecond
-	// from the timing-based seed formula. With OS entropy seeding, the rate of
-	// pairwise collisions should match what is expected for a fair 32-bit RNG,
-	// which over N draws is (N - 1) / 2^32 and rounds to zero for N << 2^16.
+	// Construct many RNGs in a tight loop and read the seed assigned to each by
+	// the implicit randomize() call in the constructor. Before the OS-entropy
+	// seeding fix, consecutive constructions on machines fast enough to build
+	// an RNG in under a microsecond would land in the same timestamp bucket
+	// from the previous formula and receive identical seeds. With OS-entropy
+	// seeding the seeds are 64-bit values from the kernel CSPRNG; the
+	// probability of two adjacent draws colliding is 1/2^64, so the count
+	// should be zero on every realistic platform.
 	constexpr int N = 1000;
-	Vector<uint32_t> firsts;
-	firsts.resize(N);
+	Vector<uint64_t> seeds;
+	seeds.resize(N);
 	for (int i = 0; i < N; i++) {
 		Ref<RandomNumberGenerator> rng;
 		rng.instantiate();
-		firsts.write[i] = rng->randi();
+		seeds.write[i] = rng->get_seed();
 	}
 
 	int collisions = 0;
 	for (int i = 1; i < N; i++) {
-		if (firsts[i] == firsts[i - 1]) {
+		if (seeds[i] == seeds[i - 1]) {
 			collisions++;
 		}
 	}
 	CHECK_MESSAGE(collisions == 0,
-			"Consecutive RandomNumberGenerator instances should produce independent first outputs.");
+			"Consecutive RandomNumberGenerator instances should receive independent seeds.");
 }
 
 } // namespace TestRandomNumberGenerator
