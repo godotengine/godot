@@ -788,8 +788,28 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	}
 	if (nav_area_navlayers.size() == 0) {
 		nav_polygons_layers.clear();
-	} else if (!has_baked_ids) {
-		nav_area_bake_ids.clear(); // We don't need to remember empty strings.
+	} else {
+		if (!has_baked_ids) {
+			nav_area_bake_ids.clear(); // We don't need to remember empty strings.
+		} else {
+			// Check if the baked `NavigationMeshAre3D.bake_id`s are really unique.
+			Vector<String> unique_bake_ids = Vector<String>();
+			Vector<String> duplicate_bake_ids = Vector<String>();
+			for (const String &id : nav_area_bake_ids) {
+				if (unique_bake_ids.find(id) == -1) {
+					unique_bake_ids.push_back(id);
+				} else if (duplicate_bake_ids.find(id) == -1) {
+					duplicate_bake_ids.push_back(id);
+				}
+			}
+			if (!duplicate_bake_ids.is_empty()) {
+				String duplicate_bake_id_warning;
+				for (const String &id : duplicate_bake_ids) {
+					duplicate_bake_id_warning += "'" + id + "', ";
+				}
+				WARN_PRINT("Navigation mesh contains duplicate mesh area bake ids: " + duplicate_bake_id_warning.trim_suffix(", "));
+			}
+		}
 	}
 
 	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_layers, nav_area_ids, nav_area_bake_ids, nav_area_navlayers, nav_area_indices);
