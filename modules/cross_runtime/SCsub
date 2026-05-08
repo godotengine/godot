@@ -1,0 +1,9 @@
+Import("env")
+
+cpp_sources = Glob("cpp/*.cpp")
+
+env.add_source_files(env.modules_sources, [
+    "register_types.cpp",
+    "command_dispatcher.cpp",
+    "command_processor.cpp",
+] + cpp_sources)

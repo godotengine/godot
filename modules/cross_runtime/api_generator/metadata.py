@@ -1,0 +1,586 @@
+"""
+- This contains the metadata for the cpp and cs files which include:
+    argument types, return types, forced return types(this one was specifically made for engine.get_singleton()), cpp and cs cs_keywords and the individual reserved ones
+"""
+from typing import Any
+
+argument_types: dict[int, dict[str, Any]] = {
+    0: {
+        "cpp_decl": "Variant",
+        "cpp_read": "Variant {name};",
+        "size": 0,
+        "cs_type": "object",
+        "cs_write": "Helpers.WriteVariant({pos}, {name});",
+        "cs_read": "Helpers.ReadVariant({pos})",
+    },
+    1: {
+        "cpp_decl": "bool",
+        "cpp_read": "bool {name} = (read_int32({buf}, {offset}) != 0);",
+        "size": 4,
+        "cs_type": "bool",
+        "cs_write": "Helpers.WriteInt32({pos}, {name} ? 1 : 0);",
+        "cs_read": "Helpers.ReadInt32({pos}) != 0",
+    },
+    2: {
+        "cpp_decl": "int64_t",
+        "cpp_read": "int64_t {name} = read_int64({buf}, {offset});",
+        "size": 8,
+        "cs_type": "long",
+        "cs_write": "Helpers.WriteInt64({pos}, {name});",
+        "cs_read": "Helpers.ReadInt64({pos})",
+    },
+    3: {
+        "cpp_decl": "double",
+        "cpp_read": "double {name} = read_double({buf}, {offset});",
+        "size": 8,
+        "cs_type": "double",
+        "cs_write": "Helpers.WriteDouble({pos}, {name});",
+        "cs_read": "Helpers.ReadDouble({pos})",
+    },
+    4: {
+        "cpp_decl": "String",
+        "cpp_read": "String {name} = read_string_from_data({buf} + {offset});",
+        "size": 4 + 1024,
+        "cs_type": "string",
+        "cs_write": "Helpers.WriteString({pos}, {name});",
+        "cs_read": "Helpers.ReadString({pos})",
+    },
+
+    5:  {
+        "cpp_decl": "Vector2",        
+        "cpp_read": "Vector2 {name} = read_vector2({buf}, {offset});",        
+        "size": 8,   
+        "cs_type": "Vector2",        
+        "cs_write": "Helpers.WriteVector2({pos}, {name});",        
+        "cs_read": "Helpers.ReadVector2({pos})"
+    },
+    
+    6:  {
+        "cpp_decl": "Vector2i",       
+        "cpp_read": "Vector2i {name} = read_vector2i({buf}, {offset});",      
+        "size": 8,   
+        "cs_type": "Vector2i",       
+        "cs_write": "Helpers.WriteVector2i({pos}, {name});",       
+        "cs_read": "Helpers.ReadVector2i({pos})"
+    },
+    
+    7:  {
+        "cpp_decl": "Rect2",          
+        "cpp_read": "Rect2 {name} = read_rect2({buf}, {offset});",           
+        "size": 16,  "cs_type": "Rect2",          
+        "cs_write": "Helpers.WriteRect2({pos}, {name});",          
+        "cs_read": "Helpers.ReadRect2({pos})"
+    },
+    
+    8:  {
+        "cpp_decl": "Rect2i",         
+        "cpp_read": "Rect2i {name} = read_rect2i({buf}, {offset});",        
+        "size": 16,  
+        "cs_type": "Rect2i",         
+        "cs_write": "Helpers.WriteRect2i({pos}, {name});",         
+        "cs_read": "Helpers.ReadRect2i({pos})"
+    },
+    
+    9:  {
+        "cpp_decl": "Vector3",        
+        "cpp_read": "Vector3 {name} = read_vector3({buf}, {offset});",      
+        "size": 12,  
+        "cs_type": "Vector3",        
+        "cs_write": "Helpers.WriteVector3({pos}, {name});",        
+        "cs_read": "Helpers.ReadVector3({pos})"
+    },
+    
+    10: {
+        "cpp_decl": "Vector3i",       
+        "cpp_read": "Vector3i {name} = read_vector3i({buf}, {offset});",    
+        "size": 12,  "cs_type": "Vector3i",       
+        "cs_write": "Helpers.WriteVector3i({pos}, {name});",       
+        "cs_read": "Helpers.ReadVector3i({pos})"
+    },
+    
+    11: {
+        "cpp_decl": "Transform2D",    
+        "cpp_read": "Transform2D {name} = read_transform2d({buf}, {offset});",
+        "size": 24, 
+        "cs_type": "Transform2D",    
+        "cs_write": "Helpers.WriteTransform2D({pos}, {name});",    
+        "cs_read": "Helpers.ReadTransform2D({pos})"
+    },
+    
+    12: {
+        "cpp_decl": "Vector4",        
+        "cpp_read": "Vector4 {name} = read_vector4({buf}, {offset});",      
+        "size": 16,  
+        "cs_type": "Vector4",        
+        "cs_write": "Helpers.WriteVector4({pos}, {name});",        
+        "cs_read": "Helpers.ReadVector4({pos})"
+    },
+    
+    13: {
+        "cpp_decl": "Vector4i",       
+        "cpp_read": "Vector4i {name} = read_vector4i({buf}, {offset});",    
+        "size": 16,  
+        "cs_type": "Vector4i",       
+        "cs_write": "Helpers.WriteVector4i({pos}, {name});",       
+        "cs_read": "Helpers.ReadVector4i({pos})"
+    },
+    
+    14: {
+        "cpp_decl": "Plane",          
+        "cpp_read": "Plane {name} = read_plane({buf}, {offset});",          
+        "size": 16,  
+        "cs_type": "Plane",          
+        "cs_write": "Helpers.WritePlane({pos}, {name});",          
+        "cs_read": "Helpers.ReadPlane({pos})"
+    },
+    
+    15: {
+        "cpp_decl": "Quaternion",     
+        "cpp_read": "Quaternion {name} = read_quaternion({buf}, {offset});", 
+        "size": 16, "cs_type": "Quaternion",     
+        "cs_write": "Helpers.WriteQuaternion({pos}, {name});",     
+        "cs_read": "Helpers.ReadQuaternion({pos})"
+    },
+    
+    16: {
+        "cpp_decl": "AABB",           
+        "cpp_read": "AABB {name} = read_aabb({buf}, {offset});",            
+        "size": 24,  
+        "cs_type": "AABB",           
+        "cs_write": "Helpers.WriteAABB({pos}, {name});",           
+        "cs_read": "Helpers.ReadAABB({pos})"
+    },
+    
+    17: {
+        "cpp_decl": "Basis",          
+        "cpp_read": "Basis {name} = read_basis({buf}, {offset});",          
+        "size": 36,  
+        "cs_type": "Basis",          
+        "cs_write": "Helpers.WriteBasis({pos}, {name});",          
+        "cs_read": "Helpers.ReadBasis({pos})"
+    },
+    
+    18: {"cpp_decl": "Transform3D",    
+        "cpp_read": "Transform3D {name} = read_transform3d({buf}, {offset});",
+        "size": 48, 
+        "cs_type": "Transform3D",    
+        "cs_write": "Helpers.WriteTransform3D({pos}, {name});",    
+        "cs_read": "Helpers.ReadTransform3D({pos})"},
+    
+    19: {
+        "cpp_decl": "Projection",     
+        "cpp_read": "Projection {name} = read_projection({buf}, {offset});",
+        "size": 64,  
+        "cs_type": "Projection",     
+        "cs_write": "Helpers.WriteProjection({pos}, {name});",     
+        "cs_read": "Helpers.ReadProjection({pos})"
+    },
+    20: {
+        "cpp_decl": "Color",          
+        "cpp_read": "Color {name} = read_color({buf}, {offset});",          
+        "size": 16,  
+        "cs_type": "Color",          
+        "cs_write": "Helpers.WriteColor({pos}, {name});",          
+        "cs_read": "Helpers.ReadColor({pos})"
+    },
+    
+    21: {
+        "cpp_decl": "StringName",     
+        "cpp_read": "StringName {name} = read_string_name({buf}, {offset});",
+        "size": 4 + 1024,
+        "cs_type": "string",
+        "cs_write": "Helpers.WriteStringName({pos}, {name});",
+        "cs_read": "Helpers.ReadStringName({pos})"
+    },
+    
+    22: {
+        "cpp_decl": "NodePath",       
+        "cpp_read": "NodePath {name} = read_node_path({buf}, {offset});",   
+        "size": 4 + 1024, 
+        "cs_type": "string",         
+        "cs_write": "Helpers.WriteNodePath({pos}, {name});",       
+        "cs_read": "Helpers.ReadNodePath({pos})"},
+    
+    23: {
+        "cpp_decl": "RID",            
+        "cpp_read": "RID {name} = read_rid({buf}, {offset});",              
+        "size": 8,   
+        "cs_type": "ulong",          
+        "cs_write": "Helpers.WriteRID({pos}, {name});",            
+        "cs_read": "Helpers.ReadRID({pos})"
+    },
+    24: {"cpp_decl": "ObjectID",       "cpp_read": "ObjectID {name} = read_object_id({buf}, {offset});",   "size": 8,   "cs_type": "ulong",          "cs_write": "Helpers.WriteUInt64({pos}, {name});",         "cs_read": "Helpers.ReadUInt64({pos})"},
+
+    
+25: {
+    "cpp_decl": "Callable",
+    "cpp_read": "Callable {name} = read_callable({buf}, {offset});",
+    "size": 0,
+    "cs_type": "object",
+    "cs_write": "Helpers.WriteCallable({pos}, {name});",
+    "cs_read": "Helpers.ReadCallable({pos})"
+},
+
+26: {
+    "cpp_decl": "Signal",
+    "cpp_read": "Signal {name} = read_signal({buf}, {offset});",
+    "size": 0,
+    "cs_type": "object",
+    "cs_write": "Helpers.WriteSignal({pos}, {name});",
+    "cs_read": "Helpers.ReadSignal({pos})"
+},
+
+27: {
+    "cpp_decl": "Dictionary",
+    "cpp_read": "Dictionary {name} = read_dictionary({buf}, {offset});",
+    "size": 0,
+    "cs_type": "object",
+    "cs_write": "Helpers.WriteDictionary({pos}, {name});",
+    "cs_read": "Helpers.ReadDictionary({pos})"
+},
+
+28: {
+    "cpp_decl": "Array",
+    "cpp_read": "Array {name} = read_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "object",
+    "cs_write": "Helpers.WriteArray({pos}, {name});",
+    "cs_read": "Helpers.ReadArray({pos})"
+},
+
+29: {
+    "cpp_decl": "PackedByteArray",
+    "cpp_read": "PackedByteArray {name} = read_packed_byte_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "byte[]",
+    "cs_write": "Helpers.WritePackedByteArray({pos}, {name});",
+    "cs_read": "Helpers.ReadPackedByteArray({pos})"
+},
+
+30: {
+    "cpp_decl": "PackedInt32Array",
+    "cpp_read": "PackedInt32Array {name} = read_packed_int32_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "int[]",
+    "cs_write": "Helpers.WritePackedInt32Array({pos}, {name});",
+    "cs_read": "Helpers.ReadPackedInt32Array({pos})"
+},
+
+31: {
+    "cpp_decl": "PackedInt64Array",
+    "cpp_read": "PackedInt64Array {name} = read_packed_int64_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "long[]",
+    "cs_write": "Helpers.WritePackedInt64Array({pos}, {name});",
+    "cs_read": "Helpers.ReadPackedInt64Array({pos})"
+},
+
+32: {
+    "cpp_decl": "PackedFloat32Array",
+    "cpp_read": "PackedFloat32Array {name} = read_packed_float32_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "float[]",
+    "cs_write": "Helpers.WritePackedFloat32Array({pos}, {name});",
+    "cs_read": "Helpers.ReadPackedFloat32Array({pos})"
+},
+
+33: {
+    "cpp_decl": "PackedFloat64Array",
+    "cpp_read": "PackedFloat64Array {name} = read_packed_float64_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "double[]",
+    "cs_write": "Helpers.WritePackedFloat64Array({pos}, {name});",
+    "cs_read": "Helpers.ReadPackedFloat64Array({pos})"
+},
+
+34: {
+    "cpp_decl": "PackedStringArray",
+    "cpp_read": "PackedStringArray {name} = read_packed_string_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "string[]",
+    "cs_write": "Helpers.WritePackedStringArray({pos}, {name});",
+    "cs_read": "Helpers.ReadPackedStringArray({pos})"
+},
+
+35: {
+    "cpp_decl": "PackedVector2Array",
+    "cpp_read": "PackedVector2Array {name} = read_packed_vector2_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "Vector2[]",
+    "cs_write": "Helpers.WritePackedVector2Array({pos}, {name});",
+    "cs_read": "Helpers.ReadPackedVector2Array({pos})"
+},
+
+36: {
+    "cpp_decl": "PackedVector3Array",
+    "cpp_read": "PackedVector3Array {name} = read_packed_vector3_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "Vector3[]",
+    "cs_write": "Helpers.WritePackedVector3Array({pos}, {name});",
+    "cs_read": "Helpers.ReadPackedVector3Array({pos})"
+},
+
+37: {
+    "cpp_decl": "PackedColorArray",
+    "cpp_read": "PackedColorArray {name} = read_packed_color_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "Color[]",
+    "cs_write": "Helpers.WritePackedColorArray({pos}, {name});",
+    "cs_read": "Helpers.ReadPackedColorArray({pos})"
+},
+
+38: {
+    "cpp_decl": "PackedVector4Array",
+    "cpp_read": "PackedVector4Array {name} = read_packed_vector4_array({buf}, {offset});",
+    "size": 0,
+    "cs_type": "Vector4[]",
+    "cs_write": "Helpers.WritePackedVector4Array({pos}, {name});",
+    "cs_read": "Helpers.ReadPackedVector4Array({pos})"
+},
+}
+
+return_types: dict[int, dict[str, str]] = {
+    0:  {"cpp": "void",        
+        "cs": "void",        
+        "cs_read": ""
+    },
+    
+    1:  {"cpp": "bool",
+        "cs": "bool",        
+        "cs_read": "Helpers.ReadInt32({pos}) != 0"
+    },
+    
+    2:  {
+        "cpp": "int64_t",     
+        "cs": "long",        
+        "cs_read": "Helpers.ReadInt64({pos})"
+    },
+    
+    3:  {
+        "cpp": "double",      
+        "cs": "double",      
+        "cs_read": "Helpers.ReadDouble({pos})"
+    },
+    
+    4:  {"cpp": "String",      
+        "cs": "string",      
+        "cs_read": "Helpers.ReadString({pos})"
+    },
+    
+    5:  {
+        "cpp": "Vector2",     
+        "cs": "Vector2",     
+        "cs_read": "Helpers.ReadVector2({pos})"
+    },
+    
+    6:  {
+        "cpp": "Vector2i",    
+        "cs": "Vector2i",    
+        "cs_read": "Helpers.ReadVector2i({pos})"
+    },
+    
+    7:  {
+        "cpp": "Rect2",       
+        "cs": "Rect2",       
+        "cs_read": "Helpers.ReadRect2({pos})"
+    },
+    8:  {
+        "cpp": "Rect2i",      
+        "cs": "Rect2i",      
+        "cs_read": "Helpers.ReadRect2i({pos})"
+    },
+    9:  {
+        "cpp": "Vector3",     
+        "cs": "Vector3",     
+        "cs_read": "Helpers.ReadVector3({pos})"
+    },
+    
+    10: {"cpp": "Vector3i",    
+        "cs": "Vector3i",
+        "cs_read": "Helpers.ReadVector3i({pos})"},
+    
+    11: {"cpp": "Transform2D",
+        "cs": "Transform2D", 
+        "cs_read": "Helpers.ReadTransform2D({pos})"},
+    
+    12: {"cpp": "Vector4",     
+        "cs": "Vector4",     
+        "cs_read": "Helpers.ReadVector4({pos})"},
+    
+    13: {"cpp": "Vector4i",   
+        "cs": "Vector4i",    
+        "cs_read": "Helpers.ReadVector4i({pos})"},
+    
+    14: {"cpp": "Plane",      
+        "cs": "Plane",       
+        "cs_read": "Helpers.ReadPlane({pos})"},
+    
+    15: {"cpp": "Quaternion",  
+        "cs": "Quaternion",  
+        "cs_read": "Helpers.ReadQuaternion({pos})"},
+    
+    16: {"cpp": "AABB",       
+        "cs": "AABB",       
+        "cs_read": "Helpers.ReadAABB({pos})"},
+    
+    17: {"cpp": "Basis",      
+        "cs": "Basis",      
+        "cs_read": "Helpers.ReadBasis({pos})"},
+    
+    18: {"cpp": "Transform3D",
+        "cs": "Transform3D",
+        "cs_read": "Helpers.ReadTransform3D({pos})"},
+    
+    19: {"cpp": "Projection",  
+        "cs": "Projection",  
+        "cs_read": "Helpers.ReadProjection({pos})"},
+    
+    20: {"cpp": "Color",      
+        "cs": "Color",      
+        "cs_read": "Helpers.ReadColor({pos})"},
+    
+    21: {"cpp": "StringName",  
+        "cs": "string",     
+        "cs_read": "Helpers.ReadStringName({pos})"},
+    
+    22: {"cpp": "NodePath",   
+        "cs": "string",      
+        "cs_read": "Helpers.ReadNodePath({pos})"},
+    
+    23: {"cpp": "RID",       
+        "cs": "ulong",      
+        "cs_read": "Helpers.ReadRID({pos})"},
+    
+    24: {"cpp": "ObjectID",   
+        "cs": "ulong",      
+        "cs_read": "Helpers.ReadUInt64({pos})"},
+    
+25: {
+    "cpp": "Variant",
+    "cs": "object",
+    "cs_read": "Helpers.ReadCallable({pos})"
+},
+
+26: {
+    "cpp": "Variant",
+    "cs": "object",
+    "cs_read": "Helpers.ReadSignal({pos})"
+},
+
+27: {
+    "cpp": "Dictionary",
+    "cs": "object",
+    "cs_read": "Helpers.ReadDictionary({pos})"
+},
+
+28: {
+    "cpp": "Array",
+    "cs": "object",
+    "cs_read": "Helpers.ReadArray({pos})"
+},
+
+29: {
+    "cpp": "PackedByteArray",
+    "cs": "byte[]",
+    "cs_read": "Helpers.ReadPackedByteArray({pos})"
+},
+
+30: {
+    "cpp": "PackedInt32Array",
+    "cs": "int[]",
+    "cs_read": "Helpers.ReadPackedInt32Array({pos})"
+},
+
+31: {
+    "cpp": "PackedInt64Array",
+    "cs": "long[]",
+    "cs_read": "Helpers.ReadPackedInt64Array({pos})"
+},
+
+32: {
+    "cpp": "PackedFloat32Array",
+    "cs": "float[]",
+    "cs_read": "Helpers.ReadPackedFloat32Array({pos})"
+},
+
+33: {
+    "cpp": "PackedFloat64Array",
+    "cs": "double[]",
+    "cs_read": "Helpers.ReadPackedFloat64Array({pos})"
+},
+
+34: {
+    "cpp": "PackedStringArray",
+    "cs": "string[]",
+    "cs_read": "Helpers.ReadPackedStringArray({pos})"
+},
+
+35: {
+    "cpp": "PackedVector2Array",
+    "cs": "Vector2[]",
+    "cs_read": "Helpers.ReadPackedVector2Array({pos})"
+},
+
+36: {
+    "cpp": "PackedVector3Array",
+    "cs": "Vector3[]",
+    "cs_read": "Helpers.ReadPackedVector3Array({pos})"
+},
+
+37: {
+    "cpp": "PackedColorArray",
+    "cs": "Color[]",
+    "cs_read": "Helpers.ReadPackedColorArray({pos})"
+},
+
+38: {
+    "cpp": "PackedVector4Array",
+    "cs": "Vector4[]",
+    "cs_read": "Helpers.ReadPackedVector4Array({pos})"
+},}
+
+# If you want to force specific return kinds regardless of the dump:
+forced_return_type_by_method = {
+    "get_instance_id": 24,
+    "get_singleton": 24,
+}
+
+cpp_keywords = {
+    "alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor",
+    "bool", "break", "case", "catch", "char", "char8_t", "char16_t", "char32_t",
+    "class", "compl", "concept", "const", "consteval", "constexpr", "const_cast",
+    "continue", "co_await", "co_return", "co_yield", "decltype", "default", "delete",
+    "do", "double", "dynamic_cast", "else", "enum", "explicit", "export", "extern",
+    "false", "float", "for", "friend", "goto", "if", "inline", "int", "long",
+    "mutable", "namespace", "new", "noexcept", "not", "not_eq", "nullptr", "operator",
+    "or", "or_eq", "private", "protected", "public", "register", "reinterpret_cast",
+    "requires", "return", "short", "signed", "sizeof", "static", "static_assert",
+    "static_cast", "struct", "switch", "template", "this", "thread_local", "throw",
+    "true", "try", "typedef", "typeid", "typename", "union", "unsigned", "using",
+    "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq",
+}
+
+cs_keywords = {
+    "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char",
+    "checked", "class", "const", "continue", "decimal", "default", "delegate",
+    "do", "double", "else", "enum", "event", "explicit", "extern", "false",
+    "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit",
+    "in", "int", "interface", "internal", "is", "lock", "long", "namespace",
+    "new", "null", "object", "operator", "out", "override", "params", "private",
+    "protected", "public", "readonly", "ref", "return", "sbyte", "sealed",
+    "short", "sizeof", "stackalloc", "static", "string", "struct", "switch",
+    "this", "throw", "true", "try", "typeof", "uint", "ulong", "unchecked",
+    "unsafe", "ushort", "using", "virtual", "void", "volatile", "while",
+    "Commands", "GodotObject", "Helpers",
+}
+
+cpp_local_reserved = {
+    "data", "obj", "obj_id", "bind", "error", "ret", "ret_value", "status",
+    "cmd", "args", "argptrs", "result", "target", "target_obj", "target_id",
+    "payload", "buffer", "payload_data", "cmd_data", "singleton",
+}
+
+cs_local_reserved = {
+    "data", "obj", "result", "Commands", "GodotObject", "Helpers",
+}
+
