@@ -75,6 +75,9 @@ void GodotPhysicsDirectBodyState3D::set_linear_velocity(const Vector3 &p_velocit
 }
 
 Vector3 GodotPhysicsDirectBodyState3D::get_linear_velocity() const {
+	if (body->has_pending_transform()) {
+		return body->get_pending_linear_velocity();
+	}
 	return body->get_linear_velocity();
 }
 
@@ -84,6 +87,9 @@ void GodotPhysicsDirectBodyState3D::set_angular_velocity(const Vector3 &p_veloci
 }
 
 Vector3 GodotPhysicsDirectBodyState3D::get_angular_velocity() const {
+	if (body->has_pending_transform()) {
+		return body->get_pending_angular_velocity();
+	}
 	return body->get_angular_velocity();
 }
 
@@ -92,10 +98,17 @@ void GodotPhysicsDirectBodyState3D::set_transform(const Transform3D &p_transform
 }
 
 Transform3D GodotPhysicsDirectBodyState3D::get_transform() const {
+	if (body->has_pending_transform()) {
+		return body->get_pending_transform();
+	}
 	return body->get_transform();
 }
 
 Vector3 GodotPhysicsDirectBodyState3D::get_velocity_at_local_position(const Vector3 &p_position) const {
+	if (body->has_pending_transform()) {
+		return body->get_pending_linear_velocity()
+				+ body->get_pending_angular_velocity().cross(p_position - body->get_center_of_mass());
+	}
 	return body->get_velocity_in_local_point(p_position);
 }
 

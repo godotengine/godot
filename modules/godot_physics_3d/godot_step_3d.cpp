@@ -404,6 +404,18 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 
 	all_constraints.clear();
 
+	/* CLEAR PENDING TRANSFORM FLAGS */
+	// Reset pending_transform_valid for all kinematic bodies at the END of step().
+	// The flag is set during _physics_process (which runs AFTER step finishes),
+	// so it must be cleared here — at the end of the previous step — not at the beginning.
+	{
+		const SelfList<GodotBody3D> *b = body_list->first();
+		while (b) {
+			b->self()->clear_pending_transform();
+			b = b->next();
+		}
+	}
+
 	p_space->unlock();
 	_step++;
 }

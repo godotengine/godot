@@ -69,6 +69,11 @@ public:
 
 	virtual Vector3 get_linear_velocity() const override;
 
+	// Returns the floor platform node this body is currently standing on, so
+	// SceneTree can ensure the platform's _physics_process runs first within
+	// the same priority group (adaptive ordering — no manual priority needed).
+	virtual Node *get_physics_process_dependency() const override;
+
 	int get_slide_collision_count() const;
 	PhysicsServer3D::MotionResult get_slide_collision(int p_bounce) const;
 

@@ -105,6 +105,19 @@ class GodotBody2D : public GodotCollisionObject2D {
 	virtual void _shapes_changed() override;
 	Transform2D new_transform;
 
+	// Pending state: set when a kinematic body writes new_transform during _physics_process.
+	// Consumed by body_get_direct_state() in the same tick so other bodies read current-tick data.
+	// Reset at the END of GodotStep2D::step(), never inside integrate_forces().
+	real_t last_step = 1.0 / 60.0;
+	bool pending_transform_valid = false;
+	Vector2 pending_linear_velocity;
+	real_t pending_angular_velocity = 0.0;
+
+	_FORCE_INLINE_ bool has_pending_transform() const { return pending_transform_valid; }
+	_FORCE_INLINE_ const Transform2D &get_pending_transform() const { return new_transform; }
+	_FORCE_INLINE_ Vector2 get_pending_linear_velocity() const { return pending_linear_velocity; }
+	_FORCE_INLINE_ real_t get_pending_angular_velocity() const { return pending_angular_velocity; }
+
 	List<Pair<GodotConstraint2D *, int>> constraint_list;
 
 	struct AreaCMP {
@@ -156,6 +169,8 @@ class GodotBody2D : public GodotCollisionObject2D {
 	friend class GodotPhysicsDirectBodyState2D; // i give up, too many functions to expose
 
 public:
+	_FORCE_INLINE_ void clear_pending_transform() { pending_transform_valid = false; }
+
 	void set_state_sync_callback(const Callable &p_callable);
 	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 

@@ -242,6 +242,14 @@ private:
 		int process_priority = 0;
 		int physics_process_priority = 0;
 
+		// Adaptive physics dependency tracking.
+		// physics_process_last_frame: set to Engine::get_physics_frames() after the node's
+		//   _physics_process runs, so other nodes can test whether it has already run this tick.
+		// physics_defer_last_frame: set when the node is deferred (swapped) once; prevents
+		//   infinite deferral loops if the dependency can never be satisfied this frame.
+		uint64_t physics_process_last_frame = 0;
+		uint64_t physics_defer_last_frame = 0;
+
 		// Keep bitpacked values together to get better packing.
 		ProcessMode process_mode : 3;
 		PhysicsInterpolationMode physics_interpolation_mode : 2;
@@ -675,6 +683,13 @@ public:
 
 	void set_physics_process_priority(int p_priority);
 	int get_physics_process_priority() const;
+
+	// Override in subclasses to declare a physics-process ordering dependency.
+	// If this returns a non-null node, SceneTree will ensure the returned node's
+	// _physics_process runs before this node's _physics_process within the same
+	// physics_process_priority group, even if the tree order would produce the
+	// opposite sequence.  Returns nullptr (no dependency) by default.
+	virtual Node *get_physics_process_dependency() const { return nullptr; }
 
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;

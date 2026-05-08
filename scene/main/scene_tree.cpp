@@ -147,6 +147,7 @@ void SceneTree::ClientPhysicsInterpolation::physics_process() {
 
 bool SceneTree::_physics_interpolation_enabled = false;
 bool SceneTree::_physics_interpolation_enabled_in_project = false;
+bool SceneTree::_platform_velocity_correction_enabled = true;
 
 void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
@@ -588,6 +589,16 @@ void SceneTree::initialize() {
 	ERR_FAIL_NULL(root);
 	MainLoop::initialize();
 	root->_set_tree(this);
+
+	// Register and cache the platform velocity correction project setting.
+	// Shown in Project Settings under Physics > Common.
+	GLOBAL_DEF("physics/common/platform_velocity_correction_beta", true);
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(
+			Variant::BOOL,
+			"physics/common/platform_velocity_correction_beta",
+			PROPERTY_HINT_NONE, "",
+			PROPERTY_USAGE_DEFAULT));
+	_platform_velocity_correction_enabled = GLOBAL_GET("physics/common/platform_velocity_correction_beta");
 }
 
 void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
@@ -1202,6 +1213,8 @@ void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
 	uint32_t node_count = nodes_copy.size();
 	Node **nodes_ptr = (Node **)nodes_copy.ptr(); // Force cast, pointer will not change.
 
+	const uint64_t current_physics_frame = p_physics ? Engine::get_singleton()->get_physics_frames() : 0;
+
 	for (uint32_t i = 0; i < node_count; i++) {
 		Node *n = nodes_ptr[i];
 		if (nodes_removed_on_group_call.has(n)) {
@@ -1215,12 +1228,56 @@ void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
 		}
 
 		if (p_physics) {
+			// Adaptive dependency ordering:
+			// If this node declares a physics-process dependency (e.g. CharacterBody3D on its
+			// floor platform) AND that node has not yet been processed this frame AND it lives
+			// later in the list with the same priority, promote it by swapping it to position i
+			// and deferring this node.  This handles chains of any depth (A on B on C …).
+			//
+			// Cycle protection: if dep itself was deferred this frame AND dep's own dependency
+			// points back to n (mutual A↔B cycle), we break it by processing n immediately.
+			// This is the only case where deferral is skipped.
+			//
+			// Gated by the "physics/common/platform_velocity_correction_beta" project setting.
+			if (_platform_velocity_correction_enabled) {
+				Node *dep = n->get_physics_process_dependency();
+				if (dep && dep->get_physics_process_priority() == n->get_physics_process_priority() &&
+						dep->data.physics_process_last_frame != current_physics_frame) {
+					// Detect mutual cycle: dep was already deferred this frame AND dep's own
+					// dependency is n — would cause infinite swapping between the two.
+					const bool circular = (dep->data.physics_defer_last_frame == current_physics_frame &&
+							dep->get_physics_process_dependency() == n);
+					if (!circular) {
+						// Search for dep in the remaining (not-yet-processed) portion of the list.
+						bool found = false;
+						for (uint32_t j = i + 1; j < node_count; j++) {
+							if (nodes_ptr[j] == dep) {
+								// Promote dep to current position; defer n.
+								SWAP(nodes_ptr[i], nodes_ptr[j]);
+								n->data.physics_defer_last_frame = current_physics_frame;
+								i--; // reprocess position i (now holds dep)
+								found = true;
+								break;
+							}
+						}
+						if (found) {
+							continue;
+						}
+						// dep not found ahead of us (different group / already processed) —
+						// fall through and process n normally.
+					}
+				}
+			}
+
 			if (n->is_physics_processing_internal()) {
 				n->notification(Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 			}
 			if (n->is_physics_processing()) {
 				n->notification(Node::NOTIFICATION_PHYSICS_PROCESS);
 			}
+			// Mark this node as having completed its physics process for this frame
+			// so dependencies declared by other nodes can detect it was already run.
+			n->data.physics_process_last_frame = current_physics_frame;
 		} else {
 			if (n->is_processing_internal()) {
 				n->notification(Node::NOTIFICATION_INTERNAL_PROCESS);

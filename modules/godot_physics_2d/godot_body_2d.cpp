@@ -309,6 +309,18 @@ void GodotBody2D::set_state(PhysicsServer2D::BodyState p_state, const Variant &p
 					_set_transform(p_variant);
 					_set_inv_transform(get_transform().affine_inverse());
 					first_time_kinematic = false;
+				} else {
+					// Cache the velocity implied by this transform change so that
+					// body_get_direct_state() in the same _physics_process tick returns
+					// current-tick data rather than last-step data.
+					if (last_step > 0.0) {
+						real_t inv_step = 1.0 / last_step;
+						pending_linear_velocity = (new_transform.get_origin() - get_transform().get_origin()) * inv_step
+								+ constant_linear_velocity;
+						real_t rot = new_transform.get_rotation() - get_transform().get_rotation();
+						pending_angular_velocity = constant_angular_velocity + std::remainder(rot, 2.0 * Math::PI) * inv_step;
+					}
+					pending_transform_valid = true;
 				}
 			} else if (mode == PhysicsServer2D::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
@@ -558,6 +570,8 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 	bool do_motion = false;
 
 	if (mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
+		// Store step for pending velocity computation in set_state(BODY_STATE_TRANSFORM).
+		last_step = p_step;
 		//compute motion, angular and etc. velocities from prev transform
 		motion = new_transform.get_origin() - get_transform().get_origin();
 		linear_velocity = constant_linear_velocity + motion / p_step;

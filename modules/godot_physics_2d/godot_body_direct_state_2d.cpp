@@ -67,6 +67,9 @@ void GodotPhysicsDirectBodyState2D::set_linear_velocity(const Vector2 &p_velocit
 }
 
 Vector2 GodotPhysicsDirectBodyState2D::get_linear_velocity() const {
+	if (body->has_pending_transform()) {
+		return body->get_pending_linear_velocity();
+	}
 	return body->get_linear_velocity();
 }
 
@@ -76,6 +79,9 @@ void GodotPhysicsDirectBodyState2D::set_angular_velocity(real_t p_velocity) {
 }
 
 real_t GodotPhysicsDirectBodyState2D::get_angular_velocity() const {
+	if (body->has_pending_transform()) {
+		return body->get_pending_angular_velocity();
+	}
 	return body->get_angular_velocity();
 }
 
@@ -84,10 +90,18 @@ void GodotPhysicsDirectBodyState2D::set_transform(const Transform2D &p_transform
 }
 
 Transform2D GodotPhysicsDirectBodyState2D::get_transform() const {
+	if (body->has_pending_transform()) {
+		return body->get_pending_transform();
+	}
 	return body->get_transform();
 }
 
 Vector2 GodotPhysicsDirectBodyState2D::get_velocity_at_local_position(const Vector2 &p_position) const {
+	if (body->has_pending_transform()) {
+		// v = v_linear + ω × r  (2D cross: ω is scalar, r is Vector2)
+		real_t ω = body->get_pending_angular_velocity();
+		return body->get_pending_linear_velocity() + Vector2(-ω * p_position.y, ω * p_position.x);
+	}
 	return body->get_velocity_in_local_point(p_position);
 }
 
