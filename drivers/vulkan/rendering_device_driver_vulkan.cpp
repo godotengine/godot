@@ -3456,13 +3456,21 @@ bool RenderingDeviceDriverVulkan::_determine_swap_chain_format(RenderingContextD
 
 	// Retrieve the formats supported by the surface.
 	uint32_t format_count = 0;
-	VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
-	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, vformat("Couldn't retrieve Vulkan surface formats (VkResult error %d).", err));
-
 	TightLocalVector<VkSurfaceFormatKHR> formats;
+	// Loop until we get the full format list. This shouldn't have to loop more than twice on most systems.
+	while (true) {
+		VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, vformat("Couldn't retrieve Vulkan surface formats (VkResult error %d).", err));
+
+		formats.resize(format_count);
+		err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
+		if (err == VK_SUCCESS) {
+			break;
+		}
+
+		ERR_FAIL_COND_V_MSG(err != VK_INCOMPLETE, false, vformat("Couldn't retrieve Vulkan surface formats (VkResult error %d).", err));
+	}
 	formats.resize(format_count);
-	err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
-	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, vformat("Couldn't retrieve Vulkan surface formats (VkResult error %d).", err));
 
 	// If the format list includes just one entry of VK_FORMAT_UNDEFINED, the surface has no preferred format.
 	if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
@@ -4017,13 +4025,20 @@ bool RenderingDeviceDriverVulkan::swap_chain_get_hdr_output_supported(SwapChainI
 
 	// Retrieve the formats supported by the surface.
 	uint32_t format_count = 0;
-	VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
-
 	TightLocalVector<VkSurfaceFormatKHR> formats;
+	while (true) {
+		VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, vformat("Couldn't retrieve Vulkan surface formats (VkResult error %d).", err));
+
+		formats.resize(format_count);
+		err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
+		if (err == VK_SUCCESS) {
+			break;
+		}
+
+		ERR_FAIL_COND_V_MSG(err != VK_INCOMPLETE, false, vformat("Couldn't retrieve Vulkan surface formats (VkResult error %d).", err));
+	}
 	formats.resize(format_count);
-	err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
-	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
 
 	// If the format list includes just one entry of VK_FORMAT_UNDEFINED, the surface has no preferred format.
 	// Just to be safe, we assume this means HDR will not be supported.
