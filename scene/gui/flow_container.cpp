@@ -347,7 +347,7 @@ void FlowContainer::_resort() {
 	cached_line_max_child_count = lines_data.size() > 0 ? lines_data[0].child_count : 0;
 }
 
-Size2 FlowContainer::get_minimum_size() const {
+Size2 FlowContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	Size2i minimum;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -356,7 +356,7 @@ Size2 FlowContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = c->get_bound_minimum_size();
+		Size2i size = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
 
 		if (vertical) { /* VERTICAL */
 			minimum.height = MAX(minimum.height, size.height);
@@ -369,6 +369,14 @@ Size2 FlowContainer::get_minimum_size() const {
 	}
 
 	return minimum;
+}
+
+Size2 FlowContainer::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 FlowContainer::get_desired_size() const {
+	return _get_minimum_size(true);
 }
 
 Vector<int> FlowContainer::get_allowed_size_flags_horizontal() const {

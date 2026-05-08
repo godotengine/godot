@@ -49,7 +49,7 @@
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h" // SceneTree:get_root()
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
@@ -550,6 +550,13 @@ Error SceneDebugger::_msg_rq_screenshot(const Array &p_args) {
 		}
 		suffix_i += 1;
 	}
+	img->convert(Image::FORMAT_RGBA8);
+#ifdef RD_ENABLED
+	RenderingDevice *rendering_device = RD::get_singleton();
+	if (rendering_device && RenderingServer::get_singleton()->viewport_is_using_hdr_2d(viewport->get_viewport_rid())) {
+		img->linear_to_srgb();
+	}
+#endif
 	img->save_png(path);
 
 	Array arr;

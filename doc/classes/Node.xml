@@ -850,6 +850,7 @@
 			<description>
 				Changes the parent of this [Node] to the [param new_parent]. The node needs to already have a parent. The node's [member owner] is preserved if its owner is still reachable from the new location (i.e., the node is still a descendant of the new parent after the operation).
 				If [param keep_global_transform] is [code]true[/code], the node's global transform will be preserved if supported. [Node2D], [Node3D] and [Control] support this argument (but [Control] keeps only position).
+				[b]Warning:[/b] If [member ProjectSettings.physics/common/physics_interpolation] is enabled and reparenting causes a large change in global transform, the object may appear to move from its old position to its new one over the next physics tick. To avoid this, call [method reset_physics_interpolation] after reparenting.
 			</description>
 		</method>
 		<method name="replace_by">

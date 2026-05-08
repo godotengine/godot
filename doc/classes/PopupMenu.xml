@@ -709,6 +709,13 @@
 			Enables the [PopupMenu] search bar if the item count is greater than [code]0[/code].
 			[b]Note:[/b] When enabled, [member allow_search] is ignored.
 		</member>
+		<member name="search_bar_fuzzy_search_enabled" type="bool" setter="set_search_bar_fuzzy_search_enabled" getter="is_search_bar_fuzzy_search_enabled" default="true">
+			If [code]true[/code], enables fuzzy searching in the [PopupMenu] search bar. This allows the search results to include items that almost match the search query, as well items that match the individual characters of the search query, but not in sequence.
+			Use [member search_bar_fuzzy_search_max_misses] to set the maximum number of mismatches allowed in the search results.
+		</member>
+		<member name="search_bar_fuzzy_search_max_misses" type="int" setter="set_search_bar_fuzzy_search_max_misses" getter="get_search_bar_fuzzy_search_max_misses" default="2">
+			Sets the maximum number of mismatches allowed in each search result when fuzzy searching is enabled for the [PopupMenu] search bar. Any item with more mismatches will be hidden from the search results.
+		</member>
 		<member name="shrink_height" type="bool" setter="set_shrink_height" getter="get_shrink_height" default="true">
 			If [code]true[/code], shrinks [PopupMenu] to minimum height when it's shown.
 		</member>

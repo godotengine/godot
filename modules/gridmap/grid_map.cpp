@@ -263,6 +263,24 @@ Array GridMap::get_collision_shapes() const {
 
 	return shapes;
 }
+
+RID GridMap::get_physics_body_from_octant_coord(const Vector3i &p_octant_coords) const {
+	OctantKey octantkey;
+	octantkey.x = p_octant_coords.x;
+	octantkey.y = p_octant_coords.y;
+	octantkey.z = p_octant_coords.z;
+
+	const HashMap<OctantKey, Octant *, OctantKey>::ConstIterator octant_kv = octant_map.find(octantkey);
+
+	if (!octant_kv) {
+		return RID();
+	}
+
+	Octant *g = octant_kv->value;
+	RID body_rid = g->static_body;
+
+	return body_rid;
+}
 #endif // PHYSICS_3D_DISABLED
 
 void GridMap::set_bake_navigation(bool p_bake_navigation) {
@@ -1731,7 +1749,34 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 	}
 #ifndef PHYSICS_3D_DISABLED
 	else if ((parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) && (gridmap->get_collision_layer() & parsed_collision_mask)) {
-		Array shapes = gridmap->get_collision_shapes();
+		Array shapes;
+
+		// If we have a baking AABB set we can skip wasting time on parsing the entire GridMap.
+		AABB baking_aabb = p_navigation_mesh->get_filter_baking_aabb();
+		if (baking_aabb.has_volume()) {
+			Vector3 baking_aabb_offset = p_navigation_mesh->get_filter_baking_aabb_offset();
+			baking_aabb.position = baking_aabb.position + baking_aabb_offset;
+
+			const TypedArray<Vector3i> octant_coords = gridmap->get_used_octants_in_bounds(baking_aabb);
+			for (const Vector3i octant_coord : octant_coords) {
+				RID body = gridmap->get_physics_body_from_octant_coord(octant_coord);
+				if (body.is_null()) {
+					continue;
+				}
+				const Transform3D body_xform = PhysicsServer3D::get_singleton()->body_get_state(body, PhysicsServer3D::BODY_STATE_TRANSFORM);
+				int nshapes = PhysicsServer3D::get_singleton()->body_get_shape_count(body);
+				for (int i = 0; i < nshapes; i++) {
+					RID shape = PhysicsServer3D::get_singleton()->body_get_shape(body, i);
+					Transform3D shape_xform = PhysicsServer3D::get_singleton()->body_get_shape_transform(body, i);
+					Transform3D xform = body_xform * shape_xform;
+					shapes.push_back(xform);
+					shapes.push_back(shape);
+				}
+			}
+		} else {
+			shapes = gridmap->get_collision_shapes();
+		}
+
 		for (int i = 0; i < shapes.size(); i += 2) {
 			RID shape = shapes[i + 1];
 			PhysicsServer3D::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);

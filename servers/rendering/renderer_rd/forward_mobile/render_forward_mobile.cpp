@@ -767,6 +767,8 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
+	RENDER_TIMESTAMP("Setup Shadows");
+
 	p_render_data->cube_shadows.clear();
 	p_render_data->shadows.clear();
 	p_render_data->directional_shadows.clear();
@@ -2008,7 +2010,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 
 				ltc.lut1_texture = RS::get_singleton()->texture_2d_create(lut1_image);
 
-				int lut2_bytes = 3 * dimensions * dimensions;
+				int lut2_bytes = 4 * dimensions * dimensions;
 				size_t lut2_size = lut2_bytes * 4;
 
 				Ref<Image> lut2_image;
@@ -2016,7 +2018,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 				lut2_data.resize(lut2_size);
 
 				memcpy(lut2_data.ptrw(), LTC_LUT2, lut2_size);
-				lut2_image = Image::create_from_data(dimensions, dimensions, false, Image::FORMAT_RGBF, lut2_data);
+				lut2_image = Image::create_from_data(dimensions, dimensions, false, Image::FORMAT_RGBAF, lut2_data);
 
 				ltc.lut2_texture = RS::get_singleton()->texture_2d_create(lut2_image);
 			}
@@ -2120,6 +2122,10 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		} else {
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.transform);
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.prev_transform);
+#ifdef REAL_T_IS_DOUBLE
+			memset(instance_data.model_precision, 0, sizeof(instance_data.model_precision));
+			memset(instance_data.prev_model_precision, 0, sizeof(instance_data.prev_model_precision));
+#endif
 		}
 
 		instance_data.flags = inst->flags_cache;

@@ -848,6 +848,10 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 		} else {
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.transform);
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.prev_transform);
+#ifdef REAL_T_IS_DOUBLE
+			memset(instance_data.model_precision, 0, sizeof(instance_data.model_precision));
+			memset(instance_data.prev_model_precision, 0, sizeof(instance_data.prev_model_precision));
+#endif
 		}
 
 		instance_data.flags = inst->flags_cache;
@@ -1523,6 +1527,8 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
 	}
 
+	RENDER_TIMESTAMP("Setup Shadows");
+
 	if (rb.is_valid() && p_use_gi && rb->has_custom_data(RB_SCOPE_SDFGI)) {
 		Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
 		sdfgi->store_probes();
@@ -1552,10 +1558,12 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			}
 		}
 
-		RENDER_TIMESTAMP("Render OmniLight Shadows");
-		// Cube shadows are rendered in their own way.
-		for (const int &index : p_render_data->cube_shadows) {
-			_render_shadow_pass(p_render_data->render_shadows[index].light, p_render_data->shadow_atlas, p_render_data->render_shadows[index].pass, p_render_data->render_shadows[index].instances, lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, true, true, true, p_render_data->render_info, viewport_size, p_render_data->scene_data->cam_transform);
+		if (p_render_data->cube_shadows.size()) {
+			RENDER_TIMESTAMP("Render OmniLight Shadows");
+			// Cube shadows are rendered in their own way.
+			for (const int &index : p_render_data->cube_shadows) {
+				_render_shadow_pass(p_render_data->render_shadows[index].light, p_render_data->shadow_atlas, p_render_data->render_shadows[index].pass, p_render_data->render_shadows[index].instances, lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, true, true, true, p_render_data->render_info, viewport_size, p_render_data->scene_data->cam_transform);
+			}
 		}
 
 		if (p_render_data->directional_shadows.size()) {
@@ -1572,9 +1580,9 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	bool render_gi = rb.is_valid() && p_use_gi;
 
 	if (render_shadows && render_gi) {
-		RENDER_TIMESTAMP("Render GI + Render Shadows (Parallel)");
+		RENDER_TIMESTAMP("Render GI + Render Directional/SpotLight Shadows (Parallel)");
 	} else if (render_shadows) {
-		RENDER_TIMESTAMP("Render Shadows");
+		RENDER_TIMESTAMP("Render Directional/SpotLight Shadows");
 	} else if (render_gi) {
 		RENDER_TIMESTAMP("Render GI");
 	}
@@ -3322,7 +3330,7 @@ void RenderForwardClustered::_update_render_base_uniform_set() {
 
 				ltc.lut1_texture = RS::get_singleton()->texture_2d_create(lut1_image);
 
-				int lut2_bytes = 3 * dimensions * dimensions;
+				int lut2_bytes = 4 * dimensions * dimensions;
 				size_t lut2_size = lut2_bytes * 4;
 
 				Ref<Image> lut2_image;
@@ -3330,7 +3338,7 @@ void RenderForwardClustered::_update_render_base_uniform_set() {
 				lut2_data.resize(lut2_size);
 
 				memcpy(lut2_data.ptrw(), LTC_LUT2, lut2_size);
-				lut2_image = Image::create_from_data(dimensions, dimensions, false, Image::FORMAT_RGBF, lut2_data);
+				lut2_image = Image::create_from_data(dimensions, dimensions, false, Image::FORMAT_RGBAF, lut2_data);
 
 				ltc.lut2_texture = RS::get_singleton()->texture_2d_create(lut2_image);
 			}

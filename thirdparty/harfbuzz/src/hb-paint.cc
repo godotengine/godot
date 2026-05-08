@@ -71,6 +71,15 @@ hb_paint_push_clip_rectangle_nil (hb_paint_funcs_t *funcs, void *paint_data,
                                   float xmin, float ymin, float xmax, float ymax,
                                   void *user_data) {}
 
+static hb_draw_funcs_t *
+hb_paint_push_clip_path_start_nil (hb_paint_funcs_t *funcs, void *paint_data,
+                                   void **draw_data,
+                                   void *user_data) { if (draw_data) *draw_data = nullptr; return nullptr; }
+
+static void
+hb_paint_push_clip_path_end_nil (hb_paint_funcs_t *funcs, void *paint_data,
+                                 void *user_data) {}
+
 static void
 hb_paint_pop_clip_nil (hb_paint_funcs_t *funcs, void *paint_data,
                        void *user_data) {}
@@ -119,6 +128,14 @@ hb_paint_push_group_nil (hb_paint_funcs_t *funcs, void *paint_data,
                          void *user_data) {}
 
 static void
+hb_paint_push_group_for_nil (hb_paint_funcs_t *funcs, void *paint_data,
+                             hb_paint_composite_mode_t mode,
+                             void *user_data)
+{
+  hb_paint_push_group (funcs, paint_data);
+}
+
+static void
 hb_paint_pop_group_nil (hb_paint_funcs_t *funcs, void *paint_data,
                         hb_paint_composite_mode_t mode,
                         void *user_data) {}
@@ -158,25 +175,25 @@ _hb_paint_funcs_set_middle (hb_paint_funcs_t  *funcs,
                             void              *user_data,
                             hb_destroy_func_t  destroy)
 {
+  auto destroy_guard = hb_make_scope_guard ([&]() {
+    if (destroy) destroy (user_data);
+  });
+
   if (user_data && !funcs->user_data)
   {
     funcs->user_data = (decltype (funcs->user_data)) hb_calloc (1, sizeof (*funcs->user_data));
     if (unlikely (!funcs->user_data))
-      goto fail;
+      return false;
   }
   if (destroy && !funcs->destroy)
   {
     funcs->destroy = (decltype (funcs->destroy)) hb_calloc (1, sizeof (*funcs->destroy));
     if (unlikely (!funcs->destroy))
-      goto fail;
+      return false;
   }
 
+  destroy_guard.release ();
   return true;
-
-fail:
-  if (destroy)
-    (destroy) (user_data);
-  return false;
 }
 
 #define HB_PAINT_FUNC_IMPLEMENT(name)                                           \
@@ -574,6 +591,71 @@ hb_paint_push_clip_rectangle (hb_paint_funcs_t *funcs, void *paint_data,
 }
 
 /**
+ * hb_paint_push_clip_path_start:
+ * @funcs: paint functions
+ * @paint_data: associated data passed by the caller
+ * @draw_data: (out) (nullable): location to receive the draw data
+ *   the caller should pass alongside the returned draw funcs.
+ *
+ * Begin clipping to an arbitrary path.  Returns an
+ * #hb_draw_funcs_t owned by the backend (the caller must not
+ * free it) that the caller uses to emit the clip outline via
+ * hb_draw_*() calls, using the returned @draw_data as the
+ * draw data.  The returned draw funcs and draw data are only
+ * valid until the matching hb_paint_push_clip_path_end() call;
+ * no other paint calls should be made between start and end
+ * except hb_draw_*() on the returned funcs.  Finish the path
+ * with hb_paint_push_clip_path_end(); pop the clip later
+ * with hb_paint_pop_clip().
+ *
+ * Usage:
+ *
+ * |[<!-- language="plain" -->
+ * hb_draw_funcs_t *df = hb_paint_push_clip_path_start (pf, pd, &dd);
+ * hb_draw_move_to (df, dd, NULL, ...);
+ * hb_draw_line_to (df, dd, NULL, ...);
+ * ...
+ * hb_draw_close_path (df, dd, NULL);
+ * hb_paint_push_clip_path_end (pf, pd);
+ * /&ast; paint ops here are clipped to the emitted path &ast;/
+ * hb_paint_pop_clip (pf, pd);
+ * ]|
+ *
+ * Return value: (transfer none): draw funcs that accumulate
+ *   the clip path, or `NULL` if the backend does not implement
+ *   arbitrary-path clipping.
+ *
+ * Since: 14.2.0
+ */
+hb_draw_funcs_t *
+hb_paint_push_clip_path_start (hb_paint_funcs_t  *funcs,
+                               void              *paint_data,
+                               void             **draw_data)
+{
+  void *scratch = nullptr;
+  if (!draw_data) draw_data = &scratch;
+  return funcs->push_clip_path_start (paint_data, draw_data);
+}
+
+/**
+ * hb_paint_push_clip_path_end:
+ * @funcs: paint functions
+ * @paint_data: associated data passed by the caller
+ *
+ * Signal that the arbitrary-clip path started by
+ * hb_paint_push_clip_path_start() is fully drawn.  The
+ * accumulated path now acts as a clip on the paint context
+ * until a matching hb_paint_pop_clip() call.
+ *
+ * Since: 14.2.0
+ */
+void
+hb_paint_push_clip_path_end (hb_paint_funcs_t *funcs, void *paint_data)
+{
+  funcs->push_clip_path_end (paint_data);
+}
+
+/**
  * hb_paint_pop_clip:
  * @funcs: paint functions
  * @paint_data: associated data passed by the caller
@@ -724,6 +806,25 @@ hb_paint_push_group (hb_paint_funcs_t *funcs, void *paint_data)
 }
 
 /**
+ * hb_paint_push_group_for:
+ * @funcs: paint functions
+ * @paint_data: associated data passed by the caller
+ * @mode: the compositing mode that will be used when the group is popped
+ *
+ * Perform a "push-group" paint operation, with the compositing
+ * mode known in advance.  By default, this calls
+ * hb_paint_push_group().
+ *
+ * Since: 14.2.0
+ */
+void
+hb_paint_push_group_for (hb_paint_funcs_t *funcs, void *paint_data,
+                         hb_paint_composite_mode_t mode)
+{
+  funcs->push_group_for (paint_data, mode);
+}
+
+/**
  * hb_paint_pop_group:
  * @funcs: paint functions
  * @paint_data: associated data passed by the caller
@@ -759,6 +860,299 @@ hb_paint_custom_palette_color (hb_paint_funcs_t *funcs, void *paint_data,
                                hb_color_t *color)
 {
   return funcs->custom_palette_color (paint_data, color_index, color);
+}
+
+
+/**
+ * hb_paint_reduce_linear_anchors:
+ * @x0: x coordinate of P0 (color stop 0).
+ * @y0: y coordinate of P0 (color stop 0).
+ * @x1: x coordinate of P1 (color stop 1).
+ * @y1: y coordinate of P1 (color stop 1).
+ * @x2: x coordinate of P2 (rotation reference).
+ * @y2: y coordinate of P2 (rotation reference).
+ * @xx0: (out): x coordinate of the resulting axis start.
+ * @yy0: (out): y coordinate of the resulting axis start.
+ * @xx1: (out): x coordinate of the resulting axis end.
+ * @yy1: (out): y coordinate of the resulting axis end.
+ *
+ * Reduces a COLRv1 linear gradient's 3-anchor spec (P0=color
+ * stop 0, P1=color stop 1, P2=rotation reference) to the
+ * 2-point axis (P0, P1') used by SVG / cairo / most software
+ * renderers.  P1' is the foot of P1 on the line through P0
+ * perpendicular to (P2 - P0); the resulting axis is the
+ * gradient's actual direction (perpendicular to the rotation
+ * line).  Degenerate (P0 == P2) passes through unchanged.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_paint_reduce_linear_anchors (float x0, float y0,
+				float x1, float y1,
+				float x2, float y2,
+				float *xx0, float *yy0,
+				float *xx1, float *yy1)
+{
+  float q2x = x2 - x0, q2y = y2 - y0;
+  float s = q2x * q2x + q2y * q2y;
+  if (s < 1e-6f)
+  {
+    *xx0 = x0; *yy0 = y0;
+    *xx1 = x1; *yy1 = y1;
+    return;
+  }
+  float q1x = x1 - x0, q1y = y1 - y0;
+  float k = (q2x * q1x + q2y * q1y) / s;
+  *xx0 = x0;
+  *yy0 = y0;
+  *xx1 = x1 - k * q2x;
+  *yy1 = y1 - k * q2y;
+}
+
+/**
+ * hb_paint_normalize_color_line:
+ * @stops: (array length=len) (inout): color stops.
+ * @len: number of stops.
+ * @min: (out): original minimum offset.
+ * @max: (out): original maximum offset.
+ *
+ * Sorts @stops by offset and rescales offsets into [0, 1] in
+ * place.  Writes the original (min, max) to @min / @max so the
+ * caller can shift the gradient geometry (axis endpoints for
+ * linear, centers+radii for radial, start+end angles for sweep)
+ * to keep the rendered gradient visually unchanged after the
+ * rescale.  Empty input is safe: both out-parameters set to 0.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_paint_normalize_color_line (hb_color_stop_t *stops,
+			       unsigned int     len,
+			       float           *min,
+			       float           *max)
+{
+  if (unlikely (!len))
+  {
+    *min = *max = 0.f;
+    return;
+  }
+
+  hb_array_t<hb_color_stop_t> (stops, len)
+    .qsort ([] (const hb_color_stop_t &a, const hb_color_stop_t &b) {
+      return a.offset < b.offset;
+    });
+
+  float mn = stops[0].offset, mx = stops[0].offset;
+  for (unsigned i = 1; i < len; i++)
+  {
+    mn = hb_min (mn, stops[i].offset);
+    mx = hb_max (mx, stops[i].offset);
+  }
+  if (mn != mx)
+    for (unsigned i = 0; i < len; i++)
+      stops[i].offset = (stops[i].offset - mn) / (mx - mn);
+
+  *min = mn;
+  *max = mx;
+}
+
+/**
+ * hb_paint_sweep_gradient_tiles:
+ * @stops: (array length=n_stops) (inout): color stops (sorted, offsets in [0,1]).
+ * @n_stops: number of stops.
+ * @extend: extend mode.
+ * @start_angle: sweep start angle, in radians.
+ * @end_angle: sweep end angle, in radians.
+ * @emit_patch: (scope call): callback invoked once per tile.
+ * @user_data: data passed to @emit_patch.
+ *
+ * Iterates the full 0..2π sweep produced by a color-stop list,
+ * invoking @emit_patch once per (start, end) angular segment.
+ * Handles #HB_PAINT_EXTEND_PAD, #HB_PAINT_EXTEND_REPEAT, and
+ * #HB_PAINT_EXTEND_REFLECT.  Stops must be pre-sorted by
+ * offset; use hb_paint_normalize_color_line() first if they
+ * aren't.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_paint_sweep_gradient_tiles (hb_color_stop_t                     *stops,
+			       unsigned int                         n_stops,
+			       hb_paint_extend_t                    extend,
+			       float                                start_angle,
+			       float                                end_angle,
+			       hb_paint_sweep_gradient_tile_func_t  emit_patch,
+			       void                                *user_data)
+{
+  if (!n_stops) return;
+
+  if (start_angle == end_angle)
+  {
+    if (extend == HB_PAINT_EXTEND_PAD)
+    {
+      if (start_angle > 0.f)
+	emit_patch (0.f, stops[0].color, start_angle, stops[0].color, user_data);
+      if (end_angle < HB_2_PI)
+	emit_patch (end_angle, stops[n_stops - 1].color, HB_2_PI, stops[n_stops - 1].color, user_data);
+    }
+    return;
+  }
+
+  if (end_angle < start_angle)
+  {
+    float tmp = start_angle; start_angle = end_angle; end_angle = tmp;
+    for (unsigned i = 0; i < n_stops - 1 - i; i++)
+    {
+      hb_color_stop_t t = stops[i];
+      stops[i] = stops[n_stops - 1 - i];
+      stops[n_stops - 1 - i] = t;
+    }
+    for (unsigned i = 0; i < n_stops; i++)
+      stops[i].offset = 1.f - stops[i].offset;
+  }
+
+  /* Map stop offsets to angles. */
+  float angles_buf[16];
+  hb_color_t colors_buf[16];
+  float *angles = angles_buf;
+  hb_color_t *colors = colors_buf;
+  bool dynamic = false;
+
+  if (n_stops > 16)
+  {
+    angles = (float *) hb_malloc (sizeof (float) * n_stops);
+    colors = (hb_color_t *) hb_malloc (sizeof (hb_color_t) * n_stops);
+    if (!angles || !colors)
+    {
+      hb_free (angles);
+      hb_free (colors);
+      return;
+    }
+    dynamic = true;
+  }
+
+  for (unsigned i = 0; i < n_stops; i++)
+  {
+    angles[i] = start_angle + stops[i].offset * (end_angle - start_angle);
+    colors[i] = stops[i].color;
+  }
+
+  if (extend == HB_PAINT_EXTEND_PAD)
+  {
+    unsigned pos;
+    hb_color_t color0 = colors[0];
+    for (pos = 0; pos < n_stops; pos++)
+    {
+      if (angles[pos] >= 0)
+      {
+	if (pos > 0)
+	{
+	  float f = (0.f - angles[pos - 1]) / (angles[pos] - angles[pos - 1]);
+	  color0 = hb_color_lerp (colors[pos - 1], colors[pos], f);
+	}
+	break;
+      }
+    }
+    if (pos == n_stops)
+    {
+      color0 = colors[n_stops - 1];
+      emit_patch (0.f, color0, HB_2_PI, color0, user_data);
+      goto done;
+    }
+    emit_patch (0.f, color0, angles[pos], colors[pos], user_data);
+    for (pos++; pos < n_stops; pos++)
+    {
+      if (angles[pos] <= HB_2_PI)
+	emit_patch (angles[pos - 1], colors[pos - 1], angles[pos], colors[pos], user_data);
+      else
+      {
+	float f = (HB_2_PI - angles[pos - 1]) / (angles[pos] - angles[pos - 1]);
+	hb_color_t color1 = hb_color_lerp (colors[pos - 1], colors[pos], f);
+	emit_patch (angles[pos - 1], colors[pos - 1], HB_2_PI, color1, user_data);
+	break;
+      }
+    }
+    if (pos == n_stops)
+    {
+      color0 = colors[n_stops - 1];
+      emit_patch (angles[n_stops - 1], color0, HB_2_PI, color0, user_data);
+      goto done;
+    }
+  }
+  else
+  {
+    float span = angles[n_stops - 1] - angles[0];
+    if (fabsf (span) < 1e-6f)
+      goto done;
+
+    int k = 0;
+    if (angles[0] >= 0)
+    {
+      float ss = angles[0];
+      while (ss > 0)
+      {
+	if (span > 0) { ss -= span; k--; }
+	else          { ss += span; k++; }
+      }
+    }
+    else
+    {
+      float ee = angles[n_stops - 1];
+      while (ee < 0)
+      {
+	if (span > 0) { ee += span; k++; }
+	else          { ee -= span; k--; }
+      }
+    }
+
+    span = fabsf (span);
+    for (int l = k; l < 1000; l++)
+    {
+      for (unsigned i = 1; i < n_stops; i++)
+      {
+	float a0_l, a1_l;
+	hb_color_t col0, col1;
+	if ((l % 2 != 0) && (extend == HB_PAINT_EXTEND_REFLECT))
+	{
+	  a0_l = angles[0] + angles[n_stops - 1] - angles[n_stops - i] + l * span;
+	  a1_l = angles[0] + angles[n_stops - 1] - angles[n_stops - 1 - i] + l * span;
+	  col0 = colors[n_stops - i];
+	  col1 = colors[n_stops - 1 - i];
+	}
+	else
+	{
+	  a0_l = angles[i - 1] + l * span;
+	  a1_l = angles[i] + l * span;
+	  col0 = colors[i - 1];
+	  col1 = colors[i];
+	}
+
+	if (a1_l < 0.f) continue;
+	if (a0_l < 0.f)
+	{
+	  float f = (0.f - a0_l) / (a1_l - a0_l);
+	  hb_color_t c = hb_color_lerp (col0, col1, f);
+	  emit_patch (0.f, c, a1_l, col1, user_data);
+	}
+	else if (a1_l >= HB_2_PI)
+	{
+	  float f = (HB_2_PI - a0_l) / (a1_l - a0_l);
+	  hb_color_t c = hb_color_lerp (col0, col1, f);
+	  emit_patch (a0_l, col0, HB_2_PI, c, user_data);
+	  goto done;
+	}
+	else
+	  emit_patch (a0_l, col0, a1_l, col1, user_data);
+      }
+    }
+  }
+
+done:
+  if (dynamic)
+  {
+    hb_free (angles);
+    hb_free (colors);
+  }
 }
 
 #endif

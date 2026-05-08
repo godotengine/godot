@@ -65,19 +65,19 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 		StringBuilder token;
 		token += " --> "; // Padding for line number.
 
+		// Files without trailing newline can produce dedent tokens on non-existent lines.
+		const String &start_line = current.start_line <= p_lines.size() ? p_lines[current.start_line - 1] : String();
+		const String &end_line = current.start_line <= p_lines.size() ? p_lines[current.start_line - 1] : String();
+
 		if (current.start_line != current.end_line) {
 			// Print "vvvvvv" to point at the token.
 			StringBuilder pointer;
 			pointer += "     "; // Padding for line number.
 
-			int line_width = 0;
-			if (current.start_line - 1 >= 0 && current.start_line - 1 < p_lines.size()) {
-				line_width = p_lines[current.start_line - 1].replace("\t", tab).length();
-			}
-
-			const int offset = MAX(0, current.start_column - 1);
-			const int width = MAX(0, line_width - current.start_column + 1);
-			pointer += String::chr(' ').repeat(offset) + String::chr('v').repeat(width);
+			const int line_width = start_line.length() + start_line.count("\t") + (tab_size - 1);
+			const int start_offset = current.start_column - 1 + (current.start_column > 1 ? start_line.count("\t", 0, current.start_column - 1) * (tab_size - 1) : 0);
+			const int width = line_width - start_offset;
+			pointer += String::chr(' ').repeat(start_offset) + String::chr('v').repeat(width);
 
 			print_line(pointer.as_string());
 		}
@@ -92,12 +92,13 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 			pointer += "     "; // Padding for line number.
 
 			if (current.start_line == current.end_line) {
-				const int offset = MAX(0, current.start_column - 1);
-				const int width = MAX(0, current.end_column - current.start_column);
-				pointer += String::chr(' ').repeat(offset) + String::chr('^').repeat(width);
+				const int start_offset = current.start_column - 1 + (current.start_column > 1 ? start_line.count("\t", 0, current.start_column - 1) * (tab_size - 1) : 0);
+				const int end_offset = current.end_column - 1 + (current.end_column > 1 ? end_line.count("\t", 0, current.end_column - 1) * (tab_size - 1) : 0);
+				const int width = end_offset - start_offset;
+				pointer += String::chr(' ').repeat(start_offset) + String::chr('^').repeat(width);
 			} else {
-				const int width = MAX(0, current.end_column - 1);
-				pointer += String::chr('^').repeat(width);
+				const int end_offset = current.end_column - 1 + (current.end_column > 1 ? end_line.count("\t", 0, current.end_column - 1) * (tab_size - 1) : 0);
+				pointer += String::chr('^').repeat(end_offset);
 			}
 
 			print_line(pointer.as_string());

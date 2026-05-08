@@ -36,6 +36,7 @@
 
 class AcceptDialog;
 class Button;
+class HFlowContainer;
 class Label;
 class PopupMenu;
 class ProjectList;
@@ -56,7 +57,7 @@ class ProjectListItemControl : public HBoxContainer {
 	Label *project_version = nullptr;
 	TextureRect *project_unsupported_features = nullptr;
 	TextureRect *project_different_version = nullptr;
-	HBoxContainer *tag_container = nullptr;
+	HFlowContainer *tag_container = nullptr;
 	Button *touch_menu_button = nullptr;
 
 	Color favorite_focus_color;

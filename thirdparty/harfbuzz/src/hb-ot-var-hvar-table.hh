@@ -180,7 +180,7 @@ struct index_map_subset_plan_t
   unsigned int get_width ()           const { return ((outer_bit_count + inner_bit_count + 7) / 8); }
   unsigned int get_map_count ()       const { return map_count; }
 
-  unsigned int get_size () const
+  size_t get_size () const
   { return (map_count? (DeltaSetIndexMap::min_size + get_width () * map_count): 0); }
 
   bool is_identity () const { return get_output_map ().length == 0; }

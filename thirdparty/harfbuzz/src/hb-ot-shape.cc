@@ -1328,4 +1328,20 @@ hb_ot_shape_glyphs_closure (hb_font_t          *font,
 }
 
 
+/**
+ * hb_ot_shape_get_buffer_format_serial:
+ *
+ * Returns the serial number of the current internal buffer format.
+ * See #HB_OT_SHAPE_BUFFER_FORMAT_SERIAL for more information.
+ *
+ * Return value: The current buffer-format serial number.
+ *
+ * Since: 13.2.0
+ **/
+unsigned int
+hb_ot_shape_get_buffer_format_serial (void)
+{
+  return HB_OT_SHAPE_BUFFER_FORMAT_SERIAL;
+}
+
 #endif

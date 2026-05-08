@@ -7,4 +7,8 @@
 
 	<!-- Labels for the dialog action buttons -->
 	<string name="dialog_ok">OK</string>
+	<string name="dialog_cancel">Cancel</string>
+	<string name="dialog_download">Download</string>
+	<string name="gabe_connection_error_message">Unable to connect to the Godot Android Build Environment (GABE). Please make sure it\'s installed on your device.</string>
+	<string name="gabe_connection_error_title">Connection Failed!</string>
 </resources>

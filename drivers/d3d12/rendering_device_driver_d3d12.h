@@ -551,6 +551,7 @@ public:
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override;
 	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) override;
+	virtual bool swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) override;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override;
 
 	/*********************/

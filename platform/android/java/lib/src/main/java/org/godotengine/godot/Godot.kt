@@ -612,6 +612,11 @@ class Godot private constructor(val context: Context) {
 			})
 
 			renderView?.queueOnRenderThread {
+				for (plugin in pluginRegistry.allPlugins) {
+					// Plugins should be registered early so they are available as soon as the app starts.
+					// Otherwise, a delay in registration may make them unavailable during _init() of the main script or an autoload.
+					plugin.onRegisterPluginWithGodotNative()
+				}
 				setKeepScreenOn(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")))
 			}
 
@@ -818,7 +823,6 @@ class Godot private constructor(val context: Context) {
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
-			plugin.onRegisterPluginWithGodotNative()
 			plugin.onGodotSetupCompleted()
 		}
 		primaryHost?.onGodotSetupCompleted()

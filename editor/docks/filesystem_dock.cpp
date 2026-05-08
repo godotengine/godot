@@ -1676,7 +1676,7 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 		print_verbose("Remapping dependencies for: " + file);
 		const Error err = ResourceLoader::rename_dependencies(file, p_renames);
 		if (err == OK) {
-			if (ResourceLoader::get_resource_type(file) == "PackedScene") {
+			if (ResourceLoader::get_resource_type(file) == "PackedScene" && EditorNode::get_editor_data().get_edited_scene_from_path(file) != -1) {
 				if (file == edited_scene_path) {
 					scenes_to_reload.push_front(file);
 				} else {
@@ -2608,7 +2608,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_MENU_DUPLICATE: {
-			if (p_selected.size() != 1) {
+			if (p_selected.size() != 1 || p_selected[0] == "res://") {
 				return;
 			}
 

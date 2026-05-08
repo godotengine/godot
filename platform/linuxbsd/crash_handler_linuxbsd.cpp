@@ -53,6 +53,31 @@
 #include <cstdio>
 #include <cstdlib>
 
+inline String find_addr2line_executable() {
+	List<String> args;
+	args.push_back("--version");
+	String output;
+	OS *os = OS::get_singleton();
+	int ret = 0;
+	Error err = OK;
+	// First, check for addr2line in the home directory's cargo bin.
+	if (os->has_environment("HOME")) {
+		// Faster implementation from gimli-rs/addr2line.
+		const String cargo_addr2line = os->get_environment("HOME").path_join(String("/.cargo/bin/addr2line"));
+		err = os->execute(cargo_addr2line, args, &output, &ret);
+		if (err == OK && ret == 0) {
+			return cargo_addr2line;
+		}
+	}
+	// Otherwise, check for llvm-addr2line.
+	err = os->execute(String("llvm-addr2line"), args, &output, &ret);
+	if (err == OK && ret == 0) {
+		return String("llvm-addr2line");
+	}
+	// Fallback guess if none of the above returned a definitive result.
+	return String("addr2line");
+}
+
 static void handle_crash(int sig) {
 	signal(SIGSEGV, SIG_DFL);
 	signal(SIGFPE, SIG_DFL);
@@ -117,31 +142,9 @@ static void handle_crash(int sig) {
 
 	if (strings) {
 		int ret;
+		const String exe_name = find_addr2line_executable();
 
 		List<String> args;
-		args.push_back("--version");
-		String exe_name;
-
-		if (exe_name.is_empty()) {
-			String output;
-			// Faster implementation from gimli-rs/addr2line.
-			Error err = OS::get_singleton()->execute(OS::get_singleton()->get_environment("HOME").path_join(String("/.cargo/bin/addr2line")), args, &output, &ret);
-			if (err == OK && ret == 0) {
-				exe_name = OS::get_singleton()->get_environment("HOME").path_join(String("/.cargo/bin/addr2line"));
-			}
-		}
-		if (exe_name.is_empty()) {
-			String output;
-			Error err = OS::get_singleton()->execute(String("llvm-addr2line"), args, &output, &ret);
-			if (err == OK && ret == 0) {
-				exe_name = String("llvm-addr2line");
-			}
-		}
-		if (exe_name.is_empty()) {
-			exe_name = String("addr2line");
-		}
-
-		args.clear();
 		for (size_t i = 0; i < size; i++) {
 			char str[1024];
 			snprintf(str, 1024, "%p", (void *)((uintptr_t)bt_buffer[i] - relocation));

@@ -39,9 +39,9 @@ jobs:
           skip_initial_fetch: true
           files_yaml_from_source_file: .github/changed_files.yml
 
-      - name: Style checks via pre-commit
-        uses: ./.github/actions/pre-commit
+      - name: Style checks via prek
+        uses: j178/prek-action@v2
         env:
           CHANGED_FILES: '"${{ steps.changed-files.outputs.everything_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
         with:
-          extra_args: --files ${{ env.CHANGED_FILES }}
+          extra-args: --files ${{ env.CHANGED_FILES }}

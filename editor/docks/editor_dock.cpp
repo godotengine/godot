@@ -45,10 +45,15 @@ void EditorDock::_emit_changed() {
 	emit_signal(SNAME("_tab_style_changed"));
 }
 
+void EditorDock::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "accessibility_name") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void EditorDock::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			set_accessibility_region(true);
 			set_accessibility_name(get_display_title());
 		} break;
 
@@ -321,4 +326,8 @@ Ref<Texture2D> EditorDock::get_effective_icon(const Callable &p_icon_fetch) {
 		icon = p_icon_fetch.call(icon_name);
 	}
 	return icon;
+}
+
+EditorDock::EditorDock() {
+	set_accessibility_region(true);
 }
