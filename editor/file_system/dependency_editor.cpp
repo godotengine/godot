@@ -928,6 +928,13 @@ enum {
 void DependencyErrorDialog::show(const String &p_for_file, const HashMap<String, HashSet<String>> &p_report) {
 	for_file = p_for_file;
 
+	// Reset state that persists between shows: a prior session's `errors_fixed`
+	// would otherwise cause `ok_pressed` to ask the loader not to ignore broken
+	// deps, looping the dialog. `replacing_item` points into the tree that we
+	// rebuild below.
+	errors_fixed = false;
+	replacing_item = nullptr;
+
 	// TRANSLATORS: The placeholder is a filename.
 	set_title(vformat(TTR("Error loading: %s"), p_for_file.get_file()));
 
@@ -1050,6 +1057,13 @@ void DependencyErrorDialog::_on_files_button_clicked(TreeItem *p_item, int p_col
 }
 
 void DependencyErrorDialog::_on_replacement_file_selected(const String &p_path) {
+	// `replacing_item` is set when the user clicks the Search button on a row;
+	// it is also nulled in `show()`. The signal flow guarantees this is non-null
+	// here in normal usage, but enforce it explicitly so a stray invocation
+	// (or a future refactor that opens the file dialog by another path) cannot
+	// dereference a stale or null pointer.
+	ERR_FAIL_NULL(replacing_item);
+
 	const String &missing_path = String(replacing_item->get_metadata(0)).get_slice("::", 0);
 
 	for (TreeItem *owner_ti = replacing_item->get_first_child(); owner_ti; owner_ti = owner_ti->get_next()) {
@@ -1066,11 +1080,36 @@ void DependencyErrorDialog::_check_for_resolved() {
 	}
 
 	errors_fixed = true;
+	// Forward deps for each owner_path; populates errors_fixed as a side effect.
 	HashMap<String, LocalVector<String>> owner_deps;
+	// Reverse deps for each missing_path (used purely for cycle detection, so
+	// kept separate from owner_deps to avoid letting unrelated missing-deps of
+	// the missing file count against errors_fixed).
+	HashMap<String, LocalVector<String>> missing_back_deps;
+
+	// `any_cyclic` drives the cycle-styled heading and hint panel.
+	// `any_unresolved` tracks whether any tree row still shows fail/warning
+	// (i.e. is unfixed in the dialog). It is intentionally separate from
+	// `errors_fixed`, which is a wider on-disk truth — a forward-dep scan can
+	// discover unrelated missing deps that aren't in the tree, and we don't
+	// want those to drive the heading text away from the user's actual view.
+	bool any_cyclic = false;
+	bool any_unresolved = false;
+	HashSet<String> cycle_types;
+
+	// TODO: cycle detection here only catches direct A↔B 2-cycles, matching
+	// `show()`'s shallow scan. Longer cycles (A→B→C→A) won't be classified as
+	// cyclic — they fall through to the plain "missing dependency" branch.
+	// Deeper detection would require walking the dep graph transitively.
 
 	TreeItem *root = files->get_root();
 	for (TreeItem *missing_ti = root->get_first_child(); missing_ti; missing_ti = missing_ti->get_next()) {
+		const String &missing_meta = missing_ti->get_metadata(0);
+		const String &missing_path = missing_meta.get_slice("::", 0);
+		const String &missing_type = missing_meta.get_slice("::", 1);
+
 		bool all_owners_fixed = true;
+		bool item_is_cyclic = false;
 
 		for (TreeItem *owner_ti = missing_ti->get_first_child(); owner_ti; owner_ti = owner_ti->get_next()) {
 			const String &owner_path = owner_ti->get_metadata(0);
@@ -1087,18 +1126,70 @@ void DependencyErrorDialog::_check_for_resolved() {
 					stored_paths.push_back(_get_stored_dep_path(dep));
 				}
 			}
-			const LocalVector<String> &stored_paths = owner_deps[owner_path];
-			const String &missing_path = String(missing_ti->get_metadata(0)).get_slice("::", 0);
+			const LocalVector<String> &owner_stored_paths = owner_deps[owner_path];
 
-			if (stored_paths.has(missing_path)) {
+			const bool owner_still_refs = owner_stored_paths.has(missing_path);
+			if (owner_still_refs) {
 				all_owners_fixed = false;
-				break;
+			}
+
+			// Per-edge cycle check: this edge is cyclic iff owner still
+			// references missing_path AND missing_path's on-disk deps still
+			// reference owner_path (i.e. the round trip survives). Skip the
+			// reverse lookup if missing_path isn't on disk — `get_dependencies`
+			// would silently return empty (a no-op today, but the guard makes
+			// the intent explicit and avoids any future error spam if that
+			// changes).
+			bool edge_cyclic = false;
+			if (owner_still_refs && FileAccess::exists(missing_path)) {
+				if (!missing_back_deps.has(missing_path)) {
+					List<String> back_deps;
+					ResourceLoader::get_dependencies(missing_path, &back_deps);
+					LocalVector<String> &mstored = missing_back_deps[missing_path];
+					for (const String &dep : back_deps) {
+						mstored.push_back(_get_stored_dep_path(dep));
+					}
+				}
+				edge_cyclic = missing_back_deps[missing_path].has(owner_path);
+			}
+			if (edge_cyclic) {
+				item_is_cyclic = true;
+			}
+
+			// Keep owner row wording in sync with the current cyclic edge status.
+			if (edge_cyclic) {
+				// TRANSLATORS: The placeholder is a file path.
+				owner_ti->set_text(0, vformat(TTR("Cyclic reference with %s"), owner_path));
+			} else {
+				// TRANSLATORS: The placeholder is a file path.
+				owner_ti->set_text(0, vformat(TTR("Referenced by %s"), owner_path));
 			}
 		}
 
-		missing_ti->set_icon(1, get_editor_theme_icon(all_owners_fixed ? icon_name_check : icon_name_fail));
+		if (all_owners_fixed) {
+			missing_ti->set_icon(1, get_editor_theme_icon(icon_name_check));
+		} else if (item_is_cyclic) {
+			missing_ti->set_icon(1, get_editor_theme_icon(SNAME("StatusWarning")));
+			any_cyclic = true;
+			any_unresolved = true;
+			cycle_types.insert(missing_type);
+		} else {
+			missing_ti->set_icon(1, get_editor_theme_icon(icon_name_fail));
+			any_unresolved = true;
+		}
 	}
 
+	// Heading reflects what the user sees in the tree, not the wider on-disk
+	// state tracked by `errors_fixed`. If the tree is all-resolved we leave
+	// the previous text alone — the dialog is about to be dismissed and the
+	// "load failed" wording is harmless in that brief moment.
+	if (any_cyclic) {
+		files_label->set_text(TTR("Load failed due to cyclic references:"));
+	} else if (any_unresolved) {
+		files_label->set_text(TTR("Load failed due to missing dependencies:"));
+	}
+
+	_update_hint_label(any_cyclic, cycle_types);
 	set_ok_button_text(errors_fixed ? TTRC("Open") : TTRC("Open Anyway"));
 }
 
