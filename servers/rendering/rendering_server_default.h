@@ -720,6 +720,10 @@ public:
 	FUNC1RC(RID, viewport_get_render_target, RID)
 	FUNC1RC(RID, viewport_get_texture, RID)
 
+	// DEAD MONEY: canvas_item MRT API forwarders.
+	FUNC3(viewport_set_mrt_attachments, RID, const Vector<int> &, const Vector<Color> &)
+	FUNC2RC(RID, viewport_get_aux_texture, RID, int)
+
 	FUNC2(viewport_set_disable_2d, RID, bool)
 	FUNC2(viewport_set_environment_mode, RID, ViewportEnvironmentMode)
 	FUNC2(viewport_set_disable_3d, RID, bool)

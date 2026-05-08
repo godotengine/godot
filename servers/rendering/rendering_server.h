@@ -1021,6 +1021,22 @@ public:
 	virtual RID viewport_get_render_target(RID p_viewport) const = 0;
 	virtual RID viewport_get_texture(RID p_viewport) const = 0;
 
+	// DEAD MONEY: canvas_item MRT API.
+	//
+	// Configures auxiliary color attachments for the viewport's render
+	// target. p_formats[i] is an RD::DataFormat for attachment i+1 (the
+	// primary world color stays at attachment 0). p_clear_colors gives
+	// the per-frame clear value for each aux attachment; pad with
+	// transparent black if shorter. Pass empty vectors to disable MRT.
+	//
+	// MSAA is forced off when MRT is enabled (per-aux multisample +
+	// resolves are not implemented in the minimum patch).
+	//
+	// viewport_get_aux_texture returns a Texture2DRD-compatible RID for
+	// sampling the i-th aux attachment from a downstream pass shader.
+	virtual void viewport_set_mrt_attachments(RID p_viewport, const Vector<int> &p_formats, const Vector<Color> &p_clear_colors) = 0;
+	virtual RID viewport_get_aux_texture(RID p_viewport, int p_index) const = 0;
+
 	enum ViewportEnvironmentMode {
 		VIEWPORT_ENVIRONMENT_DISABLED,
 		VIEWPORT_ENVIRONMENT_ENABLED,

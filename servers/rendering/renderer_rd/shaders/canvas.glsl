@@ -355,6 +355,32 @@ layout(location = 8) in vec2 pixel_size_interp;
 
 layout(location = 0) out vec4 frag_color;
 
+// DEAD MONEY: aux outputs for canvas_item MRT. Each is gated on a USED
+// define emitted by the shader compiler when the user shader writes to
+// the corresponding OUT_N built-in. The bound viewport must have at
+// least N+1 color attachments configured for these to land somewhere.
+#ifdef OUT_1_USED
+layout(location = 1) out vec4 out_1;
+#endif
+#ifdef OUT_2_USED
+layout(location = 2) out vec4 out_2;
+#endif
+#ifdef OUT_3_USED
+layout(location = 3) out vec4 out_3;
+#endif
+#ifdef OUT_4_USED
+layout(location = 4) out vec4 out_4;
+#endif
+#ifdef OUT_5_USED
+layout(location = 5) out vec4 out_5;
+#endif
+#ifdef OUT_6_USED
+layout(location = 6) out vec4 out_6;
+#endif
+#ifdef OUT_7_USED
+layout(location = 7) out vec4 out_7;
+#endif
+
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms {

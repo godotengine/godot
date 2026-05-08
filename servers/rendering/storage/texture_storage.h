@@ -188,6 +188,13 @@ public:
 	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) = 0;
 	virtual Rect2i render_target_get_render_region(RID p_render_target) const = 0;
 
+	// DEAD MONEY: canvas_item MRT virtuals.
+	// p_formats holds RD::DataFormat values cast to int (the abstract storage
+	// layer doesn't pull in RD types). Non-RD renderers (Compatibility,
+	// dummy) no-op these; canvas_item MRT is Vulkan/Forward+ only by design.
+	virtual void render_target_set_mrt_attachments(RID p_render_target, const Vector<int> &p_formats, const Vector<Color> &p_clear_colors) {}
+	virtual RID render_target_get_aux_color(RID p_render_target, int p_index) { return RID(); }
+
 	// get textures
 	virtual RID render_target_get_texture(RID p_render_target) = 0;
 

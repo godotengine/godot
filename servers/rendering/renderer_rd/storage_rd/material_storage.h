@@ -62,7 +62,11 @@ public:
 			BLEND_MODE_MUL,
 			BLEND_MODE_ALPHA_TO_COVERAGE,
 			BLEND_MODE_PREMULTIPLIED_ALPHA,
-			BLEND_MODE_DISABLED
+			BLEND_MODE_DISABLED,
+			// DEAD MONEY: max-blend for accumulating MRT signals (e.g. emissive,
+			// portal mask). RD::BLEND_OP_MAX picks per-channel max(src, dst);
+			// no factor multiplication so factors are FACTOR_ONE for both.
+			BLEND_MODE_MAX
 		};
 
 		String path;

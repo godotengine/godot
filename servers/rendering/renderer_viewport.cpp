@@ -1195,6 +1195,20 @@ RID RendererViewport::viewport_get_texture(RID p_viewport) const {
 	return RSG::texture_storage->render_target_get_texture(viewport->render_target);
 }
 
+// DEAD MONEY: canvas_item MRT — forward through the abstract texture
+// storage. Compatibility/dummy renderers no-op via the base class default.
+void RendererViewport::viewport_set_mrt_attachments(RID p_viewport, const Vector<int> &p_formats, const Vector<Color> &p_clear_colors) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+	RSG::texture_storage->render_target_set_mrt_attachments(viewport->render_target, p_formats, p_clear_colors);
+}
+
+RID RendererViewport::viewport_get_aux_texture(RID p_viewport, int p_index) const {
+	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL_V(viewport, RID());
+	return RSG::texture_storage->render_target_get_aux_color(viewport->render_target, p_index);
+}
+
 RID RendererViewport::viewport_get_occluder_debug_texture(RID p_viewport) const {
 	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL_V(viewport, RID());

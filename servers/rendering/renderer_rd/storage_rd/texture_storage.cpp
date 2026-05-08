@@ -3496,6 +3496,23 @@ RID TextureStorage::RenderTarget::get_framebuffer() {
 	// We can't resolve into our overridden buffer as it won't be marked as a resolve buffer.
 	// This is only applicable when OpenXR is used and 2D rendering is skipped.
 
+	// DEAD MONEY: MRT path. When auxiliary attachments are configured, build
+	// a multi-attachment framebuffer. The cache is bypassed (variadic template
+	// can't take a Vector); RD::framebuffer_create de-duplicates internally
+	// based on the texture RID list, so re-creation only occurs when the aux
+	// textures themselves change (i.e. on render-target reconfigure).
+	// MSAA + MRT is not supported here — _update_render_target's msaa branch
+	// would still build a multisample primary, but we don't allocate
+	// multisample aux. Force MSAA off via render_target_set_mrt_attachments.
+	if (!mrt_aux_color.is_empty()) {
+		Vector<RID> attachments;
+		attachments.push_back(overridden.color.is_valid() ? overridden.color : color);
+		for (RID aux : mrt_aux_color) {
+			attachments.push_back(aux);
+		}
+		return RD::get_singleton()->framebuffer_create(attachments, RenderingDevice::INVALID_ID, view_count);
+	}
+
 	if (msaa != RS::VIEWPORT_MSAA_DISABLED && overridden.color.is_null()) {
 		// Render into our MSAA buffer and resolve into our color buffer.
 		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, color_multisample, color);
@@ -3527,6 +3544,14 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	if (rt->color_multisample.is_valid()) {
 		RD::get_singleton()->free_rid(rt->color_multisample);
 	}
+
+	// DEAD MONEY: free MRT aux attachment textures.
+	for (RID aux : rt->mrt_aux_color) {
+		if (aux.is_valid()) {
+			RD::get_singleton()->free_rid(aux);
+		}
+	}
+	rt->mrt_aux_color.clear();
 
 	if (rt->backbuffer.is_valid()) {
 		RD::get_singleton()->free_rid(rt->backbuffer);
@@ -3600,6 +3625,30 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	// TODO see if we can lazy create this once we actually use it as we may not need to create this if we have an overridden color buffer...
 	rt->color = RD::get_singleton()->texture_create(rd_color_attachment_format, rd_view);
 	ERR_FAIL_COND(rt->color.is_null());
+
+	// DEAD MONEY: allocate auxiliary color attachments for MRT.
+	// Sized to match the primary color attachment; format per request.
+	// MSAA aux is not supported in the minimum patch; we expect callers
+	// of render_target_set_mrt_attachments to have already forced
+	// msaa=DISABLED on the render target before reaching here.
+	for (RD::DataFormat fmt : rt->mrt_formats) {
+		RD::TextureFormat aux_fmt;
+		aux_fmt.format = fmt;
+		aux_fmt.width = rt->size.width;
+		aux_fmt.height = rt->size.height;
+		aux_fmt.depth = 1;
+		aux_fmt.array_layers = rt->view_count;
+		aux_fmt.mipmaps = 1;
+		aux_fmt.texture_type = (rt->view_count > 1) ? RD::TEXTURE_TYPE_2D_ARRAY : RD::TEXTURE_TYPE_2D;
+		aux_fmt.samples = RD::TEXTURE_SAMPLES_1;
+		aux_fmt.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT
+				| RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT
+				| RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		aux_fmt.shareable_formats.push_back(fmt);
+		RID aux = RD::get_singleton()->texture_create(aux_fmt, RD::TextureView());
+		ERR_CONTINUE(aux.is_null());
+		rt->mrt_aux_color.push_back(aux);
+	}
 
 	if (rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 		// Use the texture format of the color attachment for the multisample color attachment.
@@ -3962,6 +4011,71 @@ RID TextureStorage::render_target_get_rd_framebuffer(RID p_render_target) {
 	ERR_FAIL_NULL_V(rt, RID());
 
 	return rt->get_framebuffer();
+}
+
+// DEAD MONEY: canvas_item MRT public API.
+//
+// Reconfigures the render target's auxiliary color attachments. Pass an
+// empty `p_formats` to disable MRT and revert to single-attachment behavior.
+// Forces MSAA off when any aux attachments are configured (per-aux MSAA
+// + resolves are out of scope for this patch).
+//
+// Triggers a render-target rebuild via _clear + _update so the new aux
+// textures are allocated and any cached framebuffers using the old
+// configuration get released.
+void TextureStorage::render_target_set_mrt_attachments(RID p_render_target, const Vector<int> &p_formats, const Vector<Color> &p_clear_colors) {
+	// Abstract-API entry: convert int → RD::DataFormat and forward.
+	Vector<RD::DataFormat> typed;
+	typed.resize(p_formats.size());
+	for (int i = 0; i < p_formats.size(); i++) {
+		typed.write[i] = (RD::DataFormat)p_formats[i];
+	}
+	render_target_set_mrt_attachments_typed(p_render_target, typed, p_clear_colors);
+}
+
+void TextureStorage::render_target_set_mrt_attachments_typed(RID p_render_target, const Vector<RD::DataFormat> &p_formats, const Vector<Color> &p_clear_colors) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+	ERR_FAIL_COND_MSG(p_formats.size() > 7, "canvas_item MRT supports at most 7 auxiliary attachments (8 total color attachments).");
+
+	// Bail early if nothing actually changed.
+	if (rt->mrt_formats == p_formats && rt->mrt_clear_colors == p_clear_colors) {
+		return;
+	}
+
+	rt->mrt_formats = p_formats;
+	rt->mrt_clear_colors = p_clear_colors;
+	// Pad clear colors with transparent black if the caller under-supplied.
+	while (rt->mrt_clear_colors.size() < rt->mrt_formats.size()) {
+		rt->mrt_clear_colors.push_back(Color(0, 0, 0, 0));
+	}
+
+	// Force MSAA off when MRT is enabled.
+	if (!rt->mrt_formats.is_empty() && rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
+		rt->msaa = RS::VIEWPORT_MSAA_DISABLED;
+	}
+
+	_update_render_target(rt);
+}
+
+RID TextureStorage::render_target_get_aux_color(RID p_render_target, int p_index) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, RID());
+	ERR_FAIL_INDEX_V(p_index, rt->mrt_aux_color.size(), RID());
+	return rt->mrt_aux_color[p_index];
+}
+
+int TextureStorage::render_target_get_aux_count(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, 0);
+	return rt->mrt_aux_color.size();
+}
+
+const Vector<Color> &TextureStorage::render_target_get_mrt_clear_colors(RID p_render_target) {
+	static const Vector<Color> EMPTY;
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, EMPTY);
+	return rt->mrt_clear_colors;
 }
 
 RID TextureStorage::render_target_get_rd_texture(RID p_render_target) {

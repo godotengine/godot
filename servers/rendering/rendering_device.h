@@ -689,6 +689,19 @@ public:
 	FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1);
 	TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format, uint32_t p_pass = 0);
 
+	// DEAD MONEY: returns the number of attachments declared for a given
+	// framebuffer format (excluding INVALID/UNUSED entries). Needed by the
+	// canvas_item MRT pipeline creator so it can size the per-attachment
+	// blend state to match the bound framebuffer.
+	uint32_t framebuffer_format_get_attachment_count(FramebufferFormatID p_format);
+
+	// Returns the number of color attachments in the given pass of the
+	// framebuffer format (excluding ATTACHMENT_UNUSED). MSAA resolve targets
+	// live in the pass's resolve_attachments vector, not color_attachments,
+	// so this returns just the actual color outputs (= what the pipeline
+	// blend state must size to).
+	uint32_t framebuffer_format_get_color_attachment_count(FramebufferFormatID p_format, uint32_t p_pass = 0);
+
 	RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
 	RID framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, const Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
 	RID framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples = TEXTURE_SAMPLES_1, FramebufferFormatID p_format_check = INVALID_ID);

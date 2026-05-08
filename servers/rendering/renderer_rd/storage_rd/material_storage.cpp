@@ -706,6 +706,17 @@ RD::PipelineColorBlendState::Attachment MaterialStorage::ShaderData::blend_mode_
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		} break;
+		case BLEND_MODE_MAX: {
+			// DEAD MONEY: max-blend, e.g. for emissive accumulation in MRT.
+			// FACTOR_ONE × src op_max FACTOR_ONE × dst → max(src, dst) per channel.
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_MAX;
+			attachment.color_blend_op = RD::BLEND_OP_MAX;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		} break;
 		case BLEND_MODE_DISABLED:
 		default: {
 			// Use default attachment values.

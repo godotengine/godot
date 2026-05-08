@@ -1518,6 +1518,47 @@ void RendererCanvasRenderRD::CanvasShaderData::_create_pipeline(PipelineKey p_pi
 
 	blend_state.attachments.push_back(attachment);
 
+	// DEAD MONEY: per-aux-attachment blend state for canvas_item MRT.
+	//
+	// Two layers of decisions:
+	// 1. For aux attachments the *shader* writes (uses_out_n[i] == true),
+	//    push the corresponding blend mode parsed from the shader's
+	//    `render_mode mrt_blend_<i+1>_<MODE>` declaration.
+	// 2. For aux attachments the *framebuffer* has but the shader does NOT
+	//    write to, push a no-write attachment (write_r=g=b=a=false) so the
+	//    pipeline matches the FB attachment count without disturbing the
+	//    aux contents. (We relaxed the engine's strict equality check —
+	//    the pipeline's blend_state size still has to match
+	//    fb_color_attachments.size(), but per-attachment write mask
+	//    controls whether anything actually lands.)
+	//
+	// fb_color_count returns just the color outputs of the active pass
+	// (MSAA resolve targets are in pass.resolve_attachments, not counted
+	// here, so non-MRT MSAA paths see the same count of 1 the original
+	// pipeline used). Subtract 1 for the primary attachment (already pushed
+	// above) to get the aux attachment count.
+	uint32_t fb_color_count = RD::get_singleton()->framebuffer_format_get_color_attachment_count(p_pipeline_key.framebuffer_format_id);
+	uint32_t fb_color_aux = (fb_color_count > 1) ? (fb_color_count - 1) : 0;
+	if (fb_color_aux > (uint32_t)MRT_AUX_COUNT) {
+		fb_color_aux = MRT_AUX_COUNT;
+	}
+	for (uint32_t i = 0; i < fb_color_aux; i++) {
+		if (uses_out_n[i]) {
+			auto aux_mode = RendererRD::MaterialStorage::ShaderData::BlendMode(mrt_blend_modes[i]);
+			blend_state.attachments.push_back(
+				RendererRD::MaterialStorage::ShaderData::blend_mode_to_blend_attachment(aux_mode));
+		} else {
+			// Shader doesn't write this aux — leave the attachment untouched.
+			RD::PipelineColorBlendState::Attachment no_write;
+			no_write.enable_blend = false;
+			no_write.write_r = false;
+			no_write.write_g = false;
+			no_write.write_b = false;
+			no_write.write_a = false;
+			blend_state.attachments.push_back(no_write);
+		}
+	}
+
 	RD::PipelineMultisampleState multisample_state;
 	multisample_state.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_pipeline_key.framebuffer_format_id, 0);
 
@@ -1548,6 +1589,10 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	uses_screen_texture_mipmaps = false;
 	uses_sdf = false;
 	uses_time = false;
+	for (int i = 0; i < MRT_AUX_COUNT; i++) {
+		uses_out_n[i] = false;
+		mrt_blend_modes[i] = 6; // BLEND_MODE_DISABLED — re-applied per compile.
+	}
 	_clear_vertex_input_mask_cache();
 
 	if (code.is_empty()) {
@@ -1570,8 +1615,38 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_mode, BLEND_MODE_PREMULTIPLIED_ALPHA);
 	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_mode, BLEND_MODE_DISABLED);
 
+	// DEAD MONEY: per-aux-attachment blend modes for MRT. Each token has the
+	// shape `mrt_blend_<N>_<MODE>` where N is 1..7 (matches OUT_1..OUT_7) and
+	// MODE is one of the canvas blend modes plus `max` for accumulation.
+	// Defaults to BLEND_MODE_DISABLED if no token is declared (set at struct
+	// init in renderer_canvas_render_rd.h).
+	for (int i = 0; i < CanvasShaderData::MRT_AUX_COUNT; i++) {
+		const String prefix = "mrt_blend_" + itos(i + 1) + "_";
+		int *slot = &mrt_blend_modes[i];
+		actions.render_mode_values[prefix + "mix"] = Pair<int *, int>(slot, BLEND_MODE_MIX);
+		actions.render_mode_values[prefix + "add"] = Pair<int *, int>(slot, BLEND_MODE_ADD);
+		actions.render_mode_values[prefix + "sub"] = Pair<int *, int>(slot, BLEND_MODE_SUB);
+		actions.render_mode_values[prefix + "mul"] = Pair<int *, int>(slot, BLEND_MODE_MUL);
+		actions.render_mode_values[prefix + "premul_alpha"] = Pair<int *, int>(slot, BLEND_MODE_PREMULTIPLIED_ALPHA);
+		actions.render_mode_values[prefix + "disabled"] = Pair<int *, int>(slot, BLEND_MODE_DISABLED);
+		actions.render_mode_values[prefix + "max"] = Pair<int *, int>(slot, BLEND_MODE_MAX);
+	}
+
 	actions.usage_flag_pointers["texture_sdf"] = &uses_sdf;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
+
+	// DEAD MONEY: per-aux MRT output usage flags. Set true when the user
+	// shader writes to OUT_N; consumed by _create_pipeline to size the
+	// blend state attachments. Without this, the pipeline blend count would
+	// derive from FB attachment count which counts MSAA resolve targets and
+	// produces wrong pipeline layouts for non-MRT MSAA shaders.
+	actions.usage_flag_pointers["OUT_1"] = &uses_out_n[0];
+	actions.usage_flag_pointers["OUT_2"] = &uses_out_n[1];
+	actions.usage_flag_pointers["OUT_3"] = &uses_out_n[2];
+	actions.usage_flag_pointers["OUT_4"] = &uses_out_n[3];
+	actions.usage_flag_pointers["OUT_5"] = &uses_out_n[4];
+	actions.usage_flag_pointers["OUT_6"] = &uses_out_n[5];
+	actions.usage_flag_pointers["OUT_7"] = &uses_out_n[6];
 
 	actions.uniforms = &uniforms;
 
@@ -1804,6 +1879,16 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["CUSTOM0"] = "custom0";
 		actions.renames["CUSTOM1"] = "custom1";
 
+		// DEAD MONEY: aux MRT outputs. User writes `OUT_N = ...`, compiler
+		// emits `out_N = ...` at the GLSL `out vec4 out_N` slot at location N.
+		actions.renames["OUT_1"] = "out_1";
+		actions.renames["OUT_2"] = "out_2";
+		actions.renames["OUT_3"] = "out_3";
+		actions.renames["OUT_4"] = "out_4";
+		actions.renames["OUT_5"] = "out_5";
+		actions.renames["OUT_6"] = "out_6";
+		actions.renames["OUT_7"] = "out_7";
+
 		actions.renames["LIGHT_POSITION"] = "light_position";
 		actions.renames["LIGHT_DIRECTION"] = "light_direction";
 		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
@@ -1826,6 +1911,16 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.usage_defines["POINT_SIZE"] = "#define USE_POINT_SIZE\n";
 		actions.usage_defines["CUSTOM0"] = "#define CUSTOM0_USED\n";
 		actions.usage_defines["CUSTOM1"] = "#define CUSTOM1_USED\n";
+
+		// DEAD MONEY: aux MRT output usage defines. Each gates the matching
+		// `layout(location = N) out vec4 out_N` declaration in canvas.glsl.
+		actions.usage_defines["OUT_1"] = "#define OUT_1_USED\n";
+		actions.usage_defines["OUT_2"] = "#define OUT_2_USED\n";
+		actions.usage_defines["OUT_3"] = "#define OUT_3_USED\n";
+		actions.usage_defines["OUT_4"] = "#define OUT_4_USED\n";
+		actions.usage_defines["OUT_5"] = "#define OUT_5_USED\n";
+		actions.usage_defines["OUT_6"] = "#define OUT_6_USED\n";
+		actions.usage_defines["OUT_7"] = "#define OUT_7_USED\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
@@ -2291,7 +2386,33 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::DRAW_CLEAR_COLOR_0 : RD::DRAW_DEFAULT_ALL, clear_color, 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::UI_PASS);
+	// DEAD MONEY: per-attachment clear-color array for canvas_item MRT.
+	// Aux clears are gated on the same `clear` flag the primary clear uses —
+	// only the FIRST draw of the frame clears (subsequent batches preserve).
+	// `_render_batch_items` is called multiple times per frame (canvas groups,
+	// backbuffer copies, etc.); auto-clearing on every entry would wipe earlier
+	// draws. The render-target's clear request is consumed once per frame above
+	// and that same flag governs aux clears here.
+	int aux_count = p_to_backbuffer ? 0 : texture_storage->render_target_get_aux_count(p_to_render_target.render_target);
+	Vector<Color> mrt_clear_values;
+	BitField<RD::DrawFlags> draw_flags = clear ? BitField<RD::DrawFlags>(RD::DRAW_CLEAR_COLOR_0) : BitField<RD::DrawFlags>(RD::DRAW_DEFAULT_ALL);
+	if (aux_count > 0) {
+		mrt_clear_values.push_back(clear_color);
+		const Vector<Color> &aux_clears = texture_storage->render_target_get_mrt_clear_colors(p_to_render_target.render_target);
+		for (int i = 0; i < aux_count; i++) {
+			mrt_clear_values.push_back(i < aux_clears.size() ? aux_clears[i] : Color(0, 0, 0, 0));
+			if (clear) {
+				draw_flags.set_flag(RD::DrawFlags(RD::DRAW_CLEAR_COLOR_0 << (i + 1)));
+			}
+		}
+	}
+
+	RD::DrawListID draw_list;
+	if (aux_count > 0) {
+		draw_list = RD::get_singleton()->draw_list_begin(framebuffer, draw_flags, VectorView<Color>(mrt_clear_values.ptr(), mrt_clear_values.size()), 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::UI_PASS);
+	} else {
+		draw_list = RD::get_singleton()->draw_list_begin(framebuffer, draw_flags, clear_color, 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::UI_PASS);
+	}
 
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, fb_uniform_set, BASE_UNIFORM_SET);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.default_transforms_uniform_set, TRANSFORMS_UNIFORM_SET);

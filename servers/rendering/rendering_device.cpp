@@ -2948,6 +2948,38 @@ RenderingDevice::TextureSamples RenderingDevice::framebuffer_format_get_texture_
 	return E->value.pass_samples[p_pass];
 }
 
+uint32_t RenderingDevice::framebuffer_format_get_attachment_count(FramebufferFormatID p_format) {
+	_THREAD_SAFE_METHOD_
+
+	HashMap<FramebufferFormatID, FramebufferFormat>::Iterator E = framebuffer_formats.find(p_format);
+	ERR_FAIL_COND_V(!E, 0);
+	const FramebufferFormatKey &key = E->value.E->key();
+	uint32_t count = 0;
+	for (const AttachmentFormat &af : key.attachments) {
+		if (af.usage_flags != AttachmentFormat::UNUSED_ATTACHMENT) {
+			count++;
+		}
+	}
+	return count;
+}
+
+uint32_t RenderingDevice::framebuffer_format_get_color_attachment_count(FramebufferFormatID p_format, uint32_t p_pass) {
+	_THREAD_SAFE_METHOD_
+
+	HashMap<FramebufferFormatID, FramebufferFormat>::Iterator E = framebuffer_formats.find(p_format);
+	ERR_FAIL_COND_V(!E, 0);
+	const FramebufferFormatKey &key = E->value.E->key();
+	ERR_FAIL_COND_V(p_pass >= (uint32_t)key.passes.size(), 0);
+	const FramebufferPass &pass = key.passes[p_pass];
+	uint32_t count = 0;
+	for (int32_t att : pass.color_attachments) {
+		if (att != ATTACHMENT_UNUSED) {
+			count++;
+		}
+	}
+	return count;
+}
+
 RID RenderingDevice::framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples, FramebufferFormatID p_format_check) {
 	_THREAD_SAFE_METHOD_
 
@@ -4155,8 +4187,18 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 				output_mask |= 1 << i;
 			}
 		}
-		ERR_FAIL_COND_V_MSG(shader->fragment_output_mask != output_mask, RID(),
-				"Mismatch fragment shader output mask (" + itos(shader->fragment_output_mask) + ") and framebuffer color output mask (" + itos(output_mask) + ") when binding both in render pipeline.");
+		// DEAD MONEY: subset check (was strict equality). The shader's
+		// output mask must be a subset of the framebuffer's color-attachment
+		// mask — i.e. the shader cannot write to attachments the FB doesn't
+		// have, but is allowed to write to FEWER attachments than the FB has.
+		// FB attachments the shader doesn't write are preserved at their
+		// existing values (caller is expected to set color_write_mask = 0
+		// on the corresponding PipelineColorBlendState::Attachment so Vulkan
+		// validation matches the per-attachment write semantics).
+		// Enables canvas_item MRT where viewports configure aux attachments
+		// that only some shaders contribute to.
+		ERR_FAIL_COND_V_MSG((shader->fragment_output_mask & ~output_mask) != 0, RID(),
+				"Fragment shader output mask (" + itos(shader->fragment_output_mask) + ") writes to attachments not present in framebuffer (" + itos(output_mask) + ").");
 	}
 
 	RDD::VertexFormatID driver_vertex_format;

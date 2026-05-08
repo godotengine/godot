@@ -149,6 +149,25 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 		int blend_mode = 0;
 
+		// DEAD MONEY: per-aux-attachment blend modes for canvas_item MRT.
+		// Indexed 0..6 → corresponds to attachments 1..7 (OUT_1..OUT_7).
+		// Default BLEND_MODE_DISABLED — opaque overwrite, the natural choice
+		// for "topmost sprite stamps the value" semantics (e.g. RoomID via
+		// painter's order). Set per-shader via `render_mode mrt_blend_N_<MODE>`.
+		// Holds canvas-side BlendMode values (see render_mode_values registration);
+		// final 0 == BLEND_MODE_MIX in the canvas-side enum, but we initialize
+		// to DISABLED for safety in case a shader declares OUT_N without an
+		// explicit blend mode.
+		static const int MRT_AUX_COUNT = 7;
+		int mrt_blend_modes[MRT_AUX_COUNT] = { 6, 6, 6, 6, 6, 6, 6 }; // 6 == BLEND_MODE_DISABLED
+
+		// DEAD MONEY: per-aux-attachment usage flags. Set true when the user
+		// shader writes to the corresponding OUT_N built-in. Drives the blend
+		// state attachment count in _create_pipeline — without this, the pipeline
+		// would push aux blend attachments based on framebuffer attachment count,
+		// which incorrectly counts MSAA resolve targets as MRT auxes.
+		bool uses_out_n[MRT_AUX_COUNT] = { false, false, false, false, false, false, false };
+
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size = 0;
 
