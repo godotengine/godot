@@ -52,7 +52,8 @@ godot/modules/cross_runtime/
   command_dispatcher.cpp    # command handler table
   command_processor.cpp     # per-frame command execution
   config.py
-  register_types.cpp / .h
+  register_types.cpp
+  register_types.h
   SCsub
 ```
 
