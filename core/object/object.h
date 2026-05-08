@@ -156,7 +156,7 @@ struct ObjectGDExtension {
  * much alone defines the object model.
  */
 
-/// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
+/// Provides `Object` functionality, such as being able to use `Object::cast_to()`.
 /// Use this for `Object` subclasses that are not registered in `ClassDB` (use `GDCLASS` otherwise).
 #define GDSOFTCLASS(m_class, m_inherits) \
 public: \
@@ -243,8 +243,8 @@ protected: \
 \
 private:
 
-/// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
-/// Use this for `Object` subclasses that are registered in `ObjectDB` (use `GDSOFTCLASS` otherwise).
+/// Provides `Object` functionality, such as being able to use `Object::cast_to()`, and `ClassDB` integration.
+/// Use this for `Object` subclasses that are registered in `ClassDB` (use `GDSOFTCLASS` otherwise).
 #define GDCLASS(m_class, m_inherits) \
 	GDSOFTCLASS(m_class, m_inherits) \
 private: \
