@@ -285,7 +285,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		}
 	}
 
-	if (is_search_bar_enabled()) {
+	if (search_bar->is_visible()) {
 		Size2 sb_min_size = search_bar->get_minimum_size();
 		minsize.width += MAX(body_max_w, sb_min_size.width);
 		minsize.height += sb_min_size.height + theme_cache.search_bar_separation;
@@ -1079,6 +1079,12 @@ void PopupMenu::_draw_items() {
 	}
 }
 
+void PopupMenu::_update_search_bar_visibility() {
+	if (search_bar) {
+		search_bar->set_visible(search_bar_enabled && items.size() >= search_bar_min_item_count);
+	}
+}
+
 void PopupMenu::_search_bar_input(const Ref<InputEvent> &p_event) {
 	// Redirect navigational key events to the tree.
 	Ref<InputEventKey> key = p_event;
@@ -1231,6 +1237,7 @@ void PopupMenu::_shape_item(int p_idx) const {
 }
 
 void PopupMenu::_menu_changed() {
+	_update_search_bar_visibility();
 	emit_signal(SNAME("menu_changed"));
 }
 
@@ -3237,17 +3244,23 @@ String PopupMenu::get_tooltip(const Point2 &p_pos) const {
 	return items[over].tooltip;
 }
 
+void PopupMenu::set_search_bar_enabled(bool p_enabled) {
+	search_bar_enabled = p_enabled;
+	_update_search_bar_visibility();
+}
+
 bool PopupMenu::is_search_bar_enabled() const {
-	return search_bar_enabled_on_item_count > 0 && items.size() >= search_bar_enabled_on_item_count;
+	return search_bar_enabled;
 }
 
-void PopupMenu::set_search_bar_enabled_on_item_count(int p_count) {
-	search_bar_enabled_on_item_count = p_count;
-	notify_property_list_changed();
+void PopupMenu::set_search_bar_min_item_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	search_bar_min_item_count = p_count;
+	_update_search_bar_visibility();
 }
 
-int PopupMenu::get_search_bar_enabled_on_item_count() const {
-	return search_bar_enabled_on_item_count;
+int PopupMenu::get_search_bar_min_item_count() const {
+	return search_bar_min_item_count;
 }
 
 void PopupMenu::set_search_bar_fuzzy_search_enabled(bool p_enabled) {
@@ -3338,14 +3351,6 @@ bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 	}
 #endif
 	return false;
-}
-
-void PopupMenu::_validate_property(PropertyInfo &p_property) const {
-	if (search_bar_enabled_on_item_count == 0) {
-		if (p_property.name == "search_bar_fuzzy_search_enabled" || p_property.name == "search_bar_fuzzy_search_max_misses") {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
 }
 
 void PopupMenu::_bind_methods() {
@@ -3459,9 +3464,10 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_system_menu", "system_menu_id"), &PopupMenu::set_system_menu);
 	ClassDB::bind_method(D_METHOD("get_system_menu"), &PopupMenu::get_system_menu);
 
+	ClassDB::bind_method(D_METHOD("set_search_bar_enabled", "enabled"), &PopupMenu::set_search_bar_enabled);
 	ClassDB::bind_method(D_METHOD("is_search_bar_enabled"), &PopupMenu::is_search_bar_enabled);
-	ClassDB::bind_method(D_METHOD("set_search_bar_enabled_on_item_count", "count"), &PopupMenu::set_search_bar_enabled_on_item_count);
-	ClassDB::bind_method(D_METHOD("get_search_bar_enabled_on_item_count"), &PopupMenu::get_search_bar_enabled_on_item_count);
+	ClassDB::bind_method(D_METHOD("set_search_bar_min_item_count", "count"), &PopupMenu::set_search_bar_min_item_count);
+	ClassDB::bind_method(D_METHOD("get_search_bar_min_item_count"), &PopupMenu::get_search_bar_min_item_count);
 	ClassDB::bind_method(D_METHOD("set_search_bar_fuzzy_search_enabled", "enabled"), &PopupMenu::set_search_bar_fuzzy_search_enabled);
 	ClassDB::bind_method(D_METHOD("is_search_bar_fuzzy_search_enabled"), &PopupMenu::is_search_bar_fuzzy_search_enabled);
 	ClassDB::bind_method(D_METHOD("set_search_bar_fuzzy_search_max_misses", "max_misses"), &PopupMenu::set_search_bar_fuzzy_search_max_misses);
@@ -3483,7 +3489,9 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shrink_height"), "set_shrink_height", "get_shrink_height");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shrink_width"), "set_shrink_width", "get_shrink_width");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "search_bar_enabled_on_item_count", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), "set_search_bar_enabled_on_item_count", "get_search_bar_enabled_on_item_count");
+	ADD_GROUP("Search Bar", "search_bar_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "search_bar_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_search_bar_enabled", "is_search_bar_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "search_bar_min_item_count", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), "set_search_bar_min_item_count", "get_search_bar_min_item_count");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "search_bar_fuzzy_search_enabled"), "set_search_bar_fuzzy_search_enabled", "is_search_bar_fuzzy_search_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "search_bar_fuzzy_search_max_misses", PROPERTY_HINT_RANGE, "0,2,1,or_greater"), "set_search_bar_fuzzy_search_max_misses", "get_search_bar_fuzzy_search_max_misses");
 
@@ -3691,7 +3699,6 @@ void PopupMenu::set_visible(bool p_visible) {
 	if (p_visible) {
 		PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
 		if (!parent_popup) {
-			search_bar->set_visible(is_search_bar_enabled());
 			if (search_bar->is_visible()) {
 				search_bar->edit(true);
 			}
@@ -3729,7 +3736,7 @@ PopupMenu::PopupMenu() {
 	panel->add_child(vbox_container, false, INTERNAL_MODE_FRONT);
 
 	search_bar = memnew(LineEdit);
-	search_bar->set_visible(is_search_bar_enabled());
+	search_bar->set_visible(false);
 	search_bar->set_clear_button_enabled(true);
 	search_bar->set_placeholder(ETR("Search"));
 	search_bar->set_keep_editing_on_text_submit(true);

@@ -390,17 +390,20 @@ bool OptionButton::get_allow_reselect() const {
 	return allow_reselect;
 }
 
+void OptionButton::set_search_bar_enabled(bool p_enabled) {
+	popup->set_search_bar_enabled(p_enabled);
+}
+
 bool OptionButton::is_search_bar_enabled() const {
 	return popup->is_search_bar_enabled();
 }
 
-void OptionButton::set_search_bar_enabled_on_item_count(int p_count) {
-	popup->set_search_bar_enabled_on_item_count(p_count);
-	notify_property_list_changed();
+void OptionButton::set_search_bar_min_item_count(int p_count) {
+	popup->set_search_bar_min_item_count(p_count);
 }
 
-int OptionButton::get_search_bar_enabled_on_item_count() const {
-	return popup->get_search_bar_enabled_on_item_count();
+int OptionButton::get_search_bar_min_item_count() const {
+	return popup->get_search_bar_min_item_count();
 }
 
 void OptionButton::set_search_bar_fuzzy_search_enabled(bool p_enabled) {
@@ -587,12 +590,6 @@ void OptionButton::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "text" || p_property.name == "icon") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-
-	if (popup->get_search_bar_enabled_on_item_count() == 0) {
-		if (p_property.name == "search_bar_fuzzy_search_enabled" || p_property.name == "search_bar_fuzzy_search_max_misses") {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		}
-	}
 }
 
 void OptionButton::_bind_methods() {
@@ -605,7 +602,9 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("set_item_auto_translate_mode", "idx", "mode"), &OptionButton::set_item_auto_translate_mode);
-	ClassDB::bind_method(D_METHOD("set_search_bar_enabled_on_item_count", "counts"), &OptionButton::set_search_bar_enabled_on_item_count);
+	ClassDB::bind_method(D_METHOD("set_search_bar_enabled", "enabled"), &OptionButton::set_search_bar_enabled);
+	ClassDB::bind_method(D_METHOD("set_search_bar_min_item_count", "count"), &OptionButton::set_search_bar_min_item_count);
+	ClassDB::bind_method(D_METHOD("get_search_bar_min_item_count"), &OptionButton::get_search_bar_min_item_count);
 	ClassDB::bind_method(D_METHOD("set_search_bar_fuzzy_search_enabled", "enabled"), &OptionButton::set_search_bar_fuzzy_search_enabled);
 	ClassDB::bind_method(D_METHOD("is_search_bar_fuzzy_search_enabled"), &OptionButton::is_search_bar_fuzzy_search_enabled);
 	ClassDB::bind_method(D_METHOD("set_search_bar_fuzzy_search_max_misses", "max_misses"), &OptionButton::set_search_bar_fuzzy_search_max_misses);
@@ -620,7 +619,6 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &OptionButton::is_item_separator);
 	ClassDB::bind_method(D_METHOD("is_search_bar_enabled"), &OptionButton::is_search_bar_enabled);
-	ClassDB::bind_method(D_METHOD("get_search_bar_enabled_on_item_count"), &OptionButton::get_search_bar_enabled_on_item_count);
 	ClassDB::bind_method(D_METHOD("add_separator", "text"), &OptionButton::add_separator, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);
 	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
@@ -646,9 +644,13 @@ void OptionButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_search_bar_on_item_count", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), "set_search_bar_enabled_on_item_count", "get_search_bar_enabled_on_item_count");
+
+	ADD_GROUP("Search Bar", "search_bar_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "search_bar_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_search_bar_enabled", "is_search_bar_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "search_bar_min_item_count", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), "set_search_bar_min_item_count", "get_search_bar_min_item_count");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "search_bar_fuzzy_search_enabled"), "set_search_bar_fuzzy_search_enabled", "is_search_bar_fuzzy_search_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "search_bar_fuzzy_search_max_misses", PROPERTY_HINT_RANGE, "0,2,1,or_greater"), "set_search_bar_fuzzy_search_max_misses", "get_search_bar_fuzzy_search_max_misses");
+
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
