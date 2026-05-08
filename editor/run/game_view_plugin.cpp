@@ -849,9 +849,12 @@ void GameView::_update_speed_state_size() {
 		return;
 	}
 	float min_size = 0;
+	String prev_text = speed_state_button->get_text();
 	for (const String lbl : time_scale_label) {
-		min_size = MAX(speed_state_button->get_minimum_size_for_text_and_icon(vformat(U"%s×", lbl), Ref<Texture2D>()).x, min_size);
+		speed_state_button->set_text(vformat(U"%s×", lbl));
+		min_size = MAX(speed_state_button->get_minimum_size().x, min_size);
 	}
+	speed_state_button->set_text(prev_text);
 	speed_state_button->set_custom_minimum_size(Vector2(min_size, 0));
 }
 
