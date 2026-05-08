@@ -1007,9 +1007,11 @@ void DependencyErrorDialog::show(const String &p_for_file, const HashMap<String,
 			if (is_cyclic) {
 				// TRANSLATORS: The placeholder is a file path.
 				owner_ti->set_text(0, vformat(TTR("Cyclic reference with %s"), owner_path));
+				owner_ti->set_custom_color(0, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			} else {
 				// TRANSLATORS: The placeholder is a file path.
 				owner_ti->set_text(0, vformat(TTR("Referenced by %s"), owner_path));
+				owner_ti->clear_custom_color(0);
 			}
 			owner_ti->set_metadata(0, owner_path);
 			owner_ti->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
@@ -1156,13 +1158,15 @@ void DependencyErrorDialog::_check_for_resolved() {
 				item_is_cyclic = true;
 			}
 
-			// Keep owner row wording in sync with the current cyclic edge status.
+			// Keep owner row wording and tint in sync with the current edge.
 			if (edge_cyclic) {
 				// TRANSLATORS: The placeholder is a file path.
 				owner_ti->set_text(0, vformat(TTR("Cyclic reference with %s"), owner_path));
+				owner_ti->set_custom_color(0, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			} else {
 				// TRANSLATORS: The placeholder is a file path.
 				owner_ti->set_text(0, vformat(TTR("Referenced by %s"), owner_path));
+				owner_ti->clear_custom_color(0);
 			}
 		}
 
