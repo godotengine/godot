@@ -49,7 +49,7 @@ public struct Color
     public Color(float r, float g, float b, float a = 1.0f) { R = r; G = g; B = b; A = a; }
 }
 
-//2D axis‑aligned bounding box 
+//2D axis‑aligned bounding box
 //layout is determined by the field order
 public struct Rect2
 {
@@ -87,7 +87,7 @@ public struct Rect2i
         : this(new Vector2i(x, y), new Vector2i(width, height)) { }
 }
 
-//2D transform (2×3 matrix: three Vector2 columns) 
+//2D transform (2×3 matrix: three Vector2 columns)
 
 public struct Transform2D
 {
@@ -111,7 +111,7 @@ public struct Transform2D
     }
 }
 
-// 3D transform (3×4 matrix: three Vector3 basis columns + origin) 
+// 3D transform (3×4 matrix: three Vector3 basis columns + origin)
 // Changed the naming
 public struct Basis
 {
@@ -139,7 +139,7 @@ public struct Transform3D
     }
 }
 
-//Quaternion 
+//Quaternion
 
 public struct Quaternion
 {
@@ -151,7 +151,7 @@ public struct Quaternion
     }
 }
 
-//3D axis‑aligned bounding box 
+//3D axis‑aligned bounding box
 
 public struct AABB
 {
@@ -174,12 +174,6 @@ public struct Plane
 {
     public Vector3 Normal;
     public float D;
-
-    public Plane(float d, Vector3 normal)
-    {
-        D = d;
-        Normal = normal;
-    }
 
     public Plane(Vector3 normal, float d)
     {

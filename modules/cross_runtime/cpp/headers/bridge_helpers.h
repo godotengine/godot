@@ -448,7 +448,7 @@ static inline void write_packed_float64_array(volatile uint8_t *data, int offset
 	}
 }
 
-//Should be looking at this soon enough
+//Should be looking at this soon enough!!
 static inline PackedStringArray read_packed_string_array(const volatile uint8_t *data, int offset) {
 	int len = read_int32(data, offset);
 	if (len < 0) {

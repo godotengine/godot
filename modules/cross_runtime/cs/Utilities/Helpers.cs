@@ -12,15 +12,16 @@ public static class Helpers
         Interop.AtomicWriteInt32(Commands.CMD_OFFSET, cmd);
         Interop.AtomicWriteInt32(Commands.STATUS_OFFSET, Commands.STATUS_PENDING);
     }
-    
+
     // used to reset the command offset to 0 and status to 0 at the start of the program
     public static void ResetCommandBuffer()
     {
         WriteByte(Commands.CMD_OFFSET, 0);
+        //makes sure to reset the next byte too
         WriteByte(Commands.CMD_OFFSET + 1, 0);
         WriteByte(Commands.STATUS_OFFSET, 0);
     }
-    
+
     // busy-wait loop
     public static void WaitForCompletion()
     {
@@ -29,7 +30,7 @@ public static class Helpers
             Thread.SpinWait(1);
         }
     }
-    
+
     // Offsets are the addresses to which we push bytes or pull bytes out
     public static void WriteByte(int offset, byte value)
         => Interop.BulkWrite(new[] { value }, offset, 1);
@@ -698,13 +699,13 @@ public static class Helpers
     // compatibility alias
     public static void WriteFloatArray(int offset, float[] values)
         => WritePackedFloat32Array(offset, values);
-        
+
         // Variant ops
         public static void WriteVariant(int offset, object value)
         {
             VariantHandling.Encode(offset, value);
         }
-        
+
         public static object ReadVariant(int offset)
         {
             return VariantHandling.Decode(offset);

@@ -29,12 +29,12 @@ def main(json_path, folder_path):
     class_parent: dict[str, str] = {}
     seen_methods = set()
     command_defs: list[dict] = []
-    
+
 
     for entry in entries:
         if not isinstance(entry, dict):
             continue
-        
+
         #it gets all the class information, there are some being intentionally skipped
         class_ = entry.get("class")
         if class_[0:6] !=  "Editor" :
@@ -42,35 +42,35 @@ def main(json_path, folder_path):
                 if class_[0:4] != "GLTF":
                     if class_[0:3] != "FBX":
                         if class_[0:16] != "ResourceImporter":
-                    
-                    
+
+
                             name = entry.get("name")
                             arguments = entry.get("args", [])
                             ret_type = entry.get("return_type")
-                    
+
                             if not class_ or not name or ret_type not in return_types:
                                 continue
-                    
+
                             class_ = str(class_)
                             name = str(name)
                             parent = entry.get("parent", "")
                             class_parent[class_] = str(parent) if parent else ""
-                    
+
                             args_norm = normalize_args(arguments)
                             if args_norm is None:
                                 continue
-                    
+
                             ret_type = force_return_type(class_, name, int(ret_type))
                             sig = method_signature(class_, name, args_norm, ret_type)
                             if sig in seen_methods:
                                 continue
                             seen_methods.add(sig)
-                    
+
                             const_name = make_command_name(class_, name, args_norm, ret_type)
                             cmd_id = len(command_defs) + 2  # reserve 0 and 1
-                    
-                            
-                    
+
+
+
                             command_defs.append(
                                 {
                                     "const_name": const_name,
@@ -93,7 +93,7 @@ def main(json_path, folder_path):
         else:
             continue
 
-    
+
 
     out = Path(folder_path)
     cpp_out = out / "cpp"
@@ -137,12 +137,12 @@ def main(json_path, folder_path):
     print(f"Generated files in {out}.")
     print(f"C++ output: {cpp_out}")
     print(f"C# output: {cs_out}")
-    
+
     print(f"Total commands: {len(command_defs)}")
-   
+
 # run the generator
 if len(sys.argv) != 3:
     print("Usage: generate_api.py <api.json> <output_dir>")
     sys.exit(1)
-    
+
 main(sys.argv[1], sys.argv[2])

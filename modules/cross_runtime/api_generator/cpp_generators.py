@@ -137,7 +137,7 @@ def generate_cpp_class_file(folder_path, file_base, class_, methods):
                 # Its best you confirm whether this aligns with the one in cpp generator, otherwise it will introduce mismatches
                 if method_return_type == 1:
                     cpp.write("                write_int32(payload, 0, ret_value.operator bool() ? 1 : 0);\n")
-                elif method_return_type == 2: 
+                elif method_return_type == 2:
                     cpp.write("                write_int64(payload, 0, ret_value.operator int64_t());\n")
                 elif method_return_type == 3:
                     cpp.write("                write_double(payload, 0, ret_value.operator double());\n")

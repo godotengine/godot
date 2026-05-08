@@ -1,3 +1,4 @@
+# ruff: noqa: F821
 Import("env")
 
 cpp_sources = Glob("cpp/*.cpp")
