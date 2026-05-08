@@ -1,4 +1,3 @@
-//register_types.h
 #pragma once
 
 #include "modules/register_module_types.h"
