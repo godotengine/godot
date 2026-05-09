@@ -366,10 +366,8 @@ void GodotBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p
 					// current-tick data rather than last-step data.
 					if (last_step > 0.0) {
 						real_t inv_step = 1.0 / last_step;
-						pending_linear_velocity = (new_transform.origin - get_transform().origin) * inv_step
-								+ constant_linear_velocity;
-						Basis rot = new_transform.basis.orthonormalized()
-								* get_transform().basis.orthonormalized().transposed();
+						pending_linear_velocity = (new_transform.origin - get_transform().origin) * inv_step + constant_linear_velocity;
+						Basis rot = new_transform.basis.orthonormalized() * get_transform().basis.orthonormalized().transposed();
 						Vector3 axis;
 						real_t angle;
 						rot.get_axis_angle(axis, angle);

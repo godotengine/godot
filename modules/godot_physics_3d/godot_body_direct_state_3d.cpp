@@ -106,8 +106,7 @@ Transform3D GodotPhysicsDirectBodyState3D::get_transform() const {
 
 Vector3 GodotPhysicsDirectBodyState3D::get_velocity_at_local_position(const Vector3 &p_position) const {
 	if (body->has_pending_transform()) {
-		return body->get_pending_linear_velocity()
-				+ body->get_pending_angular_velocity().cross(p_position - body->get_center_of_mass());
+		return body->get_pending_linear_velocity() + body->get_pending_angular_velocity().cross(p_position - body->get_center_of_mass());
 	}
 	return body->get_velocity_in_local_point(p_position);
 }

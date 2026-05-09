@@ -315,8 +315,7 @@ void GodotBody2D::set_state(PhysicsServer2D::BodyState p_state, const Variant &p
 					// current-tick data rather than last-step data.
 					if (last_step > 0.0) {
 						real_t inv_step = 1.0 / last_step;
-						pending_linear_velocity = (new_transform.get_origin() - get_transform().get_origin()) * inv_step
-								+ constant_linear_velocity;
+						pending_linear_velocity = (new_transform.get_origin() - get_transform().get_origin()) * inv_step + constant_linear_velocity;
 						real_t rot = new_transform.get_rotation() - get_transform().get_rotation();
 						pending_angular_velocity = constant_angular_velocity + std::remainder(rot, 2.0 * Math::PI) * inv_step;
 					}

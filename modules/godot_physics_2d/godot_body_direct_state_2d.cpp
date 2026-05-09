@@ -98,9 +98,9 @@ Transform2D GodotPhysicsDirectBodyState2D::get_transform() const {
 
 Vector2 GodotPhysicsDirectBodyState2D::get_velocity_at_local_position(const Vector2 &p_position) const {
 	if (body->has_pending_transform()) {
-		// v = v_linear + ω × r  (2D cross: ω is scalar, r is Vector2)
-		real_t ω = body->get_pending_angular_velocity();
-		return body->get_pending_linear_velocity() + Vector2(-ω * p_position.y, ω * p_position.x);
+		// v = v_linear + ang_vel x r  (2D cross: ang_vel is scalar, r is Vector2)
+		real_t ang_vel = body->get_pending_angular_velocity();
+		return body->get_pending_linear_velocity() + Vector2(-ang_vel * p_position.y, ang_vel * p_position.x);
 	}
 	return body->get_velocity_in_local_point(p_position);
 }
