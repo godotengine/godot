@@ -820,6 +820,7 @@ public:
 
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource> &p_resource);
+	void edit_file(const String p_file, int p_line = -1);
 
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
