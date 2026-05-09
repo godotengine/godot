@@ -164,7 +164,7 @@ private:
 
 	void _changed_notify(int p_cell);
 	void _changed_notify();
-	void _cell_selected(int p_cell);
+	void _cell_selected(int p_cell, bool p_set_as_cursor);
 	void _cell_deselected(int p_cell);
 	void _handle_visibility_changed(bool p_visible);
 	void _propagate_visibility_changed(bool p_parent_visible_in_tree);
@@ -224,6 +224,7 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	void _select_bind_compat_119367(int p_column);
 	void _add_button_bind_compat_76829(int p_column, const Ref<Texture2D> &p_button, int p_id, bool p_disabled, const String &p_tooltip);
 	static void _bind_compatibility_methods();
 #endif
@@ -376,7 +377,7 @@ public:
 
 	bool is_selected(int p_column);
 	bool is_any_column_selected() const;
-	void select(int p_column);
+	void select(int p_column, bool p_set_as_cursor = true);
 	void deselect(int p_column);
 	void set_as_cursor(int p_column);
 
@@ -603,7 +604,7 @@ private:
 
 	void item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mouse_index = MouseButton::NONE);
 	void item_changed(int p_column, TreeItem *p_item);
-	void item_selected(int p_column, TreeItem *p_item);
+	void item_selected(int p_column, TreeItem *p_item, bool p_set_as_cursor);
 	void item_deselected(int p_column, TreeItem *p_item);
 	void update_min_size_for_item_change();
 

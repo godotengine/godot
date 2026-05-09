@@ -97,9 +97,9 @@ void TreeItem::_changed_notify() {
 	}
 }
 
-void TreeItem::_cell_selected(int p_cell) {
+void TreeItem::_cell_selected(int p_cell, bool p_set_as_cursor) {
 	if (tree) {
-		tree->item_selected(p_cell, this);
+		tree->item_selected(p_cell, this, p_set_as_cursor);
 	}
 }
 
@@ -1358,9 +1358,9 @@ void TreeItem::set_as_cursor(int p_column) {
 	tree->queue_redraw();
 }
 
-void TreeItem::select(int p_column) {
+void TreeItem::select(int p_column, bool p_set_as_cursor) {
 	ERR_FAIL_INDEX(p_column, cells.size());
-	_cell_selected(p_column);
+	_cell_selected(p_column, p_set_as_cursor);
 }
 
 void TreeItem::deselect(int p_column) {
@@ -1927,7 +1927,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_selectable", "column"), &TreeItem::is_selectable);
 
 	ClassDB::bind_method(D_METHOD("is_selected", "column"), &TreeItem::is_selected);
-	ClassDB::bind_method(D_METHOD("select", "column"), &TreeItem::select);
+	ClassDB::bind_method(D_METHOD("select", "column", "set_as_cursor"), &TreeItem::select, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("deselect", "column"), &TreeItem::deselect);
 
 	ClassDB::bind_method(D_METHOD("set_editable", "column", "enabled"), &TreeItem::set_editable);
@@ -5667,7 +5667,7 @@ void Tree::item_changed(int p_column, TreeItem *p_item) {
 	queue_redraw();
 }
 
-void Tree::item_selected(int p_column, TreeItem *p_item) {
+void Tree::item_selected(int p_column, TreeItem *p_item, bool p_set_as_cursor) {
 	if (select_mode == SELECT_MULTI) {
 		if (!p_item->cells[p_column].selectable) {
 			return;
@@ -5676,9 +5676,11 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 		p_item->cells.write[p_column].selected = true;
 		//emit_signal(SNAME("multi_selected"),p_item,p_column,true); - NO this is for `TreeItem::select`
 
-		selected_col = p_column;
-		selected_item = p_item;
-		selected_button = -1;
+		if (p_set_as_cursor) {
+			selected_col = p_column;
+			selected_item = p_item;
+			selected_button = -1;
+		}
 	} else {
 		select_single_item(p_item, root, p_column);
 	}
