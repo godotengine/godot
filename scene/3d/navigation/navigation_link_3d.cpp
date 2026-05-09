@@ -172,7 +172,7 @@ void NavigationLink3D::_update_debug_mesh() {
 		RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, disabled_link_material->get_rid());
 	}
 
-	RS::get_singleton()->instance_set_transform(debug_instance, current_global_transform);
+	RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 }
 #endif // DEBUG_ENABLED
 
@@ -254,11 +254,6 @@ void NavigationLink3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			set_physics_process_internal(true);
-		} break;
-
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			set_physics_process_internal(false);
 			_link_update_transform();
 		} break;
 
@@ -409,7 +404,7 @@ void NavigationLink3D::set_start_position(Vector3 p_position) {
 		return;
 	}
 
-	NavigationServer3D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
+	NavigationServer3D::get_singleton()->link_set_start_position(link, get_global_transform().xform(start_position));
 
 #ifdef DEBUG_ENABLED
 	_update_debug_mesh();
@@ -430,7 +425,7 @@ void NavigationLink3D::set_end_position(Vector3 p_position) {
 		return;
 	}
 
-	NavigationServer3D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
+	NavigationServer3D::get_singleton()->link_set_end_position(link, get_global_transform().xform(end_position));
 
 #ifdef DEBUG_ENABLED
 	_update_debug_mesh();
@@ -515,9 +510,8 @@ void NavigationLink3D::_link_enter_navigation_map() {
 		NavigationServer3D::get_singleton()->link_set_map(link, get_world_3d()->get_navigation_map());
 	}
 
-	current_global_transform = get_global_transform();
-	NavigationServer3D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
-	NavigationServer3D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
+	NavigationServer3D::get_singleton()->link_set_start_position(link, get_global_transform().xform(start_position));
+	NavigationServer3D::get_singleton()->link_set_end_position(link, get_global_transform().xform(end_position));
 	NavigationServer3D::get_singleton()->link_set_enabled(link, enabled);
 
 #ifdef DEBUG_ENABLED
@@ -541,15 +535,11 @@ void NavigationLink3D::_link_update_transform() {
 		return;
 	}
 
-	Transform3D new_global_transform = get_global_transform();
-	if (current_global_transform != new_global_transform) {
-		current_global_transform = new_global_transform;
-		NavigationServer3D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
-		NavigationServer3D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
+	NavigationServer3D::get_singleton()->link_set_start_position(link, get_global_transform().xform(start_position));
+	NavigationServer3D::get_singleton()->link_set_end_position(link, get_global_transform().xform(end_position));
 #ifdef DEBUG_ENABLED
-		if (NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
-			_update_debug_mesh();
-		}
-#endif // DEBUG_ENABLED
+	if (NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+		_update_debug_mesh();
 	}
+#endif // DEBUG_ENABLED
 }
