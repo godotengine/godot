@@ -2751,6 +2751,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	// -- Dialogs --
 	confirm_auto_create_tiles = memnew(AcceptDialog);
+	confirm_auto_create_tiles->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	confirm_auto_create_tiles->set_title(TTRC("Auto Create Tiles in Non-Transparent Texture Regions?"));
 	confirm_auto_create_tiles->set_text(TTRC("The atlas's texture was modified.\nWould you like to automatically create tiles in the atlas?"));
 	confirm_auto_create_tiles->set_ok_button_text(TTRC("Yes"));

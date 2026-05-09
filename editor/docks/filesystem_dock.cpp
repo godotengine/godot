@@ -4689,6 +4689,7 @@ FileSystemDock::FileSystemDock() {
 	new_resource_dialog->connect("create", callable_mp(this, &FileSystemDock::_resource_created));
 
 	conversion_dialog = memnew(ConfirmationDialog);
+	conversion_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(conversion_dialog);
 	conversion_dialog->set_ok_button_text(TTRC("Convert"));
 	conversion_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_convert_dialog_action));
@@ -4707,6 +4708,7 @@ FileSystemDock::FileSystemDock() {
 	vb->add_child(confirm_before_move_checkbox);
 
 	unrecognized_ext_dialog = memnew(AcceptDialog);
+	unrecognized_ext_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(unrecognized_ext_dialog);
 	unrecognized_ext_dialog->set_text(TTRC("This file extension is not recognized by the editor.\nIf you want to rename it anyway, use your operating system's file manager.\nAfter renaming to an unknown extension, the file won't be shown in the editor anymore.\nTo make the editor recognize this file extension, add it to one of the lists of extensions in Editor Settings > Docks > FileSystem."));
 	Button *settings_button = unrecognized_ext_dialog->add_button(TTRC("Open Editor Settings"), false, "open_editor_settings_docks_filesystem");

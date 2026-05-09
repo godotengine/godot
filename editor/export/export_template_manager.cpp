@@ -1684,6 +1684,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	enable_online_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_force_online_mode));
 
 	confirm_delete = memnew(ConfirmationDialog);
+	confirm_delete->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(confirm_delete);
 	confirm_delete->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_delete_confirmed));
 

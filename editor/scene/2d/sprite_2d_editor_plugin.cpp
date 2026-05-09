@@ -652,6 +652,7 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	// Other elements definition
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(ConfirmationDialog);

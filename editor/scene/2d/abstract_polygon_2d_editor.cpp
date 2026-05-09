@@ -924,6 +924,7 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 	button_center->set_visible(edit_origin_and_center);
 
 	create_resource = memnew(ConfirmationDialog);
+	create_resource->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(create_resource);
 	create_resource->set_ok_button_text(TTR("Create"));
 }

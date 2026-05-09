@@ -2645,6 +2645,7 @@ FileDialog::FileDialog() {
 	confirm_save->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_save_confirm_pressed));
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	delete_dialog->set_text(ETR("Delete the selected file?\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 	add_child(delete_dialog, false, INTERNAL_MODE_FRONT);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_delete_confirm));
@@ -2663,10 +2664,12 @@ FileDialog::FileDialog() {
 	make_dir_dialog->register_text_enter(new_dir_name);
 
 	mkdirerr = memnew(AcceptDialog);
+	mkdirerr->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	mkdirerr->set_text(ETR("Could not create folder."));
 	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
 
 	exterr = memnew(AcceptDialog);
+	exterr->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	exterr->set_text(ETR("Invalid extension, or empty filename."));
 	add_child(exterr, false, INTERNAL_MODE_FRONT);
 

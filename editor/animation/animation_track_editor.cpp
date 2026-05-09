@@ -8710,6 +8710,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_COPY_TRACKS_CONFIRM));
 
 	read_only_dialog = memnew(AcceptDialog);
+	read_only_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	read_only_dialog->set_title(TTRC("Key Insertion Error"));
 	read_only_dialog->set_text(TTRC("Imported Animation cannot be edited!"));
 	add_child(read_only_dialog);
@@ -9787,6 +9788,7 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	marker_insert_color->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(marker_insert_color->get_picker()));
 	marker_insert_vbox->add_child(_create_hbox_labeled_control(TTRC("Marker Color"), marker_insert_color));
 	marker_insert_error_dialog = memnew(AcceptDialog);
+	marker_insert_error_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	marker_insert_error_dialog->set_ok_button_text(TTRC("Close"));
 	marker_insert_error_dialog->set_title(TTRC("Error!"));
 	marker_insert_confirm->add_child(marker_insert_error_dialog);
@@ -9809,6 +9811,7 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	marker_rename_vbox->add_child(marker_rename_new_name);
 
 	marker_rename_error_dialog = memnew(AcceptDialog);
+	marker_rename_error_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	marker_rename_error_dialog->set_ok_button_text(TTRC("Close"));
 	marker_rename_error_dialog->set_title(TTRC("Error!"));
 	marker_rename_confirm->add_child(marker_rename_error_dialog);
