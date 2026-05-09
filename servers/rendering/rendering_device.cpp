@@ -2360,8 +2360,11 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 					copy_region.buffer_offset = alloc_offset;
 					copy_region.row_pitch = region_pitch;
 					copy_region.texture_subresource.aspect = texture->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
-					copy_region.texture_subresource.mipmap = mm_i;
-					copy_region.texture_subresource.layer = p_layer;
+					// Add base offsets so slice views write to the correct parent mip/layer
+					// (texture->driver_id is the parent VkImage; ImageView's subresourceRange
+					// is not consulted by vkCmdCopyBufferToImage). See issue #30.
+					copy_region.texture_subresource.mipmap = mm_i + texture->base_mipmap;
+					copy_region.texture_subresource.layer = p_layer + texture->base_layer;
 					copy_region.texture_offset = Vector3i(x, y, z);
 					copy_region.texture_region_size = Vector3i(region_logic_w, region_logic_h, 1);
 
@@ -2703,8 +2706,11 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 		for (uint32_t i = 0; i < tex->mipmaps; i++) {
 			RDD::TextureSubresource subres;
 			subres.aspect = aspect;
-			subres.layer = p_layer;
-			subres.mipmap = i;
+			// Add base offsets so slice views read the correct parent mip/layer
+			// (tex->driver_id is the parent VkImage; vkCmdCopyImageToBuffer ignores
+			// the ImageView's subresourceRange). See issue #30.
+			subres.layer = p_layer + tex->base_layer;
+			subres.mipmap = i + tex->base_mipmap;
 
 			RDD::TextureCopyableLayout &mip_layout = mip_layouts[i];
 			driver->texture_get_copyable_layout(tex->driver_id, subres, &mip_layout);
@@ -2716,8 +2722,8 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 			copy_region.buffer_offset = mip_offset;
 			copy_region.row_pitch = mip_layout.row_pitch;
 			copy_region.texture_subresource.aspect = aspect;
-			copy_region.texture_subresource.mipmap = i;
-			copy_region.texture_subresource.layer = p_layer;
+			copy_region.texture_subresource.mipmap = i + tex->base_mipmap;
+			copy_region.texture_subresource.layer = p_layer + tex->base_layer;
 			copy_region.texture_region_size.x = MAX(1u, tex->width >> i);
 			copy_region.texture_region_size.y = MAX(1u, tex->height >> i);
 			copy_region.texture_region_size.z = MAX(1u, tex->depth >> i);
@@ -2873,8 +2879,10 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 					copy_region.buffer_offset = block_write_offset;
 					copy_region.row_pitch = region_pitch;
 					copy_region.texture_subresource.aspect = tex->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
-					copy_region.texture_subresource.mipmap = i;
-					copy_region.texture_subresource.layer = p_layer;
+					// Add base offsets so slice views read the correct parent mip/layer.
+					// See issue #30 (also applied in texture_get_data and texture_update).
+					copy_region.texture_subresource.mipmap = i + tex->base_mipmap;
+					copy_region.texture_subresource.layer = p_layer + tex->base_layer;
 					copy_region.texture_offset = Vector3i(x, y, z);
 					copy_region.texture_region_size = Vector3i(region_logic_w, region_logic_h, 1);
 					frames[frame].download_texture_staging_buffers.push_back(download_staging_buffers.blocks[download_staging_buffers.current].driver_id);
