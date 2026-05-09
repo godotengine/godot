@@ -3032,6 +3032,11 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 			paths = _tree_get_selected();
 		}
 	} else if (p_from == files) {
+		// Don't allow dragging from empty space in the file list.
+		int item = files->get_item_at_position(p_point, true);
+		if (item == -1 || !files->is_selected(item)) {
+			return Variant();
+		}
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->is_selected(i)) {
 				paths.push_back(files->get_item_metadata(i));
