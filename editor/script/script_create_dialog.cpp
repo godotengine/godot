@@ -1023,6 +1023,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	add_child(file_browse);
 	set_ok_button_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
+	alert->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

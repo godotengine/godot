@@ -2459,6 +2459,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(frame_list);
 
 	dialog = memnew(AcceptDialog);
+	dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(dialog);
 
 	load->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_load_pressed));
@@ -2509,6 +2510,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	edited_anim = SceneStringName(default_);
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(delete_dialog);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SpriteFramesEditor::_animation_remove_confirmed));
 

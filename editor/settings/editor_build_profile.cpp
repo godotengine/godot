@@ -1429,6 +1429,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	main_vbc->add_margin_child(TTRC("Description:"), description_bit, false);
 
 	confirm_dialog = memnew(ConfirmationDialog);
+	confirm_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(confirm_dialog);
 	confirm_dialog->set_title(TTRC("Please Confirm:"));
 	confirm_dialog->set_autowrap(true);

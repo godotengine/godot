@@ -2129,6 +2129,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	scale->hide();
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(delete_dialog);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationPlayerEditor::_animation_remove_confirmed));
 

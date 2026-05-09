@@ -408,6 +408,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	mc->add_child(tree);
 
 	dialog = memnew(AcceptDialog);
+	dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	dialog->set_title(TTRC("Error!"));
 	dialog->set_ok_button_text(TTRC("Close"));
 	add_child(dialog);

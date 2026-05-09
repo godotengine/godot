@@ -6566,6 +6566,7 @@ void EditorNode::_immediate_dialog_confirmed() {
 }
 bool EditorNode::immediate_confirmation_dialog(const String &p_text, const String &p_ok_text, const String &p_cancel_text, uint32_t p_wrap_width) {
 	ConfirmationDialog *cd = memnew(ConfirmationDialog);
+	cd->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	cd->set_text(p_text);
 	cd->set_ok_button_text(p_ok_text);
 	cd->set_cancel_button_text(p_cancel_text);
@@ -9249,6 +9250,7 @@ EditorNode::EditorNode() {
 	save_confirmation->connect("about_to_popup", callable_mp(this, &EditorNode::_prepare_save_confirmation_popup));
 
 	gradle_build_manage_templates = memnew(ConfirmationDialog);
+	gradle_build_manage_templates->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	gradle_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
 	gradle_build_manage_templates->set_ok_button_text(TTR("Manage Templates"));
 	gradle_build_manage_templates->add_button(TTR("Install from file"))->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_android_install_build_template));
@@ -9276,6 +9278,7 @@ EditorNode::EditorNode() {
 		vbox->add_child(choose_android_export_profile);
 
 		install_android_build_template = memnew(ConfirmationDialog);
+		install_android_build_template->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 		install_android_build_template->set_ok_button_text(TTR("Install"));
 		install_android_build_template->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
 		install_android_build_template->add_child(vbox);
@@ -9357,6 +9360,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(disk_changed);
 
 	project_data_missing = memnew(ConfirmationDialog);
+	project_data_missing->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	project_data_missing->set_text(TTRC("Project data folder (.godot) is missing. Please restart editor."));
 	project_data_missing->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::restart_editor).bind(false));
 	project_data_missing->set_ok_button_text(TTRC("Restart"));
@@ -9505,6 +9509,7 @@ EditorNode::EditorNode() {
 	set_process(true);
 
 	open_imported = memnew(ConfirmationDialog);
+	open_imported->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	open_imported->set_ok_button_text(TTR("Open Anyway"));
 	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "inherit");
 	open_imported->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_open_imported));

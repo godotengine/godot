@@ -374,6 +374,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	_last_pp_node = nullptr;
 
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 }
 
