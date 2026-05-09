@@ -138,11 +138,12 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 			}
 		}
 		save_path = is_link ? link : path;
+		const CharString save_path_utf8 = save_path.utf8();
 
 		// Fail if file exists and is not writable. Renaming a file to a target file
 		// in POSIX only cares about folder permissions, not file permissions, and is
 		// thus confusing to users if we overwrite it regardless.
-		if (access(save_path.utf8().get_data(), F_OK) == 0 && access(save_path.utf8().get_data(), W_OK) != 0) {
+		if (access(save_path_utf8.get_data(), F_OK) == 0 && access(save_path_utf8.get_data(), W_OK) != 0) {
 			last_error = ERR_FILE_CANT_WRITE;
 			return last_error;
 		}
@@ -157,7 +158,7 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 		}
 
 		struct stat file_stat = {};
-		int error = stat(save_path.utf8().get_data(), &file_stat);
+		int error = stat(save_path_utf8.get_data(), &file_stat);
 		if (!error) {
 			fchmod(fd, file_stat.st_mode & 0xFFF); // Mask to remove file type
 		} else {
