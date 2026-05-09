@@ -784,6 +784,19 @@ TabBar::AlignmentMode TabContainer::get_tab_alignment() const {
 	return tab_bar->get_tab_alignment();
 }
 
+void TabContainer::set_tab_sizing(TabBar::SizingMode p_sizing) {
+	if (tab_bar->get_tab_sizing() == p_sizing) {
+		return;
+	}
+
+	tab_bar->set_tab_sizing(p_sizing);
+	_update_margins();
+}
+
+TabBar::SizingMode TabContainer::get_tab_sizing() const {
+	return tab_bar->get_tab_sizing();
+}
+
 void TabContainer::set_tabs_position(TabPosition p_tabs_position) {
 	ERR_FAIL_INDEX(p_tabs_position, POSITION_MAX);
 	if (p_tabs_position == tabs_position) {
@@ -1196,6 +1209,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_control", "tab_idx"), &TabContainer::get_tab_control);
 	ClassDB::bind_method(D_METHOD("set_tab_alignment", "alignment"), &TabContainer::set_tab_alignment);
 	ClassDB::bind_method(D_METHOD("get_tab_alignment"), &TabContainer::get_tab_alignment);
+	ClassDB::bind_method(D_METHOD("set_tab_sizing", "tab_sizing"), &TabContainer::set_tab_sizing);
+	ClassDB::bind_method(D_METHOD("get_tab_sizing"), &TabContainer::get_tab_sizing);
 	ClassDB::bind_method(D_METHOD("set_tabs_position", "tabs_position"), &TabContainer::set_tabs_position);
 	ClassDB::bind_method(D_METHOD("get_tabs_position"), &TabContainer::get_tabs_position);
 	ClassDB::bind_method(D_METHOD("set_clip_tabs", "clip_tabs"), &TabContainer::set_clip_tabs);
@@ -1250,6 +1265,7 @@ void TabContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_sizing", PROPERTY_HINT_ENUM, "Fit Content,Uniform,Justify,Expand"), "set_tab_sizing", "get_tab_sizing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_tabs_position", "get_tabs_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
