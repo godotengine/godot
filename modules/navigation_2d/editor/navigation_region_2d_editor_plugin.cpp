@@ -173,6 +173,7 @@ NavigationRegion2DEditor::NavigationRegion2DEditor() {
 	rebake_timer->connect("timeout", callable_mp(this, &NavigationRegion2DEditor::_rebake_timer_timeout));
 
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 	node = nullptr;
 }
