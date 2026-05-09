@@ -57,6 +57,7 @@
 #include "scene/3d/multimesh_instance_3d.h"
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/joints/generic_6dof_joint_3d.h"
 #include "scene/3d/physics/rigid_body_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/mesh.h"
@@ -4594,7 +4595,7 @@ bool GLTFDocument::_does_skinned_mesh_require_placeholder_node(Ref<GLTFState> p_
 	return false;
 }
 
-void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
+void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root, bool p_jointed, float p_neighboring_distance) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 	Node3D *current_node = nullptr;
 	// Check if any GLTFDocumentExtension classes want to generate a node for us.
@@ -4716,7 +4717,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	current_node->merge_meta_from(*gltf_node);
 	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
-		_generate_scene_node(p_state, gltf_node->children[i], current_node, p_scene_root);
+		_generate_scene_node(p_state, gltf_node->children[i], current_node, p_scene_root, p_jointed, p_neighboring_distance);
 	}
 }
 
@@ -4785,7 +4786,7 @@ void GLTFDocument::_attach_node_to_skeleton(Ref<GLTFState> p_state, const GLTFNo
 	p_current_node->merge_meta_from(*gltf_node);
 	p_state->scene_nodes.insert(p_node_index, p_current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
-		_generate_scene_node(p_state, gltf_node->children[i], p_current_node, p_scene_root);
+		_generate_scene_node(p_state, gltf_node->children[i], p_current_node, p_scene_root, p_state->get_jointed(), p_state->get_neighboring_distance());
 	}
 }
 
@@ -7095,12 +7096,14 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	}
 	// Generate the node tree.
 	Node *single_root;
+	const bool jointed = p_state->get_jointed();
+	const float neighboring_distance = p_state->get_neighboring_distance();
 	if (p_state->extensions_used.has("GODOT_single_root")) {
 		ERR_FAIL_COND_V_MSG(p_state->nodes.is_empty(), nullptr, "glTF: Single root file has no nodes. This glTF file is invalid.");
 		if (_naming_version < 2) {
 			_generate_scene_node_compat_4pt4(p_state, 0, nullptr, nullptr);
 		} else {
-			_generate_scene_node(p_state, 0, nullptr, nullptr);
+			_generate_scene_node(p_state, 0, nullptr, nullptr, jointed, neighboring_distance);
 		}
 		single_root = p_state->scene_nodes[0];
 		if (single_root && single_root->get_owner() && single_root->get_owner() != single_root) {
@@ -7112,7 +7115,7 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 			if (_naming_version < 2) {
 				_generate_scene_node_compat_4pt4(p_state, p_state->root_nodes[root_i], single_root, single_root);
 			} else {
-				_generate_scene_node(p_state, p_state->root_nodes[root_i], single_root, single_root);
+				_generate_scene_node(p_state, p_state->root_nodes[root_i], single_root, single_root, jointed, neighboring_distance);
 			}
 		}
 	}
@@ -7127,6 +7130,39 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 			single_root->set_name(_gen_unique_name(p_state, p_state->scene_name));
 		}
 	}
+
+#ifndef PHYSICS_3D_DISABLED
+	if (p_state->get_import_as_rigid() && jointed && neighboring_distance > 0.0f) {
+		Vector<RigidBody3D *> rigid_bodies;
+		rigid_bodies.reserve(p_state->scene_nodes.size());
+		for (KeyValue<GLTFNodeIndex, Node *> E : p_state->scene_nodes) {
+			if (RigidBody3D *rb = Object::cast_to<RigidBody3D>(E.value)) {
+				rigid_bodies.push_back(rb);
+			}
+		}
+
+		for (int i = 0; i < rigid_bodies.size(); i++) {
+			RigidBody3D *a = rigid_bodies[i];
+			ERR_CONTINUE(a == nullptr);
+			const Vector3 a_pos = a->get_global_transform().origin;
+			for (int j = i + 1; j < rigid_bodies.size(); j++) {
+				RigidBody3D *b = rigid_bodies[j];
+				ERR_CONTINUE(b == nullptr);
+				const Vector3 b_pos = b->get_global_transform().origin;
+				if (a_pos.distance_to(b_pos) > neighboring_distance) {
+					continue;
+				}
+
+				Generic6DOFJoint3D *joint = memnew(Generic6DOFJoint3D);
+				single_root->add_child(joint, true);
+				joint->set_owner(single_root);
+				joint->set_global_transform(Transform3D(Basis(), (a_pos + b_pos) * 0.5f));
+				joint->set_node_a(joint->get_path_to(a));
+				joint->set_node_b(joint->get_path_to(b));
+			}
+		}
+	}
+#endif // PHYSICS_3D_DISABLED
 	return single_root;
 }
 

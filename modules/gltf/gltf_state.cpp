@@ -98,6 +98,10 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_import_as_skeleton_bones", "import_as_skeleton_bones"), &GLTFState::set_import_as_skeleton_bones);
 	ClassDB::bind_method(D_METHOD("get_import_as_rigid"), &GLTFState::get_import_as_rigid);
 	ClassDB::bind_method(D_METHOD("set_import_as_rigid", "import_as_rigid"), &GLTFState::set_import_as_rigid);
+	ClassDB::bind_method(D_METHOD("get_jointed"), &GLTFState::get_jointed);
+	ClassDB::bind_method(D_METHOD("set_jointed", "jointed"), &GLTFState::set_jointed);
+	ClassDB::bind_method(D_METHOD("get_neighboring_distance"), &GLTFState::get_neighboring_distance);
+	ClassDB::bind_method(D_METHOD("set_neighboring_distance", "neighboring_distance"), &GLTFState::set_neighboring_distance);
 	ClassDB::bind_method(D_METHOD("get_convex_decomposition_settings"), &GLTFState::get_convex_decomposition_settings);
 	ClassDB::bind_method(D_METHOD("set_convex_decomposition_settings", "settings"), &GLTFState::set_convex_decomposition_settings);
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations_bind);
@@ -139,6 +143,8 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "create_animations"), "set_create_animations", "get_create_animations"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "import_as_skeleton_bones"), "set_import_as_skeleton_bones", "get_import_as_skeleton_bones"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "import_as_rigid"), "set_import_as_rigid", "get_import_as_rigid"); // bool
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "jointed"), "set_jointed", "get_jointed"); // bool
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "neighboring_distance", PROPERTY_HINT_RANGE, "0,100000,0.0001,or_greater"), "set_neighboring_distance", "get_neighboring_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "convex_decomposition_settings", PROPERTY_HINT_RESOURCE_TYPE, "MeshConvexDecompositionSettings"), "set_convex_decomposition_settings", "get_convex_decomposition_settings");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "handle_binary_image_mode", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed"), "set_handle_binary_image_mode", "get_handle_binary_image_mode"); // enum

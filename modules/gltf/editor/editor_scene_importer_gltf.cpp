@@ -71,6 +71,12 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	if (p_options.has("physics/is_rigid")) {
 		gltf_state->set_import_as_rigid((bool)p_options["physics/is_rigid"]);
 	}
+	if (p_options.has("physics/jointed")) {
+		gltf_state->set_jointed((bool)p_options["physics/jointed"]);
+	}
+	if (p_options.has("physics/neighboring_distance")) {
+		gltf_state->set_neighboring_distance((float)p_options["physics/neighboring_distance"]);
+	}
 	if (gltf_state->get_import_as_rigid()) {
 		const int64_t max_convex_hulls = p_options.has("physics/max_convex_hulls") ? (int64_t)p_options["physics/max_convex_hulls"] : (int64_t)8;
 		const double max_concavity = p_options.has("physics/max_concavity") ? (double)p_options["physics/max_concavity"] : 0.5;
@@ -114,6 +120,8 @@ void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_map_mode", PROPERTY_HINT_ENUM, "Do Not Remap,Remap to StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFDocument::TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL));
 
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::BOOL, "physics/is_rigid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::BOOL, "physics/jointed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::FLOAT, "physics/neighboring_distance", PROPERTY_HINT_RANGE, "0,100000,0.0001,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0.0));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "physics/max_convex_hulls", PROPERTY_HINT_RANGE, "1,64,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 8));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::FLOAT, "physics/max_concavity", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0.5));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "physics/resolution", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 10000));

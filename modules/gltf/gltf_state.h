@@ -81,6 +81,8 @@ protected:
 	bool force_disable_compression = false;
 	bool import_as_skeleton_bones = false;
 	bool import_as_rigid = false;
+	bool jointed = false;
+	float neighboring_distance = 0.0f;
 
 	HandleBinaryImageMode handle_binary_image_mode = HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES;
 
@@ -218,6 +220,12 @@ public:
 
 	bool get_import_as_rigid() const { return import_as_rigid; }
 	void set_import_as_rigid(bool p_import_as_rigid) { import_as_rigid = p_import_as_rigid; }
+
+	bool get_jointed() const { return jointed; }
+	void set_jointed(bool p_jointed) { jointed = p_jointed; }
+
+	float get_neighboring_distance() const { return neighboring_distance; }
+	void set_neighboring_distance(float p_neighboring_distance) { neighboring_distance = p_neighboring_distance; }
 
 	Ref<MeshConvexDecompositionSettings> get_convex_decomposition_settings() const { return convex_decomposition_settings; }
 	void set_convex_decomposition_settings(const Ref<MeshConvexDecompositionSettings> &p_settings) { convex_decomposition_settings = p_settings; }
