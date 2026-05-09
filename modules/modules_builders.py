@@ -1,6 +1,11 @@
 """Functions used to generate source files during build time"""
 
+import argparse
 import os
+import sys
+
+# Add parent directory to path so we can import methods
+sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 
 import methods
 
@@ -51,10 +56,37 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {{
         )
 
 
-def modules_tests_builder(target, source, env):
-    headers = sorted([os.path.relpath(src.path, methods.base_folder).replace("\\", "/") for src in source])
+def modules_tests_builder(target, source):
+    headers = sorted([os.path.relpath(src, methods.base_folder).replace("\\", "/") for src in source])
     with methods.generated_wrapper(str(target[0])) as file:
         file.write("// IWYU pragma: begin_keep.\n")
         for header in headers:
             file.write(f'#include "{header}"\n')
         file.write("// IWYU pragma: end_keep.\n")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Modules build tools")
+    parser.add_argument(
+        "--method",
+        required=True,
+        choices=["modules_tests_builder"],
+        help="Builder method to execute",
+    )
+    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+
+    args = parser.parse_args()
+
+    target = args.target
+    source = args.source
+
+    if args.method == "modules_tests_builder":
+        modules_tests_builder(target, source)
+    else:
+        print(f"Unknown method: {args.method}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

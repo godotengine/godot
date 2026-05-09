@@ -48,7 +48,9 @@ if env.editor_build:
             docs += Glob(d + "/*.xml")  # Custom.
 
     docs = sorted(docs)
-    py_builder_env['MAKE_DOC_HEADER_COM'] = f"{sys.executable} editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES"
+    py_builder_env["MAKE_DOC_HEADER_COM"] = (
+        f"{sys.executable} editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES"
+    )
     py_builder_env.Command(
         "#editor/doc/doc_data_compressed.gen.h",
         docs,
