@@ -530,8 +530,9 @@
 		<method name="select">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
+			<param index="1" name="set_as_cursor" type="bool" default="true" />
 			<description>
-				Selects the given [param column].
+				Selects the given [param column]. If [param set_as_cursor] is [code]true[/code], the [Tree]'s cursor will be moved to this item (only matters if [member Tree.select_mode] is set to [constant Tree.SELECT_MULTI]).
 			</description>
 		</method>
 		<method name="set_accept_children">

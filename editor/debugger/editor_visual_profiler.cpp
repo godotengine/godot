@@ -434,7 +434,6 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 			node = node->get_parent();
 		}
 		ensure_selected->select(0);
-		ensure_selected->set_as_cursor(0);
 		variables->ensure_cursor_is_visible();
 	}
 	updating_frame = false;
