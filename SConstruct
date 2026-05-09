@@ -1232,7 +1232,7 @@ GLSL_BUILDERS = {
     "RD_GLSL": py_builder_env.Builder(
         action=Action(
             f"{sys.executable} glsl_builders.py --method build_rd_headers --target $TARGET --source $SOURCE",
-            "Generating $TARGET",
+            "$GENCOMSTR",
         ),
         suffix="glsl.gen.h",
         src_suffix=".glsl",
@@ -1240,7 +1240,7 @@ GLSL_BUILDERS = {
     "GLSL_HEADER": py_builder_env.Builder(
         action=Action(
             f"{sys.executable} glsl_builders.py --method build_raw_headers --target $TARGET --source $SOURCE",
-            "Generating $TARGET",
+            "$GENCOMSTR",
         ),
         suffix="glsl.gen.h",
         src_suffix=".glsl",
@@ -1248,7 +1248,7 @@ GLSL_BUILDERS = {
     "GLES3_GLSL": py_builder_env.Builder(
         action=Action(
             f"{sys.executable} gles3_builders.py --method build_gles3_headers --target $TARGET --source $SOURCE",
-            "Generating $TARGET",
+            "$GENCOMSTR",
         ),
         suffix="glsl.gen.h",
         src_suffix=".glsl",

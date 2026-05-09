@@ -19,7 +19,7 @@ for platform in env["PLATFORM_EXPORTERS"]:
             path,
             Action(
                 f"{sys.executable} platform/platform_builders.py --method export_icon_builder --target $TARGET --source $SOURCE",
-                "Generating $TARGET",
+                "$GENCOMSTR",
             ),
         )
 

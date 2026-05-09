@@ -22,7 +22,7 @@ py_builder_env.Command(
     "#main/splash.png",
     Action(
         f"{sys.executable} main/main_builders.py --method make_splash --target $TARGET --source $SOURCE",
-        "Generating $TARGET",
+        "$GENCOMSTR",
     ),
 )
 
@@ -32,7 +32,7 @@ if env_main.editor_build and not env_main["no_editor_splash"]:
         "#main/splash_editor.png",
         Action(
             f"{sys.executable} main/main_builders.py --method make_splash_editor --target $TARGET --source $SOURCE",
-            "Generating $TARGET",
+            "$GENCOMSTR",
         ),
     )
 
@@ -41,7 +41,7 @@ py_builder_env.Command(
     "#main/app_icon.png",
     Action(
         f"{sys.executable} main/main_builders.py --method make_app_icon --target $TARGET --source $SOURCE",
-        "Generating $TARGET",
+        "$GENCOMSTR",
     ),
 )
 

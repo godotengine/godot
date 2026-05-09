@@ -16,7 +16,7 @@ gensource = py_builder_env.Command(
     controller_databases,
     Action(
         f"{sys.executable} core/input/input_builders.py --method make_default_controller_mappings --target $TARGET --source $SOURCES",
-        "Generating $TARGET",
+        "$GENCOMSTR",
     ),
 )
 

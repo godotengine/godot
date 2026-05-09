@@ -10,6 +10,6 @@ py_builder_env.Command(
     Glob("*/*.cs"),
     Action(
         f"{sys.executable} editor/template_builders.py --method make_templates --target $TARGET --source $SOURCES",
-        "Generating $TARGET",
+        "$GENCOMSTR",
     ),
 )

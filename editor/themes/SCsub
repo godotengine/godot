@@ -16,7 +16,7 @@ py_builder_env.Command(
     flist,
     Action(
         f"{sys.executable} editor/themes/editor_theme_builders.py --method make_fonts_header --target $TARGET --source $SOURCES",
-        "Generating $TARGET",
+        "$GENCOMSTR",
     ),
 )
 

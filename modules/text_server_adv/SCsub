@@ -474,7 +474,7 @@ if env["builtin_icu4c"]:
             "#thirdparty/icu4c/icudt_godot.dat",
             Action(
                 f"{sys.executable} modules/text_server_adv/text_server_adv_builders.py --method make_icu_data --target $TARGET --source $SOURCE",
-                "Generating $TARGET",
+                "$GENCOMSTR",
             ),
         )
         env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/"])
