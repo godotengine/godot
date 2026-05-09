@@ -139,6 +139,14 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 		}
 		save_path = is_link ? link : path;
 
+		// Fail if file exists and is not writable. Renaming a file to a target file
+		// in POSIX only cares about folder permissions, not file permissions, and is
+		// thus confusing to users if we overwrite it regardless.
+		if (access(save_path.utf8().get_data(), F_OK) == 0 && access(save_path.utf8().get_data(), W_OK) != 0) {
+			last_error = ERR_FILE_CANT_WRITE;
+			return last_error;
+		}
+
 		// Create a temporary file in the same directory as the target file.
 		path = path + "-XXXXXX";
 		CharString cs = path.utf8();
