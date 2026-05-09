@@ -121,7 +121,7 @@ void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::BOOL, "physics/is_rigid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::BOOL, "physics/jointed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::FLOAT, "physics/neighboring_distance", PROPERTY_HINT_RANGE, "0,100000,0.0001,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0.0));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::FLOAT, "physics/neighboring_distance", PROPERTY_HINT_RANGE, "0,100000,0.0001,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1.0));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "physics/max_convex_hulls", PROPERTY_HINT_RANGE, "1,64,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 8));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::FLOAT, "physics/max_concavity", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0.5));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "physics/resolution", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 10000));

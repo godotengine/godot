@@ -4846,7 +4846,47 @@ void GLTFDocument::_generate_scene_node_compat_4pt4(Ref<GLTFState> p_state, cons
 			mesh_inst->set_name(gltf_node->get_name());
 			current_node->add_child(mesh_inst, true);
 		} else if (gltf_node->mesh >= 0) {
-			current_node = _generate_mesh_instance(p_state, p_node_index);
+#ifndef PHYSICS_3D_DISABLED
+			if (p_state->import_as_rigid && gltf_node->skin < 0) {
+				RigidBody3D *rigid_body = memnew(RigidBody3D);
+
+				ImporterMeshInstance3D *mesh_instance = _generate_mesh_instance(p_state, p_node_index);
+				mesh_instance->set_name(String(gltf_node->get_name()) + "_mesh");
+				mesh_instance->set_transform(Transform3D());
+				rigid_body->add_child(mesh_instance, true);
+
+				Ref<ImporterMesh> importer_mesh = mesh_instance->get_mesh();
+				if (importer_mesh.is_valid()) {
+					Ref<ArrayMesh> array_mesh = importer_mesh->get_mesh();
+					if (array_mesh.is_valid()) {
+						Ref<MeshConvexDecompositionSettings> settings = p_state->convex_decomposition_settings;
+						Vector<Ref<Shape3D>> convex_shapes;
+						if (settings.is_valid()) {
+							convex_shapes = array_mesh->convex_decompose(settings);
+						}
+						if (!convex_shapes.is_empty()) {
+							for (int hull_i = 0; hull_i < convex_shapes.size(); hull_i++) {
+								CollisionShape3D *collision_part = memnew(CollisionShape3D);
+								collision_part->set_shape(convex_shapes[hull_i]);
+								rigid_body->add_child(collision_part, true);
+							}
+						} else {
+							Ref<ConvexPolygonShape3D> convex_shape = array_mesh->create_convex_shape();
+							if (convex_shape.is_valid()) {
+								CollisionShape3D *collision_shape = memnew(CollisionShape3D);
+								collision_shape->set_shape(convex_shape);
+								rigid_body->add_child(collision_shape, true);
+							}
+						}
+					}
+				}
+
+				current_node = rigid_body;
+			} else
+#endif // PHYSICS_3D_DISABLED
+			{
+				current_node = _generate_mesh_instance(p_state, p_node_index);
+			}
 		} else if (gltf_node->camera >= 0) {
 			current_node = _generate_camera(p_state, p_node_index);
 		} else if (gltf_node->light >= 0) {
@@ -7080,6 +7120,38 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 	return buffer->get_data_array();
 }
 
+#ifndef PHYSICS_3D_DISABLED
+// Composes Node3D local transforms from p_leaf up to and including p_subtree_root.
+// Used while the imported subtree is not yet inside the scene tree (no Viewport ancestor),
+// so Node3D::get_global_transform() cannot be used.
+static Transform3D _gltf_xform_from_leaf_to_subtree_root(Node3D *p_leaf, Node *p_subtree_root) {
+	Transform3D acc;
+	Node *n = p_leaf;
+	while (n) {
+		if (Node3D *n3d = Object::cast_to<Node3D>(n)) {
+			acc = n3d->get_transform() * acc;
+		}
+		if (n == p_subtree_root) {
+			return acc;
+		}
+		n = n->get_parent();
+	}
+	return Transform3D();
+}
+
+static void _gltf_collect_rigid_bodies_recursive(Node *p_node, Vector<RigidBody3D *> &r_bodies) {
+	if (p_node == nullptr) {
+		return;
+	}
+	if (RigidBody3D *rb = Object::cast_to<RigidBody3D>(p_node)) {
+		r_bodies.push_back(rb);
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_gltf_collect_rigid_bodies_recursive(p_node->get_child(i), r_bodies);
+	}
+}
+#endif
+
 Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	// Generate the skeletons and skins (if any).
 	HashMap<ObjectID, SkinSkeletonIndex> skeleton_map;
@@ -7119,6 +7191,14 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 			}
 		}
 	}
+	// For joint placement, use the generated glTF root node as the local space root when the
+	// file uses GODOT_single_root. After import, `single_root` may be replaced with `get_owner()`
+	// for naming/ownership, which is not always an ancestor of mesh/rigid bodies in the node tree.
+	Node *joint_parent = single_root;
+	if (p_state->extensions_used.has("GODOT_single_root")) {
+		ERR_FAIL_COND_V_MSG(!p_state->scene_nodes.has(0), nullptr, "glTF: Missing scene node 0.");
+		joint_parent = p_state->scene_nodes[0];
+	}
 	// Assign the scene name and single root name to each other
 	// if one is missing, or do nothing if both are already set.
 	if (unlikely(p_state->scene_name.is_empty())) {
@@ -7132,31 +7212,31 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	}
 
 #ifndef PHYSICS_3D_DISABLED
-	if (p_state->get_import_as_rigid() && jointed && neighboring_distance > 0.0f) {
+	// `neighboring_distance` defaults to 0 in import options; treat <= 0 as "unspecified" and use a
+	// reasonable default (glTF units are meters) so enabling `jointed` alone still creates joints.
+	if (p_state->get_import_as_rigid() && jointed) {
+		const float max_neighboring_distance = neighboring_distance > 0.0f ? neighboring_distance : 1.0f;
 		Vector<RigidBody3D *> rigid_bodies;
 		rigid_bodies.reserve(p_state->scene_nodes.size());
-		for (KeyValue<GLTFNodeIndex, Node *> E : p_state->scene_nodes) {
-			if (RigidBody3D *rb = Object::cast_to<RigidBody3D>(E.value)) {
-				rigid_bodies.push_back(rb);
-			}
-		}
+		_gltf_collect_rigid_bodies_recursive(joint_parent, rigid_bodies);
 
 		for (int i = 0; i < rigid_bodies.size(); i++) {
 			RigidBody3D *a = rigid_bodies[i];
 			ERR_CONTINUE(a == nullptr);
-			const Vector3 a_pos = a->get_global_transform().origin;
+			const Vector3 a_pos = _gltf_xform_from_leaf_to_subtree_root(a, joint_parent).origin;
 			for (int j = i + 1; j < rigid_bodies.size(); j++) {
 				RigidBody3D *b = rigid_bodies[j];
 				ERR_CONTINUE(b == nullptr);
-				const Vector3 b_pos = b->get_global_transform().origin;
-				if (a_pos.distance_to(b_pos) > neighboring_distance) {
+				const Vector3 b_pos = _gltf_xform_from_leaf_to_subtree_root(b, joint_parent).origin;
+				if (a_pos.distance_to(b_pos) > max_neighboring_distance) {
 					continue;
 				}
 
 				Generic6DOFJoint3D *joint = memnew(Generic6DOFJoint3D);
-				single_root->add_child(joint, true);
+				joint_parent->add_child(joint, true);
 				joint->set_owner(single_root);
-				joint->set_global_transform(Transform3D(Basis(), (a_pos + b_pos) * 0.5f));
+				// Local to joint_parent: subtree is not in the scene tree yet, so avoid set_global_transform().
+				joint->set_transform(Transform3D(Basis(), (a_pos + b_pos) * 0.5f));
 				joint->set_node_a(joint->get_path_to(a));
 				joint->set_node_b(joint->get_path_to(b));
 			}
