@@ -780,6 +780,53 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 
 				txt += tx;
 				l.char_count += tx.length();
+
+				// Check if this is the last text item in a ruby annotation, and if so, add padding to center it if needed.
+				ItemRuby *ruby = nullptr;
+				Item *p = it->parent;
+				while (p) {
+					if (p->type == ITEM_RUBY) {
+						ruby = static_cast<ItemRuby *>(p);
+						break;
+					}
+					p = p->parent;
+				}
+				if (ruby) {
+					bool is_last = true;
+					for (Item *c_it = _get_next_item(it, true); c_it; c_it = _get_next_item(c_it, true)) {
+						Item *cp = c_it->parent;
+						bool inside = false;
+						while (cp) {
+							if (cp == ruby) {
+								inside = true;
+								break;
+							}
+							cp = cp->parent;
+						}
+						if (!inside) {
+							break;
+						}
+						if (c_it->type == ITEM_TEXT) {
+							is_last = false;
+							break;
+						}
+					}
+					if (is_last) {
+						if (ruby->text_buf.is_valid()) {
+							Size2 ruby_size = ruby->text_buf->get_size();
+							float pad = MAX(0.0f, ruby_size.width - ruby->base_text_width) / 2.0f;
+							if (pad > 0.0f) {
+								Array key;
+								key.push_back(ruby->rid);
+								key.push_back(1);
+								l.text_buf->add_object(key, Size2(pad, 0), INLINE_ALIGNMENT_BOTTOM, 1);
+								txt += String::chr(0xfffc);
+								l.char_count++;
+								remaining_characters--;
+							}
+						}
+					}
+				}
 			} break;
 			case ITEM_IMAGE: {
 				ItemImage *img = static_cast<ItemImage *>(it);
@@ -869,6 +916,88 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					l.text_buf->add_object(it->rid, Size2(table->total_width, table->total_height), table->inline_align, t_char_count);
 				}
 				txt += String::chr(0xfffc).repeat(t_char_count);
+			} break;
+			case ITEM_RUBY: {
+				ItemRuby *ruby = static_cast<ItemRuby *>(it);
+				Ref<Font> font = p_base_font;
+				int font_size = p_base_font_size;
+
+				ItemFont *font_it = _find_font(it);
+				if (font_it) {
+					if (font_it->font.is_valid()) {
+						font = font_it->font;
+					}
+					if (font_it->font_size > 0) {
+						font_size = font_it->font_size;
+					}
+				}
+				ItemFontSize *font_size_it = _find_font_size(it);
+				if (font_size_it && font_size_it->font_size > 0) {
+					font_size = font_size_it->font_size;
+				}
+				String lang = _find_language(it);
+
+				ruby->base_text_width = 0.0;
+				for (Item *c_it = _get_next_item(it, true); c_it; c_it = _get_next_item(c_it, true)) {
+					Item *p = c_it->parent;
+					bool inside = false;
+					while (p) {
+						if (p == it) {
+							inside = true;
+							break;
+						}
+						p = p->parent;
+					}
+					if (!inside) {
+						break;
+					}
+					if (c_it->type == ITEM_TEXT) {
+						ItemText *t = static_cast<ItemText *>(c_it);
+						Ref<Font> c_font = p_base_font;
+						int c_font_size = p_base_font_size;
+						ItemFont *c_font_it = _find_font(c_it);
+						if (c_font_it) {
+							if (c_font_it->font.is_valid()) {
+								c_font = c_font_it->font;
+							}
+							if (c_font_it->font_size > 0) {
+								c_font_size = c_font_it->font_size;
+							}
+						}
+						ItemFontSize *c_font_size_it = _find_font_size(c_it);
+						if (c_font_size_it && c_font_size_it->font_size > 0) {
+							c_font_size = c_font_size_it->font_size;
+						}
+						ruby->base_text_width += c_font->get_string_size(t->text, HORIZONTAL_ALIGNMENT_LEFT, -1, c_font_size).width;
+					}
+				}
+
+				if (ruby->text_buf.is_null()) {
+					ruby->text_buf.instantiate();
+				}
+				ruby->text_buf->clear();
+				ruby->text_buf->set_direction(l.text_buf->get_direction());
+				// Ruby text is typically half the size of the base text
+				ruby->text_buf->add_string(ruby->text, font, MAX(1, font_size / 2), lang);
+
+				Size2 ruby_size = ruby->text_buf->get_size();
+				float base_ascent = font->get_ascent(font_size);
+
+				float pad = MAX(0.0f, ruby_size.width - ruby->base_text_width) / 2.0f;
+				if (pad > 0.0f) {
+					Array key;
+					key.push_back(it->rid);
+					key.push_back(0);
+					l.text_buf->add_object(key, Size2(pad, 0), INLINE_ALIGNMENT_BOTTOM, 1);
+					txt += String::chr(0xfffc);
+					l.char_count++;
+					remaining_characters--;
+				}
+
+				l.text_buf->add_object(it->rid, Size2(0, base_ascent + ruby_size.height), INLINE_ALIGNMENT_BOTTOM, 1);
+				txt += String::chr(0xfffc);
+				l.char_count++;
+				remaining_characters--;
 			} break;
 			default:
 				break;
@@ -1302,6 +1431,67 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									}
 									idx++;
 								}
+							} break;
+							case ITEM_RUBY: {
+								ItemRuby *ruby = static_cast<ItemRuby *>(it);
+								float base_text_width = 0.0;
+								for (int j = 0; j < gl_size; j++) {
+									int gspan = glyphs[j].span_index;
+									if (gspan >= 0) {
+										Item *g_it = nullptr;
+										if ((glyphs[j].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) == TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) {
+											g_it = items.get_or_null(TS->shaped_get_span_embedded_object(rid, gspan));
+										} else {
+											g_it = items.get_or_null(TS->shaped_get_span_meta(rid, gspan));
+										}
+										Item *p_it = g_it;
+										while (p_it && p_it->type != ITEM_FRAME) {
+											if (p_it == ruby) {
+												base_text_width += glyphs[j].advance * glyphs[j].repeat;
+												break;
+											}
+											p_it = p_it->parent;
+										}
+									}
+								}
+
+								Size2 ruby_size = ruby->text_buf->get_size();
+								Vector2 ruby_ofs = p_ofs + rect.position + off;
+								ruby_ofs.x += (base_text_width - ruby_size.width) / 2.0;
+
+								Ref<Font> font = theme_cache.normal_font;
+								int font_size = theme_cache.normal_font_size;
+
+								ItemFont *font_it = _find_font(it);
+								if (font_it) {
+									if (font_it->font.is_valid()) {
+										font = font_it->font;
+									}
+									if (font_it->font_size > 0) {
+										font_size = font_it->font_size;
+									}
+								}
+								ItemFontSize *font_size_it = _find_font_size(it);
+								if (font_size_it && font_size_it->font_size > 0) {
+									font_size = font_size_it->font_size;
+								}
+								float base_ascent = font->get_ascent(font_size);
+
+								// Place ruby text bottom precisely above the base text's ascent
+								ruby_ofs.y = p_ofs.y + off.y - base_ascent - (ruby_size.height - ruby->text_buf->get_line_ascent()) - 2.0;
+
+								Color font_color = _find_color(it, p_base_color);
+								Color font_outline_color = _find_outline_color(it, p_outline_color);
+								int font_outline_size = _find_outline_size(it, p_outline_size);
+								Color font_shadow_color = p_font_shadow_color * Color(1, 1, 1, font_color.a);
+
+								if (p_shadow_outline_size > 0 && font_shadow_color.a != 0.0) {
+									ruby->text_buf->draw_outline(ci, ruby_ofs + p_shadow_ofs, p_shadow_outline_size, font_shadow_color);
+								}
+								if (font_outline_size > 0 && font_outline_color.a != 0.0) {
+									ruby->text_buf->draw_outline(ci, ruby_ofs, font_outline_size, font_outline_color);
+								}
+								ruby->text_buf->draw(ci, ruby_ofs, font_color);
 							} break;
 							default:
 								break;
@@ -4952,6 +5142,17 @@ void RichTextLabel::push_language(const String &p_language) {
 	_add_item(item, true);
 }
 
+void RichTextLabel::push_ruby(const String &p_text) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemRuby *item = memnew(ItemRuby);
+	item->rid = items.make_rid(item);
+	item->text = p_text;
+	_add_item(item, true);
+}
+
 void RichTextLabel::push_hint(const String &p_string) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
@@ -5887,6 +6088,11 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_indent(current_frame->indent_level);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag.begins_with("ruby=")) {
+			String ruby_str = _get_tag_value(tag);
+			push_ruby(ruby_str);
+			pos = brk_end + 1;
+			tag_stack.push_front("ruby");
 		} else if (tag.begins_with("lang=")) {
 			String lang = _get_tag_value(tag).unquote();
 			push_language(lang);
@@ -7791,6 +7997,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_meta", "data", "underline_mode", "tooltip"), &RichTextLabel::push_meta, DEFVAL(META_UNDERLINE_ALWAYS), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("push_hint", "description"), &RichTextLabel::push_hint);
 	ClassDB::bind_method(D_METHOD("push_language", "language"), &RichTextLabel::push_language);
+	ClassDB::bind_method(D_METHOD("push_ruby", "text"), &RichTextLabel::push_ruby);
 	ClassDB::bind_method(D_METHOD("push_underline", "color"), &RichTextLabel::push_underline, DEFVAL(Color(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("push_strikethrough", "color"), &RichTextLabel::push_strikethrough, DEFVAL(Color(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align", "align_to_row", "name"), &RichTextLabel::push_table, DEFVAL(INLINE_ALIGNMENT_TOP), DEFVAL(-1), DEFVAL(String()));

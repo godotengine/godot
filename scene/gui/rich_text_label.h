@@ -105,6 +105,7 @@ public:
 		ITEM_CUSTOMFX,
 		ITEM_CONTEXT,
 		ITEM_LANGUAGE,
+		ITEM_RUBY,
 	};
 
 	enum MenuItems {
@@ -347,6 +348,13 @@ private:
 	struct ItemLanguage : public Item {
 		String language;
 		ItemLanguage() { type = ITEM_LANGUAGE; }
+	};
+
+	struct ItemRuby : public Item {
+		String text;
+		Ref<TextLine> text_buf;
+		float base_text_width = 0.0;
+		ItemRuby() { type = ITEM_RUBY; }
 	};
 
 	struct ItemParagraph : public Item {
@@ -843,6 +851,7 @@ public:
 	void push_underline(const Color &p_color = Color(0, 0, 0, 0));
 	void push_strikethrough(const Color &p_color = Color(0, 0, 0, 0));
 	void push_language(const String &p_language);
+	void push_ruby(const String &p_text);
 	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array());
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
