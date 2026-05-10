@@ -17,8 +17,14 @@ Export("env_modules")
 
 
 # Header with MODULE_*_ENABLED defines.
-modules_enabled = env.CommandNoCache(
-    "modules_enabled.gen.h", env.Value(env.module_list), env.Run(modules_builders.modules_enabled_builder)
+module_name_list = " ".join(env.module_list.keys())
+modules_enabled = py_builder_env.Command(
+    "modules_enabled.gen.h",
+    env.Value(module_name_list),
+    Action(
+        f"$PYTHON_BIN modules/modules_builders.py --method modules_enabled_builder --target $TARGET --source {module_name_list}",
+        "$GENCOMSTR",
+    ),
 )
 
 

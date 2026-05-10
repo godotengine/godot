@@ -10,9 +10,9 @@ sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspat
 import methods
 
 
-def modules_enabled_builder(target, source, env):
-    modules = sorted(source[0].read())
-    with methods.generated_wrapper(str(target[0])) as file:
+def modules_enabled_builder(target, source):
+    modules = sorted(source)
+    with methods.generated_wrapper(target) as file:
         for module in modules:
             file.write(f"#define MODULE_{module.upper()}_ENABLED\n")
 
@@ -58,7 +58,7 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {{
 
 def modules_tests_builder(target, source):
     headers = sorted([os.path.relpath(src, methods.base_folder).replace("\\", "/") for src in source])
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         file.write("// IWYU pragma: begin_keep.\n")
         for header in headers:
             file.write(f'#include "{header}"\n')
@@ -70,11 +70,11 @@ def main():
     parser.add_argument(
         "--method",
         required=True,
-        choices=["modules_tests_builder"],
+        choices=["modules_tests_builder", "modules_enabled_builder"],
         help="Builder method to execute",
     )
-    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
-    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+    parser.add_argument("--target", required=True, help="Target file")
+    parser.add_argument("--source", nargs="*", default=[], help="Source file(s)")
 
     args = parser.parse_args()
 
@@ -83,6 +83,8 @@ def main():
 
     if args.method == "modules_tests_builder":
         modules_tests_builder(target, source)
+    elif args.method == "modules_enabled_builder":
+        modules_enabled_builder(target, source)
     else:
         print(f"Unknown method: {args.method}", file=sys.stderr)
         sys.exit(1)
