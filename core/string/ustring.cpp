@@ -4389,6 +4389,258 @@ bool String::is_valid_string() const {
 	return valid;
 }
 
+// RFC 3492 §6.1: Bias adaptation function.
+static _FORCE_INLINE_ int _punycode_adapt_bias(int p_delta, int p_num_points, bool p_first_time) {
+	constexpr int BASE = 36;
+	constexpr int TMIN = 1;
+	constexpr int TMAX = 26;
+	constexpr int SKEW = 38;
+	constexpr int DAMP = 700;
+
+	p_delta = p_first_time ? p_delta / DAMP : p_delta / 2;
+	p_delta += p_delta / p_num_points;
+
+	int k = 0;
+	while (p_delta > ((BASE - TMIN) * TMAX) / 2) {
+		p_delta /= (BASE - TMIN);
+		k += BASE;
+	}
+	return k + (((BASE - TMIN + 1) * p_delta) / (p_delta + SKEW));
+}
+
+// RFC 3492 §6.2: Decode a single Punycode-encoded label. Returns an empty string on failure.
+static String _punycode_decode_label(const char32_t *p_label, int p_label_len) {
+	constexpr int BASE = 36;
+	constexpr int TMIN = 1;
+	constexpr int TMAX = 26;
+	constexpr int INITIAL_N = 128;
+	constexpr int INITIAL_BIAS = 72;
+
+	int delimiter_pos = -1;
+	for (int i = p_label_len - 1; i >= 0; i--) {
+		if (p_label[i] == '-') {
+			delimiter_pos = i;
+			break;
+		}
+	}
+
+	String output;
+	int basic_end = (delimiter_pos >= 0) ? delimiter_pos : 0;
+	for (int i = 0; i < basic_end; i++) {
+		if (p_label[i] >= 128) {
+			return String();
+		}
+		output += String::chr(p_label[i]);
+	}
+
+	int src = (delimiter_pos > 0) ? delimiter_pos + 1 : 0;
+
+	int n = INITIAL_N;
+	int i = 0;
+	int bias = INITIAL_BIAS;
+
+	while (src < p_label_len) {
+		int old_i = i;
+		int w = 1;
+
+		for (int k = BASE;; k += BASE) {
+			if (src >= p_label_len) {
+				return String();
+			}
+
+			char32_t c = p_label[src++];
+			int digit;
+			if (c >= 'a' && c <= 'z') {
+				digit = c - 'a';
+			} else if (c >= 'A' && c <= 'Z') {
+				digit = c - 'A';
+			} else if (c >= '0' && c <= '9') {
+				digit = c - '0' + TMAX;
+			} else {
+				return String();
+			}
+
+			i += digit * w;
+
+			int t = CLAMP(k - bias, TMIN, TMAX);
+
+			if (digit < t) {
+				break;
+			}
+
+			w *= BASE - t;
+		}
+
+		int output_len = output.length() + 1;
+		bias = _punycode_adapt_bias(i - old_i, output_len, old_i == 0);
+		n += i / output_len;
+		i = i % output_len;
+
+		if (n < INITIAL_N) {
+			return String();
+		}
+
+		output = output.insert(i, String::chr(n));
+		i++;
+	}
+
+	return output;
+}
+
+// RFC 3492 §6.3: Encode a single non-ASCII label using Punycode.
+static String _punycode_encode_label(const char32_t *p_label, int p_label_len) {
+	constexpr int BASE = 36;
+	constexpr int TMIN = 1;
+	constexpr int TMAX = 26;
+	constexpr int INITIAL_N = 128;
+	constexpr int INITIAL_BIAS = 72;
+
+	String out = "xn--";
+
+	int num_basic = 0;
+	for (int i = 0; i < p_label_len; i++) {
+		if (p_label[i] < INITIAL_N) {
+			out += String::chr(p_label[i]);
+			num_basic++;
+		}
+	}
+	if (num_basic > 0) {
+		out += "-";
+	}
+
+	int n = INITIAL_N;
+	int delta = 0;
+	int bias = INITIAL_BIAS;
+	int h = num_basic;
+
+	while (h < p_label_len) {
+		int m = 0x7FFFFFFF;
+		for (int i = 0; i < p_label_len; i++) {
+			if (p_label[i] >= (char32_t)n && p_label[i] < (char32_t)m) {
+				m = p_label[i];
+			}
+		}
+
+		delta += (m - n) * (h + 1);
+		n = m;
+
+		for (int i = 0; i < p_label_len; i++) {
+			if (p_label[i] < (char32_t)n) {
+				delta++;
+			} else if (p_label[i] == (char32_t)n) {
+				int q = delta;
+				for (int k = BASE;; k += BASE) {
+					int t = k - bias;
+					t = CLAMP(t, TMIN, TMAX);
+					if (q < t) {
+						break;
+					}
+					int digit = t + (q - t) % (BASE - t);
+					out += String::chr(digit < TMAX ? digit + 'a' : digit - TMAX + '0');
+					q = (q - t) / (BASE - t);
+				}
+				out += String::chr(q < TMAX ? q + 'a' : q - TMAX + '0');
+
+				bias = _punycode_adapt_bias(delta, h + 1, h == num_basic);
+				delta = 0;
+				h++;
+			}
+		}
+		delta++;
+		n++;
+	}
+
+	return out;
+}
+
+String String::idna_decode() const {
+	// Fast path: no label starts with "xn--", nothing to decode.
+	if (!to_lower().contains("xn--")) {
+		return *this;
+	}
+
+	Vector<String> parts = split(".");
+	String res;
+
+	for (int i = 0; i < parts.size(); i++) {
+		if (i > 0) {
+			res += ".";
+		}
+
+		const String &part = parts[i];
+		if (part.is_empty()) {
+			continue;
+		}
+
+		if (!part.to_lower().begins_with("xn--")) {
+			res += part;
+			continue;
+		}
+
+		constexpr int ACE_PREFIX_LEN = 4;
+		String encoded = part.substr(ACE_PREFIX_LEN);
+		String decoded = _punycode_decode_label(encoded.ptr(), encoded.length());
+
+		if (decoded.is_empty() && !encoded.is_empty()) {
+			return String();
+		}
+
+		res += decoded;
+	}
+
+	return res;
+}
+
+String String::idna_encode() const {
+	// Fast path: pure ASCII requires no encoding.
+	const char32_t *str = ptr();
+	int len = length();
+
+	bool is_ascii = true;
+	for (int i = 0; i < len; i++) {
+		if (!is_ascii_char(str[i])) {
+			is_ascii = false;
+			break;
+		}
+	}
+	if (is_ascii) {
+		return *this;
+	}
+
+	Vector<String> parts = split(".");
+	String res;
+
+	for (int i = 0; i < parts.size(); i++) {
+		if (i > 0) {
+			res += ".";
+		}
+
+		const String &part = parts[i];
+		if (part.is_empty()) {
+			continue;
+		}
+
+		bool part_is_ascii = true;
+		const char32_t *part_str = part.ptr();
+		int part_len = part.length();
+
+		for (int j = 0; j < part_len; j++) {
+			if (!is_ascii_char(part_str[j])) {
+				part_is_ascii = false;
+				break;
+			}
+		}
+
+		if (part_is_ascii) {
+			res += part;
+		} else {
+			res += _punycode_encode_label(part_str, part_len);
+		}
+	}
+
+	return res;
+}
+
 String String::uri_encode() const {
 	const CharString temp = utf8();
 	String res;
