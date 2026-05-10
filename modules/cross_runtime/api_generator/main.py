@@ -30,20 +30,17 @@ def main(json_path, folder_path):
     seen_methods = set()
     command_defs: list[dict] = []
 
-
     for entry in entries:
         if not isinstance(entry, dict):
             continue
 
-        #it gets all the class information, there are some being intentionally skipped
+        # it gets all the class information, there are some being intentionally skipped
         class_ = entry.get("class")
-        if class_[0:6] !=  "Editor" :
+        if class_[0:6] != "Editor":
             if class_[0:12] != "VisualShader":
                 if class_[0:4] != "GLTF":
                     if class_[0:3] != "FBX":
                         if class_[0:16] != "ResourceImporter":
-
-
                             name = entry.get("name")
                             arguments = entry.get("args", [])
                             ret_type = entry.get("return_type")
@@ -69,18 +66,14 @@ def main(json_path, folder_path):
                             const_name = make_command_name(class_, name, args_norm, ret_type)
                             cmd_id = len(command_defs) + 2  # reserve 0 and 1
 
-
-
-                            command_defs.append(
-                                {
-                                    "const_name": const_name,
-                                    "cmd_id": cmd_id,
-                                    "class": class_,
-                                    "name": name,
-                                    "args": args_norm,
-                                    "ret_type": ret_type,
-                                }
-                            )
+                            command_defs.append({
+                                "const_name": const_name,
+                                "cmd_id": cmd_id,
+                                "class": class_,
+                                "name": name,
+                                "args": args_norm,
+                                "ret_type": ret_type,
+                            })
                             class_methods[class_].append((name, args_norm, ret_type, const_name, cmd_id))
                         else:
                             continue
@@ -92,8 +85,6 @@ def main(json_path, folder_path):
                 continue
         else:
             continue
-
-
 
     out = Path(folder_path)
     cpp_out = out / "cpp"
@@ -129,7 +120,11 @@ def main(json_path, folder_path):
 
     for cls, (parent_name, methods) in cls_data.items():
         cs_cls = cs_class_map[cls]
-        cs_base = cs_class_map.get(parent_name, "GodotObject") if parent_name and parent_name in cs_class_map else "GodotObject"
+        cs_base = (
+            cs_class_map.get(parent_name, "GodotObject")
+            if parent_name and parent_name in cs_class_map
+            else "GodotObject"
+        )
         generate_cs_class_file(out, cs_class_map[cls], cs_cls, cs_base, methods)
 
     generate_command_dispatcher(out, ordered_classes, cpp_class_map, command_defs)
@@ -139,6 +134,7 @@ def main(json_path, folder_path):
     print(f"C# output: {cs_out}")
 
     print(f"Total commands: {len(command_defs)}")
+
 
 # run the generator
 if len(sys.argv) != 3:

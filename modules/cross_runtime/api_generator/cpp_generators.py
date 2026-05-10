@@ -7,12 +7,13 @@ from utilities import (
 )
 
 
-# this one is specifically to take not of unnamed arguments which introduced duplicates that are not able to build. The problem specifically exists in Csharp, since C# side was corrected, we have to correct this one so that it matches the csharp one for correct calls
+# this one is specifically to take note of unnamed arguments which introduced duplicates that are not able to build. The problem specifically exists in Csharp, since C# side was corrected, we have to correct this one so that it matches the csharp one for correct calls
 def _has_unnamed_args(method_arguments):
     for argument in method_arguments or []:
         if str(argument.get("name", "")).startswith("_unnamed_arg"):
             return True
     return False
+
 
 # produces bridge_api.h
 def generate_bridge_api_header(folder_path, command_names):
@@ -34,7 +35,7 @@ def generate_bridge_api_header(folder_path, command_names):
     for d in command_names:
         if d["const_name"].startswith("CMD_Engine_get_singleton"):
             continue
-        #there were some duplicate commands with unnamed arguments, this specifically avoids them as the correct commands are typically present
+        # there were some duplicate commands with unnamed arguments, this specifically avoids them as the correct commands are typically present
         if _has_unnamed_args(d.get("method_arguments", [])):
             continue
         if d["cmd_id"] > max_cmd_id:
@@ -54,14 +55,16 @@ def generate_bridge_api_header(folder_path, command_names):
 
 # creates the api cpp files
 def generate_cpp_class_file(folder_path, file_base, class_, methods):
-    path = folder_path / "cpp"/ f"{file_base}.cpp"
+    path = folder_path / "cpp" / f"{file_base}.cpp"
     with open(path, "w", encoding="utf-8") as cpp:
         cpp.write('#include "headers/bridge_helpers.h"\n')
         # specifically for the custom case we have created
         if file_base == "Engine":
             cpp.write('#include "scene/main/scene_tree.h"\n')
 
-        cpp.write(f"void handle_{file_base}(uint32_t cmd, volatile uint8_t *payload, volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr) {{\n")
+        cpp.write(
+            f"void handle_{file_base}(uint32_t cmd, volatile uint8_t *payload, volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr) {{\n"
+        )
         cpp.write("    switch (cmd) {\n")
         if file_base == "Engine":
             cpp.write("        case CMD_Engine_get_singleton__r0: {\n")
@@ -73,7 +76,7 @@ def generate_cpp_class_file(folder_path, file_base, class_, methods):
             cpp.write("        } break;\n")
 
         for method_name, method_arguments, method_return_type, constant_name, cmd_id in methods:
-            # during the build, the engine.get_singleton methods were bringing errors so this basically skipps writing their cases
+            # during the build, the engine.get_singleton methods were bringing errors so this basically skips writing their cases
             if constant_name.startswith("CMD_Engine_get_singleton"):
                 continue
             if _has_unnamed_args(method_arguments):
@@ -89,10 +92,18 @@ def generate_cpp_class_file(folder_path, file_base, class_, methods):
             cpp.write("            }\n\n")
 
             used_cpp_names = {
-                "payload", "target_id", "target_obj", "cmd_ptr", "status_ptr",
-                "ret_value", "bind", "error", "args", "argptrs"
+                "payload",
+                "target_id",
+                "target_obj",
+                "cmd_ptr",
+                "status_ptr",
+                "ret_value",
+                "bind",
+                "error",
+                "args",
+                "argptrs",
             }
-            #works with both fixed offsets and when more follow each other - we have to ensure no overwriting
+            # works with both fixed offsets and when more follow each other - we have to ensure no overwriting
             arg_offset_expr = "8"
             arg_names = []
             for arg in method_arguments:
@@ -101,7 +112,9 @@ def generate_cpp_class_file(folder_path, file_base, class_, methods):
                 spec = argument_types[argument_type]
 
                 cpp.write(
-                    "            " + spec["cpp_read"].format(name=argument_name, offset=arg_offset_expr, buf="payload") + "\n"
+                    "            "
+                    + spec["cpp_read"].format(name=argument_name, offset=arg_offset_expr, buf="payload")
+                    + "\n"
                 )
                 arg_names.append(argument_name)
                 # the generator had an issue where it was assigning the wrong offsets due to its fixed mechanism, this case specifically ensures that no overwriting takes place
@@ -132,7 +145,9 @@ def generate_cpp_class_file(folder_path, file_base, class_, methods):
             if method_return_type == 0:
                 cpp.write(f"                bind->call(target_obj, argptrs, {len(arg_names)}, error);\n")
             else:
-                cpp.write(f"                Variant ret_value = bind->call(target_obj, argptrs, {len(arg_names)}, error);\n")
+                cpp.write(
+                    f"                Variant ret_value = bind->call(target_obj, argptrs, {len(arg_names)}, error);\n"
+                )
                 # This determines the kinds of reads and writes that will go into the specific case. The functions originally exist in bridge_helpers.h
                 # Its best you confirm whether this aligns with the one in cpp generator, otherwise it will introduce mismatches
                 if method_return_type == 1:
@@ -164,21 +179,25 @@ def generate_cpp_class_file(folder_path, file_base, class_, methods):
 def generate_command_dispatcher(folder_path, ordered_classes, cpp_class_map, command_defs):
     lines = []
     lines.append('#include "cpp/headers/bridge_helpers.h"')
-    lines.append('#include <cstdint>')
+    lines.append("#include <cstdint>")
     lines.append("")
-    lines.append("using CommandHandler = void (*)(uint32_t, volatile uint8_t *, volatile uint32_t *, volatile uint8_t *);")
+    lines.append(
+        "using CommandHandler = void (*)(uint32_t, volatile uint8_t *, volatile uint32_t *, volatile uint8_t *);"
+    )
     lines.append("")
 
     for class_ in ordered_classes:
         handler_name = f"handle_{cpp_class_map[class_]}"
-        lines.append(f"void {handler_name}(uint32_t cmd, volatile uint8_t *payload, volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr);")
+        lines.append(
+            f"void {handler_name}(uint32_t cmd, volatile uint8_t *payload, volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr);"
+        )
     lines.append("")
 
     handler_by_id = {
         d["cmd_id"]: f"handle_{cpp_class_map[d['class']]}"
         for d in command_defs
         if not d["const_name"].startswith("CMD_Engine_get_singleton")
-        if not _has_unnamed_args(d.get("method_arguments", [])) #skips the unnamed args instances
+        if not _has_unnamed_args(d.get("method_arguments", []))  # skips the unnamed args instances
     }
 
     engine_cmd_id = max(handler_by_id.keys(), default=0) + 1
@@ -203,7 +222,9 @@ def generate_command_dispatcher(folder_path, ordered_classes, cpp_class_map, com
     lines.append("    }")
     lines.append("")
     lines.append("    uint32_t cmd = *cmd_ptr;")
-    lines.append("    const uint32_t handler_count = static_cast<uint32_t>(sizeof(command_handlers) / sizeof(command_handlers[0]));")
+    lines.append(
+        "    const uint32_t handler_count = static_cast<uint32_t>(sizeof(command_handlers) / sizeof(command_handlers[0]));"
+    )
     lines.append("    if (cmd >= handler_count || command_handlers[cmd] == nullptr) {")
     lines.append("        update_status(STATUS_OFFSET, STATUS_DONE);")
     lines.append("        *cmd_ptr = CMD_NONE;")

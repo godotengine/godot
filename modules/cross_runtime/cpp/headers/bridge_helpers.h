@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include "bridge_api.h"
-
 #include "core/config/engine.h"
+#include "core/io/marshalls.h" // provides encode_variant / decode_variant
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
 #include "core/math/color.h"
@@ -258,20 +257,20 @@ static inline void write_plane(volatile uint8_t *data, int offset, const Plane &
 }
 
 static inline Quaternion read_quaternion(const volatile uint8_t *data, int offset) {
+	// Godot constructor expects (x, y, z, w).
 	return Quaternion(
-			read_float(data, offset + 0), // w
 			read_float(data, offset + 4), // x
 			read_float(data, offset + 8), // y
-			read_float(data, offset + 12) // z
-
+			read_float(data, offset + 12), // z
+			read_float(data, offset + 0) // w
 	);
 }
 
 static inline void write_quaternion(volatile uint8_t *data, int offset, const Quaternion &value) {
-	write_float(data, offset + 0, value.w);
 	write_float(data, offset + 4, value.x);
 	write_float(data, offset + 8, value.y);
 	write_float(data, offset + 12, value.z);
+	write_float(data, offset + 0, value.w);
 }
 
 static inline AABB read_aabb(const volatile uint8_t *data, int offset) {
@@ -448,26 +447,54 @@ static inline void write_packed_float64_array(volatile uint8_t *data, int offset
 	}
 }
 
-//Should be looking at this soon enough!!
 static inline PackedStringArray read_packed_string_array(const volatile uint8_t *data, int offset) {
-	int len = read_int32(data, offset);
-	if (len < 0) {
+	int count = read_int32(data, offset);
+	if (count < 0) {
 		return PackedStringArray();
 	}
-
 	PackedStringArray out;
-	out.resize(len);
-	for (int i = 0; i < len; ++i) {
-		out.set(i, read_string_from_data(data + offset + 4 + (i * 4)));
+	out.resize(count);
+	int pos = offset + 4;
+	for (int i = 0; i < count; ++i) {
+		int str_len = read_int32(data, pos);
+		pos += 4;
+
+		if (str_len < 0 || str_len > 4096) {
+			out.set(i, String());
+			continue;
+		}
+
+		// Remove volatile qualifier correctly, then cast to const char*
+		const uint8_t *src = const_cast<const uint8_t *>(data + pos);
+		out.set(i, String::utf8((const char *)src, str_len));
+		pos += str_len;
 	}
+
 	return out;
 }
 
 static inline void write_packed_string_array(volatile uint8_t *data, int offset, const PackedStringArray &value) {
-	const int len = value.size();
-	write_int32(data, offset, len);
-	for (int i = 0; i < len; ++i) {
-		write_string_to_data(data + offset + 4 + (i * 4), value[i]);
+	const int count = value.size();
+	write_int32(data, offset, count);
+
+	int pos = offset + 4;
+	for (int i = 0; i < count; ++i) {
+		CharString utf8 = value[i].utf8();
+		int str_len = utf8.length();
+
+		if (str_len < 0 || str_len > 4096) {
+			write_int32(data, pos, 0);
+			pos += 4;
+			continue;
+		}
+
+		write_int32(data, pos, str_len);
+		pos += 4;
+
+		for (int j = 0; j < str_len; ++j) {
+			data[pos + j] = static_cast<uint8_t>(utf8.ptr()[j]);
+		}
+		pos += str_len;
 	}
 }
 
@@ -564,27 +591,60 @@ static inline void update_status(int offset, int value) {
 	__atomic_store(reinterpret_cast<int *>(offset), &value, __ATOMIC_RELEASE);
 }
 
-//not fully implemented, they are just placeholders
+//for the more complex ones, we directly used variants
+// We use a template so T can be Dictionary, Array, Callable, etc.
+template <typename T>
+static inline T read_variant(const volatile uint8_t *data, int offset) {
+	int len = read_int32(data, offset);
+	if (len <= 0) {
+		return T(); // Returns an empty Dictionary, Array, etc.
+	}
+
+	Variant v;
+	// Decode the bytes into a temporary Variant
+	decode_variant(v, (const uint8_t *)(data + offset + 4), len);
+
+	// This returns the actual T object (e.g., Dictionary)
+	// The Variant is discarded, and you get the "unwrapped" object.
+	return (T)v;
+}
+
+// Now your stubs are just one-liners that return the concrete type
 static inline Dictionary read_dictionary(const volatile uint8_t *data, int offset) {
-	(void)data;
-	(void)offset;
-	return Dictionary();
+	return read_variant<Dictionary>(data, offset);
 }
 
 static inline Array read_array(const volatile uint8_t *data, int offset) {
-	(void)data;
-	(void)offset;
-	return Array();
+	return read_variant<Array>(data, offset);
 }
 
 static inline Callable read_callable(const volatile uint8_t *data, int offset) {
-	(void)data;
-	(void)offset;
-	return Callable();
+	return read_variant<Callable>(data, offset);
+}
+
+static inline Signal read_signal(const volatile uint8_t *data, int offset) {
+	return read_variant<Signal>(data, offset);
+}
+
+static inline void write_variant(volatile uint8_t *data, int offset, const Variant &v) {
+	int len = 0;
+	encode_variant(v, nullptr, len, false);
+	write_int32(data, offset, len);
+	encode_variant(v, (uint8_t *)(data + offset + 4), len, false);
+}
+
+static inline void write_dictionary(volatile uint8_t *data, int offset, const Dictionary &value) {
+	write_variant(data, offset, value);
+}
+
+static inline void write_array(volatile uint8_t *data, int offset, const Array &value) {
+	write_variant(data, offset, value);
 }
 
 static inline void write_callable(volatile uint8_t *data, int offset, const Callable &value) {
-	(void)data;
-	(void)offset;
-	(void)value;
+	write_variant(data, offset, value);
+}
+
+static inline void write_signal(volatile uint8_t *data, int offset, const Signal &value) {
+	write_variant(data, offset, value);
 }

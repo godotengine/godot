@@ -1,4 +1,4 @@
-#utilities
+# utilities
 import json
 import re
 
@@ -59,7 +59,8 @@ def load_entries(json_path):
 
     return data
 
-#validates and standardizes the arguments
+
+# validates and standardizes the arguments
 def normalize_args(arguments):
     if not isinstance(arguments, list):
         return []
@@ -83,7 +84,7 @@ def method_signature(class_name, method_name, arguments, return_type):
     return (class_name, method_name, tuple(argument["type"] for argument in arguments), return_type)
 
 
-#builds command identifiers
+# builds command identifiers
 def make_command_name(class_name, method_name, arguments, return_type):
     command_identifier = [str(argument["type"]) for argument in arguments]
     command_identifier.append(f"r{return_type}")
@@ -128,6 +129,7 @@ def cs_class_file_name(class_name, used):
 # this one ensures that if a method has a forced type, we use it
 def force_return_type(class_name, method_name, return_type):
     return forced_return_type_by_method.get(method_name, return_type)
+
 
 # writes texts to a selected file
 def write_text(path, text):

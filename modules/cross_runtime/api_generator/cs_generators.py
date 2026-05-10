@@ -1,6 +1,7 @@
 """
 Similar implementations to CPP generator
 """
+
 from utilities import (
     argument_types,
     cs_local_reserved,
@@ -16,6 +17,7 @@ def _has_unnamed_args(method_arguments):
         if str(argument.get("name", "")).startswith("_unnamed_arg"):
             return True
     return False
+
 
 def generate_commands_cs(folder_path, command_definitions):
     max_tracker = 0
@@ -42,7 +44,8 @@ def generate_commands_cs(folder_path, command_definitions):
     lines.append("}")
     write_text(folder_path / "cs" / "Commands.cs", "\n".join(lines) + "\n")
 
-def generate_godot_object_cs(folder_path) :
+
+def generate_godot_object_cs(folder_path):
     lines = []
     lines.append("using System;")
     lines.append("")
@@ -59,6 +62,7 @@ def generate_godot_object_cs(folder_path) :
     lines.append("    }")
     lines.append("}")
     write_text(folder_path / "cs" / "GodotApi" / "GodotObject.cs", "\n".join(lines) + "\n")
+
 
 def generate_cs_class_file(folder_path, file_base, cs_class_name, cs_base_class_name, methods):
     lines = []
@@ -113,7 +117,9 @@ def generate_cs_class_file(folder_path, file_base, cs_class_name, cs_base_class_
         lines.append(f"            Helpers.SendCommand(Commands.{constant_name});")
         lines.append("            Helpers.WaitForCompletion();")
         if return_cs != "void":
-            lines.append(f"            {return_cs} result = {return_types[method_return_type]['cs_read'].format(pos='Commands.CMD_DATA')};")
+            lines.append(
+                f"            {return_cs} result = {return_types[method_return_type]['cs_read'].format(pos='Commands.CMD_DATA')};"
+            )
             lines.append("            return result;")
         lines.append("        }")
         lines.append("")
