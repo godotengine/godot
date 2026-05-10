@@ -830,10 +830,10 @@ void ExportTemplateManager::_update_install_button() {
 
 	install_button->set_disabled(!_can_download_templates());
 	if (install_button->is_disabled()) {
-		if (mirrors_empty) {
-			install_button->set_tooltip_text(TTRC("No mirrors available for download."));
-		} else if (!_is_online()) {
+		if (!_is_online()) {
 			install_button->set_tooltip_text(TTRC("Download not available in offline mode."));
+		} else if (mirrors_empty) {
+			install_button->set_tooltip_text(TTRC("No mirrors available for download."));
 		} else {
 			install_button->set_tooltip_text(TTRC("Downloads are only available for the current Godot version."));
 		}
@@ -1331,6 +1331,8 @@ void ExportTemplateManager::_notification(int p_what) {
 			delete_all_button->set_button_icon(get_editor_theme_icon("Remove"));
 			tpz_button->set_button_icon(get_editor_theme_icon("FileBrowse"));
 
+			offline_mode_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+
 			theme_cache.install_icon = get_editor_theme_icon("AssetStore");
 			theme_cache.remove_icon = get_editor_theme_icon("Remove");
 			theme_cache.repair_icon = get_editor_theme_icon("Tools");
@@ -1658,11 +1660,12 @@ ExportTemplateManager::ExportTemplateManager() {
 	offline_container->hide();
 	main_vb->add_child(offline_container);
 
-	Label *offline_mode_label = memnew(Label(TTRC("Offline mode, some functionality is not available.")));
+	offline_mode_label = memnew(Label(TTRC("Offline mode, some functionality is not available.")));
 	offline_container->add_child(offline_mode_label);
 
 	LinkButton *enable_online_button = memnew(LinkButton);
 	enable_online_button->set_text(TTRC("Go Online"));
+	enable_online_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	offline_container->add_child(enable_online_button);
 	enable_online_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_force_online_mode));
 
