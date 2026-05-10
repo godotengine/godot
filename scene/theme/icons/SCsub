@@ -9,7 +9,7 @@ py_builder_env.Command(
     "#scene/theme/default_theme_icons.gen.h",
     Glob("*.svg"),
     Action(
-        f"{sys.executable} scene/theme/icons/default_theme_icons_builders.py --method make_default_theme_icons_action --target $TARGET --source $SOURCES",
+        "$PYTHON_BIN scene/theme/icons/default_theme_icons_builders.py --method make_default_theme_icons_action --target $TARGET --source $SOURCES",
         "$GENCOMSTR",
     ),
 )

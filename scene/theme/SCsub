@@ -13,7 +13,7 @@ py_builder_env.Command(
     "#scene/theme/default_font.gen.h",
     "#thirdparty/fonts/OpenSans_SemiBold.woff2",
     Action(
-        f"{sys.executable} scene/theme/default_theme_builders.py --method make_fonts_header --target $TARGET --source $SOURCE",
+        "$PYTHON_BIN scene/theme/default_theme_builders.py --method make_fonts_header --target $TARGET --source $SOURCE",
         "$GENCOMSTR",
     ),
 )

@@ -20,7 +20,7 @@ py_builder_env.Command(
     "#editor/themes/editor_icons.gen.h",
     icon_sources,
     Action(
-        f"{sys.executable} editor/icons/editor_icons_builders.py --method make_editor_icons_action --target $TARGET --source $SOURCES",
+        "$PYTHON_BIN editor/icons/editor_icons_builders.py --method make_editor_icons_action --target $TARGET --source $SOURCES",
         "$GENCOMSTR",
     ),
 )

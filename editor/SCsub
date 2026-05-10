@@ -23,7 +23,7 @@ if env.editor_build:
         "export/register_exporters.gen.cpp",
         env.Value(env["PLATFORM_EXPORTERS"]),
         Action(
-            f'{sys.executable} editor/editor_builders.py --method register_exporters_builder --target $TARGET --source "$PLATFORM_EXPORTERS"',
+            f'$PYTHON_BIN editor/editor_builders.py --method register_exporters_builder --target $TARGET --source "$PLATFORM_EXPORTERS"',
             "$GENCOMSTR",
         ),
     )
@@ -49,13 +49,13 @@ if env.editor_build:
 
     docs = sorted(docs)
     py_builder_env["MAKE_DOC_HEADER_COM"] = (
-        f"{sys.executable} editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES"
+        "$PYTHON_BIN editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES"
     )
     py_builder_env.Command(
         "#editor/doc/doc_data_compressed.gen.h",
         docs,
         Action(
-            f"{sys.executable} editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES",
+            "$PYTHON_BIN editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES",
             "$GENCOMSTR",
         ),
     )

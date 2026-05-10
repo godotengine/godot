@@ -58,7 +58,7 @@ if env["tests"]:
         "modules_tests.gen.h",
         test_headers,
         Action(
-            f"{sys.executable} modules/modules_builders.py --method modules_tests_builder --target $TARGET --source $SOURCES",
+            "$PYTHON_BIN modules/modules_builders.py --method modules_tests_builder --target $TARGET --source $SOURCES",
             "$GENCOMSTR",
         ),
     )

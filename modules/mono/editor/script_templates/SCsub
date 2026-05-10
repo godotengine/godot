@@ -9,7 +9,7 @@ py_builder_env.Command(
     "templates.gen.h",
     Glob("*/*.cs"),
     Action(
-        f"{sys.executable} editor/template_builders.py --method make_templates --target $TARGET --source $SOURCES",
+        "$PYTHON_BIN editor/template_builders.py --method make_templates --target $TARGET --source $SOURCES",
         "$GENCOMSTR",
     ),
 )

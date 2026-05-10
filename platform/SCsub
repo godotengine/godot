@@ -18,7 +18,7 @@ for platform in env["PLATFORM_EXPORTERS"]:
             path.replace(".svg", "_svg.gen.h"),
             path,
             Action(
-                f"{sys.executable} platform/platform_builders.py --method export_icon_builder --target $TARGET --source $SOURCE",
+                "$PYTHON_BIN platform/platform_builders.py --method export_icon_builder --target $TARGET --source $SOURCE",
                 "$GENCOMSTR",
             ),
         )

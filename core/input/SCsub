@@ -15,7 +15,7 @@ gensource = py_builder_env.Command(
     "default_controller_mappings.gen.cpp",
     controller_databases,
     Action(
-        f"{sys.executable} core/input/input_builders.py --method make_default_controller_mappings --target $TARGET --source $SOURCES",
+        "$PYTHON_BIN core/input/input_builders.py --method make_default_controller_mappings --target $TARGET --source $SOURCES",
         "$GENCOMSTR",
     ),
 )

@@ -15,7 +15,7 @@ py_builder_env.Command(
     "#editor/themes/builtin_fonts.gen.h",
     flist,
     Action(
-        f"{sys.executable} editor/themes/editor_theme_builders.py --method make_fonts_header --target $TARGET --source $SOURCES",
+        "$PYTHON_BIN editor/themes/editor_theme_builders.py --method make_fonts_header --target $TARGET --source $SOURCES",
         "$GENCOMSTR",
     ),
 )

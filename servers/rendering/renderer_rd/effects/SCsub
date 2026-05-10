@@ -27,7 +27,7 @@ py_builder_env.Command(
     "smaa_area_tex.gen.h",
     "#thirdparty/smaa/AreaTex.png",
     Action(
-        f"{sys.executable} servers/rendering/renderer_rd/effects/rendering_effects_builders.py --method areatex_builder --target $TARGET --source $SOURCE",
+        "$PYTHON_BIN servers/rendering/renderer_rd/effects/rendering_effects_builders.py --method areatex_builder --target $TARGET --source $SOURCE",
         "$GENCOMSTR",
     ),
 )
@@ -36,7 +36,7 @@ py_builder_env.Command(
     "smaa_search_tex.gen.h",
     "#thirdparty/smaa/SearchTex.png",
     Action(
-        f"{sys.executable} servers/rendering/renderer_rd/effects/rendering_effects_builders.py --method searchtex_builder --target $TARGET --source $SOURCE",
+        "$PYTHON_BIN servers/rendering/renderer_rd/effects/rendering_effects_builders.py --method searchtex_builder --target $TARGET --source $SOURCE",
         "$GENCOMSTR",
     ),
 )
