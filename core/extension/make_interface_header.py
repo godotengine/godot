@@ -1,7 +1,7 @@
 import argparse
 import difflib
-import os
 import json
+import os
 import sys
 from collections import OrderedDict
 

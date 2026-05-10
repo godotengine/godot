@@ -23,7 +23,7 @@ if env.editor_build:
         "export/register_exporters.gen.cpp",
         env.Value(env["PLATFORM_EXPORTERS"]),
         Action(
-            f'$PYTHON_BIN editor/editor_builders.py --method register_exporters_builder --target $TARGET --source "$PLATFORM_EXPORTERS"',
+            '$PYTHON_BIN editor/editor_builders.py --method register_exporters_builder --target $TARGET --source "$PLATFORM_EXPORTERS"',
             "$GENCOMSTR",
         ),
     )

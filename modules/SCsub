@@ -2,7 +2,6 @@
 from misc.utility.scons_hints import *
 
 import os
-import sys
 
 import modules_builders
 

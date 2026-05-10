@@ -1298,5 +1298,3 @@ if not env.GetOption("clean") and not env.GetOption("help"):
     methods.show_progress(env)
     methods.prepare_purge(env)
     methods.prepare_timer()
-
-

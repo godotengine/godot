@@ -1,5 +1,4 @@
 import argparse
-import sys
 
 proto_mod = """
 #define MODBIND$VER($RETTYPE m_name$ARG) \\

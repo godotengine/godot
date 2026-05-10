@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-import sys
 from glob import glob
 
 import platform_builders
