@@ -198,7 +198,7 @@ gen_encrypt = py_builder_env.Command(
     "script_encryption_key.gen.cpp",
     env.Value(encryption_key),
     Action(
-        f"{sys.executable} core/core_builders.py --method encryption_key_builder --target $TARGET --source {encryption_key}",
+        f"$PYTHON_BIN core/core_builders.py --method encryption_key_builder --target $TARGET --source {encryption_key}",
         "$GENCOMSTR",
     ),
 )
@@ -209,8 +209,7 @@ py_builder_env.Command(
     "#core/io/certs_compressed.gen.h",
     ["#thirdparty/certs/ca-bundle.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
     Action(
-        sys.executable
-        + ' core/core_builders.py --method make_certs_header --target $TARGET --source ${SOURCES[0]} ${builtin_certs} "${system_certs_path}"',
+        '$PYTHON_BIN core/core_builders.py --method make_certs_header --target $TARGET --source ${SOURCES[0]} ${builtin_certs} "${system_certs_path}"',
         "$GENCOMSTR",
     ),
 )
@@ -220,7 +219,7 @@ py_builder_env.Command(
     "#core/authors.gen.h",
     "#AUTHORS.md",
     Action(
-        f"{sys.executable} core/core_builders.py --method make_authors_header --target $TARGET --source $SOURCE",
+        "$PYTHON_BIN core/core_builders.py --method make_authors_header --target $TARGET --source $SOURCE",
         "$GENCOMSTR",
     ),
 )
@@ -230,7 +229,7 @@ py_builder_env.Command(
     "#core/donors.gen.h",
     "#DONORS.md",
     Action(
-        f"{sys.executable} core/core_builders.py --method make_donors_header --target $TARGET --source $SOURCE",
+        "$PYTHON_BIN core/core_builders.py --method make_donors_header --target $TARGET --source $SOURCE",
         "$GENCOMSTR",
     ),
 )

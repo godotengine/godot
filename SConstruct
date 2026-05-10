@@ -1225,21 +1225,22 @@ if "cpp_compiler_launcher" in env:
 
 # Create a cloned environment where it will add implicit dependencies for the first
 # two items in the Command's action string.
-py_builder_env = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES=2)
+py_builder_env = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES=2, PYTHON_BIN=sys.executable)
 Export("py_builder_env")
+
 
 GLSL_BUILDERS = {
     "RD_GLSL": py_builder_env.Builder(
-        action=Action(
-            f"{sys.executable} glsl_builders.py --method build_rd_headers --target $TARGET --source $SOURCE",
+        action=[
+            "$PYTHON_BIN glsl_builders.py --method build_rd_headers --target $TARGET --source $SOURCE",
             "$GENCOMSTR",
-        ),
+        ],
         suffix="glsl.gen.h",
         src_suffix=".glsl",
     ),
     "GLSL_HEADER": py_builder_env.Builder(
         action=Action(
-            f"{sys.executable} glsl_builders.py --method build_raw_headers --target $TARGET --source $SOURCE",
+            "$PYTHON_BIN glsl_builders.py --method build_raw_headers --target $TARGET --source $SOURCE",
             "$GENCOMSTR",
         ),
         suffix="glsl.gen.h",
@@ -1247,14 +1248,14 @@ GLSL_BUILDERS = {
     ),
     "GLES3_GLSL": py_builder_env.Builder(
         action=Action(
-            f"{sys.executable} gles3_builders.py --method build_gles3_headers --target $TARGET --source $SOURCE",
+            "$PYTHON_BIN gles3_builders.py --method build_gles3_headers --target $TARGET --source $SOURCE",
             "$GENCOMSTR",
         ),
         suffix="glsl.gen.h",
         src_suffix=".glsl",
     ),
 }
-env.Append(BUILDERS=GLSL_BUILDERS)
+py_builder_env.Append(BUILDERS=GLSL_BUILDERS)
 
 # Build subdirs, the build order is dependent on link order.
 Export("env")
@@ -1265,6 +1266,11 @@ SConscript("scene/SCsub")
 if env.editor_build:
     SConscript("editor/SCsub")
 SConscript("drivers/SCsub")
+
+# Now ensure py_builder_env has all the CPPPATH and CPPDEFINES from env
+# which are set by drivers
+py_builder_env.Prepend(CPPPATH=env["CPPPATH"])
+py_builder_env.Append(CPPDEFINES=env["CPPDEFINES"])
 
 SConscript("platform/SCsub")
 SConscript("modules/SCsub")
@@ -1292,3 +1298,5 @@ if not env.GetOption("clean") and not env.GetOption("help"):
     methods.show_progress(env)
     methods.prepare_purge(env)
     methods.prepare_timer()
+
+

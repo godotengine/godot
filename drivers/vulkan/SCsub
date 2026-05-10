@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
+Import("env py_builder_env")
 
 thirdparty_obj = []
 thirdparty_dir = "#thirdparty/vulkan"
