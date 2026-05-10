@@ -38,6 +38,7 @@ class EditorExportPreset;
 class EditorFileDialog;
 class ItemList;
 class HBoxContainer;
+class Label;
 class OptionButton;
 class Texture2D;
 class Tree;
@@ -199,6 +200,7 @@ class ExportTemplateManager : public AcceptDialog {
 	Button *delete_all_button = nullptr;
 	Button *tpz_button = nullptr;
 	HBoxContainer *offline_container = nullptr;
+	Label *offline_mode_label = nullptr;
 	ConfirmationDialog *confirm_delete = nullptr;
 	EditorFileDialog *tpz_selection_dialog = nullptr;
 
