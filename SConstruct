@@ -1231,10 +1231,10 @@ Export("py_builder_env")
 
 GLSL_BUILDERS = {
     "RD_GLSL": py_builder_env.Builder(
-        action=[
+        action=Action(
             "$PYTHON_BIN glsl_builders.py --method build_rd_headers --target $TARGET --source $SOURCE",
             "$GENCOMSTR",
-        ],
+        ),
         suffix="glsl.gen.h",
         src_suffix=".glsl",
     ),
