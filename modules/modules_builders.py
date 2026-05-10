@@ -1,6 +1,8 @@
 """Functions used to generate source files during build time"""
 
 import argparse
+import base64
+import json
 import os
 import sys
 
@@ -17,8 +19,13 @@ def modules_enabled_builder(target, source):
             file.write(f"#define MODULE_{module.upper()}_ENABLED\n")
 
 
-def register_module_types_builder(target, source, env):
-    modules = source[0].read()
+def register_module_types_builder(target, source):
+    """
+    We're passing the dictionary of modules_detected as a base64 encoded json string
+    to avoid SCons command line processing issues with large dictionaries.
+    """
+
+    modules = json.loads(base64.b64decode(source[0]).decode())
     mod_inc = "\n".join([f'#include "{value}/register_types.h"' for value in modules.values()])
     mod_init = "\n".join([
         f"""\
@@ -34,7 +41,7 @@ def register_module_types_builder(target, source, env):
 #endif"""
         for key in modules.keys()
     ])
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         file.write(
             f"""\
 #include "register_module_types.h"
@@ -70,7 +77,7 @@ def main():
     parser.add_argument(
         "--method",
         required=True,
-        choices=["modules_tests_builder", "modules_enabled_builder"],
+        choices=["modules_tests_builder", "modules_enabled_builder", "register_module_types_builder"],
         help="Builder method to execute",
     )
     parser.add_argument("--target", required=True, help="Target file")
@@ -85,6 +92,8 @@ def main():
         modules_tests_builder(target, source)
     elif args.method == "modules_enabled_builder":
         modules_enabled_builder(target, source)
+    elif args.method == "register_module_types_builder":
+        register_module_types_builder(target, source)
     else:
         print(f"Unknown method: {args.method}", file=sys.stderr)
         sys.exit(1)
