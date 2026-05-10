@@ -60,6 +60,8 @@ if env["metal"]:
         Exit(255)
     SConscript("metal/SCsub")
 
+SConscript("offscreen/SCsub")
+
 # Input drivers
 if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows", "ios", "visionos"]:
     # TODO: Evaluate support for Android and Web.

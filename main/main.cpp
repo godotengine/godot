@@ -298,6 +298,7 @@ bool profile_gpu = false;
 // Constants.
 
 static const String NULL_DISPLAY_DRIVER("headless");
+static const String OFFSCREEN_DISPLAY_DRIVER("offscreen");
 static const String EMBEDDED_DISPLAY_DRIVER("embedded");
 static const String NULL_AUDIO_DRIVER("Dummy");
 
@@ -621,6 +622,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--text-driver <driver>", "Text driver (used for font rendering, bidirectional support and shaping).\n");
 	print_help_option("--tablet-driver <driver>", "Pen tablet input driver.\n");
 	print_help_option("--headless", "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
+	print_help_option("--offscreen", "Enable offscreen rendering mode (--display-driver offscreen). Rendering stays enabled, but no native window is shown.\n");
 	print_help_option("--log-file <file>", "Write output/error log to the specified path instead of the default location defined by the project.\n");
 	print_help_option("", "<file> path should be absolute or relative to the project directory.\n");
 	print_help_option("--write-movie <file>", "Write a video to the specified path (usually with .avi or .png extension).\n");
@@ -1129,6 +1131,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String default_renderer = "";
 	String default_renderer_mobile = "";
 	String renderer_hints = "";
+	bool headless_mode_requested = false;
+	bool offscreen_mode_requested = false;
 
 	packed_data = PackedData::get_singleton();
 	if (!packed_data) {
@@ -1280,6 +1284,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			if (N) {
 				display_driver = N->get();
+				if (display_driver == NULL_DISPLAY_DRIVER) {
+					headless_mode_requested = true;
+				} else if (display_driver == OFFSCREEN_DISPLAY_DRIVER) {
+					offscreen_mode_requested = true;
+				}
 
 				bool found = false;
 				for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
@@ -1496,8 +1505,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		} else if (arg == "--headless") { // enable headless mode (no audio, no rendering).
 
+			headless_mode_requested = true;
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
+
+		} else if (arg == "--offscreen") { // enable offscreen mode (no native window, rendering enabled).
+
+			offscreen_mode_requested = true;
+			display_driver = OFFSCREEN_DISPLAY_DRIVER;
 
 		} else if (arg == "--embedded") { // Enable embedded mode.
 #ifdef MACOS_ENABLED
@@ -2047,6 +2062,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 
 		I = N;
+	}
+
+	if (headless_mode_requested && offscreen_mode_requested) {
+		OS::get_singleton()->print("Error: --headless and --offscreen are mutually exclusive.\n");
+		goto error;
+	}
+
+	if (offscreen_mode_requested && rendering_driver.is_empty()) {
+#ifdef VULKAN_ENABLED
+		rendering_driver = "vulkan";
+		rendering_driver_source = OS::RenderingSource::RENDERING_SOURCE_DEFAULT;
+#else
+		OS::get_singleton()->print("Error: --offscreen requires a build with Vulkan support.\n");
+		goto error;
+#endif
 	}
 
 #ifdef TOOLS_ENABLED
@@ -2766,12 +2796,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	DEV_ASSERT(NULL_DISPLAY_DRIVER == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
 
 	GLOBAL_DEF_NOVAL("display/display_server/driver", "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM, "default,windows,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM, "default,x11,wayland,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM, "default,windows,offscreen,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM, "default,x11,wayland,offscreen,headless"), "default");
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM, "default,android,headless"), "default");
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM, "default,iOS,headless"), "default");
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.visionos", PROPERTY_HINT_ENUM, "default,visionOS,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM, "default,macos,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM, "default,macos,offscreen,headless"), "default");
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver.is_empty()) { // Specified in project.godot.
@@ -3227,7 +3257,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 		int display_driver_idx = -1;
 
 		if (display_driver.is_empty() || display_driver == "default") {
-			display_driver_idx = 0;
+			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+				if (DisplayServer::get_create_function_fallback_eligible(i)) {
+					display_driver_idx = i;
+					break;
+				}
+			}
+			if (display_driver_idx < 0) {
+				display_driver_idx = 0;
+			}
 		} else {
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				String name = DisplayServer::get_create_function_name(i);
@@ -3238,9 +3276,17 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 
 			if (display_driver_idx < 0) {
-				// If the requested driver wasn't found, pick the first entry.
+				// If the requested driver wasn't found, pick the first fallback-eligible entry.
 				// If all else failed it would be the headless server.
-				display_driver_idx = 0;
+				for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+					if (DisplayServer::get_create_function_fallback_eligible(i)) {
+						display_driver_idx = i;
+						break;
+					}
+				}
+				if (display_driver_idx < 0) {
+					display_driver_idx = 0;
+				}
 			}
 		}
 
@@ -3296,7 +3342,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 				accessibility_driver_name = "accesskit";
 			}
 		}
-		if (display_driver == NULL_DISPLAY_DRIVER || display_driver == EMBEDDED_DISPLAY_DRIVER || accessibility_mode == AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		if (display_driver == NULL_DISPLAY_DRIVER || display_driver == OFFSCREEN_DISPLAY_DRIVER || display_driver == EMBEDDED_DISPLAY_DRIVER || accessibility_mode == AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_DISABLED) {
 			accessibility_driver_name = "dummy";
 		}
 		int accessibility_driver_idx = -1;
@@ -3341,15 +3387,18 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		String rendering_driver = OS::get_singleton()->get_current_rendering_driver_name();
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
-		if (err != OK || display_server == nullptr) {
+		if ((err != OK || display_server == nullptr) && DisplayServer::get_create_function_fallback_eligible(display_driver_idx)) {
 			String last_name = DisplayServer::get_create_function_name(display_driver_idx);
 
 			// We can't use this display server, try other ones as fallback.
-			// Skip headless (always last registered) because that's not what users
-			// would expect if they didn't request it explicitly.
-			for (int i = 0; i < DisplayServer::get_create_function_count() - 1; i++) {
+			// Skip explicit-only display servers such as headless and offscreen because
+			// that's not what users would expect if they didn't request them explicitly.
+			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
+				}
+				if (!DisplayServer::get_create_function_fallback_eligible(i)) {
+					continue;
 				}
 				String name = DisplayServer::get_create_function_name(i);
 				WARN_PRINT(vformat("Display driver %s failed, falling back to %s.", last_name, name));

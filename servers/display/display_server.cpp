@@ -65,7 +65,7 @@ bool DisplayServer::window_early_clear_override_enabled = false;
 Color DisplayServer::window_early_clear_override_color = Color(0, 0, 0, 0);
 
 DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS] = {
-	{ "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func }
+	{ "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func, false }
 };
 
 int DisplayServer::server_create_count = 1;
@@ -2024,13 +2024,14 @@ Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p
 	return image;
 }
 
-void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers) {
+void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers, bool p_fallback_eligible) {
 	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
 	// Headless display server is always last
 	server_create_functions[server_create_count] = server_create_functions[server_create_count - 1];
 	server_create_functions[server_create_count - 1].name = p_name;
 	server_create_functions[server_create_count - 1].create_function = p_function;
 	server_create_functions[server_create_count - 1].get_rendering_drivers_function = p_get_drivers;
+	server_create_functions[server_create_count - 1].fallback_eligible = p_fallback_eligible;
 	server_create_count++;
 }
 
@@ -2046,6 +2047,11 @@ const char *DisplayServer::get_create_function_name(int p_index) {
 Vector<String> DisplayServer::get_create_function_rendering_drivers(int p_index) {
 	ERR_FAIL_INDEX_V(p_index, server_create_count, Vector<String>());
 	return server_create_functions[p_index].get_rendering_drivers_function();
+}
+
+bool DisplayServer::get_create_function_fallback_eligible(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, server_create_count, false);
+	return server_create_functions[p_index].fallback_eligible;
 }
 
 DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {

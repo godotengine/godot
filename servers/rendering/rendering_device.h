@@ -1299,13 +1299,25 @@ private:
 	/****************/
 	/**** SCREEN ****/
 	/****************/
+	struct VirtualScreen {
+		RID texture;
+		RID framebuffer;
+		Size2i size;
+		DataFormat format = DATA_FORMAT_B8G8R8A8_UNORM;
+		ColorSpace color_space = COLOR_SPACE_REC709_NONLINEAR_SRGB;
+		FramebufferFormatID framebuffer_format = INVALID_ID;
+	};
+
 	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID> screen_swap_chains;
 	HashMap<DisplayServerEnums::WindowID, RDD::FramebufferID> screen_framebuffers;
+	HashMap<DisplayServerEnums::WindowID, VirtualScreen> virtual_screens;
 
 	uint32_t _get_swap_chain_desired_count() const;
 
 public:
 	Error screen_create(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID);
+	Error screen_create_virtual(DisplayServerEnums::WindowID p_screen, const Size2i &p_size, DataFormat p_format = DATA_FORMAT_B8G8R8A8_UNORM);
+	Error screen_resize_virtual(DisplayServerEnums::WindowID p_screen, const Size2i &p_size);
 	Error screen_prepare_for_drawing(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID);
 	int screen_get_width(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;
 	int screen_get_height(DisplayServerEnums::WindowID p_screen = DisplayServerEnums::MAIN_WINDOW_ID) const;

@@ -31,6 +31,7 @@
 #include "register_driver_types.h"
 
 #include "core/io/resource_saver.h"
+#include "drivers/offscreen/display_server_offscreen.h"
 #include "drivers/png/image_loader_png.h"
 #include "drivers/png/resource_saver_png.h"
 
@@ -42,6 +43,8 @@ static Ref<ImageLoaderPNG> image_loader_png;
 static Ref<ResourceSaverPNG> resource_saver_png;
 
 void register_core_driver_types() {
+	DisplayServerOffscreen::register_offscreen_driver();
+
 #ifdef ACCESSKIT_ENABLED
 	AccessibilityServerAccessKit::register_create_func();
 #endif
@@ -62,6 +65,7 @@ void unregister_core_driver_types() {
 }
 
 void register_driver_types() {
+	DisplayServerOffscreen::register_offscreen_driver();
 }
 
 void unregister_driver_types() {

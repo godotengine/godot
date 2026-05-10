@@ -5349,6 +5349,8 @@ uint32_t RenderingDevice::_get_swap_chain_desired_count() const {
 Error RenderingDevice::screen_create(DisplayServerEnums::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V_MSG(virtual_screens.has(p_screen), ERR_CANT_CREATE, "A virtual screen was already created for the screen.");
+
 	RenderingContextDriver::SurfaceID surface = context->surface_get_from_window(p_screen);
 	ERR_FAIL_COND_V_MSG(surface == 0, ERR_CANT_CREATE, "A surface was not created for the screen.");
 
@@ -5363,8 +5365,115 @@ Error RenderingDevice::screen_create(DisplayServerEnums::WindowID p_screen) {
 	return OK;
 }
 
+Error RenderingDevice::screen_create_virtual(DisplayServerEnums::WindowID p_screen, const Size2i &p_size, DataFormat p_format) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V_MSG(p_size.width <= 0 || p_size.height <= 0, ERR_INVALID_PARAMETER, "A virtual screen must have a positive size.");
+	ERR_FAIL_COND_V_MSG(screen_swap_chains.has(p_screen), ERR_CANT_CREATE, "A native swap chain was already created for the screen.");
+	ERR_FAIL_COND_V_MSG(virtual_screens.has(p_screen), ERR_CANT_CREATE, "A virtual screen was already created for the screen.");
+
+	const uint32_t usage_bits = TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_SAMPLING_BIT | TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	if (!texture_is_format_supported_for_usage(p_format, usage_bits)) {
+		p_format = DATA_FORMAT_R8G8B8A8_UNORM;
+		ERR_FAIL_COND_V_MSG(!texture_is_format_supported_for_usage(p_format, usage_bits), ERR_CANT_CREATE, "No supported texture format was found for a virtual screen.");
+	}
+
+	TextureFormat texture_format;
+	texture_format.format = p_format;
+	texture_format.width = p_size.width;
+	texture_format.height = p_size.height;
+	texture_format.texture_type = TEXTURE_TYPE_2D;
+	texture_format.usage_bits = usage_bits;
+
+	TextureView texture_view;
+	RID texture = texture_create(texture_format, texture_view);
+	ERR_FAIL_COND_V_MSG(texture.is_null(), ERR_CANT_CREATE, "Unable to create a virtual screen texture.");
+
+	Vector<RID> attachments;
+	attachments.push_back(texture);
+	RID framebuffer = framebuffer_create(attachments);
+	if (framebuffer.is_null()) {
+		free_rid(texture);
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Unable to create a virtual screen framebuffer.");
+	}
+
+	VirtualScreen virtual_screen;
+	virtual_screen.texture = texture;
+	virtual_screen.framebuffer = framebuffer;
+	virtual_screen.size = p_size;
+	virtual_screen.format = p_format;
+	virtual_screen.framebuffer_format = framebuffer_get_format(framebuffer);
+	virtual_screens[p_screen] = virtual_screen;
+
+	return OK;
+}
+
+Error RenderingDevice::screen_resize_virtual(DisplayServerEnums::WindowID p_screen, const Size2i &p_size) {
+	_THREAD_SAFE_METHOD_
+
+	HashMap<DisplayServerEnums::WindowID, VirtualScreen>::ConstIterator it = virtual_screens.find(p_screen);
+	ERR_FAIL_COND_V_MSG(it == virtual_screens.end(), ERR_DOES_NOT_EXIST, "A virtual screen was not created for the screen.");
+	ERR_FAIL_COND_V_MSG(p_size.width <= 0 || p_size.height <= 0, ERR_INVALID_PARAMETER, "A virtual screen must have a positive size.");
+
+	if (it->value.size == p_size) {
+		return OK;
+	}
+
+	DataFormat format = it->value.format;
+	RID old_framebuffer = it->value.framebuffer;
+	RID old_texture = it->value.texture;
+	virtual_screens.erase(p_screen);
+
+	_flush_and_stall_for_all_frames();
+	if (old_framebuffer.is_valid()) {
+		free_rid(old_framebuffer);
+	}
+	if (old_texture.is_valid()) {
+		free_rid(old_texture);
+	}
+
+	const uint32_t usage_bits = TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_SAMPLING_BIT | TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	if (!texture_is_format_supported_for_usage(format, usage_bits)) {
+		format = DATA_FORMAT_R8G8B8A8_UNORM;
+		ERR_FAIL_COND_V_MSG(!texture_is_format_supported_for_usage(format, usage_bits), ERR_CANT_CREATE, "No supported texture format was found for a virtual screen.");
+	}
+
+	TextureFormat texture_format;
+	texture_format.format = format;
+	texture_format.width = p_size.width;
+	texture_format.height = p_size.height;
+	texture_format.texture_type = TEXTURE_TYPE_2D;
+	texture_format.usage_bits = usage_bits;
+
+	TextureView texture_view;
+	RID texture = texture_create(texture_format, texture_view);
+	ERR_FAIL_COND_V_MSG(texture.is_null(), ERR_CANT_CREATE, "Unable to create a virtual screen texture.");
+
+	Vector<RID> attachments;
+	attachments.push_back(texture);
+	RID framebuffer = framebuffer_create(attachments);
+	if (framebuffer.is_null()) {
+		free_rid(texture);
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Unable to create a virtual screen framebuffer.");
+	}
+
+	VirtualScreen virtual_screen;
+	virtual_screen.texture = texture;
+	virtual_screen.framebuffer = framebuffer;
+	virtual_screen.size = p_size;
+	virtual_screen.format = format;
+	virtual_screen.framebuffer_format = framebuffer_get_format(framebuffer);
+	virtual_screens[p_screen] = virtual_screen;
+
+	return OK;
+}
+
 Error RenderingDevice::screen_prepare_for_drawing(DisplayServerEnums::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
+
+	if (virtual_screens.has(p_screen)) {
+		return OK;
+	}
 
 	// After submitting work, acquire the swapchain image(s).
 	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
@@ -5416,6 +5525,11 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServerEnums::WindowID p
 int RenderingDevice::screen_get_width(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
+	HashMap<DisplayServerEnums::WindowID, VirtualScreen>::ConstIterator virtual_it = virtual_screens.find(p_screen);
+	if (virtual_it != virtual_screens.end()) {
+		return virtual_it->value.size.width;
+	}
+
 	RenderingContextDriver::SurfaceID surface = context->surface_get_from_window(p_screen);
 	ERR_FAIL_COND_V_MSG(surface == 0, 0, "A surface was not created for the screen.");
 	return context->surface_get_width(surface);
@@ -5423,6 +5537,11 @@ int RenderingDevice::screen_get_width(DisplayServerEnums::WindowID p_screen) con
 
 int RenderingDevice::screen_get_height(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
+
+	HashMap<DisplayServerEnums::WindowID, VirtualScreen>::ConstIterator virtual_it = virtual_screens.find(p_screen);
+	if (virtual_it != virtual_screens.end()) {
+		return virtual_it->value.size.height;
+	}
 
 	RenderingContextDriver::SurfaceID surface = context->surface_get_from_window(p_screen);
 	ERR_FAIL_COND_V_MSG(surface == 0, 0, "A surface was not created for the screen.");
@@ -5432,6 +5551,10 @@ int RenderingDevice::screen_get_height(DisplayServerEnums::WindowID p_screen) co
 int RenderingDevice::screen_get_pre_rotation_degrees(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
+	if (virtual_screens.has(p_screen)) {
+		return 0;
+	}
+
 	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), ERR_CANT_CREATE, "A swap chain was not created for the screen.");
 
@@ -5440,6 +5563,11 @@ int RenderingDevice::screen_get_pre_rotation_degrees(DisplayServerEnums::WindowI
 
 RenderingDevice::FramebufferFormatID RenderingDevice::screen_get_framebuffer_format(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
+
+	HashMap<DisplayServerEnums::WindowID, VirtualScreen>::ConstIterator virtual_it = virtual_screens.find(p_screen);
+	if (virtual_it != virtual_screens.end()) {
+		return virtual_it->value.framebuffer_format;
+	}
 
 	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), INVALID_ID, "Screen was never prepared.");
@@ -5459,6 +5587,11 @@ RenderingDevice::FramebufferFormatID RenderingDevice::screen_get_framebuffer_for
 RenderingDevice::ColorSpace RenderingDevice::screen_get_color_space(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
+	HashMap<DisplayServerEnums::WindowID, VirtualScreen>::ConstIterator virtual_it = virtual_screens.find(p_screen);
+	if (virtual_it != virtual_screens.end()) {
+		return virtual_it->value.color_space;
+	}
+
 	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), COLOR_SPACE_MAX, "Screen was never prepared.");
 
@@ -5470,6 +5603,10 @@ RenderingDevice::ColorSpace RenderingDevice::screen_get_color_space(DisplayServe
 bool RenderingDevice::screen_get_hdr_output_supported(DisplayServerEnums::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
+	if (virtual_screens.has(p_screen)) {
+		return false;
+	}
+
 	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), false, "Screen was never prepared.");
 
@@ -5478,6 +5615,24 @@ bool RenderingDevice::screen_get_hdr_output_supported(DisplayServerEnums::Window
 
 Error RenderingDevice::screen_free(DisplayServerEnums::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
+
+	HashMap<DisplayServerEnums::WindowID, VirtualScreen>::Iterator virtual_it = virtual_screens.find(p_screen);
+	if (virtual_it != virtual_screens.end()) {
+		_flush_and_stall_for_all_frames();
+
+		const RID framebuffer = virtual_it->value.framebuffer;
+		const RID texture = virtual_it->value.texture;
+		virtual_screens.erase(p_screen);
+
+		if (framebuffer.is_valid()) {
+			free_rid(framebuffer);
+		}
+		if (texture.is_valid()) {
+			free_rid(texture);
+		}
+
+		return OK;
+	}
 
 	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), FAILED, "Screen was never created.");
@@ -5504,6 +5659,13 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayS
 	ERR_FAIL_COND_V_MSG(draw_list.active, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list.active, INVALID_ID, "Only one draw/compute list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(raytracing_list.active, INVALID_ID, "Only one draw/raytracing list can be active at the same time.");
+
+	HashMap<DisplayServerEnums::WindowID, VirtualScreen>::ConstIterator virtual_it = virtual_screens.find(p_screen);
+	if (virtual_it != virtual_screens.end()) {
+		Vector<Color> clear_colors;
+		clear_colors.push_back(p_clear_color);
+		return draw_list_begin(virtual_it->value.framebuffer, DRAW_CLEAR_COLOR_0, clear_colors, 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::BLIT_PASS);
+	}
 
 	RenderingContextDriver::SurfaceID surface = context->surface_get_from_window(p_screen);
 	HashMap<DisplayServerEnums::WindowID, RDD::SwapChainID>::ConstIterator sc_it = screen_swap_chains.find(p_screen);
@@ -8298,7 +8460,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 
 	Error err;
 	RenderingContextDriver::SurfaceID main_surface = 0;
-	is_main_instance = (singleton == this) && (p_main_window != DisplayServerEnums::INVALID_WINDOW_ID);
+	is_main_instance = singleton == this;
 	if (p_main_window != DisplayServerEnums::INVALID_WINDOW_ID) {
 		// Retrieve the surface from the main window if it was specified.
 		main_surface = p_context->surface_get_from_window(p_main_window);
@@ -8848,6 +9010,26 @@ void RenderingDevice::finalize() {
 
 	// Delete everything the graph has created.
 	draw_graph.finalize();
+
+	LocalVector<DisplayServerEnums::WindowID> virtual_screen_ids;
+	for (const KeyValue<DisplayServerEnums::WindowID, VirtualScreen> &it : virtual_screens) {
+		virtual_screen_ids.push_back(it.key);
+	}
+	for (DisplayServerEnums::WindowID window_id : virtual_screen_ids) {
+		HashMap<DisplayServerEnums::WindowID, VirtualScreen>::Iterator virtual_it = virtual_screens.find(window_id);
+		if (virtual_it != virtual_screens.end()) {
+			RID framebuffer = virtual_it->value.framebuffer;
+			RID texture = virtual_it->value.texture;
+			virtual_screens.erase(window_id);
+
+			if (framebuffer.is_valid()) {
+				free_rid(framebuffer);
+			}
+			if (texture.is_valid()) {
+				free_rid(texture);
+			}
+		}
+	}
 
 	// Free all resources.
 	_free_rids(render_pipeline_owner, "Pipeline");

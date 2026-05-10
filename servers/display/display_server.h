@@ -83,16 +83,18 @@ private:
 		const char *name;
 		CreateFunction create_function;
 		GetRenderingDriversFunction get_rendering_drivers_function;
+		bool fallback_eligible = true;
 	};
 
 	static DisplayServerCreate server_create_functions[MAX_SERVERS];
 	static int server_create_count;
 
 public:
-	static void register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers);
+	static void register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers, bool p_fallback_eligible = true);
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
+	static bool get_create_function_fallback_eligible(int p_index);
 	static DisplayServer *create(int p_index, const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
 
 	DisplayServer();
