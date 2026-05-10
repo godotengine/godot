@@ -4450,11 +4450,11 @@ static String _punycode_decode_label(const char32_t *p_label, int p_label_len) {
 
 			char32_t c = p_label[src++];
 			int digit;
-			if (c >= 'a' && c <= 'z') {
+			if (is_ascii_lower_case(c)) {
 				digit = c - 'a';
-			} else if (c >= 'A' && c <= 'Z') {
+			} else if (is_ascii_upper_case(c)) {
 				digit = c - 'A';
-			} else if (c >= '0' && c <= '9') {
+			} else if (is_digit(c)) {
 				digit = c - '0' + TMAX;
 			} else {
 				return String();
