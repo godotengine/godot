@@ -1681,17 +1681,23 @@ def get_default_include_paths(env):
     return [x.strip() for x in match[1].strip().splitlines()]
 
 
-
 # From SCons Wiki
 # https://github.com/SCons/scons/wiki/LongCmdLinesOnWin32
 class ourSpawn:
     def ourspawn(self, sh, escape, cmd, args, env):
-        newargs = ' '.join(args[1:])
+        newargs = " ".join(args[1:])
         cmdline = cmd + " " + newargs
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, startupinfo=startupinfo, shell = False, env = env)
+        proc = subprocess.Popen(
+            cmdline,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            startupinfo=startupinfo,
+            shell=False,
+            env=env,
+        )
         data, err = proc.communicate()
         rv = proc.wait()
         # if rv:
@@ -1700,8 +1706,9 @@ class ourSpawn:
         #     print "====="
         return rv
 
-def SetupSpawn( env ):
-    if sys.platform == 'win32':
+
+def SetupSpawn(env):
+    if sys.platform == "win32":
         buf = ourSpawn()
         buf.ourenv = env
-        env['SPAWN'] = buf.ourspawn
+        env["SPAWN"] = buf.ourspawn
