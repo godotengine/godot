@@ -8,5 +8,6 @@
 
   <ItemGroup Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' and '$(GodotWebNativeLibrary)' != '' and Exists('$(GodotWebNativeLibrary)') ">
     <NativeFileReference Include="$(GodotWebNativeLibrary)" />
+    <Compile Include="$(MSBuildThisFileDirectory)\BrowserMain.cs" Link="GodotWebMain.g.cs" />
   </ItemGroup>
 </Project>

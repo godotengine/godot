@@ -1,6 +1,8 @@
 <Project>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <StartupObject>GodotPlugins.Game.BrowserMain</StartupObject>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseAppHost>false</UseAppHost>
     <WasmBuildNative>true</WasmBuildNative>
     <WasmGenerateAppBundle>true</WasmGenerateAppBundle>

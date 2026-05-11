@@ -78,6 +78,10 @@ typedef int(CORECLR_DELEGATE_CALLTYPE *coreclr_initialize_fn)(const char *exePat
 coreclr_create_delegate_fn coreclr_create_delegate = nullptr;
 coreclr_initialize_fn coreclr_initialize = nullptr;
 
+#ifdef WEB_ENABLED
+extern "C" bool godotsharp_game_main_init(void *p_godot_dll_handle, GDMonoCache::ManagedCallbacks *r_managed_callbacks, const void **p_unmanaged_callbacks, int32_t p_unmanaged_callbacks_size);
+#endif
+
 #ifdef ANDROID_ENABLED
 mono_install_assembly_preload_hook_fn mono_install_assembly_preload_hook = nullptr;
 mono_assembly_name_get_name_fn mono_assembly_name_get_name = nullptr;
@@ -521,6 +525,14 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 #endif
 
 #ifndef TOOLS_ENABLED
+#ifdef WEB_ENABLED
+godot_plugins_initialize_fn initialize_browser_wasm_and_godot_plugins(bool &r_runtime_initialized) {
+	r_runtime_initialized = true;
+	print_verbose(".NET: browser-wasm runtime initialized");
+	return &godotsharp_game_main_init;
+}
+#endif
+
 #ifdef ANDROID_ENABLED
 MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p_assemblies_path, void *p_user_data) {
 	constexpr bool ref_only = false;
@@ -643,7 +655,7 @@ void GDMono::initialize() {
 
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-#if !defined(APPLE_EMBEDDED_ENABLED)
+#if !defined(APPLE_EMBEDDED_ENABLED) && !defined(WEB_ENABLED)
 	// Check that the .NET assemblies directory exists before trying to use it.
 	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
 		OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
@@ -651,6 +663,9 @@ void GDMono::initialize() {
 	}
 #endif
 
+#if defined(WEB_ENABLED) && !defined(TOOLS_ENABLED)
+	godot_plugins_initialize = initialize_browser_wasm_and_godot_plugins(runtime_initialized);
+#else
 	if (load_hostfxr(hostfxr_dll_handle)) {
 		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
 		ERR_FAIL_NULL(godot_plugins_initialize);
@@ -676,6 +691,7 @@ void GDMono::initialize() {
 		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 #endif
 	}
+#endif
 
 	int32_t interop_funcs_size = 0;
 	const void **interop_funcs = godotsharp::get_runtime_interop_funcs(interop_funcs_size);

@@ -45,6 +45,7 @@
 
 static OS_Web *os = nullptr;
 static GodotInstance *instance = nullptr;
+static bool main_started = false;
 
 #ifndef PROXY_TO_PTHREAD_ENABLED
 static uint64_t target_ticks = 0;
@@ -86,6 +87,35 @@ GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], 
 	return static_cast<GDExtensionObjectPtr>(instance);
 }
 
+extern "C" LIBGODOT_API int libgodot_web_main(int p_argc, char *p_argv[]) {
+	ERR_FAIL_COND_V_MSG(main_started, EXIT_FAILURE, "Only one Godot Web main loop may be started.");
+
+	godot_init_profiler();
+	os = new OS_Web();
+
+	Error err = Main::setup(p_argv[0], p_argc - 1, &p_argv[1]);
+	if (err != OK) {
+		if (err == ERR_HELP) {
+			return EXIT_SUCCESS;
+		}
+		return EXIT_FAILURE;
+	}
+
+	print_web_header();
+	ResourceLoader::set_abort_on_missing_resources(false);
+
+	main_started = true;
+
+	int ret = Main::start();
+	os->set_exit_code(ret);
+	if (ret != EXIT_SUCCESS) {
+		return ret;
+	}
+
+	os->get_main_loop()->initialize();
+	return EXIT_SUCCESS;
+}
+
 void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
 	GodotInstance *godot_instance = static_cast<GodotInstance *>(p_godot_instance);
 	if (instance == godot_instance) {
@@ -100,6 +130,8 @@ void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
 }
 
 extern "C" LIBGODOT_API GDExtensionBool libgodot_web_iteration() {
+	ERR_FAIL_NULL_V(os, false);
+
 #ifndef PROXY_TO_PTHREAD_ENABLED
 	uint64_t current_ticks = os->get_ticks_usec();
 #endif
