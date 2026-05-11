@@ -299,10 +299,10 @@ void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 	// The flag is set during _physics_process (which runs AFTER step finishes),
 	// so it must be cleared here — not at the beginning of the next step.
 	{
-		const SelfList<GodotBody2D> *b = body_list->first();
-		while (b) {
-			b->self()->clear_pending_transform();
-			b = b->next();
+		const SelfList<GodotBody2D> *kb = body_list->first();
+		while (kb) {
+			kb->self()->clear_pending_transform();
+			kb = kb->next();
 		}
 	}
 
