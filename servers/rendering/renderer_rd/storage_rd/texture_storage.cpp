@@ -3559,6 +3559,15 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		rt->framebuffer_uniform_set = RID(); //chain deleted
 	}
 
+	// DEAD MONEY: cached MRT framebuffer must be freed before its
+	// attachments — freeing an attachment cascades through the dependency
+	// walker to its dependent framebuffers, after which an explicit free
+	// here would double-free.
+	if (rt->mrt_framebuffer.is_valid()) {
+		RD::get_singleton()->free_rid(rt->mrt_framebuffer);
+		rt->mrt_framebuffer = RID();
+	}
+
 	if (rt->color.is_valid()) {
 		RD::get_singleton()->free_rid(rt->color);
 	}
@@ -3587,11 +3596,6 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		}
 	}
 	rt->mrt_aux_color.clear();
-
-	if (rt->mrt_framebuffer.is_valid()) {
-		RD::get_singleton()->free_rid(rt->mrt_framebuffer);
-		rt->mrt_framebuffer = RID();
-	}
 
 	if (rt->backbuffer.is_valid()) {
 		RD::get_singleton()->free_rid(rt->backbuffer);
