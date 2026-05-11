@@ -81,7 +81,7 @@
 		return;
 	}
 
-	//Acquire Godot heap 
+	// Acquire Godot heap
 	const heapU8 = window.engine?.rtenv?.['HEAPU8'];
 	if (!(heapU8 instanceof Uint8Array)) {
 		displayFailureNotice('Failed to obtain Godot HEAPU8 after startGame');
