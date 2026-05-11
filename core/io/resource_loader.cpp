@@ -517,8 +517,6 @@ String ResourceLoader::_validate_local_path(const String &p_path) {
 
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
 	Ref<ResourceLoader::LoadToken> token = _load_start(p_path, p_type_hint, p_use_sub_threads ? LOAD_THREAD_DISTRIBUTE : LOAD_THREAD_SPAWN_SINGLE, p_cache_mode, true);
-	// We need to keep at least one reference to the token until it is done.
-	token->reference();
 	return token.is_valid() ? OK : FAILED;
 }
 
