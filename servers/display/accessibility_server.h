@@ -115,6 +115,7 @@ public:
 	virtual void update_set_error_message(const RID &p_id, const RID &p_other_id) = 0;
 	virtual void update_set_live(const RID &p_id, AccessibilityServerEnums::AccessibilityLiveMode p_live) = 0;
 	virtual void update_add_action(const RID &p_id, AccessibilityServerEnums::AccessibilityAction p_action, const Callable &p_callable) = 0;
+	virtual void update_remove_action(const RID &p_id, AccessibilityServerEnums::AccessibilityAction p_action) = 0;
 	virtual void update_add_custom_action(const RID &p_id, int p_action_id, const String &p_action_description) = 0;
 	virtual void update_set_table_row_count(const RID &p_id, int p_count) = 0;
 	virtual void update_set_table_column_count(const RID &p_id, int p_count) = 0;
@@ -128,7 +129,7 @@ public:
 	virtual void update_set_list_item_selected(const RID &p_id, bool p_selected) = 0;
 	virtual void update_set_list_item_expanded(const RID &p_id, bool p_expanded) = 0;
 	virtual void update_set_popup_type(const RID &p_id, AccessibilityServerEnums::AccessibilityPopupType p_popup) = 0;
-	virtual void update_set_checked(const RID &p_id, bool p_checekd) = 0;
+	virtual void update_set_checked(const RID &p_id, bool p_checked) = 0;
 	virtual void update_set_num_value(const RID &p_id, double p_position) = 0;
 	virtual void update_set_num_range(const RID &p_id, double p_min, double p_max) = 0;
 	virtual void update_set_num_step(const RID &p_id, double p_step) = 0;
@@ -170,3 +171,5 @@ VARIANT_ENUM_CAST_EXT(AccessibilityServerEnums::AccessibilityPopupType, Accessib
 VARIANT_ENUM_CAST_EXT(AccessibilityServerEnums::AccessibilityRole, AccessibilityServer::AccessibilityRole)
 VARIANT_ENUM_CAST_EXT(AccessibilityServerEnums::AccessibilityScrollUnit, AccessibilityServer::AccessibilityScrollUnit)
 VARIANT_ENUM_CAST_EXT(AccessibilityServerEnums::AccessibilityScrollHint, AccessibilityServer::AccessibilityScrollHint)
+VARIANT_BITFIELD_CAST_EXT(AccessibilityServerEnums::AccessibilityFlagsBit, AccessibilityServer::AccessibilityFlagsBit);
+VARIANT_BITFIELD_CAST_EXT(AccessibilityServerEnums::AccessibilityActionBit, AccessibilityServer::AccessibilityActionBit);

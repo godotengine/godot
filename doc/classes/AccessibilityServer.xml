@@ -794,7 +794,7 @@
 			Element supports multiple item selection.
 		</constant>
 		<constant name="FLAG_REQUIRED" value="2" enum="AccessibilityFlags">
-			Element require user input.
+			Element requires user input.
 		</constant>
 		<constant name="FLAG_VISITED" value="3" enum="AccessibilityFlags">
 			Element is a visited link.
@@ -815,6 +815,36 @@
 			Element is disabled.
 		</constant>
 		<constant name="FLAG_CLIPS_CHILDREN" value="9" enum="AccessibilityFlags">
+			Element clips children.
+		</constant>
+		<constant name="FLAG_HIDDEN_BIT" value="1" enum="AccessibilityFlagsBit" is_bitfield="true">
+			Element is hidden for accessibility tools.
+		</constant>
+		<constant name="FLAG_MULTISELECTABLE_BIT" value="2" enum="AccessibilityFlagsBit" is_bitfield="true">
+			Element supports multiple item selection.
+		</constant>
+		<constant name="FLAG_REQUIRED_BIT" value="4" enum="AccessibilityFlagsBit" is_bitfield="true">
+			Element requires user input.
+		</constant>
+		<constant name="FLAG_VISITED_BIT" value="8" enum="AccessibilityFlagsBit" is_bitfield="true">
+			Element is a visited link.
+		</constant>
+		<constant name="FLAG_BUSY_BIT" value="16" enum="AccessibilityFlagsBit" is_bitfield="true">
+			Element content is not ready (e.g. loading).
+		</constant>
+		<constant name="FLAG_MODAL_BIT" value="32" enum="AccessibilityFlagsBit" is_bitfield="true">
+			Element is modal window.
+		</constant>
+		<constant name="FLAG_TOUCH_PASSTHROUGH_BIT" value="64" enum="AccessibilityFlagsBit" is_bitfield="true">
+			Element allows touches to be passed through when a screen reader is in touch exploration mode.
+		</constant>
+		<constant name="FLAG_READONLY_BIT" value="128" enum="AccessibilityFlagsBit" is_bitfield="true">
+			Element is text field with selectable but read-only text.
+		</constant>
+		<constant name="FLAG_DISABLED_BIT" value="256" enum="AccessibilityFlagsBit" is_bitfield="true">
+			Element is disabled.
+		</constant>
+		<constant name="FLAG_CLIPS_CHILDREN_BIT" value="512" enum="AccessibilityFlagsBit" is_bitfield="true">
 			Element clips children.
 		</constant>
 		<constant name="ACTION_CLICK" value="0" enum="AccessibilityAction">
@@ -889,6 +919,73 @@
 		</constant>
 		<constant name="ACTION_CUSTOM" value="22" enum="AccessibilityAction">
 			Custom action, callback argument is set to the integer action ID.
+			Max value of the [enum AccessibilityAction].
+		</constant>
+		<constant name="ACTION_CLICK_BIT" value="1" enum="AccessibilityActionBit" is_bitfield="true">
+			Single click action bit.
+		</constant>
+		<constant name="ACTION_FOCUS_BIT" value="2" enum="AccessibilityActionBit" is_bitfield="true">
+			Focus action bit.
+		</constant>
+		<constant name="ACTION_BLUR_BIT" value="4" enum="AccessibilityActionBit" is_bitfield="true">
+			Blur action bit.
+		</constant>
+		<constant name="ACTION_COLLAPSE_BIT" value="8" enum="AccessibilityActionBit" is_bitfield="true">
+			Collapse action bit.
+		</constant>
+		<constant name="ACTION_EXPAND_BIT" value="16" enum="AccessibilityActionBit" is_bitfield="true">
+			Expand action bit.
+		</constant>
+		<constant name="ACTION_DECREMENT_BIT" value="32" enum="AccessibilityActionBit" is_bitfield="true">
+			Decrement action bit.
+		</constant>
+		<constant name="ACTION_INCREMENT_BIT" value="64" enum="AccessibilityActionBit" is_bitfield="true">
+			Increment action bit.
+		</constant>
+		<constant name="ACTION_HIDE_TOOLTIP_BIT" value="128" enum="AccessibilityActionBit" is_bitfield="true">
+			Hide tooltip action bit.
+		</constant>
+		<constant name="ACTION_SHOW_TOOLTIP_BIT" value="256" enum="AccessibilityActionBit" is_bitfield="true">
+			Show tooltip action bit.
+		</constant>
+		<constant name="ACTION_SET_TEXT_SELECTION_BIT" value="512" enum="AccessibilityActionBit" is_bitfield="true">
+			Set text selection action bit.
+		</constant>
+		<constant name="ACTION_REPLACE_SELECTED_TEXT_BIT" value="1024" enum="AccessibilityActionBit" is_bitfield="true">
+			Replace text action bit.
+		</constant>
+		<constant name="ACTION_SCROLL_BACKWARD_BIT" value="2048" enum="AccessibilityActionBit" is_bitfield="true">
+			Scroll backward action bit.
+		</constant>
+		<constant name="ACTION_SCROLL_DOWN_BIT" value="4096" enum="AccessibilityActionBit" is_bitfield="true">
+			Scroll down action bit.
+		</constant>
+		<constant name="ACTION_SCROLL_FORWARD_BIT" value="8192" enum="AccessibilityActionBit" is_bitfield="true">
+			Scroll forward action bit.
+		</constant>
+		<constant name="ACTION_SCROLL_LEFT_BIT" value="16384" enum="AccessibilityActionBit" is_bitfield="true">
+			Scroll left action bit.
+		</constant>
+		<constant name="ACTION_SCROLL_RIGHT_BIT" value="32768" enum="AccessibilityActionBit" is_bitfield="true">
+			Scroll right action bit.
+		</constant>
+		<constant name="ACTION_SCROLL_UP_BIT" value="65536" enum="AccessibilityActionBit" is_bitfield="true">
+			Scroll up action bit.
+		</constant>
+		<constant name="ACTION_SCROLL_INTO_VIEW_BIT" value="131072" enum="AccessibilityActionBit" is_bitfield="true">
+			Scroll into view action bit.
+		</constant>
+		<constant name="ACTION_SCROLL_TO_POINT_BIT" value="262144" enum="AccessibilityActionBit" is_bitfield="true">
+			Scroll to point action bit.
+		</constant>
+		<constant name="ACTION_SET_SCROLL_OFFSET_BIT" value="524288" enum="AccessibilityActionBit" is_bitfield="true">
+			Set scroll offset action bit.
+		</constant>
+		<constant name="ACTION_SET_VALUE_BIT" value="1048576" enum="AccessibilityActionBit" is_bitfield="true">
+			Set value action bit.
+		</constant>
+		<constant name="ACTION_SHOW_CONTEXT_MENU_BIT" value="2097152" enum="AccessibilityActionBit" is_bitfield="true">
+			Show context menu action bit.
 		</constant>
 		<constant name="LIVE_OFF" value="0" enum="AccessibilityLiveMode">
 			Indicates that updates to the live region should not be presented.

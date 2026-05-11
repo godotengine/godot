@@ -152,6 +152,7 @@ public:
 	void update_set_error_message(const RID &p_id, const RID &p_other_id) override;
 	void update_set_live(const RID &p_id, AccessibilityServerEnums::AccessibilityLiveMode p_live) override;
 	void update_add_action(const RID &p_id, AccessibilityServerEnums::AccessibilityAction p_action, const Callable &p_callable) override;
+	void update_remove_action(const RID &p_id, AccessibilityServerEnums::AccessibilityAction p_action) override;
 	void update_add_custom_action(const RID &p_id, int p_action_id, const String &p_action_description) override;
 	void update_set_table_row_count(const RID &p_id, int p_count) override;
 	void update_set_table_column_count(const RID &p_id, int p_count) override;
@@ -165,7 +166,7 @@ public:
 	void update_set_list_item_selected(const RID &p_id, bool p_selected) override;
 	void update_set_list_item_expanded(const RID &p_id, bool p_expanded) override;
 	void update_set_popup_type(const RID &p_id, AccessibilityServerEnums::AccessibilityPopupType p_popup) override;
-	void update_set_checked(const RID &p_id, bool p_checekd) override;
+	void update_set_checked(const RID &p_id, bool p_checked) override;
 	void update_set_num_value(const RID &p_id, double p_position) override;
 	void update_set_num_range(const RID &p_id, double p_min, double p_max) override;
 	void update_set_num_step(const RID &p_id, double p_step) override;
