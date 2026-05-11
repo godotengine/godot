@@ -12,7 +12,7 @@ from metadata import (
 )
 
 
-# takes a raw identiier and normalizes it. the language determines keyword rules
+# takes a raw identifier and normalizes it. the language determines keyword rules
 def sanitize_identifier(name, language="cpp"):
     text = re.sub(r"[^0-9A-Za-z_]", "_", str(name))
     if not text:

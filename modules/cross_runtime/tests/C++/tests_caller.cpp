@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "cpp/headers/tests.h"
+#include "headers/tests.h"
 
 #include <cstdio> // for printf
 
 #define CMD_OFFSET 1000000
 #define STATUS_OFFSET 1000004
 #define RESULT_OFFSET 1000008
-#define CMD_DATA 1000016 // unused for variant test
+#define CMD_DATA 1000016
 
 #define CMD_NONE 0
 #define CMD_RUN_VARIANT_TESTS 1

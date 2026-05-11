@@ -1,14 +1,11 @@
 # ruff: noqa: F821
 Import("env")
 
-cpp_sources = Glob("cpp/*.cpp")
-
 env.add_source_files(
     env.modules_sources,
     [
         "register_types.cpp",
-        "command_dispatcher.cpp",
+        "tests/C++/tests_caller.cpp",
         "command_processor.cpp",
-    ]
-    + cpp_sources,
+    ],
 )

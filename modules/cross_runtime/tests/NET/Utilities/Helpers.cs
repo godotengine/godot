@@ -68,22 +68,22 @@ public static class Helpers
 	// responsible for sending commands to the command offset
 	public static void SendCommand(int cmd)
 	{
-		Interop.AtomicWriteInt32(Commands.CMD_OFFSET, cmd);
-		Interop.AtomicWriteInt32(Commands.STATUS_OFFSET, Commands.STATUS_PENDING);
+		Interop.AtomicWriteInt32(Tests.CMD_OFFSET, cmd);
+		Interop.AtomicWriteInt32(Tests.STATUS_OFFSET, Tests.STATUS_PENDING);
 	}
 
 	// used to reset the command offset to 0 and status to 0 at the start of the program
 	public static void ResetCommandBuffer()
 	{
 		// resets the whole width to 0
-		WriteInt32(Commands.CMD_OFFSET, 0);
-		WriteInt32(Commands.STATUS_OFFSET, 0);
+		WriteInt32(Tests.CMD_OFFSET, 0);
+		WriteInt32(Tests.STATUS_OFFSET, 0);
 	}
 
 	// busy-wait loop
 	public static void WaitForCompletion()
 	{
-		while (Interop.AtomicReadInt32(Commands.STATUS_OFFSET) != Commands.STATUS_DONE)
+		while (Interop.AtomicReadInt32(Tests.STATUS_OFFSET) != Tests.STATUS_DONE)
 		{
 			Thread.SpinWait(1);
 		}

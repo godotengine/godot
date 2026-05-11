@@ -1,44 +1,40 @@
 extends SceneTree
 
-func _init():
-    # get classes
-	var classes = ClassDB.get_class_list()
-	# sort classes
-	classes.sort()
-    # stores output
-	var output = []
-	# focuses on Engine get singletons
-	var singletons = Engine.get_singleton_list()
+func _init() -> void:
+	# This Array will be printed to stdout, as the result
+	var output: Array[Dictionary] = []
 
-    # for each class
-	for cls in classes:
-	    # store class name as string
-		var cls_name := String(cls)
-		# store its methods
-		var methods = ClassDB.class_get_method_list(cls_name, false)
-		# store the singletons
-		var is_singleton = singletons.has(cls_name)
+	var singletons: PackedStringArray = Engine.get_singleton_list()
 
-        # In the loop, for methods
-		for method in methods:
-		    # stores the data structures
-			var ret = method.get("return", {})
-			# create the entry
-			var entry = {
+	# cls_name is chosen instead of class_name, because class_name is a keyword
+	var classes: PackedStringArray = ClassDB.get_class_list()
+
+	for cls_name: String in classes:
+		var is_singleton: bool = singletons.has(cls_name)
+		var methods: Array[Dictionary] = ClassDB.class_get_method_list(cls_name, false)
+
+		for method: Dictionary in methods:
+			# Get the arguments
+			var method_args: Array[Dictionary] = []
+			for arg: Dictionary in method.get("args", []):
+				method_args.push_back({
+					"name": String(arg.get("name", "")), # String() is kept for readability
+					"type": int(arg.get("type", 0)) # int() is kept for readability
+				})
+
+			# Get the return data
+			var method_return: Dictionary = method.get("return", {})
+			var method_return_type: int = int(method_return.get("type", 0))
+
+			# Create the entry
+			var entry: Dictionary = {
 				"class": cls_name,
-				"name": String(method.get("name", "")),
-				"return_type": int(ret.get("type", 0)),
-				"args": [],
+				"name": String(method.get("name", "")), # String() is kept for readability
+				"return_type": int(method_return_type), # int() is kept for readability
+				"args": method_args,
 				"static": false,
 				"singleton": is_singleton
 			}
-
-			for arg in method.get("args", []):
-				entry["args"].append({
-					"name": String(arg.get("name", "")),
-					"type": int(arg.get("type", 0))
-				})
-
 			output.append(entry)
 
 		# Synthetic static accessor for singleton classes.

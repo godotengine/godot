@@ -26,6 +26,6 @@ public static partial class Interop
 	public static async Task RunGame()
 	{
 		Helpers.ResetCommandBuffer();
-		await DotRunner.Run();
+		await Tests.Run();
 	}
 }

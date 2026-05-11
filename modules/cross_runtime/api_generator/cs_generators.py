@@ -2,10 +2,10 @@
 Similar implementations to CPP generator
 """
 
+from metadata import return_types
 from utilities import (
     argument_types,
     cs_local_reserved,
-    return_types,
     sanitize_identifier,
     unique_identifier,
     write_text,

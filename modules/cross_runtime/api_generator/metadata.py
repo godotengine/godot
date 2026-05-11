@@ -320,6 +320,7 @@ argument_types: dict[int, dict[str, Any]] = {
     },
 }
 
+# Godot Types identifiers
 return_types: dict[int, dict[str, str]] = {
     0: {"cpp": "void", "cs": "void", "cs_read": ""},
     1: {"cpp": "bool", "cs": "bool", "cs_read": "Helpers.ReadInt32({pos}) != 0"},
