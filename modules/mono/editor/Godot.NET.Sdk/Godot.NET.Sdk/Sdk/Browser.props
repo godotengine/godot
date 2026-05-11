@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UseAppHost>false</UseAppHost>
+    <WasmBuildNative>true</WasmBuildNative>
+    <WasmGenerateAppBundle>true</WasmGenerateAppBundle>
+    <WasmRuntimeAssetsLocation Condition=" '$(WasmRuntimeAssetsLocation)' == '' ">_framework</WasmRuntimeAssetsLocation>
+    <InvariantGlobalization Condition=" '$(InvariantGlobalization)' == '' ">true</InvariantGlobalization>
+  </PropertyGroup>
+</Project>

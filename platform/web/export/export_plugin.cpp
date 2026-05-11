@@ -422,13 +422,6 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
 }
 
 bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
-#ifdef MODULE_MONO_ENABLED
-	// Don't check for additional errors, as this particular error cannot be resolved.
-	r_error += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
-	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
-	return false;
-#else
-
 	String err;
 	bool valid = false;
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
@@ -459,7 +452,6 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 	}
 
 	return valid;
-#endif // !MODULE_MONO_ENABLED
 }
 
 bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
@@ -531,10 +523,16 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	{
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		for (int i = 0; i < shared_objects.size(); i++) {
-			String dst = base_dir.path_join(shared_objects[i].path.get_file());
+			String dst = shared_objects[i].target.is_empty() ? shared_objects[i].path.get_file() : shared_objects[i].target;
+			dst = base_dir.path_join(dst);
+			Error mkdir_err = da->make_dir_recursive(dst.get_base_dir());
+			if (mkdir_err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create folder: \"%s\"."), dst.get_base_dir()));
+				return mkdir_err;
+			}
 			error = da->copy(shared_objects[i].path, dst);
 			if (error != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), shared_objects[i].path.get_file()));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), dst));
 				return error;
 			}
 		}

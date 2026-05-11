@@ -179,7 +179,7 @@ namespace GodotTools.Export
             if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
-            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
+            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.Web }
                     .Contains(platform))
             {
                 throw new NotImplementedException("Target platform not yet implemented.");
@@ -214,6 +214,11 @@ namespace GodotTools.Export
             if (features.Contains("arm32"))
             {
                 publishConfig.Archs.Add("arm32");
+            }
+
+            if (features.Contains("wasm32"))
+            {
+                publishConfig.Archs.Add("wasm32");
             }
 
             if (features.Contains("universal"))
@@ -283,8 +288,19 @@ namespace GodotTools.Export
                         Directory.CreateDirectory(publishOutputDir);
 
                     // Execute dotnet publish.
+                    List<string>? customProperties = null;
+                    if (platform == OS.Platforms.Web)
+                    {
+                        customProperties = new List<string>();
+                        string? nativeLibraryPath = FindWebNativeLibrary(buildConfig);
+                        if (!string.IsNullOrEmpty(nativeLibraryPath))
+                        {
+                            customProperties.Add($"GodotWebNativeLibrary={nativeLibraryPath}");
+                        }
+                    }
+
                     if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
-                            runtimeIdentifier, publishOutputDir, includeDebugSymbols))
+                            runtimeIdentifier, publishOutputDir, includeDebugSymbols, customProperties))
                     {
                         throw new InvalidOperationException("Failed to build project. Check MSBuild panel for details.");
                     }
@@ -300,7 +316,7 @@ namespace GodotTools.Export
                     string nativeAotPath = Path.Combine(publishOutputDir,
                         $"{GodotSharpDirs.ProjectAssemblyName}.{soExt}");
 
-                    if (!File.Exists(assemblyPath) && !File.Exists(nativeAotPath))
+                    if (!File.Exists(assemblyPath) && !File.Exists(nativeAotPath) && !WebPublishHasOutput(platform, publishOutputDir))
                     {
                         throw new NotSupportedException(
                             $"Publish succeeded but project assembly not found at '{assemblyPath}' or '{nativeAotPath}'.");
@@ -349,6 +365,12 @@ namespace GodotTools.Export
                             // We get called back for both directories and files, but we only package files for now.
                             if (isFile)
                             {
+                                if (platform == OS.Platforms.Web)
+                                {
+                                    AddSharedObject(path, tags: null, target: SanitizeSlashes(Path.GetRelativePath(publishOutputDir, path)));
+                                    return;
+                                }
+
                                 if (embedBuildResults)
                                 {
                                     if (platform == OS.Platforms.Android)
@@ -510,8 +532,31 @@ namespace GodotTools.Export
                 "arm64-v8a" => "arm64",
                 "arm32" => "arm",
                 "arm64" => "arm64",
+                "wasm32" => "wasm",
                 _ => throw new ArgumentOutOfRangeException(nameof(arch), arch, "Unexpected architecture")
             };
+        }
+
+        private static bool WebPublishHasOutput(string platform, string publishOutputDir)
+        {
+            if (platform != OS.Platforms.Web || !Directory.Exists(publishOutputDir))
+                return false;
+
+            return System.IO.Directory.EnumerateFiles(publishOutputDir, "*.wasm", SearchOption.AllDirectories).Any() ||
+                   System.IO.Directory.EnumerateFiles(publishOutputDir, "*.dll", SearchOption.AllDirectories).Any();
+        }
+
+        private static string? FindWebNativeLibrary(string buildConfig)
+        {
+            string[] candidates =
+            [
+                Path.Combine(GodotSharpDirs.DataEditorToolsDir, "web", buildConfig, "libgodot.a"),
+                Path.Combine(GodotSharpDirs.DataEditorToolsDir, "web", "libgodot.a"),
+                Path.Combine(GodotSharpDirs.DataEditorToolsDir, "libgodot.web.a"),
+                Path.Combine(GodotSharpDirs.DataEditorToolsDir, "libgodot.a")
+            ];
+
+            return candidates.FirstOrDefault(File.Exists);
         }
 
         public override void _ExportEnd()

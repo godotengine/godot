@@ -1,0 +1,12 @@
+<Project>
+  <Target Name="CheckGodotWebNativeLibrary"
+          BeforeTargets="Build"
+          Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' ">
+    <Error Text="Godot Web C# exports require the GodotWebNativeLibrary MSBuild property to point to a WebAssembly static library built from Godot with library_type=static_library."
+           Condition=" '$(GodotWebNativeLibrary)' == '' or !Exists('$(GodotWebNativeLibrary)') " />
+  </Target>
+
+  <ItemGroup Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' and '$(GodotWebNativeLibrary)' != '' and Exists('$(GodotWebNativeLibrary)') ">
+    <NativeFileReference Include="$(GodotWebNativeLibrary)" />
+  </ItemGroup>
+</Project>
