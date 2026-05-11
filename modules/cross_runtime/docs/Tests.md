@@ -1,82 +1,132 @@
-# CrossRuntime Variant Bridge Tests
+# Tests and Build Guide
 
-These tests verify that the C# and C++ sides of the bridge agree on the exact same memory layout, type encoding, and value interpretation. The goal is not just to prove that values can be written and read, but that both runtimes are using the same wire format for every supported type.
+## Tests
 
-## What the test covers
+The test suite verifies that the C# and C++ sides agree on the binary layout, type encoding, and value interpretation for every supported type.
 
-The test writes a fixed set of values into shared memory from the C# side, then asks the Godot side to read them back and validate them. Each value is placed at a specific offset, and those offsets are intentionally mirrored in both runtimes. That means the test is checking three things at once:
+The C# side writes fixed values into shared memory at known offsets. The C++ side reads them back using the same helpers used in real bridge calls and validates each value in sequence. A mismatch stops the run immediately and reports which type failed.
 
-1. the offset map is correct,
-2. the read/write helpers are symmetric,
-3. the complex types decode into the expected engine values.
+The offsets are hard-coded on both sides and must remain identical. They are part of the ABI between the two runtimes. If any helper changes its binary format, the test fails immediately rather than silently corrupting data downstream.
 
-The coverage includes:
+**Coverage:**
+- scalars: `int32`, `int64`, `float`, `double`, `bool`
+- string types: `String`, `StringName`, `NodePath`
+- `RID`
+- math and transform types: `Vector2`, `Vector3`, `Rect2`, `Basis`, `Quaternion`, `Transform3D`, `Projection`, and their integer variants
+- packed arrays: all nine types including `PackedStringArray`
+- recursive containers: `Dictionary` and `Array` with mixed-type values
 
-* scalars such as `int32`, `int64`, `float`, `double`, and `bool`,
-* string-like values such as `String`, `StringName`, and `NodePath`,
-* object-style numeric values such as `RID`,
-* math and transform types such as `Vector2`, `Rect2`, `Basis`, `Transform3D`, `Projection`, and `Quaternion`,
-* packed arrays such as `PackedByteArray`, `PackedInt32Array`, `PackedFloat64Array`, and others,
-* recursive variant containers such as `Dictionary` and `Array`.
+**Special cases:**
+- `Quaternion` component ordering must be consistent between the C++ constructor convention and the C# field order
+- `PackedStringArray` entries are variable-length and the cursor must advance correctly between entries
+- `Dictionary` and `Array` are validated recursively, not just by container size
 
-## C# test side
+A passing run means the command round-trip works end to end, the memory writers and readers are symmetric, and the variant codec handles nested containers correctly.
 
-The C# `Tests` class prepares the memory region by writing every value to a known offset.
+---
 
-The key implementation detail is that it uses the same `Helpers` methods that the generated API will use in real runtime calls. That means the test is validating the actual transport layer, not a separate mock serializer.
+## Build Guide
 
-The test then sends a dedicated command, waits for completion, and reads back a result byte from shared memory. That byte acts as the final pass/fail indicator.
+### Requirements
 
-This is important because it exercises the same command pipeline used in normal operation:
+- Godot 4.x (.NET edition)
+- .NET 8 SDK
+- Emscripten (EMSDK)
+- Python 3 and SCons
+- Chrome or Chromium for headless testing
 
-* reset the command buffer,
-* write test data,
-* issue the command,
-* wait for Godot to process it,
-* inspect the result.
+```bash
+dotnet --version
+emcc --version
+scons --version
+```
 
-## Godot test side
+---
 
-The C++ side reads the memory using the low-level helpers in `bridge_helpers.h`. It does not reconstruct values manually. Instead, it uses the same helper functions that the command bridge uses for real method calls.
+### 1. Build Godot for web
 
-Each test is checked in sequence. If one value does not match, the function stops immediately and returns an error string describing the failure. That makes the failure mode precise and easy to diagnose.
+From the repository root:
 
-The checks are intentionally strict. For example:
+```bash
+scons platform=web target=template_release
+```
 
-* the string tests verify exact string equality,
-* the quaternion test verifies the expected field ordering,
-* the packed array tests verify both length and element values,
-* dictionary and array tests verify nested content, not just container size.
+Output goes to `bin/`.
 
-## Why the offsets matter
+---
 
-The offsets are hard-coded on both sides and must remain identical. They are not decorative constants; they are part of the ABI between the two WASM runtimes.
+### 2. Build the .NET WASM project
 
-This test therefore acts as a layout lock. If any helper changes its binary format, the test will fail immediately. That is exactly what you want in a bridge like this, because silent mismatch would be far worse than a loud failure.
+Linux / macOS:
+```bash
+dotnet publish "Tests.csproj" -c Release -r browser-wasm \
+  -p:SelfContained=true -o "./publish_temp"
+```
 
-## Special cases being validated
+Windows:
+```bash
+dotnet publish "Tests.csproj" -c Release -r browser-wasm ^
+  -p:SelfContained=true -o ".\publish_temp"
+```
 
-A few parts of the test are especially important:
+---
 
-### Quaternion layout
+### 3. Assemble the build folder
 
-The quaternion write and read logic is sensitive to component ordering. The test makes sure the wire order and the engine-side constructor order are compatible.
+Target: `bin/.web_zip/`
 
-### Packed string arrays
+Create a `cs/` subfolder inside it, then copy the following :
 
-These are variable-length and are the easiest place for offset drift to happen. The test verifies that multiple strings can be serialized and deserialized in sequence without corruption.
+```
+bin/.web_zip/
+  host.html
+  main.js
+  server.py
+  dotnet_worker.js
+  cs/
+    interop.js
+    _framework
+```
 
-### Dictionaries and arrays
+- Copy `modules/cross_runtime/tests/Web_Assets/interop.js` into `bin/.web_zip/cs/`
+- Copy the `_framework` folder from `publish_temp/wwwroot/_framework` into `bin/.web_zip/cs/`
 
-These are not treated as fixed-size blobs. They are validated through recursive variant decoding, which confirms that nested values survive the transport format correctly.
+---
 
-## What a pass means
+### 4. Start the server
 
-A passing test means the bridge is internally consistent for every type under test. In practical terms, it means:
+`SharedArrayBuffer` requires COOP and COEP headers. Open a terminal in `bin/.web_zip/` and run:
 
-* the C# memory writers and C++ memory readers agree,
-* the variant codec is stable enough for nested containers,
-* the command round-trip works end to end,
-* and the shared memory protocol is trustworthy enough to use for real API calls.
+```bash
+python3 server.py
+```
 
-That is a strong signal that the core interop layer is working as intended.
+---
+
+### 5. Run the headless test
+
+Linux:
+```bash
+google-chrome --headless=new --no-sandbox \
+  --enable-logging=stderr --v=1 \
+  http://localhost:8000/host.html 2>&1 \
+  | grep -E "\[C\+\+\]|\[Worker\]|bridge_test|\[Main\]"
+```
+
+macOS:
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --headless=new --enable-logging=stderr --v=1 \
+  http://localhost:8000/host.html 2>&1 \
+  | grep -E "\[C\+\+\]|\[Worker\]|bridge_test|\[Main\]"
+```
+
+Windows (PowerShell):
+```powershell
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" `
+  --headless=new --enable-logging=stderr --v=1 `
+  http://localhost:8000/host.html 2>&1 `
+  | Select-String "\[C\+\+\]","\[Worker\]","bridge_test","\[Main\]"
+```
+
+A successful run prints `Bridge Test Passed`. That confirms both runtimes are reading and writing shared memory correctly.

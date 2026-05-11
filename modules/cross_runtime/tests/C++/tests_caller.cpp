@@ -30,7 +30,7 @@
 
 #include "headers/tests.h"
 
-#include <cstdio> // for printf
+#include <cstdio>
 
 #define CMD_OFFSET 1000000
 #define STATUS_OFFSET 1000004
@@ -40,13 +40,15 @@
 #define CMD_NONE 0
 #define CMD_RUN_VARIANT_TESTS 1
 
-#define STATUS_IDLE 0
 #define STATUS_PENDING 1
 #define STATUS_DONE 2
 
-typedef void (*cmd_handler_t)(uint32_t cmd, volatile uint8_t *memory);
+// Handler now receives the control pointers directly
+typedef void (*cmd_handler_t)(uint32_t cmd, volatile uint8_t *payload,
+		volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr);
 
-static void handle_run_variant_tests(uint32_t cmd, volatile uint8_t *memory);
+static void handle_run_variant_tests(uint32_t cmd, volatile uint8_t *payload,
+		volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr);
 
 static cmd_handler_t command_handlers[] = {
 	nullptr, // 0 = CMD_NONE
@@ -55,42 +57,41 @@ static cmd_handler_t command_handlers[] = {
 static const uint32_t handler_count = sizeof(command_handlers) / sizeof(command_handlers[0]);
 
 void process_api_commands() {
-	volatile uint8_t *memory = (volatile uint8_t *)0; // absolute addresses
+	volatile uint32_t *cmd_ptr = reinterpret_cast<volatile uint32_t *>(CMD_OFFSET);
+	volatile uint8_t *status_ptr = reinterpret_cast<volatile uint8_t *>(STATUS_OFFSET);
+	volatile uint8_t *payload = reinterpret_cast<volatile uint8_t *>(CMD_DATA);
 
-	int status = read_int32(memory, STATUS_OFFSET);
-	int cmd = read_int32(memory, CMD_OFFSET);
-
-	// Print only when there is a potential command or status changed
-	printf("[C++] Frame: status=%d, cmd=%d\n", status, cmd);
-
-	if (status != STATUS_PENDING || cmd == CMD_NONE) {
+	if (*status_ptr != STATUS_PENDING || *cmd_ptr == CMD_NONE) {
 		return;
 	}
 
-	printf("[C++] Handling command %u\n", (uint32_t)cmd);
-
-	if (cmd < 0 || (uint32_t)cmd >= handler_count || command_handlers[cmd] == nullptr) {
-		writer<int>(memory, CMD_OFFSET, CMD_NONE);
-		writer<int>(memory, STATUS_OFFSET, STATUS_DONE);
+	uint32_t cmd = *cmd_ptr;
+	if (cmd >= handler_count || command_handlers[cmd] == nullptr) {
+		*status_ptr = STATUS_DONE;
+		*cmd_ptr = CMD_NONE;
 		printf("[C++] Unknown command, cleared.\n");
 		return;
 	}
 
-	command_handlers[cmd]((uint32_t)cmd, memory);
+	command_handlers[cmd](cmd, payload, cmd_ptr, status_ptr);
 }
 
-static void handle_run_variant_tests(uint32_t cmd, volatile uint8_t *memory) {
+static void handle_run_variant_tests(uint32_t cmd, volatile uint8_t *payload,
+		volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr) {
 	printf("[C++] Running variant tests...\n");
+
+	// The test data is stored at absolute addresses, so we pass a base of 0.
+	volatile uint8_t *memory = nullptr;
 	String error;
 	bool ok = VariantBridgeTests::run_all_tests(memory, error);
 	printf("[C++] Test result: %s\n", ok ? "PASS" : "FAIL");
 	if (!ok && !error.is_empty()) {
-		// Print the error string on failure
-		CharString utf8 = error.utf8();
-		printf("[C++] Error: %s\n", utf8.get_data());
+		printf("[C++] Error: %s\n", error.utf8().get_data());
 	}
 
-	writer<uint8_t>(memory, RESULT_OFFSET, ok ? 1 : 0);
-	writer<int>(memory, STATUS_OFFSET, STATUS_DONE);
-	writer<int>(memory, CMD_OFFSET, CMD_NONE);
+	// Write result directly via absolute offsets, using the provided status/cmd pointers
+	volatile uint8_t *result_ptr = reinterpret_cast<volatile uint8_t *>(RESULT_OFFSET);
+	*result_ptr = (uint8_t)(ok ? 1 : 0);
+	*status_ptr = STATUS_DONE;
+	*cmd_ptr = CMD_NONE;
 }

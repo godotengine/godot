@@ -48,10 +48,6 @@
 #include "core/math/vector3i.h"
 #include "core/math/vector4.h"
 #include "core/math/vector4i.h"
-#include "core/object/class_db.h"
-#include "core/object/method_bind.h"
-#include "core/object/method_bind_common.h"
-#include "core/object/object.h"
 #include "core/object/object_id.h"
 #include "core/string/node_path.h"
 #include "core/string/string_name.h"
@@ -64,7 +60,6 @@
 
 #include <cstdint>
 #include <cstdio>
-#include <type_traits>
 
 //reads data from offset
 template <typename T>

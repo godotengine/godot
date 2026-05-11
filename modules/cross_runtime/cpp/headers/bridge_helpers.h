@@ -126,12 +126,11 @@ static inline void write_object_id(volatile uint8_t *data, int offset, ObjectID 
 	writer<uint64_t>(data, offset, static_cast<uint64_t>(id));
 }
 
-//focuses on reading int32
+// Integer helpers
 static inline int read_int32(const volatile uint8_t *data, int offset) {
 	return reader<int>(data, offset);
 }
 
-//focuses on writing int32
 static inline void write_int32(volatile uint8_t *data, int offset, int value) {
 	writer<int>(data, offset, value);
 }
@@ -152,6 +151,7 @@ static inline void write_uint64(volatile uint8_t *data, int offset, uint64_t val
 	writer<uint64_t>(data, offset, value);
 }
 
+// Float helpers
 static inline float read_float(const volatile uint8_t *data, int offset) {
 	return reader<float>(data, offset);
 }
@@ -160,6 +160,7 @@ static inline void write_float(volatile uint8_t *data, int offset, float value) 
 	writer<float>(data, offset, value);
 }
 
+// Double Helpers
 static inline double read_double(const volatile uint8_t *data, int offset) {
 	return reader<double>(data, offset);
 }
@@ -168,6 +169,7 @@ static inline void write_double(volatile uint8_t *data, int offset, double value
 	writer<double>(data, offset, value);
 }
 
+// Bool Helpers
 static inline bool read_bool(const volatile uint8_t *data, int offset) {
 	return read_int32(data, offset) != 0;
 }
@@ -176,6 +178,7 @@ static inline void write_bool(volatile uint8_t *data, int offset, bool value) {
 	write_int32(data, offset, value ? 1 : 0);
 }
 
+// Vector type helpers
 static inline Vector2 read_vector2(const volatile uint8_t *data, int offset) {
 	return reader<Vector2>(data, offset);
 }
@@ -190,22 +193,6 @@ static inline Vector2i read_vector2i(const volatile uint8_t *data, int offset) {
 
 static inline void write_vector2i(volatile uint8_t *data, int offset, const Vector2i &value) {
 	writer<Vector2i>(data, offset, value);
-}
-
-static inline Rect2 read_rect2(const volatile uint8_t *data, int offset) {
-	return reader<Rect2>(data, offset);
-}
-
-static inline void write_rect2(volatile uint8_t *data, int offset, const Rect2 &value) {
-	writer<Rect2>(data, offset, value);
-}
-
-static inline Rect2i read_rect2i(const volatile uint8_t *data, int offset) {
-	return reader<Rect2i>(data, offset);
-}
-
-static inline void write_rect2i(volatile uint8_t *data, int offset, const Rect2i &value) {
-	writer<Rect2i>(data, offset, value);
 }
 
 static inline Vector3 read_vector3(const volatile uint8_t *data, int offset) {
@@ -224,14 +211,6 @@ static inline void write_vector3i(volatile uint8_t *data, int offset, const Vect
 	writer<Vector3i>(data, offset, value);
 }
 
-static inline Transform2D read_transform2d(const volatile uint8_t *data, int offset) {
-	return reader<Transform2D>(data, offset);
-}
-
-static inline void write_transform2d(volatile uint8_t *data, int offset, const Transform2D &value) {
-	writer<Transform2D>(data, offset, value);
-}
-
 static inline Vector4 read_vector4(const volatile uint8_t *data, int offset) {
 	return reader<Vector4>(data, offset);
 }
@@ -248,6 +227,41 @@ static inline void write_vector4i(volatile uint8_t *data, int offset, const Vect
 	writer<Vector4i>(data, offset, value);
 }
 
+// Rect helpers
+static inline Rect2 read_rect2(const volatile uint8_t *data, int offset) {
+	return reader<Rect2>(data, offset);
+}
+
+static inline void write_rect2(volatile uint8_t *data, int offset, const Rect2 &value) {
+	writer<Rect2>(data, offset, value);
+}
+
+static inline Rect2i read_rect2i(const volatile uint8_t *data, int offset) {
+	return reader<Rect2i>(data, offset);
+}
+
+static inline void write_rect2i(volatile uint8_t *data, int offset, const Rect2i &value) {
+	writer<Rect2i>(data, offset, value);
+}
+
+// Transform type helpers
+static inline Transform2D read_transform2d(const volatile uint8_t *data, int offset) {
+	return reader<Transform2D>(data, offset);
+}
+
+static inline void write_transform2d(volatile uint8_t *data, int offset, const Transform2D &value) {
+	writer<Transform2D>(data, offset, value);
+}
+
+static inline Transform3D read_transform3d(const volatile uint8_t *data, int offset) {
+	return reader<Transform3D>(data, offset);
+}
+
+static inline void write_transform3d(volatile uint8_t *data, int offset, const Transform3D &value) {
+	writer<Transform3D>(data, offset, value);
+}
+
+// Plane helpers
 static inline Plane read_plane(const volatile uint8_t *data, int offset) {
 	return reader<Plane>(data, offset);
 }
@@ -256,6 +270,7 @@ static inline void write_plane(volatile uint8_t *data, int offset, const Plane &
 	writer<Plane>(data, offset, value);
 }
 
+// Quaternion Helpers
 static inline Quaternion read_quaternion(const volatile uint8_t *data, int offset) {
 	// Godot constructor expects (x, y, z, w).
 	return Quaternion(
@@ -273,6 +288,7 @@ static inline void write_quaternion(volatile uint8_t *data, int offset, const Qu
 	write_float(data, offset + 0, value.w);
 }
 
+// AABB Helpers
 static inline AABB read_aabb(const volatile uint8_t *data, int offset) {
 	return reader<AABB>(data, offset);
 }
@@ -281,6 +297,7 @@ static inline void write_aabb(volatile uint8_t *data, int offset, const AABB &va
 	writer<AABB>(data, offset, value);
 }
 
+// Basis Helpers
 static inline Basis read_basis(const volatile uint8_t *data, int offset) {
 	return reader<Basis>(data, offset);
 }
@@ -289,14 +306,7 @@ static inline void write_basis(volatile uint8_t *data, int offset, const Basis &
 	writer<Basis>(data, offset, value);
 }
 
-static inline Transform3D read_transform3d(const volatile uint8_t *data, int offset) {
-	return reader<Transform3D>(data, offset);
-}
-
-static inline void write_transform3d(volatile uint8_t *data, int offset, const Transform3D &value) {
-	writer<Transform3D>(data, offset, value);
-}
-
+// Projection helpers
 static inline Projection read_projection(const volatile uint8_t *data, int offset) {
 	return reader<Projection>(data, offset);
 }
@@ -305,6 +315,7 @@ static inline void write_projection(volatile uint8_t *data, int offset, const Pr
 	writer<Projection>(data, offset, value);
 }
 
+// Color Helpers
 static inline Color read_color(const volatile uint8_t *data, int offset) {
 	return reader<Color>(data, offset);
 }
@@ -313,6 +324,7 @@ static inline void write_color(volatile uint8_t *data, int offset, const Color &
 	writer<Color>(data, offset, value);
 }
 
+// String Helpers
 static inline StringName read_string_name(const volatile uint8_t *data, int offset) {
 	return StringName(read_string_from_data(data + offset));
 }
@@ -329,6 +341,7 @@ static inline void write_node_path(volatile uint8_t *data, int offset, const Nod
 	write_string_to_data(data + offset, String(value));
 }
 
+// RID helpers
 static inline RID read_rid(const volatile uint8_t *data, int offset) {
 	return RID::from_uint64(read_uint64(data, offset));
 }
@@ -337,6 +350,7 @@ static inline void write_rid(volatile uint8_t *data, int offset, RID value) {
 	write_uint64(data, offset, value.get_id());
 }
 
+// Packed type helpers
 static inline PackedByteArray read_packed_byte_array(const volatile uint8_t *data, int offset) {
 	int len = read_int32(data, offset);
 	if (len < 0) {
@@ -593,6 +607,7 @@ static inline void update_status(int offset, int value) {
 
 //for the more complex ones, we directly used variants
 // We use a template so T can be Dictionary, Array, Callable, etc.
+// Variant Helpers
 template <typename T>
 static inline T read_variant(const volatile uint8_t *data, int offset) {
 	int len = read_int32(data, offset);
@@ -609,23 +624,6 @@ static inline T read_variant(const volatile uint8_t *data, int offset) {
 	return (T)v;
 }
 
-// Now your stubs are just one-liners that return the concrete type
-static inline Dictionary read_dictionary(const volatile uint8_t *data, int offset) {
-	return read_variant<Dictionary>(data, offset);
-}
-
-static inline Array read_array(const volatile uint8_t *data, int offset) {
-	return read_variant<Array>(data, offset);
-}
-
-static inline Callable read_callable(const volatile uint8_t *data, int offset) {
-	return read_variant<Callable>(data, offset);
-}
-
-static inline Signal read_signal(const volatile uint8_t *data, int offset) {
-	return read_variant<Signal>(data, offset);
-}
-
 static inline void write_variant(volatile uint8_t *data, int offset, const Variant &v) {
 	int len = 0;
 	encode_variant(v, nullptr, len, false);
@@ -633,16 +631,36 @@ static inline void write_variant(volatile uint8_t *data, int offset, const Varia
 	encode_variant(v, (uint8_t *)(data + offset + 4), len, false);
 }
 
+// Dictionary Helpers
+static inline Dictionary read_dictionary(const volatile uint8_t *data, int offset) {
+	return read_variant<Dictionary>(data, offset);
+}
+
 static inline void write_dictionary(volatile uint8_t *data, int offset, const Dictionary &value) {
 	write_variant(data, offset, value);
+}
+
+// Array Helpers
+static inline Array read_array(const volatile uint8_t *data, int offset) {
+	return read_variant<Array>(data, offset);
 }
 
 static inline void write_array(volatile uint8_t *data, int offset, const Array &value) {
 	write_variant(data, offset, value);
 }
 
+// Callable Helpers
+static inline Callable read_callable(const volatile uint8_t *data, int offset) {
+	return read_variant<Callable>(data, offset);
+}
+
 static inline void write_callable(volatile uint8_t *data, int offset, const Callable &value) {
 	write_variant(data, offset, value);
+}
+
+// Signal Helpers
+static inline Signal read_signal(const volatile uint8_t *data, int offset) {
+	return read_variant<Signal>(data, offset);
 }
 
 static inline void write_signal(volatile uint8_t *data, int offset, const Signal &value) {

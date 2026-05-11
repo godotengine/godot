@@ -1,11 +1,13 @@
 # ruff: noqa: F821
 Import("env")
 
-env.add_source_files(
-    env.modules_sources,
-    [
-        "register_types.cpp",
-        "tests/C++/tests_caller.cpp",
-        "command_processor.cpp",
-    ],
-)
+# Only compiles if it is web
+if env["platform"] == "web":
+    env.add_source_files(
+        env.modules_sources,
+        [
+            "register_types.cpp",
+            "tests/C++/tests_caller.cpp",
+            "command_processor.cpp",
+        ],
+    )
