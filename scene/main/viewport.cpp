@@ -1567,19 +1567,13 @@ void Viewport::_gui_cancel_tooltip() {
 String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner) {
 	Vector2 pos = p_pos;
 	String tooltip;
+	PopupMenu *menu = Object::cast_to<PopupMenu>(this);
 
 	while (p_control) {
-		tooltip = p_control->get_tooltip(pos);
-
-		// Temporary solution for PopupMenus.
-		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
 		if (menu) {
-			Ref<StyleBox> sb = menu->get_theme_stylebox(SceneStringName(panel));
-			if (sb.is_valid()) {
-				pos.y += sb->get_margin(SIDE_TOP);
-			}
-
 			tooltip = menu->get_tooltip(pos);
+		} else {
+			tooltip = p_control->get_tooltip(pos);
 		}
 
 		if (r_tooltip_owner) {
