@@ -37,6 +37,24 @@
 #include "core/os/os.h"
 #include "core/string/ustring.h"
 
+#include <stdlib.h>
+
+// DEAD MONEY: halt the process on the first ERROR-level message when the
+// GODOT_HALT_ON_ERROR env var is set to "1". Render-pipeline failures
+// cascade as five-plus lines per frame for the same root cause; this lets
+// devs see exactly the first line without scrolling past 10k duplicates.
+// Cached on first call so we don't keep hitting getenv.
+static bool _dm_halt_on_error_resolved = false;
+static bool _dm_halt_on_error_enabled = false;
+static bool _dm_should_halt_on_error() {
+	if (!_dm_halt_on_error_resolved) {
+		const char *env = getenv("GODOT_HALT_ON_ERROR");
+		_dm_halt_on_error_enabled = env && env[0] == '1';
+		_dm_halt_on_error_resolved = true;
+	}
+	return _dm_halt_on_error_enabled;
+}
+
 // Optional physics interpolation warnings try to include the path to the relevant node.
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 #include "core/config/project_settings.h"
@@ -139,6 +157,16 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 	_global_unlock();
 
 	is_printing_error = false;
+
+	// DEAD MONEY: halt on first ERROR-level message when opted in via
+	// GODOT_HALT_ON_ERROR=1. Render-pipeline failures cascade into 5+ lines
+	// per frame for the same root cause; this lets devs see just the first
+	// line. _exit skips atexit so scene-tree teardown can't print on top.
+	if (p_type == ERR_HANDLER_ERROR && _dm_should_halt_on_error()) {
+		fflush(stdout);
+		fflush(stderr);
+		_exit(1);
+	}
 }
 
 // For printing errors when we may crash at any point, so we must flush ASAP a lot of lines
@@ -178,6 +206,13 @@ void _err_print_error_asap(const String &p_error, ErrorHandlerType p_type) {
 	_global_unlock();
 
 	is_printing_error = false;
+
+	// DEAD MONEY: same halt-on-error path as the main sink. See above.
+	if (p_type == ERR_HANDLER_ERROR && _dm_should_halt_on_error()) {
+		fflush(stdout);
+		fflush(stderr);
+		_exit(1);
+	}
 }
 
 // Errors with message. (All combinations of p_error and p_message as String or char*.)
