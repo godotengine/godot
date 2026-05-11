@@ -39,6 +39,12 @@
 
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
 // DEAD MONEY: env-var-gated halt-on-first-error switch. Render-pipeline
 // failures cascade as 5+ ERROR lines per frame for the same root cause;
 // GODOT_HALT_ON_ERROR=1 leaves only the first line visible.
