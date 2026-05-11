@@ -689,6 +689,7 @@ class CanvasItemEditorViewport : public Control {
 	void _create_texture_node(Node *p_parent, Node *p_child, const String &p_path, const Point2 &p_point);
 	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
+	void _create_mesh_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();
 	void _update_theme();
