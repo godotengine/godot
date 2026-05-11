@@ -507,7 +507,7 @@ const Vector2 &CharacterBody2D::get_platform_velocity() const {
 
 Node *CharacterBody2D::get_physics_process_dependency() const {
 	if (platform_object_id.is_valid()) {
-		return Object::cast_to<Node>(ObjectDB::get_instance(platform_object_id));
+		return ObjectDB::get_instance<Node>(platform_object_id);
 	}
 	return nullptr;
 }

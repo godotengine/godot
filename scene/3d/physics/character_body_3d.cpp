@@ -718,7 +718,7 @@ Node *CharacterBody3D::get_physics_process_dependency() const {
 	// before this CharacterBody3D within the same physics_process_priority group.
 	// platform_object_id is set in _set_platform_data() when we land on a floor.
 	if (platform_object_id.is_valid()) {
-		return Object::cast_to<Node>(ObjectDB::get_instance(platform_object_id));
+		return ObjectDB::get_instance<Node>(platform_object_id);
 	}
 	return nullptr;
 }
