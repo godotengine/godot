@@ -39,11 +39,9 @@
 
 #include <stdlib.h>
 
-// DEAD MONEY: halt the process on the first ERROR-level message when the
-// GODOT_HALT_ON_ERROR env var is set to "1". Render-pipeline failures
-// cascade as five-plus lines per frame for the same root cause; this lets
-// devs see exactly the first line without scrolling past 10k duplicates.
-// Cached on first call so we don't keep hitting getenv.
+// DEAD MONEY: env-var-gated halt-on-first-error switch. Render-pipeline
+// failures cascade as 5+ ERROR lines per frame for the same root cause;
+// GODOT_HALT_ON_ERROR=1 leaves only the first line visible.
 static bool _dm_halt_on_error_resolved = false;
 static bool _dm_halt_on_error_enabled = false;
 static bool _dm_should_halt_on_error() {
@@ -158,10 +156,8 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 
 	is_printing_error = false;
 
-	// DEAD MONEY: halt on first ERROR-level message when opted in via
-	// GODOT_HALT_ON_ERROR=1. Render-pipeline failures cascade into 5+ lines
-	// per frame for the same root cause; this lets devs see just the first
-	// line. _exit skips atexit so scene-tree teardown can't print on top.
+	// _exit, not exit: skip atexit / scene-tree teardown so the root-cause
+	// line isn't buried under shutdown noise.
 	if (p_type == ERR_HANDLER_ERROR && _dm_should_halt_on_error()) {
 		fflush(stdout);
 		fflush(stderr);
@@ -207,7 +203,6 @@ void _err_print_error_asap(const String &p_error, ErrorHandlerType p_type) {
 
 	is_printing_error = false;
 
-	// DEAD MONEY: same halt-on-error path as the main sink. See above.
 	if (p_type == ERR_HANDLER_ERROR && _dm_should_halt_on_error()) {
 		fflush(stdout);
 		fflush(stderr);
