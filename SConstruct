@@ -1226,6 +1226,9 @@ if "cpp_compiler_launcher" in env:
 # Create a cloned environment where it will add implicit dependencies for the first
 # two items in the Command's action string.
 py_builder_env = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES=2, PYTHON_BIN=sys.executable)
+
+# modify SPAWN for win32 to handle long command lines
+methods.SetupSpawn(py_builder_env)
 Export("py_builder_env")
 
 

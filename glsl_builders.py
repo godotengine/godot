@@ -292,7 +292,37 @@ def build_raw_headers(target, source):
         build_raw_header(f"{src}.gen.h", str(src))
 
 
+def read_args_from_file(argfile_path):
+    """Read arguments from a file and return them as a list."""
+    args = []
+    try:
+        with open(argfile_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):  # Skip empty lines and comments
+                    args.extend(line.split())
+    except FileNotFoundError:
+        print(f"Error: Argument file '{argfile_path}' not found", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error reading argument file '{argfile_path}': {e}", file=sys.stderr)
+        sys.exit(1)
+    return args
+
+
 def main():
+    # Parse initial arguments to check for argfile
+    initial_parser = argparse.ArgumentParser(add_help=False)
+    initial_parser.add_argument("--argfile", help="File containing additional arguments")
+    initial_args, remaining_args = initial_parser.parse_known_args()
+    
+    # If argfile is provided, read arguments from it
+    if initial_args.argfile:
+        file_args = read_args_from_file(initial_args.argfile)
+        # Combine file arguments with remaining command line arguments
+        sys.argv = [sys.argv[0]] + file_args + remaining_args
+    
+    # Parse all arguments
     parser = argparse.ArgumentParser(description="GLSL build tools")
     parser.add_argument(
         "--method",
