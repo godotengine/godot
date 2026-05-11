@@ -59,6 +59,18 @@ void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_ext
 	p_extensions->push_back("gdc");
 }
 
+bool ResourceFormatLoaderGDScript::recognize_path(const String &p_path, const String &p_for_type) const {
+	if (ResourceFormatLoader::recognize_path(p_path, p_for_type)) {
+		return true;
+	}
+
+	if (p_path.contains("::GDScript_")) {
+		return true; // Likely a built-in script.
+	}
+
+	return false;
+}
+
 bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
 	return (p_type == "Script" || p_type == "GDScript");
 }
