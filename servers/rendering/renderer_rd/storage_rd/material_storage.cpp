@@ -709,9 +709,11 @@ RD::PipelineColorBlendState::Attachment MaterialStorage::ShaderData::blend_mode_
 		case BLEND_MODE_MAX: {
 			// DEAD MONEY: max-blend, e.g. for emissive accumulation in MRT.
 			// FACTOR_ONE × src op_max FACTOR_ONE × dst → max(src, dst) per channel.
+			// BLEND_OP_MAXIMUM is the actual max operator; BLEND_OP_MAX is the
+			// enum sentinel (=5) and trips RD validation in render_pipeline_create.
 			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_MAX;
-			attachment.color_blend_op = RD::BLEND_OP_MAX;
+			attachment.alpha_blend_op = RD::BLEND_OP_MAXIMUM;
+			attachment.color_blend_op = RD::BLEND_OP_MAXIMUM;
 			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
