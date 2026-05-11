@@ -3520,11 +3520,9 @@ RID TextureStorage::RenderTarget::get_framebuffer() {
 	// We can't resolve into our overridden buffer as it won't be marked as a resolve buffer.
 	// This is only applicable when OpenXR is used and 2D rendering is skipped.
 
-	// DEAD MONEY: MRT path. RD::framebuffer_create does NOT de-duplicate, so
-	// calling it every frame leaks a framebuffer RID per call and exhausts
-	// the RID pool in seconds. Cache the result on the render target;
-	// _clear_render_target invalidates it on reconfigure. MSAA + MRT
-	// unsupported (render_target_set_mrt_attachments forces MSAA off).
+	// DEAD MONEY: MRT path. RD::framebuffer_create does NOT de-duplicate;
+	// per-frame calls exhaust the RID pool. MSAA + MRT unsupported here —
+	// render_target_set_mrt_attachments forces MSAA off.
 	if (!mrt_aux_color.is_empty()) {
 		if (mrt_framebuffer.is_valid()) {
 			return mrt_framebuffer;
@@ -3590,10 +3588,6 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	}
 	rt->mrt_aux_color.clear();
 
-	// Free the cached multi-attachment framebuffer; aux RIDs above were its
-	// attachments, so this must run after they're freed (FB free is a no-op
-	// on attachments themselves, but the dependency walk runs cleaner this
-	// way) and the next get_framebuffer() will rebuild on demand.
 	if (rt->mrt_framebuffer.is_valid()) {
 		RD::get_singleton()->free_rid(rt->mrt_framebuffer);
 		rt->mrt_framebuffer = RID();
