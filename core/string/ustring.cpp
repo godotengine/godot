@@ -4427,7 +4427,7 @@ static String _punycode_decode_label(const char32_t *p_label, int p_label_len) {
 	String output;
 	int basic_end = (delimiter_pos >= 0) ? delimiter_pos : 0;
 	for (int i = 0; i < basic_end; i++) {
-		if (p_label[i] >= 128) {
+		if (!is_ascii_char(p_label[i])) {
 			return String();
 		}
 		output += String::chr(p_label[i]);

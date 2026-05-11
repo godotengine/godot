@@ -125,7 +125,7 @@ constexpr bool is_ascii_identifier_char(char32_t p_char) {
 }
 
 constexpr bool is_ascii_char(char32_t p_char) {
-	return (p_char >= 0 && p_char <= 0x7f);
+	return p_char <= 0x7f;
 }
 
 constexpr bool is_symbol(char32_t p_char) {
