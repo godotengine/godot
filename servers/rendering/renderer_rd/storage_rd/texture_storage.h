@@ -416,6 +416,11 @@ private:
 		// every _update_render_target so consumer ShaderMaterial bindings
 		// survive viewport resize. Lazily populated on first call.
 		Vector<Ref<Texture2DRD>> mrt_aux_wrappers;
+		// Cached multi-attachment framebuffer. RD::framebuffer_create does
+		// not de-duplicate, so calling it every frame leaks a RID per call
+		// and exhausts the pool in seconds. Built once on first
+		// get_framebuffer() and cleared in _clear_render_target.
+		RID mrt_framebuffer;
 
 		// overridden textures
 		struct RTOverridden {

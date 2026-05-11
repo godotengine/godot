@@ -3520,21 +3520,22 @@ RID TextureStorage::RenderTarget::get_framebuffer() {
 	// We can't resolve into our overridden buffer as it won't be marked as a resolve buffer.
 	// This is only applicable when OpenXR is used and 2D rendering is skipped.
 
-	// DEAD MONEY: MRT path. When auxiliary attachments are configured, build
-	// a multi-attachment framebuffer. The cache is bypassed (variadic template
-	// can't take a Vector); RD::framebuffer_create de-duplicates internally
-	// based on the texture RID list, so re-creation only occurs when the aux
-	// textures themselves change (i.e. on render-target reconfigure).
-	// MSAA + MRT is not supported here — _update_render_target's msaa branch
-	// would still build a multisample primary, but we don't allocate
-	// multisample aux. Force MSAA off via render_target_set_mrt_attachments.
+	// DEAD MONEY: MRT path. RD::framebuffer_create does NOT de-duplicate, so
+	// calling it every frame leaks a framebuffer RID per call and exhausts
+	// the RID pool in seconds. Cache the result on the render target;
+	// _clear_render_target invalidates it on reconfigure. MSAA + MRT
+	// unsupported (render_target_set_mrt_attachments forces MSAA off).
 	if (!mrt_aux_color.is_empty()) {
+		if (mrt_framebuffer.is_valid()) {
+			return mrt_framebuffer;
+		}
 		Vector<RID> attachments;
 		attachments.push_back(overridden.color.is_valid() ? overridden.color : color);
 		for (RID aux : mrt_aux_color) {
 			attachments.push_back(aux);
 		}
-		return RD::get_singleton()->framebuffer_create(attachments, RenderingDevice::INVALID_ID, view_count);
+		mrt_framebuffer = RD::get_singleton()->framebuffer_create(attachments, RenderingDevice::INVALID_ID, view_count);
+		return mrt_framebuffer;
 	}
 
 	if (msaa != RS::VIEWPORT_MSAA_DISABLED && overridden.color.is_null()) {
@@ -3588,6 +3589,15 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		}
 	}
 	rt->mrt_aux_color.clear();
+
+	// Free the cached multi-attachment framebuffer; aux RIDs above were its
+	// attachments, so this must run after they're freed (FB free is a no-op
+	// on attachments themselves, but the dependency walk runs cleaner this
+	// way) and the next get_framebuffer() will rebuild on demand.
+	if (rt->mrt_framebuffer.is_valid()) {
+		RD::get_singleton()->free_rid(rt->mrt_framebuffer);
+		rt->mrt_framebuffer = RID();
+	}
 
 	if (rt->backbuffer.is_valid()) {
 		RD::get_singleton()->free_rid(rt->backbuffer);
