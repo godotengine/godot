@@ -106,6 +106,7 @@
 		</member>
 		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" default="true">
 			If [code]true[/code], the area detects bodies or areas entering and exiting it.
+			Setting this property to [code]false[/code] will cause [signal area_exited], [signal area_shape_exited], [signal body_exited], and [signal body_shape_exited] to be emitted for all areas and bodies currently within this area.
 		</member>
 		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="0">
 			The area's priority. Higher priority areas are processed first. The [World2D]'s physics is always processed last, after all areas.
