@@ -386,6 +386,7 @@ public:
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path);
 
 	void add_logger(Logger *p_logger);
+	void reset_logger(Logger *p_replacement);
 
 	enum PreferredTextureFormat {
 		PREFERRED_TEXTURE_FORMAT_S3TC_BPTC,

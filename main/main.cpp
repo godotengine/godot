@@ -218,6 +218,7 @@ static bool project_manager = false;
 static bool cmdline_tool = false;
 static String locale;
 static String log_file;
+static String log_format;
 static bool show_help = false;
 static uint64_t quit_after = 0;
 static ProcessID editor_pid = 0;
@@ -622,6 +623,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--tablet-driver <driver>", "Pen tablet input driver.\n");
 	print_help_option("--headless", "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
 	print_help_option("--log-file <file>", "Write output/error log to the specified path instead of the default location defined by the project.\n");
+	print_help_option("--log-format <text|json>", "Output format for stdout/stderr log lines. 'text' (default) is human-readable; 'json' emits one JSON object per line (NDJSON) with timestamp, level, message, and error context.\n");
 	print_help_option("", "<file> path should be absolute or relative to the project directory.\n");
 	print_help_option("--write-movie <file>", "Write a video to the specified path (usually with .avi or .png extension).\n");
 	print_help_option("", "--fixed-fps is forced when enabled, but it can be used to change movie FPS.\n");
@@ -1513,6 +1515,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing log file path argument, aborting.\n");
+				goto error;
+			}
+		} else if (arg == "--log-format") { // output format for stdout/stderr
+
+			if (N) {
+				log_format = N->get();
+				N = N->next();
+				if (log_format == "json") {
+					OS::get_singleton()->reset_logger(memnew(JSONLogger));
+				} else if (log_format != "text") {
+					OS::get_singleton()->print("Invalid --log-format value '%s'. Valid values: text, json. Aborting.\n", log_format.utf8().get_data());
+					goto error;
+				}
+			} else {
+				OS::get_singleton()->print("Missing --log-format value. Valid values: text, json. Aborting.\n");
 				goto error;
 			}
 		} else if (arg == "--profiling") { // enable profiling

@@ -91,6 +91,12 @@ void OS::add_logger(Logger *p_logger) {
 	}
 }
 
+void OS::reset_logger(Logger *p_replacement) {
+	Vector<Logger *> loggers;
+	loggers.push_back(p_replacement);
+	_set_logger(memnew(CompositeLogger(loggers)));
+}
+
 String OS::get_identifier() const {
 	return get_name().to_lower();
 }

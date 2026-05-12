@@ -103,6 +103,17 @@ public:
 };
 
 /**
+ * Writes messages as newline-delimited JSON (NDJSON) to stdout — one JSON object per log call.
+ * Designed for tools and editors that consume Godot's output programmatically.
+ */
+class JSONLogger : public Logger {
+public:
+	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
+	virtual ~JSONLogger() {}
+};
+
+/**
  * Writes messages to the specified file. If the file already exists, creates a copy (backup)
  * of it with timestamp appended to the file name. Maximum number of backups is configurable.
  * When maximum is reached, the oldest backups are erased. With the maximum being equal to 1,

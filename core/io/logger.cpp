@@ -33,9 +33,11 @@
 #include "core/core_globals.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/json.h"
 #include "core/object/script_backtrace.h"
 #include "core/os/time.h"
 #include "core/templates/rb_set.h"
+#include "core/variant/dictionary.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 
@@ -235,6 +237,91 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 			fflush(stdout);
 		}
 	}
+}
+
+static String _json_logger_format_message(const char *p_format, va_list p_list) {
+	const int static_buf_size = 1024;
+	char static_buf[static_buf_size];
+	char *buf = static_buf;
+	va_list list_copy;
+	va_copy(list_copy, p_list);
+	int len = vsnprintf(buf, static_buf_size, p_format, p_list);
+	if (len >= static_buf_size) {
+		buf = (char *)Memory::alloc_static(len + 1);
+		vsnprintf(buf, len + 1, p_format, list_copy);
+	}
+	va_end(list_copy);
+
+	String result = String::utf8(buf);
+	if (len >= static_buf_size) {
+		Memory::free_static(buf);
+	}
+	// Strip a single trailing newline (Godot's print paths append "\n" but each
+	// NDJSON record is already line-delimited by us writing one "\n" below).
+	if (result.ends_with("\n")) {
+		result = result.substr(0, result.length() - 1);
+	}
+	return result;
+}
+
+static void _json_logger_emit(const Dictionary &p_record) {
+	String line = JSON::stringify(p_record, "", false, true);
+	fwrite(line.utf8().get_data(), 1, line.utf8().length(), stdout);
+	fputc('\n', stdout);
+	fflush(stdout);
+}
+
+void JSONLogger::logv(const char *p_format, va_list p_list, bool p_err) {
+	if (!should_log(p_err)) {
+		return;
+	}
+
+	Dictionary record;
+	record["ts"] = Time::get_singleton()->get_datetime_string_from_system(true);
+	record["level"] = p_err ? "error" : "info";
+	record["msg"] = _json_logger_format_message(p_format, p_list);
+	_json_logger_emit(record);
+}
+
+void JSONLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
+	if (!should_log(true)) {
+		return;
+	}
+
+	Dictionary record;
+	record["ts"] = Time::get_singleton()->get_datetime_string_from_system(true);
+	switch (p_type) {
+		case ERR_WARNING:
+			record["level"] = "warning";
+			break;
+		case ERR_SCRIPT:
+			record["level"] = "script_error";
+			break;
+		case ERR_SHADER:
+			record["level"] = "shader_error";
+			break;
+		case ERR_ERROR:
+		default:
+			record["level"] = "error";
+			break;
+	}
+	record["function"] = String::utf8(p_function ? p_function : "");
+	record["file"] = String::utf8(p_file ? p_file : "");
+	record["line"] = p_line;
+	record["code"] = String::utf8(p_code ? p_code : "");
+	record["rationale"] = String::utf8(p_rationale ? p_rationale : "");
+	record["editor_notify"] = p_editor_notify;
+
+	Array backtraces;
+	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
+		if (backtrace.is_valid() && !backtrace->is_empty()) {
+			backtraces.push_back(backtrace->format(0));
+		}
+	}
+	if (!backtraces.is_empty()) {
+		record["backtrace"] = backtraces;
+	}
+	_json_logger_emit(record);
 }
 
 CompositeLogger::CompositeLogger(const Vector<Logger *> &p_loggers) :
