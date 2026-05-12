@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/templates/hash_map.h"
+#include "core/templates/local_vector.h"
 #include "core/variant/dictionary.h"
 
 const char *Image::format_names[Image::FORMAT_MAX] = {
@@ -1978,6 +1979,141 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 	}
 }
 
+// DEAD MONEY: Kaiser-windowed sinc mipmap downsampler.
+//
+// 6-tap separable filter targeted at 2x downsampling. Sharper LODs than the
+// 2x2-box default; the windowed sinc has negative side lobes so the result
+// is non-monotonic and can exceed the source channel range — uint8 output
+// is clamped per-component. Weights are computed once on first use and
+// reused; the sum is normalized to 1.
+
+static constexpr int KAISER_TAP_COUNT = 6;
+static constexpr float KAISER_RADIUS = 3.0f;
+static constexpr float KAISER_ALPHA = 4.0f;
+
+static float _kaiser_bessel_i0(float p_x) {
+	// Modified Bessel I0(x), series I0(x) = sum_k ((x/2)^2)^k / (k!)^2.
+	const float t = p_x * 0.5f;
+	const float y = t * t;
+	float sum = 1.0f;
+	float term = 1.0f;
+	for (int k = 1; k < 25; k++) {
+		term *= y / float(k * k);
+		sum += term;
+		if (term < 1e-12f * sum) {
+			break;
+		}
+	}
+	return sum;
+}
+
+static const float *_kaiser_weights() {
+	// C++11 thread-safe magic-static; init runs once.
+	static const auto compute = []() {
+		struct Weights {
+			float w[KAISER_TAP_COUNT];
+		};
+		Weights weights{};
+		const float bessel_alpha = _kaiser_bessel_i0(KAISER_ALPHA);
+		float sum = 0.0f;
+		for (int i = 0; i < KAISER_TAP_COUNT; i++) {
+			// Output texel center sits at source position (2*out + 0.5);
+			// taps cover source offsets -2.5..+2.5 from that center.
+			const float x = -2.5f + float(i);
+			const float arg = x / KAISER_RADIUS;
+			float window = 0.0f;
+			if (arg > -1.0f && arg < 1.0f) {
+				window = _kaiser_bessel_i0(KAISER_ALPHA * Math::sqrt(1.0f - arg * arg)) / bessel_alpha;
+			}
+			float sinc;
+			if (Math::abs(x) < 1e-6f) {
+				sinc = 1.0f;
+			} else {
+				// sinc(x*0.5) — cutoff = Nyquist of the downsampled signal.
+				const float pix = float(Math::PI) * x * 0.5f;
+				sinc = Math::sin(pix) / pix;
+			}
+			weights.w[i] = window * sinc;
+			sum += weights.w[i];
+		}
+		for (int i = 0; i < KAISER_TAP_COUNT; i++) {
+			weights.w[i] /= sum;
+		}
+		return weights;
+	}();
+	return compute.w;
+}
+
+template <int CC>
+static void _generate_po2_mipmap_kaiser_u8(const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height) {
+	const uint32_t dst_w = MAX(p_width >> 1, 1u);
+	const uint32_t dst_h = MAX(p_height >> 1, 1u);
+	const float *w = _kaiser_weights();
+
+	// Separable: horizontal into a float intermediate (dst_w x src_h),
+	// then vertical into the destination. Edges clamp via CLAMP on the
+	// source index — replicates border texels under the sinc support.
+	LocalVector<float> temp;
+	temp.resize(int64_t(dst_w) * p_height * CC);
+
+	for (uint32_t y = 0; y < p_height; y++) {
+		const uint8_t *src_row = p_src + int64_t(y) * p_width * CC;
+		float *temp_row = temp.ptr() + int64_t(y) * dst_w * CC;
+		for (uint32_t dx = 0; dx < dst_w; dx++) {
+			const int sx_start = int(dx) * 2 - 2;
+			for (int c = 0; c < CC; c++) {
+				float acc = 0.0f;
+				for (int t = 0; t < KAISER_TAP_COUNT; t++) {
+					const int sx = CLAMP(sx_start + t, 0, int(p_width) - 1);
+					acc += float(src_row[sx * CC + c]) * w[t];
+				}
+				temp_row[dx * CC + c] = acc;
+			}
+		}
+	}
+
+	for (uint32_t dy = 0; dy < dst_h; dy++) {
+		const int sy_start = int(dy) * 2 - 2;
+		uint8_t *dst_row = p_dst + int64_t(dy) * dst_w * CC;
+		for (uint32_t x = 0; x < dst_w; x++) {
+			for (int c = 0; c < CC; c++) {
+				float acc = 0.0f;
+				for (int t = 0; t < KAISER_TAP_COUNT; t++) {
+					const int sy = CLAMP(sy_start + t, 0, int(p_height) - 1);
+					acc += temp[int64_t(sy) * dst_w * CC + x * CC + c] * w[t];
+				}
+				const int32_t v = int32_t(Math::round(acc));
+				dst_row[x * CC + c] = uint8_t(CLAMP(v, 0, 255));
+			}
+		}
+	}
+}
+
+void Image::_generate_mipmap_kaiser_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height) {
+	switch (p_format) {
+		case Image::FORMAT_L8:
+		case Image::FORMAT_R8:
+			_generate_po2_mipmap_kaiser_u8<1>(p_src, p_dst, p_width, p_height);
+			break;
+		case Image::FORMAT_LA8:
+		case Image::FORMAT_RG8:
+			_generate_po2_mipmap_kaiser_u8<2>(p_src, p_dst, p_width, p_height);
+			break;
+		case Image::FORMAT_RGB8:
+			_generate_po2_mipmap_kaiser_u8<3>(p_src, p_dst, p_width, p_height);
+			break;
+		case Image::FORMAT_RGBA8:
+			_generate_po2_mipmap_kaiser_u8<4>(p_src, p_dst, p_width, p_height);
+			break;
+		default:
+			// Float/16-bit/packed formats route through the box path. The
+			// Kaiser convolution as written is uint8-only; renormalize-on-
+			// downsample paths (normal maps) belong on the box side too.
+			_generate_mipmap_from_format(p_format, p_src, p_dst, p_width, p_height, false);
+			break;
+	}
+}
+
 void Image::_generate_mipmap_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height, bool p_renormalize) {
 	const float *src_float = reinterpret_cast<const float *>(p_src);
 	float *dst_float = reinterpret_cast<float *>(p_dst);
@@ -2163,6 +2299,36 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 		_get_mipmap_offset_and_size(i, ofs, w, h);
 
 		_generate_mipmap_from_format(format, wp + prev_ofs, wp + ofs, prev_w, prev_h, p_renormalize);
+
+		prev_ofs = ofs;
+		prev_w = w;
+		prev_h = h;
+	}
+
+	mipmaps = true;
+
+	return OK;
+}
+
+Error Image::generate_mipmaps_kaiser() {
+	ERR_FAIL_COND_V_MSG(is_compressed(), ERR_UNAVAILABLE, "Cannot generate mipmaps from compressed image formats.");
+	ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
+
+	int gen_mipmap_count;
+	int64_t size = _get_dst_image_size(width, height, format, gen_mipmap_count);
+	data.resize(size);
+	uint8_t *wp = data.ptrw();
+
+	int prev_ofs = 0;
+	int prev_h = height;
+	int prev_w = width;
+
+	for (int i = 1; i <= gen_mipmap_count; i++) {
+		int64_t ofs;
+		int w, h;
+		_get_mipmap_offset_and_size(i, ofs, w, h);
+
+		_generate_mipmap_kaiser_from_format(format, wp + prev_ofs, wp + ofs, prev_w, prev_h);
 
 		prev_ofs = ofs;
 		prev_w = w;
@@ -3849,6 +4015,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("flip_x"), &Image::flip_x);
 	ClassDB::bind_method(D_METHOD("flip_y"), &Image::flip_y);
 	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("generate_mipmaps_kaiser"), &Image::generate_mipmaps_kaiser);
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
 #ifndef DISABLE_DEPRECATED

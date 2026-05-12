@@ -287,6 +287,8 @@ private:
 
 	_FORCE_INLINE_ void _generate_mipmap_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height, bool p_renormalize = false);
 
+	void _generate_mipmap_kaiser_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height);
+
 	static void average_4_uint8(uint8_t &p_out, const uint8_t &p_a, const uint8_t &p_b, const uint8_t &p_c, const uint8_t &p_d);
 	static void average_4_float(float &p_out, const float &p_a, const float &p_b, const float &p_c, const float &p_d);
 	static void average_4_half(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
@@ -338,6 +340,12 @@ public:
 
 	// Generate a mipmap chain of an image (creates an image 1/4 the size, with averaging of 4->1).
 	Error generate_mipmaps(bool p_renormalize = false);
+
+	// DEAD MONEY: Kaiser-windowed sinc downsampler. Sharper LODs than the
+	// 2x2-box default; intended for art textures where the default chain
+	// reads too soft at zoom-out (e.g. ortho 2D scenes). uint8 formats
+	// only — others fall back to the box path.
+	Error generate_mipmaps_kaiser();
 
 	Error generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map);
 
