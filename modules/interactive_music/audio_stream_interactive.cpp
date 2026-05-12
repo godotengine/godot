@@ -845,9 +845,9 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 			to_state.fade_volume = 0.0;
 			to_state.fade_speed = fade_speed;
 		}
-
-		to_state.auto_advance = auto_advance_to;
 	}
+
+	to_state.auto_advance = auto_advance_to;
 }
 
 void AudioStreamPlaybackInteractive::seek(double p_time) {
