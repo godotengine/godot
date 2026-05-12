@@ -1505,10 +1505,18 @@ void fragment_shader(in SceneData scene_data) {
 		vec4 res = vec4(0.0);
 		if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_FOG)) {
 			//must use the full blending equation here to blend fogs
-			res.a = fog.a * volumetric_fog.a;
-			res.rgb = fog.rgb * volumetric_fog.a + volumetric_fog.rgb;
+			if (sc_fog_use_legacy_blending()) {
+				res.a = mix(0.0, fog.a, volumetric_fog.a);
+				res.rgb = mix(volumetric_fog.rgb, fog.rgb, volumetric_fog.a);
+			} else {
+				res.a = fog.a * volumetric_fog.a;
+				res.rgb = fog.rgb * volumetric_fog.a + volumetric_fog.rgb;
+			}
 		} else {
 			res = volumetric_fog;
+			if (sc_fog_use_legacy_blending()) {
+				res.rgb *= 1.0 - res.a;
+			}
 		}
 		fog = res;
 	}
