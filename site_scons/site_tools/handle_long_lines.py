@@ -192,8 +192,8 @@ class MyTempFileMunge:
             # The sh shell will try to escape the backslashes in the
             # path, so unescape them.
             native_tmp = native_tmp.replace("\\", r"\\\\")
-        if "TEMPFILEPREFIX" in env:
-            prefix = env.subst("$TEMPFILEPREFIX")
+        if "MYTEMPFILEPREFIX" in env:
+            prefix = env.subst("$MYTEMPFILEPREFIX")
         else:
             prefix = "@"
         cmdlist = cmd[:tempfile_arg_count] + [prefix + native_tmp]
@@ -230,7 +230,7 @@ class MyTempFileMunge:
 
 def generate(env):
     env["MYTEMPFILE"] = MyTempFileMunge
-    env["TEMPFILEPREFIX"] = "@"
+    env["MYTEMPFILEPREFIX"] = "@"
     env["MAXLINELENGTH"] = 2048
     env["TEMPFILE_ARG_COUNT"] = 1
 
