@@ -218,7 +218,7 @@
 				[b]Note:[/b] [method get_luminance] relies on the color using linear encoding to return an accurate relative luminance value. If the color uses the default nonlinear sRGB encoding, use [method srgb_to_linear] to convert it to linear encoding first.
 			</description>
 		</method>
-		<method name="hex" qualifiers="static">
+		<method name="hex" qualifiers="static" keywords="from_rgba32">
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
@@ -239,7 +239,7 @@
 				If you want to use hex notation in a constant expression, use the equivalent constructor instead (i.e. [code]Color(0xRRGGBBAA)[/code]).
 			</description>
 		</method>
-		<method name="hex64" qualifiers="static">
+		<method name="hex64" qualifiers="static" keywords="from_rgba64">
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
@@ -460,7 +460,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_rgba32" qualifiers="const">
+		<method name="to_rgba32" qualifiers="const" keywords="to_hex">
 			<return type="int" />
 			<description>
 				Returns the color converted to a 32-bit integer in RGBA format (each component is 8 bits). RGBA is Godot's default format. This method is the inverse of [method hex].
@@ -476,7 +476,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_rgba64" qualifiers="const">
+		<method name="to_rgba64" qualifiers="const" keywords="to_hex64">
 			<return type="int" />
 			<description>
 				Returns the color converted to a 64-bit integer in RGBA format (each component is 16 bits). RGBA is Godot's default format. This method is the inverse of [method hex64].
