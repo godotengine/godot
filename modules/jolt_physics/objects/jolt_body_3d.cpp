@@ -526,6 +526,20 @@ void JoltBody3D::set_transform(Transform3D p_transform) {
 		jolt_settings->mPosition = to_jolt_r(p_transform.origin);
 		jolt_settings->mRotation = to_jolt(p_transform.basis);
 	} else if (is_kinematic()) {
+		// Cache the velocity implied by this transform change so that
+		// body_get_direct_state() in the same _physics_process tick returns
+		// current-tick data rather than last-step data.
+		if (last_step > 0.0f) {
+			const real_t inv_step = 1.0f / last_step;
+			pending_linear_velocity = (p_transform.origin - kinematic_transform.origin) * inv_step + linear_surface_velocity;
+			Basis rot = p_transform.basis.orthonormalized() * kinematic_transform.basis.orthonormalized().transposed();
+			Vector3 axis;
+			real_t angle;
+			rot.get_axis_angle(axis, angle);
+			axis.normalize();
+			pending_angular_velocity = angular_surface_velocity + axis * (angle * inv_step);
+			pending_transform_valid = true;
+		}
 		kinematic_transform = p_transform;
 	} else {
 		space->get_body_iface().SetPositionAndRotation(jolt_body->GetID(), to_jolt_r(p_transform.origin), to_jolt(p_transform.basis), JPH::EActivation::DontActivate);
@@ -1111,6 +1125,11 @@ void JoltBody3D::pre_step(float p_step) {
 			_integrate_forces(p_step);
 		} break;
 		case PhysicsServer3D::BODY_MODE_KINEMATIC: {
+			// Clear the pending flag from the previous _physics_process tick and store
+			// the step duration for pending velocity computation in set_transform().
+			clear_pending_transform();
+			last_step = p_step;
+
 			if (has_point_gravity) {
 				_update_environmental_properties();
 			}
