@@ -126,6 +126,7 @@ public:
 				uint32_t multimesh_format_2d : 1;
 				uint32_t multimesh_has_color : 1;
 				uint32_t multimesh_has_custom_data : 1;
+				uint32_t fog_use_legacy_blending : 1;
 			};
 		};
 
