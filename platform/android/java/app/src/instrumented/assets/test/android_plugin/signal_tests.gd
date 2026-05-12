@@ -15,6 +15,7 @@ func run_tests():
 
 	__exec_test(test_plugin_exists)
 	__exec_test(test_signal_registration)
+	__exec_test(test_signal_connection)
 	await __exec_test(test_signal_emission)
 
 	print("Android plugin signal tests completed.")
@@ -32,6 +33,21 @@ func test_signal_registration() -> bool:
 
 	var launch_signal_registered = _plugin.has_signal(launch_test_signal)
 	assert_true(launch_signal_registered)
+
+	return true
+
+func test_signal_connection() -> bool:
+	_plugin.connect(emission_test_signal, _on_emission_test_signal_emitted)
+	assert_equal(_plugin.has_connections(emission_test_signal), true)
+
+	_plugin.disconnect(emission_test_signal, _on_emission_test_signal_emitted)
+	assert_equal(_plugin.has_connections(emission_test_signal), false)
+
+	_plugin.emission_test_signal.connect(_on_emission_test_signal_emitted)
+	assert_equal(_plugin.has_connections(emission_test_signal), true)
+
+	_plugin.emission_test_signal.disconnect(_on_emission_test_signal_emitted)
+	assert_equal(_plugin.has_connections(emission_test_signal), false)
 
 	return true
 

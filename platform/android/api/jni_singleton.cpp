@@ -36,6 +36,15 @@ void JNISingleton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_java_method", "method"), &JNISingleton::has_java_method);
 }
 
+bool JNISingleton::_get(const StringName &p_name, Variant &r_property) const {
+	if (has_signal(p_name)) {
+		r_property = Signal(this, p_name);
+		return true;
+	}
+
+	return false;
+}
+
 Variant JNISingleton::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	// Godot methods take precedence.
 	Variant ret = Object::callp(p_method, p_args, p_argcount, r_error);
