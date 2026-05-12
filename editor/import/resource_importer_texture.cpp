@@ -405,7 +405,14 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 		}
 
 		if (!image->has_mipmaps() || p_force_normal) {
-			image->generate_mipmaps(p_force_normal);
+			// DEAD MONEY: Kaiser-windowed sinc downsampler for art textures;
+			// the box default reads too soft at zoom-out for ortho 2D. Normal
+			// maps stay on the box path because Kaiser doesn't renormalize.
+			if (p_force_normal) {
+				image->generate_mipmaps(p_force_normal);
+			} else {
+				image->generate_mipmaps_kaiser();
+			}
 		}
 
 	} else {
