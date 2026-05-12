@@ -1,7 +1,7 @@
 """
 This is a modified copy of SCons's TempFileMunge.
 It will accept TEMPFILE_ARG_COUNT which is the number of command line arguments which
-are excepted from being included in the generated response file if the comand line is too
+are excepted from being included in the generated response file if the command line is too
 long for the OS's shell
 """
 
@@ -202,7 +202,7 @@ class MyTempFileMunge:
         # to avoid creating separate temporary files for print and execute.
         if node is not None:
             try:
-                # Storing in tempfile_cmdlist by self.cmd provided when intializing
+                # Storing in tempfile_cmdlist by self.cmd provided when initializing
                 # $TEMPFILE{} fixes issue raised in PR #3140 and #3553
                 node.attributes.tempfile_cmdlist[cmdlist_key] = cmdlist
             except AttributeError:
