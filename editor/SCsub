@@ -49,7 +49,7 @@ if env.editor_build:
 
     docs = sorted(docs)
     py_builder_env["MAKE_DOC_HEADER_COM"] = (
-        "$PYTHON_BIN editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES"
+        "${MYTEMPFILE('$PYTHON_BIN editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES','$GENCOMSTR')}"
     )
     py_builder_env.Command(
         "#editor/doc/doc_data_compressed.gen.h",
