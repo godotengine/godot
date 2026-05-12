@@ -4,7 +4,7 @@
 		Playback class used for [AudioStreamPolyphonic].
 	</brief_description>
 	<description>
-		Playback component of [AudioStreamPolyphonic]. After setting the [code]stream[/code] property of an audio stream player and playing it, the playback instance can be obtained by calling the [method AudioStreamPlayer.get_stream_playback], [method AudioStreamPlayer2D.get_stream_playback], or [method AudioStreamPlayer3D.get_stream_playback] methods.
+		Playback component of [AudioStreamPolyphonic]. After setting the [code]stream[/code] property of an audio stream player and playing it, the playback instance can be obtained by calling the [method AudioStreamPlayer.get_stream_playback], [method AudioStreamPlayer2D.get_stream_playback], and [method AudioStreamPlayer3D.get_stream_playback] methods.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -28,7 +28,8 @@
 				Plays an [AudioStream] at a given offset (in seconds), volume (in decibels), pitch scale, playback type, and bus. Playback starts immediately.
 				The return value is a unique integer ID that is associated to this playback stream and which can be used to control it.
 				This ID becomes invalid when the stream ends and does not loop, when the [AudioStreamPlaybackPolyphonic] is stopped, or when [method stop_stream] is called.
-				This function returns [constant INVALID_ID] if the number of streams currently playing is greater than [member AudioStreamPolyphonic.polyphony]. If you need a higher number of maximum polyphony, raise this value.
+				This function returns [constant INVALID_ID] if the number of streams currently playing equals [member AudioStreamPolyphonic.polyphony]. If you need a higher maximum polyphony, raise this value.
+				[b]Note:[/b] Negative values and values greater than the length of [param stream] are not accepted for [param from_offset].
 				[b]Note:[/b] [param bus] only works for [AudioSamplePlayback] types.
 			</description>
 		</method>
@@ -46,7 +47,7 @@
 			<param index="1" name="volume_db" type="float" />
 			<description>
 				Changes the stream's volume, in decibels. The [param stream] argument is an integer ID returned by [method play_stream].
-				[b]Tip:[/b] You can convert linear value to decibels using [method @GlobalScope.linear_to_db].
+				[b]Note:[/b] You can convert linear values to decibels using [method @GlobalScope.linear_to_db].
 			</description>
 		</method>
 		<method name="stop_stream">

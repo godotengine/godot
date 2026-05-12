@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[AudioStreamRandomizer] can hold one or more audio streams in a pool. When an audio stream player plays an [AudioStreamRandomizer] resource, it picks an audio stream from the pool following [enum PlaybackMode] and each stream's probability weight, and applies random volume and pitch shifting.
-		[b]Tip:[/b] This stream is ideal to make sound effects that play multiple times in a short period of time sound more natural, by subtly randomizing their volume and pitch each time they are played, or by picking similar sounds from a pool. It is recommended to use [AudioStreamWAV] for sound effects.
+		This stream is ideal to make sound effects that play multiple times in a short period of time sound more natural, by subtly randomizing their volume and pitch each time they are played, or by picking similar sounds from a pool. It is recommended to use [AudioStreamWAV] for sound effects.
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
@@ -27,14 +27,14 @@
 			<return type="AudioStream" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the [AudioStream] at the given [param index].
+				Returns the [AudioStream] of the given [param index].
 			</description>
 		</method>
 		<method name="get_stream_probability_weight" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the probability weight associated with the stream at the given [param index].
+				Returns the probability weight associated with the stream of the given [param index].
 			</description>
 		</method>
 		<method name="move_stream">
@@ -49,7 +49,7 @@
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Removes the stream at the given [param index].
+				Removes the stream of the given [param index].
 			</description>
 		</method>
 		<method name="set_stream">
@@ -57,7 +57,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="stream" type="AudioStream" />
 			<description>
-				Sets [param stream] at the given [param index].
+				Sets the [param stream] of the given [param index].
 			</description>
 		</method>
 		<method name="set_stream_probability_weight">
@@ -65,7 +65,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Sets the probability [param weight] of the stream at the given [param index]. The higher this value, the more likely that the randomizer will choose the stream if [member playback_mode] is random.
+				Sets the probability [param weight] of the stream of the given [param index]. The higher this value, the more likely that the randomizer will choose the stream if [member playback_mode] is random.
 			</description>
 		</method>
 	</methods>

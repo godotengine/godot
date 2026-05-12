@@ -6,7 +6,7 @@
 	<description>
 		[AudioStream] is an audio resource that stores audio data. It can be used by an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio) to play music, sound effects, or dialog.
 		This class supports WAV (via [AudioStreamWAV]), Ogg Vorbis (via [AudioStreamOggVorbis]), and MP3 (via [AudioStreamMP3]) file formats.
-		To handle playback of an audio stream resource at a low level, use the [AudioStreamPlayback] class. To understand how audio files are imported, read [ResourceImporterWAV], [ResourceImporterOggVorbis], and [ResourceImporterMP3].
+		To handle playback of an audio stream resource at a low level, use the [AudioStreamPlayback] class. To understand how audio files are imported, see [ResourceImporterWAV], [ResourceImporterOggVorbis], and [ResourceImporterMP3].
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
@@ -114,7 +114,7 @@
 		<method name="is_monophonic" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the stream only supports one playback at a time, or [code]false[/code] if the stream supports multiple playbacks at once. See also [AudioStreamPolyphonic].
+				Returns [code]true[/code] if the stream only supports one playback at a time, or [code]false[/code] if the stream supports multiple playbacks at once.
 			</description>
 		</method>
 	</methods>

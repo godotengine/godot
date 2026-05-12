@@ -4,7 +4,7 @@
 		Meta class for playing back audio.
 	</brief_description>
 	<description>
-		This class is used to configure and control playback of an [AudioStream] resource. An existing playback instance can be obtained by calling the [method AudioStreamPlayer.get_stream_playback], [method AudioStreamPlayer2D.get_stream_playback], or [method AudioStreamPlayer3D.get_stream_playback] methods. A new one can be created from an audio stream by calling [method AudioStream.instantiate_playback].
+		This class is used to configure and control playback of an [AudioStream] resource. An existing playback instance can be obtained by calling the [method AudioStreamPlayer.get_stream_playback], [method AudioStreamPlayer2D.get_stream_playback], and [method AudioStreamPlayer3D.get_stream_playback] methods. A new one can be created from an audio stream by calling [method AudioStream.instantiate_playback].
 	</description>
 	<tutorials>
 		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
@@ -13,7 +13,7 @@
 		<method name="_get_loop_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Overridable method. Should return how many times the stream has looped. Most built-in playbacks always return [code]0[/code].
+				Overridable method. Should return how many times the stream has looped.
 			</description>
 		</method>
 		<method name="_get_parameter" qualifiers="virtual const">
@@ -82,7 +82,7 @@
 		<method name="get_loop_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of times the stream has looped.
+				Returns the number of times the stream has looped. [AudioStreamGenerator], [AudioStreamInteractive], [AudioStreamMicrophone], [AudioStreamPolyphonic], and [AudioStreamWAV] always return [code]0[/code].
 			</description>
 		</method>
 		<method name="get_playback_position" qualifiers="const">
@@ -110,7 +110,7 @@
 			<param index="1" name="frames" type="int" />
 			<description>
 				Mixes up to [param frames] of audio from the stream from the current playback position, at a rate of [param rate_scale], advancing the stream.
-				Returns a [PackedVector2Array] where each element represents the amplitude levels an audio frame's left and right channels, ranging from [code]-1.0[/code] to [code]1.0[/code].
+				Returns a [PackedVector2Array] where each element represents the amplitude levels of an audio frame's left and right channels, ranging from [code]-1.0[/code] to [code]1.0[/code].
 				[b]Note:[/b] Can return fewer frames than requested, make sure to use the size of the return value.
 			</description>
 		</method>

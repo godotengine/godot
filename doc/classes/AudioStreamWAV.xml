@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamWAV" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Stores audio data of WAV format as an [AudioStream] resource.
+		Stores audio data in WAV format as an [AudioStream] resource.
 	</brief_description>
 	<description>
 		[AudioStreamWAV] can store audio samples from loaded WAV files, recorded with [AudioEffectRecord], and set with data from [AudioEffectCapture] and [AudioStreamGenerator]. An [AudioStreamWAV] can hold different WAV formats (see [enum Format]), and can be looped in different ways (see [enum LoopMode]).
-		WAV files can be loaded with [method load_from_file], and saved with [method save_to_wav]. Read [ResourceImporterWAV] for information on how WAV files are imported as [AudioStream] resources.
+		WAV files can be loaded with [method load_from_file], and saved with [method save_to_wav]. See [ResourceImporterWAV] for information on how WAV files are imported as [AudioStream] resources.
 		To play the stored audio, use an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio).
-		[b]Tip:[/b] This stream is ideal to hold sound effects, due to the quality this format can provide, and low CPU cost to decode, allowing many [AudioStreamWAV] resources to be played with low impact in a game's performance. It generally has a big file size, so it is [i]not[/i] ideal for long sounds, like music.
+		This stream is ideal to hold sound effects, due to the quality this format can provide, and low CPU cost to decode, allowing many [AudioStreamWAV] resources to be played with low impact on a game's performance. It generally has a big file size, so it is [i]not[/i] ideal for sounds with long lengths, with minutes of duration, like music.
 		[b]Note:[/b] This stream does not contain any beat-sync functionality. If that is desired, consider using [AudioStreamOggVorbis].
 	</description>
 	<tutorials>
@@ -79,7 +79,7 @@
 		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" default="44100">
 			The sample rate for mixing the audio, in hertz. Higher values require more storage space, but result in better quality.
 			In games, common sample rates in use are [code]11025[/code], [code]16000[/code], [code]22050[/code], [code]32000[/code], [code]44100[/code], and [code]48000[/code].
-			According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are using sounds with low amount of high frequency content, lower sample rates such as [code]32000[/code] or [code]22050[/code] may be usable with little loss in quality.
+			According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are using sounds with low amounts of high frequency content, lower sample rates such as [code]32000[/code] or [code]22050[/code] may be usable with little loss in quality.
 		</member>
 		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo" default="false">
 			If [code]true[/code], audio is stereo.

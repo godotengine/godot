@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamSynchronized" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Stores multiple sub-[AudioStream]s, which will be played in synchrony.
+		Stores multiple sub-[AudioStream]s, which will be played in-sync.
 	</brief_description>
 	<description>
 		[AudioStreamSynchronized] can hold multiple streams and play them at the same time.
@@ -15,14 +15,14 @@
 			<return type="AudioStream" />
 			<param index="0" name="stream_index" type="int" />
 			<description>
-				Returns the [AudioStream] at the given [param stream_index].
+				Returns the [AudioStream] of the given [param stream_index].
 			</description>
 		</method>
 		<method name="get_sync_stream_volume" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="stream_index" type="int" />
 			<description>
-				Returns the volume, in decibels, of the stream at the given [param stream_index].
+				Returns the volume, in decibels, of the stream of the given [param stream_index].
 			</description>
 		</method>
 		<method name="set_sync_stream">
@@ -30,7 +30,7 @@
 			<param index="0" name="stream_index" type="int" />
 			<param index="1" name="audio_stream" type="AudioStream" />
 			<description>
-				Sets an [param audio_stream] at the given [param stream_index].
+				Sets the [param audio_stream] of the given [param stream_index].
 			</description>
 		</method>
 		<method name="set_sync_stream_volume">
@@ -38,18 +38,18 @@
 			<param index="0" name="stream_index" type="int" />
 			<param index="1" name="volume_db" type="float" />
 			<description>
-				Sets the volume, in decibels, of the stream at the given [param stream_index].
+				Sets the volume, in decibels, of the stream of the given [param stream_index].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="stream_count" type="int" setter="set_stream_count" getter="get_stream_count" default="0">
-			Number of streams that will be played back synchronized.
+			Number of streams that will be played back in-sync.
 		</member>
 	</members>
 	<constants>
 		<constant name="MAX_STREAMS" value="32">
-			Maximum number of streams that can be synchronized.
+			Maximum number of streams that can be in-sync.
 		</constant>
 	</constants>
 </class>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamMP3" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Stores audio data of MP3 format as an [AudioStream] resource.
+		Stores audio data in MP3 format as an [AudioStream] resource.
 	</brief_description>
 	<description>
 		[AudioStreamMP3] stores audio samples from loaded MP3 files.
-		MP3 files can be loaded with [method load_from_file]. Read [ResourceImporterMP3] for information on how MP3 files are imported as [AudioStream] resources.
+		MP3 files can be loaded with [method load_from_file]. See [ResourceImporterMP3] for information on how MP3 files are imported as [AudioStream] resources.
 		To play the stored audio, use an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio).
-		[b]Note:[/b] This class can optionally support legacy MP1 and MP2 formats, provided that the engine is compiled with the [code]minimp3_extra_formats=yes[/code] SCons option. These extra formats are not enabled by default. Read [url=https://docs.godotengine.org/en/latest/engine_details/development/compiling/index.html]Building from source[/url] to learn how to compile the engine.
+		[b]Note:[/b] This class can optionally support legacy MP1 and MP2 formats, provided that the engine is compiled with the [code]minimp3_extra_formats=yes[/code] SCons option. These extra formats are not enabled by default. See [url=https://docs.godotengine.org/en/latest/engine_details/development/compiling/index.html]Building from source[/url] to learn how to compile the engine.
 		[b]Note:[/b] MP3 files always have a short period (measured in milliseconds) of silence at the beginning. The length of this header is variable. Because of this silence, this format is not perfect for beat-related features. If perfect synchronization is desired, consider using [AudioStreamOggVorbis]. If you convert an MP3 file to Ogg Vorbis (it is preferred to start [i]from[/i] a lossless format), the silent header must be trimmed first.
 	</description>
 	<tutorials>

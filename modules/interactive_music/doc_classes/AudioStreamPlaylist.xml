@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[AudioStreamPlaylist] can play multiple streams in sequence. The order can be manually set, or shuffled with [member shuffle]. A stream can be set with [method set_list_stream].
-		[b]Tip:[/b] This stream is ideal if you want to have alternating music tracks, like a radio station.
+		This stream is ideal if you want to have alternating music tracks, like a radio station.
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
@@ -21,7 +21,7 @@
 			<return type="AudioStream" />
 			<param index="0" name="stream_index" type="int" />
 			<description>
-				Returns the [AudioStream] at the given [param stream_index].
+				Returns the [AudioStream] of the given [param stream_index].
 			</description>
 		</method>
 		<method name="set_list_stream">
@@ -29,13 +29,13 @@
 			<param index="0" name="stream_index" type="int" />
 			<param index="1" name="audio_stream" type="AudioStream" />
 			<description>
-				Sets an [param audio_stream] at the given [param stream_index].
+				Sets the [param audio_stream] of the given [param stream_index].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="fade_time" type="float" setter="set_fade_time" getter="get_fade_time" default="0.3">
-			Fade-out time used when a stream ends, and switching to the next one (without fade-in). It may be preferred to have a tail end on the streams at the same length as this property.
+			Fade-out time used when a stream ends, and switching to the next one (without fade-in). It may be preferred to have an extra bit of audio at the end of the streams with the same length as this property.
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="true">
 			If [code]true[/code], the playlist will loop, otherwise the playlist will end when the last stream is finished.
