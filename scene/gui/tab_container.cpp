@@ -835,14 +835,13 @@ bool TabContainer::are_tabs_visible() const {
 
 #ifndef DISABLE_DEPRECATED
 void TabContainer::set_all_tabs_in_front(bool p_in_front) {
-	all_tabs_in_front = p_in_front;
-	if (all_tabs_in_front) {
+	if (p_in_front) {
 		WARN_PRINT_ONCE("Due to internal changes, `all_tabs_in_front` doesn't do anything anymore, as they're always in front.");
 	}
 }
 
 bool TabContainer::is_all_tabs_in_front() const {
-	return all_tabs_in_front;
+	return false;
 }
 #endif
 
@@ -1255,7 +1254,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 #ifndef DISABLE_DEPRECATED
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_all_tabs_in_front", "is_all_tabs_in_front");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_all_tabs_in_front", "is_all_tabs_in_front");
 #endif
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_drag_hover"), "set_switch_on_drag_hover", "get_switch_on_drag_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");

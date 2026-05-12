@@ -54,9 +54,6 @@ private:
 	Button *popup_button = nullptr;
 
 	bool tabs_visible = true;
-#ifndef DISABLE_DEPRECATED
-	bool all_tabs_in_front = false;
-#endif
 	TabPosition tabs_position = POSITION_TOP;
 	mutable ObjectID popup_obj_id;
 	bool use_hidden_tabs_for_min_size = false;
