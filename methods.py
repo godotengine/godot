@@ -678,6 +678,138 @@ def is_apple_clang(env):
     return version.startswith("Apple")
 
 
+COMPILER_STANDARD_SUPPORT = {
+    "gcc": {
+        "c": {
+            "17": "9",
+            "23": "15",
+        },
+        "cpp": {
+            "17": "9",
+            "20": "11",
+            "23": "14",
+        },
+    },
+    "clang": {
+        "c": {
+            "17": "6",
+            "23": "19",
+        },
+        "cpp": {
+            "17": "6",
+            "20": "13",
+            "23": "18",
+        },
+    },
+    "apple-clang": {
+        "c": {
+            "17": "16",
+            "23": "16",
+        },
+        "cpp": {
+            "17": "16",
+            "20": "16",
+            "23": "16",
+        },
+    },
+    "emcc": {
+        "c": {
+            "17": "4",
+            "23": "4",
+        },
+        "cpp": {
+            "17": "4",
+            "20": "4",
+            "23": "4",
+        },
+    },
+    "msvc": {
+        "c": {
+            "17": "16.11",
+            "23": "16.11",
+        },
+        "cpp": {
+            "17": "16.11",
+            "20": "16.11",
+            "23": "17",
+        },
+    },
+}
+
+
+def _supports_standard(env, standard: str, language: str, verbose: bool) -> bool:
+    compiler = (
+        "msvc"
+        if env.msvc
+        else "apple-clang"
+        if is_apple_clang(env)
+        else "gcc"
+        if using_gcc(env)
+        else "emcc"
+        if using_emcc(env)
+        else "clang"
+    )
+    min_version = COMPILER_STANDARD_SUPPORT[compiler][language][standard]
+
+    if not min_version:
+        if verbose:
+            print_warning(
+                f'Using unevaluated {language.upper()} Standard "{standard}" on compiler "{compiler}"; skipping validation checks.'
+            )
+        return True
+
+    major, minor, patch, *_ = get_compiler_version(env).values()
+    if major == -1:
+        if verbose:
+            print_warning(f'Failed to parse version of compiler "{compiler}"; skipping validation checks.')
+        return True
+
+    supported = (major, minor, patch) >= tuple(int(value) for value in min_version.split("."))
+    if not supported and verbose:
+        print_error(
+            f'Compiler "{compiler}" cannot support {language.upper()} Standard {standard}; '
+            f'detected version "{major}.{minor}.{patch}", but requires version "{min_version}" or later.'
+        )
+
+    return supported
+
+
+def supports_c_standard(env, c_standard: str) -> bool:
+    return _supports_standard(env, c_standard, "c", False)
+
+
+def supports_cpp_standard(env, cpp_standard: str) -> bool:
+    return _supports_standard(env, cpp_standard, "cpp", False)
+
+
+def update_c_standard(env, new_standard: str = "") -> None:
+    if new_standard:
+        env["c_standard"] = new_standard
+
+    c_std: str = env["c_standard"]
+    if not _supports_standard(env, c_std, "c", True):
+        env.Exit(255)
+
+    if not env.msvc:
+        env["CSTD"] = f"-std=gnu{c_std}"
+    else:
+        env["CSTD"] = f"/std:c{'latest' if c_std == '23' else c_std}"
+
+
+def update_cpp_standard(env, new_standard: str = "") -> None:
+    if new_standard:
+        env["cpp_standard"] = new_standard
+
+    cpp_std: str = env["cpp_standard"]
+    if not _supports_standard(env, cpp_std, "cpp", True):
+        env.Exit(255)
+
+    if not env.msvc:
+        env["CXXSTD"] = f"-std=gnu++{cpp_std}"
+    else:
+        env["CXXSTD"] = f"/std:c++{'23preview' if cpp_std == '23' else cpp_std}"
+
+
 def get_compiler_version(env):
     """
     Returns a dictionary with various version information:
@@ -690,8 +822,6 @@ def get_compiler_version(env):
     global compiler_version_cache
     if compiler_version_cache is not None:
         return compiler_version_cache
-
-    import shlex
 
     ret = {
         "major": -1,
@@ -723,8 +853,8 @@ def get_compiler_version(env):
                 "Microsoft.Component.MSBuild",
                 "-utf8",
             ]
-            version = subprocess.check_output(args, encoding="utf-8").strip()
-            for line in version.splitlines():
+            out = subprocess.run(args, encoding="utf-8", capture_output=True, check=True)
+            for line in out.stdout.strip().splitlines():
                 split = line.split(":", 1)
                 if split[0] == "catalog_productSemanticVersion":
                     match = re.match(r" ([0-9]*).([0-9]*).([0-9]*)-?([a-z0-9.+]*)", split[1])
@@ -745,12 +875,12 @@ def get_compiler_version(env):
     # Not using -dumpversion as some GCC distros only return major, and
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
     try:
-        version = subprocess.check_output(
-            shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
-        ).strip()
+        out = subprocess.run([env["CXX"], "--version"], encoding="utf-8", capture_output=True, check=True)
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
         return update_compiler_version_cache(ret)
+
+    version = out.stdout.strip()
 
     match = re.search(
         r"(?:(?<=version )|(?<=\) )|(?<=^))"
@@ -793,6 +923,14 @@ def get_compiler_version(env):
         "apple_patch3",
     ]:
         ret[key] = int(ret[key] or -1)
+
+    if using_gcc(env) and ret["metadata1"] == "win32":
+        print_error(
+            "Detected mingw version is not using posix threads. Only posix version of mingw is supported. "
+            "Use `update-alternatives --config x86_64-w64-mingw32-g++` to switch to posix threads."
+        )
+        sys.exit(255)
+
     return update_compiler_version_cache(ret)
 
 
