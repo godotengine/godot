@@ -1227,7 +1227,7 @@ if "cpp_compiler_launcher" in env:
 # two items in the Command's action string.
 py_builder_env = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES=2, PYTHON_BIN=sys.executable)
 py_builder_env.Tool("handle_long_lines")
-env['TEMPFILE_ARG_COUNT'] =2
+env["TEMPFILE_ARG_COUNT"] = 2
 Export("py_builder_env")
 
 
