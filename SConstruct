@@ -1226,17 +1226,15 @@ if "cpp_compiler_launcher" in env:
 # Create a cloned environment where it will add implicit dependencies for the first
 # two items in the Command's action string.
 py_builder_env = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES=2, PYTHON_BIN=sys.executable)
-
-# modify SPAWN for win32 to handle long command lines
-methods.SetupSpawn(py_builder_env)
+py_builder_env.Tool("handle_long_lines")
+env['TEMPFILE_ARG_COUNT'] =2
 Export("py_builder_env")
 
 
 GLSL_BUILDERS = {
     "RD_GLSL": py_builder_env.Builder(
         action=Action(
-            "$PYTHON_BIN glsl_builders.py --method build_rd_headers --target $TARGET --source $SOURCE",
-            "$GENCOMSTR",
+            "${MYTEMPFILE('$PYTHON_BIN glsl_builders.py --method build_rd_headers --target $TARGET --source $SOURCE','$GENCOMSTR')}"
         ),
         suffix="glsl.gen.h",
         src_suffix=".glsl",
