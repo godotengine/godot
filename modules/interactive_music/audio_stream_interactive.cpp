@@ -819,10 +819,6 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 			filler_end = filler_state.stream->get_length();
 		}
 
-		if (!filler_state.stream->has_loop()) {
-			src_no_loop = true;
-		}
-
 		if (transition.fade_mode == AudioStreamInteractive::FADE_DISABLED || transition.fade_mode == AudioStreamInteractive::FADE_OUT) {
 			// No fading, immediately start at full volume.
 			to_state.fade_volume = 0.0;
