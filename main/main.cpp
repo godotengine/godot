@@ -48,6 +48,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/io/scene_inspector.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
@@ -219,6 +220,7 @@ static bool cmdline_tool = false;
 static String locale;
 static String log_file;
 static String log_format;
+static String inspect_scene_path;
 static bool show_help = false;
 static uint64_t quit_after = 0;
 static ProcessID editor_pid = 0;
@@ -624,6 +626,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--headless", "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
 	print_help_option("--log-file <file>", "Write output/error log to the specified path instead of the default location defined by the project.\n");
 	print_help_option("--log-format <text|json>", "Output format for stdout/stderr log lines. 'text' (default) is human-readable; 'json' emits one JSON object per line (NDJSON) with timestamp, level, message, and error context.\n");
+	print_help_option("--inspect-scene <path>", "Load the scene at <path> headlessly, dump its node tree (names, classes, editor-visible properties, children) to stdout as JSON, then exit.\n");
 	print_help_option("", "<file> path should be absolute or relative to the project directory.\n");
 	print_help_option("--write-movie <file>", "Write a video to the specified path (usually with .avi or .png extension).\n");
 	print_help_option("", "--fixed-fps is forced when enabled, but it can be used to change movie FPS.\n");
@@ -1532,6 +1535,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing --log-format value. Valid values: text, json. Aborting.\n");
 				goto error;
 			}
+		} else if (arg == "--inspect-scene") { // dump scene tree as JSON and exit
+
+			if (N) {
+				inspect_scene_path = N->get();
+				N = N->next();
+				cmdline_tool = true;
+			} else {
+				OS::get_singleton()->print("Missing --inspect-scene path argument, aborting.\n");
+				goto error;
+			}
 		} else if (arg == "--profiling") { // enable profiling
 
 			use_debug_profiler = true;
@@ -2332,7 +2345,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (main_args.is_empty() && String(GLOBAL_GET("application/run/main_scene")) == "") {
 #ifdef TOOLS_ENABLED
-		if (!editor && !project_manager) {
+		if (!editor && !project_manager && !cmdline_tool) {
 #endif
 			const String error_msg = "Error: Can't run project: no main scene defined in the project.\n";
 			OS::get_singleton()->print("%s", error_msg.utf8().get_data());
@@ -4007,6 +4020,12 @@ int Main::start() {
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Start");
 
 	ERR_FAIL_COND_V(!_start_success, EXIT_FAILURE);
+
+	if (!inspect_scene_path.is_empty()) {
+		String json = SceneInspector::inspect_to_json(inspect_scene_path);
+		OS::get_singleton()->print("%s\n", json.utf8().get_data());
+		return EXIT_SUCCESS;
+	}
 
 	bool has_icon = false;
 	String positional_arg;
