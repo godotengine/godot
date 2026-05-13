@@ -2486,6 +2486,38 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
 
+	// Detect open scenes that contain an instance of this scene, either directly or
+	// transitively through inheritance. They need to be re-instantiated against the
+	// freshly-saved data so that the editor inspector and viewport pick up new default
+	// values without requiring the tabs to be closed and re-opened. The check must
+	// run before sdata->recreate_state() below, because that replaces the in-memory
+	// SceneState of the saved scene and would cause get_property_revert_value() to
+	// see the new values as the default — at which point the still-old instance
+	// property values would be wrongly recorded as user-applied modifications.
+	bool has_dependent_open_scenes = false;
+	for (int dep_idx = 0; dep_idx < editor_data.get_edited_scene_count(); dep_idx++) {
+		if (editor_data.get_scene_path(dep_idx) == p_file) {
+			continue;
+		}
+		Node *dep_root = editor_data.get_edited_scene_root(dep_idx);
+		if (!dep_root) {
+			continue;
+		}
+		HashSet<Node *> matches;
+		find_all_instances_inheriting_path_in_node(dep_root, dep_root, p_file, matches);
+		if (!matches.is_empty()) {
+			has_dependent_open_scenes = true;
+			break;
+		}
+	}
+
+	if (has_dependent_open_scenes) {
+		scenes_modification_table.clear();
+		List<String> paths_to_propagate;
+		paths_to_propagate.push_back(p_file);
+		preload_reimporting_with_path_in_edited_scenes(paths_to_propagate);
+	}
+
 	Ref<PackedScene> sdata;
 
 	if (ResourceCache::has(p_file)) {
@@ -2505,6 +2537,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	Error err = sdata->pack(scene);
 
 	if (err != OK) {
+		if (has_dependent_open_scenes) {
+			scenes_modification_table.clear();
+		}
 		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("OK"));
 		return;
 	}
@@ -2557,6 +2592,17 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	scene->propagate_notification(NOTIFICATION_EDITOR_POST_SAVE);
 	_update_unsaved_cache();
+
+	if (has_dependent_open_scenes) {
+		if (err == OK) {
+			// Re-instantiate matching nodes in other open scenes against the freshly
+			// saved version. The walk through the inheritance chain in
+			// reload_instances_with_path_in_edited_scenes() handles deeply nested
+			// inherited scenes as well as direct instances.
+			reload_instances_with_path_in_edited_scenes();
+		}
+		scenes_modification_table.clear();
+	}
 }
 
 void EditorNode::save_all_scenes() {
