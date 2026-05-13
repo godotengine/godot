@@ -33,6 +33,7 @@
 #include "../misc/jolt_type_conversions.h"
 #include "../objects/jolt_body_3d.h"
 #include "../spaces/jolt_space_3d.h"
+#include "core/math/vector3.h"
 
 #include <Jolt/Physics/Constraints/SixDOFConstraint.h>
 
@@ -87,6 +88,9 @@ JPH::Constraint *JoltGeneric6DOFJoint3D::_build_6dof(JPH::Body *p_jolt_body_a, J
 		return constraint_settings.Create(*p_jolt_body_a, *p_jolt_body_b);
 	}
 }
+
+
+
 
 void JoltGeneric6DOFJoint3D::_update_limit_spring_parameters(int p_axis) {
 	JPH::SixDOFConstraint *constraint = static_cast<JPH::SixDOFConstraint *>(jolt_ref.GetPtr());
@@ -682,5 +686,24 @@ void JoltGeneric6DOFJoint3D::rebuild() {
 		_update_motor_limit(axis);
 		_update_spring_parameters(axis);
 		_update_spring_equilibrium(axis);
+	}
+}
+
+void JoltGeneric6DOFJoint3D::post_step() {
+    // Вызывается сразу после PhysicsSystem::Update()
+    // В этот момент GetTotalLambdaPosition() содержит
+    // актуальные данные за текущий шаг
+	JPH::SixDOFConstraint *jolt_constraint = static_cast<JPH::SixDOFConstraint *>(jolt_ref.GetPtr());
+    if (jolt_constraint == nullptr) {
+        return;
+    }
+
+    // Делим на dt, чтобы получить силу (импульс / dt = сила)
+    // Либо оставить как есть (импульс), зависит от семантики
+    cached_applied_force = to_godot(jolt_constraint->GetTotalLambdaPosition());
+    cached_applied_torque = to_godot(jolt_constraint->GetTotalLambdaRotation());
+
+	if (cached_applied_force >Vector3(1,1,1)){
+print_line(cached_applied_force); 
 	}
 }

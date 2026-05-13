@@ -100,10 +100,15 @@ class JoltGeneric6DOFJoint3D final : public JoltJoint3D {
 	void _spring_equilibrium_changed(int p_axis);
 	void _spring_limit_changed(int p_axis);
 
+	Vector3 cached_applied_force;
+    Vector3 cached_applied_torque;
+
 public:
 	JoltGeneric6DOFJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);
 
+	virtual void post_step() override;
 	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_6DOF; }
+	
 
 	double get_param(Axis p_axis, Param p_param) const;
 	void set_param(Axis p_axis, Param p_param, double p_value);

@@ -74,6 +74,7 @@ public:
 	JoltJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);
 	virtual ~JoltJoint3D();
 
+	virtual void post_step(){};
 	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
 
 	RID get_rid() const { return rid; }

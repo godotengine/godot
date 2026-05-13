@@ -1632,6 +1632,15 @@ void JoltPhysicsServer3D::step(real_t p_step) {
 
 		job_system->post_step();
 	}
+
+	LocalVector<RID> joint_rids = joint_owner.get_owned_list();
+
+   	 for (const RID &rid : joint_rids) {
+       	 JoltJoint3D *joint = joint_owner.get_or_null(rid);
+       	 if (joint) {
+       	     joint->post_step();
+       	 }
+  	  }
 }
 
 void JoltPhysicsServer3D::sync() {
