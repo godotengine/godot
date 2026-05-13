@@ -55,6 +55,7 @@ class GodotPhysicsServer3D : public PhysicsServer3D {
 	GodotStep3D *stepper = nullptr;
 	HashSet<GodotSpace3D *> active_spaces;
 
+protected:
 	mutable RID_PtrOwner<GodotShape3D, true> shape_owner;
 	mutable RID_PtrOwner<GodotSpace3D, true> space_owner;
 	mutable RID_PtrOwner<GodotArea3D, true> area_owner;
@@ -62,6 +63,7 @@ class GodotPhysicsServer3D : public PhysicsServer3D {
 	mutable RID_PtrOwner<GodotSoftBody3D, true> soft_body_owner;
 	mutable RID_PtrOwner<GodotJoint3D, true> joint_owner;
 
+private:
 	//void _clear_query(QuerySW *p_query);
 	friend class GodotCollisionObject3D;
 	SelfList<GodotCollisionObject3D>::List pending_shape_update_list;
