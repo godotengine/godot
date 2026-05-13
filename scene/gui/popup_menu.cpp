@@ -403,23 +403,29 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	const float scroll_container_offset = scroll_container->get_global_position().y * win_scale;
 	const float ofs_cache = items[p_over]._ofs_cache * win_scale;
 	const float height_cache = items[p_over]._height_cache * win_scale;
+	const float item_top_y = ofs_cache + scroll_offset + scroll_container_offset - int(theme_v_separation * 0.5);
 
 	if (is_layout_rtl()) {
 		is_active_submenu_left = true;
-		submenu_pos += this_pos + Point2(-submenu_size.width + panel_offset_end.x, ofs_cache + scroll_offset - int(theme_v_separation * 0.5) + scroll_container_offset);
+		submenu_pos.x = this_pos.x - submenu_size.width + panel_offset_end.x;
 		if (submenu_pos.x < screen_rect.position.x) {
 			submenu_pos.x = this_pos.x + this_rect.size.width - panel_offset_start.x;
 			is_active_submenu_left = false;
 		}
-
 	} else {
 		is_active_submenu_left = false;
-		submenu_pos += this_pos + Point2(this_size.x + panel_offset_start.x, ofs_cache + scroll_offset - int(theme_v_separation * 0.5) + scroll_container_offset);
+		submenu_pos.x = this_pos.x + this_size.x + panel_offset_start.x;
 		if (submenu_pos.x + submenu_size.width > screen_rect.position.x + screen_rect.size.width) {
 			submenu_pos.x = this_pos.x - submenu_size.width + panel_offset_end.x;
 			is_active_submenu_left = true;
 		}
 	}
+
+	submenu_pos.y = this_pos.y + item_top_y - submenu_popup->theme_cache.panel_style->get_margin(SIDE_TOP) * win_scale;
+	if (submenu_popup->search_bar->is_visible()) {
+		submenu_pos.y -= (submenu_popup->search_bar->get_minimum_size().y + submenu_popup->theme_cache.search_bar_separation) * win_scale;
+	}
+
 	submenu_popup->set_position(submenu_pos);
 	submenu_popup->activated_by_keyboard = p_by_keyboard;
 	// If not triggered by the mouse, start the popup with its first enabled item focused.
@@ -454,7 +460,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	submenu_popup->clear_autohide_areas();
 	// Add an autohide area above the submenu item unless it's the top item.
 	// This avoids a narrow strip of area that can trigger the submenu to reload when reentering the parent item from the top.
-	const int y_to_item_top = ofs_cache + scroll_offset - int(theme_v_separation * 0.5) + theme_cache.panel_style->get_margin(SIDE_TOP) * win_scale;
+	const int y_to_item_top = item_top_y - panel_offset_start.y;
 	Rect2 top_rect = Rect2(this_rect.position.x, this_rect.position.y, this_size.width, y_to_item_top);
 	if (active_submenu_index != 0) {
 		submenu_popup->add_autohide_area(top_rect);
