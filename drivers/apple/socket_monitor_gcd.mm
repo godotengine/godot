@@ -40,9 +40,12 @@ void SocketMonitorGCD::start(int p_fd, const Callable &p_on_readable) {
 		return;
 	}
 
-	Callable cb = p_on_readable;
+	Callable *cb = memnew(Callable(p_on_readable));
 	dispatch_source_set_event_handler(_source, ^{
-		cb.call_deferred();
+		cb->call_deferred();
+	});
+	dispatch_source_set_cancel_handler(_source, ^{
+		memdelete(cb);
 	});
 
 	dispatch_resume(_source);
