@@ -38,6 +38,9 @@ const float TRIM_DB_LIMIT = -50;
 const int TRIM_FADE_OUT_FRAMES = 500;
 
 void AudioStreamPlaybackWAV::start(double p_from_pos) {
+	sign = 1;
+	active = true;
+
 	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		//no seeking in IMA_ADPCM
 		for (int i = 0; i < 2; i++) {
@@ -55,8 +58,6 @@ void AudioStreamPlaybackWAV::start(double p_from_pos) {
 		seek(p_from_pos);
 	}
 
-	sign = 1;
-	active = true;
 	begin_resample();
 }
 
@@ -81,11 +82,13 @@ void AudioStreamPlaybackWAV::seek(double p_time) {
 		return; //no seeking in ima-adpcm
 	}
 
-	double max = base->get_length();
-	if (p_time < 0) {
-		p_time = 0;
-	} else if (p_time >= max) {
-		p_time = max - 0.001;
+	double real_length = base->loop_mode == AudioStreamWAV::LOOP_DISABLED ? base->get_length() : base->get_loop_end() / base->get_mix_rate();
+
+	if (p_time > real_length || p_time < 0) {
+		stop();
+		ERR_FAIL_MSG("Seeking out of bounds. Stopping the stream.");
+	} else if (p_time == real_length) {
+		p_time = real_length - 0.001;
 	}
 
 	offset = int64_t(p_time * base->mix_rate);

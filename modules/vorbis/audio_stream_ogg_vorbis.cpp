@@ -48,7 +48,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 	int beat_length_frames = -1;
 	bool use_loop = looping_override ? looping : vorbis_stream->loop;
 
-	if (use_loop && vorbis_stream->get_bpm() > 0 && vorbis_stream->get_beat_count() > 0) {
+	if (is_beat_loop()) {
 		beat_length_frames = vorbis_stream->get_beat_count() * vorbis_data->get_sampling_rate() * 60 / vorbis_stream->get_bpm();
 	}
 
@@ -284,8 +284,13 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 		return;
 	}
 
-	if (p_time >= vorbis_stream->get_length()) {
-		p_time = 0;
+	double real_length = is_beat_loop() ? 60.0 / vorbis_stream->get_bpm() * vorbis_stream->beat_count : vorbis_stream->get_length();
+
+	if (p_time > real_length || p_time < 0) {
+		stop();
+		ERR_FAIL_MSG("Seeking out of bounds. Stopping the stream.");
+	} else if (p_time == real_length) {
+		p_time = real_length - 0.001;
 	}
 
 	frames_mixed = uint32_t(vorbis_data->get_sampling_rate() * p_time);
@@ -393,6 +398,11 @@ void AudioStreamPlaybackOggVorbis::set_sample_playback(const Ref<AudioSamplePlay
 	if (sample_playback.is_valid()) {
 		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
 	}
+}
+
+bool AudioStreamPlaybackOggVorbis::is_beat_loop() const {
+	bool use_loop = looping_override ? looping : vorbis_stream->loop;
+	return use_loop && vorbis_stream->get_bpm() > 0 && vorbis_stream->get_beat_count() > 0;
 }
 
 AudioStreamPlaybackOggVorbis::~AudioStreamPlaybackOggVorbis() {

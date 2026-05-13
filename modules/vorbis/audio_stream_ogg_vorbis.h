@@ -47,6 +47,7 @@ class AudioStreamPlaybackOggVorbis : public AudioStreamPlaybackResampled {
 	bool looping_override = false;
 	bool looping = false;
 	int loops = 0;
+	bool beat_loop = false;
 
 	enum {
 		FADE_SIZE = 256
@@ -107,6 +108,8 @@ public:
 	virtual bool get_is_sample() const override;
 	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
 	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
+
+	bool is_beat_loop() const;
 
 	AudioStreamPlaybackOggVorbis() {}
 	~AudioStreamPlaybackOggVorbis();
