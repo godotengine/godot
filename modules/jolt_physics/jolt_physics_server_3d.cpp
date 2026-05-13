@@ -1581,6 +1581,30 @@ bool JoltPhysicsServer3D::joint_is_disabled_collisions_between_bodies(RID p_join
 	return joint->is_collision_disabled();
 }
 
+void JoltPhysicsServer3D::joint_set_is_breakable(RID p_joint, bool p_breakable) {
+	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
+	joint->set_is_breakable(p_breakable);
+}
+
+bool JoltPhysicsServer3D::joint_get_is_breakable(RID p_joint) const {
+	const JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, false);
+	return joint->get_is_breakable();
+}
+
+void JoltPhysicsServer3D::joint_set_break_force(RID p_joint, real_t p_force) {
+	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
+	joint->set_break_force(p_force);
+}
+
+real_t JoltPhysicsServer3D::joint_get_break_force(RID p_joint) const {
+	const JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0);
+	return joint->get_break_force();
+}
+
 void JoltPhysicsServer3D::free_rid(RID p_rid) {
 	if (JoltShape3D *shape = shape_owner.get_or_null(p_rid)) {
 		free_shape(shape);
@@ -1634,13 +1658,12 @@ void JoltPhysicsServer3D::step(real_t p_step) {
 	}
 
 	LocalVector<RID> joint_rids = joint_owner.get_owned_list();
-
-   	 for (const RID &rid : joint_rids) {
-       	 JoltJoint3D *joint = joint_owner.get_or_null(rid);
-       	 if (joint) {
-       	     joint->post_step();
-       	 }
-  	  }
+	for (const RID &rid : joint_rids) {
+		JoltJoint3D *joint = joint_owner.get_or_null(rid);
+		if (joint) {
+			joint->post_step();
+		}
+	}
 }
 
 void JoltPhysicsServer3D::sync() {

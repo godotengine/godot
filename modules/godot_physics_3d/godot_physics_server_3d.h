@@ -369,6 +369,11 @@ public:
 	virtual void joint_disable_collisions_between_bodies(RID p_joint, bool p_disable) override;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override;
 
+	virtual void joint_set_is_breakable(RID p_joint, bool p_breakable) override;
+	virtual bool joint_get_is_breakable(RID p_joint) const override;
+	virtual void joint_set_break_force(RID p_joint, real_t p_force) override;
+	virtual real_t joint_get_break_force(RID p_joint) const override;
+
 	/* MISC */
 
 	virtual void free_rid(RID p_rid) override;

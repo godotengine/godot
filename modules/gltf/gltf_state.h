@@ -83,6 +83,8 @@ protected:
 	bool import_as_rigid = false;
 	bool jointed = false;
 	float neighboring_distance = 0.0f;
+	bool joint_import_is_breakable = false;
+	float joint_import_break_force = 0.0f;
 
 	HandleBinaryImageMode handle_binary_image_mode = HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES;
 
@@ -226,6 +228,12 @@ public:
 
 	float get_neighboring_distance() const { return neighboring_distance; }
 	void set_neighboring_distance(float p_neighboring_distance) { neighboring_distance = p_neighboring_distance; }
+
+	bool get_joint_import_is_breakable() const { return joint_import_is_breakable; }
+	void set_joint_import_is_breakable(bool p_value) { joint_import_is_breakable = p_value; }
+
+	float get_joint_import_break_force() const { return joint_import_break_force; }
+	void set_joint_import_break_force(float p_value) { joint_import_break_force = p_value; }
 
 	Ref<MeshConvexDecompositionSettings> get_convex_decomposition_settings() const { return convex_decomposition_settings; }
 	void set_convex_decomposition_settings(const Ref<MeshConvexDecompositionSettings> &p_settings) { convex_decomposition_settings = p_settings; }

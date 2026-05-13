@@ -385,6 +385,11 @@ public:
 	virtual void joint_disable_collisions_between_bodies(RID p_joint, bool p_disable) override {}
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override { return false; }
 
+	virtual void joint_set_is_breakable(RID p_joint, bool p_breakable) override {}
+	virtual bool joint_get_is_breakable(RID p_joint) const override { return false; }
+	virtual void joint_set_break_force(RID p_joint, real_t p_force) override {}
+	virtual real_t joint_get_break_force(RID p_joint) const override { return 0.0; }
+
 	virtual void joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) override {}
 
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) override {}

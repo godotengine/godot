@@ -38,6 +38,9 @@ protected:
 	bool dynamic_A = false;
 	bool dynamic_B = false;
 
+	bool is_breakable = false;
+	real_t break_force = 0.0;
+
 	void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
 		if (Math::abs(n.z) > Math::SQRT12) {
 			// choose p in y-z plane
@@ -80,12 +83,19 @@ public:
 		set_self(p_joint->get_self());
 		set_priority(p_joint->get_priority());
 		disable_collisions_between_bodies(p_joint->is_disabled_collisions_between_bodies());
+		is_breakable = p_joint->is_breakable;
+		break_force = p_joint->break_force;
 	}
 
 	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
 	_FORCE_INLINE_ GodotJoint3D(GodotBody3D **p_body_ptr = nullptr, int p_body_count = 0) :
 			GodotConstraint3D(p_body_ptr, p_body_count) {
 	}
+
+	void set_is_breakable(bool p_breakable) { is_breakable = p_breakable; }
+	bool get_is_breakable() const { return is_breakable; }
+	void set_break_force(real_t p_force) { break_force = p_force; }
+	real_t get_break_force() const { return break_force; }
 
 	virtual ~GodotJoint3D() {
 		for (int i = 0; i < get_body_count(); i++) {

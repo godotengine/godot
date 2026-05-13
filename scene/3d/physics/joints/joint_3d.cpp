@@ -122,6 +122,9 @@ void Joint3D::_update_joint(bool p_only_free) {
 	}
 
 	PhysicsServer3D::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
+
+	PhysicsServer3D::get_singleton()->joint_set_is_breakable(joint, is_breakable);
+	PhysicsServer3D::get_singleton()->joint_set_break_force(joint, break_force);
 }
 
 void Joint3D::set_node_a(const NodePath &p_node_a) {
@@ -203,6 +206,34 @@ bool Joint3D::get_exclude_nodes_from_collision() const {
 	return exclude_from_collision;
 }
 
+void Joint3D::set_is_breakable(bool p_breakable) {
+	if (is_breakable == p_breakable) {
+		return;
+	}
+	is_breakable = p_breakable;
+	if (joint.is_valid()) {
+		PhysicsServer3D::get_singleton()->joint_set_is_breakable(joint, is_breakable);
+	}
+}
+
+bool Joint3D::get_is_breakable() const {
+	return is_breakable;
+}
+
+void Joint3D::set_break_force(real_t p_force) {
+	if (break_force == p_force) {
+		return;
+	}
+	break_force = p_force;
+	if (joint.is_valid()) {
+		PhysicsServer3D::get_singleton()->joint_set_break_force(joint, break_force);
+	}
+}
+
+real_t Joint3D::get_break_force() const {
+	return break_force;
+}
+
 PackedStringArray Joint3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
@@ -226,6 +257,12 @@ void Joint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_nodes_from_collision", "enable"), &Joint3D::set_exclude_nodes_from_collision);
 	ClassDB::bind_method(D_METHOD("get_exclude_nodes_from_collision"), &Joint3D::get_exclude_nodes_from_collision);
 
+	ClassDB::bind_method(D_METHOD("set_is_breakable", "breakable"), &Joint3D::set_is_breakable);
+	ClassDB::bind_method(D_METHOD("get_is_breakable"), &Joint3D::get_is_breakable);
+
+	ClassDB::bind_method(D_METHOD("set_break_force", "force"), &Joint3D::set_break_force);
+	ClassDB::bind_method(D_METHOD("get_break_force"), &Joint3D::get_break_force);
+
 	ClassDB::bind_method(D_METHOD("get_rid"), &Joint3D::get_rid);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_a", "get_node_a");
@@ -233,6 +270,8 @@ void Joint3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "solver_priority", PROPERTY_HINT_RANGE, "1,8,1"), "set_solver_priority", "get_solver_priority");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_nodes_from_collision"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_breakable"), "set_is_breakable", "get_is_breakable");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "break_force", PROPERTY_HINT_RANGE, "0,1000000000,0.01,or_greater"), "set_break_force", "get_break_force");
 }
 
 Joint3D::Joint3D() {

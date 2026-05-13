@@ -45,6 +45,8 @@ class Joint3D : public Node3D {
 
 	int solver_priority = 1;
 	bool exclude_from_collision = true;
+	bool is_breakable = false;
+	real_t break_force = 0.0;
 	String warning;
 	bool configured = false;
 
@@ -75,6 +77,12 @@ public:
 
 	void set_exclude_nodes_from_collision(bool p_enable);
 	bool get_exclude_nodes_from_collision() const;
+
+	void set_is_breakable(bool p_breakable);
+	bool get_is_breakable() const;
+
+	void set_break_force(real_t p_force);
+	real_t get_break_force() const;
 
 	RID get_rid() const { return joint; }
 	Joint3D();

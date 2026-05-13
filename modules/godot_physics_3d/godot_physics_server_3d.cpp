@@ -1454,6 +1454,30 @@ bool GodotPhysicsServer3D::joint_is_disabled_collisions_between_bodies(RID p_joi
 	return joint->is_disabled_collisions_between_bodies();
 }
 
+void GodotPhysicsServer3D::joint_set_is_breakable(RID p_joint, bool p_breakable) {
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
+	joint->set_is_breakable(p_breakable);
+}
+
+bool GodotPhysicsServer3D::joint_get_is_breakable(RID p_joint) const {
+	const GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, false);
+	return joint->get_is_breakable();
+}
+
+void GodotPhysicsServer3D::joint_set_break_force(RID p_joint, real_t p_force) {
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
+	joint->set_break_force(p_force);
+}
+
+real_t GodotPhysicsServer3D::joint_get_break_force(RID p_joint) const {
+	const GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0);
+	return joint->get_break_force();
+}
+
 GodotPhysicsServer3D::JointType GodotPhysicsServer3D::joint_get_type(RID p_joint) const {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, JOINT_TYPE_PIN);

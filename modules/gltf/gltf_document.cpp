@@ -7680,6 +7680,8 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 				Generic6DOFJoint3D *joint = memnew(Generic6DOFJoint3D);
 				joint_parent->add_child(joint, true);
 				joint->set_owner(single_root);
+				joint->set_is_breakable(p_state->get_joint_import_is_breakable());
+				joint->set_break_force(p_state->get_joint_import_break_force());
 				// Local to joint_parent: subtree is not in the scene tree yet, so avoid set_global_transform().
 				joint->set_transform(Transform3D(Basis(), (best_a + best_b) * 0.5f));
 				joint->set_node_a(joint->get_path_to(a));

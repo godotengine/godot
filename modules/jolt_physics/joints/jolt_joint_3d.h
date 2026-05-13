@@ -44,6 +44,12 @@ protected:
 	bool enabled = true;
 	bool collision_disabled = false;
 
+	bool is_breakable = false;
+	real_t break_force = 0.0;
+
+	Vector3 cached_applied_linear_impulse;
+	Vector3 cached_applied_angular_impulse;
+
 	int velocity_iterations = 0;
 	int position_iterations = 0;
 
@@ -69,20 +75,32 @@ protected:
 
 	String _bodies_to_string() const;
 
+	void _break_joint();
+	static void _gather_constraint_lambdas(JPH::Constraint *p_constraint, JPH::Vec3 &r_linear, JPH::Vec3 &r_angular);
+
 public:
 	JoltJoint3D() = default;
 	JoltJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);
 	virtual ~JoltJoint3D();
 
-	virtual void post_step(){};
+	virtual void post_step();
 	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
 
+	void set_is_breakable(bool p_breakable) { is_breakable = p_breakable; }
+	bool get_is_breakable() const { return is_breakable; }
+	void set_break_force(real_t p_force) { break_force = p_force; }
+	real_t get_break_force() const { return break_force; }
+
+	Vector3 get_cached_applied_linear_impulse() const { return cached_applied_linear_impulse; }
+	Vector3 get_cached_applied_angular_impulse() const { return cached_applied_angular_impulse; }
 	RID get_rid() const { return rid; }
 	void set_rid(const RID &p_rid) { rid = p_rid; }
 
 	JoltSpace3D *get_space() const;
 
 	JPH::Constraint *get_jolt_ref() const { return jolt_ref; }
+
+
 
 	bool is_enabled() const { return enabled; }
 	void set_enabled(bool p_enabled);

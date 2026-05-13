@@ -36,6 +36,13 @@
 #include "../objects/jolt_body_3d.h"
 #include "../spaces/jolt_space_3d.h"
 
+#include <Jolt/Physics/Constraints/FixedConstraint.h>
+#include <Jolt/Physics/Constraints/HingeConstraint.h>
+#include <Jolt/Physics/Constraints/PointConstraint.h>
+#include <Jolt/Physics/Constraints/SixDOFConstraint.h>
+#include <Jolt/Physics/Constraints/SliderConstraint.h>
+#include <Jolt/Physics/Constraints/SwingTwistConstraint.h>
+
 namespace {
 
 constexpr int JOINT_DEFAULT_SOLVER_PRIORITY = 1;
@@ -106,6 +113,8 @@ String JoltJoint3D::_bodies_to_string() const {
 JoltJoint3D::JoltJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b) :
 		enabled(p_old_joint.enabled),
 		collision_disabled(p_old_joint.collision_disabled),
+		is_breakable(p_old_joint.is_breakable),
+		break_force(p_old_joint.break_force),
 		body_a(p_body_a),
 		body_b(p_body_b),
 		rid(p_old_joint.rid),
@@ -233,4 +242,85 @@ void JoltJoint3D::destroy() {
 	}
 
 	jolt_ref = nullptr;
+}
+
+void JoltJoint3D::_gather_constraint_lambdas(JPH::Constraint *p_constraint, JPH::Vec3 &r_linear, JPH::Vec3 &r_angular) {
+	r_linear = JPH::Vec3::sZero();
+	r_angular = JPH::Vec3::sZero();
+
+	if (p_constraint == nullptr) {
+		return;
+	}
+
+	switch (p_constraint->GetSubType()) {
+		case JPH::EConstraintSubType::Point: {
+			const JPH::PointConstraint *c = static_cast<const JPH::PointConstraint *>(p_constraint);
+			r_linear = c->GetTotalLambdaPosition();
+		} break;
+		case JPH::EConstraintSubType::Fixed: {
+			const JPH::FixedConstraint *c = static_cast<const JPH::FixedConstraint *>(p_constraint);
+			r_linear = c->GetTotalLambdaPosition();
+			r_angular = c->GetTotalLambdaRotation();
+		} break;
+		case JPH::EConstraintSubType::Hinge: {
+			const JPH::HingeConstraint *c = static_cast<const JPH::HingeConstraint *>(p_constraint);
+			r_linear = c->GetTotalLambdaPosition();
+			const JPH::Vector<2> rot = c->GetTotalLambdaRotation();
+			r_angular = JPH::Vec3(rot[0], rot[1], c->GetTotalLambdaRotationLimits() + c->GetTotalLambdaMotor());
+		} break;
+		case JPH::EConstraintSubType::Slider: {
+			const JPH::SliderConstraint *c = static_cast<const JPH::SliderConstraint *>(p_constraint);
+			const JPH::Vector<2> lin = c->GetTotalLambdaPosition();
+			r_linear = JPH::Vec3(lin[0], lin[1], c->GetTotalLambdaPositionLimits() + c->GetTotalLambdaMotor());
+			r_angular = c->GetTotalLambdaRotation();
+		} break;
+		case JPH::EConstraintSubType::SwingTwist: {
+			const JPH::SwingTwistConstraint *c = static_cast<const JPH::SwingTwistConstraint *>(p_constraint);
+			r_linear = c->GetTotalLambdaPosition();
+			r_angular = JPH::Vec3(c->GetTotalLambdaTwist(), c->GetTotalLambdaSwingY(), c->GetTotalLambdaSwingZ()) + c->GetTotalLambdaMotor();
+		} break;
+		case JPH::EConstraintSubType::SixDOF: {
+			const JPH::SixDOFConstraint *c = static_cast<const JPH::SixDOFConstraint *>(p_constraint);
+			r_linear = c->GetTotalLambdaPosition() + c->GetTotalLambdaMotorTranslation();
+			r_angular = c->GetTotalLambdaRotation() + c->GetTotalLambdaMotorRotation();
+		} break;
+		default: {
+			// Unsupported constraint type: leave impulses at zero.
+		} break;
+	}
+}
+
+void JoltJoint3D::_break_joint() {
+	if (jolt_ref == nullptr) {
+		return;
+	}
+
+	if (collision_disabled) {
+		set_collision_disabled(false);
+	}
+
+	destroy();
+}
+
+void JoltJoint3D::post_step() {
+	JPH::Constraint *constraint = jolt_ref.GetPtr();
+	if (constraint == nullptr) {
+		cached_applied_linear_impulse = Vector3();
+		cached_applied_angular_impulse = Vector3();
+		return;
+	}
+
+	JPH::Vec3 j_linear;
+	JPH::Vec3 j_angular;
+	_gather_constraint_lambdas(constraint, j_linear, j_angular);
+	cached_applied_linear_impulse = to_godot(j_linear);
+	cached_applied_angular_impulse = to_godot(j_angular);
+
+	if (!is_breakable || break_force <= 0.0) {
+		return;
+	}
+
+	if (cached_applied_linear_impulse.length() > break_force) {
+		_break_joint();
+	}
 }

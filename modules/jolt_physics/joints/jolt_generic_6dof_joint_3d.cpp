@@ -688,22 +688,3 @@ void JoltGeneric6DOFJoint3D::rebuild() {
 		_update_spring_equilibrium(axis);
 	}
 }
-
-void JoltGeneric6DOFJoint3D::post_step() {
-    // Вызывается сразу после PhysicsSystem::Update()
-    // В этот момент GetTotalLambdaPosition() содержит
-    // актуальные данные за текущий шаг
-	JPH::SixDOFConstraint *jolt_constraint = static_cast<JPH::SixDOFConstraint *>(jolt_ref.GetPtr());
-    if (jolt_constraint == nullptr) {
-        return;
-    }
-
-    // Делим на dt, чтобы получить силу (импульс / dt = сила)
-    // Либо оставить как есть (импульс), зависит от семантики
-    cached_applied_force = to_godot(jolt_constraint->GetTotalLambdaPosition());
-    cached_applied_torque = to_godot(jolt_constraint->GetTotalLambdaRotation());
-
-	if (cached_applied_force >Vector3(1,1,1)){
-print_line(cached_applied_force); 
-	}
-}

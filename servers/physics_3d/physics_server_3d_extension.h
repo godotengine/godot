@@ -530,6 +530,11 @@ public:
 	EXBIND2(joint_disable_collisions_between_bodies, RID, bool)
 	EXBIND1RC(bool, joint_is_disabled_collisions_between_bodies, RID)
 
+	EXBIND2(joint_set_is_breakable, RID, bool)
+	EXBIND1RC(bool, joint_get_is_breakable, RID)
+	EXBIND2(joint_set_break_force, RID, real_t)
+	EXBIND1RC(real_t, joint_get_break_force, RID)
+
 	/* MISC */
 
 	GDVIRTUAL1_REQUIRED(_free_rid, RID)
