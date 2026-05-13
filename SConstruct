@@ -986,6 +986,9 @@ else:  # GCC, Clang
             common_warnings += ["-Wno-return-type"]
         if cc_version_major >= 11:
             common_warnings += ["-Wenum-conversion"]
+        if cc_version_major >= 16:
+            # GCC 16 flags type-incompleteness assertions on their intended behavior, see GH-119269.
+            env.AppendUnique(CXXFLAGS=["-Wno-sfinae-incomplete"])
     elif methods.using_clang(env) or methods.using_emcc(env):
         common_warnings += ["-Wshadow-field-in-constructor", "-Wshadow-uncaptured-local"]
         # We often implement `operator<` for structs of pointers as a requirement
