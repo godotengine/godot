@@ -168,14 +168,14 @@ TEST_CASE("[SceneTree][RichTextLabel] append_text with unordered list") {
 	RichTextLabel *label = make_label(SceneTree::get_singleton());
 
 	label->append_text("[ul]item 1[/ul]");
-    CHECK(label->get_parsed_text() == "\titem 1\n");
+	CHECK(label->get_parsed_text() == "\titem 1\n");
 
 	label->set_text("");
 	label->append_text("[ul]\n[/ul]");
 	// Should not add extra newlines for empty list items.
-    CHECK(label->get_parsed_text() == "\t\n");
+	CHECK(label->get_parsed_text() == "\t\n");
 
-    memdelete(label);
+	memdelete(label);
 }
 
 TEST_CASE("[SceneTree][RichTextLabel] append_text mismatched brackets") {
