@@ -163,9 +163,9 @@ class BoxMesh : public PrimitiveMesh {
 
 private:
 	Vector3 size = Vector3(1, 1, 1);
-	int subdivide_w = 0;
-	int subdivide_h = 0;
-	int subdivide_d = 0;
+	int subdivide_w = 2;
+	int subdivide_h = 2;
+	int subdivide_d = 2;
 
 protected:
 	static void _bind_methods();
