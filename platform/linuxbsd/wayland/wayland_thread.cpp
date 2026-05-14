@@ -1550,7 +1550,7 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 	}
 
 	if (height == 0) {
-		height = ws->rect.size.width;
+		height = ws->rect.size.height;
 	}
 
 	window_state_update_size(ws, width, height);
