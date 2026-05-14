@@ -1251,21 +1251,23 @@ void EditorProperty::_accessibility_action_menu(const Variant &p_data) {
 }
 
 void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
-	if (!selected || !p_event->is_pressed()) {
+	if (!selected || !p_event->is_pressed() || p_event->is_echo()) {
 		return;
 	}
 
-	const Ref<InputEventKey> k = p_event;
-
-	if (k.is_valid() && k->is_pressed()) {
-		if (ED_IS_SHORTCUT("property_editor/copy_value", p_event)) {
-			menu_option(MENU_COPY_VALUE);
-			accept_event();
-		} else if (!is_read_only() && ED_IS_SHORTCUT("property_editor/paste_value", p_event)) {
-			menu_option(MENU_PASTE_VALUE);
-			accept_event();
-		} else if (!internal && ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
-			menu_option(MENU_COPY_PROPERTY_PATH);
+	if (ED_IS_SHORTCUT("property_editor/copy_value", p_event)) {
+		menu_option(MENU_COPY_VALUE);
+		accept_event();
+	} else if (!is_read_only() && ED_IS_SHORTCUT("property_editor/paste_value", p_event)) {
+		menu_option(MENU_PASTE_VALUE);
+		accept_event();
+	} else if (!internal && ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
+		menu_option(MENU_COPY_PROPERTY_PATH);
+		accept_event();
+	} else {
+		const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, p_event);
+		if (custom_callback.is_valid()) {
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, this);
 			accept_event();
 		}
 	}
