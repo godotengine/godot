@@ -2203,64 +2203,66 @@ void EditorHelp::_update_doc() {
 			class_desc->pop(); // cell
 
 			// Script doc doesn't have setter, getter.
-			if (!cd.is_script_doc) {
-				HashMap<String, DocData::MethodDoc> method_map;
-				for (int j = 0; j < methods.size(); j++) {
-					method_map[methods[j].name] = methods[j];
-				}
-
-				if (!prop.setter.is_empty()) {
-					class_desc->push_cell();
-					class_desc->pop(); // cell
-
-					class_desc->push_cell();
-					_push_code_font();
-					class_desc->push_color(theme_cache.text_color);
-
-					if (method_map[prop.setter].arguments.size() > 1) {
-						// Setters with additional arguments are exposed in the method list, so we link them here for quick access.
-						class_desc->push_meta("@method " + prop.setter);
-						class_desc->add_text(prop.setter + TTR("(value)"));
-						class_desc->pop(); // meta
-					} else {
-						class_desc->add_text(prop.setter + TTR("(value)"));
+			if (EDITOR_GET("text_editor/help/show_property_setters_and_getters")) {
+				if (!cd.is_script_doc) {
+					HashMap<String, DocData::MethodDoc> method_map;
+					for (int j = 0; j < methods.size(); j++) {
+						method_map[methods[j].name] = methods[j];
 					}
 
-					class_desc->pop(); // color
-					class_desc->push_color(theme_cache.comment_color);
-					class_desc->add_text(" setter");
-					class_desc->pop(); // color
-					_pop_code_font();
-					class_desc->pop(); // cell
+					if (!prop.setter.is_empty()) {
+						class_desc->push_cell();
+						class_desc->pop(); // cell
 
-					method_line[prop.setter] = property_line[prop.name];
-				}
+						class_desc->push_cell();
+						_push_code_font();
+						class_desc->push_color(theme_cache.text_color);
 
-				if (!prop.getter.is_empty()) {
-					class_desc->push_cell();
-					class_desc->pop(); // cell
+						if (method_map[prop.setter].arguments.size() > 1) {
+							// Setters with additional arguments are exposed in the method list, so we link them here for quick access.
+							class_desc->push_meta("@method " + prop.setter);
+							class_desc->add_text(prop.setter + TTR("(value)"));
+							class_desc->pop(); // meta
+						} else {
+							class_desc->add_text(prop.setter + TTR("(value)"));
+						}
 
-					class_desc->push_cell();
-					_push_code_font();
-					class_desc->push_color(theme_cache.text_color);
+						class_desc->pop(); // color
+						class_desc->push_color(theme_cache.comment_color);
+						class_desc->add_text(" setter");
+						class_desc->pop(); // color
+						_pop_code_font();
+						class_desc->pop(); // cell
 
-					if (!method_map[prop.getter].arguments.is_empty()) {
-						// Getters with additional arguments are exposed in the method list, so we link them here for quick access.
-						class_desc->push_meta("@method " + prop.getter);
-						class_desc->add_text(prop.getter + "()");
-						class_desc->pop(); // meta
-					} else {
-						class_desc->add_text(prop.getter + "()");
+						method_line[prop.setter] = property_line[prop.name];
 					}
 
-					class_desc->pop(); // color
-					class_desc->push_color(theme_cache.comment_color);
-					class_desc->add_text(" getter");
-					class_desc->pop(); // color
-					_pop_code_font();
-					class_desc->pop(); // cell
+					if (!prop.getter.is_empty()) {
+						class_desc->push_cell();
+						class_desc->pop(); // cell
 
-					method_line[prop.getter] = property_line[prop.name];
+						class_desc->push_cell();
+						_push_code_font();
+						class_desc->push_color(theme_cache.text_color);
+
+						if (!method_map[prop.getter].arguments.is_empty()) {
+							// Getters with additional arguments are exposed in the method list, so we link them here for quick access.
+							class_desc->push_meta("@method " + prop.getter);
+							class_desc->add_text(prop.getter + "()");
+							class_desc->pop(); // meta
+						} else {
+							class_desc->add_text(prop.getter + "()");
+						}
+
+						class_desc->pop(); // color
+						class_desc->push_color(theme_cache.comment_color);
+						class_desc->add_text(" getter");
+						class_desc->pop(); // color
+						_pop_code_font();
+						class_desc->pop(); // cell
+
+						method_line[prop.getter] = property_line[prop.name];
+					}
 				}
 			}
 
@@ -3297,6 +3299,9 @@ void EditorHelp::_notification(int p_what) {
 				need_update = true;
 			}
 #endif
+			if (!need_update && EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/show_property_setters_and_getters")) {
+				need_update = true;
+			}
 			if (!need_update) {
 				break;
 			}
