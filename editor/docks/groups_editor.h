@@ -62,8 +62,10 @@ class GroupsEditor : public VBoxContainer {
 	CheckButton *global_group_button = nullptr;
 	EditorValidationPanel *add_validation_panel = nullptr;
 
-	ConfirmationDialog *rename_group_dialog = nullptr;
+	ConfirmationDialog *edit_group_dialog = nullptr;
 	LineEdit *rename_group = nullptr;
+	HBoxContainer *description_hb = nullptr;
+	LineEdit *edit_description = nullptr;
 	CheckBox *rename_check_box = nullptr;
 	EditorValidationPanel *rename_validation_panel = nullptr;
 
@@ -89,7 +91,7 @@ class GroupsEditor : public VBoxContainer {
 	void _cache_scene_groups(const ObjectID &p_id);
 
 	void _show_add_group_dialog();
-	void _show_rename_group_dialog();
+	void _show_edit_group_dialog();
 	void _show_remove_group_dialog();
 
 	void _check_add();
@@ -109,7 +111,7 @@ class GroupsEditor : public VBoxContainer {
 	void _set_group_checked(const String &p_name, bool p_checked);
 
 	void _confirm_add();
-	void _confirm_rename();
+	void _confirm_edit();
 	void _confirm_delete();
 
 	void _item_edited();
@@ -137,7 +139,7 @@ public:
 	enum ModifyButton {
 		DELETE_GROUP,
 		COPY_GROUP,
-		RENAME_GROUP,
+		EDIT_GROUP,
 		CONVERT_GROUP,
 	};
 
