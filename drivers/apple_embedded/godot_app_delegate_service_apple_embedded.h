@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  app.swift                                                             */
+/*  godot_app_delegate_service_apple_embedded.h                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-import SwiftUI
-import UIKit
+#pragma once
 
-struct GodotSwiftUIViewController: UIViewControllerRepresentable {
+#import <UIKit/UIKit.h>
 
-	func makeUIViewController(context: Context) -> GDTViewController {
-		let viewController = GDTViewController()
-		GDTAppDelegateService.viewController = viewController
-		return viewController
-	}
+@class GDTViewController;
 
-	func updateUIViewController(_ uiViewController: GDTViewController, context: Context) {
-		// NOOP
-	}
+@interface GDTAppDelegateService : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
 
-}
+@property(weak, class, nonatomic, nullable) GDTViewController *viewController;
 
-@main
-struct SwiftUIApp: App {
-	@UIApplicationDelegateAdaptor(GDTApplicationDelegate.self) var appDelegate
-
-	var body: some Scene {
-		WindowGroup {
-			GodotSwiftUIViewController()
-				.ignoresSafeArea()
-		}
-	}
-}
+@end

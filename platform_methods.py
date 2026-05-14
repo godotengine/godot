@@ -322,6 +322,12 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
     elif apple_platform == "visionossimulator":
         target_suffix = "xros26.0-simulator"
 
+    elif apple_platform == "tvos":
+        target_suffix = "tvos26.0"
+
+    elif apple_platform == "tvosimulator":
+        target_suffix = "tvos26.0-simulator"
+
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
 
@@ -342,6 +348,7 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
     bridging_header_path = current_path + "/" + bridging_header_filename
     env["SWIFTC"] = frontend_path + " -frontend -c"  # Swift compiler
     env["SWIFTCFLAGS"] = [
+        "-warnings-as-errors",
         "-cxx-interoperability-mode=default",
         "-emit-object",
         "-target",
@@ -363,6 +370,11 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
             SWIFTCFLAGS=[
                 "-resource-dir",
                 "/root/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift",
+                # The OSS Swift compiler doesn't auto-load cross-import overlays (e.g.
+                # _CompositorServices_SwiftUI, which provides `CompositorLayer` and
+                # `CompositorLayerConfiguration` when both CompositorServices and SwiftUI
+                # are imported). Enable them explicitly via a frontend flag.
+                "-enable-cross-import-overlays",
             ]
         )
 
@@ -401,3 +413,4 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
     env.Append(BUILDERS={"Swift": swift_builder})
     env["BUILDERS"]["Library"].add_src_builder("Swift")
     env["BUILDERS"]["Object"].add_action(".swift", Action(generate_swift_action, generator=1))
+    env["BUILDERS"]["Object"].emitter[".swift"] = methods.redirect_emitter

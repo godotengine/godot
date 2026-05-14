@@ -30,12 +30,19 @@
 
 #pragma once
 
+#ifdef TVOS_ENABLED
+#import <GameController/GameController.h>
+#endif
 #import <UIKit/UIKit.h>
 
 @class GDTView;
 @class GDTKeyboardInputView;
 
+#ifdef TVOS_ENABLED
+@interface GDTViewController : GCEventViewController
+#else
 @interface GDTViewController : UIViewController
+#endif
 
 @property(nonatomic, readonly, strong) GDTView *godotView;
 @property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  app_delegate_service.mm                                               */
+/*  godot_app_delegate_service_apple_embedded.mm                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "app_delegate_service.h"
+#import "godot_app_delegate_service_apple_embedded.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/main_loop.h"
@@ -59,14 +59,14 @@ enum {
 	SESSION_CATEGORY_SOLO_AMBIENT
 };
 
-static GDTViewController *mainViewController = nil;
+static __weak GDTViewController *_viewController = nil;
 
 + (GDTViewController *)viewController {
-	return mainViewController;
+	return _viewController;
 }
 
 + (void)setViewController:(GDTViewController *)viewController {
-	mainViewController = viewController;
+	_viewController = viewController;
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -111,7 +111,9 @@ static GDTViewController *mainViewController = nil;
 		category = AVAudioSessionCategoryMultiRoute;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAY_AND_RECORD) {
 		category = AVAudioSessionCategoryPlayAndRecord;
+#ifndef TVOS_ENABLED
 		options |= AVAudioSessionCategoryOptionDefaultToSpeaker;
+#endif
 		options |= AVAudioSessionCategoryOptionAllowBluetoothA2DP;
 		options |= AVAudioSessionCategoryOptionAllowAirPlay;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAYBACK) {

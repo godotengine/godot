@@ -34,8 +34,8 @@
 #include "core/input/input.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
-#import "drivers/apple_embedded/app_delegate_service.h"
 #import "drivers/apple_embedded/apple_embedded.h"
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
 #import "drivers/apple_embedded/godot_keyboard_input_view.h"
 #import "drivers/apple_embedded/godot_view_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_controller.h"
@@ -65,6 +65,15 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 	native_menu = memnew(NativeMenu);
 
 	bool has_made_render_compositor_current = false;
+
+#if !defined(GLES3_ENABLED) && defined(METAL_ENABLED)
+	if (rendering_driver == "opengl3") {
+		WARN_PRINT("OpenGL 3 is not supported on this platform, switching to Metal.");
+		rendering_driver = "metal";
+		OS::get_singleton()->set_current_rendering_method("mobile", OS::RENDERING_SOURCE_FALLBACK);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
+	}
+#endif
 
 #if defined(RD_ENABLED)
 	rendering_context = nullptr;
@@ -668,7 +677,7 @@ void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServerEnums::Scre
 	if (@available(iOS 16.0, *)) {
 		[GDTAppDelegateService.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
 	}
-#if !defined(VISIONOS_ENABLED)
+#if !defined(VISIONOS_ENABLED) && !defined(TVOS_ENABLED)
 	else {
 		[UIViewController attemptRotationToDeviceOrientation];
 	}
@@ -772,13 +781,19 @@ bool DisplayServerAppleEmbedded::has_hardware_keyboard() const {
 }
 
 void DisplayServerAppleEmbedded::clipboard_set(const String &p_text) {
+#ifndef TVOS_ENABLED
 	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8().get_data()];
+#endif
 }
 
 String DisplayServerAppleEmbedded::clipboard_get() const {
+#ifndef TVOS_ENABLED
 	NSString *text = [UIPasteboard generalPasteboard].string;
 
 	return String::utf8([text UTF8String]);
+#else
+	return String();
+#endif
 }
 
 void DisplayServerAppleEmbedded::screen_set_keep_on(bool p_enable) {

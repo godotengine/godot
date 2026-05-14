@@ -594,7 +594,7 @@ Dictionary OS_Unix::get_memory_info() const {
 
 #if !defined(__GLIBC__) && !defined(WEB_ENABLED)
 void OS_Unix::_load_iconv() {
-#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	String iconv_lib_aliases[] = { "/usr/lib/libiconv.2.dylib" };
 	String iconv_func_aliases[] = { "iconv" };
 	String charset_lib_aliases[] = { "/usr/lib/libcharset.1.dylib" };
@@ -734,7 +734,9 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 	}
 
 	Dictionary ret;
-#ifdef __EMSCRIPTEN__
+#ifdef APPLE_EMBEDDED_ENABLED
+	ERR_FAIL_V_MSG(ret, "Process execution is not supported on Apple embedded devices.");
+#elif defined(__EMSCRIPTEN__)
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ret);
@@ -879,7 +881,9 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 }
 
 Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
-#ifdef __EMSCRIPTEN__
+#ifdef APPLE_EMBEDDED_ENABLED
+	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Process execution is not supported on Apple embedded devices.");
+#elif defined(__EMSCRIPTEN__)
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
@@ -953,7 +957,9 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 }
 
 Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
-#ifdef __EMSCRIPTEN__
+#ifdef APPLE_EMBEDDED_ENABLED
+	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Process execution is not supported on Apple embedded devices.");
+#elif defined(__EMSCRIPTEN__)
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);

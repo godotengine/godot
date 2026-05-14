@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_app_delegate.h                                                  */
+/*  os_tvos.mm                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,16 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#import "os_tvos.h"
 
-#import <UIKit/UIKit.h>
+#import "display_server_tvos.h"
 
-typedef NSObject<UIApplicationDelegate, UIWindowSceneDelegate> GDTAppDelegateServiceProtocol;
+#ifdef TVOS_ENABLED
 
-@interface GDTApplicationDelegate : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
+OS_TVOS *OS_TVOS::get_singleton() {
+	return (OS_TVOS *)OS_AppleEmbedded::get_singleton();
+}
 
-@property(class, readonly, strong) NSArray<GDTAppDelegateServiceProtocol *> *services;
+OS_TVOS::OS_TVOS() :
+		OS_AppleEmbedded() {
+	DisplayServerTVOS::register_tvos_driver();
+}
 
-+ (void)addService:(GDTAppDelegateServiceProtocol *)service;
+OS_TVOS::~OS_TVOS() {}
 
-@end
+String OS_TVOS::get_name() const {
+	return "tvOS";
+}
+
+#endif // TVOS_ENABLED
