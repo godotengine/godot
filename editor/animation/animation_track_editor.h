@@ -672,6 +672,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _name_limit_changed();
 	void _timeline_changed(float p_new_pos, bool p_timeline_only);
+	void _zoom_changed();
 	void _track_remove_request(int p_track);
 	void _animation_track_remove_request(int p_track, Ref<Animation> p_from_animation);
 	void _track_grab_focus(int p_track);
@@ -780,7 +781,19 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _update_key_edit();
 	void _clear_key_edit();
 
+	Control *move_selection_time_draw = nullptr;
+	void _move_selection_time_draw();
+	enum TimeTextAnchor {
+		TIME_TEXT_ANCHOR_CENTER,
+		TIME_TEXT_ANCHOR_RIGHT,
+		TIME_TEXT_ANCHOR_LEFT,
+	};
+	void _draw_time_text(int p_selected_track, float p_key_time, TimeTextAnchor p_anchor);
+	int _count_time_decimals(float p_time);
+	void _update_move_selection_time_draw_rect();
+
 	Control *box_selection_container = nullptr;
+	void _box_selection_container_resized();
 
 	Control *box_selection = nullptr;
 	void _box_selection_draw();
@@ -907,6 +920,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	bool fps_compatible = true;
 	int nearest_fps = 0;
 	void _update_snap_unit();
+	double _get_current_snap();
 
 protected:
 	static void _bind_methods();
