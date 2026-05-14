@@ -2519,37 +2519,15 @@ void WaylandThread::_wl_data_source_on_target(void *data, struct wl_data_source 
 
 void WaylandThread::_wl_data_source_on_send(void *data, struct wl_data_source *wl_data_source, const char *mime_type, int32_t fd) {
 	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
-
-	Vector<uint8_t> *data_to_send = nullptr;
-
-	if (wl_data_source == ss->wl_data_source_selection) {
-		data_to_send = &ss->selection_data;
-		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested selection.");
+	if (ss == nullptr) {
+		ERR_PRINT("Seat state not set.");
+		close(fd);
+		return;
 	}
 
-	if (data_to_send) {
-		ssize_t written_bytes = 0;
-
-		bool valid_mime = false;
-
-		if (strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
-			valid_mime = true;
-		} else if (strcmp(mime_type, "text/plain") == 0) {
-			valid_mime = true;
-		}
-
-		if (valid_mime) {
-			written_bytes = write(fd, data_to_send->ptr(), data_to_send->size());
-		}
-
-		if (written_bytes > 0) {
-			DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
-		} else if (written_bytes == 0) {
-			DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
-		} else {
-			ERR_PRINT(vformat("Clipboard: write error %d.", errno));
-		}
+	if (wl_data_source == ss->wl_data_source_selection) {
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested selection.");
+		_clipboard_send(ss->selection_data, mime_type, fd);
 	}
 
 	close(fd);
@@ -2715,29 +2693,15 @@ void WaylandThread::_wp_primary_selection_offer_on_offer(void *data, struct zwp_
 
 void WaylandThread::_wp_primary_selection_source_on_send(void *data, struct zwp_primary_selection_source_v1 *wp_primary_selection_source_v1, const char *mime_type, int32_t fd) {
 	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
-
-	Vector<uint8_t> *data_to_send = nullptr;
-
-	if (wp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
-		data_to_send = &ss->primary_data;
-		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested primary selection.");
+	if (ss == nullptr) {
+		ERR_PRINT("Seat state not set.");
+		close(fd);
+		return;
 	}
 
-	if (data_to_send) {
-		ssize_t written_bytes = 0;
-
-		if (strcmp(mime_type, "text/plain") == 0) {
-			written_bytes = write(fd, data_to_send->ptr(), data_to_send->size());
-		}
-
-		if (written_bytes > 0) {
-			DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
-		} else if (written_bytes == 0) {
-			DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
-		} else {
-			ERR_PRINT(vformat("Clipboard: write error %d.", errno));
-		}
+	if (wp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested primary selection.");
+		_clipboard_send(ss->primary_data, mime_type, fd);
 	}
 
 	close(fd);
@@ -3335,6 +3299,33 @@ void WaylandThread::_godot_embedded_client_on_window_focus_out(void *data, struc
 
 	ecomp_state->focused_pid = -1;
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Embedded client pid %d focus out", state->pid));
+}
+
+void WaylandThread::_clipboard_send(Vector<uint8_t> &p_data, const char *p_media_type, int32_t p_fd) {
+	ssize_t written_bytes = 0;
+
+	bool valid_mime = false;
+
+	if (strcmp(p_media_type, "text/plain;charset=utf-8") == 0) {
+		valid_mime = true;
+	} else if (strcmp(p_media_type, "text/plain") == 0) {
+		valid_mime = true;
+	}
+
+	if (!valid_mime) {
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: Media type '%s' unknown, skipping.", p_media_type));
+		return;
+	}
+
+	written_bytes = write(p_fd, p_data.ptr(), p_data.size());
+
+	if (written_bytes > 0) {
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
+	} else if (written_bytes == 0) {
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
+	} else {
+		ERR_PRINT(vformat("Clipboard: write error %d.", errno));
+	}
 }
 
 // NOTE: This must be started after a valid wl_display is loaded.
@@ -5162,15 +5153,18 @@ void WaylandThread::selection_set_text(const String &p_text) {
 
 	ss->selection_data = p_text.to_utf8_buffer();
 
-	if (ss->wl_data_source_selection == nullptr) {
-		ss->wl_data_source_selection = wl_data_device_manager_create_data_source(registry.wl_data_device_manager);
-		wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
-		wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
-		wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
-
-		// TODO: Implement a good way of getting the latest serial from the user.
-		wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+	if (ss->wl_data_source_selection != nullptr) {
+		wl_data_source_destroy(ss->wl_data_source_selection);
+		ss->wl_data_source_selection = nullptr;
 	}
+
+	ss->wl_data_source_selection = wl_data_device_manager_create_data_source(registry.wl_data_device_manager);
+	wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
+	wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
+	wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
+
+	// TODO: Implement a good way of getting the latest serial from the user.
+	wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
 
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
@@ -5253,7 +5247,7 @@ Vector<uint8_t> WaylandThread::primary_get_mime(const String &p_mime) const {
 
 		if (os->mime_types.has(p_mime)) {
 			// All righty, we're offering this type. Let's just return the data as is.
-			return ss->selection_data;
+			return ss->primary_data;
 		}
 
 		// ... we don't offer that type. Oh well.
@@ -5283,15 +5277,18 @@ void WaylandThread::primary_set_text(const String &p_text) {
 
 	ss->primary_data = p_text.to_utf8_buffer();
 
-	if (ss->wp_primary_selection_source == nullptr) {
-		ss->wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(registry.wp_primary_selection_device_manager);
-		zwp_primary_selection_source_v1_add_listener(ss->wp_primary_selection_source, &wp_primary_selection_source_listener, ss);
-		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain;charset=utf-8");
-		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain");
-
-		// TODO: Implement a good way of getting the latest serial from the user.
-		zwp_primary_selection_device_v1_set_selection(ss->wp_primary_selection_device, ss->wp_primary_selection_source, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+	if (ss->wp_primary_selection_source != nullptr) {
+		zwp_primary_selection_source_v1_destroy(ss->wp_primary_selection_source);
+		ss->wp_primary_selection_source = nullptr;
 	}
+
+	ss->wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(registry.wp_primary_selection_device_manager);
+	zwp_primary_selection_source_v1_add_listener(ss->wp_primary_selection_source, &wp_primary_selection_source_listener, ss);
+	zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain;charset=utf-8");
+	zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain");
+
+	// TODO: Implement a good way of getting the latest serial from the user.
+	zwp_primary_selection_device_v1_set_selection(ss->wp_primary_selection_device, ss->wp_primary_selection_source, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
 
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
