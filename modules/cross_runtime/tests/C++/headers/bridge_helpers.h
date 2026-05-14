@@ -32,8 +32,6 @@
 
 #ifdef WEB_ENABLED
 
-#include "bridge_api.h"
-
 #include "core/config/engine.h"
 #include "core/io/marshalls.h"
 #include "core/math/aabb.h"
