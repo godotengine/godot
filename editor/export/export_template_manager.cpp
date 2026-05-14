@@ -223,6 +223,17 @@ void ExportTemplateManager::_delete_file(const TreeItem *p_item) {
 }
 
 void ExportTemplateManager::_tpz_file_selected(const String &p_file) {
+	// Decompressed official export templates are typically around 2 GiB on disk.
+	// While this is not necessarily the case, we assume the selected export templates TPZ
+	// contains all files (similar to official templates).
+	//
+	// The compressed file also has to stay on disk until the export templates are done extracting,
+	// so we also need to account for its compressed size on top.
+	EditorNode::get_singleton()->check_disk_space(
+			EditorPaths::get_singleton()->get_data_dir(),
+			4.0,
+			TTR("Installing export templates will fail if the disk runs out of space."));
+
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
@@ -1976,6 +1987,14 @@ void TemplateDownloader::_bind_methods() {
 }
 
 Error TemplateDownloader::download_template(const String &p_file_name, const String &p_source) {
+	// The largest official individual export template file is around 200 MiB on disk (`android_source.zip`).
+	// However, the compressed file has to stay on disk until the export templates are done extracting,
+	// so we also need to account for its compressed size on top.
+	EditorNode::get_singleton()->check_disk_space(
+			EditorPaths::get_singleton()->get_data_dir(),
+			1.0,
+			TTR("Downloading export templates will fail if the disk runs out of space."));
+
 	url = p_source;
 	filename = p_file_name;
 
