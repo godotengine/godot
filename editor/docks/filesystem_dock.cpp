@@ -982,7 +982,7 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 	for (int i = 0; i < p_path->get_file_count(); i++) {
 		String file = p_path->get_file(i);
 
-		if (_matches_all_search_tokens(file)) {
+		if (_matches_all_search_tokens(file, p_path->get_file_type(i))) {
 			FileInfo file_info;
 			file_info.name = file;
 			file_info.type = p_path->get_file_type(i);
@@ -1109,7 +1109,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 					file_info.modified_time = 0;
 				}
 
-				if (searched_tokens.is_empty() || _matches_all_search_tokens(file_info.name)) {
+				if (searched_tokens.is_empty() || _matches_all_search_tokens(file_info.name, file_info.type)) {
 					file_list.push_back(file_info);
 				}
 			}
@@ -2871,17 +2871,87 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 	}
 }
 
-bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
+bool FileSystemDock::_matches_all_search_tokens(const String &p_text, const StringName &p_file_type) {
 	if (searched_tokens.is_empty()) {
 		return false;
 	}
 	const String s = p_text.to_lower();
 	for (const String &t : searched_tokens) {
-		if (!s.contains(t)) {
+		if (t.begins_with("type:") || t.begins_with("t:")) {
+			const String class_name = t.get_slicec(':', 1);
+			if (class_name.is_empty()) {
+				return false;
+			}
+
+			bool type_found = false;
+			String type = String(p_file_type);
+			bool is_text_file = (p_file_type == SNAME("TextFile"));
+			while (!type.is_empty()) {
+				if (type.to_lower().contains(class_name)) {
+					type_found = true;
+					break;
+				}
+				if (is_text_file) {
+					break;
+				}
+				type = ClassDB::get_parent_class(type);
+			}
+
+			if (!type_found) {
+				return false;
+			}
+		} else if (!s.contains(t)) {
 			return false;
 		}
 	}
 	return true;
+}
+
+void FileSystemDock::_filter_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_null()) {
+		return;
+	}
+
+	if (mb->is_pressed() && mb->get_button_index() == MouseButton::MIDDLE) {
+		if (filter_quick_menu == nullptr) {
+			filter_quick_menu = memnew(PopupMenu);
+			_append_filter_options_to(filter_quick_menu);
+			filter_quick_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_filter_option_selected));
+			add_child(filter_quick_menu);
+		}
+
+		filter_quick_menu->set_position(get_screen_position() + get_local_mouse_position());
+		filter_quick_menu->reset_size();
+		filter_quick_menu->popup();
+		filter_quick_menu->grab_focus();
+		accept_event();
+	}
+}
+
+void FileSystemDock::_append_filter_options_to(PopupMenu *p_menu) {
+	if (p_menu->get_item_count() > 0) {
+		p_menu->add_separator();
+	}
+
+	p_menu->add_item(TTRC("Filter by Type"), FILTER_BY_TYPE);
+	p_menu->set_item_tooltip(-1, TTRC("Selects all Nodes of the given type.\nInserts \"type:\". You can also use the shorthand \"t:\"."));
+}
+
+void FileSystemDock::_filter_option_selected(int p_option) {
+	String filter_parameter;
+	switch (p_option) {
+		case FILTER_BY_TYPE: {
+			filter_parameter = "type";
+		} break;
+	}
+
+	LineEdit *current_search_box = (display_mode == DISPLAY_MODE_TREE_ONLY) ? tree_search_box : file_list_search_box;
+	const String new_text = (current_search_box->get_text() + " " + filter_parameter + ":").strip_edges();
+	current_search_box->set_text(new_text);
+	_search_changed(new_text, current_search_box);
+	current_search_box->set_caret_column(current_search_box->get_text().length());
+	current_search_box->grab_focus();
 }
 
 void FileSystemDock::_rescan() {
@@ -4518,9 +4588,13 @@ FileSystemDock::FileSystemDock() {
 	tree_search_box = memnew(LineEdit);
 	tree_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	tree_search_box->set_placeholder(TTRC("Filter Files"));
+	tree_search_box->set_tooltip_text(TTRC("Filter files by entering a part of their name or type (if prefixed with \"type:\" or \"t:\")\n. Filtering is case-insensitive."));
 	tree_search_box->set_clear_button_enabled(true);
 	tree_search_box->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(tree_search_box));
+	tree_search_box->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_filter_gui_input));
+	tree_search_box->get_menu()->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_filter_option_selected));
 	toolbar2_hbc->add_child(tree_search_box);
+	_append_filter_options_to(tree_search_box->get_menu());
 
 	tree_button_sort = _create_file_menu_button();
 	toolbar2_hbc->add_child(tree_button_sort);
@@ -4578,9 +4652,13 @@ FileSystemDock::FileSystemDock() {
 	file_list_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	file_list_search_box->set_placeholder(TTRC("Filter Files"));
 	file_list_search_box->set_accessibility_name(TTRC("Filter Files"));
+	file_list_search_box->set_tooltip_text(TTRC("Filter files by entering a part of their name or type (if prefixed with \"type:\" or \"t:\")\n. Filtering is case-insensitive."));
 	file_list_search_box->set_clear_button_enabled(true);
 	file_list_search_box->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(file_list_search_box));
+	file_list_search_box->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_filter_gui_input));
+	file_list_search_box->get_menu()->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_filter_option_selected));
 	path_hb->add_child(file_list_search_box);
+	_append_filter_options_to(file_list_search_box->get_menu());
 
 	file_list_button_sort = _create_file_menu_button();
 	path_hb->add_child(file_list_button_sort);
