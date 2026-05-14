@@ -1,3 +1,5 @@
+# cpp_generators.py
+
 import shutil
 
 from utilities import (
@@ -22,9 +24,9 @@ def generate_bridge_api_header(folder_path, command_names):
     lines.append("#include <cstdint>")
     lines.append("")
     lines.append("// Command bridge ")
-    lines.append("const std::uint32_t CMD_OFFSET   = 0x5000u;")
-    lines.append("const std::uint32_t STATUS_OFFSET = 0x5004u;")
-    lines.append("const std::uint32_t CMD_DATA     = 0x5008u;")
+    lines.append("static volatile uint32_t *const CMD_OFFSET = reinterpret_cast<volatile uint32_t *>(0x5000u);")
+    lines.append("static volatile uint8_t *const STATUS_OFFSET = reinterpret_cast<volatile uint8_t *>(0x5004u);")
+    lines.append("static const uint8_t *const CMD_DATA = reinterpret_cast<const uint8_t *>(0x5016u);")
     lines.append("")
     lines.append("const std::uint32_t CMD_NONE = 0;")
     lines.append("const std::uint8_t STATUS_PENDING = 0;")
@@ -53,37 +55,70 @@ def generate_bridge_api_header(folder_path, command_names):
     write_text(folder_path / "cpp" / "headers" / "bridge_api.h", "\n".join(lines) + "\n")
 
 
-# creates the api cpp files
+# generate CPP class files
 def generate_cpp_class_file(folder_path, file_base, class_, methods):
     path = folder_path / "cpp" / f"{file_base}.cpp"
+
+    # defines the strieds for the packed types, its noot a universal truth but it does help estimate how far the next argument should start
+    def _packed_stride(argument_type):
+        if argument_type == 29:  # PackedByteArray
+            return 1
+        if argument_type == 30:  # PackedInt32Array
+            return 4
+        if argument_type == 31:  # PackedInt64Array
+            return 8
+        if argument_type == 32:  # PackedFloat32Array
+            return 4
+        if argument_type == 33:  # PackedFloat64Array
+            return 8
+        if argument_type == 34:  # PackedStringArray
+            return 1028
+        if argument_type == 35:  # PackedVector2Array
+            return 8
+        if argument_type == 36:  # PackedVector3Array
+            return 12
+        if argument_type == 37:  # PackedColorArray
+            return 16
+        if argument_type == 38:  # PackedVector4Array
+            return 16
+        return 0
+
+    # computes where each next argument begins
+    def _format_offset(constant: int, var_terms: list[str]) -> str:
+        if not var_terms:
+            return str(constant)
+        if constant == 0:
+            return " + ".join(var_terms)
+        return f"{constant} + " + " + ".join(var_terms)
+
     with open(path, "w", encoding="utf-8") as cpp:
         cpp.write('#include "headers/bridge_helpers.h"\n')
-        # specifically for the custom case we have created
+
         if file_base == "Engine":
             cpp.write('#include "scene/main/scene_tree.h"\n')
-
+        cpp.write("")
         cpp.write(
-            f"void handle_{file_base}(uint32_t cmd, volatile uint8_t *payload, volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr) {{\n"
+            f"void handle_{file_base}(uint32_t cmd,  volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr) {{\n"
         )
         cpp.write("    switch (cmd) {\n")
+
         if file_base == "Engine":
             cpp.write("        case CMD_Engine_get_singleton__r0: {\n")
             cpp.write("            SceneTree *tree = SceneTree::get_singleton();\n")
             cpp.write("            ObjectID id = tree ? tree->get_instance_id() : ObjectID();\n")
-            cpp.write("            write_object_id(payload, 0, id);\n")
+            cpp.write("            write_object_id(CMD_DATA, id);\n")
             cpp.write("            update_status(STATUS_OFFSET, 1);\n")
             cpp.write("            *cmd_ptr = CMD_NONE;\n")
             cpp.write("        } break;\n")
 
         for method_name, method_arguments, method_return_type, constant_name, cmd_id in methods:
-            # during the build, the engine.get_singleton methods were bringing errors so this basically skips writing their cases
             if constant_name.startswith("CMD_Engine_get_singleton"):
                 continue
             if _has_unnamed_args(method_arguments):
                 continue
 
             cpp.write(f"        case {constant_name}: {{\n")
-            cpp.write("            ObjectID target_id = read_object_id(payload, 0);\n")
+            cpp.write("            ObjectID target_id = read_object_id(CMD_DATA);\n")
             cpp.write("            Object *target_obj = ObjectDB::get_instance(target_id);\n")
             cpp.write("            if (!target_obj) {\n")
             cpp.write("                *status_ptr = STATUS_DONE;\n")
@@ -92,7 +127,6 @@ def generate_cpp_class_file(folder_path, file_base, class_, methods):
             cpp.write("            }\n\n")
 
             used_cpp_names = {
-                "payload",
                 "target_id",
                 "target_obj",
                 "cmd_ptr",
@@ -103,30 +137,47 @@ def generate_cpp_class_file(folder_path, file_base, class_, methods):
                 "args",
                 "argptrs",
             }
-            # works with both fixed offsets and when more follow each other - we have to ensure no overwriting
-            arg_offset_expr = "8"
-            arg_names = []
-            for arg in method_arguments:
-                argument_type = arg["type"]
-                argument_name = unique_identifier(arg["name"], used_cpp_names, "cpp", prefix="arg")
-                spec = argument_types[argument_type]
 
-                cpp.write(
-                    "            "
-                    + spec["cpp_read"].format(name=argument_name, offset=arg_offset_expr, buf="payload")
-                    + "\n"
-                )
+            arg_names = []
+            constant_offset = 8
+            var_terms = []
+
+            for i, arg in enumerate(method_arguments):
+                argument_type = arg["type"]
+                spec = argument_types[argument_type]
+                argument_name = unique_identifier(arg["name"], used_cpp_names, "cpp", prefix="arg")
+                used_cpp_names.add(argument_name)
+
+                current_offset = _format_offset(constant_offset, var_terms)
+
+                cpp.write("            " + spec["cpp_read"].format(name=argument_name, offset=current_offset) + "\n")
                 arg_names.append(argument_name)
-                # the generator had an issue where it was assigning the wrong offsets due to its fixed mechanism, this case specifically ensures that no overwriting takes place
-                if argument_type == 29:  # PackedByteArray
-                    arg_offset_expr += f" + 4 + {argument_name}.size()"
-                elif argument_type == 32:  # PackedFloat32Array
-                    arg_offset_expr += f" + 4 + ({argument_name}.size() * 4)"
-                else:
-                    if arg_offset_expr.isdigit():
-                        arg_offset_expr = str(int(arg_offset_expr) + spec["size"])
+
+                # Only advance offset if there is a next argument
+                if i == len(method_arguments) - 1:
+                    break  # no need to compute offset for the non-existent next arg
+
+                # Fixed offsets for the ones with variable size 'False'
+                if not spec.get("variable_size", False):
+                    constant_offset += spec["size"]
+                    continue
+
+                # variable‑size, not last argument → may need to emit size variable
+                if 29 <= argument_type <= 38:  # packed arrays
+                    stride = _packed_stride(argument_type)
+                    constant_offset += 4
+                    if stride == 1:
+                        var_terms.append(f"{argument_name}.size()")
                     else:
-                        arg_offset_expr += f" + {spec['size']}"
+                        var_terms.append(f"({argument_name}.size() * {stride})")
+                else:
+                    # other variable‑size (Variant, Dictionary, etc.)
+                    size_name = unique_identifier(f"{argument_name}_size", used_cpp_names, "cpp", prefix="size")
+                    used_cpp_names.add(size_name)
+
+                    cpp.write(f"            const uint32_t {size_name} = read_int32(CMD_DATA + {current_offset});\n")
+                    constant_offset += 4
+                    var_terms.append(size_name)
 
             cpp.write(f'            MethodBind *bind = ClassDB::get_method("{class_}", "{method_name}");\n')
             cpp.write("            if (bind) {\n")
@@ -148,20 +199,18 @@ def generate_cpp_class_file(folder_path, file_base, class_, methods):
                 cpp.write(
                     f"                Variant ret_value = bind->call(target_obj, argptrs, {len(arg_names)}, error);\n"
                 )
-                # This determines the kinds of reads and writes that will go into the specific case. The functions originally exist in bridge_helpers.h
-                # Its best you confirm whether this aligns with the one in cpp generator, otherwise it will introduce mismatches
                 if method_return_type == 1:
-                    cpp.write("                write_int32(payload, 0, ret_value.operator bool() ? 1 : 0);\n")
+                    cpp.write("                write_int32(CMD_DATA, ret_value.operator bool() ? 1 : 0);\n")
                 elif method_return_type == 2:
-                    cpp.write("                write_int64(payload, 0, ret_value.operator int64_t());\n")
+                    cpp.write("                write_int64(CMD_DATA, ret_value.operator int64_t());\n")
                 elif method_return_type == 3:
-                    cpp.write("                write_double(payload, 0, ret_value.operator double());\n")
+                    cpp.write("                write_double(CMD_DATA, ret_value.operator double());\n")
                 elif method_return_type == 5:
                     cpp.write("                Vector2 v2 = ret_value.operator Vector2();\n")
-                    cpp.write("                write_float(payload, 0, v2.x);\n")
-                    cpp.write("                write_float(payload, 4, v2.y);\n")
+                    cpp.write("                write_float(CMD_DATA, v2.x);\n")
+                    cpp.write("                write_float(CMD_DATA + 4, v2.y);\n")
                 elif method_return_type == 24:
-                    cpp.write("                write_object_id(payload, 0, ret_value.operator ObjectID());\n")
+                    cpp.write("                write_object_id(CMD_DATA, ret_value.operator ObjectID());\n")
 
             cpp.write("            }\n")
             cpp.write("            *status_ptr = STATUS_DONE;\n")
@@ -181,16 +230,12 @@ def generate_command_dispatcher(folder_path, ordered_classes, cpp_class_map, com
     lines.append('#include "cpp/headers/bridge_helpers.h"')
     lines.append("#include <cstdint>")
     lines.append("")
-    lines.append(
-        "using CommandHandler = void (*)(uint32_t, volatile uint8_t *, volatile uint32_t *, volatile uint8_t *);"
-    )
+    lines.append("using CommandHandler = void (*)(uint32_t, volatile uint32_t *, volatile uint8_t *);")
     lines.append("")
 
     for class_ in ordered_classes:
         handler_name = f"handle_{cpp_class_map[class_]}"
-        lines.append(
-            f"void {handler_name}(uint32_t cmd, volatile uint8_t *payload, volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr);"
-        )
+        lines.append(f"void {handler_name}(uint32_t cmd, volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr);")
     lines.append("")
 
     handler_by_id = {
@@ -215,7 +260,6 @@ def generate_command_dispatcher(folder_path, ordered_classes, cpp_class_map, com
     lines.append("void process_api_commands() {")
     lines.append("    volatile uint32_t *cmd_ptr = reinterpret_cast<volatile uint32_t *>(CMD_OFFSET);")
     lines.append("    volatile uint8_t *status_ptr = reinterpret_cast<volatile uint8_t *>(STATUS_OFFSET);")
-    lines.append("    volatile uint8_t *payload = reinterpret_cast<volatile uint8_t *>(CMD_DATA);")
     lines.append("")
     lines.append("    if (*status_ptr != STATUS_PENDING || *cmd_ptr == CMD_NONE) {")
     lines.append("        return;")
@@ -231,7 +275,7 @@ def generate_command_dispatcher(folder_path, ordered_classes, cpp_class_map, com
     lines.append("        return;")
     lines.append("    }")
     lines.append("")
-    lines.append("    command_handlers[cmd](cmd, payload, cmd_ptr, status_ptr);")
+    lines.append("    command_handlers[cmd](cmd, cmd_ptr, status_ptr);")
     lines.append("}")
     write_text(folder_path / "command_dispatcher.cpp", "\n".join(lines) + "\n")
 

@@ -3,14 +3,6 @@ import socketserver
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
-    def do_POST(self):
-        if self.path == "/log":
-            content_length = int(self.headers["Content-Length"])
-            post_data = self.rfile.read(content_length)
-            print(f"BROWSER_LOG: {post_data.decode('utf-8')}")
-            self.send_response(200)
-            self.end_headers()
-
     def end_headers(self):
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
@@ -23,8 +15,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return "application/octet-stream"
         return super().guess_type(path)
 
+    def send_response_only(self, code, message=None):
+        super().send_response_only(code, message)
+        # Disable caching for .wasm and .js
+        if self.path.endswith((".wasm", ".js", ".pck")):
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
 
-socketserver.TCPServer.allow_reuse_address = True
+
 with socketserver.TCPServer(("", 8000), Handler) as httpd:
-    print("Server ready. Listening for logs at http://localhost:8000")
+    print("Serving at http://localhost:8000")
     httpd.serve_forever()

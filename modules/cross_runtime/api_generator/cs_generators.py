@@ -1,3 +1,4 @@
+# cs_generators.py
 """
 Similar implementations to CPP generator
 """
@@ -75,6 +76,36 @@ def generate_cs_class_file(folder_path, file_base, cs_class_name, cs_base_class_
     lines.append(f"        public {cs_class_name}(ulong id) : base(id) {{ }}")
     lines.append("")
 
+    def _packed_stride(argument_type: int) -> int:
+        if argument_type == 29:  # PackedByteArray
+            return 1
+        if argument_type == 30:  # PackedInt32Array
+            return 4
+        if argument_type == 31:  # PackedInt64Array
+            return 8
+        if argument_type == 32:  # PackedFloat32Array
+            return 4
+        if argument_type == 33:  # PackedFloat64Array
+            return 8
+        if argument_type == 34:  # PackedStringArray
+            return 1028
+        if argument_type == 35:  # PackedVector2Array
+            return 8
+        if argument_type == 36:  # PackedVector3Array
+            return 12
+        if argument_type == 37:  # PackedColorArray
+            return 16
+        if argument_type == 38:  # PackedVector4Array
+            return 16
+        return 0
+
+    def _format_offset(constant: int, var_terms: list[str]) -> str:
+        if not var_terms:
+            return str(constant)
+        if constant == 0:
+            return " + ".join(var_terms)
+        return f"{constant} + " + " + ".join(var_terms)
+
     for method_name, method_arguments, method_return_type, constant_name, command_id in methods:
         if constant_name.startswith("CMD_Engine_get_singleton"):
             continue
@@ -97,22 +128,42 @@ def generate_cs_class_file(folder_path, file_base, cs_class_name, cs_base_class_
         lines.append("        {")
         lines.append("            Helpers.WriteUInt64(Commands.CMD_DATA, Id);")
 
-        arg_offset_expr = "8"
-        for argument, argument_name in zip(method_arguments, argument_names):
-            spec = argument_types[argument["type"]]
+        constant_offset = 8
+        var_terms = []
+
+        for i, (argument, argument_name) in enumerate(zip(method_arguments, argument_names)):
+            argument_type = argument["type"]
+            spec = argument_types[argument_type]
+
+            current_offset = _format_offset(constant_offset, var_terms)
+
             lines.append(
-                f"            {spec['cs_write'].format(pos=f'Commands.CMD_DATA + {arg_offset_expr}', name=argument_name)}"
+                f"            {spec['cs_write'].format(pos=f'Commands.CMD_DATA + {current_offset}', name=argument_name)}"
             )
 
-            if argument["type"] == 29:  # PackedByteArray / byte[]
-                arg_offset_expr += f" + 4 + {argument_name}.Length"
-            elif argument["type"] == 32:  # PackedFloat32Array / float[]
-                arg_offset_expr += f" + 4 + ({argument_name}.Length * 4)"
-            else:
-                if arg_offset_expr.isdigit():
-                    arg_offset_expr = str(int(arg_offset_expr) + spec["size"])
+            # Only advance offset if not the last argument
+            if i == len(method_arguments) - 1:
+                break
+
+            if not spec.get("variable_size", False):
+                constant_offset += spec["size"]
+                continue
+
+            if 29 <= argument_type <= 38:  # packed arrays
+                stride = _packed_stride(argument_type)
+                constant_offset += 4
+                if stride == 1:
+                    var_terms.append(f"{argument_name}.Length")
                 else:
-                    arg_offset_expr += f" + {spec['size']}"
+                    var_terms.append(f"({argument_name}.Length * {stride})")
+            else:
+                # other variable‑size → read length into a temp variable
+                size_name = unique_identifier(f"{argument_name}_size", used_cs_arg_names, "cs", prefix="size")
+                used_cs_arg_names.add(size_name)
+
+                lines.append(f"            int {size_name} = Helpers.ReadInt32(Commands.CMD_DATA + {current_offset});")
+                constant_offset += 4
+                var_terms.append(size_name)
 
         lines.append(f"            Helpers.SendCommand(Commands.{constant_name});")
         lines.append("            Helpers.WaitForCompletion();")

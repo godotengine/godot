@@ -6,5 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsBrowserWasm>true</IsBrowserWasm>
+    <RunAOTCompilation>true</RunAOTCompilation>
   </PropertyGroup>
 </Project>

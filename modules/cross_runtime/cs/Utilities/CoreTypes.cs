@@ -139,19 +139,19 @@ public struct Transform3D
 	}
 }
 
-//Quaternion
+// Quaternion
 
 public struct Quaternion
 {
-	public float W, X, Y, Z;
+	public float X, Y, Z, W;
 
-	public Quaternion(float w, float x, float y, float z)
+	public Quaternion(float x, float y, float z, float w)
 	{
-		W = w; X = x; Y = y; Z = z;
+		X = x; Y = y; Z = z; W = w;
 	}
 }
 
-//3D axis‑aligned bounding box
+// 3D axis‑aligned bounding box
 
 public struct AABB
 {
@@ -168,7 +168,7 @@ public struct AABB
 	}
 }
 
-//Plane
+// Plane
 
 public struct Plane
 {
@@ -182,7 +182,7 @@ public struct Plane
 	}
 }
 
-//Projection (4×4 matrix: four Vector4 columns)
+// Projection (4×4 matrix: four Vector4 columns)
 public struct Projection
 {
 	public Vector4 X, Y, Z, W;

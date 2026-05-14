@@ -298,28 +298,30 @@ public static class Helpers
 
 	public static Basis ReadBasis(int offset)
 	{
-		Vector3 row0 = ReadVector3(offset);
-		Vector3 row1 = ReadVector3(offset + 12);
-		Vector3 row2 = ReadVector3(offset + 24);
-		return new Basis(row0, row1, row2);
+		Vector3 Column0 = ReadVector3(offset);
+		Vector3 Column1 = ReadVector3(offset + 12);
+		Vector3 Column2 = ReadVector3(offset + 24);
+		return new Basis(Column0, Column1, Column2);
 	}
 
 	// Quaternion Helpers
 	public static void WriteQuaternion(int offset, Quaternion value)
 	{
-		WriteFloat(offset, value.W);
-		WriteFloat(offset + 4, value.X);
-		WriteFloat(offset + 8, value.Y);
-		WriteFloat(offset + 12, value.Z);
+		WriteFloat(offset, value.X);
+		WriteFloat(offset + 4, value.Y);
+		WriteFloat(offset + 8, value.Z);
+		WriteFloat(offset + 12, value.W);
+
 	}
 
 	public static Quaternion ReadQuaternion(int offset)
 	{
-		float w = ReadFloat(offset);
-		float x = ReadFloat(offset + 4);
-		float y = ReadFloat(offset + 8);
-		float z = ReadFloat(offset + 12);
-		return new Quaternion(w, x, y, z);
+
+		float x = ReadFloat(offset);
+		float y = ReadFloat(offset + 4);
+		float z = ReadFloat(offset + 8);
+		float w = ReadFloat(offset + 12);
+		return new Quaternion(x, y, z, w);
 	}
 
 	// AABB Helpers

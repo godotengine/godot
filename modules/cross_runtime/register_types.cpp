@@ -35,9 +35,13 @@
 void register_command_processing();
 
 void initialize_cross_runtime_module(ModuleInitializationLevel p_level) {
+#ifdef WEB_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		register_command_processing();
 	}
+#endif
 }
 
-void uninitialize_cross_runtime_module(ModuleInitializationLevel p_level) {}
+void uninitialize_cross_runtime_module(ModuleInitializationLevel p_level) {
+	// This empty function stays here so Windows Linker is happy.
+}

@@ -34,6 +34,7 @@
 
 #include <cstdio>
 
+#ifdef WEB_ENABLED
 // Forward declaration
 void process_api_commands();
 
@@ -104,3 +105,9 @@ void unregister_command_processing() {
 		memdelete(cp);
 	}
 }
+
+#else
+
+void register_command_processing() {}
+
+#endif
