@@ -7473,11 +7473,7 @@
             "description": [
                 "Sets an Array to be a reference to another Array object."
             ],
-            "since": "4.1",
-            "deprecated": {
-                "since": "4.5",
-                "message": "Removed from interface. Use copy constructor instead."
-            }
+            "since": "4.1"
         },
         {
             "name": "array_set_typed",
@@ -7573,6 +7569,29 @@
                 "Gets a const pointer to a Variant in a Dictionary with the given key."
             ],
             "since": "4.1"
+        },
+        {
+            "name": "dictionary_ref",
+            "arguments": [
+                {
+                    "name": "p_self",
+                    "type": "GDExtensionTypePtr",
+                    "description": [
+                        "A pointer to the Dictionary object to update."
+                    ]
+                },
+                {
+                    "name": "p_from",
+                    "type": "GDExtensionConstTypePtr",
+                    "description": [
+                        "A pointer to the Dictionary object to reference."
+                    ]
+                }
+            ],
+            "description": [
+                "Sets a Dictionary to be a reference to another Dictionary object."
+            ],
+            "since": "4.8"
         },
         {
             "name": "dictionary_set_typed",
