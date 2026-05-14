@@ -221,9 +221,6 @@ void EditorSceneTabs::_update_context_menu() {
 		DISABLE_LAST_OPTION_IF(EditorNode::get_editor_data().get_edited_scene_count() == tab_id + 1);
 		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_all_scenes"), EditorNode::SCENE_CLOSE_ALL);
 		scene_tabs_context_menu->set_item_text(-1, TTRC("Close All Tabs"));
-
-		const PackedStringArray paths = { EditorNode::get_editor_data().get_scene_path(tab_id) };
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, paths);
 	} else {
 		scene_tabs_context_menu->add_separator();
 		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/reopen_closed_scene"), EditorNode::SCENE_OPEN_PREV);
@@ -231,10 +228,19 @@ void EditorSceneTabs::_update_context_menu() {
 		DISABLE_LAST_OPTION_IF(!EditorNode::get_singleton()->has_previous_closed_scenes());
 		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_all_scenes"), EditorNode::SCENE_CLOSE_ALL);
 		scene_tabs_context_menu->set_item_text(-1, TTRC("Close All Tabs"));
-
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, {});
 	}
 #undef DISABLE_LAST_OPTION_IF
+
+	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS)) {
+		EditorContextMenuPlugin::OptionsData context_data;
+		context_data["selected_scene"] = (tab_id >= 0 ? EditorNode::get_editor_data().get_scene_path(tab_id) : String());
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, context_data);
+
+#ifndef DISABLE_DEPRECATED
+		const PackedStringArray paths = tab_id >= 0 ? PackedStringArray{ EditorNode::get_editor_data().get_scene_path(tab_id) } : PackedStringArray();
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, paths, 500);
+#endif
+	}
 
 	last_hovered_tab = tab_id;
 }
@@ -245,7 +251,7 @@ int EditorSceneTabs::get_option_tab() const {
 
 void EditorSceneTabs::_custom_menu_option(int p_option) {
 	if (p_option >= EditorContextMenuPlugin::BASE_ID) {
-		EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, p_option, last_hovered_tab >= 0 ? EditorNode::get_editor_data().get_scene_path(last_hovered_tab) : String());
+		EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, p_option);
 	}
 }
 
@@ -409,18 +415,36 @@ void EditorSceneTabs::_global_menu_new_window(const Variant &p_tag) {
 
 void EditorSceneTabs::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+	if (!p_event->is_pressed()) {
+		return;
+	}
 
-	Ref<InputEventKey> k = p_event;
-	if ((k.is_valid() && k->is_pressed() && !k->is_echo()) || Object::cast_to<InputEventShortcut>(*p_event)) {
-		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
-			int next_tab = EditorNode::get_editor_data().get_edited_scene() + 1;
-			next_tab %= EditorNode::get_editor_data().get_edited_scene_count();
-			_scene_tab_changed(next_tab);
-		}
-		if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
-			int next_tab = EditorNode::get_editor_data().get_edited_scene() - 1;
-			next_tab = next_tab >= 0 ? next_tab : EditorNode::get_editor_data().get_edited_scene_count() - 1;
-			_scene_tab_changed(next_tab);
+	if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
+		int next_tab = EditorNode::get_editor_data().get_edited_scene() + 1;
+		next_tab %= EditorNode::get_editor_data().get_edited_scene_count();
+		_scene_tab_changed(next_tab);
+		accept_event();
+	} else if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
+		int next_tab = EditorNode::get_editor_data().get_edited_scene() - 1;
+		next_tab = next_tab >= 0 ? next_tab : EditorNode::get_editor_data().get_edited_scene_count() - 1;
+		_scene_tab_changed(next_tab);
+		accept_event();
+	} else if (!p_event->is_echo()) {
+		const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, p_event);
+		if (custom_callback.is_valid()) {
+#ifndef DISABLE_DEPRECATED
+			if (p_event->get_meta("_legacy", false)) {
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, last_hovered_tab >= 0 ? EditorNode::get_editor_data().get_scene_path(last_hovered_tab) : String());
+				accept_event();
+				return;
+			}
+#endif
+
+			EditorContextMenuPlugin::OptionsData context_data;
+			context_data["selected_scene"] = (get_current_tab() >= 0 ? EditorNode::get_editor_data().get_scene_path(get_current_tab()) : String());
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
+
+			accept_event();
 		}
 	}
 }

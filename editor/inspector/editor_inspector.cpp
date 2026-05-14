@@ -1251,21 +1251,36 @@ void EditorProperty::_accessibility_action_menu(const Variant &p_data) {
 }
 
 void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
-	if (!selected || !p_event->is_pressed()) {
+	if (!selected || !p_event->is_pressed() || p_event->is_echo()) {
 		return;
 	}
 
-	const Ref<InputEventKey> k = p_event;
+	if (ED_IS_SHORTCUT("property_editor/copy_value", p_event)) {
+		menu_option(MENU_COPY_VALUE);
+		accept_event();
+	} else if (!is_read_only() && ED_IS_SHORTCUT("property_editor/paste_value", p_event)) {
+		menu_option(MENU_PASTE_VALUE);
+		accept_event();
+	} else if (!internal && ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
+		menu_option(MENU_COPY_PROPERTY_PATH);
+		accept_event();
+	} else {
+		const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, p_event);
+		if (custom_callback.is_valid()) {
+#ifndef DISABLE_DEPRECATED
+			if (p_event->get_meta("_legacy", false)) {
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, this);
+				accept_event();
+				return;
+			}
+#endif
 
-	if (k.is_valid() && k->is_pressed()) {
-		if (ED_IS_SHORTCUT("property_editor/copy_value", p_event)) {
-			menu_option(MENU_COPY_VALUE);
-			accept_event();
-		} else if (!is_read_only() && ED_IS_SHORTCUT("property_editor/paste_value", p_event)) {
-			menu_option(MENU_PASTE_VALUE);
-			accept_event();
-		} else if (!internal && ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
-			menu_option(MENU_COPY_PROPERTY_PATH);
+			EditorContextMenuPlugin::OptionsData context_data;
+			context_data["property"] = this;
+			context_data["object"] = get_edited_object();
+			context_data["property_name"] = get_edited_property();
+
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
 			accept_event();
 		}
 	}
@@ -1547,7 +1562,7 @@ void EditorProperty::menu_option(int p_option) {
 		} break;
 		default: {
 			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
-				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, p_option, this);
+				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, p_option);
 			}
 		}
 	}
@@ -1717,8 +1732,18 @@ void EditorProperty::_update_popup() {
 		menu->add_icon_item(theme_cache.help_icon, TTR("Open Documentation"), MENU_OPEN_DOCUMENTATION);
 	}
 
-	Vector<String> property_paths = { String::num_int64(get_edited_object()->get_instance_id()), property_path };
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, property_paths);
+	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY)) {
+		EditorContextMenuPlugin::OptionsData context_data;
+		context_data["property"] = this;
+		context_data["object"] = get_edited_object();
+		context_data["property_name"] = get_edited_property();
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, context_data);
+
+#ifndef DISABLE_DEPRECATED
+		Vector<String> property_paths = { String::num_int64(get_edited_object()->get_instance_id()), property_path };
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, property_paths, 500);
+#endif
+	}
 }
 
 ////////////////////////////////////////////////
