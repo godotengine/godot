@@ -164,10 +164,8 @@ void MetalDeviceProperties::init_features(MTL::Device *p_device) {
 		features.supports_native_image_atomics = false;
 	}
 
-	if (OS::get_singleton()->get_processor_name().contains("Virtual")) {
-		features.supports_residency_sets = false;
-	} else if (__builtin_available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 2.0, *)) {
-		features.supports_residency_sets = true;
+	if (__builtin_available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 2.0, *)) {
+		features.supports_residency_sets = p_device->supportsFamily(MTL::GPUFamilyApple6);
 	} else {
 		features.supports_residency_sets = false;
 	}
