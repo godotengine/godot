@@ -86,6 +86,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	LineEdit *name = nullptr;
 	EditorPropertyPath *export_path = nullptr;
 	EditorInspector *parameters = nullptr;
+	LineEdit *parameters_search_box = nullptr;
 	CheckButton *runnable = nullptr;
 	CheckButton *advanced_options = nullptr;
 
