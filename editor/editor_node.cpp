@@ -2138,7 +2138,7 @@ void EditorNode::_save_editor_states(const String &p_file, int p_idx) {
 		for (Node *selected_node : selection) {
 			selection_paths.push_back(scene->get_path_to(selected_node));
 		}
-		cf->set_value("editor_states", "selected_nodes", selection_paths);
+		cf->set_value("editor_states", "$selected_nodes", selection_paths);
 	} else {
 		md = editor_data.get_scene_editor_states_with_selection(p_idx);
 	}
@@ -6456,7 +6456,7 @@ void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout) {
 	const String current_scene = p_layout->get_value(EDITOR_NODE_CONFIG_SECTION, "current_scene", String());
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		if (editor_data.get_scene_path(i) == current_scene) {
-			_set_current_scene_nocheck(i);
+			_set_current_scene_nocheck(i, true);
 			current_scene_found = true;
 			break;
 		}
