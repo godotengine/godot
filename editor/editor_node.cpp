@@ -6395,14 +6395,6 @@ void EditorNode::_save_window_settings_to_config(Ref<ConfigFile> p_layout, const
 
 		Size2i win_size = w->get_size();
 
-		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
-			// Work around logical size issues with HiDPI on Wayland. See GH-110643.
-			float win_scale = DisplayServer::get_singleton()->window_get_scale(w->get_window_id());
-
-			win_size.width /= win_scale;
-			win_size.height /= win_scale;
-		}
-
 		Window::Mode mode = w->get_mode();
 		switch (mode) {
 			case Window::MODE_WINDOWED:
