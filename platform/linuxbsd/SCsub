@@ -5,6 +5,8 @@ Import("env")
 
 import platform_linuxbsd_builders
 
+from platform_methods import combine_libs_ar, filter_file_libs
+
 common_linuxbsd = [
     "crash_handler_linuxbsd.cpp",
     "os_linuxbsd.cpp",
@@ -41,9 +43,14 @@ if env["dbus"]:
         common_linuxbsd.append("dbus-so_wrap.c")
 
 if env["library_type"] == "static_library":
-    prog = env.add_library("#bin/godot", common_linuxbsd)
+    linux_lib = env.add_library("#bin/godot_static", common_linuxbsd)
+    prog = env.CommandNoCache(
+        f"#bin/libgodot{env['LIBSUFFIX']}", filter_file_libs([linux_lib] + env["LIBS"]), env.Run(combine_libs_ar)
+    )
+    env.add_configuration_file("#bin/libgodot")
 elif env["library_type"] == "shared_library":
     prog = env.add_shared_library("#bin/godot", common_linuxbsd)
+    env.add_configuration_file("#bin/libgodot")
 else:
     prog = env.add_program("#bin/godot", common_linuxbsd)
 

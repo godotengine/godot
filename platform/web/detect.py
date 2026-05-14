@@ -91,6 +91,7 @@ def get_flags():
         # run-time performance.
         # Note that this overrides the "auto" behavior for target/dev_build.
         "optimize": "size",
+        "supported": ["library", "mono"],
     }
 
 
@@ -114,13 +115,23 @@ def configure(env: "SConsEnvironment"):
     cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
 
     # Minimum emscripten requirements.
-    if cc_semver < (4, 0, 0):
+    if env["module_mono_enabled"] and cc_semver < (3, 1, 56):
+        print_error("The minimum Emscripten version to build Godot with C# is 3.1.56, detected: %s.%s.%s" % cc_semver)
+        sys.exit(255)
+    elif not env["module_mono_enabled"] and cc_semver < (4, 0, 0):
         print_error("The minimum Emscripten version to build Godot is 4.0.0, detected: %s.%s.%s" % cc_semver)
         sys.exit(255)
 
+    if cc_semver < (4, 0, 0):
+        print_warning(
+            "The Emscripten version for C# is %s.%s.%s while minimum supported version to build "
+            "Godot is 4.0.0, export is experimental." % cc_semver
+        )
+
     env.Append(LIBEMITTER=[library_emitter])
 
-    env["EXPORTED_FUNCTIONS"] = ["_main"]
+    env["EXPORTED_FUNCTIONS"] = []
+    env["EXPORTED_FUNCTIONS_SHARED"] = []
     env["EXPORTED_RUNTIME_METHODS"] = []
 
     # Validate arch.
@@ -236,6 +247,8 @@ def configure(env: "SConsEnvironment"):
     # Add method for creating the final zip file
     env.AddMethod(create_template_zip, "CreateTemplateZip")
 
+    env["CUSTOM_GODOT_JS"] = None
+
     # Use TempFileMunge since some AR invocations are too long for cmd.exe.
     # Use POSIX-style paths, required with TempFileMunge.
     env["ARCOM_POSIX"] = env["ARCOM"].replace("$TARGET", "$TARGET.posix").replace("$SOURCES", "$SOURCES.posix")
@@ -295,13 +308,31 @@ def configure(env: "SConsEnvironment"):
         if env["proxy_to_pthread"]:
             print_warning("GDExtension support requires proxy_to_pthread=no, disabling proxy to pthread.")
             env["proxy_to_pthread"] = False
+        if env["library_type"] == "static_library":
+            print_warning(
+                "GDExtension support compiles Godot code as a side library, switching to library_type=shared_library for ease of access."
+            )
+            env["library_type"] = "shared_library"
 
         env.Append(CPPDEFINES=["WEB_DLINK_ENABLED"])
+        env.extra_suffix = ".dlink" + env.extra_suffix
+
+    if env["dlink_enabled"] or env["library_type"] == "shared_library":
         env.Append(CCFLAGS=["-sSIDE_MODULE=2"])
         env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
         env.Append(CCFLAGS=["-fvisibility=hidden"])
         env.Append(LINKFLAGS=["-fvisibility=hidden"])
-        env.extra_suffix = ".dlink" + env.extra_suffix
+
+    if env["library_type"] == "executable":
+        env["EXPORTED_FUNCTIONS"] += ["_main"]
+
+    if env["library_type"] == "shared_library":
+        env.Append(LINKFLAGS=["-sEXPORT_KEEPALIVE=1"])
+        env["EXPORTED_FUNCTIONS_SHARED"] += [
+            "_libgodot_create_godot_instance",
+            "_libgodot_destroy_godot_instance",
+            "_libgodot_web_iteration",
+        ]
 
     env.Append(LINKFLAGS=["-sWASM_BIGINT"])
     env.Append(CCFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])

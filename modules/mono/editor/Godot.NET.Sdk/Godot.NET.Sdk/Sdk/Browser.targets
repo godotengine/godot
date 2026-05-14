@@ -1,0 +1,56 @@
+<Project>
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);LIBGODOT_ENABLED</DefineConstants>
+
+    <_BaseLibGodotPath>$(BaseLibGodotPath)</_BaseLibGodotPath>
+    <_BaseLibGodotPath Condition=" '$(CustomLibGodotPath)' != '' ">$(CustomLibGodotPath)</_BaseLibGodotPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="GodotSharp" Condition="'$(EnableGodotDotNetPreview)' != 'true' and '$(DisableImplicitGodotSharpReferences)' != 'true'" />
+    <TrimmerRootAssembly Include="Godot.Bindings" Condition="'$(EnableGodotDotNetPreview)' == 'true'" />
+    <TrimmerRootAssembly Include="$(TargetName)" />
+
+    <!--
+    Some scenarios need marshal-ilgen if marshaling is not disabled https://github.com/dotnet/android/issues/7276.
+    Despite it being for android the issue is still the same.
+    -->
+    <_MonoComponent Include="marshal-ilgen" Condition=" '$(GodotDisableRuntimeMarshalling)' != 'true' " />
+
+    <EmccExportedFunction Include="_malloc;_free" />
+    <EmccExportedRuntimeMethod Include="callMain;cwrap;HEAP8;HEAPU8;HEAP16;HEAPU16;HEAP32;HEAPU32;HEAP64;HEAPU64;HEAPF32;HEAPF64" />
+
+    <DirectPInvoke Include="libgodot" />
+    <NativeLibrary Include="$(_BaseLibGodotPath)\libgodot.a" />
+
+    <_GodotJsLibraries Include="$(_BaseLibGodotPath)\js_library\**\*.js" />
+    <_GodotPreJs Include="$(_BaseLibGodotPath)\pre_js\**\*.js" />
+    <_GodotPostJs Include="$(_BaseLibGodotPath)\post_js\**\*.js" />
+  </ItemGroup>
+
+  <Choose>
+      <When Condition=" '$([MSBuild]::IsOsPlatform(Windows))' ">
+          <ItemGroup>
+            <GodotEmccExtraLDFlag Include="@(_GodotJsLibraries->'--js-library &quot;%(FullPath)&quot;'->Replace('\', '/'))" />
+            <GodotEmccExtraLDFlag Include="@(_GodotPreJs->'--pre-js &quot;%(FullPath)&quot;'->Replace('\', '/'))" />
+            <GodotEmccExtraLDFlag Include="@(_GodotPostJs->'--post-js &quot;%(FullPath)&quot;'->Replace('\', '/'))" />
+          </ItemGroup>
+      </When>
+      <Otherwise>
+          <ItemGroup>
+            <GodotEmccExtraLDFlag Include="@(_GodotJsLibraries->'--js-library &quot;%(FullPath)&quot;')" />
+            <GodotEmccExtraLDFlag Include="@(_GodotPreJs->'--pre-js &quot;%(FullPath)&quot;')" />
+            <GodotEmccExtraLDFlag Include="@(_GodotPostJs->'--post-js &quot;%(FullPath)&quot;')" />
+          </ItemGroup>
+      </Otherwise>
+  </Choose>
+
+  <PropertyGroup>
+    <EmccExtraLDFlags>@(GodotEmccExtraLDFlag->'%(Identity)', ' ')</EmccExtraLDFlags>
+  </PropertyGroup>
+
+  <Target Name="GodotCheckLibGodotPath" BeforeTargets="Build">
+    <Error Text="Cannot build with empty 'BaseLibGodotPath'." Condition=" $(_BaseLibGodotPath) == '' " />
+    <Error Text="Cannot find 'libgodot.a' in expected placee." Condition=" !Exists('$(_BaseLibGodotPath)\libgodot.a') " />
+  </Target>
+</Project>

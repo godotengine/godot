@@ -35,6 +35,11 @@ namespace GodotTools.Utils
             System.IO.File.Copy(sourceFileName.GlobalizePath(), destFileName.GlobalizePath(), overwrite: true);
         }
 
+        public static void Move(string sourceFileName, string destFileName)
+        {
+            System.IO.File.Move(sourceFileName.GlobalizePath(), destFileName.GlobalizePath(), overwrite: true);
+        }
+
         public static byte[] ReadAllBytes(string path)
         {
             return System.IO.File.ReadAllBytes(path.GlobalizePath());

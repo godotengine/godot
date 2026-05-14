@@ -35,11 +35,14 @@
 // Crash handler exception only enabled with MSVC
 #if defined(DEBUG_ENABLED)
 #define CRASH_HANDLER_EXCEPTION 1
-
-#ifdef _MSC_VER
-extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep);
 #endif
 
+#if defined(DISABLE_CRASH_HANDLER)
+#undef CRASH_HANDLER_EXCEPTION
+#endif
+
+#if defined(CRASH_HANDLER_EXCEPTION) && defined(_MSC_VER)
+extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep);
 #endif
 
 class CrashHandler {

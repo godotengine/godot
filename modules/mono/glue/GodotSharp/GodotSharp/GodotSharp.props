@@ -1,0 +1,13 @@
+<Project>
+  <ItemGroup>
+    <!-- Hide source-only content files. -->
+    <Compile Update="@(Compile)">
+      <Visible Condition="'%(NuGetItemType)' == 'Compile' and '%(NuGetPackageId)' == 'GodotSharp'">false</Visible>
+    </Compile>
+
+    <!-- Don't add 'DisableRuntimeMarshallingAttribute' to assembly if GodotDisableRuntimeMarshalling is false. -->
+    <Compile
+      Remove="$(MSBuildThisFileDirectory)\..\contentFiles\cs\netstandard2.0\GodotSharp\DisableRuntimeMarshalling.cs"
+      Condition=" '$(GodotDisableRuntimeMarshalling)' != 'true' " />
+  </ItemGroup>
+</Project>

@@ -52,6 +52,13 @@ namespace GodotPlugins.Game
                 return false.ToGodotBool();
             }
         }
+
+#if LIBGODOT_ENABLED
+        internal static unsafe IntPtr GetInitializePointer()
+        {
+            return (IntPtr)(delegate* unmanaged<IntPtr, IntPtr, IntPtr, int, godot_bool>)&InitializeFromGameProject;
+        }
+#endif
     }
 }
 ";

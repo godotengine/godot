@@ -1,0 +1,52 @@
+<Project>
+  <PropertyGroup>
+    <CustomLibGodotPath></CustomLibGodotPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputType>exe</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks> <!-- Currently needs unsafe. -->
+
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+
+    <WasmBuildNative>true</WasmBuildNative> <!-- required -->
+    <WasmAppDir>$([System.IO.Path]::Combine($(PublishDir), "AppBundle"))</WasmAppDir>
+
+    <WasmEnableSIMD>true</WasmEnableSIMD> <!-- -msimd128 -->
+    <WasmInitialHeapSize>32MB</WasmInitialHeapSize> <!-- -sINITIAL_MEMORY= -->
+    <EmccStackSize>5120KB</EmccStackSize> <!-- -sSTACK_SIZE= -->
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+    The Microsoft.NET.Sdk only understands of the Debug and Release configurations.
+    We need to set the following properties manually for ExportDebug and ExportRelease.
+    -->
+    <_EmccOptimizationFlagDefault Condition="'$(_EmccOptimizationFlagDefault)' == '' and '$(Configuration)' != 'ExportRelease' and '$(WasmBuildingForNestedPublish)' != 'true'">-O1</_EmccOptimizationFlagDefault>
+    <_EmccOptimizationFlagDefault Condition="'$(_EmccOptimizationFlagDefault)' == ''">-Oz</_EmccOptimizationFlagDefault>
+
+    <EmccCompileOptimizationFlag Condition="'$(EmccCompileOptimizationFlag)' == ''">$(_EmccOptimizationFlagDefault)</EmccCompileOptimizationFlag>
+    <WasmCompileOptimizationFlag>$(EmccCompileOptimizationFlag)</WasmCompileOptimizationFlag>
+    <WasmBitcodeCompileOptimizationFlag Condition="'$(WasmBitcodeCompileOptimizationFlag)' == '' and '$(Configuration)' == 'ExportRelease'">-O2</WasmBitcodeCompileOptimizationFlag>
+    <WasmBitcodeCompileOptimizationFlag Condition="'$(WasmBitcodeCompileOptimizationFlag)' == '' ">$(WasmCompileOptimizationFlag)</WasmBitcodeCompileOptimizationFlag>
+    <EmccLinkOptimizationFlag    Condition="'$(EmccLinkOptimizationFlag)' == '' and '$(Configuration)' == 'ExportRelease'">-O2</EmccLinkOptimizationFlag>
+    <EmccLinkOptimizationFlag    Condition="'$(EmccLinkOptimizationFlag)' == ''"   >$(WasmCompileOptimizationFlag)</EmccLinkOptimizationFlag>
+    <WasmLinkOptimizationFlag>$(EmccLinkOptimizationFlag)</WasmLinkOptimizationFlag>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <GodotEmccExtraLDFlag Include="-sMAX_WEBGL_VERSION=2" />
+    <GodotEmccExtraLDFlag Include="-sOFFSCREEN_FRAMEBUFFER=1" />
+    <GodotEmccExtraLDFlag Include="-sGL_ENABLE_GET_PROC_ADDRESS=0" />
+    <GodotEmccExtraLDFlag Include="-sWASM_BIGINT" />
+    <GodotEmccExtraLDFlag Include="-sMEMORY64=0" />
+    <GodotEmccExtraLDFlag Include="-sENVIRONMENT=web,worker" />
+    <GodotEmccExtraLDFlag Include="-sALLOW_MEMORY_GROWTH=1" />
+    <GodotEmccExtraLDFlag Include="-sINVOKE_RUN=0" />
+    <GodotEmccExtraLDFlag Include="-sEXIT_RUNTIME=1" />
+    <GodotEmccExtraLDFlag Include="-sGL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0" />
+    <GodotEmccExtraLDFlag Include="-sTEXTDECODER=1" />
+    <GodotEmccExtraLDFlag Include="-lidbfs.js" />
+  </ItemGroup>
+</Project>
