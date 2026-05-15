@@ -238,8 +238,8 @@ argument_types: dict[int, dict[str, Any]] = {
         "size": 1036,
         "variable_size": False,
         "cs_type": "CustomCallable",
-        "cs_write": "Helpers.WriteCallable({pos}, {name});",
-        "cs_read": "Helpers.ReadCallable({pos})",
+        "cs_write": "Helpers.WriteVariant({pos}, {name});",
+        "cs_read": "Helpers.ReadVariant({pos})",
     },
     26: {
         "cpp_decl": "Signal",
@@ -247,7 +247,7 @@ argument_types: dict[int, dict[str, Any]] = {
         "size": 1036,
         "variable_size": False,
         "cs_type": "CustomSignal",
-        "cs_write": "Helpers.WriteSignal({pos}, {name});",
+        "cs_write": "Helpers.WriteVariant({pos}, {name});",
         "cs_read": "Helpers.ReadSignal({pos})",
     },
     27: {
