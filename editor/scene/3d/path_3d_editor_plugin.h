@@ -125,6 +125,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *curve_closed = nullptr;
 	Button *curve_clear_points = nullptr;
 	Button *curve_auto_tangent = nullptr;
+	Button *curve_auto_tangent_mode = nullptr;
 	SpinBox *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
 
@@ -155,6 +156,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 
 	void _create_curve();
 	void _confirm_clear_points();
+	void _auto_tangent_point(int p_index, bool is_closed, int point_count);
 	void _clear_points();
 	void _auto_tangent();
 	void _clear_curve_points();
