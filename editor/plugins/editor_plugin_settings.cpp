@@ -73,7 +73,7 @@ void EditorPluginSettings::update_plugins() {
 	updating = true;
 	TreeItem *root = plugin_list->create_item();
 
-	Vector<String> plugins = _get_plugins("res://addons");
+	Vector<String> plugins = _get_plugins(plugins_path);
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
@@ -190,7 +190,8 @@ void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, in
 }
 
 Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(p_dir);
+	ERR_FAIL_COND_V_MSG(da.is_null(), Vector<String>(), "Could not create DirAccess for path: " + p_dir);
 	Error err = da->change_dir(p_dir);
 	if (err != OK) {
 		return Vector<String>();
@@ -216,10 +217,16 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 	return plugins;
 }
 
-EditorPluginSettings::EditorPluginSettings() {
-	ProjectSettings::get_singleton()->add_hidden_prefix("editor_plugins/");
+void EditorPluginSettings::set_plugins_path(String p_path) {
+	plugins_path = p_path;
+	installed_plugins_label->set_text(vformat(TTRC("Installed Plugins from [%s]:"), plugins_path.path_join("")));
+	plugin_config_dialog->set_plugins_path(p_path);
+	update_plugins();
+}
 
+EditorPluginSettings::EditorPluginSettings() {
 	plugin_config_dialog = memnew(PluginConfigDialog);
+	plugin_config_dialog->set_plugins_path(plugins_path);
 	plugin_config_dialog->config("");
 	add_child(plugin_config_dialog);
 
@@ -241,9 +248,9 @@ EditorPluginSettings::EditorPluginSettings() {
 	}
 
 	HBoxContainer *title_hb = memnew(HBoxContainer);
-	Label *label = memnew(Label(TTRC("Installed Plugins:")));
-	label->set_theme_type_variation("HeaderSmall");
-	title_hb->add_child(label);
+	installed_plugins_label = memnew(Label(vformat(TTRC("Installed Plugins from [%s]:"), plugins_path.path_join(""))));
+	installed_plugins_label->set_theme_type_variation("HeaderSmall");
+	title_hb->add_child(installed_plugins_label);
 	title_hb->add_spacer();
 	Button *create_plugin_button = memnew(Button(TTRC("Create New Plugin")));
 	create_plugin_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPluginSettings::_create_clicked));

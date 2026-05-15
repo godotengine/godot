@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/inspector/editor_inspector.h"
+#include "editor/plugins/editor_plugin_settings.h"
 #include "scene/gui/dialogs.h"
 
 class CheckButton;
@@ -50,6 +51,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	TabContainer *tabs = nullptr;
 	Control *tab_general = nullptr;
 	Control *tab_shortcuts = nullptr;
+	EditorPluginSettings *tab_plugins = nullptr;
 
 	LineEdit *search_box = nullptr;
 	CheckButton *advanced_switch = nullptr;
