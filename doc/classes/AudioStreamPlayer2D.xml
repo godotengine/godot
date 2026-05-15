@@ -4,13 +4,13 @@
 		Plays positional audio in 2D space.
 	</brief_description>
 	<description>
-		[AudioStreamPlayer2D] plays an audio stream. The player's volume and panning are dependent on its position on the screen, and the position of an [AudioListener2D]. The further the player is from the listener, the quieter the audio gets, and it will also be panned to follow which side of the listener the player is on the screen. By default, an AudioListener2D is set to the middle of the screen. This can be changed by adding an [AudioListener2D] node to the scene and enabling it by calling [method AudioListener2D.make_current] on it. This node is ideal for objects and entities in the game world.
+		[AudioStreamPlayer2D] plays an audio stream. The player's volume and panning are dependent on its position on the screen, and the position of an [AudioListener2D]. The further the player is from the listener, the quieter the audio gets, and it will also be panned to follow which side of the listener the player is on the screen. By default, an AudioListener2D is set to the middle of the screen. This can be changed by adding an AudioListener2D node to the scene and enabling it by calling [method AudioListener2D.make_current] on it. This node is ideal for objects and entities in the game world.
 		The audio to be played must be set in [member stream]. The stream must contain valid stored or fed audio data, for example, an [AudioStreamWAV] containing data from a [code].wav[/code] file, or an [AudioStreamMicrophone] receiving data from an input device.
 		To play audio independent of the position of the node, use [AudioStreamPlayer] instead.
 		To handle playback of an audio stream resource at a low level, use the [AudioStreamPlayback] class. To understand how audio files are imported, see [ResourceImporterWAV], [ResourceImporterOggVorbis], and [ResourceImporterMP3].
 		[b]Note:[/b] Hiding an [AudioStreamPlayer2D] node does not mute it. To mute the player, set [member volume_linear] to [code]0.0[/code].
 		[b]Note:[/b] While [AudioStreamPlayer2D] can only hold one [AudioStream], some streams can hold and play multiple sub-streams, like [AudioStreamInteractive].
-		[b]Note:[/b] Loading [AudioStreamOggVorbis], [AudioStreamMP3], or [AudioStreamInteractive] as a stream adds an additional player parameter in the inspector. For OggVorbis and MP3 streams, that parameter is the loop override. If you enable [code]Looping[/code], then its associated boolean will be checked for loops, instead of the [code]Loop[/code] parameter from Import. For [AudioStreamInteractive], the parameter is used to switch clips from the editor, and behaves like [method AudioStreamPlaybackInteractive.switch_to_clip_by_name].
+		[b]Note:[/b] Loading [AudioStreamOggVorbis], [AudioStreamMP3], or [AudioStreamInteractive] as a stream adds an additional player parameter in the inspector. For OggVorbis and MP3 streams, that parameter is the loop override. If you enable [code]Looping[/code], then its associated boolean will be checked for loops, instead of the [code]Loop[/code] parameter from import. For [AudioStreamInteractive], the parameter is used to switch clips from the editor, and behaves like [method AudioStreamPlaybackInteractive.switch_to_clip_by_name].
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
@@ -97,7 +97,7 @@
 		</member>
 		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
 			If [code]true[/code], the stream is paused. Setting [member stream_paused] to [code]false[/code] resumes the stream.
-			[b]Note:[/b] This property is automatically changed when exiting or entering the tree, or this node is paused (see [member Node.process_mode]).
+			[b]Note:[/b] This property is automatically changed when exiting or entering the tree, or when this node is paused (see [member Node.process_mode]).
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
 			Base volume of the stream before attenuation, in decibels. This is an offset of the [member stream]'s volume.

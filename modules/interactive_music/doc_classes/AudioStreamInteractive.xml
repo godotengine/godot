@@ -115,7 +115,7 @@
 			<param index="0" name="from_clip" type="int" />
 			<param index="1" name="to_clip" type="int" />
 			<description>
-				Returns which playback position the destination clip starts at, after a transition. See [method add_transition] and [enum TransitionToTime].
+				Returns the playback position that the destination clip starts at, after a transition. See [method add_transition] and [enum TransitionToTime].
 			</description>
 		</method>
 		<method name="has_transition" qualifiers="const">

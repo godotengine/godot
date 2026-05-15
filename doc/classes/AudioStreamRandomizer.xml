@@ -20,7 +20,7 @@
 			<param index="2" name="weight" type="float" default="1.0" />
 			<description>
 				Inserts the [param stream] at the specified [param index]. If the index is less than zero, the insertion occurs at the end of the underlying pool.
-				[param weight] controls how likely the stream can be played, compared to other streams. This is only relevant if [member playback_mode] is random.
+				[param weight] controls how likely it is that the stream is played, compared to other streams. This is only relevant if [member playback_mode] is random.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
@@ -65,13 +65,13 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Sets the probability [param weight] of the stream of the given [param index]. The higher this value, the more likely that the randomizer will choose the stream if [member playback_mode] is random.
+				Sets the probability [param weight] of the stream of the given [param index]. The higher this value, the more likely it is that the randomizer will choose the stream if [member playback_mode] is random.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="playback_mode" type="int" setter="set_playback_mode" getter="get_playback_mode" enum="AudioStreamRandomizer.PlaybackMode" default="0">
-			Controls how [AudioStreamRandomizer] picks which stream to play next.
+			Controls how AudioStreamRandomizer picks which stream to play next.
 		</member>
 		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch" default="1.0">
 			The largest possible frequency multiplier of the random pitch variation. Pitch will be randomly chosen within a range of [code skip-lint]1.0 / random_pitch[/code] and [code skip-lint]random_pitch[/code]. A value of [code]1.0[/code] means no variation. A value of [code]2.0[/code] means pitch will be randomized between double and half.
@@ -98,7 +98,7 @@
 	</members>
 	<constants>
 		<constant name="PLAYBACK_RANDOM_NO_REPEATS" value="0" enum="PlaybackMode">
-			Picks a stream at random according to the probability weights chosen for each stream, but avoid playing the same stream twice in a row whenever possible. If only 1 stream is present in the pool, the same stream will always play, effectively allowing repeats to occur.
+			Picks a stream at random according to the probability weights chosen for each stream, but avoids playing the same stream twice in a row whenever possible. If only 1 stream is present in the pool, the same stream will always play, effectively allowing repeats to occur.
 		</constant>
 		<constant name="PLAYBACK_RANDOM" value="1" enum="PlaybackMode">
 			Picks a stream at random according to the probability weights chosen for each stream. If only 1 stream is present in the pool, the same stream will always play.
