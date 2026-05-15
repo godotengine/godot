@@ -904,8 +904,8 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 	SUBCASE("[Geometry2D] Simple inflate (Miter join)") {
 		transformed = Geometry2D::offset_polygon(points, 1, Geometry2D::JOIN_MITER);
 
-		REQUIRE_MESSAGE(transformed.size() == 1, "There should be a single polygon");
-		REQUIRE_MESSAGE(transformed[0].size() == 4, "There should be exactly 4 points");
+		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
+		CHECK_MESSAGE(transformed[0].size() == 4, "There should be exactly 4 points");
 		// Check if original points are inside the inflated polygon
 		CHECK(Geometry2D::is_point_in_polygon(points[0], transformed[0]));
 		CHECK(Geometry2D::is_point_in_polygon(points[1], transformed[0]));
@@ -916,8 +916,8 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 	SUBCASE("[Geometry2D] Simple inflate (Square join)") {
 		transformed = Geometry2D::offset_polygon(points, 1, Geometry2D::JOIN_SQUARE);
 
-		REQUIRE_MESSAGE(transformed.size() == 1, "There should be a single polygon");
-		REQUIRE_MESSAGE(transformed[0].size() == 8, "There should be exactly 8 points");
+		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
+		CHECK_MESSAGE(transformed[0].size() == 8, "There should be exactly 8 points");
 		// Check if original points are inside the inflated polygon
 		CHECK(Geometry2D::is_point_in_polygon(points[0], transformed[0]));
 		CHECK(Geometry2D::is_point_in_polygon(points[1], transformed[0]));
@@ -927,8 +927,8 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 
 	SUBCASE("[Geometry2D] Simple inflate (Round join)") {
 		transformed = Geometry2D::offset_polygon(points, 1, Geometry2D::JOIN_ROUND);
-		REQUIRE_MESSAGE(transformed.size() == 1, "There should be a single polygon");
-		REQUIRE_MESSAGE(transformed[0].size() == 12, "There should be exactly 12 points");
+		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
+		CHECK_MESSAGE(transformed[0].size() == 12, "There should be exactly 12 points");
 		CHECK(Geometry2D::is_point_in_polygon(points[0], transformed[0]));
 		CHECK(Geometry2D::is_point_in_polygon(points[1], transformed[0]));
 		CHECK(Geometry2D::is_point_in_polygon(points[2], transformed[0]));
@@ -937,8 +937,8 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 
 	SUBCASE("[Geometry2D] Simple deflate") {
 		transformed = Geometry2D::offset_polygon(points, -1, Geometry2D::JOIN_SQUARE);
-		REQUIRE_MESSAGE(transformed.size() == 1, "There should be a single polygon");
-		REQUIRE_MESSAGE(transformed[0].size() == 4, "There should be exactly 4 points");
+		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
+		CHECK_MESSAGE(transformed[0].size() == 4, "There should be exactly 4 points");
 		// Check if original points are NOT in the new polygon
 		CHECK_FALSE(Geometry2D::is_point_in_polygon(points[0], transformed[0]));
 		CHECK_FALSE(Geometry2D::is_point_in_polygon(points[1], transformed[0]));
@@ -949,13 +949,19 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 	SUBCASE("[Geometry2D] Offset with negative delta that is larger than the polygon") {
 		transformed = Geometry2D::offset_polygon(points, -100, Geometry2D::JOIN_SQUARE);
 
-		REQUIRE_MESSAGE(transformed.size() == 0, "The polygon should be empty");
+		CHECK_MESSAGE(transformed.size() == 0, "The polygon should be empty");
+	}
+
+	SUBCASE("[Geometry2D] Offset of exactly half the size of a the polygon") {
+		transformed = Geometry2D::offset_polygon(points, -5, Geometry2D::JOIN_SQUARE);
+
+		CHECK_MESSAGE(transformed.size() == 0, "The polygon should be empty");
 	}
 
 	SUBCASE("[Geometry2D] Offset of zero units") {
 		transformed = Geometry2D::offset_polygon(points, 0, Geometry2D::JOIN_MITER);
 
-		REQUIRE_MESSAGE(transformed.size() == 1, "There should be a single polygon");
+		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
 
 		// TODO: check if points are in the same position as original
 		CHECK(points[0] == transformed[0][0]);
@@ -963,18 +969,92 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 		CHECK(points[2] == transformed[0][2]);
 		CHECK(points[3] == transformed[0][3]);
 	}
+
+	// TODO: clockwise/counterclockwise order case
 }
 
-// TEST_CASE("[Geometry2D] Triangulate Delaunay") {
-// 	SUBCASE("[Geometry2D]") {
+TEST_CASE("[Geometry2D] Triangulate Delaunay") {
+	Vector<Vector2> p;
 
-// 	}
-// }
+	// TODO: "normal" test
 
-// TEST_CASE("[Geometry2D] Triangulate Polygon") {
-// SUBCASE("[Geometry2D]") {
+	// passing two points
+	p.clear();
+	p.push_back(Vector2(0, 0));
+	p.push_back(Vector2(0, 10));
+	Vector<int> indices;
+	SUBCASE("[Geometry2D] Passing two points") {
+		indices = Geometry2D::triangulate_delaunay(p);
+		CHECK_MESSAGE(indices.size() == 0, "Returned array must be empty");
+	}
+}
 
-// }
-// }
+TEST_CASE("[Geometry2D] Triangulate Polygon") {
+	Vector<Vector2> p;
+	// define a 10 x 10 square
+	p.push_back(Vector2(0, 0));
+	p.push_back(Vector2(0, 10));
+	p.push_back(Vector2(10, 10));
+	p.push_back(Vector2(10, 0));
+
+	Vector<int> indices;
+
+	SUBCASE("[Geometry2D] Simple Triangulation of Square") {
+		indices = Geometry2D::triangulate_polygon(p);
+		CHECK_MESSAGE(indices.size() > 0, "Returned array must not be empty");
+		CHECK_MESSAGE(indices.size() == 6, "There should be two triangles (3 points per triangle equals 6 points)");
+
+		for (int i = 0; i < indices.size(); i++) {
+			CHECK(indices[i] < p.size());
+		}
+	}
+
+	// prepare a new polygon (irregular heptagon)
+
+	// TODO: prepare a hypothetical heptagon; possibly a concave one
+	// p.clear();
+	// p.push_back(Vector2());
+	// p.push_back(Vector2());
+	// p.push_back(Vector2());
+	// p.push_back(Vector2());
+	// p.push_back(Vector2());
+	// p.push_back(Vector2());
+
+	// prepare a new "polygon" (2 points)
+
+	p.clear();
+	p.push_back(Vector2(0, 0));
+	p.push_back(Vector2(0, 10));
+	SUBCASE("[Geometry2D] Passing two points") {
+		indices = Geometry2D::triangulate_polygon(p);
+		CHECK_MESSAGE(indices.size() == 0, "Returned array must be empty");
+	}
+
+	// collinear line (zero area)
+	// TODO: investigate a better way to test this
+	p.clear();
+	p.push_back(Vector2(0, 0));
+	p.push_back(Vector2(0, 1));
+	p.push_back(Vector2(0, 3));
+	// p.push_back(Vector2(0, 8));
+	SUBCASE("[Geometry2D] Collinear line (zero-area polygon)") {
+		indices = Geometry2D::triangulate_polygon(p);
+		CHECK_MESSAGE(indices.size() == 0, "The returned array must be empty");
+	}
+
+	// self intersecting hourglass
+	p.clear();
+	p.push_back(Vector2(-2, 4));
+	p.push_back(Vector2(2, 4));
+	p.push_back(Vector2(-2, 0));
+	p.push_back(Vector2(2, 0));
+
+	SUBCASE("[Geometry2D] Self-intersecting polygon") {
+		indices = Geometry2D::triangulate_polygon(p);
+		CHECK_MESSAGE(indices.size() == 0, "The returned array must be empty");
+	}
+
+	// TODO: hole case?
+}
 
 } // namespace TestGeometry2D
