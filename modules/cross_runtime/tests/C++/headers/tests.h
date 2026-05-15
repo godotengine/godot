@@ -363,165 +363,153 @@ bool run_read_tests(String &error) {
 	return true;
 }
 
-// They write new  values to the offsets which will be read by C#. 
+// They write new  values to the offsets which will be read by C#.
 // This runs after the read tests
 void run_write_tests() {
-
-	write_int32(const_cast<uint8_t*>(OFF_INT32), -99); 
+	write_int32(const_cast<uint8_t *>(OFF_INT32), -99);
 	printf("[C++] write_int32 passed\n");
 
-	write_int64(const_cast<uint8_t*>(OFF_INT64), -98765432109876LL);
+	write_int64(const_cast<uint8_t *>(OFF_INT64), -98765432109876LL);
 	printf("[C++] write_int64 passed\n");
 
-	write_float(const_cast<uint8_t*>(OFF_FLOAT), -2.71f);
+	write_float(const_cast<uint8_t *>(OFF_FLOAT), -2.71f);
 	printf("[C++] write_float passed\n");
 
-	write_double(const_cast<uint8_t*>(OFF_DOUBLE), -1.41421356237);
+	write_double(const_cast<uint8_t *>(OFF_DOUBLE), -1.41421356237);
 	printf("[C++] write_double passed\n");
 
-	write_bool(const_cast<uint8_t*>(OFF_BOOL), false); 
+	write_bool(const_cast<uint8_t *>(OFF_BOOL), false);
 	printf("[C++] bool write passed\n");
 
-	write_string_to_data(const_cast<uint8_t*>(OFF_STRING), "WriteOK!");
+	write_string_to_data(const_cast<uint8_t *>(OFF_STRING), "WriteOK!");
 	printf("[C++] String write passed\n");
 
-	write_string_name(const_cast<uint8_t*>(OFF_STRINGNAME), StringName("WriteSN"));
+	write_string_name(const_cast<uint8_t *>(OFF_STRINGNAME), StringName("WriteSN"));
 	printf("[C++] StringName write passed\n");
 
-	write_node_path(const_cast<uint8_t*>(OFF_NODEPATH), NodePath("/write/path"));
+	write_node_path(const_cast<uint8_t *>(OFF_NODEPATH), NodePath("/write/path"));
 	printf("[C++] NodePath write passed\n");
 
-	write_rid(const_cast<uint8_t*>(OFF_RID), RID::from_uint64(0xBEEFCAFEULL));
+	write_rid(const_cast<uint8_t *>(OFF_RID), RID::from_uint64(0xBEEFCAFEULL));
 	printf("[C++] RID write passed\n");
 
-	write_vector2(const_cast<uint8_t*>(OFF_VECTOR2), Vector2(10.5, -5.5));
+	write_vector2(const_cast<uint8_t *>(OFF_VECTOR2), Vector2(10.5, -5.5));
 	printf("[C++] Vector2 write passed\n");
 
-	write_vector2i(const_cast<uint8_t*>(OFF_VECTOR2I), Vector2i(-100, 200));
+	write_vector2i(const_cast<uint8_t *>(OFF_VECTOR2I), Vector2i(-100, 200));
 	printf("[C++] Vector2i write passed\n");
 
-	write_rect2(const_cast<uint8_t*>(OFF_RECT2), Rect2(Vector2(9, 8), Vector2(7, 6)));
+	write_rect2(const_cast<uint8_t *>(OFF_RECT2), Rect2(Vector2(9, 8), Vector2(7, 6)));
 	printf("[C++] Rect2 write passed\n");
 
-	write_rect2i(const_cast<uint8_t*>(OFF_RECT2I), Rect2i(Vector2i(15, 16), Vector2i(17, 18)));
+	write_rect2i(const_cast<uint8_t *>(OFF_RECT2I), Rect2i(Vector2i(15, 16), Vector2i(17, 18)));
 	printf("[C++] Rect2i write passed\n");
 
-	write_vector3(const_cast<uint8_t*>(OFF_VECTOR3), Vector3(10, 20, 30));
+	write_vector3(const_cast<uint8_t *>(OFF_VECTOR3), Vector3(10, 20, 30));
 	printf("[C++] Vector3 write passed\n");
 
-	write_vector3i(const_cast<uint8_t*>(OFF_VECTOR3I), Vector3i(40, 50, 60));
+	write_vector3i(const_cast<uint8_t *>(OFF_VECTOR3I), Vector3i(40, 50, 60));
 	printf("[C++] Vector3i write passed\n");
 
-	write_vector4(const_cast<uint8_t*>(OFF_VECTOR4), Vector4(11, 22, 33, 44));
+	write_vector4(const_cast<uint8_t *>(OFF_VECTOR4), Vector4(11, 22, 33, 44));
 	printf("[C++] Vector4 write passed\n");
 
-	write_vector4i(const_cast<uint8_t*>(OFF_VECTOR4I), Vector4i(55, 66, 77, 88));
+	write_vector4i(const_cast<uint8_t *>(OFF_VECTOR4I), Vector4i(55, 66, 77, 88));
 	printf("[C++] Vector4i write passed\n");
 
-	write_plane(const_cast<uint8_t*>(OFF_PLANE), Plane(Vector3(1, 0, 0), 5.0));
+	write_plane(const_cast<uint8_t *>(OFF_PLANE), Plane(Vector3(1, 0, 0), 5.0));
 	printf("[C++] Plane write passed\n");
 
-	write_quaternion(const_cast<uint8_t*>(OFF_QUATERNION), Quaternion(0, 0.707, 0, 0.707));
+	write_quaternion(const_cast<uint8_t *>(OFF_QUATERNION), Quaternion(0, 0.707, 0, 0.707));
 	printf("[C++] Quaternion write passed\n");
 
-	write_aabb(const_cast<uint8_t*>(OFF_AABB), AABB(Vector3(0, 0, 0), Vector3(10, 10, 10)));
+	write_aabb(const_cast<uint8_t *>(OFF_AABB), AABB(Vector3(0, 0, 0), Vector3(10, 10, 10)));
 	printf("[C++] AABB write passed\n");
 
-	write_basis(const_cast<uint8_t*>(OFF_BASIS), Basis(Vector3(0, 0, -1), Vector3(0, 1, 0), Vector3(1, 0, 0))); 
+	write_basis(const_cast<uint8_t *>(OFF_BASIS), Basis(Vector3(0, 0, -1), Vector3(0, 1, 0), Vector3(1, 0, 0)));
 	printf("[C++] Basis write passed\n");
 
-	write_transform3d(const_cast<uint8_t*>(OFF_TRANSFORM3D),Transform3D(Basis(Vector3(-1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, -1)), Vector3(-7, -8, -9)));
+	write_transform3d(const_cast<uint8_t *>(OFF_TRANSFORM3D), Transform3D(Basis(Vector3(-1, 0, 0), Vector3(0, -1, 0), Vector3(0, 0, -1)), Vector3(-7, -8, -9)));
 	printf("[C++] Transform3D write passed\n");
 
-	write_projection(const_cast<uint8_t*>(OFF_PROJECTION), Projection(Vector4(2, 0, 0, 0), Vector4(0, 2, 0, 0), Vector4(0, 0, 2, 0), Vector4(0, 0, 0, 2)));
+	write_projection(const_cast<uint8_t *>(OFF_PROJECTION), Projection(Vector4(2, 0, 0, 0), Vector4(0, 2, 0, 0), Vector4(0, 0, 2, 0), Vector4(0, 0, 0, 2)));
 	printf("[C++] Projection write passed\n");
 
-	write_color(const_cast<uint8_t*>(OFF_COLOR), Color(0.9, 0.8, 0.7, 0.6));
+	write_color(const_cast<uint8_t *>(OFF_COLOR), Color(0.9, 0.8, 0.7, 0.6));
 	printf("[C++] Color write passed\n");
 
-	
 	PackedByteArray new_pba;
 	new_pba.push_back(10);
 	new_pba.push_back(20);
 	new_pba.push_back(30);
-	write_packed_byte_array(const_cast<uint8_t*>(OFF_PACKED_BYTE), new_pba);
+	write_packed_byte_array(const_cast<uint8_t *>(OFF_PACKED_BYTE), new_pba);
 	printf("[C++] PackedByteArray write passed\n");
 
-	
 	PackedInt32Array new_p32;
 	new_p32.push_back(400);
 	new_p32.push_back(500);
 	new_p32.push_back(600);
-	write_packed_int32_array(const_cast<uint8_t*>(OFF_PACKED_INT32), new_p32);	
+	write_packed_int32_array(const_cast<uint8_t *>(OFF_PACKED_INT32), new_p32);
 	printf("[C++] PackedInt32Array write passed\n");
-
 
 	PackedInt64Array new_p64;
 	new_p64.push_back(-1000);
 	new_p64.push_back(-2000);
-	write_packed_int64_array(const_cast<uint8_t*>(OFF_PACKED_INT64), new_p64);	
+	write_packed_int64_array(const_cast<uint8_t *>(OFF_PACKED_INT64), new_p64);
 	printf("[C++] PackedInt64Array write passed\n");
-
 
 	PackedFloat32Array new_pf32;
 	new_pf32.push_back(-1.1f);
 	new_pf32.push_back(-2.2f);
-	write_packed_float32_array(const_cast<uint8_t*>(OFF_PACKED_FLOAT32), new_pf32);	
+	write_packed_float32_array(const_cast<uint8_t *>(OFF_PACKED_FLOAT32), new_pf32);
 	printf("[C++] PackedFloat32Array write passed\n");
-
 
 	PackedFloat64Array new_pf64;
 	new_pf64.push_back(-3.3);
 	new_pf64.push_back(-4.4);
-	write_packed_float64_array(const_cast<uint8_t*>(OFF_PACKED_FLOAT64), new_pf64);	
+	write_packed_float64_array(const_cast<uint8_t *>(OFF_PACKED_FLOAT64), new_pf64);
 	printf("[C++] PackedFloat64Array write passed\n");
-
 
 	PackedStringArray new_ps;
 	new_ps.push_back("abc");
 	new_ps.push_back("xyz");
-	write_packed_string_array(const_cast<uint8_t*>(OFF_PACKED_STRING), new_ps);	
+	write_packed_string_array(const_cast<uint8_t *>(OFF_PACKED_STRING), new_ps);
 	printf("[C++] PackedStringArray write passed\n");
-
 
 	PackedVector2Array new_pv2;
 	new_pv2.push_back(Vector2(10, 20));
 	new_pv2.push_back(Vector2(30, 40));
-	write_packed_vector2_array(const_cast<uint8_t*>(OFF_PACKED_VECTOR2), new_pv2);	
+	write_packed_vector2_array(const_cast<uint8_t *>(OFF_PACKED_VECTOR2), new_pv2);
 	printf("[C++] PackedVector2Array write passed\n");
-
 
 	PackedVector3Array new_pv3;
 	new_pv3.push_back(Vector3(50, 60, 70));
-	write_packed_vector3_array(const_cast<uint8_t*>(OFF_PACKED_VECTOR3), new_pv3);	
+	write_packed_vector3_array(const_cast<uint8_t *>(OFF_PACKED_VECTOR3), new_pv3);
 	printf("[C++] PackedVector3Array write passed\n");
-
 
 	PackedColorArray new_pc;
 	new_pc.push_back(Color(0, 0, 1, 1));
 	new_pc.push_back(Color(1, 1, 0, 1));
-	write_packed_color_array(const_cast<uint8_t*>(OFF_PACKED_COLOR), new_pc);	
+	write_packed_color_array(const_cast<uint8_t *>(OFF_PACKED_COLOR), new_pc);
 	printf("[C++] PackedColorArray write passed\n");
 
 	Dictionary new_dict;
 	new_dict[String("x")] = 10;
 	new_dict[String("y")] = 20;
 	new_dict[String("z")] = Vector3(1, 2, 3);
-	write_dictionary(const_cast<uint8_t*>(OFF_DICTIONARY), new_dict);
+	write_dictionary(const_cast<uint8_t *>(OFF_DICTIONARY), new_dict);
 	printf("[C++] Dictionary write passed\n");
-
 
 	Array new_arr;
 	new_arr.push_back(Vector3(30, 40, 50));
 	new_arr.push_back("write");
 	new_arr.push_back(42);
-	write_array(const_cast<uint8_t*>(OFF_ARRAY), new_arr);	
+	write_array(const_cast<uint8_t *>(OFF_ARRAY), new_arr);
 	printf("[C++] Array write passed\n");
 
 	Signal new_signal(ObjectID(99999ULL), StringName("write_signal"));
-	write_signal(const_cast<uint8_t*>(OFF_SIGNAL), new_signal);
+	write_signal(const_cast<uint8_t *>(OFF_SIGNAL), new_signal);
 	printf("[C++] Signal write passed\n");
-
 }
 
 } // namespace VariantBridgeTests
