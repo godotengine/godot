@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_spatial_anchor.h"
+#include "openxr_spatial_anchor.compat.inc"
 
 #include "../../openxr_api.h"
 #include "../../openxr_util.h"
@@ -129,6 +130,7 @@ Transform3D OpenXRSpatialComponentAnchorList::get_entity_pose(int64_t p_index) c
 void OpenXRSpatialContextPersistenceConfig::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_persistence_context", "persistence_context"), &OpenXRSpatialContextPersistenceConfig::add_persistence_context);
 	ClassDB::bind_method(D_METHOD("remove_persistence_context", "persistence_context"), &OpenXRSpatialContextPersistenceConfig::remove_persistence_context);
+	ClassDB::bind_method(D_METHOD("get_persistence_contexts"), &OpenXRSpatialContextPersistenceConfig::get_persistence_contexts);
 }
 
 bool OpenXRSpatialContextPersistenceConfig::has_valid_configuration() const {
@@ -192,6 +194,17 @@ void OpenXRSpatialContextPersistenceConfig::remove_persistence_context(RID p_per
 	ERR_FAIL_COND(!persistence_contexts.has(p_persistence_context));
 
 	persistence_contexts.erase(p_persistence_context);
+}
+
+Array OpenXRSpatialContextPersistenceConfig::get_persistence_contexts() const {
+	Array ret;
+
+	ret.resize(persistence_contexts.size());
+	for (int i = 0; i < persistence_contexts.size(); ++i) {
+		ret[i] = persistence_contexts[i];
+	}
+
+	return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -322,14 +335,18 @@ void OpenXRSpatialAnchorCapability::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_spatial_persistence_supported"), &OpenXRSpatialAnchorCapability::is_spatial_persistence_supported);
 
 	ClassDB::bind_method(D_METHOD("is_persistence_scope_supported", "scope"), &OpenXRSpatialAnchorCapability::_is_persistence_scope_supported);
+	ClassDB::bind_method(D_METHOD("create_default_persistence_context", "user_callback"), &OpenXRSpatialAnchorCapability::create_default_persistence_context, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("create_persistence_context", "scope", "user_callback"), &OpenXRSpatialAnchorCapability::_create_persistence_context, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("get_persistence_context_handle", "persistence_context"), &OpenXRSpatialAnchorCapability::_get_persistence_context_handle);
 	ClassDB::bind_method(D_METHOD("free_persistence_context", "persistence_context"), &OpenXRSpatialAnchorCapability::free_persistence_context);
 
-	ClassDB::bind_method(D_METHOD("create_new_anchor", "transform", "spatial_context"), &OpenXRSpatialAnchorCapability::create_new_anchor, DEFVAL(RID()));
+	ClassDB::bind_method(D_METHOD("create_new_anchor", "transform", "spatial_context", "next"), &OpenXRSpatialAnchorCapability::create_new_anchor, DEFVAL(RID()), DEFVAL(Ref<OpenXRStructureBase>()));
 	ClassDB::bind_method(D_METHOD("remove_anchor", "anchor_tracker"), &OpenXRSpatialAnchorCapability::remove_anchor);
 	ClassDB::bind_method(D_METHOD("persist_anchor", "anchor_tracker", "persistence_context", "user_callback"), &OpenXRSpatialAnchorCapability::persist_anchor, DEFVAL(RID()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("unpersist_anchor", "anchor_tracker", "persistence_context", "user_callback"), &OpenXRSpatialAnchorCapability::unpersist_anchor, DEFVAL(RID()), DEFVAL(Callable()));
+
+	ClassDB::bind_method(D_METHOD("start_entity_discovery", "spatial_context", "component_data", "next_snapshot_create", "next_snapshot_query", "user_callback"), &OpenXRSpatialAnchorCapability::start_entity_discovery, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("do_entity_update", "spatial_context", "component_data", "next_snapshot_create", "next_snapshot_query"), &OpenXRSpatialAnchorCapability::do_entity_update, DEFVAL(Variant()), DEFVAL(Variant()));
 
 	BIND_ENUM_CONSTANT(PERSISTENCE_SCOPE_SYSTEM_MANAGED);
 	BIND_ENUM_CONSTANT(PERSISTENCE_SCOPE_LOCAL_ANCHORS);
@@ -419,25 +436,7 @@ void OpenXRSpatialAnchorCapability::on_session_created(const XrSession p_session
 			// We may even want to create multiple here so we get access to all
 			// but then mark one that we use to create our persistent anchors on.
 
-			XrSpatialPersistenceScopeEXT scope = XR_SPATIAL_PERSISTENCE_SCOPE_MAX_ENUM_EXT;
-
-			// Lets check these in order of importance to us and find the best applicable scope.
-			if (supported_persistence_scopes.has(XR_SPATIAL_PERSISTENCE_SCOPE_LOCAL_ANCHORS_EXT)) {
-				// This scope allows for local storage and is required if we want to create our own anchors.
-				scope = XR_SPATIAL_PERSISTENCE_SCOPE_LOCAL_ANCHORS_EXT;
-			} else if (supported_persistence_scopes.has(XR_SPATIAL_PERSISTENCE_SCOPE_SYSTEM_MANAGED_EXT)) {
-				// The system managed scope is a read only scope with system managed anchors.
-				scope = XR_SPATIAL_PERSISTENCE_SCOPE_SYSTEM_MANAGED_EXT;
-			} else {
-				// Just use the first supported scope, but this will be an unknown type.
-				scope = supported_persistence_scopes[0];
-			}
-
-			// Output what we're using:
-			print_verbose("OpenXR: Using persistence scope " + get_spatial_persistence_scope_name(scope));
-
-			// Start by creating our persistence context.
-			create_persistence_context(scope, callable_mp(this, &OpenXRSpatialAnchorCapability::_on_persistence_context_completed));
+			create_default_persistence_context(callable_mp(this, &OpenXRSpatialAnchorCapability::_on_persistence_context_completed));
 		} else {
 			// Start by creating our spatial context
 			_create_spatial_context();
@@ -457,10 +456,12 @@ void OpenXRSpatialAnchorCapability::on_session_destroyed() {
 	ERR_FAIL_NULL(xr_server);
 
 	// Free and unregister our anchors
-	for (const KeyValue<XrSpatialEntityIdEXT, Ref<OpenXRAnchorTracker>> &anchor : anchors) {
-		xr_server->remove_tracker(anchor.value);
+	for (const KeyValue<RID, HashMap<XrSpatialEntityIdEXT, Ref<OpenXRAnchorTracker>>> &anchors : anchor_trackers) {
+		for (const KeyValue<XrSpatialEntityIdEXT, Ref<OpenXRAnchorTracker>> &anchor : anchors.value) {
+			xr_server->remove_tracker(anchor.value);
+		}
 	}
-	anchors.clear();
+	anchor_trackers.clear();
 
 	// Free our configurations
 	anchor_configuration.unref();
@@ -506,36 +507,42 @@ void OpenXRSpatialAnchorCapability::on_process() {
 	}
 
 	// Check if we need to start our discovery.
-	if (need_discovery && discovery_cooldown == 0 && !discovery_query_result.is_valid()) {
+	if (need_discovery && discovery_cooldown == 0 && !discovery_query_result.is_valid() && persistence_context.is_valid()) {
 		need_discovery = false;
 		discovery_cooldown = 60; // Set our cooldown to 60 frames, it doesn't need to be an exact science.
 
-		_start_entity_discovery();
+		if (anchor_discovery_component_data.is_empty()) {
+			// We always need a query result data object, and it must be first
+			Ref<OpenXRSpatialQueryResultData> query_result_data;
+			query_result_data.instantiate();
+			anchor_discovery_component_data.push_back(query_result_data);
+
+			Ref<OpenXRSpatialComponentAnchorList> anchor_list_data;
+			anchor_list_data.instantiate();
+			anchor_discovery_component_data.push_back(anchor_list_data);
+
+			Ref<OpenXRSpatialComponentPersistenceList> persistence_list_data;
+			persistence_list_data.instantiate();
+			anchor_discovery_component_data.push_back(persistence_list_data);
+		}
+
+		discovery_query_result = start_entity_discovery(spatial_context, anchor_discovery_component_data);
 	}
 
-	// If we have a valid spatial context, and we have anchors, we want updates!
-	if (spatial_context.is_valid() && !anchors.is_empty()) {
-		OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
-		ERR_FAIL_NULL(se_extension);
+	// If we have anchors, we want updates!
+	if (!anchor_trackers[spatial_context].is_empty()) {
+		if (anchor_update_component_data.is_empty()) {
+			// We always need a query result data object, and it must be first
+			Ref<OpenXRSpatialQueryResultData> query_result_data;
+			query_result_data.instantiate();
+			anchor_update_component_data.push_back(query_result_data);
 
-		// We want updates for all anchors
-		thread_local LocalVector<RID> entities;
-		entities.resize(anchors.size());
-		RID *entity = entities.ptr();
-		for (const KeyValue<XrSpatialEntityIdEXT, Ref<OpenXRAnchorTracker>> &e : anchors) {
-			*entity = e.value->get_entity();
-			entity++;
+			Ref<OpenXRSpatialComponentAnchorList> anchor_list_data;
+			anchor_list_data.instantiate();
+			anchor_update_component_data.push_back(anchor_list_data);
 		}
 
-		// We just want our anchor component
-		thread_local LocalVector<XrSpatialComponentTypeEXT> component_types;
-		component_types.push_back(XR_SPATIAL_COMPONENT_TYPE_ANCHOR_EXT);
-
-		// And we get our update snapshot, this is NOT async!
-		RID snapshot = se_extension->update_spatial_entities(spatial_context, entities, component_types, nullptr);
-		if (snapshot.is_valid()) {
-			_process_update_snapshot(snapshot);
-		}
+		do_entity_update(spatial_context, anchor_update_component_data);
 	}
 }
 
@@ -610,6 +617,28 @@ bool OpenXRSpatialAnchorCapability::is_persistence_scope_supported(XrSpatialPers
 
 bool OpenXRSpatialAnchorCapability::_is_persistence_scope_supported(PersistenceScope p_scope) {
 	return is_persistence_scope_supported((XrSpatialPersistenceScopeEXT)p_scope);
+}
+
+Ref<OpenXRFutureResult> OpenXRSpatialAnchorCapability::create_default_persistence_context(const Callable &p_user_callback) {
+	XrSpatialPersistenceScopeEXT scope = XR_SPATIAL_PERSISTENCE_SCOPE_MAX_ENUM_EXT;
+
+	// Lets check these in order of importance to us and find the best applicable scope.
+	if (supported_persistence_scopes.has(XR_SPATIAL_PERSISTENCE_SCOPE_LOCAL_ANCHORS_EXT)) {
+		// This scope allows for local storage and is required if we want to create our own anchors.
+		scope = XR_SPATIAL_PERSISTENCE_SCOPE_LOCAL_ANCHORS_EXT;
+	} else if (supported_persistence_scopes.has(XR_SPATIAL_PERSISTENCE_SCOPE_SYSTEM_MANAGED_EXT)) {
+		// The system managed scope is a read only scope with system managed anchors.
+		scope = XR_SPATIAL_PERSISTENCE_SCOPE_SYSTEM_MANAGED_EXT;
+	} else {
+		// Just use the first supported scope, but this will be an unknown type.
+		scope = supported_persistence_scopes[0];
+	}
+
+	// Output what we're using:
+	print_verbose("OpenXR: Using persistence scope " + get_spatial_persistence_scope_name(scope));
+
+	// Start by creating our persistence context.
+	return create_persistence_context(scope, p_user_callback);
 }
 
 Ref<OpenXRFutureResult> OpenXRSpatialAnchorCapability::create_persistence_context(XrSpatialPersistenceScopeEXT p_scope, const Callable &p_user_callback) {
@@ -763,33 +792,11 @@ void OpenXRSpatialAnchorCapability::_on_spatial_discovery_recommended(RID p_spat
 	}
 }
 
-Ref<OpenXRFutureResult> OpenXRSpatialAnchorCapability::_start_entity_discovery() {
-	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
-	ERR_FAIL_NULL_V(se_extension, nullptr);
-
-	// It makes no sense to discover non persistent anchors as we'd have created them during this session.
-	if (!persistence_context.is_valid()) {
-		return nullptr;
+void OpenXRSpatialAnchorCapability::_process_discovery_snapshot(RID p_snapshot, RID p_spatial_context, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_query, const Callable &p_user_callback) {
+	if (p_user_callback.is_valid()) {
+		p_user_callback.call(p_snapshot, false);
 	}
 
-	// Already running or ran discovery, cancel/clean up.
-	if (discovery_query_result.is_valid()) {
-		discovery_query_result->cancel_future();
-		discovery_query_result.unref();
-	}
-
-	// We want both our anchor and persistence component.
-	Vector<XrSpatialComponentTypeEXT> component_types;
-	component_types.push_back(XR_SPATIAL_COMPONENT_TYPE_ANCHOR_EXT);
-	component_types.push_back(XR_SPATIAL_COMPONENT_TYPE_PERSISTENCE_EXT);
-
-	// Start our new snapshot.
-	discovery_query_result = se_extension->discover_spatial_entities(spatial_context, component_types, nullptr, callable_mp(this, &OpenXRSpatialAnchorCapability::_process_discovery_snapshot));
-
-	return discovery_query_result;
-}
-
-void OpenXRSpatialAnchorCapability::_process_discovery_snapshot(RID p_snapshot) {
 	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
 	ERR_FAIL_NULL(se_extension);
 	XRServer *xr_server = XRServer::get_singleton();
@@ -797,25 +804,32 @@ void OpenXRSpatialAnchorCapability::_process_discovery_snapshot(RID p_snapshot) 
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 	ERR_FAIL_NULL(openxr_api);
 
-	// Build our component data.
-	TypedArray<OpenXRSpatialComponentData> component_data;
+	// The first must be OpenXRSpatialQueryResultData
+	Ref<OpenXRSpatialQueryResultData> query_result_data = p_component_data.is_empty() ? Variant() : p_component_data[0];
+	ERR_FAIL_COND(query_result_data.is_null());
 
-	// We always need a query result data object.
-	Ref<OpenXRSpatialQueryResultData> query_result_data;
-	query_result_data.instantiate();
-	component_data.push_back(query_result_data);
-
-	// And an anchor list object.
 	Ref<OpenXRSpatialComponentAnchorList> anchor_list_data;
-	anchor_list_data.instantiate();
-	component_data.push_back(anchor_list_data);
-
-	// Note that adding this data object means our snapshot will only return persistent anchors!
 	Ref<OpenXRSpatialComponentPersistenceList> persistence_list_data;
-	persistence_list_data.instantiate();
-	component_data.push_back(persistence_list_data);
+	for (Ref<OpenXRSpatialComponentData> data : p_component_data) {
+		switch (data->get_component_type()) {
+			case XR_SPATIAL_COMPONENT_TYPE_ANCHOR_EXT:
+				anchor_list_data = data;
+				break;
+			case XR_SPATIAL_COMPONENT_TYPE_PERSISTENCE_EXT:
+				persistence_list_data = data;
+				break;
+			default:
+				// Okay, maybe other data types are being queried that we don't know about
+				break;
+		}
+	}
 
-	if (se_extension->query_snapshot(p_snapshot, component_data, nullptr)) {
+	// Must be discovering at least persisted anchors, otherwise why are we here?
+	ERR_FAIL_COND(anchor_list_data.is_null());
+	ERR_FAIL_COND(persistence_list_data.is_null());
+
+	HashMap<XrSpatialEntityIdEXT, Ref<OpenXRAnchorTracker>> &anchors = anchor_trackers[p_spatial_context];
+	if (se_extension->query_snapshot(p_snapshot, p_component_data, p_next_snapshot_query)) {
 		// Now loop through our data and update our anchors.
 		int64_t size = query_result_data->get_capacity();
 		for (int64_t i = 0; i < size; i++) {
@@ -840,6 +854,7 @@ void OpenXRSpatialAnchorCapability::_process_discovery_snapshot(RID p_snapshot) 
 				} else {
 					// Create a new anchor.
 					anchor.instantiate();
+					anchor->set_spatial_context(p_spatial_context);
 					anchor->set_entity(se_extension->make_spatial_entity(se_extension->get_spatial_snapshot_context(p_snapshot), entity_id));
 					anchors[entity_id] = anchor;
 
@@ -876,6 +891,10 @@ void OpenXRSpatialAnchorCapability::_process_discovery_snapshot(RID p_snapshot) 
 		// in another device removing the shared anchor we need to deal with this.
 	}
 
+	if (p_user_callback.is_valid()) {
+		p_user_callback.call(p_snapshot, true);
+	}
+
 	// Now that we're done, clean up our snapshot!
 	se_extension->free_spatial_snapshot(p_snapshot);
 
@@ -885,7 +904,7 @@ void OpenXRSpatialAnchorCapability::_process_discovery_snapshot(RID p_snapshot) 
 	}
 }
 
-void OpenXRSpatialAnchorCapability::_process_update_snapshot(RID p_snapshot) {
+void OpenXRSpatialAnchorCapability::_process_update_snapshot(RID p_snapshot, RID p_spatial_context, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_query) {
 	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
 	ERR_FAIL_NULL(se_extension);
 	XRServer *xr_server = XRServer::get_singleton();
@@ -893,20 +912,27 @@ void OpenXRSpatialAnchorCapability::_process_update_snapshot(RID p_snapshot) {
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 	ERR_FAIL_NULL(openxr_api);
 
-	// Build our component data.
-	TypedArray<OpenXRSpatialComponentData> component_data;
+	// The first must be OpenXRSpatialQueryResultData
+	Ref<OpenXRSpatialQueryResultData> query_result_data = p_component_data.is_empty() ? Variant() : p_component_data[0];
+	ERR_FAIL_COND(query_result_data.is_null());
 
-	// We always need a query result data object.
-	Ref<OpenXRSpatialQueryResultData> query_result_data;
-	query_result_data.instantiate();
-	component_data.push_back(query_result_data);
-
-	// And an anchor list object.
 	Ref<OpenXRSpatialComponentAnchorList> anchor_list_data;
-	anchor_list_data.instantiate();
-	component_data.push_back(anchor_list_data);
+	for (Ref<OpenXRSpatialComponentData> data : p_component_data) {
+		switch (data->get_component_type()) {
+			case XR_SPATIAL_COMPONENT_TYPE_ANCHOR_EXT:
+				anchor_list_data = data;
+				break;
+			default:
+				// Okay, maybe other data types are being queried that we don't know about
+				break;
+		}
+	}
 
-	if (se_extension->query_snapshot(p_snapshot, component_data, nullptr)) {
+	// Must be updating at least anchors, otherwise why are we here?
+	ERR_FAIL_COND(anchor_list_data.is_null());
+
+	HashMap<XrSpatialEntityIdEXT, Ref<OpenXRAnchorTracker>> &anchors = anchor_trackers[p_spatial_context];
+	if (se_extension->query_snapshot(p_snapshot, p_component_data, p_next_snapshot_query)) {
 		// Now loop through our data and update our anchors.
 		int64_t size = query_result_data->get_capacity();
 		for (int64_t i = 0; i < size; i++) {
@@ -941,7 +967,7 @@ void OpenXRSpatialAnchorCapability::_process_update_snapshot(RID p_snapshot) {
 ////////////////////////////////////////////////////////////////////////////
 // Anchor creation
 
-Ref<OpenXRAnchorTracker> OpenXRSpatialAnchorCapability::create_new_anchor(const Transform3D &p_transform, RID p_spatial_context) {
+Ref<OpenXRAnchorTracker> OpenXRSpatialAnchorCapability::create_new_anchor(const Transform3D &p_transform, RID p_spatial_context, Ref<OpenXRStructureBase> p_next) {
 	Ref<OpenXRAnchorTracker> tracker;
 
 	ERR_FAIL_COND_V_MSG(!is_spatial_anchor_supported(), tracker, "OpenXR: Spatial entity anchor capability is not supported on this hardware!");
@@ -960,9 +986,14 @@ Ref<OpenXRAnchorTracker> OpenXRSpatialAnchorCapability::create_new_anchor(const 
 	RID sc = p_spatial_context.is_valid() ? p_spatial_context : spatial_context;
 	ERR_FAIL_COND_V(sc.is_null(), tracker);
 
+	void *next = nullptr;
+	if (p_next.is_valid()) {
+		next = p_next->get_header(next);
+	}
+
 	XrSpatialAnchorCreateInfoEXT create_info = {
 		XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_EXT, // type
-		nullptr, // next
+		next, // next
 		openxr_api->get_play_space(), // baseSpace
 		openxr_api->get_predicted_display_time(), // time
 		pose // pose
@@ -975,12 +1006,14 @@ Ref<OpenXRAnchorTracker> OpenXRSpatialAnchorCapability::create_new_anchor(const 
 	}
 
 	tracker.instantiate();
+	tracker->set_spatial_context(sc);
 	tracker->set_entity(se_extension->add_spatial_entity(sc, entity_id, entity));
 	tracker->set_tracker_desc("Anchor");
 	tracker->set_pose(SNAME("default"), p_transform, Vector3(), Vector3());
+	tracker->add_next(p_next);
 
 	// Remember our tracker.
-	anchors[entity_id] = tracker;
+	anchor_trackers[sc][entity_id] = tracker;
 	xr_server->add_tracker(tracker);
 
 	return tracker;
@@ -1009,8 +1042,11 @@ void OpenXRSpatialAnchorCapability::remove_anchor(Ref<OpenXRAnchorTracker> p_anc
 	ERR_FAIL_COND(entity_id == XR_NULL_ENTITY);
 
 	// Remove it from our entity list.
-	if (anchors.has(entity_id)) {
-		anchors.erase(entity_id);
+	for (KeyValue<RID, HashMap<XrSpatialEntityIdEXT, Ref<OpenXRAnchorTracker>>> &anchors : anchor_trackers) {
+		if (anchors.value.has(entity_id)) {
+			anchors.value.erase(entity_id);
+			break;
+		}
 	}
 
 	// Clear our entity, this will free it as well.
@@ -1136,6 +1172,50 @@ Ref<OpenXRFutureResult> OpenXRSpatialAnchorCapability::unpersist_anchor(Ref<Open
 	Ref<OpenXRFutureResult> future_result = future_api->register_future(future, callable_mp(this, &OpenXRSpatialAnchorCapability::_on_made_anchor_unpersistent).bind(pc, p_anchor_tracker, p_user_callback));
 
 	return future_result;
+}
+
+Ref<OpenXRFutureResult> OpenXRSpatialAnchorCapability::start_entity_discovery(RID p_spatial_context, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_create, Ref<OpenXRStructureBase> p_next_snapshot_query, const Callable &p_user_callback) {
+	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
+	ERR_FAIL_NULL_V(se_extension, nullptr);
+	return se_extension->discover_spatial_entities_with_component_data(p_spatial_context, p_component_data, p_next_snapshot_create, callable_mp(this, &OpenXRSpatialAnchorCapability::_process_discovery_snapshot).bind(p_spatial_context, p_component_data, p_next_snapshot_query, p_user_callback));
+}
+
+void OpenXRSpatialAnchorCapability::do_entity_update(RID p_spatial_context, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_create, Ref<OpenXRStructureBase> p_next_snapshot_query) {
+	if (anchor_trackers.is_empty() || anchor_trackers[p_spatial_context].is_empty()) {
+		return;
+	}
+
+	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
+	ERR_FAIL_NULL(se_extension);
+
+	// The first should be OpenXRSpatialQueryResultData
+	Ref<OpenXRSpatialQueryResultData> query_result_data = p_component_data[0];
+	ERR_FAIL_COND_MSG(query_result_data.is_null(), "OpenXR: The first component must be of type OpenXRSpatialQueryResultData");
+
+	// Skip OpenXRSpatialQueryResultData and copy the other component types
+	LocalVector<XrSpatialComponentTypeEXT> component_types;
+	component_types.resize(p_component_data.size() - 1);
+	XrSpatialComponentTypeEXT *dst = component_types.ptr();
+	for (unsigned int i = 0; i < component_types.size(); ++i) {
+		Ref<OpenXRSpatialComponentData> ele = p_component_data[i + 1];
+		dst[i] = ele->get_component_type();
+	}
+
+	// We want updates for all anchors
+	thread_local LocalVector<RID> entities;
+	HashMap<XrSpatialEntityIdEXT, Ref<OpenXRAnchorTracker>> &anchors = anchor_trackers[p_spatial_context];
+	entities.resize(anchors.size());
+	RID *entity = entities.ptr();
+	for (const KeyValue<XrSpatialEntityIdEXT, Ref<OpenXRAnchorTracker>> &e : anchors) {
+		*entity = e.value->get_entity();
+		entity++;
+	}
+
+	// And we get our update snapshot, this is NOT async!
+	RID snapshot = se_extension->update_spatial_entities(p_spatial_context, entities, component_types, p_next_snapshot_create);
+	if (snapshot.is_valid()) {
+		_process_update_snapshot(snapshot, p_spatial_context, p_component_data, p_next_snapshot_query);
+	}
 }
 
 void OpenXRSpatialAnchorCapability::_on_made_anchor_unpersistent(Ref<OpenXRFutureResult> p_future_result, RID p_persistence_context, Ref<OpenXRAnchorTracker> p_anchor_tracker, const Callable &p_user_callback) {

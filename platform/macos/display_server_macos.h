@@ -242,7 +242,7 @@ private:
 public:
 	void menu_callback(id p_sender);
 
-	bool has_window(DisplayServerEnums::WindowID p_window) const;
+	virtual bool has_window(DisplayServerEnums::WindowID p_window) const override;
 	WindowData &get_window(DisplayServerEnums::WindowID p_window);
 
 	NSImage *_convert_to_nsimg(Ref<Image> &p_image) const;

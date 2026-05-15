@@ -203,7 +203,7 @@ Patches:
 ## dr_libs
 
 - Upstream: https://github.com/mackron/dr_libs
-- Version: mp3-0.7.2 (547c211a87a06a42bf62c1366616aa14b57dd429, 2025)
+- Version: mp3-0.7.3 (5690d4671d7ad07ae6021756d7222eb159745f06, 2026)
 - License: Public Domain or Unlicense or MIT-0
 
 Files extracted from upstream source:
@@ -356,7 +356,7 @@ for UI.
 ## freetype
 
 - Upstream: https://gitlab.freedesktop.org/freetype/freetype
-- Version: 2.14.1 (526ec5c47b9ebccc4754c85ac0c0cdf7c85a5e9b, 2025)
+- Version: 2.14.3 (0a0221a1347e2f1e07c395263540026e9a0aa7c7, 2026)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -469,7 +469,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 13.1.1 (70b812d8d2fb4a2b6386c04bfd8565a0fcc05f9b, 2026)
+- Version: 14.2.0 (b0ffab42d473eb380ad0fcf42730e0f1868cbc97, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -477,13 +477,13 @@ Files extracted from upstream source:
 - `AUTHORS`, `COPYING`, `THANKS`
 - From the `src` folder, recursively:
   - All the `.cc`, `.h`, `.hh` files
-  - Except `main.cc`, `harfbuzz*.cc`, `harfrust.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`, `hb-harfrust.cc`, `wasm/*`, `ms-use/*`, `rust/*`
+  - Except `main.cc`, `harfbuzz*.cc`, `harfrust.cc`, `failing-alloc.c`, `test*.cc`, `hb-gpu*.*`, `hb-wasm*.*`, `hb-harfrust.cc`, `wasm/*`, `ms-use/*`, `rust/*`
 
 
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 78.1 (049e0d6a420629ac7db77256987d083a563287b5, 2025)
+- Version: 78.3 (21d1eb0f306e1141c10931e914dfc038c06121da, 2026)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -526,6 +526,7 @@ Patches:
 - `0003-backport-upstream-commit-365a15367.patch` (GH-115305)
 - `0004-backport-upstream-commit-e0a6a9a16.patch` (GH-115327)
 - `0005-backport-upstream-commit-449b645.patch` (GH-117194)
+- `0006-backport-upstream-commit-63765d1.patch` (GH-118393)
 
 
 ## libbacktrace
@@ -607,7 +608,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.55 (c3e304954a9cfd154bc0dfbfea2b01cd61d6546d, 2026)
+- Version: 1.6.58 (3061454d980de7d53608f594194cfac722721d2a, 2026)
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -719,7 +720,7 @@ Update instructions:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 1.0 (73583c335e541c139821d0de2bf5f12960a04941, 2025)
+- Version: 1.1 (dc9d09ed83e1004aef47a1c3c597e0ec64848a37, 2026)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -770,7 +771,7 @@ Files extracted from upstream source:
 ## minizip
 
 - Upstream: https://github.com/madler/zlib
-- Version: 1.3.1.2 (570720b0c24f9686c33f35a1b3165c1f568b96be, 2025)
+- Version: 1.3.2 (da607da739fa6047df13e66a2af6b8bec7c2a498, 2026)
 - License: zlib
 
 Files extracted from the upstream source:
@@ -1017,6 +1018,8 @@ Patches:
 - `0005-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
 - `0006-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
 - `0007-shield-duplicate-macos.patch` ([GH-115510](https://github.com/godotengine/godot/pull/115510))
+- `0008-fix-linux-joycon-serial-num.patch` ([GH-113873](https://github.com/godotengine/godot/pull/113873))
+- `0009-update-device-blocklist.patch` ([GH-119403](https://github.com/godotengine/godot/pull/119403))
 
 
 ## spirv-cross
@@ -1099,12 +1102,15 @@ Patches:
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.12 (735ff73ce5959cf005eb99ce517c9bcecab89dfb, 2025)
+- Version: 1.0.13 (4946b5d92e13bcc8102ac2c8efd129596a90bf75, 2026)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
+- `exr_reader.hh`
+- `streamreader.hh`
 - `tinyexr.{cc,h}`
+- `LICENSE`
 
 Patches:
 
@@ -1114,7 +1120,7 @@ Patches:
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.21.2 (6ecd6177af59c82ec363356ac36c3a4245b85321, 2025)
+- Version: 0.21.3 (83bc7cf44f76bc8622de63b809a42b5d557cd733, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1286,7 +1292,7 @@ Files extracted from upstream source:
 ## zlib
 
 - Upstream: https://github.com/madler/zlib
-- Version: 1.3.1.2 (570720b0c24f9686c33f35a1b3165c1f568b96be, 2025)
+- Version: 1.3.2 (da607da739fa6047df13e66a2af6b8bec7c2a498, 2026)
 - License: zlib
 
 Files extracted from upstream source:

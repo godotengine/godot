@@ -170,6 +170,9 @@ void BoneAttachment3D::_transform_changed() {
 
 		Transform3D our_trans = get_transform();
 		if (use_external_skeleton) {
+			if (!sk->is_inside_tree()) {
+				return;
+			}
 			our_trans = sk->get_global_transform().affine_inverse() * get_global_transform();
 		}
 

@@ -100,12 +100,7 @@ def find_msbuild_tools_path_reg():
                 raise ValueError("Value of `installationPath` entry is empty")
 
             # Since VS2019, the directory is simply named "Current"
-            msbuild_dir = os.path.join(val, "MSBuild", "Current", "Bin")
-            if os.path.isdir(msbuild_dir):
-                return msbuild_dir
-
-            # Directory name "15.0" is used in VS 2017
-            return os.path.join(val, "MSBuild", "15.0", "Bin")
+            return os.path.join(val, "MSBuild", "Current", "Bin")
 
         raise ValueError("Cannot find `installationPath` entry")
     except ValueError as e:
@@ -327,7 +322,7 @@ def generate_sdk_package_versions():
     <PackageVersion_Godot_NET_Sdk>{godotsharp_version_str}</PackageVersion_Godot_NET_Sdk>
     <PackageVersion_Godot_SourceGenerators>{godotsharp_version_str}</PackageVersion_Godot_SourceGenerators>
     <PackageVersion_GodotDotNet>{godot_dotnet_version_str}</PackageVersion_GodotDotNet>
-    <GodotVersionConstants>{";".join(version_defines)}</GodotVersionConstants>
+    <_GodotVersionConstants>{";".join(version_defines)}</_GodotVersionConstants>
   </PropertyGroup>
 </Project>
 """

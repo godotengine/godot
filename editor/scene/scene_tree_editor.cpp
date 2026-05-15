@@ -1133,7 +1133,7 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 			if (n && editor_selection->is_selected(n)) {
 				if (p_scroll_to_selected) {
 					// Needs to be deferred to account for possible root visibility change.
-					callable_mp(tree, &Tree::scroll_to_item).call_deferred(p_parent, false);
+					callable_mp(tree, &Tree::scroll_to_item).call_deferred(Variant(p_parent), false);
 				} else {
 					r_last_selected = p_parent;
 				}

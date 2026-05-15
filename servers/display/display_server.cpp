@@ -1304,7 +1304,7 @@ bool DisplayServer::window_is_hdr_output_supported(DisplayServerEnums::WindowID 
 
 void DisplayServer::window_request_hdr_output(const bool p_enable, DisplayServerEnums::WindowID p_window) {
 	if (p_enable) {
-		WARN_PRINT_ED("HDR output is not supported by this display server.");
+		WARN_PRINT("HDR output requested, but it is not supported by this display server.");
 	}
 }
 
@@ -1317,7 +1317,7 @@ bool DisplayServer::window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_
 }
 
 void DisplayServer::window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window) {
-	WARN_PRINT_ED("HDR output is not supported by this display server.");
+	WARN_PRINT("Attempting to set reference luminance, but HDR output is not supported by this display server.");
 }
 
 float DisplayServer::window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window) const {
@@ -1329,7 +1329,7 @@ float DisplayServer::window_get_hdr_output_current_reference_luminance(DisplaySe
 }
 
 void DisplayServer::window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window) {
-	WARN_PRINT_ED("HDR output is not supported by this display server.");
+	WARN_PRINT("Attempting to set max luminance, but HDR output is not supported by this display server.");
 }
 
 float DisplayServer::window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window) const {
@@ -1604,7 +1604,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_description", "id", "description"), &DisplayServer::accessibility_update_set_description);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_value", "id", "value"), &DisplayServer::accessibility_update_set_value);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_tooltip", "id", "tooltip"), &DisplayServer::accessibility_update_set_tooltip);
-	ClassDB::bind_method(D_METHOD("accessibility_update_set_bounds", "id", "p_rect"), &DisplayServer::accessibility_update_set_bounds);
+	ClassDB::bind_method(D_METHOD("accessibility_update_set_bounds", "id", "rect"), &DisplayServer::accessibility_update_set_bounds);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_transform", "id", "transform"), &DisplayServer::accessibility_update_set_transform);
 	ClassDB::bind_method(D_METHOD("accessibility_update_add_child", "id", "child_id"), &DisplayServer::accessibility_update_add_child);
 	ClassDB::bind_method(D_METHOD("accessibility_update_add_related_controls", "id", "related_id"), &DisplayServer::accessibility_update_add_related_controls);
@@ -1871,6 +1871,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCROLL_HINT_BOTTOM_EDGE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCROLL_HINT_LEFT_EDGE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCROLL_HINT_RIGHT_EDGE);
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_HIDDEN);
@@ -1878,7 +1879,6 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_MAX);
-#endif // DISABLE_DEPRECATED
 
 	BIND_CONSTANT(DisplayServerEnums::INVALID_SCREEN);
 	BIND_CONSTANT(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS);

@@ -146,7 +146,15 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 
 	// Build the .metallib binary.
 	{
-		List<String> args{ "-sdk", sdk, "metal", "-O3" };
+		List<String> args{
+			"-sdk",
+			sdk,
+			"metal",
+			"-O3",
+			"-Wno-unused-variable",
+			"-Wno-uninitialized",
+			"-Wno-unused-function",
+		};
 
 		// Compile metal shaders for the minimum supported target instead of the host machine.
 		switch (device_profile->platform) {
@@ -188,8 +196,10 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 		ERR_FAIL_COND_V_MSG(len == 0, ERR_CANT_CREATE, "Metal compiler created empty library");
 	}
 
-	// Strip the source from the binary.
-	{
+	// Strip the source from the binary. AIR versions before 2.4 (MSL 2.4) don't support
+	// companion MetalLib, so metal-dsymutil copies verbatim and emits a warning:
+	//   "architecture air64_v23 does not support a companion MetalLib; copying verbatim"
+	if (device_profile->features.msl_version >= MSL_VERSION_24) {
 		List<String> args{ "-sdk", sdk, "metal-dsymutil", "--remove-source", result_file->get_path_absolute() };
 		String r_pipe;
 		int exit_code;
@@ -235,72 +245,79 @@ spv::ExecutionModel map_stage(RDD::ShaderStage p_stage) {
 	return SHADER_STAGE_REMAP[p_stage];
 }
 
-Error RenderingShaderContainerMetal::reflect_spirv(const ReflectShader &p_shader) {
-	//	const LocalVector<ReflectShaderStage> &p_spirv = p_shader.shader_stages;
-	//
-	//	using ShaderStage = RenderingDeviceCommons::ShaderStage;
-	//
-	//	const uint32_t spirv_size = p_spirv.size();
-	//
-	//	HashSet<uint32_t> atomic_spirv_ids;
-	//	bool atomics_scanned = false;
-	//	auto scan_atomic_accesses = [&atomic_spirv_ids, &p_spirv, spirv_size, &atomics_scanned]() {
-	//		if (atomics_scanned) {
-	//			return;
-	//		}
-	//
-	//		for (uint32_t i = 0; i < spirv_size + 0; i++) {
-	//			const uint32_t STARTING_WORD_INDEX = 5;
-	//			Span<uint32_t> spirv = p_spirv[i].spirv();
-	//			const uint32_t *words = spirv.ptr() + STARTING_WORD_INDEX;
-	//			while (words < spirv.end()) {
-	//				uint32_t instruction = *words;
-	//				uint16_t word_count = instruction >> 16;
-	//				SpvOp opcode = (SpvOp)(instruction & 0xFFFF);
-	//				if (opcode == SpvOpImageTexelPointer) {
-	//					uint32_t image_var_id = words[3];
-	//					atomic_spirv_ids.insert(image_var_id);
-	//				}
-	//				words += word_count;
-	//			}
-	//		}
-	//
-	//		atomics_scanned = true;
-	//	};
-	//
-	//	for (uint32_t i = 0; i < spirv_size + 0; i++) {
-	//		ShaderStage stage = p_spirv[i].shader_stage;
-	//		ShaderStage stage_flag = (ShaderStage)(1 << p_spirv[i].shader_stage);
-	//		SpvReflectResult result;
-	//
-	//		const SpvReflectShaderModule &module = p_spirv[i].module();
-	//
-	//		uint32_t binding_count = 0;
-	//		result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, nullptr);
-	//		CRASH_COND(result != SPV_REFLECT_RESULT_SUCCESS);
-	//
-	//		if (binding_count > 0) {
-	//			LocalVector<SpvReflectDescriptorBinding *> bindings;
-	//			bindings.resize_uninitialized(binding_count);
-	//			result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, bindings.ptr());
-	//
-	//			for (uint32_t j = 0; j < binding_count; j++) {
-	//				const SpvReflectDescriptorBinding &binding = *bindings[j];
-	//
-	//				switch (binding.descriptor_type) {
-	//					case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-	//					case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
-	//					case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE:
-	//					case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
-	//						break;
-	//					default:
-	//						break;
-	//				}
-	//			}
-	//		}
-	//	}
-	//
-	return OK;
+MetalDeviceProfile::MinimumRequirements RenderingShaderContainerMetal::inspect_spirv(const ReflectShader &p_shader) {
+	// Scan SPIR-V for OpImageTexelPointer to detect image atomic usage and determine
+	// the minimum GPU family and MSL version required.
+	// 32-bit atomics (R32ui/R32i) require Apple6+ and MSL 3.1+.
+	// 64-bit atomics (Rg32ui/Rg32i) require Apple8+ and MSL 3.1+.
+
+	MetalDeviceProfile::MinimumRequirements reqs;
+
+	for (const ReflectShaderStage &stage : p_shader.shader_stages) {
+		Span<uint32_t> spirv = stage.spirv();
+
+		// SPIR-V header is 5 words (magic, version, generator, bound, schema).
+		HashSet<uint32_t> atomic_image_ids;
+		const uint32_t *words = spirv.ptr() + 5;
+		while (words < spirv.end()) {
+			const uint32_t instruction = *words;
+			const uint16_t word_count = instruction >> 16;
+			spv::Op opcode = static_cast<spv::Op>(instruction & 0xFFFF);
+			if (opcode == spv::OpImageTexelPointer) {
+				atomic_image_ids.insert(words[3]);
+			}
+			words += word_count;
+		}
+
+		if (atomic_image_ids.is_empty()) {
+			continue;
+		}
+
+		// Look up image formats via spv-reflect bindings.
+		const SpvReflectShaderModule &module = stage.module();
+		uint32_t binding_count = 0;
+		spvReflectEnumerateDescriptorBindings(&module, &binding_count, nullptr);
+
+		LocalVector<SpvReflectDescriptorBinding *> bindings_heap;
+		constexpr uint32_t MAX_STACK_BINDINGS = 256;
+
+		SpvReflectDescriptorBinding **bindings;
+		if (binding_count > MAX_STACK_BINDINGS) {
+			bindings_heap.resize(binding_count);
+			bindings = bindings_heap.ptr();
+		} else {
+			bindings = ALLOCA_ARRAY(SpvReflectDescriptorBinding *, binding_count);
+		}
+		spvReflectEnumerateDescriptorBindings(&module, &binding_count, bindings);
+
+		for (uint32_t i = 0; i < binding_count; i++) {
+			const SpvReflectDescriptorBinding &binding = *bindings[i];
+			if (!atomic_image_ids.has(binding.spirv_id)) {
+				continue;
+			}
+
+			switch (binding.image.image_format) {
+				case SpvImageFormatR32ui:
+				case SpvImageFormatR32i:
+					if (reqs.gpu < MetalDeviceProfile::GPU::Apple6) {
+						reqs.gpu = MetalDeviceProfile::GPU::Apple6;
+					}
+					reqs.msl_version = MAX(reqs.msl_version, MSL_VERSION_31);
+					break;
+				case SpvImageFormatRg32ui:
+				case SpvImageFormatRg32i:
+					if (reqs.gpu < MetalDeviceProfile::GPU::Apple8) {
+						reqs.gpu = MetalDeviceProfile::GPU::Apple8;
+					}
+					reqs.msl_version = MAX(reqs.msl_version, MSL_VERSION_31);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	return reqs;
 }
 
 bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_shader) {
@@ -312,6 +329,24 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 
 	if (export_mode) {
 		_initialize_toolchain_properties();
+
+		// When baking shaders for export, check if the SPIR-V requires capabilities
+		// that the target profile can't support natively. SPIRV-Cross would emulate
+		// image atomics with auxiliary buffer bindings incompatible with Godot's binding
+		// layout. Return an empty baked shader so the runtime recompiles for the actual device.
+		MetalDeviceProfile::MinimumRequirements reqs = inspect_spirv(p_shader);
+		MetalDeviceProfile::MinimumRequirements target = device_profile->get_minimum_requirements();
+		if (reqs > target) {
+			uint32_t req_maj, req_min, tgt_maj, tgt_min;
+			parse_msl_version(reqs.msl_version, req_maj, req_min);
+			parse_msl_version(target.msl_version, tgt_maj, tgt_min);
+			WARN_PRINT(vformat("Shader '%s' requires Apple%d / MSL %d.%d but target is Apple%d / MSL %d.%d. Shader will be compiled at runtime on the device.",
+					String(shader_name.ptr()),
+					static_cast<uint32_t>(reqs.gpu) - 1000, req_maj, req_min,
+					static_cast<uint32_t>(target.gpu) - 1000, tgt_maj, tgt_min));
+			mtl_reflection_data.mark_invalid();
+			return true;
+		}
 	}
 
 	// initialize Metal-specific reflection data
@@ -726,6 +761,10 @@ uint32_t RenderingShaderContainerMetal::_to_bytes_reflection_extra_data(uint8_t 
 }
 
 uint32_t RenderingShaderContainerMetal::_to_bytes_reflection_binding_uniform_extra_data(uint8_t *p_bytes, uint32_t p_index) const {
+	if (is_invalid()) {
+		return 0;
+	}
+
 	if (p_bytes != nullptr) {
 		*(UniformData *)p_bytes = mtl_reflection_binding_set_uniforms_data[p_index];
 	}
@@ -733,6 +772,10 @@ uint32_t RenderingShaderContainerMetal::_to_bytes_reflection_binding_uniform_ext
 }
 
 uint32_t RenderingShaderContainerMetal::_to_bytes_shader_extra_data(uint8_t *p_bytes, uint32_t p_index) const {
+	if (is_invalid()) {
+		return 0;
+	}
+
 	if (p_bytes != nullptr) {
 		*(StageData *)p_bytes = mtl_shaders[p_index];
 	}

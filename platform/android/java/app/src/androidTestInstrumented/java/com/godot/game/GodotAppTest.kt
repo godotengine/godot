@@ -114,6 +114,28 @@ class GodotAppTest {
 	}
 
 	/**
+	 * Runs test to validate android plugin signals.
+	 */
+	@Test
+	fun runPluginSignalTests() {
+		ActivityScenario.launch(GodotApp::class.java).use { scenario ->
+			scenario.onActivity { activity ->
+				val testPlugin = getTestPlugin()
+				assertNotNull(testPlugin)
+
+				Log.d(TAG, "Waiting for the Godot main loop to start...")
+				testPlugin.waitForGodotMainLoopStarted()
+
+				Log.d(TAG, "Running Android plugin signal tests...")
+				val result = testPlugin.runPluginSignalTests()
+				assertNotNull(result)
+				result.exceptionOrNull()?.let { throw it }
+				assertTrue(result.isSuccess)
+			}
+		}
+	}
+
+	/**
 	 * Test implicit launch of the Godot app, and validates this resolves to the `GodotAppLauncher` activity alias.
 	 */
 	@Test

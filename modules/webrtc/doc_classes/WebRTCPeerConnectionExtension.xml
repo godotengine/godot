@@ -9,9 +9,9 @@
 	<methods>
 		<method name="_add_ice_candidate" qualifiers="virtual required">
 			<return type="int" enum="Error" />
-			<param index="0" name="p_sdp_mid_name" type="String" />
-			<param index="1" name="p_sdp_mline_index" type="int" />
-			<param index="2" name="p_sdp_name" type="String" />
+			<param index="0" name="sdp_mid_name" type="String" />
+			<param index="1" name="sdp_mline_index" type="int" />
+			<param index="2" name="sdp_name" type="String" />
 			<description>
 			</description>
 		</method>
@@ -22,8 +22,8 @@
 		</method>
 		<method name="_create_data_channel" qualifiers="virtual required">
 			<return type="WebRTCDataChannel" />
-			<param index="0" name="p_label" type="String" />
-			<param index="1" name="p_config" type="Dictionary" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="config" type="Dictionary" />
 			<description>
 			</description>
 		</method>
@@ -49,7 +49,7 @@
 		</method>
 		<method name="_initialize" qualifiers="virtual required">
 			<return type="int" enum="Error" />
-			<param index="0" name="p_config" type="Dictionary" />
+			<param index="0" name="config" type="Dictionary" />
 			<description>
 			</description>
 		</method>
@@ -60,15 +60,15 @@
 		</method>
 		<method name="_set_local_description" qualifiers="virtual required">
 			<return type="int" enum="Error" />
-			<param index="0" name="p_type" type="String" />
-			<param index="1" name="p_sdp" type="String" />
+			<param index="0" name="type" type="String" />
+			<param index="1" name="sdp" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="_set_remote_description" qualifiers="virtual required">
 			<return type="int" enum="Error" />
-			<param index="0" name="p_type" type="String" />
-			<param index="1" name="p_sdp" type="String" />
+			<param index="0" name="type" type="String" />
+			<param index="1" name="sdp" type="String" />
 			<description>
 			</description>
 		</method>

@@ -1339,15 +1339,12 @@ static inline void sort_r_swap(char *__restrict a, char *__restrict b,
 /* swap a, b iff a>b */
 /* a and b must not be equal! */
 /* __restrict is same as restrict but better support on old machines */
-template <typename ...Ts>
+template <typename Compar>
 static inline int sort_r_cmpswap(char *__restrict a,
                                  char *__restrict b, size_t w,
-                                 int (*compar)(const void *_a,
-                                               const void *_b,
-                                               Ts... _ds),
-                                 Ts... ds)
+                                 Compar compar)
 {
-  if(compar(a, b, ds...) > 0) {
+  if(compar(a, b) > 0) {
     sort_r_swap(a, b, w);
     return 1;
   }
@@ -1372,23 +1369,17 @@ static inline void sort_r_swap_blocks(char *ptr, size_t na, size_t nb)
 
 /* Implement recursive quicksort ourselves */
 /* Note: quicksort is not stable, equivalent values may be swapped */
-template <typename ...Ts>
+template <typename Compar>
 static inline void sort_r_simple(void *base, size_t nel, size_t w,
-                                 int (*compar)(const void *_a,
-                                               const void *_b,
-                                               Ts... _ds),
-                                 Ts... ds)
+                                 Compar compar)
 {
   char *b = (char *)base, *end = b + nel*w;
-
-  /* for(size_t i=0; i<nel; i++) {printf("%4i", *(int*)(b + i*sizeof(int)));}
-  printf("\n"); */
 
   if(nel < 10) {
     /* Insertion sort for arbitrarily small inputs */
     char *pi, *pj;
     for(pi = b+w; pi < end; pi += w) {
-      for(pj = pi; pj > b && sort_r_cmpswap(pj-w,pj,w,compar,ds...); pj -= w) {}
+      for(pj = pi; pj > b && sort_r_cmpswap(pj-w,pj,w,compar); pj -= w) {}
     }
   }
   else
@@ -1399,68 +1390,36 @@ static inline void sort_r_simple(void *base, size_t nel, size_t w,
     char *pl, *ple, *pr, *pre, *pivot;
     char *last = b+w*(nel-1), *tmp;
 
-    /*
-    Use median of second, middle and second-last items as pivot.
-    First and last may have been swapped with pivot and therefore be extreme
-    */
     char *l[3];
     l[0] = b + w;
     l[1] = b+w*(nel/2);
     l[2] = last - w;
 
-    /* printf("pivots: %i, %i, %i\n", *(int*)l[0], *(int*)l[1], *(int*)l[2]); */
-
-    if(compar(l[0],l[1],ds...) > 0) { SORT_R_SWAP(l[0], l[1], tmp); }
-    if(compar(l[1],l[2],ds...) > 0) {
+    if(compar(l[0],l[1]) > 0) { SORT_R_SWAP(l[0], l[1], tmp); }
+    if(compar(l[1],l[2]) > 0) {
       SORT_R_SWAP(l[1], l[2], tmp);
-      if(compar(l[0],l[1],ds...) > 0) { SORT_R_SWAP(l[0], l[1], tmp); }
+      if(compar(l[0],l[1]) > 0) { SORT_R_SWAP(l[0], l[1], tmp); }
     }
 
-    /* swap mid value (l[1]), and last element to put pivot as last element */
     if(l[1] != last) { sort_r_swap(l[1], last, w); }
 
-    /*
-    pl is the next item on the left to be compared to the pivot
-    pr is the last item on the right that was compared to the pivot
-    ple is the left position to put the next item that equals the pivot
-    ple is the last right position where we put an item that equals the pivot
-                                           v- end (beyond the array)
-      EEEEEELLLLLLLLuuuuuuuuGGGGGGGEEEEEEEE.
-      ^- b  ^- ple  ^- pl   ^- pr  ^- pre ^- last (where the pivot is)
-    Pivot comparison key:
-      E = equal, L = less than, u = unknown, G = greater than, E = equal
-    */
     pivot = last;
     ple = pl = b;
     pre = pr = last;
 
-    /*
-    Strategy:
-    Loop into the list from the left and right at the same time to find:
-    - an item on the left that is greater than the pivot
-    - an item on the right that is less than the pivot
-    Once found, they are swapped and the loop continues.
-    Meanwhile items that are equal to the pivot are moved to the edges of the
-    array.
-    */
     while(pl < pr) {
-      /* Move left hand items which are equal to the pivot to the far left.
-         break when we find an item that is greater than the pivot */
       for(; pl < pr; pl += w) {
-        cmp = compar(pl, pivot, ds...);
+        cmp = compar(pl, pivot);
         if(cmp > 0) { break; }
         else if(cmp == 0) {
           if(ple < pl) { sort_r_swap(ple, pl, w); }
           ple += w;
         }
       }
-      /* break if last batch of left hand items were equal to pivot */
       if(pl >= pr) { break; }
-      /* Move right hand items which are equal to the pivot to the far right.
-         break when we find an item that is less than the pivot */
       for(; pl < pr; ) {
-        pr -= w; /* Move right pointer onto an unprocessed item */
-        cmp = compar(pr, pivot, ds...);
+        pr -= w;
+        cmp = compar(pr, pivot);
         if(cmp == 0) {
           pre -= w;
           if(pr < pre) { sort_r_swap(pr, pre, w); }
@@ -1473,22 +1432,13 @@ static inline void sort_r_simple(void *base, size_t nel, size_t w,
       }
     }
 
-    pl = pr; /* pr may have gone below pl */
+    pl = pr;
 
-    /*
-    Now we need to go from: EEELLLGGGGEEEE
-                        to: LLLEEEEEEEGGGG
-    Pivot comparison key:
-      E = equal, L = less than, u = unknown, G = greater than, E = equal
-    */
     sort_r_swap_blocks(b, ple-b, pl-ple);
     sort_r_swap_blocks(pr, pre-pr, end-pre);
 
-    /*for(size_t i=0; i<nel; i++) {printf("%4i", *(int*)(b + i*sizeof(int)));}
-    printf("\n");*/
-
-    sort_r_simple(b, (pl-ple)/w, w, compar, ds...);
-    sort_r_simple(end-(pre-pr), (pre-pr)/w, w, compar, ds...);
+    sort_r_simple(b, (pl-ple)/w, w, compar);
+    sort_r_simple(end-(pre-pr), (pre-pr)/w, w, compar);
   }
 }
 
@@ -1496,24 +1446,10 @@ static inline void
 hb_qsort (void *base, size_t nel, size_t width,
 	  int (*compar)(const void *_a, const void *_b))
 {
-#if defined(__OPTIMIZE_SIZE__) && !defined(HB_USE_INTERNAL_QSORT)
   qsort (base, nel, width, compar);
-#else
-  sort_r_simple (base, nel, width, compar);
-#endif
 }
 
-static inline void
-hb_qsort (void *base, size_t nel, size_t width,
-	  int (*compar)(const void *_a, const void *_b, void *_arg),
-	  void *arg)
-{
-#ifdef HAVE_GNU_QSORT_R
-  qsort_r (base, nel, width, compar, arg);
-#else
-  sort_r_simple (base, nel, width, compar, arg);
-#endif
-}
+
 
 
 template <typename T, typename T2, typename T3 = int> static inline void
@@ -1735,6 +1671,53 @@ double solve_itp (func_t f,
   }
   return 0.5 * (a + b);
 }
+
+
+/*
+ * Scope guard: runs a callable at scope exit (RAII cleanup for
+ * non-HB-type resources — raw malloc'd buffers, paired init/end
+ * calls like inflateInit/inflateEnd, FT_Done_* handles, etc.).
+ *
+ * Prefer hb_unique_ptr_t<hb_blob_t> etc. for HB types; this is
+ * for the long tail of cleanup that those wrappers don't cover.
+ *
+ * Usage:
+ *   void *buf = hb_malloc (len);
+ *   if (!buf) return false;
+ *   HB_SCOPE_GUARD (hb_free (buf));
+ *   ... multiple fallible operations ...
+ *   return true;  // buf freed automatically on any return path
+ */
+template <typename F>
+struct hb_scope_guard_t
+{
+  explicit hb_scope_guard_t (F &&f) : f (std::move (f)), active (true) {}
+  hb_scope_guard_t (hb_scope_guard_t &&o) noexcept
+    : f (std::move (o.f)), active (o.active) { o.active = false; }
+  hb_scope_guard_t (const hb_scope_guard_t &) = delete;
+  hb_scope_guard_t &operator= (const hb_scope_guard_t &) = delete;
+  hb_scope_guard_t &operator= (hb_scope_guard_t &&) = delete;
+  ~hb_scope_guard_t () { if (active) f (); }
+
+  /* Release: dismiss the guard so the cleanup does NOT run.  Use
+   * when transferring ownership out of the scope. */
+  void release () { active = false; }
+
+  private:
+  F f;
+  bool active;
+};
+
+template <typename F>
+static inline hb_scope_guard_t<F> hb_make_scope_guard (F &&f)
+{ return hb_scope_guard_t<F> (std::forward<F> (f)); }
+
+#define HB_SCOPE_GUARD_NAME_(line) hb_scope_guard_##line
+#define HB_SCOPE_GUARD_NAME(line) HB_SCOPE_GUARD_NAME_(line)
+#define HB_SCOPE_GUARD(stmt) \
+  auto HB_SCOPE_GUARD_NAME(__LINE__) = \
+    hb_make_scope_guard ([&]() { stmt; }); \
+  (void) HB_SCOPE_GUARD_NAME(__LINE__)
 
 
 #endif /* HB_ALGS_HH */

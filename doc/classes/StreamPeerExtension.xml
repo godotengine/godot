@@ -30,16 +30,16 @@
 		</method>
 		<method name="_put_data" qualifiers="virtual">
 			<return type="int" enum="Error" />
-			<param index="0" name="p_data" type="const uint8_t*" />
-			<param index="1" name="p_bytes" type="int" />
+			<param index="0" name="data" type="const uint8_t*" />
+			<param index="1" name="bytes" type="int" />
 			<param index="2" name="r_sent" type="int32_t*" />
 			<description>
 			</description>
 		</method>
 		<method name="_put_partial_data" qualifiers="virtual">
 			<return type="int" enum="Error" />
-			<param index="0" name="p_data" type="const uint8_t*" />
-			<param index="1" name="p_bytes" type="int" />
+			<param index="0" name="data" type="const uint8_t*" />
+			<param index="1" name="bytes" type="int" />
 			<param index="2" name="r_sent" type="int32_t*" />
 			<description>
 			</description>

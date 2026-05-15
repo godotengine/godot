@@ -140,7 +140,8 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 		layer.anchorPoint = CGPointMake(0, 0);
 		layer.transform = CATransform3DMakeScale(1.0, -1.0, 1.0);
 
-		Error err = gl_manager->window_create(window_id_counter, layer, p_resolution.width, p_resolution.height);
+		Size2i render_size = _source_to_render_size(p_resolution);
+		Error err = gl_manager->window_create(window_id_counter, layer, render_size.width, render_size.height);
 		if (err != OK) {
 			ERR_FAIL_MSG("Could not create OpenGL context.");
 		}
@@ -174,8 +175,8 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 		Error err = rendering_context->window_create(window_id_counter, &wpd);
 		ERR_FAIL_COND_MSG(err != OK, vformat("Can't create a %s context", rendering_driver));
 
-		// The rendering context is always in pixels
-		rendering_context->window_set_size(window_id_counter, p_resolution.width, p_resolution.height);
+		Size2i render_size = _source_to_render_size(p_resolution);
+		rendering_context->window_set_size(window_id_counter, render_size.width, render_size.height);
 		rendering_context->window_set_vsync_mode(window_id_counter, p_vsync_mode);
 	}
 #endif
@@ -198,8 +199,9 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 	}
 #endif
 
-	CGFloat scale = screen_get_max_scale();
-	layer.contentsScale = scale;
+	CGFloat display_scale = state.screen_max_scale;
+	CGFloat render_scale = screen_get_max_scale();
+	layer.contentsScale = render_scale;
 	layer.magnificationFilter = kCAFilterNearest;
 	layer.minificationFilter = kCAFilterNearest;
 	transparent = ((p_flags & DisplayServerEnums::WINDOW_FLAG_TRANSPARENT_BIT) == DisplayServerEnums::WINDOW_FLAG_TRANSPARENT_BIT);
@@ -207,7 +209,7 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 	layer.actions = @{ @"contents" : [NSNull null] }; // Disable implicit animations for contents.
 	// AppKit frames, bounds and positions are always in points.
 	CGRect bounds = CGRectMake(0, 0, p_resolution.width, p_resolution.height);
-	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformInvert(CGAffineTransformMakeScale(scale, scale)));
+	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformInvert(CGAffineTransformMakeScale(display_scale, display_scale)));
 	layer.bounds = bounds;
 
 	CGSConnectionID connection_id = CGSMainConnectionID();
@@ -281,7 +283,9 @@ void DisplayServerMacOSEmbedded::_mouse_apply_mode(DisplayServerEnums::MouseMode
 void DisplayServerMacOSEmbedded::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 	Input::get_singleton()->set_mouse_position(p_position);
-	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { p_position });
+	// Convert from game pixels to points for the editor.
+	float inv_scale = 1.0f / screen_get_max_scale();
+	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { Point2i(inv_scale * p_position) });
 }
 
 Point2i DisplayServerMacOSEmbedded::mouse_get_position() const {
@@ -478,6 +482,10 @@ int DisplayServerMacOSEmbedded::screen_get_dpi(int p_screen) const {
 float DisplayServerMacOSEmbedded::screen_get_scale(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
+	if (!OS::get_singleton()->is_hidpi_allowed()) {
+		return 1.0f;
+	}
+
 	switch (p_screen) {
 		case DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS:
 		case DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS:
@@ -486,7 +494,7 @@ float DisplayServerMacOSEmbedded::screen_get_scale(int p_screen) const {
 		case 0:
 			return state.screen_window_scale;
 		default:
-			return 1.0;
+			return 1.0f;
 	}
 }
 
@@ -563,27 +571,29 @@ void DisplayServerMacOSEmbedded::_window_set_size(const Size2i p_size, DisplaySe
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
 
-	CGFloat scale = screen_get_max_scale();
+	CGFloat display_scale = state.screen_max_scale;
+	CGFloat render_scale = screen_get_max_scale();
 	CGRect bounds = CGRectMake(0, 0, p_size.width, p_size.height);
-	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformInvert(CGAffineTransformMakeScale(scale, scale)));
+	bounds = CGRectApplyAffineTransform(bounds, CGAffineTransformInvert(CGAffineTransformMakeScale(display_scale, display_scale)));
 	layer.bounds = bounds;
-	layer.contentsScale = scale;
+	layer.contentsScale = render_scale;
 
+	Size2i render_size = _source_to_render_size(p_size);
 #if defined(RD_ENABLED)
 	if (rendering_context) {
-		rendering_context->window_set_size(p_window, p_size.width, p_size.height);
+		rendering_context->window_set_size(p_window, render_size.width, render_size.height);
 	}
 #endif
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
-		gl_manager->window_resize(p_window, p_size.width, p_size.height);
+		gl_manager->window_resize(p_window, render_size.width, render_size.height);
 	}
 #endif
 	[CATransaction commit];
 
 	Callable *cb = window_resize_callbacks.getptr(p_window);
 	if (cb) {
-		Variant resize_rect = Rect2i(Point2i(), p_size);
+		Variant resize_rect = Rect2i(Point2i(), render_size);
 		_window_callback(window_resize_callbacks[p_window], resize_rect);
 	}
 }
@@ -657,7 +667,17 @@ bool DisplayServerMacOSEmbedded::window_is_focused(DisplayServerEnums::WindowID 
 }
 
 float DisplayServerMacOSEmbedded::screen_get_max_scale() const {
+	if (!OS::get_singleton()->is_hidpi_allowed()) {
+		return 1.0f;
+	}
 	return state.screen_max_scale;
+}
+
+Size2i DisplayServerMacOSEmbedded::_source_to_render_size(const Size2i &p_source_size) const {
+	CGFloat display_scale = state.screen_max_scale;
+	CGFloat render_scale = screen_get_max_scale();
+	return Size2i((int)(p_source_size.width / display_scale * render_scale),
+			(int)(p_source_size.height / display_scale * render_scale));
 }
 
 bool DisplayServerMacOSEmbedded::window_can_draw(DisplayServerEnums::WindowID p_window) const {
@@ -719,6 +739,7 @@ void DisplayServerMacOSEmbedded::set_state(const DisplayServerMacOSEmbeddedState
 	}
 
 	uint32_t old_display_id = state.display_id;
+	float old_scale = state.screen_max_scale;
 
 	state = p_state;
 
@@ -728,6 +749,12 @@ void DisplayServerMacOSEmbedded::set_state(const DisplayServerMacOSEmbeddedState
 			gl_manager->set_display_id(state.display_id);
 		}
 #endif
+	}
+	if (state.screen_max_scale != old_scale) {
+		// Recover source pixel size from current bounds using the old display scale.
+		CGSize bounds_size = layer.bounds.size;
+		Size2i source_size((int)(bounds_size.width * old_scale), (int)(bounds_size.height * old_scale));
+		_window_set_size(source_size, DisplayServerEnums::MAIN_WINDOW_ID);
 	}
 	if (hdr_output.requested) {
 		_update_hdr_output(DisplayServerEnums::MAIN_WINDOW_ID, hdr_output);

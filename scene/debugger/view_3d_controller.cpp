@@ -35,7 +35,6 @@
 #include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
@@ -56,47 +55,35 @@ Transform3D View3DController::_to_camera_transform(const Cursor &p_cursor) const
 	return camera_transform;
 }
 
-bool View3DController::_is_shortcut_pressed(const ShortcutName p_name, const bool p_true_if_null) {
+bool View3DController::_is_shortcut_pressed(const ShortcutName p_name, const bool p_true_if_empty) {
 	Ref<Shortcut> shortcut = inputs[p_name];
 	if (shortcut.is_null()) {
-		return p_true_if_null;
+		return p_true_if_empty;
 	}
 
 	const Array shortcuts = shortcut->get_events();
-	Ref<InputEventKey> k;
-	if (shortcuts.size() > 0) {
-		k = shortcuts.front();
+	if (shortcuts.is_empty()) {
+		return p_true_if_empty;
 	}
 
-	if (k.is_null()) {
-		return p_true_if_null;
+	for (Ref<InputEventKey> k : shortcuts) {
+		if (k.is_null()) {
+			continue;
+		}
+
+		if (k->get_physical_keycode() == Key::NONE && Input::get_singleton()->is_key_pressed(emulate_numpad_key(k->get_keycode()))) {
+			return true;
+		} else if (Input::get_singleton()->is_physical_key_pressed(emulate_numpad_key(k->get_physical_keycode()))) {
+			return true;
+		}
 	}
 
-#define EMULATE_NUMPAD_KEY(p_code) \
-	(emulate_numpad && p_code >= Key::KEY_0 && p_code <= Key::KEY_9 ? p_code - Key::KEY_0 + Key::KP_0 : p_code)
-
-	if (k->get_physical_keycode() == Key::NONE) {
-		return Input::get_singleton()->is_key_pressed(EMULATE_NUMPAD_KEY(k->get_keycode()));
-	}
-
-	return Input::get_singleton()->is_physical_key_pressed(EMULATE_NUMPAD_KEY(k->get_physical_keycode()));
-
-#undef EMULATE_NUMPAD_KEY
+	return false;
 }
 
 bool View3DController::_is_shortcut_empty(const ShortcutName p_name) {
 	Ref<Shortcut> shortcut = inputs[p_name];
-	if (shortcut.is_null()) {
-		return true;
-	}
-
-	const Array shortcuts = shortcut->get_events();
-	Ref<InputEventKey> k;
-	if (shortcuts.size() > 0) {
-		k = shortcuts.front();
-	}
-
-	return k.is_null();
+	return shortcut.is_null() || shortcut->get_events().is_empty();
 }
 
 View3DController::NavigationMode View3DController::_get_nav_mode_from_shortcuts(NavigationMouseButton p_mouse_button, const Vector<ShortcutCheck> &p_shortcut_checks, bool p_not_empty) {
@@ -161,7 +148,7 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 		int pan_mod_input_count = GET_SHORTCUT_COUNT(SHORTCUT_PAN_MOD_1) + GET_SHORTCUT_COUNT(SHORTCUT_PAN_MOD_2);
 		int zoom_mod_input_count = GET_SHORTCUT_COUNT(SHORTCUT_ZOOM_MOD_1) + GET_SHORTCUT_COUNT(SHORTCUT_ZOOM_MOD_2);
 		bool orbit_not_empty = !_is_shortcut_empty(SHORTCUT_ORBIT_MOD_1) || !_is_shortcut_empty(SHORTCUT_ORBIT_MOD_2);
-		bool pan_not_empty = !_is_shortcut_empty(SHORTCUT_PAN_MOD_2) || !_is_shortcut_empty(SHORTCUT_PAN_MOD_2);
+		bool pan_not_empty = !_is_shortcut_empty(SHORTCUT_PAN_MOD_1) || !_is_shortcut_empty(SHORTCUT_PAN_MOD_2);
 		bool zoom_not_empty = !_is_shortcut_empty(SHORTCUT_ZOOM_MOD_1) || !_is_shortcut_empty(SHORTCUT_ZOOM_MOD_2);
 		shortcut_checks.push_back(ShortcutCheck(orbit_mod_pressed, orbit_not_empty, orbit_mod_input_count, orbit_mouse_button, NAV_MODE_ORBIT));
 		shortcut_checks.push_back(ShortcutCheck(pan_mod_pressed, pan_not_empty, pan_mod_input_count, pan_mouse_button, NAV_MODE_PAN));
@@ -621,6 +608,13 @@ void View3DController::scale_cursor_distance(const float p_scale) {
 	}
 
 	emit_signal(SNAME("cursor_distance_scaled"));
+}
+
+Key View3DController::emulate_numpad_key(const Key p_code) const {
+	if (emulate_numpad && p_code >= Key::KEY_0 && p_code <= Key::KEY_9) {
+		return p_code - Key::KEY_0 + Key::KP_0;
+	}
+	return p_code;
 }
 
 void View3DController::set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut) {

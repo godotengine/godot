@@ -988,21 +988,11 @@ void CodeTextEditor::_line_col_changed() {
 		code_complete_timer->stop();
 	}
 
-	String line = text_editor->get_line(text_editor->get_caret_line());
-
-	int positional_column = 0;
-	for (int i = 0; i < text_editor->get_caret_column(); i++) {
-		if (line[i] == '\t') {
-			positional_column += text_editor->get_indent_size(); // Tab size
-		} else {
-			positional_column += 1;
-		}
-	}
-
+	Point2i display_position = get_pos_for_display(Point2i(text_editor->get_caret_line(), text_editor->get_caret_column()));
 	StringBuilder sb;
-	sb.append(itos(text_editor->get_caret_line() + 1).lpad(4));
+	sb.append(itos(display_position.x).lpad(4));
 	sb.append(" : ");
-	sb.append(itos(positional_column + 1).lpad(3));
+	sb.append(itos(display_position.y).lpad(3));
 
 	line_and_col_button->set_text(sb.as_string());
 
@@ -1595,18 +1585,25 @@ Point2i CodeTextEditor::get_error_pos() const {
 	return Point2i(error_line, error_column);
 }
 
+Point2i CodeTextEditor::get_pos_for_display(Point2i p_internal_position) const {
+	const String line_text = text_editor->get_line(p_internal_position.x);
+	const int indent_size = text_editor->get_indent_size();
+
+	int corrected_column = 0;
+	for (int i = 0; i < p_internal_position.y; i++) {
+		if (line_text[i] == '\t') {
+			corrected_column += indent_size - (corrected_column % indent_size);
+		} else {
+			corrected_column += 1;
+		}
+	}
+
+	return Point2(p_internal_position.x + 1, corrected_column + 1);
+}
+
 void CodeTextEditor::goto_error() {
 	if (!error->get_text().is_empty()) {
-		int corrected_column = error_column;
-
-		const String line_text = text_editor->get_line(error_line);
-		const int indent_size = text_editor->get_indent_size();
-		if (indent_size > 1) {
-			const int tab_count = line_text.length() - line_text.lstrip("\t").length();
-			corrected_column -= tab_count * (indent_size - 1);
-		}
-
-		goto_line_centered(error_line, corrected_column);
+		goto_line_centered(error_line, error_column);
 	}
 }
 
@@ -1925,7 +1922,7 @@ void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("show_warnings_panel"));
 	ADD_SIGNAL(MethodInfo("show_goto_popup"));
 	ADD_SIGNAL(MethodInfo("navigation_preview_ended"));
-	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "p_zoom_factor")));
+	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "zoom_factor")));
 }
 
 void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud) {

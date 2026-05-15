@@ -63,9 +63,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_width(int p_width);
 	int get_width() const override;
-	void set_height(int p_height);
 	int get_height() const override;
 
 	void set_drawable_format(DrawableFormat p_format);

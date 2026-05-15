@@ -4629,6 +4629,16 @@ bool RichTextLabel::remove_paragraph(int p_paragraph, bool p_no_invalidate) {
 				_remove_frame(erase_list, main, i, true, off, 0);
 			} else {
 				_remove_frame(erase_list, main, i, false, off, 1);
+
+				Item *it_to = (i + 1 < (int)main->lines.size()) ? main->lines[i + 1].from : nullptr;
+				Line &nl = main->lines[i];
+				while (erase_list.has(nl.from)) {
+					nl.from = _get_next_item(nl.from);
+					if (nl.from == it_to) {
+						nl.from = nullptr;
+						break;
+					}
+				}
 			}
 		}
 		for (HashSet<Item *>::Iterator E = erase_list.begin(); E; ++E) {
@@ -8419,7 +8429,7 @@ RichTextLabel::RichTextLabel(const String &p_text) {
 	main->index = 0;
 	current = main;
 	main->lines.resize(1);
-	main->lines[0].from = main;
+	main->lines[0].from = nullptr;
 	main->first_invalid_line.store(0);
 	main->first_resized_line.store(0);
 	main->first_invalid_font_line.store(0);
@@ -8432,6 +8442,7 @@ RichTextLabel::RichTextLabel(const String &p_text) {
 	vscroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
 	vscroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 	vscroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
+	vscroll->set_use_parent_material(true);
 	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &RichTextLabel::_scroll_changed));
 	vscroll->set_step(1);
 	vscroll->hide();

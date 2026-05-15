@@ -186,9 +186,7 @@ void Node::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
-			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
-				notification(NOTIFICATION_TRANSLATION_CHANGED);
-			}
+			notification(NOTIFICATION_TRANSLATION_CHANGED);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -3724,6 +3722,14 @@ RID Node::get_focused_accessibility_element() const {
 		return id;
 	} else {
 		return get_accessibility_element();
+	}
+}
+
+Transform2D Node::get_accessibility_transform() const {
+	if (is_inside_tree() && data.parent) {
+		return data.parent->get_accessibility_transform();
+	} else {
+		return Transform2D();
 	}
 }
 

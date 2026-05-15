@@ -59,8 +59,9 @@
 			<param index="1" name="debug" type="bool" />
 			<param index="2" name="path" type="String" />
 			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
+			<param index="4" name="notify" type="bool" default="true" />
 			<description>
-				Creates a full project at [param path] for the specified [param preset].
+				Creates a full project at [param path] for the specified [param preset]. If [param notify] is [code]true[/code], plugins using [method EditorExportPlugin._export_begin] will be called during the process.
 			</description>
 		</method>
 		<method name="export_project_files">

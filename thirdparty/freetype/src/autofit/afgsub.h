@@ -4,7 +4,7 @@
  *
  *   Auto-fitter routines to parse the GSUB table (header).
  *
- * Copyright (C) 2025 by
+ * Copyright (C) 2025-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

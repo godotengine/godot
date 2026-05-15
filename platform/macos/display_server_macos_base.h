@@ -107,6 +107,8 @@ protected:
 	void _update_hdr_output(DisplayServerEnums::WindowID p_window, const HDROutput &p_hdr);
 
 public:
+	virtual bool has_window(DisplayServerEnums::WindowID p_window) const { return p_window == DisplayServerEnums::MAIN_WINDOW_ID; }
+
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;

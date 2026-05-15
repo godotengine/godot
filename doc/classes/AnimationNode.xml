@@ -212,7 +212,7 @@
 	<signals>
 		<signal name="animation_node_removed">
 			<param index="0" name="object_id" type="int" />
-			<param index="1" name="name" type="String" />
+			<param index="1" name="node_name" type="String" />
 			<description>
 				Emitted by nodes that inherit from this class and that have an internal tree when one of their animation nodes removes. The animation nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], and [AnimationNodeBlendTree].
 			</description>

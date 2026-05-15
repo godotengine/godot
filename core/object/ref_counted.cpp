@@ -45,6 +45,21 @@ bool RefCounted::init_ref() {
 	}
 }
 
+void RefCounted::deinit_ref() {
+	// Somewhat unsafe since we're doing tests in sync, but it's probably fine
+	// since this function is called from the creation thread, so nobody else should have access.
+
+	// If this succeeds, refcount_init is 2 (or more).
+	// This would be unexpected, since callers should already have consumed it, or never established it.
+	// It's a little unsafe to bring it above 1, since it means init_ref must be called more than once,
+	// but the alternative would be decrementing refcount instead, which is also unsafe since the object
+	// might unexpectedly destruct early. Better to risk zombying than to risk a crash.
+	if (!refcount_init.ref()) {
+		// refcount_init already dead, must re-establish (expected).
+		refcount_init.init(1);
+	}
+}
+
 void RefCounted::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init_ref"), &RefCounted::init_ref);
 	ClassDB::bind_method(D_METHOD("reference"), &RefCounted::reference);
@@ -75,6 +90,7 @@ bool RefCounted::reference() {
 }
 
 bool RefCounted::unreference() {
+	dereference_count.increment();
 	uint32_t rc_val = refcount.unrefval();
 	bool die = rc_val == 0;
 
@@ -91,6 +107,22 @@ bool RefCounted::unreference() {
 		die = die && binding_ret;
 	}
 
+	dereference_count.decrement();
+
+	// If we are going to be destroyed we need to ensure that no other thread
+	// is still inside our critical section. If they are they might see
+	// a (partially) destroyed Object for get_script_instance, _get_extension,
+	// or _instance_binding_reference.
+	if (die) {
+		// It is unlikely that we will spin here for very long.
+		// Only threads that see die == true will spin, which should only
+		// ever be one. Only threads seeing rc_val == 1 and rc_val == 0
+		// will do anything at all in the critical section.
+		while (dereference_count.get()) {
+			// Spin
+		}
+	}
+
 	return die;
 }
 
@@ -99,6 +131,7 @@ RefCounted::RefCounted() :
 	_define_ancestry(AncestralClass::REF_COUNTED);
 	refcount.init();
 	refcount_init.init();
+	dereference_count.set(0);
 }
 
 Variant WeakRef::get_ref() const {

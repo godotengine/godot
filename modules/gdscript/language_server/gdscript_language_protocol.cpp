@@ -546,8 +546,6 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 	List<ScriptLanguage::CodeCompletionOption> options;
 	get_workspace()->completion(params, &options);
 
-	const Vector<String> &lines = get_parse_result(workspace->get_file_path(params.textDocument.uri))->get_lines();
-
 	if (!options.is_empty()) {
 		int i = 0;
 		arr.resize(options.size());
@@ -573,7 +571,7 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 			if (option.text_edit.is_set()) {
 				GodotRange range(GodotPosition(option.text_edit.start_line, option.text_edit.start_column), GodotPosition(option.text_edit.end_line, option.text_edit.end_column));
 				item.textEdit.newText = option.text_edit.new_text;
-				item.textEdit.range = range.to_lsp(lines);
+				item.textEdit.range = range.to_lsp();
 			}
 
 			switch (option.kind) {
@@ -631,12 +629,12 @@ void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPo
 		return;
 	}
 
-	String symbol_identifier;
+	String symbol_name;
 	LSP::Range range;
-	symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, range);
+	symbol_name = parser->get_symbol_name_under_position(p_doc_pos.position, range);
 
 	for (const KeyValue<StringName, ClassMembers> &E : workspace->native_members) {
-		if (const LSP::DocumentSymbol *const *symbol = E.value.getptr(symbol_identifier)) {
+		if (const LSP::DocumentSymbol *const *symbol = E.value.getptr(symbol_name)) {
 			r_list.push_back(*symbol);
 		}
 	}
@@ -644,13 +642,13 @@ void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPo
 	for (const KeyValue<String, ExtendGDScriptParser *> &E : client->parse_results) {
 		const ExtendGDScriptParser *scr = E.value;
 		const ClassMembers &members = scr->get_members();
-		if (const LSP::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
+		if (const LSP::DocumentSymbol *const *symbol = members.getptr(symbol_name)) {
 			r_list.push_back(*symbol);
 		}
 
 		for (const KeyValue<String, ClassMembers> &F : scr->get_inner_classes()) {
 			const ClassMembers *inner_class = &F.value;
-			if (const LSP::DocumentSymbol *const *symbol = inner_class->getptr(symbol_identifier)) {
+			if (const LSP::DocumentSymbol *const *symbol = inner_class->getptr(symbol_name)) {
 				r_list.push_back(*symbol);
 			}
 		}

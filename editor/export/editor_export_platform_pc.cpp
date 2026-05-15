@@ -138,8 +138,10 @@ bool EditorExportPlatformPC::has_valid_project_configuration(const Ref<EditorExp
 	return true;
 }
 
-Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	if (p_notify) {
+		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	}
 
 	Error err = prepare_template(p_preset, p_debug, p_path, p_flags);
 	if (err == OK) {
@@ -282,7 +284,6 @@ void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) const {
 	r_features->push_back("pc"); // Identify PC platforms as such.
-	r_features->push_back(get_os_name().to_lower()); // OS name is a feature.
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {

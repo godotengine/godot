@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "object.h"
+#include "object.compat.inc"
 
 #include "core/config/engine.h"
 #include "core/extension/gdextension_manager.h"
@@ -123,13 +124,26 @@ void ObjectGDExtension::create_gdtype() {
 void ObjectGDExtension::destroy_gdtype() {
 	ERR_FAIL_COND(!gdtype);
 
-	memdelete(const_cast<GDType *>(gdtype));
+#ifdef TOOLS_ENABLED
+	if (!is_placeholder) {
+#endif
+		memdelete(const_cast<GDType *>(gdtype));
+#ifdef TOOLS_ENABLED
+	}
+#endif
+
 	gdtype = nullptr;
 }
 
 ObjectGDExtension::~ObjectGDExtension() {
 	if (gdtype) {
-		memdelete(const_cast<GDType *>(gdtype));
+#ifdef TOOLS_ENABLED
+		if (!is_placeholder) {
+#endif
+			memdelete(const_cast<GDType *>(gdtype));
+#ifdef TOOLS_ENABLED
+		}
+#endif
 	}
 }
 
@@ -2094,13 +2108,8 @@ const GDType &Object::get_gdtype() const {
 	return *_gdtype_ptr;
 }
 
-bool Object::is_class(const String &p_class) const {
-	for (const StringName &name : get_gdtype().get_name_hierarchy()) {
-		if (name == p_class) {
-			return true;
-		}
-	}
-	return false;
+bool Object::is_class(const StringName &p_class) const {
+	return get_gdtype().get_name_hierarchy().has(p_class);
 }
 
 const StringName &Object::get_class_name() const {

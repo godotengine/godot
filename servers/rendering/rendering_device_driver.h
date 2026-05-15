@@ -484,6 +484,9 @@ public:
 	// Retrieve the color space used by the swap chain's framebuffers.
 	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) = 0;
 
+	// Retrieve whether the swapchain supports our preferred HDR formats.
+	virtual bool swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) = 0;
+
 	// Tells the swapchain the max_fps so it can use the proper frame pacing.
 	// Android uses this with Swappy library. Some implementations or platforms may ignore this hint.
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {}
@@ -789,7 +792,7 @@ public:
 	virtual RaytracingPipelineID raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) = 0;
 	virtual void raytracing_pipeline_free(RaytracingPipelineID p_pipeline) = 0;
 
-	virtual bool raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data) = 0;
+	virtual bool raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data, uint32_t p_data_stride_bytes) = 0;
 
 	// ----- COMMANDS -----
 

@@ -1183,7 +1183,7 @@ void GridMapEditor::_update_mesh_library() {
 
 		if (mesh_library_editor_plugin) {
 			mesh_library_editor_plugin->edit(*mesh_library);
-			mesh_library_editor_plugin->make_visible(true);
+			mesh_library_editor_plugin->open_editor();
 		}
 	} else if (mesh_library_editor_plugin) {
 		mesh_library_editor_plugin->edit(nullptr);
@@ -1338,7 +1338,7 @@ void GridMapEditor::_update_theme() {
 
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
 
 			for (int i = 0; i < 3; i++) {
@@ -1359,28 +1359,6 @@ void GridMapEditor::_notification(int p_what) {
 
 			_update_selection_transform();
 			_update_paste_indicator();
-			_update_theme();
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			_cancel_pending_move();
-			_clear_clipboard_data();
-
-			for (int i = 0; i < 3; i++) {
-				RS::get_singleton()->free_rid(grid_instance[i]);
-				RS::get_singleton()->free_rid(grid[i]);
-				grid_instance[i] = RID();
-				grid[i] = RID();
-				RenderingServer::get_singleton()->free_rid(selection_level_instance[i]);
-			}
-
-			RenderingServer::get_singleton()->free_rid(cursor_instance);
-			RenderingServer::get_singleton()->free_rid(selection_instance);
-			RenderingServer::get_singleton()->free_rid(paste_instance);
-			cursor_instance = RID();
-			cursor_visible = false;
-			selection_instance = RID();
-			paste_instance = RID();
 		} break;
 
 		case NOTIFICATION_PROCESS: {

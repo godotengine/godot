@@ -137,6 +137,8 @@ public:
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;
 
+	void open_editor();
+
 	MeshLibraryEditorPlugin();
 	~MeshLibraryEditorPlugin() { singleton = nullptr; }
 };

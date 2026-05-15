@@ -45,8 +45,6 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_instance_create, "for_object");
 	GDVIRTUAL_BIND(_placeholder_instance_create, "for_object");
 
-	GDVIRTUAL_BIND(_instance_has, "object");
-
 	GDVIRTUAL_BIND(_has_source_code);
 	GDVIRTUAL_BIND(_get_source_code);
 
@@ -86,6 +84,10 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_is_placeholder_fallback_enabled);
 
 	GDVIRTUAL_BIND(_get_rpc_config);
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND(_instance_has, "object");
+#endif // !DISABLE_DEPRECATED
 }
 
 void ScriptLanguageExtension::_bind_methods() {

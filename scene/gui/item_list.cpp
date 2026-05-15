@@ -792,6 +792,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_or_control_pressed()) {
 				deselect(i);
 				emit_signal(SNAME("multi_selected"), i, false);
+				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 
 			} else if (select_mode == SELECT_MULTI && mb->is_shift_pressed() && current >= 0 && current < items.size() && current != i) {
 				// Range selection.
@@ -1638,14 +1639,14 @@ void ItemList::_notification(int p_what) {
 
 				if (!items[i].text.is_empty()) {
 					Color txt_modulate;
-					if (items[i].selected && hovered == i) {
+					if (items[i].custom_fg != Color()) {
+						txt_modulate = items[i].custom_fg;
+					} else if (items[i].selected && hovered == i) {
 						txt_modulate = theme_cache.font_hovered_selected_color;
 					} else if (items[i].selected) {
 						txt_modulate = theme_cache.font_selected_color;
 					} else if (hovered == i) {
 						txt_modulate = theme_cache.font_hovered_color;
-					} else if (items[i].custom_fg != Color()) {
-						txt_modulate = items[i].custom_fg;
 					} else {
 						txt_modulate = theme_cache.font_color;
 					}
@@ -2511,10 +2512,12 @@ void ItemList::_bind_methods() {
 
 ItemList::ItemList() {
 	scroll_bar_v = memnew(VScrollBar);
+	scroll_bar_v->set_use_parent_material(true);
 	add_child(scroll_bar_v, false, INTERNAL_MODE_FRONT);
 	scroll_bar_v->connect(SceneStringName(value_changed), callable_mp(this, &ItemList::_scroll_changed));
 
 	scroll_bar_h = memnew(HScrollBar);
+	scroll_bar_h->set_use_parent_material(true);
 	add_child(scroll_bar_h, false, INTERNAL_MODE_FRONT);
 	scroll_bar_h->connect(SceneStringName(value_changed), callable_mp(this, &ItemList::_scroll_changed));
 

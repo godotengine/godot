@@ -199,7 +199,7 @@ void GraphFrame::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tint_color_enabled"), "set_tint_color_enabled", "is_tint_color_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
 
-	ADD_SIGNAL(MethodInfo(SNAME("autoshrink_changed")));
+	ADD_SIGNAL(MethodInfo("autoshrink_changed"));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphFrame, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphFrame, panel_selected);
@@ -323,11 +323,11 @@ bool GraphFrame::has_point(const Point2 &p_point) const {
 	return false;
 }
 
-Size2 GraphFrame::get_minimum_size() const {
+Size2 GraphFrame::_get_minimum_size(bool p_use_desired_sizes) const {
 	Ref<StyleBox> sb_panel = theme_cache.panel;
 	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 
-	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
+	Size2 minsize = (p_use_desired_sizes ? titlebar_hbox->get_bound_desired_size() : titlebar_hbox->get_minimum_size()) + sb_titlebar->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false));
@@ -335,7 +335,7 @@ Size2 GraphFrame::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = child->get_bound_minimum_size();
+		Size2i size = p_use_desired_sizes ? child->get_bound_desired_size() : child->get_bound_minimum_size();
 		size.width += sb_panel->get_minimum_size().width;
 
 		minsize.x = MAX(minsize.x, size.x);
@@ -347,15 +347,25 @@ Size2 GraphFrame::get_minimum_size() const {
 	return minsize;
 }
 
+Size2 GraphFrame::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 GraphFrame::get_desired_size() const {
+	return _get_minimum_size(true);
+}
+
 GraphFrame::GraphFrame() {
 	titlebar_hbox = memnew(HBoxContainer);
 	titlebar_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	titlebar_hbox->set_use_parent_material(true);
 	add_child(titlebar_hbox, false, INTERNAL_MODE_FRONT);
 
 	title_label = memnew(Label);
 	title_label->set_theme_type_variation("GraphFrameTitleLabel");
 	title_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	title_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	title_label->set_use_parent_material(true);
 	titlebar_hbox->add_child(title_label);
 
 	set_mouse_filter(MOUSE_FILTER_STOP);

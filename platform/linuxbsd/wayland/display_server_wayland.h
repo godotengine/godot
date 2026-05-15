@@ -144,6 +144,7 @@ class DisplayServerWayland : public DisplayServer {
 	// track of all the generic floating window concept.
 	List<DisplayServerEnums::WindowID> popup_menu_list;
 	BitField<MouseButtonMask> last_mouse_monitor_mask = MouseButtonMask::NONE;
+	bool last_touch_monitor_pressed = false;
 
 	String ime_text;
 	Vector2i ime_selection;
@@ -242,6 +243,8 @@ public:
 	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+
+	virtual bool is_touchscreen_available() const override;
 
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;

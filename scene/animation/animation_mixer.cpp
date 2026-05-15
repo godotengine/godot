@@ -732,7 +732,10 @@ bool AnimationMixer::_update_caches() {
 					case Animation::TYPE_VALUE: {
 						// If a value track without a key is cached first, the initial value cannot be determined.
 						// It is a corner case, but which may cause problems with blending.
-						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, mixer_name + ": '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
+						if (anim->track_get_key_count(i) == 0) {
+							WARN_VERBOSE(mixer_name + ": '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
+							continue;
+						}
 
 						TrackCacheValue *track_value = memnew(TrackCacheValue);
 
@@ -2528,13 +2531,13 @@ void AnimationMixer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE);
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS);
 
-	ADD_SIGNAL(MethodInfo(SNAME("animation_list_changed")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_libraries_updated")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_finished"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_started"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
-	ADD_SIGNAL(MethodInfo(SNAME("caches_cleared")));
-	ADD_SIGNAL(MethodInfo(SNAME("mixer_applied")));
-	ADD_SIGNAL(MethodInfo(SNAME("mixer_updated"))); // For updating dummy player.
+	ADD_SIGNAL(MethodInfo("animation_list_changed"));
+	ADD_SIGNAL(MethodInfo("animation_libraries_updated"));
+	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("caches_cleared"));
+	ADD_SIGNAL(MethodInfo("mixer_applied"));
+	ADD_SIGNAL(MethodInfo("mixer_updated")); // For updating dummy player.
 
 	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
 	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);

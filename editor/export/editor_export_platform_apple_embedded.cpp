@@ -417,7 +417,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 	} else if (p_line.contains("$modules_buildgrp")) {
 		strnew += p_line.replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
 	} else if (p_line.contains("$name")) {
-		strnew += p_line.replace("$name", p_config.pkg_name.xml_escape(true)) + "\n";
+		strnew += p_line.replace("$name", p_config.pkg_name) + "\n";
 	} else if (p_line.contains("$bundle_identifier")) {
 		strnew += p_line.replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 	} else if (p_line.contains("$short_version")) {
@@ -1648,12 +1648,14 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 	return OK;
 }
 
-Error EditorExportPlatformAppleEmbedded::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false);
+Error EditorExportPlatformAppleEmbedded::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	return _export_project_helper(p_preset, p_debug, p_path, p_flags, p_notify, false);
 }
 
-Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_oneclick) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify, bool p_oneclick) {
+	if (p_notify) {
+		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	}
 
 	const String dest_dir = p_path.get_base_dir() + "/";
 	const String binary_name = p_path.get_file().get_basename();
@@ -2478,7 +2480,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 			args.push_back(vformat("hardwareProperties.deviceType MATCHES '%s'", device_types));
 
 			int ec = 0;
-			Error err = OS::get_singleton()->execute("xcrun", args, &devices_json, &ec, true);
+			Error err = OS::get_singleton()->execute("xcrun", args, &devices_json, &ec, false);
 			if (err == OK && ec == 0) {
 				Ref<JSON> json;
 				json.instantiate();
@@ -2694,7 +2696,7 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 	Device dev = devices[p_device];
 
 	// Export before sending to device.
-	Error err = _export_project_helper(p_preset, true, tmp_export_path, p_debug_flags, true);
+	Error err = _export_project_helper(p_preset, true, tmp_export_path, p_debug_flags, true, true);
 
 	if (err != OK) {
 		CLEANUP_AND_RETURN(err);

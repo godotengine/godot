@@ -498,6 +498,7 @@ private:
 	TreeItem *drop_mode_over = nullptr;
 	int drop_mode_section = 0;
 	bool drop_mode_unchanged = false;
+	bool dragging_within_self = false;
 
 	TreeItem *single_select_defer = nullptr;
 	int single_select_defer_column = 0;
@@ -555,8 +556,10 @@ private:
 
 	bool popup_edit_committed = true;
 	RID accessibility_scroll_element;
-	RID header_ci; // Separate canvas item for drawing column headers
-	RID content_ci; // Separate canvas item for drawing tree rows
+	RID stylebox_ci; // Separate canvas item for drawing native styleboxes.
+	RID custom_ci; // Separate canvas item for drawing custom content.
+	RID header_ci; // Separate canvas item for drawing column headers.
+	RID content_ci; // Separate canvas item for drawing tree rows.
 	RID drop_indicator_ci;
 
 	VBoxContainer *popup_editor_vb = nullptr;
@@ -741,6 +744,7 @@ private:
 	String incr_search;
 	bool cursor_can_exit_tree = true;
 	void _do_incr_search(const String &p_add);
+	void _incr_search_as_needed(const Ref<InputEventKey> &p_event_key);
 
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 
@@ -901,6 +905,8 @@ public:
 
 	void set_column_titles_visible(bool p_show);
 	bool are_column_titles_visible() const;
+
+	RID get_custom_drawing_canvas_item() const { return custom_ci; }
 
 	TreeItem *get_edited() const;
 	int get_edited_column() const;

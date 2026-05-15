@@ -152,6 +152,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
 		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
 		VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
+		VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION,
@@ -164,6 +165,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
 		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
 		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS,
 		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
 		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 		VIEW_DISPLAY_DEBUG_OCCLUDERS,
@@ -436,6 +438,14 @@ private:
 	bool previewing_cinema = false;
 	int times_focused_consecutively = 0;
 	bool pilot_preview_enabled = false;
+
+	bool pilot_undo_session_active = false;
+	real_t pilot_undo_idle_time = 0.0;
+	Transform3D pilot_undo_initial_transform;
+	void _pilot_ensure_undo_session();
+	void _pilot_commit_undo_session();
+	void _pilot_tick_undo_session(real_t p_delta);
+
 	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _preview_camera_property_changed();
@@ -740,6 +750,8 @@ private:
 		MENU_RULER,
 		MENU_VERTEX_SNAP_BASE_VERTEX,
 		MENU_VERTEX_SNAP_BASE_ORIGIN,
+		MENU_VERTEX_SNAP_SOURCE_MESH,
+		MENU_VERTEX_SNAP_SOURCE_COLLISION,
 	};
 
 	Button *tool_button[TOOL_MAX];
@@ -758,6 +770,7 @@ private:
 	bool snap_enabled = false;
 	bool snap_key_enabled = false;
 	bool vertex_snap_origin_mode = false;
+	bool vertex_snap_use_collision = false;
 	EditorSpinSlider *snap_translate = nullptr;
 	EditorSpinSlider *snap_rotate = nullptr;
 	EditorSpinSlider *snap_scale = nullptr;
@@ -944,6 +957,7 @@ public:
 	bool is_preserve_children_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	bool is_vertex_snap_origin_mode() const { return vertex_snap_origin_mode; }
+	bool is_vertex_snap_use_collision() const;
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
 	real_t get_scale_snap() const;

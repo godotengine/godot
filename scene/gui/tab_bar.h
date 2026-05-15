@@ -334,6 +334,7 @@ public:
 
 	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const override;
+	Size2 get_desired_size() const override;
 
 	TabBar();
 };

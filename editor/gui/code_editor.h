@@ -283,6 +283,8 @@ public:
 	void set_error(const String &p_error);
 	void set_error_pos(int p_line, int p_column);
 	Point2i get_error_pos() const;
+	/// Convert internal position into a user readable format. This means 1 is the first position and the column counts tabs with their tab width.
+	Point2i get_pos_for_display(Point2i p_internal_position) const;
 	void update_line_and_column() { _line_col_changed(); }
 	CodeEdit *get_text_editor() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }

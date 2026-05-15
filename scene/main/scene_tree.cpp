@@ -354,6 +354,10 @@ void SceneTree::_update_group_order(SceneTreeGroup &g) {
 	g.changed = false;
 }
 
+RequiredResult<Window> SceneTree::get_root() const {
+	return root;
+}
+
 void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
 	Vector<Node *> nodes_copy;
 
@@ -932,9 +936,10 @@ void SceneTree::_notification(int p_notification) {
 			if (Input::get_singleton()) {
 				Input::get_singleton()->application_focused = p_notification == NOTIFICATION_APPLICATION_FOCUS_IN;
 
-				if (Input::get_singleton()->_should_ignore_joypad_events()) {
-					Input::get_singleton()->release_pressed_events();
-				}
+				// `release_pressed_events()` already preserves joypad state when the
+				// unfocused joypad setting is disabled, but keyboard state still needs
+				// to be released after focus loss.
+				Input::get_singleton()->release_pressed_events();
 			}
 
 			// Pass these to nodes, since they are mirrored.
@@ -1804,7 +1809,7 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 	return ret;
 }
 
-Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
+RequiredResult<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<MultiplayerAPI>(), "Multiplayer can only be manipulated from the main thread.");
 	if (p_for_path.is_empty()) {
 		return multiplayer;
@@ -2149,10 +2154,7 @@ SceneTree::SceneTree() {
 		if (load_err) {
 			ERR_PRINT("Non-existing or invalid VRS texture at '" + vrs_texture_path + "'.");
 		} else {
-			Ref<ImageTexture> vrs_texture;
-			vrs_texture.instantiate();
-			vrs_texture->create_from_image(vrs_image);
-			root->set_vrs_texture(vrs_texture);
+			root->set_vrs_texture(ImageTexture::create_from_image(vrs_image));
 		}
 	}
 

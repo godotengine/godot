@@ -38,6 +38,12 @@ void ProjectTag::_notification(int p_what) {
 	if (display_close && p_what == NOTIFICATION_THEME_CHANGED) {
 		button->set_button_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
 	}
+	// HACK: Can't be set in constructor because `get_size()` would return empty.
+	// This logic should be migrated once `Button` utilizes internal labels.
+	if (p_what == NOTIFICATION_READY) {
+		button->set_custom_minimum_size(get_size());
+		button->set_text_overrun_behavior(TextServer::OverrunBehavior::OVERRUN_TRIM_ELLIPSIS);
+	}
 }
 
 void ProjectTag::connect_button_to(const Callable &p_callable) {
@@ -69,9 +75,11 @@ ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
 	add_child(button);
 	button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	button->set_text(p_text.capitalize());
+	button->set_tooltip_text(p_text.capitalize());
 	button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button->set_accessibility_name(vformat(TTR("Project Tag: %s"), p_text));
 	button->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	button->set_theme_type_variation(SNAME("ProjectTagButton"));
+	button->set_custom_maximum_size(Vector2(334 * EDSCALE, -1));
 	button->set_mouse_filter(MOUSE_FILTER_PASS);
 }

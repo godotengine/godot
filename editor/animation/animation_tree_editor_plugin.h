@@ -48,13 +48,6 @@ public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) = 0;
 	virtual void edit(const Ref<AnimationNode> &p_node) = 0;
 
-protected:
-	RichTextLabel *create_error_label_node();
-
-	void _meta_clicked(Variant p_meta);
-
-	void update_error_message(const AnimationTree *p_tree, PanelContainer *p_error_panel, RichTextLabel *p_error_label, const String *p_other_errors = nullptr);
-
 private:
 	String last_error_key;
 };
@@ -64,6 +57,10 @@ class AnimationTreeEditor : public EditorDock {
 
 	ScrollContainer *path_edit = nullptr;
 	HBoxContainer *path_hb = nullptr;
+	RichTextLabel *current_scope_error_label = nullptr;
+	Button *error_button = nullptr;
+	ScrollContainer *error_scroll = nullptr;
+	RichTextLabel *error_label = nullptr;
 
 	AnimationTree *tree = nullptr;
 	MarginContainer *editor_base = nullptr;
@@ -79,15 +76,21 @@ class AnimationTreeEditor : public EditorDock {
 	void _path_button_pressed(int p_path);
 	void _animation_list_changed();
 
+	void _toggle_error_panel();
+	void _update_error_message(const String *p_other_errors = nullptr);
+
 	static LocalVector<StringName> get_animation_list();
 
 protected:
+	void _meta_clicked(Variant p_meta);
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 
 	static AnimationTreeEditor *singleton;
 
 public:
+	String current_playback_error;
+
 	AnimationTree *get_animation_tree() { return tree; }
 	void add_plugin(AnimationTreeNodeEditorPlugin *p_editor);
 	void remove_plugin(AnimationTreeNodeEditorPlugin *p_editor);

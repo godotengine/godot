@@ -40,6 +40,8 @@ class MaterialEditor;
 class Environment;
 class ShaderMaterial;
 class Timer;
+class TextureRect;
+class StyleBoxFlat;
 
 class GDShaderSyntaxHighlighter : public CodeHighlighter {
 	GDCLASS(GDShaderSyntaxHighlighter, CodeHighlighter)
@@ -59,17 +61,25 @@ public:
 class TextShaderPreview : public VBoxContainer {
 	GDCLASS(TextShaderPreview, VBoxContainer);
 
+	static constexpr int BUTTON_SIZE = 32;
+
 private:
-	Label *error_label = nullptr;
+	PanelContainer *panel = nullptr;
+	Ref<StyleBoxFlat> panel_style;
+	Control *surface_hover = nullptr;
 	Button *goto_button = nullptr;
 	Button *delete_button = nullptr;
 	MarginContainer *surface_container = nullptr;
 	MaterialEditor *surface = nullptr;
 	Ref<ShaderMaterial> shader_material;
 	Ref<Environment> env;
+	MarginContainer *error_container = nullptr;
+	TextureRect *error_icon = nullptr;
+	Label *error_label = nullptr;
 
 	int line = -1;
 	bool in_comment = false;
+	bool hovered = false;
 
 	static HashMap<String, String> spatial_assignments;
 	static HashMap<String, String> canvas_assignments;
@@ -77,6 +87,7 @@ private:
 	static HashMap<String, String> builtin_canvas_types;
 
 	String _get_enclosing_function(const PackedStringArray &p_lines, int p_line) const;
+	bool _is_inside_loop(const PackedStringArray &p_lines, int p_line) const;
 	bool _find_statement(const PackedStringArray &p_lines, int p_line, String &r_var_name, int &r_start, int &r_end) const;
 	String _find_var_type(const PackedStringArray &p_lines, const String &p_var_name, int p_line, bool p_mode_3d);
 	bool _match_uniforms(const Ref<ShaderMaterial> &p_source, const Ref<ShaderMaterial> &p_target) const;
@@ -85,6 +96,8 @@ private:
 	void _show_error(const String &p_error);
 	void _goto_pressed();
 	void _delete_pressed();
+	void _on_hover_enter();
+	void _on_hover_exit();
 	Ref<ShaderMaterial> _get_source_material() const;
 
 protected:
@@ -96,7 +109,11 @@ public:
 	void show_shader_compile_error();
 	void recompile(const String &p_code);
 	void sync_shader_parameters();
-	MarginContainer *get_surface_container() const;
+	void update_panel_color(const Color &p_color);
+	PanelContainer *get_panel_container() const;
+	Control *get_hover_control() const;
+
+	bool is_hovered() const { return hovered; }
 
 	TextShaderPreview();
 };
@@ -226,6 +243,7 @@ class TextShaderEditor : public ShaderEditor {
 	};
 
 	HBoxContainer *menu_bar_hbox = nullptr;
+	PanelContainer *preview_panel = nullptr;
 	VBoxContainer *preview_box = nullptr;
 	MenuButton *edit_menu = nullptr;
 	MenuButton *search_menu = nullptr;
@@ -270,6 +288,10 @@ class TextShaderEditor : public ShaderEditor {
 	bool trim_trailing_whitespace_on_save = false;
 	bool trim_final_newlines_on_save = false;
 	bool pending_update_shader_previews = false;
+
+private:
+	Button *update_params_btn = nullptr;
+	Button *remove_all_btn = nullptr;
 
 protected:
 	void _notification(int p_what);

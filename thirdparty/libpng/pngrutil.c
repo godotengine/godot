@@ -436,7 +436,7 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner)
     * be gained by using this when it is known *if* the zlib stream itself does
     * not record the number; however, this is an illusion: the original writer
     * of the PNG may have selected a lower window size, and we really must
-    * follow that because, for systems with with limited capabilities, we
+    * follow that because, for systems with limited capabilities, we
     * would otherwise reject the application's attempts to use a smaller window
     * size (zlib doesn't have an interface to say "this or lower"!).
     *
@@ -1006,7 +1006,7 @@ png_handle_PLTE(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
     * in the case of an 8-bit display with a decoder which controls the palette.
     *
     * The alternative here is to ignore the error and store the palette anyway;
-    * destroying the tRNS will definately cause problems.
+    * destroying the tRNS will definitely cause problems.
     *
     * NOTE: the case of PNG_COLOR_TYPE_PALETTE need not be considered because
     * the png_handle_ routines for the three 'after PLTE' chunks tRNS, bKGD and
@@ -1053,19 +1053,6 @@ png_handle_PLTE(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       /* A valid PLTE chunk has been read */
       png_ptr->mode |= PNG_HAVE_PLTE;
 
-      /* TODO: png_set_PLTE has the side effect of setting png_ptr->palette to
-       * its own copy of the palette.  This has the side effect that when
-       * png_start_row is called (this happens after any call to
-       * png_read_update_info) the info_ptr palette gets changed.  This is
-       * extremely unexpected and confusing.
-       *
-       * REVIEW: there have been consistent bugs in the past about gamma and
-       * similar transforms to colour mapped images being useless because the
-       * modified palette cannot be accessed because of the above.
-       *
-       * CONSIDER: Fix this by not sharing the palette in this way.  But does
-       * this completely fix the problem?
-       */
       png_set_PLTE(png_ptr, info_ptr, palette, num);
       return handled_ok;
    }
@@ -1267,7 +1254,7 @@ png_handle_cHRM(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 
    /* png_set_cHRM may complain about some of the values but this doesn't matter
     * because it was a cHRM and it did have vaguely (if, perhaps, ridiculous)
-    * values.  Ridiculousity will be checked if the values are used later.
+    * values.  Ridiculosity will be checked if the values are used later.
     */
    png_set_cHRM_fixed(png_ptr, info_ptr, xy.whitex, xy.whitey, xy.redx, xy.redy,
          xy.greenx, xy.greeny, xy.bluex, xy.bluey);
@@ -1564,7 +1551,8 @@ static png_handle_result_code /* PRIVATE */
 png_handle_sPLT(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 /* Note: this does not properly handle chunks that are > 64K under DOS */
 {
-   png_bytep entry_start, buffer;
+   png_bytep buffer;
+   png_bytep entry_start;
    png_sPLT_t new_palette;
    png_sPLT_entryp pp;
    png_uint_32 data_length;
@@ -1771,10 +1759,6 @@ png_handle_tRNS(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       return handled_error;
    }
 
-   /* TODO: this is a horrible side effect in the palette case because the
-    * png_struct ends up with a pointer to the tRNS buffer owned by the
-    * png_info.  Fix this.
-    */
    png_set_tRNS(png_ptr, info_ptr, readbuf, png_ptr->num_trans,
        &(png_ptr->trans_color));
    return handled_ok;
@@ -2033,7 +2017,7 @@ png_handle_eXIf(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       return handled_error;
 
    /* PNGv3: the code used to check the byte order mark at the start for MM or
-    * II, however PNGv3 states that the the first 4 bytes should be checked.
+    * II, however PNGv3 states that the first 4 bytes should be checked.
     * The caller ensures that there are four bytes available.
     */
    {
@@ -2155,9 +2139,13 @@ png_handle_oFFs(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 static png_handle_result_code /* PRIVATE */
 png_handle_pCAL(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 {
+   png_bytep buffer;
+   png_bytep buf;
+   png_bytep endptr;
    png_int_32 X0, X1;
-   png_byte type, nparams;
-   png_bytep buffer, buf, units, endptr;
+   png_byte type;
+   png_byte nparams;
+   png_byte *units;
    png_charpp params;
    int i;
 
@@ -3011,7 +2999,7 @@ static const struct
    png_uint_32 max_length :12; /* Length min, max in bytes */
    png_uint_32 min_length :8;
       /* Length errors on critical chunks have special handling to preserve the
-       * existing behaviour in libpng 1.6.  Anciallary chunks are checked below
+       * existing behaviour in libpng 1.6.  Ancillary chunks are checked below
        * and produce a 'benign' error.
        */
    png_uint_32 pos_before :4; /* PNG_HAVE_ values chunk must precede */
@@ -3019,7 +3007,7 @@ static const struct
       /* NOTE: PLTE, tRNS and bKGD require special handling which depends on
        * the colour type of the base image.
        */
-   png_uint_32 multiple   :1; /* Multiple occurences permitted */
+   png_uint_32 multiple   :1; /* Multiple occurrences permitted */
       /* This is enabled for PLTE because PLTE may, in practice, be optional */
 }
 read_chunks[PNG_INDEX_unknown] =
@@ -3053,7 +3041,7 @@ read_chunks[PNG_INDEX_unknown] =
 #  define CDIHDR      13U,   13U,  hIHDR,     0,        0
 #  define CDPLTE  NoCheck,    0U,      0, hIHDR,        1
       /* PLTE errors are only critical for colour-map images, consequently the
-       * hander does all the checks.
+       * handler does all the checks.
        */
 #  define CDIDAT  NoCheck,    0U,  aIDAT, hIHDR,        1
 #  define CDIEND  NoCheck,    0U,      0, aIDAT,        0

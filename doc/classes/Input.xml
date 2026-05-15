@@ -377,6 +377,23 @@
 			<param index="1" name="button" type="int" enum="JoyButton" />
 			<description>
 				Returns [code]true[/code] if you are pressing the joypad button at index [param button].
+				[b]Note:[/b] If you want to check if a joypad button was just pressed, use Godot's input action system with [method is_action_just_pressed] or use the [method Node._input] method like this instead:
+				[codeblocks]
+				[gdscript]
+				func _input(event):
+					if event is InputEventJoypadButton and event.is_pressed() and event.button_index == JOY_BUTTON_A:
+						pass # Your code here.
+				[/gdscript]
+				[csharp]
+				public override void _Input(InputEvent @event)
+				{
+					if (@event is InputEventJoypadButton eventButton &amp;&amp; eventButton.Pressed &amp;&amp; eventButton.ButtonIndex == JoyButton.A)
+					{
+						// Your code here.
+					}
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="is_joy_known" keywords="is_gamepad_known, is_controller_known">
@@ -426,6 +443,23 @@
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Returns [code]true[/code] if you are pressing the key with the [param keycode] printed on it. You can pass a [enum Key] constant or any Unicode character code.
+				[b]Note:[/b] If you want to check if a key was just pressed by using its label, use Godot's input action system with [method is_action_just_pressed] or use the [method Node._input] method like this instead:
+				[codeblocks]
+				[gdscript]
+				func _input(event):
+					if event is InputEventKey and not event.is_echo() and event.is_pressed() and event.key_label == KEY_SPACE:
+						pass # Your code here.
+				[/gdscript]
+				[csharp]
+				public override void _Input(InputEvent @event)
+				{
+					if (@event is InputEventKey eventKey &amp;&amp; !eventKey.IsEcho() &amp;&amp; eventKey.Pressed &amp;&amp; eventKey.KeyLabel == Key.Space)
+					{
+						// Your code here.
+					}
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="is_key_pressed" qualifiers="const">
@@ -435,6 +469,23 @@
 				Returns [code]true[/code] if you are pressing the Latin key in the current keyboard layout. You can pass a [enum Key] constant.
 				[method is_key_pressed] is only recommended over [method is_physical_key_pressed] in non-game applications. This ensures that shortcut keys behave as expected depending on the user's keyboard layout, as keyboard shortcuts are generally dependent on the keyboard layout in non-game applications. If in doubt, use [method is_physical_key_pressed].
 				[b]Note:[/b] Due to keyboard ghosting, [method is_key_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
+				[b]Note:[/b] If you want to check if a key was just pressed by using its keycode, use Godot's input action system with [method is_action_just_pressed] or use the [method Node._input] method like this instead:
+				[codeblocks]
+				[gdscript]
+				func _input(event):
+					if event is InputEventKey and not event.is_echo() and event.is_pressed() and event.keycode == KEY_SPACE:
+						pass # Your code here.
+				[/gdscript]
+				[csharp]
+				public override void _Input(InputEvent @event)
+				{
+					if (@event is InputEventKey eventKey &amp;&amp; !eventKey.IsEcho() &amp;&amp; eventKey.Pressed &amp;&amp; eventKey.Keycode == Key.Space)
+					{
+						// Your code here.
+					}
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="is_mouse_button_pressed" qualifiers="const">
@@ -442,6 +493,23 @@
 			<param index="0" name="button" type="int" enum="MouseButton" />
 			<description>
 				Returns [code]true[/code] if you are pressing the mouse button specified with [enum MouseButton].
+				[b]Note:[/b] If you want to check if a mouse button was just pressed, use Godot's input action system with [method is_action_just_pressed] or use the [method Node._input] method like this instead:
+				[codeblocks]
+				[gdscript]
+				func _input(event):
+					if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
+						pass # Your code here.
+				[/gdscript]
+				[csharp]
+				public override void _Input(InputEvent @event)
+				{
+					if (@event is InputEventMouseButton eventMouseButton &amp;&amp; eventMouseButton.Pressed &amp;&amp; eventMouseButton.ButtonIndex == MouseButton.Left)
+					{
+						// Your code here.
+					}
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="is_physical_key_pressed" qualifiers="const">
@@ -451,6 +519,23 @@
 				Returns [code]true[/code] if you are pressing the key in the physical location on the 101/102-key US QWERTY keyboard. You can pass a [enum Key] constant.
 				[method is_physical_key_pressed] is recommended over [method is_key_pressed] for in-game actions, as it will make [kbd]W[/kbd]/[kbd]A[/kbd]/[kbd]S[/kbd]/[kbd]D[/kbd] layouts work regardless of the user's keyboard layout. [method is_physical_key_pressed] will also ensure that the top row number keys work on any keyboard layout. If in doubt, use [method is_physical_key_pressed].
 				[b]Note:[/b] Due to keyboard ghosting, [method is_physical_key_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
+				[b]Note:[/b] If you want to check if a key was just pressed by using its physical keycode, use Godot's input action system with [method is_action_just_pressed] or use the [method Node._input] method like this instead:
+				[codeblocks]
+				[gdscript]
+				func _input(event):
+					if event is InputEventKey and not event.is_echo() and event.is_pressed() and event.physical_keycode == KEY_SPACE:
+						pass # Your code here.
+				[/gdscript]
+				[csharp]
+				public override void _Input(InputEvent @event)
+				{
+					if (@event is InputEventKey eventKey &amp;&amp; !eventKey.IsEcho() &amp;&amp; eventKey.Pressed &amp;&amp; eventKey.PhysicalKeycode == Key.Space)
+					{
+						// Your code here.
+					}
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="parse_input_event">

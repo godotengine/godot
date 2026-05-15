@@ -42,7 +42,6 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
@@ -294,6 +293,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("KeyValue"));
 	Ref<Texture2D> icon_selected = get_editor_theme_icon(SNAME("KeySelected"));
+	Ref<Texture2D> icon_invalid = get_editor_theme_icon(SNAME("KeyInvalid"));
 
 	const float pm = POINT_MARGIN * EDSCALE;
 
@@ -331,8 +331,8 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		}
 	}
 
+	bool does_include_invalid_key = false;
 	points.clear();
-
 	for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
 		float point = blend_space->get_blend_point_position(i);
 		if (!read_only && dragging_selected && selected_point == i) {
@@ -348,8 +348,19 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 
 		points.push_back(point + ofs.x);
 
+		// Draw × marker on non-AnimationNodeAnimation points when in cyclic mode.
+		bool is_key_valid = true;
+		AnimationNodeBlendSpace1D::SyncMode sync_mode = blend_space->get_sync_mode();
+		if (sync_mode == AnimationNodeBlendSpace1D::SYNC_MODE_CYCLIC_MUTABLE || sync_mode == AnimationNodeBlendSpace1D::SYNC_MODE_CYCLIC_CONSTANT) {
+			Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
+			Ref<AnimationNodeAnimation> anim_node = node;
+			if (anim_node.is_null()) {
+				is_key_valid = false;
+				does_include_invalid_key = true;
+			}
+		}
 		Vector2 gui_point = (ofs + Vector2(point, s.height / 2.0) - icon->get_size() / 2.0).floor();
-		blend_space_draw->draw_texture(i == selected_point ? icon_selected : icon, gui_point);
+		blend_space_draw->draw_texture(is_key_valid ? (i == selected_point ? icon_selected : icon) : icon_invalid, gui_point);
 
 		if (point >= 0.0 && point <= s.width && editing_point != i) {
 			String name_text = show_indices ? itos(i) : String(blend_space->get_blend_point_name(i));
@@ -366,6 +377,9 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 			text_rects.write[i] = Rect2(Vector2(text_pos.x, text_pos.y - font->get_ascent(font_size)), text_size);
 		}
 	}
+	AnimationTreeEditor::get_singleton()->current_playback_error = does_include_invalid_key
+			? TTR("Cyclic sync modes require that all blend points in BlendSpace use non-nested Animation nodes with a finite, immutable length.")
+			: String();
 
 	// blend position
 	{
@@ -394,7 +408,8 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 }
 
 void AnimationNodeBlendSpace1DEditor::_update_space() {
-	if (updating) {
+	// edge case when undoing action after editor has changed
+	if (updating || blend_space.is_null()) {
 		return;
 	}
 
@@ -403,7 +418,10 @@ void AnimationNodeBlendSpace1DEditor::_update_space() {
 	max_value->set_value(blend_space->get_max_space());
 	min_value->set_value(blend_space->get_min_space());
 
-	sync->set_pressed(blend_space->is_using_sync());
+	sync->select(blend_space->get_sync_mode());
+	cyclic_length_value->set_value(blend_space->get_cyclic_length());
+	cyclic_length_value->set_visible(blend_space->get_sync_mode() == AnimationNodeBlendSpace1D::SYNC_MODE_CYCLIC_CONSTANT);
+
 	interpolation->select(blend_space->get_blend_mode());
 
 	label_value->set_text(blend_space->get_value_label());
@@ -433,14 +451,19 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
 	undo_redo->add_undo_method(blend_space.ptr(), "set_min_space", blend_space->get_min_space());
 	undo_redo->add_do_method(blend_space.ptr(), "set_snap", snap_value->get_value());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_snap", blend_space->get_snap());
-	undo_redo->add_do_method(blend_space.ptr(), "set_use_sync", sync->is_pressed());
-	undo_redo->add_undo_method(blend_space.ptr(), "set_use_sync", blend_space->is_using_sync());
+	undo_redo->add_do_method(blend_space.ptr(), "set_sync_mode", sync->get_selected());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_sync_mode", blend_space->get_sync_mode());
+	undo_redo->add_do_method(blend_space.ptr(), "set_cyclic_length", cyclic_length_value->get_value());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_cyclic_length", blend_space->get_cyclic_length());
 	undo_redo->add_do_method(blend_space.ptr(), "set_blend_mode", interpolation->get_selected());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_mode", blend_space->get_blend_mode());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
 	updating = false;
+
+	// Update cyclic_length visibility immediately (undo/redo calls _update_space while updating=true).
+	cyclic_length_value->set_visible(sync->get_selected() == AnimationNodeBlendSpace1D::SYNC_MODE_CYCLIC_CONSTANT);
 
 	blend_space_draw->queue_redraw();
 }
@@ -565,7 +588,7 @@ void AnimationNodeBlendSpace1DEditor::_tool_switch(int p_tool) {
 }
 
 void AnimationNodeBlendSpace1DEditor::_update_edited_point_pos() {
-	if (updating) {
+	if (updating || blend_space.is_null()) {
 		return;
 	}
 
@@ -694,6 +717,9 @@ void AnimationNodeBlendSpace1DEditor::_edit_point_index(double p_index) {
 
 void AnimationNodeBlendSpace1DEditor::_set_selected_point(int p_index) {
 	selected_point = p_index;
+	if (blend_space.is_null()) {
+		return;
+	}
 	_update_tool_erase();
 	if (p_index != -1) {
 		_update_edited_point_pos();
@@ -742,8 +768,6 @@ void AnimationNodeBlendSpace1DEditor::_open_editor() {
 void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("GraphBlendSpace")));
 			tool_blend->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
 			tool_select->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
@@ -756,18 +780,10 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), TTR("Capture"), 2);
 		} break;
-
-		case NOTIFICATION_PROCESS: {
-			AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
-			if (!tree) {
-				return;
-			}
-
-			update_error_message(tree, error_panel, error_label);
-		} break;
-
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			set_process(is_visible_in_tree());
+			if (!is_visible_in_tree()) {
+				AnimationTreeEditor::get_singleton()->current_playback_error = String();
+			}
 		} break;
 	}
 }
@@ -804,6 +820,7 @@ void AnimationNodeBlendSpace1DEditor::edit(const Ref<AnimationNode> &p_node) {
 	min_value->set_editable(!read_only);
 	max_value->set_editable(!read_only);
 	sync->set_disabled(read_only);
+	cyclic_length_value->set_editable(!read_only);
 	interpolation->set_disabled(read_only);
 }
 
@@ -999,9 +1016,24 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	top_hb->add_child(memnew(VSeparator));
 	top_hb->add_child(memnew(Label(TTR("Sync"))));
-	sync = memnew(CheckBox);
+	sync = memnew(OptionButton);
+	sync->add_item(TTR("None"));
+	sync->add_item(TTR("Independent"));
+	sync->add_item(TTR("Cyclic Mutable"));
+	sync->add_item(TTR("Cyclic Constant"));
 	top_hb->add_child(sync);
-	sync->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	sync->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+
+	cyclic_length_value = memnew(SpinBox);
+	cyclic_length_value->set_min(0.0);
+	cyclic_length_value->set_max(99.0);
+	cyclic_length_value->set_step(0.001);
+	cyclic_length_value->set_allow_greater(true);
+	cyclic_length_value->set_suffix("s");
+	cyclic_length_value->set_accessibility_name(TTRC("Cyclic Length"));
+	cyclic_length_value->set_tooltip_text(TTR("Cycle length in seconds for cyclic sync. All animations are time-scaled to complete one cycle in this duration."));
+	top_hb->add_child(cyclic_length_value);
+	cyclic_length_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
 	top_hb->add_child(memnew(VSeparator));
 
@@ -1108,12 +1140,6 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	min_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 	max_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 	label_value->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_labels_changed));
-
-	error_panel = memnew(PanelContainer);
-	add_child(error_panel);
-	error_label = create_error_label_node();
-	error_panel->add_child(error_label);
-	error_panel->hide();
 
 	menu = memnew(PopupMenu);
 	add_child(menu);

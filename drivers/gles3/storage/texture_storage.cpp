@@ -1237,6 +1237,7 @@ void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int
 	texture.alloc_height = texture.height;
 	texture.mipmaps = image->get_mipmap_count() + 1;
 	texture.format = image->get_format();
+	texture.drawable_type = p_format;
 	texture.type = Texture::TYPE_2D;
 	texture.target = GL_TEXTURE_2D;
 	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
@@ -2764,57 +2765,57 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 
 void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
 	ERR_FAIL_COND_MSG(rt->backbuffer_fbo != 0, "Cannot allocate RenderTarget backbuffer: already initialized.");
+	ERR_FAIL_COND_MSG(rt->size.x <= 0 || rt->size.y <= 0, "Cannot allocate RenderTarget backbuffer: invalid size.");
 	ERR_FAIL_COND(rt->direct_to_screen);
+
 	// Allocate mipmap chains for full screen blur
 	// Limit mipmaps so smallest is 32x32 to avoid unnecessary framebuffer switches
 	int count = MAX(1, Image::get_image_required_mipmaps(rt->size.x, rt->size.y, Image::FORMAT_RGBA8) - 4);
-	if (rt->size.x > 40 && rt->size.y > 40) {
-		GLsizei width = rt->size.x;
-		GLsizei height = rt->size.y;
+	GLsizei width = rt->size.x;
+	GLsizei height = rt->size.y;
 
-		rt->mipmap_count = count;
+	rt->mipmap_count = count;
 
-		glGenTextures(1, &rt->backbuffer);
-		glBindTexture(GL_TEXTURE_2D, rt->backbuffer);
-		uint32_t texture_size_bytes = 0;
+	glGenTextures(1, &rt->backbuffer);
+	glBindTexture(GL_TEXTURE_2D, rt->backbuffer);
+	uint32_t texture_size_bytes = 0;
 
-		for (int l = 0; l < count; l++) {
-			texture_size_bytes += width * height * 4;
-			glTexImage2D(GL_TEXTURE_2D, l, rt->color_internal_format, width, height, 0, rt->color_format, rt->color_type, nullptr);
-			width = MAX(1, (width / 2));
-			height = MAX(1, (height / 2));
-		}
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
-
-		glGenFramebuffers(1, &rt->backbuffer_fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
-
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
-
-		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			WARN_PRINT_ONCE("Cannot allocate mipmaps for canvas screen blur. Status: " + get_framebuffer_error(status));
-			glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
-			return;
-		}
-		GLES3::Utilities::get_singleton()->texture_allocated_data(rt->backbuffer, texture_size_bytes, "Render target backbuffer color texture");
-
-		// Initialize all levels to clear black.
-		for (int j = 0; j < count; j++) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, j);
-			glClearColor(0.0, 0.0, 0.0, 0.0);
-			glClear(GL_COLOR_BUFFER_BIT);
-		}
-
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	for (int l = 0; l < count; l++) {
+		texture_size_bytes += width * height * 4;
+		glTexImage2D(GL_TEXTURE_2D, l, rt->color_internal_format, width, height, 0, rt->color_format, rt->color_type, nullptr);
+		width = MAX(1, (width / 2));
+		height = MAX(1, (height / 2));
 	}
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
+
+	glGenFramebuffers(1, &rt->backbuffer_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		WARN_PRINT_ONCE("Cannot allocate RenderTarget backbuffer. Status: " + get_framebuffer_error(status));
+		glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+		return;
+	}
+	GLES3::Utilities::get_singleton()->texture_allocated_data(rt->backbuffer, texture_size_bytes, "Render target backbuffer color texture");
+
+	// Initialize all levels to clear black.
+	for (int j = 0; j < count; j++) {
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, j);
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 void TextureStorage::_clear_render_target(RenderTarget *rt) {
