@@ -1201,6 +1201,7 @@ void RuntimeNodeSelect::_update_view_2d() {
 	ERR_FAIL_COND(!root->is_camera_2d_override_enabled());
 
 	Camera2D *override_camera = root->get_override_camera_2d();
+	ERR_FAIL_NULL(override_camera);
 	override_camera->set_anchor_mode(Camera2D::ANCHOR_MODE_FIXED_TOP_LEFT);
 	override_camera->set_zoom(Vector2(view_2d_zoom, view_2d_zoom));
 	override_camera->set_offset(view_2d_offset);

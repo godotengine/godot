@@ -260,6 +260,7 @@ void EditorAssetLibraryZoomMode::input(const Ref<InputEvent> &p_event) {
 }
 
 EditorAssetLibraryZoomMode::EditorAssetLibraryZoomMode(Control *p_previews) {
+	ERR_FAIL_NULL(p_previews);
 	ERR_FAIL_COND(p_previews->get_parent());
 
 	ColorRect *dim = memnew(ColorRect);
