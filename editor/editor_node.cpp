@@ -8813,7 +8813,9 @@ EditorNode::EditorNode() {
 	editor_dock_manager->add_vsplit(right_l_vsplit);
 	editor_dock_manager->add_vsplit(right_r_vsplit);
 
-	editor_dock_manager->set_hsplit(main_hsplit);
+	editor_dock_manager->set_main_vsplit(main_vsplit);
+	editor_dock_manager->set_main_hsplit(main_hsplit);
+	editor_dock_manager->set_bottom_hsplit(bottom_hsplit);
 
 	for (DockTabContainer *dock_container : dock_slots) {
 		editor_dock_manager->register_dock_slot(dock_container);

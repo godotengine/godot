@@ -123,6 +123,10 @@ void DockSplitContainer::remove_child_notify(Node *p_child) {
 	_update_visibility();
 }
 
+Control *DockSplitContainer::get_child_as_control(int p_index) const {
+	return Object::cast_to<Control>(get_child(p_index));
+}
+
 DockSplitContainer::DockSplitContainer() {
 	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
 		callable_mp((SplitContainer *)this, &SplitContainer::set_touch_dragger_enabled).call_deferred(true);
@@ -481,22 +485,40 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 	}
 	p_layout->set_value(p_section, "dock_closed", closed_docks_dump);
 
-	// Save SplitContainer offsets.
-	for (int i = 0; i < vsplits.size(); i++) {
-		if (vsplits[i]->is_visible_in_tree()) {
-			p_layout->set_value(p_section, "dock_split_" + itos(i + 1), vsplits[i]->get_split_offset());
-		}
-	}
+	// Distraction-free mode hides both the sides and lower docks, so skip to avoid overriding those values.
+	if (!EditorNode::get_singleton()->is_distraction_free_mode_enabled()) {
+		// Save SplitContainer offsets.
 
-	PackedInt32Array split_offsets = main_hsplit->get_split_offsets();
-	int index = 0;
-	for (int i = 0; i < vsplits.size(); i++) {
-		int value = 0;
-		if (vsplits[i]->is_visible() && index < split_offsets.size()) {
-			value = split_offsets[index] / EDSCALE;
-			index++;
+		for (int i = 0; i < vsplits.size(); i++) {
+			if (vsplits[i]->is_visible_in_tree()) {
+				p_layout->set_value(p_section, "dock_split_" + itos(i + 1), vsplits[i]->get_split_offset());
+			}
 		}
-		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), value);
+
+		PackedInt32Array split_offsets = main_hsplit->get_split_offsets();
+		int index = 0;
+		for (int i = 0; i < vsplits.size(); i++) {
+			int value = 0;
+			if (vsplits[i]->is_visible() && index < split_offsets.size()) {
+				value = split_offsets[index] / EDSCALE;
+				index++;
+			}
+			p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), value);
+		}
+
+		// The main v-split contains only one singular split.
+		int value = 0;
+		if (main_vsplit->get_child_as_control(1)->is_visible()) {
+			value = main_vsplit->get_split_offsets()[0];
+		}
+		p_layout->set_value(p_section, "dock_main_split", value);
+
+		// Same for the bottom docks.
+		value = 0;
+		if (bottom_hsplit->get_child_as_control(1)->is_visible()) {
+			value = bottom_hsplit->get_split_offsets()[0];
+		}
+		p_layout->set_value(p_section, "dock_bottom_split", value);
 	}
 }
 
@@ -562,7 +584,9 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 	}
 
 	// Load SplitContainer offsets.
+
 	PackedInt32Array offsets;
+
 	for (int i = 0; i < vsplits.size(); i++) {
 		if (!p_layout->has_section_key(p_section, "dock_split_" + itos(i + 1))) {
 			continue;
@@ -577,6 +601,18 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 		}
 	}
 	main_hsplit->set_split_offsets(offsets);
+
+	// The main v-split contains only one singular split.
+	if (main_vsplit->get_child_as_control(1)->is_visible()) {
+		offsets = { p_layout->get_value(p_section, "dock_main_split", 0) };
+		main_vsplit->set_split_offsets(offsets);
+	}
+
+	// Same for the bottom docks.
+	if (bottom_hsplit->get_child_as_control(1)->is_visible()) {
+		offsets = { p_layout->get_value(p_section, "dock_bottom_split", 0) };
+		bottom_hsplit->set_split_offsets(offsets);
+	}
 
 	update_docks_menu();
 }
@@ -758,8 +794,18 @@ void EditorDockManager::add_vsplit(DockSplitContainer *p_split) {
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
 }
 
-void EditorDockManager::set_hsplit(DockSplitContainer *p_split) {
+void EditorDockManager::set_main_vsplit(DockSplitContainer *p_split) {
+	main_vsplit = p_split;
+	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+}
+
+void EditorDockManager::set_main_hsplit(DockSplitContainer *p_split) {
 	main_hsplit = p_split;
+	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+}
+
+void EditorDockManager::set_bottom_hsplit(DockSplitContainer *p_split) {
+	bottom_hsplit = p_split;
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
 }
 
