@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef WEB_ENABLED
+
 #include "headers/tests.h"
 
 #include <cstdio>
-
-#ifdef WEB_ENABLED
 
 // Handler receives the control pointers
 typedef void (*cmd_handler_t)(uint32_t cmd, volatile uint32_t *cmd_ptr, volatile uint8_t *status_ptr);
