@@ -575,8 +575,11 @@ void Main::print_help(const char *p_binary) {
 #if defined(OVERRIDE_PATH_ENABLED)
 	print_help_option("--path <directory>", "Path to a project (<directory> must contain a \"project.godot\" file).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE);
 	print_help_option("--scene <path>", "Path or UID of a scene in the project that should be started.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE);
-	print_help_option("--main-pack <file>", "Path to a pack (.pck) file to load.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE);
 #endif // defined(OVERRIDE_PATH_ENABLED)
+#if defined(OVERRIDE_PATH_ENABLED) || defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
+	print_help_option("--main-pack <file>", "Path to a pack (.pck) file to load.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE);
+#endif // defined(OVERRIDE_PATH_ENABLED) || defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
+
 #ifdef DISABLE_DEPRECATED
 	print_help_option("--render-thread <mode>", "Render thread mode (\"safe\", \"separate\").\n");
 #else
@@ -1854,10 +1857,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 		} else if (arg == "--main-pack") {
-#if defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) // Note: main-pack is always used on web and can't be disabled.
+// Note: main-pack is always used on web and can't be disabled.
+// Note: main-pack can be used on Android so long as it's located within the 'assets' directory which is in the executable.
+#if defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) || defined(ANDROID_ENABLED)
 			if (N) {
 				main_pack = N->get();
 				N = N->next();
+
+#if defined(ANDROID_ENABLED) && !defined(OVERRIDE_PATH_ENABLED)
+				// Validate that `main_pack` is located within the 'assets' directory.
+				Ref<FileAccess> main_pack_fa = FileAccess::create_for_path(main_pack);
+				if (main_pack_fa.is_valid()) {
+					if (main_pack_fa->get_access_type() != FileAccess::ACCESS_RESOURCES) {
+						ERR_PRINT(
+								"--main-pack is attempting to load from outside of the executable, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+								"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+						goto error;
+					}
+				} else {
+					ERR_PRINT("Invalid path to main pack file, aborting.\n");
+					goto error;
+				}
+#endif // defined(ANDROID_ENABLED) && !defined(OVERRIDE_PATH_ENABLED)
 			} else {
 				OS::get_singleton()->print("Missing path to main pack file, aborting.\n");
 				goto error;
@@ -1867,7 +1888,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"`--main-pack` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
 			goto error;
-#endif // defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED)
+#endif // defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) || defined(ANDROID_ENABLED)
 
 		} else if (arg == "-d" || arg == "--debug") {
 			debug_uri = "local://";
