@@ -75,12 +75,6 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 			return ERR_CANT_CREATE;
 		}
 	}
-
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if (da->file_exists(template_path.get_base_dir().path_join("libaccesskit." + arch + ".so"))) {
-		da->copy(template_path.get_base_dir().path_join("libaccesskit." + arch + ".so"), p_path.get_base_dir().path_join("libaccesskit." + arch + ".so"), get_chmod_flags());
-	}
-
 	bool export_as_zip = p_path.ends_with("zip");
 
 	String pkg_name;
