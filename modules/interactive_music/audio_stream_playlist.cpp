@@ -373,10 +373,17 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 					stream_todo = playlist->audio_streams[idx]->get_length();
 				}
 				stream_offset = 0.0;
+
+				// Emit a signal for the stream changing or looping
+				StringName signal_name = SNAME("stream_changed");
 				if (idx == prev) {
-					call_deferred("emit_signal", SNAME("stream_looped"));
+					signal_name = SNAME("stream_looped");
+				}
+				// The playback may be in the main thread or another
+				if (Thread::is_main_thread()) {
+					emit_signal(signal_name);
 				} else {
-					call_deferred("emit_signal", SNAME("stream_changed"));
+					call_deferred("emit_signal", signal_name);
 				}
 			}
 
@@ -423,8 +430,8 @@ bool AudioStreamPlaybackPlaylist::is_playing() const {
 }
 
 void AudioStreamPlaybackPlaylist::change_stream(int p_stream_index) {
-	ERR_FAIL_INDEX(stream_index, playlist->stream_count);
-	next_stream_index = stream_index;
+	ERR_FAIL_INDEX(p_stream_index, playlist->stream_count);
+	next_stream_index = p_stream_index;
 }
 
 void AudioStreamPlaybackPlaylist::next_stream() {
