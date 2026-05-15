@@ -279,6 +279,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		delete_preset->set_disabled(true);
 		patches->clear();
 		export_error->hide();
+		export_warning->hide();
 		export_templates_error->hide();
 		export_texture_format_error->hide();
 		return;
@@ -801,8 +802,8 @@ void ProjectExportDialog::_delete_preset() {
 
 void ProjectExportDialog::_delete_preset_confirm() {
 	int idx = presets->get_current();
-	_edit_preset(idx - 1);
 	EditorExport::get_singleton()->remove_export_preset(idx);
+	_edit_preset(idx > 0 || presets->get_item_count() == 1 ? idx - 1 : 0);
 	_update_presets();
 
 	if (presets->get_item_count() == 0) {
