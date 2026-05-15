@@ -31,15 +31,15 @@
 		<method name="next_stream">
 			<return type="void" />
 			<description>
-				Plays the next stream. The next random stream is played if [member AudioStreamPlaylist.shuffle] is enabled.
-				If [member AudioStreamPlaylist.loop] is disabled and is the last already, nothing will happen.
+				Plays the next stream. If [member AudioStreamPlaylist.shuffle] is enabled it will play the next stream in the shuffle order.
+				If [member AudioStreamPlaylist.loop] is disabled and the last stream is currently playing, nothing will happen.
 			</description>
 		</method>
 		<method name="previous_stream">
 			<return type="void" />
 			<description>
-				Plays the previous stream. The previous random stream is played if [member AudioStreamPlaylist.shuffle] is enabled.
-				If [member AudioStreamPlaylist.loop] is disabled and is the first already, nothing will happen.
+				Plays the previous stream. If [member AudioStreamPlaylist.shuffle] is enabled it will play the previous stream in the shuffle order.
+				If [member AudioStreamPlaylist.loop] is disabled and the first stream is currently playing, nothing will happen.
 			</description>
 		</method>
 	</methods>
