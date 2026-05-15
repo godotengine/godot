@@ -268,6 +268,13 @@ void ParticlesStorage::particles_set_use_local_coordinates(RID p_particles, bool
 	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
 }
 
+// DEAD MONEY: per-component inherit. The Compatibility renderer doesn't ship
+// the per-component decomposition; mixed states fall back to global (world)
+// coords. Equivalent to legacy local_coords=true only when ALL bits are set.
+void ParticlesStorage::particles_set_inherit_flags(RID p_particles, uint32_t p_flags) {
+	particles_set_use_local_coordinates(p_particles, (p_flags & RS::PARTICLES_INHERIT_ALL) == RS::PARTICLES_INHERIT_ALL);
+}
+
 void ParticlesStorage::particles_set_fixed_fps(RID p_particles, int p_fps) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);

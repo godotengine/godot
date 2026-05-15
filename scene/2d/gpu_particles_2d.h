@@ -59,6 +59,12 @@ private:
 	double speed_scale = 0.0;
 	Rect2 visibility_rect;
 	bool local_coords = false;
+	// DEAD MONEY: per-component inherit. Default = all-inherit (matches the
+	// legacy local_coords=true visual behaviour but sim still defaults to
+	// world via the constructor's set_use_local_coordinates(false) call).
+	bool inherit_position = true;
+	bool inherit_rotation = true;
+	bool inherit_scale = true;
 	int fixed_fps = 0;
 	bool fractional_delta = false;
 	bool interpolate = true;
@@ -120,6 +126,13 @@ public:
 	void set_randomness_ratio(real_t p_ratio);
 	void set_visibility_rect(const Rect2 &p_visibility_rect);
 	void set_use_local_coordinates(bool p_enable);
+	// DEAD MONEY
+	void set_inherit_position(bool p_enable);
+	void set_inherit_rotation(bool p_enable);
+	void set_inherit_scale(bool p_enable);
+	bool get_inherit_position() const;
+	bool get_inherit_rotation() const;
+	bool get_inherit_scale() const;
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(double p_scale);
 	void set_collision_base_size(real_t p_ratio);

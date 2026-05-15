@@ -125,13 +125,62 @@ void GPUParticles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 }
 
 void GPUParticles2D::set_use_local_coordinates(bool p_enable) {
+	// DEAD MONEY: legacy bool now drives all three inherit flags together.
+	inherit_position = p_enable;
+	inherit_rotation = p_enable;
+	inherit_scale = p_enable;
 	local_coords = p_enable;
-	RS::get_singleton()->particles_set_use_local_coordinates(particles, local_coords);
+
+	uint32_t flags = (inherit_position ? RS::PARTICLES_INHERIT_POSITION : 0) |
+			(inherit_rotation ? RS::PARTICLES_INHERIT_ROTATION : 0) |
+			(inherit_scale ? RS::PARTICLES_INHERIT_SCALE : 0);
+	RS::get_singleton()->particles_set_inherit_flags(particles, flags);
+
 	set_notify_transform(!p_enable);
 	if (!p_enable && is_inside_tree()) {
 		_update_particle_emission_transform();
 	}
+	notify_property_list_changed();
 }
+
+// DEAD MONEY: shared push for the three inherit setters.
+static void _push_inherit_flags(RID p_particles, bool p_pos, bool p_rot, bool p_scale) {
+	uint32_t flags = (p_pos ? RS::PARTICLES_INHERIT_POSITION : 0) |
+			(p_rot ? RS::PARTICLES_INHERIT_ROTATION : 0) |
+			(p_scale ? RS::PARTICLES_INHERIT_SCALE : 0);
+	RS::get_singleton()->particles_set_inherit_flags(p_particles, flags);
+}
+
+void GPUParticles2D::set_inherit_position(bool p_enable) {
+	inherit_position = p_enable;
+	local_coords = inherit_position && inherit_rotation && inherit_scale;
+	_push_inherit_flags(particles, inherit_position, inherit_rotation, inherit_scale);
+	set_notify_transform(!local_coords);
+	if (!local_coords && is_inside_tree()) {
+		_update_particle_emission_transform();
+	}
+}
+void GPUParticles2D::set_inherit_rotation(bool p_enable) {
+	inherit_rotation = p_enable;
+	local_coords = inherit_position && inherit_rotation && inherit_scale;
+	_push_inherit_flags(particles, inherit_position, inherit_rotation, inherit_scale);
+	set_notify_transform(!local_coords);
+	if (!local_coords && is_inside_tree()) {
+		_update_particle_emission_transform();
+	}
+}
+void GPUParticles2D::set_inherit_scale(bool p_enable) {
+	inherit_scale = p_enable;
+	local_coords = inherit_position && inherit_rotation && inherit_scale;
+	_push_inherit_flags(particles, inherit_position, inherit_rotation, inherit_scale);
+	set_notify_transform(!local_coords);
+	if (!local_coords && is_inside_tree()) {
+		_update_particle_emission_transform();
+	}
+}
+bool GPUParticles2D::get_inherit_position() const { return inherit_position; }
+bool GPUParticles2D::get_inherit_rotation() const { return inherit_rotation; }
+bool GPUParticles2D::get_inherit_scale() const { return inherit_scale; }
 
 void GPUParticles2D::_update_particle_emission_transform() {
 	Transform2D xf2d = get_global_transform();
@@ -870,6 +919,13 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_randomness_ratio", "ratio"), &GPUParticles2D::set_randomness_ratio);
 	ClassDB::bind_method(D_METHOD("set_visibility_rect", "visibility_rect"), &GPUParticles2D::set_visibility_rect);
 	ClassDB::bind_method(D_METHOD("set_use_local_coordinates", "enable"), &GPUParticles2D::set_use_local_coordinates);
+	// DEAD MONEY
+	ClassDB::bind_method(D_METHOD("set_inherit_position", "enable"), &GPUParticles2D::set_inherit_position);
+	ClassDB::bind_method(D_METHOD("set_inherit_rotation", "enable"), &GPUParticles2D::set_inherit_rotation);
+	ClassDB::bind_method(D_METHOD("set_inherit_scale", "enable"), &GPUParticles2D::set_inherit_scale);
+	ClassDB::bind_method(D_METHOD("get_inherit_position"), &GPUParticles2D::get_inherit_position);
+	ClassDB::bind_method(D_METHOD("get_inherit_rotation"), &GPUParticles2D::get_inherit_rotation);
+	ClassDB::bind_method(D_METHOD("get_inherit_scale"), &GPUParticles2D::get_inherit_scale);
 	ClassDB::bind_method(D_METHOD("set_fixed_fps", "fps"), &GPUParticles2D::set_fixed_fps);
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &GPUParticles2D::set_fractional_delta);
 	ClassDB::bind_method(D_METHOD("set_interpolate", "enable"), &GPUParticles2D::set_interpolate);
@@ -961,6 +1017,13 @@ void GPUParticles2D::_bind_methods() {
 	ADD_GROUP("Drawing", "");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "visibility_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_visibility_rect", "get_visibility_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
+	// DEAD MONEY: per-component inherit. Defaults match local_coords=true so
+	// scenes that pre-date this patch keep their visual behaviour. To get
+	// world-space sim with PPU-correct render: inherit_scale=true, the other
+	// two false.
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "inherit_position"), "set_inherit_position", "get_inherit_position");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "inherit_rotation"), "set_inherit_rotation", "get_inherit_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "inherit_scale"), "set_inherit_scale", "get_inherit_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_GROUP("Trails", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_trail_enabled", "is_trail_enabled");

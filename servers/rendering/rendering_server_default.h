@@ -596,6 +596,7 @@ public:
 	FUNC2(particles_set_custom_aabb, RID, const AABB &)
 	FUNC2(particles_set_speed_scale, RID, double)
 	FUNC2(particles_set_use_local_coordinates, RID, bool)
+	FUNC2(particles_set_inherit_flags, RID, uint32_t) // DEAD MONEY
 	FUNC2(particles_set_process_material, RID, RID)
 	FUNC2(particles_set_fixed_fps, RID, int)
 	FUNC2(particles_set_interpolate, RID, bool)

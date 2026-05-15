@@ -408,7 +408,64 @@ void ParticlesStorage::particles_set_use_local_coordinates(RID p_particles, bool
 	ERR_FAIL_NULL(particles);
 
 	particles->use_local_coords = p_enable;
+	// DEAD MONEY: keep the legacy bool and the inherit bitfield in sync at the
+	// shim layer so callers using the old API see the all-or-nothing behaviour
+	// they expect.
+	particles->inherit_flags = p_enable ? RS::PARTICLES_INHERIT_ALL : 0;
 	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
+}
+
+// DEAD MONEY: per-component inherit setter.
+void ParticlesStorage::particles_set_inherit_flags(RID p_particles, uint32_t p_flags) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->inherit_flags = p_flags & RS::PARTICLES_INHERIT_ALL;
+	particles->use_local_coords = (particles->inherit_flags == RS::PARTICLES_INHERIT_ALL);
+	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
+}
+
+// DEAD MONEY: split emission_transform per inherit flags.
+//   sim_xf is baked into newly-emitted particles (the "world-space" components).
+//   draw_inv_xf is sent to the copy shader as inv_emission_transform; it
+//   composes with the node's canvas_item global transform so the on-screen
+//   draw applies only the inherited components.
+// The two endpoints (ALL inherited, NONE inherited) are exact equivalents of
+// the legacy local_coords true/false paths. Mixed states use a T*R*S
+// decomposition that's exact for 2D uniform-scale + Z-rotation (the case this
+// patch was added for); 3D non-uniform mixed cases are best-effort.
+static void _split_emission_xf(const Transform3D &xf, uint32_t flags, Transform3D &r_sim, Transform3D &r_draw_inv) {
+	if (flags == RS::PARTICLES_INHERIT_ALL) {
+		r_sim = Transform3D();
+		r_draw_inv = Transform3D();
+		return;
+	}
+	if (flags == 0) {
+		r_sim = xf;
+		r_draw_inv = xf.affine_inverse();
+		return;
+	}
+
+	Vector3 scale = xf.basis.get_scale();
+	Basis rot = xf.basis;
+	rot.orthonormalize();
+	Vector3 origin = xf.origin;
+
+	Basis inh_basis = (flags & RS::PARTICLES_INHERIT_ROTATION) ? rot : Basis();
+	if (flags & RS::PARTICLES_INHERIT_SCALE) {
+		inh_basis.scale_local(scale);
+	}
+	Vector3 inh_origin = (flags & RS::PARTICLES_INHERIT_POSITION) ? origin : Vector3();
+	Transform3D inherited(inh_basis, inh_origin);
+
+	Basis ni_basis = (flags & RS::PARTICLES_INHERIT_ROTATION) ? Basis() : rot;
+	if (!(flags & RS::PARTICLES_INHERIT_SCALE)) {
+		ni_basis.scale_local(scale);
+	}
+	Vector3 ni_origin = (flags & RS::PARTICLES_INHERIT_POSITION) ? Vector3() : origin;
+	r_sim = Transform3D(ni_basis, ni_origin);
+
+	r_draw_inv = xf.affine_inverse() * inherited;
 }
 
 void ParticlesStorage::particles_set_fixed_fps(RID p_particles, int p_fps) {
@@ -850,10 +907,14 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	frame_params.explosiveness = p_particles->explosiveness;
 	frame_params.randomness = p_particles->randomness;
 
-	if (p_particles->use_local_coords) {
-		RendererRD::MaterialStorage::store_transform(Transform3D(), frame_params.emission_transform);
-	} else {
-		RendererRD::MaterialStorage::store_transform(p_particles->emission_transform, frame_params.emission_transform);
+	{
+		// DEAD MONEY: per-component inherit decomposition. Cached into the
+		// Particles struct so the matching draw-side path (inv_emission_transform
+		// at the copy shader) uses the same split.
+		Transform3D sim_xf, draw_inv_xf;
+		_split_emission_xf(p_particles->emission_transform, p_particles->inherit_flags, sim_xf, draw_inv_xf);
+		p_particles->draw_inv_emission_transform = draw_inv_xf;
+		RendererRD::MaterialStorage::store_transform(sim_xf, frame_params.emission_transform);
 	}
 
 	frame_params.cycle = p_particles->cycle_number;
@@ -1608,19 +1669,12 @@ void ParticlesStorage::update_particles() {
 			ParticlesShader::CopyPushConstant copy_push_constant;
 
 			// Affect 2D only.
-			if (particles->use_local_coords) {
-				// In local mode, particle positions are calculated locally (relative to the node position)
-				// and they're also drawn locally.
-				// It works as expected, so we just pass an identity transform.
-				RendererRD::MaterialStorage::store_transform(Transform3D(), copy_push_constant.inv_emission_transform);
-			} else {
-				// In global mode, particle positions are calculated globally (relative to the canvas origin)
-				// but they're drawn locally.
-				// So, we need to pass the inverse of the emission transform to bring the
-				// particles to local coordinates before drawing.
-				Transform3D inv = particles->emission_transform.affine_inverse();
-				RendererRD::MaterialStorage::store_transform(inv, copy_push_constant.inv_emission_transform);
-			}
+			// DEAD MONEY: pulled from per-component inherit decomposition cached
+			// in the simulate path. ALL-inherited collapses to identity (legacy
+			// local-coords); none-inherited collapses to emission_transform.inv()
+			// (legacy global). Mixed states make the canvas draw apply only the
+			// inherited components.
+			RendererRD::MaterialStorage::store_transform(particles->draw_inv_emission_transform, copy_push_constant.inv_emission_transform);
 
 			copy_push_constant.total_particles = total_amount;
 			copy_push_constant.frame_remainder = particles->interpolate ? particles->frame_remainder : 0.0;
