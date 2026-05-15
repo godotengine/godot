@@ -173,6 +173,7 @@ class DisplayServerX11 : public DisplayServer {
 		ObjectID instance_id;
 
 		bool no_focus = false;
+		bool focused = false;
 
 		//better to guess on the fly, given WM can change it
 		//DisplayServerEnums::WindowMode mode;
@@ -183,7 +184,7 @@ class DisplayServerX11 : public DisplayServer {
 		bool resize_disabled = false;
 		bool no_min_btn = false;
 		bool no_max_btn = false;
-		bool focused = true;
+		bool contents_focused = true;
 		bool minimized = false;
 		bool maximized = false;
 		bool is_popup = false;
@@ -221,6 +222,9 @@ class DisplayServerX11 : public DisplayServer {
 	void _create_xic(WindowData &wd);
 	DisplayServerEnums::WindowID _create_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, Window p_parent_window);
 
+	HashMap<String, Atom> supported_atoms;
+	void _fetch_supported_atoms();
+
 	String internal_clipboard;
 	String internal_clipboard_primary;
 	Window xdnd_source_window = 0;
@@ -253,7 +257,7 @@ class DisplayServerX11 : public DisplayServer {
 	MouseButton last_click_button_index = MouseButton::NONE;
 	bool app_focused = false;
 	uint64_t time_since_no_focus = 0;
-
+	uint64_t frames_since_no_focus = 0;
 	struct {
 		int opcode;
 		Vector<int> touch_devices;
@@ -356,6 +360,7 @@ class DisplayServerX11 : public DisplayServer {
 	DisplayServerEnums::Context context = DisplayServerEnums::CONTEXT_ENGINE;
 	bool swap_cancel_ok = false;
 
+	void _window_focus_changed(DisplayServerEnums::WindowID p_window);
 	DisplayServerEnums::WindowID _get_focused_window_or_popup() const;
 	bool _window_focus_check();
 
