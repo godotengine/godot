@@ -42,6 +42,7 @@
 #import "drivers/apple_embedded/key_mapping_apple_embedded.h"
 #import "drivers/apple_embedded/os_apple_embedded.h"
 #import "drivers/apple_embedded/tts_apple_embedded.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/display/native_menu.h"
 
 #import <GameController/GameController.h>
@@ -176,10 +177,17 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
+	GDTView *godot_view = GDTAppDelegateService.viewController.godotView;
+	if (godot_view) {
+		AccessibilityServer::get_singleton()->window_create(DisplayServerEnums::MAIN_WINDOW_ID, (__bridge void *)godot_view);
+	}
+
 	r_error = OK;
 }
 
 DisplayServerAppleEmbedded::~DisplayServerAppleEmbedded() {
+	AccessibilityServer::get_singleton()->window_destroy(DisplayServerEnums::MAIN_WINDOW_ID);
+
 	if (native_menu) {
 		memdelete(native_menu);
 		native_menu = nullptr;
@@ -383,9 +391,16 @@ bool DisplayServerAppleEmbedded::has_feature(DisplayServerEnums::Feature p_featu
 		case DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD:
 		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH:
 			return true;
+		case DisplayServerEnums::FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return AccessibilityServer::get_singleton()->is_supported();
+		} break;
 		default:
 			return false;
 	}
+}
+
+int DisplayServerAppleEmbedded::accessibility_screen_reader_active() const {
+	return UIAccessibilityIsVoiceOverRunning() ? 1 : 0;
 }
 
 void DisplayServerAppleEmbedded::initialize_tts() const {
