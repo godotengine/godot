@@ -48,8 +48,12 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual bool is_processed_on_saving() const override { return true; }
 #endif
+	virtual PackedStringArray get_configuration_warnings() const override;
+
 	void set_bone_name(const String &p_bone_name);
 	String get_bone_name() const;
 	void set_bone(int p_bone);
 	int get_bone() const;
+
+	ModifierBoneTarget3D();
 };
