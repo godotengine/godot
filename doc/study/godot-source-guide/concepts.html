@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Godot 源码导读 · 概念库</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-level="all" data-page="concepts">
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="mark">G</div>
+        <div>
+          <h1>Godot 概念库</h1>
+          <p>与导读正文同级</p>
+        </div>
+      </div>
+
+      <div class="nav-title">页面</div>
+      <div class="concept-nav">
+        <a href="index.html">
+          <span>返回导读</span>
+          <span>↩</span>
+        </a>
+        <a id="conceptFavoritesOpen" href="#favorites">
+          <span>收藏</span>
+          <span id="conceptFavoriteTotal">0</span>
+        </a>
+      </div>
+
+      <div class="nav-title">概念</div>
+      <div class="concept-nav single">
+        <a id="conceptLibraryOpen" href="#library">
+          <span>概念库</span>
+          <span id="conceptTotal">0</span>
+        </a>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="nav-title">说明</div>
+        <p class="side-note">概念库、收藏列表和右侧解释面板保持联通。概念内容会根据当前数据动态显示。</p>
+      </div>
+    </aside>
+
+    <main>
+      <section class="hero concept-page-hero" id="library" data-search="概念库 收藏 搜索 Object Node Resource ClassDB Variant RID Server">
+        <div class="hero-inner">
+          <h2>概念库</h2>
+          <p class="lead">
+            这里是与主导读同级的独立概念页面，用来集中浏览概念解释和收藏条目。
+          </p>
+        </div>
+      </section>
+
+      <section class="section concept-browser-section" id="concept-library" data-search="概念库 收藏 搜索 Object Node Resource ClassDB Variant RID Server">
+        <div class="section-inner">
+          <div class="section-head">
+            <div>
+              <h2 id="conceptPageTitle">概念库</h2>
+              <p id="conceptPageIntro" class="intro">概念内容会根据当前数据动态显示。</p>
+            </div>
+          </div>
+          <div class="concept-page-tools">
+            <input id="conceptPageSearch" type="search" placeholder="搜索收藏概念">
+            <div class="seg" id="conceptPageFilter">
+              <button type="button" data-filter="all" aria-pressed="true">全部概念</button>
+              <button type="button" data-filter="favorites">收藏概念</button>
+            </div>
+          </div>
+          <div class="concept-page-list" id="conceptPageList"></div>
+        </div>
+      </section>
+    </main>
+
+    <section class="concept-drawer" id="conceptDrawer" role="complementary" aria-labelledby="conceptDrawerTitle" aria-hidden="true">
+      <div class="concept-drawer-head">
+        <div>
+          <p>概念解释</p>
+          <h2 id="conceptDrawerTitle">选择一个概念</h2>
+        </div>
+        <div class="concept-drawer-actions">
+          <button id="conceptPanelFavorite" class="concept-star" type="button" aria-label="收藏当前概念" aria-pressed="false" disabled>☆</button>
+          <button id="conceptDrawerClose" class="concept-close" type="button" aria-label="关闭概念窗口">×</button>
+        </div>
+      </div>
+      <div class="concept-drawer-body" id="conceptDrawerBody">
+        <p class="concept-empty">选择概念后，这里会显示解释。</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="data.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>

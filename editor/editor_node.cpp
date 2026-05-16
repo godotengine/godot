@@ -56,6 +56,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/doc/editor_help.h"
+#include "editor/docks/ai_agent_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/groups_dock.h"
@@ -9206,6 +9207,9 @@ EditorNode::EditorNode() {
 	memnew(GroupsDock);
 	editor_dock_manager->add_dock(GroupsDock::get_singleton());
 
+	memnew(AIAgentDock);
+	editor_dock_manager->add_dock(AIAgentDock::get_singleton());
+
 	history_dock = memnew(HistoryDock);
 	editor_dock_manager->add_dock(history_dock);
 
@@ -9236,7 +9240,8 @@ EditorNode::EditorNode() {
 		const String inspector_key = InspectorDock::get_singleton()->get_effective_layout_key();
 		const String signals_key = SignalsDock::get_singleton()->get_effective_layout_key();
 		const String groups_key = GroupsDock::get_singleton()->get_effective_layout_key();
-		default_layout->set_value(docks_section, "dock_5", vformat("%s,%s,%s", inspector_key, signals_key, groups_key));
+		const String ai_agent_key = AIAgentDock::get_singleton()->get_effective_layout_key();
+		default_layout->set_value(docks_section, "dock_5", vformat("%s,%s,%s,%s", inspector_key, signals_key, groups_key, ai_agent_key));
 		default_layout->set_value(docks_section, "dock_5_selected_tab_idx", 0);
 	}
 
