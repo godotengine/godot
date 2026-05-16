@@ -95,6 +95,7 @@
 #include "scene/3d/decal.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/physics/collision_polygon_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/sprite_3d.h"
@@ -5430,8 +5431,20 @@ void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
 
 	if (co) {
 		rids.insert(co->get_rid());
-	} else if (node->is_class("CSGShape3D")) { // HACK: We should avoid referencing module logic.
-		rids.insert(node->call("_get_root_collision_instance"));
+	} else {
+		// Nodes like `CollisionShape3D` and `CollisionPolygon3D` do not possess their own `RID`.
+		// We must extract the `RID` from their parent `CollisionObject3D` to exclude them.
+		CollisionShape3D *shape = Object::cast_to<CollisionShape3D>(node);
+		CollisionPolygon3D *polygon = Object::cast_to<CollisionPolygon3D>(node);
+		if (shape || polygon) {
+			CollisionObject3D *parent_co = Object::cast_to<CollisionObject3D>(node->get_parent());
+
+			if (parent_co) {
+				rids.insert(parent_co->get_rid());
+			}
+		} else if (node->is_class("CSGShape3D")) { // HACK: We should avoid referencing module logic.
+			rids.insert(node->call("_get_root_collision_instance"));
+		}
 	}
 
 	for (int i = 0; i < node->get_child_count(); i++) {
