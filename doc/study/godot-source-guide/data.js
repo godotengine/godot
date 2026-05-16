@@ -11341,11 +11341,11 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {
       "源码阅读路线",
       "学习路径",
       "功能追踪法",
-      "小白路线",
-      "小白层",
+      "入门路线",
+      "机制路线",
+      "深入路线",
       "中级路线",
-      "中级层",
-      "底层路线",
+      "底层设计",
       "深入层",
       "结束标准",
       "影响面",
@@ -11353,15 +11353,15 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {
       "Feature Trace",
       "Source Reading Roadmap"
     ],
-    summary: "把 Godot 源码阅读拆成三层：先建立全局骨架，再追一个功能端到端路径，最后检查生命周期、线程、注册、ABI 和保存格式影响。",
+    summary: "把 Godot 源码阅读拆成三条路线：先建立全局骨架，再追一个功能端到端路径，最后检查生命周期、线程、注册、ABI 和保存格式影响。",
     article: [
       {
         type: "lead",
-        text: "源码阅读路线不是“先读哪个文件”的死顺序，而是一套降复杂度的方法：先用小白层建立地图，再用中级层追一个真实功能，最后用深入层检查生命周期、线程、注册、缓存、导出和二进制兼容影响。它的价值是让你读 Godot 时始终知道自己在回答什么问题，而不是在几百万行代码里随机跳转。"
+        text: "源码阅读路线不是“先读哪个文件”的死顺序，而是一套降复杂度的方法：先用入门路线建立地图，再用机制路线追一个真实功能，最后用深入路线检查生命周期、线程、注册、缓存、导出和二进制兼容影响。它的价值是让你读 Godot 时始终知道自己在回答什么问题，而不是在几百万行代码里随机跳转。"
       },
       {
         type: "heading",
-        title: "小白版解释"
+        title: "入门解释"
       },
       {
         type: "paragraph",
@@ -11369,34 +11369,34 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {
       },
       {
         type: "flow",
-        title: "三层阅读路线",
+        title: "三条阅读路线",
         steps: [
-          { title: "小白层", text: "看顶层目录、版本、平台入口、Main::setup、Main::start、SceneTree 和 Node，能讲清引擎如何启动。" },
-          { title: "中级层", text: "选一个可见功能，从用户 API 追到 _bind_methods、内部状态、Resource、Server 和主循环刷新点。" },
-          { title: "深入层", text: "修改前检查所有权、线程边界、注册顺序、保存格式、GDExtension ABI、导入缓存和导出模板。" }
+          { title: "入门路线", text: "看顶层目录、版本、平台入口、Main::setup、Main::start、SceneTree 和 Node，能讲清引擎如何启动。" },
+          { title: "机制路线", text: "选一个可见功能，从用户 API 追到 _bind_methods、内部状态、Resource、Server 和主循环刷新点。" },
+          { title: "深入路线", text: "修改前检查所有权、线程边界、注册顺序、保存格式、GDExtension ABI、导入缓存和导出模板。" }
         ]
       },
       {
         type: "table",
-        title: "每一层的目标",
-        headers: ["层级", "要回答的问题", "应该产出什么", "暂时不要做什么"],
+        title: "每条路线的目标",
+        headers: ["阅读阶段", "要回答的问题", "应该产出什么", "暂时不要做什么"],
         rows: [
-          ["小白层", "Godot 从平台入口到 Main、SceneTree、Node、Server、EditorNode 大概怎么串起来？", "目录依赖图、启动流程图、主循环阶段表。", "不要急着改内存、线程、资源格式、Server 后端。"],
-          ["中级层", "某个 API、节点、资源或编辑器按钮最终落到哪些类和函数？", "一条端到端调用链：用户操作/API -> 绑定 -> 对象状态 -> Resource/Server -> 主循环阶段。", "不要只改可见 bug 点；要确认序列化、Inspector、导入导出和测试。"],
-          ["深入层", "这个改动会不会破坏生命周期、缓存、线程边界、ABI 或生成代码？", "影响面清单、回归测试入口、构建配置差异、失败回滚点。", "不要在没有验证多平台/多构建目标时合并 core、servers、platform 层改动。"]
+          ["入门路线", "Godot 从平台入口到 Main、SceneTree、Node、Server、EditorNode 大概怎么串起来？", "目录依赖图、启动流程图、主循环阶段表。", "不要急着改内存、线程、资源格式、Server 后端。"],
+          ["机制路线", "某个 API、节点、资源或编辑器按钮最终落到哪些类和函数？", "一条端到端调用链：用户操作/API -> 绑定 -> 对象状态 -> Resource/Server -> 主循环阶段。", "不要只改可见 bug 点；要确认序列化、Inspector、导入导出和测试。"],
+          ["深入路线", "这个改动会不会破坏生命周期、缓存、线程边界、ABI 或生成代码？", "影响面清单、回归测试入口、构建配置差异、失败回滚点。", "不要在没有验证多平台/多构建目标时合并 core、servers、platform 层改动。"]
         ]
       },
       {
         type: "heading",
-        title: "小白层：先建立全局骨架"
+        title: "入门路线：先建立全局骨架"
       },
       {
         type: "paragraph",
-        text: "小白层的重点不是理解每个类，而是建立定位能力。`README.md:1` 告诉你这是 Godot Engine；`version.py:1` 到 `version.py:5` 给出 short_name、name 和版本号；顶层目录里 `core`、`scene`、`servers`、`modules`、`platform`、`editor` 基本就是第一张地图。启动路径可以从当前平台入口进入，再跟到 `Main::setup()`、`Main::start()` 和 `OS::run`。"
+        text: "入门路线的重点不是理解每个类，而是建立定位能力。`README.md:1` 告诉你这是 Godot Engine；`version.py:1` 到 `version.py:5` 给出 short_name、name 和版本号；顶层目录里 `core`、`scene`、`servers`、`modules`、`platform`、`editor` 基本就是第一张地图。启动路径可以从当前平台入口进入，再跟到 `Main::setup()`、`Main::start()` 和 `OS::run`。"
       },
       {
         type: "table",
-        title: "小白层文件地图",
+        title: "入门路线文件地图",
         headers: ["入口", "先看什么", "你要得到的结论"],
         rows: [
           ["`README.md` / `version.py`", "`README.md:1`、`version.py:1`、`version.py:3` 到 `version.py:5`", "确认这是哪个引擎、哪个版本、这棵源码树对应什么构建目标。"],
@@ -11409,11 +11409,11 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {
       },
       {
         type: "heading",
-        title: "中级层：用功能追踪法读源码"
+        title: "机制路线：用功能追踪法读源码"
       },
       {
         type: "paragraph",
-        text: "中级层要从一个用户看得见的功能开始，而不是从最底层开始。例如“Sprite2D 设置 texture 后为什么会重新绘制”：先看 Sprite2D 的公开 API 和绑定，再看内部字段，接着看 CanvasItem 的 draw/RID，最后回到渲染刷新点。这样读出来的是一条可解释的链，而不是一堆孤立函数。"
+        text: "机制路线要从一个用户看得见的功能开始，而不是从最底层开始。例如“Sprite2D 设置 texture 后为什么会重新绘制”：先看 Sprite2D 的公开 API 和绑定，再看内部字段，接着看 CanvasItem 的 draw/RID，最后回到渲染刷新点。这样读出来的是一条可解释的链，而不是一堆孤立函数。"
       },
       {
         type: "flow",
@@ -11647,6 +11647,397 @@ const paths = [
     explain: "Inspector 是理解编辑器复用运行时反射系统的最佳例子。C++ 属性通过 ClassDB 暴露后，脚本能访问，文档能生成，Inspector 也能自动创建编辑控件。"
   }
 ];
+
+const beginnerGuides = {
+  "这个模型怎么用": [
+    "这一小节先教你把 Godot 想成几条同时运转的线，而不是一堆文件夹。最简单的入口是：用户在编辑器里看到 Node、Resource、Script；运行时用 SceneTree 安排这些对象什么时候进入树、什么时候 ready、什么时候每帧执行；更底层的 RenderingServer、PhysicsServer、AudioServer、DisplayServer 等负责和显卡、物理后端、音频设备、窗口系统打交道。",
+    "读源码时不要急着问某个函数具体怎么写，先问它站在哪条线上：它是不是在创建进程和主循环，还是在注册 C++ 类型，还是在保存场景树状态，还是在把工作交给 Server 后端。能这样分类以后，你看到 Object、ClassDB、Variant、PackedScene、SceneTree、RID 这些词，就不会觉得它们是散的名词，而会知道它们分别解决可见对象、类型暴露、值传递、场景模板、帧调度和底层句柄的问题。"
+  ],
+  "把抽象落到一次真实动作：点击运行主场景": [
+    "这一节用点击运行主场景把抽象概念串成一条真实路径。小白最容易误会的是：按下运行按钮以后，并不是编辑器里面直接把当前场景变成游戏，而是编辑器先做保存、检查、拼命令行参数，然后启动一个新的 Godot 游戏进程。这个新进程再像普通程序一样从平台入口启动，重新初始化 Main、Server、SceneTree，最后加载主场景。",
+    "所以这条链路要分成两段看：编辑器段回答按钮在哪里、如何保存、如何创建游戏进程；游戏段回答新进程如何进入 Main::setup、Main::start，如何用 ResourceLoader 加载 PackedScene，如何实例化 Node 树并交给 SceneTree。你把这两段分清以后，就能解释为什么运行按钮在 editor 目录，主循环在 main 和 scene，资源加载在 core/io，渲染物理又会落到 servers。"
+  ],
+  "四个“不要混淆”": [
+    "这一小节是在帮你建立防混淆清单。Godot 里面很多词看起来都像“对象”或“资源”，但源码职责完全不同。Object 是反射、信号、脚本挂载的基础；Node 是能放进 SceneTree 的 Object；Resource 是可保存、可缓存、可引用计数的数据；RID 是 Server 内部对象的编号句柄。它们都能在一次功能里出现，但不能互相替代。",
+    "初学者读源码卡住，很多时候不是细节看不懂，而是把层级混了：以为 MeshInstance3D 就是 GPU mesh，以为 ResourceLoader 返回的 PackedScene 已经是场景树，以为 remove_child 会释放 Node，以为 RID 像 Ref 一样会自动管理生命周期。这个表的作用就是让你每次看到一个名词，都先问它到底保存用户语义、磁盘数据、树结构，还是底层执行状态。"
+  ],
+  "五个定位问题": [
+    "这一小节给你一个固定提问模板。面对任何源码点，先别在函数里迷路，而是依次问：它怎么被创建，它的数据放在哪里，它什么时候执行，它怎么暴露给脚本和 Inspector，它会不会因为构建选项或模块开关而不存在。很多问题靠这五问就能定位到正确目录，而不是在全仓库乱搜。",
+    "例如某个按钮属性不显示，先问它有没有通过 _bind_methods 和 ADD_PROPERTY 暴露；某个节点每帧不动，问它是否进入 SceneTree 的 process 列表；某个类源码存在但运行时找不到，问它是否被模块禁用或初始化 level 没跑到。五问本质上是在帮你从“现象”跳到“创建、状态、时机、公开 API、构建边界”这五个源码坐标。"
+  ],
+  "心智模型对应的源码锚点": [
+    "这一小节把前面的心智模型落到具体文件。小白读大项目最怕地图只有概念没有坐标，所以这里列出的锚点可以当成第一批书签：平台入口看 platform，启动和每帧看 main/main.cpp，类型反射看 Object/ClassDB/MethodBind，值传递看 Variant，资源加载看 ResourceLoader/PackedScene，场景调度看 Node/SceneTree。",
+    "读这些锚点时不要试图一次读完所有实现。更好的方式是先打开头文件看这个类保存什么字段、提供什么公开方法，再回到 cpp 看关键阶段。比如 SceneTree 先看它继承 MainLoop、保存 root/current_scene/delete queue，再看每帧 process 和 physics 的实现。锚点不是终点，而是你进入正确源码区域的入口。"
+  ],
+  "从一个功能反查源码的固定步骤": [
+    "这一节教你用用户看得见的功能倒推源码。不要从底层猜起，而是从节点名、资源名、脚本 API、编辑器按钮、菜单项、文件格式开始。先找到公开名字，再找 _bind_methods 或注册代码，接着看这个功能的数据字段放在哪个类里，最后追它什么时候进入 Resource、SceneTree、Server 或平台层。",
+    "这种读法特别适合 Godot，因为很多功能跨层很长：一个 Sprite2D 的 texture 看似只是属性，实际上会经过绑定、资源引用、CanvasItem、RenderingServer、渲染后端和主循环刷新。固定步骤能让你每次都产出一条链：用户入口 -> 绑定/注册 -> 对象状态 -> 底层执行 -> 刷新时机。"
+  ],
+  "顶层目录的职责边界": [
+    "这一小节是在告诉你每个大目录大概负责什么。core 是所有系统都要用的地基，scene 是用户最常接触的节点和资源层，servers 是底层服务接口，modules 是可开关功能接入点，platform 是操作系统差异，editor 是编辑器工具程序，thirdparty 是外部库源码。",
+    "小白不要把目录理解成普通分层书架，因为 modules 会插到不同初始化阶段，editor 又大量复用 scene/gui 和 core。更实用的判断是：这个文件定义的是基础类型、用户对象、底层服务、可选功能、平台适配，还是工具界面。只要能判断职责边界，你就能知道改某个功能应该先看哪个目录，哪些目录最好不要随便互相依赖。"
+  ],
+  "交互目录地图": [
+    "这一小节的交互地图相当于一张可点击的源码城市地图。左侧选择目录，右侧会显示职责、边界、源码锚点、典型追踪路径、常见问题和误区。对初学者来说，它不是让你背每个目录，而是帮你在遇到问题时快速判断该从哪里进入。",
+    "使用时可以带着一个具体问题点目录。比如你想知道 .tscn 怎么加载，就先看 core 的 ResourceLoader，再看 scene 的 PackedScene；想知道窗口和输入，就看 servers 的 DisplayServer 和 platform 的实现；想知道某个格式支持，就看 modules 或 drivers。地图的价值是让你少走弯路，先从 Godot 封装层看，再决定是否进入第三方库。"
+  ],
+  "目录之间的调用方向": [
+    "这一节讲的是依赖方向。Godot 的大体原则是越底层越通用，越上层越接近用户：core 不应该知道 scene 的具体节点；scene 可以调用 servers；editor 可以复用 core、scene、servers；platform 把 OS 和 DisplayServer 的抽象落地；modules 按初始化级别插入不同层。",
+    "小白可以把它想成盖楼：core 是地基，servers 是水电管线接口，scene 是房间和家具，editor 是用这些房间搭出来的装修工具，platform 是把房子接到不同城市的真实水电网络。地基不能依赖楼上的家具，否则一改上层就会震到底层；这就是为什么读源码时必须尊重调用方向。"
+  ],
+  "三条典型追踪路线": [
+    "这一小节给你几个可复用的练习题：属性如何出现在 Inspector，.tscn 如何变成场景树，Mesh 如何显示到窗口，物理移动如何得到碰撞结果。它们覆盖了 Godot 最常见的跨层路径：绑定和编辑器、资源加载和实例化、场景对象到渲染 Server、场景物理到物理后端。",
+    "小白读的时候不要只看表里的第一列，要特别关注结束标准。能说出函数名还不够，你要能解释数据从哪里来、状态存在谁身上、什么时候刷新、最后谁执行。比如 Mesh 路线的结束不是找到 MeshInstance3D，而是能区分 Mesh Resource、场景实例 RID、RendererRD 后端对象和 DisplayServer 窗口输出。"
+  ],
+  "构建系统的可用心智模型": [
+    "这一节把 SCons 构建系统解释成装配线。SConstruct 不是普通配置文件，而是会被 Python 执行的总调度脚本；platform/*/detect.py 判断当前平台能不能构建；各目录 SCsub 把自己的 cpp、生成文件、第三方源码和宏开关加入构建环境；最后平台层把对象文件链接成 editor 或 export template。",
+    "小白最需要记住的是：构建系统会决定哪些源码真的存在于最终二进制。你在仓库里看到一个类，不代表运行时一定能创建它，因为模块可能被关闭，disabled_classes 可能裁剪类，TOOLS_ENABLED 可能让编辑器代码只存在于 editor 目标。读构建系统，就是读“哪些代码会被编译、哪些宏会生效、哪些注册函数会进入运行时”。"
+  ],
+  "一次 scons platform=windows target=editor 发生什么": [
+    "这一节把一次具体构建拆开。运行 `scons platform=windows target=editor` 时，SCons 先执行 SConstruct，解析 platform、target、arch、模块开关和裁剪选项；再检查 Windows 平台能否构建；然后按固定顺序进入 core、servers、scene、editor、drivers、platform、modules、tests、main 等 SCsub 收集源码。",
+    "对小白来说，关键不是记住所有行号，而是分清构建的阶段：选项解析、平台检测、模块发现、源码收集、生成代码、编译、链接。构建失败时也按这个顺序排查。比如类找不到可能是模块没启用，链接失败可能是新 cpp 没加入 SCsub，template 构建失败可能是运行时代码无条件引用了 editor-only 类型。"
+  ],
+  "构建参数如何改变源码世界": [
+    "这一节解释为什么同一份源码在不同构建参数下会变成不同世界。platform 会决定 OS、DisplayServer、系统库和平台 SCsub；target 会决定是编辑器还是导出模板；TOOLS_ENABLED 会让编辑器、导入器和调试工具参与编译；module_* 和 disable_* 会决定某些类、格式、后端是否存在。",
+    "小白读代码时如果看到 #ifdef、MODULE_xxx_ENABLED、TOOLS_ENABLED、disabled class，不要把它当成边角细节。它们可能直接解释为什么你本地能运行、模板不能运行，为什么源码里有类但脚本创建失败，为什么某个平台有某个后端而另一个平台没有。构建参数就是源码世界的开关面板。"
+  ],
+  "SCsub 的固定读法": [
+    "这一节教你怎么读每个目录里的 SCsub。第一眼先找它把文件加入哪个 source 列表，例如 core_sources、scene_sources、servers_sources、editor_sources 或 modules_sources；第二眼看它递归进入哪些子目录；第三眼看有没有 CommandNoCache 或 builder 生成 .gen.cpp/.gen.h。",
+    "SCsub 不是运行时逻辑，而是编译前的装配说明。读它可以回答很多现实问题：为什么新文件没被编译，为什么某个第三方库被加进来了，为什么生成文件内容不是手写的，为什么 editor 目标有这个代码而 template 没有。把 SCsub 读顺以后，你就能从构建错误反推到具体目录的装配规则。"
+  ],
+  "生成文件不要手改，要改生成源头": [
+    "这一节强调一个很重要的工程习惯：看到 .gen.h 或 .gen.cpp，不要把它当成普通源码直接改。生成文件通常由 SCons builder 根据模块列表、文档、类裁剪、shader、图标或接口描述自动生成。你手改生成物，下次构建就会被覆盖，还会让真正的源头没有变化。",
+    "小白可以把生成文件想成打印出来的报表，真正的数据在表格源、脚本或配置里。比如 modules/register_module_types.gen.cpp 来自 modules_builders.py 和模块列表；disabled_classes.gen.h 来自 build profile；编辑器文档头文件来自 doc XML。要改行为，就回到 builder、SCsub、config.py 或输入数据。"
+  ],
+  "模块注册：构建结果怎样进入运行时": [
+    "这一节解释模块不是编译进去就自动生效。Godot 先在构建阶段决定启用哪些 modules，再生成统一注册函数；运行时 Main 会在 CORE、SERVERS、SCENE、EDITOR 不同初始化级别调用 initialize_modules。每个模块根据当前 level 注册基础类型、Server 后端、Node/Resource、编辑器插件等内容。",
+    "小白最容易忽略初始化级别。一个模块如果在 CORE 阶段注册，就不能依赖还没建立的 SceneTree 或 Server；如果在 EDITOR 阶段注册，就通常不能进入导出模板。读模块时先看 register_types.cpp 和 config.py，再问它在哪个 level 做了什么，这样才能解释功能为什么在某些构建里存在、在另一些构建里不存在。"
+  ],
+  "读构建错误的定位顺序": [
+    "这一节给你排查构建错误的顺序。不要看到报错就只盯最后一行，而是先判断失败发生在哪个阶段：平台识别失败、模块没启用、生成文件没生成、编译找不到头文件、链接找不到符号、模板目标引用了 editor-only 类型。不同阶段要看的文件完全不同。",
+    "比如平台不在列表里看 platform/*/detect.py；模块没有编译看 config.py、SCsub、register_types.h 和 module_* 开关；类源码存在但运行时找不到看 ClassDB 注册和 disabled_classes；链接失败看新 cpp 是否加入正确列表。按阶段定位，能把构建问题从一团日志缩小到几类可验证原因。"
+  ],
+  "启动链路总图": [
+    "这一节用图把 Godot 启动拆成几个大步骤：平台入口创建 OS 子类，Main::setup 建立 core 世界，Main::setup2 建立 Server、Display 和 Scene 类型，Main::start 决定运行编辑器、游戏、项目管理器或工具流程，OS::run 进入平台事件循环，Main::iteration 推进每一帧，最后 cleanup 反向清理。",
+    "小白不要把启动理解成一个函数从头跑到尾。Godot 的启动像搭舞台：先把跨平台地基搭好，再把底层服务和场景类型注册好，然后才决定今天演的是编辑器、游戏还是导出工具。每一帧也不是 OS 直接调脚本，而是 OS 的事件循环定期把控制权交给 Main::iteration，由它统一安排物理、process、消息队列、渲染和清理。"
+  ],
+  "从 Windows exe 到第一帧的源码追踪": [
+    "这一节选择 Windows 作为最直观样本，带你从可执行文件入口跟到第一帧。Windows 入口先处理宽字符命令行、创建 OS_Windows，再调用 Main::setup；setup 建立 core 单例和项目设置；setup2 注册 Server、DisplayServer、Scene 和 Editor 类型；start 创建 MainLoop，并按运行模式加入 EditorNode 或主场景。",
+    "初学者看这条链时要关注“谁负责跨平台，谁负责平台差异”。platform/windows 只处理 Windows 的入口、窗口事件循环、系统 API 差异；真正的跨平台初始化顺序在 main/main.cpp。这样你读 Linux、macOS、Android、Web 时也能迁移同一套骨架：平台 glue 不同，但最终都会回到 Main 和 MainLoop。"
+  ],
+  "点击查看每个阶段": [
+    "这一小节把启动阶段做成可点击列表，是为了让小白一次只看一个阶段。启动源码很长，如果从 main.cpp 顶部一路读到底，很容易忘记自己在哪个阶段。点开阶段时只问三个问题：这一阶段的输入是什么，创建了哪些全局对象或类型，下一阶段依赖它提供什么。",
+    "比如 Main::setup 的重点是 core、命令行、ProjectSettings、InputMap；setup2 的重点是 Server、DisplayServer、Scene 类型；start 的重点是选择运行模式和 MainLoop；OS::run 的重点是平台事件循环如何反复调用 Main::iteration。分阶段读，能把几千行启动代码拆成可消化的小块。"
+  ],
+  "不同运行模式的分叉点": [
+    "这一节解释同一个 Godot 可执行文件为什么能当编辑器、项目管理器、游戏、脚本执行器、导出工具或文档工具。分叉点主要在 Main::start，它会根据命令行参数、项目设置和构建目标决定创建 EditorNode、ProjectManager、SceneTree 主场景，还是执行其他工具流程。",
+    "小白要记住：setup/setup2 更多是在搭环境，start 才是在决定跑什么。你调试“为什么没有进入游戏主场景”时，不应该只看 ResourceLoader，也要看命令行和 Main::start 的运行模式判断。编辑器路径和游戏路径在同一套运行时地基上分叉，这也是为什么编辑器能复用场景树、GUI、资源系统和 ClassDB。"
+  ],
+  "主循环一帧里发生什么": [
+    "这一节讲的是 Godot 真正“动起来”的一帧。Main::iteration 会计算时间，决定固定物理步要跑几次，调用 SceneTree 的 physics_process 和 process，刷新 MessageQueue，推进导航，最后让 RenderingServer sync/draw。用户脚本看到的 _physics_process 和 _process，其实都被放在这条时间轴里。",
+    "初学者最容易混淆显示帧和物理帧。显示帧跟屏幕刷新和渲染节奏有关，物理帧通常按固定 tick 运行，一帧显示里可能跑零次、一次或多次物理步。理解这一点以后，你就能解释为什么物理相关逻辑要放在 _physics_process，为什么延迟调用和 queue_free 要等安全点执行，为什么渲染提交通常在 process 后统一发生。"
+  ],
+  "读启动源码时最容易踩的坑": [
+    "这一节列的是启动源码常见误区。不要以为 main/main.cpp 是平台入口，各平台真正入口在 platform；不要以为 Main::start 是全部初始化，很多 core 和 Server 类型在 setup/setup2 已经注册；不要以为编辑器和游戏是完全不同程序，编辑器也是 SceneTree 上的大型工具场景。",
+    "另一个常见坑是忽略清理顺序。Godot 关闭时要反向注销 Editor、Scene、Servers、Core，模块也按反向 level 清理。如果某个高层对象在底层单例释放后还访问它，就可能出现关闭崩溃。读启动源码要把初始化和 cleanup 放在一起看，因为生命周期的前半段和后半段是互相对应的。"
+  ],
+  "运行时核心部件": [
+    "这一节把 Object、ClassDB、Variant、StringName、MethodBind、Signal、Callable、MessageQueue、ObjectDB 等核心概念放在一起。它们不是独立知识点，而是共同支撑“C++ 对象能被脚本、编辑器、序列化、信号系统统一使用”的运行时地基。",
+    "小白可以这样理解：Object 给对象一张身份证和基础能力；ClassDB 像登记处，记录类、方法、属性、信号；Variant 是统一的参数盒子；StringName 是高效的名字标签；MethodBind 是脚本调 C++ 的桥；Signal 和 Callable 负责事件和可调用目标；MessageQueue 负责延迟到安全点执行；ObjectDB 负责用 ObjectID 找回对象但不拥有对象。"
+  ],
+  "一个 C++ 类怎样变成 Godot API": [
+    "这一节解释 C++ 类不是写出来就会自动出现在脚本和 Inspector 里。它通常要继承 Object 体系，使用 GDCLASS 建立类信息，在 register_types 或对应注册函数里进入 ClassDB，再在 _bind_methods 里绑定方法、属性、信号和常量。这样脚本、编辑器、文档、序列化才知道它的公开 API。",
+    "小白可以把这个过程想成把内部零件上架到公共商店。C++ 函数本来只是编译器知道的成员函数；bind_method 以后，Godot 的运行时表里才有名字、参数、返回值和调用方式。Inspector 看到属性，不是编辑器猜出来的，而是 ClassDB 和对象属性列表提供的。"
+  ],
+  "MethodBind：脚本调用 C++ 的桥": [
+    "这一节专门讲 MethodBind。脚本调用 node.rotate(1.0) 时，脚本并不知道 C++ 成员函数指针在哪里，它只知道对象和方法名。ClassDB 根据对象类型和方法名找到 MethodBind，MethodBind 再负责检查参数数量、默认值、类型转换、返回值，并最终调用真实 C++ 函数。",
+    "对小白来说，MethodBind 的意义是把动态世界和静态 C++ 世界接起来。脚本里的值通常以 Variant 形式传入，通用但有包装成本；高性能路径可以用 ptrcall 直接传原始指针。读脚本调用问题时，如果方法存在但调用失败，就要看绑定签名、默认参数、Variant 转换和 MethodBind 的错误返回。"
+  ],
+  "Object 生命周期：普通对象、Node、Resource 不一样": [
+    "这一节强调 Object 体系里的对象释放规则并不相同。普通 Object 通常由创建者手动释放或由特定 API 管理；Node 可以进入 SceneTree，运行中常用 queue_free 延迟删除；Resource 继承 RefCounted，常用 Ref 引用计数管理；Callable 通常保存对象 ID 和方法名，调用前要检查目标是否还存在。",
+    "小白最容易把 Node 当智能指针对象，或者把 Resource 当场景节点。记住：Node 的父子关系管理树结构和析构清理，但不是 Ref<Node>；Resource 可以被 ResourceLoader 缓存和多个使用者共享，但不能挂到场景树；ObjectDB 只登记对象 ID，不负责延长生命。生命周期不分清，读源码时很容易误判泄漏、重复释放或悬空引用。"
+  ],
+  "信号、Callable、MessageQueue 如何协作": [
+    "这一节解释 Godot 的事件和延迟调用机制。Signal 不是全局广播站，而是某个 Object 保存的一组连接；Callable 统一表示一个可以被调用的目标，可能是对象方法、脚本函数或自定义 callable；MessageQueue 则把 call_deferred、set_deferred、notification 等操作暂存起来，等安全点再执行。",
+    "小白可以把它想成：Signal 负责“有人按了门铃”，Callable 记录“应该通知谁、怎么通知”，MessageQueue 负责“现在不方便马上进屋，先排队，等当前遍历或物理同步结束再处理”。这样做是为了避免在发信号、遍历场景树、同步物理时立刻改结构导致重入、迭代器失效或对象已经释放还被访问。"
+  ],
+  "读运行时问题的定位问题": [
+    "这一节把运行时常见现象转换成定位问题。脚本找不到方法，就查类是否注册、_bind_methods 是否绑定、方法名是否一致；Inspector 不显示属性，就查 ADD_PROPERTY、PropertyInfo usage 和 getter/setter；信号不触发，就查信号注册、连接、Callable 有效性和 block signals。",
+    "小白调试时不要只看报错点，要顺着运行时核心的责任链查。对象访问异常可能是保存了裸指针而不是 ObjectID 或 Ref；延迟调用时机不对可能是 MessageQueue flush 阶段和你想的不一样；属性变化没生效可能是绑定到了 setter 但内部状态或通知没更新。把现象翻译成这张表里的问题，定位会快很多。"
+  ],
+  "从 ResourceLoader 到 PackedScene": [
+    "这一节讲 .tscn 进入运行时的第一半路径。ResourceLoader 是统一调度器，它根据路径、类型、缓存模式和已注册的 ResourceFormatLoader 选择具体解析器；文本场景、二进制资源、图片、脚本、导入产物都可以通过这套入口加载。加载 .tscn 的结果通常是 PackedScene，而不是直接得到一棵已经运行的 Node 树。",
+    "小白要把文件、资源模板、节点实例分开：.tscn 是磁盘上的描述文件，PackedScene 是内存里的 Resource 模板，SceneState 是 PackedScene 内部保存节点表、属性表、连接表的数据，instantiate 之后才创建真实 Node 对象。ResourceLoader 也可能命中缓存，所以“加载到资源”不等于“创建了新的场景实例”。"
+  ],
+  "Node 与 SceneTree 的职责边界": [
+    "这一节把 Node 和 SceneTree 分清。Node 保存自己的父子关系、owner、组、路径、process 开关、生命周期通知和脚本入口；SceneTree 是 MainLoop 的实现，保存根窗口、当前场景、组调用、Timer/Tween、删除队列和每帧调度。Node 是树上的单位，SceneTree 是调度整棵树的系统。",
+    "小白可以用班级比喻：Node 是每个学生，保存自己的名字、所在小组和状态；SceneTree 是班主任和课程表，决定什么时候点名、上课、分组活动、放学清理。学生自己不会决定全班每一帧怎么运行，SceneTree 也不会保存每个学生的业务属性。把职责边界分清，读生命周期和场景切换就不容易乱。"
+  ],
+  "Node 生命周期逐步看": [
+    "这一节把 Node 从创建到进入树、ready、process、退出、释放的过程拆成步骤。一个 Node 被 new 或 PackedScene 实例化以后，还不一定在 SceneTree 里；add_child 以后才会获得 tree 指针并触发 enter_tree；子树准备好后触发 ready；开启 process 或 physics_process 后才会被每帧调度。",
+    "小白特别要理解 ready 和 process 的区别。ready 是节点第一次进入树并且子节点也准备好后的初始化点，适合拿子节点引用；process 是每帧持续运行；physics_process 是固定物理步运行。queue_free 也不是立刻 delete，而是进入删除队列，等安全点释放，这样可以避免遍历节点树时把当前对象删掉。"
+  ],
+  "owner：为什么节点在树里却没有保存进 .tscn": [
+    "这一节讲 owner，这是编辑器保存场景时非常容易让小白困惑的概念。parent 决定节点在运行时树上的父子结构，owner 决定这个节点属于哪个可保存的场景资源。一个节点可以挂在树里，但如果 owner 不属于当前保存的场景，保存 .tscn 时它可能不会被写进去。",
+    "你可以把 parent 想成“住在哪个房间”，owner 想成“归哪份房产证登记”。编辑器里动态创建子节点后，如果只 add_child 而没有设置 owner，它在树里能看到、能运行，但保存场景时不会作为当前场景的一部分持久化。读 PackedScene.pack、编辑器保存、子场景实例和 editable children 时，owner 是必须看的字段。"
+  ],
+  "SceneTree 每帧的内部节奏": [
+    "这一节把 SceneTree 放回每帧时间轴。Main::iteration 会把控制权交给 MainLoop，SceneTree 再处理 physics_process、process、group call、Timer、Tween、场景切换、删除队列和消息队列。不同阶段之间会有 flush 和安全点，保证延迟调用、删除、物理同步不会互相踩踏。",
+    "小白不要把每帧理解成简单地遍历所有 Node 调 _process。实际 Godot 要考虑固定物理步、暂停模式、process 优先级、线程组、消息队列、导航、渲染同步和删除队列。读某个节点为什么这一帧没被调用时，要看它是否在树里、process 是否启用、是否暂停、是否处在正确线程组，以及当前帧到底跑的是物理阶段还是普通 process 阶段。"
+  ],
+  "场景与资源常见定位问题": [
+    "这一节把场景和资源问题整理成排查表。加载不到资源先看路径 remap、UID、导入产物和缓存模式；场景实例化缺节点先看 PackedScene 的 SceneState、owner 和子场景实例；节点回调没触发先看是否进入 SceneTree、process 是否开启、暂停模式是否阻止。",
+    "小白调试时要避免把所有问题都归到 ResourceLoader。ResourceLoader 只负责把路径变成 Resource；instantiate、enter_tree、ready、process、owner、queue_free 都是后面的系统。把问题分到“文件加载、资源模板、节点实例、树上生命周期、每帧调度、保存持久化”这几个阶段，基本就能知道下一步该看 core/io、scene/resources 还是 scene/main。"
+  ],
+  "RID：Server 世界里的轻量句柄": [
+    "这一节讲 RID。小白可以先把 RID 理解成 Server 内部对象的号码牌。场景层的 MeshInstance3D、RigidBody3D、AudioStreamPlayer 等对象不会直接拿着 GPU 对象、物理 body 或音频后端对象的 C++ 指针，而是拿一个 RID，通过 RenderingServer、PhysicsServer、AudioServer 这类接口去操作后端状态。",
+    "RID 的好处是隔离和可替换：场景层只知道有一个句柄，不需要知道后端是 Vulkan、Jolt、Godot Physics 还是别的实现。代价是生命周期必须按对应 Server 的规则释放，不能把 RID 当 Resource 或 Ref。读 Server 问题时，先问这个 RID 是哪个 Server 创建的，谁持有，什么时候 free，是否跨线程延迟执行。"
+  ],
+  "从场景节点到 Server 后端": [
+    "这一节说明高级节点如何把用户语义交给底层系统。场景节点保存的是游戏开发者能理解的状态，比如位置、材质、碰撞形状、音量、文本内容；真正执行时，它会通过 Server API 创建或更新 RID，让后端保存更适合计算和提交的内部对象。",
+    "小白可以用餐厅点单理解：Node 像服务员手上的菜单和桌号，Server 像后厨系统，RID 是订单号。服务员不直接做菜，也不直接碰厨房设备；它把点单和修改通过订单号交给后厨。这样 scene 代码保持用户友好，后端可以换实现、做线程隔离、批量提交、延迟刷新。"
+  ],
+  "主要 Server 的职责边界": [
+    "这一节帮你区分各个 Server 管什么。RenderingServer 管可见对象、材质、纹理、canvas、viewport 和绘制提交；PhysicsServer 管 body、area、shape、space、joint 和物理步；AudioServer 管总线、混音和播放；DisplayServer 管窗口、屏幕、输入法、剪贴板；TextServer 管字体 shaping 和 glyph。",
+    "小白不要把 Server 看成一个万能黑盒。每个 Server 都是一类底层能力的统一入口，它们和 scene 节点之间通过 RID、回调或资源数据连接。你遇到“节点设置了属性但底层没变化”时，要先判断它应该落到哪个 Server，再看场景节点有没有把状态同步给对应 Server。"
+  ],
+  "读 Server 源码的三个固定问题": [
+    "这一节给 Server 源码的固定读法：第一，API 契约在哪里定义，通常先看 servers/*_server.h；第二，真实后端在哪里，可能在 renderer_rd、godot_physics、jolt、text_server_adv、platform DisplayServer；第三，调用是立即执行还是被 wrap_mt、command queue、sync/draw/step 延迟。",
+    "小白读 Server 时不要一头扎进后端算法。先看抽象接口能做什么，再找谁实现这个接口，最后看每帧在哪个阶段刷新。这样你会知道 RenderingServer::draw、PhysicsServer::step、DisplayServer::process_events 不是普通工具函数，而是把前面积累的状态真正推进到底层系统的时间点。"
+  ],
+  "渲染链路图": [
+    "这一节用图展示渲染从节点属性到 GPU 命令的大方向。场景节点如 Sprite2D、Control、MeshInstance3D 先保存用户可理解的属性；CanvasItem 或 VisualInstance3D 把它们转换成 RenderingServer 能理解的 RID 和状态；Renderer 后端再做可见性、排序、材质、光照、pass 组织，最后通过 RenderingDevice 和平台窗口输出。",
+    "小白要记住，节点不是直接向屏幕画东西。节点更像是在描述“我要显示什么、在哪里、用什么材质”；RenderingServer 和 Renderer 才负责把这些描述变成渲染命令。这样做能让 2D、3D、GUI、编辑器视图共享一套底层渲染管线，也能让后端实现和场景层解耦。"
+  ],
+  "2D 路径：CanvasItem 把绘制命令交给 Server": [
+    "这一节讲 2D 和 GUI 常走的 CanvasItem 路径。Node2D、Control、Sprite2D 等都站在 CanvasItem 体系上，CanvasItem 持有 canvas item RID，负责把 draw 命令、纹理、材质、可见性、变换、z index 等状态交给 RenderingServer。",
+    "小白可以把 CanvasItem 想成一张绘图订单。Sprite2D 不会自己把像素刷到屏幕上，它会告诉 CanvasItem 和 RenderingServer：我要在这个位置画这张纹理，使用这个材质和排序。真正的绘制会在渲染阶段统一处理，所以修改 2D 属性时常能看到 queue_redraw、notification、RID 更新和 RenderingServer 调用。"
+  ],
+  "3D 路径：VisualInstance3D 只持有实例语义": [
+    "这一节讲 3D 节点到渲染后端的分工。Mesh、Material、Texture 是资源；MeshInstance3D 是场景里的实例；VisualInstance3D 负责让这个实例进入 3D 世界和 scenario；RenderingServer 维护 instance RID，后端再处理可见性、光照、阴影和 draw pass。",
+    "小白要特别分清“资源”和“实例”。同一个 Mesh Resource 可以被多个 MeshInstance3D 使用，每个实例有自己的 Transform、可见层、材质覆盖和场景信息。读 3D 渲染源码时，如果只看 Mesh 数据，你还没看到它什么时候进入世界；如果只看 Node3D 变换，你也还没看到它如何同步到 RenderingServer。"
+  ],
+  "渲染链路和源码入口": [
+    "这一节把渲染路径落到源码入口。2D 先看 CanvasItem 和 RenderingServer canvas API，3D 先看 VisualInstance3D、GeometryInstance3D、RenderingServer instance API，再进入 renderer_rd、RendererSceneRD、RendererCanvas、RenderingDevice。窗口输出相关问题再看 DisplayServer 和 platform。",
+    "小白读渲染时最容易直接跳到 Vulkan 或 RD 后端，然后被大量 GPU 细节淹没。更稳的路线是先从用户节点找到它提交给 RenderingServer 的调用，确认状态如何变成 RID，再进入 renderer 后端看这些 RID 如何被组织成可见列表、材质和命令。先看“状态怎么提交”，再看“GPU 怎么执行”。"
+  ],
+  "几个阅读抓手": [
+    "这一节列的是读渲染源码的抓手。看到 queue_redraw、notification、RID、material、scenario、viewport、RenderingServer::sync/draw，要把它们放到一条时间线上。属性改变通常只是标记或更新状态，真正绘制往往等到渲染阶段统一发生。",
+    "小白可以用三个问题读渲染：这个对象有没有 RID；它的可见性、变换、材质什么时候同步给 Server；最后在哪个 draw/sync 阶段进入后端。只要这三点清楚，复杂的 2D/3D/GPU 后端就不会完全失去方向。"
+  ],
+  "资源、Shader 和 RD 的边界": [
+    "这一节讲渲染资源、Shader 和 RenderingDevice 的边界。Texture、Mesh、Material、Shader 是用户可见或资源系统管理的数据；RenderingServer 把它们转成后端能使用的 RID；RenderingDevice 更接近底层 GPU 抽象，负责 buffer、texture、pipeline、command list 等低层操作。",
+    "小白不要把 Shader 代码、Material 参数、GPU pipeline 混成一件事。Shader Resource 描述用户写的着色逻辑，Material 保存参数和状态，Renderer 把它们编译或组合成后端需要的形式，RD 再负责和图形 API 交互。调试渲染问题时，先判断问题在资源数据、Server 状态、Renderer 组织，还是 RD/GPU 提交。"
+  ],
+  "物理源码的分界": [
+    "这一节帮你分清物理的几个层次。scene 里的 RigidBody、CharacterBody、CollisionShape 是用户节点；PhysicsServer2D/3D 是抽象 API；Godot Physics、Jolt 或 GDExtension 后端是真正求解碰撞和约束的实现；Main/SceneTree 的固定物理步决定什么时候同步和回调。",
+    "小白不要以为 RigidBody3D 就是物理引擎本体。它更像一个场景层代理，保存用户属性并把 body、shape、space 等交给 PhysicsServer。真正的广义碰撞、窄相、积分、约束求解在后端。读物理 bug 时先区分节点状态、RID 状态、后端求解状态和回调时机。"
+  ],
+  "从 RigidBody3D + CollisionShape3D 到一次物理求解": [
+    "这一节用 RigidBody3D 和 CollisionShape3D 串起物理路径。节点创建后会为 body 和 shape 创建 RID，设置质量、模式、层、mask、transform、shape 数据等；进入 SceneTree 和物理世界后，这些 RID 会被放入 space；固定物理步时 PhysicsServer 调后端 step，后端计算碰撞和运动结果，再把状态回传给场景层。",
+    "小白要看到两次同步：场景层把用户设置同步到物理后端，物理后端在 step 后把结果同步回场景层。中间还有 query、flush、监视区域、信号、直接状态访问等安全边界。这样你才能解释为什么有些物理属性要在 physics_process 里改，为什么查询要注意当前物理步，为什么直接改 transform 可能和物理后端状态打架。"
+  ],
+  "物理概念到源码对象的对应关系": [
+    "这一节把物理术语翻译成源码对象。Body 是会参与运动和碰撞的物体，Area 是检测区域和环境影响，Shape 是几何形状，Space 是同一物理世界，Joint 是约束，Query 是查询接口，RID 是这些后端对象的句柄。",
+    "小白读物理源码时，先把游戏里看到的节点名翻译成这些后端概念。CollisionShape3D 本身不是碰撞体，它提供 Shape 给 Body 或 Area；World3D 里有 space；PhysicsDirectSpaceState 做查询；PhysicsServer 管 RID。翻译准确以后，读 scene/3d 和 servers/physics_3d 的关系就会清楚很多。"
+  ],
+  "固定物理步的真实顺序": [
+    "这一节强调物理按固定 tick 推进，不是跟显示帧完全同步。Main::iteration 会根据时间累计决定跑几次物理步；每个物理步中要先同步必要状态，执行 SceneTree 的 physics_process，再让 PhysicsServer step，期间还要处理查询、消息队列、导航和删除队列的安全时机。",
+    "小白可以把物理步想成固定节拍的钟。显示帧可能快慢不一，但物理希望按稳定间隔计算，才能让碰撞和运动稳定。理解顺序以后，你会知道输入、角色移动、物理查询、信号、queue_free 放在哪个阶段更合理，也能解释为什么在 process 里做物理改动有时会出现时序问题。"
+  ],
+  "查询、CharacterBody 和 RigidBody 的边界": [
+    "这一节区分几种常见物理用法。查询是问当前物理世界某条射线、形状或点会碰到什么；CharacterBody 偏向脚本控制的角色移动，通过 move_and_slide 等 API 与世界交互；RigidBody 偏向由物理后端根据力、碰撞和约束自动求解。",
+    "小白不要把 CharacterBody 当成普通 RigidBody 的简化版。CharacterBody 的核心是用户代码主动给速度和移动请求，物理系统帮助它滑动、碰撞、贴地；RigidBody 则更强调物理模拟本身。读问题时先问：这个对象是主动控制，还是交给物理世界模拟，还是只是做查询拿结果。"
+  ],
+  "后端选择：Godot Physics、Jolt、Extension、WrapMT": [
+    "这一节讲物理后端为什么可以替换。PhysicsServer 定义统一接口，Godot Physics、Jolt 或扩展后端可以实现这些接口；WrapMT 又可能把调用包装到多线程边界中。scene 层不应该知道具体后端内部的数据结构，只通过 PhysicsServer 和 RID 操作。",
+    "小白可以把它想成同一套方向盘可以接不同发动机。方向盘的接口不能乱变，否则所有车都要改；发动机可以换，但必须遵守接口。读后端问题时先看当前项目选择了哪个 physics server，再看调用是否被多线程包装延迟，最后进入具体后端实现。"
+  ],
+  "导航不是物理的一部分": [
+    "这一节提醒你不要把导航和物理混为一谈。物理负责碰撞、运动、力、约束和空间查询；导航负责导航网格、路径搜索、避障、agent、region 和 map。它们都和空间有关，也都可能在固定步附近更新，但源码系统和数据结构不同。",
+    "小白可以这样区分：物理回答“我撞到了什么、能不能移动过去”，导航回答“从 A 到 B 应该走哪条路”。导航可能参考场景几何或物理障碍，但它不是 PhysicsServer 的子功能。读寻路、导航网格烘焙、agent 避障时，应进入 NavigationServer 和 scene/navigation 相关路径。"
+  ],
+  "读物理/导航源码的常见误区": [
+    "这一节列出物理和导航最常见的错误理解：把节点当后端本体，把 CollisionShape 当 body，把导航当物理，把显示帧当物理步，把 RID 当自动释放资源，把后端选择忽略掉。每一个误区都会让你看错源码位置。",
+    "小白排查时先分层：scene 节点负责用户 API 和状态，Server 负责抽象接口，后端负责算法，Main/SceneTree 负责时机。物理和导航问题看起来都发生在游戏世界里，但一个是碰撞求解，一个是路径规划，读源码时必须走不同入口。"
+  ],
+  "六个系统的职责边界": [
+    "这一节把音频、输入、GUI、动画、Tween、调试性能放在一起，是因为它们都直接影响用户体验，但内部路径不同。音频走 AudioServer 和播放资源；输入从平台事件进入 Input/Viewport/Control/脚本；GUI 由 Control、Theme、TextServer、RenderingServer 协作；动画和 Tween 都改属性但驱动方式不同；性能采样由运行时收集，编辑器展示。",
+    "小白不要把它们都理解成 scene 的普通节点逻辑。它们有的接平台，有的接 Server，有的接 Object 属性系统，有的接编辑器工具。读这一组系统时先问：事件从哪里来，状态存在哪里，谁每帧推进，最后是否交给 Server 或平台。"
+  ],
+  "音频：从 play() 到扬声器": [
+    "这一节讲音频播放路径。AudioStreamPlayer 调 play 以后，场景节点保存播放状态和资源引用，创建 playback，声音数据最终进入 AudioServer 的混音系统，再由音频 driver 或平台后端输出到设备。节点本身不是扬声器，也不是混音器。",
+    "小白可以把 AudioStream 看成音频素材，AudioStreamPlayer 看成场景里的播放器，AudioServer 看成混音台，平台音频后端看成真正接到扬声器的线。调试没声音时，要分别检查资源是否加载、player 是否在树里和播放、bus 和音量是否正确、AudioServer 是否混音、平台设备是否输出。"
+  ],
+  "输入：平台事件怎样走到 GUI 和脚本": [
+    "这一节讲输入从操作系统进入 Godot 的路径。平台窗口收到键盘、鼠标、触摸、手柄、输入法等事件后，DisplayServer 或平台层把它转成 Godot 的 InputEvent；Input 记录全局状态，Viewport 分发事件，Control 可以处理 GUI 输入，脚本也能通过 _input、_unhandled_input 等回调接收。",
+    "小白要把“按键状态”和“事件分发”分开。Input.is_action_pressed 查的是当前状态和 InputMap 映射；_input 收到的是事件流；GUI 控件可能先消费事件，导致后续 unhandled 输入不再触发。读输入 bug 时，要看平台事件、InputMap、Viewport 分发、Control 处理和脚本回调的顺序。"
+  ],
+  "GUI：Control 布局、Theme 和 TextServer": [
+    "这一节讲 GUI 控件并不只是画矩形。Control 负责锚点、大小、鼠标过滤、焦点、布局通知；Container 负责对子控件排版；Theme 提供颜色、字体、样式盒和图标；TextServer 负责文字 shaping、换行、字形；RenderingServer 最终绘制。",
+    "小白可以把 GUI 看成多人合作：Control 确定控件在界面中的位置和交互，Container 负责摆放，Theme 负责长相，TextServer 负责文字能正确显示，RenderingServer 负责画出来。排查按钮位置、字体、主题、点击区域、文字不显示时，要判断是哪一层的问题。"
+  ],
+  "动画与 Tween：两套“时间驱动属性变化”机制": [
+    "这一节区分 AnimationPlayer/AnimationTree 和 Tween。它们都能让属性随时间变化，但设计目标不同：AnimationPlayer 播放资源化的轨道和关键帧，适合可编辑、可保存、可复用的动画；Tween 更像运行时临时创建的过渡任务，适合代码里做 UI 动效、移动、淡入淡出。",
+    "小白不要因为它们都改属性就混用理解。Animation 关注轨道、关键帧、插值、调用方法、音频轨、混合和状态机；Tween 关注从当前值到目标值的短期插值和回调。读源码时先问这个时间变化是资源驱动，还是运行时代码临时驱动。"
+  ],
+  "AnimationPlayer / AnimationTree": [
+    "这一小节讲资源化动画。AnimationPlayer 持有 Animation 资源并按轨道更新目标对象属性、方法调用、音频等；AnimationTree 在此基础上做混合、状态机、BlendTree，让多个动画按权重和状态组合起来。它们适合角色动作、复杂 UI 状态或编辑器里可视化编辑的动画。",
+    "小白可以把 AnimationPlayer 想成按时间表执行的播放器，AnimationTree 像把多个播放器接到混音台。调试动画时，要看目标 NodePath 是否正确、轨道类型是否匹配、属性是否可写、播放状态是否正确、混合树是否把结果权重传到最终输出。"
+  ],
+  "Tween / SceneTree": [
+    "这一小节讲 Tween。Tween 通常由 SceneTree 或节点创建，描述某个属性、方法或回调在一段时间内从一个值过渡到另一个值。它更轻量，更适合运行时临时效果，比如按钮 hover、窗口淡入、相机移动、小物体漂浮。",
+    "小白要注意 Tween 的生命周期和宿主关系。Tween 不像 Animation 资源那样主要靠编辑器保存，它常常是代码创建、运行中推进、结束后清理。读 Tween 问题时，看它绑定到哪个节点或 SceneTree，是否暂停，是否被 kill，目标对象是否还存在，以及每帧由哪个阶段推进。"
+  ],
+  "调试和性能：运行时采样，编辑器呈现": [
+    "这一节说明调试和性能面板不是凭空得出数据。运行时系统会采样帧时间、对象数量、内存、渲染、物理、脚本等指标，Performance、debugger、profiler 等把数据收集起来，编辑器只是把这些运行时数据通过 UI 面板展示出来。",
+    "小白可以把它分成两端：游戏进程或运行时负责产生数据，编辑器负责请求、接收、整理和展示。调试性能问题时，不要只看编辑器面板代码，也要回到 Performance 指标、Server 统计、调试协议和采样点，确认数据在哪里产生、什么时候更新、是否只在 debug/editor 构建里可用。"
+  ],
+  "读这一组系统的固定问题": [
+    "这一节给音频、输入、GUI、动画、调试性能的共同读法。先问事件或时间从哪里来：平台输入、AudioServer 混音 tick、SceneTree 帧推进、AnimationPlayer 播放时间、调试采样时机。再问状态存在哪里：节点、Resource、Server、Theme、InputMap、Performance。",
+    "小白只要坚持这两个问题，就不会把用户体验层看成一团 UI 代码。比如输入问题看平台事件和 Viewport 分发；GUI 问题看 Control 布局和 Theme；动画问题看属性轨道和目标对象；音频问题看资源播放和混音；性能问题看采样源和编辑器展示。"
+  ],
+  "核心抽象：ScriptServer、Script、ScriptInstance": [
+    "这一节讲脚本系统的三层抽象。ScriptServer 管理已注册的脚本语言；Script 是一个脚本资源，例如 .gd 或 C# 脚本文件；ScriptInstance 是脚本挂到某个 Object 上以后生成的运行实例，负责保存脚本变量、方法和与宿主对象的连接。",
+    "小白可以把 Script 当剧本，ScriptInstance 当演员正在某个对象身上演这份剧本，ScriptServer 当剧院管理处，知道有哪些语言和剧本系统可用。这样你就能解释为什么同一个 GDScript 资源可以挂到多个节点，每个节点有自己的脚本实例和变量状态。"
+  ],
+  "GDScript：从 .gd 到字节码函数": [
+    "这一节讲 GDScript 从文件到可执行代码的路径。.gd 文件先作为 Resource 被加载，经过 tokenizer/parser 建 AST，分析类型和作用域，再编译成函数、常量、字节码或内部表示，运行时由 GDScript VM 或相关执行路径调用。",
+    "小白不要把 .gd 文件理解成每次运行都逐行解释文本。Godot 会把脚本文本变成更适合运行的结构，错误检查、类型推断、补全、调试信息也在这个过程中建立。读 GDScript 问题时，要区分解析错误、编译错误、运行时调用错误和与 Object/ClassDB 交互的问题。"
+  ],
+  "Object 怎样把调用转给脚本": [
+    "这一节解释 Object 和脚本实例如何协作。一个 Object 可以挂 Script，脚本实例会接管或补充方法、属性、通知等行为。当外部调用方法或发通知时，Object 先查 C++ 绑定和脚本实例，再把能由脚本处理的部分转给 ScriptInstance。",
+    "小白可以把 C++ Object 想成基础机体，ScriptInstance 像装在它身上的控制程序。机体提供统一身份、信号、属性、生命周期；脚本提供用户写的行为。读脚本回调不触发时，要看脚本是否挂上、实例是否创建、方法名是否正确、Object 生命周期是否已经结束。"
+  ],
+  "C# / Mono 模块：同一个 ScriptLanguage，另一套运行时": [
+    "这一节讲 C# 不是绕过 Godot 对象系统，而是通过 Mono 模块实现另一种 ScriptLanguage。它有自己的编译、程序集加载、托管对象生命周期和 C# 绑定层，但仍要和 Object、ClassDB、Variant、Script、ScriptInstance 这些 Godot 核心抽象对接。",
+    "小白可以把 GDScript 和 C# 看成两种语言接到同一个舞台。语言内部运行时不同，但它们都要能挂到 Object 上、调用 Godot API、响应信号、暴露属性、参与编辑器和调试。读 C# 问题时要多看一层托管/原生桥，不要只按 GDScript 的路径找。"
+  ],
+  "GDExtension：外部动态库怎样加入对象系统": [
+    "这一节讲 GDExtension。它允许外部动态库在不重新编译引擎的情况下注册类、方法、属性、资源和回调，接入 Godot 的 Object/ClassDB/Variant 世界。扩展通过一套 C ABI 和初始化函数告诉引擎自己提供哪些能力。",
+    "小白可以把 GDExtension 想成外部插件带着身份证明进场。它不是随便把 C++ 指针塞进 Godot，而是要按 Godot 规定的接口注册类型和方法，使用 Variant、StringName、ObjectID、Ref、RID 等共同语言。读扩展问题时，要看初始化级别、类注册、方法绑定、生命周期和 ABI 是否匹配。"
+  ],
+  "ClassDB、Variant、MethodBind 是脚本和扩展的共同语言": [
+    "这一节强调脚本语言和扩展虽然实现不同，但它们都要经过同一套运行时桥梁。ClassDB 告诉外部有哪些类、方法和属性；MethodBind 负责把名字调用变成 C++ 函数调用；Variant 负责在不同语言和系统之间传递值。",
+    "小白理解这点后，就不会把 GDScript、C#、GDExtension 当成完全独立世界。它们的语法、编译器、运行时可以不同，但要调用 Godot API，就必须说 Object/ClassDB/Variant 这套共同语言。很多跨语言 bug，本质上是绑定签名、Variant 转换、对象生命周期或线程边界的问题。"
+  ],
+  "读脚本和扩展源码的常见误区": [
+    "这一节列出脚本和扩展的常见误区：以为脚本直接调用任意 C++ 函数，忽略 _bind_methods；以为 .gd 文本运行时逐行解释，忽略编译和缓存；以为 C# 路径和 GDScript 完全一样，忽略托管运行时；以为 GDExtension 只要能加载动态库就安全，忽略 ABI 和初始化级别。",
+    "小白读这类源码要先找共同桥梁，再进入语言特有实现。共同桥梁是 ScriptLanguage、Script、ScriptInstance、ClassDB、Variant、MethodBind；语言特有部分才是 parser、compiler、VM、Mono、extension ABI。顺序反了，就会在某个语言内部细节里迷路，看不到它怎样接回 Godot 对象系统。"
+  ],
+  "先建立可用心智模型": [
+    "这一节讲编辑器的总模型：Godot 编辑器不是外部程序套壳，而是一个用 Godot 自己的场景树、GUI、资源系统、反射系统搭出来的大型工具应用。EditorNode 是主控节点，Dock、Inspector、FileSystem、SceneTree 面板、导入导出、插件系统都挂在这套工具场景里。",
+    "小白理解编辑器时要把它分成两层：它一方面是普通 Godot 程序，复用 Control、SceneTree、ResourceLoader、ClassDB；另一方面又是工具层，负责编辑项目、保存场景、导入资源、启动游戏进程。读 editor 目录时，不要忘记它大量调用运行时 API，而不是重新实现一套引擎。"
+  ],
+  "编辑器启动：从命令行到可见工具界面": [
+    "这一节讲编辑器如何启动。前面的 platform、Main::setup、setup2 和普通运行时一样，差异主要在 Main::start 选择编辑器模式后，会创建 EditorNode、加载编辑器设置、项目数据、主题、插件、Dock 和主界面。也就是说，编辑器界面出现之前，core、servers、scene、editor 类型已经按顺序注册。",
+    "小白不要把编辑器启动看成打开一个 UI 窗口这么简单。它要先有 Object/ClassDB、ResourceLoader、DisplayServer、SceneTree、Control、Theme、EditorPlugin 等基础，才能显示工具界面。编辑器启动问题常常不是单个按钮问题，而是运行模式、TOOLS_ENABLED、项目路径、资源加载或插件初始化顺序的问题。"
+  ],
+  "打开、切换、保存场景：编辑器怎样操作 PackedScene": [
+    "这一节讲编辑器对场景的操作。打开场景时，编辑器通过 ResourceLoader 得到 PackedScene，再实例化成可编辑的 Node 树；切换场景时，编辑器维护当前编辑上下文；保存时，PackedScene.pack 根据 owner、节点属性、资源引用、信号连接、子场景实例等生成 SceneState 并写回 .tscn 或 .scn。",
+    "小白要把编辑器里看到的场景树和磁盘上的 .tscn 分开。你在编辑器里改的是运行时 Node 对象和资源状态，保存才会把可持久化部分打包回 PackedScene。节点在树里但 owner 不对，可能不会保存；资源引用、信号、脚本、子场景实例也都有各自的序列化规则。"
+  ],
+  "Inspector：为什么 C++、脚本和扩展属性都能被编辑": [
+    "这一节讲 Inspector 的核心不是为每个类手写 UI，而是查询 Object 的属性列表和 ClassDB/脚本/扩展提供的 PropertyInfo，然后按类型生成 EditorProperty 控件。C++ 属性、脚本导出变量、GDExtension 属性只要正确暴露，就能走同一套编辑流程。",
+    "小白可以把 Inspector 想成万能表单生成器。它先问对象“你有哪些可编辑属性”，再根据类型生成输入框、勾选框、资源选择器、颜色选择器等控件。用户改值时，还会涉及 Object::set、UndoRedo、通知、场景 dirty 标记和保存。属性不显示时，应该先查暴露信息，而不是先改 Inspector UI。"
+  ],
+  "EditorPlugin：内置工具和用户插件共享同一套扩展口": [
+    "这一节讲 EditorPlugin。Godot 的很多编辑器工具和用户插件都通过相似的扩展口把菜单、Dock、Inspector 插件、Gizmo、导入器、编辑工具挂进 EditorNode。它是编辑器扩展能力的统一入口。",
+    "小白可以把 EditorPlugin 理解成编辑器的插槽系统。插件不是随便改主界面，而是向 EditorNode 注册自己要加的菜单、面板、处理逻辑和生命周期回调。读内置工具时也可以按插件思路看：它什么时候注册，挂到哪里，响应什么对象，退出时如何清理。"
+  ],
+  "文件系统、导入、导出：资源管线在编辑器里如何闭环": [
+    "这一节讲编辑器资源管线。FileSystemDock 和 EditorFileSystem 扫描项目文件；导入系统把外部素材转换成 Godot 更适合运行的资源和 .import 产物；ResourceLoader 在运行时加载这些资源；导出系统再把项目资源、平台模板和配置打包成最终应用。",
+    "小白要看到这是闭环：文件出现 -> 编辑器识别 -> 导入器转换 -> 资源被场景引用 -> 运行时加载 -> 导出时打包。资源显示不对、导入缓存旧、导出缺文件时，不要只看 ResourceLoader，也要看 editor/import、.godot/imported、EditorFileSystem、ExportPlatform 和平台打包规则。"
+  ],
+  "运行和调试：编辑器并不“在自己里面运行游戏”": [
+    "这一节纠正一个常见误解。点击运行时，编辑器通常会启动一个新的 Godot 游戏进程，并把项目路径、场景、调试参数等传过去。编辑器负责保存、构建、启动、连接调试器和展示输出；游戏逻辑在另一个进程里按普通 Main/SceneTree 路径运行。",
+    "小白理解这一点后，就能解释为什么编辑器崩溃和游戏崩溃可能是两个进程，为什么调试器需要通信协议，为什么运行按钮源码在 editor/run，而主场景加载仍在 main 和 ResourceLoader。调试运行问题时，要分清编辑器侧准备过程和游戏进程启动过程。"
+  ],
+  "读编辑器源码的常见误区": [
+    "这一节列出读 editor 目录的坑：以为编辑器完全独立于运行时，忽略它复用 scene/gui 和 ClassDB；以为 Inspector 手写每个属性，忽略反射；以为运行按钮直接在编辑器里跑游戏，忽略新进程；以为 editor 代码能进导出模板，忽略 TOOLS_ENABLED。",
+    "小白读编辑器源码要一直问三个问题：这段代码是在操作运行时对象，还是编辑器 UI，还是资源/项目文件；它是否只在 TOOLS_ENABLED 存在；它最终调用的是编辑器自己的逻辑，还是回到 core/scene/servers 的运行时 API。这样才能避免把工具层和运行时层混在一起。"
+  ],
+  "读平台层的正确入口：先找抽象，再找实现": [
+    "这一节讲平台代码的读法。不要一上来就读 Windows API、Android Java 或 Web JS glue，而是先找 Godot 抽象：OS、DisplayServer、FileAccess、Input、AudioDriver、Thread、Semaphore 等。抽象告诉你 Godot 需要什么能力，平台实现告诉你这个能力如何落到具体系统。",
+    "小白可以把平台层想成翻译官。Godot 内部说的是统一接口，不同操作系统说不同语言，platform 代码负责翻译。先看抽象能避免被某个平台的细节带偏，也能判断某个行为是 Godot 通用语义，还是 Windows、Web、Android 特有实现。"
+  ],
+  "桌面平台启动链：Windows 是最直观样本": [
+    "这一节用 Windows 展示桌面平台启动链。Windows 入口处理宽字符命令行、创建 OS_Windows、调用 Main::setup 和 Main::start，然后 OS_Windows::run 进入消息循环，处理窗口事件并反复调用 Main::iteration。Linux 和 macOS 形状类似，但系统 API 和事件循环细节不同。",
+    "小白读 Windows 样本的价值在于它接近传统桌面程序模型：进程入口、命令行、窗口消息、主循环都比较直观。读懂它以后，再看 macOS 的应用生命周期、Linux 的窗口后端、Web 的浏览器回调、Android 的 Activity/JNI，就能区分共同骨架和平台特殊 glue。"
+  ],
+  "移动端和 Web：主循环由宿主平台驱动": [
+    "这一节讲移动端和 Web 与桌面不同。桌面程序通常自己控制 while 循环；移动端和浏览器环境往往由宿主平台控制生命周期和帧回调。Godot 需要把自己的 MainLoop 接到 Activity、UIKit、浏览器 requestAnimationFrame 或平台回调里。",
+    "小白可以理解为：桌面像你自己开车，移动和 Web 像坐在平台安排的轨道车上，你只能在平台给你的时间点推进一帧。读这些平台时，要特别关注暂停/恢复、窗口重建、触摸输入、音频焦点、Web canvas、JS bridge 和资源加载限制。"
+  ],
+  "DisplayServer：窗口和输入的集中边界": [
+    "这一节讲 DisplayServer。它统一处理窗口、屏幕、鼠标、键盘、输入法、剪贴板、显示模式、窗口事件等能力。scene 和 GUI 不应该直接调用某个平台的窗口 API，而是通过 DisplayServer 和 InputEvent 这套抽象接收和处理。",
+    "小白可以把 DisplayServer 想成 Godot 和桌面/移动/浏览器窗口系统之间的总前台。窗口大小变化、鼠标移动、键盘输入、IME 输入、屏幕列表、DPI 等都从这里进入统一世界。GUI 和脚本看到的是 Godot 的事件和窗口对象，而不是每个平台原生事件。"
+  ],
+  "驱动、第三方、模块：三者不要混在一起读": [
+    "这一节帮你区分 drivers、thirdparty、modules。thirdparty 是外部库源码；drivers 是 Godot 对某些底层能力或格式的封装和 glue；modules 是可选功能接入点，可能封装 thirdparty，也可能注册脚本语言、物理后端、导入器或编辑器工具。",
+    "小白读外部库相关功能时，不要直接从 thirdparty 开始。先找 Godot 的封装层，看看它如何把外部库能力接进 ImageLoader、AudioStream、ResourceImporter、Server 或编辑器。只有定位到外部库 bug 或升级依赖时，才深入 thirdparty 细节。"
+  ],
+  "平台代码最容易踩的判断点": [
+    "这一节列平台代码常见坑：把某个平台行为当成所有平台通用；在 core/scene 里直接引用平台实现；忽略 TOOLS_ENABLED 和导出模板差异；忘记移动端和 Web 生命周期由宿主控制；忽略动态库、路径、权限、输入法、DPI、线程 API 差异。",
+    "小白改平台代码前要先回答：这个行为应该是 Godot 抽象的一部分，还是某个平台特殊适配；是否需要在 OS 或 DisplayServer 接口加能力；其他平台能否合理实现；导出模板和编辑器是否都需要。平台层改动很容易牵动多平台，所以边界判断比单个平台能跑更重要。"
+  ],
+  "读一个模块时先看这四个文件": [
+    "这一节给模块阅读入口。先看 config.py 了解模块是否默认启用、依赖什么；看 SCsub 了解编译哪些源码和 thirdparty；看 register_types.h/cpp 了解在哪些初始化 level 注册什么；再看模块的资源、Server、编辑器或导入器实现。这样读模块不会迷路。",
+    "小白不要把 modules 目录当成一堆同类功能。GDScript、Jolt、glTF、WebSocket、TextServer、OpenXR 的职责完全不同，但它们都要通过构建和注册接入引擎。四个文件能先回答“是否编译、何时初始化、注册什么、依赖什么”，再决定进入具体实现。"
+  ],
+  "模块不是固定目录层，而是按初始化级别接入": [
+    "这一节再次强调 modules 不是 core/scene/servers/editor 之外的第五层。一个模块可以在 CORE 注册基础资源或脚本语言，在 SERVERS 注册后端，在 SCENE 注册节点和资源，在 EDITOR 注册插件、导入器或面板。关键要看 initialize_<module>_module(p_level) 对不同 level 做了什么。",
+    "小白可以把模块想成插卡式扩展，插到哪一层取决于它需要接入什么能力。比如脚本语言可能很早就要接入 core，对应后端可能在 servers，用户可见节点在 scene，工具 UI 在 editor。读模块时按 level 切分，比按文件夹名猜层级可靠得多。"
+  ],
+  "所有权矩阵：先分清谁真的拥有谁": [
+    "这一节讲所有权。Godot 里 Object、Node、Resource、RefCounted、RID、Callable、ObjectID 的生命周期规则不同。ObjectDB 只登记不拥有；Node 的树关系管理结构和析构清理，但不是 Ref；Resource 通常由 Ref 引用计数管理；RID 由对应 Server 释放；Callable 目标需要调用时重新验证。",
+    "小白读崩溃、泄漏、重复释放、对象失效问题时，第一步就是画所有权矩阵。谁创建对象，谁保存引用，谁负责释放，释放后是否还有 ObjectID、Callable、RID 或裸指针留着。很多底层 bug 不是算法错，而是对象还没创建、已经释放、或释放顺序和依赖顺序不一致。"
+  ],
+  "RID 的设计：轻量句柄和 Server 内部对象分离": [
+    "这一节从设计角度解释 RID。RID 把场景层和 Server 内部对象分开，让场景层不需要知道渲染、物理、音频等后端对象的真实类型，也避免直接持有后端指针。Server 可以用 RID_Owner 管理内部对象、做验证、延迟释放和线程隔离。",
+    "小白要明白 RID 简单但不自动。它像订单号，不像智能指针。订单号能让你找后厨状态，但不会自动让后厨把菜退掉；必须调用对应 Server 的 free 或专用释放接口。把 RID 混用到错误 Server，或者忘记释放，都会造成难查的问题。"
+  ],
+  "注册顺序的意义：类型必须在被使用前出现": [
+    "这一节讲注册顺序为什么重要。ClassDB、Server 单例、ResourceFormatLoader、ScriptLanguage、EditorPlugin、模块后端都必须在被使用前注册。Main::setup、setup2、start 和 cleanup 的顺序，本质上是在保证依赖先建立，使用者后出现，关闭时反过来释放。",
+    "小白可以把注册看成开店前挂招牌和录入系统。没有注册，脚本查不到类，ResourceLoader 找不到格式，Inspector 看不到属性，Server 后端无法创建。模块 level 选错，可能在需要 Node 时 scene 还没注册，或者在导出模板里引用了 editor 类型。"
+  ],
+  "ObjectDB：对象索引，不是所有权系统": [
+    "这一节讲 ObjectDB。它给 Object 分配和登记 ObjectID，让系统可以通过 ID 查回对象，常用于 Callable、信号、延迟调用、调试器等场景。但 ObjectDB 不拥有对象，不会因为你保存了 ObjectID 就阻止对象被释放。",
+    "小白可以把 ObjectDB 想成通讯录，不是保险箱。通讯录里有号码，说明曾经或当前能查到这个对象；对象释放后，号码就不能当活对象使用。调用前要重新查并验证，不能把 ObjectID 当强引用，更不能保存裸指针后假设 ObjectDB 会保护它。"
+  ],
+  "memnew / memdelete：Godot 自己的分配钩子": [
+    "这一节讲 Godot 为什么不用普通 new/delete 写到底。memnew/memdelete 接入了 Godot 自己的内存统计、调试检查、Object post-initialize、pre-delete 等机制。对 Object 来说，创建和释放不仅是分配内存，还要进入/离开 ObjectDB、触发生命周期钩子。",
+    "小白可以把 memnew/memdelete 理解成带登记流程的创建和销毁。普通 C++ new 只是拿内存和构造对象；Godot 的宏还要让引擎知道这个对象存在、方便调试和统计。读对象生命周期时，看到 memnew、memdelete、queue_free、RefCounted、RID free，要马上意识到它们代表不同释放通道。"
+  ],
+  "延迟调用和删除队列：为什么不能随手立即改树": [
+    "这一节讲为什么 Godot 经常延迟执行。场景树、信号连接、物理同步、GUI 事件分发都可能正在遍历数据结构，如果在遍历中立刻删除节点、改父子关系或调用复杂逻辑，就可能破坏当前迭代状态。call_deferred、set_deferred、queue_free、MessageQueue 和 SceneTree 删除队列就是为了解决这个问题。",
+    "小白可以把它想成会议中不能随便把正在发言的人从名单里删掉，而是先记到会后处理清单。延迟不代表不执行，而是等到安全点统一执行。读时序问题时，要看这个操作是立即生效，还是进了 MessageQueue/删除队列，以及它在哪个帧阶段 flush。"
+  ],
+  "线程边界：为什么有 WorkerThreadPool、process thread group 和 wrap_mt": [
+    "这一节讲多线程边界。Godot 有主线程、工作线程池、Server 后端线程、process thread group 和各种 wrap_mt 包装。它们的目标是让耗时任务并行，同时避免任意线程随便改 Object、SceneTree 或后端状态造成竞态。",
+    "小白要先记住：不是所有 API 都能在任意线程调用。WorkerThreadPool 适合并行任务，process thread group 控制节点处理分组，wrap_mt 可能把 Server 调用排队到安全线程执行。读线程问题时，先问当前代码在哪个线程，能否访问这个对象，调用是立即执行还是被排队。"
+  ],
+  "ResourceCache：为什么同一路径加载出来可能是同一个对象": [
+    "这一节讲 ResourceCache。Godot 会按路径和缓存模式复用已加载资源，所以多次加载同一路径可能拿到同一个 Resource 实例。这样能节省内存和保持资源共享，但也意味着你修改资源状态时，其他引用者可能看到同一份变化。",
+    "小白可以把 ResourceCache 想成图书馆的同一本书被多人借阅的登记系统。你以为自己重新拿了一本，其实可能拿到同一个对象引用。调试资源状态串改、重新导入不生效、加载旧内容时，要检查缓存模式、路径 remap、UID、take_over_path 和资源是否被多个地方共享。"
+  ],
+  "错误处理风格": [
+    "这一节讲 Godot 的错误处理习惯。源码里常见 ERR_FAIL_COND、ERR_FAIL_NULL、ERR_FAIL_INDEX、ERR_FAIL_V、WARN_PRINT、CRASH_COND 等宏。它们既表达防御性检查，也统一错误日志、返回值、调试行为和 release/debug 差异。",
+    "小白读这些宏时，不要把它们当普通 if。ERR_FAIL_* 往往意味着函数在非法输入下提前返回，返回值可能是空对象、false、错误码或默认值；CRASH_* 更偏向发现绝不应该发生的内部错误。调试时要看宏后面的函数是否继续执行，以及调用者有没有处理失败返回。"
+  ],
+  "为什么生成代码这么多": [
+    "这一节解释 Godot 为什么有很多生成代码。大型引擎需要把模块列表、注册函数、文档、类裁剪、shader、图标、接口表、绑定信息等从结构化输入转成 C++ 或头文件。生成代码能减少手写重复，也能根据构建选项生成不同结果。",
+    "小白不要看到 .gen.cpp 就害怕，也不要手改它。把它当成构建系统打印出来的中间产物，真正要读的是生成器脚本和输入数据。生成代码多，说明 Godot 把大量重复注册和资源打包自动化了；理解生成源头，比盯生成物更有用。"
+  ],
+  "每条路线的结束标准": [
+    "这一节告诉你什么叫读到位。入门路线结束时，你应该能画出目录依赖、启动流程和主循环阶段；机制路线结束时，你应该能追一条功能从用户入口到绑定、对象状态、Resource/Server 和刷新时机；深入路线结束时，你应该能列出生命周期、线程、注册、保存格式、导出和测试影响面。",
+    "小白不要把读完一页或看过几个文件当成结束标准。真正的结束标准是你能用自己的话回答问题，并能定位下次遇到同类问题该从哪里查。读源码的目的不是收藏文件名，而是建立可复用的路径和判断力。"
+  ],
+  "建议的“功能追踪法”": [
+    "这一节给最终读法：选一个具体功能，从用户能看到的入口开始，沿着绑定、状态、资源、Server、主循环一路追到底，再回头记录影响面。不要泛泛地读整个目录，也不要从最底层算法开始，因为这样很容易看见很多细节却不知道它们服务哪个功能。",
+    "小白可以每次只追一个问题，例如 Button.pressed 怎么发信号，Sprite2D.texture 怎么显示，PackedScene.instantiate 怎么创建节点，RigidBody3D 怎么参与物理步。每条追踪都写下入口、关键类、状态字段、刷新时机、常见坑。几条功能链积累起来，就会自然形成完整的 Godot 源码地图。"
+  ]
+};
 
 // Concept entries use the minimal shape below.
 // Required: id, title, article. Optional: aliases, summary.

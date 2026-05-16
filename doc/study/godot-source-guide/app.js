@@ -10,6 +10,7 @@ const conceptState = {
   query: ""
 };
 const conceptFavoritesKey = "godot-source-guide-concept-favorites";
+const beginnerGuidesKey = "godot-source-guide-beginner-guides";
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -137,6 +138,68 @@ function filterModules() {
     `).join("")}
   `;
   linkConceptKeywords(qs("#moduleTable"), 4);
+}
+
+function normalizeGuideHeading(heading) {
+  return heading.textContent.replace(/\s+/g, " ").trim();
+}
+
+function renderBeginnerGuideContent(content) {
+  const paragraphs = Array.isArray(content) ? content : [content];
+  return paragraphs.map((paragraph) => `<p>${renderInlineText(paragraph)}</p>`).join("");
+}
+
+function setBeginnerGuideVisibility(visible) {
+  document.body.classList.toggle("beginner-guides-hidden", !visible);
+  const toggle = qs("#beginnerGuideToggle");
+  if (!toggle) return;
+  toggle.setAttribute("aria-pressed", String(visible));
+  toggle.textContent = visible ? "小白导读：开" : "小白导读：关";
+  toggle.setAttribute("aria-label", visible ? "关闭小白版导读解释" : "打开小白版导读解释");
+}
+
+function getStoredBeginnerGuideVisibility() {
+  try {
+    return localStorage.getItem(beginnerGuidesKey) !== "hidden";
+  } catch {
+    return true;
+  }
+}
+
+function saveBeginnerGuideVisibility(visible) {
+  try {
+    localStorage.setItem(beginnerGuidesKey, visible ? "visible" : "hidden");
+  } catch {
+    // The toggle is still usable for the current page even when storage is unavailable.
+  }
+}
+
+function setupBeginnerGuides() {
+  if (typeof beginnerGuides !== "object" || !beginnerGuides) return;
+  const headings = qsa("main .section h3, main .section h4").filter((heading) => (
+    !heading.closest(".concept-browser-section, #dirDetail, #startupDetail, #moduleTable")
+  ));
+
+  headings.forEach((heading) => {
+    const key = normalizeGuideHeading(heading);
+    const guide = beginnerGuides[key];
+    if (!guide) return;
+    const card = document.createElement("div");
+    card.className = "beginner-guide";
+    card.dataset.guideFor = key;
+    card.innerHTML = `<div class="beginner-guide-label">小白版导读</div>${renderBeginnerGuideContent(guide)}`;
+    heading.insertAdjacentElement("afterend", card);
+  });
+
+  setBeginnerGuideVisibility(getStoredBeginnerGuideVisibility());
+  const toggle = qs("#beginnerGuideToggle");
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const visible = document.body.classList.contains("beginner-guides-hidden");
+      setBeginnerGuideVisibility(visible);
+      saveBeginnerGuideVisibility(visible);
+    });
+  }
 }
 
 function loadConceptFavorites() {
@@ -648,17 +711,6 @@ function setupConcepts() {
   }
 }
 
-function setupLevels() {
-  const switcher = qs("#levelSwitch");
-  switcher.addEventListener("click", (event) => {
-    const btn = event.target.closest("button[data-level]");
-    if (!btn) return;
-    const level = btn.dataset.level;
-    document.body.dataset.level = level;
-    qsa("#levelSwitch button").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
-  });
-}
-
 function setupSearch() {
   const input = qs("#globalSearch");
   input.addEventListener("input", () => {
@@ -695,7 +747,7 @@ if (qs("#dirButtons")) renderDirs();
 if (qs("#startupSteps")) renderStartup();
 if (qs("#pathSelect")) renderPaths();
 if (qs("#moduleTable")) renderModules();
+setupBeginnerGuides();
 setupConcepts();
-if (qs("#levelSwitch")) setupLevels();
 if (qs("#globalSearch")) setupSearch();
 if (qs("#toc")) setupScrollSpy();

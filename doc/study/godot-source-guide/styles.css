@@ -168,6 +168,24 @@ aside {
   font-weight: 800;
 }
 
+.sidebar-toggle {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-color: #a9c9bc;
+  background: #fff;
+  color: #17342b;
+  font-weight: 800;
+}
+
+.sidebar-toggle[aria-pressed="true"] {
+  background: #dff1e7;
+  border-color: var(--accent);
+  color: #0f5f4c;
+}
+
 .side-note {
   margin: 0;
   color: var(--muted);
@@ -952,15 +970,33 @@ button:hover,
   margin-top: 6px;
 }
 
-.level-content[data-level] {
-  display: none;
+.beginner-guide {
+  margin: 10px 0 20px;
+  padding: 15px 16px;
+  border: 1px solid #bdd9cc;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: #f3fbf6;
+  color: #24342d;
 }
 
-body[data-level="beginner"] .level-content[data-level~="beginner"],
-body[data-level="intermediate"] .level-content[data-level~="intermediate"],
-body[data-level="deep"] .level-content[data-level~="deep"],
-body[data-level="all"] .level-content[data-level] {
-  display: block;
+.beginner-guide-label {
+  margin-bottom: 7px;
+  color: #0f5f4c;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.beginner-guide p {
+  margin: 0;
+}
+
+.beginner-guide p + p {
+  margin-top: 9px;
+}
+
+body.beginner-guides-hidden .beginner-guide {
+  display: none;
 }
 
 .hidden-by-search {
@@ -970,21 +1006,27 @@ body[data-level="all"] .level-content[data-level] {
 .concept-keyword {
   display: inline;
   border: 0;
-  border-bottom: 1px dotted var(--accent-2);
+  border-bottom: 1px dotted rgba(26, 127, 100, .32);
   border-radius: 0;
-  padding: 0 2px;
-  background: linear-gradient(180deg, transparent 58%, rgba(42, 90, 159, .14) 0);
-  color: #173f78;
+  padding: 0 1px;
+  background: transparent;
+  color: inherit;
   font: inherit;
   cursor: pointer;
+  text-underline-offset: 3px;
 }
 
 .concept-keyword:hover,
 .concept-keyword:focus-visible {
-  outline: 0;
-  color: #0e5f4c;
-  border-bottom-color: var(--accent);
-  background: linear-gradient(180deg, transparent 48%, rgba(26, 127, 100, .18) 0);
+  border-bottom-color: rgba(26, 127, 100, .85);
+  background: rgba(26, 127, 100, .07);
+  color: #0f5f4c;
+}
+
+.concept-keyword:focus-visible {
+  outline: 1px solid rgba(26, 127, 100, .35);
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 
 .concept-drawer {
@@ -1479,6 +1521,7 @@ body.concept-panel-open .module-row.header {
   .toolbar,
   .search,
   .concept-nav,
+  .sidebar-toggle,
   .module-tools,
   .step-list,
   .dir-buttons {
@@ -1495,7 +1538,4 @@ body.concept-panel-open .module-row.header {
     break-inside: avoid;
   }
 
-  .level-content[data-level] {
-    display: block !important;
-  }
 }

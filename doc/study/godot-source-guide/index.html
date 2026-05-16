@@ -6,7 +6,7 @@
   <title>Godot 4.7 源码交互导读</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body data-level="all">
+<body>
   <div class="layout">
     <aside>
       <div class="brand">
@@ -33,13 +33,8 @@
         </a>
       </div>
 
-      <div class="nav-title">层级</div>
-      <div class="seg" id="levelSwitch">
-        <button type="button" data-level="beginner">小白</button>
-        <button type="button" data-level="intermediate">中级</button>
-        <button type="button" data-level="deep">底层</button>
-        <button type="button" data-level="all" aria-pressed="true">全部</button>
-      </div>
+      <div class="nav-title">小白导读</div>
+      <button id="beginnerGuideToggle" class="sidebar-toggle" type="button" aria-pressed="true">小白导读：开</button>
 
       <div class="nav-title">目录</div>
       <nav id="toc">
@@ -73,9 +68,10 @@
         <div class="hero-inner">
           <h2>从一棵场景树开始，读懂 Godot 引擎源码。</h2>
           <p class="lead">
-            这份导读把 Godot 4.7 beta 源码拆成三层阅读：先建立“引擎是如何启动和运行场景”的直觉，
+            这份导读按三条阅读主线组织 Godot 4.7 beta 源码：先建立“引擎是如何启动并运行场景”的直觉，
             再理解 Object/ClassDB/Variant、SceneTree、ResourceLoader、Server 等核心机制，
             最后进入 RID、注册表、线程包装、GDExtension、渲染/物理后端这些底层设计。
+            读的时候不要按目录从上到下硬背，而是先拿到一张地图，再沿着真实的源码路径追下去。
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#source-map">进入源码地图</a>
@@ -97,9 +93,9 @@
             </div>
             <div class="meta-strip">
               <div class="metric"><b>4.7 beta</b><small>当前源码版本</small></div>
-              <div class="metric"><b>6,922</b><small>本地 C++/Python 相关源码文件抽样计数</small></div>
+              <div class="metric"><b>8,206</b><small>本地 C/C++/Objective-C++/Python 文件数，含 thirdparty</small></div>
               <div class="metric"><b>57</b><small>modules 目录中的功能模块</small></div>
-              <div class="metric"><b>4 层</b><small>模块初始化级别：Core / Servers / Scene / Editor</small></div>
+              <div class="metric"><b>4 个</b><small>模块初始化级别：Core / Servers / Scene / Editor</small></div>
             </div>
           </div>
         </div>
@@ -109,9 +105,10 @@
         <div class="section-inner">
           <h2>先建立一个可用的心智模型</h2>
           <p class="intro">
-            读 Godot 源码时，第一件事不是记住每个目录，而是先把“用户看到的对象”和“引擎真正执行的系统”分开。
-            一个场景能跑起来，至少要经过四条轴线：启动轴、对象轴、场景轴、服务轴。启动轴把进程变成一个运行中的 MainLoop；
-            对象轴让 C++ 类能被脚本、编辑器和资源系统识别；场景轴把资源实例化成 Node 树并安排每帧处理；服务轴把渲染、物理、音频、文本、显示等重活交给可替换的后端。
+            读 Godot 源码时，第一件事不是记住每个目录，而是先把“用户看到的对象”“运行时保存的状态”和“底层真正执行的系统”分开。
+            一个场景能跑起来，至少要同时看四条轴线：启动轴、对象轴、场景轴、服务轴。启动轴把平台进程变成一个运行中的 MainLoop；
+            对象轴让 C++ 类能被脚本、编辑器、Inspector 和资源系统识别；场景轴把资源实例化成 Node 树并安排每帧处理；服务轴把渲染、物理、音频、文本、显示等重活交给可替换的后端。
+            这里的“轴线”不是目录层级，而是读源码时反复追问的四类问题：谁启动进程，谁注册类型，谁在 SceneTree 里保存用户语义，谁在 Server 或平台后端真正执行。
           </p>
 
           <div class="split">
@@ -211,7 +208,7 @@
                 <line x1="950" y1="530" x2="770" y2="600" stroke="#65756d" stroke-width="2" marker-end="url(#mindArrow)"></line>
               </svg>
               <div class="mental-legend">
-                <span class="legend-item"><span class="legend-dot" style="background:#e9f3ff"></span>用户可见层</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#e9f3ff"></span>用户可见世界</span>
                 <span class="legend-item"><span class="legend-dot" style="background:#fff6e7"></span>反射与数据契约</span>
                 <span class="legend-item"><span class="legend-dot" style="background:#eef8ef"></span>场景运行时</span>
                 <span class="legend-item"><span class="legend-dot" style="background:#f2edfb"></span>Server 与后端</span>
@@ -219,24 +216,26 @@
             </div>
             <div>
               <h3>这个模型怎么用</h3>
-              <div class="level-content" data-level="beginner all">
-                <p>对初学者来说，先记住一句话：你在编辑器里操作的是 Node、Resource、Script；引擎每帧调度的是 SceneTree；真正接触显卡、物理世界、音频设备和窗口系统的是 Server、platform 和 driver。读任何功能时，都可以问：这个功能在用户层叫什么？它保存在哪个 Node 或 Resource 里？它每帧由谁推进？它最终交给哪个 Server 或后端执行？</p>
+              <div>
+                <p>对初学者来说，先把五个词分清：Node 是场景树里的运行对象，Resource 是可加载、可保存的数据，Script 是挂到 Object/Node 上的行为，SceneTree 是每帧调度节点的 MainLoop，Server 是渲染、物理、音频、文本、窗口等底层服务的统一入口。读任何功能时，都可以问：用户看到的名字是什么？状态保存在 Node 还是 Resource？每帧由 SceneTree 的哪个阶段推进？最后交给哪个 Server 或平台后端执行？</p>
               </div>
-              <div class="level-content" data-level="intermediate all">
+              <div>
                 <p>中级阅读时要把依赖方向看清楚：<span class="source">scene</span> 可以调用 <span class="source">servers</span>，两者都依赖 <span class="source">core</span>；<span class="source">core</span> 不能反过来依赖 <span class="source">scene</span>。<span class="source">modules</span> 不是单独一层，它会按初始化级别插入 core、servers、scene、editor：例如 <span class="source">gdscript</span> 接入脚本语言，<span class="source">jolt_physics</span> 接入 3D 物理后端，<span class="source">gltf</span> 接入导入导出，<span class="source">visual_shader</span> 接入编辑器和 shader 资源。</p>
               </div>
-              <div class="level-content" data-level="deep all">
-                <p>到底层时，重点不是“某个类在哪里”，而是“契约在哪里定义”：ClassDB 定义 C++ 类型怎样暴露给脚本和编辑器；Variant 定义跨语言值怎样传递；RID 定义场景层怎样引用 Server 内部对象；MessageQueue 定义延迟调用什么时候安全执行；Main::iteration 定义每帧阶段顺序；register/unregister 定义类型和模块的生命周期边界。</p>
+              <div>
+                <p>读到底层实现时，重点不是“某个类在哪里”，而是“契约在哪里定义”：ClassDB 定义 C++ 类型怎样暴露给脚本和编辑器；Variant 定义跨语言值怎样传递；RID 定义场景层怎样引用 Server 内部对象；MessageQueue 定义延迟调用什么时候安全执行；Main::iteration 定义每帧阶段顺序；register/unregister 定义类型和模块的生命周期边界。</p>
               </div>
               <div class="note">
-                判断一段源码“属于哪一层”时，不要只看文件夹名，还要看它持有什么状态、被谁调用、在哪个初始化级别注册、每帧在哪个阶段执行。例如 <span class="source">MeshInstance3D</span> 在 <span class="source">scene</span>，但它真正可见要靠 RenderingServer 中的 RID；<span class="source">GDScript</span> 在 <span class="source">modules</span>，但它通过 ScriptLanguage、ClassDB、Variant 接入 core 的对象世界。
+                判断一段源码的职责位置时，不要只看文件夹名，还要看它持有什么状态、被谁调用、在哪个初始化级别注册、每帧在哪个阶段执行。例如 <span class="source">MeshInstance3D</span> 在 <span class="source">scene</span>，但它真正可见要靠 RenderingServer 中的 RID；<span class="source">GDScript</span> 在 <span class="source">modules</span>，但它通过 ScriptLanguage、ClassDB、Variant 接入 core 的对象世界。
               </div>
             </div>
           </div>
 
           <h3>把抽象落到一次真实动作：点击运行主场景</h3>
           <p>
-            下面这条链路是读 Godot 源码最有用的“坐标系”。它从一个普通动作开始：用户点击运行项目。每一步都指向具体源码区域，避免只停留在“分层架构”这种空泛说法。
+            下面这条链路是读 Godot 源码最有用的“坐标系”。它从一个普通动作开始：用户在编辑器里点击运行主场景。
+            这个动作横跨两个阶段：编辑器进程先保存、构建、拼运行参数并启动游戏进程；游戏进程再从平台入口进入 Main，把主场景作为 PackedScene 加载并交给 SceneTree。
+            把这两段分开，才能解释为什么编辑器按钮、调试器、游戏主循环和主场景加载分别落在不同源码区域。
           </p>
           <div class="trace" aria-label="点击运行主场景的源码链路">
             <div class="trace-row">
@@ -247,40 +246,50 @@
             <div class="trace-row">
               <div class="trace-index">2</div>
               <strong>Main 建立运行时地基</strong>
-              <p><span class="source">main/main.cpp:1027</span> 的 <span class="source">Main::setup()</span> 注册 core 类型，创建 Engine、ProjectSettings、Input、TranslationServer、MessageQueue 等核心单例。没有这一步，后面任何 Resource、Object、Variant、脚本语言和项目设置都没有统一入口。</p>
+              <p><span class="source">main/main.cpp:1027</span> 的 <span class="source">Main::setup()</span> 开始解析命令行和建立 core 层，核心类型注册在 <span class="source">main/main.cpp:1059</span>，CORE 级模块初始化在 <span class="source">main/main.cpp:2255</span>，主 MessageQueue 在 <span class="source">main/main.cpp:2899</span> 创建。没有这一步，后面任何 Resource、Object、Variant、脚本语言和项目设置都没有统一入口。</p>
             </div>
             <div class="trace-row">
               <div class="trace-index">3</div>
               <strong>Server 与 Scene 类型接入</strong>
-              <p><span class="source">Main::setup2()</span> 进入第二阶段，调用 <span class="source">register_server_types()</span>、<span class="source">register_scene_types()</span>，并按 CORE/SERVERS/SCENE/EDITOR 初始化模块。这里决定 RenderingServer、PhysicsServer、AudioServer、Node、Control、PackedScene、AnimationPlayer 等类型能否被创建和绑定。</p>
+              <p><span class="source">main/main.cpp:3008</span> 的 <span class="source">Main::setup2()</span> 进入第二阶段，调用 <span class="source">register_server_types()</span>、<span class="source">register_scene_types()</span>，并按 CORE/SERVERS/SCENE/EDITOR 初始化模块。这里决定 RenderingServer、PhysicsServer、AudioServer、Node、Control、PackedScene、AnimationPlayer 等类型能否被创建和绑定。</p>
             </div>
             <div class="trace-row">
               <div class="trace-index">4</div>
               <strong>编辑器本身也是场景树程序</strong>
-              <p>如果以编辑器运行，<span class="source">EditorNode</span> 是主控节点，源码锚点是 <span class="source">editor/editor_node.h:120</span>。运行按钮、文件系统 Dock、Inspector、场景树 Dock、导入导出面板都在这棵编辑器场景树里。也就是说，编辑器不是 Godot 外面的工具，而是 Godot 运行时的一个复杂场景。</p>
+              <p>如果以编辑器运行，<span class="source">EditorNode</span> 是主控节点，源码锚点是 <span class="source">editor/editor_node.h:120</span>。运行按钮、文件系统 Dock、Inspector、场景树 Dock、导入导出面板都在这棵编辑器场景树里。也就是说，编辑器不是 Godot 外面的工具，而是 Godot 运行时里的一套复杂工具场景。</p>
             </div>
             <div class="trace-row">
               <div class="trace-index">5</div>
+              <strong>运行按钮启动游戏进程</strong>
+              <p>点击运行主场景时，编辑器侧入口在 <span class="source">editor/run/editor_run_bar.cpp:256</span>。它确认主场景、自动保存、调用构建和插件扩展点，然后在 <span class="source">editor/run/editor_run_bar.cpp:353</span> 进入 <span class="source">EditorRun::run()</span>。真正创建游戏进程的是 <span class="source">editor/run/editor_run.cpp:182</span> 的 <span class="source">OS::create_instance()</span>；如果指定场景，会在 <span class="source">editor/run/editor_run.cpp:150</span> 到 <span class="source">153</span> 追加 <span class="source">--scene</span> 参数。</p>
+            </div>
+            <div class="trace-row">
+              <div class="trace-index">6</div>
+              <strong>游戏进程选择 MainLoop 和主场景</strong>
+              <p>新进程会重新走平台入口、<span class="source">Main::setup()</span>、<span class="source">Main::setup2()</span> 和 <span class="source">Main::start()</span>。在 <span class="source">main/main.cpp:4335</span> 附近会创建或选择 MainLoop，游戏路径来自命令行 <span class="source">--scene</span> 或 <span class="source">application/run/main_scene</span>，主场景加载逻辑集中在 <span class="source">main/main.cpp:4735</span> 到 <span class="source">4743</span>。</p>
+            </div>
+            <div class="trace-row">
+              <div class="trace-index">7</div>
               <strong>主场景作为 Resource 被加载</strong>
               <p>项目主场景路径最终交给 <span class="source">ResourceLoader</span>。它在 <span class="source">core/io/resource_loader.h:103</span> 定义统一加载入口，通过 ResourceFormatLoader 识别 <span class="source">.tscn</span>、<span class="source">.scn</span>、<span class="source">.tres</span> 等格式，返回 <span class="source">PackedScene</span> 或其他 Resource。</p>
             </div>
             <div class="trace-row">
-              <div class="trace-index">6</div>
+              <div class="trace-index">8</div>
               <strong>PackedScene 实例化成 Node 树</strong>
               <p><span class="source">PackedScene</span> 保存的是可实例化的 SceneState，源码锚点是 <span class="source">scene/resources/packed_scene.h:246</span>。实例化时会创建 Node，恢复属性、子节点、信号连接、脚本实例和资源引用。Node 的核心声明在 <span class="source">scene/main/node.h:54</span>。</p>
             </div>
             <div class="trace-row">
-              <div class="trace-index">7</div>
+              <div class="trace-index">9</div>
               <strong>SceneTree 按阶段调度</strong>
               <p><span class="source">SceneTree</span> 是 MainLoop 的具体实现，源码锚点是 <span class="source">scene/main/scene_tree.h:89</span>。它负责 enter_tree、ready、process、physics_process、组调用、定时器、Tween、场景切换、删除队列和消息队列 flush。用户脚本的 <span class="source">_ready()</span>、<span class="source">_process()</span>、<span class="source">_physics_process()</span> 都落在这条调度线上。</p>
             </div>
             <div class="trace-row">
-              <div class="trace-index">8</div>
+              <div class="trace-index">10</div>
               <strong>每帧由 Main::iteration 推进</strong>
               <p><span class="source">main/main.cpp:4896</span> 的 <span class="source">Main::iteration()</span> 计算 delta 和固定物理步，调用 SceneTree 的 physics/process，刷新 MessageQueue，推进 NavigationServer，再调用 <span class="source">RenderingServer::sync()</span> 和 <span class="source">RenderingServer::draw()</span>。这就是“游戏在跑”的真正时间轴。</p>
             </div>
             <div class="trace-row">
-              <div class="trace-index">9</div>
+              <div class="trace-index">11</div>
               <strong>重活交给 Server 和后端</strong>
               <p>渲染对象通过 <span class="source">RenderingServer</span> 的 RID API 进入后端，源码锚点是 <span class="source">servers/rendering/rendering_server.h:64</span>；物理对象通过 <span class="source">PhysicsServer2D/3D</span> 进入 Godot Physics 或 Jolt；音频通过 AudioServer 混音；文本通过 TextServer shaping。场景层只保存用户语义和句柄，底层系统保存真实执行状态。</p>
             </div>
@@ -314,6 +323,7 @@
             <tr><th>模型节点</th><th>源码入口</th><th>为什么先看这里</th></tr>
             <tr><td>进程入口</td><td><span class="source">platform/windows/godot_windows.cpp:68</span>、其他 <span class="source">platform/*</span></td><td>确认平台如何创建 OS 对象并进入 Main。</td></tr>
             <tr><td>启动和每帧</td><td><span class="source">main/main.cpp:1027</span>、<span class="source">3008</span>、<span class="source">3988</span>、<span class="source">4896</span></td><td>这是所有系统初始化、运行和清理的总调度。</td></tr>
+            <tr><td>编辑器运行按钮</td><td><span class="source">editor/run/editor_run_bar.cpp:256</span>、<span class="source">editor/run/editor_run.cpp:51</span>、<span class="source">182</span></td><td>确认“点击运行”如何从编辑器 UI 变成带参数的新游戏进程。</td></tr>
             <tr><td>类型反射</td><td><span class="source">core/object/object.h:349</span>、<span class="source">core/object/class_db.h:97</span>、<span class="source">core/object/method_bind.h</span></td><td>解释脚本、Inspector、文档和序列化为什么能识别 C++ 类。</td></tr>
             <tr><td>统一值容器</td><td><span class="source">core/variant/variant.h:93</span></td><td>解释脚本参数、属性值、信号参数和资源字段如何跨系统传递。</td></tr>
             <tr><td>资源加载</td><td><span class="source">core/io/resource_loader.h:103</span>、<span class="source">scene/resources/packed_scene.h:246</span></td><td>解释 .tscn/.tres/.gd/.png 等如何进入运行时对象世界。</td></tr>
@@ -330,7 +340,8 @@
           <p class="intro">
             下面的源码地图按“职责边界”来读，而不是按文件夹名字背目录。Godot 的目录不是平均切分的：<span class="source">core</span> 是运行时地基，
             <span class="source">scene</span> 是用户可见对象层，<span class="source">servers</span> 是底层能力抽象，<span class="source">modules</span> 是可裁剪功能接入点，
-            <span class="source">platform</span> 和 <span class="source">drivers</span> 把抽象落到系统 API。读源码时要先判断“这个功能的入口在哪一层，真实执行在哪一层，注册在哪个阶段发生”。
+            <span class="source">platform</span> 和 <span class="source">drivers</span> 把抽象落到系统 API。读源码时要先判断“这个功能的入口在哪个职责位置，真实执行在哪个系统，注册在哪个阶段发生”。
+            这里的“入口”指用户 API、编辑器按钮、命令行或资源格式的最外层名字；“真实执行”指持有状态或运行算法的对象；“注册阶段”指 ClassDB、Server 或模块初始化让它变得可见的时机。
           </p>
 
           <h3>从一个功能反查源码的固定步骤</h3>
@@ -363,7 +374,7 @@
             <div class="trace-row">
               <div class="trace-index">6</div>
               <strong>最后确认模块和平台条件</strong>
-              <p>如果源码被 <span class="source">#ifdef MODULE_*</span>、<span class="source">TOOLS_ENABLED</span>、<span class="source">PHYSICS_3D_DISABLED</span>、平台宏包住，必须回到 <span class="source">SConstruct</span>、<span class="source">modules/register_module_types.gen.cpp</span>、<span class="source">platform/*/detect.py</span> 确认它是否参与当前构建。</p>
+              <p>如果源码被 <span class="source">#ifdef MODULE_*</span>、<span class="source">TOOLS_ENABLED</span>、<span class="source">PHYSICS_3D_DISABLED</span>、平台宏包住，必须回到 <span class="source">SConstruct</span>、<span class="source">modules/SCsub</span>、<span class="source">modules/modules_builders.py</span>、<span class="source">platform/*/detect.py</span> 确认它是否参与当前构建。<span class="source">register_module_types.gen.cpp</span> 是构建时生成文件，本地源码树里不一定已经存在。</p>
             </div>
           </div>
 
@@ -374,7 +385,7 @@
             <tr><td><span class="source">core</span></td><td>Object/Variant/ClassDB、资源加载基础、OS 抽象、容器、数学、字符串、线程、错误处理。</td><td>不依赖 scene；不直接知道 Sprite2D、Node3D、EditorNode 等高级类型。</td><td><span class="source">core/register_core_types.cpp:134</span></td></tr>
             <tr><td><span class="source">scene</span></td><td>用户可见节点、GUI、动画、场景树、资源类型、PackedScene、Viewport/Window。</td><td>不直接实现 GPU 后端、物理求解器、平台事件循环。</td><td><span class="source">scene/register_scene_types.cpp:390</span></td></tr>
             <tr><td><span class="source">servers</span></td><td>渲染、物理、音频、显示、文本、导航、XR 等底层能力的抽象 API 和部分通用服务。</td><td>不保存用户场景树结构；不承担编辑器 UI。</td><td><span class="source">servers/register_server_types.cpp:146</span></td></tr>
-            <tr><td><span class="source">modules</span></td><td>可开关功能：GDScript、C#、Jolt、Godot Physics、glTF、编解码、文本后端、网络、XR 等。</td><td>不是所有第三方库源码；不是固定层级，它按初始化 level 接入不同层。</td><td><span class="source">modules/register_module_types.gen.cpp:97</span></td></tr>
+            <tr><td><span class="source">modules</span></td><td>可开关功能：GDScript、C#、Jolt、Godot Physics、glTF、编解码、文本后端、网络、XR 等。</td><td>不是所有第三方库源码；不是固定目录层，它按初始化 level 接入 core、servers、scene、editor。</td><td><span class="source">modules/SCsub:24</span>、<span class="source">modules/modules_builders.py:15</span></td></tr>
             <tr><td><span class="source">platform</span></td><td>进程入口、OS 子类、窗口/显示/输入平台差异、导出模板平台 glue。</td><td>不定义跨平台引擎 API；不应该让 scene 直接依赖平台实现。</td><td><span class="source">platform/windows/godot_windows.cpp:68</span></td></tr>
             <tr><td><span class="source">editor</span></td><td>Godot 编辑器本体、Inspector、Dock、插件、导入导出 UI、项目管理、调试界面。</td><td>不参与普通导出模板运行时，通常受 <span class="source">TOOLS_ENABLED</span> 保护。</td><td><span class="source">editor/editor_node.h:120</span></td></tr>
             <tr><td><span class="source">drivers</span></td><td>通用驱动 glue，例如 PNG、可访问性、渲染/音频/输入辅助。</td><td>不是平台主入口；不是资源系统的统一调度器。</td><td><span class="source">drivers/register_driver_types.cpp</span></td></tr>
@@ -435,8 +446,8 @@
           </div>
 
           <div class="rail-list">
-            <div class="rail-row"><strong>实线方向不是 include 规则</strong><p>这张图表达的是阅读和运行时的主方向，不是每个 <span class="source">#include</span> 的绝对限制。实际源码里会有生成代码、前向声明、工具构建和宏保护，但大体原则是：越靠下越基础，越靠上越接近用户界面。</p></div>
-            <div class="rail-row"><strong>modules 是插入层</strong><p><span class="source">modules</span> 不像 core/scene/servers 那样固定在一层。它通过 <span class="source">initialize_modules(ModuleInitializationLevel)</span> 在 CORE、SERVERS、SCENE、EDITOR 不同阶段接入。例如 GDScript 注册脚本语言，Jolt 注册物理后端，glTF 注册资源导入导出，visual_shader 注册编辑器工具。</p></div>
+            <div class="rail-row"><strong>实线方向不是 include 规则</strong><p>这张图表达的是阅读和运行时的主方向，不是每个 <span class="source">#include</span> 的绝对限制。实际源码里会有生成代码、前向声明、模板、工具构建和宏保护；它们可能制造局部例外，但不会改变大体原则：越靠下越基础，越靠上越接近用户界面。</p></div>
+            <div class="rail-row"><strong>modules 是插入式功能区</strong><p><span class="source">modules</span> 不像 core/scene/servers 那样只对应一个固定目录位置，也不要把图里的箭头理解成“servers 依赖 modules”。它通过 <span class="source">initialize_modules(ModuleInitializationLevel)</span> 在 CORE、SERVERS、SCENE、EDITOR 不同阶段把能力注册进已有系统。例如 GDScript 注册脚本语言，Jolt 注册物理后端，glTF 注册资源导入导出，visual_shader 注册编辑器工具。</p></div>
             <div class="rail-row"><strong>editor 不是运行时外壳</strong><p>编辑器是用 Godot 自身 GUI 和 SceneTree 搭出来的工具程序。读编辑器源码时仍然要回到 Object/ClassDB/ResourceLoader/SceneTree；Inspector 能自动显示属性，靠的是运行时类型系统，不是编辑器手写每个属性控件。</p></div>
           </div>
 
@@ -458,6 +469,7 @@
             Godot 不是 CMake 项目，而是 SCons 项目。读构建系统时不要把它想成“一个工程文件列出所有源码”，而要把它想成一条 Python 驱动的装配线：
             根目录的 <span class="source">SConstruct</span> 先判断当前机器能构建哪些平台、解析用户传入的参数，再把同一个 <span class="source">env</span> 传给各层 <span class="source">SCsub</span>。
             每个目录的 <span class="source">SCsub</span> 把自己的源文件、生成文件、第三方库和宏开关加入对应的 source 列表，最后平台层把这些对象链接成 editor 或 export template。
+            SConstruct/SCsub 是构建时运行的 Python 脚本，不是引擎运行时逻辑；它们决定哪些 C++ 文件会被编译、哪些宏会被定义、哪些生成文件会参与编译。
             所以构建系统不是“源码之外的杂项”，它直接决定哪些类存在、哪些模块注册、哪些宏包住的代码会进入最终二进制。
           </p>
 
@@ -562,7 +574,7 @@
             <div class="trace-row">
               <div class="trace-index">9</div>
               <strong>平台层完成最终链接</strong>
-              <p>前面所有列表最终被编译成对象文件或静态库，再由当前平台的 <span class="source">platform/&lt;platform&gt;/SCsub</span> 组织链接。结果可以是带编辑器的 <span class="source">target=editor</span>，也可以是裁剪掉工具代码的 <span class="source">template_debug</span> 或 <span class="source">template_release</span>。所以构建失败要先判断失败发生在“选项解析、源码收集、生成文件、编译、链接”哪一层。</p>
+              <p>前面所有列表最终被编译成对象文件或静态库，再由当前平台的 <span class="source">platform/&lt;platform&gt;/SCsub</span> 组织链接。结果可以是带编辑器的 <span class="source">target=editor</span>，也可以是裁剪掉工具代码的 <span class="source">template_debug</span> 或 <span class="source">template_release</span>。所以构建失败要先判断失败发生在“选项解析、源码收集、生成文件、编译、链接”哪一步。</p>
             </div>
           </div>
 
@@ -574,7 +586,7 @@
             <tr><td><span class="source">TOOLS_ENABLED</span></td><td><span class="source">SConstruct:549</span></td><td>打开编辑器、导入器、文档、调试工具、EditorPlugin 等工具侧代码。</td><td>运行时模块不能依赖 editor-only 类型，否则导出模板会链接失败。</td></tr>
             <tr><td><span class="source">module_*</span></td><td><span class="source">SConstruct:476</span>、<span class="source">modules/SCsub:33</span></td><td>控制某个模块是否进入 <span class="source">env.module_list</span>，进而影响源码编译和初始化函数生成。</td><td>找不到脚本语言、编解码器或后端时，先确认模块是否启用。</td></tr>
             <tr><td><span class="source">disable_*</span></td><td><span class="source">SConstruct:264</span>、<span class="source">SConstruct:646</span></td><td>按 profile 或命令行裁剪 3D、物理、导航、XR、类注册等功能。</td><td>类存在于源码但运行时不可用时，要查 <span class="source">disabled_classes.gen.h</span> 和注册宏。</td></tr>
-            <tr><td><span class="source">precision</span>、<span class="source">arch</span>、优化级别</td><td><span class="source">SConstruct:161+</span></td><td>改变 ABI、浮点类型、编译优化和调试信息。</td><td>崩溃、性能或二进制兼容问题要记录这些参数，不要只记录源码 commit。</td></tr>
+            <tr><td><span class="source">precision</span>、<span class="source">arch</span>、优化级别</td><td><span class="source">SConstruct:167</span>、<span class="source">171</span>、<span class="source">192</span></td><td>改变 ABI、浮点类型、编译优化和调试信息。</td><td>崩溃、性能或二进制兼容问题要记录这些参数，不要只记录源码 commit。</td></tr>
             <tr><td><span class="source">tests</span>、<span class="source">compiledb</span>、<span class="source">ninja</span></td><td><span class="source">SConstruct:240</span></td><td>控制测试目标、IDE 的 compile_commands、Ninja 后端等开发辅助输出。</td><td>读源码和调试 IDE 跳转时，<span class="source">compiledb=yes</span> 往往比手配 include path 更可靠。</td></tr>
           </table>
 
@@ -608,7 +620,7 @@
             <tr><td>平台或模块自定义生成物</td><td>各自 <span class="source">SCsub</span></td><td>可能生成 shader、icons、接口表、协议绑定、资源数据等。</td><td>先从生成物所在目录的 <span class="source">SCsub</span> 找 builder 函数。</td></tr>
           </table>
 
-          <div class="level-content" data-level="intermediate deep all">
+          <div>
             <h3>模块注册：构建结果怎样进入运行时</h3>
             <p>
               模块不是“编译进来就自动生效”。构建阶段先决定模块是否启用，再生成统一注册文件；运行阶段由 <span class="source">main/main.cpp</span> 在不同初始化级别调用注册函数。
@@ -624,7 +636,7 @@
             </table>
           </div>
 
-          <div class="level-content" data-level="deep all">
+          <div>
             <h3>读构建错误的定位顺序</h3>
             <div class="rail-list">
               <div class="rail-row"><strong>平台不在列表里</strong><p>看 <span class="source">platform/&lt;name&gt;/detect.py</span> 是否存在、<span class="source">can_build()</span> 为什么失败，以及 <span class="source">SConstruct:414</span> 打印的可用平台列表。</p></div>
@@ -645,6 +657,7 @@
             <span class="source">Main</span> 负责跨平台的初始化顺序和运行模式选择；<span class="source">MainLoop</span> 负责真正的“每一帧”。
             读这一节时要先记住一个判断：<span class="source">setup/setup2</span> 是“搭环境”，<span class="source">start</span> 是“决定跑什么”，
             <span class="source">iteration</span> 是“推进一帧”，<span class="source">cleanup</span> 是“按反向顺序拆掉环境”。
+            标题里的 exe 只是以桌面可执行文件为例；Web、Android、iOS、macOS、Linux 的平台入口文件不同，但都会把控制权交给同一套 Main 初始化和 MainLoop 帧推进逻辑。
           </p>
 
           <h3>启动链路总图</h3>
@@ -814,7 +827,7 @@
             <div class="rail-row"><strong>渲染提交</strong><p>RenderingServer 先 <span class="source">sync()</span>，再按窗口是否需要绘制、低功耗模式、资源处理状态决定是否 <span class="source">draw()</span>。</p></div>
           </div>
 
-          <div class="level-content" data-level="deep all">
+          <div>
             <h3>读启动源码时最容易踩的坑</h3>
             <div class="rail-list">
               <div class="rail-row"><strong>不要把 setup2 当成 SceneTree 创建点</strong><p><span class="source">setup2</span> 注册 scene 类型和创建 DisplayServer，但真正的 <span class="source">SceneTree</span> 或自定义 <span class="source">MainLoop</span> 是在 <span class="source">Main::start()</span> 创建并交给 <span class="source">OS::set_main_loop()</span> 的。</p></div>
@@ -834,6 +847,7 @@
             它们共同依赖一套反射和动态调用系统：<span class="source">Object</span> 提供对象身份和通用行为，
             <span class="source">ClassDB</span> 保存类、方法、属性和信号的元数据，<span class="source">Variant</span> 负责在脚本、编辑器、序列化和 C++ 之间搬运值。
             读懂这里，就能解释“为什么一个 C++ 方法能被 GDScript 调用”“为什么 Inspector 自动出现属性”“为什么延迟调用不会立刻改树”。
+            这里的“反射”可以先理解成一张运行时登记表：C++ 类在编译后本来只对 C++ 编译器清楚，注册到 ClassDB 后，脚本、编辑器、文档生成器和资源系统才能按名字查询它有哪些方法、属性、信号和父类。
           </p>
 
           <div class="diagram">
@@ -923,7 +937,7 @@
             <div class="trace-row">
               <div class="trace-index">3</div>
               <strong>_bind_methods 填充方法、属性和信号</strong>
-              <p><span class="source">Object::_bind_methods()</span> 在 <span class="source">core/object/object.cpp:1835</span>，<span class="source">Node::_bind_methods()</span> 在 <span class="source">scene/main/node.cpp:3753</span> 附近。这里调用 <span class="source">ClassDB::bind_method</span>、<span class="source">ADD_PROPERTY</span>、<span class="source">ADD_SIGNAL</span>。Inspector、文档和脚本补全看到的 API，基本都来自这层数据。</p>
+              <p><span class="source">Object::_bind_methods()</span> 在 <span class="source">core/object/object.cpp:1835</span>，<span class="source">Node::_bind_methods()</span> 在 <span class="source">scene/main/node.cpp:3747</span> 附近。这里调用 <span class="source">ClassDB::bind_method</span>、<span class="source">ADD_PROPERTY</span>、<span class="source">ADD_SIGNAL</span>。Inspector、文档和脚本补全看到的 API，基本都来自这层数据。</p>
             </div>
             <div class="trace-row">
               <div class="trace-index">4</div>
@@ -963,11 +977,11 @@
             <tr><th>对象类型</th><th>创建</th><th>身份登记</th><th>释放方式</th><th>常见误区</th></tr>
             <tr><td>普通 Object</td><td><span class="source">memnew</span> 或 <span class="source">ClassDB::instantiate()</span></td><td>构造时进入 <span class="source">ObjectDB::add_instance()</span>，见 <span class="source">core/object/object.cpp:2294</span>。</td><td>通常手动 <span class="source">memdelete</span> 或 API 负责释放。</td><td>ObjectID 只能帮助查找，不等于自动延长生命周期。</td></tr>
             <tr><td>Node</td><td>场景实例化、脚本创建、编辑器创建</td><td>仍然是 Object，也有 ObjectID。</td><td>常用 <span class="source">queue_free()</span>，绑定在 <span class="source">scene/main/node.cpp:3864</span>。</td><td>从树上 <span class="source">remove_child()</span> 不等于释放对象。</td></tr>
-            <tr><td>Resource</td><td><span class="source">ResourceLoader</span>、<span class="source">Ref&lt;T&gt;</span>、构造器</td><td>继承 RefCounted，也进入 ObjectDB。</td><td>引用计数归零自动释放，核心在 <span class="source">RefCounted::reference/unreference</span>。</td><td>Resource 不是 Node，不能挂树；Node 也不靠 Ref 自动释放。</td></tr>
+            <tr><td>Resource</td><td><span class="source">ResourceLoader</span>、<span class="source">Ref&lt;T&gt;</span>、构造器</td><td>继承 RefCounted，也进入 ObjectDB。</td><td>引用计数归零自动释放，核心在 <span class="source">core/object/ref_counted.cpp:74</span> 和 <span class="source">92</span>。</td><td>Resource 不是 Node，不能挂树；Node 也不靠 Ref 自动释放。</td></tr>
             <tr><td>Callable 目标</td><td>信号连接、延迟调用、UndoRedo</td><td>通常保存 ObjectID 和方法名。</td><td>调用前通过 ObjectDB 检查对象是否还存在。</td><td>延迟调用目标释放后，调用应失效而不是解引用野指针。</td></tr>
           </table>
 
-          <div class="level-content" data-level="deep all">
+          <div>
             <h3>信号、Callable、MessageQueue 如何协作</h3>
             <div class="trace" aria-label="信号与延迟调用流程">
               <div class="trace-row">
@@ -999,7 +1013,7 @@
             </div>
           </div>
 
-          <div class="level-content" data-level="intermediate deep all">
+          <div>
             <h3>读运行时问题的定位问题</h3>
             <table class="matrix">
               <tr><th>现象</th><th>先问什么</th><th>优先源码入口</th></tr>
@@ -1022,6 +1036,7 @@
             <span class="source">PackedScene</span> 内部的 <span class="source">SceneState</span> 保存可实例化的数据；
             调用 <span class="source">instantiate()</span> 后才会创建真实 <span class="source">Node</span> 对象；
             只有节点进入 <span class="source">SceneTree</span>，才会收到 enter_tree、ready、process、physics_process、exit_tree 等生命周期通知。
+            换句话说，<span class="source">.tscn</span> 是磁盘上的描述文件，<span class="source">PackedScene</span> 是内存里的资源模板，<span class="source">Node</span> 是实例化出来的对象，<span class="source">SceneTree</span> 才是让这些对象按帧运行的调度器；资源缓存命中也不等于已经有一个节点实例挂在树上。
           </p>
 
           <div class="diagram">
@@ -1099,7 +1114,7 @@
             <tr><td>Node</td><td><span class="source">scene/main/node.h:55</span></td><td>父子关系、owner、组、路径、process 开关、生命周期通知、脚本入口。</td><td>不直接驱动每一帧；不直接提交渲染或物理后端。</td></tr>
             <tr><td>SceneTree</td><td><span class="source">scene/main/scene_tree.h:89</span></td><td>MainLoop 实现、根 Window、当前场景、process/physics 调度、组调用、Timer/Tween、删除队列。</td><td>不保存每个节点的业务属性；不直接解析 .tscn。</td></tr>
             <tr><td>owner</td><td><span class="source">scene/main/node.h:205</span>、<span class="source">588</span></td><td>决定节点属于哪个可保存场景，影响 PackedScene.pack 和编辑器保存。</td><td>不是 parent；改变 parent 不一定改变 owner。</td></tr>
-            <tr><td>current_scene</td><td><span class="source">SceneTree</span></td><td>游戏主场景或切换后的当前场景引用。</td><td>不代表树里只有这一棵节点；autoload、UI、Viewport 子树都可能同时存在。</td></tr>
+            <tr><td>current_scene</td><td><span class="source">scene/main/scene_tree.h:203</span>、<span class="source">439</span></td><td>游戏主场景或切换后的当前场景引用。</td><td>不代表树里只有这一棵节点；autoload、UI、Viewport 子树都可能同时存在。</td></tr>
           </table>
 
           <h3>Node 生命周期逐步看</h3>
@@ -1127,7 +1142,7 @@
             <div class="trace-row">
               <div class="trace-index">5</div>
               <strong>process 由 SceneTree 调度</strong>
-              <p><span class="source">SceneTree::physics_process()</span> 在 <span class="source">scene/main/scene_tree.cpp:639</span>，<span class="source">SceneTree::process()</span> 在 <span class="source">scene/main/scene_tree.cpp:688</span>。它们发出 <span class="source">physics_frame</span> 和 <span class="source">process_frame</span>，处理 timer/tween/multiplayer，再按 process group 调用节点通知。</p>
+              <p><span class="source">SceneTree::physics_process()</span> 在 <span class="source">scene/main/scene_tree.cpp:639</span>，<span class="source">SceneTree::process()</span> 在 <span class="source">scene/main/scene_tree.cpp:688</span>。前者发出 <span class="source">physics_frame</span> 并处理物理 process group、物理 timer/tween；后者先轮询 multiplayer，发出 <span class="source">process_frame</span>，再处理普通 process group、timer/tween 和场景切换。</p>
             </div>
             <div class="trace-row">
               <div class="trace-index">6</div>
@@ -1161,7 +1176,7 @@
             </div>
           </div>
 
-          <div class="level-content" data-level="deep all">
+          <div>
             <h3>场景与资源常见定位问题</h3>
             <div class="rail-list">
               <div class="rail-row"><strong>场景加载失败</strong><p>先从 <span class="source">ResourceLoader::load()</span> 看路径、remap、缓存模式和具体 ResourceFormatLoader；不要直接跳到 PackedScene。</p></div>
@@ -1181,6 +1196,7 @@
             Server 是 Godot 非常关键的设计：场景节点不直接持有 GPU 对象、物理世界对象、音频后端对象或导航图数据，而是通过 Server API 拿 <span class="source">RID</span> 句柄。
             这样场景层可以稳定表达用户语义，底层实现可以替换、延迟、跨线程或按平台差异处理。读 Server 源码时要分清三件事：
             节点保存用户可见状态，Server 保存真实执行状态，后端负责把状态变成 GPU 命令、物理求解、音频混音、文本 shaping 或导航路径。
+            对新读者来说，可以把 RID 先看成“Server 内部对象的号码牌”：节点可以拿着号码牌请求修改或释放底层对象，但号码牌本身不是指针，也不保存底层对象的数据。
           </p>
 
           <div class="diagram">
@@ -1227,7 +1243,7 @@
             <tr><td>RID</td><td><span class="source">core/templates/rid.h:38</span></td><td>一个 64-bit 句柄，外部代码只拿它引用 Server 内部对象。</td><td>RID 本身不保存 mesh、body、texture 数据。</td></tr>
             <tr><td>RID_Alloc</td><td><span class="source">core/templates/rid_owner.h:92</span></td><td>分配 RID id，并管理本地索引、校验和对象槽。</td><td>不要把它当普通 HashMap；它是专门为 RID 管理优化的结构。</td></tr>
             <tr><td>RID_Owner</td><td><span class="source">core/templates/rid_owner.h:517</span></td><td>拥有某类 Server 对象，提供 <span class="source">make_rid()</span>、<span class="source">get_or_null()</span>、<span class="source">free()</span>。</td><td>释放 RID 要走对应 Server/owner，不是 delete 场景节点。</td></tr>
-            <tr><td>Resource</td><td><span class="source">core/io/resource.h</span></td><td>可序列化、可引用计数、可被 ResourceLoader 管理的用户资源。</td><td>Resource 和 RID 是两层：Mesh Resource 可以对应一个或多个底层 RID。</td></tr>
+            <tr><td>Resource</td><td><span class="source">core/io/resource.h:52</span></td><td>可序列化、可引用计数、可被 ResourceLoader 管理的用户资源。</td><td>Resource 和 RID 是两层：Mesh Resource 可以对应一个或多个底层 RID。</td></tr>
           </table>
 
           <h3>从场景节点到 Server 后端</h3>
@@ -1279,7 +1295,7 @@
             <div class="rail-row"><strong>TextServer</strong><p>把复杂文字排版、字体 fallback、字形、方向、断行、Shaping 统一给 GUI 和渲染使用。</p></div>
           </div>
 
-          <div class="level-content" data-level="deep all">
+          <div>
             <h3>读 Server 源码的三个固定问题</h3>
             <div class="rail-list">
               <div class="rail-row"><strong>谁拥有真实对象？</strong><p>查 Server 或 storage 里的 <span class="source">RID_Owner</span>、owner map、storage 类。场景节点通常只保存 RID，不拥有后端对象本体。</p></div>
@@ -1297,6 +1313,8 @@
             渲染源码规模很大，适合按“场景层表示、Server API、Renderer 后端、RenderingDevice、平台显示”五段来读。
             不要一开始就读 Vulkan 或 shader 细节，先看 2D/3D 节点如何把 RID、变换、材质、可见性提交给 <span class="source">RenderingServer</span>；
             再看 Renderer 如何把这些状态组织成 canvas draw 或 3D scene render；最后才进入 <span class="source">RenderingDevice</span> 和平台 swapchain。
+            这条顺序很重要：节点解释“用户设置了什么”，Server 解释“状态怎样被提交”，Renderer 解释“这一帧怎样组织绘制”，RenderingDevice 才解释“怎样变成底层图形 API 命令”。
+            需要注意：下面的 RD 路径主要对应 Forward+/Mobile 等现代渲染后端，底层驱动在 <span class="source">drivers/vulkan</span>、<span class="source">drivers/d3d12</span>、<span class="source">drivers/metal</span>；Compatibility/OpenGL 路径走 <span class="source">drivers/gles3</span>，不要把它也直接归到 RenderingDevice。
           </p>
 
           <label for="pathSelect"><strong>选择一条调用路径：</strong></label>
@@ -1309,14 +1327,14 @@
             </div>
           </div>
 
-          <h3>渲染分层图</h3>
+          <h3>渲染链路图</h3>
           <div class="diagram">
             <div class="flow">
               <div class="flow-node"><strong>CanvasItem / Node3D</strong><span>用户改属性，节点记录变换、材质、可见性。</span></div>
               <div class="flow-node"><strong>World / Viewport</strong><span>组织 2D canvas 或 3D scenario。</span></div>
               <div class="flow-node"><strong>RenderingServer</strong><span>通过 RID 创建和更新渲染对象。</span></div>
               <div class="flow-node"><strong>RendererRD</strong><span>场景渲染、光照、阴影、后处理。</span></div>
-              <div class="flow-node"><strong>RenderingDevice</strong><span>Vulkan/D3D12/Metal/OpenGL 抽象。</span></div>
+              <div class="flow-node"><strong>RenderingDevice</strong><span>Vulkan/D3D12/Metal 等现代后端抽象。</span></div>
               <div class="flow-node"><strong>DisplayServer</strong><span>窗口 surface、swapchain、present。</span></div>
             </div>
           </div>
@@ -1369,18 +1387,18 @@
             </div>
           </div>
 
-          <h3>渲染层级和源码入口</h3>
+          <h3>渲染链路和源码入口</h3>
           <table class="matrix">
-            <tr><th>层级</th><th>源码入口</th><th>它回答的问题</th><th>不要在这里找什么</th></tr>
+            <tr><th>位置</th><th>源码入口</th><th>它回答的问题</th><th>不要在这里找什么</th></tr>
             <tr><td>场景节点</td><td><span class="source">scene/main/canvas_item.*</span>、<span class="source">scene/3d/visual_instance_3d.*</span></td><td>用户属性何时转成 RID 调用，节点进入/退出树时如何提交状态。</td><td>不要在这里找 GPU command buffer。</td></tr>
             <tr><td>RenderingServer API</td><td><span class="source">servers/rendering/rendering_server.h:64</span></td><td>引擎公开给场景层和脚本的渲染抽象有哪些。</td><td>不要期待这里有具体 Vulkan/D3D12 实现。</td></tr>
             <tr><td>RenderingServerDefault</td><td><span class="source">servers/rendering/rendering_server_default.h:47</span></td><td>Server 默认实现如何把 API 分发给 storage、canvas、scene 和线程队列。</td><td>不要把它和 RendererRD 的具体 pass 混为一谈。</td></tr>
-            <tr><td>RendererCanvas/Scene</td><td><span class="source">renderer_canvas_render.h:38</span>、<span class="source">renderer_scene_render.h:41</span></td><td>2D/3D 后端如何组织 draw、culling、lighting、shadow、post-process。</td><td>不要在这里找节点生命周期。</td></tr>
+            <tr><td>RendererCanvas/Scene</td><td><span class="source">servers/rendering/renderer_canvas_render.h:38</span>、<span class="source">servers/rendering/renderer_scene_render.h:41</span></td><td>2D/3D 后端如何组织 draw、culling、lighting、shadow、post-process。</td><td>不要在这里找节点生命周期。</td></tr>
             <tr><td>RenderingDevice</td><td><span class="source">servers/rendering/rendering_device.h:67</span></td><td>纹理、buffer、shader、pipeline、draw list、compute list 等底层图形 API 抽象。</td><td>不要从这里理解 Sprite2D 或 MeshInstance3D 的用户行为。</td></tr>
             <tr><td>DisplayServer</td><td><span class="source">servers/display/display_server.h:62</span></td><td>窗口、屏幕、swapchain/surface 接入、present 相关平台能力。</td><td>不要在这里找材质、光照或场景剔除。</td></tr>
           </table>
 
-          <div class="level-content" data-level="intermediate deep all">
+          <div>
             <h3>几个阅读抓手</h3>
             <table class="matrix">
               <tr><th>问题</th><th>先看哪里</th><th>再看哪里</th></tr>
@@ -1391,10 +1409,10 @@
             </table>
           </div>
 
-          <div class="level-content" data-level="deep all">
+          <div>
             <h3>资源、Shader 和 RD 的边界</h3>
             <div class="rail-list">
-              <div class="rail-row"><strong>Texture/Image</strong><p><span class="source">Image</span> 是 CPU 侧像素数据；Texture Resource 通常持有或生成 RenderingServer texture RID；RenderingDevice texture 是更底层的 GPU 资源。读纹理 bug 时先判断数据在哪一层错了。</p></div>
+              <div class="rail-row"><strong>Texture/Image</strong><p><span class="source">Image</span> 是 CPU 侧像素数据；Texture Resource 通常持有或生成 RenderingServer texture RID；RenderingDevice texture 是更底层的 GPU 资源。读纹理 bug 时先判断数据错在 CPU Image、Texture Resource、Server RID 还是 GPU texture。</p></div>
               <div class="rail-row"><strong>Mesh</strong><p>Mesh Resource 保存 surface arrays 和材质引用；RenderingServer 的 mesh RID 是提交给渲染后端的表示；3D instance RID 只是“这个 mesh 在某个 scenario 里有一个实例”。</p></div>
               <div class="rail-row"><strong>Shader</strong><p>用户 Shader Resource 先走 Godot shader language 和材质系统，后端再生成具体 shader variant。真正的 RD shader 创建入口在 <span class="source">RenderingDevice</span>，中间还有 shader compiler 和缓存。</p></div>
               <div class="rail-row"><strong>Render Thread</strong><p><span class="source">RenderingServerDefault::sync()</span> 在 <span class="source">servers/rendering/rendering_server_default.cpp:435</span>，<span class="source">draw()</span> 在 <span class="source">443</span>。多线程渲染时很多调用先进入 command queue，再由渲染线程执行。</p></div>
@@ -1408,6 +1426,7 @@
           <h2>物理与导航：抽象 API + 可替换实现</h2>
           <p class="intro">
             Godot 的物理层也使用 Server/RID 模式。场景层的 CollisionShape、RigidBody、Area、CharacterBody 等节点负责把用户语义转成 PhysicsServer API；真正的 broadphase、窄相碰撞、约束求解由 Godot Physics 或 Jolt 这样的后端实现。读物理源码时不要从“碰撞公式”开始，而要先建立一个更实用的模型：节点保存你在场景里能看懂的状态，Server 保存可求解的 body/area/shape/space，固定物理步负责把两边同步起来。
+            如果只记三个词：space 是物理世界容器，shape 是碰撞几何，body/area 是带着 shape 进入 space 的物理对象；节点只是把这些对象包装成用户能编辑和脚本能调用的形式。
           </p>
 
           <div class="diagram wide">
@@ -1446,7 +1465,7 @@
           <div class="two">
             <div class="diagram">
               <div class="flow vertical">
-                <div class="flow-node"><strong>PhysicsBody3D / Area3D</strong><span>场景节点，保存层级、mask、形状、脚本回调。</span></div>
+                <div class="flow-node"><strong>PhysicsBody3D / Area3D</strong><span>场景节点，保存 collision layer/mask、形状、脚本回调。</span></div>
                 <div class="flow-node"><strong>CollisionShape3D</strong><span>Resource 形式的 shape 被提交给 Server。</span></div>
                 <div class="flow-node"><strong>PhysicsServer3D</strong><span>space/body/area/shape/joint API。</span></div>
                 <div class="flow-node"><strong>Godot Physics / Jolt</strong><span>模块实现模拟和查询。</span></div>
@@ -1468,7 +1487,7 @@
           <div class="trace">
             <div class="trace-row"><strong>1. 节点创建 RID</strong><p><span class="source">PhysicsBody3D</span> 继承 <span class="source">CollisionObject3D</span>，构造时通过 <span class="source">PhysicsServer3D::body_create()</span> 得到 body RID，源码锚点是 <span class="source">scene/3d/physics/physics_body_3d.cpp:58</span> 和 <span class="source">servers/physics_3d/physics_server_3d.h:401</span>。<span class="source">Area3D</span> 类似，只是调用 <span class="source">area_create()</span>，入口在 <span class="source">scene/3d/physics/area_3d.cpp:819</span>。</p></div>
             <div class="trace-row"><strong>2. Shape 变成 Server 数据</strong><p><span class="source">CollisionShape3D</span> 本身是场景节点，真正的几何体来自 Shape3D Resource。Server 层提供 <span class="source">world_boundary_shape_create()</span>、<span class="source">sphere_shape_create()</span>、<span class="source">box_shape_create()</span> 等接口，声明在 <span class="source">servers/physics_3d/physics_server_3d.h:265</span>、<span class="source">267</span>、<span class="source">268</span>，Godot Physics 实现在 <span class="source">modules/godot_physics_3d/godot_physics_server_3d.cpp:47</span>、<span class="source">59</span>、<span class="source">65</span>。</p></div>
-            <div class="trace-row"><strong>3. 进入 Space</strong><p>body、area 和 shape 单独存在还不会参与求解，必须挂到某个 physics space。场景对象进入树、World3D/World2D 可用、transform 或 layer/mask 改变时，<span class="source">CollisionObject3D/2D</span> 会把 RID、space、transform、collision layer/mask 同步给 Server。2D 里这一类同步集中在 <span class="source">scene/2d/physics/collision_object_2d.cpp:42</span>、<span class="source">58</span>、<span class="source">146</span>、<span class="source">159</span>。</p></div>
+            <div class="trace-row"><strong>3. 进入 Space</strong><p>body、area 和 shape 单独存在还不会参与求解，必须挂到某个 physics space。场景对象进入树、World3D/World2D 可用、transform 或 layer/mask 改变时，<span class="source">CollisionObject3D/2D</span> 会把 RID、space、transform、collision layer/mask 同步给 Server。3D 的 transform/space/layer 同步可从 <span class="source">scene/3d/physics/collision_object_3d.cpp:66</span>、<span class="source">82</span>、<span class="source">148</span> 看起；2D 的对应位置在 <span class="source">scene/2d/physics/collision_object_2d.cpp:42</span>、<span class="source">58</span>、<span class="source">146</span>。</p></div>
             <div class="trace-row"><strong>4. 固定步同步和脚本回调</strong><p><span class="source">Main::iteration()</span> 在 <span class="source">main/main.cpp:4965</span> 和 <span class="source">4971</span> 调用 PhysicsServer3D/2D 的 <span class="source">sync()</span>，随后在 <span class="source">main/main.cpp:4976</span> 进入 <span class="source">MainLoop::physics_process()</span>。这时脚本的 <span class="source">_physics_process</span>、CharacterBody 移动、物理查询会看到同步后的物理世界。</p></div>
             <div class="trace-row"><strong>5. 结束同步并求解</strong><p>脚本物理阶段结束后，<span class="source">Main::iteration()</span> 在 <span class="source">main/main.cpp:5009</span>、<span class="source">5015</span> 调用 <span class="source">end_sync()</span>，然后在对应位置附近调用 <span class="source">step()</span>。Godot Physics 3D 的 <span class="source">step()</span> 入口在 <span class="source">modules/godot_physics_3d/godot_physics_server_3d.cpp:1674</span>，更内部的步进逻辑在 <span class="source">modules/godot_physics_3d/godot_step_3d.cpp:185</span>。</p></div>
             <div class="trace-row"><strong>6. 结果回到节点</strong><p>RigidBody 的位置、速度、接触信息、Area 的 enter/exit 信号、DirectBodyState/DirectSpaceState 查询结果，都是 Server 后端状态在同步点回灌到场景层的表现。Jolt 3D 的 motion test 会落到 <span class="source">modules/jolt_physics/jolt_physics_server_3d.cpp:958</span>，再进入 <span class="source">modules/jolt_physics/spaces/jolt_physics_direct_space_state_3d.cpp:861</span>。</p></div>
@@ -1494,17 +1513,17 @@
             <div class="timeline-row"><time>physics</time><div><span class="source">main/main.cpp:4976</span>：SceneTree 进入物理帧，调用节点和脚本的固定步逻辑。CharacterBody 推荐在这里移动，因为它依赖固定步和当前 space 查询。</div></div>
             <div class="timeline-row"><time>nav</time><div><span class="source">main/main.cpp:4993</span>、<span class="source">4998</span>：NavigationServer2D/3D 的 <span class="source">physics_process()</span> 更新 agent、避障和地图状态；它和物理共用固定步节奏，但不做碰撞求解。</div></div>
             <div class="timeline-row"><time>end</time><div><span class="source">main/main.cpp:5009</span>、<span class="source">5015</span>：PhysicsServer 结束同步窗口，防止脚本在求解期间继续直接查询或改动后端状态。</div></div>
-            <div class="timeline-row"><time>step</time><div>后端开始真正求解当前固定步。Godot Physics 3D 的实现入口是 <span class="source">modules/godot_physics_3d/godot_physics_server_3d.cpp:1674</span>，Jolt 3D 的对应后端入口在 <span class="source">modules/jolt_physics/jolt_physics_server_3d.cpp</span>。</div></div>
+            <div class="timeline-row"><time>step</time><div>后端开始真正求解当前固定步。Godot Physics 3D 的实现入口是 <span class="source">modules/godot_physics_3d/godot_physics_server_3d.cpp:1674</span>，Jolt 3D 的对应后端入口在 <span class="source">modules/jolt_physics/jolt_physics_server_3d.cpp:1623</span>。</div></div>
           </div>
 
           <h3>查询、CharacterBody 和 RigidBody 的边界</h3>
           <table>
             <thead><tr><th>你看到的 API</th><th>它真正做什么</th><th>常见误解</th><th>源码锚点</th></tr></thead>
             <tbody>
-              <tr><td><span class="source">RayCast2D/3D</span>、<span class="source">direct_space_state.intersect_ray</span></td><td>对当前 space 做几何查询，返回命中的 collider、位置、法线等。</td><td>查询不会自动移动 body，也不会改变碰撞结果；它只是读取当前同步点的空间状态。</td><td><span class="source">PhysicsDirectSpaceState2D</span> 绑定在 <span class="source">servers/physics_2d/physics_server_2d.cpp:464</span></td></tr>
+              <tr><td><span class="source">RayCast2D/3D</span>、<span class="source">direct_space_state.intersect_ray</span></td><td>对当前 space 做几何查询，返回命中的 collider、位置、法线等。</td><td>查询不会自动移动 body，也不会改变碰撞结果；它只是读取当前同步点的空间状态。</td><td><span class="source">PhysicsDirectSpaceState2D::_intersect_ray</span> 在 <span class="source">servers/physics_2d/physics_server_2d.cpp:341</span>，脚本绑定在 <span class="source">466</span></td></tr>
               <tr><td><span class="source">CharacterBody3D::move_and_slide()</span></td><td>把期望速度变成一次或多次 motion test，根据碰撞法线裁剪速度，并维护 floor/wall/ceiling 状态。</td><td>CharacterBody 不是由求解器自动推动的刚体；它是高层运动控制器。</td><td><span class="source">scene/3d/physics/character_body_3d.cpp:43</span>、<span class="source">scene/3d/physics/physics_body_3d.cpp:113</span></td></tr>
               <tr><td><span class="source">RigidBody3D</span></td><td>把力、速度、质量、阻尼、睡眠、接触回调交给后端积分和约束求解。</td><td>不要每帧直接改 transform 期待稳定物理；直接改状态会绕过求解器的连续性假设。</td><td><span class="source">scene/3d/physics/rigid_body_3d.h:38</span></td></tr>
-              <tr><td><span class="source">Area3D body_entered/body_exited</span></td><td>后端发现重叠变化后，通过注册的 monitor callback 回到场景节点，再发信号。</td><td>Area 只负责监测和局部空间参数，不等同于“没有质量的 RigidBody”。</td><td><span class="source">scene/3d/physics/area_3d.h:36</span>、<span class="source">scene/2d/physics/area_2d.cpp:167</span></td></tr>
+              <tr><td><span class="source">Area3D body_entered/body_exited</span></td><td>后端发现重叠变化后，通过注册的 monitor callback 回到场景节点，再发信号。</td><td>Area 只负责监测和局部空间参数，不等同于“没有质量的 RigidBody”。</td><td><span class="source">scene/3d/physics/area_3d.cpp:204</span>、<span class="source">218</span>；2D 对应在 <span class="source">scene/2d/physics/area_2d.cpp:147</span>、<span class="source">161</span></td></tr>
             </tbody>
           </table>
 
@@ -1526,7 +1545,7 @@
               <tr><td>Region</td><td>承载 NavigationMesh/NavigationPolygon，提供可走区域。</td><td><span class="source">servers/navigation_3d/navigation_server_3d.h:109</span>、<span class="source">scene/3d/navigation/navigation_region_3d.cpp:433</span></td><td>导航网格可以由场景几何烘焙得到，但运行时不替代碰撞形状。</td></tr>
               <tr><td>Agent</td><td>路径跟随和避障实体。</td><td><span class="source">servers/navigation_3d/navigation_server_3d.h:192</span>、<span class="source">scene/3d/navigation/navigation_agent_3d.cpp:358</span></td><td>Agent 的位置通常来自角色节点；真正移动角色仍由脚本和物理完成。</td></tr>
               <tr><td>Path query</td><td>从起点到终点查路径。</td><td><span class="source">servers/navigation_3d/navigation_server_3d.h:280</span>、<span class="source">scene/3d/navigation/navigation_agent_3d.cpp:851</span></td><td>返回路径点，不检查每一步的即时碰撞。</td></tr>
-              <tr><td>Avoidance</td><td>根据 agent/obstacle 速度和半径给出避障速度建议。</td><td><span class="source">scene/3d/navigation/navigation_agent_3d.cpp:332</span>、<span class="source">373</span></td><td>避障不是刚体碰撞；它更像局部运动规划。</td></tr>
+              <tr><td>Avoidance</td><td>根据 agent/obstacle 速度和半径给出避障速度建议。</td><td><span class="source">scene/3d/navigation/navigation_agent_3d.cpp:771</span>、<span class="source">785</span></td><td>避障不是刚体碰撞；它更像局部运动规划。</td></tr>
               <tr><td>Baking</td><td>从源几何生成导航网格。</td><td><span class="source">servers/navigation_3d/navigation_server_3d.h:287</span>、<span class="source">scene/3d/navigation/navigation_region_3d.cpp:237</span></td><td>可读取场景几何和物理相关几何，但产物是 navmesh，不是 physics shape。</td></tr>
             </tbody>
           </table>
@@ -1546,7 +1565,8 @@
         <div class="section-inner">
           <h2>音频、输入、GUI、动画：用户体验层的主要系统</h2>
           <p class="intro">
-            这些系统跨越 core、scene、servers 和 editor。它们读起来比渲染/物理更贴近用户 API，但同样遵循“场景节点封装、核心数据结构支撑、Server 或资源系统执行”的模式。建议把这一层理解成“玩家和编辑器操作者真正触摸到引擎的地方”：耳朵听到的是 AudioServer 混音后的结果，手指和键盘进入的是 InputEvent，眼睛看到和点击的是 Control/Theme/TextServer 共同排出的界面，动画系统则在每帧把时间变成属性变化。
+            这些系统跨越 core、scene、servers 和 editor。它们读起来比渲染/物理更贴近用户 API，但同样遵循“场景节点封装、核心数据结构支撑、Server 或资源系统执行”的模式。建议把这一组系统理解成“玩家和编辑器操作者真正触摸到引擎的地方”：耳朵听到的是 AudioServer 混音后的结果，手指和键盘进入的是 InputEvent，眼睛看到和点击的是 Control/Theme/TextServer 共同排出的界面，动画系统则在每帧把时间变成属性变化。
+            这些不是一个巨型子系统，而是几条相互交叉的链路；遇到问题时先判断它属于声音输出、输入派发、控件布局、文字排版、动画写属性，还是调试采样。
           </p>
 
           <div class="diagram wide">
@@ -1617,9 +1637,9 @@
             <div class="trace-row"><strong>1. 平台层产生 InputEvent</strong><p>不同平台把系统事件转换成 Godot 的 <span class="source">InputEvent</span>。例如 Web 在 <span class="source">platform/web/display_server_web.cpp:304</span>、<span class="source">350</span> 调用 <span class="source">Input::parse_input_event()</span>，macOS 在 <span class="source">platform/macos/display_server_macos.mm:506</span>、<span class="source">659</span> 做类似处理。</p></div>
             <div class="trace-row"><strong>2. Input 维护全局输入状态</strong><p><span class="source">Input</span> 类入口在 <span class="source">core/input/input.h:78</span>，<span class="source">parse_input_event()</span> 在 <span class="source">core/input/input.cpp:1519</span>。它维护按键、鼠标、触摸、手柄、action strength、just pressed/released 等运行时状态。</p></div>
             <div class="trace-row"><strong>3. InputMap 把事件解释成 action</strong><p><span class="source">InputMap</span> 类入口在 <span class="source">core/input/input_map.h:40</span>，<span class="source">event_is_action()</span> 在 <span class="source">core/input/input_map.cpp:279</span>，默认动作加载在 <span class="source">core/input/input_map.cpp:930</span>。它回答“这个事件是否匹配某个 action”，不负责事件分发。</p></div>
-            <div class="trace-row"><strong>4. Window/Viewport 接收并分发</strong><p>窗口把输入回调注册给 DisplayServer，入口是 <span class="source">servers/display/display_server.h:394</span> 和 <span class="source">scene/main/window.cpp:1452</span>。Viewport 的 <span class="source">push_input()</span> 在 <span class="source">scene/main/viewport.cpp:3501</span>，之后会先处理 GUI，再进入 shortcut/unhandled 链路。</p></div>
+            <div class="trace-row"><strong>4. Window/Viewport 接收并分发</strong><p>窗口把输入回调注册给 DisplayServer，入口是 <span class="source">servers/display/display_server.h:394</span> 和 <span class="source">scene/main/window.cpp:1452</span>。Viewport 的 <span class="source">push_input()</span> 在 <span class="source">scene/main/viewport.cpp:3501</span>，顺序是先调节点的 <span class="source">_input</span>，再处理 GUI，最后进入 shortcut/unhandled 链路；源码在 <span class="source">scene/main/viewport.cpp:3549</span>、<span class="source">3554</span>、<span class="source">3561</span> 直接写明了这个顺序。</p></div>
             <div class="trace-row"><strong>5. GUI 有优先消费权</strong><p><span class="source">Viewport::_gui_input_event()</span> 在 <span class="source">scene/main/viewport.cpp:1932</span>，它根据鼠标位置、focus、modal、drag、mouse_filter 等信息找到 Control。Control 的 <span class="source">_call_gui_input()</span> 在 <span class="source">scene/gui/control.cpp:2407</span>，会先发 <span class="source">gui_input</span> 信号，再调用脚本虚方法和 C++ <span class="source">gui_input()</span>。</p></div>
-            <div class="trace-row"><strong>6. 没被 GUI 消费的事件进入场景脚本</strong><p>未处理事件会走 <span class="source">Viewport::_push_unhandled_input_internal()</span>，源码在 <span class="source">scene/main/viewport.cpp:3632</span>；最终由 <span class="source">SceneTree::_call_input_pause()</span> 在 <span class="source">scene/main/scene_tree.cpp:1429</span> 按组调用 <span class="source">_shortcut_input</span>、<span class="source">_unhandled_key_input</span>、<span class="source">_unhandled_input</span> 等回调。</p></div>
+            <div class="trace-row"><strong>6. 没被处理的事件进入后续脚本阶段</strong><p>如果 <span class="source">_input</span> 和 GUI 都没有把事件标记为 handled，事件会走 <span class="source">Viewport::_push_unhandled_input_internal()</span>，源码在 <span class="source">scene/main/viewport.cpp:3632</span>；这里先调 <span class="source">_shortcut_input</span>，再按条件调 <span class="source">_unhandled_key_input</span> 和 <span class="source">_unhandled_input</span>，最终由 <span class="source">SceneTree::_call_input_pause()</span> 在 <span class="source">scene/main/scene_tree.cpp:1429</span> 按组调用节点。</p></div>
           </div>
 
           <h3>GUI：Control 布局、Theme 和 TextServer</h3>
@@ -1629,7 +1649,7 @@
               <tr><td>Control 和 Node2D 最大区别是什么？</td><td><span class="source">scene/gui/control.h:45</span></td><td>Control 继承 CanvasItem，但它增加了 anchor、offset、size flags、focus、mouse_filter、theme lookup、minimum size 和布局通知。GUI bug 通常不能只按 Node2D 的 transform 思路读。</td></tr>
               <tr><td>最小尺寸从哪里来？</td><td><span class="source">scene/gui/control.cpp:1881</span>、<span class="source">1923</span></td><td><span class="source">update_minimum_size()</span> 让父容器重新计算布局，<span class="source">get_minimum_size()</span> 汇总控件自身和主题样式。按钮文字被截断、容器撑不开时从这里追。</td></tr>
               <tr><td>大小变化怎样传播？</td><td><span class="source">scene/gui/control.cpp:2049</span>、<span class="source">4294</span></td><td><span class="source">_size_changed()</span> 和通知系统把 rect 改变、进入树、主题变化、可见性变化传播给控件。复杂 UI 问题经常是某个通知没有触发布局更新。</td></tr>
-              <tr><td>Theme item 怎样查找？</td><td><span class="source">scene/gui/control.cpp:3482</span>、<span class="source">scene/resources/theme.h:38</span>、<span class="source">scene/resources/theme.cpp:1833</span></td><td>Control 有本地 override、类型缓存、父级 theme、默认 theme 等层级。Theme 本身是 Resource，保存 icon/style/font/font_size/color/constant 等分类数据。</td></tr>
+              <tr><td>Theme item 怎样查找？</td><td><span class="source">scene/gui/control.cpp:3482</span>、<span class="source">scene/resources/theme.h:38</span>、<span class="source">scene/resources/theme.cpp:1833</span></td><td>Control 会按本地 override、类型缓存、父级 theme、默认 theme 的优先级查找。Theme 本身是 Resource，保存 icon/style/font/font_size/color/constant 等分类数据。</td></tr>
               <tr><td>文字排版由谁负责？</td><td><span class="source">servers/text/text_server.h:47</span>、<span class="source">668</span>、<span class="source">servers/text/text_server.cpp:132</span></td><td>TextServer 负责字体 RID、glyph、shaping、方向、fallback 和测量。TextServerManager 选择 primary interface，GUI 控件通过 Font/TextLine/TextParagraph 等资源间接使用它。</td></tr>
               <tr><td>编辑器 UI 是另一套吗？</td><td><span class="source">editor</span> 大量继承 <span class="source">Control</span></td><td>不是。编辑器主要复用同一套 scene/gui 控件、Theme 和输入系统，只是在 editor 层组合出 Inspector、FileSystem、Debugger、Dock 等复杂工具。</td></tr>
             </tbody>
@@ -1659,12 +1679,12 @@
 
           <h3>调试和性能：运行时采样，编辑器呈现</h3>
           <div class="trace">
-            <div class="trace-row"><strong>Performance 单例</strong><p><span class="source">Main::setup()</span> 期间创建 <span class="source">Performance</span>，源码在 <span class="source">main/main.cpp:1070</span>，并在 <span class="source">main/main.cpp:1072</span> 注册为 Engine singleton。每帧的 process、physics、navigation 时间在 <span class="source">main/main.cpp:5111</span>、<span class="source">5112</span>、<span class="source">5113</span> 写回。</p></div>
+            <div class="trace-row"><strong>Performance 单例</strong><p><span class="source">Main::setup()</span> 期间创建 <span class="source">Performance</span>，源码在 <span class="source">main/main.cpp:1070</span>，并在 <span class="source">main/main.cpp:1072</span> 注册为 Engine singleton。主循环在当前统计窗口内累计 process、physics、navigation 耗时，并在 <span class="source">main/main.cpp:5111</span>、<span class="source">5112</span>、<span class="source">5113</span> 写回 Performance。</p></div>
             <div class="trace-row"><strong>EngineDebugger</strong><p>主循环在 <span class="source">main/main.cpp:5090</span> 调用 <span class="source">EngineDebugger::iteration()</span>。运行时调试器核心在 <span class="source">core/debugger/engine_debugger.h:53</span> 定义 profiler 回调结构，并在 <span class="source">core/debugger/engine_debugger.cpp:107</span> 每帧 tick profiler。</p></div>
             <div class="trace-row"><strong>编辑器面板</strong><p>编辑器端的调试入口是 <span class="source">editor/debugger/editor_debugger_node.cpp:58</span> 创建 Debugger Dock；<span class="source">editor/debugger/script_editor_debugger.cpp:2351</span>、<span class="source">2359</span>、<span class="source">2366</span> 分别创建 profiler、visual profiler、performance profiler 页面。</p></div>
           </div>
 
-          <h3>读这一层源码的固定问题</h3>
+          <h3>读这一组系统的固定问题</h3>
           <div class="rail-list">
             <div class="rail-row"><strong>这个对象是资源、节点、Server 状态还是平台对象？</strong><p>AudioStream 是资源，AudioStreamPlayer 是节点，AudioServer playback 是运行时状态，AudioDriver 是平台输出。输入和 GUI 也有类似分层。</p></div>
             <div class="rail-row"><strong>这个事件是否已经被消费？</strong><p>输入 bug 要按顺序查平台 DisplayServer、Input、InputMap、Viewport、Control、SceneTree unhandled。GUI 控件调用 <span class="source">accept_event()</span> 后，后续脚本可能看不到。</p></div>
@@ -1679,7 +1699,8 @@
         <div class="section-inner">
           <h2>脚本、模块与 GDExtension</h2>
           <p class="intro">
-            Godot 的脚本能力不是写死在 Node 里，而是通过 ScriptLanguage 抽象接入。GDScript 是一个模块；C# 在 mono 模块里；第三方原生扩展通过 GDExtension 注册类、方法、属性和生命周期回调。读这一层时要分清三件事：语言如何加载和执行脚本，脚本实例如何挂到 Object，外部原生代码如何进入 ClassDB 的类型世界。
+            Godot 的脚本能力不是写死在 Node 里，而是通过 ScriptLanguage 抽象接入。GDScript 是一个模块；C# 在 mono 模块里；第三方原生扩展通过 GDExtension 注册类、方法、属性和生命周期回调。读这一组系统时要分清三件事：语言如何加载和执行脚本，脚本实例如何挂到 Object，外部原生代码如何进入 ClassDB 的类型世界。
+            最容易混的是四个名词：脚本文件是磁盘上的 .gd/.cs，Script 是 ResourceLoader 加载出的资源，ScriptInstance 是挂在某个 Object 上的运行时实例，ScriptLanguage 是让一种语言接入编辑器、调试器、补全和执行流程的总接口。
           </p>
 
           <div class="diagram wide">
@@ -1735,7 +1756,7 @@
               <tr><td>ScriptServer</td><td><span class="source">core/object/script_language.h:46</span>、<span class="source">core/object/script_language.cpp:239</span></td><td>保存已注册的语言，按扩展名找语言，维护 global class 列表。</td><td>GDScript、C# 都不是 Node 的内建特例，而是通过 <span class="source">ScriptServer::register_language()</span> 接入。</td></tr>
               <tr><td>ScriptLanguage</td><td><span class="source">core/object/script_language.h:208</span></td><td>语言插件接口：加载、补全、调试、profiling、reload、global class、模板、编辑器集成。</td><td>新增脚本语言时要实现这一整套接口，不只是“执行一段代码”。</td></tr>
               <tr><td>Script</td><td><span class="source">core/object/script_language.h:113</span></td><td>脚本资源基类，像其他 Resource 一样可加载、缓存、保存、热重载。</td><td>.gd、.cs 的脚本文件最终都是 Script 资源；资源生命周期和脚本生命周期会交织。</td></tr>
-              <tr><td>ScriptInstance</td><td><span class="source">core/object/script_language.h:511</span>、<span class="source">core/object/object.h:449</span></td><td>一个 Object 上挂载的脚本运行时实例，负责脚本属性、脚本方法、通知、脚本信号。</td><td>Object 本体和脚本实例是两个对象；Object 调用时先查 C++/ClassDB，再委托给 script_instance。</td></tr>
+              <tr><td>ScriptInstance</td><td><span class="source">core/object/script_instance.h:38</span>、<span class="source">core/object/object.h:449</span></td><td>一个 Object 上挂载的脚本运行时实例，负责脚本属性、脚本方法、通知、脚本信号。</td><td>Object 本体和脚本实例是两个对象；脚本属性和脚本方法会先进入 <span class="source">script_instance</span>，再按情况回退到扩展或 ClassDB。</td></tr>
               <tr><td>Global Script Class</td><td><span class="source">core/object/script_language.h:68</span>、<span class="source">core/object/script_language.cpp:399</span></td><td>把脚本里的 <span class="source">class_name</span> 变成全局可见类型名。</td><td>Inspector、创建节点/资源、类型提示和脚本继承都会依赖这张表。</td></tr>
             </tbody>
           </table>
@@ -1754,8 +1775,8 @@
           <div class="trace">
             <div class="trace-row"><strong>1. set_script 创建 ScriptInstance</strong><p><span class="source">Object</span> 里有一个 <span class="source">script_instance</span> 指针，声明在 <span class="source">core/object/object.h:449</span>。设置脚本时走 <span class="source">Object::set_script()</span>，源码在 <span class="source">core/object/object.cpp:967</span>；如果脚本可实例化，<span class="source">core/object/object.cpp:986</span> 会调用 <span class="source">s->instance_create(this)</span>。</p></div>
             <div class="trace-row"><strong>2. 属性访问先问脚本实例</strong><p><span class="source">Object::set()</span> 在 <span class="source">core/object/object.cpp:233</span>，若有 <span class="source">script_instance</span> 会在 <span class="source">239</span> 先尝试脚本属性；<span class="source">Object::get()</span> 在 <span class="source">316</span>，同样在 <span class="source">319</span> 先问脚本实例。这解释了为什么脚本导出变量能像 C++ 属性一样出现在 Inspector。</p></div>
-            <div class="trace-row"><strong>3. 方法调用也经过脚本实例</strong><p><span class="source">Object::callp()</span> 在 <span class="source">core/object/object.cpp:768</span>，如果 C++ 方法没处理而对象有脚本实例，会在 <span class="source">core/object/object.cpp:800</span> 调 <span class="source">script_instance->callp()</span>。脚本覆盖虚方法、调用 <span class="source">_ready</span>、<span class="source">_process</span> 等最终都依赖这条桥。</p></div>
-            <div class="trace-row"><strong>4. 通知、信号和属性列表也会合并脚本</strong><p><span class="source">Object::notification()</span> 附近会把通知发给脚本实例，属性列表在 <span class="source">core/object/object.cpp:476</span>、<span class="source">520</span> 合并脚本属性，脚本信号相关检查在 <span class="source">core/object/object.cpp:1200</span>、<span class="source">1440</span>。这就是脚本成员能进入同一套编辑器和运行时反射系统的原因。</p></div>
+            <div class="trace-row"><strong>3. 方法调用先问脚本实例</strong><p><span class="source">Object::callp()</span> 在 <span class="source">core/object/object.cpp:768</span>。对象有脚本实例时，会先在 <span class="source">core/object/object.cpp:800</span> 调 <span class="source">script_instance->callp()</span>；只有脚本返回 <span class="source">CALL_ERROR_INVALID_METHOD</span> 时，才在后面用 <span class="source">ClassDB::get_method()</span> 找 C++ MethodBind。读同名方法或虚方法调用时，这个顺序很关键。</p></div>
+            <div class="trace-row"><strong>4. 通知、信号和属性列表也会合并脚本</strong><p><span class="source">Object::_notification_forward()</span> 和 <span class="source">Object::_notification_backward()</span> 会在 <span class="source">core/object/object.cpp:923</span>、<span class="source">929</span> 把通知发给脚本实例；属性列表在 <span class="source">core/object/object.cpp:476</span>、<span class="source">521</span> 合并脚本属性，脚本信号相关检查在 <span class="source">core/object/object.cpp:1441</span>。这就是脚本成员能进入同一套编辑器和运行时反射系统的原因。</p></div>
           </div>
 
           <h3>C# / Mono 模块：同一个 ScriptLanguage，另一套运行时</h3>
@@ -1763,7 +1784,7 @@
             <thead><tr><th>层次</th><th>源码入口</th><th>说明</th></tr></thead>
             <tbody>
               <tr><td>CSharpScript</td><td><span class="source">modules/mono/csharp_script.h:56</span></td><td>C# 脚本资源类型，继承 Script，保存托管类型信息、导出属性、reload 状态和实例绑定。</td></tr>
-              <tr><td>CSharpInstance</td><td><span class="source">modules/mono/csharp_script.h:315</span></td><td>脚本实例侧的桥，保存托管对象句柄，把 Object 和 C# 对象绑定起来。</td></tr>
+              <tr><td>CSharpInstance</td><td><span class="source">modules/mono/csharp_script.h:304</span></td><td>脚本实例侧的桥，保存托管对象句柄，把 Object 和 C# 对象绑定起来。</td></tr>
               <tr><td>CSharpLanguage</td><td><span class="source">modules/mono/csharp_script.h:398</span>、<span class="source">modules/mono/csharp_script.cpp:102</span></td><td>实现 ScriptLanguage，初始化 GDMono/.NET 运行时，处理调试、模板、global class、frame callback 和 reload。</td></tr>
               <tr><td>模块注册</td><td><span class="source">modules/mono/register_types.cpp:47</span>、<span class="source">57</span></td><td>mono 模块在 SCENE 初始化级别创建 CSharpLanguage，并调用 <span class="source">ScriptServer::register_language()</span>。</td></tr>
               <tr><td>程序集热重载</td><td><span class="source">modules/mono/csharp_script.cpp:563</span>、<span class="source">625</span>、<span class="source">801</span></td><td>C# 的 reload 不是重新解析文本，而是围绕程序集、domain、托管对象句柄和状态备份恢复展开。</td></tr>
@@ -1880,11 +1901,11 @@
 
           <h3>先建立可用心智模型</h3>
           <p>
-            读编辑器源码时，最稳的模型是“一个 Node 主控节点加一组工具子系统”。<span class="source">EditorNode</span> 是总装配点，<span class="source">EditorData</span> 保存当前编辑状态，<span class="source">EditorSelection</span> 保存选择集，<span class="source">EditorUndoRedoManager</span> 管撤销历史，Dock 是可见工具面板，Plugin 是可插拔能力，Import/Export 是资源管线。这样看源码时不会把所有 editor 目录都当成同一个层级，而能先问：这段代码是在管理编辑器状态、显示工具 UI、编辑对象属性、转换资源，还是启动另一个运行中的项目？
+            读编辑器源码时，最稳的模型是“一个 Node 主控节点加一组工具子系统”。<span class="source">EditorNode</span> 是总装配点，<span class="source">EditorData</span> 保存当前编辑状态，<span class="source">EditorSelection</span> 保存选择集，<span class="source">EditorUndoRedoManager</span> 管撤销历史，Dock 是可见工具面板，Plugin 是可插拔能力，Import/Export 是资源管线。这样看源码时不会把所有 editor 目录都当成同一种职责，而能先问：这段代码是在管理编辑器状态、显示工具 UI、编辑对象属性、转换资源，还是启动另一个运行中的项目？
           </p>
 
           <table class="matrix">
-            <thead><tr><th>层级</th><th>代表类/文件</th><th>负责什么</th><th>读源码时先问的问题</th></tr></thead>
+            <thead><tr><th>职责位置</th><th>代表类/文件</th><th>负责什么</th><th>读源码时先问的问题</th></tr></thead>
             <tbody>
               <tr><td>入口层</td><td><span class="source">main/main.cpp:3988</span>、<span class="source">4576</span></td><td>决定运行 editor、project manager、导出命令还是游戏；创建 <span class="source">EditorNode</span> 或 <span class="source">ProjectManager</span>。</td><td>这次启动是在打开编辑器、管理项目、命令行导出，还是运行游戏？</td></tr>
               <tr><td>主控层</td><td><span class="source">editor/editor_node.h:120</span>、<span class="source">editor/editor_node.cpp:8377</span></td><td>组织菜单、dock、场景标签、打开/保存、运行栏、插件、导入导出、调试器入口。</td><td>用户点击的按钮最终连接到 EditorNode 哪个方法？</td></tr>
@@ -1922,9 +1943,9 @@
             <tbody>
               <tr><td>选择对象</td><td><span class="source">editor/editor_data.h:275</span>、<span class="source">editor/editor_data.cpp:1240</span></td><td><span class="source">EditorSelection</span> 保存选中节点，SceneTreeDock 和 2D/3D 编辑视图都会更新这个选择集。</td></tr>
               <tr><td>Inspector 接收对象</td><td><span class="source">editor/docks/inspector_dock.h:46</span>、<span class="source">editor/inspector/editor_inspector.cpp:5232</span></td><td>InspectorDock 持有 EditorInspector；<span class="source">EditorInspector::edit(Object *)</span> 设置当前对象并重建属性 UI。</td></tr>
-              <tr><td>属性列表来自 Object 反射</td><td><span class="source">core/object/object.cpp:476</span>、<span class="source">520</span></td><td><span class="source">Object</span> 合并 C++ ClassDB 属性、脚本导出变量、脚本信号等信息，最终变成 <span class="source">PropertyInfo</span> 列表。</td></tr>
+              <tr><td>属性列表来自 Object 反射</td><td><span class="source">core/object/object.cpp:476</span>、<span class="source">521</span></td><td><span class="source">Object</span> 合并脚本导出变量、GDExtension 属性和 C++/ClassDB 属性，最终变成 <span class="source">PropertyInfo</span> 列表。</td></tr>
               <tr><td>属性控件由类型决定</td><td><span class="source">editor/inspector/editor_inspector.h:731</span></td><td>EditorInspector 根据 Variant 类型、hint、usage、插件返回的自定义控件，生成对应 EditorProperty。</td></tr>
-              <tr><td>写属性必须经过 UndoRedo</td><td><span class="source">editor/inspector/editor_inspector.cpp:5481</span>、<span class="source">editor/editor_undo_redo_manager.cpp:149</span></td><td><span class="source">EditorInspector::_edit_set()</span> 不只是 <span class="source">object-&gt;set()</span>；它要创建 undo action、记录 do/undo property，并标记场景或资源已修改。</td></tr>
+              <tr><td>Inspector 写属性走 UndoRedo</td><td><span class="source">editor/inspector/editor_inspector.cpp:5481</span>、<span class="source">editor/editor_undo_redo_manager.cpp:149</span></td><td><span class="source">EditorInspector::_edit_set()</span> 在正常属性编辑路径中不只是 <span class="source">object-&gt;set()</span>；它要创建 undo action、记录 do/undo property，并标记场景或资源已修改。</td></tr>
               <tr><td>插件能插入自定义 Inspector</td><td><span class="source">editor/plugins/editor_plugin.cpp:489</span></td><td><span class="source">EditorPlugin::add_inspector_plugin()</span> 允许插件为特定对象提供额外属性 UI 或自定义编辑器。</td></tr>
             </tbody>
           </table>
@@ -1995,7 +2016,7 @@
         <div class="section-inner">
           <h2>平台、驱动、第三方：把抽象落到真实系统</h2>
           <p class="intro">
-            <span class="source">platform</span> 目录把 Godot 的抽象接口接到真实系统：进程入口、窗口、输入、文件系统、动态库、线程、音频设备、移动端生命周期、Web 浏览器事件都在这里落地。<span class="source">drivers</span> 放跨平台或半跨平台的驱动层，<span class="source">thirdparty</span> 放 vendored 外部库，<span class="source">modules</span> 再把其中很多库包装成 Godot 功能。读这一层的核心问题不是“Windows 文件在哪里”，而是“某个引擎抽象最终由哪个平台实现提供”。
+            <span class="source">platform</span> 目录把 Godot 的抽象接口接到真实系统：进程入口、窗口、输入、文件系统、动态库、线程、音频设备、移动端生命周期、Web 浏览器事件都在这里落地。<span class="source">drivers</span> 放跨平台或半跨平台的驱动适配，<span class="source">thirdparty</span> 放 vendored 外部库，<span class="source">modules</span> 再把其中很多库包装成 Godot 功能。读平台相关源码的核心问题不是“Windows 文件在哪里”，而是“某个引擎抽象最终由哪个平台实现提供”。
           </p>
 
           <div class="diagram wide">
@@ -2096,10 +2117,10 @@
             <thead><tr><th>平台</th><th>源码入口</th><th>为什么和桌面不同</th></tr></thead>
             <tbody>
               <tr><td>Android</td><td><span class="source">platform/android/java_godot_lib_jni.cpp:192</span>、<span class="source">217</span>、<span class="source">284</span></td><td>Android 由 Java/Kotlin Activity、Surface 和渲染线程驱动。JNI 的 <span class="source">GodotLib_setup</span> 调 <span class="source">Main::setup()</span>；<span class="source">GodotLib_step</span> 分阶段调用 <span class="source">Main::setup2()</span>、<span class="source">Main::start()</span>，然后每帧走 <span class="source">os_android-&gt;main_loop_iterate()</span>。</td></tr>
-              <tr><td>Android 输入和传感器</td><td><span class="source">platform/android/java_godot_lib_jni.cpp:342</span>、<span class="source">351</span>、<span class="source">458</span>、<span class="source">328</span></td><td>鼠标、触摸、按键、重力、陀螺仪等从 Java 层进入 JNI，再交给 <span class="source">DisplayServerAndroid</span> 或 Input。平台层要处理应用暂停、surface 重建、虚拟键盘、权限和文件选择器。</td></tr>
-              <tr><td>Web</td><td><span class="source">platform/web/web_main.cpp:165</span>、<span class="source">175</span>、<span class="source">platform/web/os_web.cpp:89</span></td><td>Web 没有传统阻塞式 while(true) 主循环。Emscripten 在 <span class="source">web_main.cpp:175</span> 注册 <span class="source">emscripten_set_main_loop()</span>，浏览器按 animation frame 调回 Godot；每次回调最终进入 <span class="source">Main::iteration()</span>。</td></tr>
-              <tr><td>Web 显示和输入</td><td><span class="source">platform/web/display_server_web.cpp:1113</span>、<span class="source">1165</span>、<span class="source">1469</span></td><td><span class="source">DisplayServerWeb</span> 把 JS 鼠标、触摸、键盘、gamepad、剪贴板、fullscreen、drop files 回调注册到 C++。这层代码要同时理解 C++、Emscripten glue 和 <span class="source">platform/web/js/libs</span>。</td></tr>
-              <tr><td>macOS/iOS/visionOS</td><td><span class="source">platform/macos/godot_main_macos.mm:41</span>、<span class="source">platform/macos/os_macos.mm:92</span></td><td>苹果平台大量使用 Objective-C++。桌面 macOS 接 Cocoa/NSApplication，移动/visionOS 走 embedded view 和平台生命周期；线程、窗口、菜单、输入法、Retina scale、Metal surface 都由 .mm 文件处理。</td></tr>
+              <tr><td>Android 输入和传感器</td><td><span class="source">platform/android/java_godot_lib_jni.cpp:342</span>、<span class="source">351</span>、<span class="source">458</span>、<span class="source">platform/android/display_server_android.cpp:853</span></td><td>鼠标、触摸和按键从 Java 层进入 JNI，再交给 <span class="source">DisplayServerAndroid</span> 的输入事件分发；加速度、重力、磁力计和陀螺仪则更新到 <span class="source">Input</span>。平台层还要处理应用暂停、surface 重建、虚拟键盘、权限和文件选择器。</td></tr>
+              <tr><td>Web</td><td><span class="source">platform/web/web_main.cpp:133</span>、<span class="source">platform/web/web_main.cpp:175</span>、<span class="source">platform/web/os_web.cpp:89</span></td><td>Web 没有传统阻塞式 while(true) 主循环。Emscripten 在 <span class="source">platform/web/web_main.cpp:175</span> 注册 <span class="source">emscripten_set_main_loop()</span>，浏览器按 animation frame 调回 Godot；每次回调最终进入 <span class="source">Main::iteration()</span>。</td></tr>
+              <tr><td>Web 显示和输入</td><td><span class="source">platform/web/display_server_web.cpp:1117</span>、<span class="source">1165</span>、<span class="source">1469</span></td><td><span class="source">DisplayServerWeb</span> 构造时把 JS 鼠标、触摸、键盘、gamepad、剪贴板、fullscreen、drop files 回调注册到 C++，每帧在 <span class="source">process_events()</span> 里处理按键和 gamepad 采样。这层代码要同时理解 C++、Emscripten glue 和 <span class="source">platform/web/js/libs</span>。</td></tr>
+              <tr><td>macOS/iOS/visionOS</td><td><span class="source">platform/macos/godot_main_macos.mm:41</span>、<span class="source">platform/macos/os_macos.mm:1111</span>、<span class="source">drivers/apple_embedded/os_apple_embedded.mm:221</span>、<span class="source">drivers/apple_embedded/display_server_apple_embedded.mm:55</span></td><td>苹果平台大量使用 Objective-C++，但桌面和移动入口不同。macOS 桌面接 Cocoa/NSApplication；iOS/visionOS 继承 <span class="source">OS_AppleEmbedded</span> 和 <span class="source">DisplayServerAppleEmbedded</span>，再由各自 view/layer 和平台生命周期驱动迭代、触摸、键盘、传感器和 Metal surface。</td></tr>
             </tbody>
           </table>
 
@@ -2108,16 +2129,16 @@
             <div class="trace-row"><strong>1. DisplayServer 定义统一窗口 API</strong><p>抽象类入口在 <span class="source">servers/display/display_server.h:62</span>。关键虚函数包括 <span class="source">process_events()</span> 的 <span class="source">servers/display/display_server.h:119</span>、<span class="source">swap_buffers()</span> 的 <span class="source">123</span>、<span class="source">window_set_input_event_callback()</span> 的 <span class="source">394</span>。场景层不关心 X11、Win32、Cocoa 或浏览器，只调用这套统一 API。</p></div>
             <div class="trace-row"><strong>2. 平台实现把系统事件转成 InputEvent</strong><p>Windows 事件抽取入口是 <span class="source">platform/windows/display_server_windows.cpp:4224</span>，X11 是 <span class="source">platform/linuxbsd/x11/display_server_x11.cpp:4886</span>，Wayland 是 <span class="source">platform/linuxbsd/wayland/display_server_wayland.cpp:1892</span>，macOS 是 <span class="source">platform/macos/display_server_macos.mm:3180</span>，Android 是 <span class="source">platform/android/display_server_android.cpp:647</span>，Web 是 <span class="source">platform/web/display_server_web.cpp:1469</span>。</p></div>
             <div class="trace-row"><strong>3. Input::parse_input_event 是平台到引擎的门</strong><p>不同平台在各自事件处理中创建 <span class="source">InputEventKey</span>、<span class="source">InputEventMouseButton</span>、<span class="source">InputEventMouseMotion</span>、触摸事件等，然后调用 <span class="source">Input::get_singleton()-&gt;parse_input_event()</span>。例子：Windows 鼠标/键盘路径可见于 <span class="source">platform/windows/display_server_windows.cpp:4979</span>、<span class="source">6865</span>；macOS 在 <span class="source">platform/macos/display_server_macos.mm:506</span>、<span class="source">659</span>；Web 在 <span class="source">platform/web/display_server_web.cpp:304</span>、<span class="source">350</span>。</p></div>
-            <div class="trace-row"><strong>4. Window/Viewport 再接管分发</strong><p>平台层不直接调用用户脚本的 <span class="source">_input</span>。它把事件交给 <span class="source">Input</span>，再由 <span class="source">Window</span> 注册的回调、<span class="source">Viewport</span> 的 GUI/shortcut/unhandled 链路分发。这个边界能避免平台代码知道场景树细节。</p></div>
+            <div class="trace-row"><strong>4. Window/Viewport 再接管分发</strong><p>平台层不直接调用用户脚本的 <span class="source">_input</span>。窗口把输入回调注册给 DisplayServer，入口是 <span class="source">scene/main/window.cpp:1452</span>；收到事件后进入 <span class="source">Window::_window_input()</span> 的 <span class="source">scene/main/window.cpp:1996</span>，再推给 <span class="source">Viewport::push_input()</span> 的 <span class="source">scene/main/viewport.cpp:3501</span>。Viewport 才负责 GUI、shortcut、unhandled 和节点输入回调，这个边界能避免平台代码知道场景树细节。</p></div>
           </div>
 
           <h3>驱动、第三方、模块：三者不要混在一起读</h3>
           <table class="matrix">
             <thead><tr><th>目录</th><th>职责</th><th>源码锚点</th><th>典型例子</th></tr></thead>
             <tbody>
-              <tr><td><span class="source">drivers</span></td><td>Godot 自己维护的驱动适配和轻量格式支持，很多可被多个平台共用。</td><td><span class="source">drivers/SCsub:12</span> 到 <span class="source">69</span>、<span class="source">drivers/register_driver_types.cpp:44</span></td><td>Unix/Windows 基础封装、WASAPI、PulseAudio、Vulkan、D3D12、OpenGL/GLES、PNG loader/saver、accesskit、SDL。</td></tr>
+              <tr><td><span class="source">drivers</span></td><td>Godot 自己维护的驱动适配和轻量格式支持，很多可被多个平台共用。</td><td><span class="source">drivers/SCsub:12</span> 到 <span class="source">69</span>、<span class="source">drivers/register_driver_types.cpp:64</span></td><td>Unix/Windows 基础封装、WASAPI、PulseAudio、Vulkan、D3D12、OpenGL/GLES、PNG loader/saver、accesskit、SDL。</td></tr>
               <tr><td><span class="source">thirdparty</span></td><td>vendored 外部库源码。Godot 尽量在包装层接触它们，直接改第三方代码通常是升级、补丁或平台兼容问题。</td><td><span class="source">SConstruct:319</span> 到 <span class="source">348</span></td><td>freetype、harfbuzz、icu4c、libpng、libwebp、mbedtls、glslang、spirv-cross、vulkan、zstd、openxr、jolt_physics、recastnavigation。</td></tr>
-              <tr><td><span class="source">modules</span></td><td>把可选能力注册进引擎，常常包装 thirdparty 或提供完整子系统。</td><td><span class="source">modules/SCsub:20</span>、<span class="source">38</span>、<span class="source">SConstruct:485</span></td><td>gdscript、mono、gltf、openxr、websocket、mbedtls、freetype、basis_universal、jolt_physics。</td></tr>
+              <tr><td><span class="source">modules</span></td><td>把可选能力注册进引擎，常常包装 thirdparty 或提供完整子系统。</td><td><span class="source">modules/SCsub:19</span>、<span class="source">24</span>、<span class="source">33</span>、<span class="source">SConstruct:476</span></td><td>gdscript、mono、gltf、openxr、websocket、mbedtls、freetype、basis_universal、jolt_physics。</td></tr>
               <tr><td><span class="source">platform</span></td><td>目标系统专属入口和系统 API 适配。</td><td><span class="source">SConstruct:1243</span></td><td>Windows Win32、Linux X11/Wayland、macOS Cocoa、Android JNI、Web Emscripten、iOS/visionOS view。</td></tr>
             </tbody>
           </table>
@@ -2142,6 +2163,7 @@
           <h2>模块全表：modules 目录每个主要模块做什么</h2>
           <p class="intro">
             模块是 Godot 可裁剪能力的集中区。当前源码树中，<span class="source">modules</span> 目录除 <span class="source">__pycache__</span> 外共有 57 个模块。下面的表可搜索、按类别过滤，用于快速判断“某个格式、脚本语言、物理后端、文本后端、网络能力或 XR 能力在哪里”，并给出每个模块的阅读入口。
+            这个表不是要替代源码搜索，而是先帮你判断“该从哪个模块的 config.py、SCsub、register_types.cpp 开始”，再进入具体实现文件。
           </p>
 
           <div class="diagram wide">
@@ -2186,7 +2208,7 @@
               <rect x="355" y="300" width="210" height="92" rx="12" fill="#ffffff" stroke="#e9d5ff"></rect>
               <text x="460" y="328" text-anchor="middle" font-size="16" font-weight="700">SERVERS</text>
               <text x="460" y="354" text-anchor="middle" font-size="13" fill="#475569">物理、文本、脚本语言后端</text>
-              <text x="460" y="374" text-anchor="middle" font-size="13" fill="#475569">例如 gdscript、jolt、text_server_adv</text>
+              <text x="460" y="374" text-anchor="middle" font-size="13" fill="#475569">例如 gdscript、jolt_physics、text_server_adv</text>
 
               <rect x="615" y="300" width="210" height="92" rx="12" fill="#ffffff" stroke="#e9d5ff"></rect>
               <text x="720" y="328" text-anchor="middle" font-size="16" font-weight="700">SCENE</text>
@@ -2211,16 +2233,16 @@
             <tbody>
               <tr><td><span class="source">modules/&lt;name&gt;/config.py</span></td><td>告诉构建系统这个模块能否构建、依赖哪些库或平台条件、默认是否启用。</td><td>当你找不到模块类或宏时，先确认这里的 <span class="source">can_build()</span>、依赖和 build profile 是否允许它进入当前二进制。</td></tr>
               <tr><td><span class="source">modules/&lt;name&gt;/SCsub</span></td><td>把模块源码、第三方源码、include path、平台分支、生成文件加入 SCons 构建。</td><td>当你想知道“这个 cpp 是否会编译”或“thirdparty 库从哪里接进来”，读 SCsub 比读 C++ 更快。</td></tr>
-              <tr><td><span class="source">modules/&lt;name&gt;/register_types.h/cpp</span></td><td>模块进入引擎的运行时入口：按初始化级别注册类、Server 后端、资源加载器、脚本语言、编辑器插件。</td><td>先搜 <span class="source">initialize_&lt;name&gt;_module()</span>，再看它判断的 <span class="source">ModuleInitializationLevel</span>，就能知道模块插在哪一层。</td></tr>
+              <tr><td><span class="source">modules/&lt;name&gt;/register_types.h/cpp</span></td><td>模块进入引擎的运行时入口：按初始化级别注册类、Server 后端、资源加载器、脚本语言、编辑器插件。</td><td>先搜 <span class="source">initialize_&lt;name&gt;_module()</span>，再看它判断的 <span class="source">ModuleInitializationLevel</span>，就能知道模块插在哪个初始化阶段。</td></tr>
               <tr><td>模块内部源码</td><td>真实功能实现，例如 parser、loader、server backend、resource、editor plugin。</td><td>只有在知道模块何时注册、注册了什么之后，再进入具体实现文件，否则很容易从细节里迷路。</td></tr>
             </tbody>
           </table>
 
-          <h3>模块不是固定层级，而是按初始化级别接入</h3>
+          <h3>模块不是固定目录层，而是按初始化级别接入</h3>
           <div class="trace">
             <div class="trace-row"><strong>1. 构建系统生成模块开关和总入口</strong><p><span class="source">modules/SCsub:19</span> 生成 <span class="source">modules_enabled.gen.h</span>，<span class="source">modules/SCsub:24</span> 生成 <span class="source">register_module_types.gen.cpp</span>。生成器在 <span class="source">modules/modules_builders.py:8</span> 和 <span class="source">15</span>。这解释了为什么不应该手改 <span class="source">register_module_types.gen.cpp</span>，真正源头是每个模块目录和构建参数。</p></div>
-            <div class="trace-row"><strong>2. initialize_modules 统一分发</strong><p>生成文件中的 <span class="source">initialize_modules(ModuleInitializationLevel p_level)</span> 在 <span class="source">modules/register_module_types.gen.cpp:97</span>，卸载入口在 <span class="source">271</span>。它会按模块宏包住每个 <span class="source">initialize_xxx_module(p_level)</span>，所以模块开关会同时影响编译、注册和运行时 API 可见性。</p></div>
-            <div class="trace-row"><strong>3. 同一个模块可能跨多个层级</strong><p><span class="source">gdscript</span> 在 <span class="source">modules/gdscript/register_types.cpp:137</span> 注册脚本语言；<span class="source">gltf</span> 在 <span class="source">modules/gltf/register_types.cpp:111</span> 同时处理资源格式和编辑器导入导出；<span class="source">openxr</span> 的入口在 <span class="source">modules/openxr/register_types.cpp:134</span>，会接入 XRServer、资源和平台能力；<span class="source">mono</span> 的入口在 <span class="source">modules/mono/register_types.cpp:46</span>。</p></div>
+            <div class="trace-row"><strong>2. initialize_modules 统一分发</strong><p>生成器会在 <span class="source">modules/modules_builders.py:43</span> 写出 <span class="source">initialize_modules(ModuleInitializationLevel p_level)</span>，并在 <span class="source">modules/modules_builders.py:47</span> 写出卸载入口。生成后的 <span class="source">modules/register_module_types.gen.cpp</span> 会按模块宏包住每个 <span class="source">initialize_xxx_module(p_level)</span>；它的具体行号随启用模块变化，不适合作为固定源码锚点。</p></div>
+            <div class="trace-row"><strong>3. 同一个模块可能跨多个初始化阶段</strong><p><span class="source">gdscript</span> 在 <span class="source">modules/gdscript/register_types.cpp:137</span> 注册脚本语言；<span class="source">gltf</span> 在 <span class="source">modules/gltf/register_types.cpp:111</span> 同时处理资源格式和编辑器导入导出；<span class="source">openxr</span> 的入口在 <span class="source">modules/openxr/register_types.cpp:134</span>，会接入 XRServer、资源和平台能力；<span class="source">mono</span> 的入口在 <span class="source">modules/mono/register_types.cpp:46</span>。</p></div>
             <div class="trace-row"><strong>4. 后端模块实现统一 Server 接口</strong><p><span class="source">godot_physics_3d</span> 入口在 <span class="source">modules/godot_physics_3d/register_types.cpp:52</span>，<span class="source">jolt_physics</span> 入口在 <span class="source">modules/jolt_physics/register_types.cpp:53</span>。它们不是让场景节点改 API，而是实现同一套 <span class="source">PhysicsServer3D</span> 抽象，让项目可在后端之间切换。</p></div>
           </div>
 
@@ -2238,7 +2260,8 @@
         <div class="section-inner">
           <h2>底层设计剖面：真正读实现时要抓住的模式</h2>
           <p class="intro">
-            这一节面向最详细的层级。它不再按目录讲，而是按 Godot 反复使用的设计模式讲：注册表、句柄、引用计数、延迟调用、线程边界、缓存与资源生命周期。
+            这一节面向更深入的阅读阶段。它不再按目录讲，而是按 Godot 反复使用的设计模式讲：注册表、句柄、引用计数、延迟调用、线程边界、缓存与资源生命周期。
+            如果你只是想跟一个功能，可以先跳过这里；如果你要改 core、servers、资源格式、线程或模块注册，这一节就是修改前的检查清单。
           </p>
 
           <div class="diagram wide">
@@ -2304,7 +2327,7 @@
             <thead><tr><th>对象类型</th><th>谁拥有</th><th>怎么释放</th><th>源码锚点</th><th>常见错误</th></tr></thead>
             <tbody>
               <tr><td>Object</td><td>看具体子类；ObjectDB 只登记实例，不拥有它。</td><td>通常由创建者 <span class="source">memdelete</span>，或子类自己的生命周期规则释放。</td><td><span class="source">core/object/object.h:349</span>、<span class="source">core/object/object.h:874</span>、<span class="source">core/object/object.cpp:2450</span></td><td>拿 <span class="source">ObjectID</span> 当强引用；对象释放后继续保存裸指针。</td></tr>
-              <tr><td>Node</td><td>父子树管理结构关系，但父节点不等价于 C++ 智能指针。</td><td>运行中优先 <span class="source">queue_free()</span>；树外对象可手动释放。</td><td><span class="source">scene/main/node.cpp:3461</span>、<span class="source">scene/main/scene_tree.cpp:1637</span></td><td>用 <span class="source">Ref&lt;Node&gt;</span> 管节点；遍历树时立即删除；从子线程改树。</td></tr>
+              <tr><td>Node</td><td>父子树管理结构关系；父节点析构会清理子节点，但这不等价于 C++ 智能指针或 <span class="source">Ref</span> 所有权。</td><td>运行中优先 <span class="source">queue_free()</span>；树外对象可手动释放。</td><td><span class="source">scene/main/node.cpp:308</span>、<span class="source">311</span>、<span class="source">scene/main/node.cpp:3461</span>、<span class="source">scene/main/scene_tree.cpp:1637</span></td><td>用 <span class="source">Ref&lt;Node&gt;</span> 管节点；以为 <span class="source">remove_child()</span> 会释放节点；遍历树时立即删除；从子线程改树。</td></tr>
               <tr><td>Resource</td><td><span class="source">Ref&lt;T&gt;</span> 引用计数拥有对象；带路径的资源还可能进入 ResourceCache。</td><td>最后一个 Ref 释放后析构；缓存中的同路径资源会被复用。</td><td><span class="source">core/io/resource.h:52</span>、<span class="source">core/io/resource.h:197</span>、<span class="source">core/io/resource.cpp:852</span></td><td>把 Resource 当 Node 加到树里；忽略缓存导致多个加载者共享同一个资源状态。</td></tr>
               <tr><td>RefCounted</td><td>Ref 包装器通过 <span class="source">reference()</span>/<span class="source">unreference()</span> 管生命周期。</td><td>引用计数归零时删除。</td><td><span class="source">core/object/ref_counted.h:36</span>、<span class="source">core/object/ref_counted.cpp:74</span>、<span class="source">92</span></td><td>把 RefCounted 裸指针传来传去却不保存 Ref；循环引用导致对象不释放。</td></tr>
               <tr><td>RID</td><td>对应 Server 内部的 <span class="source">RID_Owner</span> 或 <span class="source">RID_PtrOwner</span>。</td><td>必须调用对应 Server 的 <span class="source">free()</span> 或专用释放 API。</td><td><span class="source">core/templates/rid.h:38</span>、<span class="source">core/templates/rid_owner.h:517</span>、<span class="source">548</span></td><td>以为 RID 会自动释放真实 GPU/物理对象；把不同 Server 的 RID 混用。</td></tr>
@@ -2334,7 +2357,7 @@
             </tbody>
           </table>
 
-          <div class="level-content" data-level="deep all">
+          <div>
             <h3>ObjectDB：对象索引，不是所有权系统</h3>
             <div class="trace">
               <div class="trace-row"><strong>1. Object 构造时进入 ObjectDB</strong><p><span class="source">Object</span> 保存 <span class="source">_instance_id</span>，声明在 <span class="source">core/object/object.h:428</span>。构造路径在 <span class="source">core/object/object.cpp:2294</span> 调 <span class="source">ObjectDB::add_instance(this)</span>，而 <span class="source">ObjectDB::add_instance()</span> 实现在 <span class="source">core/object/object.cpp:2450</span>。</p></div>
@@ -2344,14 +2367,14 @@
 
             <h3>memnew / memdelete：Godot 自己的分配钩子</h3>
             <p>
-              Godot 大量使用 <span class="source">memnew</span> 和 <span class="source">memdelete</span>，不是普通风格偏好，而是为了接入统一内存统计、对象 post-initialize、pre-delete 和 debug 检查。宏定义在 <span class="source">core/os/memory.h:150</span> 和 <span class="source">160</span>，底层分配函数是 <span class="source">Memory::alloc_static()</span> 的 <span class="source">core/os/memory.cpp:82</span>，释放是 <span class="source">Memory::free_static()</span> 的 <span class="source">173</span>。Object 的 predelete/postinitialize 钩子在 <span class="source">core/object/object.cpp:2373</span> 和 <span class="source">2377</span>。
+              Godot 大量使用 <span class="source">memnew</span> 和 <span class="source">memdelete</span>，不是普通风格偏好，而是为了接入统一内存统计、对象 post-initialize、pre-delete 和 debug 检查。宏定义在 <span class="source">core/os/memory.h:150</span> 和 <span class="source">160</span>，底层分配函数是 <span class="source">Memory::alloc_static()</span> 的 <span class="source">core/os/memory.cpp:82</span>，释放是 <span class="source">Memory::free_static()</span> 的 <span class="source">173</span>。对 Object 来说，<span class="source">memdelete</span> 会先进入 <span class="source">predelete_handler()</span>，再析构并释放内存；Object 的 predelete/postinitialize 钩子在 <span class="source">core/object/object.cpp:2373</span> 和 <span class="source">2377</span>。
             </p>
 
             <h3>延迟调用和删除队列：为什么不能随手立即改树</h3>
             <table>
               <thead><tr><th>机制</th><th>源码入口</th><th>解决的问题</th></tr></thead>
               <tbody>
-                <tr><td><span class="source">call_deferred</span></td><td><span class="source">core/object/object.cpp:1998</span>、<span class="source">core/object/message_queue.h:150</span></td><td>把方法调用放进 MessageQueue，等当前调用栈或处理阶段结束后再执行，避免信号发射、树遍历或物理同步中修改对象结构。</td></tr>
+                <tr><td><span class="source">call_deferred</span></td><td><span class="source">core/object/object.cpp:1998</span>、<span class="source">core/object/message_queue.cpp:68</span>、<span class="source">224</span></td><td>把方法调用放进 MessageQueue，等当前调用栈或处理阶段结束后由 <span class="source">flush()</span> 执行，避免信号发射、树遍历或物理同步中修改对象结构。</td></tr>
                 <tr><td><span class="source">set_deferred</span></td><td><span class="source">core/object/object.cpp:2002</span></td><td>延迟设置属性，常用于避免在通知、输入、物理回调中立即改状态造成重入问题。</td></tr>
                 <tr><td><span class="source">queue_free</span></td><td><span class="source">scene/main/node.cpp:3461</span></td><td>节点在树内时不立即删除，而是交给 SceneTree 的删除队列。这样可以避免遍历节点树时释放当前节点导致迭代器和通知链失效。</td></tr>
                 <tr><td><span class="source">SceneTree::queue_delete</span></td><td><span class="source">scene/main/scene_tree.cpp:1637</span></td><td>把 ObjectID 加入删除队列。真正删除前会再次从 ObjectDB 查对象，避免对象已经被其他路径释放后重复删除。</td></tr>
@@ -2390,6 +2413,7 @@
           <h2>从浅到深的阅读路线</h2>
           <p class="intro">
             Godot 源码很大，按主题跳读比按文件树从上到下读有效。下面给出三条路线，每条路线都有明确问题、源码入口和结束标准。
+            它们不是互斥等级；实际读源码时可以在三条路线之间来回切换，但每次都要知道自己当前是在建立全局骨架、追一个机制，还是评估修改影响面。
           </p>
 
           <div class="diagram wide">
@@ -2402,15 +2426,15 @@
               <rect x="35" y="30" width="1110" height="300" rx="20" fill="#f8fbff" stroke="#c7d9ee"></rect>
               <text x="590" y="72" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">阅读路线：从“看懂框架”到“能改引擎”</text>
               <rect x="95" y="125" width="260" height="120" rx="14" fill="#ffffff" stroke="#bfdbfe"></rect>
-              <text x="225" y="160" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">1. 小白层</text>
+              <text x="225" y="160" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">1. 入门路线</text>
               <text x="225" y="190" text-anchor="middle" font-size="13" fill="#475569">目录、启动、主循环、场景树</text>
               <text x="225" y="212" text-anchor="middle" font-size="13" fill="#475569">能画出 core/scene/servers/modules</text>
               <rect x="460" y="125" width="260" height="120" rx="14" fill="#ffffff" stroke="#bfdbfe"></rect>
-              <text x="590" y="160" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">2. 中级层</text>
+              <text x="590" y="160" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">2. 机制路线</text>
               <text x="590" y="190" text-anchor="middle" font-size="13" fill="#475569">追一个用户功能的端到端路径</text>
               <text x="590" y="212" text-anchor="middle" font-size="13" fill="#475569">能定位类、绑定、资源、Server</text>
               <rect x="825" y="125" width="260" height="120" rx="14" fill="#ffffff" stroke="#bfdbfe"></rect>
-              <text x="955" y="160" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">3. 深入层</text>
+              <text x="955" y="160" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">3. 深入路线</text>
               <text x="955" y="190" text-anchor="middle" font-size="13" fill="#475569">生命周期、线程、注册、缓存、导出</text>
               <text x="955" y="212" text-anchor="middle" font-size="13" fill="#475569">能写出影响面并安全修改</text>
               <path d="M355 185 L450 185" stroke="#2563eb" stroke-width="2.5" marker-end="url(#route-arrow)"></path>
@@ -2420,47 +2444,47 @@
 
           <div class="three">
             <div class="panel">
-              <div class="panel-head"><span>小白路线：建立全局骨架</span><span>目标：能讲清引擎如何启动</span></div>
+              <div class="panel-head"><span>入门路线：建立全局骨架</span><span>目标：能讲清引擎如何启动</span></div>
               <div class="panel-body checklist">
                 <label><input type="checkbox"> 读 <span class="source">README.md</span>、<span class="source">version.py</span>，确认项目版本和用途。</label>
                 <label><input type="checkbox"> 看顶层目录：core、scene、servers、modules、platform、editor。</label>
-                <label><input type="checkbox"> 跟一遍 Windows 或当前平台入口到 <span class="source">Main::setup()</span>。</label>
-                <label><input type="checkbox"> 记住 SceneTree 是 MainLoop，Node 是场景树单位。</label>
-                <label><input type="checkbox"> 能用自己的话解释 Server 层为什么存在。</label>
-                <label><input type="checkbox"> 能解释 Resource 和 Node 的区别，以及为什么 PackedScene 是 Resource。</label>
+                <label><input type="checkbox"> 跟一遍 Windows 或当前平台入口到 <span class="source">Main::setup()</span>，例如 <span class="source">platform/windows/godot_windows.cpp:68</span> 到 <span class="source">main/main.cpp:1027</span>。</label>
+                <label><input type="checkbox"> 记住 <span class="source">scene/main/scene_tree.h:89</span> 的 SceneTree 是 MainLoop，<span class="source">scene/main/node.h:54</span> 的 Node 是场景树单位。</label>
+                <label><input type="checkbox"> 能用自己的话解释 Server 层为什么存在，从 <span class="source">servers/rendering/rendering_server.h:64</span> 这类抽象入口理解场景层和后端的分离。</label>
+                <label><input type="checkbox"> 能解释 Resource 和 Node 的区别，以及为什么 <span class="source">scene/resources/packed_scene.h:246</span> 的 PackedScene 是 Resource。</label>
               </div>
             </div>
             <div class="panel">
-              <div class="panel-head"><span>中级路线：读核心机制</span><span>目标：能定位功能源码</span></div>
+              <div class="panel-head"><span>机制路线：读核心机制</span><span>目标：能定位功能源码</span></div>
               <div class="panel-body checklist">
-                <label><input type="checkbox"> 读 <span class="source">Object</span>、<span class="source">ClassDB</span>、<span class="source">Variant</span> 的声明。</label>
-                <label><input type="checkbox"> 找一个类的 <span class="source">_bind_methods()</span>，跟到 MethodBind。</label>
-                <label><input type="checkbox"> 跟 ResourceLoader 加载 PackedScene 的流程。</label>
-                <label><input type="checkbox"> 跟 SceneTree 的 process/physics_process 和删除队列。</label>
+                <label><input type="checkbox"> 读 <span class="source">core/object/object.h:349</span>、<span class="source">core/object/class_db.h:97</span>、<span class="source">core/variant/variant.h:93</span> 的声明。</label>
+                <label><input type="checkbox"> 找一个类的 <span class="source">_bind_methods()</span>，跟到 <span class="source">core/object/method_bind.h:38</span>。</label>
+                <label><input type="checkbox"> 跟 <span class="source">core/io/resource_loader.cpp:513</span> 加载 PackedScene 的流程。</label>
+                <label><input type="checkbox"> 跟 SceneTree 的 process/physics_process 和删除队列，入口可从 <span class="source">scene/main/scene_tree.cpp:639</span>、<span class="source">688</span>、<span class="source">1625</span> 开始。</label>
                 <label><input type="checkbox"> 选择渲染、物理、脚本或编辑器任一子系统做一次端到端追踪。</label>
                 <label><input type="checkbox"> 能区分“场景层状态”和“Server 层 RID 状态”。</label>
               </div>
             </div>
             <div class="panel">
-              <div class="panel-head"><span>底层路线：理解设计取舍</span><span>目标：能安全改引擎</span></div>
+              <div class="panel-head"><span>深入路线：理解设计取舍</span><span>目标：能安全改引擎</span></div>
               <div class="panel-body checklist">
-                <label><input type="checkbox"> 读 RID_Owner 和 Server 内部资源生命周期。</label>
-                <label><input type="checkbox"> 读模块初始化级别和 register/unregister 对称关系。</label>
+                <label><input type="checkbox"> 读 <span class="source">core/templates/rid_owner.h:517</span> 和 Server 内部资源生命周期。</label>
+                <label><input type="checkbox"> 读模块初始化级别和 register/unregister 对称关系，先看 <span class="source">main/main.cpp:2255</span>、<span class="source">3201</span>、<span class="source">3767</span>、<span class="source">5261</span>。</label>
                 <label><input type="checkbox"> 读 GDExtension 注册类、方法、属性和回调的路径。</label>
-                <label><input type="checkbox"> 读一个 wrap_mt 或消息队列实现，理解跨线程/跨帧边界。</label>
+                <label><input type="checkbox"> 读一个 wrap_mt 或消息队列实现，理解跨线程/跨帧边界，例如 <span class="source">core/object/message_queue.cpp:68</span> 和 <span class="source">224</span>。</label>
                 <label><input type="checkbox"> 修改前写出影响面：ClassDB、资源序列化、编辑器、导出模板、测试。</label>
                 <label><input type="checkbox"> 能说明该改动是否影响 ABI、保存格式、导入缓存或多线程时序。</label>
               </div>
             </div>
           </div>
 
-          <h3>每一层的结束标准</h3>
+          <h3>每条路线的结束标准</h3>
           <table class="matrix">
-            <thead><tr><th>层级</th><th>能回答的问题</th><th>应该产出的笔记</th><th>还不该做什么</th></tr></thead>
+            <thead><tr><th>阅读阶段</th><th>能回答的问题</th><th>应该产出的笔记</th><th>还不该做什么</th></tr></thead>
             <tbody>
-              <tr><td>小白层</td><td>Godot 从平台入口到 Main、SceneTree、Node、Server、EditorNode 大概怎么串起来？</td><td>一张目录依赖图、一张启动流程图、一个主循环阶段表。</td><td>不要急着改底层内存、线程、资源格式或 Server 后端。</td></tr>
-              <tr><td>中级层</td><td>某个 API、节点、资源或编辑器按钮最终落到哪些类和函数？</td><td>一条端到端调用链：用户操作/API → 绑定 → 对象状态 → Resource/Server → 主循环阶段。</td><td>不要只改可见 bug 点；必须确认序列化、Inspector、导入导出和测试是否受影响。</td></tr>
-              <tr><td>深入层</td><td>这个改动会不会破坏生命周期、缓存、线程边界、ABI 或生成代码？</td><td>影响面清单、回归测试入口、构建配置差异、失败回滚点。</td><td>不要在没有验证多平台/多构建目标的情况下合并平台层或 core 层改动。</td></tr>
+              <tr><td>入门路线</td><td>Godot 从平台入口到 Main、SceneTree、Node、Server、EditorNode 大概怎么串起来？</td><td>一张目录依赖图、一张启动流程图、一个主循环阶段表。</td><td>不要急着改底层内存、线程、资源格式或 Server 后端。</td></tr>
+              <tr><td>机制路线</td><td>某个 API、节点、资源或编辑器按钮最终落到哪些类和函数？</td><td>一条端到端调用链：用户操作/API → 绑定 → 对象状态 → Resource/Server → 主循环阶段。</td><td>不要只改可见 bug 点；必须确认序列化、Inspector、导入导出和测试是否受影响。</td></tr>
+              <tr><td>深入路线</td><td>这个改动会不会破坏生命周期、缓存、线程边界、ABI 或生成代码？</td><td>影响面清单、回归测试入口、构建配置差异、失败回滚点。</td><td>不要在没有验证多平台/多构建目标的情况下合并平台层或 core 层改动。</td></tr>
             </tbody>
           </table>
 
