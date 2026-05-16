@@ -70,6 +70,7 @@
 		<member name="override_tip_basis" type="bool" setter="set_override_tip_basis" getter="is_override_tip_basis" default="true">
 			If [code]true[/code] overwrites the rotation of the tip bone with the rotation of the [member target] (or [member target_node] if defined).
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="0" />
 		<member name="root_bone" type="StringName" setter="set_root_bone" getter="get_root_bone" default="&amp;&quot;&quot;">
 			The name of the current root bone, the first bone in the IK chain.
 		</member>

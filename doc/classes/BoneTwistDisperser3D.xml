@@ -250,6 +250,7 @@
 			If [code]true[/code], the solver retrieves the bone axis from the bone pose every frame.
 			If [code]false[/code], the solver retrieves the bone axis from the bone rest and caches it.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="0" />
 		<member name="setting_count" type="int" setter="set_setting_count" getter="get_setting_count" default="0">
 			The number of settings.
 		</member>
