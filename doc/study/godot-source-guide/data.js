@@ -2,7 +2,7 @@
 const dirs = [
   {
     name: "core",
-    files: "465 files / 431 C++ headers",
+    files: "465 tracked files / 424 C/C++/ObjC/Python files",
     role: "运行时地基：Object、Variant、ClassDB、Resource、OS、IO、数学、线程、字符串、错误处理。",
     boundary: "只要问题涉及“所有系统都要用的基础能力”，通常先看 core：对象反射、统一值类型、资源加载基础、跨平台 OS 抽象、容器、数学类型、线程和错误宏都在这里。它不应该知道具体的 Sprite2D、EditorNode 或某个渲染后端实现。",
     anchors: ["core/object/object.h:349", "core/object/class_db.h:97", "core/variant/variant.h:93", "core/io/resource_loader.h:103", "core/os/os.h:46"],
@@ -26,7 +26,7 @@ const dirs = [
   },
   {
     name: "scene",
-    files: "836 files / 678 C++ headers",
+    files: "836 tracked files / 678 C/C++/ObjC/Python files",
     role: "用户最常接触的对象层：Node、SceneTree、2D/3D 节点、GUI、动画、主题、资源类型。",
     boundary: "只要问题涉及“用户在编辑器或脚本里直接操作的对象”，通常先看 scene。它把用户语义封装成 Node、Resource、Control、Animation、Viewport 等高层对象，再把底层执行交给 servers。",
     anchors: ["scene/main/node.h:54", "scene/main/scene_tree.h:89", "scene/register_scene_types.cpp:390", "scene/resources/packed_scene.h:246"],
@@ -50,7 +50,7 @@ const dirs = [
   },
   {
     name: "servers",
-    files: "463 files / 416 C++ headers",
+    files: "463 tracked files / 319 C/C++/ObjC/Python files",
     role: "底层能力抽象：渲染、物理、导航、音频、显示、文本、XR、调试、摄像头、电影写出。",
     boundary: "只要问题涉及“真正执行重活的系统接口”，通常进入 servers。它定义跨场景、跨平台的服务 API，隐藏后端差异，并通过 RID 或单例管理底层状态。",
     anchors: ["servers/register_server_types.cpp:146", "servers/rendering/rendering_server.h:64", "servers/physics_3d/physics_server_3d.h:236", "servers/display/display_server.h:62"],
@@ -74,7 +74,7 @@ const dirs = [
   },
   {
     name: "modules",
-    files: "3025 files / 934 C++ headers",
+    files: "3036 tracked files / 989 C/C++/ObjC/Python files",
     role: "可选功能和第三方库包装：GDScript、C#、物理实现、导入器、编解码、网络、XR、文本后端。",
     boundary: "modules 是功能接入点，不是单一层。一个模块可以在 CORE 注册资源加载器，在 SERVERS 注册后端，在 SCENE 注册节点，在 EDITOR 注册导入器或面板。判断模块位置要看它的 register_types 和初始化 level。",
     anchors: ["modules/SCsub:20", "modules/modules_builders.py:43", "modules/gdscript/register_types.cpp:137", "modules/jolt_physics", "modules/gltf"],
@@ -98,7 +98,7 @@ const dirs = [
   },
   {
     name: "platform",
-    files: "808 files / 288 C++ headers",
+    files: "818 tracked files / 349 C/C++/ObjC/Python files",
     role: "平台入口与 OS/DisplayServer 实现：Windows、LinuxBSD、macOS、Android、iOS、Web、visionOS。",
     boundary: "platform 负责把 Godot 的跨平台抽象接到具体操作系统。它处理进程入口、事件循环、窗口、输入、动态库、文件路径、平台导出 glue 等差异，但不定义 Object/Node/Server 的通用语义。",
     anchors: ["platform/windows/godot_windows.cpp:68", "platform/windows/os_windows.*", "platform/*/detect.py"],
@@ -122,7 +122,7 @@ const dirs = [
   },
   {
     name: "editor",
-    files: "1814 files / 654 C++ headers",
+    files: "1814 tracked files / 645 C/C++/ObjC/Python files",
     role: "编辑器主程序、插件、Inspector、导入导出、项目管理、调试、脚本编辑、主题和图标。",
     boundary: "editor 是工具构建中的 Godot 应用。它负责编辑器 UI、Dock、Inspector、插件、导入导出界面、项目管理和调试体验，但普通导出模板通常不会包含这些工具代码。",
     anchors: ["editor/editor_node.h:120", "editor/plugins/editor_plugin.h:59", "editor/inspector/editor_inspector.h:731"],
@@ -146,7 +146,7 @@ const dirs = [
   },
   {
     name: "drivers",
-    files: "236 files / 178 C++ headers",
+    files: "236 tracked files / 182 C/C++/ObjC/Python files",
     role: "相对通用的驱动 glue：PNG、渲染驱动辅助、可访问性、音频/输入等底层适配。",
     boundary: "drivers 放相对平台无关或可复用的驱动适配层。它通常负责把某个库或底层能力注册到 Godot 的统一接口里，例如 ImageLoader、ResourceSaver、AccessibilityServer。",
     anchors: ["drivers/register_driver_types.cpp", "drivers/png"],
@@ -169,7 +169,7 @@ const dirs = [
   },
   {
     name: "main",
-    files: "13 files / 10 C++ headers",
+    files: "13 tracked files / 9 C/C++/ObjC/Python files",
     role: "跨平台启动、命令行解析、初始化、主循环、清理、性能统计和启动资源。",
     boundary: "main 是引擎生命周期总控，不是具体子系统实现。它决定系统初始化顺序、运行模式、主循环阶段和清理顺序，是所有端到端追踪最终要回来的时间轴。",
     anchors: ["main/main.cpp:1027", "main/main.cpp:3008", "main/main.cpp:3988", "main/main.cpp:4896"],
@@ -193,7 +193,7 @@ const dirs = [
   },
   {
     name: "tests",
-    files: "222 files / 174 C++ headers",
+    files: "223 tracked files / 179 C/C++/ObjC/Python files",
     role: "单元测试和回归测试，覆盖 core、scene、servers、modules 等关键行为。",
     boundary: "tests 是行为证据层。它不定义生产逻辑，但能说明容器、Variant、Object、Resource、SceneTree、Server 抽象的预期行为，尤其适合验证底层改动有没有破坏契约。",
     anchors: ["tests/test_main.h", "tests/core", "tests/scene"],
@@ -216,7 +216,7 @@ const dirs = [
   },
   {
     name: "doc",
-    files: "829 files",
+    files: "836 tracked files / 2 C/C++/ObjC/Python files",
     role: "类文档、导读材料和生成文档输入。当前导读页也放在 doc/study。",
     boundary: "doc 是用户 API 文档和学习材料，不是实现源码。它能告诉你某个类承诺给用户的行为，但真正行为仍要回到 _bind_methods、类实现和资源序列化。",
     anchors: ["doc/classes", "doc/study"],
@@ -239,7 +239,7 @@ const dirs = [
   },
   {
     name: "thirdparty",
-    files: "4805 files / 3026 C++ headers",
+    files: "4805 tracked files / 4489 C/C++/ObjC/Python files",
     role: "引擎 vendored 的外部依赖。通常不承载 Godot 业务逻辑，但影响编解码、字体、压缩、渲染和平台能力。",
     boundary: "thirdparty 是外部依赖源码仓库的本地副本。它提供算法、编解码、字体、压缩、图形或网络能力，但 Godot 的用户 API、注册逻辑、资源语义通常在 modules/drivers/core 的封装层。",
     anchors: ["thirdparty"],
@@ -529,6 +529,21 @@ const concepts = [
       {
         type: "paragraph",
         text: "ObjectID 能避免直接保存裸指针后悬空，但它不会让对象继续活着。对象释放后，ObjectDB 的 validator 会失效，`get_instance()` 返回 null。需要真正延长生命周期时，应使用正确的所有权机制，例如 `Ref<T>`、场景树持有，或明确的释放策略。"
+      },
+      {
+        type: "heading",
+        title: "Object 和相邻概念的边界"
+      },
+      {
+        type: "table",
+        headers: ["概念", "和 Object 的关系", "边界"],
+        rows: [
+          ["Node", "继承 Object，并加入父子树、通知和 process 生命周期。", "Object 本身没有场景树关系。"],
+          ["Resource", "继承 RefCounted/Object，并可被保存、加载、缓存和共享。", "Object 本身不代表可序列化资源。"],
+          ["ClassDB", "保存 Object 子类公开出来的类型、方法、属性、信号。", "ClassDB 是登记表，不是对象实例。"],
+          ["ObjectDB", "给活着的 Object 分配 ObjectID 并支持弱查找。", "ObjectDB 不拥有对象生命周期。"],
+          ["Variant", "可以装 Object 指针或 RefCounted 引用，并参与反射调用。", "Variant 不是 Object 的所有权系统。"]
+        ]
       },
       {
         type: "heading",
@@ -4981,6 +4996,21 @@ const concepts = [
       {
         type: "paragraph",
         text: "RID 的数字格式统一，但语义属于创建它的 Server/storage。不同 owner 不会因为同样叫 RID 就能互相理解。"
+      },
+      {
+        type: "heading",
+        title: "RID 和相邻概念的边界"
+      },
+      {
+        type: "table",
+        headers: ["概念", "边界"],
+        rows: [
+          ["RID", "Server/storage 内部对象句柄，释放走对应 Server。"],
+          ["Resource", "用户可见、可序列化、常由 Ref 管生命周期的资源对象。"],
+          ["ObjectID", "ObjectDB 的弱查找 ID，只能回到 Object 世界。"],
+          ["Node", "场景树运行对象，可能持有或间接创建 RID，但不等于 RID。"],
+          ["RenderingDevice RID", "也是 RID 形状，但属于 RD owner，不能和 RenderingServer 高层 RID 随意混用。"]
+        ]
       },
       {
         type: "heading",
@@ -11039,6 +11069,662 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {
     ]
   },
   {
+    id: "projectsettings",
+    title: "ProjectSettings / project.godot / autoload",
+    aliases: ["ProjectSettings", "project.godot", "autoload", "main_scene", "GLOBAL_GET", "ProjectSettings::AutoloadInfo"],
+    summary: "项目配置进入运行时的中间层：它把 project.godot、资源包、feature override、autoload 和主场景设置提供给 Main、InputMap、ResourceLoader 和脚本系统。",
+    article: [
+      {
+        type: "lead",
+        text: "ProjectSettings 是 Godot 把项目文件变成运行时决策的中心。主场景、autoload、输入映射、资源包、feature override、窗口和语言设置都可能先进入 ProjectSettings，再被 Main、InputMap、ResourceLoader、GDScript 或编辑器读取。"
+      },
+      {
+        type: "heading",
+        title: "小白版解释"
+      },
+      {
+        type: "paragraph",
+        text: "可以把 ProjectSettings 想成项目启动前要看的总配置表。Godot 不是在源码里写死“加载哪个场景、有哪些全局单例、有哪些输入 action”，而是在启动时读取项目配置，再按这张表搭出游戏运行环境。"
+      },
+      {
+        type: "heading",
+        title: "深入解释"
+      },
+      {
+        type: "paragraph",
+        text: "类入口是 `core/config/project_settings.h:40`。它继承 Object，因此也能通过 ClassDB 暴露给脚本和编辑器。内部保存设置表、autoload 列表、资源路径、project data 目录和 feature override 相关状态。动态写入入口是 `core/config/project_settings.cpp:289` 的 `_set()`，这里会特别处理 `autoload/` 和 `autoload_prepend/`。"
+      },
+      {
+        type: "paragraph",
+        text: "普通游戏路径里，`Main::start()` 在 `main/main.cpp:4311` 读取 `application/run/main_scene`，决定没有命令行场景时要加载哪个主场景。autoload 则在 `main/main.cpp:4476` 以后从 `ProjectSettings::get_autoload_list()` 取出，先于主场景实例化并加入 SceneTree root。"
+      },
+      {
+        type: "table",
+        title: "ProjectSettings 影响哪些启动行为",
+        headers: ["配置", "运行时影响", "源码入口"],
+        rows: [
+          ["`application/run/main_scene`", "决定普通游戏默认加载的主场景。", "`main/main.cpp:4311`"],
+          ["`autoload/*`", "创建全局节点或脚本单例，并在主场景前加入 SceneTree。", "`main/main.cpp:4476`"],
+          ["`input/*`", "生成 InputMap 的 action 和按键映射。", "`main/main.cpp:2334`"],
+          ["资源包和路径", "影响 `res://`、UID cache、remap 和打包资源可见性。", "`project_settings.cpp:581`、`614`"],
+          ["feature override", "按平台、构建特性或自定义 feature 选择不同设置值。", "`project_settings.cpp:392`、`415`"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "源码锚点"
+      },
+      {
+        type: "list",
+        items: [
+          "`core/config/project_settings.h:40`：ProjectSettings 类定义。",
+          "`core/config/project_settings.cpp:289`：动态设置入口，包含 autoload 特殊处理。",
+          "`main/main.cpp:4311`：读取主场景设置。",
+          "`main/main.cpp:4476`：读取并实例化 autoload 列表。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "案例"
+      },
+      {
+        type: "code",
+        code: [
+          "# project.godot 中的典型片段",
+          "application/run/main_scene=\"res://main.tscn\"",
+          "",
+          "[autoload]",
+          "GameState=\"*res://game_state.gd\"",
+          "",
+          "[input]",
+          "jump={",
+          "\"deadzone\": 0.5,",
+          "\"events\": [Object(InputEventKey,\"keycode\":32)]",
+          "}"
+        ].join("\n")
+      },
+      {
+        type: "paragraph",
+        text: "这段配置最终会影响三条路径：Main 读取主场景，Main 在主场景前实例化 GameState，InputMap 从项目设置加载 jump action。排查运行结果时要把这三条路径分开看。"
+      },
+      {
+        type: "heading",
+        title: "相邻概念边界"
+      },
+      {
+        type: "table",
+        headers: ["概念", "负责什么", "不负责什么"],
+        rows: [
+          ["ProjectSettings", "保存和查询项目级设置、autoload、资源路径、feature override。", "不负责加载 PackedScene 的具体格式。"],
+          ["ResourceLoader", "按路径和 loader 把资源变成 Resource。", "不决定项目默认主场景。"],
+          ["SceneTree", "运行和调度节点树。", "不保存 project.godot 的原始配置表。"],
+          ["EditorSettings", "保存编辑器个人偏好。", "不等同于项目运行时设置。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "常见误区"
+      },
+      {
+        type: "list",
+        items: [
+          "误区一：主场景是 Main 写死的。实际来自命令行或 ProjectSettings。",
+          "误区二：autoload 是脚本语言特性。实际 Main 会按项目设置把脚本或场景实例化成节点。",
+          "误区三：InputMap 默认总一样。编辑器和游戏加载的输入映射路径不同。",
+          "误区四：资源路径只由文件系统决定。资源包、UID、remap 和 ProjectSettings 都会影响路径解析。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "建议阅读路线"
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "先读 `core/config/project_settings.h:40`，看它保存哪些项目级状态。",
+          "读 `_set()` 对 `autoload/` 和普通设置的分支。",
+          "到 `Main::setup()` 看 ProjectSettings 何时创建和 setup。",
+          "到 `Main::start()` 看主场景、autoload、输入映射如何消费这些设置。",
+          "最后按具体问题进入 ResourceUID、InputMap、GDScript analyzer 或编辑器 Project Settings UI。"
+        ]
+      }
+    ]
+  },
+  {
+    id: "viewportwindowworld",
+    title: "Viewport / Window / World2D / World3D",
+    aliases: ["Viewport", "SubViewport", "Godot Window", "World2D", "World3D", "RendererViewport", "scenario", "render target"],
+    summary: "场景树和渲染/输入之间的关键枢纽：Viewport 管输入、GUI、canvas、world 和 render target；Window 把 Viewport 接到 DisplayServer；World2D/World3D 保存空间上下文。",
+    article: [
+      {
+        type: "lead",
+        text: "Viewport 是很多显示和输入问题的中间答案。Node 在 SceneTree 里运行，但输入如何分发、GUI 根在哪里、2D canvas 和 3D scenario 属于谁、画面最终渲染到哪个目标，都要看 Viewport、Window 和 World 这一层。"
+      },
+      {
+        type: "heading",
+        title: "小白版解释"
+      },
+      {
+        type: "paragraph",
+        text: "如果 SceneTree 是整栋楼的管理表，Viewport 就像一个带摄像机和门禁的房间：输入先到这里，UI 在这里排队，2D/3D 世界从这里接入，最后画面也从这里输出到窗口或纹理。"
+      },
+      {
+        type: "heading",
+        title: "深入解释"
+      },
+      {
+        type: "paragraph",
+        text: "`Viewport` 定义在 `scene/main/viewport.h:96`，继承 Node。它保存 GUI、canvas、world、render target、输入 picking、debug draw、MSAA、scaling、transparent background 等状态。`Window` 定义在 `scene/main/window.h:42`，继承 Viewport，并额外连接 DisplayServer 的窗口 ID、native window 状态和焦点/大小事件。"
+      },
+      {
+        type: "paragraph",
+        text: "`World2D` 在 `scene/resources/world_2d.h:43`，`World3D` 在 `scene/resources/3d/world_3d.h:46`。它们是 Resource，而不是 Node；负责保存对应空间里的 canvas、physics space、navigation map、3D scenario、environment 等。渲染后端按 Viewport 汇总绘制，入口可从 `servers/rendering/renderer_viewport.cpp:782` 的 `draw_viewports()` 开始读。"
+      },
+      {
+        type: "table",
+        title: "四个对象的职责边界",
+        headers: ["对象", "负责什么", "不负责什么"],
+        rows: [
+          ["Viewport", "输入分发、GUI root、canvas/world 归属、render target。", "不直接实现平台窗口 API。"],
+          ["Window", "把 Viewport 接到 DisplayServer 窗口。", "不替代 SceneTree 主循环。"],
+          ["World2D", "2D canvas、physics space、navigation map。", "不是 Node，不参与树遍历。"],
+          ["World3D", "3D scenario、physics space、environment、camera effects。", "不保存节点父子关系。"],
+          ["RendererViewport", "后端按 Viewport 组织绘制和 render target。", "不保存用户节点语义。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "源码锚点"
+      },
+      {
+        type: "list",
+        items: [
+          "`scene/main/viewport.h:96`：Viewport 类入口。",
+          "`scene/main/window.h:42`：Window 继承 Viewport。",
+          "`scene/resources/world_2d.h:43`：World2D 资源入口。",
+          "`scene/resources/3d/world_3d.h:46`：World3D 资源入口。",
+          "`servers/rendering/renderer_viewport.cpp:782`：渲染后端绘制 Viewport 的入口。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "案例"
+      },
+      {
+        type: "code",
+        code: [
+          "# GDScript：确认节点最终属于哪个 Viewport 和 World",
+          "func _ready():",
+          "    print(get_viewport())",
+          "    print(get_window())",
+          "    if self is Node3D:",
+          "        print(get_world_3d())",
+          "    if self is CanvasItem:",
+          "        print(get_world_2d())"
+        ].join("\n")
+      },
+      {
+        type: "paragraph",
+        text: "这个检查能快速区分“节点不在树里”“在树里但不在预期 Viewport”“3D 对象进了错误 World3D”“SubViewport 没有被显示或更新”等问题。"
+      },
+      {
+        type: "heading",
+        title: "相邻概念边界"
+      },
+      {
+        type: "table",
+        headers: ["概念", "边界"],
+        rows: [
+          ["SceneTree", "调度整棵树和主场景；不等同于某个渲染目标。"],
+          ["Node", "保存父子关系和生命周期；是否显示还要看 Viewport/World/Server 状态。"],
+          ["CanvasItem / VisualInstance3D", "提交可见对象状态；真正归属通过 Viewport 和 World 确定。"],
+          ["DisplayServer", "处理平台窗口和输入事件；不保存场景 GUI 树。"],
+          ["RenderingServer", "保存渲染后端对象；按 Viewport 组织最终绘制。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "常见误区"
+      },
+      {
+        type: "list",
+        items: [
+          "误区一：Node 在 SceneTree 里就一定会显示。还要看它所属 Viewport、World、可见性和 Server 状态。",
+          "误区二：Window 只是平台窗口包装。它也是 Viewport，会参与场景树、输入和渲染目标逻辑。",
+          "误区三：World3D 是节点。实际它是 Resource，用来保存 3D 空间上下文。",
+          "误区四：SubViewport 会自动显示。它通常要被 ViewportTexture、SubViewportContainer 或自定义渲染路径消费。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "建议阅读路线"
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "先读 `Viewport` 头文件，圈出 GUI、world、render target、input 相关字段。",
+          "读 `Window`，看它如何把 Viewport 接到 DisplayServer window id。",
+          "读 `World2D` / `World3D`，理解 canvas、physics space、scenario 的保存位置。",
+          "沿 CanvasItem 或 VisualInstance3D 进入树的通知，看它们如何拿 Viewport/World 并提交 Server 状态。",
+          "最后读 `RendererViewport::draw_viewports()`，确认后端按 Viewport 组织绘制。"
+        ]
+      }
+    ]
+  },
+  {
+    id: "resourceimportpipeline",
+    title: "Resource Import Pipeline / ResourceUID / .import",
+    aliases: ["Resource Import Pipeline", "ResourceImporter", "ResourceFormatImporter", "ResourceUID", ".import", "EditorFileSystem", "uid://", "imported resource"],
+    summary: "编辑器资源管线：扫描源文件和 .import，生成内部资源，用 UID 维持稳定引用，再让 ResourceLoader 和导出流程消费导入产物。",
+    article: [
+      {
+        type: "lead",
+        text: "资源导入管线解释了为什么 Godot 项目里同一个素材会同时出现源文件、`.import` 元数据、`.godot/imported` 产物、UID 和导出包内文件。运行时加载的常常不是原始 png/fbx/wav，而是编辑器导入后的内部资源路径。"
+      },
+      {
+        type: "heading",
+        title: "小白版解释"
+      },
+      {
+        type: "paragraph",
+        text: "可以把导入系统想成厨房备菜。你放进项目的是原材料，编辑器扫描后会按导入设置切好、压缩、转换并登记编号；游戏运行时通常直接拿备好的成品，而不是每次从原材料重新加工。"
+      },
+      {
+        type: "heading",
+        title: "深入解释"
+      },
+      {
+        type: "paragraph",
+        text: "`ResourceUID` 定义在 `core/io/resource_uid.h:41`，维护 UID 与资源路径的映射。`ResourceFormatImporter` 定义在 `core/io/resource_importer.h:41`，继承 ResourceFormatLoader，负责读取 `.import` 元数据并把原始路径导向导入后的内部资源。具体导入器继承 `ResourceImporter`，定义入口在 `core/io/resource_importer.h:110`。"
+      },
+      {
+        type: "paragraph",
+        text: "编辑器侧的项目扫描由 `EditorFileSystem` 管，类入口在 `editor/file_system/editor_file_system.h:145`。扫描线程入口在 `editor/file_system/editor_file_system.cpp:565`，重导入判断入口在 `editor/file_system/editor_file_system.cpp:570`。它会比较源文件时间、`.import` 内容、md5、导入产物和 importer 支持状态，决定是否重新导入。"
+      },
+      {
+        type: "flow",
+        title: "从源文件到运行时加载",
+        steps: [
+          { title: "源文件进入项目", text: "例如 `res://art/hero.png`。" },
+          { title: "EditorFileSystem 扫描", text: "记录文件、UID、依赖和导入状态。" },
+          { title: "ResourceImporter 转换", text: "按导入设置生成内部资源和 `.import` 元数据。" },
+          { title: "ResourceLoader 加载", text: "ResourceFormatImporter 读取 `.import`，找到真正的导入产物。" },
+          { title: "导出打包", text: "ExportPlatform 收集导入后运行所需资源，而不只是原始文件。" }
+        ]
+      },
+      {
+        type: "heading",
+        title: "源码锚点"
+      },
+      {
+        type: "list",
+        items: [
+          "`core/io/resource_uid.h:41`：ResourceUID 类定义。",
+          "`core/io/resource_importer.h:41`：ResourceFormatImporter 类定义。",
+          "`editor/file_system/editor_file_system.h:145`：EditorFileSystem 类定义。",
+          "`editor/file_system/editor_file_system.cpp:570`：判断是否需要重导入的关键入口。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "案例"
+      },
+      {
+        type: "table",
+        headers: ["现象", "先看哪里", "原因"],
+        rows: [
+          ["改了图片但游戏仍显示旧图", "`.import`、导入产物、EditorFileSystem reimport。", "源文件变了不代表内部资源已重新生成。"],
+          ["移动资源后场景引用没断", "ResourceUID 和 uid path。", "文本资源可能通过 UID 还原路径。"],
+          ["导出包缺模型贴图", "ExportPreset、导入产物、依赖列表。", "导出收集的是运行所需文件集合。"],
+          ["运行时加载原始路径失败", "ResourceFormatImporter 和 `.import`。", "该类型可能只在编辑器导入后有内部资源可用。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "相邻概念边界"
+      },
+      {
+        type: "table",
+        headers: ["概念", "负责什么", "不负责什么"],
+        rows: [
+          ["ResourceLoader", "运行时按路径和 loader 加载 Resource。", "不负责编辑器扫描项目文件。"],
+          ["ResourceImporter", "编辑器把源文件转换成内部资源。", "不直接调度 SceneTree。"],
+          ["EditorFileSystem", "扫描项目、判断变化、安排重导入。", "不代表运行时文件系统 API。"],
+          ["ResourceUID", "维护稳定资源身份。", "不保存资源对象内容。"],
+          ["ExportPlatform", "决定哪些资源进入导出包。", "不重新解释所有导入格式语义。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "常见误区"
+      },
+      {
+        type: "list",
+        items: [
+          "误区一：运行时总是直接加载原始素材。很多资源会先导入成内部产物。",
+          "误区二：删除 `.import` 不会影响项目。它是 ResourceFormatImporter 找内部资源的重要元数据。",
+          "误区三：UID 是文件内容 hash。UID 是稳定标识和路径映射，不等于内容校验。",
+          "误区四：导出包应该包含所有源文件。导出通常只包含运行需要的文件和导入产物。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "建议阅读路线"
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "先读 `ResourceUID`，理解 uid/path 映射。",
+          "读 `ResourceFormatImporter`，确认 `.import` 如何影响 ResourceLoader。",
+          "读 `EditorFileSystem` 的扫描和重导入判断。",
+          "进入具体 importer，例如 texture、scene、font、wav，看它输出什么内部资源。",
+          "最后读 export 平台收集文件的逻辑，确认导入产物如何进入包。"
+        ]
+      }
+    ]
+  },
+  {
+    id: "stringnamenodepath",
+    title: "StringName / NodePath",
+    aliases: ["StringName", "NodePath", "SNAME", "UNIQUE_NODE_PREFIX", "property path"],
+    summary: "Godot 高频名字和路径基础设施：StringName 用于稳定高效的名字键，NodePath 用于节点路径和属性子路径引用。",
+    article: [
+      {
+        type: "lead",
+        text: "StringName 和 NodePath 很小，但几乎贯穿整个引擎。方法名、信号名、属性名、组名、主题名常用 StringName；动画轨道、场景引用、Inspector 属性路径和脚本导出 NodePath 都依赖 NodePath。"
+      },
+      {
+        type: "heading",
+        title: "小白版解释"
+      },
+      {
+        type: "paragraph",
+        text: "StringName 像一张已经登记好的名字卡，比较时不用每次逐字比较字符串；NodePath 像一条带上下文的路线，既可以指向节点，也可以指向节点上的属性或子属性。"
+      },
+      {
+        type: "heading",
+        title: "深入解释"
+      },
+      {
+        type: "paragraph",
+        text: "`StringName` 定义在 `core/string/string_name.h:38`。它内部持有 `_Data`，保存字符串、hash、引用计数和链表指针。`SNAME()` 宏在 `core/string/string_name.h:212`，用静态局部变量缓存常用名字，避免热路径反复构造。"
+      },
+      {
+        type: "paragraph",
+        text: "`NodePath` 定义在 `core/string/node_path.h:34`。内部 Data 保存 `Vector<StringName> path`、`Vector<StringName> subpath`、拼接后的 StringName、absolute 标记和 hash cache。它不直接保存 Node 指针，解析必须结合当前节点或 SceneTree 上下文。"
+      },
+      {
+        type: "table",
+        title: "常见用途",
+        headers: ["类型", "常见位置", "读法"],
+        rows: [
+          ["StringName", "方法、属性、信号、组、主题、ClassDB key。", "看它是不是稳定名字键，不要当普通可变字符串。"],
+          ["SNAME", "热路径常量名字。", "表示这个名字会被重复使用，适合静态缓存。"],
+          ["NodePath path", "`../Player/Camera` 这类节点路径。", "要结合当前节点解析。"],
+          ["NodePath subpath", "`material:shader_parameter/color` 这类属性路径。", "可能指向资源属性或嵌套属性，不只是节点。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "源码锚点"
+      },
+      {
+        type: "list",
+        items: [
+          "`core/string/string_name.h:38`：StringName 类定义。",
+          "`core/string/string_name.h:212`：SNAME 宏。",
+          "`core/string/node_path.h:34`：NodePath 类定义。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "案例"
+      },
+      {
+        type: "code",
+        code: [
+          "const StringName pressed = SNAME(\"pressed\");",
+          "button->connect(pressed, callable_mp(this, &MyPanel::_on_pressed));",
+          "",
+          "NodePath target_path(\"../Player:position\");",
+          "// path 部分找节点，subpath 部分可以继续指向属性。"
+        ].join("\n")
+      },
+      {
+        type: "heading",
+        title: "相邻概念边界"
+      },
+      {
+        type: "table",
+        headers: ["概念", "区别"],
+        rows: [
+          ["String", "普通字符串值，适合文本内容和可变字符串处理。"],
+          ["StringName", "interned 名字键，适合重复比较和查找。"],
+          ["NodePath", "路径值，不持有目标对象。"],
+          ["ObjectID", "对象弱句柄，和路径解析不是一回事。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "常见误区"
+      },
+      {
+        type: "list",
+        items: [
+          "误区一：StringName 只是 String 的别名。实际它有名字表和引用计数，比较语义不同。",
+          "误区二：NodePath 保存 Node 指针。实际它只是路径，目标可能不存在或解析到不同对象。",
+          "误区三：NodePath 只能指节点。它还能带 subpath 指向属性。",
+          "误区四：所有字符串都该用 StringName。用户文本和临时字符串仍应使用 String。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "建议阅读路线"
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "先读 `string_name.h` 的 `_Data` 字段，理解名字表和 hash。",
+          "看 `SNAME()` 宏，理解为什么热路径喜欢静态 StringName。",
+          "读 `node_path.h` 的 Data，区分 path 和 subpath。",
+          "找一个动画轨道或 exported NodePath，追它如何解析成实际对象或属性。"
+        ]
+      }
+    ]
+  },
+  {
+    id: "errorandmemorymacros",
+    title: "Error Macros / memnew / memdelete",
+    aliases: ["Error Macros", "ERR_FAIL", "ERR_FAIL_COND", "ERR_FAIL_NULL", "ERR_FAIL_INDEX", "CRASH_COND", "memnew", "memdelete", "Memory::alloc_static", "Memory::free_static"],
+    summary: "Godot C++ 基础读法：错误宏统一早返回、日志和崩溃语义；memnew/memdelete 接入内存统计和 Object 生命周期钩子。",
+    article: [
+      {
+        type: "lead",
+        text: "读 Godot C++ 时，错误宏和内存宏不是噪音。`ERR_FAIL_*` 决定非法输入时函数如何返回，`CRASH_*` 表达不可恢复错误，`memnew` / `memdelete` 则把分配释放接入 Godot 的内存统计、Object postinitialize 和 predelete 链路。"
+      },
+      {
+        type: "heading",
+        title: "小白版解释"
+      },
+      {
+        type: "paragraph",
+        text: "错误宏像统一的门卫：条件不合法就记录原因并按约定返回。memnew/memdelete 像带登记流程的 new/delete：不只是申请和释放内存，还会让 Godot 的对象系统和调试工具知道发生了什么。"
+      },
+      {
+        type: "heading",
+        title: "深入解释"
+      },
+      {
+        type: "paragraph",
+        text: "错误宏集中在 `core/error/error_macros.h`。例如 `ERR_FAIL_INDEX` 从 `core/error/error_macros.h:134` 开始，`ERR_FAIL_COND` 在 `core/error/error_macros.h:412`。带 `_V` 的宏会返回指定值，不带 `_V` 的宏通常用于 void 函数；`CRASH_*` 更偏向内部不变量被破坏。"
+      },
+      {
+        type: "paragraph",
+        text: "`memnew` 宏定义在 `core/os/memory.h:150`，`memdelete` 在 `core/os/memory.h:160`。对 Object 子类，创建后会经过 `_post_initialize`，释放前会经过 predelete handler，这和 ObjectDB、信号断开、通知、调试统计都有关系。"
+      },
+      {
+        type: "table",
+        title: "宏读法",
+        headers: ["宏", "代表什么", "读源码时注意"],
+        rows: [
+          ["`ERR_FAIL_COND(cond)`", "条件为真就报错并提前返回。", "看当前函数返回类型，确认后续逻辑不会执行。"],
+          ["`ERR_FAIL_COND_V(cond, value)`", "条件为真就返回指定值。", "调用者必须能处理这个失败值。"],
+          ["`ERR_FAIL_NULL(ptr)`", "空指针防御。", "不要把后续解引用当作必然安全，检查调用来源。"],
+          ["`CRASH_COND(cond)`", "内部不变量失败，通常是严重 bug。", "比普通输入校验更强。"],
+          ["`memnew(T)`", "用 Godot allocator 构造对象并 post-initialize。", "Object 子类不要随意绕开。"],
+          ["`memdelete(ptr)`", "predelete、析构并释放内存。", "Node/RefCounted/RID 仍有各自正确释放通道。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "源码锚点"
+      },
+      {
+        type: "list",
+        items: [
+          "`core/error/error_macros.h:134`：索引错误宏入口。",
+          "`core/error/error_macros.h:412`：条件错误宏入口。",
+          "`core/os/memory.h:150`：memnew 宏定义。",
+          "`core/os/memory.h:160`：memdelete 模板定义。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "案例"
+      },
+      {
+        type: "code",
+        code: [
+          "Ref<Resource> load_checked(const String &path) {",
+          "    ERR_FAIL_COND_V(path.is_empty(), Ref<Resource>());",
+          "    Ref<Resource> res = ResourceLoader::load(path);",
+          "    ERR_FAIL_COND_V(res.is_null(), Ref<Resource>());",
+          "    return res;",
+          "}"
+        ].join("\n")
+      },
+      {
+        type: "paragraph",
+        text: "这个函数的失败路径不是异常，而是空 Ref 返回值。读调用者时要确认它是否检查了返回资源是否为空。"
+      },
+      {
+        type: "heading",
+        title: "相邻概念边界"
+      },
+      {
+        type: "table",
+        headers: ["概念", "边界"],
+        rows: [
+          ["ERR_FAIL_*", "防御性错误处理和早返回，不等同于测试断言。"],
+          ["CRASH_*", "严重内部错误，不适合普通用户输入校验。"],
+          ["memnew/memdelete", "内存和 Object 生命周期入口，不等同于 Node 的 queue_free。"],
+          ["RefCounted", "引用计数释放路径，不能简单用 memdelete 代替。"],
+          ["RID", "Server 内部对象释放要走 Server API，不靠 memdelete RID。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "常见误区"
+      },
+      {
+        type: "list",
+        items: [
+          "误区一：ERR_FAIL_* 只是日志。实际它通常会提前返回。",
+          "误区二：带 `_V` 和不带 `_V` 没区别。带 `_V` 会返回指定值。",
+          "误区三：memdelete 可以释放所有东西。Node、RefCounted、RID 都有更具体的生命周期规则。",
+          "误区四：CRASH_* 可以用于普通用户错误。它更适合内部不变量损坏。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "建议阅读路线"
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "读 `error_macros.h` 中 `_V`、`_MSG`、`CRASH` 系列的差异。",
+          "遇到宏时先展开成“检查条件 -> 打印 -> 返回/崩溃”的控制流。",
+          "读 `memory.h` 的 memnew/memdelete，理解 allocator 和 post/pre handler。",
+          "回到 Object、Node、RefCounted、RID 的释放路径，区分不同生命周期通道。"
+        ]
+      }
+    ]
+  },
+  {
+    id: "navigationserver",
+    title: "NavigationServer2D / NavigationServer3D",
+    aliases: ["NavigationServer2D", "NavigationServer3D", "NavigationServer", "navigation map", "navigation region", "navigation agent"],
+    summary: "导航不是物理的一部分：NavigationServer 管 map、region、agent、路径查询和避障，和 PhysicsServer 只在空间与时间轴上相邻。",
+    article: [
+      { type: "lead", text: "NavigationServer 负责路径搜索、导航网格、region、agent 和避障。它和 PhysicsServer 都处理空间，但目标不同：物理回答碰撞和运动约束，导航回答从哪里走到哪里。" },
+      { type: "heading", title: "小白版解释" },
+      { type: "paragraph", text: "物理像判断你有没有撞墙，导航像帮你规划绕过墙的路线。它们都和空间有关，但不是同一套系统。" },
+      { type: "heading", title: "深入解释" },
+      { type: "paragraph", text: "`NavigationServer2D` 定义在 `servers/navigation_2d/navigation_server_2d.h:50`，`NavigationServer3D` 定义在 `servers/navigation_3d/navigation_server_3d.h:46`。它们通过 RID 管理 map、region、link、agent 等对象，并提供路径查询和避障更新。" },
+      { type: "heading", title: "源码锚点" },
+      { type: "list", items: ["`servers/navigation_2d/navigation_server_2d.h:50`", "`servers/navigation_3d/navigation_server_3d.h:46`", "`servers/navigation_3d/navigation_server_3d.h:523`：NavigationServer3DManager。"] },
+      { type: "heading", title: "案例" },
+      { type: "paragraph", text: "NavigationAgent3D 请求路径时，场景节点保存用户 API 和目标点，底层查询会落到 NavigationServer 的 map/region 数据。角色真正移动仍由脚本、CharacterBody 或物理逻辑执行，导航只给路线和避障建议。" },
+      { type: "heading", title: "相邻概念边界" },
+      { type: "table", headers: ["概念", "区别"], rows: [["PhysicsServer", "碰撞、刚体、shape、空间查询。"], ["NavigationServer", "路径、网格、region、agent、避障。"], ["SceneTree", "调度节点和每帧阶段，不保存导航网格实现。"]] },
+      { type: "heading", title: "常见误区" },
+      { type: "list", items: ["误区一：导航会自动移动角色。实际它通常只提供路径和避障信息。", "误区二：物理碰撞体等于导航网格。导航网格需要烘焙或手动提供。", "误区三：导航查询就是物理 raycast。两者数据结构和结果语义不同。"] },
+      { type: "heading", title: "建议阅读路线" },
+      { type: "list", ordered: true, items: ["先看 NavigationServer 接口。", "读 map、region、agent 的 RID API。", "回到 scene 节点看 NavigationRegion/Agent 如何提交数据。", "最后看每帧更新和异步烘焙路径。"] }
+    ]
+  },
+  {
+    id: "multiplayerapi",
+    title: "MultiplayerAPI / RPC",
+    aliases: ["MultiplayerAPI", "MultiplayerAPIExtension", "RPC", "SceneMultiplayer", "MultiplayerPeer"],
+    summary: "Godot 高层多人 API：Node/SceneTree 提供用户入口，MultiplayerAPI 负责 RPC、peer 和场景复制，传输层由模块或平台 peer 实现。",
+    article: [
+      { type: "lead", text: "MultiplayerAPI 是 Godot 高层网络游戏能力的入口。它让 Node 能发 RPC、按 peer 同步状态，并把底层 ENet/WebRTC/WebSocket 等传输差异藏在 MultiplayerPeer 后面。" },
+      { type: "heading", title: "小白版解释" },
+      { type: "paragraph", text: "可以把 MultiplayerAPI 看成游戏对象和网络连接之间的调度员：脚本说“调用远端这个方法”，它负责检查权限、目标 peer、路径和底层传输。" },
+      { type: "heading", title: "深入解释" },
+      { type: "paragraph", text: "`MultiplayerAPI` 定义在 `scene/main/multiplayer_api.h:36`，继承 RefCounted。SceneTree 和 Node 都持有或访问 multiplayer 相关入口，具体实现可以由模块提供，例如 multiplayer 模块、ENet、WebRTC 或扩展 peer。" },
+      { type: "heading", title: "源码锚点" },
+      { type: "list", items: ["`scene/main/multiplayer_api.h:36`：MultiplayerAPI。", "`scene/main/multiplayer_api.h:82`：MultiplayerAPIExtension。", "`modules/multiplayer`：高层 multiplayer 模块。", "`modules/enet`、`modules/webrtc`、`modules/websocket`：常见传输模块。"] },
+      { type: "heading", title: "案例" },
+      { type: "paragraph", text: "脚本里调用 RPC 时，用户看到的是 Node 方法；运行时要把 NodePath、方法名、peer、可靠性和权限转成 MultiplayerAPI 调用，再交给 MultiplayerPeer 发送。接收端反过来按路径找到节点并调用方法。" },
+      { type: "heading", title: "相邻概念边界" },
+      { type: "table", headers: ["概念", "边界"], rows: [["MultiplayerAPI", "高层 RPC 和复制语义。"], ["MultiplayerPeer", "底层连接和包传输。"], ["SceneTree/Node", "提供节点路径、权限和用户脚本入口。"], ["ENet/WebRTC/WebSocket", "具体传输实现或协议模块。"]] },
+      { type: "heading", title: "常见误区" },
+      { type: "list", items: ["误区一：RPC 是语言特性。实际它通过 Node、SceneTree 和 MultiplayerAPI 接入。", "误区二：MultiplayerAPI 等于 ENet。ENet 只是可能的传输实现之一。", "误区三：网络调用等同本地 call。它还要处理 peer、权限、路径和序列化。"] },
+      { type: "heading", title: "建议阅读路线" },
+      { type: "list", ordered: true, items: ["先读 `scene/main/multiplayer_api.h` 的接口。", "再看 Node/SceneTree 如何暴露 multiplayer 入口。", "读 modules/multiplayer 的 SceneMultiplayer。", "最后按传输选择 ENet/WebRTC/WebSocket。"] }
+    ]
+  },
+  {
+    id: "translationserver",
+    title: "TranslationServer / Localization",
+    aliases: ["TranslationServer", "Localization", "Translation", "locale", "CSVTranslation"],
+    summary: "Godot 本地化中心：TranslationServer 管语言环境、翻译资源和文本查找，GUI、脚本和导入器都围绕它协作。",
+    article: [
+      { type: "lead", text: "TranslationServer 是 Godot 的本地化入口。它保存当前 locale、翻译资源列表和翻译查找逻辑，让脚本、Control、导入器和编辑器能用统一方式处理多语言文本。" },
+      { type: "heading", title: "小白版解释" },
+      { type: "paragraph", text: "可以把 TranslationServer 想成语言词典管理员。游戏问一个 key 在当前语言里怎么说，它按当前 locale 和已加载的翻译资源查找结果。" },
+      { type: "heading", title: "深入解释" },
+      { type: "paragraph", text: "`TranslationServer` 定义在 `core/string/translation_server.h:36`，继承 Object。它属于 core 字符串系统的一部分，而不是 GUI 专属功能。CSV、PO 等资源或导入器会把翻译内容注册进这个中心。" },
+      { type: "heading", title: "源码锚点" },
+      { type: "list", items: ["`core/string/translation_server.h:36`：TranslationServer 类入口。", "`core/register_core_types.cpp`：核心单例注册路径。", "`editor/import/resource_importer_csv_translation.h:35`：CSV 翻译导入器示例。"] },
+      { type: "heading", title: "案例" },
+      { type: "paragraph", text: "Label 显示本地化文本时，Control/Theme/TextServer 负责布局和绘制，但文本 key 到当前语言字符串的查找应回到 TranslationServer 和 Translation 资源。" },
+      { type: "heading", title: "相邻概念边界" },
+      { type: "table", headers: ["概念", "边界"], rows: [["TranslationServer", "翻译资源和 locale 查找。"], ["TextServer", "字体 shaping、断行和字形布局。"], ["Control/Label", "显示和布局 UI 文本。"], ["ResourceImporter", "把 CSV/PO 等源文件导入成 Translation 资源。"]] },
+      { type: "heading", title: "常见误区" },
+      { type: "list", items: ["误区一：本地化等于字体渲染。翻译查找和字形排版是两套系统。", "误区二：Label 自己保存所有语言。它通常拿 key 或文本交给翻译系统。", "误区三：导入翻译文件后就一定生效。还要确认资源加载、locale 和 TranslationServer 注册状态。"] },
+      { type: "heading", title: "建议阅读路线" },
+      { type: "list", ordered: true, items: ["先读 TranslationServer 接口。", "看 Translation 资源和导入器如何生成数据。", "回到 Control/Label 或脚本 tr() 调用路径。", "最后区分 TranslationServer 和 TextServer 的边界。"] }
+    ]
+  },
+  {
     id: "deepdesignpatterns",
     title: "Ownership / queue_free / Thread Boundary / Registration",
     aliases: [
@@ -11733,6 +12419,10 @@ const beginnerGuides = {
     "这一节解释同一个 Godot 可执行文件为什么能当编辑器、项目管理器、游戏、脚本执行器、导出工具或文档工具。分叉点主要在 Main::start，它会根据命令行参数、项目设置和构建目标决定创建 EditorNode、ProjectManager、SceneTree 主场景，还是执行其他工具流程。",
     "小白要记住：setup/setup2 更多是在搭环境，start 才是在决定跑什么。你调试“为什么没有进入游戏主场景”时，不应该只看 ResourceLoader，也要看命令行和 Main::start 的运行模式判断。编辑器路径和游戏路径在同一套运行时地基上分叉，这也是为什么编辑器能复用场景树、GUI、资源系统和 ClassDB。"
   ],
+  "ProjectSettings：项目配置如何影响启动": [
+    "这一节补的是启动链路里的项目配置层。Godot 不是硬编码主场景、autoload 和输入映射，而是先把 project.godot、命令行、资源包和 feature override 变成 ProjectSettings，再由 Main::start 按这些设置决定这次游戏进程要加载什么。",
+    "小白可以把 ProjectSettings 想成项目的总配置表。主场景路径、autoload 单例、InputMap、窗口和语言设置都可能从这里进入运行时。排查启动后没有主场景、autoload 不存在、输入 action 不生效、资源包路径不对时，要把 ProjectSettings 放在 Main 和 ResourceLoader 之间一起看。"
+  ],
   "主循环一帧里发生什么": [
     "这一节讲的是 Godot 真正“动起来”的一帧。Main::iteration 会计算时间，决定固定物理步要跑几次，调用 SceneTree 的 physics_process 和 process，刷新 MessageQueue，推进导航，最后让 RenderingServer sync/draw。用户脚本看到的 _physics_process 和 _process，其实都被放在这条时间轴里。",
     "初学者最容易混淆显示帧和物理帧。显示帧跟屏幕刷新和渲染节奏有关，物理帧通常按固定 tick 运行，一帧显示里可能跑零次、一次或多次物理步。理解这一点以后，你就能解释为什么物理相关逻辑要放在 _physics_process，为什么延迟调用和 queue_free 要等安全点执行，为什么渲染提交通常在 process 后统一发生。"
@@ -11784,6 +12474,10 @@ const beginnerGuides = {
   "SceneTree 每帧的内部节奏": [
     "这一节把 SceneTree 放回每帧时间轴。Main::iteration 会把控制权交给 MainLoop，SceneTree 再处理 physics_process、process、group call、Timer、Tween、场景切换、删除队列和消息队列。不同阶段之间会有 flush 和安全点，保证延迟调用、删除、物理同步不会互相踩踏。",
     "小白不要把每帧理解成简单地遍历所有 Node 调 _process。实际 Godot 要考虑固定物理步、暂停模式、process 优先级、线程组、消息队列、导航、渲染同步和删除队列。读某个节点为什么这一帧没被调用时，要看它是否在树里、process 是否启用、是否暂停、是否处在正确线程组，以及当前帧到底跑的是物理阶段还是普通 process 阶段。"
+  ],
+  "Viewport、Window 和 World：场景连接输入与渲染的枢纽": [
+    "这一节补的是 SceneTree 和 RenderingServer 之间的中间层。Viewport 不是普通节点容器，它负责输入分发、GUI 根、2D canvas、3D world、渲染目标和调试绘制；Window 是能接到 DisplayServer 的 Viewport；World2D/World3D 则保存对应空间的物理、导航和渲染归属。",
+    "小白排查“节点在树里但不显示”“鼠标事件没到 GUI”“3D 对象没有进入世界”“窗口 resize 后画面不对”时，不要直接从 Node 跳到 GPU。先问这个节点属于哪个 Viewport，Viewport 绑定哪个 Window 或 render target，2D/3D 对象进入了哪个 World。"
   ],
   "场景与资源常见定位问题": [
     "这一节把场景和资源问题整理成排查表。加载不到资源先看路径 remap、UID、导入产物和缓存模式；场景实例化缺节点先看 PackedScene 的 SceneState、owner 和子场景实例；节点回调没触发先看是否进入 SceneTree、process 是否开启、暂停模式是否阻止。",
@@ -11949,6 +12643,10 @@ const beginnerGuides = {
     "这一节讲编辑器资源管线。FileSystemDock 和 EditorFileSystem 扫描项目文件；导入系统把外部素材转换成 Godot 更适合运行的资源和 .import 产物；ResourceLoader 在运行时加载这些资源；导出系统再把项目资源、平台模板和配置打包成最终应用。",
     "小白要看到这是闭环：文件出现 -> 编辑器识别 -> 导入器转换 -> 资源被场景引用 -> 运行时加载 -> 导出时打包。资源显示不对、导入缓存旧、导出缺文件时，不要只看 ResourceLoader，也要看 editor/import、.godot/imported、EditorFileSystem、ExportPlatform 和平台打包规则。"
   ],
+  "资源导入管线：从源文件到运行时资源": [
+    "这一节把导入管线拆成源文件、.import 元数据、内部资源、UID 和导出包几层。编辑器扫描项目时决定是否需要重新导入；ResourceImporter 生成运行时更适合加载的资源；ResourceFormatImporter 让 ResourceLoader 能从原始路径转到导入产物。",
+    "小白调试资源问题时要问清楚：当前看到的是原始素材，还是导入后的内部资源；路径是普通 res://，还是 uid://；问题发生在编辑器扫描、重导入、运行时加载，还是导出打包。这样才能避免只改原文件却忘了 .import 或导出 preset。"
+  ],
   "运行和调试：编辑器并不“在自己里面运行游戏”": [
     "这一节纠正一个常见误解。点击运行时，编辑器通常会启动一个新的 Godot 游戏进程，并把项目路径、场景、调试参数等传过去。编辑器负责保存、构建、启动、连接调试器和展示输出；游戏逻辑在另一个进程里按普通 Main/SceneTree 路径运行。",
     "小白理解这一点后，就能解释为什么编辑器崩溃和游戏崩溃可能是两个进程，为什么调试器需要通信协议，为什么运行按钮源码在 editor/run，而主场景加载仍在 main 和 ResourceLoader。调试运行问题时，要分清编辑器侧准备过程和游戏进程启动过程。"
@@ -12024,6 +12722,10 @@ const beginnerGuides = {
   "错误处理风格": [
     "这一节讲 Godot 的错误处理习惯。源码里常见 ERR_FAIL_COND、ERR_FAIL_NULL、ERR_FAIL_INDEX、ERR_FAIL_V、WARN_PRINT、CRASH_COND 等宏。它们既表达防御性检查，也统一错误日志、返回值、调试行为和 release/debug 差异。",
     "小白读这些宏时，不要把它们当普通 if。ERR_FAIL_* 往往意味着函数在非法输入下提前返回，返回值可能是空对象、false、错误码或默认值；CRASH_* 更偏向发现绝不应该发生的内部错误。调试时要看宏后面的函数是否继续执行，以及调用者有没有处理失败返回。"
+  ],
+  "StringName、NodePath、错误宏和内存宏：读 C++ 基础设施的四个抓手": [
+    "这一节补的是读 Godot C++ 时每天都会遇到的小基础设施。StringName 负责高频名字查找，NodePath 负责节点和属性路径，错误宏负责统一早返回和日志，memnew/memdelete 负责接入 Godot 的内存和对象生命周期钩子。",
+    "小白不要把它们当语法噪音。看到 SNAME 要想到名字池和快速比较；看到 NodePath 要想到路径解析上下文；看到 ERR_FAIL_* 要先看返回值和调用者；看到 memnew/memdelete 要想到 Object 的 postinitialize、predelete 和 ObjectDB。"
   ],
   "为什么生成代码这么多": [
     "这一节解释 Godot 为什么有很多生成代码。大型引擎需要把模块列表、注册函数、文档、类裁剪、shader、图标、接口表、绑定信息等从结构化输入转成 C++ 或头文件。生成代码能减少手写重复，也能根据构建选项生成不同结果。",

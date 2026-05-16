@@ -93,7 +93,7 @@
             </div>
             <div class="meta-strip">
               <div class="metric"><b>4.7 beta</b><small>当前源码版本</small></div>
-              <div class="metric"><b>8,206</b><small>本地 C/C++/Objective-C++/Python 文件数，含 thirdparty</small></div>
+              <div class="metric"><b>8,294</b><small>Git 跟踪的 C/C++/Objective-C++/Python 文件数，含 thirdparty</small></div>
               <div class="metric"><b>57</b><small>modules 目录中的功能模块</small></div>
               <div class="metric"><b>4 个</b><small>模块初始化级别：Core / Servers / Scene / Editor</small></div>
             </div>
@@ -649,7 +649,7 @@
         </div>
       </section>
 
-      <section class="section" id="startup" data-search="启动流程 platform Main setup setup2 start iteration cleanup OS run 主循环">
+      <section class="section" id="startup" data-search="启动流程 platform Main setup setup2 start iteration cleanup OS run 主循环 ProjectSettings project.godot autoload main_scene InputMap resource pack">
         <div class="section-inner">
           <h2>启动链路：从 exe 到每一帧</h2>
           <p class="intro">
@@ -778,6 +778,18 @@
             <tr><td>普通游戏</td><td>项目存在主场景或命令行指定场景</td><td><span class="source">SceneTree</span> + 当前场景 Node 树</td><td><span class="source">main/main.cpp:4302+</span></td><td>先加载 autoload，再加载 main scene，最后交给 MainLoop 每帧调度。</td></tr>
             <tr><td>脚本或自定义 MainLoop</td><td><span class="source">--script</span>、<span class="source">--main-loop</span></td><td>继承 <span class="source">MainLoop</span> 或 <span class="source">SceneTree</span> 的脚本对象</td><td><span class="source">main/main.cpp:4335+</span></td><td>不是所有运行都必须从主场景开始，MainLoop 本身可以被替换。</td></tr>
             <tr><td>导出/文档/命令行工具</td><td><span class="source">--export-*</span>、<span class="source">--doctool</span> 等</td><td>Editor 工具类或 DocTools</td><td><span class="source">main/main.cpp:3988+</span></td><td>这些流程通常只在 <span class="source">TOOLS_ENABLED</span> 构建中可用，很多会提前返回，不进入普通游戏循环。</td></tr>
+          </table>
+
+          <h3>ProjectSettings：项目配置如何影响启动</h3>
+          <p>
+            <span class="source">ProjectSettings</span> 是启动链路里最容易被低估的中间层。它把 <span class="source">project.godot</span>、命令行、feature override、资源包和编辑器写入的项目设置合并成运行时可查询的全局配置；随后 <span class="source">Main::start()</span> 用这些设置决定主场景、autoload、输入映射、窗口和语言等行为。类入口在 <span class="source">core/config/project_settings.h:40</span>，动态设置入口在 <span class="source">core/config/project_settings.cpp:289</span>。
+          </p>
+          <table class="matrix">
+            <tr><th>项目配置</th><th>运行时落点</th><th>源码锚点</th><th>读法</th></tr>
+            <tr><td><span class="source">application/run/main_scene</span></td><td>普通游戏要加载的主场景。</td><td><span class="source">main/main.cpp:4311</span></td><td>没有命令行场景时，Main 从项目设置取主场景路径，再走 ResourceLoader/PackedScene。</td></tr>
+            <tr><td><span class="source">autoload/*</span></td><td>主场景前创建的全局节点或脚本单例。</td><td><span class="source">main/main.cpp:4476</span></td><td>autoload 来自 ProjectSettings 的列表，路径先经过 UID/path 修正，再实例化并加入 SceneTree root。</td></tr>
+            <tr><td><span class="source">input/*</span></td><td>InputMap 的 action、按键和手柄映射。</td><td><span class="source">main/main.cpp:2334</span></td><td>游戏运行时用项目设置加载 InputMap；编辑器模式则加载默认编辑器快捷键。</td></tr>
+            <tr><td>资源包和路径</td><td>决定 <span class="source">res://</span>、UID、remap 和打包资源是否可见。</td><td><span class="source">core/config/project_settings.cpp:581</span>、<span class="source">614</span></td><td>资源加载问题不要只看文件系统，还要看 ProjectSettings 是否加载了 pack 和 UID cache。</td></tr>
           </table>
 
           <h3>主循环一帧里发生什么</h3>
@@ -1027,7 +1039,7 @@
         </div>
       </section>
 
-      <section class="section" id="scene" data-search="SceneTree Node ResourceLoader PackedScene SceneState Resource Node 生命周期 ready process physics_process">
+      <section class="section" id="scene" data-search="SceneTree Node ResourceLoader PackedScene SceneState Resource Node 生命周期 ready process physics_process Viewport Window World2D World3D render target">
         <div class="section-inner">
           <h2>场景与资源：从 .tscn 到一棵运行中的树</h2>
           <p class="intro">
@@ -1175,6 +1187,19 @@
               <div class="timeline-row"><time>render</time><div>SceneTree 不直接画图；节点状态最终同步给 RenderingServer，由 <span class="source">Main::iteration()</span> 后段统一 <span class="source">sync()</span> 和 <span class="source">draw()</span>。</div></div>
             </div>
           </div>
+
+          <h3>Viewport、Window 和 World：场景连接输入与渲染的枢纽</h3>
+          <p>
+            <span class="source">SceneTree</span> 负责调度整棵树，但真正把输入、GUI、2D canvas、3D world 和渲染目标接起来的是 <span class="source">Viewport</span>。<span class="source">Window</span> 是 Viewport 的窗口化子类，<span class="source">World2D</span> 和 <span class="source">World3D</span> 则保存对应空间里的 canvas、physics space、scenario 和环境资源。读显示或输入问题时，不要从 Node 直接跳到 RenderingServer，中间通常要经过 Viewport/Window/World。
+          </p>
+          <table class="matrix">
+            <tr><th>对象</th><th>源码锚点</th><th>负责什么</th><th>常见误区</th></tr>
+            <tr><td>Viewport</td><td><span class="source">scene/main/viewport.h:96</span></td><td>输入分发、GUI root、canvas/world 归属、渲染目标和调试绘制。</td><td>不是普通容器节点；它是场景与渲染/输入系统之间的集中边界。</td></tr>
+            <tr><td>Window</td><td><span class="source">scene/main/window.h:42</span></td><td>作为 Viewport 连接 DisplayServer 的 native 或 embedded window。</td><td>窗口大小、焦点和屏幕事件不是只在 platform 层处理。</td></tr>
+            <tr><td>World2D</td><td><span class="source">scene/resources/world_2d.h:43</span></td><td>保存 2D canvas、physics space 和导航 map。</td><td>CanvasItem 进入树后要落到某个 World2D/Viewport，才有绘制和查询上下文。</td></tr>
+            <tr><td>World3D</td><td><span class="source">scene/resources/3d/world_3d.h:46</span></td><td>保存 3D scenario、physics space、navigation map、environment 和 camera effects。</td><td>Node3D 的 transform 本身不会绘制；VisualInstance3D 要进入 World3D scenario 才能被 Renderer 看到。</td></tr>
+            <tr><td>RendererViewport</td><td><span class="source">servers/rendering/renderer_viewport.cpp:782</span></td><td>后端按 Viewport 集合组织 draw_viewports、render target 和 swap/present。</td><td>渲染链路不是 MeshInstance3D 直接到 GPU，中间有 Viewport 汇总和调度。</td></tr>
+          </table>
 
           <div>
             <h3>场景与资源常见定位问题</h3>
@@ -1823,7 +1848,7 @@
         </div>
       </section>
 
-      <section class="section" id="editor" data-search="editor EditorNode EditorPlugin Inspector FileSystemDock ProjectManager Import Export 编辑器">
+      <section class="section" id="editor" data-search="editor EditorNode EditorPlugin Inspector FileSystemDock ProjectManager Import Export 编辑器 ResourceUID ResourceImporter EditorFileSystem .import 资源导入">
         <div class="section-inner">
           <h2>编辑器：一个用 Godot 自己写出来的大型工具程序</h2>
           <p class="intro">
@@ -1975,6 +2000,17 @@
               <tr><td>生成 PCK/ZIP/平台包</td><td><span class="source">editor/export/editor_export_platform.cpp:2277</span>、<span class="source">2403</span></td><td><span class="source">save_pack()</span>、<span class="source">save_zip()</span> 负责写包；具体平台子类再处理模板、签名、图标、清单、安装包结构等平台细节。</td></tr>
             </tbody>
           </table>
+
+          <h3>资源导入管线：从源文件到运行时资源</h3>
+          <p>
+            编辑器导入不是“打开资源时顺手转换一次”。源文件进入项目后，<span class="source">EditorFileSystem</span> 扫描文件和 <span class="source">.import</span> 元数据，<span class="source">ResourceImporter</span> 把图片、模型、字体、音频等转换为 Godot 内部资源，<span class="source">ResourceUID</span> 让路径移动后仍能保持稳定引用，运行时 <span class="source">ResourceLoader</span> 再通过 <span class="source">ResourceFormatImporter</span> 找到真正要加载的内部产物。这个边界不清时，很容易把“源文件”“导入元数据”“内部资源”“导出包里的文件”混成一件事。
+          </p>
+          <div class="trace">
+            <div class="trace-row"><strong>1. UID 和路径先建立稳定身份</strong><p><span class="source">ResourceUID</span> 类入口在 <span class="source">core/io/resource_uid.h:41</span>。项目扫描和保存资源时会维护 UID 与路径映射，autoload、场景引用和资源文本表示都可能通过 UID 再还原路径。</p></div>
+            <div class="trace-row"><strong>2. ResourceFormatImporter 读取 .import</strong><p>导入格式加载器入口在 <span class="source">core/io/resource_importer.h:41</span>。它不是具体图片/模型导入器，而是运行时加载导入产物的桥：读取源文件旁的 <span class="source">.import</span>，找到内部资源路径、类型、依赖和 importer 信息。</p></div>
+            <div class="trace-row"><strong>3. EditorFileSystem 决定是否重导入</strong><p><span class="source">EditorFileSystem</span> 类入口在 <span class="source">editor/file_system/editor_file_system.h:145</span>，扫描线程入口在 <span class="source">editor/file_system/editor_file_system.cpp:565</span>，重导入判断在 <span class="source">editor/file_system/editor_file_system.cpp:570</span>。改源文件、改导入选项或丢失产物时，编辑器会安排重新导入。</p></div>
+            <div class="trace-row"><strong>4. 导出使用导入后的结果</strong><p>导出平台收集的是项目可运行所需文件，不只是用户看见的原始素材。纹理压缩、模型拆分、音频转换和脚本/资源 remap 都可能改变导出包内容；所以排查导出缺资源时，要同时看导入缓存、UID、ExportPreset 和平台过滤规则。</p></div>
+          </div>
 
           <h3>运行和调试：编辑器并不“在自己里面运行游戏”</h3>
           <div class="trace">
@@ -2256,7 +2292,7 @@
         </div>
       </section>
 
-      <section class="section" id="deep-design" data-search="底层设计 RID Variant ObjectDB Memory RefCounted queue_free threading wrap_mt registration Object lifecycle">
+      <section class="section" id="deep-design" data-search="底层设计 RID Variant ObjectDB Memory RefCounted queue_free threading wrap_mt registration Object lifecycle StringName NodePath error_macros ERR_FAIL memnew memdelete">
         <div class="section-inner">
           <h2>底层设计剖面：真正读实现时要抓住的模式</h2>
           <p class="intro">
@@ -2399,6 +2435,15 @@
             <p>
               Godot 大量使用 <span class="source">ERR_FAIL_COND*</span>、<span class="source">ERR_FAIL_NULL*</span>、<span class="source">ERR_PRINT*</span> 这类宏。它们让源码保持早返回风格，也让 debug/editor 构建能提供更完整的错误信息。不要把这些宏简单看成 assert；很多会在 release 中保留行为。读 bug 时要注意宏后面的返回值、是否会继续执行、是否只打印警告。
             </p>
+
+            <h3>StringName、NodePath、错误宏和内存宏：读 C++ 基础设施的四个抓手</h3>
+            <table class="matrix">
+              <tr><th>抓手</th><th>源码锚点</th><th>为什么重要</th><th>读法</th></tr>
+              <tr><td>StringName</td><td><span class="source">core/string/string_name.h:38</span>、<span class="source">212</span></td><td>方法名、属性名、信号名、组名和主题名大量使用 interned name，减少比较和查找成本。</td><td>看到 <span class="source">SNAME()</span> 时，不要当普通 String；它通常表示稳定的运行时名字键。</td></tr>
+              <tr><td>NodePath</td><td><span class="source">core/string/node_path.h:34</span></td><td>场景节点路径和属性子路径的统一值类型，PackedScene、动画轨道、Inspector 和脚本引用都会用到。</td><td>区分 node path、subpath、absolute path；路径解析要结合当前节点和 SceneTree。</td></tr>
+              <tr><td>错误宏</td><td><span class="source">core/error/error_macros.h:134</span>、<span class="source">412</span></td><td>Godot 用统一宏表达参数校验、越界、空指针、早返回、警告和崩溃级错误。</td><td>先看宏带不带 <span class="source">_V</span> 返回值，再看调用者是否处理失败结果。</td></tr>
+              <tr><td>内存宏</td><td><span class="source">core/os/memory.h:150</span>、<span class="source">160</span></td><td><span class="source">memnew</span>/<span class="source">memdelete</span> 接入 Godot 内存统计、Object postinitialize/predelete 和调试检查。</td><td>Object、RefCounted、Node、RID 的释放通道不同；不要把它们都简化成 C++ delete。</td></tr>
+            </table>
 
             <h3>为什么生成代码这么多</h3>
             <p>
