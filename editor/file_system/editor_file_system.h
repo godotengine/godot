@@ -314,10 +314,12 @@ class EditorFileSystem : public Node {
 	Mutex update_script_mutex;
 	HashMap<String, ScriptClassInfoUpdate> update_script_paths;
 	HashSet<String> update_script_paths_documentation;
+	bool update_pending_active = false;
+	bool update_pending_queued = false;
 	void _queue_update_script_class(const String &p_path, const ScriptClassInfoUpdate &p_script_update);
 	void _update_script_classes();
 	void _update_script_documentation();
-	void _process_update_pending();
+	void _process_update_pending(bool p_process_documentation = true);
 	void _process_removed_files(const HashSet<String> &p_processed_files);
 	bool _should_reload_script(const String &p_path);
 

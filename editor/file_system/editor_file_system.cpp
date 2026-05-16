@@ -862,7 +862,7 @@ bool EditorFileSystem::_update_scan_actions() {
 
 	// We need to update the script global class names before the reimports to be sure that
 	// all the importer classes that depends on class names will work.
-	_update_script_classes();
+	_process_update_pending(false);
 
 	bool fs_changed = false;
 
@@ -2160,7 +2160,13 @@ void EditorFileSystem::_update_files_icon_path(EditorFileSystemDirectory *edp) {
 }
 
 void EditorFileSystem::_update_script_classes() {
-	if (update_script_paths.is_empty()) {
+	HashMap<String, ScriptClassInfoUpdate> script_paths_to_update;
+	{
+		MutexLock update_script_lock(update_script_mutex);
+		script_paths_to_update = std::move(update_script_paths);
+	}
+
+	if (script_paths_to_update.is_empty()) {
 		// Ensure the global class file is always present; it's essential for exports to work.
 		if (!FileAccess::exists(ProjectSettings::get_singleton()->get_global_class_list_path())) {
 			ScriptServer::save_global_classes();
@@ -2168,31 +2174,25 @@ void EditorFileSystem::_update_script_classes() {
 		return;
 	}
 
-	{
-		MutexLock update_script_lock(update_script_mutex);
-
-		EditorProgress *ep = nullptr;
-		if (update_script_paths.size() > 1) {
-			if (MessageQueue::get_singleton()->is_flushing()) {
-				// Use background progress when message queue is flushing.
-				ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size(), false, true));
-			} else {
-				ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), update_script_paths.size()));
-			}
+	EditorProgress *ep = nullptr;
+	if (script_paths_to_update.size() > 1) {
+		if (MessageQueue::get_singleton()->is_flushing()) {
+			// Use background progress when message queue is flushing.
+			ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), script_paths_to_update.size(), false, true));
+		} else {
+			ep = memnew(EditorProgress("update_scripts_classes", TTR("Registering global classes..."), script_paths_to_update.size()));
 		}
-
-		int step_count = 0;
-		for (const KeyValue<String, ScriptClassInfoUpdate> &E : update_script_paths) {
-			_register_global_class_script(E.key, E.key, E.value);
-			if (ep) {
-				ep->step(E.value.name, step_count++, false);
-			}
-		}
-
-		memdelete_notnull(ep);
-
-		update_script_paths.clear();
 	}
+
+	int step_count = 0;
+	for (const KeyValue<String, ScriptClassInfoUpdate> &E : script_paths_to_update) {
+		_register_global_class_script(E.key, E.key, E.value);
+		if (ep) {
+			ep->step(E.value.name, step_count++, false);
+		}
+	}
+
+	memdelete_notnull(ep);
 
 	EditorNode::get_editor_data().script_class_save_global_classes();
 
@@ -2208,24 +2208,28 @@ void EditorFileSystem::_update_script_classes() {
 }
 
 void EditorFileSystem::_update_script_documentation() {
-	if (update_script_paths_documentation.is_empty()) {
+	HashSet<String> script_paths_to_update_documentation;
+	{
+		MutexLock update_script_lock(update_script_mutex);
+		script_paths_to_update_documentation = std::move(update_script_paths_documentation);
+	}
+
+	if (script_paths_to_update_documentation.is_empty()) {
 		return;
 	}
 
-	MutexLock update_script_lock(update_script_mutex);
-
 	EditorProgress *ep = nullptr;
-	if (update_script_paths_documentation.size() > 1) {
+	if (script_paths_to_update_documentation.size() > 1) {
 		if (MessageQueue::get_singleton()->is_flushing()) {
 			// Use background progress when message queue is flushing.
-			ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), update_script_paths_documentation.size(), false, true));
+			ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), script_paths_to_update_documentation.size(), false, true));
 		} else {
-			ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), update_script_paths_documentation.size()));
+			ep = memnew(EditorProgress("update_script_paths_documentation", TTR("Updating scripts documentation"), script_paths_to_update_documentation.size()));
 		}
 	}
 
 	int step_count = 0;
-	for (const String &path : update_script_paths_documentation) {
+	for (const String &path : script_paths_to_update_documentation) {
 		int index = -1;
 		EditorFileSystemDirectory *efd = find_file(path, &index);
 
@@ -2287,8 +2291,6 @@ void EditorFileSystem::_update_script_documentation() {
 	}
 
 	memdelete_notnull(ep);
-
-	update_script_paths_documentation.clear();
 }
 
 bool EditorFileSystem::_should_reload_script(const String &p_path) {
@@ -2310,14 +2312,33 @@ bool EditorFileSystem::_should_reload_script(const String &p_path) {
 	return true;
 }
 
-void EditorFileSystem::_process_update_pending() {
-	_update_script_classes();
-	// Parse documentation second, as it requires the class names to be loaded
-	// because _update_script_documentation loads the scripts completely.
-	if (!EditorNode::is_cmdline_mode()) {
-		_update_script_documentation();
-		_update_pending_scene_groups();
+void EditorFileSystem::_process_update_pending(bool p_process_documentation) {
+	if (update_pending_active) {
+		update_pending_queued = true;
+		return;
 	}
+
+	update_pending_active = true;
+
+	do {
+		update_pending_queued = false;
+
+		_update_script_classes();
+		if (update_pending_queued) {
+			// More classes were queued during this pass; finish classes before docs,
+			// since _update_script_documentation depends on the global class names.
+			continue;
+		}
+
+		// Parse documentation second, as it requires the class names to be loaded
+		// because _update_script_documentation loads the scripts completely.
+		if (p_process_documentation && !EditorNode::is_cmdline_mode()) {
+			_update_script_documentation();
+			_update_pending_scene_groups();
+		}
+	} while (update_pending_queued);
+
+	update_pending_active = false;
 }
 
 void EditorFileSystem::_queue_update_script_class(const String &p_path, const ScriptClassInfoUpdate &p_script_update) {
