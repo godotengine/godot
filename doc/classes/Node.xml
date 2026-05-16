@@ -664,8 +664,8 @@
 		<method name="is_node_ready" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node is ready, i.e. it's inside scene tree and all its children are initialized.
-				[method request_ready] resets it back to [code]false[/code].
+				Returns [code]true[/code] if the node has received the [constant NOTIFICATION_READY] notification since it entered the scene tree. This can remain [code]true[/code] after the node leaves the scene tree. Use [method is_inside_tree] to check whether the node is currently inside a [SceneTree].
+				[method request_ready] resets this back to [code]false[/code].
 			</description>
 		</method>
 		<method name="is_part_of_edited_scene" qualifiers="const">
