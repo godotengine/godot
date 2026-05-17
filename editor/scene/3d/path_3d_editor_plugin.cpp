@@ -719,8 +719,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 
 				//add new at pos
 			}
-		}
-		else if (mb-> is_pressed() && (mb->get_button_index()== MouseButton::LEFT && curve_auto_tangent_mode->is_pressed())) {
+		} else if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT && curve_auto_tangent_mode->is_pressed())) {
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			for (int i = 0; i < c->get_point_count(); i++) {
 				real_t dist_to_p = viewport->point_to_screen(gt.xform(c->get_point_position(i))).distance_to(mbpos);
