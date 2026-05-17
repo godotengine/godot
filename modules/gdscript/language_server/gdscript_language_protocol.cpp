@@ -619,14 +619,87 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 	return arr;
 }
 
-void collect_workspace_symbols(Array &p_arr, const LSP::DocumentSymbol &p_ds, const String &p_query) {
-	for (const LSP::DocumentSymbol &child_symbol : p_ds.children) {
-		if (p_query.is_empty() || child_symbol.name.matchn(p_query)) {
-			p_arr.push_back(LSP::WorkspaceSymbol::from_doc_symbol(child_symbol, p_ds.name).to_json());
-		}
+LSP::Range get_enum_value_range(const GDScriptParser::EnumNode::Value &p_enum_value) {
+	LSP::Range r;
+	r.start.line = p_enum_value.line;
+	r.start.character = p_enum_value.start_column;
+	r.end.line = p_enum_value.line;
+	r.end.character = p_enum_value.end_column;
+	return r;
+}
 
-		if (child_symbol.kind == LSP::SymbolKind::Class) {
-			collect_workspace_symbols(p_arr, child_symbol, p_query);
+LSP::Range get_node_range(const GDScriptParser::Node *p_node) {
+	LSP::Range r;
+	r.start.line = p_node->start_line - 1;
+	r.start.character = p_node->start_column;
+	r.end.line = p_node->end_line - 1;
+	r.end.character = p_node->end_column;
+	return r;
+}
+
+void collect_workspace_symbols(Array &p_arr, const GDScriptParser::ClassNode *p_tree, const String &p_uri, const String &p_query) {
+	if (!p_tree) {
+		return;
+	}
+
+	LSP::WorkspaceSymbol ws;
+	if (p_tree->outer) {
+		ws.containerName = p_tree->outer->get_global_name();
+		ws.name = p_tree->identifier->name;
+	} else {
+		ws.name = p_tree->get_global_name();
+	}
+	ws.kind = LSP::SymbolKind::Class;
+	ws.location.uri = p_uri;
+	ws.location.range = get_node_range(p_tree);
+	if (p_query.is_empty() || ws.name.matchn(p_query)) {
+		p_arr.append(ws.to_json());
+	}
+
+	for (const GDScriptParser::ClassNode::Member &member : p_tree->members) {
+		LSP::WorkspaceSymbol member_ws;
+		member_ws.location.uri = p_uri;
+		member_ws.location.range = get_node_range(member.get_source_node());
+		member_ws.name = member.get_name();
+		member_ws.containerName = ws.name;
+		switch (member.type) {
+			case GDScriptParser::ClassNode::Member::CLASS:
+				collect_workspace_symbols(p_arr, member.m_class, p_uri, p_query);
+				break;
+			case GDScriptParser::ClassNode::Member::CONSTANT:
+				member_ws.kind = LSP::SymbolKind::Constant;
+				break;
+			case GDScriptParser::ClassNode::Member::FUNCTION:
+				member_ws.kind = LSP::SymbolKind::Function;
+				break;
+			case GDScriptParser::ClassNode::Member::SIGNAL:
+				member_ws.kind = LSP::SymbolKind::Event;
+				break;
+			case GDScriptParser::ClassNode::Member::VARIABLE:
+				member_ws.kind = LSP::SymbolKind::Variable;
+				break;
+			case GDScriptParser::ClassNode::Member::ENUM:
+				member_ws.kind = LSP::SymbolKind::Enum;
+				for (const GDScriptParser::EnumNode::Value &value : member.m_enum->values) {
+					LSP::WorkspaceSymbol enum_value_ws;
+					enum_value_ws.name = value.identifier->name;
+					enum_value_ws.kind = LSP::SymbolKind::EnumMember;
+					enum_value_ws.location.uri = p_uri;
+					enum_value_ws.location.range = get_enum_value_range(value);
+					enum_value_ws.containerName = member_ws.name;
+					if (p_query.is_empty() || enum_value_ws.name.matchn(p_query)) {
+						p_arr.push_back(enum_value_ws.to_json());
+					}
+				}
+				break;
+			case GDScriptParser::ClassNode::Member::ENUM_VALUE:
+				member_ws.kind = LSP::SymbolKind::EnumMember;
+				break;
+			default:
+				continue;
+		}
+		if (p_query.is_empty() || member_ws.name.matchn(p_query)) {
+			p_arr.push_back(member_ws.to_json());
 		}
 	}
 }
@@ -639,12 +712,18 @@ Array GDScriptLanguageProtocol::lsp_symbol(const Dictionary &p_params) {
 	workspace->list_script_files("res://", all_scripts);
 
 	for (const String &path : all_scripts) {
-		const LSP::DocumentSymbol &class_symbol = get_parse_result(path)->get_symbols();
-		if (query.is_empty() || class_symbol.name.matchn(query)) {
-			arr.push_back(LSP::WorkspaceSymbol::from_doc_symbol(class_symbol).to_json());
+		String content;
+		const LSP::TextDocumentItem *document = client->managed_files.getptr(path);
+		if (document == nullptr) {
+			Error err;
+			content = FileAccess::get_file_as_string(path, &err);
+			ERR_FAIL_COND_V(err != OK, arr);
+		} else {
+			content = document->text;
 		}
-
-		collect_workspace_symbols(arr, class_symbol, query);
+		GDScriptParser parser;
+		parser.parse(content, path, false);
+		collect_workspace_symbols(arr, parser.get_tree(), workspace->get_file_uri(path), query);
 	}
 	return arr;
 }
