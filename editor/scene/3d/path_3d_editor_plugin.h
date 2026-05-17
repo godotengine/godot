@@ -156,7 +156,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 
 	void _create_curve();
 	void _confirm_clear_points();
-	void _auto_tangent_point(int p_index, bool is_closed, int point_count);
+	void _auto_tangent_point(int p_index);
 	void _clear_points();
 	void _auto_tangent();
 	void _clear_curve_points();
