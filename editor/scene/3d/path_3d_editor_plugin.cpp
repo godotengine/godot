@@ -804,6 +804,7 @@ void Path3DEditorPlugin::_mode_changed(int p_mode) {
 	curve_edit_tilt->set_pressed_no_signal(p_mode == MODE_EDIT_TILT);
 	curve_edit->set_pressed_no_signal(p_mode == MODE_EDIT);
 	curve_del->set_pressed_no_signal(p_mode == MODE_DELETE);
+	curve_auto_tangent_mode->set_pressed_no_signal(p_mode == MODE_AUTO_TANGENT);
 	Node3DEditor::get_singleton()->clear_subgizmo_selection();
 }
 
@@ -1134,6 +1135,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_auto_tangent_mode->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	curve_auto_tangent_mode->set_tooltip_text(TTR("Auto Tangent Mode"));
 	curve_auto_tangent_mode->set_toggle_mode(true);
+	curve_auto_tangent_mode->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_AUTO_TANGENT));
 	toolbar->add_child(curve_auto_tangent_mode);
 
 	curve_auto_tangent = memnew(Button);

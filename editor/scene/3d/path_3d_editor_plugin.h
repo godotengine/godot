@@ -138,6 +138,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 		MODE_EDIT_CURVE,
 		MODE_EDIT_TILT,
 		MODE_DELETE,
+		MODE_AUTO_TANGENT,
 		ACTION_CLOSE
 	};
 
