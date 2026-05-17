@@ -39,7 +39,6 @@
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/curve.h"
 
