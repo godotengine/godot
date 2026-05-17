@@ -34,7 +34,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
 			<description>
-				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. If it collides with more than one shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. The collision check takes the [member PhysicsShapeQueryParameters2D.motion] property into account to project the shape. If it collides with more than one shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]linear_velocity[/code]: The colliding object's velocity [Vector2]. If the object is an [Area2D], the result is [code](0, 0)[/code].
 				[code]normal[/code]: The collision normal of the query shape at the intersection point, pointing away from the intersecting object.
