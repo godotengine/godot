@@ -831,8 +831,9 @@ void Path2DEditor::_confirm_clear_points() {
 }
 
 void Path2DEditor::_auto_tangent_point(int p_index) {
-	ERR_FAIL_NULL(node);
-	ERR_FAIL_NULL(node->get_curve());
+	if (!node || node->get_curve().is_null() || node->get_curve()->get_point_count() == 0) {
+		return;
+	}
 	const Ref<Curve2D> curve = node->get_curve();
 	int point_count = curve->get_point_count();
 
