@@ -7,7 +7,7 @@ import sys
 # Add parent directory to path so we can import methods
 sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "./"))
 
-from methods import generated_wrapper, print_error, to_raw_cstring
+from methods import generated_wrapper, print_error, read_args_from_file, to_raw_cstring
 
 
 class RDHeaderStruct:
@@ -300,7 +300,7 @@ def main():
 
     # If argfile is provided, read arguments from it
     if initial_args.argfile:
-        file_args = methods.read_args_from_file(initial_args.argfile)
+        file_args = read_args_from_file(initial_args.argfile)
         # Combine file arguments with remaining command line arguments
         sys.argv = [sys.argv[0]] + file_args + remaining_args
 

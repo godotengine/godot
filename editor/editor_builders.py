@@ -183,8 +183,8 @@ def main():
         # Combine file arguments with remaining command line arguments
         sys.argv = [sys.argv[0]] + file_args + remaining_args
 
-        # Print arguments to stdout unless --quiet is present
-        if "--quiet" not in sys.argv:
+        # Print arguments to stdout if --verbose is present
+        if "--verbose" in sys.argv:
             print("Arguments read from file:", initial_args.argfile)
             print("Combined arguments:", " ".join(file_args + remaining_args))
 
@@ -198,7 +198,7 @@ def main():
     )
     parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
     parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
-    parser.add_argument("--quiet", action="store_true", help="Suppress argument printing")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
 
     args = parser.parse_args()
 
