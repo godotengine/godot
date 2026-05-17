@@ -621,9 +621,9 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 
 LSP::Range get_enum_value_range(const GDScriptParser::EnumNode::Value &p_enum_value) {
 	LSP::Range r;
-	r.start.line = p_enum_value.line;
+	r.start.line = p_enum_value.line - 1;
 	r.start.character = p_enum_value.start_column;
-	r.end.line = p_enum_value.line;
+	r.end.line = p_enum_value.line - 1;
 	r.end.character = p_enum_value.end_column;
 	return r;
 }
@@ -644,7 +644,7 @@ void collect_workspace_symbols(Array &p_arr, const GDScriptParser::ClassNode *p_
 
 	LSP::WorkspaceSymbol ws;
 	if (p_tree->outer) {
-		ws.containerName = p_tree->outer->get_global_name();
+		ws.containerName = p_tree->outer->identifier->name;
 		ws.name = p_tree->identifier->name;
 	} else {
 		ws.name = p_tree->get_global_name();
@@ -712,18 +712,24 @@ Array GDScriptLanguageProtocol::lsp_symbol(const Dictionary &p_params) {
 	workspace->list_script_files("res://", all_scripts);
 
 	for (const String &path : all_scripts) {
-		String content;
-		const LSP::TextDocumentItem *document = client->managed_files.getptr(path);
-		if (document == nullptr) {
-			Error err;
-			content = FileAccess::get_file_as_string(path, &err);
-			ERR_FAIL_COND_V(err != OK, arr);
+		String uri = workspace->get_file_uri(path);
+		if (client->parse_results.has(path)) {
+			const ExtendGDScriptParser *cached_parser = client->parse_results.get(path);
+			collect_workspace_symbols(arr, cached_parser->get_tree(), uri, query);
 		} else {
-			content = document->text;
+			String content;
+			const LSP::TextDocumentItem *document = client->managed_files.getptr(path);
+			if (document == nullptr) {
+				Error err;
+				content = FileAccess::get_file_as_string(path, &err);
+				ERR_FAIL_COND_V(err != OK, arr);
+			} else {
+				content = document->text;
+			}
+			GDScriptParser parser;
+			parser.parse(content, path, false);
+			collect_workspace_symbols(arr, parser.get_tree(), workspace->get_file_uri(path), query);
 		}
-		GDScriptParser parser;
-		parser.parse(content, path, false);
-		collect_workspace_symbols(arr, parser.get_tree(), workspace->get_file_uri(path), query);
 	}
 	return arr;
 }
