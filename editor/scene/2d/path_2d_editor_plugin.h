@@ -55,6 +55,7 @@ class Path2DEditor : public HBoxContainer {
 		MODE_DELETE,
 		MODE_CLOSE,
 		MODE_CLEAR_POINTS,
+		MODE_AUTO_TANGENT,
 	};
 
 	Mode mode = MODE_EDIT;
@@ -66,6 +67,7 @@ class Path2DEditor : public HBoxContainer {
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
 	Button *curve_auto_tangent = nullptr;
+	Button *curve_auto_tangent_toggle = nullptr;
 	SpinBox *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
 
@@ -114,6 +116,7 @@ class Path2DEditor : public HBoxContainer {
 
 	void _create_curve();
 	void _confirm_clear_points();
+	void _auto_tangent_point(int p_index);
 	void _clear_curve_points(Path2D *p_path2d);
 	void _restore_curve_points(Path2D *p_path2d, const PackedVector2Array &p_points);
 
