@@ -326,6 +326,9 @@ void Polygon2D::_notification(int p_what) {
 
 			if (invert || polygons.is_empty()) {
 				index_array = Geometry2D::triangulate_polygon(points);
+				if (index_array.is_empty()) {
+					WARN_PRINT_ONCE_ED("Polygon2D failed to triangulate polygon. Polygon data may be invalid, degenerate, or self-intersecting.");
+				}
 			} else {
 				//draw individual polygons
 				for (int i = 0; i < polygons.size(); i++) {
@@ -346,6 +349,10 @@ void Polygon2D::_notification(int p_what) {
 					}
 					Vector<int> indices = Geometry2D::triangulate_polygon(tmp_points);
 					int ic2 = indices.size();
+					if (ic2 == 0) {
+						WARN_PRINT_ONCE_ED("Polygon2D failed to triangulate a sub-polygon. Polygon data may be invalid, degenerate, or self-intersecting.");
+						continue;
+					}
 					const int *r2 = indices.ptr();
 
 					int bic = index_array.size();
