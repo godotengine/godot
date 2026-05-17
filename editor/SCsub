@@ -54,10 +54,7 @@ if env.editor_build:
     py_builder_env.Command(
         "#editor/doc/doc_data_compressed.gen.h",
         docs,
-        Action(
-            "$PYTHON_BIN editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES",
-            "$GENCOMSTR",
-        ),
+        "$MAKE_DOC_HEADER_COM",
     )
 
     # Editor interface and class reference translations incur a significant size

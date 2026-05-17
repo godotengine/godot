@@ -1227,8 +1227,8 @@ if "cpp_compiler_launcher" in env:
 # two items in the Command's action string.
 py_builder_env = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES=2, PYTHON_BIN=sys.executable)
 py_builder_env.Tool("handle_long_lines")
-env["TEMPFILE_ARG_COUNT"] = 2
-env["MYTEMPFILEPREFIX"] = "--argfile "
+py_builder_env["TEMPFILE_ARG_COUNT"] = 2
+py_builder_env["MYTEMPFILEPREFIX"] = "--argfile "
 Export("py_builder_env")
 
 

@@ -887,6 +887,26 @@ def get_size(start_path: str = ".") -> int:
     return total_size
 
 
+def read_args_from_file(argfile_path: str | Path) -> list[str]:
+    """Read arguments from a file and return them as a list."""
+    import shlex
+
+    args = []
+    try:
+        with open(argfile_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):  # Skip empty lines and comments
+                    args.extend(shlex.split(line, posix=(os.name != "nt")))
+    except FileNotFoundError:
+        print(f"Error: Argument file '{argfile_path}' not found", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error reading argument file '{argfile_path}': {e}", file=sys.stderr)
+        sys.exit(1)
+    return args
+
+
 def clean_cache(cache_path: str, cache_limit: int, verbose: bool) -> None:
     if not cache_limit:
         return

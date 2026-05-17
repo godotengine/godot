@@ -53,6 +53,23 @@ inline constexpr int editor_bg_thumbs_indices[] = {{ {", ".join(icons_big)} }};
 
 
 def main():
+    # Parse initial arguments to check for argfile
+    initial_parser = argparse.ArgumentParser(add_help=False)
+    initial_parser.add_argument("--argfile", help="File containing additional arguments")
+    initial_args, remaining_args = initial_parser.parse_known_args()
+
+    # If argfile is provided, read arguments from it
+    if initial_args.argfile:
+        file_args = methods.read_args_from_file(initial_args.argfile)
+        # Combine file arguments with remaining command line arguments
+        sys.argv = [sys.argv[0]] + file_args + remaining_args
+
+        # Print arguments to stdout unless --quiet is present
+        if "--quiet" not in sys.argv:
+            print("Arguments read from file:", initial_args.argfile)
+            print("Combined arguments:", " ".join(file_args + remaining_args))
+
+    # Parse all arguments
     parser = argparse.ArgumentParser(description="Editor icons build tools")
     parser.add_argument(
         "--method",
@@ -62,6 +79,7 @@ def main():
     )
     parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
     parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+    parser.add_argument("--quiet", action="store_true", help="Suppress argument printing")
 
     args = parser.parse_args()
 

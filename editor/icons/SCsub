@@ -15,11 +15,10 @@ for path in env.module_icons_paths:
     else:
         icon_sources += Glob(f"{path}/*.svg")  # Custom.
 
+py_builder_env['EDITOR_ICON_BUILDER'] = "${MYTEMPFILE('$PYTHON_BIN editor/icons/editor_icons_builders.py --method make_editor_icons_action --target $TARGET --source $SOURCES','$GENCOMSTR')}"
+
 py_builder_env.Command(
     "#editor/themes/editor_icons.gen.h",
     icon_sources,
-    Action(
-        "$PYTHON_BIN editor/icons/editor_icons_builders.py --method make_editor_icons_action --target $TARGET --source $SOURCES",
-        "$GENCOMSTR",
-    ),
+   "$EDITOR_ICON_BUILDER",
 )
