@@ -359,6 +359,554 @@ const moduleAdvice = {
 
 const concepts = [
   {
+    id: "startup-axis",
+    title: "启动轴",
+    aliases: ["启动轴", "启动链路轴", "启动时间轴", "Main 生命周期轴", "Main 启动链"],
+    summary: "从平台入口到 Main::setup/setup2/start/iteration/cleanup 的时间线，用来解释 Godot 怎样把一个进程变成正在跑的 MainLoop。启动轴回答“谁先初始化、每帧谁调度、退出时谁先清理”。",
+    article: [
+      {
+        type: "lead",
+        text: "启动轴不是一个目录名，而是一条时间线：平台入口创建 OS 子类，`Main::setup()` 建立 core 和项目配置，`Main::setup2()` 注册 servers/scene 并创建运行时服务，`Main::start()` 选择或创建 MainLoop，平台 `OS::run()` 进入循环，每帧回到 `Main::iteration()`，退出时 `Main::cleanup()` 按相反方向释放系统。"
+      },
+      {
+        type: "heading",
+        title: "小白版解释"
+      },
+      {
+        type: "paragraph",
+        text: "把 Godot 启动想成开机流程。平台代码先把程序门打开，然后 Main 负责装好对象系统、资源系统、渲染和物理服务，再决定这次是开编辑器、跑项目还是执行命令行工具。之后每一帧都从同一个主循环入口推进。"
+      },
+      {
+        type: "paragraph",
+        text: "读源码时，启动轴最重要的不是背函数名，而是知道“现在处在哪个阶段”。很多对象能不能创建、某个 Server 是否存在、脚本语言是否初始化、主场景有没有加载，都取决于它发生在 setup、setup2、start、iteration 还是 cleanup。"
+      },
+      {
+        type: "flow",
+        title: "启动轴的主干流程",
+        steps: [
+          { title: "平台入口", text: "`platform/windows/godot_windows.cpp:68` 和 `platform/linuxbsd/godot_linuxbsd.cpp:70` 创建 OS 子类并调用 Main。" },
+          { title: "`Main::setup()`", text: "`main/main.cpp:1027` 初始化 OS、Engine、core 类型、ProjectSettings、MessageQueue 和 CORE 级模块。" },
+          { title: "`Main::setup2()`", text: "`main/main.cpp:3008` 注册 Server 和 Scene 类型，初始化 DisplayServer、RenderingServer、AudioServer 等运行时基础。" },
+          { title: "`Main::start()`", text: "`main/main.cpp:3988` 选择 MainLoop，默认是 SceneTree，并在项目模式加载主场景。" },
+          { title: "`OS::run()`", text: "`platform/windows/os_windows.cpp:2343` 或 LinuxBSD 对应实现调用 `main_loop->initialize()` 并循环处理事件。" },
+          { title: "`Main::iteration()`", text: "`main/main.cpp:4896` 每帧推进物理、process、消息队列、导航、RenderingServer sync/draw。" },
+          { title: "`Main::cleanup()`", text: "`main/main.cpp:5191` 停脚本、清 Scene、卸 Server、删 MessageQueue、注销 core。" }
+        ]
+      },
+      {
+        type: "heading",
+        title: "深入解释"
+      },
+      {
+        type: "paragraph",
+        text: "平台入口非常薄。Windows 的 `widechar_main()` 在 `platform/windows/godot_windows.cpp:68` 构造 `OS_Windows`，把参数转成 UTF-8，调用 `Main::setup()` 和 `Main::start()`，成功后执行 `os.run()`，最后 `Main::cleanup()`。LinuxBSD 的 `main()` 在 `platform/linuxbsd/godot_linuxbsd.cpp:70` 做同样分工。也就是说，跨平台差异先被 OS 子类吸收，真正的引擎启动顺序集中到 Main。"
+      },
+      {
+        type: "paragraph",
+        text: "`Main::setup()` 的源码入口是 `main/main.cpp:1027`。它先调用 `OS::get_singleton()->initialize()`，再创建 `Engine`，执行 `register_core_types()`，建立 `InputMap`、`ProjectSettings`、`TranslationServer`、`Performance` 等 core 层单例，并解析命令行。`main/main.cpp:2255` 初始化 CORE 级模块，`main/main.cpp:2899` 创建主 `MessageQueue`。"
+      },
+      {
+        type: "paragraph",
+        text: "`Main::setup2()` 在 `main/main.cpp:3008` 进入第二阶段。它在 `main/main.cpp:3197` 调 `register_server_types()`，随后初始化 SERVERS 级模块；在后续 Display/Rendering/Audio 初始化块里创建具体服务，例如 `main/main.cpp:3540` 创建 `RenderingServerDefault` 并调用 `init()`；`main/main.cpp:3759` 调 `register_scene_types()`；`main/main.cpp:3839` 再把 Server 单例注册到 Engine。"
+      },
+      {
+        type: "paragraph",
+        text: "`Main::start()` 的入口是 `main/main.cpp:3988`。它不是最早的初始化点，而是“开始运行哪种 MainLoop”的决策点。默认情况下，`main/main.cpp:4337` 会创建 `SceneTree`；如果传入脚本或自定义 MainLoop 类型，它会通过 `ResourceLoader` 和 `ClassDB::instantiate()` 创建对应对象；`main/main.cpp:4411` 把 MainLoop 交给 OS。项目主场景加载发生在 `main/main.cpp:4737` 附近：`ResourceLoader::load()` 得到 `PackedScene`，再 `instantiate()` 成 Node 并加入 SceneTree。"
+      },
+      {
+        type: "paragraph",
+        text: "真正的帧循环由平台 `OS::run()` 驱动。Windows 的 `OS_Windows::run()` 在 `platform/windows/os_windows.cpp:2343` 调 `main_loop->initialize()`，循环 `DisplayServer::process_events()` 和 `Main::iteration()`，结束后 `main_loop->finalize()`。`Main::iteration()` 在 `main/main.cpp:4896` 做固定物理步、`physics_process()`、Server sync/step、空闲 `process()`、MessageQueue flush、导航更新以及 `RenderingServer::sync()` 和 `draw()`。"
+      },
+      {
+        type: "table",
+        title: "启动轴的证据锚点",
+        headers: ["阶段", "源码入口", "说明"],
+        rows: [
+          ["平台入口", "`platform/windows/godot_windows.cpp:68`、`platform/linuxbsd/godot_linuxbsd.cpp:70`", "创建平台 OS，调用 Main。"],
+          ["core setup", "`main/main.cpp:1027`、`main/main.cpp:1059`、`core/register_core_types.cpp:134`", "注册 Object、RefCounted、Resource、Variant 等基础类型。"],
+          ["server/scene setup", "`main/main.cpp:3008`、`3197`、`3759`", "注册 Server 与 Scene 类型，初始化模块。"],
+          ["MainLoop 选择", "`main/main.cpp:3988`、`4337`、`4411`", "创建或加载 MainLoop，默认 SceneTree。"],
+          ["主场景加载", "`main/main.cpp:4737`、`scene/resources/packed_scene.cpp:2507`", "ResourceLoader 加载 PackedScene，再实例化 Node。"],
+          ["每帧推进", "`main/main.cpp:4896`、`5004`、`5037`、`5052`", "物理、process、队列、Server sync/draw。"],
+          ["清理", "`main/main.cpp:5191`、`5261`、`5289`、`5354`、`5371`", "按 editor/scene/servers/core 反向释放。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "案例：项目主场景从参数到运行"
+      },
+      {
+        type: "flow",
+        title: "主场景路径进入 SceneTree",
+        steps: [
+          { title: "命令行或 ProjectSettings 给出场景路径", text: "`--scene` 或 `application/run/main_scene` 在启动阶段被解析。" },
+          { title: "`Main::start()` 进入项目路径", text: "`main/main.cpp:4737` 附近用 `ResourceLoader::load(local_game_path)` 加载。" },
+          { title: "得到 `PackedScene`", text: "加载结果不是直接运行中的树，而是可实例化的资源。" },
+          { title: "`PackedScene::instantiate()`", text: "`scene/resources/packed_scene.cpp:2507` 调 `SceneState::instantiate()` 创建 Node 树。" },
+          { title: "`SceneTree::add_current_scene()`", text: "主场景挂到 root 下，后续由 SceneTree 的 process/physics 调度。" }
+        ]
+      },
+      {
+        type: "heading",
+        title: "常见误区"
+      },
+      {
+        type: "list",
+        items: [
+          "误区一：以为 `Main::start()` 才是所有初始化的开始。实际 Object、Variant、ProjectSettings、MessageQueue、部分模块和 Server 类型已经在 setup/setup2 建立。",
+          "误区二：把平台入口当成引擎主逻辑。平台代码主要准备 OS 和事件循环，跨平台启动顺序集中在 `main/main.cpp`。",
+          "误区三：把一帧等同于一次 `_process()`。`Main::iteration()` 还包含固定物理步、Server 同步、消息队列、导航、渲染提交和性能采样。",
+          "误区四：忽略 cleanup 顺序。很多关闭期崩溃来自某个对象晚于它依赖的 Server 或 ClassDB 被释放。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "边界和相邻概念"
+      },
+      {
+        type: "table",
+        headers: ["概念", "启动轴怎么看它", "不属于启动轴的部分"],
+        rows: [
+          ["对象轴", "启动轴决定 Object/ClassDB/Variant 什么时候注册可用。", "具体 set/get/call、信号和绑定规则属于对象轴。"],
+          ["场景轴", "启动轴决定何时创建 SceneTree、加载主场景、进入每帧。", "Node 父子关系、ready/process 传播属于场景轴。"],
+          ["服务轴", "启动轴决定 RenderingServer、PhysicsServer、AudioServer 等什么时候创建、sync、draw、清理。", "Server API 和后端实现属于服务轴。"],
+          ["模块系统", "模块按 CORE/SERVERS/SCENE/EDITOR 插入启动时间线。", "单个模块的业务实现不等于启动轴本身。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "建议阅读路线"
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "先读当前平台入口，例如 `platform/windows/godot_windows.cpp:68`。",
+          "按 `Main::setup()`、`setup2()`、`start()`、`iteration()`、`cleanup()` 读 `main/main.cpp`，不要从文件顶部漫游到底。",
+          "在每个阶段记录它注册、创建或清理了哪些全局对象和 Server。",
+          "遇到具体问题时回到对应阶段：类型不存在看 setup/setup2，主场景加载看 start，每帧顺序看 iteration，退出崩溃看 cleanup。"
+        ]
+      },
+      {
+        type: "callout",
+        title: "一句话总结",
+        text: "启动轴是 Godot 的时间坐标：它解释对象系统、场景树和服务后端分别在什么时候出现、每帧如何被推进、退出时按什么顺序撤场。"
+      }
+    ]
+  },
+  {
+    id: "object-axis",
+    title: "对象轴",
+    aliases: ["对象轴", "对象模型轴", "类型反射轴", "Object/ClassDB/Variant 轴"],
+    summary: "围绕 Object、ClassDB、MethodBind、Variant、ObjectDB 和 ScriptInstance 的读法，用来解释 C++ 类怎样变成脚本、编辑器、Inspector、资源系统和扩展都能认识的运行时对象。",
+    article: [
+      {
+        type: "lead",
+        text: "对象轴回答的是“Godot 怎样认识一个东西”。一个类只写成 C++ 还不够；它要继承 Object 或相关基类，用 `GDCLASS` 接入类型信息，在 `_bind_methods()` 里通过 ClassDB 暴露方法、属性和信号，运行时实例还会获得 ObjectID，并通过 Variant 作为统一值边界和脚本、编辑器、序列化、GDExtension 交换数据。"
+      },
+      {
+        type: "heading",
+        title: "小白版解释"
+      },
+      {
+        type: "paragraph",
+        text: "对象轴像 Godot 的“身份证和办事窗口”。Object 给实例身份，ClassDB 是类登记表，MethodBind 是方法转接头，Variant 是通用参数盒子，ObjectDB 是按 ObjectID 查活对象的弱索引。"
+      },
+      {
+        type: "paragraph",
+        text: "所以当你在 GDScript 写 `node.call(\"set_name\", \"Player\")`，或者 Inspector 显示某个属性时，背后不是编辑器硬编码每个类，而是对象轴把 C++ 类型、方法名、属性元数据、参数和对象实例串起来。"
+      },
+      {
+        type: "flow",
+        title: "对象轴的核心链路",
+        steps: [
+          { title: "C++ 类继承 Object", text: "`scene/main/node.h:54` 的 Node 就是 `public Object`。" },
+          { title: "`GDCLASS` 建立类型入口", text: "`core/object/object.h:248` 定义宏，子类用它接入 Godot 类型系统。" },
+          { title: "`_bind_methods()` 暴露 API", text: "`ClassDB::bind_method()` 在 `core/object/class_db.h:374` 生成 MethodBind。" },
+          { title: "ClassDB 保存类级元数据", text: "`core/object/class_db.h:97` 的 ClassInfo 保存 method_map、property_list、signal 等。" },
+          { title: "Object 实例处理动态访问", text: "`core/object/object.cpp:233`、`316`、`768` 分别处理 set/get/callp。" },
+          { title: "Variant 统一参数和返回值", text: "`core/variant/variant.h:93` 定义统一值容器。" },
+          { title: "ObjectDB 提供弱查找", text: "`core/object/object.cpp:2450` 在对象构造时分配 ObjectID。" }
+        ]
+      },
+      {
+        type: "heading",
+        title: "深入解释"
+      },
+      {
+        type: "paragraph",
+        text: "对象轴在启动阶段由 `register_core_types()` 建立。`core/register_core_types.cpp:134` 调 `ObjectDB::setup()`、`StringName::setup()`，随后 `GDREGISTER_CLASS(Object)`、`GDREGISTER_CLASS(RefCounted)`、`GDREGISTER_CLASS(Resource)`，并在 `core/register_core_types.cpp:155` 附近调用 `Variant::register_types()`。这说明对象轴不是 scene 层才有，而是 core 层地基。"
+      },
+      {
+        type: "paragraph",
+        text: "Object 本体的源码入口是 `core/object/object.h:349`。它保存 `_instance_id`、脚本实例、metadata、信号表、连接列表、删除标志和类型缓存。构造路径在 `core/object/object.cpp:2283`，其中 `core/object/object.cpp:2294` 通过 `ObjectDB::add_instance(this)` 分配 ObjectID；析构时会断开信号并从 ObjectDB 移除。"
+      },
+      {
+        type: "paragraph",
+        text: "ClassDB 是类级登记表，不是实例容器。`core/object/class_db.h:97` 的 `ClassInfo` 保存 `method_map`、`property_list`、`property_setget` 等元数据。`ClassDB::bind_method()` 模板在 `core/object/class_db.h:374` 创建 MethodBind，`ClassDB::bind_methodfi()` 在 `core/object/class_db.cpp:1895` 把 MethodBind 写进当前类的 method_map，并拒绝普通脚本 API 的同名重载。"
+      },
+      {
+        type: "paragraph",
+        text: "动态调用从 Object 回到 ClassDB。`Object::callp()` 在 `core/object/object.cpp:768`，先尝试脚本实例处理；如果脚本没有这个方法，再用 `ClassDB::get_method(get_class_name(), p_method)` 找 MethodBind 并调用。`Object::set()` 和 `Object::get()` 在 `core/object/object.cpp:233`、`316`，同样会合并脚本、GDExtension、ClassDB 绑定属性和 metadata 等路径。"
+      },
+      {
+        type: "paragraph",
+        text: "Variant 是对象轴的值边界，不是对象所有权的替代品。`core/variant/variant.h:93` 定义 `Variant`，它用固定枚举类型承载 int、String、Object、RID、Array、Dictionary 等值。Object 进入 Variant 时通常保存 ObjectID 和指针；普通 Object 不会因此被强拥有，RefCounted 才会走引用计数语义。"
+      },
+      {
+        type: "table",
+        title: "对象轴的证据锚点",
+        headers: ["部件", "源码入口", "职责"],
+        rows: [
+          ["Object", "`core/object/object.h:349`、`core/object/object.cpp:2283`", "实例身份、脚本实例、信号、metadata、set/get/call。"],
+          ["ObjectDB", "`core/object/object.h:874`、`core/object/object.cpp:2450`", "给活对象分配 ObjectID，支持弱查找。"],
+          ["ClassDB", "`core/object/class_db.h:97`、`core/object/class_db.cpp:1895`", "保存类名、继承、方法、属性、信号和创建函数。"],
+          ["MethodBind", "`core/object/method_bind.h:38`、`core/object/class_db.h:374`", "把 C++ 成员函数包装成动态可调用对象。"],
+          ["Variant", "`core/variant/variant.h:93`", "脚本、反射、属性、信号和序列化的通用值容器。"],
+          ["核心注册", "`core/register_core_types.cpp:134`", "启动时建立 Object、RefCounted、Resource、Variant 等基础类型。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "案例：脚本调用一个 C++ 方法"
+      },
+      {
+        type: "flow",
+        title: "`node.set_name(\"Player\")` 的对象轴路径",
+        steps: [
+          { title: "Node 是 Object 子类", text: "`scene/main/node.h:54` 让 Node 继承 Object。" },
+          { title: "Node 绑定方法", text: "Node 的 `_bind_methods()` 把 `set_name` 等方法登记到 ClassDB。" },
+          { title: "脚本传入 Variant 参数", text: "字符串参数以 Variant 形式穿过动态调用层。" },
+          { title: "`Object::callp()` 查方法", text: "`core/object/object.cpp:768` 先查脚本，再查 ClassDB。" },
+          { title: "MethodBind 调真实 C++ 函数", text: "绑定层拆出参数并调用 Node 的 C++ 成员函数。" }
+        ]
+      },
+      {
+        type: "heading",
+        title: "常见误区"
+      },
+      {
+        type: "list",
+        items: [
+          "误区一：对象轴等于场景轴。Object 只是运行时对象根，Node 才是能进入 SceneTree 的对象。",
+          "误区二：ClassDB 保存对象实例。ClassDB 保存类级元数据；实例身份和弱查找看 Object/ObjectDB。",
+          "误区三：ObjectID 是所有权。ObjectID 只是弱句柄，不能阻止普通 Object 被释放。",
+          "误区四：Variant 让所有值都安全长活。Variant 统一传值，但普通 Object 指针仍要验证是否还活着。",
+          "误区五：Inspector 是编辑器手写属性 UI。Inspector 主要读 Object/ClassDB/ScriptInstance 暴露出的属性表。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "边界和相邻概念"
+      },
+      {
+        type: "table",
+        headers: ["概念", "对象轴负责", "不负责"],
+        rows: [
+          ["启动轴", "启动轴让 Object/ClassDB/Variant 先注册可用。", "对象轴不决定 setup/start/cleanup 的时间顺序。"],
+          ["场景轴", "场景轴使用 Object 子类 Node，并依赖 ClassDB 实例化节点。", "对象轴本身没有父子树、ready、process 或场景切换。"],
+          ["服务轴", "Server 单例也常是 Object，可被 ClassDB 暴露给脚本。", "对象轴不保存 GPU、物理世界或音频混音状态。"],
+          ["资源系统", "Resource 是 RefCounted/Object，能参与属性和 Variant。", "Object 本身不等于可保存文件；保存加载由 ResourceLoader/ResourceSaver 处理。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "建议阅读路线"
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "读 `core/register_core_types.cpp:134`，确认对象基础类型在哪个启动阶段注册。",
+          "读 `core/object/object.h:349` 和 `object.cpp:2283`，理解 Object 保存的实例状态和 ObjectID。",
+          "读 `core/object/class_db.h:97`、`374` 和 `class_db.cpp:1895`，看类元数据如何登记。",
+          "读 `core/object/object.cpp:233`、`316`、`768`，跟一次 set/get/call 的真实分发。",
+          "最后读 `core/variant/variant.h:93` 和 MethodBind，区分动态调用的值边界和函数包装。"
+        ]
+      },
+      {
+        type: "callout",
+        title: "一句话总结",
+        text: "对象轴是 Godot 的运行时识别系统：它把 C++ 类、对象实例、脚本调用、编辑器属性、信号和 Variant 参数统一到一套可反射的对象世界里。"
+      }
+    ]
+  },
+  {
+    id: "scene-axis",
+    title: "场景轴",
+    aliases: ["场景轴", "场景生命周期轴", "SceneTree 轴", "Node 树轴", "PackedScene 到 SceneTree 轴"],
+    summary: "从 PackedScene/SceneState 到 Node 树，再到 SceneTree 的 enter_tree、ready、process、physics_process、场景切换和删除队列。场景轴解释用户可见对象怎样被实例化并按帧调度。",
+    article: [
+      {
+        type: "lead",
+        text: "场景轴回答的是“一个场景怎样从文件变成正在跑的节点树”。`.tscn/.scn` 先作为 PackedScene/SceneState 被加载，`instantiate()` 创建 Node 树，Node 进入 SceneTree 后触发 enter_tree/ready，之后由 SceneTree 在每帧调用 physics/process、处理组、定时器、Tween、场景切换和删除队列。"
+      },
+      {
+        type: "heading",
+        title: "小白版解释"
+      },
+      {
+        type: "paragraph",
+        text: "PackedScene 像蓝图，Node 像蓝图造出来的零件，SceneTree 像现场调度员。蓝图加载完成后还没有“活着”；只有实例化成 Node，并挂进 SceneTree，才会收到 `_enter_tree()`、`_ready()`、`_process()` 这些生命周期回调。"
+      },
+      {
+        type: "paragraph",
+        text: "读场景轴时要一直区分三件事：文件里的场景资源、运行中的 Node 实例、每帧调度这些实例的 SceneTree。很多 bug 正是把这三者混在一起造成的。"
+      },
+      {
+        type: "flow",
+        title: "场景轴的主干流程",
+        steps: [
+          { title: "资源加载", text: "`ResourceLoader::load()` 读 `.tscn/.scn`，返回 PackedScene。" },
+          { title: "PackedScene 持有 SceneState", text: "`scene/resources/packed_scene.h:246` 的 PackedScene 内部有 `Ref<SceneState> state`。" },
+          { title: "SceneState 记录节点表", text: "`scene/resources/packed_scene.h:38` 保存节点、属性、连接、组和路径。" },
+          { title: "`instantiate()` 创建 Node", text: "`scene/resources/packed_scene.cpp:155` 按 NodeData 循环，`318` 通过 ClassDB 实例化节点类型。" },
+          { title: "Node 进入树", text: "`scene/main/node.cpp:341` 传播 enter_tree，设置 tree、viewport、组并发通知。" },
+          { title: "ready 和每帧处理", text: "`scene/main/node.cpp:323` 传播 ready；`scene/main/scene_tree.cpp:639` 和 `688` 推进 physics/process。" },
+          { title: "删除和场景切换", text: "`scene/main/scene_tree.cpp:1637` 处理 queue_delete，`1702` 到 `1721` 处理 change_scene。" }
+        ]
+      },
+      {
+        type: "heading",
+        title: "深入解释"
+      },
+      {
+        type: "paragraph",
+        text: "场景轴的类型在 `register_scene_types()` 中注册。`scene/register_scene_types.cpp:390` 先创建 SceneStringNames、初始化 Node 层级缓存和资源格式加载器，然后注册 `Node`、`CanvasItem`、`Viewport`、`Window`、`Control`、GUI、2D/3D、动画和资源类型。这些类型注册后，PackedScene 实例化时才能通过 ClassDB 创建具体节点。"
+      },
+      {
+        type: "paragraph",
+        text: "PackedScene 是 Resource，不是运行节点。源码入口是 `scene/resources/packed_scene.h:246`；它保存 `Ref<SceneState> state`。SceneState 在 `scene/resources/packed_scene.h:38`，里面有 `names`、`variants`、`node_paths`、`nodes`、`connections` 等压缩表。也就是说，场景文件进内存后先变成一套可实例化的数据表。"
+      },
+      {
+        type: "paragraph",
+        text: "`SceneState::instantiate()` 在 `scene/resources/packed_scene.cpp:155`。它遍历保存的 `NodeData`，处理继承场景、子场景实例、placeholder、缺失节点，普通节点则在 `scene/resources/packed_scene.cpp:318` 调 `ClassDB::instantiate(snames[n.type])` 创建 Object，再 cast 成 Node。后续代码恢复属性、父子关系、组、信号连接和本地资源。"
+      },
+      {
+        type: "paragraph",
+        text: "Node 的源码入口是 `scene/main/node.h:54`。它是 Object 子类，但多了父子关系、owner、组、路径、process 模式、线程组、viewport、tree 指针和生命周期通知。`Node::_propagate_enter_tree()` 在 `scene/main/node.cpp:341`，会继承 tree/viewport、加入组、发送 `NOTIFICATION_ENTER_TREE` 和 `tree_entered`，然后递归子节点；`Node::_propagate_ready()` 在 `scene/main/node.cpp:323`，先递归子节点，再发 ready。"
+      },
+      {
+        type: "paragraph",
+        text: "SceneTree 是默认 MainLoop，源码入口是 `scene/main/scene_tree.h:89`。`SceneTree::initialize()` 在 `scene/main/scene_tree.cpp:586` 把 root 节点接到树上。`SceneTree::physics_process()` 在 `scene/main/scene_tree.cpp:639`，会发 `physics_frame`、处理 picking、调用 `_process(true)`、刷新消息队列、timer/tween 和删除队列。`SceneTree::process()` 在 `scene/main/scene_tree.cpp:688`，会 poll multiplayer、发 `process_frame`、调用 `_process(false)`、flush 场景切换和删除。"
+      },
+      {
+        type: "table",
+        title: "场景轴的证据锚点",
+        headers: ["部件", "源码入口", "职责"],
+        rows: [
+          ["Scene 类型注册", "`scene/register_scene_types.cpp:390`", "注册 Node、Viewport、Control、PackedScene 相关类型和资源格式。"],
+          ["PackedScene", "`scene/resources/packed_scene.h:246`、`packed_scene.cpp:2507`", "场景资源壳，调用 SceneState 实例化。"],
+          ["SceneState", "`scene/resources/packed_scene.h:38`、`packed_scene.cpp:155`", "保存节点、属性、连接和路径表，并负责实例化。"],
+          ["Node", "`scene/main/node.h:54`、`node.cpp:341`、`323`", "父子树、owner、组、enter_tree、ready、通知。"],
+          ["SceneTree", "`scene/main/scene_tree.h:89`、`scene_tree.cpp:586`、`639`、`688`", "默认 MainLoop，负责节点调度和每帧生命周期。"],
+          ["删除和切场景", "`scene/main/node.cpp:3461`、`scene_tree.cpp:1637`、`1702`", "queue_free、delete_queue 和 change_scene。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "案例：`change_scene_to_file()`"
+      },
+      {
+        type: "flow",
+        title: "运行时切换场景",
+        steps: [
+          { title: "脚本调用切场景", text: "用户调用 `SceneTree.change_scene_to_file(path)`。" },
+          { title: "ResourceLoader 加载 PackedScene", text: "`scene/main/scene_tree.cpp:1702` 调 `ResourceLoader::load(p_path)`。" },
+          { title: "PackedScene 实例化 Node", text: "`scene/main/scene_tree.cpp:1712` 调 `change_scene_to_packed()`，再 `p_scene->instantiate()`。" },
+          { title: "挂接到 root", text: "`_flush_scene_change()` 把 pending_new_scene 加到 root 下。" },
+          { title: "进入生命周期", text: "add_child 触发 enter_tree/ready，后续由 process/physics 推进。" }
+        ]
+      },
+      {
+        type: "heading",
+        title: "常见误区"
+      },
+      {
+        type: "list",
+        items: [
+          "误区一：PackedScene 就是运行中的场景。PackedScene 是 Resource，只有 `instantiate()` 后才产生 Node 实例。",
+          "误区二：Node 等于 Resource。Node 是树上的运行对象；Resource 是可加载、可共享、可保存的数据对象。",
+          "误区三：SceneTree 负责渲染或物理求解。SceneTree 调度节点和帧阶段，真正渲染/物理执行在 Server 轴。",
+          "误区四：`queue_free()` 立刻删除。它把 ObjectID 放进 SceneTree 删除队列，通常在安全点 flush。",
+          "误区五：父节点和 owner 是一回事。parent 决定运行时树结构，owner 决定场景保存边界。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "边界和相邻概念"
+      },
+      {
+        type: "table",
+        headers: ["概念", "场景轴负责", "不负责"],
+        rows: [
+          ["启动轴", "启动轴创建 SceneTree 并把主场景加入运行。", "场景轴不决定 core/server 的全局初始化顺序。"],
+          ["对象轴", "Node 是 Object 子类，PackedScene 实例化依赖 ClassDB。", "场景轴不解释 MethodBind、Variant 调用和类元数据细节。"],
+          ["服务轴", "场景节点把渲染、物理、音频、导航状态转给 Server。", "场景轴不保存 GPU 资源、物理求解器内部状态或平台窗口实现。"],
+          ["编辑器", "编辑器本身也是一棵 SceneTree。", "编辑器 Dock、Inspector、导入导出 UI 属于 editor 工具层。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "建议阅读路线"
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "先读 `scene/resources/packed_scene.h:38` 和 `246`，区分 SceneState 与 PackedScene。",
+          "读 `scene/resources/packed_scene.cpp:155`，跟实例化如何创建节点、恢复属性和连接。",
+          "读 `scene/main/node.h:54` 和 `node.cpp:341`、`323`，理解 enter_tree 与 ready 的传播顺序。",
+          "读 `scene/main/scene_tree.h:89` 和 `scene_tree.cpp:639`、`688`，理解每帧调度。",
+          "最后读 `scene_tree.cpp:1637`、`1702` 和 `node.cpp:3461`，掌握删除和切场景的安全点。"
+        ]
+      },
+      {
+        type: "callout",
+        title: "一句话总结",
+        text: "场景轴是 Godot 的用户对象运行线：它把场景资源实例化成 Node 树，再用 SceneTree 管理生命周期、每帧回调、切场景和安全删除。"
+      }
+    ]
+  },
+  {
+    id: "service-axis",
+    title: "服务轴",
+    aliases: ["服务轴", "Server 轴", "底层服务轴", "RID/Server 轴", "Server 委托轴"],
+    summary: "围绕 RenderingServer、PhysicsServer、AudioServer、DisplayServer、TextServer、NavigationServer 和 RID 的读法。服务轴解释场景层怎样把渲染、物理、音频、显示、文本等重活交给可替换后端。",
+    article: [
+      {
+        type: "lead",
+        text: "服务轴回答的是“真正干重活的系统在哪里”。Node、Resource 和脚本表达用户语义，但可见物体、碰撞体、音频混音、窗口输入、文本 shaping、导航等底层状态通常进入 Server 单例。Server API 用 RID 或对象接口隐藏后端，后端可以是平台实现、渲染设备、物理模块、音频驱动或文本模块。"
+      },
+      {
+        type: "heading",
+        title: "小白版解释"
+      },
+      {
+        type: "paragraph",
+        text: "把场景层想成前台表单，服务轴像后台专业部门。Sprite2D、MeshInstance3D、RigidBody3D、Control 这些节点保存用户看得懂的状态；真正把纹理送到 GPU、让刚体参与求解、把声音混出去、从系统窗口收输入，都是 Server 或平台后端做的。"
+      },
+      {
+        type: "paragraph",
+        text: "RID 是服务轴的关键线索。看到 RID，通常说明场景层没有直接持有后端对象，而是拿着一个句柄，请对应 Server 去创建、更新、同步和释放真实资源。"
+      },
+      {
+        type: "flow",
+        title: "服务轴的典型委托流程",
+        steps: [
+          { title: "场景节点表达用户状态", text: "例如可见节点、物理节点、GUI 控件或音频播放器。" },
+          { title: "调用 Server API", text: "节点把 mesh、transform、shape、text、viewport 等状态提交给对应 Server。" },
+          { title: "Server 返回或接收 RID", text: "`core/templates/rid.h:38` 的 RID 是 64 位句柄，不暴露后端对象。" },
+          { title: "Server 内部 storage 保存真实对象", text: "`RID_Owner` 在 `core/templates/rid_owner.h:517` 管句柄到对象槽的映射。" },
+          { title: "Main::iteration 推进同步点", text: "物理 sync/step、RenderingServer sync/draw、导航 process 都在帧循环中推进。" },
+          { title: "后端执行", text: "渲染后端、物理模块、音频驱动、DisplayServer 平台实现等完成真实工作。" }
+        ]
+      },
+      {
+        type: "heading",
+        title: "深入解释"
+      },
+      {
+        type: "paragraph",
+        text: "服务轴的类型注册入口是 `servers/register_server_types.cpp:146`。这里注册 `TextServerManager`、`TextServer`、`DisplayServer`、`RenderingServer`、`AudioServer`、`CameraServer`、`RenderingDevice`、音频资源等。`servers/register_server_types.cpp:393` 的 `register_server_singletons()` 把 `AudioServer`、`DisplayServer`、`RenderingServer`、`NavigationServer2D/3D`、`PhysicsServer2D/3D`、`XRServer` 等加入 Engine 单例，脚本才能按全局单例访问。"
+      },
+      {
+        type: "paragraph",
+        text: "服务轴在启动轴的 setup2 阶段建立。`main/main.cpp:3197` 调 `register_server_types()`；DisplayServer 根据平台 create function 创建；`main/main.cpp:3540` 创建 `RenderingServerDefault(OS::get_singleton()->is_separate_thread_rendering_enabled())` 并 `init()`；随后初始化 AudioServer、XRServer、CameraServer、PhysicsServer 等，`main/main.cpp:3839` 再注册单例。"
+      },
+      {
+        type: "paragraph",
+        text: "RenderingServer 的抽象接口在 `servers/rendering/rendering_server.h:64`，它继承 Object 并声明大量虚函数，例如纹理、mesh、canvas、viewport、instance、global shader 参数和帧控制。`servers/rendering/rendering_server.h:966`、`967` 声明 `draw()` 与 `sync()`；`servers/rendering/rendering_server_default.cpp:435` 的实现会根据是否有渲染线程选择 `command_queue.sync()` 或 `flush_all()`，`draw()` 则可能把 `_draw` 推给渲染线程。"
+      },
+      {
+        type: "paragraph",
+        text: "PhysicsServer3D 的入口在 `servers/physics_3d/physics_server_3d.h:236`。它同样继承 Object，但暴露的是 shape、space、area、body、joint 等物理 API，返回和接收大量 RID。`servers/physics_3d/physics_server_3d.h:816` 附近声明 `sync()`、`flush_queries()`、`end_sync()`、`step()` 等帧阶段方法，Main 的物理循环会显式调用这些同步点。"
+      },
+      {
+        type: "paragraph",
+        text: "RID 不是 Resource，也不是裸指针。`core/templates/rid.h:38` 定义的 RID 只保存一个 64 位 id。真实对象由 `RID_Owner` 或专用 storage 管理；`core/templates/rid_owner.h:175` 的 `make_rid()` 分配并初始化句柄，`core/templates/rid_owner.h:191` 的 `get_or_null()` 验证 id 并取对象槽，`core/templates/rid_owner.h:330` 的 `free()` 释放句柄。"
+      },
+      {
+        type: "table",
+        title: "服务轴的证据锚点",
+        headers: ["部件", "源码入口", "职责"],
+        rows: [
+          ["Server 类型注册", "`servers/register_server_types.cpp:146`", "注册 Server 抽象、资源和相关类型。"],
+          ["Server 单例", "`servers/register_server_types.cpp:393`、`main/main.cpp:3839`", "把 Server 加入 Engine 单例，让脚本和系统可访问。"],
+          ["RenderingServer", "`servers/rendering/rendering_server.h:64`、`966`、`967`", "渲染资源、实例、viewport、sync/draw 抽象 API。"],
+          ["RenderingServerDefault", "`main/main.cpp:3540`、`servers/rendering/rendering_server_default.cpp:435`", "默认渲染 Server，实现线程队列、sync、draw。"],
+          ["PhysicsServer3D", "`servers/physics_3d/physics_server_3d.h:236`、`816`", "物理 shape/body/space/joint API 和物理步同步点。"],
+          ["RID/RID_Owner", "`core/templates/rid.h:38`、`core/templates/rid_owner.h:175`、`191`、`330`", "句柄、后端对象槽、验证与释放。"],
+          ["每帧推进", "`main/main.cpp:4896`、`5004`、`5019`、`5037`、`5052`", "物理 Server、导航 Server、RenderingServer 在主循环中被同步和执行。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "案例：一个可见 3D 节点为什么要进 RenderingServer"
+      },
+      {
+        type: "flow",
+        title: "从场景语义到渲染后端",
+        steps: [
+          { title: "Node 保存用户语义", text: "例如 MeshInstance3D 保存 mesh、material、transform、可见性等高层状态。" },
+          { title: "场景层创建或更新 RID", text: "可见对象最终通过 RenderingServer 的 instance、mesh、material、viewport 等 RID API 表达。" },
+          { title: "RenderingServer 保存渲染状态", text: "Server 内部 storage 根据 RID 找真实渲染对象，并记录本帧变更。" },
+          { title: "`Main::iteration()` 调 sync/draw", text: "`main/main.cpp:5037` 先 `RenderingServer::sync()`，`5052` 附近按需 `draw()`。" },
+          { title: "Renderer/RenderingDevice 提交命令", text: "默认 RD 后端把状态变成 GPU 资源和 draw/compute 提交。" }
+        ]
+      },
+      {
+        type: "heading",
+        title: "常见误区"
+      },
+      {
+        type: "list",
+        items: [
+          "误区一：scene 目录直接实现渲染或物理。scene 多数保存用户语义和句柄，底层执行在 Server 和后端。",
+          "误区二：Server API 等于具体后端。`RenderingServer`、`PhysicsServer` 是抽象契约，具体执行可能在 renderer_rd、modules/jolt_physics、platform/display 等位置。",
+          "误区三：RID 是 Resource。RID 是服务内部对象句柄，释放要回到对应 Server 或 RID_Owner，不走 ResourceLoader。",
+          "误区四：Server 调用一定立即执行。RenderingServerDefault 可能通过命令队列和渲染线程延后执行，真正同步点在 sync/draw。",
+          "误区五：所有服务都在 servers 目录完整实现。DisplayServer 的真实窗口和输入实现落在 platform；部分物理、文本、编码能力落在 modules。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "边界和相邻概念"
+      },
+      {
+        type: "table",
+        headers: ["概念", "服务轴负责", "不负责"],
+        rows: [
+          ["启动轴", "启动轴创建、初始化、每帧同步和清理 Server。", "服务轴不决定整个进程的 setup/start/cleanup 顺序。"],
+          ["对象轴", "Server 单例常作为 Object 暴露给脚本和 ClassDB。", "服务轴不解释 Object 的 set/get/call 和信号元数据。"],
+          ["场景轴", "场景节点通过 RID 和 Server API 委托底层执行。", "服务轴不保存 Node 父子树、owner、ready/process 状态。"],
+          ["平台层", "DisplayServer、AudioDriver、窗口和输入最终落到平台实现。", "服务轴不是某一个平台的原生 API 封装细节。"],
+          ["模块层", "Jolt、Godot Physics、TextServer 后端等可作为服务实现接入。", "服务轴不是所有第三方库源码本身。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "建议阅读路线"
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "先读 `servers/register_server_types.cpp:146` 和 `393`，确认 Server 类型与单例边界。",
+          "回到 `main/main.cpp:3197`、`3540`、`3839`，看服务什么时候创建和初始化。",
+          "读目标 Server 的抽象头文件，例如 `servers/rendering/rendering_server.h:64` 或 `servers/physics_3d/physics_server_3d.h:236`。",
+          "看到 RID 时读 `core/templates/rid.h:38` 和 `rid_owner.h:175`、`191`、`330`，确认句柄归属。",
+          "最后跟到具体后端和帧同步点：渲染看 `RenderingServerDefault::sync/draw`，物理看 `PhysicsServer*::sync/step`，显示看 `platform/*/display_server_*`。"
+        ]
+      },
+      {
+        type: "callout",
+        title: "一句话总结",
+        text: "服务轴是 Godot 的执行后端边界：场景层表达意图，Server 用 RID 和单例接口保存底层状态，并在主循环同步点把工作交给渲染、物理、音频、显示、文本和平台后端。"
+      }
+    ]
+  },
+  {
     id: "object",
     title: "Object",
     aliases: ["Object", "Godot Object", "对象基类", "对象系统"],
@@ -2088,7 +2636,7 @@ const concepts = [
   {
     id: "refcounted",
     title: "RefCounted",
-    aliases: ["RefCounted", "Ref", "Ref<T>", "引用计数", "Resource", "WeakRef", "init_ref", "reference", "unreference", "get_reference_count"],
+    aliases: ["RefCounted", "Ref", "Ref<T>", "引用计数", "WeakRef", "init_ref", "reference", "unreference", "get_reference_count"],
     summary: "Godot 的引用计数对象基类和智能引用包装：Resource 等对象继承 RefCounted，通常由 Ref<T> 持有；最后一个强引用释放时，unreference() 返回 true，调用方删除对象。",
     article: [
       {
@@ -2384,6 +2932,332 @@ const concepts = [
         type: "callout",
         title: "一句话总结",
         text: "RefCounted 是 Godot 的共享对象生命周期模型；真正日常使用的是 `Ref<T>` 强引用，最后一个强引用释放时对象才会删除，而 ObjectID、WeakRef 和裸指针都不能替代这种所有权语义。"
+      }
+    ]
+  },
+  {
+    id: "resource",
+    title: "Resource",
+    aliases: ["Resource", "资源", "资源对象", "resource_path", "resource_name", "resource_local_to_scene", "resource_scene_unique_id", "take_over_path", "set_path_cache", "is_built_in", "duplicate_deep", "emit_changed"],
+    summary: "Godot 可加载、可保存、可共享的数据对象基类：继承 RefCounted，用 resource_path 接入 ResourceCache，并通过 ResourceLoader/ResourceSaver 进出文件系统。",
+    article: [
+      {
+        type: "lead",
+        text: "Resource 是 Godot 资源系统的核心数据基类。它不是场景树里的节点，而是可被引用计数持有、可序列化、可缓存、可嵌套到其他资源里的数据对象。Texture2D、Mesh、Material、Animation、Script、PackedScene 等大量类型都建立在 Resource 语义上。"
+      },
+      {
+        type: "heading",
+        title: "小白版解释"
+      },
+      {
+        type: "paragraph",
+        text: "可以把 Resource 想成游戏项目里的“资料卡”。图片、材质、场景蓝图、动画轨道、脚本这些资料可以放在磁盘上，也可以被多个节点共用。节点负责“在场景里活着和运行”，Resource 负责“保存可复用的数据”。"
+      },
+      {
+        type: "paragraph",
+        text: "复制一个 `Ref<Resource>` 不会复制资料卡内容，只是多一份强引用指向同一个 Resource。要得到内容副本，需要调用 `duplicate()`、`duplicate_deep()` 或具体资源自己的复制 API。"
+      },
+      {
+        type: "flow",
+        title: "Resource 的日常路径",
+        steps: [
+          { title: "磁盘或脚本创建", text: "`.tres`、`.res`、`.tscn`、图片、脚本或 `Resource.new()` 得到 Resource 对象。" },
+          { title: "Ref 持有生命周期", text: "Resource 继承 RefCounted，通常由 `Ref<T>`、Variant 或脚本变量持有。" },
+          { title: "路径登记到缓存", text: "有 `resource_path` 的资源会进入 ResourceCache，后续同路径加载可能复用它。" },
+          { title: "节点或其他资源引用", text: "Sprite2D.texture、MeshInstance3D.mesh、PackedScene 内部子资源都可以引用 Resource。" },
+          { title: "保存或实例化", text: "ResourceSaver 写回文件；PackedScene 这种 Resource 还能 instantiate 成 Node 树。" }
+        ]
+      },
+      {
+        type: "heading",
+        title: "源码入口"
+      },
+      {
+        type: "paragraph",
+        text: "`Resource` 声明在 `core/io/resource.h:52`，继承 `RefCounted`。这说明它首先是 Object，能进 ClassDB、能有属性/方法/信号；其次是 RefCounted，生命周期通常由 `Ref<T>` 管；最后才是资源系统对象，额外拥有路径、缓存、复制、保存、local-to-scene 和 RID 桥接语义。"
+      },
+      {
+        type: "paragraph",
+        text: "基础注册在 `core/register_core_types.cpp:148` 的 `GDREGISTER_CLASS(Resource)`。`Resource::register_custom_data_to_otdb()` 会把默认扩展 `res` 注册到 ClassDB；子类可以用 `RES_BASE_EXTENSION(\"theme\")` 这类宏声明自己的基础扩展。"
+      },
+      {
+        type: "paragraph",
+        text: "脚本可见 API 绑定集中在 `Resource::_bind_methods()`，位置是 `core/io/resource.cpp:733`。这里绑定了 `take_over_path()`、`get_path()`、`set_path_cache()`、`get_rid()`、`duplicate()`、`duplicate_deep()`、`copy_from_resource()`、`emit_changed()`，并添加 `changed`、`resource_path`、`resource_name`、`resource_local_to_scene`、`resource_scene_unique_id` 等信号和属性。"
+      },
+      {
+        type: "table",
+        title: "Resource 关键字段和职责",
+        headers: ["字段/接口", "源码入口", "负责什么"],
+        rows: [
+          ["`name` / `resource_name`", "`resource.h:72`、`resource.cpp:189`", "编辑器展示名和脚本可读写名称；设置时会 `emit_changed()`。"],
+          ["`path_cache` / `resource_path`", "`resource.h:73`、`resource.cpp:79`", "资源路径和 ResourceCache 的键；同一路径默认只允许一个缓存资源。"],
+          ["`scene_unique_id`", "`resource.h:74`、`resource.cpp:129`", "场景内子资源的稳定 ID，帮助 .tscn 保存时保持可读、可合并。"],
+          ["`local_to_scene`", "`resource.h:88`、`resource.cpp:652`", "标记这个资源在 PackedScene 实例化时是否要为每个场景实例复制一份。"],
+          ["`emit_changed_state`", "`resource.h:87`、`resource.cpp:49`", "控制 `changed` 信号，支持阻塞期间合并成一次延后发射。"],
+          ["`get_rid()`", "`resource.cpp:618`", "给 Texture、Mesh 等高层资源返回底层 Server RID 的统一入口。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "路径和 ResourceCache"
+      },
+      {
+        type: "paragraph",
+        text: "`Resource::set_path()` 是 Resource 和全局缓存相连的关键函数。它先从旧 `path_cache` 移除自己，再检查新路径是否已有资源；如果已有且不是 `take_over_path()` 场景，就报错并拒绝覆盖；如果允许 takeover，就清掉旧资源路径并把当前对象登记到 `ResourceCache::resources[p_path]`。"
+      },
+      {
+        type: "paragraph",
+        text: "`set_path_cache()` 不触碰 ResourceCache，只直接改 `path_cache` 并调用虚拟扩展点 `_set_path_cache`。这主要给自定义 ResourceFormatLoader/ResourceFormatSaver 和 cache mode 处理用，不是普通用户覆盖缓存的工具。"
+      },
+      {
+        type: "paragraph",
+        text: "`ResourceCache` 定义在 `core/io/resource.h:197`，核心就是一个 `HashMap<String, Resource *> resources` 加锁保护。`ResourceCache::has()` 和 `get_ref()` 会检查资源是否正在被删除；如果引用计数已经归零，会把缓存条目清掉，避免返回即将销毁的对象。"
+      },
+      {
+        type: "flow",
+        title: "同一路径资源为什么会共享",
+        steps: [
+          { title: "第一次 load", text: "ResourceLoader 选中格式加载器，创建 Resource。" },
+          { title: "设置路径", text: "加载完成后调用 `resource->set_path(local_path)`。" },
+          { title: "进入 ResourceCache", text: "`ResourceCache::resources[local_path] = this`。" },
+          { title: "再次 load", text: "默认 `CACHE_MODE_REUSE` 先查 `ResourceCache::get_ref(local_path)`。" },
+          { title: "返回同一对象", text: "拿到的是同一个 Resource 的新强引用，不是重新解析文件。" }
+        ]
+      },
+      {
+        type: "table",
+        title: "path 相关 API 的边界",
+        headers: ["API", "做什么", "不要误解成"],
+        rows: [
+          ["`resource_path` / `set_path()`", "设置路径并参与 ResourceCache 唯一登记。", "普通字符串字段；它会影响后续按路径加载结果。"],
+          ["`take_over_path()`", "强行让当前资源接管某个路径的缓存入口。", "复制文件或保存文件；它只是改内存缓存映射。"],
+          ["`set_path_cache()`", "只改对象内部路径缓存，不登记 ResourceCache。", "安全替代 `take_over_path()`；它会绕开缓存唯一性。"],
+          ["`is_built_in()`", "路径为空、含 `::` 或以 `local://` 开头时视为内置/本地资源。", "判断资源类型；它判断的是保存位置语义。"],
+          ["`ResourceCache::get_ref()`", "按路径返回缓存资源的强引用。", "磁盘缓存；它只是当前进程内对象表。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "加载和保存中的 Resource"
+      },
+      {
+        type: "paragraph",
+        text: "ResourceLoader 的职责是从路径得到 `Ref<Resource>`。`ResourceLoader::_load_start()` 在默认 `CACHE_MODE_REUSE` 下会先查 ResourceCache；真正解析文件的是注册进来的 `ResourceFormatLoader`。加载完成后，如果不是 ignore cache，就把资源路径设为本地路径，从而进入缓存。"
+      },
+      {
+        type: "paragraph",
+        text: "ResourceSaver 的职责是把 `Ref<Resource>` 写回路径。`ResourceSaver::save()` 会遍历注册的 `ResourceFormatSaver`，先问 `recognize(resource)`，再问 `recognize_path(resource, path)`，匹配后才实际保存。`FLAG_CHANGE_PATH` 只在保存期间临时设置路径，保存后会恢复旧路径。"
+      },
+      {
+        type: "table",
+        title: "Resource、Loader、Saver 的分工",
+        headers: ["概念", "负责什么", "不负责什么"],
+        rows: [
+          ["Resource", "保存资源对象的路径、名称、复制规则、changed 信号和可序列化属性。", "不自己决定哪个文件格式能加载/保存。"],
+          ["ResourceLoader", "标准化路径、处理缓存和加载任务，选择 ResourceFormatLoader。", "不直接解析所有格式细节。"],
+          ["ResourceFormatLoader", "把某类文件解析成具体 Resource。", "不管理全局路径缓存策略。"],
+          ["ResourceSaver", "选择 ResourceFormatSaver，把 Resource 写回文件。", "不拥有资源生命周期。"],
+          ["ResourceFormatSaver", "把某类 Resource 序列化成具体文件格式。", "不决定其他资源是否共享同一实例。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "复制、深拷贝和本地场景资源"
+      },
+      {
+        type: "paragraph",
+        text: "`Resource::duplicate()` 和 `duplicate_deep()` 不会复制所有成员变量，而是读取属性列表，只复制带 `PROPERTY_USAGE_STORAGE` 的属性。`script` 会特殊处理，`resource_path` 在 `copy_from_resource()` 里会被跳过，避免把副本或替换资源直接改成原资源路径。"
+      },
+      {
+        type: "paragraph",
+        text: "深拷贝由 `_duplicate_recursive()` 处理。数组、字典和 packed arrays 会复制；遇到嵌套 Resource 时，要看 `PROPERTY_USAGE_ALWAYS_DUPLICATE`、`PROPERTY_USAGE_NEVER_DUPLICATE`、deep mode 和是否 built-in。默认 `DEEP_DUPLICATE_INTERNAL` 只复制内置/本地子资源，不会把外部 `.tres`、贴图、脚本等都复制一遍。脚本资源即使命中也会被排除。"
+      },
+      {
+        type: "paragraph",
+        text: "`resource_local_to_scene` 是场景实例隔离资源状态的开关。PackedScene 实例化时，如果某个 Resource 标记为 local-to-scene，就通过 `duplicate_for_local_scene()` 复制，并在新副本上设置 `local_scene`。随后 `setup_local_to_scene()` 会发出旧的 `setup_local_to_scene_requested` 信号并调用可重写的 `_setup_local_to_scene()`。"
+      },
+      {
+        type: "flow",
+        title: "local-to-scene 的路径",
+        steps: [
+          { title: "资源标记", text: "`resource_local_to_scene = true`。" },
+          { title: "PackedScene instantiate", text: "场景实例化恢复属性时发现本地资源。" },
+          { title: "复制资源", text: "`duplicate_for_local_scene()` 使用同一 remap cache，避免同一子资源重复复制。" },
+          { title: "绑定场景根", text: "新资源的 `local_scene` 指向当前实例根节点。" },
+          { title: "初始化副本", text: "调用 `_setup_local_to_scene()`，可以给每个实例设置不同状态。" }
+        ]
+      },
+      {
+        type: "table",
+        title: "复制模式怎么读",
+        headers: ["模式/标记", "效果", "典型用途"],
+        rows: [
+          ["`duplicate(false)`", "浅复制；嵌套 Resource、Array、Dictionary 多数仍共享。", "只想复制资源外壳或简单属性。"],
+          ["`duplicate(true)`", "深复制数组/字典，并按 INTERNAL 规则复制内置子资源。", "复制场景内子资源，不复制外部大资源。"],
+          ["`DEEP_DUPLICATE_NONE`", "数组/字典可复制，但子资源仍指向原对象。", "保留共享资源引用。"],
+          ["`DEEP_DUPLICATE_INTERNAL`", "只复制 built-in/local 子资源。", "默认安全选择，避免外部资源膨胀。"],
+          ["`DEEP_DUPLICATE_ALL`", "能遇到的子资源都复制，外部资源也复制。", "确实需要完全独立资源图时。"],
+          ["`ALWAYS/NEVER_DUPLICATE`", "属性级标记覆盖普通 deep 参数。", "资源子类声明固定复制规则。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "changed 信号、重载和编辑器状态"
+      },
+      {
+        type: "paragraph",
+        text: "`emit_changed()` 会发出 `changed` 信号。内置资源会在某些属性变化时自动调用；自定义 Resource 的普通导出变量不会天然知道“有意义的变化”，通常要在 setter 里手动调用 `emit_changed()`，否则依赖它的节点、预览或编辑器 UI 可能不会刷新。"
+      },
+      {
+        type: "paragraph",
+        text: "`reload_from_file()` 会用 `CACHE_MODE_IGNORE` 从路径重新加载同类资源，再 `copy_from()` 到当前对象。`copy_from()` 会先 `reset_state()`，再复制 `PROPERTY_USAGE_STORAGE` 属性，并用 `_block_emit_changed()` / `_unblock_emit_changed()` 把过程中多次变化合并成一次信号。"
+      },
+      {
+        type: "code",
+        code: [
+          "extends Resource",
+          "",
+          "@export var damage := 10:",
+          "    set(value):",
+          "        if damage == value:",
+          "            return",
+          "        damage = value",
+          "        emit_changed()"
+        ].join("\n")
+      },
+      {
+        type: "paragraph",
+        text: "这个 setter 不是为了“让值能保存”，而是为了通知使用者资源内容变了。保存仍取决于属性是否带 storage usage；刷新则取决于谁监听了 `changed`。"
+      },
+      {
+        type: "heading",
+        title: "Resource 和 RID 的关系"
+      },
+      {
+        type: "paragraph",
+        text: "`get_rid()` 是 Resource 通向底层 Server 的统一桥。Resource 本身不是 RID，也不拥有所有 Server 对象；但 Texture2D、Mesh、Font 等高层资源可以重写 `_get_rid()`，返回 RenderingServer、TextServer 或其他 Server 管理的底层句柄。"
+      },
+      {
+        type: "paragraph",
+        text: "读源码时要把这两层分开：Resource 是可序列化、可引用计数、可被编辑器和脚本持有的高层对象；RID 是 Server 内部对象句柄，释放规则由对应 Server 管。把 RID 当 Resource 或把 Resource 当 RID，都会看错生命周期。"
+      },
+      {
+        type: "heading",
+        title: "案例"
+      },
+      {
+        type: "subheading",
+        title: "案例一：共享资源会共享状态"
+      },
+      {
+        type: "code",
+        code: [
+          "var mat := load(\"res://enemy_material.tres\")",
+          "$EnemyA.material_override = mat",
+          "$EnemyB.material_override = mat",
+          "",
+          "mat.albedo_color = Color.RED",
+          "# 两个节点看到的是同一个 Resource 实例的变化。"
+        ].join("\n")
+      },
+      {
+        type: "paragraph",
+        text: "如果不希望共享状态，应该复制资源或把资源设为 local-to-scene，而不是以为再次 load 同一路径会得到新对象。"
+      },
+      {
+        type: "subheading",
+        title: "案例二：接管路径只影响内存缓存"
+      },
+      {
+        type: "code",
+        code: [
+          "var replacement := Resource.new()",
+          "replacement.take_over_path(\"res://config/runtime.tres\")",
+          "",
+          "var loaded := load(\"res://config/runtime.tres\")",
+          "# 默认缓存模式下，loaded 会拿到 replacement。"
+        ].join("\n")
+      },
+      {
+        type: "paragraph",
+        text: "`take_over_path()` 不会写磁盘文件。它只是让当前进程里后续同路径加载优先返回这个资源。"
+      },
+      {
+        type: "subheading",
+        title: "案例三：每个场景实例得到独立资源"
+      },
+      {
+        type: "code",
+        code: [
+          "extends Resource",
+          "",
+          "@export var seed := 0",
+          "",
+          "func _setup_local_to_scene():",
+          "    seed = randi()"
+        ].join("\n")
+      },
+      {
+        type: "paragraph",
+        text: "把这个资源保存到场景里并设置 `resource_local_to_scene = true` 后，每次 PackedScene 实例化都会复制一份，并调用 `_setup_local_to_scene()`。"
+      },
+      {
+        type: "heading",
+        title: "Resource 和相邻概念的边界"
+      },
+      {
+        type: "table",
+        title: "不要把这些职责混在一起",
+        headers: ["概念", "负责什么", "不负责什么"],
+        rows: [
+          ["RefCounted", "引用计数生命周期。", "不提供路径、缓存、保存和资源复制规则。"],
+          ["Resource", "可序列化数据对象、路径缓存入口、复制规则、changed 信号和可选 RID 桥接。", "不进入 SceneTree，也不代表运行中的节点。"],
+          ["Node", "场景树父子关系、生命周期、process、owner 和运行时行为。", "不是资源缓存对象，不能靠 Ref 自动释放。"],
+          ["PackedScene", "一种 Resource，保存可实例化 Node 树的 SceneState。", "加载后不是 Node；要 `instantiate()` 才生成节点。"],
+          ["ResourceLoader", "按路径和格式加载 Resource，并处理缓存策略。", "不是 Resource 基类，也不保存资源内容。"],
+          ["ResourceCache", "当前进程内按路径保存 Resource 指针。", "不是磁盘缓存，也不复制资源内容。"],
+          ["RID", "Server 内部对象句柄。", "不是 RefCounted，不负责高层资源序列化。"]
+        ]
+      },
+      {
+        type: "heading",
+        title: "常见误区"
+      },
+      {
+        type: "list",
+        items: [
+          "误区一：Resource 就是 RefCounted。Resource 继承 RefCounted，但额外提供路径、缓存、保存、复制、changed 和 local-to-scene 语义。",
+          "误区二：Resource 是 Node。Resource 是数据对象，不能进入场景树，也没有 enter_tree/ready/process。",
+          "误区三：再次 load 同一路径会重新读文件并创建新对象。默认会优先复用 ResourceCache。",
+          "误区四：复制 Ref 就复制资源内容。复制 Ref 只是增加强引用，内容仍共享。",
+          "误区五：`resource_path` 是普通显示字段。它是 ResourceCache 的键，会影响后续加载。",
+          "误区六：`take_over_path()` 会保存文件。它只接管内存缓存入口。",
+          "误区七：深拷贝会复制所有资源。默认只复制内置/本地子资源，外部资源通常仍共享。",
+          "误区八：custom Resource 属性变化会自动发 `changed`。自定义资源通常需要在 setter 中手动 `emit_changed()`。"
+        ]
+      },
+      {
+        type: "heading",
+        title: "建议阅读路线"
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "先读 `core/io/resource.h:52` 的类声明，确认它继承 RefCounted，并标出 name、path_cache、scene_unique_id、local_to_scene 等字段。",
+          "读 `core/register_core_types.cpp:148` 和 `Resource::register_custom_data_to_otdb()`，确认 Resource 何时注册、默认扩展如何进入 ClassDB。",
+          "读 `Resource::_bind_methods()`，把脚本 API、属性和信号与 C++ 方法对上。",
+          "读 `Resource::set_path()`、`take_over_path()`、`ResourceCache::has()`、`get_ref()`，理解同一路径为什么共享对象。",
+          "读 `ResourceLoader::_load_start()` 和加载完成后的 `set_path()` 路径，把 cache mode 和 ResourceCache 对上。",
+          "读 `ResourceSaver::save()`，理解保存器如何识别 Resource 并写回文件。",
+          "读 `_duplicate_recursive()`、`duplicate()`、`duplicate_deep()` 和 `duplicate_for_local_scene()`，理解浅复制、深复制、本地场景资源的区别。",
+          "最后读 `emit_changed()`、`copy_from()`、`reload_from_file()`、`get_rid()`，补上编辑器刷新、文件重载和 Server 句柄边界。"
+        ]
+      },
+      {
+        type: "callout",
+        title: "一句话总结",
+        text: "Resource 是 Godot 的可序列化共享数据基类：它借 RefCounted 管生命周期，借 resource_path 接入 ResourceCache，借 Loader/Saver 进出文件系统，并用复制规则、changed 信号和 local-to-scene 语义处理资源共享与隔离。"
       }
     ]
   },
@@ -12738,6 +13612,778 @@ const beginnerGuides = {
   "建议的“功能追踪法”": [
     "这一节给最终读法：选一个具体功能，从用户能看到的入口开始，沿着绑定、状态、资源、Server、主循环一路追到底，再回头记录影响面。不要泛泛地读整个目录，也不要从最底层算法开始，因为这样很容易看见很多细节却不知道它们服务哪个功能。",
     "小白可以每次只追一个问题，例如 Button.pressed 怎么发信号，Sprite2D.texture 怎么显示，PackedScene.instantiate 怎么创建节点，RigidBody3D 怎么参与物理步。每条追踪都写下入口、关键类、状态字段、刷新时机、常见坑。几条功能链积累起来，就会自然形成完整的 Godot 源码地图。"
+  ]
+};
+
+const sourceMapGraph = {
+  viewBox: { width: 3280, height: 1120 },
+  relationTypes: {
+    initializes: { label: "初始化", color: "#2a5a9f" },
+    registers: { label: "注册/暴露", color: "#1a7f64" },
+    "object-model": { label: "对象模型", color: "#a45b11" },
+    "resource-flow": { label: "资源流", color: "#7c5cc4" },
+    "scene-lifecycle": { label: "场景生命周期", color: "#27835f" },
+    "server-delegate": { label: "委托给 Server", color: "#365c8d" },
+    backend: { label: "后端实现", color: "#6552a8" },
+    "editor-tooling": { label: "编辑器工具链", color: "#8a5a1f" },
+    design: { label: "底层设计", color: "#6f6f45" },
+    "runtime-loop": { label: "每帧调度", color: "#b05252" }
+  },
+  groups: [
+    { id: "startup", title: "启动 / 平台入口", x: 40, y: 40, width: 700, height: 330, color: "#e9f3ff", description: "从平台可执行文件进入 Main，再创建 MainLoop 并驱动每帧。" },
+    { id: "core", title: "core：对象和统一值", x: 790, y: 40, width: 760, height: 410, color: "#fff6e7", description: "让 C++ 类型能被脚本、编辑器、资源和扩展统一识别。" },
+    { id: "scene", title: "scene：资源和运行中的树", x: 1600, y: 40, width: 780, height: 560, color: "#eef8ef", description: "把资源实例化成 Node 树，并把用户语义转成 Server 状态。" },
+    { id: "servers", title: "servers：底层执行边界", x: 2430, y: 40, width: 800, height: 610, color: "#f2edfb", description: "渲染、物理、音频、显示、导航和输入的抽象 API 与后端入口。" },
+    { id: "modules", title: "modules：可选能力接入", x: 790, y: 480, width: 760, height: 360, color: "#f6f0e6", description: "按初始化级别把脚本语言、导入器、网络、文本、物理后端等插入引擎。" },
+    { id: "editor", title: "editor：工具运行时", x: 1600, y: 660, width: 780, height: 330, color: "#eaf2f6", description: "编辑器本体也是引擎里的场景树，复用 Object、Resource、SceneTree 和 Server。" },
+    { id: "deep", title: "底层设计抓手", x: 40, y: 440, width: 700, height: 550, color: "#f8faf7", description: "读生命周期、线程、错误处理和源码路线时反复使用的判断框架。" }
+  ],
+  nodes: [
+    {
+      id: "platform-entry",
+      title: "平台入口",
+      group: "startup",
+      summary: "各平台的 godot_*.cpp 把命令行、编码、OS 对象和平台事件循环准备好，再把控制权交给 Main。",
+      beginner: "把它看成 Godot 可执行文件的门口。Windows、Linux、Web 的门口不一样，但进门后都会走向 Main。",
+      conceptId: "platformdrivers",
+      articleHref: "index.html#startup",
+      sourceAnchors: ["platform/windows/godot_windows.cpp:68", "platform/linuxbsd/godot_linuxbsd.cpp:111"],
+      tags: ["platform", "entry", "OS"],
+      x: 150,
+      y: 150,
+      importance: 3
+    },
+    {
+      id: "main-setup",
+      title: "Main::setup",
+      group: "startup",
+      summary: "建立 core 层单例、注册基础类型、解析命令行和项目设置，让后续系统有统一对象世界。",
+      beginner: "这一步像开机自检：先把对象系统、项目配置和最基础的服务台搭起来。",
+      articleHref: "index.html#startup",
+      sourceAnchors: ["main/main.cpp:1027", "main/main.cpp:1059", "main/main.cpp:2255"],
+      tags: ["Main", "core", "setup"],
+      x: 390,
+      y: 120,
+      importance: 4
+    },
+    {
+      id: "main-setup2",
+      title: "Main::setup2",
+      group: "startup",
+      summary: "注册 Server、Scene、模块和编辑器类型，创建渲染、物理、音频、文本等高层运行时基础。",
+      beginner: "如果 setup 是打地基，setup2 就是在地基上安装渲染、物理、场景和编辑器这些大系统。",
+      articleHref: "index.html#startup",
+      sourceAnchors: ["main/main.cpp:3008", "main/main.cpp:3197", "main/main.cpp:3759"],
+      tags: ["Main", "servers", "scene"],
+      x: 630,
+      y: 150,
+      importance: 4
+    },
+    {
+      id: "main-start",
+      title: "Main::start",
+      group: "startup",
+      summary: "决定运行编辑器、项目管理器、命令行工具、自定义 MainLoop，还是默认 SceneTree 和主场景。",
+      beginner: "这一步决定本次进程到底要做什么：开编辑器、跑游戏、打开项目管理器，还是执行工具命令。",
+      articleHref: "index.html#startup",
+      sourceAnchors: ["main/main.cpp:3988", "main/main.cpp:4335", "main/main.cpp:4737"],
+      tags: ["Main", "SceneTree", "main scene"],
+      x: 390,
+      y: 280,
+      importance: 4
+    },
+    {
+      id: "main-iteration",
+      title: "Main::iteration",
+      group: "startup",
+      summary: "每帧调度中心：物理步、process、消息队列、导航、渲染 sync/draw、调试和性能统计。",
+      beginner: "游戏看起来在连续运行，本质上是这里一帧一帧推进各个系统。",
+      articleHref: "index.html#startup",
+      sourceAnchors: ["main/main.cpp:4896", "main/main.cpp:5037", "main/main.cpp:5052"],
+      tags: ["frame", "process", "draw"],
+      x: 630,
+      y: 285,
+      importance: 5
+    },
+    {
+      id: "project-settings",
+      title: "ProjectSettings",
+      group: "startup",
+      summary: "读取 project.godot、autoload、feature override、主场景路径和运行参数，给 Main、ResourceLoader、InputMap 使用。",
+      beginner: "它像项目的配置总账。主场景在哪里、自动加载哪些脚本、输入和资源路径怎么解释，都要查它。",
+      conceptId: "projectsettings",
+      articleHref: "concepts.html#concept-projectsettings",
+      sourceAnchors: ["core/config/project_settings.h:57", "main/main.cpp:4737"],
+      tags: ["project.godot", "autoload", "main_scene"],
+      x: 150,
+      y: 285,
+      importance: 3
+    },
+    {
+      id: "object",
+      title: "Object",
+      group: "core",
+      summary: "Godot 大多数运行时对象的共同根，提供类型名、属性、方法、信号、脚本实例、元数据和 ObjectID。",
+      beginner: "Object 不是场景物体，而是 Godot 认识一个 C++ 对象的基础身份规则。",
+      conceptId: "object",
+      articleHref: "concepts.html#concept-object",
+      sourceAnchors: ["core/object/object.h:349", "core/object/object.cpp:2294"],
+      tags: ["Object", "base class"],
+      x: 930,
+      y: 280,
+      importance: 5
+    },
+    {
+      id: "objectdb",
+      title: "ObjectDB",
+      group: "core",
+      summary: "全局弱索引，把 Object 登记成 ObjectID，让 Callable、消息队列和删除队列能重新查找活对象。",
+      beginner: "它像通讯录，不是保险箱。能查到对象，但不会替你拥有对象。",
+      conceptId: "objectdb",
+      articleHref: "concepts.html#concept-objectdb",
+      sourceAnchors: ["core/object/object.h:908", "core/object/object.cpp:2450"],
+      tags: ["ObjectID", "weak lookup"],
+      x: 1170,
+      y: 280,
+      importance: 3
+    },
+    {
+      id: "classdb",
+      title: "ClassDB",
+      group: "core",
+      summary: "运行时类型登记表，保存类名、继承、创建函数、方法、属性、信号和常量。",
+      beginner: "脚本和 Inspector 能认识 C++ 类，靠的就是这张类型登记表。",
+      conceptId: "classdb",
+      articleHref: "concepts.html#concept-classdb",
+      sourceAnchors: ["core/object/class_db.h:97", "core/object/class_db.cpp"],
+      tags: ["reflection", "GDCLASS"],
+      x: 1170,
+      y: 155,
+      importance: 5
+    },
+    {
+      id: "methodbind",
+      title: "MethodBind",
+      group: "core",
+      summary: "把 C++ 成员函数包装成运行时可调用对象，供 Object::callp、脚本和扩展统一调用。",
+      beginner: "它像 C++ 方法和脚本调用之间的转接头。",
+      conceptId: "methodbind",
+      articleHref: "concepts.html#concept-methodbind",
+      sourceAnchors: ["core/object/method_bind.h:38", "core/object/object.cpp:768"],
+      tags: ["bind_method", "ptrcall"],
+      x: 1410,
+      y: 155,
+      importance: 4
+    },
+    {
+      id: "variant",
+      title: "Variant",
+      group: "core",
+      summary: "统一值容器，让脚本参数、属性、信号、序列化和扩展边界能传递同一套值。",
+      beginner: "Variant 像一个通用盒子，能装数字、字符串、对象、数组、字典等很多 Godot 值。",
+      conceptId: "variant",
+      articleHref: "concepts.html#concept-variant",
+      sourceAnchors: ["core/variant/variant.h:93", "core/variant/variant.cpp"],
+      tags: ["value", "script", "serialization"],
+      x: 1410,
+      y: 280,
+      importance: 5
+    },
+    {
+      id: "callable-signal",
+      title: "Callable / Signal",
+      group: "core",
+      summary: "统一表示之后可以调用的目标和对象发出的事件，串起信号连接、延迟调用和脚本函数。",
+      beginner: "Signal 是“发生了什么”，Callable 是“之后该叫谁来处理”。",
+      conceptId: "callable-signal",
+      articleHref: "concepts.html#concept-callable-signal",
+      sourceAnchors: ["core/variant/callable.h:42", "core/object/object.cpp:1541"],
+      tags: ["signal", "callable"],
+      x: 1305,
+      y: 390,
+      importance: 3
+    },
+    {
+      id: "messagequeue",
+      title: "MessageQueue",
+      group: "core",
+      summary: "把 call_deferred、set_deferred、通知等操作放到安全点统一 flush，避免遍历中改树或重入。",
+      beginner: "它像会后处理清单：先记下来，等安全时统一执行。",
+      conceptId: "messagequeue",
+      articleHref: "concepts.html#concept-messagequeue",
+      sourceAnchors: ["core/object/message_queue.h:42", "core/object/message_queue.cpp:68"],
+      tags: ["deferred", "queue_free"],
+      x: 1035,
+      y: 390,
+      importance: 4
+    },
+    {
+      id: "stringnamenodepath",
+      title: "StringName / NodePath",
+      group: "core",
+      summary: "高频名字键和节点/属性路径基础设施，支撑方法名、信号名、组名、动画路径和场景引用。",
+      beginner: "StringName 让名字查找更快，NodePath 让节点和属性路径能被保存和解析。",
+      conceptId: "stringnamenodepath",
+      articleHref: "concepts.html#concept-stringnamenodepath",
+      sourceAnchors: ["core/string/string_name.h:38", "core/string/node_path.h:34"],
+      tags: ["SNAME", "path"],
+      x: 930,
+      y: 155,
+      importance: 3
+    },
+    {
+      id: "resource",
+      title: "Resource",
+      group: "scene",
+      summary: "可加载、可保存、可共享的数据对象基类；用 RefCounted 管生命周期，用 resource_path 接入 ResourceCache。",
+      beginner: "它像项目里的资料卡：贴图、材质、脚本、场景蓝图都可以作为资源被多个地方共用。",
+      conceptId: "resource",
+      articleHref: "concepts.html#concept-resource",
+      sourceAnchors: ["core/io/resource.h:52", "core/io/resource.cpp:733", "core/io/resource.cpp:829"],
+      tags: ["Resource", "resource_path", "ResourceCache"],
+      x: 1720,
+      y: 290,
+      importance: 5
+    },
+    {
+      id: "resourceloader",
+      title: "ResourceLoader",
+      group: "scene",
+      summary: "资源加载调度器，标准化路径、处理 remap/UID/cache，选择 ResourceFormatLoader。",
+      beginner: "它负责把 .tscn、.tres、.gd、图片等文件变成 Godot 能用的 Resource。",
+      conceptId: "resourceloader",
+      articleHref: "concepts.html#concept-resourceloader",
+      sourceAnchors: ["core/io/resource_loader.h:103", "core/io/resource_loader.cpp:513"],
+      tags: ["Resource", "loader", "cache"],
+      x: 1720,
+      y: 155,
+      importance: 5
+    },
+    {
+      id: "packedscene",
+      title: "PackedScene",
+      group: "scene",
+      summary: "场景模板资源；加载后还不是运行节点，instantiate() 才创建真正的 Node 树。",
+      beginner: "它像场景蓝图，只有实例化以后才变成运行中的节点树。",
+      conceptId: "packedscene",
+      articleHref: "concepts.html#concept-packedscene",
+      sourceAnchors: ["scene/resources/packed_scene.h:246", "scene/resources/packed_scene.cpp"],
+      tags: [".tscn", "scene resource"],
+      x: 1950,
+      y: 155,
+      importance: 5
+    },
+    {
+      id: "scenestate",
+      title: "SceneState",
+      group: "scene",
+      summary: "PackedScene 内部的数据表，保存节点、属性、连接、路径和资源引用，供实例化恢复树结构。",
+      beginner: "它是 PackedScene 里面那张真正记录“有哪些节点、属性和连接”的表。",
+      conceptId: "scenestate",
+      articleHref: "concepts.html#concept-scenestate",
+      sourceAnchors: ["scene/resources/packed_scene.h:102", "scene/resources/packed_scene.cpp"],
+      tags: ["SceneState", "_bundled"],
+      x: 2180,
+      y: 155,
+      importance: 3
+    },
+    {
+      id: "node",
+      title: "Node",
+      group: "scene",
+      summary: "场景树基本单位，负责父子关系、owner、组、路径、生命周期通知和 process 开关。",
+      beginner: "Node 是游戏对象出现在场景树里的基本单位。",
+      conceptId: "node",
+      articleHref: "concepts.html#concept-node",
+      sourceAnchors: ["scene/main/node.h:54", "scene/main/node.cpp"],
+      tags: ["Node", "owner", "lifecycle"],
+      x: 1950,
+      y: 290,
+      importance: 5
+    },
+    {
+      id: "scenetree",
+      title: "SceneTree",
+      group: "scene",
+      summary: "默认 MainLoop，负责 root/current_scene、process/physics、组调用、场景切换、timer/tween、删除队列。",
+      beginner: "它是节点世界的调度员：谁进树、谁 ready、谁每帧执行，都由它安排。",
+      conceptId: "scenetree",
+      articleHref: "concepts.html#concept-scenetree",
+      sourceAnchors: ["scene/main/scene_tree.h:89", "scene/main/scene_tree.cpp:639"],
+      tags: ["MainLoop", "process", "queue_delete"],
+      x: 2180,
+      y: 290,
+      importance: 5
+    },
+    {
+      id: "viewportwindowworld",
+      title: "Viewport / Window / World",
+      group: "scene",
+      summary: "连接场景树、渲染目标、输入、GUI、World2D/World3D 和平台窗口的关键枢纽。",
+      beginner: "它决定输入打到哪里、画面渲到哪里、2D/3D 世界上下文是谁。",
+      conceptId: "viewportwindowworld",
+      articleHref: "concepts.html#concept-viewportwindowworld",
+      sourceAnchors: ["scene/main/viewport.h:51", "scene/main/window.h:42"],
+      tags: ["Viewport", "Window", "World3D"],
+      x: 2180,
+      y: 430,
+      importance: 4
+    },
+    {
+      id: "canvasitem",
+      title: "CanvasItem",
+      group: "scene",
+      summary: "2D 和 GUI 的共同渲染基类，持有 canvas item RID 并向 RenderingServer 提交 draw 状态。",
+      beginner: "2D 节点和 GUI 控件能画出来，通常都要经过 CanvasItem。",
+      conceptId: "canvasitem",
+      articleHref: "concepts.html#concept-canvasitem",
+      sourceAnchors: ["scene/main/canvas_item.h:47", "scene/main/canvas_item.cpp"],
+      tags: ["2D", "GUI", "_draw"],
+      x: 1720,
+      y: 430,
+      importance: 4
+    },
+    {
+      id: "visualinstance3d",
+      title: "VisualInstance3D",
+      group: "scene",
+      summary: "3D 可见对象基础节点，把 Mesh/Light/Decal 等 base、scenario 和 transform 提交给 RenderingServer。",
+      beginner: "3D 物体能进入渲染世界，通常靠它把场景节点翻译成渲染实例。",
+      conceptId: "visualinstance3d",
+      articleHref: "concepts.html#concept-visualinstance3d",
+      sourceAnchors: ["scene/3d/visual_instance_3d.h:51", "scene/3d/visual_instance_3d.cpp"],
+      tags: ["3D", "MeshInstance3D"],
+      x: 1950,
+      y: 430,
+      importance: 4
+    },
+    {
+      id: "controlgui",
+      title: "Control / GUI",
+      group: "scene",
+      summary: "GUI 节点层，在 CanvasItem 之上增加布局、焦点、鼠标过滤、主题查找和 TextServer 测量。",
+      beginner: "按钮、面板、输入框这些 UI 控件，核心入口是 Control。",
+      conceptId: "controlgui",
+      articleHref: "concepts.html#concept-controlgui",
+      sourceAnchors: ["scene/gui/control.h:58", "scene/theme/theme_db.h:44"],
+      tags: ["Control", "Theme", "TextServer"],
+      x: 1720,
+      y: 545,
+      importance: 3
+    },
+    {
+      id: "animationtween",
+      title: "Animation / Tween",
+      group: "scene",
+      summary: "Animation 保存可序列化时间轴，Tween 是 SceneTree 管理的运行时插值对象。",
+      beginner: "Animation 适合保存成资源，Tween 更像脚本临时创建的一段变化。",
+      conceptId: "animationtween",
+      articleHref: "concepts.html#concept-animationtween",
+      sourceAnchors: ["scene/animation/animation_player.h:43", "scene/animation/tween.h:52"],
+      tags: ["AnimationPlayer", "Tween"],
+      x: 2280,
+      y: 545,
+      importance: 3
+    },
+    {
+      id: "server",
+      title: "Server 架构",
+      group: "servers",
+      summary: "场景节点表达用户语义，Server 保存真实执行状态，后端把状态变成渲染、物理、音频等操作。",
+      beginner: "节点不直接干重活，而是把工作交给更底层的 Server。",
+      conceptId: "server",
+      articleHref: "concepts.html#concept-server",
+      sourceAnchors: ["servers/register_server_types.cpp:146", "servers/rendering/rendering_server.h:64"],
+      tags: ["Server", "RID"],
+      x: 2560,
+      y: 170,
+      importance: 5
+    },
+    {
+      id: "rid",
+      title: "RID",
+      group: "servers",
+      summary: "Server 世界里的轻量句柄；真实 texture/body/mesh 等对象由对应 Server 的 RID_Owner 管理。",
+      beginner: "RID 像订单号，不是智能指针。它能让 Server 找到内部对象，但不能自动释放。",
+      conceptId: "rid",
+      articleHref: "concepts.html#concept-rid",
+      sourceAnchors: ["core/templates/rid.h:38", "core/templates/rid_owner.h:517"],
+      tags: ["RID_Owner", "handle"],
+      x: 2785,
+      y: 150,
+      importance: 5
+    },
+    {
+      id: "renderingserver",
+      title: "RenderingServer",
+      group: "servers",
+      summary: "统一渲染 Server API，接收 texture、mesh、canvas item、3D instance、viewport 等 RID 状态。",
+      beginner: "场景层想显示东西，最后通常要把状态交给 RenderingServer。",
+      conceptId: "renderingserver",
+      articleHref: "concepts.html#concept-renderingserver",
+      sourceAnchors: ["servers/rendering/rendering_server.h:64", "servers/rendering/rendering_server_default.cpp"],
+      tags: ["render", "canvas", "mesh"],
+      x: 2785,
+      y: 285,
+      importance: 5
+    },
+    {
+      id: "rendererrd",
+      title: "RendererRD",
+      group: "servers",
+      summary: "RD 渲染后端组织层，按 viewport 组织 2D/3D 渲染，再通过 RenderingDevice 提交命令。",
+      beginner: "RenderingServer 接到任务后，RendererRD 负责把它组织成具体渲染流程。",
+      conceptId: "rendererrd",
+      articleHref: "concepts.html#concept-rendererrd",
+      sourceAnchors: ["servers/rendering/renderer_rd/renderer_compositor_rd.h:47", "servers/rendering/renderer_viewport.cpp"],
+      tags: ["RendererRD", "viewport"],
+      x: 3015,
+      y: 285,
+      importance: 4
+    },
+    {
+      id: "renderingdevice",
+      title: "RenderingDevice",
+      group: "servers",
+      summary: "底层图形 API 抽象，管理 texture、buffer、shader、pipeline、uniform set 和 draw/compute list。",
+      beginner: "它是 Godot 和 Vulkan 等底层图形能力之间更贴近 GPU 的接口。",
+      conceptId: "renderingdevice",
+      articleHref: "concepts.html#concept-renderingdevice",
+      sourceAnchors: ["servers/rendering/rendering_device.h:67", "servers/rendering/rendering_device_driver.h:90"],
+      tags: ["RD", "GPU", "Vulkan"],
+      x: 3115,
+      y: 420,
+      importance: 4
+    },
+    {
+      id: "displayserver",
+      title: "DisplayServer",
+      group: "servers",
+      summary: "平台显示与窗口边界，负责窗口、surface、输入事件、屏幕、鼠标、键盘、剪贴板和 IME。",
+      beginner: "它把 Godot 的窗口和输入抽象落到真实操作系统。",
+      conceptId: "displayserver",
+      articleHref: "concepts.html#concept-displayserver",
+      sourceAnchors: ["servers/display/display_server.h:62", "servers/display/display_server.cpp"],
+      tags: ["window", "input", "platform"],
+      x: 3015,
+      y: 150,
+      importance: 4
+    },
+    {
+      id: "physicsserver",
+      title: "PhysicsServer",
+      group: "servers",
+      summary: "物理节点和真实物理后端之间的 RID 边界，管理 Space、Body、Area、Shape、Joint。",
+      beginner: "RigidBody、Area、Shape 等场景对象真正求解碰撞时要进入 PhysicsServer。",
+      conceptId: "physicsserver",
+      articleHref: "concepts.html#concept-physicsserver",
+      sourceAnchors: ["servers/physics_3d/physics_server_3d.h:236", "servers/physics_2d/physics_server_2d.h:225"],
+      tags: ["physics", "body", "shape"],
+      x: 2785,
+      y: 425,
+      importance: 4
+    },
+    {
+      id: "audioserver",
+      title: "AudioServer",
+      group: "servers",
+      summary: "音频混音中心，维护 playback、bus、effect 和混音缓冲，再交给 AudioDriver 输出。",
+      beginner: "播放节点发起播放，真正混音和送到设备的是 AudioServer 和驱动。",
+      conceptId: "audioserver",
+      articleHref: "concepts.html#concept-audioserver",
+      sourceAnchors: ["servers/audio/audio_server.h:45", "servers/audio/audio_driver_dummy.h:40"],
+      tags: ["audio", "bus", "driver"],
+      x: 3015,
+      y: 545,
+      importance: 3
+    },
+    {
+      id: "navigationserver",
+      title: "NavigationServer",
+      group: "servers",
+      summary: "管理导航 map、region、link、agent、路径查询和避障，和物理相邻但不是物理子功能。",
+      beginner: "物理回答撞没撞，导航回答怎么走。",
+      conceptId: "navigationserver",
+      articleHref: "concepts.html#concept-navigationserver",
+      sourceAnchors: ["servers/navigation_3d/navigation_server_3d.h:46", "servers/navigation_2d/navigation_server_2d.h:50"],
+      tags: ["navigation", "agent", "map"],
+      x: 2560,
+      y: 545,
+      importance: 3
+    },
+    {
+      id: "inputsystem",
+      title: "Input / InputMap",
+      group: "servers",
+      summary: "平台/DisplayServer 产生 InputEvent，Input 更新状态，InputMap 判断 action，Viewport/Control 分发事件。",
+      beginner: "按键从系统进来后，要经过输入状态、动作映射，再交给 GUI 或脚本处理。",
+      conceptId: "inputsystem",
+      articleHref: "concepts.html#concept-inputsystem",
+      sourceAnchors: ["core/input/input.h:61", "core/input/input_map.h:44"],
+      tags: ["InputEvent", "action"],
+      x: 2560,
+      y: 315,
+      importance: 4
+    },
+    {
+      id: "moduleatlas",
+      title: "Modules / register_types",
+      group: "modules",
+      summary: "模块通过 config.py、SCsub 和 register_types 按初始化级别把能力接入 core、servers、scene、editor。",
+      beginner: "modules 不是固定层，而是一张张插卡，按需要插到不同初始化阶段。",
+      conceptId: "moduleatlas",
+      articleHref: "concepts.html#concept-moduleatlas",
+      sourceAnchors: ["modules/SCsub:20", "modules/modules_builders.py:43", "main/main.cpp:2255"],
+      tags: ["modules", "register_types"],
+      x: 935,
+      y: 600,
+      importance: 5
+    },
+    {
+      id: "scriptextension",
+      title: "Script / GDExtension",
+      group: "modules",
+      summary: "脚本语言通过 ScriptLanguage 注册，脚本文件是 Script 资源，Object 持有 ScriptInstance；GDExtension 通过 C ABI 接入 ClassDB。",
+      beginner: "脚本不是 Node 的特例，而是 Object 上挂的运行时实例和语言插件体系。",
+      conceptId: "scriptextension",
+      articleHref: "concepts.html#concept-scriptextension",
+      sourceAnchors: ["core/object/script_language.h:46", "modules/gdscript/register_types.cpp:137", "core/extension/gdextension.cpp"],
+      tags: ["GDScript", "GDExtension"],
+      x: 1190,
+      y: 600,
+      importance: 5
+    },
+    {
+      id: "resourceimportpipeline",
+      title: "Resource Import Pipeline",
+      group: "modules",
+      summary: "编辑器扫描源文件和 .import，生成内部资源，用 UID 维持引用，再供 ResourceLoader 和导出流程消费。",
+      beginner: "导入管线把原始素材变成 Godot 运行时更适合读取的资源。",
+      conceptId: "resourceimportpipeline",
+      articleHref: "concepts.html#concept-resourceimportpipeline",
+      sourceAnchors: ["core/io/resource_importer.h:43", "editor/import/3d/resource_importer_scene.h:155"],
+      tags: [".import", "ResourceUID"],
+      x: 1415,
+      y: 690,
+      importance: 4
+    },
+    {
+      id: "multiplayerapi",
+      title: "MultiplayerAPI / RPC",
+      group: "modules",
+      summary: "Node/SceneTree 提供入口，MultiplayerAPI 管 RPC、peer 和场景复制，传输层由模块或平台 peer 实现。",
+      beginner: "多人同步的用户入口在场景层，网络传输和 RPC 调度在更专门的系统里。",
+      conceptId: "multiplayerapi",
+      articleHref: "concepts.html#concept-multiplayerapi",
+      sourceAnchors: ["modules/multiplayer/scene_multiplayer.h:48", "scene/main/multiplayer_api.h:39"],
+      tags: ["RPC", "network"],
+      x: 1190,
+      y: 760,
+      importance: 3
+    },
+    {
+      id: "translationserver",
+      title: "TranslationServer",
+      group: "modules",
+      summary: "本地化中心，管理语言环境、翻译资源和文本查找，GUI、脚本和导入器都围绕它协作。",
+      beginner: "它负责把同一个文本键映射成当前语言下该显示的文字。",
+      conceptId: "translationserver",
+      articleHref: "concepts.html#concept-translationserver",
+      sourceAnchors: ["core/string/translation.h:47", "core/string/translation.cpp"],
+      tags: ["locale", "translation"],
+      x: 960,
+      y: 760,
+      importance: 3
+    },
+    {
+      id: "editorarchitecture",
+      title: "EditorNode / Editor",
+      group: "editor",
+      summary: "编辑器本体运行在引擎里的 SceneTree 上，EditorNode 挂接主界面、状态、dock、菜单和工具系统。",
+      beginner: "Godot 编辑器不是引擎外部程序，而是引擎运行时里的一棵复杂工具场景。",
+      conceptId: "editorarchitecture",
+      articleHref: "concepts.html#concept-editorarchitecture",
+      sourceAnchors: ["editor/editor_node.h:120", "editor/editor_node.cpp"],
+      tags: ["EditorNode", "tools"],
+      x: 1745,
+      y: 775,
+      importance: 5
+    },
+    {
+      id: "editor-inspector",
+      title: "Inspector",
+      group: "editor",
+      summary: "Inspector 通过 Object/ClassDB/ScriptInstance 的属性列表生成编辑 UI，并配合 UndoRedo 修改对象。",
+      beginner: "属性面板不是手写每个类的 UI，而是读对象暴露出来的属性表。",
+      conceptId: "editorarchitecture",
+      articleHref: "index.html#editor",
+      sourceAnchors: ["editor/inspector/editor_inspector.h:731", "editor/inspector/editor_inspector.cpp"],
+      tags: ["Inspector", "PropertyInfo"],
+      x: 1980,
+      y: 760,
+      importance: 4
+    },
+    {
+      id: "editor-importer",
+      title: "Editor Import / Export",
+      group: "editor",
+      summary: "导入导出工具把编辑器资源、平台模板和模块能力组织成可运行项目或导入产物。",
+      beginner: "编辑器负责把素材准备好，也负责把项目打包到不同平台。",
+      conceptId: "resourceimportpipeline",
+      articleHref: "index.html#editor",
+      sourceAnchors: ["editor/import/editor_import_plugin.h:53", "editor/export/editor_export_platform.h:87"],
+      tags: ["import", "export"],
+      x: 2230,
+      y: 835,
+      importance: 4
+    },
+    {
+      id: "debugperformance",
+      title: "Debugger / Performance",
+      group: "editor",
+      summary: "运行时 Performance/EngineDebugger 采样并发消息，编辑器调试面板接收、解析和展示。",
+      beginner: "调试数据一半在游戏进程采样，一半在编辑器 UI 里展示。",
+      conceptId: "debugperformance",
+      articleHref: "concepts.html#concept-debugperformance",
+      sourceAnchors: ["main/performance.cpp:147", "editor/debugger/editor_debugger_node.h:47"],
+      tags: ["debugger", "profiler"],
+      x: 1985,
+      y: 920,
+      importance: 3
+    },
+    {
+      id: "deepdesignpatterns",
+      title: "Ownership / Lifecycle",
+      group: "deep",
+      summary: "区分 Object、Node、Resource、RefCounted、RID、Callable、ObjectID 的拥有关系和释放通道。",
+      beginner: "读崩溃和泄漏时，先问谁创建、谁保存引用、谁负责释放。",
+      conceptId: "deepdesignpatterns",
+      articleHref: "concepts.html#concept-deepdesignpatterns",
+      sourceAnchors: ["core/object/object.h:349", "scene/main/node.h:54", "core/templates/rid.h:38"],
+      tags: ["ownership", "lifecycle"],
+      x: 175,
+      y: 575,
+      importance: 5
+    },
+    {
+      id: "errorandmemorymacros",
+      title: "Error Macros / Memory",
+      group: "deep",
+      summary: "ERR_FAIL_* 统一早返回、日志和失败语义；memnew/memdelete 接入内存统计和 Object 生命周期钩子。",
+      beginner: "这些宏不是噪音，它们告诉你非法输入、释放路径和调试行为怎么处理。",
+      conceptId: "errorandmemorymacros",
+      articleHref: "concepts.html#concept-errorandmemorymacros",
+      sourceAnchors: ["core/error/error_macros.h:134", "core/os/memory.h:150"],
+      tags: ["ERR_FAIL", "memnew"],
+      x: 525,
+      y: 575,
+      importance: 4
+    },
+    {
+      id: "renderthread",
+      title: "Render Thread / wrap_mt",
+      group: "deep",
+      summary: "主线程提交 RenderingServer API，单线程模式直接执行，Separate 模式通过命令队列给渲染线程执行。",
+      beginner: "很多 Server 调用看起来立即发生，实际可能先排队，等 sync/draw 或专用线程处理。",
+      conceptId: "renderthread",
+      articleHref: "concepts.html#concept-renderthread",
+      sourceAnchors: ["servers/server_wrap_mt_common.h", "main/main.cpp:5052"],
+      tags: ["thread", "sync", "draw"],
+      x: 525,
+      y: 760,
+      importance: 4
+    },
+    {
+      id: "sourcereadingroadmap",
+      title: "功能追踪法",
+      group: "deep",
+      summary: "从用户 API 开始，找绑定、状态、Resource/Server 边界、主循环刷新点，再回头记录影响面。",
+      beginner: "不要漫游目录。每次拿一个具体功能，从用户入口一路追到底。",
+      conceptId: "sourcereadingroadmap",
+      articleHref: "concepts.html#concept-sourcereadingroadmap",
+      sourceAnchors: ["doc/study/godot-source-guide/index.html:2536", "doc/study/godot_engine_source_reading_guide.md:1"],
+      tags: ["reading route", "trace"],
+      x: 175,
+      y: 850,
+      importance: 4
+    }
+  ],
+  edges: [
+    { from: "platform-entry", to: "main-setup", type: "initializes", label: "进入底层 setup", explanation: "平台入口完成 OS 和参数准备后调用 Main::setup。", weight: 3 },
+    { from: "main-setup", to: "object", type: "initializes", label: "建立对象世界", explanation: "register_core_types 在 setup 阶段让 Object、Variant、Resource 等基础类型可用。", weight: 5 },
+    { from: "main-setup", to: "resource", type: "initializes", label: "注册 Resource 基类", explanation: "register_core_types 在 core 阶段注册 Resource、基础二进制加载器和资源缓存入口。", weight: 4 },
+    { from: "main-setup", to: "project-settings", type: "initializes", label: "读取项目配置", explanation: "Main::setup 解析项目设置、命令行和基础资源路径。", weight: 4 },
+    { from: "main-setup", to: "moduleatlas", type: "initializes", label: "CORE 模块", explanation: "模块先在 CORE 级别接入资源格式和基础能力。", weight: 3 },
+    { from: "main-setup", to: "main-setup2", type: "initializes", label: "进入高层运行时", explanation: "setup 完成后，setup2 注册 Server、Scene 和高层模块。", weight: 4 },
+    { from: "main-setup2", to: "server", type: "initializes", label: "注册 Server 类型", explanation: "register_server_types 创建底层服务 API 和单例边界。", weight: 5 },
+    { from: "main-setup2", to: "node", type: "initializes", label: "注册 Scene 类型", explanation: "register_scene_types 让 Node、SceneTree、Control 等用户对象可实例化。", weight: 5 },
+    { from: "main-setup2", to: "scriptextension", type: "initializes", label: "脚本语言接入", explanation: "脚本语言模块在对应初始化级别注册 ScriptLanguage 和资源 loader。", weight: 4 },
+    { from: "main-setup2", to: "main-start", type: "initializes", label: "准备运行模式", explanation: "setup2 完成后，Main::start 决定运行编辑器、项目或工具。", weight: 4 },
+    { from: "main-start", to: "scenetree", type: "scene-lifecycle", label: "创建默认 MainLoop", explanation: "没有自定义 MainLoop 时，Main::start 创建 SceneTree。", weight: 5 },
+    { from: "main-start", to: "resourceloader", type: "resource-flow", label: "加载主场景", explanation: "游戏启动路径把 main_scene 或 --scene 交给 ResourceLoader。", weight: 5 },
+    { from: "main-start", to: "editorarchitecture", type: "editor-tooling", label: "编辑器模式", explanation: "编辑器运行时在 SceneTree 里挂接 EditorNode。", weight: 4 },
+    { from: "main-iteration", to: "scenetree", type: "runtime-loop", label: "process / physics", explanation: "Main::iteration 调用 SceneTree 的物理和空闲处理。", weight: 5 },
+    { from: "main-iteration", to: "messagequeue", type: "runtime-loop", label: "安全点 flush", explanation: "每帧安全点刷新延迟调用和删除队列。", weight: 4 },
+    { from: "main-iteration", to: "renderingserver", type: "runtime-loop", label: "sync / draw", explanation: "渲染命令在 Main::iteration 的 sync/draw 阶段被推进。", weight: 5 },
+    { from: "main-iteration", to: "physicsserver", type: "runtime-loop", label: "固定物理步", explanation: "物理 Server 在固定步同步、查询、求解。", weight: 4 },
+    { from: "object", to: "objectdb", type: "object-model", label: "登记 ObjectID", explanation: "Object 构造和析构时进入/离开 ObjectDB。", weight: 3 },
+    { from: "object", to: "classdb", type: "object-model", label: "类型元数据", explanation: "Object 子类通过 ClassDB 暴露类名、继承、方法、属性和信号。", weight: 5 },
+    { from: "classdb", to: "methodbind", type: "registers", label: "保存绑定方法", explanation: "_bind_methods 把 C++ 方法包装成 MethodBind 并登记到 ClassDB。", weight: 5 },
+    { from: "methodbind", to: "variant", type: "object-model", label: "统一参数", explanation: "MethodBind 通过 Variant call 或 ptrcall 接收脚本和扩展传入的参数。", weight: 4 },
+    { from: "object", to: "callable-signal", type: "object-model", label: "信号和调用目标", explanation: "Signal 和 Callable 都围绕 ObjectID、方法名和 Variant 参数工作。", weight: 3, defaultVisible: false },
+    { from: "callable-signal", to: "messagequeue", type: "object-model", label: "延迟调用", explanation: "call_deferred 等操作通过 MessageQueue 延后执行。", weight: 3 },
+    { from: "stringnamenodepath", to: "classdb", type: "object-model", label: "名字键", explanation: "方法名、信号名、属性名大量依赖 StringName。", weight: 2, defaultVisible: false },
+    { from: "stringnamenodepath", to: "node", type: "scene-lifecycle", label: "节点路径", explanation: "NodePath 保存场景节点和属性路径引用。", weight: 2, defaultVisible: false },
+    { from: "project-settings", to: "resourceloader", type: "resource-flow", label: "路径和 remap", explanation: "项目设置提供资源路径、feature override 和主场景位置。", weight: 3 },
+    { from: "object", to: "resource", type: "object-model", label: "Object + RefCounted 基础", explanation: "Resource 继承 RefCounted，仍然拥有 Object 的属性、方法、信号和 ObjectID。", weight: 4 },
+    { from: "resourceloader", to: "resource", type: "resource-flow", label: "返回资源对象", explanation: "ResourceLoader 通过格式加载器把路径解析成 Ref<Resource>，再按路径进入 ResourceCache。", weight: 5 },
+    { from: "resource", to: "packedscene", type: "object-model", label: "场景也是资源", explanation: "PackedScene 继承 Resource，加载 .tscn 后先得到可实例化的资源蓝图。", weight: 5 },
+    { from: "resourceloader", to: "packedscene", type: "resource-flow", label: "加载场景资源", explanation: ".tscn/.scn 通过 ResourceLoader 变成 PackedScene。", weight: 5 },
+    { from: "packedscene", to: "scenestate", type: "resource-flow", label: "内部场景表", explanation: "PackedScene 用 SceneState 保存节点、属性和连接数据。", weight: 4 },
+    { from: "scenestate", to: "node", type: "scene-lifecycle", label: "实例化 Node", explanation: "instantiate 按 SceneState 创建节点、恢复属性和连接。", weight: 5 },
+    { from: "node", to: "scenetree", type: "scene-lifecycle", label: "进入树和回调", explanation: "SceneTree 管理 enter_tree、ready、process、退出和删除。", weight: 5 },
+    { from: "scenetree", to: "messagequeue", type: "scene-lifecycle", label: "删除和延迟队列", explanation: "queue_free 和 queue_delete 在 SceneTree 安全点处理。", weight: 4 },
+    { from: "scenetree", to: "viewportwindowworld", type: "scene-lifecycle", label: "root Window / Viewport", explanation: "SceneTree 持有 root Window，Viewport 连接输入、GUI、世界和渲染目标。", weight: 4 },
+    { from: "node", to: "canvasitem", type: "server-delegate", label: "2D/GGUI 可见节点", explanation: "CanvasItem 是 Node 的可绘制 2D/GUI 分支。", weight: 3 },
+    { from: "node", to: "visualinstance3d", type: "server-delegate", label: "3D 可见节点", explanation: "VisualInstance3D 是 Node 的 3D 可见对象分支。", weight: 3 },
+    { from: "canvasitem", to: "renderingserver", type: "server-delegate", label: "canvas item RID", explanation: "CanvasItem 把绘制命令和状态提交给 RenderingServer。", weight: 5 },
+    { from: "visualinstance3d", to: "renderingserver", type: "server-delegate", label: "instance RID", explanation: "3D 可见节点把 base、transform 和 scenario 提交给 RenderingServer。", weight: 5 },
+    { from: "viewportwindowworld", to: "renderingserver", type: "server-delegate", label: "viewport / render target", explanation: "Viewport 决定渲染目标和世界上下文，最终由 RenderingServer 绘制。", weight: 4 },
+    { from: "viewportwindowworld", to: "displayserver", type: "server-delegate", label: "窗口和 surface", explanation: "Window/Viewport 把显示和输入边界接到 DisplayServer。", weight: 4 },
+    { from: "controlgui", to: "canvasitem", type: "scene-lifecycle", label: "GUI 继承绘制层", explanation: "Control 建立在 CanvasItem 之上，增加布局、焦点和主题。", weight: 3 },
+    { from: "controlgui", to: "inputsystem", type: "server-delegate", label: "GUI 输入分发", explanation: "InputEvent 进入 Viewport 后可能先被 Control 处理。", weight: 3 },
+    { from: "animationtween", to: "scenetree", type: "runtime-loop", label: "按帧推进", explanation: "Tween 和 AnimationPlayer 随 SceneTree 的处理阶段推进。", weight: 3, defaultVisible: false },
+    { from: "server", to: "rid", type: "design", label: "句柄边界", explanation: "Server 用 RID 隐藏真实后端对象。", weight: 5 },
+    { from: "resource", to: "rid", type: "server-delegate", label: "可暴露底层 RID", explanation: "Texture、Mesh 等 Resource 可通过 get_rid() 返回对应 Server 的底层句柄。", weight: 3, defaultVisible: false },
+    { from: "renderingserver", to: "rid", type: "server-delegate", label: "渲染资源句柄", explanation: "texture、mesh、instance、canvas item 都以 RID 暴露给场景层。", weight: 4 },
+    { from: "renderingserver", to: "rendererrd", type: "backend", label: "默认 RD 后端", explanation: "RenderingServerDefault 将状态分发给 RendererRD 体系。", weight: 5 },
+    { from: "rendererrd", to: "renderingdevice", type: "backend", label: "提交 GPU 命令", explanation: "RendererRD 通过 RenderingDevice 创建资源并提交 draw/compute。", weight: 5 },
+    { from: "renderingserver", to: "renderthread", type: "design", label: "线程隔离", explanation: "RenderingServer 调用可能通过命令队列进入渲染线程。", weight: 4 },
+    { from: "displayserver", to: "platform-entry", type: "backend", label: "平台实现", explanation: "DisplayServer 的具体窗口/输入实现落在 platform/*。", weight: 3 },
+    { from: "inputsystem", to: "displayserver", type: "backend", label: "系统事件来源", explanation: "平台显示层抽取系统输入事件，再交给 Input/Viewport。", weight: 3 },
+    { from: "physicsserver", to: "rid", type: "server-delegate", label: "body / shape RID", explanation: "物理对象通过 RID 进入对应后端空间。", weight: 4 },
+    { from: "audioserver", to: "server", type: "server-delegate", label: "音频服务", explanation: "AudioServer 是 Server 架构的一部分，但输出最终由 AudioDriver 完成。", weight: 2, defaultVisible: false },
+    { from: "navigationserver", to: "scenetree", type: "runtime-loop", label: "导航处理阶段", explanation: "导航更新在主循环的特定阶段推进。", weight: 3, defaultVisible: false },
+    { from: "moduleatlas", to: "scriptextension", type: "registers", label: "脚本语言模块", explanation: "gdscript/mono 等模块注册 ScriptLanguage、Script 资源和编辑器工具。", weight: 5 },
+    { from: "scriptextension", to: "object", type: "object-model", label: "ScriptInstance 挂到 Object", explanation: "Object 持有脚本实例，set/get/call 会先尝试脚本侧。", weight: 5 },
+    { from: "scriptextension", to: "classdb", type: "registers", label: "扩展类注册", explanation: "GDExtension 通过 ClassDB 和 MethodBind 接入原生类型系统。", weight: 4 },
+    { from: "moduleatlas", to: "physicsserver", type: "backend", label: "物理后端模块", explanation: "Godot Physics、Jolt 等模块注册 PhysicsServer 后端。", weight: 4 },
+    { from: "moduleatlas", to: "resourceimportpipeline", type: "editor-tooling", label: "格式和导入器", explanation: "glTF、图片、音频等模块和编辑器导入器共同支持资源格式。", weight: 4 },
+    { from: "resourceimportpipeline", to: "resourceloader", type: "resource-flow", label: "导入产物被加载", explanation: "编辑器生成的导入资源最终仍由 ResourceLoader 消费。", weight: 4 },
+    { from: "moduleatlas", to: "multiplayerapi", type: "registers", label: "网络能力", explanation: "高层多人 API 与传输实现按模块和 core/io 边界接入。", weight: 2, defaultVisible: false },
+    { from: "translationserver", to: "controlgui", type: "server-delegate", label: "本地化文本", explanation: "GUI 和脚本显示文本时会查询 TranslationServer 和 TextServer。", weight: 2, defaultVisible: false },
+    { from: "editorarchitecture", to: "scenetree", type: "editor-tooling", label: "编辑器也是场景树", explanation: "EditorNode 挂在 SceneTree 里运行。", weight: 5 },
+    { from: "editor-inspector", to: "classdb", type: "editor-tooling", label: "读取属性元数据", explanation: "Inspector 根据 ClassDB、Object 和 ScriptInstance 的属性列表生成 UI。", weight: 5 },
+    { from: "editor-inspector", to: "object", type: "editor-tooling", label: "编辑 Object 属性", explanation: "Inspector 最终对选中 Object 做 get/set 和 UndoRedo 修改。", weight: 4 },
+    { from: "editor-importer", to: "resourceimportpipeline", type: "editor-tooling", label: "导入导出流程", explanation: "编辑器导入导出工具围绕 ResourceImporter、ResourceUID 和平台导出能力组织。", weight: 4 },
+    { from: "debugperformance", to: "main-iteration", type: "runtime-loop", label: "采样每帧数据", explanation: "性能统计和调试器在主循环中采样并发送消息。", weight: 3, defaultVisible: false },
+    { from: "deepdesignpatterns", to: "object", type: "design", label: "对象生命周期", explanation: "Object、ObjectDB、Callable 和消息队列都要按所有权规则阅读。", weight: 4, defaultVisible: false },
+    { from: "deepdesignpatterns", to: "node", type: "design", label: "树和删除", explanation: "Node 的 parent/owner/queue_free 与 Object 生命周期不同。", weight: 4, defaultVisible: false },
+    { from: "deepdesignpatterns", to: "resource", type: "design", label: "资源共享和隔离", explanation: "Resource 的 Ref、ResourceCache、duplicate 和 local-to-scene 决定数据对象如何共享或复制。", weight: 4, defaultVisible: false },
+    { from: "deepdesignpatterns", to: "rid", type: "design", label: "Server 内部所有权", explanation: "RID 句柄不拥有真实后端对象，释放必须回到对应 Server。", weight: 4, defaultVisible: false },
+    { from: "errorandmemorymacros", to: "object", type: "design", label: "创建和释放钩子", explanation: "memnew/memdelete 影响 Object postinitialize、predelete 和调试统计。", weight: 3, defaultVisible: false },
+    { from: "sourcereadingroadmap", to: "classdb", type: "design", label: "先找绑定", explanation: "功能追踪通常从用户 API 进入 _bind_methods 和 ClassDB。", weight: 3, defaultVisible: false },
+    { from: "sourcereadingroadmap", to: "server", type: "design", label: "再找 Server 边界", explanation: "看到 RID/Server/ResourceLoader 时沿边界继续追。", weight: 3, defaultVisible: false }
   ]
 };
 

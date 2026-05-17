@@ -82,6 +82,11 @@ const conceptAliasOverrides = {
   "editorplugins": "editorarchitecture",
   "scriptserver": "scriptextension",
   "resourceloader": "resourceloader",
+  "resource": "resource",
+  "resource_path": "resource",
+  "resource_name": "resource",
+  "resource_local_to_scene": "resource",
+  "resource_scene_unique_id": "resource",
   "rendererviewport": "viewportwindowworld",
   "scenario": "viewportwindowworld",
   "resourceformatimporter": "resourceimportpipeline",
@@ -788,12 +793,20 @@ function setupConcepts() {
   });
 
   if (conceptLibrary) {
-    conceptState.filter = window.location.hash === "#favorites" ? "favorites" : "all";
-    renderConceptBrowser();
-    window.addEventListener("hashchange", () => {
+    const applyConceptPageHash = () => {
+      const conceptMatch = window.location.hash.match(/^#concept-(.+)$/);
+      if (conceptMatch) {
+        const id = decodeURIComponent(conceptMatch[1]);
+        conceptState.filter = "all";
+        renderConceptBrowser();
+        if (getConcept(id)) openConceptDetail(id);
+        return;
+      }
       conceptState.filter = window.location.hash === "#favorites" ? "favorites" : "all";
       renderConceptBrowser();
-    });
+    };
+    applyConceptPageHash();
+    window.addEventListener("hashchange", applyConceptPageHash);
   }
 }
 
