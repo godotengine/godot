@@ -876,8 +876,9 @@ void Path3DEditorPlugin::_confirm_clear_points() {
 }
 
 void Path3DEditorPlugin::_auto_tangent_point(int p_index) {
-	ERR_FAIL_NULL(path);
-	ERR_FAIL_NULL(path->get_curve());
+	if (!path || path->get_curve().is_null() || path->get_curve()->get_point_count() == 0) {
+		return;
+	}
 	const Ref<Curve3D> curve = path->get_curve();
 	// modifies
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
