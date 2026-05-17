@@ -3275,6 +3275,18 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 	Node *oldnode = p_node;
 	Node *newnode = p_by_node;
 
+	// Invalidate the cached class icon for the node's script.
+	Ref<Script> old_script = oldnode->get_script();
+	if (old_script.is_valid()) {
+		String script_class = old_script->get_global_name();
+		if (script_class.is_empty()) {
+			script_class = old_script->get_path();
+		}
+		if (!script_class.is_empty()) {
+			EditorNode::get_singleton()->invalidate_class_icon(script_class);
+		}
+	}
+
 	if (p_keep_properties) {
 		Node *default_oldnode = nullptr;
 
