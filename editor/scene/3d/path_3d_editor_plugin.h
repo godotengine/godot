@@ -123,8 +123,6 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *curve_edit_tilt = nullptr;
 	Button *curve_del = nullptr;
 	Button *curve_closed = nullptr;
-	Button *curve_clear_points = nullptr;
-	Button *curve_auto_tangent = nullptr;
 	Button *curve_auto_tangent_mode = nullptr;
 	SpinBox *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
@@ -167,6 +165,8 @@ class Path3DEditorPlugin : public EditorPlugin {
 		HANDLE_OPTION_ANGLE,
 		HANDLE_OPTION_LENGTH,
 		HANDLE_OPTION_SNAP_COLLIDER,
+		HANDLE_OPTION_AUTO_TANGENT,
+		HANDLE_OPTION_CLEAR_POINTS,
 	};
 
 protected:

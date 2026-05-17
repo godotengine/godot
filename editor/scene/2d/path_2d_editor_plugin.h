@@ -60,13 +60,11 @@ class Path2DEditor : public HBoxContainer {
 
 	Mode mode = MODE_EDIT;
 	HBoxContainer *toolbar = nullptr;
-	Button *curve_clear_points = nullptr;
 	Button *curve_close = nullptr;
 	Button *curve_create = nullptr;
 	Button *curve_del = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
-	Button *curve_auto_tangent = nullptr;
 	Button *curve_auto_tangent_toggle = nullptr;
 	SpinBox *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
@@ -81,6 +79,8 @@ class Path2DEditor : public HBoxContainer {
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
 		HANDLE_OPTION_LENGTH,
+		HANDLE_OPTION_AUTO_TANGENT,
+		HANDLE_OPTION_CLEAR_POINTS,
 	};
 
 	enum Action {

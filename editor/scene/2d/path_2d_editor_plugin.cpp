@@ -49,9 +49,7 @@ void Path2DEditor::_notification(int p_what) {
 			curve_create->set_button_icon(get_editor_theme_icon(SNAME("CurveCreate")));
 			curve_del->set_button_icon(get_editor_theme_icon(SNAME("CurveDelete")));
 			curve_close->set_button_icon(get_editor_theme_icon(SNAME("CurveClose")));
-			curve_clear_points->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
-			curve_auto_tangent->set_button_icon(get_editor_theme_icon(SNAME("CurveAutoTangent")));
-			curve_auto_tangent_toggle->set_button_icon(get_editor_theme_icon(SNAME("CurveAutoTangentToggle")));
+			curve_auto_tangent_toggle->set_button_icon(get_editor_theme_icon(SNAME("CurveAutoTangent")));
 			create_curve_button->set_button_icon(get_editor_theme_icon(SNAME("Curve2D")));
 		} break;
 	}
@@ -761,6 +759,12 @@ void Path2DEditor::_handle_option_pressed(int p_option) {
 			mirror_handle_length = !is_checked;
 			pm->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
 		} break;
+		case HANDLE_OPTION_AUTO_TANGENT: {
+			_auto_tangent();
+		} break;
+		case HANDLE_OPTION_CLEAR_POINTS: {
+			_confirm_clear_points();
+		} break;
 	}
 }
 
@@ -984,13 +988,6 @@ Path2DEditor::Path2DEditor() {
 	curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLOSE));
 	toolbar->add_child(curve_close);
 
-	curve_auto_tangent = memnew(Button);
-	curve_auto_tangent->set_theme_type_variation(SceneStringName(FlatButton));
-	curve_auto_tangent->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	curve_auto_tangent->set_tooltip_text(TTR("Apply Auto Tangent to all points"));
-	curve_auto_tangent->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_auto_tangent));
-	toolbar->add_child(curve_auto_tangent);
-
 	curve_auto_tangent_toggle = memnew(Button);
 	curve_auto_tangent_toggle->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_auto_tangent_toggle->set_toggle_mode(true);
@@ -1011,13 +1008,6 @@ Path2DEditor::Path2DEditor() {
 	toolbar->add_child(auto_tangent_torsion);
 	auto_tangent_torsion->set_value(0.5);
 
-	curve_clear_points = memnew(Button);
-	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
-	curve_clear_points->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	curve_clear_points->set_tooltip_text(TTR("Clear Points"));
-	curve_clear_points->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_confirm_clear_points));
-	toolbar->add_child(curve_clear_points);
-
 	clear_points_dialog = memnew(ConfirmationDialog);
 	clear_points_dialog->set_title(TTR("Please Confirm..."));
 	clear_points_dialog->set_text(TTR("Remove all curve points?"));
@@ -1035,6 +1025,9 @@ Path2DEditor::Path2DEditor() {
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
 	menu->add_check_item(TTR("Mirror Handle Lengths"));
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
+	menu->add_separator();
+	menu->add_item(TTR("Apply Auto Tangent to All Points"), HANDLE_OPTION_AUTO_TANGENT);
+	menu->add_item(TTR("Clear Points"), HANDLE_OPTION_CLEAR_POINTS);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &Path2DEditor::_handle_option_pressed));
 
 	add_child(toolbar);

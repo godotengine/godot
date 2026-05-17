@@ -844,6 +844,12 @@ void Path3DEditorPlugin::_handle_option_pressed(int p_option) {
 			snap_to_collider = !is_checked;
 			pm->set_item_checked(HANDLE_OPTION_SNAP_COLLIDER, snap_to_collider);
 		} break;
+		case HANDLE_OPTION_AUTO_TANGENT: {
+			_auto_tangent();
+		} break;
+		case HANDLE_OPTION_CLEAR_POINTS: {
+			_confirm_clear_points();
+		} break;
 	}
 }
 
@@ -978,9 +984,7 @@ void Path3DEditorPlugin::_update_theme() {
 	curve_create->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveCreate")));
 	curve_del->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveDelete")));
 	curve_closed->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveClose")));
-	curve_clear_points->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("Clear")));
-	curve_auto_tangent->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveAutoTangent")));
-	curve_auto_tangent_mode->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveAutoTangentMode")));
+	curve_auto_tangent_mode->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveAutoTangent")));
 	create_curve_button->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("Curve3D")));
 }
 
@@ -1138,13 +1142,6 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_auto_tangent_mode->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_AUTO_TANGENT));
 	toolbar->add_child(curve_auto_tangent_mode);
 
-	curve_auto_tangent = memnew(Button);
-	curve_auto_tangent->set_theme_type_variation(SceneStringName(FlatButton));
-	curve_auto_tangent->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	curve_auto_tangent->set_tooltip_text(TTR("Apply Auto Tangent to all points"));
-	toolbar->add_child(curve_auto_tangent);
-	curve_auto_tangent->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_auto_tangent));
-
 	auto_tangent_torsion = memnew(SpinBox);
 	auto_tangent_torsion->set_min(0.00);
 	auto_tangent_torsion->set_max(1.0);
@@ -1156,13 +1153,6 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	auto_tangent_torsion->set_accessibility_name(TTRC("Auto Tangent Torsion"));
 	toolbar->add_child(auto_tangent_torsion);
 	auto_tangent_torsion->set_value(0.5);
-
-	curve_clear_points = memnew(Button);
-	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
-	curve_clear_points->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	curve_clear_points->set_tooltip_text(TTR("Clear Points"));
-	curve_clear_points->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_confirm_clear_points));
-	toolbar->add_child(curve_clear_points);
 
 	clear_points_dialog = memnew(ConfirmationDialog);
 	clear_points_dialog->set_title(TTR("Please Confirm..."));
@@ -1189,6 +1179,9 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
 	menu->add_check_item(TTR("Snap to Colliders"));
 	menu->set_item_checked(HANDLE_OPTION_SNAP_COLLIDER, snap_to_collider);
+	menu->add_separator();
+	menu->add_item(TTR("Apply Auto Tangent to All Points"), HANDLE_OPTION_AUTO_TANGENT);
+	menu->add_item(TTR("Clear Points"), HANDLE_OPTION_CLEAR_POINTS);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &Path3DEditorPlugin::_handle_option_pressed));
 
 	curve_edit->set_pressed_no_signal(true);
