@@ -196,6 +196,19 @@ GODOT_GCC_WARNING_POP
 
 static CMMNotificationClient notif_client;
 
+AudioDriverWASAPI::AudioClientSetup AudioDriverWASAPI::get_audio_client_setup(bool p_input, int p_configured_mix_rate, int p_device_mix_rate) {
+	AudioClientSetup setup;
+	setup.stream_mix_rate = p_device_mix_rate;
+
+	// AUDCLNT_STREAMFLAGS_RATEADJUST is only valid for render endpoints.
+	if (!p_input && p_configured_mix_rate != p_device_mix_rate) {
+		setup.stream_flags |= AUDCLNT_STREAMFLAGS_RATEADJUST;
+		setup.stream_mix_rate = p_configured_mix_rate;
+	}
+
+	return setup;
+}
+
 Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_input, bool p_reinit, bool p_no_audio_client_3) {
 	// This function can be called recursively, so clean up before starting:
 	audio_device_finish(p_device);
@@ -383,13 +396,12 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	}
 
 	if (!using_audio_client_3) {
-		DWORD streamflags = 0;
-		if ((DWORD)mix_rate != pwfex->nSamplesPerSec) {
-			streamflags |= AUDCLNT_STREAMFLAGS_RATEADJUST;
-			pwfex->nSamplesPerSec = mix_rate;
+		const AudioClientSetup client_setup = get_audio_client_setup(p_input, mix_rate, pwfex->nSamplesPerSec);
+		if (client_setup.stream_mix_rate != (int)pwfex->nSamplesPerSec) {
+			pwfex->nSamplesPerSec = client_setup.stream_mix_rate;
 			pwfex->nAvgBytesPerSec = pwfex->nSamplesPerSec * pwfex->nChannels * (pwfex->wBitsPerSample / 8);
 		}
-		hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_input ? REFTIMES_PER_SEC : 0, 0, pwfex, nullptr);
+		hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, client_setup.stream_flags, p_input ? REFTIMES_PER_SEC : 0, 0, pwfex, nullptr);
 
 		if (p_reinit) {
 			// In case we're trying to re-initialize the device, prevent throwing this error on the console,
@@ -490,6 +502,11 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
+	if (p_input) {
+		input_mix_rate = pwfex->nSamplesPerSec;
+		print_verbose("WASAPI: input mix_rate = " + itos(input_mix_rate));
+	}
+
 	// Free memory
 	CoTaskMemFree(pwfex);
 
@@ -586,7 +603,9 @@ Error AudioDriverWASAPI::finish_output_device() {
 }
 
 Error AudioDriverWASAPI::finish_input_device() {
-	return audio_device_finish(&audio_input);
+	Error err = audio_device_finish(&audio_input);
+	input_mix_rate = 0;
+	return err;
 }
 
 Error AudioDriverWASAPI::init() {
@@ -606,6 +625,10 @@ Error AudioDriverWASAPI::init() {
 
 int AudioDriverWASAPI::get_mix_rate() const {
 	return mix_rate;
+}
+
+int AudioDriverWASAPI::get_input_mix_rate() const {
+	return input_mix_rate > 0 ? input_mix_rate : mix_rate;
 }
 
 float AudioDriverWASAPI::get_latency() {

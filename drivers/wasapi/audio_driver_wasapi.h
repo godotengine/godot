@@ -42,6 +42,10 @@
 #include <audioclient.h>
 #include <mmdeviceapi.h>
 
+#ifdef TESTS_ENABLED
+class TestAudioDriverWASAPIAccessor;
+#endif
+
 class AudioDriverWASAPI : public AudioDriver {
 	class AudioDeviceWASAPI {
 	public:
@@ -64,6 +68,15 @@ class AudioDriverWASAPI : public AudioDriver {
 	AudioDeviceWASAPI audio_input;
 	AudioDeviceWASAPI audio_output;
 
+#ifdef TESTS_ENABLED
+	friend class TestAudioDriverWASAPIAccessor;
+#endif
+
+	struct AudioClientSetup {
+		DWORD stream_flags = 0;
+		int stream_mix_rate = 0;
+	};
+
 	Mutex mutex;
 	Thread thread;
 
@@ -71,6 +84,7 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	unsigned int channels = 0;
 	int mix_rate = 0;
+	int input_mix_rate = 0;
 	int buffer_frames = 0;
 	int target_latency_ms = 0;
 	float real_latency = 0.0;
@@ -78,6 +92,7 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	SafeFlag exit_thread;
 
+	static AudioClientSetup get_audio_client_setup(bool p_input, int p_configured_mix_rate, int p_device_mix_rate);
 	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i, int32_t sample);
 	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
 	static void thread_func(void *p_udata);
@@ -100,6 +115,7 @@ public:
 	virtual Error init() override;
 	virtual void start() override;
 	virtual int get_mix_rate() const override;
+	virtual int get_input_mix_rate() const override;
 	virtual SpeakerMode get_speaker_mode() const override;
 	virtual float get_latency() override;
 
