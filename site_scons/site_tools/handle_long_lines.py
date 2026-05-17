@@ -196,7 +196,7 @@ class MyTempFileMunge:
             prefix = env.subst("$MYTEMPFILEPREFIX")
         else:
             prefix = "@"
-        cmdlist = cmd[:tempfile_arg_count] + [prefix,native_tmp]
+        cmdlist = cmd[:tempfile_arg_count] + [prefix, native_tmp]
 
         # Store the temporary file command list into the target Node.attributes
         # to avoid creating separate temporary files for print and execute.
