@@ -171,7 +171,9 @@ private:
 
 protected:
 	struct ExportNotifier {
-		ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags);
+		bool enabled = true;
+
+		ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_enabled = true);
 		~ExportNotifier();
 	};
 
