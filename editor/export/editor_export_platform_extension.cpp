@@ -281,9 +281,7 @@ List<String> EditorExportPlatformExtension::get_binary_extensions(const Ref<Edit
 }
 
 Error EditorExportPlatformExtension::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
-	if (p_notify) {
-		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	}
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
 	Error ret = FAILED;
 	GDVIRTUAL_CALL(_export_project, p_preset, p_debug, p_path, p_flags, ret);

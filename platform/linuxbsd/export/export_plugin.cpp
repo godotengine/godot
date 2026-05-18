@@ -109,10 +109,9 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 		}
 		tmp_app_dir->make_dir_recursive(tmp_dir_path);
 		path = tmp_dir_path.path_join(p_path.get_file().get_basename());
-
-		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 	}
 
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, export_as_zip);
 	// Export project.
 	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, path, p_flags, !export_as_zip);
 	if (err != OK) {

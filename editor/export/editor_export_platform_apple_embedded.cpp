@@ -1653,9 +1653,7 @@ Error EditorExportPlatformAppleEmbedded::export_project(const Ref<EditorExportPr
 }
 
 Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify, bool p_oneclick) {
-	if (p_notify) {
-		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	}
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
 	const String dest_dir = p_path.get_base_dir() + "/";
 	const String binary_name = p_path.get_file().get_basename();
