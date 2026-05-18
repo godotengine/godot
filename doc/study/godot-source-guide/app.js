@@ -4,6 +4,7 @@ const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 const conceptState = {
   activeId: null,
   aliasEntries: [],
+  detailHistory: [],
   favorites: new Set(),
   filter: "all",
   mode: "library",
@@ -355,13 +356,14 @@ function findAliasIndex(text, lower, entry, start) {
   return -1;
 }
 
-function getTextMatches(text, counts, maxPerConcept) {
+function getTextMatches(text, counts, maxPerConcept, options = {}) {
   const lower = text.toLocaleLowerCase();
   const matches = [];
   let cursor = 0;
   while (cursor < text.length) {
     let best = null;
     for (const entry of conceptState.aliasEntries) {
+      if (entry.conceptId === options.excludeConceptId) continue;
       if ((counts.get(entry.conceptId) || 0) >= maxPerConcept) continue;
       const index = findAliasIndex(text, lower, entry, cursor);
       if (index === -1) continue;
@@ -387,10 +389,10 @@ function getTextMatches(text, counts, maxPerConcept) {
 function shouldSkipConceptNode(node) {
   const parent = node.parentElement;
   if (!parent || !node.nodeValue.trim()) return true;
-  return Boolean(parent.closest("a, button, input, select, textarea, label, svg, code, pre, .source, .concept-keyword, .concept-drawer, .concept-browser-section"));
+  return Boolean(parent.closest("a, button, input, select, textarea, label, svg, code, pre, .source, .concept-keyword, .concept-browser-section"));
 }
 
-function linkConceptKeywords(root, maxPerConcept = 10) {
+function linkConceptKeywords(root, maxPerConcept = 10, options = {}) {
   if (!root || !conceptState.aliasEntries.length) return;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
@@ -406,7 +408,7 @@ function linkConceptKeywords(root, maxPerConcept = 10) {
   nodes.forEach((textNode) => {
     const text = textNode.nodeValue;
     const counts = new Map();
-    const matches = getTextMatches(text, counts, maxPerConcept);
+    const matches = getTextMatches(text, counts, maxPerConcept, options);
     if (!matches.length) return;
     const fragment = document.createDocumentFragment();
     let cursor = 0;
@@ -464,12 +466,29 @@ function showConceptBrowser(filter = "all", clearSearch = true) {
   focusConceptPageSearch();
 }
 
-function openConceptDetail(id) {
+function openConceptDetail(id, options = {}) {
   if (!getConcept(id)) return;
+  if (options.source === "articleKeyword") {
+    if (conceptState.activeId === id) return;
+    if (conceptState.activeId) conceptState.detailHistory.push(conceptState.activeId);
+  } else if (!options.fromHistory) {
+    conceptState.detailHistory = [];
+  }
   conceptState.mode = "detail";
   conceptState.activeId = id;
   renderConceptPanel();
   openConceptPanel();
+}
+
+function backConceptDetail() {
+  while (conceptState.detailHistory.length) {
+    const id = conceptState.detailHistory.pop();
+    if (getConcept(id)) {
+      openConceptDetail(id, { fromHistory: true });
+      return;
+    }
+  }
+  renderConceptPanel();
 }
 
 function toggleConceptFavorite(id) {
@@ -696,6 +715,12 @@ function renderConceptBrowser() {
 function renderConceptPanel() {
   const concept = getConcept(conceptState.activeId);
   const favorite = qs("#conceptPanelFavorite");
+  const back = qs("#conceptPanelBack");
+  if (back) {
+    const previousConcept = getConcept(conceptState.detailHistory[conceptState.detailHistory.length - 1]);
+    back.disabled = !previousConcept;
+    back.setAttribute("aria-label", previousConcept ? `返回 ${getConceptTitle(previousConcept)}` : "返回上一个概念解释");
+  }
   if (!concept) {
     qs("#conceptDrawerTitle").textContent = "选择一个概念";
     qs("#conceptDrawerBody").innerHTML = `<p class="concept-empty">选择概念后，这里会显示解释。</p>`;
@@ -708,6 +733,7 @@ function renderConceptPanel() {
   }
   qs("#conceptDrawerTitle").textContent = getConceptTitle(concept);
   qs("#conceptDrawerBody").innerHTML = renderConceptDetail(concept);
+  linkConceptKeywords(qs("#conceptDrawerBody"), 10, { excludeConceptId: concept.id });
   favorite.disabled = false;
   favorite.dataset.conceptFavorite = concept.id;
   favorite.textContent = conceptState.favorites.has(concept.id) ? "★" : "☆";
@@ -728,6 +754,7 @@ function setupConcepts() {
   const conceptLibraryOpen = qs("#conceptLibraryOpen");
   const conceptFavoritesOpen = qs("#conceptFavoritesOpen");
   const conceptDrawerClose = qs("#conceptDrawerClose");
+  const conceptPanelBack = qs("#conceptPanelBack");
   const conceptPanelFavorite = qs("#conceptPanelFavorite");
   const conceptPageSearch = qs("#conceptPageSearch");
   const conceptPageFilter = qs("#conceptPageFilter");
@@ -748,6 +775,7 @@ function setupConcepts() {
     });
   }
   if (conceptDrawerClose) conceptDrawerClose.addEventListener("click", closeConceptPanel);
+  if (conceptPanelBack) conceptPanelBack.addEventListener("click", backConceptDetail);
   if (conceptPanelFavorite) conceptPanelFavorite.addEventListener("click", (event) => {
     const id = event.currentTarget.dataset.conceptFavorite;
     if (id) toggleConceptFavorite(id);
@@ -777,6 +805,11 @@ function setupConcepts() {
     }
   });
   if (conceptDrawer) conceptDrawer.addEventListener("click", (event) => {
+    const keyword = event.target.closest(".concept-keyword[data-concept-id]");
+    if (keyword && keyword.closest(".concept-article")) {
+      openConceptDetail(keyword.dataset.conceptId, { source: "articleKeyword" });
+      return;
+    }
     const open = event.target.closest("[data-concept-open]");
     if (open) openConceptDetail(open.dataset.conceptOpen);
   });
