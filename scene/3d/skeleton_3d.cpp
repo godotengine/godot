@@ -104,6 +104,8 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 		set_bone_pose_rotation(which, p_value);
 	} else if (what == "scale") {
 		set_bone_pose_scale(which, p_value);
+	} else if (what == "skin_scale") {
+		set_bone_skin_scale(which, p_value);
 	} else if (what == "bone_meta") {
 		set_bone_meta(which, path.get_slicec('/', 3), p_value);
 #ifndef DISABLE_DEPRECATED
@@ -173,6 +175,8 @@ bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = get_bone_pose_rotation(which);
 	} else if (what == "scale") {
 		r_ret = get_bone_pose_scale(which);
+	} else if (what == "skin_scale") {
+		r_ret = get_bone_skin_scale(which);
 	} else if (what == "bone_meta") {
 		r_ret = get_bone_meta(which, path.get_slicec('/', 3));
 	} else {
@@ -180,6 +184,39 @@ bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 	}
 
 	return true;
+}
+
+bool Skeleton3D::_property_can_revert(const StringName &p_name) const {
+	String path = p_name;
+	if (!path.begins_with("bones/")) {
+		return false;
+	}
+	uint32_t which = path.get_slicec('/', 1).to_int();
+	if (which >= bones.size()) {
+		return false;
+	}
+	String what = path.get_slicec('/', 2);
+	if (what == "skin_scale") {
+		return bones[which].skin_scale != DEFAULT_SKIN_SCALE;
+	}
+	return false;
+}
+
+bool Skeleton3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	String path = p_name;
+	if (!path.begins_with("bones/")) {
+		return false;
+	}
+	uint32_t which = path.get_slicec('/', 1).to_int();
+	if (which >= bones.size()) {
+		return false;
+	}
+	String what = path.get_slicec('/', 2);
+	if (what == "skin_scale") {
+		r_property = DEFAULT_SKIN_SCALE;
+		return true;
+	}
+	return false;
 }
 
 void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -202,6 +239,7 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + "position", PROPERTY_HINT_NONE, "", xform_usage));
 		p_list->push_back(PropertyInfo(Variant::QUATERNION, prep + "rotation", PROPERTY_HINT_NONE, "", xform_usage));
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + "scale", PROPERTY_HINT_NONE, "", xform_usage));
+		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + "skin_scale", PROPERTY_HINT_NONE, "", xform_usage));
 
 		for (const KeyValue<StringName, Variant> &K : bones[i].metadata) {
 			PropertyInfo pi = PropertyInfo(bones[i].metadata[K.key].get_type(), prep + "bone_meta/" + K.key, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
@@ -402,7 +440,11 @@ void Skeleton3D::_notification(int p_what) {
 				for (uint32_t i = 0; i < bind_count; i++) {
 					uint32_t bone_index = E->skin_bone_indices_ptrs[i];
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
-					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].global_pose * skin->get_bind_pose(i));
+					Transform3D bind_pose_transform = skin->get_bind_pose(i);
+					if (bonesptr[bone_index].is_skin_scaled) {
+						bind_pose_transform = bind_pose_transform.scaled(bonesptr[bone_index].skin_scale);
+					}
+					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].global_pose * bind_pose_transform);
 				}
 			}
 
@@ -916,17 +958,37 @@ Vector3 Skeleton3D::get_bone_pose_scale(int p_bone) const {
 	return bones[p_bone].pose_scale;
 }
 
-void Skeleton3D::reset_bone_pose(int p_bone) {
+void Skeleton3D::set_bone_skin_scale(int p_bone, const Vector3 &p_skin_scale) {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX(p_bone, bone_size);
+	bones[p_bone].skin_scale = p_skin_scale;
+	bones[p_bone].is_skin_scaled = !bones[p_bone].skin_scale.is_equal_approx(DEFAULT_SKIN_SCALE);
+	if (is_inside_tree()) {
+		_make_dirty();
+	}
+}
+
+Vector3 Skeleton3D::get_bone_skin_scale(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, Vector3());
+	return bones[p_bone].skin_scale;
+}
+
+void Skeleton3D::reset_bone_pose(int p_bone, bool p_reset_bone_skin_scale) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
 	set_bone_pose_position(p_bone, bones[p_bone].rest.origin);
 	set_bone_pose_rotation(p_bone, bones[p_bone].rest.basis.get_rotation_quaternion());
 	set_bone_pose_scale(p_bone, bones[p_bone].rest.basis.get_scale());
+	if (!p_reset_bone_skin_scale) {
+		return;
+	}
+	set_bone_skin_scale(p_bone, DEFAULT_SKIN_SCALE);
 }
 
-void Skeleton3D::reset_bone_poses() {
+void Skeleton3D::reset_bone_poses(bool p_reset_bone_skin_scale) {
 	for (uint32_t i = 0; i < bones.size(); i++) {
-		reset_bone_pose(i);
+		reset_bone_pose(i, p_reset_bone_skin_scale);
 	}
 }
 
@@ -1278,8 +1340,11 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone_pose_rotation", "bone_idx"), &Skeleton3D::get_bone_pose_rotation);
 	ClassDB::bind_method(D_METHOD("get_bone_pose_scale", "bone_idx"), &Skeleton3D::get_bone_pose_scale);
 
-	ClassDB::bind_method(D_METHOD("reset_bone_pose", "bone_idx"), &Skeleton3D::reset_bone_pose);
-	ClassDB::bind_method(D_METHOD("reset_bone_poses"), &Skeleton3D::reset_bone_poses);
+	ClassDB::bind_method(D_METHOD("set_bone_skin_scale", "bone_idx", "skin_scale"), &Skeleton3D::set_bone_skin_scale);
+	ClassDB::bind_method(D_METHOD("get_bone_skin_scale", "bone_idx"), &Skeleton3D::get_bone_skin_scale);
+
+	ClassDB::bind_method(D_METHOD("reset_bone_pose", "bone_idx", "reset_bone_skin_scale"), &Skeleton3D::reset_bone_pose, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("reset_bone_poses", "reset_bone_skin_scale"), &Skeleton3D::reset_bone_poses, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("is_bone_enabled", "bone_idx"), &Skeleton3D::is_bone_enabled);
 	ClassDB::bind_method(D_METHOD("set_bone_enabled", "bone_idx", "enabled"), &Skeleton3D::set_bone_enabled, DEFVAL(true));
