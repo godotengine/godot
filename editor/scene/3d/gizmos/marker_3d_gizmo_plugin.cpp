@@ -33,6 +33,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "scene/3d/marker_3d.h"
+#include "scene/resources/material.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/texture.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	pos3d_mesh.instantiate();
@@ -91,6 +95,27 @@ Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	d[Mesh::ARRAY_COLOR] = cursor_colors;
 	pos3d_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, d);
 	pos3d_mesh->surface_set_material(0, mat);
+
+	//Texture mesh if used
+	tex3d_mesh.instantiate();
+	Vector<Vector3> tex3d_points;
+	Vector<Vector2> uv = {
+		Vector2(0, 0), Vector2(1, 0), Vector2(1, 1),
+		Vector2(0, 0), Vector2(1, 1), Vector2(0, 1)
+	};
+	tex3d_points.push_back(Vector3(-cs, cs, 0));
+	tex3d_points.push_back(Vector3(cs, cs, 0));
+	tex3d_points.push_back(Vector3(cs, -cs, 0));
+
+	tex3d_points.push_back(Vector3(-cs, cs, 0));
+	tex3d_points.push_back(Vector3(cs, -cs, 0));
+	tex3d_points.push_back(Vector3(-cs, -cs, 0));
+
+	Array d2;
+	d2.resize(RSE::ARRAY_MAX);
+	d2[Mesh::ARRAY_VERTEX] = tex3d_points;
+	d2[Mesh::ARRAY_TEX_UV] = uv;
+	tex3d_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, d2);
 }
 
 bool Marker3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -108,10 +133,27 @@ int Marker3DGizmoPlugin::get_priority() const {
 void Marker3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	const Marker3D *marker = Object::cast_to<Marker3D>(p_gizmo->get_node_3d());
 	const real_t extents = marker->get_gizmo_extents();
-	const Transform3D xform(Basis::from_scale(Vector3(extents, extents, extents)));
 
 	p_gizmo->clear();
-	p_gizmo->add_mesh(pos3d_mesh, Ref<Material>(), xform);
+
+	Ref<Texture2D> tex = marker->get_gizmo_texture();
+	const Transform3D xform(Basis::from_scale(Vector3(extents, extents, extents)));
+	if (tex.is_valid()) {
+		ObjectID tex_id = tex->get_instance_id();
+		if (!tex3d_materials.has(tex_id)) {
+			Ref<StandardMaterial3D> m = memnew(StandardMaterial3D);
+			m->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+			m->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+			m->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+			m->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+			m->set_flag(StandardMaterial3D::FLAG_BILLBOARD_KEEP_SCALE, true);
+			m->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, tex);
+			tex3d_materials[tex_id] = m;
+		}
+		p_gizmo->add_mesh(tex3d_mesh, tex3d_materials[tex_id], xform);
+	} else {
+		p_gizmo->add_mesh(pos3d_mesh, Ref<Material>(), xform);
+	}
 
 	const Vector<Vector3> points = {
 		Vector3(-extents, 0, 0),

@@ -30,12 +30,17 @@
 
 #pragma once
 
+#include "core/templates/hash_map.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
+
+class StandardMaterial3D;
 
 class Marker3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Marker3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
+	Ref<ArrayMesh> tex3d_mesh;
+	HashMap<ObjectID, Ref<StandardMaterial3D>> tex3d_materials;
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;

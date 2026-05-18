@@ -4,13 +4,16 @@
 		Generic 3D position hint for editing.
 	</brief_description>
 	<description>
-		Generic 3D position hint for editing. It's just like a plain [Node3D], but it displays as a cross in the 3D editor at all times.
+		Generic 3D position hint for editing. It's just like a plain [Node3D], but it displays as a cross in the 3D editor or an image of your choice.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="gizmo_extents" type="float" setter="set_gizmo_extents" getter="get_gizmo_extents" default="0.25">
 			Size of the gizmo cross that appears in the editor.
+		</member>
+		<member name="gizmo_texture" type="Texture2D" setter="set_gizmo_texture" getter="get_gizmo_texture">
+			Image texture of the gizmo that appears in the editor.
 		</member>
 	</members>
 </class>

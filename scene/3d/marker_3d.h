@@ -32,10 +32,13 @@
 
 #include "scene/3d/node_3d.h"
 
+class Texture2D;
+
 class Marker3D : public Node3D {
 	GDCLASS(Marker3D, Node3D);
 
 	real_t gizmo_extents = 0.25;
+	Ref<Texture2D> gizmo_texture;
 
 protected:
 	static void _bind_methods();
@@ -43,6 +46,9 @@ protected:
 public:
 	void set_gizmo_extents(real_t p_extents);
 	real_t get_gizmo_extents() const;
+
+	void set_gizmo_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_gizmo_texture() const;
 
 	Marker3D();
 };

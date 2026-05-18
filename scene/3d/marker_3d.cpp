@@ -31,6 +31,7 @@
 #include "marker_3d.h"
 
 #include "core/object/class_db.h"
+#include "scene/resources/texture.h"
 
 void Marker3D::set_gizmo_extents(real_t p_extents) {
 	if (Math::is_equal_approx(gizmo_extents, p_extents)) {
@@ -44,11 +45,26 @@ real_t Marker3D::get_gizmo_extents() const {
 	return gizmo_extents;
 }
 
+void Marker3D::set_gizmo_texture(const Ref<Texture2D> &p_texture) {
+	if (gizmo_texture == p_texture) {
+		return;
+	}
+	gizmo_texture = p_texture;
+	update_gizmos();
+}
+
+Ref<Texture2D> Marker3D::get_gizmo_texture() const {
+	return gizmo_texture;
+}
+
 void Marker3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gizmo_extents", "extents"), &Marker3D::set_gizmo_extents);
 	ClassDB::bind_method(D_METHOD("get_gizmo_extents"), &Marker3D::get_gizmo_extents);
+	ClassDB::bind_method(D_METHOD("set_gizmo_texture", "texture"), &Marker3D::set_gizmo_texture);
+	ClassDB::bind_method(D_METHOD("get_gizmo_texture"), &Marker3D::get_gizmo_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gizmo_extents", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater,suffix:m"), "set_gizmo_extents", "get_gizmo_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gizmo_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_gizmo_texture", "get_gizmo_texture");
 }
 
 Marker3D::Marker3D() {
