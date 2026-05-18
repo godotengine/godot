@@ -25,7 +25,7 @@
 		<method name="get_stream_playback_position" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the playback position of the currently-playing stream. This is different from the [method get_playback_position] which returns the playback position of the entire playlist.
+				Returns the playback position of the currently-playing stream. This is different from the [method AudioStreamPlayback.get_playback_position] which returns the playback position of the entire playlist.
 			</description>
 		</method>
 		<method name="next_stream">
