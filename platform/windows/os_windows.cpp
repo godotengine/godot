@@ -480,11 +480,10 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 	if (!FileAccess::exists(path)) {
 		//this code exists so gdextension can load .dll files from within the executable path
 		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
+		ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 	}
 	// Path to load from may be different from original if we make copies.
 	String load_path = path;
-
-	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 
 	// Here we want a copy to be loaded.
 	// This is so the original file isn't locked and can be updated by a compiler.
