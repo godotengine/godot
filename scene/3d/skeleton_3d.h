@@ -112,6 +112,8 @@ private:
 		Quaternion pose_rotation;
 		Vector3 pose_scale = Vector3(1, 1, 1);
 		Transform3D global_pose;
+		Vector3 skin_scale = Vector3(1, 1, 1);
+		bool is_skin_scaled = false;
 		int nested_set_offset = 0; // Offset in nested set of bone hierarchy.
 		int nested_set_span = 0; // Subtree span in nested set of bone hierarchy.
 
@@ -216,6 +218,8 @@ protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 	void _notification(int p_what);
 	TypedArray<StringName> _get_bone_meta_list_bind(int p_bone) const;
 	static void _bind_methods();
@@ -278,6 +282,9 @@ public:
 	void set_bone_pose_position(int p_bone, const Vector3 &p_position);
 	void set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation);
 	void set_bone_pose_scale(int p_bone, const Vector3 &p_scale);
+
+	void set_bone_skin_scale(int p_bone, const Vector3 &p_skin_scale);
+	Vector3 get_bone_skin_scale(int p_bone) const;
 
 	Transform3D get_bone_global_pose(int p_bone) const;
 	void set_bone_global_pose(int p_bone, const Transform3D &p_pose);

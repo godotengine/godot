@@ -121,6 +121,19 @@ void BonePropertiesEditor::create_editors() {
 	rest_matrix->set_selectable(false);
 	rest_section->get_vbox()->add_child(rest_matrix);
 
+	// Skin section.
+	skin_section = memnew(EditorInspectorSection);
+	skin_section->setup("trf_properties_skin", "Skin", this, Color(0.0f, 0.0f, 0.0f), true);
+	section->get_vbox()->add_child(skin_section);
+
+	// Skin scale property.
+	skin_scale_property = memnew(EditorPropertyVector3());
+	skin_scale_property->setup(large_range_hint, true);
+	skin_scale_property->set_label("Scale");
+	skin_scale_property->set_selectable(false);
+	skin_scale_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
+	skin_section->get_vbox()->add_child(skin_scale_property);
+
 	// Bone Metadata property
 	meta_section = memnew(EditorInspectorSection);
 	meta_section->setup("bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
@@ -141,6 +154,7 @@ void BonePropertiesEditor::_notification(int p_what) {
 			const Color section_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			section->set_bg_color(section_color);
 			rest_section->set_bg_color(section_color);
+			skin_section->set_bg_color(section_color);
 		} break;
 	}
 }
@@ -260,6 +274,7 @@ void BonePropertiesEditor::set_skeleton(Skeleton3D *p_skeleton) {
 	rotation_property->set_object_and_property(nullptr, String());
 	scale_property->set_object_and_property(nullptr, String());
 	rest_matrix->set_object_and_property(nullptr, String());
+	skin_scale_property->set_object_and_property(nullptr, String());
 
 	for (KeyValue<StringName, EditorProperty *> &E : meta_editors) {
 		E.value->set_object_and_property(nullptr, String());
@@ -281,6 +296,9 @@ void BonePropertiesEditor::set_target(const String &p_prop) {
 
 	rest_matrix->set_object_and_property(skeleton, p_prop + "rest");
 	rest_matrix->update_property();
+
+	skin_scale_property->set_object_and_property(skeleton, p_prop + "skin_scale");
+	skin_scale_property->update_property();
 }
 
 void BonePropertiesEditor::_property_keyed(const String &p_path, bool p_advance) {
@@ -345,6 +363,12 @@ void BonePropertiesEditor::_update_properties() {
 					rest_matrix->update_property();
 					rest_matrix->update_editor_property_status();
 					rest_matrix->queue_redraw();
+				}
+				if (split[2] == "skin_scale") {
+					skin_scale_property->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
+					skin_scale_property->update_property();
+					skin_scale_property->update_editor_property_status();
+					skin_scale_property->queue_redraw();
 				}
 				if (split[2] == "bone_meta") {
 					meta_seen.insert(E.name);
@@ -886,6 +910,7 @@ void Skeleton3DEditor::_joint_tree_button_clicked(Object *p_item, int p_column, 
 		String bone_rotation_property = tree_item_metadata + "/rotation";
 		String bone_scale_property = tree_item_metadata + "/scale";
 		String bone_rest_property = tree_item_metadata + "/rest";
+		String bone_skin_scale_property = tree_item_metadata + "/skin_scale";
 
 		Variant current_enabled = skeleton->get(bone_enabled_property);
 		Variant current_parent = skeleton->get(bone_parent_property);
@@ -894,6 +919,7 @@ void Skeleton3DEditor::_joint_tree_button_clicked(Object *p_item, int p_column, 
 		Variant current_rotation = skeleton->get(bone_rotation_property);
 		Variant current_scale = skeleton->get(bone_scale_property);
 		Variant current_rest = skeleton->get(bone_rest_property);
+		Variant current_skin_scale = skeleton->get(bone_skin_scale_property);
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		ur->create_action(TTR("Revert Bone"));
@@ -960,6 +986,15 @@ void Skeleton3DEditor::_joint_tree_button_clicked(Object *p_item, int p_column, 
 			if (is_valid) {
 				ur->add_undo_method(skeleton, "set", bone_rest_property, current_rest);
 				ur->add_do_method(skeleton, "set", bone_rest_property, new_rest);
+			}
+		}
+		bool can_revert_skin_scale = EditorPropertyRevert::can_property_revert(skeleton, bone_skin_scale_property, &current_skin_scale);
+		if (can_revert_skin_scale) {
+			bool is_valid = false;
+			Variant new_skin_scale = EditorPropertyRevert::get_property_revert_value(skeleton, bone_skin_scale_property, &is_valid);
+			if (is_valid) {
+				ur->add_undo_method(skeleton, "set", bone_skin_scale_property, current_skin_scale);
+				ur->add_do_method(skeleton, "set", bone_skin_scale_property, new_skin_scale);
 			}
 		}
 
