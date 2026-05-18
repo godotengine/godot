@@ -5566,10 +5566,8 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, boo
 			Vector2 min_p = pts[0];
 			Vector2 max_p = pts[0];
 			for (int i = 1; i < pts.size(); i++) {
-				min_p.x = MIN(min_p.x, pts[i].x);
-				min_p.y = MIN(min_p.y, pts[i].y);
-				max_p.x = MAX(max_p.x, pts[i].x);
-				max_p.y = MAX(max_p.y, pts[i].y);
+				min_p = min_p.min(pts[i]);
+				max_p = max_p.max(pts[i]);
 			}
 			float depth = collision_polygon->get_depth();
 			// Build the AABB using the minimum point and the calculated size.
