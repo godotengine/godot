@@ -1731,14 +1731,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_filters = memnew(LineEdit);
 	include_filters->set_accessibility_name(TTRC("Include Filters"));
 	resources_vb->add_margin_child(
-			TTR("Filters to export non-resource files/folders\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
+			TTRC("Filters to export non-resource files/folders\n(comma-separated, e.g: *.cfg, *.txt, docs/*)"),
 			include_filters);
 	include_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_filter_changed));
 
 	exclude_filters = memnew(LineEdit);
 	exclude_filters->set_accessibility_name(TTRC("Exclude Filters"));
 	resources_vb->add_margin_child(
-			TTR("Filters to exclude files/folders from project\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
+			TTRC("Filters to exclude files/folders from project\n(comma-separated, e.g: *.cfg, *.txt, docs/*)"),
 			exclude_filters);
 	exclude_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_filter_changed));
 
