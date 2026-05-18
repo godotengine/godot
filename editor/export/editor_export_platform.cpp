@@ -1706,14 +1706,19 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		} else {
 			// Just store it as it comes.
 
-			// Customization only happens if plugins did not take care of it before.
-			bool force_binary = convert_text_to_binary && (path.has_extension("tres") || path.has_extension("tscn"));
-			String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, force_binary);
+			String export_path;
+			if (type.is_empty()) {
+				export_path = path;
+			} else {
+				// Customization only happens if plugins did not take care of it before.
+				bool force_binary = convert_text_to_binary && (path.has_extension("tres") || path.has_extension("tscn"));
+				export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, force_binary);
 
-			if (export_path != path) {
-				// Add a remap entry.
-				path_remaps.push_back(path);
-				path_remaps.push_back(export_path);
+				if (export_path != path) {
+					// Add a remap entry.
+					path_remaps.push_back(path);
+					path_remaps.push_back(export_path);
+				}
 			}
 
 			Vector<uint8_t> array = FileAccess::get_file_as_bytes(export_path);
