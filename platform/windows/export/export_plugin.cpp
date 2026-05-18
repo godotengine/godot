@@ -306,9 +306,8 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		pck_path = pck_path.get_basename() + ".tmp";
 	}
 
-	if (export_as_zip) {
-		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	}
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, export_as_zip);
+
 	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags, !export_as_zip);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
