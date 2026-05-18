@@ -285,6 +285,9 @@ public:
 
 	void add_new_tag(const String &p_tag);
 
+	// Theme.
+	Ref<Theme> get_theme() const { return theme; }
+
 	ProjectManager();
 	~ProjectManager();
 };
