@@ -173,6 +173,13 @@
 				Returns the rest transform for a bone [param bone_idx].
 			</description>
 		</method>
+		<method name="get_bone_skin_scale" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the skin scale of the bone at [param bone_idx].
+			</description>
+		</method>
 		<method name="get_concatenated_bone_names" qualifiers="const">
 			<return type="StringName" />
 			<description>
@@ -255,12 +262,14 @@
 		<method name="reset_bone_pose">
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="reset_bone_skin_scale" type="bool" default="false" />
 			<description>
 				Sets the bone pose to rest for [param bone_idx].
 			</description>
 		</method>
 		<method name="reset_bone_poses">
 			<return type="void" />
+			<param index="0" name="reset_bone_skin_scale" type="bool" default="false" />
 			<description>
 				Sets all bone poses to rests.
 			</description>
@@ -358,6 +367,16 @@
 			<param index="1" name="rest" type="Transform3D" />
 			<description>
 				Sets the rest transform for bone [param bone_idx].
+			</description>
+		</method>
+		<method name="set_bone_skin_scale">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="skin_scale" type="Vector3" />
+			<description>
+				Sets the skin scale of the bone at [param bone_idx] to [param skin_scale]. This scale does not affect bone children. This is useful for modifying the visual thickness of a skin.
+				Even if the skin is visually deformed, neither scaling nor repositioning of the bones occurs. It means that you may need to adjust the origin of the child bone to synchronize its joint position with the scaling by using [BoneSpreader3D].
+				[b]Note:[/b] The skin scaling may corrupt the appearance of the gizmo for some SkeletonModifier classes, such as SpringBoneSimulator and IKModifier3D, which rely on bone lengths for skinning.
 			</description>
 		</method>
 		<method name="unparent_bone_and_rest">
