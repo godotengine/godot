@@ -4118,11 +4118,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	// Group "open_in_editor" with "show_in_file_system", if it is available.
 	if (is_tool_scene_open_inherited_available) {
 		menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
-		// TODO: Missing shortcut?
+		menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/open_scene_in_editor"));
 	} else if (is_tool_scene_open_available) {
 		menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open in Editor"), TOOL_SCENE_OPEN);
 		menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/open_scene_in_editor"));
-		// TODO: Use add_icon_shortcut() instead?
 	}
 
 	if (full_selection.size() == 1 && selection.front()->get()->is_instance()) {
