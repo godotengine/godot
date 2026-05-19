@@ -281,6 +281,9 @@ Error AudioDriverPulseAudio::init_output_device() {
 }
 
 Error AudioDriverPulseAudio::connect_context() {
+	// PA_OK is not an error, so we expect that after pa_context_connect returns -1,
+	// we won't see it from pa_context_errno
+	static int last_reported_errno = PA_OK;
 	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), pa_context_name.utf8().ptr());
 	ERR_FAIL_NULL_V(pa_ctx, ERR_CANT_OPEN);
 
@@ -289,7 +292,13 @@ Error AudioDriverPulseAudio::connect_context() {
 
 	int ret = pa_context_connect(pa_ctx, nullptr, PA_CONTEXT_NOFLAGS, nullptr);
 	if (ret < 0) {
-		ERR_PRINT("PulseAudio: pa_context_connect error: " + String(pa_strerror(pa_context_errno(pa_ctx))));
+		int pa_errno = pa_context_errno(pa_ctx);
+		// Only report connection errors once per type
+		if (pa_errno != last_reported_errno) {
+			ERR_PRINT("PulseAudio: pa_context_connect error: " +
+					String(pa_strerror(pa_errno)));
+			last_reported_errno = pa_errno;
+		}
 		if (pa_ctx) {
 			pa_context_unref(pa_ctx);
 			pa_ctx = nullptr;
