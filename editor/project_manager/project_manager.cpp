@@ -199,7 +199,7 @@ void ProjectManager::_update_size_limits() {
 		// Limit popup menus to prevent unusably long lists.
 		// We try to set it to half the screen resolution, but no smaller than the minimum window size.
 		Size2 half_screen_rect = (screen_rect.size * EDSCALE) / 2;
-		Size2 maximum_popup_size = MAX(half_screen_rect, minimum_size);
+		Size2 maximum_popup_size = half_screen_rect.max(minimum_size);
 		quick_settings_dialog->update_size_limits(maximum_popup_size);
 	}
 }
