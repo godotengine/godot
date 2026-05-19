@@ -100,7 +100,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 		return splash;
 	}
 
-	Error _extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa);
+	Error _extract_template(const Ref<EditorExportPreset> &p_preset, const String &p_template, const String &p_dir, const String &p_name, bool pwa);
 	void _replace_strings(const HashMap<String, String> &p_replaces, Vector<uint8_t> &r_template);
 	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, BitField<EditorExportPlatform::DebugFlags> p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
 	Error _add_manifest_icon(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_icon, int p_size, Array &r_arr);
