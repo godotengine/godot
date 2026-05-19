@@ -63,13 +63,14 @@ static inline void setup_http_request(HTTPRequest *request) {
 	request->set_https_proxy(proxy_host, proxy_port);
 }
 
-void EditorAssetLibraryItem::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, const String &p_license_type, const String &p_license_url, int p_rating) {
+void EditorAssetLibraryItem::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating) {
 	title_text = p_title;
 	title->set_text(title_text);
 	title->set_tooltip_text(title_text);
 	asset_id = p_asset_id;
 	author->set_text(p_author);
 	author_id = p_author_id;
+	verified->set_visible(p_verified);
 	license->set_text(p_license_type);
 	license_url = p_license_url;
 	rating_count->set_text(itos(p_rating));
@@ -98,6 +99,7 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			author->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("faded_text"), SNAME("AssetLib")));
 			license->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("faded_text"), SNAME("AssetLib")));
+			verified->set_texture(get_editor_theme_icon(SNAME("Verified")));
 			rating_icon->set_texture(get_editor_theme_icon(SNAME("ThumbsUp")));
 
 			_calculate_misc_links_size();
@@ -202,6 +204,12 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	author->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	author_license_hbox->add_child(author);
 	author->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItem::_author_clicked));
+
+	verified = memnew(TextureRect);
+	verified->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	verified->set_tooltip_text(TTRC("Verified Author"));
+	verified->hide();
+	author_license_hbox->add_child(verified);
 
 	separator = memnew(HSeparator);
 	separator->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -450,10 +458,10 @@ void EditorAssetLibraryItemDescription::_zoom_toggled(bool p_pressed) {
 	}
 }
 
-void EditorAssetLibraryItemDescription::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url) {
+void EditorAssetLibraryItemDescription::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url) {
 	asset_id = p_asset_id;
 	title = p_title;
-	item->configure(p_title, p_asset_id, p_author, p_author_id, p_license_type, p_license_url, p_rating);
+	item->configure(p_title, p_asset_id, p_author, p_author_id, p_verified, p_license_type, p_license_url, p_rating);
 
 	releases.clear();
 
@@ -1786,7 +1794,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem(true));
 				asset_items->add_child(item);
-				item->configure(r["name"], r["slug"], p["name"], author_id, r["license_type"], r["license_url"], r["reviews_score"]);
+				item->configure(r["name"], r["slug"], p["name"], author_id, p["verified"], r["license_type"], r["license_url"], r["reviews_score"]);
 				item->connect("asset_selected", callable_mp(this, &EditorAssetLibrary::_select_asset));
 
 				if (r.has("thumbnail") && !r["thumbnail"].operator String().is_empty()) {
@@ -1816,6 +1824,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			Dictionary p = d["publisher"];
 			ERR_FAIL_COND(!p.has("name"));
 			ERR_FAIL_COND(!p.has("slug"));
+			ERR_FAIL_COND(!p.has("verified"));
 
 			HashMap<String, String> tags;
 			if (d.has("tags")) {
@@ -1838,7 +1847,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description->connect(SNAME("install_requested"), callable_mp(this, &EditorAssetLibrary::_install_asset));
 			description->connect(SNAME("tag_clicked"), callable_mp(this, &EditorAssetLibrary::_tag_clicked));
 
-			description->configure(d["name"], d["slug"], p["name"], p["slug"], d["license_type"], d["license_url"], d["reviews_score"], d["body_bbcode"], tags, d["store_url"], d["source"]);
+			description->configure(d["name"], d["slug"], p["name"], p["slug"], p["verified"], d["license_type"], d["license_url"], d["reviews_score"], d["body_bbcode"], tags, d["store_url"], d["source"]);
 
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(d["slug"]);
 			if (download_item) {
