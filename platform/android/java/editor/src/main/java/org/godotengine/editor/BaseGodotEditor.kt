@@ -241,7 +241,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	override fun onNewIntent(newIntent: Intent) {
 		if (newIntent.hasCategory(HYBRID_APP_PANEL_CATEGORY) || newIntent.hasCategory(HYBRID_APP_IMMERSIVE_CATEGORY)) {
-			val params = newIntent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
+			val params = retrieveCommandLineParamsFromLaunchIntent(newIntent)
 			Log.d(TAG, "Received hybrid transition intent $newIntent with parameters ${params.contentToString()}")
 			// Override EXTRA_NEW_LAUNCH so the editor is not restarted
 			newIntent.putExtra(EXTRA_NEW_LAUNCH, false)
@@ -251,7 +251,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				var scene = ""
 				var xrMode = XR_MODE_DEFAULT
 				var path = ""
-				if (params != null) {
+				if (params.isNotEmpty()) {
 					val sceneIndex = params.indexOf(SCENE_ARG)
 					if (sceneIndex != -1 && sceneIndex + 1 < params.size) {
 						scene = params[sceneIndex +1]

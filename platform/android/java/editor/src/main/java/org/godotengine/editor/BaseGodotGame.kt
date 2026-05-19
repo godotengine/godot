@@ -62,20 +62,18 @@ abstract class BaseGodotGame: GodotEditor() {
 
 		// Check if we should be running in XR instead (if available) as it's possible we were
 		// launched from the project manager which doesn't have that information.
-		val launchingArgs = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
-		if (launchingArgs != null) {
-			val editorWindowInfo = retrieveEditorWindowInfo(launchingArgs, getEditorGameEmbedMode())
-			if (editorWindowInfo != getEditorWindowInfo()) {
-				val relaunchIntent = getNewGodotInstanceIntent(editorWindowInfo, launchingArgs)
-				relaunchIntent.putExtra(EXTRA_NEW_LAUNCH, true)
-					.putExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD, intent.getBundleExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD))
+		val launchingArgs = retrieveCommandLineParamsFromLaunchIntent()
+		val editorWindowInfo = retrieveEditorWindowInfo(launchingArgs, getEditorGameEmbedMode())
+		if (editorWindowInfo != getEditorWindowInfo()) {
+			val relaunchIntent = getNewGodotInstanceIntent(editorWindowInfo, launchingArgs)
+			relaunchIntent.putExtra(EXTRA_NEW_LAUNCH, true)
+				.putExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD, intent.getBundleExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD))
 
-				Log.d(TAG, "Relaunching XR project using ${editorWindowInfo.windowClassName} with parameters ${launchingArgs.contentToString()}")
-				Godot.getInstance(applicationContext).destroyAndKillProcess {
-					ProcessPhoenix.triggerRebirth(this, relaunchIntent)
-				}
-				return
+			Log.d(TAG, "Relaunching XR project using ${editorWindowInfo.windowClassName} with parameters ${launchingArgs.contentToString()}")
+			Godot.getInstance(applicationContext).destroyAndKillProcess {
+				ProcessPhoenix.triggerRebirth(this, relaunchIntent)
 			}
+			return
 		}
 
 		// Request project runtime permissions if necessary.
