@@ -5974,7 +5974,7 @@
 			Applies the blur based on the game's framerate as is, and does not use the reference framerate.
 		</constant>
 		<constant name="MOTION_BLUR_FRAMERATE_MODE_CAPPED" value="1" enum="MotionBlurFramerateMode">
-			Applies the blur based on the game's framerate, but below a certain framerate (which means larger time gap and thus larger blur) it will cap the blur to emulate the blur that will be generated at the reference framerate. This is the default value, and it means that if the game lags, the blur will be kept under control.
+			Applies the blur based on the game's framerate, but below a certain framerate (which means larger time gap and thus more intense blurring) it will cap the blur to emulate the blur that will be generated at the reference framerate. This is the default value, and it means that if the game lags, the blur will be kept under control.
 		</constant>
 		<constant name="MOTION_BLUR_FRAMERATE_MODE_FIXED" value="2" enum="MotionBlurFramerateMode">
 			Enforces the reference framerate blur regardless of the game's framerate. This can lead to overblurring when the game's framerate is higher than the reference framerate.

@@ -528,7 +528,7 @@
 			The scale of the outer circle of the rotation gizmo as view plane rotation in the 3D editor. If set to [code]2.0[/code], the outer circle has twice the radius of the XYZ rotation gizmo sphere.
 		</member>
 		<member name="editors/3d/viewport_visuals/show_motion_blur_in_editor" type="bool" setter="" getter="">
-		If [code]true[/code], when a scene has a camera that has motion blur enabled, it will be be applied in the editor scene view as well. When [code]false[/code], only at runtime will the motion blur be applied.
+		If [code]true[/code], when a scene has a camera that has motion blur enabled, it will be be applied in the editor scene view as well. When [code]false[/code], the motion blur will only be applied at runtime.
 		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/aabb" type="Color" setter="" getter="">
 			The color to use for the AABB gizmo that displays the [GeometryInstance3D]'s custom [AABB].
