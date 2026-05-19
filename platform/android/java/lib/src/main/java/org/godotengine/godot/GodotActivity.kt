@@ -36,6 +36,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.addCallback
 import androidx.annotation.CallSuper
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.FragmentActivity
@@ -46,7 +47,7 @@ import org.godotengine.godot.utils.ProcessPhoenix
 /**
  * Base abstract activity for Android apps intending to use Godot as the primary screen.
  *
- * Also a reference implementation for how to setup and use the [GodotFragment] fragment
+ * Also a reference implementation for how to set up and use the [GodotFragment] fragment
  * within an Android app.
  */
 abstract class GodotActivity : FragmentActivity(), GodotHost {
@@ -118,6 +119,9 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		super.onCreate(savedInstanceState)
 
 		setContentView(getGodotAppLayout())
+
+		// Register `OnBackPressedCallback` for the Godot fragment.
+		onBackPressedDispatcher.addCallback { godotFragment?.onBackPressed() }
 
 		handleStartIntent(intent, true)
 
@@ -233,10 +237,6 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 				Log.d(TAG, "Permission ${permissions[i]} ${if (permissionGranted) { "granted"} else { "denied" }}")
 			}
 		}
-	}
-
-	override fun onBackPressed() {
-		godotFragment?.onBackPressed() ?: super.onBackPressed()
 	}
 
 	override fun getActivity(): Activity? {
