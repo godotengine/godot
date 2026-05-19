@@ -122,12 +122,14 @@ void ProjectExportDialog::_notification(int p_what) {
 			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 			patch_add_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			parameters_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 		} break;
 
 		case NOTIFICATION_READY: {
 			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 			patch_add_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			parameters_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			connect(SceneStringName(confirmed), callable_mp(this, &ProjectExportDialog::_export_pck_zip));
 			_update_export_all();
 		} break;
@@ -1650,12 +1652,25 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	// Main preset parameters.
 
+	VBoxContainer *parameters_vb = memnew(VBoxContainer);
+	parameters_vb->set_name(TTRC("Options"));
+	sections->add_child(parameters_vb);
+
+	parameters_search_box = memnew(LineEdit);
+	parameters_search_box->set_placeholder(TTRC("Filter Options"));
+	parameters_search_box->set_accessibility_name(TTRC("Filter Options"));
+	parameters_search_box->set_virtual_keyboard_show_on_focus(false);
+	parameters_search_box->set_clear_button_enabled(true);
+	parameters_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	parameters_vb->add_child(parameters_search_box);
+
 	parameters = memnew(EditorInspector);
-	parameters->set_name(TTRC("Options"));
 	parameters->set_mark_unsaved(false);
 	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	parameters->set_use_doc_hints(true);
-	sections->add_child(parameters);
+	parameters->set_use_filter(true);
+	parameters->register_text_enter(parameters_search_box);
+	parameters_vb->add_child(parameters);
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
 	EditorExport::get_singleton()->connect("export_presets_updated", callable_mp(this, &ProjectExportDialog::_force_update_current_preset_parameters));
 
