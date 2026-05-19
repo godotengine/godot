@@ -197,6 +197,8 @@ void SpringBoneCollision3D::_notification(int p_what) {
 	}
 }
 
+int SpringBoneCollision3D::Dsegmentindexbeingcalculated = 0;
+
 // static
 Vector3 SpringBoneCollision3D::_collide_sphere(const Vector3 &p_origin, float p_radius, bool p_inside, float p_bone_radius, const Vector3 &p_current) {
 	Vector3 diff = p_current - p_origin;
