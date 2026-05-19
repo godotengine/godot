@@ -233,8 +233,12 @@ public:
 	struct Warning {
 		/// One-based.
 		int start_line = 0;
+		int start_column = -1;
+
 		/// One-based.
 		int end_line = 0;
+		int end_column = -1;
+
 		int code;
 		String string_code;
 		String message;
@@ -242,10 +246,11 @@ public:
 
 	struct ScriptError {
 		String path;
-		/// One-based.
-		int line = -1;
-		/// One-based.
-		int column = -1;
+		/// All one-based.
+		int start_line = -1;
+		int start_column = -1;
+		int end_line = -1;
+		int end_column = -1;
 		String message;
 	};
 
