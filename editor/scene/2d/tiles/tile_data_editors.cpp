@@ -1325,10 +1325,12 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 	}
 }
 
-void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, const String &p_property, const String &p_label, const Variant &p_default_value) {
+void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, const String &p_property, const String &p_label, const Variant &p_default_value, const PropertyHint p_property_hint, const String &p_property_hint_string) {
 	ERR_FAIL_COND_MSG(!property.is_empty(), "Cannot setup TileDataDefaultEditor twice");
 	property = p_property;
 	property_type = p_type;
+	property_hint = p_property_hint;
+	property_hint_string = p_property_hint_string;
 
 	// Update everything.
 	if (property_editor) {
@@ -1349,7 +1351,7 @@ void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, const St
 	}
 
 	// Create and setup the property editor.
-	property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, p_type, p_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+	property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, p_type, p_property, p_property_hint, p_property_hint_string, PROPERTY_USAGE_DEFAULT);
 	property_editor->set_object_and_property(dummy_object, p_property);
 	if (p_label.is_empty()) {
 		property_editor->set_label(EditorPropertyNameProcessor::get_singleton()->process_name(p_property, EditorPropertyNameProcessor::get_default_inspector_style(), p_property));
@@ -1374,6 +1376,14 @@ void TileDataDefaultEditor::_notification(int p_what) {
 
 Variant::Type TileDataDefaultEditor::get_property_type() {
 	return property_type;
+}
+
+PropertyHint TileDataDefaultEditor::get_property_hint() {
+	return property_hint;
+}
+
+String TileDataDefaultEditor::get_property_hint_string() {
+	return property_hint_string;
 }
 
 TileDataDefaultEditor::TileDataDefaultEditor() {
