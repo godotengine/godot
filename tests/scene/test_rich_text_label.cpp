@@ -138,15 +138,10 @@ TEST_CASE("[SceneTree][RichTextLabel] Sizing with fit content") {
 }
 
 // RichTextLabel
-RichTextLabel *make_label(SceneTree *tree) {
-	RichTextLabel *label = memnew(RichTextLabel);
-	tree->get_root()->add_child(label);
-	label->set_use_bbcode(true);
-	return label;
-}
-
 TEST_CASE("[SceneTree][RichTextLabel] append_text simple case") {
-	RichTextLabel *label = make_label(SceneTree::get_singleton());
+	RichTextLabel *label = memnew(RichTextLabel);
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	label->set_use_bbcode(true);
 
 	label->append_text("Hello, World!");
 	CHECK(label->get_parsed_text() == "Hello, World!");
@@ -155,7 +150,9 @@ TEST_CASE("[SceneTree][RichTextLabel] append_text simple case") {
 }
 
 TEST_CASE("[SceneTree][RichTextLabel] append_text brackets") {
-	RichTextLabel *label = make_label(SceneTree::get_singleton());
+	RichTextLabel *label = memnew(RichTextLabel);
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	label->set_use_bbcode(true);
 
 	label->set_text("[lb]test");
 	label->append_text("[rb]");
@@ -165,7 +162,9 @@ TEST_CASE("[SceneTree][RichTextLabel] append_text brackets") {
 }
 
 TEST_CASE("[SceneTree][RichTextLabel] append_text with unordered list") {
-	RichTextLabel *label = make_label(SceneTree::get_singleton());
+	RichTextLabel *label = memnew(RichTextLabel);
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	label->set_use_bbcode(true);
 
 	label->append_text("[ul]item 1[/ul]");
 	CHECK(label->get_parsed_text() == "\titem 1\n");
@@ -179,7 +178,9 @@ TEST_CASE("[SceneTree][RichTextLabel] append_text with unordered list") {
 }
 
 TEST_CASE("[SceneTree][RichTextLabel] append_text mismatched brackets") {
-	RichTextLabel *label = make_label(SceneTree::get_singleton());
+	RichTextLabel *label = memnew(RichTextLabel);
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	label->set_use_bbcode(true);
 
 	label->set_text("[b]test");
 	label->append_text("[/i]");
@@ -189,7 +190,9 @@ TEST_CASE("[SceneTree][RichTextLabel] append_text mismatched brackets") {
 }
 
 TEST_CASE("[SceneTree][RichTextLabel] append_text brackets with incorrect case") {
-	RichTextLabel *label = make_label(SceneTree::get_singleton());
+	RichTextLabel *label = memnew(RichTextLabel);
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	label->set_use_bbcode(true);
 
 	label->set_text("[b]test");
 	label->append_text("[/B]");
