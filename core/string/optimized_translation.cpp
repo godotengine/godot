@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "optimized_translation.h"
+#include "optimized_translation.compat.inc"
 
 #include "core/object/class_db.h"
 #include "core/templates/pair.h"
@@ -43,11 +44,11 @@ struct CompressedString {
 	int offset = 0;
 };
 
-void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
+bool OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	// This method compresses a Translation instance.
 	// Right now, it doesn't handle context or plurals.
 #ifdef TOOLS_ENABLED
-	ERR_FAIL_COND(p_from.is_null());
+	ERR_FAIL_COND_V(p_from.is_null(), false);
 
 	List<StringName> keys;
 	{
@@ -150,7 +151,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		bucket_table_size += 2 + b.size() * 4;
 	}
 
-	ERR_FAIL_COND(bucket_table_size == 0);
+	ERR_FAIL_COND_V(bucket_table_size == 0, false);
 
 	hash_table.resize(size);
 	bucket_table.resize(bucket_table_size);
@@ -189,9 +190,12 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		memcpy(&cw[compressed[i].offset], compressed[i].compressed.get_data(), compressed[i].compressed.size());
 	}
 
-	ERR_FAIL_COND(btindex != bucket_table_size);
+	ERR_FAIL_COND_V(btindex != bucket_table_size, false);
 	set_locale(p_from->get_locale());
 
+	return true;
+#else
+	return false;
 #endif
 }
 
