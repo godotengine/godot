@@ -95,6 +95,9 @@ class ScriptTextEditor : public CodeEditorBase {
 	Color folded_code_region_color = Color(1, 1, 1);
 	int previous_line = -1; // Previous caret line number when user continuously operates in this editor. Affects history state. Reset to -1 on editor switch.
 
+	Color warning_underline_color = Color(1, 1, 1);
+	Color error_underline_color = Color(1, 1, 1);
+
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
 	Vector3i color_position;

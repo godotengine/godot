@@ -318,16 +318,41 @@ public:
 			Array errors = ret["errors"];
 			for (const Variant &error : errors) {
 				Dictionary err = error;
-				ERR_CONTINUE(!err.has("line"));
-				ERR_CONTINUE(!err.has("column"));
 				ERR_CONTINUE(!err.has("message"));
 
 				ScriptError serr;
 				if (err.has("path")) {
 					serr.path = err["path"];
 				}
-				serr.line = err["line"];
-				serr.column = err["column"];
+
+				if (err.has("start_line")) {
+					serr.start_line = err["start_line"];
+				} else {
+					ERR_CONTINUE(!err.has("line"));
+					serr.start_line = err["line"];
+				}
+
+				if (err.has("start_column")) {
+					serr.start_column = err["start_column"];
+				} else {
+					ERR_CONTINUE(!err.has("column"));
+					serr.start_column = err["column"];
+				}
+
+				if (err.has("end_line")) {
+					serr.end_line = err["end_line"];
+				} else {
+					ERR_CONTINUE(!err.has("line"));
+					serr.end_line = err["line"];
+				}
+
+				if (err.has("end_column")) {
+					serr.end_column = err["end_column"];
+				} else {
+					ERR_CONTINUE(!err.has("column"));
+					serr.end_column = err["column"];
+				}
+
 				serr.message = err["message"];
 
 				r_errors->push_back(serr);

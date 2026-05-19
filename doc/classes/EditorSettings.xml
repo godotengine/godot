@@ -1836,6 +1836,12 @@
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].
 		</member>
+		<member name="text_editor/theme/underlining/error_underline_color" type="Color" setter="" getter="">
+			The script editor's color for underline squiggles that appear under code causing an error.
+		</member>
+		<member name="text_editor/theme/underlining/warning_underline_color" type="Color" setter="" getter="">
+			The script editor's color for underline squiggles that appear under code causing a warning.
+		</member>
 		<member name="version_control/ssh_private_key_path" type="String" setter="" getter="">
 			Path to private SSH key file for the editor's Version Control integration credentials.
 		</member>
