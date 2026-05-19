@@ -215,6 +215,10 @@ void RendererRD::MotionBlur::motion_blur_process(const MotionBlurBuffers &p_buff
 }
 
 void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool p_transparent_bg, float p_time_step, CopyEffects *p_copy_effects) {
+	if (!RSG::camera_attributes->camera_attributes_get_motion_blur_show_in_editor() && Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
 	Size2i base_size = p_render_buffers->get_internal_size();
 	Size2i tiled_size = Size2i(Math::division_round_up(base_size.width, tile_size), Math::division_round_up(base_size.height, tile_size));
 	uint32_t view_count = p_render_buffers->get_view_count();
