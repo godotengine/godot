@@ -30,7 +30,7 @@
 
 #include "servers/rendering/renderer_rd/effects/motion_blur.h"
 
-#include "editor/settings/editor_settings.h"
+#include "core/config/engine.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_server_globals.h"
 
@@ -215,11 +215,6 @@ void RendererRD::MotionBlur::motion_blur_process(const MotionBlurBuffers &p_buff
 }
 
 void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool p_transparent_bg, float p_time_step, CopyEffects *p_copy_effects) {
-	if (Engine::get_singleton()->is_editor_hint() && !EDITOR_GET("editors/3d/viewport_visuals/show_motion_blur_in_editor")) {
-		// Skip motion blur in editor viewport if `show motion blur in viewport` not enabled
-		return;
-	}
-
 	Size2i base_size = p_render_buffers->get_internal_size();
 	Size2i tiled_size = Size2i(Math::division_round_up(base_size.width, tile_size), Math::division_round_up(base_size.height, tile_size));
 	uint32_t view_count = p_render_buffers->get_view_count();
@@ -244,17 +239,6 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 	{
 		float intensity = RSG::camera_attributes->camera_attributes_get_motion_blur_intensity(p_camera_attributes);
 		int reference_framerate = RSG::camera_attributes->camera_attributes_get_motion_blur_reference_framerate();
-		switch (RSG::camera_attributes->camera_attributes_get_motion_blur_framerate_mode()) {
-			case RSE::MOTION_BLUR_FRAMERATE_MODE_NATIVE:
-				// Use raw intensity, ignore frame time
-				break;
-			case RSE::MOTION_BLUR_FRAMERATE_MODE_CAPPED:
-				intensity *= MIN(1.f / reference_framerate, p_time_step) / p_time_step;
-				break;
-			case RSE::MOTION_BLUR_FRAMERATE_MODE_FIXED:
-				// Scale intensity by frame time
-				intensity /= reference_framerate * p_time_step;
-				break;
 		const double time_scale = Engine::get_singleton()->get_effective_time_scale();
 		float time_step = p_time_step / (float)time_scale;
 		switch (RSG::camera_attributes->camera_attributes_get_motion_blur_framerate_mode()) {

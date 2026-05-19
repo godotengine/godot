@@ -558,6 +558,10 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		using_motion_blur = false;
 	}
 
+	if (using_motion_blur && !RSG::camera_attributes->camera_attributes_get_motion_blur_show_in_editor() && Engine::get_singleton()->is_editor_hint()) {
+		using_motion_blur = false;
+	}
+
 	if (can_use_effects && using_motion_blur) {
 		RENDER_TIMESTAMP("Motion Blur");
 		motion_blur->motion_blur_compute(rb, p_render_data->camera_attributes, p_render_data->scene_data, p_render_data->transparent_bg, time_step, copy_effects);

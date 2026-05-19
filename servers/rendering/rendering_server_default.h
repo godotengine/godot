@@ -909,6 +909,7 @@ public:
 
 	FUNCRIDSPLIT(camera_attributes)
 
+	FUNC1(camera_attributes_set_motion_blur_show_in_editor, bool)
 	FUNC2(camera_attributes_set_motion_blur_framerate_mode, RSE::MotionBlurFramerateMode, int)
 	FUNC1(camera_attributes_set_motion_blur_quality, RSE::MotionBlurQuality)
 	FUNC1(camera_attributes_set_motion_blur_tile_size, RSE::MotionBlurTileSize)

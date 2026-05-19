@@ -9734,6 +9734,10 @@ void Node3DEditor::_notification(int p_what) {
 
 				gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
 
+				// Update the internal setting that controls whether motion blur effect is enabled in editor viewport.
+				const bool motion_blur_show_in_editor = EDITOR_GET("editors/3d/viewport_visuals/show_motion_blur_in_editor");
+				RS::get_singleton()->camera_attributes_set_motion_blur_show_in_editor(motion_blur_show_in_editor);
+
 				// Update grid color by rebuilding grid.
 				_finish_grid();
 				_init_grid();
@@ -10469,6 +10473,10 @@ Node3DEditor::Node3DEditor() {
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
 	gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
+
+	// Init motion blow show in editor setting
+	const bool motion_blur_show_in_editor = EDITOR_GET("editors/3d/viewport_visuals/show_motion_blur_in_editor");
+	RS::get_singleton()->camera_attributes_set_motion_blur_show_in_editor(motion_blur_show_in_editor);
 
 	viewport_environment.instantiate();
 	VBoxContainer *vbc = this;

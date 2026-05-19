@@ -67,6 +67,7 @@ private:
 		float dof_blur_amount = 0.1;
 	};
 
+	bool motion_blur_show_in_editor = true;
 	RSE::MotionBlurFramerateMode motion_blur_framerate_mode = RSE::MOTION_BLUR_FRAMERATE_MODE_CAPPED;
 	int motion_blur_reference_framerate = 30;
 	RSE::MotionBlurQuality motion_blur_quality = RSE::MOTION_BLUR_QUALITY_MEDIUM;
@@ -92,6 +93,7 @@ public:
 	void camera_attributes_initialize(RID p_rid);
 	void camera_attributes_free(RID p_rid);
 
+	void camera_attributes_set_motion_blur_show_in_editor(bool p_enabled);
 	void camera_attributes_set_motion_blur_framerate_mode(RSE::MotionBlurFramerateMode p_mode, int p_reference_framerate);
 	void camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality p_quality);
 	void camera_attributes_set_motion_blur_tile_size(RSE::MotionBlurTileSize p_tile_size);
@@ -143,6 +145,10 @@ public:
 		CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
 
 		return cam_attributes && cam_attributes->use_auto_exposure;
+	}
+
+	_FORCE_INLINE_ bool camera_attributes_get_motion_blur_show_in_editor() {
+		return motion_blur_show_in_editor;
 	}
 
 	_FORCE_INLINE_ RSE::MotionBlurFramerateMode camera_attributes_get_motion_blur_framerate_mode() {
