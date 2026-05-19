@@ -111,6 +111,7 @@ private:
 	HSplitContainer *h_split = nullptr;
 
 	HashSet<StringName> plot_sigs;
+	HashSet<StringName> collapsed_categories;
 
 	OptionButton *display_mode = nullptr;
 	OptionButton *display_time = nullptr;
@@ -147,6 +148,7 @@ private:
 
 	void _make_metric_ptrs(Metric &m);
 	void _item_edited();
+	void _item_collapsed(TreeItem *p_item);
 
 	void _update_plot();
 
