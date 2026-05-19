@@ -170,8 +170,9 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	// Allow releasing focus by holding "ui_cancel" action.
 	const uint64_t hold_to_unfocus_timeout = 3000;
-	if (p_event->is_action_pressed(SNAME("ui_cancel"), true, true)) {
-		if ((OS::get_singleton()->get_ticks_msec() - hold_next) < hold_to_unfocus_timeout) {
+	bool pressed_cancel_again = get_text() == get_event_text(event_to_check, false) && p_event->is_action_pressed(SNAME("ui_cancel"), true, true);
+	if (p_event->is_action_pressed(SNAME("ui_cancel"), true, true) || pressed_cancel_again) {
+		if (pressed_cancel_again || (OS::get_singleton()->get_ticks_msec() - hold_next) < hold_to_unfocus_timeout) {
 			hold_next = 0;
 			Control *next = find_next_valid_focus();
 			next->grab_focus();
@@ -192,7 +193,6 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (event_to_check.is_null() || !event_to_check->is_pressed() || event_to_check->is_echo() || event_to_check->is_match(event) || !_is_event_allowed(event_to_check)) {
 		return;
 	}
-
 	event = event_to_check;
 	set_text(get_event_text(event, false));
 	emit_signal("event_changed", event);
