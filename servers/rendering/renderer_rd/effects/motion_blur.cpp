@@ -255,6 +255,19 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 				// Scale intensity by frame time
 				intensity /= reference_framerate * p_time_step;
 				break;
+		const double time_scale = Engine::get_singleton()->get_effective_time_scale();
+		float time_step = p_time_step / (float)time_scale;
+		switch (RSG::camera_attributes->camera_attributes_get_motion_blur_framerate_mode()) {
+			case RSE::MOTION_BLUR_FRAMERATE_MODE_NATIVE:
+				// Use raw intensity, ignore frame time
+				break;
+			case RSE::MOTION_BLUR_FRAMERATE_MODE_CAPPED:
+				intensity *= MIN(1.f / reference_framerate, time_step) / time_step;
+				break;
+			case RSE::MOTION_BLUR_FRAMERATE_MODE_FIXED:
+				// Scale intensity by frame time
+				intensity /= reference_framerate * time_step;
+				break;
 		}
 
 		int sample_count;

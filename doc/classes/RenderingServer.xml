@@ -123,6 +123,7 @@
 			<param index="7" name="velocity_lower_threshold" type="float" />
 			<param index="8" name="velocity_upper_threshold" type="float" />
 			<description>
+				Configures the motion blur effect on the specified [param camera_attributes] resource. See properties in [CameraAttributesPractical] starting from [member CameraAttributesPractical.motion_blur_enabled] for details on each parameter.
 			</description>
 		</method>
 		<method name="camera_attributes_set_motion_blur_framerate_mode">
@@ -130,18 +131,21 @@
 			<param index="0" name="mode" type="int" enum="RenderingServer.MotionBlurFramerateMode" />
 			<param index="1" name="reference_framerate" type="int" />
 			<description>
+				Sets the framerate-based behavior of the motion blur effect. See also [member ProjectSettings.rendering/camera/motion_blur/motion_blur_framerate_mode].
 			</description>
 		</method>
 		<method name="camera_attributes_set_motion_blur_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.MotionBlurQuality" />
 			<description>
+				Sets the quality for the motion blur effect. See also [member ProjectSettings.rendering/camera/motion_blur/motion_blur_quality].
 			</description>
 		</method>
 		<method name="camera_attributes_set_motion_blur_tile_size">
 			<return type="void" />
 			<param index="0" name="tile_size" type="int" enum="RenderingServer.MotionBlurTileSize" />
 			<description>
+				Sets the tile size for the motion blur effect. See also [member ProjectSettings.rendering/camera/motion_blur/motion_blur_tile_size].
 			</description>
 		</method>
 		<method name="camera_create">
@@ -5946,24 +5950,34 @@
 			Highest quality DOF blur. Results in the smoothest looking blur by taking the most samples, but is also significantly slower.
 		</constant>
 		<constant name="MOTION_BLUR_QUALITY_LOW" value="0" enum="MotionBlurQuality">
+			Low quality for the motion blur effect (cheaper on the GPU).
 		</constant>
 		<constant name="MOTION_BLUR_QUALITY_MEDIUM" value="1" enum="MotionBlurQuality">
+			Medium quality for the motion blur effect.
 		</constant>
 		<constant name="MOTION_BLUR_QUALITY_HIGH" value="2" enum="MotionBlurQuality">
+			High quality for the motion blur effect (more expensive on the GPU).
 		</constant>
 		<constant name="MOTION_BLUR_TILE_SIZE_SMALL" value="0" enum="MotionBlurTileSize">
+			Tile size of 20×20 pixels for the motion blur effect. Lowest blurring potential for fast-moving objects, highest level of detail.
 		</constant>
 		<constant name="MOTION_BLUR_TILE_SIZE_MEDIUM" value="1" enum="MotionBlurTileSize">
+			Tile size of 40×40 pixels for the motion blur effect. Low blurring potential for fast-moving objects, high level of detail.
 		</constant>
 		<constant name="MOTION_BLUR_TILE_SIZE_LARGE" value="2" enum="MotionBlurTileSize">
+			Tile size of 60×60 pixels for the motion blur effect. High blurring potential for fast-moving objects, low level of detail.
 		</constant>
 		<constant name="MOTION_BLUR_TILE_SIZE_EXTRA_LARGE" value="3" enum="MotionBlurTileSize">
+			Tile size of 80×80 pixels for the motion blur effect. Highest blurring potential for fast-moving objects, lowest level of detail.
 		</constant>
 		<constant name="MOTION_BLUR_FRAMERATE_MODE_NATIVE" value="0" enum="MotionBlurFramerateMode">
+			Applies the blur based on the game's framerate as is, and does not use the reference framerate.
 		</constant>
 		<constant name="MOTION_BLUR_FRAMERATE_MODE_CAPPED" value="1" enum="MotionBlurFramerateMode">
+			Applies the blur based on the game's framerate, but below a certain framerate (which means larger time gap and thus larger blur) it will cap the blur to emulate the blur that will be generated at the reference framerate. This is the default value, and it means that if the game lags, the blur will be kept under control.
 		</constant>
 		<constant name="MOTION_BLUR_FRAMERATE_MODE_FIXED" value="2" enum="MotionBlurFramerateMode">
+			Enforces the reference framerate blur regardless of the game's framerate. This can lead to overblurring when the game's framerate is higher than the reference framerate.
 		</constant>
 		<constant name="INSTANCE_NONE" value="0" enum="InstanceType">
 			The instance does not have a type.

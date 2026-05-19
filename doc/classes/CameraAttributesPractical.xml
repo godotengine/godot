@@ -47,9 +47,11 @@
 			When true, object blur will be clamped to the motion blur tile size (configurable in the project settings) as to not reveal the edges of motion blur tiles.
 		</member>
 		<member name="motion_blur_enabled" type="bool" setter="set_motion_blur_enabled" getter="is_motion_blur_enabled" default="false">
+			If [code]true[/code], enables a motion blur effect when the camera moves, rotates or when an object on screen moves. This has a moderate performance impact.
+			[b]Note:[/b] Motion blur can result in motion sickness among some players. When implementing motion blur in a game, consider exposing an option to reduce its intensity or turn it off.
 		</member>
 		<member name="motion_blur_intensity" type="float" setter="set_motion_blur_intensity" getter="get_motion_blur_intensity" default="1.0">
-			Defines the amount of motion blur to apply given the object's velocity. At 1.0, the object's velocity will be blurred verbatim. An intensity of 0.5 can be interpreted as a 180 degrees shutter.
+			Defines the amount of motion blur to apply given the object's velocity. At 1.0, the object's velocity will be blurred in full (blur fills in the motion step fully). An intensity of 0.5 can be interpreted as a 180 degrees shutter.
 		</member>
 		<member name="motion_blur_movement_velocity_multiplier" type="float" setter="set_motion_blur_movement_velocity_multiplier" getter="get_motion_blur_movement_velocity_multiplier" default="1.0">
 			Defines the intensity of blur similar to [member motion_blur_intensity], but only for the part of the motion caused by camera movement.
