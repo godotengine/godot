@@ -1124,6 +1124,17 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 	lines = 1;
 	f = p_f;
 
+	// Skip UTF-8 BOM.
+	{
+		uint64_t pos = f->get_position();
+		if (pos == 0 && f->get_length() > 3) {
+			uint8_t bom[3] = {};
+			if (f->get_buffer(&bom[0], 3) != 3 || bom[0] != 0xef || bom[1] != 0xbb || bom[2] != 0xbf) {
+				f->seek(pos); // Wasn't a BOM; reset position.
+			}
+		}
+	}
+
 	stream.f = f;
 	is_scene = false;
 	ignore_resource_parsing = false;
