@@ -1,53 +1,45 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Foundation/NSDate.hpp
-//
-// Copyright 2020-2024 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #include "NSDefines.hpp"
+#include "NSBlocks.hpp"
+#include "NSStructs.hpp"
+#include "NSBridge.hpp"
 #include "NSObject.hpp"
-#include "NSPrivate.hpp"
 #include "NSTypes.hpp"
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+#include "NSRange.hpp"
 
 namespace NS
 {
 
-using TimeInterval = double;
+extern NS::NotificationName const SystemClockDidChangeNotification __asm__("_NSSystemClockDidChangeNotification");
 
-class Date : public Copying<Date>
+class Date : public NS::SecureCoding<Date>
 {
 public:
-    static Date* dateWithTimeIntervalSinceNow(TimeInterval secs);
+    static Date* alloc();
+    Date*        init() const;
+
+    static NS::Date* date(NS::TimeInterval secs);
+
 };
 
-} // NS
+} // namespace NS
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- Class symbols + inline implementations ---
 
-_NS_INLINE NS::Date* NS::Date::dateWithTimeIntervalSinceNow(NS::TimeInterval secs)
+extern "C" void *OBJC_CLASS_$_NSDate;
+
+_NS_INLINE NS::Date* NS::Date::alloc()
 {
-    return NS::Object::sendMessage<NS::Date*>(_NS_PRIVATE_CLS(NSDate), _NS_PRIVATE_SEL(dateWithTimeIntervalSinceNow_), secs);
+    return _NS_msg_NS__Datep_alloc((const void*)&OBJC_CLASS_$_NSDate, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_NS_INLINE NS::Date* NS::Date::init() const
+{
+    return _NS_msg_NS__Datep_init((const void*)this, nullptr);
+}
+
+_NS_INLINE NS::Date* NS::Date::date(NS::TimeInterval secs)
+{
+    return _NS_msg_NS__Datep_dateWithTimeIntervalSinceNow__double((const void*)&OBJC_CLASS_$_NSDate, nullptr, secs);
+}

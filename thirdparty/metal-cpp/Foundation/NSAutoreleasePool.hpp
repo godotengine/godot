@@ -1,83 +1,54 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Foundation/NSAutoreleasePool.hpp
-//
-// Copyright 2020-2024 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #include "NSDefines.hpp"
+#include "NSBlocks.hpp"
+#include "NSStructs.hpp"
+#include "NSBridge.hpp"
 #include "NSObject.hpp"
-#include "NSPrivate.hpp"
 #include "NSTypes.hpp"
+#include "NSRange.hpp"
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+namespace NS {
+    class Object;
+}
 
 namespace NS
 {
-class AutoreleasePool : public Object
+
+class AutoreleasePool : public NS::Referencing<AutoreleasePool>
 {
 public:
     static AutoreleasePool* alloc();
-    AutoreleasePool*        init();
+    AutoreleasePool*        init() const;
 
-    void                    drain();
+    static void addObject(NS::Object* anObject);
 
-    void                    addObject(Object* pObject);
+    void drain();
 
-    static void             showPools();
 };
-}
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+} // namespace NS
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_NSAutoreleasePool;
 
 _NS_INLINE NS::AutoreleasePool* NS::AutoreleasePool::alloc()
 {
-    return NS::Object::alloc<AutoreleasePool>(_NS_PRIVATE_CLS(NSAutoreleasePool));
+    return _NS_msg_NS__AutoreleasePoolp_alloc((const void*)&OBJC_CLASS_$_NSAutoreleasePool, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::AutoreleasePool* NS::AutoreleasePool::init()
+_NS_INLINE NS::AutoreleasePool* NS::AutoreleasePool::init() const
 {
-    return NS::Object::init<AutoreleasePool>();
+    return _NS_msg_NS__AutoreleasePoolp_init((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_NS_INLINE void NS::AutoreleasePool::addObject(NS::Object* anObject)
+{
+    _NS_msg_v_addObject__NS__Objectp((const void*)&OBJC_CLASS_$_NSAutoreleasePool, nullptr, anObject);
+}
 
 _NS_INLINE void NS::AutoreleasePool::drain()
 {
-    Object::sendMessage<void>(this, _NS_PRIVATE_SEL(drain));
+    _NS_msg_v_drain((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::AutoreleasePool::addObject(Object* pObject)
-{
-    Object::sendMessage<void>(this, _NS_PRIVATE_SEL(addObject_), pObject);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::AutoreleasePool::showPools()
-{
-    Object::sendMessage<void>(_NS_PRIVATE_CLS(NSAutoreleasePool), _NS_PRIVATE_SEL(showPools));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------

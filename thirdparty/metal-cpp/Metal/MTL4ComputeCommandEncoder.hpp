@@ -1,300 +1,249 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTL4ComputeCommandEncoder.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
+#include "MTL4Defines.hpp"
+#include "MTL4Blocks.hpp"
+#include "MTL4Structs.hpp"
+#include "MTL4Bridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 #include "MTL4CommandEncoder.hpp"
-#include "MTL4Counters.hpp"
-#include "MTLAccelerationStructure.hpp"
-#include "MTLAccelerationStructureTypes.hpp"
-#include "MTLBlitCommandEncoder.hpp"
-#include "MTLCommandEncoder.hpp"
-#include "MTLDefines.hpp"
-#include "MTLGPUAddress.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
-#include "MTLTypes.hpp"
-#include <cstdint>
+#include "MTLStructs.hpp"
 
-namespace MTL4
-{
-class AccelerationStructureDescriptor;
-class ArgumentTable;
-class CounterHeap;
+namespace MTL {
+    class AccelerationStructure;
+    class Buffer;
+    class ComputePipelineState;
+    class IndirectCommandBuffer;
+    class Tensor;
+    class TensorExtents;
+    class Texture;
+    using AccelerationStructureRefitOptions = NS::UInteger;
+    using BlitOption = NS::UInteger;
+    using Stages = NS::UInteger;
 }
-
-namespace MTL
-{
-class AccelerationStructure;
-class Buffer;
-class ComputePipelineState;
-class IndirectCommandBuffer;
-class Tensor;
-class TensorExtents;
-class Texture;
+namespace MTL4 {
+    class AccelerationStructureDescriptor;
+    class ArgumentTable;
+    class CounterHeap;
+    enum TimestampGranularity : NS::Integer;
 }
 
 namespace MTL4
 {
-class ComputeCommandEncoder : public NS::Referencing<ComputeCommandEncoder, CommandEncoder>
+
+class ComputeCommandEncoder : public NS::Referencing<ComputeCommandEncoder, MTL4::CommandEncoder>
 {
 public:
-    void        buildAccelerationStructure(const MTL::AccelerationStructure* accelerationStructure, const MTL4::AccelerationStructureDescriptor* descriptor, const MTL4::BufferRange scratchBuffer);
-
-    void        copyAccelerationStructure(const MTL::AccelerationStructure* sourceAccelerationStructure, const MTL::AccelerationStructure* destinationAccelerationStructure);
-
-    void        copyAndCompactAccelerationStructure(const MTL::AccelerationStructure* sourceAccelerationStructure, const MTL::AccelerationStructure* destinationAccelerationStructure);
-
-    void        copyFromBuffer(const MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, const MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger size);
-    void        copyFromBuffer(const MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, NS::UInteger sourceBytesPerRow, NS::UInteger sourceBytesPerImage, MTL::Size sourceSize, const MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin);
-    void        copyFromBuffer(const MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, NS::UInteger sourceBytesPerRow, NS::UInteger sourceBytesPerImage, MTL::Size sourceSize, const MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin, MTL::BlitOption options);
-
-    void        copyFromTensor(const MTL::Tensor* sourceTensor, const MTL::TensorExtents* sourceOrigin, const MTL::TensorExtents* sourceDimensions, const MTL::Tensor* destinationTensor, const MTL::TensorExtents* destinationOrigin, const MTL::TensorExtents* destinationDimensions);
-
-    void        copyFromTexture(const MTL::Texture* sourceTexture, const MTL::Texture* destinationTexture);
-    void        copyFromTexture(const MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, const MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, NS::UInteger sliceCount, NS::UInteger levelCount);
-    void        copyFromTexture(const MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, const MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin);
-    void        copyFromTexture(const MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, const MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger destinationBytesPerRow, NS::UInteger destinationBytesPerImage);
-    void        copyFromTexture(const MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, const MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger destinationBytesPerRow, NS::UInteger destinationBytesPerImage, MTL::BlitOption options);
-
-    void        copyIndirectCommandBuffer(const MTL::IndirectCommandBuffer* source, NS::Range sourceRange, const MTL::IndirectCommandBuffer* destination, NS::UInteger destinationIndex);
-
+    void        buildAccelerationStructure(MTL::AccelerationStructure* accelerationStructure, MTL4::AccelerationStructureDescriptor* descriptor, MTL4::BufferRange scratchBuffer);
+    void        copyAccelerationStructure(MTL::AccelerationStructure* sourceAccelerationStructure, MTL::AccelerationStructure* destinationAccelerationStructure);
+    void        copyAndCompactAccelerationStructure(MTL::AccelerationStructure* sourceAccelerationStructure, MTL::AccelerationStructure* destinationAccelerationStructure);
+    void        copyFromBuffer(MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger size);
+    void        copyFromBuffer(MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, NS::UInteger sourceBytesPerRow, NS::UInteger sourceBytesPerImage, MTL::Size sourceSize, MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin);
+    void        copyFromBuffer(MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, NS::UInteger sourceBytesPerRow, NS::UInteger sourceBytesPerImage, MTL::Size sourceSize, MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin, MTL::BlitOption options);
+    void        copyFromTensor(MTL::Tensor* sourceTensor, MTL::TensorExtents* sourceOrigin, MTL::TensorExtents* sourceDimensions, MTL::Tensor* destinationTensor, MTL::TensorExtents* destinationOrigin, MTL::TensorExtents* destinationDimensions);
+    void        copyFromTexture(MTL::Texture* sourceTexture, MTL::Texture* destinationTexture);
+    void        copyFromTexture(MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, NS::UInteger sliceCount, NS::UInteger levelCount);
+    void        copyFromTexture(MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin);
+    void        copyFromTexture(MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger destinationBytesPerRow, NS::UInteger destinationBytesPerImage);
+    void        copyFromTexture(MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger destinationBytesPerRow, NS::UInteger destinationBytesPerImage, MTL::BlitOption options);
+    void        copyIndirectCommandBuffer(MTL::IndirectCommandBuffer* source, NS::Range sourceRange, MTL::IndirectCommandBuffer* destination, NS::UInteger destinationIndex);
     void        dispatchThreadgroups(MTL::Size threadgroupsPerGrid, MTL::Size threadsPerThreadgroup);
     void        dispatchThreadgroups(MTL::GPUAddress indirectBuffer, MTL::Size threadsPerThreadgroup);
-
     void        dispatchThreads(MTL::Size threadsPerGrid, MTL::Size threadsPerThreadgroup);
     void        dispatchThreads(MTL::GPUAddress indirectBuffer);
-
-    void        executeCommandsInBuffer(const MTL::IndirectCommandBuffer* indirectCommandBuffer, NS::Range executionRange);
-    void        executeCommandsInBuffer(const MTL::IndirectCommandBuffer* indirectCommandbuffer, MTL::GPUAddress indirectRangeBuffer);
-
-    void        fillBuffer(const MTL::Buffer* buffer, NS::Range range, uint8_t value);
-
-    void        generateMipmaps(const MTL::Texture* texture);
-
-    void        optimizeContentsForCPUAccess(const MTL::Texture* texture);
-    void        optimizeContentsForCPUAccess(const MTL::Texture* texture, NS::UInteger slice, NS::UInteger level);
-
-    void        optimizeContentsForGPUAccess(const MTL::Texture* texture);
-    void        optimizeContentsForGPUAccess(const MTL::Texture* texture, NS::UInteger slice, NS::UInteger level);
-
-    void        optimizeIndirectCommandBuffer(const MTL::IndirectCommandBuffer* indirectCommandBuffer, NS::Range range);
-
-    void        refitAccelerationStructure(const MTL::AccelerationStructure* sourceAccelerationStructure, const MTL4::AccelerationStructureDescriptor* descriptor, const MTL::AccelerationStructure* destinationAccelerationStructure, const MTL4::BufferRange scratchBuffer);
-    void        refitAccelerationStructure(const MTL::AccelerationStructure* sourceAccelerationStructure, const MTL4::AccelerationStructureDescriptor* descriptor, const MTL::AccelerationStructure* destinationAccelerationStructure, const MTL4::BufferRange scratchBuffer, MTL::AccelerationStructureRefitOptions options);
-
-    void        resetCommandsInBuffer(const MTL::IndirectCommandBuffer* buffer, NS::Range range);
-
-    void        setArgumentTable(const MTL4::ArgumentTable* argumentTable);
-
-    void        setComputePipelineState(const MTL::ComputePipelineState* state);
-
+    void        executeCommandsInBuffer(MTL::IndirectCommandBuffer* indirectCommandBuffer, NS::Range executionRange);
+    void        executeCommandsInBuffer(MTL::IndirectCommandBuffer* indirectCommandbuffer, MTL::GPUAddress indirectRangeBuffer);
+    void        fillBuffer(MTL::Buffer* buffer, NS::Range range, uint8_t value);
+    void        generateMipmaps(MTL::Texture* texture);
+    void        optimizeContents(MTL::Texture* texture);
+    void        optimizeContents(MTL::Texture* texture, NS::UInteger slice, NS::UInteger level);
+    void        optimizeIndirectCommandBuffer(MTL::IndirectCommandBuffer* indirectCommandBuffer, NS::Range range);
+    void        refitAccelerationStructure(MTL::AccelerationStructure* sourceAccelerationStructure, MTL4::AccelerationStructureDescriptor* descriptor, MTL::AccelerationStructure* destinationAccelerationStructure, MTL4::BufferRange scratchBuffer);
+    void        refitAccelerationStructure(MTL::AccelerationStructure* sourceAccelerationStructure, MTL4::AccelerationStructureDescriptor* descriptor, MTL::AccelerationStructure* destinationAccelerationStructure, MTL4::BufferRange scratchBuffer, MTL::AccelerationStructureRefitOptions options);
+    void        resetCommandsInBuffer(MTL::IndirectCommandBuffer* buffer, NS::Range range);
+    void        setArgumentTable(MTL4::ArgumentTable* argumentTable);
+    void        setComputePipelineState(MTL::ComputePipelineState* state);
     void        setImageblockWidth(NS::UInteger width, NS::UInteger height);
-
     void        setThreadgroupMemoryLength(NS::UInteger length, NS::UInteger index);
-
     MTL::Stages stages();
+    void        writeCompactedAccelerationStructureSize(MTL::AccelerationStructure* accelerationStructure, MTL4::BufferRange buffer);
+    void        writeTimestamp(MTL4::TimestampGranularity granularity, MTL4::CounterHeap* counterHeap, NS::UInteger index);
 
-    void        writeCompactedAccelerationStructureSize(const MTL::AccelerationStructure* accelerationStructure, const MTL4::BufferRange buffer);
-
-    void        writeTimestamp(MTL4::TimestampGranularity granularity, const MTL4::CounterHeap* counterHeap, NS::UInteger index);
 };
 
-}
-_MTL_INLINE void MTL4::ComputeCommandEncoder::buildAccelerationStructure(const MTL::AccelerationStructure* accelerationStructure, const MTL4::AccelerationStructureDescriptor* descriptor, const MTL4::BufferRange scratchBuffer)
+} // namespace MTL4
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTL4ComputeCommandEncoder;
+
+_MTL4_INLINE MTL::Stages MTL4::ComputeCommandEncoder::stages()
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(buildAccelerationStructure_descriptor_scratchBuffer_), accelerationStructure, descriptor, scratchBuffer);
+    return _MTL4_msg_MTL__Stages_stages((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyAccelerationStructure(const MTL::AccelerationStructure* sourceAccelerationStructure, const MTL::AccelerationStructure* destinationAccelerationStructure)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::setComputePipelineState(MTL::ComputePipelineState* state)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyAccelerationStructure_toAccelerationStructure_), sourceAccelerationStructure, destinationAccelerationStructure);
+    _MTL4_msg_v_setComputePipelineState__MTL__ComputePipelineStatep((const void*)this, nullptr, state);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyAndCompactAccelerationStructure(const MTL::AccelerationStructure* sourceAccelerationStructure, const MTL::AccelerationStructure* destinationAccelerationStructure)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::setThreadgroupMemoryLength(NS::UInteger length, NS::UInteger index)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyAndCompactAccelerationStructure_toAccelerationStructure_), sourceAccelerationStructure, destinationAccelerationStructure);
+    _MTL4_msg_v_setThreadgroupMemoryLength_atIndex__NS__UInteger_NS__UInteger((const void*)this, nullptr, length, index);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyFromBuffer(const MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, const MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger size)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::setImageblockWidth(NS::UInteger width, NS::UInteger height)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyFromBuffer_sourceOffset_toBuffer_destinationOffset_size_), sourceBuffer, sourceOffset, destinationBuffer, destinationOffset, size);
+    _MTL4_msg_v_setImageblockWidth_height__NS__UInteger_NS__UInteger((const void*)this, nullptr, width, height);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyFromBuffer(const MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, NS::UInteger sourceBytesPerRow, NS::UInteger sourceBytesPerImage, MTL::Size sourceSize, const MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::dispatchThreads(MTL::Size threadsPerGrid, MTL::Size threadsPerThreadgroup)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyFromBuffer_sourceOffset_sourceBytesPerRow_sourceBytesPerImage_sourceSize_toTexture_destinationSlice_destinationLevel_destinationOrigin_), sourceBuffer, sourceOffset, sourceBytesPerRow, sourceBytesPerImage, sourceSize, destinationTexture, destinationSlice, destinationLevel, destinationOrigin);
+    _MTL4_msg_v_dispatchThreads_threadsPerThreadgroup__MTL__Size_MTL__Size((const void*)this, nullptr, threadsPerGrid, threadsPerThreadgroup);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyFromBuffer(const MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, NS::UInteger sourceBytesPerRow, NS::UInteger sourceBytesPerImage, MTL::Size sourceSize, const MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin, MTL::BlitOption options)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::dispatchThreadgroups(MTL::Size threadgroupsPerGrid, MTL::Size threadsPerThreadgroup)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyFromBuffer_sourceOffset_sourceBytesPerRow_sourceBytesPerImage_sourceSize_toTexture_destinationSlice_destinationLevel_destinationOrigin_options_), sourceBuffer, sourceOffset, sourceBytesPerRow, sourceBytesPerImage, sourceSize, destinationTexture, destinationSlice, destinationLevel, destinationOrigin, options);
+    _MTL4_msg_v_dispatchThreadgroups_threadsPerThreadgroup__MTL__Size_MTL__Size((const void*)this, nullptr, threadgroupsPerGrid, threadsPerThreadgroup);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyFromTensor(const MTL::Tensor* sourceTensor, const MTL::TensorExtents* sourceOrigin, const MTL::TensorExtents* sourceDimensions, const MTL::Tensor* destinationTensor, const MTL::TensorExtents* destinationOrigin, const MTL::TensorExtents* destinationDimensions)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::dispatchThreadgroups(MTL::GPUAddress indirectBuffer, MTL::Size threadsPerThreadgroup)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyFromTensor_sourceOrigin_sourceDimensions_toTensor_destinationOrigin_destinationDimensions_), sourceTensor, sourceOrigin, sourceDimensions, destinationTensor, destinationOrigin, destinationDimensions);
+    _MTL4_msg_v_dispatchThreadgroupsWithIndirectBuffer_threadsPerThreadgroup__MTL__GPUAddress_MTL__Size((const void*)this, nullptr, indirectBuffer, threadsPerThreadgroup);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyFromTexture(const MTL::Texture* sourceTexture, const MTL::Texture* destinationTexture)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::dispatchThreads(MTL::GPUAddress indirectBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyFromTexture_toTexture_), sourceTexture, destinationTexture);
+    _MTL4_msg_v_dispatchThreadsWithIndirectBuffer__MTL__GPUAddress((const void*)this, nullptr, indirectBuffer);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyFromTexture(const MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, const MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, NS::UInteger sliceCount, NS::UInteger levelCount)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::executeCommandsInBuffer(MTL::IndirectCommandBuffer* indirectCommandBuffer, NS::Range executionRange)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyFromTexture_sourceSlice_sourceLevel_toTexture_destinationSlice_destinationLevel_sliceCount_levelCount_), sourceTexture, sourceSlice, sourceLevel, destinationTexture, destinationSlice, destinationLevel, sliceCount, levelCount);
+    _MTL4_msg_v_executeCommandsInBuffer_withRange__MTL__IndirectCommandBufferp_NS__Range((const void*)this, nullptr, indirectCommandBuffer, executionRange);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyFromTexture(const MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, const MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::executeCommandsInBuffer(MTL::IndirectCommandBuffer* indirectCommandbuffer, MTL::GPUAddress indirectRangeBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyFromTexture_sourceSlice_sourceLevel_sourceOrigin_sourceSize_toTexture_destinationSlice_destinationLevel_destinationOrigin_), sourceTexture, sourceSlice, sourceLevel, sourceOrigin, sourceSize, destinationTexture, destinationSlice, destinationLevel, destinationOrigin);
+    _MTL4_msg_v_executeCommandsInBuffer_indirectBuffer__MTL__IndirectCommandBufferp_MTL__GPUAddress((const void*)this, nullptr, indirectCommandbuffer, indirectRangeBuffer);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyFromTexture(const MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, const MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger destinationBytesPerRow, NS::UInteger destinationBytesPerImage)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyFromTexture(MTL::Texture* sourceTexture, MTL::Texture* destinationTexture)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyFromTexture_sourceSlice_sourceLevel_sourceOrigin_sourceSize_toBuffer_destinationOffset_destinationBytesPerRow_destinationBytesPerImage_), sourceTexture, sourceSlice, sourceLevel, sourceOrigin, sourceSize, destinationBuffer, destinationOffset, destinationBytesPerRow, destinationBytesPerImage);
+    _MTL4_msg_v_copyFromTexture_toTexture__MTL__Texturep_MTL__Texturep((const void*)this, nullptr, sourceTexture, destinationTexture);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyFromTexture(const MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, const MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger destinationBytesPerRow, NS::UInteger destinationBytesPerImage, MTL::BlitOption options)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyFromTexture(MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, NS::UInteger sliceCount, NS::UInteger levelCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyFromTexture_sourceSlice_sourceLevel_sourceOrigin_sourceSize_toBuffer_destinationOffset_destinationBytesPerRow_destinationBytesPerImage_options_), sourceTexture, sourceSlice, sourceLevel, sourceOrigin, sourceSize, destinationBuffer, destinationOffset, destinationBytesPerRow, destinationBytesPerImage, options);
+    _MTL4_msg_v_copyFromTexture_sourceSlice_sourceLevel_toTexture_destinationSlice_destinationLevel_sliceCount_levelCount__MTL__Texturep_NS__UInteger_NS__UInteger_MTL__Texturep_NS__UInteger_NS__UInteger_NS__UInteger_NS__UInteger((const void*)this, nullptr, sourceTexture, sourceSlice, sourceLevel, destinationTexture, destinationSlice, destinationLevel, sliceCount, levelCount);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::copyIndirectCommandBuffer(const MTL::IndirectCommandBuffer* source, NS::Range sourceRange, const MTL::IndirectCommandBuffer* destination, NS::UInteger destinationIndex)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyFromTexture(MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(copyIndirectCommandBuffer_sourceRange_destination_destinationIndex_), source, sourceRange, destination, destinationIndex);
+    _MTL4_msg_v_copyFromTexture_sourceSlice_sourceLevel_sourceOrigin_sourceSize_toTexture_destinationSlice_destinationLevel_destinationOrigin__MTL__Texturep_NS__UInteger_NS__UInteger_MTL__Origin_MTL__Size_MTL__Texturep_NS__UInteger_NS__UInteger_MTL__Origin((const void*)this, nullptr, sourceTexture, sourceSlice, sourceLevel, sourceOrigin, sourceSize, destinationTexture, destinationSlice, destinationLevel, destinationOrigin);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::dispatchThreadgroups(MTL::Size threadgroupsPerGrid, MTL::Size threadsPerThreadgroup)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyFromTexture(MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger destinationBytesPerRow, NS::UInteger destinationBytesPerImage)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(dispatchThreadgroups_threadsPerThreadgroup_), threadgroupsPerGrid, threadsPerThreadgroup);
+    _MTL4_msg_v_copyFromTexture_sourceSlice_sourceLevel_sourceOrigin_sourceSize_toBuffer_destinationOffset_destinationBytesPerRow_destinationBytesPerImage__MTL__Texturep_NS__UInteger_NS__UInteger_MTL__Origin_MTL__Size_MTL__Bufferp_NS__UInteger_NS__UInteger_NS__UInteger((const void*)this, nullptr, sourceTexture, sourceSlice, sourceLevel, sourceOrigin, sourceSize, destinationBuffer, destinationOffset, destinationBytesPerRow, destinationBytesPerImage);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::dispatchThreadgroups(MTL::GPUAddress indirectBuffer, MTL::Size threadsPerThreadgroup)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyFromTexture(MTL::Texture* sourceTexture, NS::UInteger sourceSlice, NS::UInteger sourceLevel, MTL::Origin sourceOrigin, MTL::Size sourceSize, MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger destinationBytesPerRow, NS::UInteger destinationBytesPerImage, MTL::BlitOption options)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(dispatchThreadgroupsWithIndirectBuffer_threadsPerThreadgroup_), indirectBuffer, threadsPerThreadgroup);
+    _MTL4_msg_v_copyFromTexture_sourceSlice_sourceLevel_sourceOrigin_sourceSize_toBuffer_destinationOffset_destinationBytesPerRow_destinationBytesPerImage_options__MTL__Texturep_NS__UInteger_NS__UInteger_MTL__Origin_MTL__Size_MTL__Bufferp_NS__UInteger_NS__UInteger_NS__UInteger_MTL__BlitOption((const void*)this, nullptr, sourceTexture, sourceSlice, sourceLevel, sourceOrigin, sourceSize, destinationBuffer, destinationOffset, destinationBytesPerRow, destinationBytesPerImage, options);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::dispatchThreads(MTL::Size threadsPerGrid, MTL::Size threadsPerThreadgroup)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyFromBuffer(MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, MTL::Buffer* destinationBuffer, NS::UInteger destinationOffset, NS::UInteger size)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(dispatchThreads_threadsPerThreadgroup_), threadsPerGrid, threadsPerThreadgroup);
+    _MTL4_msg_v_copyFromBuffer_sourceOffset_toBuffer_destinationOffset_size__MTL__Bufferp_NS__UInteger_MTL__Bufferp_NS__UInteger_NS__UInteger((const void*)this, nullptr, sourceBuffer, sourceOffset, destinationBuffer, destinationOffset, size);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::dispatchThreads(MTL::GPUAddress indirectBuffer)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyFromBuffer(MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, NS::UInteger sourceBytesPerRow, NS::UInteger sourceBytesPerImage, MTL::Size sourceSize, MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(dispatchThreadsWithIndirectBuffer_), indirectBuffer);
+    _MTL4_msg_v_copyFromBuffer_sourceOffset_sourceBytesPerRow_sourceBytesPerImage_sourceSize_toTexture_destinationSlice_destinationLevel_destinationOrigin__MTL__Bufferp_NS__UInteger_NS__UInteger_NS__UInteger_MTL__Size_MTL__Texturep_NS__UInteger_NS__UInteger_MTL__Origin((const void*)this, nullptr, sourceBuffer, sourceOffset, sourceBytesPerRow, sourceBytesPerImage, sourceSize, destinationTexture, destinationSlice, destinationLevel, destinationOrigin);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::executeCommandsInBuffer(const MTL::IndirectCommandBuffer* indirectCommandBuffer, NS::Range executionRange)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyFromBuffer(MTL::Buffer* sourceBuffer, NS::UInteger sourceOffset, NS::UInteger sourceBytesPerRow, NS::UInteger sourceBytesPerImage, MTL::Size sourceSize, MTL::Texture* destinationTexture, NS::UInteger destinationSlice, NS::UInteger destinationLevel, MTL::Origin destinationOrigin, MTL::BlitOption options)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(executeCommandsInBuffer_withRange_), indirectCommandBuffer, executionRange);
+    _MTL4_msg_v_copyFromBuffer_sourceOffset_sourceBytesPerRow_sourceBytesPerImage_sourceSize_toTexture_destinationSlice_destinationLevel_destinationOrigin_options__MTL__Bufferp_NS__UInteger_NS__UInteger_NS__UInteger_MTL__Size_MTL__Texturep_NS__UInteger_NS__UInteger_MTL__Origin_MTL__BlitOption((const void*)this, nullptr, sourceBuffer, sourceOffset, sourceBytesPerRow, sourceBytesPerImage, sourceSize, destinationTexture, destinationSlice, destinationLevel, destinationOrigin, options);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::executeCommandsInBuffer(const MTL::IndirectCommandBuffer* indirectCommandbuffer, MTL::GPUAddress indirectRangeBuffer)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyFromTensor(MTL::Tensor* sourceTensor, MTL::TensorExtents* sourceOrigin, MTL::TensorExtents* sourceDimensions, MTL::Tensor* destinationTensor, MTL::TensorExtents* destinationOrigin, MTL::TensorExtents* destinationDimensions)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(executeCommandsInBuffer_indirectBuffer_), indirectCommandbuffer, indirectRangeBuffer);
+    _MTL4_msg_v_copyFromTensor_sourceOrigin_sourceDimensions_toTensor_destinationOrigin_destinationDimensions__MTL__Tensorp_MTL__TensorExtentsp_MTL__TensorExtentsp_MTL__Tensorp_MTL__TensorExtentsp_MTL__TensorExtentsp((const void*)this, nullptr, sourceTensor, sourceOrigin, sourceDimensions, destinationTensor, destinationOrigin, destinationDimensions);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::fillBuffer(const MTL::Buffer* buffer, NS::Range range, uint8_t value)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::generateMipmaps(MTL::Texture* texture)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(fillBuffer_range_value_), buffer, range, value);
+    _MTL4_msg_v_generateMipmapsForTexture__MTL__Texturep((const void*)this, nullptr, texture);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::generateMipmaps(const MTL::Texture* texture)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::fillBuffer(MTL::Buffer* buffer, NS::Range range, uint8_t value)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(generateMipmapsForTexture_), texture);
+    _MTL4_msg_v_fillBuffer_range_value__MTL__Bufferp_NS__Range_uint8_t((const void*)this, nullptr, buffer, range, value);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::optimizeContentsForCPUAccess(const MTL::Texture* texture)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::optimizeContents(MTL::Texture* texture)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(optimizeContentsForCPUAccess_), texture);
+    _MTL4_msg_v_optimizeContentsForGPUAccess__MTL__Texturep((const void*)this, nullptr, texture);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::optimizeContentsForCPUAccess(const MTL::Texture* texture, NS::UInteger slice, NS::UInteger level)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::optimizeContents(MTL::Texture* texture, NS::UInteger slice, NS::UInteger level)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(optimizeContentsForCPUAccess_slice_level_), texture, slice, level);
+    _MTL4_msg_v_optimizeContentsForGPUAccess_slice_level__MTL__Texturep_NS__UInteger_NS__UInteger((const void*)this, nullptr, texture, slice, level);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::optimizeContentsForGPUAccess(const MTL::Texture* texture)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::resetCommandsInBuffer(MTL::IndirectCommandBuffer* buffer, NS::Range range)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(optimizeContentsForGPUAccess_), texture);
+    _MTL4_msg_v_resetCommandsInBuffer_withRange__MTL__IndirectCommandBufferp_NS__Range((const void*)this, nullptr, buffer, range);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::optimizeContentsForGPUAccess(const MTL::Texture* texture, NS::UInteger slice, NS::UInteger level)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyIndirectCommandBuffer(MTL::IndirectCommandBuffer* source, NS::Range sourceRange, MTL::IndirectCommandBuffer* destination, NS::UInteger destinationIndex)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(optimizeContentsForGPUAccess_slice_level_), texture, slice, level);
+    _MTL4_msg_v_copyIndirectCommandBuffer_sourceRange_destination_destinationIndex__MTL__IndirectCommandBufferp_NS__Range_MTL__IndirectCommandBufferp_NS__UInteger((const void*)this, nullptr, source, sourceRange, destination, destinationIndex);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::optimizeIndirectCommandBuffer(const MTL::IndirectCommandBuffer* indirectCommandBuffer, NS::Range range)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::optimizeIndirectCommandBuffer(MTL::IndirectCommandBuffer* indirectCommandBuffer, NS::Range range)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(optimizeIndirectCommandBuffer_withRange_), indirectCommandBuffer, range);
+    _MTL4_msg_v_optimizeIndirectCommandBuffer_withRange__MTL__IndirectCommandBufferp_NS__Range((const void*)this, nullptr, indirectCommandBuffer, range);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::refitAccelerationStructure(const MTL::AccelerationStructure* sourceAccelerationStructure, const MTL4::AccelerationStructureDescriptor* descriptor, const MTL::AccelerationStructure* destinationAccelerationStructure, const MTL4::BufferRange scratchBuffer)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::setArgumentTable(MTL4::ArgumentTable* argumentTable)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(refitAccelerationStructure_descriptor_destination_scratchBuffer_), sourceAccelerationStructure, descriptor, destinationAccelerationStructure, scratchBuffer);
+    _MTL4_msg_v_setArgumentTable__MTL4__ArgumentTablep((const void*)this, nullptr, argumentTable);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::refitAccelerationStructure(const MTL::AccelerationStructure* sourceAccelerationStructure, const MTL4::AccelerationStructureDescriptor* descriptor, const MTL::AccelerationStructure* destinationAccelerationStructure, const MTL4::BufferRange scratchBuffer, MTL::AccelerationStructureRefitOptions options)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::buildAccelerationStructure(MTL::AccelerationStructure* accelerationStructure, MTL4::AccelerationStructureDescriptor* descriptor, MTL4::BufferRange scratchBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(refitAccelerationStructure_descriptor_destination_scratchBuffer_options_), sourceAccelerationStructure, descriptor, destinationAccelerationStructure, scratchBuffer, options);
+    _MTL4_msg_v_buildAccelerationStructure_descriptor_scratchBuffer__MTL__AccelerationStructurep_MTL4__AccelerationStructureDescriptorp_MTL4__BufferRange((const void*)this, nullptr, accelerationStructure, descriptor, scratchBuffer);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::resetCommandsInBuffer(const MTL::IndirectCommandBuffer* buffer, NS::Range range)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::refitAccelerationStructure(MTL::AccelerationStructure* sourceAccelerationStructure, MTL4::AccelerationStructureDescriptor* descriptor, MTL::AccelerationStructure* destinationAccelerationStructure, MTL4::BufferRange scratchBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(resetCommandsInBuffer_withRange_), buffer, range);
+    _MTL4_msg_v_refitAccelerationStructure_descriptor_destination_scratchBuffer__MTL__AccelerationStructurep_MTL4__AccelerationStructureDescriptorp_MTL__AccelerationStructurep_MTL4__BufferRange((const void*)this, nullptr, sourceAccelerationStructure, descriptor, destinationAccelerationStructure, scratchBuffer);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::setArgumentTable(const MTL4::ArgumentTable* argumentTable)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::refitAccelerationStructure(MTL::AccelerationStructure* sourceAccelerationStructure, MTL4::AccelerationStructureDescriptor* descriptor, MTL::AccelerationStructure* destinationAccelerationStructure, MTL4::BufferRange scratchBuffer, MTL::AccelerationStructureRefitOptions options)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setArgumentTable_), argumentTable);
+    _MTL4_msg_v_refitAccelerationStructure_descriptor_destination_scratchBuffer_options__MTL__AccelerationStructurep_MTL4__AccelerationStructureDescriptorp_MTL__AccelerationStructurep_MTL4__BufferRange_MTL__AccelerationStructureRefitOptions((const void*)this, nullptr, sourceAccelerationStructure, descriptor, destinationAccelerationStructure, scratchBuffer, options);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::setComputePipelineState(const MTL::ComputePipelineState* state)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyAccelerationStructure(MTL::AccelerationStructure* sourceAccelerationStructure, MTL::AccelerationStructure* destinationAccelerationStructure)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setComputePipelineState_), state);
+    _MTL4_msg_v_copyAccelerationStructure_toAccelerationStructure__MTL__AccelerationStructurep_MTL__AccelerationStructurep((const void*)this, nullptr, sourceAccelerationStructure, destinationAccelerationStructure);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::setImageblockWidth(NS::UInteger width, NS::UInteger height)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::writeCompactedAccelerationStructureSize(MTL::AccelerationStructure* accelerationStructure, MTL4::BufferRange buffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setImageblockWidth_height_), width, height);
+    _MTL4_msg_v_writeCompactedAccelerationStructureSize_toBuffer__MTL__AccelerationStructurep_MTL4__BufferRange((const void*)this, nullptr, accelerationStructure, buffer);
 }
 
-_MTL_INLINE void MTL4::ComputeCommandEncoder::setThreadgroupMemoryLength(NS::UInteger length, NS::UInteger index)
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::copyAndCompactAccelerationStructure(MTL::AccelerationStructure* sourceAccelerationStructure, MTL::AccelerationStructure* destinationAccelerationStructure)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setThreadgroupMemoryLength_atIndex_), length, index);
+    _MTL4_msg_v_copyAndCompactAccelerationStructure_toAccelerationStructure__MTL__AccelerationStructurep_MTL__AccelerationStructurep((const void*)this, nullptr, sourceAccelerationStructure, destinationAccelerationStructure);
 }
 
-_MTL_INLINE MTL::Stages MTL4::ComputeCommandEncoder::stages()
+_MTL4_INLINE void MTL4::ComputeCommandEncoder::writeTimestamp(MTL4::TimestampGranularity granularity, MTL4::CounterHeap* counterHeap, NS::UInteger index)
 {
-    return Object::sendMessage<MTL::Stages>(this, _MTL_PRIVATE_SEL(stages));
-}
-
-_MTL_INLINE void MTL4::ComputeCommandEncoder::writeCompactedAccelerationStructureSize(const MTL::AccelerationStructure* accelerationStructure, const MTL4::BufferRange buffer)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(writeCompactedAccelerationStructureSize_toBuffer_), accelerationStructure, buffer);
-}
-
-_MTL_INLINE void MTL4::ComputeCommandEncoder::writeTimestamp(MTL4::TimestampGranularity granularity, const MTL4::CounterHeap* counterHeap, NS::UInteger index)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(writeTimestampWithGranularity_intoHeap_atIndex_), granularity, counterHeap, index);
+    _MTL4_msg_v_writeTimestampWithGranularity_intoHeap_atIndex__MTL4__TimestampGranularity_MTL4__CounterHeapp_NS__UInteger((const void*)this, nullptr, granularity, counterHeap, index);
 }

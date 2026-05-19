@@ -1,719 +1,564 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// MetalFX/MTLFXFrameInterpolator.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #include "MTLFXDefines.hpp"
-#include "MTLFXPrivate.hpp"
-#include "MTLFXTemporalScaler.hpp"
+#include "MTLFXBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 
-#include "../Metal/Metal.hpp"
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-namespace MTL4FX
-{
-    class TemporalScaler;
-    class TemporalDenoisedScaler;
+namespace MTL {
+    class CommandBuffer;
+    class Device;
+    class Fence;
+    class Texture;
+    enum PixelFormat : NS::UInteger;
+    using TextureUsage = NS::UInteger;
+}
+namespace MTL4 {
+    class Compiler;
+}
+namespace MTL4FX {
     class FrameInterpolator;
+}
+namespace NS {
+    class Object;
 }
 
 namespace MTLFX
 {
-    class FrameInterpolatorDescriptor : public NS::Copying< FrameInterpolatorDescriptor >
-    {
-    public:
-        static FrameInterpolatorDescriptor* alloc();
-        FrameInterpolatorDescriptor*        init();
 
-        MTL::PixelFormat                    colorTextureFormat() const;
-        void                                setColorTextureFormat(MTL::PixelFormat colorTextureFormat);
+class FrameInterpolatorDescriptor;
+class FrameInterpolatorBase;
+class FrameInterpolator;
 
-        MTL::PixelFormat                    outputTextureFormat() const;
-        void                                setOutputTextureFormat(MTL::PixelFormat outputTextureFormat);
+class FrameInterpolatorDescriptor : public NS::Copying<FrameInterpolatorDescriptor>
+{
+public:
+    static FrameInterpolatorDescriptor* alloc();
+    FrameInterpolatorDescriptor*        init() const;
 
-        MTL::PixelFormat                    depthTextureFormat() const;
-        void                                setDepthTextureFormat(MTL::PixelFormat depthTextureFormat);
+    static bool supportsDevice(MTL::Device* device);
+    static bool supportsMetal4FX(MTL::Device* device);
 
-        MTL::PixelFormat                    motionTextureFormat() const;
-        void                                setMotionTextureFormat(MTL::PixelFormat motionTextureFormat);
+    MTL::PixelFormat           colorTextureFormat() const;
+    MTL::PixelFormat           depthTextureFormat() const;
+    NS::UInteger               inputHeight() const;
+    NS::UInteger               inputWidth() const;
+    MTL::PixelFormat           motionTextureFormat() const;
+    MTLFX::FrameInterpolator*  newFrameInterpolator(MTL::Device* device);
+    MTL4FX::FrameInterpolator* newFrameInterpolator(MTL::Device* device, MTL4::Compiler* compiler);
+    NS::UInteger               outputHeight() const;
+    MTL::PixelFormat           outputTextureFormat() const;
+    NS::UInteger               outputWidth() const;
+    NS::Object*                scaler() const;
+    void                       setColorTextureFormat(MTL::PixelFormat colorTextureFormat);
+    void                       setDepthTextureFormat(MTL::PixelFormat depthTextureFormat);
+    void                       setInputHeight(NS::UInteger inputHeight);
+    void                       setInputWidth(NS::UInteger inputWidth);
+    void                       setMotionTextureFormat(MTL::PixelFormat motionTextureFormat);
+    void                       setOutputHeight(NS::UInteger outputHeight);
+    void                       setOutputTextureFormat(MTL::PixelFormat outputTextureFormat);
+    void                       setOutputWidth(NS::UInteger outputWidth);
+    void                       setScaler(NS::Object* scaler);
+    void                       setUITextureFormat(MTL::PixelFormat uiTextureFormat);
+    void                       setUiTextureFormat(MTL::PixelFormat uiTextureFormat);
+    MTL::PixelFormat           uiTextureFormat() const;
 
-        MTL::PixelFormat                    uiTextureFormat() const;
-        void                                setUITextureFormat(MTL::PixelFormat uiTextureFormat);
+};
 
-        MTLFX::FrameInterpolatableScaler*   scaler() const;
-        void                                setScaler(MTLFX::FrameInterpolatableScaler* scaler);
+class FrameInterpolatorBase : public NS::Referencing<FrameInterpolatorBase>
+{
+public:
+    float             aspectRatio() const;
+    MTL::Texture*     colorTexture() const;
+    MTL::PixelFormat  colorTextureFormat() const;
+    MTL::TextureUsage colorTextureUsage() const;
+    float             deltaTime() const;
+    bool              depthReversed() const;
+    MTL::Texture*     depthTexture() const;
+    MTL::PixelFormat  depthTextureFormat() const;
+    MTL::TextureUsage depthTextureUsage() const;
+    float             farPlane() const;
+    MTL::Fence*       fence() const;
+    float             fieldOfView() const;
+    NS::UInteger      inputHeight() const;
+    NS::UInteger      inputWidth() const;
+    bool              isDepthReversed();
+    bool              isUITextureComposited();
+    float             jitterOffsetX() const;
+    float             jitterOffsetY() const;
+    MTL::Texture*     motionTexture() const;
+    MTL::PixelFormat  motionTextureFormat() const;
+    MTL::TextureUsage motionTextureUsage() const;
+    float             motionVectorScaleX() const;
+    float             motionVectorScaleY() const;
+    float             nearPlane() const;
+    NS::UInteger      outputHeight() const;
+    MTL::Texture*     outputTexture() const;
+    MTL::PixelFormat  outputTextureFormat() const;
+    MTL::TextureUsage outputTextureUsage() const;
+    NS::UInteger      outputWidth() const;
+    MTL::Texture*     prevColorTexture() const;
+    void              setAspectRatio(float aspectRatio);
+    void              setColorTexture(MTL::Texture* colorTexture);
+    void              setDeltaTime(float deltaTime);
+    void              setDepthReversed(bool depthReversed);
+    void              setDepthTexture(MTL::Texture* depthTexture);
+    void              setFarPlane(float farPlane);
+    void              setFence(MTL::Fence* fence);
+    void              setFieldOfView(float fieldOfView);
+    void              setIsUITextureComposited(bool uiTextureComposited);
+    void              setJitterOffsetX(float jitterOffsetX);
+    void              setJitterOffsetY(float jitterOffsetY);
+    void              setMotionTexture(MTL::Texture* motionTexture);
+    void              setMotionVectorScaleX(float motionVectorScaleX);
+    void              setMotionVectorScaleY(float motionVectorScaleY);
+    void              setNearPlane(float nearPlane);
+    void              setOutputTexture(MTL::Texture* outputTexture);
+    void              setPrevColorTexture(MTL::Texture* prevColorTexture);
+    void              setShouldResetHistory(bool shouldResetHistory);
+    void              setUITexture(MTL::Texture* uiTexture);
+    void              setUiTexture(MTL::Texture* uiTexture);
+    void              setUiTextureComposited(bool uiTextureComposited);
+    bool              shouldResetHistory() const;
+    MTL::Texture*     uiTexture() const;
+    bool              uiTextureComposited() const;
+    MTL::PixelFormat  uiTextureFormat() const;
+    MTL::TextureUsage uiTextureUsage() const;
 
-        NS::UInteger                        inputWidth() const;
-        void                                setInputWidth( NS::UInteger inputWidth );
+};
 
-        NS::UInteger                        inputHeight() const;
-        void                                setInputHeight( NS::UInteger inputHeight );
+class FrameInterpolator : public NS::Referencing<FrameInterpolator, MTLFX::FrameInterpolatorBase>
+{
+public:
+    void encodeToCommandBuffer(MTL::CommandBuffer* commandBuffer);
 
-        NS::UInteger                        outputWidth() const;
-        void                                setOutputWidth( NS::UInteger outputWidth );
+};
 
-        NS::UInteger                        outputHeight() const;
-        void                                setOutputHeight( NS::UInteger outputHeight );
+} // namespace MTLFX
 
-        class FrameInterpolator*            newFrameInterpolator( const MTL::Device* pDevice) const;
-        MTL4FX::FrameInterpolator*          newFrameInterpolator( const MTL::Device* pDevice, const MTL4::Compiler* pCompiler) const;
+// --- Class symbols + inline implementations ---
 
-        static bool                         supportsMetal4FX(MTL::Device* device);
-        static bool                         supportsDevice(MTL::Device* device);
-    };
-
-    class FrameInterpolatorBase : public NS::Referencing<FrameInterpolatorBase>
-    {
-    public:
-        MTL::TextureUsage colorTextureUsage() const;
-        MTL::TextureUsage outputTextureUsage() const;
-        MTL::TextureUsage depthTextureUsage() const;
-        MTL::TextureUsage motionTextureUsage() const;
-        MTL::TextureUsage uiTextureUsage() const;
-
-        MTL::PixelFormat  colorTextureFormat() const;
-        MTL::PixelFormat  depthTextureFormat() const;
-        MTL::PixelFormat  motionTextureFormat() const;
-        MTL::PixelFormat  outputTextureFormat() const;
-
-        NS::UInteger      inputWidth() const;
-        NS::UInteger      inputHeight() const;
-        NS::UInteger      outputWidth() const;
-        NS::UInteger      outputHeight() const;
-        MTL::PixelFormat  uiTextureFormat() const;
-
-        MTL::Texture*     colorTexture() const;
-        void              setColorTexture(MTL::Texture* colorTexture);
-
-        MTL::Texture*     prevColorTexture() const;
-        void              setPrevColorTexture(MTL::Texture* prevColorTexture);
-
-        MTL::Texture*     depthTexture() const;
-        void              setDepthTexture(MTL::Texture* depthTexture);
-
-        MTL::Texture*     motionTexture() const;
-        void              setMotionTexture(MTL::Texture* motionTexture);
-
-        float             motionVectorScaleX() const;
-        void              setMotionVectorScaleX(float scaleX);
-
-        float             motionVectorScaleY() const;
-        void              setMotionVectorScaleY(float scaleY);
-
-        float             deltaTime() const;
-        void              setDeltaTime( float deltaTime );
-
-        float             nearPlane() const;
-        void              setNearPlane( float nearPlane );
-
-        float             farPlane() const;
-        void              setFarPlane( float farPlane );
-
-        float             fieldOfView() const;
-        void              setFieldOfView( float fieldOfView );
-
-        float             aspectRatio() const;
-        void              setAspectRatio( float aspectRatio );
-
-        MTL::Texture*     uiTexture() const;
-        void              setUITexture(MTL::Texture* uiTexture);
-
-        float             jitterOffsetX() const;
-        void              setJitterOffsetX( float jitterOffsetX );
-
-        float             jitterOffsetY() const;
-        void              setJitterOffsetY( float jitterOffsetY );
-
-        bool              isUITextureComposited() const;
-        void              setIsUITextureComposited( bool uiTextureComposited );
-
-        bool              shouldResetHistory() const;
-        void              setShouldResetHistory( bool shouldResetHistory );
-
-        MTL::Texture*     outputTexture() const;
-        void              setOutputTexture( MTL::Texture* outputTexture );
-
-        MTL::Fence*       fence() const;
-        void              setFence( MTL::Fence* fence );
-
-        bool              isDepthReversed() const;
-        void              setDepthReversed( bool depthReversed );
-    };
-
-    class FrameInterpolator : public NS::Referencing<FrameInterpolator, FrameInterpolatorBase>
-    {
-    public:
-        void              encodeToCommandBuffer(MTL::CommandBuffer* commandBuffer);
-    };
-
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern "C" void *OBJC_CLASS_$_MTLFXFrameInterpolatorDescriptor;
+extern "C" void *OBJC_CLASS_$_MTLFXFrameInterpolatorBase;
+extern "C" void *OBJC_CLASS_$_MTLFXFrameInterpolator;
 
 _MTLFX_INLINE MTLFX::FrameInterpolatorDescriptor* MTLFX::FrameInterpolatorDescriptor::alloc()
 {
-    return NS::Object::alloc< FrameInterpolatorDescriptor >( _MTLFX_PRIVATE_CLS( MTLFXFrameInterpolatorDescriptor ) );
+    return _MTLFX_msg_MTLFX__FrameInterpolatorDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTLFXFrameInterpolatorDescriptor, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTLFX::FrameInterpolatorDescriptor* MTLFX::FrameInterpolatorDescriptor::init()
+_MTLFX_INLINE MTLFX::FrameInterpolatorDescriptor* MTLFX::FrameInterpolatorDescriptor::init() const
 {
-    return NS::Object::init< FrameInterpolatorDescriptor >();
+    return _MTLFX_msg_MTLFX__FrameInterpolatorDescriptorp_init((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorDescriptor::colorTextureFormat() const
-{
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( colorTextureFormat ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setColorTextureFormat( MTL::PixelFormat colorTextureFormat )
-{
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setColorTextureFormat_ ), colorTextureFormat );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorDescriptor::outputTextureFormat() const
-{
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( outputTextureFormat ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setOutputTextureFormat( MTL::PixelFormat outputTextureFormat )
-{
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputTextureFormat_ ), outputTextureFormat );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorDescriptor::depthTextureFormat() const
-{
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( depthTextureFormat ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setDepthTextureFormat( MTL::PixelFormat depthTextureFormat )
-{
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDepthTextureFormat_ ), depthTextureFormat );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorDescriptor::motionTextureFormat() const
-{
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( motionTextureFormat ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setMotionTextureFormat( MTL::PixelFormat motionTextureFormat )
-{
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setMotionTextureFormat_ ), motionTextureFormat );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorDescriptor::uiTextureFormat() const
-{
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( uiTextureFormat ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setUITextureFormat( MTL::PixelFormat uiTextureFormat )
-{
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setUITextureFormat_ ), uiTextureFormat );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTLFX::FrameInterpolatableScaler* MTLFX::FrameInterpolatorDescriptor::scaler() const
-{
-    return NS::Object::sendMessage< MTLFX::FrameInterpolatableScaler* >( this, _MTLFX_PRIVATE_SEL( scaler ) );
-}
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setScaler(MTLFX::FrameInterpolatableScaler* scaler)
-{
-    NS::Object::sendMessage< void >(this, _MTLFX_PRIVATE_SEL( setScaler_ ), scaler );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorDescriptor::inputWidth() const
-{
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputWidth ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setInputWidth( NS::UInteger inputWidth )
-{
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputWidth_ ), inputWidth );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorDescriptor::inputHeight() const
-{
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputHeight ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setInputHeight( NS::UInteger inputHeight )
-{
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputHeight_ ), inputHeight );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorDescriptor::outputWidth() const
-{
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputWidth ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setOutputWidth( NS::UInteger outputWidth )
-{
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputWidth_ ), outputWidth );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorDescriptor::outputHeight() const
-{
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputHeight ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setOutputHeight( NS::UInteger outputHeight )
-{
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputHeight_ ), outputHeight );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTLFX::FrameInterpolator* MTLFX::FrameInterpolatorDescriptor::newFrameInterpolator( const MTL::Device* device ) const
-{
-    return NS::Object::sendMessage< MTLFX::FrameInterpolator* >( this, _MTLFX_PRIVATE_SEL( newFrameInterpolatorWithDevice_ ), device );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTL4FX::FrameInterpolator* MTLFX::FrameInterpolatorDescriptor::newFrameInterpolator( const MTL::Device* device, const MTL4::Compiler* compiler ) const
-{
-    return NS::Object::sendMessage< MTL4FX::FrameInterpolator* >( this, _MTLFX_PRIVATE_SEL( newFrameInterpolatorWithDevice_compiler_ ), device, compiler );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE bool MTLFX::FrameInterpolatorDescriptor::supportsMetal4FX(MTL::Device* device)
 {
-    return NS::Object::sendMessageSafe< bool >( _MTLFX_PRIVATE_CLS(MTLFXFrameInterpolatorDescriptor), _MTLFX_PRIVATE_SEL( supportsMetal4FX_ ), device );
+    return _MTLFX_msg_bool_supportsMetal4FX__MTL__Devicep((const void*)&OBJC_CLASS_$_MTLFXFrameInterpolatorDescriptor, nullptr, device);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE bool MTLFX::FrameInterpolatorDescriptor::supportsDevice(MTL::Device* device)
 {
-    return NS::Object::sendMessageSafe< bool >( _MTLFX_PRIVATE_CLS(MTLFXFrameInterpolatorDescriptor), _MTLFX_PRIVATE_SEL( supportsDevice_ ), device );
+    return _MTLFX_msg_bool_supportsDevice__MTL__Devicep((const void*)&OBJC_CLASS_$_MTLFXFrameInterpolatorDescriptor, nullptr, device);
 }
 
+_MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorDescriptor::colorTextureFormat() const
+{
+    return _MTLFX_msg_MTL__PixelFormat_colorTextureFormat((const void*)this, nullptr);
+}
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setColorTextureFormat(MTL::PixelFormat colorTextureFormat)
+{
+    _MTLFX_msg_v_setColorTextureFormat__MTL__PixelFormat((const void*)this, nullptr, colorTextureFormat);
+}
+
+_MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorDescriptor::outputTextureFormat() const
+{
+    return _MTLFX_msg_MTL__PixelFormat_outputTextureFormat((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setOutputTextureFormat(MTL::PixelFormat outputTextureFormat)
+{
+    _MTLFX_msg_v_setOutputTextureFormat__MTL__PixelFormat((const void*)this, nullptr, outputTextureFormat);
+}
+
+_MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorDescriptor::depthTextureFormat() const
+{
+    return _MTLFX_msg_MTL__PixelFormat_depthTextureFormat((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setDepthTextureFormat(MTL::PixelFormat depthTextureFormat)
+{
+    _MTLFX_msg_v_setDepthTextureFormat__MTL__PixelFormat((const void*)this, nullptr, depthTextureFormat);
+}
+
+_MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorDescriptor::motionTextureFormat() const
+{
+    return _MTLFX_msg_MTL__PixelFormat_motionTextureFormat((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setMotionTextureFormat(MTL::PixelFormat motionTextureFormat)
+{
+    _MTLFX_msg_v_setMotionTextureFormat__MTL__PixelFormat((const void*)this, nullptr, motionTextureFormat);
+}
+
+_MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorDescriptor::uiTextureFormat() const
+{
+    return _MTLFX_msg_MTL__PixelFormat_uiTextureFormat((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setUiTextureFormat(MTL::PixelFormat uiTextureFormat)
+{
+    _MTLFX_msg_v_setUiTextureFormat__MTL__PixelFormat((const void*)this, nullptr, uiTextureFormat);
+}
+
+_MTLFX_INLINE NS::Object* MTLFX::FrameInterpolatorDescriptor::scaler() const
+{
+    return _MTLFX_msg_NS__Objectp_scaler((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setScaler(NS::Object* scaler)
+{
+    _MTLFX_msg_v_setScaler__NS__Objectp((const void*)this, nullptr, scaler);
+}
+
+_MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorDescriptor::inputWidth() const
+{
+    return _MTLFX_msg_NS__UInteger_inputWidth((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setInputWidth(NS::UInteger inputWidth)
+{
+    _MTLFX_msg_v_setInputWidth__NS__UInteger((const void*)this, nullptr, inputWidth);
+}
+
+_MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorDescriptor::inputHeight() const
+{
+    return _MTLFX_msg_NS__UInteger_inputHeight((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setInputHeight(NS::UInteger inputHeight)
+{
+    _MTLFX_msg_v_setInputHeight__NS__UInteger((const void*)this, nullptr, inputHeight);
+}
+
+_MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorDescriptor::outputWidth() const
+{
+    return _MTLFX_msg_NS__UInteger_outputWidth((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setOutputWidth(NS::UInteger outputWidth)
+{
+    _MTLFX_msg_v_setOutputWidth__NS__UInteger((const void*)this, nullptr, outputWidth);
+}
+
+_MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorDescriptor::outputHeight() const
+{
+    return _MTLFX_msg_NS__UInteger_outputHeight((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setOutputHeight(NS::UInteger outputHeight)
+{
+    _MTLFX_msg_v_setOutputHeight__NS__UInteger((const void*)this, nullptr, outputHeight);
+}
+
+_MTLFX_INLINE MTLFX::FrameInterpolator* MTLFX::FrameInterpolatorDescriptor::newFrameInterpolator(MTL::Device* device)
+{
+    return _MTLFX_msg_MTLFX__FrameInterpolatorp_newFrameInterpolatorWithDevice__MTL__Devicep((const void*)this, nullptr, device);
+}
+
+_MTLFX_INLINE MTL4FX::FrameInterpolator* MTLFX::FrameInterpolatorDescriptor::newFrameInterpolator(MTL::Device* device, MTL4::Compiler* compiler)
+{
+    return _MTLFX_msg_MTL4FX__FrameInterpolatorp_newFrameInterpolatorWithDevice_compiler__MTL__Devicep_MTL4__Compilerp((const void*)this, nullptr, device, compiler);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorDescriptor::setUITextureFormat(MTL::PixelFormat uiTextureFormat)
+{
+    _MTLFX_msg_v_setUITextureFormat__MTL__PixelFormat((const void*)this, nullptr, uiTextureFormat);
+}
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::FrameInterpolatorBase::colorTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( colorTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_colorTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::FrameInterpolatorBase::outputTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( outputTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_outputTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::FrameInterpolatorBase::depthTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( depthTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_depthTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::FrameInterpolatorBase::motionTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( motionTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_motionTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::FrameInterpolatorBase::uiTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( uiTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_uiTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorBase::colorTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( colorTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_colorTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorBase::depthTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( depthTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_depthTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorBase::motionTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( motionTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_motionTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorBase::outputTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( outputTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_outputTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorBase::inputWidth() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputWidth ) );
+    return _MTLFX_msg_NS__UInteger_inputWidth((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorBase::inputHeight() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputHeight ) );
+    return _MTLFX_msg_NS__UInteger_inputHeight((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorBase::outputWidth() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputWidth ) );
+    return _MTLFX_msg_NS__UInteger_outputWidth((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::FrameInterpolatorBase::outputHeight() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputHeight ) );
+    return _MTLFX_msg_NS__UInteger_outputHeight((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::FrameInterpolatorBase::uiTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( uiTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_uiTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::FrameInterpolatorBase::colorTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( colorTexture ) );
+    return _MTLFX_msg_MTL__Texturep_colorTexture((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setColorTexture(MTL::Texture* colorTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setColorTexture_ ), colorTexture );
+    _MTLFX_msg_v_setColorTexture__MTL__Texturep((const void*)this, nullptr, colorTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::FrameInterpolatorBase::prevColorTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( prevColorTexture ) );
+    return _MTLFX_msg_MTL__Texturep_prevColorTexture((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setPrevColorTexture(MTL::Texture* prevColorTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setPrevColorTexture_ ), prevColorTexture );
+    _MTLFX_msg_v_setPrevColorTexture__MTL__Texturep((const void*)this, nullptr, prevColorTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::FrameInterpolatorBase::depthTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( depthTexture ) );
+    return _MTLFX_msg_MTL__Texturep_depthTexture((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setDepthTexture(MTL::Texture* depthTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDepthTexture_ ), depthTexture );
+    _MTLFX_msg_v_setDepthTexture__MTL__Texturep((const void*)this, nullptr, depthTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::FrameInterpolatorBase::motionTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( motionTexture ) );
+    return _MTLFX_msg_MTL__Texturep_motionTexture((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setMotionTexture(MTL::Texture* motionTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setMotionTexture_ ), motionTexture );
+    _MTLFX_msg_v_setMotionTexture__MTL__Texturep((const void*)this, nullptr, motionTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::FrameInterpolatorBase::motionVectorScaleX() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( motionVectorScaleX ) );
+    return _MTLFX_msg_float_motionVectorScaleX((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setMotionVectorScaleX(float scaleX)
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setMotionVectorScaleX(float motionVectorScaleX)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setMotionVectorScaleX_ ), scaleX );
+    _MTLFX_msg_v_setMotionVectorScaleX__float((const void*)this, nullptr, motionVectorScaleX);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::FrameInterpolatorBase::motionVectorScaleY() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( motionVectorScaleY ) );
+    return _MTLFX_msg_float_motionVectorScaleY((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setMotionVectorScaleY(float scaleY)
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setMotionVectorScaleY(float motionVectorScaleY)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setMotionVectorScaleY_ ), scaleY );
+    _MTLFX_msg_v_setMotionVectorScaleY__float((const void*)this, nullptr, motionVectorScaleY);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE float  MTLFX::FrameInterpolatorBase::deltaTime() const
+_MTLFX_INLINE float MTLFX::FrameInterpolatorBase::deltaTime() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( deltaTime ) );
+    return _MTLFX_msg_float_deltaTime((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void   MTLFX::FrameInterpolatorBase::setDeltaTime( float deltaTime )
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setDeltaTime(float deltaTime)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDeltaTime_ ), deltaTime );
+    _MTLFX_msg_v_setDeltaTime__float((const void*)this, nullptr, deltaTime);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE float  MTLFX::FrameInterpolatorBase::nearPlane() const
+_MTLFX_INLINE float MTLFX::FrameInterpolatorBase::nearPlane() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( nearPlane ) );
+    return _MTLFX_msg_float_nearPlane((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void  MTLFX::FrameInterpolatorBase::setNearPlane( float nearPlane )
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setNearPlane(float nearPlane)
 {
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setNearPlane_ ), nearPlane );
+    _MTLFX_msg_v_setNearPlane__float((const void*)this, nullptr, nearPlane);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE float  MTLFX::FrameInterpolatorBase::farPlane() const
+_MTLFX_INLINE float MTLFX::FrameInterpolatorBase::farPlane() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( farPlane ) );
+    return _MTLFX_msg_float_farPlane((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setFarPlane( float farPlane )
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setFarPlane(float farPlane)
 {
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setFarPlane_ ), farPlane );
+    _MTLFX_msg_v_setFarPlane__float((const void*)this, nullptr, farPlane);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE float  MTLFX::FrameInterpolatorBase::fieldOfView() const
+_MTLFX_INLINE float MTLFX::FrameInterpolatorBase::fieldOfView() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( fieldOfView ) );
+    return _MTLFX_msg_float_fieldOfView((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void   MTLFX::FrameInterpolatorBase::setFieldOfView( float fieldOfView )
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setFieldOfView(float fieldOfView)
 {
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setFieldOfView_ ), fieldOfView );
+    _MTLFX_msg_v_setFieldOfView__float((const void*)this, nullptr, fieldOfView);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE float  MTLFX::FrameInterpolatorBase::aspectRatio() const
+_MTLFX_INLINE float MTLFX::FrameInterpolatorBase::aspectRatio() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( aspectRatio ) );
+    return _MTLFX_msg_float_aspectRatio((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void   MTLFX::FrameInterpolatorBase::setAspectRatio( float aspectRatio )
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setAspectRatio(float aspectRatio)
 {
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setAspectRatio_ ), aspectRatio );
+    _MTLFX_msg_v_setAspectRatio__float((const void*)this, nullptr, aspectRatio);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::FrameInterpolatorBase::uiTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( uiTexture ) );
+    return _MTLFX_msg_MTL__Texturep_uiTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setUITexture(MTL::Texture* uiTexture)
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setUiTexture(MTL::Texture* uiTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setUITexture_ ), uiTexture );
+    _MTLFX_msg_v_setUiTexture__MTL__Texturep((const void*)this, nullptr, uiTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::FrameInterpolatorBase::jitterOffsetX() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( jitterOffsetX ) );
+    return _MTLFX_msg_float_jitterOffsetX((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setJitterOffsetX( float jitterOffsetX )
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setJitterOffsetX(float jitterOffsetX)
 {
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setJitterOffsetX_ ), jitterOffsetX );
+    _MTLFX_msg_v_setJitterOffsetX__float((const void*)this, nullptr, jitterOffsetX);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::FrameInterpolatorBase::jitterOffsetY() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( jitterOffsetY ) );
+    return _MTLFX_msg_float_jitterOffsetY((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setJitterOffsetY( float jitterOffsetY )
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setJitterOffsetY(float jitterOffsetY)
 {
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setJitterOffsetY_ ), jitterOffsetY );
+    _MTLFX_msg_v_setJitterOffsetY__float((const void*)this, nullptr, jitterOffsetY);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::FrameInterpolatorBase::isUITextureComposited() const
+_MTLFX_INLINE bool MTLFX::FrameInterpolatorBase::uiTextureComposited() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( isUITextureComposited ) );
+    return _MTLFX_msg_bool_uiTextureComposited((const void*)this, nullptr);
 }
 
-_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setIsUITextureComposited( bool uiTextureComposited )
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setUiTextureComposited(bool uiTextureComposited)
 {
-    NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setIsUITextureComposited_ ), uiTextureComposited );
+    _MTLFX_msg_v_setUiTextureComposited__bool((const void*)this, nullptr, uiTextureComposited);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE bool MTLFX::FrameInterpolatorBase::shouldResetHistory() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( shouldResetHistory ) );
+    return _MTLFX_msg_bool_shouldResetHistory((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setShouldResetHistory(bool shouldResetHistory)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setShouldResetHistory_ ), shouldResetHistory );
+    _MTLFX_msg_v_setShouldResetHistory__bool((const void*)this, nullptr, shouldResetHistory);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::FrameInterpolatorBase::outputTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( outputTexture ) );
+    return _MTLFX_msg_MTL__Texturep_outputTexture((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setOutputTexture(MTL::Texture* outputTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputTexture_ ), outputTexture );
+    _MTLFX_msg_v_setOutputTexture__MTL__Texturep((const void*)this, nullptr, outputTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Fence* MTLFX::FrameInterpolatorBase::fence() const
 {
-    return NS::Object::sendMessage< MTL::Fence* >( this, _MTLFX_PRIVATE_SEL( fence ) );
+    return _MTLFX_msg_MTL__Fencep_fence((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setFence(MTL::Fence* fence)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setFence_ ), fence );
+    _MTLFX_msg_v_setFence__MTL__Fencep((const void*)this, nullptr, fence);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::FrameInterpolatorBase::isDepthReversed() const
+_MTLFX_INLINE bool MTLFX::FrameInterpolatorBase::depthReversed() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( isDepthReversed ) );
+    return _MTLFX_msg_bool_depthReversed((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setDepthReversed(bool depthReversed)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDepthReversed_ ), depthReversed );
+    _MTLFX_msg_v_setDepthReversed__bool((const void*)this, nullptr, depthReversed);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setUITexture(MTL::Texture* uiTexture)
+{
+    _MTLFX_msg_v_setUITexture__MTL__Texturep((const void*)this, nullptr, uiTexture);
+}
+
+_MTLFX_INLINE bool MTLFX::FrameInterpolatorBase::isUITextureComposited()
+{
+    return _MTLFX_msg_bool_isUITextureComposited((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::FrameInterpolatorBase::setIsUITextureComposited(bool uiTextureComposited)
+{
+    _MTLFX_msg_v_setIsUITextureComposited__bool((const void*)this, nullptr, uiTextureComposited);
+}
+
+_MTLFX_INLINE bool MTLFX::FrameInterpolatorBase::isDepthReversed()
+{
+    return _MTLFX_msg_bool_isDepthReversed((const void*)this, nullptr);
+}
 
 _MTLFX_INLINE void MTLFX::FrameInterpolator::encodeToCommandBuffer(MTL::CommandBuffer* commandBuffer)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( encodeToCommandBuffer_ ), commandBuffer );
+    _MTLFX_msg_v_encodeToCommandBuffer__MTL__CommandBufferp((const void*)this, nullptr, commandBuffer);
 }

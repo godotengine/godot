@@ -1,37 +1,25 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTLIOCommandQueue.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
 #include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
+#include "MTLBlocks.hpp"
+#include "MTLStructs.hpp"
+#include "MTLBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
+
+namespace MTL {
+    class Buffer;
+    class IOCommandBuffer;
+}
+namespace NS {
+    class String;
+}
 
 namespace MTL
 {
-class Buffer;
-class IOCommandBuffer;
-class IOCommandQueueDescriptor;
-class IOScratchBuffer;
-class IOScratchBufferAllocator;
+
+extern NS::ErrorDomain const IOErrorDomain __asm__("_MTLIOErrorDomain");
 _MTL_ENUM(NS::Integer, IOPriority) {
     IOPriorityHigh = 0,
     IOPriorityNormal = 1,
@@ -48,164 +36,176 @@ _MTL_ENUM(NS::Integer, IOError) {
     IOErrorInternal = 2,
 };
 
-_MTL_CONST(NS::ErrorDomain, IOErrorDomain);
+
+class IOCommandQueue;
+class IOScratchBuffer;
+class IOScratchBufferAllocator;
+class IOCommandQueueDescriptor;
+class IOFileHandle;
+
 class IOCommandQueue : public NS::Referencing<IOCommandQueue>
 {
 public:
-    IOCommandBuffer* commandBuffer();
-    IOCommandBuffer* commandBufferWithUnretainedReferences();
+    MTL::IOCommandBuffer* commandBuffer();
+    MTL::IOCommandBuffer* commandBufferWithUnretainedReferences();
+    void                  enqueueBarrier();
+    NS::String*           label() const;
+    void                  setLabel(NS::String* label);
 
-    void             enqueueBarrier();
-
-    NS::String*      label() const;
-    void             setLabel(const NS::String* label);
 };
+
 class IOScratchBuffer : public NS::Referencing<IOScratchBuffer>
 {
 public:
-    Buffer* buffer() const;
+    MTL::Buffer* buffer() const;
+
 };
+
 class IOScratchBufferAllocator : public NS::Referencing<IOScratchBufferAllocator>
 {
 public:
-    IOScratchBuffer* newScratchBuffer(NS::UInteger minimumSize);
+    MTL::IOScratchBuffer* newScratchBuffer(NS::UInteger minimumSize);
+
 };
+
 class IOCommandQueueDescriptor : public NS::Copying<IOCommandQueueDescriptor>
 {
 public:
     static IOCommandQueueDescriptor* alloc();
+    IOCommandQueueDescriptor*        init() const;
 
-    IOCommandQueueDescriptor*        init();
+    NS::UInteger                   maxCommandBufferCount() const;
+    NS::UInteger                   maxCommandsInFlight() const;
+    MTL::IOPriority                priority() const;
+    MTL::IOScratchBufferAllocator* scratchBufferAllocator() const;
+    void                           setMaxCommandBufferCount(NS::UInteger maxCommandBufferCount);
+    void                           setMaxCommandsInFlight(NS::UInteger maxCommandsInFlight);
+    void                           setPriority(MTL::IOPriority priority);
+    void                           setScratchBufferAllocator(MTL::IOScratchBufferAllocator* scratchBufferAllocator);
+    void                           setType(MTL::IOCommandQueueType type);
+    MTL::IOCommandQueueType        type() const;
 
-    NS::UInteger                     maxCommandBufferCount() const;
-
-    NS::UInteger                     maxCommandsInFlight() const;
-
-    IOPriority                       priority() const;
-
-    IOScratchBufferAllocator*        scratchBufferAllocator() const;
-
-    void                             setMaxCommandBufferCount(NS::UInteger maxCommandBufferCount);
-
-    void                             setMaxCommandsInFlight(NS::UInteger maxCommandsInFlight);
-
-    void                             setPriority(MTL::IOPriority priority);
-
-    void                             setScratchBufferAllocator(const MTL::IOScratchBufferAllocator* scratchBufferAllocator);
-
-    void                             setType(MTL::IOCommandQueueType type);
-    IOCommandQueueType               type() const;
 };
+
 class IOFileHandle : public NS::Referencing<IOFileHandle>
 {
 public:
     NS::String* label() const;
-    void        setLabel(const NS::String* label);
+    void        setLabel(NS::String* label);
+
 };
 
-}
-_MTL_PRIVATE_DEF_CONST(NS::ErrorDomain, IOErrorDomain);
-_MTL_INLINE MTL::IOCommandBuffer* MTL::IOCommandQueue::commandBuffer()
+} // namespace MTL
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTLIOCommandQueue;
+extern "C" void *OBJC_CLASS_$_MTLIOScratchBuffer;
+extern "C" void *OBJC_CLASS_$_MTLIOScratchBufferAllocator;
+extern "C" void *OBJC_CLASS_$_MTLIOCommandQueueDescriptor;
+extern "C" void *OBJC_CLASS_$_MTLIOFileHandle;
+
+_MTL_INLINE NS::String* MTL::IOCommandQueue::label() const
 {
-    return Object::sendMessage<MTL::IOCommandBuffer*>(this, _MTL_PRIVATE_SEL(commandBuffer));
+    return _MTL_msg_NS__Stringp_label((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::IOCommandBuffer* MTL::IOCommandQueue::commandBufferWithUnretainedReferences()
+_MTL_INLINE void MTL::IOCommandQueue::setLabel(NS::String* label)
 {
-    return Object::sendMessage<MTL::IOCommandBuffer*>(this, _MTL_PRIVATE_SEL(commandBufferWithUnretainedReferences));
+    _MTL_msg_v_setLabel__NS__Stringp((const void*)this, nullptr, label);
 }
 
 _MTL_INLINE void MTL::IOCommandQueue::enqueueBarrier()
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(enqueueBarrier));
+    _MTL_msg_v_enqueueBarrier((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::String* MTL::IOCommandQueue::label() const
+_MTL_INLINE MTL::IOCommandBuffer* MTL::IOCommandQueue::commandBuffer()
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    return _MTL_msg_MTL__IOCommandBufferp_commandBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL::IOCommandQueue::setLabel(const NS::String* label)
+_MTL_INLINE MTL::IOCommandBuffer* MTL::IOCommandQueue::commandBufferWithUnretainedReferences()
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLabel_), label);
+    return _MTL_msg_MTL__IOCommandBufferp_commandBufferWithUnretainedReferences((const void*)this, nullptr);
 }
 
 _MTL_INLINE MTL::Buffer* MTL::IOScratchBuffer::buffer() const
 {
-    return Object::sendMessage<MTL::Buffer*>(this, _MTL_PRIVATE_SEL(buffer));
+    return _MTL_msg_MTL__Bufferp_buffer((const void*)this, nullptr);
 }
 
 _MTL_INLINE MTL::IOScratchBuffer* MTL::IOScratchBufferAllocator::newScratchBuffer(NS::UInteger minimumSize)
 {
-    return Object::sendMessage<MTL::IOScratchBuffer*>(this, _MTL_PRIVATE_SEL(newScratchBufferWithMinimumSize_), minimumSize);
+    return _MTL_msg_MTL__IOScratchBufferp_newScratchBufferWithMinimumSize__NS__UInteger((const void*)this, nullptr, minimumSize);
 }
 
 _MTL_INLINE MTL::IOCommandQueueDescriptor* MTL::IOCommandQueueDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL::IOCommandQueueDescriptor>(_MTL_PRIVATE_CLS(MTLIOCommandQueueDescriptor));
+    return _MTL_msg_MTL__IOCommandQueueDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTLIOCommandQueueDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL::IOCommandQueueDescriptor* MTL::IOCommandQueueDescriptor::init()
+_MTL_INLINE MTL::IOCommandQueueDescriptor* MTL::IOCommandQueueDescriptor::init() const
 {
-    return NS::Object::init<MTL::IOCommandQueueDescriptor>();
+    return _MTL_msg_MTL__IOCommandQueueDescriptorp_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::UInteger MTL::IOCommandQueueDescriptor::maxCommandBufferCount() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(maxCommandBufferCount));
-}
-
-_MTL_INLINE NS::UInteger MTL::IOCommandQueueDescriptor::maxCommandsInFlight() const
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(maxCommandsInFlight));
-}
-
-_MTL_INLINE MTL::IOPriority MTL::IOCommandQueueDescriptor::priority() const
-{
-    return Object::sendMessage<MTL::IOPriority>(this, _MTL_PRIVATE_SEL(priority));
-}
-
-_MTL_INLINE MTL::IOScratchBufferAllocator* MTL::IOCommandQueueDescriptor::scratchBufferAllocator() const
-{
-    return Object::sendMessage<MTL::IOScratchBufferAllocator*>(this, _MTL_PRIVATE_SEL(scratchBufferAllocator));
+    return _MTL_msg_NS__UInteger_maxCommandBufferCount((const void*)this, nullptr);
 }
 
 _MTL_INLINE void MTL::IOCommandQueueDescriptor::setMaxCommandBufferCount(NS::UInteger maxCommandBufferCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMaxCommandBufferCount_), maxCommandBufferCount);
+    _MTL_msg_v_setMaxCommandBufferCount__NS__UInteger((const void*)this, nullptr, maxCommandBufferCount);
 }
 
-_MTL_INLINE void MTL::IOCommandQueueDescriptor::setMaxCommandsInFlight(NS::UInteger maxCommandsInFlight)
+_MTL_INLINE MTL::IOPriority MTL::IOCommandQueueDescriptor::priority() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMaxCommandsInFlight_), maxCommandsInFlight);
+    return _MTL_msg_MTL__IOPriority_priority((const void*)this, nullptr);
 }
 
 _MTL_INLINE void MTL::IOCommandQueueDescriptor::setPriority(MTL::IOPriority priority)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setPriority_), priority);
-}
-
-_MTL_INLINE void MTL::IOCommandQueueDescriptor::setScratchBufferAllocator(const MTL::IOScratchBufferAllocator* scratchBufferAllocator)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setScratchBufferAllocator_), scratchBufferAllocator);
-}
-
-_MTL_INLINE void MTL::IOCommandQueueDescriptor::setType(MTL::IOCommandQueueType type)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setType_), type);
+    _MTL_msg_v_setPriority__MTL__IOPriority((const void*)this, nullptr, priority);
 }
 
 _MTL_INLINE MTL::IOCommandQueueType MTL::IOCommandQueueDescriptor::type() const
 {
-    return Object::sendMessage<MTL::IOCommandQueueType>(this, _MTL_PRIVATE_SEL(type));
+    return _MTL_msg_MTL__IOCommandQueueType_type((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::IOCommandQueueDescriptor::setType(MTL::IOCommandQueueType type)
+{
+    _MTL_msg_v_setType__MTL__IOCommandQueueType((const void*)this, nullptr, type);
+}
+
+_MTL_INLINE NS::UInteger MTL::IOCommandQueueDescriptor::maxCommandsInFlight() const
+{
+    return _MTL_msg_NS__UInteger_maxCommandsInFlight((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::IOCommandQueueDescriptor::setMaxCommandsInFlight(NS::UInteger maxCommandsInFlight)
+{
+    _MTL_msg_v_setMaxCommandsInFlight__NS__UInteger((const void*)this, nullptr, maxCommandsInFlight);
+}
+
+_MTL_INLINE MTL::IOScratchBufferAllocator* MTL::IOCommandQueueDescriptor::scratchBufferAllocator() const
+{
+    return _MTL_msg_MTL__IOScratchBufferAllocatorp_scratchBufferAllocator((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::IOCommandQueueDescriptor::setScratchBufferAllocator(MTL::IOScratchBufferAllocator* scratchBufferAllocator)
+{
+    _MTL_msg_v_setScratchBufferAllocator__MTL__IOScratchBufferAllocatorp((const void*)this, nullptr, scratchBufferAllocator);
 }
 
 _MTL_INLINE NS::String* MTL::IOFileHandle::label() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    return _MTL_msg_NS__Stringp_label((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL::IOFileHandle::setLabel(const NS::String* label)
+_MTL_INLINE void MTL::IOFileHandle::setLabel(NS::String* label)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLabel_), label);
+    _MTL_msg_v_setLabel__NS__Stringp((const void*)this, nullptr, label);
 }

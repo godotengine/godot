@@ -1,86 +1,69 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTL4StitchedFunctionDescriptor.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
+#include "MTL4Defines.hpp"
+#include "MTL4Blocks.hpp"
+#include "MTL4Structs.hpp"
+#include "MTL4Bridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 #include "MTL4FunctionDescriptor.hpp"
-#include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
 
-namespace MTL4
-{
-class StitchedFunctionDescriptor;
+namespace MTL {
+    class FunctionStitchingGraph;
 }
-
-namespace MTL
-{
-class FunctionStitchingGraph;
+namespace NS {
+    class Array;
 }
 
 namespace MTL4
 {
-class StitchedFunctionDescriptor : public NS::Copying<StitchedFunctionDescriptor, FunctionDescriptor>
+
+class StitchedFunctionDescriptor : public NS::Referencing<StitchedFunctionDescriptor, MTL4::FunctionDescriptor>
 {
 public:
     static StitchedFunctionDescriptor* alloc();
+    StitchedFunctionDescriptor*        init() const;
 
-    NS::Array*                         functionDescriptors() const;
+    NS::Array*                   functionDescriptors() const;
+    MTL::FunctionStitchingGraph* functionGraph() const;
+    void                         setFunctionDescriptors(NS::Array* functionDescriptors);
+    void                         setFunctionGraph(MTL::FunctionStitchingGraph* functionGraph);
 
-    MTL::FunctionStitchingGraph*       functionGraph() const;
-
-    StitchedFunctionDescriptor*        init();
-
-    void                               setFunctionDescriptors(const NS::Array* functionDescriptors);
-
-    void                               setFunctionGraph(const MTL::FunctionStitchingGraph* functionGraph);
 };
 
-}
-_MTL_INLINE MTL4::StitchedFunctionDescriptor* MTL4::StitchedFunctionDescriptor::alloc()
+} // namespace MTL4
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTL4StitchedFunctionDescriptor;
+
+_MTL4_INLINE MTL4::StitchedFunctionDescriptor* MTL4::StitchedFunctionDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::StitchedFunctionDescriptor>(_MTL_PRIVATE_CLS(MTL4StitchedFunctionDescriptor));
+    return _MTL4_msg_MTL4__StitchedFunctionDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4StitchedFunctionDescriptor, nullptr);
 }
 
-_MTL_INLINE NS::Array* MTL4::StitchedFunctionDescriptor::functionDescriptors() const
+_MTL4_INLINE MTL4::StitchedFunctionDescriptor* MTL4::StitchedFunctionDescriptor::init() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(functionDescriptors));
+    return _MTL4_msg_MTL4__StitchedFunctionDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::FunctionStitchingGraph* MTL4::StitchedFunctionDescriptor::functionGraph() const
+_MTL4_INLINE MTL::FunctionStitchingGraph* MTL4::StitchedFunctionDescriptor::functionGraph() const
 {
-    return Object::sendMessage<MTL::FunctionStitchingGraph*>(this, _MTL_PRIVATE_SEL(functionGraph));
+    return _MTL4_msg_MTL__FunctionStitchingGraphp_functionGraph((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::StitchedFunctionDescriptor* MTL4::StitchedFunctionDescriptor::init()
+_MTL4_INLINE void MTL4::StitchedFunctionDescriptor::setFunctionGraph(MTL::FunctionStitchingGraph* functionGraph)
 {
-    return NS::Object::init<MTL4::StitchedFunctionDescriptor>();
+    _MTL4_msg_v_setFunctionGraph__MTL__FunctionStitchingGraphp((const void*)this, nullptr, functionGraph);
 }
 
-_MTL_INLINE void MTL4::StitchedFunctionDescriptor::setFunctionDescriptors(const NS::Array* functionDescriptors)
+_MTL4_INLINE NS::Array* MTL4::StitchedFunctionDescriptor::functionDescriptors() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setFunctionDescriptors_), functionDescriptors);
+    return _MTL4_msg_NS__Arrayp_functionDescriptors((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::StitchedFunctionDescriptor::setFunctionGraph(const MTL::FunctionStitchingGraph* functionGraph)
+_MTL4_INLINE void MTL4::StitchedFunctionDescriptor::setFunctionDescriptors(NS::Array* functionDescriptors)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setFunctionGraph_), functionGraph);
+    _MTL4_msg_v_setFunctionDescriptors__NS__Arrayp((const void*)this, nullptr, functionDescriptors);
 }
