@@ -373,6 +373,10 @@ Error AudioDriverPulseAudio::init() {
 float AudioDriverPulseAudio::get_latency() {
 	lock();
 
+	if (pa_str == nullptr) {
+		return 0;
+	}
+
 	pa_usec_t pa_lat = 0;
 	if (pa_stream_get_state(pa_str) == PA_STREAM_READY) {
 		int negative = 0;
