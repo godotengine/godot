@@ -78,6 +78,7 @@ public:
 	Transform3D get_transform_from_skeleton(const Transform3D &p_center) const;
 
 	Vector3 collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const;
+	static int Dsegmentindexbeingcalculated;
 };
 
 VARIANT_ENUM_CAST(SpringBoneCollision3D::CollideMode);

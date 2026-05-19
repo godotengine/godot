@@ -1850,6 +1850,7 @@ void SpringBoneSimulator3D::_process_joints(double p_delta, Skeleton3D *p_skelet
 			if (col) {
 				// Collider movement should separate from the effect of the center.
 				float origin_radius = p_joints[(i > 0 ? i - 1 : i)]->radius;
+				SpringBoneCollision3D::Dsegmentindexbeingcalculated = i;
 				next_tail = col->collide(p_center_transform, p_joints[i]->radius, verlet->length, current_origin, origin_radius, next_tail);
 				//printf(" tttt %d %f %f %f\n", i, origin_radius, p_joints[i]->radius, verlet->length);
 				// Snap to plane if axis locked.
