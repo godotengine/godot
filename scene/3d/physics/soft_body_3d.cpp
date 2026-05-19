@@ -186,35 +186,57 @@ void SoftBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
 bool SoftBody3D::_set_property_pinned_points_indices(const Array &p_indices) {
 	const int p_indices_size = p_indices.size();
 
-	{ // Remove the pined points on physics server that will be removed by resize
-		const PinnedPoint *r = pinned_points.ptr();
-		if (p_indices_size < pinned_points.size()) {
-			for (int i = pinned_points.size() - 1; i >= p_indices_size; --i) {
-				pin_point(r[i].point_index, false);
+	// Snapshot the current pinned points so attachment/offset data can be
+	// preserved for points that stay pinned.
+	const Vector<PinnedPoint> previous_pinned_points = pinned_points;
+
+	// Unpin, on the physics server, every previously pinned point that is no
+	// longer present in the new list.
+	for (int i = 0; i < previous_pinned_points.size(); ++i) {
+		const int point_index = previous_pinned_points[i].point_index;
+		if (point_index < 0) {
+			continue;
+		}
+		bool still_pinned = false;
+		for (int j = 0; j < p_indices_size; ++j) {
+			if ((int)p_indices.get(j) == point_index) {
+				still_pinned = true;
+				break;
 			}
+		}
+		if (!still_pinned) {
+			_pin_point_on_physics_server(point_index, false);
 		}
 	}
 
+	// Rebuild the pinned points list from the new indices, reusing existing
+	// data for points that were already pinned.
 	pinned_points.resize(p_indices_size);
-
 	PinnedPoint *w = pinned_points.ptrw();
-	int point_index;
 	for (int i = 0; i < p_indices_size; ++i) {
-		point_index = p_indices.get(i);
-		if (w[i].point_index != point_index || pinned_points.size() < p_indices_size) {
-			bool insert = false;
-			if (w[i].point_index != -1 && p_indices.find(w[i].point_index) == -1) {
-				pin_point(w[i].point_index, false);
-				insert = true;
+		const int point_index = p_indices.get(i);
+
+		int previous_index = -1;
+		for (int j = 0; j < previous_pinned_points.size(); ++j) {
+			if (previous_pinned_points[j].point_index == point_index) {
+				previous_index = j;
+				break;
 			}
+		}
+
+		if (previous_index != -1) {
+			// Already pinned: keep its attachment/offset data.
+			w[i] = previous_pinned_points[previous_index];
+		} else {
+			// Newly pinned point.
+			w[i] = PinnedPoint();
 			w[i].point_index = point_index;
-			if (insert) {
-				pin_point(w[i].point_index, true, NodePath(), i);
-			} else {
-				pin_point(w[i].point_index, true);
+			if (point_index >= 0) {
+				_pin_point_on_physics_server(point_index, true);
 			}
 		}
 	}
+
 	return true;
 }
 
@@ -705,7 +727,7 @@ void SoftBody3D::apply_central_force(const Vector3 &p_force) {
 }
 
 void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path, int p_insert_at) {
-	ERR_FAIL_COND_MSG(p_insert_at < -1 || p_insert_at >= pinned_points.size(), "Invalid index for pin point insertion position.");
+	ERR_FAIL_COND_MSG(p_insert_at < -1 || p_insert_at > pinned_points.size(), "Invalid index for pin point insertion position.");
 	_pin_point_on_physics_server(p_point_index, pin);
 	if (pin) {
 		_add_pinned_point(p_point_index, p_spatial_attachment_path, p_insert_at);
