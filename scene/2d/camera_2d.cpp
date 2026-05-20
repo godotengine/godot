@@ -1097,9 +1097,9 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_right", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_bottom", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_BOTTOM);
 
-	ADD_GROUP("Limit Smoothing", "limit_smoothing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_limit_smoothing_enabled", "is_limit_smoothing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "limit_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
+	ADD_GROUP("Limit Smoothing", "limit_smoothed_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_smoothed", PROPERTY_HINT_GROUP_ENABLE), "set_limit_smoothing_enabled", "is_limit_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "limit_smoothed_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
 
 	ADD_GROUP("Position Smoothing", "position_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
