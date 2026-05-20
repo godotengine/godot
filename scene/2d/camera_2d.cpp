@@ -243,7 +243,7 @@ Transform2D Camera2D::get_camera_transform() {
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 
 	// Overrides screen_rect to immediately snap to the limits, which we only do
-	// if we're not using position smoothing
+	// if we're not using limit smoothing
 	//
 	if (limit_enabled && !limit_smoothing_enabled) {
 		Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (ret_camera_pos - screen_rect.position));
@@ -348,16 +348,19 @@ void Camera2D::_move_smooth_limits(const Rect2 &screen_rect, const Rect2 &constr
 			dist = limit[i] - smooth_limit[i];
 		}
 
-		// Once the smooth limit has reached its target location, (which might be
-		// the actual limit, or just the edge of the viewport), we move it to
+		// Calculate how far of an increment to move the smooth limit
+		int inc = dist * position_smoothing_speed * delta;
+
+		// Once the smooth limit has reached its target location (which might be
+		// the actual limit, or just the edge of the viewport), or the distance to move
+		// is smaller than the remaining increment (prevents overshooting), we move it to
 		// the real limit and we're done
-		if (dist == 0) {
+		if (dist == 0 || abs(dist) <= abs(inc)) {
 			smooth_limit[i] = limit[i];
 			continue;
 		}
 
-		// Move the smooth limit towards the true limit
-		int inc = dist * (5 * delta);
+		// Move the smooth limit towards its target
 		smooth_limit[i] += inc != 0 ? inc : (dist >= 0 ? 1 : -1);
 	}
 }
@@ -789,6 +792,9 @@ void Camera2D::force_update_scroll() {
 void Camera2D::reset_smoothing() {
 	_update_scroll();
 	smoothed_camera_pos = camera_pos;
+	for (int i = 0; i < 4; ++i) {
+		smooth_limit[i] = limit[i];
+	}
 }
 
 void Camera2D::align() {
@@ -1090,7 +1096,10 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_top", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_right", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_bottom", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_BOTTOM);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_smoothed"), "set_limit_smoothing_enabled", "is_limit_smoothing_enabled");
+
+	ADD_GROUP("Limit Smoothing", "limit_smoothing_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_limit_smoothing_enabled", "is_limit_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "limit_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
 
 	ADD_GROUP("Position Smoothing", "position_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
