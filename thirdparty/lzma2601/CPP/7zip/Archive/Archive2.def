@@ -1,0 +1,22 @@
+EXPORTS
+  CreateObject PRIVATE
+
+  GetHandlerProperty PRIVATE
+  GetNumberOfFormats PRIVATE
+  GetHandlerProperty2 PRIVATE
+  GetIsArc PRIVATE
+
+  GetNumberOfMethods PRIVATE
+  GetMethodProperty PRIVATE
+  CreateDecoder PRIVATE
+  CreateEncoder PRIVATE
+
+  GetHashers PRIVATE
+
+  SetCodecs PRIVATE
+
+  SetLargePageMode PRIVATE
+  SetLargePageMode2 PRIVATE
+  SetCaseSensitive PRIVATE
+
+  GetModuleProp PRIVATE

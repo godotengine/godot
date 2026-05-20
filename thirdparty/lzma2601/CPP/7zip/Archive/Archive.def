@@ -1,0 +1,15 @@
+EXPORTS
+  CreateObject PRIVATE
+
+  GetHandlerProperty PRIVATE
+  GetNumberOfFormats PRIVATE
+  GetHandlerProperty2 PRIVATE
+  GetIsArc PRIVATE
+
+  SetCodecs PRIVATE
+
+  SetLargePageMode PRIVATE
+  SetLargePageMode2 PRIVATE
+  SetCaseSensitive PRIVATE
+
+  GetModuleProp PRIVATE

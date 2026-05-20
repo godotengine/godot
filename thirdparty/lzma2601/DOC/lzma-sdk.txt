@@ -1,0 +1,437 @@
+LZMA SDK 26.01
+--------------
+
+LZMA SDK provides the documentation, samples, header files,
+libraries, and tools you need to develop applications that 
+use 7z / LZMA / LZMA2 / XZ compression.
+
+LZMA is an improved version of famous LZ77 compression algorithm. 
+It was improved in way of maximum increasing of compression ratio,
+keeping high decompression speed and low memory requirements for 
+decompressing.
+
+LZMA2 is a LZMA based compression method. LZMA2 provides better 
+multithreading support for compression than LZMA and some other improvements.
+
+7z is a file format for data compression and file archiving.
+7z is a main file format for 7-Zip compression program (www.7-zip.org).
+7z format supports different compression methods: LZMA, LZMA2 and others.
+7z also supports AES-256 based encryption.
+
+XZ is a file format for data compression that uses LZMA2 compression.
+XZ format provides additional features: SHA/CRC check, filters for 
+improved compression ratio, splitting to blocks and streams,
+
+
+
+LICENSE
+-------
+
+LZMA SDK is written and placed in the public domain by Igor Pavlov.
+
+Some code in LZMA SDK is based on public domain code from another developers:
+  1) PPMd var.H (2001): Dmitry Shkarin
+  2) SHA-256: Wei Dai (Crypto++ library)
+
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute the 
+original LZMA SDK code, either in source code form or as a compiled binary, for 
+any purpose, commercial or non-commercial, and by any means.
+
+LZMA SDK code is compatible with open source licenses, for example, you can 
+include it to GNU GPL or GNU LGPL code.
+
+
+LZMA SDK Contents
+-----------------
+
+  Source code:
+
+    - C / C++ / C# / Java   - LZMA compression and decompression
+    - C / C++               - LZMA2 compression and decompression
+    - C / C++               - XZ compression and decompression
+    - C                     - 7z decompression
+    -     C++               - 7z compression and decompression
+    - C                     - small SFXs for installers (7z decompression)
+    -     C++               - SFXs and SFXs for installers (7z decompression)
+
+  Precomiled binaries:
+
+    - console programs for lzma / 7z / xz compression and decompression
+    - SFX modules for installers.
+
+How to compile with makefile in Windows
+---------------------------------------
+
+Some macronames can be defined for compiling with makefile:
+
+PLATFORM
+  with possible values: x64, x86, arm64, arm, ia64
+
+OLD_COMPILER
+  for old VC compiler, like MSCV 6.0.
+
+MY_DYNAMIC_LINK
+  for dynamic linking to the run-time library (msvcrt.dll). 
+  The default makefile option is static linking to the run-time library.
+
+To compile 7zr.exe file for x64 with Visual Studio 2022,
+use the following command sequence:
+
+  cd SRC\CPP\7zip\Bundles\Alone7z\
+  %comspec% /k "C:\Program Files\VS2022\VC\Auxiliary\Build\vcvars64.bat"
+  nmake
+
+You can use other "vcvars*.bat" files from the "VS2022\VC\Auxiliary\Build" directory
+to compile for other platforms:
+  vcvars64.bat
+  vcvarsamd64_arm64.bat
+  vcvarsamd64_x86.bat
+
+
+UNIX/Linux version 
+------------------
+There are several otpions to compile 7-Zip with different compilers: gcc and clang.
+Also 7-Zip code contains two versions for some critical parts of code: in C and in Assembeler.
+So if you compile the version with Assembeler code, you will get faster 7-Zip binary.
+
+7-Zip's assembler code uses the following syntax for different platforms:
+
+1) x86 and x86-64 (AMD64): MASM syntax. 
+   There are 2 programs that supports MASM syntax in Linux.
+'    'Asmc Macro Assembler and JWasm. But JWasm now doesn't support some 
+      cpu instructions used in 7-Zip.
+   So you must install Asmc Macro Assembler in Linux, if you want to compile fastest version
+   of 7-Zip  x86 and x86-64:
+     https://github.com/nidud/asmc
+
+2) arm64: GNU assembler for ARM64 with preprocessor. 
+   That systax of that arm64 assembler code in 7-Zip is supported by GCC and CLANG for ARM64.
+
+There are different binaries that can be compiled from 7-Zip source.
+There are 2 main files in folder for compiling:
+  makefile        - that can be used for compiling Windows version of 7-Zip with nmake command
+  makefile.gcc    - that can be used for compiling Linux/macOS versions of 7-Zip with make command
+
+At first you must change the current folder to folder that contains `makefile.gcc`:
+
+  cd CPP/7zip/Bundles/Alone7z
+
+Then you can compile `makefile.gcc` with the command:
+
+  make -j -f makefile.gcc
+
+Also there are additional "*.mak" files in folder "CPP/7zip/" that can be used to compile 
+7-Zip binaries with optimized code and optimzing options.
+
+To compile with GCC without assembler:
+  cd CPP/7zip/Bundles/Alone7z
+  make -j -f ../../cmpl_gcc.mak
+
+To compile with CLANG without assembler:
+  make -j -f ../../cmpl_clang.mak
+
+To compile 7-Zip for x86-64 with asmc assembler:
+  make -j -f ../../cmpl_gcc_x64.mak
+
+To compile 7-Zip for arm64 with assembler:
+  make -j -f ../../cmpl_gcc_arm64.mak
+
+To compile 7-Zip for arm64 for macOS:
+  make -j -f ../../cmpl_mac_arm64.mak
+
+Also you can change some compiler options in the mak files:
+  cmpl_gcc.mak
+  var_gcc.mak
+  warn_gcc.mak
+
+
+
+Also you can use p7zip (port of 7-Zip for POSIX systems like Unix or Linux):
+  
+  http://p7zip.sourceforge.net/
+
+
+Files
+-----
+
+DOC/7zC.txt          - 7z ANSI-C Decoder description
+DOC/7zFormat.txt     - 7z Format description
+DOC/installer.txt    - information about 7-Zip for installers
+DOC/lzma.txt         - LZMA compression description
+DOC/lzma-sdk.txt     - LZMA SDK description (this file)
+DOC/lzma-history.txt - history of LZMA SDK
+DOC/lzma-specification.txt - Specification of LZMA
+DOC/Methods.txt      - Compression method IDs for .7z
+
+bin/installer/   - example script to create installer that uses SFX module,
+
+bin/7zdec.exe    - simplified 7z archive decoder (x86 32-bit version)
+bin/7zr.exe      - 7-Zip console program (reduced version) (x86 32-bit version)
+bin/x64/7zr.exe  - 7-Zip console program (reduced version) (x64 version)
+bin/x64/7zdec.exe  - simplified 7z archive decoder (x64 version)
+bin/arm64/7zr.exe  - 7-Zip console program (reduced version) (arm64 version)
+bin/arm64/7zdec.exe  - simplified 7z archive decoder (arm64 version)
+bin/lzma.exe     - file->file LZMA encoder/decoder for Windows
+bin/7zS2.sfx     - small SFX module for installers (GUI version)
+bin/7zS2con.sfx  - small SFX module for installers (Console version)
+bin/7zSD.sfx     - SFX module for installers.
+
+
+7zDec.exe
+---------
+7zDec.exe is simplified 7z archive decoder.
+It supports only LZMA, LZMA2, and PPMd methods.
+7zDec decodes whole solid block from 7z archive to RAM.
+The RAM consumption can be high.
+
+
+
+
+Source code structure
+---------------------
+
+
+Asm/ - asm files (optimized code for CRC calculation and Intel-AES encryption)
+
+C/  - C files (compression / decompression and other)
+  Util/
+    7z       - 7z decoder program (decoding 7z files)
+    Lzma     - LZMA program (file->file LZMA encoder/decoder).
+    LzmaLib  - LZMA library (.DLL for Windows)
+    SfxSetup - small SFX module for installers 
+
+CPP/ -- CPP files
+
+  Common  - common files for C++ projects
+  Windows - common files for Windows related code
+
+  7zip    - files related to 7-Zip
+
+    Archive - files related to archiving
+
+      Common   - common files for archive handling
+      7z       - 7z C++ Encoder/Decoder
+
+    Bundles  - Modules that are bundles of other modules (files)
+  
+      Alone7z       - 7zr.exe: Standalone 7-Zip console program (reduced version)
+      Format7zExtractR  - 7zxr.dll: Reduced version of 7z DLL: extracting from 7z/LZMA/BCJ/BCJ2.
+      Format7zR         - 7zr.dll:  Reduced version of 7z DLL: extracting/compressing to 7z/LZMA/BCJ/BCJ2
+      LzmaCon       - lzma.exe: LZMA compression/decompression
+      LzmaSpec      - example code for LZMA Specification
+      SFXCon        - 7zCon.sfx: Console 7z SFX module
+      SFXSetup      - 7zS.sfx: 7z SFX module for installers
+      SFXWin        - 7z.sfx: GUI 7z SFX module
+
+    Common   - common files for 7-Zip
+
+    Compress - files for compression/decompression
+
+    Crypto   - files for encryption / decompression
+
+    UI       - User Interface files
+         
+      Client7z - Test application for 7za.dll, 7zr.dll, 7zxr.dll
+      Common   - Common UI files
+      Console  - Code for console program (7z.exe)
+      Explorer    - Some code from 7-Zip Shell extension
+      FileManager - Some GUI code from 7-Zip File Manager
+      GUI         - Some GUI code from 7-Zip
+
+
+CS/ - C# files
+  7zip
+    Common   - some common files for 7-Zip
+    Compress - files related to compression/decompression
+      LZ     - files related to LZ (Lempel-Ziv) compression algorithm
+      LZMA         - LZMA compression/decompression
+      LzmaAlone    - file->file LZMA compression/decompression
+      RangeCoder   - Range Coder (special code of compression/decompression)
+
+Java/  - Java files
+  SevenZip
+    Compression    - files related to compression/decompression
+      LZ           - files related to LZ (Lempel-Ziv) compression algorithm
+      LZMA         - LZMA compression/decompression
+      RangeCoder   - Range Coder (special code of compression/decompression)
+
+
+Note: 
+  Asm / C / C++ source code of LZMA SDK is part of 7-Zip's source code.
+  7-Zip's source code can be downloaded from 7-Zip's SourceForge page:
+
+  http://sourceforge.net/projects/sevenzip/
+
+
+
+LZMA features
+-------------
+  - Variable dictionary size (up to 4 GB)
+  - Estimated compressing speed: about 2 MB/s on 2 GHz CPU
+  - Estimated decompressing speed: 
+      - 20-30 MB/s on modern 2 GHz cpu
+      - 1-2 MB/s on 200 MHz simple RISC cpu: (ARM, MIPS, PowerPC)
+  - Small memory requirements for decompressing (16 KB + DictionarySize)
+  - Small code size for decompressing: 5-8 KB
+
+LZMA decoder uses only integer operations and can be 
+implemented in any modern 32-bit CPU (or on 16-bit CPU with some conditions).
+
+Some critical operations that affect the speed of LZMA decompression:
+  1) 32*16 bit integer multiply
+  2) Mispredicted branches (penalty mostly depends from pipeline length)
+  3) 32-bit shift and arithmetic operations
+
+The speed of LZMA decompressing mostly depends from CPU speed.
+Memory speed has no big meaning. But if your CPU has small data cache, 
+overall weight of memory speed will slightly increase.
+
+
+How To Use
+----------
+
+Using LZMA encoder/decoder executable
+--------------------------------------
+
+Usage:  LZMA <e|d> inputFile outputFile [<switches>...]
+
+  e: encode file
+
+  d: decode file
+
+  b: Benchmark. There are two tests: compressing and decompressing 
+     with LZMA method. Benchmark shows rating in MIPS (million 
+     instructions per second). Rating value is calculated from 
+     measured speed and it is normalized with Intel's Core 2 results.
+     Also Benchmark checks possible hardware errors (RAM 
+     errors in most cases). Benchmark uses these settings:
+     (-a1, -d21, -fb32, -mfbt4). You can change only -d parameter. 
+     Also you can change the number of iterations. Example for 30 iterations:
+       LZMA b 30
+     Default number of iterations is 10.
+
+<Switches>
+  
+
+  -a{N}:  set compression mode 0 = fast, 1 = normal
+          default: 1 (normal)
+
+  d{N}:   Sets Dictionary size - [0, 31], default: N=24 (32 MB)
+          The maximum value for dictionary size is N=31 (2 GB).
+          Dictionary size is calculated as DictionarySize = 2^N bytes. 
+          For decompressing file compressed by LZMA method with dictionary 
+          size D = 2^N you need about D bytes of memory (RAM).
+
+  -fb{N}: set number of fast bytes - [5, 273], default: 128
+          Usually big number gives a little bit better compression ratio 
+          and slower compression process.
+
+  -lc{N}: set number of literal context bits - [0, 8], default: 3
+          Sometimes lc=4 gives gain for big files.
+
+  -lp{N}: set number of literal pos bits - [0, 4], default: 0
+          lp switch is intended for periodical data when period is 
+          equal 2^N. For example, for 32-bit (4 bytes) 
+          periodical data you can use lp=2. Often it's better to set lc0, 
+          if you change lp switch.
+
+  -pb{N}: set number of pos bits - [0, 4], default: 2
+          pb switch is intended for periodical data 
+          when period is equal 2^N.
+
+  -mf{MF_ID}: set Match Finder. Default: bt4. 
+              Algorithms from hc* group doesn't provide good compression 
+              ratio, but they often works pretty fast in combination with 
+              fast mode (-a0).
+
+              Memory requirements depend from dictionary size 
+              (parameter "d" in table below). 
+
+               MF_ID     Memory                   Description
+
+                bt2    d *  9.5 + 4MB  Binary Tree with 2 bytes hashing.
+                bt3    d * 11.5 + 4MB  Binary Tree with 3 bytes hashing.
+                bt4    d * 11.5 + 4MB  Binary Tree with 4 bytes hashing.
+                bt5    d * 11.5 + 4MB  Binary Tree with 5 bytes hashing.
+                hc4    d *  7.5 + 4MB  Hash Chain with 4 bytes hashing.
+                hc5    d *  7.5 + 4MB  Hash Chain with 5 bytes hashing.
+
+  -eos:   write End Of Stream marker. By default LZMA doesn't write 
+          eos marker, since LZMA decoder knows uncompressed size 
+          stored in .lzma file header.
+
+  -si:    Read data from stdin (it will write End Of Stream marker).
+  -so:    Write data to stdout
+
+
+Examples:
+
+1) LZMA e file.bin file.lzma -d16 -lc0 
+
+compresses file.bin to file.lzma with 64 KB dictionary (2^16=64K)  
+and 0 literal context bits. -lc0 allows to reduce memory requirements 
+for decompression.
+
+
+2) LZMA e file.bin file.lzma -lc0 -lp2
+
+compresses file.bin to file.lzma with settings suitable 
+for 32-bit periodical data (for example, ARM or MIPS code).
+
+3) LZMA d file.lzma file.bin
+
+decompresses file.lzma to file.bin.
+
+
+Compression ratio hints
+-----------------------
+
+Recommendations
+---------------
+
+To increase the compression ratio for LZMA compressing it's desirable 
+to have aligned data (if it's possible) and also it's desirable to locate
+data in such order, where code is grouped in one place and data is 
+grouped in other place (it's better than such mixing: code, data, code,
+data, ...).
+
+
+Filters
+-------
+You can increase the compression ratio for some data types, using
+special filters before compressing. For example, it's possible to 
+increase the compression ratio on 5-10% for code for those CPU ISAs: 
+x86, IA-64, ARM, ARM-Thumb, PowerPC, SPARC.
+
+You can find C source code of such filters in C/Bra*.* files
+
+You can check the compression ratio gain of these filters with such 
+7-Zip commands (example for ARM code):
+No filter:
+  7z a a1.7z a.bin -m0=lzma
+
+With filter for little-endian ARM code:
+  7z a a2.7z a.bin -m0=arm -m1=lzma        
+
+It works in such manner:
+Compressing    = Filter_encoding + LZMA_encoding
+Decompressing  = LZMA_decoding + Filter_decoding
+
+Compressing and decompressing speed of such filters is very high,
+so it will not increase decompressing time too much.
+Moreover, it reduces decompression time for LZMA_decoding, 
+since compression ratio with filtering is higher.
+
+These filters convert CALL (calling procedure) instructions 
+from relative offsets to absolute addresses, so such data becomes more 
+compressible.
+
+For some ISAs (for example, for MIPS) it's impossible to get gain from such filter.
+
+
+
+---
+
+http://www.7-zip.org
+http://www.7-zip.org/sdk.html
+http://www.7-zip.org/support.html

@@ -1,0 +1,215 @@
+PROG = 7zCon
+
+# IS_X64 = 1
+# USE_ASM = 1
+# ST_MODE = 1
+
+include ../../LzmaDec_gcc.mak
+
+
+LOCAL_FLAGS_ST =
+MT_OBJS =
+
+
+ifdef SystemDrive
+IS_MINGW = 1
+else
+ifdef SYSTEMDRIVE
+# ifdef OS
+IS_MINGW = 1
+endif
+endif
+
+ifdef ST_MODE
+
+LOCAL_FLAGS_ST = -DZ7_ST
+
+ifdef IS_MINGW
+MT_OBJS = \
+  $O/Threads.o \
+
+endif
+
+else
+
+MT_OBJS = \
+  $O/StreamBinder.o \
+  $O/Synchronization.o \
+  $O/VirtThread.o \
+  $O/Threads.o \
+
+endif
+
+
+
+LOCAL_FLAGS_SYS =
+
+ifdef IS_MINGW
+
+LOCAL_FLAGS_SYS = \
+  -DZ7_NO_LONG_PATH \
+
+SYS_OBJS = \
+  $O/DLL.o \
+  $O/DllSecur.o \
+  $O/resource.o \
+
+else
+
+SYS_OBJS = \
+  $O/MyWindows.o \
+
+endif
+
+LOCAL_FLAGS = \
+  -DZ7_EXTRACT_ONLY \
+  -DZ7_NO_READ_FROM_CODER \
+  -DZ7_SFX \
+  -DZ7_NO_LARGE_PAGES \
+  $(LOCAL_FLAGS_ST) \
+  $(LOCAL_FLAGS_SYS) \
+
+
+CURRENT_OBJS = \
+  $O/SfxCon.o \
+
+CONSOLE_OBJS = \
+  $O/ConsoleClose.o \
+  $O/ExtractCallbackConsole.o \
+  $O/List.o \
+  $O/MainAr.o \
+  $O/OpenCallbackConsole.o \
+  $O/PercentPrinter.o \
+  $O/UserInputUtils.o \
+
+COMMON_OBJS = \
+  $O/CommandLineParser.o \
+  $O/CRC.o \
+  $O/IntToString.o \
+  $O/MyString.o \
+  $O/MyVector.o \
+  $O/NewHandler.o \
+  $O/Sha256Prepare.o \
+  $O/StdInStream.o \
+  $O/StdOutStream.o \
+  $O/StringConvert.o \
+  $O/UTFConvert.o \
+  $O/Wildcard.o \
+
+WIN_OBJS = \
+  \
+  $O/ErrorMsg.o \
+  $O/FileDir.o \
+  $O/FileFind.o \
+  $O/FileIO.o \
+  $O/FileName.o \
+  $O/PropVariant.o \
+  $O/PropVariantConv.o \
+  \
+  $O/System.o \
+  $O/TimeUtils.o \
+
+7ZIP_COMMON_OBJS = \
+  $O/CreateCoder.o \
+  $O/CWrappers.o \
+  $O/FilePathAutoRename.o \
+  $O/FileStreams.o \
+  $O/InBuffer.o \
+  $O/FilterCoder.o \
+  $O/LimitedStreams.o \
+  $O/OutBuffer.o \
+  $O/ProgressUtils.o \
+  $O/PropId.o \
+  \
+  $O/StreamObjects.o \
+  $O/StreamUtils.o \
+  \
+
+UI_COMMON_OBJS = \
+  $O/ArchiveExtractCallback.o \
+  $O/ArchiveOpenCallback.o \
+  $O/DefaultName.o \
+  $O/Extract.o \
+  $O/ExtractingFilePath.o \
+  $O/LoadCodecs.o \
+  $O/OpenArchive.o \
+  $O/PropIDUtils.o \
+
+AR_OBJS = \
+  $O/SplitHandler.o \
+
+AR_COMMON_OBJS = \
+  $O/CoderMixer2.o \
+  $O/ItemNameUtils.o \
+  $O/MultiStream.o \
+  $O/OutStreamWithCRC.o \
+
+7Z_OBJS = \
+  $O/7zDecode.o \
+  $O/7zExtract.o \
+  $O/7zHandler.o \
+  $O/7zIn.o \
+  $O/7zRegister.o \
+
+COMPRESS_OBJS = \
+  $O/Bcj2Coder.o \
+  $O/Bcj2Register.o \
+  $O/BcjCoder.o \
+  $O/BcjRegister.o \
+  $O/BranchMisc.o \
+  $O/BranchRegister.o \
+  $O/CopyCoder.o \
+  $O/CopyRegister.o \
+  $O/DeltaFilter.o \
+  $O/Lzma2Decoder.o \
+  $O/Lzma2Register.o \
+  $O/LzmaDecoder.o \
+  $O/LzmaRegister.o \
+  $O/PpmdDecoder.o \
+  $O/PpmdRegister.o \
+
+CRYPTO_OBJS = \
+  $O/7zAes.o \
+  $O/7zAesRegister.o \
+  $O/MyAes.o \
+
+C_OBJS = \
+  $O/7zStream.o \
+  $O/Alloc.o \
+  $O/Bcj2.o \
+  $O/Bra.o \
+  $O/Bra86.o \
+  $O/BraIA64.o \
+  $O/CpuArch.o \
+  $O/Delta.o \
+  $O/Lzma2Dec.o \
+  $O/Lzma2DecMt.o \
+  $O/LzmaDec.o \
+  $O/MtDec.o \
+  $O/Ppmd7.o \
+  $O/Ppmd7Dec.o \
+  $O/Sha256.o \
+  $O/Sha256Opt.o \
+  $O/7zCrc.o \
+  $O/7zCrcOpt.o \
+  $O/Aes.o \
+  $O/AesOpt.o \
+
+OBJS = \
+  $(LZMA_DEC_OPT_OBJS) \
+  $(C_OBJS) \
+  $(MT_OBJS) \
+  $(SYS_OBJS) \
+  $(COMMON_OBJS) \
+  $(WIN_OBJS) \
+  $(COMPRESS_OBJS) \
+  $(CRYPTO_OBJS) \
+  $(7ZIP_COMMON_OBJS) \
+  $(AR_OBJS) \
+  $(AR_COMMON_OBJS) \
+  $(7Z_OBJS) \
+  $(UI_COMMON_OBJS) \
+  $(CONSOLE_OBJS) \
+  $(CURRENT_OBJS) \
+
+include ../../7zip_gcc.mak

@@ -1,0 +1,177 @@
+7-Zip method IDs for 7z and xz archives
+---------------------------------------
+
+Version: 24.02
+Date: 2024-03-22
+
+Each compression or crypto method in 7z is associated with unique binary value (ID).
+The length of ID in bytes is arbitrary but it can not exceed 63 bits (8 bytes).
+
+xz and 7z formats use same ID map.
+
+If you want to add some new ID, you have two ways:
+  1) Write request for allocating IDs to 7-Zip developers.
+  2) Generate 8-bytes ID:
+
+    3F ZZ ZZ ZZ ZZ ZZ MM MM 
+
+    3F              - Prefix for random IDs (1 byte)
+    ZZ ZZ ZZ ZZ ZZ  - Developer ID (5 bytes). Use real random bytes. 
+                      
+    MM MM           - Method ID (2 bytes)
+
+    You can notify 7-Zip developers about your Developer ID / Method ID.
+
+    Note: Use new ID, if old codec can not decode data encoded with new version.
+
+
+List of defined IDs
+-------------------
+      
+00 - Copy
+
+03 - Delta
+04 - BCJ (x86)
+05 - PPC (big-endian)
+06 - IA64
+07 - ARM (little-endian)
+08 - ARMT (little-endian)
+09 - SPARC
+0A - ARM64
+0B - RISCV
+
+21 - LZMA2
+          
+02.. - Common
+   03 [Swap]
+      - 2 Swap2
+      - 4 Swap4
+
+03.. - 7z
+   01 - 
+      01 - LZMA
+  
+   03 - [Branch Codecs]
+      01 - [x86 Codecs]
+         03  - BCJ
+         1B  - BCJ2 (4 packed streams)
+      02 - 
+         05 - PPC (big-endian)
+      03 - 
+         01 - Alpha
+      04 - 
+         01 - IA64
+      05 - 
+         01 - ARM (little-endian)
+      06 - 
+         05 - M68 (big-endian)
+      07 - 
+         01 - ARMT (little-endian)
+      08 - 
+         05 - SPARC
+
+   04 - 
+      01 - PPMD
+
+   7F -
+      01 - experimental method.
+
+
+04.. - Misc codecs
+
+   00 - Reserved
+
+   01 - [Zip]
+      00 - Copy (not used. Use {00} instead)
+      01 - Shrink
+      06 - Implode
+      08 - Deflate
+      09 - Deflate64
+      0A - Imploding
+      0C - BZip2 (not used. Use {040202} instead)
+      0E - LZMA (LZMA-zip)
+
+      5D - ZSTD
+      5F - xz
+      60 - Jpeg
+      61 - WavPack
+      62 - PPMd (PPMd-zip)
+      63 - wzAES
+
+   02 - 
+      02 - BZip2
+
+   03 - [Rar]
+      01 - Rar1
+      02 - Rar2
+      03 - Rar3
+      05 - Rar5
+
+   04 - [Arj]
+      01 - Arj(1,2,3)
+      02 - Arj4
+
+   05 - [Z]
+
+   06 - [Lzh]
+
+   07 - Reserved for 7z
+
+   08 - [Cab]
+
+   09 - [NSIS]
+      01 - DeflateNSIS
+      02 - BZip2NSIS
+
+   F7 - External codecs (that are not included to 7-Zip)
+
+      0x xx - reserved
+
+      10 xx - reserved (LZHAM)
+         01 - LZHAM
+
+      11 xx - reserved (Tino Reichardt)
+         01 - ZSTD
+         02 - BROTLI
+         04 - LZ4
+         05 - LZ5
+         06 - LIZARD
+
+      12 xx - reserverd (Denis Anisimov)
+        
+         01 - WavPack2
+         FE - eSplitter 
+         FF - RawSplitter
+ 
+
+06.. - Crypto 
+
+   F0 - Ciphers without hashing algo
+
+      01 - [AES]
+         0x - AES-128
+         4x - AES-192
+         8x - AES-256
+         Cx - AES
+
+         x0 - ECB
+         x1 - CBC
+         x2 - CFB
+         x3 - OFB
+         x4 - CTR
+
+   F1 - Combine Ciphers
+
+      01 - [Zip]
+         01 - ZipCrypto (Main Zip crypto algo)
+
+      03 - [RAR]
+         02 - 
+         03 - Rar29AES (AES-128 + modified SHA-1)
+
+      07 - [7z]
+         01 - 7zAES (AES-256 + SHA-256)
+
+
+---
+End of document

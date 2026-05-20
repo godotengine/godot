@@ -83,7 +83,9 @@ public:
 	struct SavedData {
 		uint64_t ofs = 0;
 		uint64_t size = 0;
+		uint64_t stored_size = 0;
 		bool encrypted = false;
+		bool lzma2 = false;
 		bool removal = false;
 		bool delta = false;
 		Vector<uint8_t> md5;
@@ -102,6 +104,11 @@ public:
 		EditorProgress *ep = nullptr;
 		Vector<SharedObject> *so_files = nullptr;
 		bool use_sparse_pck = false;
+		bool warned_pck_7zip_threads = false;
+		bool warned_pck_7zip_dict = false;
+		bool warned_pck_7zip_memory = false;
+		bool warned_pck_7zip_solid = false;
+		bool warned_pck_7zip_format = false;
 	};
 
 	static bool _store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs, const String &p_salt);

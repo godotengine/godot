@@ -1,0 +1,55 @@
+#include "../../MyVersionInfo.rc"
+#include "../../GuiCommon.rc"
+#include "../../UI/GUI/ExtractDialogRes.h"
+#include "../../UI/FileManager/PropertyNameRes.h"
+
+#include "resource.h"
+
+MY_VERSION_INFO_APP("7z SFX", "7z.sfx")
+
+#define xc 240
+#define yc 64
+
+IDI_ICON ICON "7z.ico"
+
+IDD_EXTRACT  DIALOG  0, 0, xs, ys  MY_MODAL_DIALOG_STYLE  MY_FONT
+CAPTION "7-Zip self-extracting archive"
+BEGIN
+  LTEXT          "E&xtract to:", IDT_EXTRACT_EXTRACT_TO, m, m, xc, 8
+  EDITTEXT       IDC_EXTRACT_PATH, m, 21, xc - bxsDots - 12, 14, ES_AUTOHSCROLL
+  PUSHBUTTON     "...", IDB_EXTRACT_SET_PATH, xs - m - bxsDots, 20, bxsDots, bys, WS_GROUP
+  DEFPUSHBUTTON  "Extract", IDOK,     bx2, by, bxs, bys, WS_GROUP
+  PUSHBUTTON     "Cancel",  IDCANCEL, bx1, by, bxs, bys
+END
+
+#ifdef UNDER_CE
+
+#undef xc
+#define xc 144
+
+IDD_EXTRACT_2  DIALOG  0, 0, xs, ys  MY_MODAL_DIALOG_STYLE  MY_FONT
+CAPTION "7-Zip self-extracting archive"
+BEGIN
+  LTEXT          "E&xtract to:", IDT_EXTRACT_EXTRACT_TO, m, m, xc - bxsDots - 12, 8
+  EDITTEXT       IDC_EXTRACT_PATH, m, m + bys + 4, xc, 14, ES_AUTOHSCROLL
+  PUSHBUTTON     "...", IDB_EXTRACT_SET_PATH, xs - m - bxsDots, m, bxsDots, bys, WS_GROUP
+  DEFPUSHBUTTON  "Extract", IDOK,     bx2, by, bxs, bys, WS_GROUP
+  PUSHBUTTON     "Cancel",  IDCANCEL, bx1, by, bxs, bys
+END
+
+#endif
+
+#include "../../UI/FileManager/OverwriteDialog.rc"
+#include "../../UI/FileManager/PasswordDialog.rc"
+#include "../../UI/FileManager/ProgressDialog2.rc"
+#include "../../UI/GUI/Extract.rc"
+
+STRINGTABLE DISCARDABLE
+BEGIN
+  IDS_PROP_MTIME        "Modified"
+END
+
+
+#ifndef UNDER_CE
+1 24 MOVEABLE PURE "../../UI/GUI/7zG.exe.manifest"
+#endif

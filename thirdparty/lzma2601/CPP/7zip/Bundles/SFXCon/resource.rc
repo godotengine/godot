@@ -1,0 +1,9 @@
+#include "../../MyVersionInfo.rc"
+
+MY_VERSION_INFO_APP("7z Console SFX", "7z.sfx")
+
+101 ICON "7z.ico"
+
+#ifndef UNDER_CE
+1  24  MOVEABLE PURE   "../../UI/Console/Console.manifest"
+#endif

@@ -113,6 +113,24 @@ thirdparty_minizip_sources = ["ioapi.c", "unzip.c", "zip.c"]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_minizip_sources)
 
+# LZMA2 (7-Zip SDK) library used by PCK payload compression.
+thirdparty_lzma_dir = "#thirdparty/lzma2601/C/"
+thirdparty_lzma_sources = [
+    "7zAlloc.c",
+    "CpuArch.c",
+    "LzFind.c",
+    "LzmaDec.c",
+    "LzmaEnc.c",
+    "Lzma2Dec.c",
+    "Lzma2Enc.c",
+]
+thirdparty_lzma_sources = [thirdparty_lzma_dir + file for file in thirdparty_lzma_sources]
+env_thirdparty.Prepend(CPPPATH=[thirdparty_lzma_dir])
+env.Prepend(CPPPATH=[thirdparty_lzma_dir])
+env_thirdparty.Append(CPPDEFINES=["Z7_ST"])
+env.Append(CPPDEFINES=["Z7_ST"])
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_lzma_sources)
+
 # Zstd library, can be unbundled
 if env["builtin_zstd"]:
     thirdparty_zstd_dir = "#thirdparty/zstd/"

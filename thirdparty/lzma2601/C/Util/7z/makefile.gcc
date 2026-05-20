@@ -1,0 +1,32 @@
+PROG = 7zdec
+
+LOCAL_FLAGS = -DZ7_PPMD_SUPPORT -DZ7_EXTRACT_ONLY
+
+include ../../../CPP/7zip/LzmaDec_gcc.mak
+
+
+OBJS = \
+  $(LZMA_DEC_OPT_OBJS) \
+  $O/Bcj2.o \
+  $O/Bra.o \
+  $O/Bra86.o \
+  $O/BraIA64.o \
+  $O/CpuArch.o \
+  $O/Delta.o \
+  $O/Lzma2Dec.o \
+  $O/LzmaDec.o \
+  $O/Ppmd7.o \
+  $O/Ppmd7Dec.o \
+  $O/7zCrc.o \
+  $O/7zCrcOpt.o \
+  $O/7zAlloc.o \
+  $O/7zArcIn.o \
+  $O/7zBuf.o \
+  $O/7zBuf2.o \
+  $O/7zDec.o \
+  $O/7zMain.o \
+  $O/7zFile.o \
+  $O/7zStream.o \
+
+
+include ../../7zip_gcc_c.mak

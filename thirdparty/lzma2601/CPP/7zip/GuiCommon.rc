@@ -1,0 +1,119 @@
+#include <windows.h>
+
+// #include <winnt.h>
+// #include <WinUser.h>
+
+// for Windows CE:
+#include <CommCtrl.h>
+
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+#undef m
+#undef bxs
+#undef bys
+#undef bxsDots
+#undef y
+#undef xc
+#undef yc
+#undef xs
+#undef ys
+#undef bx
+#undef bx1
+#undef bx2
+#undef bx3
+#undef by
+#undef by1
+#undef by2
+#undef by3
+#undef gSpace
+#undef gSize
+#undef marg2
+#undef marg3
+
+#undef MY_DIALOG
+#undef MY_RESIZE_DIALOG
+#undef MY_PAGE
+
+#define m 8
+#define bxs 64
+#define bys 16
+#define bxsDots 20
+
+#define xs (xc + m + m)
+#define ys (yc + m + m)
+
+#define bx1 (xs - m - bxs)
+#define bx2 (bx1 - m - bxs)
+#define bx3 (bx2 - m - bxs)
+#define bx bx1
+
+#define by1 (ys - m - bys)
+#define by2 (by1 - m - bys)
+#define by by1
+
+
+#define MY_MODAL_DIALOG_STYLE  STYLE  DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+#define MY_MODAL_RESIZE_DIALOG_STYLE  MY_MODAL_DIALOG_STYLE | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX | WS_THICKFRAME
+
+#define MY_PAGE_STYLE  STYLE  WS_CHILD | WS_DISABLED | WS_CAPTION
+
+#define MY_FONT  FONT 8, "MS Shell Dlg"
+
+#define MY_MODAL_DIALOG_POSTFIX  0, 0, xs, ys  MY_MODAL_DIALOG_STYLE  MY_FONT
+
+#define SMALL_PAGE_SIZE_X 120
+
+// #define MY_DIALOG         DIALOG 0, 0, xs, ys  MY_MODAL_DIALOG_STYLE  MY_FONT
+// #define MY_RESIZE_DIALOG  DIALOG 0, 0, xs, ys  MY_MODAL_RESIZE_DIALOG_STYLE  MY_FONT
+#define MY_PAGE_POSTFIX   0, 0, xs, ys  MY_PAGE_STYLE  MY_FONT
+#define MY_PAGE           DIALOG MY_PAGE_POSTFIX
+
+#define OK_CANCEL \
+  DEFPUSHBUTTON  "OK",     IDOK,     bx2, by, bxs, bys \
+  PUSHBUTTON     "Cancel", IDCANCEL, bx1, by, bxs, bys
+
+#define CONTINUE_CANCEL \
+  DEFPUSHBUTTON  "Continue",IDCONTINUE, bx2, by, bxs, bys \
+  PUSHBUTTON     "Cancel",  IDCANCEL,   bx1, by, bxs, bys
+
+#define MY_BUTTON__CLOSE \
+  DEFPUSHBUTTON  "&Close", IDCLOSE,  bx1, by, bxs, bys
+
+
+#define MY_COMBO  CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+#define MY_COMBO_SORTED  MY_COMBO | CBS_SORT
+#define MY_COMBO_WITH_EDIT  CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+
+#define MY_CHECKBOX "Button", BS_AUTOCHECKBOX | WS_TABSTOP
+
+#define cboxColonSize 18
+#define colonString ":"
+
+#define MY_CONTROL_CHECKBOX(_text,_id,_x,_y,_xsize)  CONTROL _text, _id, MY_CHECKBOX, _x,_y,_xsize,10
+#define MY_CONTROL_CHECKBOX_2LINES(_text,_id,_x,_y,_xsize)  CONTROL _text, _id, MY_CHECKBOX | BS_MULTILINE, _x,_y,_xsize,16
+#define MY_CONTROL_CHECKBOX_COLON(_id,_x,_y)  MY_CONTROL_CHECKBOX( colonString, _id, _x,_y,cboxColonSize)
+
+#define MY_AUTORADIOBUTTON "Button", BS_AUTORADIOBUTTON
+#define MY_AUTORADIOBUTTON_GROUP MY_AUTORADIOBUTTON | WS_GROUP
+
+#define MY_CONTROL_AUTORADIOBUTTON(_text,_id,_x,_y,_xsize)  CONTROL _text, _id, MY_AUTORADIOBUTTON, _x,_y,_xsize,10
+#define MY_CONTROL_AUTORADIOBUTTON_GROUP(_text,_id,_x,_y,_xsize)  CONTROL _text, _id, MY_AUTORADIOBUTTON_GROUP, _x,_y,_xsize,10
+
+#define MY_TEXT_NOPREFIX 8, SS_NOPREFIX
+
+
+// WS_EX_CLIENTEDGE
+#define MY_CONTROL_EDIT_WITH_SPIN(_id_edit, _id_spin, _text,  _x, _y, _xSize) \
+  EDITTEXT _id_edit,  _x, _y, _xSize, 12,  ES_CENTER | ES_NUMBER | ES_AUTOHSCROLL \
+  CONTROL  _text, _id_spin,  L"msctls_updown32", \
+        UDS_SETBUDDYINT   \
+      | UDS_ALIGNRIGHT    \
+      | UDS_AUTOBUDDY     \
+      | UDS_ARROWKEYS     \
+      | UDS_NOTHOUSANDS,  \
+      _x + _xSize, _y, 8, 12  // these values are unused
+
+
+#define OPTIONS_PAGE_XC_SIZE 300
+#define OPTIONS_PAGE_YC_SIZE 280

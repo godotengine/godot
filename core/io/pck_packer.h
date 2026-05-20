@@ -54,7 +54,9 @@ class PCKPacker : public RefCounted {
 		String src_path;
 		uint64_t ofs = 0;
 		uint64_t size = 0;
+		uint64_t stored_size = 0;
 		bool encrypted = false;
+		bool lzma2 = false;
 		bool removal = false;
 		Vector<uint8_t> md5;
 	};

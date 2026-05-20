@@ -1,0 +1,675 @@
+ISTORY of the LZMA SDK
+-----------------------
+
+26.01          2026-04-27
+-------------------------
+- linux version of 7-Zip can use huge pages (2 MB pages). It can increase compression
+  speed for 10% for 7z/xz/LZMA/LZMA2 compression.
+- new -spo[d|c|r] switch specifies the path generation mode for the output directory
+  for archive extraction. The output directory path is generated from the path specified
+  in the -o{dir_path} switch and the name of the archive being unpacked.
+    -spod : for Linux/Posix/macOS: -o{dir_path} specifies the direct path to the output directory.
+            The asterisk (*) character in {dir_path} will not be replaced by the archive name.
+    -spoc : 7-Zip will concatenate the path specified in -o{dir_path} with the archive name
+            to form the final path to the output directory.
+    -spor : 7-Zip will replace asterisk (*) character in the path specified in the -o{dir_path}
+            with the archive name. This is the default option.
+- The 7zdec.exe program (a lightweight 7z archive decoder) has been modified for security purposes.
+  Now 7zdec.exe extracts files only to the current folder and its subfolders.
+- some bugs were fixed.
+
+
+
+26.00          2026-02-12
+-------------------------
+- some bugs were fixed.
+
+
+25.01          2025-08-03
+-------------------------
+- The code for handling symbolic links has been changed 
+  to provide greater security when extracting files from archives.
+  Command line switch -snld20 can be used to bypass default security 
+  checks when creating symbolic links.
+
+
+25.00          2025-07-05
+-------------------------
+- 7-Zip for Windows can now use more than 64 CPU threads for compression
+  to zip/7z/xz archives and for the 7-Zip benchmark.
+  If there are more than one processor group in Windows (on systems with more than
+  64 cpu threads), 7-Zip distributes running CPU threads across different processor groups.
+- fixed some bugs and vulnerabilities.
+
+
+24.09          2024-11-29
+-------------------------
+- The default dictionary size values for LZMA/LZMA2 compression methods were increased:
+         dictionary size   compression level
+  v24.08  v24.09  v24.09   
+          32-bit  64-bit    
+    8 MB   16 MB   16 MB   -mx4
+   16 MB   32 MB   32 MB   -mx5 : Normal
+   32 MB   64 MB   64 MB   -mx6
+   32 MB   64 MB  128 MB   -mx7 : Maximum
+   64 MB   64 MB  256 MB   -mx8
+   64 MB   64 MB  256 MB   -mx9 : Ultra
+  The default dictionary size values for 32-bit versions of LZMA/LZMA2 don't exceed 64 MB.
+- If an archive update operation uses a temporary archive folder and 
+  the archive is moved to the destination folder, 7-Zip shows the progress of moving 
+  the archive file, as this operation can take a long time if the archive is large.
+- Some bugs were fixed.
+
+
+24.07          2024-06-19
+-------------------------
+- Changes in files:
+    Asm/x86/Sha256Opt.asm
+  Now it uses "READONLY" flag for constant array segment.
+  It fixes an issue where ".rodata" section in 7-Zip for x86/x64 Linux had a "WRITE" attribute.
+
+
+24.05          2024-05-14
+-------------------------
+- New switch -myv={MMNN} to set decoder compatibility version for 7z archive creating.
+  {MMNN} is 4-digit number that represents the version of 7-Zip without a dot.
+  If -myv={MMNN} switch is specified, 7-Zip will only use compression methods that can 
+  be decoded by the specified version {MMNN} of 7-Zip and newer versions.
+  If -myv={MMNN} switch is not specified, -myv=2300 is used, and 7-Zip will only
+  use compression methods that can be decoded by 7-Zip 23.00 and newer versions.
+- New switch -myfa={FilterID} to    allow 7-Zip to use the specified filter method for 7z archive creating.
+- New switch -myfd={FilterID} to disallow 7-Zip to use the specified filter method for 7z archive creating.
+
+
+24.03          2024-03-23
+-------------------------
+- 7-Zip now can use new RISCV filter for compression to 7z and xz archives.
+  RISCV filter can increase compression ratio for data containing executable
+  files compiled for RISC-V architecture.
+- The speed for LZMA and LZMA2 decompression in ARM64 version for Windows
+  was increased by 20%-60%.
+  It uses arm64 assembler code, and clang-cl is required for arm64 assembler code compiling.
+- -slmu switch : to show timestamps as UTC instead of LOCAL TIME.
+- -slsl switch : in console 7-Zip for Windows : to show file paths with 
+  linux path separator slash '/' instead of backslash separator '\'.
+- 7-Zip supports .sha256 files that use backslash path separator '\'.
+- Some bugs were fixed.
+
+
+24.01          2024-01-31
+-------------------------
+- 7-Zip uses file C/Precomp.h that is included to all c and c++ files.
+  CPP/Common/Common.h also includes C/Precomp.h.
+  C/Precomp.h defines the following macros (if _WIN32 is defined):
+    Z7_LARGE_PAGES 1
+    Z7_LONG_PATH 1
+    Z7_WIN32_WINNT_MIN  0x0500 (or higher)
+    _WIN32_WINNT        0x0500 (or higher)
+    WINVER  _WIN32_WINNT
+    UNICODE 1
+    _UNICODE 1
+  if _WIN32_WINNT is defined already, C/Precomp.h doesn't redefine it.
+
+- Speed optimizations for hash caclulation: CRC-32, CRC-64.
+- The bug was fixed: 7-Zip for Linux could fail for multivolume creation in some cases.
+- 7zr.exe for arm64 is included to LZMA SDK package.
+- Some bugs were fixed.
+
+
+23.01          2023-06-20
+-------------------------
+- 7-Zip now can use new ARM64 filter for compression to 7z and xz archives.
+  ARM64 filter can increase compression ratio for data containing executable 
+  files compiled for ARM64 (AArch64) architecture.
+  Also 7-Zip now parses executable files (that have exe and dll filename extensions) 
+  before compressing, and it selects appropriate filter for each parsed file: 
+    - BCJ or BCJ2 filter for x86 executable files,
+    - ARM64 filter for ARM64 executable files.
+  Previous versions by default used x86 filter BCJ or BCJ2 for all exe/dll files.
+- Default section size for BCJ2 filter was changed from 64 MiB to 240 MiB.
+  It can increase compression ratio for executable files larger than 64 MiB.
+- Some optimizations in filters code: BCJ, BCJ2, Swap* and opthers.
+- If 7-Zip uses BCJ2 filter for big datasets compressing, it can use additional temp 
+  files in system's TEMP folder. 7-Zip uses temp file for additional compressed 
+  data stream, if size of such compressed stream is larger than predefined limit: 
+  16 MiB in 32-bit version, 4 GiB in 64-bit version.
+- When new 7-Zip creates multivolume archive, 7-Zip keeps in open state
+  only volumes that still can be changed. Previous versions kept all volumes 
+  in open state until the end of the archive creation.
+- 7-Zip for Linux and macOS now can reduce the number of simultaneously open files,
+  when 7-Zip opens, extracts or creates multivolume archive. It allows to avoid 
+  the failures for cases with big number of volumes, bacause there is a limitation 
+  for number of open files allowed for a single program in Linux and macOS.
+- Some bugs were fixed.
+- Source code changes:
+- All external macros for compiling C/C++ code of 7-Zip now have Z7_ prefix.
+- 7-Zip COM interfaces now use new macros that allow to declare and implement COM interface.
+- The code has been modified to compile with the maximum diagnostic warning level:
+    -Wall in MSVC and -Weverything in CLANG.
+  And some warning types are disabled in 2 files:
+    - C/Compiler.h for C/C++ code warnings.
+    - CPP/Common/Common.h for C++ code warnings.
+- Linux/macOS versions of 7-Zip: IUnknown interface in new code doesn't use 
+  virtual destructor that was used in previous 7-Zip and p7zip:
+     // virtual ~IUnknown() {}
+  So 7-Zip's dynamically linked shared libraries (codecs) are not compatible 
+  between new 7-Zip for Linux/macOS and old 7-Zip (and p7zip).
+
+
+21.07          2021-12-26
+-------------------------
+- New switches: -spm and -im!{file_path} to exclude directories from processing 
+    for specified paths that don't contain path separator character at the end of path.
+- The sorting order of files in archives was slightly changed to be more consistent
+  for cases where the name of some directory is the same as the prefix part of the name
+  of another directory or file.
+
+
+21.06          2021-11-24
+-------------------------
+- Bug in LZMA encoder in file LzmaEnc.c was fixed:
+  LzmaEnc_MemEncode(), LzmaEncode() and LzmaCompress() could work incorrectly, 
+    if size value for output buffer is smaller than size required for all compressed data.
+  LzmaEnc_Encode() could work incorrectly,
+    if callback ISeqOutStream::Write() doesn't write all compressed data.
+  NCompress::NLzma::CEncoder::Code() could work incorrectly,
+    if callback ISequentialOutStream::Write() returns error code.
+- Bug in versions 21.00-21.05 was fixed:
+  7-Zip didn't set attributes of directories during archive extracting.
+
+
+21.04 beta     2021-11-02
+-------------------------
+- 7-Zip now reduces the number of working CPU threads for compression,
+  if RAM size is not enough for compression with big LZMA2 dictionary.
+- 7-Zip now can create and check "file.sha256" text files that contain the list 
+  of file names and SHA-256 checksums in format compatible with sha256sum program.
+
+
+21.03 beta     2021-07-20
+-------------------------
+- The maximum dictionary size for LZMA/LZMA2 compressing was increased to 4 GB (3840 MiB).
+- Minor speed optimizations in LZMA/LZMA2 compressing.
+
+
+21.02 alpha    2021-05-06
+-------------------------
+- The command line version of 7-Zip for macOS was released.
+- The speed for LZMA and LZMA2 decompression in arm64 versions for macOS and Linux 
+  was increased by 20%-60%.
+
+
+21.01 alpha    2021-03-09
+-------------------------
+- The command line version of 7-Zip for Linux was released.
+- The improvements for speed of ARM64 version using hardware CPU instructions 
+  for AES, CRC-32, SHA-1 and SHA-256.
+- Some bugs were fixed.
+
+
+20.02 alpha    2020-08-08
+-------------------------
+- The default number of LZMA2 chunks per solid block in 7z archive was increased to 64.
+  It allows to increase the compression speed for big 7z archives, if there is a big number 
+  of CPU cores and threads.
+- The speed of PPMd compressing/decompressing was increased for 7z archives.
+- The new -ssp switch. If the switch -ssp is specified, 7-Zip doesn't allow the system 
+  to modify "Last Access Time" property of source files for archiving and hashing operations. 
+- Some bugs were fixed.
+
+
+20.00 alpha    2020-02-06
+-------------------------
+- 7-Zip now supports new optional match finders for LZMA/LZMA2 compression: bt5 and hc5, 
+  that can work faster than bt4 and hc4 match finders for the data with big redundancy.
+- The compression ratio was improved for Fast and Fastest compression levels with the 
+  following default settings:
+   - Fastest level (-mx1) : hc5 match finder with 256 KB dictionary.
+   - Fast    level (-mx3) : hc5 match finder with 4 MB dictionary.
+- Minor speed optimizations in multithreaded LZMA/LZMA2 compression for Normal/Maximum/Ultra 
+  compression levels.
+
+
+19.00          2019-02-21
+-------------------------
+- Encryption strength for 7z archives was increased:
+  the size of random initialization vector was increased from 64-bit to 128-bit,
+  and the pseudo-random number generator was improved.
+- The bug in 7zIn.c code was fixed.
+
+
+18.06          2018-12-30
+-------------------------
+- The speed for LZMA/LZMA2 compressing was increased by 3-10%,
+  and there are minor changes in compression ratio.
+- Some bugs were fixed.
+- The bug in 7-Zip 18.02-18.05 was fixed:
+  There was memory leak in multithreading xz decoder - XzDecMt_Decode(),
+  if xz stream contains only one block.
+- The changes for MSVS compiler makefiles: 
+   - the makefiles now use "PLATFORM" macroname with values (x64, x86, arm64)
+     instead of "CPU" macroname with values (AMD64, ARM64).
+   - the makefiles by default now use static version of the run-time library.
+
+
+18.05          2018-04-30
+-------------------------
+- The speed for LZMA/LZMA2 compressing was increased 
+    by 8% for fastest/fast compression levels and 
+    by 3% for normal/maximum compression levels.
+- Previous versions of 7-Zip could work incorrectly in "Large memory pages" mode in
+  Windows 10 because of some BUG with "Large Pages" in Windows 10. 
+  Now 7-Zip doesn't use "Large Pages" on Windows 10 up to revision 1709 (16299).
+- The BUG was fixed in Lzma2Enc.c
+    Lzma2Enc_Encode2() function worked incorretly,
+      if (inStream == NULL) and the number of block threads is more than 1.
+
+
+18.03 beta     2018-03-04
+-------------------------
+- Asm\x86\LzmaDecOpt.asm: new optimized LZMA decoder written in asm 
+  for x64 with about 30% higher speed than main version of LZMA decoder written in C.
+- The speed for single-thread LZMA/LZMA2 decoder written in C was increased by 3%.
+- 7-Zip now can use multi-threading for 7z/LZMA2 decoding,
+  if there are multiple independent data chunks in LZMA2 stream.
+- 7-Zip now can use multi-threading for xz decoding,
+  if there are multiple blocks in xz stream.
+
+
+18.01          2019-01-28
+-------------------------
+- The BUG in 17.01 - 18.00 beta was fixed:
+  XzDec.c : random block unpacking and XzUnpacker_IsBlockFinished()
+  didn't work correctly for xz archives without checksum (CRC).
+
+
+18.00 beta     2019-01-10
+-------------------------
+- The BUG in xz encoder was fixed:
+  There was memory leak of 16 KB for each file compressed with 
+  xz compression method, if additional filter was used.
+
+
+17.01 beta     2017-08-28
+-------------------------
+- Minor speed optimization for LZMA2 (xz and 7z) multi-threading compression.
+  7-Zip now uses additional memory buffers for multi-block LZMA2 compression.
+  CPU utilization was slightly improved.
+- 7-zip now creates multi-block xz archives by default. Block size can be 
+  specified with -ms[Size]{m|g} switch.
+- xz decoder now can unpack random block from multi-block xz archives.
+- 7-Zip command line: @listfile now doesn't work after -- switch.
+  Use -i@listfile before -- switch instead.
+- The BUGs were fixed:
+  7-Zip 17.00 beta crashed for commands that write anti-item to 7z archive.
+
+
+17.00 beta     2017-04-29
+-------------------------
+- NewHandler.h / NewHandler.cpp: 
+    now it redefines operator new() only for old MSVC compilers (_MSC_VER < 1900).
+- C/7zTypes.h : the names of variables in interface structures were changed (vt).
+- Some bugs were fixed. 7-Zip could crash in some cases.
+- Some internal changes in code.
+
+
+16.04          2016-10-04
+-------------------------
+- The bug was fixed in DllSecur.c.
+
+
+16.03          2016-09-28
+-------------------------
+- SFX modules now use some protection against DLL preloading attack.
+- Some bugs in 7z code were fixed.
+
+
+16.02          2016-05-21
+-------------------------
+- The BUG in 16.00 - 16.01 was fixed:
+  Split Handler (SplitHandler.cpp) returned incorrect 
+  total size value (kpidSize) for split archives.
+
+
+16.01          2016-05-19
+-------------------------	
+- Some internal changes to reduce the number of compiler warnings.
+
+
+16.00          2016-05-10
+-------------------------	
+- Some bugs were fixed.
+
+
+15.12          2015-11-19
+-------------------------	
+- The BUG in C version of 7z decoder was fixed:
+  7zDec.c : SzDecodeLzma2()
+  7z decoder could mistakenly report about decoding error for some 7z archives
+  that use LZMA2 compression method.
+  The probability to get that mistaken decoding error report was about 
+  one error per 16384 solid blocks for solid blocks larger than 16 KB (compressed size). 
+- The BUG (in 9.26-15.11) in C version of 7z decoder was fixed:
+  7zArcIn.c : SzReadHeader2()
+  7z decoder worked incorrectly for 7z archives that contain 
+  empty solid blocks, that can be placed to 7z archive, if some file is 
+  unavailable for reading during archive creation.
+
+
+15.09 beta     2015-10-16
+-------------------------	
+- The BUG in LZMA / LZMA2 encoding code was fixed.
+  The BUG in LzFind.c::MatchFinder_ReadBlock() function.
+  If input data size is larger than (4 GiB - dictionary_size),
+  the following code worked incorrectly:
+  -  LZMA : LzmaEnc_MemEncode(), LzmaEncode() : LZMA encoding functions 
+     for compressing from memory to memory. 
+     That BUG is not related to LZMA encoder version that works via streams.
+  -  LZMA2 : multi-threaded version of LZMA2 encoder worked incorrectly, if 
+     default value of chunk size (CLzma2EncProps::blockSize) is changed 
+     to value larger than (4 GiB - dictionary_size).
+
+
+9.38 beta      2015-01-03
+-------------------------	
+- The BUG in 9.31-9.37 was fixed:
+  IArchiveGetRawProps interface was disabled for 7z archives.
+- The BUG in 9.26-9.36 was fixed:
+  Some code in CPP\7zip\Archive\7z\ worked correctly only under Windows.
+
+
+9.36 beta      2014-12-26
+-------------------------	
+- The BUG in command line version was fixed:
+  7-Zip created temporary archive in current folder during update archive
+  operation, if -w{Path} switch was not specified. 
+  The fixed 7-Zip creates temporary archive in folder that contains updated archive.
+- The BUG in 9.33-9.35 was fixed:
+  7-Zip silently ignored file reading errors during 7z or gz archive creation,
+  and the created archive contained only part of file that was read before error.
+  The fixed 7-Zip stops archive creation and it reports about error.
+
+
+9.35 beta      2014-12-07
+-------------------------	
+- 7zr.exe now support AES encryption.
+- SFX mudules were added to LZMA SDK
+- Some bugs were fixed.
+
+
+9.21 beta      2011-04-11
+-------------------------	
+- New class FString for file names at file systems.
+- Speed optimization in CRC code for big-endian CPUs.
+- The BUG in Lzma2Dec.c was fixed:
+    Lzma2Decode function didn't work.
+
+
+9.18 beta      2010-11-02
+-------------------------	
+- New small SFX module for installers (SfxSetup).
+
+
+9.12 beta      2010-03-24
+-------------------------
+- The BUG in LZMA SDK 9.* was fixed: LZMA2 codec didn't work,
+  if more than 10 threads were used (or more than 20 threads in some modes).
+
+
+9.11 beta      2010-03-15
+-------------------------
+- PPMd compression method support
+   
+
+9.09           2009-12-12
+-------------------------
+- The bug was fixed:
+   Utf16_To_Utf8 funstions in UTFConvert.cpp and 7zMain.c
+   incorrectly converted surrogate characters (the code >= 0x10000) to UTF-8.
+- Some bugs were fixed
+
+
+9.06           2009-08-17
+-------------------------
+- Some changes in ANSI-C 7z Decoder interfaces.
+
+
+9.04           2009-05-30
+-------------------------
+- LZMA2 compression method support
+- xz format support
+
+
+4.65           2009-02-03
+-------------------------
+- Some minor fixes
+
+
+4.63           2008-12-31
+-------------------------
+- Some minor fixes
+
+
+4.61 beta      2008-11-23
+-------------------------
+- The bug in ANSI-C LZMA Decoder was fixed:
+    If encoded stream was corrupted, decoder could access memory 
+    outside of allocated range.
+- Some changes in ANSI-C 7z Decoder interfaces.
+- LZMA SDK is placed in the public domain.
+
+
+4.60 beta      2008-08-19
+-------------------------
+- Some minor fixes.
+
+
+4.59 beta      2008-08-13
+-------------------------
+- The bug was fixed:
+    LZMA Encoder in fast compression mode could access memory outside of 
+    allocated range in some rare cases.
+
+
+4.58 beta      2008-05-05
+-------------------------
+- ANSI-C LZMA Decoder was rewritten for speed optimizations.
+- ANSI-C LZMA Encoder was included to LZMA SDK.
+- C++ LZMA code now is just wrapper over ANSI-C code.
+
+
+4.57           2007-12-12
+-------------------------
+- Speed optimizations in Ñ++ LZMA Decoder. 
+- Small changes for more compatibility with some C/C++ compilers.
+
+
+4.49 beta      2007-07-05
+-------------------------
+- .7z ANSI-C Decoder:
+     - now it supports BCJ and BCJ2 filters
+     - now it supports files larger than 4 GB.
+     - now it supports "Last Write Time" field for files.
+- C++ code for .7z archives compressing/decompressing from 7-zip 
+  was included to LZMA SDK.
+  
+
+4.43           2006-06-04
+-------------------------
+- Small changes for more compatibility with some C/C++ compilers.
+  
+
+4.42           2006-05-15
+-------------------------
+- Small changes in .h files in ANSI-C version.
+  
+
+4.39 beta      2006-04-14
+-------------------------
+- The bug in versions 4.33b:4.38b was fixed:
+  C++ version of LZMA encoder could not correctly compress 
+  files larger than 2 GB with HC4 match finder (-mfhc4).
+  
+
+4.37 beta      2005-04-06
+-------------------------
+- Fixes in C++ code: code could no be compiled if _NO_EXCEPTIONS was defined. 
+
+
+4.35 beta      2005-03-02
+-------------------------
+- The bug was fixed in C++ version of LZMA Decoder:
+    If encoded stream was corrupted, decoder could access memory 
+    outside of allocated range.
+
+
+4.34 beta      2006-02-27
+-------------------------
+- Compressing speed and memory requirements for compressing were increased
+- LZMA now can use only these match finders: HC4, BT2, BT3, BT4
+
+
+4.32           2005-12-09
+-------------------------
+- Java version of LZMA SDK was included
+
+
+4.30           2005-11-20
+-------------------------
+- Compression ratio was improved in -a2 mode
+- Speed optimizations for compressing in -a2 mode
+- -fb switch now supports values up to 273
+- The bug in 7z_C (7zIn.c) was fixed:
+  It used Alloc/Free functions from different memory pools.
+  So if program used two memory pools, it worked incorrectly.
+- 7z_C: .7z format supporting was improved
+- LZMA# SDK (C#.NET version) was included
+
+
+4.27 (Updated) 2005-09-21
+-------------------------
+- Some GUIDs/interfaces in C++ were changed.
+ IStream.h:
+   ISequentialInStream::Read now works as old ReadPart
+   ISequentialOutStream::Write now works as old WritePart
+
+
+4.27           2005-08-07
+-------------------------
+- The bug in LzmaDecodeSize.c was fixed:
+   if _LZMA_IN_CB and _LZMA_OUT_READ were defined,
+   decompressing worked incorrectly.
+
+
+4.26           2005-08-05
+-------------------------
+- Fixes in 7z_C code and LzmaTest.c:
+  previous versions could work incorrectly,
+  if malloc(0) returns 0
+
+
+4.23           2005-06-29
+-------------------------
+- Small fixes in C++ code
+
+
+4.22           2005-06-10
+-------------------------
+- Small fixes
+
+
+4.21           2005-06-08
+-------------------------
+- Interfaces for ANSI-C LZMA Decoder (LzmaDecode.c) were changed
+- New additional version of ANSI-C LZMA Decoder with zlib-like interface:
+    - LzmaStateDecode.h
+    - LzmaStateDecode.c
+    - LzmaStateTest.c
+- ANSI-C LZMA Decoder now can decompress files larger than 4 GB
+
+
+4.17           2005-04-18
+-------------------------
+- New example for RAM->RAM compressing/decompressing: 
+  LZMA + BCJ (filter for x86 code):
+    - LzmaRam.h
+    - LzmaRam.cpp
+    - LzmaRamDecode.h
+    - LzmaRamDecode.c
+    - -f86 switch for lzma.exe
+
+
+4.16           2005-03-29
+-------------------------
+- The bug was fixed in LzmaDecode.c (ANSI-C LZMA Decoder): 
+   If _LZMA_OUT_READ was defined, and if encoded stream was corrupted,
+   decoder could access memory outside of allocated range.
+- Speed optimization of ANSI-C LZMA Decoder (now it's about 20% faster).
+  Old version of LZMA Decoder now is in file LzmaDecodeSize.c. 
+  LzmaDecodeSize.c can provide slightly smaller code than LzmaDecode.c
+- Small speed optimization in LZMA C++ code
+- filter for SPARC's code was added
+- Simplified version of .7z ANSI-C Decoder was included
+
+
+4.06           2004-09-05
+-------------------------
+- The bug in v4.05 was fixed:
+    LZMA-Encoder didn't release output stream in some cases.
+
+
+4.05           2004-08-25
+-------------------------
+- Source code of filters for x86, IA-64, ARM, ARM-Thumb 
+  and PowerPC code was included to SDK
+- Some internal minor changes
+
+
+4.04           2004-07-28
+-------------------------
+- More compatibility with some C++ compilers
+
+
+4.03           2004-06-18
+-------------------------
+- "Benchmark" command was added. It measures compressing 
+  and decompressing speed and shows rating values. 
+  Also it checks hardware errors.
+
+
+4.02           2004-06-10
+-------------------------
+- C++ LZMA Encoder/Decoder code now is more portable
+  and it can be compiled by GCC on Linux.
+
+
+4.01           2004-02-15
+-------------------------
+- Some detection of data corruption was enabled.
+    LzmaDecode.c / RangeDecoderReadByte
+    .....
+    {
+      rd->ExtraBytes = 1;
+      return 0xFF;
+    }
+
+
+4.00           2004-02-13
+-------------------------
+- Original version of LZMA SDK
+
+
+
+HISTORY of the LZMA
+-------------------
+  2001-2008:  Improvements to LZMA compressing/decompressing code, 
+              keeping compatibility with original LZMA format
+  1996-2001:  Development of LZMA compression format
+
+  Some milestones:
+
+  2001-08-30: LZMA compression was added to 7-Zip
+  1999-01-02: First version of 7-Zip was released
+  
+
+End of document

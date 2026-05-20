@@ -1,0 +1,7 @@
+#include "../../../../C/7zVersion.rc"
+
+MY_VERSION_INFO_APP("7-Zip Reduced Standalone Console", "7zr")
+
+#ifndef UNDER_CE
+1  24  MOVEABLE PURE   "../../UI/Console/Console.manifest"
+#endif

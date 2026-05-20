@@ -40,6 +40,7 @@
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
+#include "core/io/pck_lzma.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/resource_uid.h"
@@ -95,6 +96,10 @@ static int _get_pad(int p_alignment, int p_n) {
 }
 
 static constexpr int PCK_PADDING = 16;
+
+static Variant _preset_get_or_default(const Ref<EditorExportPreset> &p_preset, const StringName &p_key, const Variant &p_default_value) {
+	return p_preset->has(p_key) ? p_preset->get(p_key) : p_default_value;
+}
 
 Ref<Image> EditorExportPlatform::_load_icon_or_splash_image(const String &p_path, Error *r_error) const {
 	Ref<Image> image;
@@ -447,12 +452,67 @@ Error EditorExportPlatform::_save_pack_file(const Ref<EditorExportPreset> &p_pre
 	sd.ofs = (pd->use_sparse_pck) ? 0 : pd->f->get_position();
 	sd.size = p_data.size();
 	sd.delta = p_delta;
-	Error err = _encrypt_and_store_data(ftmp, simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, sd.encrypted);
+
+	const bool pck_7zip_enabled = bool(_preset_get_or_default(p_preset, "pck_7zip/enabled", true));
+	const String pck_7zip_archive_format = String(_preset_get_or_default(p_preset, "pck_7zip/archive_format", "7z")).to_lower();
+	const String pck_7zip_method = String(_preset_get_or_default(p_preset, "pck_7zip/compression_method", "LZMA2")).to_upper();
+	const int logical_threads = MAX(1, OS::get_singleton()->get_processor_count());
+	int pck_7zip_threads = CLAMP(int(_preset_get_or_default(p_preset, "pck_7zip/threads", 16)), 1, logical_threads);
+	int pck_7zip_dict_mb = CLAMP(int(_preset_get_or_default(p_preset, "pck_7zip/dictionary_size_mb", 256)), 64, 1536);
+	int pck_7zip_memory = CLAMP(int(_preset_get_or_default(p_preset, "pck_7zip/memory_usage_percent", 80)), 10, 90);
+	int pck_7zip_level = CLAMP(int(_preset_get_or_default(p_preset, "pck_7zip/compression_level", 9)), 0, 9);
+	int pck_7zip_word_size = CLAMP(int(_preset_get_or_default(p_preset, "pck_7zip/word_size", 64)), 5, 273);
+	const String pck_7zip_solid = String(_preset_get_or_default(p_preset, "pck_7zip/solid_block_size", "16GB"));
+
+	if (pck_7zip_archive_format != "7z" || pck_7zip_method != "LZMA2") {
+		if (!pd->warned_pck_7zip_format) {
+			WARN_PRINT(vformat("Unsupported pck_7zip/archive_format or pck_7zip/compression_method. Falling back to raw payload for \"%s\".", simplified_path));
+			pd->warned_pck_7zip_format = true;
+		}
+	}
+	if (pck_7zip_threads != int(_preset_get_or_default(p_preset, "pck_7zip/threads", 16)) && !pd->warned_pck_7zip_threads) {
+		WARN_PRINT(vformat("Clamped pck_7zip/threads from %d to %d.", int(_preset_get_or_default(p_preset, "pck_7zip/threads", 16)), pck_7zip_threads));
+		pd->warned_pck_7zip_threads = true;
+	}
+	if (pck_7zip_dict_mb != int(_preset_get_or_default(p_preset, "pck_7zip/dictionary_size_mb", 256)) && !pd->warned_pck_7zip_dict) {
+		WARN_PRINT(vformat("Clamped pck_7zip/dictionary_size_mb from %d to %d.", int(_preset_get_or_default(p_preset, "pck_7zip/dictionary_size_mb", 256)), pck_7zip_dict_mb));
+		pd->warned_pck_7zip_dict = true;
+	}
+	if (pck_7zip_memory != int(_preset_get_or_default(p_preset, "pck_7zip/memory_usage_percent", 80)) && !pd->warned_pck_7zip_memory) {
+		WARN_PRINT(vformat("Clamped pck_7zip/memory_usage_percent from %d to %d.", int(_preset_get_or_default(p_preset, "pck_7zip/memory_usage_percent", 80)), pck_7zip_memory));
+		pd->warned_pck_7zip_memory = true;
+	}
+	if (pck_7zip_solid.to_lower() != "non-solid" && pck_7zip_solid != "1GB" && pck_7zip_solid != "2GB" && pck_7zip_solid != "4GB" && pck_7zip_solid != "16GB" && !pd->warned_pck_7zip_solid) {
+		WARN_PRINT(vformat("Unsupported pck_7zip/solid_block_size value \"%s\". Using per-file blocks.", pck_7zip_solid));
+		pd->warned_pck_7zip_solid = true;
+	}
+
+	Vector<uint8_t> stored_data = p_data;
+	sd.lzma2 = false;
+	if (pck_7zip_enabled && pck_7zip_archive_format == "7z" && pck_7zip_method == "LZMA2" && !p_data.is_empty()) {
+		PCKLzmaOptions lzma_options;
+		lzma_options.compression_level = pck_7zip_level;
+		lzma_options.dictionary_size_mb = pck_7zip_dict_mb;
+		lzma_options.word_size = pck_7zip_word_size;
+		lzma_options.threads = pck_7zip_threads;
+		lzma_options.memory_usage_percent = pck_7zip_memory;
+		Vector<uint8_t> compressed_data;
+		const Error c_err = compress_lzma2(p_data, compressed_data, lzma_options);
+		if (c_err == OK && compressed_data.size() < p_data.size()) {
+			stored_data = compressed_data;
+			sd.lzma2 = true;
+		}
+	}
+
+	Error err = _encrypt_and_store_data(ftmp, simplified_path, stored_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, sd.encrypted);
 	if (err != OK) {
 		return err;
 	}
 	if (!pd->use_sparse_pck) {
-		ERR_FAIL_COND_V(pd->f->get_position() - sd.ofs < (uint64_t)p_data.size(), ERR_FILE_CANT_WRITE);
+		sd.stored_size = pd->f->get_position() - sd.ofs;
+		ERR_FAIL_COND_V(sd.stored_size < (uint64_t)stored_data.size(), ERR_FILE_CANT_WRITE);
+	} else {
+		sd.stored_size = stored_data.size();
 	}
 
 	if (!pd->use_sparse_pck) {
@@ -473,6 +533,8 @@ Error EditorExportPlatform::_save_pack_file(const Ref<EditorExportPreset> &p_pre
 	}
 
 	pd->file_ofs.push_back(sd);
+
+	print_verbose(vformat("PCK payload: %s original=%d stored=%d method=%s dict=%dMB mode=%s", simplified_path, p_data.size(), sd.stored_size, sd.lzma2 ? "LZMA2" : "Store", pck_7zip_dict_mb, sd.lzma2 ? "compressed" : "raw"));
 
 	// TRANSLATORS: This is an editor progress label describing the storing of a file.
 	if (pd->ep->step(vformat(TTR("Storing File: %s"), p_path), 2 + p_file * 100 / p_total, false)) {
@@ -2237,6 +2299,7 @@ bool EditorExportPlatform::_encrypt_and_store_directory(Ref<FileAccess> p_fd, Pa
 				}
 				seed = ((seed << 5) + seed) ^ (p_pack_data.file_ofs[i].ofs - p_file_base);
 				seed = ((seed << 5) + seed) ^ p_pack_data.file_ofs[i].size;
+				seed = ((seed << 5) + seed) ^ p_pack_data.file_ofs[i].stored_size;
 			}
 
 			RandomPCG rng = RandomPCG(seed);
@@ -2265,6 +2328,7 @@ bool EditorExportPlatform::_encrypt_and_store_directory(Ref<FileAccess> p_fd, Pa
 
 		fhead->store_64(p_pack_data.file_ofs[i].ofs - p_file_base);
 		fhead->store_64(p_pack_data.file_ofs[i].size); // pay attention here, this is where file is
+		fhead->store_64(p_pack_data.file_ofs[i].stored_size);
 		fhead->store_buffer(p_pack_data.file_ofs[i].md5.ptr(), 16); //also save md5 for file
 		uint32_t flags = 0;
 		if (p_pack_data.file_ofs[i].encrypted) {
@@ -2275,6 +2339,9 @@ bool EditorExportPlatform::_encrypt_and_store_directory(Ref<FileAccess> p_fd, Pa
 		}
 		if (p_pack_data.file_ofs[i].delta) {
 			flags |= PACK_FILE_DELTA;
+		}
+		if (p_pack_data.file_ofs[i].lzma2) {
+			flags |= PACK_FILE_LZMA2;
 		}
 		fhead->store_32(flags);
 	}

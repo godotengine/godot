@@ -30,11 +30,96 @@
 
 #include "file_access_pack.h"
 
+#include <string.h>
+
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_patched.h"
+#include "core/io/pck_lzma.h"
 #include "core/object/script_language.h"
+#include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/version.h"
+
+namespace {
+
+struct PCKLzmaCacheEntry {
+	Vector<uint8_t> data;
+	uint64_t size = 0;
+	uint64_t last_use = 0;
+};
+
+static Mutex pck_lzma_cache_mutex;
+static HashMap<String, PCKLzmaCacheEntry> pck_lzma_cache;
+static uint64_t pck_lzma_cache_total_size = 0;
+static uint64_t pck_lzma_cache_use_counter = 0;
+
+static uint64_t _get_pck_lzma_cache_budget_bytes() {
+#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+	return 16ULL * 1024ULL * 1024ULL;
+#elif defined(WEB_ENABLED)
+	return 8ULL * 1024ULL * 1024ULL;
+#else
+	return 256ULL * 1024ULL * 1024ULL;
+#endif
+}
+
+static String _get_pck_lzma_cache_key(const PackedData::PackedFile &p_pf) {
+	return p_pf.pack + "|" + String::num_uint64(p_pf.offset) + "|" + String::num_uint64(p_pf.stored_size) + "|" + String::num_uint64(p_pf.size);
+}
+
+static bool _get_pck_lzma_cached_data(const String &p_key, Vector<uint8_t> &r_data) {
+	MutexLock lock(pck_lzma_cache_mutex);
+	HashMap<String, PCKLzmaCacheEntry>::Iterator E = pck_lzma_cache.find(p_key);
+	if (!E) {
+		return false;
+	}
+	E->value.last_use = ++pck_lzma_cache_use_counter;
+	r_data = E->value.data;
+	return true;
+}
+
+static void _put_pck_lzma_cached_data(const String &p_key, const Vector<uint8_t> &p_data) {
+	const uint64_t budget = _get_pck_lzma_cache_budget_bytes();
+	const uint64_t data_size = p_data.size();
+	if (budget == 0 || data_size == 0 || data_size > (budget / 2)) {
+		return;
+	}
+
+	MutexLock lock(pck_lzma_cache_mutex);
+	HashMap<String, PCKLzmaCacheEntry>::Iterator existing = pck_lzma_cache.find(p_key);
+	if (existing) {
+		if (existing->value.size <= pck_lzma_cache_total_size) {
+			pck_lzma_cache_total_size -= existing->value.size;
+		}
+	}
+
+	PCKLzmaCacheEntry &entry = pck_lzma_cache[p_key];
+	entry.data = p_data;
+	entry.size = data_size;
+	entry.last_use = ++pck_lzma_cache_use_counter;
+	pck_lzma_cache_total_size += data_size;
+
+	while (pck_lzma_cache_total_size > budget && !pck_lzma_cache.is_empty()) {
+		String oldest_key;
+		uint64_t oldest_use = (uint64_t)-1;
+		for (const KeyValue<String, PCKLzmaCacheEntry> &kv : pck_lzma_cache) {
+			if (kv.value.last_use < oldest_use) {
+				oldest_use = kv.value.last_use;
+				oldest_key = kv.key;
+			}
+		}
+		HashMap<String, PCKLzmaCacheEntry>::Iterator oldest = pck_lzma_cache.find(oldest_key);
+		if (!oldest) {
+			break;
+		}
+		if (oldest->value.size <= pck_lzma_cache_total_size) {
+			pck_lzma_cache_total_size -= oldest->value.size;
+		}
+		pck_lzma_cache.erase(oldest_key);
+	}
+}
+
+} // namespace
 
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
 	for (int i = 0; i < sources.size(); i++) {
@@ -46,7 +131,7 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t 
 	return ERR_FILE_UNRECOGNIZED;
 }
 
-void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted, bool p_bundle, bool p_delta, const String &p_salt) {
+void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, uint64_t p_stored_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted, bool p_bundle, bool p_delta, const String &p_salt, bool p_lzma2) {
 	String simplified_path = p_path.simplify_path().trim_prefix("res://");
 	PathMD5 pmd5(simplified_path.md5_buffer());
 
@@ -60,6 +145,8 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 	pf.salt = p_salt;
 	pf.offset = p_ofs;
 	pf.size = p_size;
+	pf.stored_size = p_stored_size;
+	pf.lzma2 = p_lzma2;
 	for (int i = 0; i < 16; i++) {
 		pf.md5[i] = p_md5[i];
 	}
@@ -359,14 +446,22 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		String path = String::utf8(cs.ptr(), sl);
 		uint64_t ofs = f->get_64();
 		uint64_t size = f->get_64();
+		uint64_t stored_size = size;
 		uint8_t md5[16];
-		f->get_buffer(md5, 16);
-		uint32_t flags = f->get_32();
+		uint32_t flags = 0;
+		if (version >= PACK_FORMAT_VERSION_V4) {
+			stored_size = f->get_64();
+			f->get_buffer(md5, 16);
+			flags = f->get_32();
+		} else {
+			f->get_buffer(md5, 16);
+			flags = f->get_32();
+		}
 
 		if (flags & PACK_FILE_REMOVAL) { // The file was removed.
 			PackedData::get_singleton()->remove_path(path);
 		} else {
-			PackedData::get_singleton()->add_path(p_path, path, file_base + ofs, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED), sparse_bundle, (flags & PACK_FILE_DELTA), salt);
+			PackedData::get_singleton()->add_path(p_path, path, file_base + ofs, size, stored_size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED), sparse_bundle, (flags & PACK_FILE_DELTA), salt, (flags & PACK_FILE_LZMA2));
 		}
 	}
 
@@ -416,7 +511,7 @@ void PackedSourceDirectory::add_directory(const String &p_path, bool p_replace_f
 	for (const String &file_name : da->get_files()) {
 		String file_path = p_path.path_join(file_name);
 		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		PackedData::get_singleton()->add_path(p_path, file_path, 0, 0, md5, this, p_replace_files, false, false, false);
+		PackedData::get_singleton()->add_path(p_path, file_path, 0, 0, 0, md5, this, p_replace_files, false, false, false, String(), false);
 	}
 
 	for (const String &sub_dir_name : da->get_directories()) {
@@ -433,6 +528,9 @@ Error FileAccessPack::open_internal(const String &p_path, int p_mode_flags) {
 }
 
 bool FileAccessPack::is_open() const {
+	if (use_cached_data) {
+		return true;
+	}
 	if (f.is_valid()) {
 		return f->is_open();
 	} else {
@@ -441,7 +539,7 @@ bool FileAccessPack::is_open() const {
 }
 
 void FileAccessPack::seek(uint64_t p_position) {
-	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!use_cached_data && f.is_null(), "File must be opened before use.");
 
 	if (p_position > pf.size) {
 		eof = true;
@@ -449,7 +547,9 @@ void FileAccessPack::seek(uint64_t p_position) {
 		eof = false;
 	}
 
-	f->seek(off + p_position);
+	if (!use_cached_data) {
+		f->seek(off + p_position);
+	}
 	pos = p_position;
 }
 
@@ -470,7 +570,7 @@ bool FileAccessPack::eof_reached() const {
 }
 
 uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
-	ERR_FAIL_COND_V_MSG(f.is_null(), -1, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!use_cached_data && f.is_null(), -1, "File must be opened before use.");
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	if (eof) {
@@ -488,16 +588,22 @@ uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	if (to_read <= 0) {
 		return 0;
 	}
-	f->get_buffer(p_dst, to_read);
+	if (use_cached_data) {
+		memcpy(p_dst, cached_data.ptr() + pos - to_read, to_read);
+	} else {
+		f->get_buffer(p_dst, to_read);
+	}
 
 	return to_read;
 }
 
 void FileAccessPack::set_big_endian(bool p_big_endian) {
-	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!use_cached_data && f.is_null(), "File must be opened before use.");
 
 	FileAccess::set_big_endian(p_big_endian);
-	f->set_big_endian(p_big_endian);
+	if (!use_cached_data) {
+		f->set_big_endian(p_big_endian);
+	}
 }
 
 Error FileAccessPack::get_error() const {
@@ -521,6 +627,8 @@ bool FileAccessPack::file_exists(const String &p_name) {
 
 void FileAccessPack::close() {
 	f = Ref<FileAccess>();
+	cached_data.clear();
+	use_cached_data = false;
 }
 
 FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file, const Vector<uint8_t> &p_decryption_key) {
@@ -575,6 +683,24 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
 		ERR_FAIL_COND_MSG(err != OK, vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s" due to error "%s".)", p_path, pf.pack, error_names[err]));
 		f = fae;
+		off = 0;
+	}
+	if (pf.lzma2) {
+		const String cache_key = _get_pck_lzma_cache_key(pf);
+		if (!_get_pck_lzma_cached_data(cache_key, cached_data)) {
+			ERR_FAIL_COND_MSG(pf.stored_size > INT32_MAX, vformat(R"(Compressed pack-referenced file "%s" is too large to decode in memory.)", p_path));
+			Vector<uint8_t> compressed_data;
+			compressed_data.resize((int)pf.stored_size);
+			if (pf.stored_size > 0) {
+				const uint64_t read_size = f->get_buffer(compressed_data.ptrw(), pf.stored_size);
+				ERR_FAIL_COND_MSG(read_size != pf.stored_size, vformat(R"(Failed to read compressed payload for "%s" from pack "%s".)", p_path, pf.pack));
+			}
+			const Error err = decompress_lzma2(compressed_data.ptr(), compressed_data.size(), pf.size, cached_data);
+			ERR_FAIL_COND_MSG(err != OK, vformat(R"(Failed to decompress LZMA2 payload for "%s" from pack "%s".)", p_path, pf.pack));
+			_put_pck_lzma_cached_data(cache_key, cached_data);
+		}
+		use_cached_data = true;
+		f.unref();
 		off = 0;
 	}
 	pos = 0;

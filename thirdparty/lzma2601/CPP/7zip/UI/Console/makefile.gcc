@@ -1,0 +1,184 @@
+PROG = 7z
+IS_NOT_STANDALONE = 1
+
+# IS_X64 = 1
+# USE_ASM = 1
+# ST_MODE = 1
+
+
+LOCAL_FLAGS_ST =
+MT_OBJS =
+
+ifdef SystemDrive
+IS_MINGW = 1
+else
+ifdef SYSTEMDRIVE
+# ifdef OS
+IS_MINGW = 1
+endif
+endif
+
+ifdef ST_MODE
+
+LOCAL_FLAGS_ST = -DZ7_ST
+
+ifdef IS_MINGW
+MT_OBJS = \
+  $O/Threads.o \
+
+endif
+
+else
+
+MT_OBJS = \
+  $O/Synchronization.o \
+  $O/Threads.o \
+
+endif
+
+
+
+LOCAL_FLAGS_SYS=
+
+ifdef IS_MINGW
+
+LOCAL_FLAGS_SYS = \
+  -DZ7_DEVICE_FILE \
+
+SYS_OBJS = \
+  $O/FileSystem.o \
+  $O/Registry.o \
+  $O/MemoryLock.o \
+  $O/DllSecur.o \
+  $O/resource.o \
+
+else
+
+SYS_OBJS = \
+  $O/MyWindows.o \
+
+endif
+
+
+
+LOCAL_FLAGS = \
+  $(LOCAL_FLAGS_SYS) \
+  $(LOCAL_FLAGS_ST) \
+  -DZ7_EXTERNAL_CODECS \
+
+
+
+CONSOLE_OBJS = \
+  $O/BenchCon.o \
+  $O/ConsoleClose.o \
+  $O/ExtractCallbackConsole.o \
+  $O/HashCon.o \
+  $O/List.o \
+  $O/Main.o \
+  $O/MainAr.o \
+  $O/OpenCallbackConsole.o \
+  $O/PercentPrinter.o \
+  $O/UpdateCallbackConsole.o \
+  $O/UserInputUtils.o \
+
+UI_COMMON_OBJS = \
+  $O/ArchiveCommandLine.o \
+  $O/ArchiveExtractCallback.o \
+  $O/ArchiveOpenCallback.o \
+  $O/Bench.o \
+  $O/DefaultName.o \
+  $O/EnumDirItems.o \
+  $O/Extract.o \
+  $O/ExtractingFilePath.o \
+  $O/HashCalc.o \
+  $O/LoadCodecs.o \
+  $O/OpenArchive.o \
+  $O/PropIDUtils.o \
+  $O/SetProperties.o \
+  $O/SortUtils.o \
+  $O/TempFiles.o \
+  $O/Update.o \
+  $O/UpdateAction.o \
+  $O/UpdateCallback.o \
+  $O/UpdatePair.o \
+  $O/UpdateProduce.o \
+
+COMMON_OBJS = \
+  $O/CommandLineParser.o \
+  $O/CRC.o \
+  $O/CrcReg.o \
+  $O/DynLimBuf.o \
+  $O/IntToString.o \
+  $O/ListFileUtils.o \
+  $O/NewHandler.o \
+  $O/StdInStream.o \
+  $O/StdOutStream.o \
+  $O/MyString.o \
+  $O/StringConvert.o \
+  $O/StringToInt.o \
+  $O/UTFConvert.o \
+  $O/MyVector.o \
+  $O/Wildcard.o \
+
+WIN_OBJS = \
+  $O/DLL.o \
+  $O/ErrorMsg.o \
+  $O/FileDir.o \
+  $O/FileFind.o \
+  $O/FileIO.o \
+  $O/FileLink.o \
+  $O/FileName.o \
+  $O/PropVariant.o \
+  $O/PropVariantConv.o \
+  $O/System.o \
+  $O/SystemInfo.o \
+  $O/TimeUtils.o \
+
+7ZIP_COMMON_OBJS = \
+  $O/CreateCoder.o \
+  $O/CWrappers.o \
+  $O/FilePathAutoRename.o \
+  $O/FileStreams.o \
+  $O/InBuffer.o \
+  $O/InOutTempBuffer.o \
+  $O/FilterCoder.o \
+  $O/LimitedStreams.o \
+  $O/MethodId.o \
+  $O/MethodProps.o \
+  $O/MultiOutStream.o \
+  $O/OffsetStream.o \
+  $O/OutBuffer.o \
+  $O/ProgressUtils.o \
+  $O/PropId.o \
+  $O/StreamObjects.o \
+  $O/StreamUtils.o \
+  $O/UniqBlocks.o \
+
+COMPRESS_OBJS = \
+  $O/CopyCoder.o \
+
+AR_COMMON_OBJS = \
+  $O/ItemNameUtils.o \
+
+C_OBJS = \
+  $O/Alloc.o \
+  $O/CpuArch.o \
+  $O/Sort.o \
+  $O/7zCrc.o \
+  $O/7zCrcOpt.o \
+
+
+OBJS = \
+  $(C_OBJS) \
+  $(MT_OBJS) \
+  $(COMMON_OBJS) \
+  $(WIN_OBJS) \
+  $(SYS_OBJS) \
+  $(COMPRESS_OBJS) \
+  $(AR_COMMON_OBJS) \
+  $(7ZIP_COMMON_OBJS) \
+  $(UI_COMMON_OBJS) \
+  $(CONSOLE_OBJS) \
+
+
+include ../../7zip_gcc.mak

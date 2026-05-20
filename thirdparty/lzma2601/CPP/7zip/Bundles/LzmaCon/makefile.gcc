@@ -1,0 +1,131 @@
+PROG = lzma
+
+# IS_X64 = 1
+# USE_ASM = 1
+# ST_MODE = 1
+
+ifdef SystemDrive
+IS_MINGW = 1
+else
+ifdef SYSTEMDRIVE
+# ifdef OS
+IS_MINGW = 1
+endif
+endif
+
+include ../../LzmaDec_gcc.mak
+
+
+LOCAL_FLAGS_ST =
+MT_OBJS =
+
+
+ifdef ST_MODE
+
+LOCAL_FLAGS_ST = -DZ7_ST
+
+else
+
+MT_OBJS = \
+  $O/LzFindMt.o \
+  $O/LzFindOpt.o \
+  $O/Threads.o \
+  $O/Synchronization.o \
+
+
+
+endif
+
+
+
+LOCAL_FLAGS_SYS =
+
+ifdef IS_MINGW
+
+SYS_OBJS = \
+  $O/Registry.o \
+  $O/resource.o \
+
+LOCAL_FLAGS_SYS = \
+  -DZ7_NO_LONG_PATH \
+
+else
+
+SYS_OBJS = \
+  $O/FileDir.o \
+  $O/FileFind.o \
+  $O/FileName.o \
+  $O/MyWindows.o \
+  $O/TimeUtils.o \
+
+endif
+
+LOCAL_FLAGS = \
+  $(LOCAL_FLAGS_ST) \
+  $(LOCAL_FLAGS_SYS) \
+
+
+COMMON_OBJS = \
+  $O/CommandLineParser.o \
+  $O/CRC.o \
+  $O/CrcReg.o \
+  $O/IntToString.o \
+  $O/LzFindPrepare.o \
+  $O/MyString.o \
+  $O/MyVector.o \
+  $O/NewHandler.o \
+  $O/StringConvert.o \
+  $O/StringToInt.o \
+  $O/UTFConvert.o \
+  $O/Wildcard.o \
+
+WIN_OBJS = \
+  $O/FileIO.o \
+  $O/PropVariant.o \
+  $O/System.o \
+  $O/SystemInfo.o \
+
+COMPRESS_OBJS = \
+  $O/LzmaDecoder.o \
+  $O/LzmaEncoder.o \
+  $O/LzmaRegister.o \
+
+CONSOLE_OBJS = \
+  $O/BenchCon.o \
+  $O/ConsoleClose.o \
+
+7ZIP_COMMON_OBJS = \
+  $O/CreateCoder.o \
+  $O/CWrappers.o \
+  $O/FileStreams.o \
+  $O/FilterCoder.o \
+  $O/MethodProps.o \
+  $O/StreamObjects.o \
+  $O/StreamUtils.o \
+
+C_OBJS = \
+  $O/7zCrc.o \
+  $O/7zCrcOpt.o \
+  $O/Alloc.o \
+  $O/Bra86.o \
+  $O/CpuArch.o \
+  $O/LzFind.o \
+  $O/LzmaDec.o \
+  $O/LzmaEnc.o \
+  $O/Lzma86Dec.o \
+  $O/Lzma86Enc.o \
+
+OBJS = \
+  $(LZMA_DEC_OPT_OBJS) \
+  $(C_OBJS) \
+  $(MT_OBJS) \
+  $(SYS_OBJS) \
+  $(COMMON_OBJS) \
+  $(WIN_OBJS) \
+  $(COMPRESS_OBJS) \
+  $(7ZIP_COMMON_OBJS) \
+  $(CONSOLE_OBJS) \
+  $O/LzmaAlone.o \
+  $O/Bench.o \
+
+include ../../7zip_gcc.mak

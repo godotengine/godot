@@ -1,0 +1,85 @@
+#undef bxs
+#define bxs 80
+
+#define x0s MY_PROGRESS_LABEL_UNITS_START
+#define x1s MY_PROGRESS_VAL_UNITS
+#define x2s MY_PROGRESS_LABEL_UNITS_START
+#define x3s MY_PROGRESS_VAL_UNITS
+
+#define x1 (m + x0s)
+#define x3 (xs - m - x3s)
+#define x2 (x3 - x2s)
+
+#undef y0
+#undef y1
+#undef y2
+#undef y3
+#undef y4
+
+#undef z0
+#undef z1
+#undef z2
+#undef z3
+
+#define y0 m
+#define y1 (y0 + k)
+#define y2 (y1 + k)
+#define y3 (y2 + k)
+#define y4 (y3 + k)
+
+#define z3 (y4 + k + 1)
+
+#define z2 (z3 + k + 1)
+#define z2s 24
+
+#define z1 (z2 + z2s)
+
+#define z0 (z1 + z1s + m)
+#define z0s 48
+
+#define yc (z0 + z0s + bys)
+
+
+DIALOG_ID  DIALOG  0, 0, xs, ys  MY_MODAL_RESIZE_DIALOG_STYLE  MY_FONT
+CAPTION "Progress"
+{
+  DEFPUSHBUTTON  "&Background", IDB_PROGRESS_BACKGROUND, bx3, by, bxs, bys
+  PUSHBUTTON     "&Pause",      IDB_PAUSE,               bx2, by, bxs, bys
+  PUSHBUTTON     "Cancel",      IDCANCEL,                bx1, by, bxs, bys
+
+
+  LTEXT  "Elapsed time:",      IDT_PROGRESS_ELAPSED,   m, y0, x0s, 8
+  LTEXT  "Remaining time:",    IDT_PROGRESS_REMAINING, m, y1, x0s, 8
+  LTEXT  "Files:",             IDT_PROGRESS_FILES,     m, y2, x0s, 8
+
+  LTEXT  "Errors:",            IDT_PROGRESS_ERRORS,    m, y4, x0s, 8
+
+
+  LTEXT  "Total size:",        IDT_PROGRESS_TOTAL,    x2, y0, x2s, 8
+  LTEXT  "Speed:",             IDT_PROGRESS_SPEED,    x2, y1, x2s, 8
+  LTEXT  "Processed:",         IDT_PROGRESS_PROCESSED,x2, y2, x2s, 8
+  LTEXT  "Compressed size:"  , IDT_PROGRESS_PACKED,   x2, y3, x2s, 8
+  LTEXT  "Compression ratio:", IDT_PROGRESS_RATIO,    x2, y4, x2s, 8
+
+  
+  RTEXT  "",  IDT_PROGRESS_ELAPSED_VAL,   x1, y0, x1s, MY_TEXT_NOPREFIX
+  RTEXT  "",  IDT_PROGRESS_REMAINING_VAL, x1, y1, x1s, MY_TEXT_NOPREFIX
+  RTEXT  "",  IDT_PROGRESS_FILES_VAL,     x1, y2, x1s, MY_TEXT_NOPREFIX
+  RTEXT  "",  IDT_PROGRESS_FILES_TOTAL,   x1, y3, x1s, MY_TEXT_NOPREFIX
+  RTEXT  "",  IDT_PROGRESS_ERRORS_VAL,    x1, y4, x1s, MY_TEXT_NOPREFIX
+
+  RTEXT  "",  IDT_PROGRESS_TOTAL_VAL,     x3, y0, x3s, MY_TEXT_NOPREFIX
+  RTEXT  "",  IDT_PROGRESS_SPEED_VAL,     x3, y1, x3s, MY_TEXT_NOPREFIX
+  RTEXT  "",  IDT_PROGRESS_PROCESSED_VAL, x3, y2, x3s, MY_TEXT_NOPREFIX
+  RTEXT  "",  IDT_PROGRESS_PACKED_VAL,    x3, y3, x3s, MY_TEXT_NOPREFIX
+  RTEXT  "",  IDT_PROGRESS_RATIO_VAL,     x3, y4, x3s, MY_TEXT_NOPREFIX
+
+  LTEXT  "", IDT_PROGRESS_STATUS, m, z3, xc, MY_TEXT_NOPREFIX
+  CONTROL  "", IDT_PROGRESS_FILE_NAME, "Static", SS_NOPREFIX | SS_LEFTNOWORDWRAP, m, z2, xc, z2s
+  
+  CONTROL  "Progress1", IDC_PROGRESS1, "msctls_progress32", PBS_SMOOTH | WS_BORDER, m, z1, xc, z1s
+
+  CONTROL  "List1", IDL_PROGRESS_MESSAGES, "SysListView32",
+           LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,
+           m, z0, xc, z0s
+}

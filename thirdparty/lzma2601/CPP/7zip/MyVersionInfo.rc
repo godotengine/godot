@@ -1,0 +1,2 @@
+#include "MyVersion.h"
+#include "../../C/7zVersion.rc"

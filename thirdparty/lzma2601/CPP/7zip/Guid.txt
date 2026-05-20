@@ -1,0 +1,243 @@
+{23170F69-40C1-278A-0000-00yy00xx0000}
+
+00 IProgress.h
+
+  05  IProgress
+  // 050002  IProgress2
+
+01 IFolderArchive.h
+
+  // 05  IArchiveFolder   // old 
+  // 06  IInFolderArchive // old
+  07  IFileExtractCallback.h::IFolderArchiveExtractCallback
+  08  IFileExtractCallback.h::IFolderArchiveExtractCallback2
+  // 0A  IOutFolderArchive
+  0B  IFolderArchiveUpdateCallback
+  0C  Agent.h::IArchiveFolderInternal
+  0D  IArchiveFolder
+  0E  IInFolderArchive
+  0F  IOutFolderArchive
+  10  IFolderArchiveUpdateCallback2
+  11  IFolderScanProgress
+  12  IFolderSetZoneIdMode
+  13  IFolderSetZoneIdFile
+  14  IFolderArchiveUpdateCallback_MoveArc
+  
+  20  IFileExtractCallback.h::IGetProp
+  30  IFileExtractCallback.h::IFolderExtractToStreamCallback (old)
+  31  IFileExtractCallback.h::IFolderExtractToStreamCallback (new 21.04)
+
+03 IStream.h
+
+  01  ISequentialInStream
+  02  ISequentialOutStream
+  03  IInStream
+  04  IOutStream
+
+  06  IStreamGetSize
+  07  IOutStreamFinish
+  08  IStreamGetProps
+  09  IStreamGetProps2
+  0A  IStreamGetProp
+
+  10  IStreamSetRestriction
+
+
+04 ICoder.h
+
+  04  ICompressProgressInfo
+  05  ICompressCoder
+  18  ICompressCoder2
+  1F  ICompressSetCoderPropertiesOpt
+  20  ICompressSetCoderProperties
+  21  ICompressSetDecoderProperties //
+  22  ICompressSetDecoderProperties2
+  23  ICompressWriteCoderProperties
+  24  ICompressGetInStreamProcessedSize
+  25  ICompressSetCoderMt
+  26  ICompressSetFinishMode
+  27  ICompressGetInStreamProcessedSize2
+  28  ICompressSetMemLimit
+  29  ICompressReadUnusedFromInBuf
+
+  30  ICompressGetSubStreamSize
+  31  ICompressSetInStream
+  32  ICompressSetOutStream
+//  33  ICompressSetInStreamSize
+  34  ICompressSetOutStreamSize
+  35  ICompressSetBufSize
+  36  ICompressInitEncoder
+  37  ICompressSetInStream2
+//  38  ICompressSetOutStream2
+//  39  SetInStreamSize2
+//  3A  SetOutStreamSize2
+
+  40  ICompressFilter
+  60  ICompressCodecsInfo
+  61  ISetCompressCodecsInfo
+  80  ICryptoProperties
+  88  ICryptoResetSalt
+  8C  ICryptoResetInitVector
+  90  ICryptoSetPassword
+  A0  ICryptoSetCRC
+  C0  IHasher
+  C1  IHashers
+
+
+05 IPassword.h
+
+  10 ICryptoGetTextPassword
+  11 ICryptoGetTextPassword2
+
+
+06 IArchive.h
+
+  03  ISetProperties
+  04  IArchiveKeepModeForNextOpen
+  05  IArchiveAllowTail
+
+  09  IArchiveRequestMemoryUseCallback
+
+  10  IArchiveOpenCallback
+  
+  20  IArchiveExtractCallback
+  21  IArchiveExtractCallbackMessage  (deprecated in v23)
+  22  IArchiveExtractCallbackMessage2 (new in v23)
+  
+  30  IArchiveOpenVolumeCallback
+  40  IInArchiveGetStream
+  50  IArchiveOpenSetSubArchiveName
+  60  IInArchive
+  61  IArchiveOpenSeq
+  70  IArchiveGetRawProps
+  71  IArchiveGetRootProps
+
+  80  IArchiveUpdateCallback
+  82  IArchiveUpdateCallback2
+  83  IArchiveUpdateCallbackFile
+  84  IArchiveGetDiskProperty
+  85  IArchiveUpdateCallbackArcProp (Reserved)
+
+
+  A0  IOutArchive
+
+
+
+08 IFolder.h
+
+  00 IFolderFolder
+  01 IEnumProperties
+  02 IFolderGetTypeID
+  03 IFolderGetPath
+  04 IFolderWasChanged
+  05 // IFolderReload
+  06 // IFolderOperations old
+  07 IFolderGetSystemIconIndex
+  08 IFolderGetItemFullSize
+  09 IFolderClone
+  0A IFolderSetFlatMode
+  0B IFolderOperationsExtractCallback
+  0C // 
+  0D // 
+  0E IFolderProperties
+  0F 
+  10 IFolderArcProps
+  11 IGetFolderArcProps
+  12 // IFolderOperations
+  13 IFolderOperations
+  14 IFolderCalcItemFullSize
+  15 IFolderCompare
+  16 IFolderGetItemName
+  17 IFolderAltStreams
+
+
+09 IFolder.h :: FOLDER_MANAGER_INTERFACE
+
+  00 - 04 // old IFolderManager
+  05 IFolderManager
+
+
+// 0A PluginInterface.h
+  00 IInitContextMenu
+  01 IPluginOptionsCallback
+  02 IPluginOptions
+
+
+Handler GUIDs:
+
+{23170F69-40C1-278A-1000-000110xx0000}
+
+  01 Zip
+  02 BZip2
+  03 Rar
+  04 Arj
+  05 Z
+  06 Lzh
+  07 7z
+  08 Cab
+  09 Nsis
+  0A lzma
+  0B lzma86
+  0C xz
+  0D ppmd
+  0E zstd
+
+  BF LVM
+  C0 AVB
+  C1 LP
+  C2 Sparse
+  C3 APFS
+  C4 Vhdx
+  C5 Base64
+  C6 COFF
+  C7 Ext
+  C8 VMDK
+  C9 VDI
+  CA Qcow
+  CB GPT
+  CC Rar5
+  CD IHex
+  CE Hxs
+  CF TE
+  D0 UEFIc
+  D1 UEFIs
+  D2 SquashFS
+  D3 CramFS
+  D4 APM
+  D5 Mslz
+  D6 Flv
+  D7 Swf
+  D8 Swfc
+  D9 Ntfs
+  DA Fat
+  DB Mbr
+  DC Vhd
+  DD Pe
+  DE Elf
+  DF Mach-O
+  E0 Udf
+  E1 Xar
+  E2 Mub
+  E3 Hfs
+  E4 Dmg
+  E5 Compound
+  E6 Wim
+  E7 Iso
+  E8 
+  E9 Chm
+  EA Split
+  EB Rpm
+  EC Deb
+  ED Cpio
+  EE Tar
+  EF GZip
+
+{23170F69-40C1-278A-1000-000100020000} ContextMenu.h::CZipContextMenu
+
+// {23170F69-40C1-278A-1000-000100030000} // CAgentArchiveHandler
+// {23170F69-40C1-278B- old codecs clsids
+// {23170F69-40C1-278D-1000-000100020000} OptionsDialog.h::CLSID_CSevenZipOptions
+
+{23170F69-40C1-2790-id} Codec Decoders
+{23170F69-40C1-2791-id} Codec Encoders
+{23170F69-40C1-2792-id} Hashers
