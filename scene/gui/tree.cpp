@@ -5546,7 +5546,7 @@ void Tree::_notification(int p_what) {
 			if (popup_edited_item != nullptr) {
 				Rect2 rect = _get_item_focus_rect(popup_edited_item);
 
-				popup_editor->set_position(get_global_position() + rect.position);
+				popup_editor->set_position(get_screen_position() + rect.position);
 				popup_editor->set_size(rect.size);
 				popup_editor->child_controls_changed();
 			}
