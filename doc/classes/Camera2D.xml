@@ -165,7 +165,7 @@
 			[b]Note:[/b] To immediately update the camera's position to be within limits without smoothing, even with this setting enabled, invoke [method reset_smoothing].
 		</member>
 		<member name="limit_smoothed_speed" type="float" setter="set_position_smoothing_speed" getter="get_position_smoothing_speed" default="5.0">
-			Speed in pixels per second of the camera's smoothing effect when [member limit_smoothing_enabled] is [code]true[/code].
+			Speed in pixels per second of the camera's smoothing effect when [member limit_smoothed] is [code]true[/code].
 			[b]Note:[/b] This is one and the same as [member position_smoothing_speed].
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit" default="-10000000">
