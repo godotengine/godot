@@ -86,7 +86,7 @@ class AndroidRuntimePlugin(godot: Godot) : GodotPlugin(godot) {
 
 					// Invocation for the interface single abstract method falls here and is dispatched to the
 					// Godot [Callable].
-					else -> godotCallable.call(*args)
+					else -> godotCallable.call(*(args ?: emptyArray()))
 				}
 			}
 		}
@@ -111,7 +111,7 @@ class AndroidRuntimePlugin(godot: Godot) : GodotPlugin(godot) {
 
 					// Invocation for the remaining interface(s) methods falls here and is dispatched to the
 					// Godot Object.
-					else -> Callable.call(godotObjectID, methodName, *args)
+					else -> Callable.call(godotObjectID, methodName, *(args ?: emptyArray()))
 				}
 			}
 		}
