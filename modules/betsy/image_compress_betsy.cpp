@@ -864,13 +864,13 @@ void ensure_betsy_exists() {
 	betsy_mutex.unlock();
 }
 
-Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels) {
+Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels, Image::BPTCFormat p_bptc_format) {
 	ensure_betsy_exists();
 	Image::Format format = r_img->get_format();
 	Error result = ERR_UNAVAILABLE;
 
 	if (format >= Image::FORMAT_RF && format <= Image::FORMAT_RGBE9995) {
-		if (r_img->detect_signed()) {
+		if ((p_bptc_format == Image::BPTC_DETECT && r_img->detect_signed()) || p_bptc_format == Image::BPTC_FORCE_SIGNED) {
 			result = betsy->compress(BETSY_FORMAT_BC6_SIGNED, r_img);
 		} else {
 			result = betsy->compress(BETSY_FORMAT_BC6_UNSIGNED, r_img);
