@@ -95,7 +95,7 @@ protected:
 	static inline void _invert_y_channel(Ref<Image> &r_image);
 
 public:
-	static void save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params);
+	static void save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::BPTCFormat p_bptc_format);
 
 	static ResourceImporterTexture *get_singleton() { return singleton; }
 	virtual String get_importer_name() const override;

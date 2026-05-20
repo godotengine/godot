@@ -150,6 +150,12 @@ public:
 		ASTC_FORMAT_8x8,
 	};
 
+	enum BPTCFormat {
+		BPTC_DETECT,
+		BPTC_FORCE_SIGNED,
+		BPTC_FORCE_UNSIGNED,
+	};
+
 	enum RoughnessChannel {
 		ROUGHNESS_CHANNEL_R,
 		ROUGHNESS_CHANNEL_G,
@@ -224,12 +230,12 @@ public:
 	// External VRAM compression function pointers.
 
 	static void (*_image_compress_bc_func)(Image *, UsedChannels p_channels);
-	static void (*_image_compress_bptc_func)(Image *, UsedChannels p_channels);
+	static void (*_image_compress_bptc_func)(Image *, UsedChannels p_channels, BPTCFormat p_bptc_format);
 	static void (*_image_compress_etc1_func)(Image *);
 	static void (*_image_compress_etc2_func)(Image *, UsedChannels p_channels);
 	static void (*_image_compress_astc_func)(Image *, ASTCFormat p_format);
 
-	static Error (*_image_compress_bptc_rd_func)(Image *, UsedChannels p_channels);
+	static Error (*_image_compress_bptc_rd_func)(Image *, UsedChannels p_channels, BPTCFormat p_bptc_format);
 	static Error (*_image_compress_bc_rd_func)(Image *, UsedChannels p_channels);
 
 	// External VRAM decompression function pointers.
@@ -399,6 +405,8 @@ public:
 
 	Error compress(CompressMode p_mode, CompressSource p_source = COMPRESS_SOURCE_GENERIC, ASTCFormat p_astc_format = ASTC_FORMAT_4x4);
 	Error compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format = ASTC_FORMAT_4x4);
+	Error _compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format, BPTCFormat p_bptc_format);
+
 	Error decompress();
 	bool is_compressed() const;
 	static bool is_format_compressed(Format p_format);
