@@ -1107,19 +1107,20 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 					if ((p_old_format & OLD_ARRAY_COMPRESS_NORMAL) && (p_old_format & OLD_ARRAY_FORMAT_TANGENT) && (p_old_format & OLD_ARRAY_COMPRESS_TANGENT)) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 
-							dst[0] = (int16_t)CLAMP(src[0] / 127.0f * 32767, -32768, 32767);
-							dst[1] = (int16_t)CLAMP(src[1] / 127.0f * 32767, -32768, 32767);
+							// 4.x requires biasing the octahedron components to a 0.0 <-> 1.0 range, whereas in 3.x they were stored in the -1.0 <-> 1.0 range
+							dst[0] = (uint16_t)CLAMP((src[0] / 127.0f * .5f + .5f) * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP((src[1] / 127.0f * .5f + .5f) * 65535, 0, 65535);
 						}
 						src_offset += sizeof(int8_t) * 2;
 					} else {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 
-							dst[0] = src[0];
-							dst[1] = src[1];
+							dst[0] = (uint16_t)CLAMP((src[0] / 32767.0f * .5f + .5f) * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP((src[1] / 32767.0f * .5f + .5f) * 65535, 0, 65535);
 						}
 						src_offset += sizeof(int16_t) * 2;
 					}
@@ -1127,7 +1128,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 					if (p_old_format & OLD_ARRAY_COMPRESS_NORMAL) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							const Vector3 original_normal(src[0], src[1], src[2]);
+							const Vector3 original_normal(src[0] / 127.0f, src[1] / 127.0f, src[2] / 127.0f);
 							Vector2 res = original_normal.octahedron_encode();
 
 							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
@@ -1175,10 +1176,10 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 					if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							const Vector3 original_tangent(src[0], src[1], src[2]);
-							Vector2 res = original_tangent.octahedron_tangent_encode(src[3]);
+							const Vector3 original_tangent(src[0] / 127.0f, src[1] / 127.0f, src[2] / 127.0f);
+							Vector2 res = original_tangent.octahedron_tangent_encode(src[3] / 127.0f);
 
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 							if (dst[0] == 0 && dst[1] == 65535) {
@@ -1194,7 +1195,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 							const Vector3 original_tangent(src[0], src[1], src[2]);
 							Vector2 res = original_tangent.octahedron_tangent_encode(src[3]);
 
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 							if (dst[0] == 0 && dst[1] == 65535) {
@@ -1420,7 +1421,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 				new_format |= ARRAY_FORMAT_INDEX;
 			}
 			if (old_format & OLD_ARRAY_FLAG_USE_2D_VERTICES) {
-				new_format |= OLD_ARRAY_FLAG_USE_2D_VERTICES;
+				new_format |= ARRAY_FLAG_USE_2D_VERTICES;
 			}
 
 			Vector<uint8_t> vertex_array;
