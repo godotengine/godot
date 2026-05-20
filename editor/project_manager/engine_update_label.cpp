@@ -52,13 +52,13 @@ void EngineUpdateLabel::_check_update() {
 void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
 	if (p_result != OK) {
 		_set_status(UpdateStatus::ERROR);
-		_set_message(vformat(TTR("Failed to check for updates. Error: %d."), p_result), theme_cache.error_color);
+		_set_message(TTRC("Failed to check for updates. Error: %d."), theme_cache.error_color, p_result);
 		return;
 	}
 
 	if (p_response_code != 200) {
 		_set_status(UpdateStatus::ERROR);
-		_set_message(vformat(TTR("Failed to check for updates. Response code: %d."), p_response_code), theme_cache.error_color);
+		_set_message(TTRC("Failed to check for updates. Response code: %d."), theme_cache.error_color, p_response_code);
 		return;
 	}
 
@@ -70,12 +70,12 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		Variant result = JSON::parse_string(s);
 		if (result == Variant()) {
 			_set_status(UpdateStatus::ERROR);
-			_set_message(TTR("Failed to parse version JSON."), theme_cache.error_color);
+			_set_message(TTRC("Failed to parse version JSON."), theme_cache.error_color);
 			return;
 		}
 		if (result.get_type() != Variant::ARRAY) {
 			_set_status(UpdateStatus::ERROR);
-			_set_message(TTR("Received JSON data is not a valid version array."), theme_cache.error_color);
+			_set_message(TTRC("Received JSON data is not a valid version array."), theme_cache.error_color);
 			return;
 		}
 		version_array = result;
@@ -157,19 +157,21 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 
 	if (!available_newer_version.is_empty()) {
 		_set_status(UpdateStatus::UPDATE_AVAILABLE);
-		_set_message(vformat(TTR("Update available: %s."), available_newer_version), theme_cache.update_color);
+		_set_message(TTRC("Update available: %s."), theme_cache.update_color, available_newer_version);
 	} else if (available_newer_version.is_empty()) {
 		_set_status(UpdateStatus::UP_TO_DATE);
 	}
 }
 
-void EngineUpdateLabel::_set_message(const String &p_message, const Color &p_color) {
+void EngineUpdateLabel::_set_message(const String &p_message, const Color &p_color, const Variant &p_format) {
 	if (is_disabled()) {
 		add_theme_color_override("font_disabled_color", p_color);
 	} else {
 		add_theme_color_override(SceneStringName(font_color), p_color);
 	}
-	set_text(p_message);
+	current_message = p_message;
+	message_format = p_format;
+	_update_message();
 }
 
 void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
@@ -186,9 +188,9 @@ void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 		case UpdateStatus::OFFLINE: {
 			set_disabled(false);
 			if (int(EDITOR_GET("network/connection/network_mode")) == EditorSettings::NETWORK_OFFLINE) {
-				_set_message(TTR("Offline mode, update checks disabled."), theme_cache.disabled_color);
+				_set_message(TTRC("Offline mode, update checks disabled."), theme_cache.disabled_color);
 			} else {
-				_set_message(TTR("Update checks disabled."), theme_cache.disabled_color);
+				_set_message(TTRC("Update checks disabled."), theme_cache.disabled_color);
 			}
 			set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode::LIVE_OFF);
 			set_tooltip_text("");
@@ -209,6 +211,14 @@ void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 
 		default: {
 		}
+	}
+}
+
+void EngineUpdateLabel::_update_message() {
+	if (message_format.get_type() == Variant::NIL) {
+		set_text(TTR(current_message));
+	} else {
+		set_text(vformat(TTR(current_message), message_format));
 	}
 }
 
@@ -269,6 +279,12 @@ void EngineUpdateLabel::_notification(int p_what) {
 			theme_cache.update_color = get_theme_color("warning_color", EditorStringName(Editor));
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (!current_message.is_empty()) {
+				_update_message();
+			}
+		} break;
+
 		case NOTIFICATION_READY: {
 			if (_can_check_updates()) {
 				_check_update();
@@ -304,6 +320,7 @@ void EngineUpdateLabel::pressed() {
 
 EngineUpdateLabel::EngineUpdateLabel() {
 	set_underline_mode(UNDERLINE_MODE_ON_HOVER);
+	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	http = memnew(HTTPRequest);
 	http->set_https_proxy(EDITOR_GET("network/http_proxy/host"), EDITOR_GET("network/http_proxy/port"));
