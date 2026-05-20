@@ -94,38 +94,71 @@ void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Vector<Vector3> lines;
-	Vector3 size = decal->get_size();
+	if (p_gizmo->is_selected()) {
+		Vector<Vector3> lines;
+		Vector3 size = decal->get_size();
 
-	AABB aabb;
-	aabb.position = -size / 2;
-	aabb.size = size;
+		AABB aabb;
+		aabb.position = -size / 2;
+		aabb.size = size;
 
-	for (int i = 0; i < 12; i++) {
-		Vector3 a, b;
-		aabb.get_edge(i, a, b);
-		if (a.y == b.y) {
-			lines.push_back(a);
-			lines.push_back(b);
-		} else {
-			Vector3 ah = a.lerp(b, 0.2);
-			lines.push_back(a);
-			lines.push_back(ah);
-			Vector3 bh = b.lerp(a, 0.2);
-			lines.push_back(b);
-			lines.push_back(bh);
+		// Draw the decal's AABB with lines.
+		for (int i = 0; i < 12; i++) {
+			Vector3 a, b;
+			aabb.get_edge(i, a, b);
+			if (a.y == b.y) {
+				lines.push_back(a);
+				lines.push_back(b);
+			} else {
+				Vector3 ah = a.lerp(b, 0.2);
+				lines.push_back(a);
+				lines.push_back(ah);
+				Vector3 bh = b.lerp(a, 0.2);
+				lines.push_back(b);
+				lines.push_back(bh);
+			}
 		}
+
+		// Draw a directional arrow at the decal's origin.
+		constexpr int arrow_points = 7;
+		const float arrow_length = size.y * 0.5;
+
+		const Vector3 arrow[arrow_points] = {
+			Vector3(0, 0, -1),
+			Vector3(0, 0.8, 0),
+			Vector3(0, 0.3, 0),
+			Vector3(0, 0.3, arrow_length),
+			Vector3(0, -0.3, arrow_length),
+			Vector3(0, -0.3, 0),
+			Vector3(0, -0.8, 0)
+		};
+
+		constexpr int arrow_sides = 2;
+
+		for (int i = 0; i < arrow_sides; i++) {
+			for (int j = 0; j < arrow_points; j++) {
+				// Rotate by 90 degrees on the X axis to match the decal orientation.
+				const Basis rotation = Basis(Vector3(1, 0, 0), -Math::PI * 0.5) * Basis(Vector3(0, 0, 1), Math::PI * i / arrow_sides);
+				const Basis scale = Basis::from_scale(size * 0.125);
+				// Move the arrow to start at the top of the decal (when the decal points downwards).
+				// This ensures the arrow is not within surface geometry, since decals are sometimes placed inside surfaces.
+				const Transform3D transform = Transform3D(scale * rotation, Vector3(0, size.y * 0.5, 0));
+
+				Vector3 v1 = arrow[j] - Vector3(0, 0, arrow_length);
+				Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, 0, arrow_length);
+
+				lines.push_back(transform.xform(v1));
+				lines.push_back(transform.xform(v2));
+			}
+		}
+
+		Vector<Vector3> handles = helper->box_get_handles(decal->get_size());
+		Ref<Material> material = get_material("decal_material", p_gizmo);
+
+		p_gizmo->add_lines(lines, material);
+		p_gizmo->add_handles(handles, get_material("handles"));
 	}
 
-	float half_size_y = size.y / 2;
-	lines.push_back(Vector3(0, half_size_y, 0));
-	lines.push_back(Vector3(0, half_size_y * 1.2, 0));
-
-	Vector<Vector3> handles = helper->box_get_handles(decal->get_size());
-	Ref<Material> material = get_material("decal_material", p_gizmo);
 	const Ref<Material> icon = get_material("decal_icon", p_gizmo);
-
-	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
-	p_gizmo->add_handles(handles, get_material("handles"));
 }
