@@ -391,7 +391,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	// Handles the favorites.
 	favorites_item = tree->create_item(root);
 	favorites_item->set_icon(0, get_editor_theme_icon(SNAME("Favorites")));
-	favorites_item->set_text(0, TTRC("Favorites:"));
+	favorites_item->set_text(0, TTRC("Favorites"));
 	favorites_item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_ALWAYS);
 	favorites_item->set_metadata(0, "Favorites");
 	favorites_item->set_collapsed(!p_uncollapsed_paths.has("Favorites"));
