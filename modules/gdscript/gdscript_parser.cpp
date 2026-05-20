@@ -5565,11 +5565,25 @@ bool GDScriptParser::DataType::can_reference(const GDScriptParser::DataType &p_o
 		return true;
 	} else if (script_other.is_null()) {
 		return false;
-	} else if (script != script_other && !script_other->inherits_script(script)) {
-		return false;
+	} else if (script == script_other || script_other->inherits_script(script)) {
+		return true;
 	}
 
-	return true;
+	// inherits_script() walks the GDScript::base chain, which is null
+	// on shallow scripts (it's assigned later in _prepare_compilation).
+	// Fall back to walking the parser inheritance chain by fqcn so subclass
+	// keys in typed containers like Dictionary[Base, T] are accepted during initial analysis.
+	if (kind == GDScriptParser::DataType::CLASS && class_type != nullptr && p_other.kind == GDScriptParser::DataType::CLASS && p_other.class_type != nullptr) {
+		const ClassNode *other_class = p_other.class_type;
+		while (other_class != nullptr) {
+			if (other_class->fqcn == class_type->fqcn) {
+				return true;
+			}
+			other_class = other_class->base_type.class_type;
+		}
+	}
+
+	return false;
 }
 
 void GDScriptParser::complete_extents(Node *p_node) {
