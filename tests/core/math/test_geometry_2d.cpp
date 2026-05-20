@@ -963,98 +963,161 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 
 		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
 
-		// TODO: check if points are in the same position as original
 		CHECK(points[0] == transformed[0][0]);
 		CHECK(points[1] == transformed[0][1]);
 		CHECK(points[2] == transformed[0][2]);
 		CHECK(points[3] == transformed[0][3]);
 	}
-
-	// TODO: clockwise/counterclockwise order case
 }
 
 TEST_CASE("[Geometry2D] Triangulate Delaunay") {
 	Vector<Vector2> p;
-
-	// TODO: "normal" test
-
-	// passing two points
-	p.clear();
-	p.push_back(Vector2(0, 0));
-	p.push_back(Vector2(0, 10));
 	Vector<int> indices;
+
+	SUBCASE("[Geometry2D] Simple Triangulation of Square") {
+		// define a 10 x 10 square
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 10));
+		p.push_back(Vector2(10, 10));
+		p.push_back(Vector2(10, 0));
+		indices = Geometry2D::triangulate_delaunay(p);
+		CHECK_MESSAGE(indices.size() > 0, "Returned array must not be empty");
+		CHECK_MESSAGE(indices.size() == 6, "There should be two triangles");
+		// check if the indices are in the point set
+		for (int i = 0; i < indices.size(); i++) {
+			CHECK(indices[i] < p.size());
+		}
+	}
+
+	SUBCASE("[Geometry2D] Simple Triangulation of Six Points") {
+		p.clear();
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(2, 0));
+		p.push_back(Vector2(4, 1));
+		p.push_back(Vector2(0, 4));
+		p.push_back(Vector2(1, 3));
+		p.push_back(Vector2(4, 4));
+		indices = Geometry2D::triangulate_delaunay(p);
+		CHECK_MESSAGE(indices.size() == 5 * 3, "There should be exactly 5 triangles");
+	}
+
 	SUBCASE("[Geometry2D] Passing two points") {
+		p.clear();
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 10));
 		indices = Geometry2D::triangulate_delaunay(p);
 		CHECK_MESSAGE(indices.size() == 0, "Returned array must be empty");
+	}
+
+	SUBCASE("[Geometry2D] Collinear line (zero-area polygon)") {
+		p.clear();
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 1));
+		p.push_back(Vector2(0, 3));
+		p.push_back(Vector2(0, 6));
+		p.push_back(Vector2(0, 9));
+		indices = Geometry2D::triangulate_delaunay(p);
+		CHECK_MESSAGE(indices.size() == 0, "The returned array must be empty");
+	}
+
+	SUBCASE("[Geometry2D] All identical points") {
+		p.clear();
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 0));
+		indices = Geometry2D::triangulate_delaunay(p);
+		CHECK_MESSAGE(indices.size() == 0, "The returned array must be empty");
 	}
 }
 
 TEST_CASE("[Geometry2D] Triangulate Polygon") {
 	Vector<Vector2> p;
-	// define a 10 x 10 square
-	p.push_back(Vector2(0, 0));
-	p.push_back(Vector2(0, 10));
-	p.push_back(Vector2(10, 10));
-	p.push_back(Vector2(10, 0));
 
 	Vector<int> indices;
 
 	SUBCASE("[Geometry2D] Simple Triangulation of Square") {
+		// define a 10 x 10 square
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 10));
+		p.push_back(Vector2(10, 10));
+		p.push_back(Vector2(10, 0));
 		indices = Geometry2D::triangulate_polygon(p);
 		CHECK_MESSAGE(indices.size() > 0, "Returned array must not be empty");
-		CHECK_MESSAGE(indices.size() == 6, "There should be two triangles (3 points per triangle equals 6 points)");
+		CHECK_MESSAGE(indices.size() == 6, "There must be two triangles (3 points per triangle equals 6 points)");
 
 		for (int i = 0; i < indices.size(); i++) {
 			CHECK(indices[i] < p.size());
 		}
 	}
 
-	// prepare a new polygon (irregular heptagon)
+	SUBCASE("[Geometry2D] Counterclockwise Winding Test") {
+		// define a 10 x 10 square
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(10, 0));
+		p.push_back(Vector2(10, 10));
+		p.push_back(Vector2(0, 10));
 
-	// TODO: prepare a hypothetical heptagon; possibly a concave one
-	// p.clear();
-	// p.push_back(Vector2());
-	// p.push_back(Vector2());
-	// p.push_back(Vector2());
-	// p.push_back(Vector2());
-	// p.push_back(Vector2());
-	// p.push_back(Vector2());
+		indices = Geometry2D::triangulate_polygon(p);
 
-	// prepare a new "polygon" (2 points)
+		CHECK_MESSAGE(indices.size() == 6, "There must be 2 triangles");
+	}
 
-	p.clear();
-	p.push_back(Vector2(0, 0));
-	p.push_back(Vector2(0, 10));
+	SUBCASE("[Geometry2D] Triangulation of Concave Polygon") {
+		p.clear();
+		p.push_back(Vector2(-2, 2));
+		p.push_back(Vector2(2, 2));
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(2, -2));
+		p.push_back(Vector2(-2, -2));
+		indices = Geometry2D::triangulate_polygon(p);
+		CHECK(indices.size() == 9);
+	}
+
 	SUBCASE("[Geometry2D] Passing two points") {
+		p.clear();
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 10));
 		indices = Geometry2D::triangulate_polygon(p);
 		CHECK_MESSAGE(indices.size() == 0, "Returned array must be empty");
 	}
 
-	// collinear line (zero area)
-	// TODO: investigate a better way to test this
-	p.clear();
-	p.push_back(Vector2(0, 0));
-	p.push_back(Vector2(0, 1));
-	p.push_back(Vector2(0, 3));
-	// p.push_back(Vector2(0, 8));
-	SUBCASE("[Geometry2D] Collinear line (zero-area polygon)") {
-		indices = Geometry2D::triangulate_polygon(p);
-		CHECK_MESSAGE(indices.size() == 0, "The returned array must be empty");
-	}
-
 	// self intersecting hourglass
-	p.clear();
-	p.push_back(Vector2(-2, 4));
-	p.push_back(Vector2(2, 4));
-	p.push_back(Vector2(-2, 0));
-	p.push_back(Vector2(2, 0));
 
 	SUBCASE("[Geometry2D] Self-intersecting polygon") {
+		p.clear();
+		p.push_back(Vector2(-2, 4));
+		p.push_back(Vector2(2, 4));
+		p.push_back(Vector2(-2, 0));
+		p.push_back(Vector2(2, 0));
 		indices = Geometry2D::triangulate_polygon(p);
 		CHECK_MESSAGE(indices.size() == 0, "The returned array must be empty");
 	}
 
-	// TODO: hole case?
+	SUBCASE("[Geometry2D] Collinear line (Degenerate case)") {
+		p.clear();
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(1, 0));
+		p.push_back(Vector2(3, 0));
+		p.push_back(Vector2(6, 0));
+		p.push_back(Vector2(9, 0));
+		indices = Geometry2D::triangulate_polygon(p);
+		CHECK_MESSAGE(indices.size() == 9, "The method should use degenerate case fallback");
+	}
+
+	SUBCASE("[Geometry2D] All identical points (Degenerate case)") {
+		p.clear();
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 0));
+		p.push_back(Vector2(0, 0));
+		indices = Geometry2D::triangulate_polygon(p);
+		CHECK_MESSAGE(indices.size() == 12, "The method should use degenerate case fallback");
+	}
 }
 
 } // namespace TestGeometry2D
