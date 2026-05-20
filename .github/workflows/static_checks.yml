@@ -9,7 +9,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
 
@@ -31,9 +31,9 @@ jobs:
           echo "CHANGED_FILES=$files" >> $GITHUB_ENV
 
       - name: Style checks via pre-commit
-        uses: pre-commit/action@v3.0.1
+        uses: j178/prek-action@v2
         with:
-          extra_args: --files ${{ env.CHANGED_FILES }}
+          extra-args: --files ${{ env.CHANGED_FILES }}
 
       - name: Class reference schema checks
         run: |
