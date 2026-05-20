@@ -46,6 +46,7 @@
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/embedded_process.h"
 #include "editor/run/run_instances_dialog.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -1769,7 +1770,7 @@ void GameViewPluginBase::_save_last_editor(const String &p_editor) {
 
 void GameViewPluginBase::_focus_another_editor() {
 	if (_is_window_wrapper_enabled()) {
-		if (last_editor.is_empty()) {
+		if (last_editor.is_empty() || (last_editor == "Script" && ScriptEditor::get_singleton()->is_editor_floating())) {
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_2D);
 		} else {
 			EditorInterface::get_singleton()->set_main_screen_editor(last_editor);
