@@ -165,29 +165,33 @@ Transform2D Camera2D::get_camera_transform() {
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
 		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom_scale);
 
+		// Adjusts camera_pos to respect the current limits.
+		// This has the effect that next time we create screen_rect, that rect will also respect
+		// the limits.
+		//
 		if (limit_enabled && limit_smoothing_enabled) {
 			// Apply horizontal limiting.
-			if (limit[SIDE_LEFT] > limit[SIDE_RIGHT] - screen_rect.size.x) {
-				// Split the limit difference horizontally.
-				camera_pos.x -= screen_rect.position.x + (screen_rect.size.x - limit[SIDE_RIGHT] - limit[SIDE_LEFT]) / 2;
-			} else if (screen_rect.position.x < limit[SIDE_LEFT]) {
-				// Only apply left limit.
-				camera_pos.x -= screen_rect.position.x - limit[SIDE_LEFT];
-			} else if (screen_rect.position.x + screen_rect.size.x > limit[SIDE_RIGHT]) {
-				// Only apply the right limit.
-				camera_pos.x -= screen_rect.position.x + screen_rect.size.x - limit[SIDE_RIGHT];
+			if (smooth_limit[SIDE_LEFT] > smooth_limit[SIDE_RIGHT] - screen_rect.size.x) {
+				// Split the smooth_limit difference horizontally.
+				camera_pos.x -= screen_rect.position.x + (screen_rect.size.x - smooth_limit[SIDE_RIGHT] - smooth_limit[SIDE_LEFT]) / 2;
+			} else if (screen_rect.position.x < smooth_limit[SIDE_LEFT]) {
+				// Only apply left smooth_limit.
+				camera_pos.x -= screen_rect.position.x - smooth_limit[SIDE_LEFT];
+			} else if (screen_rect.position.x + screen_rect.size.x > smooth_limit[SIDE_RIGHT]) {
+				// Only apply the right smooth_limit.
+				camera_pos.x -= screen_rect.position.x + screen_rect.size.x - smooth_limit[SIDE_RIGHT];
 			}
 
-			// Apply vertical limiting.
-			if (limit[SIDE_TOP] > limit[SIDE_BOTTOM] - screen_rect.size.y) {
-				// Split the limit difference vertically.
-				camera_pos.y -= screen_rect.position.y + (screen_rect.size.y - limit[SIDE_BOTTOM] - limit[SIDE_TOP]) / 2;
-			} else if (screen_rect.position.y < limit[SIDE_TOP]) {
-				// Only apply the top limit.
-				camera_pos.y -= screen_rect.position.y - limit[SIDE_TOP];
-			} else if (screen_rect.position.y + screen_rect.size.y > limit[SIDE_BOTTOM]) {
-				// Only apply the bottom limit.
-				camera_pos.y -= screen_rect.position.y + screen_rect.size.y - limit[SIDE_BOTTOM];
+			// Apply vertical smooth_limiting.
+			if (smooth_limit[SIDE_TOP] > smooth_limit[SIDE_BOTTOM] - screen_rect.size.y) {
+				// Split the smooth_limit difference vertically.
+				camera_pos.y -= screen_rect.position.y + (screen_rect.size.y - smooth_limit[SIDE_BOTTOM] - smooth_limit[SIDE_TOP]) / 2;
+			} else if (screen_rect.position.y < smooth_limit[SIDE_TOP]) {
+				// Only apply the top smooth_limit.
+				camera_pos.y -= screen_rect.position.y - smooth_limit[SIDE_TOP];
+			} else if (screen_rect.position.y + screen_rect.size.y > smooth_limit[SIDE_BOTTOM]) {
+				// Only apply the bottom smooth_limit.
+				camera_pos.y -= screen_rect.position.y + screen_rect.size.y - smooth_limit[SIDE_BOTTOM];
 			}
 		}
 
@@ -196,15 +200,27 @@ Transform2D Camera2D::get_camera_transform() {
 		// It may be called MULTIPLE TIMES on certain frames,
 		// therefore smoothing is not currently applied only once per frame / tick,
 		// which will result in some haphazard results.
+		bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
+		real_t delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
+		real_t c = position_smoothing_speed * delta;
 		if (position_smoothing_enabled && !is_part_of_edited_scene()) {
-			bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
-			real_t delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
-			real_t c = position_smoothing_speed * delta;
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
 			//camera_pos=camera_pos*(1.0-position_smoothing_speed)+new_camera_pos*position_smoothing_speed;
 		} else {
 			ret_camera_pos = smoothed_camera_pos = camera_pos;
+		}
+
+		// Perform limit smoothing independent of position smoothing.
+		// Position Smoothing handles smooth limits naturally, so we can skip this if we're using
+		// position smoothing.
+		//
+		// Note: This requires access to the unconstrained screen_rect, so we do it here
+		// since screen_rect was initially created with the unconstrained camera_pos
+		//
+		if (limit_smoothing_enabled && !position_smoothing_enabled && !is_part_of_edited_scene()) {
+			Rect2 constrained_rect(-screen_offset + camera_pos, screen_size * zoom_scale);
+			_move_smooth_limits(screen_rect, constrained_rect, delta);
 		}
 
 	} else {
@@ -226,7 +242,10 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 
-	if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)) {
+	// Overrides screen_rect to immediately snap to the limits, which we only do
+	// if we're not using position smoothing
+	//
+	if (limit_enabled && !limit_smoothing_enabled) {
 		Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (ret_camera_pos - screen_rect.position));
 		// Apply horizontal limiting.
 		if (limit[SIDE_LEFT] > limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x)) {
@@ -267,6 +286,95 @@ Transform2D Camera2D::get_camera_transform() {
 	camera_screen_center = xform.xform(0.5 * screen_size);
 
 	return xform.affine_inverse();
+}
+
+void Camera2D::_move_smooth_limits(const Rect2 &screen_rect, const Rect2 &constrained_rect, double delta) {
+	for (int i = 0; i < 4; ++i) {
+		//
+		// If our smooth_limit equals our limit target, there's nothing to be done
+		//
+		if (limit[i] == smooth_limit[i]) {
+			continue;
+		}
+
+		// Helps us normalize positions so we can always use > (gt) to determine
+		// if something is further away from us or not
+		//
+		int dir = (i == SIDE_LEFT || i == SIDE_TOP) ? -1 : 1;
+
+		// We need to know the edge of the viewport with and without limit constraints
+		int free_edge = _get_limit_viewport_edge(i, screen_rect);
+		int constrained_edge = _get_limit_viewport_edge(i, constrained_rect);
+
+		// Whichever viewport edge is further away from us is the one we use for distance measurement,
+		// otherwise we incorrectly move our limit to a spot further inward of the screen than
+		// we should, resulting in limits snapping prematurely
+		//
+		int viewport_edge = free_edge * dir >= constrained_edge * dir ? free_edge : constrained_edge;
+
+		// We need to determine where the cameras limits are in relation to
+		// the limit constrained viewport. This helps us decide how to move our
+		// smooth limit towards the limit target `limit[i]`.
+		//
+		bool limit_outside = limit[i] * dir > constrained_edge * dir;
+		bool smooth_outside = smooth_limit[i] * dir > constrained_edge * dir;
+
+		// Grab the distance from our smooth limit to the viewport edge and limit target
+		int viewport_dist = (viewport_edge - smooth_limit[i]);
+		int limit_dist = (limit[i] - smooth_limit[i]);
+
+		// If both limits are inside our viewport, just go to the limit.
+		int dist = limit_dist;
+
+		// If both limits are outside the viewport, we can't see them, so
+		// we can just update smooth_limit and be done
+		//
+		if (smooth_outside && limit_outside) {
+			smooth_limit[i] = limit[i];
+			continue;
+		}
+		// If the limit is outside, but smooth is inside, go to whichever is closer
+		// either the new viewport edge, or the limit
+		//
+		else if (limit_outside && !smooth_outside) {
+			dist = abs(viewport_dist) <= abs(limit_dist) ? viewport_dist : limit_dist;
+		}
+		// If the limit is inside, but the smooth is outside, move smooth to the
+		// constrained viewport edge immediately, then it finishes moving towards limit
+		// like normal
+		//
+		else if (!limit_outside && smooth_outside) {
+			smooth_limit[i] = constrained_edge;
+			dist = limit[i] - smooth_limit[i];
+		}
+
+		// Once the smooth limit has reached its target location, (which might be
+		// the actual limit, or just the edge of the viewport), we move it to
+		// the real limit and we're done
+		if (dist == 0) {
+			smooth_limit[i] = limit[i];
+			continue;
+		}
+
+		// Move the smooth limit towards the true limit
+		int inc = dist * (5 * delta);
+		smooth_limit[i] += inc != 0 ? inc : (dist >= 0 ? 1 : -1);
+	}
+}
+
+int Camera2D::_get_limit_viewport_edge(int i, const Rect2 &screen_rect) {
+	switch (i) {
+		case SIDE_LEFT:
+			return screen_rect.position.x;
+		case SIDE_RIGHT:
+			return screen_rect.position.x + screen_rect.size.x;
+		case SIDE_TOP:
+			return screen_rect.position.y;
+		case SIDE_BOTTOM:
+			return screen_rect.position.y + screen_rect.size.y;
+		default:
+			return 0;
+	}
 }
 
 void Camera2D::_ensure_update_interpolation_data() {
@@ -626,6 +734,14 @@ void Camera2D::set_limit(Side p_side, int p_limit) {
 		return;
 	}
 	limit[p_side] = p_limit;
+
+	// smooth_limit only applies to limit_smoothing only scenarios,
+	// so if were using position_smoothing_enabled, or not using limit smoothing,
+	// we just keep it in sync with limit
+	if (position_smoothing_enabled || !limit_smoothing_enabled) {
+		smooth_limit[p_side] = limit[p_side];
+	}
+
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
 	smoothed_camera_pos = old_smoothed_camera_pos;
