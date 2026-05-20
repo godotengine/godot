@@ -127,6 +127,10 @@ void EmbeddedProcessMacOS::request_close() {
 	reset();
 }
 
+void EmbeddedProcessMacOS::send_dialog_cb(const Array &p_args) {
+	script_debugger->send_message("embed:dialog_cb", { p_args });
+}
+
 void EmbeddedProcessMacOS::display_state_changed() {
 	DisplayServerMacOSEmbeddedState state;
 	state.screen_max_scale = ds->screen_get_max_scale();

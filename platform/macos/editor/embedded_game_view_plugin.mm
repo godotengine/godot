@@ -34,6 +34,7 @@
 
 #include "core/config/engine.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/gui/window_wrapper.h"
 #include "scene/main/window.h"
@@ -130,6 +131,47 @@ bool GameViewDebuggerMacOS::_msg_warp_mouse(const Array &p_args) {
 	return true;
 }
 
+void GameViewDebuggerMacOS::_dlg_forward_cb1(const Variant &p_result, int64_t p_id) {
+	embedded_process->send_dialog_cb({ p_id, p_result });
+}
+
+void GameViewDebuggerMacOS::_dlg_forward_cb3(const Variant &p_result, const Variant &p_files, const Variant &p_index, int64_t p_id) {
+	embedded_process->send_dialog_cb({ p_id, p_result, p_files, p_index });
+}
+
+void GameViewDebuggerMacOS::_dlg_forward_cb4(const Variant &p_result, const Variant &p_files, const Variant &p_index, const Variant &p_opt, int64_t p_id) {
+	embedded_process->send_dialog_cb({ p_id, p_result, p_files, p_index, p_opt });
+}
+
+bool GameViewDebuggerMacOS::_msg_open_dialog(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 4, false, "open_dialog: invalid number of arguments.");
+
+	DisplayServer::get_singleton()->dialog_show(p_args[0], p_args[1], p_args[2], callable_mp(this, &GameViewDebuggerMacOS::_dlg_forward_cb1).bind(p_args[3]));
+	return true;
+}
+
+bool GameViewDebuggerMacOS::_msg_open_input_dialog(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 4, false, "open_input_dialog: invalid number of arguments.");
+
+	DisplayServer::get_singleton()->dialog_input_text(p_args[0], p_args[1], p_args[2], callable_mp(this, &GameViewDebuggerMacOS::_dlg_forward_cb1).bind(p_args[3]));
+	return true;
+}
+
+bool GameViewDebuggerMacOS::_msg_open_file_dialog(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 10, false, "open_file_dialog: invalid number of arguments.");
+	if ((bool)p_args[8]) {
+		if (DisplayServer::get_singleton()->file_dialog_with_options_show(p_args[0], p_args[1], p_args[2], p_args[3], p_args[4], p_args[5], p_args[6], p_args[7], callable_mp(this, &GameViewDebuggerMacOS::_dlg_forward_cb4).bind(p_args[9])) != OK) {
+			embedded_process->send_dialog_cb({ p_args[9], false, Vector<String>(), 0 });
+		}
+	} else {
+		if (DisplayServer::get_singleton()->file_dialog_show(p_args[0], p_args[1], p_args[3], p_args[4], p_args[5], p_args[6], callable_mp(this, &GameViewDebuggerMacOS::_dlg_forward_cb3).bind(p_args[9])) != OK) {
+			embedded_process->send_dialog_cb({ p_args[9], false, Vector<String>(), 0, Dictionary() });
+		}
+	}
+
+	return true;
+}
+
 void GameViewDebuggerMacOS::_init_capture_message_handlers() {
 	parse_message_handlers["game_view:set_context_id"] = &GameViewDebuggerMacOS::_msg_set_context_id;
 	parse_message_handlers["game_view:cursor_set_shape"] = &GameViewDebuggerMacOS::_msg_cursor_set_shape;
@@ -138,6 +180,9 @@ void GameViewDebuggerMacOS::_init_capture_message_handlers() {
 	parse_message_handlers["game_view:window_set_ime_active"] = &GameViewDebuggerMacOS::_msg_window_set_ime_active;
 	parse_message_handlers["game_view:window_set_ime_position"] = &GameViewDebuggerMacOS::_msg_window_set_ime_position;
 	parse_message_handlers["game_view:warp_mouse"] = &GameViewDebuggerMacOS::_msg_warp_mouse;
+	parse_message_handlers["game_view:open_dialog"] = &GameViewDebuggerMacOS::_msg_open_dialog;
+	parse_message_handlers["game_view:open_input_dialog"] = &GameViewDebuggerMacOS::_msg_open_input_dialog;
+	parse_message_handlers["game_view:open_file_dialog"] = &GameViewDebuggerMacOS::_msg_open_file_dialog;
 }
 
 bool GameViewDebuggerMacOS::capture(const String &p_message, const Array &p_data, int p_session) {
