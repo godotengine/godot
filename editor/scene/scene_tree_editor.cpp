@@ -1084,11 +1084,13 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 		p_parent->set_visible(!hide_filtered_out_parents || is_root);
 
 		if (!p_parent->is_visible()) {
+			TreeItem *candidate_sibling = p_parent;
 			TreeItem *filtered_parent = p_parent->get_parent();
 			while (filtered_parent) {
 				if (filtered_parent == tree->get_root() || (filtered_parent->is_selectable(0) && filtered_parent->is_visible())) {
 					break;
 				}
+				candidate_sibling = filtered_parent;
 				filtered_parent = filtered_parent->get_parent();
 			}
 
@@ -1099,10 +1101,8 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 
 					p_parent->remove_child(ti);
 					filtered_parent->add_child(ti);
-					TreeItem *prev = p_parent->get_prev();
-					if (prev) {
-						ti->move_after(prev);
-					}
+					ti->move_after(candidate_sibling);
+					candidate_sibling = ti;
 
 					if (is_selected) {
 						ti->select(0);
