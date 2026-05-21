@@ -1231,18 +1231,24 @@ py_builder_env["TEMPFILE_ARG_COUNT"] = 2
 py_builder_env["MYTEMPFILEPREFIX"] = "--argfile "
 Export("py_builder_env")
 
-
+py_builder_env["BUILD_RD_HEADERS_COM"] = (
+    "${MYTEMPFILE('$PYTHON_BIN glsl_builders.py --method build_rd_headers --target $TARGET --source $SOURCE','$GENCOMSTR')}"
+)
+py_builder_env["BUILD_RAW_HEADERS_COM"] = (
+    "$PYTHON_BIN glsl_builders.py --method build_raw_headers --target $TARGET --source $SOURCE"
+)
+py_builder_env["BUILD_GLES3_HEADERS_COM"] = (
+    "$PYTHON_BIN gles3_builders.py --method build_gles3_headers --target $TARGET --source $SOURCE"
+)
 GLSL_BUILDERS = {
     "RD_GLSL": py_builder_env.Builder(
-        action=Action(
-            "${MYTEMPFILE('$PYTHON_BIN glsl_builders.py --method build_rd_headers --target $TARGET --source $SOURCE','$GENCOMSTR')}"
-        ),
+        action=Action("$BUILD_RD_HEADERS_COM", "$GENCOMSTR"),
         suffix="glsl.gen.h",
         src_suffix=".glsl",
     ),
     "GLSL_HEADER": py_builder_env.Builder(
         action=Action(
-            "$PYTHON_BIN glsl_builders.py --method build_raw_headers --target $TARGET --source $SOURCE",
+            "$BUILD_RAW_HEADERS_COM",
             "$GENCOMSTR",
         ),
         suffix="glsl.gen.h",
@@ -1250,7 +1256,7 @@ GLSL_BUILDERS = {
     ),
     "GLES3_GLSL": py_builder_env.Builder(
         action=Action(
-            "$PYTHON_BIN gles3_builders.py --method build_gles3_headers --target $TARGET --source $SOURCE",
+            "$BUILD_GLES3_HEADERS_COM",
             "$GENCOMSTR",
         ),
         suffix="glsl.gen.h",
