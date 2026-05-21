@@ -51,11 +51,7 @@ if env.editor_build:
     py_builder_env["MAKE_DOC_HEADER_COM"] = (
         "${MYTEMPFILE('$PYTHON_BIN editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES','$GENCOMSTR')}"
     )
-    py_builder_env.Command(
-        "#editor/doc/doc_data_compressed.gen.h",
-        docs,
-        "$MAKE_DOC_HEADER_COM",
-    )
+    py_builder_env.Command("#editor/doc/doc_data_compressed.gen.h", docs, Action("$MAKE_DOC_HEADER_COM", "$GENCOMSTR"))
 
     # Editor interface and class reference translations incur a significant size
     # cost for the editor binary (see godot-proposals#3421).
@@ -76,7 +72,7 @@ if env.editor_build:
             sources,
             Action(
                 f"{sys.executable} editor/editor_builders.py --method make_translations --target $TARGETS --source $SOURCES",
-                "Generating $TARGETS",
+                "$GENCOMSTR",
             ),
         )
 

@@ -520,7 +520,7 @@ env.Prepend(CPPPATH=["#"])
 
 # configure ENV for platform
 env["PLATFORM_EXPORTERS"] = platform_exporters
-env.platform_apis = platform_apis
+env["PLATFORM_APIS"] = platform_apis
 
 # Configuration of build targets:
 # - Editor or template

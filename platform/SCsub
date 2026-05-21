@@ -9,28 +9,29 @@ env.platform_sources = []
 
 
 # Generate export icons
+py_builder_env["EXPORT_ICON_BUILDER_COM"] = (
+    "${MYTEMPFILE('$PYTHON_BIN platform/platform_builders.py --method export_icon_builder --target $TARGET --source $SOURCE','$GENCOMSTR')}"
+)
 for platform in env["PLATFORM_EXPORTERS"]:
     for path in glob(f"{platform}/export/*.svg"):
         py_builder_env.Command(
             path.replace(".svg", "_svg.gen.h"),
             path,
-            Action(
-                "${MYTEMPFILE('$PYTHON_BIN platform/platform_builders.py --method export_icon_builder --target $TARGET --source $SOURCE','$GENCOMSTR')}"
-            ),
+            Action("$EXPORT_ICON_BUILDER_COM", "$GEMCOMSTR"),
         )
 
 
 # Register platform-exclusive APIs
-py_builder_env['REG_PLATFORM_APIS_COM'] = "${MYTEMPFILE('$PYTHON_BIN platform/platform_builders.py --method register_platform_apis_builder --target $TARGET --source $PLATFORM_APIS','$GENCOMSTR')}"
+py_builder_env["REG_PLATFORM_APIS_COM"] = (
+    "${MYTEMPFILE('$PYTHON_BIN platform/platform_builders.py --method register_platform_apis_builder --target $TARGET --source $PLATFORM_APIS','$GENCOMSTR')}"
+)
 register_platform_apis = py_builder_env.Command(
     "register_platform_apis.gen.cpp",
-    env.Value(env['PLATFORM_APIS']),
-    Action(
-        "$REG_PLATFORM_APIS_COM","$GENCOMSTR"
-    ),
+    env.Value(env["PLATFORM_APIS"]),
+    Action("$REG_PLATFORM_APIS_COM", "$GENCOMSTR"),
 )
 env.add_source_files(env.platform_sources, register_platform_apis)
-for platform in env['PLATFORM_APIS']:
+for platform in env["PLATFORM_APIS"]:
     env.add_source_files(env.platform_sources, f"{platform}/api/*.cpp")
 
 lib = env.add_library("platform", env.platform_sources)
