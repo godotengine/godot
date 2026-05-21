@@ -811,7 +811,7 @@ private:
 	};
 
 	RDD *driver = nullptr;
-	RenderingContextDriver::Device device;
+	RDD::DriverWorkarounds driver_workarounds;
 	RenderPassCreationFunction render_pass_creation_function = nullptr;
 	int64_t tracking_frame = 0;
 	LocalVector<uint8_t> command_data;
@@ -887,7 +887,7 @@ private:
 public:
 	RenderingDeviceGraph();
 	~RenderingDeviceGraph();
-	void initialize(RDD *p_driver, RenderingContextDriver::Device p_device, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame);
+	void initialize(RDD *p_driver, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame);
 	void finalize();
 	void begin();
 	void add_blas_build(RDD::AccelerationStructureID p_blas, RDD::BufferID p_scratch_buffer, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers);
