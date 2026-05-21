@@ -1049,6 +1049,12 @@ public:
 		SUBGROUP_QUAD_BIT = 128,
 	};
 
+	// Driver workarounds that require higher level code and cannot be solely implemented in RenderingDeviceDriver.
+	struct DriverWorkarounds {
+		bool avoid_compute_after_draw = false;
+		bool disable_ubershaders = false;
+	};
+
 	////////////////////////////////////////////
 	// PROTECTED STUFF
 	// Not exposed by RenderingDevice, but shared

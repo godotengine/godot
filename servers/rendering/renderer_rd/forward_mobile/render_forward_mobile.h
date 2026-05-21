@@ -73,6 +73,7 @@ private:
 	/* Scene Shader */
 
 	SceneShaderForwardMobile scene_shader;
+	bool disable_ubershaders = false;
 
 	/* Render Buffer */
 
