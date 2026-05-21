@@ -3,8 +3,6 @@ from misc.utility.scons_hints import *
 
 from glob import glob
 
-import platform_builders
-
 Import("env", "py_builder_env")
 
 env.platform_sources = []
@@ -17,20 +15,22 @@ for platform in env["PLATFORM_EXPORTERS"]:
             path.replace(".svg", "_svg.gen.h"),
             path,
             Action(
-                "$PYTHON_BIN platform/platform_builders.py --method export_icon_builder --target $TARGET --source $SOURCE",
-                "$GENCOMSTR",
+                "${MYTEMPFILE('$PYTHON_BIN platform/platform_builders.py --method export_icon_builder --target $TARGET --source $SOURCE','$GENCOMSTR')}"
             ),
         )
 
 
 # Register platform-exclusive APIs
-register_platform_apis = env.Command(
+py_builder_env['REG_PLATFORM_APIS_COM'] = "${MYTEMPFILE('$PYTHON_BIN platform/platform_builders.py --method register_platform_apis_builder --target $TARGET --source $PLATFORM_APIS','$GENCOMSTR')}"
+register_platform_apis = py_builder_env.Command(
     "register_platform_apis.gen.cpp",
-    env.Value(env.platform_apis),
-    env.Run(platform_builders.register_platform_apis_builder),
+    env.Value(env['PLATFORM_APIS']),
+    Action(
+        "$REG_PLATFORM_APIS_COM","$GENCOMSTR"
+    ),
 )
 env.add_source_files(env.platform_sources, register_platform_apis)
-for platform in env.platform_apis:
+for platform in env['PLATFORM_APIS']:
     env.add_source_files(env.platform_sources, f"{platform}/api/*.cpp")
 
 lib = env.add_library("platform", env.platform_sources)
