@@ -445,7 +445,11 @@ String OS_AppleEmbedded::get_bundle_resource_dir() const {
 	if (!str) {
 		return OS_Unix::get_bundle_resource_dir();
 	} else {
-		return String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+		String res_path = String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+		if (res_path.is_relative_path()) {
+			res_path = String::utf8([[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSUTF8StringEncoding]).path_join(res_path);
+		}
+		return res_path;
 	}
 }
 
