@@ -107,7 +107,7 @@ class AndroidRuntimePlugin(godot: Godot) : GodotPlugin(godot) {
 					// and provide consistency.
 					"toString" -> "Godot Object Proxy for ${interfaces.joinToString(",")}"
 					"equals" -> proxy == args[0]
-					"hashCode" -> godotObjectID
+					"hashCode" -> godotObjectID.hashCode()
 
 					// Invocation for the remaining interface(s) methods falls here and is dispatched to the
 					// Godot Object.
