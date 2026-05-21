@@ -224,6 +224,8 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	author_license_hbox->add_child(license);
 	license->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItem::_license_clicked));
 
+	vb->add_spacer();
+
 	HBoxContainer *rating_hbox = memnew(HBoxContainer);
 	rating_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	vb->add_child(rating_hbox);
@@ -235,11 +237,12 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 
 	rating_count = memnew(Label);
 	rating_count->set_mouse_filter(MOUSE_FILTER_STOP);
+	rating_count->set_theme_type_variation("LabelNoMargin");
 	rating_count->set_tooltip_text(TTRC("Review Score"));
-	rating_count->set_accessibility_name(TTRC("Review score"));
+	rating_count->set_accessibility_name(TTRC("Review Score"));
 	rating_hbox->add_child(rating_count);
 
-	set_accessibility_name(TTRC("Open asset details"));
+	set_accessibility_name(TTRC("Open Asset Details"));
 	set_custom_minimum_size(Size2(250, 80) * EDSCALE);
 	set_h_size_flags(SIZE_EXPAND_FILL);
 }
@@ -944,7 +947,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	vb->add_child(title_hb);
 	title = memnew(Label);
 	title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-	title->set_theme_type_variation("LabelVMarginless");
+	title->set_theme_type_variation("LabelNoMarginVertical");
 	title->set_focus_mode(FOCUS_ACCESSIBILITY);
 	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_hb->add_child(title);
@@ -956,7 +959,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	version = memnew(Label);
 	version->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	version->set_theme_type_variation("LabelVMarginless");
+	version->set_theme_type_variation("LabelNoMarginVertical");
 	vb->add_child(version);
 
 	spacer = memnew(Control);
