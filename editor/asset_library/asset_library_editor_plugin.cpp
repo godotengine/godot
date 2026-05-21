@@ -1443,21 +1443,18 @@ void EditorAssetLibrary::_search(int p_page) {
 	String search = filter->get_text().to_lower();
 	String args = "?query=" + search.uri_encode();
 
-	if (templates_only) {
-		args += "%23template";
-	} else if (categories->get_selected() > 0) {
-		args = args.replace("%23template", ""); // Bad user, no templates in projects!
+	if (categories->get_selected() > 0) {
 		args += "%23" + (String)categories->get_item_metadata(categories->get_selected());
 	}
 
 	args += "&require_release=true";
+	args += "&type=" + String(templates_only ? "1" : "0");
+	args += "&sort=" + String(sort_key[sort->get_selected()]);
 
 	args += "&compatibility=" + itos(GODOT_VERSION_MAJOR) + "." + itos(GODOT_VERSION_MINOR);
 	if (GODOT_VERSION_PATCH > 0) {
 		args += "." + itos(GODOT_VERSION_PATCH);
 	}
-
-	args += String() + "&sort=" + sort_key[sort->get_selected()];
 
 	int license_count = licenses->get_item_count();
 	if (license_count > 0) {
