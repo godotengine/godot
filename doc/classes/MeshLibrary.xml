@@ -133,7 +133,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="category" type="StringName" />
 			<description>
-				Sets the [param category] for a specific item [param id] for organization in the [GridMap] editor. A category can include [code]/[/code] as a delimiter to create sub categories.
+				Sets the [param category] for a specific item [param id] for organization in the [GridMap] editor. A category can include [code]/[/code] as a delimiter to create subcategories.
 			</description>
 		</method>
 		<method name="set_item_mesh">
@@ -211,4 +211,36 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="item/{index}/category" type="String" setter="" getter="" default="&amp;&quot;&quot;">
+			The item's category. Used to organize meshes in the [GridMap] editor. A category can include [code]/[/code] as a delimiter to create subcategories.
+		</member>
+		<member name="item/{index}/mesh" type="Mesh" setter="" getter="">
+			The item's mesh. Used by other parts of the engine (e.g. [GridMap], which displays them in a 3D tile).
+		</member>
+		<member name="item/{index}/mesh_cast_shadow" type="int" setter="" getter="" default="1">
+			The shadow casting mode used by the item's mesh. See [enum RenderingServer.ShadowCastingSetting].
+		</member>
+		<member name="item/{index}/mesh_transform" type="Transform3D" setter="" getter="" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
+			The transform to apply to the item's mesh.
+		</member>
+		<member name="item/{index}/name" type="String" setter="" getter="" default="&quot;&quot;">
+			The item's name, shown in the editor. It can also be used to look up the item later using [method MeshLibrary.find_item_by_name].
+		</member>
+		<member name="item/{index}/navigation_layers" type="int" setter="" getter="" default="1">
+			The item's navigation layers bitmask.
+		</member>
+		<member name="item/{index}/navigation_mesh" type="NavigationMesh" setter="" getter="">
+			The item's navigation mesh.
+		</member>
+		<member name="item/{index}/navigation_mesh_transform" type="Transform3D" setter="" getter="" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
+			The transform to apply to the item's navigation mesh.
+		</member>
+		<member name="item/{index}/preview" type="Texture2D" setter="" getter="">
+			The texture to use as the item's preview icon in the editor.
+		</member>
+		<member name="item/{index}/shapes" type="Array" setter="" getter="" default="[]">
+			The item's collision shapes. The array should consist of [Shape3D] objects, each followed by a [Transform3D] that will be applied to it. For shapes that should not have a transform, use [constant Transform3D.IDENTITY].
+		</member>
+	</members>
 </class>
