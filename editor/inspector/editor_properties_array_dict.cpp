@@ -116,9 +116,13 @@ bool EditorPropertyDictionaryObject::_set(const StringName &p_name, const Varian
 
 	if (name.begins_with("indices")) {
 		dict = dict.duplicate();
-		int index = name.get_slicec('/', 1).to_int();
-		Variant key = dict.get_key_at_index(index);
-		dict[key] = p_value;
+		int index = name.get_slicec('_', 1).to_int();
+		if (index == editing_key_index) {
+			set_edited_key(p_value);
+		} else {
+			Variant key = dict.get_key_at_index(index);
+			dict[key] = p_value;
+		}
 		return true;
 	}
 
@@ -136,39 +140,45 @@ bool EditorPropertyDictionaryObject::_get(const StringName &p_name, Variant &r_r
 }
 
 bool EditorPropertyDictionaryObject::get_by_property_name(const String &p_name, Variant &r_ret) const {
-	String name = p_name;
-
-	if (name == "new_item_key") {
+	if (p_name == "new_item_key") {
 		r_ret = new_item_key;
 		return true;
 	}
 
-	if (name == "new_item_value") {
+	if (p_name == "new_item_value") {
 		r_ret = new_item_value;
 		return true;
 	}
 
-	if (name == "new_item_key_name") {
+	if (p_name == "new_item_key_name") {
 		r_ret = TTR("New Key:");
 		return true;
 	}
 
-	if (name == "new_item_value_name") {
+	if (p_name == "new_item_value_name") {
 		r_ret = TTR("New Value:");
 		return true;
 	}
 
-	if (name.begins_with("indices")) {
-		int index = name.get_slicec('/', 1).to_int();
-		Variant key = dict.get_key_at_index(index);
-		r_ret = dict[key];
+	if (p_name.begins_with("indices")) {
+		int index = p_name.get_slicec('_', 1).to_int();
+		if (index == editing_key_index) {
+			r_ret = edited_key;
+		} else {
+			Variant key = dict.get_key_at_index(index);
+			r_ret = dict[key];
+		}
 		return true;
 	}
 
-	if (name.begins_with("keys")) {
-		int index = name.get_slicec('/', 1).to_int();
+	if (p_name.begins_with("keys")) {
+		int index = p_name.get_slicec('_', 1).to_int();
 		Variant key = dict.get_key_at_index(index);
-		r_ret = key;
+		if (index == editing_key_index) {
+			r_ret = dict[key];
+		} else {
+			r_ret = key;
+		}
 		return true;
 	}
 
@@ -206,7 +216,7 @@ String EditorPropertyDictionaryObject::get_property_name_for_index(int p_index) 
 		case NEW_VALUE_INDEX:
 			return "new_item_value";
 		default:
-			return "indices/" + itos(p_index);
+			return "indices_" + itos(p_index);
 	}
 }
 
@@ -217,7 +227,7 @@ String EditorPropertyDictionaryObject::get_key_name_for_index(int p_index) {
 		case NEW_VALUE_INDEX:
 			return "new_item_value_name";
 		default:
-			return "keys/" + itos(p_index);
+			return "keys_" + itos(p_index);
 	}
 }
 
@@ -233,6 +243,46 @@ String EditorPropertyDictionaryObject::get_label_for_index(int p_index) {
 			return dict.get_key_at_index(p_index).get_construct_string();
 			break;
 	}
+}
+void EditorPropertyDictionaryObject::set_edited_key(const Variant &p_edited_key) {
+	edited_key = p_edited_key;
+	if (!dict.has(edited_key)) {
+		Variant old_key = dict.get_key_at_index(editing_key_index);
+		dict.replace_key(old_key, edited_key);
+	}
+}
+
+Variant EditorPropertyDictionaryObject::get_edited_key() {
+	return edited_key;
+}
+
+bool EditorPropertyDictionaryObject::has_unsaved_edited_key() {
+	return editing_key_index > -1 && edited_key != dict.get_key_at_index(editing_key_index);
+}
+
+void EditorPropertyDictionaryObject::edit_key_at_index(int p_index) {
+	if (p_index == editing_key_index) {
+		editing_key_index = NEW_KEY_INDEX - 1;
+		edited_key = Variant();
+	} else {
+		editing_key_index = p_index;
+		edited_key = dict.get_key_at_index(p_index);
+	}
+}
+
+int EditorPropertyDictionaryObject::get_editing_key_index() {
+	return editing_key_index;
+}
+
+String EditorPropertyDictionaryObject::_get_property_warning(const StringName &p_property) {
+	if (p_property == get_property_name_for_index(editing_key_index) && has_unsaved_edited_key()) {
+		return "The currently edited key has conflict with an already existing key!";
+	}
+	return "";
+}
+
+void EditorPropertyDictionaryObject::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &EditorPropertyDictionaryObject::_get_property_warning);
 }
 
 ///////////////////// ARRAY ///////////////////////////
@@ -441,16 +491,13 @@ void EditorPropertyArray::update_property() {
 		updating = true;
 
 		if (!container) {
-			container = memnew(PanelContainer);
+			container = memnew(VBoxContainer);
+			container->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			add_child(container);
 			set_bottom_editor(container);
 
-			VBoxContainer *vbox = memnew(VBoxContainer);
-			vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
-			container->add_child(vbox);
-
 			HBoxContainer *hbox = memnew(HBoxContainer);
-			vbox->add_child(hbox);
+			container->add_child(hbox);
 
 			Label *size_label = memnew(Label(TTR("Size:")));
 			size_label->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -469,7 +516,7 @@ void EditorPropertyArray::update_property() {
 			property_vbox = memnew(VBoxContainer);
 			property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-			vbox->add_child(property_vbox);
+			container->add_child(property_vbox);
 
 			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Element"), SNAME("Add")));
 			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
@@ -477,11 +524,11 @@ void EditorPropertyArray::update_property() {
 			SET_DRAG_FORWARDING_CD(button_add_item, EditorPropertyArray);
 			button_add_item->set_disabled(is_read_only());
 			button_add_item->set_accessibility_name(TTRC("Add"));
-			vbox->add_child(button_add_item);
+			container->add_child(button_add_item);
 
 			paginator = memnew(EditorPaginator);
 			paginator->connect("page_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
-			vbox->add_child(paginator);
+			container->add_child(paginator);
 
 			for (int i = 0; i < page_length; i++) {
 				_create_new_property_slot();
@@ -1057,12 +1104,19 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 		update_property();
 	}
 }
+void EditorPropertyDictionary::edit_key_at_slot_index(int p_slot_index) {
+	int index = slots[p_slot_index].index;
+	object->edit_key_at_index(index);
+	update_property();
+}
 
 void EditorPropertyDictionary::_change_type(Object *p_button, int p_slot_index) {
 	Button *button = Object::cast_to<Button>(p_button);
 	int index = slots[p_slot_index].index;
 	Rect2 rect = button->get_screen_rect();
 	change_type->set_item_disabled(change_type->get_item_index(Variant::VARIANT_MAX), index < 0);
+	change_type->set_item_disabled(change_type->get_item_index(MENU_EDIT_KEY), index < 0);
+	change_type->set_item_text(change_type->get_item_index(MENU_EDIT_KEY), index == object->get_editing_key_index() ? "Edit Value" : "Edit Key");
 	change_type->reset_size();
 	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
@@ -1098,23 +1152,16 @@ void EditorPropertyDictionary::_add_key_value() {
 void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	HBoxContainer *hbox = memnew(HBoxContainer);
 
-	EditorProperty *prop_key = nullptr;
-	if (p_idx != EditorPropertyDictionaryObject::NEW_KEY_INDEX && p_idx != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
-		prop_key = memnew(EditorPropertyNil);
-	}
-
 	EditorProperty *prop = memnew(EditorPropertyNil);
 	prop->set_h_size_flags(SIZE_EXPAND_FILL);
 	hbox->add_child(prop);
-	if (prop_key) {
-		prop->add_inline_control(prop_key, INLINE_CONTROL_LEFT);
-	}
 
 	bool use_key = p_idx == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
 	bool is_untyped_dict = (use_key ? key_subtype : value_subtype) == Variant::NIL;
 
 	Button *edit_btn = nullptr;
 	Button *remove_btn = nullptr;
+	Button *edit_key_btn = nullptr;
 	if (is_untyped_dict) {
 		edit_btn = memnew(Button);
 		edit_btn->set_accessibility_name(TTRC("Edit"));
@@ -1129,6 +1176,12 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 		remove_btn->set_disabled(is_read_only());
 		remove_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_remove_pressed).bind(slots.size()));
+		edit_key_btn = memnew(Button);
+		edit_key_btn->set_accessibility_name(TTRC("Edit Key"));
+		edit_key_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+		edit_key_btn->set_disabled(is_read_only());
+		edit_key_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
+		edit_key_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::edit_key_at_slot_index).bind(slots.size()));
 	}
 
 	if (add_panel) {
@@ -1139,11 +1192,11 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 
 	Slot slot;
 	slot.prop = prop;
-	slot.prop_key = prop_key;
 	slot.object = object;
 	slot.container = hbox;
 	slot.edit_button = edit_btn;
 	slot.remove_button = remove_btn;
+	slot.edit_key_button = edit_key_btn;
 	int index = p_idx + (p_idx >= 0 ? page_index * page_length : 0);
 	slot.set_index(index);
 	slots.push_back(slot);
@@ -1168,20 +1221,27 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 			break;
 
 		default:
-			Dictionary dict = object->get_dict().duplicate();
-			Variant key = dict.get_key_at_index(changing_type_index);
-			if (p_index < Variant::VARIANT_MAX) {
-				VariantInternal::initialize(&value, Variant::Type(p_index));
-				dict[key] = value;
-			} else {
-				dict.erase(key);
-				object->set_dict(dict);
-				for (Slot &slot : slots) {
-					slot.update_prop_or_index();
-				}
-			}
+			Dictionary dict;
+			Variant key;
+			switch (p_index) {
+				case MENU_EDIT_KEY:
+					object->edit_key_at_index(changing_type_index);
+					update_property();
+					break;
 
-			emit_changed(get_edited_property(), dict);
+				case Variant::VARIANT_MAX:
+					dict = object->get_dict().duplicate();
+					key = dict.get_key_at_index(changing_type_index);
+					dict.erase(key);
+					emit_changed(get_edited_property(), dict);
+					break;
+
+				default:
+					VariantInternal::initialize(&value, Variant::Type(p_index));
+					object->set("indices_" + itos(changing_type_index), value);
+					emit_changed(get_edited_property(), object->get_dict());
+					break;
+			}
 	}
 }
 
@@ -1327,22 +1387,19 @@ void EditorPropertyDictionary::update_property() {
 		updating = true;
 
 		if (!container) {
-			container = memnew(PanelContainer);
+			container = memnew(VBoxContainer);
+			container->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			add_child(container);
 			set_bottom_editor(container);
-
-			VBoxContainer *vbox = memnew(VBoxContainer);
-			vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
-			container->add_child(vbox);
 
 			property_vbox = memnew(VBoxContainer);
 			property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-			vbox->add_child(property_vbox);
+			container->add_child(property_vbox);
 
 			paginator = memnew(EditorPaginator);
 			paginator->connect("page_changed", callable_mp(this, &EditorPropertyDictionary::_page_changed));
-			vbox->add_child(paginator);
+			container->add_child(paginator);
 
 			for (int i = 0; i < page_length; i++) {
 				_create_new_property_slot(slots.size());
@@ -1385,8 +1442,10 @@ void EditorPropertyDictionary::update_property() {
 				continue;
 			}
 
+			slot.set_editing_key(slot.index == object->get_editing_key_index());
+
 			// Check if the editor property key needs to be updated.
-			if (slot.prop_key) {
+			if (slot.index >= 0) {
 				Variant key;
 				object->get_by_property_name(slot.key_name, key);
 				Variant::Type key_type = key.get_type();
@@ -1422,9 +1481,6 @@ void EditorPropertyDictionary::update_property() {
 						dict_prop->set_preview_value(true);
 					}
 					slot.set_key_prop(new_prop);
-					if (slot.prop) {
-						slot.prop->add_inline_control(new_prop, INLINE_CONTROL_LEFT);
-					}
 				}
 			}
 
@@ -1450,7 +1506,7 @@ void EditorPropertyDictionary::update_property() {
 					editor->setup("Object");
 					new_prop = editor;
 				} else {
-					bool use_key = slot.index == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
+					bool use_key = slot.index == EditorPropertyDictionaryObject::NEW_KEY_INDEX || slot.index == object->get_editing_key_index();
 					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", use_key ? key_subtype_hint : value_subtype_hint,
 							use_key ? key_subtype_hint_string : value_subtype_hint_string, PROPERTY_USAGE_NONE);
 				}
@@ -1467,16 +1523,6 @@ void EditorPropertyDictionary::update_property() {
 					new_prop->set_label_overlayed(true);
 				}
 				new_prop->set_read_only(is_read_only());
-				if (slot.remove_button) {
-					new_prop->add_inline_control(slot.remove_button, INLINE_CONTROL_RIGHT);
-				}
-				if (slot.edit_button) {
-					new_prop->add_inline_control(slot.edit_button, INLINE_CONTROL_RIGHT);
-				}
-				if (slot.prop_key) {
-					new_prop->add_inline_control(slot.prop_key, INLINE_CONTROL_LEFT);
-				}
-
 				slot.set_prop(new_prop);
 
 			} else if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
@@ -1493,6 +1539,7 @@ void EditorPropertyDictionary::update_property() {
 			}
 
 			slot.prop->update_property();
+			slot.prop->update_editor_property_status();
 			if (slot.prop_key) {
 				slot.prop_key->update_property();
 			}
@@ -1538,6 +1585,8 @@ void EditorPropertyDictionary::_notification(int p_what) {
 					slot.remove_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 				}
 			}
+
+			change_type->set_item_icon(change_type->get_item_index(MENU_EDIT_KEY), get_editor_theme_icon(SNAME("Edit")));
 
 			if (button_add_item) {
 				add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
@@ -1594,6 +1643,8 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	button_add_item = nullptr;
 	paginator = nullptr;
 	change_type = memnew(EditorVariantTypePopupMenu(true));
+	change_type->add_item(TTR("Edit Key"), MENU_EDIT_KEY);
+	change_type->set_item_index(change_type->get_item_index(MENU_EDIT_KEY), 0);
 	add_child(change_type);
 	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
 	changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE;

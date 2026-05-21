@@ -209,6 +209,10 @@ bool Dictionary::set(const Variant &p_key, const Variant &p_value) {
 	return true;
 }
 
+bool Dictionary::replace_key(const Variant &p_key, const Variant &p_new_key) {
+	return _p->variant_map.replace_key(p_key, p_new_key);
+}
+
 int Dictionary::size() const {
 	return _p->variant_map.size();
 }

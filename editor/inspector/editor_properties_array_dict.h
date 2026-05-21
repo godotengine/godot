@@ -62,6 +62,8 @@ class EditorPropertyDictionaryObject : public RefCounted {
 	Variant new_item_key;
 	Variant new_item_value;
 	Dictionary dict;
+	Variant edited_key;
+	int editing_key_index = NEW_KEY_INDEX - 1;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -84,9 +86,23 @@ public:
 	void set_new_item_value(const Variant &p_new_item);
 	Variant get_new_item_value();
 
+	void set_edited_key(const Variant &p_edited_key);
+	Variant get_edited_key();
+
+	bool has_unsaved_edited_key();
+
+	void edit_key_at_index(int p_index);
+	int get_editing_key_index();
+
 	String get_label_for_index(int p_index);
 	String get_property_name_for_index(int p_index);
 	String get_key_name_for_index(int p_index);
+
+	void set_layout_direction_on_child(Node *node, bool p_editing_key = true);
+
+	bool has_unsaved_edited_key() const;
+	String _get_property_warning(const StringName &p_property);
+	static void _bind_methods();
 };
 
 class EditorPropertyArray : public EditorProperty {
@@ -118,7 +134,7 @@ class EditorPropertyArray : public EditorProperty {
 	int page_index = 0;
 	int changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 	Button *edit = nullptr;
-	PanelContainer *container = nullptr;
+	VBoxContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 	EditorSpinSlider *size_slider = nullptr;
 	Button *button_add_item = nullptr;
@@ -191,9 +207,19 @@ class EditorPropertyDictionary : public EditorProperty {
 		EditorProperty *prop = nullptr;
 		EditorProperty *prop_key = nullptr;
 		Button *edit_button = nullptr;
+		Button *edit_key_button = nullptr;
 		Button *remove_button = nullptr;
 		String prop_name;
 		String key_name;
+		bool editing_key = false;
+
+		void set_editing_key(bool p_editing_key) {
+			if (editing_key == p_editing_key) {
+				return;
+			}
+			editing_key = p_editing_key;
+			update_prop_or_index();
+		}
 
 		void set_index(int p_idx) {
 			index = p_idx;
@@ -210,12 +236,8 @@ class EditorPropertyDictionary : public EditorProperty {
 		}
 
 		void set_key_prop(EditorProperty *p_prop) {
-			if (prop_key) {
-				prop_key->add_sibling(p_prop);
-				prop_key->queue_free();
-				prop_key = p_prop;
-				update_prop_or_index();
-			}
+			prop_key = p_prop;
+			update_prop_or_index();
 		}
 
 		void update_prop_or_index() {
@@ -225,8 +247,25 @@ class EditorPropertyDictionary : public EditorProperty {
 			} else {
 				prop->set_label(object->get_label_for_index(index));
 			}
+			prop->set_force_borders(editing_key);
+			if (prop_key) {
+				prop->add_inline_control(prop_key, editing_key ? INLINE_CONTROL_RIGHT : INLINE_CONTROL_LEFT);
+				prop->set_draw_label_inverted(editing_key);
+			}
+
+			if (edit_key_button) {
+				prop->add_inline_control(edit_key_button, INLINE_CONTROL_RIGHT);
+			}
+			if (remove_button) {
+				prop->add_inline_control(remove_button, INLINE_CONTROL_RIGHT);
+			}
+			if (edit_button) {
+				prop->add_inline_control(edit_button, INLINE_CONTROL_RIGHT);
+			}
 		}
 	};
+
+	static constexpr int MENU_EDIT_KEY = Variant::VARIANT_MAX + 1;
 
 	EditorVariantTypePopupMenu *change_type = nullptr;
 	bool updating = false;
@@ -237,7 +276,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	int page_index = 0;
 	int changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE;
 	Button *edit = nullptr;
-	PanelContainer *container = nullptr;
+	VBoxContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 	PanelContainer *add_panel = nullptr;
 	Button *button_add_item = nullptr;
@@ -248,6 +287,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	void _page_changed(int p_page);
 	void _edit_pressed();
 	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void edit_key_at_slot_index(int p_slot_index);
 	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 	void _change_type(Object *p_button, int p_slot_index);
 	void _change_type_menu(int p_index);

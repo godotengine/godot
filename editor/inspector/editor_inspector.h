@@ -80,7 +80,9 @@ protected:
 		Ref<StyleBox> background_selected;
 		Ref<StyleBox> child_background;
 		Ref<StyleBox> hover;
+		Ref<StyleBox> sub_inspector_property_background[17];
 		Ref<StyleBox> sub_inspector_background[17];
+		Ref<StyleBox> sub_inspector_background_inverted[17];
 
 		Ref<Texture2D> key_icon;
 		Ref<Texture2D> key_next_icon;
@@ -154,6 +156,7 @@ private:
 	int property_usage;
 
 	bool draw_label = true;
+	bool draw_label_inverted = false;
 	bool draw_background = true;
 	bool read_only = false;
 	bool checkable = false;
@@ -217,6 +220,7 @@ private:
 
 protected:
 	bool has_borders = false;
+	bool force_borders = false;
 	bool can_override = false;
 
 	void _notification(int p_what);
@@ -249,10 +253,17 @@ public:
 	bool is_read_only() const;
 
 	void set_draw_label(bool p_draw_label);
+	void set_draw_label_inverted(bool p_draw_label_inverted);
 	bool is_draw_label() const;
+	bool is_draw_label_inverted() const;
 
 	void set_draw_background(bool p_draw_background);
 	bool is_draw_background() const;
+
+	void set_force_borders(bool p_force_borders);
+	bool get_force_borders() const { return force_borders; }
+
+	bool has_borders_enabled() const;
 
 	Object *get_edited_object();
 	StringName get_edited_property() const;

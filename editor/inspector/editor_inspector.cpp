@@ -54,7 +54,6 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
@@ -230,7 +229,7 @@ Size2 EditorProperty::get_minimum_size() const {
 		return Vector2();
 	}
 
-	Size2 ms = Size2(0, theme_cache.inspector_property_height);
+	Size2 ms = Size2(0, label.is_empty() ? 0 : theme_cache.inspector_property_height);
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
@@ -273,6 +272,10 @@ Size2 EditorProperty::get_minimum_size() const {
 	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
 		ms.height += label.is_empty() ? 0 : _get_v_separation();
 		Size2 bems = bottom_editor->get_combined_minimum_size();
+		if (has_borders_enabled()) {
+			bems += 4 * EDSCALE * Vector2(1, 1);
+		}
+
 		ms.height += bems.height;
 		ms.width = MAX(ms.width, bems.width);
 	}
@@ -345,7 +348,7 @@ void EditorProperty::_notification(int p_what) {
 			{
 				int child_room = size.width * (1.0 - split_ratio) - name_fixed_size;
 				int separation = 4 * EDSCALE;
-				int height = theme_cache.inspector_property_height;
+				int height = label.is_empty() ? 0 : theme_cache.inspector_property_height;
 				int half_padding = theme_cache.padding / 2;
 				bool no_children = true;
 
@@ -375,7 +378,7 @@ void EditorProperty::_notification(int p_what) {
 					rect = Rect2(1, 0, size.width - 1, height);
 				} else {
 					text_size = MAX(0, size.width - (child_room + separation));
-					if (is_layout_rtl()) {
+					if (is_layout_rtl() != draw_label_inverted) {
 						rect = Rect2(1, 0, child_room, height);
 					} else {
 						rect = Rect2(size.width - child_room, 0, child_room, height);
@@ -383,15 +386,28 @@ void EditorProperty::_notification(int p_what) {
 				}
 
 				if (rect.size.x > 1) {
-					rect.size.x -= right_container->get_combined_minimum_size().x;
+					Control *container = draw_label_inverted ? left_container : right_container;
+					rect.size.x -= container->get_combined_minimum_size().x;
 					if (is_layout_rtl()) {
-						rect.position.x += right_container->get_combined_minimum_size().x;
+						rect.position.x += container->get_combined_minimum_size().x;
 					}
 				}
 
 				if (bottom_editor) {
 					int v_offset = label.is_empty() ? 0 : _get_v_separation();
-					bottom_rect = Rect2(0, rect.size.height + v_offset, size.width, bottom_editor->get_combined_minimum_size().height);
+					if (draw_label_inverted) {
+						bottom_rect = Rect2(0, 0, size.width, bottom_editor->get_combined_minimum_size().height);
+						rect.position.y = bottom_editor->get_combined_minimum_size().height + v_offset;
+					} else {
+						bottom_rect = Rect2(0, rect.size.height + v_offset, size.width, bottom_editor->get_combined_minimum_size().height);
+					}
+					if (sub_inspector_color_level >= 0) {
+						bottom_rect.position += 2 * EDSCALE * Vector2(1, 1);
+						bottom_rect.size.x -= 4 * EDSCALE;
+						if (draw_label_inverted) {
+							rect.position.y += 4 * EDSCALE;
+						}
+					}
 				}
 
 				if (keying) {
@@ -465,19 +481,28 @@ void EditorProperty::_notification(int p_what) {
 
 			Size2 rs = right_container->get_combined_minimum_size();
 			rs.y = MAX(rs.y, rect.size.y);
-			if (is_layout_rtl()) {
-				fit_child_in_rect(right_container, Rect2(0, 0, rs.width, rs.y));
-			} else {
-				fit_child_in_rect(right_container, Rect2(size.width - rs.width, 0, rs.width, rs.y));
-			}
 
 			Size2 ls = left_container->get_combined_minimum_size();
-			real_t right_size = rect.size.x + rs.x;
 			ls.y = MAX(ls.y, rect.size.y);
-			if (is_layout_rtl()) {
-				fit_child_in_rect(left_container, Rect2(right_size, 0, size.x - right_size, ls.y));
+
+			if (draw_label_inverted) {
+				real_t left_size = rect.size.x + ls.x;
+				if (is_layout_rtl()) {
+					fit_child_in_rect(left_container, Rect2(size.width - ls.width, rect.position.y, ls.width, ls.y));
+					fit_child_in_rect(right_container, Rect2(0, rect.position.y, size.x - left_size, rs.y));
+				} else {
+					fit_child_in_rect(left_container, Rect2(0, rect.position.y, ls.width, ls.y));
+					fit_child_in_rect(right_container, Rect2(left_size, rect.position.y, size.x - left_size, rs.y));
+				}
 			} else {
-				fit_child_in_rect(left_container, Rect2(0, 0, size.x - right_size, ls.y));
+				real_t right_size = rect.size.x + rs.x;
+				if (is_layout_rtl()) {
+					fit_child_in_rect(right_container, Rect2(0, rect.position.y, rs.width, rs.y));
+					fit_child_in_rect(left_container, Rect2(right_size, rect.position.y, size.x - right_size, ls.y));
+				} else {
+					fit_child_in_rect(right_container, Rect2(size.width - rs.width, rect.position.y, rs.width, rs.y));
+					fit_child_in_rect(left_container, Rect2(0, rect.position.y, size.x - right_size, ls.y));
+				}
 			}
 
 			queue_redraw(); //need to redraw text
@@ -490,35 +515,41 @@ void EditorProperty::_notification(int p_what) {
 
 			Size2 size = get_size();
 			if (bottom_editor) {
-				size.height = bottom_editor->get_offset(SIDE_TOP) - _get_v_separation();
+				size.height = right_child_rect.size.height;
 			} else if (label_reference) {
 				size.height = label_reference->get_size().height;
 			}
 			size.height = MAX(size.height, left_container->get_size().height);
 
-			// Only draw the label if it's not empty.
-			if (label.is_empty()) {
-				size.height = 0;
-			} else if (sub_inspector_color_level >= 0 && theme_cache.sub_inspector_background[sub_inspector_color_level].is_valid()) {
-				draw_style_box(theme_cache.sub_inspector_background[sub_inspector_color_level], Rect2(Vector2(), size));
+			if (sub_inspector_color_level >= 0 && theme_cache.sub_inspector_property_background[sub_inspector_color_level].is_valid()) {
+				draw_style_box(theme_cache.sub_inspector_property_background[sub_inspector_color_level], Rect2(0, 0, size.x, size.y + _get_v_separation() + bottom_child_rect.size.y + 4 * EDSCALE));
+				if (draw_label_inverted) {
+					draw_style_box(theme_cache.sub_inspector_background_inverted[sub_inspector_color_level], bottom_child_rect);
+				} else {
+					draw_style_box(theme_cache.sub_inspector_background[sub_inspector_color_level], bottom_child_rect);
+				}
 			} else {
-				draw_style_box(selected ? theme_cache.background_selected : theme_cache.background, Rect2(Vector2(), size));
+				Rect2 rect = Rect2(0, 0, size.x, size.y);
+				draw_style_box(selected ? theme_cache.background_selected : theme_cache.background, rect);
+
+				if (bottom_child_rect != Rect2() && draw_background) {
+					draw_style_box(theme_cache.child_background, bottom_child_rect);
+				}
 			}
 
 			if (draw_top_bg && right_child_rect != Rect2() && draw_background) {
 				draw_style_box(theme_cache.child_background, right_child_rect);
 			}
-			if (bottom_child_rect != Rect2() && draw_background) {
-				draw_style_box(theme_cache.child_background, bottom_child_rect);
-			}
 
 			Color color;
 			if (draw_warning || draw_prop_warning) {
 				color = is_read_only() ? theme_cache.readonly_warning_color : theme_cache.warning_color;
+			} else if (sub_inspector_color_level >= 0) {
+				color = theme_cache.sub_inspector_property_color;
 			} else if (is_read_only()) {
-				color = (sub_inspector_color_level >= 0) ? theme_cache.sub_inspector_property_color : theme_cache.readonly_property_color;
+				color = theme_cache.readonly_property_color;
 			} else {
-				color = (sub_inspector_color_level >= 0) ? theme_cache.sub_inspector_property_color : theme_cache.property_color;
+				color = theme_cache.property_color;
 			}
 			if (label.contains_char('.')) {
 				// FIXME: Move this to the project settings editor, as this is only used
@@ -583,7 +614,7 @@ void EditorProperty::_notification(int p_what) {
 				revert_rect = Rect2(ofs + text_limit, 0, reload_icon->get_width() + padding + (1 * EDSCALE), size.height);
 
 				Point2 rtl_pos;
-				if (rtl) {
+				if (rtl != draw_label_inverted) {
 					rtl_pos = Point2(size.width - revert_rect.position.x - (reload_icon->get_width() + padding + (1 * EDSCALE)), revert_rect.position.y);
 				}
 
@@ -593,7 +624,7 @@ void EditorProperty::_notification(int p_what) {
 					color2.g *= 1.2;
 					color2.b *= 1.2;
 
-					if (rtl) {
+					if (rtl != draw_label_inverted) {
 						draw_style_box(theme_cache.hover, Rect2(rtl_pos, revert_rect.size));
 					} else {
 						draw_style_box(theme_cache.hover, revert_rect);
@@ -601,7 +632,7 @@ void EditorProperty::_notification(int p_what) {
 				}
 
 				Point2 icon_ofs = (Point2(padding, size.height - reload_icon->get_height()) / 2).round();
-				if (rtl) {
+				if (rtl != draw_label_inverted) {
 					draw_texture(reload_icon, rtl_pos + icon_ofs, color2);
 				} else {
 					draw_texture(reload_icon, revert_rect.position + icon_ofs, color2);
@@ -627,10 +658,11 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			int v_ofs = (size.height - font->get_height(font_size)) / 2;
-			if (rtl) {
-				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
+			HorizontalAlignment alignment = rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT;
+			if (rtl != draw_label_inverted) {
+				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, alignment, text_limit, font_size, color);
 			} else {
-				draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
+				draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, alignment, text_limit, font_size, color);
 			}
 
 			ofs = size.width;
@@ -719,7 +751,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 			set_shortcut_context(inspector);
 
-			if (has_borders) {
+			if (has_borders_enabled()) {
 				get_parent()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
 				_update_property_bg();
 			}
@@ -748,7 +780,7 @@ void EditorProperty::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (has_borders) {
+			if (has_borders_enabled()) {
 				get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
 			}
 		} break;
@@ -874,6 +906,11 @@ void EditorProperty::_update_property_bg() {
 	if (!is_inside_tree()) {
 		return;
 	}
+	if (!has_borders_enabled()) {
+		sub_inspector_color_level = -1;
+		queue_redraw();
+		return;
+	}
 
 	if (bottom_editor) {
 		ColorationMode nested_color_mode = (ColorationMode)(int)EDITOR_GET("interface/inspector/nested_color_mode");
@@ -894,10 +931,7 @@ void EditorProperty::_update_property_bg() {
 			}
 		}
 		add_theme_style_override(SNAME("DictionaryAddItem"), get_theme_stylebox("DictionaryAddItem" + itos(sub_inspector_color_level), EditorStringName(EditorStyles)));
-		if (delimitate_all_container_and_resources || is_colored(nested_color_mode)) {
-			bottom_editor->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("sub_inspector_bg" + itos(sub_inspector_color_level), EditorStringName(EditorStyles)));
-		} else {
-			bottom_editor->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("sub_inspector_bg_no_border", EditorStringName(EditorStyles)));
+		if (!(delimitate_all_container_and_resources || is_colored(nested_color_mode))) {
 			sub_inspector_color_level = -1;
 		}
 	} else {
@@ -965,9 +999,18 @@ void EditorProperty::set_draw_label(bool p_draw_label) {
 	queue_redraw();
 	queue_sort();
 }
+void EditorProperty::set_draw_label_inverted(bool p_draw_label_inverted) {
+	draw_label_inverted = p_draw_label_inverted;
+	queue_redraw();
+	queue_sort();
+}
 
 bool EditorProperty::is_draw_label() const {
 	return draw_label;
+}
+
+bool EditorProperty::is_draw_label_inverted() const {
+	return draw_label_inverted;
 }
 
 void EditorProperty::set_draw_background(bool p_draw_background) {
@@ -977,6 +1020,29 @@ void EditorProperty::set_draw_background(bool p_draw_background) {
 
 bool EditorProperty::is_draw_background() const {
 	return draw_background;
+}
+
+void EditorProperty::set_force_borders(bool p_force_borders) {
+	if (has_borders) {
+		return; // If borders are already enabled, no need to force them.
+	}
+	if (force_borders == p_force_borders) {
+		return;
+	}
+	force_borders = p_force_borders;
+	if (is_inside_tree()) {
+		if (has_borders_enabled()) {
+			get_parent()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
+		} else {
+			get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
+		}
+		_update_property_bg();
+	}
+	queue_redraw();
+}
+
+bool EditorProperty::has_borders_enabled() const {
+	return has_borders || force_borders;
 }
 
 void EditorProperty::set_checkable(bool p_checkable) {
@@ -1293,7 +1359,7 @@ HBoxContainer *EditorProperty::get_inline_container(InlineControlSide p_side) {
 
 void EditorProperty::set_bottom_editor(Control *p_control) {
 	bottom_editor = p_control;
-	if (has_borders) {
+	if (has_borders_enabled()) {
 		_update_property_bg();
 	}
 }
@@ -3941,7 +4007,9 @@ void EditorInspector::initialize_property_theme(EditorProperty::ThemeCache &p_ca
 	if (p_control == parent_inspector) {
 		// Only initialize for the inspector, as stand-alone properties won't need it.
 		for (int i = 0; i <= 16; i++) {
-			p_cache.sub_inspector_background[i] = p_control->get_theme_stylebox("sub_inspector_property_bg" + itos(i), EditorStringName(EditorStyles));
+			p_cache.sub_inspector_property_background[i] = p_control->get_theme_stylebox("sub_inspector_property_bg" + itos(i), EditorStringName(EditorStyles));
+			p_cache.sub_inspector_background[i] = p_control->get_theme_stylebox("sub_inspector_bg" + itos(i), EditorStringName(EditorStyles));
+			p_cache.sub_inspector_background_inverted[i] = p_control->get_theme_stylebox("sub_inspector_bg_inverted" + itos(i), EditorStringName(EditorStyles));
 		}
 	}
 }
