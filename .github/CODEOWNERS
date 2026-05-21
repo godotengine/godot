@@ -40,7 +40,8 @@
 /drivers/vulkan/                              @godotengine/rendering
 
 ## OS
-/drivers/apple*/                              @godotengine/macos
+/drivers/apple/                               @godotengine/macos @godotengine/ios
+/drivers/apple_embedded/                      @godotengine/ios
 /drivers/unix/                                @godotengine/linux-bsd
 /drivers/windows/                             @godotengine/windows
 
