@@ -4112,7 +4112,7 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 	int32_t blend_count = mesh_resource->get_blend_shape_count();
 	blend_weights.resize(blend_count);
 	for (int32_t blend_i = 0; blend_i < blend_count; blend_i++) {
-		blend_weights.write[blend_i] = 0.0f;
+		blend_weights.write[blend_i] = p_mesh_instance->get_blend_shape_value(blend_i);
 	}
 
 	Ref<GLTFMesh> gltf_mesh;
@@ -6545,7 +6545,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 		ERR_CONTINUE_MSG(!animated_node, "glTF: Cannot get node for animated track using path: " + String(track_path));
 		const GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::godot_to_gltf_interpolation(animation, track_index);
 		// First, check if it's a Blend Shape track.
-		if (animation->track_get_type(track_index) == Animation::TYPE_BLEND_SHAPE) {
+		const Vector<StringName> subnames = track_path.get_subnames();
+		Animation::TrackType track_type = animation->track_get_type(track_index);
+		if (animation->track_get_type(track_index) == Animation::TYPE_BLEND_SHAPE || (subnames.size() == 1 && subnames[0].operator String().begins_with("blend_shapes/") && track_type == Animation::TYPE_VALUE)) {
 			const MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(animated_node);
 			ERR_CONTINUE_MSG(!mesh_instance, "glTF: Animation had a Blend Shape track, but the node wasn't a MeshInstance3D. Ignoring this track.");
 			Ref<Mesh> mesh = mesh_instance->get_mesh();
@@ -6563,6 +6565,10 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 					String shape_name = mesh->get_blend_shape_name(shape_i);
 					NodePath shape_path = NodePath(track_path.get_names(), { shape_name }, false);
 					int32_t shape_track_i = animation->find_track(shape_path, Animation::TYPE_BLEND_SHAPE);
+					if (shape_track_i == -1) {
+						shape_path = NodePath(track_path.get_names(), { "blend_shapes/" + shape_name }, false);
+						shape_track_i = animation->find_track(shape_path, Animation::TYPE_VALUE);
+					}
 					if (shape_track_i == -1) {
 						GLTFAnimation::Channel<real_t> weight;
 						weight.interpolation = GLTFAnimation::INTERP_LINEAR;
@@ -6592,7 +6598,6 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 		}
 		// If it's not a Blend Shape track, it must either be a TRS track, a property Value track, or something we can't handle.
 		// For the cases we can handle, we will need to know the glTF node index, glTF interpolation, and the times of the track.
-		const Vector<StringName> subnames = track_path.get_subnames();
 		const GLTFNodeIndex node_i = _node_and_or_bone_to_gltf_node_index(p_state, subnames, animated_node);
 		ERR_CONTINUE_MSG(node_i == -1, "glTF: Cannot get glTF node index for animated track using path: " + String(track_path));
 		const int anim_key_count = animation->track_get_key_count(track_index);
