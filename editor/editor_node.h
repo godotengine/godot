@@ -803,6 +803,8 @@ public:
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings_editor; }
 
+	EditorSettingsDialog *get_editor_settings() { return editor_settings_dialog; }
+
 	void trigger_menu_option(int p_option, bool p_confirmed);
 	bool has_previous_closed_scenes() const;
 

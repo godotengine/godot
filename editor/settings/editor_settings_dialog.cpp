@@ -247,6 +247,10 @@ void EditorSettingsDialog::set_advanced_mode_enabled(bool p_enabled) {
 	advanced_switch->set_pressed(p_enabled);
 }
 
+void EditorSettingsDialog::update_plugins() {
+	tab_plugins->update_plugins();
+}
+
 void EditorSettingsDialog::set_current_section(const String &p_section) {
 	inspector->set_current_section(p_section);
 }

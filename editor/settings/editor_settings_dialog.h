@@ -136,6 +136,8 @@ public:
 	void set_current_section(const String &p_section);
 	void set_advanced_mode_enabled(bool p_enabled);
 
+	void update_plugins();
+
 	EditorSettingsDialog();
 };
 
