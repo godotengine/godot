@@ -168,154 +168,154 @@ static void check_token_color(HighlightedSource &p_source, int p_line, const Str
 } // namespace Highlighter
 
 TEST_SUITE("[Modules][GDScript][SyntaxHighlighter]") {
-TEST_CASE("[Editor] reports GDScript metadata") {
-	Ref<GDScriptSyntaxHighlighter> highlighter;
-	highlighter.instantiate();
+	TEST_CASE("[Editor] reports GDScript metadata") {
+		Ref<GDScriptSyntaxHighlighter> highlighter;
+		highlighter.instantiate();
 
-	CHECK(highlighter->_get_name() == "GDScript");
+		CHECK(highlighter->_get_name() == "GDScript");
 
-	const PackedStringArray languages = highlighter->_get_supported_languages();
-	REQUIRE(languages.size() == 1);
-	CHECK(languages[0] == "GDScript");
-}
+		const PackedStringArray languages = highlighter->_get_supported_languages();
+		REQUIRE(languages.size() == 1);
+		CHECK(languages[0] == "GDScript");
+	}
 
-TEST_CASE("[Editor] highlights declarations, types, calls, and literals") {
-	using namespace Highlighter;
+	TEST_CASE("[Editor] highlights declarations, types, calls, and literals") {
+		using namespace Highlighter;
 
-	HighlighterFixture fixture;
-	const String code = "extends Node2D\n"
-						"@export var health: int = -42\n"
-						"const SPAWN_NAME := &\"Player%d\" % 2\n"
-						"signal hit(amount: float)\n"
-						"func _ready() -> void:\n"
-						"\tvar path: NodePath = ^\"Root/Child\"\n"
-						"\t$Sprite2D.visible = true\n"
-						"\t%HealthBar.value = clampf(health, 0.0, 100.0)\n"
-						"\tprint(\"hp={health}\\n\")\n"
-						"\tself.position.x += TAU\n";
-	HighlightedSource highlighted(code);
+		HighlighterFixture fixture;
+		const String code = "extends Node2D\n"
+							"@export var health: int = -42\n"
+							"const SPAWN_NAME := &\"Player%d\" % 2\n"
+							"signal hit(amount: float)\n"
+							"func _ready() -> void:\n"
+							"\tvar path: NodePath = ^\"Root/Child\"\n"
+							"\t$Sprite2D.visible = true\n"
+							"\t%HealthBar.value = clampf(health, 0.0, 100.0)\n"
+							"\tprint(\"hp={health}\\n\")\n"
+							"\tself.position.x += TAU\n";
+		HighlightedSource highlighted(code);
 
-	check_token_color(highlighted, 0, "extends Node2D", "extends", KEYWORD_COLOR);
-	check_token_color(highlighted, 0, "extends Node2D", "Node2D", ENGINE_TYPE_COLOR);
+		check_token_color(highlighted, 0, "extends Node2D", "extends", KEYWORD_COLOR);
+		check_token_color(highlighted, 0, "extends Node2D", "Node2D", ENGINE_TYPE_COLOR);
 
-	check_token_color(highlighted, 1, "@export var health: int = -42", "@export", ANNOTATION_COLOR);
-	check_token_color(highlighted, 1, "@export var health: int = -42", "var", KEYWORD_COLOR);
-	check_token_color(highlighted, 1, "@export var health: int = -42", "int", TYPE_COLOR);
-	check_token_color(highlighted, 1, "@export var health: int = -42", "-42", NUMBER_COLOR);
+		check_token_color(highlighted, 1, "@export var health: int = -42", "@export", ANNOTATION_COLOR);
+		check_token_color(highlighted, 1, "@export var health: int = -42", "var", KEYWORD_COLOR);
+		check_token_color(highlighted, 1, "@export var health: int = -42", "int", TYPE_COLOR);
+		check_token_color(highlighted, 1, "@export var health: int = -42", "-42", NUMBER_COLOR);
 
-	check_token_color(highlighted, 2, "const SPAWN_NAME := &\"Player%d\" % 2", "const", KEYWORD_COLOR);
-	check_token_color(highlighted, 2, "const SPAWN_NAME := &\"Player%d\" % 2", "&\"Player", STRING_NAME_COLOR);
-	check_token_color(highlighted, 2, "const SPAWN_NAME := &\"Player%d\" % 2", "%d", PLACEHOLDER_COLOR);
-	check_token_color(highlighted, 2, "const SPAWN_NAME := &\"Player%d\" % 2", "2", NUMBER_COLOR);
+		check_token_color(highlighted, 2, "const SPAWN_NAME := &\"Player%d\" % 2", "const", KEYWORD_COLOR);
+		check_token_color(highlighted, 2, "const SPAWN_NAME := &\"Player%d\" % 2", "&\"Player", STRING_NAME_COLOR);
+		check_token_color(highlighted, 2, "const SPAWN_NAME := &\"Player%d\" % 2", "%d", PLACEHOLDER_COLOR);
+		check_token_color(highlighted, 2, "const SPAWN_NAME := &\"Player%d\" % 2", "2", NUMBER_COLOR);
 
-	check_token_color(highlighted, 3, "signal hit(amount: float)", "signal", KEYWORD_COLOR);
-	check_token_color(highlighted, 3, "signal hit(amount: float)", "hit", MEMBER_COLOR);
-	check_token_color(highlighted, 3, "signal hit(amount: float)", "float", TYPE_COLOR);
+		check_token_color(highlighted, 3, "signal hit(amount: float)", "signal", KEYWORD_COLOR);
+		check_token_color(highlighted, 3, "signal hit(amount: float)", "hit", MEMBER_COLOR);
+		check_token_color(highlighted, 3, "signal hit(amount: float)", "float", TYPE_COLOR);
 
-	check_token_color(highlighted, 4, "func _ready() -> void:", "func", KEYWORD_COLOR);
-	check_token_color(highlighted, 4, "func _ready() -> void:", "_ready", FUNCTION_DEFINITION_COLOR);
-	check_token_color(highlighted, 4, "func _ready() -> void:", "void", TYPE_COLOR);
+		check_token_color(highlighted, 4, "func _ready() -> void:", "func", KEYWORD_COLOR);
+		check_token_color(highlighted, 4, "func _ready() -> void:", "_ready", FUNCTION_DEFINITION_COLOR);
+		check_token_color(highlighted, 4, "func _ready() -> void:", "void", TYPE_COLOR);
 
-	check_token_color(highlighted, 5, "\tvar path: NodePath = ^\"Root/Child\"", "NodePath", TYPE_COLOR);
-	check_token_color(highlighted, 5, "\tvar path: NodePath = ^\"Root/Child\"", "^\"Root/Child\"", NODE_PATH_COLOR);
+		check_token_color(highlighted, 5, "\tvar path: NodePath = ^\"Root/Child\"", "NodePath", TYPE_COLOR);
+		check_token_color(highlighted, 5, "\tvar path: NodePath = ^\"Root/Child\"", "^\"Root/Child\"", NODE_PATH_COLOR);
 
-	check_token_color(highlighted, 6, "\t$Sprite2D.visible = true", "$Sprite2D", NODE_REFERENCE_COLOR);
-	check_token_color(highlighted, 6, "\t$Sprite2D.visible = true", "visible", MEMBER_COLOR);
-	check_token_color(highlighted, 6, "\t$Sprite2D.visible = true", "true", KEYWORD_COLOR);
+		check_token_color(highlighted, 6, "\t$Sprite2D.visible = true", "$Sprite2D", NODE_REFERENCE_COLOR);
+		check_token_color(highlighted, 6, "\t$Sprite2D.visible = true", "visible", MEMBER_COLOR);
+		check_token_color(highlighted, 6, "\t$Sprite2D.visible = true", "true", KEYWORD_COLOR);
 
-	check_token_color(highlighted, 7, "\t%HealthBar.value = clampf(health, 0.0, 100.0)", "%HealthBar",
-			NODE_REFERENCE_COLOR);
-	check_token_color(highlighted, 7, "\t%HealthBar.value = clampf(health, 0.0, 100.0)", "value", MEMBER_COLOR);
-	check_token_color(highlighted, 7, "\t%HealthBar.value = clampf(health, 0.0, 100.0)", "clampf", GLOBAL_FUNCTION_COLOR);
-	check_token_color(highlighted, 7, "\t%HealthBar.value = clampf(health, 0.0, 100.0)", "0.0", NUMBER_COLOR);
-	check_token_color(highlighted, 7, "\t%HealthBar.value = clampf(health, 0.0, 100.0)", "100.0", NUMBER_COLOR);
+		check_token_color(highlighted, 7, "\t%HealthBar.value = clampf(health, 0.0, 100.0)", "%HealthBar",
+				NODE_REFERENCE_COLOR);
+		check_token_color(highlighted, 7, "\t%HealthBar.value = clampf(health, 0.0, 100.0)", "value", MEMBER_COLOR);
+		check_token_color(highlighted, 7, "\t%HealthBar.value = clampf(health, 0.0, 100.0)", "clampf", GLOBAL_FUNCTION_COLOR);
+		check_token_color(highlighted, 7, "\t%HealthBar.value = clampf(health, 0.0, 100.0)", "0.0", NUMBER_COLOR);
+		check_token_color(highlighted, 7, "\t%HealthBar.value = clampf(health, 0.0, 100.0)", "100.0", NUMBER_COLOR);
 
-	check_token_color(highlighted, 8, "\tprint(\"hp={health}\\n\")", "print", GLOBAL_FUNCTION_COLOR);
-	check_token_color(highlighted, 8, "\tprint(\"hp={health}\\n\")", "\"hp=", STRING_COLOR);
-	check_token_color(highlighted, 8, "\tprint(\"hp={health}\\n\")", "{health}", PLACEHOLDER_COLOR);
-	check_token_color(highlighted, 8, "\tprint(\"hp={health}\\n\")", "\\n", SYMBOL_COLOR);
+		check_token_color(highlighted, 8, "\tprint(\"hp={health}\\n\")", "print", GLOBAL_FUNCTION_COLOR);
+		check_token_color(highlighted, 8, "\tprint(\"hp={health}\\n\")", "\"hp=", STRING_COLOR);
+		check_token_color(highlighted, 8, "\tprint(\"hp={health}\\n\")", "{health}", PLACEHOLDER_COLOR);
+		check_token_color(highlighted, 8, "\tprint(\"hp={health}\\n\")", "\\n", SYMBOL_COLOR);
 
-	check_token_color(highlighted, 9, "\tself.position.x += TAU", "self", KEYWORD_COLOR);
-	check_token_color(highlighted, 9, "\tself.position.x += TAU", "position", MEMBER_COLOR);
-	check_token_color(highlighted, 9, "\tself.position.x += TAU", "x", MEMBER_COLOR);
-	check_token_color(highlighted, 9, "\tself.position.x += TAU", "TAU", KEYWORD_COLOR);
-}
+		check_token_color(highlighted, 9, "\tself.position.x += TAU", "self", KEYWORD_COLOR);
+		check_token_color(highlighted, 9, "\tself.position.x += TAU", "position", MEMBER_COLOR);
+		check_token_color(highlighted, 9, "\tself.position.x += TAU", "x", MEMBER_COLOR);
+		check_token_color(highlighted, 9, "\tself.position.x += TAU", "TAU", KEYWORD_COLOR);
+	}
 
-TEST_CASE("[Editor] keeps comments, markers, and multiline strings distinct") {
-	using namespace Highlighter;
+	TEST_CASE("[Editor] keeps comments, markers, and multiline strings distinct") {
+		using namespace Highlighter;
 
-	HighlighterFixture fixture;
-	const String code = "#region Gameplay\n"
-						"var text = \"\"\"First\n"
-						"TODO inside string\n"
-						"Third\"\"\"\n"
-						"# TODO: schedule follow-up\n"
-						"## NOTE: exported docs\n"
-						"pass #region not a fold marker\n"
-						"#endregion\n"
-						"var done = true\n";
-	HighlightedSource highlighted(code);
+		HighlighterFixture fixture;
+		const String code = "#region Gameplay\n"
+							"var text = \"\"\"First\n"
+							"TODO inside string\n"
+							"Third\"\"\"\n"
+							"# TODO: schedule follow-up\n"
+							"## NOTE: exported docs\n"
+							"pass #region not a fold marker\n"
+							"#endregion\n"
+							"var done = true\n";
+		HighlightedSource highlighted(code);
 
-	check_token_color(highlighted, 0, "#region Gameplay", "#region", CODE_REGION_COLOR);
-	check_token_color(highlighted, 1, "var text = \"\"\"First", "\"\"\"First", STRING_COLOR);
-	check_token_color(highlighted, 2, "TODO inside string", "TODO", STRING_COLOR);
-	check_token_color(highlighted, 3, "Third\"\"\"", "Third\"\"\"", STRING_COLOR);
+		check_token_color(highlighted, 0, "#region Gameplay", "#region", CODE_REGION_COLOR);
+		check_token_color(highlighted, 1, "var text = \"\"\"First", "\"\"\"First", STRING_COLOR);
+		check_token_color(highlighted, 2, "TODO inside string", "TODO", STRING_COLOR);
+		check_token_color(highlighted, 3, "Third\"\"\"", "Third\"\"\"", STRING_COLOR);
 
-	check_token_color(highlighted, 4, "# TODO: schedule follow-up", "# ", COMMENT_COLOR);
-	check_token_color(highlighted, 4, "# TODO: schedule follow-up", "TODO", COMMENT_MARKER_WARNING_COLOR);
-	check_token_color(highlighted, 4, "# TODO: schedule follow-up", ": schedule", COMMENT_COLOR);
+		check_token_color(highlighted, 4, "# TODO: schedule follow-up", "# ", COMMENT_COLOR);
+		check_token_color(highlighted, 4, "# TODO: schedule follow-up", "TODO", COMMENT_MARKER_WARNING_COLOR);
+		check_token_color(highlighted, 4, "# TODO: schedule follow-up", ": schedule", COMMENT_COLOR);
 
-	check_token_color(highlighted, 5, "## NOTE: exported docs", "## ", DOC_COMMENT_COLOR);
-	check_token_color(highlighted, 5, "## NOTE: exported docs", "NOTE", COMMENT_MARKER_NOTICE_COLOR);
-	check_token_color(highlighted, 5, "## NOTE: exported docs", ": exported", DOC_COMMENT_COLOR);
+		check_token_color(highlighted, 5, "## NOTE: exported docs", "## ", DOC_COMMENT_COLOR);
+		check_token_color(highlighted, 5, "## NOTE: exported docs", "NOTE", COMMENT_MARKER_NOTICE_COLOR);
+		check_token_color(highlighted, 5, "## NOTE: exported docs", ": exported", DOC_COMMENT_COLOR);
 
-	check_token_color(highlighted, 6, "pass #region not a fold marker", "pass", CONTROL_FLOW_KEYWORD_COLOR);
-	check_token_color(highlighted, 6, "pass #region not a fold marker", "#region", COMMENT_COLOR);
+		check_token_color(highlighted, 6, "pass #region not a fold marker", "pass", CONTROL_FLOW_KEYWORD_COLOR);
+		check_token_color(highlighted, 6, "pass #region not a fold marker", "#region", COMMENT_COLOR);
 
-	check_token_color(highlighted, 7, "#endregion", "#endregion", CODE_REGION_COLOR);
-	check_token_color(highlighted, 8, "var done = true", "var", KEYWORD_COLOR);
-	check_token_color(highlighted, 8, "var done = true", "true", KEYWORD_COLOR);
-}
+		check_token_color(highlighted, 7, "#endregion", "#endregion", CODE_REGION_COLOR);
+		check_token_color(highlighted, 8, "var done = true", "var", KEYWORD_COLOR);
+		check_token_color(highlighted, 8, "var done = true", "true", KEYWORD_COLOR);
+	}
 
-TEST_CASE("[Editor] separates raw strings, escape sequences, and prefixed literals") {
-	using namespace Highlighter;
+	TEST_CASE("[Editor] separates raw strings, escape sequences, and prefixed literals") {
+		using namespace Highlighter;
 
-	HighlighterFixture fixture;
-	const String code = "var escaped = \"line\\t%04d\" % 7\n"
-						"var raw = r\"line\\t{placeholder}\"\n"
-						"var refs = value && &\"name\" != ^\"path\"\n";
-	HighlightedSource highlighted(code);
+		HighlighterFixture fixture;
+		const String code = "var escaped = \"line\\t%04d\" % 7\n"
+							"var raw = r\"line\\t{placeholder}\"\n"
+							"var refs = value && &\"name\" != ^\"path\"\n";
+		HighlightedSource highlighted(code);
 
-	check_token_color(highlighted, 0, "var escaped = \"line\\t%04d\" % 7", "\"line", STRING_COLOR);
-	check_token_color(highlighted, 0, "var escaped = \"line\\t%04d\" % 7", "\\t", SYMBOL_COLOR);
-	check_token_color(highlighted, 0, "var escaped = \"line\\t%04d\" % 7", "%04d", PLACEHOLDER_COLOR);
-	check_token_color(highlighted, 0, "var escaped = \"line\\t%04d\" % 7", "7", NUMBER_COLOR);
+		check_token_color(highlighted, 0, "var escaped = \"line\\t%04d\" % 7", "\"line", STRING_COLOR);
+		check_token_color(highlighted, 0, "var escaped = \"line\\t%04d\" % 7", "\\t", SYMBOL_COLOR);
+		check_token_color(highlighted, 0, "var escaped = \"line\\t%04d\" % 7", "%04d", PLACEHOLDER_COLOR);
+		check_token_color(highlighted, 0, "var escaped = \"line\\t%04d\" % 7", "7", NUMBER_COLOR);
 
-	check_token_color(highlighted, 1, "var raw = r\"line\\t{placeholder}\"", "r\"line", STRING_COLOR);
-	check_token_color(highlighted, 1, "var raw = r\"line\\t{placeholder}\"", "\\t", STRING_COLOR);
+		check_token_color(highlighted, 1, "var raw = r\"line\\t{placeholder}\"", "r\"line", STRING_COLOR);
+		check_token_color(highlighted, 1, "var raw = r\"line\\t{placeholder}\"", "\\t", STRING_COLOR);
 
-	check_token_color(highlighted, 2, "var refs = value && &\"name\" != ^\"path\"", "&&", SYMBOL_COLOR);
-	check_token_color(highlighted, 2, "var refs = value && &\"name\" != ^\"path\"", "&\"name\"", STRING_NAME_COLOR);
-	check_token_color(highlighted, 2, "var refs = value && &\"name\" != ^\"path\"", "^\"path\"", NODE_PATH_COLOR);
-}
+		check_token_color(highlighted, 2, "var refs = value && &\"name\" != ^\"path\"", "&&", SYMBOL_COLOR);
+		check_token_color(highlighted, 2, "var refs = value && &\"name\" != ^\"path\"", "&\"name\"", STRING_NAME_COLOR);
+		check_token_color(highlighted, 2, "var refs = value && &\"name\" != ^\"path\"", "^\"path\"", NODE_PATH_COLOR);
+	}
 
-TEST_CASE("[Editor] distinguishes global functions from identifiers and methods") {
-	using namespace Highlighter;
+	TEST_CASE("[Editor] distinguishes global functions from identifiers and methods") {
+		using namespace Highlighter;
 
-	HighlighterFixture fixture;
-	const String code = "func demo():\n"
-						"\tprint\n"
-						"\tprint()\n"
-						"\tobject.print()\n"
-						"\tobject.if\n";
-	HighlightedSource highlighted(code);
+		HighlighterFixture fixture;
+		const String code = "func demo():\n"
+							"\tprint\n"
+							"\tprint()\n"
+							"\tobject.print()\n"
+							"\tobject.if\n";
+		HighlightedSource highlighted(code);
 
-	check_token_color(highlighted, 0, "func demo():", "demo", FUNCTION_DEFINITION_COLOR);
-	check_token_color(highlighted, 1, "\tprint", "print", FONT_COLOR);
-	check_token_color(highlighted, 2, "\tprint()", "print", GLOBAL_FUNCTION_COLOR);
-	check_token_color(highlighted, 3, "\tobject.print()", "print", FUNCTION_COLOR);
-	check_token_color(highlighted, 4, "\tobject.if", "if", MEMBER_COLOR);
-}
+		check_token_color(highlighted, 0, "func demo():", "demo", FUNCTION_DEFINITION_COLOR);
+		check_token_color(highlighted, 1, "\tprint", "print", FONT_COLOR);
+		check_token_color(highlighted, 2, "\tprint()", "print", GLOBAL_FUNCTION_COLOR);
+		check_token_color(highlighted, 3, "\tobject.print()", "print", FUNCTION_COLOR);
+		check_token_color(highlighted, 4, "\tobject.if", "if", MEMBER_COLOR);
+	}
 }
 } // namespace GDScriptTests
 
