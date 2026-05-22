@@ -4401,7 +4401,14 @@ void WaylandThread::window_try_set_mode(DisplayServer::WindowID p_window_id, Dis
 	// Ask the compositor to set the state indicated by the new mode.
 	switch (p_window_mode) {
 		case DisplayServer::WINDOW_MODE_WINDOWED: {
-			// Do nothing. We're already windowed.
+			// Already windowed after the unset above — restore the decoration
+			// subsurface that fullscreen entry explicitly hid. The borderless
+			// flag, if set, gets re-applied separately and will hide it again.
+#ifdef LIBDECOR_ENABLED
+			if (ws.libdecor_frame && !libdecor_frame_is_visible(ws.libdecor_frame)) {
+				libdecor_frame_set_visibility(ws.libdecor_frame, true);
+			}
+#endif // LIBDECOR_ENABLED
 		} break;
 
 		case DisplayServer::WINDOW_MODE_MINIMIZED: {
@@ -4447,6 +4454,14 @@ void WaylandThread::window_try_set_mode(DisplayServer::WindowID p_window_id, Dis
 #ifdef LIBDECOR_ENABLED
 			if (ws.libdecor_frame) {
 				libdecor_frame_set_fullscreen(ws.libdecor_frame, nullptr);
+				// Hide the decoration subsurface explicitly. set_fullscreen
+				// alone queues a configure-driven hide, but the decoration
+				// subsurface keeps its prior buffer until the next commit,
+				// leaving a windowed-size titlebar floating at the top-left
+				// when fullscreen is requested before any frame is presented.
+				if (libdecor_frame_is_visible(ws.libdecor_frame)) {
+					libdecor_frame_set_visibility(ws.libdecor_frame, false);
+				}
 			}
 #endif // LIBDECOR_ENABLED
 		} break;
