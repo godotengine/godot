@@ -380,6 +380,15 @@
 				See [method set_item_disabled] for more info on how to disable an item.
 			</description>
 		</method>
+		<method name="is_item_indeterminate" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at the given [param index] is in an indeterminate state. This only applies to checkable items and is represented visually by a horizontal line instead of a checkmark or radio button.
+				See [method set_item_indeterminate] for more info on how to set an item as indeterminate.
+				[b]Note:[/b] Indeterminate items just display a horizontal line, but don't have any built-in behavior and must be set as indeterminate manually.
+			</description>
+		</method>
 		<method name="is_item_radio_checkable" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="index" type="int" />
@@ -536,6 +545,15 @@
 				Sets the horizontal offset of the item at the given [param index].
 			</description>
 		</method>
+		<method name="set_item_indeterminate">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="indeterminate" type="bool" />
+			<description>
+				Sets the indeterminate status of the item at the given [param index]. This only applies to checkable items and is represented visually by a horizontal line instead of a checkmark or radio button.
+				[b]Note:[/b] Indeterminate items just display a horizontal line, but don't have any built-in behavior and must be set as indeterminate manually.
+			</description>
+		</method>
 		<method name="set_item_index">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -687,6 +705,10 @@
 			The ID of the item at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
 		</member>
+		<member name="item_{index}/indeterminate" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is in an indeterminate state.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
 		<member name="item_{index}/separator" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the item at [code]index[/code] is a separator.
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
@@ -825,6 +847,12 @@
 		</theme_item>
 		<theme_item name="checked_disabled" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the checked checkbox items when they are disabled.
+		</theme_item>
+		<theme_item name="indeterminate" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the indeterminate checkbox items.
+		</theme_item>
+		<theme_item name="indeterminate_disabled" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the indeterminate checkbox items when they are disabled.
 		</theme_item>
 		<theme_item name="radio_checked" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the checked radio button items.

@@ -680,6 +680,26 @@ bool NativeMenuMacOS::is_item_checked(const RID &p_rid, int p_idx) const {
 	return false;
 }
 
+bool NativeMenuMacOS::is_item_indeterminate(const RID &p_rid, int p_idx) const {
+	ERR_FAIL_COND_V(p_idx < 0, false);
+
+	const MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, false);
+
+	int item_start = _get_system_menu_start(md->menu);
+	int item_count = _get_system_menu_count(md->menu);
+	p_idx += item_start;
+	ERR_FAIL_COND_V(p_idx >= item_start + item_count, false);
+	const NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
+	if (menu_item) {
+		const GodotMenuItem *obj = [menu_item representedObject];
+		if (obj) {
+			return obj->indeterminate;
+		}
+	}
+	return false;
+}
+
 bool NativeMenuMacOS::is_item_checkable(const RID &p_rid, int p_idx) const {
 	ERR_FAIL_COND_V(p_idx < 0, false);
 
@@ -996,8 +1016,33 @@ void NativeMenuMacOS::set_item_checked(const RID &p_rid, int p_idx, bool p_check
 		GodotMenuItem *obj = [menu_item representedObject];
 		if (obj) {
 			obj->checked = p_checked;
+			obj->indeterminate = false;
 			if (p_checked) {
 				[menu_item setState:NSControlStateValueOn];
+			} else {
+				[menu_item setState:NSControlStateValueOff];
+			}
+		}
+	}
+}
+
+void NativeMenuMacOS::set_item_indeterminate(const RID &p_rid, int p_idx, bool p_indeterminate) {
+	ERR_FAIL_COND(p_idx < 0);
+
+	MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL(md);
+	int item_start = _get_system_menu_start(md->menu);
+	int item_count = _get_system_menu_count(md->menu);
+	p_idx += item_start;
+	ERR_FAIL_COND(p_idx >= item_start + item_count);
+	NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
+	if (menu_item) {
+		GodotMenuItem *obj = [menu_item representedObject];
+		if (obj) {
+			obj->indeterminate = p_indeterminate;
+			obj->checked = false;
+			if (p_indeterminate) {
+				[menu_item setState:NSControlStateValueMixed];
 			} else {
 				[menu_item setState:NSControlStateValueOff];
 			}

@@ -58,6 +58,10 @@
 			The ID of the item at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
 		</member>
+		<member name="popup/item_{index}/indeterminate" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is in an indeterminate state.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
 		<member name="popup/item_{index}/separator" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the item at [code]index[/code] is a separator.
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
