@@ -200,6 +200,7 @@ void HTTPRequest::cancel_request() {
 		set_process_internal(false);
 	} else {
 		thread_request_quit.set();
+		client->cancel_response_read();
 		if (thread.is_started()) {
 			thread.wait_to_finish();
 		}

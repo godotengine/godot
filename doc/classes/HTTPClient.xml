@@ -20,6 +20,14 @@
 		<link title="TLS certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
+		<method name="cancel_response_read">
+			<return type="void" />
+			<description>
+				Signals to the worker thread to break out of any read loop currently waiting on data from the peer, in order to unblock it from being stuck in [method read_response_body_chunk]. This method has no effect if blocking mode is disabled (see [member blocking_mode_enabled]).
+				[b]Warning:[/b] As a side effect, this closes the current connection, resulting in [constant STATUS_DISCONNECTED].
+				[b]Note:[/b] This method does nothing on the Web platform.
+			</description>
+		</method>
 		<method name="close">
 			<return type="void" />
 			<description>

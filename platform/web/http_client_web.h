@@ -95,6 +95,7 @@ public:
 	Error get_response_headers(List<String> *r_response) override;
 	int64_t get_response_body_length() const override;
 	PackedByteArray read_response_body_chunk() override;
+	void cancel_response_read() override;
 	void set_blocking_mode(bool p_enable) override;
 	bool is_blocking_mode_enabled() const override;
 	void set_read_chunk_size(int p_size) override;

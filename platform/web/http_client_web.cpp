@@ -272,6 +272,10 @@ Error HTTPClientWeb::poll() {
 	return OK;
 }
 
+void HTTPClientWeb::cancel_response_read() {
+	// Do nothing.
+}
+
 HTTPClient *HTTPClientWeb::_create_func(bool p_notify_postinitialize) {
 	return static_cast<HTTPClient *>(ClassDB::creator<HTTPClientWeb>(p_notify_postinitialize));
 }

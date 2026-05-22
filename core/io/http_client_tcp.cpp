@@ -217,6 +217,8 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	status = STATUS_REQUESTING;
 	head_request = p_method == METHOD_HEAD;
 
+	flag_cancel_read.clear();
+
 	return OK;
 }
 
@@ -469,6 +471,11 @@ Error HTTPClientTCP::poll() {
 				uint8_t byte;
 				int rec = 0;
 				Error err = _get_http_data(&byte, 1, rec);
+				if (err == ERR_SKIP) {
+					close();
+					status = STATUS_DISCONNECTED;
+					return ERR_UNCONFIGURED;
+				}
 				if (err != OK) {
 					close();
 					status = STATUS_CONNECTION_ERROR;
@@ -587,6 +594,9 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 				if (rec == 0) {
 					break;
 				}
+				if (err == ERR_SKIP) {
+					break;
+				}
 
 				chunk.push_back(b);
 				int cs = chunk.size();
@@ -609,6 +619,9 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 				err = _get_http_data(&b, 1, rec);
 
 				if (rec == 0) {
+					break;
+				}
+				if (err == ERR_SKIP) {
 					break;
 				}
 
@@ -658,9 +671,14 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 			} else {
 				int rec = 0;
 				err = _get_http_data(&chunk.write[chunk.size() - chunk_left], chunk_left, rec);
+
 				if (rec == 0) {
 					break;
 				}
+				if (err == ERR_SKIP) {
+					break;
+				}
+
 				chunk_left -= rec;
 
 				if (chunk_left == 0) {
@@ -711,8 +729,8 @@ PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 	if (err != OK) {
 		close();
 
-		if (err == ERR_FILE_EOF) {
-			status = STATUS_DISCONNECTED; // Server disconnected.
+		if (err == ERR_FILE_EOF || err == ERR_SKIP) {
+			status = STATUS_DISCONNECTED; // Server disconnected or cancel_response_read() was called.
 		} else {
 			status = STATUS_CONNECTION_ERROR;
 		}
@@ -744,6 +762,9 @@ Error HTTPClientTCP::_get_http_data(uint8_t *p_buffer, int p_bytes, int &r_recei
 		int left = p_bytes;
 		r_received = 0;
 		while (left > 0) {
+			if (flag_cancel_read.is_set()) {
+				return ERR_SKIP;
+			}
 			err = connection->get_partial_data(p_buffer + r_received, left, read);
 			if (err == OK) {
 				r_received += read;
@@ -788,6 +809,10 @@ void HTTPClientTCP::set_https_proxy(const String &p_host, int p_port) {
 		https_proxy_host = p_host;
 		https_proxy_port = p_port;
 	}
+}
+
+void HTTPClientTCP::cancel_response_read() {
+	flag_cancel_read.set();
 }
 
 HTTPClientTCP::HTTPClientTCP() {

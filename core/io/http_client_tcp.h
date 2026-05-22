@@ -71,6 +71,8 @@ private:
 	Ref<StreamPeer> connection;
 	Ref<HTTPClientTCP> proxy_client; // Negotiate with proxy server.
 
+	SafeFlag flag_cancel_read;
+
 	int response_num = 0;
 	Vector<String> response_headers;
 	// 64 KiB by default (favors fast download speeds at the cost of memory usage).
@@ -94,6 +96,7 @@ public:
 	Error get_response_headers(List<String> *r_response) override;
 	int64_t get_response_body_length() const override;
 	PackedByteArray read_response_body_chunk() override;
+	void cancel_response_read() override;
 	void set_blocking_mode(bool p_enable) override;
 	bool is_blocking_mode_enabled() const override;
 	void set_read_chunk_size(int p_size) override;

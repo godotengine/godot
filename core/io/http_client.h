@@ -182,6 +182,7 @@ public:
 	virtual int64_t get_response_body_length() const = 0;
 
 	virtual PackedByteArray read_response_body_chunk() = 0; // Can't get body as partial text because of most encodings UTF8, gzip, etc.
+	virtual void cancel_response_read() = 0;
 
 	virtual void set_blocking_mode(bool p_enable) = 0; // Useful mostly if running in a thread
 	virtual bool is_blocking_mode_enabled() const = 0;
