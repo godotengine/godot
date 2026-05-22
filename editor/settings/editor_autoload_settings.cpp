@@ -45,7 +45,6 @@
 #include "scene/gui/button.h"
 #include "scene/gui/tree.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
 #define PREVIEW_LIST_MAX_SIZE 10
@@ -907,6 +906,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	add_child(mc);
 
 	tree = memnew(Tree);
+	tree->set_row_stripes_visible(true);
 	tree->set_accessibility_name(TTRC("Autoloads"));
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);

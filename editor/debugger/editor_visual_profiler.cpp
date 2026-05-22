@@ -862,6 +862,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	variables->set_column_clip_content(2, true);
 	variables->set_column_custom_minimum_width(2, 75 * EDSCALE);
 	variables->set_theme_type_variation("TreeSecondary");
+	variables->set_row_stripes_visible(true);
 	variables->connect("cell_selected", callable_mp(this, &EditorVisualProfiler::_item_selected));
 	variables->connect("item_collapsed", callable_mp(this, &EditorVisualProfiler::_item_collapsed));
 
