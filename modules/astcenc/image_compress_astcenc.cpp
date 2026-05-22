@@ -257,9 +257,6 @@ void _decompress_astc(Image *r_img) {
 
 		int dst_mip_w, dst_mip_h;
 		const int64_t dst_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, dst_mip_w, dst_mip_h);
-
-		// Ensure that mip offset is a multiple of 8 (etcpak expects uint64_t pointer).
-		ERR_FAIL_COND(dst_ofs % 8 != 0);
 		uint8_t *dest_mip_write = &dest_write[dst_ofs];
 
 		astcenc_image image;
@@ -267,7 +264,6 @@ void _decompress_astc(Image *r_img) {
 		image.dim_y = dst_mip_h;
 		image.dim_z = 1;
 		image.data_type = is_hdr ? ASTCENC_TYPE_F16 : ASTCENC_TYPE_U8;
-
 		image.data = (void **)(&dest_mip_write);
 
 		const astcenc_swizzle swizzle = {
