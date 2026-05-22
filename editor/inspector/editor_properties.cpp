@@ -3392,7 +3392,15 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 	resource_picker->set_editable(!p_read_only);
 }
 
-void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_inspect, bool p_force_open) {
+void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_inspect) {
+	_select_resource(p_resource, p_inspect, false);
+}
+
+void EditorPropertyResource::_resource_expand_requested(const Ref<Resource> &p_resource, bool p_inspect) {
+	_select_resource(p_resource, p_inspect, true);
+}
+
+void EditorPropertyResource::_select_resource(const Ref<Resource> &p_resource, bool p_inspect, bool p_force_open) {
 	if (p_resource->is_built_in() && !p_resource->get_path().is_empty()) {
 		String parent = p_resource->get_path().get_slice("::", 0);
 		List<String> extensions;
@@ -3649,6 +3657,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 
 	resource_picker->connect("resource_selected", callable_mp(this, &EditorPropertyResource::_resource_selected));
 	resource_picker->connect("resource_changed", callable_mp(this, &EditorPropertyResource::_resource_changed));
+	resource_picker->connect("resource_expand_requested", callable_mp(this, &EditorPropertyResource::_resource_expand_requested));
 
 	for (int i = 0; i < resource_picker->get_child_count(); i++) {
 		Button *b = Object::cast_to<Button>(resource_picker->get_child(i));

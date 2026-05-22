@@ -225,7 +225,7 @@ void EditorResourcePicker::_resource_selected() {
 		return;
 	}
 
-	emit_signal(SNAME("resource_selected"), edited_resource, false, false);
+	emit_signal(SNAME("resource_selected"), edited_resource, false);
 }
 
 void EditorResourcePicker::_resource_changed() {
@@ -485,7 +485,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 		case OBJ_MENU_INSPECT: {
 			if (edited_resource.is_valid()) {
-				emit_signal(SNAME("resource_selected"), edited_resource, true, true);
+				emit_signal(SNAME("resource_selected"), edited_resource, true);
 			}
 		} break;
 
@@ -644,7 +644,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			if (edited_resource.is_valid() && bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"))) {
 				// Expand newly created resources, as the user will most likely want to change at least one property within the resource.
 				// This is disabled when resources are forcibly opened in a new inspector, as it would be too intrusive.
-				emit_signal(SNAME("resource_selected"), edited_resource, false, true);
+				emit_signal(SNAME("resource_expand_requested"), edited_resource, false);
 			}
 		} break;
 	}
@@ -1055,8 +1055,9 @@ void EditorResourcePicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), PropertyInfo(Variant::BOOL, "inspect"), PropertyInfo(Variant::BOOL, "force_open")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), PropertyInfo(Variant::BOOL, "inspect")));
 	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
+	ADD_SIGNAL(MethodInfo("resource_expand_requested", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), PropertyInfo(Variant::BOOL, "inspect")));
 }
 
 void EditorResourcePicker::_notification(int p_what) {

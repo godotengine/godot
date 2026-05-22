@@ -750,7 +750,9 @@ class EditorPropertyResource : public EditorProperty {
 	bool use_filter = false;
 	bool user_opened_editor = false;
 
-	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect, bool p_force_open = false);
+	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
+	void _resource_expand_requested(const Ref<Resource> &p_resource, bool p_inspect);
+	void _select_resource(const Ref<Resource> &p_resource, bool p_inspect, bool p_force_open);
 	void _resource_changed(const Ref<Resource> &p_resource);
 
 	Node *_get_base_node();
