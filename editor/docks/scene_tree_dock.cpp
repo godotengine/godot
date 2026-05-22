@@ -1330,6 +1330,16 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 		} break;
+		case TOOL_COPY_TREE_STRUCTURE: {
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
+			const List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
+					DisplayServer::get_singleton()->clipboard_set(node->get_tree_string_pretty());
+				}
+			}
+		} break;
 		case TOOL_AUTO_EXPAND: {
 			scene_tree->set_auto_expand_selected(!EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), true);
 		} break;
@@ -4132,6 +4142,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 
 	menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), TTR("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
+
+	if (full_selection.size() == 1) {
+		menu->add_icon_item(get_editor_theme_icon(SNAME("FileTree")), TTR("Copy Tree Structure"), TOOL_COPY_TREE_STRUCTURE);
+	}
 
 	if (profile_allow_editing) {
 		menu->add_separator();
