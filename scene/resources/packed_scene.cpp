@@ -1046,7 +1046,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			}
 		}
 
-		if (!pinned_props.has(name)) {
+		if (!(E.usage & PROPERTY_USAGE_STORE_DEFAULT) && !pinned_props.has(name)) {
 			bool is_valid_default = false;
 			Variant default_value = PropertyUtils::get_property_default_value(p_node, name, &is_valid_default, &states_stack, true);
 
