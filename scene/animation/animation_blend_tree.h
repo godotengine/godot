@@ -36,6 +36,10 @@
 class AnimationNodeAnimation : public AnimationRootNode {
 	GDCLASS(AnimationNodeAnimation, AnimationRootNode);
 
+#ifdef TOOLS_ENABLED
+	void push_issues(AnimationTree *p_tree, const StringName &p_path);
+#endif
+
 	StringName backward = "backward"; // Only used by pingpong animation.
 
 	StringName animation;
@@ -55,7 +59,7 @@ public:
 		PLAY_MODE_BACKWARD
 	};
 
-	virtual void validate_node(const AnimationTree *p_tree, const StringName &p_path) const override;
+	virtual void prepare(AnimationTree *p_tree, const AnimationNodeInstance &p_instance) override;
 
 	void get_parameter_list(LocalVector<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
@@ -104,7 +108,7 @@ protected:
 private:
 	PlayMode play_mode = PLAY_MODE_FORWARD;
 
-	void _update_animation_cache(AnimationTree *p_tree, AnimationNodeInstance &p_instance) const;
+	void _update_animation_cache(AnimationTree *p_tree, const AnimationNodeInstance &p_instance) const;
 };
 
 VARIANT_ENUM_CAST(AnimationNodeAnimation::PlayMode)
@@ -444,7 +448,7 @@ public:
 		//no need to check for cycles due to tree topology
 	};
 
-	virtual void validate_node(const AnimationTree *p_tree, const StringName &p_path) const override;
+	virtual void prepare(AnimationTree *p_tree, const AnimationNodeInstance &p_instance) override;
 
 	void add_node(const StringName &p_name, const Ref<AnimationNode> &p_node, const Vector2 &p_position = Vector2());
 	Ref<AnimationNode> get_node(const StringName &p_name) const;

@@ -35,6 +35,10 @@
 class AnimationNodeBlendSpace2D : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode);
 
+#ifdef TOOLS_ENABLED
+	void push_issues(AnimationTree *p_tree, const StringName &p_path);
+#endif
+
 public:
 	enum BlendMode {
 		BLEND_MODE_INTERPOLATED,
@@ -115,7 +119,7 @@ protected:
 #endif
 
 public:
-	virtual void validate_node(const AnimationTree *p_tree, const StringName &p_path) const override;
+	virtual void prepare(AnimationTree *p_tree, const AnimationNodeInstance &p_instance) override;
 
 	virtual void get_parameter_list(LocalVector<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;

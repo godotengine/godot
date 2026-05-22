@@ -34,6 +34,25 @@
 #include "core/object/class_db.h"
 #include "scene/animation/animation_blend_tree.h"
 
+#if TOOLS_ENABLED
+#include "core/config/engine.h"
+
+void AnimationNodeBlendSpace1D::push_issues(AnimationTree *p_tree, const StringName &p_path) {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	if (blend_points_used == 0) {
+		p_tree->push_issue(p_path, TTR("No blend points exist, so blending cannot take place."));
+	}
+
+	if (is_contain_invalid_point) {
+		p_tree->push_issue(p_path, TTR("Cyclic sync modes require that all blend points in BlendSpace use non-nested Animation nodes with a finite, immutable length."));
+	}
+}
+
+#endif
+
 void AnimationNodeBlendSpace1D::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_position));
@@ -74,12 +93,12 @@ void AnimationNodeBlendSpace1D::_animation_node_removed(const ObjectID &p_oid, c
 	AnimationRootNode::_animation_node_removed(p_oid, p_node);
 }
 
-void AnimationNodeBlendSpace1D::validate_node(const AnimationTree *p_tree, const StringName &p_path) const {
-	AnimationRootNode::validate_node(p_tree, p_path);
-
-	if (get_blend_point_count() == 0) {
-		add_validation_error(p_tree, p_path, RTR("No blend points exist, so blending cannot take place."));
-	}
+void AnimationNodeBlendSpace1D::prepare(AnimationTree *p_tree, const AnimationNodeInstance &p_instance) {
+	AnimationRootNode::prepare(p_tree, p_instance);
+	_check_can_sync();
+#ifdef TOOLS_ENABLED
+	push_issues(p_tree, p_instance.path);
+#endif
 }
 
 void AnimationNodeBlendSpace1D::_bind_methods() {
@@ -424,6 +443,9 @@ void AnimationNodeBlendSpace1D::_check_can_sync() {
 
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	if (!blend_points_used || is_contain_invalid_point) {
+#ifdef TOOLS_ENABLED
+		push_issues(p_process_state.tree, p_instance.path);
+#endif
 		return NodeTimeInfo();
 	}
 

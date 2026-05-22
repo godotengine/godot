@@ -630,7 +630,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 		blend_space_draw->draw_primitive(bl_points, colors, Vector<Vector2>());
 	}
 
-	bool does_include_invalid_key = false;
 	points.clear();
 	for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
 		Vector2 point = blend_space->get_blend_point_position(i);
@@ -656,7 +655,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			Ref<AnimationNodeAnimation> anim_node = node;
 			if (anim_node.is_null()) {
 				is_key_valid = false;
-				does_include_invalid_key = true;
 			}
 		}
 		Vector2 gui_point = (ofs + point - icon->get_size() / 2).floor();
@@ -682,9 +680,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			text_rects.write[i] = Rect2(Vector2(text_pos.x, text_pos.y - font->get_ascent(font_size)), text_size);
 		}
 	}
-	AnimationTreeEditor::get_singleton()->current_playback_error = does_include_invalid_key
-			? TTR("Cyclic sync modes require that all blend points in BlendSpace use non-nested Animation nodes with a finite, immutable length.")
-			: String();
 
 	if (making_triangle.size()) {
 		Vector<Vector2> bl_points;
@@ -1020,11 +1015,6 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), TTR("Capture"), 2);
-		} break;
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible_in_tree()) {
-				AnimationTreeEditor::get_singleton()->current_playback_error = String();
-			}
 		} break;
 	}
 }

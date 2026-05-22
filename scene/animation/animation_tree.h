@@ -100,14 +100,12 @@ public:
 	};
 
 	struct InvalidInstance {
-		LocalVector<String> errors;
-
-		struct InputError {
-			int index;
-			String error;
+		struct Issue {
+			String message;
+			int input_index;
 		};
 
-		LocalVector<InputError> input_errors;
+		LocalVector<Issue> issues;
 	};
 
 	// Temporary state for blending process which needs to be started in the AnimationTree, pass through the AnimationNodes, and then return to the AnimationTree.
@@ -116,7 +114,6 @@ public:
 		const AHashMap<NodePath, int> *track_map; // TODO: Is there a better way to manage filter/tracks?
 		bool track_map_updated = false;
 		bool is_testing = false;
-		bool valid = false;
 		mutable AHashMap<StringName, InvalidInstance> invalid_instances;
 		uint64_t last_pass = 0;
 	};
@@ -136,13 +133,19 @@ public:
 
 	friend class AnimationNodeBlendTree;
 
-	virtual void validate_node(const AnimationTree *p_tree, const StringName &p_path) const {}
+	// Called when the animation graph needs to refresh cached state, or update issues.
+	// For performance reasons, this should only be invoked when there is a change.
+	virtual void prepare(AnimationTree *p_tree, const AnimationNodeInstance &p_instance) {}
 	// The time information is passed from upstream to downstream by AnimationMixer::PlaybackInfo::p_playback_info until AnimationNodeAnimation processes it.
 	// Conversely, AnimationNodeAnimation returns the processed result as NodeTimeInfo from downstream to upstream.
 	NodeTimeInfo _blend_node(ProcessState &p_process_state, AnimationNodeInstance &p_instance, AnimationNodeInstance &p_other, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false, real_t *r_activity = nullptr);
 	NodeTimeInfo _pre_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false);
 
 protected:
+#ifdef TOOLS_ENABLED
+	void push_blend_input_issue(AnimationTree *p_tree, const StringName &p_path, int p_input_index);
+#endif
+
 	StringName current_length = "current_length";
 	StringName current_position = "current_position";
 	StringName current_delta = "current_delta";
@@ -162,9 +165,6 @@ protected:
 	void blend_animation_ex(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
 	double blend_node_ex(const StringName &p_sub_path, const Ref<AnimationNode> &p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
 	double blend_input_ex(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
-
-	void add_validation_error(const AnimationTree *p_tree, const StringName &p_path, const String &p_error, int p_input_index = -1) const;
-	void make_invalid(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const String &p_reason);
 
 	static void _bind_methods();
 
@@ -237,6 +237,9 @@ VARIANT_ENUM_CAST(AnimationNode::FilterAction)
 class AnimationRootNode : public AnimationNode {
 	GDCLASS(AnimationRootNode, AnimationNode);
 
+public:
+	virtual void prepare(AnimationTree *p_tree, const AnimationNodeInstance &p_instance) override;
+
 protected:
 	void _add_node(const Ref<AnimationNode> &p_node);
 	void _remove_node(const Ref<AnimationNode> &p_node);
@@ -289,9 +292,9 @@ struct AnimationNodeInstance {
 	LocalVector<Activity> input_activity;
 #endif
 
-	// Cache for AnimationNodeAnimation
-	Ref<Animation> cached_animation;
-	uint32_t cached_animation_version = 0;
+	// Cache for AnimationNodeAnimation (Nullable)
+	mutable Ref<Animation> cached_animation;
+	mutable uint32_t cached_animation_version = 0;
 
 	// Macro to define all slots.
 	// slot index, enum name, member name, variant type, native type
@@ -421,7 +424,7 @@ struct AnimationNodeInstance {
 		return instance;
 	}
 
-	_FORCE_INLINE_ AnimationNodeInstance &get_child_instance_by_path(const StringName &p_path) {
+	_FORCE_INLINE_ AnimationNodeInstance &get_child_instance_by_path(const StringName &p_path) const {
 		AnimationNodeInstance **instance_ptr = child_instances.getptr(p_path);
 		CRASH_COND_MSG(!instance_ptr, "No child instance found for path: \"" + String(p_path) + "\".");
 		AnimationNodeInstance *instance = *instance_ptr;
@@ -446,6 +449,9 @@ private:
 	Ref<AnimationRootNode> root_animation_node;
 	NodePath advance_expression_base_node = NodePath(String("."));
 
+	// Preparation issues are stored separately from process state issues
+	// so warnings persist between process frames.
+	mutable AHashMap<StringName, AnimationNode::InvalidInstance> preparation_warnings;
 	AnimationNode::ProcessState process_state;
 	uint64_t process_pass = 1;
 	uint64_t last_track_map_version = 0;
@@ -460,13 +466,9 @@ private:
 	mutable AHashMap<ObjectID, HashSet<StringName>> instance_paths;
 
 	mutable bool properties_dirty = true;
-	mutable bool validation_dirty = true;
-	mutable bool validation_successful = false;
+	mutable bool nodes_dirty = true;
 
 	void _update_properties() const;
-	void _validate_animation_graph(const StringName &p_path, const Ref<AnimationNode> &p_node) const;
-	void _update_connections();
-	void _add_validation_error(const StringName &p_path, const String &p_error, int p_input_index = -1) const;
 	void _update_properties_for_node(const StringName &p_base_path, const Ref<AnimationNode> &p_node) const;
 
 	void _tree_changed();
@@ -544,8 +546,17 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
-	bool is_state_invalid() const;
-	const AHashMap<StringName, AnimationNode::InvalidInstance> &get_invalid_instances() const;
+#ifdef TOOLS_ENABLED
+	void push_issue(const StringName &p_path, const String &p_message, int p_input_index = -1);
+
+public:
+	const AHashMap<StringName, AnimationNode::InvalidInstance> &get_warning_issues() const {
+		return preparation_warnings;
+	}
+	const AHashMap<StringName, AnimationNode::InvalidInstance> &get_error_issues() const {
+		return process_state.invalid_instances;
+	}
+#endif
 
 	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
 
