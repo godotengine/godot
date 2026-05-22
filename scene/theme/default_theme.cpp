@@ -766,6 +766,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("checked_disabled", "PopupMenu", icons["checked_disabled"]);
 	theme->set_icon("unchecked", "PopupMenu", icons["unchecked"]);
 	theme->set_icon("unchecked_disabled", "PopupMenu", icons["unchecked_disabled"]);
+	theme->set_icon("indeterminate", "PopupMenu", icons["indeterminate"]);
+	theme->set_icon("indeterminate_disabled", "PopupMenu", icons["indeterminate_disabled"]);
 	theme->set_icon("radio_checked", "PopupMenu", icons["radio_checked"]);
 	theme->set_icon("radio_checked_disabled", "PopupMenu", icons["radio_checked_disabled"]);
 	theme->set_icon("radio_unchecked", "PopupMenu", icons["radio_unchecked"]);
