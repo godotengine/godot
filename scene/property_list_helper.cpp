@@ -161,10 +161,6 @@ void PropertyListHelper::add_properties_for_index(int p_index, List<PropertyInfo
 		}
 
 		PropertyInfo info = property.info;
-		if (!(info.usage & PROPERTY_USAGE_STORE_IF_NULL) && _call_getter(&property, p_index) == property.default_value) {
-			info.usage &= (~PROPERTY_USAGE_STORAGE);
-		}
-
 		info.name = vformat("%s%d/%s", prefix, p_index, info.name);
 		p_list->push_back(info);
 	}
