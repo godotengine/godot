@@ -378,7 +378,7 @@ void EditorProperty::_notification(int p_what) {
 					if (is_layout_rtl()) {
 						rect = Rect2(1, 0, child_room, height);
 					} else {
-						rect = Rect2(size.width - child_room, 0, child_room, height);
+						rect = Rect2( MAX(0, size.width - child_room), 0, MAX(0, child_room), height ); // item sizing fix
 					}
 				}
 
@@ -452,6 +452,14 @@ void EditorProperty::_notification(int p_what) {
 				}
 				if (c == right_container) {
 					continue;
+				}
+				
+				// hide if width is 0 or less
+				if (rect.size.x <= 0) {
+					c->hide();
+					continue;
+				} else {
+					c->show();
 				}
 
 				fit_child_in_rect(c, rect);
@@ -534,6 +542,7 @@ void EditorProperty::_notification(int p_what) {
 			int left_ofs = left_container->get_combined_minimum_size().x;
 			ofs += left_ofs;
 			text_limit -= left_ofs;
+			text_limit = MAX(text_limit, 0); //  one line fix to prevent negative scaling...
 
 			if (checkable) {
 				Ref<Texture2D> checkbox;
@@ -627,10 +636,12 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			int v_ofs = (size.height - font->get_height(font_size)) / 2;
-			if (rtl) {
-				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
-			} else {
-				draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
+			if (text_limit > 0) { 
+				if (rtl) {
+					draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
+				} else {
+					draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
+				}
 			}
 
 			ofs = size.width;
