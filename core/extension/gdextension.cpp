@@ -949,11 +949,7 @@ void GDExtension::prepare_reload() {
 				Variant value = obj->get(P.name);
 				Variant default_value = ClassDB::class_get_default_property_value(obj->get_class_name(), P.name);
 
-				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
-					continue;
-				}
-
-				if (P.type == Variant::OBJECT && value.is_zero() && !(P.usage & PROPERTY_USAGE_STORE_IF_NULL)) {
+				if (value.hash_compare(default_value) && !(P.usage & PROPERTY_USAGE_STORE_DEFAULT)) {
 					continue;
 				}
 

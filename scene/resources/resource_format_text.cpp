@@ -1985,11 +1985,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				bool is_script = name == CoreStringName(script);
 				Variant default_value = is_script ? Variant() : PropertyUtils::get_property_default_value(res.ptr(), name);
 
-				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
-					continue;
-				}
-
-				if (pi.type == Variant::OBJECT && value.is_zero() && !(pi.usage & PROPERTY_USAGE_STORE_IF_NULL)) {
+				if (value.hash_compare(default_value) && !(pi.usage & PROPERTY_USAGE_STORE_DEFAULT)) {
 					continue;
 				}
 

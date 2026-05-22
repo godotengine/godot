@@ -99,9 +99,9 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_NO_INSTANCE_STATE = 1 << 10,
 	PROPERTY_USAGE_RESTART_IF_CHANGED = 1 << 11,
 	PROPERTY_USAGE_SCRIPT_VARIABLE = 1 << 12,
-	PROPERTY_USAGE_STORE_IF_NULL = 1 << 13,
+	PROPERTY_USAGE_STORE_DEFAULT = 1 << 13, // Always store properties, even when they are equal to their default. Helpful for dynamically initialized properties were the dynamic default can overlap with the constant default.
 	PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED = 1 << 14,
-	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE = 1 << 15, // Deprecated.
+	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE [[deprecated]] = 1 << 15, // Deprecated.
 	PROPERTY_USAGE_CLASS_IS_ENUM = 1 << 16,
 	PROPERTY_USAGE_NIL_IS_VARIANT = 1 << 17,
 	PROPERTY_USAGE_ARRAY = 1 << 18, // Used in the inspector to group properties as elements of an array.
@@ -111,7 +111,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT = 1 << 22,
 	PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT = 1 << 23,
 	PROPERTY_USAGE_KEYING_INCREMENTS = 1 << 24, // Used in inspector to increment property when keyed in animation player.
-	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 25, // Deprecated.
+	PROPERTY_USAGE_DEFERRED_SET_RESOURCE [[deprecated]] = 1 << 25, // Deprecated.
 	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 26, // For Object properties, instantiate them when creating in editor.
 	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 27, //for project or editor settings, show when basic settings are selected.
 	PROPERTY_USAGE_READ_ONLY = 1 << 28, // Mark a property as read-only in the inspector.
@@ -119,6 +119,10 @@ enum PropertyUsageFlags {
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
+
+#ifndef DISABLE_DEPRECATED
+	PROPERTY_USAGE_STORE_IF_NULL [[deprecated("Use PROPERTY_USAGE_STORE_DEFAULT instead.")]] = PROPERTY_USAGE_STORE_DEFAULT,
+#endif
 };
 
 struct PropertyInfo {
