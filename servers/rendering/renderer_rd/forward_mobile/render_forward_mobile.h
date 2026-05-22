@@ -417,6 +417,8 @@ private:
 
 	RenderList render_list[RENDER_LIST_MAX];
 
+	bool avoid_subpass_post_process = false;
+
 protected:
 	/* setup */
 	virtual void _update_shader_quality_settings() override;
