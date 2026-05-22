@@ -142,6 +142,8 @@ public:
 	void set_advanced_mode_enabled(bool p_enabled);
 	static EditorSettingsDialog *get_singleton() { return singleton; }
 
+	void update_plugins();
+
 	EditorSettingsDialog();
 	~EditorSettingsDialog();
 };
