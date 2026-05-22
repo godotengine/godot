@@ -35,6 +35,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
+#include "scene/resources/shader_template.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
@@ -131,6 +132,21 @@ void Shader::set_code(const String &p_code) {
 	}
 
 	if (shader_rid.is_valid()) {
+		Ref<ShaderTemplate> new_shader_template;
+
+		String shader_template_path = ShaderLanguage::get_shader_template(preprocessed_code);
+		if (!shader_template_path.is_empty()) {
+			new_shader_template = ResourceLoader::load(shader_template_path);
+		}
+		if (shader_template != new_shader_template) {
+			shader_template = new_shader_template;
+			if (shader_template.is_valid()) {
+				RenderingServer::get_singleton()->shader_set_shader_template(shader_rid, shader_template->get_rid(), true);
+			} else {
+				RenderingServer::get_singleton()->shader_set_shader_template(shader_rid, RID());
+			}
+		}
+
 		RenderingServer::get_singleton()->shader_set_code(shader_rid, preprocessed_code);
 		preprocessed_code = String();
 	}
