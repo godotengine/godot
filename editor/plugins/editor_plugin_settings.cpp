@@ -106,6 +106,7 @@ void EditorPluginSettings::update_plugins() {
 				String version = cfg->get_value("plugin", "version");
 				String description = cfg->get_value("plugin", "description");
 				String scr = cfg->get_value("plugin", "script");
+				int scope = cfg->get_value("plugin", "scope", EditorPlugin::SCOPE_PROJECT);
 
 				bool is_enabled = EditorNode::get_singleton()->is_addon_plugin_enabled(path);
 				Color disabled_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
@@ -139,6 +140,23 @@ void EditorPluginSettings::update_plugins() {
 				item->set_checked(COLUMN_STATUS, is_enabled);
 				item->set_editable(COLUMN_STATUS, true);
 				item->add_button(COLUMN_EDIT, get_editor_theme_icon(SNAME("Edit")), BUTTON_PLUGIN_EDIT, false, TTRC("Edit Plugin"));
+
+				if ((scope == EditorPlugin::SCOPE_PROJECT && is_editor_plugins) || (scope == EditorPlugin::SCOPE_EDITOR && !is_editor_plugins)) {
+					String warning_text;
+
+					if (is_editor_plugins) {
+						warning_text = TTRC("This plugin is incompatible with editor-wide plugins.");
+					} else {
+						warning_text = TTRC("This plugin is incompatible with project-wide plugins.");
+					}
+					item->add_button(COLUMN_STATUS, get_editor_theme_icon(SNAME("StatusError")), -1, false, warning_text);
+
+					if (is_enabled) {
+						item->set_checked(COLUMN_STATUS, false);
+						_update_plugin_enabled(item);
+					}
+					item->set_editable(COLUMN_STATUS, false);
+				}
 			}
 		}
 	}
@@ -153,6 +171,12 @@ void EditorPluginSettings::_plugin_activity_changed() {
 
 	TreeItem *ti = plugin_list->get_edited();
 	ERR_FAIL_NULL(ti);
+	_update_plugin_enabled(ti);
+}
+
+void EditorPluginSettings::_update_plugin_enabled(Object *p_item) {
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+
 	bool checked = ti->is_checked(COLUMN_STATUS);
 	String name = ti->get_metadata(COLUMN_NAME);
 

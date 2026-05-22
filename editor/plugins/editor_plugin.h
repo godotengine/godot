@@ -110,6 +110,12 @@ public:
 		AFTER_GUI_INPUT_CUSTOM,
 	};
 
+	enum {
+		SCOPE_PROJECT,
+		SCOPE_EDITOR,
+		SCOPE_EDITOR_AND_PROJECT,
+	};
+
 protected:
 	void _notification(int p_what);
 

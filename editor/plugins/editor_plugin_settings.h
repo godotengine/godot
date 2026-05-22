@@ -60,6 +60,7 @@ class EditorPluginSettings : public VBoxContainer {
 	bool is_editor_plugins = false;
 
 	void _plugin_activity_changed();
+	void _update_plugin_enabled(Object *p_item);
 	void _create_clicked();
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
