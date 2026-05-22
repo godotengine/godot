@@ -467,7 +467,15 @@ void TabBar::_notification(int p_what) {
 					AccessibilityServer::get_singleton()->update_add_action(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &TabBar::_accessibility_action_focus).bind(i));
 
 					AccessibilityServer::get_singleton()->update_set_list_item_index(item.accessibility_item_element, i);
-					AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, atr(item.text));
+					if (!item.ac_name.is_empty()) {
+						AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, atr(item.ac_name));
+					} else if (!item.text.is_empty()) {
+						AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, atr(item.text));
+					} else if (!item.tooltip.is_empty()) {
+						AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, atr(item.tooltip));
+					} else {
+						AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, vformat(atr("Tab %d"), i + 1));
+					}
 					AccessibilityServer::get_singleton()->update_set_list_item_selected(item.accessibility_item_element, i == current);
 					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED, item.disabled);
 					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, item.hidden);
@@ -947,6 +955,23 @@ void TabBar::set_tab_title(int p_tab, const String &p_title) {
 String TabBar::get_tab_title(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), "");
 	return tabs[p_tab].text;
+}
+
+void TabBar::set_tab_accessibility_name(int p_tab, const String &p_name) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+
+	if (tabs[p_tab].ac_name == p_name) {
+		return;
+	}
+
+	tabs.write[p_tab].ac_name = p_name;
+
+	queue_accessibility_update();
+}
+
+String TabBar::get_tab_accessibility_name(int p_tab) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), "");
+	return tabs[p_tab].ac_name;
 }
 
 void TabBar::set_tab_tooltip(int p_tab, const String &p_tooltip) {
@@ -2165,6 +2190,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select_next_available"), &TabBar::select_next_available);
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabBar::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabBar::get_tab_title);
+	ClassDB::bind_method(D_METHOD("set_tab_accessibility_name", "tab_idx", "name"), &TabBar::set_tab_accessibility_name);
+	ClassDB::bind_method(D_METHOD("get_tab_accessibility_name", "tab_idx"), &TabBar::get_tab_accessibility_name);
 	ClassDB::bind_method(D_METHOD("set_tab_tooltip", "tab_idx", "tooltip"), &TabBar::set_tab_tooltip);
 	ClassDB::bind_method(D_METHOD("get_tab_tooltip", "tab_idx"), &TabBar::get_tab_tooltip);
 	ClassDB::bind_method(D_METHOD("set_tab_text_direction", "tab_idx", "direction"), &TabBar::set_tab_text_direction);
@@ -2294,6 +2321,7 @@ void TabBar::_bind_methods() {
 	base_property_helper.set_prefix("tab_");
 	base_property_helper.set_array_length_getter(&TabBar::get_tab_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "title"), defaults.text, &TabBar::set_tab_title, &TabBar::get_tab_title);
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "accessibility_name"), defaults.ac_name, &TabBar::set_tab_accessibility_name, &TabBar::get_tab_accessibility_name);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "tooltip"), defaults.tooltip, &TabBar::set_tab_tooltip, &TabBar::get_tab_tooltip);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &TabBar::set_tab_icon, &TabBar::get_tab_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &TabBar::set_tab_disabled, &TabBar::is_tab_disabled);
