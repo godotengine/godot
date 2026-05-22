@@ -825,7 +825,7 @@ public:
 	uint32_t hash() const;
 	uint32_t recursive_hash(int recursion_count) const;
 
-	// By default, performs a semantic comparison. Otherwise, numeric/binary comparison (if appropriate).
+	// Performs a semantic comparison (where NaN == NaN). Falls back to normal equality comparison (OP_EQUAL) when no special handling is needed.
 	bool hash_compare(const Variant &p_variant, int recursion_count = 0, bool semantic_comparison = true) const;
 	bool identity_compare(const Variant &p_variant) const;
 	bool booleanize() const;
