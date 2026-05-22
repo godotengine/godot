@@ -39,6 +39,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/plugins/editor_plugin.h"
+#include "editor/settings/editor_settings_dialog.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
@@ -72,12 +73,30 @@ void PluginConfigDialog::_on_confirmed() {
 	cf->set_value("plugin", "description", desc_edit->get_text());
 	cf->set_value("plugin", "author", author_edit->get_text());
 	cf->set_value("plugin", "version", version_edit->get_text());
+	int scope = scope_edit->get_selected_id();
+	if (scope != -1) {
+		if (scope == EditorPlugin::SCOPE_PROJECT) {
+			cf->set_value("plugin", "scope", "project-wide");
+		} else if (scope == EditorPlugin::SCOPE_EDITOR) {
+			cf->set_value("plugin", "scope", "editor-wide");
+		}
+	} else {
+		if (cf->has_section_key("plugin", "scope")) {
+			cf->erase_section_key("plugin", "scope");
+		}
+	}
 	// Language-specific settings.
 	int lang_index = script_option_edit->get_selected();
 	_create_script_for_plugin(path, cf, lang_index);
 	// Save and inform the editor.
 	cf->save(path.path_join("plugin.cfg"));
-	EditorNode::get_singleton()->get_project_settings()->update_plugins();
+
+	if (is_editor_plugins) {
+		EditorNode::get_singleton()->get_editor_settings()->update_plugins();
+	} else {
+		EditorNode::get_singleton()->get_project_settings()->update_plugins();
+	}
+
 	EditorFileSystem::get_singleton()->scan();
 	_clear_fields();
 }
@@ -183,12 +202,38 @@ void PluginConfigDialog::config(const String &p_config_path) {
 		version_edit->set_text(cf->get_value("plugin", "version", ""));
 		script_edit->set_text(cf->get_value("plugin", "script", ""));
 
+		String scope_name = cf->get_value("plugin", "scope", "");
+		int scope = EditorPlugin::SCOPE_UNKNOWN;
+		if (scope_name == "project-wide") {
+			scope = EditorPlugin::SCOPE_PROJECT;
+		} else if (scope_name == "editor-wide") {
+			scope = EditorPlugin::SCOPE_EDITOR;
+		}
+
+		if (scope != EditorPlugin::SCOPE_UNKNOWN) {
+			scope_edit->select(scope_edit->get_item_index(scope));
+		} else {
+			scope_edit->select(-1);
+		}
+
 		_edit_mode = true;
 		set_title(TTR("Edit a Plugin"));
+		if (is_editor_plugins) {
+			scope_edit->set_item_tooltip(EditorPlugin::SCOPE_PROJECT, TTRC("Cannot change plugin scope to project-wide from the editor plugin settings."));
+		} else {
+			scope_edit->set_item_tooltip(EditorPlugin::SCOPE_EDITOR, TTRC("Cannot change plugin scope to editor-wide from the project plugin settings."));
+		}
 	} else {
 		_clear_fields();
 		_edit_mode = false;
 		set_title(TTR("Create a Plugin"));
+		if (is_editor_plugins) {
+			scope_edit->select(EditorPlugin::SCOPE_EDITOR);
+			scope_edit->set_item_tooltip(EditorPlugin::SCOPE_PROJECT, TTRC("Cannot create a plugin with project-wide scope from the editor plugin settings.\nGo to [project/project_settings/addons/plugins] to create project plugins"));
+		} else {
+			scope_edit->select(EditorPlugin::SCOPE_PROJECT);
+			scope_edit->set_item_tooltip(EditorPlugin::SCOPE_EDITOR, TTRC("Cannot create a plugin with editor-wide scope from the project plugin settings.\nGo to [editor/editor_settings/plugins] to create editor plugins"));
+		}
 	}
 
 	for (Control *control : plugin_edit_hidden_controls) {
@@ -330,6 +375,27 @@ PluginConfigDialog::PluginConfigDialog(bool p_is_editor_plugins) {
 	script_edit->set_accessibility_name(TTRC("Script Name:"));
 	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(script_edit);
+
+	// Plugin Scope Dropdown
+	Label *scope_label = memnew(Label);
+	scope_label->set_text(TTRC("Scope:"));
+	scope_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	grid->add_child(scope_label);
+
+	scope_edit = memnew(OptionButton);
+	scope_edit->set_tooltip_text(TTRC("Required. The plugin's scope.\nProject-wide plugins load per-project, whereas editor-wide plugins load on all projects and does not work on runtime and export."));
+	scope_edit->set_accessibility_name(TTRC("Scope:"));
+	scope_edit->add_item(TTRC("Project-wide"), EditorPlugin::SCOPE_PROJECT);
+	scope_edit->add_item(TTRC("Editor-wide"), EditorPlugin::SCOPE_EDITOR);
+
+	if (is_editor_plugins) {
+		scope_edit->select(EditorPlugin::SCOPE_EDITOR);
+		scope_edit->set_item_disabled(EditorPlugin::SCOPE_PROJECT, true);
+	} else {
+		scope_edit->select(EditorPlugin::SCOPE_PROJECT);
+		scope_edit->set_item_disabled(EditorPlugin::SCOPE_EDITOR, true);
+	}
+	grid->add_child(scope_edit);
 
 	Control *spacing = memnew(Control);
 	vbox->add_child(spacing);
