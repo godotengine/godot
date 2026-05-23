@@ -3958,19 +3958,33 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		BEGIN_SECTION()
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCut")), ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("scene_tree/copy_node"), TOOL_COPY);
+
 		if (!node_clipboard.is_empty()) {
+			bool is_tool_paste_available = false;
+			bool is_tool_paste_as_sibling_available = false;
+			bool is_tool_paste_as_replacement_available = false;
+
 			if (selection.size() == 1) {
+				is_tool_paste_available = true;
+				is_tool_paste_as_sibling_available = selection.front()->get() != edited_scene;
+			}
+
+			if (selection.size() >= 1) {
+				is_tool_paste_as_replacement_available = (selection.front()->get() != edited_scene) && (can_rename || can_replace);
+			}
+
+			if (is_tool_paste_available || is_tool_paste_as_sibling_available || is_tool_paste_as_replacement_available) {
+				// Show all "paste" options if at least one is available.
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
-				menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_sibling"), TOOL_PASTE_AS_SIBLING);
-				if (selection.front()->get() == edited_scene) {
+				if (!is_tool_paste_available) {
 					menu->set_item_disabled(-1, true);
 				}
-			}
-			if (selection.size() >= 1) {
-				if (can_rename || can_replace) {
-					menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_replacement"), TOOL_PASTE_AS_REPLACEMENT);
+				menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_sibling"), TOOL_PASTE_AS_SIBLING);
+				if (!is_tool_paste_as_sibling_available) {
+					menu->set_item_disabled(-1, true);
 				}
-				if (selection.front()->get() == edited_scene) {
+				menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_replacement"), TOOL_PASTE_AS_REPLACEMENT);
+				if (!is_tool_paste_as_replacement_available) {
 					menu->set_item_disabled(-1, true);
 				}
 			}
