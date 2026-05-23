@@ -81,7 +81,7 @@ class AndroidRuntimePlugin(godot: Godot) : GodotPlugin(godot) {
 					// We automatically handle 'toString', 'equals' and 'hashCode' to simplify the task of the caller
 					// and provide consistency.
 					"toString" -> "Godot Callable Proxy for $interfaceName"
-					"equals" -> proxy == args[0]
+					"equals" -> proxy === args[0]
 					"hashCode" -> godotCallable.hashCode()
 
 					// Invocation for the interface single abstract method falls here and is dispatched to the
@@ -106,8 +106,8 @@ class AndroidRuntimePlugin(godot: Godot) : GodotPlugin(godot) {
 					// We automatically handle 'toString', 'equals' and 'hashCode' to simplify the task of the caller
 					// and provide consistency.
 					"toString" -> "Godot Object Proxy for ${interfaces.joinToString(",")}"
-					"equals" -> proxy == args[0]
-					"hashCode" -> godotObjectID
+					"equals" -> proxy === args[0]
+					"hashCode" -> godotObjectID.hashCode()
 
 					// Invocation for the remaining interface(s) methods falls here and is dispatched to the
 					// Godot Object.
