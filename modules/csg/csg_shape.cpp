@@ -1716,6 +1716,21 @@ CSGSphere3D::CSGSphere3D() {
 }
 
 ///////////////
+static Vector2 _get_box_uv(const Vector3 &p_normalized, const Vector3 &uv_size, int side) {
+	const int axis = side % 3;
+
+	const int u_axis = axis == 2 ? 0 : (axis + 2) % 3;
+	const int v_axis = axis == 2 ? 1 : (axis + 1) % 3;
+
+	float u = (p_normalized[u_axis] + 1.0) * 0.5 * uv_size[u_axis];
+	float v = (p_normalized[v_axis] + 1.0) * 0.5 * uv_size[v_axis];
+
+	if (side >= 3) {
+		u = uv_size[u_axis] - u;
+	}
+
+	return Vector2(u, v);
+}
 
 CSGBrush *CSGBox3D::_build_brush() {
 	// set our bounding box
@@ -1751,10 +1766,12 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 		Vector3 vertex_mul = size / 2;
 
+		Vector3 uv_size = uv_repeat ? size : Vector3(1, 1, 1);
+		uv_size *= uv_scale;
+
 		{
 			for (int i = 0; i < 6; i++) {
 				Vector3 face_points[4];
-				float uv_points[8] = { 0, 0, 0, 1, 1, 1, 1, 0 };
 
 				for (int j = 0; j < 4; j++) {
 					float v[3];
@@ -1773,7 +1790,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 				Vector2 u[4];
 				for (int j = 0; j < 4; j++) {
-					u[j] = Vector2(uv_points[j * 2 + 0], uv_points[j * 2 + 1]);
+					u[j] = _get_box_uv(face_points[j], uv_size, i);
 				}
 
 				//face 1
@@ -1824,8 +1841,16 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
 
+	ClassDB::bind_method(D_METHOD("get_uv_repeat"), &CSGBox3D::get_uv_repeat);
+	ClassDB::bind_method(D_METHOD("set_uv_repeat", "enabled"), &CSGBox3D::set_uv_repeat);
+
+	ClassDB::bind_method(D_METHOD("get_uv_scale"), &CSGBox3D::get_uv_scale);
+	ClassDB::bind_method(D_METHOD("set_uv_scale", "uv_scale"), &CSGBox3D::set_uv_scale);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_scale", PROPERTY_HINT_LINK, ""), "set_uv_scale", "get_uv_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_repeat", PROPERTY_HINT_NONE, ""), "set_uv_repeat", "get_uv_repeat");
 }
 
 void CSGBox3D::set_size(const Vector3 &p_size) {
@@ -1836,6 +1861,26 @@ void CSGBox3D::set_size(const Vector3 &p_size) {
 
 Vector3 CSGBox3D::get_size() const {
 	return size;
+}
+
+void CSGBox3D::set_uv_scale(const Vector3 &p_uv_scale) {
+	uv_scale = p_uv_scale;
+	_make_dirty();
+	update_gizmos();
+}
+
+Vector3 CSGBox3D::get_uv_scale() const {
+	return uv_scale;
+}
+
+void CSGBox3D::set_uv_repeat(const bool &p_enabled) {
+	uv_repeat = p_enabled;
+	_make_dirty();
+	update_gizmos();
+}
+
+bool CSGBox3D::get_uv_repeat() const {
+	return uv_repeat;
 }
 
 #ifndef DISABLE_DEPRECATED
