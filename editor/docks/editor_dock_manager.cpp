@@ -30,7 +30,12 @@
 
 #include "editor_dock_manager.h"
 
+#include "core/error/error_macros.h"
+#include "core/math/math_defs.h"
 #include "core/object/callable_mp.h"
+#include "core/templates/pair.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/editor_node.h"
@@ -40,6 +45,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/split_container.h"
@@ -172,6 +178,9 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 		for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
 			dock_slots[i]->show_drag_hint();
 		}
+		for (const KeyValue<int, DockTabContainer *> &KV : extended_slots) {
+			KV.value->show_drag_hint();
+		}
 
 		return dock_tab_dragged;
 	}
@@ -196,6 +205,11 @@ void EditorDockManager::_update_layout() {
 }
 
 DockTabContainer *EditorDockManager::get_dock_container(int p_slot) const {
+	if (p_slot >= EditorDock::DOCK_SLOT_BASE_EXTENDED) {
+		DockTabContainer *const *slot = extended_slots.getptr(p_slot);
+		ERR_FAIL_NULL_V_MSG(slot, nullptr, vformat("No extended slot with ID %d.", p_slot));
+		return *slot;
+	}
 	ERR_FAIL_INDEX_V(p_slot, EditorDock::DOCK_SLOT_MAX, nullptr);
 	return dock_slots[p_slot];
 }
@@ -329,6 +343,256 @@ void EditorDockManager::_restore_dock_to_saved_window(EditorDock *p_dock, const 
 			p_window_dump.get("window_screen_rect", Rect2i()));
 }
 
+void EditorDockManager::_load_docks_in_slot(DockTabContainer *p_slot, const Ref<ConfigFile> &p_layout, const String &p_section, const HashMap<String, EditorDock *> &p_dock_map, const Array &p_closed_docks, const Dictionary &p_floating_docks_dump) {
+	int idx = p_slot ? p_slot->dock_slot : -1;
+
+	const String key = DockTabContainer::get_config_key(idx);
+	if (!p_layout->has_section_key(p_section, key)) {
+		return;
+	}
+
+	Vector<String> names = String(p_layout->get_value(p_section, key)).split(",");
+	for (int j = names.size() - 1; j >= 0; j--) {
+		const String &name = names[j];
+		const String section_name = p_section + "/" + name;
+
+		EditorDock *const *dock_ptr = p_dock_map.getptr(name);
+		if (!dock_ptr) {
+			return;
+		}
+		EditorDock *dock = *dock_ptr;
+
+		if (!dock->enabled) {
+			// Don't open disabled docks.
+			dock->load_layout_from_config(p_layout, section_name);
+			continue;
+		}
+
+		if (p_floating_docks_dump.has(name)) {
+			_restore_dock_to_saved_window(dock, p_floating_docks_dump[name]);
+		} else if (idx >= 0 && !(dock->transient && !dock->is_open)) {
+			// Safe to include transient open docks here because they won't be in the closed dock dump.
+			if (p_closed_docks.has(name)) {
+				dock->is_open = false;
+				dock->hide();
+				_move_dock(dock, closed_dock_parent);
+			} else {
+				dock->is_open = true;
+				_move_dock(dock, p_slot, 0, false);
+			}
+		}
+		dock->load_layout_from_config(p_layout, section_name);
+
+		dock->dock_slot_index = idx;
+		dock->previous_tab_index = idx >= 0 ? j : 0;
+	}
+}
+
+bool EditorDockManager::_slot_has_docks(DockTabContainer *p_slot) const {
+	if (p_slot->get_tab_count() > 0) {
+		return true;
+	}
+	// Check if any closed dock belongs to this slot.
+	for (const EditorDock *dock : all_docks) {
+		if (!dock->is_open && dock->dock_slot_index == p_slot->dock_slot) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void EditorDockManager::_move_dock_to_extended_slot(EditorDock *p_dock, DockTabContainer *p_base_slot, int p_idx) {
+	int idx = EditorDock::DOCK_SLOT_BASE_EXTENDED;
+	for (; idx < EditorDock::DOCK_SLOT_BASE_EXTENDED + 1000; idx++) {
+		if (!extended_slots.has(idx)) {
+			break;
+		}
+	}
+	DockTabContainer *extended_slot = _create_extended_dock_slot(p_base_slot, p_idx, idx);
+	ERR_FAIL_NULL(extended_slot);
+	_move_dock(p_dock, extended_slot);
+}
+
+DockTabContainer *EditorDockManager::_create_extended_dock_slot(DockTabContainer *p_base_slot, int p_idx, int p_new_slot_id) {
+	int base_slot = p_base_slot->dock_slot;
+	if (base_slot >= EditorDock::DOCK_SLOT_BASE_EXTENDED) {
+		base_slot = p_base_slot->get_meta("base_slot");
+	}
+
+	DockTabContainer *extended_slot = nullptr;
+	switch (base_slot) {
+		case EditorDock::DOCK_SLOT_LEFT_BL:
+		case EditorDock::DOCK_SLOT_LEFT_BR:
+		case EditorDock::DOCK_SLOT_LEFT_UL:
+		case EditorDock::DOCK_SLOT_LEFT_UR: {
+			extended_slot = memnew(SideDockTabContainer(p_new_slot_id, Rect2i()));
+			extended_slot->add_margin_valid_drop(SIDE_BOTTOM, EditorDock::DOCK_SLOT_BASE_EXTENDED);
+			if (base_slot == EditorDock::DOCK_SLOT_LEFT_BL || base_slot == EditorDock::DOCK_SLOT_LEFT_UL) {
+				extended_slot->add_margin_valid_drop(SIDE_LEFT, EditorDock::DOCK_SLOT_BASE_EXTENDED);
+			}
+
+			if (p_idx == SIDE_LEFT) {
+				DockSplitContainer *new_column = memnew(DockSplitContainer);
+				new_column->set_vertical(true);
+				EditorNode::get_singleton()->left_hsplit->add_child(new_column);
+				EditorNode::get_singleton()->left_hsplit->move_child(new_column, 0);
+				_add_extended_dock_split(new_column);
+
+				new_column->add_child(extended_slot);
+			} else if (p_idx == SIDE_BOTTOM) {
+				if (base_slot == EditorDock::DOCK_SLOT_LEFT_UR) {
+					EditorNode::get_singleton()->left_r_vsplit->add_child(extended_slot);
+				} else if (base_slot == EditorDock::DOCK_SLOT_LEFT_BR) {
+					EditorNode::get_singleton()->left_vsplit->add_child(extended_slot);
+				} else {
+					p_base_slot->add_sibling(extended_slot);
+				}
+			}
+		} break;
+
+		case EditorDock::DOCK_SLOT_RIGHT_BL:
+		case EditorDock::DOCK_SLOT_RIGHT_BR:
+		case EditorDock::DOCK_SLOT_RIGHT_UL:
+		case EditorDock::DOCK_SLOT_RIGHT_UR: {
+			extended_slot = memnew(SideDockTabContainer(p_new_slot_id, Rect2i()));
+			extended_slot->add_margin_valid_drop(SIDE_BOTTOM, EditorDock::DOCK_SLOT_BASE_EXTENDED);
+			if (base_slot == EditorDock::DOCK_SLOT_RIGHT_BR || base_slot == EditorDock::DOCK_SLOT_RIGHT_UR) {
+				extended_slot->add_margin_valid_drop(SIDE_RIGHT, EditorDock::DOCK_SLOT_BASE_EXTENDED);
+			}
+
+			if (p_idx == SIDE_RIGHT) {
+				DockSplitContainer *new_column = memnew(DockSplitContainer);
+				new_column->set_vertical(true);
+				EditorNode::get_singleton()->right_hsplit->add_child(new_column);
+				_add_extended_dock_split(new_column);
+
+				new_column->add_child(extended_slot);
+			} else if (p_idx == SIDE_BOTTOM) {
+				if (base_slot == EditorDock::DOCK_SLOT_RIGHT_UL) {
+					EditorNode::get_singleton()->right_l_vsplit->add_child(extended_slot);
+				} else if (base_slot == EditorDock::DOCK_SLOT_RIGHT_BL) {
+					EditorNode::get_singleton()->right_vsplit->add_child(extended_slot);
+				} else {
+					p_base_slot->add_sibling(extended_slot);
+				}
+			}
+		} break;
+
+		case EditorDock::DOCK_SLOT_BOTTOM: {
+			extended_slot = memnew(BottomSideDockTabContainer(p_new_slot_id, Rect2i()));
+			extended_slot->add_margin_valid_drop(SIDE_BOTTOM, EditorDock::DOCK_SLOT_BASE_EXTENDED);
+			EditorNode::get_singleton()->center_vsplit->add_child(extended_slot);
+		} break;
+
+		case EditorDock::DOCK_SLOT_BOTTOM_L:
+		case EditorDock::DOCK_SLOT_BOTTOM_R: {
+			extended_slot = memnew(BottomSideDockTabContainer(p_new_slot_id, Rect2i()));
+			if (p_idx == SIDE_LEFT || p_idx == SIDE_RIGHT) {
+				p_base_slot->add_sibling(extended_slot);
+				if (p_idx == SIDE_LEFT) {
+					p_base_slot->get_parent()->move_child(extended_slot, 0);
+				}
+				extended_slot->add_margin_valid_drop(p_idx, EditorDock::DOCK_SLOT_BASE_EXTENDED);
+			} else {
+				DockSplitContainer *new_row = memnew(DockSplitContainer);
+				EditorNode::get_singleton()->main_vsplit->add_child(new_row);
+				_add_extended_dock_split(new_row);
+
+				new_row->add_child(extended_slot);
+				extended_slot->add_margin_valid_drop(SIDE_LEFT, EditorDock::DOCK_SLOT_BASE_EXTENDED);
+				extended_slot->add_margin_valid_drop(SIDE_RIGHT, EditorDock::DOCK_SLOT_BASE_EXTENDED);
+				extended_slot->add_margin_valid_drop(SIDE_BOTTOM, EditorDock::DOCK_SLOT_BASE_EXTENDED);
+			}
+		} break;
+	}
+	ERR_FAIL_NULL_V(extended_slot, nullptr);
+
+	extended_slot->set_meta("base_slot", base_slot);
+	register_dock_slot(extended_slot);
+	return extended_slot;
+}
+
+void EditorDockManager::_save_extended_spaces(const Ref<ConfigFile> &p_layout, const String &p_section, Node *p_parent, int p_base, bool p_reversed) const {
+	int idx = 0;
+
+	int child_count = p_parent->get_child_count();
+	for (int i = 0; i < child_count; i++) {
+		Node *space = p_parent->get_child(p_reversed ? child_count - i - 1 : i);
+		if (default_dock_spaces.has(Object::cast_to<DockSplitContainer>(space)) || !Object::cast_to<Container>(space)) {
+			continue;
+		}
+		PackedInt32Array slots;
+		for (Node *slot : space->iterate_children()) {
+			DockTabContainer *dock_container = Object::cast_to<DockTabContainer>(slot);
+			if (!dock_container || !_slot_has_docks(dock_container)) {
+				continue;
+			}
+			slots.append(dock_container->dock_slot);
+		}
+		if (slots.is_empty()) {
+			continue;
+		}
+		p_layout->set_value(p_section, vformat("extended_slot_%d/%d", p_base, idx), slots);
+		idx++;
+	}
+}
+
+void EditorDockManager::_load_extended_spaces(const Ref<ConfigFile> &p_layout, const String &p_section, int p_base, int p_main_idx, int p_secondary_idx) {
+	String base_key = vformat("extended_slot_%d/", p_base);
+	for (int i = 0; i < 1000; i++) {
+		const String key = base_key + itos(i);
+		if (!p_layout->has_section_key(p_section, key)) {
+			break;
+		}
+		const PackedInt32Array slots = p_layout->get_value(p_section, key);
+		if (slots.is_empty()) {
+			continue;
+		}
+
+		DockTabContainer *base_slot = _create_extended_dock_slot(dock_slots[p_base], p_main_idx, slots[0]);
+		ERR_FAIL_NULL(base_slot);
+
+		for (int j = 1; j < slots.size(); j++) {
+			_create_extended_dock_slot(base_slot, p_secondary_idx, slots[j]);
+		}
+	}
+}
+
+void EditorDockManager::_save_extended_slots(const Ref<ConfigFile> &p_layout, const String &p_section, Node *p_parent, int p_base) const {
+	bool skip_l = p_base == EditorDock::DOCK_SLOT_BOTTOM_L;
+	bool skip_r = p_base == EditorDock::DOCK_SLOT_BOTTOM_R;
+
+	PackedInt32Array slots;
+	for (Node *slot : p_parent->iterate_children()) {
+		DockTabContainer *dock_container = Object::cast_to<DockTabContainer>(slot);
+
+		// Bottom left/right slots might have slots on either side, so they need to be saved properly.
+		if (skip_l && dock_container == dock_slots[EditorDock::DOCK_SLOT_BOTTOM_L]) {
+			break;
+		} else if (skip_r) {
+			if (dock_container == dock_slots[EditorDock::DOCK_SLOT_BOTTOM_R]) {
+				skip_r = false;
+			}
+			continue;
+		}
+
+		if (!dock_container || dock_container->dock_slot < EditorDock::DOCK_SLOT_BASE_EXTENDED || !_slot_has_docks(dock_container)) {
+			continue;
+		}
+		slots.append(dock_container->dock_slot);
+	}
+	if (!slots.is_empty()) {
+		p_layout->set_value(p_section, vformat("extended_slot_%d", p_base), slots);
+	}
+}
+
+void EditorDockManager::_load_extended_slots(const Ref<ConfigFile> &p_layout, const String &p_section, int p_base, int p_idx) {
+	PackedInt32Array slots = p_layout->get_value(p_section, vformat("extended_slot_%d", p_base), PackedInt32Array());
+	for (int i : slots) {
+		_create_extended_dock_slot(dock_slots[p_base], p_idx, i);
+	}
+}
+
 void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index, bool p_set_current) {
 	ERR_FAIL_NULL(p_dock);
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot move unknown dock '%s'.", p_dock->get_display_title()));
@@ -416,18 +680,46 @@ void EditorDockManager::_update_dirty_dock_tabs() {
 	}
 }
 
+void EditorDockManager::_add_extended_dock_split(DockSplitContainer *p_split) {
+	extended_dock_splits.push_back(p_split);
+	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+}
+
+void EditorDockManager::add_default_dock_space(DockSplitContainer *p_slot) {
+	default_dock_spaces.push_back(p_slot);
+	add_default_dock_split(p_slot);
+}
+
+void EditorDockManager::add_default_dock_split(DockSplitContainer *p_split) {
+	default_dock_splits.push_back(p_split);
+	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+}
+
 void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
+	// Get rid of potentially invalid data.
+	if (p_layout->has_section(p_section)) {
+		p_layout->erase_section(p_section);
+	}
+
 	// Save docks by dock slot.
 	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
 		dock_slots[i]->save_docks_to_config(p_layout, p_section);
 	}
-
-	// Clear the special dock slot for docks without default slots (index -1 = dock_0).
-	// This prevents closed docks from being infinitely appended to the config on each save.
-	const String no_slot_config_key = "dock_0";
-	if (p_layout->has_section_key(p_section, no_slot_config_key)) {
-		p_layout->erase_section_key(p_section, no_slot_config_key);
+	for (const KeyValue<int, DockTabContainer *> &KV : extended_slots) {
+		KV.value->save_docks_to_config(p_layout, p_section);
 	}
+
+	// Save extended dock slots.
+	_save_extended_spaces(p_layout, p_section, EditorNode::get_singleton()->left_hsplit, EditorDock::DOCK_SLOT_LEFT_UL, true);
+	_save_extended_spaces(p_layout, p_section, EditorNode::get_singleton()->right_hsplit, EditorDock::DOCK_SLOT_RIGHT_UR);
+	_save_extended_slots(p_layout, p_section, EditorNode::get_singleton()->left_l_vsplit, EditorDock::DOCK_SLOT_LEFT_BL);
+	_save_extended_slots(p_layout, p_section, EditorNode::get_singleton()->right_r_vsplit, EditorDock::DOCK_SLOT_RIGHT_BR);
+	_save_extended_slots(p_layout, p_section, EditorNode::get_singleton()->left_vsplit, EditorDock::DOCK_SLOT_LEFT_BR);
+	_save_extended_slots(p_layout, p_section, EditorNode::get_singleton()->right_vsplit, EditorDock::DOCK_SLOT_RIGHT_BL);
+	_save_extended_slots(p_layout, p_section, EditorNode::get_singleton()->center_vsplit, EditorDock::DOCK_SLOT_BOTTOM);
+	_save_extended_spaces(p_layout, p_section, EditorNode::get_singleton()->main_vsplit, EditorDock::DOCK_SLOT_BOTTOM_L);
+	_save_extended_slots(p_layout, p_section, EditorNode::get_singleton()->bottom_hsplit, EditorDock::DOCK_SLOT_BOTTOM_L);
+	_save_extended_slots(p_layout, p_section, EditorNode::get_singleton()->bottom_hsplit, EditorDock::DOCK_SLOT_BOTTOM_R);
 
 	// Save docks in windows.
 	Dictionary floating_docks_dump;
@@ -492,44 +784,53 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 	if (!EditorNode::get_singleton()->is_distraction_free_mode_enabled()) {
 		// Save SplitContainer offsets.
 
-		for (int i = 0; i < vsplits.size(); i++) {
-			if (vsplits[i]->is_visible_in_tree()) {
-				p_layout->set_value(p_section, "dock_split_" + itos(i + 1), vsplits[i]->get_split_offset());
+		int idx = 1;
+		for (const DockSplitContainer *dock_split : default_dock_splits) {
+			p_layout->set_value(p_section, "dock_split_" + itos(idx), dock_split->get_split_offsets());
+			idx++;
+		}
+
+		idx = EditorDock::DOCK_SLOT_BASE_EXTENDED;
+		for (const DockSplitContainer *dock_split : extended_dock_splits) {
+			bool is_empty = true;
+			for (Node *child : dock_split->iterate_children()) {
+				DockTabContainer *dock_container = Object::cast_to<DockTabContainer>(child);
+				if (dock_container && _slot_has_docks(dock_container)) {
+					is_empty = false;
+					break;
+				}
 			}
-		}
-
-		PackedInt32Array split_offsets = main_hsplit->get_split_offsets();
-		int index = 0;
-		for (int i = 0; i < vsplits.size(); i++) {
-			int value = 0;
-			if (vsplits[i]->is_visible() && index < split_offsets.size()) {
-				value = split_offsets[index] / EDSCALE;
-				index++;
+			if (is_empty) {
+				// Don't store dock splits without docks, as they are not going to be restored.
+				continue;
 			}
-			p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), value);
-		}
 
-		// The main v-split contains only one singular split.
-		int value = 0;
-		if (main_vsplit->get_child_as_control(1)->is_visible()) {
-			value = main_vsplit->get_split_offsets()[0];
+			p_layout->set_value(p_section, "dock_split_" + itos(idx), dock_split->get_split_offsets());
+			idx++;
 		}
-		p_layout->set_value(p_section, "dock_main_split", value);
-
-		// Same for the bottom docks.
-		value = 0;
-		if (bottom_hsplit->get_child_as_control(1)->is_visible()) {
-			value = bottom_hsplit->get_split_offsets()[0];
-		}
-		p_layout->set_value(p_section, "dock_bottom_split", value);
 	}
 }
 
 void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load) {
-	Dictionary floating_docks_dump = p_layout->get_value(p_section, "dock_floating", Dictionary());
 	Array closed_docks = p_layout->get_value(p_section, "dock_closed", Array());
 
-	bool allow_floating_docks = EditorNode::get_singleton()->is_multi_window_enabled() && (!p_first_load || EDITOR_GET("interface/multi_window/restore_windows_on_load"));
+	Dictionary floating_docks_dump;
+	if (EditorNode::get_singleton()->is_multi_window_enabled() && (!p_first_load || EDITOR_GET("interface/multi_window/restore_windows_on_load"))) {
+		// Floating docks allowed.
+		p_layout->get_value(p_section, "dock_floating", Dictionary());
+	}
+
+	// Restore extended slots.
+	_load_extended_spaces(p_layout, p_section, EditorDock::DOCK_SLOT_LEFT_UL, SIDE_LEFT, SIDE_BOTTOM);
+	_load_extended_spaces(p_layout, p_section, EditorDock::DOCK_SLOT_RIGHT_UR, SIDE_RIGHT, SIDE_BOTTOM);
+	_load_extended_slots(p_layout, p_section, EditorDock::DOCK_SLOT_LEFT_BL, SIDE_BOTTOM);
+	_load_extended_slots(p_layout, p_section, EditorDock::DOCK_SLOT_RIGHT_BR, SIDE_BOTTOM);
+	_load_extended_slots(p_layout, p_section, EditorDock::DOCK_SLOT_LEFT_BR, SIDE_BOTTOM);
+	_load_extended_slots(p_layout, p_section, EditorDock::DOCK_SLOT_RIGHT_BL, SIDE_BOTTOM);
+	_load_extended_slots(p_layout, p_section, EditorDock::DOCK_SLOT_BOTTOM, SIDE_BOTTOM);
+	_load_extended_spaces(p_layout, p_section, EditorDock::DOCK_SLOT_BOTTOM_L, SIDE_BOTTOM, SIDE_RIGHT);
+	_load_extended_slots(p_layout, p_section, EditorDock::DOCK_SLOT_BOTTOM_L, SIDE_LEFT);
+	_load_extended_slots(p_layout, p_section, EditorDock::DOCK_SLOT_BOTTOM_R, SIDE_RIGHT);
 
 	// Store the docks by name for easy lookup.
 	HashMap<String, EditorDock *> dock_map;
@@ -538,46 +839,12 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 	}
 
 	// Load docks by slot. Index -1 is for docks that have no slot.
-	for (int i = -1; i < EditorDock::DOCK_SLOT_MAX; i++) {
-		const String key = DockTabContainer::get_config_key(i);
-		if (!p_layout->has_section_key(p_section, key)) {
-			continue;
-		}
-
-		Vector<String> names = String(p_layout->get_value(p_section, key)).split(",");
-		for (int j = names.size() - 1; j >= 0; j--) {
-			const String &name = names[j];
-			const String section_name = p_section + "/" + name;
-
-			if (!dock_map.has(name)) {
-				continue;
-			}
-			EditorDock *dock = dock_map[name];
-
-			if (!dock->enabled) {
-				// Don't open disabled docks.
-				dock->load_layout_from_config(p_layout, section_name);
-				continue;
-			}
-
-			if (allow_floating_docks && floating_docks_dump.has(name)) {
-				_restore_dock_to_saved_window(dock, floating_docks_dump[name]);
-			} else if (i >= 0 && !(dock->transient && !dock->is_open)) {
-				// Safe to include transient open docks here because they won't be in the closed dock dump.
-				if (closed_docks.has(name)) {
-					dock->is_open = false;
-					dock->hide();
-					_move_dock(dock, closed_dock_parent);
-				} else {
-					dock->is_open = true;
-					_move_dock(dock, dock_slots[i], 0, false);
-				}
-			}
-			dock->load_layout_from_config(p_layout, section_name);
-
-			dock->dock_slot_index = i;
-			dock->previous_tab_index = i >= 0 ? j : 0;
-		}
+	_load_docks_in_slot(nullptr, p_layout, p_section, dock_map, closed_docks, floating_docks_dump);
+	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
+		_load_docks_in_slot(dock_slots[i], p_layout, p_section, dock_map, closed_docks, floating_docks_dump);
+	}
+	for (const KeyValue<int, DockTabContainer *> &KV : extended_slots) {
+		_load_docks_in_slot(KV.value, p_layout, p_section, dock_map, closed_docks, floating_docks_dump);
 	}
 
 	// Set the selected tabs.
@@ -588,33 +855,16 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 
 	// Load SplitContainer offsets.
 
-	PackedInt32Array offsets;
-
-	for (int i = 0; i < vsplits.size(); i++) {
-		if (!p_layout->has_section_key(p_section, "dock_split_" + itos(i + 1))) {
-			continue;
-		}
-		int ofs = p_layout->get_value(p_section, "dock_split_" + itos(i + 1));
-		vsplits[i]->set_split_offset(ofs);
-
-		// Only visible ones need a split offset for the main hsplit, even though they all have a value saved.
-		if (vsplits[i]->is_visible() && p_layout->has_section_key(p_section, "dock_hsplit_" + itos(i + 1))) {
-			int offset = p_layout->get_value(p_section, "dock_hsplit_" + itos(i + 1));
-			offsets.push_back(offset * EDSCALE);
-		}
-	}
-	main_hsplit->set_split_offsets(offsets);
-
-	// The main v-split contains only one singular split.
-	if (main_vsplit->get_child_as_control(1)->is_visible()) {
-		offsets = { p_layout->get_value(p_section, "dock_main_split", 0) };
-		main_vsplit->set_split_offsets(offsets);
+	int idx = 1;
+	for (DockSplitContainer *dock_split : default_dock_splits) {
+		dock_split->set_split_offsets(p_layout->get_value(p_section, "dock_split_" + itos(idx), PackedInt32Array()));
+		idx++;
 	}
 
-	// Same for the bottom docks.
-	if (bottom_hsplit->get_child_as_control(1)->is_visible()) {
-		offsets = { p_layout->get_value(p_section, "dock_bottom_split", 0) };
-		bottom_hsplit->set_split_offsets(offsets);
+	idx = EditorDock::DOCK_SLOT_BASE_EXTENDED;
+	for (DockSplitContainer *dock_split : extended_dock_splits) {
+		dock_split->set_split_offsets(p_layout->get_value(p_section, "dock_split_" + itos(idx), PackedInt32Array()));
+		idx++;
 	}
 
 	update_docks_menu();
@@ -681,7 +931,7 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 
 	// Open dock to its previous location.
 	if (p_dock->dock_slot_index != EditorDock::DOCK_SLOT_NONE) {
-		DockTabContainer *slot = dock_slots[p_dock->dock_slot_index];
+		DockTabContainer *slot = get_dock_container(p_dock->dock_slot_index);
 		int tab_index = p_dock->previous_tab_index;
 		if (tab_index < 0) {
 			tab_index = slot->get_tab_count();
@@ -783,6 +1033,9 @@ void EditorDockManager::set_docks_visible(bool p_show) {
 		// Show and hide in reverse order due to the SplitContainer prioritizing the last split offset.
 		dock_slots[docks_visible ? i : EditorDock::DOCK_SLOT_MAX - i - 1]->update_visibility();
 	}
+	for (const KeyValue<int, DockTabContainer *> &KV : extended_slots) {
+		KV.value->update_visibility();
+	}
 	_update_layout();
 }
 
@@ -802,27 +1055,17 @@ void EditorDockManager::set_tab_icon_max_width(int p_max_width) {
 	}
 }
 
-void EditorDockManager::_register_split(DockSplitContainer **p_var, DockSplitContainer *p_split) {
-	*p_var = p_split;
-	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
-}
-
-void EditorDockManager::add_vsplit(DockSplitContainer *p_split) {
-	vsplits.push_back(p_split);
-	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
-}
-
 void EditorDockManager::register_dock_slot(DockTabContainer *p_tab_container) {
 	ERR_FAIL_NULL(p_tab_container);
-	dock_slots[p_tab_container->dock_slot] = p_tab_container;
+	if (p_tab_container->dock_slot < EditorDock::DOCK_SLOT_MAX) {
+		dock_slots[p_tab_container->dock_slot] = p_tab_container;
+	} else {
+		extended_slots.insert(p_tab_container->dock_slot, p_tab_container);
+	}
 
 	p_tab_container->set_dock_context_popup(dock_context_popup);
 	p_tab_container->connect("tab_changed", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
 	p_tab_container->connect("active_tab_rearranged", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
-}
-
-int EditorDockManager::get_vsplit_count() const {
-	return vsplits.size();
 }
 
 PopupMenu *EditorDockManager::get_docks_menu() {
