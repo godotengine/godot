@@ -38,6 +38,7 @@ class Button;
 class ConfigFile;
 class Control;
 class EditorDock;
+class HBoxContainer;
 class PopupMenu;
 class TabBar;
 class TabContainer;
@@ -98,6 +99,7 @@ private:
 	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
 	Vector<WindowWrapper *> dock_windows;
 	LocalVector<EditorDock *> all_docks;
+	HashMap<EditorDock::DockSlot, LocalVector<EditorDock *>> far_docks;
 	HashSet<EditorDock *> dirty_docks;
 
 	EditorDock *dock_tab_dragged = nullptr;
@@ -119,6 +121,7 @@ private:
 	EditorDock *_close_window(WindowWrapper *p_wrapper);
 	void _open_dock_in_window(EditorDock *p_dock, bool p_show_window = true, bool p_reset_size = false);
 	void _restore_dock_to_saved_window(EditorDock *p_dock, const Dictionary &p_window_dump);
+	void _make_far_dock(EditorDock *p_dock, int p_idx);
 
 	void _make_dock_visible(EditorDock *p_dock, bool p_grab_focus);
 	void _move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
@@ -198,6 +201,9 @@ private:
 	Button *tab_move_right_button = nullptr;
 	Button *close_button = nullptr;
 
+	HBoxContainer *dynamic_buttons_container = nullptr;
+	LocalVector<Button *> dynamic_buttons;
+
 	DockSlotGrid *dock_select = nullptr;
 
 	EditorDock *context_dock = nullptr;
@@ -209,6 +215,7 @@ private:
 	void _tab_move_right();
 	void _close_dock();
 	void _float_dock();
+	void _far_dock(int p_idx);
 
 	void _update_buttons();
 

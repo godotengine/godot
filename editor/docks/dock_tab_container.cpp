@@ -255,8 +255,7 @@ Rect2 DockTabContainer::get_default_floating_dock_rect(EditorDock *p_dock) {
 	return ret;
 }
 
-DockTabContainer::DockTabContainer(EditorDock::DockSlot p_slot) {
-	ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
+DockTabContainer::DockTabContainer(int p_slot) {
 	dock_slot = p_slot;
 
 	set_drag_to_rearrange_enabled(true);
@@ -280,7 +279,14 @@ Rect2 SideDockTabContainer::get_floating_dock_rect(EditorDock *p_dock) {
 	return Rect2(get_screen_position() + Vector2(0, tab_bar_height), get_size() - Vector2(0, tab_bar_height));
 }
 
-SideDockTabContainer::SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect) :
+PackedStringArray SideDockTabContainer::get_available_expand() const {
+	if (dock_slot < EditorDock::DOCK_SLOT_MAX) {
+		return PackedStringArray{ TTRC("Side"), TTRC("Down"), TTRC("Under") };
+	}
+	return PackedStringArray{};
+}
+
+SideDockTabContainer::SideDockTabContainer(int p_slot, const Rect2i &p_slot_rect) :
 		DockTabContainer(p_slot) {
 	grid_rect = p_slot_rect;
 	set_custom_minimum_size(Size2(170 * EDSCALE, 0));
@@ -296,7 +302,14 @@ Rect2 BottomSideDockTabContainer::get_floating_dock_rect(EditorDock *p_dock) {
 	return Rect2(get_screen_position() + Vector2(0, tab_bar_height), get_size() - Vector2(0, tab_bar_height));
 }
 
-BottomSideDockTabContainer::BottomSideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect) :
+PackedStringArray BottomSideDockTabContainer::get_available_expand() const {
+	if (dock_slot < EditorDock::DOCK_SLOT_MAX) {
+		return PackedStringArray{ TTRC("Side"), TTRC("Down") };
+	}
+	return PackedStringArray{};
+}
+
+BottomSideDockTabContainer::BottomSideDockTabContainer(int p_slot, const Rect2i &p_slot_rect) :
 		DockTabContainer(p_slot) {
 	grid_rect = p_slot_rect;
 	layout = EditorDock::DOCK_LAYOUT_HORIZONTAL;

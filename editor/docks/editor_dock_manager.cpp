@@ -324,6 +324,69 @@ void EditorDockManager::_restore_dock_to_saved_window(EditorDock *p_dock, const 
 			p_window_dump.get("window_screen_rect", Rect2i()));
 }
 
+void EditorDockManager::_make_far_dock(EditorDock *p_dock, int p_idx) {
+	DockTabContainer *slot = p_dock->get_parent_container();
+
+	DockTabContainer *far_slot = nullptr;
+	switch (slot->dock_slot) {
+		case EditorDock::DOCK_SLOT_LEFT_BL:
+		case EditorDock::DOCK_SLOT_LEFT_BR:
+		case EditorDock::DOCK_SLOT_LEFT_UL:
+		case EditorDock::DOCK_SLOT_LEFT_UR: {
+			far_slot = memnew(SideDockTabContainer(10000, Rect2i()));
+			if (p_idx == 0) {
+				EditorNode::get_singleton()->left_hsplit->add_child(far_slot);
+				EditorNode::get_singleton()->left_hsplit->move_child(far_slot, 0);
+			} else if (p_idx == 1) {
+				if (slot->dock_slot == EditorDock::DOCK_SLOT_LEFT_UR || slot->dock_slot == EditorDock::DOCK_SLOT_LEFT_BR) {
+					EditorNode::get_singleton()->left_r_vsplit->add_child(far_slot);
+				} else {
+					EditorNode::get_singleton()->left_l_vsplit->add_child(far_slot);
+				}
+			} else if (p_idx == 2) {
+				EditorNode::get_singleton()->left_vsplit->add_child(far_slot);
+			}
+		} break;
+
+		case EditorDock::DOCK_SLOT_RIGHT_BL:
+		case EditorDock::DOCK_SLOT_RIGHT_BR:
+		case EditorDock::DOCK_SLOT_RIGHT_UL:
+		case EditorDock::DOCK_SLOT_RIGHT_UR: {
+			far_slot = memnew(SideDockTabContainer(10000, Rect2i()));
+			if (p_idx == 0) {
+				EditorNode::get_singleton()->right_hsplit->add_child(far_slot);
+			} else if (p_idx == 1) {
+				if (slot->dock_slot == EditorDock::DOCK_SLOT_RIGHT_UR || slot->dock_slot == EditorDock::DOCK_SLOT_RIGHT_BR) {
+					EditorNode::get_singleton()->right_r_vsplit->add_child(far_slot);
+				} else {
+					EditorNode::get_singleton()->right_l_vsplit->add_child(far_slot);
+				}
+			} else {
+				EditorNode::get_singleton()->right_vsplit->add_child(far_slot);
+			}
+		} break;
+
+		case EditorDock::DOCK_SLOT_BOTTOM: {
+			far_slot = memnew(BottomSideDockTabContainer(10000, Rect2i()));
+			EditorNode::get_singleton()->center_vsplit->add_child(far_slot);
+		} break;
+
+		case EditorDock::DOCK_SLOT_BOTTOM_L:
+		case EditorDock::DOCK_SLOT_BOTTOM_R: {
+			far_slot = memnew(BottomSideDockTabContainer(10000, Rect2i()));
+			if (p_idx == 0) {
+				EditorNode::get_singleton()->bottom_hsplit->add_child(far_slot);
+			} else {
+				EditorNode::get_singleton()->main_vsplit->add_child(far_slot);
+			}
+		} break;
+	}
+	ERR_FAIL_NULL(far_slot);
+
+	register_dock_slot(far_slot);
+	_move_dock(p_dock, far_slot);
+}
+
 void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index, bool p_set_current) {
 	ERR_FAIL_NULL(p_dock);
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot move unknown dock '%s'.", p_dock->get_display_title()));
@@ -912,6 +975,11 @@ void DockContextPopup::_float_dock() {
 	dock_manager->_open_dock_in_window(context_dock);
 }
 
+void DockContextPopup::_far_dock(int p_idx) {
+	hide();
+	dock_manager->_make_far_dock(context_dock, p_idx);
+}
+
 void DockContextPopup::_update_buttons() {
 	if (context_dock->global || context_dock->closable) {
 		close_button->set_tooltip_text(TTRC("Close this dock."));
@@ -930,10 +998,28 @@ void DockContextPopup::_update_buttons() {
 		}
 	}
 
+	DockTabContainer *context_tab_container = context_dock->get_parent_container();
+	const PackedStringArray far_buttons = context_tab_container->get_available_expand();
+	if (far_buttons.is_empty()) {
+		dynamic_buttons_container->hide();
+	} else {
+		if ((uint32_t)far_buttons.size() > dynamic_buttons.size()) {
+			ERR_PRINT("Wrong button count.");
+		}
+		dynamic_buttons_container->show();
+		for (int i = 0; i < dynamic_buttons.size(); i++) {
+			if (i >= far_buttons.size()) {
+				dynamic_buttons[i]->hide();
+			} else {
+				dynamic_buttons[i]->set_text(far_buttons[i]);
+				dynamic_buttons[i]->show();
+			}
+		}
+	}
+
 	// Update tab move buttons.
 	tab_move_left_button->set_disabled(true);
 	tab_move_right_button->set_disabled(true);
-	TabContainer *context_tab_container = context_dock->get_parent_container();
 	if (context_tab_container && context_tab_container->get_tab_count() > 0) {
 		int context_tab_index = context_tab_container->get_tab_idx_from_control(context_dock);
 		tab_move_left_button->set_disabled(context_tab_index == 0);
@@ -1002,6 +1088,17 @@ DockContextPopup::DockContextPopup() {
 	make_float_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	make_float_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_float_dock));
 	dock_select_popup_vb->add_child(make_float_button);
+
+	dynamic_buttons_container = memnew(HBoxContainer);
+	dock_select_popup_vb->add_child(dynamic_buttons_container);
+
+	for (int i = 0; i < 3; i++) {
+		Button *make_far_button = memnew(Button);
+		make_far_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+		make_far_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_far_dock).bind(i));
+		dynamic_buttons_container->add_child(make_far_button);
+		dynamic_buttons.push_back(make_far_button);
+	}
 
 	close_button = memnew(Button);
 	close_button->set_text(TTRC("Close"));
