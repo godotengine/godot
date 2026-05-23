@@ -51,6 +51,8 @@ void EditorDockDragHint::drop_data(const Point2 &p_point, const Variant &p_data)
 		EditorDockManager *dock_manager = EditorDockManager::get_singleton();
 		if (mouse_margin_index == -1) {
 			dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), dock_container, drop_tabbar->get_tab_count());
+		} else if (mouse_margin_target_slot == EditorDock::DOCK_SLOT_BASE_EXTENDED) {
+			dock_manager->_move_dock_to_extended_slot(dock_manager->_get_dock_tab_dragged(), dock_container, mouse_margin_index);
 		} else {
 			DockTabContainer *target_container = EditorDockManager::get_singleton()->get_dock_container(mouse_margin_target_slot);
 			dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), target_container, target_container->get_tab_count());
@@ -99,6 +101,13 @@ void EditorDockDragHint::gui_input(const Ref<InputEvent> &p_event) {
 			mouse_margin_target_slot = dock_container->get_margin_drop_slot(new_margin_index);
 			if (mouse_margin_target_slot == -1) {
 				new_margin_index = -1;
+			} else if (mouse_margin_target_slot == EditorDock::DOCK_SLOT_BASE_EXTENDED) {
+				EditorDock *dragged_dock = EditorDockManager::get_singleton()->_get_dock_tab_dragged();
+				if (!(dragged_dock->get_available_layouts() & dock_container->layout)) {
+					new_margin_index = -1;
+				} else if (dragged_dock->get_parent_container() == dock_container && dock_container->get_tab_count() == 1) {
+					new_margin_index = -1;
+				}
 			} else {
 				EditorDock *dragged_dock = EditorDockManager::get_singleton()->_get_dock_tab_dragged();
 				DockTabContainer *target_container = EditorDockManager::get_singleton()->get_dock_container(mouse_margin_target_slot);
@@ -187,6 +196,14 @@ void EditorDockDragHint::_notification(int p_what) {
 			} else if (mouse_margin_index == SIDE_BOTTOM) {
 				dock_rect.position.y = size.y * (1.0 - SIDE_DROP_MARGIN);
 				dock_rect.size.y = size.y * 0.2;
+
+				if (dock_container->dock_slot == EditorDock::DOCK_SLOT_LEFT_BR || dock_container->dock_slot == EditorDock::DOCK_SLOT_RIGHT_BL) {
+					const Vector2 span = dock_container->dock_slot == EditorDock::DOCK_SLOT_LEFT_BR
+							? EditorNode::get_singleton()->get_left_split_span()
+							: EditorNode::get_singleton()->get_right_split_span();
+					dock_rect.position.x = span.x - get_global_position().x;
+					dock_rect.size.x = span.y;
+				}
 			}
 			// Draw highlights around docks that can be dropped.
 			dock_rect = dock_rect.grow(2 * EDSCALE);
@@ -256,6 +273,11 @@ int DockTabContainer::get_margin_drop_slot(int p_margin) const {
 	if (!target_slot) {
 		return -1;
 	}
+
+	if (*target_slot == EditorDock::DOCK_SLOT_BASE_EXTENDED) {
+		return *target_slot;
+	}
+
 	DockTabContainer *tab_container = EditorDockManager::get_singleton()->get_dock_container(*target_slot);
 	if (!tab_container->is_visible()) {
 		return *target_slot;
@@ -334,7 +356,6 @@ Rect2 DockTabContainer::get_default_floating_dock_rect(EditorDock *p_dock) {
 }
 
 DockTabContainer::DockTabContainer(int p_slot) {
-	ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
 	dock_slot = p_slot;
 
 	set_drag_to_rearrange_enabled(true);

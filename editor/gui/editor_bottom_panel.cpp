@@ -295,7 +295,7 @@ EditorBottomPanel::EditorBottomPanel() :
 	set_deselect_enabled(true);
 	set_theme_type_variation("BottomPanel");
 
-	add_margin_valid_drop(SIDE_BOTTOM, EditorDock::DOCK_SLOT_BOTTOM_L);
+	add_margin_valid_drop(SIDE_BOTTOM, EditorDock::DOCK_SLOT_BASE_EXTENDED);
 
 	bottom_hbox = memnew(HBoxContainer);
 	bottom_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
