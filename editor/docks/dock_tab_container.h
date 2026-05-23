@@ -95,12 +95,14 @@ public:
 		TEXT_AND_ICON,
 	};
 
-	EditorDock::DockSlot dock_slot = EditorDock::DOCK_SLOT_NONE;
+	int dock_slot = EditorDock::DOCK_SLOT_NONE;
 	EditorDock::DockLayout layout = EditorDock::DOCK_LAYOUT_VERTICAL;
 	Rect2i grid_rect;
 
 	static String get_config_key(int p_idx) { return "dock_" + itos(p_idx + 1); }
 
+	virtual void dock_added(EditorDock *p_dock) {}
+	virtual void dock_removed(EditorDock *p_dock) {}
 	virtual void dock_closed(EditorDock *p_dock) {}
 	virtual void dock_focused(EditorDock *p_dock, bool p_was_visible) {}
 	virtual void update_visibility();
@@ -125,7 +127,7 @@ public:
 
 	static Rect2 get_default_floating_dock_rect(EditorDock *p_dock);
 
-	DockTabContainer(EditorDock::DockSlot p_slot);
+	DockTabContainer(int p_slot);
 };
 
 class SideDockTabContainer : public DockTabContainer {
@@ -134,7 +136,7 @@ class SideDockTabContainer : public DockTabContainer {
 public:
 	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) override;
 
-	SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect);
+	SideDockTabContainer(int p_slot, const Rect2i &p_slot_rect);
 };
 
 class BottomSideDockTabContainer : public DockTabContainer {
@@ -143,5 +145,5 @@ class BottomSideDockTabContainer : public DockTabContainer {
 public:
 	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) override;
 
-	BottomSideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect);
+	BottomSideDockTabContainer(int p_slot, const Rect2i &p_slot_rect);
 };
