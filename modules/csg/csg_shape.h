@@ -329,6 +329,12 @@ class CSGCylinder3D : public CSGPrimitive3D {
 	bool cone;
 	bool smooth_faces;
 
+	Vector2 uv_cap_scale;
+	Vector2 uv_cap_offset;
+	Vector2 uv_side_scale;
+	Vector2 uv_side_offset;
+	bool use_size_as_uv;
+
 protected:
 	static void _bind_methods();
 
@@ -350,6 +356,21 @@ public:
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_uv_cap_scale(const Vector2 &p_uv_cap_scale);
+	Vector2 get_uv_cap_scale() const;
+
+	void set_uv_cap_offset(const Vector2 &p_uv_cap_offset);
+	Vector2 get_uv_cap_offset() const;
+
+	void set_uv_side_scale(const Vector2 &p_uv_side_scale);
+	Vector2 get_uv_side_scale() const;
+
+	void set_uv_side_offset(const Vector2 &p_uv_side_offset);
+	Vector2 get_uv_side_offset() const;
+
+	void set_use_size_as_uv(const bool p_enabled);
+	bool get_use_size_as_uv() const;
 
 	CSGCylinder3D();
 };
