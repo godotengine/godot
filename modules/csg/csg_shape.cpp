@@ -1766,7 +1766,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 		Vector3 vertex_mul = size / 2;
 
-		Vector3 uv_size = uv_repeat ? size : Vector3(1, 1, 1);
+		Vector3 uv_size = use_size_as_uv ? size : Vector3(1, 1, 1);
 		uv_size *= uv_scale;
 
 		{
@@ -1841,8 +1841,8 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
 
-	ClassDB::bind_method(D_METHOD("get_uv_repeat"), &CSGBox3D::get_uv_repeat);
-	ClassDB::bind_method(D_METHOD("set_uv_repeat", "enabled"), &CSGBox3D::set_uv_repeat);
+	ClassDB::bind_method(D_METHOD("get_use_size_as_uv"), &CSGBox3D::get_use_size_as_uv);
+	ClassDB::bind_method(D_METHOD("set_use_size_as_uv", "enabled"), &CSGBox3D::set_use_size_as_uv);
 
 	ClassDB::bind_method(D_METHOD("get_uv_scale"), &CSGBox3D::get_uv_scale);
 	ClassDB::bind_method(D_METHOD("set_uv_scale", "uv_scale"), &CSGBox3D::set_uv_scale);
@@ -1850,7 +1850,7 @@ void CSGBox3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_scale", PROPERTY_HINT_LINK, ""), "set_uv_scale", "get_uv_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_repeat", PROPERTY_HINT_NONE, ""), "set_uv_repeat", "get_uv_repeat");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_size_as_uv", PROPERTY_HINT_NONE, ""), "set_use_size_as_uv", "get_use_size_as_uv");
 }
 
 void CSGBox3D::set_size(const Vector3 &p_size) {
@@ -1873,14 +1873,14 @@ Vector3 CSGBox3D::get_uv_scale() const {
 	return uv_scale;
 }
 
-void CSGBox3D::set_uv_repeat(const bool &p_enabled) {
-	uv_repeat = p_enabled;
+void CSGBox3D::set_use_size_as_uv(const bool &p_enabled) {
+	use_size_as_uv = p_enabled;
 	_make_dirty();
 	update_gizmos();
 }
 
-bool CSGBox3D::get_uv_repeat() const {
-	return uv_repeat;
+bool CSGBox3D::get_use_size_as_uv() const {
+	return use_size_as_uv;
 }
 
 #ifndef DISABLE_DEPRECATED
