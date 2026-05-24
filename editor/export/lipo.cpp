@@ -30,133 +30,77 @@
 
 #include "lipo.h"
 
+#include "core/io/file_access_packed_byte_array.h"
 #include "editor/export/macho.h"
 
 bool LipO::is_lipo(const String &p_path) {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_path));
-	uint32_t magic = fb->get_32();
+	return is_lipo(fb);
+}
+
+bool LipO::is_lipo(const PackedByteArray &p_buffer) {
+	Ref<FileAccessPackedBayteArray> fb;
+	fb.instantiate();
+	fb->open_custom(p_buffer);
+	return is_lipo(fb);
+}
+
+bool LipO::is_lipo(const Ref<FileAccess> &p_fa) {
+	ERR_FAIL_COND_V(p_fa.is_null(), false);
+	uint32_t magic = p_fa->get_32();
 	return (magic == 0xbebafeca || magic == 0xcafebabe || magic == 0xbfbafeca || magic == 0xcafebabf);
 }
 
-bool LipO::create_file(const String &p_output_path, const Vector<String> &p_files) {
-	close();
-
-	fa = FileAccess::open(p_output_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_output_path));
-
-	uint64_t max_size = 0;
-	for (int i = 0; i < p_files.size(); i++) {
-		{
-			MachO mh;
-			if (!mh.open_file(p_files[i])) {
-				ERR_FAIL_V_MSG(false, vformat("LipO: Invalid MachO file: \"%s\".", p_files[i]));
-			}
-
-			FatArch arch;
-			arch.cputype = mh.get_cputype();
-			arch.cpusubtype = mh.get_cpusubtype();
-			arch.offset = 0;
-			arch.size = mh.get_size();
-			arch.align = mh.get_align();
-			max_size += arch.size;
-
-			archs.push_back(arch);
-		}
-
-		Ref<FileAccess> fb = FileAccess::open(p_files[i], FileAccess::READ);
-		if (fb.is_null()) {
-			close();
-			ERR_FAIL_V_MSG(false, vformat("LipO: Can't open file: \"%s\".", p_files[i]));
-		}
+bool LipO::create_file(const String &p_output_path, const Vector<String> &p_files, const Vector<Vector2i> &p_cputypes) {
+	Vector<Ref<FileAccess>> files;
+	for (const String &file : p_files) {
+		Ref<FileAccess> fb = FileAccess::open(file, FileAccess::READ);
+		ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("LipO: Can't open file: \"%s\".", file));
+		files.push_back(fb);
 	}
-
-	// Write header.
-	bool is_64 = (max_size >= std::numeric_limits<uint32_t>::max());
-	if (is_64) {
-		fa->store_32(0xbfbafeca);
-	} else {
-		fa->store_32(0xbebafeca);
-	}
-	fa->store_32(BSWAP32(archs.size()));
-	uint64_t offset = archs.size() * (is_64 ? 32 : 20) + 8;
-	for (int i = 0; i < archs.size(); i++) {
-		archs.write[i].offset = offset + PAD(offset, uint64_t(1) << archs[i].align);
-		if (is_64) {
-			fa->store_32(BSWAP32(archs[i].cputype));
-			fa->store_32(BSWAP32(archs[i].cpusubtype));
-			fa->store_64(BSWAP64(archs[i].offset));
-			fa->store_64(BSWAP64(archs[i].size));
-			fa->store_32(BSWAP32(archs[i].align));
-			fa->store_32(0);
-		} else {
-			fa->store_32(BSWAP32(archs[i].cputype));
-			fa->store_32(BSWAP32(archs[i].cpusubtype));
-			fa->store_32(BSWAP32(archs[i].offset));
-			fa->store_32(BSWAP32(archs[i].size));
-			fa->store_32(BSWAP32(archs[i].align));
-		}
-		offset = archs[i].offset + archs[i].size;
-	}
-
-	// Write files and padding.
-	for (int i = 0; i < archs.size(); i++) {
-		Ref<FileAccess> fb = FileAccess::open(p_files[i], FileAccess::READ);
-		if (fb.is_null()) {
-			close();
-			ERR_FAIL_V_MSG(false, vformat("LipO: Can't open file: \"%s\".", p_files[i]));
-		}
-		uint64_t cur = fa->get_position();
-		for (uint64_t j = cur; j < archs[i].offset; j++) {
-			fa->store_8(0);
-		}
-		int pages = archs[i].size / 4096;
-		int remain = archs[i].size % 4096;
-		unsigned char step[4096];
-		for (int j = 0; j < pages; j++) {
-			uint64_t br = fb->get_buffer(step, 4096);
-			if (br > 0) {
-				fa->store_buffer(step, br);
-			}
-		}
-		uint64_t br = fb->get_buffer(step, remain);
-		if (br > 0) {
-			fa->store_buffer(step, br);
-		}
-	}
-	return true;
+	return _create_file(p_output_path, files, p_cputypes);
 }
 
-bool LipO::create_file(const String &p_output_path, const Vector<String> &p_files, const Vector<Vector2i> &p_cputypes) {
-	close();
+bool LipO::create_file(const String &p_output_path, const Vector<PackedByteArray> &p_file_buffers, const Vector<Vector2i> &p_cputypes) {
+	Vector<Ref<FileAccess>> files;
+	for (const PackedByteArray &file : p_file_buffers) {
+		Ref<FileAccessPackedBayteArray> fb;
+		fb.instantiate();
+		fb->open_custom(file);
 
-	fa = FileAccess::open(p_output_path, FileAccess::WRITE);
+		files.push_back(fb);
+	}
+	return _create_file(p_output_path, files, p_cputypes);
+}
+
+bool LipO::_create_file(const String &p_output_path, const Vector<Ref<FileAccess>> &p_files, const Vector<Vector2i> &p_cputypes) {
+	Vector<FatArch> archs;
+	Ref<FileAccess> fa = FileAccess::open(p_output_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_output_path));
-	ERR_FAIL_COND_V(p_files.size() != p_cputypes.size(), false);
 
 	uint64_t max_size = 0;
 	for (int i = 0; i < p_files.size(); i++) {
-		Ref<FileAccess> fb = FileAccess::open(p_files[i], FileAccess::READ);
-		if (fb.is_null()) {
-			close();
-			ERR_FAIL_V_MSG(false, vformat("LipO: Can't open file: \"%s\".", p_files[i]));
-		}
-
 		{
 			FatArch arch;
 			MachO mh;
-			if (MachO::is_macho(p_files[i]) && mh.open_file(p_files[i])) {
+			if (mh.open_file(p_files[i])) {
 				arch.cputype = mh.get_cputype();
 				arch.cpusubtype = mh.get_cpusubtype();
 				arch.offset = 0;
 				arch.size = mh.get_size();
 				arch.align = mh.get_align();
-				ERR_FAIL_V_MSG(arch.cputype != (uint32_t)p_cputypes[i].x || arch.cpusubtype != (uint32_t)p_cputypes[i].y, vformat("Mismatching MachO architecture: \"%s\".", p_files[i]));
+				if (p_files.size() == p_cputypes.size()) {
+					ERR_FAIL_V_MSG(arch.cputype != (uint32_t)p_cputypes[i].x || arch.cpusubtype != (uint32_t)p_cputypes[i].y, vformat("Mismatching MachO architecture: \"%s\".", p_files[i]));
+				}
 			} else {
+				if (p_files.size() != p_cputypes.size()) {
+					ERR_FAIL_V(false);
+				}
 				arch.cputype = (uint32_t)p_cputypes[i].x;
 				arch.cpusubtype = (uint32_t)p_cputypes[i].y;
 				arch.offset = 0;
-				arch.size = fb->get_length();
+				arch.size = p_files[i]->get_length();
 				arch.align = 0x03;
 			}
 			max_size += arch.size;
@@ -195,11 +139,6 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 
 	// Write files and padding.
 	for (int i = 0; i < archs.size(); i++) {
-		Ref<FileAccess> fb = FileAccess::open(p_files[i], FileAccess::READ);
-		if (fb.is_null()) {
-			close();
-			ERR_FAIL_V_MSG(false, vformat("LipO: Can't open file: \"%s\".", p_files[i]));
-		}
 		uint64_t cur = fa->get_position();
 		for (uint64_t j = cur; j < archs[i].offset; j++) {
 			fa->store_8(0);
@@ -208,12 +147,12 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 		int remain = archs[i].size % 4096;
 		unsigned char step[4096];
 		for (int j = 0; j < pages; j++) {
-			uint64_t br = fb->get_buffer(step, 4096);
+			uint64_t br = p_files[i]->get_buffer(step, 4096);
 			if (br > 0) {
 				fa->store_buffer(step, br);
 			}
 		}
-		uint64_t br = fb->get_buffer(step, remain);
+		uint64_t br = p_files[i]->get_buffer(step, remain);
 		if (br > 0) {
 			fa->store_buffer(step, br);
 		}
@@ -222,10 +161,24 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 }
 
 bool LipO::open_file(const String &p_path) {
-	close();
+	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_path));
 
-	fa = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_path));
+	return open_file(fb);
+}
+
+bool LipO::open_buffer(const PackedByteArray &p_buffer) {
+	Ref<FileAccessPackedBayteArray> fb;
+	fb.instantiate();
+	fb->open_custom(p_buffer);
+
+	return open_file(fb);
+}
+
+bool LipO::open_file(const Ref<FileAccess> &p_fb) {
+	close();
+	ERR_FAIL_COND_V(p_fb.is_null(), false);
+	fa = p_fb;
 
 	uint32_t magic = fa->get_32();
 	if (magic == 0xbebafeca) {
@@ -284,7 +237,7 @@ bool LipO::open_file(const String &p_path) {
 		}
 	} else {
 		close();
-		ERR_FAIL_V_MSG(false, vformat("LipO: Invalid fat binary: \"%s\".", p_path));
+		ERR_FAIL_V_MSG(false, vformat("LipO: Invalid fat binary: \"%s\".", fa->get_path()));
 	}
 	return true;
 }
@@ -333,6 +286,7 @@ bool LipO::extract_arch(int p_index, const String &p_path) {
 
 void LipO::close() {
 	archs.clear();
+	fa = nullptr;
 }
 
 LipO::~LipO() {

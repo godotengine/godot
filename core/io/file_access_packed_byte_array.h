@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  lipo.h                                                                */
+/*  file_access_packed_byte_array.h                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,49 +30,49 @@
 
 #pragma once
 
-// Universal / Universal 2 fat binary file creator and extractor.
-
 #include "core/io/file_access.h"
-#include "core/object/ref_counted.h"
 
-class LipO : public RefCounted {
-	GDSOFTCLASS(LipO, RefCounted);
+class FileAccessPackedBayteArray : public FileAccess {
+	GDSOFTCLASS(FileAccessPackedBayteArray, FileAccess);
 
-	struct FatArch {
-		uint32_t cputype;
-		uint32_t cpusubtype;
-		uint64_t offset;
-		uint64_t size;
-		uint32_t align;
-	};
+	PackedByteArray data;
+	mutable uint64_t pos = 0;
 
-	Ref<FileAccess> fa;
-	Vector<FatArch> archs;
-
-	static inline size_t PAD(size_t s, size_t a) {
-		return (a - s % a);
-	}
-
-	static bool _create_file(const String &p_output_path, const Vector<Ref<FileAccess>> &p_files, const Vector<Vector2i> &p_cputypes);
+	static Ref<FileAccess> create();
 
 public:
-	static bool is_lipo(const String &p_path);
-	static bool is_lipo(const PackedByteArray &p_buffer);
-	static bool is_lipo(const Ref<FileAccess> &p_fa);
+	virtual Error open_custom(const PackedByteArray &p_data);
+	virtual Error open_internal(const String &p_path, int p_mode_flags) override { return ERR_UNAVAILABLE; }
+	virtual bool is_open() const override { return true; }
 
-	static bool create_file(const String &p_output_path, const Vector<String> &p_files, const Vector<Vector2i> &p_cputypes = Vector<Vector2i>());
-	static bool create_file(const String &p_output_path, const Vector<PackedByteArray> &p_file_buffers, const Vector<Vector2i> &p_cputypes = Vector<Vector2i>());
+	virtual void seek(uint64_t p_position) override;
+	virtual void seek_end(int64_t p_position) override;
+	virtual uint64_t get_position() const override;
+	virtual uint64_t get_length() const override;
 
-	bool open_file(const String &p_path);
-	bool open_buffer(const PackedByteArray &p_buffer);
-	bool open_file(const Ref<FileAccess> &p_fa);
+	virtual bool eof_reached() const override;
 
-	int get_arch_count() const;
-	uint32_t get_arch_cputype(int p_index) const;
-	uint32_t get_arch_cpusubtype(int p_index) const;
-	bool extract_arch(int p_index, const String &p_path);
+	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
-	void close();
+	virtual Error get_error() const override;
 
-	~LipO();
+	virtual Error resize(int64_t p_length) override;
+	virtual void flush() override {}
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override;
+
+	virtual bool file_exists(const String &p_name) override { return false; }
+
+	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
+	virtual int64_t _get_size(const String &p_file) override { return -1; }
+
+	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
+
+	virtual bool _get_hidden_attribute(const String &p_file) override { return false; }
+	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) override { return ERR_UNAVAILABLE; }
+	virtual bool _get_read_only_attribute(const String &p_file) override { return false; }
+	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override { return ERR_UNAVAILABLE; }
+
+	virtual void close() override {}
 };
