@@ -654,21 +654,20 @@ EditorLog::EditorLog() {
 	HFlowContainer *bottom_hf = memnew(HFlowContainer);
 	bottom_hf->set_alignment(FlowContainer::ALIGNMENT_END);
 	vb_left->add_child(bottom_hf);
-
-	HBoxContainer *hbox = memnew(HBoxContainer);
-	hbox->set_h_size_flags(SIZE_EXPAND_FILL);
-	bottom_hf->add_child(hbox);
-
+	
 	// Search box
 	search_box = memnew(LineEdit);
-	search_box->set_custom_minimum_size(Vector2(200 * EDSCALE, 0));
+	search_box->set_custom_minimum_size(Vector2(150 * EDSCALE, 0));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTRC("Filter Messages"));
 	search_box->set_accessibility_name(TTRC("Filter Messages"));
 	search_box->set_clear_button_enabled(true);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
-	hbox->add_child(search_box);
+	bottom_hf->add_child(search_box);
 
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	bottom_hf->add_child(hbox);
+	
 	//Exclude non-filter matches button
 	show_non_search_matches_button = memnew(Button);
 	show_non_search_matches_button->set_tooltip_text(TTRC("Show Non-Matches"));
@@ -681,6 +680,8 @@ EditorLog::EditorLog() {
 
 	// Case sensitive button
 	search_case_sensitive_button = memnew(Button);
+	search_case_sensitive_button->set_tooltip_text(TTRC("Toggle case-sensitivity"));
+	search_case_sensitive_button->set_accessibility_name(TTRC("Toggle case-sensitivity"));
 	search_case_sensitive_button->set_theme_type_variation(SceneStringName(FlatButton));
 	search_case_sensitive_button->set_toggle_mode(true);
 	search_case_sensitive_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_case_sensitive));
@@ -707,17 +708,7 @@ EditorLog::EditorLog() {
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
 	bottom_hf->add_child(collapse_button);
-
-	// Search box
-	search_box = memnew(LineEdit);
-	search_box->set_custom_minimum_size(Vector2(150 * EDSCALE, 0));
-	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTRC("Filter Messages"));
-	search_box->set_accessibility_name(TTRC("Filter Messages"));
-	search_box->set_clear_button_enabled(true);
-	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
-	bottom_hf->add_child(search_box);
-
+	
 	// Message Type Filters.
 	LogFilter *std_filter = memnew(LogFilter(MSG_TYPE_STD));
 	std_filter->initialize_button(TTRC("Standard Messages"), TTRC("Toggle visibility of standard output messages."), callable_mp(this, &EditorLog::_set_filter_active));
