@@ -785,7 +785,7 @@ void GPUParticles2D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (one_shot) {
-				time += get_process_delta_time();
+				time += get_process_delta_time() * speed_scale;
 				if (time > emission_time) {
 					emitting = false;
 					if (!active) {
