@@ -3909,6 +3909,7 @@ void ThemeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Con
 	preview_tabs->set_current_tab(preview_tabs->get_tab_count() - 1);
 	preview_tab->connect("scene_invalidated", callable_mp(this, &ThemeEditor::_remove_preview_tab_invalid).bind(preview_tab));
 	preview_tab->connect("scene_reloaded", callable_mp(this, &ThemeEditor::_update_preview_tab).bind(preview_tab));
+	_preview_tabs_resized();
 }
 
 void ThemeEditor::_preview_tabs_resized() {
@@ -4077,6 +4078,7 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs->connect(SceneStringName(resized), callable_mp(this, &ThemeEditor::_preview_tabs_resized), CONNECT_DEFERRED);
 
 	add_preview_button = memnew(Button);
+	add_preview_button->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	add_preview_button->set_tooltip_text(TTRC("Add Preview"));
 	add_preview_button->set_flat(true);
 	preview_tabs->add_child(add_preview_button);
