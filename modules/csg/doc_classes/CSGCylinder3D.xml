@@ -29,5 +29,21 @@
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="true">
 			If [code]true[/code] the normals of the cylinder are set to give a smooth effect making the cylinder seem rounded. If [code]false[/code] the cylinder will have a flat shaded look.
 		</member>
+
+		<member name="uv_cap_scale" type="Vector2" setter="set_uv_cap_scale" getter="get_uv_cap_scale" default="Vector2(1,1)">
+			Scales the UV of the top and bottom faces. Higher values make the material repeat more.
+		</member>
+		<member name="uv_cap_offset" type="Vector2" setter="set_uv_cap_offset" getter="get_uv_cap_offset" default="Vector2(0,0)">
+			Offsets the UV of the top and bottom faces along the offset axis.
+		</member>
+		<member name="uv_side_scale" type="Vector2" setter="set_uv_side_scale" getter="get_uv_side_scale" default="Vector2(1,1)">
+			Scales the UV of the side faces. Higher values make the material repeat more.
+		</member>
+		<member name="uv_side_offset" type="Vector2" setter="set_uv_side_offset" getter="get_uv_side_offset" default="Vector2(0,0)">
+			Offsets the UV of the side faces along the offset axis.
+		</member>
+		<member name="use_side_as_uv" type="bool" setter="set_use_size_as_uv" getter="get_use_size_as_uv" default="false">
+			If [code]true[/code], scales UV using [member radius] and [member height], making the material repeat instead of stretch.
+		</member>
 	</members>
 </class>
