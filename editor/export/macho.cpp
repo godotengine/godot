@@ -31,6 +31,7 @@
 #include "macho.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/marshalls.h"
 
 uint32_t MachO::seg_align(uint64_t p_vmaddr, uint32_t p_min, uint32_t p_max) {
 	uint32_t salign = p_max;
@@ -107,6 +108,14 @@ bool MachO::is_macho(const String &p_path) {
 	return (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf);
 }
 
+bool MachO::is_macho(const PackedByteArray &p_buffer) {
+	if (p_buffer.size() < 4) {
+		return false;
+	}
+	uint32_t magic = decode_uint32(p_buffer.ptr());
+	return (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf);
+}
+
 uint32_t MachO::get_filetype(const String &p_path) {
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("MachO: Can't open file: \"%s\".", p_path));
@@ -114,17 +123,77 @@ uint32_t MachO::get_filetype(const String &p_path) {
 	MachHeader mach_header;
 
 	// Read MachO header.
-	if (magic == 0xcefaedfe || magic == 0xfeedface) {
-		// Thin 32-bit binary.
+	if (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf) {
 		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
-	} else if (magic == 0xcffaedfe || magic == 0xfeedfacf) {
-		// Thin 64-bit binary.
-		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
-		fa->get_32(); // Skip extra reserved field.
 	} else {
 		ERR_FAIL_V_MSG(0, vformat("MachO: File is not a valid MachO binary: \"%s\".", p_path));
 	}
 	return mach_header.filetype;
+}
+
+uint32_t MachO::get_filetype(const PackedByteArray &p_buffer) {
+	ERR_FAIL_COND_V((size_t)p_buffer.size() > sizeof(MachHeader) + 4, 0);
+	uint32_t magic = decode_uint32(p_buffer.ptr());
+	const MachHeader *mach_header = nullptr;
+
+	// Read MachO header.
+	if (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf) {
+		mach_header = (const MachHeader *)(p_buffer.ptr() + 4);
+	} else {
+		ERR_FAIL_V_MSG(0, "MachO: Buffer is not a valid MachO binary.");
+	}
+	return mach_header->filetype;
+}
+
+uint32_t MachO::get_cputype(const String &p_path) {
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("MachO: Can't open file: \"%s\".", p_path));
+	uint32_t magic = fa->get_32();
+	MachHeader mach_header;
+
+	// Read MachO header.
+	if (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf) {
+		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
+	} else {
+		ERR_FAIL_V_MSG(0, vformat("MachO: File is not a valid MachO binary: \"%s\".", p_path));
+	}
+	return mach_header.cputype;
+}
+
+uint32_t MachO::get_cputype(const PackedByteArray &p_buffer) {
+	ERR_FAIL_COND_V((size_t)p_buffer.size() > sizeof(MachHeader) + 4, 0);
+	uint32_t magic = decode_uint32(p_buffer.ptr());
+	const MachHeader *mach_header = nullptr;
+
+	// Read MachO header.
+	if (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf) {
+		mach_header = (const MachHeader *)(p_buffer.ptr() + 4);
+	} else {
+		ERR_FAIL_V_MSG(0, "MachO: Buffer is not a valid MachO binary.");
+	}
+	return mach_header->cputype;
+}
+
+String MachO::arch_name(uint32_t p_arch) {
+	if (p_arch == (CPU_TYPE_64BIT | CPU_TYPE_X86)) {
+		return "x86_64";
+	} else if (p_arch == (CPU_TYPE_64BIT | CPU_TYPE_ARM)) {
+		return "arm64";
+	} else if (p_arch == (CPU_TYPE_64BIT | CPU_TYPE_PPC)) {
+		return "ppc64";
+	} else if (p_arch == (CPU_TYPE_64BIT | CPU_TYPE_RISCV)) {
+		return "rv64";
+	} else if (p_arch == CPU_TYPE_X86) {
+		return "x86_32";
+	} else if (p_arch == CPU_TYPE_ARM) {
+		return "arm32";
+	} else if (p_arch == CPU_TYPE_PPC) {
+		return "ppc32";
+	} else if (p_arch == CPU_TYPE_RISCV) {
+		return "rv32";
+	} else {
+		return "unknown";
+	}
 }
 
 bool MachO::open_file(const String &p_path) {
