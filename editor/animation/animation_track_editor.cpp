@@ -5253,13 +5253,12 @@ void AnimationTrackEditor::_update_tracks() {
 
 		if (use_filter) {
 			NodePath path = animation->track_get_path(i);
-
 			if (root) {
 				Node *node = root->get_node_or_null(path);
 				if (!node) {
 					continue; // No node, no filter.
 				}
-				if (!EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
+				if (!filtered_nodes.has(node)) {
 					continue; // Skip track due to not selected.
 				}
 			}
@@ -7922,8 +7921,13 @@ void AnimationTrackEditor::_scene_changed() {
 }
 
 void AnimationTrackEditor::_selection_changed() {
+	const TypedArray<Node> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_nodes();
+	if (selected_nodes.size() > 0) {
+		filtered_nodes = selected_nodes;
+	}
 	if (selected_filter->is_pressed()) {
 		_update_tracks(); // Needs updating.
+		bezier_edit->queue_redraw();
 	} else {
 		_redraw_tracks();
 		_redraw_groups();
