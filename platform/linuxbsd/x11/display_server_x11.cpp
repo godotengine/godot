@@ -4356,7 +4356,8 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 			p_target == XInternAtom(x11_display, "TEXT", 0) ||
 			p_target == XA_STRING ||
 			p_target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
-			p_target == XInternAtom(x11_display, "text/plain", 0)) {
+			p_target == XInternAtom(x11_display, "text/plain", 0) ||
+			p_target == XInternAtom(x11_display, "text/uri-list", 0)) {
 		// Directly using internal clipboard because we know our window
 		// is the owner during a selection request.
 		CharString clip;
@@ -5395,6 +5396,23 @@ void DisplayServerX11::process_events() {
 				} else {
 					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
 
+					// Drop files
+					if(is_dnd_dragging && xdnd_target_window) {
+						XClientMessageEvent m;
+						memset(&m, 0, sizeof(m));
+						m.type = ClientMessage;
+						m.display = x11_display;
+						m.window = xdnd_target_window;
+						m.message_type = xdnd_drop;
+						m.format = 32;
+						m.data.l[0] = XGetSelectionOwner(x11_display, xdnd_selection);
+						m.data.l[1] = (xdnd_version << 24) | 1;
+						m.data.l[2] = CurrentTime;
+						XSendEvent(x11_display, xdnd_target_window, False, NoEventMask, (XEvent *)&m);
+						XFlush(x11_display);
+						is_dnd_dragging = false;
+					}
+
 					DisplayServerEnums::WindowID window_id_other = DisplayServerEnums::INVALID_WINDOW_ID;
 					Window wd_other_x11_window;
 					if (!wd.focused) {
@@ -5718,6 +5736,50 @@ void DisplayServerX11::process_events() {
 				break;
 			default:
 				break;
+		}
+	}
+
+	if (is_dnd_dragging) {
+		// Get x11 window under mouse
+		Window root, child;
+		int root_x, root_y;
+		int win_x, win_y;
+		unsigned int mask;
+		XQueryPointer(x11_display, DefaultRootWindow(x11_display), &root, &child, &root_x, &root_y, &win_x, &win_y, &mask);
+
+		Window new_target_window = child;
+		if (xdnd_target_window != new_target_window) {
+			// Notify new target of intent to drop
+			XEvent xev_enter;
+			memset(&xev_enter, 0, sizeof(xev_enter));
+			xev_enter.type = ClientMessage;
+			xev_enter.xclient.window = new_target_window;
+			xev_enter.xclient.message_type = xdnd_enter;
+			xev_enter.xclient.format = 32;
+			xev_enter.xclient.data.l[0] = XGetSelectionOwner(x11_display, xdnd_selection);
+			xev_enter.xclient.data.l[1] = (xdnd_version << 24);
+			xev_enter.xclient.data.l[2] = XInternAtom(x11_display, "text/uri-list" ,0);
+			xev_enter.xclient.data.l[3] = XInternAtom(x11_display, "text/plain" ,0);
+			xev_enter.xclient.data.l[4] = 0;
+			XSendEvent(x11_display, new_target_window, False, NoEventMask, &xev_enter);
+			XFlush(x11_display);
+			xdnd_target_window = new_target_window;
+		}
+		
+		// Notify dnd target of mouse position
+		if (xdnd_target_window) {
+			XEvent xev;
+			memset(&xev, 0, sizeof(xev));
+			xev.type = ClientMessage;
+			xev.xclient.window = xdnd_target_window;
+			xev.xclient.message_type = xdnd_position;
+			xev.xclient.format = 32;
+			xev.xclient.data.l[0] = XGetSelectionOwner(x11_display, xdnd_selection);
+			xev.xclient.data.l[1] = (xdnd_version << 24) | 1;
+			xev.xclient.data.l[2] = (root_x << 16) | root_y;
+			xev.xclient.data.l[3] = CurrentTime;
+			xev.xclient.data.l[4] = xdnd_action_copy;
+			XSendEvent(x11_display, xdnd_target_window, False, NoEventMask, &xev);
 		}
 	}
 
@@ -6822,6 +6884,19 @@ void DisplayServerX11::_xim_instantiate_callback(::Display *display, ::XPointer 
 	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : ds->windows) {
 		ds->_create_xic(E.value);
 	}
+}
+
+void DisplayServerX11::window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window) {
+	String uri_files = "";
+	for(String file: p_files){
+		uri_files += "file://";
+		uri_files += file;
+		uri_files += "\r\n";
+	}
+	clipboard_set(uri_files);
+	is_dnd_dragging = true;
+	XSetSelectionOwner(x11_display, xdnd_selection, windows[p_window].x11_window, CurrentTime);
+	XFlush(x11_display);
 }
 
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
