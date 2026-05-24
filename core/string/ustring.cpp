@@ -111,6 +111,12 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 	if (pos != -1) {
 		r_path = base.substr(pos);
 		base = base.substr(0, pos);
+	} else {
+		pos = base.find_char('?');
+		if (pos != -1) {
+			r_path = "/" + base.substr(pos);
+			base = base.substr(0, pos);
+		}
 	}
 	// Host
 	pos = base.find_char('@');

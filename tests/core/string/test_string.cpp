@@ -2223,6 +2223,10 @@ TEST_CASE("[String][URL] Parse URL") {
 	CHECK_URL("https://me:secret@godotengine.org", "https://", "godotengine.org", 0, "", "", Error::OK);
 	CHECK_URL("https://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]/ipv6", "https://", "fedc:ba98:7654:3210:fedc:ba98:7654:3210", 0, "/ipv6", "", Error::OK);
 
+	// Query without explicit path slash (issue #119695).
+	CHECK_URL("https://httpbin.org?token=abc", "https://", "httpbin.org", 0, "/?token=abc", "", Error::OK);
+	CHECK_URL("https://httpbin.org/?token=abc", "https://", "httpbin.org", 0, "/?token=abc", "", Error::OK);
+
 	// Scheme vs Fragment.
 	CHECK_URL("google.com/#goto=http://redirect_url/", "", "google.com", 0, "/", "goto=http://redirect_url/", Error::OK);
 
