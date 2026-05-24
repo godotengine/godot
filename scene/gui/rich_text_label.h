@@ -105,6 +105,9 @@ public:
 		ITEM_CUSTOMFX,
 		ITEM_CONTEXT,
 		ITEM_LANGUAGE,
+		ITEM_SHADOW_SIZE,
+		ITEM_SHADOW_COLOR,
+		ITEM_SHADOW_OFFSET,
 	};
 
 	enum MenuItems {
@@ -161,6 +164,7 @@ protected:
 	void _update_image_bind_compat_107347(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
 	void _add_image_bind_compat_112617(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false, const String &p_alt_text = String());
 	void _update_image_bind_compat_112617(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false);
+	void _push_dropcap_bind_compat_119716(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
 	static void _bind_compatibility_methods();
 #endif
 
@@ -175,6 +179,9 @@ private:
 		int prefix_outline_size = -1;
 		Color prefix_outline_color = Color(0, 0, 0, 0);
 		float prefix_width = 0;
+		int prefix_shadow_size = -1;
+		Color prefix_shadow_color = Color(0, 0, 0, 0);
+		Vector2 prefix_shadow_offset = Vector2(Math::INF, Math::INF);
 		Ref<TextParagraph> text_buf;
 		Ref<TextParagraph> text_buf_disp;
 
@@ -185,6 +192,9 @@ private:
 		Color dc_color;
 		int dc_ol_size = 0;
 		Color dc_ol_color;
+		int dc_sh_size = 0;
+		Color dc_sh_color;
+		Vector2 dc_sh_off;
 
 		Vector2 offset;
 		float indent = 0.0;
@@ -267,6 +277,9 @@ private:
 		Color color;
 		int ol_size = 0;
 		Color ol_color;
+		int shadow_size = 0;
+		Color shadow_color;
+		Vector2 shadow_off;
 		Rect2 dropcap_margins;
 		ObjectID owner;
 		ItemDropcap() { type = ITEM_DROPCAP; }
@@ -310,6 +323,21 @@ private:
 	struct ItemColor : public Item {
 		Color color;
 		ItemColor() { type = ITEM_COLOR; }
+	};
+
+	struct ItemShadowSize : public Item {
+		int outline_size = 0;
+		ItemShadowSize() { type = ITEM_SHADOW_SIZE; }
+	};
+
+	struct ItemShadowColor : public Item {
+		Color color;
+		ItemShadowColor() { type = ITEM_SHADOW_COLOR; }
+	};
+
+	struct ItemShadowOffset : public Item {
+		Vector2 offset;
+		ItemShadowOffset() { type = ITEM_SHADOW_OFFSET; }
 	};
 
 	struct ItemOutlineSize : public Item {
@@ -680,6 +708,7 @@ private:
 	ItemFontSize *_find_font_size(Item *p_item);
 	ItemFont *_find_font(Item *p_item);
 	int _find_outline_size(Item *p_item, int p_default);
+	int _find_shadow_size(Item *p_item, int p_default);
 	ItemList *_find_list_item(Item *p_item);
 	ItemDropcap *_find_dc_item(Item *p_item);
 	int _find_list(Item *p_item, Vector<int> &r_index, Vector<int> &r_count, Vector<ItemList *> &r_list);
@@ -692,6 +721,8 @@ private:
 	String _find_language(Item *p_item);
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	Color _find_outline_color(Item *p_item, const Color &p_default_color);
+	Color _find_shadow_color(Item *p_item, const Color &p_default_color);
+	Vector2 _find_shadow_offset(Item *p_item, const Vector2 &p_default_off);
 	bool _find_underline(Item *p_item, Color *r_color = nullptr);
 	bool _find_strikethrough(Item *p_item, Color *r_color = nullptr);
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
@@ -827,12 +858,13 @@ public:
 	void add_newline();
 	bool remove_paragraph(int p_paragraph, bool p_no_invalidate = false);
 	bool invalidate_paragraph(int p_paragraph);
-	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
+	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0), int p_sh_size = 0, const Color &p_sh_color = Color(0, 0, 0, 0), const Vector2 &p_sh_off = Vector2());
 	void _push_def_font(DefaultFont p_def_font);
 	void _push_def_font_var(DefaultFont p_def_font, const Ref<Font> &p_font, int p_size = -1);
 	void push_font(const Ref<Font> &p_font, int p_size = 0);
 	void push_font_size(int p_font_size);
 	void push_outline_size(int p_font_size);
+	void push_shadow_size(int p_font_size);
 	void push_normal();
 	void push_bold();
 	void push_bold_italics();
@@ -840,6 +872,8 @@ public:
 	void push_mono();
 	void push_color(const Color &p_color);
 	void push_outline_color(const Color &p_color);
+	void push_shadow_color(const Color &p_color);
+	void push_shadow_offset(const Vector2 &p_offset);
 	void push_underline(const Color &p_color = Color(0, 0, 0, 0));
 	void push_strikethrough(const Color &p_color = Color(0, 0, 0, 0));
 	void push_language(const String &p_language);
