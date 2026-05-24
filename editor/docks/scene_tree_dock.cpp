@@ -3961,20 +3961,26 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		BEGIN_SECTION()
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCut")), ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("scene_tree/copy_node"), TOOL_COPY);
+
 		if (!node_clipboard.is_empty()) {
+			bool is_paste_icon_added = false; // Only add an icon to the first "paste" option.
+
 			if (selection.size() == 1) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
-				menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_sibling"), TOOL_PASTE_AS_SIBLING);
-				if (selection.front()->get() == edited_scene) {
-					menu->set_item_disabled(-1, true);
+				is_paste_icon_added = true;
+
+				if (selection.front()->get() != edited_scene) {
+					menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_sibling"), TOOL_PASTE_AS_SIBLING);
 				}
 			}
+
 			if (selection.size() >= 1) {
-				if (can_rename || can_replace) {
+				if ((selection.front()->get() != edited_scene) && (can_rename || can_replace)) {
 					menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_replacement"), TOOL_PASTE_AS_REPLACEMENT);
-				}
-				if (selection.front()->get() == edited_scene) {
-					menu->set_item_disabled(-1, true);
+					if (!is_paste_icon_added) {
+						menu->set_item_icon(-1, get_editor_theme_icon(SNAME("ActionPaste")));
+						is_paste_icon_added = true;
+					}
 				}
 			}
 		}
