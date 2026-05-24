@@ -88,6 +88,9 @@ public:
 	void set_max_polyphony(int p_max_polyphony);
 	int get_max_polyphony() const;
 
+	void set_bypass_global_polyphony(bool p_bypass);
+	bool is_bypassing_global_polyphony() const;
+
 	void play(float p_from_pos = 0.0);
 	void seek(float p_seconds);
 	void stop();
