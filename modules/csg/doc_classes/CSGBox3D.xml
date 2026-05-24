@@ -20,6 +20,9 @@
 		<member name="uv_scale" type="Vector3" setter="set_uv_scale" getter="get_uv_scale" default="Vector3(1, 1, 1)">
 			Scales the UV coordinates generated for each face of the box. Higher values make the material repeat more often on the corresponding local axis.
 		</member>
+		<member name="uv_offset" type="Vector3" setter="set_uv_offset" getter="get_uv_offset" default="Vector3(0, 0, 0)">
+			Moves the UV coordinates generated for each face of the box along the offset axis.
+		</member>
 		<member name="use_size_as_uv" type="bool" setter="set_uv_repeat" getter="get_uv_repeat" default="false">
 			If [code]true[/code], UV coordinates are scaled by the box's [member size], making the material repeat proportionally to the box dimensions. If [code]false[/code], each face uses the default [code]0.0[/code] to [code]1.0[/code] UV range.
 		</member>
