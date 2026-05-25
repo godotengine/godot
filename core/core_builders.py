@@ -168,7 +168,7 @@ def make_donors_header(target, source):
             close_section()
 
 
-def make_license_header(target, source, env):
+def make_license_header(target, source):
     src_copyright = str(source[0])
     src_license = str(source[1])
 
