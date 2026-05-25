@@ -2293,8 +2293,8 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 		light_frustum_planes.write[4] = Plane(cam_basis_z, light_view_frustum_rect_max.z + 1e6);
 		light_frustum_planes.write[5] = Plane(-cam_basis_z, -light_view_frustum_rect_min.z); // z_min is ok, since casters further than far-light plane are not needed
 
-		// Add two texels each side as margin to compensate for under-rounding of pixel positions
-		frustum_circumscribing_radius += frustum_circumscribing_radius * 2.0 / texture_size;
+		// Add two texels (one on each side) as margin to compensate for under-rounding of pixel positions
+		frustum_circumscribing_radius *= texture_size / (texture_size - 2.0);
 		real_t unit = frustum_circumscribing_radius * 4.0 / texture_size;
 
 		Vector3 texel_snapped_frustum_centroid;
