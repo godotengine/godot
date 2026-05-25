@@ -1091,7 +1091,17 @@ void PopupMenu::_draw_items() {
 
 void PopupMenu::_update_search_bar_visibility() {
 	if (search_bar) {
-		search_bar->set_visible(search_bar_enabled && items.size() >= search_bar_min_item_count);
+		if (search_bar_enabled) {
+			int item_count = 0;
+			for (const Item &item : items) {
+				if (!item.separator) {
+					item_count++;
+				}
+			}
+			search_bar->set_visible(item_count >= search_bar_min_item_count);
+		} else {
+			search_bar->hide();
+		}
 	}
 }
 
