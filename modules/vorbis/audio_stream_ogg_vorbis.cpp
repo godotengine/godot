@@ -48,7 +48,8 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 	int beat_length_frames = -1;
 	bool use_loop = looping_override ? looping : vorbis_stream->loop;
 
-	if (is_beat_loop()) {
+	bool beat_loop = is_beat_loop();
+	if (beat_loop) {
 		beat_length_frames = vorbis_stream->get_beat_count() * vorbis_data->get_sampling_rate() * 60 / vorbis_stream->get_bpm();
 	}
 
@@ -284,11 +285,12 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 		return;
 	}
 
-	double real_length = is_beat_loop() ? 60.0 / vorbis_stream->get_bpm() * vorbis_stream->beat_count : vorbis_stream->get_length();
+	bool beat_loop = is_beat_loop();
+	double real_length = beat_loop ? 60.0 / vorbis_stream->get_bpm() * vorbis_stream->beat_count : vorbis_stream->get_length();
 
 	if (p_time > real_length || p_time < 0) {
 		stop();
-		ERR_FAIL_MSG("Seeking out of bounds. Stopping the stream.");
+		ERR_FAIL_MSG(vformat("Seek of value %f is out of bounds (0.0 to %f). Stopping the stream %s.", p_time, real_length, vorbis_stream->get_path().get_file()));
 	} else if (p_time == real_length) {
 		p_time = real_length - 0.001;
 	}

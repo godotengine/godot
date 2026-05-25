@@ -51,7 +51,8 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int beat_length_frames = -1;
 	bool use_loop = looping_override ? looping : mp3_stream->loop;
 
-	if (is_beat_loop()) {
+	bool beat_loop = is_beat_loop();
+	if (beat_loop) {
 		beat_length_frames = mp3_stream->get_beat_count() * mp3_stream->sample_rate * 60 / mp3_stream->get_bpm();
 	}
 
@@ -69,7 +70,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 			--todo;
 			++frames_mixed;
 
-			if (is_beat_loop() && (int)frames_mixed >= beat_length_frames) {
+			if (beat_loop && (int)frames_mixed >= beat_length_frames) {
 				for (int i = 0; i < FADE_SIZE; i++) {
 					samples_mixed = drmp3_read_pcm_frames_f32(&mp3d, 1, buf_frame);
 					loop_fade[i] = AudioFrame(buf_frame[0], buf_frame[mp3d.channels - 1]);
@@ -134,11 +135,12 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 		return;
 	}
 
-	double real_length = is_beat_loop() ? 60.0 / mp3_stream->get_bpm() * mp3_stream->beat_count : mp3_stream->get_length();
+	bool beat_loop = is_beat_loop();
+	double real_length = beat_loop ? 60.0 / mp3_stream->get_bpm() * mp3_stream->beat_count : mp3_stream->get_length();
 
 	if (p_time > real_length || p_time < 0) {
 		stop();
-		ERR_FAIL_MSG("Seeking out of bounds. Stopping the stream.");
+		ERR_FAIL_MSG(vformat("Seek of value %f is out of bounds (0.0 to %f). Stopping the stream %s.", p_time, real_length, mp3_stream->get_path().get_file()));
 	} else if (p_time == real_length) {
 		p_time = real_length - 0.001;
 	}

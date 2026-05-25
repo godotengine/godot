@@ -86,7 +86,7 @@ void AudioStreamPlaybackWAV::seek(double p_time) {
 
 	if (p_time > real_length || p_time < 0) {
 		stop();
-		ERR_FAIL_MSG("Seeking out of bounds. Stopping the stream.");
+		ERR_FAIL_MSG(vformat("Seek of value %f is out of bounds (0.0 to %f). Stopping the stream %s.", p_time, real_length, base->get_path().get_file()));
 	} else if (p_time == real_length) {
 		p_time = real_length - 0.001;
 	}
