@@ -5,13 +5,15 @@ Import("env", "py_builder_env")
 
 
 py_builder_env["MAKE_DEFAULT_THEME_ICONS_ACTION_COM"] = (
-    "${MYTEMPFILE('$PYTHON_BIN scene/theme/icons/default_theme_icons_builders.py --method make_default_theme_icons_action --target $TARGET --source $SOURCES','$GENCOMSTR')}"
+    "${MYTEMPFILE('$PYTHON_BIN scene/theme/icons/default_theme_icons_builders.py --target $TARGET --source $SOURCES','$GENCOMSTR')}"
 )
-py_builder_env.Command(
+
+
+x = py_builder_env.Command(
     "#scene/theme/default_theme_icons.gen.h",
     Glob("*.svg"),
     Action(
-        "$MAKE_DEFAULT_THEM_ICONS_ACTION_COM",
+        "$MAKE_DEFAULT_THEME_ICONS_ACTION_COM",
         "$GENCOMSTR",
     ),
 )

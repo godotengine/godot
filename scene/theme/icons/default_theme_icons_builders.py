@@ -25,7 +25,7 @@ def make_default_theme_icons_action(target, source):
     icons_names_str = ",\n\t".join(icons_names)
     icons_raw_str = ",\n\t".join(icons_raw)
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         file.write(f"""\
 inline constexpr int default_theme_icons_count = {len(icons_names)};
 inline constexpr const char *default_theme_icons_sources[] = {{
@@ -57,26 +57,13 @@ def main():
 
     # Parse all arguments
     parser = argparse.ArgumentParser(description="Default theme icons build tools")
-    parser.add_argument(
-        "--method",
-        required=True,
-        choices=["make_default_theme_icons_action"],
-        help="Builder method to execute",
-    )
-    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--target", required=True, help="Target file")
     parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
 
     args = parser.parse_args()
 
-    target = args.target
-    source = args.source
-
-    if args.method == "make_default_theme_icons_action":
-        make_default_theme_icons_action(target, source)
-    else:
-        print(f"Unknown method: {args.method}", file=sys.stderr)
-        sys.exit(1)
+    make_default_theme_icons_action(args.target, args.source)
 
 
 if __name__ == "__main__":
