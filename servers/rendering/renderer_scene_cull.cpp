@@ -2247,12 +2247,8 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 		Vector3 light_view_frustum_rect_max = light_transform.basis.xform_inv(frustum_corners_local[0]);
 		for (int j = 1; j < 8; j++) {
 			Vector3 cam_space_corner = light_transform.basis.xform_inv(frustum_corners_local[j]);
-			light_view_frustum_rect_min.x = MIN(light_view_frustum_rect_min.x, cam_space_corner.x);
-			light_view_frustum_rect_min.y = MIN(light_view_frustum_rect_min.y, cam_space_corner.y);
-			light_view_frustum_rect_min.z = MIN(light_view_frustum_rect_min.z, cam_space_corner.z);
-			light_view_frustum_rect_max.x = MAX(light_view_frustum_rect_max.x, cam_space_corner.x);
-			light_view_frustum_rect_max.y = MAX(light_view_frustum_rect_max.y, cam_space_corner.y);
-			light_view_frustum_rect_max.z = MAX(light_view_frustum_rect_max.z, cam_space_corner.z);
+			light_view_frustum_rect_min = light_view_frustum_rect_min.min(cam_space_corner);
+			light_view_frustum_rect_max = light_view_frustum_rect_max.max(cam_space_corner);
 		}
 		light_view_frustum_rect_min += light_transform.basis.xform_inv(p_cam_transform.origin);
 		light_view_frustum_rect_max += light_transform.basis.xform_inv(p_cam_transform.origin);
