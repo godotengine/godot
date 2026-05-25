@@ -63,34 +63,32 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (p_event->get_device() == InputEvent::DEVICE_ID_EMULATION) {
-		return;
-	}
-
-	Ref<InputEventScreenTouch> touch = p_event;
-	if (touch.is_valid()) {
-		if (status.touch_index == -1) {
-			if (touch->is_pressed()) {
-				status.touch_index = touch->get_index();
-				status.press_attempt = true;
-				status.pressing_inside = has_point(touch->get_position());
-				on_action_event(p_event);
-			}
-		} else if (touch->get_index() == status.touch_index) {
-			if (!touch->is_pressed()) {
-				status.touch_index = -1;
-				on_action_event(p_event);
+	if (p_event->get_device() != InputEvent::DEVICE_ID_EMULATION) {
+		Ref<InputEventScreenTouch> touch = p_event;
+		if (touch.is_valid()) {
+			if (status.touch_index == -1) {
+				if (touch->is_pressed()) {
+					status.touch_index = touch->get_index();
+					status.press_attempt = true;
+					status.pressing_inside = has_point(touch->get_position());
+					on_action_event(p_event);
+				}
+			} else if (touch->get_index() == status.touch_index) {
+				if (!touch->is_pressed()) {
+					status.touch_index = -1;
+					on_action_event(p_event);
+				}
 			}
 		}
-	}
 
-	Ref<InputEventScreenDrag> drag = p_event;
-	if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
-		bool last_press_inside = status.pressing_inside;
-		status.pressing_inside = has_point(drag->get_position());
+		Ref<InputEventScreenDrag> drag = p_event;
+		if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
+			bool last_press_inside = status.pressing_inside;
+			status.pressing_inside = has_point(drag->get_position());
 
-		if (last_press_inside != status.pressing_inside) {
-			queue_redraw();
+			if (last_press_inside != status.pressing_inside) {
+				queue_redraw();
+			}
 		}
 	}
 
@@ -102,17 +100,15 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		was_mouse_pressed = button_masked;
 		on_action_event(p_event);
 		was_mouse_pressed = false;
-
-		return;
-	}
-
-	Ref<InputEventMouseMotion> mouse_motion = p_event;
-	if (mouse_motion.is_valid()) {
-		if (status.press_attempt) {
-			bool last_press_inside = status.pressing_inside;
-			status.pressing_inside = has_point(mouse_motion->get_position());
-			if (last_press_inside != status.pressing_inside) {
-				queue_redraw();
+	} else {
+		Ref<InputEventMouseMotion> mouse_motion = p_event;
+		if (mouse_motion.is_valid()) {
+			if (status.press_attempt) {
+				bool last_press_inside = status.pressing_inside;
+				status.pressing_inside = has_point(mouse_motion->get_position());
+				if (last_press_inside != status.pressing_inside) {
+					queue_redraw();
+				}
 			}
 		}
 	}
