@@ -211,13 +211,17 @@ void EditorLog::_load_state() {
 void EditorLog::_set_show_non_search_matches(bool p_state) {
 	show_non_search_matches = p_state;
 
+	log->set_scroll_follow(false);
 	_rebuild_log();
+	log->set_scroll_follow(false);
 }
 
 void EditorLog::_set_search_case_sensitive(bool p_state) {
 	search_case_sensitive = p_state;
-
+	
+	log->set_scroll_follow(false);
 	_rebuild_log();
+	log->set_scroll_follow(true);
 }
 
 void EditorLog::_set_search_buttons_visibility(bool p_visible) {
@@ -413,7 +417,15 @@ bool EditorLog::_contains_case_sensitive(const String &p_base, const String &p_c
 	}
 }
 
-void EditorLog::_append_styled_log_line(const Color &p_color_regular, const Color &p_color_highlighted, const String &p_line, const String &p_keytext) {
+int EditorLog::_find_case_sensitive(const String &p_base, const String &p_target) {
+	if (search_case_sensitive) {
+		return p_base.find(p_target);
+	} else {
+		return p_base.findn(p_target);
+	}
+}
+
+void EditorLog::_add_highlighted_log_line(const Color &p_color_regular, const Color &p_color_highlighted, const String &p_line, const String &p_keytext) {
 	if (p_keytext.is_empty() || !_contains_case_sensitive(p_line, p_keytext)) {
 		log->push_color(p_color_regular);
 		log->add_text(p_line);
@@ -428,14 +440,14 @@ void EditorLog::_append_styled_log_line(const Color &p_color_regular, const Colo
 	Vector<int> positions; // Array of substring positions. Every pair will be cut into a substring from p_line.
 	positions.append(0);
 
-	if (iterator_line.findn(p_keytext) == 0) {
+	if (_find_case_sensitive(iterator_line, p_keytext) == 0) {
 		positions.append(0);
 		positions.append(0); // This last zero will be replaced in a few lines, which fixes the order in case the first characters are immediately matches.
 	}
 
 	// Map which segments of p_line contain the target string. Every uneven pair of ints will be a non-match, and every even pair will be a match.
 	while (_contains_case_sensitive(iterator_line, p_keytext)) {
-		int keytext_pos = iterator_line.findn(p_keytext);
+		int keytext_pos = _find_case_sensitive(iterator_line, p_keytext);
 
 		if (keytext_pos == 0) {
 			int last_pos = positions[positions.size() - 1];
@@ -558,11 +570,11 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	} else { // For all other message types
 		if (_check_display_message(p_message) && !filter_keytext.is_empty()) {
 			if (p_message.type == MSG_TYPE_ERROR) {
-				_append_styled_log_line(theme_cache.error_color * Color(0.8, 0.8, 0.8), Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
+				_add_highlighted_log_line(theme_cache.error_color * Color(0.8, 0.8, 0.8), Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
 			} else if (p_message.type == MSG_TYPE_WARNING) {
-				_append_styled_log_line(theme_cache.warning_color * Color(0.8, 0.8, 0.8), Color(1.0, 0.35, 0.35), p_message.text, filter_keytext);
+				_add_highlighted_log_line(theme_cache.warning_color * Color(0.8, 0.8, 0.8), Color(1.0, 0.35, 0.35), p_message.text, filter_keytext);
 			} else {
-				_append_styled_log_line(theme_cache.message_color, Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
+				_add_highlighted_log_line(theme_cache.message_color, Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
 			}
 		} else { // If we aren't doing anything special with filtering, just print it as normal
 			log->add_text(p_message.text);

@@ -165,10 +165,11 @@ private:
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 	void _rebuild_log();
-	void _append_styled_log_line(const Color &p_color_regular, const Color &p_color_highlighted, const String &p_line, const String &p_keytext);
+	void _add_highlighted_log_line(const Color &p_color_regular, const Color &p_color_highlighted, const String &p_line, const String &p_keytext);
 	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false);
 	bool _check_display_message(LogMessage &p_message);
 	bool _contains_case_sensitive(const String &p_base, const String &p_contains);
+	int _find_case_sensitive(const String &p_base, const String &p_target);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
 	void _search_changed(const String &p_text);
