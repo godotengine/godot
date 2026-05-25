@@ -298,6 +298,9 @@ void OpenXRFrameSynthesisExtension::on_pre_draw_viewport(RID p_render_target) {
 	Quaternion delta_quat = delta_transform.basis.get_quaternion();
 	Vector3 delta_origin = delta_transform.origin;
 
+	float z_far = openxr_api->get_render_state_z_far();
+	float z_near = openxr_api->get_render_state_z_near();
+
 	// Z near/far can change per frame, so make sure we update this.
 	for (XrFrameSynthesisInfoEXT &frame_synthesis_info : render_state.frame_synthesis_info) {
 		frame_synthesis_info.layerFlags = render_state.relax_frame_interval ? XR_FRAME_SYNTHESIS_INFO_REQUEST_RELAXED_FRAME_INTERVAL_BIT_EXT : 0;
@@ -307,9 +310,12 @@ void OpenXRFrameSynthesisExtension::on_pre_draw_viewport(RID p_render_target) {
 			{ (float)delta_origin.x, (float)delta_origin.y, (float)delta_origin.z }
 		};
 
-		// Note: reverse-Z.
-		frame_synthesis_info.nearZ = openxr_api->get_render_state_z_far();
-		frame_synthesis_info.farZ = openxr_api->get_render_state_z_near();
+		// Ensure we only use valid near/far Z values.
+		if (z_far != z_near) {
+			// Note: reverse-Z.
+			frame_synthesis_info.nearZ = z_far;
+			frame_synthesis_info.farZ = z_near;
+		}
 	}
 
 	// Remember our transform.
