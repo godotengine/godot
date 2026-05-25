@@ -276,7 +276,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 	const String &original_path = p_original_path.is_empty() ? p_path : p_original_path;
 	load_nesting++;
 
-	print_verbose(vformat("Loading resource: %s", p_path));
+	print_verbose(vformat("Loading resource: %s remapped: %s", p_path, _path_remap(p_path)));
 
 	// Try all loaders and pick the first match for the type hint
 	bool found = false;
@@ -336,6 +336,8 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 // The load task token must be manually re-referenced before this is called, which includes threaded runs.
 void ResourceLoader::_run_load_task(void *p_userdata) {
 	ThreadLoadTask &load_task = *(ThreadLoadTask *)p_userdata;
+	int thread_index = WorkerThreadPool::get_singleton()->get_thread_index();
+	String thread_waiting_on_backup;
 
 	bool wait = false;
 	{
@@ -345,9 +347,14 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 			return;
 		}
 
-		int thread_index = WorkerThreadPool::get_singleton()->get_thread_index();
-
 		if (load_task.started_load && load_task.thread_index != thread_index) {
+			// If we were already waiting for task completion in a previous
+			// step make sure we don't clobber the old wait.
+			if (thread_waiting_on.has(thread_index)) {
+				thread_waiting_on_backup = thread_waiting_on[thread_index];
+			}
+
+			thread_waiting_on[thread_index] = load_task.local_path;
 			wait = true;
 		} else {
 			load_task.started_load = true;
@@ -355,28 +362,158 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 		}
 	}
 
+	ThreadLoadTask *curr_load_task_backup = curr_load_task;
+	curr_load_task = &load_task;
+
 	if (wait) {
 		// There are a couple of reasons why we got here:
 		// 1) We re-started the task in _load_complete_inner but we also
 		//    got started via the original task in the WorkerThreadPool
 		// 2) There's a race between multiple threads in _load_complete_inner
 		//    and more than one thread thought they had to restart
-		//
-		// This task was already running, wait for the other thread to complete.
+
 		ThreadLoadStatus status;
+		LocalVector<int> chain;
+
 		do {
-			OS::get_singleton()->delay_usec(1000);
+			chain.clear();
+
 			thread_load_mutex.lock();
+
+			int waiting_on_thread = load_task.thread_index;
+			int current_thread = waiting_on_thread;
+			bool progress_blocked = thread_waiting_on.has(waiting_on_thread);
+
+			ThreadLoadTask *waiting_on_task = nullptr;
+			bool cycle_detected = false;
+
+			// Try to figure out if we're in a dependency cycle, and what asset
+			// we are ultimately waiting for.
+			if (progress_blocked && thread_index != -1) {
+				while (true) {
+					String *waiting_on_path = thread_waiting_on.getptr(current_thread);
+					if (!waiting_on_path) {
+						break;
+					}
+
+					waiting_on_task = thread_load_tasks.getptr(*waiting_on_path);
+					if (!waiting_on_task) {
+						// Path might be remapped, and someone might be waiting on the
+						// remapped path.
+						waiting_on_task = thread_load_tasks.getptr(_path_remap(*waiting_on_path));
+						if (!waiting_on_task) {
+							break;
+						}
+					}
+
+					// Record the cycle so we can determine whether we should be the one
+					// to break it or not.
+					int next_thread = waiting_on_task->thread_index;
+					chain.push_back(current_thread);
+
+					// We made it back to us, we're in a cycle.
+					if (next_thread == thread_index) {
+						cycle_detected = true;
+						break;
+					}
+
+					if (chain.size() > thread_load_tasks.size()) {
+						break;
+					}
+
+					current_thread = next_thread;
+				}
+			}
+
 			status = load_task.status;
+
+			if (status == THREAD_LOAD_IN_PROGRESS) {
+				if (cycle_detected) {
+					// Only do something if we're the lowest thread ID waiting,
+					// if we didn't we'd run the risk of concurrently running
+					// the resource load again.
+					int lowest_waiting = thread_index;
+					for (const int &link : chain) {
+						if (link < lowest_waiting) {
+							lowest_waiting = link;
+						}
+					}
+
+					if (lowest_waiting == thread_index) {
+						print_verbose(
+								vformat("CYCLE: Stealing on thread %d for resource '%s' originally on thread %d",
+										thread_index, load_task.local_path, waiting_on_task->thread_index));
+						// Take over the task. The original thread was definitely
+						// not going to make progress.
+						load_task.thread_index = thread_index;
+						thread_waiting_on.erase(thread_index);
+						wait = false;
+					}
+				}
+			} else {
+				if (thread_waiting_on_backup.is_empty()) {
+					thread_waiting_on.erase(thread_index);
+				} else {
+					thread_waiting_on[thread_index] = thread_waiting_on_backup;
+				}
+				wait = false;
+			}
+
+			// Only yield if we ultimately found a task that we are waiting on.
+			bool should_yield = progress_blocked && wait && waiting_on_task && thread_index != -1;
+
+			if (should_yield) {
+				// We need to make sure we yield on our actual current task. If we are
+				// waiting we are certainly not the the task being ran.
+				yielders.push_back(WorkerThreadPool::get_singleton()->get_caller_task_id());
+			}
+
 			thread_load_mutex.unlock();
-		} while (status == THREAD_LOAD_IN_PROGRESS);
 
-		load_task.load_token->unreference();
-		return;
+			if (should_yield) {
+				// We are blocked on some upstream task in our dependency chain. We
+				// don't know how long it will take or what is needed to unblock it.
+				// If we yield we give the WTP a free thread to solve the problem.
+				int load_nesting_backup = load_nesting;
+				load_nesting = 0;
+				WorkerThreadPool::get_singleton()->yield();
+				DEV_ASSERT(load_nesting == 0);
+				load_nesting = load_nesting_backup;
+
+				thread_load_mutex.lock();
+				yielders.erase(WorkerThreadPool::get_singleton()->get_caller_task_id());
+				status = load_task.status;
+				thread_load_mutex.unlock();
+			} else if (wait) {
+				// Forward progress is being made, just wait for task completion.
+				// If we are not currently blocked more dependencies might block later,
+				// so we cannot yield or wait on a task.
+				// This is not the most optimal thing to do, but it is safe. Either the
+				// dependency will complete soon, or will block soon when we can safely
+				// yield.
+				OS::get_singleton()->delay_usec(1000);
+			}
+		} while (wait && status == THREAD_LOAD_IN_PROGRESS && !cleaning_tasks);
+
+		if (cleaning_tasks || status != THREAD_LOAD_IN_PROGRESS) {
+			curr_load_task = curr_load_task_backup;
+		}
+
+		if (cleaning_tasks) {
+			load_task.status = THREAD_LOAD_FAILED;
+			// Do not attempt to unreference the load token. Many things are
+			// tearing down concurrently and our task might be dead already. If it is
+			// the load token is already released.
+			return;
+		}
+
+		if (status != THREAD_LOAD_IN_PROGRESS) {
+			load_task.load_token->unreference();
+			return;
+		}
+
+		// do it ourselves anyway
 	}
-
-	ThreadLoadTask *curr_load_task_backup = curr_load_task;
-	curr_load_task = &load_task;
 
 	// Thread-safe either if it's the current thread or a brand new one.
 	CallQueue *own_mq_override = nullptr;
@@ -402,31 +539,21 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	}
 
 	thread_load_mutex.lock();
+	bool thread_load_mutex_held = true;
 
 	load_task.resource = res;
 
 	load_task.progress = 1.0; // It was fully loaded at this point, so force progress to 1.0.
 	load_task.error = load_err;
-	if (load_task.error != OK) {
-		load_task.status = THREAD_LOAD_FAILED;
-	} else {
-		load_task.status = THREAD_LOAD_LOADED;
-	}
-
-	if (load_task.cond_var && load_task.need_wait) {
-		load_task.cond_var->notify_all();
-	}
-	load_task.need_wait = false;
 
 	bool ignoring = load_task.cache_mode == CACHE_MODE_IGNORE || load_task.cache_mode == CACHE_MODE_IGNORE_DEEP;
 	bool replacing = load_task.cache_mode == CACHE_MODE_REPLACE || load_task.cache_mode == CACHE_MODE_REPLACE_DEEP;
-	bool unlock_pending = true;
 	if (load_task.resource.is_valid()) {
 		// From now on, no critical section needed as no one will write to the task anymore.
 		// Moreover, the mutex being unlocked is a requirement if some of the calls below
 		// that set the resource up invoke code that in turn requests resource loading.
 		thread_load_mutex.unlock();
-		unlock_pending = false;
+		thread_load_mutex_held = false;
 
 		if (!ignoring) {
 			ResourceCache::lock.lock(); // Check and operations must happen atomically.
@@ -479,7 +606,7 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 			load_task.progress = 1.0;
 
 			thread_load_mutex.unlock();
-			unlock_pending = false;
+			thread_load_mutex_held = false;
 
 			if (_loaded_callback) {
 				_loaded_callback(load_task.resource, load_task.local_path);
@@ -487,12 +614,45 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 		}
 	}
 
+	if (!thread_load_mutex_held) {
+		thread_load_mutex.lock();
+	}
+
+	if (cleaning_tasks) {
+		// If we are cleaning don't wake up yielders here.
+		// And don't unreference the load token, it will get destroyed
+		// with the task later.
+		load_task.status = THREAD_LOAD_FAILED;
+		thread_load_mutex.unlock();
+		return;
+	}
+
+	if (load_task.error != OK) {
+		load_task.status = THREAD_LOAD_FAILED;
+	} else {
+		load_task.status = THREAD_LOAD_LOADED;
+	}
+
+	if (load_task.cond_var && load_task.need_wait) {
+		load_task.cond_var->notify_all();
+	}
+	load_task.need_wait = false;
+
+	if (!thread_waiting_on_backup.is_empty()) {
+		thread_waiting_on[thread_index] = thread_waiting_on_backup;
+	}
+
+	for (int tid : yielders) {
+		// Thundering herd, but not really an issue in practice. The
+		// number of threads in the WorkerThreadPool is bound and
+		// low.
+		WorkerThreadPool::get_singleton()->notify_yield_over(tid);
+	}
+
+	thread_load_mutex.unlock();
+
 	// It's safe now to let the task go in case no one else was grabbing the token.
 	load_task.load_token->unreference();
-
-	if (unlock_pending) {
-		thread_load_mutex.unlock();
-	}
 
 	if (load_nesting == 0) {
 		if (own_mq_override) {
@@ -502,6 +662,8 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	}
 
 	curr_load_task = curr_load_task_backup;
+
+	print_verbose(vformat("Completed load for: '%s' remapped '%s' at thread %d", load_task.local_path, remapped_path, thread_index));
 }
 
 String ResourceLoader::_validate_local_path(const String &p_path) {
@@ -789,6 +951,10 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 				thread_load_lock.temp_unlock();
 				bool exit = !_ensure_load_progress();
 				OS::get_singleton()->delay_usec(1000);
+				if (MessageQueue::get_singleton()) {
+					MessageQueue::get_singleton()->flush();
+				}
+
 				thread_load_lock.temp_relock();
 				if (exit) {
 					break;
@@ -873,40 +1039,12 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 			bool loader_is_wtp = load_task.task_id != 0;
 			if (loader_is_wtp) {
 				// Loading thread is in the worker pool.
-
-				int load_nesting_backup = load_nesting;
-				load_nesting = 0;
-				int thread_index = WorkerThreadPool::get_singleton()->get_thread_index();
-				int task_thread_index = load_task.thread_index;
-
-				bool restart = false;
-				bool running = load_task.started_load;
-
 				p_thread_load_lock.temp_unlock();
 
-				if (running && task_thread_index != thread_index) {
-					Error wait_err = WorkerThreadPool::get_singleton()->wait_for_task_completion(load_task.task_id);
-
-					DEV_ASSERT(!wait_err || wait_err == ERR_BUSY);
-					if (wait_err == ERR_BUSY) {
-						restart = true;
-					}
-				} else {
-					restart = true;
-				}
-
-				DEV_ASSERT(load_nesting == 0);
-				load_nesting = load_nesting_backup;
-
-				if (restart) {
-					// The WorkerThreadPool has reported that the current task wants to await on an older one.
-					// That't not allowed for safety, to avoid deadlocks. Fortunately, though, in the context of
-					// resource loading that means that the task to wait for can be restarted here to break the
-					// cycle, with as much recursion into this process as needed.
-					// When the stack is eventually unrolled, the original load will have been notified to go on.
-					load_task.load_token->reference();
-					_run_load_task(&load_task);
-				}
+				// The wtp won't let us wait on tasks that are older than us. But ResourceLoader has its own
+				// deadlock detection and prevention in _run_load_task(), rely on that instead.
+				load_task.load_token->reference();
+				_run_load_task(&load_task);
 
 				p_thread_load_lock.temp_relock();
 				load_task.awaited = true;
@@ -1022,6 +1160,7 @@ void ResourceLoader::resource_changed_connect(Resource *p_source, const Callable
 	rcc.callable = p_callable;
 	rcc.flags = p_flags;
 	curr_load_task->resource_changed_connections.push_back(rcc);
+	curr_load_task->resource_dependencies.push_back(p_source);
 }
 
 void ResourceLoader::resource_changed_disconnect(Resource *p_source, const Callable &p_callable) {
@@ -1032,6 +1171,7 @@ void ResourceLoader::resource_changed_disconnect(Resource *p_source, const Calla
 	for (uint32_t i = 0; i < curr_load_task->resource_changed_connections.size(); ++i) {
 		const ThreadLoadTask::ResourceChangedConnection &rcc = curr_load_task->resource_changed_connections[i];
 		if (unlikely(rcc.source == p_source && rcc.callable == p_callable)) {
+			curr_load_task->resource_dependencies.erase(p_source);
 			curr_load_task->resource_changed_connections.remove_at_unordered(i);
 			return;
 		}
@@ -1091,8 +1231,7 @@ bool ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
 		return true; // If cached, it probably exists
 	}
 
-	bool xl_remapped = false;
-	String path = _path_remap(local_path, &xl_remapped);
+	String path = _path_remap(local_path);
 
 	// Try all loaders and pick the first match for the type hint
 	for (int i = 0; i < loader_count; i++) {
@@ -1434,6 +1573,9 @@ void ResourceLoader::clear_thread_load_tasks() {
 
 	while (true) {
 		bool none_running = true;
+		for (int tid : yielders) {
+			WorkerThreadPool::get_singleton()->notify_yield_over(tid);
+		}
 		if (thread_load_tasks.size()) {
 			for (KeyValue<String, ResourceLoader::ThreadLoadTask> &E : thread_load_tasks) {
 				if (E.value.status == THREAD_LOAD_IN_PROGRESS) {
@@ -1448,8 +1590,15 @@ void ResourceLoader::clear_thread_load_tasks() {
 		if (none_running) {
 			break;
 		}
+
 		thread_load_lock.temp_unlock();
+
+		if (MessageQueue::get_singleton()) {
+			MessageQueue::get_singleton()->flush();
+		}
+
 		OS::get_singleton()->delay_usec(1000);
+
 		thread_load_lock.temp_relock();
 	}
 
@@ -1463,6 +1612,8 @@ void ResourceLoader::clear_thread_load_tasks() {
 	}
 
 	thread_load_tasks.clear();
+	thread_waiting_on.clear();
+	// yielders is already guaranteed to be empty now
 
 	cleaning_tasks = false;
 }
@@ -1624,6 +1775,9 @@ template <>
 thread_local SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG>::TLSData SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG>::tls_data(_get_res_loader_mutex());
 SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG> ResourceLoader::thread_load_mutex;
 HashMap<String, ResourceLoader::ThreadLoadTask> ResourceLoader::thread_load_tasks;
+HashMap<int, String> ResourceLoader::thread_waiting_on;
+LocalVector<int> ResourceLoader::yielders;
+
 bool ResourceLoader::cleaning_tasks = false;
 
 HashMap<String, ResourceLoader::LoadToken *> ResourceLoader::user_load_tokens;

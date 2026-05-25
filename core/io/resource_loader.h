@@ -194,6 +194,7 @@ private:
 		CacheMode cache_mode = CACHE_MODE_REUSE;
 		Error error = OK;
 		Ref<Resource> resource;
+		LocalVector<Ref<Resource>> resource_dependencies; // We need to keep these alive for as long as the task is alive at least.
 		ThreadLoadTask *parent_task = nullptr;
 		HashSet<String> sub_tasks;
 
@@ -230,6 +231,8 @@ private:
 	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_res_loader_mutex();
 
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
+	static HashMap<int, String> thread_waiting_on;
+	static LocalVector<int> yielders;
 	static bool cleaning_tasks;
 
 	static HashMap<String, LoadToken *> user_load_tokens;
