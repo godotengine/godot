@@ -129,6 +129,7 @@ private:
 	HashMap<StringName, State> states;
 	bool allow_transition_to_self = false;
 	bool reset_ends = false;
+	bool defer_end = false;
 
 	struct Transition {
 		StringName from;
@@ -206,6 +207,9 @@ public:
 
 	void set_reset_ends(bool p_enable);
 	bool are_ends_reset() const;
+
+	void set_defer_end(bool p_enable);
+	bool is_end_deferred() const;
 
 	bool can_edit_node(const StringName &p_name) const;
 
@@ -288,6 +292,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	bool teleport_request = false;
 
 	bool is_grouped = false;
+	bool pending_end = false;
 
 	void _clear_fading(AnimationNode::ProcessState &p_process_state, AnimationNodeStateMachine *p_state_machine, const StringName &p_state);
 	void _signal_state_change(AnimationTree *p_animation_tree, const StringName &p_state, bool p_started);

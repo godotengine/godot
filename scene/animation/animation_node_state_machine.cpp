@@ -198,6 +198,7 @@ AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
 
 void AnimationNodeStateMachinePlayback::_set_current(AnimationNode::ProcessState &p_process_state, AnimationNodeStateMachine *p_state_machine, const StringName &p_state) {
 	current = p_state;
+	pending_end = false;
 	if (current == StringName()) {
 		group_start_transition = Ref<AnimationNodeStateMachineTransition>();
 		group_end_transition = Ref<AnimationNodeStateMachineTransition>();
@@ -916,6 +917,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(Animatio
 		if (fading_from != StringName()) {
 			return Animation::is_greater_approx(current_nti.get_remain(), fadeing_from_nti.get_remain()) ? current_nti : fadeing_from_nti;
 		}
+		current_nti.pending_end = pending_end;
 		return current_nti;
 	}
 
@@ -1042,9 +1044,25 @@ bool AnimationNodeStateMachinePlayback::_can_transition_to_next(AnimationNode::P
 		return false;
 	}
 
-	if (current != SceneStringName(Start) && p_next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
+	if (current == SceneStringName(Start)) {
+		return true;
+	}
+
+	if (p_next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
 		return Animation::is_less_or_equal_approx(current_nti.get_remain(p_next.break_loop_at_end), p_next.xfade);
 	}
+
+	if (!p_state_machine->is_end_deferred()) {
+		return true;
+	}
+
+	if (p_next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE) {
+		if (p_next.node == SceneStringName(End)) {
+			pending_end = true;
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -1350,6 +1368,14 @@ void AnimationNodeStateMachine::set_reset_ends(bool p_enable) {
 
 bool AnimationNodeStateMachine::are_ends_reset() const {
 	return reset_ends;
+}
+
+void AnimationNodeStateMachine::set_defer_end(bool p_enable) {
+	defer_end = p_enable;
+}
+
+bool AnimationNodeStateMachine::is_end_deferred() const {
+	return defer_end;
 }
 
 bool AnimationNodeStateMachine::can_edit_node(const StringName &p_name) const {
@@ -1857,9 +1883,13 @@ void AnimationNodeStateMachine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_reset_ends", "enable"), &AnimationNodeStateMachine::set_reset_ends);
 	ClassDB::bind_method(D_METHOD("are_ends_reset"), &AnimationNodeStateMachine::are_ends_reset);
 
+	ClassDB::bind_method(D_METHOD("set_defer_end", "enable"), &AnimationNodeStateMachine::set_defer_end);
+	ClassDB::bind_method(D_METHOD("is_end_deferred"), &AnimationNodeStateMachine::is_end_deferred);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "state_machine_type", PROPERTY_HINT_ENUM, "Root,Nested,Grouped"), "set_state_machine_type", "get_state_machine_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_transition_to_self"), "set_allow_transition_to_self", "is_allow_transition_to_self");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_ends"), "set_reset_ends", "are_ends_reset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "defer_end"), "set_defer_end", "is_end_deferred");
 
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_ROOT);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_NESTED);
