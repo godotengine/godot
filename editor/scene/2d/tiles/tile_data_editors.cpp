@@ -414,11 +414,11 @@ void GenericTilePolygonEditor::_grab_polygon_point(Vector2 p_pos, const Transfor
 	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 	r_polygon_index = -1;
 	r_point_index = -1;
-	float closest_distance = grab_threshold + 1.0;
+	real_t closest_distance = grab_threshold + 1.0f;
 	for (unsigned int i = 0; i < polygons.size(); i++) {
 		const Vector<Vector2> &polygon = polygons[i];
 		for (int j = 0; j < polygon.size(); j++) {
-			float distance = p_pos.distance_to(p_polygon_xform.xform(polygon[j]));
+			const real_t distance = p_pos.distance_to(p_polygon_xform.xform(polygon[j]));
 			if (distance < grab_threshold && distance < closest_distance) {
 				r_polygon_index = i;
 				r_point_index = j;
@@ -514,7 +514,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 		undo_redo = memnew(EditorUndoRedoManager);
 	}
 
-	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 	hovered_polygon_index = -1;
 	hovered_point_index = -1;
