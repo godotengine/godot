@@ -17,7 +17,7 @@ for platform in env["PLATFORM_EXPORTERS"]:
         py_builder_env.Command(
             path.replace(".svg", "_svg.gen.h"),
             path,
-            Action("$EXPORT_ICON_BUILDER_COM", "$GEMCOMSTR"),
+            Action("$EXPORT_ICON_BUILDER_COM", "$GENCOMSTR"),
         )
 
 
