@@ -174,15 +174,39 @@ env.CommandNoCache(
 )
 
 # Generate version info
-env.CommandNoCache(
+vinfo = methods.get_version_info(env.module_version_string)
+py_builder_env.CommandNoCache(
     "version_generated.gen.h",
-    env.Value(methods.get_version_info(env.module_version_string)),
-    env.Run(core_builders.version_info_builder),
+    [
+        env.Value(vinfo[k])
+        for k in [
+            "short_name",
+            "name",
+            "major",
+            "minor",
+            "patch",
+            "status",
+            "build",
+            "module_config",
+            "website",
+            "docs_branch",
+        ]
+    ],
+    Action(
+        "$PYTHON_BIN core/core_builders.py --method version_info_builder --target $TARGET --source $SOURCES",
+        "$GENCOMSTR",
+    ),
 )
 
 # Generate version hash
-gen_hash = env.CommandNoCache(
-    "version_hash.gen.cpp", env.Value(methods.get_git_info()), env.Run(core_builders.version_hash_builder)
+git_info = methods.get_git_info()
+gen_hash = py_builder_env.CommandNoCache(
+    "version_hash.gen.cpp",
+    [env.Value(git_info["git_hash"]), env.Value(git_info["git_timestamp"])],
+    Action(
+        "$PYTHON_BIN core/core_builders.py --method version_hash_builder --target $TARGET --source $SOURCES",
+        "$GENCOMSTR",
+    ),
 )
 env.add_source_files(env.core_sources, gen_hash)
 

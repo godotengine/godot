@@ -21,34 +21,34 @@ def disabled_class_builder(target, source, env):
 
 
 # Generate version info
-def version_info_builder(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
+def version_info_builder(target, source):
+    with methods.generated_wrapper(target) as file:
         file.write(
-            """\
-#define GODOT_VERSION_SHORT_NAME "{short_name}"
-#define GODOT_VERSION_NAME "{name}"
-#define GODOT_VERSION_MAJOR {major}
-#define GODOT_VERSION_MINOR {minor}
-#define GODOT_VERSION_PATCH {patch}
-#define GODOT_VERSION_STATUS "{status}"
-#define GODOT_VERSION_BUILD "{build}"
-#define GODOT_VERSION_MODULE_CONFIG "{module_config}"
-#define GODOT_VERSION_WEBSITE "{website}"
-#define GODOT_VERSION_DOCS_BRANCH "{docs_branch}"
+            f"""\
+#define GODOT_VERSION_SHORT_NAME "{source[0]}"
+#define GODOT_VERSION_NAME "{source[1]}"
+#define GODOT_VERSION_MAJOR {source[2]}
+#define GODOT_VERSION_MINOR {source[3]}
+#define GODOT_VERSION_PATCH {source[4]}
+#define GODOT_VERSION_STATUS "{source[5]}"
+#define GODOT_VERSION_BUILD "{source[6]}"
+#define GODOT_VERSION_MODULE_CONFIG "{source[7]}"
+#define GODOT_VERSION_WEBSITE "{source[8]}"
+#define GODOT_VERSION_DOCS_BRANCH "{source[9]}"
 #define GODOT_VERSION_DOCS_URL "https://docs.godotengine.org/en/" GODOT_VERSION_DOCS_BRANCH
-""".format(**source[0].read())
+"""
         )
 
 
-def version_hash_builder(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
+def version_hash_builder(target, source):
+    with methods.generated_wrapper(target) as file:
         file.write(
-            """\
+            f"""\
 #include "core/version.h"
 
-const char *const GODOT_VERSION_HASH = "{git_hash}";
-const unsigned long long GODOT_VERSION_TIMESTAMP = {git_timestamp};
-""".format(**source[0].read())
+const char *const GODOT_VERSION_HASH = "{source[0]}";
+const unsigned long long GODOT_VERSION_TIMESTAMP = {source[1]};
+"""
         )
 
 
@@ -70,7 +70,7 @@ def encryption_key_builder(target, source):
         )
         raise
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         file.write(
             f"""\
 #include <cstdint>
@@ -86,7 +86,7 @@ def make_certs_header(target, source):
     decomp_size = len(buffer)
     buffer = methods.compress_buffer(buffer)
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         # System certs path. Editor will use them if defined. (for package maintainers)
         file.write('#define _SYSTEM_CERTS_PATH "{}"\n'.format(source[2] or ""))
         if source[1] == "True":
@@ -112,7 +112,7 @@ def make_authors_header(target, source):
     buffer = methods.get_buffer(str(source[0]))
     reading = False
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
 
         def close_section():
             file.write("\tnullptr,\n};\n\n")
@@ -147,7 +147,7 @@ def make_donors_header(target, source):
     buffer = methods.get_buffer(str(source[0]))
     reading = False
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
 
         def close_section():
             file.write("\tnullptr,\n};\n\n")
@@ -302,15 +302,40 @@ struct ComponentCopyright {{
 
 
 def main():
+    # Parse initial arguments to check for argfile
+    initial_parser = argparse.ArgumentParser(add_help=False)
+    initial_parser.add_argument("--argfile", help="File containing additional arguments")
+    initial_args, remaining_args = initial_parser.parse_known_args()
+
+    # If argfile is provided, read arguments from it
+    if initial_args.argfile:
+        file_args = methods.read_args_from_file(initial_args.argfile)
+        # Combine file arguments with remaining command line arguments
+        sys.argv = [sys.argv[0]] + file_args + remaining_args
+
+        # Print arguments to stdout if --verbose is present
+        if "--verbose" in sys.argv:
+            print("Arguments read from file:", initial_args.argfile)
+            print("Combined arguments:", " ".join(file_args + remaining_args))
+
+    # Parse all arguments
     parser = argparse.ArgumentParser(description="Core build tools")
     parser.add_argument(
         "--method",
         required=True,
-        choices=["make_authors_header", "make_donors_header", "encryption_key_builder", "make_certs_header"],
+        choices=[
+            "make_authors_header",
+            "make_donors_header",
+            "encryption_key_builder",
+            "make_certs_header",
+            "version_info_builder",
+            "version_hash_builder",
+        ],
         help="Builder method to execute",
     )
-    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--target", required=True, help="Target file")
     parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
 
     args = parser.parse_args()
 
@@ -325,6 +350,10 @@ def main():
         encryption_key_builder(target, source)
     elif args.method == "make_certs_header":
         make_certs_header(target, source)
+    elif args.method == "version_info_builder":
+        version_info_builder(target, source)
+    elif args.method == "version_hash_builder":
+        version_hash_builder(target, source)
     else:
         print(f"Unknown method: {args.method}", file=sys.stderr)
         sys.exit(1)
