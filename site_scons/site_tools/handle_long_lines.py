@@ -159,7 +159,8 @@ class MyTempFileMunge:
         native_tmp = SCons.Util.get_native_path(tmp)
 
         # arrange for cleanup on exit:
-        if not env['ninja']:
+        if not env["ninja"]:
+
             def tmpfile_cleanup(file) -> None:
                 with contextlib.suppress(FileNotFoundError):
                     os.remove(file)
