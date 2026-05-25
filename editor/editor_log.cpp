@@ -654,7 +654,7 @@ EditorLog::EditorLog() {
 	HFlowContainer *bottom_hf = memnew(HFlowContainer);
 	bottom_hf->set_alignment(FlowContainer::ALIGNMENT_END);
 	vb_left->add_child(bottom_hf);
-	
+
 	// Search box
 	search_box = memnew(LineEdit);
 	search_box->set_custom_minimum_size(Vector2(150 * EDSCALE, 0));
@@ -667,7 +667,7 @@ EditorLog::EditorLog() {
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	bottom_hf->add_child(hbox);
-	
+
 	//Exclude non-filter matches button
 	show_non_search_matches_button = memnew(Button);
 	show_non_search_matches_button->set_tooltip_text(TTRC("Show Non-Matches"));
@@ -708,7 +708,7 @@ EditorLog::EditorLog() {
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
 	bottom_hf->add_child(collapse_button);
-	
+
 	// Message Type Filters.
 	LogFilter *std_filter = memnew(LogFilter(MSG_TYPE_STD));
 	std_filter->initialize_button(TTRC("Standard Messages"), TTRC("Toggle visibility of standard output messages."), callable_mp(this, &EditorLog::_set_filter_active));
