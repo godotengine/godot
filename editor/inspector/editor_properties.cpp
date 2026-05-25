@@ -3758,6 +3758,10 @@ void EditorPropertyResource::set_use_sub_inspector(bool p_enable) {
 }
 
 void EditorPropertyResource::set_use_filter(bool p_use) {
+	if (use_filter == p_use) {
+		return;
+	}
+
 	use_filter = p_use;
 	if (sub_inspector) {
 		update_property();
