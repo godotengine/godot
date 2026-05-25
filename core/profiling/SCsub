@@ -5,9 +5,7 @@ from misc.utility.scons_hints import *
 
 import pathlib
 
-import profiling_builders
-
-Import("env")
+Import("env", "py_builder_env")
 
 env.add_source_files(env.core_sources, "*.cpp")
 
@@ -104,7 +102,7 @@ elif env["profiler_path"]:
     print("profiler is required if profiler_path is set. Aborting.")
     Exit(255)
 
-env.CommandNoCache(
+py_builder_env.CommandNoCache(
     "profiling.gen.h",
     [
         env.Value(env["profiler"]),
@@ -112,5 +110,12 @@ env.CommandNoCache(
         env.Value(env["profiler_track_memory"]),
         env.Value(env["profiler_record_on_demand"]),
     ],
-    env.Run(profiling_builders.profiler_gen_builder),
+    Action(
+        "$PYTHON_BIN core/profiling/profiling_builders.py --target $TARGET"
+        + (f" --profiler {env['profiler']}" if env["profiler"] else "")
+        + (" --sample-callstack" if env["profiler_sample_callstack"] else "")
+        + (" --track-memory" if env["profiler_track_memory"] else "")
+        + (" --record-on-demand" if env["profiler_record_on_demand"] else ""),
+        "$GENCOMSTR",
+    ),
 )
