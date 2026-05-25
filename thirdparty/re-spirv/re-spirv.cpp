@@ -2822,13 +2822,13 @@ namespace respv {
 
             if (terminatorReduced) {
                 // If there's a selection merge before this branch, we place the unconditional branch in its place.
-                const uint32_t mergeWordCount = 3;
-                uint32_t mergeWordIndex = wordIndex - mergeWordCount;
+                uint32_t mergeInstructionIndex = pInstructionIndex - 1;
+                uint32_t mergeWordIndex = rContext.shader.instructions[mergeInstructionIndex].wordIndex;
                 SpvOp mergeOpCode = SpvOp(optimizedWords[mergeWordIndex] & 0xFFFFU);
 
                 uint32_t patchWordIndex;
                 if (mergeOpCode == SpvOpSelectionMerge) {
-                    optimizerReduceLabelDegree(pInstructionIndex, optimizedWords[mergeWordIndex + 1], rContext);
+                    optimizerReduceLabelDegree(mergeInstructionIndex, optimizedWords[mergeWordIndex + 1], rContext);
                     patchWordIndex = mergeWordIndex;
                 }
                 else {
