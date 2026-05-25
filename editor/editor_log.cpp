@@ -213,7 +213,7 @@ void EditorLog::_set_show_non_search_matches(bool p_state) {
 
 	log->set_scroll_follow(false);
 	_rebuild_log();
-	log->set_scroll_follow(false);
+	log->set_scroll_follow(true);
 }
 
 void EditorLog::_set_search_case_sensitive(bool p_state) {
