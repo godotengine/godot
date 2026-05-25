@@ -1009,12 +1009,13 @@ void ProjectList::load_project_list() {
 		String parent = path.get_base_dir();
 		String basename = path.get_file();
 
-		if (da->change_dir(parent) != OK) {
-			continue;
-		}
 		if (da->is_case_sensitive(parent)) {
 			continue;
 		}
+		if (da->change_dir(parent) != OK) {
+			continue;
+		}
+
 		da->list_dir_begin();
 		String n = da->get_next();
 		while (!n.is_empty()) {
