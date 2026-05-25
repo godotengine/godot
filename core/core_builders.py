@@ -13,9 +13,9 @@ import methods
 
 
 # Generate disabled classes
-def disabled_class_builder(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
-        for c in source[0].read():
+def disabled_class_builder(target, source):
+    with methods.generated_wrapper(target) as file:
+        for c in source:
             if cs := c.strip():
                 file.write(f"class {cs}; template <> struct is_class_enabled<{cs}> : std::false_type {{}};\n")
 
@@ -331,6 +331,7 @@ def main():
             "version_info_builder",
             "version_hash_builder",
             "make_license_header",
+            "disabled_class_builder",
         ],
         help="""Builder method to execute.
 - make_authors_header:      Source: AUTHORS.md
@@ -339,7 +340,8 @@ def main():
 - make_certs_header:        Source: ca-bundle.crt, builtin_certs, system_certs_path
 - version_info_builder:     Source: short_name, name, major, minor, patch, status, build, module_config, website, docs_branch
 - version_hash_builder:     Source: git_hash, git_timestamp
-- make_license_header:      Source: COPYRIGHT.txt, LICENSE.txt""",
+- make_license_header:      Source: COPYRIGHT.txt, LICENSE.txt
+- disabled_class_builder:   Source: disabled_classes""",
     )
     parser.add_argument("--target", required=True, help="Target file")
     parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
@@ -362,6 +364,10 @@ def main():
         version_info_builder(target, source)
     elif args.method == "version_hash_builder":
         version_hash_builder(target, source)
+    elif args.method == "make_license_header":
+        make_license_header(target, source)
+    elif args.method == "disabled_class_builder":
+        disabled_class_builder(target, source)
     else:
         print(f"Unknown method: {args.method}", file=sys.stderr)
         sys.exit(1)

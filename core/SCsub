@@ -3,8 +3,6 @@ from misc.utility.scons_hints import *
 
 import os
 
-import core_builders
-
 import methods
 
 Import("env", "py_builder_env")
@@ -169,8 +167,13 @@ env.core_sources += thirdparty_obj
 env.add_source_files(env.core_sources, "*.cpp")
 
 # Generate disabled classes
-env.CommandNoCache(
-    "disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(core_builders.disabled_class_builder)
+py_builder_env.CommandNoCache(
+    "disabled_classes.gen.h",
+    [env.Value(c) for c in env["DISABLED_CLASSES"]],
+    Action(
+        "$PYTHON_BIN core/core_builders.py --method disabled_class_builder --target $TARGET --source $SOURCES",
+        "$GENCOMSTR",
+    ),
 )
 
 # Generate version info
