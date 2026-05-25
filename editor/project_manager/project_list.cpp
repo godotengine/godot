@@ -1012,7 +1012,9 @@ void ProjectList::load_project_list() {
 		if (da->change_dir(parent) != OK) {
 			continue;
 		}
-
+		if (da->is_case_sensitive(parent)) {
+			continue;
+		}
 		da->list_dir_begin();
 		String n = da->get_next();
 		while (!n.is_empty()) {
