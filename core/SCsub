@@ -258,8 +258,13 @@ py_builder_env.Command(
 )
 
 # License
-env.CommandNoCache(
-    "#core/license.gen.h", ["#COPYRIGHT.txt", "#LICENSE.txt"], env.Run(core_builders.make_license_header)
+py_builder_env.CommandNoCache(
+    "#core/license.gen.h",
+    ["#COPYRIGHT.txt", "#LICENSE.txt"],
+    Action(
+        "$PYTHON_BIN core/core_builders.py --method make_license_header --target $TARGET --source $SOURCES",
+        "$GENCOMSTR",
+    ),
 )
 
 # Chain load SCsubs

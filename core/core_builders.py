@@ -330,6 +330,7 @@ def main():
             "make_certs_header",
             "version_info_builder",
             "version_hash_builder",
+            "make_license_header",
         ],
         help="""Builder method to execute.
 - make_authors_header:      Source: AUTHORS.md
@@ -337,7 +338,8 @@ def main():
 - encryption_key_builder:   Source: encryption key
 - make_certs_header:        Source: ca-bundle.crt, builtin_certs, system_certs_path
 - version_info_builder:     Source: short_name, name, major, minor, patch, status, build, module_config, website, docs_branch
-- version_hash_builder:     Source: git_hash, git_timestamp""",
+- version_hash_builder:     Source: git_hash, git_timestamp
+- make_license_header:      Source: COPYRIGHT.txt, LICENSE.txt""",
     )
     parser.add_argument("--target", required=True, help="Target file")
     parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
