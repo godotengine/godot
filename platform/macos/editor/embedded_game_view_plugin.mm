@@ -126,7 +126,7 @@ bool GameViewDebuggerMacOS::_msg_warp_mouse(const Array &p_args) {
 	// Position arrives in points; convert to editor pixels.
 	Vector2i pos = p_args[0];
 	float scale = DisplayServer::get_singleton()->screen_get_max_scale();
-	embedded_process->get_layer_host()->warp_mouse(Vector2i(scale * pos));
+	embedded_process->get_layer_host()->warp_mouse(Vector2i(Vector2(pos) * scale));
 	return true;
 }
 
