@@ -2351,6 +2351,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		int skip2 = 0;
 
 		bool is_row_hovered = (!cache.hover_header_row && cache.hover_item == p_item);
+		bool should_draw_row_rect = select_mode == SELECT_ROW;
 
 		for (int i = 0; i < columns.size(); i++) {
 			if (skip2) {
@@ -2435,7 +2436,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				cell_rect.size.x += theme_cache.h_separation;
 			}
 
-			if (i == 0 && select_mode == SELECT_ROW) {
+			if (should_draw_row_rect) {
 				if (p_item->cells[0].selected || is_row_hovered) {
 					const Rect2 content_rect = _get_content_rect();
 					Rect2i row_rect = Rect2i(Point2i(content_rect.position.x, item_rect.position.y), Size2i(content_rect.size.x, item_rect.size.y));
@@ -2463,6 +2464,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						}
 					}
 				}
+				should_draw_row_rect = false;
 			}
 
 			if (select_mode != SELECT_ROW) {
@@ -3833,6 +3835,15 @@ Rect2 Tree::_get_content_rect() const {
 
 void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+
+	using_native_touch = false;
+	if (p_event->get_device() != InputEvent::DEVICE_ID_EMULATION) {
+		Ref<InputEventScreenTouch> touch = p_event;
+		Ref<InputEventScreenDrag> drag = p_event;
+		if (touch.is_valid() || drag.is_valid()) {
+			using_native_touch = true;
+		}
+	}
 
 	Ref<InputEventKey> k = p_event;
 
@@ -6941,7 +6952,7 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 }
 
 bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (drag_touching) {
+	if (using_native_touch) {
 		// Disable data drag & drop when touch dragging.
 		return false;
 	}
@@ -6950,7 +6961,7 @@ bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 }
 
 Variant Tree::get_drag_data(const Point2 &p_point) {
-	if (drag_touching) {
+	if (using_native_touch) {
 		// Disable data drag & drop when touch dragging.
 		return Variant();
 	}

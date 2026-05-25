@@ -224,6 +224,8 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	author_license_hbox->add_child(license);
 	license->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItem::_license_clicked));
 
+	vb->add_spacer();
+
 	HBoxContainer *rating_hbox = memnew(HBoxContainer);
 	rating_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	vb->add_child(rating_hbox);
@@ -235,11 +237,12 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 
 	rating_count = memnew(Label);
 	rating_count->set_mouse_filter(MOUSE_FILTER_STOP);
+	rating_count->set_theme_type_variation("LabelNoMargin");
 	rating_count->set_tooltip_text(TTRC("Review Score"));
-	rating_count->set_accessibility_name(TTRC("Review score"));
+	rating_count->set_accessibility_name(TTRC("Review Score"));
 	rating_hbox->add_child(rating_count);
 
-	set_accessibility_name(TTRC("Open asset details"));
+	set_accessibility_name(TTRC("Open Asset Details"));
 	set_custom_minimum_size(Size2(250, 80) * EDSCALE);
 	set_h_size_flags(SIZE_EXPAND_FILL);
 }
@@ -944,7 +947,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	vb->add_child(title_hb);
 	title = memnew(Label);
 	title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-	title->set_theme_type_variation("LabelVMarginless");
+	title->set_theme_type_variation("LabelNoMarginVertical");
 	title->set_focus_mode(FOCUS_ACCESSIBILITY);
 	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_hb->add_child(title);
@@ -956,7 +959,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	version = memnew(Label);
 	version->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	version->set_theme_type_variation("LabelVMarginless");
+	version->set_theme_type_variation("LabelNoMarginVertical");
 	vb->add_child(version);
 
 	spacer = memnew(Control);
@@ -1481,7 +1484,7 @@ void EditorAssetLibrary::_request_current_config() {
 HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
-	if (p_page_count < 2) {
+	if (p_page_count < 1) {
 		return hbc;
 	}
 
@@ -1499,7 +1502,8 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
-	first->set_text(TTR("First", "Pagination"));
+	first->set_button_icon(get_editor_theme_icon(SNAME("BackStart")));
+	first->set_tooltip_text(TTR("First", "Pagination"));
 	first->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page != 1) {
 		first->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(1));
@@ -1508,9 +1512,11 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		first->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(first);
+	first->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(first, SNAME("BackStart")));
 
 	Button *prev = memnew(Button);
-	prev->set_text(TTR("Previous", "Pagination"));
+	prev->set_button_icon(get_editor_theme_icon(SNAME("Back")));
+	prev->set_tooltip_text(TTR("Previous", "Pagination"));
 	prev->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page > 1) {
 		prev->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page - 1));
@@ -1519,6 +1525,8 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		prev->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(prev);
+	prev->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(prev, SNAME("Back")));
+
 	hbc->add_child(memnew(VSeparator));
 
 	for (int i = from; i <= to; i++) {
@@ -1535,8 +1543,11 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		hbc->add_child(current);
 	}
 
+	hbc->add_child(memnew(VSeparator));
+
 	Button *next = memnew(Button);
-	next->set_text(TTR("Next", "Pagination"));
+	next->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
+	next->set_tooltip_text(TTR("Next", "Pagination"));
 	next->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page < p_page_count) {
 		next->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page + 1));
@@ -1544,11 +1555,12 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		next->set_disabled(true);
 		next->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
-	hbc->add_child(memnew(VSeparator));
 	hbc->add_child(next);
+	next->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(next, SNAME("Forward")));
 
 	Button *last = memnew(Button);
-	last->set_text(TTR("Last", "Pagination"));
+	last->set_button_icon(get_editor_theme_icon(SNAME("ForwardEnd")));
+	last->set_tooltip_text(TTR("Last", "Pagination"));
 	last->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page != p_page_count) {
 		last->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page_count));
@@ -1557,10 +1569,15 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		last->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(last);
+	last->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(last, SNAME("ForwardEnd")));
 
 	hbc->add_spacer();
 
 	return hbc;
+}
+
+void EditorAssetLibrary::_update_button_icon(Button *p_button, const StringName &p_icon) {
+	p_button->set_button_icon(get_editor_theme_icon(p_icon));
 }
 
 void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_request_type, bool p_is_parallel) {
@@ -1735,7 +1752,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			int page_len = 24; // API's default batch size.
 			int total_items = d["count"];
-			int pages = total_items / page_len;
+			int pages = MAX(1, total_items / page_len);
 			current_page = MIN(current_page, pages);
 			Array result = d["hits"];
 

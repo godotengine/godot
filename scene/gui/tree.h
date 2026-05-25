@@ -771,6 +771,7 @@ private:
 	bool click_handled = false;
 	bool allow_rmb_select = false;
 	bool scrolling = false;
+	bool using_native_touch = true;
 
 	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
 	bool tile_scroll_hint = false;

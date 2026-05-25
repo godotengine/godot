@@ -606,8 +606,6 @@ void CSGShape3D::update_shape() {
 	CSGBrush *n = _get_brush();
 	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
-	AHashMap<Vector3, Vector3> vec_map;
-
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
 	face_count.fill(0);
