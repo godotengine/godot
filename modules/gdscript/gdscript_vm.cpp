@@ -4009,12 +4009,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	}
 #endif
 
-	// Check if this is not the last time it was interrupted by `await` or if it's the first time executing.
-	// If that is the case then we exit the function as normal. Otherwise we postpone it until the last `await` is completed.
-	// This ensures the call stack can be properly shown when using `await`, showing what resumed the function.
-	if (!p_state || awaited) {
-		GDScriptLanguage::get_singleton()->exit_function();
+	if (p_state && !awaited) {
+		// This means we have finished executing a resumed function and it was not awaited again.
+		// Exit function only after executing the remaining function states to preserve async call stack.
+		// Postpone the function exiting and the call stack clearing until the last `await` is completed.
+		// This ensures the call stack can be properly shown when using `await`, showing what resumed the function.
+
+		// Signal the next function-state to resume.
+		const Variant *args[1] = { &retvalue };
+		p_state->completed.emit(args, 1);
 	}
+
+	GDScriptLanguage::get_singleton()->exit_function();
 
 	// We deliberately avoid calling the destructor for `ADDR_STACK_CLASS`, since we initialized it
 	// without incrementing any reference count that it might have.
@@ -4026,17 +4032,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	}
 
 	call_depth--;
-
-	if (p_state && !awaited) {
-		// This means we have finished executing a resumed function and it was not awaited again.
-
-		// Signal the next function-state to resume.
-		const Variant *args[1] = { &retvalue };
-		p_state->completed.emit(args, 1);
-
-		// Exit function only after executing the remaining function states to preserve async call stack.
-		GDScriptLanguage::get_singleton()->exit_function();
-	}
 
 	return retvalue;
 }
