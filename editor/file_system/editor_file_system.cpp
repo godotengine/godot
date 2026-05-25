@@ -1118,7 +1118,7 @@ void EditorFileSystem::_update_dependencies_after_scan() {
 							if (ResourceUID::get_singleton()->has_id(uid)) {
 								const String uid_path = ResourceUID::get_singleton()->get_id_path(uid);
 								if (uid_path != dep_path) {
-									WARN_PRINT(vformat("The path %s of dependency (UID %s) in file %s doesn's match the path %s in UID cache. Please fix this dependency promptly.", dep_path, uid_text, file_path, uid_path));
+									WARN_PRINT(vformat("The path %s of dependency (UID %s) in file %s doesn't match the path %s in UID cache. Please fix this dependency promptly.", dep_path, uid_text, file_path, uid_path));
 								}
 							} else {
 								WARN_PRINT(vformat("The UID %s of dependency (path %s) in file %s was no longer in use. Please fix this dependency promptly.", uid_text, dep_path, file_path));
