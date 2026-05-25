@@ -253,6 +253,10 @@ partial class ExportedFields
         /// </summary>
         public new static readonly global::Godot.StringName @_fieldGodotGenericArray = "_fieldGodotGenericArray";
         /// <summary>
+        /// Cached name for the '_notIgnoredField' field.
+        /// </summary>
+        public new static readonly global::Godot.StringName @_notIgnoredField = "_notIgnoredField";
+        /// <summary>
         /// Cached name for the '_fieldEmptyInt64Array' field.
         /// </summary>
         public new static readonly global::Godot.StringName @_fieldEmptyInt64Array = "_fieldEmptyInt64Array";
@@ -503,6 +507,10 @@ partial class ExportedFields
         }
         if (name == PropertyName.@_fieldGodotGenericArray) {
             this.@_fieldGodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
+            return true;
+        }
+        if (name == PropertyName.@_notIgnoredField) {
+            this.@_notIgnoredField = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
             return true;
         }
         if (name == PropertyName.@_fieldEmptyInt64Array) {
@@ -759,6 +767,10 @@ partial class ExportedFields
             value = global::Godot.NativeInterop.VariantUtils.CreateFromArray(this.@_fieldGodotGenericArray);
             return true;
         }
+        if (name == PropertyName.@_notIgnoredField) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@_notIgnoredField);
+            return true;
+        }
         if (name == PropertyName.@_fieldEmptyInt64Array) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(this.@_fieldEmptyInt64Array);
             return true;
@@ -835,6 +847,7 @@ partial class ExportedFields
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.@_fieldGodotArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)27, name: PropertyName.@_fieldGodotGenericDictionary, hint: (global::Godot.PropertyHint)23, hintString: "4/0:;1/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.@_fieldGodotGenericArray, hint: (global::Godot.PropertyHint)23, hintString: "2/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.@_notIgnoredField, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         properties.Add(new(type: (global::Godot.Variant.Type)31, name: PropertyName.@_fieldEmptyInt64Array, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         return properties;
     }
