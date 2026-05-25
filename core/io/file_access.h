@@ -83,6 +83,7 @@ public:
 		COMPRESSION_ZSTD = Compression::MODE_ZSTD,
 		COMPRESSION_GZIP = Compression::MODE_GZIP,
 		COMPRESSION_BROTLI = Compression::MODE_BROTLI,
+		COMPRESSION_LZMA2 = Compression::MODE_LZMA2,
 	};
 
 	typedef void (*FileCloseFailNotify)(const String &);

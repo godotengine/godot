@@ -1,5 +1,0 @@
-#include "../../7zVersion.rc"
-
-MY_VERSION_INFO_APP("7z Setup SFX small", "7zS2.sfx")
-
-1  ICON "setup.ico"

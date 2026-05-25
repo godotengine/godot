@@ -1,5 +1,0 @@
-#include "../../../../C/7zVersion.rc"
-
-MY_VERSION_INFO_DLL("7z Extracting Reduced Standalone Plugin", "7zxr")
-
-101  ICON  "../../Archive/Icons/7z.ico"

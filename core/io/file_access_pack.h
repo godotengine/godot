@@ -43,9 +43,10 @@
 #define PACK_FORMAT_VERSION_V2 2
 #define PACK_FORMAT_VERSION_V3 3
 #define PACK_FORMAT_VERSION_V4 4
+#define PACK_FORMAT_VERSION_V5 5
 
 // The current packed file format version number.
-#define PACK_FORMAT_VERSION PACK_FORMAT_VERSION_V4
+#define PACK_FORMAT_VERSION PACK_FORMAT_VERSION_V5
 
 enum PackFlags {
 	PACK_DIR_ENCRYPTED = 1 << 0,

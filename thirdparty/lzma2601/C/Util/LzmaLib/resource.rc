@@ -1,3 +1,0 @@
-#include "../../7zVersion.rc"
-
-MY_VERSION_INFO_DLL("LZMA library", "LZMA")

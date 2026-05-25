@@ -30,10 +30,12 @@
 
 #include "compression.h"
 
+#include "core/io/pck_lzma.h"
 #include "core/io/zip_io.h"
 
 #include <thirdparty/misc/fastlz.h>
 
+#include <string.h>
 #include <zstd.h>
 
 #ifdef BROTLI_ENABLED
@@ -45,6 +47,16 @@ static BinaryMutex mutex;
 static ZSTD_DCtx *current_zstd_d_ctx = nullptr;
 static bool current_zstd_long_distance_matching;
 static int current_zstd_window_log_size;
+
+static _FORCE_INLINE_ PCKLzmaOptions _get_default_lzma2_options() {
+	PCKLzmaOptions options;
+	options.compression_level = 9;
+	options.dictionary_size_mb = 64;
+	options.word_size = 64;
+	options.threads = 1;
+	options.memory_usage_percent = 80;
+	return options;
+}
 
 int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_src_size, Mode p_mode) {
 	switch (p_mode) {
@@ -101,6 +113,25 @@ int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_sr
 			ZSTD_freeCCtx(cctx);
 			return (int64_t)ret;
 		} break;
+		case MODE_LZMA2: {
+			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress an LZMA2 stream 2 GiB or larger.");
+			if (p_src_size == 0) {
+				return 0;
+			}
+			Vector<uint8_t> src_data;
+			src_data.resize((int)p_src_size);
+			if (p_src_size > 0) {
+				memcpy(src_data.ptrw(), p_src, p_src_size);
+			}
+
+			Vector<uint8_t> compressed_data;
+			const Error err = compress_lzma2(src_data, compressed_data, _get_default_lzma2_options());
+			ERR_FAIL_COND_V_MSG(err != OK, -1, "Failed to compress LZMA2 stream.");
+			if (!compressed_data.is_empty()) {
+				memcpy(p_dst, compressed_data.ptr(), compressed_data.size());
+			}
+			return compressed_data.size();
+		} break;
 	}
 
 	ERR_FAIL_V(-1);
@@ -139,6 +170,12 @@ int64_t Compression::get_max_compressed_buffer_size(int64_t p_src_size, Mode p_m
 		} break;
 		case MODE_ZSTD: {
 			return ZSTD_compressBound(p_src_size);
+		} break;
+		case MODE_LZMA2: {
+			ERR_FAIL_COND_V_MSG(p_src_size < 0, -1, "Invalid source size.");
+			ERR_FAIL_COND_V_MSG(p_src_size > (INT64_MAX - 1024) / 2, -1, "LZMA2 source size is too large.");
+			// Conservative buffer to avoid overflow in callers that preallocate.
+			return (p_src_size * 2) + 1024;
 		} break;
 	}
 
@@ -214,6 +251,18 @@ int64_t Compression::decompress(uint8_t *p_dst, int64_t p_dst_max_size, const ui
 
 			size_t ret = ZSTD_decompressDCtx(current_zstd_d_ctx, p_dst, p_dst_max_size, p_src, p_src_size);
 			return (int64_t)ret;
+		} break;
+		case MODE_LZMA2: {
+			if (p_dst_max_size == 0 && p_src_size == 0) {
+				return 0;
+			}
+			Vector<uint8_t> dst_data;
+			const Error err = decompress_lzma2(p_src, p_src_size, p_dst_max_size, dst_data);
+			ERR_FAIL_COND_V_MSG(err != OK, -1, "Failed to decompress LZMA2 stream.");
+			if (!dst_data.is_empty()) {
+				memcpy(p_dst, dst_data.ptr(), dst_data.size());
+			}
+			return dst_data.size();
 		} break;
 	}
 

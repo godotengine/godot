@@ -379,7 +379,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	uint32_t ver_minor = f->get_32();
 	uint32_t ver_patch = f->get_32(); // Not used for validation.
 
-	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION_V4 && version != PACK_FORMAT_VERSION_V3 && version != PACK_FORMAT_VERSION_V2, false, vformat("Pack version unsupported: %d.", version));
+	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION_V5 && version != PACK_FORMAT_VERSION_V4 && version != PACK_FORMAT_VERSION_V3 && version != PACK_FORMAT_VERSION_V2, false, vformat("Pack version unsupported: %d.", version));
 	ERR_FAIL_COND_V_MSG(ver_major > GODOT_VERSION_MAJOR || (ver_major == GODOT_VERSION_MAJOR && ver_minor > GODOT_VERSION_MINOR), false, vformat("Pack created with a newer version of the engine: %d.%d.%d.", ver_major, ver_minor, ver_patch));
 
 	uint32_t pack_flags = f->get_32();
@@ -389,15 +389,15 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	String salt;
 
 	uint64_t file_base = f->get_64();
-	if ((version == PACK_FORMAT_VERSION_V4) || (version == PACK_FORMAT_VERSION_V3) || (version == PACK_FORMAT_VERSION_V2 && rel_filebase)) {
+	if ((version == PACK_FORMAT_VERSION_V5) || (version == PACK_FORMAT_VERSION_V4) || (version == PACK_FORMAT_VERSION_V3) || (version == PACK_FORMAT_VERSION_V2 && rel_filebase)) {
 		file_base += pck_start_pos;
 	}
 
-	if (version == PACK_FORMAT_VERSION_V3 || version == PACK_FORMAT_VERSION_V4) {
-		// V3/V4: Read directory offset and skip reserved part of the header.
+	if (version == PACK_FORMAT_VERSION_V3 || version == PACK_FORMAT_VERSION_V4 || version == PACK_FORMAT_VERSION_V5) {
+		// V3/V4/V5: Read directory offset and skip reserved part of the header.
 		uint64_t dir_offset = f->get_64() + pck_start_pos;
-		if (sparse_bundle && enc_directory && version == PACK_FORMAT_VERSION_V4) {
-			// V4: Read encrypted directory salt.
+		if (sparse_bundle && enc_directory && version >= PACK_FORMAT_VERSION_V4) {
+			// V4+: Read encrypted directory salt.
 			Vector<uint8_t> salt_data = f->get_buffer(32);
 			salt.append_latin1(Span((const char *)salt_data.ptr(), salt_data.size()));
 		}
@@ -449,7 +449,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		uint64_t stored_size = size;
 		uint8_t md5[16];
 		uint32_t flags = 0;
-		if (version >= PACK_FORMAT_VERSION_V4) {
+		if (version >= PACK_FORMAT_VERSION_V5) {
 			stored_size = f->get_64();
 			f->get_buffer(md5, 16);
 			flags = f->get_32();
