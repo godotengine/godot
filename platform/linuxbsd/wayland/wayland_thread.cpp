@@ -5506,7 +5506,8 @@ Error WaylandThread::init() {
 
 	if (embedder_enabled && Engine::get_singleton()->is_editor_hint() && !Engine::get_singleton()->is_project_manager_hint()) {
 		print_verbose("Initializing Wayland embedder.");
-		Error embedder_status = embedder.init();
+		bool embedder_debug = OS::get_singleton()->get_environment("GODOT_WAYLAND_EMBEDDER_DEBUG") == "1";
+		Error embedder_status = embedder.init(embedder_debug);
 		ERR_FAIL_COND_V_MSG(embedder_status != OK, ERR_CANT_CREATE, "Can't initialize Wayland embedder.");
 
 		embedder_socket_path = embedder.get_socket_path();
