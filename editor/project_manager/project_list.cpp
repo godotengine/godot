@@ -1004,6 +1004,29 @@ void ProjectList::load_project_list() {
 	_config.load(_config_path);
 	Vector<String> sections = _config.get_sections();
 
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	for (const String &path : sections) {
+		String parent = path.get_base_dir();
+		String basename = path.get_file();
+
+		if (da->change_dir(parent) != OK) {
+			continue;
+		}
+
+		da->list_dir_begin();
+		String n = da->get_next();
+		while (!n.is_empty()) {
+			if (da->current_is_dir() && n.to_lower() == basename.to_lower() && n != basename) {
+				_config.erase_section(path);
+				_config.set_value(parent.path_join(n), "favorite", false);
+				_config.save(_config_path);
+				break;
+			}
+			n = da->get_next();
+		}
+		da->list_dir_end();
+	}
+
 	for (const String &path : sections) {
 		bool favorite = _config.get_value(path, "favorite", false);
 		_projects.push_back(load_project_data(path, favorite));
