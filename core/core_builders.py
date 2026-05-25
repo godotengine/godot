@@ -319,7 +319,7 @@ def main():
             print("Combined arguments:", " ".join(file_args + remaining_args))
 
     # Parse all arguments
-    parser = argparse.ArgumentParser(description="Core build tools")
+    parser = argparse.ArgumentParser(description="Core build tools", formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
         "--method",
         required=True,
@@ -331,7 +331,13 @@ def main():
             "version_info_builder",
             "version_hash_builder",
         ],
-        help="Builder method to execute",
+        help="""Builder method to execute.
+- make_authors_header:      Source: AUTHORS.md
+- make_donors_header:       Source: DONORS.md
+- encryption_key_builder:   Source: encryption key
+- make_certs_header:        Source: ca-bundle.crt, builtin_certs, system_certs_path
+- version_info_builder:     Source: short_name, name, major, minor, patch, status, build, module_config, website, docs_branch
+- version_hash_builder:     Source: git_hash, git_timestamp""",
     )
     parser.add_argument("--target", required=True, help="Target file")
     parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
