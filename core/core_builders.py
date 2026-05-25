@@ -344,7 +344,7 @@ def main():
 - disabled_class_builder:   Source: disabled_classes""",
     )
     parser.add_argument("--target", required=True, help="Target file")
-    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+    parser.add_argument("--source", nargs="*", default=[], help="Source file(s)")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
 
     args = parser.parse_args()
