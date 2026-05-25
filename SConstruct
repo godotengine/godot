@@ -642,7 +642,7 @@ env.Append(ARFLAGS=env.get("arflags", "").split())
 env.Append(RCFLAGS=env.get("rcflags", "").split())
 
 # Feature build profile
-env['DISABLED_CLASSES'] = []
+env["DISABLED_CLASSES"] = []
 if env["build_profile"] != "":
     print(f'Using feature build profile: "{env["build_profile"]}"')
     import json
@@ -650,7 +650,7 @@ if env["build_profile"] != "":
     try:
         ft = json.load(open(env["build_profile"], "r", encoding="utf-8"))
         if "disabled_classes" in ft:
-            env['DISABLED_CLASSES'] = ft["disabled_classes"]
+            env["DISABLED_CLASSES"] = ft["disabled_classes"]
         if "disabled_build_options" in ft:
             dbo = ft["disabled_build_options"]
             for c in dbo:
