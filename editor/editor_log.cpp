@@ -439,7 +439,7 @@ void EditorLog::_append_styled_log_line(const Color &p_color_regular, const Colo
 
 		if (keytext_pos == 0) {
 			int last_pos = positions[positions.size() - 1];
-			positions.remove_at(positions.size() - 1);
+			positions.resize(positions.size() - 1);
 			positions.append(last_pos + keytext_length);
 		} else {
 			positions.append(keytext_pos + cursor_position);
@@ -448,7 +448,7 @@ void EditorLog::_append_styled_log_line(const Color &p_color_regular, const Colo
 
 		cursor_position += keytext_pos + keytext_length;
 
-		iterator_line = p_line.substr(cursor_position, p_line.length());
+		iterator_line = p_line.substr(cursor_position);
 	}
 
 	// Imagine p_line "Lullaby" and p_keytext "l".
