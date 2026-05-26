@@ -3759,9 +3759,15 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 
 	if (use_gradle_build) {
+		if (ep.step(TTR("Starting gradle build..."), 0)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Starting gradle build...");
 		//test that installed build version is alright
 		{
+			if (ep.step(TTR("Checking build version..."), 10)) {
+				return ERR_SKIP;
+			}
 			print_verbose("Checking build version...");
 			String gradle_base_directory = gradle_build_directory.get_base_dir();
 			Ref<FileAccess> f = FileAccess::open(gradle_base_directory.path_join(".build_version"), FileAccess::READ);
@@ -3811,6 +3817,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_clear_assets_directory(p_preset);
 		String gdextension_libs_path = gradle_build_directory.path_join(GDEXTENSION_LIBS_PATH);
 		_remove_copied_libs(gdextension_libs_path);
+
+		if (ep.step(TTR("Exporting project files..."), 20)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Exporting project files...");
 		CustomExportData user_data;
 		user_data.assets_directory = assets_directory;
@@ -3851,6 +3861,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			fa->store_string(JSON::stringify(user_data.libs, "\t"));
 		}
 
+		if (ep.step(TTR("Storing command line flags..."), 30)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Storing command line flags...");
 		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 
@@ -3969,6 +3982,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.
 		// Any non-sensitive additions to the command line arguments must be done above this section.
 		// Sensitive additions must be done below the logging statement.
+		if (ep.step(TTR("Build Android project..."), 40)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Build Android project using gradle command: " + String("\n") + build_command + " " + join_list(cmdline, String(" ")));
 
 		if (should_sign) {
@@ -4089,6 +4105,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		print_verbose("Successfully completed Android gradle build.");
 #endif
+		if (ep.step(TTR("Build complete."), 105)) {
+			return ERR_SKIP;
+		}
 		return OK;
 	}
 	// This is the start of the Legacy build system
