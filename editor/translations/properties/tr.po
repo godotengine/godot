@@ -104,13 +104,15 @@
 # Sueda Ünlü <sue.unlu@gmail.com>, 2025.
 # Fatih Serbest <fatihxserbest@gmail.com>, 2026.
 # Hasan Kara <hasanbeytullahkara@gmail.com>, 2026.
+# Fikret Sadak <fsadak@gmail.com>, 2026.
+# can unal <justplay95@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-14 14:30+0000\n"
-"Last-Translator: Hasan Kara <hasanbeytullahkara@gmail.com>\n"
+"PO-Revision-Date: 2026-04-13 02:09+0000\n"
+"Last-Translator: can unal <justplay95@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -118,7 +120,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.2\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -303,6 +305,9 @@ msgstr "iOS"
 msgid "Session Category"
 msgstr "Oturum Kategorisi"
 
+msgid "Mix with Others"
+msgstr "Diğerleri ile Karıştır"
+
 msgid "Subwindows"
 msgstr "Altpencereler"
 
@@ -428,6 +433,9 @@ msgstr "Araçipucu Gecikmesi (sn)"
 
 msgid "Common"
 msgstr "Ortak"
+
+msgid "Drag Threshold"
+msgstr "HDR Eşiği"
 
 msgid "Snap Controls to Pixels"
 msgstr "Kontrolleri Piksellere Tuttur"
@@ -569,6 +577,12 @@ msgstr "Fırınlama Çoklu İş Parçacıklarını Kullan"
 
 msgid "Baking Use High Priority Threads"
 msgstr "Fırınlama Yüksek Öncelikli İş Parçacıklarını Kullan"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "NavMesh Kenar Birleştirme Hataları"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "NavMesh Hücre Boyutu Hatalı"
 
 msgid "Low Processor Usage Mode"
 msgstr "Düşük İşlemci Kullanım Kipi"
@@ -771,6 +785,9 @@ msgstr "Büyük Sonlu (big endian)"
 msgid "Blocking Mode Enabled"
 msgstr "Engelleme Kipi Etkinleştirildi"
 
+msgid "Connection"
+msgstr "Bağlantı"
+
 msgid "Read Chunk Size"
 msgstr "Okuma Parça Boyutu"
 
@@ -948,12 +965,6 @@ msgstr "Bitiş Kayması"
 msgid "Easing"
 msgstr "Yumuşatma"
 
-msgid "Asset Library"
-msgstr "Varlık Kütüphanesi"
-
-msgid "Available URLs"
-msgstr "Kullanılabilir URL'ler"
-
 msgid "Debug Adapter"
 msgstr "Hata Ayıklama Bağdaştırıcısı"
 
@@ -1046,6 +1057,9 @@ msgstr "Yalnızca Projeyi Dışa Aktar"
 
 msgid "Delete Old Export Files Unconditionally"
 msgstr "Eski Dışa Aktarma Dosyalarını Koşulsuz Sil"
+
+msgid "Camera"
+msgstr "Kamera"
 
 msgid "Plugins"
 msgstr "Eklentiler"
@@ -1458,6 +1472,9 @@ msgstr "Kök Türü"
 msgid "Root Name"
 msgstr "Kök İsmi"
 
+msgid "Mesh Library"
+msgstr "Örgü Kütüphanesi"
+
 msgid "Apply Root Scale"
 msgstr "Kök Ölçeği Uygula"
 
@@ -1659,6 +1676,12 @@ msgstr "Temel Ölçek"
 msgid "Saturation"
 msgstr "Doygunluk"
 
+msgid "Fix Alpha Border"
+msgstr "Alfa Kenarını Düzelt"
+
+msgid "Premult Alpha"
+msgstr "Önçarpılmış Alfa"
+
 msgid "Normal Map"
 msgstr "Normal Haritası"
 
@@ -1673,12 +1696,6 @@ msgstr "İşlem"
 
 msgid "Blue"
 msgstr "Mavi"
-
-msgid "Fix Alpha Border"
-msgstr "Alfa Kenarını Düzelt"
-
-msgid "Premult Alpha"
-msgstr "Önçarpılmış Alfa"
 
 msgid "Normal Map Invert Y"
 msgstr "Normal Haritası Y Eksenini Ters Çevir"
@@ -1885,8 +1902,35 @@ msgstr "Alet Renkleri"
 msgid "Particles Emission Shape"
 msgstr "Parçacıkların Yayılma Şekli"
 
+msgid "Mesh"
+msgstr "Örgü"
+
+msgid "Mesh Transform"
+msgstr "Ögrü Dönüştürme"
+
+msgid "Mesh Cast Shadow"
+msgstr "Örgü Gölge Yayma"
+
+msgid "Shapes"
+msgstr "Şekiller"
+
+msgid "Navigation Mesh"
+msgstr "Gezinti Örgüsü"
+
+msgid "Navigation Mesh Transform"
+msgstr "Gezinti Örgüsü Dönüştürme"
+
+msgid "Navigation Layers"
+msgstr "Gezinim Katmanları"
+
+msgid "Preview"
+msgstr "Önizleme"
+
 msgid "Interface"
 msgstr "Arayüz"
+
+msgid "Localization"
+msgstr "Yerelleştirme"
 
 msgid "Editor Language"
 msgstr "Düzenleyici Dili"
@@ -1894,14 +1938,23 @@ msgstr "Düzenleyici Dili"
 msgid "Use Threads"
 msgstr "İş Parçacıklarını Kullan"
 
+msgid "Available URLs"
+msgstr "Kullanılabilir URL'ler"
+
 msgid "Localize Settings"
 msgstr "Ayarları Yerelleştir"
+
+msgid "Docks"
+msgstr "Yuvalar"
 
 msgid "Dock Tab Style"
 msgstr "Yuva Sekmesi Tarzı"
 
 msgid "UI Layout Direction"
 msgstr "UI Yerleşim Düzeni Yönü"
+
+msgid "Appearance"
+msgstr "Dış görünüş"
 
 msgid "Display Scale"
 msgstr "Görüntü Ölçeği"
@@ -1912,11 +1965,11 @@ msgstr "Özel Ekran Ölçeği"
 msgid "Editor Screen"
 msgstr "Düzenleyici Ekranı"
 
+msgid "Input"
+msgstr "Giriş"
+
 msgid "Project Manager Screen"
 msgstr "Proje Yöneticisi Ekranı"
-
-msgid "Connection"
-msgstr "Bağlantı"
 
 msgid "Check for Updates"
 msgstr "Güncellemeleri Denetle"
@@ -1969,6 +2022,9 @@ msgstr "Ana Yazı Tipi Kalın"
 msgid "Code Font"
 msgstr "Kod Yazı Tipi"
 
+msgid "Behavior"
+msgstr "Davranış"
+
 msgid "Separate Distraction Mode"
 msgstr "Ayrık Dikkat Dağıtma Kipi"
 
@@ -2011,14 +2067,8 @@ msgstr "Dikey-Eşleme Kipi"
 msgid "Update Continuously"
 msgstr "Sürekli Güncelle"
 
-msgid "Show Scene Tree Root Selection"
-msgstr "Sahne Ağacı Kök Seçimini Göster"
-
 msgid "Derive Script Globals by Name"
 msgstr "Betik Genellerini İsmiyle Türet"
-
-msgid "Docks"
-msgstr "Yuvalar"
 
 msgid "Scene Tree"
 msgstr "Sahne Ağacı"
@@ -2326,9 +2376,6 @@ msgstr "Uyarı Listesi"
 msgid "Notice List"
 msgstr "Bildirme Listesi"
 
-msgid "Appearance"
-msgstr "Dış görünüş"
-
 msgid "Enable Inline Color Picker"
 msgstr "Satır İçi Renk Seçiciyi Etkinleştir"
 
@@ -2406,9 +2453,6 @@ msgstr "Boşluk Karakterlerini Çiz"
 
 msgid "Line Spacing"
 msgstr "Satır Aralığı"
-
-msgid "Behavior"
-msgstr "Davranış"
 
 msgid "Empty Selection Clipboard"
 msgstr "Seçim Panosunu Boşalt"
@@ -2610,9 +2654,6 @@ msgstr "Eksen-Hizalı Sınırlayıcı Kutu"
 
 msgid "Stream Player 3D"
 msgstr "Akış Oynatıcı 3B"
-
-msgid "Camera"
-msgstr "Kamera"
 
 msgid "Decal"
 msgstr "Çıkartma"
@@ -3013,6 +3054,21 @@ msgstr "TLS V 1'i etkinleştir"
 msgid "Remote Host"
 msgstr "Uzak Ana Bilgisayar"
 
+msgid "Language Server"
+msgstr "Dil Sunucusu"
+
+msgid "Enable Smart Resolve"
+msgstr "Akıllı Çözümlemeyi Etkinleştir"
+
+msgid "Show Native Symbols in Editor"
+msgstr "Özgün Simgeleri Düzenleyicide Göster"
+
+msgid "Use Thread"
+msgstr "İş Parçası Kullan"
+
+msgid "Poll Limit (µsec)"
+msgstr "Yoklama Sınırı (µsn)"
+
 msgid "Debugger"
 msgstr "Hata Ayıklayıcı"
 
@@ -3048,9 +3104,6 @@ msgstr "SSH Genel Anahtar Yolu"
 
 msgid "SSH Private Key Path"
 msgstr "SSH Özel Anahtar Yolu"
-
-msgid "Input"
-msgstr "Giriş"
 
 msgid "Buffering"
 msgstr "Ara Belleğe Alma"
@@ -3532,9 +3585,6 @@ msgstr "Çarpışma Önceliği"
 msgid "Flip Faces"
 msgstr "Yüzleri Ters Çevir"
 
-msgid "Mesh"
-msgstr "Örgü"
-
 msgid "Material"
 msgstr "Malzeme"
 
@@ -3654,21 +3704,6 @@ msgstr "Her Zaman True Olarak Belirt"
 
 msgid "Assert Always False"
 msgstr "Her Zaman False Olarak Belirt"
-
-msgid "Language Server"
-msgstr "Dil Sunucusu"
-
-msgid "Enable Smart Resolve"
-msgstr "Akıllı Çözümlemeyi Etkinleştir"
-
-msgid "Show Native Symbols in Editor"
-msgstr "Özgün Simgeleri Düzenleyicide Göster"
-
-msgid "Use Thread"
-msgstr "İş Parçası Kullan"
-
-msgid "Poll Limit (µsec)"
-msgstr "Yoklama Sınırı (µsn)"
 
 msgid "Copyright"
 msgstr "Telif Hakkı"
@@ -3972,9 +4007,6 @@ msgstr "S Sarması"
 
 msgid "Wrap T"
 msgstr "T Sarması"
-
-msgid "Mesh Library"
-msgstr "Örgü Kütüphanesi"
 
 msgid "Physics Material"
 msgstr "Fizik Malzemesi"
@@ -4489,6 +4521,114 @@ msgstr "İnternetGeçidiCihazı Bizim Adres"
 msgid "IGD Status"
 msgstr "İnternetGeçidiCihazı Durumu"
 
+msgid "Output Port for Preview"
+msgstr "Önizleme için Çıkış Portu"
+
+msgid "Modes"
+msgstr "Kipler"
+
+msgid "Flags"
+msgstr "Bayraklar"
+
+msgid "Input Name"
+msgstr "Giriş İsmi"
+
+msgid "Parameter Name"
+msgstr "Parametre İsmi"
+
+msgid "Qualifier"
+msgstr "Niteleyici"
+
+msgid "Tint Color Enabled"
+msgstr "Açıcı Renk Etkin"
+
+msgid "Tint Color"
+msgstr "Açıcı Renk"
+
+msgid "Autoshrink"
+msgstr "Otomatik daraltma"
+
+msgid "Expression"
+msgstr "İfade"
+
+msgid "Varying Name"
+msgstr "Değişen İsmi"
+
+msgid "Varying Type"
+msgstr "Değişen Türü"
+
+msgid "Op Type"
+msgstr "İşleç Türü"
+
+msgid "Constant"
+msgstr "Sabit"
+
+msgid "Source"
+msgstr "Kaynak"
+
+msgid "Texture Type"
+msgstr "Doku Türü"
+
+msgid "Texture Array"
+msgstr "Doku Dizisi"
+
+msgid "Cube Map"
+msgstr "Küp Harita"
+
+msgid "Operator"
+msgstr "İşleç"
+
+msgid "Function"
+msgstr "Fonksiyon"
+
+msgid "Hint"
+msgstr "İpucu"
+
+msgid "Step"
+msgstr "Adım"
+
+msgid "Default Value Enabled"
+msgstr "Varsayılan Değer Etkin"
+
+msgid "Default Value"
+msgstr "Varsayılan Değer"
+
+msgid "Enum Names"
+msgstr "Numaralandırma İsimleri"
+
+msgid "Color Default"
+msgstr "Renk Varsayılanı"
+
+msgid "Texture Filter"
+msgstr "Doku Filtresi"
+
+msgid "Texture Repeat"
+msgstr "Doku Tekrarı"
+
+msgid "Texture Source"
+msgstr "Doku Kaynağı"
+
+msgid "Condition"
+msgstr "Koşul"
+
+msgid "Billboard Type"
+msgstr "Tabela Türü"
+
+msgid "Keep Scale"
+msgstr "Ölçeği Koru"
+
+msgid "Mode 2D"
+msgstr "2B Kip"
+
+msgid "Use All Surfaces"
+msgstr "Tüm Yüzeyleri Kullan"
+
+msgid "Surface Index"
+msgstr "Yüzey İndeksi"
+
+msgid "Degrees Mode"
+msgstr "Derece Kipi"
+
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -4572,6 +4712,9 @@ msgstr "Uzaktan Hata Ayıklama için Wi-Fi Kullan"
 
 msgid "Wi-Fi Remote Debug Host"
 msgstr "Wi-Fi Uzaktan Hata Ayıklama Ana Bilgisayarı"
+
+msgid "Background Color"
+msgstr "Arkaplan Rengi"
 
 msgid "Launcher Icons"
 msgstr "Başlatıcı Simgeleri"
@@ -4687,9 +4830,6 @@ msgstr "Destek Büyük"
 msgid "Support Xlarge"
 msgstr "Destek Fazladan Büyük"
 
-msgid "Background Color"
-msgstr "Arkaplan Rengi"
-
 msgid "User Data Backup"
 msgstr "Kullanıcı Verisi Yedekleme"
 
@@ -4701,15 +4841,6 @@ msgstr "Komut Satırı"
 
 msgid "Extra Args"
 msgstr "Ek Girdi Değişkenleri"
-
-msgid "APK Expansion"
-msgstr "APK Genişletme"
-
-msgid "Salt"
-msgstr "Tuzlama"
-
-msgid "Public Key"
-msgstr "Genel Anahtar"
 
 msgid "Permissions"
 msgstr "İzinler"
@@ -5599,9 +5730,6 @@ msgstr "Hedef İstenilen Mesafe"
 msgid "Path Max Distance"
 msgstr "Yol En Uzun Mesafe"
 
-msgid "Navigation Layers"
-msgstr "Gezinim Katmanları"
-
 msgid "Pathfinding Algorithm"
 msgstr "Yol bulucu Algoritmaları"
 
@@ -6300,9 +6428,6 @@ msgstr "Deterministik"
 msgid "Pixel Size"
 msgstr "Piksel Boyutu"
 
-msgid "Flags"
-msgstr "Bayraklar"
-
 msgid "Billboard"
 msgstr "Tabela"
 
@@ -6332,9 +6457,6 @@ msgstr "Alfa Kusur düzeltme Kipi"
 
 msgid "Alpha Antialiasing Edge"
 msgstr "Alfa Kusur düzeltme Kenarı"
-
-msgid "Texture Filter"
-msgstr "Doku Filtresi"
 
 msgid "Render Priority"
 msgstr "İşleme Önceliği"
@@ -6620,9 +6742,6 @@ msgstr "Y Hızını Koru"
 
 msgid "NavigationMesh"
 msgstr "GezintiÖrgüsü"
-
-msgid "Navigation Mesh"
-msgstr "Gezinti Örgüsü"
 
 msgid "Quaternion"
 msgstr "Kuaterniyon"
@@ -7239,12 +7358,6 @@ msgstr "Kipi Değiştir"
 msgid "Advance"
 msgstr "İlerletme"
 
-msgid "Condition"
-msgstr "Koşul"
-
-msgid "Expression"
-msgstr "İfade"
-
 msgid "State Machine Type"
 msgstr "Durum Makinesi Türü"
 
@@ -7455,14 +7568,11 @@ msgstr "Yazı Tipi Boyutları"
 msgid "Styles"
 msgstr "Tarzlar"
 
-msgid "Clip Contents"
-msgstr "İçerikleri Kes"
-
 msgid "Custom Minimum Size"
 msgstr "Özel En Küçük Boyut"
 
-msgid "Layout Direction"
-msgstr "Yerleşim Düzeni Yönü"
+msgid "Clip Contents"
+msgstr "İçerikleri Kes"
 
 msgid "Layout Mode"
 msgstr "Yerleşim Düzeni Kipi"
@@ -7488,11 +7598,11 @@ msgstr "Taşıyıcı Boyutlandırma"
 msgid "Stretch Ratio"
 msgstr "Esnetme Oranı"
 
-msgid "Localization"
-msgstr "Yerelleştirme"
-
 msgid "Localize Numeral System"
 msgstr "Sayı Sistemini Yerelleştir"
+
+msgid "Layout Direction"
+msgstr "Yerleşim Düzeni Yönü"
 
 msgid "Tooltip"
 msgstr "Araçipucu"
@@ -7652,12 +7762,6 @@ msgstr "Otomatik Daraltma Kenar Boşluğu"
 
 msgid "Drag Margin"
 msgstr "Sürükleme Kenar Boşluğu"
-
-msgid "Tint Color Enabled"
-msgstr "Açıcı Renk Etkin"
-
-msgid "Tint Color"
-msgstr "Açıcı Renk"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "Geçersiz Bağlantı Tipini Görmezden Gel"
@@ -7866,9 +7970,6 @@ msgstr "En küçük Değer"
 msgid "Max Value"
 msgstr "En Büyük Değer"
 
-msgid "Step"
-msgstr "Adım"
-
 msgid "Page"
 msgstr "Sayfa"
 
@@ -8048,9 +8149,6 @@ msgstr "Sekmelerin Konumu"
 
 msgid "Tabs Visible"
 msgstr "Sekmeler Görünür"
-
-msgid "All Tabs in Front"
-msgstr "Tüm Sekmeler Ön tarafta"
 
 msgid "Use Hidden Tabs for Min Size"
 msgstr "En Küçük Boy için Gizli Sekmeler Kullan"
@@ -8296,9 +8394,6 @@ msgstr "Hata Ayıklama Gezinti İpucu"
 msgid "Multiplayer Poll"
 msgstr "Çokluoyuncu Sorgulama"
 
-msgid "Shapes"
-msgstr "Şekiller"
-
 msgid "Shape Color"
 msgstr "Şekil Rengi"
 
@@ -8511,6 +8606,9 @@ msgstr "2B Boyutun Üzerine Yaz"
 
 msgid "Size 2D Override Stretch"
 msgstr "2B Boyut Üzerine Yazma Esnetmesi"
+
+msgid "View Count"
+msgstr "Görünüm Sayısı"
 
 msgid "Render Target"
 msgstr "İşleme Hedefi"
@@ -8824,18 +8922,6 @@ msgstr "Harita Verisi"
 msgid "Item"
 msgstr "Öğe"
 
-msgid "Mesh Transform"
-msgstr "Ögrü Dönüştürme"
-
-msgid "Mesh Cast Shadow"
-msgstr "Örgü Gölge Yayma"
-
-msgid "Navigation Mesh Transform"
-msgstr "Gezinti Örgüsü Dönüştürme"
-
-msgid "Preview"
-msgstr "Önizleme"
-
 msgid "Add UV2"
 msgstr "UV2 ekle"
 
@@ -9127,9 +9213,6 @@ msgstr "Özel Görüş Alanı"
 msgid "Ambient Light"
 msgstr "Ortamsal Işık"
 
-msgid "Source"
-msgstr "Kaynak"
-
 msgid "Sky Contribution"
 msgstr "Gökyüzü Katkısı"
 
@@ -9415,9 +9498,6 @@ msgstr "Metalik"
 msgid "Texture Channel"
 msgstr "Doku Kanalı"
 
-msgid "Operator"
-msgstr "İşleç"
-
 msgid "On UV2"
 msgstr "UV2 de"
 
@@ -9495,9 +9575,6 @@ msgstr "Gölgeler Almayı Devre Dışı Bırak"
 
 msgid "Shadow to Opacity"
 msgstr "Şeffaflığa Gölge"
-
-msgid "Keep Scale"
-msgstr "Ölçeği Koru"
 
 msgid "Particles Anim"
 msgstr "Parçacıklar Animasyonu"
@@ -9843,84 +9920,6 @@ msgstr "Varsayılan Yazı Tipi Boyutu"
 
 msgid "File"
 msgstr "Dosya"
-
-msgid "Output Port for Preview"
-msgstr "Önizleme için Çıkış Portu"
-
-msgid "Modes"
-msgstr "Kipler"
-
-msgid "Input Name"
-msgstr "Giriş İsmi"
-
-msgid "Parameter Name"
-msgstr "Parametre İsmi"
-
-msgid "Qualifier"
-msgstr "Niteleyici"
-
-msgid "Autoshrink"
-msgstr "Otomatik daraltma"
-
-msgid "Varying Name"
-msgstr "Değişen İsmi"
-
-msgid "Varying Type"
-msgstr "Değişen Türü"
-
-msgid "Op Type"
-msgstr "İşleç Türü"
-
-msgid "Constant"
-msgstr "Sabit"
-
-msgid "Texture Type"
-msgstr "Doku Türü"
-
-msgid "Texture Array"
-msgstr "Doku Dizisi"
-
-msgid "Cube Map"
-msgstr "Küp Harita"
-
-msgid "Function"
-msgstr "Fonksiyon"
-
-msgid "Hint"
-msgstr "İpucu"
-
-msgid "Default Value Enabled"
-msgstr "Varsayılan Değer Etkin"
-
-msgid "Default Value"
-msgstr "Varsayılan Değer"
-
-msgid "Enum Names"
-msgstr "Numaralandırma İsimleri"
-
-msgid "Color Default"
-msgstr "Renk Varsayılanı"
-
-msgid "Texture Repeat"
-msgstr "Doku Tekrarı"
-
-msgid "Texture Source"
-msgstr "Doku Kaynağı"
-
-msgid "Billboard Type"
-msgstr "Tabela Türü"
-
-msgid "Mode 2D"
-msgstr "2B Kip"
-
-msgid "Use All Surfaces"
-msgstr "Tüm Yüzeyleri Kullan"
-
-msgid "Surface Index"
-msgstr "Yüzey İndeksi"
-
-msgid "Degrees Mode"
-msgstr "Derece Kipi"
 
 msgid "Font Pressed Color"
 msgstr "Yazı Tipi Basıldı Rengi"
@@ -10990,9 +10989,6 @@ msgstr "Oda Boyutu"
 msgid "High-pass"
 msgstr "Yüksek-geçiş"
 
-msgid "Tap Back Pos"
-msgstr "Geri Vuruş Konumu"
-
 msgid "Pan Pullout"
 msgstr "Kaydırma çekilmesi"
 
@@ -11598,9 +11594,6 @@ msgstr "Dahili Boyut"
 
 msgid "Target Size"
 msgstr "Hedef Boyut"
-
-msgid "View Count"
-msgstr "Görünüm Sayısı"
 
 msgid "Default Font Antialiasing"
 msgstr "Varsayılan Yazı Tipi Kenar yumuşatması"

@@ -659,8 +659,8 @@ msgstr "Afegeix %s"
 msgid "Load..."
 msgstr "Carregar..."
 
-msgid "Move Node Point"
-msgstr "Moure Punt de Node"
+msgid "Move BlendSpace1D Node Point"
+msgstr "Moure Punt BlendSpace1D"
 
 msgid "Change BlendSpace1D Labels"
 msgstr "Canviar Etiquetes de BlendSpace1D"
@@ -678,9 +678,6 @@ msgstr "Afegir Punt d'Animació"
 
 msgid "Remove BlendSpace1D Point"
 msgstr "Eliminar Punt BlendSpace1D"
-
-msgid "Move BlendSpace1D Node Point"
-msgstr "Moure Punt BlendSpace1D"
 
 msgid "Continuous"
 msgstr "Continu"
@@ -700,14 +697,17 @@ msgstr "Elimina un Punt."
 msgid "Enable snap and show grid."
 msgstr "Habilitar ajustament i mostrar quadrícula."
 
-msgid "Blend:"
-msgstr "Mescla:"
+msgid "Sync"
+msgstr "Sincronitzar"
 
-msgid "Point"
-msgstr "Punt"
+msgid "None"
+msgstr "Cap"
 
 msgid "Open Editor"
 msgstr "Obre l'Editor"
+
+msgid "Position"
+msgstr "Posició"
 
 msgid "Value"
 msgstr "Valor"
@@ -729,9 +729,6 @@ msgstr "Eliminar Punt BlendSpace2D"
 
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Eliminar Triangle BlendSpace2D"
-
-msgid "No triangles exist, so no blending can take place."
-msgstr "En no haver-hi cap triangle, no es pot mesclar res."
 
 msgid "Toggle Auto Triangles"
 msgstr "Commutar Auto Triangles"
@@ -811,9 +808,6 @@ msgstr "Neteja"
 
 msgid "Load Animation"
 msgstr "Carrega l'Animació"
-
-msgid "Animation Name:"
-msgstr "Nom de l'Animació:"
 
 msgid "Pasted Animation"
 msgstr "Animació Enganxada"
@@ -938,6 +932,9 @@ msgstr "Inclou Gizmos (3D)"
 msgid "Pin AnimationPlayer"
 msgstr "Fixar AnimationPlayer"
 
+msgid "Animation Name:"
+msgstr "Nom de l'Animació:"
+
 msgid "Close"
 msgstr "Tancar"
 
@@ -965,9 +962,6 @@ msgstr "Afegir una Transició"
 msgid "Immediate"
 msgstr "Immediat"
 
-msgid "Sync"
-msgstr "Sincronitzar"
-
 msgid "At End"
 msgstr "Al Final"
 
@@ -991,12 +985,6 @@ msgstr "Connectar nodes."
 
 msgid "Remove selected node or transition."
 msgstr "Eliminar el node o transició seleccionats."
-
-msgid "Transition:"
-msgstr "Transició:"
-
-msgid "Play Mode:"
-msgstr "Mode de Reproducció:"
 
 msgid "Animation Change Transition"
 msgstr "Modifica la Transició de l'Animació"
@@ -1291,6 +1279,50 @@ msgstr "propietat '%s'"
 msgid "Nearest FPS: %d"
 msgstr "FPS més proper: %d"
 
+msgctxt "Transition Type"
+msgid "Linear"
+msgstr "Lineal"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Quint"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Quart"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Quad"
+
+msgctxt "Transition Type"
+msgid "Expo"
+msgstr "Exponencial"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Elàstic"
+
+msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "Cúbic"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Circular"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Rebot"
+
+msgctxt "Transition Type"
+msgid "Back"
+msgstr "Enrere"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Spring"
+
 msgid "Change Animation Step"
 msgstr "Canvia el Pas d'Animació"
 
@@ -1326,6 +1358,9 @@ msgstr "Les pistes d'Animació només poden apuntar a nodes AnimationPlayer."
 msgid "Not possible to add a new track without a root"
 msgstr "No es pot afegir una nova pista sense cap arrel"
 
+msgid "Pick a node to animate:"
+msgstr "Tria un node a animar:"
+
 msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr ""
 "La pista no és vàlida per a corbes de Bézier (cap subpropietat adequada)"
@@ -1353,9 +1388,6 @@ msgstr "Mètode no trobat a l'objecte:"
 
 msgid "Animation Move Keys"
 msgstr "Mou les Claus de l'Animació"
-
-msgid "Position"
-msgstr "Posició"
 
 msgid "Rotation"
 msgstr "Rotació"
@@ -1558,9 +1590,6 @@ msgstr "Optimitza l'Animació (no es pot desfer)..."
 msgid "Clean-Up Animation (no undo)..."
 msgstr "Poleix l'Animació (No es pot desfer)..."
 
-msgid "Pick a node to animate:"
-msgstr "Tria un node a animar:"
-
 msgid "Use Bezier Curves"
 msgstr "Fes servir Corbes de Bézier"
 
@@ -1611,54 +1640,6 @@ msgstr "Selecciona la transició i el suavitzat"
 
 msgid "Transition Type:"
 msgstr "Tipus de Transició:"
-
-msgctxt "Transition Type"
-msgid "Linear"
-msgstr "Lineal"
-
-msgctxt "Transition Type"
-msgid "Sine"
-msgstr "Sinus"
-
-msgctxt "Transition Type"
-msgid "Quint"
-msgstr "Quint"
-
-msgctxt "Transition Type"
-msgid "Quart"
-msgstr "Quart"
-
-msgctxt "Transition Type"
-msgid "Quad"
-msgstr "Quad"
-
-msgctxt "Transition Type"
-msgid "Expo"
-msgstr "Exponencial"
-
-msgctxt "Transition Type"
-msgid "Elastic"
-msgstr "Elàstic"
-
-msgctxt "Transition Type"
-msgid "Cubic"
-msgstr "Cúbic"
-
-msgctxt "Transition Type"
-msgid "Circ"
-msgstr "Circular"
-
-msgctxt "Transition Type"
-msgid "Bounce"
-msgstr "Rebot"
-
-msgctxt "Transition Type"
-msgid "Back"
-msgstr "Enrere"
-
-msgctxt "Transition Type"
-msgid "Spring"
-msgstr "Spring"
 
 msgid "Ease Type:"
 msgstr "Tipus d'acceleració:"
@@ -1765,23 +1746,29 @@ msgstr "Canviar Desplaçament de Fi del Clip de Pista d'Àudio"
 msgid "Path:"
 msgstr "Camí:"
 
+msgid "Errors"
+msgstr "Errors"
+
 msgid "License"
 msgstr "Llicència"
+
+msgid "Loading..."
+msgstr "S’està carregant…"
+
+msgid "Download"
+msgstr "Baixa"
+
+msgid "Downloading..."
+msgstr "Descarregant..."
+
+msgid "Install..."
+msgstr "Instal·lar..."
 
 msgid "Version:"
 msgstr "Versió:"
 
-msgid "Contents:"
-msgstr "Continguts:"
-
-msgid "View Files"
-msgstr "Visualitza Fitxers"
-
-msgid "Description:"
-msgstr "Descripció:"
-
-msgid "Download"
-msgstr "Baixa"
+msgid "Description"
+msgstr "Descripció"
 
 msgid "Connection error, please try again."
 msgstr "S'ha produït un error en la connexió. Torneu-ho a provar."
@@ -1834,9 +1821,6 @@ msgstr "Error en la baixada de l'Actiu:"
 msgid "Downloading (%s / %s)..."
 msgstr "Descarregant (%s / %s)..."
 
-msgid "Downloading..."
-msgstr "Descarregant..."
-
 msgid "Resolving..."
 msgstr "s'està resolent..."
 
@@ -1852,47 +1836,17 @@ msgstr "Error en la sol·licitud"
 msgid "Idle"
 msgstr "Inactiu"
 
-msgid "Install..."
-msgstr "Instal·lar..."
-
 msgid "Retry"
 msgstr "Torneu a provar"
 
 msgid "Download Error"
 msgstr "Error en la Baixada"
 
-msgid "Recently Updated"
-msgstr "Actualitzat Recentment"
-
-msgid "Least Recently Updated"
-msgstr "Actualitzacions menys recents"
-
-msgid "Name (A-Z)"
-msgstr "Nom (A-Z)"
-
-msgid "Name (Z-A)"
-msgstr "Nom (Z-A)"
-
-msgid "License (A-Z)"
-msgstr "Llicència (A-Z)"
-
-msgid "License (Z-A)"
-msgstr "Llicència (Z-A)"
-
-msgid "Community"
-msgstr "Comunitat"
-
-msgid "Testing"
-msgstr "Provant"
-
-msgid "Loading..."
-msgstr "S’està carregant…"
-
 msgid "All"
 msgstr "Tot"
 
-msgid "Install"
-msgstr "Instal·la"
+msgid "No results for \"%s\"."
+msgstr "No hi ha cap resultat per a «%s»."
 
 msgid "Import..."
 msgstr "Importa…"
@@ -1906,11 +1860,8 @@ msgstr "Ordena:"
 msgid "Category:"
 msgstr "Categoria:"
 
-msgid "Site:"
-msgstr "Lloc:"
-
-msgid "Support"
-msgstr "Assistència"
+msgid "Licenses"
+msgstr "Llicències"
 
 msgid "Assets ZIP File"
 msgstr "Arxiu ZIP d'Actius"
@@ -1965,12 +1916,6 @@ msgid ""
 "Change the folder where the contents of the asset are going to be installed."
 msgstr "Canvia la carpeta on s'instal·laran els continguts de l'actiu."
 
-msgid "Ignore asset root"
-msgstr "Ignorar arrel del recurs"
-
-msgid "No files conflict with your project"
-msgstr "No hi ha cap fitxer en conflicte amb el vostre projecte"
-
 msgid "Show contents of the asset and conflicting files."
 msgstr "Mostrar continguts del recurs i els arxius en conflicte."
 
@@ -1982,6 +1927,9 @@ msgstr "Previsualització de la instal·lació:"
 
 msgid "Configure Asset Before Installing"
 msgstr "Configurar el recurs abans d'instal·lar-ho"
+
+msgid "Install"
+msgstr "Instal·la"
 
 msgid "Stop"
 msgstr "Atura"
@@ -2347,9 +2295,6 @@ msgstr "CPU"
 msgid "GPU"
 msgstr "GPU"
 
-msgid "Errors"
-msgstr "Errors"
-
 msgid "Main Thread"
 msgstr "Fil principal"
 
@@ -2458,6 +2403,12 @@ msgstr "Format"
 msgid "Usage"
 msgstr "Ús"
 
+msgid "Show in FileSystem"
+msgstr "Mostrar en el Sistema de Fitxers"
+
+msgid "View Owners..."
+msgstr "Mostra Propietaris..."
+
 msgid "Misc"
 msgstr "Miscel·lània"
 
@@ -2547,12 +2498,6 @@ msgstr "Aquesta classe es canviarà o eliminarà en futures versions."
 msgid "Inherits:"
 msgstr "Hereta:"
 
-msgid "Inherited by:"
-msgstr "Heretat per:"
-
-msgid "Description"
-msgstr "Descripció"
-
 msgid "There is currently no description for this class."
 msgstr "Actualment no hi ha cap descripció per a aquesta classe."
 
@@ -2632,9 +2577,6 @@ msgstr "Editor"
 
 msgid "Open"
 msgstr "Obre"
-
-msgid "Show in FileSystem"
-msgstr "Mostrar en el Sistema de Fitxers"
 
 msgid "Open in File Manager"
 msgstr "Obrir en el Gestor de Fitxers"
@@ -2748,9 +2690,6 @@ msgstr "Mou aquest acoblador una pestanya cap a l'esquerra."
 msgid "Dock Position"
 msgstr "Posició de l'Acoblador"
 
-msgid "Favorites:"
-msgstr "Favorits:"
-
 msgid "Favorites"
 msgstr "Preferits"
 
@@ -2811,9 +2750,6 @@ msgstr "Executar"
 msgid "Edit Dependencies..."
 msgstr "Edita Dependències..."
 
-msgid "View Owners..."
-msgstr "Mostra Propietaris..."
-
 msgid "Add to Favorites"
 msgstr "Afegir a Preferits"
 
@@ -2822,9 +2758,6 @@ msgstr "Eliminar de Preferits"
 
 msgid "Reimport"
 msgstr "ReImportar"
-
-msgid "Show in File Manager"
-msgstr "Mostrar en el Gestor de Fitxers"
 
 msgid "New Folder..."
 msgstr "Nou Directori..."
@@ -2884,6 +2817,9 @@ msgstr "Treu del Grup"
 msgid "Name:"
 msgstr "Nom:"
 
+msgid "Description:"
+msgstr "Descripció:"
+
 msgid "Rename"
 msgstr "Reanomena"
 
@@ -2908,14 +2844,14 @@ msgstr "Importa"
 msgid "Import As:"
 msgstr "Importar com a:"
 
+msgid "Make Sub-Resources Unique"
+msgstr "Crea SubRecurs Únic"
+
 msgid "Failed to load resource."
 msgstr "No s'ha pogut carregar el recurs."
 
 msgid "Property Name Style"
 msgstr "Estil del nom de la propietat"
-
-msgid "Make Sub-Resources Unique"
-msgstr "Crea SubRecurs Únic"
 
 msgid "Inspector"
 msgstr "Inspector"
@@ -3028,17 +2964,14 @@ msgstr "Sub-Recursos"
 msgid "Clear Inheritance"
 msgstr "Elimina l'Herència"
 
-msgid "Open in Editor"
-msgstr "Obre en l'Editor"
-
 msgid "Editable Children"
 msgstr "Fills Editables"
 
+msgid "Open in Editor"
+msgstr "Obre en l'Editor"
+
 msgid "Can't paste root node into the same scene."
 msgstr "No es pot enganxar el node arrel a la mateixa escena."
-
-msgid "None"
-msgstr "Cap"
 
 msgid "Move Up"
 msgstr "Mou Amunt"
@@ -3243,12 +3176,6 @@ msgstr "L'Escena '%s' té dependències no vàlides:"
 msgid "Clear Recent Scenes"
 msgstr "Buida les Escenes Recents"
 
-msgid "Save Layout"
-msgstr "Desar Disseny"
-
-msgid "Delete Layout"
-msgstr "Elimina Disseny"
-
 msgid "Save & Close"
 msgstr "Desar i Tancar"
 
@@ -3369,6 +3296,9 @@ msgstr "Mode Pantalla Completa"
 msgid "Online Documentation"
 msgstr "Documentació en Línia"
 
+msgid "Community"
+msgstr "Comunitat"
+
 msgid "Report a Bug"
 msgstr "Informar d'un Bug"
 
@@ -3383,9 +3313,6 @@ msgstr "Contribueix al Desenvolupament de Godot"
 
 msgid "Open Script Editor"
 msgstr "Editor d'Scripts"
-
-msgid "Open Asset Library"
-msgstr "Exportar Biblioteca de Recursos"
 
 msgid "Open the next Editor"
 msgstr "Obre l'Editor Següent"
@@ -3477,58 +3404,13 @@ msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 "En les exportacions de 32 bits, el PCK incrustat no pot ser superior a 4 GiB."
 
-msgid "Open the folder containing these templates."
-msgstr "Obriu la carpeta que conté aquestes plantilles."
-
-msgid "Uninstall these templates."
-msgstr "Desinstal·lar aquestes plantilles."
-
-msgid "Starting the download..."
-msgstr "S'està iniciant la baixada..."
-
-msgid "Error requesting URL:"
-msgstr "Error en sol·licitar l'URL:"
-
-msgid "Connecting to the mirror..."
-msgstr "Connectant amb el mirall..."
-
-msgid "Can't resolve the requested address."
-msgstr "No es pot resoldre l'adreça sol·licitada."
-
-msgid "Can't connect to the mirror."
-msgstr "No es pot connectar al mirall."
-
-msgid "No response from the mirror."
-msgstr "Cap resposta del mirall."
-
-msgid "Request ended up in a redirect loop."
-msgstr "La sol·licitud ha acabat en un bucle de redirecció."
-
-msgid "Request failed:"
-msgstr "La Sol·licitud ha fallat:"
-
-msgid "Download complete; extracting templates..."
-msgstr "S'ha completat la baixada; s'estan extraient les plantilles..."
-
-msgid ""
-"Templates installation failed.\n"
-"The problematic templates archives can be found at '%s'."
+msgid "Official export templates aren't available for development builds."
 msgstr ""
-"No s'han pogut instal·lar les plantilles.\n"
-"Les plantilles problemàtics es troben a '%s'."
+"Les plantilles oficials d'exportació no estan disponibles per a les versions "
+"de desenvolupament."
 
 msgid "Error getting the list of mirrors."
 msgstr "Error obtenint la llista de miralls."
-
-msgid "Best available mirror"
-msgstr "Millor mirall disponible"
-
-msgid ""
-"No download links found for this version. Direct download is only available "
-"for official releases."
-msgstr ""
-"No s'ha trobat cap enllaç de baixada per a aquesta versió. Les baixades "
-"directes només són disponibles per a versions oficials."
 
 msgid "Extracting Export Templates"
 msgstr "Extraient Plantilles d'Exportació"
@@ -3536,65 +3418,20 @@ msgstr "Extraient Plantilles d'Exportació"
 msgid "Importing:"
 msgstr "Importació:"
 
-msgid "Export templates are missing. Download them or install from a file."
-msgstr ""
-"Les plantilles d'exportació falten. Descarregueu-les o instal·leu-les des "
-"d'un fitxer."
-
-msgid "Official export templates aren't available for development builds."
-msgstr ""
-"Les plantilles oficials d'exportació no estan disponibles per a les versions "
-"de desenvolupament."
-
 msgid "Uncompressing Android Build Sources"
 msgstr "Descomprimint les Fonts de Compilació d'Android"
 
 msgid "Export Template Manager"
 msgstr "Gestor de Plantilles d'Exportació"
 
-msgid "Current Version:"
-msgstr "Versió Actual:"
-
-msgid "Export templates are installed and ready to be used."
-msgstr ""
-"Les plantilles d'exportació estan instal·lades i llestes per a ser "
-"utilitzades."
-
-msgid "Open the folder containing installed templates for the current version."
-msgstr ""
-"Obre la carpeta que conté les plantilles instal·lades per la versió actual."
-
-msgid "Uninstall"
-msgstr "Desinstal·lar"
-
-msgid "Uninstall templates for the current version."
-msgstr "Desinstal·la les plantilles de la versió actual."
-
 msgid "Download from:"
 msgstr "Descarregar des de:"
-
-msgid "Download and Install"
-msgstr "Descarregar i instal·lar"
-
-msgid ""
-"Download and install templates for the current version from the best possible "
-"mirror."
-msgstr ""
-"Descarrega i instal·la plantilles per a la versió actual des del millor "
-"mirall possible."
-
-msgid "Install templates from a local file."
-msgstr "Instal·la plantilles des d'un fitxer local."
 
 msgid "Select Template File"
 msgstr "Seleccioneu un Fitxer de Plantilla"
 
-msgid ""
-"The templates will continue to download.\n"
-"You may experience a short editor freeze when they finish."
-msgstr ""
-"Les plantilles continuaran descarregant-se.\n"
-"Es possible que experimenteu una breu congelació de l'editor quan acabin."
+msgid "Export templates for this platform are missing:"
+msgstr "Manquen les plantilles d'exportació per aquesta plataforma:"
 
 msgid "Runnable"
 msgstr "Executable"
@@ -3638,20 +3475,6 @@ msgstr "Exporta els Recursos seleccionats (dependències incloses)"
 msgid "Export Mode:"
 msgstr "Mode d'Exportació:"
 
-msgid ""
-"Filters to export non-resource files/folders\n"
-"(comma-separated, e.g: *.json, *.txt, docs/*)"
-msgstr ""
-"Filtres per a l'exportació de fitxers/carpetes no-recurs \n"
-"(separats per comes, ex: *.json, *. txt, docs/*)"
-
-msgid ""
-"Filters to exclude files/folders from project\n"
-"(comma-separated, e.g: *.json, *.txt, docs/*)"
-msgstr ""
-"Filtres per excloure fitxers/carpetes del projecte\n"
-"(separats per comes, ex:*.json, *.txt, docs/*)"
-
 msgid "Features"
 msgstr "Característiques"
 
@@ -3667,17 +3490,11 @@ msgstr "Exportar Tot"
 msgid "ZIP File"
 msgstr "Fitxer ZIP"
 
-msgid "Export templates for this platform are missing:"
-msgstr "Manquen les plantilles d'exportació per aquesta plataforma:"
-
 msgid "Manage Export Templates"
 msgstr "Gestor de Plantilles d'Exportació"
 
 msgid "Dependencies For:"
 msgstr "Dependències per a:"
-
-msgid "Dependencies"
-msgstr "Dependències"
 
 msgid "Dependencies:"
 msgstr "Dependències:"
@@ -3724,9 +3541,6 @@ msgstr "No es pot eliminar:"
 
 msgid "Files to be deleted:"
 msgstr "Arxius a eliminar:"
-
-msgid "Dependencies of files to be deleted:"
-msgstr "Dependències dels fitxers a eliminar:"
 
 msgid "Fix Dependencies"
 msgstr "Arregla Dependències"
@@ -3839,9 +3653,6 @@ msgstr "Canviar el Tipus de \"%s\""
 msgid "Change"
 msgstr "Modifica"
 
-msgid "No results for \"%s\"."
-msgstr "No hi ha cap resultat per a «%s»."
-
 msgid "Script path: %s"
 msgstr "Ruta de l'script: %s"
 
@@ -3850,6 +3661,9 @@ msgstr "El script s'executarà a l'editor."
 
 msgid "The selected class can't be instantiated."
 msgstr "La classe seleccionada no pot ser instanciada."
+
+msgid "Favorites:"
+msgstr "Favorits:"
 
 msgid "Recent:"
 msgstr "Recents:"
@@ -3992,9 +3806,6 @@ msgstr "Tots els Components"
 
 msgid "Components"
 msgstr "Components"
-
-msgid "Licenses"
-msgstr "Llicències"
 
 msgid "Expand Bottom Panel"
 msgstr "Desplega el Tauler Inferior"
@@ -4253,9 +4064,6 @@ msgstr "Importa el projecte"
 
 msgid "Scan"
 msgstr "Explora"
-
-msgid "Asset Library"
-msgstr "Biblioteca d'Actius"
 
 msgid "Select a Folder to Scan"
 msgstr "Selecciona un Directori per Explorar"
@@ -4642,21 +4450,12 @@ msgstr "Eix Z"
 msgid "UV Channel Debug"
 msgstr "Depuració del canal UV"
 
-msgid "Remove item %d?"
-msgstr "Elimina l'element %d?"
-
 msgid ""
 "Update from existing scene?:\n"
 "%s"
 msgstr ""
 "Actualitzar des de l'Escena existent?:\n"
 "%s"
-
-msgid "Add Item"
-msgstr "Afegeix un Element"
-
-msgid "Remove Selected Item"
-msgstr "Elimina l'Element Seleccionat"
 
 msgid "Update from Scene"
 msgstr "Actualitza des de l'Escena"
@@ -4724,12 +4523,6 @@ msgstr "Omple"
 msgid "Transform Aborted."
 msgstr "S'ha interromput la Transformació ."
 
-msgid "Orthogonal"
-msgstr "Ortogonal"
-
-msgid "Perspective"
-msgstr "Perspectiva"
-
 msgid "X-Axis Transform."
 msgstr "Transformació de l'Eix X."
 
@@ -4747,6 +4540,9 @@ msgstr "l'Edició de Claus està inhabilitada (no s'ha inserit cap Clau)."
 
 msgid "Animation Key Inserted."
 msgstr "S'ha insertit una Clau d'Animació."
+
+msgid "Rotating %s degrees."
+msgstr "Rotació de %s graus."
 
 msgid "Top View."
 msgstr "Vista superior."
@@ -4775,14 +4571,35 @@ msgstr "Alinea Rotació amb la Vista"
 msgid "Rotate"
 msgstr "Rotar"
 
-msgid "Scaling:"
-msgstr "Escalat:"
+msgid "Freelook Left"
+msgstr "Vista Lliure Esquerra"
 
-msgid "Rotating %s degrees."
-msgstr "Rotació de %s graus."
+msgid "Freelook Right"
+msgstr "Vista Lliure Dreta"
+
+msgid "Freelook Forward"
+msgstr "Vista Lliure Endavant"
+
+msgid "Freelook Backwards"
+msgstr "Vista Lliure Enrere"
+
+msgid "Freelook Up"
+msgstr "Vista Lliura Amunt"
+
+msgid "Freelook Down"
+msgstr "Vista Lliure Avall"
+
+msgid "Freelook Speed Modifier"
+msgstr "Modificador de la Velocitat de la Vista Lliure"
 
 msgid "View"
 msgstr "Vista"
+
+msgid "Perspective"
+msgstr "Perspectiva"
+
+msgid "Orthogonal"
+msgstr "Ortogonal"
 
 msgid "Auto Orthogonal Enabled"
 msgstr "Auto Ortogonal Activat"
@@ -4822,27 +4639,6 @@ msgstr "Receptor d'Àudio"
 
 msgid "Cinematic Preview"
 msgstr "Previsualització Cinemàtica"
-
-msgid "Freelook Left"
-msgstr "Vista Lliure Esquerra"
-
-msgid "Freelook Right"
-msgstr "Vista Lliure Dreta"
-
-msgid "Freelook Forward"
-msgstr "Vista Lliure Endavant"
-
-msgid "Freelook Backwards"
-msgstr "Vista Lliure Enrere"
-
-msgid "Freelook Up"
-msgstr "Vista Lliura Amunt"
-
-msgid "Freelook Down"
-msgstr "Vista Lliure Avall"
-
-msgid "Freelook Speed Modifier"
-msgstr "Modificador de la Velocitat de la Vista Lliure"
 
 msgid "View Rotation Locked"
 msgstr "Rotació de la Vista Bloquejada"
@@ -5116,6 +4912,9 @@ msgstr "Eliminar guia horitzontal"
 msgid "Create Horizontal and Vertical Guides"
 msgstr "Crea guies horitzontal i vertical"
 
+msgid "Scaling:"
+msgstr "Escalat:"
+
 msgid "Paste Pose"
 msgstr "Enganxa Positura"
 
@@ -5134,14 +4933,8 @@ msgstr "Zoom a 1600%"
 msgid "Pan Mode"
 msgstr "Mode d'Escombratge lateral"
 
-msgid "Toggle smart snapping."
-msgstr "Commutar Ajustament Intel·ligent."
-
 msgid "Use Smart Snap"
 msgstr "Utilitzar Ajustament Intel·ligent"
-
-msgid "Toggle grid snapping."
-msgstr "Commutar Ajustament a la Quadrícula."
 
 msgid "Use Grid Snap"
 msgstr "Utilitzar Ajustament a la Quadrícula"
@@ -5796,6 +5589,21 @@ msgstr "Script integrat:"
 msgid "Attach Node Script"
 msgstr "Adjunta un Script de Node"
 
+msgid "Line"
+msgstr "Línia"
+
+msgid "Convert Case"
+msgstr "Converteix Majúscules"
+
+msgid "Syntax Highlighter"
+msgstr "Ressaltador de sintaxi"
+
+msgid "Go To"
+msgstr "Anar a"
+
+msgid "Bookmarks"
+msgstr "Marcadors"
+
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "No es pot obrir '%s'. Comproveu si el fitxer s'ha mogut o eliminat."
 
@@ -5844,9 +5652,6 @@ msgstr "Obrir..."
 msgid "Save All"
 msgstr "Desa-ho Tot"
 
-msgid "Copy Script Path"
-msgstr "Copia el camí de l'Script"
-
 msgid "History Previous"
 msgstr "Anterior en l'Historial"
 
@@ -5892,9 +5697,6 @@ msgstr "Minúscula"
 msgid "Capitalize"
 msgstr "Converteix a Majúscules"
 
-msgid "Standard"
-msgstr "Estàndard"
-
 msgid "Connections to method:"
 msgstr "Connexions al mètode:"
 
@@ -5912,24 +5714,6 @@ msgstr ""
 
 msgid "Pick Color"
 msgstr "Tria un Color"
-
-msgid "Go to Function"
-msgstr "Vés a la Funció"
-
-msgid "Line"
-msgstr "Línia"
-
-msgid "Convert Case"
-msgstr "Converteix Majúscules"
-
-msgid "Syntax Highlighter"
-msgstr "Ressaltador de sintaxi"
-
-msgid "Bookmarks"
-msgstr "Marcadors"
-
-msgid "Go To"
-msgstr "Anar a"
 
 msgid "Delete Line"
 msgstr "Esborra la Línia"
@@ -5999,6 +5783,12 @@ msgstr "Anar al Punt d'Interrupció següent"
 
 msgid "Go to Previous Breakpoint"
 msgstr "Anar al Punt d'Interrupció anterior"
+
+msgid "Go to Function"
+msgstr "Vés a la Funció"
+
+msgid "Standard"
+msgstr "Estàndard"
 
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
@@ -6091,9 +5881,6 @@ msgstr "%s no és un camí vàlid. No a la ruta del recurs (res://)."
 msgid "Add Autoload"
 msgstr "Afegeix Autocàrrega"
 
-msgid "Node Name:"
-msgstr "Nom del node:"
-
 msgid "Global Variable"
 msgstr "Variable Global"
 
@@ -6148,26 +5935,11 @@ msgstr "Fonts SIL Graphite"
 msgid "Multi-channel Signed Distance Field Font Rendering"
 msgstr "Renderització de font amb camp de distància signada multi-canal"
 
-msgid "3D Nodes as well as RenderingServer access to 3D features."
-msgstr "Nodes 3D així com accés del RenderingServer a les característiques 3D."
-
-msgid "Navigation Server and capabilities for 2D."
-msgstr "Servidor de Navegació i funcionalitats per a 2D."
-
-msgid "Navigation Server and capabilities for 3D."
-msgstr "Servidor de Navegació i funcionalitats per a 3D."
-
 msgid "XR (AR and VR)."
 msgstr "XR (RA i RV)."
 
 msgid "OpenXR standard implementation (requires XR to be enabled)."
 msgstr "Implementació de l'estàndard OpenXR (cal tenir XR activat)."
-
-msgid "Wayland display (Linux only)."
-msgstr "Visualització Wayland (Linux)."
-
-msgid "X11 display (Linux only)."
-msgstr "Visualització X11 (Linux)."
 
 msgid "Forward+ renderer for advanced 3D graphics."
 msgstr "Renderització Forward+ per a gràfics 3D avançats."
@@ -6175,14 +5947,8 @@ msgstr "Renderització Forward+ per a gràfics 3D avançats."
 msgid "Mobile renderer for less advanced 3D graphics."
 msgstr "Renderització Mòbil per a gràfics menys avançats."
 
-msgid "Physics Server and capabilities for 2D."
-msgstr "Servidor de Física i funcionalitats per a 2D."
-
 msgid "Godot Physics backend (2D)."
 msgstr "Motor intern de física de Godot (2D)."
-
-msgid "Physics Server and capabilities for 3D."
-msgstr "Servidor de Física i funcionalitats per a 3D."
 
 msgid "Godot Physics backend (3D)."
 msgstr "Motor intern de física de Godot (3D)."
@@ -6225,15 +5991,6 @@ msgid ""
 msgstr ""
 "Suport per a la tecnologia de fonts intel·ligents SIL Graphite (només "
 "suportat pel servidor de text avançat)."
-
-msgid ""
-"Multi-channel signed distance field font rendering support using msdfgen "
-"library (pre-rendered MSDF fonts can be used even if this option disabled)."
-msgstr ""
-"Suport per a la renderització de fonts amb camp de distància signada multi-"
-"canal utilitzant la biblioteca msdfgen (les fonts MSDF prèviament "
-"renderitzades es poden utilitzar encara que aquesta opció estigui "
-"desactivada)."
 
 msgid "General Features:"
 msgstr "Característiques Generals:"
@@ -6342,9 +6099,6 @@ msgstr "Permet veure i editar escenes 3D."
 msgid "Allows to edit scripts using the integrated script editor."
 msgstr "Permet editar scripts utilitzant l'editor de scripts integrat."
 
-msgid "Provides built-in access to the Asset Library."
-msgstr "Proporciona accés integrat a la Biblioteca de Recursos."
-
 msgid "Allows editing the node hierarchy in the Scene dock."
 msgstr "Permet editar la jerarquia de nodes en el panell d'Escena."
 
@@ -6442,6 +6196,12 @@ msgstr "Importar Perfil(s)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Administra els Perfils de Característiques de l'Editor"
 
+msgid "Save Layout"
+msgstr "Desar Disseny"
+
+msgid "Delete Layout"
+msgstr "Elimina Disseny"
+
 msgid "Editor Settings"
 msgstr "Configuració de l'Editor"
 
@@ -6462,6 +6222,9 @@ msgstr "Tots els Dispositius"
 
 msgid "Device"
 msgstr "Dispositiu"
+
+msgid "Reload"
+msgstr "Torna a Carregar"
 
 msgid "Device:"
 msgstr "Dispositiu:"
@@ -6493,11 +6256,115 @@ msgstr "Connectors"
 msgid "N/A"
 msgstr "No Disponible"
 
-msgid "Reload"
-msgstr "Torna a Carregar"
-
 msgid "Resave"
 msgstr "Torna a Desar"
+
+msgid "Changed Locale Filter Mode"
+msgstr "Modifica el Mode del Filtre de Localització"
+
+msgid "Show All Locales"
+msgstr "Mostrar tots els idiomes"
+
+msgid "Show Selected Locales Only"
+msgstr "Mostrar només els idiomes seleccionats"
+
+msgid "Change Resource Remap Language"
+msgstr "Canvia la Llengua del Remapatge de Recursos"
+
+msgid "Remove Resource Remap"
+msgstr "Elimina el Remapatge de Recursos"
+
+msgid "Remove Resource Remap Option"
+msgstr "Elimina l'Opció de Remapatge de Recursos"
+
+msgid "Translations"
+msgstr "Traduccions"
+
+msgid "Translations:"
+msgstr "Traduccions:"
+
+msgid "Remaps"
+msgstr "Remapatges"
+
+msgid "Resources:"
+msgstr "Recursos:"
+
+msgid "Remaps by Locale:"
+msgstr "Remapatges per Llengua:"
+
+msgid "File:"
+msgstr "Fitxer:"
+
+msgid "Detect new changes"
+msgstr "Detectar nous canvis"
+
+msgid "Modified"
+msgstr "Modificat"
+
+msgid "GridMap Delete Selection"
+msgstr "Elimina la Selecció del GridMap"
+
+msgid "Previous Floor"
+msgstr "Planta Anterior"
+
+msgid "Next Floor"
+msgstr "Planta Següent"
+
+msgid "Edit X Axis"
+msgstr "Edita l'Eix X"
+
+msgid "Edit Y Axis"
+msgstr "Edita l'Eix Y"
+
+msgid "Edit Z Axis"
+msgstr "Edita l'Eix Z"
+
+msgid "GridMap Settings"
+msgstr "Configuració del GridMap"
+
+msgid "Pick Distance:"
+msgstr "Trieu la distància:"
+
+msgid "Cursor Rotate X"
+msgstr "Gira X en el Cursor"
+
+msgid "Cursor Rotate Y"
+msgstr "Gira Y en el Cursor"
+
+msgid "Cursor Rotate Z"
+msgstr "Gira Z en el Cursor"
+
+msgid "Class name can't be a reserved keyword"
+msgstr "El nom de la classe no pot ser una paraula clau reservada"
+
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr "Manquen bytes per a descodificar els bytes, o el format no és vàlid."
+
+msgid "%s/s"
+msgstr "%s/s"
+
+msgid "Node"
+msgstr "Node"
+
+msgid "Incoming RPC"
+msgstr "RPC Entrant"
+
+msgid "Outgoing RPC"
+msgstr "RPC Sortint"
+
+msgid "Config"
+msgstr "Configuració"
+
+msgid "Create Navigation Polygon"
+msgstr "Crea un Polígon de Navegació"
+
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+"Cal crear o establir un recurs de tipus NavigationMesh per al correcte "
+"funcionament d'aquest node."
+
+msgid "Boolean"
+msgstr "Booleà"
 
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
 msgstr "Constant E (2,718282). Representa la base del logaritme natural."
@@ -6522,9 +6389,6 @@ msgstr "Constant Sqrt2 (1,414214). Arrel quadrada de 2."
 
 msgid "Add Input"
 msgstr "Afegeix una Entrada"
-
-msgid "Boolean"
-msgstr "Booleà"
 
 msgid "Vertex"
 msgstr "Vèrtex"
@@ -6813,112 +6677,8 @@ msgstr ""
 msgid "Visual Shader Mode Changed"
 msgstr "El mode Visual Shader ha canviat"
 
-msgid "Changed Locale Filter Mode"
-msgstr "Modifica el Mode del Filtre de Localització"
-
-msgid "Show All Locales"
-msgstr "Mostrar tots els idiomes"
-
-msgid "Show Selected Locales Only"
-msgstr "Mostrar només els idiomes seleccionats"
-
-msgid "Change Resource Remap Language"
-msgstr "Canvia la Llengua del Remapatge de Recursos"
-
-msgid "Remove Resource Remap"
-msgstr "Elimina el Remapatge de Recursos"
-
-msgid "Remove Resource Remap Option"
-msgstr "Elimina l'Opció de Remapatge de Recursos"
-
-msgid "Translations"
-msgstr "Traduccions"
-
-msgid "Translations:"
-msgstr "Traduccions:"
-
-msgid "Remaps"
-msgstr "Remapatges"
-
-msgid "Resources:"
-msgstr "Recursos:"
-
-msgid "Remaps by Locale:"
-msgstr "Remapatges per Llengua:"
-
-msgid "File:"
-msgstr "Fitxer:"
-
-msgid "Detect new changes"
-msgstr "Detectar nous canvis"
-
-msgid "Modified"
-msgstr "Modificat"
-
-msgid "GridMap Delete Selection"
-msgstr "Elimina la Selecció del GridMap"
-
-msgid "Previous Floor"
-msgstr "Planta Anterior"
-
-msgid "Next Floor"
-msgstr "Planta Següent"
-
-msgid "Edit X Axis"
-msgstr "Edita l'Eix X"
-
-msgid "Edit Y Axis"
-msgstr "Edita l'Eix Y"
-
-msgid "Edit Z Axis"
-msgstr "Edita l'Eix Z"
-
-msgid "GridMap Settings"
-msgstr "Configuració del GridMap"
-
-msgid "Pick Distance:"
-msgstr "Trieu la distància:"
-
-msgid "Cursor Rotate X"
-msgstr "Gira X en el Cursor"
-
-msgid "Cursor Rotate Y"
-msgstr "Gira Y en el Cursor"
-
-msgid "Cursor Rotate Z"
-msgstr "Gira Z en el Cursor"
-
-msgid "Class name can't be a reserved keyword"
-msgstr "El nom de la classe no pot ser una paraula clau reservada"
-
-msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Manquen bytes per a descodificar els bytes, o el format no és vàlid."
-
-msgid "%s/s"
-msgstr "%s/s"
-
-msgid "Node"
-msgstr "Node"
-
-msgid "Incoming RPC"
-msgstr "RPC Entrant"
-
-msgid "Outgoing RPC"
-msgstr "RPC Sortint"
-
-msgid "Config"
-msgstr "Configuració"
-
-msgid "Create Navigation Polygon"
-msgstr "Crea un Polígon de Navegació"
-
-msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr ""
-"Cal crear o establir un recurs de tipus NavigationMesh per al correcte "
-"funcionament d'aquest node."
-
-msgid "Invalid public key for APK expansion."
-msgstr "Clau pública no vàlida per a l'expansió de l'APK."
+msgid "Invalid source for shader."
+msgstr "Font no vàlida pel Shader."
 
 msgid "Invalid package name:"
 msgstr "El nom del paquet no és vàlid:"
@@ -6931,9 +6691,6 @@ msgstr "Desinstal·lant..."
 
 msgid "Could not install to device: %s"
 msgstr "No s'ha pogut instal·lar al dispositiu: %s"
-
-msgid "Could not write expansion package file!"
-msgstr "No s'ha pogut escriure el fitxer del paquet d'expansió!"
 
 msgid "Run in Browser"
 msgstr "Executa-ho en el Navegador"
@@ -6995,14 +6752,8 @@ msgstr "S'estàn traçant les Malles"
 msgid "Finishing Plot"
 msgstr "S'està finalitzant el Traçat"
 
-msgid "Animation not found: '%s'"
-msgstr "Animació no trobada: '%s'"
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Canviar entre valors hexadecimals i de codi."
-
-msgid "Invalid source for shader."
-msgstr "Font no vàlida pel Shader."
 
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
