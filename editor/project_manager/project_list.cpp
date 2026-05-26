@@ -1003,6 +1003,8 @@ void ProjectList::find_projects_multiple(const PackedStringArray &p_paths) {
 void ProjectList::load_project_list() {
 	_config.load(_config_path);
 	Vector<String> sections = _config.get_sections();
+	Vector<String> old_paths;
+	Vector<String> new_paths;
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	for (const String &path : sections) {
@@ -1020,14 +1022,22 @@ void ProjectList::load_project_list() {
 		String n = da->get_next();
 		while (!n.is_empty()) {
 			if (da->current_is_dir() && n.to_lower() == basename.to_lower() && n != basename) {
-				_config.erase_section(path);
-				_config.set_value(parent.path_join(n), "favorite", false);
-				_config.save(_config_path);
-				break;
+				old_paths.append(path);
+				new_paths.append(parent.path_join(n));
 			}
 			n = da->get_next();
 		}
 		da->list_dir_end();
+	}
+
+	for (int i = 0; i < old_paths.size(); i++) {
+		bool favorite = _config.get_value(old_paths[i], "favorite", false);
+		_config.erase_section(old_paths[i]);
+		_config.set_value(new_paths[i], "favorite", favorite);
+	}
+
+	if (!old_paths.is_empty()) {
+		_config.save(_config_path);
 	}
 
 	for (const String &path : sections) {
