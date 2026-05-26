@@ -30,15 +30,15 @@
 
 #include "pck_lzma.h"
 
-#include <string.h>
-
 #include "core/math/math_funcs.h"
 #include "core/templates/local_vector.h"
 
+#include <string.h>
+
 extern "C" {
-#include "thirdparty/lzma2601/C/7zAlloc.h"
-#include "thirdparty/lzma2601/C/Lzma2Dec.h"
-#include "thirdparty/lzma2601/C/Lzma2Enc.h"
+#include <thirdparty/lzma2601/C/7zAlloc.h>
+#include <thirdparty/lzma2601/C/Lzma2Dec.h>
+#include <thirdparty/lzma2601/C/Lzma2Enc.h>
 }
 
 namespace {
