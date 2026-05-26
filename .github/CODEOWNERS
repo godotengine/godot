@@ -114,7 +114,6 @@
 /modules/hdr/                                 @godotengine/asset-pipeline
 /modules/jpg/                                 @godotengine/asset-pipeline
 /modules/ktx/                                 @godotengine/asset-pipeline
-/modules/squish/                              @godotengine/asset-pipeline
 /modules/svg/                                 @godotengine/asset-pipeline
 /modules/tga/                                 @godotengine/asset-pipeline
 /modules/tinyexr/                             @godotengine/asset-pipeline
@@ -150,6 +149,8 @@
 /modules/vhacd/                               @godotengine/rendering
 /modules/visual_shader/                       @godotengine/shaders
 /modules/visual_shader/doc_classes/           @godotengine/shaders @godotengine/documentation
+/modules/visual_shader/editor/                @godotengine/shaders @godotengine/editor
+/modules/visual_shader/tests/                 @godotengine/shaders @godotengine/tests
 /modules/xatlas_unwrap/                       @godotengine/rendering
 
 ## Scripting
@@ -161,7 +162,7 @@
 /modules/jsonrpc/tests/                       @godotengine/gdscript @godotengine/network @godotengine/tests
 /modules/mono/                                @godotengine/dotnet
 /modules/mono/doc_classes/                    @godotengine/dotnet @godotengine/documentation
-/modules/mono/editor/                         @godotengine/dotnet @godotengine/script-editor
+/modules/mono/editor/                         @godotengine/dotnet @godotengine/editor
 
 ## Text
 /modules/freetype/                            @godotengine/buildsystem
@@ -190,6 +191,7 @@
 /modules/gridmap/                             @godotengine/3d-nodes
 /modules/gridmap/doc_classes/                 @godotengine/3d-nodes @godotengine/documentation
 /modules/gridmap/editor/                      @godotengine/3d-nodes @godotengine/editor
+/modules/gridmap/tests/                       @godotengine/3d-nodes @godotengine/tests
 /modules/navigation_2d/                       @godotengine/navigation
 /modules/navigation_2d/editor/                @godotengine/navigation @godotengine/editor
 /modules/navigation_3d/                       @godotengine/navigation
