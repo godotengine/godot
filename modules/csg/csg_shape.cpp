@@ -591,7 +591,6 @@ CSGBrush *CSGShape3D::_get_combined_brush() {
 }
 
 CSGBrush *CSGShape3D::_get_brush() {
-	int child_count = get_child_count();
 	if (!dirty) {
 		return brush;
 	}
@@ -600,7 +599,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	}
 	brush = nullptr;
 	CSGBrush *n = _build_brush();
-	if (child_count() < 1) {
+	if (get_child_count() < 1) {
 		AABB aabb;
 		if (n && !n->faces.is_empty()) {
 			aabb.position = n->faces[0].vertices[0];
