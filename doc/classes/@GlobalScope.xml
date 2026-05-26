@@ -1184,6 +1184,19 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="get_seed">
+			<return type="int" />
+			<description>
+				Returns the current seed of the global random number generator.
+				[codeblock]
+				seed(0)
+				print(get_seed()) # Prints 0
+				
+				seed(1)
+				print(get_seed()) # Prints 1
+				[/codeblock]
+			</description>
+		</method>
 		<method name="sign">
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
