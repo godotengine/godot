@@ -20,7 +20,7 @@
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Overridable method. Should return the current value of a playback parameter by [param name] (see [method AudioStream._get_parameter_list]).
+				Returns the current value of a playback parameter by [param name] (see [method AudioStream._get_parameter_list]).
 			</description>
 		</method>
 		<method name="_get_playback_position" qualifiers="virtual required const">
@@ -32,7 +32,7 @@
 		<method name="_is_playing" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
-				Overridable method. Should return [code]true[/code] if the playback is active and playing its stream.
+				Overridable method. Should return [code]true[/code] if this playback is active and playing its audio stream.
 			</description>
 		</method>
 		<method name="_mix" qualifiers="virtual required">
@@ -57,7 +57,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Set the current value of a playback parameter by [param name] (see [method AudioStream._get_parameter_list]).
+				Sets the current value of a playback parameter by [param name] (see [method AudioStream._get_parameter_list]).
 			</description>
 		</method>
 		<method name="_start" qualifiers="virtual required">
