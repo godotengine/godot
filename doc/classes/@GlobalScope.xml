@@ -476,7 +476,7 @@
 		<method name="get_seed">
 			<return type="int" />
 			<description>
-				Returns the current seed of the global random number generator.
+				Returns the current seed of the global random number generator. See also [method seed].
 			</description>
 		</method>
 		<method name="hash">
