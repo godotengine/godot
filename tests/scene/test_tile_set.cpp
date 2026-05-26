@@ -36,7 +36,7 @@ TEST_FORCE_LINK(test_tile_set)
 
 namespace TestTileSet {
 
-TEST_CASE("[TileSet] get_neighbor_cell on a square shaped tile") {
+TEST_CASE("[TileSet] get_neighbor_cell: square shape") {
 	Ref<TileSet> tile_set = memnew(TileSet);
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_SQUARE);
 
@@ -52,631 +52,508 @@ TEST_CASE("[TileSet] get_neighbor_cell on a square shaped tile") {
 	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_CORNER) == Vector2i(-1, -1));
 }
 
-TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stacked layout") {
+TEST_CASE("[TileSet] get_neighbor_cell: stacked layout, horizontal offset axis") {
 	Ref<TileSet> tile_set = memnew(TileSet);
 	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STACKED);
 	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
 
-	Vector2i center_cell(0, 0);
-
-	// First if
+	// CELL_NEIGHBOR_RIGHT_SIDE (hex) / CELL_NEIGHBOR_RIGHT_CORNER (isometric) — no offset effect
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 0));
-
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 0));
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
 
-	// Second if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-
-	center_cell = Vector2i(0, 1); // UGLY
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 2));
-
-	// Third if
-	center_cell = Vector2i(0, 0);
+	// CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE — shifts x+1 on odd rows
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 2));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1)); // even row
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 1), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 2)); // odd row
 
-	// Fourth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-
-	center_cell = Vector2i(0, 1);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 2));
-
-	// Fifth if
-	center_cell = Vector2i(0, 0);
+	// CELL_NEIGHBOR_BOTTOM_CORNER (isometric only) — no offset effect
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 2));
+
+	// CELL_NEIGHBOR_BOTTOM_LEFT_SIDE — shifts x-1 on even rows
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1)); // even row
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 1), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 2));  // odd row
+
+	// CELL_NEIGHBOR_LEFT_SIDE (hex) / CELL_NEIGHBOR_LEFT_CORNER (isometric) — no offset effect
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 0));
 
-	// Sixth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, -1));
-	center_cell = Vector2i(0, 1);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, 0));
+	// CELL_NEIGHBOR_TOP_LEFT_SIDE — shifts x-1 on even rows
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, -1)); // even row
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 1), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, 0));   // odd row
 
-	// Seventh if
+	// CELL_NEIGHBOR_TOP_CORNER (isometric only) — no offset effect
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -2));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -2));
 
-	// Eighth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
-	center_cell = Vector2i(0, 1);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
+	// CELL_NEIGHBOR_TOP_RIGHT_SIDE — shifts x+1 on odd rows
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1)); // even row
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 1), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));  // odd row
 
-	// Error cases
+	// Invalid neighbor for this shape
 	ERR_PRINT_OFF;
-	center_cell = Vector2i(0, 0);
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
-	ERR_PRINT_ON;
-
-	// ==============================================================================================
-	// ==============================================================================================
-	// ==============================================================================================
-
-	// TILE_OFFSET_AXIS_VERTICAL
-	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
-
-	// First if
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
-
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(0, 1));
-
-	// Second if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-
-	center_cell = Vector2i(1, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(2, 1));
-
-	// Third if
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
-
-	// Fourth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
-
-	center_cell = Vector2i(1, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(3, 0));
-
-	// Fifth if
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
-
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(0, -1));
-
-	// Sixth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, -1));
-
-	center_cell = Vector2i(1, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, 0));
-
-	// Seventh if
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 0));
-
-	// Eighth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
-
-	center_cell = Vector2i(1, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
-
-	// Error cases
-	ERR_PRINT_OFF;
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
 	ERR_PRINT_ON;
 }
 
-TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stacked offset layout") {
+TEST_CASE("[TileSet] get_neighbor_cell: stacked layout, vertical offset axis") {
+	Ref<TileSet> tile_set = memnew(TileSet);
+	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STACKED);
+	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+
+	// CELL_NEIGHBOR_BOTTOM_SIDE (hex) / CELL_NEIGHBOR_BOTTOM_CORNER (isometric) — no offset effect
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(0, 1));
+
+	// CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE — shifts y+1 on odd columns
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0)); // even column
+	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(2, 1)); // odd column
+
+	// CELL_NEIGHBOR_RIGHT_CORNER (isometric only) — no offset effect
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
+
+	// CELL_NEIGHBOR_TOP_RIGHT_SIDE — shifts y-1 on even columns; note: shares branch with RIGHT_CORNER for isometric
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(3, 0));
+
+	// CELL_NEIGHBOR_TOP_SIDE (hex) / CELL_NEIGHBOR_TOP_CORNER (isometric) — no offset effect
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(0, -1));
+
+	// CELL_NEIGHBOR_TOP_LEFT_SIDE — shifts y-1 on even columns
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, -1)); // even column
+	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, 0));   // odd column
+
+	// CELL_NEIGHBOR_LEFT_CORNER (isometric only) — no offset effect
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 0));
+
+	// CELL_NEIGHBOR_BOTTOM_LEFT_SIDE — shifts y+1 on odd columns
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0)); // even column
+	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));  // odd column
+
+	// Invalid neighbor for this shape
+	ERR_PRINT_OFF;
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
+	ERR_PRINT_ON;
+}
+
+TEST_CASE("[TileSet] get_neighbor_cell: stacked offset layout, horizontal offset axis") {
 	Ref<TileSet> tile_set = memnew(TileSet);
 	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STACKED_OFFSET);
 	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
 
-	Vector2i center_cell(0, 0);
-
-	// First if
-	center_cell = Vector2i(0, 0);
+	// CELL_NEIGHBOR_RIGHT_SIDE (hex) / CELL_NEIGHBOR_RIGHT_CORNER (isometric) — no offset effect
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 0));
-
-	center_cell = Vector2i(0, 0);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 0));
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
 
-	// Second if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 1));
-
-	center_cell = Vector2i(0, 1);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 2));
-
-	// Third if
-	center_cell = Vector2i(0, 0);
+	// CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE — shifts x+1 on even rows (inverted vs stacked)
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 2));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 1)); // even row
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 1), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 2)); // odd row
 
-	// Fourth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
-
-	center_cell = Vector2i(0, 1);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 2));
-
-	// Fifth if
-	center_cell = Vector2i(0, 0);
+	// CELL_NEIGHBOR_BOTTOM_CORNER (isometric only) — no offset effect
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 2));
+
+	// CELL_NEIGHBOR_BOTTOM_LEFT_SIDE — shifts x-1 on odd rows (inverted vs stacked)
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));  // even row
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 1), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 2)); // odd row
+
+	// CELL_NEIGHBOR_LEFT_SIDE (hex) / CELL_NEIGHBOR_LEFT_CORNER (isometric) — no offset effect
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 0));
 
-	// Sixth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-	center_cell = Vector2i(0, 1);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
+	// CELL_NEIGHBOR_TOP_LEFT_SIDE — shifts x-1 on odd rows (inverted vs stacked)
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));  // even row
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 1), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0)); // odd row
 
-	// Seventh if
+	// CELL_NEIGHBOR_TOP_CORNER (isometric only) — no offset effect
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -2));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -2));
 
-	// Eighth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-	center_cell = Vector2i(0, 1);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, 0));
+	// CELL_NEIGHBOR_TOP_RIGHT_SIDE — shifts x+1 on even rows (inverted vs stacked)
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1)); // even row
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 1), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, 0));  // odd row
 
-	// Error cases
+	// Invalid neighbor for this shape
 	ERR_PRINT_OFF;
-	center_cell = Vector2i(0, 0);
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
-	ERR_PRINT_ON;
-
-	// ==============================================================================================
-	// ==============================================================================================
-	// ==============================================================================================
-
-	// TILE_OFFSET_AXIS_VERTICAL
-	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
-
-	// First if
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
-
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(0, 1));
-
-	// Second if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 1));
-
-	center_cell = Vector2i(1, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(2, 0));
-
-	// Third if
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
-
-	// Fourth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
-
-	center_cell = Vector2i(1, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(3, 0));
-
-	// Fifth if
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
-
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(0, -1));
-
-	// Sixth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-
-	center_cell = Vector2i(1, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-
-	// Seventh if
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 0));
-
-	// Eighth if
-	center_cell = Vector2i(0, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-
-	center_cell = Vector2i(1, 0);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 0));
-
-	// Error cases
-	ERR_PRINT_OFF;
-	center_cell = Vector2i(0, 0);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
 	ERR_PRINT_ON;
 }
 
-TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stairs layout") {
+TEST_CASE("[TileSet] get_neighbor_cell: stacked offset layout, vertical offset axis") {
 	Ref<TileSet> tile_set = memnew(TileSet);
-
-	Vector2i center_cell(0, 0);
-
-	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_RIGHT);
-	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
-
-	// First if
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 0));
-
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
-
-	// Second if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-
-	// Third if
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 2));
-
-	// Fourth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-
-	// Fifth if
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 0));
-
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
-
-	// Sixth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-
-	// Seventh if
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -2));
-
-	// Eighth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-
-	// ==============================================================================================
-	// ==============================================================================================
-	// ==============================================================================================
-
-	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_DOWN);
+	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STACKED_OFFSET);
 	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
 
-	// First if
+	// CELL_NEIGHBOR_BOTTOM_SIDE (hex) / CELL_NEIGHBOR_BOTTOM_CORNER (isometric) — no offset effect
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(0, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(0, 1));
 
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
-
-	// Second if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-
-	// Third if
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, -1));
-
-	// Fourth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-
-	// Fifth if
+	// CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE — shifts y+1 on even columns (inverted vs stacked)
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(0, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 1)); // even column
+	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(2, 0)); // odd column
 
+	// CELL_NEIGHBOR_RIGHT_CORNER (isometric only) — no offset effect
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
 
-	// Sixth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-
-	// Seventh if
+	// CELL_NEIGHBOR_TOP_RIGHT_SIDE — shifts y-1 on odd columns (inverted vs stacked)
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(3, 0));
 
-	// Eighth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-
-	// ==============================================================================================
-	// ==============================================================================================
-	// ==============================================================================================
-
-	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_DOWN);
-	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
-
-	// First if
+	// CELL_NEIGHBOR_TOP_SIDE (hex) / CELL_NEIGHBOR_TOP_CORNER (isometric) — no offset effect
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(2, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(0, -1));
 
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, -1));
-
-	// Second if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-
-	// Third if
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
-
-	// Fourth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-
-	// Fifth if
+	// CELL_NEIGHBOR_TOP_LEFT_SIDE — shifts y-1 on odd columns (inverted vs stacked)
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-2, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));  // even column
+	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1)); // odd column
 
+	// CELL_NEIGHBOR_LEFT_CORNER (isometric only) — no offset effect
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 0));
 
-	// Sixth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-
-	// Seventh if
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
-
-	// Eighth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-
-	// ==============================================================================================
-	// ==============================================================================================
-	// ==============================================================================================
-
-	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_RIGHT);
-	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
-
-	// First if
+	// CELL_NEIGHBOR_BOTTOM_LEFT_SIDE — shifts y+1 on even columns (inverted vs stacked)
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(-1, 2));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1)); // even column
+	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 0));  // odd column
 
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 2));
-
-	// Second if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-
-	// Third if
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
-
-	// Fourth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-
-	// Fifth if
+	// Invalid neighbor for this shape
+	ERR_PRINT_OFF;
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(1, -2));
-
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -2));
-
-	// Sixth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-
-	// Seventh if
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
-
-	// Eighth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
+	ERR_PRINT_ON;
 }
 
-TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the diamond layout") {
+TEST_CASE("[TileSet] get_neighbor_cell: stairs right layout, horizontal offset axis") {
 	Ref<TileSet> tile_set = memnew(TileSet);
-	Vector2i center_cell(0, 0);
+	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_RIGHT);
+	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
 
+	// No offset effect in stairs layouts — all neighbors are fixed offsets from center
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 0));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 2));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 0));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -2));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
+}
+
+TEST_CASE("[TileSet] get_neighbor_cell: stairs down layout, vertical offset axis") {
+	Ref<TileSet> tile_set = memnew(TileSet);
+	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_DOWN);
+	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(0, 1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, -1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(0, -1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
+}
+
+TEST_CASE("[TileSet] get_neighbor_cell: stairs down layout, horizontal offset axis") {
+	Ref<TileSet> tile_set = memnew(TileSet);
+	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_DOWN);
+	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(2, -1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, -1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-2, 1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
+}
+
+TEST_CASE("[TileSet] get_neighbor_cell: stairs right layout, vertical offset axis") {
+	Ref<TileSet> tile_set = memnew(TileSet);
+	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_RIGHT);
+	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(-1, 2));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 2));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(1, -2));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -2));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
+}
+
+TEST_CASE("[TileSet] get_neighbor_cell: diamond right layout, horizontal offset axis") {
+	Ref<TileSet> tile_set = memnew(TileSet);
 	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_RIGHT);
 	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
 
-	// First if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 1));
 
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
 
-	// Second if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-
-	// Third if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 1));
 
-	// Fourth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
-
-	// Fifth if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, -1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, -1));
 
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
 
-	// Sixth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-
-	// Seventh if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -1));
 
-	// Eighth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
 
-	// Error cases
+	// Invalid neighbor for this shape
 	ERR_PRINT_OFF;
-	center_cell = Vector2i(0, 0);
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
 	ERR_PRINT_ON;
+}
 
-	// ==============================================================================================
-	// ==============================================================================================
-	// ==============================================================================================
-
+TEST_CASE("[TileSet] get_neighbor_cell: diamond down layout, vertical offset axis") {
+	Ref<TileSet> tile_set = memnew(TileSet);
 	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_DOWN);
 	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
 
-	// First if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(1, 1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(1, 1));
 
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
 
-	// Second if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-
-	// Third if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, -1));
 
-	// Fourth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
-
-	// Fifth if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(-1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(-1, -1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(-1, -1));
 
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(-1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
 
-	// Sixth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-
-	// Seventh if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 1));
 
-	// Eighth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
 
-	// Error cases
+	// Invalid neighbor for this shape
 	ERR_PRINT_OFF;
-	center_cell = Vector2i(0, 0);
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
 	ERR_PRINT_ON;
+}
 
-	// ==============================================================================================
-	// ==============================================================================================
-	// ==============================================================================================
-
+TEST_CASE("[TileSet] get_neighbor_cell: diamond down layout, horizontal offset axis") {
+	Ref<TileSet> tile_set = memnew(TileSet);
 	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_DOWN);
 	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
 
-	// First if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, -1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, -1));
 
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
 
-	// Second if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-
-	// Third if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(1, 1));
 
-	// Fourth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
-
-	// Fifth if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 1));
 
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
 
-	// Sixth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-
-	// Seventh if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(-1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(-1, -1));
 
-	// Eighth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
 
-	// Error cases
+	// Invalid neighbor for this shape
 	ERR_PRINT_OFF;
-	center_cell = Vector2i(0, 0);
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
 	ERR_PRINT_ON;
+}
 
-	// ==============================================================================================
-	// ==============================================================================================
-	// ==============================================================================================
-
+TEST_CASE("[TileSet] get_neighbor_cell: diamond right layout, vertical offset axis") {
+	Ref<TileSet> tile_set = memnew(TileSet);
 	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_RIGHT);
 	tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
 
-	// First if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(-1, 1));
 
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(-1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
 
-	// Second if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-
-	// Third if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 1));
 
-	// Fourth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
-
-	// Fifth if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
+
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -1));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(1, -1));
 
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
 
-	// Sixth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-
-	// Seventh if
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, -1));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, -1));
 
-	// Eighth if
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
 
-	// Error cases
+	// Invalid neighbor for this shape
 	ERR_PRINT_OFF;
-	center_cell = Vector2i(0, 0);
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
 	ERR_PRINT_ON;
 }
 
