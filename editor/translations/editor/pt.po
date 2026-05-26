@@ -45,7 +45,7 @@
 # gomakappa <gomaproi@outlook.com>, 2023.
 # 100Nome <100nome.portugal@gmail.com>, 2023, 2024, 2025, 2026.
 # João Victor Alonso de Paula Sperandio <joaovictorapsperandio@gmail.com>, 2024.
-# AegisTTN <tc.dev04@gmail.com>, 2024, 2025.
+# AegisTTN <tc.dev04@gmail.com>, 2024, 2025, 2026.
 # NamelessGO <66227691+NameLessGO@users.noreply.github.com>, 2024.
 # pgbiolchi <pgbiolchi@gmail.com>, 2024.
 # Bruno Vieira <bruno.leo516@hotmail.com>, 2024.
@@ -79,13 +79,14 @@
 # Pedro Mateus <pedropmateus91@gmail.com>, 2025.
 # Diogo Gomes <dgomes@graphnode.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# MRSG <miguelrsgoncalves@miguelrsgoncalves.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-11 23:26+0000\n"
-"Last-Translator: 100Nome <100nome.portugal@gmail.com>\n"
+"PO-Revision-Date: 2026-05-09 13:11+0000\n"
+"Last-Translator: AegisTTN <tc.dev04@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -93,16 +94,139 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 2026.5-dev\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "Falhou"
+
+msgid "Unavailable"
+msgstr "Indisponível"
+
+msgid "Unconfigured"
+msgstr "Desconfigurado"
+
+msgid "Unauthorized"
+msgstr "Não autorizado"
+
+msgid "Parameter out of range"
+msgstr "Parâmetro fora dos limites"
+
+msgid "Out of memory"
+msgstr "Sem memória"
+
+msgid "File not found"
+msgstr "Ficheiro não encontrado"
+
+msgid "File: Bad path"
+msgstr "Ficheiro: Caminho inválido"
+
+msgid "File: Permission denied"
+msgstr "Ficheiro: Permissão negada"
+
+msgid "File already in use"
+msgstr "Ficheiro já em uso"
+
+msgid "Can't open file"
+msgstr "Não foi possível abrir ficheiro"
+
+msgid "Can't write file"
+msgstr "Não foi possível escrever ficheiro"
+
+msgid "Can't read file"
+msgstr "Não foi possível ler o ficheiro"
+
+msgid "File unrecognized"
+msgstr "Ficheiro não reconhecido"
+
+msgid "File corrupt"
+msgstr "Ficheiro corrompido"
+
+msgid "Missing dependencies for file"
+msgstr "Dependências em falta para o ficheiro"
+
+msgid "End of file"
+msgstr "Fim do ficheiro"
+
+msgid "Can't open"
+msgstr "Não foi possível abrir"
+
+msgid "Can't create"
+msgstr "Não foi possível criar"
+
+msgid "Query failed"
+msgstr "Falha na consulta"
+
+msgid "Already in use"
+msgstr "Já em uso"
+
 msgid "Locked"
 msgstr "Bloqueado"
 
+msgid "Can't connect"
+msgstr "Não foi possível conectar"
+
+msgid "Connection error"
+msgstr "Erro de conexão"
+
+msgid "Can't acquire resource"
+msgstr "Não foi possível adquirir o recurso"
+
+msgid "Can't fork"
+msgstr "Não foi possível bifurcar"
+
+msgid "Invalid data"
+msgstr "Dados inválido"
+
+msgid "Invalid parameter"
+msgstr "Parâmetro inválido"
+
+msgid "Already exists"
+msgstr "Já existe"
+
+msgid "Does not exist"
+msgstr "Não existe"
+
+msgid "Can't read database"
+msgstr "Não foi possível ler a base de dados"
+
+msgid "Can't write database"
+msgstr "Não foi possível escrever na base de dados"
+
+msgid "Compilation failed"
+msgstr "Compilação falhou"
+
+msgid "Method not found"
+msgstr "Método não encontrado"
+
+msgid "Link failed"
+msgstr "Link falhou"
+
+msgid "Script failed"
+msgstr "Script falhou"
+
+msgid "Invalid declaration"
+msgstr "Declaração inválida"
+
+msgid "Duplicate symbol"
+msgstr "Símbolo duplicado"
+
+msgid "Busy"
+msgstr "Ocupado"
+
+msgid "Skip"
+msgstr "Pular"
+
 msgid "Help"
 msgstr "Ajuda"
+
+msgid "Bug"
+msgstr "Erro"
+
+msgid "Printer on fire"
+msgstr "Impressora em chamas"
 
 msgid "Physical"
 msgstr "Físico"
@@ -291,6 +415,9 @@ msgstr "Selecionar"
 
 msgid "Cancel"
 msgstr "Cancelar"
+
+msgid "Close Dialog"
+msgstr "Fechar diálogo"
 
 msgid "Focus Next"
 msgstr "Focar Próximo"
@@ -653,6 +780,15 @@ msgstr "Discreto"
 msgid "Capture"
 msgstr "Capturar"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space."
+msgstr ""
+"Selecionar e mover pontos.\n"
+"Botão Direito: Adicionar um ponto na posição do clique.\n"
+"Shift+Botão Esquerdo+Arrastar: Definir a posição de mistura dentro do espaço."
+
 msgid "Create points."
 msgstr "Criar pontos."
 
@@ -734,6 +870,9 @@ msgstr "Incremento de Grade Y"
 msgid "Blend X Value"
 msgstr "Valor de Mistura X"
 
+msgid "Blend Y Value"
+msgstr "Valor de Mistura Y"
+
 msgid "Max Y"
 msgstr "Máx Y"
 
@@ -748,6 +887,9 @@ msgstr "Mín X"
 
 msgid "X Value"
 msgstr "Valor X"
+
+msgid "Max X"
+msgstr "X Máximo"
 
 msgid "Parameter Changed: %s"
 msgstr "Parâmetro Alterado: %s"
@@ -5068,12 +5210,6 @@ msgstr "Gravar Layout..."
 msgid "Delete Layout..."
 msgstr "Apagar Layout..."
 
-msgid "Save Layout"
-msgstr "Guardar Modelo"
-
-msgid "Delete Layout"
-msgstr "Apagar Modelo"
-
 msgid "This scene was never saved."
 msgstr "Esta cena nunca foi salva."
 
@@ -8335,6 +8471,9 @@ msgstr "Remover Projeto"
 msgid "Remove Missing"
 msgstr "Remover Ausente"
 
+msgid "Donate"
+msgstr "Doar"
+
 msgid "Asset Library"
 msgstr "Biblioteca de Recursos"
 
@@ -8359,6 +8498,9 @@ msgstr "Editar em Modo de Recuperação"
 
 msgid "Convert Full Project"
 msgstr "Converter Projeto Completo"
+
+msgid "See Migration Guide"
+msgstr "Ver Guia de Migração"
 
 msgid ""
 "This option will perform full project conversion, updating scenes, resources "
@@ -10736,6 +10878,48 @@ msgstr "Girando %f graus."
 msgid "Scaling %s."
 msgstr "Dimensionamento: %s."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Modificador de Órbita da Viewport 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Modificador de Órbita da Viewport 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Modificador Panorâmico da Janela de Visualização 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Modificador Panorâmico da Janela de Visualização 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Modificador de Zoom da Janela de Visualização 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Modificador de Zoom da Janela de Visualização 2"
+
+msgid "Freelook Left"
+msgstr "Freelook Esquerda"
+
+msgid "Freelook Right"
+msgstr "Freelook Direita"
+
+msgid "Freelook Forward"
+msgstr "Freelook Frente"
+
+msgid "Freelook Backwards"
+msgstr "Freelook Trás"
+
+msgid "Freelook Up"
+msgstr "Freelook Cima"
+
+msgid "Freelook Down"
+msgstr "Freelook Baixo"
+
+msgid "Freelook Speed Modifier"
+msgstr "Freelook Modificador de Velocidade"
+
+msgid "Freelook Slow Modifier"
+msgstr "Freelook Modificador de Lentidão"
+
 msgid "View"
 msgstr "Vista"
 
@@ -10973,48 +11157,6 @@ msgstr "Ativar Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Pré-visualização Cinemática"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Modificador de Órbita da Viewport 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Modificador de Órbita da Viewport 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Modificador Panorâmico da Janela de Visualização 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Modificador Panorâmico da Janela de Visualização 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Modificador de Zoom da Janela de Visualização 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Modificador de Zoom da Janela de Visualização 2"
-
-msgid "Freelook Left"
-msgstr "Freelook Esquerda"
-
-msgid "Freelook Right"
-msgstr "Freelook Direita"
-
-msgid "Freelook Forward"
-msgstr "Freelook Frente"
-
-msgid "Freelook Backwards"
-msgstr "Freelook Trás"
-
-msgid "Freelook Up"
-msgstr "Freelook Cima"
-
-msgid "Freelook Down"
-msgstr "Freelook Baixo"
-
-msgid "Freelook Speed Modifier"
-msgstr "Freelook Modificador de Velocidade"
-
-msgid "Freelook Slow Modifier"
-msgstr "Freelook Modificador de Lentidão"
 
 msgid "Lock Transformation to X axis"
 msgstr "Bloquear Transformação para o Eixo-X"
@@ -14689,6 +14831,12 @@ msgstr "Importar Perfil/Perfis"
 msgid "Manage Editor Feature Profiles"
 msgstr "Gerir Perfis de Funcionalidades do Editor"
 
+msgid "Save Layout"
+msgstr "Guardar Modelo"
+
+msgid "Delete Layout"
+msgstr "Apagar Modelo"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Editar Ações Integradas: %s"
 
@@ -16836,6 +16984,15 @@ msgstr "Pintura do GridMap"
 msgid "GridMap Selection"
 msgstr "Seleção de GridMap"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Alterar Andar da Grade:\n"
+"Plano Anterior (%s)\n"
+"Próximo Plano (%s)"
+
 msgid "Previous Floor"
 msgstr "Piso anterior"
 
@@ -16874,15 +17031,6 @@ msgstr "Rodar Cursor Y"
 
 msgid "Cursor Rotate Z"
 msgstr "Rodar Cursor Z"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Alterar Andar da Grade:\n"
-"Plano Anterior (%s)\n"
-"Próximo Plano (%s)"
 
 msgid "Filter Meshes"
 msgstr "Filtrar Malhas"

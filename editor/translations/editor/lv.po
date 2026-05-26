@@ -16,13 +16,14 @@
 # GGLVXD <85647114+GGLVXD@users.noreply.github.com>, 2024.
 # Oskars Putāns <o.putaans@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Kristians Jelinsks <jelinsksk@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-10 05:35+0000\n"
-"Last-Translator: M E <gruffy7932@gmail.com>\n"
+"PO-Revision-Date: 2026-05-12 13:11+0000\n"
+"Last-Translator: Kristians Jelinsks <jelinsksk@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -31,10 +32,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 2026.5-dev\n"
 
 msgid "OK"
 msgstr "Labi"
+
+msgid "Failed"
+msgstr "Neizdevās:"
 
 msgid "Help"
 msgstr "Palīdzība"
@@ -1940,12 +1944,6 @@ msgstr ""
 msgid "Cannot run the script because it's not a tool script."
 msgstr "Nevar palaist skriptu, jo tas nav rīka skripts."
 
-msgid "Save Layout"
-msgstr "Saglabāt izkārtojumu"
-
-msgid "Delete Layout"
-msgstr "Dzēst izkārtojumu"
-
 msgid "Save & Close"
 msgstr "Saglabāt & aizvērt"
 
@@ -3810,6 +3808,12 @@ msgstr "Importēt profilu(s)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Pārvaldīt redaktora iespēju profilus"
+
+msgid "Save Layout"
+msgstr "Saglabāt izkārtojumu"
+
+msgid "Delete Layout"
+msgstr "Dzēst izkārtojumu"
 
 msgid "General"
 msgstr "Vispārēji"

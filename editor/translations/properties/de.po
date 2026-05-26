@@ -92,7 +92,7 @@
 # Janosch Lion <janorico@posteo.de>, 2023.
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
 # Roman Wanner <flugtauglicher@gmail.com>, 2023.
-# Ettore Atalan <atalanttore@googlemail.com>, 2023, 2024, 2025.
+# Ettore Atalan <atalanttore@googlemail.com>, 2023, 2024, 2025, 2026.
 # Lars Bollmann <lars.bollmann@tu-dortmund.de>, 2023.
 # Benedikt Wicklein <benedikt.wicklein@gmail.com>, 2023.
 # Wuzzy <Wuzzy@disroot.org>, 2023, 2025.
@@ -117,13 +117,18 @@
 # Albert Sobral <albertsobral610@gmail.com>, 2025.
 # clride <david.g.schilcher@gmail.com>, 2025.
 # Maximilian Wey <wey.maximilian@gmail.com>, 2026.
+# alxhu <hosted.weblate.org@alxhu.de>, 2026.
+# PaulTubeTV <jungpaulmail@gmail.com>, 2026.
+# Mika Kreis <atten0007@gmail.com>, 2026.
+# Dirk Schiller <email.schiller@gmail.com>, 2026.
+# Elia Nitsche <egnrse@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-11 23:26+0000\n"
-"Last-Translator: Maximilian Wey <wey.maximilian@gmail.com>\n"
+"PO-Revision-Date: 2026-05-26 03:27+0000\n"
+"Last-Translator: Elia Nitsche <egnrse@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
 "Language: de\n"
@@ -131,7 +136,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -315,6 +320,9 @@ msgstr "iOS"
 
 msgid "Session Category"
 msgstr "Session-Kategorie"
+
+msgid "Mix with Others"
+msgstr "Mit anderen mischen"
 
 msgid "Subwindows"
 msgstr "Unterfenster"
@@ -502,6 +510,12 @@ msgstr "Max. Deskriptoren pro Pool"
 msgid "D3D12"
 msgstr "D3D12"
 
+msgid "Max Resource Descriptors"
+msgstr "Max. Ressourcen-Deskriptoren"
+
+msgid "Max Sampler Descriptors"
+msgstr "Max. Sampler-Deskriptoren"
+
 msgid "Agility SDK Version"
 msgstr "Agility SDK-Version"
 
@@ -591,6 +605,9 @@ msgstr "NaviNetz Rand zusammenführen Fehler"
 
 msgid "NavMesh Cell Size Mismatch"
 msgstr "NavMesh Cellen Grösen stimmen nich überein"
+
+msgid "Editor Overrides"
+msgstr "Editor Überschreibungen"
 
 msgid "Low Processor Usage Mode"
 msgstr "Prozessorenergiesparmodus"
@@ -919,6 +936,9 @@ msgstr "Pseudo-Lokalisierung"
 msgid "Use Pseudolocalization"
 msgstr "Verwende Pseudo-Lokalisierung"
 
+msgid "Replace with Accents"
+msgstr "Mit Akzenten ersetzen"
+
 msgid "Double Vowels"
 msgstr "Doppelvokale"
 
@@ -1002,6 +1022,15 @@ msgstr "Global"
 
 msgid "Transient"
 msgstr "Flüchtig"
+
+msgid "Closable"
+msgstr "Schließbar"
+
+msgid "Icon Name"
+msgstr "Symbolname"
+
+msgid "Dock Icon"
+msgstr "Dock-Symbol"
 
 msgid "Title Color"
 msgstr "Titelfarbe"
@@ -1629,6 +1658,9 @@ msgstr "Skalierungs-Modus"
 
 msgid "Delimiter"
 msgstr "Trennzeichen"
+
+msgid "Unescape Keys"
+msgstr "Tasten unescapen"
 
 msgid "Character Ranges"
 msgstr "Zeichenbereiche"
@@ -2813,6 +2845,9 @@ msgstr "Freelook-Empfindlichkeit"
 msgid "Freelook Inertia"
 msgstr "Freelook-Schwerfälligkeit"
 
+msgid "Freelook Activation Modifier"
+msgstr "Freiblick-Aktivierungsmodifikator"
+
 msgid "Freelook Speed Zoom Link"
 msgstr "Freelook-Schnell-Zoom-Link"
 
@@ -3266,11 +3301,20 @@ msgstr "Startbenachrichtigung"
 msgid "Extensions"
 msgstr "Extensions"
 
+msgid "Frame Synthesis"
+msgstr "Bildsynthese"
+
 msgid "Hand Tracking"
 msgstr "Hand-Tracking"
 
 msgid "Hand Interaction Profile"
 msgstr "Hand-Interaktionsprofil"
+
+msgid "Aruco Dict"
+msgstr "Aruco-Wörterbuch"
+
+msgid "April Tag Dict"
+msgstr "April-Tag-Wörterbuch"
 
 msgid "Eye Gaze Interaction"
 msgstr "Blickkontakt-Interaktion"
@@ -3563,8 +3607,11 @@ msgstr "GDScript"
 msgid "Max Call Stack"
 msgstr "Max. Call-Stack"
 
+msgid "Always Track Call Stacks"
+msgstr "Immer Call Stacks verfolgen"
+
 msgid "Always Track Local Variables"
-msgstr "Immer lokale Variablen vervolgen"
+msgstr "Immer lokale Variablen verfolgen"
 
 msgid "Unused Local Constant"
 msgstr "Ungenutzte lokale Konstante"
@@ -3596,14 +3643,50 @@ msgstr "Unsichere Eigenschaft Zugriff"
 msgid "Unsafe Method Access"
 msgstr "Unsicherer methoden Zugriff"
 
+msgid "Unsafe Cast"
+msgstr "Unsichere Umwandlung"
+
+msgid "Unsafe Call Argument"
+msgstr "Unsicheres Funktionsargument"
+
+msgid "Unsafe Void Return"
+msgstr "Unsicheres zurückgeben"
+
 msgid "Return Value Discarded"
 msgstr "Zurückgegebener Wert weggeworfen"
 
 msgid "Missing Tool"
 msgstr "Fehlendes Werkzeug"
 
+msgid "Redundant Static Unload"
+msgstr "Überflüssiges statisches Entladen"
+
 msgid "Redundant Await"
 msgstr "Überflüssiger Erwarte"
+
+msgid "Assert Always True"
+msgstr "Assert immer True"
+
+msgid "Assert Always False"
+msgstr "Assert immer False"
+
+msgid "Integer Division"
+msgstr "Integer-Division"
+
+msgid "Int As Enum Without Cast"
+msgstr "Int als Enum ohne Umwandlung"
+
+msgid "Int As Enum Without Match"
+msgstr "Int als Enum ohne Übereinstimmung"
+
+msgid "Enum Variable Without Default"
+msgstr "Enum-Variable ohne Standardwert"
+
+msgid "Confusable Local Usage"
+msgstr "Verwirrende lokale Verwendung"
+
+msgid "Confusable Capture Reassignment"
+msgstr "Verwechselbare eingefangene Wiederzuweisung"
 
 msgid "Language Server"
 msgstr "Sprachserver"

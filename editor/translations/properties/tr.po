@@ -104,13 +104,15 @@
 # Sueda Ünlü <sue.unlu@gmail.com>, 2025.
 # Fatih Serbest <fatihxserbest@gmail.com>, 2026.
 # Hasan Kara <hasanbeytullahkara@gmail.com>, 2026.
+# Fikret Sadak <fsadak@gmail.com>, 2026.
+# can unal <justplay95@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-14 14:30+0000\n"
-"Last-Translator: Hasan Kara <hasanbeytullahkara@gmail.com>\n"
+"PO-Revision-Date: 2026-04-13 02:09+0000\n"
+"Last-Translator: can unal <justplay95@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -118,7 +120,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.2\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -303,6 +305,9 @@ msgstr "iOS"
 msgid "Session Category"
 msgstr "Oturum Kategorisi"
 
+msgid "Mix with Others"
+msgstr "Diğerleri ile Karıştır"
+
 msgid "Subwindows"
 msgstr "Altpencereler"
 
@@ -428,6 +433,9 @@ msgstr "Araçipucu Gecikmesi (sn)"
 
 msgid "Common"
 msgstr "Ortak"
+
+msgid "Drag Threshold"
+msgstr "HDR Eşiği"
 
 msgid "Snap Controls to Pixels"
 msgstr "Kontrolleri Piksellere Tuttur"
@@ -569,6 +577,12 @@ msgstr "Fırınlama Çoklu İş Parçacıklarını Kullan"
 
 msgid "Baking Use High Priority Threads"
 msgstr "Fırınlama Yüksek Öncelikli İş Parçacıklarını Kullan"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "NavMesh Kenar Birleştirme Hataları"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "NavMesh Hücre Boyutu Hatalı"
 
 msgid "Low Processor Usage Mode"
 msgstr "Düşük İşlemci Kullanım Kipi"

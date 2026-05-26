@@ -28,13 +28,14 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>, 2025, 2026.
 # Vladimir Kirov <morbeo@gmail.com>, 2026.
+# bruvzg <bruvzg13@proton.me>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-21 18:58+0000\n"
-"Last-Translator: Vladimir Kirov <morbeo@gmail.com>\n"
+"PO-Revision-Date: 2026-02-21 13:09+0000\n"
+"Last-Translator: bruvzg <bruvzg13@proton.me>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -42,7 +43,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 msgid "OK"
 msgstr "Добре"
@@ -2237,7 +2238,7 @@ msgid ""
 "Check the enabled support levels using the 'Support' button in the top-right "
 "corner."
 msgstr ""
-"Няма резултати съвместими с „%s“ за нивото/нивата на поддръжка: %s.\n"
+"Няма резултати съвместими с %s %s за нивото/нивата на поддръжка: %s.\n"
 "Проверете включените нива на поддръжка чрез бутона „Поддръжка“ в горния десен "
 "ъгъл."
 
@@ -3190,9 +3191,6 @@ msgstr "Внимание!"
 
 msgid "Completed with warnings."
 msgstr "Завършено с предупредителни съобщения."
-
-msgid "Could not open file to read from path \"%s\"."
-msgstr "Файловете на проекта не могат да бъдат изнесени като проект на gradle."
 
 msgid "Can't open file for writing at path \"%s\"."
 msgstr "Файлът не може да бъде отворен за запис към пътя „%s“."
@@ -4334,6 +4332,30 @@ msgstr "Превеждане на %s."
 msgid "Scaling %s."
 msgstr "Скалиране на %s."
 
+msgid "Freelook Left"
+msgstr "Свободен изглед отляво"
+
+msgid "Freelook Right"
+msgstr "Свободен изглед отдясно"
+
+msgid "Freelook Forward"
+msgstr "Свободен изглед отпред"
+
+msgid "Freelook Backwards"
+msgstr "Свободен изглед отзад"
+
+msgid "Freelook Up"
+msgstr "Свободен изглед отгоре"
+
+msgid "Freelook Down"
+msgstr "Свободен изглед отдолу"
+
+msgid "Freelook Speed Modifier"
+msgstr "Модификатор за скоростта на свободния изглед"
+
+msgid "Freelook Slow Modifier"
+msgstr "Модификатор за забавяне на свободния изглед"
+
 msgid "View"
 msgstr "Преглед"
 
@@ -4386,30 +4408,6 @@ msgstr "Включване на доплеровия ефект"
 
 msgid "Cinematic Preview"
 msgstr "Кинематографски предварителен преглед"
-
-msgid "Freelook Left"
-msgstr "Свободен изглед отляво"
-
-msgid "Freelook Right"
-msgstr "Свободен изглед отдясно"
-
-msgid "Freelook Forward"
-msgstr "Свободен изглед отпред"
-
-msgid "Freelook Backwards"
-msgstr "Свободен изглед отзад"
-
-msgid "Freelook Up"
-msgstr "Свободен изглед отгоре"
-
-msgid "Freelook Down"
-msgstr "Свободен изглед отдолу"
-
-msgid "Freelook Speed Modifier"
-msgstr "Модификатор за скоростта на свободния изглед"
-
-msgid "Freelook Slow Modifier"
-msgstr "Модификатор за забавяне на свободния изглед"
 
 msgid "Toggle Camera Preview"
 msgstr "Превключване на изгледа за преглед на камерата"

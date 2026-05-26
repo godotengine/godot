@@ -116,13 +116,15 @@
 # Alejandro Moctezuma <moctezumaalejandro25@gmail.com>, 2025, 2026.
 # Julián Lacomba <julian_alberto93@yahoo.com.ar>, 2025.
 # Kevin <kevmed39@protonmail.com>, 2025.
+# Eric Lael Vasquez Carreño <clvasquezer@gmail.com>, 2026.
+# Juan José Arcila Valderrama <sedmirnel124@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-20 09:04+0000\n"
-"Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2026-03-30 14:09+0000\n"
+"Last-Translator: Juan José Arcila Valderrama <sedmirnel124@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -130,7 +132,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -166,7 +168,7 @@ msgid "Print Header"
 msgstr "Imprimir Encabezado"
 
 msgid "Enable Alt Space Menu"
-msgstr "Activar Menú Alt Espacio"
+msgstr "Activar el Menú Alt Espacio"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Usar Directorio de Datos Ocultos del Proyecto"
@@ -1576,7 +1578,7 @@ msgid "Remove Immutable Tracks"
 msgstr "Eliminar Pistas Inmutables"
 
 msgid "Import Rest as Reset"
-msgstr "Importar Descanso como RESET"
+msgstr "Importar Rest como Reset"
 
 msgid "Import Script"
 msgstr "Importar Script"
@@ -4313,7 +4315,7 @@ msgid "Object Model Type"
 msgstr "Tipo de Modelo de Objeto"
 
 msgid "Json Pointers"
-msgstr "Punteros JSON"
+msgstr "Punteros Json"
 
 msgid "Variant Type"
 msgstr "Tipo de Variant"
@@ -8933,7 +8935,7 @@ msgid "Download Chunk Size"
 msgstr "Descargar Tamaño del Fragmento"
 
 msgid "Accept Gzip"
-msgstr "Aceptar GZip"
+msgstr "Aceptar Gzip"
 
 msgid "Body Size Limit"
 msgstr "Límite del Tamaño del Cuerpo"
@@ -12353,7 +12355,7 @@ msgid "Default Filters"
 msgstr "Filtros Predeterminados"
 
 msgid "Use Nearest Mipmap Filter"
-msgstr "Usar Filtro de Mapa MIP más Cercano"
+msgstr "Utilizar el filtro Mipmap más cercano"
 
 msgid "Depth of Field"
 msgstr "Profundidad de Campo"

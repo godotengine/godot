@@ -86,7 +86,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-09 12:49+0000\n"
+"PO-Revision-Date: 2026-02-23 08:27+0000\n"
 "Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
@@ -95,7 +95,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 msgid "OK"
 msgstr "확인"
@@ -5401,12 +5401,6 @@ msgstr "레이아웃 저장..."
 msgid "Delete Layout..."
 msgstr "레이아웃 삭제..."
 
-msgid "Save Layout"
-msgstr "레이아웃 저장"
-
-msgid "Delete Layout"
-msgstr "레이아웃 삭제"
-
 msgid "This scene was never saved."
 msgstr "이 씬은 저장되지 않았습니다."
 
@@ -7408,11 +7402,11 @@ msgid ""
 "Configure the Beats Per Measure (tempo) used for the interactive streams.\n"
 "This is required in order to configure beat information."
 msgstr ""
-"인터랙티브한 스트림에 사용되는 BPM(템포)를 구성합니다.\n"
-"이는 비트 정보를 구성하기 위해 필요합니다."
+"상호작용 스트림에 사용되는 분당 박자 수(BPM, 템포)를 구성합니다.\n"
+"이는 박자 정보를 구성하는 데 필요합니다."
 
 msgid "Beat Count:"
-msgstr "비트 수:"
+msgstr "박자 수:"
 
 msgid ""
 "Configure the amount of Beats used for music-aware looping. If zero, it will "
@@ -7420,19 +7414,19 @@ msgid ""
 "It is recommended to set this value (either manually or by clicking on a beat "
 "number in the preview) to ensure looping works properly."
 msgstr ""
-"음악적인 루핑에 사용되는 비트의 양을 구성합니다. 0이면 길이에서 자동 감지됩니"
+"음악적인 루핑에 사용되는 박자의 양을 구성합니다. 0이면 길이에서 자동 감지됩니"
 "다.\n"
-"루핑이 제대로 작동하도록 하려면 이 값을 수동으로 또는 미리보기에서 비트 번호"
+"루핑이 제대로 작동하도록 하려면 이 값을 수동으로 또는 미리보기에서 박자 번호"
 "를 클릭하여 제대로 설정하는 것이 좋습니다."
 
 msgid "Bar Beats:"
-msgstr "마디당 비트:"
+msgstr "마디당 박자:"
 
 msgid ""
 "Configure the Beats Per Bar. This used for music-aware transitions between "
 "AudioStreams."
 msgstr ""
-"마디당 비트를 구성합니다. 오디오스트림 사이를 음악적으로 전환할 때 사용됩니다."
+"마디당 박자를 구성합니다. AudioStream 사이를 음악적으로 전환할 때 사용됩니다."
 
 msgid "Music Playback:"
 msgstr "음악 재생:"
@@ -7595,7 +7589,7 @@ msgid "Dynamically rendered TrueType/OpenType font"
 msgstr "동적으로 렌더링된 트루타입/오픈타입 글꼴"
 
 msgid "Prerendered multichannel(+true) signed distance field"
-msgstr "프리렌더링된 MSDF (다채널 부호화 디스턴스 필드)"
+msgstr "사전 렌더링된 다채널(+true) 부호화 디스턴스 필드"
 
 msgid ""
 "Error importing GLSL shader file: '%s'. Open the file in the filesystem dock "
@@ -7626,7 +7620,7 @@ msgstr ""
 "처 압축 모드를 %s 로 설정합니다."
 
 msgid "2D/3D (Auto-Detect)"
-msgstr "2D/3D(자동 감지)"
+msgstr "2D/3D (자동 감지)"
 
 msgid "2D"
 msgstr "2D"
@@ -11634,6 +11628,54 @@ msgstr "%f 도 회전 중."
 msgid "Scaling %s."
 msgstr "%s 스케일 중."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "뷰포트 궤도 모디파이어 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "뷰포트 궤도 모디파이어 2"
+
+msgid "Viewport Orbit Snap Modifier 1"
+msgstr "뷰포트 궤도 스냅 모디파이어 1"
+
+msgid "Viewport Orbit Snap Modifier 2"
+msgstr "뷰포트 궤도 스냅 모디파이어 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "뷰포트 패닝 모디파이어 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "뷰포트 패닝 모디파이어 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "뷰포트 줌 모디파이어 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "뷰포트 줌 모디파이어 2"
+
+msgid "Freelook Left"
+msgstr "자유 시점 왼쪽으로"
+
+msgid "Freelook Right"
+msgstr "자유 시점 오른쪽으로"
+
+msgid "Freelook Forward"
+msgstr "자유 시점 앞으로"
+
+msgid "Freelook Backwards"
+msgstr "자유 시점 뒤로"
+
+msgid "Freelook Up"
+msgstr "자유 시점 위로"
+
+msgid "Freelook Down"
+msgstr "자유 시점 아래로"
+
+msgid "Freelook Speed Modifier"
+msgstr "자유 시점 가속 모디파이어"
+
+msgid "Freelook Slow Modifier"
+msgstr "자유 시점 감속 모디파이어"
+
 msgid "View"
 msgstr "보기"
 
@@ -11868,54 +11910,6 @@ msgstr "도플러 효과 활성화"
 
 msgid "Cinematic Preview"
 msgstr "시네마틱 미리보기"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "뷰포트 궤도 모디파이어 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "뷰포트 궤도 모디파이어 2"
-
-msgid "Viewport Orbit Snap Modifier 1"
-msgstr "뷰포트 궤도 스냅 모디파이어 1"
-
-msgid "Viewport Orbit Snap Modifier 2"
-msgstr "뷰포트 궤도 스냅 모디파이어 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "뷰포트 패닝 모디파이어 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "뷰포트 패닝 모디파이어 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "뷰포트 줌 모디파이어 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "뷰포트 줌 모디파이어 2"
-
-msgid "Freelook Left"
-msgstr "자유 시점 왼쪽으로"
-
-msgid "Freelook Right"
-msgstr "자유 시점 오른쪽으로"
-
-msgid "Freelook Forward"
-msgstr "자유 시점 앞으로"
-
-msgid "Freelook Backwards"
-msgstr "자유 시점 뒤로"
-
-msgid "Freelook Up"
-msgstr "자유 시점 위로"
-
-msgid "Freelook Down"
-msgstr "자유 시점 아래로"
-
-msgid "Freelook Speed Modifier"
-msgstr "자유 시점 가속 모디파이어"
-
-msgid "Freelook Slow Modifier"
-msgstr "자유 시점 감속 모디파이어"
 
 msgid "Lock Transformation to X axis"
 msgstr "변형을 X축으로 잠금"
@@ -15429,17 +15423,17 @@ msgid "SIL Graphite Fonts"
 msgstr "SIL Graphite 글꼴"
 
 msgid "Multi-channel Signed Distance Field Font Rendering"
-msgstr "다채널 부호화 디스턴스 필드 (MSDF) 글꼴 렌더링"
+msgstr "다채널 부호화 디스턴스 필드 글꼴 렌더링"
 
 msgid "3D Nodes as well as RenderingServer access to 3D features."
 msgstr ""
 "3D 노드 지원과 더불어 RenderingServer가 3D 기능을 사용할 수 있게 합니다."
 
 msgid "Navigation Server and capabilities for 2D."
-msgstr "2D를 위한 내비게이션 서버 및 능력."
+msgstr "2D를 위한 내비게이션 서버와 능력."
 
 msgid "Navigation Server and capabilities for 3D."
-msgstr "3D를 위한 내비게이션 서버 및 능력."
+msgstr "3D를 위한 내비게이션 서버와 능력."
 
 msgid "XR (AR and VR)."
 msgstr "XR (AR 및 VR)."
@@ -15456,7 +15450,7 @@ msgstr "X11 디스플레이 (Linux 전용)."
 msgid ""
 "RenderingDevice based rendering (if disabled, the OpenGL backend is required)."
 msgstr ""
-"RenderingDevice 기반 렌더링 (비활성화된 경우, OpenGL 백엔드가 필요합니다)."
+"RenderingDevice 기반 렌더링 (비활성화된 경우 OpenGL 백엔드가 필요합니다)."
 
 msgid "Forward+ renderer for advanced 3D graphics."
 msgstr "고급 3D 그래픽을 위한 Forward+ 렌더러."
@@ -15787,6 +15781,12 @@ msgstr "또는 새로운 레이아웃 이름을 입력하세요."
 
 msgid "New layout name"
 msgstr "새 레이아웃 이름"
+
+msgid "Save Layout"
+msgstr "레이아웃 저장"
+
+msgid "Delete Layout"
+msgstr "레이아웃 삭제"
 
 msgid "Edit Built-in Action: %s"
 msgstr "내장 액션 편집: %s"
@@ -17999,6 +17999,15 @@ msgstr "그리드맵 칠하기"
 msgid "GridMap Selection"
 msgstr "그리드맵 선택"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"격자 바닥 바꾸기:\n"
+"이전 평면 (%s)\n"
+"다음 평면 (%s)"
+
 msgid "Previous Floor"
 msgstr "이전 바닥"
 
@@ -18040,15 +18049,6 @@ msgstr "커서 회전 Z"
 
 msgid "Change Grid Floor:"
 msgstr "격자 바닥 바꾸기:"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"격자 바닥 바꾸기:\n"
-"이전 평면 (%s)\n"
-"다음 평면 (%s)"
 
 msgid "Filter Meshes"
 msgstr "메시 필터"
@@ -19082,7 +19082,7 @@ msgstr ""
 msgid ""
 "\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
-"\"대상 SDK\"는 올바른 정수여야 하지만, 다음 값은 올바르지 않습니다(\"%s\")."
+"\"대상 SDK\"는 올바른 정수여야 하지만, 올바르지 않는 \"%s\"을(를) 얻었습니다."
 
 msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
 msgstr "\"대상 SDK\" 버전은 \"최소 SDK\" 버전보다 크거나 같아야 합니다."
@@ -19497,29 +19497,28 @@ msgid "All Files"
 msgstr "모든 파일"
 
 msgid "Invalid bundle identifier:"
-msgstr "잘못된 bundle 식별자:"
+msgstr "잘못된 번들 식별자:"
 
 msgid "App Store distribution with ad-hoc code signing is not supported."
-msgstr "ad-hoc 코드 서명 App Store 배포는 지원되지 않습니다."
+msgstr "ad-hoc 코드 서명으로는 App Store 배포는 지원되지 않습니다."
 
 msgid "Notarization with an ad-hoc signature is not supported."
-msgstr ""
-"ad-hoc 서명으로는 노타리제이션(Apple의 소프트웨어 검증) 이 지원되지 않습니다."
+msgstr "ad-hoc 서명으로는 공증이 지원되지 않습니다."
 
 msgid "Apple Team ID is required for App Store distribution."
 msgstr "App Store 배포를 위해서는 Apple 팀 ID가 필요합니다."
 
 msgid "Apple Team ID is required for notarization."
-msgstr "공증을 위해서 Apple Team ID가 필요합니다."
+msgstr "공증을 위해서는 Apple 팀 ID가 필요합니다."
 
 msgid "Provisioning profile is required for App Store distribution."
 msgstr "App Store 배포를 위해서는 프로비저닝 프로필이 필요합니다."
 
 msgid "Installer signing identity is required for App Store distribution."
-msgstr "App Store 배포를 위해 설치 프로그램 서명 ID가 필요합니다."
+msgstr "App Store 배포를 위해서는 인스톨러 서명 ID가 필요합니다."
 
 msgid "App sandbox is required for App Store distribution."
-msgstr "App Store 배포를 위해서는 App sandbox가 필요합니다."
+msgstr "App Store 배포를 위해서는 앱 샌드박스가 필요합니다."
 
 msgid ""
 "'rcodesign' doesn't support signing applications with embedded dynamic "
@@ -19529,10 +19528,10 @@ msgstr ""
 "케이션의 서명을 지원하지 않습니다."
 
 msgid "Code signing is required for App Store distribution."
-msgstr "App Store 배포를 위해 코드 서명이 필요합니다."
+msgstr "App Store 배포를 위해서는 코드 서명이 필요합니다."
 
 msgid "Code signing is required for notarization."
-msgstr "공증을 위해서 코드 서명이 필요합니다."
+msgstr "공증을 위해서는 코드 서명이 필요합니다."
 
 msgid ""
 "Neither Apple ID name nor App Store Connect issuer ID name not specified."
@@ -19550,7 +19549,7 @@ msgid "Apple ID password not specified."
 msgstr "Apple ID 비밀번호가 지정되지 않았습니다."
 
 msgid "App Store Connect API key ID not specified."
-msgstr "App Store Connect API key ID가 지정되지 않았습니다."
+msgstr "App Store Connect API 키 ID가 지정되지 않았습니다."
 
 msgid "App Store Connect issuer ID name not specified."
 msgstr "App Store Connect 발급자 ID 이름이 지정되지 않았습니다."
@@ -19570,10 +19569,11 @@ msgid "Address book access is enabled, but usage description is not specified."
 msgstr "주소 접근이 활성화되었지만 사용법 설명이 지정되지 않았습니다."
 
 msgid "Calendar access is enabled, but usage description is not specified."
-msgstr "캘린더 접근이 활성화되었지만 사용 설명이 지정되지 않았습니다."
+msgstr "캘린더 접근이 활성화되었지만 사용법 설명이 지정되지 않았습니다."
 
 msgid "Photo library access is enabled, but usage description is not specified."
-msgstr "사진 라이브러리 접근이 활성화되었지만 사용 설명이 지정되지 않았습니다."
+msgstr ""
+"사진 라이브러리 접근이 활성화되었지만 사용법 설명이 지정되지 않았습니다."
 
 msgid "Liquid Glass Icons"
 msgstr "Liquid Glass 아이콘"

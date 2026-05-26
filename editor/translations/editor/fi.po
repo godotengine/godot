@@ -33,12 +33,13 @@
 # Leo Peltola <leopeltola@gmail.com>, 2025.
 # sevonj <100710152+sevonj@users.noreply.github.com>, 2025.
 # Aki Ryhänen <aki.ryhanen@gmail.com>, 2026.
+# jesseojala20-crypto <jesseojala20@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-01 00:01+0000\n"
+"PO-Revision-Date: 2026-02-26 02:09+0000\n"
 "Last-Translator: Aki Ryhänen <aki.ryhanen@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -47,19 +48,88 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "Epäonnistui."
+
+msgid "Unavailable"
+msgstr "%s kuvaus ei ole saatavilla."
+
+msgid "Unconfigured"
+msgstr "Määrittelemätön"
+
+msgid "Unauthorized"
+msgstr "Luvaton"
+
+msgid "Parameter out of range"
+msgstr "Parametri ulkona raja-alueelta"
+
+msgid "Out of memory"
+msgstr "Muisti täynnä"
+
+msgid "File not found"
+msgstr "Tiedostoa ei löytynyt."
+
+msgid "File: Bad drive"
+msgstr "Tiedosto: Kelvoton asema"
+
+msgid "File: Bad path"
+msgstr "Tiedosto: Kelvoton polku"
+
+msgid "File: Permission denied"
+msgstr "Tiedosto: Pääsy estetty"
+
+msgid "File already in use"
+msgstr "Tiedosto on jo käytössä."
+
+msgid "Can't open file"
+msgstr "Tiedostoa ei voi avata"
+
+msgid "Can't write file"
+msgstr "Ei pysty kirjoittamaan tiedostoa"
+
+msgid "Can't read file"
+msgstr "Ei pysty lukemaan tiedostoa"
+
 msgid "File unrecognized"
 msgstr "Tunnistamaton tiedosto"
+
+msgid "File corrupt"
+msgstr "Tiedosto korruptoitunut"
+
+msgid "Missing dependencies for file"
+msgstr "Tarvittavia riippuvuuksia tiedostolle ei löydy"
+
+msgid "End of file"
+msgstr "Tiedoston loppu"
+
+msgid "Can't open"
+msgstr "Ei pysty avamaan"
+
+msgid "Can't create"
+msgstr "Luonti epäonnistui"
+
+msgid "Already in use"
+msgstr "Jo käytössä"
 
 msgid "Locked"
 msgstr "Lukittu"
 
 msgid "Timeout"
 msgstr "Aikakatkaisu"
+
+msgid "Can't connect"
+msgstr "Yhdistäminen epäonnistui."
+
+msgid "Can't resolve"
+msgstr "Yhteydenselvitys epäonnistui"
+
+msgid "Connection error"
+msgstr "Yhdistämisvirhe"
 
 msgid "Help"
 msgstr "Ohje"
@@ -5102,12 +5172,6 @@ msgstr "Tallenna asettelu..."
 msgid "Delete Layout..."
 msgstr "Poista asettelu..."
 
-msgid "Save Layout"
-msgstr "Tallenna asettelu"
-
-msgid "Delete Layout"
-msgstr "Poista asettelu"
-
 msgid "This scene was never saved."
 msgstr "Tätä kohtausta ei koskaan tallennettu."
 
@@ -8180,6 +8244,30 @@ msgstr "Kieretään %f astetta."
 msgid "Scaling %s."
 msgstr "Skaalataan %s."
 
+msgid "Freelook Left"
+msgstr "Liiku vasemmalle"
+
+msgid "Freelook Right"
+msgstr "Liiku oikealle"
+
+msgid "Freelook Forward"
+msgstr "Liiku eteenpäin"
+
+msgid "Freelook Backwards"
+msgstr "Liiku taaksepäin"
+
+msgid "Freelook Up"
+msgstr "Liiku ylös"
+
+msgid "Freelook Down"
+msgstr "Liiku alas"
+
+msgid "Freelook Speed Modifier"
+msgstr "Liikkumisen nopeussäädin"
+
+msgid "Freelook Slow Modifier"
+msgstr "Liikkumisen hitauskerroin"
+
 msgid "View"
 msgstr "Näkymä"
 
@@ -8236,30 +8324,6 @@ msgstr "Kytke Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Elokuvallinen esikatselu"
-
-msgid "Freelook Left"
-msgstr "Liiku vasemmalle"
-
-msgid "Freelook Right"
-msgstr "Liiku oikealle"
-
-msgid "Freelook Forward"
-msgstr "Liiku eteenpäin"
-
-msgid "Freelook Backwards"
-msgstr "Liiku taaksepäin"
-
-msgid "Freelook Up"
-msgstr "Liiku ylös"
-
-msgid "Freelook Down"
-msgstr "Liiku alas"
-
-msgid "Freelook Speed Modifier"
-msgstr "Liikkumisen nopeussäädin"
-
-msgid "Freelook Slow Modifier"
-msgstr "Liikkumisen hitauskerroin"
 
 msgid "Cancel Transformation"
 msgstr "Peruuta muunnos"
@@ -10670,6 +10734,12 @@ msgstr "Tuo profiileja"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Hallinnoi editorin ominaisuusprofiileja"
+
+msgid "Save Layout"
+msgstr "Tallenna asettelu"
+
+msgid "Delete Layout"
+msgstr "Poista asettelu"
 
 msgid "Edit Built-in Action: %s"
 msgstr "Muokkaa Sisäänrakennettua Toimintoa: %s"

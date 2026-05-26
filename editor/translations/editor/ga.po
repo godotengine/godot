@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-01-17 13:01+0000\n"
+"PO-Revision-Date: 2026-02-21 13:09+0000\n"
 "Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
 "Language-Team: Irish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ga/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : (n>2 && n<7) ? 2 :(n>6 "
 "&& n<11) ? 3 : 4;\n"
-"X-Generator: Weblate 5.15.2\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 msgid "OK"
 msgstr "Ceart go leor"
@@ -584,10 +584,10 @@ msgid "B"
 msgstr "B"
 
 msgid "KiB"
-msgstr "KiBName"
+msgstr "KiB"
 
 msgid "MiB"
-msgstr "MiBName"
+msgstr "MiB"
 
 msgid "GiB"
 msgstr "Tabhair"
@@ -596,10 +596,10 @@ msgid "TiB"
 msgstr "TibName"
 
 msgid "PiB"
-msgstr "PiBName"
+msgstr "PiB"
 
 msgid "EiB"
-msgstr "EiBName"
+msgstr "EiB"
 
 msgid "Time:"
 msgstr "Am:"
@@ -5454,12 +5454,6 @@ msgstr "Sábháil Leagan Amach..."
 msgid "Delete Layout..."
 msgstr "Scrios Leagan Amach..."
 
-msgid "Save Layout"
-msgstr "Sábháil Leagan Amach"
-
-msgid "Delete Layout"
-msgstr "Scrios Leagan Amach"
-
 msgid "This scene was never saved."
 msgstr "Níor sábháladh an radharc seo riamh."
 
@@ -7819,7 +7813,7 @@ msgid "Pin Value"
 msgstr "Luach bioráin"
 
 msgid "Pin Value [Disabled because '%s' is editor-only]"
-msgstr "Luach PIN [Díchumasaithe toisc go bhfuil '%s' ina eagarthóir amháin]"
+msgstr "Luach bioráin [Díchumasaithe mar níl '%s' ach don eagarthóir]"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -11880,6 +11874,54 @@ msgstr "%f céim á rothlú."
 msgid "Scaling %s."
 msgstr "%s á scálú."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Modhnóir Fithis Radharcphoirt 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Modhnóir Fithis Radharcphoirt 2"
+
+msgid "Viewport Orbit Snap Modifier 1"
+msgstr "Modhnóir Snap Fithis Radharcphoirt 1"
+
+msgid "Viewport Orbit Snap Modifier 2"
+msgstr "Modhnóir Snap Fithis Radharcphoirt 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Modhnóir Pan Radharcphoirt 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Modhnóir Pan Radharcphoirt 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Modhnóir Súmáil Radharcphoirt 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Modhnóir Súmáil Radharcphoirt 2"
+
+msgid "Freelook Left"
+msgstr "Freelook Ar Chlé"
+
+msgid "Freelook Right"
+msgstr "Freelook Ceart"
+
+msgid "Freelook Forward"
+msgstr "Freelook Ar Aghaidh"
+
+msgid "Freelook Backwards"
+msgstr "Freelook Ar gcúl"
+
+msgid "Freelook Up"
+msgstr "Freelook Suas"
+
+msgid "Freelook Down"
+msgstr "Freelook An Dúin"
+
+msgid "Freelook Speed Modifier"
+msgstr "Mionathraitheoir Luas Freelook"
+
+msgid "Freelook Slow Modifier"
+msgstr "Mionathraitheoir Mall Freelook"
+
 msgid "View"
 msgstr "Amharc"
 
@@ -12136,54 +12178,6 @@ msgstr "Cumasaigh Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Réamhamharc Cineamatach"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Modhnóir Fithis Radharcphoirt 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Modhnóir Fithis Radharcphoirt 2"
-
-msgid "Viewport Orbit Snap Modifier 1"
-msgstr "Modhnóir Snap Fithis Radharcphoirt 1"
-
-msgid "Viewport Orbit Snap Modifier 2"
-msgstr "Modhnóir Snap Fithis Radharcphoirt 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Modhnóir Pan Radharcphoirt 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Modhnóir Pan Radharcphoirt 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Modhnóir Súmáil Radharcphoirt 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Modhnóir Súmáil Radharcphoirt 2"
-
-msgid "Freelook Left"
-msgstr "Freelook Ar Chlé"
-
-msgid "Freelook Right"
-msgstr "Freelook Ceart"
-
-msgid "Freelook Forward"
-msgstr "Freelook Ar Aghaidh"
-
-msgid "Freelook Backwards"
-msgstr "Freelook Ar gcúl"
-
-msgid "Freelook Up"
-msgstr "Freelook Suas"
-
-msgid "Freelook Down"
-msgstr "Freelook An Dúin"
-
-msgid "Freelook Speed Modifier"
-msgstr "Mionathraitheoir Luas Freelook"
-
-msgid "Freelook Slow Modifier"
-msgstr "Mionathraitheoir Mall Freelook"
 
 msgid "Lock Transformation to X axis"
 msgstr "Cuir claochlú faoi ghlas go hais X"
@@ -16173,6 +16167,12 @@ msgstr "Nó cuir isteach ainm leagan amach nua."
 msgid "New layout name"
 msgstr "Ainm leagan amach nua"
 
+msgid "Save Layout"
+msgstr "Sábháil Leagan Amach"
+
+msgid "Delete Layout"
+msgstr "Scrios Leagan Amach"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Cuir Gníomh Ionsuite in Eagar: %s"
 
@@ -18481,6 +18481,15 @@ msgstr "Péint Mapa Greille"
 msgid "GridMap Selection"
 msgstr "Roghnú Mapa Greille"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Athraigh Urlár na Greille:\n"
+"An tEitleán Roimhe Seo (%s)\n"
+"An Chéad Eitleán Eile (%s)"
+
 msgid "Previous Floor"
 msgstr "An tUrlár Roimhe Seo"
 
@@ -18522,15 +18531,6 @@ msgstr "Rothlaigh Cúrsóir Z"
 
 msgid "Change Grid Floor:"
 msgstr "Athraigh Urlár Eangaí:"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Athraigh Urlár na Greille:\n"
-"An tEitleán Roimhe Seo (%s)\n"
-"An Chéad Eitleán Eile (%s)"
 
 msgid "Filter Meshes"
 msgstr "Mogalraí Scag"

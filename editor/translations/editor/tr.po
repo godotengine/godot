@@ -128,13 +128,17 @@
 # Volkan <vnyz2002@gmail.com>, 2026.
 # KiiVoZin <kiivozin@gmail.com>, 2026.
 # Hasan Kara <hasanbeytullahkara@gmail.com>, 2026.
+# Cataphract <catapharaoh@proton.me>, 2026.
+# Poyraz <zpoyrazcoskun@gmail.com>, 2026.
+# Alperen Turan <alpptrnn@gmail.com>, 2026.
+# can unal <justplay95@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-23 01:57+0000\n"
-"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
+"PO-Revision-Date: 2026-04-13 02:09+0000\n"
+"Last-Translator: can unal <justplay95@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -142,7 +146,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 msgid "OK"
 msgstr "Tamam"
@@ -151,13 +155,13 @@ msgid "Failed"
 msgstr "Başarısız"
 
 msgid "Unavailable"
-msgstr "Erişilemez"
+msgstr "Mevcut Değil"
 
 msgid "Unconfigured"
 msgstr "Yapılandırılmamış"
 
 msgid "Unauthorized"
-msgstr "Yetkilendirilmemiş"
+msgstr "Yetkisiz"
 
 msgid "Parameter out of range"
 msgstr "Parametre değer aralığı dışında"
@@ -228,6 +232,9 @@ msgstr "Çözümlenemedi"
 msgid "Can't acquire resource"
 msgstr "Kaynağa erişilemiyor"
 
+msgid "Can't fork"
+msgstr "Çözümlenemiyor"
+
 msgid "Invalid data"
 msgstr "Geçersiz veri"
 
@@ -249,11 +256,17 @@ msgstr "veritabanına yazılamıyor"
 msgid "Compilation failed"
 msgstr "Derleme başarısız oldu"
 
+msgid "Method not found"
+msgstr "Yöntem, nesne içinde bulunamadı:"
+
 msgid "Link failed"
 msgstr "Bağlantı başarısız oldu"
 
 msgid "Script failed"
 msgstr "Betik başarısız oldu"
+
+msgid "Cyclic link detected"
+msgstr "Döngüsel içerme bulundu"
 
 msgid "Invalid declaration"
 msgstr "Hatalı tanımlama"
@@ -468,6 +481,9 @@ msgstr "Seç"
 
 msgid "Cancel"
 msgstr "Vazgeç"
+
+msgid "Close Dialog"
+msgstr "Diyalog Penceresini Kapat"
 
 msgid "Focus Next"
 msgstr "Sonrakine Odaklan"
@@ -3902,6 +3918,11 @@ msgstr ""
 msgid "Could not create folder: %s"
 msgstr "Klasör oluşturulamadı: %s"
 
+msgid "Move %d selected item to \"%s\"?"
+msgid_plural "Move %d selected items to \"%s\"?"
+msgstr[0] "Seçili %d öğe \"%s\" konumuna taşınsın mı?"
+msgstr[1] "Seçili %d öğe \"%s\" konumuna taşınsın mı?"
+
 msgid "Open Scene"
 msgstr "Sahneyi Aç"
 
@@ -4647,6 +4668,13 @@ msgstr ""
 msgid "Filter by Type"
 msgstr "Türe Göre Filtrele"
 
+msgid ""
+"Selects all Nodes of the given type.\n"
+"Inserts \"type:\". You can also use the shorthand \"t:\"."
+msgstr ""
+"Seçilen tipin tüm Düğümlerini seç.\n"
+"\"tip:\"i ekler. Aynı zamanda kısaltma olarak \"t:\" de kullanılabilir."
+
 msgid "Filter by Group"
 msgstr "Gruba Göre Filtrele"
 
@@ -5356,12 +5384,6 @@ msgstr "Yerleşim Düzenini Kaydet..."
 msgid "Delete Layout..."
 msgstr "Yerleşim Düzenini Sil..."
 
-msgid "Save Layout"
-msgstr "Yerleşim Düzenini Kaydet"
-
-msgid "Delete Layout"
-msgstr "Yerleşim Düzenini Sil"
-
 msgid "This scene was never saved."
 msgstr "Bu sahne hiç kaydedilmedi."
 
@@ -5405,6 +5427,22 @@ msgstr "Yeniden yükleme tamamlandı."
 
 msgid "Save & Restart"
 msgstr "Kaydet ve Yeniden Başlat"
+
+msgid ""
+"Changing the renderer requires restarting the editor.\n"
+"\n"
+"Choosing Save & Restart will change the renderer to:\n"
+"- Desktop platforms: %s\n"
+"- Mobile platforms: %s\n"
+"- Web platform: %s"
+msgstr ""
+"İşleyiciyi değiştirmek, düzenleyicinin yeniden başlatılmasını gerektirir.\n"
+"\n"
+"Kaydet ve Yeniden Başlat'ın seçilmesi, işleme yöntemini şu şekilde "
+"değiştirecektir:\n"
+"- Masaüstü platformları: %s\n"
+"- Mobil platformlar: %s\n"
+"- Web platformu: %s"
 
 msgid "Forward+"
 msgstr "İleri+"
@@ -6570,6 +6608,9 @@ msgstr "Dışa Aktarım Şablonlarını Yönet"
 msgid "Baking shaders"
 msgstr "Gölgelendiriciler fırınlanıyor"
 
+msgid "Search Replacement For: %s"
+msgstr "Şunu Değiştirmek İçin Ara:%s"
+
 msgid "Dependencies For:"
 msgstr "Şunun İçin Bağımlılıklar:"
 
@@ -7004,6 +7045,10 @@ msgstr "Izgara görünümü"
 
 msgid "List view"
 msgstr "Liste görünümü"
+
+msgid "Hold Shift for more precise changes."
+msgstr ""
+"Daha hassas değişiklikler için Shift (üst karakter) tuşuna basılı tutun."
 
 msgid "No notifications."
 msgstr "Bildirim yok."
@@ -7870,6 +7915,11 @@ msgstr "Çeviri Ekle"
 
 msgid "Lock/Unlock Component Ratio"
 msgstr "Bileşen Oranını Kilitle/Kilidi Aç"
+
+msgid "This %s is used in %d place."
+msgid_plural "This %s is used in %d places."
+msgstr[0] "Bu %s, %d yerde kullanılıyor."
+msgstr[1] "Bu %s, %d yerde kullanılıyor."
 
 msgid "Left-click to make it unique."
 msgstr "Benzersiz hale getirmek için Sol-tıklayın."
@@ -9807,6 +9857,9 @@ msgstr "Seçim Aracı"
 msgid "Shift: Draw line."
 msgstr "ÜstKrkt: Çizgi çiz."
 
+msgid "%s+Shift: Draw rectangle."
+msgstr "%s + ÜstKrkt: Dikdörtgen çiz."
+
 msgid "Paint Tool"
 msgstr "Boyama Aracı"
 
@@ -10506,6 +10559,9 @@ msgstr "Silgi Aracı"
 msgid "Picker Tool"
 msgstr "Seçici Aracı"
 
+msgid "Source ID: %d"
+msgstr "Kaynak ID: %d"
+
 msgid "Bone Picker:"
 msgstr "Kemik Seçicisi:"
 
@@ -10725,6 +10781,12 @@ msgstr "Basitleştirilmiş bir çarpışma şekli oluşturulamadı."
 
 msgid "Couldn't create any collision shapes."
 msgstr "Herhangi bir çarpışma şekli oluşturulamadı."
+
+msgid "Create %s Collision Shape Sibling"
+msgstr "%s Çarpışma Şekli Kardeşi Oluştur"
+
+msgid "Create %s Static Body Child"
+msgstr "%s Statik Cisim Alt Düğümü Oluştur"
 
 msgid "Trimesh"
 msgstr "Üçgenörgü"
@@ -11181,6 +11243,48 @@ msgstr "%f derece döndürülüyor."
 msgid "Scaling %s."
 msgstr "Ölçekleniyor: %s."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Çerçeve Yörünge Değiştirici 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Çerçeve Yörünge Değiştirici 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Çerçeve Kaydırma Değiştirici 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Çerçeve Kaydırma Değiştirici 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Çerçeve Yakınlaştırma Değiştirici 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Çerçeve Yakınlaştırma Değiştirici 2"
+
+msgid "Freelook Left"
+msgstr "Sola Serbest Bakış"
+
+msgid "Freelook Right"
+msgstr "Sağa Serbest Bakış"
+
+msgid "Freelook Forward"
+msgstr "İleri Serbest Bakış"
+
+msgid "Freelook Backwards"
+msgstr "Geriye Serbest Bakış"
+
+msgid "Freelook Up"
+msgstr "Yukarı Serbest Bakış"
+
+msgid "Freelook Down"
+msgstr "Aşağı Serbest Bakış"
+
+msgid "Freelook Speed Modifier"
+msgstr "Serbest Bakış Hızlı Değiştirici"
+
+msgid "Freelook Slow Modifier"
+msgstr "Serbest Bakış Yavaş Değiştirici"
+
 msgid "View"
 msgstr "Görünüm"
 
@@ -11407,48 +11511,6 @@ msgstr "Doppler'i etkinleştir"
 
 msgid "Cinematic Preview"
 msgstr "Sinema Özellikli Önizleme"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Çerçeve Yörünge Değiştirici 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Çerçeve Yörünge Değiştirici 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Çerçeve Kaydırma Değiştirici 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Çerçeve Kaydırma Değiştirici 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Çerçeve Yakınlaştırma Değiştirici 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Çerçeve Yakınlaştırma Değiştirici 2"
-
-msgid "Freelook Left"
-msgstr "Sola Serbest Bakış"
-
-msgid "Freelook Right"
-msgstr "Sağa Serbest Bakış"
-
-msgid "Freelook Forward"
-msgstr "İleri Serbest Bakış"
-
-msgid "Freelook Backwards"
-msgstr "Geriye Serbest Bakış"
-
-msgid "Freelook Up"
-msgstr "Yukarı Serbest Bakış"
-
-msgid "Freelook Down"
-msgstr "Aşağı Serbest Bakış"
-
-msgid "Freelook Speed Modifier"
-msgstr "Serbest Bakış Hızlı Değiştirici"
-
-msgid "Freelook Slow Modifier"
-msgstr "Serbest Bakış Yavaş Değiştirici"
 
 msgid "Lock Transformation to X axis"
 msgstr "Dönüşümü X Eksenine Kilitle"
@@ -15230,6 +15292,12 @@ msgstr "Profil(leri) İçe Aktar"
 msgid "Manage Editor Feature Profiles"
 msgstr "Düzenleyici Özellik Profillerini Yönet"
 
+msgid "Save Layout"
+msgstr "Yerleşim Düzenini Kaydet"
+
+msgid "Delete Layout"
+msgstr "Yerleşim Düzenini Sil"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Yerleşik Eylemi Düzenle: %s"
 
@@ -17410,6 +17478,15 @@ msgstr "IzgaraHaritası Boyama"
 msgid "GridMap Selection"
 msgstr "IzgaraHaritası Seçim"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Izgara Zeminini Değiştir:\n"
+"Önceki Düzlem (%s)\n"
+"Sonraki Düzlem (%s)"
+
 msgid "Previous Floor"
 msgstr "Önceki Zemin"
 
@@ -17448,15 +17525,6 @@ msgstr "İmleç Döndür Y"
 
 msgid "Cursor Rotate Z"
 msgstr "İmleç Döndür Z"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Izgara Zeminini Değiştir:\n"
-"Önceki Düzlem (%s)\n"
-"Sonraki Düzlem (%s)"
 
 msgid "Filter Meshes"
 msgstr "Örgüleri Filtrele"

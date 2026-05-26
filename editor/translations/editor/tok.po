@@ -1624,12 +1624,6 @@ msgstr "o awen e nasin kulupu ma..."
 msgid "Delete Layout..."
 msgstr "o weka e nasin kulupu ma..."
 
-msgid "Save Layout"
-msgstr "o awen e nasin kulupu ma"
-
-msgid "Delete Layout"
-msgstr "o weka e nasin kulupu ma"
-
 msgid "This scene was never saved."
 msgstr "ala la ma pali ni li awen."
 
@@ -3420,9 +3414,6 @@ msgstr "lukin monsi."
 msgid "Rotate"
 msgstr "o sike"
 
-msgid "View"
-msgstr "lukin"
-
 msgid "Viewport Orbit Modifier 1"
 msgstr "ante sike Viewport nanpa 1"
 
@@ -3434,6 +3425,9 @@ msgstr "ante Viewport pi suli lukin nanpa 1"
 
 msgid "Viewport Zoom Modifier 2"
 msgstr "ante Viewport pi suli lukin nanpa 2"
+
+msgid "View"
+msgstr "lukin"
 
 msgid "(Available in all modes.)"
 msgstr "(ni li ken lon nasin ale.)"
@@ -4501,6 +4495,12 @@ msgstr "(ilo ante li ala)"
 msgid "Reset to Default"
 msgstr "o ante open tawa meso"
 
+msgid "Save Layout"
+msgstr "o awen e nasin kulupu ma"
+
+msgid "Delete Layout"
+msgstr "o weka e nasin kulupu ma"
+
 msgid "Primary"
 msgstr "lawa"
 
@@ -4907,6 +4907,15 @@ msgstr "CSG"
 msgid "Change CSG Box Size"
 msgstr "o ante e suli pi leko CSG"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"o ante e anpa noka leko:\n"
+"selo nanpa tawa (%s)\n"
+"selo nanpa kama (%s)"
+
 msgid "Previous Floor"
 msgstr "anpa kama"
 
@@ -4927,15 +4936,6 @@ msgstr "o weka e tawa sike"
 
 msgid "GridMap Settings"
 msgstr "lawa toki GridMap"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"o ante e anpa noka leko:\n"
-"selo nanpa tawa (%s)\n"
-"selo nanpa kama (%s)"
 
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""

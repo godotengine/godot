@@ -33,13 +33,15 @@
 # Đức Anh Nguyễn <ducnah2132k9@gmail.com>, 2025.
 # Orus Or <orus3732@gmail.com>, 2025.
 # Nguyen Ngoc Thai <thaidev247@gmail.com>, 2026.
+# Nam Namcuteee <namcuteeenam@gmail.com>, 2026.
+# Khắc Vinh Vũ <vukhacvinh31@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-28 01:30+0000\n"
-"Last-Translator: Nguyen Ngoc Thai <thaidev247@gmail.com>\n"
+"PO-Revision-Date: 2026-05-06 10:05+0000\n"
+"Last-Translator: Khắc Vinh Vũ <vukhacvinh31@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/vi/>\n"
 "Language: vi\n"
@@ -47,7 +49,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1\n"
 
 msgid "Application"
 msgstr "Ứng dụng"
@@ -96,6 +98,9 @@ msgstr "Tên thư mục người dùng tùy chỉnh"
 
 msgid "Project Settings Override"
 msgstr "Ghi đè thiết đặt dự án"
+
+msgid "Disable Project Settings Override"
+msgstr "Vô hiệu Hoá Ghi đè Thiết đặt Dự án"
 
 msgid "Main Loop Type"
 msgstr "Loại vòng lặp chính"

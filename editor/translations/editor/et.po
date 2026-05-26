@@ -2497,12 +2497,6 @@ msgstr "Stseenil %s on katkised sõltuvused:"
 msgid "Clear Recent Scenes"
 msgstr "Tühjenda Hiljuti Avatud Tseenid"
 
-msgid "Save Layout"
-msgstr "Salvesta Paigutus"
-
-msgid "Delete Layout"
-msgstr "Kustuta Paigutus"
-
 msgid "Save & Close"
 msgstr "Salvesta Ja Sulge"
 
@@ -5226,6 +5220,30 @@ msgstr "Skaleerin:"
 msgid "Rotating %s degrees."
 msgstr "Pööratakse %s Kraadi."
 
+msgid "Freelook Left"
+msgstr "Vabavaade Vasakule"
+
+msgid "Freelook Right"
+msgstr "Vabavaade Paremale"
+
+msgid "Freelook Forward"
+msgstr "Vabavaade Ette"
+
+msgid "Freelook Backwards"
+msgstr "Vabavaade Tagasi"
+
+msgid "Freelook Up"
+msgstr "Vabavaade Ülesse"
+
+msgid "Freelook Down"
+msgstr "Vabavaade Alla"
+
+msgid "Freelook Speed Modifier"
+msgstr "Vabavaate Kiiruse Modifikaator"
+
+msgid "Freelook Slow Modifier"
+msgstr "Vabavaate Aeglustuse Modifikaator"
+
 msgid "View"
 msgstr "Kuva"
 
@@ -5342,30 +5360,6 @@ msgstr "Luba Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Kinemaatiline eelvaade"
-
-msgid "Freelook Left"
-msgstr "Vabavaade Vasakule"
-
-msgid "Freelook Right"
-msgstr "Vabavaade Paremale"
-
-msgid "Freelook Forward"
-msgstr "Vabavaade Ette"
-
-msgid "Freelook Backwards"
-msgstr "Vabavaade Tagasi"
-
-msgid "Freelook Up"
-msgstr "Vabavaade Ülesse"
-
-msgid "Freelook Down"
-msgstr "Vabavaade Alla"
-
-msgid "Freelook Speed Modifier"
-msgstr "Vabavaate Kiiruse Modifikaator"
-
-msgid "Freelook Slow Modifier"
-msgstr "Vabavaate Aeglustuse Modifikaator"
 
 msgid "Lock Transformation to X axis"
 msgstr "Lukusta Transformatsioonid X Teljele"
@@ -7673,6 +7667,12 @@ msgstr "Impordi profiil(id)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Halda redaktori funktsioonide profiile"
+
+msgid "Save Layout"
+msgstr "Salvesta Paigutus"
+
+msgid "Delete Layout"
+msgstr "Kustuta Paigutus"
 
 msgid "Common"
 msgstr "Ühine"

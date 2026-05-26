@@ -5,14 +5,14 @@
 #
 # தமிழ்நேரம் <anishprabu.t@gmail.com>, 2024, 2025.
 # zirzak <gdarlucas@gmail.com>, 2025.
-# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025, 2026.
 # Muhammed Nihal <muhammed.dnihal06@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-01-29 23:25+0000\n"
-"Last-Translator: Muhammed Nihal <muhammed.dnihal06@gmail.com>\n"
+"PO-Revision-Date: 2026-02-16 07:10+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Tamil <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ta/>\n"
 "Language: ta\n"
@@ -4943,12 +4943,6 @@ msgstr "தளவமைப்பைச் சேமிக்கவும் ..."
 msgid "Delete Layout..."
 msgstr "தளவமைப்பை நீக்கு ..."
 
-msgid "Save Layout"
-msgstr "தளவமைப்பை சேமிக்கவும்"
-
-msgid "Delete Layout"
-msgstr "தளவமைப்பை நீக்கு"
-
 msgid "This scene was never saved."
 msgstr "இந்த காட்சி ஒருபோதும் காப்பாற்றப்படவில்லை."
 
@@ -7421,9 +7415,6 @@ msgstr "வகை: %s"
 
 msgid "Dimensions: %d × %d"
 msgstr "பரிமாணங்கள்: %d × %d"
-
-msgid "Length: %0dm %0ds"
-msgstr "நீளம்: %0DM %0DS"
 
 msgid "Length: %0.1fs"
 msgstr "நீளம்: %0.1fs"
@@ -10523,6 +10514,48 @@ msgstr "சுழலும் %எஃப் டிகிரி."
 msgid "Scaling %s."
 msgstr "அளவிடுதல் %s."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "ViewPort சுற்றுப்பாதை மாற்றியமைத்தல் 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "ViewPort சுற்றுப்பாதை மாற்றியமைத்தல் 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "வியூபோர்ட் பான் மாற்றியமைப்பாளர் 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "வியூபோர்ட் பான் மாற்றியமைப்பாளர் 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "ViewPort சூம் மாற்றியமைப்பாளர் 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "ViewPort சூம் மாற்றியமைப்பாளர் 2"
+
+msgid "Freelook Left"
+msgstr "ஃப்ரீலூக் இடது"
+
+msgid "Freelook Right"
+msgstr "ஃப்ரீலூக் சரி"
+
+msgid "Freelook Forward"
+msgstr "ஃப்ரீலூக் முன்னோக்கி"
+
+msgid "Freelook Backwards"
+msgstr "ஃப்ரீலூக் பின்னோக்கி"
+
+msgid "Freelook Up"
+msgstr "ஃப்ரீலூக் அப்"
+
+msgid "Freelook Down"
+msgstr "ஃப்ரீலூக் கீழே"
+
+msgid "Freelook Speed Modifier"
+msgstr "ஃப்ரீலூக் வேக மாற்றி"
+
+msgid "Freelook Slow Modifier"
+msgstr "ஃப்ரீலூக் மெதுவான மாற்றியமைப்பாளர்"
+
 msgid "View"
 msgstr "பார்வை"
 
@@ -10731,48 +10764,6 @@ msgstr "டாப்ளரை இயக்கவும்"
 
 msgid "Cinematic Preview"
 msgstr "சினிமா முன்னோட்டம்"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "ViewPort சுற்றுப்பாதை மாற்றியமைத்தல் 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "ViewPort சுற்றுப்பாதை மாற்றியமைத்தல் 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "வியூபோர்ட் பான் மாற்றியமைப்பாளர் 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "வியூபோர்ட் பான் மாற்றியமைப்பாளர் 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "ViewPort சூம் மாற்றியமைப்பாளர் 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "ViewPort சூம் மாற்றியமைப்பாளர் 2"
-
-msgid "Freelook Left"
-msgstr "ஃப்ரீலூக் இடது"
-
-msgid "Freelook Right"
-msgstr "ஃப்ரீலூக் சரி"
-
-msgid "Freelook Forward"
-msgstr "ஃப்ரீலூக் முன்னோக்கி"
-
-msgid "Freelook Backwards"
-msgstr "ஃப்ரீலூக் பின்னோக்கி"
-
-msgid "Freelook Up"
-msgstr "ஃப்ரீலூக் அப்"
-
-msgid "Freelook Down"
-msgstr "ஃப்ரீலூக் கீழே"
-
-msgid "Freelook Speed Modifier"
-msgstr "ஃப்ரீலூக் வேக மாற்றி"
-
-msgid "Freelook Slow Modifier"
-msgstr "ஃப்ரீலூக் மெதுவான மாற்றியமைப்பாளர்"
 
 msgid "Lock Transformation to X axis"
 msgstr "ஃச் அச்சுக்கு பூட்டு மாற்றம்"
@@ -14445,6 +14436,12 @@ msgstr "இறக்குமதி சுயவிவரம் (கள்)"
 msgid "Manage Editor Feature Profiles"
 msgstr "எடிட்டர் அம்ச சுயவிவரங்களை நிர்வகிக்கவும்"
 
+msgid "Save Layout"
+msgstr "தளவமைப்பை சேமிக்கவும்"
+
+msgid "Delete Layout"
+msgstr "தளவமைப்பை நீக்கு"
+
 msgid "Edit Built-in Action: %s"
 msgstr "உள்ளமைக்கப்பட்ட செயலைத் திருத்து: %s"
 
@@ -16576,6 +16573,15 @@ msgstr "கிரிட்மேப் பெயிண்ட்"
 msgid "GridMap Selection"
 msgstr "கிரிட்மேப் தேர்வு"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"கட்டம் தளத்தை மாற்றவும்: \n"
+"முந்தைய வானூர்தி (%s) \n"
+"அடுத்த வானூர்தி (%s)"
+
 msgid "Previous Floor"
 msgstr "முந்தைய தளம்"
 
@@ -16614,15 +16620,6 @@ msgstr "கர்சர் ஒய் ஐ சுழற்றுங்கள்"
 
 msgid "Cursor Rotate Z"
 msgstr "கர்சர் சட் ஐ சுழற்றுங்கள்"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"கட்டம் தளத்தை மாற்றவும்: \n"
-"முந்தைய வானூர்தி (%s) \n"
-"அடுத்த வானூர்தி (%s)"
 
 msgid "Filter Meshes"
 msgstr "வடிகட்டி மெச்கள்"

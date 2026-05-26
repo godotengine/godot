@@ -4563,12 +4563,6 @@ msgstr "Sla Indeling op..."
 msgid "Delete Layout..."
 msgstr "Verwiijder Indeling..."
 
-msgid "Save Layout"
-msgstr "Indeling opslaan"
-
-msgid "Delete Layout"
-msgstr "Indeling verwijderen"
-
 msgid "Save & Close"
 msgstr "Opslaan & Sluiten"
 
@@ -6985,6 +6979,30 @@ msgstr "Roteren %s graden."
 msgid "Rotating %f degrees."
 msgstr "Roteren %f graden."
 
+msgid "Freelook Left"
+msgstr "Vrijekijk Links"
+
+msgid "Freelook Right"
+msgstr "Vrijekijk Rechts"
+
+msgid "Freelook Forward"
+msgstr "Vrijekijk Vooruit"
+
+msgid "Freelook Backwards"
+msgstr "Vrijekijk Achteruit"
+
+msgid "Freelook Up"
+msgstr "Vrijekijk Omhoog"
+
+msgid "Freelook Down"
+msgstr "Vrijekijk Omlaag"
+
+msgid "Freelook Speed Modifier"
+msgstr "Vrijekijk Snelheid Modificator"
+
+msgid "Freelook Slow Modifier"
+msgstr "Vrijekijk Snelheid Modificator"
+
 msgid "View"
 msgstr "Weergeven"
 
@@ -7038,30 +7056,6 @@ msgstr "Activeer Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Bioscoop Preview"
-
-msgid "Freelook Left"
-msgstr "Vrijekijk Links"
-
-msgid "Freelook Right"
-msgstr "Vrijekijk Rechts"
-
-msgid "Freelook Forward"
-msgstr "Vrijekijk Vooruit"
-
-msgid "Freelook Backwards"
-msgstr "Vrijekijk Achteruit"
-
-msgid "Freelook Up"
-msgstr "Vrijekijk Omhoog"
-
-msgid "Freelook Down"
-msgstr "Vrijekijk Omlaag"
-
-msgid "Freelook Speed Modifier"
-msgstr "Vrijekijk Snelheid Modificator"
-
-msgid "Freelook Slow Modifier"
-msgstr "Vrijekijk Snelheid Modificator"
 
 msgid "Toggle Camera Preview"
 msgstr "Camera-voorbeeld aan-/uitzetten"
@@ -9094,6 +9088,12 @@ msgstr "Profiel(en) importeren"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Eigenschapsprofielen Editor beheren"
+
+msgid "Save Layout"
+msgstr "Indeling opslaan"
+
+msgid "Delete Layout"
+msgstr "Indeling verwijderen"
 
 msgid "Edit Built-in Action: %s"
 msgstr "Bewerk ingebouwde actie: %s"

@@ -57,7 +57,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-14 05:00+0000\n"
+"PO-Revision-Date: 2026-02-14 22:10+0000\n"
 "Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
@@ -66,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "OK"
@@ -5423,12 +5423,6 @@ msgstr "Spara layout..."
 msgid "Delete Layout..."
 msgstr "Radera layout..."
 
-msgid "Save Layout"
-msgstr "Spara layout"
-
-msgid "Delete Layout"
-msgstr "Radera layout"
-
 msgid "This scene was never saved."
 msgstr "Den här scenen har aldrig sparats."
 
@@ -5822,7 +5816,7 @@ msgid "Open Project Settings"
 msgstr "Öppna projektets inställningar"
 
 msgid "Ok"
-msgstr "OK"
+msgstr "Ok"
 
 msgid "Warning!"
 msgstr "Varning!"
@@ -6032,7 +6026,8 @@ msgstr "Apple-inbäddade plugins"
 msgid ""
 "Failed to export Apple Embedded plugins with code %d. Please check the output "
 "log."
-msgstr "Kunde inte exportera iOS-plugin med koden %d. Se output-loggen."
+msgstr ""
+"Kunde inte exportera Apple Embedded-plugins med koden %d. Se output-loggen."
 
 msgid "Could not create a directory at path \"%s\"."
 msgstr "Kunde inte skapa katalog \"%s\"."
@@ -7438,7 +7433,7 @@ msgid ""
 "Configure the Beats Per Measure (tempo) used for the interactive streams.\n"
 "This is required in order to configure beat information."
 msgstr ""
-"Ställ in BPM (tempo) för de interaktiva strömmarna.\n"
+"Konfigurera taktslag per takt (tempo) för de interaktiva strömmarna.\n"
 "Det är ett krav för att konfigurera taktslags-information."
 
 msgid "Beat Count:"
@@ -9700,10 +9695,10 @@ msgid "%s+Click: Add Point"
 msgstr "%s+Klick: Lägg till punkt"
 
 msgid "Left Click: Split Segment (in curve)"
-msgstr "LMB: Dela segment (i kurva)"
+msgstr "Vänster musknapp: Dela segment (i kurva)"
 
 msgid "Right Click: Delete Point"
-msgstr "RMB: Radera punkt"
+msgstr "Höger musknapp: Radera punkt"
 
 msgid "Select Control Points (Shift+Drag)"
 msgstr "Markera kontrollpunkter (skift+dra)"
@@ -11732,6 +11727,54 @@ msgstr "Roterar %f grader."
 msgid "Scaling %s."
 msgstr "Skalar om %s."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Orbitmodifierare för viewport 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Orbitmodifierare för viewport 2"
+
+msgid "Viewport Orbit Snap Modifier 1"
+msgstr "Viewport‑orbit‑snappmodifierare 1"
+
+msgid "Viewport Orbit Snap Modifier 2"
+msgstr "Viewport‑orbit‑snappmodifierare 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Panoreringsmodifierare för viewport 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Panoreringsmodifierare för viewport 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Zoommodifierare för viewport 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Zoommodifierare för viewport 2"
+
+msgid "Freelook Left"
+msgstr "Frikolla vänster"
+
+msgid "Freelook Right"
+msgstr "Frikolla höger"
+
+msgid "Freelook Forward"
+msgstr "Frikolla framåt"
+
+msgid "Freelook Backwards"
+msgstr "Frikolla bakåt"
+
+msgid "Freelook Up"
+msgstr "Frikolla uppåt"
+
+msgid "Freelook Down"
+msgstr "Frikolla nedåt"
+
+msgid "Freelook Speed Modifier"
+msgstr "Frikolla hastighetsfaktor"
+
+msgid "Freelook Slow Modifier"
+msgstr "Frikolla långsam-faktor"
+
 msgid "View"
 msgstr "Vy"
 
@@ -11974,54 +12017,6 @@ msgstr "Slå på doppler-effekt"
 
 msgid "Cinematic Preview"
 msgstr "Filmisk förhandsvisning"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Orbitmodifierare för viewport 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Orbitmodifierare för viewport 2"
-
-msgid "Viewport Orbit Snap Modifier 1"
-msgstr "Viewport‑orbit‑snappmodifierare 1"
-
-msgid "Viewport Orbit Snap Modifier 2"
-msgstr "Viewport‑orbit‑snappmodifierare 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Panoreringsmodifierare för viewport 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Panoreringsmodifierare för viewport 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Zoommodifierare för viewport 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Zoommodifierare för viewport 2"
-
-msgid "Freelook Left"
-msgstr "Frikolla vänster"
-
-msgid "Freelook Right"
-msgstr "Frikolla höger"
-
-msgid "Freelook Forward"
-msgstr "Frikolla framåt"
-
-msgid "Freelook Backwards"
-msgstr "Frikolla bakåt"
-
-msgid "Freelook Up"
-msgstr "Frikolla uppåt"
-
-msgid "Freelook Down"
-msgstr "Frikolla nedåt"
-
-msgid "Freelook Speed Modifier"
-msgstr "Frikolla hastighetsfaktor"
-
-msgid "Freelook Slow Modifier"
-msgstr "Frikolla långsam-faktor"
 
 msgid "Lock Transformation to X axis"
 msgstr "Lås transformering till X-axeln"
@@ -15925,6 +15920,12 @@ msgstr "Eller ange nytt layoutnamn."
 msgid "New layout name"
 msgstr "Nytt layoutnamn"
 
+msgid "Save Layout"
+msgstr "Spara layout"
+
+msgid "Delete Layout"
+msgstr "Radera layout"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Redigera inbyggd åtgärd: %s"
 
@@ -18189,6 +18190,15 @@ msgstr "GridMap måla"
 msgid "GridMap Selection"
 msgstr "GridMap markering"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Ändra rutnätsgolv:\n"
+"Föregående plan (%s)\n"
+"Nästa plan (%s)"
+
 msgid "Previous Floor"
 msgstr "Föregående golv"
 
@@ -18230,15 +18240,6 @@ msgstr "Pekare rotera Z"
 
 msgid "Change Grid Floor:"
 msgstr "Ändra rutnätsgolv:"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Ändra rutnätsgolv:\n"
-"Föregående plan (%s)\n"
-"Nästa plan (%s)"
 
 msgid "Filter Meshes"
 msgstr "Filtrera mesher"
@@ -18470,7 +18471,7 @@ msgid "%s/s"
 msgstr "%s/s"
 
 msgid "Incoming Bandwidth"
-msgstr "Inkommande RPC"
+msgstr "Inkommande bandbredd"
 
 msgid "Outgoing Bandwidth"
 msgstr "Utgående bandbredd"

@@ -75,13 +75,16 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Dandihk <n00b38d@gmail.com>, 2025.
 # Sapatekno <sapatekno@gmail.com>, 2026.
+# CoffeAfterBreak <harithadzka.ramadhan@gmail.com>, 2026.
+# Narada Fox <narada.fox7pc@gmail.com>, 2026.
+# "Oscar :D" <robloxgamingindonesia7@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-05 19:02+0000\n"
-"Last-Translator: Sapatekno <sapatekno@gmail.com>\n"
+"PO-Revision-Date: 2026-05-26 08:28+0000\n"
+"Last-Translator: \"Oscar :D\" <robloxgamingindonesia7@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -89,13 +92,31 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "OK"
 msgstr "Oke"
 
+msgid "Failed"
+msgstr "Gagal"
+
+msgid "Unavailable"
+msgstr "Tidak tersedia"
+
+msgid "Unconfigured"
+msgstr "Tidak terkonfigurasi"
+
+msgid "Unauthorized"
+msgstr "Tidak diizinkan"
+
+msgid "Parameter out of range"
+msgstr "Parameter diluar jangkauan"
+
 msgid "Out of memory"
 msgstr "Kehabisan memori"
+
+msgid "File not found"
+msgstr "Berkas tidak ditemukan"
 
 msgid "File: Bad drive"
 msgstr "Berkas: Drive Tidak Terbaca"
@@ -106,17 +127,104 @@ msgstr "Berkas: Lokasi File Tidak Ditemukan"
 msgid "File: Permission denied"
 msgstr "Berkas: Izin akses ditolak"
 
+msgid "File already in use"
+msgstr "Berkas sudah digunakan"
+
+msgid "Can't open file"
+msgstr "Tidak dapat membuka file"
+
+msgid "Can't write file"
+msgstr "Tidak bisa menulis file"
+
+msgid "Can't read file"
+msgstr "Tidak dapat membaca file"
+
 msgid "File unrecognized"
 msgstr "Berkas Tidak Dikenali"
 
 msgid "File corrupt"
 msgstr "Berkas rusak atau tidak valid"
 
+msgid "Missing dependencies for file"
+msgstr "Kurangnya kebutuhan untuk file"
+
+msgid "End of file"
+msgstr "Akhir dari file"
+
+msgid "Can't open"
+msgstr "Tidak dapat membuka"
+
+msgid "Can't create"
+msgstr "Tidak dapat membuat"
+
+msgid "Query failed"
+msgstr "Permintaan gagal"
+
+msgid "Already in use"
+msgstr "Sudah digunakan"
+
 msgid "Locked"
 msgstr "Terkunci"
 
+msgid "Timeout"
+msgstr "Tenggat waktu habis"
+
+msgid "Can't connect"
+msgstr "Tidak dapat terhubung"
+
+msgid "Can't resolve"
+msgstr "Tidak bisa menyelesaikan"
+
+msgid "Connection error"
+msgstr "Menghubungkan gagal"
+
+msgid "Can't acquire resource"
+msgstr "Tidak bisa mendapat sumber daya"
+
+msgid "Can't fork"
+msgstr "Tidak bisa membuat proses baru"
+
+msgid "Invalid data"
+msgstr "Data tidak valid"
+
+msgid "Invalid parameter"
+msgstr "Parameter tidak valid"
+
+msgid "Already exists"
+msgstr "Sudah ada"
+
+msgid "Does not exist"
+msgstr "Tidak ada"
+
+msgid "Can't read database"
+msgstr "Tidak bisa membaca database"
+
 msgid "Can't write database"
 msgstr "Gagal Menulis ke Basis Data"
+
+msgid "Compilation failed"
+msgstr "Kompilasi gagal"
+
+msgid "Method not found"
+msgstr "Metode tidak ditemukan"
+
+msgid "Link failed"
+msgstr "Penghubung gagal"
+
+msgid "Script failed"
+msgstr "Skrip gagal"
+
+msgid "Cyclic link detected"
+msgstr "Tautan Siklik terdeteksi"
+
+msgid "Invalid declaration"
+msgstr "Deklarasi tidak valid"
+
+msgid "Duplicate symbol"
+msgstr "Simbol duplikat"
+
+msgid "Parse error"
+msgstr "Gagal mengurai"
 
 msgid "Busy"
 msgstr "Sibuk"
@@ -126,6 +234,15 @@ msgstr "Lewati"
 
 msgid "Help"
 msgstr "Bantuan"
+
+msgid "Bug"
+msgstr "Masalah sistem"
+
+msgid "Printer on fire"
+msgstr "Printer kebakaran"
+
+msgid "unset"
+msgstr "Belum disetel"
 
 msgid "Physical"
 msgstr "Fisik"
@@ -315,6 +432,9 @@ msgstr "Pilih"
 msgid "Cancel"
 msgstr "Batal"
 
+msgid "Close Dialog"
+msgstr "Tutup Dialog"
+
 msgid "Focus Next"
 msgstr "Fokus Berikutnya"
 
@@ -488,6 +608,9 @@ msgstr "Segarkan"
 
 msgid "Show Hidden"
 msgstr "Tampilkan Tersembunyi"
+
+msgid "Find"
+msgstr "Cari"
 
 msgid "Focus Path"
 msgstr "Garis Fokus"
@@ -674,8 +797,20 @@ msgstr "Berlainan"
 msgid "Capture"
 msgstr "Tangkap"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space."
+msgstr ""
+"Memilih dan memindahkan node.\n"
+"RMB: Menambahkan titik pada posisi yang diklik.\n"
+"Shift+LMB+Seret: Atur posisi pembaruan di dalam ruangan."
+
 msgid "Create points."
 msgstr "Buat titik."
+
+msgid "Set the blending position within the space."
+msgstr "Setel posisi pembauran di dalam ruangan."
 
 msgid "Erase points."
 msgstr "Hapus titik."
@@ -755,6 +890,9 @@ msgstr "Langkah Grid Sumbu Y"
 msgid "Blend X Value"
 msgstr "Nilai Pencampuran Sumbu X"
 
+msgid "Blend Y Value"
+msgstr "Nilai Pencampuran Sumbu Y"
+
 msgid "Max Y"
 msgstr "Maks Y"
 
@@ -769,6 +907,9 @@ msgstr "Min X"
 
 msgid "X Value"
 msgstr "Nilai X"
+
+msgid "Max X"
+msgstr "Maks X"
 
 msgid "Parameter Changed: %s"
 msgstr "Parameter Berubah: %s"
@@ -1240,20 +1381,38 @@ msgstr "Waktu Berbaur:"
 msgid "Next (Auto Queue):"
 msgstr "Selanjutnya (Antrian Otomatis):"
 
+msgid "Reconnect Transition"
+msgstr "Hubungkan Transisi kembali"
+
 msgid "Move Node"
 msgstr "Pindahkan Node"
 
 msgid "Transition exists!"
 msgstr "Transisi sudah ada!"
 
+msgid "Cannot transition to self!"
+msgstr "Tidak bisa transisi ke sendiri!"
+
+msgid "Cannot transition to \"Start\"!"
+msgstr "Tidak bisa transisi ke \"Start\"!"
+
+msgid "Cannot transition from \"End\"!"
+msgstr "Tidak bisa transisi dari \"End\"!"
+
+msgid "Transition from \"%s\" to \"%s\" already exists!"
+msgstr "Animasi \"%s\" ke \"%s\" sudah ada!"
+
 msgid "Play/Travel to %s"
 msgstr "Putar/Pindah ke %s"
 
 msgid "Edit %s"
-msgstr "Ubah%s"
+msgstr "Ubah %s"
 
 msgid "Add Node and Transition"
 msgstr "Tambahkan Node dan Transisi"
+
+msgid "Transition already exists!"
+msgstr "Transisi sudah ada!"
 
 msgid "Add Transition"
 msgstr "Tambah Transisi"
@@ -4133,12 +4292,6 @@ msgstr ""
 msgid "Cannot run the script because it's not a tool script."
 msgstr "Tidak bisa menjalankan skrip karena itu bukan sebuah alat skrip."
 
-msgid "Save Layout"
-msgstr "Simpan Penampilan"
-
-msgid "Delete Layout"
-msgstr "Hapus Penampilan"
-
 msgid "This scene was never saved."
 msgstr "Tidak bisa memuat ulang adegan yang belum pernah disimpan."
 
@@ -4490,17 +4643,144 @@ msgstr "Tidak dapat membuka file untuk membaca-menulis di path \"%s\"."
 msgid "Failed to export project files."
 msgstr "Tidak dapat ekspor berkas proyek."
 
+msgid "No files or changes to export."
+msgstr "Tidak ada perubahan atau file untuk diekspor."
+
 msgid "Can't create encrypted file."
 msgstr "Tidak dapat membuat file terenkripsi."
+
+msgid "Save ZIP"
+msgstr "Simpan Sebagai ZIP"
+
+msgid "Failed to move temporary file \"%s\" to \"%s\"."
+msgstr "Tidak dapat menghapus berkas sementara \"%s\" ke \"%s\"."
+
+msgid "App Store Team ID not specified."
+msgstr "Team ID App Store tidak spesifik."
 
 msgid "Invalid Identifier:"
 msgstr "Identifier tidak valid:"
 
+msgid "At least one file timestamp access reason should be selected."
+msgstr "Setidaknya 1 file timestamp access reason harus dipilih."
+
+msgid "\"Shader Baker\" doesn't work with the Compatibility renderer."
+msgstr "\"Shader Baker\" tidak bisa bekerja dengan renderer Kompatibilitas."
+
+msgid ""
+"The editor is currently using a different renderer than what the target "
+"platform will use. \"Shader Baker\" won't be able to include core shaders. "
+"Switch to \"%s\" renderer temporarily to fix this."
+msgstr ""
+"Editor sedang menggunakan renderer yang berbeda dengan renderer yang akan "
+"digunakan platform target. \"Shader Baker\" tidak akan bisa memasukkan shader "
+"inti. Ganti ke renderer \"%s\" untuk sementara waktu untuk memperbaiki "
+"masalah ini."
+
+msgid "Target folder does not exist or is inaccessible: \"%s\""
+msgstr "Folder target tidak ada atau tidak bisa diakses: \"%s\""
+
+msgid "Export template not found."
+msgstr "Templat ekspor tidak ditemukan."
+
+msgid ""
+"Unexpected files found in the export destination directory \"%s.xcodeproj\", "
+"delete it manually or select another destination."
+msgstr ""
+"File tak terduga ditemukan di tempat tujuan ekspor \"%s.xcodeproj\". Hapus "
+"secara manual atau pilih tempat tujuan ekspor yang lain."
+
+msgid ""
+"Unexpected files found in the export destination directory \"%s\", delete it "
+"manually or select another destination."
+msgstr ""
+"File tak terduga ditemukan di tempat tujuan ekspor \"%s\". Hapus secara "
+"manual atau pilih tempat tujuan ekspor yang lain."
+
+msgid "Failed to create the directory: \"%s\""
+msgstr "Tidak dapat menciptakan direktori \"%s\""
+
+msgid "Could not create and open the directory: \"%s\""
+msgstr "Tidak dapat menciptakan dan membuka direktori: \"%s\""
+
+msgid "Apple Embedded Plugins"
+msgstr "Plugin Internal Apple"
+
+msgid ""
+"Failed to export Apple Embedded plugins with code %d. Please check the output "
+"log."
+msgstr ""
+"Tidak bisa mengekspor Plugin Internal Apple dengan kode %d. Periksa keluaran "
+"log."
+
+msgid "Could not create a directory at path \"%s\"."
+msgstr "Tidak dapat menciptakan direktori di jalur \"%s\"."
+
+msgid "Could not write to a file at path \"%s\"."
+msgstr "Tidak dapat menulis berkas di jalur \"%s\"."
+
+msgid ""
+"Requested template library '%s' not found. It might be missing from your "
+"template archive."
+msgstr ""
+"Library templat yang diminta '%s' tidak ditemukan. Mungkin menghilang dari "
+"arsip templat anda."
+
+msgid "Could not copy a file at path \"%s\" to \"%s\"."
+msgstr "Tidak dapat menyalin file untuk dibaca dari path \"%s\" ke \"%s\"."
+
+msgid "Could not access the filesystem."
+msgstr "Tidak dapat mengakses sistem file."
+
+msgid "Failed to create a file at path \"%s\" with code %d."
+msgstr "Tidak dapat membuat file di jalur \"%s\" dengan code %d."
+
+msgid "Code Signing"
+msgstr "Pengesahan Kode"
+
+msgid "Code signing failed, see editor log for details."
+msgstr "Pengesahan kode gagal, lihat log editor lebih lanjut."
+
+msgid "Xcode Build"
+msgstr "Pembuatan Proyek Xcode"
+
+msgid "Failed to run xcodebuild with code %d"
+msgstr "Gagal untuk menjalankan xcodebuild dengan kode %d"
+
+msgid "Xcode project build failed, see editor log for details."
+msgstr "Proyek Xcode gagal dibuat, lihat log editor lebih lanjut."
+
+msgid ".ipa export failed, see editor log for details."
+msgstr "Ekspor .ipa gagal, lihat log editor lebih lanjut."
+
+msgid ""
+".ipa can only be built on macOS. Leaving Xcode project without building the "
+"package."
+msgstr ""
+"File .ipa hanya bisa dibuat di macOS. Meninggalkan proyek Xcode tanpa membuat "
+"paket aplikasi."
+
+msgid ""
+"Exporting to an Apple Embedded platform when using C#/.NET is experimental "
+"and requires macOS."
+msgstr ""
+"Mengekspor game ke platform Internal Apple menggunakan C#/.NET masih bersifat "
+"eksperimental dan membutuhkan macOS."
+
+msgid ""
+"Exporting to an Apple Embedded platform when using C#/.NET is experimental."
+msgstr ""
+"Mengekspor ke platform Tersemat (Embedded) Apple saat menggunakan C#/.NET "
+"bersifat eksperimental."
+
 msgid "Custom debug template not found."
-msgstr "Templat awakutu kustom tidak ditemukan."
+msgstr "Templat debug kustom tidak ditemukan."
 
 msgid "Custom release template not found."
 msgstr "Templat rilis kustom tidak ditemukan."
+
+msgid "Invalid additional PList content: "
+msgstr "Content PList tambahan tidak valid. "
 
 msgid "Select device from the list"
 msgstr "Pilih perangkat pada daftar"
@@ -4508,12 +4788,42 @@ msgstr "Pilih perangkat pada daftar"
 msgid "Running on %s"
 msgstr "Berjalan pada %s"
 
+msgid "Could not start ios-deploy executable."
+msgstr "Tidak dapat memulai executable ios-deploy."
+
+msgid "Installation/running failed, see editor log for details."
+msgstr "Instalasi/menjalankan program gagal, lihat log editor lebih lanjut."
+
+msgid "Installation failed, see editor log for details."
+msgstr "Instalasi gagal, lihat log editor lebih lanjut."
+
+msgid "Running failed, see editor log for details."
+msgstr "Menjalankan program gagal, lihat log editor lebih lanjut."
+
+msgid "\"Shader Baker\" is not supported when using the Compatibility renderer."
+msgstr ""
+"\"Shader Baker\" tidak didukung ketika menggunakan perernder Kompatibilitas "
+"(Compatibility renderer)."
+
+msgid ""
+"The editor is currently using a different renderer than what the target "
+"platform will use. \"Shader Baker\" won't be able to include core shaders. "
+"Switch to the \"%s\" renderer temporarily to fix this."
+msgstr ""
+"Saat ini, editor sedang menggunakan perender dengan perender yang akan "
+"digunakan target platform. \"Shader Baker\" tidak akan bisa digunakan untuk "
+"memasukkan shader utama. Ganti perender \"%s\" untuk sementara waktu untuk "
+"memperbaiki masalah ini."
+
 msgid ""
 "A texture format must be selected to export the project. Please select at "
 "least one texture format."
 msgstr ""
 "Format tekstur setidaknya harus dipilih untuk mengekspor proyek. Silahkan "
 "pilih salah satu format tekstur."
+
+msgid "Prepare Template"
+msgstr "Kelola Templat"
 
 msgid "The given export path doesn't exist."
 msgstr "Lokasi ekspor yang diberikan tidak ada."
@@ -4524,8 +4834,17 @@ msgstr "File template tidak ditemukan: \"%s\"."
 msgid "Failed to copy export template."
 msgstr "Gagal menyalin template ekspor."
 
+msgid "PCK Embedding"
+msgstr "Penyematan File PCK"
+
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Pada ekspor 32-bit PCK yang ditanamkan tidak boleh lebih dari 4GiB."
+
+msgid "GDExtension"
+msgstr "GDExtension"
+
+msgid "Failed to copy shared object \"%s\"."
+msgstr "Tidak dapat menyalin objek yang dibagi \"%s\"."
 
 msgid "Plugin \"%s\" is not supported on \"%s\""
 msgstr "Plugin \"%s\" tidak didukung pada \"%s\""
@@ -4597,6 +4916,30 @@ msgstr ""
 "Tautan unduh tidak ditemukan untuk versi ini. Unduhan langsung hanya tersedia "
 "untuk versi rilis resmi."
 
+msgid "Disconnected"
+msgstr "Terputus"
+
+msgid "Resolving"
+msgstr "Menyelesaikan"
+
+msgid "Can't Resolve"
+msgstr "Tidak bisa menyelesaikan"
+
+msgid "Can't Connect"
+msgstr "Tidak dapat terhubung"
+
+msgid "Connected"
+msgstr "Terhubung"
+
+msgid "Downloading"
+msgstr "Mengunduh"
+
+msgid "Connection Error"
+msgstr "Error pada koneksi"
+
+msgid "TLS Handshake Error"
+msgstr "Error pada Jabat Tangan TLS"
+
 msgid "Can't open the export templates file."
 msgstr "Tidak dapat membuka file template ekspor."
 
@@ -4621,8 +4964,23 @@ msgstr "Hapus template untuk versi '%s'?"
 msgid "Export templates are missing. Download them or install from a file."
 msgstr "Template ekspor tidak ada. Download atau instal dari file."
 
+msgid "Export templates are missing. Install them from a file."
+msgstr "Template ekspor tidak ada. Instal dari file."
+
+msgid "Not available in offline mode"
+msgstr "Tidak tersedia di mode offline"
+
+msgid "Template downloading is disabled in offline mode."
+msgstr "Mendownload templat tidak bisa saat mode offline."
+
+msgid "No templates for development builds"
+msgstr "Templat ekspor tidak tersedia untuk build pengembangan"
+
 msgid "Official export templates aren't available for development builds."
 msgstr "Templat ekspor resmi tidak tersedia untuk build pengembangan."
+
+msgid "No templates for double-precision builds"
+msgstr "Tidak ada templat untuk build presisi ganda"
 
 msgid "Uncompressing Android Build Sources"
 msgstr "Mengekstrak Kode Sumber Build Android"
@@ -4635,6 +4993,9 @@ msgstr "Versi sekarang:"
 
 msgid "Export templates are installed and ready to be used."
 msgstr "Template ekspor sudah terinstal dan siap digunakan."
+
+msgid "Installed Path"
+msgstr "Jalur terinstal"
 
 msgid "Open Folder"
 msgstr "Buka Folder"
@@ -4650,6 +5011,12 @@ msgstr "Uninstall template untuk versi saat ini."
 
 msgid "Download from:"
 msgstr "Unduh dari:"
+
+msgid "Mirror"
+msgstr "Mirror"
+
+msgid "Mirror Options"
+msgstr "Opsi Mirror"
 
 msgid "Open in Web Browser"
 msgstr "Buka di Browser Web"
@@ -4671,8 +5038,11 @@ msgstr "Padang dari File"
 msgid "Install templates from a local file."
 msgstr "Instal template dari file lokal."
 
+msgid "Online mode is needed to download the templates."
+msgstr "Mode online diperlukan untuk mendownload templat."
+
 msgid "Cancel the download of the templates."
-msgstr "Batalkan download template."
+msgstr "Batalkan mengunduh template."
 
 msgid "Other Installed Versions:"
 msgstr "Versi Terinstal Lainnya:"
@@ -4692,6 +5062,16 @@ msgid ""
 msgstr ""
 "Templat akan dilanjutkan untuk diunduh.\n"
 "Editor Anda mungkin mengalami pembekuan sementara saat unduhan selesai."
+
+msgid ""
+"No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
+"your platform: %s"
+msgstr ""
+"Tidak ada library \"%s\" yang ditemukan untuk GDExtension: \"%s\". "
+"Kemungkinan flags yang ditemukan untuk platform anda: %s"
+
+msgid "Multiple \"%s\" libraries found for GDExtension: \"%s\": \"%s\"."
+msgstr "Beberapa library \"%s\" ditemukan untuk GDExtension: \"%s\": \"%s\"."
 
 msgid "Runnable"
 msgstr "Dapat dijalankan"
@@ -4922,6 +5302,12 @@ msgstr "Editor Dependensi"
 msgid "Owners of: %s (Total: %d)"
 msgstr "Pemilik dari: %s (Total: %d)"
 
+msgid "No owners found for: %s"
+msgstr "Tidak ada pemilik yang ditemukan untuk: %s"
+
+msgid "Owners List"
+msgstr "Daftar pemilik"
+
 msgid "Localization remap"
 msgstr "Pemetaan ulang lokalisasi"
 
@@ -4953,6 +5339,18 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "Tidak bisa menghapus:"
 
+msgid "Files to be deleted:"
+msgstr "File yang akan dihapus:"
+
+msgid "Dependencies of files to be deleted:"
+msgstr "Kebutuhan file yang akan dihapus:"
+
+msgid "Error loading: %s"
+msgstr "Error saat memuat:%s"
+
+msgid "Referenced by %s"
+msgstr "Direferensikan oleh %s"
+
 msgid "Fix Dependencies"
 msgstr "Perbaiki Dependensi"
 
@@ -4977,11 +5375,35 @@ msgstr "Memiliki"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Sumber Tanpa Kepemilikan yang Jelas:"
 
+msgid "Project initialization"
+msgstr "Inisialisasi proyek"
+
+msgid "Scanning file structure..."
+msgstr "Memindai struktur file..."
+
+msgid "Loading global class names..."
+msgstr "Memuat nama - nama kelas global…"
+
+msgid "Verifying GDExtensions..."
+msgstr "Memverifikasi GDExtensions..."
+
 msgid "Initializing plugins..."
 msgstr "Menginisialisasi plugin..."
 
+msgid "Starting file scan..."
+msgstr "Memulai pemindaian file…"
+
+msgid "Scanning actions..."
+msgstr "Memindai aksi..."
+
+msgid "Some extensions need the editor to restart to take effect."
+msgstr "Editor harus dimulai ulang untuk menerapkan perubahan."
+
 msgid "ScanSources"
 msgstr "Sumber Pemindaian"
+
+msgid "Updating Scene Groups"
+msgstr "Memperbarui kelompok scene"
 
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
@@ -4993,11 +5415,23 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Mengimpor ulang Aset"
 
+msgid "Preparing files to reimport..."
+msgstr "Menyiapkan scene untuk memuat ulang…"
+
+msgid "Executing pre-reimport operations..."
+msgstr "Mengeksekusi operasi pra-impor ulang…"
+
 msgid "Import resources of type: %s"
 msgstr "Mengimpor sumber daya dengan tipe: %s"
 
 msgid "Finalizing Asset Import..."
 msgstr "Menyelesaikan impor asset..."
+
+msgid "Executing post-reimport operations..."
+msgstr "Mengeksekusi operasi pasca-impor ulang…"
+
+msgid "Copying files..."
+msgstr "Menyalin file..."
 
 msgid "Go to Line"
 msgstr "Pergi ke Baris"
@@ -5007,6 +5441,15 @@ msgstr "Nomor Baris:"
 
 msgid "%d replaced."
 msgstr "%d telah diganti."
+
+msgid "Hide Replace"
+msgstr "Sembunyikan Replace"
+
+msgid "Show Replace"
+msgstr "Tunjukkan Replace"
+
+msgid "Replace Mode"
+msgstr "Ganti Mode"
 
 msgid "Match Case"
 msgstr "Kasus Kecocokan"
@@ -5975,14 +6418,88 @@ msgstr "Lokasi yang ditentukan tidak ada."
 msgid "New Game Project"
 msgstr "Proyek Baru Permainan"
 
+msgid "Supports desktop platforms only."
+msgstr "Hanya mendukung platform desktop."
+
+msgid "Advanced 3D graphics available."
+msgstr "Tersedia grafik 3D lebih lanjut."
+
+msgid "Can scale to large complex scenes."
+msgstr "Bisa diskala untuk scene yang besar dan kompleks."
+
+msgid "Uses RenderingDevice backend."
+msgstr "Menggunakan backend RenderingDevice."
+
+msgid "Slower rendering of simple scenes."
+msgstr "Render scene simpel yang lebih lama."
+
+msgid "Supports desktop + mobile platforms."
+msgstr "Mendukung platform - platform desktop + mobile."
+
+msgid "Less advanced 3D graphics."
+msgstr "Grafik 3D yang kurang canggih."
+
+msgid "Less scalable for complex scenes."
+msgstr "Kurang dapat diskalakan untuk adegan yang kompleks."
+
+msgid "Fast rendering of simple scenes."
+msgstr "Perenderan cepat untuk scene sederhana."
+
+msgid "Supports desktop, mobile + web platforms."
+msgstr "Mendukung platform desktop, mobile + web."
+
+msgid "Least advanced 3D graphics."
+msgstr "Grafik 3D yang paling tidak canggih."
+
+msgid "Intended for low-end/older devices."
+msgstr "Ditujukan untuk level perangkat yang lebih rendah/ lebih tua."
+
+msgid "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2)."
+msgstr "Menggunakan backend OpenGL 3 (OpenGL 3.3/ES 3.0/WebGL2)."
+
+msgid "Fastest rendering of simple scenes."
+msgstr "Perender tercepat untuk scene sederhana."
+
+msgid "Warning: This folder is not empty"
+msgstr "Peringatan: Folder ini tidak kosong"
+
+msgid ""
+"You are about to create a Godot project in a non-empty folder.\n"
+"The entire contents of this folder will be imported as project resources!\n"
+"\n"
+"Are you sure you wish to continue?"
+msgstr ""
+"Ana akan membuat proyek Godot di folder yang tidak kosong.\n"
+"Keseluruhan isi folder akan diimpor sebagai sumber daya proyek!\n"
+"\n"
+"Apakah anda yakin untuk melanjutkan?"
+
+msgid "Couldn't create project directory, check permissions."
+msgstr "Tidak dapat membuat jalur proyek, cek izin folder pembuatan projek."
+
 msgid "Couldn't create project.godot in project path."
 msgstr "Tidak dapat membuat project.godot dalam lokasi proyek."
 
+msgid "Couldn't create icon.svg in project path."
+msgstr "Tidak dapat membuat icon.svg dalam lokasi proyek."
+
 msgid "Error opening package file, not in ZIP format."
-msgstr "Gagal saat membuka paket, tidak dalam bentuk zip."
+msgstr "Gagal saat membuka paket, tidak dalam bentuk ZIP."
 
 msgid "The following files failed extraction from package:"
 msgstr "Berkas berikut gagal diekstrak dari paket:"
+
+msgid "Couldn't duplicate project (error %d)."
+msgstr "Tidak dapat menduplikat proyek (error %d)."
+
+msgid ""
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
+msgstr ""
+"Tidak dapat memuat project.godot dalam lokasi proyek '%s'(error %d). Mungkin "
+"berkas itu tidak ada atau rusak."
+
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Tidak dapat membuka proyek di '%s' (error %d)."
 
 msgid "Rename Project"
 msgstr "Ubah Nama Proyek"
@@ -6008,8 +6525,38 @@ msgstr "Lokasi Pemasangan Proyek:"
 msgid "Renderer:"
 msgstr "Perender:"
 
+msgid "More information"
+msgstr "Informasi Lebih Lanjut"
+
+msgid ""
+"RenderingDevice-based methods not available on this GPU:\n"
+"%s\n"
+"Please use the Compatibility renderer."
+msgstr ""
+"Metode berbasis RenderingDevice tidak tersedia pada GPU ini:\n"
+"%s\n"
+"Gunakan renderer Kompatibilitas (Compatibility)."
+
+msgid "Version Control Metadata:"
+msgstr "Metadata Kontrol Versi:"
+
+msgid "Git"
+msgstr "Git"
+
 msgid "Edit Now"
-msgstr "edit sekarang"
+msgstr "Edit sekarang"
+
+msgid "Project Name"
+msgstr "Nama Projek"
+
+msgid "Project Path"
+msgstr "Lokasi Projek"
+
+msgid "This project was last edited in a different Godot version: "
+msgstr "Projek ini terakhir diedit di versi Godot yang berbeda: "
+
+msgid "This project uses features unsupported by the current build:"
+msgstr "Projek ini menggunakan feature yang tidak didukung oleh build saat ini:"
 
 msgid "Error: Project is missing on the filesystem."
 msgstr "Error: Proyek ini tidak ditemukan dalam berkas sistem."
@@ -6017,17 +6564,103 @@ msgstr "Error: Proyek ini tidak ditemukan dalam berkas sistem."
 msgid "Toggle Favorite"
 msgstr "Beralih Favorit"
 
+msgid "Open in file manager"
+msgstr "Tampilkan di Pengelola Berkas"
+
+msgid "Last edited timestamp"
+msgstr "Penanda waktu terakhir diubah"
+
+msgid "Unknown version"
+msgstr "Versi tidak diketahui"
+
+msgid "Scanning"
+msgstr "Pindai"
+
+msgid "Scanning for projects..."
+msgstr "Memindai projek..."
+
 msgid "Missing Project"
 msgstr "Proyek hilang"
+
+msgid "Open in Editor (Verbose Mode)"
+msgstr "Buka dalam Editor (Mode Verbose)"
+
+msgid "Open in Editor (Recovery Mode)"
+msgstr "Buka dalam Editor (Mode Pemulihan)"
 
 msgid "Run Project"
 msgstr "Jalankan Proyek"
 
+msgid "Manage Tags"
+msgstr "Atur Tags"
+
+msgid "Remove from Project List"
+msgstr "Hapus dari list proyek"
+
 msgid "New Window"
 msgstr "Jendela Baru"
 
+msgid "Missing Date"
+msgstr "Tanggal hilang"
+
+msgctxt "Application"
+msgid "Project Manager"
+msgstr "Manajer Proyek"
+
+msgid "You don't have any projects yet."
+msgstr "Anda belum memiliki proyek apapun."
+
+msgid ""
+"Get started by creating a new one,\n"
+"importing one that exists, or by downloading a project template from the "
+"Asset Library!"
+msgstr ""
+"Mulai dengan membuat proyek baru,\n"
+"mengimpor proyek yang sudah ada, atau mendownload templat proyek dari Pustaka "
+"Asset!"
+
+msgid "Go Online and Open Asset Library"
+msgstr "Buka Aset Library secara Online"
+
 msgid "Are you sure to run %d projects at once?"
 msgstr "Apakah Anda yakin menjalankan %d proyek sekaligus?"
+
+msgid ""
+"Can't run project: Project has no main scene defined.\n"
+"Please edit the project and set the main scene in the Project Settings under "
+"the \"Application\" category."
+msgstr ""
+"Tidak dapat menjalankan proyek: tidak ada skena utama yang didefinisikan.\n"
+"Harap sunting proyek Anda dan atur skena utama dalam Pengaturan Proyek di "
+"bawah kategori \"Aplikasi\"."
+
+msgid ""
+"Can't run project: Assets need to be imported first.\n"
+"Please edit the project to trigger the initial import."
+msgstr ""
+"Tidak dapat menjalankan proyek: Aset perlu diimpor.\n"
+"Silakan sunting proyek untuk memicu pengimporan awal."
+
+msgid ""
+"Can't open project at '%s'.\n"
+"Project file doesn't exist or is inaccessible."
+msgstr ""
+"Tidak bisa membuka proyek di ‘%s’\n"
+"File proyek tidak ada atau tidak bisa diakses."
+
+msgid ""
+"Can't open project at '%s'.\n"
+"Failed to start the editor."
+msgstr ""
+"Tidak dapat membuka proyek di '%s'.\n"
+"Gagal menjalankan editor."
+
+msgid ""
+"You requested to open %d projects in parallel. Do you confirm?\n"
+"Note that usual checks for engine version compatibility will be bypassed."
+msgstr ""
+"Anda meminta untuk membuka proyek %d secara parallel. Apakah anda yakin?\n"
+"Harap diketahui bahwa pengecekan versi mesin seperti biasa akan dilewati."
 
 msgid ""
 "The selected project \"%s\" does not specify its supported Godot version in "
@@ -6051,6 +6684,40 @@ msgstr ""
 "\n"
 "Peringatan: Anda tidak akan bisa membuka proyek dengan versi Engine "
 "sebelumnya lagi."
+
+msgid ""
+"The selected project \"%s\" was generated by Godot 3.x, and needs to be "
+"converted for Godot 4.x.\n"
+"\n"
+"Project path: %s\n"
+"\n"
+"You have three options:\n"
+"- Convert only the configuration file (\"project.godot\"). Use this to open "
+"the project without attempting to convert its scenes, resources and scripts.\n"
+"- Convert the entire project including its scenes, resources and scripts "
+"(recommended if you are upgrading).\n"
+"- Do nothing and go back.\n"
+"\n"
+"Warning: If you select a conversion option, you won't be able to open the "
+"project with previous versions of the engine anymore."
+msgstr ""
+"Proyek yang dipilih \"%s\" telah dibuat di Godot 3.x, dan perlu dikonversikan "
+"untuk Godot 4.x.\n"
+"\n"
+"Jalur proyek: %s\n"
+"\n"
+"Anda memiliki 3 pilihan:\n"
+"– Konversikan pengaturan file (\"project.godot\"). Gunakan ini untuk membuka "
+"proyek tanpa mencoba mengonversikan scene, sumber daya dan skrip.\n"
+"– Konversikan seluruh proyek termasuk scene, sumber daya, dan skrip "
+"(direkomendasikan jika ingin memperbarui Godot).\n"
+"– Tidak melakukan apa - apa dan kembali.\n"
+"\n"
+"Peringatan: jika anda memilih pilihan konversi, anda tidak akan bisa membuka "
+"projek dengan engine versi sebelumnya."
+
+msgid "Convert project.godot Only"
+msgstr "Hanya konversikan project.godot"
 
 msgid ""
 "The selected project \"%s\" was generated by an older engine version, and "
@@ -6088,6 +6755,9 @@ msgstr ""
 "Pengaturan proyek dibuat oleh versi Engine yang lebih baru, yang "
 "pengaturannya tidak kompatibel dengan versi ini."
 
+msgid "Open anyway? Project will be modified."
+msgstr "Buka saja? Proyek akan dimodifikasi."
+
 msgid "Remove %d projects from the list?"
 msgstr "Buang proyek %d dari daftar?"
 
@@ -6101,8 +6771,81 @@ msgstr ""
 "Hapus semua proyek yang hilang dari daftar?\n"
 "Konten folder proyek tidak akan diubah."
 
+msgid ""
+"It looks like Godot crashed when opening this project the last time. If "
+"you're having problems editing this project, you can try to open it in "
+"Recovery Mode."
+msgstr ""
+"Sepertinya Godot mengalami crash saat membuka proyek ini terakhir kali. Jika "
+"anda mengalami masalah menyunting proyek ini, anda bisa membukanya di Mode "
+"Pemulihan."
+
+msgid ""
+"Recovery Mode is a special mode that may help to recover projects that crash "
+"the engine during initialization. This mode temporarily disables the "
+"following features:"
+msgstr ""
+"Mode Pemulihan adalah mode khusus yang bisa membantu anda untuk memulihkan "
+"proyek anda yang membuat Godot mengalami kerusakan saat melakukan inisiasi. "
+"Mode ini mematikan fitur - fitur ini untuk sementara:"
+
+msgid "Tool scripts"
+msgstr "Skrip"
+
+msgid "Editor plugins"
+msgstr "Plugin editor"
+
+msgid "GDExtension addons"
+msgstr "Tambahan dari GDExtension"
+
+msgid "Automatic scene restoring"
+msgstr "Restorasi scene otomatis"
+
+msgid ""
+"This mode is intended only for basic editing to troubleshoot such issues, and "
+"therefore it will not be possible to run the project during this mode. It is "
+"also a good idea to make a backup of your project before proceeding."
+msgstr ""
+"Mode ini ditujukan hanya untuk pengeditan dasar untuk menyelesaikan masalah "
+"tersebut, dengan kata lain proyek tidak bisa dijalankan saat mode ini aktif. "
+"Saran yang bagus adalah untuk membuat backup dari proyek sebelum melanjutkan."
+
+msgid "Edit the project in Recovery Mode?"
+msgstr "Apakah anda ingin mengedit proyek di Mode Pemulihan ?"
+
+msgid "Couldn't load project at '%s'. It may be missing or corrupted."
+msgstr "Tidak dapat memuat proyek di '%s'. Mungkin tidak ada atau rusak."
+
+msgid "Tag name can't be empty."
+msgstr "Nama tag tidak boleh kosong."
+
+msgid "Tag name can't begin or end with underscore."
+msgstr "Nama tag tidak boleh dimulai atau diakhir dengan underscore."
+
+msgid "Tag name can't contain consecutive underscores or spaces."
+msgstr ""
+"Nama tag tidak bisa mengandung underscore atau space yang berulang - ulang."
+
+msgid "These characters are not allowed in tags: %s."
+msgstr "Karakter '%s' tidak diizinkan dalam tag."
+
+msgid "About Godot"
+msgstr "Tentang Godot"
+
+msgid "Window"
+msgstr "Jendela"
+
+msgid "Settings"
+msgstr "Pengaturan"
+
+msgid "Projects"
+msgstr "Proyek"
+
 msgid "New Project"
 msgstr "Proyek Baru"
+
+msgid "Import Project"
+msgstr "Impor Proyek"
 
 msgid "Scan"
 msgstr "Pindai"
@@ -7178,6 +7921,30 @@ msgstr "Penskalaan:"
 msgid "Rotating %s degrees."
 msgstr "Memutar %s derajat."
 
+msgid "Freelook Left"
+msgstr "Tampilan Bebas Kiri"
+
+msgid "Freelook Right"
+msgstr "Tampilan Bebas Kanan"
+
+msgid "Freelook Forward"
+msgstr "Tampilan Bebas Maju"
+
+msgid "Freelook Backwards"
+msgstr "Tampilan Bebas Mundur"
+
+msgid "Freelook Up"
+msgstr "Tampilan Bebas Atas"
+
+msgid "Freelook Down"
+msgstr "Tampilan Bebas Bawah"
+
+msgid "Freelook Speed Modifier"
+msgstr "Pengubah Kecepatan Tampilan Bebas"
+
+msgid "Freelook Slow Modifier"
+msgstr "Pengubah Lambat Tampilan Bebas"
+
 msgid "View"
 msgstr "Pandangan"
 
@@ -7294,30 +8061,6 @@ msgstr "Aktifkan Efek Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Pratinjau Sinematik"
-
-msgid "Freelook Left"
-msgstr "Tampilan Bebas Kiri"
-
-msgid "Freelook Right"
-msgstr "Tampilan Bebas Kanan"
-
-msgid "Freelook Forward"
-msgstr "Tampilan Bebas Maju"
-
-msgid "Freelook Backwards"
-msgstr "Tampilan Bebas Mundur"
-
-msgid "Freelook Up"
-msgstr "Tampilan Bebas Atas"
-
-msgid "Freelook Down"
-msgstr "Tampilan Bebas Bawah"
-
-msgid "Freelook Speed Modifier"
-msgstr "Pengubah Kecepatan Tampilan Bebas"
-
-msgid "Freelook Slow Modifier"
-msgstr "Pengubah Lambat Tampilan Bebas"
 
 msgid "Lock Transformation to X axis"
 msgstr "Kunci Transformasi ke sumbu X"
@@ -10008,6 +10751,12 @@ msgstr "Impor Profil"
 msgid "Manage Editor Feature Profiles"
 msgstr "Kelola Editor Profil Fitur"
 
+msgid "Save Layout"
+msgstr "Simpan Penampilan"
+
+msgid "Delete Layout"
+msgstr "Hapus Penampilan"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Edit Tindakan Bawaan:%s"
 
@@ -11574,11 +12323,50 @@ msgstr "Indeks Permukaan"
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
 
+msgid "Expected a '%s'."
+msgstr "Mengharapkan adanya '%s'."
+
+msgid "Expected a '%s' or '%s'."
+msgstr "Mengharapkan '%s' atau '%s'."
+
+msgid "Expected a '%s' after '%s'."
+msgstr "Mengharapkan '%s' setelah '%s'."
+
+msgid "Redefinition of '%s'."
+msgstr "Definisi ulang dari '%s'."
+
+msgid "Unknown directive."
+msgstr "Jenis lajuan tidak diketahui."
+
+msgid "Invalid macro name."
+msgstr "Nama makro tidak valid."
+
+msgid "Macro redefinition."
+msgstr "Definisi ulang Makro."
+
 msgid "Invalid argument name."
 msgstr "Nama argumen tidak valid."
 
+msgid "Expected a comma in the macro argument list."
+msgstr "Mengharapkan koma di daftar argumen makro."
+
+msgid "'##' must not appear at beginning of macro expansion."
+msgstr "'##' harus tidak boleh ada di bagian awal peluasan makro."
+
+msgid "'##' must not appear at end of macro expansion."
+msgstr "'##' harus tidak boleh ada di bagian akhir peluasan makro."
+
+msgid "Unmatched '%s' directive."
+msgstr "Tidak ada kecocokan di jalur %d."
+
+msgid "Missing condition."
+msgstr "Kondisi yang menghilang."
+
+msgid "Invalid '%s' directive."
+msgstr "Jalur '%s' tidak valid."
+
 msgid "Shader include file does not exist:"
-msgstr "File shader tidak ada."
+msgstr "File shader tidak ada:"
 
 msgid ""
 "Shader include load failed. Does the shader include exist? Is there a cyclic "
@@ -11608,5 +12396,43 @@ msgstr "Argumen makro tidak sah."
 msgid "Invalid macro argument count."
 msgstr "Daftar Argumen Macro Tidak Valid"
 
+msgid "Can't find matching branch directive."
+msgstr "Tidak bisa menemukan jalur cabang yang cocok."
+
 msgid "Unmatched conditional statement."
 msgstr "Pernyataan kondisi tidak cocok."
+
+msgid "The const '%s' is declared but never used."
+msgstr "Konstanta '%s' dideklarasikan tapi tidak pernah digunakan."
+
+msgid "The function '%s' is declared but never used."
+msgstr "Funksi '%s' dideklarasi tapi tidak digunakan."
+
+msgid "The struct '%s' is declared but never used."
+msgstr "Struktur '%s' dideklarasi tapi tidak digunakan."
+
+msgid "The uniform '%s' is declared but never used."
+msgstr "Uniform '%s' dideklarasi tapi tidak digunakan."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "Variabel lokal '%s' dideklarasikan tetapi tidak pernah digunakan."
+
+msgid ""
+"The total size of the %s for this shader on this device has been exceeded (%d/"
+"%d). The shader may not work correctly."
+msgstr ""
+"Ukuran total %s untuk shader di perangkat ini melebihi (%d/%d). Shader bisa "
+"munkin tidak bekerja dengan benar."
+
+msgid ""
+"You are attempting to assign the VERTEX position in model space to the vertex "
+"POSITION in clip space. The definition of clip space changed in version 4.3, "
+"so if this code was written prior to 4.3, it will not continue to work. "
+"Consider specifying the clip space z-component directly i.e. use "
+"`vec4(VERTEX.xy, 1.0, 1.0)`."
+msgstr ""
+"Anda mencoba menetapkan posisi VERTEX dalam model space ke POSITION vertex "
+"dalam clip space. Definisi clip space telah berubah pada versi 4.3, sehingga "
+"jika kode ini ditulis sebelum versi 4.3, kode tidak akan berfungsi lagi. "
+"Pertimbangkan untuk menentukan komponen-z clip space secara langsung, yaitu "
+"dengan menggunakan `vec4(VERTEX.xy, 1.0, 1.0)`."

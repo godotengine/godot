@@ -141,7 +141,7 @@
 # Deleted User <squander@users.noreply.hosted.weblate.org>, 2024.
 # dvddvd300 <daviddeleon2001@gmail.com>, 2024.
 # LuisGFlorez <lgfgcoder@gmail.com>, 2024, 2025.
-# Juan Matias Olmos <ma7as@protonmail.com>, 2024, 2025.
+# Juan Matias Olmos <ma7as@protonmail.com>, 2024, 2025, 2026.
 # José Andrés Urdaneta <urdaneta7834@gmail.com>, 2025.
 # andres valenzuela pacheco <andresmauricio6777@gmail.com>, 2025.
 # Marco Antonio Silva Mendoza <n00028146@upn.pe>, 2025.
@@ -157,13 +157,15 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Myeongjin <aranet100@gmail.com>, 2025.
 # Kevin <kevmed39@protonmail.com>, 2025.
+# Juan José Arcila Valderrama <sedmirnel124@gmail.com>, 2026.
+# Valentin Romanutti <valentinromanutti@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-28 01:30+0000\n"
-"Last-Translator: Julián Lacomba <julian_alberto93@yahoo.com.ar>\n"
+"PO-Revision-Date: 2026-05-17 03:47+0000\n"
+"Last-Translator: Valentin Romanutti <valentinromanutti@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -171,10 +173,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "OK"
-msgstr "Aceptar"
+msgstr "OK"
 
 msgid "Failed"
 msgstr "Error"
@@ -207,7 +209,7 @@ msgid "File: Permission denied"
 msgstr "Archivo: Permiso denegado"
 
 msgid "File already in use"
-msgstr "Archivo ya en uso"
+msgstr "Archivo en uso"
 
 msgid "Can't open file"
 msgstr "No se puede abrir el archivo"
@@ -5565,12 +5567,6 @@ msgstr "Guardar Layout..."
 
 msgid "Delete Layout..."
 msgstr "Eliminar Layout..."
-
-msgid "Save Layout"
-msgstr "Guardar Layout"
-
-msgid "Delete Layout"
-msgstr "Eliminar Layout"
 
 msgid "This scene was never saved."
 msgstr "Esta escena nunca fue guardada."
@@ -12019,6 +12015,54 @@ msgstr "Rotando %f grados."
 msgid "Scaling %s."
 msgstr "Escalando %s."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Modificador de Órbita del Viewport 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Modificador de Órbita del Viewport 2"
+
+msgid "Viewport Orbit Snap Modifier 1"
+msgstr "Modificador 1 de Ajuste de Órbita del Viewport"
+
+msgid "Viewport Orbit Snap Modifier 2"
+msgstr "Modificador 2 de Ajuste de Órbita del Viewport"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Modificador de Desplazamiento del Viewport 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Modificador de Desplazamiento del Viewport 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Modificador de Zoom del Viewport 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Modificador de Zoom del Viewport 2"
+
+msgid "Freelook Left"
+msgstr "Vista Libre Izquierda"
+
+msgid "Freelook Right"
+msgstr "Vista Libre Derecha"
+
+msgid "Freelook Forward"
+msgstr "Vista Libre Frontal"
+
+msgid "Freelook Backwards"
+msgstr "Vista Libre Trasera"
+
+msgid "Freelook Up"
+msgstr "Vista Libre Arriba"
+
+msgid "Freelook Down"
+msgstr "Vista Libre Abajo"
+
+msgid "Freelook Speed Modifier"
+msgstr "Modificador de Velocidad de Vista Libre"
+
+msgid "Freelook Slow Modifier"
+msgstr "Modificador de Velocidad de Vista Libre"
+
 msgid "View"
 msgstr "Ver"
 
@@ -12263,54 +12307,6 @@ msgstr "Activar Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Vista Previa Cinemática"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Modificador de Órbita del Viewport 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Modificador de Órbita del Viewport 2"
-
-msgid "Viewport Orbit Snap Modifier 1"
-msgstr "Modificador 1 de Ajuste de Órbita del Viewport"
-
-msgid "Viewport Orbit Snap Modifier 2"
-msgstr "Modificador 2 de Ajuste de Órbita del Viewport"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Modificador de Desplazamiento del Viewport 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Modificador de Desplazamiento del Viewport 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Modificador de Zoom del Viewport 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Modificador de Zoom del Viewport 2"
-
-msgid "Freelook Left"
-msgstr "Vista Libre Izquierda"
-
-msgid "Freelook Right"
-msgstr "Vista Libre Derecha"
-
-msgid "Freelook Forward"
-msgstr "Vista Libre Frontal"
-
-msgid "Freelook Backwards"
-msgstr "Vista Libre Trasera"
-
-msgid "Freelook Up"
-msgstr "Vista Libre Arriba"
-
-msgid "Freelook Down"
-msgstr "Vista Libre Abajo"
-
-msgid "Freelook Speed Modifier"
-msgstr "Modificador de Velocidad de Vista Libre"
-
-msgid "Freelook Slow Modifier"
-msgstr "Modificador de Velocidad de Vista Libre"
 
 msgid "Lock Transformation to X axis"
 msgstr "Bloquear Transformación al eje X"
@@ -16269,6 +16265,12 @@ msgstr "O introduce un nuevo nombre de Layout."
 msgid "New layout name"
 msgstr "Nuevo nombre de layout"
 
+msgid "Save Layout"
+msgstr "Guardar Layout"
+
+msgid "Delete Layout"
+msgstr "Eliminar Layout"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Editar Acción Integrada: %s"
 
@@ -18577,6 +18579,15 @@ msgstr "Pintar GridMap"
 msgid "GridMap Selection"
 msgstr "Seleccionar GridMap"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Cambiar el piso de la cuadrícula:\n"
+"Plano anterior (%s)\n"
+"Plano siguiente (%s)"
+
 msgid "Previous Floor"
 msgstr "Anterior Plano"
 
@@ -18618,15 +18629,6 @@ msgstr "Rotar Cursor Z"
 
 msgid "Change Grid Floor:"
 msgstr "Cambiar Piso de Cuadrícula:"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Cambiar el piso de la cuadrícula:\n"
-"Plano anterior (%s)\n"
-"Plano siguiente (%s)"
 
 msgid "Filter Meshes"
 msgstr "Filtrar Mallas"
@@ -19706,7 +19708,7 @@ msgstr ""
 msgid "\"Use Gradle Build\" must be enabled to enable \"Show In Android Tv\"."
 msgstr ""
 "\"Usar Gradle Build\" debe estar activado para activar \"Mostrar en Android "
-"TV\"."
+"Tv\"."
 
 msgid "\"Use Gradle Build\" must be enabled to enable \"Show As Launcher App\"."
 msgstr ""

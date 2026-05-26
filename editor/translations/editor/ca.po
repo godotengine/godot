@@ -3243,12 +3243,6 @@ msgstr "L'Escena '%s' té dependències no vàlides:"
 msgid "Clear Recent Scenes"
 msgstr "Buida les Escenes Recents"
 
-msgid "Save Layout"
-msgstr "Desar Disseny"
-
-msgid "Delete Layout"
-msgstr "Elimina Disseny"
-
 msgid "Save & Close"
 msgstr "Desar i Tancar"
 
@@ -4781,6 +4775,27 @@ msgstr "Escalat:"
 msgid "Rotating %s degrees."
 msgstr "Rotació de %s graus."
 
+msgid "Freelook Left"
+msgstr "Vista Lliure Esquerra"
+
+msgid "Freelook Right"
+msgstr "Vista Lliure Dreta"
+
+msgid "Freelook Forward"
+msgstr "Vista Lliure Endavant"
+
+msgid "Freelook Backwards"
+msgstr "Vista Lliure Enrere"
+
+msgid "Freelook Up"
+msgstr "Vista Lliura Amunt"
+
+msgid "Freelook Down"
+msgstr "Vista Lliure Avall"
+
+msgid "Freelook Speed Modifier"
+msgstr "Modificador de la Velocitat de la Vista Lliure"
+
 msgid "View"
 msgstr "Vista"
 
@@ -4822,27 +4837,6 @@ msgstr "Receptor d'Àudio"
 
 msgid "Cinematic Preview"
 msgstr "Previsualització Cinemàtica"
-
-msgid "Freelook Left"
-msgstr "Vista Lliure Esquerra"
-
-msgid "Freelook Right"
-msgstr "Vista Lliure Dreta"
-
-msgid "Freelook Forward"
-msgstr "Vista Lliure Endavant"
-
-msgid "Freelook Backwards"
-msgstr "Vista Lliure Enrere"
-
-msgid "Freelook Up"
-msgstr "Vista Lliura Amunt"
-
-msgid "Freelook Down"
-msgstr "Vista Lliure Avall"
-
-msgid "Freelook Speed Modifier"
-msgstr "Modificador de la Velocitat de la Vista Lliure"
 
 msgid "View Rotation Locked"
 msgstr "Rotació de la Vista Bloquejada"
@@ -6441,6 +6435,12 @@ msgstr "Importar Perfil(s)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Administra els Perfils de Característiques de l'Editor"
+
+msgid "Save Layout"
+msgstr "Desar Disseny"
+
+msgid "Delete Layout"
+msgstr "Elimina Disseny"
 
 msgid "Editor Settings"
 msgstr "Configuració de l'Editor"

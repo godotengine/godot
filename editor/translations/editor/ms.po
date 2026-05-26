@@ -2383,12 +2383,6 @@ msgstr "Adegan '%s' mengandungi kebergantungan yang pecah:"
 msgid "Clear Recent Scenes"
 msgstr "Kosongkan Adegan-adegan Terbaru"
 
-msgid "Save Layout"
-msgstr "Simpan Susun Atur"
-
-msgid "Delete Layout"
-msgstr "Padam Susun Atur"
-
 msgid "Save & Close"
 msgstr "Simpan & Tutup"
 
@@ -4032,6 +4026,12 @@ msgstr "Import Profil"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Urus Profil Ciri Editor"
+
+msgid "Save Layout"
+msgstr "Simpan Susun Atur"
+
+msgid "Delete Layout"
+msgstr "Padam Susun Atur"
 
 msgid "General"
 msgstr "Am"

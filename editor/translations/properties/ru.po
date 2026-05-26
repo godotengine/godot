@@ -208,13 +208,14 @@
 # daodan <karovich16@gmail.com>, 2026.
 # XZY <XZY@xyecoc.com>, 2026.
 # MariyaShikunova <mariia@basealt.ru>, 2026.
+# Anatoly Zubarev <padamass@mail.ru>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-12 03:09+0000\n"
-"Last-Translator: MariyaShikunova <mariia@basealt.ru>\n"
+"PO-Revision-Date: 2026-05-01 05:40+0000\n"
+"Last-Translator: Anatoly Zubarev <padamass@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -223,7 +224,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -1885,7 +1886,7 @@ msgid "Normal Map Invert Y"
 msgstr "Инверсия карты нормалей по Y"
 
 msgid "HDR as sRGB"
-msgstr "HDR как sRGB"
+msgstr "HDR к sRGB"
 
 msgid "HDR Clamp Exposure"
 msgstr "Ограничение экспозиции HDR"

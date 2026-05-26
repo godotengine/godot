@@ -234,13 +234,14 @@
 # Artyom <artem.natharov@gmail.com>, 2026.
 # MariyaShikunova <mariia@basealt.ru>, 2026.
 # Rémi Verschelde <remi@godotengine.org>, 2026.
+# Viktor Antonov <vijorich@mail.ru>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-13 13:16+0000\n"
-"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
+"PO-Revision-Date: 2026-03-03 23:09+0000\n"
+"Last-Translator: Viktor Antonov <vijorich@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -249,7 +250,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 msgid "OK"
 msgstr "OK"
@@ -5619,12 +5620,6 @@ msgstr "Сохранить макет…"
 msgid "Delete Layout..."
 msgstr "Удалить макет…"
 
-msgid "Save Layout"
-msgstr "Сохранить макет"
-
-msgid "Delete Layout"
-msgstr "Удалить макет"
-
 msgid "This scene was never saved."
 msgstr "Эта сцена никогда не сохранялась."
 
@@ -9340,12 +9335,12 @@ msgstr ""
 "сцен или ресурсов, либо при повторном импорте.\n"
 "\n"
 "Этот инструмент позволяет одновременно вносить все изменения. Он выполняет:\n"
-"- Повторное формирование кеша UID\n"
+"- Повторное формирование кэша UID\n"
 "- Загрузку и повторное сохранение каждого текстового/двоичного ресурса\n"
 "- Повторный импорт каждого импортируемого ресурса\n"
 "\n"
-"Полное обновление займёт немало времени, но последующее сохранение "
-"илиповторный импорт любой сцены/ресурса не должен приводить к непредвиденным "
+"Полное обновление займёт немало времени, но последующее сохранение или "
+"повторный импорт любой сцены/ресурса не должен приводить к непредвиденным "
 "изменениям."
 
 msgid "Restart & Upgrade"
@@ -12006,6 +12001,54 @@ msgstr "Поворот на %f градусов."
 msgid "Scaling %s."
 msgstr "Масштабирование %s."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Модификатор орбиты окна просмотра 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Модификатор орбиты окна просмотра 2"
+
+msgid "Viewport Orbit Snap Modifier 1"
+msgstr "Модификатор привязки к орбите в окне просмотра 1"
+
+msgid "Viewport Orbit Snap Modifier 2"
+msgstr "Модификатор привязки к орбите в окне просмотра 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Модификатор панорамы окна 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Модификатор панорамы окна 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Модификатор приближения окна 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Модификатор приближения окна 2"
+
+msgid "Freelook Left"
+msgstr "Свободный вид, влево"
+
+msgid "Freelook Right"
+msgstr "Свободный вид, вправо"
+
+msgid "Freelook Forward"
+msgstr "Свободный вид, вперёд"
+
+msgid "Freelook Backwards"
+msgstr "Свободный вид, назад"
+
+msgid "Freelook Up"
+msgstr "Свободный вид, вверх"
+
+msgid "Freelook Down"
+msgstr "Свободный вид, вниз"
+
+msgid "Freelook Speed Modifier"
+msgstr "Модификатор скорости свободного вида"
+
+msgid "Freelook Slow Modifier"
+msgstr "Модификатор замедления свободного вида"
+
 msgid "View"
 msgstr "Вид"
 
@@ -12251,54 +12294,6 @@ msgstr "Включить эффект Доплера"
 
 msgid "Cinematic Preview"
 msgstr "Кинематографический предварительный просмотр"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Модификатор орбиты окна просмотра 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Модификатор орбиты окна просмотра 2"
-
-msgid "Viewport Orbit Snap Modifier 1"
-msgstr "Модификатор привязки к орбите в окне просмотра 1"
-
-msgid "Viewport Orbit Snap Modifier 2"
-msgstr "Модификатор привязки к орбите в окне просмотра 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Модификатор панорамы окна 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Модификатор панорамы окна 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Модификатор приближения окна 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Модификатор приближения окна 2"
-
-msgid "Freelook Left"
-msgstr "Свободный вид, влево"
-
-msgid "Freelook Right"
-msgstr "Свободный вид, вправо"
-
-msgid "Freelook Forward"
-msgstr "Свободный вид, вперёд"
-
-msgid "Freelook Backwards"
-msgstr "Свободный вид, назад"
-
-msgid "Freelook Up"
-msgstr "Свободный вид, вверх"
-
-msgid "Freelook Down"
-msgstr "Свободный вид, вниз"
-
-msgid "Freelook Speed Modifier"
-msgstr "Модификатор скорости свободного вида"
-
-msgid "Freelook Slow Modifier"
-msgstr "Модификатор замедления свободного вида"
 
 msgid "Lock Transformation to X axis"
 msgstr "Заблокировать трансформацию по оси X"
@@ -16246,6 +16241,12 @@ msgstr "Или введите новое название макета."
 msgid "New layout name"
 msgstr "Новое название макета"
 
+msgid "Save Layout"
+msgstr "Сохранить макет"
+
+msgid "Delete Layout"
+msgstr "Удалить макет"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Изменить встроенное действие: %s"
 
@@ -18544,6 +18545,15 @@ msgstr "GridMap: рисование"
 msgid "GridMap Selection"
 msgstr "GridMap: выделение"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Изменить низ сетки:\n"
+"Предыдущая плоскость (%s)\n"
+"Следующая плоскость (%s)"
+
 msgid "Previous Floor"
 msgstr "Предыдущий этаж"
 
@@ -18585,15 +18595,6 @@ msgstr "Поворот курсора по Z"
 
 msgid "Change Grid Floor:"
 msgstr "Изменить Grid Floor (сетку пола):"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Изменить низ сетки:\n"
-"Предыдущая плоскость (%s)\n"
-"Следующая плоскость (%s)"
 
 msgid "Filter Meshes"
 msgstr "Фильтр сеток"

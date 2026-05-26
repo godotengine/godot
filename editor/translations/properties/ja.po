@@ -61,13 +61,16 @@
 # Viktor Jagebrant <vjagebrant@gmail.com>, 2025, 2026.
 # Myeongjin <aranet100@gmail.com>, 2025, 2026.
 # johann carlo florin <join001re2@gmail.com>, 2025.
+# "IndigoCarmine (Yuhei Yamada)" <tamanisikaminai@gmail.com>, 2026.
+# Chikashi Suzuki <underground.resources823@gmail.com>, 2026.
+# shortsun <weekenddamehuman@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-29 23:26+0000\n"
-"Last-Translator: Viktor Jagebrant <vjagebrant@gmail.com>\n"
+"PO-Revision-Date: 2026-05-19 14:03+0000\n"
+"Last-Translator: shortsun <weekenddamehuman@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -75,7 +78,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "Application"
 msgstr "アプリ"
@@ -124,6 +127,9 @@ msgstr "カスタムユーザフォルダ名"
 
 msgid "Project Settings Override"
 msgstr "プロジェクト設定のオーバーライド"
+
+msgid "Disable Project Settings Override"
+msgstr "プロジェクト設定の上書きを無効にする"
 
 msgid "Main Loop Type"
 msgstr "メインループのタイプ"
@@ -227,6 +233,9 @@ msgstr "角度補間タイプの衝突を確認"
 msgid "Compatibility"
 msgstr "互換性"
 
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "デフォルトの親インスタンスの中のMesh Instance 3D"
+
 msgid "Audio"
 msgstr "オーディオ"
 
@@ -253,6 +262,9 @@ msgstr "iOS"
 
 msgid "Session Category"
 msgstr "セッションカテゴリー:"
+
+msgid "Mix with Others"
+msgstr "バックグラウンド音声とミックス"
 
 msgid "Subwindows"
 msgstr "サブウィンドウ"
@@ -797,6 +809,9 @@ msgstr "TCP"
 msgid "Connect Timeout Seconds"
 msgstr "接続タイムアウト秒数"
 
+msgid "Unix"
+msgstr "Unix"
+
 msgid "Packet Peer Stream"
 msgstr "パケットピアストリーム"
 
@@ -910,6 +925,12 @@ msgstr "ブレークポイントの同期"
 
 msgid "Title"
 msgstr "タイトル"
+
+msgid "Global"
+msgstr "グローバル"
+
+msgid "Force Show Icon"
+msgstr "アイコンの表示を強制にする"
 
 msgid "Title Color"
 msgstr "タイトルの色"
@@ -1385,11 +1406,17 @@ msgstr "システムフォントのフォールバックを許可"
 msgid "Force Autohinter"
 msgstr "微調整を行う"
 
+msgid "Modulate Color Glyphs"
+msgstr "カラーグリフの色調調整"
+
 msgid "Hinting"
 msgstr "微調整モード"
 
 msgid "Subpixel Positioning"
 msgstr "サブピクセルの配置"
+
+msgid "Keep Rounding Remainders"
+msgstr "端数を切り捨てる"
 
 msgid "Oversampling"
 msgstr "オーバーサンプリング"
@@ -1432,6 +1459,9 @@ msgstr "スケールモード"
 
 msgid "Delimiter"
 msgstr "区切り文字"
+
+msgid "Unescape Keys"
+msgstr "キーのエスケープ解除"
 
 msgid "Character Ranges"
 msgstr "文字の範囲"

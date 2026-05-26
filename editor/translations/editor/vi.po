@@ -53,13 +53,16 @@
 # Orus Or <orus3732@gmail.com>, 2025.
 # Tâm Mai <tammai.it@gmail.com>, 2025.
 # Nguyen Ngoc Thai <thaidev247@gmail.com>, 2026.
+# Ngô Quang Đại <thanglinh868686@gmail.com>, 2026.
+# Nam Namcuteee <namcuteeenam@gmail.com>, 2026.
+# Khắc Vinh Vũ <vukhacvinh31@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-28 01:30+0000\n"
-"Last-Translator: Nguyen Ngoc Thai <thaidev247@gmail.com>\n"
+"PO-Revision-Date: 2026-05-06 10:05+0000\n"
+"Last-Translator: Khắc Vinh Vũ <vukhacvinh31@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -67,7 +70,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1\n"
 
 msgid "OK"
 msgstr "OK"
@@ -93,6 +96,15 @@ msgstr "Tràn bộ nhớ"
 msgid "File not found"
 msgstr "Không tìm thấy tệp"
 
+msgid "File: Bad drive"
+msgstr "Tệp: Ổ đĩa hỏng"
+
+msgid "File: Bad path"
+msgstr "Tệp: Đường dẫn không hợp lệ"
+
+msgid "File: Permission denied"
+msgstr "Tệp: quyền truy cập bị từ chối"
+
 msgid "File already in use"
 msgstr "Tệp đã được sử dụng"
 
@@ -110,6 +122,9 @@ msgstr "Tệp không xác định"
 
 msgid "File corrupt"
 msgstr "Tệp bị lỗi"
+
+msgid "Missing dependencies for file"
+msgstr "Thiếu các phần phụ thuộc cho tệp"
 
 msgid "End of file"
 msgstr "Kết thúc tệp"
@@ -135,8 +150,17 @@ msgstr "Quá giờ"
 msgid "Can't connect"
 msgstr "Không thể kết nối"
 
+msgid "Can't resolve"
+msgstr "Không thể giải quyết"
+
 msgid "Connection error"
 msgstr "Lỗi kết nối"
+
+msgid "Can't acquire resource"
+msgstr "Không thể lấy được tài nguyên"
+
+msgid "Can't fork"
+msgstr "Không thể tạo tiến trình"
 
 msgid "Invalid data"
 msgstr "Dữ liệu không hợp lệ"
@@ -165,8 +189,35 @@ msgstr "Không tìm thấy phương thức"
 msgid "Link failed"
 msgstr "Liên kết thất bại"
 
+msgid "Script failed"
+msgstr "Thực thi lệnh thất bại"
+
+msgid "Cyclic link detected"
+msgstr "Phát hiện liên kết vòng"
+
+msgid "Invalid declaration"
+msgstr "Khai báo không hợp lệ"
+
+msgid "Duplicate symbol"
+msgstr "Nhân bản biểu tượng"
+
+msgid "Parse error"
+msgstr "Lỗi phân tích cú pháp"
+
+msgid "Busy"
+msgstr "Bận"
+
+msgid "Skip"
+msgstr "Bỏ qua"
+
 msgid "Help"
 msgstr "Trợ giúp"
+
+msgid "Bug"
+msgstr "Lỗi"
+
+msgid "unset"
+msgstr "Bỏ đặt"
 
 msgid "Physical"
 msgstr "Vật lý"
@@ -3450,12 +3501,6 @@ msgstr "Cảnh '%s' bị hỏng các phụ thuộc:"
 
 msgid "Clear Recent Scenes"
 msgstr "Dọn các cảnh gần đây"
-
-msgid "Save Layout"
-msgstr "Lưu bố cục"
-
-msgid "Delete Layout"
-msgstr "Xoá bố cục"
 
 msgid "Save & Close"
 msgstr "Lưu & Đóng"
@@ -6854,6 +6899,12 @@ msgstr "Nhập vào hồ sơ"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Quản lý trình tính năng"
+
+msgid "Save Layout"
+msgstr "Lưu bố cục"
+
+msgid "Delete Layout"
+msgstr "Xoá bố cục"
 
 msgid "Edit Built-in Action: %s"
 msgstr "Chỉnh sửa hành động tính hợp sẵn: %s"

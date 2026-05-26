@@ -108,13 +108,16 @@
 # ahmad aaaz <aaazahmad8@gmail.com>, 2025.
 # kyan <heiorun.eks@gmail.com>, 2026.
 # Khaled Aboud <khaledaboud700@gmail.com>, 2026.
+# bruvzg <bruvzg13@proton.me>, 2026.
+# Sajjad Zavar <zavarsajjad98@gmail.com>, 2026.
+# Mohammad Bouland <mohammad.bouland@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-23 01:57+0000\n"
-"Last-Translator: Khaled Aboud <khaledaboud700@gmail.com>\n"
+"PO-Revision-Date: 2026-03-24 14:10+0000\n"
+"Last-Translator: Mohammad Bouland <mohammad.bouland@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -123,7 +126,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 msgid "OK"
 msgstr "حسنا"
@@ -141,7 +144,7 @@ msgid "Unauthorized"
 msgstr "غير مصرح به"
 
 msgid "Parameter out of range"
-msgstr "المعامل خارج النطاق:%s"
+msgstr "المعامل خارج النطاق"
 
 msgid "Out of memory"
 msgstr "الذاكره غير كافيه"
@@ -220,6 +223,9 @@ msgstr "بيانات غير صالح"
 
 msgid "Invalid parameter"
 msgstr "مسار غير صالح"
+
+msgid "Invalid declaration"
+msgstr "صيغة غير صالحة"
 
 msgid "Help"
 msgstr "المساعدة"
@@ -4871,12 +4877,6 @@ msgstr "حفظ التخطيط..."
 msgid "Delete Layout..."
 msgstr "مسح التخطيط..."
 
-msgid "Save Layout"
-msgstr "حفظ التخطيط"
-
-msgid "Delete Layout"
-msgstr "مسح التخطيط"
-
 msgid "This scene was never saved."
 msgstr "لم يتم حفظ هذا المشهد مطلقا."
 
@@ -8930,6 +8930,9 @@ msgstr "لا يمكن إنشاء شكل تصادمي مُبسّط."
 msgid "Couldn't create any collision shapes."
 msgstr "لا يمكن إنشاء أي شكل تصادمي."
 
+msgid "Trimesh"
+msgstr "شبكة مثلثة"
+
 msgid "Sphere"
 msgstr "كرة"
 
@@ -9320,6 +9323,30 @@ msgstr "يُدير %f من الدرجات."
 msgid "Scaling %s."
 msgstr "تحجيم %s."
 
+msgid "Freelook Left"
+msgstr "الرؤية الحُرة Freelook يساراً"
+
+msgid "Freelook Right"
+msgstr "الرؤية الحرة Freelook يميناً"
+
+msgid "Freelook Forward"
+msgstr "الرؤية الحرة Freelook قُدماً"
+
+msgid "Freelook Backwards"
+msgstr "الرؤية الحُرة Freelook تراجعياً"
+
+msgid "Freelook Up"
+msgstr "الرؤية الحُرة Freelook للأعلى"
+
+msgid "Freelook Down"
+msgstr "الرؤية الحُرة للأسفل"
+
+msgid "Freelook Speed Modifier"
+msgstr "مُعدّل سرعة الرؤية الحُرة"
+
+msgid "Freelook Slow Modifier"
+msgstr "مُعدّل تباطؤ الرؤية الحُرة"
+
 msgid "View"
 msgstr "الرؤية"
 
@@ -9441,30 +9468,6 @@ msgstr "تفعيل دوبلر"
 
 msgid "Cinematic Preview"
 msgstr "معاينة سينمائية"
-
-msgid "Freelook Left"
-msgstr "الرؤية الحُرة Freelook يساراً"
-
-msgid "Freelook Right"
-msgstr "الرؤية الحرة Freelook يميناً"
-
-msgid "Freelook Forward"
-msgstr "الرؤية الحرة Freelook قُدماً"
-
-msgid "Freelook Backwards"
-msgstr "الرؤية الحُرة Freelook تراجعياً"
-
-msgid "Freelook Up"
-msgstr "الرؤية الحُرة Freelook للأعلى"
-
-msgid "Freelook Down"
-msgstr "الرؤية الحُرة للأسفل"
-
-msgid "Freelook Speed Modifier"
-msgstr "مُعدّل سرعة الرؤية الحُرة"
-
-msgid "Freelook Slow Modifier"
-msgstr "مُعدّل تباطؤ الرؤية الحُرة"
 
 msgid "Lock Transformation to X axis"
 msgstr "قفل التحول إلى المحور س"
@@ -12671,6 +12674,12 @@ msgstr "استيراد التعريفات"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "إدارة تعريفة مزايا المحرر"
+
+msgid "Save Layout"
+msgstr "حفظ التخطيط"
+
+msgid "Delete Layout"
+msgstr "مسح التخطيط"
 
 msgid "Edit Built-in Action: %s"
 msgstr "تحرير الإجراء المضمن: %s"

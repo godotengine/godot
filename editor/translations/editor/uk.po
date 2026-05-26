@@ -63,13 +63,14 @@
 # Максим Горпиніч <gorpinicmaksim5@gmail.com>, 2025.
 # Максим Горпиніч <gorpinicmaksim0@gmail.com>, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Максим Горпиніч <gorpinicmaksim2005ukr@protonmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-15 05:04+0000\n"
-"Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
+"PO-Revision-Date: 2026-05-06 10:05+0000\n"
+"Last-Translator: Максим Горпиніч <gorpinicmaksim2005ukr@protonmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -78,7 +79,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15.2\n"
+"X-Generator: Weblate 5.17.1\n"
 
 msgid "OK"
 msgstr "Гаразд"
@@ -2847,7 +2848,7 @@ msgstr ""
 "діагностики GDScript локально."
 
 msgid "Small Deploy with Network Filesystem"
-msgstr "Маленьке розгортання з мережевою файловою системою (NFS)"
+msgstr "Невелике розгортання з використанням мережевої файлової системи"
 
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
@@ -5456,12 +5457,6 @@ msgstr "Зберегти макет..."
 msgid "Delete Layout..."
 msgstr "Видалити макет..."
 
-msgid "Save Layout"
-msgstr "Зберегти компонування"
-
-msgid "Delete Layout"
-msgstr "Видалити компонування"
-
 msgid "This scene was never saved."
 msgstr "Ця сцена так і не була збережена."
 
@@ -7495,8 +7490,9 @@ msgid ""
 "Configure the Beats Per Measure (tempo) used for the interactive streams.\n"
 "This is required in order to configure beat information."
 msgstr ""
-"Встановіть кількість ударів на такт (BPM)(темп), для інтерактивних потоків.\n"
-"Це потрібно для того, щоб налаштувати інформацію про ритм."
+"Налаштуйте кількість ударів на такт (темп), що використовується для "
+"інтерактивних потоків.\n"
+"Це необхідно для налаштування інформації про удари."
 
 msgid "Beat Count:"
 msgstr "Кількість ударів:"
@@ -11802,6 +11798,54 @@ msgstr "Поворот на %f градусів."
 msgid "Scaling %s."
 msgstr "Масштабування %s."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Модифікатор орбіти вікна перегляду 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Модифікатор орбіти вікна перегляду 2"
+
+msgid "Viewport Orbit Snap Modifier 1"
+msgstr "Модифікатор прив'язки орбіти вікна перегляду 1"
+
+msgid "Viewport Orbit Snap Modifier 2"
+msgstr "Модифікатор прив'язки орбіти вікна перегляду 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Модифікатор Pan Viewport 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Модифікатор Pan Viewport 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Модифікатор масштабування вікна перегляду 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Модифікатор масштабування вікна перегляду 2"
+
+msgid "Freelook Left"
+msgstr "Огляд ліворуч"
+
+msgid "Freelook Right"
+msgstr "Огляд праворуч"
+
+msgid "Freelook Forward"
+msgstr "Огляд вперед"
+
+msgid "Freelook Backwards"
+msgstr "Огляд назад"
+
+msgid "Freelook Up"
+msgstr "Огляд вгору"
+
+msgid "Freelook Down"
+msgstr "Огляд вниз"
+
+msgid "Freelook Speed Modifier"
+msgstr "Коефіцієнт швидкості огляду"
+
+msgid "Freelook Slow Modifier"
+msgstr "Модифікатор швидкості довільного огляду"
+
 msgid "View"
 msgstr "Перегляд"
 
@@ -12043,54 +12087,6 @@ msgstr "Увімкнути ефект Доплера"
 
 msgid "Cinematic Preview"
 msgstr "Кінематичний перегляд"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Модифікатор орбіти вікна перегляду 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Модифікатор орбіти вікна перегляду 2"
-
-msgid "Viewport Orbit Snap Modifier 1"
-msgstr "Модифікатор прив'язки орбіти вікна перегляду 1"
-
-msgid "Viewport Orbit Snap Modifier 2"
-msgstr "Модифікатор прив'язки орбіти вікна перегляду 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Модифікатор Pan Viewport 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Модифікатор Pan Viewport 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Модифікатор масштабування вікна перегляду 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Модифікатор масштабування вікна перегляду 2"
-
-msgid "Freelook Left"
-msgstr "Огляд ліворуч"
-
-msgid "Freelook Right"
-msgstr "Огляд праворуч"
-
-msgid "Freelook Forward"
-msgstr "Огляд вперед"
-
-msgid "Freelook Backwards"
-msgstr "Огляд назад"
-
-msgid "Freelook Up"
-msgstr "Огляд вгору"
-
-msgid "Freelook Down"
-msgstr "Огляд вниз"
-
-msgid "Freelook Speed Modifier"
-msgstr "Коефіцієнт швидкості огляду"
-
-msgid "Freelook Slow Modifier"
-msgstr "Модифікатор швидкості довільного огляду"
 
 msgid "Lock Transformation to X axis"
 msgstr "Блокування Перетворення по осі X"
@@ -16029,6 +16025,12 @@ msgstr "Або введіть нову назву макета."
 msgid "New layout name"
 msgstr "Нова назва макета"
 
+msgid "Save Layout"
+msgstr "Зберегти компонування"
+
+msgid "Delete Layout"
+msgstr "Видалити компонування"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Редагувати вбудовану дію: %s"
 
@@ -18311,6 +18313,15 @@ msgstr "Малюнок GridMap"
 msgid "GridMap Selection"
 msgstr "Вибір GridMap"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Змінити підлогу сітки:\n"
+"Попередній літак (%s)\n"
+"Наступний літак (%s)"
+
 msgid "Previous Floor"
 msgstr "Попередній поверх"
 
@@ -18352,15 +18363,6 @@ msgstr "Обертання вказівника навколо Z"
 
 msgid "Change Grid Floor:"
 msgstr "Зміна підлоги сітки:"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Змінити підлогу сітки:\n"
-"Попередній літак (%s)\n"
-"Наступний літак (%s)"
 
 msgid "Filter Meshes"
 msgstr "Фільтрувати сітки"

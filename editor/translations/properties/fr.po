@@ -140,7 +140,7 @@
 # Patrice Ferlet <metal3d@gmail.com>, 2025.
 # trobador <gbrosset@proton.me>, 2025, 2026.
 # Marc-Daniel DALEBA <marcodxv10@gmail.com>, 2025.
-# aioshiro <aioshiro57@proton.me>, 2025.
+# aioshiro <aioshiro57@proton.me>, 2025, 2026.
 # fleprohon <felix.leprohon@gmail.com>, 2025.
 # MaxiMaxdu59 <max.miroux@gmail.com>, 2025.
 # mbenrubi <maxime.benrubi@gmail.com>, 2025.
@@ -159,13 +159,15 @@
 # Bamowen <bamowen@users.noreply.hosted.weblate.org>, 2025.
 # MERCRED <augustinseroul@gmail.com>, 2026.
 # Posemartonis <weblate.drainage895@passmail.net>, 2026.
+# Ingrid Pigueron <ingridp.uxr@gmail.com>, 2026.
+# "Alyx.dev" <alyxdev@ik.me>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-19 09:52+0000\n"
-"Last-Translator: Posemartonis <weblate.drainage895@passmail.net>\n"
+"PO-Revision-Date: 2026-05-19 14:04+0000\n"
+"Last-Translator: \"Alyx.dev\" <alyxdev@ik.me>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -173,7 +175,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "Application"
 msgstr "Application"
@@ -3850,7 +3852,7 @@ msgid "Rings"
 msgstr "Anneaux"
 
 msgid "Smooth Faces"
-msgstr "Adoucir les faces"
+msgstr "Lisser les faces"
 
 msgid "Sides"
 msgstr "Côtés"
@@ -4019,6 +4021,9 @@ msgstr "Déchargement statique redondant"
 
 msgid "Redundant Await"
 msgstr "Await redondant"
+
+msgid "Missing Await"
+msgstr "Await manquant"
 
 msgid "Assert Always True"
 msgstr "Assertion toujours vraie"
@@ -5327,6 +5332,9 @@ msgstr "macOS"
 
 msgid "rcodesign"
 msgstr "rcodesign"
+
+msgid "actool"
+msgstr "actool"
 
 msgid "Distribution Type"
 msgstr "Type de distribution"
@@ -11208,6 +11216,9 @@ msgstr "Séparateur nommé droit"
 msgid "Submenu"
 msgstr "Sous-menu"
 
+msgid "Submenu Mirrored"
+msgstr "Sous-menu (inversé)"
+
 msgid "Font Separator"
 msgstr "Police du séparateur"
 
@@ -11591,6 +11602,12 @@ msgstr "Alpha du soulignage"
 
 msgid "Strikethrough Alpha"
 msgstr "Alpha barré"
+
+msgid "H Touch Dragger"
+msgstr "Poignée de glissement adaptée au tactile masquée"
+
+msgid "V Touch Dragger"
+msgstr "Poignée de glissement adaptée au tactile visible"
 
 msgid "Touch Dragger"
 msgstr "Glissière pour le tactile"
@@ -12314,6 +12331,9 @@ msgstr "Trames à converger"
 
 msgid "Frames to Update Lights"
 msgstr "Trames pour mettre à jour les lumières"
+
+msgid "Use Legacy Blending"
+msgstr "Mode de fusion de compatibilité"
 
 msgid "Volume Size"
 msgstr "Taille du volume"

@@ -69,13 +69,14 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # RogerFang <newlag@gmail.com>, 2025.
 # Wei-Fu Chen <410477jimmy@gmail.com>, 2026.
+# "Chen,Wei-Ting" <benson94879453@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-29 23:25+0000\n"
-"Last-Translator: sashimi <kyle2160k@gmail.com>\n"
+"PO-Revision-Date: 2026-03-18 04:09+0000\n"
+"Last-Translator: \"Chen,Wei-Ting\" <benson94879453@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hant/>\n"
 "Language: zh_Hant\n"
@@ -83,7 +84,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 msgid "OK"
 msgstr "好"
@@ -168,6 +169,12 @@ msgstr "無法解析"
 
 msgid "Can't acquire resource"
 msgstr "無法取得資源"
+
+msgid "Invalid data"
+msgstr "無效的資料"
+
+msgid "Invalid parameter"
+msgstr "無效的參數"
 
 msgid "Already exists"
 msgstr "已存在"
@@ -5022,12 +5029,6 @@ msgstr "儲存畫面佈局…"
 
 msgid "Delete Layout..."
 msgstr "刪除畫面佈局…"
-
-msgid "Save Layout"
-msgstr "儲存配置"
-
-msgid "Delete Layout"
-msgstr "刪除配置"
 
 msgid "This scene was never saved."
 msgstr "該場景從未保存過。"
@@ -10552,6 +10553,48 @@ msgstr "旋轉 %f 度。"
 msgid "Scaling %s."
 msgstr "縮放 %s。"
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "視埠軌道操作鍵 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "視埠軌道操作鍵 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "視埠平移鍵 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "視埠平移鍵 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "視埠縮放鍵 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "視埠縮放鍵 2"
+
+msgid "Freelook Left"
+msgstr "自由觀看 左"
+
+msgid "Freelook Right"
+msgstr "自由觀看 右"
+
+msgid "Freelook Forward"
+msgstr "自由觀看 前"
+
+msgid "Freelook Backwards"
+msgstr "自由觀看 後"
+
+msgid "Freelook Up"
+msgstr "自由觀看 上"
+
+msgid "Freelook Down"
+msgstr "自由觀看 下"
+
+msgid "Freelook Speed Modifier"
+msgstr "自由觀看速度調整"
+
+msgid "Freelook Slow Modifier"
+msgstr "自由觀看減速調整"
+
 msgid "View"
 msgstr "檢視"
 
@@ -10763,48 +10806,6 @@ msgstr "啟用都卜勒效應"
 
 msgid "Cinematic Preview"
 msgstr "效果預覽"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "視埠軌道操作鍵 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "視埠軌道操作鍵 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "視埠平移鍵 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "視埠平移鍵 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "視埠縮放鍵 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "視埠縮放鍵 2"
-
-msgid "Freelook Left"
-msgstr "自由觀看 左"
-
-msgid "Freelook Right"
-msgstr "自由觀看 右"
-
-msgid "Freelook Forward"
-msgstr "自由觀看 前"
-
-msgid "Freelook Backwards"
-msgstr "自由觀看 後"
-
-msgid "Freelook Up"
-msgstr "自由觀看 上"
-
-msgid "Freelook Down"
-msgstr "自由觀看 下"
-
-msgid "Freelook Speed Modifier"
-msgstr "自由觀看速度調整"
-
-msgid "Freelook Slow Modifier"
-msgstr "自由觀看減速調整"
 
 msgid "Lock Transformation to X axis"
 msgstr "將變換鎖定到 X 軸"
@@ -14512,6 +14513,12 @@ msgstr "管理編輯器功能配置"
 msgid "New layout name"
 msgstr "新排版名稱"
 
+msgid "Save Layout"
+msgstr "儲存配置"
+
+msgid "Delete Layout"
+msgstr "刪除配置"
+
 msgid "Edit Built-in Action: %s"
 msgstr "編輯內建動作：%s"
 
@@ -16598,6 +16605,15 @@ msgstr "網格地圖繪製"
 msgid "GridMap Selection"
 msgstr "網格地圖選取"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"變更格線樓層：\n"
+"前一平面 (%s)\n"
+"下一平面 (%s)"
+
 msgid "Previous Floor"
 msgstr "上一個樓層"
 
@@ -16639,15 +16655,6 @@ msgstr "以游標沿 Z 軸旋轉"
 
 msgid "Change Grid Floor:"
 msgstr "變更格線樓層："
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"變更格線樓層：\n"
-"前一平面 (%s)\n"
-"下一平面 (%s)"
 
 msgid "Filter Meshes"
 msgstr "篩選網格"

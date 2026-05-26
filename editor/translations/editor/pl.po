@@ -102,7 +102,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-05 19:02+0000\n"
+"PO-Revision-Date: 2026-03-28 15:31+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
@@ -112,7 +112,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 msgid "OK"
 msgstr "OK"
@@ -5110,7 +5110,7 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
-"Domyślny układ edytora nadpisany.\n"
+"Domyślny układ edytora został nadpisany.\n"
 "By przywrócić Domyślny układ do bazowych ustawień, użyj opcji Usuń układ i "
 "usuń Domyślny układ."
 
@@ -5301,7 +5301,7 @@ msgid "This operation can't be done without a scene."
 msgstr "Ta operacja nie może zostać wykonana bez sceny."
 
 msgid "Export Mesh Library"
-msgstr "Eksportuj bibliotekę Meshów"
+msgstr "Eksportuj bibliotekę siatek"
 
 msgid "All scenes are already saved."
 msgstr "Wszystkie sceny są już zapisane."
@@ -5471,12 +5471,6 @@ msgstr "Zapisz układ..."
 
 msgid "Delete Layout..."
 msgstr "Usuń układ..."
-
-msgid "Save Layout"
-msgstr "Zapisz układ"
-
-msgid "Delete Layout"
-msgstr "Usuń układ"
 
 msgid "This scene was never saved."
 msgstr "Ta scena nigdy nie była zapisana."
@@ -5675,7 +5669,7 @@ msgid "Quick Open Script..."
 msgstr "Szybkie otwieranie skryptu..."
 
 msgid "MeshLibrary..."
-msgstr "Biblioteka Meshów..."
+msgstr "Biblioteka siatek..."
 
 msgid "Reload Saved Scene"
 msgstr "Przywróć zapisaną scenę"
@@ -11826,6 +11820,54 @@ msgstr "Obracanie o %f stopni."
 msgid "Scaling %s."
 msgstr "Skalowanie %s."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Modyfikator orbity widoku 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Modyfikator orbity widoku 2"
+
+msgid "Viewport Orbit Snap Modifier 1"
+msgstr "Modyfikator przyciągania orbity widoku 1"
+
+msgid "Viewport Orbit Snap Modifier 2"
+msgstr "Modyfikator przyciągania orbity widoku 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Modyfikator przesuwania widoku 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Modyfikator przesuwania widoku 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Modyfikator przybliżenia widoku 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Modyfikator przybliżenia widoku 2"
+
+msgid "Freelook Left"
+msgstr "\"Wolny widok\" w lewo"
+
+msgid "Freelook Right"
+msgstr "\"Wolny widok\" w prawo"
+
+msgid "Freelook Forward"
+msgstr "\"Wolny widok\" w przód"
+
+msgid "Freelook Backwards"
+msgstr "\"Wolny widok\" w tył"
+
+msgid "Freelook Up"
+msgstr "\"Wolny widok\" w górę"
+
+msgid "Freelook Down"
+msgstr "\"Wolny widok\" w dół"
+
+msgid "Freelook Speed Modifier"
+msgstr "Modyfikator prędkości swobodnego widoku"
+
+msgid "Freelook Slow Modifier"
+msgstr "Wolny modyfikator swobodnego widoku"
+
 msgid "View"
 msgstr "Widok"
 
@@ -12075,54 +12117,6 @@ msgstr "Włącz Dopplera"
 
 msgid "Cinematic Preview"
 msgstr "Podgląd kinowy"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Modyfikator orbity widoku 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Modyfikator orbity widoku 2"
-
-msgid "Viewport Orbit Snap Modifier 1"
-msgstr "Modyfikator przyciągania orbity widoku 1"
-
-msgid "Viewport Orbit Snap Modifier 2"
-msgstr "Modyfikator przyciągania orbity widoku 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Modyfikator przesuwania widoku 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Modyfikator przesuwania widoku 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Modyfikator przybliżenia widoku 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Modyfikator przybliżenia widoku 2"
-
-msgid "Freelook Left"
-msgstr "\"Wolny widok\" w lewo"
-
-msgid "Freelook Right"
-msgstr "\"Wolny widok\" w prawo"
-
-msgid "Freelook Forward"
-msgstr "\"Wolny widok\" w przód"
-
-msgid "Freelook Backwards"
-msgstr "\"Wolny widok\" w tył"
-
-msgid "Freelook Up"
-msgstr "\"Wolny widok\" w górę"
-
-msgid "Freelook Down"
-msgstr "\"Wolny widok\" w dół"
-
-msgid "Freelook Speed Modifier"
-msgstr "Modyfikator prędkości swobodnego widoku"
-
-msgid "Freelook Slow Modifier"
-msgstr "Wolny modyfikator swobodnego widoku"
 
 msgid "Lock Transformation to X axis"
 msgstr "Zawęź transformacje do osi X"
@@ -16056,6 +16050,12 @@ msgstr "Lub podaj nazwę nowego układu."
 msgid "New layout name"
 msgstr "Nazwa nowego układu"
 
+msgid "Save Layout"
+msgstr "Zapisz układ"
+
+msgid "Delete Layout"
+msgstr "Usuń układ"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Edytuj wbudowaną akcję: %s"
 
@@ -18343,6 +18343,15 @@ msgstr "Malowanie GridMap"
 msgid "GridMap Selection"
 msgstr "Wybór GridMap"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Zmień piętro siatki:\n"
+"Poprzednia płaszczyzna (%s)\n"
+"Następna płaszczyzna (%s)"
+
 msgid "Previous Floor"
 msgstr "Poprzedni poziom"
 
@@ -18384,15 +18393,6 @@ msgstr "Kursor Obróć Z"
 
 msgid "Change Grid Floor:"
 msgstr "Zmień piętro siatki:"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Zmień podłogę siatki:\n"
-"Poprzednia płaszczyzna (%s)\n"
-"Następna płaszczyzna (%s)"
 
 msgid "Filter Meshes"
 msgstr "Filtruj siatki"

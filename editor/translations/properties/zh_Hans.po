@@ -100,13 +100,14 @@
 # MicroGame0 <MicroGame@petalmail.com>, 2025.
 # Syltus Chau <32429926+233213fedf@users.noreply.github.com>, 2025.
 # Zhen Luo <461652354@qq.com>, 2025, 2026.
+# 张华 <i1tb@qq.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2026-01-24 01:46+0000\n"
-"Last-Translator: 风青山 <idleman@yeah.net>\n"
+"PO-Revision-Date: 2026-05-24 11:13+0000\n"
+"Last-Translator: 张华 <i1tb@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -114,7 +115,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "Application"
 msgstr "应用"
@@ -882,7 +883,7 @@ msgid "Unix"
 msgstr "Unix"
 
 msgid "Packet Peer Stream"
-msgstr "数据包对等体流"
+msgstr "数据包对等端流"
 
 msgid "Max Buffer (Power of 2)"
 msgstr "最大缓冲区（2 的幂）"
@@ -903,7 +904,7 @@ msgid "Low Priority Thread Ratio"
 msgstr "低优先级线程比率"
 
 msgid "Locale"
-msgstr "区域"
+msgstr "区域设置"
 
 msgid "Plural Rules Override"
 msgstr "复数规则覆盖"
@@ -1104,7 +1105,7 @@ msgid "Entitlements"
 msgstr "授权"
 
 msgid "Increased Memory Limit"
-msgstr "提升的内存限制"
+msgstr "更高的内存限制"
 
 msgid "Game Center"
 msgstr "游戏中心"
@@ -1281,7 +1282,7 @@ msgid "Remove Tracks"
 msgstr "移除轨道"
 
 msgid "Except Bone Transform"
-msgstr "排除骨骼变换"
+msgstr "仅保留骨骼变换"
 
 msgid "Unimportant Positions"
 msgstr "非重要位置"
@@ -1611,7 +1612,7 @@ msgid "Subpixel Positioning"
 msgstr "次像素定位"
 
 msgid "Keep Rounding Remainders"
-msgstr "保持舍入余数"
+msgstr "保留舍入余数"
 
 msgid "Oversampling"
 msgstr "过采样"
@@ -3604,7 +3605,7 @@ msgid "Minimum Display Time"
 msgstr "最短显示时间"
 
 msgid "Dotnet"
-msgstr ".NET"
+msgstr "Dotnet"
 
 msgid "Project"
 msgstr "项目"
@@ -3877,7 +3878,7 @@ msgid "Always Track Local Variables"
 msgstr "始终跟踪局部变量"
 
 msgid "Renamed in Godot 4 Hint"
-msgstr "在Godot 4提示中重命名"
+msgstr "提示已在 Godot 4 中被重命名"
 
 msgid "Unassigned Variable"
 msgstr "未赋值变量"
@@ -3976,7 +3977,7 @@ msgid "Narrowing Conversion"
 msgstr "收缩转换"
 
 msgid "Int As Enum Without Cast"
-msgstr "整型用作枚举不转换"
+msgstr "整型用作枚举未转换"
 
 msgid "Int As Enum Without Match"
 msgstr "整型用作枚举不匹配"
@@ -4117,7 +4118,7 @@ msgid "Visibility Mode"
 msgstr "可见模式"
 
 msgid "Json"
-msgstr "JSON"
+msgstr "Json"
 
 msgid "Major Version"
 msgstr "主版本"
@@ -4396,10 +4397,10 @@ msgid "Position Steps"
 msgstr "位置步数"
 
 msgid "Use Enhanced Internal Edge Removal"
-msgstr "使用增强的内部边移除"
+msgstr "使用增强内部边缘移除"
 
 msgid "Generate All Kinematic Contacts"
-msgstr "生成所有动态约束"
+msgstr "生成所有运动接触"
 
 msgid "Penetration Slop"
 msgstr "穿透度"
@@ -4408,7 +4409,7 @@ msgid "Speculative Contact Distance"
 msgstr "推测接触距离"
 
 msgid "Baumgarte Stabilization Factor"
-msgstr "鲍姆加特稳定性因子"
+msgstr "Baumgarte 稳定系数"
 
 msgid "Soft Body Point Radius"
 msgstr "柔体点半径"
@@ -4459,7 +4460,7 @@ msgid "Collisions"
 msgstr "碰撞"
 
 msgid "Collision Margin Fraction"
-msgstr "碰撞边距小数"
+msgstr "碰撞边距分数"
 
 msgid "Active Edge Threshold"
 msgstr "活动边缘阈值"
@@ -4471,7 +4472,7 @@ msgid "Temporary Memory Buffer Size"
 msgstr "临时内存缓冲区大小"
 
 msgid "World Boundary Shape Size"
-msgstr "世界边缘形状尺寸"
+msgstr "世界边界形状尺寸"
 
 msgid "Max Linear Velocity"
 msgstr "最大线速度"
@@ -8088,7 +8089,7 @@ msgid "Hide on OK"
 msgstr "确定时隐藏"
 
 msgid "Close on Escape"
-msgstr "ESC 时关闭"
+msgstr "按 Esc 键关闭"
 
 msgid "Autowrap"
 msgstr "自动换行"
@@ -11923,7 +11924,7 @@ msgid "Monitoring Feeds"
 msgstr "监视源"
 
 msgid "Movie Writer"
-msgstr "Movie Writer"
+msgstr "影片录制器"
 
 msgid "Speaker Mode"
 msgstr "扬声器模式"
@@ -12589,7 +12590,7 @@ msgid "Device Limit Exceeded"
 msgstr "超出设备限制"
 
 msgid "Magic Position Write"
-msgstr "POSITION 写入魔数"
+msgstr "Magic Position Write"
 
 msgid "Internal Size"
 msgstr "内部大小"

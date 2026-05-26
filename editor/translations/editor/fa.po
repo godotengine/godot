@@ -62,12 +62,13 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Mazdak Parnian <mazdak.parniandg@gmail.com>, 2025.
 # Sajjad Zavar <zavarsajjad98@gmail.com>, 2026.
+# ArmanDarkknight <armanalizadeh234@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-12 03:10+0000\n"
+"PO-Revision-Date: 2026-02-21 16:30+0000\n"
 "Last-Translator: Sajjad Zavar <zavarsajjad98@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
@@ -76,7 +77,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 msgid "OK"
 msgstr "باشه"
@@ -124,16 +125,16 @@ msgid "Can't read file"
 msgstr "نمی‌توان فایل را خواند"
 
 msgid "File unrecognized"
-msgstr "فایل ناشناخته است"
+msgstr "فایل ناشناخته"
 
 msgid "File corrupt"
-msgstr "فایل خراب است"
+msgstr "فایل خراب"
 
 msgid "Missing dependencies for file"
-msgstr "وابستگی‌های لازم برای فایل وجود ندارد"
+msgstr "وابستگی‌های موردنیاز برای فایل یافت نشد"
 
 msgid "End of file"
-msgstr "پایان فایل"
+msgstr "انتهای فایل"
 
 msgid "Can't open"
 msgstr "نمی‌توان باز کرد"
@@ -166,13 +167,13 @@ msgid "Can't acquire resource"
 msgstr "نمی‌توان منبع را به‌دست آورد"
 
 msgid "Can't fork"
-msgstr "نمی‌توان فرآیند جدید ایجاد کرد"
+msgstr "نمی‌توان fork کرد"
 
 msgid "Invalid data"
-msgstr "داده نامعتبر است"
+msgstr "داده نامعتبر"
 
 msgid "Invalid parameter"
-msgstr "پارامتر نامعتبر است"
+msgstr "پارامتر نامعتبر"
 
 msgid "Already exists"
 msgstr "از قبل وجود دارد"
@@ -193,16 +194,16 @@ msgid "Method not found"
 msgstr "متد پیدا نشد"
 
 msgid "Link failed"
-msgstr "لینک ناموفق بود"
+msgstr "لینک ناموفق"
 
 msgid "Script failed"
-msgstr "اجرای اسکریپت ناموفق بود"
+msgstr "اجرای اسکریپت ناموفق"
 
 msgid "Cyclic link detected"
 msgstr "پیوند چرخه‌ای شناسایی شد"
 
 msgid "Invalid declaration"
-msgstr "اعلان نامعتبر است"
+msgstr "تعریف نامعتبر"
 
 msgid "Duplicate symbol"
 msgstr "نماد تکراری"
@@ -211,10 +212,10 @@ msgid "Parse error"
 msgstr "خطای تجزیه"
 
 msgid "Busy"
-msgstr "مشغول است"
+msgstr "مشغول"
 
 msgid "Skip"
-msgstr "رد شد"
+msgstr "رد کردن"
 
 msgid "Help"
 msgstr "راهنما"
@@ -223,7 +224,7 @@ msgid "Bug"
 msgstr "باگ"
 
 msgid "Printer on fire"
-msgstr "چاپگر آتش گرفته است"
+msgstr "چاپگر آتش گرفته"
 
 msgid "unset"
 msgstr "تنظیم نشده"
@@ -232,25 +233,25 @@ msgid "Physical"
 msgstr "فیزیکی"
 
 msgid "Left Mouse Button"
-msgstr "دکمهٔ چپ موس"
+msgstr "دکمه چپ موس"
 
 msgid "Right Mouse Button"
-msgstr "دکمهٔ راست موس"
+msgstr "دکمه راست موس"
 
 msgid "Middle Mouse Button"
-msgstr "دکمهٔ وسط موس"
+msgstr "دکمه وسط موس"
 
 msgid "Mouse Wheel Up"
-msgstr "چرخ ماوس به بالا"
+msgstr "چرخ موس به بالا"
 
 msgid "Mouse Wheel Down"
-msgstr "چرخ ماوس به پایین"
+msgstr "چرخ موس به پایین"
 
 msgid "Mouse Wheel Left"
-msgstr "چرخ ماوس به چپ"
+msgstr "چرخ موس به چپ"
 
 msgid "Mouse Wheel Right"
-msgstr "چرخ ماوس به راست"
+msgstr "چرخ موس به راست"
 
 msgid "Mouse Thumb Button 1"
 msgstr "دکمه شست موس ۱"
@@ -265,7 +266,7 @@ msgid "Double Click"
 msgstr "دوبار کلیک"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
-msgstr "حرکت ماوس در موقعیت (%s) با سرعت (%s)"
+msgstr "حرکت موس در موقعیت (%s) با سرعت (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
 msgstr "محور X استیک چپ، محور X جوی‌استیک ۰"
@@ -812,7 +813,7 @@ msgid "Max"
 msgstr "بیشینه‌"
 
 msgid "Value"
-msgstr "ارزش"
+msgstr "مقدار"
 
 msgid "Open Animation Node"
 msgstr "باز کردن گره پویانمایی"
@@ -5195,12 +5196,6 @@ msgstr "ذخیرهٔ چیدمان..."
 
 msgid "Delete Layout..."
 msgstr "زدایش چیدمان..."
-
-msgid "Save Layout"
-msgstr "ذخیره چیدمان"
-
-msgid "Delete Layout"
-msgstr "زدایش چیدمان"
 
 msgid "This scene was never saved."
 msgstr "این صحنه هرگز ذخیره نشده بود."
@@ -10838,6 +10833,36 @@ msgstr "%f درجه چرخاندن."
 msgid "Scaling %s."
 msgstr "مقیاس‌دهی %s."
 
+msgid "Viewport Pan Modifier 2"
+msgstr "اصلاح‌گر حرکت درگاه دید ۲"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "اصلاح‌گر بزرگنمایی درگاه دید ۱"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "اصلاح‌گر بزرگنمایی درگاه دید ۲"
+
+msgid "Freelook Left"
+msgstr "آزادنگری چپ"
+
+msgid "Freelook Right"
+msgstr "آزادنگری راست"
+
+msgid "Freelook Forward"
+msgstr "آزادنگری جلو"
+
+msgid "Freelook Backwards"
+msgstr "آزادنگری به پشت"
+
+msgid "Freelook Up"
+msgstr "آزادنگری بالا"
+
+msgid "Freelook Down"
+msgstr "آزادنگری به پایین"
+
+msgid "Freelook Speed Modifier"
+msgstr "اصلاح‌کنندهٔ تندی آزادنگری"
+
 msgid "View"
 msgstr "دیدن"
 
@@ -10986,36 +11011,6 @@ msgstr "به‌کاراندازی دوپلر"
 
 msgid "Cinematic Preview"
 msgstr "پیش‌نمایش سینمایی"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "اصلاح‌گر حرکت درگاه دید ۲"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "اصلاح‌گر بزرگنمایی درگاه دید ۱"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "اصلاح‌گر بزرگنمایی درگاه دید ۲"
-
-msgid "Freelook Left"
-msgstr "آزادنگری چپ"
-
-msgid "Freelook Right"
-msgstr "آزادنگری راست"
-
-msgid "Freelook Forward"
-msgstr "آزادنگری جلو"
-
-msgid "Freelook Backwards"
-msgstr "آزادنگری به پشت"
-
-msgid "Freelook Up"
-msgstr "آزادنگری بالا"
-
-msgid "Freelook Down"
-msgstr "آزادنگری به پایین"
-
-msgid "Freelook Speed Modifier"
-msgstr "اصلاح‌کنندهٔ تندی آزادنگری"
 
 msgid "Lock Transformation to X axis"
 msgstr "قفلیدن ترادیسی به محور X"
@@ -14416,6 +14411,12 @@ msgstr "درون‌برد نمایه(ها)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "مدیریت ویژگی نمایه‌های ویراستار"
+
+msgid "Save Layout"
+msgstr "ذخیره چیدمان"
+
+msgid "Delete Layout"
+msgstr "زدایش چیدمان"
 
 msgid "Edit Built-in Action: %s"
 msgstr "ویرایش کنش درون‌ساخته: %s"

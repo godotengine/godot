@@ -131,13 +131,15 @@
 # Winfried Gerlach <firmen@schoech.de>, 2025.
 # Dragon7 <nopenope@gmx.ch>, 2025.
 # Marek J <marek.workspace@gmail.com>, 2026.
+# Daniel Haus <d@danielhaus.de>, 2026.
+# Elia Nitsche <egnrse@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-14 10:15+0000\n"
-"Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
+"PO-Revision-Date: 2026-05-26 03:27+0000\n"
+"Last-Translator: Elia Nitsche <egnrse@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
 "Language: de\n"
@@ -145,7 +147,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -160,13 +162,10 @@ msgid "Unconfigured"
 msgstr "Nicht konfiguriert"
 
 msgid "Unauthorized"
-msgstr "Nicht authorisiert"
+msgstr "Nicht autorisiert"
 
 msgid "Parameter out of range"
 msgstr "Parameter außerhalb des Wertebereichs"
-
-msgid "Out of memory"
-msgstr "Kein Speicher mehr"
 
 msgid "File not found"
 msgstr "Datei nicht gefunden"
@@ -196,7 +195,7 @@ msgid "File unrecognized"
 msgstr "Datei nicht erkannt"
 
 msgid "File corrupt"
-msgstr "Datei kaputt"
+msgstr "Datei beschädigt"
 
 msgid "Missing dependencies for file"
 msgstr "Fehlende Abhängigkeiten für Datei"
@@ -289,7 +288,7 @@ msgid "Help"
 msgstr "Hilfe"
 
 msgid "Bug"
-msgstr "Fehler"
+msgstr "Bug"
 
 msgid "Printer on fire"
 msgstr "Drucker brennt"
@@ -328,7 +327,7 @@ msgid "Mouse Thumb Button 2"
 msgstr "Maus-Daumentaste 2"
 
 msgid "Button"
-msgstr "Schaltfläche"
+msgstr "Button"
 
 msgid "Double Click"
 msgstr "Doppelklick"
@@ -394,10 +393,10 @@ msgid "Start, Xbox Menu, Nintendo +"
 msgstr "Start, Xbox-Menü, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
-msgstr "Linker Steuerknüppel, Sony L3, Xbox L/LS"
+msgstr "Linker Stick, Sony L3, Xbox L/LS"
 
 msgid "Right Stick, Sony R3, Xbox R/RS"
-msgstr "Rechter Steuerknüppel, Sony R3, Xbox R/RS"
+msgstr "Rechter Stick, Sony R3, Xbox R/RS"
 
 msgid "Left Shoulder, Sony L1, Xbox LB"
 msgstr "Linke Schultertaste, Sony L1, Xbox LB"
@@ -670,16 +669,16 @@ msgid "Focus Path"
 msgstr "Zu Pfad springen"
 
 msgid "Swap Input Direction"
-msgstr "Eingaberichtung umschalten"
+msgstr "Eingaberichtung wechseln"
 
 msgid "Start Unicode Character Input"
 msgstr "Unicodezeicheneingabe starten"
 
 msgid "ColorPicker: Delete Preset"
-msgstr "ColorPicker: Vorgabe löschen"
+msgstr "ColorPicker: Profil löschen"
 
 msgid "Accessibility: Keyboard Drag and Drop"
-msgstr "Barrierefreiheit: Tastatur-Drag-&-Drop"
+msgstr "Barrierefreiheit: Tastatur Drag&Drop"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Ungültige Eingabe %d (nicht übergeben) im Ausdruck"
@@ -735,9 +734,6 @@ msgstr "Zeit:"
 
 msgid "Value:"
 msgstr "Wert:"
-
-msgid "Update Selected Key Handles"
-msgstr "Ausgewählte Key-Griffe aktualisieren"
 
 msgid "Insert Key Here"
 msgstr "Key hier einfügen"
@@ -5575,12 +5571,6 @@ msgstr "Layout speichern..."
 msgid "Delete Layout..."
 msgstr "Layout löschen..."
 
-msgid "Save Layout"
-msgstr "Layout speichern"
-
-msgid "Delete Layout"
-msgstr "Layout löschen"
-
 msgid "This scene was never saved."
 msgstr "Diese Szene wurde nie gespeichert."
 
@@ -10094,7 +10084,7 @@ msgid "Copy Polygon to UV"
 msgstr "Polygon zu UV kopieren"
 
 msgid "Copy UV to Polygon"
-msgstr "Polygon zu UV kopieren"
+msgstr "UV zu Polygon kopieren"
 
 msgid "Clear UV"
 msgstr "Leere UV-Map"
@@ -12022,6 +12012,54 @@ msgstr "Rotiere um %f Grad."
 msgid "Scaling %s."
 msgstr "Skaliere um %s."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Viewport-Orbitmodifizierer 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Viewport-Orbitmodifizierer 2"
+
+msgid "Viewport Orbit Snap Modifier 1"
+msgstr "Viewport-Orbiteinrastmodifizierer 1"
+
+msgid "Viewport Orbit Snap Modifier 2"
+msgstr "Viewport-Orbiteinrastmodifizierer 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Viewport-Schwenkungsmodifizierer 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Viewport-Schwenkungsmodifizierer 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Viewport-Zoom-Modifizierer 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Viewport-Zoom-Modifizierer 2"
+
+msgid "Freelook Left"
+msgstr "Freelook Links"
+
+msgid "Freelook Right"
+msgstr "Freelook Rechts"
+
+msgid "Freelook Forward"
+msgstr "Freelook Vorwärts"
+
+msgid "Freelook Backwards"
+msgstr "Freelook Rückwärts"
+
+msgid "Freelook Up"
+msgstr "Freelook Hoch"
+
+msgid "Freelook Down"
+msgstr "Freelook Runter"
+
+msgid "Freelook Speed Modifier"
+msgstr "Freelook-Geschwindigkeits-Modifier"
+
+msgid "Freelook Slow Modifier"
+msgstr "Freelook-Trägheits-Modifier"
+
 msgid "View"
 msgstr "Ansicht"
 
@@ -12277,54 +12315,6 @@ msgstr "Dopplereffekt aktivieren"
 
 msgid "Cinematic Preview"
 msgstr "Cinematische Vorschau"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Viewport-Orbitmodifizierer 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Viewport-Orbitmodifizierer 2"
-
-msgid "Viewport Orbit Snap Modifier 1"
-msgstr "Viewport-Orbiteinrastmodifizierer 1"
-
-msgid "Viewport Orbit Snap Modifier 2"
-msgstr "Viewport-Orbiteinrastmodifizierer 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Viewport-Schwenkungsmodifizierer 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Viewport-Schwenkungsmodifizierer 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Viewport-Zoom-Modifizierer 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Viewport-Zoom-Modifizierer 2"
-
-msgid "Freelook Left"
-msgstr "Freelook Links"
-
-msgid "Freelook Right"
-msgstr "Freelook Rechts"
-
-msgid "Freelook Forward"
-msgstr "Freelook Vorwärts"
-
-msgid "Freelook Backwards"
-msgstr "Freelook Rückwärts"
-
-msgid "Freelook Up"
-msgstr "Freelook Hoch"
-
-msgid "Freelook Down"
-msgstr "Freelook Runter"
-
-msgid "Freelook Speed Modifier"
-msgstr "Freelook-Geschwindigkeits-Modifier"
-
-msgid "Freelook Slow Modifier"
-msgstr "Freelook-Trägheits-Modifier"
 
 msgid "Lock Transformation to X axis"
 msgstr "Transformation auf X-Achse begrenzen"
@@ -16297,6 +16287,12 @@ msgstr "Oder neuen Layout-Namen eingeben."
 msgid "New layout name"
 msgstr "Neuer Layout-Name"
 
+msgid "Save Layout"
+msgstr "Layout speichern"
+
+msgid "Delete Layout"
+msgstr "Layout löschen"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Built-in-Aktion bearbeiten: %s"
 
@@ -18607,6 +18603,15 @@ msgstr "GridMap malen"
 msgid "GridMap Selection"
 msgstr "GridMap-Auswahl"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Gitterboden ändern:\n"
+"Vorherige Ebene (%s)\n"
+"Nächste Ebene (%s)"
+
 msgid "Previous Floor"
 msgstr "Vorherige Ebene"
 
@@ -18648,15 +18653,6 @@ msgstr "Z-Rotation am Mauszeiger"
 
 msgid "Change Grid Floor:"
 msgstr "Rasterboden ändern:"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Gitterboden ändern:\n"
-"Vorherige Ebene (%s)\n"
-"Nächste Ebene (%s)"
 
 msgid "Filter Meshes"
 msgstr "Meshes filtern"

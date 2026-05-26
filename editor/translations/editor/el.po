@@ -3066,12 +3066,6 @@ msgstr "Αποθήκευση διάταξης..."
 msgid "Delete Layout..."
 msgstr "Διαγραφή διάταξης..."
 
-msgid "Save Layout"
-msgstr "Αποθήκευση διάταξης"
-
-msgid "Delete Layout"
-msgstr "Διαγραφή διάταξης"
-
 msgid "Save & Close"
 msgstr "Αποθήκευση & Κλείσιμο"
 
@@ -4860,6 +4854,30 @@ msgstr "Μετάφραση:%s."
 msgid "Scaling %s."
 msgstr "Κλιμάκωση:%s."
 
+msgid "Freelook Left"
+msgstr "Ελεύθερο κοίταγμα αριστερά"
+
+msgid "Freelook Right"
+msgstr "Ελεύθερο κοίταγμα δεξιά"
+
+msgid "Freelook Forward"
+msgstr "Ελεύθερο κοίταγμα μπροστά"
+
+msgid "Freelook Backwards"
+msgstr "Ελεύθερο κοίταγμα πίσω"
+
+msgid "Freelook Up"
+msgstr "Ελεύθερο κοίταγμα πάνω"
+
+msgid "Freelook Down"
+msgstr "Ελεύθερο κοίταγμα κάτω"
+
+msgid "Freelook Speed Modifier"
+msgstr "Ταχύτητα ελεύθερου κοιτάγματος"
+
+msgid "Freelook Slow Modifier"
+msgstr "Αργός Τροποποιητής Ελεύθερου Κοιτάγματος"
+
 msgid "View"
 msgstr "Θέα"
 
@@ -4913,30 +4931,6 @@ msgstr "Ενεργοποίηση Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Κινηματογραφική Προεπισκόπηση"
-
-msgid "Freelook Left"
-msgstr "Ελεύθερο κοίταγμα αριστερά"
-
-msgid "Freelook Right"
-msgstr "Ελεύθερο κοίταγμα δεξιά"
-
-msgid "Freelook Forward"
-msgstr "Ελεύθερο κοίταγμα μπροστά"
-
-msgid "Freelook Backwards"
-msgstr "Ελεύθερο κοίταγμα πίσω"
-
-msgid "Freelook Up"
-msgstr "Ελεύθερο κοίταγμα πάνω"
-
-msgid "Freelook Down"
-msgstr "Ελεύθερο κοίταγμα κάτω"
-
-msgid "Freelook Speed Modifier"
-msgstr "Ταχύτητα ελεύθερου κοιτάγματος"
-
-msgid "Freelook Slow Modifier"
-msgstr "Αργός Τροποποιητής Ελεύθερου Κοιτάγματος"
 
 msgid "View Rotation Locked"
 msgstr "Κλείδωμα Περιστροφής"
@@ -6654,6 +6648,12 @@ msgstr "Εισαγωγή Προφίλ"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Διαχείριση Προφίλ Δυνατοτήτων Επεξεργαστή"
+
+msgid "Save Layout"
+msgstr "Αποθήκευση διάταξης"
+
+msgid "Delete Layout"
+msgstr "Διαγραφή διάταξης"
 
 msgid "Edit Built-in Action: %s"
 msgstr "Επεξεργασία ενσωματωμένης ενέργειας: %s"

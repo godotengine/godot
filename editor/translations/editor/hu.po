@@ -51,7 +51,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-13 12:54+0000\n"
+"PO-Revision-Date: 2026-04-17 08:10+0000\n"
 "Last-Translator: Tallyrald <tally.github@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
@@ -60,16 +60,31 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "Sikertelen"
+
+msgid "Unavailable"
+msgstr "Nem elérhető"
+
+msgid "Unconfigured"
+msgstr "Nem konfigurált"
+
 msgid "Unauthorized"
 msgstr "Nem engedélyezett"
 
+msgid "Parameter out of range"
+msgstr "Tartományon kívüli paraméter"
+
 msgid "Out of memory"
 msgstr "Nincs elég memória"
+
+msgid "File not found"
+msgstr "A fájl nem található"
 
 msgid "File: Bad drive"
 msgstr "Fájl: Hibás meghajtó"
@@ -80,17 +95,104 @@ msgstr "Fájl: Hibás útvonal"
 msgid "File: Permission denied"
 msgstr "Fájl: Nem engedélyezett"
 
+msgid "File already in use"
+msgstr "Fájl már használatban"
+
+msgid "Can't open file"
+msgstr "A fájl nem nyitható meg"
+
+msgid "Can't write file"
+msgstr "A fájl nem írható"
+
+msgid "Can't read file"
+msgstr "A fájl nem olvasható"
+
 msgid "File unrecognized"
 msgstr "Ismeretlen fájl"
 
 msgid "File corrupt"
 msgstr "Sérült fájl"
 
+msgid "Missing dependencies for file"
+msgstr "Hiányzó függőségek a fájlhoz"
+
+msgid "End of file"
+msgstr "Fájl vége"
+
+msgid "Can't open"
+msgstr "Nem nyitható meg"
+
+msgid "Can't create"
+msgstr "Nem hozható létre"
+
+msgid "Query failed"
+msgstr "Lekérdezés sikertelen"
+
+msgid "Already in use"
+msgstr "Már használatban"
+
+msgid "Locked"
+msgstr "Zárolva"
+
+msgid "Timeout"
+msgstr "Időtúllépés"
+
+msgid "Can't connect"
+msgstr "Nem lehet csatlakozni"
+
+msgid "Can't resolve"
+msgstr "Nem feloldható"
+
+msgid "Connection error"
+msgstr "Csatlakozás hiba"
+
+msgid "Can't acquire resource"
+msgstr "Nem beszerezhető erőforrás"
+
+msgid "Can't fork"
+msgstr "Nem ágaztatható"
+
+msgid "Invalid data"
+msgstr "Érvénytelen adat"
+
+msgid "Invalid parameter"
+msgstr "Érvénytelen paraméter"
+
+msgid "Already exists"
+msgstr "Már létezik"
+
+msgid "Does not exist"
+msgstr "Nem létezik"
+
+msgid "Can't read database"
+msgstr "Nem olvasható adatbázis"
+
 msgid "Can't write database"
 msgstr "Nem lehet írni az adatbázisba"
 
+msgid "Compilation failed"
+msgstr "Fordítás sikertelen"
+
+msgid "Method not found"
+msgstr "Nem található metódus"
+
+msgid "Link failed"
+msgstr "Sikertelen kapcsolás"
+
+msgid "Script failed"
+msgstr "Sikertelen szkript"
+
 msgid "Cyclic link detected"
 msgstr "Ciklikus hivatkozás érzékelve"
+
+msgid "Invalid declaration"
+msgstr "Érvénytelen deklaráció"
+
+msgid "Duplicate symbol"
+msgstr "Duplikált szimbólum"
+
+msgid "Parse error"
+msgstr "Elemzési hiba"
 
 msgid "Busy"
 msgstr "Foglalt"
@@ -106,6 +208,9 @@ msgstr "Hiba"
 
 msgid "Printer on fire"
 msgstr "Ég a nyomtató"
+
+msgid "unset"
+msgstr "visszaállítás"
 
 msgid "Physical"
 msgstr "Fizikai"
@@ -295,6 +400,9 @@ msgstr "Kiválaszt"
 msgid "Cancel"
 msgstr "Mégse"
 
+msgid "Close Dialog"
+msgstr "Párbeszédablak Bezárás"
+
 msgid "Focus Next"
 msgstr "Fókuszálás a Következőre"
 
@@ -333,6 +441,9 @@ msgstr "Másolás"
 
 msgid "Paste"
 msgstr "Beillesztés"
+
+msgid "Toggle Tab Focus Mode"
+msgstr "Tab Fókusz Mód Állítás"
 
 msgid "Undo"
 msgstr "Visszavonás"
@@ -451,6 +562,9 @@ msgstr "Node-ok duplikálása"
 msgid "Delete Nodes"
 msgstr "Node-ok törlése"
 
+msgid "Follow Input Port Connection"
+msgstr "Bemeneti Port Kapcsolat Követés"
+
 msgid "Follow Output Port Connection"
 msgstr "Kimeneti Port Kapcsolat Követése"
 
@@ -463,6 +577,9 @@ msgstr "Frissítés"
 msgid "Show Hidden"
 msgstr "Rejtettek megjelenítése"
 
+msgid "Find"
+msgstr "Keresés"
+
 msgid "Focus Path"
 msgstr "Elérési Út Fókuszálása"
 
@@ -471,6 +588,9 @@ msgstr "Irányok Felcserélése"
 
 msgid "Start Unicode Character Input"
 msgstr "Unicode karakterbevitele indítása"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "ColorPicker: Beállítás Törlés"
 
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "Akadálymentesítés: Billentyűzet Húzd és Vidd"
@@ -574,6 +694,9 @@ msgstr "Bézier Pont Hozzáadása"
 msgid "Move Bezier Points"
 msgstr "Bézier Pontok Mozgatása"
 
+msgid "Scale Bezier Points"
+msgstr "Bézier Pontok Méretezése"
+
 msgid "Animation Duplicate Keys"
 msgstr "Animáció - Kulcsok Megkettőzése"
 
@@ -606,6 +729,9 @@ msgstr "Betöltés..."
 
 msgid "Move Node Point"
 msgstr "Node Pont Mozgatás"
+
+msgid "Change BlendSpace1D Config"
+msgstr "BlendSpace1D Konfig Módosítás"
 
 msgid "Change BlendSpace1D Labels"
 msgstr "BlendSpace1D Címkék Változtatása"
@@ -659,14 +785,26 @@ msgstr "Pontok törlése."
 msgid "Enable snap and show grid."
 msgstr "Illesztés engedélyezése és rács megjelenítése."
 
+msgid "Grid Step"
+msgstr "Rács Lépésköz"
+
+msgid "Sync:"
+msgstr "Szinkronizálás:"
+
 msgid "Blend:"
 msgstr "Keverés:"
 
 msgid "Point"
 msgstr "Pont"
 
+msgid "Blend Value"
+msgstr "Keverési Érték"
+
 msgid "Open Editor"
 msgstr "Szerkesztő megnyitása"
+
+msgid "Min"
+msgstr "Min"
 
 msgid "Max"
 msgstr "Max"
@@ -682,6 +820,9 @@ msgstr "A háromszög már létezik."
 
 msgid "Add Triangle"
 msgstr "Háromszög hozzáadása"
+
+msgid "Change BlendSpace2D Config"
+msgstr "BlendSpace2D Konfig Módosítás"
 
 msgid "Change BlendSpace2D Labels"
 msgstr "BlendSpace2D Címkék Változtatása"
@@ -707,8 +848,23 @@ msgstr "Pontok és háromszögek törlése."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Keverési háromszögek generálása automatikusan (kézi helyett)"
 
+msgid "Grid X Step"
+msgstr "Rács X Lépés"
+
+msgid "Grid Y Step"
+msgstr "Rács Y Lépés"
+
+msgid "Blend X Value"
+msgstr "Keverés X Érték"
+
+msgid "Blend Y Value"
+msgstr "Keverés Y Érték"
+
 msgid "Max Y"
 msgstr "Max Y"
+
+msgid "Y Value"
+msgstr "Y Érték"
 
 msgid "Min Y"
 msgstr "Min Y"
@@ -716,8 +872,17 @@ msgstr "Min Y"
 msgid "Min X"
 msgstr "Min X"
 
+msgid "X Value"
+msgstr "X Érték"
+
 msgid "Max X"
 msgstr "Max X"
+
+msgid "Parameter Changed: %s"
+msgstr "Paraméter Megváltozott: %s"
+
+msgid "Inspect Filters"
+msgstr "Szűrők Vizsgálata:"
 
 msgid "Edit Filters"
 msgstr "Szűrők Szerkesztése"
@@ -757,6 +922,15 @@ msgstr "Szűrő be- és kikapcsolása"
 msgid "Change Filter"
 msgstr "Szűrő módosítása"
 
+msgid "Fill Selected Filter Children"
+msgstr "Kijelölt Gyermekek Kitöltése"
+
+msgid "Invert Filter Selection"
+msgstr "Szűrő kijelölés Invertálása"
+
+msgid "Clear Filter Selection"
+msgstr "Szűrő kijelölés megszüntetése"
+
 msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
@@ -788,32 +962,121 @@ msgstr "Node hozzáadása..."
 msgid "Enable Filtering"
 msgstr "Szűrés engedélyezése"
 
+msgid "Fill Selected Children"
+msgstr "Kijelölt Gyermekek Kitöltése"
+
 msgid "Invert"
 msgstr "Invertálás"
 
 msgid "Clear"
 msgstr "Töröl"
 
+msgid "Start of Animation"
+msgstr "Animáció Kezdete"
+
+msgid "End of Animation"
+msgstr "Animáció Vége"
+
 msgid "Set Custom Timeline from Marker"
 msgstr "Egyedi Idővonal Beállítás Jelzőből"
+
+msgid "Select Markers"
+msgstr "Jelölők Kiválasztása"
+
+msgid "Start Marker"
+msgstr "Kezdő Jelölő"
 
 msgid "End Marker"
 msgstr "Végjelző"
 
+msgid "Library Name:"
+msgstr "Könyvtár Név:"
+
+msgid "Animation name can't be empty."
+msgstr "Az animáció neve nem lehet üres."
+
+msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
+msgstr ""
+"Az animáció neve érvénytelen karaktereket tartalmaz: \"/\", \":\", \",\" vagy "
+"\"[\"."
+
+msgid "Animation with the same name already exists."
+msgstr "Ilyen nevű animáció már létezik."
+
 msgid "Enter a library name."
 msgstr "Adjon meg egy könyvtárnevet."
+
+msgid "Library name contains invalid characters: '/', ':', ',' or '['."
+msgstr ""
+"A könyvtár neve érvénytelen karaktereket tartalmaz: \"/\", \":\", \",\" vagy "
+"\"[\"."
+
+msgid "Library with the same name already exists."
+msgstr "Ilyen nevű könyvtár már létezik."
+
+msgid "Animation name is valid."
+msgstr "Az animáció neve érvényes."
 
 msgid "Global library will be created."
 msgstr "Globális könyvár fog létrejönni."
 
+msgid "Library name is valid."
+msgstr "A könyvtár neve érvényes."
+
+msgid "Add Animation to Library: %s"
+msgstr "Animáció Hozzáadása Könyvtárhoz: %s"
+
+msgid "Add Animation Library: %s"
+msgstr "Animáció Könyvtár Hozzáadása: %s"
+
 msgid "Load Animation"
 msgstr "Animáció Betöltése"
+
+msgid ""
+"This animation library can't be saved because it does not belong to the "
+"edited scene. Make it unique first."
+msgstr ""
+"Ez az animáció könyvtár nem methető, mert nem a módosított jelenet része. "
+"Először tegye egyedivé."
+
+msgid ""
+"This animation library can't be saved because it was imported from another "
+"file. Make it unique first."
+msgstr ""
+"Az animáció könyvtár nem menthető, mert másik fájlból lett importálva. "
+"Először tegye egyedivé."
+
+msgid "Save Library"
+msgstr "Könyvtár Mentés"
 
 msgid "Make Animation Library Unique: %s"
 msgstr "Animációs Könyvtár Egyedivé Tétele: %s"
 
+msgid ""
+"This animation can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
+"Az animáció nem menthető, mert nem a módosított jelenet része. Először tegye "
+"egyedivé."
+
+msgid ""
+"This animation can't be saved because it was imported from another file. Make "
+"it unique first."
+msgstr ""
+"Az animáció nem menthető, mert másik fájlból lett importálva. Először tegye "
+"egyedivé."
+
+msgid "Save Animation"
+msgstr "Animáció Mentés"
+
+msgid "Make Animation Unique: %s"
+msgstr "Animáció Egyedivé Tétele: %s"
+
 msgid "Save Animation library to File: %s"
 msgstr "Animáció könyvtár Fájlba Mentése: %s"
+
+msgid "Save Animation to File: %s"
+msgstr "Animáció Mentése Fájlba: %s"
 
 msgid ""
 "The file you selected is an imported scene from a 3D model such as glTF or "
@@ -854,11 +1117,35 @@ msgstr ""
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr "A kiválasztott könyvtárak között néhány már szerepel a keverőben."
 
+msgid "Add Animation Libraries"
+msgstr "Animációs Könyvtárak Hozzáadása"
+
+msgid "Some Animation files were invalid."
+msgstr "Néhány Animációs fájl érvénytelen."
+
 msgid "Some of the selected animations were already added to the library."
 msgstr "A kiválasztott animációk között néhány már szerepel a könyvtárban."
 
+msgid "Load Animations into Library"
+msgstr "Animációk Könyvtárba Betöltése"
+
+msgid "Load Animation into Library: %s"
+msgstr "Animáció Betöltése Könyvtárba: %s"
+
+msgid "Rename Animation Library: %s"
+msgstr "Animáció Könyvtár Átnevezése: %s"
+
+msgid "[Global]"
+msgstr "[Global]"
+
+msgid "Rename Animation: %s"
+msgstr "Animáció Átnevezése: %s"
+
 msgid "Animation Name:"
 msgstr "Animáció Neve:"
+
+msgid "No animation resource in clipboard!"
+msgstr "Nincs animációs erőforrás a vágólapon!"
 
 msgid "Pasted Animation"
 msgstr "Animáció Beillesztve"
@@ -875,14 +1162,65 @@ msgstr "Egyedivé tétel"
 msgid "Open in Inspector"
 msgstr "Megnyitás az Elemzőben"
 
+msgid "Remove Animation Library: %s"
+msgstr "Animáció Könyvtár Eltávolítása: %s"
+
+msgid "Remove Animation from Library: %s"
+msgstr "Animáció Eltávolítása Könyvtárból: %s"
+
 msgid "[built-in]"
 msgstr "[beépített]"
 
 msgid "[foreign]"
 msgstr "[külső]"
 
+msgid "[imported]"
+msgstr "[importált]"
+
+msgid "Add animation to library."
+msgstr "Animáció hozzáadása könyvtárhoz."
+
+msgid "Load animation from file and add to library."
+msgstr "Animáció betöltése és könyvtárhoz adása fájlból."
+
+msgid "Paste animation to library from clipboard."
+msgstr "Animáció betöltése a vágólapról könyvtárba."
+
+msgid "Save animation library to resource on disk."
+msgstr "Animáció könyvtár mentése lemezen lévő erőforrásba."
+
+msgid "Remove animation library."
+msgstr "Animáció könyvtár eltávolítása."
+
+msgid "Copy animation to clipboard."
+msgstr "Animáció vágólapra másolása."
+
+msgid "Save animation to resource on disk."
+msgstr "Animáció mentése lemezen lévő erőforrásba."
+
+msgid "Remove animation from Library."
+msgstr "Animáció Eltávolítása Könyvtárból."
+
+msgid "Edit Animation Libraries"
+msgstr "Animációs Könyvtárak Módosítása"
+
+msgid "New Library"
+msgstr "Új Könyvtár"
+
+msgid "Create new empty animation library."
+msgstr "Új üres animációs könyvtár létrehozása."
+
+msgid "Load Library"
+msgstr "Könyvtár Betöltése"
+
+msgid "Load animation library from disk."
+msgstr "Animációs könyvtár betöltése lemezről."
+
 msgid "Resource"
 msgstr "Erőforrás"
+
+msgid "Storage"
+msgstr "Tároló"
 
 msgid "Error:"
 msgstr "Hiba:"
@@ -902,11 +1240,17 @@ msgstr "Animáció Átnevezése"
 msgid "Change Animation Name:"
 msgstr "Animáció Nevének Megváltoztatása:"
 
+msgid "Delete Animation '%s'?"
+msgstr "A(z) \"%s\" Animáció Törlése?"
+
 msgid "Remove Animation"
 msgstr "Animáció Eltávolítása"
 
 msgid "Invalid animation name!"
 msgstr "Érvénytelen animáció név!"
+
+msgid "Animation '%s' already exists!"
+msgstr "A(z) \"%s\" animáció már létezik!"
 
 msgid "Duplicate Animation"
 msgstr "Animáció Megkettőzése"
@@ -917,11 +1261,35 @@ msgstr "Következő Megváltozott Keverése"
 msgid "Change Blend Time"
 msgstr "Keverési Idő Módosítása"
 
+msgid "[Global] (create)"
+msgstr "[Global] (létrehozás)"
+
+msgid "Pause/Stop Animation"
+msgstr "Animáció Szünet/Lejátszás"
+
+msgid "Play Animation from Start"
+msgstr "Animáció Lejátszása az Elejétől"
+
+msgid "Play Animation"
+msgstr "Animáció Lejátszása"
+
+msgid "Play Animation Backwards"
+msgstr "Animáció Lejátszása Visszafelé"
+
+msgid "Play Animation Backwards from End"
+msgstr "Animáció Lejátszása Visszafelé a Végétől"
+
+msgid "Duplicated Animation Name:"
+msgstr "Duplikált Animáció Neve:"
+
 msgid "Onion skinning requires a RESET animation."
 msgstr "Hagymahéjhoz RESET animációra van szükség."
 
 msgid "Animation"
 msgstr "Animáció"
+
+msgid "Toggle Animation Dock"
+msgstr "Animációs Dokk Kapcsolása"
 
 msgid "Animation position (in seconds)."
 msgstr "Animáció pozíció (másodpercekben)."
@@ -934,6 +1302,9 @@ msgstr "Animációs Eszközök"
 
 msgid "New..."
 msgstr "Új..."
+
+msgid "Manage Animations..."
+msgstr "Animációk Kezelése..."
 
 msgid "Duplicate..."
 msgstr "Megkettőzés..."
@@ -1007,6 +1378,9 @@ msgstr "Keverési Idők:"
 msgid "Next (Auto Queue):"
 msgstr "Következő (Auto Sor):"
 
+msgid "Reconnect Transition"
+msgstr "Áttűnés Újrakapcsolása"
+
 msgid "Move Node"
 msgstr "Node áthelyezése"
 
@@ -1022,8 +1396,20 @@ msgstr "Nem tűnhet át \"Start\"-hoz!"
 msgid "Cannot transition from \"End\"!"
 msgstr "Nem tűnhet át \"End\"-ből!"
 
+msgid "Transition from \"%s\" to \"%s\" already exists!"
+msgstr "Az áttűnés \"%s\" és \"%s\" között már létezik!"
+
 msgid "Play/Travel to %s"
 msgstr "Lejátszás/Mozgás ide: %s"
+
+msgid "Edit %s"
+msgstr "%s Módosítása"
+
+msgid "Add Node and Transition"
+msgstr "Node és Áttűnés Hozzáadása"
+
+msgid "Transition already exists!"
+msgstr "Az áttűnés már létezik!"
 
 msgid "Add Transition"
 msgstr "Átmenet hozzáadása"
@@ -1060,6 +1446,9 @@ msgstr ""
 "Shift+LMB+Drag: Összekapcsolja a kiválasztott node-ot egy másik node-dal vagy "
 "létrehoz egy új node-ot ha a kiválasztott területen nincs node."
 
+msgid "Select and move nodes."
+msgstr "Node-ok kiválasztása és mozgatása."
+
 msgid "Create new nodes."
 msgstr "Új node-ok létrehozása."
 
@@ -1092,6 +1481,27 @@ msgstr "Animáció Scale3D Módosítása"
 
 msgid "Animation Change Keyframe Value"
 msgstr "Animáció Kulcskép Érték Módosítása"
+
+msgid "Animation Change Call"
+msgstr "Animáció Változtatás Hívás"
+
+msgid "Animation Multi Change Transition"
+msgstr "Több Változtatásos Animáció Áttűnés"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Több Változtatásos Animáció Position3D"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Több Változtatásos Animáció Rotation3D"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Több Változtatásos Animáció Scale3D"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Több Változtatásos Animáció Kulcskocka Érték"
+
+msgid "Animation Multi Change Call"
+msgstr "Több Változtatásos Animáció Hívás"
 
 msgid "Change Animation Length"
 msgstr "Animáció Hosszának Változtatása"
@@ -1132,11 +1542,44 @@ msgid "Can't change loop mode on animation embedded in another resource."
 msgstr ""
 "Egy másik erőforrásba ágyazott animáció ciklikusságán nem lehet módosítani."
 
+msgid "Property Track..."
+msgstr "Tulajdonság Sáv..."
+
+msgid "3D Position Track..."
+msgstr "3D Pozíció Sáv..."
+
+msgid "3D Rotation Track..."
+msgstr "3D Forgatás Sáv..."
+
+msgid "3D Scale Track..."
+msgstr "3D Méretezés Sáv..."
+
+msgid "Blend Shape Track..."
+msgstr "Keverési Forma Sáv..."
+
+msgid "Call Method Track..."
+msgstr "Metódus Hívás Sáv..."
+
+msgid "Bezier Curve Track..."
+msgstr "Bézier Görbe Sáv..."
+
+msgid "Audio Playback Track..."
+msgstr "Audio Lejátszás Sáv..."
+
+msgid "Animation Playback Track..."
+msgstr "Animáció Lejátszás Sáv..."
+
 msgid "Animation length (frames)"
 msgstr "Animáció hossza (képkockák)"
 
 msgid "Animation length (seconds)"
 msgstr "Animáció hossza (másodpercek)"
+
+msgid "Select a new track by type to add to this animation."
+msgstr "Válasszon egy új sávtípust az animációhoz adáshoz."
+
+msgid "Filter Tracks"
+msgstr "Sávok Szűrése"
 
 msgid "Filter tracks by entering part of their node name or property."
 msgstr "Sávok szűrése a node neve vagy tulajdonságai alapján."
@@ -1150,11 +1593,20 @@ msgstr "Függvények:"
 msgid "Audio Clips:"
 msgstr "Hang Klipek:"
 
+msgid "Animation Clips:"
+msgstr "Animáció vágások:"
+
 msgid "Change Track Path"
 msgstr "Sáv Útvonal Változtatás"
 
 msgid "Toggle this track on/off."
 msgstr "Jelen sáv ki/be kapcsolása."
+
+msgid "Select node in scene."
+msgstr "Node kiválasztása jelenetben."
+
+msgid "Use Blend"
+msgstr "Keverés Használata"
 
 msgid "Update Mode (How this property is set)"
 msgstr "Frissítés Módja (Hogyan van ez a tulajdonság beállítva)"
@@ -1171,18 +1623,63 @@ msgstr "Jelen sáv eltávolítása."
 msgid "Time (s):"
 msgstr "Idő (mp):"
 
+msgid "Position:"
+msgstr "Pozíció:"
+
+msgid "Rotation:"
+msgstr "Forgatás:"
+
 msgid "Scale:"
 msgstr "Skála:"
+
+msgid "Blend Shape:"
+msgstr "Keverési Forma:"
 
 msgid "Type:"
 msgstr "Típus:"
 
+msgid "(Invalid, expected type: %s)"
+msgstr "(Érvénytelen, várt típus: %s)"
+
 msgid "Easing:"
 msgstr "Átmenet:"
+
+msgid "In-Handle:"
+msgstr "Be-Fogópont:"
+
+msgid "Out-Handle:"
+msgstr "Ki-Fogópont:"
 
 msgctxt "Bezier Handle Mode"
 msgid "Free"
 msgstr "Szabad"
+
+msgctxt "Bezier Handle Mode"
+msgid "Linear"
+msgstr "Lineáris"
+
+msgctxt "Bezier Handle Mode"
+msgid "Balanced"
+msgstr "Kiegyensúlyozott"
+
+msgctxt "Bezier Handle Mode"
+msgid "Mirrored"
+msgstr "Tükrözött"
+
+msgid "Handle mode: %s"
+msgstr "Fogópont mód: %s"
+
+msgid "Stream:"
+msgstr "Folyam:"
+
+msgid "Start (s):"
+msgstr "Start (mp):"
+
+msgid "End (s):"
+msgstr "Vég (mp):"
+
+msgid "Animation Clip:"
+msgstr "Animáció Vágás:"
 
 msgid "Toggle Track Enabled"
 msgstr "Sáv Engedélyezés Kapcsolása"
@@ -1199,14 +1696,32 @@ msgstr "Lineáris"
 msgid "Cubic"
 msgstr "Köbös"
 
+msgid "Linear Angle"
+msgstr "Lináris Szög"
+
+msgid "Cubic Angle"
+msgstr "Köbös Szög"
+
 msgid "Clamp Loop Interp"
 msgstr "Átmenet Nélküli Interpoláció"
 
 msgid "Wrap Loop Interp"
 msgstr "Folytatólagos Interpoláció"
 
+msgid "Go to Definition"
+msgstr "Ugrás Definicióhoz"
+
+msgid "Insert Key..."
+msgstr "Kulcs Beszúrása..."
+
 msgid "Duplicate Key(s)"
 msgstr "Kulcs(ok) Megkettőzése"
+
+msgid "Cut Key(s)"
+msgstr "Kulcs(ok) Kivágása"
+
+msgid "Copy Key(s)"
+msgstr "Kulcs(ok) Másolása"
 
 msgid "Send Key(s) to RESET"
 msgstr "Kulcs(ok) RESET-hez Küldése"
@@ -1223,6 +1738,9 @@ msgstr "Animáció Interpolálás Módjának Változtatása"
 msgid "Change Animation Loop Mode"
 msgstr "Animáció Összefűzés Módjának Változtatása"
 
+msgid "Change Animation Use Blend"
+msgstr "Animáció Keverés Használatának Változtatása"
+
 msgid ""
 "Compressed tracks can't be edited or removed. Re-import the animation with "
 "compression disabled in order to edit."
@@ -1233,11 +1751,20 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Animáció Sáv Eltávolítása"
 
+msgid "Create new track for %s and insert key?"
+msgstr "Hozzunk létre új sávot és illesszünk be kulcsot ehhez: %s?"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "Hozzunk létre %d új sávot és szúrjunk be kulcsokat?"
+
 msgid "Hold Shift when clicking the key icon to skip this dialog."
 msgstr "Shift billentyű + kulcsra kattintás átugorja ezt a párbeszédablakot."
 
 msgid "Create"
 msgstr "Létrehozás"
+
+msgid "Animation Insert Key"
+msgstr "Animáció Kulcs Beszúrás"
 
 msgid "node '%s'"
 msgstr "'%s' csomópont"
@@ -1252,6 +1779,12 @@ msgstr ""
 msgid "property '%s'"
 msgstr "'%s' tulajdonság"
 
+msgid "Nearest FPS: %d"
+msgstr "Legközelebbi FPS: %d"
+
+msgid "Bezier Default Mode"
+msgstr "Alapértelmezett Bézier Mód"
+
 msgid "Set the default handle mode of new bezier keys."
 msgstr "Beállítja az új bézier kulcsok alapértelmezett kezelési módját."
 
@@ -1260,6 +1793,12 @@ msgstr "Animáció Léptékének Változtatása"
 
 msgid "Rearrange Tracks"
 msgstr "Sávok Újrarendezése"
+
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr "A keverési forma sávok csak a MeshInstance3D node-okra vonatkoznak."
+
+msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
+msgstr "Position/Rotation/Scale 3D sávok csak 3D-alapú node-okra vonatkoznak."
 
 msgid "Add Track"
 msgstr "Sáv Hozzáadása"
@@ -1289,6 +1828,12 @@ msgstr "Beizer Sáv Hozzáadása"
 
 msgid "Track path is invalid, so can't add a key."
 msgstr "Sáv elérési útja helytelen, kulcs hozzáadása nem lehetséges."
+
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "A sáv típusa nem Node3D, kulcs beszúrása nem lehetséges"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "A sáv típusa nem MeshInstance3D, kulcs beszúrása nem lehetséges"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Sáv elérési útja helytelen, kulcs hozzáadása nem lehetséges."
@@ -1329,8 +1874,23 @@ msgstr "A vágólap üres!"
 msgid "Paste Tracks"
 msgstr "Sávok beillesztése"
 
+msgid "Animation Scale Keys"
+msgstr "Animáció Kulcsok Nyújtása"
+
+msgid "Animation Set Start Offset"
+msgstr "Animáció Kulcs Start Eltolás"
+
+msgid "Animation Set End Offset"
+msgstr "Animáció Kulcs Vég Eltolás"
+
 msgid "Make Easing Keys"
 msgstr "Átmenet Kulcsok Létrehozása"
+
+msgid "Animation Add RESET Keys"
+msgstr "Animáció RESET Kulcsok Hozzáadása"
+
+msgid "Bake Animation as Linear Keys"
+msgstr "Animáció Beégetése Lineáris Kulcsokként"
 
 msgid "Create Node"
 msgstr "Node létrehozás"
@@ -2562,7 +3122,7 @@ msgid "Keywords"
 msgstr "Kulcsszavak"
 
 msgid "This class is marked as deprecated."
-msgstr "Ez az osztály elavultnak van megjelölve."
+msgstr "Ez az osztály elavultként van megjelölve."
 
 msgid "This class is marked as experimental."
 msgstr "Ez az osztály kísérletiként van megjelölve."
@@ -3630,12 +4190,6 @@ msgstr ""
 
 msgid "Cannot run the script because it's not a tool script."
 msgstr "A szkript nem futtatható, mert nem eszköz szkript."
-
-msgid "Save Layout"
-msgstr "Elrendezés Mentése"
-
-msgid "Delete Layout"
-msgstr "Elrendezés Törlése"
 
 msgid "Save & Close"
 msgstr "Mentés és Bezárás"
@@ -7827,6 +8381,54 @@ msgstr "%s fokkal való forgatás."
 msgid "Rotating %f degrees."
 msgstr "Forgatás %f fokkal."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Betekintő Pálya Módosító 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Betekintő Pálya Módosító 2"
+
+msgid "Viewport Orbit Snap Modifier 1"
+msgstr "Betekintő Pálya Illesztés Módosító 1"
+
+msgid "Viewport Orbit Snap Modifier 2"
+msgstr "Betekintő Pálya Illesztés Módosító 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Betekintő Csúsztatás Módosító 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Betekintő Csúsztatás Módosító 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Betekintő Nagyítás Módosító 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Betekintő Nagyítás Módosító 2"
+
+msgid "Freelook Left"
+msgstr "Szabadnézet Bal"
+
+msgid "Freelook Right"
+msgstr "Szabadnézet Jobb"
+
+msgid "Freelook Forward"
+msgstr "Szabadnézet Előre"
+
+msgid "Freelook Backwards"
+msgstr "Szabadnézet Hátra"
+
+msgid "Freelook Up"
+msgstr "Szabadnézet Fel"
+
+msgid "Freelook Down"
+msgstr "Szabadnézet Le"
+
+msgid "Freelook Speed Modifier"
+msgstr "Szabadnézet Sebesség Módosító"
+
+msgid "Freelook Slow Modifier"
+msgstr "Szabadnézet Lassítás Módosító"
+
 msgid "View"
 msgstr "Nézet"
 
@@ -8025,54 +8627,6 @@ msgstr "Doppler Engedélyezése"
 
 msgid "Cinematic Preview"
 msgstr "Filmszerű előnézet"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Betekintő Pálya Módosító 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Betekintő Pálya Módosító 2"
-
-msgid "Viewport Orbit Snap Modifier 1"
-msgstr "Betekintő Pálya Illesztés Módosító 1"
-
-msgid "Viewport Orbit Snap Modifier 2"
-msgstr "Betekintő Pálya Illesztés Módosító 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Betekintő Csúsztatás Módosító 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Betekintő Csúsztatás Módosító 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Betekintő Nagyítás Módosító 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Betekintő Nagyítás Módosító 2"
-
-msgid "Freelook Left"
-msgstr "Szabadnézet Bal"
-
-msgid "Freelook Right"
-msgstr "Szabadnézet Jobb"
-
-msgid "Freelook Forward"
-msgstr "Szabadnézet Előre"
-
-msgid "Freelook Backwards"
-msgstr "Szabadnézet Hátra"
-
-msgid "Freelook Up"
-msgstr "Szabadnézet Fel"
-
-msgid "Freelook Down"
-msgstr "Szabadnézet Le"
-
-msgid "Freelook Speed Modifier"
-msgstr "Szabadnézet Sebesség Módosító"
-
-msgid "Freelook Slow Modifier"
-msgstr "Szabadnézet Lassítás Módosító"
 
 msgid "Lock Transformation to X axis"
 msgstr "X tengelyre Transzformálás Zárolása"
@@ -10533,6 +11087,12 @@ msgstr "Profil(ok) importálása"
 msgid "Manage Editor Feature Profiles"
 msgstr "A szerkesztő funkcióprofiljainak kezelése"
 
+msgid "Save Layout"
+msgstr "Elrendezés Mentése"
+
+msgid "Delete Layout"
+msgstr "Elrendezés Törlése"
+
 msgid "Editor Settings"
 msgstr "Szerkesztő Beállítások"
 
@@ -12111,6 +12671,15 @@ msgstr "GridMap Szelekció Beillesztés"
 msgid "GridMap Paint"
 msgstr "GridMap Festés"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Rács Padló Változtatás:\n"
+"Előző Sík (%s)\n"
+"Következő Sík (%s)"
+
 msgid "Previous Floor"
 msgstr "Előző Padló"
 
@@ -12140,15 +12709,6 @@ msgstr "Kurzor Forgatás Y"
 
 msgid "Cursor Rotate Z"
 msgstr "Kurzor Forgatás Z"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Rács Padló Változtatás:\n"
-"Előző Sík (%s)\n"
-"Következő Sík (%s)"
 
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "A GridMap mesh-ek használatához adjon hozzá egy MeshLibrary erőforrást."
@@ -13964,14 +14524,1190 @@ msgstr ""
 "Adjon hozzá egy CollisionShape3D vagy CollisionPolygon3D gyermeket az alak "
 "meghatározásához."
 
+msgid ""
+"With a non-uniform scale this node will probably not function as expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size in children collision shapes instead."
+msgstr ""
+"Nem-egységes méretezéssel ez a node valószínűleg nem fog megfelelően "
+"működni.\n"
+"Méretezze egységesen (minden tengelyen azonos mértékben), és helyette "
+"módosítsa a gyermek ütközési alakzatok méretét."
+
+msgid ""
+"CollisionPolygon3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"A CollisionPolygon3D csak CollisionObject3D leszármazott node-oknak "
+"szolgáltat ütközési alakzatot.\n"
+"Csak Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, stb. gyermekeként "
+"használja alakzat definiálására."
+
+msgid "An empty CollisionPolygon3D has no effect on collision."
+msgstr "Üres CollisionPolygon3D nincs hatással az ütközésekre."
+
+msgid ""
+"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change its "
+"polygon's vertices instead."
+msgstr ""
+"Nem-egységes méretezéssel a CollisionPolygon3D node valószínűleg nem fog "
+"megfelelően működni.\n"
+"Méretezze egységesen (minden tengelyen azonos mértékben), és helyette "
+"módosítsa a sokszög csúcsait."
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"A CollisionShape3D csak CollisionObject3D leszármazott node-oknak szolgáltat "
+"ütközési alakzatot.\n"
+"Csak Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, stb. gyermekeként "
+"használja alakzat definiálására."
+
+msgid ""
+"A shape must be provided for CollisionShape3D to function. Please create a "
+"shape resource for it."
+msgstr ""
+"A CollisionShape3D működéséhez alakzat megadására van szükség. Hozzon létre "
+"egy alakzat erőforrást."
+
+msgid ""
+"When used for collision, ConcavePolygonShape3D is intended to work with "
+"static CollisionObject3D nodes like StaticBody3D.\n"
+"It will likely not behave well for %ss (except when frozen and freeze_mode "
+"set to FREEZE_MODE_STATIC)."
+msgstr ""
+"A ConcavePolygonShape3D statikus CollisionObject3D node-okra, pl. "
+"StaticBody3D-re van felkészítve ütközésdetektálás esetén.\n"
+"%s használatakor valószínűleg nem fog megfelelően viselkedni (kivéve ha le "
+"van fagyasztva a freeze_mode FREEZE_MODE_STATIC beállításával)."
+
+msgid ""
+"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
+msgstr ""
+"A WorldBoundaryShape3D nem támogatja a RigidBody3D statikustól eltérő módjait."
+
+msgid ""
+"When used for collision, ConcavePolygonShape3D is intended to work with "
+"static CollisionObject3D nodes like StaticBody3D.\n"
+"It will likely not behave well for CharacterBody3Ds."
+msgstr ""
+"A ConcavePolygonShape3D statikus CollisionObject3D node-okra, pl. "
+"StaticBody3D-re van felkészítve ütközésdetektálás esetén.\n"
+"CharacterBody3D hazsnálatakor valószínűleg nem fog megfelelően viselkedni."
+
+msgid ""
+"A non-uniformly scaled CollisionShape3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size of its shape resource instead."
+msgstr ""
+"Nem-egységes méretezéssel a CollisionShape3D node valószínűleg nem fog "
+"megfelelően működni.\n"
+"Méretezze egységesen (minden tengelyen azonos mértékben), és helyette "
+"módosítsa az alakzat erőforrás méreteit."
+
+msgid "Node A and Node B must be PhysicsBody3Ds"
+msgstr "Node A és Node B is PhysicsBody3D kell legyen"
+
+msgid "Node A must be a PhysicsBody3D"
+msgstr "Node A PhysicsBody3D kell legyen"
+
+msgid "Node B must be a PhysicsBody3D"
+msgstr "Node B PhysicsBody3D kell legyen"
+
+msgid "Joint is not connected to any PhysicsBody3Ds"
+msgstr "A csukló nincs PhysicsBody3D-hez kapcsolva"
+
+msgid "Node A and Node B must be different PhysicsBody3Ds"
+msgstr "Node A és Node B különböző PhysicsBody3D kell legyen"
+
+msgid ""
+"PhysicsBody3D will not work correctly on a non-interpolated branch of the "
+"SceneTree.\n"
+"Check the node's inherited physics_interpolation_mode."
+msgstr ""
+"A PhysicsBody3D nem fog helyesen működni nem-interpolált SceneTree ágon.\n"
+"Ellenőrizze a node örökölt physics_interpolation_mode tulajdonságát."
+
+msgid ""
+"Scale changes to RigidBody3D will be overridden by the physics engine when "
+"running.\n"
+"Please change the size in children collision shapes instead."
+msgstr ""
+"A RigidBody3D méretváltoztatásait futáskor felül fogja írni a fizika motor.\n"
+"Változtasson helyette a gyermek ütközési alakzatok méretein."
+
+msgid ""
+"This node cannot interact with other objects unless a Shape3D is assigned."
+msgstr ""
+"Ez a node nem léphet kölcsönhatásba más objektumokkal Shape3D hozzárendelése "
+"nélkül."
+
+msgid ""
+"ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be "
+"reported."
+msgstr ""
+"A ShapeCast3D nem támogatja a ConcavePolygonShape3D-t. Az ütközéseket nem "
+"jelenti."
+
+msgid "This body will be ignored until you set a mesh."
+msgstr "Ez a test figyelmen kívül marad, amíg nincs hozzárendelt mesh."
+
+msgid ""
+"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
+"use it as a child of a VehicleBody3D."
+msgstr ""
+"A VehicleWheel3D kerék rendszert biztosít a VehicleBody3D számára. Használja "
+"VehicleBody3D gyermekeként."
+
+msgid ""
+"The \"Remote Path\" property must point to a valid Node3D or Node3D-derived "
+"node to work."
+msgstr ""
+"A \"Távoli Útvonal\" tulajdonság érvényes Node3D vagy Node3D leszármazott "
+"node-ra kell mutasson."
+
+msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
+msgstr ""
+"A Skeleton3D node nincs beállítva! A SkeletonModifier3D Skeleton3D gyermeke "
+"kell legyen."
+
+msgid ""
+"Detecting settings with no Path3D set! SplineIK3D must have a Path3D to work."
+msgstr ""
+"A beállításokban nincs Path3D beállítva! A SplineIK3D-nek Path3D-re van "
+"szüksége a működéshez."
+
+msgid "Parent node should be a SpringBoneSimulator3D node."
+msgstr "A szülő node SpringBoneSimulator3D kell legyen."
+
+msgid ""
+"A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
+"property in order for AnimatedSprite3D to display frames."
+msgstr ""
+"Képkockák megjelenítéséhez az AnimatedSprite3D \"Sprite Képkockák\" "
+"tulajdonságában beállított vagy létrehozott SpriteFrames erőforrás kell "
+"legyen."
+
+msgid ""
+"Detecting settings with no target set! TwoBoneIK3D must have a target to work."
+msgstr ""
+"A beállításokban nincs cél beállítva! A TwoBoneIK3D működéséhez célra van "
+"szükség."
+
+msgid ""
+"Detecting settings with no pole target set! TwoBoneIK3D must have a pole "
+"target to work."
+msgstr ""
+"A beállításokban nincs cél irányító! A TwoBoneIK3D működéséhez cél irányítóra "
+"(pole) van szükség."
+
+msgid ""
+"The GeometryInstance3D visibility range's End distance is set to a non-zero "
+"value, but is lower than the Begin distance.\n"
+"This means the GeometryInstance3D will never be visible.\n"
+"To resolve this, set the End distance to 0 or to a value greater than the "
+"Begin distance."
+msgstr ""
+"A GeometryInstance3D láthatóságának Vég távolsága nem nulla, de alacsonyabb, "
+"mint a Kezdő távolság.\n"
+"Ez azt jelenti, hogy a GeometryInstance3D sosem lesz látható.\n"
+"Ezt a Vég távolság nullára állításával vagy a Kezdő távolságnál nagyobbra "
+"állításával oldhatja meg."
+
+msgid ""
+"The GeometryInstance3D is configured to fade in smoothly over distance, but "
+"the fade transition distance is set to 0.\n"
+"To resolve this, increase Visibility Range Begin Margin above 0."
+msgstr ""
+"A GeometryInstance3D fokozatos előhalványításra van állítva, de az átmenet "
+"távolsága nullára van állítva.\n"
+"Ezt a Láthatósági Távolság Margó nullánál nagyobbra állításával oldhatja meg."
+
+msgid ""
+"The GeometryInstance3D is configured to fade out smoothly over distance, but "
+"the fade transition distance is set to 0.\n"
+"To resolve this, increase Visibility Range End Margin above 0."
+msgstr ""
+"A GeometryInstance3D fokozatos elhalványításra van állítva, de az átmenet "
+"távolsága nullára van állítva.\n"
+"Ezt a Láthatósági Távolság Vége nullánál nagyobbra állításával oldhatja meg."
+
+msgid ""
+"GeometryInstance3D transparency is only available when using the Forward+ "
+"renderer."
+msgstr ""
+"A GeometryInstance3D átlátszósága csak Forward+ rendermotor esetén érhető el."
+
+msgid ""
+"GeometryInstance3D visibility range transparency fade is only available when "
+"using the Forward+ renderer."
+msgstr ""
+"A GeometryInstance3D átlátszóságának távolságalapú halványítása csak Forward+ "
+"rendermotor esetén érhető el."
+
+msgid "Plotting Meshes"
+msgstr "Mesh-ek Rajzolása"
+
+msgid "Finishing Plot"
+msgstr "Rajzolás Befejezése"
+
+msgid ""
+"VoxelGI nodes are not supported when using the Compatibility renderer yet. "
+"Support will be added in a future release."
+msgstr ""
+"A VoxelGI node-ok még nem támogatottak a Compatibility rendermotor esetén. "
+"Valamely jövőbeli kiadások támogatni fogják."
+
+msgid "VoxelGI nodes are not supported when using the Dummy renderer."
+msgstr "A VoxelGI node-ok nem támogatottak a Dummy rendermotor esetén."
+
+msgid ""
+"No VoxelGI data set, so this node is disabled. Bake static objects to enable "
+"GI."
+msgstr ""
+"Nincs beállítva VoxelGI adat, ezért a node le van tiltva. Égesse be a "
+"statikus objektumokat a GI engedélyezéséhez."
+
+msgid ""
+"To have any visible effect, WorldEnvironment requires its \"Environment\" "
+"property to contain an Environment, its \"Camera Attributes\" property to "
+"contain a CameraAttributes resource, or both."
+msgstr ""
+"Látható eredmény eléréséhez a WorldEnvironment \"Környezet\" tulajdonságának "
+"tartalmaznia kell egy Környezetet, a \"Kamera Tulajdonságok\" beállításnak "
+"egy CameraAttributes erőforrást, vagy mindkettőt."
+
+msgid ""
+"Only one WorldEnvironment is allowed per scene (or set of instantiated "
+"scenes)."
+msgstr ""
+"Jelenetenként (vagy példányosított jelenetcsoportonként) csak egy "
+"WorldEnvironment egedélyezett."
+
+msgid ""
+"XRCamera3D may not function as expected without an XROrigin3D node as its "
+"parent."
+msgstr "Az XRCamera3D nem fog megfelelően működni XROrigin3D szülő node nélkül."
+
+msgid ""
+"XRCamera3D should have physics_interpolation_mode set to OFF in order to "
+"avoid jitter."
+msgstr ""
+"Az XROrigin3D physics_interpolation_mode tulajdonsága OFF kell legyen a "
+"jitter (remegés) elkerüléséhez."
+
+msgid ""
+"XRNode3D may not function as expected without an XROrigin3D node as its "
+"parent."
+msgstr "Az XRNode3D nem fog megfelelően működni XROrigin3D szülő node nélkül."
+
+msgid "No tracker name is set."
+msgstr "Nincs beállítva követő név."
+
+msgid "No pose is set."
+msgstr "Nincs beállítva póz."
+
+msgid ""
+"XRNode3D should have physics_interpolation_mode set to OFF in order to avoid "
+"jitter."
+msgstr ""
+"Az XRNode3D physics_interpolation_mode tulajdonsága OFF kell legyen a jitter "
+"(remegés) elkerüléséhez."
+
+msgid "XROrigin3D requires an XRCamera3D child node."
+msgstr "Az XROrigin3D XRCamera3D gyermek node-ot igényel."
+
+msgid ""
+"Changing the scale on the XROrigin3D node is not supported. Change the World "
+"Scale instead."
+msgstr ""
+"Az XROrigin3D node átméretezése nem támogatott. Változtassa meg helyette a "
+"Világ Méretet."
+
+msgid ""
+"XR shaders are not enabled in project settings. Stereoscopic output is not "
+"supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
+"stereoscopic output."
+msgstr ""
+"Az XR shaderek nincsenek bekapcsolva a projekt beállításokban. A térhatású "
+"kimenet nem támogatott nélküle. Engedélyezze az `xr/shaders/"
+"enabled`beállítást a térhatású kimenet használatához."
+
+msgid "On BlendTree node '%s', animation not found: '%s'"
+msgstr "A(z) \"%s\" BlendTree node-on nem található az animáció: \"%s\""
+
 msgid "Animation not found: '%s'"
 msgstr "Az animáció nem található: '%s'"
+
+msgid "Nothing connected to input '%s' of node '%s'."
+msgstr "A(z) \"%s\" bementre semmi sincs kapcsolva a node-on: \"%s\"."
+
+msgid "No root AnimationNode for the graph is set."
+msgstr "A grafikonnak nincs AnimationNode gyökere."
+
+msgid ""
+"The AnimationTree is inactive.\n"
+"Activate it in the inspector to enable playback; check node warnings if "
+"activation fails."
+msgstr ""
+"Az AnimationTree inaktív.\n"
+"A lejátszáshoz engedélyezze az elemzőben; ellenőrizze a figyelmeztetéseket, "
+"ha a bekapcsolás sikertelen."
+
+msgid ""
+"The AnimationTree node (or one of its parents) has its process mode set to "
+"Disabled.\n"
+"Change the process mode in the inspector to allow playback."
+msgstr ""
+"Az AnimationTree node-nak (vagy egyik szülőjének) feldolgozási módja "
+"Kikapcsoltra van állítva.\n"
+"A lejátszáshoz változtassa meg a feldolgozási módot az elemzőben."
+
+msgid ""
+"ButtonGroup is intended to be used only with buttons that have toggle_mode "
+"set to true."
+msgstr ""
+"A ButtonGroup olyan gombokhoz való, amik toggle_mode beállítása igazra van "
+"állítva."
+
+msgid "The changes to this palette have not been saved to a file."
+msgstr "A paletta változtatásai nincsenek fájlba mentve."
+
+msgid "Switch between hexadecimal and code values."
+msgstr "Váltás hexadecimális és kód értékek között."
+
+msgid ""
+"Container by itself serves no purpose unless a script configures its children "
+"placement behavior.\n"
+"If you don't intend to add a script, use a plain Control node instead."
+msgstr ""
+"A Container önmagában semmilyen célt nem szolgál, hacsak egy szkript be nem "
+"álltja a gyermekek működését.\n"
+"Ha nem fog szkriptet hozzáadni, akkor használjon helyette Control node-ot."
+
+msgid ""
+"The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
+"\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
+msgstr ""
+"A Javaslat Tooltip nem jelenik meg, mert az Egér Szűrő \"Ignorál\"-ra van "
+"állítva. Ezt az Egér Szűrő \"Stop\" vagy \"Továbbít\" beállításával oldhatja "
+"meg."
+
+msgid "Accessibility Name must not be empty, or contain only spaces."
+msgstr "Az Akadálymentes Név nem lehet üres vagy szóközök sorozata."
+
+msgid "Accessibility Name must not include Node class name."
+msgstr "Az Akadálymentes Név nem tartalmazhat Node osztálynevet."
+
+msgid "Accessibility Name must not include control character."
+msgstr "Az Akadálymentes Név nem tartalmazhat control karaktert."
+
+msgid "%s grabbed. Select target and use %s to drop, use %s to cancel."
+msgstr ""
+"%s megfogva. Válassza ki a célt és %s használatával dobja le, %s "
+"visszavonáshoz."
+
+msgid "%s can be dropped here. Use %s to drop, use %s to cancel."
+msgstr "%s itt eldobható. %s eldobáshoz, %s visszavonáshoz."
+
+msgid "%s can not be dropped here. Use %s to cancel."
+msgstr "%s itt nem dobható el. %s visszavonáshoz."
+
+msgid ""
+"Labels with autowrapping enabled must have a custom minimum size configured "
+"to work correctly inside a container."
+msgstr ""
+"Az automatikus sortöréssel rendelkező feliratok minimális mérettel kell "
+"rendelkezzenek a helyes konténeren belüli viselkedéshez."
+
+msgid ""
+"The current font does not support rendering one or more characters used in "
+"this Label's text."
+msgstr ""
+"A jelenlegi betűtípus legalább egy karaktert nem támogat a felirat szövegében."
+
+msgid ""
+"MSDF font pixel range is too small, some outlines/shadows will not render. "
+"Set MSDF pixel range to be at least %d to render all outlines/shadows."
+msgstr ""
+"Az MSDF betűtípus pixeltartománya túl kicsi, néhány körvonal/árnyék nem "
+"renderelődik. Az MSDF pixeltartomány legalább %d legyen minden körvonal/"
+"árnyék rendereléséhez."
+
+msgid ""
+"The current theme style has shadows and/or rounded corners for popups, but "
+"those won't display correctly if \"display/window/per_pixel_transparency/"
+"allowed\" isn't enabled in the Project Settings, nor if it isn't supported."
+msgstr ""
+"A jelenlegi téma árnyékokkal és/vagy lekerekített sarkokkal jeleníti meg a "
+"felugró ablakokat, de ezek nem jelennek meg megfelelően, ha a \"display/"
+"window/per_pixel_transparency/allowed\" ki van kapcsolva vagy nem támogatott "
+"a Projekt Beállításokban."
+
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater or equal to 0."
+msgstr ""
+"Ha az \"Exp Edit\" be van kapcsolva, akkor a \"Min Érték\" nagyobb vagy "
+"egyenlő kell legyen nullával."
+
+msgid ""
+"ScrollContainer is intended to work with a single child control.\n"
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
+"minimum size manually."
+msgstr ""
+"A ScrollContainer egyetlen gyermek vezérlővel működik.\n"
+"Használjon gyermekként container-t (VBox, HBox, stb.), vagy Control-t és "
+"állítsa be manuálisan a minimum méretet."
+
+msgid "Drag to resize"
+msgstr "Átméretezés húzással"
+
+msgid ""
+"This node doesn't have a SubViewport as child, so it can't display its "
+"intended content.\n"
+"Consider adding a SubViewport as a child to provide something displayable."
+msgstr ""
+"Ennek a node-nak nincs SubViewport gyermeke, ezért nem tudja megjeleníteni a "
+"tartalmát.\n"
+"Adjon hozzá SubViewport gyermeket megjeleníthetó tartalom szolgáltatásához."
+
+msgid ""
+"The default mouse cursor shape of SubViewportContainer has no effect.\n"
+"Consider leaving it at its initial value `CURSOR_ARROW`."
+msgstr ""
+"A SubViewportContainer-ben beállított alapértelmezett egér kurzornak nincs "
+"hatása.\n"
+"Az eredeti `CURSOR_ARROW` értéken hagyhatja."
+
+msgid "Cell %d x %d: either text or alternative text must not be empty."
+msgstr "Cella %d x %d: Szöveg vagy alternatív szöveg nem lehet üres."
+
+msgid "Button %d in %d x %d: alternative text must not be empty."
+msgstr "Gomb %d, %d x %d: alternatív szöveg nem lehet üres."
+
+msgid ""
+"Ancestor \"%s\" clips its children, so this node will not be able to clip its "
+"children."
+msgstr ""
+"A(z) \"%s\" ős és gyermekei összeérnek, ezért ez a node nem fogja eltakarni a "
+"gyermekeit."
+
+msgid ""
+"Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its "
+"children."
+msgstr ""
+"A(z) \"%s\" ős egy CanvasGroup, ezért ez a node nem fogja tudni eltakarni a "
+"gyermekeit."
+
+msgid ""
+"This node was an instance of scene '%s', which was no longer available when "
+"this scene was loaded."
+msgstr ""
+"Ez a node a(z) \"%s\" jelenet példánya volt, amely a jelenet betöltésekor már "
+"nem volt elérhető."
+
+msgid ""
+"Saving current scene will discard instance and all its properties, including "
+"editable children edits (if existing)."
+msgstr ""
+"A jelenlegi jelenet elmentése elveti a példányt és annak tulajdonságait, "
+"beleértve a módosítható gyermek változtatásokat (ha voltak)."
+
+msgid ""
+"This node was saved as class type '%s', which was no longer available when "
+"this scene was loaded."
+msgstr ""
+"Ez a node \"%s\" osztályként volt elmentve, amely a jelenet betöltésekor már "
+"nem volt elérhető."
+
+msgid ""
+"Data from the original node is kept as a placeholder until this type of node "
+"is available again. It can hence be safely re-saved without risk of data loss."
+msgstr ""
+"Az eredeti node adatai placeholder-ként megmaradnak addig, amíg ez a node "
+"típus újra elérhetővé nem válik. Biztonságosan elmenthető adatvesztés nélkül."
+
+msgid "Unrecognized missing node. Check scene dependency errors for details."
+msgstr ""
+"Ismeretlen hiányzó node. A részletekért ellenőrizze a jelenet függőség hibáit."
+
+msgid ""
+"This node is marked as deprecated and will be removed in future versions.\n"
+"Please check the Godot documentation for information about migration."
+msgstr ""
+"Ez a node elavultként van megjelölve és későbbi verziókban el lesz "
+"távolítva.\n"
+"Migrációs információkért keresse fel a Godot dokumentációt."
+
+msgid ""
+"This node is marked as experimental and may be subject to removal or major "
+"changes in future versions."
+msgstr ""
+"Ez a node kísérletiként van megjelölve és későbbi verziókban nem garantált a "
+"jelenléte vagy jelentős változásokon eshet át."
+
+msgid ""
+"ShaderGlobalsOverride is not active because another node of the same type is "
+"in the scene."
+msgstr ""
+"A ShaderGlobalsOverride nem aktív, mert már van egy ugyanilyen node a "
+"jelenetben."
+
+msgid ""
+"Very low timer wait times (< 0.05 seconds) may behave in significantly "
+"different ways depending on the rendered or physics frame rate.\n"
+"Consider using a script's process loop instead of relying on a Timer for very "
+"low wait times."
+msgstr ""
+"Nagyon alacsony várakozási idő (< 0,05 mp) jelentősen eltérően viselkedhet a "
+"renderelt képkockasebesség vagy fizika feldolgozási sebességtől függően.\n"
+"Használja inkább a szkriptek process ciklusát az ilyen alacsony várakozási "
+"időkhöz."
+
+msgid "Drag-and-drop data"
+msgstr "Húzzon rá adatot"
+
+msgid ""
+"The Viewport size must be greater than or equal to 2 pixels on both "
+"dimensions to render anything."
+msgstr ""
+"Rendereléshez a Viewport mérete mindkét dimenzióban nagyobb vagy egyenlő kell "
+"legyen 2 pixelnél."
+
+msgid ""
+"An incoming node's name clashes with %s already in the scene (presumably, "
+"from a more nested instance).\n"
+"The less nested node will be renamed. Please fix and re-save the scene."
+msgstr ""
+"Az érkező node neve ütközik a jelenetben már szereplő \"%s\" node-dal "
+"(gyaníthatóan egy jobban beágyazott példány).\n"
+"A kevésbé beágyazott node át lesz nevezve. Javítsa és mentse el újra a "
+"jelenetet."
+
+msgid "This parameter type does not support the '%s' qualifier."
+msgstr "Ez a paraméter típus nem támogatja a(z) \"%s\" minősítőt."
+
+msgid ""
+"Global parameter '%s' does not exist.\n"
+"Create it in the Project Settings."
+msgstr ""
+"A(z) \"%s\" globális paraméter nem létezik.\n"
+"Hozza létre a Projekt Beállításokban."
+
+msgid ""
+"Global parameter '%s' has an incompatible type for this kind of node.\n"
+"Change it in the Project Settings."
+msgstr ""
+"A(z) \"%s\" globális paraméter típusa ilyen node-dal nem kompatibilis.\n"
+"Változtassa meg a Projekt Beállításokban."
+
+msgid ""
+"The sampler port is connected but not used. Consider changing the source to "
+"'SamplerPort'."
+msgstr ""
+"A mintavételező port kapcsolva van, de nincs használatban. Változtassa meg a "
+"forrást \"SamplePort\"-ra."
 
 msgid "Invalid source for preview."
 msgstr "Érvénytelen forrás az előnézethez."
 
+msgid "Invalid source for shader."
+msgstr "Érvénytelen shader forrás."
+
+msgid ""
+"`%s` precision mode is not available for `gl_compatibility` profile.\n"
+"Reverted to `None` precision."
+msgstr ""
+"`%s` pontosság mód nem érhető el a `gl_compatibility` profilhoz.\n"
+"Visszaállítva `None`pontosságra."
+
+msgid "'%s' type is incompatible with '%s' source."
+msgstr "A(z) \"%s\" típus nem kompatibilis a(z) \"%s\" forrással."
+
+msgid "'%s' default color is incompatible with '%s' source."
+msgstr ""
+"A(z) \"%s\" alapértelmezett szín nem kompatibilis a(z) \"%s\" forrással."
+
+msgid "Repeat"
+msgstr "Ismétlés"
+
+msgid "Invalid comparison function for that type."
+msgstr "Érvénytelen hasonlító függvény a típushoz."
+
+msgid "Division by zero error."
+msgstr "Nullával osztás hiba."
+
+msgid "Modulo by zero error."
+msgstr "Nulla-moduló számítás hiba."
+
+msgid ""
+"Invalid number of arguments when calling stage function '%s', which expects "
+"%d argument(s)."
+msgstr ""
+"Érvénytelen argumentumszám a(z) \"%s\" szakasz függvény hívásakor, amely %d "
+"argumentumot vár."
+
+msgid ""
+"Invalid argument type when calling stage function '%s', type expected is '%s'."
+msgstr ""
+"Érvénytelen argumentum típus a(z) \"%s\" szakasz függvény hívásakor, amely "
+"\"%s\" típust vár."
+
+msgid "Expected integer constant within [%d..%d] range."
+msgstr "Várt konstans egész szám tartomány: [%d..%d]."
+
+msgid "Argument %d of function '%s' is not a variable, array, or member."
+msgstr "Argumentum %d a(z) \"%s\" függényben nem változó, tömb vagy tag."
+
+msgid "Varyings cannot be passed for the '%s' parameter."
+msgstr "Variáló nem adható át a(z) \"%s\" paraméternek."
+
+msgid "A constant value cannot be passed for the '%s' parameter."
+msgstr "Konstans érték nem adható át a(z) \"%s\" paraméternek."
+
+msgid ""
+"Argument %d of function '%s' can only take a local variable, array, or member."
+msgstr ""
+"Argumentum %d a(z) \"%s\" függvényben csak helyi változót, tömböt vagy tagot "
+"fogad."
+
+msgid "Built-in function \"%s(%s)\" is only supported on high-end platforms."
+msgstr ""
+"A beépített \"%s(%s)\" függény csak felsőkategóriás platformokon érhető el."
+
+msgid "Recursion is not allowed."
+msgstr "Rekurzió nem engedélyezett."
+
+msgid "Function '%s' can't be called from source code."
+msgstr "A(z) \"%s\" függvény nem hívható forráskódból."
+
+msgid ""
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
+msgstr ""
+"jelölt függvény \"%s(%s)\" nem lehetséges, argumentum %d %s kellene legyen, "
+"de %s."
+
+msgid ""
+"Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
+msgstr ""
+"Túl kevés argumentum a(z) \"%s(%s)\" híváshoz. Legalább %d várva, de %d "
+"érkezett."
+
+msgid ""
+"Too many arguments for \"%s(%s)\" call. Expected at most %d but received %d."
+msgstr ""
+"Túl sok argumentum a(z) \"%s(%s)\" híváshoz. Legfeljebb %d várva, de %d "
+"érkezett."
+
+msgid "Expected ',' or ')' after argument."
+msgstr "\",\" vagy \")\" várva az argumentum után."
+
+msgid "Varying may not be assigned in the '%s' function."
+msgstr "Variáló nem adható meg a(z) \"%s\" függvényben."
+
+msgid "Varying with '%s' data type may only be assigned in the '%s' function."
+msgstr "Variáló \"%s\" adattípussal csak a(z) \"%s\" függvényben adható meg."
+
+msgid ""
+"Varyings which assigned in '%s' function may not be reassigned in '%s' or "
+"'%s'."
+msgstr ""
+"A(z) \"%s\" függvényben megadott variáló újramegadása csak ezekben "
+"lehetséges: \"%s\" vagy \"%s\"."
+
+msgid "'%s' cannot be used within the '%s' processor function."
+msgstr "\"%s\" nem használható a(z) \"%s\" feldolgozó függvényben."
+
+msgid ""
+"'%s' cannot be used here, because '%s' is called by the '%s' processor "
+"function (which is not allowed)."
+msgstr ""
+"\"%s\" itt nem hasznnálható, mert \"%s\" meghívása történik a(z) \"%s\" "
+"feldolgozó függvényben (amely nem engedélyezett)."
+
+msgid "Swizzling assignment contains duplicates."
+msgstr "Swizzling hozzárendelés duplikációt tartalmaz."
+
+msgid "Assignment to uniform."
+msgstr "Uniform-hoz rendelés."
+
+msgid "Constants cannot be modified."
+msgstr "Konstansok nem módosíthatóak."
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using both built-"
+"ins and uniform textures, this is not supported (use either one or the other)."
+msgstr ""
+"Mintavevő argumentum %d a(z) \"%s\" függényben többször is meghívásra kerül "
+"beépített és egységes textúrák használatával, ami nem támogatott (csak az "
+"egyiket használja)."
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using textures "
+"that differ in either filter, repeat, or texture hint setting."
+msgstr ""
+"Mintavevő argumentum %d a(z) \"%s\" függényben többször is meghívásra kerül "
+"olyan textúrákkal, amiknek különbözik a szűrője, ismétlődése vagy textúra "
+"hint beállítása."
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using different "
+"built-ins. Only calling with the same built-in is supported."
+msgstr ""
+"Mintavevő argumentum %d a(z) \"%s\" függényben többször is meghívásra kerül "
+"különböző beépítettek használatával. Csak ugyanazon beépítettből hívás "
+"támogatott."
+
+msgid "Array size is already defined."
+msgstr "A tömb mérete már be van állítva."
+
+msgid "Unknown array size is forbidden in that context."
+msgstr "Ebben a kontextusban tilos az ismeretlen tömbméret."
+
+msgid "Expected a positive integer constant."
+msgstr "Konstans pozitív egész szám várva."
+
+msgid "Array size mismatch. Expected %d elements (found %d)."
+msgstr "Tömbméret eltérés. %d elemet várt (%d elem érzékelve)."
+
+msgid "Expected array initialization."
+msgstr "Tömb inicializáció szükséges."
+
+msgid "Expected '(' after the type name."
+msgstr "\"(\" szükséges a típusnév után."
+
+msgid "Built-in function '%s' is not supported for the '%s' shader type."
+msgstr ""
+"A(z) \"%s\" beépített függvény nem támogatott a(z) \"%s\" shader típus esetén."
+
+msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
+msgstr ""
+"Ebben a kontextusban a(z) \"%s\" variáló nem adható a(z) \"%s\" paraméterben."
+
+msgid ""
+"Unable to pass a multiview texture sampler as a parameter to a custom "
+"function. Consider sampling it in the main function and then passing the "
+"vector result to the custom function."
+msgstr ""
+"Többnézetes textúra mintavételező nem adható át egyedi függvény "
+"paramétereként. Vegyen mintát a fő függvényben és adja át az eredményvektort "
+"az egyedi függvénynek."
+
+msgid ""
+"Unable to pass RADIANCE texture sampler as a parameter to a custom function. "
+"Consider sampling it in the main function and then passing the vector result "
+"to the custom function."
+msgstr ""
+"RADIANCE textúra mintavételező nem adható át egyedi függvény paramétereként. "
+"Vegyen mintát a fő függvényben és adja át az eredményvektort az egyedi "
+"függvénynek."
+
+msgid "Unknown identifier in expression: '%s'."
+msgstr "Ismeretlen azonosító a kifejezésben: \"%s\"."
+
+msgid ""
+"%s has been removed in favor of using hint_%s with a uniform.\n"
+"To continue with minimal code changes add 'uniform sampler2D %s : hint_%s, "
+"filter_linear_mipmap;' near the top of your shader."
+msgstr ""
+"%s eltávolítva hint_%s javára egységes mintavételezéssel.\n"
+"Minimális kódváltoztatással folytatáshoz csak adja hozzá a shaderkód "
+"tetejéhez ezt: \"uniform sampler2D %s : hint_%s, filter_linear_mipmap;\"."
+
+msgid "Can't use function as identifier: '%s'."
+msgstr "Függvény nem használható azonosítóként: \"%s\"."
+
+msgid "Varying with '%s' data type may only be used in the '%s' function."
+msgstr "\"%s\" adattípussal csak a(z) \"%s\" függvényben használható variáló."
+
+msgid "Varying '%s' must be assigned in the '%s' function first."
+msgstr ""
+"A(z) \"%s\" variáló értékét először a(z) \"%s\" függvényben kell megadni."
+
+msgid "Only integer expressions are allowed for indexing."
+msgstr "Indexeléshez csak egész szám kifejezések engedélyezettek."
+
+msgid "Index [%d] out of range [%d..%d]."
+msgstr "Index [%d] tartományon kívül [%d..%d]."
+
+msgid "Expected expression, found: '%s'."
+msgstr "Kifejezés várva, kapott érték: \"%s\"."
+
+msgid "Empty statement. Remove ';' to fix this warning."
+msgstr "Üres utasítás. A figyelmeztetés javításához törölje a \";\"-t."
+
+msgid "Expected an identifier as a member."
+msgstr "Azonosító várva tagként."
+
+msgid "Cannot combine symbols from different sets in expression '.%s'."
+msgstr ""
+"A szimbólumok nem kombinálhatóak különböző készletekből a kifejezésben \"."
+"%s\"."
+
+msgid "Invalid member for '%s' expression: '.%s'."
+msgstr "Érvénytelen tag a(z) \"%s\" kifejezésben: \".%s\"."
+
+msgid "An object of type '%s' can't be indexed."
+msgstr "\"%s\" típusú objektum nem indexelhető."
+
+msgid "Invalid base type for increment/decrement operator."
+msgstr "Érvénytelen alaptípus az növelő/csökkentő operátorhoz."
+
+msgid "Missing matching ':' for select operator."
+msgstr "Hiányzó \":\" a select operátorhoz."
+
+msgid "A switch may only contain '%s' and '%s' blocks."
+msgstr "A switch művelet csak \"%s\" és \"%s\" blokkokat tartalmazhat."
+
+msgid "Expected variable type after precision modifier."
+msgstr "Pontosság módosító után változó típus szükséges."
+
+msgid "Invalid variable type (samplers are not allowed)."
+msgstr "Érvénytelen változó típus (mintavételezők nem engedélyezettek)."
+
+msgid "Expected an identifier or '[' after type."
+msgstr "Típus után azonosító vagy \"[\" szükséges."
+
+msgid "Expected an identifier."
+msgstr "Azonosító szükséges."
+
+msgid "Expected array initializer."
+msgstr "Tömb inicializáló szükséges."
+
+msgid "Expected data type after precision modifier."
+msgstr "Pontosság módosító után adattípus szükséges."
+
+msgid "Expected a constant expression."
+msgstr "Konstans kifejezés szükséges."
+
+msgid "Expected initialization of constant."
+msgstr "Konstans inicializáció szükséges."
+
+msgid "Expected constant expression for argument %d of function call after '='."
+msgstr ""
+"Konstans kifejezés szükséges az \"=\" utáni függvényhívás %d. paramétereként."
+
+msgid "Expected a boolean expression."
+msgstr "Boolean kifejezés szükséges."
+
+msgid "Default case must be defined only once."
+msgstr "Az alapértelmezett ág csak egyszer definiálható."
+
+msgid "'%s' must be placed within a '%s' block."
+msgstr "\"%s\" egy \"%s\" blokkban kell legyen."
+
+msgid "Undefined identifier '%s' in a case label."
+msgstr "Meghatározatlan azonosító \"%s\" az ág nevében."
+
+msgid "Using '%s' in the '%s' processor function is incorrect."
+msgstr "\"%s\" helytelen használata a(z) \"%s\" feldolgozó függvényben."
+
+msgid "Expected '%s' with an expression of type '%s'."
+msgstr "\"%s\" szükséges \"%s\" kifejezéstípus esetén."
+
+msgid "'%s' function cannot return a value."
+msgstr "\"%s\" függvény nem adhat vissza értéket."
+
+msgid "Expected return with an expression of type '%s'."
+msgstr "\"%s\" típusú visszatérési érték szükséges."
+
+msgid "Use of '%s' is not supported for the '%s' shader type."
+msgstr "\"%s\" használata nem támogatott \"%s\" shader típus esetén."
+
+msgid "'%s' is not allowed outside of a loop or '%s' statement."
+msgstr "\"%s\" nem engedélyezett cikluson vagy \"%s\" utasításon kívül."
+
+msgid "'%s' is not allowed outside of a loop."
+msgstr "\"%s\" nem engedélyezett cikluson kívül."
+
+msgid "The middle expression is expected to have a boolean data type."
+msgstr "A középső kifejezés boolean típusú kell legyen."
+
+msgid "The left expression is expected to be a variable declaration."
+msgstr "A bal oldali kifejezés változó deklaráció kell legyen."
+
+msgid "The precision modifier cannot be used on structs."
+msgstr "A pontosság módosító nem használható struct-okon."
+
+msgid "The precision modifier cannot be used on boolean types."
+msgstr "A pontosság módosító nem használható boolean típusokon."
+
+msgid "Expected '%s' at the beginning of shader. Valid types are: %s."
+msgstr "\"%s\" szükséges a shader elején. Érvényes típusok: %s."
+
+msgid ""
+"Expected an identifier after '%s', indicating the type of shader. Valid types "
+"are: %s."
+msgstr ""
+"Azonosító szükséges a(z) \"%s\" után, amely a shader típusát jelzi. Érvényes "
+"típusok: %s."
+
+msgid "Stencil mode reference value cannot be negative: '%s'."
+msgstr "Stencil mód referencia értéke nem lehet negatív: \"%s\"."
+
+msgid "Stencil mode reference value cannot be greater than 255: '%s'."
+msgstr "Stencil mód referencia értéke nem lehet 255-nél nagyobb: \"%s\"."
+
+msgid "Expected a struct identifier."
+msgstr "Struct azonosító várva."
+
+msgid "Nested structs are not allowed."
+msgstr "Beágyazott struct nem engedélyezett."
+
+msgid "A '%s' data type is not allowed here."
+msgstr "\"%s\" adattípus itt nem engedélyezett."
+
+msgid "Expected an identifier or '['."
+msgstr "Azonosító vagy \"[\" várva."
+
+msgid "Empty structs are not allowed."
+msgstr "Üres struct nem engedélyezett."
+
+msgid "Uniform instances are not yet implemented for '%s' shaders."
+msgstr "A Uniform példányok még nincsenek implementálva \"%s\" shaderekhez."
+
+msgid "Varyings cannot be used in '%s' shaders."
+msgstr "Variálók nem használhatóak \"%s\" shaderekben."
+
+msgid "Interpolation qualifiers are not supported for uniforms."
+msgstr "Uniform-ok esetén az interpoláló minősítők nem támogatottak."
+
+msgid "The '%s' data type is not supported for uniforms."
+msgstr "Az uniform-ok esetén a(z) \"%s\" adattípus nem támogatott."
+
+msgid "The '%s' data type is not allowed here."
+msgstr "A(z) \"%s\" adattípus itt nem engedélyezett."
+
+msgid "Interpolation modifier '%s' cannot be used with boolean types."
+msgstr "A(z) \"%s\" interpoláló módosító nem használható boolen típusokkal."
+
+msgid "Global uniform '%s' does not exist. Create it in Project Settings."
+msgstr ""
+"A globális \"%s\" uniform nem létezik. Hozza létre a Projekt Beállításokban."
+
+msgid "Global uniform '%s' must be of type '%s'."
+msgstr "A globális \"%s\" uniform \"%s\" típusú kell legyen."
+
+msgid "The '%s' qualifier is not supported for sampler types."
+msgstr "A \"%s\" minősítő nem támogatott mintavételező típusoknál."
+
+msgid "The '%s' qualifier is not supported for matrix types."
+msgstr "A(z) \"%s\" minősítő nem támogatott mátrix típusoknál."
+
+msgid "The '%s' qualifier is not supported for uniform arrays."
+msgstr "A(z) \"%s\" minősítő nem támogatott uniform tömböknél."
+
+msgid "Expected valid type hint after ':'."
+msgstr "Érvényes típusjelző várva a \":\" után."
+
+msgid "This hint is not supported for uniform arrays."
+msgstr "Ez a jelző nem támogatott uniform tömbök esetén."
+
+msgid "Source color hint is for '%s', '%s' or sampler types only."
+msgstr ""
+"A forrásszín jelzője csak \"%s\", \"%s\" vagy mintavételező típusokhoz van."
+
+msgid "Source color conversion disabled hint is for '%s', '%s'."
+msgstr "A forrásszín átalakítás letiltás jelzője ezekhez: \"%s\" és \"%s\"."
+
+msgid "Hint '%s' should be preceded by '%s'."
+msgstr "A(z) \"%s\" jelző előtt \"%s\" kell szerepeljen."
+
+msgid "Range hint is for '%s' and '%s' only."
+msgstr "Tartományjelző csak ezekhez: \"%s\" és \"%s\"."
+
+msgid "Enum hint is for '%s' only."
+msgstr "Enum jelző csak ehhez: \"%s\"."
+
+msgid "Can only specify '%s' once."
+msgstr "\"%s\" csak egyszer adható meg."
+
+msgid "The instance index can't be negative."
+msgstr "A példányindex nem lehet negatív."
+
+msgid "Allowed instance uniform indices must be within [0..%d] range."
+msgstr "Az engedélyezett uniform indexek [0..%d] tartományba kell essenek."
+
+msgid ""
+"'hint_normal_roughness_texture' is only available when using the Forward+ "
+"renderer."
+msgstr ""
+"\"hint_normal_roughness_texture\" csak a Forward+ rendermotor esetén elérhető."
+
+msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
+msgstr "\"hint_normal_roughness_texture\" nem támogatott \"%s\" shaderekben."
+
+msgid "'hint_depth_texture' is not supported in '%s' shaders."
+msgstr "\"hint_depth_texture\" nem támogatott \"%s\" shaderekben."
+
+msgid "This hint is only for sampler types."
+msgstr "Ez a jelző csak mintavételező típusokhoz való."
+
+msgid "Redefinition of hint: '%s'. The hint has already been set to '%s'."
+msgstr "Jelző újradefiniálás: \"%s\" A jelző már beállítva erre: \"%s\"."
+
+msgid ""
+"Redefinition of filter mode: '%s'. The filter mode has already been set to "
+"'%s'."
+msgstr ""
+"Szűrőmód újradefiniálás: \"%s\". A szűrőmód már be van állítva erre: \"%s\"."
+
+msgid ""
+"Redefinition of repeat mode: '%s'. The repeat mode has already been set to "
+"'%s'."
+msgstr ""
+"Ismétlés mód újradefiniálás: \"%s\". Az ismétlés mód már be van állítva erre: "
+"\"%s\"."
+
+msgid "Too many '%s' uniforms in shader, maximum supported is %d."
+msgstr "\"Túl sok \"%s\" uniform van a shader-ben, maximum %d lehet."
+
+msgid "Setting default values to uniform arrays is not supported."
+msgstr "Alapértelmezett érték hozzárendelése uniform tömbökhöz nem támogatott."
+
+msgid "Expected constant expression after '='."
+msgstr "Konstant kifejezés várva az \"=\" után."
+
+msgid "Expected an uniform subgroup identifier."
+msgstr "Uniform alcsoport azonosító várva."
+
+msgid "Expected an uniform group identifier."
+msgstr "Uniform csoport azonosító várva."
+
+msgid "Expected an uniform group identifier or `;`."
+msgstr "Uniform alcsoport azonosító vagy \";\" várva."
+
+msgid "Group needs to be opened before."
+msgstr "A csoport először nyitva kell legyen."
+
+msgid "Shader type is already defined."
+msgstr "Már definiált shader típus."
+
+msgid "Expected constant, function, uniform or varying."
+msgstr "Konstans, függvény, uniform vagy variáló várva."
+
+msgid "Invalid constant type (samplers are not allowed)."
+msgstr "Érvénytelen konstans típus (mintavételezők nem engedélyezettek)."
+
+msgid "Invalid function type (samplers are not allowed)."
+msgstr "Érvénytelen függvény típus (mintavételezők nem engedélyezettek)."
+
+msgid "Expected a function name after type."
+msgstr "A típus után függvénynév várva."
+
+msgid "Expected '(' after function identifier."
+msgstr "Függvény azonosító után \"(\" várva."
+
+msgid ""
+"Global non-constant variables are not supported. Expected '%s' keyword before "
+"constant definition."
+msgstr ""
+"Nem-konstans globális változók nem támogatottak. A konstans definíció előtt "
+"\"%s\" kulcsszó várva."
+
+msgid "Expected an identifier after type."
+msgstr "Típus után azonosító várva."
+
+msgid "'%s' qualifier cannot be used with a function return type."
+msgstr "\"%s\" minősítő nem használható függvény visszatérési értékkel."
+
+msgid ""
+"The '%s' qualifier cannot be used within a function parameter declared with "
+"'%s'."
+msgstr ""
+"A(z) \"%s\" minősítő nem használható \"%s\" segítségével deklarált függvény "
+"paraméterben."
+
+msgid "Expected a valid data type for argument."
+msgstr "Érvényes adattípus várva argumentumként."
+
+msgid "Opaque types cannot be output parameters."
+msgstr "Átlátszatlan típusok nem lehetnek kimeneti paraméterek."
+
+msgid "Void type not allowed as argument."
+msgstr "Void típus nem lehet argumentum."
+
+msgid "Expected an identifier for argument name."
+msgstr "Azonosító várva argumentum neveként."
+
+msgid "Function '%s' expects no arguments."
+msgstr "A(z) \"%s\" függvény nem vár argumentumokat."
+
+msgid "Function '%s' must be of '%s' return type."
+msgstr "A(z) \"%s\" függvény visszatérési típusa \"%s\" kell legyen."
+
+msgid "Expected at least one '%s' statement in a non-void function."
+msgstr "Nem-void függvényben legalább egy \"%s\" utasítás kell szerepeljen."
+
+msgid ""
+"Varying with integer data type must be declared with `%s` interpolation "
+"qualifier."
+msgstr ""
+"Egész szám adattípussú variáló \"%s\" interpolációs minősítővel deklarálandó."
+
+msgid "Too many varyings used in shader (%d used, maximum supported is %d)."
+msgstr "Túl sok variáló van a shader-ben (%d használt, támogatott maximum: %d)."
+
+msgid "Expected an identifier for render mode."
+msgstr "Renderelés módhoz azonosító várva."
+
+msgid ""
+"Redefinition of stencil mode: '%s'. The '%s' mode has already been set to "
+"'%s'."
+msgstr ""
+"Stencil mód újradefiniálás: \"%s\". A \"%s\" mód már beállítva erre: \"%s\"."
+
+msgid ""
+"Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."
+msgstr ""
+"Renderelés mód újradefiniálás: \"%s\" A \"%s\" mód már beállítva erre: \"%s\"."
+
+msgid "Unknown directive."
+msgstr "Ismeretlen direktíva."
+
+msgid "Macro redefinition."
+msgstr "Makró újradefiniálás."
+
 msgid "Invalid argument name."
 msgstr "Érvénytelen argumentum név."
+
+msgid "Expected a comma in the macro argument list."
+msgstr "Vessző várva a makró argumentum listában."
+
+msgid "'##' must not appear at beginning of macro expansion."
+msgstr "\"##\" nem szerepelhet makrókiterjesztés elején."
+
+msgid "'##' must not appear at end of macro expansion."
+msgstr "\"##\" nem szerepelhet makrókiterjesztés végén."
+
+msgid ""
+"Shader include load failed. Does the shader include exist? Is there a cyclic "
+"dependency?"
+msgstr ""
+"Beépülő shader betöltése sikertelen. Létezik a beépítendő shader? Ciklikus "
+"függőség jött létre?"
+
+msgid "Shader include resource type is wrong."
+msgstr "A beépülő shader erőforrás típus hibás."
+
+msgid "Cyclic include found"
+msgstr "Ciklikus beépítés érzékelve"
+
+msgid "Shader max include depth exceeded."
+msgstr "Max shader beépítés mélység elérve."
+
+msgid "Cannot use '%s' on built-in define."
+msgstr "\"%s\" nem használható beépített definíción."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Makrókiterjesztés limit elérve."
 
 msgid "Invalid macro argument list."
 msgstr "Érvénytelen makró argumentum lista."
@@ -13981,3 +15717,55 @@ msgstr "Érvénytelen makró argumentum."
 
 msgid "Invalid macro argument count."
 msgstr "Érvénytelen makró argumentum mennyiség."
+
+msgid "Can't find matching branch directive."
+msgstr "Nem található egyező elágazás direktíva."
+
+msgid "Unmatched conditional statement."
+msgstr "Nem egyező feltételes utasítás."
+
+msgid ""
+"Direct floating-point comparison (this may not evaluate to `true` as you "
+"expect). Instead, use `abs(a - b) < 0.0001` for an approximate but "
+"predictable comparison."
+msgstr ""
+"Közvetlen lebegőpontos összehasonlítás (ez nem feltátlenül ad elvárással "
+"megegyező `igaz` értéket). Használja helyette az `abs(a - b) < 0.0001` "
+"közelítő, de megjósolható kimenetű kifejezést."
+
+msgid "The const '%s' is declared but never used."
+msgstr "Nem használt deklarált konstans: \"%s\"."
+
+msgid "The function '%s' is declared but never used."
+msgstr "Nem használt deklarált függvény: \"%s\"."
+
+msgid "The struct '%s' is declared but never used."
+msgstr "Nem használt deklarált struct: \"%s\"."
+
+msgid "The uniform '%s' is declared but never used."
+msgstr "Nem használt deklarált uniform: \"%s\"."
+
+msgid "The varying '%s' is declared but never used."
+msgstr "Nem használt deklarált variáló: \"%s\"."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "Nem használt deklarált lokális változó: \"%s\"."
+
+msgid ""
+"The total size of the %s for this shader on this device has been exceeded (%d/"
+"%d). The shader may not work correctly."
+msgstr ""
+"Az eszközön az ezen shader-hez tartozó %s teljes mérete túl nagy (%d/%d). A "
+"shader nem fog jól működni."
+
+msgid ""
+"You are attempting to assign the VERTEX position in model space to the vertex "
+"POSITION in clip space. The definition of clip space changed in version 4.3, "
+"so if this code was written prior to 4.3, it will not continue to work. "
+"Consider specifying the clip space z-component directly i.e. use "
+"`vec4(VERTEX.xy, 1.0, 1.0)`."
+msgstr ""
+"VERTEX pozíciót próbál megadni a modell terében a vertex POZÍCIÓhoz a clip "
+"térben. A clip tér definíciója megváltozozz a 4.3-mas verzióban, így ha ez a "
+"kód 4.3 előtt készült, akkor nem fog működni. Adja meg helyette a clip tér z-"
+"komponensét közvetlenül, pl. `vec4(VERTEX.xy, 1.0, 1.0)`."

@@ -56,7 +56,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-12 14:11+0000\n"
+"PO-Revision-Date: 2026-02-21 16:30+0000\n"
 "Last-Translator: Sajjad Zavar <zavarsajjad98@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fa/>\n"
@@ -65,7 +65,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 msgid "Application"
 msgstr "برنامه"
@@ -77,10 +77,10 @@ msgid "Name"
 msgstr "نام"
 
 msgid "Name Localized"
-msgstr "بومی شدهٔ نام"
+msgstr "نام محلی‌سازی‌شده"
 
 msgid "Description"
-msgstr "شرح"
+msgstr "توضیح"
 
 msgid "Version"
 msgstr "نسخه"
@@ -92,85 +92,85 @@ msgid "Main Scene"
 msgstr "صحنهٔ اصلی"
 
 msgid "Disable stdout"
-msgstr "ازکاراندازی stdout"
+msgstr "غیرفعال کردن خروجی استاندارد (stdout)"
 
 msgid "Disable stderr"
-msgstr "ازکاراندازی stderr"
+msgstr "غیرفعال کردن خروجی خطای استاندارد (stderr)"
 
 msgid "Print Header"
-msgstr "پرینت هدر ها"
+msgstr "چاپ سربرگ"
 
 msgid "Enable Alt Space Menu"
-msgstr "به‌کاراندازی گزینگان Alt + Space"
+msgstr "فعال‌سازی منوی Alt+Space"
 
 msgid "Use Hidden Project Data Directory"
-msgstr "به‌کارگیری پوشه‌دان دادهٔ پروژهٔ پنهان‌شده"
+msgstr "استفاده از پوشهٔ مخفی داده‌های پروژه"
 
 msgid "Use Custom User Dir"
-msgstr "استفاده از Custom User Dir"
+msgstr "استفاده از دایرکتوری کاربر سفارشی"
 
 msgid "Custom User Dir Name"
-msgstr "نام دلخواه برای پوشه‌دان کاربر"
+msgstr "نام دایرکتوری کاربر سفارشی"
 
 msgid "Project Settings Override"
-msgstr "لغو تنظیمات پروژه"
+msgstr "بازنویسی تنظیمات پروژه"
 
 msgid "Disable Project Settings Override"
-msgstr "غیرفعال کردن Override تنظیمات پروژه"
+msgstr "غیرفعال کردن بازنویسی تنظیمات پروژه"
 
 msgid "Main Loop Type"
-msgstr "گونهٔ چرخهٔ اصلی"
+msgstr "نوع حلقهٔ اصلی"
 
 msgid "Auto Accept Quit"
 msgstr "پذیرش خودکار خروج"
 
 msgid "Quit on Go Back"
-msgstr "خروج در بازگشت"
+msgstr "خروج با دکمهٔ بازگشت"
 
 msgid "Accessibility"
-msgstr "دسترسی‌پذیری"
+msgstr "دسترس‌پذیری"
 
 msgid "General"
 msgstr "عمومی"
 
 msgid "Accessibility Support"
-msgstr "پشتیبانی از دسترسی"
+msgstr "پشتیبانی از دسترس‌پذیری"
 
 msgid "Updates per Second"
-msgstr "به‌روزرسانی در ثانیه"
+msgstr "به‌روزرسانی‌ها در هر ثانیه"
 
 msgid "Display"
 msgstr "نمایش"
 
 msgid "Window"
-msgstr "پنجره (چارچوب)"
+msgstr "پنجره"
 
 msgid "Size"
 msgstr "اندازه"
 
 msgid "Viewport Width"
-msgstr "طول دید"
+msgstr "عرض ویوپورت"
 
 msgid "Viewport Height"
-msgstr "عرض دید"
+msgstr "ارتفاع ویوپورت"
 
 msgid "Mode"
 msgstr "حالت"
 
 msgid "Initial Position Type"
-msgstr "نوع مکان اولیه"
+msgstr "نوع موقعیت اولیه"
 
 msgid "Initial Position"
 msgstr "موقعیت اولیه"
 
 msgid "Initial Screen"
-msgstr "صفحه اولیه"
+msgstr "نمایشگر اولیه"
 
 msgid "Resizable"
-msgstr "تغییر اندازه پذیر"
+msgstr "قابل تغییر اندازه"
 
 msgid "Borderless"
-msgstr "بی‌مرز"
+msgstr "بدون قاب"
 
 msgid "Always on Top"
 msgstr "همیشه در بالا"
@@ -188,61 +188,61 @@ msgid "Sharp Corners"
 msgstr "گوشه‌های تیز"
 
 msgid "Minimize Disabled"
-msgstr "کوچک کردن پنجره غیرفعال شده است"
+msgstr "کوچک‌سازی (Minimize) غیرفعال است"
 
 msgid "Maximize Disabled"
-msgstr "بزرگ کردن پنجره غیرفعال شده است"
+msgstr "بزرگ‌نمایی (Maximize) غیرفعال است"
 
 msgid "Window Width Override"
-msgstr "بازنویسی پهنای پنجره"
+msgstr "عرض پنجره اجباری"
 
 msgid "Window Height Override"
-msgstr "بازنویسی ارتفاع پنجره"
+msgstr "ارتفاع پنجره اجباری"
 
 msgid "Energy Saving"
-msgstr "ذخیره انرژی"
+msgstr "صرفه‌جویی در انرژی"
 
 msgid "Keep Screen On"
-msgstr "روشن نگه داشتن صفحه نمایش"
+msgstr "روشن نگه‌داشتن صفحه"
 
 msgid "Animation"
-msgstr "پویانمایی"
+msgstr "انیمیشن"
 
 msgid "Warnings"
 msgstr "هشدارها"
 
 msgid "Check Invalid Track Paths"
-msgstr "بررسی مسیرهای نامعتبر نوار"
+msgstr "بررسی مسیرهای نامعتبر ترک"
 
 msgid "Check Angle Interpolation Type Conflicting"
-msgstr "بررسی ناسازگاری نوع درون‌یابی زاویه"
+msgstr "بررسی تضاد نوع درون‌یابی زاویه"
 
 msgid "Compatibility"
 msgstr "سازگاری"
 
 msgid "Default Parent Skeleton in Mesh Instance 3D"
-msgstr "والد پیش‌فرض اسکلت در Mesh Instance 3D"
+msgstr "اسکلت والد پیش‌فرض در Mesh Instance 3D"
 
 msgid "Audio"
 msgstr "صدا"
 
 msgid "Buses"
-msgstr "غول ها"
+msgstr "گذرگاه‌ها"
 
 msgid "Default Bus Layout"
-msgstr "چیدمان پیش‌فرض باس"
+msgstr "چیدمان پیش‌فرض گذرگاه‌ها"
 
 msgid "Default Playback Type"
-msgstr "نوع پیش‌فرض بازپخش"
+msgstr "نوع پخش پیش‌فرض"
 
 msgid "Text to Speech"
 msgstr "متن به گفتار"
 
 msgid "2D Panning Strength"
-msgstr "قدرت پیوستگی دوبعدی"
+msgstr "شدت پنینگ دوبعدی"
 
 msgid "3D Panning Strength"
-msgstr "قدرت پیوستگی سه‌بعدی"
+msgstr "شدت پنینگ سه‌بعدی"
 
 msgid "iOS"
 msgstr "آی‌او‌اس"
@@ -251,16 +251,16 @@ msgid "Session Category"
 msgstr "دسته‌بندی نشست"
 
 msgid "Mix with Others"
-msgstr "مخلوط با سایرین"
+msgstr "ترکیب با سایرین"
 
 msgid "Subwindows"
-msgstr "زیر پنجره ها"
+msgstr "زیرپنجره‌ها"
 
 msgid "Embed Subwindows"
 msgstr "جاسازی زیرپنجره‌ها"
 
 msgid "Frame Pacing"
-msgstr "فاصله گذاری فریم"
+msgstr "زمان‌بندی فریم‌ها"
 
 msgid "Android"
 msgstr "اندروید"
@@ -382,6 +382,9 @@ msgstr "عمومی"
 msgid "Snap Controls to Pixels"
 msgstr "چسباندن کنترل ها به پیکسل ها"
 
+msgid "Show Focus State on Pointer Event"
+msgstr "نمایش حالت فوکوس هنگام رویداد اشاره‌گر"
+
 msgid "Fonts"
 msgstr "قلم‌ها"
 
@@ -469,6 +472,9 @@ msgstr "درنظرگرفتن فشار طولانی به‌عنوان راست ک
 msgid "Enable Pan and Scale Gestures"
 msgstr "فعالسازی حرکات کشیدن و مقیاس دهی"
 
+msgid "Rotary Input Scroll Axis"
+msgstr "محور پیمایش ورودی چرخشی"
+
 msgid "Override Volume Buttons"
 msgstr "بازنویسی دکمه‌های بلندی صدا"
 
@@ -481,6 +487,12 @@ msgstr "جهان"
 msgid "Avoidance"
 msgstr "پرهیز"
 
+msgid "Thread Model"
+msgstr "مدل نخ"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "اجتناب با استفاده از نخ‌های با اولویت بالا"
+
 msgid "Pathfinding"
 msgstr "مسیریابی"
 
@@ -489,6 +501,12 @@ msgstr "بیشینه‌‌ی ریسه‌ها"
 
 msgid "Baking"
 msgstr "پخت"
+
+msgid "Use Crash Prevention Checks"
+msgstr "از بررسی‌های جلوگیری از کرش (Crash) استفاده کنید"
+
+msgid "Baking Use High Priority Threads"
+msgstr "بِیکینگ (Baking) با استفاده از نخ‌های با اولویت بالا"
 
 msgid "Low Processor Usage Mode"
 msgstr "حالت کاربرد کم پردازنده"

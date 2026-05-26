@@ -39,13 +39,15 @@
 # Максим Горпиніч <maksimgorpinic2005a@gmail.com>, 2025.
 # Максим Горпиніч <maksimgorpinic4@gmail.com>, 2025.
 # Максим Горпиніч <gorpinicmaksim0@gmail.com>, 2025, 2026.
+# Nikita <general.governator@gmail.com>, 2026.
+# Максим Горпиніч <gorpinicmaksim2005ukr@protonmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-20 09:04+0000\n"
-"Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
+"PO-Revision-Date: 2026-05-06 10:05+0000\n"
+"Last-Translator: Максим Горпиніч <gorpinicmaksim2005ukr@protonmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -54,7 +56,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1\n"
 
 msgid "Application"
 msgstr "Застосування"
@@ -2035,7 +2037,7 @@ msgid "Save Each Scene on Quit"
 msgstr "Зберігати усі сцени при виході"
 
 msgid "Save on Focus Loss"
-msgstr "Заощаджуйте на втраті фокусу"
+msgstr "Зберігати при втраті фокусу"
 
 msgid "Accept Dialog Cancel OK Buttons"
 msgstr "Погоджувати діалогові кнопки Скасувати ОК"
@@ -2599,7 +2601,7 @@ msgid "External"
 msgstr "Зовнішній"
 
 msgid "Exec Path"
-msgstr "Шлях експорту"
+msgstr "Шлях до редактору"
 
 msgid "Exec Flags"
 msgstr "Виконувані прапорці"
@@ -5416,7 +5418,7 @@ msgid "Removable Volumes Usage Description"
 msgstr "Опис використання портативних томів"
 
 msgid "Removable Volumes Usage Description Localized"
-msgstr "ФОпис використання знімних томів локалізовано"
+msgstr "Використання знімних носіїв: опис (локалізована версія)"
 
 msgid "Min visionOS Version"
 msgstr "Мінімальна версія visionOS"
@@ -5689,7 +5691,7 @@ msgid "Clear Margin"
 msgstr "Очистити поле"
 
 msgid "Use Mipmaps"
-msgstr "Використовувати MIP-текстурування"
+msgstr "Використовувати Mipmaps"
 
 msgid "Emitting"
 msgstr "Надсилання"

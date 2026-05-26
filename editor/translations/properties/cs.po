@@ -46,13 +46,14 @@
 # kubfaf <kubfaf@gmail.com>, 2025.
 # Jan Matějka <controlcommanddev@gmail.com>, 2025.
 # Pixeluted <pixeluted@proton.me>, 2025.
+# Jakub Szydlowski <kubkii27@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-04 18:02+0000\n"
-"Last-Translator: Marek Poustka <noskrat@gmail.com>\n"
+"PO-Revision-Date: 2026-05-24 11:13+0000\n"
+"Last-Translator: Jakub Szydlowski <kubkii27@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/cs/>\n"
 "Language: cs\n"
@@ -60,7 +61,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "Application"
 msgstr "Aplikace"
@@ -515,11 +516,17 @@ msgstr "Hledání cest"
 msgid "Max Threads"
 msgstr "Maximální počet vláken"
 
+msgid "Baking"
+msgstr "Pečení"
+
 msgid "Baking Use Multiple Threads"
 msgstr "Použít více vláken pro vypalování"
 
 msgid "Baking Use High Priority Threads"
 msgstr "Použít vysokoprioritní vlákna pro vypalování"
+
+msgid "Editor Overrides"
+msgstr "Editor Přepisuje"
 
 msgid "Low Processor Usage Mode"
 msgstr "Režim nízkého využití procesoru"
@@ -806,6 +813,9 @@ msgstr "TCP"
 msgid "Connect Timeout Seconds"
 msgstr "Časový limit připojení (s)"
 
+msgid "Unix"
+msgstr "Unix"
+
 msgid "Packet Peer Stream"
 msgstr "Stream packet peer"
 
@@ -920,6 +930,30 @@ msgstr "Synchronizovat breakpointy"
 msgid "Title"
 msgstr "Nadpis"
 
+msgid "Global"
+msgstr "Globální"
+
+msgid "Closable"
+msgstr "Uzavíratelné"
+
+msgid "Icon Name"
+msgstr "Název Ikony"
+
+msgid "Dock Icon"
+msgstr "Ikona Dock"
+
+msgid "Force Show Icon"
+msgstr "Vynutit Zobrazení Ikony"
+
+msgid "Title Color"
+msgstr "Barva Nadpisu"
+
+msgid "Default Slot"
+msgstr "Výchozí Slot"
+
+msgid "Available Layouts"
+msgstr "Dostupné Layouty"
+
 msgid "Distraction Free Mode"
 msgstr "Nerozptylující režim"
 
@@ -1012,6 +1046,9 @@ msgstr "Výkon herní úrovně"
 
 msgid "Performance A 12"
 msgstr "Výkon A12"
+
+msgid "Shader Baker"
+msgstr "Pečení Shaderu"
 
 msgid "Enabled"
 msgstr "Povoleno"
@@ -1195,6 +1232,9 @@ msgstr "Nuceně zakázat kompresi sítě"
 
 msgid "Node"
 msgstr "Uzel"
+
+msgid "Node Type"
+msgstr "Typ Uzlu"
 
 msgid "Script"
 msgstr "Skript"
@@ -1385,6 +1425,9 @@ msgstr "Typ kořenového uzlu"
 msgid "Root Name"
 msgstr "Název kořenového uzlu"
 
+msgid "Root Script"
+msgstr "Kořen Skriptu"
+
 msgid "Apply Root Scale"
 msgstr "Použít měřítko kořenového uzlu"
 
@@ -1393,6 +1436,9 @@ msgstr "Měřítko kořenového uzlu"
 
 msgid "Import as Skeleton Bones"
 msgstr "Importovat jako kosti kostry"
+
+msgid "Use Name Suffixes"
+msgstr "Použít Sufixy Jména"
 
 msgid "Use Node Type Suffixes"
 msgstr "Použít sufixy typu uzlu"
@@ -1438,6 +1484,9 @@ msgstr "Skript pro import"
 
 msgid "Materials"
 msgstr "Materiály"
+
+msgid "Extract"
+msgstr "Extrahovat"
 
 msgid "Antialiasing"
 msgstr "Vyhlazování"
@@ -1553,6 +1602,12 @@ msgstr "Vysoká kvalita"
 msgid "Lossy Quality"
 msgstr "Ztrátová kvalita"
 
+msgid "UASTC Level"
+msgstr "Level UASTC"
+
+msgid "RDO Quality Loss"
+msgstr "Ztráta kvality RDO"
+
 msgid "HDR Compression"
 msgstr "Komprese HDR"
 
@@ -1577,6 +1632,9 @@ msgstr "Uspořádání"
 msgid "Layout"
 msgstr "Rozvržení"
 
+msgid "Saturation"
+msgstr "Saturace"
+
 msgid "Normal Map"
 msgstr "Normálová mapa"
 
@@ -1588,6 +1646,18 @@ msgstr "Zdroj normál"
 
 msgid "Process"
 msgstr "Zpracování"
+
+msgid "Red"
+msgstr "Červená"
+
+msgid "Green"
+msgstr "Zelená"
+
+msgid "Blue"
+msgstr "Modrá"
+
+msgid "Alpha"
+msgstr "Alfa"
 
 msgid "Fix Alpha Border"
 msgstr "Spravit alfa okraj"
@@ -1839,6 +1909,9 @@ msgstr "Použít nativní souborové dialogy"
 msgid "Expand to Title"
 msgstr "Rozšířit na název"
 
+msgid "Main Font Size"
+msgstr "Hlavní Velikost Písma"
+
 msgid "Code Font Contextual Ligatures"
 msgstr "Kontextuální ligatury fontu kódu"
 
@@ -1902,6 +1975,9 @@ msgstr "Režim V-Sync"
 msgid "Update Continuously"
 msgstr "Aktualizovat průběžně"
 
+msgid "Collapse Main Menu"
+msgstr "Minimalizovat hlavní menu"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "Zobrazit výběr kořenu stromu scény"
 
@@ -1950,11 +2026,23 @@ msgstr "Otevírat zdroje ve stávajícím inspektoru"
 msgid "Resources to Open in New Inspector"
 msgstr "Zdroje pro otevření v novém inspektoru"
 
+msgid "Default Color Picker Mode"
+msgstr "Výchozí mód výběru barev"
+
 msgid "Theme"
 msgstr "Motiv"
 
+msgid "Color Preset"
+msgstr "Předvolba barvy"
+
+msgid "Spacing Preset"
+msgstr "Předvolba mezer"
+
 msgid "Icon and Font Color"
 msgstr "Barva ikon a fontů"
+
+msgid "Base Color"
+msgstr "Základní barva"
 
 msgid "Contrast"
 msgstr "Kontrast"
@@ -2007,11 +2095,35 @@ msgstr "Zobrazit tlačítko skriptu"
 msgid "Restore Scenes on Load"
 msgstr "Obnovit scény při načtení"
 
+msgid "Auto Select Current Scene File"
+msgstr "Automaticky zvolit soubor aktuální scény"
+
+msgid "Restore Windows on Load"
+msgstr "Obnovit Windows při načtení"
+
+msgid "Maximize Window"
+msgstr "Maximalizovat okno"
+
 msgid "FileSystem"
 msgstr "Souborový systém"
 
 msgid "External Programs"
 msgstr "Externí programy"
+
+msgid "Raster Image Editor"
+msgstr "Editor rastrových obrázků"
+
+msgid "Vector Image Editor"
+msgstr "Editor vektorových obrázků"
+
+msgid "Audio Editor"
+msgstr "Editor audia"
+
+msgid "3D Model Editor"
+msgstr "Editor 3D modelů"
+
+msgid "Terminal Emulator"
+msgstr "Emulátor terminálu"
 
 msgid "Terminal Emulator Flags"
 msgstr "Argumenty emulátoru terminálu"
@@ -2022,6 +2134,9 @@ msgstr "Adresáře"
 msgid "Autoscan Project Path"
 msgstr "Cesta pro automatické prohledávání projektů"
 
+msgid "Default Project Path"
+msgstr "Výchozí cesta projektu"
+
 msgid "On Save"
 msgstr "Při uložení"
 
@@ -2030,6 +2145,9 @@ msgstr "Komprimovat binární zdroje"
 
 msgid "Safe Save on Backup then Rename"
 msgstr "Bezpečné uložení se zálohou a přejmenováním"
+
+msgid "Warn on Saving Large Text Resources"
+msgstr "Upozornění při ukládání rozsáhlých textových zdrojů"
 
 msgid "File Server"
 msgstr "Souborový server"
@@ -2057,6 +2175,9 @@ msgstr "Dialog rychlého otevření"
 
 msgid "Max Results"
 msgstr "Maximum výsledků"
+
+msgid "Instant Preview"
+msgstr "Okamžitý náhled"
 
 msgid "Show Search Highlight"
 msgstr "Zobrazit zvýraznění vyhledávání"
@@ -2115,6 +2236,9 @@ msgstr "Vycentrovat uzel při změně rodiče"
 msgid "Hide Filtered Out Parents"
 msgstr "Schovat rodiče vyfiltrovaných"
 
+msgid "Accessibility Warnings"
+msgstr "Přístupnostní upozornění"
+
 msgid "Always Show Folders"
 msgstr "Vždy zobrazit složky"
 
@@ -2156,6 +2280,9 @@ msgstr "Seznam upozornění"
 
 msgid "Appearance"
 msgstr "Vzhled"
+
+msgid "Enable Inline Color Picker"
+msgstr "Povolit vestavěný výběr barev"
 
 msgid "Caret"
 msgstr "Kurzor"
@@ -2213,6 +2340,9 @@ msgstr "Řádky"
 
 msgid "Code Folding"
 msgstr "Složení kódu"
+
+msgid "Word Wrap"
+msgstr "Zalámování slov"
 
 msgid "Autowrap Mode"
 msgstr "Režim automatického zalamování"
@@ -2301,8 +2431,14 @@ msgstr "Automaticky aktualizovat a provést rozbor skriptů při uložení"
 msgid "Open Dominant Script on Scene Change"
 msgstr "Otevřít dominantní skript při změně scény"
 
+msgid "Drop Preload Resources as UID"
+msgstr "Uvolnit přednačtené zdroje jako UID"
+
 msgid "Documentation"
 msgstr "Dokumentace"
+
+msgid "Enable Tooltips"
+msgstr "Povolit rychlou nápovědu"
 
 msgid "Script List"
 msgstr "Seznam skriptů"
@@ -2384,6 +2520,9 @@ msgstr "Nápověda"
 
 msgid "Show Help Index"
 msgstr "Zobrazit index nápovědy"
+
+msgid "Help Font Size"
+msgstr "Nápověda Velikosti písma"
 
 msgid "Sort Functions Alphabetically"
 msgstr "Třídit funkce abecedně"
@@ -4836,8 +4975,14 @@ msgstr "Spodní"
 msgid "Smoothed"
 msgstr "Vyhlazený"
 
+msgid "Horizontal Enabled"
+msgstr "Horizontální orientace povolena"
+
 msgid "Vertical Enabled"
 msgstr "Povolit vertikálně"
+
+msgid "Horizontal Offset"
+msgstr "Horizonální offset"
 
 msgid "Left Margin"
 msgstr "Levý okraj"
@@ -4853,6 +4998,9 @@ msgstr "Spodní okraj"
 
 msgid "Draw Screen"
 msgstr "Kreslit obrazovku"
+
+msgid "Draw Limits"
+msgstr "Vykreslovací limity"
 
 msgid "Tweaks"
 msgstr "Vychytávky"
@@ -5121,8 +5269,17 @@ msgstr "SDF kolize"
 msgid "Occluder Light Mask"
 msgstr "Světelná maska stínidla"
 
+msgid "Default Color"
+msgstr "Výchozí barva"
+
+msgid "Gradient"
+msgstr "Přechod"
+
 msgid "Joint Mode"
 msgstr "Mód bodu"
+
+msgid "Border"
+msgstr "Hranice"
 
 msgid "Antialiased"
 msgstr "Vyhlazený"
@@ -5226,17 +5383,29 @@ msgstr "Použít spojení hran"
 msgid "Scroll Offset"
 msgstr "Offset posouvání"
 
+msgid "Repeat"
+msgstr "Opakovat"
+
 msgid "Begin"
 msgstr "Počátek"
 
 msgid "End"
 msgstr "End"
 
+msgid "Follow Viewport"
+msgstr "Sledovat Viewport"
+
 msgid "Screen Offset"
 msgstr "Offset obrazovky"
 
 msgid "Scroll"
 msgstr "Posouvání"
+
+msgid "Limit Begin"
+msgstr "Začátek limitu"
+
+msgid "Limit End"
+msgstr "Konec limitu"
 
 msgid "Motion"
 msgstr "Pohyb"
@@ -5270,6 +5439,18 @@ msgstr "Synchronizace s fyzikou"
 
 msgid "Point"
 msgstr "Bod"
+
+msgid "Constant Speed"
+msgstr "Konstantní rychlost"
+
+msgid "Max Angle"
+msgstr "Maximální úhel"
+
+msgid "Moving Platform"
+msgstr "Pohyblivá plošina"
+
+msgid "Wall Layers"
+msgstr "Vrstvy zdí"
 
 msgid "Safe Margin"
 msgstr "Bezpečné rozpětí"

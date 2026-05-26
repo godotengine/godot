@@ -25,13 +25,14 @@
 # Jivko Chterev <Jivko91@gmail.com>, 2025.
 # Кристиан Николов <kris.nikolov07@gmail.com>, 2025, 2026.
 # Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>, 2025, 2026.
+# Antoan Ignatov <antoan.a.ignatov@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-10 10:02+0000\n"
-"Last-Translator: Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>\n"
+"PO-Revision-Date: 2026-04-17 08:09+0000\n"
+"Last-Translator: Antoan Ignatov <antoan.a.ignatov@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/bg/>\n"
 "Language: bg\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 msgid "Application"
 msgstr "Апликация"
@@ -5211,8 +5212,26 @@ msgstr "Ъгъл на Експорт"
 msgid "High Res"
 msgstr "Висока Резолюция"
 
+msgid "Certificate Password"
+msgstr "Парола на Сертификат"
+
+msgid "Address Book"
+msgstr "Адресна Книга"
+
+msgid "Calendars"
+msgstr "Календари"
+
 msgid "Debugging"
 msgstr "Дебъгване"
+
+msgid "Network Client"
+msgstr "Мрежов Клиент"
+
+msgid "Device USB"
+msgstr "USB Устройство"
+
+msgid "Device Bluetooth"
+msgstr "Bluetooth Устройство"
 
 msgid "Variant"
 msgstr "Вариант"

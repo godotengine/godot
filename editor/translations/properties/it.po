@@ -61,7 +61,7 @@
 # Daniele Basso <tiziodcaio@gmail.com>, 2021.
 # Riteo Siuga <riteo@posteo.net>, 2021, 2022.
 # Luigi <luibass92@live.it>, 2021.
-# Micky <micheledevita2@gmail.com>, 2021, 2022, 2024, 2025.
+# Micky <micheledevita2@gmail.com>, 2021, 2022, 2024, 2025, 2026.
 # Fabio Plos <altre0cose@gmail.com>, 2021.
 # Theraloss <danilo.polani@gmail.com>, 2021.
 # Pietro Grungo <pietro.grungo@libero.it>, 2021.
@@ -99,13 +99,17 @@
 # shifenis <dedi.ceka99@gmail.com>, 2026.
 # Alex B <alexius.barresi@gmail.com>, 2026.
 # Cristian Zerbinati <cristian.zerbinati@gmail.com>, 2026.
+# Stefano Rizzello <rizzellostefano@gmail.com>, 2026.
+# Alessandro Longo <alessandrolongo1109@gmail.com>, 2026.
+# Georgya <georgyavieira@gmail.com>, 2026.
+# Gianmarco Cavallo <cavallogianmarco@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-03 14:02+0000\n"
-"Last-Translator: Cristian Zerbinati <cristian.zerbinati@gmail.com>\n"
+"PO-Revision-Date: 2026-05-23 08:11+0000\n"
+"Last-Translator: Gianmarco Cavallo <cavallogianmarco@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -113,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -161,10 +165,10 @@ msgid "Custom User Dir Name"
 msgstr "Nome della cartella utente personalizzata"
 
 msgid "Project Settings Override"
-msgstr "Sovrascrittura Impostazioni del Progetto"
+msgstr "Sovrascrittura impostazioni del progetto"
 
 msgid "Disable Project Settings Override"
-msgstr "Disattiva sovrascrittura impostazioni di progetto"
+msgstr "Disabilita sovrascrittura impostazioni del progetto"
 
 msgid "Main Loop Type"
 msgstr "Tipo di ciclo principale"
@@ -298,6 +302,9 @@ msgstr "iOS"
 msgid "Session Category"
 msgstr "Categoria della sessione"
 
+msgid "Mix with Others"
+msgstr "Mischia con altri"
+
 msgid "Subwindows"
 msgstr "Sottofinestre"
 
@@ -430,9 +437,6 @@ msgstr "Soglia di trascinamento"
 msgid "Snap Controls to Pixels"
 msgstr "Scatta i nodi Control ai pixel"
 
-msgid "Show Focus State on Pointer Event"
-msgstr "Mostra lo stato di messa a fuoco sull'evento del puntatore"
-
 msgid "Fonts"
 msgstr "Font"
 
@@ -486,6 +490,12 @@ msgstr "Descrittori massimi per Pool"
 
 msgid "D3D12"
 msgstr "D3D12"
+
+msgid "Max Resource Descriptors"
+msgstr "Numero massimo di descrittori di risorse"
+
+msgid "Max Sampler Descriptors"
+msgstr "Numero massimo di descrittori del campionatore"
 
 msgid "Agility SDK Version"
 msgstr "Versione di SDK Agility"
@@ -572,10 +582,13 @@ msgid "Baking Use High Priority Threads"
 msgstr "Usa i thread ad alta priorità per il precalcolo"
 
 msgid "NavMesh Edge Merge Errors"
-msgstr "Errori nell' unione dei margini delle NavMesh"
+msgstr "Errori nell'unione dei margini delle NavMesh"
 
 msgid "NavMesh Cell Size Mismatch"
 msgstr "Incongruenza nella dimensione delle celle NavMesh"
+
+msgid "Editor Overrides"
+msgstr "Sovrascritture dell'editor"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modalità basso consumo del processore"
@@ -1617,9 +1630,6 @@ msgstr "Modalità di scala"
 
 msgid "Delimiter"
 msgstr "Delimitatore"
-
-msgid "Unescape Keys"
-msgstr "Tasti di Escape"
 
 msgid "Character Ranges"
 msgstr "Intervalli dei caratteri"
@@ -3378,6 +3388,9 @@ msgstr "Utilità di debug"
 msgid "Debug Message Types"
 msgstr "Tipi per i messaggi di debug"
 
+msgid "Frame Synthesis"
+msgstr "Creazione di Fotogramma"
+
 msgid "Hand Tracking"
 msgstr "Tracciamento delle mani"
 
@@ -3454,7 +3467,7 @@ msgid "Show Image"
 msgstr "Mostra immagine"
 
 msgid "Stretch Mode"
-msgstr "Modo di allungamento"
+msgstr "Modo di stiramento"
 
 msgid "Use Filter"
 msgstr "Usa filtro"
@@ -4267,7 +4280,7 @@ msgid "Baumgarte Stabilization Factor"
 msgstr "Fattore di stabilizzazione Baumgarte"
 
 msgid "Soft Body Point Radius"
-msgstr "Raggio dei punti dei corpi morbidi"
+msgstr "Raggio dei punti dei corpi deformabili"
 
 msgid "Bounce Velocity Threshold"
 msgstr "Soglia di velocità di rimbalzo"
@@ -4607,6 +4620,9 @@ msgstr "Soglia di attivazione"
 
 msgid "Off Threshold"
 msgstr "Soglia di disattivazione"
+
+msgid "Marker ID"
+msgstr "Identità del Marker"
 
 msgid "Display Refresh Rate"
 msgstr "Frequenza di aggiornamento del display"
@@ -5081,6 +5097,9 @@ msgstr "rcodesign"
 
 msgid "Distribution Type"
 msgstr "Tipo di distribuzione"
+
+msgid "Liquid Glass Icon"
+msgstr "Icona Vetro Liquido"
 
 msgid "Copyright Localized"
 msgstr "Copyright localizzato"
@@ -9427,7 +9446,7 @@ msgid "Needs Separate Specular"
 msgstr "Ha bisogno di separazioni di speculari"
 
 msgid "Compositor Effects"
-msgstr "Effetti di composizione"
+msgstr "Effetti compositore"
 
 msgid "Load Path"
 msgstr "Percorso di caricamento"
@@ -11525,7 +11544,7 @@ msgid "Keyframe Interval"
 msgstr "Intervallo di fotogrammi chiave"
 
 msgid "Movie File"
-msgstr "File del film"
+msgstr "File del filmato"
 
 msgid "Disable V-Sync"
 msgstr "Disattiva la sincronizzazione verticale"
@@ -11807,7 +11826,7 @@ msgid "Time Rollover Secs"
 msgstr "Tempo di riinizio in secondi"
 
 msgid "Use Physical Light Units"
-msgstr "Usa unità di luce fisica"
+msgstr "Usa unità fisiche di luce"
 
 msgid "Soft Shadow Filter Quality"
 msgstr "Qualità del filtro di ombre morbide"
@@ -12008,10 +12027,10 @@ msgid "Threaded Cull Minimum Instances"
 msgstr "Istanze minime di culling nei thread"
 
 msgid "Cluster Builder"
-msgstr "Costruttore di cluster"
+msgstr "Costruttore cluster"
 
 msgid "Max Clustered Elements"
-msgstr "Elementi di cluster massimi"
+msgstr "Elementi clusterizzati massimi"
 
 msgid "OpenGL"
 msgstr "OpenGL"
@@ -12128,7 +12147,7 @@ msgid "Unused Function"
 msgstr "Funzione non utilizzata"
 
 msgid "Unused Struct"
-msgstr "Struct non utilizzato"
+msgstr "Struct non utilizzata"
 
 msgid "Unused Uniform"
 msgstr "Uniforme non utilizzato"

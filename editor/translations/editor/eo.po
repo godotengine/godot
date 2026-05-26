@@ -25,28 +25,171 @@
 # programutox <programutox@disroot.org>, 2024.
 # Julián Lacomba <julian_alberto93@yahoo.com.ar>, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# bruvzg <bruvzg13@proton.me>, 2026.
+# Matty-H <matissegouery@yahoo.fr>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-02-02 01:02+0000\n"
-"Last-Translator: Julián Lacomba <julian_alberto93@yahoo.com.ar>\n"
+"PO-Revision-Date: 2026-05-05 18:11+0000\n"
+"Last-Translator: Matty-H <matissegouery@yahoo.fr>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1\n"
 
 msgid "OK"
 msgstr "Bone"
 
+msgid "Failed"
+msgstr "Misis"
+
 msgid "Unavailable"
-msgstr "Ne disponebla"
+msgstr "Nedisponebla"
+
+msgid "Unconfigured"
+msgstr "Neagornita"
+
+msgid "Unauthorized"
+msgstr "Nepermisita"
+
+msgid "Parameter out of range"
+msgstr "Eksterintervala Parametro"
+
+msgid "Out of memory"
+msgstr "Senmemoro"
+
+msgid "File not found"
+msgstr "Dosiero netrovita"
+
+msgid "File: Bad drive"
+msgstr "Dosiero: Malbona disko"
+
+msgid "File: Bad path"
+msgstr "Dosiero: Malbona irejo"
+
+msgid "File: Permission denied"
+msgstr "Dosiero: Negita permeso"
+
+msgid "File already in use"
+msgstr "Dosiero jam uzata"
+
+msgid "Can't open file"
+msgstr "Ne eblas malfermi dosieron"
+
+msgid "Can't write file"
+msgstr "Ne eblas skribi dosieron"
+
+msgid "Can't read file"
+msgstr "Ne eblas legi dosieron"
+
+msgid "File unrecognized"
+msgstr "Nerekonita dosiero"
+
+msgid "File corrupt"
+msgstr "Koruptita dosiero"
+
+msgid "Missing dependencies for file"
+msgstr "Mankantaj aneksaĵoj de dosiero"
+
+msgid "End of file"
+msgstr "Fino de dosiero"
+
+msgid "Can't open"
+msgstr "Ne eblas malfermi"
+
+msgid "Can't create"
+msgstr "Ne eblas krei"
+
+msgid "Query failed"
+msgstr "Informmendo misis"
+
+msgid "Already in use"
+msgstr "Jam uzata"
+
+msgid "Locked"
+msgstr "Ŝlosita"
+
+msgid "Timeout"
+msgstr "Tempofino"
+
+msgid "Can't connect"
+msgstr "Ne eblas konekti"
+
+msgid "Can't resolve"
+msgstr "Ne eblas solvi"
+
+msgid "Connection error"
+msgstr "Konekto eraro"
+
+msgid "Can't acquire resource"
+msgstr "Ne eblas akiri resurson"
+
+msgid "Can't fork"
+msgstr "Ne eblas forkiĝi"
+
+msgid "Invalid data"
+msgstr "Nevalida datumo"
+
+msgid "Invalid parameter"
+msgstr "Nevalida parametro"
+
+msgid "Already exists"
+msgstr "Jam ekzistas"
+
+msgid "Does not exist"
+msgstr "Ne ekzistas"
+
+msgid "Can't read database"
+msgstr "Ne eblas legi datumportilon"
+
+msgid "Can't write database"
+msgstr "Ne eblas skribi datumportilon"
+
+msgid "Compilation failed"
+msgstr "Kompilo misis"
+
+msgid "Method not found"
+msgstr "Procedo ne trovi"
+
+msgid "Link failed"
+msgstr "Ligilo misis"
+
+msgid "Script failed"
+msgstr "Skripto misis"
+
+msgid "Cyclic link detected"
+msgstr "Detektika cikla ligilo"
+
+msgid "Invalid declaration"
+msgstr "Nevalida deklaro"
+
+msgid "Duplicate symbol"
+msgstr "Duplikata simbolo"
+
+msgid "Parse error"
+msgstr "Analiza eraro"
+
+msgid "Busy"
+msgstr "Okupita"
+
+msgid "Skip"
+msgstr "Preterpasi"
 
 msgid "Help"
 msgstr "Helpo"
+
+msgid "Bug"
+msgstr "Cimo"
+
+msgid "Printer on fire"
+msgstr "Presilo brulas"
+
+msgid "unset"
+msgstr "Nedefinita"
 
 msgid "Physical"
 msgstr "Fizika"
@@ -139,13 +282,13 @@ msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
 msgstr "Supra ago, 🜂 ĉe Sony, Y ĉe Xbox, X ĉe Nintendo"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
-msgstr "Reen, SELECT ĉe Sony, ⧉ ĉe Xbox, — ĉe Nintendo"
+msgstr "Reen, Sony Elekti, Xbox Reen, Nintendo ‐"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Gvidilo, PS ĉe Sony, Home ĉe Xbox"
 
 msgid "Start, Xbox Menu, Nintendo +"
-msgstr "Komenci, START/OPTIONS ĉe Sony, ☰ ĉe Xbox, + ĉe Nintendo"
+msgstr "Eki, Xbox Menuo, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Maldekstra stirstango, L3 ĉe Sony, L/LS ĉe Xbox"
@@ -237,6 +380,9 @@ msgstr "Elekti"
 
 msgid "Cancel"
 msgstr "Nuligi"
+
+msgid "Close Dialog"
+msgstr "Fermi la dialogujon"
 
 msgid "Focus Next"
 msgstr "Enfokusigi je la sekva"
@@ -709,7 +855,7 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
-"Animacia ludilo ne havas valida radika nodo-vojo, do ne eblas ricevi nomojn "
+"Animacia ludilo ne havas validan radikan nodvojon, do ne eblas ricevi nomojn "
 "de trakoj."
 
 msgid "Anim Clips"
@@ -1142,7 +1288,7 @@ msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "AnimationPlayer ne povas animicii sin mem, nur aliajn animiciilojn."
 
 msgid "property '%s'"
-msgstr "atributo"
+msgstr "atributo '%s'"
 
 msgid "Bezier Default Mode"
 msgstr "Defaŭlta reĝimo por kurbo de Bézier"
@@ -3093,12 +3239,6 @@ msgstr "Ŝargado de la aranĝo de la kromprograma fenestro..."
 
 msgid "Editor layout ready."
 msgstr "La redaktila aranĝo estas preta."
-
-msgid "Save Layout"
-msgstr "Konservi aranĝon"
-
-msgid "Delete Layout"
-msgstr "Forigi aranĝon"
 
 msgid "This scene was never saved."
 msgstr "Vi neniam konservis ĉi tiun scenon."
@@ -5552,6 +5692,12 @@ msgstr "Enporti profilo(j)n"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Administri profilojn de funkciaro de redaktilo"
+
+msgid "Save Layout"
+msgstr "Konservi aranĝon"
+
+msgid "Delete Layout"
+msgstr "Forigi aranĝon"
 
 msgid "General"
 msgstr "Ĝenerala"

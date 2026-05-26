@@ -60,13 +60,14 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Frostcorn <houskam@gasos-ro.cz>, 2026.
 # Marek Poustka <noskrat@gmail.com>, 2026.
+# Jakub Szydlowski <kubkii27@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-02 01:02+0000\n"
-"Last-Translator: Marek Poustka <noskrat@gmail.com>\n"
+"PO-Revision-Date: 2026-05-24 11:13+0000\n"
+"Last-Translator: Jakub Szydlowski <kubkii27@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -74,7 +75,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -5403,12 +5404,6 @@ msgstr "Uložit rozvržení..."
 msgid "Delete Layout..."
 msgstr "Smazat rozvržení..."
 
-msgid "Save Layout"
-msgstr "Uložit rozvržení"
-
-msgid "Delete Layout"
-msgstr "Smazat rozvržení"
-
 msgid "This scene was never saved."
 msgstr "Tato scéna nebyla nikdy uložena."
 
@@ -5820,7 +5815,7 @@ msgid "Invalid Info.plist, no exe name."
 msgstr "Neplatný Info.plist, žádný název exe."
 
 msgid "Invalid Info.plist, no bundle id."
-msgstr "Neplatný Info.plist, žádné ID balíčku."
+msgstr "Neplatný Info.plist, žádné id balíčku."
 
 msgid "Invalid Info.plist, can't load."
 msgstr "Neplatný Info.plist, nelze načíst."
@@ -7627,7 +7622,7 @@ msgid "Dynamically rendered TrueType/OpenType font"
 msgstr "Dynamicky vykreslovaný TrueType/OpenType font"
 
 msgid "Prerendered multichannel(+true) signed distance field"
-msgstr "Předem vykreslené vícekanálové(+true) pole vzdáleností se znaménkem SDF"
+msgstr "Předem vykreslené vícekanálové(+true) pole vzdáleností se znaménkem"
 
 msgid ""
 "Error importing GLSL shader file: '%s'. Open the file in the filesystem dock "
@@ -11706,6 +11701,54 @@ msgstr "Otočení o %f stupňů."
 msgid "Scaling %s."
 msgstr "Škálování %s."
 
+msgid "Viewport Orbit Modifier 1"
+msgstr "Modifikátor obkroužení výřezu 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Modifikátor obkroužení výřezu 2"
+
+msgid "Viewport Orbit Snap Modifier 1"
+msgstr "Modifikátor uchopení obkroužení výřezu 1"
+
+msgid "Viewport Orbit Snap Modifier 2"
+msgstr "Modifikátor uchopení obkroužení výřezu 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Modifikátor posunu výřezu 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Modifikátor posunu výřezu 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Modifikátor přiblížení výřezu 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Modifikátor přiblížení výřezu 2"
+
+msgid "Freelook Left"
+msgstr "Levý volný pohled"
+
+msgid "Freelook Right"
+msgstr "Pravý volný pohled"
+
+msgid "Freelook Forward"
+msgstr "Přední volný pohled"
+
+msgid "Freelook Backwards"
+msgstr "Zadní volný pohled"
+
+msgid "Freelook Up"
+msgstr "Horní volný pohled"
+
+msgid "Freelook Down"
+msgstr "Dolní volný pohled"
+
+msgid "Freelook Speed Modifier"
+msgstr "Modifikátor rychlosti volného pohybu"
+
+msgid "Freelook Slow Modifier"
+msgstr "Modifikátor zpomalení volného pohybu"
+
 msgid "View"
 msgstr "Zobrazení"
 
@@ -11951,54 +11994,6 @@ msgstr "Povolit Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Filmový náhled"
-
-msgid "Viewport Orbit Modifier 1"
-msgstr "Modifikátor obkroužení výřezu 1"
-
-msgid "Viewport Orbit Modifier 2"
-msgstr "Modifikátor obkroužení výřezu 2"
-
-msgid "Viewport Orbit Snap Modifier 1"
-msgstr "Modifikátor uchopení obkroužení výřezu 1"
-
-msgid "Viewport Orbit Snap Modifier 2"
-msgstr "Modifikátor uchopení obkroužení výřezu 2"
-
-msgid "Viewport Pan Modifier 1"
-msgstr "Modifikátor posunu výřezu 1"
-
-msgid "Viewport Pan Modifier 2"
-msgstr "Modifikátor posunu výřezu 2"
-
-msgid "Viewport Zoom Modifier 1"
-msgstr "Modifikátor přiblížení výřezu 1"
-
-msgid "Viewport Zoom Modifier 2"
-msgstr "Modifikátor přiblížení výřezu 2"
-
-msgid "Freelook Left"
-msgstr "Levý volný pohled"
-
-msgid "Freelook Right"
-msgstr "Pravý volný pohled"
-
-msgid "Freelook Forward"
-msgstr "Přední volný pohled"
-
-msgid "Freelook Backwards"
-msgstr "Zadní volný pohled"
-
-msgid "Freelook Up"
-msgstr "Horní volný pohled"
-
-msgid "Freelook Down"
-msgstr "Dolní volný pohled"
-
-msgid "Freelook Speed Modifier"
-msgstr "Modifikátor rychlosti volného pohybu"
-
-msgid "Freelook Slow Modifier"
-msgstr "Modifikátor zpomalení volného pohybu"
 
 msgid "Lock Transformation to X axis"
 msgstr "Uzamknout transformaci na osu X"
@@ -15917,6 +15912,12 @@ msgstr "Nebo zadejte nový název rozvržení."
 msgid "New layout name"
 msgstr "Nový název rozvržení"
 
+msgid "Save Layout"
+msgstr "Uložit rozvržení"
+
+msgid "Delete Layout"
+msgstr "Smazat rozvržení"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Upravit vestavěnou akci: %s"
 
@@ -18171,6 +18172,15 @@ msgstr "Mřížková mapa: Kreslit"
 msgid "GridMap Selection"
 msgstr "Mřížková mapa: Výběr"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Změnit patro mřížky:\n"
+"Předchozí rovina (%s)\n"
+"Další rovina (%s)"
+
 msgid "Previous Floor"
 msgstr "Předchozí patro"
 
@@ -18212,15 +18222,6 @@ msgstr "Z otočení kurzoru"
 
 msgid "Change Grid Floor:"
 msgstr "Změnit patro mřížky:"
-
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Změnit patro mřížky:\n"
-"Předchozí rovina (%s)\n"
-"Další rovina (%s)"
 
 msgid "Filter Meshes"
 msgstr "Filtrovat sítě"

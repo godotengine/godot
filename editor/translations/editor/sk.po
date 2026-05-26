@@ -26,13 +26,14 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Marek J <marek.workspace@gmail.com>, 2026.
 # Martin Sinansky <martin.sinansky@gmail.com>, 2026.
+# Shrek3010 <martinlukac2244@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-18 16:02+0000\n"
-"Last-Translator: Martin Sinansky <martin.sinansky@gmail.com>\n"
+"PO-Revision-Date: 2026-03-02 14:35+0000\n"
+"Last-Translator: Shrek3010 <martinlukac2244@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -40,10 +41,82 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15.2\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 msgid "OK"
 msgstr "OK"
+
+msgid "Failed"
+msgstr "Zlyhal"
+
+msgid "Unavailable"
+msgstr "Nedostupný"
+
+msgid "Unconfigured"
+msgstr "Nekonfigurovaný"
+
+msgid "Unauthorized"
+msgstr "Neoprávnený"
+
+msgid "Parameter out of range"
+msgstr "Parameter nedostupný : %s"
+
+msgid "Out of memory"
+msgstr "Nedostatok pamäte"
+
+msgid "File not found"
+msgstr "Súbor nebol nájdený"
+
+msgid "File: Bad path"
+msgstr "Súbor: Zlá cesta"
+
+msgid "File: Permission denied"
+msgstr "Súbor"
+
+msgid "File already in use"
+msgstr "Súbor už existuje."
+
+msgid "Can't open file"
+msgstr "Nie je možné otvoriť súbor"
+
+msgid "Can't write file"
+msgstr "Súbor sa nevie zapísať"
+
+msgid "Can't read file"
+msgstr "Nie je možné prečítať súbor."
+
+msgid "File unrecognized"
+msgstr "Súbor nerozpoznaný"
+
+msgid "File corrupt"
+msgstr "Súbor skorumpovaný"
+
+msgid "Missing dependencies for file"
+msgstr "Chýbajú závislosti pre súbor"
+
+msgid "End of file"
+msgstr "Koniec súboru"
+
+msgid "Can't open"
+msgstr "Nie je možné otvoriť"
+
+msgid "Can't create"
+msgstr "Nie je možné vytvoriť."
+
+msgid "Query failed"
+msgstr "Žiadosť zlyhala."
+
+msgid "Already in use"
+msgstr "Už sa používa"
+
+msgid "Locked"
+msgstr "Zamknúť"
+
+msgid "Timeout"
+msgstr "Čas vypršal."
+
+msgid "Can't connect"
+msgstr "Nie je možné pripojiť."
 
 msgid "Help"
 msgstr "Pomoc"
@@ -3143,12 +3216,6 @@ msgstr "Scéna '%s' má zničené závislosti:"
 msgid "Clear Recent Scenes"
 msgstr "Vyčistiť Posledné Scény"
 
-msgid "Save Layout"
-msgstr "Uložiť Layout"
-
-msgid "Delete Layout"
-msgstr "Odstrániť Layout"
-
 msgid "Save & Close"
 msgstr "Uložiť & Zatvoriť"
 
@@ -6209,6 +6276,12 @@ msgstr "Importovať Profil(y)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Spravovať Feature Profily Editora"
+
+msgid "Save Layout"
+msgstr "Uložiť Layout"
+
+msgid "Delete Layout"
+msgstr "Odstrániť Layout"
 
 msgid "Editor Settings"
 msgstr "Nastavenia editoru"

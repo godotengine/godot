@@ -36,18 +36,22 @@
 # GREEN MONSTER <racovitavvalentin@gmail.com>, 2025.
 # Alin Gheorghe <yovngra@gmail.com>, 2025.
 # SimonMaracine <simonmaracine@gmail.com>, 2025.
-# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025, 2026.
 # EnderIce2 <enderice2@protonmail.com>, 2025.
 # Gape Gepeto <gapegepeto@gmail.com>, 2026.
 # Rareș Bozga <darwj10011@gmail.com>, 2026.
 # ADV <alex.devien@gmail.com>, 2026.
+# Mihai Andrei <mihoi25@yahoo.com>, 2026.
+# AlexTECPlayz <alextecplayz@vantainteractive.com>, 2026.
+# benq <madalin.lost@gmail.com>, 2026.
+# robbpaun <robbpaun@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-14 05:00+0000\n"
-"Last-Translator: ADV <alex.devien@gmail.com>\n"
+"PO-Revision-Date: 2026-05-21 19:11+0000\n"
+"Last-Translator: robbpaun <robbpaun@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -56,31 +60,136 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "A eșuat"
+
+msgid "Unavailable"
+msgstr "Indisponibil"
+
+msgid "Unconfigured"
+msgstr "Neconfigurat"
+
 msgid "Unauthorized"
 msgstr "Neautorizat"
+
+msgid "Parameter out of range"
+msgstr "Parametru în afara intervalului"
 
 msgid "Out of memory"
 msgstr "Memorie epuizată"
 
+msgid "File not found"
+msgstr "Fișier nu a fost găsit"
+
+msgid "File: Bad drive"
+msgstr "Fișier: Disc defect"
+
+msgid "File: Bad path"
+msgstr "Fișier: Cale greșită"
+
 msgid "File: Permission denied"
 msgstr "Acces respins"
+
+msgid "File already in use"
+msgstr "Fișierul este deja in utilizare"
+
+msgid "Can't open file"
+msgstr "Nu s-a putut deschide fișierul"
+
+msgid "Can't write file"
+msgstr "Nu s-a putut scrie fișierul"
+
+msgid "Can't read file"
+msgstr "Nu s-a putut citi fișierul"
+
+msgid "File unrecognized"
+msgstr "Fișier nerecunoscut"
 
 msgid "File corrupt"
 msgstr "Fișier corupt"
 
+msgid "Missing dependencies for file"
+msgstr "Dependențele fișierului lipsesc"
+
+msgid "End of file"
+msgstr "Sfârșitul fișierului"
+
+msgid "Can't open"
+msgstr "Nu s-a putut deschide"
+
+msgid "Can't create"
+msgstr "Nu se poate crea"
+
+msgid "Query failed"
+msgstr "Cerere eșuată"
+
+msgid "Already in use"
+msgstr "Deja folosit"
+
+msgid "Locked"
+msgstr "Blocat"
+
+msgid "Timeout"
+msgstr "Expirat"
+
+msgid "Can't acquire resource"
+msgstr "Nu pot lua resursa"
+
+msgid "Invalid parameter"
+msgstr "paremetru nevalid."
+
+msgid "Already exists"
+msgstr "Deja există"
+
+msgid "Does not exist"
+msgstr "Nu există"
+
+msgid "Can't read database"
+msgstr "Nu se poate citii baza de date"
+
 msgid "Can't write database"
 msgstr "Nu se poate scrie în baza de date"
+
+msgid "Compilation failed"
+msgstr "Compilare eșuată"
+
+msgid "Method not found"
+msgstr "Metoda nu a fost găsită"
+
+msgid "Link failed"
+msgstr "Legătura a eșuat"
+
+msgid "Script failed"
+msgstr "Scriptul a eșuat"
 
 msgid "Cyclic link detected"
 msgstr "Legătură ciclică detectată"
 
+msgid "Invalid declaration"
+msgstr "Declarație invalidă"
+
+msgid "Duplicate symbol"
+msgstr "Simbol dublicat"
+
+msgid "Busy"
+msgstr "Ocupat"
+
+msgid "Skip"
+msgstr "Sari peste"
+
 msgid "Help"
 msgstr "Ajutor"
+
+msgid "Bug"
+msgstr "Bug"
+
+msgid "Printer on fire"
+msgstr "Printerul a luat foc"
 
 msgid "unset"
 msgstr "Nesetat"
@@ -921,6 +1030,21 @@ msgstr "Salvează Bibliotecă"
 msgid "Make Animation Library Unique: %s"
 msgstr "Fă biblioteca de animații unică: %s"
 
+msgid "Make Animation Unique: %s"
+msgstr "Fă animația unică: %s"
+
+msgid "Save Animation to File: %s"
+msgstr "Salvează animația în fișierul: %s"
+
+msgid "Load Animation into Library: %s"
+msgstr "Încarcă animația în bibliotecă: %s"
+
+msgid "Rename Animation Library: %s"
+msgstr "Redenumește biblioteca de animații: %s"
+
+msgid "Rename Animation: %s"
+msgstr "Redenumește animația: %s"
+
 msgid "Animation Name:"
 msgstr "Nume Animație:"
 
@@ -932,6 +1056,9 @@ msgstr "Salvați"
 
 msgid "Save As"
 msgstr "Salvați Ca"
+
+msgid "Remove Animation Library: %s"
+msgstr "Elimină biblioteca de animații: %s"
 
 msgid "Resource"
 msgstr "Resursă"
@@ -1975,14 +2102,6 @@ msgstr "Descrieri Proprietate"
 msgid "(value)"
 msgstr "(valoare)"
 
-msgid ""
-"There is currently no description for this property. Please help us by "
-"[color=$color][url=$url]contributing one[/url][/color]!"
-msgstr ""
-"Nu există în prezent nici o descriere pentru această proprietate. Te rog "
-"ajută-ne prin a [color = $color] [url = $url] contribui cu una [/ URL] [/ "
-"color]!"
-
 msgid "Editor"
 msgstr "Editor"
 
@@ -2409,12 +2528,6 @@ msgstr "Scena '%s' are dependințe nefuncționale:"
 
 msgid "Clear Recent Scenes"
 msgstr "Curăță Scenele Recente"
-
-msgid "Save Layout"
-msgstr "Salvează Schema"
-
-msgid "Delete Layout"
-msgstr "Șterge Schema"
 
 msgid "Save & Close"
 msgstr "Salvează și închide"
@@ -4172,6 +4285,12 @@ msgstr "Încarcă Profil(e)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Administrează Profilele Ferestrei de Editare"
+
+msgid "Save Layout"
+msgstr "Salvează Schema"
+
+msgid "Delete Layout"
+msgstr "Șterge Schema"
 
 msgid "Editor Settings"
 msgstr "Setări ale Editorului"
