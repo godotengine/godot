@@ -35,8 +35,9 @@
 
 #include <thirdparty/misc/fastlz.h>
 
-#include <cstring>
 #include <zstd.h>
+
+#include <cstring>
 
 #ifdef BROTLI_ENABLED
 #include <brotli/decode.h>

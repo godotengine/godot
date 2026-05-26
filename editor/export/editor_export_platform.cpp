@@ -169,8 +169,7 @@ bool EditorExportPlatform::get_pck_7zip_export_option_visibility(const EditorExp
 		return true;
 	}
 
-	const bool compression_enabled = p_preset->has("binary_format/compression_enabled") ? bool(p_preset->get("binary_format/compression_enabled")) :
-			(p_preset->has("pck_7zip/enabled") ? bool(p_preset->get("pck_7zip/enabled")) : true);
+	const bool compression_enabled = p_preset->has("binary_format/compression_enabled") ? bool(p_preset->get("binary_format/compression_enabled")) : (p_preset->has("pck_7zip/enabled") ? bool(p_preset->get("pck_7zip/enabled")) : true);
 	if (!compression_enabled) {
 		return is_toggle;
 	}
