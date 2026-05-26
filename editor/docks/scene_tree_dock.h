@@ -195,6 +195,8 @@ class SceneTreeDock : public EditorDock {
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
 
+	void _make_owners_map(Node *p_node, Dictionary &r_owners);
+	void _apply_owners_map(Node *p_node, const Dictionary &p_owners);
 	void _set_owners(Node *p_owner, const Array &p_nodes);
 
 	enum ReplaceOwnerMode {
