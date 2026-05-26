@@ -50,6 +50,10 @@ void Math::randomize() {
 	default_rand.randomize();
 }
 
+uint64_t Math::get_seed() {
+	return default_rand.get_seed();
+}
+
 uint32_t Math::rand() {
 	return default_rand.rand();
 }

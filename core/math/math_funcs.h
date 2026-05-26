@@ -680,6 +680,7 @@ uint32_t larger_prime(uint32_t p_val);
 
 void seed(uint64_t p_seed);
 void randomize();
+uint64_t get_seed();
 uint32_t rand_from_seed(uint64_t *p_seed);
 uint32_t rand();
 _ALWAYS_INLINE_ double randd() {
