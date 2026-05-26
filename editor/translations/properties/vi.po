@@ -32,13 +32,16 @@
 # a <anhkietcb2008@gmail.com>, 2024.
 # Đức Anh Nguyễn <ducnah2132k9@gmail.com>, 2025.
 # Orus Or <orus3732@gmail.com>, 2025.
+# Nguyen Ngoc Thai <thaidev247@gmail.com>, 2026.
+# Nam Namcuteee <namcuteeenam@gmail.com>, 2026.
+# Khắc Vinh Vũ <vukhacvinh31@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-10 01:56+0000\n"
-"Last-Translator: Orus Or <orus3732@gmail.com>\n"
+"PO-Revision-Date: 2026-05-06 10:05+0000\n"
+"Last-Translator: Khắc Vinh Vũ <vukhacvinh31@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/vi/>\n"
 "Language: vi\n"
@@ -46,7 +49,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.17.1\n"
 
 msgid "Application"
 msgstr "Ứng dụng"
@@ -95,6 +98,9 @@ msgstr "Tên thư mục người dùng tùy chỉnh"
 
 msgid "Project Settings Override"
 msgstr "Ghi đè thiết đặt dự án"
+
+msgid "Disable Project Settings Override"
+msgstr "Vô hiệu Hoá Ghi đè Thiết đặt Dự án"
 
 msgid "Main Loop Type"
 msgstr "Loại vòng lặp chính"
@@ -194,6 +200,9 @@ msgstr "Kiểm tra Đường dẫn theo dõi không hợp lệ"
 
 msgid "Check Angle Interpolation Type Conflicting"
 msgstr "Kiểm tra loại nội suy góc xung đột"
+
+msgid "Compatibility"
+msgstr "Chế độ Tương thích"
 
 msgid "Audio"
 msgstr "Âm thanh"
@@ -600,9 +609,6 @@ msgstr "Luồng"
 msgid "Easing"
 msgstr "Làm dễ dàng"
 
-msgid "Asset Library"
-msgstr "Thư viện tài nguyên"
-
 msgid "Title"
 msgstr "Đã chọn"
 
@@ -632,6 +638,9 @@ msgstr "Phát hành UUID hồ sơ cung cấp"
 
 msgid "Delete Old Export Files Unconditionally"
 msgstr "Xóa các tệp xuất cũ vô điều kiện"
+
+msgid "Camera"
+msgstr "Camera"
 
 msgid "Plugins"
 msgstr "Tiện ích"
@@ -753,6 +762,9 @@ msgstr "Cỡ trang"
 msgid "Nodes"
 msgstr "Nút"
 
+msgid "Mesh Library"
+msgstr "Thư viện Lưới"
+
 msgid "Import as Skeleton Bones"
 msgstr "Root Scale"
 
@@ -807,14 +819,14 @@ msgstr "Giới hạn"
 msgid "Layout"
 msgstr "Bố cục"
 
+msgid "Fix Alpha Border"
+msgstr "Sửa đường viền Alpha"
+
 msgid "Normal Map"
 msgstr "Bản đồ chuẩn"
 
 msgid "Roughness"
 msgstr "Độ nhám"
-
-msgid "Fix Alpha Border"
-msgstr "Sửa đường viền Alpha"
 
 msgid "HDR as sRGB"
 msgstr "HDR dưới dạng sRGB"
@@ -891,8 +903,20 @@ msgstr "Trình chỉnh sửa"
 msgid "3D Gizmos"
 msgstr "Gizmo 3D"
 
+msgid "Mesh"
+msgstr "Lưới"
+
+msgid "Shapes"
+msgstr "Hình dạng"
+
+msgid "Preview"
+msgstr "Xem thử"
+
 msgid "Interface"
 msgstr "Giao diễn"
+
+msgid "Localization"
+msgstr "Bản địa hoá"
 
 msgid "Editor Language"
 msgstr "Ngôn ngữ trình chỉnh sửa"
@@ -903,11 +927,20 @@ msgstr "Sử dụng luồng"
 msgid "Localize Settings"
 msgstr "Thiết đặt địa phương hoá"
 
+msgid "Docks"
+msgstr "Các bến đỗ"
+
+msgid "Appearance"
+msgstr "Ngoại hình"
+
 msgid "Display Scale"
 msgstr "Tỉ lệ hiển thị"
 
 msgid "Custom Display Scale"
 msgstr "Tỉ lệ hiển thị tuỳ chỉnh"
+
+msgid "Input"
+msgstr "Đầu vào"
 
 msgid "Use Embedded Menu"
 msgstr "Sử dụng Menu nhúng"
@@ -927,6 +960,9 @@ msgstr "Phông chữ chính đậm"
 msgid "Code Font"
 msgstr "Phông mã"
 
+msgid "Behavior"
+msgstr "Hành vi"
+
 msgid "Automatically Open Screenshots"
 msgstr "Tự động mở ảnh chụp màn hình"
 
@@ -944,9 +980,6 @@ msgstr "Cập nhật Liên tục"
 
 msgid "Derive Script Globals by Name"
 msgstr "Dẫn xuất toàn cục tập lệnh theo tên"
-
-msgid "Docks"
-msgstr "Các bến đỗ"
 
 msgid "Scene Tree"
 msgstr "Cây chứa cảnh"
@@ -1080,9 +1113,6 @@ msgstr "Trình soạn thảo"
 msgid "Highlighting"
 msgstr "Tô sáng"
 
-msgid "Appearance"
-msgstr "Ngoại hình"
-
 msgid "Caret"
 msgstr "Vị trí con trỏ"
 
@@ -1130,9 +1160,6 @@ msgstr "Khoảng trắng"
 
 msgid "Line Spacing"
 msgstr "Khoảng cách dòng"
-
-msgid "Behavior"
-msgstr "Hành vi"
 
 msgid "Move Caret on Right Click"
 msgstr "Di chuyển Dấu nháy khi Nhấp chuột phải"
@@ -1226,9 +1253,6 @@ msgstr "AABB"
 
 msgid "Stream Player 3D"
 msgstr "Stream Player 3D"
-
-msgid "Camera"
-msgstr "Camera"
 
 msgid "Decal"
 msgstr "Hình ảnh dán"
@@ -1383,6 +1407,15 @@ msgstr "Proxy HTTP"
 msgid "Host"
 msgstr "Máy chủ"
 
+msgid "Show Native Symbols in Editor"
+msgstr "Hiển thị ký hiệu gốc trong trình soạn thảo"
+
+msgid "Use Thread"
+msgstr "Sử dụng luồng"
+
+msgid "Poll Limit (µsec)"
+msgstr "Giới hạn thăm dò (µgiây)"
+
 msgid "Debugger"
 msgstr "Trình gỡ lỗi"
 
@@ -1403,9 +1436,6 @@ msgstr "Đường dẫn khoá SSH công khai"
 
 msgid "SSH Private Key Path"
 msgstr "Đường dẫn khoá SSH riêng tư"
-
-msgid "Input"
-msgstr "Đầu vào"
 
 msgid "Buffering"
 msgstr "Đệm"
@@ -1581,9 +1611,6 @@ msgstr "Tính toán đường tiếp tuyến"
 msgid "Collision"
 msgstr "Va chạm"
 
-msgid "Mesh"
-msgstr "Lưới"
-
 msgid "Smooth Faces"
 msgstr "Mặt nhẵn"
 
@@ -1628,15 +1655,6 @@ msgstr "GDScript"
 
 msgid "Max Call Stack"
 msgstr "Ngăn xếp cuộc gọi tối đa"
-
-msgid "Show Native Symbols in Editor"
-msgstr "Hiển thị ký hiệu gốc trong trình soạn thảo"
-
-msgid "Use Thread"
-msgstr "Sử dụng luồng"
-
-msgid "Poll Limit (µsec)"
-msgstr "Giới hạn thăm dò (µgiây)"
 
 msgid "glTF"
 msgstr "glTF"
@@ -1748,9 +1766,6 @@ msgstr "Gói S"
 
 msgid "Wrap T"
 msgstr "Gói T"
-
-msgid "Mesh Library"
-msgstr "Thư viện Lưới"
 
 msgid "Cell"
 msgstr "Ô"
@@ -1884,6 +1899,39 @@ msgstr "URL điều khiển IGD"
 msgid "IGD Our Addr"
 msgstr "Địa chỉ của chúng tôi IGD"
 
+msgid "Output Port for Preview"
+msgstr "Cổng đầu ra để xem trước"
+
+msgid "Flags"
+msgstr "Cờ"
+
+msgid "Expression"
+msgstr "Biểu thức"
+
+msgid "Constant"
+msgstr "Hằng số"
+
+msgid "Source"
+msgstr "Nguồn"
+
+msgid "Cube Map"
+msgstr "Bản đồ khối"
+
+msgid "Operator"
+msgstr "Toán tử"
+
+msgid "Function"
+msgstr "Hàm"
+
+msgid "Hint"
+msgstr "Gợi ý"
+
+msgid "Step"
+msgstr "Bước"
+
+msgid "Condition"
+msgstr "Điều kiện"
+
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -1946,9 +1994,6 @@ msgstr "Hiển thị dưới dạng ứng dụng Launcher"
 
 msgid "Allow"
 msgstr "Cho phép"
-
-msgid "Salt"
-msgstr "Salt"
 
 msgid "iOS Deploy"
 msgstr "Triển khai iOS"
@@ -2421,9 +2466,6 @@ msgstr "Fade khoảng cách"
 msgid "Thickness"
 msgstr "Độ dày"
 
-msgid "Flags"
-msgstr "Cờ"
-
 msgid "Billboard"
 msgstr "Biển quảng cáo"
 
@@ -2667,12 +2709,6 @@ msgstr "Đặt lại"
 msgid "Switch"
 msgstr "Chuyển đổi"
 
-msgid "Condition"
-msgstr "Điều kiện"
-
-msgid "Expression"
-msgstr "Biểu thức"
-
 msgid "Current Animation"
 msgstr "Hoạt hình hiện tại"
 
@@ -2714,9 +2750,6 @@ msgstr "Có thể thêm mẫu"
 
 msgid "Constants"
 msgstr "Các hằng số"
-
-msgid "Localization"
-msgstr "Bản địa hoá"
 
 msgid "Localize Numeral System"
 msgstr "Tỷ lệ kéo giãn"
@@ -2825,9 +2858,6 @@ msgstr "ID menu hệ thống"
 
 msgid "Prefer Native Menu"
 msgstr "Ưu tiên Menu gốc"
-
-msgid "Step"
-msgstr "Bước"
 
 msgid "Allow Greater"
 msgstr "Cho phép lớn hơn"
@@ -2951,9 +2981,6 @@ msgstr "Tên nút Bộ phân cách số"
 
 msgid "Node Name Casing"
 msgstr "Tên nút Vỏ"
-
-msgid "Shapes"
-msgstr "Hình dạng"
 
 msgid "Shape Color"
 msgstr "Màu hình dạng"
@@ -3093,9 +3120,6 @@ msgstr "Chiều rộng bản đồ"
 msgid "Item"
 msgstr "Mục"
 
-msgid "Preview"
-msgstr "Xem thử"
-
 msgid "Subdivide Width"
 msgstr "Chiều rộng chia nhỏ"
 
@@ -3185,9 +3209,6 @@ msgstr "Nền"
 
 msgid "Canvas Max Layer"
 msgstr "Lớp Canvas Max"
-
-msgid "Source"
-msgstr "Nguồn"
 
 msgid "Tonemap"
 msgstr "Bản đồ tông màu"
@@ -3297,9 +3318,6 @@ msgstr "ORM"
 msgid "Metallic"
 msgstr "Kim loại"
 
-msgid "Operator"
-msgstr "Toán tử"
-
 msgid "On UV2"
 msgstr "Trên UV2"
 
@@ -3407,21 +3425,6 @@ msgstr "Màu biểu tượng"
 
 msgid "File"
 msgstr "Tệp"
-
-msgid "Output Port for Preview"
-msgstr "Cổng đầu ra để xem trước"
-
-msgid "Constant"
-msgstr "Hằng số"
-
-msgid "Cube Map"
-msgstr "Bản đồ khối"
-
-msgid "Function"
-msgstr "Hàm"
-
-msgid "Hint"
-msgstr "Gợi ý"
 
 msgid "Align to Largest Stylebox"
 msgstr "Căn chỉnh theo hộp kiểu lớn nhất"
@@ -3647,9 +3650,6 @@ msgstr "Msec"
 
 msgid "Room Size"
 msgstr "Kích thước phòng"
-
-msgid "Tap Back Pos"
-msgstr "Tap Back Pos"
 
 msgid "Pan Pullout"
 msgstr "Pan Pullout"

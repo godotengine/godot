@@ -58,16 +58,19 @@
 # Binnaga <polycharacter@gmail.com>, 2024.
 # rion <miyachikozin@gmail.com>, 2025.
 # Bagumeon <bagumelon@gmail.com>, 2025.
-# Viktor Jagebrant <vjagebrant@gmail.com>, 2025.
+# Viktor Jagebrant <vjagebrant@gmail.com>, 2025, 2026.
 # Myeongjin <aranet100@gmail.com>, 2025, 2026.
 # johann carlo florin <join001re2@gmail.com>, 2025.
+# "IndigoCarmine (Yuhei Yamada)" <tamanisikaminai@gmail.com>, 2026.
+# Chikashi Suzuki <underground.resources823@gmail.com>, 2026.
+# shortsun <weekenddamehuman@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-14 21:31+0000\n"
-"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2026-05-19 14:03+0000\n"
+"Last-Translator: shortsun <weekenddamehuman@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -75,7 +78,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15.2\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "Application"
 msgstr "アプリ"
@@ -124,6 +127,9 @@ msgstr "カスタムユーザフォルダ名"
 
 msgid "Project Settings Override"
 msgstr "プロジェクト設定のオーバーライド"
+
+msgid "Disable Project Settings Override"
+msgstr "プロジェクト設定の上書きを無効にする"
 
 msgid "Main Loop Type"
 msgstr "メインループのタイプ"
@@ -227,6 +233,9 @@ msgstr "角度補間タイプの衝突を確認"
 msgid "Compatibility"
 msgstr "互換性"
 
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "デフォルトの親インスタンスの中のMesh Instance 3D"
+
 msgid "Audio"
 msgstr "オーディオ"
 
@@ -253,6 +262,9 @@ msgstr "iOS"
 
 msgid "Session Category"
 msgstr "セッションカテゴリー:"
+
+msgid "Mix with Others"
+msgstr "バックグラウンド音声とミックス"
 
 msgid "Subwindows"
 msgstr "サブウィンドウ"
@@ -797,6 +809,9 @@ msgstr "TCP"
 msgid "Connect Timeout Seconds"
 msgstr "接続タイムアウト秒数"
 
+msgid "Unix"
+msgstr "Unix"
+
 msgid "Packet Peer Stream"
 msgstr "パケットピアストリーム"
 
@@ -890,12 +905,6 @@ msgstr "終点オフセット"
 msgid "Easing"
 msgstr "イージング"
 
-msgid "Asset Library"
-msgstr "アセットライブラリ"
-
-msgid "Available URLs"
-msgstr "有効なURL"
-
 msgid "Debug Adapter"
 msgstr "デバッグアダプター"
 
@@ -910,6 +919,12 @@ msgstr "ブレークポイントの同期"
 
 msgid "Title"
 msgstr "タイトル"
+
+msgid "Global"
+msgstr "グローバル"
+
+msgid "Force Show Icon"
+msgstr "アイコンの表示を強制にする"
 
 msgid "Title Color"
 msgstr "タイトルの色"
@@ -952,6 +967,9 @@ msgstr "追加Plistコンテンツ"
 
 msgid "Delete Old Export Files Unconditionally"
 msgstr "古いエクスポートファイルを常に削除"
+
+msgid "Camera"
+msgstr "カメラ"
 
 msgid "Plugins"
 msgstr "プラグイン"
@@ -1304,6 +1322,9 @@ msgstr "ルートの型"
 msgid "Root Name"
 msgstr "ルートの名前"
 
+msgid "Mesh Library"
+msgstr "メッシュライブラリ"
+
 msgid "Apply Root Scale"
 msgstr "ルートスケールを適用"
 
@@ -1385,11 +1406,17 @@ msgstr "システムフォントのフォールバックを許可"
 msgid "Force Autohinter"
 msgstr "微調整を行う"
 
+msgid "Modulate Color Glyphs"
+msgstr "カラーグリフの色調調整"
+
 msgid "Hinting"
 msgstr "微調整モード"
 
 msgid "Subpixel Positioning"
 msgstr "サブピクセルの配置"
+
+msgid "Keep Rounding Remainders"
+msgstr "端数を切り捨てる"
 
 msgid "Oversampling"
 msgstr "オーバーサンプリング"
@@ -1433,6 +1460,9 @@ msgstr "スケールモード"
 msgid "Delimiter"
 msgstr "区切り文字"
 
+msgid "Unescape Keys"
+msgstr "キーのエスケープ解除"
+
 msgid "Character Ranges"
 msgstr "文字の範囲"
 
@@ -1475,6 +1505,12 @@ msgstr "垂直"
 msgid "Layout"
 msgstr "レイアウト"
 
+msgid "Fix Alpha Border"
+msgstr "アルファ境界を修正"
+
+msgid "Premult Alpha"
+msgstr "乗算済みアルファ"
+
 msgid "Normal Map"
 msgstr "法線マップ"
 
@@ -1501,12 +1537,6 @@ msgstr "青"
 
 msgid "Alpha"
 msgstr "アルファ"
-
-msgid "Fix Alpha Border"
-msgstr "アルファ境界を修正"
-
-msgid "Premult Alpha"
-msgstr "乗算済みアルファ"
 
 msgid "Normal Map Invert Y"
 msgstr "法線マップのYを反転"
@@ -1680,8 +1710,20 @@ msgstr "ギズモの色"
 msgid "Particles Emission Shape"
 msgstr "パーティクル放出シェイプ"
 
+msgid "Mesh"
+msgstr "メッシュ"
+
+msgid "Shapes"
+msgstr "シェイプ"
+
+msgid "Preview"
+msgstr "プレビュー"
+
 msgid "Interface"
 msgstr "インターフェース"
+
+msgid "Localization"
+msgstr "ローカライズ"
 
 msgid "Editor Language"
 msgstr "エディターの言語"
@@ -1689,14 +1731,23 @@ msgstr "エディターの言語"
 msgid "Use Threads"
 msgstr "スレッドを使用"
 
+msgid "Available URLs"
+msgstr "有効なURL"
+
 msgid "Localize Settings"
 msgstr "ローカライズの設定"
+
+msgid "Docks"
+msgstr "ドック"
 
 msgid "Dock Tab Style"
 msgstr "ドックタブのスタイル"
 
 msgid "UI Layout Direction"
 msgstr "UIレイアウトの方向"
+
+msgid "Appearance"
+msgstr "外観"
 
 msgid "Display Scale"
 msgstr "表示スケール"
@@ -1706,6 +1757,9 @@ msgstr "カスタムの表示スケール"
 
 msgid "Editor Screen"
 msgstr "エディター画面"
+
+msgid "Input"
+msgstr "入力"
 
 msgid "Tablet Driver"
 msgstr "タブレットドライバー"
@@ -1724,6 +1778,12 @@ msgstr "ネイティブのファイルダイアログを使用"
 
 msgid "Expand to Title"
 msgstr "タイトルまで展開"
+
+msgid "Main Font Size"
+msgstr "標準フォントサイズ"
+
+msgid "Code Font Size"
+msgstr "コードのフォントサイズ"
 
 msgid "Code Font Contextual Ligatures"
 msgstr "コードフォントコンテキスト合字"
@@ -1751,6 +1811,9 @@ msgstr "メインの太字フォント"
 
 msgid "Code Font"
 msgstr "コードのフォント"
+
+msgid "Behavior"
+msgstr "ビヘイビア"
 
 msgid "Separate Distraction Mode"
 msgstr "集中モードを分離する"
@@ -1794,14 +1857,8 @@ msgstr "継続的に更新"
 msgid "Collapse Main Menu"
 msgstr "メインメニューを折りたたむ"
 
-msgid "Show Scene Tree Root Selection"
-msgstr "シーンツリーのルート選択対象を表示"
-
 msgid "Derive Script Globals by Name"
 msgstr "名前からスクリプト内のグローバルスコープを推論する"
-
-msgid "Docks"
-msgstr "ドック"
 
 msgid "Scene Tree"
 msgstr "シーンツリー"
@@ -2085,9 +2142,6 @@ msgstr "警告マーカーのタグ"
 msgid "Notice List"
 msgstr "情報マーカーのタグ"
 
-msgid "Appearance"
-msgstr "外観"
-
 msgid "Enable Inline Color Picker"
 msgstr "コード内のカラーピッカーを有効にする"
 
@@ -2165,9 +2219,6 @@ msgstr "スペースを描画"
 
 msgid "Line Spacing"
 msgstr "行間隔"
-
-msgid "Behavior"
-msgstr "ビヘイビア"
 
 msgid "Move Caret on Right Click"
 msgstr "右クリックでキャレットを移動"
@@ -2336,9 +2387,6 @@ msgstr "AABB"
 
 msgid "Stream Player 3D"
 msgstr "ストリームプレイヤー3D"
-
-msgid "Camera"
-msgstr "カメラ"
 
 msgid "Decal"
 msgstr "デカール"
@@ -2661,6 +2709,15 @@ msgstr "エディターのTLS証明書"
 msgid "Remote Host"
 msgstr "リモートホスト"
 
+msgid "Language Server"
+msgstr "言語サーバー"
+
+msgid "Enable Smart Resolve"
+msgstr "Smart Resolveを有効化"
+
+msgid "Use Thread"
+msgstr "スレッドを使用"
+
 msgid "Debugger"
 msgstr "デバッガー"
 
@@ -2693,9 +2750,6 @@ msgstr "SSH 公開鍵パス"
 
 msgid "SSH Private Key Path"
 msgstr "SSH 秘密鍵パス"
-
-msgid "Input"
-msgstr "入力"
 
 msgid "Buffering"
 msgstr "バッファリング"
@@ -3015,9 +3069,6 @@ msgstr "コリジョンレイヤー"
 msgid "Collision Mask"
 msgstr "コリジョンマスク"
 
-msgid "Mesh"
-msgstr "メッシュ"
-
 msgid "Material"
 msgstr "マテリアル"
 
@@ -3059,15 +3110,6 @@ msgstr "GDScript"
 
 msgid "Max Call Stack"
 msgstr "最大コールスタック数"
-
-msgid "Language Server"
-msgstr "言語サーバー"
-
-msgid "Enable Smart Resolve"
-msgstr "Smart Resolveを有効化"
-
-msgid "Use Thread"
-msgstr "スレッドを使用"
 
 msgid "Copyright"
 msgstr "著作権"
@@ -3270,9 +3312,6 @@ msgstr "横のラップ"
 msgid "Wrap T"
 msgstr "縦のラップ"
 
-msgid "Mesh Library"
-msgstr "メッシュライブラリ"
-
 msgid "Physics Material"
 msgstr "物理マテリアル"
 
@@ -3426,6 +3465,39 @@ msgstr "名前"
 msgid "Strings"
 msgstr "文字列"
 
+msgid "Flags"
+msgstr "フラグ"
+
+msgid "Expression"
+msgstr "式"
+
+msgid "Constant"
+msgstr "コンスタント"
+
+msgid "Source"
+msgstr "ソース"
+
+msgid "Operator"
+msgstr "演算子"
+
+msgid "Function"
+msgstr "関数"
+
+msgid "Step"
+msgstr "ステップ"
+
+msgid "Condition"
+msgstr "条件"
+
+msgid "Use All Surfaces"
+msgstr "すべてのサーフェスを使用する"
+
+msgid "Surface Index"
+msgstr "サーフェスインデックス"
+
+msgid "Degrees Mode"
+msgstr "角度モード"
+
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -3455,6 +3527,9 @@ msgstr "Java SDKパス"
 
 msgid "Android SDK Path"
 msgstr "Android SDKパス"
+
+msgid "Background Color"
+msgstr "背景色"
 
 msgid "Launcher Icons"
 msgstr "ランチャーアイコン"
@@ -3531,9 +3606,6 @@ msgstr "大サイズ対応"
 msgid "Support Xlarge"
 msgstr "特大サイズ対応"
 
-msgid "Background Color"
-msgstr "背景色"
-
 msgid "User Data Backup"
 msgstr "ユーザーデータのバックアップ"
 
@@ -3542,15 +3614,6 @@ msgstr "コマンドライン"
 
 msgid "Extra Args"
 msgstr "追加の引数"
-
-msgid "APK Expansion"
-msgstr "APK拡張"
-
-msgid "Salt"
-msgstr "ソルト"
-
-msgid "Public Key"
-msgstr "公開鍵"
 
 msgid "Permissions"
 msgstr "権限"
@@ -4282,9 +4345,6 @@ msgstr "アルベドミックス"
 msgid "Deterministic"
 msgstr "決定的"
 
-msgid "Flags"
-msgstr "フラグ"
-
 msgid "Text"
 msgstr "テキスト"
 
@@ -4528,12 +4588,6 @@ msgstr "スイッチモード"
 msgid "Advance"
 msgstr "進行"
 
-msgid "Condition"
-msgstr "条件"
-
-msgid "Expression"
-msgstr "式"
-
 msgid "Current Animation"
 msgstr "現在のアニメーション"
 
@@ -4578,9 +4632,6 @@ msgstr "インデント"
 
 msgid "Theme Overrides"
 msgstr "テーマのオーバーライド"
-
-msgid "Localization"
-msgstr "ローカライズ"
 
 msgid "Tooltip"
 msgstr "ツールチップ"
@@ -4672,9 +4723,6 @@ msgstr "最小値"
 msgid "Max Value"
 msgstr "最大値"
 
-msgid "Step"
-msgstr "ステップ"
-
 msgid "Page"
 msgstr "ページ"
 
@@ -4761,9 +4809,6 @@ msgstr "ノード名の命名規則"
 
 msgid "Group"
 msgstr "グループ"
-
-msgid "Shapes"
-msgstr "シェイプ"
 
 msgid "Shape Color"
 msgstr "シェイプ色"
@@ -4927,9 +4972,6 @@ msgstr "距離"
 msgid "Item"
 msgstr "アイテム"
 
-msgid "Preview"
-msgstr "プレビュー"
-
 msgid "Add UV2"
 msgstr "UV2を追加"
 
@@ -5058,9 +5100,6 @@ msgstr "背景"
 
 msgid "Ambient Light"
 msgstr "環境光"
-
-msgid "Source"
-msgstr "ソース"
 
 msgid "Tonemap"
 msgstr "トーンマップ"
@@ -5202,9 +5241,6 @@ msgstr "メタリック"
 
 msgid "Texture Channel"
 msgstr "テクスチャチャンネル"
-
-msgid "Operator"
-msgstr "演算子"
 
 msgid "Bent Normal Map"
 msgstr "ベント法線マップ"
@@ -5400,21 +5436,6 @@ msgstr "メンバー変数の色"
 
 msgid "File"
 msgstr "ファイル"
-
-msgid "Constant"
-msgstr "コンスタント"
-
-msgid "Function"
-msgstr "関数"
-
-msgid "Use All Surfaces"
-msgstr "すべてのサーフェスを使用する"
-
-msgid "Surface Index"
-msgstr "サーフェスインデックス"
-
-msgid "Degrees Mode"
-msgstr "角度モード"
 
 msgid "Font Pressed Color"
 msgstr "フォントの押下色"

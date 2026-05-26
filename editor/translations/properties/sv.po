@@ -41,7 +41,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-22 09:33+0000\n"
+"PO-Revision-Date: 2026-02-18 18:10+0000\n"
 "Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/sv/>\n"
@@ -50,7 +50,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 msgid "Application"
 msgstr "Applikation"
@@ -727,6 +727,9 @@ msgstr "Big Endian"
 msgid "Blocking Mode Enabled"
 msgstr "Blockeringsläge Aktiverat"
 
+msgid "Connection"
+msgstr "Anslutning"
+
 msgid "Read Chunk Size"
 msgstr "Läs segmentstorlek"
 
@@ -916,12 +919,6 @@ msgstr "Slutförskjutning"
 msgid "Easing"
 msgstr "Lätta"
 
-msgid "Asset Library"
-msgstr "Tillgångsbibliotek"
-
-msgid "Available URLs"
-msgstr "Tillgängliga URL:er"
-
 msgid "Debug Adapter"
 msgstr "Felsökningsadapter"
 
@@ -1032,6 +1029,9 @@ msgstr "Exportera endast projektet"
 
 msgid "Delete Old Export Files Unconditionally"
 msgstr "Ta bort gamla exportfiler ovillkorligen"
+
+msgid "Camera"
+msgstr "Kamera"
 
 msgid "Plugins"
 msgstr "Plugins"
@@ -1447,6 +1447,9 @@ msgstr "Rotnamn"
 msgid "Root Script"
 msgstr "Rotskript"
 
+msgid "Mesh Library"
+msgstr "Mesh‑bibliotek"
+
 msgid "Apply Root Scale"
 msgstr "Tillämpa rotskala"
 
@@ -1523,7 +1526,7 @@ msgid "Disable Embedded Bitmaps"
 msgstr "Inaktivera inbäddade bitmaps"
 
 msgid "Multichannel Signed Distance Field"
-msgstr "Flerkanalig signed distance field (MSDF)"
+msgstr "Flerkanalig Signed Distance Field (MSDF)"
 
 msgid "MSDF Pixel Range"
 msgstr "MSDF‑pixelintervall"
@@ -1675,6 +1678,12 @@ msgstr "Mättnad"
 msgid "Color Map"
 msgstr "Färgkarta"
 
+msgid "Fix Alpha Border"
+msgstr "Åtgärda alpha-kant"
+
+msgid "Premult Alpha"
+msgstr "Premultiplicerad alfa"
+
 msgid "Normal Map"
 msgstr "Normalkarta"
 
@@ -1701,12 +1710,6 @@ msgstr "Blå"
 
 msgid "Alpha"
 msgstr "Alpha"
-
-msgid "Fix Alpha Border"
-msgstr "Åtgärda alpha-kant"
-
-msgid "Premult Alpha"
-msgstr "Premultiplicerad alfa"
 
 msgid "Normal Map Invert Y"
 msgstr "Normalkarta: Invertera Y"
@@ -1919,8 +1922,35 @@ msgstr "Gizmo‑färger"
 msgid "Particles Emission Shape"
 msgstr "Partiklars emissionsform"
 
+msgid "Mesh"
+msgstr "Mesh"
+
+msgid "Mesh Transform"
+msgstr "Mesh-transform"
+
+msgid "Mesh Cast Shadow"
+msgstr "Mesh – Skuggkastning"
+
+msgid "Shapes"
+msgstr "Former"
+
+msgid "Navigation Mesh"
+msgstr "Navigeringsnät"
+
+msgid "Navigation Mesh Transform"
+msgstr "Navigationsmesh‑transform"
+
+msgid "Navigation Layers"
+msgstr "Navigeringslager"
+
+msgid "Preview"
+msgstr "Förhandsgranska"
+
 msgid "Interface"
 msgstr "Interface"
+
+msgid "Localization"
+msgstr "Lokalisering"
 
 msgid "Editor Language"
 msgstr "Editorspråk"
@@ -1928,8 +1958,14 @@ msgstr "Editorspråk"
 msgid "Use Threads"
 msgstr "Använd trådar"
 
+msgid "Available URLs"
+msgstr "Tillgängliga URL:er"
+
 msgid "Localize Settings"
 msgstr "Lokalisera inställningar"
+
+msgid "Docks"
+msgstr "Anslutningar"
 
 msgid "Dock Tab Style"
 msgstr "Dockflikstil"
@@ -1940,6 +1976,9 @@ msgstr "Stil för nederdockans flik"
 msgid "UI Layout Direction"
 msgstr "UI‑layoutens riktning"
 
+msgid "Appearance"
+msgstr "Utseende"
+
 msgid "Display Scale"
 msgstr "Skalning för visning"
 
@@ -1949,14 +1988,14 @@ msgstr "Anpassad visningsskalning"
 msgid "Editor Screen"
 msgstr "Editor‑skärm"
 
+msgid "Input"
+msgstr "Input"
+
 msgid "Tablet Driver"
 msgstr "Drivrutin för tablet"
 
 msgid "Project Manager Screen"
 msgstr "Projekhanterarskärm"
-
-msgid "Connection"
-msgstr "Anslutning"
 
 msgid "Check for Updates"
 msgstr "Sök efter uppdateringar"
@@ -2015,6 +2054,9 @@ msgstr "Kodtypsnitt"
 msgid "Dragging Hover Wait Seconds"
 msgstr "Väntetid i sekunder vid hovring under dragning"
 
+msgid "Behavior"
+msgstr "Beteende"
+
 msgid "Separate Distraction Mode"
 msgstr "Separat störningsfritt läge"
 
@@ -2060,14 +2102,8 @@ msgstr "Uppdatera kontinuerligt"
 msgid "Collapse Main Menu"
 msgstr "Fäll ihop huvudmenyn"
 
-msgid "Show Scene Tree Root Selection"
-msgstr "Visa rotval i scen­trädet"
-
 msgid "Derive Script Globals by Name"
 msgstr "Härled skript‑globala variabler efter namn"
-
-msgid "Docks"
-msgstr "Anslutningar"
 
 msgid "Scene Tree"
 msgstr "Scenträd"
@@ -2402,9 +2438,6 @@ msgstr "Varningslista"
 msgid "Notice List"
 msgstr "Meddelandelista"
 
-msgid "Appearance"
-msgstr "Utseende"
-
 msgid "Enable Inline Color Picker"
 msgstr "Aktivera inbyggd färgväljare"
 
@@ -2482,9 +2515,6 @@ msgstr "Rita ut mellanslag"
 
 msgid "Line Spacing"
 msgstr "Radavstånd"
-
-msgid "Behavior"
-msgstr "Beteende"
 
 msgid "Empty Selection Clipboard"
 msgstr "Urklipp vid tom markering"
@@ -2695,9 +2725,6 @@ msgstr "AABB"
 
 msgid "Stream Player 3D"
 msgstr "Strömspelare 3D"
-
-msgid "Camera"
-msgstr "Kamera"
 
 msgid "Decal"
 msgstr "Dekal"
@@ -3131,6 +3158,21 @@ msgstr "Aktivera TLS v1"
 msgid "Remote Host"
 msgstr "Fjärrvärd"
 
+msgid "Language Server"
+msgstr "Språkserver"
+
+msgid "Enable Smart Resolve"
+msgstr "Aktivera smart upplösning"
+
+msgid "Show Native Symbols in Editor"
+msgstr "Visa inbyggda symboler i editorn"
+
+msgid "Use Thread"
+msgstr "Använd tråd"
+
+msgid "Poll Limit (µsec)"
+msgstr "Poll‑gräns (µs)"
+
 msgid "Debugger"
 msgstr "Avlusare"
 
@@ -3169,9 +3211,6 @@ msgstr "SSH publik nyckelsökväg"
 
 msgid "SSH Private Key Path"
 msgstr "SSH privat nyckelsökväg"
-
-msgid "Input"
-msgstr "Input"
 
 msgid "Buffering"
 msgstr "Buffring"
@@ -3713,9 +3752,6 @@ msgstr "Kollisionsprioritet"
 msgid "Flip Faces"
 msgstr "Vänd ytor"
 
-msgid "Mesh"
-msgstr "Mesh"
-
 msgid "Material"
 msgstr "Material"
 
@@ -3949,21 +3985,6 @@ msgstr "Hämtar nod som standard utan onready"
 
 msgid "Onready With Export"
 msgstr "Onready med export"
-
-msgid "Language Server"
-msgstr "Språkserver"
-
-msgid "Enable Smart Resolve"
-msgstr "Aktivera smart upplösning"
-
-msgid "Show Native Symbols in Editor"
-msgstr "Visa inbyggda symboler i editorn"
-
-msgid "Use Thread"
-msgstr "Använd tråd"
-
-msgid "Poll Limit (µsec)"
-msgstr "Poll‑gräns (µs)"
 
 msgid "Copyright"
 msgstr "Copyright"
@@ -4276,9 +4297,6 @@ msgstr "Omslag S"
 
 msgid "Wrap T"
 msgstr "Omslag T"
-
-msgid "Mesh Library"
-msgstr "Mesh‑bibliotek"
 
 msgid "Physics Material"
 msgstr "Fysikmaterial"
@@ -4856,6 +4874,129 @@ msgstr "IGD vår adress"
 msgid "IGD Status"
 msgstr "IGD‑status"
 
+msgid "Output Port for Preview"
+msgstr "Utgångsport för förhandsvisning"
+
+msgid "Modes"
+msgstr "Lägen"
+
+msgid "Flags"
+msgstr "Flaggor"
+
+msgid "Stencil"
+msgstr "Stencil"
+
+msgid "Reference"
+msgstr "Referens"
+
+msgid "Stencil Modes"
+msgstr "Stencil-lägen"
+
+msgid "Stencil Flags"
+msgstr "Stencil-flaggor"
+
+msgid "Input Name"
+msgstr "Inmatningsnamn"
+
+msgid "Parameter Name"
+msgstr "Parameternamn"
+
+msgid "Qualifier"
+msgstr "Kvalificerare"
+
+msgid "Instance Index"
+msgstr "Instansindex"
+
+msgid "Tint Color Enabled"
+msgstr "Toning aktiverad"
+
+msgid "Tint Color"
+msgstr "Toningens färg"
+
+msgid "Autoshrink"
+msgstr "Automatisk krympning"
+
+msgid "Expression"
+msgstr "Uttryck"
+
+msgid "Varying Name"
+msgstr "Varying-namn"
+
+msgid "Varying Type"
+msgstr "Varying-typ"
+
+msgid "Op Type"
+msgstr "Op-typ"
+
+msgid "Constant"
+msgstr "Konstant"
+
+msgid "Source"
+msgstr "Källa"
+
+msgid "Texture Type"
+msgstr "Texturtyp"
+
+msgid "Texture Array"
+msgstr "Texturarray"
+
+msgid "Cube Map"
+msgstr "Kubkarta"
+
+msgid "Operator"
+msgstr "Operator"
+
+msgid "Function"
+msgstr "Funktion"
+
+msgid "Hint"
+msgstr "Ledtråd"
+
+msgid "Step"
+msgstr "Steg"
+
+msgid "Default Value Enabled"
+msgstr "Standardvärde aktiverat"
+
+msgid "Default Value"
+msgstr "Standardvärde"
+
+msgid "Enum Names"
+msgstr "Enum-namn"
+
+msgid "Color Default"
+msgstr "Standardfärg"
+
+msgid "Texture Filter"
+msgstr "Texturfilter"
+
+msgid "Texture Repeat"
+msgstr "Texturupprepning"
+
+msgid "Texture Source"
+msgstr "Texturkälla"
+
+msgid "Condition"
+msgstr "Villkor"
+
+msgid "Billboard Type"
+msgstr "Billboard-typ"
+
+msgid "Keep Scale"
+msgstr "Behåll skala"
+
+msgid "Mode 2D"
+msgstr "Läge 2D"
+
+msgid "Use All Surfaces"
+msgstr "Använd alla ytor"
+
+msgid "Surface Index"
+msgstr "Ytindex"
+
+msgid "Degrees Mode"
+msgstr "Gradläge"
+
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -4954,6 +5095,9 @@ msgstr "Använd Wi‑Fi för fjärrdebuggning"
 
 msgid "Wi-Fi Remote Debug Host"
 msgstr "Värd för fjärrdebuggning via Wi‑Fi"
+
+msgid "Background Color"
+msgstr "Bakgrundsfärg"
 
 msgid "Launcher Icons"
 msgstr "Startikoner"
@@ -5078,9 +5222,6 @@ msgstr "Stöd för normal"
 msgid "Support Xlarge"
 msgstr "Stöd för extra stor"
 
-msgid "Background Color"
-msgstr "Bakgrundsfärg"
-
 msgid "User Data Backup"
 msgstr "Säkerhetskopiering av användardata"
 
@@ -5092,15 +5233,6 @@ msgstr "Kommandorad"
 
 msgid "Extra Args"
 msgstr "Extra argument"
-
-msgid "APK Expansion"
-msgstr "APK‑expansion"
-
-msgid "Salt"
-msgstr "Salt"
-
-msgid "Public Key"
-msgstr "Publik nyckel"
 
 msgid "Permissions"
 msgstr "Rättigheter"
@@ -6005,9 +6137,6 @@ msgstr "Önskat avstånd till mål"
 msgid "Path Max Distance"
 msgstr "Maximalt vägavstånd"
 
-msgid "Navigation Layers"
-msgstr "Navigeringslager"
-
 msgid "Pathfinding Algorithm"
 msgstr "Sökvägsalgoritm"
 
@@ -6739,9 +6868,6 @@ msgstr "Deterministisk"
 msgid "Pixel Size"
 msgstr "Pixelstorlek"
 
-msgid "Flags"
-msgstr "Flaggor"
-
 msgid "Billboard"
 msgstr "Billboard"
 
@@ -6771,9 +6897,6 @@ msgstr "Alfa‑kantutjämningsläge"
 
 msgid "Alpha Antialiasing Edge"
 msgstr "Alfa‑kantutjämningskant"
-
-msgid "Texture Filter"
-msgstr "Texturfilter"
 
 msgid "Render Priority"
 msgstr "Renderingsprioritet"
@@ -7065,9 +7188,6 @@ msgstr "Behåll Y‑hastighet"
 
 msgid "NavigationMesh"
 msgstr "NavigationMesh"
-
-msgid "Navigation Mesh"
-msgstr "Navigeringsnät"
 
 msgid "Quaternion"
 msgstr "Kvaternion"
@@ -7693,12 +7813,6 @@ msgstr "Växlingsläge"
 msgid "Advance"
 msgstr "Avancera"
 
-msgid "Condition"
-msgstr "Villkor"
-
-msgid "Expression"
-msgstr "Uttryck"
-
 msgid "State Machine Type"
 msgstr "Tillståndsmaskintyp"
 
@@ -7915,14 +8029,11 @@ msgstr "Typsnittsstorlekar"
 msgid "Styles"
 msgstr "Stilar"
 
-msgid "Clip Contents"
-msgstr "Klipp innehåll"
-
 msgid "Custom Minimum Size"
 msgstr "Anpassad minimistorlek"
 
-msgid "Layout Direction"
-msgstr "Layout‑riktning"
+msgid "Clip Contents"
+msgstr "Klipp innehåll"
 
 msgid "Layout Mode"
 msgstr "Layout‑läge"
@@ -7951,11 +8062,11 @@ msgstr "Container‑storlekshantering"
 msgid "Stretch Ratio"
 msgstr "Sträckningsförhållande"
 
-msgid "Localization"
-msgstr "Lokalisering"
-
 msgid "Localize Numeral System"
 msgstr "Lokalisera talsystem"
+
+msgid "Layout Direction"
+msgstr "Layout‑riktning"
 
 msgid "Tooltip"
 msgstr "Verktygstips"
@@ -8184,12 +8295,6 @@ msgstr "Autoshrink‑marginal"
 
 msgid "Drag Margin"
 msgstr "Dragmarginal"
-
-msgid "Tint Color Enabled"
-msgstr "Toning aktiverad"
-
-msgid "Tint Color"
-msgstr "Toningens färg"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "Ignorera ogiltig kopplingstyp"
@@ -8431,9 +8536,6 @@ msgstr "Minimivärde"
 msgid "Max Value"
 msgstr "Maximivärde"
 
-msgid "Step"
-msgstr "Steg"
-
 msgid "Page"
 msgstr "Sida"
 
@@ -8655,9 +8757,6 @@ msgstr "Flikarnas position"
 
 msgid "Tabs Visible"
 msgstr "Flikar synliga"
-
-msgid "All Tabs in Front"
-msgstr "Alla flikar längst fram"
 
 msgid "Use Hidden Tabs for Min Size"
 msgstr "Använd dolda flikar för minsta storlek"
@@ -8912,9 +9011,6 @@ msgstr "Navigations‑debughint"
 msgid "Multiplayer Poll"
 msgstr "Multiplayer‑poll"
 
-msgid "Shapes"
-msgstr "Former"
-
 msgid "Shape Color"
 msgstr "Formfärg"
 
@@ -9133,6 +9229,9 @@ msgstr "Storlek 2D‑override"
 
 msgid "Size 2D Override Stretch"
 msgstr "Storlek 2D‑override stretch"
+
+msgid "View Count"
+msgstr "Visningsantal"
 
 msgid "Render Target"
 msgstr "Render Target"
@@ -9452,18 +9551,6 @@ msgstr "Kartdata"
 msgid "Item"
 msgstr "Item"
 
-msgid "Mesh Transform"
-msgstr "Mesh-transform"
-
-msgid "Mesh Cast Shadow"
-msgstr "Mesh – Skuggkastning"
-
-msgid "Navigation Mesh Transform"
-msgstr "Navigationsmesh‑transform"
-
-msgid "Preview"
-msgstr "Förhandsgranska"
-
 msgid "Add UV2"
 msgstr "Lägg till UV2"
 
@@ -9754,9 +9841,6 @@ msgstr "Anpassat synfält"
 
 msgid "Ambient Light"
 msgstr "Omgivningsljus"
-
-msgid "Source"
-msgstr "Källa"
 
 msgid "Sky Contribution"
 msgstr "Himmelbidrag"
@@ -10064,9 +10148,6 @@ msgstr "Metallisk"
 msgid "Texture Channel"
 msgstr "Texturkanal"
 
-msgid "Operator"
-msgstr "Operator"
-
 msgid "On UV2"
 msgstr "På UV2"
 
@@ -10151,9 +10232,6 @@ msgstr "Inaktivera ta emot skuggor"
 msgid "Shadow to Opacity"
 msgstr "Skugga till opacitet"
 
-msgid "Keep Scale"
-msgstr "Behåll skala"
-
 msgid "Particles Anim"
 msgstr "Partikelanimation"
 
@@ -10196,14 +10274,8 @@ msgstr "MSDF"
 msgid "Pixel Range"
 msgstr "Pixelintervall"
 
-msgid "Stencil"
-msgstr "Stencil"
-
 msgid "Compare"
 msgstr "Jämför"
-
-msgid "Reference"
-msgstr "Referens"
 
 msgid "Outline Thickness"
 msgstr "Konturtjocklek"
@@ -10522,93 +10594,6 @@ msgstr "Standard fontstorlek"
 
 msgid "File"
 msgstr "Fil"
-
-msgid "Output Port for Preview"
-msgstr "Utgångsport för förhandsvisning"
-
-msgid "Modes"
-msgstr "Lägen"
-
-msgid "Stencil Modes"
-msgstr "Stencil-lägen"
-
-msgid "Stencil Flags"
-msgstr "Stencil-flaggor"
-
-msgid "Input Name"
-msgstr "Inmatningsnamn"
-
-msgid "Parameter Name"
-msgstr "Parameternamn"
-
-msgid "Qualifier"
-msgstr "Kvalificerare"
-
-msgid "Instance Index"
-msgstr "Instansindex"
-
-msgid "Autoshrink"
-msgstr "Automatisk krympning"
-
-msgid "Varying Name"
-msgstr "Varying-namn"
-
-msgid "Varying Type"
-msgstr "Varying-typ"
-
-msgid "Op Type"
-msgstr "Op-typ"
-
-msgid "Constant"
-msgstr "Konstant"
-
-msgid "Texture Type"
-msgstr "Texturtyp"
-
-msgid "Texture Array"
-msgstr "Texturarray"
-
-msgid "Cube Map"
-msgstr "Kubkarta"
-
-msgid "Function"
-msgstr "Funktion"
-
-msgid "Hint"
-msgstr "Ledtråd"
-
-msgid "Default Value Enabled"
-msgstr "Standardvärde aktiverat"
-
-msgid "Default Value"
-msgstr "Standardvärde"
-
-msgid "Enum Names"
-msgstr "Enum-namn"
-
-msgid "Color Default"
-msgstr "Standardfärg"
-
-msgid "Texture Repeat"
-msgstr "Texturupprepning"
-
-msgid "Texture Source"
-msgstr "Texturkälla"
-
-msgid "Billboard Type"
-msgstr "Billboard-typ"
-
-msgid "Mode 2D"
-msgstr "Läge 2D"
-
-msgid "Use All Surfaces"
-msgstr "Använd alla ytor"
-
-msgid "Surface Index"
-msgstr "Ytindex"
-
-msgid "Degrees Mode"
-msgstr "Gradläge"
 
 msgid "Font Pressed Color"
 msgstr "Fontfärg (nedtryckt)"
@@ -11834,9 +11819,6 @@ msgstr "Rumsstorlek"
 msgid "High-pass"
 msgstr "Högpassfilter"
 
-msgid "Tap Back Pos"
-msgstr "Avläsningsposition"
-
 msgid "Pan Pullout"
 msgstr "Panoramadifferens"
 
@@ -12533,9 +12515,6 @@ msgstr "Intern storlek"
 msgid "Target Size"
 msgstr "Målstorlek"
 
-msgid "View Count"
-msgstr "Visningsantal"
-
 msgid "Default Font Antialiasing"
 msgstr "Standardtypsnittets kantutjämning"
 
@@ -12546,7 +12525,7 @@ msgid "Default Font Subpixel Positioning"
 msgstr "Standardtypsnittets subpixel‑positionering"
 
 msgid "Default Font Multichannel Signed Distance Field"
-msgstr "Standardtypsnittets multikanal‑signed distance field (MSDF)"
+msgstr "Standardtypsnitt för Multikanal‑Signed Distance Field (MSDF)"
 
 msgid "Default Font Generate Mipmaps"
 msgstr "Generera mipmaps för standardtypsnitt"
