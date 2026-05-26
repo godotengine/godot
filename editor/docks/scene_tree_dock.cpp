@@ -1955,6 +1955,21 @@ void SceneTreeDock::_node_renamed() {
 	_node_selected();
 }
 
+void SceneTreeDock::_make_owners_map(Node *p_node, Dictionary &r_owners) {
+	r_owners[p_node] = p_node->get_owner();
+	for (Node *child : p_node->iterate_children()) {
+		_make_owners_map(child, r_owners);
+	}
+}
+
+void SceneTreeDock::_apply_owners_map(Node *p_node, const Dictionary &p_owners) {
+	Node *owner = Object::cast_to<Node>(p_owners[p_node]);
+	p_node->set_owner(owner);
+	for (Node *child : p_node->iterate_children()) {
+		_apply_owners_map(child, p_owners);
+	}
+}
+
 void SceneTreeDock::_set_owners(Node *p_owner, const Array &p_nodes) {
 	for (int i = 0; i < p_nodes.size(); i++) {
 		Node *n = Object::cast_to<Node>(p_nodes[i]);
@@ -4495,7 +4510,7 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 			// When copying, all nodes that should have an owner assigned here were given nullptr as an owner
 			// and added to the node_clipboard_edited_scene_owned list.
 			if (d != dup && E2.key->get_owner() == nullptr) {
-				if (node_clipboard_edited_scene_owned.find(const_cast<Node *>(E2.key))) {
+				if (node_clipboard_edited_scene_owned.has(const_cast<Node *>(E2.key))) {
 					ur->add_do_method(d, "set_owner", owner);
 				}
 			}
@@ -4533,14 +4548,20 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 
 void SceneTreeDock::paste_node_as_replacement() {
 	List<Node *> selected_node_list = editor_selection->get_top_selected_node_list();
+	Node *clipboard_node = node_clipboard.front()->get();
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Paste Node(s) as Replacement"), UndoRedo::MERGE_DISABLE, edited_scene);
+
 	for (Node *selected : selected_node_list) {
-		Node *clipboard_node = node_clipboard.front()->get();
 		HashMap<const Node *, Node *> duplimap;
 		Node *new_node = clipboard_node->duplicate_from_editor(duplimap);
 		if (!new_node) {
 			continue;
 		}
-		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+		ur->add_do_reference(new_node);
+		ur->add_undo_reference(selected);
+
 		String old_scene_file_path = selected->get_scene_file_path();
 		String new_scene_file_path = clipboard_node->get_scene_file_path();
 
@@ -4548,34 +4569,16 @@ void SceneTreeDock::paste_node_as_replacement() {
 		bool new_is_scene = !new_scene_file_path.is_empty();
 
 		LocalVector<Node *> old_children;
+		Dictionary owners_map;
 
-		ur->create_action(TTR("Paste Node(s) as Replacement"), UndoRedo::MERGE_ALL, selected);
+		int child_count = selected->get_child_count();
+		for (int i = 0; i < child_count; i++) {
+			Node *child = selected->get_child(0);
+			_make_owners_map(child, owners_map);
+			old_children.push_back(child);
 
-		if (old_is_scene) {
-			for (int i = 0; i < selected->get_child_count(); i++) {
-				Node *child = selected->get_child(i);
-				if (child->get_owner() == selected) {
-					ur->add_do_method(selected, "remove_child", child);
-
-					selected->remove_child(child);
-					old_children.push_back(child);
-				}
-			}
-		}
-
-		ur->add_do_method(this, "replace_node", selected, new_node, false);
-		ur->add_do_method(new_node, "set_scene_file_path", new_scene_file_path);
-		ur->add_do_reference(new_node);
-
-		if (new_is_scene) {
-			for (int i = 0; i < new_node->get_child_count(); i++) {
-				Node *child = new_node->get_child(i);
-				if (child->get_owner() == new_node) {
-					ur->add_undo_method(new_node, "add_child", child, true);
-					ur->add_undo_method(child, "set_owner", new_node);
-					ur->add_undo_reference(child);
-				}
-			}
+			ur->add_do_method(selected, "remove_child", child);
+			selected->remove_child(child);
 		}
 
 		const bool is_missing_node_selected = Object::cast_to<MissingNode>(selected) != nullptr;
@@ -4588,9 +4591,6 @@ void SceneTreeDock::paste_node_as_replacement() {
 		} else if (selected_node_3d) {
 			selected_transform_3d = selected_node_3d->get_transform();
 		}
-
-		_replace_node(selected, new_node, is_missing_node_selected);
-		new_node->set_scene_file_path(new_scene_file_path);
 
 		if (selected_canvas_item) {
 			Node2D *new_node_2d = Object::cast_to<Node2D>(new_node);
@@ -4609,29 +4609,47 @@ void SceneTreeDock::paste_node_as_replacement() {
 			}
 		}
 
-		if (new_is_scene) {
-			for (int i = 0; i < new_node->get_child_count(); i++) {
-				Node *child = new_node->get_child(i);
-				if (child->get_owner() == new_node) {
-					ur->add_undo_method(new_node, "remove_child", child);
+		for (Node *child : new_node->iterate_children()) {
+			ur->add_do_reference(child);
+			ur->add_do_method(new_node, "add_child", child);
+			ur->add_undo_method(new_node, "remove_child", child);
+		}
+
+		// Note that due to the new node possibly having child nodes, it's not possible to unify the operations to use only do methods.
+		_replace_node(selected, new_node, is_missing_node_selected);
+		ur->add_do_method(this, "replace_node", selected, new_node, false);
+		if (old_is_scene || new_is_scene) {
+			new_node->set_scene_file_path(new_scene_file_path);
+			ur->add_do_method(new_node, "set_scene_file_path", new_scene_file_path);
+		}
+
+		for (KeyValue<const Node *, Node *> &E2 : duplimap) {
+			Node *d = E2.value;
+			// When copying, all nodes that should have an owner assigned here were given nullptr as an owner
+			// and added to the node_clipboard_edited_scene_owned list.
+			if (d != new_node && E2.key->get_owner() == nullptr) {
+				if (node_clipboard_edited_scene_owned.has(const_cast<Node *>(E2.key))) {
+					d->set_owner(edited_scene);
+					ur->add_do_method(d, "set_owner", edited_scene);
 				}
 			}
 		}
 
 		ur->add_undo_method(this, "replace_node", new_node, selected, false);
-		ur->add_undo_method(selected, "set_scene_file_path", old_scene_file_path);
-		ur->add_undo_reference(selected);
-
-		if (old_is_scene) {
-			for (Node *child : old_children) {
-				ur->add_undo_method(selected, "add_child", child, true);
-				ur->add_undo_method(child, "set_owner", selected);
-				ur->add_undo_reference(child);
-			}
+		if (old_is_scene || new_is_scene) {
+			ur->add_undo_method(selected, "set_scene_file_path", old_scene_file_path);
 		}
 
-		ur->commit_action(false);
+		for (Node *child : old_children) {
+			ur->add_undo_method(selected, "add_child", child);
+			ur->add_undo_method(this, "_apply_owners_map", child, owners_map);
+			ur->add_undo_reference(child);
+		}
 	}
+	ur->commit_action(false);
+	// FIXME: This shouldn't be needed, but children of the pasted node do not appear immediately for some reason.
+	scene_tree->clear_cache();
+	scene_tree->update_tree();
 }
 
 List<Node *> SceneTreeDock::get_node_clipboard() const {
@@ -4942,6 +4960,7 @@ void SceneTreeDock::_edit_subresource(int p_idx, const PopupMenu *p_from_menu) {
 
 void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_post_do_create"), &SceneTreeDock::_post_do_create);
+	ClassDB::bind_method(D_METHOD("_apply_owners_map"), &SceneTreeDock::_apply_owners_map);
 	ClassDB::bind_method(D_METHOD("_set_owners"), &SceneTreeDock::_set_owners);
 	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_root"), &SceneTreeDock::_reparent_nodes_to_root);
 	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_paths_with_transform_and_name"), &SceneTreeDock::_reparent_nodes_to_paths_with_transform_and_name);
