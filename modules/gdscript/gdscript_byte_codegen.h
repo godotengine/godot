@@ -499,7 +499,9 @@ public:
 	virtual void write_set(const Address &p_target, const Address &p_index, const Address &p_source) override;
 	virtual void write_get(const Address &p_target, const Address &p_index, const Address &p_source) override;
 	virtual void write_set_named(const Address &p_target, const StringName &p_name, const Address &p_source) override;
+	virtual void write_set_named_safe(const Address &p_target, const StringName &p_name, const Address &p_source) override;
 	virtual void write_get_named(const Address &p_target, const StringName &p_name, const Address &p_source) override;
+	virtual void write_get_named_safe(const Address &p_target, const StringName &p_name, const Address &p_source) override;
 	virtual void write_set_member(const Address &p_value, const StringName &p_name) override;
 	virtual void write_get_member(const Address &p_target, const StringName &p_name) override;
 	virtual void write_set_static_variable(const Address &p_value, const Address &p_class, int p_index) override;
@@ -514,6 +516,7 @@ public:
 	virtual void write_store_named_global(const Address &p_dst, const StringName &p_global) override;
 	virtual void write_cast(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) override;
 	virtual void write_call(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
+	virtual void write_call_safe(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) override;
