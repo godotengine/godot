@@ -2455,7 +2455,7 @@ void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 	connections_layer->queue_redraw();
 
 	if (is_visible_in_tree()) {
-		scroll_offset = zoom_anchor * zoom - p_center;
+		scroll_offset = (zoom_anchor * zoom - p_center).clamp(min_scroll_offset, max_scroll_offset - get_size());
 	}
 
 	_update_zoom_label();
