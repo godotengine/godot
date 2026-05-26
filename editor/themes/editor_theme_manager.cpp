@@ -374,11 +374,6 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/icon_saturation", config.icon_saturation);
 		}
 
-		if (follow_system_theme && system_base_color != Color(0, 0, 0, 0)) {
-			config.base_color = system_base_color;
-			config.preset = "Custom";
-		}
-
 		if (use_system_accent_color && system_accent_color != Color(0, 0, 0, 0)) {
 			config.accent_color = system_accent_color;
 			config.preset = "Custom";

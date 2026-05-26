@@ -606,8 +606,6 @@ void CSGShape3D::update_shape() {
 	CSGBrush *n = _get_brush();
 	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
-	AHashMap<Vector3, Vector3> vec_map;
-
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
 	face_count.fill(0);
@@ -706,6 +704,7 @@ void CSGShape3D::_build_surfaces_smoothed(CSGBrush *p_brush, Vector<CSGShape3D::
 		for (int i = 0; i < smooth_faces_size; i++) {
 			for (int k = 0; k < 3; k++) {
 				int curr_vert = i * 3 + k;
+				// Skip the other vertices of the face as they will never occupy the same position.
 				Vector3 vert_a = p_brush->faces[i].vertices[k];
 				for (int j = i + 1; j < smooth_faces_size; j++) {
 					// Compare the angles of faces instead of vertices.
@@ -716,39 +715,13 @@ void CSGShape3D::_build_surfaces_smoothed(CSGBrush *p_brush, Vector<CSGShape3D::
 								int curr_j = j * 3 + h;
 								smooth_vertex[curr_vert] += smooth_faces_ptr[j];
 								smooth_vertex[curr_j] += smooth_faces_ptr[i];
+								// Skip the other 2 vertices as only one vertex of each face can connect with one vertex of other face.
 								break;
 							}
 						}
 					}
 				}
 				smooth_vertex[curr_vert].normalize();
-			}
-		}
-	} else {
-		for (int i = 0; i < smooth_faces_size; i++) {
-			bool face_is_smooth = p_brush->faces[i].smooth;
-			if (face_is_smooth) {
-				for (int k = 0; k < 3; k++) {
-					Vector3 vert_a = p_brush->faces[i].vertices[k];
-					int curr_vert = i * 3 + k;
-					// Skip the other vertices of the face as they will never occupy the same position.
-					for (int j = i + 1; j < smooth_faces_size; j++) {
-						// Preparing for when and if we replace Vector of bool for Vector of int smoothing groups. for now, face_is_smooth is always true.
-						if (face_is_smooth == p_brush->faces[j].smooth) {
-							for (int h = 0; h < 3; h++) {
-								Vector3 vert_b = p_brush->faces[j].vertices[h];
-								if (vert_a == vert_b) {
-									int curr_j = j * 3 + h;
-									smooth_vertex[curr_vert] += smooth_faces_ptr[j];
-									smooth_vertex[curr_j] += smooth_faces_ptr[i];
-									// Skip the other 2 vertices as only one vertex of each face can connect with one vertex of other face.
-									break;
-								}
-							}
-						}
-					}
-					smooth_vertex[curr_vert].normalize();
-				}
 			}
 		}
 	}

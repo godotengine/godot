@@ -65,14 +65,14 @@
 			<return type="bool" />
 			<param index="0" name="from" type="float" />
 			<description>
-				Cast a [float] value to a boolean value. Returns [code]false[/code] if [param from] is equal to [code]0.0[/code] (including [code]-0.0[/code]), and [code]true[/code] for all other values (including [constant @GDScript.INF] and [constant @GDScript.NAN]).
+				Casts a [float] value to a [bool]. Returns [code]false[/code] if [param from] is equal to [code]0.0[/code] (including [code]-0.0[/code]), and [code]true[/code] for all other values (including [constant @GDScript.INF] and [constant @GDScript.NAN]).
 			</description>
 		</constructor>
 		<constructor name="bool">
 			<return type="bool" />
 			<param index="0" name="from" type="int" />
 			<description>
-				Cast an [int] value to a boolean value. Returns [code]false[/code] if [param from] is equal to [code]0[/code], and [code]true[/code] for all other values.
+				Casts an [int] value to a [bool]. Returns [code]false[/code] if [param from] is equal to [code]0[/code], and [code]true[/code] for all other values.
 			</description>
 		</constructor>
 	</constructors>
@@ -81,28 +81,28 @@
 			<return type="bool" />
 			<param index="0" name="right" type="bool" />
 			<description>
-				Returns [code]true[/code] if one operand is [code]true[/code] and the other operand is [code]false[/code]. Equivalent to logical [b]XOR[/b] ([b]NEQ[/b]).
+				Returns [code]true[/code] if one [bool] is [code]true[/code] and the other [bool] is [code]false[/code]. Equivalent to logical XOR (NEQ).
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="bool" />
 			<description>
-				Returns [code]true[/code] if the left operand is [code]false[/code] and the right operand is [code]true[/code].
+				Returns [code]true[/code] if the left [bool] is [code]false[/code] and [param right] is [code]true[/code].
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="bool" />
 			<description>
-				Returns [code]true[/code] if both operands are [code]true[/code], or if both operands are [code]false[/code]. Equivalent to logical [b]XNOR[/b] ([b]EQ[/b]).
+				Returns [code]true[/code] if both [bool]s are [code]true[/code], or if both [bool]s are [code]false[/code]. Equivalent to logical XNOR (EQ).
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
 			<param index="0" name="right" type="bool" />
 			<description>
-				Returns [code]true[/code] if the left operand is [code]true[/code] and the right operand is [code]false[/code].
+				Returns [code]true[/code] if the left [bool] is [code]true[/code] and [param right] is [code]false[/code].
 			</description>
 		</operator>
 	</operators>
