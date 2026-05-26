@@ -65,7 +65,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Sets the probability [param weight] of the stream of the given [param index]. The higher this value, the more likely it is that the randomizer will choose the stream if [member playback_mode] is random.
+				Sets the probability [param weight] of the stream of the given [param index]. The higher this value, the more likely it is that the randomizer will choose this stream if [member playback_mode] is random.
 			</description>
 		</method>
 	</methods>

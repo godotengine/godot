@@ -24,7 +24,7 @@
 		<method name="get_playback_position">
 			<return type="float" />
 			<description>
-				Returns the playback position in the latest [AudioStream] played, in seconds. Returns [code]0.0[/code] if the stream is not playing.
+				Returns the current progress along the latest [AudioStream] played, in seconds. Returns [code]0.0[/code] if the stream is not playing.
 				[b]Note:[/b] The playback position is not always accurate, as the [AudioServer] does not mix audio every processed frame. To get more accurate results, add [method AudioServer.get_time_since_last_mix] to the returned playback position.
 				[b]Note:[/b] This method always returns [code]0.0[/code] if the [member stream] is [AudioStreamInteractive], [AudioStreamMicrophone], or [AudioStreamPolyphonic].
 			</description>
@@ -96,7 +96,7 @@
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
 			Volume of the stream, in decibels. This is an offset of the [member stream]'s volume.
-			[b]Note:[/b] To convert between decibel and linear energy (like most volume sliders do), use [method @GlobalScope.db_to_linear] and [method @GlobalScope.linear_to_db]. Alternatively, use [member volume_linear].
+			[b]Tip:[/b] To convert between decibel and linear energy (like most volume sliders do), use [method @GlobalScope.db_to_linear] and [method @GlobalScope.linear_to_db]. Alternatively, use [member volume_linear].
 		</member>
 		<member name="volume_linear" type="float" setter="set_volume_linear" getter="get_volume_linear">
 			Volume of the stream, as a linear value.

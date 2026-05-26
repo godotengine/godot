@@ -45,10 +45,10 @@
 			Contains the audio data in bytes.
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
-			If [code]true[/code], the stream will play again from the specified [member loop_offset] once it reaches the end of the stream, or once it reaches the end of the last beat according to the number specified in [member beat_count]. Useful for ambient sounds and background music.
+			If [code]true[/code], this audio stream will play again from the specified [member loop_offset] once it reaches the end of this audio stream, or once it reaches the end of the last beat according to the number specified in [member beat_count]. Useful for ambient sounds and background music.
 		</member>
 		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset" default="0.0">
-			Playback position in seconds at which the stream starts after being looped. This value should range from [code]0.0[/code] to the length of the stream in seconds, or to the end of the beat set in [member beat_count] in seconds, if the stream loops at a set beat.
+			Playback position in seconds at which this audio stream starts after being looped. This value should range from [code]0.0[/code] to the length of this audio stream in seconds, or to the end of the beat set in [member beat_count] in seconds, if this audio stream loops at a set beat.
 		</member>
 	</members>
 </class>

@@ -177,7 +177,7 @@
 	</methods>
 	<members>
 		<member name="clip_count" type="int" setter="set_clip_count" getter="get_clip_count" default="0">
-			Number of clips contained in the stream.
+			Number of clips contained in this audio stream.
 		</member>
 		<member name="initial_clip" type="int" setter="set_initial_clip" getter="get_initial_clip" default="0">
 			Index of the initial clip, which will be played first when this stream is played.
@@ -228,7 +228,7 @@
 			Enables auto-advance. The clip will automatically switch to another after it finishes. The clip it will switch to must be specified.
 		</constant>
 		<constant name="AUTO_ADVANCE_RETURN_TO_HOLD" value="2" enum="AutoAdvanceMode">
-			Enables auto-advance, but instead of switching to a specified clip after it finishes, the stream will return to the last clip played with [code]hold_previous[/code] enabled. See [method add_transition].
+			Enables auto-advance, but instead of switching to a specified clip after it finishes, this audio stream will return to the last clip played with [code]hold_previous[/code] enabled. See [method add_transition].
 			[b]Note:[/b] This auto-advance mode only works if the previous clip is not the one with [code]hold_previous[/code] enabled. Otherwise the clip finishes without switching.
 		</constant>
 		<constant name="CLIP_ANY" value="-1">
