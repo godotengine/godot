@@ -645,6 +645,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		int variant_id = group_to_variant_map[p_group][i];
 		uint32_t variant_size = f->get_32();
 		if (!variants_enabled[variant_id]) {
+			f->seek(f->get_position() + variant_size);
 			continue;
 		}
 		if (variant_size == 0) {
