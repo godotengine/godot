@@ -108,10 +108,8 @@ namespace Godot.NativeInterop
                 {
                     SendToScriptDebugger(e);
                 }
-                else
-                {
-                    GD.PushError(e.ToString());
-                }
+
+                GD.PushError(e.ToString());
             }
             catch (Exception unexpected)
             {
@@ -128,7 +126,6 @@ namespace Godot.NativeInterop
                     SendToScriptDebugger(e);
                 }
 
-                // In this case, print it as well in addition to sending it to the script debugger
                 GD.PushError("Unhandled exception\n" + e);
             }
             catch (Exception unexpected)
