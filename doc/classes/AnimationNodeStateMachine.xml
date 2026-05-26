@@ -173,7 +173,7 @@
 		</member>
 		<member name="defer_end" type="bool" setter="set_defer_end" getter="is_end_deferred" default="false">
 			If [code]true[/code], exiting a state machine through an immediate transition will blend the parent with the state machine's last animation instead of with the RESET animation.
-			    	Keep in mind that when this option is active, [signal AnimationNodeStateMachinePlayback.state_finished] will never be emitted for the last node.
+			[b]Note:[/b] When this option is active, [signal AnimationNodeStateMachinePlayback.state_finished] will never be emitted for the last node.
 		</member>
 		<member name="reset_ends" type="bool" setter="set_reset_ends" getter="are_ends_reset" default="false">
 			If [code]true[/code], treat the cross-fade to the start and end nodes as a blend with the RESET animation.
