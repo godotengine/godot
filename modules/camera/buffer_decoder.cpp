@@ -77,21 +77,28 @@ void SeparateYuyvBufferDecoder::decode(StreamingBuffer p_buffer) {
 	uint8_t *y_dst = (uint8_t *)y_image_data.ptrw();
 	uint8_t *uv_dst = (uint8_t *)cbcr_image_data.ptrw();
 	uint8_t *src = (uint8_t *)p_buffer.start;
-	uint8_t *y0_src = src + component_indexes[0];
-	uint8_t *y1_src = src + component_indexes[1];
-	uint8_t *u_src = src + component_indexes[2];
-	uint8_t *v_src = src + component_indexes[3];
+	// YUYV-family is packed 4:2:2 (2 bytes per pixel). Honor driver-reported
+	// pitch in case bytesperline is padded for row alignment.
+	const int row_stride = p_buffer.pitch > 0 ? p_buffer.pitch : width * 2;
 
-	for (int i = 0; i < width * height; i += 2) {
-		*y_dst++ = *y0_src;
-		*y_dst++ = *y1_src;
-		*uv_dst++ = *u_src;
-		*uv_dst++ = *v_src;
+	for (int y = 0; y < height; y++) {
+		uint8_t *row = src + (size_t)y * row_stride;
+		uint8_t *y0_src = row + component_indexes[0];
+		uint8_t *y1_src = row + component_indexes[1];
+		uint8_t *u_src = row + component_indexes[2];
+		uint8_t *v_src = row + component_indexes[3];
 
-		y0_src += 4;
-		y1_src += 4;
-		u_src += 4;
-		v_src += 4;
+		for (int x = 0; x < width; x += 2) {
+			*y_dst++ = *y0_src;
+			*y_dst++ = *y1_src;
+			*uv_dst++ = *u_src;
+			*uv_dst++ = *v_src;
+
+			y0_src += 4;
+			y1_src += 4;
+			u_src += 4;
+			v_src += 4;
+		}
 	}
 
 	if (y_image.is_valid()) {
@@ -116,15 +123,20 @@ YuyvToGrayscaleBufferDecoder::YuyvToGrayscaleBufferDecoder(CameraFeed *p_camera_
 void YuyvToGrayscaleBufferDecoder::decode(StreamingBuffer p_buffer) {
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
 	uint8_t *src = (uint8_t *)p_buffer.start;
-	uint8_t *y0_src = src + component_indexes[0];
-	uint8_t *y1_src = src + component_indexes[1];
+	const int row_stride = p_buffer.pitch > 0 ? p_buffer.pitch : width * 2;
 
-	for (int i = 0; i < width * height; i += 2) {
-		*dst++ = *y0_src;
-		*dst++ = *y1_src;
+	for (int y = 0; y < height; y++) {
+		uint8_t *row = src + (size_t)y * row_stride;
+		uint8_t *y0_src = row + component_indexes[0];
+		uint8_t *y1_src = row + component_indexes[1];
 
-		y0_src += 4;
-		y1_src += 4;
+		for (int x = 0; x < width; x += 2) {
+			*dst++ = *y0_src;
+			*dst++ = *y1_src;
+
+			y0_src += 4;
+			y1_src += 4;
+		}
 	}
 
 	if (image.is_valid()) {
@@ -143,31 +155,36 @@ YuyvToRgbBufferDecoder::YuyvToRgbBufferDecoder(CameraFeed *p_camera_feed) :
 
 void YuyvToRgbBufferDecoder::decode(StreamingBuffer p_buffer) {
 	uint8_t *src = (uint8_t *)p_buffer.start;
-	uint8_t *y0_src = src + component_indexes[0];
-	uint8_t *y1_src = src + component_indexes[1];
-	uint8_t *u_src = src + component_indexes[2];
-	uint8_t *v_src = src + component_indexes[3];
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
+	const int row_stride = p_buffer.pitch > 0 ? p_buffer.pitch : width * 2;
 
-	for (int i = 0; i < width * height; i += 2) {
-		int u = *u_src;
-		int v = *v_src;
-		int u1 = (((u - 128) << 7) + (u - 128)) >> 6;
-		int rg = (((u - 128) << 1) + (u - 128) + ((v - 128) << 2) + ((v - 128) << 1)) >> 3;
-		int v1 = (((v - 128) << 1) + (v - 128)) >> 1;
+	for (int y = 0; y < height; y++) {
+		uint8_t *row = src + (size_t)y * row_stride;
+		uint8_t *y0_src = row + component_indexes[0];
+		uint8_t *y1_src = row + component_indexes[1];
+		uint8_t *u_src = row + component_indexes[2];
+		uint8_t *v_src = row + component_indexes[3];
 
-		*dst++ = CLAMP(*y0_src + v1, 0, 255);
-		*dst++ = CLAMP(*y0_src - rg, 0, 255);
-		*dst++ = CLAMP(*y0_src + u1, 0, 255);
+		for (int x = 0; x < width; x += 2) {
+			int u = *u_src;
+			int v = *v_src;
+			int u1 = (((u - 128) << 7) + (u - 128)) >> 6;
+			int rg = (((u - 128) << 1) + (u - 128) + ((v - 128) << 2) + ((v - 128) << 1)) >> 3;
+			int v1 = (((v - 128) << 1) + (v - 128)) >> 1;
 
-		*dst++ = CLAMP(*y1_src + v1, 0, 255);
-		*dst++ = CLAMP(*y1_src - rg, 0, 255);
-		*dst++ = CLAMP(*y1_src + u1, 0, 255);
+			*dst++ = CLAMP(*y0_src + v1, 0, 255);
+			*dst++ = CLAMP(*y0_src - rg, 0, 255);
+			*dst++ = CLAMP(*y0_src + u1, 0, 255);
 
-		y0_src += 4;
-		y1_src += 4;
-		u_src += 4;
-		v_src += 4;
+			*dst++ = CLAMP(*y1_src + v1, 0, 255);
+			*dst++ = CLAMP(*y1_src - rg, 0, 255);
+			*dst++ = CLAMP(*y1_src + u1, 0, 255);
+
+			y0_src += 4;
+			y1_src += 4;
+			u_src += 4;
+			v_src += 4;
+		}
 	}
 
 	if (image.is_valid()) {
@@ -187,7 +204,20 @@ CopyBufferDecoder::CopyBufferDecoder(CameraFeed *p_camera_feed, bool p_rgba) :
 
 void CopyBufferDecoder::decode(StreamingBuffer p_buffer) {
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
-	memcpy(dst, p_buffer.start, p_buffer.length);
+	uint8_t *src = (uint8_t *)p_buffer.start;
+	const int bpp = rgba ? 4 : 2;
+	const int row_bytes = width * bpp;
+	const int row_stride = p_buffer.pitch > 0 ? p_buffer.pitch : row_bytes;
+
+	if (row_stride == row_bytes) {
+		// No padding: single contiguous copy.
+		memcpy(dst, src, (size_t)row_bytes * height);
+	} else {
+		// Strip row padding.
+		for (int y = 0; y < height; y++) {
+			memcpy(dst + (size_t)y * row_bytes, src + (size_t)y * row_stride, row_bytes);
+		}
+	}
 
 	if (image.is_valid()) {
 		image->set_data(width, height, false, rgba ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8, image_data);
