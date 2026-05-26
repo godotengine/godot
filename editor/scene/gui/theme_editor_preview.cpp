@@ -295,6 +295,8 @@ void DefaultThemeEditorPreview::_notification(int p_what) {
 }
 
 DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
+	set_oversampling_with_scale(OVERSAMPLING_WITH_SCALE_ENABLED);
+
 	Panel *main_panel = memnew(Panel);
 	preview_content->add_child(main_panel);
 
