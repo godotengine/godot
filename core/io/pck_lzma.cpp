@@ -30,10 +30,9 @@
 
 #include "pck_lzma.h"
 
-#include "core/math/math_funcs.h"
 #include "core/templates/local_vector.h"
 
-#include <string.h>
+#include <cstring>
 
 extern "C" {
 #include <thirdparty/lzma2601/C/7zAlloc.h>
@@ -54,7 +53,7 @@ struct LzmaInStream {
 };
 
 static SRes _lzma_in_stream_read(ISeqInStreamPtr pp, void *p_buf, size_t *p_size) {
-	LzmaInStream *stream = Z7_CONTAINER_FROM_VTBL(pp, LzmaInStream, vt);
+	LzmaInStream *stream = Z7_CONTAINER_FROM_VTBL(pp, LzmaInStream, vt); // NOLINT(modernize-use-bool-literals)
 	const size_t requested = *p_size;
 	const size_t left = (stream->pos < stream->size) ? stream->size - stream->pos : 0;
 	const size_t read_size = MIN(requested, left);
@@ -72,7 +71,7 @@ struct LzmaOutStream {
 };
 
 static size_t _lzma_out_stream_write(ISeqOutStreamPtr pp, const void *p_buf, size_t p_size) {
-	LzmaOutStream *stream = Z7_CONTAINER_FROM_VTBL(pp, LzmaOutStream, vt);
+	LzmaOutStream *stream = Z7_CONTAINER_FROM_VTBL(pp, LzmaOutStream, vt); // NOLINT(modernize-use-bool-literals)
 	if (p_size == 0) {
 		return 0;
 	}

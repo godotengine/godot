@@ -38,7 +38,7 @@
 #include "core/os/os.h"
 #include "core/version.h"
 
-#include <string.h>
+#include <cstring>
 
 namespace {
 

@@ -97,8 +97,89 @@ static int _get_pad(int p_alignment, int p_n) {
 
 static constexpr int PCK_PADDING = 16;
 
-static Variant _preset_get_or_default(const Ref<EditorExportPreset> &p_preset, const StringName &p_key, const Variant &p_default_value) {
-	return p_preset->has(p_key) ? p_preset->get(p_key) : p_default_value;
+static Variant _preset_get_or_default_compat(const Ref<EditorExportPreset> &p_preset, const StringName &p_key, const StringName &p_legacy_key, const Variant &p_default_value) {
+	if (p_preset->has(p_key)) {
+		return p_preset->get(p_key);
+	}
+	if (p_preset->has(p_legacy_key)) {
+		return p_preset->get(p_legacy_key);
+	}
+	return p_default_value;
+}
+
+static String _preset_get_pck_7zip_compression_type(const EditorExportPreset *p_preset) {
+	if (p_preset == nullptr) {
+		return "7zip";
+	}
+
+	if (p_preset->has("binary_format/compression_type")) {
+		return String(p_preset->get("binary_format/compression_type")).to_lower();
+	}
+
+	if (p_preset->has("pck_7zip/compression_type")) {
+		return String(p_preset->get("pck_7zip/compression_type")).to_lower();
+	}
+
+	if (p_preset->has("pck_7zip/archive_format")) {
+		const String legacy_archive_format = String(p_preset->get("pck_7zip/archive_format")).to_lower();
+		return (legacy_archive_format == "7z") ? "7zip" : "zstd";
+	}
+
+	return "7zip";
+}
+
+void EditorExportPlatform::add_pck_7zip_export_options(List<ExportOption> *r_options) const {
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/compression_enabled"), true, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/compression_type", PROPERTY_HINT_ENUM, "zstd,7zip"), "7zip", true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "binary_format/compression_level", PROPERTY_HINT_ENUM, "0 - Store,1 - Fastest,3 - Fast,5 - Normal,7 - Maximum,9 - Ultra"), 9));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/compression_method", PROPERTY_HINT_ENUM, "LZMA2"), "LZMA2"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "binary_format/dictionary_size_mb", PROPERTY_HINT_ENUM, "64,128,256"), 256));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "binary_format/word_size", PROPERTY_HINT_ENUM, "32,64"), 64));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/solid_block_size", PROPERTY_HINT_ENUM, "Non-solid,1GB,2GB,4GB,16GB"), "16GB"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "binary_format/threads", PROPERTY_HINT_RANGE, "1,1024,1"), 16));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "binary_format/memory_usage_percent", PROPERTY_HINT_RANGE, "10,90,1"), 80));
+}
+
+bool EditorExportPlatform::get_pck_7zip_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	if (p_preset == nullptr) {
+		return true;
+	}
+	if (!p_option.begins_with("binary_format/") && !p_option.begins_with("pck_7zip/")) {
+		return true;
+	}
+
+	const bool is_toggle = p_option == "binary_format/compression_enabled" || p_option == "pck_7zip/enabled";
+	const bool is_type = p_option == "binary_format/compression_type" || p_option == "pck_7zip/compression_type" || p_option == "pck_7zip/archive_format";
+	const bool is_lzma2_tuning = p_option == "binary_format/compression_level" ||
+			p_option == "binary_format/compression_method" ||
+			p_option == "binary_format/dictionary_size_mb" ||
+			p_option == "binary_format/word_size" ||
+			p_option == "binary_format/solid_block_size" ||
+			p_option == "binary_format/threads" ||
+			p_option == "binary_format/memory_usage_percent" ||
+			p_option == "pck_7zip/compression_level" ||
+			p_option == "pck_7zip/compression_method" ||
+			p_option == "pck_7zip/dictionary_size_mb" ||
+			p_option == "pck_7zip/word_size" ||
+			p_option == "pck_7zip/solid_block_size" ||
+			p_option == "pck_7zip/threads" ||
+			p_option == "pck_7zip/memory_usage_percent";
+
+	if (!is_toggle && !is_type && !is_lzma2_tuning) {
+		return true;
+	}
+
+	const bool compression_enabled = p_preset->has("binary_format/compression_enabled") ? bool(p_preset->get("binary_format/compression_enabled")) :
+			(p_preset->has("pck_7zip/enabled") ? bool(p_preset->get("pck_7zip/enabled")) : true);
+	if (!compression_enabled) {
+		return is_toggle;
+	}
+
+	if (is_lzma2_tuning) {
+		return _preset_get_pck_7zip_compression_type(p_preset) == "7zip";
+	}
+
+	return true;
 }
 
 Ref<Image> EditorExportPlatform::_load_icon_or_splash_image(const String &p_path, Error *r_error) const {
@@ -453,43 +534,48 @@ Error EditorExportPlatform::_save_pack_file(const Ref<EditorExportPreset> &p_pre
 	sd.size = p_data.size();
 	sd.delta = p_delta;
 
-	const bool pck_7zip_enabled = bool(_preset_get_or_default(p_preset, "pck_7zip/enabled", true));
-	const String pck_7zip_archive_format = String(_preset_get_or_default(p_preset, "pck_7zip/archive_format", "7z")).to_lower();
-	const String pck_7zip_method = String(_preset_get_or_default(p_preset, "pck_7zip/compression_method", "LZMA2")).to_upper();
+	const bool pck_7zip_enabled = bool(_preset_get_or_default_compat(p_preset, "binary_format/compression_enabled", "pck_7zip/enabled", true));
+	const String pck_7zip_compression_type = _preset_get_pck_7zip_compression_type(p_preset.ptr());
+	const String pck_7zip_method = String(_preset_get_or_default_compat(p_preset, "binary_format/compression_method", "pck_7zip/compression_method", "LZMA2")).to_upper();
 	const int logical_threads = MAX(1, OS::get_singleton()->get_processor_count());
-	int pck_7zip_threads = CLAMP(int(_preset_get_or_default(p_preset, "pck_7zip/threads", 16)), 1, logical_threads);
-	int pck_7zip_dict_mb = CLAMP(int(_preset_get_or_default(p_preset, "pck_7zip/dictionary_size_mb", 256)), 64, 1536);
-	int pck_7zip_memory = CLAMP(int(_preset_get_or_default(p_preset, "pck_7zip/memory_usage_percent", 80)), 10, 90);
-	int pck_7zip_level = CLAMP(int(_preset_get_or_default(p_preset, "pck_7zip/compression_level", 9)), 0, 9);
-	int pck_7zip_word_size = CLAMP(int(_preset_get_or_default(p_preset, "pck_7zip/word_size", 64)), 5, 273);
-	const String pck_7zip_solid = String(_preset_get_or_default(p_preset, "pck_7zip/solid_block_size", "16GB"));
+	const int pck_7zip_threads_raw = int(_preset_get_or_default_compat(p_preset, "binary_format/threads", "pck_7zip/threads", 16));
+	const int pck_7zip_dict_mb_raw = int(_preset_get_or_default_compat(p_preset, "binary_format/dictionary_size_mb", "pck_7zip/dictionary_size_mb", 256));
+	const int pck_7zip_memory_raw = int(_preset_get_or_default_compat(p_preset, "binary_format/memory_usage_percent", "pck_7zip/memory_usage_percent", 80));
+	int pck_7zip_threads = CLAMP(pck_7zip_threads_raw, 1, logical_threads);
+	int pck_7zip_dict_mb = CLAMP(pck_7zip_dict_mb_raw, 64, 1536);
+	int pck_7zip_memory = CLAMP(pck_7zip_memory_raw, 10, 90);
+	int pck_7zip_level = CLAMP(int(_preset_get_or_default_compat(p_preset, "binary_format/compression_level", "pck_7zip/compression_level", 9)), 0, 9);
+	int pck_7zip_word_size = CLAMP(int(_preset_get_or_default_compat(p_preset, "binary_format/word_size", "pck_7zip/word_size", 64)), 5, 273);
+	const String pck_7zip_solid = String(_preset_get_or_default_compat(p_preset, "binary_format/solid_block_size", "pck_7zip/solid_block_size", "16GB"));
+	const bool pck_7zip_type_supported = pck_7zip_compression_type == "zstd" || pck_7zip_compression_type == "7zip";
+	const bool pck_7zip_use_lzma2 = pck_7zip_enabled && pck_7zip_compression_type == "7zip" && pck_7zip_method == "LZMA2";
 
-	if (pck_7zip_archive_format != "7z" || pck_7zip_method != "LZMA2") {
+	if (!pck_7zip_type_supported || (pck_7zip_compression_type == "7zip" && pck_7zip_method != "LZMA2")) {
 		if (!pd->warned_pck_7zip_format) {
-			WARN_PRINT(vformat("Unsupported pck_7zip/archive_format or pck_7zip/compression_method. Falling back to raw payload for \"%s\".", simplified_path));
+			WARN_PRINT(vformat("Unsupported binary_format/compression_type or binary_format/compression_method. Falling back to raw payload for \"%s\".", simplified_path));
 			pd->warned_pck_7zip_format = true;
 		}
 	}
-	if (pck_7zip_threads != int(_preset_get_or_default(p_preset, "pck_7zip/threads", 16)) && !pd->warned_pck_7zip_threads) {
-		WARN_PRINT(vformat("Clamped pck_7zip/threads from %d to %d.", int(_preset_get_or_default(p_preset, "pck_7zip/threads", 16)), pck_7zip_threads));
+	if (pck_7zip_threads != pck_7zip_threads_raw && !pd->warned_pck_7zip_threads) {
+		WARN_PRINT(vformat("Clamped binary_format/threads from %d to %d.", pck_7zip_threads_raw, pck_7zip_threads));
 		pd->warned_pck_7zip_threads = true;
 	}
-	if (pck_7zip_dict_mb != int(_preset_get_or_default(p_preset, "pck_7zip/dictionary_size_mb", 256)) && !pd->warned_pck_7zip_dict) {
-		WARN_PRINT(vformat("Clamped pck_7zip/dictionary_size_mb from %d to %d.", int(_preset_get_or_default(p_preset, "pck_7zip/dictionary_size_mb", 256)), pck_7zip_dict_mb));
+	if (pck_7zip_dict_mb != pck_7zip_dict_mb_raw && !pd->warned_pck_7zip_dict) {
+		WARN_PRINT(vformat("Clamped binary_format/dictionary_size_mb from %d to %d.", pck_7zip_dict_mb_raw, pck_7zip_dict_mb));
 		pd->warned_pck_7zip_dict = true;
 	}
-	if (pck_7zip_memory != int(_preset_get_or_default(p_preset, "pck_7zip/memory_usage_percent", 80)) && !pd->warned_pck_7zip_memory) {
-		WARN_PRINT(vformat("Clamped pck_7zip/memory_usage_percent from %d to %d.", int(_preset_get_or_default(p_preset, "pck_7zip/memory_usage_percent", 80)), pck_7zip_memory));
+	if (pck_7zip_memory != pck_7zip_memory_raw && !pd->warned_pck_7zip_memory) {
+		WARN_PRINT(vformat("Clamped binary_format/memory_usage_percent from %d to %d.", pck_7zip_memory_raw, pck_7zip_memory));
 		pd->warned_pck_7zip_memory = true;
 	}
 	if (pck_7zip_solid.to_lower() != "non-solid" && pck_7zip_solid != "1GB" && pck_7zip_solid != "2GB" && pck_7zip_solid != "4GB" && pck_7zip_solid != "16GB" && !pd->warned_pck_7zip_solid) {
-		WARN_PRINT(vformat("Unsupported pck_7zip/solid_block_size value \"%s\". Using per-file blocks.", pck_7zip_solid));
+		WARN_PRINT(vformat("Unsupported binary_format/solid_block_size value \"%s\". Using per-file blocks.", pck_7zip_solid));
 		pd->warned_pck_7zip_solid = true;
 	}
 
 	Vector<uint8_t> stored_data = p_data;
 	sd.lzma2 = false;
-	if (pck_7zip_enabled && pck_7zip_archive_format == "7z" && pck_7zip_method == "LZMA2" && !p_data.is_empty()) {
+	if (pck_7zip_use_lzma2 && !p_data.is_empty()) {
 		PCKLzmaOptions lzma_options;
 		lzma_options.compression_level = pck_7zip_level;
 		lzma_options.dictionary_size_mb = pck_7zip_dict_mb;

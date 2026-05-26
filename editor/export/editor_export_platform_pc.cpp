@@ -63,20 +63,16 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) c
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "pck_7zip/enabled"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "pck_7zip/archive_format", PROPERTY_HINT_ENUM, "7z"), "7z"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "pck_7zip/compression_level", PROPERTY_HINT_ENUM, "0 - Store,1 - Fastest,3 - Fast,5 - Normal,7 - Maximum,9 - Ultra"), 9));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "pck_7zip/compression_method", PROPERTY_HINT_ENUM, "LZMA2"), "LZMA2"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "pck_7zip/dictionary_size_mb", PROPERTY_HINT_ENUM, "64,128,256"), 256));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "pck_7zip/word_size", PROPERTY_HINT_ENUM, "32,64"), 64));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "pck_7zip/solid_block_size", PROPERTY_HINT_ENUM, "Non-solid,1GB,2GB,4GB,16GB"), "16GB"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "pck_7zip/threads", PROPERTY_HINT_RANGE, "1,1024,1"), 16));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "pck_7zip/memory_usage_percent", PROPERTY_HINT_RANGE, "10,90,1"), 80));
+	add_pck_7zip_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc_bptc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2_astc"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
+}
+
+bool EditorExportPlatformPC::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	return get_pck_7zip_export_option_visibility(p_preset, p_option);
 }
 
 String EditorExportPlatformPC::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
