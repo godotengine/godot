@@ -763,7 +763,6 @@ void CSGShape3D::update_shape() {
 			}
 		}
 	}
-	face_count.fill(0);
 
 	Vector<ShapeUpdateSurface> surfaces;
 
