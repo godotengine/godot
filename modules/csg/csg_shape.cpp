@@ -505,6 +505,7 @@ struct ManifoldOperation {
 };
 
 CSGBrush *CSGShape3D::_get_combined_brush() {
+	int child_count = get_child_count();
 	if (!dirty) {
 		if (child_count < 1) {
 			// Single node should not have combined_brush.
@@ -538,7 +539,7 @@ CSGBrush *CSGShape3D::_get_combined_brush() {
 	manifold::OpType current_op = ManifoldOperation::convert_csg_op(get_operation());
 	std::vector<manifold::Manifold> manifolds;
 	manifolds.push_back(root_manifold);
-	for (int i = 0; i < get_child_count(); i++) {
+	for (int i = 0; i < child_count; i++) {
 		CSGShape3D *child = Object::cast_to<CSGShape3D>(get_child(i));
 		if (!child || !child->is_visible()) {
 			continue;
@@ -590,6 +591,7 @@ CSGBrush *CSGShape3D::_get_combined_brush() {
 }
 
 CSGBrush *CSGShape3D::_get_brush() {
+	int child_count = get_child_count();
 	if (!dirty) {
 		return brush;
 	}
