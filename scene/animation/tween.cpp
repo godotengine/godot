@@ -416,9 +416,8 @@ bool Tween::step(double p_delta) {
 							in_step = false;
 #ifdef DEBUG_ENABLED
 							ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
-#else
-							return false;
 #endif
+							return false;
 						}
 					}
 				}
