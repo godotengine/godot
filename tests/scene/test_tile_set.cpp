@@ -34,419 +34,432 @@ TEST_FORCE_LINK(test_tile_set)
 
 #include "scene/resources/2d/tile_set.h"
 
+struct NeighborTestCase {
+	TileSet::CellNeighbor direction;
+	Vector2i expected_position;
+};
+
 namespace TestTileSet {
 
+class NeighborCellTester {
+private:
+	Ref<TileSet> tile_set;
+
+public:
+	NeighborCellTester() : tile_set(memnew(TileSet)) {}
+
+	void configure(TileSet::TileShape shape,
+			TileSet::TileLayout layout = TileSet::TILE_LAYOUT_STACKED,
+			TileSet::TileOffsetAxis offset = TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		tile_set->set_tile_shape(shape);
+		tile_set->set_tile_layout(layout);
+		tile_set->set_tile_offset_axis(offset);
+	}
+
+	void test_neighbors(const Vector2i &center, const Vector<NeighborTestCase> &cases) {
+		for (const auto &test_case : cases) {
+			Vector2i result = tile_set->get_neighbor_cell(center, test_case.direction);
+			CHECK(result == test_case.expected_position);
+		}
+	}
+
+	void test_error_case(const Vector2i &center, TileSet::CellNeighbor direction) {
+		ERR_PRINT_OFF;
+		Vector2i result = tile_set->get_neighbor_cell(center, direction);
+		CHECK(result == center);
+		ERR_PRINT_ON;
+	}
+};
+
 TEST_CASE("[TileSet] get_neighbor_cell on a square shaped tile") {
-	Ref<TileSet> tile_set = memnew(TileSet);
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_SQUARE);
+	NeighborCellTester tester;
+	tester.configure(TileSet::TILE_SHAPE_SQUARE);
 
 	Vector2i center_cell(0, 0);
 
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(0, -1));
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_CORNER) == Vector2i(1, -1));
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 0));
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER) == Vector2i(1, 1));
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(0, 1));
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER) == Vector2i(-1, 1));
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 0));
-	CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_CORNER) == Vector2i(-1, -1));
+	SUBCASE("All neighbors of a square tile") {
+		Vector<NeighborTestCase> square_neighbors = {
+			{ TileSet::CELL_NEIGHBOR_TOP_SIDE, Vector2i(0, -1) },
+			{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER, Vector2i(1, -1) },
+			{ TileSet::CELL_NEIGHBOR_RIGHT_SIDE, Vector2i(1, 0) },
+			{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER, Vector2i(1, 1) },
+			{ TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, Vector2i(0, 1) },
+			{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER, Vector2i(-1, 1) },
+			{ TileSet::CELL_NEIGHBOR_LEFT_SIDE, Vector2i(-1, 0) },
+			{ TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER, Vector2i(-1, -1) }
+		};
+
+		tester.test_neighbors(center_cell, square_neighbors);
+	}
 }
 
 TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stacked layout") {
-	Ref<TileSet> tile_set = memnew(TileSet);
-	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STACKED);
+	NeighborCellTester tester;
 
-	Vector2i center_cell(0, 0);
-
-	SUBCASE("hexagon") {
-		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-
+	SUBCASE("Hexagon") {
 		SUBCASE("horizontal offset axis") {
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_STACKED,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 0));
+			Vector<NeighborTestCase> neighbors_even = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(0, -1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors_even);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-			center_cell = Vector2i(0, 1); // UGLY
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 2));
+			Vector<NeighborTestCase> neighbors_odd = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 2) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 2) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, 0) }
+			};
+			tester.test_neighbors(Vector2i(0, 1), neighbors_odd);
 
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 2));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 0));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, -1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, 0));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
-
-			ERR_PRINT_OFF;
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
-			ERR_PRINT_ON;
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_TOP_CORNER);
 		}
 
 		SUBCASE("vertical offset axis") {
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_STACKED,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(0, 1));
+			Vector<NeighborTestCase> neighbors_even = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, -1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 0) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors_even);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(2, 1));
+			Vector<NeighborTestCase> neighbors_odd = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(2, 1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 1) }
+			};
+			tester.test_neighbors(Vector2i(1, 0), neighbors_odd);
 
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(0, -1));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, -1));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, 0));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
-
-			ERR_PRINT_OFF;
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
-			ERR_PRINT_ON;
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_LEFT_CORNER);
 		}
 	}
 
 	SUBCASE("isometric") {
-		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-
 		SUBCASE("horizontal offset axis") {
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_STACKED,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
+			Vector<NeighborTestCase> neighbors_even = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(0, 2) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(0, -2) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(0, -1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors_even);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-			center_cell = Vector2i(0, 1); // UGLY
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 2));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 2));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 2));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, -1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, 0));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -2));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
+			Vector<NeighborTestCase> neighbors_odd = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 2) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 2) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, 0) }
+			};
+			tester.test_neighbors(Vector2i(0, 1), neighbors_odd);
 		}
 
 		SUBCASE("vertical offset axis") {
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_STACKED,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
+			Vector<NeighborTestCase> neighbors_even = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(2, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, -1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-2, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 0) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors_even);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(2, 1));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(2, -1));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, -1));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, 0));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 0));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
+			Vector<NeighborTestCase> neighbors_odd = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(2, 1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(2, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 1) }
+			};
+			tester.test_neighbors(Vector2i(1, 0), neighbors_odd);
 		}
 	}
 }
 
 TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stacked offset layout") {
-	Ref<TileSet> tile_set = memnew(TileSet);
-	tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STACKED_OFFSET);
-
-	Vector2i center_cell(0, 0);
+	NeighborCellTester tester;
 
 	SUBCASE("hexagon") {
-		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-
 		SUBCASE("horizontal offset axis") {
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_STACKED_OFFSET,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 0));
+			Vector<NeighborTestCase> neighbors_even = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors_even);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 2));
+			Vector<NeighborTestCase> neighbors_odd = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 2) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 2) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(0, 0) }
+			};
+			tester.test_neighbors(Vector2i(0, 1), neighbors_odd);
 
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 2));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 0));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, 0));
-
-			ERR_PRINT_OFF;
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
-			ERR_PRINT_ON;
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_TOP_CORNER);
 		}
 
 		SUBCASE("vertical offset axis") {
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_STACKED_OFFSET,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(0, 1));
+			Vector<NeighborTestCase> neighbors_even = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors_even);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 1));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(2, 0));
+			Vector<NeighborTestCase> neighbors_odd = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(2, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 0) }
+			};
+			tester.test_neighbors(Vector2i(1, 0), neighbors_odd);
 
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(0, -1));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 0));
-
-			ERR_PRINT_OFF;
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
-			ERR_PRINT_ON;
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_LEFT_CORNER);
 		}
 	}
 
 	SUBCASE("isometric") {
-		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-
 		SUBCASE("horizontal offset axis") {
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_STACKED_OFFSET,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
+			Vector<NeighborTestCase> neighbors_even = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(0, 2) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(0, -2) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors_even);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 2));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 2));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 2));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -2));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-			center_cell = Vector2i(0, 1);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, 0));
+			Vector<NeighborTestCase> neighbors_odd = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 2) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 2) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(0, 0) }
+			};
+			tester.test_neighbors(Vector2i(0, 1), neighbors_odd);
 		}
 
 		SUBCASE("vertical offset axis") {
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_STACKED_OFFSET,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
+			Vector<NeighborTestCase> neighbors_even = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 1) },
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(2, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-2, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors_even);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 1));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(2, 0));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(2, -1));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-
-			center_cell = Vector2i(0, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 0));
-
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 0));
+			Vector<NeighborTestCase> neighbors_odd = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(2, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(2, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 0) }
+			};
+			tester.test_neighbors(Vector2i(1, 0), neighbors_odd);
 		}
 	}
 }
 
 TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stairs layout") {
-	Ref<TileSet> tile_set = memnew(TileSet);
-
-	Vector2i center_cell(0, 0);
+	NeighborCellTester tester;
 
 	SUBCASE("hexagon") {
-		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-
 		SUBCASE("stairs right, horizontal offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_RIGHT);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_STAIRS_RIGHT,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 
 		SUBCASE("stairs down, vertical offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_DOWN);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_STAIRS_DOWN,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 
 		SUBCASE("stairs down, horizontal offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_DOWN);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_STAIRS_DOWN,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(2, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-2, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_SIDE, Vector2i(2, -1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_SIDE, Vector2i(-2, 1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 
 		SUBCASE("stairs right, vertical offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_RIGHT);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_STAIRS_RIGHT,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(-1, 2));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(1, -2));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, Vector2i(-1, 2) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_SIDE, Vector2i(1, -2) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 	}
 
 	SUBCASE("isometric") {
-		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-
 		SUBCASE("stairs right, horizontal offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_RIGHT);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_STAIRS_RIGHT,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 2));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -2));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(-1, 2) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(1, -2) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 
 		SUBCASE("stairs down, vertical offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_DOWN);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_STAIRS_DOWN,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(2, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-2, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 
 		SUBCASE("stairs down, horizontal offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_DOWN);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_STAIRS_DOWN,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-2, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(2, -1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-2, 1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 
 		SUBCASE("stairs right, vertical offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_STAIRS_RIGHT);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_STAIRS_RIGHT,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 2));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -2));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(-1, 2) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(1, -2) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 	}
 }
 
 TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the diamond layout") {
+	NeighborCellTester tester;
+
 	Ref<TileSet> tile_set = memnew(TileSet);
 
 	Vector2i center_cell(0, 0);
@@ -455,67 +468,75 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the diamo
 		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
 
 		SUBCASE("diamond right, horizontal offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_RIGHT);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_DIAMOND_RIGHT,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_SIDE, Vector2i(1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_SIDE, Vector2i(-1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, 0) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 
-			ERR_PRINT_OFF;
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
-			ERR_PRINT_ON;
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_TOP_CORNER);
 		}
 
 		SUBCASE("diamond down, vertical offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_DOWN);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_DIAMOND_DOWN,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(-1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, Vector2i(1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_SIDE, Vector2i(-1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 
-			ERR_PRINT_OFF;
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
-			ERR_PRINT_ON;
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_LEFT_CORNER);
 		}
 
 		SUBCASE("diamond down, horizontal offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_DOWN);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_DIAMOND_DOWN,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_SIDE) == Vector2i(1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_SIDE) == Vector2i(-1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_SIDE, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_SIDE, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(0, -1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 
-			ERR_PRINT_OFF;
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, 0));
-			ERR_PRINT_ON;
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_TOP_CORNER);
 		}
 
 		SUBCASE("diamond right, vertical offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_RIGHT);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
+					TileSet::TILE_LAYOUT_DIAMOND_RIGHT,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_SIDE) == Vector2i(-1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_SIDE) == Vector2i(1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_SIDE, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 0) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 
-			ERR_PRINT_OFF;
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(0, 0));
-			ERR_PRINT_ON;
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_LEFT_CORNER);
 		}
 	}
 
@@ -523,59 +544,75 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the diamo
 		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
 
 		SUBCASE("diamond right, horizontal offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_RIGHT);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_DIAMOND_RIGHT,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, 0) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 
 		SUBCASE("diamond down, vertical offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_DOWN);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_DIAMOND_DOWN,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(-1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(-1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 
 		SUBCASE("diamond down, horizontal offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_DOWN);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_HORIZONTAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_DIAMOND_DOWN,
+					TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(-1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(-1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(0, -1));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(-1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(-1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(0, -1) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 
 		SUBCASE("diamond right, vertical offset axis") {
-			tile_set->set_tile_layout(TileSet::TileLayout::TILE_LAYOUT_DIAMOND_RIGHT);
-			tile_set->set_tile_offset_axis(TileSet::TileOffsetAxis::TILE_OFFSET_AXIS_VERTICAL);
+			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+					TileSet::TILE_LAYOUT_DIAMOND_RIGHT,
+					TileSet::TILE_OFFSET_AXIS_VERTICAL);
 
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_CORNER) == Vector2i(-1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) == Vector2i(0, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(1, 1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_LEFT_SIDE) == Vector2i(0, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_LEFT_CORNER) == Vector2i(-1, -1));
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) == Vector2i(-1, 0));
+			Vector<NeighborTestCase> neighbors = {
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_CORNER, Vector2i(-1, 1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, Vector2i(0, 1) },
+				{ TileSet::CELL_NEIGHBOR_RIGHT_CORNER, Vector2i(1, 1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, 0) },
+				{ TileSet::CELL_NEIGHBOR_TOP_CORNER, Vector2i(1, -1) },
+				{ TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, Vector2i(0, -1) },
+				{ TileSet::CELL_NEIGHBOR_LEFT_CORNER, Vector2i(-1, -1) },
+				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 0) }
+			};
+			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 	}
 }
