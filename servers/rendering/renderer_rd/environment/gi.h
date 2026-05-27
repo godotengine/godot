@@ -590,7 +590,6 @@ public:
 		enum {
 			MAX_CASCADES = 8,
 			CASCADE_SIZE = 128,
-			REGION_CELLS = 8,
 			MAX_DYNAMIC_LIGHTS = 128,
 			MAX_STATIC_LIGHTS = 1024,
 			LIGHTPROBE_OCT_SIZE = 5,
@@ -599,6 +598,8 @@ public:
 			OCCLUSION_SUBPIXELS = 4,
 			SH_SIZE = 16
 		};
+
+		static constexpr int32_t REGION_CELLS = 8;
 
 		struct Cascade {
 			struct UBO {

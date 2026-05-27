@@ -1259,32 +1259,6 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "background_intensity" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
-
-	static const char *hide_prefixes[] = {
-		"fog_",
-		"volumetric_fog_",
-		"ssr_",
-		"ssao_",
-		"ssil_",
-		"sdfgi_",
-		"glow_",
-		"adjustment_",
-		nullptr
-
-	};
-
-	const char **prefixes = hide_prefixes;
-	while (*prefixes) {
-		String prefix = String(*prefixes);
-
-		String enabled = prefix + "enabled";
-		if (p_property.name.begins_with(prefix) && p_property.name != enabled && !bool(get(enabled))) {
-			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-			return;
-		}
-
-		prefixes++;
-	}
 }
 
 #ifndef DISABLE_DEPRECATED

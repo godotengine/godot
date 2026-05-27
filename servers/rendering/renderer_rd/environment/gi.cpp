@@ -3683,16 +3683,17 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 		RID hddagi_default_3d_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_HDDAGI_TEXTURE_3D);
 		RID default_2d_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 		RID default_2d_array_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+		RID default_3d_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
 
 		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
 				shader.version_get_shader(shader_version, mode),
 				0,
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, !use_hddagi ? hddagi_default_3d_tex : hddagi->voxel_bits_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, !use_hddagi ? hddagi_default_3d_tex : hddagi->voxel_region_tex),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, !use_hddagi ? default_2d_tex : hddagi->voxel_light_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, !use_hddagi ? default_3d_tex : hddagi->voxel_light_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 4, !use_hddagi ? default_2d_array_tex : hddagi->lightprobe_specular_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 5, !use_hddagi ? default_2d_array_tex : (hddagi->using_probe_filter ? hddagi->lightprobe_diffuse_filter_tex : hddagi->lightprobe_diffuse_tex)),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, !use_hddagi ? Vector<RID>({ hddagi_default_3d_tex, hddagi_default_3d_tex }) : hddagi->get_lightprobe_occlusion_textures()),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, !use_hddagi ? Vector<RID>({ default_3d_tex, default_3d_tex }) : hddagi->get_lightprobe_occlusion_textures()),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 7, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 8, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, !use_hddagi ? hddagi_default_2d_tex : hddagi->voxel_disocclusion_tex),
