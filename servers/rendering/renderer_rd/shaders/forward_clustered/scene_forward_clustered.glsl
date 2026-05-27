@@ -218,6 +218,13 @@ uint multimesh_stride() {
 	return stride;
 }
 
+mat3 adjugate(in mat4 m) {
+	return mat3(
+			cross(m[1].xyz, m[2].xyz),
+			cross(m[2].xyz, m[0].xyz),
+			cross(m[0].xyz, m[1].xyz));
+}
+
 void vertex_shader(vec3 vertex_input,
 #ifdef NORMAL_USED
 		in vec3 normal_input,
@@ -251,7 +258,8 @@ void vertex_shader(vec3 vertex_input,
 
 	mat3 model_normal_matrix;
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
-		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
+		float dsign = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_POSITIVE_DET) ? 1.0 : -1.0;
+		model_normal_matrix = dsign * adjugate(model_matrix);
 	} else {
 		model_normal_matrix = mat3(model_matrix);
 	}
