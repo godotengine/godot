@@ -260,32 +260,36 @@ void CSGShape3D::_make_dirty(bool p_parent_removing) {
 		callable_mp(this, &CSGShape3D::update_shape).call_deferred();
 	}
 #endif // PHYSICS_3D_DISABLED
-
+	children_modified = true;
 	painted = false;
 	dirty = true;
 	notify_property_list_changed();
 }
 
 void CSGShape3D::_make_painted(bool p_paint, bool p_parent_removing) {
+	// Update combined_brush.
+	children_modified = true;
+
+	painted = painted || p_paint;
+	if (!painted) {
+		_make_dirty(p_parent_removing);
+		return;
+	} else if (!brush) {
+		_make_dirty(p_parent_removing);
+		return;
+	}
+
 	if (p_parent_removing) {
 		callable_mp(this, &CSGShape3D::update_shape).call_deferred();
 	} else if (!is_root_shape()) {
 		// The !is_root_shape() means the node has a parent so it has been added already.
-		painted = painted || p_paint;
-		if (!painted) {
-			_make_dirty();
-			return;
-		} else if (!brush) {
-			_make_dirty();
-			return;
-		}
 		update_configuration_warnings();
 		notify_property_list_changed();
 		// We force a rebuild of the root shape only.
 		parent_shape->_make_painted();
 	} else {
 		// Properties are set before add_child, so the node is root shape because it doesn't have a parent.
-		rebuild_brush();
+		callable_mp(this, &CSGShape3D::update_shape).call_deferred();
 	}
 }
 
@@ -506,14 +510,16 @@ struct ManifoldOperation {
 
 CSGBrush *CSGShape3D::_get_combined_brush() {
 	int child_count = get_child_count();
-	if (!dirty) {
+	if (!dirty && !children_modified) {
 		if (child_count < 1) {
 			// Single node should not have combined_brush.
 			if (combined_brush) {
 				memdelete(combined_brush);
 				combined_brush = nullptr;
 			}
-			return brush;
+			if (brush) {
+				return brush;
+			}
 		}
 		if (combined_brush) {
 			return combined_brush;
@@ -524,10 +530,13 @@ CSGBrush *CSGShape3D::_get_combined_brush() {
 		memdelete(combined_brush);
 	}
 
+	// This will generate a CSGBrush if it's not assigned.
 	CSGBrush *orig = _get_brush();
+
 	if (child_count < 1) {
 		// Dirty but single node, we can skip the rest of the code.
 		combined_brush = nullptr;
+		children_modified = false;
 		return brush;
 	}
 
@@ -539,6 +548,8 @@ CSGBrush *CSGShape3D::_get_combined_brush() {
 	manifold::OpType current_op = ManifoldOperation::convert_csg_op(get_operation());
 	std::vector<manifold::Manifold> manifolds;
 	manifolds.push_back(root_manifold);
+
+	bool has_children = false;
 	for (int i = 0; i < child_count; i++) {
 		CSGShape3D *child = Object::cast_to<CSGShape3D>(get_child(i));
 		if (!child || !child->is_visible()) {
@@ -560,6 +571,8 @@ CSGBrush *CSGShape3D::_get_combined_brush() {
 			current_op = child_operation;
 		}
 		manifolds.push_back(child_manifold);
+		// Node has at least one CSGShape3D child.
+		has_children = true;
 	}
 	if (!manifolds.empty()) {
 		manifold::Manifold manifold_result = manifold::Manifold::BatchBoolean(manifolds, current_op);
@@ -574,18 +587,15 @@ CSGBrush *CSGShape3D::_get_combined_brush() {
 			csg_push_warning(NON_MANIFOLD);
 		}
 	}
-	AABB aabb;
-	if (n && !n->faces.is_empty()) {
-		aabb.position = n->faces[0].vertices[0];
-		for (const CSGBrush::Face &face : n->faces) {
-			for (int i = 0; i < 3; ++i) {
-				aabb.expand_to(face.vertices[i]);
-			}
-		}
+	if (has_children) {
+		_expand_aabb(n);
+	} else {
+		// Node has children but those children are not CSGShape3D.
+		_expand_aabb(orig);
 	}
-	node_aabb = aabb;
 	combined_brush = n;
 	dirty = false;
+	children_modified = false;
 	update_configuration_warnings();
 	return combined_brush;
 }
@@ -600,21 +610,25 @@ CSGBrush *CSGShape3D::_get_brush() {
 	brush = nullptr;
 	CSGBrush *n = _build_brush();
 	if (get_child_count() < 1) {
-		AABB aabb;
-		if (n && !n->faces.is_empty()) {
-			aabb.position = n->faces[0].vertices[0];
-			for (const CSGBrush::Face &face : n->faces) {
-				for (int i = 0; i < 3; ++i) {
-					aabb.expand_to(face.vertices[i]);
-				}
-			}
-		}
-		node_aabb = aabb;
+		_expand_aabb(n);
 	}
 	brush = n;
 	dirty = false;
 	update_configuration_warnings();
 	return brush;
+}
+
+void CSGShape3D::_expand_aabb(CSGBrush *p_brush) {
+	AABB aabb;
+	if (p_brush && !p_brush->faces.is_empty()) {
+		aabb.position = p_brush->faces[0].vertices[0];
+		for (const CSGBrush::Face &face : p_brush->faces) {
+			for (int i = 0; i < 3; ++i) {
+				aabb.expand_to(face.vertices[i]);
+			}
+		}
+	}
+	node_aabb = aabb;
 }
 
 int CSGShape3D::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
@@ -898,7 +912,7 @@ Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
 #ifndef PHYSICS_3D_DISABLED
 Vector<Vector3> CSGShape3D::_get_brush_collision_faces() {
 	Vector<Vector3> collision_faces;
-	CSGBrush *n = _get_brush();
+	CSGBrush *n = _get_combined_brush();
 	ERR_FAIL_NULL_V_MSG(n, collision_faces, "Cannot get CSGBrush.");
 	collision_faces.resize(n->faces.size() * 3);
 	Vector3 *collision_faces_ptrw = collision_faces.ptrw();
@@ -1020,13 +1034,6 @@ void CSGShape3D::_notification(int p_what) {
 				}
 			}
 			last_visible = is_visible();
-		} break;
-
-		case NOTIFICATION_READY: {
-			// Build the brush only once all children are inside the tree.
-			if (is_root_shape()) {
-				rebuild_brush();
-			}
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
@@ -1319,19 +1326,12 @@ void CSGShape3D::set_csg_brush(const Dictionary &p_brush_data) {
 		csg_push_warning(NO_WARNING);
 	}
 
-	AABB aabb;
-	if (n && !n->faces.is_empty()) {
-		aabb.position = n->faces[0].vertices[0];
-		for (const CSGBrush::Face &face : n->faces) {
-			for (int i = 0; i < 3; ++i) {
-				aabb.expand_to(face.vertices[i]);
-			}
-		}
-	}
-	node_aabb = aabb;
+	_expand_aabb(n);
 	brush = n;
 	dirty = false;
 	update_configuration_warnings();
+	// Recalculate parent.
+	_make_painted();
 }
 
 void CSGShape3D::set_uv_offsets(const Vector<int> &p_faces, const Vector2 &p_prev_offset, const Vector2 &p_offset) {
@@ -1784,17 +1784,6 @@ bool CSGShape3D::resize_brush(const Vector3 &p_prev_size, const Vector3 &p_size)
 
 	Vector3 n_size = p_size / p_prev_size;
 
-	AABB aabb;
-	aabb.position = n->faces[0].vertices[0] * n_size;
-	for (int i = 0; i < n->faces.size(); i++) {
-		for (int j = 0; j < 3; j++) {
-			Vector3 curr = n->faces[i].vertices[j];
-			curr *= n_size;
-			aabb.expand_to(curr);
-			n->faces.write[i].vertices[j] = curr;
-		}
-	}
-	node_aabb = aabb;
 	return true;
 }
 
@@ -1824,12 +1813,6 @@ void CSGShape3D::resize_brush_rework() {
 	AABB aabb;
 	if (b) {
 		if (!b->faces.is_empty()) {
-			aabb.position = b->faces[0].vertices[0];
-			for (const CSGBrush::Face &face : b->faces) {
-				for (int i = 0; i < 3; ++i) {
-					aabb.expand_to(face.vertices[i]);
-				}
-			}
 			for (int i = 0; i < n->faces.size(); i++) {
 				for (int j = 0; j < 3; j++) {
 					n->faces.write[i].vertices[j] = b->faces[i].vertices[j];
@@ -1838,7 +1821,6 @@ void CSGShape3D::resize_brush_rework() {
 		}
 		memdelete(b);
 	}
-	node_aabb = aabb;
 }
 
 void CSGShape3D::set_csg_invert(bool p_inv_val) {
@@ -2157,6 +2139,10 @@ CSGShape3D::~CSGShape3D() {
 	if (brush) {
 		memdelete(brush);
 		brush = nullptr;
+	}
+	if (combined_brush) {
+		memdelete(combined_brush);
+		combined_brush = nullptr;
 	}
 }
 

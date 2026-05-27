@@ -76,6 +76,7 @@ private:
 	AABB node_aabb;
 
 	bool dirty = false;
+	bool children_modified = false;
 	bool painted = false;
 	bool last_visible = false;
 	float snap = 0.001;
@@ -142,6 +143,8 @@ protected:
 	friend class CSGCombiner3D;
 	CSGBrush *_get_combined_brush();
 	CSGBrush *_get_brush();
+
+	void _expand_aabb(CSGBrush *p_brush);
 
 	void _validate_property(PropertyInfo &p_property) const;
 
