@@ -15,10 +15,9 @@
 		<method name="get_stream_frame_duration" qualifiers="const">
 			<return type="float" />
 			<description>
-				The frame duration of the current stream, in seconds.
+				Returns the duration of a single video frame from the current stream, in seconds.
 			</description>
 		</method>
-
 		<method name="get_stream_length" qualifiers="const">
 			<return type="float" />
 			<description>
