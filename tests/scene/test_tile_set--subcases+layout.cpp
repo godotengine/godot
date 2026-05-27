@@ -167,10 +167,9 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stack
 			center_cell = Vector2i(0, 0);
 			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
 
-			// Fourth if (buggy in original — tests RIGHT_CORNER instead of TOP_RIGHT_SIDE)
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
+			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
 			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(3, 0));
+			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(2, -1));
 
 			center_cell = Vector2i(0, 0);
 			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
@@ -308,11 +307,10 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stack
 			center_cell = Vector2i(0, 0);
 			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
 
-			// Fourth if (buggy in original — tests RIGHT_CORNER instead of TOP_RIGHT_SIDE)
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
+			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));
 			center_cell = Vector2i(1, 0);
-			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(3, 0));
-
+			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(2, -1));
+			
 			center_cell = Vector2i(0, 0);
 			CHECK(tile_set->get_neighbor_cell(center_cell, TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_CORNER) == Vector2i(0, -1));
 
