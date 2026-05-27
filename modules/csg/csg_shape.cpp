@@ -1781,7 +1781,7 @@ bool CSGShape3D::resize_brush(const Vector3 &p_prev_size, const Vector3 &p_size)
 
 	Vector3 n_size = p_size / p_prev_size;
 	AABB aabb;
-	aabb.position = p_brush->faces[0].vertices[0];
+	aabb.position = n->faces[0].vertices[0];
 	for (int i = 0; i < n->faces.size(); i++) {
 		for (int j = 0; j < 3; j++) {
 			Vector3 curr = n->faces[i].vertices[j];
