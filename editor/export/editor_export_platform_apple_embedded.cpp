@@ -2291,6 +2291,9 @@ bool EditorExportPlatformAppleEmbedded::has_valid_project_configuration(const Re
 	}
 
 	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
+		if (EditorNode::is_cmdline_mode()) {
+			err += vformat(TTR("ETC2/ASTC texture compression is required for %s export. In the Project Settings, search for 'ETC2' in the search field, or enable 'Advanced Settings', and go to Rendering > Textures > VRAM Compression to enable 'Import ETC2 ASTC'."), get_name()) + "\n";
+		}
 		valid = false;
 	}
 
