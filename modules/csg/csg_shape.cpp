@@ -1783,6 +1783,13 @@ bool CSGShape3D::resize_brush(const Vector3 &p_prev_size, const Vector3 &p_size)
 	}
 
 	Vector3 n_size = p_size / p_prev_size;
+	for (int i = 0; i < n->faces.size(); i++) {
+		for (int j = 0; j < 3; j++) {
+			Vector3 curr = n->faces[i].vertices[j];
+			curr *= n_size;
+			n->faces.write[i].vertices[j] = curr;
+		}
+	}
 
 	return true;
 }
@@ -1810,7 +1817,6 @@ void CSGShape3D::resize_brush_rework() {
 		return;
 	}
 
-	AABB aabb;
 	if (b) {
 		if (!b->faces.is_empty()) {
 			for (int i = 0; i < n->faces.size(); i++) {
