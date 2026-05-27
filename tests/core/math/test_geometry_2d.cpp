@@ -893,6 +893,7 @@ TEST_CASE("[Geometry2D] Bresenham line") {
 TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 	// defining a square
 	Vector<Vector2> points;
+	points.clear();
 	// define a 10 x 10 square
 	points.push_back(Vector2(0, 0));
 	points.push_back(Vector2(0, 10));
@@ -902,6 +903,7 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 	Vector<Vector<Vector2>> transformed;
 
 	SUBCASE("[Geometry2D] Simple inflate (Miter join)") {
+		transformed.clear();
 		transformed = Geometry2D::offset_polygon(points, 1, Geometry2D::JOIN_MITER);
 
 		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
@@ -914,6 +916,7 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 	}
 
 	SUBCASE("[Geometry2D] Simple inflate (Square join)") {
+		transformed.clear();
 		transformed = Geometry2D::offset_polygon(points, 1, Geometry2D::JOIN_SQUARE);
 
 		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
@@ -926,6 +929,7 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 	}
 
 	SUBCASE("[Geometry2D] Simple inflate (Round join)") {
+		transformed.clear();
 		transformed = Geometry2D::offset_polygon(points, 1, Geometry2D::JOIN_ROUND);
 		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
 		CHECK_MESSAGE(transformed[0].size() == 12, "There should be exactly 12 points");
@@ -936,6 +940,7 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 	}
 
 	SUBCASE("[Geometry2D] Simple deflate") {
+		transformed.clear();
 		transformed = Geometry2D::offset_polygon(points, -1, Geometry2D::JOIN_SQUARE);
 		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
 		CHECK_MESSAGE(transformed[0].size() == 4, "There should be exactly 4 points");
@@ -947,18 +952,21 @@ TEST_CASE("[Geometry2D] Polygon Inflation/Deflation") {
 	}
 
 	SUBCASE("[Geometry2D] Offset with negative delta that is larger than the polygon") {
+		transformed.clear();
 		transformed = Geometry2D::offset_polygon(points, -100, Geometry2D::JOIN_SQUARE);
 
 		CHECK_MESSAGE(transformed.size() == 0, "The polygon should be empty");
 	}
 
 	SUBCASE("[Geometry2D] Offset of exactly half the size of a the polygon") {
+		transformed.clear();
 		transformed = Geometry2D::offset_polygon(points, -5, Geometry2D::JOIN_SQUARE);
 
 		CHECK_MESSAGE(transformed.size() == 0, "The polygon should be empty");
 	}
 
 	SUBCASE("[Geometry2D] Offset of zero units") {
+		transformed.clear();
 		transformed = Geometry2D::offset_polygon(points, 0, Geometry2D::JOIN_MITER);
 
 		CHECK_MESSAGE(transformed.size() == 1, "There should be a single polygon");
@@ -976,6 +984,8 @@ TEST_CASE("[Geometry2D] Triangulate Delaunay") {
 
 	SUBCASE("[Geometry2D] Simple Triangulation of Square") {
 		// define a 10 x 10 square
+		p.clear();
+		indices.clear();
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(0, 10));
 		p.push_back(Vector2(10, 10));
@@ -991,6 +1001,7 @@ TEST_CASE("[Geometry2D] Triangulate Delaunay") {
 
 	SUBCASE("[Geometry2D] Simple Triangulation of Six Points") {
 		p.clear();
+		indices.clear();
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(2, 0));
 		p.push_back(Vector2(4, 1));
@@ -1003,6 +1014,7 @@ TEST_CASE("[Geometry2D] Triangulate Delaunay") {
 
 	SUBCASE("[Geometry2D] Passing two points") {
 		p.clear();
+		indices.clear();
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(0, 10));
 		indices = Geometry2D::triangulate_delaunay(p);
@@ -1011,6 +1023,7 @@ TEST_CASE("[Geometry2D] Triangulate Delaunay") {
 
 	SUBCASE("[Geometry2D] Collinear line (zero-area polygon)") {
 		p.clear();
+		indices.clear();
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(0, 1));
 		p.push_back(Vector2(0, 3));
@@ -1022,6 +1035,7 @@ TEST_CASE("[Geometry2D] Triangulate Delaunay") {
 
 	SUBCASE("[Geometry2D] All identical points") {
 		p.clear();
+		indices.clear();
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(0, 0));
@@ -1040,6 +1054,8 @@ TEST_CASE("[Geometry2D] Triangulate Polygon") {
 
 	SUBCASE("[Geometry2D] Simple Triangulation of Square") {
 		// define a 10 x 10 square
+		p.clear();
+		indices.clear();
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(0, 10));
 		p.push_back(Vector2(10, 10));
@@ -1055,6 +1071,8 @@ TEST_CASE("[Geometry2D] Triangulate Polygon") {
 
 	SUBCASE("[Geometry2D] Counterclockwise Winding Test") {
 		// define a 10 x 10 square
+		p.clear();
+		indices.clear();
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(10, 0));
 		p.push_back(Vector2(10, 10));
@@ -1067,6 +1085,7 @@ TEST_CASE("[Geometry2D] Triangulate Polygon") {
 
 	SUBCASE("[Geometry2D] Triangulation of Concave Polygon") {
 		p.clear();
+		indices.clear();
 		p.push_back(Vector2(-2, 2));
 		p.push_back(Vector2(2, 2));
 		p.push_back(Vector2(0, 0));
@@ -1078,6 +1097,7 @@ TEST_CASE("[Geometry2D] Triangulate Polygon") {
 
 	SUBCASE("[Geometry2D] Passing two points") {
 		p.clear();
+		indices.clear();
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(0, 10));
 		indices = Geometry2D::triangulate_polygon(p);
@@ -1088,6 +1108,7 @@ TEST_CASE("[Geometry2D] Triangulate Polygon") {
 
 	SUBCASE("[Geometry2D] Self-intersecting polygon") {
 		p.clear();
+		indices.clear();
 		p.push_back(Vector2(-2, 4));
 		p.push_back(Vector2(2, 4));
 		p.push_back(Vector2(-2, 0));
@@ -1098,6 +1119,7 @@ TEST_CASE("[Geometry2D] Triangulate Polygon") {
 
 	SUBCASE("[Geometry2D] Collinear line (Degenerate case)") {
 		p.clear();
+		indices.clear();
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(1, 0));
 		p.push_back(Vector2(3, 0));
@@ -1109,6 +1131,7 @@ TEST_CASE("[Geometry2D] Triangulate Polygon") {
 
 	SUBCASE("[Geometry2D] All identical points (Degenerate case)") {
 		p.clear();
+		indices.clear();
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(0, 0));
 		p.push_back(Vector2(0, 0));
