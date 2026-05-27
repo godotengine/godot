@@ -41,6 +41,7 @@ void VideoStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_is_playing);
 	GDVIRTUAL_BIND(_set_paused, "paused");
 	GDVIRTUAL_BIND(_is_paused);
+	GDVIRTUAL_BIND(_get_frame_duration);
 	GDVIRTUAL_BIND(_get_length);
 	GDVIRTUAL_BIND(_get_playback_position);
 	GDVIRTUAL_BIND(_seek, "time");
@@ -85,6 +86,14 @@ bool VideoStreamPlayback::is_paused() const {
 	return false;
 }
 
+double VideoStreamPlayback::get_frame_duration() const {
+	double ret;
+	if (GDVIRTUAL_CALL(_get_frame_duration, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
 double VideoStreamPlayback::get_length() const {
 	double ret;
 	if (GDVIRTUAL_CALL(_get_length, ret)) {
@@ -92,6 +101,7 @@ double VideoStreamPlayback::get_length() const {
 	}
 	return 0;
 }
+
 
 double VideoStreamPlayback::get_playback_position() const {
 	double ret;
