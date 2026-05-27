@@ -126,8 +126,8 @@ TEST_CASE("[TileSet] get_neighbor_cell: stacked layout, vertical offset axis") {
 
 	// CELL_NEIGHBOR_TOP_RIGHT_SIDE — shifts y-1 on even columns; note: shares branch with RIGHT_CORNER for isometric
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
-	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(3, 0));
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));  // even column
+	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(2, -1)); // odd column
 
 	// CELL_NEIGHBOR_TOP_SIDE (hex) / CELL_NEIGHBOR_TOP_CORNER (isometric) — no offset effect
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
@@ -229,9 +229,9 @@ TEST_CASE("[TileSet] get_neighbor_cell: stacked offset layout, vertical offset a
 	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
 
 	// CELL_NEIGHBOR_TOP_RIGHT_SIDE — shifts y-1 on odd columns (inverted vs stacked)
-	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(2, 0));
-	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_RIGHT_CORNER) == Vector2i(3, 0));
+	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
+	CHECK(tile_set->get_neighbor_cell(Vector2i(0, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(1, 0));  // even column
+	CHECK(tile_set->get_neighbor_cell(Vector2i(1, 0), TileSet::CellNeighbor::CELL_NEIGHBOR_TOP_RIGHT_SIDE) == Vector2i(2, -1)); // odd column
 
 	// CELL_NEIGHBOR_TOP_SIDE (hex) / CELL_NEIGHBOR_TOP_CORNER (isometric) — no offset effect
 	tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
