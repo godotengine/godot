@@ -1485,6 +1485,11 @@ void GDScript::clear() {
 }
 
 void GDScript::cancel_pending_functions(bool warn) {
+	if (!GDScriptLanguage::get_singleton()) {
+		// GDScriptLanguage has been destroyed during Main::cleanup().
+		// All pending functions have been cleared by GDScriptLanguage::finish().
+		return;
+	}
 	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
 	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
@@ -1522,10 +1527,14 @@ GDScript::~GDScript() {
 
 	cancel_pending_functions(false);
 
-	{
-		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+	if (GDScriptLanguage::get_singleton()) {
+		GDScriptLanguage::get_singleton()->mutex.lock();
+	}
 
-		script_list.remove_from_list();
+	script_list.remove_from_list();
+
+	if (GDScriptLanguage::get_singleton()) {
+		GDScriptLanguage::get_singleton()->mutex.unlock();
 	}
 }
 
@@ -2064,7 +2073,14 @@ void GDScriptInstance::reload_members() {
 }
 
 GDScriptInstance::~GDScriptInstance() {
-	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+	// GDScriptLanguage may have been destroyed during Main::cleanup() before
+	// this destructor runs. If so, the mutex is no longer needed since all
+	// script data has been cleared by GDScriptLanguage::finish().
+	// Use manual lock/unlock (not MutexLock RAII) to keep the mutex held
+	// for the entire destructor body regardless of null-singleton guard.
+	if (GDScriptLanguage::get_singleton()) {
+		GDScriptLanguage::get_singleton()->mutex.lock();
+	}
 
 	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
 		// Order matters since clearing the stack may already cause
@@ -2080,6 +2096,10 @@ GDScriptInstance::~GDScriptInstance() {
 
 	if (script.is_valid()) {
 		script->instances.remove(&script_instance_list);
+	}
+
+	if (GDScriptLanguage::get_singleton()) {
+		GDScriptLanguage::get_singleton()->mutex.unlock();
 	}
 }
 
