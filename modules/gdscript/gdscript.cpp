@@ -2064,7 +2064,9 @@ void GDScriptInstance::reload_members() {
 }
 
 GDScriptInstance::~GDScriptInstance() {
-	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+	if (GDScriptLanguage::get_singleton()) {
+		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+	}
 
 	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
 		// Order matters since clearing the stack may already cause
