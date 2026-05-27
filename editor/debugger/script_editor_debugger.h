@@ -372,6 +372,8 @@ public:
 	bool get_debug_mute_audio() const;
 	void set_debug_mute_audio(bool p_mute);
 
+	void set_debug_collisions(bool p_enable);
+
 	EditorDebuggerNode::CameraOverride get_camera_override() const;
 	void set_camera_override(EditorDebuggerNode::CameraOverride p_override);
 
