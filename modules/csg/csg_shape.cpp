@@ -1171,10 +1171,6 @@ Dictionary CSGShape3D::get_csg_brush() {
 		return p_brush_data;
 	}
 
-	if (is_root_shape()) {
-		return p_brush_data;
-	}
-
 	if (!painted) {
 		// Only save painted brushes.
 		return p_brush_data;
