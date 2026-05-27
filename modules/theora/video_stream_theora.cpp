@@ -640,6 +640,10 @@ bool VideoStreamPlaybackTheora::is_paused() const {
 	return paused;
 }
 
+double VideoStreamPlaybackTheora::get_frame_duration() const {
+	return frame_duration;
+}
+
 double VideoStreamPlaybackTheora::get_length() const {
 	return stream_length;
 }
