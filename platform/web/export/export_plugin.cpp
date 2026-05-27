@@ -470,6 +470,7 @@ bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorEx
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
+			err += TTR("Cannot export for Web if ETC2/ASTC texture format is disabled. Enable it in the Project Settings (Rendering > Textures > VRAM Compression > Import ETC2 ASTC).") + "\n";
 			valid = false;
 		}
 	}
