@@ -10,10 +10,13 @@
 	</tutorials>
 	<constants>
 		<constant name="FLAG_NONE" value="0" enum="LoaderFlags" is_bitfield="true">
+			Default loading behavior. No processing is applied to the image.
 		</constant>
 		<constant name="FLAG_FORCE_LINEAR" value="1" enum="LoaderFlags" is_bitfield="true">
+			If set, the image is converted from sRGB to linear encoding.
 		</constant>
 		<constant name="FLAG_CONVERT_COLORS" value="2" enum="LoaderFlags" is_bitfield="true">
+			If set, a predefined color map is applied to the image. Used when [member ResourceImporterTexture.editor/convert_colors_with_editor_theme] is [code]true[/code].
 		</constant>
 	</constants>
 </class>
