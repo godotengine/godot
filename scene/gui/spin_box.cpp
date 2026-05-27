@@ -109,11 +109,11 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	last_text_value = value;
 
 	if (!line_edit->is_editing()) {
-		if (!prefix.is_empty()) {
-			value = prefix + " " + value;
+		if (!prefix_translated.is_empty()) {
+			value = prefix_translated + " " + value;
 		}
-		if (!suffix.is_empty()) {
-			value += " " + suffix;
+		if (!suffix_translated.is_empty()) {
+			value += " " + suffix_translated;
 		}
 	}
 
@@ -153,7 +153,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 	text = text.replace_char(';', ',');
 	text = TranslationServer::get_singleton()->parse_number(text, lang);
 	// Ignore the prefix and suffix in the expression.
-	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
+	text = text.trim_prefix(prefix_translated + " ").trim_suffix(" " + suffix_translated);
 
 	Error err = expr->parse(text);
 
@@ -161,7 +161,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = p_string;
 		text = TranslationServer::get_singleton()->parse_number(text, lang);
-		text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
+		text = text.trim_prefix(prefix_translated + " ").trim_suffix(" " + suffix_translated);
 
 		err = expr->parse(text);
 		if (err != OK) {
@@ -533,6 +533,9 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			prefix_translated = atr(prefix);
+			suffix_translated = atr(suffix);
+			_update_text();
 			queue_redraw();
 		} break;
 
@@ -564,6 +567,7 @@ void SpinBox::set_suffix(const String &p_suffix) {
 	}
 
 	suffix = p_suffix;
+	suffix_translated = atr(suffix);
 	_update_text();
 }
 
@@ -577,6 +581,7 @@ void SpinBox::set_prefix(const String &p_prefix) {
 	}
 
 	prefix = p_prefix;
+	prefix_translated = atr(prefix);
 	_update_text();
 }
 

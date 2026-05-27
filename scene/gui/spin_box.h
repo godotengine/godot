@@ -76,7 +76,9 @@ class SpinBox : public Range {
 	void _text_changed(const String &p_string);
 
 	String prefix;
+	String prefix_translated;
 	String suffix;
+	String suffix_translated;
 	String last_text_value;
 	double custom_arrow_step = 0.0;
 	bool custom_arrow_round = false;
