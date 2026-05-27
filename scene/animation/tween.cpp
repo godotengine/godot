@@ -376,9 +376,6 @@ bool Tween::step(double p_delta) {
 	bool step_active = false;
 	total_time += rem_delta;
 
-	// Infinite-loop guard variables, used in both debug and release builds.
-	// In release builds the guard silently breaks the step instead of throwing,
-	// preventing freezes when a Tween chain accidentally produces zero-duration loops.
 	double initial_delta = rem_delta;
 	bool potential_infinite = false;
 
@@ -411,11 +408,6 @@ bool Tween::step(double p_delta) {
 					emit_signal(SNAME("loop_finished"), loops_done);
 					current_step = 0;
 					_start_tweeners();
-					// Detect infinite loop (looped without consuming any time).
-					// In debug builds we surface a hard error so the developer can fix it;
-					// in release builds we break the step silently so the running game
-					// does not freeze (observed on mobile profilers as Tween::step
-					// dominating frame time when an infinite Tween becomes zero-duration).
 					if (loops <= 0 && Math::is_equal_approx(rem_delta, initial_delta)) {
 						if (!potential_infinite) {
 							potential_infinite = true;
