@@ -266,7 +266,7 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 	*(uint32_t *)basisu_data_ptr = decompress_format | BASIS_DECOMPRESS_FLAG_KTX2;
 	memcpy(basisu_data_ptr + 4, basisu_encoded.get_ptr(), basisu_encoded.size());
 
-	print_verbose(vformat("BasisU: Encoding a %dx%d image with %d mipmaps took %d ms.", p_image->get_width(), p_image->get_height(), p_image->get_mipmap_count(), OS::get_singleton()->get_ticks_msec() - start_time));
+	PRINT_VERBOSE(vformat("BasisU: Encoding a %dx%d image with %d mipmaps took %d ms.", p_image->get_width(), p_image->get_height(), p_image->get_mipmap_count(), OS::get_singleton()->get_ticks_msec() - start_time));
 
 	return basisu_data;
 }
@@ -492,7 +492,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 		}
 	}
 
-	print_verbose(vformat("BasisU: Transcoding a %dx%d image with %d mipmaps into %s took %d ms.",
+	PRINT_VERBOSE(vformat("BasisU: Transcoding a %dx%d image with %d mipmaps into %s took %d ms.",
 			image->get_width(), image->get_height(), image->get_mipmap_count(), Image::get_format_name(image_format), OS::get_singleton()->get_ticks_msec() - start_time));
 
 	return image;
