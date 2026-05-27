@@ -609,7 +609,8 @@ CSGBrush *CSGShape3D::_get_brush() {
 	}
 	brush = nullptr;
 	CSGBrush *n = _build_brush();
-	if (get_child_count() < 1) {
+	if (get_child_count() < 1 || !combined_brush) {
+		// This is a hack and needs a better solution to the problem of non CSGShape3D children.
 		_expand_aabb(n);
 	}
 	brush = n;
@@ -996,7 +997,8 @@ AABB CSGShape3D::get_aabb() const {
 
 Vector<Vector3> CSGShape3D::get_brush_faces() {
 	ERR_FAIL_COND_V(!is_inside_tree(), Vector<Vector3>());
-	CSGBrush *b = _get_brush();
+	// This should fix the unit test. But should brush faces return the combined brush like it did before, or just the current brush? This is an important question for when a face editor is implemented.
+	CSGBrush *b = _get_combined_brush();
 	if (!b) {
 		return Vector<Vector3>();
 	}
@@ -1011,11 +1013,6 @@ Vector<Vector3> CSGShape3D::get_brush_faces() {
 			w[i * 3 + 1] = b->faces[i].vertices[1];
 			w[i * 3 + 2] = b->faces[i].vertices[2];
 		}
-	}
-
-	if (get_operation() == OPERATION_SUBTRACTION) {
-		// Testing backface selection. If this doesn't work we need to think of a way to cull front faces so polygons can be selected on flipped or subtracting brushes.
-		faces.reverse();
 	}
 
 	return faces;
@@ -1783,12 +1780,19 @@ bool CSGShape3D::resize_brush(const Vector3 &p_prev_size, const Vector3 &p_size)
 	}
 
 	Vector3 n_size = p_size / p_prev_size;
+	AABB aabb;
+	aabb.position = p_brush->faces[0].vertices[0];
 	for (int i = 0; i < n->faces.size(); i++) {
 		for (int j = 0; j < 3; j++) {
 			Vector3 curr = n->faces[i].vertices[j];
 			curr *= n_size;
+			aabb.expand_to(curr);
 			n->faces.write[i].vertices[j] = curr;
 		}
+	}
+	if (get_child_count() < 1 || !combined_brush) {
+		// This is a hack and needs a better solution to the problem of non CSGShape3D children.
+		node_aabb = aabb;
 	}
 
 	return true;
@@ -1817,12 +1821,23 @@ void CSGShape3D::resize_brush_rework() {
 		return;
 	}
 
+	AABB aabb;
 	if (b) {
 		if (!b->faces.is_empty()) {
+			aabb.position = b->faces[0].vertices[0];
+			for (const CSGBrush::Face &face : b->faces) {
+				for (int i = 0; i < 3; ++i) {
+					aabb.expand_to(face.vertices[i]);
+				}
+			}
 			for (int i = 0; i < n->faces.size(); i++) {
 				for (int j = 0; j < 3; j++) {
 					n->faces.write[i].vertices[j] = b->faces[i].vertices[j];
 				}
+			}
+			if (get_child_count() < 1 || !combined_brush) {
+				// This is a hack and needs a better solution to the problem of non CSGShape3D children.
+				node_aabb = aabb;
 			}
 		}
 		memdelete(b);

@@ -32,8 +32,7 @@
 		<method name="brush_modified">
 			<return type="void" />
 			<description>
-				Forces an update of the root CSG shape visuals. When used on a root shape, it rebuilds the brush.
-				This is meant to be called after [code]set_csg_brush[/code] in undo operations.
+				Forces an update of the root CSG shape visuals.
 			</description>
 		</method>
 		<method name="calculate_cube_map">
@@ -219,7 +218,8 @@
 			<param index="0" name="faces" type="PackedInt32Array" />
 			<param index="1" name="smooth" type="int" />
 			<description>
-				Sets the smoothing of [param faces]. A value of [code]0[/code] will make the face flat while any value above will make it smooth. Faces of different brushes with the same smooth group will blend together.
+				Sets the smoothing of [param faces]. A value of [code]0[/code] will make the face flat while any value above will make it smooth.
+				[b]Note:[/b] This is a work in progress, at the moment, all values above [code]0[/code] will blend together.
 				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
 			</description>
 		</method>
@@ -296,7 +296,8 @@
 			- [code]material_id[/code]: [PackedByteArray] with the IDs of the material assigned to each face. See [code]materials[/code].
 			- [code]vertices[/code]: [PackedVector3Array] containing the positions of the triangles that make up the CSGBrush, must be divisible by 3.
 			- [code]uvs[/code]: [PackedVector2Array] containing the UVs of the triangles of the CSGBrush, must be divisible by 3.
-			- [code]smooth[/code]: [PackedByteArray] with the smoothing groups of the faces of the CSGBrush. A value of [code]0[/code] disables the effect and any value above enables it. Faces of different brushes with the same smooth group will blend together.
+			- [code]smooth[/code]: [PackedByteArray] with the smoothing groups of the faces of the CSGBrush. A value of [code]0[/code] disables the effect and any value above enables it.
+			[b]NOTE:[/b] This is a work in progress, at the moment, all values above [code]0[/code] will blend together.
 			- [code]inverted[/code]: Needed since [code]flip_faces[/code] is a property of [CSGPrimitive3D] and not [CSGShape3D].
 			- [code]materials[/code]: [Array] of [Material]s of the CSGBrush.
 			- [code]painted[/code]: When set to [code]true[/code], tells the engine not to rebuild the CSGBrush. Must always be [code]true[/code] for this to work.

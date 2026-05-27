@@ -59,15 +59,12 @@ void CSGShapeEditor::edit(CSGShape3D *p_csg_shape) {
 		hbox->show();
 		if (node->is_root_shape()) {
 			options->show();
-			cubemap_uvs->hide();
-			cylinder_uvs->hide();
-			global_uv_toggle->hide();
 		} else {
 			options->hide();
-			cubemap_uvs->show();
-			cylinder_uvs->show();
-			global_uv_toggle->show();
 		}
+		cubemap_uvs->show();
+		cylinder_uvs->show();
+		global_uv_toggle->show();
 		rebuild_csg->show();
 	} else {
 		options->hide();
@@ -175,7 +172,6 @@ void CSGShapeEditor::_rebuild_brush() {
 	ur->create_action(TTR("Rebuild CSG Brush"));
 	ur->add_do_method(node, "rebuild_brush");
 	ur->add_undo_method(node, "set_csg_brush", dict);
-	ur->add_undo_method(node, "brush_modified");
 	ur->commit_action();
 }
 
@@ -187,7 +183,6 @@ void CSGShapeEditor::_make_cube_uv() {
 	// TODO Add a SpinBox to set uv_scale before pressing the button.
 	ur->add_do_method(node, "calculate_cube_map", node->get_all_csg_faces(), Vector3(1.0, 1.0, 1.0), global_uv_toggle->is_pressed());
 	ur->add_undo_method(node, "set_csg_brush", dict);
-	ur->add_undo_method(node, "brush_modified");
 	ur->commit_action();
 }
 
@@ -198,7 +193,6 @@ void CSGShapeEditor::_make_cylinder_uv() {
 	// TODO Add a SpinBox to set uv_scale before pressing the button.
 	ur->add_do_method(node, "calculate_cylinder_map", node->get_all_csg_faces(), Vector3(1.0, 1.0, 1.0), global_uv_toggle->is_pressed());
 	ur->add_undo_method(node, "set_csg_brush", dict);
-	ur->add_undo_method(node, "brush_modified");
 	ur->commit_action();
 }
 
