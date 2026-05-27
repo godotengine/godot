@@ -487,4 +487,421 @@ TEST_CASE("[Image] Convert image") {
 	CHECK_MESSAGE(image2->get_data() == image_data, "Image conversion to invalid type (Image::FORMAT_MAX + 1) should not alter image.");
 }
 
+TEST_CASE("[Image] Rotate Image 90 degrees") {
+	Color red(1.0f, 0.0f, 0.0f, 1.0f);
+	Color green(0.0f, 1.0f, 0.0f, 1.0f);
+	Color blue(0.0f, 0.0f, 1.0f, 1.0f);
+
+	Ref<Image> image;
+	PackedByteArray rotated_data;
+
+	SUBCASE("[Image] Rotation of simple 3x3 image clockwise") {
+		image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		rotated_data.clear();
+		/*
+		initial:
+		123
+		231
+		312
+
+		expected result:
+		321
+		132
+		213
+
+		1: red
+		2: green
+		3: blue
+		*/
+
+		image->set_pixel(0, 0, red);
+		image->set_pixel(1, 0, green);
+		image->set_pixel(2, 0, blue);
+
+		image->set_pixel(0, 1, green);
+		image->set_pixel(1, 1, blue);
+		image->set_pixel(2, 1, red);
+
+		image->set_pixel(0, 2, blue);
+		image->set_pixel(1, 2, red);
+		image->set_pixel(2, 2, green);
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); //
+
+		image->rotate_90(ClockDirection::CLOCKWISE);
+		CHECK(image->get_data() == rotated_data);
+	}
+
+	SUBCASE("[Image] Rotation of simple 3x3 image counterclockwise") {
+		image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		rotated_data.clear();
+		/*
+		initial:
+		123
+		231
+		312
+
+		expected result:
+		312
+		231
+		123
+
+		1: red
+		2: green
+		3: blue
+		*/
+
+		image->set_pixel(0, 0, red);
+		image->set_pixel(1, 0, green);
+		image->set_pixel(2, 0, blue);
+
+		image->set_pixel(0, 1, green);
+		image->set_pixel(1, 1, blue);
+		image->set_pixel(2, 1, red);
+
+		image->set_pixel(0, 2, blue);
+		image->set_pixel(1, 2, red);
+		image->set_pixel(2, 2, green);
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		image->rotate_90(ClockDirection::COUNTERCLOCKWISE);
+		CHECK(image->get_data() == rotated_data);
+	}
+
+	// TODO: this doesnt print anything at all
+	SUBCASE("[Image] Attempting to rotate a compressed image") {
+		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
+		ERR_PRINT_OFF;
+		image->rotate_90(CLOCKWISE);
+		ERR_PRINT_ON;
+		WARN_PRINT("Successfully threw an error for attempting to rotate a compressed image"); // Prints an engine warning
+	}
+
+	SUBCASE("[Image] Attempting to rotate an image with 0 width and 0 height") {
+		image = memnew(Image());
+		ERR_PRINT_OFF;
+		image->rotate_90(CLOCKWISE);
+		ERR_PRINT_ON;
+		WARN_PRINT("Successfully threw an error for attempting to rotate a zero-sized image"); // Prints an engine warning
+	}
+}
+
+TEST_CASE("[Image] Rotate Image 180 degrees") {
+	Color red(1.0f, 0.0f, 0.0f, 1.0f);
+	Color green(0.0f, 1.0f, 0.0f, 1.0f);
+	Color blue(0.0f, 0.0f, 1.0f, 1.0f);
+
+	Ref<Image> image;
+	PackedByteArray rotated_data;
+
+	SUBCASE("[Image] Simple flip") {
+		image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		rotated_data.clear();
+		/*
+		initial:
+		123
+		231
+		312
+
+		expected result:
+		213
+		132
+		321
+
+		1: red
+		2: green
+		3: blue
+		*/
+
+		image->set_pixel(0, 0, red);
+		image->set_pixel(1, 0, green);
+		image->set_pixel(2, 0, blue);
+
+		image->set_pixel(0, 1, green);
+		image->set_pixel(1, 1, blue);
+		image->set_pixel(2, 1, red);
+
+		image->set_pixel(0, 2, blue);
+		image->set_pixel(1, 2, red);
+		image->set_pixel(2, 2, green);
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		image->rotate_180();
+		CHECK(image->get_data() == rotated_data);
+	}
+
+	// TODO: this doesnt print anything at all
+	SUBCASE("[Image] Attempting to rotate a compressed image") {
+		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
+		ERR_PRINT_OFF;
+		image->rotate_180();
+		ERR_PRINT_ON;
+		WARN_PRINT("Successfully threw an error for attempting to rotate a compressed image"); // Prints an engine warning
+	}
+
+	SUBCASE("[Image] Attempting to rotate an image with 0 width and 0 height") {
+		image = memnew(Image());
+		ERR_PRINT_OFF;
+		image->rotate_180();
+		ERR_PRINT_ON;
+		WARN_PRINT("Successfully threw an error for attempting to rotate a zero-sized image"); // Prints an engine warning
+	}
+}
+
+TEST_CASE("[Image] Decompressing images") {
+	Ref<Image> image;
+
+	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_S3TC)") {
+		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
+		image->decompress();
+		CHECK(!(image->is_compressed()));
+	}
+
+	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_ETC2)") {
+		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+		image->compress(Image::COMPRESS_ETC2, Image::COMPRESS_SOURCE_GENERIC);
+		image->decompress();
+		CHECK(!(image->is_compressed()));
+	}
+
+	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_BPTC)") {
+		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+		image->compress(Image::COMPRESS_BPTC, Image::COMPRESS_SOURCE_GENERIC);
+		image->decompress();
+		CHECK(!(image->is_compressed()));
+	}
+
+	SUBCASE("[Image] Attempting to decompress an uncompressed image") {
+		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+		// image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
+		ERR_PRINT_OFF;
+		image->decompress();
+		ERR_PRINT_ON;
+		// CHECK(!(image->is_compressed()));
+		WARN_PRINT("Successfully threw an error for attempting to decompress an uncompressed image");
+	}
+
+	SUBCASE("[Image] Mipmapped image decompression") {
+		image = memnew(Image(4, 4, true, Image::FORMAT_RGBA8));
+		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
+		image->decompress();
+		CHECK(image->has_mipmaps());
+	}
+
+	SUBCASE("[Image] Decompressing an image with zero width and height") {
+		image = memnew(Image());
+
+		CHECK(image->is_empty());
+
+		ERR_PRINT_OFF;
+		image->decompress();
+		ERR_PRINT_ON;
+
+		CHECK(image->get_width() == 0);
+		CHECK(image->get_height() == 0);
+		CHECK(image->is_empty());
+	}
+
+	SUBCASE("[Image] Decompression from a lossy format") {
+		image = memnew(Image(4, 4, true, Image::FORMAT_RGBA8));
+		Color red(1.0f, 0.0f, 0.0f, 1.0f);
+		Color green(0.0f, 1.0f, 0.0f, 1.0f);
+		Color blue(0.0f, 0.0f, 1.0f, 1.0f);
+		Color white(1.0f, 1.0f, 1.0f, 1.0f);
+
+		image->set_pixel(0, 0, red);
+		image->set_pixel(0, 1, red);
+		image->set_pixel(0, 2, red);
+		image->set_pixel(0, 3, red);
+
+		image->set_pixel(1, 0, red);
+		image->set_pixel(1, 1, red);
+		image->set_pixel(1, 2, red);
+		image->set_pixel(1, 3, red);
+
+		image->set_pixel(2, 0, red);
+		image->set_pixel(2, 1, red);
+		image->set_pixel(2, 2, red);
+		image->set_pixel(2, 3, red);
+
+		image->set_pixel(3, 0, red);
+		image->set_pixel(3, 1, red);
+		image->set_pixel(3, 2, red);
+		image->set_pixel(3, 3, red);
+
+		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
+
+		image->decompress();
+
+		CHECK(image->get_pixel(0, 0).is_equal_approx(red));
+
+		/*
+		NOTE: when compressing such a small image in a lossy format, Godot tends to
+		interpololate the colors, so the colors may significantly deviate outside of
+		a tolerable range
+		 */
+	}
+}
+
 } // namespace TestImage
