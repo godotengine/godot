@@ -2170,6 +2170,11 @@ void TileMapLayer::_notification(int p_what) {
 			dirty.flags[DIRTY_FLAGS_LAYER_VISIBILITY] = true;
 			_queue_internal_update();
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			dirty.flags[DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE] = true;
+			_queue_internal_update();
+		} break;
 	}
 
 	_rendering_notification(p_what);

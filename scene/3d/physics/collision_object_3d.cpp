@@ -139,6 +139,17 @@ void CollisionObject3D::_notification(int p_what) {
 		case NOTIFICATION_ENABLED: {
 			_apply_enabled();
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			if (_are_collision_shapes_visible()) {
+				for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+					debug_shapes_to_update.insert(E.key);
+				}
+				_update_debug_shapes();
+			} else {
+				_clear_debug_shapes();
+			}
+		} break;
 	}
 }
 

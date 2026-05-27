@@ -966,7 +966,13 @@ void SceneTree::set_quit_on_go_back(bool p_enable) {
 
 #ifdef DEBUG_ENABLED
 void SceneTree::set_debug_collisions_hint(bool p_enabled) {
+	if (debug_collisions_hint == p_enabled) {
+		return;
+	}
 	debug_collisions_hint = p_enabled;
+	if (get_root()) {
+		get_root()->propagate_notification(Node::NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED);
+	}
 }
 
 bool SceneTree::is_debugging_collisions_hint() const {
