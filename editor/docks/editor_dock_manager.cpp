@@ -617,6 +617,16 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 	update_docks_menu();
 }
 
+void EditorDockManager::set_dock_slot_highlighted(int p_slot, bool p_highlighted) {
+	ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
+	if (p_highlighted) {
+		dock_slots[p_slot]->show_drag_hint();
+	} else {
+		dock_slots[p_slot]->get_drag_hint()->hide();
+	}
+	dock_slots[p_slot]->get_drag_hint()->set_highlighted(p_highlighted);
+}
+
 void EditorDockManager::set_dock_enabled(EditorDock *p_dock, bool p_enabled) {
 	ERR_FAIL_NULL(p_dock);
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot set enabled unknown dock '%s'.", p_dock->get_display_title()));
@@ -1131,6 +1141,7 @@ void DockSlotGrid::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (hovered_slot > -1) {
+				EditorDockManager::get_singleton()->set_dock_slot_highlighted(hovered_slot, false);
 				hovered_slot = -1;
 				queue_redraw();
 			}
@@ -1152,8 +1163,15 @@ void DockSlotGrid::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (over_dock_slot != hovered_slot) {
-			queue_redraw();
+			if (hovered_slot != -1) {
+				EditorDockManager::get_singleton()->set_dock_slot_highlighted(hovered_slot, false);
+			}
 			hovered_slot = over_dock_slot;
+			if (hovered_slot != -1 && hovered_slot != context_dock->dock_slot_index &&
+					context_dock->available_layouts & EditorDockManager::get_singleton()->dock_slots[hovered_slot]->layout) {
+				EditorDockManager::get_singleton()->set_dock_slot_highlighted(hovered_slot, true);
+			}
+			queue_redraw();
 		}
 
 		if (over_dock_slot == -1) {

@@ -144,6 +144,8 @@ public:
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	void load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load = false);
 
+	void set_dock_slot_highlighted(int p_slot, bool p_highlighted);
+
 	void set_dock_enabled(EditorDock *p_dock, bool p_enabled);
 	void close_dock(EditorDock *p_dock);
 	void open_dock(EditorDock *p_dock, bool p_set_current = true);

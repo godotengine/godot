@@ -83,6 +83,14 @@ void EditorDockDragHint::set_slot(DockTabContainer *p_slot) {
 	drop_tabbar_parent = (Control *)p_slot->get_internal_container();
 }
 
+void EditorDockDragHint::set_highlighted(bool p_highlighted) {
+	if (highlighted == p_highlighted) {
+		return;
+	}
+	highlighted = p_highlighted;
+	queue_redraw();
+}
+
 void EditorDockDragHint::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -95,7 +103,9 @@ void EditorDockDragHint::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			valid_drop_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			const Color valid_drop_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			dock_drop_highlight->set_border_color(valid_drop_color);
+			dock_drop_highlight->set_bg_color(valid_drop_color * Color(1, 1, 1, 0.1));
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER:
@@ -112,18 +122,17 @@ void EditorDockDragHint::_notification(int p_what) {
 
 			can_drop_dock = dragged_dock->get_available_layouts() & dock_container->layout;
 
-			dock_drop_highlight->set_border_color(valid_drop_color);
-			dock_drop_highlight->set_bg_color(valid_drop_color * Color(1, 1, 1, 0.1));
 		} break;
 		case NOTIFICATION_DRAG_END: {
 			EditorDockManager::get_singleton()->_dock_drag_stopped();
 			can_drop_dock = false;
 			mouse_inside = false;
+			highlighted = false;
 			hide();
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (!mouse_inside || !can_drop_dock) {
+			if (!highlighted && (!can_drop_dock || !mouse_inside)) {
 				return;
 			}
 
