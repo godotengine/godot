@@ -102,7 +102,6 @@ double VideoStreamPlayback::get_length() const {
 	return 0;
 }
 
-
 double VideoStreamPlayback::get_playback_position() const {
 	double ret;
 	if (GDVIRTUAL_CALL(_get_playback_position, ret)) {
