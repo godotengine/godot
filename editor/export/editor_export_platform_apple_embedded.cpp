@@ -173,6 +173,50 @@ static const String export_method_string[] = {
 	"enterprise",
 };
 
+String EditorExportPlatformAppleEmbedded::get_package_name(const Ref<EditorExportPreset> &p_preset) const {
+	String pname = p_preset->get("application/bundle_identifier");
+	String name = get_valid_basename(p_preset);
+	pname = pname.replace("$genname", name);
+	return pname;
+}
+
+// Returns the project name without invalid characters
+// or the "noname" string if all characters are invalid.
+bool EditorExportPlatformAppleEmbedded::is_project_name_valid(const Ref<EditorExportPreset> &p_preset) const {
+	// Get the original project name and convert to lowercase.
+	String basename = get_project_setting(p_preset, "application/config/name");
+	basename = basename.to_lower();
+	// Check if there are invalid characters.
+	if (basename != get_valid_basename(p_preset)) {
+		return false;
+	}
+	return true;
+}
+
+String EditorExportPlatformAppleEmbedded::get_valid_basename(const Ref<EditorExportPreset> &p_preset) const {
+	String basename = get_project_setting(p_preset, "application/config/name");
+	basename = basename.to_lower();
+
+	String name;
+	bool first = true;
+	for (int i = 0; i < basename.length(); i++) {
+		char32_t c = basename[i];
+		if (is_digit(c) && first) {
+			continue;
+		}
+		if (is_ascii_identifier_char(c)) {
+			name += String::chr(c);
+			first = false;
+		}
+	}
+
+	if (name.is_empty()) {
+		name = "noname";
+	}
+
+	return name;
+}
+
 String EditorExportPlatformAppleEmbedded::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
 		if (p_name == "application/app_store_team_id") {
@@ -181,7 +225,7 @@ String EditorExportPlatformAppleEmbedded::get_export_option_warning(const Editor
 				return TTR("App Store Team ID not specified.") + "\n";
 			}
 		} else if (p_name == "application/bundle_identifier") {
-			String identifier = p_preset->get("application/bundle_identifier");
+			String identifier = get_package_name(Ref<EditorExportPreset>(p_preset));
 			String pn_err;
 			if (!is_package_name_valid(identifier, &pn_err)) {
 				return TTR("Invalid Identifier:") + " " + pn_err;
@@ -272,7 +316,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_specifier_release", PROPERTY_HINT_PLACEHOLDER_TEXT, ""), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_method_release", PROPERTY_HINT_ENUM, "App Store,Development,Ad-Hoc,Enterprise"), 0));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "com.example.$genname", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
@@ -419,7 +463,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 	} else if (p_line.contains("$name")) {
 		strnew += p_line.replace("$name", p_config.pkg_name) + "\n";
 	} else if (p_line.contains("$bundle_identifier")) {
-		strnew += p_line.replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
+		strnew += p_line.replace("$bundle_identifier", get_package_name(p_preset)) + "\n";
 	} else if (p_line.contains("$short_version")) {
 		strnew += p_line.replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
 	} else if (p_line.contains("$version")) {
@@ -1250,7 +1294,7 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 		destination = destination_dir;
 
 		// Convert to framework and copy.
-		Error err = _convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier"));
+		Error err = _convert_to_framework(p_asset, destination, get_package_name(p_preset));
 		if (err) {
 			return err;
 		}
@@ -1279,7 +1323,7 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 
 		if (dylibs > 0) {
 			// Convert to framework and copy.
-			Error err = _convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier"));
+			Error err = _convert_to_framework(p_asset, destination, get_package_name(p_preset));
 			if (err) {
 				return err;
 			}
@@ -2824,7 +2868,7 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 			args.push_back("--terminate-existing");
 			args.push_back("-d");
 			args.push_back(dev.id);
-			args.push_back(p_preset->get("application/bundle_identifier"));
+			args.push_back(get_package_name(p_preset));
 			for (const String &E : cmd_args_list) {
 				args.push_back(E);
 			}
