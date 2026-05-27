@@ -2125,7 +2125,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	if (popup_rect != Rect2()) {
 		set_size(popup_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(popup_rect.size);
 	if (popup_rect != Rect2i()) {
 		popup_rect.size = get_size();
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
@@ -2164,7 +2164,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	if (popup_rect != Rect2()) {
 		set_size(popup_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(popup_rect.size);
 	if (popup_rect != Rect2i()) {
 		popup_rect.size = get_size();
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
@@ -2201,7 +2201,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	if (popup_rect != Rect2()) {
 		set_size(popup_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(popup_rect.size);
 	if (popup_rect != Rect2i()) {
 		popup_rect.size = get_size();
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
@@ -2217,7 +2217,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	if (screen_rect != Rect2i()) {
 		set_size(screen_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(screen_rect.size);
 	if (screen_rect != Rect2i()) {
 		screen_rect.size = get_size();
 	}

@@ -149,7 +149,7 @@ EditorDockDragHint::EditorDockDragHint() {
 	dock_drop_highlight->set_border_width_all(Math::round(2 * EDSCALE));
 }
 
-void DockTabContainer::_pre_popup() {
+void DockTabContainer::_pre_popup(const Size2i &p_size) {
 	dock_context_popup->set_dock(get_dock(get_current_tab()));
 }
 
@@ -167,7 +167,7 @@ void DockTabContainer::_tab_rmb_clicked(int p_tab_idx) {
 
 void DockTabContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		connect("pre_popup_pressed", callable_mp(this, &DockTabContainer::_pre_popup));
+		connect("pre_popup_pressed", callable_mp(this, &DockTabContainer::_pre_popup).bind(Size2i()));
 		connect("child_order_changed", callable_mp(this, &DockTabContainer::update_visibility));
 	}
 }

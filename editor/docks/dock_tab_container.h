@@ -73,7 +73,7 @@ class DockTabContainer : public TabContainer {
 
 	EditorDockDragHint *drag_hint = nullptr;
 
-	void _pre_popup();
+	void _pre_popup(const Size2i &p_size);
 	void _tab_rmb_clicked(int p_tab_idx);
 
 protected:
