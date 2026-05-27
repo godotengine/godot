@@ -711,7 +711,7 @@
 			Sets the maximum number of mismatches allowed in each search result when fuzzy searching is enabled for the [PopupMenu] search bar. Any item with more mismatches will be hidden from the search results.
 		</member>
 		<member name="search_bar_min_item_count" type="int" setter="set_search_bar_min_item_count" getter="get_search_bar_min_item_count" default="0">
-			Sets the minimum number of items required for the search bar to be visible. [member search_bar_enabled] must be [code]true[/code] for this to have any effect.
+			Sets the minimum number of items required for the search bar to be visible. [member search_bar_enabled] must be [code]true[/code] for this to have any effect. Separator items are not counted.
 		</member>
 		<member name="shrink_height" type="bool" setter="set_shrink_height" getter="get_shrink_height" default="true">
 			If [code]true[/code], shrinks [PopupMenu] to minimum height when it's shown.
