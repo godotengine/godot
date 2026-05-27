@@ -7,6 +7,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clear_buffer">
+			<return type="void" />
+			<description>
+				Clears the packet buffer of this data channel.
+			</description>
+		</method>
 		<method name="close">
 			<return type="void" />
 			<description>
