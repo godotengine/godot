@@ -189,7 +189,6 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w, h, target_format) : 0;
 	data.resize(target_size);
-	int shift = Image::get_format_pixel_rshift(target_format);
 
 	uint8_t *wb = data.ptrw();
 
@@ -272,7 +271,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 			out_bytes += 16 * (bw / 4);
 		}
 
-		dst_ofs += (MAX(4, bw) * MAX(4, bh)) >> shift;
+		dst_ofs += Image::get_format_pixels_shifted(target_format, MAX(4, bw) * MAX(4, bh));
 	}
 
 	const CVTTCompressionRowTask *tasks_rb = tasks.ptr();
