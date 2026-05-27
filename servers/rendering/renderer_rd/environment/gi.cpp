@@ -1419,7 +1419,7 @@ void GI::HDDAGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_
 
 	hddagi_data.energy = energy;
 
-	for (int32_t i = 0; i < hddagi_data.max_cascades; i++) {
+	for (int32_t i = 0; i < int32_t(hddagi_data.max_cascades); i++) {
 		HDDAGIData::ProbeCascadeData &c = hddagi_data.cascades[i];
 		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -(cascade_size >> 1) + cascades[i].position)) * cascades[i].cell_size;
 		Vector3 cam_origin = p_transform.origin;
@@ -3681,7 +3681,6 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 
 		RID hddagi_default_2d_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_HDDAGI_TEXTURE_2D);
 		RID hddagi_default_3d_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_HDDAGI_TEXTURE_3D);
-		RID default_2d_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 		RID default_2d_array_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 		RID default_3d_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
 
