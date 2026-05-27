@@ -453,7 +453,6 @@ String VideoStreamPlayer::get_stream_name() const {
 	return stream->get_name();
 }
 
-
 double VideoStreamPlayer::get_stream_frame_duration() const {
 	if (playback.is_null()) {
 		return 0;
