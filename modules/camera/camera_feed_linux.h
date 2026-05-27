@@ -49,6 +49,7 @@ private:
 	int file_descriptor = -1;
 	StreamingBuffer *buffers = nullptr;
 	unsigned int buffer_count = 0;
+	int32_t buffer_pitch = 0; // Y plane row stride reported by V4L2 (bytesperline).
 	BufferDecoder *buffer_decoder = nullptr;
 
 	static void update_buffer_thread_func(void *p_func);
