@@ -876,10 +876,8 @@ Ref<Texture2D> ExportTemplateManager::_get_platform_icon(const String &p_platfor
 }
 
 void ExportTemplateManager::_version_selected() {
-	if (!is_downloading()) {
-		file_metadata.clear();
-		_update_template_tree();
-	}
+	file_metadata.clear();
+	_update_template_tree();
 	_update_install_button();
 }
 
@@ -944,6 +942,11 @@ void ExportTemplateManager::_install_templates(TreeItem *p_files) {
 	_update_template_tree();
 	_process_download_queue();
 	_update_install_button();
+
+	// Don't allow changing selected version while downloading.
+	for (int i = 0; i < version_list->get_item_count(); i++) {
+		version_list->set_item_disabled(i, true);
+	}
 
 	ProgressIndicator *indicator = EditorNode::get_bottom_panel()->get_progress_indicator();
 	indicator->set_tooltip_text(TTRC("Downloading export templates..."));
@@ -1015,6 +1018,10 @@ void ExportTemplateManager::_process_download_queue() {
 		set_process_internal(false);
 		_update_install_button();
 		EditorNode::get_bottom_panel()->get_progress_indicator()->hide();
+
+		for (int i = 0; i < version_list->get_item_count(); i++) {
+			version_list->set_item_disabled(i, false);
+		}
 	} else {
 		set_process_internal(true);
 	}
