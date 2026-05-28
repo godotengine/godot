@@ -106,8 +106,9 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 	ERR_FAIL_COND_V(anim.is_null(), NodeTimeInfo());
 	double anim_size = anim->get_length();
 
-	double cur_len;
-	double playback_end;
+	double cur_len = 0.0;
+	double playback_start = 0.0;
+	double playback_end = 0.0;
 	Animation::LoopMode cur_loop_mode;
 	if (use_custom_timeline) {
 		cur_len = timeline_length;
@@ -116,7 +117,8 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 			// Therefore, the end of the animation section is the animation length.
 			playback_end = anim_size;
 		} else {
-			playback_end = timeline_length;
+			playback_start = start_offset;
+			playback_end = playback_start + timeline_length;
 		}
 		cur_loop_mode = loop_mode;
 	} else {
@@ -193,8 +195,8 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 	nti.will_end = will_end;
 
 	// 3. Progress for Animation.
-	double prev_playback_time = prev_time + start_offset;
-	double cur_playback_time = cur_time + start_offset;
+	double prev_playback_time = prev_time + playback_start;
+	double cur_playback_time = cur_time + playback_start;
 	if (stretch_time_scale) {
 		double mlt = anim_size / cur_len;
 		prev_playback_time *= mlt;
@@ -252,7 +254,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 		// Force process first key for Discrete/Method/Audio/AnimationPlayback.
 		if (immediately_after_start) {
 			AnimationMixer::PlaybackInfo pi = p_playback_info;
-			pi.start = 0.0;
+			pi.start = playback_start;
 			pi.end = playback_end;
 			if (play_mode == PLAY_MODE_FORWARD) {
 				pi.time = 0;
@@ -265,7 +267,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 		}
 
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
-		pi.start = 0.0;
+		pi.start = playback_start;
 		pi.end = playback_end;
 		if (play_mode == PLAY_MODE_FORWARD) {
 			pi.time = cur_playback_time;
