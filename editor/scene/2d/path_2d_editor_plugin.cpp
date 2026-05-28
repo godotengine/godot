@@ -48,6 +48,8 @@ void Path2DEditor::_notification(int p_what) {
 			curve_edit->set_button_icon(get_editor_theme_icon(SNAME("CurveEdit")));
 			curve_edit_curve->set_button_icon(get_editor_theme_icon(SNAME("CurveCurve")));
 			curve_create->set_button_icon(get_editor_theme_icon(SNAME("CurveCreate")));
+			curve_create_circle->set_button_icon(get_editor_theme_icon(SNAME("CircleShape2D")));
+			curve_create_rectangle->set_button_icon(get_editor_theme_icon(SNAME("RectangleShape2D")));
 			curve_del->set_button_icon(get_editor_theme_icon(SNAME("CurveDelete")));
 			curve_close->set_button_icon(get_editor_theme_icon(SNAME("CurveClose")));
 			curve_clear_points->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
@@ -798,6 +800,41 @@ void Path2DEditor::_create_curve() {
 	undo_redo->commit_action();
 }
 
+void Path2DEditor::_create_primitive_curve(int p_option) {
+	ERR_FAIL_NULL(node);
+	ERR_FAIL_COND(node->get_curve().is_null());
+
+	Ref<Curve2D> new_curve;
+	String action_name;
+
+	switch (PrimitiveOption(p_option)) {
+		case PRIMITIVE_OPTION_CIRCLE: {
+			new_curve = Curve2D::create_circle(64.0);
+			action_name = TTR("Create Circle Curve");
+		} break;
+		case PRIMITIVE_OPTION_RECTANGLE: {
+			new_curve = Curve2D::create_rectangle(Rect2(-64.0, -64.0, 128.0, 128.0));
+			action_name = TTR("Create Rectangle Curve");
+		} break;
+		default: {
+			ERR_FAIL_MSG("Invalid primitive curve option.");
+		} break;
+	}
+
+	ERR_FAIL_COND(new_curve.is_null());
+
+	PackedVector2Array new_points = new_curve->get_points();
+	PackedVector2Array previous_points = node->get_curve()->get_points().duplicate();
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(action_name, UndoRedo::MERGE_DISABLE, node);
+	undo_redo->add_do_method(this, "_restore_curve_points", node, new_points);
+	undo_redo->add_undo_method(this, "_restore_curve_points", node, previous_points);
+	undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+	undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+	undo_redo->commit_action();
+}
+
 void Path2DEditor::_confirm_clear_points() {
 	if (!node || node->get_curve().is_null()) {
 		return;
@@ -840,7 +877,7 @@ void Path2DEditor::_restore_curve_points(Path2D *p_path2d, const PackedVector2Ar
 	}
 
 	if (node == p_path2d) {
-		_mode_selected(MODE_EDIT);
+		_mode_selected(p_points.is_empty() ? MODE_CREATE : MODE_EDIT);
 	}
 }
 
@@ -874,6 +911,22 @@ Path2DEditor::Path2DEditor() {
 	curve_create->set_accessibility_name(TTRC("Add Point (in empty space)"));
 	curve_create->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CREATE));
 	toolbar->add_child(curve_create);
+
+	curve_create_circle = memnew(Button);
+	curve_create_circle->set_theme_type_variation(SceneStringName(FlatButton));
+	curve_create_circle->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	curve_create_circle->set_tooltip_text(TTR("Create Circle Curve"));
+	curve_create_circle->set_accessibility_name(TTRC("Create Circle Curve"));
+	curve_create_circle->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_create_primitive_curve).bind(PRIMITIVE_OPTION_CIRCLE));
+	toolbar->add_child(curve_create_circle);
+
+	curve_create_rectangle = memnew(Button);
+	curve_create_rectangle->set_theme_type_variation(SceneStringName(FlatButton));
+	curve_create_rectangle->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	curve_create_rectangle->set_tooltip_text(TTR("Create Rectangle Curve"));
+	curve_create_rectangle->set_accessibility_name(TTRC("Create Rectangle Curve"));
+	curve_create_rectangle->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_create_primitive_curve).bind(PRIMITIVE_OPTION_RECTANGLE));
+	toolbar->add_child(curve_create_rectangle);
 
 	curve_del = memnew(Button);
 	curve_del->set_theme_type_variation(SceneStringName(FlatButton));

@@ -763,6 +763,41 @@ void Curve2D::clear_points() {
 	}
 }
 
+Ref<Curve2D> Curve2D::create_circle(real_t p_radius, const Vector2 &p_center) {
+	ERR_FAIL_COND_V_MSG(!Math::is_finite(p_radius), Ref<Curve2D>(), "Radius is non-finite.");
+	ERR_FAIL_COND_V_MSG(p_radius <= 0.0, Ref<Curve2D>(), "Radius must be greater than 0.");
+	ERR_FAIL_COND_V_MSG(!p_center.is_finite(), Ref<Curve2D>(), "Center is non-finite.");
+
+	const real_t control_offset = p_radius * (4.0 * (Math::SQRT2 - 1.0) / 3.0);
+
+	Ref<Curve2D> curve;
+	curve.instantiate();
+	curve->add_point(p_center + Vector2(p_radius, 0.0), Vector2(), Vector2(0.0, control_offset));
+	curve->add_point(p_center + Vector2(0.0, p_radius), Vector2(control_offset, 0.0), Vector2(-control_offset, 0.0));
+	curve->add_point(p_center + Vector2(-p_radius, 0.0), Vector2(0.0, control_offset), Vector2(0.0, -control_offset));
+	curve->add_point(p_center + Vector2(0.0, -p_radius), Vector2(-control_offset, 0.0), Vector2(control_offset, 0.0));
+	curve->add_point(p_center + Vector2(p_radius, 0.0), Vector2(0.0, -control_offset), Vector2());
+
+	return curve;
+}
+
+Ref<Curve2D> Curve2D::create_rectangle(const Rect2 &p_rect) {
+	ERR_FAIL_COND_V_MSG(!p_rect.is_finite(), Ref<Curve2D>(), "Rectangle is non-finite.");
+
+	const Rect2 rect = p_rect.abs();
+	ERR_FAIL_COND_V_MSG(rect.size.x <= 0.0 || rect.size.y <= 0.0, Ref<Curve2D>(), "Rectangle size must be greater than 0.");
+
+	Ref<Curve2D> curve;
+	curve.instantiate();
+	curve->add_point(rect.position);
+	curve->add_point(rect.position + Vector2(rect.size.x, 0.0));
+	curve->add_point(rect.position + rect.size);
+	curve->add_point(rect.position + Vector2(0.0, rect.size.y));
+	curve->add_point(rect.position);
+
+	return curve;
+}
+
 Vector2 Curve2D::sample(int p_index, const real_t p_offset) const {
 	int pc = points.size();
 	ERR_FAIL_COND_V(pc == 0, Vector2());
@@ -1316,6 +1351,8 @@ void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_out", "idx"), &Curve2D::get_point_out);
 	ClassDB::bind_method(D_METHOD("remove_point", "idx"), &Curve2D::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve2D::clear_points);
+	ClassDB::bind_static_method("Curve2D", D_METHOD("create_circle", "radius", "center"), &Curve2D::create_circle, DEFVAL(Vector2()));
+	ClassDB::bind_static_method("Curve2D", D_METHOD("create_rectangle", "rect"), &Curve2D::create_rectangle);
 	ClassDB::bind_method(D_METHOD("sample", "idx", "t"), &Curve2D::sample);
 	ClassDB::bind_method(D_METHOD("samplef", "fofs"), &Curve2D::samplef);
 	//ClassDB::bind_method(D_METHOD("bake","subdivs"),&Curve2D::bake,DEFVAL(10));

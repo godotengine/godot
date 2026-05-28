@@ -61,6 +61,8 @@ class Path2DEditor : public HBoxContainer {
 	Button *curve_clear_points = nullptr;
 	Button *curve_close = nullptr;
 	Button *curve_create = nullptr;
+	Button *curve_create_circle = nullptr;
+	Button *curve_create_rectangle = nullptr;
 	Button *curve_del = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
@@ -76,6 +78,11 @@ class Path2DEditor : public HBoxContainer {
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
 		HANDLE_OPTION_LENGTH,
+	};
+
+	enum PrimitiveOption {
+		PRIMITIVE_OPTION_CIRCLE,
+		PRIMITIVE_OPTION_RECTANGLE,
 	};
 
 	enum Action {
@@ -108,6 +115,7 @@ class Path2DEditor : public HBoxContainer {
 	void _update_toolbar();
 
 	void _create_curve();
+	void _create_primitive_curve(int p_option);
 	void _confirm_clear_points();
 	void _clear_curve_points(Path2D *p_path2d);
 	void _restore_curve_points(Path2D *p_path2d, const PackedVector2Array &p_points);

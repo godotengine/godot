@@ -27,6 +27,21 @@
 				Removes all points from the curve.
 			</description>
 		</method>
+		<method name="create_circle" qualifiers="static">
+			<return type="Curve2D" />
+			<param index="0" name="radius" type="float" />
+			<param index="1" name="center" type="Vector2" default="Vector2(0, 0)" />
+			<description>
+				Creates a new closed curve approximating a circle with four cubic Bézier segments. The circle is centered at [param center] and has the specified [param radius]. The [param radius] must be greater than [code]0[/code].
+			</description>
+		</method>
+		<method name="create_rectangle" qualifiers="static">
+			<return type="Curve2D" />
+			<param index="0" name="rect" type="Rect2" />
+			<description>
+				Creates a new closed curve following the edges of [param rect]. If [param rect] has a negative size, the rectangle is normalized with [method Rect2.abs]. The rectangle must have non-zero width and height.
+			</description>
+		</method>
 		<method name="get_baked_length" qualifiers="const">
 			<return type="float" />
 			<description>

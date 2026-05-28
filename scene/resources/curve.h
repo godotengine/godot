@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/math/rect2.h"
 #include "core/templates/rb_map.h"
 #include "scene/property_list_helper.h"
 
@@ -249,6 +250,9 @@ public:
 	Vector2 get_point_out(int p_index) const;
 	void remove_point(int p_index);
 	void clear_points();
+
+	static Ref<Curve2D> create_circle(real_t p_radius, const Vector2 &p_center = Vector2());
+	static Ref<Curve2D> create_rectangle(const Rect2 &p_rect);
 
 	Vector2 sample(int p_index, real_t p_offset) const;
 	Vector2 samplef(real_t p_findex) const;

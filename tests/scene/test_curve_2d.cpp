@@ -93,6 +93,67 @@ TEST_CASE("[Curve2D] Point management") {
 	}
 }
 
+TEST_CASE("[Curve2D] Primitive curve creation") {
+	SUBCASE("Circle") {
+		const Vector2 center = Vector2(4, -3);
+		const real_t radius = 10.0;
+		const real_t control_offset = radius * (4.0 * (Math::SQRT2 - 1.0) / 3.0);
+		Ref<Curve2D> curve = Curve2D::create_circle(radius, center);
+
+		REQUIRE(curve.is_valid());
+		CHECK(curve->get_point_count() == 5);
+
+		CHECK(curve->get_point_position(0).is_equal_approx(Vector2(14, -3)));
+		CHECK(curve->get_point_in(0).is_zero_approx());
+		CHECK(curve->get_point_out(0).is_equal_approx(Vector2(0, control_offset)));
+
+		CHECK(curve->get_point_position(1).is_equal_approx(Vector2(4, 7)));
+		CHECK(curve->get_point_in(1).is_equal_approx(Vector2(control_offset, 0)));
+		CHECK(curve->get_point_out(1).is_equal_approx(Vector2(-control_offset, 0)));
+
+		CHECK(curve->get_point_position(2).is_equal_approx(Vector2(-6, -3)));
+		CHECK(curve->get_point_in(2).is_equal_approx(Vector2(0, control_offset)));
+		CHECK(curve->get_point_out(2).is_equal_approx(Vector2(0, -control_offset)));
+
+		CHECK(curve->get_point_position(3).is_equal_approx(Vector2(4, -13)));
+		CHECK(curve->get_point_in(3).is_equal_approx(Vector2(-control_offset, 0)));
+		CHECK(curve->get_point_out(3).is_equal_approx(Vector2(control_offset, 0)));
+
+		CHECK(curve->get_point_position(4).is_equal_approx(Vector2(14, -3)));
+		CHECK(curve->get_point_in(4).is_equal_approx(Vector2(0, -control_offset)));
+		CHECK(curve->get_point_out(4).is_zero_approx());
+	}
+
+	SUBCASE("Rectangle") {
+		Ref<Curve2D> curve = Curve2D::create_rectangle(Rect2(Vector2(10, 20), Vector2(-30, -40)));
+
+		REQUIRE(curve.is_valid());
+		CHECK(curve->get_point_count() == 5);
+
+		CHECK(curve->get_point_position(0).is_equal_approx(Vector2(-20, -20)));
+		CHECK(curve->get_point_position(1).is_equal_approx(Vector2(10, -20)));
+		CHECK(curve->get_point_position(2).is_equal_approx(Vector2(10, 20)));
+		CHECK(curve->get_point_position(3).is_equal_approx(Vector2(-20, 20)));
+		CHECK(curve->get_point_position(4).is_equal_approx(Vector2(-20, -20)));
+
+		for (int i = 0; i < curve->get_point_count(); i++) {
+			CHECK(curve->get_point_in(i).is_zero_approx());
+			CHECK(curve->get_point_out(i).is_zero_approx());
+		}
+
+		CHECK(Math::is_equal_approx(curve->get_baked_length(), real_t(140.0)));
+	}
+
+	SUBCASE("Invalid input") {
+		ERR_PRINT_OFF;
+		CHECK(Curve2D::create_circle(0.0).is_null());
+		CHECK(Curve2D::create_circle(-1.0).is_null());
+		CHECK(Curve2D::create_rectangle(Rect2(Vector2(), Vector2(0, 1))).is_null());
+		CHECK(Curve2D::create_rectangle(Rect2(Vector2(), Vector2(1, 0))).is_null());
+		ERR_PRINT_ON;
+	}
+}
+
 TEST_CASE("[Curve2D] Baked") {
 	Ref<Curve2D> curve = memnew(Curve2D);
 
