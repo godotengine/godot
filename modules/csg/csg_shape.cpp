@@ -1025,9 +1025,9 @@ void CSGShape3D::_notification(int p_what) {
 				if (parent_shape) {
 					set_base(RID());
 					root_mesh.unref();
-					_make_painted();
 				}
 			}
+			_make_painted();
 			last_visible = is_visible();
 		} break;
 
