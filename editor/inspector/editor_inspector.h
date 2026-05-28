@@ -94,6 +94,7 @@ protected:
 		Ref<Texture2D> paste_icon;
 		Ref<Texture2D> unfavorite_icon;
 		Ref<Texture2D> favorite_icon;
+		Ref<Texture2D> favorite_local_icon;
 		Ref<Texture2D> override_icon;
 		Ref<Texture2D> remove_icon;
 		Ref<Texture2D> help_icon;
@@ -123,6 +124,7 @@ public:
 		MENU_COPY_PROPERTY_PATH,
 		MENU_OVERRIDE_FOR_PROJECT,
 		MENU_FAVORITE_PROPERTY,
+		MENU_FAVORITE_LOCAL_PROPERTY,
 		MENU_PIN_VALUE,
 		MENU_DELETE,
 		MENU_REVERT_VALUE,
@@ -183,6 +185,9 @@ private:
 
 	bool can_favorite = false;
 	bool favorited = false;
+	bool can_local_favorite = false;
+	bool local_favorite_enabled = false;
+	bool locally_favorited = false;
 
 	bool use_folding = false;
 	bool draw_top_bg = true;
@@ -323,6 +328,9 @@ public:
 
 	void set_favoritable(bool p_favoritable);
 	bool is_favoritable() const;
+	void set_local_favoritable(bool p_favoritable);
+	bool is_local_favoritable() const;
+	void set_local_favorite_enabled(bool p_enabled);
 
 	void set_object_and_property(Object *p_object, const StringName &p_property);
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
@@ -387,6 +395,8 @@ class EditorInspectorCategory : public Control {
 		MENU_COPY_VALUE,
 		MENU_PASTE_VALUE,
 		MENU_OPEN_DOCS,
+		MENU_UNFAVORITE_GLOBAL,
+		MENU_UNFAVORITE_LOCAL,
 		MENU_UNFAVORITE_ALL,
 	};
 
@@ -417,6 +427,10 @@ class EditorInspectorCategory : public Control {
 	PopupMenu *menu = nullptr;
 	bool is_favorite = false;
 	bool menu_icon_dirty = true;
+	bool menu_items_built = false;
+	int global_favorite_count = 0;
+	int local_favorite_count = 0;
+	int combined_favorite_count = 0;
 
 	LocalVector<EditorProperty *> category_properties;
 
@@ -435,6 +449,7 @@ protected:
 
 public:
 	void set_as_favorite();
+	void set_favorite_counts(int p_global_count, int p_local_count, int p_combined_count);
 	void set_property_info(const PropertyInfo &p_info);
 	void set_doc_class_name(const String &p_name);
 
@@ -762,9 +777,14 @@ private:
 
 	bool can_favorite = false;
 	PackedStringArray current_favorites;
+	PackedStringArray current_local_favorites;
+	String current_scene_path;
 	VBoxContainer *favorites_section = nullptr;
-	VBoxContainer *favorites_vbox = nullptr;
-	VBoxContainer *favorites_groups_vbox = nullptr;
+	EditorInspectorCategory *favorites_category = nullptr;
+	VBoxContainer *local_favorites_vbox = nullptr;
+	VBoxContainer *local_favorites_groups_vbox = nullptr;
+	VBoxContainer *global_favorites_vbox = nullptr;
+	VBoxContainer *global_favorites_groups_vbox = nullptr;
 	HSeparator *favorites_separator = nullptr;
 
 	EditorInspector *root_inspector = nullptr;
@@ -846,10 +866,18 @@ private:
 	void _property_selected(const String &p_path, int p_focusable);
 	void _object_id_selected(const String &p_path, ObjectID p_id);
 
+	String _get_current_scene_path_for_favorites() const;
 	void _update_current_favorites();
+	StringName _get_favorite_property_class_name(const String &p_path) const;
 	void _set_property_favorited(const String &p_path, bool p_favorited);
+	void _set_property_local_favorited(const String &p_path, bool p_favorited);
+	void _sync_favorite_counts_to_category();
+	void _erase_favorites_for_current_object(HashMap<String, PackedStringArray> &p_favorites);
 	void _clear_current_favorites();
+	void _clear_current_local_favorites();
+	void _clear_current_favorites_all();
 
+	void _scene_saved(const String &p_path);
 	void _node_removed(Node *p_node);
 
 	HashMap<StringName, int> per_array_page;
@@ -860,7 +888,7 @@ private:
 
 	void _keying_changed();
 
-	void _parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> p_plugin);
+	void _parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, bool p_disable_favorite, Ref<EditorInspectorPlugin> p_plugin);
 
 	void _vscroll_changed(double);
 
