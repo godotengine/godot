@@ -4276,6 +4276,13 @@ void RichTextLabel::add_text(const String &p_text) {
 
 		pos = end + 1;
 	}
+
+	if (!parsing_bbcode.load()) {
+		// Don't do this if parsing bbcode (it would be called in a loop which is O(N^2)).
+		// Instead, it is done at the end of append_text.
+		_recalculate_visible_ratio();
+	}
+
 	queue_redraw();
 }
 
@@ -4705,6 +4712,8 @@ bool RichTextLabel::remove_paragraph(int p_paragraph, bool p_no_invalidate) {
 		main->first_invalid_font_line.store(MIN(main->first_invalid_font_line.load(), p_paragraph));
 	}
 	queue_redraw();
+
+	_recalculate_visible_ratio();
 
 	return true;
 }
@@ -6722,6 +6731,9 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 	}
 
 	parsing_bbcode.store(false);
+
+	// add_text does not do this if parsing_bbcode is true, so do it here.
+	_recalculate_visible_ratio();
 }
 
 void RichTextLabel::scroll_to_selection() {
@@ -7596,6 +7608,21 @@ BitField<TextServer::LineBreakFlag> RichTextLabel::get_autowrap_trim_flags() con
 	return autowrap_flags_trim;
 }
 
+void RichTextLabel::_recalculate_visible_ratio() {
+	if (visible_characters == -1) {
+		visible_ratio = 1.0;
+	} else if (visible_characters < 0) {
+		visible_ratio = 0.0;
+	} else {
+		int total_char_count = get_total_character_count();
+		if (visible_characters >= total_char_count) {
+			visible_ratio = 1.0;
+		} else {
+			visible_ratio = (float)visible_characters / (float)total_char_count;
+		}
+	}
+}
+
 void RichTextLabel::set_visible_ratio(float p_ratio) {
 	if (visible_ratio != p_ratio) {
 		_stop_thread();
@@ -8110,14 +8137,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 
 		int prev_vc = visible_characters;
 		visible_characters = p_visible;
-		if (p_visible == -1) {
-			visible_ratio = 1;
-		} else {
-			int total_char_count = get_total_character_count();
-			if (total_char_count > 0) {
-				visible_ratio = (float)p_visible / (float)total_char_count;
-			}
-		}
+		_recalculate_visible_ratio();
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visible_characters != prev_vc) {
 			int new_vc = (visible_characters < 0) ? get_total_character_count() : visible_characters;
 			int old_vc = (prev_vc < 0) ? get_total_character_count() : prev_vc;
