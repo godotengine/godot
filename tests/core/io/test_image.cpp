@@ -491,6 +491,7 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 	Color red(1.0f, 0.0f, 0.0f, 1.0f);
 	Color green(0.0f, 1.0f, 0.0f, 1.0f);
 	Color blue(0.0f, 0.0f, 1.0f, 1.0f);
+	Color white(1.0f, 1.0f, 1.0f, 1.0f);
 
 	Ref<Image> image;
 	PackedByteArray rotated_data;
@@ -673,7 +674,6 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 		CHECK(image->get_data() == rotated_data);
 	}
 
-	// TODO: this doesnt print anything at all
 	SUBCASE("[Image] Attempting to rotate a compressed image") {
 		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
 		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
@@ -689,6 +689,84 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 		image->rotate_90(CLOCKWISE);
 		ERR_PRINT_ON;
 		WARN_PRINT("Successfully threw an error for attempting to rotate a zero-sized image"); // Prints an engine warning
+	}
+
+	SUBCASE("[Image] rotating non-square image") {
+		image = memnew(Image(4, 2, false, Image::FORMAT_RGBA8));
+
+		// Setting pixels
+		image->set_pixel(0, 0, red);
+		image->set_pixel(1, 0, green);
+		image->set_pixel(2, 0, blue);
+		image->set_pixel(3, 0, white);
+
+		image->set_pixel(0, 1, red);
+		image->set_pixel(1, 1, green);
+		image->set_pixel(2, 1, blue);
+		image->set_pixel(3, 1, white);
+
+		image->rotate_90(CLOCKWISE);
+
+		// check height and width
+		CHECK(image->get_width() == 2);
+		CHECK(image->get_height() == 4);
+
+		// Check pixels
+		CHECK(image->get_pixel(0, 0) == red);
+		CHECK(image->get_pixel(1, 0) == red);
+		CHECK(image->get_pixel(0, 1) == green);
+		CHECK(image->get_pixel(1, 1) == green);
+
+		CHECK(image->get_pixel(0, 2) == blue);
+		CHECK(image->get_pixel(1, 2) == blue);
+		CHECK(image->get_pixel(0, 3) == white);
+		CHECK(image->get_pixel(1, 3) == white);
+	}
+
+	SUBCASE("[Image] Idempotency testing") {
+				image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		Ref<Image> temp = memnew(Image());
+		Ref<Image> image_copy = memnew(Image());
+		image->set_pixel(0, 0, red);
+		image->set_pixel(1, 0, red);
+		image->set_pixel(2, 0, blue);
+
+		image->set_pixel(0, 1, blue);
+		image->set_pixel(1, 1, blue);
+		image->set_pixel(2, 1, green);
+
+		image->set_pixel(0, 2, green);
+		image->set_pixel(1, 2, red);
+		image->set_pixel(2, 2, red);
+
+		image_copy->copy_from(image);
+		temp->copy_from(image);
+
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+		CHECK_MESSAGE(image_copy->get_data() == image->get_data(), "Rotating clockwise four times; data should equal original");
+
+		// resetting the copy
+		image_copy->copy_from(image);
+
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+		temp->rotate_180();
+
+		CHECK_MESSAGE(image_copy->get_data() == temp->get_data(), "Rotating clockwise twice; data should equal execution of rotate_180()");
+
+		// resetting copies
+		image_copy->copy_from(image);
+		temp->copy_from(image);
+
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+
+		temp->rotate_90(COUNTERCLOCKWISE);
+		CHECK_MESSAGE(image_copy->get_data() == temp->get_data(), "Rotating clockwise three times; data should equal rotating counterclockwise once");
 	}
 }
 
@@ -899,7 +977,8 @@ TEST_CASE("[Image] Decompressing images") {
 		/*
 		NOTE: when compressing such a small image in a lossy format, Godot tends to
 		interpololate the colors, so the colors may significantly deviate outside of
-		a tolerable range
+		a tolerable range. More test cases may therefore be required to fully
+		cover lossy image formats.
 		 */
 	}
 }
