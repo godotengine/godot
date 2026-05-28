@@ -352,8 +352,6 @@ static void _unpack_manifold(
 			r_mesh_merge->faces.push_back(face);
 		}
 	}
-
-	r_mesh_merge->_regen_face_aabbs();
 }
 
 #ifdef DEV_ENABLED
@@ -1612,9 +1610,12 @@ void CSGShape3D::calculate_cylinder_map(const Vector<int> &p_faces, const Vector
 			// This calculates two mirrored sides and then mirrors one back.
 			float inv = ang.normal.z < 0.0 ? -1.0 : 1.0;
 			// MAX is needed because under one specific circumstance the resulting value is -0.0 and that returns the angle -PI, causing the UV to stretch on the last face.
-			float t_ang_1 = Vector2(v1.x, MAX(0.0, v1.z * inv)).normalized().angle() * flatten * inv;
-			float t_ang_2 = Vector2(v2.x, MAX(0.0, v2.z * inv)).normalized().angle() * flatten * inv;
-			float t_ang_3 = Vector2(v3.x, MAX(0.0, v3.z * inv)).normalized().angle() * flatten * inv;
+			Vector2 t_vec_1(v1.x, MAX(0.0, v1.z * inv));
+			Vector2 t_vec_2(v2.x, MAX(0.0, v2.z * inv));
+			Vector2 t_vec_3(v3.x, MAX(0.0, v3.z * inv));
+			float t_ang_1 = t_vec_1.normalized().angle() * flatten * inv * Math::ceil(t_vec_1.length() * 4.0);
+			float t_ang_2 = t_vec_2.normalized().angle() * flatten * inv * Math::ceil(t_vec_2.length() * 4.0);
+			float t_ang_3 = t_vec_3.normalized().angle() * flatten * inv * Math::ceil(t_vec_3.length() * 4.0);
 			// Correctly calculating `uv_scale` makes the code too complicated. Using `x` only.
 			n->faces.write[p].uvs[0] = p_rotation.xform(Vector2(t_ang_1 * p_scale.x, v1.y * p_scale.y));
 			n->faces.write[p].uvs[1] = p_rotation.xform(Vector2(t_ang_2 * p_scale.x, v2.y * p_scale.y));

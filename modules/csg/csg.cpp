@@ -99,8 +99,6 @@ void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<
 	for (const KeyValue<Ref<Material>, int> &E : material_map) {
 		materials.write[E.value] = E.key;
 	}
-
-	_regen_face_aabbs();
 }
 
 void CSGBrush::copy_from(const CSGBrush &p_brush, const Transform3D &p_xform) {
@@ -112,8 +110,6 @@ void CSGBrush::copy_from(const CSGBrush &p_brush, const Transform3D &p_xform) {
 			faces.write[i].vertices[j] = p_xform.xform(p_brush.faces[i].vertices[j]);
 		}
 	}
-
-	_regen_face_aabbs();
 }
 
 void CSGBrush::add_ngons(const Vector<int> &p_ngons) {
