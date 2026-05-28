@@ -1894,13 +1894,13 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				// Locate and open the file.
 				err = godot_unzip_locate_file(uzf, file_info.name, true);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("File does not exist in zip archive."));
+					_download_failed(TTR("File does not exist in ZIP archive."));
 					return;
 				}
 
 				err = unzOpenCurrentFile(uzf);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("Could not open file within zip archive."));
+					_download_failed(TTR("Could not open file within ZIP archive."));
 					return;
 				}
 
@@ -1908,7 +1908,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				unz_file_info info;
 				err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("Unable to read file information from zip archive."));
+					_download_failed(TTR("Unable to read file information from ZIP archive."));
 					return;
 				}
 
@@ -1919,7 +1919,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				while (to_read > 0) {
 					int bytes_read = unzReadCurrentFile(uzf, buffer, to_read);
 					if (bytes_read < 0 || (bytes_read == UNZ_EOF && to_read != 0)) {
-						_download_failed(TTR("IO/zlib error reading file from zip archive."));
+						_download_failed(TTR("IO/zlib error reading file from ZIP archive."));
 						return;
 					}
 					buffer += bytes_read;
@@ -1929,7 +1929,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				// Verify the data and return.
 				err = unzCloseCurrentFile(uzf);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("CRC error reading file from zip archive."));
+					_download_failed(TTR("CRC error reading file from ZIP archive."));
 					return;
 				}
 			}
@@ -1943,7 +1943,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 
 				f = FileAccess::open(target_directory.path_join(filename), FileAccess::WRITE);
 				if (f.is_null()) {
-					_download_failed(TTR("Failed to template file for writing."));
+					_download_failed(TTR("Failed to open template file for writing."));
 					return;
 				}
 				f->store_buffer(extracted_data);
