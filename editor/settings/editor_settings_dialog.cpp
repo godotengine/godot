@@ -37,6 +37,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/filesystem_dock.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -950,6 +951,14 @@ void EditorSettingsDialog::_editor_restart_request() {
 
 void EditorSettingsDialog::_editor_restart_close() {
 	restart_container->hide();
+}
+
+void EditorSettingsDialog::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
+	p_fs_dock->connect("files_moved", callable_mp(EditorSettings::get_singleton(), &EditorSettings::update_local_favorites_on_file_move));
+	p_fs_dock->connect("folder_moved", callable_mp(EditorSettings::get_singleton(), &EditorSettings::update_local_favorites_on_folder_move));
+	// Clearing on file_removed/folder_removed results in favorites being lost if the user saves a still-open scene back to the disk after deleting it.
+	p_fs_dock->connect("file_removed", callable_mp(EditorSettings::get_singleton(), &EditorSettings::clear_local_favorite_properties_for_scene));
+	p_fs_dock->connect("folder_removed", callable_mp(EditorSettings::get_singleton(), &EditorSettings::clear_local_favorite_properties_for_folder));
 }
 
 void EditorSettingsDialog::_bind_methods() {

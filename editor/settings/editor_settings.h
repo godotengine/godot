@@ -104,6 +104,7 @@ private:
 
 	Vector<String> favorites;
 	HashMap<String, PackedStringArray> favorite_properties;
+	HashMap<String, HashMap<String, PackedStringArray>> local_favorite_properties;
 	Vector<String> recent_dirs;
 
 	bool save_changed_setting = true;
@@ -120,6 +121,7 @@ private:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 	void _set_initialized();
+	void _save_local_favorite_properties_to_disk() const;
 	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
 	void _load_default_visual_shader_editor_theme();
 	static String _guess_exec_args_for_extenal_editor(const String &p_value);
@@ -187,6 +189,12 @@ public:
 	Vector<String> get_favorite_folders() const;
 	void set_favorite_properties(const HashMap<String, PackedStringArray> &p_favorite_properties);
 	HashMap<String, PackedStringArray> get_favorite_properties() const;
+	void set_local_favorite_properties(const String &p_scene_path, const HashMap<String, PackedStringArray> &p_favorite_properties);
+	HashMap<String, PackedStringArray> get_local_favorite_properties(const String &p_scene_path) const;
+	void clear_local_favorite_properties_for_scene(const String &p_scene_path);
+	void clear_local_favorite_properties_for_folder(const String &p_folder);
+	void update_local_favorites_on_file_move(const String &p_old_file, const String &p_new_file);
+	void update_local_favorites_on_folder_move(const String &p_old_folder, const String &p_new_folder);
 	void set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog = true);
 	void set_recent_dirs_bind(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
