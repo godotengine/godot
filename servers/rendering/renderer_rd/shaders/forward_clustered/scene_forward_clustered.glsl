@@ -2115,7 +2115,7 @@ void fragment_shader(in SceneData scene_data) {
 
 	//finalize ambient light here
 	{
-#ifndef MULTI_BOUNCE_OCCLUSION_DISABLED
+#ifdef MULTI_BOUNCE_OCCLUSION_ENABLED
 		// Apply multi-bounce ambient-occlusion approximation to ambient light:
 		// https://blog.selfshadow.com/publications/s2016-shading-course/activision/s2016_pbs_activision_occlusion.pdf#page=78
 		{
@@ -2126,9 +2126,9 @@ void fragment_shader(in SceneData scene_data) {
 			vec3 bounce_occlusion = max(x, ((x * a + b) * x + c) * x);
 			ambient_light *= bounce_occlusion;
 		}
-#else // MULTI_BOUNCE_OCCLUSION_DISABLED
+#else // MULTI_BOUNCE_OCCLUSION_ENABLED
 		ambient_light *= ao;
-#endif // MULTI_BOUNCE_OCCLUSION_DISABLED
+#endif // MULTI_BOUNCE_OCCLUSION_ENABLED
 #ifndef SPECULAR_OCCLUSION_DISABLED
 #ifdef BENT_NORMAL_MAP_USED
 		// Apply cone to cone intersection with cosine weighted assumption:

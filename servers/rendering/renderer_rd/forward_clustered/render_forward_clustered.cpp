@@ -5015,8 +5015,8 @@ RenderForwardClustered::RenderForwardClustered() {
 		}
 
 		bool multi_bounce_occlusion = GLOBAL_GET("rendering/lights_and_shadows/multi_bounce_occlusion/enabled");
-		if (!multi_bounce_occlusion) {
-			defines += "\n#define MULTI_BOUNCE_OCCLUSION_DISABLED\n";
+		if (multi_bounce_occlusion) {
+			defines += "\n#define MULTI_BOUNCE_OCCLUSION_ENABLED\n";
 		}
 
 		bool specular_occlusion = GLOBAL_GET("rendering/reflections/specular_occlusion/enabled");
