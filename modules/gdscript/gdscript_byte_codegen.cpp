@@ -467,10 +467,10 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM2D);
 			break;
 		case Variant::VECTOR4:
-			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR4);
 			break;
 		case Variant::VECTOR4I:
-			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3I);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR4I);
 			break;
 		case Variant::PLANE:
 			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PLANE);
