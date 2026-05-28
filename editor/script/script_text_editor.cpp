@@ -42,6 +42,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/editor_help.h"
 #include "editor/docks/filesystem_dock.h"
+#include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -54,6 +55,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
@@ -866,7 +868,7 @@ void ScriptTextEditor::_validate_script() {
 		if (errors.size() > 0) {
 			code_editor->set_error_pos(errors.front()->get().line - 1, errors.front()->get().column - 1);
 			const String message = errors.front()->get().message.replace("[", "[lb]");
-			const Point2i display_pos = code_editor->get_pos_for_display(code_editor->get_error_pos());
+			const Point2i display_pos = code_editor->get_error_pos() + Point2i(1, 1);
 			const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), display_pos.x, display_pos.y, display_pos.x, display_pos.y) + " " + message;
 			code_editor->set_error(error_text);
 		}
@@ -1188,6 +1190,12 @@ void ScriptTextEditor::_on_caret_moved() {
 }
 
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
+	CodeEdit *text_edit = code_editor->get_text_editor();
+	String nodepath = text_edit->get_nodepath_at_pos(p_row, p_column);
+	if (!nodepath.is_empty() && _navigate_nodepath(p_row, p_column)) {
+		return;
+	}
+
 	Ref<Script> script = edited_res;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
@@ -1293,7 +1301,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		// Check for Autoload scenes.
 		const ProjectSettings::AutoloadInfo &info = ProjectSettings::get_singleton()->get_autoload(p_symbol);
 		if (info.is_singleton) {
-			EditorNode::get_singleton()->open_scene(info.path);
+			EditorNode::get_singleton()->load_scene(info.path);
 		}
 	} else if (p_symbol.is_relative_path()) {
 		// Every symbol other than absolute path is relative path so keep this condition at last.
@@ -1308,7 +1316,28 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 
 	Ref<Script> script = edited_res;
-	Node *base = get_tree()->get_edited_scene_root();
+	Node *scene_root = get_tree()->get_edited_scene_root();
+	if (scene_root) {
+		NodePath np(p_symbol);
+		if (!np.is_empty()) {
+			if (np.is_absolute()) {
+				if (scene_root->get_node_or_null(np)) {
+					text_edit->set_symbol_lookup_word_as_valid(true);
+					return;
+				}
+			} else {
+				Vector<Node *> script_nodes = _find_all_node_for_script(scene_root, scene_root, script);
+				for (Node *owner : script_nodes) {
+					if (owner->get_node_or_null(np)) {
+						text_edit->set_symbol_lookup_word_as_valid(true);
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	Node *base = scene_root;
 	if (base) {
 		base = _find_node_for_script(base, base, script);
 	}
@@ -1328,6 +1357,101 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 		}
 	} else {
 		text_edit->set_symbol_lookup_word_as_valid(false);
+	}
+}
+
+bool ScriptTextEditor::_navigate_nodepath(int p_row, int p_column) {
+	CodeEdit *text_edit = code_editor->get_text_editor();
+	String nodepath = text_edit->get_nodepath_at_pos(p_row, p_column);
+	if (nodepath.is_empty()) {
+		return false;
+	}
+
+	Node *scene_root = get_tree()->get_edited_scene_root();
+	if (!scene_root) {
+		return false;
+	}
+
+	Ref<Script> script = edited_res;
+	Vector<Node *> script_nodes = _find_all_node_for_script(scene_root, scene_root, script);
+	if (script_nodes.is_empty()) {
+		EditorToaster::get_singleton()->popup_str(
+				vformat(TTR("NodePath '%s': script is not attached to any node in the current scene."), nodepath),
+				EditorToaster::SEVERITY_WARNING);
+		return true;
+	}
+
+	NodePath np(nodepath);
+	if (np.is_absolute()) {
+		Node *target = scene_root->get_node_or_null(np);
+		if (target) {
+			_navigate_to_scene_node(target);
+			return true;
+		}
+
+		EditorToaster::get_singleton()->popup_str(
+				vformat(TTR("NodePath '%s' could not be resolved in the current scene."), nodepath),
+				EditorToaster::SEVERITY_WARNING);
+		return true;
+	}
+
+	Vector<Node *> resolved;
+	HashSet<Node *> unique_nodes;
+	for (Node *owner : script_nodes) {
+		Node *target = owner->get_node_or_null(np);
+		if (target && !unique_nodes.has(target)) {
+			unique_nodes.insert(target);
+			resolved.push_back(target);
+		}
+	}
+
+	if (resolved.is_empty()) {
+		EditorToaster::get_singleton()->popup_str(
+				vformat(TTR("NodePath '%s' could not be resolved in the current scene."), nodepath),
+				EditorToaster::SEVERITY_WARNING);
+		return true;
+	}
+
+	if (resolved.size() == 1) {
+		_navigate_to_scene_node(resolved[0]);
+		return true;
+	}
+
+	_pending_nodepath_nodes.clear();
+	nodepath_select_list->clear();
+	for (Node *node : resolved) {
+		NodePath scene_path = scene_root->get_path_to(node);
+		int item = nodepath_select_list->add_item(vformat(TTR("%s (%s)"), String(scene_path), node->get_class()));
+		nodepath_select_list->set_item_tooltip(item, vformat(TTR("Type: %s"), node->get_class()));
+		_pending_nodepath_nodes.push_back(node);
+	}
+
+	nodepath_select_dialog->set_title(vformat(TTR("Select target for NodePath: %s"), nodepath));
+	nodepath_select_label->set_text(vformat(TTR("%d matches for NodePath '%s'. Select the target node:"), resolved.size(), nodepath));
+	nodepath_select_list->select(0);
+	nodepath_select_list->grab_focus();
+	nodepath_select_dialog->popup_centered(Size2(420, 320) * EDSCALE);
+	return true;
+}
+
+void ScriptTextEditor::_navigate_to_scene_node(Node *p_node) {
+	SceneTreeDock::get_singleton()->set_selected(p_node, true);
+}
+
+void ScriptTextEditor::_nodepath_select_confirmed() {
+	PackedInt32Array selected = nodepath_select_list->get_selected_items();
+	if (selected.is_empty()) {
+		return;
+	}
+
+	int idx = selected[0];
+	if (idx < 0 || idx >= _pending_nodepath_nodes.size()) {
+		return;
+	}
+
+	Node *node = _pending_nodepath_nodes[idx];
+	if (node) {
+		_navigate_to_scene_node(node);
 	}
 }
 
@@ -2705,6 +2829,27 @@ void ScriptTextEditor::_enable_code_editor() {
 	add_child(quick_open);
 
 	add_child(connection_info_dialog);
+
+	nodepath_select_dialog = memnew(AcceptDialog);
+	nodepath_select_dialog->set_ok_button_text(TTR("Navigate"));
+	nodepath_select_label = memnew(Label);
+	nodepath_select_label->set_text(TTR("Multiple nodes found. Select the target node:"));
+	nodepath_select_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	nodepath_select_list = memnew(ItemList);
+	nodepath_select_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	nodepath_select_list->set_select_mode(ItemList::SELECT_SINGLE);
+	nodepath_select_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	nodepath_select_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	VBoxContainer *np_vbc = memnew(VBoxContainer);
+	np_vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	np_vbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	np_vbc->add_child(nodepath_select_label);
+	np_vbc->add_child(nodepath_select_list);
+	nodepath_select_dialog->add_child(np_vbc);
+
+	nodepath_select_dialog->connect("confirmed", callable_mp(this, &ScriptTextEditor::_nodepath_select_confirmed));
+	add_child(nodepath_select_dialog);
 }
 
 ScriptTextEditor::ScriptTextEditor() {

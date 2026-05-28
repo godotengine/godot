@@ -5714,6 +5714,171 @@ func _ready():
 	memdelete(code_edit);
 }
 
+TEST_CASE("[SceneTree][CodeEdit] nodepath dollar extraction") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
+
+	SUBCASE("[SceneTree][CodeEdit] simple name, cursor on first char") {
+		code_edit->set_text("var x = $Node");
+		CHECK(code_edit->get_nodepath_at_pos(0, 9) == "Node");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] simple name, cursor in middle") {
+		code_edit->set_text("var x = $Node");
+		CHECK(code_edit->get_nodepath_at_pos(0, 11) == "Node");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] simple name, cursor on last char") {
+		code_edit->set_text("var x = $Node");
+		CHECK(code_edit->get_nodepath_at_pos(0, 12) == "Node");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] two-segment path, cursor on first segment") {
+		code_edit->set_text("var x = $Node/Child");
+		// var x = $Node/Child
+		//          ^col 9
+		CHECK(code_edit->get_nodepath_at_pos(0, 9) == "Node/Child");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] two-segment path, cursor on slash") {
+		code_edit->set_text("var x = $Node/Child");
+		// Cursor on '/' at col 13
+		CHECK(code_edit->get_nodepath_at_pos(0, 13) == "Node/Child");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] two-segment path, cursor on second segment") {
+		code_edit->set_text("var x = $Node/Child");
+		// Cursor on 'C' of 'Child' at col 15
+		CHECK(code_edit->get_nodepath_at_pos(0, 15) == "Node/Child");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] three-segment path") {
+		code_edit->set_text("var x = $UI/HUD/HealthBar");
+		// var x = $UI/HUD/HealthBar
+		CHECK(code_edit->get_nodepath_at_pos(0, 18) == "UI/HUD/HealthBar");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] unique node name with percent returns empty") {
+		code_edit->set_text("var x = $%UniqueNode");
+		// '%' is not a scanned character; the '$' prefix is not found, so nothing is returned.
+		CHECK(code_edit->get_nodepath_at_pos(0, 12).is_empty());
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] cursor at the '$' itself returns empty") {
+		code_edit->set_text("var x = $Node");
+		// Cursor on '$' at col 8 — not inside the path
+		CHECK(code_edit->get_nodepath_at_pos(0, 8).is_empty());
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] cursor before '$' returns empty") {
+		code_edit->set_text("var x = $Node");
+		// Cursor on space before '$' at col 7
+		CHECK(code_edit->get_nodepath_at_pos(0, 5).is_empty());
+	}
+
+	memdelete(code_edit);
+}
+
+TEST_CASE("[SceneTree][CodeEdit] nodepath get_node extraction") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
+
+	SUBCASE("[SceneTree][CodeEdit] simple name, cursor inside string") {
+		code_edit->set_text("get_node(\"Node\")");
+		// get_node("Node")
+		//           ^col 10
+		CHECK(code_edit->get_nodepath_at_pos(0, 10) == "Node");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] two-segment path, cursor on first segment") {
+		code_edit->set_text("get_node(\"Node/Child\")");
+		CHECK(code_edit->get_nodepath_at_pos(0, 10) == "Node/Child");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] two-segment path, cursor on slash") {
+		code_edit->set_text("get_node(\"Node/Child\")");
+		CHECK(code_edit->get_nodepath_at_pos(0, 14) == "Node/Child");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] two-segment path, cursor on second segment") {
+		code_edit->set_text("get_node(\"Node/Child\")");
+		CHECK(code_edit->get_nodepath_at_pos(0, 17) == "Node/Child");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] three-segment path") {
+		code_edit->set_text("get_node(\"UI/HUD/HealthBar\")");
+		CHECK(code_edit->get_nodepath_at_pos(0, 15) == "UI/HUD/HealthBar");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] NodePath literal with caret prefix") {
+		code_edit->set_text("get_node(^\"Node/Child\")");
+		// get_node(^"Node/Child")
+		CHECK(code_edit->get_nodepath_at_pos(0, 12) == "Node/Child");
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] single-quoted string not supported") {
+		// Only double-quoted strings are recognized; single quotes return empty.
+		CHECK(code_edit->get_nodepath_at_pos(0, 11).is_empty());
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] cursor outside string returns empty") {
+		// Cursor on 'g' of get_node, not inside the string
+		code_edit->set_text("get_node(\"Node/Child\")");
+		CHECK(code_edit->get_nodepath_at_pos(0, 2).is_empty());
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] cursor after closing paren returns empty") {
+		// Cursor after ')'
+		code_edit->set_text("get_node(\"Node\")");
+		CHECK(code_edit->get_nodepath_at_pos(0, 16).is_empty());
+	}
+
+	memdelete(code_edit);
+}
+
+TEST_CASE("[SceneTree][CodeEdit] nodepath edge cases") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
+
+	SUBCASE("[SceneTree][CodeEdit] empty line returns empty") {
+		code_edit->set_text("");
+		CHECK(code_edit->get_nodepath_at_pos(0, 0).is_empty());
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] out-of-bounds column returns empty") {
+		code_edit->set_text("$Node");
+		CHECK(code_edit->get_nodepath_at_pos(0, 100).is_empty());
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] negative column returns empty") {
+		code_edit->set_text("$Node");
+		CHECK(code_edit->get_nodepath_at_pos(0, -1).is_empty());
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] regular identifier (not a NodePath) returns empty") {
+		// Regular method call — no '$' or get_node context
+		code_edit->set_text("set_visible(true)");
+		CHECK(code_edit->get_nodepath_at_pos(0, 4).is_empty());
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] string not in get_node returns empty") {
+		// Just a string assignment, not get_node
+		code_edit->set_text("var s = \"Node/Child\"");
+		CHECK(code_edit->get_nodepath_at_pos(0, 12).is_empty());
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] dollar at line start with no path returns empty") {
+		// "$" alone
+		code_edit->set_text("$");
+		CHECK(code_edit->get_nodepath_at_pos(0, 1).is_empty());
+	}
+
+	memdelete(code_edit);
+}
+
 } // namespace TestCodeEdit
 
 #endif // ADVANCED_GUI_DISABLED
