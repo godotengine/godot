@@ -179,7 +179,7 @@ namespace GodotTools.Export
             if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
-            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
+            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.Web }
                     .Contains(platform))
             {
                 throw new NotImplementedException("Target platform not yet implemented.");
@@ -195,6 +195,11 @@ namespace GodotTools.Export
                 UseTempDir = platform != OS.Platforms.iOS, // xcode project links directly to files in the publish dir, so use one that sticks around.
                 BundleOutputs = true,
             };
+
+            if (features.Contains("wasm32"))
+            {
+                publishConfig.Archs.Add("wasm32");
+            }
 
             if (features.Contains("x86_64"))
             {
@@ -242,7 +247,7 @@ namespace GodotTools.Export
 
             List<string> outputPaths = new();
 
-            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android) && platform != OS.Platforms.MacOS;
+            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android || platform == OS.Platforms.Web) && platform != OS.Platforms.MacOS;
 
             var exportedJars = new HashSet<string>();
 
@@ -510,6 +515,8 @@ namespace GodotTools.Export
                 "arm64-v8a" => "arm64",
                 "arm32" => "arm",
                 "arm64" => "arm64",
+                "wasm" => "wasm",
+                "wasm32" => "wasm",
                 _ => throw new ArgumentOutOfRangeException(nameof(arch), arch, "Unexpected architecture")
             };
         }
