@@ -48,25 +48,25 @@ private:
 public:
 	NeighborCellTester() : tile_set(memnew(TileSet)) {}
 
-	void configure(TileSet::TileShape shape,
-			TileSet::TileLayout layout = TileSet::TILE_LAYOUT_STACKED,
-			TileSet::TileOffsetAxis offset = TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		tile_set->set_tile_shape(shape);
-		tile_set->set_tile_layout(layout);
-		tile_set->set_tile_offset_axis(offset);
+	void configure(TileSet::TileShape p_shape,
+			TileSet::TileLayout p_layout = TileSet::TILE_LAYOUT_STACKED,
+			TileSet::TileOffsetAxis p_offset = TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		tile_set->set_tile_shape(p_shape);
+		tile_set->set_tile_layout(p_layout);
+		tile_set->set_tile_offset_axis(p_offset);
 	}
 
-	void test_neighbors(const Vector2i &center, const Vector<NeighborTestCase> &cases) {
-		for (const auto &test_case : cases) {
-			Vector2i result = tile_set->get_neighbor_cell(center, test_case.direction);
+	void test_neighbors(const Vector2i &p_center, const Vector<NeighborTestCase> &p_cases) {
+		for (const NeighborTestCase &test_case : p_cases) {
+			Vector2i result = tile_set->get_neighbor_cell(p_center, test_case.direction);
 			CHECK(result == test_case.expected_position);
 		}
 	}
 
-	void test_error_case(const Vector2i &center, TileSet::CellNeighbor direction) {
+	void test_error_case(const Vector2i &p_center, TileSet::CellNeighbor p_direction) {
 		ERR_PRINT_OFF;
-		Vector2i result = tile_set->get_neighbor_cell(center, direction);
-		CHECK(result == center);
+		Vector2i result = tile_set->get_neighbor_cell(p_center, p_direction);
+		CHECK(result == p_center);
 		ERR_PRINT_ON;
 	}
 };
