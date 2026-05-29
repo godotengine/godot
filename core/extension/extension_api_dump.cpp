@@ -45,6 +45,13 @@
 #ifdef TOOLS_ENABLED
 #include "editor/doc/editor_help.h"
 
+void GDExtensionAPIDump::_bind_methods() {
+	ClassDB::bind_static_method("GDExtensionAPIDump", D_METHOD("generate_extension_api", "include_docs"), &GDExtensionAPIDump::generate_extension_api, DEFVAL(false));
+	ClassDB::bind_static_method("GDExtensionAPIDump", D_METHOD("dump_extension_api"), &GDExtensionAPIDump::dump_extension_api);
+	ClassDB::bind_static_method("GDExtensionAPIDump", D_METHOD("generate_extension_json_file", "path", "include_docs"), &GDExtensionAPIDump::generate_extension_json_file, DEFVAL(false));
+	ClassDB::bind_static_method("GDExtensionAPIDump", D_METHOD("validate_extension_json_file", "path"), &GDExtensionAPIDump::validate_extension_json_file);
+}
+
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {
 		return "Variant";
@@ -1353,7 +1360,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				for (const MethodInfo &method_info : method_list) {
 					Dictionary method;
 					method["name"] = method_info.name;
-					method["is_static"] = method_info.is_static;
+					method["is_static"] = bool(method_info.flags & METHOD_FLAG_STATIC);
 
 					bool has_return = method_info.return_val.type != Variant::NIL || (method_info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 					if (has_return) {
@@ -1504,6 +1511,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 	}
 
 	return api_dump;
+}
+
+String GDExtensionAPIDump::dump_extension_api() {
+	Dictionary api = generate_extension_api(true);
+	Ref<JSON> json;
+	json.instantiate();
+
+	return json->stringify(api, "\t", false) + "\n";
 }
 
 void GDExtensionAPIDump::generate_extension_json_file(const String &p_path, bool p_include_docs) {
