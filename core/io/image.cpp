@@ -93,12 +93,12 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 // External VRAM compression function pointers.
 
 void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels, Image::BPTCFormat) = nullptr;
 void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
 
-Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
+Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels, Image::BPTCFormat) = nullptr;
 Error (*Image::_image_compress_bc_rd_func)(Image *, Image::UsedChannels) = nullptr;
 
 // External VRAM decompression function pointers.
@@ -2949,6 +2949,10 @@ Error Image::compress(CompressMode p_mode, CompressSource p_source, ASTCFormat p
 }
 
 Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format) {
+	return _compress_from_channels(p_mode, p_channels, p_astc_format, BPTC_DETECT);
+}
+
+Error Image::_compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format, BPTCFormat p_bptc_format) {
 	ERR_FAIL_COND_V(data.is_empty(), ERR_INVALID_DATA);
 
 	// RenderingDevice only.
@@ -2957,7 +2961,7 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 			case COMPRESS_BPTC: {
 				// BC7 is unsupported currently.
 				if ((format >= FORMAT_RF && format <= FORMAT_RGBE9995) && _image_compress_bptc_rd_func) {
-					Error result = _image_compress_bptc_rd_func(this, p_channels);
+					Error result = _image_compress_bptc_rd_func(this, p_channels, p_bptc_format);
 
 					// If the image was compressed successfully, we return here. If not, we fall back to the default compression scheme.
 					if (result == OK) {
@@ -2996,7 +3000,7 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 		} break;
 		case COMPRESS_BPTC: {
 			ERR_FAIL_NULL_V(_image_compress_bptc_func, ERR_UNAVAILABLE);
-			_image_compress_bptc_func(this, p_channels);
+			_image_compress_bptc_func(this, p_channels, p_bptc_format);
 		} break;
 		case COMPRESS_ASTC: {
 			ERR_FAIL_NULL_V(_image_compress_astc_func, ERR_UNAVAILABLE);
