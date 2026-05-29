@@ -462,8 +462,6 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the diamo
 
 	Ref<TileSet> tile_set = memnew(TileSet);
 
-	Vector2i center_cell(0, 0);
-
 	SUBCASE("hexagon") {
 		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
 
