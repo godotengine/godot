@@ -724,7 +724,7 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 	}
 
 	SUBCASE("[Image] Idempotency testing") {
-				image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
 		Ref<Image> temp = memnew(Image());
 		Ref<Image> image_copy = memnew(Image());
 		image->set_pixel(0, 0, red);
