@@ -75,8 +75,6 @@ TEST_CASE("[TileSet] get_neighbor_cell on a square shaped tile") {
 	NeighborCellTester tester;
 	tester.configure(TileSet::TILE_SHAPE_SQUARE);
 
-	Vector2i center_cell(0, 0);
-
 	SUBCASE("All neighbors of a square tile") {
 		Vector<NeighborTestCase> square_neighbors = {
 			{ TileSet::CELL_NEIGHBOR_TOP_SIDE, Vector2i(0, -1) },
@@ -89,7 +87,9 @@ TEST_CASE("[TileSet] get_neighbor_cell on a square shaped tile") {
 			{ TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER, Vector2i(-1, -1) }
 		};
 
-		tester.test_neighbors(center_cell, square_neighbors);
+		tester.test_neighbors(Vector2i(0, 0), square_neighbors);
+
+		tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE);
 	}
 }
 
@@ -331,6 +331,8 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stair
 				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) }
 			};
 			tester.test_neighbors(Vector2i(0, 0), neighbors);
+
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_LEFT_CORNER);
 		}
 
 		SUBCASE("stairs down, vertical offset axis") {
@@ -347,6 +349,8 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stair
 				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) }
 			};
 			tester.test_neighbors(Vector2i(0, 0), neighbors);
+
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_LEFT_CORNER);
 		}
 
 		SUBCASE("stairs down, horizontal offset axis") {
@@ -363,6 +367,8 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stair
 				{ TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, Vector2i(1, -1) }
 			};
 			tester.test_neighbors(Vector2i(0, 0), neighbors);
+
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_LEFT_CORNER);
 		}
 
 		SUBCASE("stairs right, vertical offset axis") {
@@ -379,6 +385,8 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stair
 				{ TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, Vector2i(-1, 1) }
 			};
 			tester.test_neighbors(Vector2i(0, 0), neighbors);
+
+			tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_LEFT_CORNER);
 		}
 	}
 
@@ -460,11 +468,7 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the stair
 TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the diamond layout") {
 	NeighborCellTester tester;
 
-	Ref<TileSet> tile_set = memnew(TileSet);
-
 	SUBCASE("hexagon") {
-		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_HEXAGON);
-
 		SUBCASE("diamond right, horizontal offset axis") {
 			tester.configure(TileSet::TILE_SHAPE_HEXAGON,
 					TileSet::TILE_LAYOUT_DIAMOND_RIGHT,
@@ -539,8 +543,6 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the diamo
 	}
 
 	SUBCASE("isometric") {
-		tile_set->set_tile_shape(TileSet::TileShape::TILE_SHAPE_ISOMETRIC);
-
 		SUBCASE("diamond right, horizontal offset axis") {
 			tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
 					TileSet::TILE_LAYOUT_DIAMOND_RIGHT,
@@ -613,6 +615,16 @@ TEST_CASE("[TileSet] get_neighbor_cell on a non-square shaped tile for the diamo
 			tester.test_neighbors(Vector2i(0, 0), neighbors);
 		}
 	}
+}
+
+TEST_CASE("[TileSet] get_neighbor_cell on a invalid layout") {
+	NeighborCellTester tester;
+	tester.configure(TileSet::TILE_SHAPE_ISOMETRIC,
+			// 6 in case anyone adds a new layout and forgets to update the tests
+			static_cast<TileSet::TileLayout>(6),
+			TileSet::TILE_OFFSET_AXIS_HORIZONTAL);
+
+	tester.test_error_case(Vector2i(0, 0), TileSet::CELL_NEIGHBOR_RIGHT_SIDE);
 }
 
 } // namespace TestTileSet
