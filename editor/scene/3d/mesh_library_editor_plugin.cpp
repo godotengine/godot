@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "editor/doc/editor_help.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_interface.h"
@@ -88,7 +89,7 @@ bool MeshLibraryEditor::MeshLibraryItem::_set(const StringName &p_name, const Va
 		}
 #ifndef PHYSICS_3D_DISABLED
 	} else if (p_name == "shapes") {
-		mesh_library->call("set_item_shapes", mesh_id, p_value);
+		mesh_library->_set_item_shapes(mesh_id, p_value);
 #endif // PHYSICS_3D_DISABLED
 	} else if (p_name == "preview") {
 		mesh_library->set_item_preview(mesh_id, p_value);
@@ -120,7 +121,7 @@ bool MeshLibraryEditor::MeshLibraryItem::_get(const StringName &p_name, Variant 
 		r_ret = (int)mesh_library->get_item_mesh_cast_shadow(mesh_id);
 #ifndef PHYSICS_3D_DISABLED
 	} else if (p_name == "shapes") {
-		r_ret = mesh_library->call("get_item_shapes", mesh_id);
+		r_ret = mesh_library->_get_item_shapes(mesh_id);
 #endif // PHYSICS_3D_DISABLED
 	} else if (p_name == "navigation_mesh") {
 		r_ret = mesh_library->get_item_navigation_mesh(mesh_id);
@@ -634,9 +635,20 @@ void MeshLibraryEditor::_mesh_items_input(const Ref<InputEvent> &p_event) {
 }
 
 void MeshLibraryEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED) {
-		add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-		remove_item->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			HashMap<String, DocData::ClassDoc>::Iterator meshlib_docs = EditorHelp::get_doc_data()->class_list.find("MeshLibrary");
+			if (meshlib_docs) {
+				for (const DocData::PropertyDoc &prop : meshlib_docs->value.properties) {
+					inspector->add_custom_property_description("MeshLibraryItem", prop.name.replace("item/{index}/", ""), DTR(prop.description));
+				}
+			}
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			remove_item->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+		} break;
 	}
 }
 
@@ -737,16 +749,6 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	inspector->set_stretch_ratio(0.3);
 	inspector->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	item_split->add_child(inspector);
-
-	inspector->add_custom_property_description("MeshLibraryItem", "name", TTRC("The item's name, shown in the editor. It can also be used to look up the item later using [method MeshLibrary.find_item_by_name]."));
-	inspector->add_custom_property_description("MeshLibraryItem", "mesh", TTRC("The item's mesh. Used by other parts of the engine (e.g. [GridMap], which displays them in a 3D tile)."));
-	inspector->add_custom_property_description("MeshLibraryItem", "mesh_transform", TTRC("The transform to apply to the item's mesh."));
-	inspector->add_custom_property_description("MeshLibraryItem", "mesh_cast_shadow", TTRC("The shadow casting mode used by the item's mesh. See [enum RenderingServer.ShadowCastingSetting]"));
-	inspector->add_custom_property_description("MeshLibraryItem", "shapes", TTRC("The item's collision shapes.\nThe array should consist of [Shape3D] objects, each followed by a [Transform3D] that will be applied to it. For shapes that should not have a transform, use [constant Transform3D.IDENTITY]."));
-	inspector->add_custom_property_description("MeshLibraryItem", "navigation_mesh", TTRC("The item's navigation mesh."));
-	inspector->add_custom_property_description("MeshLibraryItem", "navigation_mesh_transform", TTRC("The transform to apply to the item's navigation mesh."));
-	inspector->add_custom_property_description("MeshLibraryItem", "navigation_layers", TTRC("The item's navigation layers bitmask."));
-	inspector->add_custom_property_description("MeshLibraryItem", "preview", TTRC("The texture to use as the item's preview icon in the editor."));
 
 	empty_lib = memnew(Label);
 	empty_lib->set_text(TTRC("No items found inside the MeshLibrary.\nYou can add some by using the Add button on the left, or by exporting them from a scene file via the Export menu."));

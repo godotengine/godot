@@ -31,6 +31,7 @@
 #include "mesh_library.h"
 
 #include "core/object/class_db.h"
+#include "scene/resources/navigation_mesh.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server.h" // IWYU pragma: keep // Needed to bind RSE enums.
 
@@ -142,21 +143,6 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 
 	return true;
-}
-
-void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const KeyValue<int, Item> &E : item_map) {
-		String prop_name = vformat("%s/%d/", PNAME("item"), E.key);
-		p_list->push_back(PropertyInfo(Variant::STRING, prop_name + PNAME("name"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static(), PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("mesh_cast_shadow"), PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only", PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::ARRAY, prop_name + PNAME("shapes"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, NavigationMesh::get_class_static(), PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("navigation_layers"), PROPERTY_HINT_LAYERS_3D_NAVIGATION, "", PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_NO_EDITOR));
-	}
 }
 
 void MeshLibrary::create_item(int p_item) {
@@ -371,6 +357,7 @@ Array MeshLibrary::_get_item_shapes(int p_item) const {
 void MeshLibrary::reset_state() {
 	clear();
 }
+
 void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_item", "id"), &MeshLibrary::create_item);
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);
@@ -402,10 +389,23 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_list"), &MeshLibrary::get_item_list);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &MeshLibrary::get_item_count);
 	ClassDB::bind_method(D_METHOD("get_last_unused_item_id"), &MeshLibrary::get_last_unused_item_id);
+
+	Item defaults;
+
+	base_property_helper.set_prefix("item/");
+	base_property_helper.set_array_length_getter(&MeshLibrary::get_item_count);
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), defaults.name);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static(), PROPERTY_USAGE_NO_EDITOR), defaults.mesh);
+	base_property_helper.register_property(PropertyInfo(Variant::TRANSFORM3D, "mesh_transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR), defaults.mesh_transform);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "mesh_cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only", PROPERTY_USAGE_NO_EDITOR), defaults.mesh_cast_shadow);
+	base_property_helper.register_property(PropertyInfo(Variant::ARRAY, "shapes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Array());
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "navigation_mesh", PROPERTY_HINT_RESOURCE_TYPE, NavigationMesh::get_class_static(), PROPERTY_USAGE_NO_EDITOR), defaults.navigation_mesh);
+	base_property_helper.register_property(PropertyInfo(Variant::TRANSFORM3D, "navigation_mesh_transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR), defaults.navigation_mesh_transform);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION, "", PROPERTY_USAGE_NO_EDITOR), defaults.navigation_layers);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "preview", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_NO_EDITOR), defaults.preview);
+	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
 MeshLibrary::MeshLibrary() {
-}
-
-MeshLibrary::~MeshLibrary() {
+	property_helper.setup_for_instance(base_property_helper, this);
 }
