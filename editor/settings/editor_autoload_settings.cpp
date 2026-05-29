@@ -185,11 +185,11 @@ void EditorAutoloadSettings::_autoload_edited() {
 
 		undo_redo->add_do_property(ProjectSettings::get_singleton(), name, scr_path);
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", name, order);
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", selected_autoload);
+		undo_redo->add_do_property(ProjectSettings::get_singleton(), selected_autoload, Variant());
 
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), selected_autoload, scr_path);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", selected_autoload, order);
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
+		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
 
 		undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_autoload");
 		undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_autoload");
