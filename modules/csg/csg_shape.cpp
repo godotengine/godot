@@ -2237,8 +2237,17 @@ CSGBrush *CSGTorus3D::_build_brush() {
 
 		int face = 0;
 
-		float inc_uv = 8.0 / sides;
-		float inci_uv = 4.0 / ring_sides;
+		Vector2 uv_size;
+		if (uv_match_size) {
+			const float max = MAX(outer_radius, inner_radius);
+			const float min = MIN(outer_radius, inner_radius);
+			uv_size = Vector2(max, max - min);
+		} else {
+			uv_size = Vector2(1, 1);
+		}
+
+		float inc_uv = Math::TAU * uv_size.x / sides;
+		float inci_uv = Math::PI * uv_size.y / ring_sides;
 
 		{
 			for (int i = 0; i < sides; i++) {
