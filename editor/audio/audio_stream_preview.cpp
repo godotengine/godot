@@ -212,8 +212,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	preview->preview->length = len_s;
 
 	if (preview->playback.is_valid()) {
-		preview->thread = memnew(Thread);
-		preview->thread->start(_preview_thread, preview);
+		preview->task_id = WorkerThreadPool::get_singleton()->add_native_task(&AudioStreamPreviewGenerator::_preview_thread, preview, true, "AudioStreamPreviewGenerator");
 	}
 
 	return preview->preview;
@@ -233,12 +232,12 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 			List<ObjectID> to_erase;
 			for (KeyValue<ObjectID, Preview> &E : previews) {
 				if (!E.value.generating.is_set()) {
-					if (E.value.thread) {
-						E.value.thread->wait_to_finish();
-						memdelete(E.value.thread);
-						E.value.thread = nullptr;
-					}
-					if (!ObjectDB::get_instance(E.key)) { //no longer in use, get rid of preview
+					if (E.value.task_id != WorkerThreadPool::INVALID_TASK_ID) {
+						if (WorkerThreadPool::get_singleton()->is_task_completed(E.value.task_id)) {
+							WorkerThreadPool::get_singleton()->wait_for_task_completion(E.value.task_id);
+							E.value.task_id = WorkerThreadPool::INVALID_TASK_ID;
+						}
+					} else if (!ObjectDB::get_instance(E.key)) { //no longer in use, get rid of preview
 						to_erase.push_back(E.key);
 					}
 				}
@@ -255,4 +254,13 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 AudioStreamPreviewGenerator::AudioStreamPreviewGenerator() {
 	singleton = this;
 	set_process(true);
+}
+
+AudioStreamPreviewGenerator::~AudioStreamPreviewGenerator() {
+	for (KeyValue<ObjectID, Preview> &E : previews) {
+		if (E.value.task_id != WorkerThreadPool::INVALID_TASK_ID) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(E.value.task_id);
+		}
+	}
+	previews.clear();
 }
