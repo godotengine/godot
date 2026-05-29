@@ -44,7 +44,7 @@ jobs:
     uses: ./.github/workflows/macos_builds.yml
 
   openharmony-build:
-    name: 🫟️ OpenHarmony
+    name: 🚩️ OpenHarmony
     needs: static-checks
     uses: ./.github/workflows/openharmony_builds.yml
 

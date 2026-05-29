@@ -1,6 +1,7 @@
-name: 🫟️ OpenHarmony Builds
+name: 🚩️ OpenHarmony Builds
 on:
   workflow_call:
+  workflow_dispatch:
 
 # Global Settings
 env:
@@ -11,6 +12,8 @@ env:
     generate_bundle=yes
     OPENHARMONY_SDK_PATH="$HOME/OpenHarmony/"
 
+  NDK_REPO: "Rindbee/OpenHarmony-NDK-public"
+  NDK_VERSION: "5.1.0.107"
 
 jobs:
   build-openharmony:
@@ -33,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -46,21 +49,35 @@ jobs:
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
-      - name: Download OpenHarmony-NDK-public
-        uses: dsaltares/fetch-gh-release-asset@1.1.2
+      - name: Cache OpenHarmony SDK
+        id: cache-ohos
+        uses: actions/cache@v5
         with:
-          repo: Rindbee/OpenHarmony-NDK-public
-          version: tags/5.1.0.107
-          file:  native-linux-x64-5.1.0.107-Release.zip
-          target: /tmp/native-linux-x64-5.1.0.107-Release.zip
+          path: ~/OpenHarmony/
+          key: ohos-sdk-${{ env.NDK_VERSION }}
 
-      - name: Extract OpenHarmony-NDK-public
+      # Currently, compiling export templates requires only the NDK.
+      - name: Download OpenHarmony NDK (if cache miss)
+        if: steps.cache-ohos.outputs.cache-hit != 'true'
+        uses: step-security/fetch-gh-release-asset@v1
+        with:
+          repo: ${{ env.NDK_REPO }}
+          version: tags/${{ env.NDK_VERSION }}
+          file:  native-linux-x64-${{ env.NDK_VERSION }}-Release.zip
+          target: /tmp/OpenHarmony-NDK-public.zip
+
+      - name: Extract OpenHarmony NDK (if cache miss)
+        if: steps.cache-ohos.outputs.cache-hit != 'true'
         run: |
+
+          set -euo pipefail
+          mkdir -p $HOME/OpenHarmony/
+
           echo "::group::Extract..."
-          unzip /tmp/native-linux-x64-5.1.0.107-Release.zip "native/*" -d $HOME/OpenHarmony/
+          unzip /tmp/OpenHarmony-NDK-public.zip "native/*" -d $HOME/OpenHarmony/
           echo "::endgroup::"
 
-          rm /tmp/native-linux-x64-5.1.0.107-Release.zip
+          rm /tmp/OpenHarmony-NDK-public.zip
 
       - name: Compilation
         uses: ./.github/actions/godot-build
