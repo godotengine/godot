@@ -1497,6 +1497,10 @@ void DisplayServerWayland::window_start_resize(DisplayServerEnums::WindowResizeE
 	wayland_thread.window_start_resize(p_edge, p_window);
 }
 
+void DisplayServerWayland::window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window) {
+	wayland_thread.window_drag_files(p_files, p_window);
+}
+
 void DisplayServerWayland::_window_update_hdr_state(WindowData &p_window) {
 	DisplayServerEnums::WindowID window_id = p_window.id;
 

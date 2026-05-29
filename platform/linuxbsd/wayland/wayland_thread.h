@@ -579,6 +579,7 @@ public:
 		DisplayServerEnums::WindowID dnd_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		struct wl_data_offer *wl_data_offer_dnd = nullptr;
 		uint32_t dnd_enter_serial = 0;
+		String self_dnd_mime;
 
 		// Clipboard.
 		struct wl_data_source *wl_data_source_selection = nullptr;
@@ -1293,6 +1294,8 @@ public:
 	void window_request_attention(DisplayServerEnums::WindowID p_window_id);
 
 	void window_start_drag(DisplayServerEnums::WindowID p_window_id);
+
+	void window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID);
 
 	// Optional - require idle_inhibit_unstable_v1
 	void window_set_idle_inhibition(DisplayServerEnums::WindowID p_window_id, bool p_enable);

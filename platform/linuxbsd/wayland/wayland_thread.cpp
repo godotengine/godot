@@ -2758,6 +2758,7 @@ void WaylandThread::_wl_data_device_on_enter(void *data, struct wl_data_device *
 
 	// Godot only supports DnD file copying for now.
 	wl_data_offer_accept(id, serial, "text/uri-list");
+	wl_data_offer_accept(id, serial, ss->self_dnd_mime.utf8().get_data());
 	wl_data_offer_set_actions(id, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
 }
 
@@ -2791,7 +2792,13 @@ void WaylandThread::_wl_data_device_on_drop(void *data, struct wl_data_device *w
 		msg.instantiate();
 		msg->id = ss->dnd_id;
 
-		Vector<uint8_t> list_data = _wl_data_offer_read(wayland_thread->wl_display, "text/uri-list", ss->wl_data_offer_dnd);
+		Vector<uint8_t> list_data;
+		if (os->mime_types.has(ss->self_dnd_mime)) {
+			// Avoid read/write deadlock on dnd from same thread
+			list_data = ss->selection_data;
+		} else {
+			list_data = _wl_data_offer_read(wayland_thread->wl_display, "text/uri-list", ss->wl_data_offer_dnd);
+		}
 
 		msg->files = String::utf8((const char *)list_data.ptr(), list_data.size()).split("\r\n", false);
 		for (int i = 0; i < msg->files.size(); i++) {
@@ -3770,7 +3777,9 @@ void WaylandThread::_clipboard_send(Vector<uint8_t> &p_data, const char *p_media
 		valid_mime = true;
 	} else if (strcmp(p_media_type, "text/plain") == 0) {
 		valid_mime = true;
-	}
+	} else if (strcmp(p_media_type, "text/uri-list") == 0) {
+		valid_mime = true;
+	} 
 
 	if (!valid_mime) {
 		DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: Media type '%s' unknown, skipping.", p_media_type));
@@ -4668,6 +4677,24 @@ void WaylandThread::window_start_drag(DisplayServerEnums::WindowID p_window_id) 
 		libdecor_frame_move(ws.libdecor_frame, ss->wl_seat, ss->pointer_data.button_serial);
 	}
 #endif
+}
+
+void WaylandThread::window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+	
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	if (ss) {
+		String p_text = "";
+		for (String file: p_files){
+			p_text += "file://" + file + "\r\n";
+		}
+		selection_set_text(p_text);
+		ss->self_dnd_mime = "application/godot/" + String::num_uint64(ss->pointer_data.button_serial);
+		wl_data_source_offer(ss->wl_data_source_selection, ss->self_dnd_mime.utf8().get_data() );
+		wl_data_source_set_actions(ss->wl_data_source_selection, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
+		wl_data_device_start_drag(ss->wl_data_device, ss->wl_data_source_selection, window_get_wl_surface(p_window), nullptr, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+	}
+
 }
 
 void WaylandThread::window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window) {
@@ -5873,6 +5900,7 @@ void WaylandThread::selection_set_text(const String &p_text) {
 	wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
 	wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
 	wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
+	wl_data_source_offer(ss->wl_data_source_selection, "text/uri-list");
 
 	// TODO: Implement a good way of getting the latest serial from the user.
 	wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
