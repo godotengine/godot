@@ -1586,6 +1586,9 @@ CSGBrush *CSGSphere3D::_build_brush() {
 		const double latitude_step = -Math::PI / rings;
 		const double longitude_step = Math::TAU / radial_segments;
 		int face = 0;
+
+		float uv_size = uv_match_size ? radius * Math::PI : 1.0;
+
 		for (int i = 0; i < rings; i++) {
 			double cos0 = 0;
 			double sin0 = 1;
@@ -1630,10 +1633,10 @@ CSGBrush *CSGSphere3D::_build_brush() {
 				};
 
 				Vector2 u[4] = {
-					Vector2(u0, v0),
-					Vector2(u1, v0),
-					Vector2(u1, v1),
-					Vector2(u0, v1),
+					Vector2(u0, v0) * uv_size,
+					Vector2(u1, v0) * uv_size,
+					Vector2(u1, v1) * uv_size,
+					Vector2(u0, v1) * uv_size,
 				};
 
 				// Draw the first face, but skip this at the north pole (i == 0).
