@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/os/thread.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
@@ -64,7 +64,7 @@ class AudioStreamPreviewGenerator : public Node {
 		Ref<AudioStreamPlayback> playback;
 		SafeFlag generating;
 		ObjectID id;
-		Thread *thread = nullptr;
+		WorkerThreadPool::TaskID task_id = WorkerThreadPool::INVALID_TASK_ID;
 
 		// Needed for the bookkeeping of the Map
 		void operator=(const Preview &p_rhs) {
@@ -73,7 +73,7 @@ class AudioStreamPreviewGenerator : public Node {
 			playback = p_rhs.playback;
 			generating.set_to(generating.is_set());
 			id = p_rhs.id;
-			thread = p_rhs.thread;
+			task_id = p_rhs.task_id;
 		}
 		Preview(const Preview &p_rhs) {
 			preview = p_rhs.preview;
@@ -81,7 +81,7 @@ class AudioStreamPreviewGenerator : public Node {
 			playback = p_rhs.playback;
 			generating.set_to(generating.is_set());
 			id = p_rhs.id;
-			thread = p_rhs.thread;
+			task_id = p_rhs.task_id;
 		}
 		Preview() {}
 	};
@@ -102,4 +102,5 @@ public:
 	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_stream);
 
 	AudioStreamPreviewGenerator();
+	~AudioStreamPreviewGenerator();
 };
