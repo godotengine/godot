@@ -2540,13 +2540,31 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		Transform3D current_xform;
 		Transform3D previous_xform;
 		Transform3D previous_previous_xform;
+
+		double spin_step = Math::deg_to_rad(spin_degrees / spin_sides);
+		double extrusion_step = 1.0 / extrusions;
 		double u_step = 1.0 / extrusions;
+		double v_step = 1.0 / shape_sides;
+		if (uv_match_size) {
+			switch (mode) {
+				case MODE_PATH:
+					u_step = extrusions;
+					v_step = shape_sides;
+					break;
+				case MODE_DEPTH:
+					u_step = extrusions * depth;
+					v_step = shape_sides;
+					break;
+				case MODE_SPIN:
+					u_step = spin_step;
+					v_step = shape_sides;
+					break;
+			}
+		}
+
 		if (path_u_distance > 0.0) {
 			u_step *= curve_length / path_u_distance;
 		}
-		double v_step = 1.0 / shape_sides;
-		double spin_step = Math::deg_to_rad(spin_degrees / spin_sides);
-		double extrusion_step = 1.0 / extrusions;
 		if (mode == MODE_PATH) {
 			if (path_joined) {
 				extrusion_step = 1.0 / (extrusions - 1);
@@ -2603,11 +2621,16 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					// We need to reverse the rotation of the shape face vertices.
 					int index = shape_faces[face_idx * 3 + 2 - face_vertex_idx];
 					Point2 p = shape_polygon[index];
-					Point2 uv = (p - shape_rect.position) / shape_rect.size;
 
-					// Use the left side of the bottom half of the y-inverted texture.
-					uv.x = uv.x / 2;
-					uv.y = 1 - (uv.y / 2);
+					Vector2 uv;
+					if (uv_match_size) {
+						uv = p;
+					} else {
+						uv = (p - shape_rect.position) / shape_rect.size;
+						// Use the left side of the bottom half of the y-inverted texture.
+						uv.x = uv.x / 2;
+						uv.y = 1 - (uv.y / 2);
+					}
 
 					facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
 					uvsw[face * 3 + face_vertex_idx] = uv;
@@ -2695,16 +2718,31 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 			double u0 = (x0 - faces_combined) * u_step;
 			double u1 = ((x0 + 1) * u_step);
-			if (mode == MODE_PATH && !path_continuous_u) {
-				u0 = 0.0;
-				u1 = 1.0;
+			if (mode == MODE_PATH && (!path_continuous_u || uv_match_size)) {
+				u0 = uv_match_size ? 0.0 : 0.0;
+				u1 = uv_match_size ? 0.5 : 0.1;
 			}
 
 			for (int y0 = 0; y0 < shape_sides; y0++) {
 				int y1 = (y0 + 1) % shape_sides;
 				// Use the top half of the texture.
-				double v0 = (y0 * v_step) / 2;
-				double v1 = ((y0 + 1) * v_step) / 2;
+				double v0;
+				double v1;
+
+				if (uv_match_size) {
+					Point2 p0 = shape_polygon[y0];
+					Point2 p1 = shape_polygon[y1];
+					if (Math::abs(p0.x - p1.x) > Math::abs(p0.y - p1.y)) {
+						v0 = p0.x;
+						v1 = p1.x;
+					} else {
+						v0 = p0.y;
+						v1 = p1.y;
+					}
+				} else {
+					v0 = (y0 * v_step) / 2;
+					v1 = ((y0 + 1) * v_step) / 2;
+				}
 
 				Vector3 v[4] = {
 					previous_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
@@ -2758,11 +2796,16 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				for (int face_vertex_idx = 0; face_vertex_idx < 3; face_vertex_idx++) {
 					int index = shape_faces[face_idx * 3 + face_vertex_idx];
 					Point2 p = shape_polygon[index];
-					Point2 uv = (p - shape_rect.position) / shape_rect.size;
 
-					// Use the x-inverted ride side of the bottom half of the y-inverted texture.
-					uv.x = 1 - uv.x / 2;
-					uv.y = 1 - (uv.y / 2);
+					Vector2 uv;
+					if (uv_match_size) {
+						uv = p;
+					} else {
+						uv = (p - shape_rect.position) / shape_rect.size;
+						// Use the left side of the bottom half of the y-inverted texture.
+						uv.x = uv.x / 2;
+						uv.y = 1 - (uv.y / 2);
+					}
 
 					facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
 					uvsw[face * 3 + face_vertex_idx] = uv;
