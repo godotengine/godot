@@ -1743,7 +1743,7 @@ CSGSphere3D::CSGSphere3D() {
 }
 
 ///////////////
-static Vector2 _get_box_uv(const Vector3 &p_normalized, const Vector3 &uv_size, const Vector3 &uv_offset, const int side) {
+static Vector2 _get_box_uv(const Vector3 &p_normalized, const Vector3 &uv_size, const int side) {
 	const int axis = side % 3;
 
 	const int u_axis = axis == 2 ? 0 : (axis + 2) % 3;
@@ -1756,7 +1756,7 @@ static Vector2 _get_box_uv(const Vector3 &p_normalized, const Vector3 &uv_size, 
 		u = uv_size[u_axis] - u;
 	}
 
-	return Vector2(u + uv_offset[u_axis], v + uv_offset[v_axis]);
+	return Vector2(u, v);
 }
 
 CSGBrush *CSGBox3D::_build_brush() {
@@ -1794,8 +1794,6 @@ CSGBrush *CSGBox3D::_build_brush() {
 		Vector3 vertex_mul = size / 2;
 
 		Vector3 uv_size = use_size_as_uv ? size : Vector3(1, 1, 1);
-		uv_size *= uv_scale;
-
 		{
 			for (int i = 0; i < 6; i++) {
 				Vector3 face_points[4];
@@ -1817,7 +1815,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 				Vector2 u[4];
 				for (int j = 0; j < 4; j++) {
-					u[j] = _get_box_uv(face_points[j], uv_size, uv_offset, i);
+					u[j] = _get_box_uv(face_points[j], uv_size, i);
 				}
 
 				//face 1
@@ -1868,19 +1866,11 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
 
-	ClassDB::bind_method(D_METHOD("get_uv_scale"), &CSGBox3D::get_uv_scale);
-	ClassDB::bind_method(D_METHOD("set_uv_scale", "uv_scale"), &CSGBox3D::set_uv_scale);
-
-	ClassDB::bind_method(D_METHOD("get_uv_offset"), &CSGBox3D::get_uv_offset);
-	ClassDB::bind_method(D_METHOD("set_uv_offset", "uv_offset"), &CSGBox3D::set_uv_offset);
-
 	ClassDB::bind_method(D_METHOD("get_use_size_as_uv"), &CSGBox3D::get_use_size_as_uv);
 	ClassDB::bind_method(D_METHOD("set_use_size_as_uv", "enabled"), &CSGBox3D::set_use_size_as_uv);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_scale", PROPERTY_HINT_LINK, ""), "set_uv_scale", "get_uv_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv_offset", PROPERTY_HINT_NONE, ""), "set_uv_offset", "get_uv_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_size_as_uv", PROPERTY_HINT_NONE, ""), "set_use_size_as_uv", "get_use_size_as_uv");
 }
 
@@ -1894,16 +1884,6 @@ Vector3 CSGBox3D::get_size() const {
 	return size;
 }
 
-void CSGBox3D::set_uv_scale(const Vector3 &p_uv_scale) {
-	uv_scale = p_uv_scale;
-	_make_dirty();
-	update_gizmos();
-}
-
-Vector3 CSGBox3D::get_uv_scale() const {
-	return uv_scale;
-}
-
 void CSGBox3D::set_use_size_as_uv(const bool &p_enabled) {
 	use_size_as_uv = p_enabled;
 	_make_dirty();
@@ -1912,16 +1892,6 @@ void CSGBox3D::set_use_size_as_uv(const bool &p_enabled) {
 
 bool CSGBox3D::get_use_size_as_uv() const {
 	return use_size_as_uv;
-}
-
-void CSGBox3D::set_uv_offset(const Vector3 &p_uv_offset) {
-	uv_offset = p_uv_offset;
-	_make_dirty();
-	update_gizmos();
-}
-
-Vector3 CSGBox3D::get_uv_offset() const {
-	return uv_offset;
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -1959,7 +1929,7 @@ Ref<Material> CSGBox3D::get_material() const {
 }
 
 ///////////////
-static Vector2 _get_cylinder_cap_uv(const Vector3 &p_normalized, const Vector2 &p_uv_size, const Vector2 &p_uv_offset, bool p_top) {
+static Vector2 _get_cylinder_cap_uv(const Vector3 &p_normalized, const Vector2 &p_uv_size, bool p_top) {
 	float u = (p_normalized.x + 1.0f) * p_uv_size.x;
 	float v = (p_normalized.z + 1.0f) * p_uv_size.y;
 
@@ -1967,7 +1937,7 @@ static Vector2 _get_cylinder_cap_uv(const Vector3 &p_normalized, const Vector2 &
 		u = p_uv_size.x * 2.0f - u;
 	}
 
-	return Vector2(u + p_uv_offset.x, v + p_uv_offset.y);
+	return Vector2(u, v);
 }
 
 CSGBrush *CSGCylinder3D::_build_brush() {
@@ -2004,10 +1974,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 
 		Vector3 vertex_mul(radius, height * 0.5, radius);
 		Vector2 uv_cap_size = use_size_as_uv ? Vector2(radius, radius) : Vector2(1, 1);
-		uv_cap_size *= uv_cap_scale;
-
 		Vector2 uv_side_size = use_size_as_uv ? Vector2(radius, height) : Vector2(1, 1);
-		uv_side_size *= uv_side_scale;
 
 		//We tile the textures 4 times around the cylinder.
 		float inc_uv = 4.0 / sides * uv_side_size.x * 2.0;
@@ -2037,10 +2004,10 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				int inverse_i = sides - i; //Flip UVs horizontally.
 
 				Vector2 u[4] = {
-					Vector2(uv_side_offset.x + inc_uv * inverse_i, uv_side_offset.y),
-					Vector2(uv_side_offset.x + inc_uv * (inverse_i - 1), uv_side_offset.y),
-					Vector2(uv_side_offset.x + inc_uv * (inverse_i - 1), uv_side_offset.y - uv_side_size.y),
-					Vector2(uv_side_offset.x + inc_uv * inverse_i, uv_side_offset.y - uv_side_size.y),
+					Vector2(inc_uv * inverse_i, 0),
+					Vector2(inc_uv * (inverse_i - 1), 0),
+					Vector2(inc_uv * (inverse_i - 1), -uv_side_size.y),
+					Vector2(inc_uv * inverse_i, -uv_side_size.y),
 				};
 
 				if (cone) {
@@ -2083,9 +2050,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 2] = Vector3(0, -1, 0) * vertex_mul;
 
-				uvsw[face * 3 + 0] = _get_cylinder_cap_uv(face_points[1], uv_cap_size, uv_cap_offset, false);
-				uvsw[face * 3 + 1] = _get_cylinder_cap_uv(face_points[0], uv_cap_size, uv_cap_offset, false);
-				uvsw[face * 3 + 2] = _get_cylinder_cap_uv(Vector3(0, -1, 0), uv_cap_size, uv_cap_offset, false);
+				uvsw[face * 3 + 0] = _get_cylinder_cap_uv(face_points[1], uv_cap_size, false);
+				uvsw[face * 3 + 1] = _get_cylinder_cap_uv(face_points[0], uv_cap_size, false);
+				uvsw[face * 3 + 2] = _get_cylinder_cap_uv(Vector3(0, -1, 0), uv_cap_size, false);
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
@@ -2098,9 +2065,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 1] = face_points[2] * vertex_mul;
 					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
 
-					uvsw[face * 3 + 0] = _get_cylinder_cap_uv(face_points[3], uv_cap_size, uv_cap_offset, true);
-					uvsw[face * 3 + 1] = _get_cylinder_cap_uv(face_points[2], uv_cap_size, uv_cap_offset, true);
-					uvsw[face * 3 + 2] = _get_cylinder_cap_uv(Vector3(0, 1, 0), uv_cap_size, uv_cap_offset, true);
+					uvsw[face * 3 + 0] = _get_cylinder_cap_uv(face_points[3], uv_cap_size, true);
+					uvsw[face * 3 + 1] = _get_cylinder_cap_uv(face_points[2], uv_cap_size, true);
+					uvsw[face * 3 + 2] = _get_cylinder_cap_uv(Vector3(0, 1, 0), uv_cap_size, true);
 
 					smoothw[face] = false;
 					invertw[face] = invert_val;
@@ -2139,18 +2106,6 @@ void CSGCylinder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGCylinder3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGCylinder3D::get_smooth_faces);
 
-	ClassDB::bind_method(D_METHOD("set_uv_cap_scale", "uv_scale"), &CSGCylinder3D::set_uv_cap_scale);
-	ClassDB::bind_method(D_METHOD("get_uv_cap_scale"), &CSGCylinder3D::get_uv_cap_scale);
-
-	ClassDB::bind_method(D_METHOD("set_uv_cap_offset", "uv_offset"), &CSGCylinder3D::set_uv_cap_offset);
-	ClassDB::bind_method(D_METHOD("get_uv_cap_offset"), &CSGCylinder3D::get_uv_cap_offset);
-
-	ClassDB::bind_method(D_METHOD("set_uv_side_scale", "uv_scale"), &CSGCylinder3D::set_uv_side_scale);
-	ClassDB::bind_method(D_METHOD("get_uv_side_scale"), &CSGCylinder3D::get_uv_side_scale);
-
-	ClassDB::bind_method(D_METHOD("set_uv_side_offset", "uv_offset"), &CSGCylinder3D::set_uv_side_offset);
-	ClassDB::bind_method(D_METHOD("get_uv_side_offset"), &CSGCylinder3D::get_uv_side_offset);
-
 	ClassDB::bind_method(D_METHOD("set_use_size_as_uv", "enabled"), &CSGCylinder3D::set_use_size_as_uv);
 	ClassDB::bind_method(D_METHOD("get_use_size_as_uv"), &CSGCylinder3D::get_use_size_as_uv);
 
@@ -2160,10 +2115,6 @@ void CSGCylinder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cone"), "set_cone", "is_cone");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv/uv_cap_scale", PROPERTY_HINT_LINK, ""), "set_uv_cap_scale", "get_uv_cap_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv/uv_cap_offset"), "set_uv_cap_offset", "get_uv_cap_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv/uv_side_scale", PROPERTY_HINT_LINK, ""), "set_uv_side_scale", "get_uv_side_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv/uv_side_offset"), "set_uv_side_offset", "get_uv_side_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv/use_size_as_uv"), "set_use_size_as_uv", "get_use_size_as_uv");
 }
 
@@ -2226,42 +2177,6 @@ Ref<Material> CSGCylinder3D::get_material() const {
 	return material;
 }
 
-void CSGCylinder3D::set_uv_cap_scale(const Vector2 &p_uv_cap_scale) {
-	uv_cap_scale = p_uv_cap_scale;
-	_make_dirty();
-}
-
-Vector2 CSGCylinder3D::get_uv_cap_scale() const {
-	return uv_cap_scale;
-}
-
-void CSGCylinder3D::set_uv_cap_offset(const Vector2 &p_uv_cap_offset) {
-	uv_cap_offset = p_uv_cap_offset;
-	_make_dirty();
-}
-
-Vector2 CSGCylinder3D::get_uv_cap_offset() const {
-	return uv_cap_offset;
-}
-
-void CSGCylinder3D::set_uv_side_scale(const Vector2 &p_uv_side_scale) {
-	uv_side_scale = p_uv_side_scale;
-	_make_dirty();
-}
-
-Vector2 CSGCylinder3D::get_uv_side_scale() const {
-	return uv_side_scale;
-}
-
-void CSGCylinder3D::set_uv_side_offset(const Vector2 &p_uv_side_offset) {
-	uv_side_offset = p_uv_side_offset;
-	_make_dirty();
-}
-
-Vector2 CSGCylinder3D::get_uv_side_offset() const {
-	return uv_side_offset;
-}
-
 void CSGCylinder3D::set_use_size_as_uv(const bool p_enabled) {
 	use_size_as_uv = p_enabled;
 	_make_dirty();
@@ -2278,11 +2193,6 @@ CSGCylinder3D::CSGCylinder3D() {
 	sides = 8;
 	cone = false;
 	smooth_faces = true;
-
-	uv_cap_scale = Vector2(1, 1);
-	uv_cap_offset = Vector2(0, 0);
-	uv_side_scale = Vector2(1, 1);
-	uv_side_offset = Vector2(0, 0);
 	use_size_as_uv = false;
 }
 
