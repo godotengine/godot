@@ -218,6 +218,7 @@ class CSGPrimitive3D : public CSGShape3D {
 	GDCLASS(CSGPrimitive3D, CSGShape3D);
 
 protected:
+	bool uv_match_size;
 	bool flip_faces;
 	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
 	static void _bind_methods();
@@ -225,6 +226,9 @@ protected:
 public:
 	void set_flip_faces(bool p_invert);
 	bool get_flip_faces();
+
+	void set_uv_match_size(bool p_enabled);
+	bool get_uv_match_size();
 
 	CSGPrimitive3D();
 };
@@ -288,7 +292,6 @@ class CSGBox3D : public CSGPrimitive3D {
 
 	Ref<Material> material;
 	Vector3 size = Vector3(1, 1, 1);
-	bool use_size_as_uv = false;
 
 protected:
 	static void _bind_methods();
@@ -304,8 +307,6 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	void set_use_size_as_uv(const bool &p_enabled);
-	bool get_use_size_as_uv() const;
 	CSGBox3D() {}
 };
 
@@ -319,7 +320,6 @@ class CSGCylinder3D : public CSGPrimitive3D {
 	int sides;
 	bool cone;
 	bool smooth_faces;
-	bool use_size_as_uv;
 
 protected:
 	static void _bind_methods();
@@ -342,8 +342,6 @@ public:
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
-	void set_use_size_as_uv(const bool p_enabled);
-	bool get_use_size_as_uv() const;
 
 	CSGCylinder3D();
 };

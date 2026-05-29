@@ -1310,7 +1310,11 @@ void CSGPrimitive3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &CSGPrimitive3D::set_flip_faces);
 	ClassDB::bind_method(D_METHOD("get_flip_faces"), &CSGPrimitive3D::get_flip_faces);
 
+	ClassDB::bind_method(D_METHOD("set_uv_match_size", "enabled"), &CSGPrimitive3D::set_uv_match_size);
+	ClassDB::bind_method(D_METHOD("get_uv_match_size"), &CSGPrimitive3D::get_uv_match_size);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_match_size"), "set_uv_match_size", "get_uv_match_size");
 }
 
 void CSGPrimitive3D::set_flip_faces(bool p_invert) {
@@ -1327,8 +1331,23 @@ bool CSGPrimitive3D::get_flip_faces() {
 	return flip_faces;
 }
 
+void CSGPrimitive3D::set_uv_match_size(bool p_enabled) {
+	if (uv_match_size == p_enabled) {
+		return;
+	}
+
+	uv_match_size = p_enabled;
+
+	_make_dirty();
+}
+
+bool CSGPrimitive3D::get_uv_match_size() {
+	return uv_match_size;
+}
+
 CSGPrimitive3D::CSGPrimitive3D() {
 	flip_faces = false;
+	uv_match_size = false;
 }
 
 /////////////////////
@@ -1793,7 +1812,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 		Vector3 vertex_mul = size / 2;
 
-		Vector3 uv_size = use_size_as_uv ? size : Vector3(1, 1, 1);
+		Vector3 uv_size = uv_match_size ? size : Vector3(1, 1, 1);
 		{
 			for (int i = 0; i < 6; i++) {
 				Vector3 face_points[4];
@@ -1866,12 +1885,8 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
 
-	ClassDB::bind_method(D_METHOD("get_use_size_as_uv"), &CSGBox3D::get_use_size_as_uv);
-	ClassDB::bind_method(D_METHOD("set_use_size_as_uv", "enabled"), &CSGBox3D::set_use_size_as_uv);
-
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_size_as_uv", PROPERTY_HINT_NONE, ""), "set_use_size_as_uv", "get_use_size_as_uv");
 }
 
 void CSGBox3D::set_size(const Vector3 &p_size) {
@@ -1882,16 +1897,6 @@ void CSGBox3D::set_size(const Vector3 &p_size) {
 
 Vector3 CSGBox3D::get_size() const {
 	return size;
-}
-
-void CSGBox3D::set_use_size_as_uv(const bool &p_enabled) {
-	use_size_as_uv = p_enabled;
-	_make_dirty();
-	update_gizmos();
-}
-
-bool CSGBox3D::get_use_size_as_uv() const {
-	return use_size_as_uv;
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -1973,8 +1978,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 		int face = 0;
 
 		Vector3 vertex_mul(radius, height * 0.5, radius);
-		Vector2 uv_cap_size = use_size_as_uv ? Vector2(radius, radius) : Vector2(1, 1);
-		Vector2 uv_side_size = use_size_as_uv ? Vector2(radius, height) : Vector2(1, 1);
+		Vector2 uv_cap_size = uv_match_size ? Vector2(radius, radius) : Vector2(1, 1);
+		Vector2 uv_side_size = uv_match_size ? Vector2(radius, height) : Vector2(1, 1);
 
 		//We tile the textures 4 times around the cylinder.
 		float inc_uv = 4.0 / sides * uv_side_size.x * 2.0;
@@ -2106,16 +2111,12 @@ void CSGCylinder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGCylinder3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGCylinder3D::get_smooth_faces);
 
-	ClassDB::bind_method(D_METHOD("set_use_size_as_uv", "enabled"), &CSGCylinder3D::set_use_size_as_uv);
-	ClassDB::bind_method(D_METHOD("get_use_size_as_uv"), &CSGCylinder3D::get_use_size_as_uv);
-
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp,suffix:m"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,1000.0,0.001,or_greater,exp,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cone"), "set_cone", "is_cone");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv/use_size_as_uv"), "set_use_size_as_uv", "get_use_size_as_uv");
 }
 
 void CSGCylinder3D::set_radius(const float p_radius) {
@@ -2177,15 +2178,6 @@ Ref<Material> CSGCylinder3D::get_material() const {
 	return material;
 }
 
-void CSGCylinder3D::set_use_size_as_uv(const bool p_enabled) {
-	use_size_as_uv = p_enabled;
-	_make_dirty();
-}
-
-bool CSGCylinder3D::get_use_size_as_uv() const {
-	return use_size_as_uv;
-}
-
 CSGCylinder3D::CSGCylinder3D() {
 	// defaults
 	radius = 0.5;
@@ -2193,7 +2185,6 @@ CSGCylinder3D::CSGCylinder3D() {
 	sides = 8;
 	cone = false;
 	smooth_faces = true;
-	use_size_as_uv = false;
 }
 
 ///////////////
