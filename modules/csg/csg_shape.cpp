@@ -2739,9 +2739,9 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 			double u0 = (x0 - faces_combined) * u_step;
 			double u1 = ((x0 + 1) * u_step);
-			if (mode == MODE_PATH && (!path_continuous_u || uv_match_size)) {
+			if (mode == MODE_PATH && !path_continuous_u) {
 				u0 = 0.0;
-				u1 = uv_match_size ? 0.5 : 0.1;
+				u1 = 1.0;
 			}
 
 			for (int y0 = 0; y0 < shape_sides; y0++) {
@@ -2752,11 +2752,15 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				if (uv_match_size) {
 					Point2 p0 = shape_polygon[y0];
 					Point2 p1 = shape_polygon[y1];
+					real_t distance = p0.distance_to(p1);
 					v0 = y0;
-					v1 = y0 + p0.distance_to(p1);
+					v1 = y0 + distance;
 					if (mode == MODE_SPIN) {
 						u0 = 0.0;
 						u1 = ((p0.x + p1.x) * 0.5f) * spin_step;
+					} else if (mode == MODE_PATH) {
+						u0 = x0;
+						u1 = x0 + distance;
 					}
 				} else {
 					// Use the top half of the texture.
