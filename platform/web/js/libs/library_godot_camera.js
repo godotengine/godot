@@ -620,6 +620,16 @@ self.onmessage = async function(event) {
 		},
 
 		/**
+		 * Checks whether an async startup path still owns the active camera resource.
+		 * @param {string} cameraId Camera identifier
+		 * @param {CameraResource} camera Camera resource captured before awaiting
+		 * @returns {boolean} True if the resource is still current
+		 */
+		isCurrentCamera: function (cameraId, camera) {
+			return GodotCamera.cameras.get(cameraId) === camera;
+		},
+
+		/**
 		 * Sets up WebCodecs-based frame capture using MediaStreamTrackProcessor.
 		 * @param {CameraResource} camera Camera resource
 		 * @param {string} cameraId Camera identifier
@@ -1214,6 +1224,13 @@ self.onmessage = async function(event) {
 						};
 						// eslint-disable-next-line require-atomic-updates
 						camera.stream = await navigator.mediaDevices.getUserMedia(constraints);
+						if (!GodotCamera.isCurrentCamera(cameraId, camera)) {
+							if (camera.stream) {
+								camera.stream.getTracks().forEach((track) => track.stop());
+							}
+							camera.stream = null;
+							return;
+						}
 
 						const [videoTrack] = camera.stream.getVideoTracks();
 						videoTrack.addEventListener('ended', () => {
@@ -1241,9 +1258,23 @@ self.onmessage = async function(event) {
 								// This is not critical - we can still use the camera.
 							}
 						}
+						if (!GodotCamera.isCurrentCamera(cameraId, camera)) {
+							if (camera.stream) {
+								camera.stream.getTracks().forEach((track) => track.stop());
+							}
+							camera.stream = null;
+							return;
+						}
 
 						camera.video.srcObject = camera.stream;
 						await camera.video.play();
+						if (!GodotCamera.isCurrentCamera(cameraId, camera)) {
+							if (camera.stream) {
+								camera.stream.getTracks().forEach((track) => track.stop());
+							}
+							camera.stream = null;
+							return;
+						}
 
 						// Cache facing mode once (doesn't change during stream).
 						camera.facingMode = GodotCamera.getFacingMode(camera.stream);

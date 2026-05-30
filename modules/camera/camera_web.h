@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include "modules/camera/buffer_decoder.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
+
+#include "modules/camera/buffer_decoder.h"
 
 // Shared camera data types, kept in a platform/web-level header so this
 // module does not need to include the full CameraDriverWeb driver header.
@@ -46,8 +47,10 @@ class CameraFeedWeb : public CameraFeed {
 	String device_id;
 	BufferDecoder *buffer_decoder = nullptr;
 	int current_pixel_format = -1;
+	String detected_format_name;
 
 	static BufferDecoder *_create_buffer_decoder(CameraFeedWeb *p_feed, int p_pixel_format);
+	static String _get_format_name(int p_pixel_format);
 	static void _on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_pixel_format, const int p_facing_mode, const char *p_error);
 	static void _on_denied_callback(void *p_context);
 
@@ -68,6 +71,7 @@ class CameraWeb : public CameraServer {
 
 	CameraDriverWeb *driver = nullptr;
 	SafeFlag activating;
+	uint64_t request_id = 0;
 	void _cleanup();
 	void _update_feeds();
 	static void _on_get_cameras_callback(void *p_context, const Vector<CameraInfo> &p_camera_info);

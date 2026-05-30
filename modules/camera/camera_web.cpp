@@ -41,6 +41,11 @@ constexpr int FORMAT_CODE_NV12 = 1;
 
 const String KEY_HEIGHT("height");
 const String KEY_WIDTH("width");
+
+struct CameraWebRequest {
+	ObjectID server_id;
+	uint64_t request_id = 0;
+};
 } // namespace
 
 BufferDecoder *CameraFeedWeb::_create_buffer_decoder(CameraFeedWeb *p_feed, int p_pixel_format) {
@@ -56,6 +61,17 @@ BufferDecoder *CameraFeedWeb::_create_buffer_decoder(CameraFeedWeb *p_feed, int 
 	}
 }
 
+String CameraFeedWeb::_get_format_name(int p_pixel_format) {
+	switch (p_pixel_format) {
+		case FORMAT_CODE_NV12:
+			return String("NV12");
+		case FORMAT_CODE_RGBA:
+			return String("RGBA");
+		default:
+			return String("Unknown");
+	}
+}
+
 void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_pixel_format, const int p_facing_mode, const char *p_error) {
 	// Validate context first to avoid dereferencing null on error paths.
 	ERR_FAIL_NULL_MSG(p_context, "Camera feed error: Null context received.");
@@ -64,7 +80,7 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 
 	if (p_error) {
 		if (feed->is_active()) {
-			feed->deactivate_feed();
+			feed->set_active(false);
 		}
 		String error_str = String::utf8(p_error);
 		ERR_PRINT(vformat("Camera feed error from JS: %s", error_str));
@@ -73,7 +89,7 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 
 	if (p_data == nullptr || p_length <= 0 || p_width <= 0 || p_height <= 0) {
 		if (feed->is_active()) {
-			feed->deactivate_feed();
+			feed->set_active(false);
 		}
 		ERR_PRINT("Camera feed error: Invalid pixel data received.");
 		return;
@@ -94,6 +110,10 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 	const CameraFeed::FeedFormat current_format = feed->get_format();
 	const bool size_changed = current_format.width != p_width || current_format.height != p_height;
 	if (feed->buffer_decoder == nullptr || feed->current_pixel_format != p_pixel_format || size_changed) {
+		feed->detected_format_name = _get_format_name(p_pixel_format);
+		for (int i = 0; i < feed->formats.size(); i++) {
+			feed->formats.write[i].format = feed->detected_format_name;
+		}
 		if (feed->selected_format >= 0 && feed->selected_format < feed->formats.size()) {
 			FeedFormat &f = feed->formats.write[feed->selected_format];
 			f.width = p_width;
@@ -117,7 +137,9 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 void CameraFeedWeb::_on_denied_callback(void *p_context) {
 	ERR_FAIL_NULL_MSG(p_context, "Camera feed error: Null context received in denied callback.");
 	CameraFeedWeb *feed = reinterpret_cast<CameraFeedWeb *>(p_context);
-	feed->deactivate_feed();
+	if (feed->is_active()) {
+		feed->set_active(false);
+	}
 }
 
 bool CameraFeedWeb::activate_feed() {
@@ -174,7 +196,7 @@ Array CameraFeedWeb::get_formats() const {
 		Dictionary dictionary;
 		dictionary["width"] = feed_format.width;
 		dictionary["height"] = feed_format.height;
-		dictionary["format"] = feed_format.format;
+		dictionary["format"] = detected_format_name.is_empty() ? feed_format.format : detected_format_name;
 		dictionary["frame_numerator"] = feed_format.frame_numerator;
 		dictionary["frame_denominator"] = feed_format.frame_denominator;
 		result.push_back(dictionary);
@@ -201,7 +223,7 @@ CameraFeedWeb::CameraFeedWeb(const CameraInfo &info) {
 		FeedFormat feed_format;
 		feed_format.width = info.formats[i].width;
 		feed_format.height = info.formats[i].height;
-		feed_format.format = String("RGBA");
+		feed_format.format = String("Browser");
 		// Web API provides frame rate as integer (max fps).
 		// Use frame_numerator/frame_denominator format consistent with other platforms.
 		if (info.formats[i].frame_rate > 0) {
@@ -219,7 +241,16 @@ CameraFeedWeb::~CameraFeedWeb() {
 }
 
 void CameraWeb::_on_get_cameras_callback(void *p_context, const Vector<CameraInfo> &p_camera_info) {
-	CameraWeb *server = static_cast<CameraWeb *>(p_context);
+	CameraWebRequest *request = static_cast<CameraWebRequest *>(p_context);
+	ERR_FAIL_NULL(request);
+
+	Object *server_object = ObjectDB::get_instance(request->server_id);
+	CameraWeb *server = Object::cast_to<CameraWeb>(server_object);
+	if (server == nullptr || request->request_id != server->request_id || !server->monitoring_feeds) {
+		memdelete(request);
+		return;
+	}
+	memdelete(request);
 
 	// Build a set of new device IDs for quick lookup.
 	HashSet<String> new_device_ids;
@@ -232,7 +263,7 @@ void CameraWeb::_on_get_cameras_callback(void *p_context, const Vector<CameraInf
 		Ref<CameraFeedWeb> feed = server->feeds[i];
 		if (feed.is_valid() && !new_device_ids.has(feed->get_device_id())) {
 			if (feed->is_active()) {
-				feed->deactivate_feed();
+				feed->set_active(false);
 			}
 			server->remove_feed(feed);
 		}
@@ -261,10 +292,15 @@ void CameraWeb::_on_get_cameras_callback(void *p_context, const Vector<CameraInf
 
 void CameraWeb::_update_feeds() {
 	activating.set();
-	driver->get_cameras((void *)this, &_on_get_cameras_callback);
+	CameraWebRequest *request = memnew(CameraWebRequest);
+	request->server_id = get_instance_id();
+	request->request_id = request_id;
+	driver->get_cameras((void *)request, &_on_get_cameras_callback);
 }
 
 void CameraWeb::_cleanup() {
+	request_id++;
+	activating.clear();
 	if (driver != nullptr) {
 		driver->stop_stream();
 		memdelete(driver);
@@ -273,7 +309,7 @@ void CameraWeb::_cleanup() {
 }
 
 void CameraWeb::set_monitoring_feeds(bool p_monitoring_feeds) {
-	if (p_monitoring_feeds == monitoring_feeds || activating.is_set()) {
+	if (p_monitoring_feeds == monitoring_feeds) {
 		return;
 	}
 
@@ -282,6 +318,7 @@ void CameraWeb::set_monitoring_feeds(bool p_monitoring_feeds) {
 		if (driver == nullptr) {
 			driver = memnew(CameraDriverWeb);
 		}
+		request_id++;
 		_update_feeds();
 	} else {
 		_cleanup();
