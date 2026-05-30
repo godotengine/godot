@@ -504,7 +504,6 @@ void EditorProperty::_notification(int p_what) {
 			}
 			size.height = MAX(size.height, left_container->get_size().height);
 
-			// Only draw the label if it's not empty.
 			if (label.is_empty()) {
 				size.height = 0;
 			} else if (sub_inspector_color_level >= 0 && theme_cache.sub_inspector_background[sub_inspector_color_level].is_valid()) {
@@ -542,7 +541,7 @@ void EditorProperty::_notification(int p_what) {
 			int left_ofs = left_container->get_combined_minimum_size().x;
 			ofs += left_ofs;
 			text_limit -= left_ofs;
-			text_limit = MAX(text_limit, 0); //  one line fix to prevent negative scaling...
+			text_limit = MAX(text_limit, 0);
 
 			if (checkable) {
 				Ref<Texture2D> checkbox;
@@ -582,13 +581,16 @@ void EditorProperty::_notification(int p_what) {
 				int check_ofs = checkbox->get_width() + padding + theme_cache.horizontal_separation;
 				ofs += check_ofs;
 				text_limit -= check_ofs;
+				text_limit = MAX(text_limit, 0);
 			} else {
 				check_rect = Rect2();
 			}
 
 			if (can_revert && !is_read_only()) {
 				const Ref<Texture2D> &reload_icon = theme_cache.revert_icon;
-				text_limit -= reload_icon->get_width() + half_padding + theme_cache.horizontal_separation;
+				int revert_w = reload_icon->get_width() + half_padding + theme_cache.horizontal_separation;
+				text_limit -= revert_w;
+				text_limit = MAX(text_limit, 0);
 				revert_rect = Rect2(ofs + text_limit, 0, reload_icon->get_width() + padding + (1 * EDSCALE), size.height);
 
 				Point2 rtl_pos;
@@ -625,7 +627,7 @@ void EditorProperty::_notification(int p_what) {
 				const Ref<Texture2D> &pinned_icon = theme_cache.pin_icon;
 				int margin_w = theme_cache.horizontal_separation;
 				int total_icon_w = margin_w + pinned_icon->get_width();
-				int text_w = font->get_string_size(label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w, font_size).x;
+				int text_w = font->get_string_size(label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, MAX(text_limit - total_icon_w, 0), font_size).x;
 				int y = (size.height - pinned_icon->get_height()) / 2;
 				if (rtl) {
 					draw_texture(pinned_icon, Vector2(size.width - ofs - text_w - total_icon_w, y), color);
