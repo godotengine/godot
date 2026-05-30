@@ -2719,7 +2719,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			double u0 = (x0 - faces_combined) * u_step;
 			double u1 = ((x0 + 1) * u_step);
 			if (mode == MODE_PATH && (!path_continuous_u || uv_match_size)) {
-				u0 = uv_match_size ? 0.0 : 0.0;
+				u0 = 0.0;
 				u1 = uv_match_size ? 0.5 : 0.1;
 			}
 
