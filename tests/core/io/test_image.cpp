@@ -867,7 +867,6 @@ TEST_CASE("[Image] Rotate Image 180 degrees") {
 		CHECK(image->get_data() == rotated_data);
 	}
 
-	// TODO: this doesnt print anything at all
 	SUBCASE("[Image] Attempting to rotate a compressed image") {
 		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
 		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
@@ -912,11 +911,9 @@ TEST_CASE("[Image] Decompressing images") {
 
 	SUBCASE("[Image] Attempting to decompress an uncompressed image") {
 		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
-		// image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
 		ERR_PRINT_OFF;
 		image->decompress();
 		ERR_PRINT_ON;
-		// CHECK(!(image->is_compressed()));
 		WARN_PRINT("Successfully threw an error for attempting to decompress an uncompressed image");
 	}
 
