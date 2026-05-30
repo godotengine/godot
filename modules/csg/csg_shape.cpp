@@ -1313,8 +1313,16 @@ void CSGPrimitive3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uv_match_size", "enabled"), &CSGPrimitive3D::set_uv_match_size);
 	ClassDB::bind_method(D_METHOD("get_uv_match_size"), &CSGPrimitive3D::get_uv_match_size);
 
+	ClassDB::bind_method(D_METHOD("set_uv_offset", "uv_offset"), &CSGPrimitive3D::set_uv_offset);
+	ClassDB::bind_method(D_METHOD("get_uv_offset"), &CSGPrimitive3D::get_uv_offset);
+
+	ClassDB::bind_method(D_METHOD("set_uv_scale", "uv_scale"), &CSGPrimitive3D::set_uv_scale);
+	ClassDB::bind_method(D_METHOD("get_uv_scale"), &CSGPrimitive3D::get_uv_scale);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_match_size"), "set_uv_match_size", "get_uv_match_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv_offset"), "set_uv_offset", "get_uv_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv_scale", PROPERTY_HINT_LINK), "set_uv_scale", "get_uv_scale");
 }
 
 void CSGPrimitive3D::set_flip_faces(bool p_invert) {
@@ -1345,9 +1353,35 @@ bool CSGPrimitive3D::get_uv_match_size() {
 	return uv_match_size;
 }
 
+void CSGPrimitive3D::set_uv_offset(const Vector2 &p_uv_offset) {
+	if (uv_offset == p_uv_offset) {
+		return;
+	}
+	uv_offset = p_uv_offset;
+	_make_dirty();
+}
+
+Vector2 CSGPrimitive3D::get_uv_offset() const {
+	return uv_offset;
+}
+
+void CSGPrimitive3D::set_uv_scale(const Vector2 &p_uv_scale) {
+	if (uv_scale == p_uv_scale) {
+		return;
+	}
+	uv_scale = p_uv_scale;
+	_make_dirty();
+}
+
+Vector2 CSGPrimitive3D::get_uv_scale() const {
+	return uv_scale;
+}
+
 CSGPrimitive3D::CSGPrimitive3D() {
 	flip_faces = false;
 	uv_match_size = false;
+	uv_offset = Vector2(0, 0);
+	uv_scale = Vector2(1, 1);
 }
 
 /////////////////////
@@ -1633,10 +1667,10 @@ CSGBrush *CSGSphere3D::_build_brush() {
 				};
 
 				Vector2 u[4] = {
-					Vector2(u0, v0) * uv_size,
-					Vector2(u1, v0) * uv_size,
-					Vector2(u1, v1) * uv_size,
-					Vector2(u0, v1) * uv_size,
+					uv_offset + Vector2(u0, v0) * uv_size * uv_scale,
+					uv_offset + Vector2(u1, v0) * uv_size * uv_scale,
+					uv_offset + Vector2(u1, v1) * uv_size * uv_scale,
+					uv_offset + Vector2(u0, v1) * uv_size * uv_scale,
 				};
 
 				// Draw the first face, but skip this at the north pole (i == 0).
@@ -1837,7 +1871,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 				Vector2 u[4];
 				for (int j = 0; j < 4; j++) {
-					u[j] = _get_box_uv(face_points[j], uv_size, i);
+					u[j] = uv_offset + _get_box_uv(face_points[j], uv_size, i) * uv_scale;
 				}
 
 				//face 1
@@ -2012,10 +2046,10 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				int inverse_i = sides - i; //Flip UVs horizontally.
 
 				Vector2 u[4] = {
-					Vector2(inc_uv * inverse_i, 0),
-					Vector2(inc_uv * (inverse_i - 1), 0),
-					Vector2(inc_uv * (inverse_i - 1), -uv_side_size.y),
-					Vector2(inc_uv * inverse_i, -uv_side_size.y),
+					uv_offset + Vector2(inc_uv * inverse_i, 0) * uv_scale,
+					uv_offset + Vector2(inc_uv * (inverse_i - 1), 0) * uv_scale,
+					uv_offset + Vector2(inc_uv * (inverse_i - 1), -uv_side_size.y) * uv_scale,
+					uv_offset + Vector2(inc_uv * inverse_i, -uv_side_size.y) * uv_scale,
 				};
 
 				if (cone) {
@@ -2058,9 +2092,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 2] = Vector3(0, -1, 0) * vertex_mul;
 
-				uvsw[face * 3 + 0] = _get_cylinder_cap_uv(face_points[1], uv_cap_size, false);
-				uvsw[face * 3 + 1] = _get_cylinder_cap_uv(face_points[0], uv_cap_size, false);
-				uvsw[face * 3 + 2] = _get_cylinder_cap_uv(Vector3(0, -1, 0), uv_cap_size, false);
+				uvsw[face * 3 + 0] = uv_offset + _get_cylinder_cap_uv(face_points[1], uv_cap_size, false) * uv_scale;
+				uvsw[face * 3 + 1] = uv_offset + _get_cylinder_cap_uv(face_points[0], uv_cap_size, false) * uv_scale;
+				uvsw[face * 3 + 2] = uv_offset + _get_cylinder_cap_uv(Vector3(0, -1, 0), uv_cap_size, false) * uv_scale;
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
@@ -2073,9 +2107,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 1] = face_points[2] * vertex_mul;
 					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
 
-					uvsw[face * 3 + 0] = _get_cylinder_cap_uv(face_points[3], uv_cap_size, true);
-					uvsw[face * 3 + 1] = _get_cylinder_cap_uv(face_points[2], uv_cap_size, true);
-					uvsw[face * 3 + 2] = _get_cylinder_cap_uv(Vector3(0, 1, 0), uv_cap_size, true);
+					uvsw[face * 3 + 0] = uv_offset + _get_cylinder_cap_uv(face_points[3], uv_cap_size, true) * uv_scale;
+					uvsw[face * 3 + 1] = uv_offset + _get_cylinder_cap_uv(face_points[2], uv_cap_size, true) * uv_scale;
+					uvsw[face * 3 + 2] = uv_offset + _get_cylinder_cap_uv(Vector3(0, 1, 0), uv_cap_size, true) * uv_scale;
 
 					smoothw[face] = false;
 					invertw[face] = invert_val;
@@ -2284,10 +2318,10 @@ CSGBrush *CSGTorus3D::_build_brush() {
 					};
 
 					Vector2 u[4] = {
-						Vector2(inc_uv * i, inci_uv * j),
-						Vector2(inc_uv * i, inci_uv * (j + 1)),
-						Vector2(inc_uv * (i + 1), inci_uv * (j + 1)),
-						Vector2(inc_uv * (i + 1), inci_uv * j),
+						uv_offset + Vector2(inc_uv * i, inci_uv * j) * uv_scale,
+						uv_offset + Vector2(inc_uv * i, inci_uv * (j + 1)) * uv_scale,
+						uv_offset + Vector2(inc_uv * (i + 1), inci_uv * (j + 1)) * uv_scale,
+						uv_offset + Vector2(inc_uv * (i + 1), inci_uv * j) * uv_scale,
 					};
 
 					// face 1
@@ -2620,7 +2654,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					}
 
 					facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
-					uvsw[face * 3 + face_vertex_idx] = uv;
+					uvsw[face * 3 + face_vertex_idx] = uv_offset + uv * uv_scale;
 				}
 
 				smoothw[face] = false;
@@ -2738,10 +2772,10 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				};
 
 				Vector2 u[4] = {
-					Vector2(u0, v0),
-					Vector2(u1, v0),
-					Vector2(u1, v1),
-					Vector2(u0, v1),
+					uv_offset + Vector2(u0, v0) * uv_scale,
+					uv_offset + Vector2(u1, v0) * uv_scale,
+					uv_offset + Vector2(u1, v1) * uv_scale,
+					uv_offset + Vector2(u0, v1) * uv_scale,
 				};
 
 				// Face 1
@@ -2794,7 +2828,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					}
 
 					facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
-					uvsw[face * 3 + face_vertex_idx] = uv;
+					uvsw[face * 3 + face_vertex_idx] = uv_offset + uv * uv_scale;
 				}
 
 				smoothw[face] = false;
