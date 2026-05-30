@@ -364,8 +364,7 @@ namespace Godot.Bridge
                 }
                 catch (Exception e)
                 {
-                    if (OS.IsStdOutVerbose())
-                        Console.Error.WriteLine($"[.NET] Failed to load '{dllName}': {e.Message}");
+                    LogIfVerbose($"[.NET] Failed to load '{dllName}': {e.Message}");
                     continue;
                 }
 
@@ -378,6 +377,14 @@ namespace Godot.Bridge
 
                 LookupScriptsInAssembly(depAssembly, externalScriptTypes);
             }
+
+            // Proactive script_load and the OS.IsStdOutVerbose-guarded logging
+            // both require the native engine binding. In exported games this
+            // method runs from godotsharp_game_main_init before the engine is
+            // initialized, so skip these steps then — the discovery work
+            // above (which fills _pathTypeBiMap) is all the runtime needs.
+            if (!NativeFuncs.godotsharp_dotnet_module_is_initialized().ToBool() || !Engine.IsEditorHint())
+                return;
 
             foreach (var scriptType in externalScriptTypes)
             {
@@ -392,14 +399,22 @@ namespace Godot.Bridge
                 }
                 catch (Exception e)
                 {
-                    if (OS.IsStdOutVerbose())
-                        Console.Error.WriteLine($"[.NET] Failed to load script '{scriptPath}': {e.Message}");
+                    LogIfVerbose($"[.NET] Failed to load script '{scriptPath}': {e.Message}");
                 }
                 finally
                 {
                     scriptRef.Dispose();
                 }
             }
+        }
+
+        private static void LogIfVerbose(string message)
+        {
+            if (!NativeFuncs.godotsharp_dotnet_module_is_initialized().ToBool())
+                return;
+            if (!OS.IsStdOutVerbose())
+                return;
+            Console.Error.WriteLine(message);
         }
 
         public static string? GetSourceFilePath(string scriptPath)
