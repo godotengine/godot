@@ -2545,21 +2545,8 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		double extrusion_step = 1.0 / extrusions;
 		double u_step = 1.0 / extrusions;
 		double v_step = 1.0 / shape_sides;
-		if (uv_match_size) {
-			switch (mode) {
-				case MODE_PATH:
-					u_step = extrusions;
-					v_step = shape_sides;
-					break;
-				case MODE_DEPTH:
-					u_step = extrusions * depth;
-					v_step = shape_sides;
-					break;
-				case MODE_SPIN:
-					u_step = spin_step;
-					v_step = shape_sides;
-					break;
-			}
+		if (uv_match_size && mode == MODE_DEPTH) {
+			u_step *= depth;
 		}
 
 		if (path_u_distance > 0.0) {
@@ -2725,21 +2712,20 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 			for (int y0 = 0; y0 < shape_sides; y0++) {
 				int y1 = (y0 + 1) % shape_sides;
-				// Use the top half of the texture.
+
 				double v0;
 				double v1;
-
 				if (uv_match_size) {
 					Point2 p0 = shape_polygon[y0];
 					Point2 p1 = shape_polygon[y1];
-					if (Math::abs(p0.x - p1.x) > Math::abs(p0.y - p1.y)) {
-						v0 = p0.x;
-						v1 = p1.x;
-					} else {
-						v0 = p0.y;
-						v1 = p1.y;
+					v0 = y0;
+					v1 = y0 + p0.distance_to(p1);
+					if (mode == MODE_SPIN) {
+						u0 = 0.0;
+						u1 = ((p0.x + p1.x) * 0.5f) * spin_step;
 					}
 				} else {
+					// Use the top half of the texture.
 					v0 = (y0 * v_step) / 2;
 					v1 = ((y0 + 1) * v_step) / 2;
 				}
