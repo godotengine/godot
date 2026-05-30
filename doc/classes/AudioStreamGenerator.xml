@@ -74,7 +74,7 @@
 		<member name="mix_rate" type="float" setter="set_mix_rate" getter="get_mix_rate" default="44100.0">
 			The sample rate to use, in hertz. Higher values are more demanding for the CPU to generate, but result in better quality.
 			In games, common sample rates in use are [code]11025[/code], [code]16000[/code], [code]22050[/code], [code]32000[/code], [code]44100[/code], and [code]48000[/code].
-			According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are generating sounds with low amounts of high frequency content, lower sample rates such as [code]32000[/code] or [code]22050[/code] may be usable with little loss in quality.
+			According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are generating sounds that are not rich in high frequency content (such as a low-pitched triangle wave), lower sample rates such as [code]32000[/code] or [code]22050[/code] may be usable with little loss in quality.
 			[b]Note:[/b] [AudioStreamGenerator] does not automatically resample input data. To produce expected results, [member mix_rate_mode] should match the sampling rate of input data.
 			[b]Note:[/b] If you are using [AudioEffectCapture] as the source of your data, set [member mix_rate_mode] to [constant MIX_RATE_INPUT] or [constant MIX_RATE_OUTPUT] to automatically match current [AudioServer] mixing rate.
 		</member>

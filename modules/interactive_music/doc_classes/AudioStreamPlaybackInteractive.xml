@@ -19,14 +19,14 @@
 			<return type="void" />
 			<param index="0" name="clip_index" type="int" />
 			<description>
-				Switches to a clip, by index.
+				Switches to the clip with the given index.
 			</description>
 		</method>
 		<method name="switch_to_clip_by_name">
 			<return type="void" />
 			<param index="0" name="clip_name" type="StringName" />
 			<description>
-				Switches to a clip, by name.
+				Switches to the clip with the given name.
 			</description>
 		</method>
 	</methods>

@@ -65,7 +65,7 @@
 			[b]Note:[/b] If [member format] is set to [constant FORMAT_QOA], this property expects data from a full QOA file.
 		</member>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="0">
-			The audio format. See [enum Format].
+			Audio format.
 		</member>
 		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" default="0">
 			The loop start point (in number of audio samples, relative to the beginning of the stream).
@@ -74,12 +74,12 @@
 			The loop end point (in number of audio samples, relative to the beginning of the stream).
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamWAV.LoopMode" default="0">
-			The loop mode. See [enum LoopMode].
+			The loop mode.
 		</member>
 		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" default="44100">
 			The sample rate for mixing this audio, in hertz. Higher values require more storage space, but result in better quality.
 			In games, common sample rates in use are [code]11025[/code], [code]16000[/code], [code]22050[/code], [code]32000[/code], [code]44100[/code], and [code]48000[/code].
-			According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are using sounds with low amounts of high frequency content, lower sample rates such as [code]32000[/code] or [code]22050[/code] may be usable with little loss in quality.
+			According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are using sounds that are not rich in high frequency content (such as muffled sound effects), lower sample rates such as [code]32000[/code] or [code]22050[/code] may be usable with little loss in quality.
 		</member>
 		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo" default="false">
 			If [code]true[/code], audio is stereo.

@@ -188,10 +188,10 @@
 			Transitions as soon as possible, does not wait for any specific playback position.
 		</constant>
 		<constant name="TRANSITION_FROM_TIME_NEXT_BEAT" value="1" enum="TransitionFromTime">
-			Transitions when the playback position of the source clip reaches the next beat. This only works accurately if the clip is imported with the correct tempo set. See also [ResourceImporterOggVorbis] or [ResourceImporterMP3]. Falls back to [constant TRANSITION_FROM_TIME_IMMEDIATE] if the clip is imported without an assigned tempo.
+			Transitions when the playback position of the source clip reaches the next beat. This only works accurately if the clip is imported with the correct tempo set. See also [ResourceImporterOggVorbis] and [ResourceImporterMP3]. Falls back to [constant TRANSITION_FROM_TIME_IMMEDIATE] if the clip is imported without an assigned tempo.
 		</constant>
 		<constant name="TRANSITION_FROM_TIME_NEXT_BAR" value="2" enum="TransitionFromTime">
-			Transitions when the playback position of the source clip reaches the next bar. This only works accurately if the clip is imported with the correct tempo [i]and[/i] beats per bar information set. See also [ResourceImporterOggVorbis] or [ResourceImporterMP3]. Falls back to [constant TRANSITION_FROM_TIME_IMMEDIATE] if the clip is imported without an assigned tempo or beats per bar information.
+			Transitions when the playback position of the source clip reaches the next bar. This only works accurately if the clip is imported with the correct tempo [i]and[/i] beats per bar information set. See also [ResourceImporterOggVorbis] and [ResourceImporterMP3]. Falls back to [constant TRANSITION_FROM_TIME_IMMEDIATE] if the clip is imported without an assigned tempo or beats per bar information.
 		</constant>
 		<constant name="TRANSITION_FROM_TIME_END" value="3" enum="TransitionFromTime">
 			Transitions when the clip finishes playing. This only works if the clip has a length greater than [code]0.0[/code]. Falls back to [constant TRANSITION_FROM_TIME_IMMEDIATE] otherwise.
