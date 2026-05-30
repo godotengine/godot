@@ -725,7 +725,7 @@
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_GI_BUFFER" value="18" enum="DebugDraw">
-			Draws the buffer used for global illumination from [VoxelGI] or SDFGI. Requires [VoxelGI] (at least one visible baked VoxelGI node) or SDFGI ([member Environment.sdfgi_enabled]) to be enabled to have a visible effect.
+			Draws the buffer used for global illumination from [VoxelGI] or DynamicGI. Requires [VoxelGI] (at least one visible baked VoxelGI node) or DynamicGI ([member Environment.dynamic_gi_enabled]) to be enabled to have a visible effect.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_DISABLE_LOD" value="19" enum="DebugDraw">

@@ -95,16 +95,16 @@
 			The amount of cascades used for global illumination. More cascades allows the global illumination to reach further away, but at the same time it costs more memory and GPU performance. Adjust this value to what you find necessary in your game.
 		</member>
 		<member name="dynamic_gi_enabled" type="bool" setter="set_dynamic_gi_enabled" getter="is_dynamic_gi_enabled" default="false">
-			Turns on Dynamic GI. This provides global illumination (indirect light and reflections) for the whole scene. Only static objects contribute to GI while dynamic objects can also recieve it (check whether your object is static, dynamic or disabled with [member GeometryInstance3D.gi_mode].
+			Turns on Dynamic GI. This provides global illumination (indirect light and reflections) for the whole scene. Only static objects contribute to GI while dynamic objects can also receive it (check whether your object is static, dynamic or disabled with [member GeometryInstance3D.gi_mode].
 		</member>
 		<member name="dynamic_gi_energy" type="float" setter="set_dynamic_gi_energy" getter="get_dynamic_gi_energy" default="1.0">
-			Adjust the amount of energy that geometry recieved from GI. Use this only as a last resort because it affects everything uniformly and decreases the quality. If needed, consider using [member Environment.dynamic_gi_bounce_feedback] or [member Light3D.light_indirect_energy] to inject more energy into the system.
+			Adjust the amount of energy that geometry received from GI. Use this only as a last resort because it affects everything uniformly and decreases the quality. If needed, consider using [member Environment.dynamic_gi_bounce_feedback] or [member Light3D.light_indirect_energy] to inject more energy into the system.
 		</member>
 		<member name="dynamic_gi_filter_ambient" type="bool" setter="set_dynamic_gi_filter_ambient" getter="is_dynamic_gi_filtering_ambient" default="true">
 			Filter the ambient light, this results in higher quality transitions between the cascades.
 		</member>
 		<member name="dynamic_gi_filter_probes" type="bool" setter="set_dynamic_gi_filter_probes" getter="is_dynamic_gi_filtering_probes" default="true">
-			Filter the probes (averaging probes with neighbouring probes) to smooth out the light transitions. This option can be used safely, as occlusion between probes is considered when filtering, but it may also result on lower light frequency.
+			Filter the probes (averaging probes with neighboring probes) to smooth out the light transitions. This option can be used safely, as occlusion between probes is considered when filtering, but it may also result on lower light frequency.
 		</member>
 		<member name="dynamic_gi_filter_reflection" type="bool" setter="set_dynamic_gi_filter_reflections" getter="is_dynamic_gi_filtering_reflections" default="false">
 			Applies a gaussian filter to reflections. If you find that the voxelish look of the reflections is not to your taste, this filter will smooth it out.

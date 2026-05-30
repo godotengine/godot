@@ -1934,7 +1934,7 @@ void fragment_shader(in SceneData scene_data) {
 			ivec2 closest_coord = coord;
 
 #ifdef USE_MULTIVIEW
-			vec4 closest_nr = texelFetch(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), ivec3(coord, ViewIndex), 0);			
+			vec4 closest_nr = texelFetch(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), ivec3(coord, ViewIndex), 0);
 #else // USE_MULTIVIEW
 			vec4 closest_nr = texelFetch(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), coord, 0);
 #endif // USE_MULTIVIEW
@@ -1944,14 +1944,14 @@ void fragment_shader(in SceneData scene_data) {
 			if (dynamic_object) {
 				closest_r = 1.0 - closest_r;
 			}
-			closest_r /= (127.0 / 255.0);	
-			
+			closest_r /= (127.0 / 255.0);
+
 			float closest_ang = dot(normal, normalize(closest_nr.xyz * 2.0 - 1.0));
 			closest_ang -= abs(closest_r - roughness) * 0.5;
 
 			for (int i = 0; i < 4; i++) {
-				const ivec2 neighbours[4] = ivec2[](ivec2(1, 0), ivec2(0, 1), ivec2(-1, 0), ivec2(0, -1));
-				ivec2 neighbour_coord = coord + (neighbours[i] << implementation_data.gi_upscale_shift);
+				const ivec2 neighbors[4] = ivec2[](ivec2(1, 0), ivec2(0, 1), ivec2(-1, 0), ivec2(0, -1));
+				ivec2 neighbour_coord = coord + (neighbors[i] << implementation_data.gi_upscale_shift);
 #ifdef USE_MULTIVIEW
 				closest_nr = texelFetch(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), ivec3(neighbour_coord, ViewIndex), 0);
 #else // USE_MULTIVIEW
@@ -1963,8 +1963,8 @@ void fragment_shader(in SceneData scene_data) {
 				if (dynamic_object) {
 					r = 1.0 - r;
 				}
-				r /= (127.0 / 255.0);	
-											
+				r /= (127.0 / 255.0);
+
 				float ang = dot(normal, normalize(closest_nr.xyz * 2.0 - 1.0));
 				ang -= abs(r - roughness) * 0.5;
 

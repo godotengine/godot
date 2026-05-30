@@ -258,7 +258,7 @@ bool bayer_dither(float value) {
 
 #endif
 
-#if 0	
+#if 0
 	uvec2 dt = gl_GlobalInvocationID.xy & 0x3;
 	uint index = dt.x + dt.y * 4;
 
@@ -877,7 +877,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 					light.a = 1;
 
 					if (!disoccluded) {
-						// filter using the neighbours!
+						// filter using the neighbors!
 						uint neighbour_bits = imageLoad(voxel_neighbours, read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0)).r;
 						vec3 cascade_ofs = hddagi.cascades[hit_cascade].position;
 						float to_cell = hddagi.cascades[hit_cascade].to_cell;

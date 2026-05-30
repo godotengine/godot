@@ -380,7 +380,7 @@ const uint wrap_neighbours[(LIGHTPROBE_OCT_SIZE + 2) * (LIGHTPROBE_OCT_SIZE + 2)
 #endif
 
 shared uvec3 neighbours_accum[LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE];
-shared vec3 neighbours[LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE];
+shared vec3 neighbors[LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE];
 shared uvec3 ambient_accum;
 shared int probe_history_index;
 
@@ -395,7 +395,7 @@ const vec3 oct_directions[16]=vec3[](vec3( (-0.408248, -0.408248, -0.816497)), v
 const vec3 oct_directions[25]=vec3[](vec3( (-0.301511, -0.301511, -0.904534)), vec3( (-0.301511, -0.904534, -0.301511)), vec3( (0, -0.970142, 0.242536)), vec3( (0.301511, -0.904534, -0.301511)), vec3( (0.301511, -0.301511, -0.904534)), vec3( (-0.904534, -0.301511, -0.301511)), vec3( (-0.666667, -0.666667, 0.333333)), vec3( (0, -0.5547, 0.83205)), vec3( (0.666667, -0.666667, 0.333333)), vec3( (0.904534, -0.301511, -0.301511)), vec3( (-0.970142, 0, 0.242536)), vec3( (-0.5547, 0, 0.83205)), vec3( (0, 0, 1)), vec3( (0.5547, 0, 0.83205)), vec3( (0.970142, 0, 0.242536)), vec3( (-0.904534, 0.301511, -0.301511)), vec3( (-0.666667, 0.666667, 0.333333)), vec3( (0, 0.5547, 0.83205)), vec3( (0.666667, 0.666667, 0.333333)), vec3( (0.904534, 0.301511, -0.301511)), vec3( (-0.301511, 0.301511, -0.904534)), vec3( (-0.301511, 0.904534, -0.301511)), vec3( (0, 0.970142, 0.242536)), vec3( (0.301511, 0.904534, -0.301511)), vec3( (0.301511, 0.301511, -0.904534)));
 #endif
 
-shared uvec3 neighbours[LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE];
+shared uvec3 neighbors[LIGHTPROBE_OCT_SIZE*LIGHTPROBE_OCT_SIZE];
 */
 
 ivec3 modi(ivec3 value, ivec3 p_y) {
@@ -607,7 +607,7 @@ void main() {
 	}
 #else
 
-	neighbours[probe_index] = light;
+	neighbors[probe_index] = light;
 #endif
 
 	if (!cache_valid) {
@@ -654,7 +654,7 @@ void main() {
 #ifdef TRACE_SUBPIXEL
 	light = vec3(neighbours_accum[probe_index]) / float(1 << FP_BITS);
 #else
-	light = neighbours[probe_index];
+	light = neighbors[probe_index];
 #endif
 
 	// Encode to RGBE to store in accumulator
@@ -691,7 +691,7 @@ void main() {
 	}
 
 	light = vec3(moving_average) / float(1 << FP_BITS);
-	neighbours[probe_index] = light;
+	neighbors[probe_index] = light;
 
 	groupMemoryBarrier();
 	barrier();
@@ -705,7 +705,7 @@ void main() {
 		uint n = neighbour_weights[probe_index * neighbour_max_weights + i];
 		uint index = n >> 16;
 		float weight = float(n & 0xFFFF) / float(0xFFFF);
-		diffuse_light += neighbours[index] * weight;
+		diffuse_light += neighbors[index] * weight;
 	}
 
 	ivec3 store_texture_pos = ivec3(probe_texture_pos.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1), probe_texture_pos.z);

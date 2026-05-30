@@ -1438,7 +1438,7 @@
 			<return type="void" />
 			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentHDDAGIInactiveProbeFrames" />
 			<description>
-				Set the amount of frames it takes to process inactive probes (inactive probes are those not connected to any geometry and not visible by the camera). They process (raytrace) at a lower framerate in order to save GPU resouces.
+				Set the amount of frames it takes to process inactive probes (inactive probes are those not connected to any geometry and not visible by the camera). They process (raytrace) at a lower framerate in order to save GPU resources.
 			</description>
 		</method>
 		<method name="environment_set_sky">
@@ -5583,7 +5583,7 @@
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="18" enum="ViewportDebugDraw">
-			Draws the global illumination buffer from [VoxelGI] or DynamicGI. Requires [VoxelGI] (at least one visible baked VoxelGI node) or DynamicGI ([member Environment.hddagi_enabled]) to be enabled to have a visible effect.
+			Draws the global illumination buffer from [VoxelGI] or DynamicGI. Requires [VoxelGI] (at least one visible baked VoxelGI node) or DynamicGI ([member Environment.dynamic_gi_enabled]) to be enabled to have a visible effect.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLE_LOD" value="19" enum="ViewportDebugDraw">
