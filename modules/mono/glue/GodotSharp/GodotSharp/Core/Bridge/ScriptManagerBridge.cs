@@ -496,8 +496,7 @@ namespace Godot.Bridge
                 }
                 catch (TypeLoadException e)
                 {
-                    if (OS.IsStdOutVerbose())
-                        Console.Error.WriteLine($"[.NET] Failed to process type '{type}': {e.Message}");
+                    LogIfVerbose($"[.NET] Failed to process type '{type}': {e.Message}");
                 }
             }
 
