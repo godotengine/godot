@@ -383,6 +383,16 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(RequiredParam<PhysicsRayQue
 	return d;
 }
 
+bool PhysicsDirectSpaceState3D::_intersect_ray_into(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, RequiredParam<PhysicsRayQueryResult3D> rp_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
+
+	RayResult result;
+	bool hit = intersect_ray(p_ray_query->get_parameters(), result);
+	p_result->_set_result(result, hit);
+	return hit;
+}
+
 TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results) {
 	EXTRACT_PARAM_OR_FAIL_V(p_point_query, rp_point_query, TypedArray<Dictionary>());
 
@@ -488,10 +498,50 @@ PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 void PhysicsDirectSpaceState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_point, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray);
+	ClassDB::bind_method(D_METHOD("intersect_ray_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_ray_into);
 	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState3D::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_collide_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState3D::_get_rest_info);
+}
+
+///////////////////////////////
+
+void PhysicsRayQueryResult3D::_set_result(const PhysicsDirectSpaceState3D::RayResult &p_result, bool p_hit) {
+	hit = p_hit;
+	if (p_hit) {
+		position = p_result.position;
+		normal = p_result.normal;
+		face_index = p_result.face_index;
+		collider_id = p_result.collider_id;
+		collider = p_result.collider;
+		shape = p_result.shape;
+		rid = p_result.rid;
+	} else {
+		_clear();
+	}
+}
+
+void PhysicsRayQueryResult3D::_clear() {
+	hit = false;
+	position = Vector3();
+	normal = Vector3();
+	face_index = -1;
+	collider_id = ObjectID();
+	collider = nullptr;
+	shape = 0;
+	rid = RID();
+}
+
+void PhysicsRayQueryResult3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("has_hit"), &PhysicsRayQueryResult3D::has_hit);
+	ClassDB::bind_method(D_METHOD("get_position"), &PhysicsRayQueryResult3D::get_position);
+	ClassDB::bind_method(D_METHOD("get_normal"), &PhysicsRayQueryResult3D::get_normal);
+	ClassDB::bind_method(D_METHOD("get_face_index"), &PhysicsRayQueryResult3D::get_face_index);
+	ClassDB::bind_method(D_METHOD("get_collider_id"), &PhysicsRayQueryResult3D::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider"), &PhysicsRayQueryResult3D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_shape"), &PhysicsRayQueryResult3D::get_shape);
+	ClassDB::bind_method(D_METHOD("get_rid"), &PhysicsRayQueryResult3D::get_rid);
 }
 
 ///////////////////////////////

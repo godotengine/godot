@@ -122,11 +122,14 @@ class PhysicsRayQueryParameters3D;
 class PhysicsPointQueryParameters3D;
 class PhysicsShapeQueryParameters3D;
 
+class PhysicsRayQueryResult3D;
+
 class PhysicsDirectSpaceState3D : public Object {
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
 
 private:
 	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query);
+	bool _intersect_ray_into(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, RequiredParam<PhysicsRayQueryResult3D> rp_result);
 	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
@@ -830,6 +833,40 @@ public:
 
 	PhysicsServer3D();
 	~PhysicsServer3D();
+};
+
+// Pooled, reusable result holder for intersect_ray_into — avoids the Dictionary
+// allocation + 7x Variant boxing the legacy intersect_ray return-by-Dictionary
+// path performs on every successful raycast. Caller allocates once, reuses
+// across queries.
+class PhysicsRayQueryResult3D : public RefCounted {
+	GDCLASS(PhysicsRayQueryResult3D, RefCounted);
+
+	bool hit = false;
+	Vector3 position;
+	Vector3 normal;
+	int face_index = -1;
+	ObjectID collider_id;
+	Object *collider = nullptr;
+	int shape = 0;
+	RID rid;
+
+protected:
+	static void _bind_methods();
+
+public:
+	// Engine-internal — populated by PhysicsDirectSpaceState3D::_intersect_ray_into.
+	void _set_result(const PhysicsDirectSpaceState3D::RayResult &p_result, bool p_hit);
+	void _clear();
+
+	bool has_hit() const { return hit; }
+	Vector3 get_position() const { return position; }
+	Vector3 get_normal() const { return normal; }
+	int get_face_index() const { return face_index; }
+	ObjectID get_collider_id() const { return collider_id; }
+	Object *get_collider() const { return collider; }
+	int get_shape() const { return shape; }
+	RID get_rid() const { return rid; }
 };
 
 class PhysicsRayQueryParameters3D : public RefCounted {

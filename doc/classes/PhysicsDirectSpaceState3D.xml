@@ -75,6 +75,24 @@
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
 			</description>
 		</method>
+		<method name="intersect_ray_into">
+			<return type="bool" />
+			<param index="0" name="parameters" type="PhysicsRayQueryParameters3D" />
+			<param index="1" name="result" type="PhysicsRayQueryResult3D" />
+			<description>
+				Allocation-free variant of [method intersect_ray]. Performs the same intersection query but writes the hit data into the caller-provided [param result] holder instead of allocating a new [Dictionary] per call. Returns [code]true[/code] when the ray hit something, [code]false[/code] otherwise; on a miss, [param result] is cleared.
+				This is the preferred entry point for hot-path raycasts (hitscan weapons, line-of-sight checks, foot IK probes), where the per-call [Dictionary] allocation and key-string interning of [method intersect_ray] becomes a measurable source of garbage on busy frames. The legacy [method intersect_ray] is unchanged.
+				[codeblock]
+				var query := PhysicsRayQueryParameters3D.create(from, to)
+				var result := PhysicsRayQueryResult3D.new()  # allocate once, reuse every frame
+				var space := get_world_3d().direct_space_state
+				if space.intersect_ray_into(query, result):
+				    position = result.get_position()
+				    normal = result.get_normal()
+				[/codeblock]
+				[b]Note:[/b] [param result] is overwritten on every call. Reading fields from a previous query after a new [method intersect_ray_into] call returns stale or unrelated data.
+			</description>
+		</method>
 		<method name="intersect_shape">
 			<return type="Dictionary[]" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />

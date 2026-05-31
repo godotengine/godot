@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsRayQueryResult3D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Holds the result of a [method PhysicsDirectSpaceState3D.intersect_ray_into] query.
+	</brief_description>
+	<description>
+		Reusable result holder for the allocation-free raycast API [method PhysicsDirectSpaceState3D.intersect_ray_into]. The caller creates one instance and passes it to every query, avoiding the per-call [Dictionary] allocation that the legacy [method PhysicsDirectSpaceState3D.intersect_ray] performs.
+		Fields are populated by the engine on a successful hit and cleared when the ray misses. Read [method has_hit] first; the other getters are only meaningful when it returns [code]true[/code].
+		[codeblock]
+		var query := PhysicsRayQueryParameters3D.create(from, to)
+		var result := PhysicsRayQueryResult3D.new()  # allocate once, reuse for every cast
+		var space := get_world_3d().direct_space_state
+		if space.intersect_ray_into(query, result):
+		    print("hit at ", result.get_position(), " normal ", result.get_normal())
+		[/codeblock]
+	</description>
+	<tutorials>
+		<link title="Ray-casting">$DOCS_URL/tutorials/physics/ray-casting.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_collider" qualifiers="const">
+			<return type="Object" />
+			<description>
+				Returns the colliding object, or [code]null[/code] when no hit was recorded.
+			</description>
+		</method>
+		<method name="get_collider_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the unique instance ID of the colliding object. See [method Object.get_instance_id]. Returns [code]0[/code] when no hit was recorded.
+			</description>
+		</method>
+		<method name="get_face_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the face index at the intersection point.
+				[b]Note:[/b] Returns a valid index only if the intersected shape is a [ConcavePolygonShape3D]. Otherwise [code]-1[/code] is returned.
+			</description>
+		</method>
+		<method name="get_normal" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the surface normal at the intersection point, or [code]Vector3(0, 0, 0)[/code] if the ray started inside the shape and [member PhysicsRayQueryParameters3D.hit_from_inside] was [code]true[/code]. Equivalent to the [code]normal[/code] key of the [Dictionary] returned by [method PhysicsDirectSpaceState3D.intersect_ray].
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the intersection point in global coordinates. Equivalent to the [code]position[/code] key of the [Dictionary] returned by [method PhysicsDirectSpaceState3D.intersect_ray].
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the intersecting object's [RID].
+			</description>
+		</method>
+		<method name="get_shape" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the shape index of the colliding shape on the intersecting object. See [CollisionObject3D].
+			</description>
+		</method>
+		<method name="has_hit" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the most recent [method PhysicsDirectSpaceState3D.intersect_ray_into] call that filled this result reported a hit. When [code]false[/code], the other getters return zero / default values and should not be relied on.
+				[method PhysicsDirectSpaceState3D.intersect_ray_into] also returns this same value, so checking the call's return value is usually sufficient.
+			</description>
+		</method>
+	</methods>
+</class>
