@@ -87,11 +87,12 @@ const GodotCamera = {
 		 * can feed it to set_ycbcr_images without a color conversion. Other
 		 * formats fall through to RGBA and rely on the browser to convert.
 		 * @param {string} srcFormat VideoFrame.format ('NV12', 'RGBA', ...)
-		 * @param {number} width
-		 * @param {number} height
+		 * @param {{x:number,y:number,width:number,height:number}} rect
 		 * @returns {{totalSize:number,options:Object,formatCode:number}}
 		 */
-		getCopyToOptions: function (srcFormat, width, height) {
+		getCopyToOptions: function (srcFormat, rect) {
+			const width = rect.width;
+			const height = rect.height;
 			if (srcFormat === 'NV12') {
 				// Chrome rejects copyTo with `format: 'NV12'`. Omit the format
 				// field to get the VideoFrame's native pixel format, which is
@@ -99,7 +100,7 @@ const GodotCamera = {
 				return {
 					totalSize: width * height * 3 / 2,
 					options: {
-						rect: { x: 0, y: 0, width: width, height: height },
+						rect: rect,
 						layout: [
 							{ offset: 0, stride: width },
 							{ offset: width * height, stride: width },
@@ -111,11 +112,34 @@ const GodotCamera = {
 			return {
 				totalSize: width * height * 4,
 				options: {
-					rect: { x: 0, y: 0, width: width, height: height },
+					rect: rect,
 					layout: [{ offset: 0, stride: width * 4 }],
 					format: 'RGBA',
 				},
 				formatCode: GodotCamera.FORMAT_CODE_RGBA,
+			};
+		},
+
+		/**
+		 * Gets the visible pixel rectangle to copy from a VideoFrame.
+		 * @param {VideoFrame} videoFrame
+		 * @returns {{x:number,y:number,width:number,height:number}}
+		 */
+		getVisibleFrameRect: function (videoFrame) {
+			const rect = videoFrame.visibleRect;
+			if (rect) {
+				return {
+					x: rect.x,
+					y: rect.y,
+					width: rect.width,
+					height: rect.height,
+				};
+			}
+			return {
+				x: 0,
+				y: 0,
+				width: videoFrame.displayWidth,
+				height: videoFrame.displayHeight,
 			};
 		},
 
@@ -328,7 +352,27 @@ function processImageBitmap(imageBitmap) {
 const FORMAT_CODE_RGBA = 0;
 const FORMAT_CODE_NV12 = 1;
 
-function getCopyToOptions(srcFormat, width, height) {
+function getVisibleFrameRect(videoFrame) {
+	const rect = videoFrame.visibleRect;
+	if (rect) {
+		return {
+			x: rect.x,
+			y: rect.y,
+			width: rect.width,
+			height: rect.height,
+		};
+	}
+	return {
+		x: 0,
+		y: 0,
+		width: videoFrame.displayWidth,
+		height: videoFrame.displayHeight,
+	};
+}
+
+function getCopyToOptions(srcFormat, rect) {
+	const width = rect.width;
+	const height = rect.height;
 	if (srcFormat === 'NV12') {
 		// Chrome rejects copyTo with \`format: 'NV12'\`. Omit the format
 		// field to get the VideoFrame's native pixel format, which is
@@ -336,7 +380,7 @@ function getCopyToOptions(srcFormat, width, height) {
 		return {
 			totalSize: width * height * 3 / 2,
 			options: {
-				rect: { x: 0, y: 0, width: width, height: height },
+				rect: rect,
 				layout: [
 					{ offset: 0, stride: width },
 					{ offset: width * height, stride: width },
@@ -348,7 +392,7 @@ function getCopyToOptions(srcFormat, width, height) {
 	return {
 		totalSize: width * height * 4,
 		options: {
-			rect: { x: 0, y: 0, width: width, height: height },
+			rect: rect,
 			layout: [{ offset: 0, stride: width * 4 }],
 			format: 'RGBA',
 		},
@@ -358,9 +402,8 @@ function getCopyToOptions(srcFormat, width, height) {
 
 // Process VideoFrame using WebCodecs copyTo (most efficient)
 async function processVideoFrame(videoFrame) {
-	const frameWidth = videoFrame.displayWidth;
-	const frameHeight = videoFrame.displayHeight;
-	const copyTo = getCopyToOptions(videoFrame.format, frameWidth, frameHeight);
+	const frameRect = getVisibleFrameRect(videoFrame);
+	const copyTo = getCopyToOptions(videoFrame.format, frameRect);
 
 	ensureBufferPool(copyTo.totalSize);
 
@@ -377,8 +420,8 @@ async function processVideoFrame(videoFrame) {
 
 		return {
 			pixelData: pixelBuffer,
-			width: frameWidth,
-			height: frameHeight,
+			width: frameRect.width,
+			height: frameRect.height,
 			formatCode: copyTo.formatCode,
 		};
 	} catch (e) {
@@ -660,9 +703,8 @@ self.onmessage = async function(event) {
 						}
 
 						try {
-							const width = videoFrame.displayWidth;
-							const height = videoFrame.displayHeight;
-							const copyTo = GodotCamera.getCopyToOptions(videoFrame.format, width, height);
+							const frameRect = GodotCamera.getVisibleFrameRect(videoFrame);
+							const copyTo = GodotCamera.getCopyToOptions(videoFrame.format, frameRect);
 							const pixelBuffer = new Uint8Array(copyTo.totalSize);
 
 							// eslint-disable-next-line no-await-in-loop
@@ -675,8 +717,8 @@ self.onmessage = async function(event) {
 								context,
 								GodotCamera._cachedDataPtr,
 								pixelBuffer.length,
-								width,
-								height,
+								frameRect.width,
+								frameRect.height,
 								copyTo.formatCode,
 								currentCamera.facingMode,
 								null
