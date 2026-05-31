@@ -1851,6 +1851,18 @@ void RendererCanvasCull::canvas_item_set_collapse_group(RID p_item, bool p_enabl
 	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->collapse_group = p_enable;
+
+	if (canvas_item_owner.owns(canvas_item->parent)) {
+		Item *canvas_item_parent = canvas_item_owner.get_or_null(canvas_item->parent);
+		canvas_item_parent->children_order_dirty = true;
+		return;
+	}
+
+	Canvas *canvas = canvas_owner.get_or_null(canvas_item->parent);
+	if (canvas) {
+		canvas->children_order_dirty = true;
+		return;
+	}
 }
 
 void RendererCanvasCull::canvas_item_attach_skeleton(RID p_item, RID p_skeleton) {
