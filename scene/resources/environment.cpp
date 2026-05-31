@@ -1468,7 +1468,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_dynamic_gi_filtering_reflections"), &Environment::is_dynamic_gi_filtering_reflections);
 
 	ADD_GROUP("DynamicGI", "dynamic_gi_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_enabled"), "set_dynamic_gi_enabled", "is_dynamic_gi_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_dynamic_gi_enabled", "is_dynamic_gi_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_gi_cascades", PROPERTY_HINT_RANGE, "1,8,1"), "set_dynamic_gi_cascades", "get_dynamic_gi_cascades");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_gi_cascade_format", PROPERTY_HINT_ENUM, "16x8x16,16x16x16,16x16x16 75% Height,16x16x16 50% Height"), "set_dynamic_gi_cascade_format", "get_dynamic_gi_cascade_format");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_min_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_dynamic_gi_min_cell_size", "get_dynamic_gi_min_cell_size");
