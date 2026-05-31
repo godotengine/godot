@@ -1544,9 +1544,10 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 		if (r_struct_name) {
 			*r_struct_name = shader->constants[p_identifier].struct_name;
 		}
-		if (r_constant_values) {
-			if (shader->constants[p_identifier].initializer && !shader->constants[p_identifier].initializer->get_values().is_empty()) {
-				*r_constant_values = shader->constants[p_identifier].initializer->get_values();
+		if (r_constant_values && shader->constants[p_identifier].initializer) {
+			Vector<Scalar> values = _get_node_values(p_block, p_function_info, shader->constants[p_identifier].initializer);
+			if (!values.is_empty()) {
+				*r_constant_values = values;
 			}
 		}
 		if (r_type) {
