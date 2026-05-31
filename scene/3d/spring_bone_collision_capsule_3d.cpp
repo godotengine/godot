@@ -168,13 +168,13 @@ bool closest_capsule_sphere_to_taper(Vector3 &capsule_sphere_center, const Vecto
 	real_t Dhhdba = -badba * lam + badp * mu;
 	real_t Dhhdp = -badp * lam + pdp * mu;
 	Vector3 Dperpvec = perp * (perp_dist / perp_len);
-	printf(" %d %.03f %0.3f small ", SpringBoneCollision3D::Dsegmentindexbeingcalculated, Dhhdba - hhdba, Dhhdp - hhdp);
+	DEV_ASSERT(Math::is_equal_approx(Dhhdba, hhdba));
+	DEV_ASSERT(Math::is_equal_approx(Dhhdp, hhdp));
 	Vector3 Dlammuvec = (p_bone_little_end + bone_axis * lam + Dperpvec) - (head + p * mu);
-	printf(" Dlamuvec %.04f small ", Dlammuvec.length());
+	DEV_ASSERT(Math::is_zero_approx_approx(Dlammuvec.length()));
 
 	// handle cylinder case
 	if (p_bone_little_end_radius == p_bone_big_end_radius) {
-		printf("\n");
 		if ((mu < 0.0) || (mu > 1.0)) {
 			return false;
 		}
@@ -252,6 +252,10 @@ Vector3 SpringBoneCollisionCapsule3D::_collide(const Transform3D &p_center, floa
 	Vector3 tail = head_tail.second;
 	if (collide_mode == COLLIDE_MODE_CHAIN) {
 		// Pick sphere in collider capsule that best collides with the tapered bone.
+
+// ** this is still incomplete as it's not taking account of the ends of the tapered bone yet
+// ** But it does work for non-tapered bone chains
+
 		Vector3 capsule_sphere_center;
 		bool collision_detected;
 		if (p_bone_origin_radius <= p_bone_radius) {
@@ -259,7 +263,9 @@ Vector3 SpringBoneCollisionCapsule3D::_collide(const Transform3D &p_center, floa
 		} else {
 			collision_detected = closest_capsule_sphere_to_taper(capsule_sphere_center, head, tail, radius, p_current, p_bone_radius, p_current_origin, p_bone_origin_radius, p_bone_length);
 		}
-		return _collide_sphere_taper(capsule_sphere_center, radius, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+		if (collision_detected)
+			return _collide_sphere_taper(capsule_sphere_center, radius, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+		return p_current;
 	}
 	// Pick sphere in collider capsule that best collides with the bone end point (the joint).
 	Vector3 capsule_sphere_center = closest_capsule_sphere(head, tail, p_current);
