@@ -46,6 +46,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 
@@ -305,7 +306,7 @@ void EditorAssetInstaller::_rebuild_destination_tree() {
 
 	TreeItem *root = destination_tree->create_item();
 	root->set_icon(0, get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
-	root->set_text(0, target_dir_path + (target_dir_path == "res://" ? "" : "/"));
+	root->set_text(0, target_dir_path + ((target_dir_path == "res://" || target_dir_path == "editor://") ? "" : "/"));
 
 	HashMap<String, TreeItem *> directory_item_map;
 
@@ -489,11 +490,11 @@ void EditorAssetInstaller::_open_target_dir_dialog() {
 		target_dir_dialog = memnew(EditorFileDialog);
 		target_dir_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 		target_dir_dialog->set_title(TTRC("Select Install Folder"));
-		target_dir_dialog->set_current_dir(target_dir_path);
 		target_dir_dialog->connect("dir_selected", callable_mp(this, &EditorAssetInstaller::_target_dir_selected));
 		add_child(target_dir_dialog);
 	}
 
+	target_dir_dialog->set_current_dir(target_dir_path);
 	target_dir_dialog->popup_file_dialog();
 }
 
@@ -506,6 +507,20 @@ void EditorAssetInstaller::_target_dir_selected(const String &p_target_path) {
 	_update_file_mappings();
 	_update_source_tree();
 	_rebuild_destination_tree();
+
+	if (target_dir_path.begins_with("res://") && scope_option_button->get_selected_id() != 0) {
+		scope_option_button->select(0);
+	} else if (target_dir_path.begins_with("editor://") && scope_option_button->get_selected_id() != 1) {
+		scope_option_button->select(1);
+	}
+}
+
+void EditorAssetInstaller::_on_asset_scope_changed(int index) {
+	if (index == 0 && !target_dir_path.begins_with("res://")) {
+		_target_dir_selected("res://");
+	} else if (index == 1 && !target_dir_path.begins_with("editor://")) {
+		_target_dir_selected("editor://");
+	}
 }
 
 void EditorAssetInstaller::ok_pressed() {
@@ -527,7 +542,7 @@ void EditorAssetInstaller::_install_asset() {
 
 	ProgressDialog::get_singleton()->add_task("uncompress", TTR("Uncompressing Assets"), file_item_map.size());
 
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(target_dir_path);
 	for (int idx = 0; ret == UNZ_OK; ret = unzGoToNextFile(pkg), idx++) {
 		unz_file_info info;
 		char fname[16384];
@@ -634,6 +649,9 @@ void EditorAssetInstaller::_notification(int p_what) {
 			} else {
 				show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			}
+
+			target_dir_button->set_button_icon(get_editor_theme_icon(SNAME("FileDialog")));
+
 			asset_conflicts_link->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			generic_extension_icon = get_editor_theme_icon(SNAME("Object"));
@@ -721,8 +739,15 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	remapping_tools->add_child(show_source_files_button);
 	show_source_files_button->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
 
-	Button *target_dir_button = memnew(Button);
-	target_dir_button->set_text(TTRC("Change Install Folder"));
+	scope_option_button = memnew(OptionButton);
+	scope_option_button->add_item(TTRC("Install for this Project"));
+	scope_option_button->add_item(TTRC("Install for all Projects"));
+	scope_option_button->set_tooltip_text(TTRC("Install the asset locally on res:// or globally on editor://."));
+	scope_option_button->set_accessibility_name(TTRC("Addon's scope"));
+	remapping_tools->add_child(scope_option_button);
+	scope_option_button->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetInstaller::_on_asset_scope_changed));
+
+	target_dir_button = memnew(Button);
 	target_dir_button->set_tooltip_text(TTRC("Change the folder where the contents of the asset are going to be installed."));
 	remapping_tools->add_child(target_dir_button);
 	target_dir_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetInstaller::_open_target_dir_dialog));
