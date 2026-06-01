@@ -37,9 +37,15 @@ class CheckBox;
 class EditorFileDialog;
 class Label;
 class LinkButton;
+class OptionButton;
 
 class EditorAssetInstaller : public ConfirmationDialog {
 	GDCLASS(EditorAssetInstaller, ConfirmationDialog);
+
+	enum {
+		SCOPE_OPTION_BUTTON_SCOPE_PROJECT,
+		SCOPE_OPTION_BUTTON_SCOPE_EDITOR,
+	};
 
 	VBoxContainer *source_tree_vb = nullptr;
 	Tree *source_tree = nullptr;
@@ -58,11 +64,16 @@ class EditorAssetInstaller : public ConfirmationDialog {
 	HashSet<String> asset_files;
 	HashMap<String, String> mapped_files;
 	HashMap<String, TreeItem *> file_item_map;
+	int asset_scope;
 
 	TreeItem *first_file_conflict = nullptr;
 
 	Ref<Texture2D> generic_extension_icon;
 	HashMap<String, Ref<Texture2D>> extension_icon_map;
+
+	Button *target_dir_button = nullptr;
+
+	OptionButton *scope_option_button = nullptr;
 
 	bool updating_source = false;
 	String toplevel_prefix;
@@ -74,6 +85,7 @@ class EditorAssetInstaller : public ConfirmationDialog {
 
 	void _open_target_dir_dialog();
 	void _target_dir_selected(const String &p_target_path);
+	void _on_asset_scope_changed(int index);
 
 	void _update_file_mappings();
 	void _rebuild_source_tree();
@@ -82,6 +94,8 @@ class EditorAssetInstaller : public ConfirmationDialog {
 	void _rebuild_destination_tree();
 	TreeItem *_create_dir_item(Tree *p_tree, TreeItem *p_parent, const String &p_path, HashMap<String, TreeItem *> &p_item_map);
 	TreeItem *_create_file_item(Tree *p_tree, TreeItem *p_parent, const String &p_path, int *r_conflicts);
+
+	void _update_asset_scope();
 
 	void _update_conflict_status(int p_conflicts);
 	void _update_confirm_button();
