@@ -1035,9 +1035,7 @@ void TileDataDefaultEditor::_property_value_changed(const StringName &p_property
 	ERR_FAIL_NULL(dummy_object);
 	dummy_object->set(p_property, p_value);
 
-	if (property_editor &&
-			(Object::cast_to<EditorPropertyArray>(property_editor) ||
-					Object::cast_to<EditorPropertyDictionary>(property_editor))) {
+	if (Object::cast_to<EditorPropertyArray>(property_editor) ||Object::cast_to<EditorPropertyDictionary>(property_editor)) {
 		property_editor->update_property();
 	}
 	emit_signal(SNAME("needs_redraw"));
