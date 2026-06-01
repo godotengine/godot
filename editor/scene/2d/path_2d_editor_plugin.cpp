@@ -1036,7 +1036,6 @@ Path2DEditor::Path2DEditor() {
 	menu->add_shortcut(ED_SHORTCUT("path_editor/apply_auto_tangent_to_all_points", TTRC("Apply Auto Tangent to All Points"), KeyModifierMask::CMD_OR_CTRL | Key::T), HANDLE_OPTION_AUTO_TANGENT);
 	menu->add_shortcut(ED_SHORTCUT("path_editor/clear_points", TTRC("Clear All Points"), Key::NONE), HANDLE_OPTION_CLEAR_POINTS);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &Path2DEditor::_handle_option_pressed));
-	menu->connect(SceneStringName(id_pressed), callable_mp(this, &Path2DEditor::_handle_option_pressed));
 
 	add_child(toolbar);
 
