@@ -30,17 +30,16 @@
 
 #pragma once
 
-#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/spin_box.h"
 
+class EditorSpinSlider;
 class HBoxContainer;
 class MenuButton;
 class ConfirmationDialog;
+class VSeparator;
 
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
