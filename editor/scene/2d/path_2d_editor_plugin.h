@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/2d/path_2d.h"
 #include "scene/gui/box_container.h"
