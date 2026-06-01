@@ -30,10 +30,12 @@
 
 #pragma once
 
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 
 class HBoxContainer;
@@ -124,7 +126,8 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *curve_del = nullptr;
 	Button *curve_closed = nullptr;
 	Button *curve_auto_tangent_mode = nullptr;
-	SpinBox *auto_tangent_torsion = nullptr;
+	VSeparator *v_separator = nullptr;
+	EditorSpinSlider *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
 
 	Button *create_curve_button = nullptr;

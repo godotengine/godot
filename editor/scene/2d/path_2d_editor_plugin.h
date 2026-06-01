@@ -30,9 +30,11 @@
 
 #pragma once
 
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/2d/path_2d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/separator.h"
 
 class CanvasItemEditor;
 class ConfirmationDialog;
@@ -66,7 +68,8 @@ class Path2DEditor : public HBoxContainer {
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
 	Button *curve_auto_tangent_toggle = nullptr;
-	SpinBox *auto_tangent_torsion = nullptr;
+	VSeparator *v_separator = nullptr;
+	EditorSpinSlider *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
 
 	Button *create_curve_button = nullptr;

@@ -36,10 +36,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/separator.h"
 #include "scene/resources/curve.h"
 
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
@@ -1126,12 +1128,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	toolbar->add_child(curve_del);
 	curve_del->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_DELETE));
 
-	curve_closed = memnew(Button);
-	curve_closed->set_theme_type_variation(SceneStringName(FlatButton));
-	curve_closed->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	curve_closed->set_tooltip_text(TTR("Close Curve"));
-	toolbar->add_child(curve_closed);
-	curve_closed->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_toggle_closed_curve));
+
 
 	curve_auto_tangent_mode = memnew(Button);
 	curve_auto_tangent_mode->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1141,17 +1138,26 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_auto_tangent_mode->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_AUTO_TANGENT));
 	toolbar->add_child(curve_auto_tangent_mode);
 
-	auto_tangent_torsion = memnew(SpinBox);
+	auto_tangent_torsion = memnew(EditorSpinSlider);
 	auto_tangent_torsion->set_min(0.00);
 	auto_tangent_torsion->set_max(1.0);
-	auto_tangent_torsion->set_step(0.1);
-	auto_tangent_torsion->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	auto_tangent_torsion->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	auto_tangent_torsion->set_step(0.05);
+	auto_tangent_torsion->set_h_size_flags(Control::SIZE_EXPAND);
+	auto_tangent_torsion->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 	auto_tangent_torsion->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	auto_tangent_torsion->set_tooltip_text(TTR("Auto Tangent Torsion"));
-	auto_tangent_torsion->set_accessibility_name(TTRC("Auto Tangent Torsion"));
 	toolbar->add_child(auto_tangent_torsion);
 	auto_tangent_torsion->set_value(0.5);
+
+	v_separator = memnew(VSeparator);
+	toolbar-> add_child(v_separator);
+
+	curve_closed = memnew(Button);
+	curve_closed->set_theme_type_variation(SceneStringName(FlatButton));
+	curve_closed->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	curve_closed->set_tooltip_text(TTR("Close Curve"));
+	toolbar->add_child(curve_closed);
+	curve_closed->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_toggle_closed_curve));
 
 	clear_points_dialog = memnew(ConfirmationDialog);
 	clear_points_dialog->set_title(TTR("Please Confirm..."));
