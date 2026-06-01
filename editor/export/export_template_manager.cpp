@@ -458,7 +458,7 @@ void ExportTemplateManager::_initialize_template_data() {
 	{
 		TemplateInfo info;
 		info.name = TTR("Web with Extensions");
-		info.description = TTRC("Web build with support for GDExtextensions. Only useful if you use GDExtensions, otherwise it only increases build size.");
+		info.description = TTRC("Web build with support for GDExtensions. Only useful if you use GDExtensions, otherwise it only increases build size.");
 		info.file_list = { "web_dlink_debug.zip", "web_dlink_release.zip" };
 		template_data[TemplateID::WEB_EXTENSIONS] = info;
 	}
@@ -876,10 +876,8 @@ Ref<Texture2D> ExportTemplateManager::_get_platform_icon(const String &p_platfor
 }
 
 void ExportTemplateManager::_version_selected() {
-	if (!is_downloading()) {
-		file_metadata.clear();
-		_update_template_tree();
-	}
+	file_metadata.clear();
+	_update_template_tree();
 	_update_install_button();
 }
 
@@ -944,6 +942,11 @@ void ExportTemplateManager::_install_templates(TreeItem *p_files) {
 	_update_template_tree();
 	_process_download_queue();
 	_update_install_button();
+
+	// Don't allow changing selected version while downloading.
+	for (int i = 0; i < version_list->get_item_count(); i++) {
+		version_list->set_item_disabled(i, true);
+	}
 
 	ProgressIndicator *indicator = EditorNode::get_bottom_panel()->get_progress_indicator();
 	indicator->set_tooltip_text(TTRC("Downloading export templates..."));
@@ -1015,6 +1018,10 @@ void ExportTemplateManager::_process_download_queue() {
 		set_process_internal(false);
 		_update_install_button();
 		EditorNode::get_bottom_panel()->get_progress_indicator()->hide();
+
+		for (int i = 0; i < version_list->get_item_count(); i++) {
+			version_list->set_item_disabled(i, false);
+		}
 	} else {
 		set_process_internal(true);
 	}
@@ -1894,13 +1901,13 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				// Locate and open the file.
 				err = godot_unzip_locate_file(uzf, file_info.name, true);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("File does not exist in zip archive."));
+					_download_failed(TTR("File does not exist in ZIP archive."));
 					return;
 				}
 
 				err = unzOpenCurrentFile(uzf);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("Could not open file within zip archive."));
+					_download_failed(TTR("Could not open file within ZIP archive."));
 					return;
 				}
 
@@ -1908,7 +1915,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				unz_file_info info;
 				err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("Unable to read file information from zip archive."));
+					_download_failed(TTR("Unable to read file information from ZIP archive."));
 					return;
 				}
 
@@ -1919,7 +1926,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				while (to_read > 0) {
 					int bytes_read = unzReadCurrentFile(uzf, buffer, to_read);
 					if (bytes_read < 0 || (bytes_read == UNZ_EOF && to_read != 0)) {
-						_download_failed(TTR("IO/zlib error reading file from zip archive."));
+						_download_failed(TTR("IO/zlib error reading file from ZIP archive."));
 						return;
 					}
 					buffer += bytes_read;
@@ -1929,7 +1936,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				// Verify the data and return.
 				err = unzCloseCurrentFile(uzf);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("CRC error reading file from zip archive."));
+					_download_failed(TTR("CRC error reading file from ZIP archive."));
 					return;
 				}
 			}
@@ -1943,7 +1950,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 
 				f = FileAccess::open(target_directory.path_join(filename), FileAccess::WRITE);
 				if (f.is_null()) {
-					_download_failed(TTR("Failed to template file for writing."));
+					_download_failed(TTR("Failed to open template file for writing."));
 					return;
 				}
 				f->store_buffer(extracted_data);

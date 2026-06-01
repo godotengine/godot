@@ -62,6 +62,7 @@ class EditorAssetLibraryItem : public MarginContainer {
 	TextureRect *icon = nullptr;
 	Label *title = nullptr;
 	LinkButton *author = nullptr;
+	TextureRect *verified = nullptr;
 	LinkButton *license = nullptr;
 	HSeparator *separator = nullptr;
 	HBoxContainer *author_license_hbox = nullptr;
@@ -92,7 +93,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, const String &p_license_type, const String &p_license_url, int p_rating);
+	void configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating);
 
 	EditorAssetLibraryItem(bool p_clickable = false);
 };
@@ -189,7 +190,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url);
+	void configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url);
 	void set_install_mode(InstallMode p_mode);
 	void add_release(const String &p_url, const String &p_version, const String &p_changes, const String &p_sha256);
 	void add_preview(int p_id, bool p_video = false, const String &p_url = "", const String &p_thumbnail = "");
@@ -350,6 +351,7 @@ class EditorAssetLibrary : public PanelContainer {
 	int current_page = 0;
 
 	HBoxContainer *_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items);
+	void _update_button_icon(Button *p_button, const StringName &p_icon);
 
 	enum RequestType {
 		REQUESTING_NONE,

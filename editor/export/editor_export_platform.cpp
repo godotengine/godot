@@ -100,7 +100,7 @@ Ref<Image> EditorExportPlatform::_load_icon_or_splash_image(const String &p_path
 	Ref<Image> image;
 
 	if (!p_path.is_empty() && ResourceLoader::exists(p_path) && !ResourceLoader::get_resource_type(p_path).is_empty()) {
-		Ref<Texture2D> texture = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, r_error);
+		Ref<Texture2D> texture = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE, r_error);
 		if (texture.is_valid()) {
 			image = texture->get_image();
 			if (image.is_valid() && image->is_compressed()) {

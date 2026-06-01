@@ -133,6 +133,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	ProjectExportTextureFormatError *export_texture_format_error = nullptr;
 	Label *export_error = nullptr;
+	Label *export_error2 = nullptr;
 	Label *export_warning = nullptr;
 	HBoxContainer *export_templates_error = nullptr;
 
