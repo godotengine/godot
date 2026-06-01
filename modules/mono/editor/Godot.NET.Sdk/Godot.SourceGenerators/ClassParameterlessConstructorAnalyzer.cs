@@ -38,27 +38,16 @@ namespace Godot.SourceGenerators
             if (!typeSymbol.InheritsFrom("GodotSharp", GodotClasses.GodotObject))
                 return;
 
-            bool hasConstructorWithParameters = false;
-            bool hasConstructorWithoutParameters = false;
+            if (typeSymbol.InstanceConstructors.IsEmpty)
+                return;
 
-            foreach (IMethodSymbol constructor in typeSymbol.InstanceConstructors)
-            {
-                if (constructor.Parameters.IsEmpty)
-                {
-                    hasConstructorWithoutParameters = true;
-                    break;
-                }
-                else
-                {
-                    hasConstructorWithParameters = true;
-                }
-            }
+            if (typeSymbol.InstanceConstructors.Any(constructor => constructor.Parameters.IsEmpty))
+                return;
 
-            if (hasConstructorWithParameters && !hasConstructorWithoutParameters)
-                context.ReportDiagnostic(Diagnostic.Create(
-                    Common.ClassParameterlessConstructorRule,
-                    classDeclaration.Identifier.GetLocation(),
-                    typeSymbol.ToDisplayString()));
+            context.ReportDiagnostic(Diagnostic.Create(
+                Common.ClassParameterlessConstructorRule,
+                classDeclaration.Identifier.GetLocation(),
+                typeSymbol.ToDisplayString()));
         }
     }
 
