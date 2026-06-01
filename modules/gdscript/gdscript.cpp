@@ -113,6 +113,7 @@ Variant GDScriptNativeClass::callp(const StringName &p_method, const Variant **p
 		// Constructor.
 		return Object::callp(p_method, p_args, p_argcount, r_error);
 	}
+
 	MethodBind *method = ClassDB::get_method(name, p_method);
 	if (method && method->is_static()) {
 		// Native static method.
@@ -211,12 +212,16 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	/* STEP 1, CREATE */
 
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+
 	if (!valid) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
 
-	r_error.error = Callable::CallError::CALL_OK;
+	if (_is_abstract) {
+		return "Can't instantiate an abstract class.";
+	}
+
 	Ref<RefCounted> ref;
 	Object *owner = nullptr;
 
@@ -226,6 +231,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	}
 
 	ERR_FAIL_COND_V(_baseptr->native.is_null(), Variant());
+
 	if (_baseptr->native.ptr()) {
 		owner = _baseptr->native->instantiate();
 
@@ -234,19 +240,23 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 			ref = Ref<RefCounted>(r);
 		}
 	} else {
-		ref = memnew(RefCounted); // By default, no base means use reference.
+		ref = memnew(RefCounted); // By default, no base means use `RefCounted`.
 		owner = ref.ptr();
 	}
-	ERR_FAIL_NULL_V_MSG(owner, Variant(), "Can't inherit from a virtual class.");
+
+	if (owner == nullptr) {
+		return "Can't inherit from a virtual class.";
+	}
 
 	GDScriptInstance *instance = _create_instance(p_args, p_argcount, owner, r_error);
 	if (!instance) {
 		if (ref.is_null()) {
-			memdelete(owner); //no owner, sorry
+			memdelete(owner);
 		}
 		return Variant();
 	}
 
+	r_error.error = Callable::CallError::CALL_OK;
 	if (ref.is_valid()) {
 		return ref;
 	} else {
@@ -256,9 +266,9 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 
 bool GDScript::can_instantiate() const {
 #ifdef TOOLS_ENABLED
-	return valid && (tool || ScriptServer::is_scripting_enabled()) && !Engine::get_singleton()->is_recovery_mode_hint();
+	return valid && !_is_abstract && (tool || ScriptServer::is_scripting_enabled()) && !Engine::get_singleton()->is_recovery_mode_hint();
 #else
-	return valid;
+	return valid && !_is_abstract;
 #endif
 }
 
@@ -406,6 +416,7 @@ bool GDScript::get_property_default_value(const StringName &p_property, Variant 
 
 ScriptInstance *GDScript::instance_create(Object *p_this) {
 	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Script is invalid!");
+	ERR_FAIL_COND_V_MSG(_is_abstract, nullptr, "Can't instantiate an abstract class.");
 
 	GDScript *top = this;
 	while (top->base.ptr()) {
@@ -932,7 +943,10 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 		if (likely(top->valid)) {
 			HashMap<StringName, GDScriptFunction *>::Iterator E = top->member_functions.find(p_method);
 			if (E) {
-				ERR_FAIL_COND_V_MSG(!E->value->is_static(), Variant(), "Can't call non-static function '" + String(p_method) + "' in script.");
+				if (!E->value->is_static()) {
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+					return "Can't call non-static function '" + String(p_method) + "' in script.";
+				}
 
 				return E->value->call(nullptr, p_args, p_argcount, r_error);
 			}
@@ -945,6 +959,11 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 		if (r_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 			return ret;
 		}
+	}
+
+	if (_is_abstract && p_method == SNAME("new")) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return "Can't instantiate an abstract class.";
 	}
 
 	if (native.is_valid()) {
