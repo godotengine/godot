@@ -118,7 +118,6 @@ class DisplayServerX11 : public DisplayServer {
 	Atom requested = None;
 	int xdnd_version = 5;
 	bool is_dnd_dragging = false;
-	
 
 #if defined(GLES3_ENABLED)
 	GLManager_X11 *gl_manager = nullptr;

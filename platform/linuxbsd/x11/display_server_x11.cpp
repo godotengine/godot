@@ -5397,7 +5397,7 @@ void DisplayServerX11::process_events() {
 					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
 
 					// Drop files
-					if(is_dnd_dragging && xdnd_target_window) {
+					if (is_dnd_dragging && xdnd_target_window) {
 						XClientMessageEvent m;
 						memset(&m, 0, sizeof(m));
 						m.type = ClientMessage;
@@ -5758,14 +5758,14 @@ void DisplayServerX11::process_events() {
 			xev_enter.xclient.format = 32;
 			xev_enter.xclient.data.l[0] = XGetSelectionOwner(x11_display, xdnd_selection);
 			xev_enter.xclient.data.l[1] = (xdnd_version << 24);
-			xev_enter.xclient.data.l[2] = XInternAtom(x11_display, "text/uri-list" ,0);
-			xev_enter.xclient.data.l[3] = XInternAtom(x11_display, "text/plain" ,0);
+			xev_enter.xclient.data.l[2] = XInternAtom(x11_display, "text/uri-list", 0);
+			xev_enter.xclient.data.l[3] = XInternAtom(x11_display, "text/plain", 0);
 			xev_enter.xclient.data.l[4] = 0;
 			XSendEvent(x11_display, new_target_window, False, NoEventMask, &xev_enter);
 			XFlush(x11_display);
 			xdnd_target_window = new_target_window;
 		}
-		
+
 		// Notify dnd target of mouse position
 		if (xdnd_target_window) {
 			XEvent xev;
@@ -6888,7 +6888,7 @@ void DisplayServerX11::_xim_instantiate_callback(::Display *display, ::XPointer 
 
 void DisplayServerX11::window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window) {
 	String uri_files = "";
-	for(String file: p_files){
+	for (String file : p_files) {
 		uri_files += "file://";
 		uri_files += file;
 		uri_files += "\r\n";

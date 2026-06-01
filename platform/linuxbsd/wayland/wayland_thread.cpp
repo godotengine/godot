@@ -3779,7 +3779,7 @@ void WaylandThread::_clipboard_send(Vector<uint8_t> &p_data, const char *p_media
 		valid_mime = true;
 	} else if (strcmp(p_media_type, "text/uri-list") == 0) {
 		valid_mime = true;
-	} 
+	}
 
 	if (!valid_mime) {
 		DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: Media type '%s' unknown, skipping.", p_media_type));
@@ -4681,20 +4681,19 @@ void WaylandThread::window_start_drag(DisplayServerEnums::WindowID p_window_id) 
 
 void WaylandThread::window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
-	
+
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 	if (ss) {
 		String p_text = "";
-		for (String file: p_files){
+		for (String file : p_files) {
 			p_text += "file://" + file + "\r\n";
 		}
 		selection_set_text(p_text);
 		ss->self_dnd_mime = "application/godot/" + String::num_uint64(ss->pointer_data.button_serial);
-		wl_data_source_offer(ss->wl_data_source_selection, ss->self_dnd_mime.utf8().get_data() );
+		wl_data_source_offer(ss->wl_data_source_selection, ss->self_dnd_mime.utf8().get_data());
 		wl_data_source_set_actions(ss->wl_data_source_selection, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
 		wl_data_device_start_drag(ss->wl_data_device, ss->wl_data_source_selection, window_get_wl_surface(p_window), nullptr, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
 	}
-
 }
 
 void WaylandThread::window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window) {
