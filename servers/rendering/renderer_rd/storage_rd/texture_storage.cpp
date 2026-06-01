@@ -1731,12 +1731,12 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 		// Load Target Textures
 		if (i < p_textures.size()) {
 			Texture *tex = get_texture(p_textures[i]);
-			srgb_mask += get_texture(p_textures[i])->drawable_type == RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB ? srgbMaskArray[i] : 0;
 			ERR_FAIL_NULL_MSG(tex, "Drawable Texture target cannot be null.");
 			ERR_FAIL_COND_MSG(p_to_mipmap >= tex->mipmaps || p_to_mipmap >= tex->cached_rd_slices.size(), vformat("Drawable Texture Target does not have mipmap level %d.", p_to_mipmap));
 			if (i > 0) {
 				ERR_FAIL_COND_MSG(texture_2d_get_size(p_textures[i - 1]) != texture_2d_get_size(p_textures[i]), "All Blit_Rect output textures must be same size.");
 			}
+			srgb_mask += tex->drawable_type == RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB ? srgbMaskArray[i] : 0;
 			tar_textures[i] = tex->cached_rd_slices[p_to_mipmap];
 		}
 
