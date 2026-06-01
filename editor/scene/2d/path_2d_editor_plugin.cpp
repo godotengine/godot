@@ -42,7 +42,6 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/spin_box.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server.h"
 
