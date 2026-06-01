@@ -941,9 +941,6 @@ TEST_CASE("[Image] Decompressing images") {
 	SUBCASE("[Image] Decompression from a lossy format") {
 		image = memnew(Image(4, 4, true, Image::FORMAT_RGBA8));
 		Color red(1.0f, 0.0f, 0.0f, 1.0f);
-		Color green(0.0f, 1.0f, 0.0f, 1.0f);
-		Color blue(0.0f, 0.0f, 1.0f, 1.0f);
-		Color white(1.0f, 1.0f, 1.0f, 1.0f);
 
 		image->set_pixel(0, 0, red);
 		image->set_pixel(0, 1, red);
