@@ -44,9 +44,15 @@
 #include "scene/theme/theme_db.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
-	String value = get_text_value() + suffix;
+	const String base_tooltip = Range::get_tooltip(p_pos);
+
+	const String value = get_text_value() + suffix;
 	if (!read_only && grabber->is_visible()) {
 		String tooltip = value;
+		if (!base_tooltip.is_empty()) {
+			tooltip += "\n" + TTR(base_tooltip);
+		}
+
 		Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 		if (!editing_integer) {
 			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), find_keycode_name(key));
