@@ -38,6 +38,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 
@@ -312,15 +313,9 @@ uint16_t FileAccess::get_16() const {
 	uint16_t data = 0;
 	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint16_t));
 
-#ifdef BIG_ENDIAN_ENABLED
-	if (!big_endian) {
-		data = BSWAP16(data);
-	}
-#else
 	if (big_endian) {
 		data = BSWAP16(data);
 	}
-#endif
 
 	return data;
 }
@@ -329,15 +324,9 @@ uint32_t FileAccess::get_32() const {
 	uint32_t data = 0;
 	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint32_t));
 
-#ifdef BIG_ENDIAN_ENABLED
-	if (!big_endian) {
-		data = BSWAP32(data);
-	}
-#else
 	if (big_endian) {
 		data = BSWAP32(data);
 	}
-#endif
 
 	return data;
 }
@@ -346,15 +335,9 @@ uint64_t FileAccess::get_64() const {
 	uint64_t data = 0;
 	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint64_t));
 
-#ifdef BIG_ENDIAN_ENABLED
-	if (!big_endian) {
-		data = BSWAP64(data);
-	}
-#else
 	if (big_endian) {
 		data = BSWAP64(data);
 	}
-#endif
 
 	return data;
 }
@@ -425,7 +408,7 @@ class CharBuffer {
 	int64_t written = 0;
 
 	bool grow() {
-		if (vector.resize(next_power_of_2((uint64_t)1 + (uint64_t)written)) != OK) {
+		if (vector.resize(Math::next_power_of_2((uint64_t)1 + (uint64_t)written)) != OK) {
 			return false;
 		}
 
@@ -604,43 +587,25 @@ bool FileAccess::store_8(uint8_t p_dest) {
 }
 
 bool FileAccess::store_16(uint16_t p_dest) {
-#ifdef BIG_ENDIAN_ENABLED
-	if (!big_endian) {
-		p_dest = BSWAP16(p_dest);
-	}
-#else
 	if (big_endian) {
 		p_dest = BSWAP16(p_dest);
 	}
-#endif
 
 	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint16_t));
 }
 
 bool FileAccess::store_32(uint32_t p_dest) {
-#ifdef BIG_ENDIAN_ENABLED
-	if (!big_endian) {
-		p_dest = BSWAP32(p_dest);
-	}
-#else
 	if (big_endian) {
 		p_dest = BSWAP32(p_dest);
 	}
-#endif
 
 	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint32_t));
 }
 
 bool FileAccess::store_64(uint64_t p_dest) {
-#ifdef BIG_ENDIAN_ENABLED
-	if (!big_endian) {
-		p_dest = BSWAP64(p_dest);
-	}
-#else
 	if (big_endian) {
 		p_dest = BSWAP64(p_dest);
 	}
-#endif
 
 	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint64_t));
 }

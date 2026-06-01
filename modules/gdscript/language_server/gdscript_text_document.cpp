@@ -34,32 +34,38 @@
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
-#include "editor/script/script_text_editor.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "servers/display/display_server.h"
 
 void GDScriptTextDocument::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);
-	ClassDB::bind_method(D_METHOD("didClose"), &GDScriptTextDocument::didClose);
-	ClassDB::bind_method(D_METHOD("didChange"), &GDScriptTextDocument::didChange);
-	ClassDB::bind_method(D_METHOD("willSaveWaitUntil"), &GDScriptTextDocument::willSaveWaitUntil);
-	ClassDB::bind_method(D_METHOD("didSave"), &GDScriptTextDocument::didSave);
-	ClassDB::bind_method(D_METHOD("nativeSymbol"), &GDScriptTextDocument::nativeSymbol);
-	ClassDB::bind_method(D_METHOD("documentSymbol"), &GDScriptTextDocument::documentSymbol);
-	ClassDB::bind_method(D_METHOD("completion"), &GDScriptTextDocument::completion);
-	ClassDB::bind_method(D_METHOD("resolve"), &GDScriptTextDocument::resolve);
-	ClassDB::bind_method(D_METHOD("rename"), &GDScriptTextDocument::rename);
-	ClassDB::bind_method(D_METHOD("prepareRename"), &GDScriptTextDocument::prepareRename);
-	ClassDB::bind_method(D_METHOD("references"), &GDScriptTextDocument::references);
-	ClassDB::bind_method(D_METHOD("foldingRange"), &GDScriptTextDocument::foldingRange);
-	ClassDB::bind_method(D_METHOD("codeLens"), &GDScriptTextDocument::codeLens);
-	ClassDB::bind_method(D_METHOD("documentLink"), &GDScriptTextDocument::documentLink);
-	ClassDB::bind_method(D_METHOD("colorPresentation"), &GDScriptTextDocument::colorPresentation);
-	ClassDB::bind_method(D_METHOD("hover"), &GDScriptTextDocument::hover);
-	ClassDB::bind_method(D_METHOD("definition"), &GDScriptTextDocument::definition);
-	ClassDB::bind_method(D_METHOD("declaration"), &GDScriptTextDocument::declaration);
-	ClassDB::bind_method(D_METHOD("signatureHelp"), &GDScriptTextDocument::signatureHelp);
-	ClassDB::bind_method(D_METHOD("show_native_symbol_in_editor"), &GDScriptTextDocument::show_native_symbol_in_editor);
+	ClassDB::bind_method(D_METHOD("show_native_symbol_in_editor", "symbol_id"), &GDScriptTextDocument::show_native_symbol_in_editor);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("didOpen", "params"), &GDScriptTextDocument::didOpen);
+	ClassDB::bind_method(D_METHOD("didClose", "params"), &GDScriptTextDocument::didClose);
+	ClassDB::bind_method(D_METHOD("didChange", "params"), &GDScriptTextDocument::didChange);
+	ClassDB::bind_method(D_METHOD("willSaveWaitUntil", "params"), &GDScriptTextDocument::willSaveWaitUntil);
+	ClassDB::bind_method(D_METHOD("didSave", "params"), &GDScriptTextDocument::didSave);
+	ClassDB::bind_method(D_METHOD("nativeSymbol", "params"), &GDScriptTextDocument::nativeSymbol);
+	ClassDB::bind_method(D_METHOD("documentSymbol", "params"), &GDScriptTextDocument::documentSymbol);
+	ClassDB::bind_method(D_METHOD("completion", "params"), &GDScriptTextDocument::completion);
+	ClassDB::bind_method(D_METHOD("resolve", "params"), &GDScriptTextDocument::resolve);
+	ClassDB::bind_method(D_METHOD("rename", "params"), &GDScriptTextDocument::rename);
+	ClassDB::bind_method(D_METHOD("prepareRename", "params"), &GDScriptTextDocument::prepareRename);
+	ClassDB::bind_method(D_METHOD("references", "params"), &GDScriptTextDocument::references);
+	ClassDB::bind_method(D_METHOD("foldingRange", "params"), &GDScriptTextDocument::foldingRange);
+	ClassDB::bind_method(D_METHOD("codeLens", "params"), &GDScriptTextDocument::codeLens);
+	ClassDB::bind_method(D_METHOD("documentLink", "params"), &GDScriptTextDocument::documentLink);
+	ClassDB::bind_method(D_METHOD("colorPresentation", "params"), &GDScriptTextDocument::colorPresentation);
+	ClassDB::bind_method(D_METHOD("hover", "params"), &GDScriptTextDocument::hover);
+	ClassDB::bind_method(D_METHOD("definition", "params"), &GDScriptTextDocument::definition);
+	ClassDB::bind_method(D_METHOD("declaration", "params"), &GDScriptTextDocument::declaration);
+	ClassDB::bind_method(D_METHOD("signatureHelp", "params"), &GDScriptTextDocument::signatureHelp);
+#endif // !DISABLE_DEPRECATED
 }
 
 void GDScriptTextDocument::didOpen(const Variant &p_param) {
@@ -170,65 +176,7 @@ Array GDScriptTextDocument::documentHighlight(const Dictionary &p_params) {
 }
 
 Array GDScriptTextDocument::completion(const Dictionary &p_params) {
-	Array arr;
-
-	LSP::CompletionParams params;
-	params.load(p_params);
-	Dictionary request_data = params.to_json();
-
-	List<ScriptLanguage::CodeCompletionOption> options;
-	GDScriptLanguageProtocol::get_singleton()->get_workspace()->completion(params, &options);
-
-	if (!options.is_empty()) {
-		int i = 0;
-		arr.resize(options.size());
-
-		for (const ScriptLanguage::CodeCompletionOption &option : options) {
-			LSP::CompletionItem item;
-			item.label = option.display;
-			item.data = request_data;
-			item.insertText = option.insert_text;
-
-			switch (option.kind) {
-				case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
-					item.kind = LSP::CompletionItemKind::Enum;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_CLASS:
-					item.kind = LSP::CompletionItemKind::Class;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
-					item.kind = LSP::CompletionItemKind::Property;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
-					item.kind = LSP::CompletionItemKind::Method;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
-					item.kind = LSP::CompletionItemKind::Event;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
-					item.kind = LSP::CompletionItemKind::Constant;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
-					item.kind = LSP::CompletionItemKind::Variable;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
-					item.kind = LSP::CompletionItemKind::File;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
-					item.kind = LSP::CompletionItemKind::Snippet;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
-					item.kind = LSP::CompletionItemKind::Text;
-					break;
-				default: {
-				}
-			}
-
-			arr[i] = item.to_json();
-			i++;
-		}
-	}
-	return arr;
+	return GDScriptLanguageProtocol::get_singleton()->lsp_completion(p_params);
 }
 
 Dictionary GDScriptTextDocument::rename(const Dictionary &p_params) {

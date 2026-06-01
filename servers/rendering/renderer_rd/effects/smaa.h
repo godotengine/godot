@@ -35,9 +35,6 @@
 #include "servers/rendering/renderer_rd/shaders/effects/smaa_edge_detection.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/smaa_weight_calculation.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
-#include "servers/rendering/renderer_scene_render.h"
-
-#include "servers/rendering/rendering_server.h"
 
 #define RB_SCOPE_SMAA SNAME("rb_smaa")
 

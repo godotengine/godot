@@ -32,7 +32,7 @@
 
 #include "rendering_context_driver_vulkan_x11.h"
 
-#include "drivers/vulkan/godot_vulkan.h"
+#include <drivers/vulkan/godot_vulkan.h>
 
 const char *RenderingContextDriverVulkanX11::_get_platform_surface_extension() const {
 	return VK_KHR_XLIB_SURFACE_EXTENSION_NAME;

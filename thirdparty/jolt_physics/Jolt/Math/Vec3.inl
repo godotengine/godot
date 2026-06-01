@@ -871,6 +871,8 @@ uint32 Vec3::CompressUnitVector() const
 	constexpr float cOneOverSqrt2 = 0.70710678f;
 	constexpr uint cNumBits = 14;
 	constexpr uint cMask = (1 << cNumBits) - 1;
+	constexpr uint cMaxValue = cMask - 1; // Need odd number of buckets to quantize to or else we can't encode 0
+	constexpr float cScale = float(cMaxValue) / (2.0f * cOneOverSqrt2);
 
 	// Store sign bit
 	Vec3 v = *this;
@@ -886,7 +888,7 @@ uint32 Vec3::CompressUnitVector() const
 	value |= max_element << 29;
 
 	// Store the other two components in a compressed format
-	UVec4 compressed = Vec3::sClamp((v + Vec3::sReplicate(cOneOverSqrt2)) * (float(cMask) / (2.0f * cOneOverSqrt2)) + Vec3::sReplicate(0.5f), Vec3::sZero(), Vec3::sReplicate(cMask)).ToInt();
+	UVec4 compressed = Vec3::sClamp((v + Vec3::sReplicate(cOneOverSqrt2)) * cScale + Vec3::sReplicate(0.5f), Vec3::sZero(), Vec3::sReplicate(cMaxValue)).ToInt();
 	switch (max_element)
 	{
 	case 0:
@@ -908,9 +910,11 @@ Vec3 Vec3::sDecompressUnitVector(uint32 inValue)
 	constexpr float cOneOverSqrt2 = 0.70710678f;
 	constexpr uint cNumBits = 14;
 	constexpr uint cMask = (1u << cNumBits) - 1;
+	constexpr uint cMaxValue = cMask - 1; // Need odd number of buckets to quantize to or else we can't encode 0
+	constexpr float cScale = 2.0f * cOneOverSqrt2 / float(cMaxValue);
 
 	// Restore two components
-	Vec3 v = Vec3(UVec4(inValue & cMask, (inValue >> cNumBits) & cMask, 0, 0).ToFloat()) * (2.0f * cOneOverSqrt2 / float(cMask)) - Vec3(cOneOverSqrt2, cOneOverSqrt2, 0.0f);
+	Vec3 v = Vec3(UVec4(inValue & cMask, (inValue >> cNumBits) & cMask, 0, 0).ToFloat()) * cScale - Vec3(cOneOverSqrt2, cOneOverSqrt2, 0.0f);
 	JPH_ASSERT(v.GetZ() == 0.0f);
 
 	// Restore the highest component

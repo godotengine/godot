@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "node.h"
+
+#include "core/object/class_db.h"
+
 void Node::_set_name_bind_compat_76560(const String &p_name) {
 	set_name(p_name);
 }
@@ -43,4 +47,4 @@ void Node::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("get_rpc_config"), &Node::_get_rpc_config_bind_compat_106848);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

@@ -32,7 +32,11 @@
 
 #include "core/math/plane.h"
 #include "core/math/projection.h"
-#include "rendering_server_globals.h"
+#include "servers/rendering/rendering_server_globals.h"
+
+#ifdef LIGHT_CULLER_DEBUG_FLASH
+#include "core/config/engine.h"
+#endif
 
 #ifdef RENDERING_LIGHT_CULLER_DEBUG_STRINGS
 const char *RenderingLightCuller::Data::string_planes[] = {
@@ -89,36 +93,42 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 
 	LightSource lsource;
 	switch (RSG::light_storage->light_get_type(p_instance.base)) {
-		case RS::LIGHT_SPOT:
+		case RSE::LIGHT_SPOT:
 			lsource.type = LightSource::ST_SPOTLIGHT;
-			lsource.angle = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_SPOT_ANGLE);
-			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_RANGE);
+			lsource.angle = RSG::light_storage->light_get_param(p_instance.base, RSE::LIGHT_PARAM_SPOT_ANGLE);
+			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RSE::LIGHT_PARAM_RANGE);
 			break;
-		case RS::LIGHT_OMNI:
+		case RSE::LIGHT_OMNI:
 			lsource.type = LightSource::ST_OMNI;
-			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_RANGE);
+			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RSE::LIGHT_PARAM_RANGE);
 			break;
-		case RS::LIGHT_DIRECTIONAL:
+		case RSE::LIGHT_AREA: {
+			lsource.type = LightSource::ST_AREA;
+			lsource.area_size = RSG::light_storage->light_area_get_size(p_instance.base);
+			float half_diagonal = lsource.area_size.length() / 2.0;
+			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RSE::LIGHT_PARAM_RANGE) + half_diagonal;
+		} break;
+		case RSE::LIGHT_DIRECTIONAL:
 			lsource.type = LightSource::ST_DIRECTIONAL;
 
-			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
+			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RSE::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 			switch (RSG::light_storage->light_directional_get_shadow_mode(p_instance.base)) {
-				case RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
+				case RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
 					lsource.cascade_count = 1;
 					break;
-				case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
+				case RSE::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
 					lsource.cascade_count = 2;
 					break;
-				case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
+				case RSE::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
 					lsource.cascade_count = 4;
 					break;
 				default:
 					ERR_FAIL_V_MSG(false, "Only directional lights with 1, 2, or 4 shadow cascades are supported.");
 					break;
 			}
-			lsource.cascade_splits[0] = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET);
-			lsource.cascade_splits[1] = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET);
-			lsource.cascade_splits[2] = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET);
+			lsource.cascade_splits[0] = RSG::light_storage->light_get_param(p_instance.base, RSE::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET);
+			lsource.cascade_splits[1] = RSG::light_storage->light_get_param(p_instance.base, RSE::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET);
+			lsource.cascade_splits[2] = RSG::light_storage->light_get_param(p_instance.base, RSE::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET);
 			lsource.blend_splits = RSG::light_storage->light_directional_get_blend_splits(p_instance.base);
 			break;
 	}
@@ -419,6 +429,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 	switch (p_light_source.type) {
 		case LightSource::ST_SPOTLIGHT:
 		case LightSource::ST_OMNI:
+		case LightSource::ST_AREA:
 			break;
 		case LightSource::ST_DIRECTIONAL:
 			return add_light_camera_planes_directional(r_cull_planes, p_light_source, p_cull_frustum);
@@ -458,6 +469,24 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 				// This is one of the tests. If the point source is more than range distance from a frustum plane, it can't
 				// be seen.
 				if (dist >= p_light_source.range) {
+					// If the light is out of range, no need to do anything else, everything will be culled.
+					data.out_of_range = true;
+					return false;
+				}
+			}
+		}
+	} else if (p_light_source.type == LightSource::ST_AREA) {
+		for (int n = 0; n < 6; n++) {
+			float dist = data.frustum_planes[n].distance_to(p_light_source.pos);
+			float half_diagonal = p_light_source.area_size.length() / 2.0;
+			if (dist < 0.0f) {
+				lookup |= 1 << n;
+
+				// Add backfacing camera frustum planes.
+				r_cull_planes.add_cull_plane(data.frustum_planes[n]);
+			} else {
+				// Is the light out of range?
+				if (dist >= p_light_source.range + half_diagonal) {
 					// If the light is out of range, no need to do anything else, everything will be culled.
 					data.out_of_range = true;
 					return false;

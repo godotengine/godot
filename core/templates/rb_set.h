@@ -694,11 +694,32 @@ public:
 	}
 
 	void operator=(const RBSet &p_set) {
+		if (this == &p_set) {
+			return;
+		}
+
 		_copy_from(p_set);
 	}
 
-	RBSet(const RBSet &p_set) {
+	void operator=(RBSet &&p_set) {
+		if (this == &p_set) {
+			return;
+		}
+
+		SWAP(_data._root, p_set._data._root);
+		SWAP(_data.size_cache, p_set._data.size_cache);
+	}
+
+	explicit RBSet(const RBSet &p_set) {
 		_copy_from(p_set);
+	}
+
+	RBSet(RBSet &&p_set) {
+		_data._root = p_set._data._root;
+		_data.size_cache = p_set._data.size_cache;
+
+		p_set._data._root = nullptr;
+		p_set._data.size_cache = 0;
 	}
 
 	RBSet(std::initializer_list<T> p_init) {

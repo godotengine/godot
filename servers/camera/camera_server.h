@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/rid.h"
-#include "core/variant/variant.h"
+#include "core/variant/type_info.h"
 
 /**
 	The camera server is a singleton object that gives access to the various

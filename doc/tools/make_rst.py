@@ -102,19 +102,14 @@ CLASS_GROUPS: dict[str, str] = {
     "editor": "Editor-only",
     "variant": "Variant types",
 }
+
 CLASS_GROUPS_BASE: dict[str, str] = {
     "node": "Node",
     "resource": "Resource",
     "object": "Object",
     "variant": "Variant",
 }
-# Sync with editor\register_editor_types.cpp
-EDITOR_CLASSES: list[str] = [
-    "FileSystemDock",
-    "ScriptCreateDialog",
-    "ScriptEditor",
-    "ScriptEditorBase",
-]
+
 # Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
 CLASSES_WITH_CSHARP_DIFFERENCES: list[str] = [
     "@GlobalScope",
@@ -183,6 +178,8 @@ class State:
         inherits = class_root.get("inherits")
         if inherits is not None:
             class_def.inherits = inherits
+
+        class_def.api_type = class_root.get("api_type")
 
         class_def.deprecated = class_root.get("deprecated")
         class_def.experimental = class_root.get("experimental")
@@ -595,8 +592,8 @@ class ClassDef(DefinitionBase):
     def __init__(self, name: str) -> None:
         super().__init__("class", name)
 
-        self.class_group = "variant"
-        self.editor_class = self._is_editor_class()
+        self.class_group: str = "variant"
+        self.api_type: str | None = None
 
         self.constants: OrderedDict[str, ConstantDef] = OrderedDict()
         self.enums: OrderedDict[str, EnumDef] = OrderedDict()
@@ -615,14 +612,6 @@ class ClassDef(DefinitionBase):
 
         # Used to match the class with XML source for output filtering purposes.
         self.filepath: str = ""
-
-    def _is_editor_class(self) -> bool:
-        if self.name.startswith("Editor"):
-            return True
-        if self.name in EDITOR_CLASSES:
-            return True
-
-        return False
 
     def update_class_group(self, state: State) -> None:
         group_name = "variant"
@@ -799,7 +788,7 @@ def main() -> None:
             grouped_classes[class_def.class_group] = []
         grouped_classes[class_def.class_group].append(class_name)
 
-        if class_def.editor_class:
+        if class_def.api_type == "editor":
             if "editor" not in grouped_classes:
                 grouped_classes["editor"] = []
             grouped_classes["editor"].append(class_name)
@@ -1869,7 +1858,20 @@ def format_text_block(
 
     pos = 0
     tag_depth = 0
+    debug_tag_stack: list[str] = []
     while True:
+        if tag_depth > 2 or (
+            tag_depth == 2
+            and not (
+                debug_tag_stack[0] == "codeblocks"
+                and (debug_tag_stack[1] == "gdscript" or debug_tag_stack[1] == "csharp")
+            )
+        ):
+            print_warning(
+                f"{state.current_class}.xml: Found nested tags [{']['.join(debug_tag_stack)}] in {context_name} (online doc will contain invalid RST markup).",
+                state,
+            )
+
         pos = text.find("[", pos)
         if pos == -1:
             break
@@ -1908,6 +1910,7 @@ def format_text_block(
                     if is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
                         tag_text = ""
                         tag_depth -= 1
+                        debug_tag_stack.pop()
                         inside_code = False
                         ignore_code_warnings = False
                         # Strip newline if the tag was alone on one
@@ -1917,6 +1920,7 @@ def format_text_block(
                     elif is_in_tagset(tag_state.name, ["code"]):
                         tag_text = "``"
                         tag_depth -= 1
+                        debug_tag_stack.pop()
                         inside_code = False
                         ignore_code_warnings = False
                         escape_post = True
@@ -1946,15 +1950,18 @@ def format_text_block(
                     has_codeblocks_csharp = False
 
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                     tag_text = ""
                     inside_code_tabs = False
                 else:
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                     tag_text = "\n.. tabs::"
                     inside_code_tabs = True
 
             elif is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
                 tag_depth += 1
+                debug_tag_stack.append(tag_state.name)
 
                 if tag_state.name == "gdscript":
                     if not inside_code_tabs:
@@ -1994,6 +2001,7 @@ def format_text_block(
             elif is_in_tagset(tag_state.name, ["code"]):
                 tag_text = "``"
                 tag_depth += 1
+                debug_tag_stack.append(tag_state.name)
 
                 inside_code = True
                 inside_code_tag = "code"
@@ -2280,6 +2288,12 @@ def format_text_block(
                         )
                         break
                     link_title = text[endq_pos + 1 : endurl_pos]
+                    for rft in RESERVED_FORMATTING_TAGS:
+                        if link_title.find(f"[{rft}]") != -1:
+                            print_warning(
+                                f"{state.current_class}.xml: Found nested tags [url][{rft}] in {context_name} (online doc will contain invalid RST markup).",
+                                state,
+                            )
                     tag_text = make_link(url_target, link_title)
 
                     pre_text = text[:pos]
@@ -2304,34 +2318,42 @@ def format_text_block(
             elif tag_state.name == "center":
                 if tag_state.closing:
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                 else:
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                 tag_text = ""
 
             elif tag_state.name == "i":
                 if tag_state.closing:
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                     escape_post = True
                 else:
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                     escape_pre = True
                 tag_text = "*"
 
             elif tag_state.name == "b":
                 if tag_state.closing:
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                     escape_post = True
                 else:
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                     escape_pre = True
                 tag_text = "**"
 
             elif tag_state.name == "u":
                 if tag_state.closing:
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                     escape_post = True
                 else:
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                     escape_pre = True
                 tag_text = ""
 
@@ -2345,10 +2367,12 @@ def format_text_block(
                 tag_text = "`"
                 if tag_state.closing:
                     tag_depth -= 1
+                    debug_tag_stack.pop()
                     escape_post = True
                 else:
                     tag_text = ":kbd:" + tag_text
                     tag_depth += 1
+                    debug_tag_stack.append(tag_state.name)
                     escape_pre = True
 
             # Invalid syntax.

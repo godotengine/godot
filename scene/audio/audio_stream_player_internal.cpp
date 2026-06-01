@@ -30,7 +30,10 @@
 
 #include "audio_stream_player_internal.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "servers/audio/audio_stream.h"
 
 void AudioStreamPlayerInternal::_set_process(bool p_enabled) {

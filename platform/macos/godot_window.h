@@ -30,17 +30,17 @@
 
 #pragma once
 
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
 @interface GodotWindow : NSWindow {
-	DisplayServer::WindowID window_id;
+	DisplayServerEnums::WindowID window_id;
 	NSTimeInterval anim_duration;
 }
 
-- (void)setWindowID:(DisplayServer::WindowID)wid;
+- (void)setWindowID:(DisplayServerEnums::WindowID)wid;
 - (void)setAnimDuration:(NSTimeInterval)duration;
 
 @end

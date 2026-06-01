@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "taa.h"
+
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
@@ -56,7 +57,7 @@ void TAA::resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_pr
 	RID shader = taa_shader.version_get_shader(shader_version, 0);
 	ERR_FAIL_COND(shader.is_null());
 
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	float base_variance = 1.1f;
 	float base_variance_min = 0.75f;

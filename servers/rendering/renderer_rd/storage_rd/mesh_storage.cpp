@@ -30,6 +30,10 @@
 
 #include "mesh_storage.h"
 
+#include "servers/rendering/renderer_viewport.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_types.h"
+
 using namespace RendererRD;
 
 MeshStorage *MeshStorage::singleton = nullptr;
@@ -117,7 +121,7 @@ MeshStorage::MeshStorage() {
 			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV2] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
 		}
 
-		for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
+		for (int i = 0; i < RSE::ARRAY_CUSTOM_COUNT; i++) {
 			buffer.resize(sizeof(float) * 4);
 			{
 				uint8_t *w = buffer.ptrw();
@@ -256,11 +260,11 @@ void MeshStorage::mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count
 }
 
 /// Returns stride
-void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) {
+void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::SurfaceData &p_surface) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 
-	ERR_FAIL_COND(mesh->surface_count == RS::MAX_MESH_SURFACES);
+	ERR_FAIL_COND(mesh->surface_count == RSE::MAX_MESH_SURFACES);
 
 #ifdef DEBUG_ENABLED
 	//do a validation, to catch errors first
@@ -269,60 +273,60 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		uint32_t attrib_stride = 0;
 		uint32_t skin_stride = 0;
 
-		for (int i = 0; i < RS::ARRAY_WEIGHTS; i++) {
+		for (int i = 0; i < RSE::ARRAY_WEIGHTS; i++) {
 			if ((p_surface.format & (1ULL << i))) {
 				switch (i) {
-					case RS::ARRAY_VERTEX: {
-						if ((p_surface.format & RS::ARRAY_FLAG_USE_2D_VERTICES) || (p_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+					case RSE::ARRAY_VERTEX: {
+						if ((p_surface.format & RSE::ARRAY_FLAG_USE_2D_VERTICES) || (p_surface.format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 							stride += sizeof(float) * 2;
 						} else {
 							stride += sizeof(float) * 3;
 						}
 
 					} break;
-					case RS::ARRAY_NORMAL: {
+					case RSE::ARRAY_NORMAL: {
 						stride += sizeof(uint16_t) * 2;
 
 					} break;
-					case RS::ARRAY_TANGENT: {
-						if (!(p_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+					case RSE::ARRAY_TANGENT: {
+						if (!(p_surface.format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 							stride += sizeof(uint16_t) * 2;
 						}
 					} break;
-					case RS::ARRAY_COLOR: {
+					case RSE::ARRAY_COLOR: {
 						attrib_stride += sizeof(uint32_t);
 					} break;
-					case RS::ARRAY_TEX_UV: {
-						if (p_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+					case RSE::ARRAY_TEX_UV: {
+						if (p_surface.format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 							attrib_stride += sizeof(uint16_t) * 2;
 						} else {
 							attrib_stride += sizeof(float) * 2;
 						}
 
 					} break;
-					case RS::ARRAY_TEX_UV2: {
-						if (p_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+					case RSE::ARRAY_TEX_UV2: {
+						if (p_surface.format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 							attrib_stride += sizeof(uint16_t) * 2;
 						} else {
 							attrib_stride += sizeof(float) * 2;
 						}
 
 					} break;
-					case RS::ARRAY_CUSTOM0:
-					case RS::ARRAY_CUSTOM1:
-					case RS::ARRAY_CUSTOM2:
-					case RS::ARRAY_CUSTOM3: {
-						int idx = i - RS::ARRAY_CUSTOM0;
-						const uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
-						uint32_t fmt = (p_surface.format >> fmt_shift[idx]) & RS::ARRAY_FORMAT_CUSTOM_MASK;
-						const uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+					case RSE::ARRAY_CUSTOM0:
+					case RSE::ARRAY_CUSTOM1:
+					case RSE::ARRAY_CUSTOM2:
+					case RSE::ARRAY_CUSTOM3: {
+						int idx = i - RSE::ARRAY_CUSTOM0;
+						const uint32_t fmt_shift[RSE::ARRAY_CUSTOM_COUNT] = { RSE::ARRAY_FORMAT_CUSTOM0_SHIFT, RSE::ARRAY_FORMAT_CUSTOM1_SHIFT, RSE::ARRAY_FORMAT_CUSTOM2_SHIFT, RSE::ARRAY_FORMAT_CUSTOM3_SHIFT };
+						uint32_t fmt = (p_surface.format >> fmt_shift[idx]) & RSE::ARRAY_FORMAT_CUSTOM_MASK;
+						const uint32_t fmtsize[RSE::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
 						attrib_stride += fmtsize[fmt];
 
 					} break;
-					case RS::ARRAY_WEIGHTS:
-					case RS::ARRAY_BONES: {
+					case RSE::ARRAY_WEIGHTS:
+					case RSE::ARRAY_BONES: {
 						//uses a separate array
-						bool use_8 = p_surface.format & RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+						bool use_8 = p_surface.format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
 						skin_stride += sizeof(int16_t) * (use_8 ? 16 : 8);
 					} break;
 				}
@@ -339,7 +343,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		int expected_attrib_size = attrib_stride * p_surface.vertex_count;
 		ERR_FAIL_COND_MSG(expected_attrib_size != p_surface.attribute_data.size(), "Size of attribute data provided (" + itos(p_surface.attribute_data.size()) + ") does not match expected (" + itos(expected_attrib_size) + ")");
 
-		if ((p_surface.format & RS::ARRAY_FORMAT_WEIGHTS) && (p_surface.format & RS::ARRAY_FORMAT_BONES)) {
+		if ((p_surface.format & RSE::ARRAY_FORMAT_WEIGHTS) && (p_surface.format & RSE::ARRAY_FORMAT_BONES)) {
 			expected_size = skin_stride * p_surface.vertex_count;
 			ERR_FAIL_COND_MSG(expected_size != p_surface.skin_data.size(), "Size of skin data provided (" + itos(p_surface.skin_data.size()) + ") does not match expected (" + itos(expected_size) + ")");
 		}
@@ -347,21 +351,21 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 #endif
 
-	uint64_t surface_version = p_surface.format & (uint64_t(RS::ARRAY_FLAG_FORMAT_VERSION_MASK) << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
-	RS::SurfaceData new_surface = p_surface;
+	uint64_t surface_version = p_surface.format & (uint64_t(RSE::ARRAY_FLAG_FORMAT_VERSION_MASK) << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+	RenderingServerTypes::SurfaceData new_surface = p_surface;
 #ifdef DISABLE_DEPRECATED
 
-	ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION, "Surface version provided (" + itos(int(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT)) + ") does not match current version (" + itos(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) + ")");
+	ERR_FAIL_COND_MSG(surface_version != RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION, "Surface version provided (" + itos(int(surface_version >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT)) + ") does not match current version (" + itos(RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) + ")");
 
 #else
 
-	if (surface_version != uint64_t(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION)) {
+	if (surface_version != uint64_t(RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION)) {
 		RS::get_singleton()->fix_surface_compatibility(new_surface);
-		surface_version = new_surface.format & (RS::ARRAY_FLAG_FORMAT_VERSION_MASK << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
-		ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+		surface_version = new_surface.format & (RSE::ARRAY_FLAG_FORMAT_VERSION_MASK << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+		ERR_FAIL_COND_MSG(surface_version != RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
 				vformat("Surface version provided (%d) does not match current version (%d).",
-						(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK,
-						(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK));
+						(surface_version >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK,
+						(RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK));
 	}
 #endif
 
@@ -380,7 +384,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		// This allows us to avoid adding a shader permutation, and avoid passing dummy tangents. Since the stride is kept small
 		// this should still be a net win for bandwidth.
 		// If we do this, then the last normal will read past the end of the array. So we need to pad the array with dummy data.
-		if (!(new_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (new_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(new_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
+		if (!(new_surface.format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (new_surface.format & RSE::ARRAY_FORMAT_NORMAL) && !(new_surface.format & RSE::ARRAY_FORMAT_TANGENT)) {
 			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
 			Vector<uint8_t> new_vertex_data;
 			new_vertex_data.resize_initialized(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
@@ -404,7 +408,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 	s->vertex_count = new_surface.vertex_count;
 
-	if (new_surface.format & RS::ARRAY_FORMAT_BONES) {
+	if (new_surface.format & RSE::ARRAY_FORMAT_BONES) {
 		mesh->has_bone_weights = true;
 	}
 
@@ -550,7 +554,7 @@ int MeshStorage::mesh_get_blend_shape_count(RID p_mesh) const {
 	return mesh->blend_shape_count;
 }
 
-void MeshStorage::mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) {
+void MeshStorage::mesh_set_blend_shape_mode(RID p_mesh, RSE::BlendShapeMode p_mode) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_INDEX((int)p_mode, 2);
@@ -558,9 +562,9 @@ void MeshStorage::mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mod
 	mesh->blend_shape_mode = p_mode;
 }
 
-RS::BlendShapeMode MeshStorage::mesh_get_blend_shape_mode(RID p_mesh) const {
+RSE::BlendShapeMode MeshStorage::mesh_get_blend_shape_mode(RID p_mesh) const {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-	ERR_FAIL_NULL_V(mesh, RS::BLEND_SHAPE_MODE_NORMALIZED);
+	ERR_FAIL_NULL_V(mesh, RSE::BLEND_SHAPE_MODE_NORMALIZED);
 	return mesh->blend_shape_mode;
 }
 
@@ -634,19 +638,19 @@ RID MeshStorage::mesh_surface_get_material(RID p_mesh, int p_surface) const {
 	return mesh->surfaces[p_surface]->material;
 }
 
-RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
+RenderingServerTypes::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-	ERR_FAIL_NULL_V(mesh, RS::SurfaceData());
-	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, RS::SurfaceData());
+	ERR_FAIL_NULL_V(mesh, RenderingServerTypes::SurfaceData());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, RenderingServerTypes::SurfaceData());
 
 	Mesh::Surface &s = *mesh->surfaces[p_surface];
 
-	RS::SurfaceData sd;
+	RenderingServerTypes::SurfaceData sd;
 	sd.format = s.format;
 	if (s.vertex_buffer.is_valid()) {
 		sd.vertex_data = RD::get_singleton()->buffer_get_data(s.vertex_buffer);
 		// When using an uncompressed buffer with normals, but without tangents, we have to trim the padding.
-		if (!(s.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (s.format & RS::ARRAY_FORMAT_NORMAL) && !(s.format & RS::ARRAY_FORMAT_TANGENT)) {
+		if (!(s.format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (s.format & RSE::ARRAY_FORMAT_NORMAL) && !(s.format & RSE::ARRAY_FORMAT_TANGENT)) {
 			sd.vertex_data.resize(sd.vertex_data.size() - sizeof(uint16_t) * 2);
 		}
 	}
@@ -666,7 +670,7 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 	sd.aabb = s.aabb;
 	sd.uv_scale = s.uv_scale;
 	for (uint32_t i = 0; i < s.lod_count; i++) {
-		RS::SurfaceData::LOD lod;
+		RenderingServerTypes::SurfaceData::LOD lod;
 		lod.edge_length = s.lods[i].edge_length;
 		lod.index_data = RD::get_singleton()->buffer_get_data(s.lods[i].index_buffer);
 		sd.lods.push_back(lod);
@@ -722,7 +726,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 	for (uint32_t i = 0; i < mesh->surface_count; i++) {
 		AABB laabb;
 		const Mesh::Surface &surface = *mesh->surfaces[i];
-		if ((surface.format & RS::ARRAY_FORMAT_BONES) && surface.bone_aabbs.size()) {
+		if ((surface.format & RSE::ARRAY_FORMAT_BONES) && surface.bone_aabbs.size()) {
 			int bs = surface.bone_aabbs.size();
 			const AABB *skbones = surface.bone_aabbs.ptr();
 
@@ -912,7 +916,7 @@ void MeshStorage::mesh_surface_remove(RID p_mesh, int p_surface) {
 	if (mesh->has_bone_weights) {
 		mesh->has_bone_weights = false;
 		for (uint32_t i = 0; i < mesh->surface_count; i++) {
-			if (mesh->surfaces[i]->format & RS::ARRAY_FORMAT_BONES) {
+			if (mesh->surfaces[i]->format & RSE::ARRAY_FORMAT_BONES) {
 				mesh->has_bone_weights = true;
 				break;
 			}
@@ -937,13 +941,13 @@ void MeshStorage::mesh_surface_remove(RID p_mesh, int p_surface) {
 	}
 }
 
-void MeshStorage::mesh_debug_usage(List<RS::MeshInfo> *r_info) {
+void MeshStorage::mesh_debug_usage(List<RenderingServerTypes::MeshInfo> *r_info) {
 	for (const RID &mesh_rid : mesh_owner.get_owned_list()) {
 		Mesh *mesh = mesh_owner.get_or_null(mesh_rid);
 		if (!mesh) {
 			continue;
 		}
-		RS::MeshInfo mesh_info;
+		RenderingServerTypes::MeshInfo mesh_info;
 		mesh_info.mesh = mesh_rid;
 		mesh_info.path = mesh->path;
 
@@ -1048,7 +1052,7 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 	}
 
 	MeshInstance::Surface s;
-	if ((mesh->blend_shape_count > 0 || (mesh->surfaces[p_surface]->format & RS::ARRAY_FORMAT_BONES)) && mesh->surfaces[p_surface]->vertex_buffer_size > 0) {
+	if ((mesh->blend_shape_count > 0 || (mesh->surfaces[p_surface]->format & RSE::ARRAY_FORMAT_BONES)) && mesh->surfaces[p_surface]->vertex_buffer_size > 0) {
 		_mesh_instance_add_surface_buffer(mi, mesh, &s, p_surface, 0);
 	}
 
@@ -1194,7 +1198,7 @@ void MeshStorage::update_mesh_instances() {
 				continue;
 			}
 
-			bool array_is_2d = mi->mesh->surfaces[i]->format & RS::ARRAY_FLAG_USE_2D_VERTICES;
+			bool array_is_2d = mi->mesh->surfaces[i]->format & RSE::ARRAY_FLAG_USE_2D_VERTICES;
 
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, skeleton_shader.pipeline[array_is_2d ? SkeletonShader::SHADER_MODE_2D : SkeletonShader::SHADER_MODE_3D]);
 
@@ -1208,9 +1212,9 @@ void MeshStorage::update_mesh_instances() {
 
 			SkeletonShader::PushConstant push_constant;
 
-			push_constant.has_normal = mi->mesh->surfaces[i]->format & RS::ARRAY_FORMAT_NORMAL;
-			push_constant.has_tangent = mi->mesh->surfaces[i]->format & RS::ARRAY_FORMAT_TANGENT;
-			push_constant.has_skeleton = sk != nullptr && sk->use_2d == array_is_2d && (mi->mesh->surfaces[i]->format & RS::ARRAY_FORMAT_BONES);
+			push_constant.has_normal = mi->mesh->surfaces[i]->format & RSE::ARRAY_FORMAT_NORMAL;
+			push_constant.has_tangent = mi->mesh->surfaces[i]->format & RSE::ARRAY_FORMAT_TANGENT;
+			push_constant.has_skeleton = sk != nullptr && sk->use_2d == array_is_2d && (mi->mesh->surfaces[i]->format & RSE::ARRAY_FORMAT_BONES);
 			push_constant.has_blend_shape = mi->mesh->blend_shape_count > 0;
 
 			push_constant.normal_tangent_stride = (push_constant.has_normal ? 1 : 0) + (push_constant.has_tangent ? 1 : 0);
@@ -1218,7 +1222,7 @@ void MeshStorage::update_mesh_instances() {
 			push_constant.vertex_count = mi->mesh->surfaces[i]->vertex_count;
 			push_constant.vertex_stride = ((mi->mesh->surfaces[i]->vertex_buffer_size / mi->mesh->surfaces[i]->vertex_count) / 4) - push_constant.normal_tangent_stride;
 			push_constant.skin_stride = (mi->mesh->surfaces[i]->skin_buffer_size / mi->mesh->surfaces[i]->vertex_count) / 4;
-			push_constant.skin_weight_offset = (mi->mesh->surfaces[i]->format & RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 4 : 2;
+			push_constant.skin_weight_offset = (mi->mesh->surfaces[i]->format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 4 : 2;
 
 			Transform2D transform = Transform2D();
 			if (sk && sk->use_2d) {
@@ -1240,7 +1244,7 @@ void MeshStorage::update_mesh_instances() {
 			push_constant.inverse_transform_offset[1] = inverse_transform.columns[2][1];
 
 			push_constant.blend_shape_count = mi->mesh->blend_shape_count;
-			push_constant.normalized_blend_shapes = mi->mesh->blend_shape_mode == RS::BLEND_SHAPE_MODE_NORMALIZED;
+			push_constant.normalized_blend_shapes = mi->mesh->blend_shape_mode == RSE::BLEND_SHAPE_MODE_NORMALIZED;
 			push_constant.pad1 = 0;
 
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SkeletonShader::PushConstant));
@@ -1267,31 +1271,31 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 
 	r_position_stride = 0;
 
-	for (int i = 0; i < RS::ARRAY_INDEX; i++) {
+	for (int i = 0; i < RSE::ARRAY_INDEX; i++) {
 		RD::VertexAttribute vd;
 		vd.location = i;
 
 		if (!(p_surface_format & (1ULL << i))) {
 			vd.stride = 0;
 			switch (i) {
-				case RS::ARRAY_VERTEX:
-				case RS::ARRAY_NORMAL:
+				case RSE::ARRAY_VERTEX:
+				case RSE::ARRAY_NORMAL:
 					vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
 					break;
-				case RS::ARRAY_TEX_UV:
-				case RS::ARRAY_TEX_UV2:
+				case RSE::ARRAY_TEX_UV:
+				case RSE::ARRAY_TEX_UV2:
 					vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
 					break;
-				case RS::ARRAY_BONES:
+				case RSE::ARRAY_BONES:
 					vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
 					break;
-				case RS::ARRAY_TANGENT:
-				case RS::ARRAY_COLOR:
-				case RS::ARRAY_CUSTOM0:
-				case RS::ARRAY_CUSTOM1:
-				case RS::ARRAY_CUSTOM2:
-				case RS::ARRAY_CUSTOM3:
-				case RS::ARRAY_WEIGHTS:
+				case RSE::ARRAY_TANGENT:
+				case RSE::ARRAY_COLOR:
+				case RSE::ARRAY_CUSTOM0:
+				case RSE::ARRAY_CUSTOM1:
+				case RSE::ARRAY_CUSTOM2:
+				case RSE::ARRAY_CUSTOM3:
+				case RSE::ARRAY_WEIGHTS:
 					vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 					break;
 				default:
@@ -1303,14 +1307,14 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 			vd.stride = 1;
 
 			switch (i) {
-				case RS::ARRAY_VERTEX: {
+				case RSE::ARRAY_VERTEX: {
 					vd.offset = r_position_stride;
 
-					if (p_surface_format & RS::ARRAY_FLAG_USE_2D_VERTICES) {
+					if (p_surface_format & RSE::ARRAY_FLAG_USE_2D_VERTICES) {
 						vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
 						r_position_stride = sizeof(float) * 2;
 					} else {
-						if (!p_instanced_surface && (p_surface_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+						if (!p_instanced_surface && (p_surface_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 							vd.format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
 							r_position_stride = sizeof(uint16_t) * 4;
 						} else {
@@ -1320,10 +1324,10 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 					}
 
 				} break;
-				case RS::ARRAY_NORMAL: {
+				case RSE::ARRAY_NORMAL: {
 					vd.offset = 0;
 
-					if (!p_instanced_surface && (p_surface_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+					if (!p_instanced_surface && (p_surface_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 						vd.format = RD::DATA_FORMAT_R16G16_UNORM;
 						normal_tangent_stride += sizeof(uint16_t) * 2;
 					} else {
@@ -1331,26 +1335,26 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 						// A small trick here: if we are uncompressed and we have normals, but no tangents. We need
 						// the shader to think there are 4 components to "axis_tangent_attrib". So we give a size of 4,
 						// but a stride based on only having 2 elements.
-						if (!(p_surface_format & RS::ARRAY_FORMAT_TANGENT)) {
+						if (!(p_surface_format & RSE::ARRAY_FORMAT_TANGENT)) {
 							normal_tangent_stride += sizeof(uint16_t) * 2;
 						} else {
 							normal_tangent_stride += sizeof(uint16_t) * 4;
 						}
 					}
 				} break;
-				case RS::ARRAY_TANGENT: {
+				case RSE::ARRAY_TANGENT: {
 					vd.stride = 0;
 					vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 				} break;
-				case RS::ARRAY_COLOR: {
+				case RSE::ARRAY_COLOR: {
 					vd.offset = attribute_stride;
 
 					vd.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 					attribute_stride += sizeof(int8_t) * 4;
 				} break;
-				case RS::ARRAY_TEX_UV: {
+				case RSE::ARRAY_TEX_UV: {
 					vd.offset = attribute_stride;
-					if (p_surface_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+					if (p_surface_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 						vd.format = RD::DATA_FORMAT_R16G16_UNORM;
 						attribute_stride += sizeof(uint16_t) * 2;
 					} else {
@@ -1359,9 +1363,9 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 					}
 
 				} break;
-				case RS::ARRAY_TEX_UV2: {
+				case RSE::ARRAY_TEX_UV2: {
 					vd.offset = attribute_stride;
-					if (p_surface_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+					if (p_surface_format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 						vd.format = RD::DATA_FORMAT_R16G16_UNORM;
 						attribute_stride += sizeof(uint16_t) * 2;
 					} else {
@@ -1369,27 +1373,27 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 						attribute_stride += sizeof(float) * 2;
 					}
 				} break;
-				case RS::ARRAY_CUSTOM0:
-				case RS::ARRAY_CUSTOM1:
-				case RS::ARRAY_CUSTOM2:
-				case RS::ARRAY_CUSTOM3: {
+				case RSE::ARRAY_CUSTOM0:
+				case RSE::ARRAY_CUSTOM1:
+				case RSE::ARRAY_CUSTOM2:
+				case RSE::ARRAY_CUSTOM3: {
 					vd.offset = attribute_stride;
 
-					int idx = i - RS::ARRAY_CUSTOM0;
-					const uint32_t fmt_shift[RS::ARRAY_CUSTOM_COUNT] = { RS::ARRAY_FORMAT_CUSTOM0_SHIFT, RS::ARRAY_FORMAT_CUSTOM1_SHIFT, RS::ARRAY_FORMAT_CUSTOM2_SHIFT, RS::ARRAY_FORMAT_CUSTOM3_SHIFT };
-					uint32_t fmt = (p_surface_format >> fmt_shift[idx]) & RS::ARRAY_FORMAT_CUSTOM_MASK;
-					const uint32_t fmtsize[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
-					const RD::DataFormat fmtrd[RS::ARRAY_CUSTOM_MAX] = { RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::DATA_FORMAT_R8G8B8A8_SNORM, RD::DATA_FORMAT_R16G16_SFLOAT, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::DATA_FORMAT_R32_SFLOAT, RD::DATA_FORMAT_R32G32_SFLOAT, RD::DATA_FORMAT_R32G32B32_SFLOAT, RD::DATA_FORMAT_R32G32B32A32_SFLOAT };
+					int idx = i - RSE::ARRAY_CUSTOM0;
+					const uint32_t fmt_shift[RSE::ARRAY_CUSTOM_COUNT] = { RSE::ARRAY_FORMAT_CUSTOM0_SHIFT, RSE::ARRAY_FORMAT_CUSTOM1_SHIFT, RSE::ARRAY_FORMAT_CUSTOM2_SHIFT, RSE::ARRAY_FORMAT_CUSTOM3_SHIFT };
+					uint32_t fmt = (p_surface_format >> fmt_shift[idx]) & RSE::ARRAY_FORMAT_CUSTOM_MASK;
+					const uint32_t fmtsize[RSE::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+					const RD::DataFormat fmtrd[RSE::ARRAY_CUSTOM_MAX] = { RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::DATA_FORMAT_R8G8B8A8_SNORM, RD::DATA_FORMAT_R16G16_SFLOAT, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::DATA_FORMAT_R32_SFLOAT, RD::DATA_FORMAT_R32G32_SFLOAT, RD::DATA_FORMAT_R32G32B32_SFLOAT, RD::DATA_FORMAT_R32G32B32A32_SFLOAT };
 					vd.format = fmtrd[fmt];
 					attribute_stride += fmtsize[fmt];
 				} break;
-				case RS::ARRAY_BONES: {
+				case RSE::ARRAY_BONES: {
 					vd.offset = skin_stride;
 
 					vd.format = RD::DATA_FORMAT_R16G16B16A16_UINT;
 					skin_stride += sizeof(int16_t) * 4;
 				} break;
-				case RS::ARRAY_WEIGHTS: {
+				case RSE::ARRAY_WEIGHTS: {
 					vd.offset = skin_stride;
 
 					vd.format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
@@ -1412,13 +1416,13 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 			// Since the previous vertex, normal and tangent can't be part of the vertex format but they are required when
 			// motion vectors are enabled, we opt to push a copy of the vertex attribute with a different location.
 			switch (i) {
-				case RS::ARRAY_VERTEX: {
+				case RSE::ARRAY_VERTEX: {
 					vd.location = ATTRIBUTE_LOCATION_PREV_VERTEX;
 				} break;
-				case RS::ARRAY_NORMAL: {
+				case RSE::ARRAY_NORMAL: {
 					vd.location = ATTRIBUTE_LOCATION_PREV_NORMAL;
 				} break;
-				case RS::ARRAY_TANGENT: {
+				case RSE::ARRAY_TANGENT: {
 					vd.location = ATTRIBUTE_LOCATION_PREV_TANGENT;
 				} break;
 			}
@@ -1437,11 +1441,11 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 		}
 
 		int loc = attributes[i].location;
-		if (loc == RS::ARRAY_VERTEX || loc == ATTRIBUTE_LOCATION_PREV_VERTEX) {
+		if (loc == RSE::ARRAY_VERTEX || loc == ATTRIBUTE_LOCATION_PREV_VERTEX) {
 			attributes.write[i].stride = r_position_stride;
-		} else if ((loc < RS::ARRAY_COLOR) || ((loc >= ATTRIBUTE_LOCATION_PREV_NORMAL) && (loc <= ATTRIBUTE_LOCATION_PREV_TANGENT))) {
+		} else if ((loc < RSE::ARRAY_COLOR) || ((loc >= ATTRIBUTE_LOCATION_PREV_NORMAL) && (loc <= ATTRIBUTE_LOCATION_PREV_TANGENT))) {
 			attributes.write[i].stride = normal_tangent_stride;
-		} else if (loc < RS::ARRAY_BONES) {
+		} else if (loc < RSE::ARRAY_BONES) {
 			attributes.write[i].stride = attribute_stride;
 		} else {
 			attributes.write[i].stride = skin_stride;
@@ -1459,7 +1463,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 	Vector<uint64_t> offsets;
 	RID buffer;
 	uint64_t offset = 0;
-	for (int i = 0; i < RS::ARRAY_INDEX; i++) {
+	for (int i = 0; i < RSE::ARRAY_INDEX; i++) {
 		offset = 0;
 
 		if (!(s->format & (1ULL << i))) {
@@ -1468,25 +1472,25 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		} else {
 			// Supplied by surface, use buffer.
 			switch (i) {
-				case RS::ARRAY_VERTEX:
-				case RS::ARRAY_NORMAL:
-					offset = i == RS::ARRAY_NORMAL ? position_stride * s->vertex_count : 0;
+				case RSE::ARRAY_VERTEX:
+				case RSE::ARRAY_NORMAL:
+					offset = i == RSE::ARRAY_NORMAL ? position_stride * s->vertex_count : 0;
 					buffer = mis != nullptr ? mis->vertex_buffer[p_current_buffer] : s->vertex_buffer;
 					break;
-				case RS::ARRAY_TANGENT:
+				case RSE::ARRAY_TANGENT:
 					buffer = mesh_default_rd_buffers[i];
 					break;
-				case RS::ARRAY_COLOR:
-				case RS::ARRAY_TEX_UV:
-				case RS::ARRAY_TEX_UV2:
-				case RS::ARRAY_CUSTOM0:
-				case RS::ARRAY_CUSTOM1:
-				case RS::ARRAY_CUSTOM2:
-				case RS::ARRAY_CUSTOM3:
+				case RSE::ARRAY_COLOR:
+				case RSE::ARRAY_TEX_UV:
+				case RSE::ARRAY_TEX_UV2:
+				case RSE::ARRAY_CUSTOM0:
+				case RSE::ARRAY_CUSTOM1:
+				case RSE::ARRAY_CUSTOM2:
+				case RSE::ARRAY_CUSTOM3:
 					buffer = s->attribute_buffer;
 					break;
-				case RS::ARRAY_BONES:
-				case RS::ARRAY_WEIGHTS:
+				case RSE::ARRAY_BONES:
+				case RSE::ARRAY_WEIGHTS:
 					buffer = s->skin_buffer;
 					break;
 			}
@@ -1501,7 +1505,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 
 		if (p_input_motion_vectors) {
 			// Push the buffer for motion vector inputs.
-			if (i == RS::ARRAY_VERTEX || i == RS::ARRAY_NORMAL || i == RS::ARRAY_TANGENT) {
+			if (i == RSE::ARRAY_VERTEX || i == RSE::ARRAY_NORMAL || i == RSE::ARRAY_TANGENT) {
 				if (mis && buffer != mesh_default_rd_buffers[i]) {
 					buffers.push_back(mis->vertex_buffer[p_previous_buffer]);
 				} else {
@@ -1534,13 +1538,13 @@ void MeshStorage::_multimesh_free(RID p_rid) {
 	// Remove from interpolator.
 	_interpolation_data.notify_free_multimesh(p_rid);
 	_update_dirty_multimeshes();
-	multimesh_allocate_data(p_rid, 0, RS::MULTIMESH_TRANSFORM_2D);
+	multimesh_allocate_data(p_rid, 0, RSE::MULTIMESH_TRANSFORM_2D);
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_rid);
 	multimesh->dependency.deleted_notify(p_rid);
 	multimesh_owner.free(p_rid);
 }
 
-void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data, bool p_use_indirect) {
+void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RSE::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data, bool p_use_indirect) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 
@@ -1570,7 +1574,7 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS:
 	multimesh->instances = p_instances;
 	multimesh->xform_format = p_transform_format;
 	multimesh->uses_colors = p_use_colors;
-	multimesh->color_offset_cache = p_transform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
+	multimesh->color_offset_cache = p_transform_format == RSE::MULTIMESH_TRANSFORM_2D ? 8 : 12;
 	multimesh->uses_custom_data = p_use_custom_data;
 	multimesh->custom_data_offset_cache = multimesh->color_offset_cache + (p_use_colors ? 4 : 0);
 	multimesh->stride_cache = multimesh->custom_data_offset_cache + (p_use_custom_data ? 4 : 0);
@@ -1579,7 +1583,7 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS:
 	multimesh->indirect = p_use_indirect;
 	multimesh->command_buffer = RID();
 
-	//print_line("allocate, elements: " + itos(p_instances) + " 2D: " + itos(p_transform_format == RS::MULTIMESH_TRANSFORM_2D) + " colors " + itos(multimesh->uses_colors) + " data " + itos(multimesh->uses_custom_data) + " stride " + itos(multimesh->stride_cache) + " total size " + itos(multimesh->stride_cache * multimesh->instances));
+	//print_line("allocate, elements: " + itos(p_instances) + " 2D: " + itos(p_transform_format == RSE::MULTIMESH_TRANSFORM_2D) + " colors " + itos(multimesh->uses_colors) + " data " + itos(multimesh->uses_custom_data) + " stride " + itos(multimesh->stride_cache) + " total size " + itos(multimesh->stride_cache * multimesh->instances));
 	multimesh->data_cache = Vector<float>();
 	multimesh->aabb = AABB();
 	multimesh->aabb_dirty = false;
@@ -1839,7 +1843,7 @@ void MeshStorage::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p
 		const float *data = p_data + multimesh->stride_cache * i;
 		Transform3D t;
 
-		if (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_3D) {
+		if (multimesh->xform_format == RSE::MULTIMESH_TRANSFORM_3D) {
 			t.basis.rows[0][0] = data[0];
 			t.basis.rows[0][1] = data[1];
 			t.basis.rows[0][2] = data[2];
@@ -1877,7 +1881,7 @@ void MeshStorage::_multimesh_instance_set_transform(RID p_multimesh, int p_index
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
-	ERR_FAIL_COND(multimesh->xform_format != RS::MULTIMESH_TRANSFORM_3D);
+	ERR_FAIL_COND(multimesh->xform_format != RSE::MULTIMESH_TRANSFORM_3D);
 
 	_multimesh_make_local(multimesh);
 
@@ -1914,7 +1918,7 @@ void MeshStorage::_multimesh_instance_set_transform_2d(RID p_multimesh, int p_in
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
-	ERR_FAIL_COND(multimesh->xform_format != RS::MULTIMESH_TRANSFORM_2D);
+	ERR_FAIL_COND(multimesh->xform_format != RSE::MULTIMESH_TRANSFORM_2D);
 
 	_multimesh_make_local(multimesh);
 	_multimesh_update_motion_vectors_data_cache(multimesh);
@@ -2001,7 +2005,7 @@ Transform3D MeshStorage::_multimesh_instance_get_transform(RID p_multimesh, int 
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, Transform3D());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform3D());
-	ERR_FAIL_COND_V(multimesh->xform_format != RS::MULTIMESH_TRANSFORM_3D, Transform3D());
+	ERR_FAIL_COND_V(multimesh->xform_format != RSE::MULTIMESH_TRANSFORM_3D, Transform3D());
 
 	_multimesh_make_local(multimesh);
 
@@ -2032,7 +2036,7 @@ Transform2D MeshStorage::_multimesh_instance_get_transform_2d(RID p_multimesh, i
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, Transform2D());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform2D());
-	ERR_FAIL_COND_V(multimesh->xform_format != RS::MULTIMESH_TRANSFORM_2D, Transform2D());
+	ERR_FAIL_COND_V(multimesh->xform_format != RSE::MULTIMESH_TRANSFORM_2D, Transform2D());
 
 	_multimesh_make_local(multimesh);
 

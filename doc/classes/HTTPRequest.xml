@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPRequest" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="HTTPRequest" inherits="Node" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node with the ability to send HTTP(S) requests.
 	</brief_description>
@@ -25,7 +25,7 @@
 			# Perform a POST request. The URL below returns JSON as of writing.
 			# Note: Don't make simultaneous requests using a single HTTPRequest node.
 			# The snippet below is provided for reference only.
-			var body = JSON.new().stringify({"name": "Godette"})
+			var body = JSON.stringify({"name": "Godette"})
 			error = http_request.request("https://httpbin.org/post", [], HTTPClient.METHOD_POST, body)
 			if error != OK:
 				push_error("An error occurred in the HTTP request.")
@@ -57,7 +57,7 @@
 			// Perform a POST request. The URL below returns JSON as of writing.
 			// Note: Don't make simultaneous requests using a single HTTPRequest node.
 			// The snippet below is provided for reference only.
-			string body = new Json().Stringify(new Godot.Collections.Dictionary
+			string body = Json.Stringify(new Godot.Collections.Dictionary
 			{
 				{ "name", "Godette" }
 			});

@@ -74,6 +74,11 @@ class Polygon2D : public Node2D {
 	void _skeleton_bone_setup_changed();
 
 	RID mesh;
+	int last_len = 0;
+	int last_index_count = 0;
+	bool last_has_uv = false;
+	bool last_has_color = false;
+	bool last_has_bones = false;
 
 protected:
 	void _notification(int p_what);

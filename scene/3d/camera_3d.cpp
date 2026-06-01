@@ -30,9 +30,13 @@
 
 #include "camera_3d.h"
 
+#include "core/config/engine.h"
 #include "core/math/projection.h"
 #include "core/math/transform_interpolator.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 
 void Camera3D::_update_audio_listener_state() {
 }
@@ -66,22 +70,28 @@ void Camera3D::fti_update_servers_property() {
 	if (camera.is_valid()) {
 		float f = Engine::get_singleton()->get_physics_interpolation_fraction();
 
+		bool update_fov = fov.interpolate(f);
+		bool update_near = _near.interpolate(f);
+		bool update_far = _far.interpolate(f);
+		bool update_size = size.interpolate(f);
+		bool update_frustum_offset = frustum_offset.interpolate(f);
+
+		// If there have been changes due to interpolated values, OR we are forcing an update, update the servers.
 		switch (mode) {
 			default:
 				break;
 			case PROJECTION_PERSPECTIVE: {
-				// If there have been changes due to interpolation, update the servers.
-				if (fov.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_fov || update_near || update_far) {
 					RS::get_singleton()->camera_set_perspective(camera, fov.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
 			case PROJECTION_ORTHOGONAL: {
-				if (size.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_size || update_near || update_far) {
 					RS::get_singleton()->camera_set_orthogonal(camera, size.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
 			case PROJECTION_FRUSTUM: {
-				if (size.interpolate(f) || frustum_offset.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_size || update_frustum_offset || update_near || update_far) {
 					RS::get_singleton()->camera_set_frustum(camera, size.interpolated(), frustum_offset.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
@@ -122,14 +132,17 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			if (mode != PROJECTION_PERSPECTIVE) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		} else if (p_property.name == "size") {
 			if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		} else if (p_property.name == "frustum_offset") {
 			if (mode != PROJECTION_FRUSTUM) {
 				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			}
+			return;
 		}
 	}
 

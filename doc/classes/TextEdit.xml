@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextEdit" inherits="Control" keywords="textarea" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TextEdit" inherits="Control" api_type="core" keywords="textarea" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A multiline text editor.
 	</brief_description>
@@ -797,6 +797,7 @@
 			<description>
 				Returns [code]true[/code] if the caret is visible, [code]false[/code] otherwise. A caret will be considered hidden if it is outside the scrollable area when scrolling is enabled.
 				[b]Note:[/b] [method is_caret_visible] does not account for a caret being off-screen if it is still within the scrollable area. It will return [code]true[/code] even if the caret is off-screen as long as it meets [TextEdit]'s own conditions for being visible. This includes uses of [member scroll_fit_content_width] and [member scroll_fit_content_height] that cause the [TextEdit] to expand beyond the viewport's bounds.
+				[b]Note:[/b] This method does [i]not[/i] guarantee an accurate visibility check immediately after setting the caret position. The correct value may only be available in the next frame after the [TextEdit] has finished drawing. This also applies to any operation that causes the [TextEdit] to change in size.
 			</description>
 		</method>
 		<method name="is_dragging_cursor" qualifiers="const">
@@ -838,6 +839,13 @@
 			<param index="1" name="gutter" type="int" />
 			<description>
 				Returns [code]true[/code] if the gutter at the given index on the given line is clickable. See [method set_line_gutter_clickable].
+			</description>
+		</method>
+		<method name="is_line_in_viewport" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns [code]true[/code] if the given line is within the scope of the scrollable area of the viewport.
 			</description>
 		</method>
 		<method name="is_line_wrapped" qualifiers="const">
@@ -1367,10 +1375,10 @@
 			Text shown when the [TextEdit] is empty. It is [b]not[/b] the [TextEdit]'s default value (see [member text]).
 		</member>
 		<member name="scroll_fit_content_height" type="bool" setter="set_fit_content_height_enabled" getter="is_fit_content_height_enabled" default="false">
-			If [code]true[/code], [TextEdit] will disable vertical scroll and fit minimum height to the number of visible lines. When both this property and [member scroll_fit_content_width] are [code]true[/code], no scrollbars will be displayed.
+			If [code]true[/code], [TextEdit] fits its minimum height to the number of visible lines instead of scrolling vertically. If a maximum height is set (for example via [member Control.custom_maximum_size]) and content exceeds it, a vertical scrollbar is shown.
 		</member>
 		<member name="scroll_fit_content_width" type="bool" setter="set_fit_content_width_enabled" getter="is_fit_content_width_enabled" default="false">
-			If [code]true[/code], [TextEdit] will disable horizontal scroll and fit minimum width to the widest line in the text. When both this property and [member scroll_fit_content_height] are [code]true[/code], no scrollbars will be displayed.
+			If [code]true[/code], [TextEdit] fits its minimum width to the widest line instead of scrolling horizontally. If a maximum width is set (for example via [member Control.custom_maximum_size]) and content exceeds it, a horizontal scrollbar is shown.
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			If there is a horizontal scrollbar, this determines the current horizontal scroll value in pixels.

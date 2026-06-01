@@ -32,7 +32,7 @@
 
 #include "core/math/plane.h"
 #include "core/math/vector3.h"
-#include "renderer_scene_cull.h"
+#include "servers/rendering/renderer_scene_cull.h"
 
 struct Projection;
 struct Transform3D;
@@ -78,6 +78,7 @@ private:
 			ST_DIRECTIONAL,
 			ST_SPOTLIGHT,
 			ST_OMNI,
+			ST_AREA,
 		};
 
 		LightSource() {
@@ -96,6 +97,9 @@ private:
 
 		float angle; // For spotlight.
 		float range;
+		float width; // For area light.
+		float height;
+		Vector2 area_size; // For area light.
 
 		int cascade_count;
 		float cascade_splits[3]; // Max 4 cascades, which only has 3 splits.

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_map.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/gui/theme_editor_preview.h"
@@ -499,7 +500,6 @@ class ThemeEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "Theme"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

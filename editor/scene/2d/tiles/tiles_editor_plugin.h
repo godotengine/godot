@@ -30,10 +30,10 @@
 
 #pragma once
 
+#include "core/os/semaphore.h"
 #include "editor/plugins/editor_plugin.h"
-
-#include "tile_map_layer_editor.h"
-#include "tile_set_editor.h"
+#include "editor/scene/2d/tiles/tile_map_layer_editor.h"
+#include "editor/scene/2d/tiles/tile_set_editor.h"
 
 class TilesEditorUtils : public Object {
 	GDCLASS(TilesEditorUtils, Object);

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "animation_mixer.h"
+#include "scene/animation/animation_mixer.h"
 #include "scene/resources/animation.h"
 
 class AnimationPlayer : public AnimationMixer {
@@ -61,8 +61,6 @@ private:
 	double auto_capture_duration = -1.0;
 	Tween::TransitionType auto_capture_transition_type = Tween::TRANS_LINEAR;
 	Tween::EaseType auto_capture_ease_type = Tween::EASE_IN;
-
-	bool is_stopping = false;
 
 	struct PlaybackData {
 		bool is_enabled = false;
@@ -98,7 +96,7 @@ private:
 		bool seeked = false;
 		bool internal_seeked = false;
 		bool started = false;
-		List<Blend> blend;
+		LocalVector<Blend> blend;
 	} playback;
 
 	struct BlendKey {
@@ -155,6 +153,7 @@ protected:
 	virtual void _blend_capture(double p_delta) override;
 	virtual void _blend_post_process() override;
 
+	virtual void _animation_changed(const StringName &p_name) override;
 	virtual void _animation_removed(const StringName &p_name, const StringName &p_library) override;
 	virtual void _rename_animation(const StringName &p_from_name, const StringName &p_to_name) override;
 

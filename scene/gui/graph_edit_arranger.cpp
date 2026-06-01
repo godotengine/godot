@@ -32,6 +32,8 @@
 
 #include "scene/gui/graph_edit.h"
 
+#include <cfloat> // FLT_MIN, FLT_MAX
+
 void GraphEditArranger::arrange_nodes() {
 	ERR_FAIL_NULL(graph_edit);
 
@@ -242,14 +244,17 @@ int GraphEditArranger::_set_operations(SET_OPERATIONS p_operation, HashSet<Strin
 HashMap<int, Vector<StringName>> GraphEditArranger::_layering(const HashSet<StringName> &r_selected_nodes, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours) {
 	HashMap<int, Vector<StringName>> l;
 
-	HashSet<StringName> p = r_selected_nodes, q = r_selected_nodes, u, z;
+	HashSet<StringName> p(r_selected_nodes);
+	HashSet<StringName> q(r_selected_nodes);
+	HashSet<StringName> u;
+	HashSet<StringName> z;
 	int current_layer = 0;
 	bool selected = false;
 
 	while (!_set_operations(GraphEditArranger::IS_EQUAL, q, u)) {
 		_set_operations(GraphEditArranger::DIFFERENCE, p, u);
 		for (const StringName &E : p) {
-			HashSet<StringName> n = r_upper_neighbours[E];
+			HashSet<StringName> n(r_upper_neighbours[E]);
 			if (_set_operations(GraphEditArranger::IS_SUBSET, n, z)) {
 				Vector<StringName> t;
 				t.push_back(E);

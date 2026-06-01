@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "file_access.h"
+
+#include "core/object/class_db.h"
+
 Ref<FileAccess> FileAccess::_open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key) {
 	return open_encrypted(p_path, p_mode_flags, p_key, Vector<uint8_t>());
 }
@@ -123,4 +127,4 @@ void FileAccess::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("get_as_text", "skip_cr"), &FileAccess::get_as_text_bind_compat_110867, DEFVAL(false));
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

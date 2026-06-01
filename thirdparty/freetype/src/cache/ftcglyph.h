@@ -4,7 +4,7 @@
  *
  *   FreeType abstract glyph cache (specification).
  *
- * Copyright (C) 2000-2025 by
+ * Copyright (C) 2000-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

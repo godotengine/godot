@@ -31,9 +31,12 @@
 #include "spring_bone_3d_gizmo_plugin.h"
 
 #include "editor/settings/editor_settings.h"
+#include "scene/3d/spring_bone_collision_3d.h"
 #include "scene/3d/spring_bone_collision_capsule_3d.h"
 #include "scene/3d/spring_bone_collision_plane_3d.h"
 #include "scene/3d/spring_bone_collision_sphere_3d.h"
+#include "scene/3d/spring_bone_simulator_3d.h"
+#include "scene/resources/surface_tool.h"
 
 // SpringBoneSimulator3D
 

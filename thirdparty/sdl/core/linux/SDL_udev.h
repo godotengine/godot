@@ -31,7 +31,7 @@
 #endif
 
 //#include <libudev.h>
-#include "thirdparty/linuxbsd_headers/udev/libudev.h"
+#include <thirdparty/linuxbsd_headers/udev/libudev.h>
 #include <sys/time.h>
 #include <sys/types.h>
 

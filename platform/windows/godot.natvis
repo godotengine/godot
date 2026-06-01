@@ -251,21 +251,18 @@
 	</Type>
 
 	<Type Name="StringName">
-		<DisplayString Condition="_data &amp;&amp; _data->cname">{_data->cname,na}</DisplayString>
-		<DisplayString Condition="_data &amp;&amp; !_data->cname">{_data->name,s32}</DisplayString>
+		<DisplayString Condition="_data">{_data->name,s32}</DisplayString>
 		<DisplayString Condition="!_data">[empty]</DisplayString>
-		<StringView Condition="_data &amp;&amp; _data->cname">_data->cname,na</StringView>
-		<StringView Condition="_data &amp;&amp; !_data->cname">_data->name,s32</StringView>
+		<StringView Condition="_data">_data->name,s32</StringView>
 	</Type>
 
 	<!-- can't cast the opaque to ::StringName because Natvis does not support global namespace specifier? -->
 	<Type Name="godot::StringName">
-		<DisplayString Condition="(*reinterpret_cast&lt;const char***&gt;(opaque))[1]">{(*reinterpret_cast&lt;const char***&gt;(opaque))[1],s8}</DisplayString>
-		<DisplayString Condition="!(*reinterpret_cast&lt;const char***&gt;(opaque))[1]">{(*reinterpret_cast&lt;const char***&gt;(opaque))[2],s32}</DisplayString>
+		<Intrinsic Name="get_data_ptr" Expression="(*reinterpret_cast&lt;const char32_t***&gt;(opaque))[1]" />
+		<DisplayString Condition="get_data_ptr()">{get_data_ptr(),s32}</DisplayString>
 		<Expand>
 			<Item Name="opaque_ptr">*reinterpret_cast&lt;void**&gt;(opaque)</Item>
-			<Item Name="&amp;cname">(*reinterpret_cast&lt;const char***&gt;(opaque))+1</Item>
-			<Item Name="cname">(*reinterpret_cast&lt;const char***&gt;(opaque))[1],s8</Item>
+			<Item Name="cname">get_data_ptr(),s32</Item>
 		</Expand>
 	</Type>
 

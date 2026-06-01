@@ -30,11 +30,11 @@
 
 #include "rendering_device_driver_metal3.h"
 
-#include "pixel_formats.h"
-#include "rendering_context_driver_metal.h"
-
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 #include "core/string/ustring.h"
+#include "drivers/metal/pixel_formats.h"
+#include "drivers/metal/rendering_context_driver_metal.h"
 
 namespace MTL3 {
 
@@ -151,7 +151,12 @@ void RenderingDeviceDriverMetal::remove_residency_set_to_main_queue(MTL::Residen
 #pragma mark - Fences
 
 RDD::FenceID RenderingDeviceDriverMetal::fence_create() {
-	Fence *fence = memnew(FenceEvent(NS::TransferPtr(device->newSharedEvent())));
+	Fence *fence = nullptr;
+	if (__builtin_available(macOS 12.0, iOS 15.0, tvOS 15.0, visionOS 1.0, *)) {
+		fence = memnew(FenceEvent(NS::TransferPtr(device->newSharedEvent())));
+	} else {
+		fence = memnew(FenceSemaphore());
+	}
 	return FenceID(fence);
 }
 
@@ -238,7 +243,7 @@ Error RenderingDeviceDriverMetal::_execute_and_present_barriers(CommandQueueID p
 
 	struct DrawRequest {
 		NS::SharedPtr<MTL::Drawable> drawable;
-		DisplayServer::VSyncMode vsync_mode;
+		DisplayServerEnums::VSyncMode vsync_mode;
 		double duration;
 	};
 
@@ -263,7 +268,7 @@ Error RenderingDeviceDriverMetal::_execute_and_present_barriers(CommandQueueID p
 		cb->addCompletedHandler([drawables = std::move(drawables)](MTL::CommandBuffer *) {
 			for (const DrawRequest &dr : drawables) {
 				switch (dr.vsync_mode) {
-					case DisplayServer::VSYNC_DISABLED: {
+					case DisplayServerEnums::VSYNC_DISABLED: {
 						dr.drawable->present();
 					} break;
 					default: {

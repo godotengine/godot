@@ -32,6 +32,8 @@
 
 #include "../gltf_template_convert.h"
 
+#include "core/object/class_db.h"
+
 void GLTFObjectModelProperty::_bind_methods() {
 	BIND_ENUM_CONSTANT(GLTF_OBJECT_MODEL_TYPE_UNKNOWN);
 	BIND_ENUM_CONSTANT(GLTF_OBJECT_MODEL_TYPE_BOOL);

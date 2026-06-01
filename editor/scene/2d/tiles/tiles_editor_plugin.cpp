@@ -30,25 +30,25 @@
 
 #include "tiles_editor_plugin.h"
 
-#include "tile_set_editor.h"
-
+#include "core/object/callable_mp.h"
 #include "core/os/mutex.h"
-
+#include "core/os/os.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/scene/2d/tiles/tile_set_editor.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
-#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
 #include "scene/2d/tile_map_layer.h"
-#include "scene/gui/button.h"
 #include "scene/gui/control.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/2d/tile_set.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 TilesEditorUtils *TilesEditorUtils::singleton = nullptr;
 TileMapEditorPlugin *tile_map_plugin_singleton = nullptr;
@@ -290,7 +290,7 @@ void TilesEditorUtils::draw_selection_rect(CanvasItem *p_ci, const Rect2 &p_rect
 	p_ci->draw_set_transform(p_rect.position, 0, Vector2(1, 1) / scale);
 	RS::get_singleton()->canvas_item_add_nine_patch(
 			p_ci->get_canvas_item(), Rect2(Vector2(), p_rect.size * scale), Rect2(), selection_texture->get_rid(),
-			Vector2(2, 2), Vector2(2, 2), RS::NINE_PATCH_STRETCH, RS::NINE_PATCH_STRETCH, false, p_color);
+			Vector2(2, 2), Vector2(2, 2), RSE::NINE_PATCH_STRETCH, RSE::NINE_PATCH_STRETCH, false, p_color);
 	p_ci->draw_set_transform_matrix(Transform2D());
 }
 
@@ -422,6 +422,11 @@ void TileMapEditorPlugin::_edit_tile_map_layer(TileMapLayer *p_tile_map_layer, b
 void TileMapEditorPlugin::_edit_tile_map(TileMap *p_tile_map) {
 	ERR_FAIL_NULL(p_tile_map);
 
+	tile_map_group_id = p_tile_map->get_instance_id();
+	if (!p_tile_map->is_connected(CoreStringName(changed), callable_mp(editor, &TileMapLayerEditor::set_show_layer_selector))) {
+		p_tile_map->connect(CoreStringName(changed), callable_mp(editor, &TileMapLayerEditor::set_show_layer_selector).bind(p_tile_map->get_layers_count()));
+	}
+
 	if (p_tile_map->get_layers_count() > 0) {
 		TileMapLayer *selected_layer = Object::cast_to<TileMapLayer>(p_tile_map->get_child(0));
 		_edit_tile_map_layer(selected_layer, true);
@@ -442,6 +447,11 @@ void TileMapEditorPlugin::edit(Object *p_object) {
 	if (edited_layer) {
 		edited_layer->disconnect(CoreStringName(changed), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_changed));
 		edited_layer->disconnect(SceneStringName(tree_exited), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_removed));
+	}
+
+	TileMap *edited_map = ObjectDB::get_instance<TileMap>(tile_map_group_id);
+	if (edited_map) {
+		edited_map->disconnect(CoreStringName(changed), callable_mp(editor, &TileMapLayerEditor::set_show_layer_selector));
 	}
 
 	tile_map_group_id = ObjectID();

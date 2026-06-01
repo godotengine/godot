@@ -30,6 +30,11 @@
 
 #include "rigid_body_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/resources/physics_material.h"
+
 void RigidBody3D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
@@ -142,9 +147,12 @@ struct _RigidBodyInOut {
 };
 
 void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
-	set_ignore_transform_notification(true);
-	set_global_transform(p_state->get_transform());
-	set_ignore_transform_notification(false);
+	Transform3D new_transform = p_state->get_transform();
+	if (likely(new_transform != get_global_transform())) {
+		set_ignore_transform_notification(true);
+		set_global_transform(new_transform);
+		set_ignore_transform_notification(false);
+	}
 
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
@@ -813,9 +821,7 @@ void RigidBody3D::_validate_property(PropertyInfo &p_property) const {
 	}
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM && p_property.name == "center_of_mass") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (!contact_monitor && p_property.name == "max_contacts_reported") {
+	} else if (!contact_monitor && p_property.name == "max_contacts_reported") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

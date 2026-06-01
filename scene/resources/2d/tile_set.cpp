@@ -31,17 +31,17 @@
 #include "tile_set.h"
 #include "tile_set.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_set.h"
 #include "scene/gui/control.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/mesh.h"
-
-#ifndef NAVIGATION_2D_DISABLED
-#include "servers/navigation_2d/navigation_server_2d.h"
-#endif // NAVIGATION_2D_DISABLED
+#include "servers/rendering/rendering_server.h"
 
 /////////////////////////////// TileMapPattern //////////////////////////////////////
 
@@ -60,15 +60,6 @@ void TileMapPattern::_set_tile_data(const Vector<int> &p_data) {
 		for (int j = 0; j < 12; j++) {
 			local[j] = ptr[j];
 		}
-
-#ifdef BIG_ENDIAN_ENABLED
-		SWAP(local[0], local[3]);
-		SWAP(local[1], local[2]);
-		SWAP(local[4], local[7]);
-		SWAP(local[5], local[6]);
-		SWAP(local[8], local[11]);
-		SWAP(local[9], local[10]);
-#endif
 
 		int16_t x = decode_uint16(&local[0]);
 		int16_t y = decode_uint16(&local[2]);
@@ -847,6 +838,22 @@ void TileSet::remove_terrain(int p_terrain_set, int p_index) {
 	emit_changed();
 }
 
+void TileSet::clear_terrains(int p_terrain_set) {
+	ERR_FAIL_INDEX(p_terrain_set, terrain_sets.size());
+	Vector<Terrain> &terrains = terrain_sets.write[p_terrain_set].terrains;
+
+	int terrain_count = terrains.size();
+	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
+		for (int i = terrain_count - 1; i >= 0; i--) {
+			source.value->remove_terrain(p_terrain_set, i);
+		}
+	}
+	terrains.clear();
+	notify_property_list_changed();
+	terrains_cache_dirty = true;
+	emit_changed();
+}
+
 void TileSet::set_terrain_name(int p_terrain_set, int p_terrain_index, String p_name) {
 	ERR_FAIL_INDEX(p_terrain_set, terrain_sets.size());
 	ERR_FAIL_INDEX(p_terrain_index, terrain_sets[p_terrain_set].terrains.size());
@@ -1399,7 +1406,7 @@ RBSet<TileSet::TerrainsPattern> TileSet::get_terrains_pattern_set(int p_terrain_
 RBSet<TileMapCell> TileSet::get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern) {
 	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), RBSet<TileMapCell>());
 	_update_terrains_cache();
-	return per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
+	return RBSet<TileMapCell>(per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern]);
 }
 
 TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, TileSet::TerrainsPattern p_terrain_tile_pattern) {
@@ -1408,7 +1415,7 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 
 	// Count the sum of probabilities.
 	double sum = 0.0;
-	RBSet<TileMapCell> set = per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
+	RBSet<TileMapCell> set(per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern]);
 	for (const TileMapCell &E : set) {
 		if (E.source_id >= 0) {
 			Ref<TileSetSource> source = sources[E.source_id];
@@ -3355,8 +3362,9 @@ void TileSet::_compatibility_conversion() {
 		CompatibilityTileData *ctd = E.value;
 
 		// Add the texture
-		TileSetAtlasSource *atlas_source = memnew(TileSetAtlasSource);
-		int source_id = add_source(Ref<TileSetSource>(atlas_source));
+		Ref<TileSetAtlasSource> atlas_source;
+		atlas_source.instantiate();
+		int source_id = add_source(atlas_source);
 
 		atlas_source->set_texture(ctd->texture);
 
@@ -4235,10 +4243,14 @@ void TileSet::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name == "tile_layout" && tile_shape == TILE_SHAPE_SQUARE) {
-		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
-	} else if (p_property.name == "tile_offset_axis" && tile_shape == TILE_SHAPE_SQUARE) {
-		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+	if (p_property.name == "tile_layout") {
+		if (tile_shape == TILE_SHAPE_SQUARE) {
+			p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+		}
+	} else if (p_property.name == "tile_offset_axis") {
+		if (tile_shape == TILE_SHAPE_SQUARE) {
+			p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+		}
 	}
 }
 
@@ -4309,6 +4321,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_terrain", "terrain_set", "to_position"), &TileSet::add_terrain, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("move_terrain", "terrain_set", "terrain_index", "to_position"), &TileSet::move_terrain);
 	ClassDB::bind_method(D_METHOD("remove_terrain", "terrain_set", "terrain_index"), &TileSet::remove_terrain);
+	ClassDB::bind_method(D_METHOD("clear_terrains", "terrain_set"), &TileSet::clear_terrains);
 	ClassDB::bind_method(D_METHOD("set_terrain_name", "terrain_set", "terrain_index", "name"), &TileSet::set_terrain_name);
 	ClassDB::bind_method(D_METHOD("get_terrain_name", "terrain_set", "terrain_index"), &TileSet::get_terrain_name);
 	ClassDB::bind_method(D_METHOD("set_terrain_color", "terrain_set", "terrain_index", "color"), &TileSet::set_terrain_color);
@@ -4344,7 +4357,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_source_level_tile_proxy", "source_from"), &TileSet::has_source_level_tile_proxy);
 	ClassDB::bind_method(D_METHOD("remove_source_level_tile_proxy", "source_from"), &TileSet::remove_source_level_tile_proxy);
 
-	ClassDB::bind_method(D_METHOD("set_coords_level_tile_proxy", "p_source_from", "coords_from", "source_to", "coords_to"), &TileSet::set_coords_level_tile_proxy);
+	ClassDB::bind_method(D_METHOD("set_coords_level_tile_proxy", "source_from", "coords_from", "source_to", "coords_to"), &TileSet::set_coords_level_tile_proxy);
 	ClassDB::bind_method(D_METHOD("get_coords_level_tile_proxy", "source_from", "coords_from"), &TileSet::get_coords_level_tile_proxy);
 	ClassDB::bind_method(D_METHOD("has_coords_level_tile_proxy", "source_from", "coords_from"), &TileSet::has_coords_level_tile_proxy);
 	ClassDB::bind_method(D_METHOD("remove_coords_level_tile_proxy", "source_from", "coords_from"), &TileSet::remove_coords_level_tile_proxy);

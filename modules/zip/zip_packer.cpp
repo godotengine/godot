@@ -32,6 +32,7 @@
 #include "zip_packer.compat.inc"
 
 #include "core/io/zip_io.h"
+#include "core/object/class_db.h"
 #include "core/os/time.h"
 
 Error ZIPPacker::open(const String &p_path, ZipAppend p_append) {

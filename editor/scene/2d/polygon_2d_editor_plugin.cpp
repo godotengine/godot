@@ -32,6 +32,9 @@
 
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
@@ -53,6 +56,8 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/view_panner.h"
+#include "scene/main/scene_tree.h"
+#include "servers/rendering/rendering_server.h"
 
 Node2D *Polygon2DEditor::_get_node() const {
 	return node;
@@ -107,7 +112,7 @@ void Polygon2DEditor::_notification(int p_what) {
 		}
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(polygon_edit, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_READY: {

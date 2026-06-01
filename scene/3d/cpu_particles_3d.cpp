@@ -31,7 +31,10 @@
 #include "cpu_particles_3d.h"
 #include "cpu_particles_3d.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/math/random_number_generator.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/main/viewport.h"
@@ -39,6 +42,7 @@
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/particle_process_material.h"
+#include "servers/rendering/rendering_server.h"
 
 AABB CPUParticles3D::get_aabb() const {
 	return AABB();
@@ -83,7 +87,7 @@ void CPUParticles3D::set_amount(int p_amount) {
 
 	particle_data.resize((12 + 4 + 4) * p_amount);
 	RS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
-	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_3D, true, true);
+	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RSE::MULTIMESH_TRANSFORM_3D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -583,45 +587,47 @@ uint32_t CPUParticles3D::get_seed() const {
 	return seed;
 }
 
-void CPUParticles3D::request_particles_process(real_t p_requested_process_time) {
-	_requested_process_time = p_requested_process_time;
+void CPUParticles3D::request_particles_process(real_t p_request_process_time, real_t p_request_process_time_residual) {
+	_request_process_time = p_request_process_time;
+	_request_process_time_residual = p_request_process_time_residual;
+	_update_internal();
 }
 
 void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
-	}
-
-	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_box_extents" && emission_shape != EMISSION_SHAPE_BOX) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if ((p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture" || p_property.name == "emission_points") && (emission_shape != EMISSION_SHAPE_POINTS && (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS))) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_normals" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("scale_curve_") && !split_scale) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "emission_sphere_radius") {
+		if (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_box_extents") {
+		if (emission_shape != EMISSION_SHAPE_BOX) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture" || p_property.name == "emission_points") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_normals") {
+		if (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("emission_ring_")) {
+		if (emission_shape != EMISSION_SHAPE_RING) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("orbit_")) {
+		if (!particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("scale_curve_")) {
+		if (!split_scale) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "seed") {
+		if (!use_fixed_seed) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
 	}
 }
 
@@ -668,25 +674,58 @@ void CPUParticles3D::_update_internal() {
 
 	bool processed = false;
 
+	{
+		float todo = time == 0 ? pre_process_time : 0;
+		todo = todo > _request_process_time ? todo : _request_process_time;
+		todo = todo > _request_process_time_residual ? todo : _request_process_time_residual;
+
+		if (todo > 0.0) {
+			real_t frame_time;
+			if (fixed_fps > 0) {
+				frame_time = 1.0 / fixed_fps;
+			} else {
+				frame_time = 1.0 / 30.0;
+			}
+
+			float tmp_scale = speed_scale;
+			// We need this otherwise the speed scale of the particle system influences the TODO.
+			speed_scale = 1.0;
+			if (time == 0) {
+				todo = pre_process_time;
+				while (todo > 0.0) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			if (_request_process_time > 0.0) {
+				todo = _request_process_time;
+				emitting = true;
+				while (todo > 0.0) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			if (_request_process_time_residual > 0.0) {
+				emitting = false;
+				todo = _request_process_time_residual;
+				while (todo > 0.0) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			speed_scale = tmp_scale;
+			processed = true;
+		}
+		_request_process_time = 0;
+		_request_process_time_residual = 0;
+	}
+
 	double frame_time;
 	if (fixed_fps > 0) {
 		frame_time = 1.0 / fixed_fps;
 	} else {
 		frame_time = 1.0 / 30.0;
 	}
-	double todo = _requested_process_time;
-	_requested_process_time = 0.;
-	if (time == 0 && pre_process_time > 0.0) {
-		todo += pre_process_time;
-	}
-	real_t tmp_speed = speed_scale;
-	speed_scale = 1.0;
-	while (todo > 0) {
-		_particles_process(frame_time);
-		todo -= frame_time;
-	}
-	speed_scale = tmp_speed;
-	todo = 0.0;
 
 	if (fixed_fps > 0) {
 		double decr = frame_time;
@@ -694,10 +733,10 @@ void CPUParticles3D::_update_internal() {
 		double ldelta = delta;
 		if (ldelta > 0.1) { //avoid recursive stalls if fps goes below 10
 			ldelta = 0.1;
-		} else if (ldelta <= 0.0) { //unlikely but..
-			ldelta = 0.001;
+		} else if (ldelta < 0.0) {
+			ldelta = 0.0;
 		}
-		todo = frame_remainder + ldelta;
+		double todo = frame_remainder + ldelta;
 
 		while (todo >= frame_time) {
 			_particles_process(frame_time);
@@ -1328,13 +1367,13 @@ void CPUParticles3D::_set_redraw(bool p_redraw) {
 
 		if (redraw) {
 			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread));
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
 			RS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 		} else {
 			if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread))) {
 				RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread));
 			}
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
 			RS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 		}
 	}
@@ -1376,7 +1415,11 @@ void CPUParticles3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			inv_emission_transform = get_global_transform().affine_inverse();
+			Transform3D global_transform = get_global_transform();
+			if (unlikely(global_transform.basis.determinant() == 0)) {
+				return;
+			}
+			inv_emission_transform = global_transform.affine_inverse();
 
 			if (!local_coords) {
 				int pc = particles.size();
@@ -1545,7 +1588,7 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_seed"), &CPUParticles3D::get_seed);
 
 	ClassDB::bind_method(D_METHOD("restart", "keep_seed"), &CPUParticles3D::restart, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &CPUParticles3D::request_particles_process);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time", "process_time_residual"), &CPUParticles3D::request_particles_process, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("capture_aabb"), &CPUParticles3D::capture_aabb);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting", PROPERTY_HINT_ONESHOT), "set_emitting", "is_emitting");

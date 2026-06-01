@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OptionButton" inherits="Button" keywords="select, dropdown" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OptionButton" inherits="Button" api_type="core" keywords="select, dropdown" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A button that brings up a dropdown with selectable options when pressed.
 	</brief_description>
@@ -240,6 +240,39 @@
 		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items to select from.
 		</member>
+		<member name="popup/item_{index}/disabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is disabled.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="popup/item_{index}/icon" type="Texture2D" setter="" getter="">
+			The icon of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="popup/item_{index}/id" type="int" setter="" getter="" default="0">
+			The ID of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="popup/item_{index}/separator" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is a separator.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="popup/item_{index}/text" type="String" setter="" getter="" default="&quot;&quot;">
+			The text of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="search_bar_enabled" type="bool" setter="set_search_bar_enabled" getter="is_search_bar_enabled" default="false">
+			If [code]true[/code], shows a search bar at the top of the [PopupMenu] for filtering items. See [member search_bar_min_item_count] for dynamically controlling its visibility based on the number of items.
+		</member>
+		<member name="search_bar_fuzzy_search_enabled" type="bool" setter="set_search_bar_fuzzy_search_enabled" getter="is_search_bar_fuzzy_search_enabled" default="true">
+			If [code]true[/code], enables fuzzy searching in the [PopupMenu] search bar. This allows the search results to include items that almost match the search query, as well items that match the individual characters of the search query, but not in sequence.
+			Use [member search_bar_fuzzy_search_max_misses] to set the maximum number of mismatches allowed in the search results.
+		</member>
+		<member name="search_bar_fuzzy_search_max_misses" type="int" setter="set_search_bar_fuzzy_search_max_misses" getter="get_search_bar_fuzzy_search_max_misses" default="2">
+			Sets the maximum number of mismatches allowed in each search result when fuzzy searching is enabled for the [PopupMenu] search bar. Any item with more mismatches will be hidden from the search results.
+		</member>
+		<member name="search_bar_min_item_count" type="int" setter="set_search_bar_min_item_count" getter="get_search_bar_min_item_count" default="0">
+			Sets the minimum number of items required for the [PopupMenu] search bar to be visible. [member search_bar_enabled] must be [code]true[/code] for this to have any effect.
+		</member>
 		<member name="selected" type="int" setter="_select_int" getter="get_selected" default="-1">
 			The index of the currently selected item, or [code]-1[/code] if no item is selected.
 		</member>
@@ -249,7 +282,7 @@
 		<signal name="item_focused">
 			<param index="0" name="index" type="int" />
 			<description>
-				Emitted when the user navigates to an item using the [member ProjectSettings.input/ui_up] or [member ProjectSettings.input/ui_down] input actions. The index of the item selected is passed as argument.
+				Emitted when the user navigates to an item using the [member ProjectSettings.input/ui_up] or [member ProjectSettings.input/ui_down] input actions. The index of the item focused is passed as argument.
 			</description>
 		</signal>
 		<signal name="item_selected">

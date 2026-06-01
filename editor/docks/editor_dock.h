@@ -59,12 +59,15 @@ public:
 		DOCK_SLOT_RIGHT_UR,
 		DOCK_SLOT_RIGHT_BR,
 		DOCK_SLOT_BOTTOM,
+		DOCK_SLOT_BOTTOM_L,
+		DOCK_SLOT_BOTTOM_R,
 		DOCK_SLOT_MAX
 	};
 
 private:
 	friend class EditorDockManager;
 	friend class DockContextPopup;
+	friend class DockSlotGrid;
 	friend class DockShortcutHandler;
 
 	String title;
@@ -95,6 +98,8 @@ private:
 	void _emit_changed();
 
 protected:
+	void _validate_property(PropertyInfo &p_property) const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -157,6 +162,8 @@ public:
 
 	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const { GDVIRTUAL_CALL(_save_layout_to_config, p_layout, p_section); }
 	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) { GDVIRTUAL_CALL(_load_layout_from_config, p_layout, p_section); }
+
+	EditorDock();
 };
 
 VARIANT_BITFIELD_CAST(EditorDock::DockLayout);

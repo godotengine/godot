@@ -31,6 +31,7 @@
 #include "editor_context_menu_plugin.h"
 
 #include "core/input/shortcut.h"
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/resources/texture.h"
@@ -91,6 +92,7 @@ void EditorContextMenuPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTEXT_SLOT_SCRIPT_EDITOR_CODE);
 	BIND_ENUM_CONSTANT(CONTEXT_SLOT_SCENE_TABS);
 	BIND_ENUM_CONSTANT(CONTEXT_SLOT_2D_EDITOR);
+	BIND_ENUM_CONSTANT(CONTEXT_SLOT_INSPECTOR_PROPERTY);
 }
 
 void EditorContextMenuPluginManager::add_plugin(EditorContextMenuPlugin::ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin) {

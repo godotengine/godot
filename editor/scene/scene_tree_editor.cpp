@@ -30,7 +30,11 @@
 
 #include "scene_tree_editor.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
@@ -51,6 +55,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
@@ -346,7 +351,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 
 	_update_node(p_node, item, part_of_subscene);
 	I->value.dirty = false;
-	I->value.can_process = p_node->can_process();
+	I->value.can_process = is_scene_tree_dock && p_node->can_process();
 
 	// Force update all our children if we are new or if we were forced to update.
 	bool force_update_children = p_force || is_new;
@@ -470,7 +475,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		p_item->set_text(0, node_name);
 		p_item->set_selectable(0, marked_selectable);
 		_set_item_custom_color(p_item, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
-	} else if (!p_node->can_process()) {
+	} else if (is_scene_tree_dock && !p_node->can_process()) {
 		_set_item_custom_color(p_item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	} else if (!marked_selectable && !marked_children_selectable) {
 		Node *node = p_node;
@@ -640,8 +645,9 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 	if (selected == p_node) {
 		if (!editor_selection) {
 			p_item->select(0);
+		} else {
+			p_item->set_as_cursor(0);
 		}
-		p_item->set_as_cursor(0);
 	}
 }
 
@@ -1078,11 +1084,13 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 		p_parent->set_visible(!hide_filtered_out_parents || is_root);
 
 		if (!p_parent->is_visible()) {
+			TreeItem *candidate_sibling = p_parent;
 			TreeItem *filtered_parent = p_parent->get_parent();
 			while (filtered_parent) {
 				if (filtered_parent == tree->get_root() || (filtered_parent->is_selectable(0) && filtered_parent->is_visible())) {
 					break;
 				}
+				candidate_sibling = filtered_parent;
 				filtered_parent = filtered_parent->get_parent();
 			}
 
@@ -1093,10 +1101,8 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 
 					p_parent->remove_child(ti);
 					filtered_parent->add_child(ti);
-					TreeItem *prev = p_parent->get_prev();
-					if (prev) {
-						ti->move_after(prev);
-					}
+					ti->move_after(candidate_sibling);
+					candidate_sibling = ti;
 
 					if (is_selected) {
 						ti->select(0);
@@ -1128,7 +1134,7 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 			if (n && editor_selection->is_selected(n)) {
 				if (p_scroll_to_selected) {
 					// Needs to be deferred to account for possible root visibility change.
-					callable_mp(tree, &Tree::scroll_to_item).call_deferred(p_parent, false);
+					callable_mp(tree, &Tree::scroll_to_item).call_deferred(Variant(p_parent), false);
 				} else {
 					r_last_selected = p_parent;
 				}
@@ -1389,7 +1395,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			// Wait for the node to be inspected before triggering the unfolding.
-			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000 * 2);
+			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds") * 1000 * 2);
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 			[[fallthrough]];
 		}
@@ -1464,11 +1470,10 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	if (selected == p_node) {
 		return;
 	}
+	selected = p_node;
 
 	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
-
 	if (item) {
-		selected = p_node;
 		if (auto_expand_selected) {
 			// Make visible when it's collapsed.
 			TreeItem *node = item->get_parent();
@@ -1477,7 +1482,6 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 				node = node->get_parent();
 			}
 			item->select(0);
-			item->set_as_cursor(0);
 			tree->ensure_cursor_is_visible();
 		} else {
 			// Ensure the node is selected and visible for the user if the node
@@ -1493,15 +1497,9 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 			}
 			if (!collapsed) {
 				item->select(0);
-				item->set_as_cursor(0);
 				tree->ensure_cursor_is_visible();
 			}
 		}
-	} else {
-		if (!p_node) {
-			selected = nullptr;
-		}
-		selected = p_node;
 	}
 
 	if (p_emit_selected) {

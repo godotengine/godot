@@ -54,9 +54,41 @@
 #define _CA_PRIVATE_DEF_CLS(symbol) void* s_k##symbol _CA_PRIVATE_VISIBILITY = _CA_PRIVATE_OBJC_LOOKUP_CLASS(symbol)
 #define _CA_PRIVATE_DEF_PRO(symbol) void* s_k##symbol _CA_PRIVATE_VISIBILITY = _CA_PRIVATE_OBJC_GET_PROTOCOL(symbol)
 #define _CA_PRIVATE_DEF_SEL(accessor, symbol) SEL s_k##accessor _CA_PRIVATE_VISIBILITY = sel_registerName(symbol)
+
+#include <dlfcn.h>
+
+namespace CA::Private
+{
+    template <typename _Type>
+    inline _Type const LoadSymbol(const char* pSymbol)
+    {
+        const _Type* pAddress = static_cast<_Type*>(dlsym(RTLD_DEFAULT, pSymbol));
+
+        return pAddress ? *pAddress : nullptr;
+    }
+} // CA::Private
+
+#if defined(__MAC_26_0) || defined(__IPHONE_26_0) || defined(__TVOS_26_0)
+
 #define _CA_PRIVATE_DEF_STR(type, symbol)                \
     _CA_EXTERN type const CA##symbol _CA_PRIVATE_IMPORT; \
     type const                       CA::symbol = (nullptr != &CA##symbol) ? CA##symbol : nullptr
+
+#define _CA_PRIVATE_DEF_CONST(type, symbol)              \
+    _CA_EXTERN type const CA##symbol _CA_PRIVATE_IMPORT; \
+    type const                         CA::symbol = (nullptr != &CA##symbol) ? CA##symbol : nullptr
+
+#else
+
+#define _CA_PRIVATE_DEF_STR(type, symbol)    \
+    _CA_EXTERN type const CA##symbol;    \
+    type const             CA::symbol = CA::Private::LoadSymbol<type>("CA" #symbol)
+
+#define _CA_PRIVATE_DEF_CONST(type, symbol)    \
+    _CA_EXTERN type const CA##symbol;    \
+    type const             CA::symbol = CA::Private::LoadSymbol<type>("CA" #symbol)
+
+#endif
 
 #else
 
@@ -64,6 +96,7 @@
 #define _CA_PRIVATE_DEF_PRO(symbol) extern void* s_k##symbol
 #define _CA_PRIVATE_DEF_SEL(accessor, symbol) extern SEL s_k##accessor
 #define _CA_PRIVATE_DEF_STR(type, symbol) extern type const CA::symbol
+#define _CA_PRIVATE_DEF_CONST(type, symbol) extern type const CA::symbol
 
 #endif // CA_PRIVATE_IMPLEMENTATION
 
@@ -76,6 +109,7 @@ namespace Private
     namespace Class
     {
         _CA_PRIVATE_DEF_CLS(CAMetalLayer);
+            _CA_PRIVATE_DEF_CLS(CALayer);
     } // Class
 } // Private
 } // CA
@@ -107,6 +141,8 @@ namespace Private
             "allowsNextDrawableTimeout");
         _CA_PRIVATE_DEF_SEL(colorspace,
             "colorspace");
+        _CA_PRIVATE_DEF_SEL(contentsHeadroom,
+            "contentsHeadroom");
         _CA_PRIVATE_DEF_SEL(device,
             "device");
         _CA_PRIVATE_DEF_SEL(displaySyncEnabled,
@@ -121,14 +157,20 @@ namespace Private
             "maximumDrawableCount");
         _CA_PRIVATE_DEF_SEL(nextDrawable,
             "nextDrawable");
+        _CA_PRIVATE_DEF_SEL(opaque,
+            "opaque");
         _CA_PRIVATE_DEF_SEL(pixelFormat,
             "pixelFormat");
+        _CA_PRIVATE_DEF_SEL(preferredDynamicRange,
+            "preferredDynamicRange");
         _CA_PRIVATE_DEF_SEL(residencySet,
             "residencySet");
         _CA_PRIVATE_DEF_SEL(setAllowsNextDrawableTimeout_,
             "setAllowsNextDrawableTimeout:");
         _CA_PRIVATE_DEF_SEL(setColorspace_,
             "setColorspace:");
+        _CA_PRIVATE_DEF_SEL(setContentsHeadroom_,
+            "setContentsHeadroom:");
         _CA_PRIVATE_DEF_SEL(setDevice_,
             "setDevice:");
         _CA_PRIVATE_DEF_SEL(setDisplaySyncEnabled_,
@@ -139,10 +181,19 @@ namespace Private
             "setFramebufferOnly:");
         _CA_PRIVATE_DEF_SEL(setMaximumDrawableCount_,
             "setMaximumDrawableCount:");
+        _CA_PRIVATE_DEF_SEL(setOpaque_,
+            "setOpaque:");
         _CA_PRIVATE_DEF_SEL(setPixelFormat_,
             "setPixelFormat:");
+        _CA_PRIVATE_DEF_SEL(setPreferredDynamicRange_,
+            "setPreferredDynamicRange:");
+        _CA_PRIVATE_DEF_SEL(setWantsExtendedDynamicRangeContent_,
+            "setWantsExtendedDynamicRangeContent:");
         _CA_PRIVATE_DEF_SEL(texture,
             "texture");
+        _CA_PRIVATE_DEF_SEL(wantsExtendedDynamicRangeContent,
+            "wantsExtendedDynamicRangeContent");
+
     } // Class
 } // Private
 } // CA

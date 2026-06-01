@@ -30,6 +30,7 @@
 
 #include "gltf_physics_body.h"
 
+#include "core/object/class_db.h"
 #include "scene/3d/physics/animatable_body_3d.h"
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/character_body_3d.h"

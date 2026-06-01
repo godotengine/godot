@@ -31,6 +31,10 @@
 #include "editor_resource_picker.h"
 
 #include "core/input/input.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/doc/editor_help.h"
 #include "editor/docks/filesystem_dock.h"
@@ -50,6 +54,7 @@
 #include "scene/property_utils.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 static bool _has_sub_resources(const Ref<Resource> &p_res) {
 	List<PropertyInfo> property_list;
@@ -154,18 +159,18 @@ void EditorResourcePicker::_update_resource() {
 		}
 
 		if (!editable) {
-			tooltip += "\n" + vformat(TTR("The %s cannot be edited in the inspector and can't be made unique directly."), resource_name) + "\n";
+			tooltip += "\n" + vformat(TTR("The %s cannot be edited in the inspector and can't be made unique directly."), resource_name);
 		} else {
 			if (unique_enable) {
-				tooltip += "\n" + TTR("Left-click to make it unique.") + "\n";
+				tooltip += "\n" + TTR("Left-click to make it unique.");
 			}
 
 			if (unique_recursive_enabled) {
-				tooltip += TTR("It is possible to make its subresources unique.") + "\n" + TTR("Right-click to make them unique.");
+				tooltip += "\n" + TTR("It is possible to make its subresources unique.") + "\n" + TTR("Right-click to make them unique.");
 			}
 
 			if (!unique_enable && EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size() == 1) {
-				tooltip += TTR("In order to duplicate it, make its parent Resource unique.") + "\n";
+				tooltip += "\n" + TTR("In order to duplicate it, make its parent Resource unique.");
 			}
 		}
 
@@ -318,11 +323,13 @@ void EditorResourcePicker::_update_menu_items() {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Search")), TTR("Inspect"), OBJ_MENU_INSPECT);
 		} else {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Edit")), TTR("Edit"), OBJ_MENU_INSPECT);
+			edit_menu->set_item_disabled(-1, force_allow_unique);
 		}
 
 		if (is_editable()) {
 			if (!_is_custom_type_script()) {
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
+				edit_menu->set_item_disabled(-1, force_allow_unique);
 			}
 			bool unique_enabled = _is_uniqueness_enabled();
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
@@ -357,7 +364,9 @@ void EditorResourcePicker::_update_menu_items() {
 			}
 
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
+			edit_menu->set_item_disabled(-1, force_allow_unique);
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
+			edit_menu->set_item_disabled(-1, force_allow_unique);
 		}
 
 		if (edited_resource->get_path().is_resource_file()) {
@@ -391,12 +400,12 @@ void EditorResourcePicker::_update_menu_items() {
 		edit_menu->add_separator();
 
 		if (edited_resource.is_valid()) {
-			edit_menu->add_item(TTRC("Copy"), OBJ_MENU_COPY);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTRC("Copy"), OBJ_MENU_COPY);
 		}
 
 		if (paste_valid) {
-			edit_menu->add_item(TTRC("Paste"), OBJ_MENU_PASTE);
-			edit_menu->add_item(TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTRC("Paste"), OBJ_MENU_PASTE);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
 		}
 	}
 
@@ -621,15 +630,15 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				obj = EditorNode::get_editor_data().instantiate_custom_type(intype, "Resource");
 			}
 
-			Resource *resp = Object::cast_to<Resource>(obj);
-			ERR_BREAK(!resp);
-			resp->set_path(_get_owner_path() + "::" + resp->generate_scene_unique_id()); // Assign a base path for built-in Resources.
+			Ref<Resource> resp(obj);
+			ERR_BREAK(resp.is_null());
+			EditorNode::setup_built_in_resource(resp, _get_owner_path()); // Assign a base path for built-in Resources.
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
 			// Prevent freeing of the object until the end of the update of the resource (GH-88286).
 			Ref<Resource> old_edited_resource = edited_resource;
-			edited_resource = Ref<Resource>(resp);
+			edited_resource = resp;
 			_resource_changed();
 		} break;
 	}
@@ -647,7 +656,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 		int idx = 0;
 
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_without_convert;
+		HashSet<StringName> allowed_types(allowed_types_without_convert);
 		if (!allowed_types.is_empty()) {
 			edit_menu->add_separator(TTRC("New"));
 		}
@@ -871,7 +880,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	}
 
 	_ensure_allowed_types();
-	HashSet<StringName> allowed_types = allowed_types_with_convert;
+	HashSet<StringName> allowed_types(allowed_types_with_convert);
 
 	String res_type = _get_resource_type(res);
 
@@ -966,7 +975,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	Ref<Resource> dropped_resource = _get_dropped_resource(p_data);
 	if (dropped_resource.is_valid()) {
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_without_convert;
+		HashSet<StringName> allowed_types(allowed_types_without_convert);
 
 		String res_type = _get_resource_type(dropped_resource);
 
@@ -1110,7 +1119,7 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 	// Keep the value, but warn the user that there is a potential mistake.
 	if (!base_type.is_empty() && edited_resource.is_valid()) {
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_with_convert;
+		HashSet<StringName> allowed_types(allowed_types_with_convert);
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -1132,7 +1141,7 @@ String EditorResourcePicker::get_base_type() const {
 
 Vector<String> EditorResourcePicker::get_allowed_types() const {
 	_ensure_allowed_types();
-	HashSet<StringName> allowed_types = allowed_types_without_convert;
+	HashSet<StringName> allowed_types(allowed_types_without_convert);
 
 	Vector<String> types;
 	types.resize(allowed_types.size());
@@ -1154,7 +1163,7 @@ bool EditorResourcePicker::is_resource_allowed(const Ref<Resource> &p_resource) 
 
 	if (!base_type.is_empty()) {
 		_ensure_allowed_types();
-		HashSet<StringName> allowed_types = allowed_types_with_convert;
+		HashSet<StringName> allowed_types(allowed_types_with_convert);
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -1231,6 +1240,8 @@ void EditorResourcePicker::_ensure_resource_menu() {
 		return;
 	}
 	edit_menu = memnew(PopupMenu);
+	edit_menu->set_search_bar_enabled(true);
+	edit_menu->set_search_bar_min_item_count(10);
 	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
 	edit_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
@@ -1423,7 +1434,8 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 
 	if (p_check_recursive && parent_counter <= 1) {
 		List<Ref<Resource>> nested_resources;
-		en->gather_resources(edited_resource, nested_resources, true, true);
+		HashSet<Object *> scanned_objects;
+		en->gather_resources(edited_resource, nested_resources, scanned_objects, true, true);
 
 		for (Ref<Resource> R : nested_resources) {
 			// Take into account Nested External Resources.

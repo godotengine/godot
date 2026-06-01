@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all other classes in the engine.
 	</brief_description>
@@ -43,6 +43,7 @@
 					if property == "fake_property":
 						print("Getting my property!")
 						return 4
+					return null
 
 				func _get_property_list():
 					return [
@@ -74,6 +75,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns a non-[code]null[/code] value.
+				[b]Warning:[/b] This method must be [url=$DOCS_URL/tutorials/performance/thread_safe_apis.html]thread-safe[/url] if overridden. Otherwise, the engine may crash when trying to save a resource containing the object.
 			</description>
 		</method>
 		<method name="_get_property_list" qualifiers="virtual">
@@ -97,7 +99,7 @@
 				var numbers = PackedInt32Array([0, 0, 0])
 
 				func _get_property_list():
-					var properties = []
+					var properties: Array[Dictionary] = []
 
 					for i in range(number_count):
 						properties.append({
@@ -113,6 +115,7 @@
 					if property.begins_with("number_"):
 						var index = property.get_slice("_", 1).to_int()
 						return numbers[index]
+					return null
 
 				func _set(property, value):
 					if property.begins_with("number_"):
@@ -187,6 +190,7 @@
 				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc. If you want to customize exported properties, use [method _validate_property].
 				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
 				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy.
+				[b]Warning:[/b] This method must be [url=$DOCS_URL/tutorials/performance/thread_safe_apis.html]thread-safe[/url] if overridden. Otherwise, the engine may crash when trying to save a resource containing the object.
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
@@ -235,7 +239,8 @@
 					for x in my_range:
 						print(x) # Prints 2, 3, 4.
 				[/codeblock]
-				[b]Note:[/b] Alternatively, you can ignore [param iter] and use the object's state instead, see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_advanced.html#custom-iterators]online docs[/url] for an example. Note that in this case you will not be able to reuse the same iterator instance in nested loops. Also, make sure you reset the iterator state in this method if you want to reuse the same instance multiple times.
+				[b]Note:[/b] Avoid storing iterator state in a member variable, use the [param iter] parameter instead. Otherwise, you won't be able to reuse the same iterator instance in nested loops.
+				See also [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_advanced.html#custom-iterators]online docs[/url].
 			</description>
 		</method>
 		<method name="_iter_next" qualifiers="virtual">
@@ -761,7 +766,7 @@
 		</method>
 		<method name="is_class" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="class" type="String" />
+			<param index="0" name="class" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the object inherits from the given [param class]. See also [method get_class].
 				[codeblocks]
@@ -793,7 +798,8 @@
 		<method name="is_queued_for_deletion" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the [method Node.queue_free] method was called for the object.
+				Returns [code]true[/code] if the methods [method Node.queue_free] or [method SceneTree.queue_delete] was called for the object.
+				[b]Note:[/b] This method does not return [code]true[/code] on children of the node that [method Node.queue_free] has been called on, even though they will be freed together with the parent.
 			</description>
 		</method>
 		<method name="notification">
@@ -1037,20 +1043,20 @@
 		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
 			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.
 		</constant>
-		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags">
+		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags" is_bitfield="true">
 			Deferred connections trigger their [Callable]s on idle time (at the end of the frame), rather than instantly.
 		</constant>
-		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags">
+		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags" is_bitfield="true">
 			Persisting connections are stored when the object is serialized (such as when using [method PackedScene.pack]). In the editor, connections created through the Signals dock are always persisting.
 			[b]Note:[/b] Connections to lambda functions (that is, when the function code is embedded in the [method connect] call) cannot be made persistent.
 		</constant>
-		<constant name="CONNECT_ONE_SHOT" value="4" enum="ConnectFlags">
+		<constant name="CONNECT_ONE_SHOT" value="4" enum="ConnectFlags" is_bitfield="true">
 			One-shot connections disconnect themselves after emission.
 		</constant>
-		<constant name="CONNECT_REFERENCE_COUNTED" value="8" enum="ConnectFlags">
+		<constant name="CONNECT_REFERENCE_COUNTED" value="8" enum="ConnectFlags" is_bitfield="true">
 			Reference-counted connections can be assigned to the same [Callable] multiple times. Each disconnection decreases the internal counter. The signal fully disconnects only when the counter reaches 0.
 		</constant>
-		<constant name="CONNECT_APPEND_SOURCE_OBJECT" value="16" enum="ConnectFlags">
+		<constant name="CONNECT_APPEND_SOURCE_OBJECT" value="16" enum="ConnectFlags" is_bitfield="true">
 			On signal emission, the source object is automatically appended after the original arguments of the signal, regardless of the connected [Callable]'s unbinds which affect only the original arguments of the signal (see [method Callable.unbind], [method Callable.get_unbound_arguments_count]).
 			[codeblock]
 			extends Object

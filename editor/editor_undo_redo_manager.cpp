@@ -32,6 +32,7 @@
 #include "editor_undo_redo_manager.compat.inc"
 
 #include "core/io/resource.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"

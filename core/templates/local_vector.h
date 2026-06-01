@@ -32,7 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
+#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/sort_array.h"
 #include "core/templates/vector.h"
 
@@ -190,7 +190,7 @@ public:
 		_resize<!std::is_trivially_constructible_v<T>>(p_size);
 	}
 
-	/// Resize and set all values to 0 / false / nullptr.
+	/// Resize and set new values to 0 / false / nullptr.
 	_FORCE_INLINE_ void resize_initialized(U p_size) { _resize<true>(p_size); }
 
 	/// Resize and keep memory uninitialized.

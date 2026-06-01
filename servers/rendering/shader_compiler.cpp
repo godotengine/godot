@@ -30,6 +30,7 @@
 
 #include "shader_compiler.h"
 
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_types.h"
 
@@ -928,7 +929,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.renames.has(vnode->name)) {
 				code = p_default_actions.renames[vnode->name];
 			} else {
-				if (shader->uniforms.has(vnode->name)) {
+				bool param_found = false;
+				if (function) {
+					for (const SL::FunctionNode::Argument &argument : function->arguments) {
+						if (argument.name == vnode->name) {
+							param_found = true;
+							break;
+						}
+					}
+				}
+				if (!param_found && shader->uniforms.has(vnode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
 					if (u.is_texture()) {
@@ -1053,7 +1063,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.renames.has(anode->name)) {
 				code = p_default_actions.renames[anode->name];
 			} else {
-				if (shader->uniforms.has(anode->name)) {
+				bool param_found = false;
+				if (function) {
+					for (const SL::FunctionNode::Argument &argument : function->arguments) {
+						if (argument.name == anode->name) {
+							param_found = true;
+							break;
+						}
+					}
+				}
+				if (!param_found && shader->uniforms.has(anode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[anode->name];
 					if (u.is_texture()) {
@@ -1518,11 +1537,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 }
 
 ShaderLanguage::DataType ShaderCompiler::_get_global_shader_uniform_type(const StringName &p_name) {
-	RS::GlobalShaderParameterType gvt = RSG::material_storage->global_shader_parameter_get_type(p_name);
+	RSE::GlobalShaderParameterType gvt = RSG::material_storage->global_shader_parameter_get_type(p_name);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
-Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
+Error ShaderCompiler::compile(RSE::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
 	SL::ShaderCompileInfo info;
 	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);

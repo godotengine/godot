@@ -36,19 +36,17 @@ def generate_test_data_files(reftag: str):
     gdextension_reference_json = download_gdextension_api(reftag)
 
     with open(CLASS_METHODS_FILE, "w") as classes_file:
-        classes_file.writelines(
-            [
-                f"{klass['name']} {func['name']} {func['hash']}\n"
-                for (klass, func) in itertools.chain(
-                    (
-                        (klass, method)
-                        for klass in gdextension_reference_json["classes"]
-                        for method in klass.get("methods", [])
-                        if not method.get("is_virtual")
-                    ),
-                )
-            ]
-        )
+        classes_file.writelines([
+            f"{klass['name']} {func['name']} {func['hash']}\n"
+            for (klass, func) in itertools.chain(
+                (
+                    (klass, method)
+                    for klass in gdextension_reference_json["classes"]
+                    for method in klass.get("methods", [])
+                    if not method.get("is_virtual")
+                ),
+            )
+        ])
 
     variant_types: dict[str, int] | None = None
     for global_enum in gdextension_reference_json["global_enums"]:
@@ -63,18 +61,16 @@ def generate_test_data_files(reftag: str):
         return
 
     with open(BUILTIN_METHODS_FILE, "w") as f:
-        f.writelines(
-            [
-                f"{variant_types[klass['name'].lower()]} {func['name']} {func['hash']}\n"
-                for (klass, func) in itertools.chain(
-                    (
-                        (klass, method)
-                        for klass in gdextension_reference_json["builtin_classes"]
-                        for method in klass.get("methods", [])
-                    ),
-                )
-            ]
-        )
+        f.writelines([
+            f"{variant_types[klass['name'].lower()]} {func['name']} {func['hash']}\n"
+            for (klass, func) in itertools.chain(
+                (
+                    (klass, method)
+                    for klass in gdextension_reference_json["builtin_classes"]
+                    for method in klass.get("methods", [])
+                ),
+            )
+        ])
 
     with open(UTILITY_FUNCTIONS_FILE, "w") as f:
         f.writelines([f"{func['name']} {func['hash']}\n" for func in gdextension_reference_json["utility_functions"]])

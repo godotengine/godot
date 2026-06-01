@@ -547,12 +547,6 @@ void
 hb_buffer_t::merge_clusters_impl (unsigned int start,
 				  unsigned int end)
 {
-  if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (cluster_level))
-  {
-    unsafe_to_break (start, end);
-    return;
-  }
-
   max_ops -= end - start;
   if (unlikely (max_ops < 0))
     successful = false;
@@ -581,15 +575,9 @@ hb_buffer_t::merge_clusters_impl (unsigned int start,
     set_cluster (info[i], cluster);
 }
 void
-hb_buffer_t::merge_out_clusters (unsigned int start,
-				 unsigned int end)
+hb_buffer_t::merge_out_clusters_impl (unsigned int start,
+				      unsigned int end)
 {
-  if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (cluster_level))
-    return;
-
-  if (unlikely (end - start < 2))
-    return;
-
   max_ops -= end - start;
   if (unlikely (max_ops < 0))
     successful = false;
@@ -972,6 +960,9 @@ void
 hb_buffer_set_content_type (hb_buffer_t              *buffer,
 			    hb_buffer_content_type_t  content_type)
 {
+  if (unlikely (hb_object_is_immutable (buffer)))
+    return;
+
   buffer->content_type = content_type;
 }
 
@@ -1822,6 +1813,9 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
   if (item_length == -1)
     item_length = text_length - item_offset;
 
+  item_offset = hb_min (item_offset, (unsigned) text_length);
+  item_length = hb_clamp (item_length, 0, text_length - (int) item_offset);
+
   if (unlikely (item_length < 0 ||
 		item_length > INT_MAX / 8 ||
 		!buffer->ensure (buffer->len + item_length * sizeof (T) / 4)))
@@ -2290,6 +2284,22 @@ hb_buffer_diff (hb_buffer_t *buffer,
  * Debugging.
  */
 
+void
+hb_buffer_t::changed ()
+{
+#ifdef HB_NO_BUFFER_MESSAGE
+  return;
+#else
+  if (!message_depth)
+    return;
+
+  if (changed_func)
+    changed_func (this, changed_data);
+  else
+    update_digest ();
+#endif
+}
+
 #ifndef HB_NO_BUFFER_MESSAGE
 /**
  * hb_buffer_set_message_func:
@@ -2307,7 +2317,8 @@ hb_buffer_set_message_func (hb_buffer_t *buffer,
 			    hb_buffer_message_func_t func,
 			    void *user_data, hb_destroy_func_t destroy)
 {
-  if (unlikely (hb_object_is_immutable (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)) ||
+      unlikely (buffer->message_depth))
   {
     if (destroy)
       destroy (user_data);
@@ -2327,6 +2338,23 @@ hb_buffer_set_message_func (hb_buffer_t *buffer,
     buffer->message_destroy = nullptr;
   }
 }
+/**
+ * hb_buffer_changed:
+ * @buffer: An #hb_buffer_t
+ *
+ * Called by a message callback after modifying buffer glyph indices,
+ * to update internal caches.
+ *
+ * If not called from inside a message callback, does nothing.
+ *
+ * Since: 13.0.0
+ **/
+void
+hb_buffer_changed (hb_buffer_t *buffer)
+{
+  buffer->changed ();
+}
+
 bool
 hb_buffer_t::message_impl (hb_font_t *font, const char *fmt, va_list ap)
 {

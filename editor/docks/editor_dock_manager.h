@@ -52,12 +52,15 @@ private:
 	bool is_updating = false;
 
 protected:
+	void _notification(int p_what);
 	void _update_visibility();
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
 public:
+	Control *get_child_as_control(int p_index) const;
+
 	DockSplitContainer();
 };
 
@@ -82,12 +85,15 @@ private:
 	friend class DockContextPopup;
 	friend class EditorDockDragHint;
 	friend class DockShortcutHandler;
+	friend class DockSlotGrid;
 
 	static inline EditorDockManager *singleton = nullptr;
 
 	// To access splits easily by index.
 	Vector<DockSplitContainer *> vsplits;
+	DockSplitContainer *main_vsplit = nullptr;
 	DockSplitContainer *main_hsplit = nullptr;
+	DockSplitContainer *bottom_hsplit = nullptr;
 
 	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
 	Vector<WindowWrapper *> dock_windows;
@@ -128,7 +134,9 @@ public:
 	void set_tab_icon_max_width(int p_max_width);
 
 	void add_vsplit(DockSplitContainer *p_split);
-	void set_hsplit(DockSplitContainer *p_split);
+	void set_main_vsplit(DockSplitContainer *p_split);
+	void set_main_hsplit(DockSplitContainer *p_split);
+	void set_bottom_hsplit(DockSplitContainer *p_split);
 	void register_dock_slot(DockTabContainer *p_tab_container);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
@@ -151,6 +159,34 @@ public:
 	EditorDockManager();
 };
 
+class DockSlotGrid : public Control {
+	GDCLASS(DockSlotGrid, Control);
+
+	static constexpr Vector2 GRID_SIZE = Vector2(8, 8);
+	static constexpr Vector2 MARGINS = Vector2(4, 8);
+	static constexpr Vector2 CELL_SIZE = Vector2(24, 12);
+	static constexpr int TABS_PER_CELL = 3;
+	static constexpr int TAB_MARGIN = 2;
+
+	int hovered_slot = -1;
+
+	Rect2 rect_cache[EditorDock::DOCK_SLOT_MAX];
+	Rect2 main_screen_rect;
+	bool rect_cache_dirty = true;
+
+	void _update_rect_cache();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual Size2 get_minimum_size() const override;
+
+public:
+	EditorDock *context_dock = nullptr;
+};
+
 class DockContextPopup : public PopupPanel {
 	GDCLASS(DockContextPopup, PopupPanel);
 
@@ -162,22 +198,17 @@ private:
 	Button *tab_move_right_button = nullptr;
 	Button *close_button = nullptr;
 
-	Control *dock_select = nullptr;
-	Rect2 dock_select_rects[EditorDock::DOCK_SLOT_MAX];
-	int dock_select_rect_over_idx = -1;
+	DockSlotGrid *dock_select = nullptr;
 
 	EditorDock *context_dock = nullptr;
 
 	EditorDockManager *dock_manager = nullptr;
 
+	void _slot_clicked(int p_slot);
 	void _tab_move_left();
 	void _tab_move_right();
 	void _close_dock();
 	void _float_dock();
-
-	void _dock_select_input(const Ref<InputEvent> &p_input);
-	void _dock_select_mouse_exited();
-	void _dock_select_draw();
 
 	void _update_buttons();
 

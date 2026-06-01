@@ -36,15 +36,13 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
+#include <io.h>
 #include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
+
 #include <cerrno>
 #include <cwchar>
 
@@ -71,6 +69,9 @@ void FileAccessWindows::check_errors(bool p_write) const {
 bool FileAccessWindows::is_path_invalid(const String &p_path) {
 	// Check for invalid operating system file.
 	String fname = p_path.get_file().to_lower();
+	if (fname.ends_with(".") || fname.ends_with(" ")) {
+		return true;
+	}
 
 	int dot = fname.find_char('.');
 	if (dot != -1) {
@@ -693,11 +694,11 @@ HashSet<String> FileAccessWindows::invalid_files;
 
 void FileAccessWindows::initialize() {
 	static const char *reserved_files[]{
-		"con", "prn", "aux", "nul", "com0", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9", "lpt0", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9", nullptr
+		"con", "prn", "aux", "nul", "com0", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9", "com¹", "com²", "com³", "lpt0", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9", "lpt¹", "lpt²", "lpt³", nullptr
 	};
 	int reserved_file_index = 0;
 	while (reserved_files[reserved_file_index] != nullptr) {
-		invalid_files.insert(reserved_files[reserved_file_index]);
+		invalid_files.insert(String::utf8(reserved_files[reserved_file_index]));
 		reserved_file_index++;
 	}
 

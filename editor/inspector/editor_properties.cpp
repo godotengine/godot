@@ -32,6 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
@@ -56,11 +60,19 @@
 #include "scene/gui/color_picker.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/texture_button.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/sky.h"
-#include "scene/resources/visual_shader_nodes.h"
+#include "servers/display/display_server.h"
+
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+#include "modules/visual_shader/vs_nodes/visual_shader_nodes.h"
+#endif // MODULE_VISUAL_SHADER_ENABLED
 
 ///////////////////// NIL /////////////////////////
 
@@ -96,6 +108,10 @@ void EditorPropertyVariant::_popup_edit_menu() {
 	change_type->popup();
 }
 
+void EditorPropertyVariant::_object_id_selected(const StringName &p_property, ObjectID p_id) {
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
+}
+
 void EditorPropertyVariant::_set_read_only(bool p_read_only) {
 	edit_button->set_disabled(p_read_only);
 	if (sub_property) {
@@ -124,7 +140,14 @@ void EditorPropertyVariant::update_property() {
 		}
 
 		if (current_type == Variant::OBJECT) {
-			sub_property = EditorInspector::instantiate_property_editor(nullptr, current_type, "", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static(), PROPERTY_USAGE_NONE);
+			Object *obj = value.get_validated_object();
+			if (Object::cast_to<EncodedObjectAsID>(obj)) {
+				EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+				editor->setup("Object");
+				sub_property = editor;
+			} else {
+				sub_property = EditorInspector::instantiate_property_editor(nullptr, current_type, "", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static(), PROPERTY_USAGE_NONE);
+			}
 		} else {
 			sub_property = EditorInspector::instantiate_property_editor(nullptr, current_type, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 		}
@@ -137,6 +160,7 @@ void EditorPropertyVariant::update_property() {
 		sub_property->set_read_only(is_read_only());
 		sub_property->set_h_size_flags(SIZE_EXPAND_FILL);
 		sub_property->connect(SNAME("property_changed"), callable_mp((EditorProperty *)this, &EditorProperty::emit_changed));
+		sub_property->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyVariant::_object_id_selected));
 		content->add_child(sub_property);
 		content->move_child(sub_property, 0);
 		sub_property->update_property();
@@ -562,6 +586,8 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	option_button->set_clip_text(true);
 	option_button->set_flat(true);
+	option_button->set_search_bar_enabled(true);
+	option_button->set_search_bar_min_item_count(10);
 	option_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	default_layout->add_child(option_button);
@@ -775,16 +801,7 @@ void EditorPropertyPath::_update_uid_icon() {
 
 void EditorPropertyPath::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	const Dictionary drag_data = p_data;
-	if (!drag_data.has("type")) {
-		return;
-	}
-	if (String(drag_data["type"]) != "files") {
-		return;
-	}
 	const Vector<String> filesPaths = drag_data["files"];
-	if (filesPaths.is_empty()) {
-		return;
-	}
 
 	_path_selected(filesPaths[0]);
 }
@@ -794,17 +811,31 @@ bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant 
 	if (!drag_data.has("type")) {
 		return false;
 	}
-	if (String(drag_data["type"]) != "files") {
-		return false;
-	}
 	const Vector<String> filesPaths = drag_data["files"];
-	if (filesPaths.is_empty()) {
-		return false;
-	}
+	if (folder) {
+		if (String(drag_data["type"]) != "files_and_dirs") {
+			return false;
+		}
+		if (filesPaths.size() > 1) {
+			for (const String &p : filesPaths) {
+				if (!p.ends_with("/")) {
+					return false;
+				}
+			}
+		}
+		return true;
+	} else {
+		if (String(drag_data["type"]) != "files") {
+			return false;
+		}
+		if (filesPaths.is_empty()) {
+			return false;
+		}
 
-	for (const String &extension : extensions) {
-		if (filesPaths[0].ends_with(extension.substr(1))) {
-			return true;
+		for (const String &extension : extensions) {
+			if (filesPaths[0].ends_with(extension.substr(1))) {
+				return true;
+			}
 		}
 	}
 
@@ -969,6 +1000,8 @@ EditorPropertyEnum::EditorPropertyEnum() {
 	options->set_flat(true);
 	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	options->set_search_bar_enabled(true);
+	options->set_search_bar_min_item_count(10);
 	add_child(options);
 	add_focusable(options);
 	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyEnum::_option_selected));
@@ -1561,6 +1594,12 @@ void EditorPropertyInteger::_value_changed(int64_t val) {
 	emit_changed(get_edited_property(), val);
 }
 
+void EditorPropertyInteger::set_deferred_drag_mode_enabled(bool p_enabled) {
+	EditorProperty::set_deferred_drag_mode_enabled(p_enabled);
+
+	spin->set_deferred_drag_mode_enabled(p_enabled);
+}
+
 void EditorPropertyInteger::update_property() {
 	int64_t val = get_edited_property_display_value();
 	spin->set_value_no_signal(val);
@@ -1597,12 +1636,24 @@ EditorPropertyInteger::EditorPropertyInteger() {
 
 ///////////////////// OBJECT ID /////////////////////////
 
-void EditorPropertyObjectID::_set_read_only(bool p_read_only) {
-	edit->set_disabled(p_read_only);
+ObjectID EditorPropertyObjectID::_get_object_id() const {
+	const Variant value = get_edited_property_value();
+	if (value.get_type() == Variant::OBJECT) {
+		Object *obj = value.get_validated_object();
+		EncodedObjectAsID *obj_as_id = Object::cast_to<EncodedObjectAsID>(obj);
+		if (obj_as_id) {
+			return obj_as_id->get_object_id();
+		}
+	}
+	return value;
 }
 
 void EditorPropertyObjectID::_edit_pressed() {
-	emit_signal(SNAME("object_id_selected"), get_edited_property(), get_edited_property_value());
+	emit_signal(SNAME("object_id_selected"), get_edited_property(), _get_object_id());
+}
+
+void EditorPropertyObjectID::_set_read_only(bool p_read_only) {
+	edit->set_disabled(p_read_only);
 }
 
 void EditorPropertyObjectID::update_property() {
@@ -1611,10 +1662,10 @@ void EditorPropertyObjectID::update_property() {
 		type = "Object";
 	}
 
-	ObjectID id = get_edited_property_value();
+	const ObjectID id = _get_object_id();
 	if (id.is_valid()) {
-		edit->set_text(type + " ID: " + uitos(id));
-		edit->set_tooltip_text(type + " ID: " + uitos(id));
+		edit->set_text(type + ": " + uitos(id));
+		edit->set_tooltip_text(type + ": " + uitos(id));
 		edit->set_disabled(false);
 		edit->set_button_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
@@ -1622,6 +1673,14 @@ void EditorPropertyObjectID::update_property() {
 		edit->set_tooltip_text("");
 		edit->set_disabled(true);
 		edit->set_button_icon(Ref<Texture2D>());
+	}
+}
+
+void EditorPropertyObjectID::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			edit->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+		} break;
 	}
 }
 
@@ -1696,6 +1755,12 @@ void EditorPropertyFloat::_value_changed(double val) {
 		val = Math::deg_to_rad(val);
 	}
 	emit_changed(get_edited_property(), val);
+}
+
+void EditorPropertyFloat::set_deferred_drag_mode_enabled(bool p_enabled) {
+	EditorProperty::set_deferred_drag_mode_enabled(p_enabled);
+
+	spin->set_deferred_drag_mode_enabled(p_enabled);
 }
 
 void EditorPropertyFloat::update_property() {
@@ -3347,6 +3412,7 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 	if (!p_inspect && use_sub_inspector) {
 		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
+		user_opened_editor = unfold;
 		update_property();
 	} else if (!is_checkable() || is_checked()) {
 		emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
@@ -3393,12 +3459,14 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 	Ref<ViewportTexture> vpt = p_resource;
 	if (vpt.is_valid()) {
 		r = Object::cast_to<Resource>(get_edited_object());
+#ifdef MODULE_VISUAL_SHADER_ENABLED
 		if (Object::cast_to<VisualShaderNodeTexture>(r)) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture in a Texture2D node because the texture will not be bound to a scene.\nUse a Texture2DParameter node instead and set the texture in the \"Shader Parameters\" tab."));
 			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;
 		}
+#endif // MODULE_VISUAL_SHADER_ENABLED
 
 		if (r && r->get_path().is_resource_file()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on resources saved as a file.\nResource needs to belong to a scene."));
@@ -3459,7 +3527,7 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 void EditorPropertyResource::_open_editor_pressed() {
 	Ref<Resource> res = get_edited_property_value();
 	if (res.is_valid()) {
-		EditorNode::get_singleton()->edit_item(res.ptr(), this);
+		EditorNode::get_singleton()->edit_item(res.ptr(), this, user_opened_editor);
 	}
 }
 
@@ -3663,6 +3731,8 @@ void EditorPropertyResource::update_property() {
 	resource_picker->set_edited_resource_no_check(res);
 	const Ref<Resource> &real_res = get_edited_property_value();
 	resource_picker->set_force_allow_unique(real_res.is_null() && res.is_valid());
+
+	user_opened_editor = false;
 }
 
 void EditorPropertyResource::collapse_all_folding() {
@@ -3700,6 +3770,13 @@ void EditorPropertyResource::fold_resource() {
 		resource_picker->set_toggle_pressed(false);
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
 		update_property();
+	}
+}
+
+void EditorPropertyResource::set_keying(bool p_keying) {
+	EditorProperty::set_keying(p_keying);
+	if (sub_inspector) {
+		sub_inspector->set_keying(p_keying);
 	}
 }
 
@@ -3960,7 +4037,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options;
 				Vector<String> option_names;
 				if (p_hint_text.begins_with(";")) {
-					// This is not supported officially. Only for `interface/editor/editor_language`.
+					// This is not supported officially. Only for `interface/editor/localization/editor_language`.
 					for (const String &option : p_hint_text.split(";", false)) {
 						options.append(option.get_slicec('/', 0));
 						option_names.append(option.get_slicec('/', 1));

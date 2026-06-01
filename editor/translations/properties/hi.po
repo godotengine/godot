@@ -712,6 +712,9 @@ msgstr "बड़े एंडियन"
 msgid "Blocking Mode Enabled"
 msgstr "अवरुद्ध मोड सक्रिय"
 
+msgid "Connection"
+msgstr "कनेक्शन"
+
 msgid "Read Chunk Size"
 msgstr "चंक आकार पढ़ें"
 
@@ -901,12 +904,6 @@ msgstr "अंत ऑफसेट"
 msgid "Easing"
 msgstr "आसान"
 
-msgid "Asset Library"
-msgstr "अस्सेट संग्रह"
-
-msgid "Available URLs"
-msgstr "उपलब्ध URLs"
-
 msgid "Debug Adapter"
 msgstr "डीबग एडाप्टर"
 
@@ -1014,6 +1011,9 @@ msgstr "सिर्फ निर्यात योजना"
 
 msgid "Delete Old Export Files Unconditionally"
 msgstr "पुरानी निर्यात फ़ाइलें बिना शर्त हटाएं"
+
+msgid "Camera"
+msgstr "कैमरा"
 
 msgid "Plugins"
 msgstr "प्लगइन्स"
@@ -1429,6 +1429,9 @@ msgstr "रूट नाम"
 msgid "Root Script"
 msgstr "रूट लिपि"
 
+msgid "Mesh Library"
+msgstr "मेश संग्रह"
+
 msgid "Apply Root Scale"
 msgstr "रूट स्केल लागू करें"
 
@@ -1657,6 +1660,12 @@ msgstr "परिपूर्णता"
 msgid "Color Map"
 msgstr "रंग मैप"
 
+msgid "Fix Alpha Border"
+msgstr "अल्फ़ा बॉर्डर ठीक करें"
+
+msgid "Premult Alpha"
+msgstr "प्रीमल्ट अल्फ़ा"
+
 msgid "Normal Map"
 msgstr "सामान्य मानचित्र"
 
@@ -1683,12 +1692,6 @@ msgstr "नीला"
 
 msgid "Alpha"
 msgstr "अल्फा"
-
-msgid "Fix Alpha Border"
-msgstr "अल्फ़ा बॉर्डर ठीक करें"
-
-msgid "Premult Alpha"
-msgstr "प्रीमल्ट अल्फ़ा"
 
 msgid "Normal Map Invert Y"
 msgstr "सामान्य मानचित्र उलटा Y"
@@ -1895,8 +1898,20 @@ msgstr "गिज़मो कलर्स"
 msgid "Particles Emission Shape"
 msgstr "कण उत्सर्जन आकार"
 
+msgid "Mesh"
+msgstr "मेश"
+
+msgid "Shapes"
+msgstr "आकार"
+
+msgid "Preview"
+msgstr "पूर्व दर्शन"
+
 msgid "Interface"
 msgstr "इंटरफ़ेस"
+
+msgid "Localization"
+msgstr "स्थानीयकरण"
 
 msgid "Editor Language"
 msgstr "एडीटर भाषा"
@@ -1904,14 +1919,23 @@ msgstr "एडीटर भाषा"
 msgid "Use Threads"
 msgstr "थ्रेड्स का प्रयोग करें"
 
+msgid "Available URLs"
+msgstr "उपलब्ध URLs"
+
 msgid "Localize Settings"
 msgstr "सेटिंग्स को स्थानीयकृत करें"
+
+msgid "Docks"
+msgstr "डौक्स"
 
 msgid "Dock Tab Style"
 msgstr "डॉक टैब शैली"
 
 msgid "UI Layout Direction"
 msgstr "UI लेआउट दिशा"
+
+msgid "Appearance"
+msgstr "उपस्थिति"
 
 msgid "Display Scale"
 msgstr "प्रदर्शन स्केल"
@@ -1922,14 +1946,14 @@ msgstr "कस्टम डिस्प्ले स्केल"
 msgid "Editor Screen"
 msgstr "संपादक स्क्रीन"
 
+msgid "Input"
+msgstr "इनपुट"
+
 msgid "Tablet Driver"
 msgstr "टैबलेट ड्राइवर"
 
 msgid "Project Manager Screen"
 msgstr "योजना मैनेजर स्क्रीन"
-
-msgid "Connection"
-msgstr "कनेक्शन"
 
 msgid "Check for Updates"
 msgstr "अद्यतन के लिए जाँच"
@@ -1985,6 +2009,9 @@ msgstr "कोड फ़ॉन्ट"
 msgid "Dragging Hover Wait Seconds"
 msgstr "ड्रेगिंग होवर प्रतीक्षा सेकंड"
 
+msgid "Behavior"
+msgstr "व्यवहार"
+
 msgid "Separate Distraction Mode"
 msgstr "अलग करना मोड"
 
@@ -2030,14 +2057,8 @@ msgstr "लगातार अपडेट करें"
 msgid "Collapse Main Menu"
 msgstr "मुख्य मेनू को संक्षिप्त करें"
 
-msgid "Show Scene Tree Root Selection"
-msgstr "दृश्य दिखाएँ वृक्ष जड़ चयन"
-
 msgid "Derive Script Globals by Name"
 msgstr "नाम से स्क्रिप्ट ग्लोबल्स प्राप्त करें"
-
-msgid "Docks"
-msgstr "डौक्स"
 
 msgid "Scene Tree"
 msgstr "दृश्य वृक्ष"
@@ -2321,9 +2342,6 @@ msgstr "टेक्स्ट फ़ाइल एक्सटेंशन"
 msgid "Auto Refresh Interval"
 msgstr "ऑटो रिफ्रेश अंतराल"
 
-msgid "Appearance"
-msgstr "उपस्थिति"
-
 msgid "Enable Inline Color Picker"
 msgstr "इनलाइन रंग पिकर सक्षम करें"
 
@@ -2374,9 +2392,6 @@ msgstr "खाली स्थान"
 
 msgid "Line Spacing"
 msgstr "पंक्ति रिक्ति"
-
-msgid "Behavior"
-msgstr "व्यवहार"
 
 msgid "Move Caret on Right Click"
 msgstr "दाएं क्लिक पर कैरेट ले जाएं"
@@ -2485,9 +2500,6 @@ msgstr "AABB"
 
 msgid "Stream Player 3D"
 msgstr "स्ट्रीम प्लेयर 3D"
-
-msgid "Camera"
-msgstr "कैमरा"
 
 msgid "Decal"
 msgstr "डेकल"
@@ -2669,6 +2681,18 @@ msgstr "HTTP Proxy"
 msgid "Host"
 msgstr "मेजबान"
 
+msgid "Language Server"
+msgstr "भाषा सर्वर"
+
+msgid "Show Native Symbols in Editor"
+msgstr "संपादक में मूल प्रतीक दिखाएँ"
+
+msgid "Use Thread"
+msgstr "थ्रेड का प्रयोग करें"
+
+msgid "Poll Limit (µsec)"
+msgstr "मतदान सीमा (µsec)"
+
 msgid "Debugger"
 msgstr "डीबगर"
 
@@ -2701,9 +2725,6 @@ msgstr "SSH सार्वजनिक कुंजी पथ"
 
 msgid "SSH Private Key Path"
 msgstr "SSH निजी कुंजी पथ"
-
-msgid "Input"
-msgstr "इनपुट"
 
 msgid "Agile Event Flushing"
 msgstr "एजाइल इवेंट फ्लशिंग"
@@ -2897,9 +2918,6 @@ msgstr "स्पर्शरेखाओं की गणना करें"
 msgid "Flip Faces"
 msgstr "चेहरे पलटें"
 
-msgid "Mesh"
-msgstr "मेश"
-
 msgid "Material"
 msgstr "सामग्री"
 
@@ -3046,18 +3064,6 @@ msgstr "Onready के बिना नोड डिफ़ॉल्ट प्र
 
 msgid "Onready With Export"
 msgstr "निर्यात के साथ तैयार"
-
-msgid "Language Server"
-msgstr "भाषा सर्वर"
-
-msgid "Show Native Symbols in Editor"
-msgstr "संपादक में मूल प्रतीक दिखाएँ"
-
-msgid "Use Thread"
-msgstr "थ्रेड का प्रयोग करें"
-
-msgid "Poll Limit (µsec)"
-msgstr "मतदान सीमा (µsec)"
 
 msgid "glTF"
 msgstr "glTF"
@@ -3226,9 +3232,6 @@ msgstr "लपेटें S"
 
 msgid "Wrap T"
 msgstr "लपेटें T"
-
-msgid "Mesh Library"
-msgstr "मेश संग्रह"
 
 msgid "Cell"
 msgstr "सेल"
@@ -3434,6 +3437,42 @@ msgstr "आईजीडी सेवा प्रकार"
 msgid "IGD Status"
 msgstr "IGD स्थिति"
 
+msgid "Output Port for Preview"
+msgstr "पूर्वावलोकन के लिए आउटपुट पोर्ट"
+
+msgid "Flags"
+msgstr "ध्वजा"
+
+msgid "Stencil"
+msgstr "निकृंत"
+
+msgid "Input Name"
+msgstr "इनपुट नाम"
+
+msgid "Expression"
+msgstr "एक्सप्रेशन"
+
+msgid "Constant"
+msgstr "कोन्स्टन्ट"
+
+msgid "Cube Map"
+msgstr "घन मानचित्र"
+
+msgid "Operator"
+msgstr "ऑपरेटर"
+
+msgid "Function"
+msgstr "कार्य"
+
+msgid "Hint"
+msgstr "संकेत"
+
+msgid "Step"
+msgstr "कदम"
+
+msgid "Surface Index"
+msgstr "सतह सूचकांक"
+
 msgid "WebRTC"
 msgstr "वेबRTC"
 
@@ -3535,9 +3574,6 @@ msgstr "समर्थन बड़ा"
 
 msgid "Allow"
 msgstr "अनुमति दें"
-
-msgid "APK Expansion"
-msgstr "APK विस्तार"
 
 msgid "iOS Deploy"
 msgstr "IOS परिनियोजन"
@@ -4190,9 +4226,6 @@ msgstr "निर्धारणात्मक"
 msgid "Pixel Size"
 msgstr "पिक्सेल आकार"
 
-msgid "Flags"
-msgstr "ध्वजा"
-
 msgid "Billboard"
 msgstr "सूचनापटल"
 
@@ -4538,9 +4571,6 @@ msgstr "बदलना"
 msgid "Switch Mode"
 msgstr "मोड बदलना"
 
-msgid "Expression"
-msgstr "एक्सप्रेशन"
-
 msgid "Movie Quit on Finish"
 msgstr "मूवी खत्म होने पर बंद करें"
 
@@ -4615,9 +4645,6 @@ msgstr "धुरी ओफ़्सेट"
 
 msgid "Container Sizing"
 msgstr "कंटेनर का आकार"
-
-msgid "Localization"
-msgstr "स्थानीयकरण"
 
 msgid "Localize Numeral System"
 msgstr "स्थानीयकृत अंक प्रणाली"
@@ -4793,9 +4820,6 @@ msgstr "मूल मेनू को प्राथमिकता दें"
 msgid "Indeterminate"
 msgstr "अनिर्धारित"
 
-msgid "Step"
-msgstr "कदम"
-
 msgid "Allow Lesser"
 msgstr "छोटे मान की अनुमति"
 
@@ -4933,9 +4957,6 @@ msgstr "नोड नाम संख्या विभाजक"
 
 msgid "Node Name Casing"
 msgstr "नोड नाम आवरण"
-
-msgid "Shapes"
-msgstr "आकार"
 
 msgid "Shape Color"
 msgstr "आकार रंग"
@@ -5167,9 +5188,6 @@ msgstr "नक्शा डेटा"
 
 msgid "Item"
 msgstr "वस्तु"
-
-msgid "Preview"
-msgstr "पूर्व दर्शन"
 
 msgid "Add UV2"
 msgstr "ऐड UV2"
@@ -5426,9 +5444,6 @@ msgstr "ORM"
 msgid "Metallic"
 msgstr "धातुमय"
 
-msgid "Operator"
-msgstr "ऑपरेटर"
-
 msgid "On UV2"
 msgstr "UV2 पर"
 
@@ -5467,9 +5482,6 @@ msgstr "निकटता फेड"
 
 msgid "MSDF"
 msgstr "MSDF"
-
-msgid "Stencil"
-msgstr "निकृंत"
 
 msgid "Convex Hull Approximation"
 msgstr "उत्तल पतवार सन्निकटन"
@@ -5566,27 +5578,6 @@ msgstr "सदस्य कीवर्ड रंग"
 
 msgid "File"
 msgstr "नत्थी"
-
-msgid "Output Port for Preview"
-msgstr "पूर्वावलोकन के लिए आउटपुट पोर्ट"
-
-msgid "Input Name"
-msgstr "इनपुट नाम"
-
-msgid "Constant"
-msgstr "कोन्स्टन्ट"
-
-msgid "Cube Map"
-msgstr "घन मानचित्र"
-
-msgid "Function"
-msgstr "कार्य"
-
-msgid "Hint"
-msgstr "संकेत"
-
-msgid "Surface Index"
-msgstr "सतह सूचकांक"
 
 msgid "Align to Largest Stylebox"
 msgstr "सबसे बड़े स्टाइलबॉक्स से संरेखित करें"
@@ -5920,9 +5911,6 @@ msgstr "Msec"
 
 msgid "Room Size"
 msgstr "कमरे का आकार"
-
-msgid "Tap Back Pos"
-msgstr "टैप बैक स्थिति"
 
 msgid "Pan Pullout"
 msgstr "पैन बाहर खींचना"

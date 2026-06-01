@@ -30,8 +30,8 @@
 
 #include "editor_export.h"
 
-#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
+#include "core/object/callable_mp.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/main/timer.h"
 
@@ -482,7 +482,7 @@ void EditorExport::update_export_presets() {
 			export_presets_updated = true;
 
 			bool update_value_overrides = false;
-			List<EditorExportPlatform::ExportOption> options = platform_options[preset->get_platform()->get_name()];
+			List<EditorExportPlatform::ExportOption> options(platform_options[preset->get_platform()->get_name()]);
 
 			// Clear the preset properties prior to reloading, keep the values to preserve options from plugins that may be currently disabled.
 			preset->properties.clear();

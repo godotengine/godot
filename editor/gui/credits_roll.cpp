@@ -34,14 +34,17 @@
 #include "core/donors.gen.h"
 #include "core/input/input.h"
 #include "core/license.gen.h"
+#include "core/object/callable_mp.h"
 #include "core/string/string_builder.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 Label *CreditsRoll::_create_label(const String &p_with_text, LabelSize p_size) {
@@ -144,13 +147,21 @@ void CreditsRoll::_notification(int p_what) {
 
 void CreditsRoll::roll_credits() {
 	if (!project_manager) {
-		font_size_normal = EditorNode::get_singleton()->get_editor_theme()->get_font_size("main_size", EditorStringName(EditorFonts)) * 2;
+		Ref<Theme> theme;
+		if (EditorNode::get_singleton()) {
+			theme = EditorNode::get_singleton()->get_editor_theme();
+		} else if (ProjectManager::get_singleton()) {
+			theme = ProjectManager::get_singleton()->get_theme();
+		} else {
+			return;
+		}
+		font_size_normal = theme->get_font_size("main_size", EditorStringName(EditorFonts)) * 2;
 		font_size_header = font_size_normal + 10 * EDSCALE;
 		font_size_big_header = font_size_header + 20 * EDSCALE;
-		bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("bold", EditorStringName(EditorFonts));
+		bold_font = theme->get_font("bold", EditorStringName(EditorFonts));
 
 		{
-			const Ref<Texture2D> logo_texture = EditorNode::get_singleton()->get_editor_theme()->get_icon("Logo", EditorStringName(EditorIcons));
+			const Ref<Texture2D> logo_texture = theme->get_icon("Logo", EditorStringName(EditorIcons));
 
 			TextureRect *logo = memnew(TextureRect);
 			logo->set_custom_minimum_size(Vector2(0, logo_texture->get_height() * 3));
@@ -228,7 +239,7 @@ void CreditsRoll::roll_credits() {
 		_create_nothing(400 * EDSCALE);
 		_create_label(TTRC("Thank you for choosing Godot Engine!"), LabelSize::BIG_HEADER);
 	}
-	// Needs to be set here, so it stays centered even if the window is resized.
+	// Needs to be set here, otherwise the starting position will be incorrect.
 	content->set_anchors_and_offsets_preset(Control::PRESET_VCENTER_WIDE);
 
 	Window *root = get_tree()->get_root();
@@ -245,5 +256,6 @@ CreditsRoll::CreditsRoll() {
 	add_child(background);
 
 	content = memnew(VBoxContainer);
+	content->set_grow_direction_preset(Control::PRESET_VCENTER_WIDE);
 	add_child(content);
 }

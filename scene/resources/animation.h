@@ -40,7 +40,7 @@ class Animation : public Resource {
 	RES_BASE_EXTENSION("anim");
 
 public:
-	typedef uint32_t TypeHash;
+	typedef uint64_t TrackCacheID;
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
 	static constexpr real_t DEFAULT_STEP = 1.0 / 30;
@@ -109,9 +109,16 @@ public:
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
 		bool loop_wrap = true;
 		NodePath path; // Path to something.
-		TypeHash thash = 0; // Hash by Path + SubPath + TrackType.
+		StringName concatenated_path;
 		bool imported = false;
 		bool enabled = true;
+		TrackCacheID get_unique_id() const {
+			// HACK. StringName pointer allocates 40 bytes (sizeof(StringName::_Data)), so any StringName pointer we allocate
+			// is guaranteed to not have another StringName pointer within 40 bytes address range. get_cache_type() returns
+			// a value in range (0, 8) so this can be used as an offset while keeping the uniqueness property.
+			// This will break if sizeof(StringName::_Data) is less than max(CACHE_TYPE).
+			return (TrackCacheID)(concatenated_path.data_unique_pointer()) + get_cache_type(type);
+		}
 		virtual ~Track() {}
 	};
 
@@ -250,6 +257,9 @@ private:
 	HashMap<StringName, Color> marker_colors; // name -> color
 
 	LocalVector<Track *> tracks;
+#ifdef TOOLS_ENABLED
+	HashSet<StringName> folded_groups;
+#endif // TOOLS_ENABLED
 
 	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);
@@ -276,15 +286,13 @@ private:
 	_FORCE_INLINE_ T _interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
 
 	template <typename T>
-	_FORCE_INLINE_ void _track_get_key_indices_in_range(const LocalVector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
+	_FORCE_INLINE_ void _track_get_key_indices_in_range(const LocalVector<T> &p_array, double from_time, double to_time, LocalVector<int> *r_indices, bool p_is_backward) const;
 
 	double length = 1.0;
 	real_t step = DEFAULT_STEP;
 	LoopMode loop_mode = LOOP_NONE;
 	bool capture_included = false;
 	void _check_capture_included();
-
-	void _track_update_hash(int p_track);
 
 	/* Animation compression page format (version 1):
 	 *
@@ -364,7 +372,7 @@ private:
 	bool _fetch_compressed_by_index(uint32_t p_compressed_track, int p_index, Vector3i &r_value, double &r_time) const;
 	int _get_compressed_key_count(uint32_t p_compressed_track) const;
 	template <uint32_t COMPONENTS>
-	void _get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, List<int> *r_indices) const;
+	void _get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, LocalVector<int> *r_indices) const;
 	_FORCE_INLINE_ Quaternion _uncompress_quaternion(const Vector3i &p_value) const;
 	_FORCE_INLINE_ Vector3 _uncompress_pos_scale(uint32_t p_compressed_track, const Vector3i &p_value) const;
 	_FORCE_INLINE_ float _uncompress_blend_shape(const Vector3i &p_value) const;
@@ -420,7 +428,7 @@ public:
 	NodePath track_get_path(int p_track) const;
 	int find_track(const NodePath &p_path, const TrackType p_type) const;
 
-	TypeHash track_get_type_hash(int p_track) const;
+	TrackCacheID track_get_unique_id(int p_track) const;
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
@@ -512,7 +520,7 @@ public:
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 
-	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, double p_start, double p_end, List<int> *p_indices, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE) const;
+	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, double p_start, double p_end, LocalVector<int> *r_indices, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE) const;
 
 	void add_marker(const StringName &p_name, double p_time);
 	void remove_marker(const StringName &p_name);
@@ -525,11 +533,11 @@ public:
 	Color get_marker_color(const StringName &p_name) const;
 	void set_marker_color(const StringName &p_name, const Color &p_color);
 
-	void set_length(real_t p_length);
-	real_t get_length() const;
+	void set_length(double p_length);
+	_FORCE_INLINE_ double get_length() const { return length; }
 
 	void set_loop_mode(LoopMode p_loop_mode);
-	LoopMode get_loop_mode() const;
+	_FORCE_INLINE_ LoopMode get_loop_mode() const { return loop_mode; }
 
 	void set_step(real_t p_step);
 	real_t get_step() const;
@@ -539,12 +547,28 @@ public:
 	void optimize(real_t p_allowed_velocity_err = 0.01, real_t p_allowed_angular_err = 0.01, int p_precision = 3);
 	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests.
 
+#ifdef TOOLS_ENABLED
+	const HashSet<StringName> &editor_get_folded_groups() const { return folded_groups; }
+	void editor_clear_folded_groups() { folded_groups.clear(); }
+	void editor_add_folded_group(const StringName &p_group_name) { folded_groups.insert(p_group_name); }
+	void editor_remove_folded_group(const StringName &p_group_name) { folded_groups.erase(p_group_name); }
+	bool editor_is_group_folded(const StringName &p_group_name) const { return folded_groups.has(p_group_name); }
+	void editor_set_group_folded(const StringName &p_group_name, bool p_folded) {
+		if (p_folded) {
+			editor_add_folded_group(p_group_name);
+		} else {
+			editor_remove_folded_group(p_group_name);
+		}
+	}
+#endif // TOOLS_ENABLED
+
 	// Helper functions for Rotation.
 	static double interpolate_via_rest(double p_from, double p_to, double p_weight, double p_rest = 0.0); // Deterministic slerp to prevent to cross the inverted rest axis.
 	static Quaternion interpolate_via_rest(const Quaternion &p_from, const Quaternion &p_to, real_t p_weight, const Quaternion &p_rest = Quaternion()); // Deterministic slerp to prevent to cross the inverted rest axis.
 
 	// Helper functions for Variant.
 	static bool is_variant_interpolatable(const Variant p_value);
+	static bool needs_type_cast(const Variant &p_from, const Variant &p_to);
 	static bool validate_type_match(const Variant &p_from, Variant &r_to);
 
 	static Variant cast_to_blendwise(const Variant p_value);

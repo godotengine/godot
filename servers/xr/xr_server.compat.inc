@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "xr_server.h"
+
+#include "core/object/class_db.h"
+
 void XRServer::_add_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker) {
 	add_tracker(p_tracker);
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEvent" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="InputEvent" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for input events.
 	</brief_description>
@@ -125,6 +125,12 @@
 	<constants>
 		<constant name="DEVICE_ID_EMULATION" value="-1">
 			Device ID used for emulated mouse input from a touchscreen, or for emulated touch input from a mouse. This can be used to distinguish emulated mouse input from physical mouse input, or emulated touch input from physical touch input.
+		</constant>
+		<constant name="DEVICE_ID_KEYBOARD" value="16">
+			Device ID used for input from a keyboard. This can be used to distinguish keyboard input events from joypad input events.
+		</constant>
+		<constant name="DEVICE_ID_MOUSE" value="32">
+			Device ID used for input from a mouse. This can be used to distinguish mouse input events from joypad input events.
 		</constant>
 	</constants>
 </class>

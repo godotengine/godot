@@ -170,7 +170,7 @@ void NativeMenuWindows::popup(const RID &p_rid, const Vector2i &p_position) {
 	const MenuData *md = menus.get_or_null(p_rid);
 	ERR_FAIL_NULL(md);
 
-	HWND hwnd = (HWND)DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, DisplayServer::MAIN_WINDOW_ID);
+	HWND hwnd = (HWND)DisplayServer::get_singleton()->window_get_native_handle(DisplayServerEnums::WINDOW_HANDLE, DisplayServerEnums::MAIN_WINDOW_ID);
 	UINT flags = TPM_HORIZONTAL | TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON | TPM_VERPOSANIMATION;
 	if (md->is_rtl) {
 		flags |= TPM_LAYOUTRTL;

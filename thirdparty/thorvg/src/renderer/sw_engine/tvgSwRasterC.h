@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,32 +92,35 @@ static void inline cRasterPixels(PIXEL_T* dst, PIXEL_T val, uint32_t offset, int
 }
 
 
-static bool inline cRasterTranslucentRle(SwSurface* surface, const SwRle* rle, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+static bool inline cRasterTranslucentRle(SwSurface* surface, const SwRle* rle, const RenderRegion& bbox, const RenderColor& c)
 {
-    auto span = rle->spans;
+    const SwSpan* end;
+    int32_t x, len;
 
     //32bit channels
     if (surface->channelSize == sizeof(uint32_t)) {
-        auto color = surface->join(r, g, b, a);
+        auto color = surface->join(c.r, c.g, c.b, c.a);
         uint32_t src;
-        for (uint32_t i = 0; i < rle->size; ++i, ++span) {
-            auto dst = &surface->buf32[span->y * surface->stride + span->x];
+        for (auto span = rle->fetch(bbox, &end); span < end; ++span) {
+            if (!span->fetch(bbox, x, len)) continue;
+            auto dst = &surface->buf32[span->y * surface->stride + x];
             if (span->coverage < 255) src = ALPHA_BLEND(color, span->coverage);
             else src = color;
             auto ialpha = IA(src);
-            for (uint32_t x = 0; x < span->len; ++x, ++dst) {
+            for (auto x = 0; x < len; ++x, ++dst) {
                 *dst = src + ALPHA_BLEND(*dst, ialpha);
             }
         }
     //8bit grayscale
     } else if (surface->channelSize == sizeof(uint8_t)) {
         uint8_t src;
-        for (uint32_t i = 0; i < rle->size; ++i, ++span) {
-            auto dst = &surface->buf8[span->y * surface->stride + span->x];
-            if (span->coverage < 255) src = MULTIPLY(span->coverage, a);
-            else src = a;
-            auto ialpha = ~a;
-            for (uint32_t x = 0; x < span->len; ++x, ++dst) {
+        for (auto span = rle->fetch(bbox, &end); span < end; ++span) {
+            if (!span->fetch(bbox, x, len)) continue;
+            auto dst = &surface->buf8[span->y * surface->stride + x];
+            if (span->coverage < 255) src = MULTIPLY(span->coverage, c.a);
+            else src = c.a;
+            auto ialpha = ~c.a;
+            for (auto x = 0; x < len; ++x, ++dst) {
                 *dst = src + MULTIPLY(*dst, ialpha);
             }
         }
@@ -126,30 +129,27 @@ static bool inline cRasterTranslucentRle(SwSurface* surface, const SwRle* rle, u
 }
 
 
-static bool inline cRasterTranslucentRect(SwSurface* surface, const SwBBox& region, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+static bool inline cRasterTranslucentRect(SwSurface* surface, const RenderRegion& bbox, const RenderColor& c)
 {
-    auto h = static_cast<uint32_t>(region.max.y - region.min.y);
-    auto w = static_cast<uint32_t>(region.max.x - region.min.x);
-
     //32bits channels
     if (surface->channelSize == sizeof(uint32_t)) {
-        auto color = surface->join(r, g, b, a);
-        auto buffer = surface->buf32 + (region.min.y * surface->stride) + region.min.x;
-        auto ialpha = 255 - a;
-        for (uint32_t y = 0; y < h; ++y) {
+        auto color = surface->join(c.r, c.g, c.b, c.a);
+        auto buffer = surface->buf32 + (bbox.min.y * surface->stride) + bbox.min.x;
+        auto ialpha = 255 - c.a;
+        for (uint32_t y = 0; y < bbox.h(); ++y) {
             auto dst = &buffer[y * surface->stride];
-            for (uint32_t x = 0; x < w; ++x, ++dst) {
+            for (uint32_t x = 0; x < bbox.w(); ++x, ++dst) {
                 *dst = color + ALPHA_BLEND(*dst, ialpha);
             }
         }
     //8bit grayscale
     } else if (surface->channelSize == sizeof(uint8_t)) {
-        auto buffer = surface->buf8 + (region.min.y * surface->stride) + region.min.x;
-        auto ialpha = ~a;
-        for (uint32_t y = 0; y < h; ++y) {
+        auto buffer = surface->buf8 + (bbox.min.y * surface->stride) + bbox.min.x;
+        auto ialpha = ~c.a;
+        for (uint32_t y = 0; y < bbox.h(); ++y) {
             auto dst = &buffer[y * surface->stride];
-            for (uint32_t x = 0; x < w; ++x, ++dst) {
-                *dst = a + MULTIPLY(*dst, ialpha);
+            for (uint32_t x = 0; x < bbox.w(); ++x, ++dst) {
+                *dst = c.a + MULTIPLY(*dst, ialpha);
             }
         }
     }

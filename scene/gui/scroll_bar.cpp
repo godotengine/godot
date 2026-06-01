@@ -30,8 +30,12 @@
 
 #include "scroll_bar.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 bool ScrollBar::focus_by_default = false;
 
@@ -54,14 +58,14 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 		if (orientation == HORIZONTAL) {
 			if (pg->get_delta().x != 0) {
 				if (pg->get_delta().x < 0) {
-					scroll(-MAX(fabsf(pg->get_delta().x), get_step()));
+					scroll(-MAX(Math::abs(pg->get_delta().x), get_step()));
 				}
 				if (pg->get_delta().x > 0) {
 					scroll(MAX(pg->get_delta().x, get_step()));
 				}
 			} else if (pg->get_delta().y != 0) {
 				if (pg->get_delta().y < 0) {
-					scroll(-MAX(fabsf(pg->get_delta().y), get_step()));
+					scroll(-MAX(Math::abs(pg->get_delta().y), get_step()));
 				}
 				if (pg->get_delta().y > 0) {
 					scroll(MAX(pg->get_delta().y, get_step()));
@@ -69,7 +73,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else {
 			if (pg->get_delta().y < 0) {
-				scroll(-MAX(fabsf(pg->get_delta().y), get_step()));
+				scroll(-MAX(Math::abs(pg->get_delta().y), get_step()));
 			}
 			if (pg->get_delta().y > 0) {
 				scroll(MAX(pg->get_delta().y, get_step()));
@@ -259,7 +263,7 @@ void ScrollBar::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SCROLL_BAR);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SCROLL_BAR);
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -369,7 +373,7 @@ void ScrollBar::_notification(int p_what) {
 			if (scrolling) {
 				if (get_value() != target_scroll) {
 					double target = target_scroll - get_value();
-					double dist = std::abs(target);
+					double dist = Math::abs(target);
 					double vel = ((target / dist) * 500) * get_process_delta_time();
 
 					if (Math::abs(vel) >= dist) {

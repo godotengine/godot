@@ -30,8 +30,12 @@
 
 #include "collision_shape_2d.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_object_2d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
 
@@ -301,7 +305,7 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
-	ClassDB::bind_method(D_METHOD("set_one_way_collision_direction", "p_direction"), &CollisionShape2D::set_one_way_collision_direction);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_direction", "direction"), &CollisionShape2D::set_one_way_collision_direction);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_direction"), &CollisionShape2D::get_one_way_collision_direction);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape2D::get_class_static()), "set_shape", "get_shape");

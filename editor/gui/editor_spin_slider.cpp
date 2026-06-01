@@ -30,9 +30,13 @@
 
 #include "editor_spin_slider.h"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/math/expression.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
@@ -58,6 +62,9 @@ Size2 EditorSpinSlider::get_minimum_size() const {
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
 
 	Size2 ms = sb->get_minimum_size();
+	Ref<Texture2D> updown = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
+	ms.width += updown->get_width();
+
 	ms.height += font->get_height(font_size);
 	ms.height = MAX(ms.height, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor)));
 
@@ -91,7 +98,12 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				_grab_start();
 			} else {
+				bool grabbing = grabbing_spinner;
 				_grab_end();
+
+				if (deferred_drag_mode && grabbing) {
+					_notify_shared_value_changed(); // Need to be emitted at the end, since the signal doesn't emitted in `set_value_no_signal` method.
+				}
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			if (mb->is_pressed() && is_grabbing()) {
@@ -132,7 +144,13 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 				const double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
 				const double drag_step = MAX(get_step(), default_float_step);
 				const double new_value = pre_grab_value + drag_step * grabbing_spinner_dist_cache;
-				set_value((mm->is_command_or_control_pressed() && !editing_integer) ? Math::round(new_value) : new_value);
+
+				double val = (mm->is_command_or_control_pressed() && !editing_integer) ? Math::round(new_value) : new_value;
+				if (deferred_drag_mode) {
+					set_value_no_signal(val);
+				} else {
+					set_value(val);
+				}
 			}
 		} else if (updown_offset != -1) {
 			bool new_hover = (!is_layout_rtl() && mm->get_position().x > updown_offset) || (is_layout_rtl() && mm->get_position().x < updown_offset);
@@ -336,8 +354,6 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
-
-	Ref<Texture2D> updown = get_theme_icon(read_only ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 
 	String numstr = get_text_value();
 
@@ -581,6 +597,10 @@ String EditorSpinSlider::get_suffix() const {
 }
 
 void EditorSpinSlider::_evaluate_input_text() {
+	if (value_input->get_text().is_empty()) {
+		set_value(0);
+		return;
+	}
 	const String &lang = _get_locale();
 
 	Ref<Expression> expr;
@@ -689,6 +709,14 @@ bool EditorSpinSlider::is_grabbing() const {
 	return grabbing_grabber || grabbing_spinner;
 }
 
+void EditorSpinSlider::set_deferred_drag_mode_enabled(bool p_enabled) {
+	deferred_drag_mode = p_enabled;
+}
+
+bool EditorSpinSlider::is_deferred_drag_mode_enabled() const {
+	return deferred_drag_mode;
+}
+
 void EditorSpinSlider::_focus_entered(bool p_hide_focus) {
 	if (read_only) {
 		return;
@@ -727,6 +755,9 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editing_integer", "editing_integer"), &EditorSpinSlider::set_editing_integer);
 	ClassDB::bind_method(D_METHOD("is_editing_integer"), &EditorSpinSlider::is_editing_integer);
 
+	ClassDB::bind_method(D_METHOD("set_deferred_drag_mode_enabled", "enabled"), &EditorSpinSlider::set_deferred_drag_mode_enabled, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_deferred_drag_mode_enabled"), &EditorSpinSlider::is_deferred_drag_mode_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
@@ -736,6 +767,7 @@ void EditorSpinSlider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
 #endif
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editing_integer"), "set_editing_integer", "is_editing_integer");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_drag_mode"), "set_deferred_drag_mode_enabled", "is_deferred_drag_mode_enabled");
 
 	BIND_ENUM_CONSTANT(CONTROL_STATE_DEFAULT);
 	BIND_ENUM_CONSTANT(CONTROL_STATE_PREFER_SLIDER);

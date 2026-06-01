@@ -34,37 +34,30 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/templates/a_hash_map.h"
-#include "core/templates/pooled_list.h"
-
-#ifdef SOWRAP_ENABLED
-#include "wayland/dynwrappers/wayland-client-core-so_wrap.h"
-#else
-#include <wayland-client-core.h>
-#endif
-
 #include "protocol/wayland.gen.h"
 
-#include "protocol/linux_dmabuf_v1.gen.h"
-#include "protocol/xdg_shell.gen.h"
+// Keep wayland protocol included first.
 
+#include "protocol/color_management.gen.h"
 #include "protocol/commit_timing_v1.gen.h"
 #include "protocol/cursor_shape.gen.h"
 #include "protocol/fifo_v1.gen.h"
 #include "protocol/fractional_scale.gen.h"
 #include "protocol/godot_embedding_compositor.gen.h"
 #include "protocol/idle_inhibit.gen.h"
+#include "protocol/linux_dmabuf_v1.gen.h"
 #include "protocol/linux_drm_syncobj_v1.gen.h"
 #include "protocol/linux_explicit_synchronization_unstable_v1.gen.h"
 #include "protocol/pointer_constraints.gen.h"
 #include "protocol/pointer_gestures.gen.h"
+#include "protocol/pointer_warp.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
-#include "protocol/tablet.gen.h"
 #include "protocol/tearing_control_v1.gen.h"
 #include "protocol/text_input.gen.h"
 #include "protocol/viewporter.gen.h"
 #include "protocol/wayland-drm.gen.h"
+#include "protocol/wayland.gen.h"
 #include "protocol/xdg_activation.gen.h"
 #include "protocol/xdg_decoration.gen.h"
 #include "protocol/xdg_foreign_v1.gen.h"
@@ -73,18 +66,21 @@
 #include "protocol/xdg_system_bell.gen.h"
 #include "protocol/xdg_toplevel_icon.gen.h"
 
-#include <errno.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-
-#include <poll.h>
+// #include "protocol/tablet.gen.h" // TODO: Needs some extra work
 
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
+#include "core/templates/a_hash_map.h"
+#include "core/templates/pooled_list.h"
+
+#include <poll.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 // TODO: Consider resizing the ancillary buffer dynamically.
 #define EMBED_ANCILLARY_BUF_SIZE 4096
@@ -227,6 +223,7 @@ class WaylandEmbedder {
 	struct WaylandSeatInstanceData : WaylandObjectData {
 		uint32_t wl_keyboard_id = INVALID_ID;
 		uint32_t wl_pointer_id = INVALID_ID;
+		uint32_t wl_touch_id = INVALID_ID;
 	};
 
 	struct WaylandSeatGlobalData : WaylandObjectData {
@@ -234,6 +231,12 @@ class WaylandEmbedder {
 
 		uint32_t pointed_surface_id = INVALID_ID;
 		uint32_t focused_surface_id = INVALID_ID;
+
+		// Keyboard stuff.
+		uint32_t mods_depressed = 0;
+		uint32_t mods_latched = 0;
+		uint32_t mods_locked = 0;
+		uint32_t group = 0;
 	};
 
 	struct WaylandKeyboardData : WaylandObjectData {
@@ -242,6 +245,11 @@ class WaylandEmbedder {
 
 	struct WaylandPointerData : WaylandObjectData {
 		uint32_t wl_seat_id = INVALID_ID;
+	};
+
+	struct WaylandTouchData : WaylandObjectData {
+		uint32_t wl_seat_id = INVALID_ID;
+		int touch_point_count = 0;
 	};
 
 	struct WaylandSurfaceData : WaylandObjectData {
@@ -327,7 +335,7 @@ class WaylandEmbedder {
 		&wl_subcompositor_interface,
 		&wl_subsurface_interface,
 		&wl_surface_interface,
-		//&wl_touch_interface, // Unused (at the moment).
+		&wl_touch_interface,
 
 		// xdg-shell
 		&xdg_wm_base_interface,
@@ -345,6 +353,16 @@ class WaylandEmbedder {
 		&zwp_linux_explicit_synchronization_v1_interface,
 		&zwp_linux_surface_synchronization_v1_interface,
 		&zwp_linux_buffer_release_v1_interface,
+
+		// color-management
+		&wp_color_manager_v1_interface,
+		&wp_color_management_output_v1_interface,
+		&wp_color_management_surface_v1_interface,
+		&wp_color_management_surface_feedback_v1_interface,
+		&wp_image_description_creator_icc_v1_interface,
+		&wp_image_description_creator_params_v1_interface,
+		&wp_image_description_v1_interface,
+		&wp_image_description_info_v1_interface,
 
 		// fractional-scale
 		&wp_fractional_scale_manager_v1_interface,
@@ -450,6 +468,9 @@ class WaylandEmbedder {
 		// tearing-control-v1
 		&wp_tearing_control_manager_v1_interface,
 		&wp_tearing_control_v1_interface,
+
+		// pointer-warp-v1
+		&wp_pointer_warp_v1_interface,
 
 		// Our custom things.
 		&godot_embedding_compositor_interface,

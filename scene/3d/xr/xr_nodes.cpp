@@ -30,7 +30,11 @@
 
 #include "xr_nodes.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 #include "servers/xr/xr_interface.h"
 
@@ -530,10 +534,10 @@ void XRController3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRController3D::get_tracker_hand);
 
-	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
-	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value")));
+	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "action_name")));
+	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "action_name")));
+	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::FLOAT, "value")));
+	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::VECTOR2, "value")));
 	ADD_SIGNAL(MethodInfo("profile_changed", PropertyInfo(Variant::STRING, "role")));
 }
 

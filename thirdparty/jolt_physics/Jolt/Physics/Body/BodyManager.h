@@ -40,6 +40,9 @@ using BodyVector = Array<Body *>;
 using BodyIDVector = Array<BodyID>;
 
 /// Class that contains all bodies
+///
+/// WARNING: This class is an internal part of PhysicsSystem, it has no functions that can be called by users of the library.
+/// Its functionality is exposed through PhysicsSystem, BodyInterface, BodyLockRead and BodyLockWrite.
 class JPH_EXPORT BodyManager : public NonCopyable
 {
 public:
@@ -227,6 +230,16 @@ public:
 	};
 
 	/// Draw settings
+	///
+	/// Note that there are several debug drawing features that are not exposed through this interface since they use information
+	/// that is only available deep inside the simulation update and are mostly there to facilitate debugging Jolt. These options
+	/// use DebugRenderer::sInstance to draw.
+	///
+	/// E.g.:
+	/// * To draw contact information, use ContactConstraintManager::sDrawContactManifolds.
+	/// * To draw when continuous collision detection is used, use PhysicsSystem::sDrawMotionQualityLinearCast.
+	/// * To draw what's going on in a CharacterVirtual update, use CharacterVirtual::sDrawConstraints, CharacterVirtual::sDrawWalkStairs and CharacterVirtual::sDrawStickToFloor.
+	/// * To draw the volume of water that interacts with a shape, use Shape::sDrawSubmergedVolumes.
 	struct DrawSettings
 	{
 		bool						mDrawGetSupportFunction = false;				///< Draw the GetSupport() function, used for convex collision detection
@@ -288,6 +301,16 @@ public:
 	/// Validate if the cached bounding boxes are correct for all active bodies
 	void							ValidateActiveBodyBounds();
 #endif // JPH_DEBUG
+
+#ifdef JPH_TRACK_SIMULATION_STATS
+	/// Resets the per body simulation stats
+	void							ResetSimulationStats();
+
+#ifdef JPH_PROFILE_ENABLED
+	/// Dump the per body simulation stats to the TTY
+	void							ReportSimulationStats();
+#endif
+#endif
 
 private:
 	/// Increment and get the sequence number of the body

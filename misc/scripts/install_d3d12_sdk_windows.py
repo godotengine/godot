@@ -33,7 +33,7 @@ else:
 # Mesa NIR
 # Sync with `drivers/d3d12/SCsub` when updating Mesa.
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
-mesa_version = "25.3.1-1"
+mesa_version = "25.3.1-2"
 # WinPixEventRuntime
 # Check for latest version: https://www.nuget.org/api/v2/package/WinPixEventRuntime (check downloaded filename)
 pix_version = "1.0.240308001"

@@ -31,9 +31,10 @@
 #pragma once
 
 #include "core/math/audio_frame.h"
-#include "core/variant/binder_common.h"
 #include "core/variant/method_ptrcall.h"
 #include "core/variant/type_info.h"
+#include "core/variant/variant_caster.h"
+#include "core/variant/variant_internal.h"
 
 template <typename T>
 struct GDExtensionConstPtr {

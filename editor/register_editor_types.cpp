@@ -30,7 +30,12 @@
 
 #include "register_editor_types.h"
 
+#include "core/config/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/audio/audio_stream_editor_plugin.h"
 #include "editor/audio/audio_stream_randomizer_editor_plugin.h"
@@ -83,6 +88,7 @@
 #include "editor/scene/2d/physics/collision_polygon_2d_editor_plugin.h"
 #include "editor/scene/2d/physics/collision_shape_2d_editor_plugin.h"
 #include "editor/scene/2d/polygon_2d_editor_plugin.h"
+#include "editor/scene/2d/scene_paint_2d_editor_plugin.h"
 #include "editor/scene/2d/skeleton_2d_editor_plugin.h"
 #include "editor/scene/2d/sprite_2d_editor_plugin.h"
 #include "editor/scene/2d/tiles/tiles_editor_plugin.h"
@@ -131,6 +137,8 @@
 #include "editor/shader/shader_file_editor_plugin.h"
 #include "editor/translations/editor_translation_parser.h"
 #include "editor/version_control/editor_vcs_interface.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifndef DISABLE_DEPRECATED
 #include "editor/scene/2d/parallax_background_editor_plugin.h"
 #include "editor/scene/3d/skeleton_ik_3d_editor_plugin.h"
@@ -145,14 +153,14 @@ void register_editor_types() {
 	EditorStringNames::create();
 
 	GDREGISTER_CLASS(EditorPaths);
-	GDREGISTER_CLASS(EditorPlugin);
+	GDREGISTER_VIRTUAL_CLASS(EditorPlugin);
 	GDREGISTER_CLASS(EditorTranslationParserPlugin);
 	GDREGISTER_CLASS(EditorImportPlugin);
 	GDREGISTER_CLASS(EditorScript);
 	GDREGISTER_CLASS(EditorDock);
 	GDREGISTER_CLASS(EditorSelection);
 	GDREGISTER_CLASS(EditorFileDialog);
-	GDREGISTER_CLASS(EditorSettings);
+	GDREGISTER_VIRTUAL_CLASS(EditorSettings);
 	GDREGISTER_ABSTRACT_CLASS(EditorToaster);
 	GDREGISTER_CLASS(EditorNode3DGizmo);
 	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
@@ -193,7 +201,7 @@ void register_editor_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorFileSystemImportFormatSupportQuery);
 
 	GDREGISTER_CLASS(EditorScenePostImport);
-	GDREGISTER_CLASS(EditorCommandPalette);
+	GDREGISTER_VIRTUAL_CLASS(EditorCommandPalette);
 	GDREGISTER_CLASS(EditorDebuggerPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorDebuggerSession);
 
@@ -279,6 +287,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
+	EditorPlugins::add_by_type<ScenePaint2DEditorPlugin>();
 #ifndef DISABLE_DEPRECATED
 	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 #endif
@@ -329,6 +338,7 @@ void unregister_editor_types() {
 	TextureLayeredEditor::finish_shaders();
 	TexturePreview::finish_shaders();
 
+	EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::EMPTY, Variant());
 	EditorNode::cleanup();
 	EditorInterface::free();
 

@@ -31,12 +31,13 @@
 #include "openxr_select_runtime.h"
 
 #ifdef WINDOWS_ENABLED
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "editor/settings/editor_settings.h"
 

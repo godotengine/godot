@@ -33,7 +33,8 @@
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
 #import "drivers/gles3/storage/texture_storage.h"
-#import "platform_gl.h"
+
+#import <platform_gl.h>
 
 #import <QuartzCore/QuartzCore.h>
 #include <dlfcn.h>
@@ -65,7 +66,7 @@ Error GLManagerEmbedded::create_context(GLWindow &p_win) {
 	return OK;
 }
 
-Error GLManagerEmbedded::window_create(DisplayServer::WindowID p_window_id, CALayer *p_layer, int p_width, int p_height) {
+Error GLManagerEmbedded::window_create(DisplayServerEnums::WindowID p_window_id, CALayer *p_layer, int p_width, int p_height) {
 	GLWindow win;
 	win.layer = p_layer;
 	win.width = 0;
@@ -81,7 +82,7 @@ Error GLManagerEmbedded::window_create(DisplayServer::WindowID p_window_id, CALa
 	return OK;
 }
 
-void GLManagerEmbedded::window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
+void GLManagerEmbedded::window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height) {
 	GLWindowElement *el = windows.find(p_window_id);
 	ERR_FAIL_NULL_MSG(el, "Window resize failed: window does not exist.");
 
@@ -175,7 +176,7 @@ void GLManagerEmbedded::GLWindow::destroy_framebuffers() {
 	}
 }
 
-Size2i GLManagerEmbedded::window_get_size(DisplayServer::WindowID p_window_id) const {
+Size2i GLManagerEmbedded::window_get_size(DisplayServerEnums::WindowID p_window_id) const {
 	const GLWindowElement *el = windows.find(p_window_id);
 	if (el == nullptr) {
 		return Size2i();
@@ -185,29 +186,29 @@ Size2i GLManagerEmbedded::window_get_size(DisplayServer::WindowID p_window_id) c
 	return Size2i(win.width, win.height);
 }
 
-void GLManagerEmbedded::window_destroy(DisplayServer::WindowID p_window_id) {
+void GLManagerEmbedded::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	GLWindowElement *el = windows.find(p_window_id);
 	if (el == nullptr) {
 		return;
 	}
 
 	if (current_window == p_window_id) {
-		current_window = DisplayServer::INVALID_WINDOW_ID;
+		current_window = DisplayServerEnums::INVALID_WINDOW_ID;
 	}
 
 	windows.erase(el);
 }
 
 void GLManagerEmbedded::release_current() {
-	if (current_window == DisplayServer::INVALID_WINDOW_ID) {
+	if (current_window == DisplayServerEnums::INVALID_WINDOW_ID) {
 		return;
 	}
 
 	[NSOpenGLContext clearCurrentContext];
-	current_window = DisplayServer::INVALID_WINDOW_ID;
+	current_window = DisplayServerEnums::INVALID_WINDOW_ID;
 }
 
-void GLManagerEmbedded::window_make_current(DisplayServer::WindowID p_window_id) {
+void GLManagerEmbedded::window_make_current(DisplayServerEnums::WindowID p_window_id) {
 	if (current_window == p_window_id) {
 		return;
 	}

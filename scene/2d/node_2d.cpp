@@ -30,7 +30,11 @@
 
 #include "node_2d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
@@ -391,7 +395,8 @@ void Node2D::set_global_transform(const Transform2D &p_transform) {
 	}
 }
 
-Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
+Transform2D Node2D::get_relative_transform_to_parent(RequiredParam<const Node> rp_parent) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_parent, rp_parent, Transform2D());
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	if (p_parent == this) {
 		return Transform2D();
@@ -433,7 +438,7 @@ void Node2D::_notification(int p_notification) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

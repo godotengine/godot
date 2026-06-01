@@ -32,15 +32,15 @@
 
 #include "servers/physics_3d/physics_server_3d.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Body/Body.h"
-#include "Jolt/Physics/Body/BodyFilter.h"
-#include "Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h"
-#include "Jolt/Physics/Collision/ContactListener.h"
-#include "Jolt/Physics/Collision/ObjectLayer.h"
-#include "Jolt/Physics/Collision/Shape/Shape.h"
-#include "Jolt/Physics/Collision/ShapeFilter.h"
+#include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Body/BodyFilter.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Physics/Collision/ContactListener.h>
+#include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
+#include <Jolt/Physics/Collision/ShapeFilter.h>
 
 class JoltBody3D;
 class JoltShape3D;
@@ -64,7 +64,7 @@ class JoltPhysicsDirectSpaceState3D final : public PhysicsDirectSpaceState3D {
 	void _generate_manifold(const JPH::CollideShapeResult &p_hit, JPH::ContactPoints &r_contact_points1, JPH::ContactPoints &r_contact_points2 JPH_IF_DEBUG_RENDERER(, JPH::RVec3Arg p_center_of_mass)) const;
 
 	void _collide_shape_queries(const JPH::Shape *p_shape, JPH::Vec3Arg p_scale, JPH::RMat44Arg p_transform_com, const JPH::CollideShapeSettings &p_settings, JPH::RVec3Arg p_base_offset, JPH::CollideShapeCollector &p_collector, const JPH::BroadPhaseLayerFilter &p_broad_phase_layer_filter = JPH::BroadPhaseLayerFilter(), const JPH::ObjectLayerFilter &p_object_layer_filter = JPH::ObjectLayerFilter(), const JPH::BodyFilter &p_body_filter = JPH::BodyFilter(), const JPH::ShapeFilter &p_shape_filter = JPH::ShapeFilter()) const;
-	void _collide_shape_kinematics(const JPH::Shape *p_shape, JPH::Vec3Arg p_scale, JPH::RMat44Arg p_transform_com, const JPH::CollideShapeSettings &p_settings, JPH::RVec3Arg p_base_offset, JPH::CollideShapeCollector &p_collector, const JPH::BroadPhaseLayerFilter &p_broad_phase_layer_filter = JPH::BroadPhaseLayerFilter(), const JPH::ObjectLayerFilter &p_object_layer_filter = JPH::ObjectLayerFilter(), const JPH::BodyFilter &p_body_filter = JPH::BodyFilter(), const JPH::ShapeFilter &p_shape_filter = JPH::ShapeFilter()) const;
+	void _collide_shape_motion(const JPH::Shape *p_shape, JPH::Vec3Arg p_scale, JPH::RMat44Arg p_transform_com, const JPH::CollideShapeSettings &p_settings, JPH::RVec3Arg p_base_offset, JPH::CollideShapeCollector &p_collector, const JPH::BroadPhaseLayerFilter &p_broad_phase_layer_filter = JPH::BroadPhaseLayerFilter(), const JPH::ObjectLayerFilter &p_object_layer_filter = JPH::ObjectLayerFilter(), const JPH::BodyFilter &p_body_filter = JPH::BodyFilter(), const JPH::ShapeFilter &p_shape_filter = JPH::ShapeFilter()) const;
 
 public:
 	JoltPhysicsDirectSpaceState3D() = default;

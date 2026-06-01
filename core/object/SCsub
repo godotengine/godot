@@ -7,6 +7,4 @@ import make_virtuals
 
 env.CommandNoCache("gdvirtual.gen.h", "make_virtuals.py", env.Run(make_virtuals.run))
 
-env_object = env.Clone()
-
-env_object.add_source_files(env.core_sources, "*.cpp")
+env.add_source_files(env.core_sources, "*.cpp")

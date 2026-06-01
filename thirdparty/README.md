@@ -8,7 +8,7 @@ readability.
 ## accesskit
 
 - Upstream: https://github.com/AccessKit/accesskit-c
-- Version: 0.18.0 (0c52a8ce2357bbeb927f90dc9a1c19c8ec1bd2c3, 2025)
+- Version: 0.21.2 (72460cd52d1b24492393cdf54a6f19d2fd63e258, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -153,7 +153,7 @@ Patches:
 ## d3d12ma
 
 - Upstream: https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator
-- Version: 2.1.0-development (4d16e802e0b9451c9d3c27cd308928c13b73acd6, 2023)
+- Version: 3.1.0 (0fa62ed3a0a69b73230a8ec1faa752d4061c8dc8, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -170,7 +170,7 @@ Patches:
 ## directx_headers
 
 - Upstream: https://github.com/microsoft/DirectX-Headers
-- Version: 1.618.2 (dde59d560da2760fec612d6634124edc2a26b82f, 2025)
+- Version: main (25411c74bb9cc7c416b2ff01b3ad8a306811dfdd, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -203,7 +203,7 @@ Patches:
 ## dr_libs
 
 - Upstream: https://github.com/mackron/dr_libs
-- Version: mp3-0.7.2 (547c211a87a06a42bf62c1366616aa14b57dd429, 2025)
+- Version: mp3-0.7.3 (5690d4671d7ad07ae6021756d7222eb159745f06, 2026)
 - License: Public Domain or Unlicense or MIT-0
 
 Files extracted from upstream source:
@@ -356,7 +356,7 @@ for UI.
 ## freetype
 
 - Upstream: https://gitlab.freedesktop.org/freetype/freetype
-- Version: 2.14.1 (526ec5c47b9ebccc4754c85ac0c0cdf7c85a5e9b, 2025)
+- Version: 2.14.3 (0a0221a1347e2f1e07c395263540026e9a0aa7c7, 2026)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -386,7 +386,7 @@ Patches:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 2.0.4 (d08b1aa01f8fe57498f04d47b5fa8c48725be877, 2023)
+- Version: 2.0.8 (73db193f853e2ee079bf3ca8a64aa2eaf6459043, 2024)
 - License: CC0 1.0 and Apache 2.0
 
 Files extracted from upstream source:
@@ -402,12 +402,13 @@ Files generated from [upstream web instance](https://gen.glad.sh/):
 - `glx.c`
 - `glad/glx.h`
 
-See the permalinks in `glad/gl.h` and `glad/glx.h` to regenerate the files with
-a new version of the web instance.
+See the permalinks in `glad/egl.h`, `glad/gl.h` and `glad/glx.h`
+to regenerate the files with a new version of the web instance.
 
 Patches:
 
 - `0001-enable-both-gl-and-gles.patch` ([GH-72831](https://github.com/godotengine/godot/pull/72831))
+- `0002-revert-egl_static-removal.patch` ([GH-107312](https://github.com/godotengine/godot/pull/107312))
 
 
 ## glslang
@@ -434,6 +435,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-apple-disable-absolute-paths.patch` ([GH-92010](https://github.com/godotengine/godot/pull/92010))
+- `0002-apple-m1-msaa-fix.patch` ([GH-115893](https://github.com/godotengine/godot/issues/115893))
 
 
 ## graphite
@@ -467,7 +469,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 12.3.2 (b42511e071162fe76102f613a6ccc009726c99af, 2026)
+- Version: 14.2.0 (b0ffab42d473eb380ad0fcf42730e0f1868cbc97, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -475,13 +477,13 @@ Files extracted from upstream source:
 - `AUTHORS`, `COPYING`, `THANKS`
 - From the `src` folder, recursively:
   - All the `.cc`, `.h`, `.hh` files
-  - Except `main.cc`, `harfbuzz*.cc`, `harfrust.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`, `hb-harfrust.cc`, `wasm/*`, `ms-use/*`, `rust/*`
+  - Except `main.cc`, `harfbuzz*.cc`, `harfrust.cc`, `failing-alloc.c`, `test*.cc`, `hb-gpu*.*`, `hb-wasm*.*`, `hb-harfrust.cc`, `wasm/*`, `ms-use/*`, `rust/*`
 
 
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 78.1 (049e0d6a420629ac7db77256987d083a563287b5, 2025)
+- Version: 78.3 (21d1eb0f306e1141c10931e914dfc038c06121da, 2026)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -509,13 +511,22 @@ Files generated from upstream source:
 ## jolt_physics
 
 - Upstream: https://github.com/jrouwe/JoltPhysics
-- Version: 5.4.0 (036ea7b1d717b3e713ac9d8cbd47118fb9cd5d60, 2025)
+- Version: 5.5.0 (23dadd0e603f1b321142d4c74df07fce85064989, 2025)
 - License: MIT
 
 Files extracted from upstream source:
 
 - All files in `Jolt/`, except `Jolt/Jolt.cmake` and any files dependent on `ENABLE_OBJECT_STREAM`, as seen in `Jolt/Jolt.cmake`
 - `LICENSE`
+
+Patches:
+
+- `0001-backport-upstream-commit-ee3725250.patch` (GH-115089)
+- `0002-backport-upstream-commit-bc7f1fb8c.patch` (GH-115305)
+- `0003-backport-upstream-commit-365a15367.patch` (GH-115305)
+- `0004-backport-upstream-commit-e0a6a9a16.patch` (GH-115327)
+- `0005-backport-upstream-commit-449b645.patch` (GH-117194)
+- `0006-backport-upstream-commit-63765d1.patch` (GH-118393)
 
 
 ## libbacktrace
@@ -597,7 +608,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.54 (02f2b4f4699f0ef9111a6534f093b53732df4452, 2026)
+- Version: 1.6.58 (3061454d980de7d53608f594194cfac722721d2a, 2026)
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -709,7 +720,7 @@ Update instructions:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 1.0 (73583c335e541c139821d0de2bf5f12960a04941, 2025)
+- Version: 1.1 (dc9d09ed83e1004aef47a1c3c597e0ec64848a37, 2026)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -760,7 +771,7 @@ Files extracted from upstream source:
 ## minizip
 
 - Upstream: https://github.com/madler/zlib
-- Version: 1.3.1.2 (570720b0c24f9686c33f35a1b3165c1f568b96be, 2025)
+- Version: 1.3.2 (da607da739fa6047df13e66a2af6b8bec7c2a498, 2026)
 - License: zlib
 
 Files extracted from the upstream source:
@@ -941,7 +952,7 @@ Files extracted from upstream source:
 ## re-spirv
 
 - Upstream: https://github.com/renderbag/re-spirv
-- Version: git (c1853b0221cd43866b792406f55c4ab10a0b4503, 2026)
+- Version: git (29a77fca357567d00aa37b8ffde19c19cfe477c4, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1007,6 +1018,8 @@ Patches:
 - `0005-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
 - `0006-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
 - `0007-shield-duplicate-macos.patch` ([GH-115510](https://github.com/godotengine/godot/pull/115510))
+- `0008-fix-linux-joycon-serial-num.patch` ([GH-113873](https://github.com/godotengine/godot/pull/113873))
+- `0009-update-device-blocklist.patch` ([GH-119403](https://github.com/godotengine/godot/pull/119403))
 
 
 ## spirv-cross
@@ -1073,7 +1086,7 @@ Files extracted from upstream source:
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.15.16 (e15069de7afcc5e853edf1561e69d9b8383e2c6c, 2025)
+- Version: 1.0.3 (d114cd9e3c32d7f77bc9b324ae5c71d7775cb7ae, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1083,20 +1096,21 @@ Files extracted from upstream source:
 
 Patches:
 
-- `0001-revert-tvglines-bezier-precision.patch` ([GH-96658](https://github.com/godotengine/godot/pull/96658))
-- `0002-use-heap-alloc.patch` ([GH-109530](https://github.com/godotengine/godot/pull/109530))
-- `0003-explicit-includes.patch` ([GH-111557](https://github.com/godotengine/godot/pull/111557))
+- `0001-let-delete-be-delete.patch` ([GH-116024](https://github.com/godotengine/godot/pull/116024))
 
 
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.12 (735ff73ce5959cf005eb99ce517c9bcecab89dfb, 2025)
+- Version: 1.0.13 (4946b5d92e13bcc8102ac2c8efd129596a90bf75, 2026)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
+- `exr_reader.hh`
+- `streamreader.hh`
 - `tinyexr.{cc,h}`
+- `LICENSE`
 
 Patches:
 
@@ -1106,7 +1120,7 @@ Patches:
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.21.2 (6ecd6177af59c82ec363356ac36c3a4245b85321, 2025)
+- Version: 0.21.3 (83bc7cf44f76bc8622de63b809a42b5d557cd733, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1201,7 +1215,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.46 (6141e1154303dadd5c3e480bc4a16e26f1dcb2af, 2025)
+- Version: 1.47 (88223018d1b578d0d8869866da66d9608e05f928, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1212,11 +1226,15 @@ Files extracted from upstream source:
 - `stable/viewporter/viewporter.xml`
 - `stable/xdg-shell/README`
 - `stable/xdg-shell/xdg-shell.xml`
+- `staging/color-management/README.md`
+- `staging/color-management/color-management-v1.xml`
 - `staging/fractional-scale/README`
 - `staging/fractional-scale/fractional-scale-v1.xml`
 - `staging/xdg-activation/README`
 - `staging/xdg-activation/xdg-activation-v1.xml`
 - `staging/xdg-system-bell/xdg-system-bell-v1.xml`
+- `staging/pointer-warp/pointer-warp-v1.xml`
+- `staging/pointer-warp/README`
 - `unstable/idle-inhibit/README`
 - `unstable/idle-inhibit/idle-inhibit-unstable-v1.xml`
 - `unstable/pointer-constraints/README`
@@ -1274,7 +1292,7 @@ Files extracted from upstream source:
 ## zlib
 
 - Upstream: https://github.com/madler/zlib
-- Version: 1.3.1.2 (570720b0c24f9686c33f35a1b3165c1f568b96be, 2025)
+- Version: 1.3.2 (da607da739fa6047df13e66a2af6b8bec7c2a498, 2026)
 - License: zlib
 
 Files extracted from upstream source:

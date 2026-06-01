@@ -31,6 +31,8 @@
 #include "connections_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/templates/hash_set.h"
 #include "editor/doc/editor_help.h"
 #include "editor/docks/scene_tree_dock.h"
@@ -54,6 +56,8 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
+#include "scene/main/scene_tree.h"
+#include "servers/display/display_server.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
@@ -296,9 +300,14 @@ StringName ConnectDialog::generate_method_callback_name(Object *p_source, const 
 }
 
 void ConnectDialog::_create_method_tree_items(const List<MethodInfo> &p_methods, TreeItem *p_parent_item) {
+	bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+	Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
 	for (const MethodInfo &mi : p_methods) {
 		TreeItem *method_item = method_tree->create_item(p_parent_item);
 		method_item->set_text(0, get_signature(mi));
+		if (use_monospace_font) {
+			method_item->set_custom_font(0, monospace_font);
+		}
 		method_item->set_metadata(0, mi.name);
 	}
 }
@@ -518,6 +527,18 @@ void ConnectDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			method_search->set_right_icon(get_editor_theme_icon("Search"));
 			open_method_tree->set_button_icon(get_editor_theme_icon("Edit"));
+
+			bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+			Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+
+			if (use_monospace_font) {
+				from_signal->add_theme_font_override(SceneStringName(font), monospace_font);
+				dst_method->add_theme_font_override(SceneStringName(font), monospace_font);
+			} else {
+				from_signal->remove_theme_font_override(SceneStringName(font));
+				dst_method->remove_theme_font_override(SceneStringName(font));
+			}
+
 		} break;
 	}
 }
@@ -1534,6 +1555,9 @@ void ConnectionsDock::update_tree() {
 	StringName native_base = selected_object->get_class();
 	Ref<Script> script_base = selected_object->get_script();
 
+	bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+	Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+
 	while (native_base != StringName()) {
 		String class_name;
 		String doc_class_name;
@@ -1594,6 +1618,18 @@ void ConnectionsDock::update_tree() {
 
 			ClassDB::get_signal_list(native_base, &class_signals, true);
 
+			// Hide underscored native signals as they are meant to be private.
+			for (List<MethodInfo>::Element *E = class_signals.front(); E;) {
+				List<MethodInfo>::Element *N = E->next();
+				const MethodInfo &mi = E->get();
+
+				if (mi.name.is_empty() || mi.name[0] == '_') {
+					class_signals.erase(E);
+				}
+
+				E = N;
+			}
+
 			native_base = ClassDB::get_parent_class(native_base);
 		}
 
@@ -1630,6 +1666,10 @@ void ConnectionsDock::update_tree() {
 			TreeItem *signal_item = tree->create_item(section_item);
 			String signame = connect_dialog->get_signature(mi, &argnames);
 			signal_item->set_text(0, signame);
+
+			if (use_monospace_font) {
+				signal_item->set_custom_font(0, monospace_font);
+			}
 
 			if (signame == prev_selected) {
 				signal_item->select(0);
@@ -1690,6 +1730,9 @@ void ConnectionsDock::update_tree() {
 				connection_item->set_text(0, path);
 				connection_item->set_metadata(0, connection);
 				connection_item->set_icon(0, get_editor_theme_icon(SNAME("Slot")));
+				if (use_monospace_font) {
+					connection_item->set_custom_font(0, monospace_font);
+				}
 
 				if (_is_connection_inherited(connection)) {
 					// The scene inherits this connection.

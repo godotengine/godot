@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStream" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioStream" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for audio streams.
 	</brief_description>
 	<description>
-		Base class for audio streams. Audio streams are used for sound effects and music playback, and support WAV (via [AudioStreamWAV]) and Ogg (via [AudioStreamOggVorbis]) file formats.
+		Base class for audio streams. Audio streams are used for sound effects and music playback, and support WAV (via [AudioStreamWAV]), Ogg (via [AudioStreamOggVorbis]), and MP3 (via [AudioStreamMP3]) file formats.
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>

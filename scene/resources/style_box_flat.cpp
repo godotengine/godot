@@ -30,9 +30,12 @@
 
 #include "style_box_flat.h"
 
-#include "scene/main/canvas_item.h"
-#include "scene/main/viewport.h"
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
+#include "servers/text/text_server.h"
+
+#include <cfloat> // FLT_EPSILON
 
 float StyleBoxFlat::get_style_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);

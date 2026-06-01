@@ -33,6 +33,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/zip_io.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -153,8 +155,8 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 	asset_title_label->set_text(asset_name);
 
 	_check_has_toplevel();
-	// Default to false, unless forced.
-	skip_toplevel = p_autoskip_toplevel;
+	// Default to false, unless forced. Don't skip "addons" by default
+	skip_toplevel = p_autoskip_toplevel && toplevel_prefix != "addons/";
 	skip_toplevel_check->set_block_signals(true);
 	skip_toplevel_check->set_pressed(!skip_toplevel_check->is_disabled() && skip_toplevel);
 	skip_toplevel_check->set_block_signals(false);
@@ -704,7 +706,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	remapping_tools->add_child(memnew(VSeparator));
 
 	skip_toplevel_check = memnew(CheckBox);
-	skip_toplevel_check->set_text(TTRC("Ignore asset root"));
+	skip_toplevel_check->set_text(TTRC("Ignore Asset Root"));
 	skip_toplevel_check->set_tooltip_text(TTRC("Ignore the root directory when extracting files."));
 	skip_toplevel_check->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
 	remapping_tools->add_child(skip_toplevel_check);
@@ -714,7 +716,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	asset_conflicts_label = memnew(Label);
 	asset_conflicts_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	asset_conflicts_label->set_theme_type_variation("HeaderSmall");
-	asset_conflicts_label->set_text(TTRC("No files conflict with your project"));
+	asset_conflicts_label->set_text(TTRC("No files conflict with your project."));
 	remapping_tools->add_child(asset_conflicts_label);
 	asset_conflicts_link = memnew(LinkButton);
 	asset_conflicts_link->set_theme_type_variation("HeaderSmallLink");

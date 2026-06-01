@@ -32,6 +32,8 @@
 #include "audio_stream_player_2d.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
@@ -80,6 +82,10 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 // Interacts with PhysicsServer2D, so can only be called during _physics_process.
 StringName AudioStreamPlayer2D::_get_actual_bus() {
 #ifndef PHYSICS_2D_DISABLED
+	if (area_mask == 0) {
+		return internal->bus;
+	}
+
 	Vector2 global_pos = get_global_position();
 
 	//check if any area is diverting sound into a bus
@@ -125,7 +131,7 @@ void AudioStreamPlayer2D::_update_panning() {
 
 	Vector2 global_pos = get_global_position();
 
-	HashSet<Viewport *> viewports = world_2d->get_viewports();
+	HashSet<Viewport *> viewports(world_2d->get_viewports());
 
 	volume_vector.resize(4);
 	volume_vector.write[0] = AudioFrame(0, 0);

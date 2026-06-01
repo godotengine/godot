@@ -32,7 +32,9 @@
 #include "text_server.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -274,8 +276,16 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font_rid", "force_autohinter"), &TextServer::font_set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("font_is_force_autohinter", "font_rid"), &TextServer::font_is_force_autohinter);
 
-	ClassDB::bind_method(D_METHOD("font_set_modulate_color_glyphs", "font_rid", "force_autohinter"), &TextServer::font_set_modulate_color_glyphs);
+	ClassDB::bind_method(D_METHOD("font_set_modulate_color_glyphs", "font_rid", "modulate"), &TextServer::font_set_modulate_color_glyphs);
 	ClassDB::bind_method(D_METHOD("font_is_modulate_color_glyphs", "font_rid"), &TextServer::font_is_modulate_color_glyphs);
+
+	ClassDB::bind_method(D_METHOD("font_get_palette_count", "font_rid"), &TextServer::font_get_palette_count);
+	ClassDB::bind_method(D_METHOD("font_get_palette_name", "font_rid", "index"), &TextServer::font_get_palette_name);
+	ClassDB::bind_method(D_METHOD("font_get_palette_colors", "font_rid", "index"), &TextServer::font_get_palette_colors);
+	ClassDB::bind_method(D_METHOD("font_set_palette_custom_colors", "font_rid", "colors"), &TextServer::font_set_palette_custom_colors);
+	ClassDB::bind_method(D_METHOD("font_get_palette_custom_colors", "font_rid"), &TextServer::font_get_palette_custom_colors);
+	ClassDB::bind_method(D_METHOD("font_get_used_palette", "font_rid"), &TextServer::font_get_used_palette);
+	ClassDB::bind_method(D_METHOD("font_set_used_palette", "font_rid", "index"), &TextServer::font_set_used_palette);
 
 	ClassDB::bind_method(D_METHOD("font_set_hinting", "font_rid", "hinting"), &TextServer::font_set_hinting);
 	ClassDB::bind_method(D_METHOD("font_get_hinting", "font_rid"), &TextServer::font_get_hinting);
@@ -451,6 +461,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_get_run_count", "shaped"), &TextServer::shaped_get_run_count);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_text", "shaped", "index"), &TextServer::shaped_get_run_text);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_range", "shaped", "index"), &TextServer::shaped_get_run_range);
+	ClassDB::bind_method(D_METHOD("shaped_get_run_glyph_range", "shaped", "index"), &TextServer::shaped_get_run_glyph_range);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_font_rid", "shaped", "index"), &TextServer::shaped_get_run_font_rid);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_font_size", "shaped", "index"), &TextServer::shaped_get_run_font_size);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_language", "shaped", "index"), &TextServer::shaped_get_run_language);
@@ -977,7 +988,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 					if ((l_gl[i].flags & GRAPHEME_IS_SOFT_HYPHEN) == GRAPHEME_IS_SOFT_HYPHEN) {
 						uint32_t gl = font_get_glyph_index(l_gl[i].font_rid, l_gl[i].font_size, 0x00ad, 0);
 						float w = font_get_glyph_advance(l_gl[i].font_rid, l_gl[i].font_size, gl)[(orientation == ORIENTATION_HORIZONTAL) ? 0 : 1];
-						if (width + adv + w <= p_width[chunk]) {
+						if (width + adv + w <= p_width[chunk] || w >= p_width[chunk]) {
 							last_safe_break = i;
 							word_count++;
 						}
@@ -1161,7 +1172,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 					if ((l_gl[i].flags & GRAPHEME_IS_SOFT_HYPHEN) == GRAPHEME_IS_SOFT_HYPHEN) {
 						uint32_t gl = font_get_glyph_index(l_gl[i].font_rid, l_gl[i].font_size, 0x00AD, 0);
 						float w = font_get_glyph_advance(l_gl[i].font_rid, l_gl[i].font_size, gl)[(orientation == ORIENTATION_HORIZONTAL) ? 0 : 1];
-						if (width + adv + w <= p_width) {
+						if (width + adv + w <= p_width || w >= p_width) {
 							last_safe_break = i;
 							word_count++;
 						}

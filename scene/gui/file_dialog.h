@@ -205,6 +205,7 @@ private:
 	String full_dir;
 
 	bool is_invalidating = false;
+	bool ensure_visible_after_invalidating = false;
 
 	VBoxContainer *main_vbox = nullptr;
 
@@ -213,7 +214,8 @@ private:
 	Button *dir_up = nullptr;
 
 	HBoxContainer *drives_container = nullptr;
-	OptionButton *drives = nullptr;
+	MenuButton *drives = nullptr;
+	int selected_drive = 0;
 	LineEdit *directory_edit = nullptr;
 	HBoxContainer *shortcuts_container = nullptr;
 
@@ -279,6 +281,13 @@ private:
 		Ref<Texture2D> favorite_down;
 		Ref<Texture2D> file_thumbnail;
 		Ref<Texture2D> folder_thumbnail;
+
+		Ref<Texture2D> menu_copy_path;
+		Ref<Texture2D> menu_delete;
+		Ref<Texture2D> menu_refresh;
+		Ref<Texture2D> menu_new_folder;
+		Ref<Texture2D> menu_show_in_file_manager;
+		Ref<Texture2D> menu_open_bundle;
 
 		Color folder_icon_color;
 		Color file_icon_color;

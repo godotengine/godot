@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "core/error/error_macros.h"
 #include "gdscript_extend_parser.h"
 #include "godot_lsp.h"
 
+#include "core/error/error_macros.h"
 #include "core/variant/variant.h"
 
 class GDScriptWorkspace : public RefCounted {
@@ -41,7 +41,7 @@ class GDScriptWorkspace : public RefCounted {
 
 private:
 #ifndef DISABLE_DEPRECATED
-	void didDeleteFiles() {}
+	void didDeleteFiles(const Dictionary &p_params) {}
 	Error parse_script(const String &p_path, const String &p_content) {
 		WARN_DEPRECATED;
 		return Error::FAILED;
