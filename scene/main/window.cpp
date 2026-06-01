@@ -3437,7 +3437,7 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("start_drag"), &Window::start_drag);
 	ClassDB::bind_method(D_METHOD("start_resize", "edge"), &Window::start_resize);
-	ClassDB::bind_method(D_METHOD("drag_files"), &Window::drag_files);
+	ClassDB::bind_method(D_METHOD("drag_files", "files"), &Window::drag_files);
 
 	ClassDB::bind_method(D_METHOD("set_ime_active", "active"), &Window::set_ime_active);
 	ClassDB::bind_method(D_METHOD("set_ime_position", "position"), &Window::set_ime_position);
