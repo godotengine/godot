@@ -1128,8 +1128,6 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	toolbar->add_child(curve_del);
 	curve_del->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_DELETE));
 
-
-
 	curve_auto_tangent_mode = memnew(Button);
 	curve_auto_tangent_mode->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_auto_tangent_mode->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -1150,7 +1148,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	auto_tangent_torsion->set_value(0.5);
 
 	v_separator = memnew(VSeparator);
-	toolbar-> add_child(v_separator);
+	toolbar->add_child(v_separator);
 
 	curve_closed = memnew(Button);
 	curve_closed->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1185,8 +1183,8 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	menu->add_check_item(TTR("Snap to Colliders"));
 	menu->set_item_checked(HANDLE_OPTION_SNAP_COLLIDER, snap_to_collider);
 	menu->add_separator();
-	menu->add_item(TTR("Apply Auto Tangent to All Points"), HANDLE_OPTION_AUTO_TANGENT);
-	menu->add_item(TTR("Clear Points"), HANDLE_OPTION_CLEAR_POINTS);
+	menu->add_shortcut(ED_SHORTCUT("path_editor/apply_auto_tangent_to_all_points", TTRC("Apply Auto Tangent to All / Selected Points"), KeyModifierMask::CMD_OR_CTRL | Key::T), HANDLE_OPTION_AUTO_TANGENT);
+	menu->add_shortcut(ED_SHORTCUT("path_editor/clear_points", TTRC("Clear All Points"), Key::NONE), HANDLE_OPTION_CLEAR_POINTS);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &Path3DEditorPlugin::_handle_option_pressed));
 
 	curve_edit->set_pressed_no_signal(true);
