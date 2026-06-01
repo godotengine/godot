@@ -451,7 +451,7 @@ void ScenePaint2DEditor::_edit_properties() {
 		InspectorDock::get_inspector_singleton()->edit(instance);
 		InspectorDock::get_singleton()->set_info(
 				TTR("Editing instance properties"),
-				TTR("Edit the properties of the scene instance being painted.\nEdited properties will be stored locally in the current scene. If overused, this can significantly increase the scene's size and its loading time."), true);
+				TTR("Edited properties will apply to the newly painted instances. They will be stored locally in the current scene."), true);
 	}
 }
 
@@ -523,7 +523,7 @@ void ScenePaint2DEditor::_set_pinned(bool p_pinned, Node *p_pinned_node) {
 	pin_node_button->set_pressed_no_signal(pinned);
 	String tooltip_text = TTR("Pin the current node.\nWhen enabled, the painting parent node will not change when selecting other nodes in the scene.");
 	if (p_pinned_node && pinned) {
-		tooltip_text += vformat(TTR("\nPinned Node: %s"), EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_pinned_node));
+		tooltip_text += vformat("\n" + TTR("Pinned Node: %s"), EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_pinned_node));
 	}
 	pin_node_button->set_tooltip_text(tooltip_text);
 }
@@ -709,6 +709,10 @@ void ScenePaint2DEditor::_grid_step_changed() {
 
 void ScenePaint2DEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			advanced_settings_button->set_tooltip_text(TTR("Advanced Settings") + "\n" + TTR("Hold Alt while painting to temporarily switch to the previously used paint snap mode."));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			pin_node_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 			scene_picker_button->set_button_icon(get_editor_theme_icon(SNAME("ColorPick")));
@@ -818,7 +822,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	pin_node_button->set_toggle_mode(true);
 	pin_node_button->set_accessibility_name(TTRC("Pin Node"));
 	pin_node_button->set_theme_type_variation(SceneStringName(FlatButton));
-	pin_node_button->set_tooltip_text(TTRC("Pin the current node.\nWhen enabled, the painting parent node will not change when selecting other nodes in the scene."));
+	pin_node_button->set_tooltip_text(TTRC("When enabled, the painting parent node will not change when selecting other nodes in the scene."));
 	pin_node_button->connect(SceneStringName(toggled), callable_mp(this, &ScenePaint2DEditor::_pinned_toggled));
 	pin_node_button->set_shortcut(ED_SHORTCUT("scene_painter/pin_node", TTRC("Pin Node"), Key::P));
 	pin_node_button->set_shortcut_context(canvas_item_editor);
@@ -828,7 +832,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	scene_picker_button->set_toggle_mode(true);
 	scene_picker_button->set_accessibility_name(TTRC("Scene Picker"));
 	scene_picker_button->set_theme_type_variation(SceneStringName(FlatButton));
-	scene_picker_button->set_tooltip_text(TTRC("Toggle scene picker mode.\nWhen enabled, you can select scenes from the FileSystem dock, Scene dock, or 2D editor's viewport.\nHolding Ctrl enables picking from the 2D editor's viewport."));
+	scene_picker_button->set_tooltip_text(TTRC("When enabled, you can select scenes from the FileSystem dock, Scene dock, or 2D editor's viewport.\nHolding Ctrl enables picking from the 2D editor's viewport."));
 	scene_picker_button->connect(SceneStringName(toggled), callable_mp(this, &ScenePaint2DEditor::_scene_picker_toggled));
 	scene_picker_button->set_shortcut(ED_SHORTCUT("scene_painter/scene_picker", TTRC("Scene Picker"), Key::I));
 	scene_picker_button->set_shortcut_context(CanvasItemEditor::get_singleton());
@@ -858,7 +862,6 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	advanced_settings_button = memnew(Button);
 	advanced_settings_button->set_accessibility_name(TTRC("Advanced Settings"));
 	advanced_settings_button->set_theme_type_variation(SceneStringName(FlatButton));
-	advanced_settings_button->set_tooltip_text(TTRC("Open advanced settings.\nHolding alt temporarily switches to previously used paint mode."));
 	advanced_settings_button->connect(SceneStringName(pressed), callable_mp(this, &ScenePaint2DEditor::_advanced_settings_pressed));
 	toolbar->add_child(advanced_settings_button);
 
@@ -867,16 +870,13 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 
 	advanced_settings_popup->add_item(TTRC("Free Paint"), MENU_ITEM_FREE_PAINT_MODE);
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_FREE);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Enable free painting without snapping."));
 	advanced_settings_popup->add_item(TTRC("Snap to Grid"), MENU_ITEM_SNAP_TO_GRID_PAINT_MODE);
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_SNAP_GRID);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Enable snapping to grid when painting."));
 	advanced_settings_popup->add_item(TTRC("Snap to Grid Cell Center"), MENU_ITEM_SNAP_TO_GRID_CELL_CENTER_PAINT_MODE);
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_SNAP_GRID_CELL_CENTER);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Enable snapping to grid cell center when painting."));
 	advanced_settings_popup->add_separator();
 	advanced_settings_popup->add_check_item(TTRC("Allow Overlapping"), MENU_ITEM_ALLOW_OVERLAPPING);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Allow painting over existing painted scenes.\nHolding shift temporarily toggles this option."));
+	advanced_settings_popup->set_item_tooltip(-1, TTRC("Allow painting over existing painted scenes.\nHold Shift while painting to temporarily toggle this option."));
 	advanced_settings_popup->set_item_disabled(-1, true);
 
 	advanced_settings_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ScenePaint2DEditor::_advanced_settings_id_pressed));
