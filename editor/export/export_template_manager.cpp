@@ -458,7 +458,7 @@ void ExportTemplateManager::_initialize_template_data() {
 	{
 		TemplateInfo info;
 		info.name = TTR("Web with Extensions");
-		info.description = TTRC("Web build with support for GDExtextensions. Only useful if you use GDExtensions, otherwise it only increases build size.");
+		info.description = TTRC("Web build with support for GDExtensions. Only useful if you use GDExtensions, otherwise it only increases build size.");
 		info.file_list = { "web_dlink_debug.zip", "web_dlink_release.zip" };
 		template_data[TemplateID::WEB_EXTENSIONS] = info;
 	}
