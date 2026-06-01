@@ -63,13 +63,14 @@ static inline void setup_http_request(HTTPRequest *request) {
 	request->set_https_proxy(proxy_host, proxy_port);
 }
 
-void EditorAssetLibraryItem::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, const String &p_license_type, const String &p_license_url, int p_rating) {
+void EditorAssetLibraryItem::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating) {
 	title_text = p_title;
 	title->set_text(title_text);
 	title->set_tooltip_text(title_text);
 	asset_id = p_asset_id;
 	author->set_text(p_author);
 	author_id = p_author_id;
+	verified->set_visible(p_verified);
 	license->set_text(p_license_type);
 	license_url = p_license_url;
 	rating_count->set_text(itos(p_rating));
@@ -98,6 +99,7 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			author->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("faded_text"), SNAME("AssetLib")));
 			license->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("faded_text"), SNAME("AssetLib")));
+			verified->set_texture(get_editor_theme_icon(SNAME("Verified")));
 			rating_icon->set_texture(get_editor_theme_icon(SNAME("ThumbsUp")));
 
 			_calculate_misc_links_size();
@@ -203,6 +205,12 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	author_license_hbox->add_child(author);
 	author->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItem::_author_clicked));
 
+	verified = memnew(TextureRect);
+	verified->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	verified->set_tooltip_text(TTRC("Verified Author"));
+	verified->hide();
+	author_license_hbox->add_child(verified);
+
 	separator = memnew(HSeparator);
 	separator->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	author_license_hbox->add_child(separator);
@@ -216,6 +224,8 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	author_license_hbox->add_child(license);
 	license->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItem::_license_clicked));
 
+	vb->add_spacer();
+
 	HBoxContainer *rating_hbox = memnew(HBoxContainer);
 	rating_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	vb->add_child(rating_hbox);
@@ -227,11 +237,12 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 
 	rating_count = memnew(Label);
 	rating_count->set_mouse_filter(MOUSE_FILTER_STOP);
+	rating_count->set_theme_type_variation("LabelNoMargin");
 	rating_count->set_tooltip_text(TTRC("Review Score"));
-	rating_count->set_accessibility_name(TTRC("Review score"));
+	rating_count->set_accessibility_name(TTRC("Review Score"));
 	rating_hbox->add_child(rating_count);
 
-	set_accessibility_name(TTRC("Open asset details"));
+	set_accessibility_name(TTRC("Open Asset Details"));
 	set_custom_minimum_size(Size2(250, 80) * EDSCALE);
 	set_h_size_flags(SIZE_EXPAND_FILL);
 }
@@ -450,10 +461,10 @@ void EditorAssetLibraryItemDescription::_zoom_toggled(bool p_pressed) {
 	}
 }
 
-void EditorAssetLibraryItemDescription::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url) {
+void EditorAssetLibraryItemDescription::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url) {
 	asset_id = p_asset_id;
 	title = p_title;
-	item->configure(p_title, p_asset_id, p_author, p_author_id, p_license_type, p_license_url, p_rating);
+	item->configure(p_title, p_asset_id, p_author, p_author_id, p_verified, p_license_type, p_license_url, p_rating);
 
 	releases.clear();
 
@@ -936,7 +947,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	vb->add_child(title_hb);
 	title = memnew(Label);
 	title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-	title->set_theme_type_variation("LabelVMarginless");
+	title->set_theme_type_variation("LabelNoMarginVertical");
 	title->set_focus_mode(FOCUS_ACCESSIBILITY);
 	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_hb->add_child(title);
@@ -948,7 +959,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	version = memnew(Label);
 	version->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	version->set_theme_type_variation("LabelVMarginless");
+	version->set_theme_type_variation("LabelNoMarginVertical");
 	vb->add_child(version);
 
 	spacer = memnew(Control);
@@ -1435,21 +1446,18 @@ void EditorAssetLibrary::_search(int p_page) {
 	String search = filter->get_text().to_lower();
 	String args = "?query=" + search.uri_encode();
 
-	if (templates_only) {
-		args += "%23template";
-	} else if (categories->get_selected() > 0) {
-		args = args.replace("%23template", ""); // Bad user, no templates in projects!
+	if (categories->get_selected() > 0) {
 		args += "%23" + (String)categories->get_item_metadata(categories->get_selected());
 	}
 
 	args += "&require_release=true";
+	args += "&type=" + String(templates_only ? "1" : "0");
+	args += "&sort=" + String(sort_key[sort->get_selected()]);
 
 	args += "&compatibility=" + itos(GODOT_VERSION_MAJOR) + "." + itos(GODOT_VERSION_MINOR);
 	if (GODOT_VERSION_PATCH > 0) {
 		args += "." + itos(GODOT_VERSION_PATCH);
 	}
-
-	args += String() + "&sort=" + sort_key[sort->get_selected()];
 
 	int license_count = licenses->get_item_count();
 	if (license_count > 0) {
@@ -1476,7 +1484,7 @@ void EditorAssetLibrary::_request_current_config() {
 HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
-	if (p_page_count < 2) {
+	if (p_page_count < 1) {
 		return hbc;
 	}
 
@@ -1494,7 +1502,8 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
-	first->set_text(TTR("First", "Pagination"));
+	first->set_button_icon(get_editor_theme_icon(SNAME("BackStart")));
+	first->set_tooltip_text(TTR("First", "Pagination"));
 	first->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page != 1) {
 		first->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(1));
@@ -1503,9 +1512,11 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		first->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(first);
+	first->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(first, SNAME("BackStart")));
 
 	Button *prev = memnew(Button);
-	prev->set_text(TTR("Previous", "Pagination"));
+	prev->set_button_icon(get_editor_theme_icon(SNAME("Back")));
+	prev->set_tooltip_text(TTR("Previous", "Pagination"));
 	prev->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page > 1) {
 		prev->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page - 1));
@@ -1514,6 +1525,8 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		prev->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(prev);
+	prev->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(prev, SNAME("Back")));
+
 	hbc->add_child(memnew(VSeparator));
 
 	for (int i = from; i <= to; i++) {
@@ -1530,8 +1543,11 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		hbc->add_child(current);
 	}
 
+	hbc->add_child(memnew(VSeparator));
+
 	Button *next = memnew(Button);
-	next->set_text(TTR("Next", "Pagination"));
+	next->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
+	next->set_tooltip_text(TTR("Next", "Pagination"));
 	next->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page < p_page_count) {
 		next->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page + 1));
@@ -1539,11 +1555,12 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		next->set_disabled(true);
 		next->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
-	hbc->add_child(memnew(VSeparator));
 	hbc->add_child(next);
+	next->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(next, SNAME("Forward")));
 
 	Button *last = memnew(Button);
-	last->set_text(TTR("Last", "Pagination"));
+	last->set_button_icon(get_editor_theme_icon(SNAME("ForwardEnd")));
+	last->set_tooltip_text(TTR("Last", "Pagination"));
 	last->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page != p_page_count) {
 		last->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page_count));
@@ -1552,10 +1569,15 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		last->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(last);
+	last->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(last, SNAME("ForwardEnd")));
 
 	hbc->add_spacer();
 
 	return hbc;
+}
+
+void EditorAssetLibrary::_update_button_icon(Button *p_button, const StringName &p_icon) {
+	p_button->set_button_icon(get_editor_theme_icon(p_icon));
 }
 
 void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_request_type, bool p_is_parallel) {
@@ -1730,7 +1752,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			int page_len = 24; // API's default batch size.
 			int total_items = d["count"];
-			int pages = total_items / page_len;
+			int pages = MAX(1, total_items / page_len);
 			current_page = MIN(current_page, pages);
 			Array result = d["hits"];
 
@@ -1786,7 +1808,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem(true));
 				asset_items->add_child(item);
-				item->configure(r["name"], r["slug"], p["name"], author_id, r["license_type"], r["license_url"], r["reviews_score"]);
+				item->configure(r["name"], r["slug"], p["name"], author_id, p["verified"], r["license_type"], r["license_url"], r["reviews_score"]);
 				item->connect("asset_selected", callable_mp(this, &EditorAssetLibrary::_select_asset));
 
 				if (r.has("thumbnail") && !r["thumbnail"].operator String().is_empty()) {
@@ -1816,6 +1838,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			Dictionary p = d["publisher"];
 			ERR_FAIL_COND(!p.has("name"));
 			ERR_FAIL_COND(!p.has("slug"));
+			ERR_FAIL_COND(!p.has("verified"));
 
 			HashMap<String, String> tags;
 			if (d.has("tags")) {
@@ -1838,7 +1861,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description->connect(SNAME("install_requested"), callable_mp(this, &EditorAssetLibrary::_install_asset));
 			description->connect(SNAME("tag_clicked"), callable_mp(this, &EditorAssetLibrary::_tag_clicked));
 
-			description->configure(d["name"], d["slug"], p["name"], p["slug"], d["license_type"], d["license_url"], d["reviews_score"], d["body_bbcode"], tags, d["store_url"], d["source"]);
+			description->configure(d["name"], d["slug"], p["name"], p["slug"], p["verified"], d["license_type"], d["license_url"], d["reviews_score"], d["body_bbcode"], tags, d["store_url"], d["source"]);
 
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(d["slug"]);
 			if (download_item) {

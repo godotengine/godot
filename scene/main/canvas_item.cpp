@@ -40,6 +40,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/dpi_texture.h"
 #include "scene/resources/font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
@@ -152,7 +153,21 @@ void CanvasItem::_redraw_callback() {
 
 	if (is_visible_in_tree()) {
 		drawing = true;
-		TextServer::set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
+		if (oversampling_override > 0 && _is_oversampling_with_scale()) {
+			double oversampling = oversampling_override * get_viewport()->get_oversampling();
+			if (oversampling_override_cache != oversampling) {
+				TS->reference_oversampling_level(oversampling);
+				DPITexture::reference_scaling_level(oversampling);
+				if (oversampling_override_cache > 0) {
+					TS->unreference_oversampling_level(oversampling_override_cache);
+					DPITexture::unreference_scaling_level(oversampling_override_cache);
+				}
+				oversampling_override_cache = oversampling;
+			}
+			TextServer::set_current_drawn_item_oversampling(oversampling_override_cache);
+		} else {
+			TextServer::set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
+		}
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringName(draw));
@@ -303,6 +318,56 @@ void CanvasItem::_exit_canvas() {
 	}
 }
 
+bool CanvasItem::_is_oversampling_with_scale() const {
+	if (oversampling_with_scale == OVERSAMPLING_WITH_SCALE_PARENT_NODE) {
+		CanvasItem *ci = get_parent_item();
+		if (ci) {
+			return ci->_is_oversampling_with_scale();
+		}
+	}
+	return oversampling_with_scale == OVERSAMPLING_WITH_SCALE_ENABLED;
+}
+
+CanvasItem::OversamplingWithScale CanvasItem::get_oversampling_with_scale() const {
+	return oversampling_with_scale;
+}
+
+void CanvasItem::_update_oversampling(bool p_propagate) {
+	if (p_propagate) {
+		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
+			CanvasItem *ci = data.canvas_item_children[n];
+			if (!ci->top_level && ci->get_oversampling_with_scale() == OVERSAMPLING_WITH_SCALE_PARENT_NODE) {
+				ci->_update_oversampling(p_propagate);
+			}
+		}
+	}
+
+	if (parent_visible_in_tree) {
+		bool new_oversampling_with_scale = _is_oversampling_with_scale();
+		if (new_oversampling_with_scale) {
+			double new_os = MAX(get_global_transform().get_scale().x, get_global_transform().get_scale().y);
+			if (new_os != oversampling_override) {
+				oversampling_override = new_os;
+				queue_redraw();
+			}
+		} else {
+			oversampling_override = -1.0;
+		}
+		if (is_oversampling_with_scale_cache != new_oversampling_with_scale) {
+			is_oversampling_with_scale_cache = new_oversampling_with_scale;
+			queue_redraw();
+		}
+	}
+}
+
+void CanvasItem::set_oversampling_with_scale(CanvasItem::OversamplingWithScale p_mode) {
+	if (oversampling_with_scale == p_mode) {
+		return;
+	}
+	oversampling_with_scale = p_mode;
+	_update_oversampling(true);
+}
+
 void CanvasItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -391,6 +456,7 @@ void CanvasItem::_notification(int p_what) {
 			if (is_physics_interpolated_and_enabled()) {
 				notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 			}
+			_update_oversampling(false);
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -427,6 +493,12 @@ void CanvasItem::_notification(int p_what) {
 			}
 			_set_global_invalid(true);
 			parent_visible_in_tree = false;
+
+			if (oversampling_override_cache > 0) {
+				TS->unreference_oversampling_level(oversampling_override_cache);
+				DPITexture::unreference_scaling_level(oversampling_override_cache);
+				oversampling_override_cache = -1.0;
+			}
 
 			if (get_viewport()) {
 				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::canvas_parent_mark_dirty).bind(get_parent()));
@@ -1103,6 +1175,8 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	 * notification anyway).
 	 */
 
+	_update_oversampling(false);
+
 	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_global_invalid()) {
 		return; //nothing to do
 	}
@@ -1498,6 +1572,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clip_children_mode", "mode"), &CanvasItem::set_clip_children_mode);
 	ClassDB::bind_method(D_METHOD("get_clip_children_mode"), &CanvasItem::get_clip_children_mode);
 
+	ClassDB::bind_method(D_METHOD("set_oversampling_with_scale", "enabled"), &CanvasItem::set_oversampling_with_scale);
+	ClassDB::bind_method(D_METHOD("get_oversampling_with_scale"), &CanvasItem::get_oversampling_with_scale);
+
 	GDVIRTUAL_BIND(_draw);
 
 	ADD_GROUP("Visibility", "");
@@ -1507,6 +1584,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_children", PROPERTY_HINT_ENUM, "Disabled,Clip Only,Clip + Draw"), "set_clip_children_mode", "get_clip_children_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "oversampling_with_scale", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled"), "set_oversampling_with_scale", "get_oversampling_with_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_layer", PROPERTY_HINT_LAYERS_2D_RENDER), "set_visibility_layer", "get_visibility_layer");
 
@@ -1559,6 +1637,11 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_ONLY);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_AND_DRAW);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_MAX);
+
+	BIND_ENUM_CONSTANT(OVERSAMPLING_WITH_SCALE_PARENT_NODE);
+	BIND_ENUM_CONSTANT(OVERSAMPLING_WITH_SCALE_DISABLED);
+	BIND_ENUM_CONSTANT(OVERSAMPLING_WITH_SCALE_ENABLED);
+	BIND_ENUM_CONSTANT(OVERSAMPLING_WITH_SCALE_MAX);
 }
 
 Transform2D CanvasItem::get_canvas_transform() const {

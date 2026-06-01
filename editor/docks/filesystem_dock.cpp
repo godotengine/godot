@@ -391,7 +391,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	// Handles the favorites.
 	favorites_item = tree->create_item(root);
 	favorites_item->set_icon(0, get_editor_theme_icon(SNAME("Favorites")));
-	favorites_item->set_text(0, TTRC("Favorites:"));
+	favorites_item->set_text(0, TTRC("Favorites"));
 	favorites_item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_ALWAYS);
 	favorites_item->set_metadata(0, "Favorites");
 	favorites_item->set_collapsed(!p_uncollapsed_paths.has("Favorites"));
@@ -465,7 +465,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	}
 
 	Vector<String> uncollapsed_paths = p_uncollapsed_paths;
-	if (p_uncollapse_root) {
+	if (p_uncollapse_root && !uncollapsed_paths.has("res://")) {
 		uncollapsed_paths.push_back("res://");
 	}
 
@@ -494,7 +494,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 
 	// Preserve the selection when switching modes.
 	Vector<String> selected_paths;
-	if (old_display_mode != display_mode) {
+	if (old_display_mode != display_mode && old_display_mode != DISPLAY_MODE_VSPLIT) {
 		selected_paths = get_selected_paths();
 	}
 
@@ -533,42 +533,35 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 
 			tree->show();
 			tree->set_v_size_flags(SIZE_EXPAND_FILL);
-			if (is_vertical) {
-				tree->set_theme_type_variation("");
-				tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
-				tree_mc->set_theme_type_variation(horizontal ? "NoBorderBottomPanel" : "NoBorderHorizontal");
+			tree->set_theme_type_variation("TreeSecondary");
+			tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);
+			tree_mc->set_theme_type_variation("");
 
-				files->set_theme_type_variation(horizontal ? "ItemListSecondary" : "");
-				files->set_scroll_hint_mode(horizontal ? ItemList::SCROLL_HINT_MODE_DISABLED : ItemList::SCROLL_HINT_MODE_TOP);
-				files_mc->set_theme_type_variation(horizontal ? "" : "NoBorderHorizontalBottom");
-			} else {
-				tree->set_theme_type_variation("TreeSecondary");
-				tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);
-				tree_mc->set_theme_type_variation("");
-
-				files->set_theme_type_variation("ItemListSecondary");
-				files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_DISABLED);
-				files_mc->set_theme_type_variation("");
-			}
-			tree->ensure_cursor_is_visible();
-
-			// Properly allocate the selections between the views.
-			Vector<String> selected_files;
-			for (int i = 0; i < selected_paths.size(); i++) {
-				const String &path = selected_paths[i];
-				if (!path.ends_with("/")) {
-					selected_files.append(path);
-					selected_paths.remove_at(i);
-					i--;
-				}
-			}
+			files->set_theme_type_variation("ItemListSecondary");
+			files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_DISABLED);
+			files_mc->set_theme_type_variation("");
 
 			toolbar2_hbc->hide();
 			button_file_list_display_mode->show();
-			_update_tree(get_uncollapsed_paths(), false, true, selected_paths);
-
 			file_list_vb->show();
-			_update_file_list(true, selected_files);
+
+			if (old_display_mode == DISPLAY_MODE_TREE_ONLY) {
+				// Properly allocate the selections between the views.
+				Vector<String> selected_files;
+				for (int i = 0; i < selected_paths.size(); i++) {
+					const String &path = selected_paths[i];
+					if (!path.ends_with("/")) {
+						selected_files.append(path);
+						selected_paths.remove_at(i);
+						i--;
+					}
+				}
+
+				_update_tree(get_uncollapsed_paths(), false, true, selected_paths);
+				_update_file_list(!selected_files.is_empty(), selected_files);
+			} else {
+				tree->ensure_cursor_is_visible();
+			}
 		} break;
 	}
 
@@ -4272,12 +4265,42 @@ void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, co
 		set_file_list_display_mode(dock_filesystem_file_list_display_mode);
 	}
 
-	PackedStringArray uncollapsed_tis;
-	if (p_layout->has_section_key(p_section, "uncollapsed_paths")) {
-		uncollapsed_tis = p_layout->get_value(p_section, "uncollapsed_paths");
+	// Restore uncollapsed state.
+	{
+		PackedStringArray uncollapsed_tis;
+		if (p_layout->has_section_key(p_section, "uncollapsed_paths")) {
+			uncollapsed_tis = p_layout->get_value(p_section, "uncollapsed_paths");
+		} else {
+			uncollapsed_tis = { "res://" };
+		}
+
+		TreeItem *item = tree->get_item_with_metadata("res://", 0);
+		item->set_collapsed_recursive(true);
+		LocalVector<TreeItem *> ti_visit;
+		ti_visit.push_back(item);
+
+		// BFS to uncollapse items (skipping those in favorites).
+		while (!ti_visit.is_empty()) {
+			TreeItem *curr_ti = ti_visit[0];
+			const String &path = curr_ti->get_metadata(0);
+
+			if (uncollapsed_tis.has(path)) {
+				curr_ti->set_collapsed(false);
+
+				uncollapsed_tis.erase(path);
+				if (uncollapsed_tis.is_empty()) {
+					break;
+				}
+			}
+
+			for (TreeItem *child_ti = curr_ti->get_first_child(); child_ti; child_ti = child_ti->get_next()) {
+				ti_visit.push_back(child_ti);
+			}
+			ti_visit.remove_at(0);
+		}
 	}
 
-	get_tree_control()->deselect_all();
+	tree->deselect_all();
 	files->deselect_all();
 	current_path = "";
 
@@ -4305,21 +4328,50 @@ void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, co
 			if (files_to_select.is_empty() && dirs_to_select.is_empty()) {
 				select_file("res://"); // No valid file to select, default to root folder.
 			} else {
-				_update_tree(uncollapsed_tis, true, false, dirs_to_select);
+				TreeItem *item = tree->get_item_with_metadata("res://", 0);
+				LocalVector<TreeItem *> ti_visit = { item };
+				bool first_selection = true;
 
-				if (!dirs_to_select.is_empty()) {
-					TreeItem *item = tree->get_item_with_metadata(*dirs_to_select.begin());
-					if (item) {
-						item->set_as_cursor(0);
-						current_path = item->get_metadata(0);
+				// BFS to select items (skipping those in favorites).
+				while (!ti_visit.is_empty()) {
+					TreeItem *curr_ti = ti_visit[0];
+					const String &path = curr_ti->get_metadata(0);
+
+					if (dirs_to_select.has(path)) {
+						curr_ti->select(0, first_selection);
+						if (first_selection) {
+							first_selection = false;
+							current_path = curr_ti->get_metadata(0);
+							tree->ensure_cursor_is_visible();
+						}
+
+						dirs_to_select.erase(path);
+						if (dirs_to_select.is_empty()) {
+							break;
+						}
 					}
+
+					if (!curr_ti->is_collapsed()) {
+						for (TreeItem *child_ti = curr_ti->get_first_child(); child_ti; child_ti = child_ti->get_next()) {
+							ti_visit.push_back(child_ti);
+						}
+					}
+					ti_visit.remove_at(0);
 				}
 
 				if (display_mode != DISPLAY_MODE_TREE_ONLY) {
-					_update_file_list(true, files_to_select);
+					// The folders not found could be from the selected folder.
+					files_to_select.append_array(dirs_to_select);
 
-					if (files->is_anything_selected()) {
-						current_path = files->get_item_metadata(*files->get_selected_items().begin());
+					_update_file_list(!files_to_select.is_empty(), files_to_select);
+
+					for (const int idx : files->get_selected_items()) {
+						const String &path = files->get_item_metadata(idx);
+						// Subfolders shouldn't be set as the current path.
+						if (!path.ends_with("/")) {
+							current_path = path;
+							break;
+						}
 					}
 				}
 

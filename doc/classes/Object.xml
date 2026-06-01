@@ -75,6 +75,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns a non-[code]null[/code] value.
+				[b]Warning:[/b] This method must be [url=$DOCS_URL/tutorials/performance/thread_safe_apis.html]thread-safe[/url] if overridden. Otherwise, the engine may crash when trying to save a resource containing the object.
 			</description>
 		</method>
 		<method name="_get_property_list" qualifiers="virtual">
@@ -189,6 +190,7 @@
 				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc. If you want to customize exported properties, use [method _validate_property].
 				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
 				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy.
+				[b]Warning:[/b] This method must be [url=$DOCS_URL/tutorials/performance/thread_safe_apis.html]thread-safe[/url] if overridden. Otherwise, the engine may crash when trying to save a resource containing the object.
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">

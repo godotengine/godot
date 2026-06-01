@@ -1948,6 +1948,8 @@ public:
 	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
 
+	DriverWorkarounds get_driver_workarounds() const;
+
 	uint64_t get_frames_drawn() const { return frames_drawn; }
 
 	bool is_composite_alpha_supported() const;
