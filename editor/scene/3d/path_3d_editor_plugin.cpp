@@ -933,7 +933,7 @@ void Path3DEditorPlugin::_auto_tangent_point(int p_index) {
 		undo_redo->add_do_method(curve.ptr(), "set_point_in", p_index, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
 		undo_redo->add_undo_method(curve.ptr(), "set_point_out", p_index, curve->get_point_out(p_index));
 		undo_redo->add_do_method(curve.ptr(), "set_point_out", p_index, tangent * curr_p.distance_to(next_p) * smooth_ratio);
-	} else if (has_next) { // first point of an open curve set the out tangent and zero the in tangent
+	} else if (has_next) { // First point of an open curve set the out tangent and zero the in tangent.
 		Vector3 next_p = curve->get_point_position(p_index + 1);
 		Vector3 tangent = (next_p - curr_p).normalized();
 		undo_redo->add_undo_method(curve.ptr(), "set_point_in", p_index, curve->get_point_in(p_index));
