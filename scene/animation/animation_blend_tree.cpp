@@ -106,25 +106,37 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 	ERR_FAIL_COND_V(anim.is_null(), NodeTimeInfo());
 	double anim_size = anim->get_length();
 
-	double cur_len;
-	double playback_end;
+	double cur_len; // The animation length seen in NodeTimeInfo, propagated throughout the tree.
+	double playback_start; // Start of the current section in AnimationMixer.
+	double playback_end; // End of the current section in AnimationMixer.
 	Animation::LoopMode cur_loop_mode;
 	if (use_custom_timeline) {
-		cur_len = timeline_length;
 		if (stretch_time_scale) {
 			// When time scale is stretched, the entire animation is played anyway using a time scale based on the timeline length.
 			// Therefore, the end of the animation section is the animation length.
+			cur_len = anim_size;
+			playback_start = 0.0;
 			playback_end = anim_size;
 		} else {
-			playback_end = timeline_length;
+			cur_len = timeline_length;
+			if (play_mode == PLAY_MODE_FORWARD) {
+				playback_start = start_offset;
+				playback_end = playback_start + timeline_length;
+			} else {
+				playback_end = anim_size - start_offset;
+				playback_start = playback_end - timeline_length;
+			}
 		}
 		cur_loop_mode = loop_mode;
 	} else {
 		cur_len = anim_size;
+		playback_start = 0.0;
 		playback_end = anim_size;
 		cur_loop_mode = anim->get_loop_mode();
 	}
 
+	// AnimationNodeAnimation always uses times relative to the start of the section. ([0, cur_len])
+	// When creating the next PlaybackInfo, the relative time is converted back to absolute time. ([playback_start, playback_end])
 	double cur_time = p_playback_info.time;
 	double cur_delta = p_playback_info.delta;
 	bool cur_backward = p_instance.get_parameter_backward();
@@ -193,44 +205,44 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 	nti.will_end = will_end;
 
 	// 3. Progress for Animation.
-	double prev_playback_time = prev_time + start_offset;
-	double cur_playback_time = cur_time + start_offset;
+	double prev_playback_time = prev_time;
+	double cur_playback_time = cur_time;
 	if (stretch_time_scale) {
-		double mlt = anim_size / cur_len;
+		double mlt = anim_size / timeline_length;
 		prev_playback_time *= mlt;
 		cur_playback_time *= mlt;
 		cur_delta *= mlt;
 	}
 	if (cur_loop_mode == Animation::LOOP_LINEAR) {
-		if (!Math::is_zero_approx(anim_size)) {
-			prev_playback_time = Math::fposmod(prev_playback_time, anim_size);
-			cur_playback_time = Math::fposmod(cur_playback_time, anim_size);
+		if (!Math::is_zero_approx(cur_len)) {
+			prev_playback_time = Math::fposmod(prev_playback_time, cur_len);
+			cur_playback_time = Math::fposmod(cur_playback_time, cur_len);
 			if (Animation::is_greater_or_equal_approx(prev_playback_time, 0) && Animation::is_less_approx(cur_playback_time, 0)) {
 				looped_flag = node_backward ? Animation::LOOPED_FLAG_END : Animation::LOOPED_FLAG_START;
 			}
-			if (Animation::is_less_or_equal_approx(prev_playback_time, anim_size) && Animation::is_greater_approx(cur_playback_time, anim_size)) {
+			if (Animation::is_less_or_equal_approx(prev_playback_time, cur_len) && Animation::is_greater_approx(cur_playback_time, cur_len)) {
 				looped_flag = node_backward ? Animation::LOOPED_FLAG_START : Animation::LOOPED_FLAG_END;
 			}
 		}
 	} else if (cur_loop_mode == Animation::LOOP_PINGPONG) {
-		if (!Math::is_zero_approx(anim_size)) {
-			if (Animation::is_greater_or_equal_approx(Math::fposmod(cur_playback_time, anim_size * 2.0), anim_size)) {
+		if (!Math::is_zero_approx(cur_len)) {
+			if (Animation::is_greater_or_equal_approx(Math::fposmod(cur_playback_time, cur_len * 2.0), cur_len)) {
 				cur_delta = -cur_delta; // Needed for retrieving discrete keys correctly.
 			}
-			prev_playback_time = Math::pingpong(prev_playback_time, anim_size);
-			cur_playback_time = Math::pingpong(cur_playback_time, anim_size);
+			prev_playback_time = Math::pingpong(prev_playback_time, cur_len);
+			cur_playback_time = Math::pingpong(cur_playback_time, cur_len);
 			if (Animation::is_greater_or_equal_approx(prev_playback_time, 0) && Animation::is_less_approx(cur_playback_time, 0)) {
 				looped_flag = node_backward ? Animation::LOOPED_FLAG_END : Animation::LOOPED_FLAG_START;
 			}
-			if (Animation::is_less_or_equal_approx(prev_playback_time, anim_size) && Animation::is_greater_approx(cur_playback_time, anim_size)) {
+			if (Animation::is_less_or_equal_approx(prev_playback_time, cur_len) && Animation::is_greater_approx(cur_playback_time, cur_len)) {
 				looped_flag = node_backward ? Animation::LOOPED_FLAG_START : Animation::LOOPED_FLAG_END;
 			}
 		}
 	} else {
 		if (Animation::is_less_approx(cur_playback_time, 0)) {
 			cur_playback_time = 0;
-		} else if (Animation::is_greater_approx(cur_playback_time, anim_size)) {
-			cur_playback_time = anim_size;
+		} else if (Animation::is_greater_approx(cur_playback_time, cur_len)) {
+			cur_playback_time = cur_len;
 		}
 
 		// Emit start & finish signal. Internally, the detections are the same for backward.
@@ -241,8 +253,8 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 				p_process_state.tree->call_deferred(SNAME("emit_signal"), SceneStringName(animation_started), animation);
 			}
 			// Finished.
-			if (Animation::is_less_approx(prev_playback_time, anim_size) && Animation::is_greater_or_equal_approx(cur_playback_time, anim_size)) {
-				cur_playback_time = anim_size;
+			if (Animation::is_less_approx(prev_playback_time, cur_len) && Animation::is_greater_or_equal_approx(cur_playback_time, cur_len)) {
+				cur_playback_time = cur_len;
 				p_process_state.tree->call_deferred(SNAME("emit_signal"), SceneStringName(animation_finished), animation);
 			}
 		}
@@ -252,12 +264,12 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 		// Force process first key for Discrete/Method/Audio/AnimationPlayback.
 		if (immediately_after_start) {
 			AnimationMixer::PlaybackInfo pi = p_playback_info;
-			pi.start = 0.0;
+			pi.start = playback_start;
 			pi.end = playback_end;
 			if (play_mode == PLAY_MODE_FORWARD) {
-				pi.time = 0;
+				pi.time = playback_start;
 			} else {
-				pi.time = anim_size;
+				pi.time = playback_end;
 			}
 			pi.delta = 0;
 			pi.weight = CMP_EPSILON;
@@ -265,12 +277,12 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 		}
 
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
-		pi.start = 0.0;
+		pi.start = playback_start;
 		pi.end = playback_end;
 		if (play_mode == PLAY_MODE_FORWARD) {
-			pi.time = cur_playback_time;
+			pi.time = playback_start + cur_playback_time;
 		} else {
-			pi.time = anim_size - cur_playback_time;
+			pi.time = playback_start + cur_len - cur_playback_time;
 		}
 		if (node_backward ? cur_backward : !cur_backward) {
 			pi.delta = cur_delta;
