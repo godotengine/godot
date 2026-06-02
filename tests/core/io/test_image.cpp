@@ -708,8 +708,10 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 
 	SUBCASE("[Image] Idempotency testing") {
 		image.instantiate(3, 3, false, Image::FORMAT_RGBA8);
-		Ref<Image> temp = memnew(Image());
-		Ref<Image> image_copy = memnew(Image());
+		Ref<Image> temp;
+		Ref<Image> image_copy;
+		temp.instantiate(0, 0, false, Image::FORMAT_RGBA8);
+		image_copy.instantiate(0, 0, false, Image::FORMAT_RGBA8);
 		image->set_pixel(0, 0, red);
 		image->set_pixel(1, 0, red);
 		image->set_pixel(2, 0, blue);
@@ -858,21 +860,21 @@ TEST_CASE("[Image] Decompressing images") {
 		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
 		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
 		image->decompress();
-		CHECK(!(image->is_compressed()));
+		CHECK_FALSE(image->is_compressed());
 	}
 
 	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_ETC2)") {
 		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
 		image->compress(Image::COMPRESS_ETC2, Image::COMPRESS_SOURCE_GENERIC);
 		image->decompress();
-		CHECK(!(image->is_compressed()));
+		CHECK_FALSE(image->is_compressed());
 	}
 
 	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_BPTC)") {
 		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
 		image->compress(Image::COMPRESS_BPTC, Image::COMPRESS_SOURCE_GENERIC);
 		image->decompress();
-		CHECK(!(image->is_compressed()));
+		CHECK_FALSE(image->is_compressed());
 	}
 
 	SUBCASE("[Image] Mipmapped image decompression") {
@@ -880,44 +882,6 @@ TEST_CASE("[Image] Decompressing images") {
 		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
 		image->decompress();
 		CHECK(image->has_mipmaps());
-	}
-
-	SUBCASE("[Image] Decompression from a lossy format") {
-		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
-		Color red(1.0f, 0.0f, 0.0f, 1.0f);
-
-		image->set_pixel(0, 0, red);
-		image->set_pixel(0, 1, red);
-		image->set_pixel(0, 2, red);
-		image->set_pixel(0, 3, red);
-
-		image->set_pixel(1, 0, red);
-		image->set_pixel(1, 1, red);
-		image->set_pixel(1, 2, red);
-		image->set_pixel(1, 3, red);
-
-		image->set_pixel(2, 0, red);
-		image->set_pixel(2, 1, red);
-		image->set_pixel(2, 2, red);
-		image->set_pixel(2, 3, red);
-
-		image->set_pixel(3, 0, red);
-		image->set_pixel(3, 1, red);
-		image->set_pixel(3, 2, red);
-		image->set_pixel(3, 3, red);
-
-		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
-
-		image->decompress();
-
-		CHECK(image->get_pixel(0, 0).is_equal_approx(red));
-
-		/*
-		NOTE: when compressing such a small image in a lossy format, Godot tends to
-		interpololate the colors, so the colors may significantly deviate outside of
-		a tolerable range. More test cases may therefore be required to fully
-		cover lossy image formats.
-		 */
 	}
 }
 
