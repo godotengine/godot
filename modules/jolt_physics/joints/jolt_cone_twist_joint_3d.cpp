@@ -78,7 +78,6 @@ JPH::Constraint *JoltConeTwistJoint3D::_build_swing_twist(JPH::Body *p_jolt_body
 	constraint_settings.mPosition2 = to_jolt_r(p_shifted_ref_b.origin);
 	constraint_settings.mTwistAxis2 = to_jolt(p_shifted_ref_b.basis.get_column(Vector3::AXIS_X));
 	constraint_settings.mPlaneAxis2 = to_jolt(p_shifted_ref_b.basis.get_column(Vector3::AXIS_Z));
-	constraint_settings.mSwingType = JPH::ESwingType::Pyramid;
 
 	if (p_jolt_body_a == nullptr) {
 		return constraint_settings.Create(JPH::Body::sFixedToWorld, *p_jolt_body_b);
