@@ -48,6 +48,10 @@
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #include "modules/svg/image_loader_svg.h"
 
+#ifdef MODULE_MONO_ENABLED
+#include "modules/mono/utils/path_utils.h"
+#endif
+
 Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
@@ -394,6 +398,10 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "threads/emscripten_pool_size"), 8));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "threads/godot_pool_size"), 4));
+
+#ifdef MODULE_MONO_ENABLED
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "dotnet/publish_directory", PROPERTY_HINT_GLOBAL_DIR), ""));
+#endif
 }
 
 bool EditorExportPlatformWeb::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
@@ -405,6 +413,13 @@ bool EditorExportPlatformWeb::get_export_option_visibility(const EditorExportPre
 	if (p_option == "threads/godot_pool_size" || p_option == "threads/emscripten_pool_size") {
 		return p_preset->get("variant/thread_support").operator bool();
 	}
+
+#ifdef MODULE_MONO_ENABLED
+	if (p_option == "dotnet/publish_directory") {
+		const String csproj_path = ProjectSettings::get_singleton()->globalize_path("res://" + Path::get_csharp_project_name() + ".csproj");
+		return FileAccess::exists(csproj_path);
+	}
+#endif
 
 	return true;
 }
@@ -422,13 +437,6 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
 }
 
 bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
-#ifdef MODULE_MONO_ENABLED
-	// Don't check for additional errors, as this particular error cannot be resolved.
-	r_error += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
-	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
-	return false;
-#else
-
 	String err;
 	bool valid = false;
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
@@ -454,12 +462,26 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
+#ifdef MODULE_MONO_ENABLED
+	const String csproj_path = ProjectSettings::get_singleton()->globalize_path("res://" + Path::get_csharp_project_name() + ".csproj");
+	if (FileAccess::exists(csproj_path)) {
+		const String publish_dir = p_preset->get("dotnet/publish_directory");
+		if (publish_dir.is_empty()) {
+			err += TTR("Exporting a C#/.NET project to Web from the editor only produces the game data (PCK) and web template; the runnable web host has to be built separately.") + "\n";
+			err += TTR("To produce the runnable web host, run 'dotnet publish' on the project with the 'GodotWebStaticLibrary' MSBuild property pointing at the 'libgodot.a' file from the web export template, then set the 'dotnet/publish_directory' export option to the resulting publish output directory.") + "\n";
+			valid = false;
+		} else if (!FileAccess::exists(publish_dir.path_join("_framework").path_join("dotnet.js")) || !FileAccess::exists(publish_dir.path_join("_framework").path_join("dotnet.native.wasm"))) {
+			err += vformat(TTR("The 'dotnet/publish_directory' export option does not point at a valid 'dotnet publish' output directory; '%s' must contain a '_framework' folder with 'dotnet.js' and 'dotnet.native.wasm'."), publish_dir) + "\n";
+			valid = false;
+		}
+	}
+#endif
+
 	if (!err.is_empty()) {
 		r_error = err;
 	}
 
 	return valid;
-#endif // !MODULE_MONO_ENABLED
 }
 
 bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {

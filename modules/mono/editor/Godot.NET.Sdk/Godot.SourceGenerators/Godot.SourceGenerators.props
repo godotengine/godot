@@ -5,6 +5,8 @@
     <CompilerVisibleProperty Include="GodotProjectDir" />
     <CompilerVisibleProperty Include="GodotProjectDirBase64" />
     <CompilerVisibleProperty Include="GodotSourceGenerators" />
+    <CompilerVisibleProperty Include="GodotTargetPlatform" />
     <CompilerVisibleProperty Include="IsGodotToolsProject" />
+    <CompilerVisibleProperty Include="RootNamespace" />
   </ItemGroup>
 </Project>

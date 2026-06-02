@@ -25,7 +25,10 @@ namespace Godot.NativeInterop
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    return _internalHandle;
+                    if (_internalHandle != IntPtr.Zero)
+                    {
+                        return _internalHandle;
+                    }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {

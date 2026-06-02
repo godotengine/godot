@@ -38,6 +38,8 @@
     <None Include="Sdk\Android.props" Pack="true" PackagePath="Sdk" />
     <None Include="Sdk\iOS.props" Pack="true" PackagePath="Sdk" />
     <None Include="Sdk\iOS.targets" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\Web.props" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\Web.targets" Pack="true" PackagePath="Sdk" />
   </ItemGroup>
 
 </Project>

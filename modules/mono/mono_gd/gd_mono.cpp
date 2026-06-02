@@ -258,7 +258,7 @@ String find_coreclr() {
 }
 #endif
 
-bool load_hostfxr(void *&r_hostfxr_dll_handle) {
+[[maybe_unused]] bool load_hostfxr(void *&r_hostfxr_dll_handle) {
 	String hostfxr_path = find_hostfxr();
 
 	if (hostfxr_path.is_empty()) {
@@ -299,7 +299,7 @@ bool load_hostfxr(void *&r_hostfxr_dll_handle) {
 }
 
 #ifndef TOOLS_ENABLED
-bool load_coreclr(void *&r_coreclr_dll_handle) {
+[[maybe_unused]] bool load_coreclr(void *&r_coreclr_dll_handle) {
 	String coreclr_path = find_coreclr();
 
 	bool is_monovm = false;
@@ -428,6 +428,16 @@ using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbac
 using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
 #endif
 
+#ifdef WEB_ENABLED
+// On web the .NET runtime hosts the engine, so there is no runtime for GDMono to load.
+// The host registers the GodotPlugins entry point here before creating the Godot instance.
+static godot_plugins_initialize_fn web_godot_plugins_initialize = nullptr;
+
+extern "C" __attribute__((visibility("default"))) void libgodot_web_register_godot_plugins_initialize(void *p_godot_plugins_initialize) {
+	web_godot_plugins_initialize = (godot_plugins_initialize_fn)p_godot_plugins_initialize;
+}
+#endif
+
 #ifdef TOOLS_ENABLED
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
@@ -462,7 +472,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	return godot_plugins_initialize;
 }
 #else
-godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
+[[maybe_unused]] godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
 	String assembly_name = Path::get_csharp_project_name();
@@ -489,7 +499,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	return godot_plugins_initialize;
 }
 
-godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle) {
+[[maybe_unused]] godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle) {
 	String assembly_name = Path::get_csharp_project_name();
 
 #if defined(WINDOWS_ENABLED)
@@ -575,7 +585,7 @@ MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p
 }
 #endif
 
-godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime_initialized) {
+[[maybe_unused]] godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
 	String assembly_name = Path::get_csharp_project_name();
@@ -615,7 +625,15 @@ bool GDMono::should_initialize() {
 	// The editor always needs to initialize the .NET module for now.
 	return true;
 #else
-	return OS::get_singleton()->has_feature("dotnet");
+	bool initialize = OS::get_singleton()->has_feature("dotnet");
+#ifdef WEB_ENABLED
+	if (!initialize && web_godot_plugins_initialize != nullptr) {
+		// The hosting .NET runtime registered the GodotPlugins entry point, but the
+		// project was packaged without the 'dotnet' feature tag, so it will never be used.
+		WARN_PRINT_ONCE(".NET: A hosting runtime registered the GodotPlugins entry point, but the project was packaged without the 'dotnet' feature tag. C# scripts will not be loaded.");
+	}
+#endif
+	return initialize;
 #endif
 }
 
@@ -643,6 +661,11 @@ void GDMono::initialize() {
 
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
+#ifdef WEB_ENABLED
+	godot_plugins_initialize = web_godot_plugins_initialize;
+	ERR_FAIL_NULL_MSG(godot_plugins_initialize, ".NET: The hosting .NET runtime did not register the GodotPlugins entry point.");
+	runtime_initialized = true;
+#else
 #if !defined(APPLE_EMBEDDED_ENABLED)
 	// Check that the .NET assemblies directory exists before trying to use it.
 	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
@@ -676,6 +699,7 @@ void GDMono::initialize() {
 		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 #endif
 	}
+#endif // WEB_ENABLED
 
 	int32_t interop_funcs_size = 0;
 	const void **interop_funcs = godotsharp::get_runtime_interop_funcs(interop_funcs_size);
@@ -684,7 +708,7 @@ void GDMono::initialize() {
 
 	void *godot_dll_handle = nullptr;
 
-#if defined(UNIX_ENABLED) && !defined(MACOS_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED)
+#if defined(UNIX_ENABLED) && !defined(MACOS_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED) && !defined(WEB_ENABLED)
 	// Managed code can access it on its own on other platforms
 	godot_dll_handle = dlopen(nullptr, RTLD_NOW);
 #endif

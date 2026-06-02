@@ -78,6 +78,7 @@ def get_doc_path():
 def get_flags():
     return {
         "arch": "wasm32",
+        "supported": ["library", "mono"],
         "target": "template_debug",
         "builtin_pcre2_with_jit": False,
         "vulkan": False,
@@ -114,8 +115,12 @@ def configure(env: "SConsEnvironment"):
     cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
 
     # Minimum emscripten requirements.
-    if cc_semver < (4, 0, 0):
-        print_error("The minimum Emscripten version to build Godot is 4.0.0, detected: %s.%s.%s" % cc_semver)
+    minimum_version = (3, 1, 56) if env["library_type"] != "executable" else (4, 0, 0)
+    if cc_semver < minimum_version:
+        print_error(
+            "The minimum Emscripten version to build Godot is %s.%s.%s, detected: %s.%s.%s"
+            % (minimum_version + cc_semver)
+        )
         sys.exit(255)
 
     env.Append(LIBEMITTER=[library_emitter])

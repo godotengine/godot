@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <!--
+    On web the .NET runtime hosts the engine, so the browser-wasm build must relink
+    natively to pull in the LibGodot static library. The generated LibGodot host type
+    uses 'unsafe' (byte** argv), so unsafe blocks are required.
+    -->
+    <WasmBuildNative>true</WasmBuildNative>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputType>Exe</OutputType>
+    <StartupObject Condition=" '$(StartupObject)' == '' ">$(RootNamespace).GodotWebEntryPoint</StartupObject>
+    <!-- The default Godot web library build emits atomics, so the .NET runtime must match. -->
+    <WasmEnableThreads Condition=" '$(WasmEnableThreads)' == '' ">true</WasmEnableThreads>
+  </PropertyGroup>
+</Project>

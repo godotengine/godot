@@ -1,0 +1,65 @@
+<Project>
+  <!--
+  Web hosts the engine through the .NET runtime, so the browser-wasm native link must pull in the
+  LibGodot static library and the engine's JavaScript libraries produced by the Godot web library
+  build. Set 'GodotWebStaticLibrary' to the absolute path of 'libgodot.a'; 'GodotWebJsLibraryDir'
+  is the directory holding the engine JS libraries (defaults to the 'godot_web_dotnet' folder beside
+  the static library). Both ship in the Godot web export template.
+  -->
+  <PropertyGroup>
+    <GodotWebJsLibraryDir Condition=" '$(GodotWebJsLibraryDir)' == '' and '$(GodotWebStaticLibrary)' != '' ">$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(GodotWebStaticLibrary)')), 'godot_web_dotnet'))</GodotWebJsLibraryDir>
+  </PropertyGroup>
+
+  <!--
+  The Godot web library build writes this alongside the engine JS libraries to record whether the
+  engine was compiled with thread support (SCons 'threads'). Importing it surfaces
+  'GodotWebThreadsEnabled' so the build can verify it matches the .NET runtime's 'WasmEnableThreads'.
+  -->
+  <Import Project="$(GodotWebJsLibraryDir)\Godot.Web.BuildSettings.props" Condition=" '$(GodotWebJsLibraryDir)' != '' and Exists('$(GodotWebJsLibraryDir)\Godot.Web.BuildSettings.props') " />
+
+  <ItemGroup Condition=" '$(GodotWebStaticLibrary)' != '' and Exists('$(GodotWebStaticLibrary)') ">
+    <NativeFileReference Include="$(GodotWebStaticLibrary)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(GodotWebJsLibraryDir)' != '' and Exists('$(GodotWebJsLibraryDir)') ">
+    <Content Include="$(GodotWebJsLibraryDir)\*.js" Exclude="$(GodotWebJsLibraryDir)\patch_em_gl.js" Kind="js-library" CopyToOutputDirectory="Never" Visible="false" />
+    <Content Include="$(GodotWebJsLibraryDir)\patch_em_gl.js" Kind="post-js" CopyToOutputDirectory="Never" Visible="false" />
+  </ItemGroup>
+
+  <!--
+  The engine objects in 'libgodot.a' require these emscripten link settings to match the SCons
+  executable link (see platform/web/detect.py). They are forwarded to the dotnet-publish wasm link:
+    -sMAX_WEBGL_VERSION=2          The renderer uses WebGL 2 (GLES3).
+    -sOFFSCREEN_FRAMEBUFFER=1      display_server_web.cpp creates the WebGL2 context with
+                                   explicitSwapControl=true, which requires offscreen framebuffer.
+    -sGL_ENABLE_GET_PROC_ADDRESS=0 The GL backend never calls *glGetProcAddress().
+    -sGL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0 Keep the WebGL context from being garbage collected.
+    -sSTACK_SIZE=$(GodotWebStackSizeKB)KB The engine needs the same WASM stack size as the SCons build.
+    -sINITIAL_MEMORY=$(GodotWebInitialMemoryMB)MB The engine's initial WASM memory layout.
+    -sALLOW_MEMORY_GROWTH=1        The engine grows the WASM heap at runtime.
+    -lidbfs.js                     IndexedDB-backed filesystem for the user:// data directory.
+  -->
+  <PropertyGroup Condition=" '$(GodotWebJsLibraryDir)' != '' and Exists('$(GodotWebJsLibraryDir)') ">
+    <GodotWebStackSizeKB Condition=" '$(GodotWebStackSizeKB)' == '' ">5120</GodotWebStackSizeKB>
+    <GodotWebInitialMemoryMB Condition=" '$(GodotWebInitialMemoryMB)' == '' ">32</GodotWebInitialMemoryMB>
+    <EmccExtraLDFlags>$(EmccExtraLDFlags) -s MAX_WEBGL_VERSION=2 -s OFFSCREEN_FRAMEBUFFER=1 -s GL_ENABLE_GET_PROC_ADDRESS=0 -s GL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0 -s STACK_SIZE=$(GodotWebStackSizeKB)KB -s INITIAL_MEMORY=$(GodotWebInitialMemoryMB)MB -s ALLOW_MEMORY_GROWTH=1 -lidbfs.js</EmccExtraLDFlags>
+  </PropertyGroup>
+
+  <Target Name="GodotCheckWebStaticLibrary" BeforeTargets="Build">
+    <Error Text="The Godot web .NET host requires the engine static library. Set the 'GodotWebStaticLibrary' property to the absolute path of 'libgodot.a' from the Godot web export template."
+           Condition=" '$(GodotWebStaticLibrary)' == '' " />
+    <Error Text="The Godot web .NET host could not find the engine static library at '$(GodotWebStaticLibrary)'."
+           Condition=" '$(GodotWebStaticLibrary)' != '' and !Exists('$(GodotWebStaticLibrary)') " />
+    <Error Text="The Godot web .NET host could not find the engine JavaScript libraries at '$(GodotWebJsLibraryDir)'."
+           Condition=" '$(GodotWebJsLibraryDir)' == '' or !Exists('$(GodotWebJsLibraryDir)') " />
+    <!--
+    The .NET runtime and the engine must agree on thread support; a mismatch produces an ABI-incompatible
+    link. 'GodotWebThreadsEnabled' comes from the engine's Godot.Web.BuildSettings.props (the SCons
+    'threads' setting); 'WasmEnableThreads' selects the .NET runtime pack at restore time.
+    -->
+    <Error Text="The Godot web export template was built with threads=no but this project sets WasmEnableThreads=true. Rebuild the template with threads=yes, or set WasmEnableThreads=false in the project."
+           Condition=" '$(GodotWebThreadsEnabled)' == 'false' and '$(WasmEnableThreads)' == 'true' " />
+    <Error Text="The Godot web export template was built with threads=yes but this project sets WasmEnableThreads=false. Rebuild the template with threads=no, or set WasmEnableThreads=true in the project."
+           Condition=" '$(GodotWebThreadsEnabled)' == 'true' and '$(WasmEnableThreads)' == 'false' " />
+  </Target>
+</Project>

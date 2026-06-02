@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-from methods import print_error
+import subprocess
+
+from methods import print_error, print_warning
 
 Import("env")
 
@@ -30,11 +32,7 @@ web_files = [
     "os_web.cpp",
 ]
 
-if env["target"] == "editor":
-    env.add_source_files(web_files, "editor/*.cpp")
-
-sys_env = env.Clone()
-sys_env.AddJSLibraries([
+platform_js_libraries = [
     "js/libs/library_godot_audio.js",
     "js/libs/library_godot_display.js",
     "js/libs/library_godot_emscripten.js",
@@ -44,7 +42,73 @@ sys_env.AddJSLibraries([
     "js/libs/library_godot_runtime.js",
     "js/libs/library_godot_input.js",
     "js/libs/library_godot_webgl2.js",
-])
+]
+
+if env["target"] == "editor":
+    env.add_source_files(web_files, "editor/*.cpp")
+
+
+def merge_static_libraries(target, source, env):
+    script_lines = ['create "' + target[0].abspath + '"']
+    for archive in source:
+        script_lines.append('addlib "' + archive.abspath + '"')
+    script_lines.append("save")
+    script_lines.append("end")
+    result = subprocess.run([env.subst("$AR"), "-M"], input="\n".join(script_lines) + "\n", text=True)
+    if result.returncode != 0:
+        print_error(
+            'Failed to merge static libraries into "%s" (ar exited with %d).' % (target[0].abspath, result.returncode)
+        )
+    return result.returncode
+
+
+if env["library_type"] != "executable":
+    if not env["module_mono_enabled"]:
+        print_warning(
+            "Building the web static library without the mono module: the resulting libgodot.a will not support C#/.NET projects. Pass module_mono_enabled=yes if this library is intended for the .NET web host."
+        )
+
+    library_files = [source for source in web_files if source != "web_main.cpp"]
+    library_files.append("libgodot_web.cpp")
+    if env["library_type"] == "shared_library":
+        env.add_shared_library("#bin/libgodot", library_files)
+    else:
+        web_glue = env.add_library("#bin/godot_web_glue", library_files)
+        engine_libraries = [lib for lib in env.Flatten(env["LIBS"]) if str(lib).endswith(".a")]
+        merged_library = env.Command(
+            "#bin/libgodot" + env["LIBSUFFIX"], engine_libraries + web_glue, merge_static_libraries
+        )
+        Default(merged_library)
+
+    # The .NET host performs the final native link via `dotnet publish`, so it needs the engine's
+    # JavaScript libraries alongside the static library. library_godot_main_loop_compat.js bridges
+    # the $MainLoop API for the pre-4.0 Emscripten the .NET wasm-tools workload links against.
+    host_js_library_paths = list(platform_js_libraries)
+    if env["javascript_eval"]:
+        host_js_library_paths.append("js/libs/library_godot_javascript_singleton.js")
+    host_js_library_paths.append("js/libs/library_godot_main_loop_compat.js")
+    host_js_library_paths.append("js/patches/patch_em_gl.js")
+    host_js_libraries = [env.File(path) for path in host_js_library_paths]
+    host_js_libraries += env.Flatten(env["JS_LIBS"])
+    for js_library in host_js_libraries:
+        Default(env.InstallAs("#bin/godot_web_dotnet/" + js_library.name, js_library))
+
+    # Write the build settings consumed by the .NET web host's Web.targets so it can
+    # match the thread mode of this static library. The value mirrors env["threads"].
+    build_settings = [
+        "<Project>",
+        "  <PropertyGroup>",
+        "    <GodotWebThreadsEnabled>" + str(env["threads"]).lower() + "</GodotWebThreadsEnabled>",
+        "    <GodotWebStackSizeKB>" + str(env["stack_size"]) + "</GodotWebStackSizeKB>",
+        "    <GodotWebInitialMemoryMB>" + str(env["initial_memory"]) + "</GodotWebInitialMemoryMB>",
+        "  </PropertyGroup>",
+        "</Project>",
+    ]
+    Default(env.Textfile("#bin/godot_web_dotnet/Godot.Web.BuildSettings.props", build_settings, TEXTFILESUFFIX=""))
+    Return()
+
+sys_env = env.Clone()
+sys_env.AddJSLibraries(platform_js_libraries)
 sys_env.AddJSExterns([
     "js/libs/library_godot_webgl2.externs.js",
 ])

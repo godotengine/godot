@@ -179,6 +179,14 @@ namespace GodotTools.Export
             if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
+            if (platform == OS.Platforms.Web)
+            {
+                // On web the .NET runtime hosts the engine and the user's own 'dotnet publish'
+                // performs the native link against libgodot, so the editor neither publishes
+                // nor packs managed binaries here; it only produces the PCK and web template.
+                return;
+            }
+
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
                     .Contains(platform))
             {

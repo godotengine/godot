@@ -51,4 +51,7 @@
   <!-- iOS-specific build targets -->
   <Import Project="$(MSBuildThisFileDirectory)\iOS.targets" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
 
+  <!-- Web-specific build targets -->
+  <Import Project="$(MSBuildThisFileDirectory)\Web.targets" Condition=" '$(GodotTargetPlatform)' == 'web' " />
+
 </Project>
