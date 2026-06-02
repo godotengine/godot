@@ -1649,11 +1649,7 @@ void ScriptEditor::_members_overview_selected(int p_idx) {
 	int line = members_overview->get_item_metadata(p_idx);
 	ScriptEditorBase *current = _get_current_editor();
 	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(current)) {
-		if (teb->get_caret_line(0) == line) {
-			teb->toggle_fold_line(line);
-		} else {
-			teb->goto_line_centered(line);
-		}
+		teb->goto_line_centered_toggle_fold(line);
 	}
 }
 
