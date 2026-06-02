@@ -207,7 +207,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 	// 3. Progress for Animation.
 	double prev_playback_time = prev_time;
 	double cur_playback_time = cur_time;
-	if (stretch_time_scale) {
+	if (use_custom_timeline && stretch_time_scale) {
 		double mlt = anim_size / timeline_length;
 		prev_playback_time *= mlt;
 		cur_playback_time *= mlt;
