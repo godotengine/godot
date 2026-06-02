@@ -603,6 +603,7 @@ private:
 
 	Vector<Pair<int64_t, Color>> _get_line_syntax_highlighting(int p_line);
 	void _clear_syntax_highlighting_cache();
+	void _syntax_highlighter_changed();
 
 	/* Visual. */
 	struct ThemeCache {
