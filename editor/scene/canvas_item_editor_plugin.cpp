@@ -5612,7 +5612,7 @@ void CanvasItemEditor::focus_selection() {
 
 void CanvasItemEditor::center_at(const Point2 &p_pos) {
 	Vector2 offset = viewport->get_size() / 2 - EditorNode::get_singleton()->get_scene_root()->get_global_canvas_transform().xform(p_pos);
-	view_offset -= (offset / zoom).round();
+	view_offset = (view_offset - offset / zoom).round();
 	update_viewport();
 }
 
