@@ -99,9 +99,14 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
-			for (const StringName &E : tree->get_sorted_animation_list()) {
-				animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
-				animations_to_add.push_back(E);
+			LocalVector<StringName> animation_names = tree->get_sorted_animation_list();
+			if (animation_names.is_empty()) {
+				menu->set_item_disabled(menu->get_item_idx_from_text(TTR("Add Animation")), true);
+			} else {
+				for (const StringName &E : animation_names) {
+					animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
+					animations_to_add.push_back(E);
+				}
 			}
 
 			for (const StringName &E : classes) {
