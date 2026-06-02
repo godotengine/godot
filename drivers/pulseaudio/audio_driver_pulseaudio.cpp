@@ -46,6 +46,10 @@
 #endif
 #endif
 
+// How long to wait before reconnecting when we lose our connection
+// to PulseAudio
+const int64_t PA_RECONNECT_MSEC = 1000;
+
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
@@ -276,6 +280,35 @@ Error AudioDriverPulseAudio::init_output_device() {
 	return OK;
 }
 
+Error AudioDriverPulseAudio::connect_context() {
+	// PA_OK is not an error, so we expect that after pa_context_connect returns -1,
+	// we won't see it from pa_context_errno
+	static int last_reported_errno = PA_OK;
+	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), pa_context_name.utf8().ptr());
+	ERR_FAIL_NULL_V(pa_ctx, ERR_CANT_OPEN);
+
+	pa_ready = 0;
+	pa_context_set_state_callback(pa_ctx, pa_state_cb, (void *)this);
+
+	int ret = pa_context_connect(pa_ctx, nullptr, PA_CONTEXT_NOFLAGS, nullptr);
+	if (ret < 0) {
+		int pa_errno = pa_context_errno(pa_ctx);
+		// Only report connection errors once per type
+		if (pa_errno != last_reported_errno) {
+			ERR_PRINT("PulseAudio: pa_context_connect error: " +
+					String(pa_strerror(pa_errno)));
+			last_reported_errno = pa_errno;
+		}
+		if (pa_ctx) {
+			pa_context_unref(pa_ctx);
+			pa_ctx = nullptr;
+		}
+		return ERR_CANT_OPEN;
+	}
+
+	return OK;
+}
+
 Error AudioDriverPulseAudio::init() {
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
@@ -311,29 +344,16 @@ Error AudioDriverPulseAudio::init() {
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_NULL_V(pa_ml, ERR_CANT_OPEN);
 
-	String context_name;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		context_name = GODOT_VERSION_NAME " Editor";
+		pa_context_name = GODOT_VERSION_NAME " Editor";
 	} else {
-		context_name = GLOBAL_GET("application/config/name");
-		if (context_name.is_empty()) {
-			context_name = GODOT_VERSION_NAME " Project";
+		pa_context_name = GLOBAL_GET("application/config/name");
+		if (pa_context_name.is_empty()) {
+			pa_context_name = GODOT_VERSION_NAME " Project";
 		}
 	}
 
-	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), context_name.utf8().ptr());
-	ERR_FAIL_NULL_V(pa_ctx, ERR_CANT_OPEN);
-
-	pa_ready = 0;
-	pa_context_set_state_callback(pa_ctx, pa_state_cb, (void *)this);
-
-	int ret = pa_context_connect(pa_ctx, nullptr, PA_CONTEXT_NOFLAGS, nullptr);
-	if (ret < 0) {
-		if (pa_ctx) {
-			pa_context_unref(pa_ctx);
-			pa_ctx = nullptr;
-		}
-
+	if (connect_context() != OK) {
 		if (pa_ml) {
 			pa_mainloop_free(pa_ml);
 			pa_ml = nullptr;
@@ -343,7 +363,7 @@ Error AudioDriverPulseAudio::init() {
 	}
 
 	while (pa_ready == 0) {
-		ret = pa_mainloop_iterate(pa_ml, 1, nullptr);
+		int ret = pa_mainloop_iterate(pa_ml, 1, nullptr);
 		if (ret < 0) {
 			ERR_PRINT("pa_mainloop_iterate error");
 		}
@@ -373,6 +393,10 @@ Error AudioDriverPulseAudio::init() {
 float AudioDriverPulseAudio::get_latency() {
 	lock();
 
+	if (pa_str == nullptr) {
+		return 0;
+	}
+
 	pa_usec_t pa_lat = 0;
 	if (pa_stream_get_state(pa_str) == PA_STREAM_READY) {
 		int negative = 0;
@@ -397,6 +421,8 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
 	uint64_t default_device_msec = OS::get_singleton()->get_ticks_msec();
+	uint64_t reconnect_next_msec = 0;
+	bool input_was_active = false;
 
 	while (!ad->exit_thread.is_set()) {
 		size_t read_bytes = 0;
@@ -447,7 +473,60 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			ret = pa_mainloop_iterate(ad->pa_ml, 0, nullptr);
 		} while (ret > 0);
 
-		if (avail_bytes > 0 && pa_stream_get_state(ad->pa_str) == PA_STREAM_READY) {
+		// Reconnect if context has died (e.g. pulseaudio was killed and restarted).
+		if (ad->pa_ready < 0) {
+			uint64_t msec = OS::get_singleton()->get_ticks_msec();
+			if (msec >= reconnect_next_msec) {
+				reconnect_next_msec = msec + PA_RECONNECT_MSEC;
+				print_verbose("PulseAudio: context dead, attempting reconnect...");
+
+				if (ad->pa_rec_str != nullptr) {
+					input_was_active = true;
+				}
+				ad->finish_output_device();
+				ad->finish_input_device();
+				if (ad->pa_ctx) {
+					pa_context_disconnect(ad->pa_ctx);
+					pa_context_unref(ad->pa_ctx);
+					ad->pa_ctx = nullptr;
+				}
+
+				if (ad->connect_context() != OK) {
+					// We'll try again in PA_RECONNECT_MSEC
+					ad->pa_ready = -1;
+				}
+			}
+		}
+
+		// Once the context becomes ready after a reconnect, reinit audio devices.
+		if (ad->pa_ready == 1 && ad->pa_str == nullptr) {
+			Error err = ad->init_output_device();
+			if (err != OK) {
+				ERR_PRINT("PulseAudio: failed to reinit output device after reconnect");
+				ad->pa_ready = -1;
+			} else {
+				if (input_was_active) {
+					err = ad->init_input_device();
+					if (err != OK) {
+						/* This is a pretty unfortunate case: we successfully reconnected
+						   to pulseaudio, but our input device is gone.  Maybe the user unplugged
+						   their microphone. We keep input_was_active to true for now, which will
+						   let the microphone reconnect if pulseaudio restarts again.
+						   Longer-term, we should subscribe to updates from pulseaudio so that
+						   we can notice when devices change.
+						*/
+						ERR_PRINT("PulseAudio: failed to reinit input device after reconnect");
+					} else {
+						input_was_active = false;
+					}
+				}
+				avail_bytes = 0;
+				write_ofs = 0;
+				print_verbose("PulseAudio: successfully reconnected");
+			}
+		}
+
+		if (avail_bytes > 0 && ad->pa_str != nullptr && pa_stream_get_state(ad->pa_str) == PA_STREAM_READY) {
 			size_t bytes = pa_stream_writable_size(ad->pa_str);
 			if (bytes > 0) {
 				size_t bytes_to_write = MIN(bytes, avail_bytes);
@@ -487,7 +566,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 		}
 
 		// If we're using the default output device, check that the current output device is still the default
-		if (ad->output_device_name == "Default") {
+		if (ad->output_device_name == "Default" && ad->pa_ctx != nullptr && ad->pa_ready == 1) {
 			uint64_t msec = OS::get_singleton()->get_ticks_msec();
 			if (msec > (default_device_msec + 1000)) {
 				String old_default_device = ad->default_output_device;
