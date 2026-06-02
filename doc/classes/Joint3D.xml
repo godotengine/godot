@@ -30,8 +30,10 @@
 			If left empty and [member node_a] is set, the body is attached to a fixed [StaticBody3D] without collision shapes.
 		</member>
 		<member name="solver_priority" type="int" setter="set_solver_priority" getter="get_solver_priority" default="1">
-			The priority used to define which solver is executed first for multiple joints. The lower the value, the higher the priority.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This property is ignored when using Jolt Physics.
+			The priority specifies how accurately a joint is solved. Generally, higher values improve accuracy. This has very different implementations between Godot Physics and Jolt Physics:
+			[b]Godot Physics:[/b] [i]Values above 1 have a performance impact[/i]. Joint is solved [code]max(1, solver_priority) * iterations[/code] times. A value of [code]4[/code] would solve the same joint [i]4x additional times per physics step[/i].
+			[b]Jolt Physics:[/b] Aside from sorting the joints, there is no performance impact with higher values. Joints with [i]high[/i] priorities are solved [i]later[/i]. A value of [code]4[/code] would solve [i]after priorities of 0, 1, 2, and 3[/i]. Later joints have the final say between the two bodies they connect.
+			Negative values are not allowed and will be silently [code]max(0, solver_priority)[/code] when set.
 		</member>
 	</members>
 </class>

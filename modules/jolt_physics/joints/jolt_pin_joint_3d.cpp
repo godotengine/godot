@@ -155,6 +155,5 @@ void JoltPinJoint3D::rebuild() {
 
 	space->add_joint(this);
 
-	_update_enabled();
-	_update_iterations();
+	_update_joint();
 }
