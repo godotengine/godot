@@ -1423,26 +1423,6 @@ void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
 	center_viewport_to_caret();
 }
 
-void CodeTextEditor::goto_line_centered_toggle_fold(int p_line, int p_column) {
-	bool already_on_line = (text_editor->get_caret_line(0) == p_line);
-	text_editor->remove_secondary_carets();
-	text_editor->deselect();
-	if (already_on_line) {
-		if (text_editor->is_line_folded(p_line)) {
-			text_editor->unfold_line(p_line);
-		} else {
-			text_editor->fold_line(p_line);
-		}
-	} else {
-		text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
-	}
-	text_editor->set_caret_line(p_line, false);
-	text_editor->set_caret_column(p_column, false);
-	text_editor->set_code_hint("");
-	text_editor->cancel_code_completion();
-	center_viewport_to_caret();
-}
-
 void CodeTextEditor::set_executing_line(int p_line) {
 	text_editor->set_line_as_executing(p_line, true);
 }
