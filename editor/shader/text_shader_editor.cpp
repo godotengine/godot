@@ -1273,6 +1273,7 @@ void ShaderTextEditor::_validate_script() {
 			syntax_highlighter->add_disabled_branch_region(Point2i(region.from_line, region.to_line));
 		}
 	}
+	syntax_highlighter->emit_changed();
 
 	set_error("");
 	set_error_count(0);
