@@ -141,9 +141,15 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
-			for (const StringName &E : tree->get_sorted_animation_list()) {
-				animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
-				animations_to_add.push_back(E);
+			const LocalVector<StringName> &animation_list = tree->get_sorted_animation_list();
+			if (animation_list.is_empty()) {
+				animations_menu->add_item(TTR("No available animations"));
+				animations_menu->set_item_disabled(-1, true);
+			} else {
+				for (const StringName &E : animation_list) {
+					animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
+					animations_to_add.push_back(E);
+				}
 			}
 
 			for (const StringName &E : classes) {
