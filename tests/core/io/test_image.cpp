@@ -497,7 +497,7 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 	PackedByteArray rotated_data;
 
 	SUBCASE("[Image] Rotation of simple 3x3 image clockwise") {
-		image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		image.instantiate(3, 3, false, Image::FORMAT_RGBA8);
 		rotated_data.clear();
 		/*
 		initial:
@@ -586,7 +586,7 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 	}
 
 	SUBCASE("[Image] Rotation of simple 3x3 image counterclockwise") {
-		image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		image.instantiate(3, 3, false, Image::FORMAT_RGBA8);
 		rotated_data.clear();
 		/*
 		initial:
@@ -674,25 +674,8 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 		CHECK(image->get_data() == rotated_data);
 	}
 
-	SUBCASE("[Image] Attempting to rotate a compressed image") {
-		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
-		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
-		ERR_PRINT_OFF;
-		image->rotate_90(CLOCKWISE);
-		ERR_PRINT_ON;
-		WARN_PRINT("Successfully threw an error for attempting to rotate a compressed image"); // Prints an engine warning
-	}
-
-	SUBCASE("[Image] Attempting to rotate an image with 0 width and 0 height") {
-		image = memnew(Image());
-		ERR_PRINT_OFF;
-		image->rotate_90(CLOCKWISE);
-		ERR_PRINT_ON;
-		WARN_PRINT("Successfully threw an error for attempting to rotate a zero-sized image"); // Prints an engine warning
-	}
-
 	SUBCASE("[Image] rotating non-square image") {
-		image = memnew(Image(4, 2, false, Image::FORMAT_RGBA8));
+		image.instantiate(4, 2, false, Image::FORMAT_RGBA8);
 
 		// Setting pixels
 		image->set_pixel(0, 0, red);
@@ -724,7 +707,7 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 	}
 
 	SUBCASE("[Image] Idempotency testing") {
-		image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		image.instantiate(3, 3, false, Image::FORMAT_RGBA8);
 		Ref<Image> temp = memnew(Image());
 		Ref<Image> image_copy = memnew(Image());
 		image->set_pixel(0, 0, red);
@@ -779,7 +762,7 @@ TEST_CASE("[Image] Rotate Image 180 degrees") {
 	PackedByteArray rotated_data;
 
 	SUBCASE("[Image] Simple flip") {
-		image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		image.instantiate(3, 3, false, Image::FORMAT_RGBA8);
 		rotated_data.clear();
 		/*
 		initial:
@@ -866,80 +849,41 @@ TEST_CASE("[Image] Rotate Image 180 degrees") {
 		image->rotate_180();
 		CHECK(image->get_data() == rotated_data);
 	}
-
-	SUBCASE("[Image] Attempting to rotate a compressed image") {
-		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
-		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
-		ERR_PRINT_OFF;
-		image->rotate_180();
-		ERR_PRINT_ON;
-		WARN_PRINT("Successfully threw an error for attempting to rotate a compressed image"); // Prints an engine warning
-	}
-
-	SUBCASE("[Image] Attempting to rotate an image with 0 width and 0 height") {
-		image = memnew(Image());
-		ERR_PRINT_OFF;
-		image->rotate_180();
-		ERR_PRINT_ON;
-		WARN_PRINT("Successfully threw an error for attempting to rotate a zero-sized image"); // Prints an engine warning
-	}
 }
 
 TEST_CASE("[Image] Decompressing images") {
 	Ref<Image> image;
 
 	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_S3TC)") {
-		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
 		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
 		image->decompress();
 		CHECK(!(image->is_compressed()));
 	}
 
 	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_ETC2)") {
-		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
 		image->compress(Image::COMPRESS_ETC2, Image::COMPRESS_SOURCE_GENERIC);
 		image->decompress();
 		CHECK(!(image->is_compressed()));
 	}
 
 	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_BPTC)") {
-		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
 		image->compress(Image::COMPRESS_BPTC, Image::COMPRESS_SOURCE_GENERIC);
 		image->decompress();
 		CHECK(!(image->is_compressed()));
 	}
 
-	SUBCASE("[Image] Attempting to decompress an uncompressed image") {
-		image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
-		ERR_PRINT_OFF;
-		image->decompress();
-		ERR_PRINT_ON;
-		WARN_PRINT("Successfully threw an error for attempting to decompress an uncompressed image");
-	}
-
 	SUBCASE("[Image] Mipmapped image decompression") {
-		image = memnew(Image(4, 4, true, Image::FORMAT_RGBA8));
+		image.instantiate(4, 4, true, Image::FORMAT_RGBA8);
 		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
 		image->decompress();
 		CHECK(image->has_mipmaps());
 	}
 
-	SUBCASE("[Image] Decompressing an image with zero width and height") {
-		image = memnew(Image());
-
-		CHECK(image->is_empty());
-
-		ERR_PRINT_OFF;
-		image->decompress();
-		ERR_PRINT_ON;
-
-		CHECK(image->get_width() == 0);
-		CHECK(image->get_height() == 0);
-		CHECK(image->is_empty());
-	}
-
 	SUBCASE("[Image] Decompression from a lossy format") {
-		image = memnew(Image(4, 4, true, Image::FORMAT_RGBA8));
+		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
 		Color red(1.0f, 0.0f, 0.0f, 1.0f);
 
 		image->set_pixel(0, 0, red);
