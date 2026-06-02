@@ -1413,10 +1413,14 @@ void AnimationNodeAnimationEditor::_confirm_set_custom_timeline_from_marker_dial
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Set Custom Timeline from Marker"));
-	undo_redo->add_do_method(*animation_node_animation, "set_start_offset", start_time);
-	undo_redo->add_undo_method(*animation_node_animation, "set_start_offset", animation_node_animation->get_start_offset());
 	undo_redo->add_do_method(*animation_node_animation, "set_stretch_time_scale", false);
 	undo_redo->add_undo_method(*animation_node_animation, "set_stretch_time_scale", animation_node_animation->is_stretching_time_scale());
+	if (animation_node_animation->get_play_mode() == AnimationNodeAnimation::PLAY_MODE_FORWARD) {
+		undo_redo->add_do_method(*animation_node_animation, "set_start_offset", start_time);
+	} else {
+		undo_redo->add_do_method(*animation_node_animation, "set_start_offset", animation->get_length() - end_time);
+	}
+	undo_redo->add_undo_method(*animation_node_animation, "set_start_offset", animation_node_animation->get_start_offset());
 	undo_redo->add_do_method(*animation_node_animation, "set_timeline_length", length);
 	undo_redo->add_undo_method(*animation_node_animation, "set_timeline_length", animation_node_animation->get_timeline_length());
 	undo_redo->add_do_method(*animation_node_animation, "notify_property_list_changed");
