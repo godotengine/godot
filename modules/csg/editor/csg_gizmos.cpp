@@ -468,7 +468,7 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	Vector<Vector3> lines;
-	TypedArray<Vector<Vector3>> local_csg_faces = csg->get_csg_ngon_colliders();
+	TypedArray<Vector<Vector3>> local_csg_faces = cs->get_csg_ngon_colliders();
 	bool skip = local_csg_faces.is_empty();
 	if (!skip) {
 		for (int i = 0; i < local_csg_faces.size(); i++) {
