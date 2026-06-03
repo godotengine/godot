@@ -1102,16 +1102,20 @@ void GDScriptParser::parse_trait() {
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
 		// Allow extends on the same line.
 		parse_extends();
-		if (match(GDScriptTokenizer::Token::IMPLEMENTS)) {
-			parse_implements();
-		}
-		end_statement("superclass");
-	} else if (match(GDScriptTokenizer::Token::IMPLEMENTS)) {
-		parse_implements();
-		end_statement("trait list");
-	} else {
-		end_statement("trait declaration");
 	}
+	if (match(GDScriptTokenizer::Token::IMPLEMENTS)) {
+		parse_implements();
+	}
+
+	if (check(GDScriptTokenizer::Token::COLON)) {
+		// Common mistake: writing a file-level trait like a nested one (`trait Foo:`).
+		// A file-level trait names the whole file (like `class_name`), so its members
+		// live at the top level of the file rather than in an indented block.
+		push_error(R"(A file-level trait does not use ":". Declare its members at the top level of the file (like "class_name"), or use a nested "trait Name:" inside a class.)");
+		return;
+	}
+
+	end_statement("trait declaration");
 }
 
 void GDScriptParser::parse_extends() {
