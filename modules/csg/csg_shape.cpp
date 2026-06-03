@@ -2005,11 +2005,6 @@ TypedArray<Vector<Vector3>> CSGShape3D::get_csg_ngon_colliders() {
 		}
 	}
 
-	// Flip faces so they can be selected from the inside.
-	if (get_operation() == OPERATION_SUBTRACTION) {
-		ret.reverse();
-	}
-
 	return ret;
 }
 

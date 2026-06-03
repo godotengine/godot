@@ -77,7 +77,7 @@ void CSGShapeEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			options->set_button_icon(get_editor_theme_icon(SNAME("CSGCombiner3D")));
 			// FIXME We need an icon for this button. Using KeepAspect for now.
-			global_uv_toggle->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
+			global_uv_toggle->set_button_icon(get_editor_theme_icon(SNAME("ToolUseGlobalUV")));
 		} break;
 	}
 }
@@ -222,6 +222,7 @@ CSGShapeEditor::CSGShapeEditor() {
 	rebuild_csg->set_text(TTR("Rebuild"));
 	rebuild_csg->set_flat(false);
 	hbox->add_child(rebuild_csg);
+	rebuild_csg->set_tooltip_text(TTRC("Rebuild this brush, removing any changes to faces or vertices. Children of this node will not be affected."));
 	rebuild_csg->connect(SceneStringName(pressed), callable_mp(this, &CSGShapeEditor::_rebuild_brush));
 
 	cubemap_uvs = memnew(Button);
@@ -229,6 +230,7 @@ CSGShapeEditor::CSGShapeEditor() {
 	cubemap_uvs->set_text(TTR("Make cube UV"));
 	cubemap_uvs->set_flat(false);
 	hbox->add_child(cubemap_uvs);
+	cubemap_uvs->set_tooltip_text(TTRC("Apply cube map UVs to this node's CSGBrush."));
 	cubemap_uvs->connect(SceneStringName(pressed), callable_mp(this, &CSGShapeEditor::_make_cube_uv));
 
 	cylinder_uvs = memnew(Button);
@@ -236,6 +238,7 @@ CSGShapeEditor::CSGShapeEditor() {
 	cylinder_uvs->set_text(TTR("Make cylinder UV"));
 	cylinder_uvs->set_flat(false);
 	hbox->add_child(cylinder_uvs);
+	cylinder_uvs->set_tooltip_text(TTRC("Apply cylinder map UVs to this node's CSGBrush."));
 	cylinder_uvs->connect(SceneStringName(pressed), callable_mp(this, &CSGShapeEditor::_make_cylinder_uv));
 
 	global_uv_toggle = memnew(Button);
@@ -465,26 +468,22 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	Vector<Vector3> lines;
-	bool skip = cs->is_root_shape();
+	TypedArray<Vector<Vector3>> local_csg_faces = csg->get_csg_ngon_colliders();
+	bool skip = local_csg_faces.is_empty();
 	if (!skip) {
-		TypedArray<Vector<Vector3>> local_csg_faces = cs->get_csg_ngon_colliders();
-		if (local_csg_faces.is_empty()) {
-			skip = true;
-		}
-		Vector<Vector3> temp_edges;
 		for (int i = 0; i < local_csg_faces.size(); i++) {
 			Vector<Vector3> curr_ngon = local_csg_faces[i];
 			// Convert to lines.
 			if (curr_ngon.size() == 6) {
 				// Quad.
-				temp_edges.push_back(curr_ngon[0]);
-				temp_edges.push_back(curr_ngon[1]);
-				temp_edges.push_back(curr_ngon[1]);
-				temp_edges.push_back(curr_ngon[2]);
-				temp_edges.push_back(curr_ngon[3]);
-				temp_edges.push_back(curr_ngon[4]);
-				temp_edges.push_back(curr_ngon[4]);
-				temp_edges.push_back(curr_ngon[5]);
+				lines.push_back(curr_ngon[0]);
+				lines.push_back(curr_ngon[1]);
+				lines.push_back(curr_ngon[1]);
+				lines.push_back(curr_ngon[2]);
+				lines.push_back(curr_ngon[3]);
+				lines.push_back(curr_ngon[4]);
+				lines.push_back(curr_ngon[4]);
+				lines.push_back(curr_ngon[5]);
 			} else if (curr_ngon.size() > 6) {
 				// Since the only way to generate Ngons is through CSG building and they are always surrounded by quads, we just skip the ngons.
 				continue;
@@ -493,25 +492,10 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				for (int j = 0; j < curr_ngon.size() / 3; j++) {
 					for (int k = 0; k < 3; k++) {
 						int k_n = (k + 1) % 3;
-						temp_edges.push_back(curr_ngon[j * 3 + k]);
-						temp_edges.push_back(curr_ngon[j * 3 + k_n]);
+						lines.push_back(curr_ngon[j * 3 + k]);
+						lines.push_back(curr_ngon[j * 3 + k_n]);
 					}
 				}
-			}
-		}
-		// Remove duplicated lines.
-		for (int i = 0; i < temp_edges.size() / 2; i++) {
-			bool found_edge = false;
-			for (int j = 0; j < lines.size() / 2; j++) {
-				if (temp_edges[i * 2].is_equal_approx(lines[j * 2]) && temp_edges[i * 2 + 1].is_equal_approx(lines[j * 2 + 1]) && temp_edges[i * 2].is_equal_approx(lines[j * 2 + 1]) && temp_edges[i * 2 + 1].is_equal_approx(lines[j * 2])) {
-					found_edge = true;
-					break;
-				}
-			}
-
-			if (!found_edge) {
-				lines.push_back(temp_edges[i * 2]);
-				lines.push_back(temp_edges[i * 2 + 1]);
 			}
 		}
 		if (lines.is_empty()) {
