@@ -885,14 +885,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (!_validate_no_foreign_selected(editor_selection->get_top_selected_node_list())) {
+			List<Node *> selection = editor_selection->get_full_selected_node_list();
+			if (!_validate_no_foreign_selected(selection)) {
 				break;
 			}
 
 			bool MOVING_DOWN = (p_tool == TOOL_MOVE_DOWN);
 			bool MOVING_UP = !MOVING_DOWN;
 
-			List<Node *> selection = editor_selection->get_full_selected_node_list();
 			selection.sort_custom<Node::Comparator>(); // sort by index
 			if (MOVING_DOWN) {
 				selection.reverse();
