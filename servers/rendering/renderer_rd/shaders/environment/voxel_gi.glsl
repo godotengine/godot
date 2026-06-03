@@ -71,7 +71,7 @@ layout(set = 0, binding = 3, std140) uniform Lights {
 }
 lights;
 
-layout(set = 0, binding = 13) uniform texture2D area_light_atlas;
+layout(set = 1, binding = 0) uniform texture2D area_light_atlas;
 
 #endif // MODE COMPUTE LIGHT
 
