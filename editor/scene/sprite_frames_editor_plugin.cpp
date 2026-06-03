@@ -2145,23 +2145,16 @@ void SpriteFramesEditor::_autoplay_pressed() {
 	_update_library();
 }
 
-void SpriteFramesEditor::_step_forward_pressed() {
+void SpriteFramesEditor::_step_frame_pressed(int p_step) {
 	if (animated_sprite) {
 		String current_animation_name = animated_sprite->call("get_animation");
 		int frame_count = frames->get_frame_count(current_animation_name);
+		if (frame_count < 1) {
+			return;
+		}
 		int current_frame = animated_sprite->call("get_frame");
-		int next_frame = (current_frame + 1) % frame_count;
-		animated_sprite->call("set_frame", next_frame);
-	}
-}
-
-void SpriteFramesEditor::_step_backward_pressed() {
-	if (animated_sprite) {
-		String current_animation_name = animated_sprite->call("get_animation");
-		int frame_count = frames->get_frame_count(current_animation_name);
-		int current_frame = animated_sprite->call("get_frame");
-		int previous_frame = (current_frame - 1 + frame_count) % frame_count;
-		animated_sprite->call("set_frame", previous_frame);
+		int new_frame = Math::posmod(current_frame + step, frame_count);
+		animated_sprite->call("set_frame", new_frame);
 	}
 }
 
@@ -2364,8 +2357,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	play_bw->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_pressed));
 	play_bw_from->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_from_pressed));
 	stop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_stop_pressed));
-	step_forward->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_step_forward_pressed));
-	step_backward->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_step_backward_pressed));
+	step_forward->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_step_frame_pressed).bind(1));
+	step_backward->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_step_frame_pressed).bind(-1));
 
 	HBoxContainer *hbc_actions = memnew(HBoxContainer);
 	hfc->add_child(hbc_actions);
