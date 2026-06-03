@@ -3903,6 +3903,13 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 				valid = is_type_compatible(cast_type, op_type) || is_type_compatible(op_type, cast_type);
 			}
 
+			// A trait can be implemented by otherwise-unrelated types, so `as SomeTrait` is a
+			// legitimate runtime-checked cast even when the static types are unrelated.
+			if (!valid && cast_type.kind == GDScriptParser::DataType::CLASS && cast_type.class_type != nullptr && cast_type.class_type->is_trait) {
+				valid = true;
+				mark_node_unsafe(p_cast);
+			}
+
 			if (!valid) {
 				push_error(vformat(R"(Invalid cast. Cannot convert from "%s" to "%s".)", op_type.to_string(), cast_type.to_string()), p_cast->cast_type);
 			}
@@ -5299,7 +5306,11 @@ void GDScriptAnalyzer::reduce_type_test(GDScriptParser::TypeTestNode *p_type_tes
 		return;
 	}
 
-	if (!is_type_compatible(test_type, operand_type) && !is_type_compatible(operand_type, test_type)) {
+	// A trait can be implemented by otherwise-unrelated types, so `is SomeTrait` is always a
+	// legitimate runtime check and must not be rejected based on the operand's static type.
+	const bool test_is_trait = test_type.kind == GDScriptParser::DataType::CLASS && test_type.class_type != nullptr && test_type.class_type->is_trait;
+
+	if (!test_is_trait && !is_type_compatible(test_type, operand_type) && !is_type_compatible(operand_type, test_type)) {
 		if (operand_type.is_hard_type()) {
 			push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", operand_type.to_string(), test_type.to_string()), p_type_test->operand);
 		} else {

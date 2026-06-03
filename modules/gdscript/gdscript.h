@@ -104,6 +104,7 @@ class GDScript : public Script {
 	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
 	HashMap<StringName, Ref<GDScript>> subclasses;
+	Vector<Ref<GDScript>> implemented_traits; // Traits declared via `implements`, used by `is`/`as` at runtime.
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
 
