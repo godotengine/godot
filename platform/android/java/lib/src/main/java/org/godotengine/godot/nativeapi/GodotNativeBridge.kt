@@ -320,7 +320,7 @@ internal class GodotNativeBridge(private val godot: Godot) {
 						.setTitle(activity.getString(R.string.gabe_connection_error_title))
 						.setCancelable(false)
 						.setPositiveButton(activity.getString(R.string.dialog_download)) { dialog: DialogInterface, _: Int ->
-							val intent = Intent(Intent.ACTION_VIEW, "https://godotengine.org/download/android/".toUri())
+							val intent = Intent(Intent.ACTION_VIEW, "https://godotengine.org/download/android#gabe".toUri())
 							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 							activity.startActivity(intent)
 							dialog.cancel()
