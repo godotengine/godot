@@ -77,7 +77,7 @@ void CSGShapeEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			options->set_button_icon(get_editor_theme_icon(SNAME("CSGCombiner3D")));
 			// FIXME We need an icon for this button. Using KeepAspect for now.
-			global_uv_toggle->set_button_icon(get_editor_theme_icon(SNAME("ToolUseGlobalUV")));
+			global_uv_toggle->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
 		} break;
 	}
 }
