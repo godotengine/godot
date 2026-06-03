@@ -134,6 +134,23 @@ struct [[nodiscard]] Vector2i {
 	constexpr bool operator==(const Vector2i &p_vec2) const;
 	constexpr bool operator!=(const Vector2i &p_vec2) const;
 
+	Vector2i operator>>(const Vector2i &p_v) const;
+	Vector2i &operator>>=(const Vector2i &p_v);
+	Vector2i operator<<(const Vector2i &p_v) const;
+	Vector2i &operator<<=(const Vector2i &p_v);
+
+	Vector2i &operator>>=(const int32_t p_scalar);
+	Vector2i operator>>(const int32_t p_scalar) const;
+	Vector2i &operator<<=(const int32_t p_scalar);
+	Vector2i operator<<(const int32_t p_scalar) const;
+
+	Vector2i operator|(const Vector2i &p_v) const;
+	Vector2i &operator|=(const Vector2i &p_v);
+	Vector2i operator&(const Vector2i &p_v) const;
+	Vector2i &operator&=(const Vector2i &p_v);
+	Vector2i operator^(const Vector2i &p_v) const;
+	Vector2i &operator^=(const Vector2i &p_v);
+
 	int64_t length_squared() const;
 	double length() const;
 

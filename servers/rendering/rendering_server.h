@@ -316,7 +316,7 @@ public:
 	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) = 0;
 
 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) = 0;
-	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
+	virtual void light_set_max_hddagi_cascade(RID p_light, uint32_t p_cascade) = 0;
 
 	// Omni light
 
@@ -407,7 +407,7 @@ public:
 
 	virtual void voxel_gi_set_quality(RSE::VoxelGIQuality) = 0;
 
-	virtual void sdfgi_reset() = 0;
+	virtual void hddagi_reset() = 0;
 
 	/* LIGHTMAP API */
 
@@ -676,13 +676,52 @@ public:
 
 	virtual void environment_set_ssil_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
-	virtual void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RSE::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
+	enum EnvironmentHDDAGICascadeFormat {
+		ENV_HDDAGI_CASCADE_FORMAT_16x8x16,
+		ENV_HDDAGI_CASCADE_FORMAT_16x16x16,
+		ENV_HDDAGI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT,
+		ENV_HDDAGI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT,
+		ENV_HDDAGI_CASCADE_FORMAT_MAX,
+	};
 
-	virtual void environment_set_sdfgi_ray_count(RSE::EnvironmentSDFGIRayCount p_ray_count) = 0;
+	virtual void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RSE::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_bias, bool p_filter_reflection, bool p_filter_ambient) = 0;
 
-	virtual void environment_set_sdfgi_frames_to_converge(RSE::EnvironmentSDFGIFramesToConverge p_frames) = 0;
+	enum EnvironmentHDDAGIFramesToConverge {
+		ENV_HDDAGI_CONVERGE_IN_6_FRAMES,
+		ENV_HDDAGI_CONVERGE_IN_12_FRAMES,
+		ENV_HDDAGI_CONVERGE_IN_18_FRAMES,
+		ENV_HDDAGI_CONVERGE_IN_24_FRAMES,
+		ENV_HDDAGI_CONVERGE_IN_32_FRAMES,
+		ENV_HDDAGI_CONVERGE_MAX
+	};
 
-	virtual void environment_set_sdfgi_frames_to_update_light(RSE::EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
+	virtual void environment_set_hddagi_frames_to_converge(RSE::EnvironmentHDDAGIFramesToConverge p_frames) = 0;
+
+	enum EnvironmentHDDAGIFramesToUpdateLight {
+		ENV_HDDAGI_UPDATE_LIGHT_IN_1_FRAME,
+		ENV_HDDAGI_UPDATE_LIGHT_IN_2_FRAMES,
+		ENV_HDDAGI_UPDATE_LIGHT_IN_4_FRAMES,
+		ENV_HDDAGI_UPDATE_LIGHT_IN_8_FRAMES,
+		ENV_HDDAGI_UPDATE_LIGHT_IN_16_FRAMES,
+		ENV_HDDAGI_UPDATE_LIGHT_MAX,
+	};
+
+	virtual void environment_set_hddagi_frames_to_update_light(RSE::EnvironmentHDDAGIFramesToUpdateLight p_update) = 0;
+
+	enum EnvironmentHDDAGIInactiveProbeFrames {
+		ENV_HDDAGI_INACTIVE_PROBE_1_FRAMES,
+		ENV_HDDAGI_INACTIVE_PROBE_2_FRAMES,
+		ENV_HDDAGI_INACTIVE_PROBE_4_FRAMES,
+		ENV_HDDAGI_INACTIVE_PROBE_8_FRAMES,
+		ENV_HDDAGI_INACTIVE_PROBE_MAX
+	};
+
+	virtual void environment_set_hddagi_inactive_probe_frames(RSE::EnvironmentHDDAGIInactiveProbeFrames p_frames) = 0;
+
+	enum EnvironmentFogMode {
+		ENV_FOG_MODE_EXPONENTIAL,
+		ENV_FOG_MODE_DEPTH,
+	};
 
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RSE::EnvironmentFogMode p_mode = RSE::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL) = 0;
 	virtual void environment_set_fog_depth(RID p_env, float p_curve, float p_begin, float p_end) = 0;
@@ -994,7 +1033,7 @@ public:
 	virtual RID get_test_texture();
 	virtual RID get_white_texture();
 
-	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
+	virtual void hddagi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
 	virtual RID make_sphere_mesh(int p_lats, int p_lons, real_t p_radius);
 
@@ -1141,10 +1180,10 @@ VARIANT_ENUM_CAST_EXT(RSE::EnvironmentToneMapper, RenderingServer::EnvironmentTo
 VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSSRRoughnessQuality, RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSSAOQuality, RenderingServer::EnvironmentSSAOQuality);
 VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSSILQuality, RenderingServer::EnvironmentSSILQuality);
-VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSDFGIFramesToConverge, RenderingServer::EnvironmentSDFGIFramesToConverge);
-VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSDFGIRayCount, RenderingServer::EnvironmentSDFGIRayCount);
-VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSDFGIFramesToUpdateLight, RenderingServer::EnvironmentSDFGIFramesToUpdateLight);
-VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSDFGIYScale, RenderingServer::EnvironmentSDFGIYScale);
+VARIANT_ENUM_CAST_EXT(RSE::EnvironmentHDDAGIFramesToConverge, RenderingServer::EnvironmentHDDAGIFramesToConverge);
+VARIANT_ENUM_CAST_EXT(RSE::EnvironmentHDDAGICascadeFormat, RenderingServer::EnvironmentHDDAGICascadeFormat);
+VARIANT_ENUM_CAST_EXT(RSE::EnvironmentHDDAGIFramesToUpdateLight, RenderingServer::EnvironmentHDDAGIFramesToUpdateLight);
+VARIANT_ENUM_CAST_EXT(RSE::EnvironmentHDDAGIInactiveProbeFrames, RenderingServer::EnvironmentHDDAGIInactiveProbeFrames);
 VARIANT_ENUM_CAST_EXT(RSE::SubSurfaceScatteringQuality, RenderingServer::SubSurfaceScatteringQuality);
 VARIANT_ENUM_CAST_EXT(RSE::DOFBlurQuality, RenderingServer::DOFBlurQuality);
 VARIANT_ENUM_CAST_EXT(RSE::DOFBokehShape, RenderingServer::DOFBokehShape);

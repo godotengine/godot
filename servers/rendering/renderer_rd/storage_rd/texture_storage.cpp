@@ -592,6 +592,38 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
+	{ //create default HDDAGI
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8_UINT;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+
+		Vector<uint8_t> pv;
+		pv.resize(4 * 4);
+		for (int i = 0; i < 4 * 4; i++) {
+			pv.set(i, 0);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_HDDAGI_TEXTURE_2D] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+
+		tformat.texture_type = RD::TEXTURE_TYPE_3D;
+		tformat.array_layers = 0;
+		tformat.depth = 1;
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_HDDAGI_TEXTURE_3D] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+	}
+
 	{
 		Vector<String> sdf_modes;
 		sdf_modes.push_back("\n#define MODE_LOAD\n");

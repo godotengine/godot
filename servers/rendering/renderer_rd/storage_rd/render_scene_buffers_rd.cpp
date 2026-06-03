@@ -96,7 +96,9 @@ void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
 }
 
 void RenderSceneBuffersRD::free_named_texture(NamedTexture &p_named_texture) {
-	if (p_named_texture.texture.is_valid()) {
+	// named_textures may store additional views for textures. These views are marked as dependencies and will be freed along with their owner texture.
+	// texture_is_valid makes sure we don't free a view a second time right after it was freed.
+	if (p_named_texture.texture.is_valid() && RD::get_singleton()->texture_is_valid(p_named_texture.texture)) {
 		RD::get_singleton()->free_rid(p_named_texture.texture);
 	}
 	p_named_texture.texture = RID();

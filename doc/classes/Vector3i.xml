@@ -236,6 +236,12 @@
 				[/codeblock]
 			</description>
 		</operator>
+		<operator name="operator &amp;">
+			<return type="Vector3i" />
+			<param index="0" name="right" type="Vector3i" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator *">
 			<return type="Vector3i" />
 			<param index="0" name="right" type="Vector3i" />
@@ -362,6 +368,55 @@
 			<return type="Vector3i" />
 			<description>
 				Returns the negative value of the [Vector3i]. This is the same as writing [code]Vector3i(-v.x, -v.y, -v.z)[/code]. This operation flips the direction of the vector while keeping the same magnitude.
+			</description>
+		</operator>
+		<operator name="operator &gt;&gt;">
+			<return type="Vector3i" />
+			<param index="0" name="right" type="Vector3i" />
+			<description>
+				Bitwise shift right each vector component of [Vector3i] by the corresponding [param right] component.
+			</description>
+		</operator>
+		<operator name="operator &lt;&lt;">
+			<return type="Vector3i" />
+			<param index="0" name="right" type="Vector3i" />
+			<description>
+				Bitwise shift left each vector component of [Vector3i] by the corresponding [param right] component.
+			</description>
+		</operator>
+		<operator name="operator &gt;&gt;">
+			<return type="Vector3i" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Bitwise shift right each vector component of [Vector3i] by the [param right].
+			</description>
+		</operator>
+		<operator name="operator &lt;&lt;">
+			<return type="Vector3i" />
+			<param index="0" name="right" type="Vector3i" />
+			<description>
+				Bitwise shift left each vector component of [Vector3i] by [param right].
+			</description>
+		</operator>
+		<operator name="operator |">
+			<return type="Vector3i" />
+			<param index="0" name="right" type="Vector3i" />
+			<description>
+				Bitwise OR each vector component of [Vector3i] with the corresponding [param right] component.
+			</description>
+		</operator>
+		<operator name="operator &amp;">
+			<return type="Vector3i" />
+			<param index="0" name="right" type="Vector3i" />
+			<description>
+				Bitwise AND each vector component of [Vector3i] with the corresponding [param right] component.
+			</description>
+		</operator>
+		<operator name="operator ^">
+			<return type="Vector3i" />
+			<param index="0" name="right" type="Vector3i" />
+			<description>
+				Bitwise XOR each vector component of [Vector3i] with the corresponding [param right] component.
 			</description>
 		</operator>
 	</operators>

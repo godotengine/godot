@@ -345,6 +345,12 @@
 				Access vector components using their [param index]. [code]v[0][/code] is equivalent to [code]v.x[/code], and [code]v[1][/code] is equivalent to [code]v.y[/code].
 			</description>
 		</operator>
+		<operator name="operator ^">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator unary+">
 			<return type="Vector2i" />
 			<description>
@@ -355,6 +361,55 @@
 			<return type="Vector2i" />
 			<description>
 				Returns the negative value of the [Vector2i]. This is the same as writing [code]Vector2i(-v.x, -v.y)[/code]. This operation flips the direction of the vector while keeping the same magnitude.
+			</description>
+		</operator>
+		<operator name="operator &gt;&gt;">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Bitwise shift right each vector component of [Vector2i] by the corresponding [param right] component.
+			</description>
+		</operator>
+		<operator name="operator &lt;&lt;">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Bitwise shift left each vector component of [Vector2i] by the corresponding [param right] component.
+			</description>
+		</operator>
+		<operator name="operator &gt;&gt;">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Bitwise shift right each vector component of [Vector2i] by the [param right].
+			</description>
+		</operator>
+		<operator name="operator &lt;&lt;">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Bitwise shift left each vector component of [Vector2i] by [param right].
+			</description>
+		</operator>
+		<operator name="operator |">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Bitwise OR each vector component of [Vector2i] with the corresponding [param right] component.
+			</description>
+		</operator>
+		<operator name="operator &amp;">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Bitwise AND each vector component of [Vector2i] with the corresponding [param right] component.
+			</description>
+		</operator>
+		<operator name="operator ^">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Bitwise XOR each vector component of [Vector2i] with the corresponding [param right] component.
 			</description>
 		</operator>
 	</operators>
