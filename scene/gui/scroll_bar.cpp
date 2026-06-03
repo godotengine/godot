@@ -105,27 +105,30 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			Ref<Texture2D> decr = theme_cache.decrement_icon;
 			Ref<Texture2D> incr = theme_cache.increment_icon;
 
-			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
-			double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
+			Size2 decr_size = _fit_icon_size(decr->get_size()).round();
+			Size2 incr_size = _fit_icon_size(incr->get_size()).round();
+
+			double decr_len = orientation == VERTICAL ? decr_size.height : decr_size.width;
+			double incr_len = orientation == VERTICAL ? incr_size.height : incr_size.width;
 			double grabber_ofs = get_grabber_offset();
 			double grabber_size = get_grabber_size();
 			double total = orientation == VERTICAL ? get_size().height : get_size().width;
 
-			if (ofs < decr_size) {
+			if (ofs < decr_len) {
 				decr_active = true;
 				scroll(-(custom_step >= 0 ? custom_step : get_step()));
 				queue_redraw();
 				return;
 			}
 
-			if (ofs > total - incr_size) {
+			if (ofs > total - incr_len) {
 				incr_active = true;
 				scroll(custom_step >= 0 ? custom_step : get_step());
 				queue_redraw();
 				return;
 			}
 
-			ofs -= decr_size + theme_cache.scroll_style->get_margin(orientation == VERTICAL ? SIDE_TOP : SIDE_LEFT);
+			ofs -= decr_len + theme_cache.scroll_style->get_margin(orientation == VERTICAL ? SIDE_TOP : SIDE_LEFT);
 
 			if (ofs < grabber_ofs) {
 				if (scrolling) {
@@ -181,9 +184,10 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 		if (drag.active) {
 			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;
 			Ref<Texture2D> decr = theme_cache.decrement_icon;
+			Size2 decr_size = _fit_icon_size(decr->get_size()).round();
 
-			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
-			ofs -= decr_size + theme_cache.scroll_style->get_margin(orientation == VERTICAL ? SIDE_TOP : SIDE_LEFT);
+			double decr_len = orientation == VERTICAL ? decr_size.height : decr_size.width;
+			ofs -= decr_len + theme_cache.scroll_style->get_margin(orientation == VERTICAL ? SIDE_TOP : SIDE_LEFT);
 
 			double diff = (ofs - drag.pos_at_click) / get_area_size();
 
@@ -199,16 +203,19 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			Ref<Texture2D> decr = theme_cache.decrement_icon;
 			Ref<Texture2D> incr = theme_cache.increment_icon;
 
-			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
-			double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
+			Size2 decr_size = _fit_icon_size(decr->get_size()).round();
+			Size2 incr_size = _fit_icon_size(incr->get_size()).round();
+
+			double decr_len = orientation == VERTICAL ? decr_size.height : decr_size.width;
+			double incr_len = orientation == VERTICAL ? incr_size.height : incr_size.width;
 			double total = orientation == VERTICAL ? get_size().height : get_size().width;
 
 			HighlightStatus new_hilite;
 
-			if (ofs < decr_size) {
+			if (ofs < decr_len) {
 				new_hilite = HIGHLIGHT_DECR;
 
-			} else if (ofs > total - incr_size) {
+			} else if (ofs > total - incr_len) {
 				new_hilite = HIGHLIGHT_INCR;
 
 			} else {
@@ -287,6 +294,9 @@ void ScrollBar::_notification(int p_what) {
 				incr = theme_cache.increment_icon;
 			}
 
+			Size2 decr_size = _fit_icon_size(decr->get_size()).round();
+			Size2 incr_size = _fit_icon_size(incr->get_size()).round();
+
 			Ref<StyleBox> grabber;
 			if (drag.active) {
 				grabber = theme_cache.grabber_pressed_style;
@@ -298,20 +308,20 @@ void ScrollBar::_notification(int p_what) {
 
 			Point2 ofs;
 
-			decr->draw(ci, Point2());
+			decr->draw_rect(ci, Rect2(Point2(), decr_size));
 
 			if (orientation == HORIZONTAL) {
-				ofs.x += decr->get_width();
+				ofs.x += decr_size.width;
 			} else {
-				ofs.y += decr->get_height();
+				ofs.y += decr_size.height;
 			}
 
 			Size2 area = get_size();
 
 			if (orientation == HORIZONTAL) {
-				area.width -= incr->get_width() + decr->get_width();
+				area.width -= incr_size.width + decr_size.width;
 			} else {
-				area.height -= incr->get_height() + decr->get_height();
+				area.height -= incr_size.height + decr_size.height;
 			}
 
 			if (has_focus(true)) {
@@ -326,7 +336,7 @@ void ScrollBar::_notification(int p_what) {
 				ofs.height += area.height;
 			}
 
-			incr->draw(ci, ofs);
+			incr->draw_rect(ci, Rect2(ofs, incr_size));
 			Rect2 grabber_rect;
 
 			if (orientation == HORIZONTAL) {
@@ -335,13 +345,13 @@ void ScrollBar::_notification(int p_what) {
 				grabber_rect.size.width = get_grabber_size();
 				grabber_rect.size.height = get_size().height - padding_top - padding_bottom;
 				grabber_rect.position.y = padding_top;
-				grabber_rect.position.x = get_grabber_offset() + decr->get_width() + theme_cache.scroll_style->get_margin(SIDE_LEFT);
+				grabber_rect.position.x = get_grabber_offset() + decr_size.width + theme_cache.scroll_style->get_margin(SIDE_LEFT);
 			} else {
 				int padding_left = MAX(theme_cache.padding_left, 0);
 				int padding_right = MAX(theme_cache.padding_right, 0);
 				grabber_rect.size.width = get_size().width - padding_left - padding_right;
 				grabber_rect.size.height = get_grabber_size();
-				grabber_rect.position.y = get_grabber_offset() + decr->get_height() + theme_cache.scroll_style->get_margin(SIDE_TOP);
+				grabber_rect.position.y = get_grabber_offset() + decr_size.height + theme_cache.scroll_style->get_margin(SIDE_TOP);
 				grabber_rect.position.x = padding_left;
 			}
 
@@ -523,16 +533,19 @@ double ScrollBar::get_grabber_offset() const {
 Size2 ScrollBar::get_minimum_size() const {
 	Ref<Texture2D> incr = theme_cache.increment_icon;
 	Ref<Texture2D> decr = theme_cache.decrement_icon;
+	Size2 incr_size = _fit_icon_size(incr->get_size()).round();
+	Size2 decr_size = _fit_icon_size(decr->get_size()).round();
+
 	Ref<StyleBox> bg = theme_cache.scroll_style;
 	Size2 minsize;
 
 	if (orientation == VERTICAL) {
 		int padding_left = MAX(theme_cache.padding_left, 0);
 		int padding_right = MAX(theme_cache.padding_right, 0);
-		minsize.width = MAX(incr->get_size().width, bg->get_minimum_size().width);
+		minsize.width = MAX(incr_size.width, bg->get_minimum_size().width);
 		minsize.width += padding_left + padding_right;
-		minsize.height += incr->get_size().height;
-		minsize.height += decr->get_size().height;
+		minsize.height += incr_size.height;
+		minsize.height += decr_size.height;
 		minsize.height += bg->get_minimum_size().height;
 		minsize.height += get_grabber_min_size();
 	}
@@ -540,10 +553,10 @@ Size2 ScrollBar::get_minimum_size() const {
 	if (orientation == HORIZONTAL) {
 		int padding_top = MAX(theme_cache.padding_top, 0);
 		int padding_bottom = MAX(theme_cache.padding_bottom, 0);
-		minsize.height = MAX(incr->get_size().height, bg->get_minimum_size().height);
+		minsize.height = MAX(incr_size.height, bg->get_minimum_size().height);
 		minsize.height += padding_top + padding_bottom;
-		minsize.width += incr->get_size().width;
-		minsize.width += decr->get_size().width;
+		minsize.width += incr_size.width;
+		minsize.width += decr_size.width;
 		minsize.width += bg->get_minimum_size().width;
 		minsize.width += get_grabber_min_size();
 	}
@@ -639,6 +652,19 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
+Size2 ScrollBar::_fit_icon_size(const Size2 &p_size) const {
+	int max_size = theme_cache.icon_max_size;
+
+	int max_dimension = MAX(p_size.width, p_size.height);
+	if (max_size <= 0 || max_dimension <= max_size) {
+		return p_size;
+	}
+
+	double scale = (double)max_size / max_dimension;
+
+	return Size2((int)(p_size.width * scale), (int)(p_size.height * scale));
+}
+
 void ScrollBar::set_drag_node(const NodePath &p_path) {
 	if (is_inside_tree()) {
 		if (drag_node) {
@@ -699,6 +725,8 @@ void ScrollBar::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_icon, "decrement");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_hl_icon, "decrement_highlight");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_pressed_icon, "decrement_pressed");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollBar, icon_max_size);
 }
 
 ScrollBar::ScrollBar(Orientation p_orientation) {
