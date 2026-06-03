@@ -477,8 +477,13 @@
 		<constant name="DYNAMIC_GI_CASCADE_FORMAT_16x16x16" value="1" enum="DynamicGICascadeFormat">
 			Full vertical resolution cascade format. Ensures cascades are the same in all directions.
 		</constant>
-		<constant name="DYNAMIC_GI_CASCADE_FORMAT_MAX" value="2" enum="DynamicGICascadeFormat">
-			Maximum amount of cascade formats.
+		<constant name="DYNAMIC_GI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT" value="2" enum="DynamicGICascadeFormat">
+			Reduce vertical cascade size to 75% of its original size. If your game isn't highly vertical, this may improve lighting quality and reduce light leaks.
+		</constant>
+		<constant name="DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT" value="3" enum="DynamicGICascadeFormat">
+			Reduce vertical cascade size to 50% of its original size. If your game isn't highly vertical, this may improve lighting quality and reduce light leaks.
+		</constant>
+		<constant name="DYNAMIC_GI_CASCADE_FORMAT_MAX" value="4" enum="DynamicGICascadeFormat">
 		</constant>
 	</constants>
 </class>
