@@ -167,7 +167,7 @@ class ScriptEditor : public PanelContainer {
 
 	ItemList *script_list = nullptr;
 	HSplitContainer *script_split = nullptr;
-	ItemList *members_overview = nullptr;
+	Tree *members_overview = nullptr;
 	LineEdit *filter_scripts = nullptr;
 	LineEdit *filter_methods = nullptr;
 	VBoxContainer *scripts_vbox = nullptr;
@@ -323,7 +323,7 @@ class ScriptEditor : public PanelContainer {
 	void _update_script_names();
 	bool _sort_list_on_update;
 
-	void _members_overview_selected(int p_idx);
+	void _members_overview_selected();
 	void _script_selected(int p_idx);
 
 	void _update_help_overview_visibility();
