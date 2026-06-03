@@ -1771,7 +1771,7 @@ void EditorAudioStreamPicker::_preview_draw() {
 
 	float text_width = size.width - 4 * EDSCALE - icon->get_width();
 	if (text_width > 0) {
-		stream_preview_rect->draw_string(font, Point2i(EDSCALE * 4 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, text_width, font_size, get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
+		stream_preview_rect->draw_string(font, Point2i(size.width - text_width, rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, text_width, font_size, get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 	}
 }
 
