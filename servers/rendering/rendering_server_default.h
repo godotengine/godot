@@ -1060,6 +1060,7 @@ public:
 	FUNC2(canvas_item_set_sort_children_by_y, RID, bool)
 	FUNC2(canvas_item_set_z_index, RID, int)
 	FUNC2(canvas_item_set_z_as_relative_to_parent, RID, bool)
+	FUNC2(canvas_item_set_sorting_group, RID, bool)
 	FUNC3(canvas_item_set_copy_to_backbuffer, RID, bool, const Rect2 &)
 	FUNC2(canvas_item_attach_skeleton, RID, RID)
 

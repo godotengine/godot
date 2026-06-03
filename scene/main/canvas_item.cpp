@@ -804,6 +804,20 @@ bool CanvasItem::is_y_sort_enabled() const {
 	return y_sort_enabled;
 }
 
+void CanvasItem::set_sorting_group(bool p_enabled) {
+	ERR_THREAD_GUARD;
+	if (sorting_group == p_enabled) {
+		return;
+	}
+	sorting_group = p_enabled;
+	RS::get_singleton()->canvas_item_set_sorting_group(canvas_item, p_enabled);
+}
+
+bool CanvasItem::is_sorting_group() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return sorting_group;
+}
+
 void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, real_t p_dash, bool p_aligned, bool p_antialiased) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
@@ -1479,6 +1493,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_y_sort_enabled", "enabled"), &CanvasItem::set_y_sort_enabled);
 	ClassDB::bind_method(D_METHOD("is_y_sort_enabled"), &CanvasItem::is_y_sort_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_sorting_group", "enable"), &CanvasItem::set_sorting_group);
+	ClassDB::bind_method(D_METHOD("is_sorting_group"), &CanvasItem::is_sorting_group);
+
 	ClassDB::bind_method(D_METHOD("set_draw_behind_parent", "enable"), &CanvasItem::set_draw_behind_parent);
 	ClassDB::bind_method(D_METHOD("is_draw_behind_parent_enabled"), &CanvasItem::is_draw_behind_parent_enabled);
 
@@ -1582,6 +1599,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index", PROPERTY_HINT_RANGE, itos(RSE::CANVAS_ITEM_Z_MIN) + "," + itos(RSE::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_index", "get_z_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "z_as_relative"), "set_z_as_relative", "is_z_relative");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "y_sort_enabled"), "set_y_sort_enabled", "is_y_sort_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sorting_group"), "set_sorting_group", "is_sorting_group");
 
 	ADD_GROUP("Texture", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");

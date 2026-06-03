@@ -110,6 +110,7 @@ private:
 	int z_index = 0;
 	bool z_relative = true;
 	bool y_sort_enabled = false;
+	bool sorting_group = false;
 
 	static constexpr int DEFAULT_FONT_SIZE = 16; // Keep synced with font.h.
 
@@ -324,6 +325,8 @@ public:
 	virtual void set_y_sort_enabled(bool p_enabled);
 	virtual bool is_y_sort_enabled() const;
 
+	void set_sorting_group(bool p_enabled);
+	bool is_sorting_group() const;
 	/* DRAWING API */
 
 	void draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width = -1.0, real_t p_dash = 2.0, bool p_aligned = true, bool p_antialiased = false);

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/chunked_sparse_array.h"
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/instance_uniforms.h"
 #include "servers/rendering/renderer_canvas_render.h"
@@ -42,6 +43,17 @@ class RendererCanvasCull {
 	static void _dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker);
 
 public:
+	template <typename D>
+	struct Entry {
+		D *head = nullptr;
+		D *tail = nullptr;
+
+		_FORCE_INLINE_ void reset() {
+			head = nullptr;
+			tail = nullptr;
+		}
+	};
+
 	struct Item : public RendererCanvasRender::Item {
 		RID parent; // canvas it belongs to
 		RID self;
@@ -49,6 +61,7 @@ public:
 		int z_index;
 		bool z_relative;
 		bool sort_y;
+		bool sorting_group;
 		Color modulate;
 		Color self_modulate;
 		bool use_parent_material;
@@ -62,6 +75,9 @@ public:
 		uint32_t visibility_layer = 0xffffffff;
 
 		Vector<Item *> child_items;
+
+		// initialize and destruct in sorting_group setter and Item destructor
+		ChunkedSparseArray<Entry<Item>> *sparse_array = nullptr;
 
 		struct VisibilityNotifierData {
 			Rect2 area;
@@ -93,6 +109,7 @@ public:
 			sort_y = false;
 			use_parent_material = false;
 			z_relative = true;
+			sorting_group = false;
 			index = 0;
 			ysort_children_count = -1;
 			ysort_xform = Transform2D();
@@ -102,6 +119,13 @@ public:
 			dependency_tracker.userdata = this;
 			dependency_tracker.changed_callback = &RendererCanvasCull::_dependency_changed;
 			dependency_tracker.deleted_callback = &RendererCanvasCull::_dependency_deleted;
+		}
+
+		~Item() {
+			if (sparse_array) {
+				memdelete(sparse_array);
+				sparse_array = nullptr;
+			}
 		}
 	};
 
@@ -200,14 +224,15 @@ public:
 	double debug_redraw_time = 0;
 	Color debug_redraw_color;
 
+	PagedAllocator<ChunkedSparseArray<Entry<Item>>::Chunk> chunk_allocator{ 256 };
 	PagedAllocator<Item::VisibilityNotifierData> visibility_notifier_allocator;
 	SelfList<Item::VisibilityNotifierData>::List visibility_notifier_list;
 
-	_FORCE_INLINE_ void _attach_canvas_item_for_draw(Item *ci, Item *p_canvas_clip, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, const Transform2D &p_transform, const Rect2 &p_clip_rect, Rect2 p_global_rect, const Color &modulate, int p_z, RendererCanvasCull::Item *p_material_owner, bool p_use_canvas_group, RendererCanvasRender::Item *r_canvas_group_from);
+	_FORCE_INLINE_ void _attach_canvas_item_for_draw(Item *ci, Item *p_canvas_clip, ChunkedSparseArray<Entry<Item>> &r_z_sparse_array, const Transform2D &p_transform, const Rect2 &p_clip_rect, Rect2 p_global_rect, const Color &modulate, int p_z, RendererCanvasCull::Item *p_material_owner, bool p_use_canvas_group, RendererCanvasRender::Item *r_canvas_group_from);
 
 private:
 	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RSE::CanvasItemTextureFilter p_default_filter, RSE::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t p_canvas_cull_mask, RenderingServerTypes::RenderInfo *r_render_info = nullptr);
-	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_is_already_y_sorted, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times, RendererCanvasRender::Item *p_repeat_source_item);
+	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, ChunkedSparseArray<Entry<Item>> &r_z_sparse_array, Item *p_canvas_clip, Item *p_material_owner, bool p_is_already_y_sorted, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times, RendererCanvasRender::Item *p_repeat_source_item, bool is_sorting_group_root);
 
 	void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int &r_ysort_children_count, int p_z, uint32_t p_canvas_cull_mask);
 	int _count_ysort_children(RendererCanvasCull::Item *p_canvas_item);
@@ -215,12 +240,13 @@ private:
 
 	static constexpr int z_range = RSE::CANVAS_ITEM_Z_MAX - RSE::CANVAS_ITEM_Z_MIN + 1;
 
-	RendererCanvasRender::Item **z_list;
-	RendererCanvasRender::Item **z_last_list;
+	ChunkedSparseArray<Entry<Item>> z_sparse_array{ chunk_allocator };
 
 	Transform2D _current_camera_transform;
 
 public:
+	static Entry<Item> flatten_chunked_sparse_array(ChunkedSparseArray<Entry<Item>> &sparse_array);
+
 	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RSE::CanvasItemTextureFilter p_default_filter, RSE::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel, uint32_t p_canvas_cull_mask, RenderingServerTypes::RenderInfo *r_render_info = nullptr);
 
 	bool was_sdf_used();
@@ -283,6 +309,7 @@ public:
 	void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
 	void canvas_item_set_z_index(RID p_item, int p_z);
 	void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
+	void canvas_item_set_sorting_group(RID p_item, bool p_enable);
 	void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect);
 	void canvas_item_attach_skeleton(RID p_item, RID p_skeleton);
 
