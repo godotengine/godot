@@ -2153,7 +2153,7 @@ void SpriteFramesEditor::_step_frame_pressed(int p_step) {
 			return;
 		}
 		int current_frame = animated_sprite->call("get_frame");
-		int new_frame = Math::posmod(current_frame + step, frame_count);
+		int new_frame = Math::posmod(current_frame + p_step, frame_count);
 		animated_sprite->call("set_frame", new_frame);
 	}
 }
