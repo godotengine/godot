@@ -804,6 +804,25 @@ void GDScriptParser::parse_program() {
 					end_statement("superclass");
 				}
 				break;
+			case GDScriptTokenizer::Token::TRAIT:
+				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
+				advance();
+				if (head->identifier != nullptr) {
+					push_error(R"("trait" can only be used once and not together with "class_name".)");
+				} else {
+					parse_trait();
+				}
+				break;
+			case GDScriptTokenizer::Token::IMPLEMENTS:
+				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
+				advance();
+				if (head->implements_used) {
+					push_error(R"("implements" can only be used once.)");
+				} else {
+					parse_implements();
+					end_statement("trait list");
+				}
+				break;
 			case GDScriptTokenizer::Token::TK_EOF:
 				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
 				can_have_class_or_extends = false;
@@ -846,6 +865,10 @@ void GDScriptParser::parse_program() {
 	}
 
 	parse_class_body(true);
+
+	if (head->is_trait) {
+		apply_trait_member_rules(head);
+	}
 
 	head->end_line = current.end_line;
 	head->end_column = current.end_column;
@@ -949,7 +972,22 @@ bool GDScriptParser::has_class(const GDScriptParser::ClassNode *p_class) const {
 }
 
 GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
+	return parse_class_impl(p_is_static, false);
+}
+
+GDScriptParser::ClassNode *GDScriptParser::parse_trait_class(bool p_is_static) {
+	return parse_class_impl(p_is_static, true);
+}
+
+GDScriptParser::ClassNode *GDScriptParser::parse_class_impl(bool p_is_static, bool p_is_trait) {
 	ClassNode *n_class = alloc_node<ClassNode>();
+	n_class->is_trait = p_is_trait;
+	if (p_is_trait) {
+		// A trait is an implicit abstract contract and cannot be instantiated.
+		n_class->is_abstract = true;
+	}
+
+	const String keyword = p_is_trait ? "trait" : "class";
 
 	make_completion_context(COMPLETION_DECLARATION, n_class);
 
@@ -957,7 +995,7 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	current_class = n_class;
 	n_class->outer = previous_class;
 
-	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the class name after "class".)")) {
+	if (consume(GDScriptTokenizer::Token::IDENTIFIER, vformat(R"(Expected identifier for the %s name after "%s".)", keyword, keyword))) {
 		n_class->identifier = parse_identifier();
 		if (n_class->outer) {
 			String fqcn = n_class->outer->fqcn;
@@ -973,12 +1011,15 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
 		parse_extends();
 	}
+	if (match(GDScriptTokenizer::Token::IMPLEMENTS)) {
+		parse_implements();
+	}
 
-	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after class declaration.)");
+	consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":" after %s declaration.)", keyword));
 
 	bool multiline = match(GDScriptTokenizer::Token::NEWLINE);
 
-	if (multiline && !consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block after class declaration.)")) {
+	if (multiline && !consume(GDScriptTokenizer::Token::INDENT, vformat(R"(Expected indented block after %s declaration.)", keyword))) {
 		current_class = previous_class;
 		complete_extents(n_class);
 		return n_class;
@@ -991,8 +1032,20 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 		parse_extends();
 		end_statement("superclass");
 	}
+	if (match(GDScriptTokenizer::Token::IMPLEMENTS)) {
+		if (n_class->implements_used) {
+			push_error(R"(Cannot use "implements" more than once in the same class.)");
+		}
+		parse_implements();
+		end_statement("trait list");
+	}
 
 	parse_class_body(multiline);
+
+	if (p_is_trait) {
+		apply_trait_member_rules(n_class);
+	}
+
 	complete_extents(n_class);
 
 	if (multiline) {
@@ -1018,9 +1071,46 @@ void GDScriptParser::parse_class_name() {
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
 		// Allow extends on the same line.
 		parse_extends();
+		if (match(GDScriptTokenizer::Token::IMPLEMENTS)) {
+			parse_implements();
+		}
 		end_statement("superclass");
+	} else if (match(GDScriptTokenizer::Token::IMPLEMENTS)) {
+		parse_implements();
+		end_statement("trait list");
 	} else {
 		end_statement("class_name statement");
+	}
+}
+
+void GDScriptParser::parse_trait() {
+	current_class->is_trait = true;
+	// A trait is an implicit abstract contract and cannot be instantiated.
+	current_class->is_abstract = true;
+
+	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the trait name after "trait".)")) {
+		current_class->identifier = parse_identifier();
+		current_class->fqcn = String(current_class->identifier->name);
+	}
+
+	if (script_path.begins_with("res://") && script_path.contains("::")) {
+		push_error(R"("trait" isn't allowed in built-in scripts.)");
+	}
+
+	make_completion_context(COMPLETION_DECLARATION, current_class);
+
+	if (match(GDScriptTokenizer::Token::EXTENDS)) {
+		// Allow extends on the same line.
+		parse_extends();
+		if (match(GDScriptTokenizer::Token::IMPLEMENTS)) {
+			parse_implements();
+		}
+		end_statement("superclass");
+	} else if (match(GDScriptTokenizer::Token::IMPLEMENTS)) {
+		parse_implements();
+		end_statement("trait list");
+	} else {
+		end_statement("trait declaration");
 	}
 }
 
@@ -1053,6 +1143,65 @@ void GDScriptParser::parse_extends() {
 			return;
 		}
 		current_class->extends.push_back(parse_identifier());
+	}
+}
+
+void GDScriptParser::parse_implements() {
+	current_class->implements_used = true;
+
+	do {
+		TypeNode *trait_type = parse_type(false);
+		if (trait_type == nullptr) {
+			push_error(R"(Expected trait name after "implements".)");
+			return;
+		}
+		current_class->implemented_traits.push_back(trait_type);
+	} while (match(GDScriptTokenizer::Token::COMMA));
+}
+
+void GDScriptParser::apply_trait_member_rules(ClassNode *p_trait) {
+	// A trait only declares a contract: bodyless (abstract) instance functions.
+	// Mark every function abstract (the "no body" check is reused from the analyzer)
+	// and reject any other kind of member for this first version.
+	for (const ClassNode::Member &member : p_trait->members) {
+		switch (member.type) {
+			case ClassNode::Member::FUNCTION: {
+				FunctionNode *function = member.function;
+				if (function->is_static) {
+					push_error(R"(Traits cannot declare static functions.)", function);
+				}
+				function->is_abstract = true;
+			} break;
+			case ClassNode::Member::UNDEFINED:
+			case ClassNode::Member::GROUP:
+				break;
+			default: {
+				const Node *member_node = p_trait;
+				switch (member.type) {
+					case ClassNode::Member::CLASS:
+						member_node = member.m_class;
+						break;
+					case ClassNode::Member::CONSTANT:
+						member_node = member.constant;
+						break;
+					case ClassNode::Member::SIGNAL:
+						member_node = member.signal;
+						break;
+					case ClassNode::Member::VARIABLE:
+						member_node = member.variable;
+						break;
+					case ClassNode::Member::ENUM:
+						member_node = member.m_enum;
+						break;
+					case ClassNode::Member::ENUM_VALUE:
+						member_node = member.enum_value.identifier;
+						break;
+					default:
+						break;
+				}
+				push_error(vformat(R"(Traits can only declare functions, but found %s "%s".)", member.get_type_name(), member.get_name()), member_node);
+			} break;
+		}
 	}
 }
 
@@ -1150,6 +1299,9 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				break;
 			case GDScriptTokenizer::Token::CLASS:
 				parse_class_member(&GDScriptParser::parse_class, AnnotationInfo::CLASS, "class");
+				break;
+			case GDScriptTokenizer::Token::TRAIT:
+				parse_class_member(&GDScriptParser::parse_trait_class, AnnotationInfo::CLASS, "trait");
 				break;
 			case GDScriptTokenizer::Token::ENUM:
 				parse_class_member(&GDScriptParser::parse_enum, AnnotationInfo::NONE, "enum");
@@ -4331,6 +4483,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ENUM,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // EXTENDS,
 		{ &GDScriptParser::parse_lambda,                    nullptr,                                        PREC_NONE }, // FUNC,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // IMPLEMENTS,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_CONTENT_TEST }, // TK_IN,
 		{ nullptr,                                          &GDScriptParser::parse_type_test,            	PREC_TYPE_TEST }, // IS,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // NAMESPACE,

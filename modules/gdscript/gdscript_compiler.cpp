@@ -92,6 +92,14 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		return GDScriptDataType();
 	}
 
+	// Traits are a compile-time-only contract with no runtime type identity. Their
+	// `implements` relationship is verified by the analyzer, but the VM knows nothing
+	// about it, so a trait-typed value must be left untyped at runtime to avoid
+	// spurious type checks (e.g. when passed to a trait-typed parameter).
+	if (!(p_handle_metatype && p_datatype.is_meta_type) && p_datatype.kind == GDScriptParser::DataType::CLASS && p_datatype.class_type != nullptr && p_datatype.class_type->is_trait) {
+		return GDScriptDataType();
+	}
+
 	GDScriptDataType result;
 
 	switch (p_datatype.kind) {

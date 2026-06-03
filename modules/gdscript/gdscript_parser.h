@@ -753,12 +753,15 @@ public:
 		HashMap<StringName, int> members_indices;
 		ClassNode *outer = nullptr;
 		bool extends_used = false;
+		bool implements_used = false;
 		bool onready_used = false;
 		bool is_abstract = false;
+		bool is_trait = false;
 		bool has_static_data = false;
 		bool annotated_static_unload = false;
 		String extends_path;
 		Vector<IdentifierNode *> extends; // List for indexing: extends A.B.C
+		Vector<TypeNode *> implemented_traits; // List for indexing: implements A, B.C
 		DataType base_type;
 		String fqcn; // Fully-qualified class name. Identifies uniquely any class in the project.
 #ifdef TOOLS_ENABLED
@@ -1541,8 +1544,13 @@ private:
 	// Main blocks.
 	void parse_program();
 	ClassNode *parse_class(bool p_is_static);
+	ClassNode *parse_trait_class(bool p_is_static);
+	ClassNode *parse_class_impl(bool p_is_static, bool p_is_trait);
 	void parse_class_name();
+	void parse_trait();
 	void parse_extends();
+	void parse_implements();
+	void apply_trait_member_rules(ClassNode *p_trait);
 	void parse_class_body(bool p_is_multiline);
 	template <typename T>
 	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static = false);

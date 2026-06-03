@@ -111,6 +111,7 @@ static const char *token_names[] = {
 	"enum", // ENUM,
 	"extends", // EXTENDS,
 	"func", // FUNC,
+	"implements", // IMPLEMENTS,
 	"in", // TK_IN,
 	"is", // IS,
 	"namespace", // NAMESPACE
@@ -235,6 +236,7 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case FOR:
 		case FUNC:
 		case IF:
+		case IMPLEMENTS:
 		case TK_IN:
 		case IS:
 		case MATCH:
@@ -507,6 +509,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD("func", Token::FUNC) \
 	KEYWORD_GROUP('i') \
 	KEYWORD("if", Token::IF) \
+	KEYWORD("implements", Token::IMPLEMENTS) \
 	KEYWORD("in", Token::TK_IN) \
 	KEYWORD("is", Token::IS) \
 	KEYWORD_GROUP('m') \
