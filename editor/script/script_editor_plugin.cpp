@@ -1713,8 +1713,9 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 	}
 }
 
-void ScriptEditor::_members_overview_selected(int p_idx) {
-	int line = members_overview->get_item_metadata(p_idx);
+void ScriptEditor::_members_overview_selected() {
+	TreeItem *item = members_overview->get_selected();
+	int line = item->get_metadata(0);
 	ScriptEditorBase *current = _get_current_editor();
 	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(current)) {
 		teb->goto_line_centered(line);
@@ -1835,16 +1836,81 @@ void ScriptEditor::_update_members_overview() {
 	}
 
 	Vector<String> functions = ceb->get_functions();
-	if (EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically")) {
+	bool sort_alphabetically = EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically");
+
+	if (sort_alphabetically) {
 		functions.sort();
 	}
 
+	TreeItem *root = members_overview->create_item();
+	members_overview->set_hide_root(true);
+
+	CodeTextEditor *cte = ceb->get_code_editor();
+	CodeEdit *te = cte->get_text_editor();
+
+	struct PairSortComparator {
+		bool operator()(const Pair<String, int> &p_a, const Pair<String, int> &p_b) const {
+			return p_a.second < p_b.second;
+		}
+	};
+
+	struct CodeRegion {
+		int start_line;
+		int end_line;
+		String name;
+		TreeItem *item;
+
+		CodeRegion(int p_start, int p_end, String p_name, TreeItem *p_item) {
+			start_line = p_start;
+			end_line = p_end;
+			name = p_name;
+			item = p_item;
+		}
+
+		bool is_valid_parent_for(const CodeRegion &p_other) const {
+			return item && start_line < p_other.start_line && end_line > p_other.end_line;
+		}
+
+		bool is_nested_in(const CodeRegion &p_other) const {
+			return start_line > p_other.start_line && end_line < p_other.end_line;
+		}
+
+		bool contains_line(int p_line) const {
+			return item && start_line <= p_line && end_line >= p_line;
+		}
+	};
+	Vector<CodeRegion> regions;
+
+	int region_level = 0;
+	TypedArray<int> region_stack;
+
+	for (int i = 0; i < te->get_line_count(); i++) {
+		if (te->is_line_code_region_start(i)) {
+			String line = te->get_line(i);
+			Vector<String> parts = line.strip_edges().split_spaces(1);
+			String region_name = parts.size() > 1 ? parts[1] : "Region";
+			CodeRegion region = CodeRegion(i, -1, region_name, nullptr);
+			regions.push_back(region);
+			region_stack.push_back(regions.size() - 1);
+			region_level++;
+		} else if (te->is_line_code_region_end(i)) {
+			if (region_level > 0 && !region_stack.is_empty()) {
+				int idx = region_stack[region_stack.size() - 1];
+				regions.write[idx].end_line = i;
+				region_stack.pop_back();
+				region_level--;
+			}
+		}
+	}
+
 	String filter = filter_methods->get_text();
+
+	Vector<Pair<String, int>> filtered_functions;
 	if (filter.is_empty()) {
 		for (int i = 0; i < functions.size(); i++) {
 			String name = functions[i].get_slicec(':', 0);
-			members_overview->add_item(name);
-			members_overview->set_item_metadata(-1, functions[i].get_slicec(':', 1).to_int() - 1);
+			int line = functions[i].get_slicec(':', 1).to_int() - 1;
+			filtered_functions.push_back(Pair<String, int>(name, line));
 		}
 	} else {
 		PackedStringArray search_names;
@@ -1859,8 +1925,90 @@ void ScriptEditor::_update_members_overview() {
 		for (const Ref<FuzzySearchMatch> &res : results) {
 			String name = functions[res->get_original_index()].get_slicec(':', 0);
 			int line = functions[res->get_original_index()].get_slicec(':', 1).to_int() - 1;
-			members_overview->add_item(name);
-			members_overview->set_item_metadata(-1, line);
+			filtered_functions.push_back(Pair<String, int>(name, line));
+		}
+	}
+
+	if (!sort_alphabetically) {
+		filtered_functions.sort_custom<PairSortComparator>();
+	}
+
+	struct TreeItemData {
+		int line;
+		bool is_region;
+		int region;
+		int function;
+
+		TreeItemData(int p_line, bool p_is_region, int p_region, int p_function) {
+			line = p_line;
+			is_region = p_is_region;
+			region = p_region;
+			function = p_function;
+		}
+	};
+
+	struct TreeItemDataComparator {
+		bool operator()(const TreeItemData &p_a, const TreeItemData &p_b) const {
+			return p_a.line < p_b.line;
+		}
+	};
+	Vector<TreeItemData> items;
+
+	for (int i = 0; i < regions.size(); i++) {
+		TreeItemData item_data = TreeItemData(regions[i].start_line, true, i, -1);
+		items.push_back(item_data);
+	}
+
+	for (int i = 0; i < filtered_functions.size(); i++) {
+		TreeItemData item_data = TreeItemData(filtered_functions[i].second, false, -1, i);
+		items.push_back(item_data);
+	}
+
+	if (!sort_alphabetically) {
+		items.sort_custom<TreeItemDataComparator>();
+	}
+
+	for (int i = 0; i < items.size(); i++) {
+		if (items[i].is_region) {
+			CodeRegion &region = regions.write[items[i].region];
+
+			TreeItem *parent = root;
+			int idx = -1;
+			for (int j = 0; j < regions.size(); j++) {
+				if (j != items[i].region && regions[j].is_valid_parent_for(region)) {
+					if (idx == -1 || regions[j].is_nested_in(regions[idx])) {
+						idx = j;
+					}
+				}
+			}
+			if (idx != -1) {
+				parent = regions[idx].item;
+			}
+
+			TreeItem *item = members_overview->create_item(parent);
+			item->set_text(0, region.name);
+			item->set_metadata(0, region.start_line);
+			region.item = item;
+		} else {
+			String name = filtered_functions[items[i].function].first;
+			int line = filtered_functions[items[i].function].second;
+
+			TreeItem *parent = root;
+			int idx = -1;
+			for (int j = 0; j < regions.size(); j++) {
+				if (regions[j].contains_line(line)) {
+					if (idx == -1 || regions[j].is_nested_in(regions[idx])) {
+						idx = j;
+					}
+				}
+			}
+			if (idx != -1) {
+				parent = regions[idx].item;
+			}
+
+			TreeItem *item = members_overview->create_item(parent);
+			item->set_text(0, name);
+			item->set_metadata(0, line);
 		}
 	}
 }
@@ -4005,11 +4153,11 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	members_overview_alphabeta_sort_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
 	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
 
-	members_overview = memnew(ItemList);
+	members_overview = memnew(Tree);
 	members_overview->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	members_overview->set_theme_type_variation("ItemListSecondary");
 	overview_vbox->add_child(members_overview);
 
+	members_overview->set_hide_root(true);
 	members_overview->set_allow_reselect(true);
 	members_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
