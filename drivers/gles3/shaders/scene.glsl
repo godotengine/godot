@@ -681,6 +681,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 #ifndef USE_MULTIVIEW
 	mat4 projection_matrix = scene_data_input.projection_matrix;
 	mat4 inv_projection_matrix = scene_data_input.inv_projection_matrix;
+	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
 #endif //!USE_MULTIVIEW
 
 #ifdef USE_INSTANCING
