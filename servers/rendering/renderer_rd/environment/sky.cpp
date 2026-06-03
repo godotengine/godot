@@ -1111,7 +1111,9 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 		if (sky_scene_state.ubo.directional_light_count != sky_scene_state.last_frame_directional_light_count) {
 			light_data_dirty = true;
 			for (uint32_t i = sky_scene_state.ubo.directional_light_count; i < sky_scene_state.max_directional_lights; i++) {
+				sky_scene_state.directional_lights[i] = {};
 				sky_scene_state.directional_lights[i].enabled = false;
+				sky_scene_state.last_frame_directional_lights[i] = {};
 				sky_scene_state.last_frame_directional_lights[i].enabled = false;
 			}
 		}
