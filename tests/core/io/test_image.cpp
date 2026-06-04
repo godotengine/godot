@@ -710,8 +710,9 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 		image.instantiate(3, 3, false, Image::FORMAT_RGBA8);
 		Ref<Image> temp;
 		Ref<Image> image_copy;
-		temp.instantiate(0, 0, false, Image::FORMAT_RGBA8);
-		image_copy.instantiate(0, 0, false, Image::FORMAT_RGBA8);
+		// to avoid errors, instantiating with non-zero dimensions
+		temp.instantiate(1, 1, false, Image::FORMAT_RGBA8);
+		image_copy.instantiate(1, 1, false, Image::FORMAT_RGBA8);
 		image->set_pixel(0, 0, red);
 		image->set_pixel(1, 0, red);
 		image->set_pixel(2, 0, blue);
@@ -752,6 +753,8 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 
 		temp->rotate_90(COUNTERCLOCKWISE);
 		CHECK_MESSAGE(image_copy->get_data() == temp->get_data(), "Rotating clockwise three times; data should equal rotating counterclockwise once");
+		image_copy.unref();
+		temp.unref();
 	}
 }
 
