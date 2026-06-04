@@ -225,7 +225,8 @@ Vector3 SpringBoneCollision3D::_collide_sphere_taper(const Vector3 &p_origin, fl
 	}
 
 	Vector3 diff = p_current - p_origin;
-	Vector3 bone_axis = p_current - p_current_origin;  // should be length p_bone_radius due to calls to limit_length()
+	Vector3 bone_axis = p_current - p_current_origin;
+	DEV_ASSERT(Math::is_equal_approx(bone_axis.length(), p_bone_length));
 	float taper_side = Math::sqrt(1.0 - taper_fore * taper_fore);
 	float bone_axis_sq = bone_axis.dot(bone_axis);
 	float lam = 1.0 - bone_axis.dot(diff) / bone_axis_sq;  // calculated from the tail end
@@ -282,8 +283,8 @@ Vector3 SpringBoneCollision3D::_collide_sphere_taper(const Vector3 &p_origin, fl
 	}
 	//printf(" hh=%f; ", distance); 
 
-	// We could model a rotation of the bone_axis about p_current_origin to move the (coneaxispoint, coneaxisradius) sphere 
-	// away from its intersection with (p_origin, p_radius) [not quite accurate since as it rotates the lamcone position 	
+	// We could model a rotation of the bone_axis about p_current_origin to move the (coneaxispoint, coneaxisradius) sphere
+	// away from its intersection with (p_origin, p_radius) [not quite accurate since as it rotates the lamcone position
 	// of the virtual sphere inside the cone changes].
 	// But instead we will just project it as a simple lever and rely on limit_length() and the iteration to settle it into the correct place.
 

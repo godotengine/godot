@@ -105,21 +105,49 @@ void SpringBoneCollisionCapsule3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collide_mode", PROPERTY_HINT_ENUM, "Joint,Inside,Chain"), "set_collide_mode", "get_collide_mode");
 }
 
+// The SpringBoneCollisionCapsule3D::_collide() function is to find the deepest point of 
+// collision between two capsule shaped components, a conical springbone and a cylindrical capsule collider.
+// The first step is to select the sphere within the capsule collider that makes the deepest collision to the conical springbone.
+// Then we call _collide_sphere_taper() to collide this subset shape of the collider with the conical springbone.
+
+// In the first step we need to find a mu between 0 and 1 that minimizes verify_distance_within_taper(lerp(head,tail,mu)).
+
+// function to verify calculations
+real_t verify_distance_within_taper(const Vector3 &p_origin, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
+	// (p_origin) defines the external collider 
+	// The bone capsule is from (p_current_origin, p_bone_origin_radius) to (p_current, p_bone_radius)
+	real_t taper_fore = (p_bone_origin_radius - p_bone_radius) / p_bone_length;
+	Vector3 diff = p_current - p_origin;
+	Vector3 bone_axis = p_current - p_current_origin;  // should be length p_bone_radius due to calls to limit_length()
+	DEV_ASSERT(Math::is_equal_approx(bone_axis.length(), p_bone_length));
+	real_t taper_side = Math::sqrt(1.0 - taper_fore * taper_fore);
+	real_t lam = 1.0 - bone_axis.dot(diff) / (p_bone_length * p_bone_length);
+	Vector3 vecside = p_origin - (p_current_origin + bone_axis * lam);
+	real_t radial_distance = vecside.length();
+	real_t bone_axis_length = p_bone_length;
+
+	real_t lamd = radial_distance * taper_fore / taper_side / bone_axis_length;
+	real_t lamcone = lam - lamd;
+	real_t clamcone = MIN(MAX(lamcone, 0.0), 1.0);
+	Vector3 closest_cone_axis_point = p_current_origin + bone_axis * clamcone;
+	return (p_origin - closest_cone_axis_point).length();
+}
+
 Vector3 closest_capsule_sphere(const Vector3 &head, const Vector3 &tail, const Vector3 &bone_sphere_center) {
 	Vector3 p = tail - head;
 	Vector3 q = bone_sphere_center - head;
-	float dot = p.dot(q);
+	real_t dot = p.dot(q);
 	if (dot <= 0) {
 		return head;
 	}
-	float pls = p.length_squared();
+	real_t pls = p.length_squared();
 	if ((pls <= dot) || Math::is_zero_approx(pls)) {
 		return tail;
 	}
 	return head + p * (dot / pls);
 }
 
-bool closest_capsule_sphere_to_taper(Vector3 &capsule_sphere_center, const Vector3 &head, const Vector3 &tail, float radius, const Vector3 &p_bone_little_end, float p_bone_little_end_radius, const Vector3 &p_bone_big_end, float p_bone_big_end_radius, float p_bone_length) {
+real_t closest_capsule_sphere_to_taper(const Vector3 &head, const Vector3 &tail, float radius, const Vector3 &p_bone_little_end, float p_bone_little_end_radius, const Vector3 &p_bone_big_end, float p_bone_big_end_radius, float p_bone_length) {
 	// The collision capsule is (head, tail), radius.
 	// The tapered bone capsule is from (p_bone_little_end, p_bone_little_end_radius) to (p_bone_big_end, p_bone_big_end_radius).
 	DEV_ASSERT(p_bone_little_end_radius <= p_bone_big_end_radius);
@@ -133,14 +161,13 @@ bool closest_capsule_sphere_to_taper(Vector3 &capsule_sphere_center, const Vecto
 	Vector3 perp = bone_axis.cross(p);
 	real_t perp_len = perp.length();
 	if (Math::is_zero_approx(perp_len)) {
-		capsule_sphere_center = head;
-		return true;
+		return 1.0;
 	}
 	real_t perp_bone = perp.dot(p_bone_little_end);
 	real_t perp_capsule = perp.dot(head);
 	real_t perp_dist = (perp_capsule - perp_bone) / perp_len;
 	if (Math::abs(perp_dist) > radius + p_bone_big_end_radius) {
-		return false;
+		return -1.0;
 	}
 
 	// Calculate the points of closest approach between these two skew lines
@@ -176,10 +203,9 @@ bool closest_capsule_sphere_to_taper(Vector3 &capsule_sphere_center, const Vecto
 	// handle cylinder case
 	if (p_bone_little_end_radius == p_bone_big_end_radius) {
 		if ((mu < 0.0) || (mu > 1.0)) {
-			return false;
+			return -1.0;
 		}
-		capsule_sphere_center = head + p * mu;
-		return true;
+		return mu;
 	}
 	real_t cone_slope = p_bone_length / (p_bone_big_end_radius - p_bone_little_end_radius);
 
@@ -220,7 +246,7 @@ bool closest_capsule_sphere_to_taper(Vector3 &capsule_sphere_center, const Vecto
 	real_t xsq = ccsq * perp_dist_sq / (1.0 - ccsq);
 	if (xsq < 0.0) {
 		printf(" %.2f xsq<0\n", xsq);
-		return false;
+		return -1.0;
 	}
 	real_t tangent_axis_distance = Math::sqrt(perp_dist_sq + xsq);
 
@@ -239,10 +265,9 @@ bool closest_capsule_sphere_to_taper(Vector3 &capsule_sphere_center, const Vecto
 
 	printf("\n");
 	if ((mu2 >= 0.0) and (mu2 < 1.0)) {
-		capsule_sphere_center = head + p * mu2;
-		return true;
+		return mu2;
 	}
-	return false;
+	return -1.0;
 }
 
 Vector3 SpringBoneCollisionCapsule3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
@@ -250,24 +275,40 @@ Vector3 SpringBoneCollisionCapsule3D::_collide(const Transform3D &p_center, floa
 	Pair<Vector3, Vector3> head_tail = get_head_and_tail(p_center);
 	Vector3 head = head_tail.first;
 	Vector3 tail = head_tail.second;
-	if (collide_mode == COLLIDE_MODE_CHAIN) {
-		// Pick sphere in collider capsule that best collides with the tapered bone.
 
-// ** this is still incomplete as it's not taking account of the ends of the tapered bone yet
-// ** But it does work for non-tapered bone chains
+	// dispose of the non-capsule bone chains (the capsule collider just hits each bone node).
+	if (collide_mode != COLLIDE_MODE_CHAIN) {
+		// Pick sphere in collider capsule that best collides with the bone end point (the joint).
+		Vector3 capsule_sphere_center = closest_capsule_sphere(head, tail, p_current);
+		return _collide_sphere(capsule_sphere_center, radius, (collide_mode == COLLIDE_MODE_INSIDE), p_bone_radius, p_current);
+	}
 
-		Vector3 capsule_sphere_center;
-		bool collision_detected;
-		if (p_bone_origin_radius <= p_bone_radius) {
-			collision_detected = closest_capsule_sphere_to_taper(capsule_sphere_center, head, tail, radius, p_current_origin, p_bone_origin_radius, p_current, p_bone_radius, p_bone_length);
-		} else {
-			collision_detected = closest_capsule_sphere_to_taper(capsule_sphere_center, head, tail, radius, p_current, p_bone_radius, p_current_origin, p_bone_origin_radius, p_bone_length);
-		}
-		if (collision_detected)
-			return _collide_sphere_taper(capsule_sphere_center, radius, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+	real_t capsule_mu;
+	if (p_bone_origin_radius <= p_bone_radius) {
+		capsule_mu = closest_capsule_sphere_to_taper(head, tail, radius, p_current_origin, p_bone_origin_radius, p_current, p_bone_radius, p_bone_length);
+	} else {
+		capsule_mu = closest_capsule_sphere_to_taper(head, tail, radius, p_current, p_bone_radius, p_current_origin, p_bone_origin_radius, p_bone_length);
+	}
+	if (capsule_mu == -1.0) {
 		return p_current;
 	}
-	// Pick sphere in collider capsule that best collides with the bone end point (the joint).
-	Vector3 capsule_sphere_center = closest_capsule_sphere(head, tail, p_current);
-	return _collide_sphere(capsule_sphere_center, radius, (collide_mode == COLLIDE_MODE_INSIDE), p_bone_radius, p_current);
+
+	Vector3 capsule_sphere_center = head * (1.0 - capsule_mu) + tail * capsule_mu;
+
+	// Numerically test deepest collision claim
+	real_t Dvdist = verify_distance_within_taper(capsule_sphere_center, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+	real_t mulo = MAX(capsule_mu - 0.1, 0.0);
+	Vector3 caplo = head * (1.0 - mulo) + tail * mulo;
+	real_t muhi = MIN(capsule_mu + 0.1, 1.0);
+	Vector3 caphi = head * (1.0 - muhi) + tail * muhi;
+	real_t Dvdistlo = verify_distance_within_taper(caplo, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+	real_t Dvdisthi = verify_distance_within_taper(caphi, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+	if (Dvdistlo < Dvdist - 0.001) {
+		printf("Non-minimal mu=%.2f  %.3f < %.3f lo\n", capsule_mu, Dvdistlo, Dvdist);
+	}
+	if (Dvdisthi < Dvdist - 0.001) {
+		printf("Non-minimal mu=%.2f  %.3f < %.3f hi\n", capsule_mu, Dvdisthi, Dvdist);
+	}
+
+	return _collide_sphere_taper(capsule_sphere_center, radius, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 }
