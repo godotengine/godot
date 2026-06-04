@@ -25,7 +25,7 @@ args = parser.parse_args()
 # Base Godot dependencies path
 # If cross-compiling (no LOCALAPPDATA), we install in `bin`
 deps_folder = os.getenv("LOCALAPPDATA")
-if deps_folder:
+if deps_folder and not os.getenv("MSYSTEM"):
     deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
 else:
     deps_folder = os.path.join("bin", "build_deps")
