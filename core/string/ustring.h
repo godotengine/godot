@@ -755,6 +755,9 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 #define TTRGET(m_value) (m_value)
 #endif
 
+// Use for simple plural messages, i.e. with no counter in the message.
+#define TPL(m_count, m_singular, m_plural) ((m_count == 1) ? (m_singular) : (m_plural))
+
 // Use this to mark property names for editor translation.
 // Often for dynamic properties defined in _get_property_list().
 // Property names defined directly inside EDITOR_DEF, GLOBAL_DEF, and ADD_PROPERTY macros don't need this.
