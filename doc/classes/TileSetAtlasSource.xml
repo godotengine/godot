@@ -52,7 +52,8 @@
 		<method name="get_runtime_texture" qualifiers="const">
 			<return type="Texture2D" />
 			<description>
-				If [member use_texture_padding] is [code]false[/code], returns [member texture]. Otherwise, returns an internal [ImageTexture] created that includes the padding.
+				If [member use_texture_padding] is [code]false[/code], returns [member texture]. Otherwise, returns an internal [CanvasTexture] created with one pixel of padding around each tile.
+				The padded texture is generated asynchronously after the [TileSetAtlasSource] resource is modified. Until the update runs, this method may return [code]null[/code] or the previous padded texture.
 			</description>
 		</method>
 		<method name="get_runtime_tile_texture_region" qualifiers="const">
