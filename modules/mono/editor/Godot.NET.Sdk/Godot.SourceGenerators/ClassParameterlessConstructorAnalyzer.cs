@@ -105,4 +105,3 @@ namespace Godot.SourceGenerators
         }
     }
 }
-

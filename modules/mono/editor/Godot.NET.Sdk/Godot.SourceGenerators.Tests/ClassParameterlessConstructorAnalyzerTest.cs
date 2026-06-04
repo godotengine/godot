@@ -18,4 +18,3 @@ public class ClassParameterlessConstructorTest
             .Verify("ClassParameterlessConstructor.GD0004.cs", "ClassParameterlessConstructor.GD0004.fixed.cs");
     }
 }
-
