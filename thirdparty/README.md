@@ -667,13 +667,17 @@ See `linuxbsd_headers/README.md`.
 ## manifold
 
 - Upstream: https://github.com/elalish/manifold
-- Version: 3.3.2 (798d83c8d7fabcddd23c1617097b95ba40f2597c, 2025)
+- Version: 3.5.2 (11235e6b8ebea2dbed8aec4285685aafd3d95667, 2026)
 - License: Apache 2.0
 
 File extracted from upstream source:
 
-- `src/` and `include/`, except from `CMakeLists.txt`, `cross_section.h` and `meshIO.{cpp,h}`
+- `src/` and `include/`, except from `CMakeLists.txt`, `cross_section.h`
 - `AUTHORS`, `LICENSE`
+
+Patches:
+
+- `0001-missing-include.patch` ([GH-120018](https://github.com/godotengine/godot/pull/120018))
 
 
 ## mbedtls
