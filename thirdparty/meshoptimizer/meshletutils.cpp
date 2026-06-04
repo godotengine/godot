@@ -491,7 +491,7 @@ void meshopt_optimizeMeshletLevel(unsigned int* meshlet_vertices, size_t vertex_
 				// if subsequent triangles don't share edges ca or bc, we can rotate the triangle to fix this
 				bool needab = false, needbc = false, needca = false;
 
-				for (size_t j = i + 1; j < triangle_count && j <= i + 3; ++j)
+				for (size_t j = i + 1; j < triangle_count && j <= i + cache_cutoff; ++j)
 				{
 					unsigned char oa = indices[j * 3 + 0], ob = indices[j * 3 + 1], oc = indices[j * 3 + 2];
 
@@ -510,6 +510,12 @@ void meshopt_optimizeMeshletLevel(unsigned int* meshlet_vertices, size_t vertex_
 				else if (needab && !needca)
 				{
 					// abc -> cab
+					unsigned char t = c;
+					c = b, b = a, a = t;
+				}
+				else if (!needab && needbc && !needca)
+				{
+					// abc -> cab: put bc at most recent FIFO position
 					unsigned char t = c;
 					c = b, b = a, a = t;
 				}
