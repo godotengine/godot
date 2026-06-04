@@ -6155,7 +6155,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		}
 	}
 
-	String title = TTRN("Can't drop the file...", "Can't drop the files...", files.size());
+	String title = TPL(files.size(), TTR("Can't drop the file..."), TTR("Can't drop the files..."));
 	if (!error_message.is_empty()) {
 		_show_tooltip(title, error_message);
 		return false;
@@ -6177,18 +6177,9 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	preview_node->hide();
 
 	String desc = "[ul]" +
-			TTRN("[b]Default:[/b] Add as sibling of selected node (except when root is selected).",
-					"[b]Default:[/b] Add as siblings of selected node (except when root is selected).",
-					files.size()) +
-			"\n" +
-			TTRN("[b]Hold Shift:[/b] Add as child of selected node.",
-					"[b]Hold Shift:[/b] Add as children of selected node.",
-					files.size()) +
-			"\n" +
-			vformat(TTRN("[b]Hold %s:[/b] Add as child of root node.",
-							"[b]Hold %s:[/b] Add as children of root node.",
-							files.size()),
-					keycode_get_string((Key)KeyModifierMask::ALT));
+			TPL(files.size(), TTR("[b]Default:[/b] Add as sibling of selected node (except when root is selected)."), TTR("[b]Default:[/b] Add as siblings of selected node (except when root is selected).")) + "\n" +
+			TPL(files.size(), TTR("[b]Hold Shift:[/b] Add as child of selected node."), TTR("[b]Hold Shift:[/b] Add as children of selected node.")) + "\n" +
+			vformat(TPL(files.size(), TTR("[b]Hold %s:[/b] Add as child of root node."), TTR("[b]Hold %s:[/b] Add as children of root node.")), keycode_get_string((Key)KeyModifierMask::ALT));
 
 	if (files.size() > 1) {
 		title = TTR("Dropping multiple files...");
