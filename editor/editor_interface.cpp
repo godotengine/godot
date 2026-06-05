@@ -50,6 +50,7 @@
 #include "editor/inspector/property_selector.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/scene_tree_editor.h"
 #include "editor/settings/editor_command_palette.h"
