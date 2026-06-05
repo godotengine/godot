@@ -39,7 +39,6 @@ class EditorSpinSlider;
 class HBoxContainer;
 class MenuButton;
 class ConfirmationDialog;
-class VSeparator;
 
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
@@ -125,7 +124,6 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *curve_del = nullptr;
 	Button *curve_closed = nullptr;
 	Button *curve_auto_tangent_mode = nullptr;
-	VSeparator *v_separator = nullptr;
 	EditorSpinSlider *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
 

@@ -1005,8 +1005,7 @@ Path2DEditor::Path2DEditor() {
 	toolbar->add_child(auto_tangent_torsion);
 	auto_tangent_torsion->set_value(0.5);
 
-	v_separator = memnew(VSeparator);
-	toolbar->add_child(v_separator);
+	toolbar->add_child(memnew(VSeparator));
 
 	curve_close = memnew(Button);
 	curve_close->set_theme_type_variation(SceneStringName(FlatButton));

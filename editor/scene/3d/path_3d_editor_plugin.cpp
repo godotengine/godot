@@ -1177,8 +1177,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	toolbar->add_child(auto_tangent_torsion);
 	auto_tangent_torsion->set_value(0.5);
 
-	v_separator = memnew(VSeparator);
-	toolbar->add_child(v_separator);
+	toolbar->add_child(memnew(VSeparator));
 
 	curve_closed = memnew(Button);
 	curve_closed->set_theme_type_variation(SceneStringName(FlatButton));

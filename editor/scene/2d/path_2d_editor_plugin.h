@@ -38,7 +38,6 @@ class CanvasItemEditor;
 class ConfirmationDialog;
 class MenuButton;
 class EditorSpinSlider;
-class VSeparator;
 
 class Path2DEditor : public HBoxContainer {
 	GDCLASS(Path2DEditor, HBoxContainer);
@@ -67,7 +66,6 @@ class Path2DEditor : public HBoxContainer {
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
 	Button *curve_auto_tangent_toggle = nullptr;
-	VSeparator *v_separator = nullptr;
 	EditorSpinSlider *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
 
