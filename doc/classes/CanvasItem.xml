@@ -669,7 +669,8 @@
 			The color applied to this [CanvasItem]. This property does affect child [CanvasItem]s, unlike [member self_modulate] which only affects the node itself.
 		</member>
 		<member name="oversampling_with_scale" type="int" setter="set_oversampling_with_scale" getter="get_oversampling_with_scale" enum="CanvasItem.OversamplingWithScale" default="0">
-			If enabled, oversampling for this [CanvasItem] is automatically adjusted with scale.
+			If enabled, oversampling for this [CanvasItem] is automatically adjusted with scale. This makes fonts and [DPITexture] images automatically re-render to match the actual scale they are drawn at, for crisper visuals. This has a performance impact on the CPU every time the node's scale changes, so it is disabled by default.
+			[b]Note:[/b] For [Control] nodes with [member Control.offset_transform_enabled] set to [code]true[/code], scale-based oversampling is only effective if [member Control.offset_transform_visual_only] is [code]false[/code]. This ensures there is no performance overhead when using visual-only offset transforms (as often used in animations).
 		</member>
 		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate" default="Color(1, 1, 1, 1)">
 			The color applied to this [CanvasItem]. This property does [b]not[/b] affect child [CanvasItem]s, unlike [member modulate] which affects both the node itself and its children.
