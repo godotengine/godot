@@ -113,6 +113,8 @@ RDD::BufferID RenderingDeviceDriverMetal::buffer_create(uint64_t p_size, BitFiel
 				options = base_hazard_tracking | MTL::ResourceStorageModePrivate;
 			}
 			break;
+		case MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE:
+			ERR_FAIL_V_MSG(RDD::BufferID(), "GPU mappable buffers are not implemented on Metal yet.");
 	}
 
 	MTL::Buffer *obj = device->newBuffer(p_size, options);
