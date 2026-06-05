@@ -98,7 +98,6 @@ private:
 			float bias_scale = 0.0;
 			float shadow_texel_size = 0.0;
 			float range_begin = 0.0;
-			Rect2 allocated_atlas_rect;
 			Rect2 atlas_rect;
 			Rect2 norm_draw_rect;
 			Vector2 uv_scale;
@@ -739,16 +738,6 @@ public:
 	_FORCE_INLINE_ Vector2 light_instance_get_shadow_uv_scale(RID p_light_instance, int p_index) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->shadow_transform[p_index].uv_scale;
-	}
-	
-	_FORCE_INLINE_ void light_instance_set_directional_shadow_atlas_allocated_rect(RID p_light_instance, int p_index, const Rect2& p_allocated_atlas_rect) {
-		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		li->shadow_transform[p_index].allocated_atlas_rect = p_allocated_atlas_rect;
-	}
-	
-	_FORCE_INLINE_ Rect2 light_instance_get_directional_shadow_atlas_allocated_rect(RID p_light_instance, int p_index) {
-		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->shadow_transform[p_index].allocated_atlas_rect;
 	}
 
 	_FORCE_INLINE_ void light_instance_set_directional_shadow_atlas_rect(RID p_light_instance, int p_index, const Rect2& p_atlas_rect) {
