@@ -141,6 +141,13 @@
 				Sets the quality for the motion blur effect. See also [member ProjectSettings.rendering/camera/motion_blur/motion_blur_quality].
 			</description>
 		</method>
+		<method name="camera_attributes_set_motion_blur_show_in_editor">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], and motion blur is enabled,, it will be be applied in the editor scene view as well. When [code]false[/code], the motion blur will only be applied at runtime. See also [member EditorSettings.editors/3d/viewport_visuals/show_motion_blur_in_editor]
+			</description>
+		</method>
 		<method name="camera_attributes_set_motion_blur_tile_size">
 			<return type="void" />
 			<param index="0" name="tile_size" type="int" enum="RenderingServer.MotionBlurTileSize" />
