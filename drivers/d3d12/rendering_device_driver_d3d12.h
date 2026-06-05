@@ -51,6 +51,7 @@ namespace D3D12MA {
 class Allocation;
 class Allocator;
 class VirtualBlock;
+class Pool;
 }; // namespace D3D12MA
 
 struct IDXGIAdapter;
@@ -103,6 +104,8 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 
 	struct MiscFeaturesSupport {
 		bool depth_bounds_supported = false;
+		bool uma_supported = false;
+		bool gpu_upload_heap_supported = false;
 	};
 
 	struct SamplerCapabilities {
@@ -199,6 +202,7 @@ private:
 	/****************/
 
 	Microsoft::WRL::ComPtr<D3D12MA::Allocator> allocator;
+	Microsoft::WRL::ComPtr<D3D12MA::Pool> uma_gpu_mappable_pool;
 
 	/******************/
 	/**** RESOURCE ****/

@@ -185,10 +185,13 @@ private:
 		RDD::BufferID driver_id;
 		uint32_t size = 0;
 		BitField<RDD::BufferUsageBits> usage = {};
+		RDD::MemoryAllocationType alloc_type = {};
 		RDG::ResourceTracker *draw_tracker = nullptr;
 		int32_t transfer_worker_index = -1;
 		uint64_t transfer_worker_operation = 0;
 	};
+
+	RDD::MemoryAllocationType _get_buffer_alloc_type(bool p_has_initial_data, Thread::ID p_thread_id) const;
 
 	Buffer *_get_buffer_from_owner(RID p_buffer);
 	Error _buffer_initialize(Buffer *p_buffer, Span<uint8_t> p_data, uint32_t p_required_align = 32);
