@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <!-- Godot package versions for .NET SDK -->
+    <PackageVersion_GodotSharp>4.6.0</PackageVersion_GodotSharp>
+    <PackageVersion_GodotSharpEditor>4.6.0</PackageVersion_GodotSharpEditor>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <!--
+      This project only exists to resolve and fetch the WASM Mono runtime pack.
+      We don't want it to build as a regular app.
+    -->
+    <UseMonoRuntime>true</UseMonoRuntime>
+    <SelfContained>true</SelfContained>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Threading: default to false -->
+    <WasmEnableThreads Condition=" '$(WasmEnableThreads)' == '' ">false</WasmEnableThreads>
+    <WasmEnableExceptionHandling>true</WasmEnableExceptionHandling>
+    <WasmEnableSIMD>true</WasmEnableSIMD>
+    <!-- Don't try to publish for the host platform, we only need the target -->
+    <SelfContained>false</SelfContained>
+  </PropertyGroup>
+
+  <!-- Directly locate the Mono WASM runtime pack in the dotnet packs directory -->
+  <Target Name="WriteRuntimePackDir" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <MonoRuntimePackDir Condition="Exists('$(DotNetRoot)packs\Microsoft.NETCore.App.Runtime.Mono.browser-wasm\$(NETCoreSdkVersion)')">$(DotNetRoot)packs\Microsoft.NETCore.App.Runtime.Mono.browser-wasm\$(NETCoreSdkVersion)</MonoRuntimePackDir>
+      <MonoRuntimePackDir Condition=" '$(MonoRuntimePackDir)' == '' And Exists('C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Runtime.Mono.browser-wasm\9.0.16') ">C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Runtime.Mono.browser-wasm\9.0.16</MonoRuntimePackDir>
+    </PropertyGroup>
+    <Error Condition=" '$(MonoRuntimePackDir)' == '' " Text="Could not find Mono browser-wasm runtime pack. Looked in $(DotNetRoot)packs\Microsoft.NETCore.App.Runtime.Mono.browser-wasm\$(NETCoreSdkVersion) and C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Runtime.Mono.browser-wasm\9.0.16" />
+    <Message Importance="High" Text="Mono runtime pack found at: $(MonoRuntimePackDir)"/>
+    <MakeDir Directories="bin\$(RuntimeIdentifier)" />
+    <WriteLinesToFile Overwrite="true" File="bin\$(RuntimeIdentifier)\runtime-pack-dir.txt" Lines="$(MonoRuntimePackDir)" />
+  </Target>
+</Project>

@@ -179,7 +179,7 @@ namespace GodotTools.Export
             if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
-            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
+            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.Web }
                     .Contains(platform))
             {
                 throw new NotImplementedException("Target platform not yet implemented.");
@@ -192,9 +192,14 @@ namespace GodotTools.Export
                 IncludeDebugSymbols = (bool)GetOption("dotnet/include_debug_symbols"),
                 RidOS = DetermineRuntimeIdentifierOS(platform, useAndroidLinuxBionic),
                 Archs = [],
-                UseTempDir = platform != OS.Platforms.iOS, // xcode project links directly to files in the publish dir, so use one that sticks around.
+                UseTempDir = platform != OS.Platforms.iOS,
                 BundleOutputs = true,
             };
+
+            if (features.Contains("wasm32"))
+            {
+                publishConfig.Archs.Add("wasm32");
+            }
 
             if (features.Contains("x86_64"))
             {
@@ -242,7 +247,7 @@ namespace GodotTools.Export
 
             List<string> outputPaths = new();
 
-            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android) && platform != OS.Platforms.MacOS;
+            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android || platform == OS.Platforms.Web) && platform != OS.Platforms.MacOS;
 
             var exportedJars = new HashSet<string>();
 

@@ -89,6 +89,7 @@ def get_flags():
         # run-time performance.
         # Note that this overrides the "auto" behavior for target/dev_build.
         "optimize": "size",
+        "supported": ["mono"],
     }
 
 
