@@ -130,6 +130,9 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
+			if (compat_projects.size() > 0) {
+				_apply_compat_tags();
+			}
 			_dim_window();
 		} break;
 
@@ -297,6 +300,11 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			open_btn_container->add_theme_constant_override("separation", 0);
 			open_options_popup->set_item_icon(0, get_editor_theme_icon("Notification"));
 			open_options_popup->set_item_icon(1, get_editor_theme_icon("NodeWarning"));
+
+			//prettify create tag button
+			create_tag_btn->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+			create_tag_btn->set_custom_maximum_size(Vector2(24, 24) * EDSCALE);
+			create_tag_btn->set_v_size_flags(SIZE_SHRINK_CENTER);
 		}
 
 		// Dialogs.
@@ -437,7 +445,7 @@ void ProjectManager::_project_list_menu_option(int p_option) {
 			break;
 
 		case ProjectList::MENU_MANAGE_TAGS:
-			_manage_project_tags();
+			manage_project_tags();
 			break;
 
 		case ProjectList::MENU_DUPLICATE:
@@ -601,10 +609,13 @@ void ProjectManager::_open_selected_projects() {
 		}
 	}
 
-	project_list->project_opening_initiated = true;
+	if (compat_projects.size() > 0) {
+		_apply_compat_tags(true);
+	} else {
+		project_list->project_opening_initiated = true;
 
-	_dim_window();
-	get_tree()->quit();
+		get_tree()->quit();
+	}
 }
 
 void ProjectManager::_open_selected_projects_check_warnings() {
@@ -1001,7 +1012,7 @@ LineEdit *ProjectManager::get_search_box() {
 
 // Project tag management.
 
-void ProjectManager::_manage_project_tags() {
+void ProjectManager::manage_project_tags() {
 	for (int i = 0; i < project_tags->get_child_count(); i++) {
 		project_tags->get_child(i)->queue_free();
 	}
@@ -1009,9 +1020,9 @@ void ProjectManager::_manage_project_tags() {
 	const ProjectList::Item item = project_list->get_selected_projects()[0];
 	current_project_tags = item.tags;
 	for (const String &tag : current_project_tags) {
-		ProjectTag *tag_control = memnew(ProjectTag(tag, true));
+		ProjectTag *tag_control = memnew(ProjectTag(tag));
 		project_tags->add_child(tag_control);
-		tag_control->connect_button_to(callable_mp(this, &ProjectManager::_delete_project_tag).bind(tag));
+		tag_control->connect_add_remove_button_to(callable_mp(this, &ProjectManager::_delete_project_tag).bind(tag));
 	}
 
 	tag_edit_error->hide();
@@ -1024,9 +1035,29 @@ void ProjectManager::_add_project_tag(const String &p_tag) {
 	}
 	current_project_tags.append(p_tag);
 
-	ProjectTag *tag_control = memnew(ProjectTag(p_tag, true));
+	ProjectTag *tag_control = memnew(ProjectTag(p_tag));
 	project_tags->add_child(tag_control);
-	tag_control->connect_button_to(callable_mp(this, &ProjectManager::_delete_project_tag).bind(p_tag));
+	tag_control->connect_add_remove_button_to(callable_mp(this, &ProjectManager::remove_project_tag).bind(p_tag));
+}
+
+void ProjectManager::remove_project_tag(const String &p_tag) {
+	const ProjectList::Item item = project_list->get_selected_projects()[0];
+	const String project_godot = item.path.path_join("project.godot");
+
+	// So tags aren't removed from an invalid project.
+	if (!FileAccess::exists(project_godot)) {
+		_show_error(vformat(TTR("Couldn't load project at\n%s.\nIt may be missing."), project_godot));
+		error_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_on_projects_updated));
+		return;
+	}
+
+	current_project_tags = item.tags;
+	current_project_tags.erase(p_tag);
+	ProjectTag *tag_control = item.control->get_tag_control(p_tag);
+	if (tag_control && tag_control->get_tag() == p_tag) {
+		memdelete(tag_control);
+		_apply_project_tags(true);
+	}
 }
 
 void ProjectManager::_delete_project_tag(const String &p_tag) {
@@ -1040,38 +1071,91 @@ void ProjectManager::_delete_project_tag(const String &p_tag) {
 	}
 }
 
-void ProjectManager::_apply_project_tags() {
+void ProjectManager::_apply_project_tags(bool p_is_list) {
+	const ProjectList::Item item = project_list->get_selected_projects()[0];
+	const String project_godot = item.path.path_join("project.godot");
 	PackedStringArray tags;
-	for (int i = 0; i < project_tags->get_child_count(); i++) {
-		ProjectTag *tag_control = Object::cast_to<ProjectTag>(project_tags->get_child(i));
-		if (tag_control) {
-			tags.append(tag_control->get_tag());
-		}
+
+	if (!FileAccess::exists(project_godot)) {
+		_show_error(vformat(TTR("Couldn't load project at\n%s.\nIt may be missing."), project_godot));
+		error_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_on_projects_updated));
+		return;
 	}
 
-	const String project_godot = project_list->get_selected_projects()[0].path.path_join("project.godot");
-	ProjectSettings *cfg = memnew(ProjectSettings(project_godot));
-	if (!cfg->is_project_loaded()) {
-		memdelete(cfg);
-		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s'. It may be missing or corrupted."), project_godot));
-		tag_edit_error->show();
-		callable_mp((Window *)tag_manage_dialog, &Window::show).call_deferred(); // Make sure the dialog does not disappear.
-		return;
-	} else {
-		tags.sort();
-		cfg->set("application/config/tags", tags);
-		Error err = cfg->save_custom(project_godot);
-		memdelete(cfg);
-
-		if (err != OK) {
-			tag_edit_error->set_text(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err));
-			tag_edit_error->show();
-			callable_mp((Window *)tag_manage_dialog, &Window::show).call_deferred();
-			return;
+	if (p_is_list) {
+		for (const String &tag : item.tags) {
+			ProjectTag *tag_control = item.control->get_tag_control(tag);
+			if (tag_control) {
+				tags.append(tag_control->get_tag());
+			}
 		}
+	} else {
+		for (int i = 0; i < project_tags->get_child_count(); i++) {
+			ProjectTag *tag_control = Object::cast_to<ProjectTag>(project_tags->get_child(i));
+			if (tag_control) {
+				tags.append(tag_control->get_tag());
+			}
+		}
+	}
+	tags.sort();
+	const String tag_config_path = item.path.path_join(".tags");
+	ConfigFile tag_config;
+
+	// in case of accidental deletion
+	if (!FileAccess::exists(tag_config_path)) {
+		tag_config.save(tag_config_path);
+	}
+	tag_config.load(tag_config_path);
+	tag_config.set_value(item.project_name, "tags", tags);
+	tag_config.save(tag_config_path);
+
+	if (!compat_projects.has(item)) {
+		compat_projects.append(item);
 	}
 
 	_on_projects_updated();
+}
+
+void ProjectManager::_apply_compat_tags(bool p_is_project_open_request) {
+	get_tree()->set_auto_accept_quit(false);
+	error_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_quit_tree).bind(p_is_project_open_request));
+	error_dialog->connect("canceled", callable_mp(this, &ProjectManager::_quit_tree).bind(p_is_project_open_request));
+
+	ConfigFile tag_config;
+	for (const ProjectList::Item &cp : compat_projects) {
+		if (!cp.missing) {
+			const String tag_config_path = cp.path.path_join(".tags");
+			if (!FileAccess::exists(tag_config_path)) {
+				_show_error(vformat(TTR("Couldn't load .tags file at\n'%s'.\nIt may be missing."), cp.path));
+				return;
+			}
+			tag_config.load(tag_config_path);
+			PackedStringArray tags = tag_config.get_value(cp.project_name, "tags", PackedStringArray());
+
+			const String project_godot = cp.path.path_join("project.godot");
+			ProjectSettings *cfg = memnew(ProjectSettings(project_godot));
+			if (!cfg->is_project_loaded()) {
+				memdelete(cfg);
+				_show_error(vformat(TTR("Couldn't load project at\n'%s'.\nIt may be missing."), project_godot));
+				return;
+			} else {
+				tags.sort();
+				cfg->set("application/config/tags", tags);
+				Error err = cfg->save_custom(project_godot);
+				memdelete(cfg);
+
+				if (err != OK) {
+					_show_error(vformat(TTR("Couldn't save project at\n'%s'\n(error %d)."), project_godot, err));
+					return;
+				}
+			}
+		}
+	}
+	if (p_is_project_open_request) {
+		project_list->project_opening_initiated = true;
+	}
+
+	get_tree()->quit();
 }
 
 void ProjectManager::_set_new_tag_name(const String p_name) {
@@ -1127,10 +1211,11 @@ void ProjectManager::_create_new_tag() {
 void ProjectManager::add_new_tag(const String &p_tag) {
 	if (!tag_set.has(p_tag)) {
 		tag_set.insert(p_tag);
-		ProjectTag *tag_control = memnew(ProjectTag(p_tag));
+		ProjectTag *tag_control = memnew(ProjectTag(p_tag, true));
 		all_tags->add_child(tag_control);
 		all_tags->move_child(tag_control, -2);
 		tag_control->connect_button_to(callable_mp(this, &ProjectManager::_add_project_tag).bind(p_tag));
+		tag_control->connect_add_remove_button_to(callable_mp(this, &ProjectManager::_add_project_tag).bind(p_tag));
 	}
 }
 
@@ -1223,7 +1308,11 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 #ifndef MACOS_ENABLED
 		if (k->get_keycode_with_modifiers() == (KeyModifierMask::META | Key::Q)) {
 			_dim_window();
-			get_tree()->quit();
+			if (compat_projects.size() > 0) {
+				_apply_compat_tags();
+			} else {
+				get_tree()->quit();
+			}
 		}
 #endif
 
@@ -1314,6 +1403,14 @@ void ProjectManager::_titlebar_resized() {
 	if (title_bar) {
 		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
 	}
+}
+
+void ProjectManager::_quit_tree(bool p_is_project_open_request) {
+	if (p_is_project_open_request) {
+		project_list->project_opening_initiated = true;
+	}
+
+	get_tree()->quit();
 }
 
 void ProjectManager::_open_donate_page() {
@@ -1867,8 +1964,8 @@ ProjectManager::ProjectManager() {
 		tag_manage_dialog = memnew(ConfirmationDialog);
 		add_child(tag_manage_dialog);
 		tag_manage_dialog->set_title(TTRC("Manage Project Tags"));
-		tag_manage_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_apply_project_tags));
-		manage_tags_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_manage_project_tags));
+		tag_manage_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_apply_project_tags).bind(false));
+		manage_tags_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::manage_project_tags));
 
 		VBoxContainer *tag_vb = memnew(VBoxContainer);
 		tag_manage_dialog->add_child(tag_vb);

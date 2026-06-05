@@ -35,13 +35,17 @@
 #include "scene/gui/color_rect.h"
 
 void ProjectTag::_notification(int p_what) {
-	if (display_close && p_what == NOTIFICATION_THEME_CHANGED) {
-		button->set_button_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
+	// Needed to get the correct icons in ProjectList and Manage Project Tags dialog on Project Manager Startup.
+	if (is_add_button && p_what == NOTIFICATION_THEME_CHANGED) {
+		add_remove_tag->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+	}
+	if (!is_add_button && p_what == NOTIFICATION_THEME_CHANGED) {
+		add_remove_tag->set_button_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
 	}
 	// HACK: Can't be set in constructor because `get_size()` would return empty.
 	// This logic should be migrated once `Button` utilizes internal labels.
 	if (p_what == NOTIFICATION_READY) {
-		button->set_custom_minimum_size(get_size());
+		button->set_custom_minimum_size(button->get_size());
 		button->set_text_overrun_behavior(TextServer::OverrunBehavior::OVERRUN_TRIM_ELLIPSIS);
 	}
 }
@@ -50,15 +54,24 @@ void ProjectTag::connect_button_to(const Callable &p_callable) {
 	button->connect(SceneStringName(pressed), p_callable, CONNECT_DEFERRED);
 }
 
+void ProjectTag::connect_add_remove_button_to(const Callable &p_callable) {
+	add_remove_tag->connect(SceneStringName(pressed), p_callable, CONNECT_DEFERRED);
+
+	// Used to get correct icon for newly created tags in Manage Project Tags dialog.
+	if (is_add_button) {
+		add_remove_tag->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+	}
+}
+
 const String ProjectTag::get_tag() const {
 	return tag_string;
 }
 
-ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
+ProjectTag::ProjectTag(const String &p_text, bool p_is_add_button) {
 	add_theme_constant_override(SNAME("separation"), 0);
 	set_v_size_flags(SIZE_SHRINK_CENTER);
 	tag_string = p_text;
-	display_close = p_display_close;
+	is_add_button = p_is_add_button;
 
 	Color tag_color = Color(1, 0, 0);
 	tag_color.set_ok_hsl_s(0.8);
@@ -78,8 +91,17 @@ ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
 	button->set_tooltip_text(p_text.capitalize());
 	button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button->set_accessibility_name(vformat(TTR("Project Tag: %s"), p_text));
-	button->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	button->set_theme_type_variation(SNAME("ProjectTagButton"));
-	button->set_custom_maximum_size(Vector2(334 * EDSCALE, -1));
+	button->set_custom_maximum_size(Vector2(334, 30) * EDSCALE);
 	button->set_mouse_filter(MOUSE_FILTER_PASS);
+
+	add_remove_tag = memnew(Button);
+	add_child(add_remove_tag);
+	add_remove_tag->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	add_remove_tag->set_focus_mode(FOCUS_ACCESSIBILITY);
+	add_remove_tag->set_accessibility_name(vformat(TTR("Remove Tag: %s"), p_text));
+	add_remove_tag->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	add_remove_tag->set_theme_type_variation(SNAME("ProjectTagAddRemoveButton"));
+	add_remove_tag->set_custom_maximum_size(Vector2(20, 30) * EDSCALE);
+	add_remove_tag->set_mouse_filter(MOUSE_FILTER_PASS);
 }
