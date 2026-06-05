@@ -6643,7 +6643,8 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 						}
 					} else if (pos.y < r_height / 4) {
 						// Near top edge.
-						if (current_item_depth > 0) { // Not root, since root cannot have siblings.
+						bool item_can_have_siblings = (p_item != root) && (current_item_depth > 0 || hide_root); // Disqualify root.
+						if (item_can_have_siblings) {
 							r_section = parent_allows_drop ? -1 : COLUMN_NOT_FOUND; // Sibling above.
 						} else {
 							r_section = item_allows_drop ? 0 : COLUMN_NOT_FOUND; // On root, or as last child of root.
@@ -6911,7 +6912,7 @@ int Tree::get_column_at_position(const Point2 &p_pos) const {
 }
 
 int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
-	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos)) {
+	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos) || !drop_mode_flags) {
 		return COLUMN_NOT_FOUND;
 	}
 
