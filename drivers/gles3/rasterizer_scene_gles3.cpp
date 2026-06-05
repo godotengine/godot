@@ -2121,13 +2121,10 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 		// This MUST be rounding and not, say, floor or ceil.
 		// Using anything other than round will lead to flickering in directional shadows when the tightened draw area is resized by camera rotations.
 		atlas_rect = Rect2i(
-			Vector2i(
-				(int32_t)Math::round(draw_rect.position.x), (int32_t)Math::round(draw_rect.position.y)
-			),
-			Vector2i(
-				(int32_t)Math::round(draw_rect.size.x), (int32_t)Math::round(draw_rect.size.y)
-			)
-		);
+				Vector2i(
+						(int32_t)Math::round(draw_rect.position.x), (int32_t)Math::round(draw_rect.position.y)),
+				Vector2i(
+						(int32_t)Math::round(draw_rect.size.x), (int32_t)Math::round(draw_rect.size.y)));
 
 	} else {
 		// Set from shadow atlas.

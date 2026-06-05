@@ -2289,9 +2289,9 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			// Position of camera frustum centroid in the view space of the light.
 			Vector3 light_view_frustum_centroid = light_transform.basis.xform_inv(frustum_centroid_world);
 			texel_snapped_frustum_centroid = Vector3(
-				Math::snapped(light_view_frustum_centroid.x, unit),
-				Math::snapped(light_view_frustum_centroid.y, unit),
-				light_view_frustum_centroid.z // Don't mind z.
+					Math::snapped(light_view_frustum_centroid.x, unit),
+					Math::snapped(light_view_frustum_centroid.y, unit),
+					light_view_frustum_centroid.z // Don't mind z.
 			);
 		}
 
@@ -2309,16 +2309,15 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 			if (USE_TIGHTER_DRAW_RECT) {
 				Vector2 texel_snapped_frustum_size = Vector2(
-					Math::snapped(light_view_frustum_rect_max.x - light_view_frustum_rect_min.x + unit, unit),
-					Math::snapped(light_view_frustum_rect_max.y - light_view_frustum_rect_min.y + unit, unit)
-				);
+						Math::snapped(light_view_frustum_rect_max.x - light_view_frustum_rect_min.x + unit, unit),
+						Math::snapped(light_view_frustum_rect_max.y - light_view_frustum_rect_min.y + unit, unit));
 				view_space_draw_size = texel_snapped_frustum_size;
 				Vector2 draw_half = texel_snapped_frustum_size * 0.5;
 				ortho_camera.set_orthogonal(-draw_half.x, draw_half.x, -draw_half.y, draw_half.y, 0, (light_view_frustum_rect_max.z - z_min_cam));
 				ortho_transform.origin =
-					cam_basis_x * Math::snapped((light_view_frustum_rect_min.x + light_view_frustum_rect_max.x) / 2, unit) +
-					cam_basis_y * Math::snapped((light_view_frustum_rect_min.y + light_view_frustum_rect_max.y) / 2, unit) +
-					cam_basis_z * light_view_frustum_rect_max.z;
+						cam_basis_x * Math::snapped((light_view_frustum_rect_min.x + light_view_frustum_rect_max.x) / 2, unit) +
+						cam_basis_y * Math::snapped((light_view_frustum_rect_min.y + light_view_frustum_rect_max.y) / 2, unit) +
+						cam_basis_z * light_view_frustum_rect_max.z;
 			} else {
 				Vector2 bound_half = light_view_fullrect_size * 0.5;
 				ortho_camera.set_orthogonal(-bound_half.x, bound_half.x, -bound_half.y, bound_half.y, 0, (light_view_frustum_rect_max.z - z_min_cam));
