@@ -127,6 +127,15 @@
 		<member name="icons/icon_1024x1024_tinted" type="String" setter="" getter="">
 			Base application icon used to generate other icons, tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
+		<member name="icons/icon_back_layer_1024x1024" type="String" setter="" getter="">
+			Back layer of the visionOS app icon. visionOS app icons are composed of three stacked layers (front/middle/back) rendered with parallax. Should be a 1024x1024 image. Falls back to [member icons/icon_1024x1024], then [member ProjectSettings.application/config/icon] when empty. See [url=https://developer.apple.com/design/human-interface-guidelines/app-icons]App icons[/url].
+		</member>
+		<member name="icons/icon_front_layer_1024x1024" type="String" setter="" getter="">
+			Front layer of the visionOS app icon. Should be a 1024x1024 image. Falls back to [member icons/icon_1024x1024], then [member ProjectSettings.application/config/icon] when empty. See [url=https://developer.apple.com/design/human-interface-guidelines/app-icons]App icons[/url].
+		</member>
+		<member name="icons/icon_middle_layer_1024x1024" type="String" setter="" getter="">
+			Middle layer of the visionOS app icon. Should be a 1024x1024 image. Falls back to [member icons/icon_1024x1024], then [member ProjectSettings.application/config/icon] when empty. See [url=https://developer.apple.com/design/human-interface-guidelines/app-icons]App icons[/url].
+		</member>
 		<member name="modules/camera" type="bool" setter="" getter="">
 			If [code]true[/code], [CameraServer] module is added to the exported project.
 		</member>
