@@ -53,6 +53,12 @@ extern void apple_embedded_finish();
 	return self;
 }
 
+// Skip the boot splash in CompositorServices (immersive XR) mode.
+// There is no visible window to display it on.
+- (void)setUpProjectDataShowingBootLogo:(BOOL)p_show_boot_logo {
+	[super setUpProjectDataShowingBootLogo:NO];
+}
+
 - (void)updateXRInterface {
 	Ref<VisionOSXRInterface> visionos_xr_interface = VisionOSXRInterface::find_interface();
 	if (visionos_xr_interface.is_valid()) {
