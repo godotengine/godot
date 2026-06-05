@@ -88,7 +88,7 @@ def configure(env, env_mono):
         if env["dlink_enabled"]:
             env_thirdparty.Append(CPPDEFINES=["WASM_SUPPORTS_DLOPEN"])
         env_thirdparty.Prepend(CPPPATH=os.path.join(mono_runtime_path, "include", "wasm"))
-        get_runtime_pack_project_includes = os.path.join(get_runtime_pack_project_path, "obj", "Release", "net9.0", rid, "wasm", "for-publish")
+        get_runtime_pack_project_includes = os.path.join(get_runtime_pack_project_path, "obj", "Release", "net9.0", rid, "wasm", "for-build")
         env_thirdparty.Prepend(CPPPATH=os.path.join(get_runtime_pack_project_includes))
         env_thirdparty.add_source_files(
             env.modules_sources,
