@@ -568,7 +568,7 @@ RID VisionOSXRInterface::RenderThread::get_depth_texture() {
 			MTL::texture_type_from_metal(depth_texture.textureType),
 			pixel_formats->getDataFormat((MTL::PixelFormat)depth_texture.pixelFormat),
 			MTL::texture_samples_from_metal(depth_texture.sampleCount),
-			RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT,
+			RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT,
 			(uint64_t)depth_texture,
 			depth_texture.width,
 			depth_texture.height,

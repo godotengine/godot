@@ -1642,6 +1642,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		subpass.color_references = p_subpasses[i].color_references;
 		subpass.depth_stencil_reference = p_subpasses[i].depth_stencil_reference;
 		subpass.resolve_references = p_subpasses[i].resolve_references;
+		subpass.depth_resolve_reference = p_subpasses[i].depth_resolve_reference;
 	}
 
 	static const MTL::LoadAction LOAD_ACTIONS[] = {
@@ -2731,6 +2732,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 #endif
 			return is_supported;
 		}
+		case SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE:
+			return device_properties->features.supports_msaa_depth_resolve;
 		default:
 			return false;
 	}
