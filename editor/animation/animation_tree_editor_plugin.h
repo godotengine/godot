@@ -47,9 +47,6 @@ class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) = 0;
 	virtual void edit(const Ref<AnimationNode> &p_node) = 0;
-
-private:
-	String last_error_key;
 };
 
 class AnimationTreeEditor : public EditorDock {
@@ -64,6 +61,37 @@ class AnimationTreeEditor : public EditorDock {
 
 	AnimationTree *tree = nullptr;
 	MarginContainer *editor_base = nullptr;
+	String last_error_key;
+
+	enum class Severity {
+		ERROR,
+		WARNING,
+	};
+
+	struct NodeIssue {
+		String message;
+		Severity severity;
+		int input_index;
+	};
+
+	struct Styles {
+		Ref<Texture2D> error_icon;
+		Ref<Texture2D> warning_icon;
+		Color error_color;
+		Color warning_color;
+		Color primary_text_color;
+		Color secondary_text_color;
+
+		const Ref<Texture2D> &get_issue_icon(const Severity &severity) const {
+			return severity == Severity::ERROR ? error_icon : warning_icon;
+		}
+
+		const Color &get_issue_color(const Severity &severity) const {
+			return severity == Severity::ERROR ? error_color : warning_color;
+		}
+
+		static Styles load(const Control &control);
+	} styles;
 
 	Vector<String> button_path;
 	Vector<String> edited_path;
@@ -77,7 +105,16 @@ class AnimationTreeEditor : public EditorDock {
 	void _animation_list_changed();
 
 	void _toggle_error_panel();
-	void _update_error_message(const String *p_other_errors = nullptr);
+
+	AHashMap<StringName, LocalVector<NodeIssue>> _normalize_issues(const AHashMap<StringName, AnimationNode::InvalidInstance> &p_warnings, const AHashMap<StringName, AnimationNode::InvalidInstance> &p_errors);
+	void _update_error_message(const String &p_other_errors);
+	String _create_cache_key(const AHashMap<StringName, LocalVector<NodeIssue>> &p_invalid_instances, const String &p_other_errors, const String &p_editor_error_message);
+	String _format_issue_count(int p_count) const;
+
+	void _draw_node_issues(const KeyValue<StringName, LocalVector<NodeIssue>> &p_instance, const Ref<AnimationNode> &p_node) const;
+	void _draw_node_issue(RichTextLabel *p_label, const String &p_input_error_base, const NodeIssue &p_issue, const Ref<AnimationNode> &p_node) const;
+	void _draw_compact_node_issue(RichTextLabel *p_label, const String &p_node_meta, const NodeIssue &p_issue, const Ref<AnimationNode> &p_node) const;
+	void _draw_node_issue_input(RichTextLabel *p_label, const String &p_input_error_base, const NodeIssue &p_issue, const Ref<AnimationNode> &p_node) const;
 
 	static LocalVector<StringName> get_animation_list();
 

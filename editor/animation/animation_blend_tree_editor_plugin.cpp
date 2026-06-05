@@ -1062,10 +1062,8 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 			blend_tree->get_node_connections(&conns);
 			for (const AnimationNodeBlendTree::NodeConnection &E : conns) {
 				float activity = 0;
-				StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
-				if (!tree->is_state_invalid()) {
-					activity = tree->get_connection_activity(path, E.input_index);
-				}
+				StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node + "/";
+				activity = tree->get_connection_activity(path, E.input_index);
 				graph->set_connection_activity(E.output_node, 0, E.input_node, E.input_index, activity);
 			}
 

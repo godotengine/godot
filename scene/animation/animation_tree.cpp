@@ -34,7 +34,6 @@
 #include "core/config/engine.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 
 thread_local AnimationNode::ProcessState *AnimationNode::tls_process_state = nullptr;
@@ -120,16 +119,15 @@ AnimationNode::NodeTimeInfo AnimationNode::_pre_process(ProcessState &p_process_
 	return nti;
 }
 
-void AnimationNode::add_validation_error(const AnimationTree *p_tree, const StringName &p_path, const String &p_error, int p_input_index) const {
-	p_tree->_add_validation_error(p_path, p_error, p_input_index);
-}
+#ifdef TOOLS_ENABLED
+void AnimationNode::push_blend_input_issue(AnimationTree *p_tree, const StringName &p_path, int p_input_index) {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 
-void AnimationNode::make_invalid(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const String &p_reason) {
-	p_process_state.valid = false;
-
-	InvalidInstance &invalid_instance = p_process_state.invalid_instances[p_instance.path];
-	invalid_instance.errors.push_back(p_reason);
+	p_tree->push_issue(p_path, TTR("Nothing connected to"), p_input_index);
 }
+#endif
 
 AnimationNode::NodeTimeInfo AnimationNode::blend_input(ProcessState &p_process_state, AnimationNodeInstance &p_instance, int p_input, const AnimationMixer::PlaybackInfo &p_playback_info, FilterAction p_filter, bool p_sync, bool p_test_only) {
 	ERR_FAIL_INDEX_V(p_input, (int64_t)inputs.size(), NodeTimeInfo());
@@ -138,9 +136,13 @@ AnimationNode::NodeTimeInfo AnimationNode::blend_input(ProcessState &p_process_s
 	if (likely(p_instance.connection_instances.size() > 0)) {
 		node_instance = p_instance.connection_instances[p_input];
 	}
-	// Should not ever happen due to validation earlier.
-	ERR_FAIL_NULL_V(node_instance, NodeTimeInfo());
 
+	if (unlikely(!node_instance)) {
+#ifdef TOOLS_ENABLED
+		push_blend_input_issue(p_process_state.tree, p_instance.path, p_input);
+#endif
+		return NodeTimeInfo();
+	}
 	real_t activity = 0.0;
 
 	NodeTimeInfo nti = _blend_node(p_process_state, p_instance, *node_instance, p_playback_info, p_filter, p_sync, p_test_only, &activity);
@@ -589,6 +591,14 @@ AnimationNode::AnimationNode() {
 
 ////////////////////
 
+void AnimationRootNode::prepare(AnimationTree *p_tree, const AnimationNodeInstance &p_instance) {
+	AnimationNode::prepare(p_tree, p_instance);
+
+	for (const KeyValue<StringName, AnimationNodeInstance *> &E : p_instance.child_instances) {
+		E.value->resource->prepare(p_tree, *E.value);
+	}
+}
+
 void AnimationRootNode::_add_node(const Ref<AnimationNode> &p_node) {
 	p_node->connect(SNAME("tree_changed"), callable_mp(this, &AnimationRootNode::_tree_changed), CONNECT_REFERENCE_COUNTED);
 	p_node->connect(SNAME("node_updated"), callable_mp(this, &AnimationRootNode::_node_updated), CONNECT_REFERENCE_COUNTED);
@@ -650,21 +660,17 @@ Ref<AnimationRootNode> AnimationTree::get_root_animation_node() const {
 bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map) {
 	_update_properties(); // If properties need updating, update them.
 
-	bool was_validation_dirty = validation_dirty;
-	if (validation_dirty) {
-		process_state.invalid_instances.clear();
-		validation_successful = true;
-		_validate_animation_graph(Animation::PARAMETERS_BASE_PATH, root_animation_node);
-		validation_dirty = false;
-	}
-	if (!validation_successful) {
+	if (root_animation_node.is_null()) {
 		return false;
-	}
-	if (was_validation_dirty) {
-		_update_connections();
 	}
 
 	AnimationNodeInstance &instance = get_node_instance_by_path(SNAME(Animation::PARAMETERS_BASE_PATH.ascii().get_data()));
+
+	if (nodes_dirty) {
+		preparation_warnings.clear();
+		root_animation_node->prepare(this, instance);
+		nodes_dirty = false;
+	}
 
 	{ // Setup.
 		process_pass++;
@@ -675,7 +681,6 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		// Init process state.
 		process_state = AnimationNode::ProcessState();
 		process_state.tree = this;
-		process_state.valid = true;
 		process_state.invalid_instances.clear();
 		process_state.last_pass = process_pass;
 		process_state.track_map = &p_track_map;
@@ -709,10 +714,11 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		AnimationNode::tls_process_state = &process_state;
 		root_animation_node->_pre_process(process_state, instance, pi, false);
 		AnimationNode::tls_process_state = nullptr;
-	}
-
-	if (!process_state.valid) {
-		return false; // State is not valid, abort process.
+#ifdef TOOLS_ENABLED
+		if (process_state.invalid_instances.size() > 0) {
+			update_configuration_warnings();
+		}
+#endif
 	}
 
 	return true;
@@ -731,19 +737,27 @@ NodePath AnimationTree::get_advance_expression_base_node() const {
 	return advance_expression_base_node;
 }
 
-bool AnimationTree::is_state_invalid() const {
-	return !process_state.valid;
+#ifdef TOOLS_ENABLED
+void AnimationTree::push_issue(const StringName &p_path, const String &p_message, int p_input_index) {
+	// when tls_process_state is present, it implies the tree is processing.
+	if (AnimationNode::tls_process_state) {
+		process_state.invalid_instances[p_path].issues.push_back({ p_message, p_input_index });
+	} else {
+		preparation_warnings[p_path].issues.push_back({ p_message, p_input_index });
+	}
 }
-
-const AHashMap<StringName, AnimationNode::InvalidInstance> &AnimationTree::get_invalid_instances() const {
-	return process_state.invalid_instances;
-}
+#endif
 
 PackedStringArray AnimationTree::get_configuration_warnings() const {
 	PackedStringArray warnings = AnimationMixer::get_configuration_warnings();
 	if (root_animation_node.is_null()) {
 		warnings.push_back(RTR("No root AnimationNode for the graph is set."));
 	}
+#ifdef TOOLS_ENABLED
+	else if (!process_state.invalid_instances.is_empty()) {
+		warnings.push_back(RTR("The AnimationTree contains errors, check the dock for more details."));
+	}
+#endif
 	return warnings;
 }
 
@@ -761,7 +775,7 @@ void AnimationTree::_node_updated(const ObjectID &p_oid) {
 	// or a connection in AnimationNodeBlendTree changes.
 
 	// Ideally, we would only validate relevant instances, but for now, revalidate all.
-	validation_dirty = true;
+	nodes_dirty = true;
 }
 
 void AnimationTree::_animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) {
@@ -864,7 +878,7 @@ void AnimationTree::_update_properties() const {
 	}
 
 	// if properties are dirty, so is the validation state.
-	validation_dirty = true;
+	nodes_dirty = true;
 	properties.clear();
 	instance_map.clear();
 	instance_paths.clear();
@@ -908,69 +922,6 @@ void AnimationTree::_update_properties() const {
 	properties_dirty = false;
 
 	const_cast<AnimationTree *>(this)->notify_property_list_changed();
-}
-
-void AnimationTree::_validate_animation_graph(const StringName &p_path, const Ref<AnimationNode> &p_node) const {
-	if (p_node.is_null()) {
-		validation_successful = false;
-		return;
-	}
-
-	p_node->validate_node(this, p_path);
-	// We will continue even if the validation is not successful, to gather all errors.
-
-	LocalVector<AnimationNode::ChildNode> children;
-	p_node->get_child_nodes(&children);
-
-	for (const AnimationNode::ChildNode &E : children) {
-		const StringName child_path = String(p_path) + E.name + "/";
-		_validate_animation_graph(child_path, E.node);
-	}
-}
-
-void AnimationTree::_update_connections() {
-	for (KeyValue<StringName, AnimationNodeInstance> &E : instance_map) {
-		AnimationNodeInstance &parent_instance = E.value;
-
-		const AnimationNodeBlendTree *blend_tree = Object::cast_to<AnimationNodeBlendTree>(parent_instance.resource.ptr());
-
-		if (!blend_tree) {
-			continue;
-		}
-
-		{
-			const LocalVector<StringName> *output_connections = blend_tree->get_node_connection_array(SceneStringName(output));
-			parent_instance.connection_instances.resize(1);
-			AnimationNodeInstance *connected_instance = parent_instance.get_child_instance_by_path_or_null(output_connections->operator[](0));
-			parent_instance.connection_instances[0] = connected_instance;
-			CRASH_COND(!connected_instance); // Will never happen.
-		}
-
-		for (const KeyValue<StringName, AnimationNodeInstance *> &kv : parent_instance.child_instances) {
-			AnimationNodeInstance *child_instance = kv.value;
-			const LocalVector<StringName> &child_connections = *blend_tree->get_node_connection_array(kv.key);
-			child_instance->connection_instances.clear();
-			child_instance->connection_instances.resize(child_connections.size());
-			for (uint32_t input = 0; input < child_connections.size(); input++) {
-				const StringName &connected_node_name = child_connections[input];
-				AnimationNodeInstance *connected_instance = parent_instance.get_child_instance_by_path_or_null(connected_node_name);
-				child_instance->connection_instances[input] = connected_instance;
-				CRASH_COND(!connected_instance); // Will never happen.
-			}
-		}
-	}
-}
-
-void AnimationTree::_add_validation_error(const StringName &p_path, const String &p_error, int p_input_index) const {
-	validation_successful = false;
-
-	AnimationNode::InvalidInstance &invalid_instance = process_state.invalid_instances[p_path];
-
-	if (p_input_index == -1) {
-		invalid_instance.errors.push_back(p_error);
-	} else {
-		invalid_instance.input_errors.push_back({ p_input_index, p_error });
-	}
 }
 
 void AnimationTree::_notification(int p_what) {
