@@ -30,7 +30,9 @@
 
 #import "display_server_visionos.h"
 
-#import "core/os/os.h"
+#import "gc_keyboard_handler.h"
+
+#include "core/os/os.h"
 
 #import "platform/visionos/godot_app_delegate_service_visionos.h"
 
@@ -46,9 +48,20 @@ DisplayServerVisionOS::DisplayServerVisionOS(const String &p_rendering_driver, D
 		WARN_PRINT_ONCE("visionOS in immersive mode doesn't support the Forward+ renderer, switching to the Mobile renderer.");
 		OS::get_singleton()->set_current_rendering_method("mobile", OS::RENDERING_SOURCE_FALLBACK);
 	}
+
+	// In Compositor Services mode, there is no UIViewController to receive UIPress
+	// events, so we use the Game Controller framework's GCKeyboard API instead.
+	if (app_delegate_render_mode == GDTRenderModeCompositorServices) {
+		gc_keyboard = memnew(GCKeyboardHandler);
+		gc_keyboard->start();
+	}
 }
 
 DisplayServerVisionOS::~DisplayServerVisionOS() {
+	if (gc_keyboard) {
+		memdelete(gc_keyboard);
+		gc_keyboard = nullptr;
+	}
 }
 
 DisplayServer *DisplayServerVisionOS::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {

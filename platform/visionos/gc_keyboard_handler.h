@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  display_server_visionos.h                                             */
+/*  gc_keyboard_handler.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,34 +30,29 @@
 
 #pragma once
 
-#include "drivers/apple_embedded/display_server_apple_embedded.h"
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
+#endif
 
-class GCKeyboardHandler;
-
-class DisplayServerVisionOS : public DisplayServerAppleEmbedded {
-	GDSOFTCLASS(DisplayServerVisionOS, DisplayServerAppleEmbedded);
-
-	_THREAD_SAFE_CLASS_
-
-	GCKeyboardHandler *gc_keyboard = nullptr;
-
-	DisplayServerVisionOS(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
-	~DisplayServerVisionOS();
-
+class GCKeyboardHandler {
 public:
-	static DisplayServerVisionOS *get_singleton();
+	GCKeyboardHandler();
+	~GCKeyboardHandler();
 
-	static void register_visionos_driver();
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
+	void start();
+	void stop();
 
-	virtual String get_name() const override;
+private:
+#ifdef __OBJC__
+	id keyboard_connect_observer = nil;
+	id keyboard_disconnect_observer = nil;
+#else
+	void *keyboard_connect_observer = nullptr;
+	void *keyboard_disconnect_observer = nullptr;
+#endif
 
-	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	bool active = false;
 
-protected:
-	virtual bool _screen_hdr_is_supported() const override;
-	virtual float _screen_potential_edr_headroom() const override;
-	virtual float _screen_current_edr_headroom() const override;
+	void setup_keyboard_handler();
+	void remove_keyboard_handler();
 };
