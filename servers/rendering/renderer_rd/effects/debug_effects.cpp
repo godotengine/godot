@@ -305,7 +305,6 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 			// Get our light projection info.
 			light_projection = light_storage->light_instance_get_shadow_camera(p_light, (splits - 1));
 			light_transform = light_storage->light_instance_get_shadow_transform(p_light, (splits - 1));
-			//Source for shadow atlas rect.
 			atlas_rect_norm = light_storage->light_instance_get_directional_shadow_atlas_rect(p_light, (splits - 1));
 
 			if (!is_orthogonal) {

@@ -759,7 +759,7 @@ public:
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->shadow_transform[p_index].shadow_texel_size;
 	}
-	
+
 	_FORCE_INLINE_ Rect2 light_instance_get_directional_shadow_draw_norm_rect(RID p_light_instance, int p_index) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->shadow_transform[p_index].norm_draw_rect;

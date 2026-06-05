@@ -2212,17 +2212,17 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			Vector3 frustum_corners_cam_view[8];
 			bool res = camera_matrix.get_endpoints(Transform3D(), frustum_corners_cam_view); // Retrieve endpoints in identity transform.
 			ERR_CONTINUE(!res);
-			
+
 			// Again, everything in cam view space for maximum numerical stability (yes it matters, see #72015 discussion)
 			Vector3 frustum_centroid_cam_view(0, 0, 0);
 			for (int j = 0; j < 8; j++) {
 				frustum_centroid_cam_view += frustum_corners_cam_view[j] / 8.0; // Dividing then adding hopefully has better numerical precision
 			}
-			
+
 			for (int j = 0; j < 8; j++) {
 				frustum_circumscribing_radius = MAX(frustum_circumscribing_radius, frustum_centroid_cam_view.distance_to(frustum_corners_cam_view[j]));
 			}
-			
+
 			// Turn things in local space now since we're done with view space stuff here.
 			frustum_centroid_local = p_cam_transform.basis.xform(frustum_centroid_cam_view);
 			for (int j = 0; j < 8; j++) {
@@ -2230,9 +2230,9 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			}
 		}
 		Vector3 frustum_centroid_world = p_cam_transform.origin + frustum_centroid_local;
-		
+
 		constexpr bool USE_TIGHTER_DRAW_RECT = true;
-		
+
 		// Compute bounding box of frustum as seen from within the shadowmap
 		Vector3 light_view_frustum_rect_min = light_transform.basis.xform_inv(frustum_corners_local[0]);
 		Vector3 light_view_frustum_rect_max = light_transform.basis.xform_inv(frustum_corners_local[0]);
@@ -2243,26 +2243,26 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 		}
 		light_view_frustum_rect_min += light_transform.basis.xform_inv(p_cam_transform.origin);
 		light_view_frustum_rect_max += light_transform.basis.xform_inv(p_cam_transform.origin);
-		
+
 		//z_vec points against the camera, like in default opengl
 		real_t z_min_cam = cam_basis_z.dot(frustum_centroid_world) - frustum_circumscribing_radius;
-		
+
 		// Expansion for soft shadow is needed regardless of tighter or normal rect, so make it a standalone block.
 		{
 			real_t soft_shadow_expand = 0;
 			float soft_shadow_angle = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SIZE);
-			
+
 			if (soft_shadow_angle > 0.0) {
 				float z_range = (cam_basis_z.dot(frustum_centroid_local) + frustum_circumscribing_radius + pancake_size) - z_min_cam;
 				soft_shadow_expand = Math::tan(Math::deg_to_rad(soft_shadow_angle)) * z_range;
 			}
-			
+
 			// Gotta leave extra margin around the frustum for distance-based shadow blurring.
 			light_view_frustum_rect_max.x += soft_shadow_expand;
 			light_view_frustum_rect_max.y += soft_shadow_expand;
 			light_view_frustum_rect_min.x -= soft_shadow_expand;
 			light_view_frustum_rect_min.y -= soft_shadow_expand;
-			
+
 			// ...But as the frustum has now basically been made larger, the draw bounds must be made larger too to fit it.
 			frustum_circumscribing_radius += soft_shadow_expand;
 		}
@@ -2307,7 +2307,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			ortho_transform.basis = light_transform.basis;
 			Vector2 light_view_fullrect_size = Vector2(frustum_circumscribing_radius, frustum_circumscribing_radius) * 2;
 			Vector2 view_space_draw_size = light_view_fullrect_size;
-			
+
 			if (USE_TIGHTER_DRAW_RECT) {
 				Vector2 texel_snapped_frustum_size = Vector2(
 					Math::snapped(light_view_frustum_rect_max.x - light_view_frustum_rect_min.x + unit, unit),
@@ -2325,11 +2325,11 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 				ortho_camera.set_orthogonal(-bound_half.x, bound_half.x, -bound_half.y, bound_half.y, 0, (light_view_frustum_rect_max.z - z_min_cam));
 				ortho_transform.origin = cam_basis_x * texel_snapped_frustum_centroid.x + cam_basis_y * texel_snapped_frustum_centroid.y + cam_basis_z * light_view_frustum_rect_max.z;
 			}
-			
+
 			Vector2 light_view_fullrect_min = Vector2(texel_snapped_frustum_centroid.x, texel_snapped_frustum_centroid.y) - light_view_fullrect_size / 2;
 			Vector2 light_view_fullrect_max = Vector2(texel_snapped_frustum_centroid.x, texel_snapped_frustum_centroid.y) + light_view_fullrect_size / 2;
 			Vector2 uv_scale = Vector2(1.0 / (light_view_fullrect_max.x - light_view_fullrect_min.x), 1.0 / (light_view_fullrect_max.y - light_view_fullrect_min.y));
-			
+
 			cull.shadows[p_shadow_index].cascades[i].frustum = Frustum(light_frustum_planes);
 			cull.shadows[p_shadow_index].cascades[i].projection = ortho_camera;
 			cull.shadows[p_shadow_index].cascades[i].transform = ortho_transform;
@@ -3283,7 +3283,6 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			for (uint32_t j = 0; j < cull.shadows[i].cascade_count; j++) {
 				const Cull::Shadow::Cascade &c = cull.shadows[i].cascades[j];
 				//			print_line("shadow " + itos(i) + " cascade " + itos(j) + " elements: " + itos(c.cull_result.size()));
-				// in here?
 				RSG::light_storage->light_instance_set_shadow_transform(cull.shadows[i].light_instance, c.projection, c.transform, c.zfar, c.split, j, c.shadow_texel_size, c.bias_scale, c.range_begin, c.uv_scale, c.normalized_render_bounds);
 				if (max_shadows_used == MAX_UPDATE_SHADOWS) {
 					continue;
