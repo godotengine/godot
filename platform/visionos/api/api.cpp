@@ -32,7 +32,12 @@
 
 #if defined(VISIONOS_ENABLED)
 
+#include "core/object/class_db.h"
+
+#include "platform/visionos/input_event_spatial.h"
+
 void register_visionos_api() {
+	GDREGISTER_CLASS(InputEventSpatial);
 	godot_apple_embedded_plugins_initialize();
 }
 

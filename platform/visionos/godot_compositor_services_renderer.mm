@@ -30,7 +30,11 @@
 
 #import "godot_compositor_services_renderer.h"
 
-#import "drivers/apple_embedded/os_apple_embedded.h"
+#include "display_server_visionos.h"
+#include "input_event_spatial.h"
+
+#include "drivers/apple_embedded/os_apple_embedded.h"
+#include "servers/rendering/rendering_server_default.h"
 
 #include "modules/visionos_xr/visionos_xr_interface.h"
 
@@ -117,6 +121,23 @@ extern void apple_embedded_finish();
 	if (visionos_xr_interface.is_valid()) {
 		visionos_xr_interface->emit_signal_enum(VisionOSXRInterface::VISIONOS_XR_SIGNAL_POSE_RECENTERED);
 	}
+}
+
+- (void)spatialEventWithIndex:(NSInteger)index
+					 isActive:(BOOL)isActive
+			 hasBeenCancelled:(BOOL)hasBeenCancelled
+				 hasChirality:(BOOL)hasChirality
+				   isLeftHand:(BOOL)isLeftHand
+				 selectionRay:(SPRay3D)selectionRay
+			  inputDevicePose:(SPPose3D)inputDevicePose {
+	Vector3 selectionRayOrigin(selectionRay.origin.x, selectionRay.origin.y, selectionRay.origin.z);
+	Vector3 selectionRayDirection(selectionRay.direction.x, selectionRay.direction.y, selectionRay.direction.z);
+	InputEventSpatial::Chirality chirality = isLeftHand ? InputEventSpatial::CHIRALITY_LEFT : InputEventSpatial::CHIRALITY_RIGHT;
+	InputEventSpatial::Phase phase = isActive ? InputEventSpatial::PHASE_ACTIVE : (hasBeenCancelled ? InputEventSpatial::PHASE_CANCELLED : InputEventSpatial::PHASE_ENDED);
+	simd_double4 deviceInputRotationQuat = inputDevicePose.rotation.quaternion.vector;
+	Vector3 inputDevicePosition(inputDevicePose.position.x, inputDevicePose.position.y, inputDevicePose.position.z);
+	Quaternion inputDeviceRotation(deviceInputRotationQuat[0], deviceInputRotationQuat[1], deviceInputRotationQuat[2], deviceInputRotationQuat[3]);
+	DisplayServerVisionOS::get_singleton()->spatial_event(index, phase, hasChirality, chirality, selectionRayOrigin, selectionRayDirection, inputDevicePosition, inputDeviceRotation);
 }
 
 @end

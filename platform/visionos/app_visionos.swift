@@ -30,6 +30,13 @@
 
 import SwiftUI
 @preconcurrency import CompositorServices
+import OSLog
+
+// MARK: Helpers
+
+extension os.Logger {
+	static let godot = Logger(subsystem: "com.GodotFoundation.Godot", category: "SwiftUI")
+}
 
 // MARK: Renderer
 
@@ -92,6 +99,33 @@ struct CompositorServicesImmersiveSpace: Scene {
 	var body: some Scene {
 		ImmersiveSpace(id: "ImmersiveSpace") {
 			CompositorLayer(configuration: ContentStageConfiguration()) { @MainActor layerRenderer in
+
+				layerRenderer.onSpatialEvent = { spatialEventCollection in
+					for event in spatialEventCollection {
+						guard event.kind == .indirectPinch else {
+							Logger.godot.log("Ignoring non-IndirectPinch event: \(String(describing: event))")
+							return
+						}
+						guard let selectionRay = event.selectionRay else {
+							Logger.godot.log("Ignoring event without selectionRay: \(String(describing: event))")
+							return
+						}
+						guard let inputDevicePose = event.inputDevicePose else {
+							Logger.godot.log("Ignoring event without inputDevicePose: \(String(describing: event))")
+							return
+						}
+						let isActive = (event.phase == .active)
+						let hasBeenCancelled = (event.phase == .cancelled)
+						renderer.spatialEvent(with: event.id.hashValue,
+											  isActive: isActive,
+											  hasBeenCancelled: hasBeenCancelled,
+											  hasChirality: event.chirality != nil,
+											  isLeftHand: event.chirality == .left,
+											  selectionRay: selectionRay,
+											  inputDevicePose: inputDevicePose.pose3D)
+					}
+				}
+
 				GDTAppDelegateServiceVisionOS.layerRenderer = layerRenderer
 				renderer = GDTCompositorServicesRenderer(layerRenderer: layerRenderer,
                                                          capabilities: GDTAppDelegateServiceVisionOS.layerRendererCapabilities)

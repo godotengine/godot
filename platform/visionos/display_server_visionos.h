@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "input_event_spatial.h"
+
 #include "drivers/apple_embedded/display_server_apple_embedded.h"
 
 class GCKeyboardHandler;
@@ -55,6 +57,15 @@ public:
 	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+
+	void spatial_event(int p_index,
+			InputEventSpatial::Phase p_phase,
+			bool p_has_chirality,
+			InputEventSpatial::Chirality p_chirality,
+			const Vector3 &p_selection_ray_origin,
+			const Vector3 &p_selection_ray_direction,
+			const Vector3 &p_input_device_pose_position,
+			const Quaternion &p_input_device_pose_rotation);
 
 protected:
 	virtual bool _screen_hdr_is_supported() const override;

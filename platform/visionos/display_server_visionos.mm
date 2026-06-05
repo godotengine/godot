@@ -31,6 +31,7 @@
 #import "display_server_visionos.h"
 
 #import "gc_keyboard_handler.h"
+#include "input_event_spatial.h"
 
 #include "core/os/os.h"
 
@@ -99,6 +100,31 @@ float DisplayServerVisionOS::screen_get_scale(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
 
 	return 1;
+}
+
+void DisplayServerVisionOS::spatial_event(int p_index,
+		InputEventSpatial::Phase p_phase,
+		bool p_has_chirality,
+		InputEventSpatial::Chirality p_chirality,
+		const Vector3 &p_selection_ray_origin,
+		const Vector3 &p_selection_ray_direction,
+		const Vector3 &p_input_device_pose_position,
+		const Quaternion &p_input_device_pose_rotation) {
+	Ref<InputEventSpatial> ev;
+	ev.instantiate();
+
+	ev->set_index(p_index);
+	ev->set_phase(p_phase);
+	if (p_has_chirality) {
+		ev->set_flag(InputEventSpatial::FLAG_HAS_CHIRALITY, true);
+		ev->set_chirality(p_chirality);
+	}
+	ev->set_flag(InputEventSpatial::FLAG_HAS_SELECTION_RAY, true);
+	ev->set_selection_ray_origin(p_selection_ray_origin);
+	ev->set_selection_ray_direction(p_selection_ray_direction);
+	ev->set_input_device_pose_position(p_input_device_pose_position);
+	ev->set_input_device_pose_rotation(p_input_device_pose_rotation);
+	perform_event(ev);
 }
 
 bool DisplayServerVisionOS::_screen_hdr_is_supported() const {

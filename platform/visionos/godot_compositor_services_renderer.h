@@ -33,6 +33,7 @@
 #import "drivers/apple_embedded/godot_renderer.h"
 
 #import <CompositorServices/CompositorServices.h>
+#import <Spatial/Spatial.h>
 
 @interface GDTCompositorServicesRenderer : GDTRenderer
 
@@ -43,6 +44,14 @@
 
 - (void)startRenderLoop;
 - (void)renderFrame;
+
 - (void)worldRecentered;
+- (void)spatialEventWithIndex:(NSInteger)index
+					 isActive:(BOOL)isActive
+			 hasBeenCancelled:(BOOL)hasBeenCancelled
+				 hasChirality:(BOOL)hasChirality
+				   isLeftHand:(BOOL)isLeftHand
+				 selectionRay:(SPRay3D)selectionRay
+			  inputDevicePose:(SPPose3D)inputDevicePose;
 
 @end
