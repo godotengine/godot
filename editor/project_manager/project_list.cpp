@@ -129,21 +129,23 @@ void ProjectListItemControl::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX_OPTION);
-			AccessibilityServer::get_singleton()->update_set_name(ae, TTR("Project") + " " + project_title->get_text());
-			AccessibilityServer::get_singleton()->update_set_value(ae, project_title->get_text());
+			AccessibilityServer *accessibility_server = AccessibilityServer::get_singleton();
 
-			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &ProjectListItemControl::_accessibility_action_open));
-			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ProjectListItemControl::_accessibility_action_scroll_into_view));
-			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ProjectListItemControl::_accessibility_action_focus));
-			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ProjectListItemControl::_accessibility_action_blur));
+			accessibility_server->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX_OPTION);
+			accessibility_server->update_set_name(ae, TTR("Project") + " " + project_title->get_text());
+			accessibility_server->update_set_value(ae, project_title->get_text());
+
+			accessibility_server->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &ProjectListItemControl::_accessibility_action_open));
+			accessibility_server->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ProjectListItemControl::_accessibility_action_scroll_into_view));
+			accessibility_server->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ProjectListItemControl::_accessibility_action_focus));
+			accessibility_server->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ProjectListItemControl::_accessibility_action_blur));
 
 			ProjectList *pl = get_list();
 			if (pl) {
-				AccessibilityServer::get_singleton()->update_set_list_item_index(ae, pl->get_index(this));
+				accessibility_server->update_set_list_item_index(ae, pl->get_index(this));
 			}
-			AccessibilityServer::get_singleton()->update_set_list_item_level(ae, 0);
-			AccessibilityServer::get_singleton()->update_set_list_item_selected(ae, is_selected);
+			accessibility_server->update_set_list_item_level(ae, 0);
+			accessibility_server->update_set_list_item_selected(ae, is_selected);
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {

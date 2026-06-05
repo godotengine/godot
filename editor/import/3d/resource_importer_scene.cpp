@@ -3107,6 +3107,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 }
 
 static Error convert_path_to_uid(ResourceUID::ID p_source_id, const String &p_hash_str, Dictionary &p_settings, const String &p_path_key, const String &p_fallback_path_key) {
+	ResourceUID *resource_uid = ResourceUID::get_singleton();
 	const String &raw_save_path = p_settings[p_path_key];
 	String save_path = ResourceUID::ensure_path(raw_save_path);
 	if (raw_save_path.begins_with("uid://")) {
@@ -3115,7 +3116,7 @@ static Error convert_path_to_uid(ResourceUID::ID p_source_id, const String &p_ha
 				String fallback_save_path = p_settings[p_fallback_path_key];
 				if (!fallback_save_path.is_empty() && DirAccess::exists(fallback_save_path.get_base_dir())) {
 					save_path = fallback_save_path;
-					ResourceUID::get_singleton()->add_id(ResourceUID::get_singleton()->text_to_id(raw_save_path), save_path);
+					resource_uid->add_id(resource_uid->text_to_id(raw_save_path), save_path);
 				}
 			}
 		} else {
@@ -3126,17 +3127,17 @@ static Error convert_path_to_uid(ResourceUID::ID p_source_id, const String &p_ha
 	if (!save_path.is_empty() && !raw_save_path.begins_with("uid://")) {
 		const ResourceUID::ID id = ResourceLoader::get_resource_uid(save_path);
 		if (id != ResourceUID::INVALID_ID) {
-			p_settings[p_path_key] = ResourceUID::get_singleton()->id_to_text(id);
+			p_settings[p_path_key] = resource_uid->id_to_text(id);
 		} else {
 			ResourceUID::ID save_id = hash64_murmur3_64(p_hash_str.hash64(), p_source_id) & 0x7FFFFFFFFFFFFFFF;
-			if (ResourceUID::get_singleton()->has_id(save_id)) {
-				if (save_path != ResourceUID::get_singleton()->get_id_path(save_id)) {
+			if (resource_uid->has_id(save_id)) {
+				if (save_path != resource_uid->get_id_path(save_id)) {
 					// The user has specified a path which does not match the default UID.
-					save_id = ResourceUID::get_singleton()->create_id_for_path(save_path);
+					save_id = resource_uid->create_id_for_path(save_path);
 				}
 			}
-			p_settings[p_path_key] = ResourceUID::get_singleton()->id_to_text(save_id);
-			ResourceUID::get_singleton()->add_id(save_id, save_path);
+			p_settings[p_path_key] = resource_uid->id_to_text(save_id);
+			resource_uid->add_id(save_id, save_path);
 		}
 		p_settings[p_fallback_path_key] = save_path;
 	}

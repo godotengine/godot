@@ -2614,15 +2614,17 @@ Error EditorExportPlatform::ssh_run_on_remote(const String &p_host, const String
 	String out;
 	int exit_code = -1;
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		OS::get_singleton()->print("Executing: %s", ssh_path.utf8().get_data());
+	OS *os = OS::get_singleton();
+
+	if (os->is_stdout_verbose()) {
+		os->print("Executing: %s", ssh_path.utf8().get_data());
 		for (const String &arg : args) {
-			OS::get_singleton()->print(" %s", arg.utf8().get_data());
+			os->print(" %s", arg.utf8().get_data());
 		}
-		OS::get_singleton()->print("\n");
+		os->print("\n");
 	}
 
-	Error err = OS::get_singleton()->execute(ssh_path, args, &out, &exit_code, true);
+	Error err = os->execute(ssh_path, args, &out, &exit_code, true);
 	if (out.is_empty()) {
 		print_verbose(vformat("Exit code: %d", exit_code));
 	} else {
@@ -2668,15 +2670,17 @@ Error EditorExportPlatform::ssh_run_on_remote_no_wait(const String &p_host, cons
 	args.push_back(p_host);
 	args.push_back(p_cmd_args);
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		OS::get_singleton()->print("Executing: %s", ssh_path.utf8().get_data());
+	OS *os = OS::get_singleton();
+
+	if (os->is_stdout_verbose()) {
+		os->print("Executing: %s", ssh_path.utf8().get_data());
 		for (const String &arg : args) {
-			OS::get_singleton()->print(" %s", arg.utf8().get_data());
+			os->print(" %s", arg.utf8().get_data());
 		}
-		OS::get_singleton()->print("\n");
+		os->print("\n");
 	}
 
-	return OS::get_singleton()->create_process(ssh_path, args, r_pid);
+	return os->create_process(ssh_path, args, r_pid);
 }
 
 Error EditorExportPlatform::ssh_push_to_remote(const String &p_host, const String &p_port, const Vector<String> &p_scp_args, const String &p_src_file, const String &p_dst_file) const {
@@ -2704,15 +2708,17 @@ Error EditorExportPlatform::ssh_push_to_remote(const String &p_host, const Strin
 	String out;
 	int exit_code = -1;
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		OS::get_singleton()->print("Executing: %s", scp_path.utf8().get_data());
+	OS *os = OS::get_singleton();
+
+	if (os->is_stdout_verbose()) {
+		os->print("Executing: %s", scp_path.utf8().get_data());
 		for (const String &arg : args) {
-			OS::get_singleton()->print(" %s", arg.utf8().get_data());
+			os->print(" %s", arg.utf8().get_data());
 		}
-		OS::get_singleton()->print("\n");
+		os->print("\n");
 	}
 
-	Error err = OS::get_singleton()->execute(scp_path, args, &out, &exit_code, true);
+	Error err = os->execute(scp_path, args, &out, &exit_code, true);
 	if (err != OK) {
 		return err;
 	} else if (exit_code != 0) {

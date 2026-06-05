@@ -928,10 +928,11 @@ void TextureRegionEditor::_notification(int p_what) {
 			}
 
 			if (!is_visible()) {
-				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_offset", snap_offset);
-				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_step", snap_step);
-				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_separation", snap_separation);
-				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_mode", snap_mode);
+				EditorSettings *es = EditorSettings::get_singleton();
+				es->set_project_metadata("texture_region_editor", "snap_offset", snap_offset);
+				es->set_project_metadata("texture_region_editor", "snap_step", snap_step);
+				es->set_project_metadata("texture_region_editor", "snap_separation", snap_separation);
+				es->set_project_metadata("texture_region_editor", "snap_mode", snap_mode);
 			}
 		} break;
 
@@ -1226,10 +1227,11 @@ TextureRegionEditor::TextureRegionEditor() {
 	set_close_on_escape(false);
 
 	// A power-of-two value works better as a default grid size.
-	snap_offset = EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_offset", Vector2());
-	snap_step = EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_step", Vector2(8, 8));
-	snap_separation = EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_separation", Vector2());
-	snap_mode = (SnapMode)(int)EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_mode", SNAP_NONE);
+	EditorSettings *editor_settings = EditorSettings::get_singleton();
+	snap_offset = editor_settings->get_project_metadata("texture_region_editor", "snap_offset", Vector2());
+	snap_step = editor_settings->get_project_metadata("texture_region_editor", "snap_step", Vector2(8, 8));
+	snap_separation = editor_settings->get_project_metadata("texture_region_editor", "snap_separation", Vector2());
+	snap_mode = (SnapMode)(int)editor_settings->get_project_metadata("texture_region_editor", "snap_mode", SNAP_NONE);
 
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &TextureRegionEditor::_pan_callback), callable_mp(this, &TextureRegionEditor::_zoom_callback));

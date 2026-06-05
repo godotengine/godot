@@ -82,8 +82,9 @@ void GroupSettingsEditor::_item_edited() {
 
 		undo_redo->create_action(TTR("Set Group Description"));
 
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), name, new_description);
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, old_description);
+		ProjectSettings *ps = ProjectSettings::get_singleton();
+		undo_redo->add_do_property(ps, name, new_description);
+		undo_redo->add_undo_property(ps, name, old_description);
 
 		undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_groups");
 		undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_groups");
@@ -159,8 +160,9 @@ void GroupSettingsEditor::_add_group(const String &p_name, const String &p_descr
 
 	name = GLOBAL_GROUP_PREFIX + name;
 
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, p_description);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	undo_redo->add_do_property(ps, name, p_description);
+	undo_redo->add_undo_property(ps, name, Variant());
 
 	undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_groups");
 	undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_groups");
@@ -348,11 +350,13 @@ void GroupSettingsEditor::_confirm_rename() {
 
 	String description = ti->get_meta("__description");
 
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), property_new_name, description);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_new_name, Variant());
+	ProjectSettings *ps = ProjectSettings::get_singleton();
 
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), property_old_name, Variant());
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_old_name, description);
+	undo_redo->add_do_property(ps, property_new_name, description);
+	undo_redo->add_undo_property(ps, property_new_name, Variant());
+
+	undo_redo->add_do_property(ps, property_old_name, Variant());
+	undo_redo->add_undo_property(ps, property_old_name, description);
 
 	if (rename_check_box->is_pressed()) {
 		undo_redo->add_do_method(this, "rename_references", old_name, new_name);

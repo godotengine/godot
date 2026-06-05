@@ -459,15 +459,16 @@ void GroupsEditor::_menu_id_pressed(int p_id) {
 			String description = ti->get_meta("__description");
 			String property_name = GLOBAL_GROUP_PREFIX + group_name;
 
+			ProjectSettings *project_settings = ProjectSettings::get_singleton();
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			if (is_local) {
 				undo_redo->create_action(TTR("Convert to Global Group"));
 
-				undo_redo->add_do_property(ProjectSettings::get_singleton(), property_name, "");
-				undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_name, Variant());
+				undo_redo->add_do_property(project_settings, property_name, "");
+				undo_redo->add_undo_property(project_settings, property_name, Variant());
 
-				undo_redo->add_do_method(ProjectSettings::get_singleton(), "save");
-				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "save");
+				undo_redo->add_do_method(project_settings, "save");
+				undo_redo->add_undo_method(project_settings, "save");
 
 				undo_redo->add_undo_method(this, "_add_scene_group", group_name);
 
@@ -478,11 +479,11 @@ void GroupsEditor::_menu_id_pressed(int p_id) {
 			} else {
 				undo_redo->create_action(TTR("Convert to Scene Group"));
 
-				undo_redo->add_do_property(ProjectSettings::get_singleton(), property_name, Variant());
-				undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_name, description);
+				undo_redo->add_do_property(project_settings, property_name, Variant());
+				undo_redo->add_undo_property(project_settings, property_name, description);
 
-				undo_redo->add_do_method(ProjectSettings::get_singleton(), "save");
-				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "save");
+				undo_redo->add_do_method(project_settings, "save");
+				undo_redo->add_undo_method(project_settings, "save");
 
 				undo_redo->add_do_method(this, "_add_scene_group", group_name);
 
@@ -549,11 +550,13 @@ void GroupsEditor::_confirm_add() {
 	} else {
 		String property_name = GLOBAL_GROUP_PREFIX + name;
 
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), property_name, description);
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_name, Variant());
+		ProjectSettings *project_settings = ProjectSettings::get_singleton();
 
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "save");
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "save");
+		undo_redo->add_do_property(project_settings, property_name, description);
+		undo_redo->add_undo_property(project_settings, property_name, Variant());
+
+		undo_redo->add_do_method(project_settings, "save");
+		undo_redo->add_undo_method(project_settings, "save");
 
 		undo_redo->add_do_method(this, "_update_groups");
 		undo_redo->add_undo_method(this, "_update_groups");
@@ -595,19 +598,22 @@ void GroupsEditor::_confirm_rename() {
 
 		String description = ti->get_meta("__description");
 
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), property_new_name, description);
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_new_name, Variant());
+		ProjectSettings *project_settings = ProjectSettings::get_singleton();
 
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), property_old_name, Variant());
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_old_name, description);
+		undo_redo->add_do_property(project_settings, property_new_name, description);
+		undo_redo->add_undo_property(project_settings, property_new_name, Variant());
+
+		undo_redo->add_do_property(project_settings, property_old_name, Variant());
+		undo_redo->add_undo_property(project_settings, property_old_name, description);
 
 		if (rename_check_box->is_pressed()) {
-			undo_redo->add_do_method(ProjectSettingsEditor::get_singleton()->get_group_settings(), "rename_references", old_name, new_name);
-			undo_redo->add_undo_method(ProjectSettingsEditor::get_singleton()->get_group_settings(), "rename_references", new_name, old_name);
+			GroupSettingsEditor *group_settings = ProjectSettingsEditor::get_singleton()->get_group_settings();
+			undo_redo->add_do_method(group_settings, "rename_references", old_name, new_name);
+			undo_redo->add_undo_method(group_settings, "rename_references", new_name, old_name);
 		}
 
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "save");
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "save");
+		undo_redo->add_do_method(project_settings, "save");
+		undo_redo->add_undo_method(project_settings, "save");
 
 		undo_redo->add_do_method(this, "_update_groups");
 		undo_redo->add_undo_method(this, "_update_groups");
@@ -640,15 +646,17 @@ void GroupsEditor::_confirm_delete() {
 		String property_name = GLOBAL_GROUP_PREFIX + name;
 		String description = ti->get_meta("__description");
 
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), property_name, Variant());
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_name, description);
+		ProjectSettings *project_settings = ProjectSettings::get_singleton();
+
+		undo_redo->add_do_property(project_settings, property_name, Variant());
+		undo_redo->add_undo_property(project_settings, property_name, description);
 
 		if (remove_check_box->is_pressed()) {
 			undo_redo->add_do_method(ProjectSettingsEditor::get_singleton()->get_group_settings(), "remove_references", name);
 		}
 
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "save");
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "save");
+		undo_redo->add_do_method(project_settings, "save");
+		undo_redo->add_undo_method(project_settings, "save");
 
 		undo_redo->add_do_method(this, "_update_groups");
 		undo_redo->add_undo_method(this, "_update_groups");

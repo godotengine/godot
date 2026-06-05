@@ -214,19 +214,20 @@ void EditorNode3DGizmo::set_node_3d(Node3D *p_node) {
 }
 
 void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden) {
-	instance = RS::get_singleton()->instance_create2(mesh->get_rid(), p_base->get_world_3d()->get_scenario());
-	RS::get_singleton()->instance_attach_object_instance_id(instance, p_base->get_instance_id());
+	RS *rs = RS::get_singleton();
+	instance = rs->instance_create2(mesh->get_rid(), p_base->get_world_3d()->get_scenario());
+	rs->instance_attach_object_instance_id(instance, p_base->get_instance_id());
 	if (skin_reference.is_valid()) {
-		RS::get_singleton()->instance_attach_skeleton(instance, skin_reference->get_skeleton());
+		rs->instance_attach_skeleton(instance, skin_reference->get_skeleton());
 	}
 	if (extra_margin) {
-		RS::get_singleton()->instance_set_extra_visibility_margin(instance, 1);
+		rs->instance_set_extra_visibility_margin(instance, 1);
 	}
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, RSE::SHADOW_CASTING_SETTING_OFF);
+	rs->instance_geometry_set_cast_shadows_setting(instance, RSE::SHADOW_CASTING_SETTING_OFF);
 	int layer = p_hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
-	RS::get_singleton()->instance_set_layer_mask(instance, layer); //gizmos are 26
-	RS::get_singleton()->instance_geometry_set_flag(instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	rs->instance_set_layer_mask(instance, layer); //gizmos are 26
+	rs->instance_geometry_set_flag(instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	rs->instance_geometry_set_flag(instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 }
 
 void EditorNode3DGizmo::add_mesh(const Ref<Mesh> &p_mesh, const Ref<Material> &p_material, const Transform3D &p_xform, const Ref<SkinReference> &p_skin_reference) {
@@ -810,8 +811,10 @@ void EditorNode3DGizmo::create() {
 void EditorNode3DGizmo::transform() {
 	ERR_FAIL_NULL(spatial_node);
 	ERR_FAIL_COND(!valid);
+
+	RS *rs = RS::get_singleton();
 	for (int i = 0; i < instances.size(); i++) {
-		RS::get_singleton()->instance_set_transform(instances[i].instance, spatial_node->get_global_transform() * instances[i].xform);
+		rs->instance_set_transform(instances[i].instance, spatial_node->get_global_transform() * instances[i].xform);
 	}
 
 	_update_bvh();
@@ -822,9 +825,10 @@ void EditorNode3DGizmo::free() {
 	ERR_FAIL_NULL(spatial_node);
 	ERR_FAIL_COND(!valid);
 
+	RS *rs = RS::get_singleton();
 	for (int i = 0; i < instances.size(); i++) {
 		if (instances[i].instance.is_valid()) {
-			RS::get_singleton()->free_rid(instances[i].instance);
+			rs->free_rid(instances[i].instance);
 		}
 		instances.write[i].instance = RID();
 	}
@@ -840,8 +844,9 @@ void EditorNode3DGizmo::free() {
 void EditorNode3DGizmo::set_hidden(bool p_hidden) {
 	hidden = p_hidden;
 	int layer = hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
+	RS *rs = RS::get_singleton();
 	for (int i = 0; i < instances.size(); ++i) {
-		RS::get_singleton()->instance_set_layer_mask(instances[i].instance, layer);
+		rs->instance_set_layer_mask(instances[i].instance, layer);
 	}
 }
 

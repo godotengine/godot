@@ -124,10 +124,11 @@ void ProjectExportDialog::_notification(int p_what) {
 			delete_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 			patch_add_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 
-			script_key_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
-			export_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
-			export_error2->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
-			export_warning->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("warning_color"), EditorStringName(Editor)));
+			Ref<Theme> editor_theme = EditorNode::get_singleton()->get_editor_theme();
+			script_key_error->add_theme_color_override(SceneStringName(font_color), editor_theme->get_color(SNAME("error_color"), EditorStringName(Editor)));
+			export_error->add_theme_color_override(SceneStringName(font_color), editor_theme->get_color(SNAME("error_color"), EditorStringName(Editor)));
+			export_error2->add_theme_color_override(SceneStringName(font_color), editor_theme->get_color(SNAME("error_color"), EditorStringName(Editor)));
+			export_warning->add_theme_color_override(SceneStringName(font_color), editor_theme->get_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -146,10 +147,10 @@ void ProjectExportDialog::_notification(int p_what) {
 }
 
 void ProjectExportDialog::popup_export() {
+	EditorExport *editor_export = EditorExport::get_singleton();
 	add_preset->get_popup()->clear();
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-		Ref<EditorExportPlatform> plat = EditorExport::get_singleton()->get_export_platform(i);
-
+	for (int i = 0; i < editor_export->get_export_platform_count(); i++) {
+		Ref<EditorExportPlatform> plat = editor_export->get_export_platform(i);
 		add_preset->get_popup()->add_icon_item(plat->get_logo(), plat->get_name());
 	}
 
@@ -168,16 +169,19 @@ void ProjectExportDialog::popup_export() {
 }
 
 void ProjectExportDialog::_add_preset(int p_platform) {
-	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_platform(p_platform)->create_preset();
+	EditorExport *editor_export = EditorExport::get_singleton();
+	Ref<EditorExportPlatform> editor_export_platform = editor_export->get_export_platform(p_platform);
+
+	Ref<EditorExportPreset> preset = editor_export_platform->create_preset();
 	ERR_FAIL_COND(preset.is_null());
 
-	String preset_name = EditorExport::get_singleton()->get_export_platform(p_platform)->get_name();
+	String preset_name = editor_export_platform->get_name();
 	int attempt = 1;
 	while (true) {
 		bool valid = true;
 
-		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-			Ref<EditorExportPreset> p = EditorExport::get_singleton()->get_export_preset(i);
+		for (int i = 0; i < editor_export->get_export_preset_count(); i++) {
+			Ref<EditorExportPreset> p = editor_export->get_export_preset(i);
 			if (p->get_name() == preset_name) {
 				valid = false;
 				break;
@@ -189,16 +193,16 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 		}
 
 		attempt++;
-		preset_name = EditorExport::get_singleton()->get_export_platform(p_platform)->get_name() + " " + itos(attempt);
+		preset_name = editor_export_platform->get_name() + " " + itos(attempt);
 	}
 
 	preset->set_name(preset_name);
-	if (EditorExport::get_singleton()->get_runnable_preset_for_platform(preset->get_platform()).is_null()) {
-		EditorExport::get_singleton()->set_runnable_preset(preset);
+	if (editor_export->get_runnable_preset_for_platform(preset->get_platform()).is_null()) {
+		editor_export->set_runnable_preset(preset);
 	}
-	EditorExport::get_singleton()->add_export_preset(preset);
+	editor_export->add_export_preset(preset);
 	_update_presets();
-	_edit_preset(EditorExport::get_singleton()->get_export_preset_count() - 1);
+	_edit_preset(editor_export->get_export_preset_count() - 1);
 }
 
 void ProjectExportDialog::_force_update_current_preset_parameters() {

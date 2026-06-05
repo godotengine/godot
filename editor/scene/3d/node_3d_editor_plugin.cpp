@@ -3607,6 +3607,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 				follow_mode->hide();
 			}
 
+			RS *rs = RS::get_singleton();
+
 			Node *scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
 			if (previewing_cinema && scene_root != nullptr) {
 				Camera3D *cam = scene_root->get_viewport()->get_camera_3d();
@@ -3620,7 +3622,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 					previewing = cam;
 					previewing->connect(SceneStringName(tree_exited), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 					previewing->connect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
-					RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
+					rs->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
 					surface->queue_redraw();
 				}
 			}
@@ -3687,10 +3689,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 					t_offset.basis = t_offset.basis * aabb_s;
 				}
 
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_offset, t_offset);
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray, t);
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray_offset, t_offset);
+				rs->instance_set_transform(se->sbox_instance, t);
+				rs->instance_set_transform(se->sbox_instance_offset, t_offset);
+				rs->instance_set_transform(se->sbox_instance_xray, t);
+				rs->instance_set_transform(se->sbox_instance_xray_offset, t_offset);
 			}
 
 			if (changed || (spatial_editor->is_gizmo_visible() && !exist)) {
@@ -4795,92 +4797,95 @@ void Node3DEditorViewport::_update_centered_labels() {
 void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 	uint32_t layer = 1 << (GIZMO_BASE_LAYER + p_idx);
 
+	RS *rs = RS::get_singleton();
+
 	for (int i = 0; i < 3; i++) {
-		move_gizmo_instance[i] = RS::get_singleton()->instance_create();
-		RS::get_singleton()->instance_set_base(move_gizmo_instance[i], spatial_editor->get_move_gizmo(i)->get_rid());
-		RS::get_singleton()->instance_set_scenario(move_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(move_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		move_gizmo_instance[i] = rs->instance_create();
+		rs->instance_set_base(move_gizmo_instance[i], spatial_editor->get_move_gizmo(i)->get_rid());
+		rs->instance_set_scenario(move_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+		rs->instance_set_visible(move_gizmo_instance[i], false);
+		rs->instance_geometry_set_cast_shadows_setting(move_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
+		rs->instance_set_layer_mask(move_gizmo_instance[i], layer);
+		rs->instance_geometry_set_flag(move_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		rs->instance_geometry_set_flag(move_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-		move_plane_gizmo_instance[i] = RS::get_singleton()->instance_create();
-		RS::get_singleton()->instance_set_base(move_plane_gizmo_instance[i], spatial_editor->get_move_plane_gizmo(i)->get_rid());
-		RS::get_singleton()->instance_set_scenario(move_plane_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_plane_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(move_plane_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		move_plane_gizmo_instance[i] = rs->instance_create();
+		rs->instance_set_base(move_plane_gizmo_instance[i], spatial_editor->get_move_plane_gizmo(i)->get_rid());
+		rs->instance_set_scenario(move_plane_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+		rs->instance_set_visible(move_plane_gizmo_instance[i], false);
+		rs->instance_geometry_set_cast_shadows_setting(move_plane_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
+		rs->instance_set_layer_mask(move_plane_gizmo_instance[i], layer);
+		rs->instance_geometry_set_flag(move_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		rs->instance_geometry_set_flag(move_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-		scale_gizmo_instance[i] = RS::get_singleton()->instance_create();
-		RS::get_singleton()->instance_set_base(scale_gizmo_instance[i], spatial_editor->get_scale_gizmo(i)->get_rid());
-		RS::get_singleton()->instance_set_scenario(scale_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(scale_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(scale_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(scale_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		scale_gizmo_instance[i] = rs->instance_create();
+		rs->instance_set_base(scale_gizmo_instance[i], spatial_editor->get_scale_gizmo(i)->get_rid());
+		rs->instance_set_scenario(scale_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+		rs->instance_set_visible(scale_gizmo_instance[i], false);
+		rs->instance_geometry_set_cast_shadows_setting(scale_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
+		rs->instance_set_layer_mask(scale_gizmo_instance[i], layer);
+		rs->instance_geometry_set_flag(scale_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		rs->instance_geometry_set_flag(scale_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-		scale_plane_gizmo_instance[i] = RS::get_singleton()->instance_create();
-		RS::get_singleton()->instance_set_base(scale_plane_gizmo_instance[i], spatial_editor->get_scale_plane_gizmo(i)->get_rid());
-		RS::get_singleton()->instance_set_scenario(scale_plane_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_plane_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(scale_plane_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		scale_plane_gizmo_instance[i] = rs->instance_create();
+		rs->instance_set_base(scale_plane_gizmo_instance[i], spatial_editor->get_scale_plane_gizmo(i)->get_rid());
+		rs->instance_set_scenario(scale_plane_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+		rs->instance_set_visible(scale_plane_gizmo_instance[i], false);
+		rs->instance_geometry_set_cast_shadows_setting(scale_plane_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
+		rs->instance_set_layer_mask(scale_plane_gizmo_instance[i], layer);
+		rs->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		rs->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-		axis_gizmo_instance[i] = RS::get_singleton()->instance_create();
+		axis_gizmo_instance[i] = rs->instance_create();
 	}
 
 	for (int i = 0; i < 3; i++) {
-		RS::get_singleton()->instance_set_base(axis_gizmo_instance[i], spatial_editor->get_axis_gizmo(i)->get_rid());
-		RS::get_singleton()->instance_set_scenario(axis_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(axis_gizmo_instance[i], true);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(axis_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(axis_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(axis_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(axis_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		rs->instance_set_base(axis_gizmo_instance[i], spatial_editor->get_axis_gizmo(i)->get_rid());
+		rs->instance_set_scenario(axis_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+		rs->instance_set_visible(axis_gizmo_instance[i], true);
+		rs->instance_geometry_set_cast_shadows_setting(axis_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
+		rs->instance_set_layer_mask(axis_gizmo_instance[i], layer);
+		rs->instance_geometry_set_flag(axis_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		rs->instance_geometry_set_flag(axis_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	}
 
 	for (int i = 0; i < 4; i++) {
-		rotate_gizmo_instance[i] = RS::get_singleton()->instance_create();
-		RS::get_singleton()->instance_set_base(rotate_gizmo_instance[i], spatial_editor->get_rotate_gizmo(i)->get_rid());
-		RS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(rotate_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		rotate_gizmo_instance[i] = rs->instance_create();
+		rs->instance_set_base(rotate_gizmo_instance[i], spatial_editor->get_rotate_gizmo(i)->get_rid());
+		rs->instance_set_scenario(rotate_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+		rs->instance_set_visible(rotate_gizmo_instance[i], false);
+		rs->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
+		rs->instance_set_layer_mask(rotate_gizmo_instance[i], layer);
+		rs->instance_geometry_set_flag(rotate_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		rs->instance_geometry_set_flag(rotate_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	}
 
 	// Create trackball sphere instance
-	trackball_sphere_instance = RS::get_singleton()->instance_create();
-	RS::get_singleton()->instance_set_base(trackball_sphere_instance, spatial_editor->get_trackball_sphere_gizmo()->get_rid());
-	RS::get_singleton()->instance_set_scenario(trackball_sphere_instance, get_tree()->get_root()->get_world_3d()->get_scenario());
-	RS::get_singleton()->instance_set_visible(trackball_sphere_instance, false);
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(trackball_sphere_instance, RSE::SHADOW_CASTING_SETTING_OFF);
-	RS::get_singleton()->instance_set_layer_mask(trackball_sphere_instance, layer);
-	RS::get_singleton()->instance_geometry_set_flag(trackball_sphere_instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(trackball_sphere_instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	trackball_sphere_instance = rs->instance_create();
+	rs->instance_set_base(trackball_sphere_instance, spatial_editor->get_trackball_sphere_gizmo()->get_rid());
+	rs->instance_set_scenario(trackball_sphere_instance, get_tree()->get_root()->get_world_3d()->get_scenario());
+	rs->instance_set_visible(trackball_sphere_instance, false);
+	rs->instance_geometry_set_cast_shadows_setting(trackball_sphere_instance, RSE::SHADOW_CASTING_SETTING_OFF);
+	rs->instance_set_layer_mask(trackball_sphere_instance, layer);
+	rs->instance_geometry_set_flag(trackball_sphere_instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	rs->instance_geometry_set_flag(trackball_sphere_instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 }
 
 void Node3DEditorViewport::_finish_gizmo_instances() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	RS *rs = RS::get_singleton();
+	ERR_FAIL_NULL(rs);
 	for (int i = 0; i < 3; i++) {
-		RS::get_singleton()->free_rid(move_gizmo_instance[i]);
-		RS::get_singleton()->free_rid(move_plane_gizmo_instance[i]);
-		RS::get_singleton()->free_rid(rotate_gizmo_instance[i]);
-		RS::get_singleton()->free_rid(scale_gizmo_instance[i]);
-		RS::get_singleton()->free_rid(scale_plane_gizmo_instance[i]);
-		RS::get_singleton()->free_rid(axis_gizmo_instance[i]);
+		rs->free_rid(move_gizmo_instance[i]);
+		rs->free_rid(move_plane_gizmo_instance[i]);
+		rs->free_rid(rotate_gizmo_instance[i]);
+		rs->free_rid(scale_gizmo_instance[i]);
+		rs->free_rid(scale_plane_gizmo_instance[i]);
+		rs->free_rid(axis_gizmo_instance[i]);
 	}
 	// Rotation white outline
-	RS::get_singleton()->free_rid(rotate_gizmo_instance[3]);
+	rs->free_rid(rotate_gizmo_instance[3]);
 
-	RS::get_singleton()->free_rid(trackball_sphere_instance);
+	rs->free_rid(trackball_sphere_instance);
 }
 
 void Node3DEditorViewport::_disable_follow_mode() {
@@ -5029,20 +5034,22 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		return;
 	}
 
+	RS *rs = RS::get_singleton();
+
 	Transform3D xform = spatial_editor->get_gizmo_transform();
 
 	Transform3D camera_xform = camera->get_transform();
 
 	if (xform.origin.is_equal_approx(camera_xform.origin)) {
 		for (int i = 0; i < 3; i++) {
-			RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(axis_gizmo_instance[i], false);
+			rs->instance_set_visible(move_gizmo_instance[i], false);
+			rs->instance_set_visible(move_plane_gizmo_instance[i], false);
+			rs->instance_set_visible(rotate_gizmo_instance[i], false);
+			rs->instance_set_visible(scale_gizmo_instance[i], false);
+			rs->instance_set_visible(scale_plane_gizmo_instance[i], false);
+			rs->instance_set_visible(axis_gizmo_instance[i], false);
 		}
-		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], false);
+		rs->instance_set_visible(rotate_gizmo_instance[3], false);
 		return;
 	}
 
@@ -5067,14 +5074,14 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	// this prevents supplying bad values to the renderer and then having to filter it out again.
 	if (xform.basis.determinant() == 0) {
 		for (int i = 0; i < 3; i++) {
-			RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(axis_gizmo_instance[i], false);
+			rs->instance_set_visible(move_gizmo_instance[i], false);
+			rs->instance_set_visible(move_plane_gizmo_instance[i], false);
+			rs->instance_set_visible(rotate_gizmo_instance[i], false);
+			rs->instance_set_visible(scale_gizmo_instance[i], false);
+			rs->instance_set_visible(scale_plane_gizmo_instance[i], false);
+			rs->instance_set_visible(axis_gizmo_instance[i], false);
 		}
-		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], false);
+		rs->instance_set_visible(rotate_gizmo_instance[3], false);
 		return;
 	}
 
@@ -5116,17 +5123,17 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		}
 		axis_angle.basis.scale(scale);
 		axis_angle.origin = xform.origin;
-		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
-		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
-		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_rotate_gizmo && i != arc_replaces_ring);
-		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
-		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
-		RenderingServer::get_singleton()->instance_set_transform(axis_gizmo_instance[i], xform);
+		rs->instance_set_transform(move_gizmo_instance[i], axis_angle);
+		rs->instance_set_visible(move_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+		rs->instance_set_transform(move_plane_gizmo_instance[i], axis_angle);
+		rs->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+		rs->instance_set_transform(rotate_gizmo_instance[i], axis_angle);
+		rs->instance_set_visible(rotate_gizmo_instance[i], show_rotate_gizmo && i != arc_replaces_ring);
+		rs->instance_set_transform(scale_gizmo_instance[i], axis_angle);
+		rs->instance_set_visible(scale_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
+		rs->instance_set_transform(scale_plane_gizmo_instance[i], axis_angle);
+		rs->instance_set_visible(scale_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
+		rs->instance_set_transform(axis_gizmo_instance[i], xform);
 	}
 
 	Transform3D view_rotation_xform = xform;
@@ -5136,17 +5143,16 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	bool show_trackball_sphere = can_show_trackball && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) && !hide_gizmo_during_trackball;
 	Transform3D trackball_xform = view_rotation_xform;
 	trackball_xform.basis.scale(scale);
-	RenderingServer::get_singleton()->instance_set_transform(trackball_sphere_instance, trackball_xform);
-	RenderingServer::get_singleton()->instance_set_visible(trackball_sphere_instance, show_trackball_sphere);
+	rs->instance_set_transform(trackball_sphere_instance, trackball_xform);
+	rs->instance_set_visible(trackball_sphere_instance, show_trackball_sphere);
 
 	bool shrink_view_ring = arc_replaces_ring >= 0 && arc_replaces_ring < 3;
 	Vector3 view_ring_scale = shrink_view_ring ? scale : scale * (spatial_editor->gizmo_view_rotation_scale / GIZMO_CIRCLE_SIZE);
 	view_rotation_xform.basis.scale(view_ring_scale);
-	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], view_rotation_xform);
-	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], show_rotate_gizmo && arc_replaces_ring != 3);
+	rs->instance_set_transform(rotate_gizmo_instance[3], view_rotation_xform);
+	rs->instance_set_visible(rotate_gizmo_instance[3], show_rotate_gizmo && arc_replaces_ring != 3);
 
 	bool show_axes = spatial_editor->is_gizmo_visible() && _edit.mode != TRANSFORM_NONE && !hide_gizmo_during_trackball;
-	RenderingServer *rs = RenderingServer::get_singleton();
 	rs->instance_set_visible(axis_gizmo_instance[0], show_axes && (_edit.plane == TRANSFORM_X_AXIS || _edit.plane == TRANSFORM_XY || _edit.plane == TRANSFORM_XZ));
 	rs->instance_set_visible(axis_gizmo_instance[1], show_axes && (_edit.plane == TRANSFORM_Y_AXIS || _edit.plane == TRANSFORM_XY || _edit.plane == TRANSFORM_YZ));
 	rs->instance_set_visible(axis_gizmo_instance[2], show_axes && (_edit.plane == TRANSFORM_Z_AXIS || _edit.plane == TRANSFORM_XZ || _edit.plane == TRANSFORM_YZ));
@@ -6780,39 +6786,40 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	vbox->add_child(hbox);
 
 	view_display_menu = memnew(MenuButton);
+	PopupMenu *view_display_menu_popup = view_display_menu->get_popup();
 	view_display_menu->set_flat(false);
 	view_display_menu->set_h_size_flags(0);
 	view_display_menu->set_shortcut_context(this);
 	view_display_menu->set_accessibility_name(TTRC("View"));
 	view_display_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	view_display_menu->get_popup()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+	view_display_menu_popup->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	hbox->add_child(view_display_menu);
 
-	view_display_menu->get_popup()->set_hide_on_checkable_item_selection(false);
+	view_display_menu_popup->set_hide_on_checkable_item_selection(false);
 
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/left_view"), VIEW_LEFT);
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/right_view"), VIEW_RIGHT);
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/front_view"), VIEW_FRONT);
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/rear_view"), VIEW_REAR);
-	view_display_menu->get_popup()->add_separator();
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/switch_perspective_orthogonal"), VIEW_SWITCH_PERSPECTIVE_ORTHOGONAL);
-	view_display_menu->get_popup()->add_radio_check_item(TTRC("Perspective"), VIEW_PERSPECTIVE);
-	view_display_menu->get_popup()->add_radio_check_item(TTRC("Orthogonal"), VIEW_ORTHOGONAL);
-	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE), true);
-	view_display_menu->get_popup()->add_check_item(TTRC("Auto Orthogonal Enabled"), VIEW_AUTO_ORTHOGONAL);
-	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_AUTO_ORTHOGONAL), true);
-	view_display_menu->get_popup()->add_separator();
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_lock_rotation", TTRC("Lock View Rotation")), VIEW_LOCK_ROTATION);
-	view_display_menu->get_popup()->add_separator();
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/left_view"), VIEW_LEFT);
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/right_view"), VIEW_RIGHT);
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/front_view"), VIEW_FRONT);
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/rear_view"), VIEW_REAR);
+	view_display_menu_popup->add_separator();
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/switch_perspective_orthogonal"), VIEW_SWITCH_PERSPECTIVE_ORTHOGONAL);
+	view_display_menu_popup->add_radio_check_item(TTRC("Perspective"), VIEW_PERSPECTIVE);
+	view_display_menu_popup->add_radio_check_item(TTRC("Orthogonal"), VIEW_ORTHOGONAL);
+	view_display_menu_popup->set_item_checked(view_display_menu_popup->get_item_index(VIEW_PERSPECTIVE), true);
+	view_display_menu_popup->add_check_item(TTRC("Auto Orthogonal Enabled"), VIEW_AUTO_ORTHOGONAL);
+	view_display_menu_popup->set_item_checked(view_display_menu_popup->get_item_index(VIEW_AUTO_ORTHOGONAL), true);
+	view_display_menu_popup->add_separator();
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_lock_rotation", TTRC("Lock View Rotation")), VIEW_LOCK_ROTATION);
+	view_display_menu_popup->add_separator();
 	// TRANSLATORS: "Normal" as in "normal life", not "normal vector".
-	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_normal", TTRC("Display Normal")), VIEW_DISPLAY_NORMAL);
-	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_wireframe", TTRC("Display Wireframe")), VIEW_DISPLAY_WIREFRAME);
-	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_overdraw", TTRC("Display Overdraw")), VIEW_DISPLAY_OVERDRAW);
-	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_lighting", TTRC("Display Lighting")), VIEW_DISPLAY_LIGHTING);
-	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_unshaded", TTRC("Display Unshaded")), VIEW_DISPLAY_UNSHADED);
-	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), true);
+	view_display_menu_popup->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_normal", TTRC("Display Normal")), VIEW_DISPLAY_NORMAL);
+	view_display_menu_popup->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_wireframe", TTRC("Display Wireframe")), VIEW_DISPLAY_WIREFRAME);
+	view_display_menu_popup->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_overdraw", TTRC("Display Overdraw")), VIEW_DISPLAY_OVERDRAW);
+	view_display_menu_popup->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_lighting", TTRC("Display Lighting")), VIEW_DISPLAY_LIGHTING);
+	view_display_menu_popup->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_unshaded", TTRC("Display Unshaded")), VIEW_DISPLAY_UNSHADED);
+	view_display_menu_popup->set_item_checked(view_display_menu_popup->get_item_index(VIEW_DISPLAY_NORMAL), true);
 
 	display_submenu = memnew(PopupMenu);
 	display_submenu->set_hide_on_checkable_item_selection(false);
@@ -6872,35 +6879,35 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 			TTRC("Represents motion vectors with colored lines in the direction of motion. Gray dots represent areas with no per-pixel motion."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Internal Buffer"), VIEW_DISPLAY_INTERNAL_BUFFER, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
 			TTRC("Shows the scene rendered in linear colorspace before any tonemapping or post-processing."));
-	view_display_menu->get_popup()->add_submenu_node_item(TTRC("Display Advanced..."), display_submenu, VIEW_DISPLAY_ADVANCED);
+	view_display_menu_popup->add_submenu_node_item(TTRC("Display Advanced..."), display_submenu, VIEW_DISPLAY_ADVANCED);
 
-	view_display_menu->get_popup()->add_separator();
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTRC("View Environment")), VIEW_ENVIRONMENT);
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTRC("View Gizmos")), VIEW_GIZMOS);
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_transform_gizmo", TTRC("View Transform Gizmo")), VIEW_TRANSFORM_GIZMO);
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid_lines", TTRC("View Grid")), VIEW_GRID);
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_information", TTRC("View Information")), VIEW_INFORMATION);
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_fps", TTRC("View Frame Time")), VIEW_FRAME_TIME);
-	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT), true);
-	view_display_menu->get_popup()->add_separator();
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_half_resolution", TTRC("Half Resolution")), VIEW_HALF_RESOLUTION);
-	view_display_menu->get_popup()->add_separator();
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_listener", TTRC("Audio Listener")), VIEW_AUDIO_LISTENER);
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_doppler", TTRC("Enable Doppler")), VIEW_AUDIO_DOPPLER);
-	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GIZMOS), true);
-	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_TRANSFORM_GIZMO), true);
-	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GRID), true);
+	view_display_menu_popup->add_separator();
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTRC("View Environment")), VIEW_ENVIRONMENT);
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTRC("View Gizmos")), VIEW_GIZMOS);
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_transform_gizmo", TTRC("View Transform Gizmo")), VIEW_TRANSFORM_GIZMO);
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid_lines", TTRC("View Grid")), VIEW_GRID);
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_information", TTRC("View Information")), VIEW_INFORMATION);
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_fps", TTRC("View Frame Time")), VIEW_FRAME_TIME);
+	view_display_menu_popup->set_item_checked(view_display_menu_popup->get_item_index(VIEW_ENVIRONMENT), true);
+	view_display_menu_popup->add_separator();
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_half_resolution", TTRC("Half Resolution")), VIEW_HALF_RESOLUTION);
+	view_display_menu_popup->add_separator();
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_listener", TTRC("Audio Listener")), VIEW_AUDIO_LISTENER);
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_doppler", TTRC("Enable Doppler")), VIEW_AUDIO_DOPPLER);
+	view_display_menu_popup->set_item_checked(view_display_menu_popup->get_item_index(VIEW_GIZMOS), true);
+	view_display_menu_popup->set_item_checked(view_display_menu_popup->get_item_index(VIEW_TRANSFORM_GIZMO), true);
+	view_display_menu_popup->set_item_checked(view_display_menu_popup->get_item_index(VIEW_GRID), true);
 
-	view_display_menu->get_popup()->add_separator();
-	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_cinematic_preview", TTRC("Cinematic Preview")), VIEW_CINEMATIC_PREVIEW);
+	view_display_menu_popup->add_separator();
+	view_display_menu_popup->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_cinematic_preview", TTRC("Cinematic Preview")), VIEW_CINEMATIC_PREVIEW);
 
-	view_display_menu->get_popup()->add_separator();
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
-	view_display_menu->get_popup()->set_item_tooltip(-1, TTR("Press Focus Selection twice to start following the selection as it moves. Press it yet another time to stop following the selection."));
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
-	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
-	view_display_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_menu_option));
+	view_display_menu_popup->add_separator();
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
+	view_display_menu_popup->set_item_tooltip(-1, TTR("Press Focus Selection twice to start following the selection as it moves. Press it yet another time to stop following the selection."));
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
+	view_display_menu_popup->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
+	view_display_menu_popup->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_menu_option));
 	display_submenu->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_menu_option));
 	view_display_menu->set_disable_shortcuts(true);
 
@@ -7360,18 +7367,19 @@ Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
 Node3DEditor *Node3DEditor::singleton = nullptr;
 
 Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	RS *rs = RS::get_singleton();
+	ERR_FAIL_NULL(rs);
 	if (sbox_instance.is_valid()) {
-		RenderingServer::get_singleton()->free_rid(sbox_instance);
+		rs->free_rid(sbox_instance);
 	}
 	if (sbox_instance_offset.is_valid()) {
-		RenderingServer::get_singleton()->free_rid(sbox_instance_offset);
+		rs->free_rid(sbox_instance_offset);
 	}
 	if (sbox_instance_xray.is_valid()) {
-		RenderingServer::get_singleton()->free_rid(sbox_instance_xray);
+		rs->free_rid(sbox_instance_xray);
 	}
 	if (sbox_instance_xray_offset.is_valid()) {
-		RenderingServer::get_singleton()->free_rid(sbox_instance_xray_offset);
+		rs->free_rid(sbox_instance_xray_offset);
 	}
 }
 
@@ -7485,49 +7493,51 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 		return nullptr;
 	}
 
+	RS *rs = RS::get_singleton();
+
 	Node3DEditorSelectedItem *si = memnew(Node3DEditorSelectedItem);
 
 	si->sp = sp;
-	si->sbox_instance = RenderingServer::get_singleton()->instance_create2(
+	si->sbox_instance = rs->instance_create2(
 			selection_box->get_rid(),
 			sp->get_world_3d()->get_scenario());
-	si->sbox_instance_offset = RenderingServer::get_singleton()->instance_create2(
+	si->sbox_instance_offset = rs->instance_create2(
 			selection_box->get_rid(),
 			sp->get_world_3d()->get_scenario());
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
+	rs->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance,
 			RSE::SHADOW_CASTING_SETTING_OFF);
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
+	rs->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance_offset,
 			RSE::SHADOW_CASTING_SETTING_OFF);
 	// Use the Edit layer to hide the selection box when View Gizmos is disabled, since it is a bit distracting.
 	// It's still possible to approximately guess what is selected by looking at the manipulation gizmo position.
-	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
-	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_offset, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_offset, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_offset, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-	si->sbox_instance_xray = RenderingServer::get_singleton()->instance_create2(
+	rs->instance_set_layer_mask(si->sbox_instance, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
+	rs->instance_set_layer_mask(si->sbox_instance_offset, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
+	rs->instance_geometry_set_flag(si->sbox_instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	rs->instance_geometry_set_flag(si->sbox_instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	rs->instance_geometry_set_flag(si->sbox_instance_offset, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	rs->instance_geometry_set_flag(si->sbox_instance_offset, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	si->sbox_instance_xray = rs->instance_create2(
 			selection_box_xray->get_rid(),
 			sp->get_world_3d()->get_scenario());
-	si->sbox_instance_xray_offset = RenderingServer::get_singleton()->instance_create2(
+	si->sbox_instance_xray_offset = rs->instance_create2(
 			selection_box_xray->get_rid(),
 			sp->get_world_3d()->get_scenario());
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
+	rs->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance_xray,
 			RSE::SHADOW_CASTING_SETTING_OFF);
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
+	rs->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance_xray_offset,
 			RSE::SHADOW_CASTING_SETTING_OFF);
 	// Use the Edit layer to hide the selection box when View Gizmos is disabled, since it is a bit distracting.
 	// It's still possible to approximately guess what is selected by looking at the manipulation gizmo position.
-	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_xray, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
-	RS::get_singleton()->instance_set_layer_mask(si->sbox_instance_xray_offset, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	rs->instance_set_layer_mask(si->sbox_instance_xray, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
+	rs->instance_set_layer_mask(si->sbox_instance_xray_offset, 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER);
+	rs->instance_geometry_set_flag(si->sbox_instance_xray, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	rs->instance_geometry_set_flag(si->sbox_instance_xray, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+	rs->instance_geometry_set_flag(si->sbox_instance_xray_offset, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+	rs->instance_geometry_set_flag(si->sbox_instance_xray_offset, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
 	return si;
 }
@@ -8079,31 +8089,35 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VERTEX_SNAP_BASE_VERTEX: {
 			vertex_snap_origin_mode = false;
-			int idx_vertex = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
-			int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
-			transform_menu->get_popup()->set_item_checked(idx_vertex, true);
-			transform_menu->get_popup()->set_item_checked(idx_origin, false);
+			PopupMenu *transform_menu_popup = transform_menu->get_popup();
+			int idx_vertex = transform_menu_popup->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
+			int idx_origin = transform_menu_popup->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
+			transform_menu_popup->set_item_checked(idx_vertex, true);
+			transform_menu_popup->set_item_checked(idx_origin, false);
 		} break;
 		case MENU_VERTEX_SNAP_BASE_ORIGIN: {
 			vertex_snap_origin_mode = true;
-			int idx_vertex = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
-			int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
-			transform_menu->get_popup()->set_item_checked(idx_vertex, false);
-			transform_menu->get_popup()->set_item_checked(idx_origin, true);
+			PopupMenu *transform_menu_popup = transform_menu->get_popup();
+			int idx_vertex = transform_menu_popup->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
+			int idx_origin = transform_menu_popup->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
+			transform_menu_popup->set_item_checked(idx_vertex, false);
+			transform_menu_popup->set_item_checked(idx_origin, true);
 		} break;
 		case MENU_VERTEX_SNAP_SOURCE_MESH: {
 			vertex_snap_use_collision = false;
-			int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
-			int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
-			transform_menu->get_popup()->set_item_checked(idx_mesh, true);
-			transform_menu->get_popup()->set_item_checked(idx_collision, false);
+			PopupMenu *transform_menu_popup = transform_menu->get_popup();
+			int idx_mesh = transform_menu_popup->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+			int idx_collision = transform_menu_popup->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+			transform_menu_popup->set_item_checked(idx_mesh, true);
+			transform_menu_popup->set_item_checked(idx_collision, false);
 		} break;
 		case MENU_VERTEX_SNAP_SOURCE_COLLISION: {
 			vertex_snap_use_collision = true;
-			int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
-			int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
-			transform_menu->get_popup()->set_item_checked(idx_mesh, false);
-			transform_menu->get_popup()->set_item_checked(idx_collision, true);
+			PopupMenu *transform_menu_popup = transform_menu->get_popup();
+			int idx_mesh = transform_menu_popup->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+			int idx_collision = transform_menu_popup->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+			transform_menu_popup->set_item_checked(idx_mesh, false);
+			transform_menu_popup->set_item_checked(idx_collision, true);
 		} break;
 		case MENU_TRANSFORM_DIALOG: {
 			for (int i = 0; i < 3; i++) {
@@ -8121,12 +8135,13 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 				last_used_viewport = 0;
 			}
 
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), true);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
+			PopupMenu *view_layout_menu_popup = view_layout_menu->get_popup();
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_1_VIEWPORT), true);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
 
 		} break;
 		case MENU_VIEW_USE_2_VIEWPORTS: {
@@ -8135,12 +8150,13 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 				last_used_viewport = 0;
 			}
 
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), true);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
+			PopupMenu *view_layout_menu_popup = view_layout_menu->get_popup();
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), true);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
 
 		} break;
 		case MENU_VIEW_USE_2_VIEWPORTS_ALT: {
@@ -8149,12 +8165,13 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 				last_used_viewport = 0;
 			}
 
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), true);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
+			PopupMenu *view_layout_menu_popup = view_layout_menu->get_popup();
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), true);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
 
 		} break;
 		case MENU_VIEW_USE_3_VIEWPORTS: {
@@ -8163,12 +8180,13 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 				last_used_viewport = 0;
 			}
 
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), true);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
+			PopupMenu *view_layout_menu_popup = view_layout_menu->get_popup();
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), true);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
 
 		} break;
 		case MENU_VIEW_USE_3_VIEWPORTS_ALT: {
@@ -8177,41 +8195,46 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 				last_used_viewport = 0;
 			}
 
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), true);
+			PopupMenu *view_layout_menu_popup = view_layout_menu->get_popup();
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), true);
 
 		} break;
 		case MENU_VIEW_USE_4_VIEWPORTS: {
 			viewport_base->set_view(Node3DEditorViewportContainer::VIEW_USE_4_VIEWPORTS);
 
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), true);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
+			PopupMenu *view_layout_menu_popup = view_layout_menu->get_popup();
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), true);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
 
 		} break;
 		case MENU_VIEW_ORIGIN: {
-			bool is_checked = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(p_option));
+			PopupMenu *view_layout_menu_popup = view_layout_menu->get_popup();
+
+			bool is_checked = view_layout_menu_popup->is_item_checked(view_layout_menu_popup->get_item_index(p_option));
 
 			origin_enabled = !is_checked;
-			RenderingServer::get_singleton()->instance_set_visible(origin_instance, origin_enabled);
+			RS::get_singleton()->instance_set_visible(origin_instance, origin_enabled);
 			// Update the grid since its appearance depends on whether the origin is enabled
 			_finish_grid();
 			_init_grid();
 
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(p_option), origin_enabled);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(p_option), origin_enabled);
 		} break;
 		case MENU_VIEW_GRID: {
-			bool is_checked = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(p_option));
+			PopupMenu *view_layout_menu_popup = view_layout_menu->get_popup();
+
+			bool is_checked = view_layout_menu_popup->is_item_checked(view_layout_menu_popup->get_item_index(p_option));
 
 			grid_enabled = !is_checked;
-
 			for (int i = 0; i < 3; ++i) {
 				if (grid_enable[i]) {
 					grid_visible[i] = grid_enabled;
@@ -8220,7 +8243,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			_finish_grid();
 			_init_grid();
 
-			view_layout_menu->get_popup()->set_item_checked(view_layout_menu->get_popup()->get_item_index(p_option), grid_enabled);
+			view_layout_menu_popup->set_item_checked(view_layout_menu_popup->get_item_index(p_option), grid_enabled);
 
 		} break;
 		case MENU_VIEW_CAMERA_SETTINGS: {
@@ -9056,6 +9079,8 @@ void Node3DEditor::_init_grid() {
 		division_level_min = (int)(division_level_min / div);
 	}
 
+	RS *rs = RS::get_singleton();
+
 	for (int a = 0; a < 3; a++) {
 		if (!grid_enable[a]) {
 			continue; // If this grid plane is disabled, skip generation.
@@ -9177,37 +9202,39 @@ void Node3DEditor::_init_grid() {
 		}
 
 		// Create a mesh from the pushed vector points and colors.
-		grid[c] = RenderingServer::get_singleton()->mesh_create();
+		grid[c] = rs->mesh_create();
 		Array d;
 		d.resize(RSE::ARRAY_MAX);
 		d[RSE::ARRAY_VERTEX] = (Vector<Vector3>)grid_points[c];
 		d[RSE::ARRAY_COLOR] = (Vector<Color>)grid_colors[c];
 		d[RSE::ARRAY_NORMAL] = (Vector<Vector3>)grid_normals[c];
-		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(grid[c], RSE::PRIMITIVE_LINES, d);
-		RenderingServer::get_singleton()->mesh_surface_set_material(grid[c], 0, grid_mat[c]->get_rid());
-		grid_instance[c] = RenderingServer::get_singleton()->instance_create2(grid[c], get_tree()->get_root()->get_world_3d()->get_scenario());
+		rs->mesh_add_surface_from_arrays(grid[c], RSE::PRIMITIVE_LINES, d);
+		rs->mesh_surface_set_material(grid[c], 0, grid_mat[c]->get_rid());
+		grid_instance[c] = rs->instance_create2(grid[c], get_tree()->get_root()->get_world_3d()->get_scenario());
 
 		// Yes, the end of this line is supposed to be a.
-		RenderingServer::get_singleton()->instance_set_visible(grid_instance[c], grid_visible[a]);
-		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_instance[c], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(grid_instance[c], 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
-		RS::get_singleton()->instance_geometry_set_flag(grid_instance[c], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(grid_instance[c], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		rs->instance_set_visible(grid_instance[c], grid_visible[a]);
+		rs->instance_geometry_set_cast_shadows_setting(grid_instance[c], RSE::SHADOW_CASTING_SETTING_OFF);
+		rs->instance_set_layer_mask(grid_instance[c], 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
+		rs->instance_geometry_set_flag(grid_instance[c], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		rs->instance_geometry_set_flag(grid_instance[c], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	}
 }
 
 void Node3DEditor::_finish_indicators() {
-	RenderingServer::get_singleton()->free_rid(origin_instance);
-	RenderingServer::get_singleton()->free_rid(origin_multimesh);
-	RenderingServer::get_singleton()->free_rid(origin_mesh);
+	RS *rs = RS::get_singleton();
+	rs->free_rid(origin_instance);
+	rs->free_rid(origin_multimesh);
+	rs->free_rid(origin_mesh);
 
 	_finish_grid();
 }
 
 void Node3DEditor::_finish_grid() {
+	RS *rs = RS::get_singleton();
 	for (int i = 0; i < 3; i++) {
-		RenderingServer::get_singleton()->free_rid(grid_instance[i]);
-		RenderingServer::get_singleton()->free_rid(grid[i]);
+		rs->free_rid(grid_instance[i]);
+		rs->free_rid(grid[i]);
 	}
 }
 
@@ -9272,16 +9299,17 @@ void Node3DEditor::_selection_changed() {
 			continue;
 		}
 
+		RS *rs = RS::get_singleton();
 		if (sp == editor_selection->get_top_selected_node_list().back()->get()) {
-			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance, active_selection_box->get_rid());
-			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray, active_selection_box_xray->get_rid());
-			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_offset, active_selection_box->get_rid());
-			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray_offset, active_selection_box_xray->get_rid());
+			rs->instance_set_base(se->sbox_instance, active_selection_box->get_rid());
+			rs->instance_set_base(se->sbox_instance_xray, active_selection_box_xray->get_rid());
+			rs->instance_set_base(se->sbox_instance_offset, active_selection_box->get_rid());
+			rs->instance_set_base(se->sbox_instance_xray_offset, active_selection_box_xray->get_rid());
 		} else {
-			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance, selection_box->get_rid());
-			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray, selection_box_xray->get_rid());
-			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_offset, selection_box->get_rid());
-			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray_offset, selection_box_xray->get_rid());
+			rs->instance_set_base(se->sbox_instance, selection_box->get_rid());
+			rs->instance_set_base(se->sbox_instance_xray, selection_box_xray->get_rid());
+			rs->instance_set_base(se->sbox_instance_offset, selection_box->get_rid());
+			rs->instance_set_base(se->sbox_instance_xray_offset, selection_box_xray->get_rid());
 		}
 	}
 

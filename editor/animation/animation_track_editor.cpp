@@ -4839,12 +4839,13 @@ bool AnimationTrackEditor::is_global_library_read_only() const {
 }
 
 Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
-	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+	AnimationPlayerEditor *player_editor = AnimationPlayerEditor::get_singleton();
+	AnimationPlayer *player = player_editor->get_player();
 	if (player->has_animation(SceneStringName(RESET))) {
 		return player->get_animation(SceneStringName(RESET));
 	} else {
 		Ref<AnimationLibrary> al;
-		AnimationMixer *mixer = AnimationPlayerEditor::get_singleton()->fetch_mixer_for_library();
+		AnimationMixer *mixer = player_editor->fetch_mixer_for_library();
 		if (mixer) {
 			if (!mixer->has_animation_library("")) {
 				al.instantiate();
@@ -4858,9 +4859,9 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 		reset_anim->set_length(ANIM_MIN_LENGTH);
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->add_do_method(al.ptr(), "add_animation", SceneStringName(RESET), reset_anim);
-		undo_redo->add_do_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
+		undo_redo->add_do_method(player_editor, "_animation_player_changed", player);
 		undo_redo->add_undo_method(al.ptr(), "remove_animation", SceneStringName(RESET));
-		undo_redo->add_undo_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
+		undo_redo->add_undo_method(player_editor, "_animation_player_changed", player);
 		return reset_anim;
 	}
 }

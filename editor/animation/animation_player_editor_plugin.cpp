@@ -1730,21 +1730,23 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 	onion.captures.resize(captures);
 	onion.captures_valid.resize(captures);
 
+	RS *rs = RS::get_singleton();
+
 	for (int i = 0; i < captures; i++) {
 		bool is_present = onion.differences_only && i == captures - 1;
 
 		// Each capture is a viewport with a canvas item attached that renders a full-size rect with the contents of the main viewport.
-		onion.captures[i] = RS::get_singleton()->viewport_create();
+		onion.captures[i] = rs->viewport_create();
 
-		RS::get_singleton()->viewport_set_size(onion.captures[i], capture_size.width, capture_size.height);
-		RS::get_singleton()->viewport_set_update_mode(onion.captures[i], RSE::VIEWPORT_UPDATE_ALWAYS);
-		RS::get_singleton()->viewport_set_transparent_background(onion.captures[i], !is_present);
-		RS::get_singleton()->viewport_attach_canvas(onion.captures[i], onion.capture.canvas);
+		rs->viewport_set_size(onion.captures[i], capture_size.width, capture_size.height);
+		rs->viewport_set_update_mode(onion.captures[i], RSE::VIEWPORT_UPDATE_ALWAYS);
+		rs->viewport_set_transparent_background(onion.captures[i], !is_present);
+		rs->viewport_attach_canvas(onion.captures[i], onion.capture.canvas);
 	}
 
 	// Reset the capture canvas item to the current root viewport texture (defensive).
-	RS::get_singleton()->canvas_item_clear(onion.capture.canvas_item);
-	RS::get_singleton()->canvas_item_add_texture_rect(onion.capture.canvas_item, Rect2(Point2(), Point2(capture_size.x, -capture_size.y)), get_tree()->get_root()->get_texture()->get_rid());
+	rs->canvas_item_clear(onion.capture.canvas_item);
+	rs->canvas_item_add_texture_rect(onion.capture.canvas_item, Rect2(Point2(), Point2(capture_size.x, -capture_size.y)), get_tree()->get_root()->get_texture()->get_rid());
 
 	onion.capture_size = capture_size;
 }
@@ -1834,21 +1836,23 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_prolog() {
 		CanvasItemEditor::get_singleton()->set_state(new_state);
 	}
 
+	RS *rs = RS::get_singleton();
+
 	// Tweak the root viewport to ensure it's rendered before our target.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
 	onion.temp.screen_rect = Rect2(Vector2(), DisplayServer::get_singleton()->window_get_size(DisplayServerEnums::MAIN_WINDOW_ID));
-	RS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2(), DisplayServerEnums::INVALID_WINDOW_ID);
-	RS::get_singleton()->viewport_set_update_mode(root_vp, RSE::VIEWPORT_UPDATE_ALWAYS);
+	rs->viewport_attach_to_screen(root_vp, Rect2(), DisplayServerEnums::INVALID_WINDOW_ID);
+	rs->viewport_set_update_mode(root_vp, RSE::VIEWPORT_UPDATE_ALWAYS);
 
 	RID present_rid;
 	if (onion.differences_only) {
 		// Capture present scene as it is.
-		RS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, RID());
+		rs->canvas_item_set_material(onion.capture.canvas_item, RID());
 		present_rid = onion.captures[onion.captures.size() - 1];
-		RS::get_singleton()->viewport_set_active(present_rid, true);
-		RS::get_singleton()->viewport_set_parent_viewport(root_vp, present_rid);
-		RS::get_singleton()->draw(false);
-		RS::get_singleton()->viewport_set_active(present_rid, false);
+		rs->viewport_set_active(present_rid, true);
+		rs->viewport_set_parent_viewport(root_vp, present_rid);
+		rs->draw(false);
+		rs->viewport_set_active(present_rid, false);
 	}
 
 	// Backup current animation state.
@@ -1857,7 +1861,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_prolog() {
 
 	// Render every past/future step with the capture shader.
 
-	RS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
+	rs->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
 	onion.capture.material->set_shader_parameter("bkg_color", GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	onion.capture.material->set_shader_parameter("differences_only", onion.differences_only);
 	onion.capture.material->set_shader_parameter("present", onion.differences_only ? RS::get_singleton()->viewport_get_texture(present_rid) : RID());
@@ -1906,10 +1910,11 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_step_capture(int p_step_offs
 	DEV_ASSERT(onion.captures_valid[p_capture_idx]);
 
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
-	RS::get_singleton()->viewport_set_active(onion.captures[p_capture_idx], true);
-	RS::get_singleton()->viewport_set_parent_viewport(root_vp, onion.captures[p_capture_idx]);
-	RS::get_singleton()->draw(false);
-	RS::get_singleton()->viewport_set_active(onion.captures[p_capture_idx], false);
+	RS *rs = RS::get_singleton();
+	rs->viewport_set_active(onion.captures[p_capture_idx], true);
+	rs->viewport_set_parent_viewport(root_vp, onion.captures[p_capture_idx]);
+	rs->draw(false);
+	rs->viewport_set_active(onion.captures[p_capture_idx], false);
 
 	int last_step_offset = onion.future ? onion.steps : 0;
 	if (p_step_offset < last_step_offset) {
@@ -1922,9 +1927,10 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_step_capture(int p_step_offs
 void AnimationPlayerEditor::_prepare_onion_layers_2_epilog() {
 	// Restore root viewport.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
-	RS::get_singleton()->viewport_set_parent_viewport(root_vp, RID());
-	RS::get_singleton()->viewport_attach_to_screen(root_vp, onion.temp.screen_rect, DisplayServerEnums::MAIN_WINDOW_ID);
-	RS::get_singleton()->viewport_set_update_mode(root_vp, RSE::VIEWPORT_UPDATE_WHEN_VISIBLE);
+	RS *rs = RS::get_singleton();
+	rs->viewport_set_parent_viewport(root_vp, RID());
+	rs->viewport_attach_to_screen(root_vp, onion.temp.screen_rect, DisplayServerEnums::MAIN_WINDOW_ID);
+	rs->viewport_set_update_mode(root_vp, RSE::VIEWPORT_UPDATE_WHEN_VISIBLE);
 
 	// Restore animation state.
 	// Here we're combine the power of seeking back to the original position and
@@ -2137,19 +2143,20 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	tool_anim->set_flat(false);
 	tool_anim->set_tooltip_text(TTRC("Animation Tools"));
 	tool_anim->set_text(TTRC("Animation"));
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/new_animation", TTRC("New...")), TOOL_NEW_ANIM);
-	tool_anim->get_popup()->add_separator();
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/animation_libraries", TTRC("Manage Animations...")), TOOL_ANIM_LIBRARY);
-	tool_anim->get_popup()->add_separator();
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTRC("Duplicate...")), TOOL_DUPLICATE_ANIM);
-	tool_anim->get_popup()->add_separator();
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/rename_animation", TTRC("Rename...")), TOOL_RENAME_ANIM);
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/edit_transitions", TTRC("Edit Transitions...")), TOOL_EDIT_TRANSITIONS);
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation_in_inspector", TTRC("Open in Inspector")), TOOL_EDIT_RESOURCE);
-	tool_anim->get_popup()->add_separator();
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/remove_animation", TTRC("Remove")), TOOL_REMOVE_ANIM);
+	PopupMenu *tool_anim_popup = tool_anim->get_popup();
+	tool_anim_popup->add_shortcut(ED_SHORTCUT("animation_player_editor/new_animation", TTRC("New...")), TOOL_NEW_ANIM);
+	tool_anim_popup->add_separator();
+	tool_anim_popup->add_shortcut(ED_SHORTCUT("animation_player_editor/animation_libraries", TTRC("Manage Animations...")), TOOL_ANIM_LIBRARY);
+	tool_anim_popup->add_separator();
+	tool_anim_popup->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTRC("Duplicate...")), TOOL_DUPLICATE_ANIM);
+	tool_anim_popup->add_separator();
+	tool_anim_popup->add_shortcut(ED_SHORTCUT("animation_player_editor/rename_animation", TTRC("Rename...")), TOOL_RENAME_ANIM);
+	tool_anim_popup->add_shortcut(ED_SHORTCUT("animation_player_editor/edit_transitions", TTRC("Edit Transitions...")), TOOL_EDIT_TRANSITIONS);
+	tool_anim_popup->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation_in_inspector", TTRC("Open in Inspector")), TOOL_EDIT_RESOURCE);
+	tool_anim_popup->add_separator();
+	tool_anim_popup->add_shortcut(ED_SHORTCUT("animation_player_editor/remove_animation", TTRC("Remove")), TOOL_REMOVE_ANIM);
 	tool_anim->set_disabled(true);
-	tool_anim->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
+	tool_anim_popup->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_animation_tool_menu));
 	hb->add_child(tool_anim);
 
 	animation = memnew(OptionButton);
@@ -2184,22 +2191,23 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_skinning->set_flat(false);
 	onion_skinning->set_theme_type_variation("FlatMenuButton");
 	onion_skinning->set_tooltip_text(TTRC("Onion Skinning Options"));
-	onion_skinning->get_popup()->add_separator(TTRC("Directions"));
+	PopupMenu *onion_skinning_popup = onion_skinning->get_popup();
+	onion_skinning_popup->add_separator(TTRC("Directions"));
 	// TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
-	onion_skinning->get_popup()->add_check_item(TTRC("Past"), ONION_SKINNING_PAST);
-	onion_skinning->get_popup()->set_item_checked(-1, true);
+	onion_skinning_popup->add_check_item(TTRC("Past"), ONION_SKINNING_PAST);
+	onion_skinning_popup->set_item_checked(-1, true);
 	// TRANSLATORS: Opposite of "Past", refers to a direction in animation onion skinning.
-	onion_skinning->get_popup()->add_check_item(TTRC("Future"), ONION_SKINNING_FUTURE);
-	onion_skinning->get_popup()->add_separator(TTRC("Depth"));
-	onion_skinning->get_popup()->add_radio_check_item(TTRC("1 step"), ONION_SKINNING_1_STEP);
-	onion_skinning->get_popup()->set_item_checked(-1, true);
-	onion_skinning->get_popup()->add_radio_check_item(TTRC("2 steps"), ONION_SKINNING_2_STEPS);
-	onion_skinning->get_popup()->add_radio_check_item(TTRC("3 steps"), ONION_SKINNING_3_STEPS);
-	onion_skinning->get_popup()->add_separator();
-	onion_skinning->get_popup()->add_check_item(TTRC("Differences Only"), ONION_SKINNING_DIFFERENCES_ONLY);
-	onion_skinning->get_popup()->add_check_item(TTRC("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
-	onion_skinning->get_popup()->add_check_item(TTRC("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
-	onion_skinning->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
+	onion_skinning_popup->add_check_item(TTRC("Future"), ONION_SKINNING_FUTURE);
+	onion_skinning_popup->add_separator(TTRC("Depth"));
+	onion_skinning_popup->add_radio_check_item(TTRC("1 step"), ONION_SKINNING_1_STEP);
+	onion_skinning_popup->set_item_checked(-1, true);
+	onion_skinning_popup->add_radio_check_item(TTRC("2 steps"), ONION_SKINNING_2_STEPS);
+	onion_skinning_popup->add_radio_check_item(TTRC("3 steps"), ONION_SKINNING_3_STEPS);
+	onion_skinning_popup->add_separator();
+	onion_skinning_popup->add_check_item(TTRC("Differences Only"), ONION_SKINNING_DIFFERENCES_ONLY);
+	onion_skinning_popup->add_check_item(TTRC("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
+	onion_skinning_popup->add_check_item(TTRC("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
+	onion_skinning_popup->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
 	hb->add_child(onion_skinning);
 
 	hb->add_child(memnew(VSeparator));
@@ -2295,9 +2303,10 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	track_editor->connect(SceneStringName(visibility_changed), callable_mp(this, &AnimationPlayerEditor::_editor_visibility_changed));
 
-	onion.capture.canvas = RS::get_singleton()->canvas_create();
-	onion.capture.canvas_item = RS::get_singleton()->canvas_item_create();
-	RS::get_singleton()->canvas_item_set_parent(onion.capture.canvas_item, onion.capture.canvas);
+	RS *rs = RS::get_singleton();
+	onion.capture.canvas = rs->canvas_create();
+	onion.capture.canvas_item = rs->canvas_item_create();
+	rs->canvas_item_set_parent(onion.capture.canvas_item, onion.capture.canvas);
 
 	onion.capture.material.instantiate();
 
@@ -2330,7 +2339,7 @@ void fragment() {
 	COLOR = vec4(capture_samp.rgb * dir_color.rgb, bkg_mask * diff_mask);
 }
 )");
-	RS::get_singleton()->material_set_shader(onion.capture.material->get_rid(), onion.capture.shader->get_rid());
+	rs->material_set_shader(onion.capture.material->get_rid(), onion.capture.shader->get_rid());
 
 	ED_SHORTCUT("animation_editor/stop_animation", TTRC("Pause/Stop Animation"), Key::S, true);
 	ED_SHORTCUT("animation_editor/play_animation", TTRC("Play Animation"), Key::D, true);

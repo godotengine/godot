@@ -1097,11 +1097,12 @@ void EditorResourcePicker::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
 			Callable resource_counter_changed = callable_mp(this, &EditorResourcePicker::_update_resource);
-			if (EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
-				EditorNode::get_singleton()->disconnect("resource_saved", resource_saved);
+			EditorNode *editor_node = EditorNode::get_singleton();
+			if (editor_node->is_connected("resource_saved", resource_saved)) {
+				editor_node->disconnect("resource_saved", resource_saved);
 			}
-			if (EditorNode::get_singleton()->is_connected("resource_counter_changed", resource_counter_changed)) {
-				EditorNode::get_singleton()->disconnect("resource_counter_changed", resource_counter_changed);
+			if (editor_node->is_connected("resource_counter_changed", resource_counter_changed)) {
+				editor_node->disconnect("resource_counter_changed", resource_counter_changed);
 			}
 		} break;
 	}

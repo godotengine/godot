@@ -495,45 +495,47 @@ void EditorNode::_update_from_settings() {
 		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 	}
 
+	RS *rs = RS::get_singleton();
+
 	RSE::DOFBokehShape dof_shape = RSE::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
-	RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
+	rs->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
 	RSE::DOFBlurQuality dof_quality = RSE::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));
 	bool dof_jitter = GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter");
-	RS::get_singleton()->camera_attributes_set_dof_blur_quality(dof_quality, dof_jitter);
-	RS::get_singleton()->environment_set_ssao_quality(RSE::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
-	RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled"), GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount"), GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit"));
+	rs->camera_attributes_set_dof_blur_quality(dof_quality, dof_jitter);
+	rs->environment_set_ssao_quality(RSE::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
+	rs->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled"), GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount"), GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit"));
 	bool glow_bicubic = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
-	RS::get_singleton()->environment_set_ssil_quality(RSE::EnvironmentSSILQuality(int(GLOBAL_GET("rendering/environment/ssil/quality"))), GLOBAL_GET("rendering/environment/ssil/half_size"), GLOBAL_GET("rendering/environment/ssil/adaptive_target"), GLOBAL_GET("rendering/environment/ssil/blur_passes"), GLOBAL_GET("rendering/environment/ssil/fadeout_from"), GLOBAL_GET("rendering/environment/ssil/fadeout_to"));
-	RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
-	RS::get_singleton()->environment_set_ssr_half_size(GLOBAL_GET("rendering/environment/screen_space_reflection/half_size"));
+	rs->environment_set_ssil_quality(RSE::EnvironmentSSILQuality(int(GLOBAL_GET("rendering/environment/ssil/quality"))), GLOBAL_GET("rendering/environment/ssil/half_size"), GLOBAL_GET("rendering/environment/ssil/adaptive_target"), GLOBAL_GET("rendering/environment/ssil/blur_passes"), GLOBAL_GET("rendering/environment/ssil/fadeout_from"), GLOBAL_GET("rendering/environment/ssil/fadeout_to"));
+	rs->environment_glow_set_use_bicubic_upscale(glow_bicubic);
+	rs->environment_set_ssr_half_size(GLOBAL_GET("rendering/environment/screen_space_reflection/half_size"));
 	RSE::SubSurfaceScatteringQuality sss_quality = RSE::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
-	RS::get_singleton()->sub_surface_scattering_set_quality(sss_quality);
+	rs->sub_surface_scattering_set_quality(sss_quality);
 	float sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
 	float sss_depth_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale");
-	RS::get_singleton()->sub_surface_scattering_set_scale(sss_scale, sss_depth_scale);
+	rs->sub_surface_scattering_set_scale(sss_scale, sss_depth_scale);
 
 	uint32_t directional_shadow_size = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size");
 	uint32_t directional_shadow_16_bits = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits");
-	RS::get_singleton()->directional_shadow_atlas_set_size(directional_shadow_size, directional_shadow_16_bits);
+	rs->directional_shadow_atlas_set_size(directional_shadow_size, directional_shadow_16_bits);
 
 	RSE::ShadowQuality shadows_quality = RSE::ShadowQuality(int(GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality")));
-	RS::get_singleton()->positional_soft_shadow_filter_set_quality(shadows_quality);
+	rs->positional_soft_shadow_filter_set_quality(shadows_quality);
 	RSE::ShadowQuality directional_shadow_quality = RSE::ShadowQuality(int(GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality")));
-	RS::get_singleton()->directional_soft_shadow_filter_set_quality(directional_shadow_quality);
+	rs->directional_soft_shadow_filter_set_quality(directional_shadow_quality);
 	float probe_update_speed = GLOBAL_GET("rendering/lightmapping/probe_capture/update_speed");
-	RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
+	rs->lightmap_set_probe_capture_update_speed(probe_update_speed);
 	RSE::EnvironmentSDFGIFramesToConverge frames_to_converge = RSE::EnvironmentSDFGIFramesToConverge(int(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")));
-	RS::get_singleton()->environment_set_sdfgi_frames_to_converge(frames_to_converge);
+	rs->environment_set_sdfgi_frames_to_converge(frames_to_converge);
 	RSE::EnvironmentSDFGIRayCount ray_count = RSE::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")));
-	RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);
+	rs->environment_set_sdfgi_ray_count(ray_count);
 	RSE::VoxelGIQuality voxel_gi_quality = RSE::VoxelGIQuality(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")));
-	RS::get_singleton()->voxel_gi_set_quality(voxel_gi_quality);
-	RS::get_singleton()->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
-	RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter")));
-	RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/2d/shadow_atlas/size"));
+	rs->voxel_gi_set_quality(voxel_gi_quality);
+	rs->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
+	rs->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter")));
+	rs->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/2d/shadow_atlas/size"));
 
 	bool use_half_res_gi = GLOBAL_GET("rendering/global_illumination/gi/use_half_resolution");
-	RS::get_singleton()->gi_set_use_half_resolution(use_half_res_gi);
+	rs->gi_set_use_half_resolution(use_half_res_gi);
 
 	bool snap_2d_transforms = GLOBAL_GET("rendering/2d/snap/snap_2d_transforms_to_pixel");
 	scene_root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
@@ -568,10 +570,10 @@ void EditorNode::_update_from_settings() {
 	float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_mesh_lod_threshold(mesh_lod_threshold);
 
-	RS::get_singleton()->decals_set_filter(RSE::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
-	RS::get_singleton()->light_projectors_set_filter(RSE::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
-	RS::get_singleton()->lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
-	RS::get_singleton()->material_set_use_debanding(GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding"));
+	rs->decals_set_filter(RSE::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
+	rs->light_projectors_set_filter(RSE::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
+	rs->lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
+	rs->material_set_use_debanding(GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding"));
 
 	SceneTree *tree = get_tree();
 	tree->set_debug_collisions_color(GLOBAL_GET("debug/shapes/collision/shape_color"));
@@ -600,25 +602,27 @@ void EditorNode::_update_from_settings() {
 	_update_translations();
 
 #ifdef DEBUG_ENABLED
-	NavigationServer2D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/2d/edge_connection_color"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_color"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_color"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_disabled_color"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_disabled_color"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_connections"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_lines"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/2d/enable_geometry_face_random_color"));
+	NavigationServer2D *nav_server_2d = NavigationServer2D::get_singleton();
+	nav_server_2d->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/2d/edge_connection_color"));
+	nav_server_2d->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_color"));
+	nav_server_2d->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_color"));
+	nav_server_2d->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_disabled_color"));
+	nav_server_2d->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_disabled_color"));
+	nav_server_2d->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_connections"));
+	nav_server_2d->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_lines"));
+	nav_server_2d->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/2d/enable_geometry_face_random_color"));
 
-	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/3d/edge_connection_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_disabled_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_disabled_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections_xray"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines_xray"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/3d/enable_geometry_face_random_color"));
+	NavigationServer3D *nav_server_3d = NavigationServer3D::get_singleton();
+	nav_server_3d->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/3d/edge_connection_color"));
+	nav_server_3d->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_color"));
+	nav_server_3d->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_color"));
+	nav_server_3d->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_disabled_color"));
+	nav_server_3d->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_disabled_color"));
+	nav_server_3d->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections"));
+	nav_server_3d->set_debug_navigation_enable_edge_connections_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections_xray"));
+	nav_server_3d->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines"));
+	nav_server_3d->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines_xray"));
+	nav_server_3d->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/3d/enable_geometry_face_random_color"));
 #endif // DEBUG_ENABLED
 }
 
@@ -956,10 +960,11 @@ void EditorNode::_notification(int p_what) {
 
 			_begin_first_scan();
 
-			last_dark_mode_state = DisplayServer::get_singleton()->is_dark_mode();
-			last_system_accent_color = DisplayServer::get_singleton()->get_accent_color();
-			last_system_base_color = DisplayServer::get_singleton()->get_base_color();
-			DisplayServer::get_singleton()->set_system_theme_change_callback(callable_mp(this, &EditorNode::_check_system_theme_changed));
+			DisplayServer *display_server = DisplayServer::get_singleton();
+			last_dark_mode_state = display_server->is_dark_mode();
+			last_system_accent_color = display_server->get_accent_color();
+			last_system_base_color = display_server->get_base_color();
+			display_server->set_system_theme_change_callback(callable_mp(this, &EditorNode::_check_system_theme_changed));
 
 			get_viewport()->connect("size_changed", callable_mp(this, &EditorNode::_viewport_resized));
 
@@ -1088,16 +1093,17 @@ void EditorNode::_notification(int p_what) {
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/input/tablet_driver")) {
+				DisplayServer *display_server = DisplayServer::get_singleton();
 				String tablet_driver = GLOBAL_GET("input_devices/pen_tablet/driver");
 				int tablet_driver_idx = EDITOR_GET("interface/editor/input/tablet_driver");
 				if (tablet_driver_idx != -1) {
-					tablet_driver = DisplayServer::get_singleton()->tablet_get_driver_name(tablet_driver_idx);
+					tablet_driver = display_server->tablet_get_driver_name(tablet_driver_idx);
 				}
 				if (tablet_driver.is_empty()) {
-					tablet_driver = DisplayServer::get_singleton()->tablet_get_driver_name(0);
+					tablet_driver = display_server->tablet_get_driver_name(0);
 				}
-				DisplayServer::get_singleton()->tablet_set_current_driver(tablet_driver);
-				print_verbose("Using \"" + DisplayServer::get_singleton()->tablet_get_current_driver() + "\" pen tablet driver...");
+				display_server->tablet_set_current_driver(tablet_driver);
+				print_verbose("Using \"" + display_server->tablet_get_current_driver() + "\" pen tablet driver...");
 			}
 
 			if (EDITOR_GET("interface/editor/behavior/import_resources_when_unfocused")) {
@@ -8404,10 +8410,11 @@ EditorNode::EditorNode() {
 	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
 	add_child(epnp);
 
-	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
-	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_unsaved_cache));
-	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
-	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_unsaved_cache));
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
+	undo_redo->connect("version_changed", callable_mp(this, &EditorNode::_update_unsaved_cache));
+	undo_redo->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
+	undo_redo->connect("history_changed", callable_mp(this, &EditorNode::_update_unsaved_cache));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
 	GDExtensionManager::get_singleton()->connect("extensions_reloaded", callable_mp(this, &EditorNode::_gdextensions_reloaded));
 
@@ -8441,8 +8448,9 @@ EditorNode::EditorNode() {
 		bool agile_input_event_flushing = EDITOR_GET("input/buffering/agile_event_flushing");
 		bool use_accumulated_input = EDITOR_GET("input/buffering/use_accumulated_input");
 
-		Input::get_singleton()->set_agile_input_event_flushing(agile_input_event_flushing);
-		Input::get_singleton()->set_use_accumulated_input(use_accumulated_input);
+		Input *input_singleton = Input::get_singleton();
+		input_singleton->set_agile_input_event_flushing(agile_input_event_flushing);
+		input_singleton->set_use_accumulated_input(use_accumulated_input);
 	}
 
 	{
@@ -8508,82 +8516,84 @@ EditorNode::EditorNode() {
 	});
 
 	{
+		ResourceFormatImporter *resource_format_importer = ResourceFormatImporter::get_singleton();
+
 		// Register importers at the beginning, so dialogs are created with the right extensions.
 		Ref<ResourceImporterTexture> import_texture = memnew(ResourceImporterTexture(true));
-		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
+		resource_format_importer->add_importer(import_texture);
 
 		Ref<ResourceImporterLayeredTexture> import_cubemap;
 		import_cubemap.instantiate();
 		import_cubemap->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP);
-		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap);
+		resource_format_importer->add_importer(import_cubemap);
 
 		Ref<ResourceImporterLayeredTexture> import_array;
 		import_array.instantiate();
 		import_array->set_mode(ResourceImporterLayeredTexture::MODE_2D_ARRAY);
-		ResourceFormatImporter::get_singleton()->add_importer(import_array);
+		resource_format_importer->add_importer(import_array);
 
 		Ref<ResourceImporterLayeredTexture> import_cubemap_array;
 		import_cubemap_array.instantiate();
 		import_cubemap_array->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP_ARRAY);
-		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap_array);
+		resource_format_importer->add_importer(import_cubemap_array);
 
 		Ref<ResourceImporterLayeredTexture> import_3d = memnew(ResourceImporterLayeredTexture(true));
 		import_3d->set_mode(ResourceImporterLayeredTexture::MODE_3D);
-		ResourceFormatImporter::get_singleton()->add_importer(import_3d);
+		resource_format_importer->add_importer(import_3d);
 
 		Ref<ResourceImporterImage> import_image;
 		import_image.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_image);
+		resource_format_importer->add_importer(import_image);
 
 		Ref<ResourceImporterSVG> import_svg;
 		import_svg.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_svg);
+		resource_format_importer->add_importer(import_svg);
 
 		Ref<ResourceImporterTextureAtlas> import_texture_atlas;
 		import_texture_atlas.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_texture_atlas);
+		resource_format_importer->add_importer(import_texture_atlas);
 
 		Ref<ResourceImporterDynamicFont> import_font_data_dynamic;
 		import_font_data_dynamic.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_font_data_dynamic);
+		resource_format_importer->add_importer(import_font_data_dynamic);
 
 		Ref<ResourceImporterBMFont> import_font_data_bmfont;
 		import_font_data_bmfont.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_font_data_bmfont);
+		resource_format_importer->add_importer(import_font_data_bmfont);
 
 		Ref<ResourceImporterImageFont> import_font_data_image;
 		import_font_data_image.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_font_data_image);
+		resource_format_importer->add_importer(import_font_data_image);
 
 		Ref<ResourceImporterCSVTranslation> import_csv_translation;
 		import_csv_translation.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_csv_translation);
+		resource_format_importer->add_importer(import_csv_translation);
 
 		Ref<ResourceImporterWAV> import_wav;
 		import_wav.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_wav);
+		resource_format_importer->add_importer(import_wav);
 
 		Ref<ResourceImporterOBJ> import_obj;
 		import_obj.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_obj);
+		resource_format_importer->add_importer(import_obj);
 
 		Ref<ResourceImporterShaderFile> import_shader_file;
 		import_shader_file.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_shader_file);
+		resource_format_importer->add_importer(import_shader_file);
 
 		Ref<ResourceImporterScene> import_model_as_scene;
 		import_model_as_scene.instantiate("PackedScene");
-		ResourceFormatImporter::get_singleton()->add_importer(import_model_as_scene);
+		resource_format_importer->add_importer(import_model_as_scene);
 
 		Ref<ResourceImporterScene> import_model_as_animation;
 		import_model_as_animation.instantiate("AnimationLibrary");
-		ResourceFormatImporter::get_singleton()->add_importer(import_model_as_animation);
+		resource_format_importer->add_importer(import_model_as_animation);
 
 		Ref<ResourceImporterScene> import_scene_as_mesh_library = memnew(ResourceImporterScene("MeshLibrary"));
-		ResourceFormatImporter::get_singleton()->add_importer(import_scene_as_mesh_library);
+		resource_format_importer->add_importer(import_scene_as_mesh_library);
 
 		Ref<ResourceImporterScene> import_scene_as_single_mesh = memnew(ResourceImporterScene("ArrayMesh"));
-		ResourceFormatImporter::get_singleton()->add_importer(import_scene_as_single_mesh);
+		resource_format_importer->add_importer(import_scene_as_single_mesh);
 
 		{
 			Ref<EditorSceneFormatImporterCollada> import_collada;
@@ -8601,7 +8611,7 @@ EditorNode::EditorNode() {
 
 		Ref<ResourceImporterBitMap> import_bitmap;
 		import_bitmap.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_bitmap);
+		resource_format_importer->add_importer(import_bitmap);
 	}
 
 	{
@@ -9562,11 +9572,12 @@ EditorNode::EditorNode() {
 	execute_output_dialog->add_child(execute_outputs);
 	execute_output_dialog->set_title("");
 
-	EditorFileSystem::get_singleton()->connect("sources_changed", callable_mp(this, &EditorNode::_sources_changed));
-	EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorNode::_fs_changed));
-	EditorFileSystem::get_singleton()->connect("resources_reimporting", callable_mp(this, &EditorNode::_resources_reimporting));
-	EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(this, &EditorNode::_resources_reimported));
-	EditorFileSystem::get_singleton()->connect("resources_reload", callable_mp(this, &EditorNode::_resources_changed));
+	EditorFileSystem *editor_file_system = EditorFileSystem::get_singleton();
+	editor_file_system->connect("sources_changed", callable_mp(this, &EditorNode::_sources_changed));
+	editor_file_system->connect("filesystem_changed", callable_mp(this, &EditorNode::_fs_changed));
+	editor_file_system->connect("resources_reimporting", callable_mp(this, &EditorNode::_resources_reimporting));
+	editor_file_system->connect("resources_reimported", callable_mp(this, &EditorNode::_resources_reimported));
+	editor_file_system->connect("resources_reload", callable_mp(this, &EditorNode::_resources_changed));
 
 	_build_icon_type_cache();
 

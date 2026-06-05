@@ -270,23 +270,24 @@ void EditorSceneTabs::update_scene_tabs() {
 	}
 	menu_initialized = true;
 
-	if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
-		RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
-		NativeMenu::get_singleton()->clear(dock_rid);
+	NativeMenu *native_menu = NativeMenu::get_singleton();
+	if (native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+		RID dock_rid = native_menu->get_system_menu(NativeMenu::DOCK_MENU_ID);
+		native_menu->clear(dock_rid);
 	}
 
 	scene_tabs->set_block_signals(true);
 	scene_tabs->set_tab_count(EditorNode::get_editor_data().get_edited_scene_count());
 	scene_tabs->set_block_signals(false);
 
-	if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
-		RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
+	if (native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+		RID dock_rid = native_menu->get_system_menu(NativeMenu::DOCK_MENU_ID);
 		for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
-			int global_menu_index = NativeMenu::get_singleton()->add_item(dock_rid, EditorNode::get_editor_data().get_scene_title(i), callable_mp(this, &EditorSceneTabs::_global_menu_scene), Callable(), i);
+			int global_menu_index = native_menu->add_item(dock_rid, EditorNode::get_editor_data().get_scene_title(i), callable_mp(this, &EditorSceneTabs::_global_menu_scene), Callable(), i);
 			scene_tabs->set_tab_metadata(i, global_menu_index);
 		}
-		NativeMenu::get_singleton()->add_separator(dock_rid);
-		NativeMenu::get_singleton()->add_item(dock_rid, TTR("New Window"), callable_mp(this, &EditorSceneTabs::_global_menu_new_window));
+		native_menu->add_separator(dock_rid);
+		native_menu->add_item(dock_rid, TTR("New Window"), callable_mp(this, &EditorSceneTabs::_global_menu_new_window));
 	}
 
 	_update_tab_titles();
@@ -329,11 +330,12 @@ void EditorSceneTabs::_update_tab_titles() {
 			scene_tabs->set_font_color_override(i, TabBar::DRAW_PRESSED, get_theme_color(SNAME("font_selected_color"), SNAME("TabBar")));
 		}
 
-		if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
-			RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
+		NativeMenu *native_menu = NativeMenu::get_singleton();
+		if (native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+			RID dock_rid = native_menu->get_system_menu(NativeMenu::DOCK_MENU_ID);
 			int global_menu_index = scene_tabs->get_tab_metadata(i);
-			NativeMenu::get_singleton()->set_item_text(dock_rid, global_menu_index, EditorNode::get_editor_data().get_scene_title(i) + (unsaved ? "(*)" : ""));
-			NativeMenu::get_singleton()->set_item_tag(dock_rid, global_menu_index, i);
+			native_menu->set_item_text(dock_rid, global_menu_index, EditorNode::get_editor_data().get_scene_title(i) + (unsaved ? "(*)" : ""));
+			native_menu->set_item_tag(dock_rid, global_menu_index, i);
 		}
 
 		if (show_rb && EditorNode::get_editor_data().get_scene_root_script(i).is_valid()) {

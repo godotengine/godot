@@ -308,10 +308,11 @@ RID TileAtlasView::_get_canvas_item_to_draw(const TileData *p_for_data, const Ca
 	} else if (p_material_map.has(mat)) {
 		return p_material_map[mat];
 	} else {
-		RID ci_rid = RS::get_singleton()->canvas_item_create();
-		RS::get_singleton()->canvas_item_set_parent(ci_rid, p_base_item->get_canvas_item());
-		RS::get_singleton()->canvas_item_set_material(ci_rid, mat->get_rid());
-		RS::get_singleton()->canvas_item_set_default_texture_filter(ci_rid, RSE::CanvasItemTextureFilter(p_base_item->get_texture_filter_in_tree()));
+		RS *rs = RS::get_singleton();
+		RID ci_rid = rs->canvas_item_create();
+		rs->canvas_item_set_parent(ci_rid, p_base_item->get_canvas_item());
+		rs->canvas_item_set_material(ci_rid, mat->get_rid());
+		rs->canvas_item_set_default_texture_filter(ci_rid, RSE::CanvasItemTextureFilter(p_base_item->get_texture_filter_in_tree()));
 		p_material_map[mat] = ci_rid;
 		return ci_rid;
 	}

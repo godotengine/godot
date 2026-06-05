@@ -129,10 +129,12 @@ EditorPaths::EditorPaths() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
+	OS *os = OS::get_singleton();
+
 	project_data_dir = ProjectSettings::get_singleton()->get_project_data_path();
 
 	// Self-contained mode if a `._sc_` or `_sc_` file is present in executable dir.
-	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
+	String exe_path = os->get_executable_path().get_base_dir();
 	Ref<DirAccess> d = DirAccess::create_for_path(exe_path);
 	if (d->file_exists(exe_path + "/._sc_")) {
 		self_contained = true;
@@ -144,7 +146,7 @@ EditorPaths::EditorPaths() {
 
 	// On macOS, look outside .app bundle, since .app bundle is read-only.
 	// Note: This will not work if Gatekeeper path randomization is active.
-	if (OS::get_singleton()->has_feature("macos") && exe_path.ends_with("MacOS") && exe_path.path_join("..").simplify_path().ends_with("Contents")) {
+	if (os->has_feature("macos") && exe_path.ends_with("MacOS") && exe_path.path_join("..").simplify_path().ends_with("Contents")) {
 		exe_path = exe_path.path_join("../../..").simplify_path();
 		d = DirAccess::create_for_path(exe_path);
 		if (d->file_exists(exe_path + "/._sc_")) {
@@ -171,19 +173,19 @@ EditorPaths::EditorPaths() {
 		temp_dir = data_dir.path_join("temp");
 	} else {
 		// Typically XDG_DATA_HOME or %APPDATA%.
-		data_path = OS::get_singleton()->get_data_path();
-		data_dir = data_path.path_join(OS::get_singleton()->get_godot_dir_name());
+		data_path = os->get_data_path();
+		data_dir = data_path.path_join(os->get_godot_dir_name());
 		// Can be different from data_path e.g. on Linux or macOS.
-		config_path = OS::get_singleton()->get_config_path();
-		config_dir = config_path.path_join(OS::get_singleton()->get_godot_dir_name());
+		config_path = os->get_config_path();
+		config_dir = config_path.path_join(os->get_godot_dir_name());
 		// Can be different from above paths, otherwise a subfolder of data_dir.
-		cache_path = OS::get_singleton()->get_cache_path();
+		cache_path = os->get_cache_path();
 		if (cache_path == data_path) {
 			cache_dir = data_dir.path_join("cache");
 		} else {
-			cache_dir = cache_path.path_join(OS::get_singleton()->get_godot_dir_name());
+			cache_dir = cache_path.path_join(os->get_godot_dir_name());
 		}
-		temp_dir = OS::get_singleton()->get_temp_path();
+		temp_dir = os->get_temp_path();
 	}
 
 	paths_valid = (!data_path.is_empty() && !config_path.is_empty() && !cache_path.is_empty());

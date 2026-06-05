@@ -1049,7 +1049,8 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-			AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+			AnimationTreeEditor *tree_editor = AnimationTreeEditor::get_singleton();
+			AnimationTree *tree = tree_editor->get_animation_tree();
 			if (!tree) {
 				return; // Node has been changed.
 			}
@@ -1062,7 +1063,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 			blend_tree->get_node_connections(&conns);
 			for (const AnimationNodeBlendTree::NodeConnection &E : conns) {
 				float activity = 0;
-				StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
+				StringName path = tree_editor->get_base_path() + E.input_node;
 				if (!tree->is_state_invalid()) {
 					activity = tree->get_connection_activity(path, E.input_index);
 				}
@@ -1075,9 +1076,9 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 					if (tree->has_animation(an->get_animation())) {
 						Ref<Animation> anim = tree->get_animation(an->get_animation());
 						if (anim.is_valid()) {
-							//StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E.input_node;
-							StringName length_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E.key) + "/current_length";
-							StringName time_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E.key) + "/current_position";
+							//StringName path = tree_editor->get_base_path() + E.input_node;
+							StringName length_path = tree_editor->get_base_path() + String(E.key) + "/current_length";
+							StringName time_path = tree_editor->get_base_path() + String(E.key) + "/current_position";
 							E.value->set_max(tree->get(length_path));
 							E.value->set_value(tree->get(time_path));
 						}

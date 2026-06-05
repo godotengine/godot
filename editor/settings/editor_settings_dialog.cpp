@@ -169,10 +169,11 @@ void EditorSettingsDialog::update_navigation_preset() {
 	}
 	// Set settings to the desired preset values.
 	if (set_preset) {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/orbit_mouse_button", (int)set_orbit_mouse_button);
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/pan_mouse_button", (int)set_pan_mouse_button);
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/zoom_mouse_button", (int)set_zoom_mouse_button);
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/emulate_3_button_mouse", set_3_button_mouse);
+		EditorSettings *es = EditorSettings::get_singleton();
+		es->set_manually("editors/3d/navigation/orbit_mouse_button", (int)set_orbit_mouse_button);
+		es->set_manually("editors/3d/navigation/pan_mouse_button", (int)set_pan_mouse_button);
+		es->set_manually("editors/3d/navigation/zoom_mouse_button", (int)set_zoom_mouse_button);
+		es->set_manually("editors/3d/navigation/emulate_3_button_mouse", set_3_button_mouse);
 		_set_shortcut_input("spatial_editor/viewport_orbit_modifier_1", orbit_mod_key_1);
 		_set_shortcut_input("spatial_editor/viewport_orbit_modifier_2", orbit_mod_key_2);
 		_set_shortcut_input("spatial_editor/viewport_pan_modifier_1", pan_mod_key_1);
@@ -198,28 +199,33 @@ void EditorSettingsDialog::_settings_save() {
 	if (!timer->is_stopped()) {
 		timer->stop();
 	}
-	EditorSettings::get_singleton()->notify_changes();
-	EditorSettings::get_singleton()->save();
+	EditorSettings *es = EditorSettings::get_singleton();
+	es->notify_changes();
+	es->save();
 }
 
 void EditorSettingsDialog::cancel_pressed() {
-	if (!EditorSettings::get_singleton()) {
+	EditorSettings *es = EditorSettings::get_singleton();
+
+	if (!es) {
 		return;
 	}
 
-	EditorSettings::get_singleton()->notify_changes();
+	es->notify_changes();
 }
 
 void EditorSettingsDialog::popup_edit_settings() {
-	if (!EditorSettings::get_singleton()) {
+	EditorSettings *es = EditorSettings::get_singleton();
+
+	if (!es) {
 		return;
 	}
 
-	EditorSettings::get_singleton()->update_text_editor_themes_list(); // Make sure we have an up to date list of themes.
+	es->update_text_editor_themes_list(); // Make sure we have an up to date list of themes.
 
 	_update_dynamic_property_hints();
 
-	inspector->edit(EditorSettings::get_singleton());
+	inspector->edit(es);
 	inspector->get_inspector()->update_tree();
 
 	_update_shortcuts();
@@ -228,7 +234,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	// Restore valid window bounds or pop up at default size.
 	Rect2 saved_size;
 	if (!_is_in_project_manager()) {
-		saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
+		saved_size = es->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
 	}
 
 	if (saved_size != Rect2()) {
@@ -376,7 +382,8 @@ bool EditorSettingsDialog::_is_in_project_manager() const {
 }
 
 void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Array &p_events) {
-	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
+	EditorSettings *editor_settings = EditorSettings::get_singleton();
+	Array old_input_array = editor_settings->get_builtin_action_overrides(p_name);
 	if (old_input_array.is_empty()) {
 		List<Ref<InputEvent>> defaults(InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier]);
 		old_input_array = _event_list_to_array_helper(defaults);
@@ -384,17 +391,17 @@ void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Ar
 
 	if (_is_in_project_manager()) {
 		// Project Manager doesn't have EditorUndoRedoManager, so apply changes directly.
-		EditorSettings::get_singleton()->mark_setting_changed("builtin_action_overrides");
-		EditorSettings::get_singleton()->set_builtin_action_override(p_name, p_events);
+		editor_settings->mark_setting_changed("builtin_action_overrides");
+		editor_settings->set_builtin_action_override(p_name, p_events);
 		_update_shortcuts();
 		_settings_changed();
 	} else {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(vformat(TTR("Edit Built-in Action: %s"), p_name));
-		undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
-		undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
-		undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
-		undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
+		undo_redo->add_do_method(editor_settings, "mark_setting_changed", "builtin_action_overrides");
+		undo_redo->add_undo_method(editor_settings, "mark_setting_changed", "builtin_action_overrides");
+		undo_redo->add_do_method(editor_settings, "set_builtin_action_override", p_name, p_events);
+		undo_redo->add_undo_method(editor_settings, "set_builtin_action_override", p_name, old_input_array);
 		undo_redo->add_do_method(this, "_update_shortcuts");
 		undo_redo->add_undo_method(this, "_update_shortcuts");
 		undo_redo->add_do_method(this, "_settings_changed");
@@ -404,24 +411,25 @@ void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Ar
 }
 
 void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const Array &p_events) {
-	Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	EditorSettings *editor_settings = EditorSettings::get_singleton();
+	Ref<Shortcut> current_sc = editor_settings->get_shortcut(p_path);
 
 	if (_is_in_project_manager()) {
 		// Project Manager doesn't have EditorUndoRedoManager, so apply changes directly.
 		current_sc->set_events(p_events);
-		EditorSettings::get_singleton()->mark_setting_changed("shortcuts");
+		editor_settings->mark_setting_changed("shortcuts");
 		_update_shortcuts();
 		_settings_changed();
 	} else {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path), UndoRedo::MERGE_DISABLE, EditorSettings::get_singleton());
+		undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path), UndoRedo::MERGE_DISABLE, editor_settings);
 		// History must be fixed based on the EditorSettings object because current_sc would
 		// incorrectly make this action use the scene history.
 		undo_redo->force_fixed_history();
 		undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
 		undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
-		undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
-		undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
+		undo_redo->add_do_method(editor_settings, "mark_setting_changed", "shortcuts");
+		undo_redo->add_undo_method(editor_settings, "mark_setting_changed", "shortcuts");
 		undo_redo->add_do_method(this, "_update_shortcuts");
 		undo_redo->add_undo_method(this, "_update_shortcuts");
 		undo_redo->add_do_method(this, "_settings_changed");
@@ -433,7 +441,7 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 	bool path_is_pan_mod = p_path == "spatial_editor/viewport_pan_modifier_1" || p_path == "spatial_editor/viewport_pan_modifier_2";
 	bool path_is_zoom_mod = p_path == "spatial_editor/viewport_zoom_modifier_1" || p_path == "spatial_editor/viewport_zoom_modifier_2";
 	if (path_is_orbit_mod || path_is_pan_mod || path_is_zoom_mod) {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
+		editor_settings->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
 	}
 }
 

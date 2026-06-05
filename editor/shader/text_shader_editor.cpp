@@ -123,10 +123,11 @@ void TextShaderPreviewLineLayer::_notification(int p_what) {
 			}
 
 			const Rect2i visible_rect = scroll_container->get_global_rect();
-			RenderingServer::get_singleton()->canvas_item_set_custom_rect(
+			RS *rs = RS::get_singleton();
+			rs->canvas_item_set_custom_rect(
 					get_canvas_item(), true,
 					Rect2(get_global_transform().affine_inverse().xform(Vector2(visible_rect.position)), visible_rect.size + Vector2(code_editor->get_total_gutter_width(), 0)));
-			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
+			rs->canvas_item_set_clip(get_canvas_item(), true);
 
 			int current_caret_line = code_editor->get_caret_line();
 			int idx = 0;
@@ -789,8 +790,9 @@ static uint32_t saved_warning_flags = 0U;
 void ShaderTextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			get_text_editor()->add_theme_color_override("breakpoint_color", EditorNode::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), EditorStringName(Editor)));
-			get_text_editor()->add_theme_icon_override("breakpoint", get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
+			CodeEdit *t_edit = get_text_editor();
+			t_edit->add_theme_color_override("breakpoint_color", EditorNode::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), EditorStringName(Editor)));
+			t_edit->add_theme_icon_override("breakpoint", get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
 
 			if (is_visible_in_tree()) {
 				_load_theme_settings();
@@ -865,11 +867,12 @@ void ShaderTextEditor::set_edited_shader_include(const Ref<ShaderInclude> &p_sha
 void ShaderTextEditor::set_edited_code(const String &p_code) {
 	_load_theme_settings();
 
-	get_text_editor()->set_text(p_code);
-	get_text_editor()->clear_undo_history();
-	callable_mp((TextEdit *)get_text_editor(), &TextEdit::set_h_scroll).call_deferred(0);
-	callable_mp((TextEdit *)get_text_editor(), &TextEdit::set_v_scroll).call_deferred(0);
-	get_text_editor()->tag_saved_version();
+	CodeEdit *t_edit = get_text_editor();
+	t_edit->set_text(p_code);
+	t_edit->clear_undo_history();
+	callable_mp((TextEdit *)t_edit, &TextEdit::set_h_scroll).call_deferred(0);
+	callable_mp((TextEdit *)t_edit, &TextEdit::set_v_scroll).call_deferred(0);
+	t_edit->tag_saved_version();
 
 	_validate_script();
 	_line_col_changed();
@@ -891,8 +894,9 @@ void ShaderTextEditor::redraw_preview_lines() {
 }
 
 void ShaderTextEditor::recompile_previews() {
+	String editor_text = get_text_editor()->get_text();
 	for (KeyValue<int, TextShaderPreview *> &E : previews) {
-		E.value->recompile(get_text_editor()->get_text());
+		E.value->recompile(editor_text);
 	}
 }
 
@@ -1013,21 +1017,22 @@ void ShaderTextEditor::_load_theme_settings() {
 		syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
 	}
 
+	ShaderTypes *shader_types = ShaderTypes::get_singleton();
+
 	// Colorize built-ins like `COLOR` differently to make them easier
 	// to distinguish from keywords at a quick glance.
-
 	List<String> built_ins;
 
 	if (shader_inc.is_valid()) {
 		for (int i = 0; i < RSE::SHADER_MAX; i++) {
-			for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(i))) {
+			for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : shader_types->get_functions(RSE::ShaderMode(i))) {
 				for (const KeyValue<StringName, ShaderLanguage::BuiltInInfo> &F : E.value.built_ins) {
 					built_ins.push_back(F.key);
 				}
 			}
 
 			{
-				const Vector<ShaderLanguage::ModeInfo> &render_modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(i));
+				const Vector<ShaderLanguage::ModeInfo> &render_modes = shader_types->get_modes(RSE::ShaderMode(i));
 
 				for (const ShaderLanguage::ModeInfo &mode_info : render_modes) {
 					if (!mode_info.options.is_empty()) {
@@ -1041,7 +1046,7 @@ void ShaderTextEditor::_load_theme_settings() {
 			}
 
 			{
-				const Vector<ShaderLanguage::ModeInfo> &stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(i));
+				const Vector<ShaderLanguage::ModeInfo> &stencil_modes = shader_types->get_stencil_modes(RSE::ShaderMode(i));
 
 				for (const ShaderLanguage::ModeInfo &mode_info : stencil_modes) {
 					if (!mode_info.options.is_empty()) {
@@ -1055,14 +1060,14 @@ void ShaderTextEditor::_load_theme_settings() {
 			}
 		}
 	} else if (shader.is_valid()) {
-		for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(shader->get_mode()))) {
+		for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : shader_types->get_functions(RSE::ShaderMode(shader->get_mode()))) {
 			for (const KeyValue<StringName, ShaderLanguage::BuiltInInfo> &F : E.value.built_ins) {
 				built_ins.push_back(F.key);
 			}
 		}
 
 		{
-			const Vector<ShaderLanguage::ModeInfo> &shader_modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(shader->get_mode()));
+			const Vector<ShaderLanguage::ModeInfo> &shader_modes = shader_types->get_modes(RSE::ShaderMode(shader->get_mode()));
 
 			for (const ShaderLanguage::ModeInfo &mode_info : shader_modes) {
 				if (!mode_info.options.is_empty()) {
@@ -1076,7 +1081,7 @@ void ShaderTextEditor::_load_theme_settings() {
 		}
 
 		{
-			const Vector<ShaderLanguage::ModeInfo> &stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(shader->get_mode()));
+			const Vector<ShaderLanguage::ModeInfo> &stencil_modes = shader_types->get_stencil_modes(RSE::ShaderMode(shader->get_mode()));
 
 			for (const ShaderLanguage::ModeInfo &mode_info : stencil_modes) {
 				if (!mode_info.options.is_empty()) {
@@ -1218,10 +1223,11 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		return;
 	}
 	_check_shader_mode();
-	comp_info.functions = ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(shader->get_mode()));
-	comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(shader->get_mode()));
-	comp_info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(shader->get_mode()));
-	comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
+	ShaderTypes *st = ShaderTypes::get_singleton();
+	comp_info.functions = st->get_functions(RSE::ShaderMode(shader->get_mode()));
+	comp_info.render_modes = st->get_modes(RSE::ShaderMode(shader->get_mode()));
+	comp_info.stencil_modes = st->get_stencil_modes(RSE::ShaderMode(shader->get_mode()));
+	comp_info.shader_types = st->get_types();
 
 	sl.complete(code, comp_info, r_options, calltip);
 	if (sl.get_completion_type() == ShaderLanguage::COMPLETION_IDENTIFIER) {
@@ -1343,10 +1349,11 @@ void ShaderTextEditor::_validate_script() {
 			comp_info.is_include = true;
 		} else {
 			Shader::Mode mode = shader->get_mode();
-			comp_info.functions = ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(mode));
-			comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RSE::ShaderMode(mode));
-			comp_info.stencil_modes = ShaderTypes::get_singleton()->get_stencil_modes(RSE::ShaderMode(mode));
-			comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
+			ShaderTypes *st = ShaderTypes::get_singleton();
+			comp_info.functions = st->get_functions(RSE::ShaderMode(mode));
+			comp_info.render_modes = st->get_modes(RSE::ShaderMode(mode));
+			comp_info.stencil_modes = st->get_stencil_modes(RSE::ShaderMode(mode));
+			comp_info.shader_types = st->get_types();
 		}
 
 		code = code_pp;
@@ -2162,14 +2169,15 @@ TextShaderEditor::TextShaderEditor() {
 	code_editor->connect(CoreStringName(script_changed), callable_mp(this, &TextShaderEditor::apply_shaders));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_project_settings_changed));
 
-	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
-	code_editor->get_text_editor()->set_context_menu_enabled(false);
-	code_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
-	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &TextShaderEditor::_text_edit_gui_input));
-	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &TextShaderEditor::_on_shader_preview_toggled));
-	code_editor->get_text_editor()->connect("_fold_line_updated", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines), CONNECT_DEFERRED);
-	code_editor->get_text_editor()->connect("theme_changed", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines), CONNECT_DEFERRED);
-	code_editor->get_text_editor()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines).unbind(1), CONNECT_DEFERRED);
+	CodeEdit *code_editor_text_editor = code_editor->get_text_editor();
+	code_editor_text_editor->set_symbol_lookup_on_click_enabled(true);
+	code_editor_text_editor->set_context_menu_enabled(false);
+	code_editor_text_editor->set_draw_executing_lines_gutter(false);
+	code_editor_text_editor->connect(SceneStringName(gui_input), callable_mp(this, &TextShaderEditor::_text_edit_gui_input));
+	code_editor_text_editor->connect("breakpoint_toggled", callable_mp(this, &TextShaderEditor::_on_shader_preview_toggled));
+	code_editor_text_editor->connect("_fold_line_updated", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines), CONNECT_DEFERRED);
+	code_editor_text_editor->connect("theme_changed", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines), CONNECT_DEFERRED);
+	code_editor_text_editor->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines).unbind(1), CONNECT_DEFERRED);
 
 	code_editor->update_editor_settings();
 
@@ -2189,28 +2197,29 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->set_switch_on_hover(true);
 	edit_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_prepare_edit_menu));
 
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
-	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_cut"), EDIT_CUT);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_copy"), EDIT_COPY);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_paste"), EDIT_PASTE);
-	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_select_all"), EDIT_SELECT_ALL);
-	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_up"), EDIT_MOVE_LINE_UP);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_down"), EDIT_MOVE_LINE_DOWN);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent"), EDIT_INDENT);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/join_lines"), EDIT_JOIN_LINES);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_lines"), EDIT_DUPLICATE_LINES);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
-	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
-	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
+	PopupMenu *edit_menu_popup = edit_menu->get_popup();
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO);
+	edit_menu_popup->add_separator();
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("ui_cut"), EDIT_CUT);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("ui_copy"), EDIT_COPY);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("ui_paste"), EDIT_PASTE);
+	edit_menu_popup->add_separator();
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("ui_text_select_all"), EDIT_SELECT_ALL);
+	edit_menu_popup->add_separator();
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_up"), EDIT_MOVE_LINE_UP);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_down"), EDIT_MOVE_LINE_DOWN);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent"), EDIT_INDENT);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/join_lines"), EDIT_JOIN_LINES);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_lines"), EDIT_DUPLICATE_LINES);
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
+	edit_menu_popup->add_separator();
+	edit_menu_popup->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
+	edit_menu_popup->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	search_menu = memnew(MenuButton);
 	search_menu->set_flat(false);
@@ -2219,11 +2228,12 @@ TextShaderEditor::TextShaderEditor() {
 	search_menu->set_text(TTRC("Search"));
 	search_menu->set_switch_on_hover(true);
 
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
+	PopupMenu *search_menu_popup = search_menu->get_popup();
+	search_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
+	search_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
+	search_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
+	search_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
+	search_menu_popup->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_flat(false);
@@ -2231,19 +2241,20 @@ TextShaderEditor::TextShaderEditor() {
 	goto_menu->set_shortcut_context(this);
 	goto_menu->set_text(TTRC("Go To"));
 	goto_menu->set_switch_on_hover(true);
-	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
-	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
-	goto_menu->get_popup()->add_separator();
+	PopupMenu *goto_menu_popup = goto_menu->get_popup();
+	goto_menu_popup->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
+	goto_menu_popup->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
+	goto_menu_popup->add_separator();
 
 	bookmarks_menu = memnew(PopupMenu);
-	goto_menu->get_popup()->add_submenu_node_item(TTRC("Bookmarks"), bookmarks_menu);
+	goto_menu_popup->add_submenu_node_item(TTRC("Bookmarks"), bookmarks_menu);
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextShaderEditor::_bookmark_item_pressed));
 
 	previews_menu = memnew(PopupMenu);
-	goto_menu->get_popup()->add_submenu_node_item(TTRC("Shader Previews"), previews_menu);
+	goto_menu_popup->add_submenu_node_item(TTRC("Shader Previews"), previews_menu);
 	_update_shader_preview_list();
 	previews_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_update_shader_preview_list));
 	previews_menu->connect("index_pressed", callable_mp(this, &TextShaderEditor::_shader_preview_item_pressed));

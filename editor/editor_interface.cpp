@@ -151,25 +151,27 @@ TypedArray<Texture2D> EditorInterface::_make_mesh_previews(const TypedArray<Mesh
 Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size) {
 	int size = p_preview_size;
 
-	RID scenario = RS::get_singleton()->scenario_create();
+	RS *rs = RS::get_singleton();
 
-	RID viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_ALWAYS);
-	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
-	RS::get_singleton()->viewport_set_size(viewport, size, size);
-	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
-	RS::get_singleton()->viewport_set_active(viewport, true);
-	RID viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
+	RID scenario = rs->scenario_create();
 
-	RID camera = RS::get_singleton()->camera_create();
-	RS::get_singleton()->viewport_attach_camera(viewport, camera);
+	RID viewport = rs->viewport_create();
+	rs->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_ALWAYS);
+	rs->viewport_set_scenario(viewport, scenario);
+	rs->viewport_set_size(viewport, size, size);
+	rs->viewport_set_transparent_background(viewport, true);
+	rs->viewport_set_active(viewport, true);
+	RID viewport_texture = rs->viewport_get_texture(viewport);
 
-	RID light = RS::get_singleton()->directional_light_create();
-	RID light_instance = RS::get_singleton()->instance_create2(light, scenario);
+	RID camera = rs->camera_create();
+	rs->viewport_attach_camera(viewport, camera);
 
-	RID light2 = RS::get_singleton()->directional_light_create();
-	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	RID light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
+	RID light = rs->directional_light_create();
+	RID light_instance = rs->instance_create2(light, scenario);
+
+	RID light2 = rs->directional_light_create();
+	rs->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	RID light_instance2 = rs->instance_create2(light2, scenario);
 
 	EditorProgress ep("mlib", TTR("Creating Mesh Previews"), p_meshes.size());
 
@@ -187,8 +189,8 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 			mesh_xform = (*p_transforms)[i];
 		}
 
-		RID inst = RS::get_singleton()->instance_create2(mesh->get_rid(), scenario);
-		RS::get_singleton()->instance_set_transform(inst, mesh_xform);
+		RID inst = rs->instance_create2(mesh->get_rid(), scenario);
+		rs->instance_set_transform(inst, mesh_xform);
 
 		AABB aabb = mesh->get_aabb();
 		Vector3 ofs = aabb.get_center();
@@ -207,32 +209,32 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		xform.invert();
 		xform = mesh_xform * xform;
 
-		RS::get_singleton()->camera_set_transform(camera, xform * Transform3D(Basis(), Vector3(0, 0, 3)));
-		RS::get_singleton()->camera_set_orthogonal(camera, m * 2, 0.01, 1000.0);
+		rs->camera_set_transform(camera, xform * Transform3D(Basis(), Vector3(0, 0, 3)));
+		rs->camera_set_orthogonal(camera, m * 2, 0.01, 1000.0);
 
-		RS::get_singleton()->instance_set_transform(light_instance, xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
-		RS::get_singleton()->instance_set_transform(light_instance2, xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
+		rs->instance_set_transform(light_instance, xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
+		rs->instance_set_transform(light_instance2, xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
 
 		ep.step(TTR("Thumbnail..."), i);
 		DisplayServer::get_singleton()->process_events();
 		Main::iteration();
 		Main::iteration();
-		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
+		Ref<Image> img = rs->texture_2d_get(viewport_texture);
 		ERR_CONTINUE(img.is_null() || img->is_empty());
 		Ref<ImageTexture> it = ImageTexture::create_from_image(img);
 
-		RS::get_singleton()->free_rid(inst);
+		rs->free_rid(inst);
 
 		textures.push_back(it);
 	}
 
-	RS::get_singleton()->free_rid(viewport);
-	RS::get_singleton()->free_rid(light);
-	RS::get_singleton()->free_rid(light_instance);
-	RS::get_singleton()->free_rid(light2);
-	RS::get_singleton()->free_rid(light_instance2);
-	RS::get_singleton()->free_rid(camera);
-	RS::get_singleton()->free_rid(scenario);
+	rs->free_rid(viewport);
+	rs->free_rid(light);
+	rs->free_rid(light_instance);
+	rs->free_rid(light2);
+	rs->free_rid(light_instance2);
+	rs->free_rid(camera);
+	rs->free_rid(scenario);
 
 	return textures;
 }

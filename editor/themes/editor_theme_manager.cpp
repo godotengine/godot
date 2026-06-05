@@ -167,7 +167,9 @@ Ref<StyleBoxLine> EditorThemeManager::make_line_stylebox(Color p_color, int p_th
 // Theme generation and population routines.
 
 Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &p_old_theme) {
-	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Create Base Theme");
+	OS *os = OS::get_singleton();
+
+	os->benchmark_begin_measure(get_benchmark_key(), "Create Base Theme");
 
 	Ref<EditorTheme> theme = memnew(EditorTheme);
 	ThemeConfiguration config = _create_theme_config();
@@ -186,7 +188,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 
 	// Register icons.
 	{
-		OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Register Icons");
+		os->benchmark_begin_measure(get_benchmark_key(), "Register Icons");
 
 		// External functions, see editor_icons.cpp.
 		editor_configure_icons(config.dark_icon_and_font);
@@ -202,12 +204,12 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 			editor_register_icons(theme, config.dark_icon_and_font, config.icon_saturation, config.thumb_size, config.gizmo_handle_scale);
 		}
 
-		OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Register Icons");
+		os->benchmark_end_measure(get_benchmark_key(), "Register Icons");
 	}
 
 	// Register fonts.
 	{
-		OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Register Fonts");
+		os->benchmark_begin_measure(get_benchmark_key(), "Register Fonts");
 
 		// TODO: Check if existing font definitions from the old theme are usable and copy them.
 
@@ -215,7 +217,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 		print_verbose("EditorTheme: Generating new fonts.");
 		editor_register_fonts(theme);
 
-		OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Register Fonts");
+		os->benchmark_end_measure(get_benchmark_key(), "Register Fonts");
 	}
 
 	// TODO: Check if existing style definitions from the old theme are usable and copy them.
@@ -233,7 +235,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 	_populate_text_editor_styles(theme, config);
 	_populate_visual_shader_styles(theme, config);
 
-	OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Create Base Theme");
+	os->benchmark_end_measure(get_benchmark_key(), "Create Base Theme");
 	return theme;
 }
 
@@ -269,6 +271,8 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 	config.subresource_hue_tint = EDITOR_GET("docks/property_editor/subresource_hue_tint");
 	config.dragging_hover_wait_msec = (float)EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds") * 1000;
 
+	EditorSettings *editor_settings = EditorSettings::get_singleton();
+
 	// Handle theme style.
 	if (config.preset != "Custom") {
 		if (config.style == "Classic") {
@@ -279,12 +283,12 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			config.corner_radius = config.default_corner_radius;
 		}
 
-		EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_relationship_lines", config.draw_relationship_lines);
-		EditorSettings::get_singleton()->set_initial_value("interface/theme/corner_radius", config.corner_radius);
+		editor_settings->set_initial_value("interface/theme/draw_relationship_lines", config.draw_relationship_lines);
+		editor_settings->set_initial_value("interface/theme/corner_radius", config.corner_radius);
 
 		// Enforce values in case they were adjusted or overridden.
-		EditorSettings::get_singleton()->set_manually("interface/theme/draw_relationship_lines", config.draw_relationship_lines);
-		EditorSettings::get_singleton()->set_manually("interface/theme/corner_radius", config.corner_radius);
+		editor_settings->set_manually("interface/theme/draw_relationship_lines", config.draw_relationship_lines);
+		editor_settings->set_manually("interface/theme/corner_radius", config.corner_radius);
 	}
 
 	// Handle color preset.
@@ -367,11 +371,11 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			config.draw_extra_borders = preset_draw_extra_borders;
 			config.icon_saturation = preset_icon_saturation;
 
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", config.accent_color);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", config.base_color);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/icon_saturation", config.icon_saturation);
+			editor_settings->set_initial_value("interface/theme/accent_color", config.accent_color);
+			editor_settings->set_initial_value("interface/theme/base_color", config.base_color);
+			editor_settings->set_initial_value("interface/theme/contrast", config.contrast);
+			editor_settings->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
+			editor_settings->set_initial_value("interface/theme/icon_saturation", config.icon_saturation);
 		}
 
 		if (use_system_accent_color && system_accent_color != Color(0, 0, 0, 0)) {
@@ -380,12 +384,12 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 		}
 
 		// Enforce values in case they were adjusted or overridden.
-		EditorSettings::get_singleton()->set_manually("interface/theme/color_preset", config.preset);
-		EditorSettings::get_singleton()->set_manually("interface/theme/accent_color", config.accent_color);
-		EditorSettings::get_singleton()->set_manually("interface/theme/base_color", config.base_color);
-		EditorSettings::get_singleton()->set_manually("interface/theme/contrast", config.contrast);
-		EditorSettings::get_singleton()->set_manually("interface/theme/draw_extra_borders", config.draw_extra_borders);
-		EditorSettings::get_singleton()->set_manually("interface/theme/icon_saturation", config.icon_saturation);
+		editor_settings->set_manually("interface/theme/color_preset", config.preset);
+		editor_settings->set_manually("interface/theme/accent_color", config.accent_color);
+		editor_settings->set_manually("interface/theme/base_color", config.base_color);
+		editor_settings->set_manually("interface/theme/contrast", config.contrast);
+		editor_settings->set_manually("interface/theme/draw_extra_borders", config.draw_extra_borders);
+		editor_settings->set_manually("interface/theme/icon_saturation", config.icon_saturation);
 	}
 
 	// Handle theme spacing preset.
@@ -413,14 +417,14 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			config.extra_spacing = preset_extra_spacing;
 			config.dialogs_buttons_min_size = preset_dialogs_buttons_min_size;
 
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_spacing", config.base_spacing);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/additional_spacing", config.extra_spacing);
+			editor_settings->set_initial_value("interface/theme/base_spacing", config.base_spacing);
+			editor_settings->set_initial_value("interface/theme/additional_spacing", config.extra_spacing);
 		}
 
 		// Enforce values in case they were adjusted or overridden.
-		EditorSettings::get_singleton()->set_manually("interface/theme/spacing_preset", config.spacing_preset);
-		EditorSettings::get_singleton()->set_manually("interface/theme/base_spacing", config.base_spacing);
-		EditorSettings::get_singleton()->set_manually("interface/theme/additional_spacing", config.extra_spacing);
+		editor_settings->set_manually("interface/theme/spacing_preset", config.spacing_preset);
+		editor_settings->set_manually("interface/theme/base_spacing", config.base_spacing);
+		editor_settings->set_manually("interface/theme/additional_spacing", config.extra_spacing);
 	}
 
 	// Generated properties.
@@ -684,11 +688,13 @@ void EditorThemeManager::_reset_dirty_flag() {
 // Public interface for theme generation.
 
 Ref<EditorTheme> EditorThemeManager::generate_theme(const Ref<EditorTheme> &p_old_theme) {
-	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Generate Theme");
+	OS *os = OS::get_singleton();
+
+	os->benchmark_begin_measure(get_benchmark_key(), "Generate Theme");
 
 	Ref<EditorTheme> theme = _create_base_theme(p_old_theme);
 
-	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Merge Custom Theme");
+	os->benchmark_begin_measure(get_benchmark_key(), "Merge Custom Theme");
 
 	const String custom_theme_path = EDITOR_GET("interface/theme/custom_theme");
 	if (!custom_theme_path.is_empty()) {
@@ -698,9 +704,9 @@ Ref<EditorTheme> EditorThemeManager::generate_theme(const Ref<EditorTheme> &p_ol
 		}
 	}
 
-	OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Merge Custom Theme");
+	os->benchmark_end_measure(get_benchmark_key(), "Merge Custom Theme");
 
-	OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Generate Theme");
+	os->benchmark_end_measure(get_benchmark_key(), "Generate Theme");
 	benchmark_run++;
 
 	return theme;
@@ -712,16 +718,17 @@ bool EditorThemeManager::is_generated_theme_outdated() {
 	// without a restart, so there is no point regenerating the theme.
 
 	if (outdated_cache_dirty) {
+		EditorSettings *es = EditorSettings::get_singleton();
 		// TODO: We can use this information more intelligently to do partial theme updates and speed things up.
-		outdated_cache = EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/fonts") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/enable_touch_optimizations") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("editors/visual_editors") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("docks/property_editor/subresource_hue_tint") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog/thumbnail_size") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("run/output/font_size");
+		outdated_cache = es->check_changed_settings_in_group("interface/theme") ||
+				es->check_changed_settings_in_group("interface/editor/fonts") ||
+				es->check_changed_settings_in_group("interface/touchscreen/enable_touch_optimizations") ||
+				es->check_changed_settings_in_group("editors/visual_editors") ||
+				es->check_changed_settings_in_group("text_editor/theme") ||
+				es->check_changed_settings_in_group("text_editor/help/help") ||
+				es->check_changed_settings_in_group("docks/property_editor/subresource_hue_tint") ||
+				es->check_changed_settings_in_group("filesystem/file_dialog/thumbnail_size") ||
+				es->check_changed_settings_in_group("run/output/font_size");
 
 		// The outdated flag is relevant at the moment of changing editor settings.
 		callable_mp_static(&EditorThemeManager::_reset_dirty_flag).call_deferred();

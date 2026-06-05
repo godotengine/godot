@@ -216,6 +216,8 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		return;
 	}
 
+	EditorNode *editor_node = EditorNode::get_singleton();
+
 	String node_directory;
 	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(_get_root_playback_path(node_directory));
 	if (playback.is_null()) {
@@ -299,7 +301,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				_update_connected_nodes(selected_node);
 
 				Ref<AnimationNode> anode = state_machine->get_node(selected_node);
-				EditorNode::get_singleton()->push_item(anode.ptr(), "", true);
+				editor_node->push_item(anode.ptr(), "", true);
 				state_machine_draw->queue_redraw();
 				dragging_selected_attempt = true;
 				dragging_selected = false;
@@ -357,7 +359,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 		// If no state or transition was selected, select host StateMachine node.
 		if (selected_node.is_empty() && selected_transition_index == -1) {
-			EditorNode::get_singleton()->push_item(state_machine.ptr(), "", true);
+			editor_node->push_item(state_machine.ptr(), "", true);
 		}
 
 		state_machine_draw->queue_redraw();
@@ -417,7 +419,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			Ref<AnimationNodeEndState> end_node = node;
 
 			if (state_machine->has_transition(connecting_from, connecting_to_node) && state_machine->can_edit_node(connecting_to_node) && anodesm.is_null()) {
-				EditorNode::get_singleton()->show_warning(TTR("Transition exists!"));
+				editor_node->show_warning(TTR("Transition exists!"));
 				connecting = false;
 			} else {
 				_add_transition();
@@ -475,13 +477,13 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (new_from == old_from && new_to == old_to) {
 				// No change.
 			} else if (new_from == new_to) {
-				EditorNode::get_singleton()->show_warning(TTR("Cannot transition to self!"));
+				editor_node->show_warning(TTR("Cannot transition to self!"));
 			} else if (new_to == SceneStringName(Start)) {
-				EditorNode::get_singleton()->show_warning(TTR("Cannot transition to \"Start\"!"));
+				editor_node->show_warning(TTR("Cannot transition to \"Start\"!"));
 			} else if (new_from == SceneStringName(End)) {
-				EditorNode::get_singleton()->show_warning(TTR("Cannot transition from \"End\"!"));
+				editor_node->show_warning(TTR("Cannot transition from \"End\"!"));
 			} else if (state_machine->has_transition(new_from, new_to)) {
-				EditorNode::get_singleton()->show_warning(vformat(TTR("Transition from \"%s\" to \"%s\" already exists!"), new_from, new_to));
+				editor_node->show_warning(vformat(TTR("Transition from \"%s\" to \"%s\" already exists!"), new_from, new_to));
 			} else {
 				_reconnect_transition();
 			}
@@ -548,7 +550,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 		if (clicked_node != StringName()) {
 			Ref<AnimationNode> anode = state_machine->get_node(clicked_node);
-			EditorNode::get_singleton()->push_item(anode.ptr(), "", true);
+			editor_node->push_item(anode.ptr(), "", true);
 			dragging_selected_attempt = true;
 			dragging_selected = false;
 			drag_from = mb->get_position();

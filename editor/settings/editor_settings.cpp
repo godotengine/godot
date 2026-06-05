@@ -1329,9 +1329,10 @@ void EditorSettings::_rename_setting(const String &p_old_name, const String &p_n
 		set_setting(p_new_name, get_setting(p_old_name));
 		erase(p_old_name);
 	}
-	if (ProjectSettings::get_singleton()->has_editor_setting_override(p_old_name)) {
-		ProjectSettings::get_singleton()->set_editor_setting_override(p_new_name, ProjectSettings::get_singleton()->get_editor_setting_override(p_old_name));
-		ProjectSettings::get_singleton()->set_editor_setting_override(p_old_name, Variant());
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (ps->has_editor_setting_override(p_old_name)) {
+		ps->set_editor_setting_override(p_new_name, ps->get_editor_setting_override(p_old_name));
+		ps->set_editor_setting_override(p_old_name, Variant());
 	}
 	compat_map[p_old_name] = p_new_name;
 }
@@ -1630,28 +1631,30 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 }
 
 Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed, bool p_basic) {
-	ERR_FAIL_NULL_V_MSG(EditorSettings::get_singleton(), p_default, "EditorSettings not instantiated yet.");
+	EditorSettings *es = EditorSettings::get_singleton();
+	ERR_FAIL_NULL_V_MSG(es, p_default, "EditorSettings not instantiated yet.");
 
 	Variant ret = p_default;
-	if (EditorSettings::get_singleton()->has_setting(p_setting)) {
+	if (es->has_setting(p_setting)) {
 		ret = EDITOR_GET(p_setting);
 	} else {
-		EditorSettings::get_singleton()->set_manually(p_setting, p_default);
+		es->set_manually(p_setting, p_default);
 	}
-	EditorSettings::get_singleton()->set_restart_if_changed(p_setting, p_restart_if_changed);
-	EditorSettings::get_singleton()->set_basic(p_setting, p_basic);
+	es->set_restart_if_changed(p_setting, p_restart_if_changed);
+	es->set_basic(p_setting, p_basic);
 
-	if (!EditorSettings::get_singleton()->has_default_value(p_setting)) {
-		EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
+	if (!es->has_default_value(p_setting)) {
+		es->set_initial_value(p_setting, p_default);
 	}
 
 	return ret;
 }
 
 Variant _EDITOR_GET(const String &p_setting) {
-	ERR_FAIL_NULL_V_MSG(EditorSettings::get_singleton(), Variant(), vformat(R"(EditorSettings not instantiated yet when getting setting "%s".)", p_setting));
-	ERR_FAIL_COND_V_MSG(!EditorSettings::get_singleton()->has_setting(p_setting), Variant(), vformat(R"(Editor setting "%s" does not exist.)", p_setting));
-	return EditorSettings::get_singleton()->get_setting(p_setting);
+	EditorSettings *es = EditorSettings::get_singleton();
+	ERR_FAIL_NULL_V_MSG(es, Variant(), vformat(R"(EditorSettings not instantiated yet when getting setting "%s".)", p_setting));
+	ERR_FAIL_COND_V_MSG(!es->has_setting(p_setting), Variant(), vformat(R"(Editor setting "%s" does not exist.)", p_setting));
+	return es->get_setting(p_setting);
 }
 
 bool EditorSettings::_property_can_revert(const StringName &p_name) const {
@@ -1806,14 +1809,15 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 	String favorites_file;
 	String favorite_properties_file;
 	String recent_dirs_file;
+	EditorPaths *editor_paths = EditorPaths::get_singleton();
 	if (Engine::get_singleton()->is_project_manager_hint()) {
-		favorites_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_dirs");
-		favorite_properties_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_properties");
-		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().path_join("recent_dirs");
+		favorites_file = editor_paths->get_config_dir().path_join("favorite_dirs");
+		favorite_properties_file = editor_paths->get_config_dir().path_join("favorite_properties");
+		recent_dirs_file = editor_paths->get_config_dir().path_join("recent_dirs");
 	} else {
-		favorites_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites");
-		favorite_properties_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorite_properties");
-		recent_dirs_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("recent_dirs");
+		favorites_file = editor_paths->get_project_settings_dir().path_join("favorites");
+		favorite_properties_file = editor_paths->get_project_settings_dir().path_join("favorite_properties");
+		recent_dirs_file = editor_paths->get_project_settings_dir().path_join("recent_dirs");
 	}
 
 	/// File Favorites
@@ -1972,11 +1976,12 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() {
+	DisplayServer *ds = DisplayServer::get_singleton();
 #ifdef LINUXBSD_ENABLED
-	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
-		float main_window_scale = DisplayServer::get_singleton()->screen_get_scale(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW);
+	if (ds->get_name() == "Wayland") {
+		float main_window_scale = ds->screen_get_scale(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW);
 
-		if (DisplayServer::get_singleton()->get_screen_count() == 1 || Math::fract(main_window_scale) != 0) {
+		if (ds->get_screen_count() == 1 || Math::fract(main_window_scale) != 0) {
 			// If we have a single screen or the screen of the window is fractional, all
 			// bets are off. At this point, let's just return the current's window scale,
 			// which is special-cased to the scale of `DisplayServerEnums::SCREEN_OF_MAIN_WINDOW`.
@@ -1987,26 +1992,26 @@ float EditorSettings::get_auto_display_scale() {
 		// properly anyways (we're need the ability to change the UI scale at runtime).
 		// At this point it's more convenient to "supersample" like we do with other
 		// platforms, hoping that the user is only using integer-scaled screens.
-		return DisplayServer::get_singleton()->screen_get_max_scale();
+		return ds->screen_get_max_scale();
 	}
 #endif
 
 #if defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
-	return DisplayServer::get_singleton()->screen_get_max_scale();
+	return ds->screen_get_max_scale();
 #else
-	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
+	const int screen = ds->window_get_current_screen();
 
-	if (DisplayServer::get_singleton()->screen_get_size(screen) == Vector2i()) {
+	if (ds->screen_get_size(screen) == Vector2i()) {
 		// Invalid screen size, skip.
 		return 1.0;
 	}
 
 #if defined(WINDOWS_ENABLED)
-	return DisplayServer::get_singleton()->screen_get_dpi(screen) / 96.0;
+	return ds->screen_get_dpi(screen) / 96.0;
 #else
 	// Use the smallest dimension to use a correct display scale on portrait displays.
-	const int smallest_dimension = MIN(DisplayServer::get_singleton()->screen_get_size(screen).x, DisplayServer::get_singleton()->screen_get_size(screen).y);
-	if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && smallest_dimension >= 1400) {
+	const int smallest_dimension = MIN(ds->screen_get_size(screen).x, ds->screen_get_size(screen).y);
+	if (ds->screen_get_dpi(screen) >= 192 && smallest_dimension >= 1400) {
 		// hiDPI display.
 		return 2.0;
 	} else if (smallest_dimension >= 1700) {

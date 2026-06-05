@@ -3343,12 +3343,13 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 }
 
 void FileSystemDock::_update_folder_colors_setting() {
-	if (!ProjectSettings::get_singleton()->has_setting("file_customization/folder_colors")) {
-		ProjectSettings::get_singleton()->set_setting("file_customization/folder_colors", assigned_folder_colors);
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (!ps->has_setting("file_customization/folder_colors")) {
+		ps->set_setting("file_customization/folder_colors", assigned_folder_colors);
 	} else if (assigned_folder_colors.is_empty()) {
-		ProjectSettings::get_singleton()->set_setting("file_customization/folder_colors", Variant());
+		ps->set_setting("file_customization/folder_colors", Variant());
 	}
-	ProjectSettings::get_singleton()->save();
+	ps->save();
 }
 
 void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu) {

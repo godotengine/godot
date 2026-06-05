@@ -2664,16 +2664,17 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		EditorNode::setup_built_in_resource(p_script, edited_scene->get_scene_file_path());
 	}
 
+	InspectorDock *inspector_dock = InspectorDock::get_singleton();
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, selected.front()->get());
 	for (Node *E : selected) {
 		Ref<Script> existing = E->get_script();
-		undo_redo->add_do_method(InspectorDock::get_singleton(), "store_script_properties", E);
-		undo_redo->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", E);
+		undo_redo->add_do_method(inspector_dock, "store_script_properties", E);
+		undo_redo->add_undo_method(inspector_dock, "store_script_properties", E);
 		undo_redo->add_do_method(E, "set_script", p_script);
 		undo_redo->add_undo_method(E, "set_script", existing);
-		undo_redo->add_do_method(InspectorDock::get_singleton(), "apply_script_properties", E);
-		undo_redo->add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", E);
+		undo_redo->add_do_method(inspector_dock, "apply_script_properties", E);
+		undo_redo->add_undo_method(inspector_dock, "apply_script_properties", E);
 		undo_redo->add_do_method(this, "_queue_update_script_button");
 		undo_redo->add_undo_method(this, "_queue_update_script_button");
 	}
@@ -3776,13 +3777,14 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 			}
 		}
 
+		InspectorDock *inspector_dock = InspectorDock::get_singleton();
 		undo_redo->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, n);
-		undo_redo->add_do_method(InspectorDock::get_singleton(), "store_script_properties", n);
-		undo_redo->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", n);
+		undo_redo->add_do_method(inspector_dock, "store_script_properties", n);
+		undo_redo->add_undo_method(inspector_dock, "store_script_properties", n);
 		undo_redo->add_do_method(n, "set_script", scr);
 		undo_redo->add_undo_method(n, "set_script", n->get_script());
-		undo_redo->add_do_method(InspectorDock::get_singleton(), "apply_script_properties", n);
-		undo_redo->add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", n);
+		undo_redo->add_do_method(inspector_dock, "apply_script_properties", n);
+		undo_redo->add_undo_method(inspector_dock, "apply_script_properties", n);
 		undo_redo->add_do_method(this, "_queue_update_script_button");
 		undo_redo->add_undo_method(this, "_queue_update_script_button");
 		undo_redo->commit_action();

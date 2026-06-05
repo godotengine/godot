@@ -180,16 +180,18 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 void ProjectManager::_update_size_limits() {
 	const Size2 minimum_size = Size2(720, 450) * EDSCALE;
 
+	DisplayServer *ds = DisplayServer::get_singleton();
+
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
 	if (w) {
 		// Calling Window methods this early doesn't sync properties with DS.
 		w->set_min_size(minimum_size);
-		DisplayServer::get_singleton()->window_set_min_size(minimum_size);
+		ds->window_set_min_size(minimum_size);
 	}
-	Size2 real_size = DisplayServer::get_singleton()->window_get_size();
+	Size2 real_size = ds->window_get_size();
 
-	Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen());
+	Rect2i screen_rect = ds->screen_get_usable_rect(ds->window_get_current_screen());
 	if (screen_rect.size != Vector2i()) {
 		// Center the window on the screen.
 		Vector2i window_position;

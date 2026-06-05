@@ -259,7 +259,9 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 		return;
 	}
 
-	if (!EditorNode::get_singleton()->validate_custom_directory()) {
+	EditorNode *editor_node = EditorNode::get_singleton();
+
+	if (!editor_node->validate_custom_directory()) {
 		return;
 	}
 
@@ -270,7 +272,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 		String project_file_path = resource_path.path_join("project.godot");
 		if (!FileAccess::exists(project_file_path)) {
 			// TODO: Try to recover the "project.godot" file using ProjectSettings::get_singleton()->save()
-			EditorNode::get_singleton()->show_warning(
+			editor_node->show_warning(
 					TTRC("Failed to run the project because the project.godot file is missing."),
 					TTRC("Error!"));
 			return;
@@ -304,7 +306,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 
 		if (write_movie_file.is_empty()) {
 			// TODO: Provide options to directly resolve the issue with a custom dialog.
-			EditorNode::get_singleton()->show_accept(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the Editor > Movie Writer category.\nAlternatively, for running single scenes, a `movie_file` string metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."), TTR("OK"));
+			editor_node->show_accept(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the Editor > Movie Writer category.\nAlternatively, for running single scenes, a `movie_file` string metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."), TTR("OK"));
 			return;
 		}
 	}
@@ -325,12 +327,12 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 
 			Node *scene_root = get_tree()->get_edited_scene_root();
 			if (!scene_root) {
-				EditorNode::get_singleton()->show_accept(TTR("There is no defined scene to run."), TTR("OK"));
+				editor_node->show_accept(TTR("There is no defined scene to run."), TTR("OK"));
 				return;
 			}
 
 			if (scene_root->get_scene_file_path().is_empty()) {
-				EditorNode::get_singleton()->save_before_run();
+				editor_node->save_before_run();
 				return;
 			}
 
@@ -339,7 +341,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 		} break;
 
 		default: {
-			if (!EditorNode::get_singleton()->ensure_main_scene(false)) {
+			if (!editor_node->ensure_main_scene(false)) {
 				return;
 			}
 
@@ -347,24 +349,26 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 		} break;
 	}
 
-	EditorNode::get_singleton()->try_autosave();
-	if (!EditorNode::get_singleton()->call_build()) {
+	editor_node->try_autosave();
+	if (!editor_node->call_build()) {
 		return;
 	}
 
 	Vector<String> args = p_run_args;
-	EditorNode::get_singleton()->call_run_scene(run_filename, args);
+	editor_node->call_run_scene(run_filename, args);
+
+	EditorDebuggerNode *debug_node = EditorDebuggerNode::get_singleton();
 
 	// Use the existing URI, in case it is overridden by the CLI.
-	String uri = EditorDebuggerNode::get_singleton()->get_server_uri();
+	String uri = debug_node->get_server_uri();
 	if (uri.is_empty()) {
 		uri = "tcp://";
 	}
-	EditorDebuggerNode::get_singleton()->start(uri);
+	debug_node->start(uri);
 	Error error = editor_run.run(run_filename, write_movie_file, args);
 	if (error != OK) {
-		EditorDebuggerNode::get_singleton()->stop();
-		EditorNode::get_singleton()->show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
+		debug_node->stop();
+		editor_node->show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
 		return;
 	}
 
@@ -391,16 +395,19 @@ void EditorRunBar::_run_native(const Ref<EditorExportPreset> &p_preset) {
 }
 
 void EditorRunBar::_profiler_autostart_indicator_pressed() {
-	// Switch to the first profiler tab in the bottom panel.
-	EditorDebuggerNode::get_singleton()->make_visible();
+	EditorDebuggerNode *debug_node = EditorDebuggerNode::get_singleton();
+	EditorSettings *settings = EditorSettings::get_singleton();
 
-	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
-		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(3);
-	} else if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false)) {
-		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(4);
+	// Switch to the first profiler tab in the bottom panel.
+	debug_node->make_visible();
+
+	if (settings->get_project_metadata("debug_options", "autostart_profiler", false)) {
+		debug_node->get_current_debugger()->switch_to_debugger(3);
+	} else if (settings->get_project_metadata("debug_options", "autostart_visual_profiler", false)) {
+		debug_node->get_current_debugger()->switch_to_debugger(4);
 	} else {
 		// Switch to the network profiler tab.
-		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(8);
+		debug_node->get_current_debugger()->switch_to_debugger(8);
 	}
 }
 

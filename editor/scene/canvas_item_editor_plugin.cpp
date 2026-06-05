@@ -967,12 +967,13 @@ void CanvasItemEditor::_commit_canvas_item_state(const List<CanvasItem *> &p_can
 void CanvasItemEditor::_snap_changed() {
 	static_cast<SnapDialog *>(snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_step, snap_rotation_offset, snap_rotation_step, snap_scale_step);
 
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "grid_offset", grid_offset);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "grid_step", grid_step);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "primary_grid_step", primary_grid_step);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_rotation_offset", snap_rotation_offset);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_rotation_step", snap_rotation_step);
-	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_scale_step", snap_scale_step);
+	EditorSettings *es = EditorSettings::get_singleton();
+	es->set_project_metadata("2d_editor", "grid_offset", grid_offset);
+	es->set_project_metadata("2d_editor", "grid_step", grid_step);
+	es->set_project_metadata("2d_editor", "primary_grid_step", primary_grid_step);
+	es->set_project_metadata("2d_editor", "snap_rotation_offset", snap_rotation_offset);
+	es->set_project_metadata("2d_editor", "snap_rotation_step", snap_rotation_step);
+	es->set_project_metadata("2d_editor", "snap_scale_step", snap_scale_step);
 
 	grid_step_multiplier = 0;
 	viewport->queue_redraw();
@@ -1186,15 +1187,16 @@ void CanvasItemEditor::_switch_theme_preview(int p_mode) {
 
 bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (drag_type == DRAG_NONE) {
-		if (show_guides && show_rulers && EditorNode::get_singleton()->get_edited_scene()) {
+		if (show_guides && show_rulers && edited_scene) {
 			Transform2D xform = viewport_scrollable->get_transform() * transform;
 			// Retrieve the guide lists
-			Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_", Array());
-			Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_", Array());
+			Array vguides = edited_scene->get_meta("_edit_vertical_guides_", Array());
+			Array hguides = edited_scene->get_meta("_edit_horizontal_guides_", Array());
 
 			// Hover over guides
 			real_t minimum = 1e20;
@@ -1283,12 +1285,12 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 
 		// Release confirms the guide move
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
-			if (show_guides && EditorNode::get_singleton()->get_edited_scene()) {
+			if (show_guides && edited_scene) {
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
 
 				// Retrieve the guide lists
-				Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_", Array());
-				Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_", Array());
+				Array vguides = edited_scene->get_meta("_edit_vertical_guides_", Array());
+				Array hguides = edited_scene->get_meta("_edit_horizontal_guides_", Array());
 
 				Point2 edited = snap_point(xform.affine_inverse().xform(b->get_position()), SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES);
 				if (drag_type == DRAG_V_GUIDE) {
@@ -1298,18 +1300,18 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						if (dragged_guide_index >= 0) {
 							vguides[dragged_guide_index] = edited.x;
 							undo_redo->create_action(TTR("Move Vertical Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_do_method(edited_scene, "set_meta", "_edit_vertical_guides_", vguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
 						} else {
 							vguides.push_back(edited.x);
 							undo_redo->create_action(TTR("Create Vertical Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
+							undo_redo->add_do_method(edited_scene, "set_meta", "_edit_vertical_guides_", vguides);
 							if (prev_vguides.is_empty()) {
-								undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_vertical_guides_");
+								undo_redo->add_undo_method(edited_scene, "remove_meta", "_edit_vertical_guides_");
 							} else {
-								undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+								undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
 							}
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
@@ -1319,11 +1321,11 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 							vguides.remove_at(dragged_guide_index);
 							undo_redo->create_action(TTR("Remove Vertical Guide"));
 							if (vguides.is_empty()) {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_vertical_guides_");
+								undo_redo->add_do_method(edited_scene, "remove_meta", "_edit_vertical_guides_");
 							} else {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
+								undo_redo->add_do_method(edited_scene, "set_meta", "_edit_vertical_guides_", vguides);
 							}
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
 						}
@@ -1335,18 +1337,18 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						if (dragged_guide_index >= 0) {
 							hguides[dragged_guide_index] = edited.y;
 							undo_redo->create_action(TTR("Move Horizontal Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_do_method(edited_scene, "set_meta", "_edit_horizontal_guides_", hguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
 						} else {
 							hguides.push_back(edited.y);
 							undo_redo->create_action(TTR("Create Horizontal Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+							undo_redo->add_do_method(edited_scene, "set_meta", "_edit_horizontal_guides_", hguides);
 							if (prev_hguides.is_empty()) {
-								undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_horizontal_guides_");
+								undo_redo->add_undo_method(edited_scene, "remove_meta", "_edit_horizontal_guides_");
 							} else {
-								undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+								undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
 							}
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
@@ -1356,11 +1358,11 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 							hguides.remove_at(dragged_guide_index);
 							undo_redo->create_action(TTR("Remove Horizontal Guide"));
 							if (hguides.is_empty()) {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_horizontal_guides_");
+								undo_redo->add_do_method(edited_scene, "remove_meta", "_edit_horizontal_guides_");
 							} else {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+								undo_redo->add_do_method(edited_scene, "set_meta", "_edit_horizontal_guides_", hguides);
 							}
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
 						}
@@ -1373,17 +1375,17 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						vguides.push_back(edited.x);
 						hguides.push_back(edited.y);
 						undo_redo->create_action(TTR("Create Horizontal and Vertical Guides"));
-						undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
-						undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+						undo_redo->add_do_method(edited_scene, "set_meta", "_edit_vertical_guides_", vguides);
+						undo_redo->add_do_method(edited_scene, "set_meta", "_edit_horizontal_guides_", hguides);
 						if (prev_vguides.is_empty()) {
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_vertical_guides_");
+							undo_redo->add_undo_method(edited_scene, "remove_meta", "_edit_vertical_guides_");
 						} else {
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
 						}
 						if (prev_hguides.is_empty()) {
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_horizontal_guides_");
+							undo_redo->add_undo_method(edited_scene, "remove_meta", "_edit_horizontal_guides_");
 						} else {
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_undo_method(edited_scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
 						}
 						undo_redo->add_undo_method(viewport, "queue_redraw");
 						undo_redo->commit_action();
@@ -5518,12 +5520,13 @@ void CanvasItemEditor::clear() {
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen.
 	_update_scrollbars();
 
-	grid_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_offset", Vector2());
-	grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_step", Vector2(8, 8));
-	primary_grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "primary_grid_step", Vector2i(8, 8));
-	snap_rotation_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
-	snap_rotation_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_offset", 0.0);
-	snap_scale_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_scale_step", 0.1);
+	EditorSettings *es = EditorSettings::get_singleton();
+	grid_offset = es->get_project_metadata("2d_editor", "grid_offset", Vector2());
+	grid_step = es->get_project_metadata("2d_editor", "grid_step", Vector2(8, 8));
+	primary_grid_step = es->get_project_metadata("2d_editor", "primary_grid_step", Vector2i(8, 8));
+	snap_rotation_step = es->get_project_metadata("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
+	snap_rotation_offset = es->get_project_metadata("2d_editor", "snap_rotation_offset", 0.0);
+	snap_scale_step = es->get_project_metadata("2d_editor", "snap_scale_step", 0.1);
 
 	if (auto_resampling_enabled) {
 		if (resample_timer->is_inside_tree()) {

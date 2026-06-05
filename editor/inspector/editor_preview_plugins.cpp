@@ -360,41 +360,43 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const Ref<Resource> &p_from
 }
 
 EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
-	scenario = RS::get_singleton()->scenario_create();
+	RS *rs = RS::get_singleton();
 
-	viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
-	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
-	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
-	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
-	RS::get_singleton()->viewport_set_active(viewport, true);
-	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
+	scenario = rs->scenario_create();
 
-	camera = RS::get_singleton()->camera_create();
-	RS::get_singleton()->viewport_attach_camera(viewport, camera);
-	RS::get_singleton()->camera_set_transform(camera, Transform3D(Basis(), Vector3(0, 0, 3)));
-	RS::get_singleton()->camera_set_perspective(camera, 45, 0.1, 10);
+	viewport = rs->viewport_create();
+	rs->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
+	rs->viewport_set_scenario(viewport, scenario);
+	rs->viewport_set_size(viewport, 128, 128);
+	rs->viewport_set_transparent_background(viewport, true);
+	rs->viewport_set_active(viewport, true);
+	viewport_texture = rs->viewport_get_texture(viewport);
+
+	camera = rs->camera_create();
+	rs->viewport_attach_camera(viewport, camera);
+	rs->camera_set_transform(camera, Transform3D(Basis(), Vector3(0, 0, 3)));
+	rs->camera_set_perspective(camera, 45, 0.1, 10);
 
 	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
-		camera_attributes = RS::get_singleton()->camera_attributes_create();
-		RS::get_singleton()->camera_attributes_set_exposure(camera_attributes, 1.0, 0.000032552); // Matches default CameraAttributesPhysical to work well with default DirectionalLight3Ds.
-		RS::get_singleton()->camera_set_camera_attributes(camera, camera_attributes);
+		camera_attributes = rs->camera_attributes_create();
+		rs->camera_attributes_set_exposure(camera_attributes, 1.0, 0.000032552); // Matches default CameraAttributesPhysical to work well with default DirectionalLight3Ds.
+		rs->camera_set_camera_attributes(camera, camera_attributes);
 	}
 
-	light = RS::get_singleton()->directional_light_create();
-	light_instance = RS::get_singleton()->instance_create2(light, scenario);
-	RS::get_singleton()->instance_set_transform(light_instance, Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
+	light = rs->directional_light_create();
+	light_instance = rs->instance_create2(light, scenario);
+	rs->instance_set_transform(light_instance, Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 
-	light2 = RS::get_singleton()->directional_light_create();
-	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	//RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	light2 = rs->directional_light_create();
+	rs->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	//rs->light_set_color(light2, Color(0.7, 0.7, 0.7));
 
-	light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
+	light_instance2 = rs->instance_create2(light2, scenario);
 
-	RS::get_singleton()->instance_set_transform(light_instance2, Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
+	rs->instance_set_transform(light_instance2, Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 
-	sphere = RS::get_singleton()->mesh_create();
-	sphere_instance = RS::get_singleton()->instance_create2(sphere, scenario);
+	sphere = rs->mesh_create();
+	sphere_instance = rs->instance_create2(sphere, scenario);
 
 	int lats = 32;
 	int lons = 32;
@@ -472,21 +474,22 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	arr[RSE::ARRAY_NORMAL] = normals;
 	arr[RSE::ARRAY_TANGENT] = tangents;
 	arr[RSE::ARRAY_TEX_UV] = uvs;
-	RS::get_singleton()->mesh_add_surface_from_arrays(sphere, RSE::PRIMITIVE_TRIANGLES, arr);
+	rs->mesh_add_surface_from_arrays(sphere, RSE::PRIMITIVE_TRIANGLES, arr);
 }
 
 EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free_rid(sphere);
-	RS::get_singleton()->free_rid(sphere_instance);
-	RS::get_singleton()->free_rid(viewport);
-	RS::get_singleton()->free_rid(light);
-	RS::get_singleton()->free_rid(light_instance);
-	RS::get_singleton()->free_rid(light2);
-	RS::get_singleton()->free_rid(light_instance2);
-	RS::get_singleton()->free_rid(camera);
-	RS::get_singleton()->free_rid(camera_attributes);
-	RS::get_singleton()->free_rid(scenario);
+	RS *rs = RS::get_singleton();
+	ERR_FAIL_NULL(rs);
+	rs->free_rid(sphere);
+	rs->free_rid(sphere_instance);
+	rs->free_rid(viewport);
+	rs->free_rid(light);
+	rs->free_rid(light_instance);
+	rs->free_rid(light2);
+	rs->free_rid(light_instance2);
+	rs->free_rid(camera);
+	rs->free_rid(camera_attributes);
+	rs->free_rid(scenario);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -780,56 +783,59 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const Ref<Resource> &p_from, co
 }
 
 EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
-	scenario = RS::get_singleton()->scenario_create();
+	RS *rs = RS::get_singleton();
 
-	viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
-	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
-	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
-	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
-	RS::get_singleton()->viewport_set_active(viewport, true);
-	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
+	scenario = rs->scenario_create();
 
-	camera = RS::get_singleton()->camera_create();
-	RS::get_singleton()->viewport_attach_camera(viewport, camera);
-	RS::get_singleton()->camera_set_transform(camera, Transform3D(Basis(), Vector3(0, 0, 3)));
-	//RS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
-	RS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
+	viewport = rs->viewport_create();
+	rs->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
+	rs->viewport_set_scenario(viewport, scenario);
+	rs->viewport_set_size(viewport, 128, 128);
+	rs->viewport_set_transparent_background(viewport, true);
+	rs->viewport_set_active(viewport, true);
+	viewport_texture = rs->viewport_get_texture(viewport);
+
+	camera = rs->camera_create();
+	rs->viewport_attach_camera(viewport, camera);
+	rs->camera_set_transform(camera, Transform3D(Basis(), Vector3(0, 0, 3)));
+	//rs->camera_set_perspective(camera,45,0.1,10);
+	rs->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
 
 	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
-		camera_attributes = RS::get_singleton()->camera_attributes_create();
-		RS::get_singleton()->camera_attributes_set_exposure(camera_attributes, 1.0, 0.000032552); // Matches default CameraAttributesPhysical to work well with default DirectionalLight3Ds.
-		RS::get_singleton()->camera_set_camera_attributes(camera, camera_attributes);
+		camera_attributes = rs->camera_attributes_create();
+		rs->camera_attributes_set_exposure(camera_attributes, 1.0, 0.000032552); // Matches default CameraAttributesPhysical to work well with default DirectionalLight3Ds.
+		rs->camera_set_camera_attributes(camera, camera_attributes);
 	}
 
-	light = RS::get_singleton()->directional_light_create();
-	light_instance = RS::get_singleton()->instance_create2(light, scenario);
-	RS::get_singleton()->instance_set_transform(light_instance, Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
+	light = rs->directional_light_create();
+	light_instance = rs->instance_create2(light, scenario);
+	rs->instance_set_transform(light_instance, Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 
-	light2 = RS::get_singleton()->directional_light_create();
-	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	//RS::get_singleton()->light_set_color(light2, RSE::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
-	light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
+	light2 = rs->directional_light_create();
+	rs->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	//rs->light_set_color(light2, RSE::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
+	light_instance2 = rs->instance_create2(light2, scenario);
 
-	RS::get_singleton()->instance_set_transform(light_instance2, Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
+	rs->instance_set_transform(light_instance2, Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 
-	//sphere = RS::get_singleton()->mesh_create();
-	mesh_instance = RS::get_singleton()->instance_create();
-	RS::get_singleton()->instance_set_scenario(mesh_instance, scenario);
+	//sphere = rs->mesh_create();
+	mesh_instance = rs->instance_create();
+	rs->instance_set_scenario(mesh_instance, scenario);
 }
 
 EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	//RS::get_singleton()->free(sphere);
-	RS::get_singleton()->free_rid(mesh_instance);
-	RS::get_singleton()->free_rid(viewport);
-	RS::get_singleton()->free_rid(light);
-	RS::get_singleton()->free_rid(light_instance);
-	RS::get_singleton()->free_rid(light2);
-	RS::get_singleton()->free_rid(light_instance2);
-	RS::get_singleton()->free_rid(camera);
-	RS::get_singleton()->free_rid(camera_attributes);
-	RS::get_singleton()->free_rid(scenario);
+	RS *rs = RS::get_singleton();
+	ERR_FAIL_NULL(rs);
+	//rs->free(sphere);
+	rs->free_rid(mesh_instance);
+	rs->free_rid(viewport);
+	rs->free_rid(light);
+	rs->free_rid(light_instance);
+	rs->free_rid(light2);
+	rs->free_rid(light_instance2);
+	rs->free_rid(camera);
+	rs->free_rid(camera_attributes);
+	rs->free_rid(scenario);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -898,24 +904,27 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate(const Ref<Resource> &p_from, co
 }
 
 EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
-	viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
-	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
-	RS::get_singleton()->viewport_set_active(viewport, true);
-	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
+	RS *rs = RS::get_singleton();
 
-	canvas = RS::get_singleton()->canvas_create();
-	canvas_item = RS::get_singleton()->canvas_item_create();
+	viewport = rs->viewport_create();
+	rs->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
+	rs->viewport_set_size(viewport, 128, 128);
+	rs->viewport_set_active(viewport, true);
+	viewport_texture = rs->viewport_get_texture(viewport);
 
-	RS::get_singleton()->viewport_attach_canvas(viewport, canvas);
-	RS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
+	canvas = rs->canvas_create();
+	canvas_item = rs->canvas_item_create();
+
+	rs->viewport_attach_canvas(viewport, canvas);
+	rs->canvas_item_set_parent(canvas_item, canvas);
 }
 
 EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free_rid(canvas_item);
-	RS::get_singleton()->free_rid(canvas);
-	RS::get_singleton()->free_rid(viewport);
+	RS *rs = RS::get_singleton();
+	ERR_FAIL_NULL(rs);
+	rs->free_rid(canvas_item);
+	rs->free_rid(canvas);
+	rs->free_rid(viewport);
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -918,14 +918,15 @@ bool EditorFileSystem::_update_scan_actions() {
 				fs_changed = true;
 
 				const String new_file_path = ia.dir->get_file_path(idx);
+				ResourceUID *resource_uid_singleton = ResourceUID::get_singleton();
 				const ResourceUID::ID existing_id = ResourceLoader::get_resource_uid(new_file_path);
 				if (existing_id != ResourceUID::INVALID_ID) {
-					const bool id_known = ResourceUID::get_singleton()->has_id(existing_id);
-					const String old_path = id_known ? ResourceUID::get_singleton()->get_id_path(existing_id) : String();
+					const bool id_known = resource_uid_singleton->has_id(existing_id);
+					const String old_path = id_known ? resource_uid_singleton->get_id_path(existing_id) : String();
 
 					if (id_known && old_path != new_file_path && FileAccess::exists(old_path)) {
-						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
-						ResourceUID::get_singleton()->add_id(new_id, new_file_path);
+						const ResourceUID::ID new_id = resource_uid_singleton->create_id_for_path(new_file_path);
+						resource_uid_singleton->add_id(new_id, new_file_path);
 						ResourceSaver::set_uid(new_file_path, new_id);
 						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", new_file_path, old_path));
 						ia.new_file->uid = new_id;
@@ -934,9 +935,9 @@ bool EditorFileSystem::_update_scan_actions() {
 						ResourceSaver::set_uid(new_file_path, existing_id);
 
 						if (id_known) {
-							ResourceUID::get_singleton()->set_id(existing_id, new_file_path);
+							resource_uid_singleton->set_id(existing_id, new_file_path);
 						} else {
-							ResourceUID::get_singleton()->add_id(existing_id, new_file_path);
+							resource_uid_singleton->add_id(existing_id, new_file_path);
 						}
 
 						ia.new_file->uid = existing_id;
@@ -944,8 +945,8 @@ bool EditorFileSystem::_update_scan_actions() {
 				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
 					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
 					if (f.is_valid()) {
-						ia.new_file->uid = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
-						f->store_line(ResourceUID::get_singleton()->id_to_text(ia.new_file->uid));
+						ia.new_file->uid = resource_uid_singleton->create_id_for_path(new_file_path);
+						f->store_line(resource_uid_singleton->id_to_text(ia.new_file->uid));
 					}
 				}
 
@@ -2398,6 +2399,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 }
 
 void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
+	ResourceUID *resource_uid = ResourceUID::get_singleton();
 	bool updated = false;
 	bool update_files_icon_cache = false;
 	Vector<EditorFileSystemDirectory::FileInfo *> files_to_update_icon_path;
@@ -2417,8 +2419,8 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			_delete_internal_files(file);
 			if (cpos != -1) { // Might've never been part of the editor file system (*.* files deleted in Open dialog).
 				if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
-					if (ResourceUID::get_singleton()->has_id(fs->files[cpos]->uid)) {
-						ResourceUID::get_singleton()->remove_id(fs->files[cpos]->uid);
+					if (resource_uid->has_id(fs->files[cpos]->uid)) {
+						resource_uid->remove_id(fs->files[cpos]->uid);
 					}
 				}
 				if (ClassDB::is_parent_class(fs->files[cpos]->type, SNAME("Script"))) {
@@ -2494,20 +2496,20 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
 
 			if (uid != ResourceUID::INVALID_ID) {
-				if (ResourceUID::get_singleton()->has_id(uid)) {
-					ResourceUID::get_singleton()->set_id(uid, file);
+				if (resource_uid->has_id(uid)) {
+					resource_uid->set_id(uid, file);
 				} else {
-					ResourceUID::get_singleton()->add_id(uid, file);
+					resource_uid->add_id(uid, file);
 				}
 
-				ResourceUID::get_singleton()->update_cache();
+				resource_uid->update_cache();
 			} else {
 				if (ResourceLoader::should_create_uid_file(file)) {
 					Ref<FileAccess> f = FileAccess::open(file + ".uid", FileAccess::WRITE);
 					if (f.is_valid()) {
-						const ResourceUID::ID id = ResourceUID::get_singleton()->create_id_for_path(file);
-						ResourceUID::get_singleton()->add_id(id, file);
-						f->store_line(ResourceUID::get_singleton()->id_to_text(id));
+						const ResourceUID::ID id = resource_uid->create_id_for_path(file);
+						resource_uid->add_id(id, file);
+						f->store_line(resource_uid->id_to_text(id));
 						fi->uid = id;
 					}
 				}

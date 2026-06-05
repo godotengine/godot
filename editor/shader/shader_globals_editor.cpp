@@ -81,9 +81,10 @@ class ShaderGlobalsEditorInterface : public Object {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 		undo_redo->create_action(TTR("Set Shader Global Variable"));
-		undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_value);
-		undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_prev_value);
-		RSE::GlobalShaderParameterType type = RS::get_singleton()->global_shader_parameter_get_type(p_name);
+		RS *rs = RS::get_singleton();
+		undo_redo->add_do_method(rs, "global_shader_parameter_set", p_name, p_value);
+		undo_redo->add_undo_method(rs, "global_shader_parameter_set", p_name, p_prev_value);
+		RSE::GlobalShaderParameterType type = rs->global_shader_parameter_get_type(p_name);
 		Dictionary gv;
 		gv["type"] = global_var_type_names[type];
 		if (type >= RSE::GLOBAL_VAR_TYPE_SAMPLER2D) {
@@ -98,8 +99,9 @@ class ShaderGlobalsEditorInterface : public Object {
 		}
 
 		String path = "shader_globals/" + String(p_name);
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), path, gv);
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), path, GLOBAL_GET(path));
+		ProjectSettings *ps = ProjectSettings::get_singleton();
+		undo_redo->add_do_property(ps, path, gv);
+		undo_redo->add_undo_property(ps, path, GLOBAL_GET(path));
 		undo_redo->add_do_method(this, "_var_changed");
 		undo_redo->add_undo_method(this, "_var_changed");
 		block_update = true;
@@ -385,8 +387,11 @@ void ShaderGlobalsEditor::_variable_name_text_changed(const String &p_variable_n
 void ShaderGlobalsEditor::_variable_added() {
 	String var = variable_name->get_text().strip_edges();
 
-	if (RenderingServer::get_singleton()->global_shader_parameter_get(var).get_type() != Variant::NIL) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Global shader parameter '%s' already exists."), var));
+	RS *rs = RS::get_singleton();
+	EditorNode *editor_node = EditorNode::get_singleton();
+
+	if (rs->global_shader_parameter_get(var).get_type() != Variant::NIL) {
+		editor_node->show_warning(vformat(TTR("Global shader parameter '%s' already exists."), var));
 		return;
 	}
 
@@ -394,7 +399,7 @@ void ShaderGlobalsEditor::_variable_added() {
 	ShaderLanguage::get_keyword_list(&keywords);
 
 	if (keywords.find(var) != nullptr || var == "script") {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Name '%s' is a reserved shader language keyword."), var));
+		editor_node->show_warning(vformat(TTR("Name '%s' is a reserved shader language keyword."), var));
 		return;
 	}
 
@@ -403,14 +408,15 @@ void ShaderGlobalsEditor::_variable_added() {
 	Variant value = create_var(RSE::GlobalShaderParameterType(variable_type->get_selected()));
 
 	undo_redo->create_action(TTR("Add Shader Global Parameter"));
-	undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_add", var, RSE::GlobalShaderParameterType(variable_type->get_selected()), value);
-	undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_remove", var);
+	undo_redo->add_do_method(rs, "global_shader_parameter_add", var, RSE::GlobalShaderParameterType(variable_type->get_selected()), value);
+	undo_redo->add_undo_method(rs, "global_shader_parameter_remove", var);
 	Dictionary gv;
 	gv["type"] = global_var_type_names[variable_type->get_selected()];
 	gv["value"] = value;
 
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "shader_globals/" + var, gv);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "shader_globals/" + var, Variant());
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	undo_redo->add_do_property(project_settings, "shader_globals/" + var, gv);
+	undo_redo->add_undo_property(project_settings, "shader_globals/" + var, Variant());
 	undo_redo->add_do_method(this, "_changed");
 	undo_redo->add_undo_method(this, "_changed");
 	undo_redo->commit_action();
@@ -421,12 +427,14 @@ void ShaderGlobalsEditor::_variable_added() {
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
+	RS *rs = RS::get_singleton();
 	undo_redo->create_action(TTR("Add Shader Global Parameter"));
-	undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_remove", p_variable);
-	undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_add", p_variable, RS::get_singleton()->global_shader_parameter_get_type(p_variable), RS::get_singleton()->global_shader_parameter_get(p_variable));
+	undo_redo->add_do_method(rs, "global_shader_parameter_remove", p_variable);
+	undo_redo->add_undo_method(rs, "global_shader_parameter_add", p_variable, RS::get_singleton()->global_shader_parameter_get_type(p_variable), RS::get_singleton()->global_shader_parameter_get(p_variable));
 
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "shader_globals/" + p_variable, Variant());
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "shader_globals/" + p_variable, GLOBAL_GET("shader_globals/" + p_variable));
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	undo_redo->add_do_property(ps, "shader_globals/" + p_variable, Variant());
+	undo_redo->add_undo_property(ps, "shader_globals/" + p_variable, GLOBAL_GET("shader_globals/" + p_variable));
 	undo_redo->add_do_method(this, "_changed");
 	undo_redo->add_undo_method(this, "_changed");
 	undo_redo->commit_action();

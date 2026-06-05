@@ -312,7 +312,8 @@ void EditorProperty::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer *accessibility_server = AccessibilityServer::get_singleton();
+			accessibility_server->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 
 			bool use_help_bit = EDITOR_GET("interface/accessibility/property_descriptions");
 			String tooltip = get_tooltip_text();
@@ -330,21 +331,21 @@ void EditorProperty::_notification(int p_what) {
 							prologue += custom_description;
 						}
 					}
-					AccessibilityServer::get_singleton()->update_set_description(ae, EditorHelpBit::get_as_plain_text(symbol, prologue));
+					accessibility_server->update_set_description(ae, EditorHelpBit::get_as_plain_text(symbol, prologue));
 				} else {
-					AccessibilityServer::get_singleton()->update_set_description(ae, tooltip);
+					accessibility_server->update_set_description(ae, tooltip);
 				}
 			}
 
-			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Property: %s"), label));
+			accessibility_server->update_set_name(ae, vformat(TTR("Property: %s"), label));
 
-			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
-			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorProperty::_accessibility_action_menu));
-			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &EditorProperty::_accessibility_action_click));
+			accessibility_server->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
+			accessibility_server->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorProperty::_accessibility_action_menu));
+			accessibility_server->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &EditorProperty::_accessibility_action_click));
 
-			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, read_only);
+			accessibility_server->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, read_only);
 			if (checkable) {
-				AccessibilityServer::get_singleton()->update_set_checked(ae, checked);
+				accessibility_server->update_set_checked(ae, checked);
 			}
 		} break;
 
@@ -3550,12 +3551,14 @@ void ArrayPanelContainer::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer *accessibility_server = AccessibilityServer::get_singleton();
 
-			AccessibilityServer::get_singleton()->update_set_name(ae, get_meta("text"));
+			accessibility_server->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 
-			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
-			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &ArrayPanelContainer::_accessibility_action_menu));
+			accessibility_server->update_set_name(ae, get_meta("text"));
+
+			accessibility_server->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
+			accessibility_server->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &ArrayPanelContainer::_accessibility_action_menu));
 		} break;
 	}
 }
@@ -5531,6 +5534,9 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 	} else {
 		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS, nullptr, false, mark_unsaved);
 		undo_redo->add_do_property(object, p_name, p_value);
+
+		EditorNode *editor_node = EditorNode::get_singleton();
+
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
 		Variant::Type type = p_value.get_type();
@@ -5543,12 +5549,12 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			Node *N = Object::cast_to<Node>(object);
 			bool double_counting = Object::cast_to<Node>(p_value) == N || Object::cast_to<Node>(value) == N;
 			if (N && !double_counting && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
-				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
-				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
+				undo_redo->add_do_method(editor_node, "update_node_reference", value, N, true);
+				undo_redo->add_do_method(editor_node, "update_node_reference", p_value, N, false);
 				// Perhaps an inefficient way of updating the resource count.
 				// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
-				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
+				undo_redo->add_undo_method(editor_node, "update_node_reference", p_value, N, true);
+				undo_redo->add_undo_method(editor_node, "update_node_reference", value, N, false);
 			}
 		}
 
@@ -5601,15 +5607,15 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 
 		if (r) {
 			//Setting a Subresource. Since there's possibly multiple Nodes referencing 'r', we need to link them to the Subresource.
-			List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_node_list(r);
+			List<Node *> shared_nodes = editor_node->get_resource_node_list(r);
 			for (Node *N : shared_nodes) {
 				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
-					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
-					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
+					undo_redo->add_do_method(editor_node, "update_node_reference", value, N, true);
+					undo_redo->add_do_method(editor_node, "update_node_reference", p_value, N, false);
 					// Perhaps an inefficient way of updating the resource count.
 					// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
-					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
+					undo_redo->add_undo_method(editor_node, "update_node_reference", p_value, N, true);
+					undo_redo->add_undo_method(editor_node, "update_node_reference", value, N, false);
 				}
 			}
 			if (String(p_name) == "resource_local_to_scene") {

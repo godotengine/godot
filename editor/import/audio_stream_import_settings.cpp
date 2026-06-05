@@ -229,25 +229,29 @@ void AudioStreamImportSettingsDialog::_preview_zoom_offset_changed(double) {
 }
 
 void AudioStreamImportSettingsDialog::_reset_master() {
-	master_state.bypass = AudioServer::get_singleton()->is_bus_bypassing_effects(0);
-	master_state.mute = AudioServer::get_singleton()->is_bus_mute(0);
-	master_state.volume = AudioServer::get_singleton()->get_bus_volume_db(0);
+	AudioServer *as = AudioServer::get_singleton();
 
-	AudioServer::get_singleton()->set_bus_bypass_effects(0, true); // We don't want effects interfering.
-	AudioServer::get_singleton()->set_bus_mute(0, false);
-	AudioServer::get_singleton()->set_bus_volume_db(0, 0);
+	master_state.bypass = as->is_bus_bypassing_effects(0);
+	master_state.mute = as->is_bus_mute(0);
+	master_state.volume = as->get_bus_volume_db(0);
+
+	as->set_bus_bypass_effects(0, true); // We don't want effects interfering.
+	as->set_bus_mute(0, false);
+	as->set_bus_volume_db(0, 0);
 
 	// Prevent the modifications from being saved.
-	AudioServer::get_singleton()->set_edited(false);
+	as->set_edited(false);
 }
 
 void AudioStreamImportSettingsDialog::_load_master_state() {
-	AudioServer::get_singleton()->set_bus_bypass_effects(0, master_state.bypass);
-	AudioServer::get_singleton()->set_bus_mute(0, master_state.mute);
-	AudioServer::get_singleton()->set_bus_volume_db(0, master_state.volume);
+	AudioServer *as = AudioServer::get_singleton();
+
+	as->set_bus_bypass_effects(0, master_state.bypass);
+	as->set_bus_mute(0, master_state.mute);
+	as->set_bus_volume_db(0, master_state.volume);
 
 	// Prevent the modifications from being saved.
-	AudioServer::get_singleton()->set_edited(false);
+	as->set_edited(false);
 }
 
 void AudioStreamImportSettingsDialog::_audio_changed() {

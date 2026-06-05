@@ -227,16 +227,17 @@ void DebuggerEditorPlugin::_notification(int p_what) {
 }
 
 void DebuggerEditorPlugin::_update_debug_options() {
-	bool check_deploy_remote = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", true);
-	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
-	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisions", false);
-	bool check_debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
-	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
-	bool check_debug_avoidance = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_avoidance", false);
-	bool check_debug_canvas_redraw = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_canvas_redraw", false);
-	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
-	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
-	bool check_server_keep_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "server_keep_open", false);
+	EditorSettings *es = EditorSettings::get_singleton();
+	bool check_deploy_remote = es->get_project_metadata("debug_options", "run_deploy_remote_debug", true);
+	bool check_file_server = es->get_project_metadata("debug_options", "run_file_server", false);
+	bool check_debug_collisions = es->get_project_metadata("debug_options", "run_debug_collisions", false);
+	bool check_debug_paths = es->get_project_metadata("debug_options", "run_debug_paths", false);
+	bool check_debug_navigation = es->get_project_metadata("debug_options", "run_debug_navigation", false);
+	bool check_debug_avoidance = es->get_project_metadata("debug_options", "run_debug_avoidance", false);
+	bool check_debug_canvas_redraw = es->get_project_metadata("debug_options", "run_debug_canvas_redraw", false);
+	bool check_live_debug = es->get_project_metadata("debug_options", "run_live_debug", true);
+	bool check_reload_scripts = es->get_project_metadata("debug_options", "run_reload_scripts", true);
+	bool check_server_keep_open = es->get_project_metadata("debug_options", "server_keep_open", false);
 
 	if (check_deploy_remote) {
 		_menu_option(RUN_DEPLOY_REMOTE_DEBUG);

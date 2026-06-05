@@ -1332,11 +1332,12 @@ Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 }
 
 Polygon2DEditor::Polygon2DEditor() {
-	snap_offset = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_offset", Vector2());
+	EditorSettings *editor_settings = EditorSettings::get_singleton();
+	snap_offset = editor_settings->get_project_metadata("polygon_2d_uv_editor", "snap_offset", Vector2());
 	// A power-of-two value works better as a default grid size.
-	snap_step = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_step", Vector2(8, 8));
-	use_snap = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_enabled", false);
-	snap_show_grid = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "show_grid", false);
+	snap_step = editor_settings->get_project_metadata("polygon_2d_uv_editor", "snap_step", Vector2(8, 8));
+	use_snap = editor_settings->get_project_metadata("polygon_2d_uv_editor", "snap_enabled", false);
+	snap_show_grid = editor_settings->get_project_metadata("polygon_2d_uv_editor", "show_grid", false);
 
 	selected_action = ACTION_EDIT_POINT;
 
