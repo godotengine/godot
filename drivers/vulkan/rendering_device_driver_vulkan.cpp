@@ -1565,6 +1565,24 @@ Error RenderingDeviceDriverVulkan::_initialize_allocator() {
 	VkResult err = vmaCreateAllocator(&allocator_info, &allocator);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, vformat("Couldn't create Vulkan memory allocator (VkResult error %d).", err));
 
+	// Check for device local, host visible and host coherent memory support.
+	const VkPhysicalDeviceMemoryProperties *memory_properties = nullptr;
+	vmaGetMemoryProperties(allocator, &memory_properties);
+
+	const VkMemoryPropertyFlags device_local_host_visible_host_coherent_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+	for (uint32_t i = 0; i < memory_properties->memoryTypeCount; i++) {
+		const VkMemoryType &memory_type = memory_properties->memoryTypes[i];
+
+		if ((memory_type.propertyFlags & device_local_host_visible_host_coherent_flags) == device_local_host_visible_host_coherent_flags) {
+			// Above 256 MiB is a good indicator for ReBAR or cache-coherent UMA support.
+			if (memory_properties->memoryHeaps[memory_type.heapIndex].size > (256 * 1024 * 1024)) {
+				device_local_host_visible_host_coherent_memory_support = true;
+				break;
+			}
+		}
+	}
+
 	return OK;
 }
 
@@ -2004,6 +2022,15 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 				uint32_t mem_type_index = 0;
 				vmaFindMemoryTypeIndexForBufferInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
 				alloc_create_info.pool = _find_or_create_small_allocs_pool(mem_type_index);
+			}
+		} break;
+		case MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE: {
+			if (device_local_host_visible_host_coherent_memory_support) {
+				vma_usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+				alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+			} else {
+				ERR_FAIL_V_MSG(BufferID(), "GPU mappable buffers are unsupported on this device.");
 			}
 		} break;
 	}
@@ -7421,6 +7448,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 #else
 			return context_driver->is_colorspace_supported();
 #endif // defined(WINDOWS_ENABLED)
+		case SUPPORTS_GPU_MAPPABLE_BUFFER:
+			return device_local_host_visible_host_coherent_memory_support;
 		default:
 			return false;
 	}
