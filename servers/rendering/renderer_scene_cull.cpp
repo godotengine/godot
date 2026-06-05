@@ -2199,7 +2199,6 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 			camera_matrix.set_orthogonal(vp_he.y * 2.0, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
 		} else {
-			// Is this branch ever actually invoked?? Perspective matrix on a directional light...
 			real_t fov = p_cam_projection.get_fov(); //this is actually yfov, because set aspect tries to keep it
 			camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
 		}

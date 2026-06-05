@@ -740,7 +740,7 @@ public:
 		return li->shadow_transform[p_index].uv_scale;
 	}
 
-	_FORCE_INLINE_ void light_instance_set_directional_shadow_atlas_rect(RID p_light_instance, int p_index, const Rect2& p_atlas_rect) {
+	_FORCE_INLINE_ void light_instance_set_directional_shadow_atlas_rect(RID p_light_instance, int p_index, const Rect2 p_atlas_rect) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		li->shadow_transform[p_index].atlas_rect = p_atlas_rect;
 	}
