@@ -1554,6 +1554,8 @@ void SpriteFramesEditor::_frame_list_item_selected(int p_index, bool p_selected)
 		return;
 	}
 
+	animated_sprite->call("set_frame", p_index);
+
 	updating = true;
 	frame_duration->set_value(frames->get_frame_duration(edited_anim, selection[0]));
 	updating = false;
@@ -2070,10 +2072,12 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 		_sync_animation();
 		autoplay_container->show();
 		playback_container->show();
+		stepping_container->show();
 	} else {
 		_update_library(); // To init autoplay icon.
 		autoplay_container->hide();
 		playback_container->hide();
+		stepping_container->hide();
 	}
 }
 
@@ -2155,6 +2159,9 @@ void SpriteFramesEditor::_step_frame_pressed(int p_step) {
 		int current_frame = animated_sprite->call("get_frame");
 		int new_frame = Math::posmod(current_frame + p_step, frame_count);
 		animated_sprite->call("set_frame", new_frame);
+
+		frame_list->select(new_frame);
+		frame_list->ensure_current_is_visible();
 	}
 }
 
@@ -2320,10 +2327,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	playback_container->set_layout_direction(LAYOUT_DIRECTION_LTR);
 	hfc->add_child(playback_container);
 
-	step_backward = memnew(Button);
-	step_backward->set_theme_type_variation(SceneStringName(FlatButton));
-	playback_container->add_child(step_backward);
-
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
 	playback_container->add_child(play_bw_from);
@@ -2344,9 +2347,19 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	play_from->set_theme_type_variation(SceneStringName(FlatButton));
 	playback_container->add_child(play_from);
 
+	stepping_container = memnew(HBoxContainer);
+	stepping_container->set_layout_direction(LAYOUT_DIRECTION_LTR);
+	hfc->add_child(stepping_container);
+
+	stepping_container->add_child(memnew(VSeparator));
+
+	step_backward = memnew(Button);
+	step_backward->set_theme_type_variation(SceneStringName(FlatButton));
+	stepping_container->add_child(step_backward);
+
 	step_forward = memnew(Button);
 	step_forward->set_theme_type_variation(SceneStringName(FlatButton));
-	playback_container->add_child(step_forward);
+	stepping_container->add_child(step_forward);
 
 	hfc->add_child(memnew(VSeparator));
 

@@ -117,6 +117,8 @@ class SpriteFramesEditor : public EditorDock {
 	Button *play_from = nullptr;
 	Button *play_bw = nullptr;
 	Button *play_bw_from = nullptr;
+
+	HBoxContainer *stepping_container = nullptr;
 	Button *step_forward = nullptr;
 	Button *step_backward = nullptr;
 
