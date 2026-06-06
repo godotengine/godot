@@ -741,7 +741,9 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 		image_copy->rotate_90(CLOCKWISE);
 		temp->rotate_180();
 
-		CHECK_MESSAGE(image_copy->get_data() == temp->get_data(), "Rotating clockwise twice; data should equal execution of rotate_180()");
+		PackedByteArray image_copy_data = image_copy->get_data();
+		PackedByteArray temp_data = temp->get_data();
+		CHECK_MESSAGE(image_copy_data == temp_data, "Rotating clockwise twice; data should equal execution of rotate_180()");
 
 		// resetting copies
 		image_copy->copy_from(image);
@@ -752,9 +754,10 @@ TEST_CASE("[Image] Rotate Image 90 degrees") {
 		image_copy->rotate_90(CLOCKWISE);
 
 		temp->rotate_90(COUNTERCLOCKWISE);
-		CHECK_MESSAGE(image_copy->get_data() == temp->get_data(), "Rotating clockwise three times; data should equal rotating counterclockwise once");
-		image_copy.unref();
-		temp.unref();
+
+		image_copy_data = image_copy->get_data();
+		temp_data = temp->get_data();
+		CHECK_MESSAGE(image_copy_data == temp_data, "Rotating clockwise three times; data should equal rotating counterclockwise once");
 	}
 }
 
@@ -852,7 +855,8 @@ TEST_CASE("[Image] Rotate Image 180 degrees") {
 		rotated_data.push_back(255); // A
 
 		image->rotate_180();
-		CHECK(image->get_data() == rotated_data);
+		PackedByteArray image_data = image->get_data();
+		CHECK(image_data == rotated_data);
 	}
 }
 
