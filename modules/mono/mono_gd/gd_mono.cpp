@@ -790,9 +790,11 @@ void GDMono::reload_failure() {
 	if (++project_load_failure_count >= (int)GLOBAL_GET("dotnet/project/assembly_reload_attempts")) {
 		// After reloading a project has failed n times in a row, update the path and modification time
 		// to stop any further attempts at loading this assembly, which probably is never going to work anyways.
+		// Note: With cooperative ALC unloading, unload failures result in a leaked ALC (handled on the C# side)
+		// rather than blocking the reload, so this path is only reached on actual load failures.
 		project_load_failure_count = 0;
 
-		ERR_PRINT_ED(".NET: Giving up on assembly reloading. Please restart the editor if unloading was failing.");
+		ERR_PRINT_ED(".NET: Giving up on assembly reloading. The project assembly could not be loaded. Please restart the editor.");
 
 		String assembly_name = Path::get_csharp_project_name();
 		String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir().path_join(assembly_name + ".dll");
@@ -807,10 +809,33 @@ Error GDMono::reload_project_assemblies() {
 
 	finalizing_scripts_domain = true;
 
-	if (!get_plugin_callbacks().UnloadProjectPluginCallback()) {
-		ERR_PRINT_ED(".NET: Failed to unload assemblies. Please check https://github.com/godotengine/godot/issues/78513 for more information.");
-		reload_failure();
-		return FAILED;
+	// Cooperative ALC unloading: the C# side attempts to unload the old AssemblyLoadContext.
+	// Returns a struct with an opcode (see gdmono::UnloadOpcode) and a cumulative leak count.
+	gdmono::UnloadPluginResult result = get_plugin_callbacks().UnloadProjectPluginCallback();
+
+	switch (result.opcode) {
+		case gdmono::UNLOAD_OPCODE_OK:
+			if (result.leaked_alc_count > 0) {
+				// Unload succeeded this time, but previous ALCs have leaked.
+				WARN_PRINT_ED(vformat(
+						".NET: Assembly unloading succeeded, but %d AssemblyLoadContext(s) have leaked since the editor started and consume memory until the editor is restarted. \nPlease check https://github.com/godotengine/godot/issues/78513 for more information.",
+						result.leaked_alc_count));
+			}
+			break;
+		case gdmono::UNLOAD_OPCODE_ALC_LEAKED:
+			// ALC leaked — cooperative unloading. The old ALC has been abandoned and a new
+			// one will be loaded. Report the failure with the updated leaked count.
+			WARN_PRINT_ED(vformat(
+					".NET: Failed to unload the old AssemblyLoadContext. \nThe context has leaked and memory will not be reclaimed until editor restart (leaked ALCs so far: %d). \nThe editor will continue working using a new AssemblyLoadContext. \nPossible causes: Strong GC handles, running threads, static event handlers on AppDomain or AssemblyLoadContext.Default, or libraries that are not unloadability-friendly. \nPlease check https://github.com/godotengine/godot/issues/78513 for more information.",
+					result.leaked_alc_count));
+			break;
+		default:
+			// Critical error — cannot proceed with reload.
+			ERR_PRINT_ED(vformat(
+					".NET: Failed to unload assemblies due to a critical error (opcode: %d). \nPlease check https://github.com/godotengine/godot/issues/78513 for more information.",
+					result.opcode));
+			reload_failure();
+			return FAILED;
 	}
 
 	finalizing_scripts_domain = false;
