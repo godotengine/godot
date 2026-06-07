@@ -534,7 +534,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								}
 							}
 
-							value = setup_resources_in_array(set_array, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
+							setup_resources_in_array(set_array, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
+							value = set_array;
 						}
 
 						if (value.get_type() == Variant::DICTIONARY) {
@@ -551,7 +552,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								}
 							}
 
-							value = setup_resources_in_dictionary(set_dict, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
+							setup_resources_in_dictionary(set_dict, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
+							value = set_dict;
 						}
 
 						bool set_valid = true;
@@ -803,30 +805,27 @@ Variant SceneState::make_local_resource(Variant &p_value, const SceneState::Node
 	return local_dupe;
 }
 
-Array SceneState::setup_resources_in_array(Array &p_array_to_scan, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
-	for (int i = 0; i < p_array_to_scan.size(); i++) {
-		if (p_array_to_scan[i].get_type() == Variant::OBJECT) {
-			p_array_to_scan[i] = make_local_resource(p_array_to_scan[i], p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
+void SceneState::setup_resources_in_array(Array &p_array, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
+	for (int i = 0; i < p_array.size(); i++) {
+		if (p_array[i].get_type() == Variant::OBJECT) {
+			p_array[i] = make_local_resource(p_array[i], p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
 		}
 	}
-	return p_array_to_scan;
 }
 
-Dictionary SceneState::setup_resources_in_dictionary(Dictionary &p_dictionary_to_scan, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
-	if (dictionary_has_local_resource(p_dictionary_to_scan)) {
-		Array duplicated_keys = p_dictionary_to_scan.keys().duplicate(true);
-		Array duplicated_values = p_dictionary_to_scan.values().duplicate(true);
+void SceneState::setup_resources_in_dictionary(Dictionary &p_dictionary, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
+	if (dictionary_has_local_resource(p_dictionary)) {
+		Array duplicated_keys = p_dictionary.keys().duplicate(true);
+		Array duplicated_values = p_dictionary.values().duplicate(true);
 
-		duplicated_keys = setup_resources_in_array(duplicated_keys, p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
-		duplicated_values = setup_resources_in_array(duplicated_values, p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
-		p_dictionary_to_scan.clear();
+		setup_resources_in_array(duplicated_keys, p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
+		setup_resources_in_array(duplicated_values, p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
+		p_dictionary.clear();
 
 		for (int i = 0; i < duplicated_keys.size(); i++) {
-			p_dictionary_to_scan[duplicated_keys[i]] = duplicated_values[i];
+			p_dictionary[duplicated_keys[i]] = duplicated_values[i];
 		}
 	}
-
-	return p_dictionary_to_scan;
 }
 
 bool SceneState::dictionary_has_local_resource(const Dictionary &p_dict) {
