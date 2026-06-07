@@ -161,6 +161,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	instance->owner_id = p_owner->get_instance_id();
 #ifdef DEBUG_ENABLED
 	//needed for hot reloading
+	instance->member_indices_cache.reserve(member_indices.size());
 	for (const KeyValue<StringName, MemberInfo> &E : member_indices) {
 		instance->member_indices_cache[E.key] = E.value.index;
 	}
