@@ -452,7 +452,18 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 		}
 	} else {
 		task_mutex.unlock();
-		task->done_semaphore.wait();
+		if (Thread::is_main_thread()) {
+			// If we are the main thread we can't block the messagequeue
+			while (!task->done_semaphore.try_wait()) {
+				if (MessageQueue::get_singleton()) {
+					MessageQueue::get_singleton()->flush();
+				}
+
+				OS::get_singleton()->delay_usec(100);
+			}
+		} else {
+			task->done_semaphore.wait();
+		}
 		task_mutex.lock();
 		task->waiting_user--;
 		if (task->waiting_pool == 0 && task->waiting_user == 0) {
@@ -739,7 +750,18 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 		if (this == singleton) {
 			_unlock_unlockable_mutexes();
 		}
-		group->done_semaphore.wait();
+		if (Thread::is_main_thread()) {
+			// If we are the main thread we can't block the messagequeue
+			while (!group->done_semaphore.try_wait()) {
+				if (MessageQueue::get_singleton()) {
+					MessageQueue::get_singleton()->flush();
+				}
+
+				OS::get_singleton()->delay_usec(100);
+			}
+		} else {
+			group->done_semaphore.wait();
+		}
 		if (this == singleton) {
 			_lock_unlockable_mutexes();
 		}
