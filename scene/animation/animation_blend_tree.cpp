@@ -102,8 +102,12 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const 
 AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	_update_animation_cache(p_process_state.tree, p_instance);
 	const Ref<Animation> &anim = p_instance.cached_animation;
-	// Should not ever happen due to validation earlier.
-	ERR_FAIL_COND_V(anim.is_null(), NodeTimeInfo());
+	if (unlikely(anim.is_null())) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, vformat(RTR("Animation '%s' not found."), animation));
+		}
+		return NodeTimeInfo();
+	}
 	double anim_size = anim->get_length();
 
 	double cur_len; // The animation length seen in NodeTimeInfo, propagated throughout the tree.

@@ -35,6 +35,9 @@
 class AnimationNodeBlendSpace1D : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendSpace1D, AnimationRootNode);
 
+	const String ERR_NO_BLEND_POINT = "No blend points exist, so blending cannot take place.";
+	const String ERR_INVALID_POINT = "Cyclic sync modes require that all blend points in BlendSpace use non-nested Animation nodes with a finite, immutable length.";
+
 public:
 	enum BlendMode {
 		BLEND_MODE_INTERPOLATED,
