@@ -1475,6 +1475,9 @@ void TreeItem::set_button_tooltip_text(int p_column, int p_index, const String &
 void TreeItem::set_button(int p_column, int p_index, const Ref<Texture2D> &p_button) {
 	ERR_FAIL_COND(p_button.is_null());
 	ERR_FAIL_INDEX(p_column, cells.size());
+	if (p_index < 0) {
+		p_index += cells[p_column].buttons.size();
+	}
 	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
 
 	if (cells[p_column].buttons[p_index].texture == p_button) {
@@ -1489,6 +1492,9 @@ void TreeItem::set_button(int p_column, int p_index, const Ref<Texture2D> &p_but
 
 void TreeItem::set_button_description(int p_column, int p_index, const String &p_description) {
 	ERR_FAIL_INDEX(p_column, cells.size());
+	if (p_index < 0) {
+		p_index += cells[p_column].buttons.size();
+	}
 	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
 
 	if (cells[p_column].buttons[p_index].description == p_description) {
@@ -1504,6 +1510,9 @@ void TreeItem::set_button_description(int p_column, int p_index, const String &p
 
 void TreeItem::set_button_color(int p_column, int p_index, const Color &p_color) {
 	ERR_FAIL_INDEX(p_column, cells.size());
+	if (p_index < 0) {
+		p_index += cells[p_column].buttons.size();
+	}
 	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
 
 	if (cells[p_column].buttons[p_index].color == p_color) {
@@ -1516,6 +1525,9 @@ void TreeItem::set_button_color(int p_column, int p_index, const Color &p_color)
 
 void TreeItem::set_button_disabled(int p_column, int p_index, bool p_disabled) {
 	ERR_FAIL_INDEX(p_column, cells.size());
+	if (p_index < 0) {
+		p_index += cells[p_column].buttons.size();
+	}
 	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
 
 	if (cells[p_column].buttons[p_index].disabled == p_disabled) {
