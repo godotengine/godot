@@ -476,7 +476,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 }
 
 EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(RS::get_singleton());
 	RS::get_singleton()->free_rid(sphere);
 	RS::get_singleton()->free_rid(sphere_instance);
 	RS::get_singleton()->free_rid(viewport);
@@ -819,7 +819,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 }
 
 EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(RS::get_singleton());
 	//RS::get_singleton()->free(sphere);
 	RS::get_singleton()->free_rid(mesh_instance);
 	RS::get_singleton()->free_rid(viewport);
@@ -912,7 +912,7 @@ EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 }
 
 EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(RS::get_singleton());
 	RS::get_singleton()->free_rid(canvas_item);
 	RS::get_singleton()->free_rid(canvas);
 	RS::get_singleton()->free_rid(viewport);
