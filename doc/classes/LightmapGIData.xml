@@ -38,6 +38,20 @@
 				Returns the [NodePath] of the baked object at index [param user_idx].
 			</description>
 		</method>
+		<method name="get_user_lightmap_uv_scale" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="user_idx" type="int" />
+			<description>
+				Returns a [Rect2] describing the scale of the baked object within this [LightmapGIData] at index [param user_idx].
+			</description>
+		</method>
+		<method name="get_user_lightmap_slice_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="user_idx" type="int" />
+			<description>
+				Returns the slice index of the baked object within this [LightmapGIData] at index [param user_idx].
+			</description>
+		</method>
 		<method name="is_using_spherical_harmonics" qualifiers="const">
 			<return type="bool" />
 			<description>
