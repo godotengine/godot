@@ -690,13 +690,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								if (r_error) {
 									return GDScriptCodeGenerator::Address();
 								}
-								const GDScriptParser::DataType &base_type = subscript->base->get_datatype();
-								bool is_script_class_metatype = base_type.is_meta_type &&
-										(base_type.kind == GDScriptParser::DataType::CLASS || base_type.kind == GDScriptParser::DataType::SCRIPT);
 								if (is_awaited) {
 									gen->write_call_async(result, base, call->function_name, arguments);
-								} else if (is_script_class_metatype) {
-									gen->write_call(result, base, call->function_name, arguments);
 								} else if (base.type.kind != GDScriptDataType::VARIANT && base.type.kind != GDScriptDataType::BUILTIN) {
 									// Native method, use faster path.
 									StringName class_name;
