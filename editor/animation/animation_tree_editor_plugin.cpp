@@ -108,12 +108,25 @@ void AnimationTreeEditor::_meta_clicked(Variant p_meta) {
 	}
 }
 
-void AnimationTreeEditor::_update_error_message(const String *p_other_errors) {
+void AnimationTreeEditor::_update_error_message() {
+	const StringName base_path = get_base_path();
+	Ref<AnimationNode> inspected_node = tree->get_animation_node_by_path(base_path);
+	if (inspected_node.is_valid()) {
+		inspected_node->validate_node(tree, base_path);
+		LocalVector<AnimationNode::ChildNode> children;
+		inspected_node->get_child_nodes(&children);
+		for (const AnimationNode::ChildNode &child : children) {
+			if (child.node.is_valid()) {
+				child.node->validate_node(tree, String(base_path) + String(child.name) + "/");
+			}
+		}
+	}
+
 	const String editor_error_message = tree->get_editor_error_message();
 	const AHashMap<StringName, AnimationNode::InvalidInstance> &invalid_instances = tree->get_invalid_instances();
 
 	static String last_error_key;
-	if (editor_error_message.is_empty() && invalid_instances.is_empty() && (!p_other_errors || p_other_errors->is_empty())) {
+	if (editor_error_message.is_empty() && invalid_instances.is_empty()) {
 		last_error_key = String();
 		error_button->hide();
 		error_scroll->hide();
@@ -127,9 +140,6 @@ void AnimationTreeEditor::_update_error_message(const String *p_other_errors) {
 		StringBuffer k;
 		k += get_base_path();
 		k += editor_error_message;
-		if (p_other_errors) {
-			k += *p_other_errors;
-		}
 		for (const KeyValue<StringName, AnimationNode::InvalidInstance> &kv : invalid_instances) {
 			k += kv.key;
 			for (const String &reason : kv.value.errors) {
@@ -173,14 +183,6 @@ void AnimationTreeEditor::_update_error_message(const String *p_other_errors) {
 		error_label->append_text(editor_error_message);
 		error_label->add_newline();
 		count++;
-	}
-
-	if (p_other_errors) {
-		error_label->append_text(*p_other_errors);
-		error_label->add_newline();
-		count++;
-
-		scope_error_found = true;
 	}
 
 	error_label->push_table(2);
@@ -246,11 +248,7 @@ void AnimationTreeEditor::_update_error_message(const String *p_other_errors) {
 	error_label->pop(); // Table.
 
 	current_scope_error_label->clear();
-	if (p_other_errors) {
-		current_scope_error_label->push_color(current_scope_error_label->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-		current_scope_error_label->append_text(TTR("Error: ") + *p_other_errors);
-		current_scope_error_label->pop(); // Color.
-	} else {
+	{
 		const StringName display_key = scope_error_found ? fallback_key : (!downstream_key.is_empty() ? downstream_key : fallback_key);
 		if (!display_key.is_empty()) {
 			const AnimationNode::InvalidInstance &inst = invalid_instances.get(display_key);
@@ -391,7 +389,7 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 	}
 
 	_update_path();
-	_update_error_message(current_playback_error.is_empty() ? nullptr : &current_playback_error);
+	_update_error_message();
 }
 
 void AnimationTreeEditor::_clear_editors() {
@@ -445,7 +443,7 @@ void AnimationTreeEditor::_notification(int p_what) {
 			}
 
 			if (tree) {
-				_update_error_message(current_playback_error.is_empty() ? nullptr : &current_playback_error);
+				_update_error_message();
 			}
 		} break;
 

@@ -77,7 +77,7 @@ class AnimationTreeEditor : public EditorDock {
 	void _animation_list_changed();
 
 	void _toggle_error_panel();
-	void _update_error_message(const String *p_other_errors = nullptr);
+	void _update_error_message();
 
 	static LocalVector<StringName> get_animation_list();
 
@@ -89,8 +89,6 @@ protected:
 	static AnimationTreeEditor *singleton;
 
 public:
-	String current_playback_error;
-
 	AnimationTree *get_animation_tree() { return tree; }
 	void add_plugin(AnimationTreeNodeEditorPlugin *p_editor);
 	void remove_plugin(AnimationTreeNodeEditorPlugin *p_editor);
