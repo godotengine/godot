@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 
 #nullable enable
@@ -59,9 +61,23 @@ internal class ReflectionUtils
 
     public static Type? FindTypeInLoadedAssemblies(string assemblyName, string typeFullName)
     {
+        // With cooperative ALC unloading, there may be multiple assemblies with the same name
+        // loaded from different ALCs (one from a leaked old ALC, one from the new ALC).
+        // We must return the type from a non-leaked ALC. LastOrDefault prefers the most
+        // recently loaded assembly (from the newest ALC), which is the correct one.
+        // As an additional safety check, we filter out assemblies from ALCs that are being
+        // unloaded (leaked), in case the enumeration order is not reliable.
         return AppDomain.CurrentDomain.GetAssemblies()
-            .FirstOrDefault(a => a.GetName().Name == assemblyName)?
-            .GetType(typeFullName);
+            .Where(a => a.GetName().Name == assemblyName)
+            .Where(a =>
+            {
+                var alc = AssemblyLoadContext.GetLoadContext(a);
+                // alc is null for assemblies in the default ALC (shared assemblies),
+                // which are never being unloaded, so include them.
+                return alc == null || !CustomGCHandle.IsAlcBeingUnloaded(alc);
+            })
+            .Select(a => a.GetType(typeFullName))
+            .LastOrDefault(t => t != null);
     }
 
     public static string ConstructTypeName(Type type)
