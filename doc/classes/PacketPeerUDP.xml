@@ -25,6 +25,7 @@
 
 
 		func _process(_delta):
+			peer.poll()
 			if peer.get_available_packet_count() &gt; 0:
 				var array_bytes = peer.get_packet()
 				var packet_string = array_bytes.get_string_from_ascii()
@@ -108,6 +109,13 @@
 			<param index="1" name="interface_name" type="String" />
 			<description>
 				Removes the interface identified by [param interface_name] from the multicast group specified by [param multicast_address].
+			</description>
+		</method>
+		<method name="poll">
+			<return type="int" enum="Error" />
+			<description>
+				Reads incoming packets and stores them for later reading via [method PacketPeer.get_packet] or [method PacketPeer.get_var].
+				Also updates the return value of [method PacketPeer.get_available_packet_count].
 			</description>
 		</method>
 		<method name="set_broadcast_enabled">

@@ -118,9 +118,11 @@ TEST_CASE("[UDPServer] Accept a connection and receive/send data") {
 	CHECK_EQ(client_from_server->put_var(pi), Error::OK);
 
 	wait_for_condition([&]() {
+		client->poll();
 		return client->get_available_packet_count() > 0;
 	});
 
+	CHECK_EQ(client->poll(), Error::OK);
 	CHECK_GT(client->get_available_packet_count(), 0);
 
 	Variant pi_received;
@@ -170,6 +172,7 @@ TEST_CASE("[UDPServer] Handle multiple clients at the same time") {
 	wait_for_condition([&]() {
 		bool should_exit = true;
 		for (Ref<PacketPeerUDP> &c : clients) {
+			c->poll();
 			int count = c->get_available_packet_count();
 			if (count < 0) {
 				return true;
@@ -182,6 +185,7 @@ TEST_CASE("[UDPServer] Handle multiple clients at the same time") {
 	});
 
 	for (int i = 0; i < clients.size(); i++) {
+		CHECK_EQ(clients[i]->poll(), Error::OK);
 		CHECK_GT(clients[i]->get_available_packet_count(), 0);
 
 		Variant received_var;
