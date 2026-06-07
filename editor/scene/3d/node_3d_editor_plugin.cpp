@@ -6243,7 +6243,8 @@ void Node3DEditorViewport::commit_transform() {
 void Node3DEditorViewport::apply_transform(Vector3 p_motion, double p_snap) {
 	// View-plane translate/scale always uses global coords; rotation and axis operations respect local/global preference.
 	bool local_coords = spatial_editor->are_local_coords_enabled() &&
-			!(_edit.plane == TRANSFORM_VIEW && _edit.mode != TRANSFORM_ROTATE);
+			!(_edit.plane == TRANSFORM_VIEW && _edit.mode != TRANSFORM_ROTATE) &&
+			!_edit.is_trackball;
 
 	bool is_global_view_plane = (_edit.plane == TRANSFORM_VIEW) &&
 			((_edit.mode != TRANSFORM_ROTATE) || !spatial_editor->are_local_coords_enabled());
