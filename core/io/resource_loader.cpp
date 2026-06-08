@@ -412,12 +412,15 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 					chain.push_back(current_thread);
 
 					// We made it back to us, we're in a cycle.
-					if (next_thread == thread_index) {
+					if (next_thread == thread_index || chain.has(next_thread)) {
 						cycle_detected = true;
 						break;
 					}
 
 					if (chain.size() > thread_load_tasks.size()) {
+						ERR_PRINT(vformat("chain.size() > thread_load_tasks.size() for '%s' on thread %d",
+								load_task.local_path, thread_index));
+						cycle_detected = true;
 						break;
 					}
 
@@ -451,11 +454,6 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 					}
 				}
 			} else {
-				if (thread_waiting_on_backup.is_empty()) {
-					thread_waiting_on.erase(thread_index);
-				} else {
-					thread_waiting_on[thread_index] = thread_waiting_on_backup;
-				}
 				wait = false;
 			}
 
@@ -509,6 +507,13 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 
 		if (status != THREAD_LOAD_IN_PROGRESS) {
 			load_task.load_token->unreference();
+			thread_load_mutex.lock();
+			if (thread_waiting_on_backup.is_empty()) {
+				thread_waiting_on.erase(thread_index);
+			} else {
+				thread_waiting_on[thread_index] = thread_waiting_on_backup;
+			}
+			thread_load_mutex.unlock();
 			return;
 		}
 
@@ -541,6 +546,11 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	thread_load_mutex.lock();
 	bool thread_load_mutex_held = true;
 
+	bool was_finished = load_task.finished_load;
+	if (load_task.resource.is_valid()) {
+		load_task.finished_load = true;
+	}
+
 	load_task.resource = res;
 
 	load_task.progress = 1.0; // It was fully loaded at this point, so force progress to 1.0.
@@ -559,6 +569,16 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 			ResourceCache::lock.lock(); // Check and operations must happen atomically.
 			bool pending_unlock = true;
 			Ref<Resource> old_res = ResourceCache::get_ref(load_task.local_path);
+			if (was_finished) {
+				// If another thread already finished the entire load wait for it to complete
+				// cache registration, then use their instance.
+				while (!old_res.is_valid()) {
+					ResourceCache::lock.unlock();
+					OS::get_singleton()->delay_usec(1000);
+					ResourceCache::lock.lock();
+					old_res = ResourceCache::get_ref(load_task.local_path);
+				}
+			}
 			if (old_res.is_valid()) {
 				if (old_res != load_task.resource) {
 					// Resource can already exists at this point for two reasons:

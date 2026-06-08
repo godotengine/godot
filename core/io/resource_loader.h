@@ -203,6 +203,7 @@ private:
 		bool in_progress_check : 1; // Measure against recursion cycles in progress reporting. Cycles are not expected, but can happen due to how it's currently implemented.
 		bool use_sub_threads : 1;
 		bool started_load : 1;
+		bool finished_load : 1;
 		bool connections_propagated : 1;
 
 		struct ResourceChangedConnection {
@@ -218,6 +219,7 @@ private:
 				in_progress_check(false),
 				use_sub_threads(false),
 				started_load(false),
+				finished_load(false),
 				connections_propagated(false) {}
 	};
 	static void _run_load_task(void *p_userdata);
