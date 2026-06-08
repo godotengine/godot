@@ -1539,8 +1539,8 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 		HashMap<StringName, GDScript::MemberInfo>::Iterator E = script->member_indices.find(p_name);
 		if (E) {
 			const GDScript::MemberInfo *member = &E->value;
-			Variant value = p_value;
-			if (!member->data_type.is_type(value)) {
+			if (!member->data_type.is_type(p_value)) {
+				Variant value = p_value;
 				const Variant *args = &p_value;
 				Callable::CallError err;
 				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
@@ -1549,12 +1549,12 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				}
 			}
 			if (likely(script->valid) && member->setter) {
-				const Variant *args = &value;
+				const Variant *args = &p_value;
 				Callable::CallError err;
 				callp(member->setter, &args, 1, err);
 				return err.error == Callable::CallError::CALL_OK;
 			} else {
-				members.write[member->index] = value;
+				members.write[member->index] = p_value;
 				return true;
 			}
 		}
