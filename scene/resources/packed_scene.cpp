@@ -806,9 +806,9 @@ Variant SceneState::make_local_resource(Variant &p_value, const SceneState::Node
 }
 
 void SceneState::setup_resources_in_array(Array &p_array, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const {
-	for (int i = 0; i < p_array.size(); i++) {
-		if (p_array[i].get_type() == Variant::OBJECT) {
-			p_array[i] = make_local_resource(p_array[i], p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
+	for (Variant &v : p_array) {
+		if (v.get_type() == Variant::OBJECT) {
+			v = make_local_resource(v, p_n, p_resources_local_to_scenes, p_node, p_sname, p_i, p_ret_nodes, p_edit_state);
 		}
 	}
 }
@@ -829,18 +829,15 @@ void SceneState::setup_resources_in_dictionary(Dictionary &p_dictionary, const S
 }
 
 bool SceneState::dictionary_has_local_resource(const Dictionary &p_dict) {
-	const Variant *v = p_dict.next();
-
-	while (v) {
-		Ref<Resource> res = *v;
+	for (const KeyValue<Variant, Variant> &kv : p_dict) {
+		Ref<Resource> res = kv.key;
 		if (res.is_valid() && res->is_local_to_scene()) {
 			return true;
 		}
-		res = p_dict[*v];
+		res = kv.value;
 		if (res.is_valid() && res->is_local_to_scene()) {
 			return true;
 		}
-		v = p_dict.next(v);
 	}
 	return false;
 }
