@@ -1421,9 +1421,6 @@ msgstr "Aan het einde"
 msgid "Travel"
 msgstr "Verplaats"
 
-msgid "No playback resource set at path: %s."
-msgstr "Geen afspeelbron ingesteld op pad: %s."
-
 msgid "Node Removed"
 msgstr "Knoop verwijderd"
 
@@ -10069,6 +10066,9 @@ msgstr "Plotten van Meshes"
 
 msgid "Finishing Plot"
 msgstr "Plotten Voltooid"
+
+msgid "No playback resource set at path: %s."
+msgstr "Geen afspeelbron ingesteld op pad: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Er is geen AnimationNode-wortelknoop voor dit diagram aangegeven."

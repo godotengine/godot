@@ -214,13 +214,14 @@
 # kawoshi <gccgamer9@gmail.com>, 2026.
 # Maíra Alves Rodrigues <contato@mairarodrigues.org>, 2026.
 # Artur Alves Coqueiro <arturalvescoqueiro@proton.me>, 2026.
+# Marco André Babinski <mab.babinski@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2026-05-12 13:11+0000\n"
-"Last-Translator: Artur Alves Coqueiro <arturalvescoqueiro@proton.me>\n"
+"PO-Revision-Date: 2026-05-30 11:01+0000\n"
+"Last-Translator: Marco André Babinski <mab.babinski@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -228,7 +229,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.5-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -1572,9 +1573,6 @@ msgstr "No Fim"
 
 msgid "Travel"
 msgstr "Viagem"
-
-msgid "No playback resource set at path: %s."
-msgstr "Nenhum recurso de reprodução definido no caminho: %s."
 
 msgid "Node Removed"
 msgstr "Nó Removido"
@@ -12771,6 +12769,9 @@ msgstr "Zoom de 800%"
 msgid "Zoom to 1600%"
 msgstr "Zoom de 1600%"
 
+msgid "List Selectable Nodes"
+msgstr "Listar Nó(s) Selecionado(s)"
+
 msgid "Change Pivot"
 msgstr "Alterar Pivô"
 
@@ -20978,6 +20979,9 @@ msgstr ""
 
 msgid "Animation Apply Reset"
 msgstr "Aplicar Redefinição De Animação"
+
+msgid "No playback resource set at path: %s."
+msgstr "Nenhum recurso de reprodução definido no caminho: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Nenhuma raiz AnimationNode para o grafo foi definida."

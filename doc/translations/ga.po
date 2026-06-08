@@ -89980,13 +89980,6 @@ msgstr ""
 "Féach [enum TextServer.FontLCDSubpixelLayout]."
 
 msgid ""
-"When [member BaseButton.shortcut_feedback] is enabled, this is the time the "
-"[BaseButton] will remain highlighted after a shortcut."
-msgstr ""
-"Nuair a bheidh [member BaseButton.shortcut_feedback] cumasaithe, seo an t-am "
-"a fhanfaidh an [BaseButton] chun suntais tar éis aicearra."
-
-msgid ""
 "Timer setting for incremental search in [Tree], [ItemList], etc. controls (in "
 "milliseconds)."
 msgstr ""

@@ -1323,9 +1323,6 @@ msgstr "Lopussa"
 msgid "Travel"
 msgstr "Matkaa"
 
-msgid "No playback resource set at path: %s."
-msgstr "Polulle ei ole asetettu toistoresurssia: %s."
-
 msgid "Node Removed"
 msgstr "Solmu poistettu"
 
@@ -11984,6 +11981,9 @@ msgstr "Piirretään meshejä"
 
 msgid "Finishing Plot"
 msgstr "Viimeistellään piirto"
+
+msgid "No playback resource set at path: %s."
+msgstr "Polulle ei ole asetettu toistoresurssia: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Graafille ei ole asetettu AnimationNode juurisolmua."

@@ -68222,13 +68222,6 @@ msgstr ""
 "LCD 次圖元佈局，用於字形抗鋸齒。見 [enum TextServer.FontLCDSubpixelLayout]。"
 
 msgid ""
-"When [member BaseButton.shortcut_feedback] is enabled, this is the time the "
-"[BaseButton] will remain highlighted after a shortcut."
-msgstr ""
-"啟用 [member BaseButton.shortcut_feedback] 時，按下快捷鍵後 [BaseButton] 保持"
-"高亮的時間。"
-
-msgid ""
 "Timer setting for incremental search in [Tree], [ItemList], etc. controls (in "
 "milliseconds)."
 msgstr "在 [Tree]、[ItemList] 等控制項中為差異量搜索設定計時器（單位為毫秒）。"

@@ -132,13 +132,14 @@
 # Poyraz <zpoyrazcoskun@gmail.com>, 2026.
 # Alperen Turan <alpptrnn@gmail.com>, 2026.
 # can unal <justplay95@gmail.com>, 2026.
+# Efe Yılmaz <iceburn322@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-04-13 02:09+0000\n"
-"Last-Translator: can unal <justplay95@gmail.com>\n"
+"PO-Revision-Date: 2026-05-30 11:01+0000\n"
+"Last-Translator: Efe Yılmaz <iceburn322@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -146,7 +147,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "OK"
 msgstr "Tamam"
@@ -228,6 +229,9 @@ msgstr "Bağlanamıyor"
 
 msgid "Can't resolve"
 msgstr "Çözümlenemedi"
+
+msgid "Connection error"
+msgstr "Bağlantı hatası"
 
 msgid "Can't acquire resource"
 msgstr "Kaynağa erişilemiyor"
@@ -1453,9 +1457,6 @@ msgstr "Sonda"
 
 msgid "Travel"
 msgstr "Seyahat"
-
-msgid "No playback resource set at path: %s."
-msgstr "%s yolunda, hiç bir oynatma kaynağı ayarlanmadı."
 
 msgid "Node Removed"
 msgstr "Düğüm Silindi"
@@ -19435,6 +19436,9 @@ msgstr ""
 
 msgid "Animation Apply Reset"
 msgstr "Animasyon Sıfırlamayı Uygula"
+
+msgid "No playback resource set at path: %s."
+msgstr "%s yolunda, hiç bir oynatma kaynağı ayarlanmadı."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr ""

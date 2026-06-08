@@ -25,7 +25,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-05-25 14:11+0000\n"
+"PO-Revision-Date: 2026-06-06 10:01+0000\n"
 "Last-Translator: ninjum <ninhum@gmx.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
@@ -33,7 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.6\n"
 
 msgid "OK"
 msgstr "Vale"
@@ -67,6 +67,9 @@ msgstr "Non se pode ler a base de datos"
 
 msgid "Can't write database"
 msgstr "Non se pode escribir na base de datos"
+
+msgid "Cyclic link detected"
+msgstr "Ligazón cíclica detectada"
 
 msgid "Busy"
 msgstr "Ocupado"
@@ -440,6 +443,9 @@ msgstr "Actualizar"
 msgid "Show Hidden"
 msgstr "Mostrar Oculto"
 
+msgid "Focus Path"
+msgstr "Ruta de enfoque"
+
 msgid "Swap Input Direction"
 msgstr "Cambiar a dirección de entrada"
 
@@ -636,8 +642,31 @@ msgstr "Sincronizar"
 msgid "None"
 msgstr "Ningún"
 
+msgid "Cyclic Mutable"
+msgstr "Cíclico mutable"
+
+msgid "Cyclic Length"
+msgstr "Lonxitude cíclica"
+
+msgid ""
+"Cycle length in seconds for cyclic sync. All animations are time-scaled to "
+"complete one cycle in this duration."
+msgstr ""
+"Duración do ciclo en segundos para a sincronización cíclica. Tódalas "
+"animacións escálanse no tempo para completar un ciclo nesta duración."
+
 msgid "Open Editor"
 msgstr "Abrir Editor"
+
+msgid "Blend Point Index"
+msgstr "Índice do punto de mestura"
+
+msgid ""
+"Index of the blend point.\n"
+"Values outside of the valid range will be clamped to the nearest index."
+msgstr ""
+"Índice do punto de mestura.\n"
+"Os valores fóra do rango válido axustaranse ao índice máis próximo."
 
 msgid "Position"
 msgstr "Posición"
@@ -1185,6 +1214,15 @@ msgstr "Mover Nodo"
 msgid "Transition exists!"
 msgstr "Existe transición!"
 
+msgid "Cannot transition to self!"
+msgstr "Non se pode facer transición a si mesmo!"
+
+msgid "Cannot transition to \"Start\"!"
+msgstr "Non se pode facer transición a \"Start\"!"
+
+msgid "Cannot transition from \"End\"!"
+msgstr "Non se pode facer transición desde \"End\"!"
+
 msgid "Play/Travel to %s"
 msgstr "Reproducir/Ir a %s"
 
@@ -1205,9 +1243,6 @@ msgstr "Ao Final"
 
 msgid "Travel"
 msgstr "Viaxe"
-
-msgid "No playback resource set at path: %s."
-msgstr "Ningún recurso de reproducción asignado na ruta: %s."
 
 msgid "Node Removed"
 msgstr "Nodo Eliminado"
@@ -1424,6 +1459,10 @@ msgstr "No manexo:"
 msgid "Out-Handle:"
 msgstr "Manipulador de saída:"
 
+msgctxt "Bezier Handle Mode"
+msgid "Free"
+msgstr "Libre"
+
 msgid "Stream:"
 msgstr "Fluxo:"
 
@@ -1477,6 +1516,9 @@ msgstr "Cortar Nodo(s)"
 
 msgid "Copy Key(s)"
 msgstr "Copiar chave(s)"
+
+msgid "Send Key(s) to RESET"
+msgstr "Enviar tecla(s) para RESET"
 
 msgid "Delete Key(s)"
 msgstr "Eliminar Chave(s)"
@@ -1535,17 +1577,40 @@ msgstr "propiedade '%s'"
 msgid "Nearest FPS: %d"
 msgstr "FPS máis cercano: %d"
 
+msgid "Set the default handle mode of new bezier keys."
+msgstr "Establecer o modo de manipulador por defecto para novas claves bezier."
+
 msgctxt "Transition Type"
 msgid "Linear"
 msgstr "Lineal"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Quint"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Quart"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Quad"
 
 msgctxt "Transition Type"
 msgid "Expo"
 msgstr "Exponencial"
 
 msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Elastic"
+
+msgctxt "Transition Type"
 msgid "Cubic"
 msgstr "Cúbica"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Circ"
 
 msgctxt "Transition Type"
 msgid "Bounce"
@@ -1712,6 +1777,12 @@ msgstr "Advertencia: Edición de animación importada"
 
 msgid "Inactive Player"
 msgstr "Xogador inactivo"
+
+msgid "Warning: AnimationPlayer is inactive"
+msgstr "Advertencia: O AnimationPlayer está inactivo"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Alternar entre o editor de curvas Bézier e o editor de pistas."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Só mostrar pistas de nodos seleccionados na árbore."
@@ -5329,6 +5400,9 @@ msgstr ""
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Este corpo será ignorado ata que se lle sea asignado unha malla."
+
+msgid "No playback resource set at path: %s."
+msgstr "Ningún recurso de reproducción asignado na ruta: %s."
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "

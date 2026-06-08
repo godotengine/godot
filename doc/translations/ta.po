@@ -128259,13 +128259,6 @@ msgstr ""
 "பயன்படுத்தப்படுகிறது. [Enum textserver.fontlcdsubpixellayout] ஐப் பார்க்கவும்."
 
 msgid ""
-"When [member BaseButton.shortcut_feedback] is enabled, this is the time the "
-"[BaseButton] will remain highlighted after a shortcut."
-msgstr ""
-"[உறுப்பினர் basebutton.shortcut_feedback] இயக்கப்பட்டபோது, குறுக்குவழியின் பின்னர் "
-"[பேச்பட்டன்] முன்னிலைப்படுத்தப்படும் நேரம் இது."
-
-msgid ""
 "Timer setting for incremental search in [Tree], [ItemList], etc. controls (in "
 "milliseconds)."
 msgstr ""

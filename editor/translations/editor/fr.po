@@ -217,13 +217,14 @@
 # Ingrid Pigueron <ingridp.uxr@gmail.com>, 2026.
 # "Alyx.dev" <alyxdev@ik.me>, 2026.
 # isatis <q.isatis@gmail.com>, 2026.
+# William Bouchard <william.bouchard.2@umontreal.ca>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-25 14:11+0000\n"
-"Last-Translator: isatis <q.isatis@gmail.com>\n"
+"PO-Revision-Date: 2026-06-04 21:01+0000\n"
+"Last-Translator: William Bouchard <william.bouchard.2@umontreal.ca>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -231,7 +232,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.6\n"
 
 msgid "OK"
 msgstr "OK"
@@ -927,6 +928,12 @@ msgstr "Ajouter un point d’animation"
 msgid "Remove BlendSpace1D Point"
 msgstr "Supprimer le point BlendSpace1D"
 
+msgid "Reorder BlendSpace1D Point Index"
+msgstr "Réorganiser l'index du point BlendSpace1D"
+
+msgid "Change BlendSpace1D Point Name"
+msgstr "Modifier le nom du point BlendSpace1D"
+
 msgid "Continuous"
 msgstr "Continu"
 
@@ -935,6 +942,17 @@ msgstr "Discret"
 
 msgid "Capture"
 msgstr "Capturer"
+
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"Sélectionner et déplacer des points.\n"
+"Clic droit : Ajouter un point à l'emplacement cliqué.\n"
+"Maj + clic gauche + glisser : Définir la position de mélange dans l'espace.\n"
+"Molette : incrémenter ou décrémenter l’index."
 
 msgid "Create points."
 msgstr "Créer des points."
@@ -957,8 +975,31 @@ msgstr "Synchroniser"
 msgid "None"
 msgstr "Aucun"
 
+msgid "Independent"
+msgstr "Indépendant"
+
+msgid "Cyclic Mutable"
+msgstr "Mutable cyclique"
+
+msgid "Cyclic Constant"
+msgstr "Constante cyclique"
+
+msgid ""
+"Cycle length in seconds for cyclic sync. All animations are time-scaled to "
+"complete one cycle in this duration."
+msgstr ""
+"Durée du cycle en secondes pour la synchronisation cyclique. Toutes les "
+"animations sont ajustées dans le temps afin d’effectuer un cycle complet "
+"pendant cette durée."
+
 msgid "Open Editor"
 msgstr "Ouvrir l’éditeur"
+
+msgid "Index"
+msgstr "Index"
+
+msgid "Blend Point Index"
+msgstr "Index de point de mélange"
 
 msgid "Position"
 msgstr "Position"
@@ -1586,9 +1627,6 @@ msgstr "À la fin"
 
 msgid "Travel"
 msgstr "Se déplacer"
-
-msgid "No playback resource set at path: %s."
-msgstr "Aucune ressource de lecture définie au chemin : %s."
 
 msgid "Node Removed"
 msgstr "Nœud supprimé"
@@ -2487,6 +2525,9 @@ msgstr "Modifier le décalage de début de clip de piste audio"
 
 msgid "Change Audio Track Clip End Offset"
 msgstr "Modifier le décalage de fin de clip de piste audio"
+
+msgid "Error: "
+msgstr "Erreur : "
 
 msgid "Root"
 msgstr "Racine"
@@ -6318,6 +6359,13 @@ msgstr "Le téléchargement de modèles est désactivé en mode hors-ligne."
 msgid "Error getting the list of mirrors."
 msgstr "Erreur lors du téléchargement de la liste des miroirs."
 
+msgid ""
+"Result: %d\n"
+"Response code: %d"
+msgstr ""
+"Résultat : %d\n"
+"Code de réponse : %d"
+
 msgid "Error parsing JSON with the list of mirrors. Please report this issue!"
 msgstr ""
 "Erreur lors de la lecture de la liste JSON des miroirs. Veuillez signaler ce "
@@ -6341,6 +6389,19 @@ msgstr "Extraction des modèles d’exportation"
 
 msgid "Importing:"
 msgstr "Importation :"
+
+msgid "32-bit build for Linux systems."
+msgstr "Version 32-bit pour systèmes Linux."
+
+msgid "64-bit build for Linux systems."
+msgstr "Version 64-bit pour systèmes Linux."
+
+msgid "Universal build for macOS."
+msgstr "Version universelle pour macOS."
+
+msgctxt "Platform Group"
+msgid "Mobile"
+msgstr "Mobile"
 
 msgid "Common"
 msgstr "Commun"
@@ -11651,6 +11712,9 @@ msgstr "Temps GPU : %s ms"
 msgid "FPS: %d"
 msgstr "FPS : %d"
 
+msgid "Instantiating: %s"
+msgstr "Instanciation : %s"
+
 msgid "Top View."
 msgstr "Vue de dessus."
 
@@ -11683,6 +11747,11 @@ msgstr "Définir le matériau de surcharge"
 
 msgid "Error instantiating scene from %s."
 msgstr "Erreur d’instanciation de la scène depuis %s."
+
+msgid "Can't drop the file..."
+msgid_plural "Can't drop the files..."
+msgstr[0] "Impossible de déposer le fichier..."
+msgstr[1] "Impossible de déposer les fichiers..."
 
 msgid "Circular dependency found at %s."
 msgstr "Une dépendance circulaire a été trouvée à %s."
@@ -15231,6 +15300,11 @@ msgstr "Ligne %d (%s) :"
 msgid "Line %d:"
 msgstr "Ligne %d :"
 
+msgid "Drop file path."
+msgid_plural "Drop file paths."
+msgstr[0] "Chemin du fichier déposé."
+msgstr[1] "Chemins des fichiers déposés."
+
 msgid ""
 "The resource does not have a valid path because it has not been saved.\n"
 "Please save the scene or resource that contains this resource and try again."
@@ -15870,6 +15944,9 @@ msgstr "Profil(s) d’importation"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Gérer les profils de fonctionnalités de l’éditeur"
+
+msgid "Layout name can't be empty."
+msgstr "Le nom de la disposition ne peut pas être vide."
 
 msgid "Select Existing Layout:"
 msgstr "Sélectionner une disposition existante :"
@@ -21208,6 +21285,9 @@ msgstr ""
 
 msgid "Animation Apply Reset"
 msgstr "L'animation applique la réinitialisation"
+
+msgid "No playback resource set at path: %s."
+msgstr "Aucune ressource de lecture définie au chemin : %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Aucun AnimationNode racine pour le graphique n'est défini."
