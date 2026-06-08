@@ -111,13 +111,14 @@
 # bruvzg <bruvzg13@proton.me>, 2026.
 # Sajjad Zavar <zavarsajjad98@gmail.com>, 2026.
 # Mohammad Bouland <mohammad.bouland@gmail.com>, 2026.
+# Majd Tqe <majd.t321@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-03-24 14:10+0000\n"
-"Last-Translator: Mohammad Bouland <mohammad.bouland@gmail.com>\n"
+"PO-Revision-Date: 2026-05-31 00:03+0000\n"
+"Last-Translator: Majd Tqe <majd.t321@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -126,7 +127,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "OK"
 msgstr "حسنا"
@@ -1346,6 +1347,9 @@ msgstr "الانتقال موجود سلفاً!"
 msgid "Cannot transition to self!"
 msgstr "لا يمكن الانتقال(transition ) إلى الذات!"
 
+msgid "Transition from \"%s\" to \"%s\" already exists!"
+msgstr "التحريك '%s%s%s%s' موجود سا%sبقا!%s"
+
 msgid "Play/Travel to %s"
 msgstr "تشغيل/انتقل إلى %s"
 
@@ -1366,9 +1370,6 @@ msgstr "في النهاية"
 
 msgid "Travel"
 msgstr "السفر"
-
-msgid "No playback resource set at path: %s."
-msgstr "لم يتم تعيين موارد التشغيل في المسار: %s."
 
 msgid "Node Removed"
 msgstr "العُقدة قد حُذفتْ"
@@ -15568,6 +15569,9 @@ msgstr "لم يتم تعيين أي وضع."
 
 msgid "Animation Apply Reset"
 msgstr "الرسوم المتحركة تطبيق إعادة تعيين"
+
+msgid "No playback resource set at path: %s."
+msgstr "لم يتم تعيين موارد التشغيل في المسار: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "لم يتم تحديد عُقدة رئيسة لعُقدة الرسومات المتحركة لأجل الرسم graph."

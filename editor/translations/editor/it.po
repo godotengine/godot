@@ -131,7 +131,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-20 16:31+0000\n"
+"PO-Revision-Date: 2026-06-08 20:47+0000\n"
 "Last-Translator: Micky <micheledevita2@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -140,7 +140,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.6\n"
 
 msgid "OK"
 msgstr "OK"
@@ -844,6 +844,18 @@ msgstr "Discreto"
 msgid "Capture"
 msgstr "Cattura"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"Seleziona e muove i punti.\n"
+"Clic destro: Aggiungi un punto alla posizione cliccata.\n"
+"Maiusc + Clic sinistro + Trascina: Imposta la posizione di fusione "
+"all'interno dello spazio.\n"
+"Rotella: incrementa o decrementa l'indice."
+
 msgid "Create points."
 msgstr "Crea punti."
 
@@ -864,6 +876,9 @@ msgstr "Sincronizza"
 
 msgid "None"
 msgstr "Nessuno"
+
+msgid "Blend"
+msgstr "Fusione"
 
 msgid "Open Editor"
 msgstr "Apri editor"
@@ -1491,9 +1506,6 @@ msgstr "Alla fine"
 msgid "Travel"
 msgstr "Raggiungi"
 
-msgid "No playback resource set at path: %s."
-msgstr "Nessuna risorsa di riproduzione impostata sul percorso: %s."
-
 msgid "Node Removed"
 msgstr "Nodo rimosso"
 
@@ -1523,8 +1535,14 @@ msgstr "Collega i nodi."
 msgid "Remove selected node or transition."
 msgstr "Rimuovi il nodo o la transizione selezionati."
 
+msgid "Transition"
+msgstr "Transizione"
+
 msgid "New Transitions Should Auto Advance"
 msgstr "Le nuove transizioni auto-proseguiranno"
+
+msgid "Play Mode"
+msgstr "Modalità riproduzione"
 
 msgid "Animation Change Transition"
 msgstr "Modifica la transizione di un'animazione"
@@ -1770,6 +1788,9 @@ msgstr "Blocca l'interpolazione d'un ciclo"
 
 msgid "Wrap Loop Interp"
 msgstr "Continua l'interpolazione d'un ciclo"
+
+msgid "Failed to lookup method: \"%s\""
+msgstr "Impossibile ricavare il metodo: \"%s\""
 
 msgid "Go to Definition"
 msgstr "Vai alla definizione"
@@ -2373,6 +2394,12 @@ msgstr "Modifica l'offset iniziale di una clip di una traccia audio"
 msgid "Change Audio Track Clip End Offset"
 msgstr "Modifica l'offset finale di una clip di una traccia audio"
 
+msgid "input %d '%s'."
+msgstr "input %d '%s'."
+
+msgid "Error: "
+msgstr "Errore: "
+
 msgid "Root"
 msgstr "Radice"
 
@@ -2388,6 +2415,9 @@ msgstr "Percorso:"
 msgid "Errors"
 msgstr "Errori"
 
+msgid "Thumbnail"
+msgstr "Miniatura"
+
 msgid "Title"
 msgstr "Titolo"
 
@@ -2400,6 +2430,9 @@ msgstr "Licenza"
 msgid "Loading..."
 msgstr "Caricamento…"
 
+msgid "Tags:"
+msgstr "Etichette:"
+
 msgid "Download"
 msgstr "Scarica"
 
@@ -2411,6 +2444,9 @@ msgstr "Installa..."
 
 msgid "Version:"
 msgstr "Versione:"
+
+msgid "Download other versions."
+msgstr "Scarica altre versioni."
 
 msgid "Description"
 msgstr "Descrizione"
@@ -2478,6 +2514,9 @@ msgstr "Verifica di hash SHA-256 fallita"
 msgid "Asset Download Error:"
 msgstr "Errore di download del contenuto:"
 
+msgid "Ready to install."
+msgstr "Pronto a installare."
+
 msgid "Downloading (%s / %s)..."
 msgstr "Download in corso (%s / %s)..."
 
@@ -2530,6 +2569,10 @@ msgstr "Tutto"
 msgid "No results for \"%s\"."
 msgstr "Nessun risultato per \"%s\"."
 
+msgid "Search assets (excluding templates). Use tags by including \"#tagname\"."
+msgstr ""
+"Cerca tra i contenuti (modelli esclusi). Utilizza tag includendo \"#tagname\"."
+
 msgid "Import..."
 msgstr "Importa…"
 
@@ -2541,6 +2584,9 @@ msgstr "Ordina:"
 
 msgid "Category:"
 msgstr "Categoria:"
+
+msgid "Source:"
+msgstr "Sorgente:"
 
 msgid "Licenses"
 msgstr "Licenze"
@@ -2599,6 +2645,9 @@ msgstr "Cambia la cartella di installazione"
 msgid ""
 "Change the folder where the contents of the asset are going to be installed."
 msgstr "Cambia la cartella dove verranno installati i contenuti."
+
+msgid "No files conflict with your project."
+msgstr "Nessun file in conflitto con il tuo progetto."
 
 msgid "Show contents of the asset and conflicting files."
 msgstr "Mostra i contenuti della risorsa e dei file in conflitto."
@@ -2927,6 +2976,9 @@ msgstr "Imposta %s su %d oggetti"
 
 msgid "Remote %s: %d"
 msgstr "%s remoto(i): %d"
+
+msgid "Remote %s (%s): %d"
+msgstr "%s remoto(i) (%s): %d"
 
 msgid "Remote %s (%d Selected)"
 msgstr "%s remoto(i) (%d selezionati)"
@@ -4060,6 +4112,22 @@ msgstr "Converti"
 msgid "Don't Ask Again"
 msgstr "Non chiedere di nuovo"
 
+msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the editor "
+"anymore.\n"
+"To make the editor recognize this file extension, add it to one of the lists "
+"of extensions in Editor Settings > Docks > FileSystem."
+msgstr ""
+"Quest'estensione di file non è riconosciuta dall'editor.\n"
+"Se vuoi comunque rinominarla, usa il gestore di file del tuo sistema "
+"operativo.\n"
+"Dopo averlo rinominato a un'estensione sconosciuta, il file non sarà più "
+"mostrato nell'editor.\n"
+"Affinché l'editor riconosca questa estensione di file, aggiungila a uno delle "
+"liste di estensioni in Impostazioni dell'editor > Pannelli > Filesystem."
+
 msgid "Groups"
 msgstr "Gruppi"
 
@@ -4878,6 +4946,9 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Gira quando la finestra dell'editor viene ridisegnata."
 
+msgid "Error saving resource at path \"%s\": %s."
+msgstr "Errore di salvataggio della risorsa nel percorso \"%s\": %s."
+
 msgid ""
 "The text-based resource at path \"%s\" is large on disk (%s), likely because "
 "it has embedded binary data.\n"
@@ -5088,6 +5159,19 @@ msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "%d ora fa"
 msgstr[1] "%d ore fa"
+
+msgid "Scene opened: %s."
+msgstr "Scena aperta: %s."
+
+msgid "Last saved: %s."
+msgstr "Ultimo salvataggio: %s."
+
+msgid ""
+"Scene \"%s\" has unsaved changes.\n"
+"%s"
+msgstr ""
+"La scena \"%s\" ha modifiche non salvate.\n"
+"%s"
 
 msgid "Open Base Scene"
 msgstr "Apri la scena di base"
@@ -5382,6 +5466,9 @@ msgstr "Salva disposizione..."
 
 msgid "Delete Layout..."
 msgstr "Elimina disposizione..."
+
+msgid "Default (Overridden)"
+msgstr "Predefinito (Sovrascritto)"
 
 msgid "This scene was never saved."
 msgstr "Questa scena non è mai stata salvata."
@@ -6140,11 +6227,11 @@ msgid "Failed to copy export template."
 msgstr "Impossibile copiare il modello di esportazione."
 
 msgid "PCK Embedding"
-msgstr "Integrazione PCK"
+msgstr "Incorporamento PCK"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
-"Il PCK integrato non può essere più grande di 4 GiB nelle esportazioni a 32 "
+"Il PCK incorporato non può essere più grande di 4 GiB nelle esportazioni a 32 "
 "bit."
 
 msgid "GDExtension"
@@ -6154,7 +6241,7 @@ msgid "Failed to copy shared object \"%s\"."
 msgstr "Impossibile copiare l'oggetto condiviso \"%s\"."
 
 msgid "Plugin \"%s\" is not supported on \"%s\""
-msgstr "L'estensione \"%s\" non é supportata su \"%s\""
+msgstr "L'estensione \"%s\" non è supportata su \"%s\""
 
 msgid "Official export templates aren't available for development builds."
 msgstr ""
@@ -6198,8 +6285,26 @@ msgstr "Estrazione dei modelli di esportazione"
 msgid "Importing:"
 msgstr "Importando:"
 
+msgctxt "Platform Group"
+msgid "Desktop"
+msgstr "Desktop"
+
+msgctxt "Platform Group"
+msgid "Mobile"
+msgstr "Mobile"
+
+msgctxt "Platform Group"
+msgid "Web"
+msgstr "Web"
+
 msgid "Common"
 msgstr "Comuni"
+
+msgid "Install Selected Templates"
+msgstr "Installa modelli selezionati"
+
+msgid "Download not available in offline mode."
+msgstr "Scaricamento non disponibile in modalità offline."
 
 msgid "Uncompressing Android Build Sources"
 msgstr "Decomprimendo le sorgenti di compilazione Android"
@@ -6216,11 +6321,47 @@ msgstr "Mirror"
 msgid "Open in Web Browser"
 msgstr "Apri nel browser web"
 
+msgid "Install from a TPZ file."
+msgstr "Installa da un file TPZ."
+
 msgid "Select Template File"
 msgstr "Seleziona il file del modello"
 
 msgid "Godot Export Templates"
 msgstr "Modelli di esportazione di Godot"
+
+msgid "Godot Version"
+msgstr "Versione di Godot"
+
+msgid "Godot Version List"
+msgstr "Elenco di versioni di Godot"
+
+msgid "Remove all installed templates."
+msgstr "Rimuovi tutti i modelli installati."
+
+msgid "Can't resolve the requested address"
+msgstr "Impossibile risolvere l'indirizzo richiesto"
+
+msgid "Can't connect to the mirror"
+msgstr "Impossibile connettersi al mirror"
+
+msgid "No response from the mirror"
+msgstr "Nessuna risposta dal mirror"
+
+msgid "Request failed"
+msgstr "Richiesta fallita"
+
+msgid "Request ended up in a redirect loop"
+msgstr "La richiesta è finita in un ciclo di reindirizzamenti"
+
+msgid "Not found"
+msgstr "Non trovato"
+
+msgid "Response code: %d"
+msgstr "Codice di risposta: %d"
+
+msgid "Requested template not found in the archive."
+msgstr "Il modello richiesto non è stato trovato nell'archivio."
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
@@ -6756,6 +6897,12 @@ msgstr "Cerca:"
 msgid "Matches:"
 msgstr "Corrispondenze:"
 
+msgid "Reset filters."
+msgstr "Ripristina i filtri."
+
+msgid "Filters"
+msgstr "Filtri"
+
 msgctxt "Job Title"
 msgid "Project Manager"
 msgstr "Responsabile di progetto"
@@ -6922,6 +7069,9 @@ msgstr "Seleziona una risorsa"
 
 msgid "Select Scene"
 msgstr "Seleziona una scena"
+
+msgid "Select %s"
+msgstr "Seleziona %s"
 
 msgid "Instant Preview"
 msgstr "Anteprima instantanea"
@@ -7863,7 +8013,7 @@ msgstr ""
 "proprietà (%s)."
 
 msgid "Quick Load..."
-msgstr "Caricamento rapido..."
+msgstr "Carica rapida..."
 
 msgid "Opens a quick menu to select from a list of allowed Resource files."
 msgstr ""
@@ -7909,7 +8059,7 @@ msgid "Assign Resource"
 msgstr "Assegna una risorsa"
 
 msgid "Quick Load"
-msgstr "Caricamento rapido"
+msgstr "Carica rapida"
 
 msgid "New Shader..."
 msgstr "Nuovo shader..."
@@ -8042,7 +8192,7 @@ msgid ""
 msgstr ""
 "Facoltativo. Il nome della cartella deve generalmente usare la nomenclatura "
 "`snake_case` (evita spazi e caratteri speciali).\n"
-"Se lasciata vuota, la cartella verrà nominata con il nome dell'estensione "
+"Se lasciata vuota, la cartella verrà denominata con il nome dell'estensione "
 "convertito in `snake_case`."
 
 msgid ""
@@ -9176,16 +9326,16 @@ msgid "Selection Options"
 msgstr "Opzioni di selezione"
 
 msgid "Don't Select Locked Nodes"
-msgstr "Non selezionare u nodi bloccati"
+msgstr "Non selezionare i nodi bloccati"
 
 msgid "Select Group Over Children"
-msgstr "Seleziona i gruppi piuttosto che i figli"
+msgstr "Seleziona gruppo piuttosto che figli"
 
 msgid "Override the in-game camera."
 msgstr "Sostituisci la telecamera di gioco."
 
 msgid "Camera Override Options"
-msgstr "Opzioni di sostituzione della telecamera"
+msgstr "Opzioni di sovrascrittura della telecamera"
 
 msgid "Reset 2D Camera"
 msgstr "Ripristina telecamera 2D"
@@ -9226,6 +9376,9 @@ msgstr "Mantieni rapporto d'aspetto"
 
 msgid "Keep the aspect ratio of the embedded game."
 msgstr "Mantieni il rapporto d'aspetto del gioco incorporato."
+
+msgid "Stretch to Fit"
+msgstr "Stira per adattare"
 
 msgid "Embedded game size stretches to fit the Game Workspace."
 msgstr ""
@@ -9658,8 +9811,20 @@ msgstr "Passo Y della griglia:"
 msgid "Sync Bones to Polygon"
 msgstr "Sincronizza le ossa con il poligono"
 
+msgid ""
+"The selected scene could not be found. It may have been moved or deleted."
+msgstr ""
+"Impossibile trovare la scena selezionata. Potrebbe essere stata spostata o "
+"eliminata."
+
 msgid "Advanced Settings"
 msgstr "Impostazioni avanzate"
+
+msgid "Scene Picker"
+msgstr "Selettore di scene"
+
+msgid "Edit Properties"
+msgstr "Modifica proprietà"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Questo scheletro non ha ossa, crea dei nodi Bone2D figlio."
@@ -9883,6 +10048,9 @@ msgstr "Disegna le proprietà di tasselli"
 
 msgid "Painting:"
 msgstr "Disegno:"
+
+msgid "Polygon %d"
+msgstr "Poligono %d"
 
 msgid "No terrains"
 msgstr "Nessun terreno"
@@ -11109,7 +11277,7 @@ msgid ""
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
 "Crea una forma di collisione basata su poligoni.\n"
-"Questa é l'opzione più accurata (anche se la più lenta) per il rilevamento "
+"Questa è l'opzione più accurata (anche se la più lenta) per il rilevamento "
 "delle collisioni."
 
 msgid ""
@@ -11253,6 +11421,13 @@ msgstr "Aggiorna da scena"
 msgid "Filter Meshes"
 msgstr "Filtra le mesh"
 
+msgid "The item's navigation mesh."
+msgstr "La mesh di navigazione dell'elemento."
+
+msgid "The item's navigation layers bitmask."
+msgstr ""
+"La maschera di bit che rappresenta gli strati di navigazione dell'elemento."
+
 msgid "Apply without Transforms"
 msgstr "Applica senza trasformazioni"
 
@@ -11358,6 +11533,9 @@ msgstr "Chiave d'animazione inserita."
 msgid "Rotating %s degrees."
 msgstr "Ruotando di %s gradi."
 
+msgid "Move Camera \"%s\""
+msgstr "Sposta la telecamera \"%s\""
+
 msgid ""
 "This debug draw mode is only supported when using the Forward+ or Mobile "
 "renderer."
@@ -11400,6 +11578,12 @@ msgstr "Tempo GPU: %s ms"
 msgid "FPS: %d"
 msgstr "FPS: %d"
 
+msgid "Translating: %s"
+msgstr "Traslando %s"
+
+msgid "Instantiating: %s"
+msgstr "Istanziando: %s"
+
 msgid "Top View."
 msgstr "Vista dall'alto."
 
@@ -11433,8 +11617,19 @@ msgstr "Imposta un materiale di sovrascrittura"
 msgid "Error instantiating scene from %s."
 msgstr "Errore durante l'istanziazione della scena da %s."
 
+msgid "Can't drop the file..."
+msgid_plural "Can't drop the files..."
+msgstr[0] "Impossibile rilasciare il file..."
+msgstr[1] "Impossibile rilasciare i file..."
+
 msgid "Circular dependency found at %s."
 msgstr "Una dipendenza circolare è stata trovata a %s."
+
+msgid "File format is not supported."
+msgstr "Il formato di file non è supportato."
+
+msgid "Scaling: %s"
+msgstr "Ridimensionando: %s"
 
 msgid "Rotate"
 msgstr "Ruota"
@@ -11920,6 +12115,9 @@ msgstr "Modalità scala"
 msgid "Select Mode"
 msgstr "Modalità selezione"
 
+msgid "Show List of Selectable Nodes"
+msgstr "Mostra lista di nodi selezionabili"
+
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Blocca il nodo selezionato, impedendo la selezione e il movimento."
 
@@ -11953,6 +12151,13 @@ msgstr ""
 msgid "Ungroup"
 msgstr "Deraggruppa"
 
+msgid ""
+"LMB+Drag: Measure distance between two points.\n"
+"Shift+LMB+Drag: Show component measurements."
+msgstr ""
+"Clic sinistro + Trascina: Misura la distanza tra due punti nello spazio 3D.\n"
+"Maiusc + Clic sinistro + Trascina: Mostra misure per ogni componente."
+
 msgid "Ruler Mode"
 msgstr "Modalità righello"
 
@@ -11961,6 +12166,12 @@ msgstr "Usa coordinate locali"
 
 msgid "Use Snap"
 msgstr "Usa scatto"
+
+msgid "Use Trackball"
+msgstr "Usa trackball"
+
+msgid "Preserve Children Transform"
+msgstr "Mantieni trasformazione dei figli"
 
 msgid ""
 "Toggle preview sunlight.\n"
@@ -12582,6 +12793,14 @@ msgstr "Rimuovi una guida orizzontale"
 msgid "Create Horizontal and Vertical Guides"
 msgstr "Crea guide orizzontali e verticali"
 
+msgid ""
+"Can't modify anchor offsets when the parent has a size of 0. Disable the "
+"anchors mode in the toolbar."
+msgstr ""
+"Non è possibile modificare gli offset delle ancore quando il nodo genitore ha "
+"una dimensione di 0. Disabilita la modalità ancora nella barra degli "
+"strumenti."
+
 msgid "Instantiate Scene Here..."
 msgstr "Istanzia scena qui..."
 
@@ -12866,6 +13085,9 @@ msgstr "Aggiungendo %s..."
 
 msgid "Can't instantiate multiple nodes without root."
 msgstr "Impossibile istanziare più di un nodo senza una radice."
+
+msgid "This file format is not supported."
+msgstr "Questo formato di file non è supportato."
 
 msgid "Creating inherited scene from: %s"
 msgstr "Creando scena ereditata da: %s"
@@ -14232,7 +14454,7 @@ msgid "Rename Nodes"
 msgstr "Rinomina nodi"
 
 msgid "Scene Tree (Nodes):"
-msgstr "Albero di scena (nodi):"
+msgstr "Albero di scene (nodi):"
 
 msgid "Node Configuration Warning!"
 msgstr "Avviso sulla configurazione del nodo!"
@@ -14690,6 +14912,9 @@ msgstr "Il nome o percorso dello script è valido."
 msgid "Will create a new script file."
 msgstr "Verrà creato un nuovo file di script."
 
+msgid "No Scripting Languages Available"
+msgstr "Nessun linguaggio di scripting disponibile"
+
 msgid "Parent Name"
 msgstr "Nome del padre"
 
@@ -14944,6 +15169,11 @@ msgstr "Riga %d (%s):"
 
 msgid "Line %d:"
 msgstr "Riga %d:"
+
+msgid "Drop file path."
+msgid_plural "Drop file paths."
+msgstr[0] "Rilascia percorso di file."
+msgstr[1] "Rilascia percorsi di file."
 
 msgid ""
 "The resource does not have a valid path because it has not been saved.\n"
@@ -15429,7 +15659,7 @@ msgid "3D Editor"
 msgstr "Editor 3D"
 
 msgid "Scene Tree Editing"
-msgstr "Modifica dell'albero di scena"
+msgstr "Modifica dell'albero di scene"
 
 msgid "Node Dock (deprecated)"
 msgstr "Pannello Nodo (deprecato)"
@@ -15718,6 +15948,9 @@ msgstr "In attesa di un input"
 msgid "Filter by Event"
 msgstr "Filtra per evento"
 
+msgid "Reload Extension"
+msgstr "Ricarica estensione"
+
 msgid "Reload"
 msgstr "Ricarica"
 
@@ -15981,6 +16214,9 @@ msgstr "Errore nella riga %d in include %s:%d:"
 msgid "Warnings should be fixed to prevent errors."
 msgstr "Gli avvisi andrebbero risolti per evitare errori."
 
+msgid "Toggle Shader Preview"
+msgstr "Commuta l'anteprima dello shader"
+
 msgid ""
 "This shader has been modified on disk.\n"
 "What action should be taken?"
@@ -16081,6 +16317,9 @@ msgstr[1] "Aggiungi %d file per la generazione di modelli"
 
 msgid "Remove file from template generation"
 msgstr "Rimuovi un file dalla generazione di modelli"
+
+msgid "Template generated."
+msgstr "Modello generato."
 
 msgid "Removed"
 msgstr "Rimosso"
@@ -17125,6 +17364,18 @@ msgstr "RefCounted"
 
 msgid "Filter RefCounteds"
 msgstr "Filtra RefCounted"
+
+msgid "Native Refs"
+msgstr "Rif. nativi"
+
+msgid "ObjectDB Refs"
+msgstr "Rif. ObjectDB"
+
+msgid "Total Refs"
+msgstr "Rif. totali"
+
+msgid "ObjectDB Cycles"
+msgstr "Cicli ObjectDB"
 
 msgid "ObjectDB References + Native References"
 msgstr "Riferimenti di ObjectDB + Riferimenti nativi"
@@ -19152,6 +19403,10 @@ msgstr ""
 "Il renderer \"%s\" è stato sviluppato per dispositivi desktop, e non è adatto "
 "per dispositivi Android."
 
+msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
+msgstr ""
+"\"Min SDK\" dovrebbe essere maggiore o uguale a %d per il renderer \"%s\"."
+
 msgid ""
 "The project name does not meet the requirement for the package name format "
 "and will be updated to \"%s\". Please explicitly specify the package name if "
@@ -19162,7 +19417,7 @@ msgstr ""
 "il nome del pacchetto se necessario."
 
 msgid "AAB signing is not supported"
-msgstr "La firma AAB non é supportata"
+msgstr "La firma AAB non è supportata"
 
 msgid "Signing debug APK..."
 msgstr "Firma dell'APK di debug..."
@@ -20065,12 +20320,12 @@ msgstr "Un CollisionPolygon2D vuoto non ha effetto sulle collisioni."
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
 msgstr ""
 "Poligono non valido. Sono necessari almeno 3 punti nella modalità di "
-"costruzione \"Solidi\"."
+"costruzione \"Solids\"."
 
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
 "Poligono non valido. Sono necessari almeno 2 punti nella modalità di "
-"costruzione \"Segmenti\"."
+"costruzione \"Segments\"."
 
 msgid ""
 "The One Way Collision property will be ignored when the collision object is "
@@ -20318,7 +20573,7 @@ msgstr ""
 "nell'ambiente della scena per essere visibili."
 
 msgid "Nothing is visible because meshes have not been assigned to draw passes."
-msgstr "Nulla é visibile perché le mesh non sono state assegnate ai draw pass."
+msgstr "Nulla è visibile perché le mesh non sono state assegnate ai draw pass."
 
 msgid ""
 "Particles animation requires the usage of a BaseMaterial3D whose Billboard "
@@ -20894,8 +21149,17 @@ msgstr ""
 "stereoscopica non è supportata a meno che non siano attivi. Si prega di "
 "abilitare `xr/shaders/enabled` per utilizzare l'uscita stereoscopica."
 
+msgid "Animation '%s' not found."
+msgstr "Animazione \"%s\" non trovata."
+
+msgid "Nothing connected to output."
+msgstr "Niente collegato all'uscita."
+
 msgid "Animation Apply Reset"
 msgstr "Applica un reset di animazione"
+
+msgid "No playback resource set at path: %s."
+msgstr "Nessuna risorsa di riproduzione impostata sul percorso: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Nessun nodo AnimationNode radice impostato per il grafico."
