@@ -592,8 +592,21 @@ Vector<String> OS_MacOS::get_system_fonts() const {
 		for (CFIndex i = 0; i < CFArrayGetCount(fonts); i++) {
 			CFStringRef cf_name = (CFStringRef)CFArrayGetValueAtIndex(fonts, i);
 			if (cf_name && (CFStringGetLength(cf_name) > 0) && (CFStringCompare(cf_name, CFSTR("LastResort"), kCFCompareCaseInsensitive) != kCFCompareEqualTo) && (CFStringGetCharacterAtIndex(cf_name, 0) != '.')) {
-				NSString *ns_name = (__bridge NSString *)cf_name;
-				font_names.insert(String::utf8([ns_name UTF8String]));
+				CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
+				CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, cf_name);
+				CTFontDescriptorRef font = CTFontDescriptorCreateWithAttributes(attributes);
+				if (font) {
+					CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(font, kCTFontURLAttribute);
+					if (url) {
+						if ([NSString stringWithString:[(__bridge NSURL *)url path]].length > 0) {
+							NSString *ns_name = (__bridge NSString *)cf_name;
+							font_names.insert(String::utf8([ns_name UTF8String]));
+						}
+						CFRelease(url);
+					}
+					CFRelease(font);
+				}
+				CFRelease(attributes);
 			}
 		}
 		CFRelease(fonts);
