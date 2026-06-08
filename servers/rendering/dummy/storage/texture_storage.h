@@ -114,7 +114,8 @@ public:
 	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override { return Vector<Ref<Image>>(); }
 
 	virtual void texture_drawable_generate_mipmaps(RID p_texture) override {}
-	virtual RID texture_drawable_get_default_material() const override { return RID(); }
+	virtual RID texture_drawable_get_default_blit_material() const override { return RID(); }
+	virtual RID texture_drawable_get_default_blend_material() const override { return RID(); }
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override { texture_free(p_by_texture); }
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override {}

@@ -241,7 +241,8 @@ public:
 	FUNC1RC(Vector<Ref<Image>>, texture_3d_get, RID)
 
 	FUNC1(texture_drawable_generate_mipmaps, RID)
-	FUNC0RC(RID, texture_drawable_get_default_material)
+	FUNC0RC(RID, texture_drawable_get_default_blit_material)
+	FUNC0RC(RID, texture_drawable_get_default_blend_material)
 
 	FUNC2(texture_replace, RID, RID)
 

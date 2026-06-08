@@ -139,7 +139,8 @@ public:
 	virtual String texture_get_path(RID p_texture) const = 0;
 
 	virtual void texture_drawable_generate_mipmaps(RID p_texture) = 0; // Update mipmaps if modified
-	virtual RID texture_drawable_get_default_material() const = 0; // To use with simplified functions in DrawableTexture2D
+	virtual RID texture_drawable_get_default_blit_material() const = 0; // To use with simplified functions in DrawableTexture2D
+	virtual RID texture_drawable_get_default_blend_material() const = 0;
 
 	virtual Image::Format texture_get_format(RID p_texture) const = 0;
 

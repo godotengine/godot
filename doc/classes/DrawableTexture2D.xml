@@ -9,6 +9,16 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="blend_rect">
+			<return type="void" />
+			<param index="0" name="rect" type="Rect2i" />
+			<param index="1" name="source" type="Texture2D" />
+			<param index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="3" name="mipmap" type="int" default="0" />
+			<description>
+				Draws to given [param rect] on this texture by copying from the given [param source]. A [param modulate] color can be passed in for the shader to use, but defaults to White. The [param mipmap] value can specify a draw to a lower mipmap level. The texture is drawn using mix blending, i.e. respecting the pixel transparency. If you want to replace pixels or use a custom material, use [method blit_rect] instead.
+			</description>
+		</method>
 		<method name="blit_rect" experimental="This function and its parameters are likely to change in the 4.7 Dev Cycle">
 			<return type="void" />
 			<param index="0" name="rect" type="Rect2i" />
