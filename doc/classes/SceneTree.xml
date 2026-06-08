@@ -265,7 +265,16 @@
 		</member>
 		<member name="debug_collisions_hint" type="bool" setter="set_debug_collisions_hint" getter="is_debugging_collisions_hint" default="false">
 			If [code]true[/code], collision shapes will be visible when running the game from the editor for debugging purposes.
-			[b]Note:[/b] This property is not designed to be changed at run-time. Changing the value of [member debug_collisions_hint] while the project is running will not have the desired effect.
+			[b]Note:[/b] This property is not designed to be changed at run-time, however queueing a redraw across the tree while the project is running after changing the value may have the desired effect.
+			[codeblocks]
+			[gdscript]
+			get_tree().root.propagate_call("queue_redraw")
+			[/gdscript]
+			[csharp]
+			GetTree().Root.PropagateCall(CanvasItem.MethodName.QueueRedraw);
+			[/csharp]
+			[/codeblocks]
+			[b]Note:[/b] This only applies to 2D [CanvasItem] nodes, and may cause a stutter in large scenes.
 		</member>
 		<member name="debug_navigation_hint" type="bool" setter="set_debug_navigation_hint" getter="is_debugging_navigation_hint" default="false">
 			If [code]true[/code], navigation polygons will be visible when running the game from the editor for debugging purposes.
