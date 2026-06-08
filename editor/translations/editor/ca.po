@@ -37,13 +37,14 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # marc-marcos <marcmarcosmadruga@gmail.com>, 2026.
 # "Drussentis@gmail.com" <drussentis@gmail.com>, 2026.
+# Júlia Rosell Saldaña <contacte@juliars.cat>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-25 00:39+0000\n"
-"Last-Translator: \"Drussentis@gmail.com\" <drussentis@gmail.com>\n"
+"PO-Revision-Date: 2026-06-08 08:59+0000\n"
+"Last-Translator: Júlia Rosell Saldaña <contacte@juliars.cat>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -51,10 +52,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.6\n"
 
 msgid "OK"
 msgstr "D'acord"
+
+msgid "Failed"
+msgstr "Ha fallat:"
 
 msgid "Unconfigured"
 msgstr "Desconfigurat"
@@ -967,9 +971,6 @@ msgstr "Al Final"
 
 msgid "Travel"
 msgstr "Viatge"
-
-msgid "No playback resource set at path: %s."
-msgstr "Cap recurs de reproducció assignat en el camí: %s."
 
 msgid "Node Removed"
 msgstr "Node Eliminat"
@@ -6751,6 +6752,9 @@ msgstr "S'estàn traçant les Malles"
 
 msgid "Finishing Plot"
 msgstr "S'està finalitzant el Traçat"
+
+msgid "No playback resource set at path: %s."
+msgstr "Cap recurs de reproducció assignat en el camí: %s."
 
 msgid "Switch between hexadecimal and code values."
 msgstr "Canviar entre valors hexadecimals i de codi."

@@ -41,7 +41,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-18 18:10+0000\n"
+"PO-Revision-Date: 2026-06-04 21:01+0000\n"
 "Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/sv/>\n"
@@ -50,7 +50,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16.1-dev\n"
+"X-Generator: Weblate 2026.6\n"
 
 msgid "Application"
 msgstr "Applikation"
@@ -124,6 +124,9 @@ msgstr "Support för tillgänglighet"
 msgid "Updates per Second"
 msgstr "Uppdateringar per sekund"
 
+msgid "Accessibility Driver"
+msgstr "Tillgänglighetsdrivrutin"
+
 msgid "Display"
 msgstr "Visa"
 
@@ -184,6 +187,12 @@ msgstr "Fönsterbredds‑åsidosättning"
 msgid "Window Height Override"
 msgstr "Åsidosätt fönstrets höjd"
 
+msgid "HDR"
+msgstr "HDR"
+
+msgid "Request HDR Output"
+msgstr "Begär HDR‑utdata"
+
 msgid "Energy Saving"
 msgstr "Energisparande"
 
@@ -195,6 +204,9 @@ msgstr "Animation"
 
 msgid "Warnings"
 msgstr "Varningar"
+
+msgid "Check Invalid Skeleton Modifier Node Paths"
+msgstr "Kontrollera ogiltiga sökvägar för Skeleton Modifier‑noder"
 
 msgid "Check Invalid Track Paths"
 msgstr "Kontrollera ogiltiga spårvägar"
@@ -568,6 +580,9 @@ msgstr "Emulera mus med pekskärm"
 msgid "Emulate Touch From Mouse"
 msgstr "Emulera touch med mus"
 
+msgid "Ignore Joypad on Unfocused Application"
+msgstr "Ignorera handkontroll när applikationen inte är i fokus"
+
 msgid "Legacy Just Pressed Behavior"
 msgstr "Äldre beteende för 'Nyligen tryckt'"
 
@@ -585,6 +600,9 @@ msgstr "Aktivera gyroskop"
 
 msgid "Enable Magnetometer"
 msgstr "Aktivera magnetometer"
+
+msgid "Joypads"
+msgstr "Handkontrollers"
 
 msgid "Device"
 msgstr "Enhet"
@@ -747,6 +765,9 @@ msgstr "Maximal storlek på inmatningsbufferten"
 
 msgid "Output Buffer Max Size"
 msgstr "Maxstorlek för utgångsbuffert"
+
+msgid "Stream Peer"
+msgstr "Ström‑peer"
 
 msgid "Resource"
 msgstr "Resurs"
@@ -1030,6 +1051,9 @@ msgstr "Exportera endast projektet"
 msgid "Delete Old Export Files Unconditionally"
 msgstr "Ta bort gamla exportfiler ovillkorligen"
 
+msgid "Modules"
+msgstr "Moduler"
+
 msgid "Camera"
 msgstr "Kamera"
 
@@ -1155,6 +1179,9 @@ msgstr "Dölj skjutreglage"
 
 msgid "Editing Integer"
 msgstr "Redigera heltal"
+
+msgid "Deferred Drag Mode"
+msgstr "Fördröjt dragningsläge"
 
 msgid "Zoom"
 msgstr "Zooma"
@@ -1449,6 +1476,15 @@ msgstr "Rotskript"
 
 msgid "Mesh Library"
 msgstr "Mesh‑bibliotek"
+
+msgid "Use Node Names as Mesh Names"
+msgstr "Använd nodnamn som mesh‑namn"
+
+msgid "Array Mesh"
+msgstr "Array-mesh"
+
+msgid "Deduplicate Surfaces"
+msgstr "Deduplicera ytor"
 
 msgid "Apply Root Scale"
 msgstr "Tillämpa rotskala"
@@ -1817,11 +1853,17 @@ msgstr "Namn‑delningsförhållande"
 msgid "Base Type"
 msgstr "Bastyp"
 
+msgid "Edited Resource"
+msgstr "Ändrad resurs"
+
 msgid "Editable"
 msgstr "Redigerbar"
 
 msgid "Toggle Mode"
 msgstr "Växla Läge"
+
+msgid "Script Owner"
+msgstr "Skriptägare"
 
 msgid "Main Run Args"
 msgstr "Huvudkörnings arg"
@@ -1954,6 +1996,9 @@ msgstr "Lokalisering"
 
 msgid "Editor Language"
 msgstr "Editorspråk"
+
+msgid "Asset Store"
+msgstr "Asset Store"
 
 msgid "Use Threads"
 msgstr "Använd trådar"
@@ -2102,6 +2147,9 @@ msgstr "Uppdatera kontinuerligt"
 msgid "Collapse Main Menu"
 msgstr "Fäll ihop huvudmenyn"
 
+msgid "Show Renderer Selector"
+msgstr "Visa renderer‑väljare"
+
 msgid "Derive Script Globals by Name"
 msgstr "Härled skript‑globala variabler efter namn"
 
@@ -2155,6 +2203,9 @@ msgstr "Öppna resurser i aktuell inspektor"
 
 msgid "Resources to Open in New Inspector"
 msgstr "Resurser att öppna i ny inspektor"
+
+msgid "Property Descriptions"
+msgstr "Egenskapsbeskrivningar"
 
 msgid "Default Color Picker Mode"
 msgstr "Standardläge för färgväljare"
@@ -2219,6 +2270,9 @@ msgstr "Grundavstånd"
 msgid "Additional Spacing"
 msgstr "Extra avstånd"
 
+msgid "Use Monospace Font for Editor Symbols"
+msgstr "Använd monospace‑typsnitt för editorsymboler"
+
 msgid "Custom Theme"
 msgstr "Anpassat tema"
 
@@ -2227,6 +2281,9 @@ msgstr "Pekskärm"
 
 msgid "Enable Touch Optimizations"
 msgstr "Aktivera touch‑optimeringar"
+
+msgid "Haptic on Long Press"
+msgstr "Haptisk feedback vid långtryck"
 
 msgid "Scale Gizmo Handles"
 msgstr "Skalningshandtag för gizmo"
@@ -2408,6 +2465,12 @@ msgstr "TextFile-filändelser"
 msgid "Other File Extensions"
 msgstr "Andra filändelser"
 
+msgid "Automatically Open Created Scripts"
+msgstr "Öppna skapade skript automatiskt"
+
+msgid "Ask Before Moving Files"
+msgstr "Fråga innan filer flyttas"
+
 msgid "Property Editor"
 msgstr "Egenskapseditor"
 
@@ -2491,6 +2554,12 @@ msgstr "Visa minikarta"
 
 msgid "Minimap Width"
 msgstr "Minikarta - Bredd"
+
+msgid "Drag and Drop Info"
+msgstr "Information om dra‑och‑släpp"
+
+msgid "Show Drag and Drop Info"
+msgstr "Visa information om dra‑och‑släpp"
 
 msgid "Lines"
 msgstr "Rader"
@@ -2804,6 +2873,9 @@ msgstr "Skivstorlek för Path3D‑lutning"
 msgid "Lightmap GI Probe Size"
 msgstr "Ljuskarta GI‑probstorlek"
 
+msgid "Show Collision Shapes Only When Selected"
+msgstr "Visa kollisionsformer endast när de är valda"
+
 msgid "Primary Grid Steps"
 msgstr "Primära rutnätssteg"
 
@@ -2912,6 +2984,9 @@ msgstr "Fri‑vy‑basfart"
 msgid "Freelook Activation Modifier"
 msgstr "Aktiveringsmodifierare för fri vy"
 
+msgid "Freelook Invert Y Axis"
+msgstr "Invertera Y‑axeln i frilägesvy"
+
 msgid "Freelook Speed Zoom Link"
 msgstr "Koppling mellan fri‑vy‑fart och zoom"
 
@@ -2924,6 +2999,9 @@ msgstr "Opacitet för manipulator‑gizmo"
 msgid "Show Gizmo During Rotation"
 msgstr "Visa gizmo under rotation"
 
+msgid "View Plane Rotation Gizmo Scale"
+msgstr "Skala för rotations‑gizmo i vyplanet"
+
 msgid "Grid Color"
 msgstr "Rutnätsfärg"
 
@@ -2932,6 +3010,12 @@ msgstr "Guidefärg"
 
 msgid "Smart Snapping Line Color"
 msgstr "Färg på smarta fästlinjer"
+
+msgid "Selection Rectangle Color"
+msgstr "Färg på markeringsrektangel"
+
+msgid "Locked Selection Rectangle Color"
+msgstr "Färg på låst markeringsrektangel"
 
 msgid "Bone Width"
 msgstr "Benbredd"
@@ -3055,6 +3139,33 @@ msgstr "Färg för tidigare onion‑lager"
 
 msgid "Onion Layers Future Color"
 msgstr "Färg för kommande onion‑lager"
+
+msgid "Audio Buses"
+msgstr "Ljudbussar"
+
+msgid "Active Max dB Color"
+msgstr "Färg för aktiv max‑dB"
+
+msgid "Active Min dB Color"
+msgstr "Färg för aktiv min‑dB"
+
+msgid "Active Normalized dB Color"
+msgstr "Färg för normaliserad aktiv dB"
+
+msgid "Inactive Max dB Color"
+msgstr "Färg för inaktiv max‑dB"
+
+msgid "Inactive Min dB Color"
+msgstr "Färg för inaktiv min‑dB"
+
+msgid "Inactive Normalized dB Color"
+msgstr "Färg för inaktiv normaliserad dB"
+
+msgid "Tint over Color"
+msgstr "Toning ovanpå färg"
+
+msgid "Tint Under Color"
+msgstr "Toning under färg"
 
 msgid "Shader Editor"
 msgstr "Shadereditor"
@@ -3443,6 +3554,12 @@ msgstr "Foveationsnivå"
 msgid "Foveation Dynamic"
 msgstr "Dynamisk foveering"
 
+msgid "Foveation Eye Tracked"
+msgstr "Foveation med ögonspårning"
+
+msgid "Foveation with Subsampled Images"
+msgstr "Foveation med undersamplade bilder"
+
 msgid "Submit Depth Buffer"
 msgstr "Skicka djupbuffert"
 
@@ -3508,6 +3625,9 @@ msgstr "Ögonblicksinteraktion"
 
 msgid "Render Model"
 msgstr "Renderingsmodell"
+
+msgid "User Presence"
+msgstr "Användarnärvaro"
 
 msgid "Binding Modifiers"
 msgstr "Bindningsmodifierare"
@@ -3727,6 +3847,12 @@ msgstr "Zstd‑superkomprimering"
 
 msgid "Zstd Supercompression Level"
 msgstr "Zstd‑superkomprimeringsnivå"
+
+msgid "Autosmooth"
+msgstr "Automatisk utjämning"
+
+msgid "Smoothing Angle"
+msgstr "Utjämningsvinkel"
 
 msgid "Operation"
 msgstr "Operation"
@@ -3974,6 +4100,9 @@ msgstr "Förväxlingsbar lokal användning"
 msgid "Confusable Capture Reassignment"
 msgstr "Förväxlingsbar om‑tilldelning av fångad variabel"
 
+msgid "Confusable Temporary Modification"
+msgstr "Förväxlingsbar temporär modifiering"
+
 msgid "Inference On Variant"
 msgstr "Typinferens på Variant"
 
@@ -3994,6 +4123,9 @@ msgstr "Baka FPS"
 
 msgid "glTF"
 msgstr "glTF"
+
+msgid "Texture Map Mode"
+msgstr "Texturkartläge"
 
 msgid "Color"
 msgstr "Färg"
@@ -4550,6 +4682,9 @@ msgstr "Replikationsintervall"
 msgid "Delta Interval"
 msgstr "Delta‑intervall"
 
+msgid "Replication Config"
+msgstr "Replikeringskonfiguration"
+
 msgid "Visibility Update Mode"
 msgstr "Synlighetsuppdateringsläge"
 
@@ -4667,11 +4802,23 @@ msgstr "Åtgärdstyp"
 msgid "Toplevel Paths"
 msgstr "Toppnivåvägar"
 
+msgid "Action Sets"
+msgstr "Åtgärdsuppsättningar"
+
+msgid "Interaction Profiles"
+msgstr "Interaktionsprofiler"
+
+msgid "Actions"
+msgstr "Åtgärder"
+
 msgid "Binding Path"
 msgstr "Bindningssökväg"
 
 msgid "Interaction Profile Path"
 msgstr "Interaktionsprofilsökväg"
+
+msgid "Bindings"
+msgstr "Bindningar"
 
 msgid "Runtime Paths"
 msgstr "Körtidssökvägar"
@@ -4765,6 +4912,9 @@ msgstr "Alfablendning"
 
 msgid "Enable Hole Punch"
 msgstr "Aktivera hålslag"
+
+msgid "Eye Visibility"
+msgstr "Ögonsynlighet"
 
 msgid "Swapchain State"
 msgstr "Swapchain‑tillstånd"
@@ -5096,8 +5246,17 @@ msgstr "Använd Wi‑Fi för fjärrdebuggning"
 msgid "Wi-Fi Remote Debug Host"
 msgstr "Värd för fjärrdebuggning via Wi‑Fi"
 
+msgid "Splash Screen"
+msgstr "Startskärm"
+
+msgid "Disable Godot Boot Splash"
+msgstr "Inaktivera Godots startskärm"
+
 msgid "Background Color"
 msgstr "Bakgrundsfärg"
+
+msgid "Branding Image"
+msgstr "Varumärkesbild"
 
 msgid "Launcher Icons"
 msgstr "Startikoner"
@@ -5746,6 +5905,9 @@ msgstr "Ankar‑läge"
 
 msgid "Ignore Rotation"
 msgstr "Ignorera rotation"
+
+msgid "Custom Viewport"
+msgstr "Anpassad vyport"
 
 msgid "Process Callback"
 msgstr "Process‑återanrop"
@@ -6811,6 +6973,12 @@ msgstr "Avståndsavtoning"
 msgid "Transform Align"
 msgstr "Transform‑justering"
 
+msgid "Transform Align Axis"
+msgstr "Justera transformering mot axel"
+
+msgid "Transform Align Channel Filter"
+msgstr "Kanalfilter för transformjustering"
+
 msgid "Draw Passes"
 msgstr "Ritpasser"
 
@@ -7024,11 +7192,20 @@ msgstr "Spot‑ljus"
 msgid "Angle Attenuation"
 msgstr "Vinkelavtagning"
 
+msgid "Area"
+msgstr "Areor"
+
+msgid "Normalize Energy"
+msgstr "Normalisera energi"
+
 msgid "Lightmap Textures"
 msgstr "Ljuskartstexturer"
 
 msgid "Shadowmask Textures"
 msgstr "Skuggmask‑texturer"
+
+msgid "Light Texture"
+msgstr "Ljustextur"
 
 msgid "Quality"
 msgstr "Kvalitet"
@@ -8017,6 +8194,9 @@ msgstr "Synlig hex‑kod"
 msgid "Presets Visible"
 msgstr "Synliga förinställningar"
 
+msgid "Accessibility Region"
+msgstr "Tillgänglighetsregion"
+
 msgid "Theme Overrides"
 msgstr "Tema‑åtsidosättningar"
 
@@ -8031,6 +8211,12 @@ msgstr "Stilar"
 
 msgid "Custom Minimum Size"
 msgstr "Anpassad minimistorlek"
+
+msgid "Custom Maximum Size"
+msgstr "Anpassad max-storlek"
+
+msgid "Propagate Maximum Size"
+msgstr "Propagera maximal storlek"
 
 msgid "Clip Contents"
 msgstr "Klipp innehåll"
@@ -8062,11 +8248,29 @@ msgstr "Container‑storlekshantering"
 msgid "Stretch Ratio"
 msgstr "Sträckningsförhållande"
 
+msgid "Offset Transform"
+msgstr "Offset‑transform"
+
+msgid "Position Ratio"
+msgstr "Positionsförhållande"
+
+msgid "Pivot"
+msgstr "Pivotpunkt"
+
+msgid "Pivot Ratio"
+msgstr "Pivot‑förhållande"
+
+msgid "Visual Only"
+msgstr "Endast visuell"
+
 msgid "Localize Numeral System"
 msgstr "Lokalisera talsystem"
 
 msgid "Layout Direction"
 msgstr "Layout‑riktning"
+
+msgid "Translation Context"
+msgstr "Översättningskontext"
 
 msgid "Tooltip"
 msgstr "Verktygstips"
@@ -8494,6 +8698,18 @@ msgstr "Axelsträckning"
 msgid "Fit to Longest Item"
 msgstr "Anpassa till längsta objekt"
 
+msgid "Search Bar"
+msgstr "Sökfält"
+
+msgid "Min Item Count"
+msgstr "Minsta antal objekt"
+
+msgid "Fuzzy Search Enabled"
+msgstr "Fuzzy‑sökning aktiverad"
+
+msgid "Fuzzy Search Max Misses"
+msgstr "Maximalt antal felträffar för fuzzy‑sökning"
+
 msgid "Hide on Item Selection"
 msgstr "Dölj vid objektval"
 
@@ -8644,6 +8860,9 @@ msgstr "Horisontellt rullningsläge"
 msgid "Vertical Scroll Mode"
 msgstr "Vertical Scroll Mode"
 
+msgid "Scroll Horizontal by Default"
+msgstr "Scrolla horisontellt som standard"
+
 msgid "Scroll Deadzone"
 msgstr "Rullningsdödzon"
 
@@ -8688,6 +8907,9 @@ msgstr "Draghandtagets synlighet"
 
 msgid "Touch Dragger Enabled"
 msgstr "Pek‑drag aktiverat"
+
+msgid "Drag Nested Intersections"
+msgstr "Dra nästlade skärningar"
 
 msgid "Drag Area"
 msgstr "Dragområde"
@@ -8906,6 +9128,36 @@ msgstr "Expandera"
 msgid "Buffering Msec"
 msgstr "Buffring (ms)"
 
+msgid "Joystick Mode"
+msgstr "Joystick-läge"
+
+msgid "Joystick Size"
+msgstr "Joystick-storlek"
+
+msgid "Tip Size"
+msgstr "Spetsstorlek"
+
+msgid "Deadzone Ratio"
+msgstr "Dödzonsförhållande"
+
+msgid "Clampzone Ratio"
+msgstr "Klämzonsförhållande"
+
+msgid "Initial Offset Ratio"
+msgstr "Initialt offset‑förhållande"
+
+msgid "Action Left"
+msgstr "Åtgärd vänster"
+
+msgid "Action Right"
+msgstr "Åtgärd höger"
+
+msgid "Action Up"
+msgstr "Åtgärd upp"
+
+msgid "Action Down"
+msgstr "Åtgärd ner"
+
 msgid "Self Modulate"
 msgstr "Självmodulering"
 
@@ -8963,6 +9215,9 @@ msgstr "Maximalt antal omdirigeringar"
 msgid "Timeout"
 msgstr "Tidsgräns"
 
+msgid "Multiplayer Peer"
+msgstr "Multiplayer‑peer"
+
 msgid "Transfer Mode"
 msgstr "Överföringsläge"
 
@@ -8974,6 +9229,12 @@ msgstr "Nodnamns‑nummeravgränsare"
 
 msgid "Node Name Casing"
 msgstr "Nodnamns‑skiftläge"
+
+msgid "Owner"
+msgstr "Ägare"
+
+msgid "Multiplayer"
+msgstr "Multiplayer"
 
 msgid "Physics Priority"
 msgstr "Fysikprioritet"
@@ -9007,6 +9268,15 @@ msgstr "Sökvägs‑debughint"
 
 msgid "Debug Navigation Hint"
 msgstr "Navigations‑debughint"
+
+msgid "Edited Scene Root"
+msgstr "Redigerad scen‑rot"
+
+msgid "Current Scene"
+msgstr "Nuvarande scen"
+
+msgid "Root"
+msgstr "Rot"
 
 msgid "Multiplayer Poll"
 msgstr "Multiplayer‑poll"
@@ -9133,6 +9403,9 @@ msgstr "Eget 3D‑världsläge"
 
 msgid "World 3D"
 msgstr "World 3D"
+
+msgid "World 2D"
+msgstr "World 2D"
 
 msgid "Transparent BG"
 msgstr "Transparent bakgrund"
@@ -9289,6 +9562,12 @@ msgstr "Behåll titel synlig"
 
 msgid "Content Scale"
 msgstr "Innehållsskala"
+
+msgid "HDR Output"
+msgstr "HDR-utdata"
+
+msgid "Requested"
+msgstr "Begärt"
 
 msgid "Swap Cancel OK"
 msgstr "Byt plats på Avbryt/OK"
@@ -9667,6 +9946,9 @@ msgstr "Natthimmel"
 
 msgid "Fallback Environment"
 msgstr "Reservmiljö"
+
+msgid "Direct Space State"
+msgstr "Direct Space State"
 
 msgid "Plane"
 msgstr "Plan"
@@ -10049,6 +10331,12 @@ msgstr "Rymd"
 msgid "Baseline"
 msgstr "Baslinje"
 
+msgid "Palette"
+msgstr "Palett"
+
+msgid "Custom Colors"
+msgstr "Anpassade färger"
+
 msgid "Font Names"
 msgstr "Typsnittsnamn"
 
@@ -10364,6 +10652,9 @@ msgstr "Baka‑AABB‑offset"
 msgid "Damping as Friction"
 msgstr "Dämpning som friktion"
 
+msgid "Inherit Emitter Scale"
+msgstr "Ärv emitter‑skala"
+
 msgid "Spawn"
 msgstr "Spawna"
 
@@ -10406,6 +10697,15 @@ msgstr "Emissionsrings‑innerradie"
 msgid "Emission Ring Cone Angle"
 msgstr "Emissionsrings‑konvinkel"
 
+msgid "Rotation 3D"
+msgstr "Rotation 3D"
+
+msgid "Rotation 3D Min"
+msgstr "Minsta 3D-rotation"
+
+msgid "Rotation 3D Max"
+msgstr "Maximal 3D-rotation"
+
 msgid "Inherit Velocity Ratio"
 msgstr "Ärvd hastighets‑kvot"
 
@@ -10427,11 +10727,32 @@ msgstr "Radiell hastighet"
 msgid "Velocity Limit Curve"
 msgstr "Hastighetsgräns‑kurva"
 
+msgid "Rotation Velocity 3D"
+msgstr "Rotationshastighet 3D"
+
+msgid "Rotation Velocity 3D Min"
+msgstr "Minsta Rotationshastighet 3D"
+
+msgid "Rotation Velocity 3D Max"
+msgstr "Högsta rotationshastighet 3D"
+
+msgid "Rotation Velocity 3D Curve"
+msgstr "Rotationshastighet 3D‑kurva"
+
 msgid "Accelerations"
 msgstr "Accelerationer"
 
 msgid "Attractor Interaction"
 msgstr "Attraktor‑interaktion"
+
+msgid "Use Scale 3D"
+msgstr "Använd skala 3D"
+
+msgid "Scale 3D Min"
+msgstr "Minsta 3D‑skala"
+
+msgid "Scale 3D Max"
+msgstr "Största 3D‑skala"
 
 msgid "Scale Curve"
 msgstr "Skalnings‑kurva"
@@ -11012,6 +11333,18 @@ msgstr "Färg för vertikal rullningshint"
 msgid "Scroll Hint Horizontal Color"
 msgstr "Färg för horisontell rullningshint"
 
+msgid "Normal Joystick"
+msgstr "Normal joystick"
+
+msgid "Normal Tip"
+msgstr "Normal spets"
+
+msgid "Pressed Joystick"
+msgstr "Nedtryckt joystick"
+
+msgid "Pressed Tip"
+msgstr "Nedtryckt spets"
+
 msgid "Embedded Border"
 msgstr "Inbäddad ram"
 
@@ -11129,6 +11462,9 @@ msgstr "Undermeny"
 msgid "Submenu Mirrored"
 msgstr "Spegelvänd undermeny"
 
+msgid "Search"
+msgstr "Sök"
+
 msgid "Font Separator"
 msgstr "Typsnittsavskiljare"
 
@@ -11146,6 +11482,9 @@ msgstr "Typsnittsavskiljarens konturfärg"
 
 msgid "V Separation"
 msgstr "Vertikal separation"
+
+msgid "Search Bar Separation"
+msgstr "Separation för sökfält"
 
 msgid "Separator Outline Size"
 msgstr "Avskiljarens konturstorlek"
@@ -11260,6 +11599,9 @@ msgstr "Typsnittsfärg (markerad, vald)"
 
 msgid "Guide Color"
 msgstr "Hjälplinjesfärg"
+
+msgid "Drop on Item Color"
+msgstr "Färg vid släpp på objekt"
 
 msgid "Drop Position Color"
 msgstr "Släppositionfärg"
@@ -11471,6 +11813,9 @@ msgstr "Väljarens markörbakgrund"
 msgid "Color Script"
 msgstr "Färgskript"
 
+msgid "Color Copy"
+msgstr "Färgkopiering"
+
 msgid "Color Hue"
 msgstr "Färgton"
 
@@ -11680,6 +12025,9 @@ msgstr "Anpassat typsnitt"
 
 msgid "Fallback values"
 msgstr "Reservvärden"
+
+msgid "Stylebox"
+msgstr "Stylebox"
 
 msgid "Enable Input"
 msgstr "Aktivera inmatning"
@@ -12110,6 +12458,21 @@ msgstr "Tesselationsutvärdering"
 msgid "Compute"
 msgstr "Beräkning"
 
+msgid "Raygen"
+msgstr "Raygen"
+
+msgid "Any Hit"
+msgstr "Any‑hit"
+
+msgid "Closest Hit"
+msgstr "Closest‑hit"
+
+msgid "Miss"
+msgstr "Miss"
+
+msgid "Intersection"
+msgstr "Skärning"
+
 msgid "Syntax"
 msgstr "Syntax"
 
@@ -12130,6 +12493,9 @@ msgstr "Konstant-ID"
 
 msgid "Sample Masks"
 msgstr "Samplingsmasker"
+
+msgid "Specialization Constants"
+msgstr "Specialiseringskonstanter"
 
 msgid "Render Loop Enabled"
 msgstr "Renderingsloop aktiverad"
@@ -12352,6 +12718,9 @@ msgstr "Bildrutor för konvergens"
 
 msgid "Frames to Update Lights"
 msgstr "Bildrutor för ljusuppdatering"
+
+msgid "Use Legacy Blending"
+msgstr "Använd legacy‑blandning"
 
 msgid "Volume Size"
 msgstr "Volymstorlek"

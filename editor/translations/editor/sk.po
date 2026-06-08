@@ -1299,9 +1299,6 @@ msgstr "Na Konci"
 msgid "Travel"
 msgstr "Cestovať"
 
-msgid "No playback resource set at path: %s."
-msgstr "Nieje nastavený žiadny zdrojový playback ako cesta: %s."
-
 msgid "Node Removed"
 msgstr "Node Vymazaný"
 
@@ -6742,6 +6739,9 @@ msgstr ""
 
 msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D potrebuje detský XRCamera3D node."
+
+msgid "No playback resource set at path: %s."
+msgstr "Nieje nastavený žiadny zdrojový playback ako cesta: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Pre graf nie je nastavený žiadny koreňový AnimationNode."
