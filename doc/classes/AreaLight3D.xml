@@ -8,6 +8,7 @@
 		Light is emitted in the -Z direction of the node's global basis. For an unrotated light, this means that the light is emitted forwards, illuminating the front side of a 3D model (see [constant Vector3.FORWARD] and [constant Vector3.MODEL_FRONT]).
 		Area lights can cast soft shadows using PCSS, which you can control by tweaking the size parameter. The shadow map is drawn from the center of the light.
 		[b]Note:[/b] Area lights have limited support in the Mobile and Compatibility renderers. In the Mobile renderer, the size of the penumbra doesn't vary as it should with PCSS. In Compatibility, area lights cannot cast shadows.
+		[b]Performance:[/b] Area lights are more demanding on the GPU compared to omni and spot lights. In Forward+, there is an additional GPU cost on [i]all[/i] rendered objects as soon as one area light is present in the view frustum (due to the nature of clustered lighting). Consider using them only for cinematics or when targeting high-end devices.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -1385,9 +1385,6 @@ msgstr "На края"
 msgid "Travel"
 msgstr "Преминаване"
 
-msgid "No playback resource set at path: %s."
-msgstr "Няма ресурс, който може да бъде изпълнен, на пътя: %s."
-
 msgid "Node Removed"
 msgstr "Обектът е премахнат"
 
@@ -6407,6 +6404,9 @@ msgstr "Това тяло ще бъде игнорирано, докато не 
 
 msgid "Plotting Meshes"
 msgstr "Построяване на полигонните мрежи"
+
+msgid "No playback resource set at path: %s."
+msgstr "Няма ресурс, който може да бъде изпълнен, на пътя: %s."
 
 msgid "Load existing color palette."
 msgstr "Зареди съществуваща палитра."

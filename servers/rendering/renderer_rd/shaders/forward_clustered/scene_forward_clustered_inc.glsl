@@ -142,6 +142,10 @@ bool sc_fog_use_legacy_blending() {
 	return ((sc_packed_1() >> 4) & 1U) != 0;
 }
 
+bool sc_cluster_has_area_light() {
+	return ((sc_packed_1() >> 5) & 1U) != 0;
+}
+
 float sc_luminance_multiplier() {
 	// Not used in clustered renderer but we share some code with the mobile renderer that requires this.
 	return 1.0;
