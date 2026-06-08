@@ -378,6 +378,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	// The name is the version, to keep compatibility with different versions of Godot.
+	static inline String CACHE_FILE_NAME = "filesystem_cache10";
+
 	static EditorFileSystem *get_singleton() { return singleton; }
 
 	EditorFileSystemDirectory *get_filesystem();
