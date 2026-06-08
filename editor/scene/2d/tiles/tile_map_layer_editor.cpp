@@ -657,8 +657,8 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 		Vector2 mpos = xform.affine_inverse().xform(mm->get_position());
 
 		if (edited_layer->local_to_map(drag_last_mouse_pos) != edited_layer->local_to_map(mpos)) {
-			pattern_rng.seed(Math::rand());
-			rng_base_state = Math::rand();
+			pattern_rng.randomize();
+			rng_base_state = pattern_rng.get_state();
 		}
 
 		switch (drag_type) {
