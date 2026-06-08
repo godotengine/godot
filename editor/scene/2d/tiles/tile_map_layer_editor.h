@@ -183,7 +183,7 @@ private:
 	RBSet<TileMapCell> tile_set_selection;
 
 	RandomPCG pattern_rng;
-	uint32_t rng_base_state = 0;
+	uint64_t rng_base_state = 0;
 
 	void _update_selection_pattern_from_tilemap_selection();
 	void _update_selection_pattern_from_tileset_tiles_selection();
