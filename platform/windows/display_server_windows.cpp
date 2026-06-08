@@ -2118,6 +2118,14 @@ void DisplayServerWindows::window_set_drop_files_callback(const Callable &p_call
 	}
 }
 
+void DisplayServerWindows::window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND(!windows.has(p_window));
+	if (p_files.is_empty()) {
+		return;
+	}
+}
+
 void DisplayServerWindows::window_set_title(const String &p_title, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
