@@ -267,6 +267,7 @@ struct AnimationNodeInstance {
 
 	mutable LocalVector<AnimationNodeInstance *> connection_instances; // AnimationNodeInstance* | nullptr
 	mutable LocalVector<real_t> track_weights;
+	mutable bool blended = false;
 	mutable LocalVector<int> filtered_track_indices_cache;
 	mutable uint32_t filters_version = 0;
 	mutable AHashMap<StringName, AnimationNodeInstance *> child_instances; // Child Name -> AnimationNodeInstance*
@@ -428,6 +429,10 @@ struct AnimationNodeInstance {
 		CRASH_COND_MSG(!instance, "Child instance pointer is null for path: \"" + String(p_path) + "\".");
 		return *instance;
 	}
+
+	_FORCE_INLINE_ bool is_blended() const {
+		return blended;
+	}
 };
 
 class AnimationTree : public AnimationMixer {
@@ -461,10 +466,8 @@ private:
 
 	mutable bool properties_dirty = true;
 	mutable bool validation_dirty = true;
-	mutable bool validation_successful = false;
 
 	void _update_properties() const;
-	void _validate_animation_graph(const StringName &p_path, const Ref<AnimationNode> &p_node) const;
 	void _update_connections();
 	void _add_validation_error(const StringName &p_path, const String &p_error, int p_input_index = -1) const;
 	void _update_properties_for_node(const StringName &p_base_path, const Ref<AnimationNode> &p_node) const;
