@@ -25,7 +25,7 @@
 		attachment.color_blend_op = RenderingDevice.BLEND_OP_ADD
 		attachment.src_color_blend_factor = RenderingDevice.BLEND_FACTOR_SRC_ALPHA
 		attachment.dst_color_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
-		attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_SRC_ALPHA
+		attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ZERO
 		attachment.dst_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
 		[/codeblock]
 		[b]Subtract:[/b]
@@ -61,6 +61,13 @@
 		attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
 		attachment.dst_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA
 		[/codeblock]
+		[b]Effect shader blend states:[/b]
+		For fullscreen effects shared between normal buffers and low-resolution accumulator (LRA) buffers, write straight RGBA from the shader: [code]src.rgb[/code] is the effect color and [code]src.a[/code] is opacity or intensity. Do not premultiply [code]src.rgb[/code] in shader code and do not force [code]src.a[/code] to [code]0.0[/code] for additive effects. Select the target and blend state instead.
+		All four states use [constant RenderingDevice.BLEND_OP_ADD] for both color and alpha.
+		[b]Full buffer mix[/b] ([code]render_mode blend_mix[/code]) uses [constant RenderingDevice.BLEND_FACTOR_SRC_ALPHA], [constant RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA] for color and [constant RenderingDevice.BLEND_FACTOR_ONE], [constant RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA] for alpha.
+		[b]Full buffer add[/b] ([code]render_mode blend_add[/code]) uses [constant RenderingDevice.BLEND_FACTOR_SRC_ALPHA], [constant RenderingDevice.BLEND_FACTOR_ONE] for color and [constant RenderingDevice.BLEND_FACTOR_ZERO], [constant RenderingDevice.BLEND_FACTOR_ONE] for alpha.
+		[b]LRA mix[/b] ([code]render_mode blend_lra_mix[/code]) uses [constant RenderingDevice.BLEND_FACTOR_SRC_ALPHA], [constant RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA] for color and [constant RenderingDevice.BLEND_FACTOR_ZERO], [constant RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA] for alpha.
+		[b]LRA add[/b] ([code]render_mode blend_lra_add[/code]) uses [constant RenderingDevice.BLEND_FACTOR_SRC_ALPHA], [constant RenderingDevice.BLEND_FACTOR_ONE] for color and [constant RenderingDevice.BLEND_FACTOR_ZERO], [constant RenderingDevice.BLEND_FACTOR_ONE] for alpha.
 	</description>
 	<tutorials>
 	</tutorials>

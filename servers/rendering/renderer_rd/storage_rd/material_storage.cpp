@@ -706,16 +706,26 @@ RD::PipelineColorBlendState::Attachment MaterialStorage::ShaderData::blend_mode_
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		} break;
-		case BLEND_MODE_PREMULTIPLIED_ALPHA_SEPARATE: {
-			// Color: premultiplied accumulation. Alpha: multiply remaining background transparency.
-			// Lets one buffer mix premultiplied translucent and additive draws with correct order.
+		case BLEND_MODE_LRA_MIX: {
+			// LRA accumulator write from straight RGBA:
+			// rgb accumulates src.rgb * src.a, alpha stores remaining background visibility.
 			attachment.enable_blend = true;
 			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
 			attachment.color_blend_op = RD::BLEND_OP_ADD;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		} break;
+		case BLEND_MODE_LRA_ADD: {
+			// Additive LRA write from straight RGBA while preserving accumulator alpha.
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 		} break;
 		case BLEND_MODE_DISABLED:
 		default: {
@@ -740,7 +750,9 @@ bool MaterialStorage::ShaderData::blend_mode_uses_blend_alpha(BlendMode p_mode) 
 			return false;
 		case BLEND_MODE_PREMULTIPLIED_ALPHA:
 			return true;
-		case BLEND_MODE_PREMULTIPLIED_ALPHA_SEPARATE:
+		case BLEND_MODE_LRA_MIX:
+			return true;
+		case BLEND_MODE_LRA_ADD:
 			return true;
 		case BLEND_MODE_DISABLED:
 		default:

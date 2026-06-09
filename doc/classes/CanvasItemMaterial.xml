@@ -48,6 +48,15 @@
 		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
 		</constant>
+		<constant name="BLEND_MODE_DISABLED" value="5" enum="BlendMode">
+			Disable blending. Source pixels overwrite destination pixels.
+		</constant>
+		<constant name="BLEND_MODE_LRA_MIX" value="6" enum="BlendMode">
+			Low-resolution accumulator mix blending mode for straight RGBA effect shaders. This corresponds to [code]render_mode blend_lra_mix[/code]. The shader must output unpacked straight color in [code]COLOR.rgb[/code] and opacity in [code]COLOR.a[/code]; do not premultiply color in shader code.
+		</constant>
+		<constant name="BLEND_MODE_LRA_ADD" value="7" enum="BlendMode">
+			Low-resolution accumulator additive blending mode for straight RGBA effect shaders. This corresponds to [code]render_mode blend_lra_add[/code]. The shader must output unpacked straight color in [code]COLOR.rgb[/code] and intensity in [code]COLOR.a[/code]; do not force alpha to [code]0.0[/code] in shader code.
+		</constant>
 		<constant name="LIGHT_MODE_NORMAL" value="0" enum="LightMode">
 			Render the material using both light and non-light sensitive material properties.
 		</constant>

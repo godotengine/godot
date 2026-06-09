@@ -764,11 +764,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 				} break;
 				case GLES3::CanvasShaderData::BLEND_MODE_ADD: {
 					glBlendEquation(GL_FUNC_ADD);
-					if (state.transparent_render_target) {
-						glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE);
-					} else {
-						glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
-					}
+					glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
 
 				} break;
 				case GLES3::CanvasShaderData::BLEND_MODE_SUB: {
@@ -797,11 +793,14 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 					}
 
 				} break;
-				case GLES3::CanvasShaderData::BLEND_MODE_PMALPHA_SEPARATE: {
-					// Color: premultiplied accumulation. Alpha: multiply remaining background transparency.
-					// Lets one buffer mix premultiplied translucent and additive draws with correct order.
+				case GLES3::CanvasShaderData::BLEND_MODE_LRA_MIX: {
+					// LRA accumulator write from straight RGBA.
 					glBlendEquation(GL_FUNC_ADD);
-					glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+					glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+				} break;
+				case GLES3::CanvasShaderData::BLEND_MODE_LRA_ADD: {
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
 				} break;
 			}
 			last_blend_mode = blend_mode;

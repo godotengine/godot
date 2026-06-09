@@ -151,7 +151,12 @@ jobs:
           EOF
           cat > shader_gate_test/test_shader.gdshader <<'EOF'
           shader_type canvas_item;
-          render_mode unshaded, blend_premul_alpha_separate;
+          render_mode unshaded, blend_lra_mix;
+          void fragment() { COLOR = vec4(0.0); }
+          EOF
+          cat > shader_gate_test/test_shader_lra_add.gdshader <<'EOF'
+          shader_type canvas_item;
+          render_mode unshaded, blend_lra_add;
           void fragment() { COLOR = vec4(0.0); }
           EOF
           # --import scans assets and triggers shader compile; --headless
