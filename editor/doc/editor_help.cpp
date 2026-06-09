@@ -906,7 +906,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 
 				class_desc->add_text(TTR("Error codes returned:"));
 				class_desc->add_newline();
-				class_desc->push_list(0, RichTextLabel::LIST_DOTS, false);
+				class_desc->push_list(1, RichTextLabel::LIST_DOTS, false);
 				for (int j = 0; j < method.errors_returned.size(); j++) {
 					if (j > 0) {
 						class_desc->add_newline();
