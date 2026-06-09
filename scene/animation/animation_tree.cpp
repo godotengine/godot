@@ -660,6 +660,11 @@ Ref<AnimationRootNode> AnimationTree::get_root_animation_node() const {
 bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map) {
 	_update_properties(); // If properties need updating, update them.
 
+	if (root_animation_node.is_null()) {
+		process_state = AnimationNode::ProcessState();
+		return false; // Abort after _update_properties() and init process_state.
+	}
+
 	if (validation_dirty) {
 		_update_connections();
 		validation_dirty = false;
