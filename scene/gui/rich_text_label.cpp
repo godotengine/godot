@@ -715,7 +715,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	String txt;
 	String txt_sub;
 	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
-	Item *it_prev = l.from ? l.from : current;
+	Item *it_prev = l.from;
 	int remaining_characters = visible_characters - l.char_offset;
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
 		it_prev = it;
