@@ -875,6 +875,7 @@ Error Main::test_setup() {
 
 	ClassDB::set_current_api(ClassDB::API_NONE);
 
+	iterating++;
 	_start_success = true;
 
 	return OK;
@@ -883,6 +884,7 @@ Error Main::test_setup() {
 // The order is the same as in `Main::cleanup()`.
 void Main::test_cleanup() {
 	ERR_FAIL_COND(!_start_success);
+	iterating--;
 
 	// Printing in the usual way can become problematic during/after cleanup.
 	CoreGlobals::print_ready = false;
