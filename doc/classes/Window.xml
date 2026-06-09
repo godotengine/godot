@@ -93,7 +93,7 @@
 			<return type="void" />
 			<param index="0" name="files" type="PackedStringArray" />
 			<description>
-				Starts operating system's drag-and-drop, must be called after user presses mouse button. [param files] is the list of absolute filepaths of files to drag.
+				Starts the operating system's drag-and-drop, must be called after the user presses the mouse button. [param files] is the list of absolute filepaths of files to drag.
 			</description>
 		</method>
 		<method name="end_bulk_theme_override">
