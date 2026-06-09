@@ -223,6 +223,7 @@ private:
 		Color selection_color;
 
 		Ref<Texture2D> clear_icon;
+		int icon_max_width = 0;
 		Color clear_button_color;
 		Color clear_button_color_pressed;
 
@@ -281,6 +282,7 @@ protected:
 	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
+	Size2 _fit_icon_size(const Size2 &p_size) const;
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
