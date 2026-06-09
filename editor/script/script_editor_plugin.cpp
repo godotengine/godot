@@ -4397,7 +4397,7 @@ String ScriptEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 			return String();
 		} else {
 			message.resize(unsaved_built_in_scripts.size() + 1);
-			message.write[0] = TTR(vformat("There are unsaved changes in the following built-in resource(s)"));
+			message.write[0] = TTR("There are unsaved changes in the following built-in resource(s)");
 
 			int i = 1;
 			for (const String &E : unsaved_built_in_scripts) {

@@ -616,7 +616,7 @@ Ref<ShaderMaterial> TextShaderPreview::_get_source_material() const {
 
 			if (mesh.is_valid()) {
 				for (int i = 0; i < mesh->get_surface_count(); i++) {
-					const Ref<ShaderMaterial> surface_material = Object::cast_to<ShaderMaterial>(mi->get_surface_override_material(i).ptr());
+					const Ref<ShaderMaterial> surface_material = mi->get_surface_override_material(i);
 
 					if (surface_material.is_valid() && _match_uniforms(surface_material, shader_material)) {
 						return surface_material;
@@ -1405,7 +1405,7 @@ ShaderTextEditor::ShaderTextEditor() {
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ShaderTextEditor::_update_warnings).bind(true));
 
 	code_editor->get_text_editor()->connect("_fold_line_updated", callable_mp(this, &ShaderTextEditor::redraw_preview_lines), CONNECT_DEFERRED);
-	code_editor->get_text_editor()->connect("theme_changed", callable_mp(this, &ShaderTextEditor::redraw_preview_lines), CONNECT_DEFERRED);
+	code_editor->get_text_editor()->connect(SceneStringName(theme_changed), callable_mp(this, &ShaderTextEditor::redraw_preview_lines), CONNECT_DEFERRED);
 	code_editor->get_text_editor()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &ShaderTextEditor::redraw_preview_lines).unbind(1), CONNECT_DEFERRED);
 
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
