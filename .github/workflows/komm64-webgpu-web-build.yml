@@ -1,6 +1,8 @@
 name: komm64 WebGPU Web Build
 
 # Builds the experimental WebGPU web export template for the komm64 fork.
+# The 4.6-webgpu branch is based on dwalter/godotwebgpu:webgpu-4.6.2
+# plus the normal komm64/godot:4.6 fork changes.
 # Keep this separate from the normal Windows editor build so WebGPU branch
 # pushes do not spend a full Windows CI cycle unless explicitly requested.
 
@@ -10,7 +12,7 @@ on:
       ref:
         description: Branch, tag, or commit to build.
         required: true
-        default: komm64/4.6-webgpu
+        default: 4.6-webgpu
       target:
         description: Web export template target.
         required: true
