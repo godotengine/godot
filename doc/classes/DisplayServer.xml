@@ -2159,7 +2159,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Starts operating system's drag-and-drop, must be called after user presses mouse button. [param files] is the list of absolute filepaths of files to drag. [param window_id] is the window files are dragging from.
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland).
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="window_get_active_popup" qualifiers="const">
