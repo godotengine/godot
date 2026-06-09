@@ -1,0 +1,100 @@
+name: komm64 WebGPU Web Build
+
+# Builds the experimental WebGPU web export template for the komm64 fork.
+# Keep this separate from the normal Windows editor build so WebGPU branch
+# pushes do not spend a full Windows CI cycle unless explicitly requested.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag, or commit to build.
+        required: true
+        default: komm64/4.6-webgpu
+      target:
+        description: Web export template target.
+        required: true
+        type: choice
+        default: template_debug
+        options:
+          - template_debug
+          - template_release
+  push:
+    tags:
+      - 'v*-komm64-webgpu*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}|${{ github.ref_name }}|${{ inputs.ref || '' }}|${{ inputs.target || '' }}
+  cancel-in-progress: true
+
+env:
+  EM_VERSION: 4.0.11
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    tests=no
+    debug_symbols=no
+    use_closure_compiler=yes
+    threads=no
+    dlink_enabled=yes
+    webgpu=yes
+    opengl3=no
+
+jobs:
+  webgpu-web-template:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    name: WebGPU web template
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
+          submodules: recursive
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{ env.EM_VERSION }}
+          no-cache: true
+
+      - name: Verify Emscripten setup
+        run: emcc -v
+
+      - name: Restore build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: komm64-webgpu-web-template
+        continue-on-error: true
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          scons-flags: ${{ env.SCONS_FLAGS }}
+          platform: web
+          target: ${{ github.event_name == 'push' && 'template_release' || inputs.target }}
+
+      - name: Save build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: komm64-webgpu-web-template
+        continue-on-error: true
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: komm64-webgpu-web-${{ github.event_name == 'push' && 'template_release' || inputs.target }}
+          path: bin/godot.web.${{ github.event_name == 'push' && 'template_release' || inputs.target }}.wasm32.nothreads.dlink.zip
+
+      - name: Create Release (WebGPU tag only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: bin/godot.web.${{ github.event_name == 'push' && 'template_release' || inputs.target }}.wasm32.nothreads.dlink.zip
+          generate_release_notes: true

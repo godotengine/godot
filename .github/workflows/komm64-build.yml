@@ -9,9 +9,10 @@ name: komm64 Windows Build
 #
 # Trigger:
 #   - workflow_dispatch: 手動 trigger (ad-hoc 検証用)
-#   - tag push (v*-komm64*): 自動 build + Release 作成
+#   - tag push (v*-komm64*, except v*-komm64-webgpu*): 自動 build + Release 作成
 #   - 4.6 push (= 通常 PR merge): build + cache populate (Release は作らない)
 #   - komm64/** branch push: feature branch 検証用 build
+#     * komm64/4.6-webgpu は WebGPU web template workflow 側で扱う
 #
 # 4.6 を trigger に含めるのは godot-cache-restore が default_branch (= 4.6)
 # の cache を fallback key として使うため。 4.6 を build しないと cache が
@@ -27,10 +28,12 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'komm64/**'
       - '4.6'
+      - 'komm64/**'
+      - '!komm64/4.6-webgpu'
     tags:
       - 'v*-komm64*'
+      - '!v*-komm64-webgpu*'
 
 # softprops/action-gh-release@v2 needs contents:write to create the release.
 # Default GITHUB_TOKEN permission (contents:read) caused 403 on the first
