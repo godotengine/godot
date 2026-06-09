@@ -4672,11 +4672,11 @@ void WaylandThread::window_start_drag(DisplayServerEnums::WindowID p_window_id) 
 
 void WaylandThread::window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
-
+	ERR_FAIL_COND(p_files.is_empty());
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 	if (ss) {
 		String p_text = "";
-		for (String file : p_files) {
+		for (const String &file : p_files) {
 			p_text += "file://" + file + "\r\n";
 		}
 		selection_set_text(p_text);

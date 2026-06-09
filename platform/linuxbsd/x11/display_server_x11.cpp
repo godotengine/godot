@@ -6887,8 +6887,9 @@ void DisplayServerX11::_xim_instantiate_callback(::Display *display, ::XPointer 
 }
 
 void DisplayServerX11::window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_files.is_empty());
 	String uri_files = "";
-	for (String file : p_files) {
+	for (const String &file : p_files) {
 		uri_files += "file://";
 		uri_files += file;
 		uri_files += "\r\n";
