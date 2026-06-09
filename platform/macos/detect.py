@@ -103,6 +103,10 @@ def configure(env: "SConsEnvironment"):
     if "OSXCROSS_ROOT" in os.environ:
         env["osxcross"] = True
 
+    cc_version = get_compiler_version(env)
+    cc_version_major = cc_version["apple_major"]
+    cc_version_minor = cc_version["apple_minor"]
+
     # CPU architecture.
     if env["arch"] == "arm64":
         print("Building for macOS 11.0+.")
@@ -110,17 +114,20 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
         env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
     elif env["arch"] == "x86_64":
-        print("Building for macOS 10.13+.")
-        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
-        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
-        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+        if (cc_version_major, cc_version_minor) >= (2100, 3):
+            # Xcode 27 only supports building for 11.0+
+            print("Building for macOS 11.0+.")
+            env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=11.0"])
+            env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=11.0"])
+            env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=11.0"])
+        else:
+            print("Building for macOS 10.13+.")
+            env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+            env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+            env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
     env.Append(CCFLAGS=["-fobjc-arc", "-fvisibility=hidden"])
-
-    cc_version = get_compiler_version(env)
-    cc_version_major = cc_version["apple_major"]
-    cc_version_minor = cc_version["apple_minor"]
 
     # Workaround for Xcode 15 linker bug.
     if is_apple_clang(env) and cc_version_major == 1500 and cc_version_minor == 0:

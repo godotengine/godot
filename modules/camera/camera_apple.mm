@@ -484,7 +484,7 @@ void CameraApple::update_feeds() {
 		devices = session.devices;
 	}
 #else // APPLE_EMBEDDED_ENABLED
-#if defined(__x86_64__)
+#if defined(__x86_64__) && (__MAC_OS_X_VERSION_MIN_REQUIRED < 110000)
 	if (@available(macOS 10.15, *)) {
 #endif // __x86_64__
 		AVCaptureDeviceDiscoverySession *session;
@@ -494,7 +494,7 @@ void CameraApple::update_feeds() {
 			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
 		}
 		devices = session.devices;
-#if defined(__x86_64__)
+#if defined(__x86_64__) && (__MAC_OS_X_VERSION_MIN_REQUIRED < 110000)
 	} else {
 		devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
 	}
