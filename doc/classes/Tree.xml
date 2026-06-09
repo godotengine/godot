@@ -157,9 +157,13 @@
 			<return type="int" />
 			<param index="0" name="position" type="Vector2" />
 			<description>
-				Returns the drop section at [param position], or -100 if no item is there.
-				Values -1, 0, or 1 will be returned for the "above item", "on item", and "below item" drop sections, respectively. See [enum DropModeFlags] for a description of each drop section.
-				To get the item which the returned drop section is relative to, use [method get_item_at_position].
+				Returns the drop section at [param position], as permitted by enabled [enum DropModeFlags].
+				- [code]-1[/code] if the position is [b]above[/b] the item. Typically used to insert as the item's previous sibling.
+				- [code]0[/code] if the position is [b]on[/b] the item. Typically used to insert as the item's last child.
+				- [code]1[/code] if the position is [b]below[/b] the item, when the item has no children. Typically used to insert as the item's next sibling. If the item [i]does[/i] have children, this section is still reachable by hovering to the left of the item's collapse arrow, and below.
+				- [code]2[/code] if the position is [b]below[/b] the item, when the item has children. Typically used to insert as the item's first child.
+				- [code]-100[/code] if the position is not over any item, or no [enum DropModeFlags] are set.
+				See [enum DropModeFlags] for a description of each drop region. To get the item which the returned drop section refers to, use [method get_item_at_position].
 			</description>
 		</method>
 		<method name="get_edited" qualifiers="const">
@@ -519,16 +523,16 @@
 			The focus cursor is visible in this mode, the item or column under the cursor is not necessarily selected.
 		</constant>
 		<constant name="DROP_MODE_DISABLED" value="0" enum="DropModeFlags">
-			Disables all drop sections, but still allows to detect the "on item" drop section by [method get_drop_section_at_position].
+			Disables all drop sections.
 			[b]Note:[/b] This is the default flag, it has no effect when combined with other flags.
 		</constant>
 		<constant name="DROP_MODE_ON_ITEM" value="1" enum="DropModeFlags">
 			Enables the "on item" drop section. This drop section covers the entire item.
-			When combined with [constant DROP_MODE_INBETWEEN], this drop section halves the height and stays centered vertically.
+			When combined with [constant DROP_MODE_INBETWEEN], this drop section halves in height and stays centered vertically.
 		</constant>
 		<constant name="DROP_MODE_INBETWEEN" value="2" enum="DropModeFlags">
-			Enables "above item" and "below item" drop sections. The "above item" drop section covers the top half of the item, and the "below item" drop section covers the bottom half.
-			When combined with [constant DROP_MODE_ON_ITEM], these drop sections halves the height and stays on top / bottom accordingly.
+			Enables "above item" and "below item" drop sections. The "above item" drop section covers the top half of the item, while the "below item" drop section covers the bottom half, and extends downward to the left of any children.
+			When combined with [constant DROP_MODE_ON_ITEM], these drop sections halve in height and stay at the top and bottom respectively.
 		</constant>
 		<constant name="SCROLL_HINT_MODE_DISABLED" value="0" enum="ScrollHintMode">
 			Scroll hints will never be shown.
