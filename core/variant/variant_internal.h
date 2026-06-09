@@ -969,9 +969,9 @@ struct VariantTypeChanger {
 		if (v->get_type() != GetTypeInfo<T>::VARIANT_TYPE || GetTypeInfo<T>::VARIANT_TYPE >= Variant::PACKED_BYTE_ARRAY) { //second condition removed by optimizer
 			VariantInternal::clear(v);
 			VariantInitializer<T>::init(v);
+		} else {
+			VariantDefaultInitializer<T>::init(v);
 		}
-
-		VariantDefaultInitializer<T>::init(v);
 	}
 };
 
