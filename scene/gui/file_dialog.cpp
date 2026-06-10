@@ -472,6 +472,9 @@ void FileDialog::_action_pressed() {
 	file_text = OS::get_singleton()->expand_path(file_text);
 
 	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().path_join(file_text);
+	if (dir_access->is_bookmark(f)) {
+		f = dir_access->read_bookmark(f);
+	}
 
 	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && (dir_access->file_exists(f) || dir_access->is_bundle(f))) {
 		_save_to_recent();
@@ -485,7 +488,11 @@ void FileDialog::_action_pressed() {
 		if (selected > -1) {
 			Dictionary d = file_list->get_item_metadata(selected);
 			if (d["dir"] && d["name"] != "..") {
-				path = path.path_join(d["name"]);
+				if (d.has("real_path")) {
+					path = d["real_path"];
+				} else {
+					path = path.path_join(d["name"]);
+				}
 			}
 		}
 
@@ -678,7 +685,11 @@ void FileDialog::_file_list_item_activated(int p_item) {
 	Dictionary d = file_list->get_item_metadata(p_item);
 
 	if (d["dir"]) {
-		_change_dir(d["name"]);
+		if (d.has("real_path")) {
+			_change_dir(d["real_path"]);
+		} else {
+			_change_dir(d["name"]);
+		}
 		if (mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES || mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
 			filename_edit->set_text("");
 		}
@@ -746,7 +757,11 @@ void FileDialog::_item_menu_id_pressed(int p_option) {
 				return;
 			}
 			Dictionary meta = file_list->get_item_metadata(selected);
-			_change_dir(meta["name"]);
+			if (meta.has("real_path")) {
+				_change_dir(meta["real_path"]);
+			} else {
+				_change_dir(meta["name"]);
+			}
 			if (mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES || mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
 				filename_edit->set_text("");
 			}
@@ -866,6 +881,7 @@ void FileDialog::update_file_list() {
 
 	LocalVector<String> files;
 	LocalVector<String> dirs;
+	HashMap<String, String> bookmarks;
 
 	String item = dir_access->get_next();
 
@@ -876,7 +892,15 @@ void FileDialog::update_file_list() {
 		}
 
 		if (show_hidden_files || (!dir_access->current_is_hidden() && !_should_hide_file(item))) {
-			if (!dir_access->current_is_dir()) {
+			bool is_dir_bookmark = false;
+			if (dir_access->is_bookmark(item)) {
+				String target_path = dir_access->read_bookmark(item);
+				if (dir_access->dir_exists(target_path)) {
+					bookmarks[item] = target_path;
+					is_dir_bookmark = true;
+				}
+			}
+			if (!dir_access->current_is_dir() && !is_dir_bookmark) {
 				files.push_back(item);
 			} else {
 				dirs.push_back(item);
@@ -918,7 +942,11 @@ void FileDialog::update_file_list() {
 	const String base_dir = dir_access->get_current_dir();
 
 	for (const String &dir_name : dirs) {
-		bool bundle = dir_access->is_bundle(dir_name);
+		String real_path = dir_name;
+		if (bookmarks.has(dir_name)) {
+			real_path = bookmarks[dir_name];
+		}
+		bool bundle = dir_access->is_bundle(real_path);
 		bool found = true;
 		if (bundle) {
 			bool match = patterns.is_empty();
@@ -953,6 +981,10 @@ void FileDialog::update_file_list() {
 	}
 
 	for (const DirInfo &info : filtered_dirs) {
+		String real_path;
+		if (bookmarks.has(info.name)) {
+			real_path = bookmarks[info.name];
+		}
 		if (display_mode == DISPLAY_THUMBNAILS) {
 			file_list->add_item(info.name, info.bundle ? theme_cache.file_thumbnail : theme_cache.folder_thumbnail);
 		} else {
@@ -964,6 +996,16 @@ void FileDialog::update_file_list() {
 		d["name"] = info.name;
 		d["dir"] = !info.bundle;
 		d["bundle"] = info.bundle;
+		if (!real_path.is_empty()) {
+			d["real_path"] = real_path;
+		}
+		if (dir_access->is_link(info.name)) {
+			file_list->set_item_icon_overlay(-1, (display_mode == DISPLAY_THUMBNAILS) ? theme_cache.link_overlay_thumbnail : theme_cache.link_overlay);
+			file_list->set_item_tooltip(-1, vformat(ETR("Link to: %s"), dir_access->read_link(info.name)));
+		} else if (!real_path.is_empty()) {
+			file_list->set_item_icon_overlay(-1, (display_mode == DISPLAY_THUMBNAILS) ? theme_cache.link_overlay_thumbnail : theme_cache.link_overlay);
+			file_list->set_item_tooltip(-1, vformat(ETR("Alias of: %s"), real_path));
+		}
 		file_list->set_item_metadata(-1, d);
 	}
 
@@ -1072,6 +1114,13 @@ void FileDialog::update_file_list() {
 		d["name"] = info.name;
 		d["dir"] = false;
 		d["bundle"] = false;
+		if (dir_access->is_link(info.name)) {
+			file_list->set_item_icon_overlay(-1, (display_mode == DISPLAY_THUMBNAILS) ? theme_cache.link_overlay_thumbnail : theme_cache.link_overlay);
+			file_list->set_item_tooltip(-1, vformat(ETR("Link to: %s"), dir_access->read_link(info.name)));
+		} else if (dir_access->is_bookmark(info.name)) {
+			file_list->set_item_icon_overlay(-1, (display_mode == DISPLAY_THUMBNAILS) ? theme_cache.link_overlay_thumbnail : theme_cache.link_overlay);
+			file_list->set_item_tooltip(-1, vformat(ETR("Alias of: %s"), dir_access->read_bookmark(info.name)));
+		}
 		file_list->set_item_metadata(-1, d);
 
 		if (filename_edit->get_text() == info.name || info.match_string == info.name) {
@@ -2236,6 +2285,8 @@ void FileDialog::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, list_mode);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, file_thumbnail);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, folder_thumbnail);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, link_overlay);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, link_overlay_thumbnail);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, menu_copy_path);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, menu_delete);

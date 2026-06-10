@@ -63,6 +63,7 @@ private:
 		mutable bool accessibility_item_dirty = true;
 
 		Ref<Texture2D> icon;
+		Ref<Texture2D> icon_overlay;
 		bool icon_transposed = false;
 		Rect2i icon_region;
 		Color icon_modulate = Color(1, 1, 1, 1);
@@ -230,6 +231,9 @@ public:
 
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_item_icon(int p_idx) const;
+
+	void set_item_icon_overlay(int p_idx, const Ref<Texture2D> &p_icon_overlay);
+	Ref<Texture2D> get_item_icon_overlay(int p_idx) const;
 
 	void set_item_icon_transposed(int p_idx, const bool transposed);
 	bool is_item_icon_transposed(int p_idx) const;

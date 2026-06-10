@@ -171,6 +171,8 @@ public:
 	virtual bool is_case_sensitive(const String &p_path) const;
 	virtual bool is_bundle(const String &p_file) const { return false; }
 	virtual bool is_equivalent(const String &p_path_a, const String &p_path_b) const;
+	virtual bool is_bookmark(const String &p_file) const { return false; }
+	virtual String read_bookmark(const String &p_file) const { return String(); }
 
 public:
 	virtual ~DirAccess();

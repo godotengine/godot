@@ -223,8 +223,8 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 		item.icon->disconnect_changed(redraw);
 	}
 	item.icon = p_icon;
-	if (p_icon.is_valid()) {
-		p_icon->connect_changed(redraw);
+	if (item.icon.is_valid()) {
+		item.icon->connect_changed(redraw);
 	}
 
 	queue_redraw();
@@ -235,6 +235,36 @@ Ref<Texture2D> ItemList::get_item_icon(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
 
 	return items[p_idx].icon;
+}
+
+void ItemList::set_item_icon_overlay(int p_idx, const Ref<Texture2D> &p_icon) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	Item &item = items.write[p_idx];
+	if (item.icon_overlay == p_icon) {
+		return;
+	}
+
+	const Callable redraw = callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw);
+	if (item.icon_overlay.is_valid()) {
+		item.icon_overlay->disconnect_changed(redraw);
+	}
+	item.icon_overlay = p_icon;
+	if (item.icon_overlay.is_valid()) {
+		item.icon_overlay->connect_changed(redraw);
+	}
+
+	queue_redraw();
+	shape_changed = true;
+}
+
+Ref<Texture2D> ItemList::get_item_icon_overlay(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
+
+	return items[p_idx].icon_overlay;
 }
 
 void ItemList::set_item_icon_transposed(int p_idx, const bool p_transposed) {
@@ -1617,6 +1647,11 @@ void ItemList::_notification(int p_what) {
 						draw_rect.position.x = size.width - draw_rect.position.x - draw_rect.size.x;
 					}
 					draw_texture_rect_region(items[i].icon, draw_rect, region, icon_modulate, items[i].icon_transposed);
+
+					if (items[i].icon_overlay.is_valid()) {
+						Vector2 offset = items[i].icon->get_size() - items[i].icon_overlay->get_size();
+						draw_texture_rect_region(items[i].icon_overlay, Rect2(draw_rect.position + offset, draw_rect.size), region, icon_modulate, items[i].icon_transposed);
+					}
 				}
 
 				if (items[i].tag_icon.is_valid()) {
@@ -2312,6 +2347,9 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "icon"), &ItemList::set_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &ItemList::get_item_icon);
 
+	ClassDB::bind_method(D_METHOD("set_item_icon_overlay", "idx", "icon_overlay"), &ItemList::set_item_icon_overlay);
+	ClassDB::bind_method(D_METHOD("get_item_icon_overlay", "idx"), &ItemList::get_item_icon_overlay);
+
 	ClassDB::bind_method(D_METHOD("set_item_text_direction", "idx", "direction"), &ItemList::set_item_text_direction);
 	ClassDB::bind_method(D_METHOD("get_item_text_direction", "idx"), &ItemList::get_item_text_direction);
 
@@ -2505,6 +2543,7 @@ void ItemList::_bind_methods() {
 	base_property_helper.set_array_length_getter(&ItemList::get_item_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &ItemList::set_item_text, &ItemList::get_item_text);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &ItemList::set_item_icon, &ItemList::get_item_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon_overlay", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &ItemList::set_item_icon_overlay, &ItemList::get_item_icon_overlay);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "selectable"), defaults.selectable, &ItemList::set_item_selectable, &ItemList::is_item_selectable);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &ItemList::set_item_disabled, &ItemList::is_item_disabled);
 	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
