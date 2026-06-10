@@ -793,12 +793,12 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 					}
 
 				} break;
-				case GLES3::CanvasShaderData::BLEND_MODE_LRA_MIX: {
-					// LRA accumulator write from straight RGBA.
+				case GLES3::CanvasShaderData::BLEND_MODE_TRANSMITTANCE_MIX: {
+					// Transmittance accumulator write from straight RGBA.
 					glBlendEquation(GL_FUNC_ADD);
 					glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 				} break;
-				case GLES3::CanvasShaderData::BLEND_MODE_LRA_ADD: {
+				case GLES3::CanvasShaderData::BLEND_MODE_TRANSMITTANCE_ADD: {
 					glBlendEquation(GL_FUNC_ADD);
 					glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
 				} break;

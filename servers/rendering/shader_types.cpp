@@ -357,7 +357,7 @@ ShaderTypes::ShaderTypes() {
 	// canvasitem render modes
 	{
 		shader_modes[RSE::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("skip_vertex_transform") });
-		shader_modes[RSE::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("blend"), { "mix", "add", "sub", "mul", "premul_alpha", "lra_mix", "lra_add", "disabled" } });
+		shader_modes[RSE::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("blend"), { "mix", "add", "sub", "mul", "premul_alpha", "transmittance_mix", "transmittance_add", "disabled" } });
 		shader_modes[RSE::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("unshaded") });
 		shader_modes[RSE::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("light_only") });
 		shader_modes[RSE::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("world_vertex_coords") });
