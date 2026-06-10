@@ -48,6 +48,7 @@
 #include "core/templates/rb_set.h"
 #include "core/variant/variant_parser.h"
 #include "servers/rendering/rendering_server.h"
+#include "main/main.h"
 
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
@@ -711,7 +712,7 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 	}
 
 	if (ensure_progress) {
-		_ensure_load_progress();
+		_ensure_load_progress(false);
 	}
 
 	return status;
@@ -757,7 +758,7 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 
 			while (load_task_ptr->status == THREAD_LOAD_IN_PROGRESS) {
 				thread_load_lock.temp_unlock();
-				bool exit = !_ensure_load_progress();
+				bool exit = !_ensure_load_progress(tasks_waiting_on_main > 0);
 				OS::get_singleton()->delay_usec(1000);
 				thread_load_lock.temp_relock();
 				if (exit) {
@@ -932,9 +933,11 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 						}
 					}
 					if (!import_thread) { // Main thread is blocked by initial resource reimport, do not wait.
+						tasks_waiting_on_main++;
 						CoreBind::Semaphore done;
 						MessageQueue::get_main_singleton()->push_callable(callable_mp(&done, &CoreBind::Semaphore::post).bind(1));
 						done.wait();
+						tasks_waiting_on_main--;
 					}
 				}
 			}
@@ -946,7 +949,7 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 	return resource;
 }
 
-bool ResourceLoader::_ensure_load_progress() {
+bool ResourceLoader::_ensure_load_progress(bool needs_iteration) {
 	// Some servers may need a new engine iteration to allow the load to progress.
 	// Since the only known one is the rendering server (in single thread mode), let's keep it simple and just sync it.
 	// This may be refactored in the future to support other servers and have less coupling.
@@ -954,6 +957,11 @@ bool ResourceLoader::_ensure_load_progress() {
 		return false; // Not needed.
 	}
 	RenderingServer::get_singleton()->sync();
+
+	if (needs_iteration && Thread::is_main_thread()) {
+		// Main::iteration();
+		MessageQueue::get_singleton()->flush();
+	}
 	return true;
 }
 
@@ -1581,5 +1589,7 @@ HashMap<String, ResourceLoader::LoadToken *> ResourceLoader::user_load_tokens;
 
 SelfList<Resource>::List ResourceLoader::remapped_list;
 HashMap<String, Vector<String>> ResourceLoader::translation_remaps;
+
+std::atomic<int64_t> ResourceLoader::tasks_waiting_on_main;
 
 ResourceLoaderImport ResourceLoader::import = nullptr;

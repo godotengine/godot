@@ -160,6 +160,8 @@ private:
 	static bool create_missing_resources_if_class_unavailable;
 	static HashMap<String, Vector<String>> translation_remaps;
 
+	static std::atomic<int64_t> tasks_waiting_on_main;
+
 	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
 
@@ -226,7 +228,7 @@ private:
 
 	static float _dependency_get_progress(const String &p_path);
 
-	static bool _ensure_load_progress();
+	static bool _ensure_load_progress(bool p_needs_iteration);
 
 	static String _validate_local_path(const String &p_path);
 
