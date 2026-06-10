@@ -86,9 +86,12 @@ public:
 	void set_item_mesh(int p_item, const Ref<Mesh> &p_mesh);
 	void set_item_mesh_transform(int p_item, const Transform3D &p_transform);
 	void set_item_mesh_cast_shadow(int p_item, RSE::ShadowCastingSetting p_shadow_casting_setting);
+#ifndef NAVIGATION_3D_DISABLED
 	void set_item_navigation_mesh(int p_item, const Ref<NavigationMesh> &p_navigation_mesh);
 	void set_item_navigation_mesh_transform(int p_item, const Transform3D &p_transform);
 	void set_item_navigation_layers(int p_item, uint32_t p_navigation_layers);
+#endif // NAVIGATION_3D_DISABLED
+
 #ifndef PHYSICS_3D_DISABLED
 	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
 #endif // PHYSICS_3D_DISABLED
