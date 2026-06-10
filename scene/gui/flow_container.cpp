@@ -186,6 +186,7 @@ void FlowContainer::_resort() {
 				if (line->min_line_height > max_stretch) {
 					stretch_lines_active.write[j] = false;
 					container_cross_stretch_total -= line->line_cross_stretch_ratio;
+					container_cross_axis_stretch_available_space -= line->min_line_height;
 					refit_successful = false;
 					break;
 				}
