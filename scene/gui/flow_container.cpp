@@ -173,16 +173,16 @@ void FlowContainer::_resort() {
 		while (container_cross_stretch_total > 0) {
 			bool refit_successful = true;
 
-			for (int j = 0; j < stretch_lines.size(); j++) {
-				if (!stretch_lines_active[j]) {
+			for (int i = 0; i < stretch_lines.size(); i++) {
+				if (!stretch_lines_active[i]) {
 					continue;
 				}
 
-				_LineData *line = stretch_lines[j];
+				_LineData *line = stretch_lines[i];
 				const float max_stretch = container_cross_axis_stretch_available_space * (line->line_cross_stretch_ratio / container_cross_stretch_total);
 
 				if (line->min_line_height > max_stretch) {
-					stretch_lines_active.write[j] = false;
+					stretch_lines_active.write[i] = false;
 					container_cross_stretch_total -= line->line_cross_stretch_ratio;
 					container_cross_axis_stretch_available_space -= line->min_line_height;
 					refit_successful = false;
