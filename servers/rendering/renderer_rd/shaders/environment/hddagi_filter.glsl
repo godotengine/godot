@@ -47,7 +47,8 @@ layout(push_constant, std430) uniform Params {
 	vec4 proj_info;
 
 	ivec2 filter_dir;
-	uvec2 pad;
+	float filter_intensity;
+	uint pad;
 }
 params;
 
@@ -157,7 +158,9 @@ void main() {
 		specular_accum /= total_weight;
 	}
 
-	//imageStore(dst_specular_buffer,pos,uvec4(rgbe_encode(specular_accum.rgb)));
+	vec3 orig_rgb = texelFetch(sampler2D(specular_buffer, linear_sampler), pos, 0).rgb;
+	specular_accum.rgb = mix(orig_rgb, specular_accum.rgb, params.filter_intensity);
+
 	imageStore(dst_specular_buffer, pos, uvec4(rgbe_encode(specular_accum.rgb)));
 	uint blend = uint(clamp(specular_accum.a * 0xF, 0, 0xF)) | (uint(clamp(diffuse_blend * 0xF, 0, 0xF)) << 4);
 	imageStore(dst_blend_buffer, pos, vec4(diffuse_blend, specular_accum.a, 0, 0));

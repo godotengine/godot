@@ -120,6 +120,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 sky_irradiance_border_size;
 	int global_frame;
 	uint motion_accum; // Motion that happened since last update (bit 0 in X, bit 1 in Y, bit 2 in Z).
+	float probe_filter_intensity;
 }
 params;
 
@@ -791,6 +792,8 @@ void main() {
 	light.rgb = rgbe_decode(imageLoad(lightprobe_src_diffuse_data, probe_read_pos).r);
 	light.a = 1.0;
 
+	vec3 src_rgb = light.rgb;
+
 	if (geom_proximity && cam_visibility) {
 		// Only filter if there is geom proximity and probe is visible by camera.
 
@@ -830,6 +833,8 @@ void main() {
 		}
 		light.rgb /= light.a;
 	}
+
+	light.rgb = mix(src_rgb, light.rgb, params.probe_filter_intensity);
 
 	ivec3 copy_to[4] = ivec3[](ivec3(-2, -2, -2), ivec3(-2, -2, -2), ivec3(-2, -2, -2), ivec3(-2, -2, -2));
 	copy_to[0] = probe_read_pos;

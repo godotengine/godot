@@ -375,8 +375,11 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 	num_cascades = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_cascades(p_env);
 	min_cell_size = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_min_cell_size(p_env);
 	using_probe_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_probes(p_env);
+	probe_filter_intensity = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_probes_intensity(p_env);
 	using_reflection_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_reflection(p_env);
+	reflection_filter_intensity = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_reflections_intensity(p_env);
 	using_ambient_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_ambient(p_env);
+	ambient_filter_intensity = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_ambient_intensity(p_env);
 	reflection_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_reflection_bias(p_env);
 	probe_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_probe_bias(p_env);
 	occlusion_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_occlusion_bias(p_env);
@@ -696,8 +699,11 @@ void GI::HDDAGI::update(RID p_env, const Vector3 &p_world_position) {
 	energy = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_energy(p_env);
 	reads_sky = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_read_sky_light(p_env);
 	using_probe_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_probes(p_env);
+	probe_filter_intensity = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_probes_intensity(p_env);
 	using_reflection_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_reflection(p_env);
+	reflection_filter_intensity = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_reflections_intensity(p_env);
 	using_ambient_filter = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_ambient(p_env);
+	ambient_filter_intensity = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_filter_ambient_intensity(p_env);
 	reflection_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_reflection_bias(p_env);
 	normal_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_normal_bias(p_env);
 	probe_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_probe_bias(p_env);
@@ -881,6 +887,7 @@ void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_cou
 	push_constant.history_size = frames_to_converge;
 	push_constant.ray_bias = probe_bias;
 	push_constant.store_ambient_texture = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_enabled(p_env);
+	push_constant.probe_filter_intensity = probe_filter_intensity;
 
 	const float sky_irradiance_border_size = p_sky != nullptr ? p_sky->uv_border_size : 0.0f;
 	push_constant.sky_irradiance_border_size[0] = sky_irradiance_border_size;
@@ -3649,7 +3656,7 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 		pipeline_specialization |= SHADER_SPECIALIZATION_USE_VRS;
 	}
 
-	bool without_sampler = RD::get_singleton()->sampler_is_format_supported_for_filter(RD::DATA_FORMAT_R8G8_UINT, RD::SAMPLER_FILTER_LINEAR);
+		bool without_sampler = RD::get_singleton()->sampler_is_format_supported_for_filter(RD::DATA_FORMAT_R8G8_UINT, RD::SAMPLER_FILTER_LINEAR);
 	Mode mode;
 	if (use_hddagi) {
 		if (use_voxel_gi_instances) {
@@ -3662,9 +3669,11 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 			mode = hddagi->using_ambient_filter ? MODE_HDDAGI_BLEND_AMBIENT : MODE_HDDAGI;
 		}
 		push_constant.occlusion_bias = hddagi->occlusion_bias;
+		push_constant.filter_ambient_intensity = hddagi->ambient_filter_intensity;
 	} else {
 		mode = without_sampler ? MODE_VOXEL_GI_WITHOUT_SAMPLER : MODE_VOXEL_GI;
 		push_constant.occlusion_bias = 0;
+		push_constant.filter_ambient_intensity = 1.0;
 	}
 
 	for (uint32_t v = 0; v < p_view_count; v++) {
@@ -3690,7 +3699,7 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, !use_hddagi ? hddagi_default_3d_tex : hddagi->voxel_region_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, !use_hddagi ? default_3d_tex : hddagi->voxel_light_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 4, !use_hddagi ? default_2d_array_tex : hddagi->lightprobe_specular_tex),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 5, !use_hddagi ? default_2d_array_tex : (hddagi->using_probe_filter ? hddagi->lightprobe_diffuse_filter_tex : hddagi->lightprobe_diffuse_tex)),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 5, !use_hddagi ? default_2d_array_tex : hddagi->lightprobe_diffuse_filter_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, !use_hddagi ? Vector<RID>({ default_3d_tex, default_3d_tex }) : hddagi->get_lightprobe_occlusion_textures()),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 7, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 8, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
@@ -3741,6 +3750,7 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 		filter_push_constant.proj_info[1] = push_constant.proj_info[1];
 		filter_push_constant.proj_info[2] = push_constant.proj_info[2];
 		filter_push_constant.proj_info[3] = push_constant.proj_info[3];
+		filter_push_constant.filter_intensity = hddagi->reflection_filter_intensity;
 
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, filter_pipelines[filter_pipeline_specialization][rbgi->using_half_size_gi ? FILTER_MODE_BILATERAL_HALF_SIZE : FILTER_MODE_BILATERAL]);
 

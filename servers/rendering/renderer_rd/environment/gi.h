@@ -455,6 +455,7 @@ private:
 			float sky_irradiance_border_size[2];
 			int32_t global_frame;
 			uint32_t motion_accum; // Motion that happened since last update (bit 0 in X, bit 1 in Y, bit 2 in Z).
+			float probe_filter_intensity;
 		};
 
 		struct IntegrateCameraUBO {
@@ -690,8 +691,11 @@ public:
 		uint32_t frames_to_converge = 6;
 
 		bool using_probe_filter = true;
+		float probe_filter_intensity = 1.0;
 		bool using_reflection_filter = true;
+		float reflection_filter_intensity = 1.0;
 		bool using_ambient_filter = true;
+		float ambient_filter_intensity = 1.0;
 
 		int num_cascades = 6;
 		float min_cell_size = 0;
@@ -731,11 +735,7 @@ public:
 		void update_cascades();
 
 		RID get_lightprobe_diffuse_texture() {
-			if (using_probe_filter) {
-				return lightprobe_diffuse_filter_tex;
-			} else {
-				return lightprobe_diffuse_tex;
-			}
+			return lightprobe_diffuse_filter_tex;
 		}
 
 		RID get_lightprobe_specular_texture() {
@@ -838,7 +838,7 @@ public:
 
 		float z_near;
 		float z_far;
-		uint32_t pad;
+		float filter_ambient_intensity;
 		float occlusion_bias;
 	};
 
@@ -895,7 +895,8 @@ public:
 		float proj_info[4];
 
 		int32_t filter_dir[2];
-		uint32_t pad[2];
+		float filter_intensity;
+		uint32_t pad;
 	};
 
 	HddagiFilterShaderRD filter_shader;

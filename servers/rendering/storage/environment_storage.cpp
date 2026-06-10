@@ -838,6 +838,32 @@ void RendererEnvironmentStorage::environment_set_hddagi(RID p_env, bool p_enable
 	env->hddagi_filter_reflection = p_filter_reflection;
 }
 
+void RendererEnvironmentStorage::environment_set_hddagi_filter_intensities(RID p_env, float p_filter_probes, float p_filter_ambient, float p_filter_reflections) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->hddagi_filter_probes_intensity = p_filter_probes;
+	env->hddagi_filter_ambient_intensity = p_filter_ambient;
+	env->hddagi_filter_reflections_intensity = p_filter_reflections;
+}
+
+float RendererEnvironmentStorage::environment_get_hddagi_filter_probes_intensity(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	return env->hddagi_filter_probes_intensity;
+}
+
+float RendererEnvironmentStorage::environment_get_hddagi_filter_ambient_intensity(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	return env->hddagi_filter_ambient_intensity;
+}
+
+float RendererEnvironmentStorage::environment_get_hddagi_filter_reflections_intensity(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	return env->hddagi_filter_reflections_intensity;
+}
+
 bool RendererEnvironmentStorage::environment_get_hddagi_enabled(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, false);

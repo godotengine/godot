@@ -1349,6 +1349,7 @@ public:
 	// HDDAGI
 
 	PASS15(environment_set_hddagi, RID, bool, int, RSE::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, float, bool, bool)
+	PASS4(environment_set_hddagi_filter_intensities, RID, float, float, float)
 
 	PASS1RC(bool, environment_get_hddagi_enabled, RID)
 	PASS1RC(RSE::EnvironmentHDDAGICascadeFormat, environment_get_hddagi_cascade_format, RID)
@@ -1363,7 +1364,10 @@ public:
 	PASS1RC(float, environment_get_hddagi_probe_bias, RID)
 	PASS1RC(float, environment_get_hddagi_occlusion_bias, RID)
 	PASS1RC(float, environment_get_hddagi_filter_ambient, RID)
+	PASS1RC(float, environment_get_hddagi_filter_ambient_intensity, RID)
 	PASS1RC(float, environment_get_hddagi_filter_reflection, RID)
+	PASS1RC(float, environment_get_hddagi_filter_reflections_intensity, RID)
+	PASS1RC(float, environment_get_hddagi_filter_probes_intensity, RID)
 
 	PASS1(environment_set_hddagi_frames_to_converge, RSE::EnvironmentHDDAGIFramesToConverge)
 	PASS1(environment_set_hddagi_frames_to_update_light, RSE::EnvironmentHDDAGIFramesToUpdateLight)

@@ -103,11 +103,20 @@
 		<member name="dynamic_gi_filter_ambient" type="bool" setter="set_dynamic_gi_filter_ambient" getter="is_dynamic_gi_filtering_ambient" default="true">
 			Filter the ambient light, this results in higher quality transitions between the cascades.
 		</member>
+		<member name="dynamic_gi_filter_ambient_intensity" type="float" setter="set_dynamic_gi_filter_ambient_intensity" getter="get_dynamic_gi_filter_ambient_intensity" default="1.0">
+			Controls the intensity of the ambient light filter. Higher values result in smoother transitions between cascades.
+		</member>
 		<member name="dynamic_gi_filter_probes" type="bool" setter="set_dynamic_gi_filter_probes" getter="is_dynamic_gi_filtering_probes" default="true">
 			Filter the probes (averaging probes with neighboring probes) to smooth out the light transitions. This option can be used safely, as occlusion between probes is considered when filtering, but it may also result on lower light frequency.
 		</member>
+		<member name="dynamic_gi_filter_probes_intensity" type="float" setter="set_dynamic_gi_filter_probes_intensity" getter="get_dynamic_gi_filter_probes_intensity" default="1.0">
+			Controls the intensity of the probe filter. Lower values reduce the smoothing effect of probe filtering.
+		</member>
 		<member name="dynamic_gi_filter_reflection" type="bool" setter="set_dynamic_gi_filter_reflections" getter="is_dynamic_gi_filtering_reflections" default="false">
 			Applies a gaussian filter to reflections. If you find that the voxelish look of the reflections is not to your taste, this filter will smooth it out.
+		</member>
+		<member name="dynamic_gi_filter_reflections_intensity" type="float" setter="set_dynamic_gi_filter_reflections_intensity" getter="get_dynamic_gi_filter_reflections_intensity" default="1.0">
+			Controls the intensity of the reflection filter. Lower values reduce the smoothing of reflections.
 		</member>
 		<member name="dynamic_gi_max_distance" type="float" setter="set_dynamic_gi_max_distance" getter="get_dynamic_gi_max_distance" default="204.8">
 			Total maximum distance for Dynamic GI, considering cell size and cascades. Changing this value also changes [member dynamic_gi_cascade0_distance] and [member  dynamic_gi_min_cell_size].

@@ -665,6 +665,10 @@ void RendererSceneRender::environment_set_hddagi(RID p_env, bool p_enable, int p
 	environment_storage.environment_set_hddagi(p_env, p_enable, p_cascades, p_cascade_format, p_min_cell_size, p_filter_probes, p_bounce_feedback, p_read_sky, p_energy, p_normal_bias, p_reflection_bias, p_probe_bias, p_occlusion_bias, p_filter_reflection, p_filter_ambient);
 }
 
+void RendererSceneRender::environment_set_hddagi_filter_intensities(RID p_env, float p_filter_probes, float p_filter_ambient, float p_filter_reflections) {
+	environment_storage.environment_set_hddagi_filter_intensities(p_env, p_filter_probes, p_filter_ambient, p_filter_reflections);
+}
+
 bool RendererSceneRender::environment_get_hddagi_enabled(RID p_env) const {
 	return environment_storage.environment_get_hddagi_enabled(p_env);
 }
@@ -685,8 +689,20 @@ bool RendererSceneRender::environment_get_hddagi_filter_ambient(RID p_env) const
 	return environment_storage.environment_get_hddagi_filter_ambient(p_env);
 }
 
+float RendererSceneRender::environment_get_hddagi_filter_ambient_intensity(RID p_env) const {
+	return environment_storage.environment_get_hddagi_filter_ambient_intensity(p_env);
+}
+
 bool RendererSceneRender::environment_get_hddagi_filter_reflection(RID p_env) const {
 	return environment_storage.environment_get_hddagi_filter_reflection(p_env);
+}
+
+float RendererSceneRender::environment_get_hddagi_filter_reflections_intensity(RID p_env) const {
+	return environment_storage.environment_get_hddagi_filter_reflections_intensity(p_env);
+}
+
+float RendererSceneRender::environment_get_hddagi_filter_probes_intensity(RID p_env) const {
+	return environment_storage.environment_get_hddagi_filter_probes_intensity(p_env);
 }
 
 float RendererSceneRender::environment_get_hddagi_bounce_feedback(RID p_env) const {

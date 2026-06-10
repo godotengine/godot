@@ -882,6 +882,7 @@ public:
 	FUNC1(environment_set_volumetric_fog_filter_active, bool)
 
 	FUNC15(environment_set_hddagi, RID, bool, int, RSE::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, float, bool, bool)
+	FUNC4(environment_set_hddagi_filter_intensities, RID, float, float, float)
 	FUNC1(environment_set_hddagi_frames_to_converge, RSE::EnvironmentHDDAGIFramesToConverge)
 	FUNC1(environment_set_hddagi_frames_to_update_light, RSE::EnvironmentHDDAGIFramesToUpdateLight)
 	FUNC1(environment_set_hddagi_inactive_probe_frames, RSE::EnvironmentHDDAGIInactiveProbeFrames)

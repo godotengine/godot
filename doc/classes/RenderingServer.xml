@@ -1420,6 +1420,16 @@
 				Configure DynamicGI (HDDAGI). See the [Environment] class for more detail on what each argument is.
 			</description>
 		</method>
+		<method name="environment_set_hddagi_filter_intensities">
+			<return type="void" />
+			<param index="0" name="env" type="RID" />
+			<param index="1" name="filter_probes" type="float" />
+			<param index="2" name="filter_ambient" type="float" />
+			<param index="3" name="filter_reflections" type="float" />
+			<description>
+				Sets the filter intensities for DynamicGI (HDDAGI). Each value controls the strength of the respective filter (probes, ambient, reflections) in the range 0.0 to 1.0.
+			</description>
+		</method>
 		<method name="environment_set_hddagi_frames_to_converge">
 			<return type="void" />
 			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentHDDAGIFramesToConverge" />

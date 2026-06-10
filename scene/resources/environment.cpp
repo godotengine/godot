@@ -545,6 +545,15 @@ bool Environment::is_dynamic_gi_filtering_probes() const {
 	return dynamic_gi_filter_probes;
 }
 
+void Environment::set_dynamic_gi_filter_probes_intensity(float p_intensity) {
+	dynamic_gi_filter_probes_intensity = p_intensity;
+	RS::get_singleton()->environment_set_hddagi_filter_intensities(environment, dynamic_gi_filter_probes_intensity, dynamic_gi_filter_ambient_intensity, dynamic_gi_filter_reflections_intensity);
+}
+
+float Environment::get_dynamic_gi_filter_probes_intensity() const {
+	return dynamic_gi_filter_probes_intensity;
+}
+
 void Environment::set_dynamic_gi_filter_ambient(bool p_enabled) {
 	dynamic_gi_filter_ambient = p_enabled;
 	_update_dynamic_gi();
@@ -554,6 +563,15 @@ bool Environment::is_dynamic_gi_filtering_ambient() const {
 	return dynamic_gi_filter_ambient;
 }
 
+void Environment::set_dynamic_gi_filter_ambient_intensity(float p_intensity) {
+	dynamic_gi_filter_ambient_intensity = p_intensity;
+	RS::get_singleton()->environment_set_hddagi_filter_intensities(environment, dynamic_gi_filter_probes_intensity, dynamic_gi_filter_ambient_intensity, dynamic_gi_filter_reflections_intensity);
+}
+
+float Environment::get_dynamic_gi_filter_ambient_intensity() const {
+	return dynamic_gi_filter_ambient_intensity;
+}
+
 void Environment::set_dynamic_gi_filter_reflections(bool p_enabled) {
 	dynamic_gi_filter_reflections = p_enabled;
 	_update_dynamic_gi();
@@ -561,6 +579,15 @@ void Environment::set_dynamic_gi_filter_reflections(bool p_enabled) {
 
 bool Environment::is_dynamic_gi_filtering_reflections() const {
 	return dynamic_gi_filter_reflections;
+}
+
+void Environment::set_dynamic_gi_filter_reflections_intensity(float p_intensity) {
+	dynamic_gi_filter_reflections_intensity = p_intensity;
+	RS::get_singleton()->environment_set_hddagi_filter_intensities(environment, dynamic_gi_filter_probes_intensity, dynamic_gi_filter_ambient_intensity, dynamic_gi_filter_reflections_intensity);
+}
+
+float Environment::get_dynamic_gi_filter_reflections_intensity() const {
+	return dynamic_gi_filter_reflections_intensity;
 }
 
 void Environment::set_dynamic_gi_bounce_feedback(float p_amount) {
@@ -642,6 +669,7 @@ void Environment::_update_dynamic_gi() {
 			dynamic_gi_occlusion_bias,
 			dynamic_gi_filter_reflections,
 			dynamic_gi_filter_ambient);
+	RS::get_singleton()->environment_set_hddagi_filter_intensities(environment, dynamic_gi_filter_probes_intensity, dynamic_gi_filter_ambient_intensity, dynamic_gi_filter_reflections_intensity);
 }
 
 // Glow
@@ -1448,6 +1476,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_cascade_format"), &Environment::get_dynamic_gi_cascade_format);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_filter_probes", "enable"), &Environment::set_dynamic_gi_filter_probes);
 	ClassDB::bind_method(D_METHOD("is_dynamic_gi_filtering_probes"), &Environment::is_dynamic_gi_filtering_probes);
+	ClassDB::bind_method(D_METHOD("set_dynamic_gi_filter_probes_intensity", "intensity"), &Environment::set_dynamic_gi_filter_probes_intensity);
+	ClassDB::bind_method(D_METHOD("get_dynamic_gi_filter_probes_intensity"), &Environment::get_dynamic_gi_filter_probes_intensity);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_bounce_feedback", "amount"), &Environment::set_dynamic_gi_bounce_feedback);
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_bounce_feedback"), &Environment::get_dynamic_gi_bounce_feedback);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_read_sky_light", "enable"), &Environment::set_dynamic_gi_read_sky_light);
@@ -1464,8 +1494,12 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_occlusion_bias"), &Environment::get_dynamic_gi_occlusion_bias);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_filter_ambient", "enable"), &Environment::set_dynamic_gi_filter_ambient);
 	ClassDB::bind_method(D_METHOD("is_dynamic_gi_filtering_ambient"), &Environment::is_dynamic_gi_filtering_ambient);
+	ClassDB::bind_method(D_METHOD("set_dynamic_gi_filter_ambient_intensity", "intensity"), &Environment::set_dynamic_gi_filter_ambient_intensity);
+	ClassDB::bind_method(D_METHOD("get_dynamic_gi_filter_ambient_intensity"), &Environment::get_dynamic_gi_filter_ambient_intensity);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_filter_reflections", "enable"), &Environment::set_dynamic_gi_filter_reflections);
 	ClassDB::bind_method(D_METHOD("is_dynamic_gi_filtering_reflections"), &Environment::is_dynamic_gi_filtering_reflections);
+	ClassDB::bind_method(D_METHOD("set_dynamic_gi_filter_reflections_intensity", "intensity"), &Environment::set_dynamic_gi_filter_reflections_intensity);
+	ClassDB::bind_method(D_METHOD("get_dynamic_gi_filter_reflections_intensity"), &Environment::get_dynamic_gi_filter_reflections_intensity);
 
 	ADD_GROUP("DynamicGI", "dynamic_gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_dynamic_gi_enabled", "is_dynamic_gi_enabled");
@@ -1484,8 +1518,11 @@ void Environment::_bind_methods() {
 
 	ADD_SUBGROUP("Filter", "dynamic_gi_filter_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_filter_probes"), "set_dynamic_gi_filter_probes", "is_dynamic_gi_filtering_probes");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_filter_probes_intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dynamic_gi_filter_probes_intensity", "get_dynamic_gi_filter_probes_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_filter_ambient"), "set_dynamic_gi_filter_ambient", "is_dynamic_gi_filtering_ambient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_filter_ambient_intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dynamic_gi_filter_ambient_intensity", "get_dynamic_gi_filter_ambient_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_filter_reflection"), "set_dynamic_gi_filter_reflections", "is_dynamic_gi_filtering_reflections");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_filter_reflections_intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dynamic_gi_filter_reflections_intensity", "get_dynamic_gi_filter_reflections_intensity");
 
 	ADD_SUBGROUP("Bias", "dynamic_gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_normal_bias", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_dynamic_gi_normal_bias", "get_dynamic_gi_normal_bias");

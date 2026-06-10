@@ -128,7 +128,7 @@ layout(push_constant, std430) uniform Params {
 
 	float z_near;
 	float z_far;
-	uint pad;
+	float filter_ambient_intensity;
 	float occlusion_bias;
 }
 params;
@@ -743,11 +743,11 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 				vec3 blend_cascade_pos = (cam_pos - hddagi.cascades[cascade + 1].position) * hddagi.cascades[cascade + 1].to_cell;
 				vec3 diffuse2, specular2;
 				sdfvoxel_gi_process(cascade + 1, blend_cascade_pos, cam_pos, cam_normal, reflection, roughness, dynamic_object, diffuse2, specular2);
-				diffuse = mix(diffuse, diffuse2, blend);
-				specular = mix(specular, specular2, blend);
+				float intensity_blend = blend * params.filter_ambient_intensity;
+				diffuse = mix(diffuse, diffuse2, intensity_blend);
+				specular = mix(specular, specular2, intensity_blend);
 
 				if (bayer_dither(blend)) {
-					// Apply dither for roughness here.
 					cascade++;
 					cascade_pos = (cam_pos - hddagi.cascades[cascade].position) * hddagi.cascades[cascade].to_cell;
 				}

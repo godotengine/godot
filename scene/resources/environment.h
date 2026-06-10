@@ -157,6 +157,7 @@ private:
 	float dynamic_gi_min_cell_size = 0.2;
 	DynamicGICascadeFormat dynamic_gi_cascade_format = DYNAMIC_GI_CASCADE_FORMAT_16x8x16;
 	bool dynamic_gi_filter_probes = true;
+	float dynamic_gi_filter_probes_intensity = 1.0;
 	float dynamic_gi_bounce_feedback = 1.0;
 	bool dynamic_gi_read_sky_light = true;
 	float dynamic_gi_energy = 1.0;
@@ -165,7 +166,9 @@ private:
 	float dynamic_gi_probe_bias = 1.1;
 	float dynamic_gi_occlusion_bias = 0.1;
 	bool dynamic_gi_filter_ambient = true;
+	float dynamic_gi_filter_ambient_intensity = 1.0;
 	bool dynamic_gi_filter_reflections = false;
+	float dynamic_gi_filter_reflections_intensity = 1.0;
 	void _update_dynamic_gi();
 
 	// Glow
@@ -344,6 +347,8 @@ public:
 	DynamicGICascadeFormat get_dynamic_gi_cascade_format() const;
 	void set_dynamic_gi_filter_probes(bool p_enabled);
 	bool is_dynamic_gi_filtering_probes() const;
+	void set_dynamic_gi_filter_probes_intensity(float p_intensity);
+	float get_dynamic_gi_filter_probes_intensity() const;
 	void set_dynamic_gi_bounce_feedback(float p_amount);
 	float get_dynamic_gi_bounce_feedback() const;
 	void set_dynamic_gi_read_sky_light(bool p_enabled);
@@ -360,8 +365,12 @@ public:
 	float get_dynamic_gi_occlusion_bias() const;
 	void set_dynamic_gi_filter_ambient(bool p_enabled);
 	bool is_dynamic_gi_filtering_ambient() const;
+	void set_dynamic_gi_filter_ambient_intensity(float p_intensity);
+	float get_dynamic_gi_filter_ambient_intensity() const;
 	void set_dynamic_gi_filter_reflections(bool p_enabled);
 	bool is_dynamic_gi_filtering_reflections() const;
+	void set_dynamic_gi_filter_reflections_intensity(float p_intensity);
+	float get_dynamic_gi_filter_reflections_intensity() const;
 
 	// Glow
 	void set_glow_enabled(bool p_enabled);
