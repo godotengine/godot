@@ -306,10 +306,10 @@ EditorHelpSearch::EditorHelpSearch() {
 	set_hide_on_ok(false);
 	set_clamp_to_embedder(true);
 
-	set_title(TTR("Search Help"));
+	set_title(TTRC("Search Help"));
 
 	get_ok_button()->set_disabled(true);
-	set_ok_button_text(TTR("Open"));
+	set_ok_button_text(TTRC("Open"));
 
 	// Split search and results area.
 	VBoxContainer *vbox = memnew(VBoxContainer);
@@ -329,7 +329,7 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	case_sensitive_button = memnew(Button);
 	case_sensitive_button->set_theme_type_variation(SceneStringName(FlatButton));
-	case_sensitive_button->set_tooltip_text(TTR("Case Sensitive"));
+	case_sensitive_button->set_tooltip_text(TTRC("Case Sensitive"));
 	case_sensitive_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
 	case_sensitive_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -337,7 +337,7 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	hierarchy_button = memnew(Button);
 	hierarchy_button->set_theme_type_variation(SceneStringName(FlatButton));
-	hierarchy_button->set_tooltip_text(TTR("Show Hierarchy"));
+	hierarchy_button->set_tooltip_text(TTRC("Show Hierarchy"));
 	hierarchy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
@@ -348,17 +348,17 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->set_accessibility_name(TTRC("Filter"));
 	filter_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	filter_combo->set_stretch_ratio(0); // Fixed width.
-	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);
+	filter_combo->add_item(TTRC("Display All"), SEARCH_ALL);
 	filter_combo->add_separator();
-	filter_combo->add_item(TTR("Classes Only"), SEARCH_CLASSES);
-	filter_combo->add_item(TTR("Constructors Only"), SEARCH_CONSTRUCTORS);
-	filter_combo->add_item(TTR("Methods Only"), SEARCH_METHODS);
-	filter_combo->add_item(TTR("Operators Only"), SEARCH_OPERATORS);
-	filter_combo->add_item(TTR("Signals Only"), SEARCH_SIGNALS);
-	filter_combo->add_item(TTR("Annotations Only"), SEARCH_ANNOTATIONS);
-	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
-	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
-	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
+	filter_combo->add_item(TTRC("Classes Only"), SEARCH_CLASSES);
+	filter_combo->add_item(TTRC("Constructors Only"), SEARCH_CONSTRUCTORS);
+	filter_combo->add_item(TTRC("Methods Only"), SEARCH_METHODS);
+	filter_combo->add_item(TTRC("Operators Only"), SEARCH_OPERATORS);
+	filter_combo->add_item(TTRC("Signals Only"), SEARCH_SIGNALS);
+	filter_combo->add_item(TTRC("Annotations Only"), SEARCH_ANNOTATIONS);
+	filter_combo->add_item(TTRC("Constants Only"), SEARCH_CONSTANTS);
+	filter_combo->add_item(TTRC("Properties Only"), SEARCH_PROPERTIES);
+	filter_combo->add_item(TTRC("Theme Properties Only"), SEARCH_THEME_ITEMS);
 	filter_combo->connect(SceneStringName(item_selected), callable_mp(this, &EditorHelpSearch::_filter_combo_item_selected));
 	hbox->add_child(filter_combo);
 
@@ -373,9 +373,9 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_accessibility_name(TTRC("Search Results"));
 	results_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	results_tree->set_columns(2);
-	results_tree->set_column_title(0, TTR("Name"));
+	results_tree->set_column_title(0, TTRC("Name"));
 	results_tree->set_column_clip_content(0, true);
-	results_tree->set_column_title(1, TTR("Member Type"));
+	results_tree->set_column_title(1, TTRC("Member Type"));
 	results_tree->set_column_expand(1, false);
 	results_tree->set_column_custom_minimum_width(1, 150 * EDSCALE);
 	results_tree->set_column_clip_content(1, true);
@@ -1139,16 +1139,16 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	TreeItem *item = nullptr;
 	if (_find_or_create_item(p_parent, item_meta, item)) {
 		item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_doc->name));
-		item->set_text(1, TTR("Class"));
+		item->set_text(1, TTRC("Class"));
 		item->set_tooltip_text(0, tooltip);
 		item->set_tooltip_text(1, tooltip);
 		item->set_metadata(0, item_meta);
 		if (p_doc->is_deprecated) {
 			Ref<Texture2D> error_icon = ui_service->get_editor_theme_icon(SNAME("StatusError"));
-			item->add_button(0, error_icon, 0, false, TTR("This class is marked as deprecated."));
+			item->add_button(0, error_icon, 0, false, TTRC("This class is marked as deprecated."));
 		} else if (p_doc->is_experimental) {
 			Ref<Texture2D> warning_icon = ui_service->get_editor_theme_icon(SNAME("NodeWarning"));
-			item->add_button(0, warning_icon, 0, false, TTR("This class is marked as experimental."));
+			item->add_button(0, warning_icon, 0, false, TTRC("This class is marked as experimental."));
 		}
 	}
 	// Cached item might be collapsed.
@@ -1257,10 +1257,10 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 
 		if (p_is_deprecated) {
 			Ref<Texture2D> error_icon = ui_service->get_editor_theme_icon(SNAME("StatusError"));
-			item->add_button(0, error_icon, 0, false, TTR("This member is marked as deprecated."));
+			item->add_button(0, error_icon, 0, false, TTRC("This member is marked as deprecated."));
 		} else if (p_is_experimental) {
 			Ref<Texture2D> warning_icon = ui_service->get_editor_theme_icon(SNAME("NodeWarning"));
-			item->add_button(0, warning_icon, 0, false, TTR("This member is marked as experimental."));
+			item->add_button(0, warning_icon, 0, false, TTRC("This member is marked as experimental."));
 		}
 	}
 

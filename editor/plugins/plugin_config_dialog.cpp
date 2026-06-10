@@ -175,11 +175,11 @@ void PluginConfigDialog::config(const String &p_config_path) {
 		script_edit->set_text(cf->get_value("plugin", "script", ""));
 
 		_edit_mode = true;
-		set_title(TTR("Edit a Plugin"));
+		set_title(TTRC("Edit a Plugin"));
 	} else {
 		_clear_fields();
 		_edit_mode = false;
-		set_title(TTR("Create a Plugin"));
+		set_title(TTRC("Create a Plugin"));
 	}
 
 	for (Control *control : plugin_edit_hidden_controls) {
@@ -189,7 +189,7 @@ void PluginConfigDialog::config(const String &p_config_path) {
 	validation_panel->update();
 
 	get_ok_button()->set_disabled(!_edit_mode);
-	set_ok_button_text(_edit_mode ? TTR("Update") : TTR("Create"));
+	set_ok_button_text(_edit_mode ? TTRC("Update") : TTRC("Create"));
 }
 
 void PluginConfigDialog::_bind_methods() {
@@ -212,27 +212,27 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	// Plugin Name
 	Label *name_lb = memnew(Label);
-	name_lb->set_text(TTR("Plugin Name:"));
+	name_lb->set_text(TTRC("Plugin Name:"));
 	name_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(name_lb);
 
 	name_edit = memnew(LineEdit);
 	name_edit->set_placeholder("MyPlugin");
-	name_edit->set_tooltip_text(TTR("Required. This name will be displayed in the list of plugins."));
+	name_edit->set_tooltip_text(TTRC("Required. This name will be displayed in the list of plugins."));
 	name_edit->set_accessibility_name(TTRC("Plugin Name:"));
 	name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(name_edit);
 
 	// Subfolder
 	Label *subfolder_lb = memnew(Label);
-	subfolder_lb->set_text(TTR("Subfolder:"));
+	subfolder_lb->set_text(TTRC("Subfolder:"));
 	subfolder_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(subfolder_lb);
 	plugin_edit_hidden_controls.push_back(subfolder_lb);
 
 	subfolder_edit = memnew(LineEdit);
 	subfolder_edit->set_placeholder(U"\"my_plugin\" → res://addons/my_plugin");
-	subfolder_edit->set_tooltip_text(TTR("Optional. The folder name should generally use `snake_case` naming (avoid spaces and special characters).\nIf left empty, the folder will be named after the plugin name converted to `snake_case`."));
+	subfolder_edit->set_tooltip_text(TTRC("Optional. The folder name should generally use `snake_case` naming (avoid spaces and special characters).\nIf left empty, the folder will be named after the plugin name converted to `snake_case`."));
 	subfolder_edit->set_accessibility_name(TTRC("Subfolder:"));
 	subfolder_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(subfolder_edit);
@@ -240,12 +240,12 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	// Description
 	Label *desc_lb = memnew(Label);
-	desc_lb->set_text(TTR("Description:"));
+	desc_lb->set_text(TTRC("Description:"));
 	desc_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(desc_lb);
 
 	desc_edit = memnew(TextEdit);
-	desc_edit->set_tooltip_text(TTR("Optional. This description should be kept relatively short (up to 5 lines).\nIt will display when hovering the plugin in the list of plugins."));
+	desc_edit->set_tooltip_text(TTRC("Optional. This description should be kept relatively short (up to 5 lines).\nIt will display when hovering the plugin in the list of plugins."));
 	desc_edit->set_accessibility_name(TTRC("Description:"));
 	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
 	desc_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
@@ -255,25 +255,25 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	// Author
 	Label *author_lb = memnew(Label);
-	author_lb->set_text(TTR("Author:"));
+	author_lb->set_text(TTRC("Author:"));
 	author_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(author_lb);
 
 	author_edit = memnew(LineEdit);
 	author_edit->set_placeholder("Godette");
 	author_edit->set_accessibility_name(TTRC("Author:"));
-	author_edit->set_tooltip_text(TTR("Optional. The author's username, full name, or organization name."));
+	author_edit->set_tooltip_text(TTRC("Optional. The author's username, full name, or organization name."));
 	author_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(author_edit);
 
 	// Version
 	Label *version_lb = memnew(Label);
-	version_lb->set_text(TTR("Version:"));
+	version_lb->set_text(TTRC("Version:"));
 	version_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(version_lb);
 
 	version_edit = memnew(LineEdit);
-	version_edit->set_tooltip_text(TTR("Optional. A human-readable version identifier used for informational purposes only."));
+	version_edit->set_tooltip_text(TTRC("Optional. A human-readable version identifier used for informational purposes only."));
 	version_edit->set_placeholder("1.0");
 	version_edit->set_accessibility_name(TTRC("Version:"));
 	version_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -281,12 +281,12 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	// Language dropdown
 	Label *script_option_lb = memnew(Label);
-	script_option_lb->set_text(TTR("Language:"));
+	script_option_lb->set_text(TTRC("Language:"));
 	script_option_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(script_option_lb);
 
 	script_option_edit = memnew(OptionButton);
-	script_option_edit->set_tooltip_text(TTR("Required. The scripting language to use for the script.\nNote that a plugin may use several languages at once by adding more scripts to the plugin."));
+	script_option_edit->set_tooltip_text(TTRC("Required. The scripting language to use for the script.\nNote that a plugin may use several languages at once by adding more scripts to the plugin."));
 	script_option_edit->set_accessibility_name(TTRC("Language:"));
 	int default_lang = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -301,12 +301,12 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	// Plugin Script Name
 	Label *script_name_label = memnew(Label);
-	script_name_label->set_text(TTR("Script Name:"));
+	script_name_label->set_text(TTRC("Script Name:"));
 	script_name_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(script_name_label);
 
 	script_edit = memnew(LineEdit);
-	script_edit->set_tooltip_text(TTR("Optional. The name of the script file. If left empty, will default to the subfolder name."));
+	script_edit->set_tooltip_text(TTRC("Optional. The name of the script file. If left empty, will default to the subfolder name."));
 	script_edit->set_placeholder(U"\"plugin.gd\" → res://addons/my_plugin/plugin.gd");
 	script_edit->set_accessibility_name(TTRC("Script Name:"));
 	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);

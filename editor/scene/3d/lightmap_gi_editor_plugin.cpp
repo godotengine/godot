@@ -192,7 +192,7 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	// TODO: Rework this as a dedicated toolbar control so we can hook into theme changes and update it
 	// when the editor theme updates.
 	bake->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
-	bake->set_text(TTR("Bake Lightmaps"));
+	bake->set_text(TTRC("Bake Lightmaps"));
 
 #ifdef MODULE_LIGHTMAPPER_RD_ENABLED
 	// Disable lightmap baking if not supported on the current GPU.
@@ -217,8 +217,8 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	file_dialog->add_filter("*.lmbake", TTR("LightMap Bake"));
-	file_dialog->set_title(TTR("Select lightmap bake file:"));
+	file_dialog->add_filter("*.lmbake", TTRC("LightMap Bake"));
+	file_dialog->set_title(TTRC("Select lightmap bake file:"));
 	file_dialog->connect("file_selected", callable_mp(this, &LightmapGIEditorPlugin::_bake_select_file));
 	bake->add_child(file_dialog);
 }

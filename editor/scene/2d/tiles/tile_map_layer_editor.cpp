@@ -3959,7 +3959,7 @@ void TileMapLayerEditor::_advanced_menu_button_id_pressed(int p_id) {
 
 	if (p_id == ADVANCED_MENU_REPLACE_WITH_PROXIES) { // Replace Tile Proxies
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTRC("Replace Tiles with Proxies"));
+		undo_redo->create_action(TTR("Replace Tiles with Proxies"));
 		TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
 		for (int i = 0; i < used_cells.size(); i++) {
 			Vector2i cell_coords = used_cells[i];
@@ -3984,7 +3984,7 @@ void TileMapLayerEditor::_advanced_menu_button_id_pressed(int p_id) {
 		ERR_FAIL_NULL(edited_scene_root);
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTRC("Extract TileMap layers as individual TileMapLayer nodes"));
+		undo_redo->create_action(TTR("Extract TileMap layers as individual TileMapLayer nodes"));
 
 		TileMap *tile_map = Object::cast_to<TileMap>(edited_layer->get_parent());
 		for (int i = 0; i < tile_map->get_layers_count(); i++) {

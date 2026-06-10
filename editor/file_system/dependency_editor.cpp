@@ -383,12 +383,12 @@ DependencyEditor::DependencyEditor() {
 	tree->connect("button_clicked", callable_mp(this, &DependencyEditor::_load_pressed));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
-	Label *label = memnew(Label(TTR("Dependencies:")));
+	Label *label = memnew(Label(TTRC("Dependencies:")));
 	label->set_theme_type_variation("HeaderSmall");
 
 	hbc->add_child(label);
 	hbc->add_spacer();
-	fixdeps = memnew(Button(TTR("Fix Broken")));
+	fixdeps = memnew(Button(TTRC("Fix Broken")));
 	hbc->add_child(fixdeps);
 	fixdeps->connect(SceneStringName(pressed), callable_mp(this, &DependencyEditor::_fix_all));
 
@@ -432,7 +432,7 @@ DependencyEditor::DependencyEditor() {
 	warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	vb->add_child(warning_label);
 
-	set_title(TTR("Dependency Editor"));
+	set_title(TTRC("Dependency Editor"));
 	search = memnew(EditorFileDialog);
 	search->connect("file_selected", callable_mp(this, &DependencyEditor::_searched));
 	search->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
@@ -462,7 +462,7 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 		if (only_scenes_selected) {
 			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRN("Open Scene", "Open Scenes", selected_items.size()), FILE_MENU_OPEN);
 		} else if (selected_items.size() == 1) {
-			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open"), FILE_MENU_OPEN);
+			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open"), FILE_MENU_OPEN);
 		} else {
 			return;
 		}
@@ -1198,7 +1198,7 @@ void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_
 }
 
 OrphanResourcesDialog::OrphanResourcesDialog() {
-	set_title(TTR("Orphan Resource Explorer"));
+	set_title(TTRC("Orphan Resource Explorer"));
 	delete_confirm = memnew(ConfirmationDialog);
 	set_ok_button_text(TTR("Delete"));
 	add_child(delete_confirm);
@@ -1220,8 +1220,8 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	files->set_column_clip_content(0, true);
 	files->set_column_expand(1, false);
 	files->set_column_clip_content(1, true);
-	files->set_column_title(0, TTR("Resource"));
-	files->set_column_title(1, TTR("Owns"));
+	files->set_column_title(0, TTRC("Resource"));
+	files->set_column_title(1, TTRC("Owns"));
 	files->set_hide_root(true);
 	files->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
 	files->connect("button_clicked", callable_mp(this, &OrphanResourcesDialog::_button_pressed));

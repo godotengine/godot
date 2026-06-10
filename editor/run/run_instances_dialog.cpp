@@ -86,7 +86,7 @@ void RunInstancesDialog::_create_instance(InstanceData &p_instance, const Dictio
 
 	instance_item->set_cell_mode(COLUMN_OVERRIDE_ARGS, TreeItem::CELL_MODE_CHECK);
 	instance_item->set_editable(COLUMN_OVERRIDE_ARGS, true);
-	instance_item->set_text(COLUMN_OVERRIDE_ARGS, TTR("Enabled"));
+	instance_item->set_text(COLUMN_OVERRIDE_ARGS, TTRC("Enabled"));
 	instance_item->set_checked(COLUMN_OVERRIDE_ARGS, p_data.get("override_args", false));
 
 	instance_item->set_editable(COLUMN_LAUNCH_ARGUMENTS, true);
@@ -94,7 +94,7 @@ void RunInstancesDialog::_create_instance(InstanceData &p_instance, const Dictio
 
 	instance_item->set_cell_mode(COLUMN_OVERRIDE_FEATURES, TreeItem::CELL_MODE_CHECK);
 	instance_item->set_editable(COLUMN_OVERRIDE_FEATURES, true);
-	instance_item->set_text(COLUMN_OVERRIDE_FEATURES, TTR("Enabled"));
+	instance_item->set_text(COLUMN_OVERRIDE_FEATURES, TTRC("Enabled"));
 	instance_item->set_checked(COLUMN_OVERRIDE_FEATURES, p_data.get("override_features", false));
 
 	instance_item->set_editable(COLUMN_FEATURE_TAGS, true);
@@ -182,7 +182,7 @@ void RunInstancesDialog::_instance_tree_rmb(const Vector2 &p_pos, MouseButton p_
 	}
 
 	popup_menu->clear();
-	popup_menu->add_item(TTR("Clear"), CLEAR_ITEM);
+	popup_menu->add_item(TTRC("Clear"), CLEAR_ITEM);
 
 	TreeItem *item = instance_tree->get_item_at_position(p_pos);
 	if (item) {
@@ -191,7 +191,7 @@ void RunInstancesDialog::_instance_tree_rmb(const Vector2 &p_pos, MouseButton p_
 		popup_menu->set_item_disabled(0, true);
 	}
 
-	popup_menu->add_item(TTR("Clear All"), CLEAR_ALL);
+	popup_menu->add_item(TTRC("Clear All"), CLEAR_ALL);
 	popup_menu->set_position(instance_tree->get_screen_position() + p_pos);
 	popup_menu->reset_size();
 	popup_menu->popup();
@@ -297,7 +297,7 @@ void RunInstancesDialog::apply_custom_features(int p_instance_idx) {
 
 RunInstancesDialog::RunInstancesDialog() {
 	singleton = this;
-	set_title(TTR("Run Instances"));
+	set_title(TTRC("Run Instances"));
 
 	main_apply_timer = memnew(Timer);
 	main_apply_timer->set_wait_time(0.5);
@@ -320,13 +320,13 @@ RunInstancesDialog::RunInstancesDialog() {
 
 	{
 		Label *l = memnew(Label);
-		l->set_text(TTR("Main Run Args:"));
+		l->set_text(TTRC("Main Run Args:"));
 		main_gc->add_child(l);
 	}
 
 	{
 		Label *l = memnew(Label);
-		l->set_text(TTR("Main Feature Tags:"));
+		l->set_text(TTRC("Main Feature Tags:"));
 		main_gc->add_child(l);
 	}
 
@@ -334,7 +334,7 @@ RunInstancesDialog::RunInstancesDialog() {
 
 	main_args_edit = memnew(LineEdit);
 	main_args_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	main_args_edit->set_placeholder(TTR("Space-separated arguments, example: host player1 blue"));
+	main_args_edit->set_placeholder(TTRC("Space-separated arguments, example: host player1 blue"));
 	main_args_edit->set_accessibility_name(TTRC("Main Run Args:"));
 	main_gc->add_child(main_args_edit);
 	_fetch_main_args();
@@ -343,7 +343,7 @@ RunInstancesDialog::RunInstancesDialog() {
 
 	main_features_edit = memnew(LineEdit);
 	main_features_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	main_features_edit->set_placeholder(TTR("Comma-separated tags, example: demo, steam, event"));
+	main_features_edit->set_placeholder(TTRC("Comma-separated tags, example: demo, steam, event"));
 	main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
 	main_features_edit->set_accessibility_name(TTRC("Main Feature Tags:"));
 	main_gc->add_child(main_features_edit);
@@ -384,12 +384,12 @@ RunInstancesDialog::RunInstancesDialog() {
 	instance_tree->set_hide_folding(true);
 	instance_tree->set_columns(4);
 	instance_tree->set_column_titles_visible(true);
-	instance_tree->set_column_title(COLUMN_OVERRIDE_ARGS, TTR("Override Main Run Args"));
+	instance_tree->set_column_title(COLUMN_OVERRIDE_ARGS, TTRC("Override Main Run Args"));
 	instance_tree->set_column_expand(COLUMN_OVERRIDE_ARGS, false);
-	instance_tree->set_column_title(COLUMN_LAUNCH_ARGUMENTS, TTR("Launch Arguments"));
-	instance_tree->set_column_title(COLUMN_OVERRIDE_FEATURES, TTR("Override Main Tags"));
+	instance_tree->set_column_title(COLUMN_LAUNCH_ARGUMENTS, TTRC("Launch Arguments"));
+	instance_tree->set_column_title(COLUMN_OVERRIDE_FEATURES, TTRC("Override Main Tags"));
 	instance_tree->set_column_expand(COLUMN_OVERRIDE_FEATURES, false);
-	instance_tree->set_column_title(COLUMN_FEATURE_TAGS, TTR("Feature Tags"));
+	instance_tree->set_column_title(COLUMN_FEATURE_TAGS, TTRC("Feature Tags"));
 	instance_tree->set_hide_root(true);
 	instance_tree->set_allow_rmb_select(true);
 	instance_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
