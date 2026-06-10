@@ -645,7 +645,7 @@ TEST_CASE("[SceneTree][FlowContainer] VFlowContainer") {
 		memdelete(child_control_1);
 	}
 
-		SUBCASE("Cross axis expand") {
+	SUBCASE("Cross axis expand") {
 		Control *child_control_1 = memnew(Control);
 		Control *child_control_2 = memnew(Control);
 		Control *child_control_3 = memnew(Control);

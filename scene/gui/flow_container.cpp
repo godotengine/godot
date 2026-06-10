@@ -148,7 +148,6 @@ void FlowContainer::_resort() {
 	if (last_child != nullptr) {
 		is_filled = vertical ? (ofs.y + last_child->get_bound_minimum_size().y > current_container_size ? true : false) : (ofs.x + last_child->get_bound_minimum_size().x > current_container_size ? true : false);
 	}
-
 	lines_data.push_back(_LineData{ children_in_current_line, line_height, line_length, current_container_size - line_length, line_stretch_ratio_total, line_cross_stretch_ratio, is_filled });
 
 	container_cross_stretch_total += line_cross_stretch_ratio;
@@ -166,8 +165,7 @@ void FlowContainer::_resort() {
 			if (lines_data[i].line_cross_stretch_ratio != 0) {
 				stretch_lines.push_back(&lines_data.write[i]);
 				stretch_lines_active.push_back(true);
-			} else
-			{
+			} else {
 				container_cross_axis_stretch_available_space -= lines_data[i].min_line_height;
 			}
 		}
@@ -205,7 +203,6 @@ void FlowContainer::_resort() {
 			}
 		}
 	}
-
 
 	// Third pass for in-line expansion and alignment.
 
