@@ -390,29 +390,61 @@ bool TextEditorBase::_edit_option(int p_op) {
 	tx->apply_ime();
 
 	switch (p_op) {
+		case EDIT_UNDO:
+		case EDIT_REDO:
+		case EDIT_CUT:
+		case EDIT_COPY:
+		case EDIT_PASTE:
+		case EDIT_SELECT_ALL:
+		case EDIT_TRIM_TRAILING_WHITESAPCE:
+		case EDIT_TRIM_FINAL_NEWLINES:
+		case EDIT_CONVERT_INDENT_TO_SPACES:
+		case EDIT_CONVERT_INDENT_TO_TABS:
+		case EDIT_MOVE_LINE_UP:
+		case EDIT_MOVE_LINE_DOWN:
+		case EDIT_INDENT:
+		case EDIT_UNINDENT:
+		case EDIT_DELETE_LINE:
+		case EDIT_JOIN_LINES:
+		case EDIT_DUPLICATE_SELECTION:
+		case EDIT_DUPLICATE_LINES:
+		case EDIT_TO_UPPERCASE:
+		case EDIT_TO_LOWERCASE:
+		case EDIT_CAPITALIZE:
+		case EDIT_TOGGLE_FOLD_LINE:
+		case EDIT_FOLD_ALL_LINES:
+		case EDIT_TOGGLE_WORD_WRAP:
+		case EDIT_UNFOLD_ALL_LINES:
+		case EDIT_EMOJI_AND_SYMBOL:
+		case SEARCH_FIND_NEXT:
+		case SEARCH_FIND_PREV:
+		case BOOKMARK_TOGGLE:
+		case BOOKMARK_GOTO_NEXT:
+		case BOOKMARK_GOTO_PREV:
+		case BOOKMARK_REMOVE_ALL:
+		case BASE_ENUM_COUNT: {
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
+		}
+	}
+
+	switch (p_op) {
 		case EDIT_UNDO: {
 			tx->undo();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_REDO: {
 			tx->redo();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_CUT: {
 			tx->cut();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_COPY: {
 			tx->copy();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_PASTE: {
 			tx->paste();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_SELECT_ALL: {
 			tx->select_all();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_MOVE_LINE_UP: {
 			tx->move_lines_up();
@@ -786,6 +818,15 @@ bool CodeEditorBase::_edit_option(int p_option) {
 	tx->apply_ime();
 
 	switch (p_option) {
+		case DEBUG_TOGGLE_BREAKPOINT:
+		case DEBUG_REMOVE_ALL_BREAKPOINTS:
+		case DEBUG_GOTO_NEXT_BREAKPOINT:
+		case DEBUG_GOTO_PREV_BREAKPOINT: {
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
+		}
+	}
+
+	switch (p_option) {
 		case DEBUG_TOGGLE_BREAKPOINT: {
 			Vector<int> sorted_carets = tx->get_sorted_carets();
 			int last_line = -1;
@@ -852,11 +893,16 @@ bool CodeEditorBase::_edit_option(int p_option) {
 			}
 			goto_line_centered(bpoints[bpoint_idx]);
 		} break;
+		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
+			for (int line : tx->get_breakpointed_lines()) {
+				tx->set_line_as_breakpoint(line, false);
+			}
+		} break;
 		default: {
 			return TextEditorBase::_edit_option(p_option);
 		}
 	}
-	return false;
+	return true;
 }
 
 CodeEditorBase::CodeEditorBase() {

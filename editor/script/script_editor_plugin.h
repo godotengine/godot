@@ -192,7 +192,6 @@ class ScriptEditor : public PanelContainer {
 
 	float zoom_factor = 1.0f;
 
-	MenuButton *debug_menu_btn = nullptr;
 	HBoxContainer *script_name_button_hbox = nullptr;
 	Control *script_name_button_left_spacer = nullptr;
 	Control *script_name_button_right_spacer = nullptr;
@@ -346,8 +345,8 @@ class ScriptEditor : public PanelContainer {
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	void _setup_popup_menu(PopupMenu *p_menu, ScriptEditorBase *p_seb, bool p_is_context_menu = true);
-	void _prepare_popup_menu(PopupMenu *p_menu, ScriptEditorBase *p_seb, bool p_is_context_menu = true);
+	void _setup_popup_menu(PopupMenu *p_menu, bool p_is_context_menu = true);
+	void _prepare_popup_menu(PopupMenu *p_menu, bool p_is_context_menu = true);
 	void _prepare_file_menu();
 	void _script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
 	void _make_script_list_context_menu();
@@ -384,7 +383,7 @@ class ScriptEditor : public PanelContainer {
 
 	String config_section;
 
-	HashSet<String> handled_file_types = { "GDScript", "Script", "JSON", "Shader", "VisualShader", "ShaderInclude" };
+	HashSet<String> handled_resource_types;
 	List<String> _get_recognized_extensions();
 	HashSet<String> textfile_extensions;
 	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
@@ -425,7 +424,7 @@ public:
 
 	bool is_editor_floating();
 
-	void set_handled_file_types(HashSet<String> p_file_types) { handled_file_types = p_file_types; }
+	void set_handled_resource_types(HashSet<String> p_file_types) { handled_resource_types = p_file_types; }
 
 	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
@@ -440,7 +439,6 @@ public:
 	void save_all_scripts();
 	void update_script_times();
 
-	void set_config_section(const String &p_config_section) { config_section = p_config_section; }
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
 
@@ -473,7 +471,7 @@ public:
 
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
-	ScriptEditor(WindowWrapper *p_wrapper = nullptr, EditorDock *p_dock = nullptr);
+	ScriptEditor(const String &config_section, WindowWrapper *p_wrapper = nullptr, EditorDock *p_dock = nullptr);
 	~ScriptEditor();
 };
 

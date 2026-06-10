@@ -286,7 +286,6 @@ public:
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	void set_find_replace_bar(FindReplaceBar *p_bar);
 	void remove_find_replace_bar();
-	virtual void goto_error();
 
 	void toggle_bookmark();
 	void goto_next_bookmark();

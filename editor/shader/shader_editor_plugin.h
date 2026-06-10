@@ -39,6 +39,15 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	EditorDock *shader_dock = nullptr;
 	Ref<Shortcut> make_floating_shortcut;
+	const PackedStringArray old_layout_keys = {
+		"window_rect", "window_screen", "window_screen_rect",
+		"open_shaders", "split_offset", "selected_shader", "text_shader_zoom_factor"
+	};
+	const PackedStringArray new_layout_keys = {
+		"", "", "",
+		"open_scripts", "script_split_offset", "selected_script", "zoom_factor"
+	};
+	const String config_section = "ShaderEditor";
 
 protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;

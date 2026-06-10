@@ -175,8 +175,6 @@ protected:
 		EditMenusShTE(ScriptEditor *p_se) : EditMenusCEB(p_se, "Shader Previews") {}
 	};
 
-	static void _bind_methods();
-
 	void _notification(int p_what);
 
 	virtual void _validate_script() override;

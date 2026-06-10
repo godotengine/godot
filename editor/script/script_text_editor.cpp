@@ -1623,6 +1623,18 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 	tx->apply_ime();
 
 	switch (p_op) {
+		case EDIT_AUTO_INDENT:
+		case EDIT_EVALUATE:
+		case EDIT_CREATE_CODE_REGION:
+		case SHOW_TOOLTIP_AT_CARET:
+		case LOOKUP_SYMBOL:
+		case EDIT_COMPLETE:
+		case EDIT_TOGGLE_COMMENT: {
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
+		}
+	}
+
+	switch (p_op) {
 		case EDIT_CREATE_CODE_REGION: {
 			tx->create_code_region();
 		} break;
@@ -1700,16 +1712,6 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case SEARCH_LOCATE_FUNCTION: {
 			quick_open->popup_dialog(get_functions());
-		} break;
-		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
-			PackedInt32Array bpoints = tx->get_breakpointed_lines();
-
-			for (int i = 0; i < bpoints.size(); i++) {
-				int line = bpoints[i];
-				bool dobreak = !tx->is_line_breakpointed(line);
-				tx->set_line_as_breakpoint(line, dobreak);
-				EditorDebuggerNode::get_singleton()->set_breakpoint(edited_res->get_path(), line + 1, dobreak);
-			}
 		} break;
 		case SHOW_TOOLTIP_AT_CARET: {
 			_show_symbol_tooltip(tx->get_word_under_caret(), tx->get_caret_line(), tx->get_caret_column(), true);

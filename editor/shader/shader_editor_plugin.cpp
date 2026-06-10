@@ -30,6 +30,7 @@
 
 #include "shader_editor_plugin.h"
 
+#include "core/variant/variant.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
@@ -45,7 +46,7 @@ void ShaderEditorPlugin::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (make_floating_shortcut.is_valid() && make_floating_shortcut->matches_event(p_event)) {
-		EditorDockManager::get_singleton()->make_dock_floating(shader_dock);
+		shader_dock->make_floating();
 	}
 }
 
@@ -78,12 +79,28 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 }
 
 void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
+#ifndef DISABLE_DEPRECATED
+	for (int i = 0; i < old_layout_keys.size(); i++) {
+		if (new_layout_keys[i] != "" && p_layout->has_section_key(config_section, old_layout_keys[i])) {
+			p_layout->set_value(config_section, new_layout_keys[i], p_layout->get_value(config_section, old_layout_keys[i]));
+		}
+	}
+#endif
+
 	if (bool(EDITOR_GET("editors/shader_editor/behavior/files/restore_shaders_on_load"))) {
 		script_editor->set_window_layout(p_layout);
 	}
 }
 
 void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
+#ifndef DISABLE_DEPRECATED
+	for (int i = 0; i < old_layout_keys.size(); i++) {
+		if (p_layout->has_section_key(config_section, old_layout_keys[i])) {
+			p_layout->erase_section_key(config_section, old_layout_keys[i]);
+		}
+	}
+#endif
+
 	script_editor->get_window_layout(p_layout);
 }
 
@@ -150,8 +167,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 
 	make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("shader_editor/make_floating", TTRC("Make Floating"));
 
-	script_editor = memnew(ScriptEditor(nullptr, shader_dock));
-	script_editor->set_config_section("ShaderEditor");
-	script_editor->set_handled_file_types({ "Shader", "VisualShader", "ShaderInclude" });
+	script_editor = memnew(ScriptEditor(config_section, nullptr, shader_dock));
+	script_editor->set_handled_resource_types({ "Shader", "VisualShader", "ShaderInclude" });
 	shader_dock->add_child(script_editor);
 }

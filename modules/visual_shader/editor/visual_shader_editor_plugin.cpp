@@ -1572,7 +1572,7 @@ void VisualShaderEditor::set_edited_resource(const Ref<Resource> &p_shader) {
 }
 
 void VisualShaderEditor::apply_code() {
-	// Stub. TODO: Implement apply_shaders in visual shaders for parity with text shaders.
+	// Stub. TODO: Implement apply_code in visual shaders for parity with text shaders.
 }
 
 bool VisualShaderEditor::is_unsaved() {
@@ -7875,6 +7875,9 @@ VisualShaderEditor::VisualShaderEditor() {
 
 VisualShaderEditor::~VisualShaderEditor() {
 	save_editor_layout();
+	if (EditorNode::get_editor_data().get_edited_scene_count() > 0) { // Avoid crash on shutdown.
+		EditorUndoRedoManager::get_singleton()->clear_history(); // To prevent undo on deleted graphs.
+	}
 }
 
 class VisualShaderNodePluginInputEditor : public OptionButton {

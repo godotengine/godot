@@ -1600,12 +1600,6 @@ Point2i CodeTextEditor::get_pos_for_display(Point2i p_internal_position) const {
 	return Point2(p_internal_position.x + 1, corrected_column + 1);
 }
 
-void CodeTextEditor::goto_error() {
-	if (!error->get_text().is_empty()) {
-		goto_line_centered(error_line, error_column);
-	}
-}
-
 void CodeTextEditor::_update_text_editor_theme() {
 	emit_signal(SNAME("load_theme_settings"));
 
@@ -1733,7 +1727,9 @@ void CodeTextEditor::_toggle_files_pressed() {
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		goto_error();
+		if (!error->get_text().is_empty()) {
+			goto_line_centered(error_line, error_column);
+		}
 	}
 }
 

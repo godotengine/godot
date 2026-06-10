@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -750,11 +749,6 @@ static bool saved_treat_warning_as_errors = false;
 static HashMap<ShaderWarning::Code, bool> saved_warnings;
 static uint32_t saved_warning_flags = 0U;
 
-void ShaderTextEditor::_bind_methods() {
-	ClassDB::bind_method("_show_warnings_panel", &ShaderTextEditor::_show_warnings_panel);
-	ClassDB::bind_method("_warning_clicked", &ShaderTextEditor::_warning_clicked);
-}
-
 void ShaderTextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -902,6 +896,8 @@ void ShaderTextEditor::_check_shader_mode() {
 		mode = Shader::MODE_SKY;
 	} else if (type == "fog") {
 		mode = Shader::MODE_FOG;
+	} else if (type == "texture_blit") {
+		mode = Shader::MODE_TEXTURE_BLIT;
 	} else {
 		mode = Shader::MODE_SPATIAL;
 	}
@@ -1035,6 +1031,13 @@ bool ShaderTextEditor::_edit_option(int p_option) {
 	tx->apply_ime();
 
 	switch (p_option) {
+		case EDIT_COMPLETE:
+		case EDIT_TOGGLE_COMMENT: {
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
+		}
+	}
+
+	switch (p_option) {
 		case EDIT_TOGGLE_COMMENT: {
 			if (edited_res.is_null()) {
 				return true;
@@ -1044,27 +1047,14 @@ bool ShaderTextEditor::_edit_option(int p_option) {
 		case EDIT_COMPLETE: {
 			tx->request_code_completion();
 		} break;
-		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
-			PackedInt32Array bpoints = tx->get_breakpointed_lines();
-
-			for (int i = 0; i < bpoints.size(); i++) {
-				int line = bpoints[i];
-				bool dobreak = !tx->is_line_breakpointed(line);
-
-				tx->set_line_as_breakpoint(line, dobreak);
-			}
-		} break;
 		default:
 			CodeEditorBase::_edit_option(p_option);
-	}
-	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
-		callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 	}
 	return true;
 }
 
 void ShaderTextEditor::_validate_script() {
-	TextEditorBase::_validate_script();
+	apply_code();
 
 	CodeEdit *te = code_editor->get_text_editor();
 	String code = te->get_text();
@@ -1233,6 +1223,8 @@ void ShaderTextEditor::_validate_script() {
 	}
 
 	compilation_success = last_compile_result == OK;
+
+	TextEditorBase::_validate_script();
 }
 
 void ShaderTextEditor::goto_line_centered(int p_line, int p_column) {
@@ -1399,8 +1391,6 @@ void ShaderTextEditor::register_editor() {
 
 ShaderTextEditor::ShaderTextEditor() {
 	_update_warnings(false);
-
-	code_editor->connect(CoreStringName(script_changed), callable_mp(this, &ShaderTextEditor::apply_code));
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ShaderTextEditor::_update_warnings).bind(true));
 
