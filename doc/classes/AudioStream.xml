@@ -94,6 +94,12 @@
 				Returns the length of the audio stream in seconds. If this stream is an [AudioStreamRandomizer], returns the length of the last played stream. If this stream has an indefinite length (such as for [AudioStreamGenerator] and [AudioStreamMicrophone]), returns [code]0.0[/code].
 			</description>
 		</method>
+		<method name="get_stream_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name assigned to this stream.
+			</description>
+		</method>
 		<method name="instantiate_playback">
 			<return type="AudioStreamPlayback" />
 			<description>

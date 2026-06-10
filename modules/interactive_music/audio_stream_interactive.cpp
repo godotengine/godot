@@ -45,7 +45,7 @@ Ref<AudioStreamPlayback> AudioStreamInteractive::instantiate_playback() {
 }
 
 String AudioStreamInteractive::get_stream_name() const {
-	return "Transitioner";
+	return "Interactive";
 }
 
 void AudioStreamInteractive::set_clip_count(int p_count) {

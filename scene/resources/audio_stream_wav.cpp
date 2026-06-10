@@ -626,7 +626,7 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 }
 
 String AudioStreamWAV::get_stream_name() const {
-	return "";
+	return "WAV";
 }
 
 Ref<AudioSample> AudioStreamWAV::generate_sample() const {

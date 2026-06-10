@@ -429,7 +429,7 @@ Ref<AudioStreamPlayback> AudioStreamOggVorbis::instantiate_playback() {
 }
 
 String AudioStreamOggVorbis::get_stream_name() const {
-	return ""; //return stream_name;
+	return "OggVorbis";
 }
 
 void AudioStreamOggVorbis::maybe_update_info() {
