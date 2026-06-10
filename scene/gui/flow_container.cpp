@@ -68,7 +68,6 @@ void FlowContainer::_resort() {
 
 	float line_cross_stretch_ratio = 0;
 	float container_cross_stretch_total = 0;
-	float container_cross_axis_stretch_available_space = vertical ? get_size().x : get_size().y;
 
 	// First pass for line wrapping and minimum size calculation.
 	for (int i = 0; i < get_child_count(); i++) {
@@ -91,12 +90,10 @@ void FlowContainer::_resort() {
 				// Move in new column (vertical line).
 				ofs.x += line_height + theme_cache.h_separation;
 				ofs.y = 0;
-				if (line_cross_stretch_ratio == 0) {
-					container_cross_axis_stretch_available_space -= line_height;
-				} else {
-					container_cross_stretch_total += line_cross_stretch_ratio;
-					line_cross_stretch_ratio = 0;
-				}
+
+				container_cross_stretch_total += line_cross_stretch_ratio;
+				line_cross_stretch_ratio = 0;
+
 				line_height = 0;
 				line_stretch_ratio_total = 0;
 				children_in_current_line = 0;
@@ -122,13 +119,9 @@ void FlowContainer::_resort() {
 				// Move in new line.
 				ofs.y += line_height + theme_cache.v_separation;
 				ofs.x = 0;
-				if (line_cross_stretch_ratio == 0) {
-					container_cross_axis_stretch_available_space -= line_height;
-				} else
-				{
-					container_cross_stretch_total += line_cross_stretch_ratio;
-					line_cross_stretch_ratio = 0;
-				}
+
+				container_cross_stretch_total += line_cross_stretch_ratio;
+				line_cross_stretch_ratio = 0;
 
 				line_height = 0;
 				line_stretch_ratio_total = 0;
@@ -158,23 +151,24 @@ void FlowContainer::_resort() {
 
 	lines_data.push_back(_LineData{ children_in_current_line, line_height, line_length, current_container_size - line_length, line_stretch_ratio_total, line_cross_stretch_ratio, is_filled });
 
-	if (line_cross_stretch_ratio == 0) {
-		container_cross_axis_stretch_available_space -= line_height;
-	} else {
-		container_cross_stretch_total += line_cross_stretch_ratio;
-	}
-	container_cross_axis_stretch_available_space -= vertical ? theme_cache.h_separation * MAX(0, lines_data.size() - 1) : theme_cache.v_separation * MAX(0, lines_data.size() - 1);
+	container_cross_stretch_total += line_cross_stretch_ratio;
 
 	// Second pass to distribute extra space among stretchable lines and compute final line heights
 
-	if (container_cross_stretch_total > 0 && container_cross_axis_stretch_available_space > 0) {
+	if (container_cross_stretch_total > 0) {
 		Vector<_LineData *> stretch_lines;
 		Vector<bool> stretch_lines_active;
+
+		float container_cross_axis_stretch_available_space = vertical ? get_size().x : get_size().y;
+		container_cross_axis_stretch_available_space -= vertical ? theme_cache.h_separation * MAX(0, lines_data.size() - 1) : theme_cache.v_separation * MAX(0, lines_data.size() - 1);
 
 		for (int i = 0; i < lines_data.size(); i++) {
 			if (lines_data[i].line_cross_stretch_ratio != 0) {
 				stretch_lines.push_back(&lines_data.write[i]);
 				stretch_lines_active.push_back(true);
+			} else
+			{
+				container_cross_axis_stretch_available_space -= lines_data[i].min_line_height;
 			}
 		}
 
