@@ -38,7 +38,10 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #include "scene/resources/surface_tool.h"
-#include "servers/rendering/rendering_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/rendering/rendering_server.h" // Only used for debug collision shapes.
+#endif // PHYSICS_3D_DISABLED
 
 #ifdef DEV_ENABLED
 #include "core/io/json.h"
