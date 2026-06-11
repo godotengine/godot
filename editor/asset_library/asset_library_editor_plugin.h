@@ -296,6 +296,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _force_online_mode();
 
 	LocalVector<bool> licenses_toggled;
+	bool licenses_all_toggled = true;
 
 	void _licenses_id_pressed(int p_id);
 	void _licenses_popup_hide();
