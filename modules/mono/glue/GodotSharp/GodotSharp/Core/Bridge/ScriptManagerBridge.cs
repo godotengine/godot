@@ -927,7 +927,8 @@ namespace Godot.Bridge
                 // Base script
 
                 var baseType = scriptType.BaseType;
-                if (baseType != null && baseType != native)
+                if (baseType != null && baseType != native
+                    && _pathTypeBiMap.TryGetScriptPath(baseType, out _))
                 {
                     GetOrLoadOrCreateScriptForType(baseType, outBaseScript);
                 }
