@@ -47,7 +47,7 @@ inline bool ScriptIterator::is_emoji(UChar32 p_c, UChar32 p_next) {
 	} else if (p_next == VARIATION_SELECTOR_16 && (u_hasBinaryProperty(p_c, UCHAR_EMOJI) || u_hasBinaryProperty(p_c, UCHAR_EXTENDED_PICTOGRAPHIC))) {
 		return true;
 	} else {
-		return u_hasBinaryProperty(p_c, UCHAR_EMOJI_PRESENTATION) || u_hasBinaryProperty(p_c, UCHAR_EMOJI_MODIFIER) || u_hasBinaryProperty(p_c, UCHAR_REGIONAL_INDICATOR);
+		return u_hasBinaryProperty(p_c, UCHAR_EMOJI_PRESENTATION) || u_hasBinaryProperty(p_c, UCHAR_EMOJI_MODIFIER) || u_hasBinaryProperty(p_c, UCHAR_REGIONAL_INDICATOR) || (u_hasBinaryProperty(p_c, UCHAR_EMOJI) && u_hasBinaryProperty(p_next, UCHAR_EMOJI_MODIFIER));
 	}
 }
 
