@@ -662,19 +662,22 @@
 			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
-			Uses the [url=https://fastlz.org/]FastLZ[/url] compression method.
+			Uses the [url=https://ariya.github.io/FastLZ/]FastLZ[/url] compression algorithm.
 		</constant>
 		<constant name="COMPRESSION_DEFLATE" value="1" enum="CompressionMode">
-			Uses the [url=https://en.wikipedia.org/wiki/DEFLATE]DEFLATE[/url] compression method.
+			Uses the [url=https://datatracker.ietf.org/doc/html/rfc1951]DEFLATE[/url] compression algorithm in [url=https://datatracker.ietf.org/doc/html/rfc1950]zlib[/url] format.
+			When compressing data, the compression level defined in [member ProjectSettings.compression/formats/zlib/compression_level] will be used.
 		</constant>
 		<constant name="COMPRESSION_ZSTD" value="2" enum="CompressionMode">
-			Uses the [url=https://facebook.github.io/zstd/]Zstandard[/url] compression method.
+			Uses the [url=https://facebook.github.io/zstd/]Zstandard[/url] compression algorithm.
+			When compressing data, the compression level defined in [member ProjectSettings.compression/formats/zstd/compression_level] will be used.
 		</constant>
 		<constant name="COMPRESSION_GZIP" value="3" enum="CompressionMode">
-			Uses the [url=https://www.gzip.org/]gzip[/url] compression method.
+			Uses the [url=https://datatracker.ietf.org/doc/html/rfc1951]DEFLATE[/url] compression algorithm in [url=https://datatracker.ietf.org/doc/html/rfc1952]gzip[/url] format.
+			When compressing data, the compression level defined in [member ProjectSettings.compression/formats/gzip/compression_level] will be used.
 		</constant>
 		<constant name="COMPRESSION_BROTLI" value="4" enum="CompressionMode">
-			Uses the [url=https://github.com/google/brotli]brotli[/url] compression method (only decompression is supported).
+			Uses the [url=https://www.brotli.org/]Brotli[/url] compression algorithm (only decompression is supported).
 		</constant>
 		<constant name="UNIX_READ_OWNER" value="256" enum="UnixPermissionFlags" is_bitfield="true">
 			Read for owner bit.
