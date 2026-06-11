@@ -97,7 +97,7 @@ mono_assembly_load_from_full_fn mono_assembly_load_from_full = nullptr;
 
 #ifdef WEB_ENABLED
 extern "C" {
-void mono_wasm_load_runtime(int debug_level);
+void mono_wasm_load_runtime(const char *unused, int debug_level);
 }
 #endif
 #endif // !TOOLS_ENABLED
@@ -594,7 +594,7 @@ MonoMethod *_initialize_method;
 godot_plugins_initialize_fn initialize_monovm_and_godot_plugins(bool &r_runtime_initialized) {
 	mono_install_assembly_preload_hook(&load_assembly_from_pck, nullptr);
 
-	mono_wasm_load_runtime(1);
+	mono_wasm_load_runtime("unused", 1);
 
 	r_runtime_initialized = true;
 

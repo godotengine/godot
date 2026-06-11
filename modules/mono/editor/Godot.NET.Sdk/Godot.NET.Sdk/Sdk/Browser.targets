@@ -2,9 +2,11 @@
   <PropertyGroup>
     <UseMonoRuntime Condition=" '$(UseMonoRuntime)' == '' and '$(PublishAot)' != 'true' ">true</UseMonoRuntime>
 
-    <!-- Default to relinking in ExportDebug and ExportRelease configurations. -->
-    <WasmBuildNative Condition=" '$(WasmBuildNative)' == '' and '$(Configuration)' == 'ExportDebug' ">true</WasmBuildNative>
-    <WasmBuildNative Condition=" '$(WasmBuildNative)' == '' and '$(Configuration)' == 'ExportRelease' ">true</WasmBuildNative>
+    <!-- Default to relinking disabled. -->
+    <WasmBuildNative Condition=" '$(WasmBuildNative)' == '' ">false</WasmBuildNative>
+
+    <!-- Disable Webcil for assemblies. Godot expects standard PE .dll assemblies and ignores Webcil .wasm wrapper outputs. -->
+    <WasmDisableWebcil Condition=" '$(WasmDisableWebcil)' == '' ">true</WasmDisableWebcil>
   </PropertyGroup>
 
   <!-- Configuration for the Mono WASM runtime. Must match the features enabled on GetRuntimePack.csproj. -->

@@ -43,6 +43,7 @@ def configure(env, env_mono):
                 "-r", "browser-wasm",
                 "--self-contained",
                 "-c", "Release",
+                "-p:WasmEnableThreads=" + ("true" if env["threads"] else "false"),
             ]
         )
         if exit_code != 0:

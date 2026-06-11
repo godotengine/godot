@@ -21,7 +21,7 @@
 
   <!-- Configuration for the Mono WASM runtime. Must match the features supported by the Godot build. -->
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">
-    <WasmEnableThreads>false</WasmEnableThreads>
+    <WasmEnableThreads>true</WasmEnableThreads>
     <WasmEnableExceptionHandling>true</WasmEnableExceptionHandling>
     <WasmEnableSIMD>true</WasmEnableSIMD>
   </PropertyGroup>
