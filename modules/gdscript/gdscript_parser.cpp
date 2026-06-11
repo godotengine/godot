@@ -737,9 +737,8 @@ void GDScriptParser::parse_program() {
 						// Some annotations need to be resolved and applied in the parser.
 						// The root class is not in any class, so `head->outer == nullptr`.
 						annotation->apply(this, head, nullptr);
-					} else {
-						head->annotations.push_back(annotation);
 					}
+					head->annotations.push_back(annotation);
 				} else if (annotation->applies_to(AnnotationInfo::STANDALONE)) {
 					if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
 						push_error(R"(Expected newline after a standalone annotation.)");
