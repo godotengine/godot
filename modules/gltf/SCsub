@@ -6,6 +6,85 @@ Import("env_modules")
 
 env_gltf = env_modules.Clone()
 
+# Thirdparty source files
+
+thirdparty_obj = []
+thirdparty_dir = "#thirdparty/draco/"
+thirdparty_sources = [
+    "draco/attributes/attribute_octahedron_transform.cc",
+    "draco/attributes/attribute_quantization_transform.cc",
+    "draco/attributes/attribute_transform.cc",
+    "draco/attributes/geometry_attribute.cc",
+    "draco/attributes/point_attribute.cc",
+    "draco/compression/attributes/attributes_decoder.cc",
+    "draco/compression/attributes/kd_tree_attributes_decoder.cc",
+    "draco/compression/attributes/sequential_attribute_decoder.cc",
+    "draco/compression/attributes/sequential_attribute_decoders_controller.cc",
+    "draco/compression/attributes/sequential_integer_attribute_decoder.cc",
+    "draco/compression/attributes/sequential_normal_attribute_decoder.cc",
+    "draco/compression/attributes/sequential_quantization_attribute_decoder.cc",
+    "draco/compression/bit_coders/adaptive_rans_bit_decoder.cc",
+    "draco/compression/bit_coders/adaptive_rans_bit_encoder.cc",
+    "draco/compression/bit_coders/direct_bit_decoder.cc",
+    "draco/compression/bit_coders/direct_bit_encoder.cc",
+    "draco/compression/bit_coders/rans_bit_decoder.cc",
+    "draco/compression/bit_coders/rans_bit_encoder.cc",
+    "draco/compression/bit_coders/symbol_bit_decoder.cc",
+    "draco/compression/bit_coders/symbol_bit_encoder.cc",
+    "draco/compression/decode.cc",
+    "draco/compression/draco_compression_options.cc",
+    "draco/compression/entropy/shannon_entropy.cc",
+    "draco/compression/entropy/symbol_decoding.cc",
+    "draco/compression/entropy/symbol_encoding.cc",
+    "draco/compression/mesh/mesh_decoder.cc",
+    "draco/compression/mesh/mesh_edgebreaker_decoder.cc",
+    "draco/compression/mesh/mesh_edgebreaker_decoder_impl.cc",
+    "draco/compression/mesh/mesh_sequential_decoder.cc",
+    "draco/compression/point_cloud/algorithms/dynamic_integer_points_kd_tree_decoder.cc",
+    "draco/compression/point_cloud/algorithms/float_points_tree_decoder.cc",
+    "draco/compression/point_cloud/point_cloud_decoder.cc",
+    "draco/compression/point_cloud/point_cloud_kd_tree_decoder.cc",
+    "draco/compression/point_cloud/point_cloud_sequential_decoder.cc",
+    "draco/core/bit_utils.cc",
+    "draco/core/bounding_box.cc",
+    "draco/core/cycle_timer.cc",
+    "draco/core/data_buffer.cc",
+    "draco/core/decoder_buffer.cc",
+    "draco/core/divide.cc",
+    "draco/core/draco_types.cc",
+    "draco/core/encoder_buffer.cc",
+    "draco/core/hash_utils.cc",
+    "draco/core/options.cc",
+    "draco/core/quantization_utils.cc",
+    "draco/mesh/corner_table.cc",
+    "draco/mesh/mesh.cc",
+    "draco/mesh/mesh_attribute_corner_table.cc",
+    "draco/mesh/mesh_cleanup.cc",
+    "draco/mesh/mesh_features.cc",
+    "draco/mesh/mesh_misc_functions.cc",
+    "draco/mesh/mesh_stripifier.cc",
+    "draco/mesh/triangle_soup_mesh_builder.cc",
+    "draco/metadata/geometry_metadata.cc",
+    "draco/metadata/metadata.cc",
+    "draco/metadata/metadata_decoder.cc",
+    "draco/metadata/property_attribute.cc",
+    "draco/metadata/property_table.cc",
+    "draco/metadata/structural_metadata.cc",
+    "draco/metadata/structural_metadata_schema.cc",
+    "draco/point_cloud/point_cloud.cc",
+    "draco/point_cloud/point_cloud_builder.cc",
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_thirdparty = env_gltf.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.Prepend(CPPPATH=[thirdparty_dir])
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+env_gltf.Prepend(CPPPATH=[thirdparty_dir])
+env_gltf.Append(CPPDEFINES=["GLTF_HAS_DRACO"])
+
 # Godot source files
 
 env_gltf.add_source_files(env.modules_sources, "*.cpp")

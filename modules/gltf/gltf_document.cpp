@@ -44,6 +44,7 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/json.h"
+#include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/io/stream_peer.h"
 #include "core/object/class_db.h"
@@ -74,8 +75,15 @@
 #include "modules/gridmap/grid_map.h"
 #endif
 
+#ifdef GLTF_HAS_DRACO
+#include "draco/compression/decode.h"
+#include "draco/core/decoder_buffer.h"
+#include "draco/mesh/mesh.h"
+#endif // GLTF_HAS_DRACO
+
 #include <cstdio>
 #include <cstdlib>
+#include <limits>
 
 static void _attach_extras_to_meta(const Dictionary &p_extras, Ref<Resource> p_node) {
 	if (!p_extras.is_empty()) {
@@ -964,6 +972,319 @@ Array GLTFDocument::_decode_accessor_as_variants(const Ref<GLTFState> p_gltf_sta
 	Array variants = accessor->decode_as_variants(p_gltf_state, p_variant_type);
 	return variants;
 }
+
+#ifdef GLTF_HAS_DRACO
+static int _gltf_draco_accessor_component_count(GLTFAccessor::GLTFAccessorType p_accessor_type) {
+	switch (p_accessor_type) {
+		case GLTFAccessor::TYPE_SCALAR:
+			return 1;
+		case GLTFAccessor::TYPE_VEC2:
+			return 2;
+		case GLTFAccessor::TYPE_VEC3:
+			return 3;
+		case GLTFAccessor::TYPE_VEC4:
+			return 4;
+		case GLTFAccessor::TYPE_MAT2:
+		case GLTFAccessor::TYPE_MAT3:
+		case GLTFAccessor::TYPE_MAT4:
+			return 0;
+	}
+	return 0;
+}
+
+static int _gltf_draco_component_type_byte_size(GLTFAccessor::GLTFComponentType p_component_type) {
+	switch (p_component_type) {
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE:
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE:
+			return 1;
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT:
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT:
+		case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT:
+			return 2;
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT:
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT:
+		case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT:
+			return 4;
+		case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT:
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG:
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG:
+			return 8;
+		case GLTFAccessor::COMPONENT_TYPE_NONE:
+			return 0;
+	}
+	return 0;
+}
+
+template <typename T>
+static Error _gltf_draco_encode_attribute_values(const draco::Mesh &p_mesh, const draco::PointAttribute &p_attribute, const int p_component_count, PackedByteArray &r_data) {
+	const int64_t point_count = p_mesh.num_points();
+	const int64_t byte_count = point_count * p_component_count * (int64_t)sizeof(T);
+	ERR_FAIL_COND_V(byte_count < 0 || byte_count > INT32_MAX, ERR_OUT_OF_MEMORY);
+	r_data.resize(byte_count);
+	uint8_t *write_ptr = r_data.ptrw();
+	for (int64_t point_i = 0; point_i < point_count; point_i++) {
+		T values[16] = {};
+		const draco::AttributeValueIndex value_index = p_attribute.mapped_index(draco::PointIndex(point_i));
+		ERR_FAIL_COND_V_MSG(!p_attribute.ConvertValue<T>(value_index, p_component_count, values), ERR_PARSE_ERROR, "glTF import: Failed to convert Draco attribute value.");
+		memcpy(write_ptr + point_i * p_component_count * sizeof(T), values, p_component_count * sizeof(T));
+	}
+	return OK;
+}
+
+static Error _gltf_draco_encode_half_attribute_values(const draco::Mesh &p_mesh, const draco::PointAttribute &p_attribute, const int p_component_count, PackedByteArray &r_data) {
+	const int64_t point_count = p_mesh.num_points();
+	const int64_t byte_count = point_count * p_component_count * (int64_t)sizeof(uint16_t);
+	ERR_FAIL_COND_V(byte_count < 0 || byte_count > INT32_MAX, ERR_OUT_OF_MEMORY);
+	r_data.resize(byte_count);
+	uint8_t *write_ptr = r_data.ptrw();
+	for (int64_t point_i = 0; point_i < point_count; point_i++) {
+		float values[16] = {};
+		const draco::AttributeValueIndex value_index = p_attribute.mapped_index(draco::PointIndex(point_i));
+		ERR_FAIL_COND_V_MSG(!p_attribute.ConvertValue<float>(value_index, p_component_count, values), ERR_PARSE_ERROR, "glTF import: Failed to convert Draco attribute value.");
+		for (int component_i = 0; component_i < p_component_count; component_i++) {
+			encode_uint16(Math::make_half_float(values[component_i]), write_ptr + (point_i * p_component_count + component_i) * sizeof(uint16_t));
+		}
+	}
+	return OK;
+}
+
+static Error _gltf_draco_encode_attribute(const draco::Mesh &p_mesh, const draco::PointAttribute &p_attribute, const Ref<GLTFAccessor> &p_accessor, PackedByteArray &r_data) {
+	const int component_count = _gltf_draco_accessor_component_count(p_accessor->get_accessor_type());
+	ERR_FAIL_COND_V_MSG(component_count <= 0 || component_count > 16, ERR_PARSE_ERROR, "glTF import: Unsupported Draco accessor type.");
+	ERR_FAIL_COND_V_MSG(p_attribute.num_components() != component_count, ERR_PARSE_ERROR, "glTF import: Draco attribute component count does not match the glTF accessor.");
+	ERR_FAIL_COND_V_MSG(p_accessor->get_count() != p_mesh.num_points(), ERR_PARSE_ERROR, "glTF import: Draco attribute count does not match the glTF accessor.");
+	ERR_FAIL_COND_V_MSG(p_accessor->get_sparse_count() != 0, ERR_PARSE_ERROR, "glTF import: Sparse accessors are not supported for Draco-compressed attributes.");
+
+	switch (p_accessor->get_component_type()) {
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE:
+			return _gltf_draco_encode_attribute_values<int8_t>(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE:
+			return _gltf_draco_encode_attribute_values<uint8_t>(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT:
+			return _gltf_draco_encode_attribute_values<int16_t>(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT:
+			return _gltf_draco_encode_attribute_values<uint16_t>(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT:
+			return _gltf_draco_encode_attribute_values<int32_t>(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT:
+			return _gltf_draco_encode_attribute_values<uint32_t>(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT:
+			return _gltf_draco_encode_attribute_values<float>(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT:
+			return _gltf_draco_encode_attribute_values<double>(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT:
+			return _gltf_draco_encode_half_attribute_values(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG:
+			return _gltf_draco_encode_attribute_values<int64_t>(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG:
+			return _gltf_draco_encode_attribute_values<uint64_t>(p_mesh, p_attribute, component_count, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_NONE:
+			break;
+	}
+	ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "glTF import: Unsupported Draco accessor component type.");
+}
+
+template <typename T>
+static Error _gltf_draco_encode_indices_typed(const draco::Mesh &p_mesh, PackedByteArray &r_data) {
+	const int64_t index_count = (int64_t)p_mesh.num_faces() * 3;
+	const int64_t byte_count = index_count * (int64_t)sizeof(T);
+	ERR_FAIL_COND_V(byte_count < 0 || byte_count > INT32_MAX, ERR_OUT_OF_MEMORY);
+	r_data.resize(byte_count);
+	uint8_t *write_ptr = r_data.ptrw();
+	for (int64_t face_i = 0; face_i < p_mesh.num_faces(); face_i++) {
+		const draco::Mesh::Face &face = p_mesh.face(draco::FaceIndex(face_i));
+		for (int corner_i = 0; corner_i < 3; corner_i++) {
+			const int64_t point_index = face[corner_i].value();
+			ERR_FAIL_COND_V_MSG(point_index < 0 || point_index >= p_mesh.num_points(), ERR_PARSE_ERROR, "glTF import: Draco face references an invalid point.");
+			ERR_FAIL_COND_V_MSG((uint64_t)point_index > (uint64_t)std::numeric_limits<T>::max(), ERR_PARSE_ERROR, "glTF import: Draco mesh index does not fit in the glTF index accessor component type.");
+			const T value = (T)point_index;
+			memcpy(write_ptr + (face_i * 3 + corner_i) * sizeof(T), &value, sizeof(T));
+		}
+	}
+	return OK;
+}
+
+static Error _gltf_draco_encode_indices(const draco::Mesh &p_mesh, const Ref<GLTFAccessor> &p_accessor, PackedByteArray &r_data) {
+	ERR_FAIL_COND_V_MSG(p_accessor->get_accessor_type() != GLTFAccessor::TYPE_SCALAR, ERR_PARSE_ERROR, "glTF import: Draco index accessor must be a scalar accessor.");
+	ERR_FAIL_COND_V_MSG(p_accessor->get_count() != (int64_t)p_mesh.num_faces() * 3, ERR_PARSE_ERROR, "glTF import: Draco index count does not match the glTF index accessor.");
+	ERR_FAIL_COND_V_MSG(p_accessor->get_sparse_count() != 0, ERR_PARSE_ERROR, "glTF import: Sparse accessors are not supported for Draco-compressed indices.");
+
+	switch (p_accessor->get_component_type()) {
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE:
+			return _gltf_draco_encode_indices_typed<uint8_t>(p_mesh, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT:
+			return _gltf_draco_encode_indices_typed<uint16_t>(p_mesh, r_data);
+		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT:
+			return _gltf_draco_encode_indices_typed<uint32_t>(p_mesh, r_data);
+		default:
+			break;
+	}
+	ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "glTF import: Draco index accessor must use an unsigned integer component type.");
+}
+
+Error GLTFDocument::_write_decoded_draco_accessor_data(Ref<GLTFState> p_state, GLTFAccessorIndex p_accessor_index, const PackedByteArray &p_data, GLTFBufferView::ArrayBufferTarget p_target) {
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_PARSE_ERROR);
+	ERR_FAIL_INDEX_V(p_accessor_index, p_state->accessors.size(), ERR_PARSE_ERROR);
+	ERR_FAIL_COND_V_MSG(p_data.is_empty(), ERR_PARSE_ERROR, "glTF import: Draco decoded accessor data is empty.");
+	Ref<GLTFAccessor> accessor = p_state->accessors[p_accessor_index];
+	ERR_FAIL_COND_V(accessor.is_null(), ERR_PARSE_ERROR);
+	const int component_byte_size = _gltf_draco_component_type_byte_size(accessor->get_component_type());
+	ERR_FAIL_COND_V_MSG(component_byte_size <= 0, ERR_PARSE_ERROR, "glTF import: Draco decoded accessor has an unsupported component type.");
+	const int component_count = _gltf_draco_accessor_component_count(accessor->get_accessor_type());
+	ERR_FAIL_COND_V_MSG(component_count <= 0, ERR_PARSE_ERROR, "glTF import: Draco decoded accessor has an unsupported accessor type.");
+	const int64_t accessor_count = accessor->get_count();
+	const int64_t raw_element_size = (int64_t)component_byte_size * component_count;
+	const int64_t raw_byte_count = accessor_count * raw_element_size;
+	ERR_FAIL_COND_V_MSG(accessor_count <= 0 || raw_byte_count != p_data.size(), ERR_PARSE_ERROR, "glTF import: Draco decoded accessor data size does not match the glTF accessor.");
+
+	const PackedByteArray *buffer_data = &p_data;
+	PackedByteArray padded_data;
+	int64_t byte_stride = -1;
+	if (p_target == GLTFBufferView::TARGET_ARRAY_BUFFER) {
+		byte_stride = raw_element_size;
+		if (byte_stride < 4 || byte_stride % 4 != 0) {
+			byte_stride += 4 - (byte_stride % 4);
+		}
+		if (byte_stride != raw_element_size) {
+			const int64_t padded_byte_count = accessor_count * byte_stride;
+			ERR_FAIL_COND_V(padded_byte_count > INT32_MAX, ERR_OUT_OF_MEMORY);
+			padded_data.resize(padded_byte_count);
+			const uint8_t *source_ptr = p_data.ptr();
+			uint8_t *write_ptr = padded_data.ptrw();
+			for (int64_t element_i = 0; element_i < accessor_count; element_i++) {
+				memcpy(write_ptr + element_i * byte_stride, source_ptr + element_i * raw_element_size, raw_element_size);
+			}
+			buffer_data = &padded_data;
+		}
+	}
+
+	const GLTFBufferViewIndex buffer_view = GLTFBufferView::write_new_buffer_view_into_state(p_state, *buffer_data, component_byte_size, p_target, byte_stride, 0, false);
+	ERR_FAIL_COND_V(buffer_view < 0, ERR_PARSE_ERROR);
+	accessor->set_buffer_view(buffer_view);
+	accessor->set_byte_offset(0);
+	return OK;
+}
+
+Error GLTFDocument::_decode_draco_primitive(Ref<GLTFState> p_state, Dictionary &r_mesh_prim) {
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_PARSE_ERROR);
+	ERR_FAIL_COND_V(!r_mesh_prim.has("extensions"), ERR_PARSE_ERROR);
+	Dictionary extensions = r_mesh_prim["extensions"];
+	ERR_FAIL_COND_V(!extensions.has("KHR_draco_mesh_compression"), ERR_PARSE_ERROR);
+	const Dictionary draco_extension = extensions["KHR_draco_mesh_compression"];
+	ERR_FAIL_COND_V_MSG(!draco_extension.has("bufferView"), ERR_PARSE_ERROR, "glTF import: KHR_draco_mesh_compression is missing bufferView.");
+	ERR_FAIL_COND_V_MSG(!draco_extension.has("attributes"), ERR_PARSE_ERROR, "glTF import: KHR_draco_mesh_compression is missing attributes.");
+	ERR_FAIL_COND_V_MSG(!r_mesh_prim.has("attributes"), ERR_PARSE_ERROR, "glTF import: Draco-compressed primitive is missing attributes.");
+
+	const int mode = r_mesh_prim.has("mode") ? (int)r_mesh_prim["mode"] : 4;
+	ERR_FAIL_COND_V_MSG(mode != 4 && mode != 5, ERR_PARSE_ERROR, "glTF import: Draco-compressed primitive mode must be TRIANGLES or TRIANGLE_STRIP.");
+	const GLTFBufferViewIndex compressed_buffer_view_index = draco_extension["bufferView"];
+	ERR_FAIL_INDEX_V(compressed_buffer_view_index, p_state->buffer_views.size(), ERR_PARSE_ERROR);
+	const Ref<GLTFBufferView> compressed_buffer_view = p_state->buffer_views[compressed_buffer_view_index];
+	ERR_FAIL_COND_V(compressed_buffer_view.is_null(), ERR_PARSE_ERROR);
+	const Vector<uint8_t> compressed_data = compressed_buffer_view->load_buffer_view_data(p_state);
+	ERR_FAIL_COND_V_MSG(compressed_data.is_empty(), ERR_PARSE_ERROR, "glTF import: Draco buffer view is empty.");
+
+	draco::DecoderBuffer decoder_buffer;
+	decoder_buffer.Init(reinterpret_cast<const char *>(compressed_data.ptr()), compressed_data.size());
+	draco::Decoder decoder;
+	draco::StatusOr<std::unique_ptr<draco::Mesh>> decoded_mesh_status = decoder.DecodeMeshFromBuffer(&decoder_buffer);
+	ERR_FAIL_COND_V_MSG(!decoded_mesh_status.ok(), ERR_PARSE_ERROR, "glTF import: Draco mesh decode failed: " + String(decoded_mesh_status.status().error_msg()));
+	std::unique_ptr<draco::Mesh> decoded_mesh = std::move(decoded_mesh_status).value();
+	ERR_FAIL_COND_V_MSG(decoded_mesh == nullptr, ERR_PARSE_ERROR, "glTF import: Draco mesh decode returned no mesh.");
+	ERR_FAIL_COND_V_MSG(decoded_mesh->num_faces() <= 0 || decoded_mesh->num_points() <= 0, ERR_PARSE_ERROR, "glTF import: Draco mesh is empty.");
+
+	const Dictionary primitive_attributes = r_mesh_prim["attributes"];
+	const Dictionary draco_attributes = draco_extension["attributes"];
+	ERR_FAIL_COND_V_MSG(draco_attributes.is_empty(), ERR_PARSE_ERROR, "glTF import: Draco-compressed primitive has no compressed attributes.");
+	ERR_FAIL_COND_V_MSG(!draco_attributes.has("POSITION"), ERR_PARSE_ERROR, "glTF import: Draco-compressed primitive is missing the required POSITION attribute.");
+	Error err = OK;
+	for (const KeyValue<Variant, Variant> &kv : draco_attributes) {
+		const String attribute_name = String(kv.key);
+		ERR_FAIL_COND_V_MSG(!primitive_attributes.has(attribute_name), ERR_PARSE_ERROR, "glTF import: Draco attribute '" + attribute_name + "' does not have a matching glTF accessor.");
+		const GLTFAccessorIndex accessor_index = primitive_attributes[attribute_name];
+		ERR_FAIL_INDEX_V(accessor_index, p_state->accessors.size(), ERR_PARSE_ERROR);
+		const Ref<GLTFAccessor> accessor = p_state->accessors[accessor_index];
+		ERR_FAIL_COND_V(accessor.is_null(), ERR_PARSE_ERROR);
+		const int draco_attribute_unique_id = kv.value;
+		const int draco_attribute_id = decoded_mesh->GetAttributeIdByUniqueId(draco_attribute_unique_id);
+		ERR_FAIL_COND_V_MSG(draco_attribute_id < 0, ERR_PARSE_ERROR, "glTF import: Draco attribute '" + attribute_name + "' is missing from the compressed mesh.");
+		const draco::PointAttribute *draco_attribute = decoded_mesh->attribute(draco_attribute_id);
+		ERR_FAIL_NULL_V(draco_attribute, ERR_PARSE_ERROR);
+		PackedByteArray decoded_attribute_data;
+		err = _gltf_draco_encode_attribute(*decoded_mesh, *draco_attribute, accessor, decoded_attribute_data);
+		ERR_FAIL_COND_V(err != OK, err);
+		err = _write_decoded_draco_accessor_data(p_state, accessor_index, decoded_attribute_data, GLTFBufferView::TARGET_ARRAY_BUFFER);
+		ERR_FAIL_COND_V(err != OK, err);
+	}
+
+	GLTFAccessorIndex index_accessor_index = -1;
+	if (r_mesh_prim.has("indices")) {
+		index_accessor_index = r_mesh_prim["indices"];
+		ERR_FAIL_INDEX_V(index_accessor_index, p_state->accessors.size(), ERR_PARSE_ERROR);
+	} else {
+		Ref<GLTFAccessor> index_accessor;
+		index_accessor.instantiate();
+		index_accessor->set_accessor_type(GLTFAccessor::TYPE_SCALAR);
+		index_accessor->set_component_type(GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT);
+		index_accessor->set_count((int64_t)decoded_mesh->num_faces() * 3);
+		Vector<double> min;
+		min.push_back(0.0);
+		index_accessor->set_min(min);
+		Vector<double> max;
+		max.push_back((double)MAX(0, (int)decoded_mesh->num_points() - 1));
+		index_accessor->set_max(max);
+		index_accessor_index = p_state->accessors.size();
+		p_state->accessors.push_back(index_accessor);
+		r_mesh_prim["indices"] = index_accessor_index;
+	}
+	const Ref<GLTFAccessor> index_accessor = p_state->accessors[index_accessor_index];
+	ERR_FAIL_COND_V(index_accessor.is_null(), ERR_PARSE_ERROR);
+	PackedByteArray decoded_index_data;
+	err = _gltf_draco_encode_indices(*decoded_mesh, index_accessor, decoded_index_data);
+	ERR_FAIL_COND_V(err != OK, err);
+	err = _write_decoded_draco_accessor_data(p_state, index_accessor_index, decoded_index_data, GLTFBufferView::TARGET_ELEMENT_ARRAY_BUFFER);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	r_mesh_prim["mode"] = 4;
+	extensions.erase("KHR_draco_mesh_compression");
+	if (extensions.is_empty()) {
+		r_mesh_prim.erase("extensions");
+	} else {
+		r_mesh_prim["extensions"] = extensions;
+	}
+	return OK;
+}
+
+Error GLTFDocument::_decode_draco_mesh_compression(Ref<GLTFState> p_state) {
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_PARSE_ERROR);
+	if (!p_state->json.has("meshes")) {
+		return OK;
+	}
+	Array meshes = p_state->json["meshes"];
+	for (int mesh_i = 0; mesh_i < meshes.size(); mesh_i++) {
+		Dictionary mesh_dict = meshes[mesh_i];
+		ERR_FAIL_COND_V(!mesh_dict.has("primitives"), ERR_PARSE_ERROR);
+		Array primitives = mesh_dict["primitives"];
+		for (int primitive_i = 0; primitive_i < primitives.size(); primitive_i++) {
+			Dictionary mesh_prim = primitives[primitive_i];
+			if (!mesh_prim.has("extensions")) {
+				continue;
+			}
+			const Dictionary extensions = mesh_prim["extensions"];
+			if (!extensions.has("KHR_draco_mesh_compression")) {
+				continue;
+			}
+			Error err = _decode_draco_primitive(p_state, mesh_prim);
+			ERR_FAIL_COND_V(err != OK, err);
+			primitives[primitive_i] = mesh_prim;
+		}
+		mesh_dict["primitives"] = primitives;
+		meshes[mesh_i] = mesh_dict;
+	}
+	p_state->json["meshes"] = meshes;
+	return OK;
+}
+#endif // GLTF_HAS_DRACO
 
 Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 	Array meshes;
@@ -6975,6 +7296,9 @@ HashSet<String> GLTFDocument::get_supported_gltf_extensions_hashset() {
 	supported_extensions.insert("KHR_materials_unlit");
 	supported_extensions.insert("KHR_node_visibility");
 	supported_extensions.insert("KHR_texture_transform");
+#ifdef GLTF_HAS_DRACO
+	supported_extensions.insert("KHR_draco_mesh_compression");
+#endif // GLTF_HAS_DRACO
 	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		Vector<String> ext_supported_extensions = ext->get_supported_extensions();
@@ -7119,6 +7443,12 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	/* PARSE EXTENSIONS */
 	err = _parse_gltf_extensions(p_state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
+#ifdef GLTF_HAS_DRACO
+	/* EXPAND DRACO-COMPRESSED MESH PRIMITIVES */
+	err = _decode_draco_mesh_compression(p_state);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+#endif // GLTF_HAS_DRACO
 
 	/* PARSE SCENE */
 	err = _parse_scenes(p_state);

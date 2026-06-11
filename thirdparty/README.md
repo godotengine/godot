@@ -200,6 +200,22 @@ Patches:
 - `0001-ciso646-version.patch` ([GH-105913](https://github.com/godotengine/godot/pull/105913))
 
 
+## draco
+
+- Upstream: https://github.com/google/draco
+- Version: 1.5.7
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- Decoder source files and headers from `src/draco`
+- `AUTHORS` and `LICENSE`
+
+Files excluded from upstream source:
+
+- Tests, command-line tools, JavaScript/WASM wrappers, and plugin folders
+
+
 ## dr_libs
 
 - Upstream: https://github.com/mackron/dr_libs

@@ -252,6 +252,11 @@ Comment: doctest
 Copyright: 2016-2023, Viktor Kirilov
 License: Expat
 
+Files: thirdparty/draco/*
+Comment: Draco
+Copyright: 2016-2024, Google Inc. and other contributors
+License: Apache-2.0
+
 Files: thirdparty/dr_libs/*
 Comment: dr_libs
 Copyright: 2020, David Reid
