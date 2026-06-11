@@ -2274,6 +2274,7 @@ void FileDialog::set_show_hidden_files(bool p_show) {
 	if (show_hidden_files == p_show) {
 		return;
 	}
+	show_hidden->set_pressed_no_signal(p_show);
 	show_hidden_files = p_show;
 	invalidate();
 }
