@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsRayQueryResult3D" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Holds the result of a 3D ray-casting query from [method PhysicsDirectSpaceState3D.intersect_ray_into].
+	</brief_description>
+	<description>
+		Holds the result of a 3D ray-casting query performed with [method PhysicsDirectSpaceState3D.intersect_ray_into].
+		Unlike [method PhysicsDirectSpaceState3D.intersect_ray], which allocates and returns a new [Dictionary] on every call, this object can be created once and reused across many [method PhysicsDirectSpaceState3D.intersect_ray_into] calls, avoiding per-call allocations. This is useful for gameplay code that performs a large number of raycasts every frame, such as hitscan weapons, line-of-sight checks, or foot IK.
+		Use [method has_hit] to check whether the last query produced a hit. If the last query did not hit anything, all fields are reset to their default values.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collider" qualifiers="const">
+			<return type="Object" />
+			<description>
+				Returns the colliding object, if the ray hit something. Returns [code]null[/code] otherwise.
+			</description>
+		</method>
+		<method name="get_collider_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the unique instance ID of the colliding object, if the ray hit something. Returns [code]0[/code] otherwise. See [method Object.get_instance_id].
+			</description>
+		</method>
+		<method name="get_face_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the face index at the intersection point, if the ray hit something.
+				[b]Note:[/b] Returns a valid number only if the intersected shape is a [ConcavePolygonShape3D]. Otherwise, [code]-1[/code] is returned.
+			</description>
+		</method>
+		<method name="get_normal" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the object's surface normal at the intersection point, if the ray hit something. Returns [constant Vector3.ZERO] otherwise, or if the ray starts inside the shape and [member PhysicsRayQueryParameters3D.hit_from_inside] is [code]true[/code].
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the intersection point, if the ray hit something. Returns [constant Vector3.ZERO] otherwise.
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the intersecting object, if the ray hit something.
+			</description>
+		</method>
+		<method name="get_shape" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the shape index of the colliding shape, if the ray hit something.
+			</description>
+		</method>
+		<method name="has_hit" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the last [method PhysicsDirectSpaceState3D.intersect_ray_into] call resulted in a hit, and the rest of this object's fields hold valid hit data. Returns [code]false[/code] if the last query missed, in which case all fields are reset to their default values.
+			</description>
+		</method>
+	</methods>
+</class>

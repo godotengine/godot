@@ -248,6 +248,24 @@ Ref<PhysicsRayQueryParameters3D> PhysicsRayQueryParameters3D::create(Vector3 p_f
 	return params;
 }
 
+///////////////////////////////////////////////////////
+
+void PhysicsRayQueryResult3D::clear() {
+	result = PhysicsDirectSpaceState3D::RayResult();
+	hit = false;
+}
+
+void PhysicsRayQueryResult3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("has_hit"), &PhysicsRayQueryResult3D::has_hit);
+	ClassDB::bind_method(D_METHOD("get_position"), &PhysicsRayQueryResult3D::get_position);
+	ClassDB::bind_method(D_METHOD("get_normal"), &PhysicsRayQueryResult3D::get_normal);
+	ClassDB::bind_method(D_METHOD("get_face_index"), &PhysicsRayQueryResult3D::get_face_index);
+	ClassDB::bind_method(D_METHOD("get_collider_id"), &PhysicsRayQueryResult3D::get_collider_id);
+	ClassDB::bind_method(D_METHOD("get_collider"), &PhysicsRayQueryResult3D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_shape"), &PhysicsRayQueryResult3D::get_shape);
+	ClassDB::bind_method(D_METHOD("get_rid"), &PhysicsRayQueryResult3D::get_rid);
+}
+
 void PhysicsPointQueryParameters3D::set_exclude(const TypedArray<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
@@ -383,6 +401,23 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(RequiredParam<PhysicsRayQue
 	return d;
 }
 
+bool PhysicsDirectSpaceState3D::_intersect_ray_into(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, const Ref<PhysicsRayQueryResult3D> &p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, false);
+	ERR_FAIL_COND_V_MSG(p_result.is_null(), false, "The result object must be a valid PhysicsRayQueryResult3D instance.");
+
+	RayResult result;
+	bool res = intersect_ray(p_ray_query->get_parameters(), result);
+
+	if (!res) {
+		p_result->clear();
+		return false;
+	}
+
+	*p_result->get_result_ptr() = result;
+	p_result->set_hit(true);
+	return true;
+}
+
 TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results) {
 	EXTRACT_PARAM_OR_FAIL_V(p_point_query, rp_point_query, TypedArray<Dictionary>());
 
@@ -488,6 +523,7 @@ PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 void PhysicsDirectSpaceState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_point, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray);
+	ClassDB::bind_method(D_METHOD("intersect_ray_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_ray_into);
 	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState3D::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_collide_shape, DEFVAL(32));

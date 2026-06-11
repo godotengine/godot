@@ -75,6 +75,16 @@
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
 			</description>
 		</method>
+		<method name="intersect_ray_into">
+			<return type="bool" />
+			<param index="0" name="parameters" type="PhysicsRayQueryParameters3D" />
+			<param index="1" name="result" type="PhysicsRayQueryResult3D" />
+			<description>
+				Intersects a ray in a given space, like [method intersect_ray], but writes the hit information directly into the provided [param result] object instead of allocating and returning a new [Dictionary].
+				Returns [code]true[/code] if the ray hit something, in which case [param result] is populated with the hit data and [method PhysicsRayQueryResult3D.has_hit] returns [code]true[/code]. If the ray did not hit anything, [param result] is reset to its default state and this method returns [code]false[/code].
+				Reusing the same [PhysicsRayQueryResult3D] instance across many calls avoids the per-call allocations of [method intersect_ray], which is useful for gameplay code that performs a large number of raycasts every frame (e.g. hitscan weapons, line-of-sight checks, or foot IK).
+			</description>
+		</method>
 		<method name="intersect_shape">
 			<return type="Dictionary[]" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
