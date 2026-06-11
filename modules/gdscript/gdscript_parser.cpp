@@ -726,6 +726,12 @@ void GDScriptParser::parse_program() {
 						// Some annotations need to be resolved and applied in the parser.
 						// The root class is not in any class, so `head->outer == nullptr`.
 						annotation->apply(this, head, nullptr);
+
+						// Required so that the range for the REDUNDANT_STATIC_UNLOAD
+						// warning can be determined.
+						if (annotation->name == SNAME("@static_unload")) {
+							head->annotations.push_back(annotation);
+						}
 					} else {
 						head->annotations.push_back(annotation);
 					}
