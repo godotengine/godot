@@ -121,7 +121,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 		DEBUG_VALIDATE_ARG_COUNT(1, 1);
 		DEBUG_VALIDATE_ARG_TYPE(0, Variant::INT);
 		const int64_t code = *p_args[0];
-		VALIDATE_ARG_CUSTOM(0, Variant::INT, code < 0 || code > UINT32_MAX, RTR("Expected an integer between 0 and 2^32 - 1."));
+		VALIDATE_ARG_CUSTOM(0, Variant::INT, code <= 0 || (code & 0xFFFFF800) == 0xD800 || code > 0x10FFFF,
+				vformat(RTR("%d is not a valid character code."), code));
 		*r_ret = String::chr(code);
 	}
 
