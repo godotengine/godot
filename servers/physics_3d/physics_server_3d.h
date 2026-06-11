@@ -121,12 +121,14 @@ public:
 class PhysicsRayQueryParameters3D;
 class PhysicsPointQueryParameters3D;
 class PhysicsShapeQueryParameters3D;
+class PhysicsRayQueryResult3D;
 
 class PhysicsDirectSpaceState3D : public Object {
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
 
 private:
 	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query);
+	bool _intersect_ray_into(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, const Ref<PhysicsRayQueryResult3D> &p_result);
 	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
@@ -1051,6 +1053,40 @@ public:
 
 	PhysicsServer3DManager();
 	~PhysicsServer3DManager();
+};
+
+// Allocation-free raycast result object. Reuse a single instance across many
+// intersect_ray_into() calls to avoid per-frame Dictionary allocation and
+// Variant boxing that the standard intersect_ray() API incurs.
+class PhysicsRayQueryResult3D : public RefCounted {
+	GDCLASS(PhysicsRayQueryResult3D, RefCounted);
+
+	Vector3 position;
+	Vector3 normal;
+	RID rid;
+	ObjectID collider_id;
+	Object *collider = nullptr;
+	int shape = 0;
+	int face_index = -1;
+	bool hit = false;
+
+protected:
+	static void _bind_methods();
+
+public:
+	// Called by PhysicsDirectSpaceState3D::_intersect_ray_into() to write results directly.
+	void _set_result(const PhysicsDirectSpaceState3D::RayResult &p_result);
+	void _clear();
+
+	bool has_hit() const { return hit; }
+
+	Vector3 get_position() const { return position; }
+	Vector3 get_normal() const { return normal; }
+	RID get_rid() const { return rid; }
+	ObjectID get_collider_id() const { return collider_id; }
+	Object *get_collider() const { return collider; }
+	int get_shape() const { return shape; }
+	int get_face_index() const { return face_index; }
 };
 
 VARIANT_ENUM_CAST(PhysicsServer3D::ShapeType);
