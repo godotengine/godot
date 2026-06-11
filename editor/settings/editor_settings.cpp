@@ -52,6 +52,7 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/project_manager/engine_update_label.h"
+#include "editor/settings/editor_setting_tracker.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/translations/editor_translation.h"
 #include "main/main.h"
@@ -82,6 +83,16 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	bool changed = _set_only(p_name, p_value);
 	if (changed && initialized) {
+		for (EditorSettingTracker *tracker : setting_trackers) {
+			if (tracker->setting != p_name) {
+				continue;
+			}
+			tracker->value = p_value;
+			if (!tracker->changed_callback.is_null()) {
+				tracker->changed_callback.call();
+			}
+		}
+
 		changed_settings.insert(p_name);
 		if (p_name == SNAME("text_editor/external/exec_path")) {
 			const StringName exec_args_name = "text_editor/external/exec_flags";
