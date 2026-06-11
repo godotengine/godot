@@ -861,7 +861,7 @@ struct VariantInitializer {
 template <typename T>
 struct VariantInitializer<T, std::enable_if_t<VariantInternalAccessor<T>::is_local>> {
 	static _FORCE_INLINE_ void init(Variant *v) {
-		memnew_placement(&VariantInternalAccessor<T>::get(v), T);
+		memnew_placement(&VariantInternalAccessor<T>::get(v), T());
 		VariantInternal::set_type(*v, GetTypeInfo<T>::VARIANT_TYPE);
 	}
 };
