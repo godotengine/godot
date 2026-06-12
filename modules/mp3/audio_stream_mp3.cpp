@@ -212,7 +212,7 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 }
 
 String AudioStreamMP3::get_stream_name() const {
-	return ""; //return stream_name;
+	return "MP3";
 }
 
 void AudioStreamMP3::clear_data() {

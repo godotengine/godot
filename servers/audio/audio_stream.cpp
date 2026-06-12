@@ -332,6 +332,7 @@ Ref<AudioSample> AudioStream::generate_sample() const {
 }
 
 void AudioStream::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_stream_name"), &AudioStream::get_stream_name);
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);
 	ClassDB::bind_method(D_METHOD("instantiate_playback"), &AudioStream::instantiate_playback);

@@ -203,7 +203,7 @@ TEST_CASE("[Audio][AudioStreamWAV] Default values") {
 	CHECK(stream->get_length() == 0);
 	CHECK(stream->is_monophonic() == false);
 	CHECK(stream->get_data() == Vector<uint8_t>{});
-	CHECK(stream->get_stream_name() == "");
+	CHECK(stream->get_stream_name() == "WAV");
 }
 
 TEST_CASE("[Audio][AudioStreamWAV] Save empty file") {
