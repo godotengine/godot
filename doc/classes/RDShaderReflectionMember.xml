@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDShaderReflectionMember" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Shader reflection member reflected from SPIR-V bytecode.
+	</brief_description>
+	<description>
+		Describes a member of a shader block reflected with [method RenderingDevice.shader_reflect_spirv]. Nested structure members are exposed recursively through [member members].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="array_dimensions" type="PackedInt32Array" setter="" getter="get_array_dimensions" default="PackedInt32Array()">
+			Array dimensions for this member.
+		</member>
+		<member name="matrix_column_count" type="int" setter="" getter="get_matrix_column_count" default="0">
+			Number of matrix columns, or [code]0[/code] if this member is not a matrix.
+		</member>
+		<member name="matrix_row_count" type="int" setter="" getter="get_matrix_row_count" default="0">
+			Number of matrix rows, or [code]0[/code] if this member is not a matrix.
+		</member>
+		<member name="matrix_stride" type="int" setter="" getter="get_matrix_stride" default="0">
+			Matrix stride in bytes.
+		</member>
+		<member name="members" type="RDShaderReflectionMember[]" setter="" getter="get_members" default="[]">
+			Nested structure members.
+		</member>
+		<member name="name" type="String" setter="" getter="get_name" default="&quot;&quot;">
+			The reflected member name, if present in the SPIR-V bytecode.
+		</member>
+		<member name="numeric_signedness" type="int" setter="" getter="get_numeric_signedness" default="0">
+			Numeric signedness for scalar, vector, and matrix members.
+		</member>
+		<member name="numeric_width" type="int" setter="" getter="get_numeric_width" default="0">
+			Numeric width in bits for scalar, vector, and matrix members.
+		</member>
+		<member name="offset" type="int" setter="" getter="get_offset" default="0">
+			Offset in bytes relative to the containing block or structure.
+		</member>
+		<member name="padded_size" type="int" setter="" getter="get_padded_size" default="0">
+			Padded size in bytes.
+		</member>
+		<member name="size" type="int" setter="" getter="get_size" default="0">
+			Size in bytes.
+		</member>
+		<member name="type_op" type="int" setter="" getter="get_type_op" default="0">
+			The SPIR-V type operation value for this member.
+		</member>
+		<member name="vector_component_count" type="int" setter="" getter="get_vector_component_count" default="0">
+			Number of vector components, or [code]0[/code] if this member is not a vector.
+		</member>
+	</members>
+</class>
