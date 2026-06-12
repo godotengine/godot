@@ -383,6 +383,7 @@ void RigidBody3D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 	}
 
 	notify_property_list_changed();
+	update_gizmos();
 }
 
 RigidBody3D::CenterOfMassMode RigidBody3D::get_center_of_mass_mode() const {
@@ -398,6 +399,7 @@ void RigidBody3D::set_center_of_mass(const Vector3 &p_center_of_mass) {
 	center_of_mass = p_center_of_mass;
 
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
+	update_gizmos();
 }
 
 const Vector3 &RigidBody3D::get_center_of_mass() const {
