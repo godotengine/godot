@@ -335,6 +335,7 @@ public:
 		 */
 		TextEdit text_edit;
 		Color font_color;
+		bool deprecated = false;
 		Ref<Resource> icon;
 		Variant default_value;
 		Vector<Pair<int, int>> matches;
