@@ -144,6 +144,7 @@ protected:
 		String modules_buildphase;
 		String modules_buildgrp;
 		Vector<String> capabilities;
+		bool has_accesskit = false;
 	};
 
 	struct CodeSigningDetails {
