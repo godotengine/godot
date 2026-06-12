@@ -59,7 +59,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		void cleanup() {
 			DEV_ASSERT(!cleaned);
 			if (is_new_temporary) {
-				codegen->pop_temporary();
+				codegen->pop_temporary(target.address);
 			}
 #ifdef DEV_ENABLED
 			cleaned = true;
@@ -462,7 +462,7 @@ public:
 	virtual uint32_t add_or_get_constant(const Variant &p_constant) override;
 	virtual uint32_t add_or_get_name(const StringName &p_name) override;
 	virtual uint32_t add_temporary(const GDScriptDataType &p_type) override;
-	virtual void pop_temporary() override;
+	virtual void pop_temporary(int p_slot_idx) override;
 	virtual void clear_temporaries() override;
 	virtual void clear_address(const Address &p_address) override;
 	virtual bool is_local_dirty(const Address &p_address) const override;
