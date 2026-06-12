@@ -164,7 +164,6 @@ public:
 	Error save_to_wav(const String &p_path);
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 
 	virtual bool can_be_sampled() const override {
 		return true;

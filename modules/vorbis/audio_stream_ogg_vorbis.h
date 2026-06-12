@@ -161,7 +161,6 @@ public:
 	virtual Dictionary get_tags() const override;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 
 	void set_packet_sequence(Ref<OggPacketSequence> p_packet_sequence);
 	Ref<OggPacketSequence> get_packet_sequence() const;
