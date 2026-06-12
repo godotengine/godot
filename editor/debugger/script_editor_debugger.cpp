@@ -281,17 +281,25 @@ void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String 
 	Array msg = { p_obj_id, p_prop };
 
 	Ref<Resource> res = p_value;
-	if (res.is_valid() && !res->get_path().is_empty()) {
-		msg.append(res->get_path());
+	if (res.is_valid()) {
+		bool is_valid_file = !res->get_path().is_empty() && !res->get_path().contains("::") && FileAccess::exists(res->get_path());
+		if (is_valid_file) {
+			msg.append(res->get_path());
+		} else {
+			msg.append(res->get_path());
+			msg.append(res->get_class());
+		}
 	} else {
 		msg.append(p_value);
 	}
 
+	bool is_data_msg = msg.size() == 4;
+
 	if (p_field.is_empty()) {
-		_put_msg("scene:set_object_property", msg);
+		_put_msg(is_data_msg ? "scene:set_object_property_data" : "scene:set_object_property", msg);
 	} else {
 		msg.push_back(p_field);
-		_put_msg("scene:set_object_property_field", msg);
+		_put_msg(is_data_msg ? "scene:set_object_property_field_data" : "scene:set_object_property_field", msg);
 	}
 }
 
@@ -1514,9 +1522,15 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
 		if (p_value.is_ref_counted()) {
 			Ref<Resource> res = p_value;
-			if (res.is_valid() && !res->get_path().is_empty()) {
-				Array msg = { pathid, p_property, res->get_path() };
-				_put_msg("scene:live_node_prop_res", msg);
+			if (res.is_valid()) {
+				bool is_valid_file = !res->get_path().is_empty() && !res->get_path().contains("::") && FileAccess::exists(res->get_path());
+				if (is_valid_file) {
+					Array msg = { pathid, p_property, res->get_path() };
+					_put_msg("scene:live_node_prop_res", msg);
+				} else {
+					Array msg = { pathid, p_property, res->get_path(), res->get_class() };
+					_put_msg("scene:live_node_prop_data", msg);
+				}
 			}
 		} else {
 			Array msg = { pathid, p_property, p_value };
@@ -1534,9 +1548,15 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
 		if (p_value.is_ref_counted()) {
 			Ref<Resource> res2 = p_value;
-			if (res2.is_valid() && !res2->get_path().is_empty()) {
-				Array msg = { pathid, p_property, res2->get_path() };
-				_put_msg("scene:live_res_prop_res", msg);
+			if (res2.is_valid()) {
+				bool is_valid_file = !res2->get_path().is_empty() && !res2->get_path().contains("::") && FileAccess::exists(res2->get_path());
+				if (is_valid_file) {
+					Array msg = { pathid, p_property, res2->get_path() };
+					_put_msg("scene:live_res_prop_res", msg);
+				} else {
+					Array msg = { pathid, p_property, res2->get_path(), res2->get_class() };
+					_put_msg("scene:live_res_prop_data", msg);
+				}
 			}
 		} else {
 			Array msg = { pathid, p_property, p_value };
