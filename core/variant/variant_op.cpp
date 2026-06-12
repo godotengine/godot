@@ -395,6 +395,11 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorDiv<Color, Color, double>>(Variant::OP_DIVIDE, Variant::COLOR, Variant::FLOAT);
 	register_op<OperatorEvaluatorDiv<Color, Color, int64_t>>(Variant::OP_DIVIDE, Variant::COLOR, Variant::INT);
 
+	register_op<OperatorEvaluatorIntDivNZ<int64_t, int64_t>>(Variant::OP_INT_DIVIDE, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorIntDivNZ<double, int64_t>>(Variant::OP_INT_DIVIDE, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorIntDiv<int64_t, double>>(Variant::OP_INT_DIVIDE, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorIntDiv<double, double>>(Variant::OP_INT_DIVIDE, Variant::FLOAT, Variant::FLOAT);
+
 	register_op<OperatorEvaluatorModNZ<int64_t, int64_t, int64_t>>(Variant::OP_MODULE, Variant::INT, Variant::INT);
 	register_op<OperatorEvaluatorModNZ<Vector2i, Vector2i, Vector2i>>(Variant::OP_MODULE, Variant::VECTOR2I, Variant::VECTOR2I);
 	register_op<OperatorEvaluatorModNZ<Vector2i, Vector2i, int64_t>>(Variant::OP_MODULE, Variant::VECTOR2I, Variant::INT);
@@ -1089,6 +1094,7 @@ static const char *_op_names[Variant::OP_MAX] = {
 	"-",
 	"*",
 	"/",
+	"~/",
 	"unary-",
 	"unary+",
 	"%",
