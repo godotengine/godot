@@ -239,7 +239,7 @@ public:
 		TUD *ud = memnew(TUD);
 		ud->instance = p_instance;
 		ud->method = p_method;
-		ud->userdata = p_userdata;
+		ud->userdata = std::move(p_userdata);
 		return _add_task(Callable(), nullptr, nullptr, ud, p_high_priority, p_description);
 	}
 	TaskID add_native_task(void (*p_func)(void *), void *p_userdata, bool p_high_priority = false, const String &p_description = String());
