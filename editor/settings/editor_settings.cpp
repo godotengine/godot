@@ -1755,6 +1755,72 @@ void EditorSettings::set_favorite_properties(const HashMap<String, PackedStringA
 	cf->save(favorite_properties_file);
 }
 
+void EditorSettings::_save_local_favorite_properties_to_disk() const {
+	String favorite_properties_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorite_properties_local");
+
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	for (const KeyValue<String, HashMap<String, PackedStringArray>> &scene_kv : local_favorite_properties) {
+		Dictionary scene_properties;
+		for (const KeyValue<String, PackedStringArray> &class_kv : scene_kv.value) {
+			scene_properties[class_kv.key] = class_kv.value;
+		}
+		cf->set_value(scene_kv.key, "properties", scene_properties);
+	}
+	cf->save(favorite_properties_file);
+}
+
+void EditorSettings::set_local_favorite_properties(const String &p_scene_path, const HashMap<String, PackedStringArray> &p_favorite_properties) {
+	if (p_favorite_properties.is_empty()) {
+		local_favorite_properties.erase(p_scene_path);
+	} else {
+		local_favorite_properties.insert(p_scene_path, p_favorite_properties);
+	}
+
+	_save_local_favorite_properties_to_disk();
+}
+
+void EditorSettings::update_local_favorites_on_file_move(const String &p_old_file, const String &p_new_file) {
+	if (p_old_file == p_new_file) {
+		return;
+	}
+	HashMap<String, HashMap<String, PackedStringArray>>::Iterator it = local_favorite_properties.find(p_old_file);
+	if (!it) {
+		return;
+	}
+	local_favorite_properties.insert(p_new_file, it->value);
+	local_favorite_properties.erase(p_old_file);
+	_save_local_favorite_properties_to_disk();
+}
+
+void EditorSettings::update_local_favorites_on_folder_move(const String &p_old_folder, const String &p_new_folder) {
+	String old_path = p_old_folder.ends_with("/") ? p_old_folder : p_old_folder + "/";
+	String new_path = p_new_folder.ends_with("/") ? p_new_folder : p_new_folder + "/";
+
+	if (old_path == new_path) {
+		return;
+	}
+
+	Vector<String> keys_to_rewrite;
+	for (const KeyValue<String, HashMap<String, PackedStringArray>> &kv : local_favorite_properties) {
+		if (kv.key.begins_with(old_path)) {
+			keys_to_rewrite.push_back(kv.key);
+		}
+	}
+
+	if (keys_to_rewrite.is_empty()) {
+		return;
+	}
+
+	for (const String &old_key : keys_to_rewrite) {
+		String new_key = new_path + old_key.substr(old_path.length());
+		local_favorite_properties.insert(new_key, local_favorite_properties[old_key]);
+		local_favorite_properties.erase(old_key);
+	}
+
+	_save_local_favorite_properties_to_disk();
+}
+
 Vector<String> EditorSettings::get_favorites() const {
 	return favorites;
 }
@@ -1777,6 +1843,40 @@ Vector<String> EditorSettings::get_favorite_folders() const {
 
 HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() const {
 	return HashMap<String, PackedStringArray>(favorite_properties);
+}
+
+HashMap<String, PackedStringArray> EditorSettings::get_local_favorite_properties(const String &p_scene_path) const {
+	const HashMap<String, HashMap<String, PackedStringArray>>::ConstIterator favorites_it = local_favorite_properties.find(p_scene_path);
+	if (!favorites_it) {
+		return HashMap<String, PackedStringArray>();
+	}
+
+	return HashMap<String, PackedStringArray>(favorites_it->value);
+}
+
+void EditorSettings::clear_local_favorite_properties_for_scene(const String &p_scene_path) {
+	set_local_favorite_properties(p_scene_path, HashMap<String, PackedStringArray>());
+}
+
+void EditorSettings::clear_local_favorite_properties_for_folder(const String &p_folder) {
+	String path = p_folder.ends_with("/") ? p_folder : p_folder + "/";
+
+	Vector<String> keys_to_remove;
+	for (const KeyValue<String, HashMap<String, PackedStringArray>> &kv : local_favorite_properties) {
+		if (kv.key.begins_with(path)) {
+			keys_to_remove.push_back(kv.key);
+		}
+	}
+
+	if (keys_to_remove.is_empty()) {
+		return;
+	}
+
+	for (const String &key : keys_to_remove) {
+		local_favorite_properties.erase(key);
+	}
+
+	_save_local_favorite_properties_to_disk();
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog) {
@@ -1809,14 +1909,17 @@ Vector<String> EditorSettings::get_recent_dirs() const {
 void EditorSettings::load_favorites_and_recent_dirs() {
 	String favorites_file;
 	String favorite_properties_file;
+	String favorite_properties_local_file;
 	String recent_dirs_file;
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		favorites_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_dirs");
 		favorite_properties_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_properties");
+		favorite_properties_local_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_properties_local");
 		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().path_join("recent_dirs");
 	} else {
 		favorites_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites");
 		favorite_properties_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorite_properties");
+		favorite_properties_local_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorite_properties_local");
 		recent_dirs_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("recent_dirs");
 	}
 
@@ -1847,6 +1950,47 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 						favorite_properties[E].push_back(property);
 					}
 				}
+			}
+		}
+	}
+
+	/// Inspector Local Favorites
+
+	cf.instantiate();
+	if (cf->load(favorite_properties_local_file) == OK) {
+		Vector<String> secs = cf->get_sections();
+
+		for (const String &E : secs) {
+			if (!ResourceLoader::exists(E)) {
+				continue;
+			}
+
+			Dictionary scene_dict = cf->get_value(E, "properties", Dictionary());
+			if (scene_dict.is_empty()) {
+				continue;
+			}
+
+			HashMap<String, PackedStringArray> scene_favorites;
+			Array keys = scene_dict.keys();
+			for (int i = 0; i < keys.size(); i++) {
+				String class_name = keys[i];
+				if (!EditorNode::get_editor_data().is_type_recognized(class_name) && !ResourceLoader::exists(class_name, "Script")) {
+					continue;
+				}
+
+				PackedStringArray properties = PackedStringArray(scene_dict[class_name]);
+				if (properties.is_empty()) {
+					continue;
+				}
+				for (const String &property : properties) {
+					if (!scene_favorites[class_name].has(property)) {
+						scene_favorites[class_name].push_back(property);
+					}
+				}
+			}
+
+			if (!scene_favorites.is_empty()) {
+				local_favorite_properties.insert(E, scene_favorites);
 			}
 		}
 	}
