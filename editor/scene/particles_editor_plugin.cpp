@@ -62,7 +62,11 @@ void ParticlesEditorPlugin::_notification(int p_what) {
 
 bool ParticlesEditorPlugin::need_show_lifetime_dialog(SpinBox *p_seconds) {
 	// Add one second to the default generation lifetime, since the progress is updated every second.
-	p_seconds->set_value(MAX(1.0, std::trunc(edited_node->get("lifetime").operator double()) + 1.0));
+	// For particles with a lifetime lower than 20 seconds, we simulate them for at least 1 second in real time
+	// to allow for multiple cycles to be emitted.
+	// For particles with a lifetime greater than 20 seconds, we increase the simulation duration
+	// to allow the entire lifetime to be simulated.
+	p_seconds->set_value(MAX(1.0, std::trunc(edited_node->get("lifetime").operator double()) * 0.05));
 
 	if (p_seconds->get_value() >= 11.0 + CMP_EPSILON) {
 		// Only pop up the time dialog if the particle's lifetime is long enough to warrant shortening it.
