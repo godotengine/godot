@@ -31,6 +31,7 @@
 #include "audio_stream_ogg_vorbis.h"
 
 #include "core/io/file_access.h"
+#include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
 #include "core/templates/rb_map.h"
 
@@ -101,25 +102,29 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 			**/
 
 			if (use_loop && beat_length_frames <= (int)frames_mixed) {
-				// End of file when doing beat-based looping. <= used instead of == because importer editing
-				if (!have_packets_left && !have_samples_left) {
-					//Nothing remaining, so do nothing.
-					loop_fade_remaining = FADE_SIZE;
-				} else {
-					// Add some loop fade;
-					int faded_mix = _mix_frames_vorbis(loop_fade, FADE_SIZE);
+				if (vorbis_stream->loop_offset * vorbis_data->get_sampling_rate() < (double)beat_length_frames) {
+					// End of file when doing beat-based looping. <= used instead of == because importer editing
+					if (!have_packets_left && !have_samples_left) {
+						//Nothing remaining, so do nothing.
+						loop_fade_remaining = FADE_SIZE;
+					} else {
+						// Add some loop fade;
+						int faded_mix = _mix_frames_vorbis(loop_fade, FADE_SIZE);
 
-					for (int i = faded_mix; i < FADE_SIZE; i++) {
-						// In case lesss was mixed, pad with zeros
-						loop_fade[i] = AudioFrame(0, 0);
+						for (int i = faded_mix; i < FADE_SIZE; i++) {
+							// In case lesss was mixed, pad with zeros
+							loop_fade[i] = AudioFrame(0, 0);
+						}
+						loop_fade_remaining = 0;
 					}
-					loop_fade_remaining = 0;
-				}
 
-				seek(vorbis_stream->loop_offset);
-				loops++;
-				// We still have buffer to fill, start from this element in the next iteration.
-				continue;
+					seek(vorbis_stream->loop_offset);
+					loops++;
+					// We still have buffer to fill, start from this element in the next iteration.
+					continue;
+				} else {
+					beat_length_frames = -1;
+				}
 			}
 		}
 
@@ -280,6 +285,12 @@ Variant AudioStreamPlaybackOggVorbis::get_parameter(const StringName &p_name) co
 void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 	ERR_FAIL_COND(!ready);
 	ERR_FAIL_COND(vorbis_stream.is_null());
+	if (Math::is_nan(p_time)) {
+		p_time = 0.0;
+	}
+	if (p_time < 0.0) {
+		p_time = 0.0;
+	}
 	if (!active) {
 		return;
 	}
@@ -508,7 +519,7 @@ bool AudioStreamOggVorbis::has_loop() const {
 }
 
 void AudioStreamOggVorbis::set_loop_offset(double p_seconds) {
-	loop_offset = p_seconds;
+	loop_offset = MAX(0.0, p_seconds);
 }
 
 double AudioStreamOggVorbis::get_loop_offset() const {
