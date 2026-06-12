@@ -40,12 +40,21 @@ class TextEditor : public TextEditorBase {
 	static inline EditMenus *edit_menus = nullptr;
 
 protected:
+	class EditMenusTEB : public EditMenus {
+		GDCLASS(EditMenusTEB, EditMenus);
+
+	public:
+		virtual bool handles(ScriptEditorBase *p_seb) override { return Object::cast_to<TextEditor>(p_seb); }
+
+		EditMenusTEB(ScriptEditor *p_se) : EditMenus(p_se) {}
+	};
+
 	virtual void _validate_script() override;
 
 public:
 	virtual void apply_code() override;
 
-	virtual Control *get_edit_menu() override;
+	virtual EditMenusBase *create_edit_menu(ScriptEditor *p_se) override { return memnew(EditMenusTEB(p_se)); }
 
 	static void register_editor();
 
