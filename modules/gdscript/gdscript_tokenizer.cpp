@@ -1271,7 +1271,8 @@ void GDScriptTokenizerText::check_indent() {
 			}
 			if ((indent_level() > 0 && indent_stack.back()->get() != indent_count) || (indent_level() == 0 && indent_count != 0)) {
 				// Mismatched indentation alignment.
-				Token error = make_error("Unindent doesn't match the previous indentation level.");
+				const int expected_indent = indent_level() > 0 ? (indent_stack.back()->get() - 1) : 0;
+				Token error = make_error(vformat("Unindent to %d doesn't match the previous indentation level of %d.", indent_count, expected_indent));
 				error.start_line = line;
 				error.start_column = 1;
 				error.end_column = column + 1;
