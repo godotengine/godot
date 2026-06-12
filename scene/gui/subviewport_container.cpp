@@ -52,6 +52,38 @@ Size2 SubViewportContainer::get_minimum_size() const {
 	return ms;
 }
 
+void SubViewportContainer::set_mode(ResolutionMode p_mode) {
+	if (mode == p_mode) {
+		return;
+	}
+
+	mode = p_mode;
+	notify_property_list_changed();
+	recalc_force_viewport_sizes();
+	update_minimum_size();
+	queue_sort();
+	queue_redraw();
+}
+
+SubViewportContainer::ResolutionMode SubViewportContainer::get_mode() const {
+	return mode;
+}
+void SubViewportContainer::set_fixed_resolution(const Vector2i &p_fixed_resolution) {
+	if (fixed_resolution == p_fixed_resolution) {
+		return;
+	}
+
+	fixed_resolution = p_fixed_resolution.maxi(1);
+	recalc_force_viewport_sizes();
+	update_minimum_size();
+	queue_sort();
+	queue_redraw();
+}
+
+Vector2i SubViewportContainer::get_fixed_resolution() const {
+	return fixed_resolution;
+}
+
 void SubViewportContainer::set_stretch(bool p_enable) {
 	if (stretch == p_enable) {
 		return;
@@ -92,7 +124,14 @@ void SubViewportContainer::recalc_force_viewport_sizes() {
 			continue;
 		}
 
-		c->set_size_force(get_size() / shrink);
+		switch (mode) {
+			case RESOLUTION_MODE_SHRINK: {
+				c->set_size_force(get_size() / shrink);
+			} break;
+			case RESOLUTION_MODE_FIXED: {
+				c->set_size_force(fixed_resolution);
+			} break;
+		}
 	}
 }
 
@@ -106,6 +145,14 @@ Vector<int> SubViewportContainer::get_allowed_size_flags_horizontal() const {
 
 Vector<int> SubViewportContainer::get_allowed_size_flags_vertical() const {
 	return Vector<int>();
+}
+
+void SubViewportContainer::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "stretch_shrink") {
+		p_property.usage = mode == RESOLUTION_MODE_SHRINK ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_NO_EDITOR;
+	} else if (p_property.name == "fixed_resolution") {
+		p_property.usage = mode == RESOLUTION_MODE_FIXED ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_NO_EDITOR;
+	}
 }
 
 void SubViewportContainer::_notification(int p_what) {
@@ -218,10 +265,18 @@ void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (stretch && shrink > 1) {
-		Transform2D xform;
-		xform.scale(Vector2(1, 1) / shrink);
-		_send_event_to_viewports(p_event->xformed_by(xform));
+	Vector2 s;
+	switch (mode) {
+		case RESOLUTION_MODE_SHRINK: {
+			s = Vector2(1, 1) / shrink;
+		} break;
+		case RESOLUTION_MODE_FIXED: {
+			s = Vector2(fixed_resolution) / get_size();
+		} break;
+	}
+
+	if (stretch) {
+		_send_event_to_viewports(p_event->xformed_by(Transform2D().scaled(s)));
 	} else {
 		_send_event_to_viewports(p_event);
 	}
@@ -289,6 +344,12 @@ PackedStringArray SubViewportContainer::get_configuration_warnings() const {
 }
 
 void SubViewportContainer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &SubViewportContainer::set_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"), &SubViewportContainer::get_mode);
+
+	ClassDB::bind_method(D_METHOD("set_fixed_resolution", "fixed_resolution"), &SubViewportContainer::set_fixed_resolution);
+	ClassDB::bind_method(D_METHOD("get_fixed_resolution"), &SubViewportContainer::get_fixed_resolution);
+
 	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &SubViewportContainer::set_stretch);
 	ClassDB::bind_method(D_METHOD("is_stretch_enabled"), &SubViewportContainer::is_stretch_enabled);
 
@@ -298,9 +359,14 @@ void SubViewportContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_target", "amount"), &SubViewportContainer::set_mouse_target);
 	ClassDB::bind_method(D_METHOD("is_mouse_target_enabled"), &SubViewportContainer::is_mouse_target_enabled);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Shrink,Fixed"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "fixed_resolution"), "set_fixed_resolution", "get_fixed_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), "set_stretch_shrink", "get_stretch_shrink");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_target"), "set_mouse_target", "is_mouse_target_enabled");
+
+	BIND_ENUM_CONSTANT(RESOLUTION_MODE_SHRINK);
+	BIND_ENUM_CONSTANT(RESOLUTION_MODE_FIXED);
 
 	GDVIRTUAL_BIND(_propagate_input_event, "event");
 }
