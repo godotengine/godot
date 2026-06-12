@@ -779,6 +779,10 @@ public:
 			return (outer == nullptr && identifier != nullptr) ? identifier->name : StringName();
 		}
 
+		StringName get_identifier_name() const {
+			return identifier != nullptr ? identifier->name : StringName();
+		}
+
 		Member get_member(const StringName &p_name) const {
 			return members[members_indices[p_name]];
 		}
@@ -865,6 +869,15 @@ public:
 		bool is_abstract = false;
 		bool is_static = false; // For lambdas it's determined in the analyzer.
 		bool is_coroutine = false;
+
+		// If this function is known to override a function in the parent type.
+		// If a function is an override, but does not have the @override annotation, a warning is raised.
+		// The value of this field is undefined unless resolved_signature is true.
+		bool is_override = false;
+
+		// If this function node has the @override annotation. This does not indicate if the function is actually an override or not.
+		bool is_marked_as_override = false;
+
 		Variant rpc_config;
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
@@ -875,6 +888,7 @@ public:
 		String signature; // For autocompletion.
 #endif // TOOLS_ENABLED
 
+		// True if GDScriptAnalyzer::resolve_function_signature has been called for this function node.
 		bool resolved_signature = false;
 		bool resolved_body = false;
 
@@ -1330,6 +1344,7 @@ public:
 		FunctionNode *current_function = nullptr;
 		SuiteNode *current_suite = nullptr;
 		int current_line = -1;
+		int current_column = -1;
 		union {
 			int current_argument = -1;
 			int type_chain_index;
@@ -1562,6 +1577,7 @@ private:
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool override_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);

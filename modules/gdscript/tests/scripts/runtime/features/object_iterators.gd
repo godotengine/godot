@@ -4,16 +4,19 @@ class MyIterator:
 	func _init(p_count: int) -> void:
 		count = p_count
 
+	@override
 	func _iter_init(arg: Array) -> bool:
 		prints("_iter_init", arg)
 		arg[0] = 0
 		return arg[0] < count
 
+	@override
 	func _iter_next(arg: Array) -> bool:
 		prints("_iter_next", arg)
 		arg[0] += 1
 		return arg[0] < count
 
+	@override
 	func _iter_get(arg: Variant) -> Variant:
 		prints("_iter_get", arg)
 		return arg

@@ -17,6 +17,7 @@ func test():
 var v1 := InnerA.new().fn()
 
 class InnerA extends InnerAB:
+	@override
 	func fn(p2 := E1.V2) -> String:
 		return "%s, p2=%s" % [super.fn(), p2]
 

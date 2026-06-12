@@ -9,6 +9,7 @@ class Inner:
 			print("subprop getter")
 			return subprop
 
+	@override
 	func _to_string() -> String:
 		return "<Inner>"
 
