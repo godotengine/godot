@@ -35,27 +35,37 @@
 template <typename T>
 class RingBuffer {
 	LocalVector<T> data;
-	int read_pos = 0;
-	int write_pos = 0;
-	int size_mask;
+	int _read_pos = 0;
+	int _count = 0;
+	int _size_mask;
 
-	inline int inc(int &p_var, int p_size) const {
-		int ret = p_var;
-		p_var += p_size;
-		p_var = p_var & size_mask;
+	inline int _write_pos() const {
+		return _wrapped_pos(_read_pos + _count);
+	}
+
+	inline int _inc_read(int p_amount = 1) {
+		const int ret = _read_pos;
+
+		_read_pos = _wrapped_pos(_read_pos + p_amount);
+		_count -= p_amount;
 		return ret;
+	}
+
+	inline int _wrapped_pos(int p_val) const {
+		return p_val & _size_mask;
 	}
 
 public:
 	T read() {
 		ERR_FAIL_COND_V(data_left() < 1, T());
-		return data.ptr()[inc(read_pos, 1)];
+		return data.ptr()[_inc_read(1)];
 	}
 
 	int read(T *p_buf, int p_size, bool p_advance = true) {
-		int left = data_left();
+		const int left = data_left();
 		p_size = MIN(left, p_size);
-		int pos = read_pos;
+
+		int pos = _read_pos;
 		int to_read = p_size;
 		int dst = 0;
 		while (to_read) {
@@ -69,23 +79,22 @@ public:
 			to_read -= total;
 			pos = 0;
 		}
+
 		if (p_advance) {
-			inc(read_pos, p_size);
+			_inc_read(p_size);
 		}
+
 		return p_size;
 	}
 
 	int copy(T *p_buf, int p_offset, int p_size) const {
-		int left = data_left();
-		if ((p_offset + p_size) > left) {
-			p_size = left - p_offset;
-			if (p_size <= 0) {
-				return 0;
-			}
+		const int left = data_left();
+		if (p_offset > left) {
+			return 0;
 		}
-		p_size = MIN(left, p_size);
-		int pos = read_pos;
-		inc(pos, p_offset);
+
+		p_size = MIN(left - p_offset, p_size);
+		int pos = _wrapped_pos(_read_pos + p_offset);
 		int to_read = p_size;
 		int dst = 0;
 		while (to_read) {
@@ -98,20 +107,18 @@ public:
 			to_read -= total;
 			pos = 0;
 		}
+
 		return p_size;
 	}
 
 	int find(const T &t, int p_offset, int p_max_size) const {
-		int left = data_left();
-		if ((p_offset + p_max_size) > left) {
-			p_max_size = left - p_offset;
-			if (p_max_size <= 0) {
-				return 0;
-			}
+		const int left = data_left();
+		if (p_offset > left) {
+			return 0;
 		}
-		p_max_size = MIN(left, p_max_size);
-		int pos = read_pos;
-		inc(pos, p_offset);
+
+		p_max_size = MIN(left - p_offset, p_max_size);
+		int pos = _wrapped_pos(_read_pos + p_offset);
 		int to_read = p_max_size;
 		while (to_read) {
 			int end = pos + to_read;
@@ -125,39 +132,40 @@ public:
 			to_read -= total;
 			pos = 0;
 		}
+
 		return -1;
 	}
 
 	inline int advance_read(int p_n) {
 		p_n = MIN(p_n, data_left());
-		inc(read_pos, p_n);
+		_inc_read(p_n);
 		return p_n;
 	}
 
 	inline int decrease_write(int p_n) {
 		p_n = MIN(p_n, data_left());
-		inc(write_pos, size_mask + 1 - p_n);
+		_count -= p_n;
 		return p_n;
 	}
 
 	Error write(const T &p_v) {
 		ERR_FAIL_COND_V(space_left() < 1, FAILED);
-		data[inc(write_pos, 1)] = p_v;
+		data[_write_pos()] = p_v;
+		_count += 1;
 		return OK;
 	}
 
 	int write(const T *p_buf, int p_size) {
-		int left = space_left();
+		const int left = space_left();
 		p_size = MIN(left, p_size);
 
-		int pos = write_pos;
+		int pos = _write_pos();
 		int to_write = p_size;
 		int src = 0;
 		while (to_write) {
 			int end = pos + to_write;
 			end = MIN(end, size());
 			int total = end - pos;
-
 			for (int i = 0; i < total; i++) {
 				data[pos + i] = p_buf[src++];
 			}
@@ -165,22 +173,15 @@ public:
 			pos = 0;
 		}
 
-		inc(write_pos, p_size);
+		_count += p_size;
 		return p_size;
 	}
 
 	inline int space_left() const {
-		int left = read_pos - write_pos;
-		if (left < 0) {
-			return size() + left - 1;
-		}
-		if (left == 0) {
-			return size() - 1;
-		}
-		return left - 1;
+		return size() - data_left() - 1;
 	}
 	inline int data_left() const {
-		return size() - space_left() - 1;
+		return _count;
 	}
 
 	inline int size() const {
@@ -188,26 +189,36 @@ public:
 	}
 
 	inline void clear() {
-		read_pos = 0;
-		write_pos = 0;
+		_read_pos = 0;
+		_count = 0;
 	}
 
 	void resize(int p_power) {
-		int old_size = size();
-		int new_size = 1 << p_power;
-		int mask = new_size - 1;
-		data.resize(int64_t(1) << int64_t(p_power));
-		if (old_size < new_size && read_pos > write_pos) {
-			for (int i = 0; i < write_pos; i++) {
-				data[(old_size + i) & mask] = data[i];
+		const int old_size = size();
+		const int new_size = uint32_t(1) << uint32_t(p_power);
+		const int mask = new_size - 1;
+
+		if (old_size < new_size) {
+			data.resize(new_size);
+			// Make data contiguous
+			if (_read_pos > _write_pos()) {
+				for (int i = 0; i < _write_pos(); i++) {
+					data[_wrapped_pos(old_size + i)] = data[i];
+				}
 			}
-			write_pos = (old_size + write_pos) & mask;
-		} else {
-			read_pos = read_pos & mask;
-			write_pos = write_pos & mask;
+		} else if (old_size > new_size) {
+			LocalVector<T> new_data;
+			new_data.resize(new_size);
+			const int new_count = MIN(new_size - 1, data_left());
+			for (int i = 0; i < new_count; i++) {
+				new_data[i] = data[_wrapped_pos(_read_pos + i)];
+			}
+			_read_pos = 0;
+			_count = new_count;
+			data = new_data;
 		}
 
-		size_mask = mask;
+		_size_mask = mask;
 	}
 
 	RingBuffer(int p_power = 0) {
