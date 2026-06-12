@@ -31,7 +31,6 @@
 #include "message_queue.h"
 
 #include "core/config/project_settings.h"
-#include "main/main.h"
 
 #include <cstdio>
 
@@ -223,10 +222,6 @@ void CallQueue::_call_function(const Callable &p_callable, const Variant *p_args
 }
 
 Error CallQueue::flush() {
-	if (!Main::is_iterating()) {
-		return ERR_BUSY;
-	}
-
 	LOCK_MUTEX;
 
 	if (pages.is_empty()) {
