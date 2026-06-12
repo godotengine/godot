@@ -81,6 +81,7 @@ public:
 	Dictionary req_variables(const Dictionary &p_params) const;
 	Dictionary req_next(const Dictionary &p_params) const;
 	Dictionary req_stepIn(const Dictionary &p_params) const;
+	Dictionary req_stepOut(const Dictionary &p_params) const;
 	Dictionary req_evaluate(const Dictionary &p_params) const;
 	Dictionary req_godot_put_msg(const Dictionary &p_params) const;
 
