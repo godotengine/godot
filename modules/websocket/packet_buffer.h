@@ -82,7 +82,7 @@ public:
 		}
 		_queued -= 1;
 
-		ERR_FAIL_COND_V(_payload.data_left() < (int)p.size, ERR_BUG);
+		ERR_FAIL_COND_V(_payload.data_left() < p.size, ERR_BUG);
 		ERR_FAIL_COND_V(p_bytes < (int)p.size, ERR_OUT_OF_MEMORY);
 
 		r_read = p.size;

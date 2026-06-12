@@ -178,7 +178,7 @@ Error StreamPeerGZIP::get_data(uint8_t *p_buffer, int p_bytes) {
 Error StreamPeerGZIP::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 	ERR_FAIL_COND_V(p_bytes < 0, ERR_INVALID_PARAMETER);
 
-	r_received = MIN(p_bytes, rb.data_left());
+	r_received = MIN(p_bytes, int(rb.data_left()));
 	if (r_received == 0) {
 		return OK;
 	}

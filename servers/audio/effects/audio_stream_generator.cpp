@@ -124,12 +124,12 @@ bool AudioStreamGeneratorPlayback::push_frame(const Vector2 &p_frame) {
 }
 
 bool AudioStreamGeneratorPlayback::can_push_buffer(int p_frames) const {
-	return buffer.space_left() >= p_frames;
+	return int(buffer.space_left()) >= p_frames;
 }
 
 bool AudioStreamGeneratorPlayback::push_buffer(const PackedVector2Array &p_frames) {
 	int to_write = p_frames.size();
-	if (buffer.space_left() < to_write) {
+	if (int(buffer.space_left()) < to_write) {
 		return false;
 	}
 
