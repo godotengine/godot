@@ -160,9 +160,13 @@
 			Right scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
 		</member>
 		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled" default="false">
-			If [code]true[/code], the camera smoothly stops when reaches its limits.
-			This property has no effect if [member position_smoothing_enabled] is [code]false[/code].
+			If [code]true[/code], the camera smoothly moves when it's limits change.
+			This property has no effect if [member limit_enabled] is [code]false[/code].
 			[b]Note:[/b] To immediately update the camera's position to be within limits without smoothing, even with this setting enabled, invoke [method reset_smoothing].
+		</member>
+		<member name="limit_smoothed_speed" type="float" setter="set_position_smoothing_speed" getter="get_position_smoothing_speed" default="5.0">
+			Speed in pixels per second of the camera's smoothing effect when [member limit_smoothed] is [code]true[/code].
+			[b]Note:[/b] This is one and the same as [member position_smoothing_speed].
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit" default="-10000000">
 			Top scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
