@@ -43,8 +43,10 @@ GODOT_CLANG_WARNING_PUSH
 GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
 
 #include <inspectable.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Graphics.Display.h>
+#include <winrt/Windows.System.UserProfile.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.UI.Input.h>
 #include <winrt/Windows.UI.ViewManagement.Core.h>
@@ -110,7 +112,9 @@ GODOT_CLANG_WARNING_POP
 
 using namespace winrt::Windows::Graphics::Display;
 using namespace winrt::Windows::System;
+using namespace winrt::Windows::System::UserProfile;
 using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Foundation::Metadata;
 using namespace winrt::Windows::UI::ViewManagement::Core;
 
@@ -151,6 +155,16 @@ void WinRTUtils::destroy_queue() {
 		}
 	}
 	ERR_FAIL_COND_MSG(action.Status() == AsyncStatus::Error, "DispatcherQueueController shutdown failed.");
+}
+
+Vector<String> WinRTUtils::get_preferred_locales() {
+	Vector<String> out;
+	IVectorView<winrt::hstring> languages = GlobalizationPreferences::Languages();
+	for (uint32_t i = 0; i < languages.Size(); i++) {
+		winrt::hstring lang = languages.GetAt(i);
+		out.push_back(String::utf16((const char16_t *)lang.c_str(), lang.size()).replace_char('-', '_'));
+	}
+	return out;
 }
 
 bool WinRTUtils::try_show_onecore_emoji_picker() {
@@ -227,6 +241,10 @@ bool WinRTUtils::create_queue() {
 }
 
 void WinRTUtils::destroy_queue() {}
+
+Vector<String> WinRTUtils::get_preferred_locales() {
+	return Vector<String>();
+}
 
 bool WinRTUtils::window_has_display_info(const WinRTWindowData *p_data) {
 	return false;
