@@ -111,7 +111,7 @@ private:
 
 	virtual void _add_to_space() override;
 
-	bool _should_call_queries() const { return state_sync_callback.is_valid() || custom_integration_callback.is_valid(); }
+	bool _should_call_queries() const { return !state_sync_callback.is_null() || !custom_integration_callback.is_null(); }
 	void _enqueue_call_queries();
 	void _dequeue_call_queries();
 
@@ -162,10 +162,10 @@ public:
 	Variant get_param(PhysicsServer3D::BodyParameter p_param) const;
 	void set_param(PhysicsServer3D::BodyParameter p_param, const Variant &p_value);
 
-	bool has_state_sync_callback() const { return state_sync_callback.is_valid(); }
+	bool has_state_sync_callback() const { return !state_sync_callback.is_null(); }
 	void set_state_sync_callback(const Callable &p_callback) { state_sync_callback = p_callback; }
 
-	bool has_custom_integration_callback() const { return custom_integration_callback.is_valid(); }
+	bool has_custom_integration_callback() const { return !custom_integration_callback.is_null(); }
 	void set_custom_integration_callback(const Callable &p_callback, const Variant &p_userdata) {
 		custom_integration_callback = p_callback;
 		custom_integration_userdata = p_userdata;

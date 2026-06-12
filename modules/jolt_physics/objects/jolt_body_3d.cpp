@@ -1067,7 +1067,7 @@ void JoltBody3D::remove_joint(JoltJoint3D *p_joint) {
 }
 
 void JoltBody3D::call_queries() {
-	if (custom_integration_callback.is_valid()) {
+	if (!custom_integration_callback.is_null()) {
 		const Variant direct_state_variant = get_direct_state();
 		const Variant *args[2] = { &direct_state_variant, &custom_integration_userdata };
 		const int argc = custom_integration_userdata.get_type() != Variant::NIL ? 2 : 1;
@@ -1077,11 +1077,17 @@ void JoltBody3D::call_queries() {
 		custom_integration_callback.callp(args, argc, ret, ce);
 
 		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
-			ERR_PRINT_ONCE(vformat("Failed to call force integration callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(custom_integration_callback, args, argc, ce)));
+			if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
+				// Godot Physics effectively silences this error by virtue of doing a `Callable::is_valid` check before the call, so we silently ignore this for compatibility.
+				// There's no point in trying to call this callback again though, so we clear it.
+				custom_integration_callback = Callable();
+			} else {
+				ERR_PRINT_ONCE(vformat("Failed to call force integration callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(custom_integration_callback, args, argc, ce)));
+			}
 		}
 	}
 
-	if (state_sync_callback.is_valid()) {
+	if (!state_sync_callback.is_null()) {
 		const Variant direct_state_variant = get_direct_state();
 		const Variant *args[1] = { &direct_state_variant };
 
@@ -1090,7 +1096,13 @@ void JoltBody3D::call_queries() {
 		state_sync_callback.callp(args, 1, ret, ce);
 
 		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
-			ERR_PRINT_ONCE(vformat("Failed to call state synchronization callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(state_sync_callback, args, 1, ce)));
+			if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
+				// Godot Physics effectively silences this error by virtue of doing a `Callable::is_valid` check before the call, so we silently ignore this for compatibility.
+				// There's no point in trying to call this callback again though, so we clear it.
+				state_sync_callback = Callable();
+			} else {
+				ERR_PRINT_ONCE(vformat("Failed to call state synchronization callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(state_sync_callback, args, 1, ce)));
+			}
 		}
 	}
 }
