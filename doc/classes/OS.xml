@@ -904,8 +904,11 @@
 			[b]Note:[/b] On start-up, this is the same as [member ProjectSettings.application/run/low_processor_mode].
 		</member>
 		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
-			The amount of sleeping between frames when the low-processor usage mode is enabled, in microseconds. Higher values will result in lower CPU usage. See also [member low_processor_usage_mode].
+			The amount of sleeping between frames when the low-processor usage mode is enabled, in microseconds. Higher values will result in lower CPU usage. See also [member low_processor_usage_mode]. Only effective if [member low_processor_usage_mode_sleep_usec_mode] is set to [constant LOW_PROCESSOR_SLEEP_USEC_MODE_CUSTOM].
 			[b]Note:[/b] On start-up, this is the same as [member ProjectSettings.application/run/low_processor_mode_sleep_usec].
+		</member>
+		<member name="low_processor_usage_mode_sleep_usec_mode" type="int" setter="set_low_processor_usage_mode_sleep_usec_mode" getter="get_low_processor_usage_mode_sleep_usec_mode" enum="OS.LowProcessorModeSleepUsecMode" default="1">
+			The policy to use to determine the sleep duration between frames when the low-processor usage mode is enabled. See also [member low_processor_usage_mode].
 		</member>
 	</members>
 	<constants>
@@ -959,6 +962,12 @@
 		</constant>
 		<constant name="STD_HANDLE_UNKNOWN" value="4" enum="StdHandleType">
 			Standard I/O device type is unknown.
+		</constant>
+		<constant name="LOW_PROCESSOR_SLEEP_USEC_MODE_AUTOMATIC" value="0" enum="LowProcessorModeSleepUsecMode">
+			Automatically determine the sleep duration between frames using the refresh rate of the fastest display connected to the system when the engine starts.
+		</constant>
+		<constant name="LOW_PROCESSOR_SLEEP_USEC_MODE_CUSTOM" value="1" enum="LowProcessorModeSleepUsecMode">
+			Use a custom sleep duration between frames, as specified by [member low_processor_usage_mode_sleep_usec].
 		</constant>
 	</constants>
 </class>
