@@ -67,6 +67,10 @@ class FileSystemList : public ItemList {
 	GDCLASS(FileSystemList, ItemList);
 
 	bool popup_edit_committed = true;
+
+	HashSet<int> button_items;
+	int hovered_button = -1;
+
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
@@ -75,18 +79,31 @@ class FileSystemList : public ItemList {
 	void _line_editor_submit(const String &p_text);
 	void _text_editor_popup_modal_close();
 
+	Rect2 _get_button_rect(int p_idx) const;
+
+	Ref<Texture2D> button_icon;
+
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
+
 	bool edit_selected();
 	String get_edit_text();
+
+	void add_button(int p_idx);
+	void clear_buttons();
 
 	FileSystemList();
 };
 
 class FileSystemDock : public EditorDock {
 	GDCLASS(FileSystemDock, EditorDock);
+
+	friend class FileSystemList;
 
 public:
 	enum FileListDisplayMode {
@@ -248,6 +265,7 @@ private:
 	int history_max_size;
 
 	String current_path = "res://";
+	String sub_resource_inspect_path;
 	String select_after_scan;
 	String main_scene_path;
 
@@ -263,6 +281,7 @@ private:
 	bool holding_branch = false;
 	Vector<TreeItem *> tree_items_selected_on_drag_begin;
 	PackedInt32Array list_items_selected_on_drag_begin;
+	LocalVector<String> list_types;
 
 	LocalVector<Ref<EditorResourceTooltipPlugin>> tooltip_plugins;
 
@@ -357,8 +376,10 @@ private:
 	void _tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _file_list_button_clicked(int p_idx);
 	void _tree_empty_click(const Vector2 &p_pos, MouseButton p_button);
 	void _tree_empty_selected();
+	void _tree_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
@@ -410,6 +431,8 @@ public:
 
 	static Color get_dir_icon_color(const String &p_dir_path, const Color &p_default);
 
+	const StringName TYPE_META = "type";
+
 	const HashMap<String, Color> &get_folder_colors() const;
 	Dictionary get_assigned_folder_colors() const;
 
@@ -450,7 +473,7 @@ public:
 
 	void add_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
-	Control *create_tooltip_for_path(const String &p_path) const;
+	Control *create_tooltip_for_path(const String &p_path, const String &p_type) const;
 
 	FileSystemDock();
 	~FileSystemDock();

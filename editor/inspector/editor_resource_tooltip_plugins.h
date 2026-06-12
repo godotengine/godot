@@ -50,7 +50,7 @@ protected:
 	GDVIRTUAL3RC(Control *, _make_tooltip_for_path, String, Dictionary, Control *)
 
 public:
-	static VBoxContainer *make_default_tooltip(const String &p_resource_path);
+	static VBoxContainer *make_default_tooltip(const String &p_resource_path, const String &p_resource_type);
 	void request_thumbnail(const String &p_path, TextureRect *p_for_control) const;
 
 	virtual bool handles(const String &p_resource_type) const;
