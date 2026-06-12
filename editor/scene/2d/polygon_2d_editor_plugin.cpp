@@ -1496,7 +1496,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_x->set_max(256);
 	sb_off_x->set_step(1);
 	sb_off_x->set_value(snap_offset.x);
-	sb_off_x->set_suffix("px");
+	sb_off_x->set_format("%s px");
 	sb_off_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_x));
 	sb_off_x->set_accessibility_name(TTRC("Grid Offset X:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset X:"), sb_off_x);
@@ -1506,7 +1506,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_y->set_max(256);
 	sb_off_y->set_step(1);
 	sb_off_y->set_value(snap_offset.y);
-	sb_off_y->set_suffix("px");
+	sb_off_y->set_format("%s px");
 	sb_off_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_y));
 	sb_off_y->set_accessibility_name(TTRC("Grid Offset Y:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset Y:"), sb_off_y);
@@ -1516,7 +1516,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_x->set_max(256);
 	sb_step_x->set_step(1);
 	sb_step_x->set_value(snap_step.x);
-	sb_step_x->set_suffix("px");
+	sb_step_x->set_format("%s px");
 	sb_step_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_x));
 	sb_step_x->set_accessibility_name(TTRC("Grid Step X:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Step X:"), sb_step_x);
@@ -1526,7 +1526,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_y->set_max(256);
 	sb_step_y->set_step(1);
 	sb_step_y->set_value(snap_step.y);
-	sb_step_y->set_suffix("px");
+	sb_step_y->set_format("%s px");
 	sb_step_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_y));
 	sb_step_y->set_accessibility_name(TTRC("Grid Step Y:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Step Y:"), sb_step_y);
