@@ -332,6 +332,7 @@ public:
 	EXBIND3(body_set_param, RID, BodyParameter, const Variant &)
 	EXBIND2RC(Variant, body_get_param, RID, BodyParameter)
 
+	EXBIND5(body_set_mass_properties, RID, real_t, const Vector3 &, const Vector3 &, const Vector3 &)
 	EXBIND1(body_reset_mass_properties, RID)
 
 	EXBIND3(body_set_state, RID, BodyState, const Variant &)
