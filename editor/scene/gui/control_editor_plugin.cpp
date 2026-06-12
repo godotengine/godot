@@ -810,13 +810,21 @@ void ControlEditorToolbar::_anchors_preset_selected(int p_preset) {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
+	if (!reposition_button->is_pressed()) {
+		undo_redo->create_action(TTR("Change Anchors, Grow Direction"));
+	} else {
+		undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
+	}
 
 	for (Node *E : selection) {
 		Control *control = Object::cast_to<Control>(E);
 		if (control) {
 			undo_redo->add_do_property(control, "layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS);
 			undo_redo->add_do_property(control, "anchors_preset", preset);
+			if (!reposition_button->is_pressed()) {
+				undo_redo->add_do_property(control, "position", control->get_position());
+				undo_redo->add_do_property(control, "size", control->get_size());
+			}
 			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
 		}
 	}
@@ -1206,6 +1214,13 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	anchors_picker->set_h_size_flags(SIZE_SHRINK_CENTER);
 	anchors_button->get_popup_hbox()->add_child(anchors_picker);
 	anchors_picker->connect("anchors_preset_selected", callable_mp(this, &ControlEditorToolbar::_anchors_preset_selected));
+
+	reposition_button = memnew(CheckBox);
+	reposition_button->set_text(TTRC("Reposition"));
+	reposition_button->set_tooltip_text(TTRC("If disabled, picking a preset will only adjust the anchors, without moving the Control."));
+	reposition_button->set_h_size_flags(SIZE_SHRINK_CENTER);
+	reposition_button->set_pressed(true);
+	anchors_button->get_popup_hbox()->add_child(reposition_button);
 
 	anchors_button->get_popup_hbox()->add_child(memnew(HSeparator));
 
