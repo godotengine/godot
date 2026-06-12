@@ -516,7 +516,9 @@ double AudioStreamOggVorbis::get_loop_offset() const {
 }
 
 double AudioStreamOggVorbis::get_length() const {
-	ERR_FAIL_COND_V(packet_sequence.is_null(), 0);
+	if (packet_sequence.is_null()) {
+		return 0;
+	}
 	return packet_sequence->get_length();
 }
 
