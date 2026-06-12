@@ -1,0 +1,17 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 8: Signal "my_signal" expects only 1 parameter(s) when emitted.
+>> ERROR at line 9: Signal "my_signal" expects only 1 parameter(s) when emitted.
+>> ERROR at line 10: Signal "child_exiting_tree" expects only 1 parameter(s) when emitted.
+>> ERROR at line 11: Signal "child_exiting_tree" expects only 1 parameter(s) when emitted.
+>> ERROR at line 12: Signal "another_signal" expects only 1 parameter(s) when emitted.
+>> ERROR at line 13: Signal "another_signal" expects only 1 parameter(s) when emitted.
+>> ERROR at line 14: Signal "child_exiting_tree" expects only 1 parameter(s) when emitted.
+>> ERROR at line 15: Signal "child_exiting_tree" expects only 1 parameter(s) when emitted.
+>> ERROR at line 18: Signal "my_signal" 1 parameter is typed as "int" not "float".
+>> ERROR at line 19: Signal "my_signal" 2 parameter is typed as "int" not "float".
+>> ERROR at line 20: Signal "child_exiting_tree" 1 parameter is typed as "Node" not "Object".
+>> ERROR at line 21: Signal "child_exiting_tree" 2 parameter is typed as "Node" not "Object".
+>> ERROR at line 22: Signal "another_signal" 1 parameter is typed as "int" not "float".
+>> ERROR at line 23: Signal "another_signal" 2 parameter is typed as "int" not "float".
+>> ERROR at line 24: Signal "child_exiting_tree" 1 parameter is typed as "Node" not "Object".
+>> ERROR at line 25: Signal "child_exiting_tree" 2 parameter is typed as "Node" not "Object".
