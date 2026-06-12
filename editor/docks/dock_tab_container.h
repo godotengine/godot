@@ -71,13 +71,12 @@ public:
 class DockTabContainer : public TabContainer {
 	GDCLASS(DockTabContainer, TabContainer);
 
-	EditorDockDragHint *drag_hint = nullptr;
-
 	void _pre_popup();
 	void _tab_rmb_clicked(int p_tab_idx);
 
 protected:
 	DockContextPopup *dock_context_popup = nullptr;
+	EditorDockDragHint *drag_hint = nullptr;
 
 	void _notification(int p_what);
 
@@ -88,21 +87,26 @@ public:
 		TEXT_AND_ICON,
 	};
 
-	EditorDock::DockSlot dock_slot = EditorDock::DOCK_SLOT_NONE;
+	int dock_slot = EditorDock::DOCK_SLOT_NONE;
 	EditorDock::DockLayout layout = EditorDock::DOCK_LAYOUT_VERTICAL;
 	Rect2i grid_rect;
 
 	static String get_config_key(int p_idx) { return "dock_" + itos(p_idx + 1); }
 
+	virtual void dock_added(EditorDock *p_dock) {}
+	virtual void dock_removed(EditorDock *p_dock) {}
 	virtual void dock_closed(EditorDock *p_dock) {}
-	virtual void dock_focused(EditorDock *p_dock, bool p_was_visible) {}
+	virtual void dock_focused(EditorDock *p_dock, bool p_was_visible);
 	virtual void update_visibility();
 	virtual TabStyle get_tab_style() const;
 	virtual bool can_switch_dock() const;
 	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) { return DockTabContainer::get_default_floating_dock_rect(p_dock); }
+	virtual Rect2 get_drag_hint_rect() const { return get_global_rect(); }
+
+	virtual bool can_dock_float(EditorDock *p_dock, String &r_float_info);
 
 	// There is no equivalent load method, because loading needs to handle floating and closing.
-	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section);
+	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	virtual void load_selected_tab(int p_idx);
 
 	// This method should only be called by EditorDock.
@@ -114,7 +118,7 @@ public:
 
 	static Rect2 get_default_floating_dock_rect(EditorDock *p_dock);
 
-	DockTabContainer(EditorDock::DockSlot p_slot);
+	DockTabContainer(int p_slot);
 };
 
 class SideDockTabContainer : public DockTabContainer {
@@ -123,7 +127,7 @@ class SideDockTabContainer : public DockTabContainer {
 public:
 	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) override;
 
-	SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect);
+	SideDockTabContainer(int p_slot, const Rect2i &p_slot_rect);
 };
 
 class BottomSideDockTabContainer : public DockTabContainer {
