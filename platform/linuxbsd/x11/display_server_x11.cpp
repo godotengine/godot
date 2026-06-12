@@ -3700,6 +3700,27 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Di
 	}
 }
 
+DisplayServerEnums::NotificationID DisplayServerX11::send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) {
+#ifdef DBUS_ENABLED
+	if (!portal_desktop) {
+		return DisplayServerEnums::INVALID_NOTIFICATION_ID;
+	}
+	DisplayServerEnums::NotificationID id = noti_id++;
+	if (portal_desktop->send_toast_notification(id, p_title, p_text, p_image, p_callback)) {
+		return id;
+	}
+#endif
+	return DisplayServerEnums::INVALID_NOTIFICATION_ID;
+}
+
+void DisplayServerX11::hide_toast_notification(DisplayServerEnums::NotificationID p_id) {
+#ifdef DBUS_ENABLED
+	if (portal_desktop) {
+		portal_desktop->hide_toast_notification(p_id);
+	}
+#endif
+}
+
 bool DisplayServerX11::get_swap_cancel_ok() {
 	return swap_cancel_ok;
 }
@@ -6918,6 +6939,35 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 
 	r_error = OK;
 
+// Note: Portal init should be done before X11 init to ensure application ID is correctly registered.
+#ifdef DBUS_ENABLED
+	bool dbus_ok = true;
+#ifdef SOWRAP_ENABLED
+	if (initialize_dbus(dylibloader_verbose) != 0) {
+		print_verbose("Failed to load DBus library!");
+		dbus_ok = false;
+	}
+#endif
+	if (dbus_ok) {
+		bool ver_ok = false;
+		int version_major = 0;
+		int version_minor = 0;
+		int version_rev = 0;
+		dbus_get_version(&version_major, &version_minor, &version_rev);
+		ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
+		print_verbose(vformat("DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
+		if (!ver_ok) {
+			print_verbose("Unsupported DBus library version!");
+			dbus_ok = false;
+		}
+	}
+	if (dbus_ok) {
+		portal_desktop = memnew(FreeDesktopPortalDesktop);
+		screensaver = memnew(FreeDesktopScreenSaver);
+		atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
+	}
+#endif // DBUS_ENABLED
+
 #ifdef SOWRAP_ENABLED
 	{
 		if (!XcursorImageCreate || !XcursorImageLoadCursor || !XcursorImageDestroy || !XcursorGetDefaultSize || !XcursorGetTheme || !XcursorLibraryLoadImage) {
@@ -7431,34 +7481,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 	events_thread.start(_poll_events_thread, this);
 
 	_update_real_mouse_position(windows[DisplayServerEnums::MAIN_WINDOW_ID]);
-
-#ifdef DBUS_ENABLED
-	bool dbus_ok = true;
-#ifdef SOWRAP_ENABLED
-	if (initialize_dbus(dylibloader_verbose) != 0) {
-		print_verbose("Failed to load DBus library!");
-		dbus_ok = false;
-	}
-#endif
-	if (dbus_ok) {
-		bool ver_ok = false;
-		int version_major = 0;
-		int version_minor = 0;
-		int version_rev = 0;
-		dbus_get_version(&version_major, &version_minor, &version_rev);
-		ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
-		print_verbose(vformat("DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
-		if (!ver_ok) {
-			print_verbose("Unsupported DBus library version!");
-			dbus_ok = false;
-		}
-	}
-	if (dbus_ok) {
-		screensaver = memnew(FreeDesktopScreenSaver);
-		portal_desktop = memnew(FreeDesktopPortalDesktop);
-		atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
-	}
-#endif // DBUS_ENABLED
 
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
