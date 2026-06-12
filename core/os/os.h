@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/config/engine.h"
+#include "core/input/input_event.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
 #include "core/os/process_id.h"
@@ -182,8 +183,10 @@ public:
 	virtual String get_system_ca_certificates() { return ""; } // Concatenated certificates in PEM format.
 
 	virtual PackedStringArray get_connected_midi_inputs();
+	virtual PackedStringArray get_connected_midi_outputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
+	virtual Error send_midi(Ref<InputEventMIDI> p_event);
 
 	virtual Rect2 calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const;
 
