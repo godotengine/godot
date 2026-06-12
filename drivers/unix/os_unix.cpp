@@ -72,6 +72,7 @@
 #endif
 
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <poll.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
@@ -754,10 +755,20 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 		ERR_FAIL_V(ret);
 	}
 
+	// Create notification pipe for execvp failure reporting.
+	int notify_pipe[2] = { -1, -1 };
+	if (pipe(notify_pipe) != 0) {
+		ERR_FAIL_V(ret);
+	}
+	fcntl(notify_pipe[0], F_SETFD, FD_CLOEXEC);
+	fcntl(notify_pipe[1], F_SETFD, FD_CLOEXEC);
+
 	// Create process.
 	pid_t pid = fork();
 	if (pid < 0) {
 		CLEAN_PIPES
+		::close(notify_pipe[0]);
+		::close(notify_pipe[1]);
 		ERR_FAIL_V(ret);
 	}
 
@@ -793,12 +804,18 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 
 		execvp(p_path.utf8().get_data(), &args[0]);
 		// The execvp() function only returns if an error occurs.
-		fprintf(stderr, "Could not create child process: %s\n", p_path.utf8().get_data());
+		[[maybe_unused]] ssize_t size = ::write(notify_pipe[1], "E", 1);
 		raise(SIGKILL);
 	}
 	::close(pipe_in[0]);
 	::close(pipe_out[1]);
 	::close(pipe_err[1]);
+
+	char notify_buffer[1] = { 0 };
+	::close(notify_pipe[1]);
+	int execute_failed = ::read(notify_pipe[0], &notify_buffer, 1);
+	::close(notify_pipe[0]);
+	ERR_FAIL_COND_V_MSG(execute_failed > 0, ret, "Could not create child process: " + p_path);
 
 	Ref<FileAccessUnixPipe> main_pipe;
 	main_pipe.instantiate();
@@ -920,8 +937,20 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		return OK;
 	}
 
+	// Create notification pipe for execvp failure reporting.
+	int notify_pipe[2] = { -1, -1 };
+	if (pipe(notify_pipe) != 0) {
+		ERR_FAIL_V(ERR_CANT_FORK);
+	}
+	fcntl(notify_pipe[0], F_SETFD, FD_CLOEXEC);
+	fcntl(notify_pipe[1], F_SETFD, FD_CLOEXEC);
+
 	pid_t pid = fork();
-	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+	if (pid < 0) {
+		::close(notify_pipe[0]);
+		::close(notify_pipe[1]);
+		ERR_FAIL_V(ERR_CANT_FORK);
+	}
 
 	if (pid == 0) {
 		// The child process
@@ -939,9 +968,15 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 
 		execvp(p_path.utf8().get_data(), &args[0]);
 		// The execvp() function only returns if an error occurs.
-		fprintf(stderr, "Could not create child process: %s\n", p_path.utf8().get_data());
+		[[maybe_unused]] ssize_t size = ::write(notify_pipe[1], "E", 1);
 		raise(SIGKILL);
 	}
+
+	char notify_buffer[1] = { 0 };
+	::close(notify_pipe[1]);
+	int execute_failed = ::read(notify_pipe[0], &notify_buffer, 1);
+	::close(notify_pipe[0]);
+	ERR_FAIL_COND_V_MSG(execute_failed > 0, ERR_CANT_FORK, "Could not create child process: " + p_path);
 
 	int status = 0;
 	const int result = _wait_for_pid_completion(pid, &status, 0);
@@ -958,8 +993,21 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
 #else
+
+	// Create notification pipe for execvp failure reporting.
+	int notify_pipe[2] = { -1, -1 };
+	if (pipe(notify_pipe) != 0) {
+		ERR_FAIL_V(ERR_CANT_FORK);
+	}
+	fcntl(notify_pipe[0], F_SETFD, FD_CLOEXEC);
+	fcntl(notify_pipe[1], F_SETFD, FD_CLOEXEC);
+
 	pid_t pid = fork();
-	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+	if (pid < 0) {
+		::close(notify_pipe[0]);
+		::close(notify_pipe[1]);
+		ERR_FAIL_V(ERR_CANT_FORK);
+	}
 
 	if (pid == 0) {
 		// The new process
@@ -981,9 +1029,15 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 
 		execvp(p_path.utf8().get_data(), &args[0]);
 		// The execvp() function only returns if an error occurs.
-		fprintf(stderr, "Could not create child process: %s\n", p_path.utf8().get_data());
+		[[maybe_unused]] ssize_t size = ::write(notify_pipe[1], "E", 1);
 		raise(SIGKILL);
 	}
+
+	char notify_buffer[1] = { 0 };
+	::close(notify_pipe[1]);
+	int execute_failed = ::read(notify_pipe[0], &notify_buffer, 1);
+	::close(notify_pipe[0]);
+	ERR_FAIL_COND_V_MSG(execute_failed > 0, ERR_CANT_FORK, "Could not create child process: " + p_path);
 
 	ProcessInfo pi;
 	process_map_mutex.lock();
