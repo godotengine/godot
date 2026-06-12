@@ -18,20 +18,26 @@
 			<param index="3" name="normal" type="Vector3" />
 			<param index="4" name="shape_idx" type="int" />
 			<description>
-				Receives unhandled [InputEvent]s. [param event_position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
-				[b]Note:[/b] [method _input_event] requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				Receives unhandled [InputEvent]s. 
+				[param event_position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point.
+				Connect to the [signal input_event] signal to easily pick up these events.
+				[b]Note:[/b] See [member input_ray_pickable] for conditions.
 			</description>
 		</method>
 		<method name="_mouse_enter" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called when the mouse pointer enters any of this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject3D] won't cause this function to be called.
+				Called when the mouse pointer enters any of this object's shapes.
+				Moving between different shapes within a single [CollisionObject3D] won't cause this function to be called.
+				[b]Note:[/b] See [member input_ray_pickable] for conditions.
 			</description>
 		</method>
 		<method name="_mouse_exit" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called when the mouse pointer exits all this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject3D] won't cause this function to be called.
+				Called when the mouse pointer exits all this object's shapes.
+				Moving between different shapes within a single [CollisionObject3D] won't cause this function to be called.
+				[b]Note:[/b] See [member input_ray_pickable] for conditions.
 			</description>
 		</method>
 		<method name="create_shape_owner">
@@ -200,7 +206,14 @@
 			If [code]true[/code], the [CollisionObject3D] will continue to receive input events as the mouse is dragged across its shapes.
 		</member>
 		<member name="input_ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
-			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [member collision_layer] bit to be set.
+			If [code]true[/code], this object is pickable if all other conditions below are met.
+			A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events.
+			[b]Conditions:[/b] If these conditions aren't met, signals and methods which rely on input_ray_pickable may not fire.
+			This field ([code]input_ray_pickable[/code] itself) must be [code]true[/code].
+			At least one [member collision_layer] bit must be set.
+			This node must have [method Node3D.visible_in_tree] evaluate to [code]true[/code].
+			The ray takes other visible (not just physics!) nodes into account when calculating whether this object is picked, so therefore unrelated [VisualInstance3D] or [CollisionBody3D] nodes should not overlap this [CollisionObject3D].
+			Due to the lack of continuous collision detection, signals may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject3D]'s area is small.
 		</member>
 	</members>
 	<signals>
@@ -211,19 +224,23 @@
 			<param index="3" name="normal" type="Vector3" />
 			<param index="4" name="shape_idx" type="int" />
 			<description>
-				Emitted when the object receives an unhandled [InputEvent]. [param event_position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point.
+				Emitted when the object receives an unhandled [InputEvent].
+				[param event_position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point.
+				[b]Note:[/b] See [member input_ray_pickable] for conditions.
 			</description>
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
-				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject3D]'s area is small. This signal may also not be emitted if another [CollisionObject3D] is overlapping the [CollisionObject3D] in question.
+				Emitted when the mouse pointer enters any of this object's shapes.
+				Moving between different shapes within a single [CollisionObject3D] won't cause this function to be called.
+				[b]Note:[/b] See [member input_ray_pickable] for conditions.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
-				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject3D]'s area is small. This signal may also not be emitted if another [CollisionObject3D] is overlapping the [CollisionObject3D] in question.
+				Emitted when the mouse pointer exits all of this object's shapes.
+				Moving between different shapes within a single [CollisionObject3D] won't cause this function to be called.
+				[b]Note:[/b] See [member input_ray_pickable] for conditions.
 			</description>
 		</signal>
 	</signals>
