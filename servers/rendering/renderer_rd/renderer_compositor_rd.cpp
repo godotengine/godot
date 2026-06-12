@@ -317,12 +317,6 @@ RendererCompositorRD::RendererCompositorRD() {
 	framebuffer_cache = memnew(FramebufferCacheRD);
 
 	bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
-	bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
-	bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
-	bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");
-	ShaderRD::set_shader_cache_save_compressed(compress);
-	ShaderRD::set_shader_cache_save_compressed_zstd(use_zstd);
-	ShaderRD::set_shader_cache_save_debug(!strip_debug);
 
 	// Shader cache is forcefully enabled when running the editor.
 	if (shader_cache_enabled || Engine::get_singleton()->is_editor_hint()) {
