@@ -66,7 +66,7 @@
 #include "editor/file_system/editor_file_system.h"
 #endif
 
-#include "modules/modules_enabled.gen.h" // For csg, gridmap.
+#include "modules/modules_enabled.gen.h" // For csg, gridmap, meshoptimizer.
 
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
@@ -80,6 +80,9 @@
 #include "draco/core/decoder_buffer.h"
 #include "draco/mesh/mesh.h"
 #endif // GLTF_HAS_DRACO
+#ifdef MODULE_MESHOPTIMIZER_ENABLED
+#include <thirdparty/meshoptimizer/meshoptimizer.h>
+#endif // MODULE_MESHOPTIMIZER_ENABLED
 
 #include <cstdio>
 #include <cstdlib>
@@ -700,6 +703,20 @@ static Vector<uint8_t> _parse_base64_uri(const String &p_uri) {
 	return buf;
 }
 
+#ifdef MODULE_MESHOPTIMIZER_ENABLED
+static bool _gltf_meshopt_buffer_is_fallback(const Dictionary &p_buffer) {
+	if (!p_buffer.has("extensions")) {
+		return false;
+	}
+	const Dictionary extensions = p_buffer["extensions"];
+	if (!extensions.has("EXT_meshopt_compression")) {
+		return false;
+	}
+	const Dictionary meshopt_extension = extensions["EXT_meshopt_compression"];
+	return meshopt_extension.has("fallback") && (bool)meshopt_extension["fallback"];
+}
+#endif // MODULE_MESHOPTIMIZER_ENABLED
+
 Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> p_state, const String &p_path) {
 	print_verbose("glTF: Total buffers: " + itos(p_state->buffers.size()));
 
@@ -803,7 +820,15 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 		} else if (i == 0 && p_state->glb_data.size()) {
 			buffer_data = p_state->glb_data;
 		} else {
+#ifdef MODULE_MESHOPTIMIZER_ENABLED
+			if (_gltf_meshopt_buffer_is_fallback(buffer)) {
+				print_verbose("glTF: Buffer " + itos(i) + " is a meshopt fallback buffer and will be populated from compressed buffer views.");
+			} else {
+				ERR_PRINT("glTF: Buffer " + itos(i) + " has no data and cannot be loaded.");
+			}
+#else
 			ERR_PRINT("glTF: Buffer " + itos(i) + " has no data and cannot be loaded.");
+#endif // MODULE_MESHOPTIMIZER_ENABLED
 		}
 		p_state->buffers.push_back(buffer_data);
 	}
@@ -1285,6 +1310,138 @@ Error GLTFDocument::_decode_draco_mesh_compression(Ref<GLTFState> p_state) {
 	return OK;
 }
 #endif // GLTF_HAS_DRACO
+
+#ifdef MODULE_MESHOPTIMIZER_ENABLED
+Error GLTFDocument::_decode_meshopt_buffer_view(Ref<GLTFState> p_state, Dictionary &r_buffer_view) {
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_PARSE_ERROR);
+	ERR_FAIL_COND_V(!r_buffer_view.has("extensions"), ERR_PARSE_ERROR);
+	Dictionary extensions = r_buffer_view["extensions"];
+	ERR_FAIL_COND_V(!extensions.has("EXT_meshopt_compression"), ERR_PARSE_ERROR);
+	const Dictionary meshopt_extension = extensions["EXT_meshopt_compression"];
+
+	ERR_FAIL_COND_V_MSG(!r_buffer_view.has("buffer"), ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression buffer view is missing fallback buffer.");
+	ERR_FAIL_COND_V_MSG(!r_buffer_view.has("byteLength"), ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression buffer view is missing decoded byteLength.");
+	ERR_FAIL_COND_V_MSG(!meshopt_extension.has("buffer"), ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression is missing buffer.");
+	ERR_FAIL_COND_V_MSG(!meshopt_extension.has("byteLength"), ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression is missing byteLength.");
+	ERR_FAIL_COND_V_MSG(!meshopt_extension.has("byteStride"), ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression is missing byteStride.");
+	ERR_FAIL_COND_V_MSG(!meshopt_extension.has("count"), ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression is missing count.");
+	ERR_FAIL_COND_V_MSG(!meshopt_extension.has("mode"), ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression is missing mode.");
+
+	const GLTFBufferIndex fallback_buffer_index = r_buffer_view["buffer"];
+	const GLTFBufferIndex compressed_buffer_index = meshopt_extension["buffer"];
+	ERR_FAIL_INDEX_V(fallback_buffer_index, p_state->buffers.size(), ERR_PARSE_ERROR);
+	ERR_FAIL_INDEX_V(compressed_buffer_index, p_state->buffers.size(), ERR_PARSE_ERROR);
+
+	const int64_t fallback_byte_offset = r_buffer_view.has("byteOffset") ? (int64_t)r_buffer_view["byteOffset"] : 0;
+	const int64_t fallback_byte_length = r_buffer_view["byteLength"];
+	const int64_t compressed_byte_offset = meshopt_extension.has("byteOffset") ? (int64_t)meshopt_extension["byteOffset"] : 0;
+	const int64_t compressed_byte_length = meshopt_extension["byteLength"];
+	const int64_t byte_stride = meshopt_extension["byteStride"];
+	const int64_t count = meshopt_extension["count"];
+	const String mode = meshopt_extension["mode"];
+	const String filter = meshopt_extension.has("filter") ? String(meshopt_extension["filter"]) : String("NONE");
+
+	ERR_FAIL_COND_V_MSG(fallback_byte_offset < 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression fallback byteOffset must be non-negative.");
+	ERR_FAIL_COND_V_MSG(fallback_byte_length <= 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression fallback byteLength must be positive.");
+	ERR_FAIL_COND_V_MSG(compressed_byte_offset < 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression byteOffset must be non-negative.");
+	ERR_FAIL_COND_V_MSG(compressed_byte_length <= 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression byteLength must be positive.");
+	ERR_FAIL_COND_V_MSG(byte_stride <= 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression byteStride must be positive.");
+	ERR_FAIL_COND_V_MSG(count <= 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression count must be positive.");
+	ERR_FAIL_COND_V_MSG(count > std::numeric_limits<int64_t>::max() / byte_stride, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression decoded buffer view size overflow.");
+	const int64_t decoded_byte_length = count * byte_stride;
+	ERR_FAIL_COND_V_MSG(fallback_byte_length != decoded_byte_length, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression decoded byteLength does not match byteStride * count.");
+	if (r_buffer_view.has("byteStride")) {
+		const int64_t fallback_byte_stride = r_buffer_view["byteStride"];
+		ERR_FAIL_COND_V_MSG(fallback_byte_stride != byte_stride, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression byteStride does not match parent bufferView byteStride.");
+	}
+	ERR_FAIL_COND_V(decoded_byte_length > INT32_MAX, ERR_OUT_OF_MEMORY);
+	ERR_FAIL_COND_V(fallback_byte_offset > std::numeric_limits<int64_t>::max() - decoded_byte_length, ERR_PARSE_ERROR);
+	const int64_t fallback_byte_end = fallback_byte_offset + decoded_byte_length;
+	ERR_FAIL_COND_V(fallback_byte_end > INT32_MAX, ERR_OUT_OF_MEMORY);
+
+	const PackedByteArray &compressed_buffer = p_state->buffers[compressed_buffer_index];
+	ERR_FAIL_COND_V(compressed_byte_offset > std::numeric_limits<int64_t>::max() - compressed_byte_length, ERR_PARSE_ERROR);
+	const int64_t compressed_byte_end = compressed_byte_offset + compressed_byte_length;
+	ERR_FAIL_COND_V_MSG(compressed_byte_end > compressed_buffer.size(), ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression compressed buffer range exceeds the source buffer size.");
+	PackedByteArray compressed_data = compressed_buffer.slice(compressed_byte_offset, compressed_byte_end);
+	ERR_FAIL_COND_V_MSG(compressed_data.is_empty(), ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression compressed data is empty.");
+
+	PackedByteArray decoded_data;
+	decoded_data.resize(decoded_byte_length);
+	uint8_t *decoded_ptr = decoded_data.ptrw();
+	const uint8_t *compressed_ptr = compressed_data.ptr();
+
+	int meshopt_result = 0;
+	if (mode == "ATTRIBUTES") {
+		ERR_FAIL_COND_V_MSG(byte_stride % 4 != 0 || byte_stride > 256, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression ATTRIBUTES byteStride must be a multiple of 4 and no more than 256.");
+		meshopt_result = meshopt_decodeVertexBuffer(decoded_ptr, count, byte_stride, compressed_ptr, compressed_data.size());
+		ERR_FAIL_COND_V_MSG(meshopt_result != 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression ATTRIBUTES decode failed with code " + itos(meshopt_result) + ".");
+		if (filter == "NONE") {
+			// Nothing to do.
+		} else if (filter == "OCTAHEDRAL") {
+			ERR_FAIL_COND_V_MSG(byte_stride != 4 && byte_stride != 8, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression OCTAHEDRAL filter requires byteStride 4 or 8.");
+			meshopt_decodeFilterOct(decoded_ptr, count, byte_stride);
+		} else if (filter == "QUATERNION") {
+			ERR_FAIL_COND_V_MSG(byte_stride != 8, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression QUATERNION filter requires byteStride 8.");
+			meshopt_decodeFilterQuat(decoded_ptr, count, byte_stride);
+		} else if (filter == "EXPONENTIAL") {
+			ERR_FAIL_COND_V_MSG(byte_stride % 4 != 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression EXPONENTIAL filter requires byteStride to be a multiple of 4.");
+			meshopt_decodeFilterExp(decoded_ptr, count, byte_stride);
+		} else {
+			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression has an unsupported filter.");
+		}
+	} else if (mode == "TRIANGLES") {
+		ERR_FAIL_COND_V_MSG(filter != "NONE", ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression TRIANGLES mode does not support filters.");
+		ERR_FAIL_COND_V_MSG(count % 3 != 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression TRIANGLES count must be divisible by 3.");
+		ERR_FAIL_COND_V_MSG(byte_stride != 2 && byte_stride != 4, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression TRIANGLES byteStride must be 2 or 4.");
+		meshopt_result = meshopt_decodeIndexBuffer(decoded_ptr, count, byte_stride, compressed_ptr, compressed_data.size());
+		ERR_FAIL_COND_V_MSG(meshopt_result != 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression TRIANGLES decode failed with code " + itos(meshopt_result) + ".");
+	} else if (mode == "INDICES") {
+		ERR_FAIL_COND_V_MSG(filter != "NONE", ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression INDICES mode does not support filters.");
+		ERR_FAIL_COND_V_MSG(byte_stride != 2 && byte_stride != 4, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression INDICES byteStride must be 2 or 4.");
+		meshopt_result = meshopt_decodeIndexSequence(decoded_ptr, count, byte_stride, compressed_ptr, compressed_data.size());
+		ERR_FAIL_COND_V_MSG(meshopt_result != 0, ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression INDICES decode failed with code " + itos(meshopt_result) + ".");
+	} else {
+		ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "glTF import: EXT_meshopt_compression has an unsupported mode.");
+	}
+
+	if (p_state->buffers[fallback_buffer_index].size() < fallback_byte_end) {
+		p_state->buffers.write[fallback_buffer_index].resize(fallback_byte_end);
+	}
+	memcpy(&p_state->buffers.write[fallback_buffer_index].write[fallback_byte_offset], decoded_data.ptr(), decoded_data.size());
+
+	extensions.erase("EXT_meshopt_compression");
+	if (extensions.is_empty()) {
+		r_buffer_view.erase("extensions");
+	} else {
+		r_buffer_view["extensions"] = extensions;
+	}
+	return OK;
+}
+
+Error GLTFDocument::_decode_meshopt_compression(Ref<GLTFState> p_state) {
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_PARSE_ERROR);
+	if (!p_state->json.has("bufferViews")) {
+		return OK;
+	}
+	Array buffer_views = p_state->json["bufferViews"];
+	for (int buffer_view_i = 0; buffer_view_i < buffer_views.size(); buffer_view_i++) {
+		Dictionary buffer_view = buffer_views[buffer_view_i];
+		if (!buffer_view.has("extensions")) {
+			continue;
+		}
+		const Dictionary extensions = buffer_view["extensions"];
+		if (!extensions.has("EXT_meshopt_compression")) {
+			continue;
+		}
+		Error err = _decode_meshopt_buffer_view(p_state, buffer_view);
+		ERR_FAIL_COND_V(err != OK, err);
+		buffer_views[buffer_view_i] = buffer_view;
+	}
+	p_state->json["bufferViews"] = buffer_views;
+	return OK;
+}
+#endif // MODULE_MESHOPTIMIZER_ENABLED
 
 Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 	Array meshes;
@@ -7294,11 +7451,15 @@ HashSet<String> GLTFDocument::get_supported_gltf_extensions_hashset() {
 	supported_extensions.insert("KHR_materials_emissive_strength");
 	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
 	supported_extensions.insert("KHR_materials_unlit");
+	supported_extensions.insert("KHR_mesh_quantization");
 	supported_extensions.insert("KHR_node_visibility");
 	supported_extensions.insert("KHR_texture_transform");
 #ifdef GLTF_HAS_DRACO
 	supported_extensions.insert("KHR_draco_mesh_compression");
 #endif // GLTF_HAS_DRACO
+#ifdef MODULE_MESHOPTIMIZER_ENABLED
+	supported_extensions.insert("EXT_meshopt_compression");
+#endif // MODULE_MESHOPTIMIZER_ENABLED
 	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		Vector<String> ext_supported_extensions = ext->get_supported_extensions();
@@ -7431,6 +7592,12 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	/* PARSE BUFFERS */
 	err = _parse_buffers(p_state, p_search_path);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
+#ifdef MODULE_MESHOPTIMIZER_ENABLED
+	/* EXPAND MESHOPT-COMPRESSED BUFFER VIEWS */
+	err = _decode_meshopt_compression(p_state);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+#endif // MODULE_MESHOPTIMIZER_ENABLED
 
 	/* PARSE BUFFER VIEWS */
 	err = _parse_buffer_views(p_state);
