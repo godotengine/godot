@@ -88,7 +88,6 @@ static GDScriptParser::DataType make_callable_type(const MethodInfo &p_info) {
 	type.kind = GDScriptParser::DataType::BUILTIN;
 	type.builtin_type = Variant::CALLABLE;
 	type.is_constant = true;
-	type.method_info = p_info;
 	return type;
 }
 
@@ -98,7 +97,6 @@ static GDScriptParser::DataType make_signal_type(const MethodInfo &p_info) {
 	type.kind = GDScriptParser::DataType::BUILTIN;
 	type.builtin_type = Variant::SIGNAL;
 	type.is_constant = true;
-	type.method_info = p_info;
 	return type;
 }
 
