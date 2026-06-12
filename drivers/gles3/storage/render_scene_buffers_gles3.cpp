@@ -476,22 +476,34 @@ void RenderSceneBuffersGLES3::check_backbuffer(bool p_need_color, bool p_need_de
 	GLenum depth_format = GL_DEPTH24_STENCIL8;
 	uint32_t depth_format_size = 4;
 
+	int mipmaps = Image::get_image_required_mipmaps(internal_size.x, internal_size.y, Image::FORMAT_RGBA8);
+	uint32_t total_pixels = 0;
+	GLsizei width = internal_size.x;
+	GLsizei height = internal_size.y;
+
 	if (backbuffer3d.color == 0 && p_need_color) {
 		glGenTextures(1, &backbuffer3d.color);
 		glBindTexture(texture_target, backbuffer3d.color);
 
-		if (use_multiview) {
-			glTexImage3D(texture_target, 0, color_internal_format, internal_size.x, internal_size.y, view_count, 0, color_format, color_type, nullptr);
-		} else {
-			glTexImage2D(texture_target, 0, color_internal_format, internal_size.x, internal_size.y, 0, color_format, color_type, nullptr);
+		for (int level = 0; level < mipmaps; level++) {
+			if (use_multiview) {
+				glTexImage3D(texture_target, level, color_internal_format, width, height, view_count, 0, color_format, color_type, nullptr);
+			} else {
+				glTexImage2D(texture_target, level, color_internal_format, width, height, 0, color_format, color_type, nullptr);
+			}
+
+			total_pixels += width * height * view_count;
+			width = MAX(1, width >> 1);
+			height = MAX(1, height >> 1);
 		}
 
 		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, mipmaps - 1);
 
-		GLES3::Utilities::get_singleton()->texture_allocated_data(backbuffer3d.color, internal_size.x * internal_size.y * view_count * color_format_size, "3D Back buffer color texture");
+		GLES3::Utilities::get_singleton()->texture_allocated_data(backbuffer3d.color, total_pixels * color_format_size, "3D Back buffer color texture");
 
 #ifndef IOS_ENABLED
 		if (use_multiview) {
