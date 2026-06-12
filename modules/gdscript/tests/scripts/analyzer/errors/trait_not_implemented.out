@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 1: Class "Something" must implement "SimSystem.declared_func()".

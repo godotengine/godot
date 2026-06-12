@@ -87,8 +87,18 @@ void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::N
 	}
 }
 
-GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::DataType &p_datatype, GDScript *p_owner, bool p_handle_metatype) {
+GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::DataType &p_datatype, GDScript *p_owner, bool p_handle_metatype, bool p_lower_traits) {
 	if (!p_datatype.is_set() || !p_datatype.is_hard_type() || p_datatype.is_coroutine) {
+		return GDScriptDataType();
+	}
+
+	// Traits are a compile-time-only contract with no runtime type identity. Their
+	// `implements` relationship is verified by the analyzer, but the VM knows nothing
+	// about it, so a trait-typed value must be left untyped at runtime to avoid
+	// spurious type checks (e.g. when passed to a trait-typed parameter). The
+	// exceptions are `is`/`as` and the per-class trait list, which need the real
+	// trait script type to perform the runtime check; those pass `p_lower_traits = false`.
+	if (p_lower_traits && !(p_handle_metatype && p_datatype.is_meta_type) && p_datatype.kind == GDScriptParser::DataType::CLASS && p_datatype.class_type != nullptr && p_datatype.class_type->is_trait) {
 		return GDScriptDataType();
 	}
 
@@ -580,7 +590,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		} break;
 		case GDScriptParser::Node::CAST: {
 			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
-			GDScriptDataType cast_type = _gdtype_from_datatype(cn->get_datatype(), codegen.script, false);
+			// `p_lower_traits = false`: a cast to a trait needs the real trait script type so the VM can check `implements`.
+			GDScriptDataType cast_type = _gdtype_from_datatype(cn->get_datatype(), codegen.script, false, false);
 
 			GDScriptCodeGenerator::Address result;
 			if (cast_type.has_type()) {
@@ -962,7 +973,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(type_test->get_datatype(), codegen.script));
 
 			GDScriptCodeGenerator::Address operand = _parse_expression(codegen, r_error, type_test->operand);
-			GDScriptDataType test_type = _gdtype_from_datatype(type_test->test_datatype, codegen.script, false);
+			// `p_lower_traits = false`: `is SomeTrait` needs the real trait script type so the VM can check `implements`.
+			GDScriptDataType test_type = _gdtype_from_datatype(type_test->test_datatype, codegen.script, false, false);
 			if (r_error) {
 				return GDScriptCodeGenerator::Address();
 			}
@@ -3007,6 +3019,19 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 }
 
 Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
+	// Record the traits this class implements so `is`/`as` can verify them at runtime.
+	p_script->implemented_traits.clear();
+	for (GDScriptParser::TypeNode *trait_node : p_class->implemented_traits) {
+		// `p_lower_traits = false` keeps the real trait script type instead of lowering it to untyped.
+		GDScriptDataType trait_type = _gdtype_from_datatype(trait_node->get_datatype(), p_script, false, false);
+		if (trait_type.kind == GDScriptDataType::GDSCRIPT || trait_type.kind == GDScriptDataType::SCRIPT) {
+			Ref<GDScript> trait_script = Object::cast_to<GDScript>(trait_type.script_type);
+			if (trait_script.is_valid()) {
+				p_script->implemented_traits.push_back(trait_script);
+			}
+		}
+	}
+
 	// Compile member functions, getters, and setters.
 	for (int i = 0; i < p_class->members.size(); i++) {
 		const GDScriptParser::ClassNode::Member &member = p_class->members[i];

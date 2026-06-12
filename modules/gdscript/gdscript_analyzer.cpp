@@ -626,6 +626,11 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 		E->apply(parser, p_class, p_class->outer);
 	}
 
+	// Resolve implemented trait types now so type-compatibility checks can see them later.
+	for (GDScriptParser::TypeNode *trait_type_node : p_class->implemented_traits) {
+		resolve_datatype(trait_type_node);
+	}
+
 	parser->current_class = previous_class;
 
 	return OK;
@@ -1567,7 +1572,91 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		}
 	}
 
+	// Verify that a concrete class fulfills every trait it claims to implement.
+	// Abstract classes are allowed to defer this to their concrete subclasses.
+	if (!p_class->is_abstract && p_class->implements_used) {
+		check_trait_implementations(p_class);
+	}
+
 	parser->current_class = previous_class;
+}
+
+void GDScriptAnalyzer::check_trait_implementations(GDScriptParser::ClassNode *p_class) {
+	const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
+
+	GDScriptParser::DataType self_type = p_class->get_datatype();
+	self_type.is_meta_type = false;
+
+	for (GDScriptParser::TypeNode *trait_type_node : p_class->implemented_traits) {
+		GDScriptParser::DataType trait_type = type_from_metatype(resolve_datatype(trait_type_node));
+
+		if (trait_type.kind != GDScriptParser::DataType::CLASS || trait_type.class_type == nullptr || !trait_type.class_type->is_trait) {
+			push_error(vformat(R"(Type "%s" used in "implements" is not a trait.)", trait_type.to_string()), trait_type_node);
+			continue;
+		}
+
+		GDScriptParser::ClassNode *trait_class = trait_type.class_type;
+
+		// Make sure the trait's members and their signatures are resolved.
+		resolve_class_interface(trait_class, p_class);
+
+		const String trait_name = trait_class->identifier == nullptr ? trait_class->fqcn.get_file() : String(trait_class->identifier->name);
+
+		for (const GDScriptParser::ClassNode::Member &member : trait_class->members) {
+			if (member.type != GDScriptParser::ClassNode::Member::FUNCTION) {
+				continue;
+			}
+			const StringName &function_name = member.function->identifier->name;
+
+			// Expected signature, as declared by the trait.
+			GDScriptParser::DataType trait_return;
+			List<GDScriptParser::DataType> trait_params;
+			int trait_default_count = 0;
+			BitField<MethodFlags> trait_flags = {};
+			get_function_signature(p_class, false, trait_type, function_name, trait_return, trait_params, trait_default_count, trait_flags);
+
+			// Actual signature, as found in the class or its base chain.
+			GDScriptParser::DataType impl_return;
+			List<GDScriptParser::DataType> impl_params;
+			int impl_default_count = 0;
+			BitField<MethodFlags> impl_flags = {};
+			if (!get_function_signature(p_class, false, self_type, function_name, impl_return, impl_params, impl_default_count, impl_flags) || impl_flags.has_flag(METHOD_FLAG_VIRTUAL_REQUIRED)) {
+				push_error(vformat(R"*(Class "%s" must implement "%s.%s()".)*", class_name, trait_name, function_name), p_class);
+				continue;
+			}
+
+			bool valid = impl_flags.has_flag(METHOD_FLAG_STATIC) == trait_flags.has_flag(METHOD_FLAG_STATIC);
+
+			// `[impl_min..impl_max]` must include `[trait_min..trait_max]`.
+			const int trait_min_argc = trait_params.size() - trait_default_count;
+			const int trait_max_argc = trait_flags.has_flag(METHOD_FLAG_VARARG) ? INT_MAX : trait_params.size();
+			const int impl_min_argc = impl_params.size() - impl_default_count;
+			const int impl_max_argc = impl_flags.has_flag(METHOD_FLAG_VARARG) ? INT_MAX : impl_params.size();
+			valid = valid && impl_min_argc <= trait_min_argc && trait_max_argc <= impl_max_argc;
+
+			// Return type must be covariant.
+			if (valid && !trait_return.is_variant()) {
+				valid = is_type_compatible(trait_return, impl_return);
+			}
+
+			// Parameter types must be contravariant.
+			const List<GDScriptParser::DataType>::Element *trait_it = trait_params.front();
+			const List<GDScriptParser::DataType>::Element *impl_it = impl_params.front();
+			while (valid && trait_it != nullptr && impl_it != nullptr) {
+				const GDScriptParser::DataType &trait_par = trait_it->get();
+				const GDScriptParser::DataType &impl_par = impl_it->get();
+				if (!trait_par.is_variant() && !impl_par.is_variant()) {
+					valid = is_type_compatible(impl_par, trait_par);
+				}
+				trait_it = trait_it->next();
+				impl_it = impl_it->next();
+			}
+
+			if (!valid) {
+				push_error(vformat(R"*(The signature of "%s.%s()" does not match the signature declared by trait "%s".)*", class_name, function_name, trait_name), p_class);
+			}
+		}
+	}
 }
 
 void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, bool p_recursive) {
@@ -3834,6 +3923,13 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 				valid = is_type_compatible(cast_type, op_type) || is_type_compatible(op_type, cast_type);
 			}
 
+			// A trait can be implemented by otherwise-unrelated types, so `as SomeTrait` is a
+			// legitimate runtime-checked cast even when the static types are unrelated.
+			if (!valid && cast_type.kind == GDScriptParser::DataType::CLASS && cast_type.class_type != nullptr && cast_type.class_type->is_trait) {
+				valid = true;
+				mark_node_unsafe(p_cast);
+			}
+
 			if (!valid) {
 				push_error(vformat(R"(Invalid cast. Cannot convert from "%s" to "%s".)", op_type.to_string(), cast_type.to_string()), p_cast->cast_type);
 			}
@@ -5238,7 +5334,11 @@ void GDScriptAnalyzer::reduce_type_test(GDScriptParser::TypeTestNode *p_type_tes
 		return;
 	}
 
-	if (!is_type_compatible(test_type, operand_type) && !is_type_compatible(operand_type, test_type)) {
+	// A trait can be implemented by otherwise-unrelated types, so `is SomeTrait` is always a
+	// legitimate runtime check and must not be rejected based on the operand's static type.
+	const bool test_is_trait = test_type.kind == GDScriptParser::DataType::CLASS && test_type.class_type != nullptr && test_type.class_type->is_trait;
+
+	if (!test_is_trait && !is_type_compatible(test_type, operand_type) && !is_type_compatible(operand_type, test_type)) {
 		if (operand_type.is_hard_type()) {
 			push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", operand_type.to_string(), test_type.to_string()), p_type_test->operand);
 		} else {
@@ -6490,6 +6590,16 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			while (src_class != nullptr) {
 				if (src_class == p_target.class_type || src_class->fqcn == p_target.class_type->fqcn) {
 					return true;
+				}
+				// A class is compatible with a trait it (or a base class) implements.
+				if (p_target.class_type->is_trait) {
+					for (const GDScriptParser::TypeNode *trait_type_node : src_class->implemented_traits) {
+						const GDScriptParser::DataType impl_trait = trait_type_node->get_datatype();
+						if (impl_trait.kind == GDScriptParser::DataType::CLASS && impl_trait.class_type != nullptr &&
+								(impl_trait.class_type == p_target.class_type || impl_trait.class_type->fqcn == p_target.class_type->fqcn)) {
+							return true;
+						}
+					}
 				}
 				src_class = src_class->base_type.class_type;
 			}
