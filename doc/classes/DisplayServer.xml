@@ -2153,6 +2153,15 @@
 				Returns [code]true[/code] if anything can be drawn in the window specified by [param window_id], [code]false[/code] otherwise. Using the [code]--disable-render-loop[/code] command line argument or a headless build will return [code]false[/code].
 			</description>
 		</method>
+		<method name="window_drag_files">
+			<return type="void" />
+			<param index="0" name="files" type="PackedStringArray" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Starts the operating system's drag-and-drop, must be called after the user presses the mouse button. [param files] is the list of absolute filepaths of files to drag. [param window_id] is the window the files are being dragged from.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
+			</description>
+		</method>
 		<method name="window_get_active_popup" qualifiers="const">
 			<return type="int" />
 			<description>
