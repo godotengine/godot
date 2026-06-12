@@ -282,6 +282,10 @@ void ShapeCast2D::_notification(int p_what) {
 			}
 			_update_shapecast_state();
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			queue_redraw();
+		} break;
 	}
 }
 

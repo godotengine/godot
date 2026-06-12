@@ -1088,6 +1088,14 @@ void CSGShape3D::_notification(int p_what) {
 			}
 			_on_transform_changed();
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			if (_is_debug_collision_shape_visible()) {
+				_update_debug_collision_shape();
+			} else {
+				_clear_debug_collision_shape();
+			}
+		} break;
 #endif // PHYSICS_3D_DISABLED
 	}
 }

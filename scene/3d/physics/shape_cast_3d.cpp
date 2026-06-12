@@ -102,6 +102,14 @@ void ShapeCast3D::_notification(int p_what) {
 				}
 			}
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			if (get_tree()->is_debugging_collisions_hint()) {
+				_update_debug_shape();
+			} else {
+				_clear_debug_shape();
+			}
+		} break;
 	}
 }
 

@@ -135,6 +135,10 @@ void CollisionShape2D::_notification(int p_what) {
 				draw_primitive(pts, cols, Vector<Vector2>());
 			}
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			queue_redraw();
+		} break;
 	}
 }
 

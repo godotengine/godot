@@ -272,6 +272,13 @@ Error SceneDebugger::_msg_hdr_output_toggle_requested(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_set_debug_collisions(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	bool enabled = p_args[0];
+	SceneTree::get_singleton()->set_debug_collisions_hint(enabled);
+	return OK;
+}
+
 Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enable = p_args[0];
@@ -623,6 +630,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["window_request_size"] = _msg_window_request_size;
 	message_handlers["hdr_output_request_state"] = _msg_hdr_output_request_state;
 	message_handlers["hdr_output_toggle_requested"] = _msg_hdr_output_toggle_requested;
+	message_handlers["set_debug_collisions"] = _msg_set_debug_collisions;
 	message_handlers["override_cameras"] = _msg_override_cameras;
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
 #ifndef _3D_DISABLED
