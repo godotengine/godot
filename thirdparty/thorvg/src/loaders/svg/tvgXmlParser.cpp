@@ -328,7 +328,7 @@ bool xmlParseAttributes(const char* buf, unsigned bufLength, xmlAttributeCb func
 
         if (!func((void*)data, tmpBuf, tval)) {
             if (_unsupported(tmpBuf, tval)) {
-                TVGLOG("SVG", "Unsupported attributes used [Elements type: %s][Id : %s][Attribute: %s][Value: %s]", xmlNodeTypeToString(((SvgLoaderData*)data)->svgParse->node->type), ((SvgLoaderData*)data)->svgParse->node->id ? ((SvgLoaderData*)data)->svgParse->node->id : "NO_ID", tmpBuf, tval ? tval : "NONE");
+                TVGLOG("SVG", "Unsupported attributes used [Elements type: %s][Id : %s][Attribute: %s][Value: %s]", xmlNodeTypeToString(((SvgParserContext*)data)->parser->node->type), ((SvgParserContext*)data)->parser->node->id ? ((SvgParserContext*)data)->parser->node->id : "NO_ID", tmpBuf, tval ? tval : "NONE");
             }
         }
     }
@@ -408,7 +408,7 @@ bool xmlParse(const char* buf, unsigned bufLength, bool strip, xmlCb func, const
         } else {
             const char *p, *end;
 
-            if (strip && ((SvgLoaderData*)data)->openedTag != OpenedTagType::Text) {
+            if (strip && ((SvgParserContext*)data)->openedTag != OpenedTagType::Text) {
                 p = itr;
                 p = _skipWhiteSpacesAndXmlEntities(p, itrEnd);
                 if (p) {
@@ -421,7 +421,7 @@ bool xmlParse(const char* buf, unsigned bufLength, bool strip, xmlCb func, const
             if (!p) p = itrEnd;
 
             end = p;
-            if (strip && ((SvgLoaderData*)data)->openedTag != OpenedTagType::Text) end = _unskipWhiteSpacesAndXmlEntities(end, itr);
+            if (strip && ((SvgParserContext*)data)->openedTag != OpenedTagType::Text) end = _unskipWhiteSpacesAndXmlEntities(end, itr);
 
             if (itr != end && !func((void*)data, XMLType::Data, itr, (unsigned int)(end - itr))) return false;
 
@@ -487,7 +487,7 @@ bool xmlParseW3CAttribute(const char* buf, unsigned bufLength, xmlAttributeCb fu
 
             if (!func((void*)data, key, val)) {
                 if (!_unsupported(key, val)) {
-                    TVGLOG("SVG", "Unsupported attributes used [Elements type: %s][Id : %s][Attribute: %s][Value: %s]", xmlNodeTypeToString(((SvgLoaderData*)data)->svgParse->node->type), ((SvgLoaderData*)data)->svgParse->node->id ? ((SvgLoaderData*)data)->svgParse->node->id : "NO_ID", key, val ? val : "NONE");
+                    TVGLOG("SVG", "Unsupported attributes used [Elements type: %s][Id : %s][Attribute: %s][Value: %s]", xmlNodeTypeToString(((SvgParserContext*)data)->parser->node->type), ((SvgParserContext*)data)->parser->node->id ? ((SvgParserContext*)data)->parser->node->id : "NO_ID", key, val ? val : "NONE");
                 }
             }
         }

@@ -22,17 +22,17 @@
 
 #include "tvgCanvas.h"
 #include "tvgTaskScheduler.h"
-#include "tvgLoadModule.h"
+#include "tvgLoader.h"
 
-#ifdef THORVG_SW_RASTER_SUPPORT
+#ifdef THORVG_CPU_ENGINE_SUPPORT
     #include "tvgSwRenderer.h"
 #endif
 
-#ifdef THORVG_GL_RASTER_SUPPORT
+#ifdef THORVG_GL_ENGINE_SUPPORT
     #include "tvgGlRenderer.h"
 #endif
 
-#ifdef THORVG_WG_RASTER_SUPPORT
+#ifdef THORVG_WG_ENGINE_SUPPORT
     #include "tvgWgRenderer.h"
 #endif
 
@@ -111,7 +111,7 @@ SwCanvas::SwCanvas() = default;
 
 SwCanvas::~SwCanvas()
 {
-#ifdef THORVG_SW_RASTER_SUPPORT
+#ifdef THORVG_CPU_ENGINE_SUPPORT
     SwRenderer::term();
 #endif
 }
@@ -119,7 +119,7 @@ SwCanvas::~SwCanvas()
 
 Result SwCanvas::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t h, ColorSpace cs) noexcept
 {
-#ifdef THORVG_SW_RASTER_SUPPORT
+#ifdef THORVG_CPU_ENGINE_SUPPORT
     if (cs == ColorSpace::Unknown) return Result::InvalidArguments;
     if (cs == ColorSpace::Grayscale8) return Result::NonSupport;
 
@@ -149,7 +149,7 @@ Result SwCanvas::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t 
 
 SwCanvas* SwCanvas::gen(EngineOption op) noexcept
 {
-#ifdef THORVG_SW_RASTER_SUPPORT
+#ifdef THORVG_CPU_ENGINE_SUPPORT
     if (engineInit > 0) {
         auto renderer = new SwRenderer(TaskScheduler::threads(), op);
         renderer->ref();
@@ -170,7 +170,7 @@ GlCanvas::GlCanvas() = default;
 
 GlCanvas::~GlCanvas()
 {
-#ifdef THORVG_GL_RASTER_SUPPORT
+#ifdef THORVG_GL_ENGINE_SUPPORT
     GlRenderer::term();
 #endif
 }
@@ -178,7 +178,7 @@ GlCanvas::~GlCanvas()
 
 Result GlCanvas::target(void* display, void* surface, void* context, int32_t id, uint32_t w, uint32_t h, ColorSpace cs) noexcept
 {
-#ifdef THORVG_GL_RASTER_SUPPORT
+#ifdef THORVG_GL_ENGINE_SUPPORT
     if (cs != ColorSpace::ABGR8888S) return Result::NonSupport;
 
     if (pImpl->status == Status::Updating || pImpl->status == Status::Drawing) {
@@ -204,7 +204,7 @@ Result GlCanvas::target(void* display, void* surface, void* context, int32_t id,
 
 GlCanvas* GlCanvas::gen(EngineOption op) noexcept
 {
-#ifdef THORVG_GL_RASTER_SUPPORT
+#ifdef THORVG_GL_ENGINE_SUPPORT
     if (engineInit > 0) {
         if (op == EngineOption::SmartRender) TVGLOG("RENDERER", "GlCanvas doesn't support Smart Rendering");
         auto renderer = GlRenderer::gen(TaskScheduler::threads(), op);
@@ -227,7 +227,7 @@ WgCanvas::WgCanvas() = default;
 
 WgCanvas::~WgCanvas()
 {
-#ifdef THORVG_WG_RASTER_SUPPORT
+#ifdef THORVG_WG_ENGINE_SUPPORT
     auto renderer = static_cast<WgRenderer*>(pImpl->renderer);
     renderer->target(nullptr, nullptr, nullptr, 0, 0, ColorSpace::Unknown);
 
@@ -238,7 +238,7 @@ WgCanvas::~WgCanvas()
 
 Result WgCanvas::target(void* device, void* instance, void* target, uint32_t w, uint32_t h, ColorSpace cs, int type) noexcept
 {
-#ifdef THORVG_WG_RASTER_SUPPORT
+#ifdef THORVG_WG_ENGINE_SUPPORT
     if (cs != ColorSpace::ABGR8888S) return Result::NonSupport;
 
     if (pImpl->status == Status::Updating || pImpl->status == Status::Drawing) {
@@ -264,7 +264,7 @@ Result WgCanvas::target(void* device, void* instance, void* target, uint32_t w, 
 
 WgCanvas* WgCanvas::gen(EngineOption op) noexcept
 {
-#ifdef THORVG_WG_RASTER_SUPPORT
+#ifdef THORVG_WG_ENGINE_SUPPORT
     if (engineInit > 0) {
         if (op == EngineOption::SmartRender) TVGLOG("RENDERER", "WgCanvas doesn't support Smart Rendering");
         auto renderer = new WgRenderer(TaskScheduler::threads(), op);

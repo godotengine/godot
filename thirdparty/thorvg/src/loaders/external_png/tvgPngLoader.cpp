@@ -50,8 +50,7 @@ PngLoader::~PngLoader()
     tvg::free(surface.buf32);
 }
 
-
-bool PngLoader::open(const char* path)
+bool PngLoader::open(const char* path, TVG_UNUSED const LoaderOps* ops)
 {
     image->opaque = nullptr;
 
@@ -63,8 +62,7 @@ bool PngLoader::open(const char* path)
     return true;
 }
 
-
-bool PngLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rpath, bool copy)
+bool PngLoader::open(const char* data, uint32_t size, TVG_UNUSED const LoaderOps* ops, bool copy)
 {
 #ifdef THORVG_FILE_IO_SUPPORT
     image->opaque = nullptr;
@@ -83,7 +81,7 @@ bool PngLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rpa
 
 bool PngLoader::read()
 {
-    if (!LoadModule::read()) return true;
+    if (!Loader::read()) return true;
 
     if (w == 0 || h == 0) return false;
 

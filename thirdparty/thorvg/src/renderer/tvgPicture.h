@@ -25,37 +25,11 @@
 
 #include "tvgPaint.h"
 #include "tvgScene.h"
-#include "tvgLoader.h"
+#include "tvgAccessor.h"
+#include "tvgLoaderMgr.h"
 
 namespace tvg
 {
-
-struct PictureIterator : Iterator
-{
-    Paint* paint = nullptr;
-    Paint* ptr = nullptr;
-
-    PictureIterator(Paint* p) : paint(p) {}
-
-    const Paint* next() override
-    {
-        if (!ptr) ptr = paint;
-        else ptr = nullptr;
-        return ptr;
-    }
-
-    uint32_t count() override
-    {
-        if (paint) return 1;
-        else return 0;
-    }
-
-    void begin() override
-    {
-        ptr = nullptr;
-    }
-};
-
 
 struct PictureImpl : Picture
 {
@@ -159,11 +133,9 @@ struct PictureImpl : Picture
         if (vector || bitmap) return Result::InsufficientCondition;
 
         bool invalid;  //Invalid Path
-        auto loader = static_cast<ImageLoader*>(LoaderMgr::loader(filename, &invalid));
-        if (!loader) {
-            if (invalid) return Result::InvalidArguments;
-            return Result::NonSupport;
-        }
+        PictureOps ops = {resolver, nullptr, accessible};
+        auto loader = LoaderMgr::loader(filename, &ops, &invalid);
+        if (invalid) return Result::InvalidArguments;
         return load(loader);
     }
 
@@ -171,20 +143,16 @@ struct PictureImpl : Picture
     {
         if (!data || size <= 0) return Result::InvalidArguments;
         if (vector || bitmap) return Result::InsufficientCondition;
-        auto loader = static_cast<ImageLoader*>(LoaderMgr::loader(data, size, mimeType, rpath, copy));
-        if (!loader) return Result::NonSupport;
-        return load(loader);
+
+        PictureOps ops = {resolver, rpath, accessible};
+        return load(LoaderMgr::loader(data, size, mimeType, &ops, copy));
     }
 
     Result load(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, bool copy)
     {
         if (!data || w <= 0 || h <= 0 || cs == ColorSpace::Unknown)  return Result::InvalidArguments;
         if (vector || bitmap) return Result::InsufficientCondition;
-
-        auto loader = static_cast<ImageLoader*>(LoaderMgr::loader(data, w, h, cs, copy));
-        if (!loader) return Result::FailedAllocation;
-
-        return load(loader);
+        return load(LoaderMgr::loader(data, w, h, cs, copy));
     }
 
     Result set(std::function<bool(Paint* paint, const char* src, void* data)> resolver, void* data)
@@ -232,9 +200,24 @@ struct PictureImpl : Picture
         return picture;
     }
 
-    Iterator* iterator()
+    AccessorIterator* iterator()
     {
         load();
+
+        struct PictureIterator : AccessorIterator
+        {
+            Paint* ptr = nullptr;
+
+            PictureIterator(Paint* p) : ptr(p) {}
+
+            const Paint* next() override
+            {
+                auto ret = ptr;
+                ptr = nullptr;
+                return ret;
+            }
+        };
+
         return new PictureIterator(vector);
     }
 
@@ -315,8 +298,16 @@ struct PictureImpl : Picture
         return impl.renderer->region(impl.rd);
     }
 
-    Result load(ImageLoader* loader)
+    Result load(Loader* loader)
     {
+        if (!loader) return Result::NonSupport;
+
+        // fonts are not expected in the picture
+        if (loader->type == FileType::Ttf) {
+            LoaderMgr::retrieve(loader);
+            return Result::InvalidArguments;
+        }
+
         //Same resource has been loaded.
         if (this->loader == loader) {
             this->loader->sharing--;  //make it sure the reference counting.
@@ -325,16 +316,26 @@ struct PictureImpl : Picture
             LoaderMgr::retrieve(this->loader);
         }
 
-        this->loader = loader;
-        loader->set(resolver);
+        this->loader = static_cast<ImageLoader*>(loader);
         if (!loader->read()) return Result::Unknown;
 
-        this->w = loader->w;
-        this->h = loader->h;
+        this->w = this->loader->w;
+        this->h = this->loader->h;
 
         impl.mark(RenderUpdateFlag::All);
 
         return Result::Success;
+    }
+
+    const AccessorEntity* access(uint32_t id)
+    {
+        if (loader) return loader->access(id);
+        return nullptr;
+    }
+
+    void access(AccessorCallback& cb)
+    {
+        if (loader) loader->access(cb);
     }
 };
 

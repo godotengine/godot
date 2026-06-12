@@ -22,17 +22,17 @@
 
 #include "tvgCommon.h"
 #include "tvgTaskScheduler.h"
-#include "tvgLoader.h"
+#include "tvgLoaderMgr.h"
 
-#ifdef THORVG_SW_RASTER_SUPPORT
+#ifdef THORVG_CPU_ENGINE_SUPPORT
     #include "tvgSwRenderer.h"
 #endif
 
-#ifdef THORVG_GL_RASTER_SUPPORT
+#ifdef THORVG_GL_ENGINE_SUPPORT
     #include "tvgGlRenderer.h"
 #endif
 
-#ifdef THORVG_WG_RASTER_SUPPORT
+#ifdef THORVG_WG_ENGINE_SUPPORT
     #include "tvgWgRenderer.h"
 #endif
 
@@ -100,17 +100,17 @@ Result Initializer::term() noexcept
 
     if (--engineInit > 0) return Result::Success;
 
-    #ifdef THORVG_SW_RASTER_SUPPORT
-        if (!SwRenderer::term()) return Result::InsufficientCondition;
-    #endif
+#ifdef THORVG_CPU_ENGINE_SUPPORT
+    if (!SwRenderer::term()) return Result::InsufficientCondition;
+#endif
 
-    #ifdef THORVG_GL_RASTER_SUPPORT
-        if (!GlRenderer::term()) return Result::InsufficientCondition;
-    #endif
+#ifdef THORVG_GL_ENGINE_SUPPORT
+    if (!GlRenderer::term()) return Result::InsufficientCondition;
+#endif
 
-    #ifdef THORVG_WG_RASTER_SUPPORT
-        if (!WgRenderer::term()) return Result::InsufficientCondition;
-    #endif
+#ifdef THORVG_WG_ENGINE_SUPPORT
+    if (!WgRenderer::term()) return Result::InsufficientCondition;
+#endif
 
     TaskScheduler::term();
 

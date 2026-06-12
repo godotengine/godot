@@ -415,7 +415,7 @@ struct ShapeImpl : Shape
         rs.fill = nullptr;
     }
 
-    Iterator* iterator()
+    AccessorIterator* iterator()
     {
         return nullptr;
     }
