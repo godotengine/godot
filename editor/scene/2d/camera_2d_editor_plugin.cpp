@@ -175,12 +175,51 @@ bool Camera2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void Camera2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	if (!selected_camera || !selected_camera->is_limit_enabled()) {
+	if (!selected_camera) {
 		return;
 	}
-	Rect2 limit_rect = selected_camera->get_limit_rect();
-	limit_rect = CanvasItemEditor::get_singleton()->get_canvas_transform().xform(limit_rect);
-	p_overlay->draw_rect(limit_rect, Color(1, 1, 0.25, 0.63), false, 3);
+
+	if (selected_camera->is_limit_enabled()) {
+		Rect2 limit_rect = selected_camera->get_limit_rect();
+		limit_rect = CanvasItemEditor::get_singleton()->get_canvas_transform().xform(limit_rect);
+		p_overlay->draw_rect(limit_rect, Color(1, 1, 0.25, 0.63), false, 3);
+	}
+
+	if (selected_camera->is_zoom_limit_enabled()) {
+		Size2 screen_size;
+		Viewport *vp = selected_camera->get_viewport();
+		if (selected_camera->is_part_of_edited_scene() || !vp) {
+			screen_size = Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
+		} else {
+			screen_size = vp->get_visible_rect().size;
+		}
+
+		const Point2 center = selected_camera->get_camera_position();
+
+		Vector2 zmin = selected_camera->get_zoom_min();
+		Vector2 zmax = selected_camera->get_zoom_max();
+
+		if (!Math::is_zero_approx(zmin.x) && !Math::is_zero_approx(zmin.y) && !Math::is_zero_approx(zmax.x) && !Math::is_zero_approx(zmax.y)) {
+			Vector2 scale_min = Vector2(1, 1) / zmin;
+			Vector2 scale_max = Vector2(1, 1) / zmax;
+
+			Rect2 rect_min(center - (screen_size * 0.5) * scale_min, screen_size * scale_min);
+			Rect2 rect_max(center - (screen_size * 0.5) * scale_max, screen_size * scale_max);
+
+			rect_min = CanvasItemEditor::get_singleton()->get_canvas_transform().xform(rect_min);
+			rect_max = CanvasItemEditor::get_singleton()->get_canvas_transform().xform(rect_max);
+
+			p_overlay->draw_rect(rect_min, Color(0.2, 1, 0.2, 0.08), true);
+			p_overlay->draw_rect(rect_min, Color(0.2, 1, 0.2, 0.6), false, 2);
+
+			p_overlay->draw_rect(rect_max, Color(1, 0.2, 0.2, 0.08), true);
+			p_overlay->draw_rect(rect_max, Color(1, 0.2, 0.2, 0.6), false, 2);
+
+			Point2 center_canvas = CanvasItemEditor::get_singleton()->get_canvas_transform().xform(center);
+			p_overlay->draw_line(center_canvas - Point2(6, 0), center_canvas + Point2(6, 0), Color(1, 1, 1, 0.7), 2);
+			p_overlay->draw_line(center_canvas - Point2(0, 6), center_canvas + Point2(0, 6), Color(1, 1, 1, 0.7), 2);
+		}
+	}
 }
 
 void Camera2DEditor::_menu_option(int p_option) {
