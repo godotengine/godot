@@ -226,5 +226,107 @@ namespace Godot.SourceGenerators
                 isEnabledByDefault: true,
                 "The class must not be generic. Make the class non-generic, or remove the '[GlobalClass]' attribute.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0402"));
+
+        // Unloadability Diagnostics (GDU)
+
+        public static readonly DiagnosticDescriptor GDU0001_SubscriptionToExternalStaticEventRule =
+            new DiagnosticDescriptor(id: "GDU0001",
+                title: "Subscription to external static event prevents unloading",
+                messageFormat: "Subscribing to static event '{0}.{1}' prevents assembly hot-reload; unsubscribe before the assembly unloads",
+                category: "Unloadability",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                "Static events on framework or engine types (e.g. Console, AppDomain) keep a reference to your delegate. Unsubscribe before the AssemblyLoadContext unloads, for example in an AssemblyLoadContext.Unloading callback.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GDU0001"));
+
+        public static readonly DiagnosticDescriptor GDU0002_GCHandleAllocRule =
+            new DiagnosticDescriptor(id: "GDU0002",
+                title: "GCHandle.Alloc prevents unloading",
+                messageFormat: "GCHandle.Alloc creates a GC root that prevents assembly hot-reload; free the handle before the assembly unloads",
+                category: "Unloadability",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                "Normal and Pinned GCHandles create strong GC roots. Call GCHandle.Free before the AssemblyLoadContext unloads. Suppress this warning if you are sure the handle will be freed in time.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GDU0002"));
+
+        public static readonly DiagnosticDescriptor GDU0003_ThreadPoolRegisterWaitForSingleObjectRule =
+            new DiagnosticDescriptor(id: "GDU0003",
+                title: "RegisterWaitForSingleObject prevents unloading",
+                messageFormat: "ThreadPool.RegisterWaitForSingleObject prevents assembly hot-reload while the wait is registered",
+                category: "Unloadability",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                "The registered wait handle holds a reference to your callback. Call RegisteredWaitHandle.Unregister before the AssemblyLoadContext unloads.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GDU0003"));
+
+        public static readonly DiagnosticDescriptor GDU0005_NewtonsoftJsonSerializationRule =
+            new DiagnosticDescriptor(id: "GDU0005",
+                title: "Newtonsoft.Json serialization may prevent unloading",
+                messageFormat: "Newtonsoft.Json serialization may cache type metadata and prevent assembly hot-reload",
+                category: "Unloadability",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                "Newtonsoft.Json caches type metadata internally, which can root the assembly. This warning flags any serialization call in a [Tool] type. Suppress if you only serialize types from non-collectible assemblies.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GDU0005"));
+
+        public static readonly DiagnosticDescriptor GDU0006_TypeDescriptorModificationRule =
+            new DiagnosticDescriptor(id: "GDU0006",
+                title: "TypeDescriptor modification may prevent unloading",
+                messageFormat: "TypeDescriptor.{0} may register type metadata globally and prevent assembly hot-reload",
+                category: "Unloadability",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                "TypeDescriptor stores type metadata in global caches that are never cleared. This warning flags any TypeDescriptor call in a [Tool] type. Suppress if you only register types from non-collectible assemblies.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GDU0006"));
+
+        public static readonly DiagnosticDescriptor GDU0007_ThreadCreationRule =
+            new DiagnosticDescriptor(id: "GDU0007",
+                title: "Thread creation prevents unloading",
+                messageFormat: "Creating a Thread prevents assembly hot-reload while the thread is running",
+                category: "Unloadability",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                "A running thread keeps the assembly loaded. Make sure the thread exits before the AssemblyLoadContext unloads. Suppress if you are sure the thread will finish in time.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GDU0007"));
+
+        public static readonly DiagnosticDescriptor GDU0008_TimerCreationRule =
+            new DiagnosticDescriptor(id: "GDU0008",
+                title: "Timer creation may prevent unloading",
+                messageFormat: "Creating a Timer may prevent assembly hot-reload; dispose the timer before the assembly unloads",
+                category: "Unloadability",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                "Timers hold references to callback delegates that keep the assembly loaded. Dispose the timer before the AssemblyLoadContext unloads. Suppress if the timer uses no callbacks from this assembly.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GDU0008"));
+
+        public static readonly DiagnosticDescriptor GDU0009_EncodingRegisterProviderRule =
+            new DiagnosticDescriptor(id: "GDU0009",
+                title: "Encoding.RegisterProvider may prevent unloading",
+                messageFormat: "Encoding.RegisterProvider may prevent assembly hot-reload; registered providers cannot be removed",
+                category: "Unloadability",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                "Registered encoding providers are stored in a global list that is never cleared. This warning flags any RegisterProvider call in a [Tool] type. Suppress if the provider is from a non-collectible assembly (e.g. a framework-provided provider).",
+                helpLinkUri: string.Format(_helpLinkFormat, "GDU0009"));
+
+        public static readonly DiagnosticDescriptor GDU0010_TaskRunRule =
+            new DiagnosticDescriptor(id: "GDU0010",
+                title: "Task.Run prevents unloading",
+                messageFormat: "Task.Run prevents assembly hot-reload while the task is running",
+                category: "Unloadability",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                "A running task keeps the assembly loaded. Make sure the task completes or is cancelled before the AssemblyLoadContext unloads. Suppress if you are sure the task will finish in time.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GDU0010"));
+
+        public static readonly DiagnosticDescriptor GDU0011_ThreadPoolQueueUserWorkItemRule =
+            new DiagnosticDescriptor(id: "GDU0011",
+                title: "ThreadPool.QueueUserWorkItem prevents unloading",
+                messageFormat: "ThreadPool.QueueUserWorkItem prevents assembly hot-reload while the work item is running",
+                category: "Unloadability",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                "A running work item keeps the assembly loaded. Make sure it completes before the AssemblyLoadContext unloads. Suppress if you are sure it will finish in time.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GDU0011"));
     }
 }
