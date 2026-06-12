@@ -4489,9 +4489,6 @@ int Main::start() {
 			sml->get_root()->set_embedding_subwindows(true);
 		}
 
-		ResourceLoader::add_custom_loaders();
-		ResourceSaver::add_custom_savers();
-
 		if (!project_manager && !editor) { // game
 			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
@@ -4563,6 +4560,9 @@ int Main::start() {
 				OS::get_singleton()->benchmark_end_measure("Startup", "Load Autoloads");
 			}
 		}
+
+		ResourceLoader::add_custom_loaders();
+		ResourceSaver::add_custom_savers();
 
 #ifdef TOOLS_ENABLED
 #ifdef MODULE_GDSCRIPT_ENABLED
