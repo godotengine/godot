@@ -4558,6 +4558,7 @@ int Main::start() {
 				for (Node *E : to_add) {
 					sml->get_root()->add_child(E);
 				}
+
 				OS::get_singleton()->benchmark_end_measure("Startup", "Load Autoloads");
 			}
 		}
