@@ -100,11 +100,11 @@ private:
 	Button *activate = nullptr;
 	Button *clear_button = nullptr;
 	TextureRect *graph = nullptr;
+	HScrollBar *graph_scrollbar = nullptr;
 	Ref<ImageTexture> graph_texture;
 	Vector<uint8_t> graph_image;
 
 	float graph_zoom = 0.0f;
-	float pan_accumulator = 0.0f;
 	int zoom_center = -1;
 
 	Tree *variables = nullptr;
@@ -124,6 +124,7 @@ private:
 	int last_metric = -1;
 
 	bool updating_frame = false;
+	bool updating_scrollbar = false;
 
 	int hover_metric = -1;
 
@@ -149,6 +150,9 @@ private:
 	void _item_edited();
 
 	void _update_plot();
+
+	void _scrollbar_changed(double p_value);
+	void _update_scrollbar();
 
 	void _graph_tex_mouse_exit();
 

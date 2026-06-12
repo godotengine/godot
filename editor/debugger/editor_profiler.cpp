@@ -344,6 +344,28 @@ void EditorProfiler::_update_plot() {
 	graph->queue_redraw();
 }
 
+void EditorProfiler::_update_scrollbar() {
+	const int max_profiles_shown = frame_metrics.size() / Math::exp(graph_zoom);
+	const int left_border = _get_zoom_left_border();
+
+	updating_scrollbar = true;
+	graph_scrollbar->set_min(0);
+	graph_scrollbar->set_max(frame_metrics.size());
+	graph_scrollbar->set_page(max_profiles_shown);
+	graph_scrollbar->set_value(left_border);
+	graph_scrollbar->set_visible(max_profiles_shown < frame_metrics.size());
+	updating_scrollbar = false;
+}
+
+void EditorProfiler::_scrollbar_changed(double p_value) {
+	if (updating_scrollbar) {
+		return;
+	}
+	const int max_profiles_shown = frame_metrics.size() / Math::exp(graph_zoom);
+	zoom_center = CLAMP((int)p_value + max_profiles_shown / 2, max_profiles_shown / 2, frame_metrics.size() - max_profiles_shown / 2);
+	_update_plot();
+}
+
 void EditorProfiler::_update_frame() {
 	int cursor_metric = cursor_metric_edit->get_value() - _get_frame_metric(0).frame_number;
 
@@ -429,6 +451,7 @@ void EditorProfiler::_clear_pressed() {
 	clear_button->set_disabled(true);
 	clear();
 	_update_plot();
+	_update_scrollbar();
 }
 
 void EditorProfiler::_internal_profiles_pressed() {
@@ -460,7 +483,11 @@ void EditorProfiler::_notification(int p_what) {
 
 			if (total_metrics > 0) {
 				_update_plot();
+				_update_scrollbar();
 			}
+		} break;
+		case NOTIFICATION_RESIZED: {
+			_update_scrollbar();
 		} break;
 	}
 }
@@ -539,22 +566,11 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
-	if (graph_zoom > 0 && mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::MIDDLE) || mm->get_button_mask().has_flag(MouseButtonMask::RIGHT))) {
-		// Panning.
-		const int max_profiles_shown = frame_metrics.size() / Math::exp(graph_zoom);
-		pan_accumulator += (float)mm->get_relative().x * max_profiles_shown / graph->get_size().width;
-
-		if (Math::abs(pan_accumulator) > 1) {
-			zoom_center = CLAMP(zoom_center - (int)pan_accumulator, max_profiles_shown / 2, frame_metrics.size() - max_profiles_shown / 2);
-			pan_accumulator -= (int)pan_accumulator;
-			_update_plot();
-		}
-	}
-
 	if (button_idx == MouseButton::WHEEL_DOWN) {
 		// Zooming.
 		graph_zoom = MAX(-0.05 + graph_zoom, 0);
 		_update_plot();
+		_update_scrollbar();
 	} else if (button_idx == MouseButton::WHEEL_UP) {
 		if (graph_zoom == 0) {
 			zoom_center = me->get_position().x;
@@ -562,6 +578,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 		}
 		graph_zoom = MIN(0.05 + graph_zoom, 2);
 		_update_plot();
+		_update_scrollbar();
 	}
 
 	graph->queue_redraw();
@@ -785,8 +802,18 @@ EditorProfiler::EditorProfiler() {
 	graph->connect(SceneStringName(gui_input), callable_mp(this, &EditorProfiler::_graph_tex_input));
 	graph->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorProfiler::_graph_tex_mouse_exit));
 
-	h_split->add_child(graph);
+	VBoxContainer *graph_container = memnew(VBoxContainer);
+	graph_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	h_split->add_child(graph_container);
+
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
+	graph->set_v_size_flags(SIZE_EXPAND_FILL);
+	graph_container->add_child(graph);
+
+	graph_scrollbar = memnew(HScrollBar);
+	graph_scrollbar->set_visible(false);
+	graph_container->add_child(graph_scrollbar);
+	graph_scrollbar->connect(SceneStringName(value_changed), callable_mp(this, &EditorProfiler::_scrollbar_changed));
 
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);
 	frame_metrics.resize(metric_size);
