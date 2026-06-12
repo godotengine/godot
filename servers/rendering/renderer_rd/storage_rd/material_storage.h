@@ -121,20 +121,24 @@ public:
 		Vector<RID> texture_cache;
 	};
 
+	struct SamplerEntry {
+		RID rid;
+		uint32_t refcount = 0;
+	};
+
 	struct Samplers {
-		RID rids[RSE::CANVAS_ITEM_TEXTURE_FILTER_MAX][RSE::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
+		LocalVector<RD::SamplerState> states;
 		float mipmap_bias = 0.0f;
 		bool use_nearest_mipmap_filter = false;
 		int anisotropic_filtering_level = 2;
 
 		_FORCE_INLINE_ RID get_sampler(RSE::CanvasItemTextureFilter p_filter, RSE::CanvasItemTextureRepeat p_repeat) const {
-			return rids[p_filter][p_repeat];
+			RD::SamplerState sampler_state = default_sampler_state_for(this, p_filter, p_repeat);
+			return MaterialStorage::get_singleton()->_get_sampler(sampler_state);
 		}
 
 		template <typename Collection>
 		void append_uniforms(Collection &p_uniforms, int p_first_index) const;
-		bool is_valid() const;
-		bool is_null() const;
 	};
 
 	/* Texture Blit Shader */
@@ -190,6 +194,9 @@ private:
 	/* Samplers */
 
 	Samplers default_samplers;
+
+	mutable Mutex sampler_cache_mutex;
+	mutable HashMap<RD::SamplerState, SamplerEntry> sampler_cache;
 
 	/* Buffers */
 
@@ -419,7 +426,86 @@ public:
 	/* Samplers */
 
 	Samplers samplers_rd_allocate(float p_mipmap_bias = 0.0f, RSE::ViewportAnisotropicFiltering anisotropic_filtering_level = RSE::ViewportAnisotropicFiltering::VIEWPORT_ANISOTROPY_4X) const;
+	RID _sampler_acquire(const RD::SamplerState &p_state) const;
+	RID _get_sampler(const RD::SamplerState &p_state) const;
+	void _sampler_release(const RD::SamplerState &p_state) const;
 	void samplers_rd_free(Samplers &p_samplers) const;
+
+	_FORCE_INLINE_ static RD::SamplerState default_sampler_state_for(const MaterialStorage::Samplers *samplers,
+			RSE::CanvasItemTextureFilter p_filter,
+			RSE::CanvasItemTextureRepeat p_repeat) {
+		RD::SamplerFilter mip_filter = samplers->use_nearest_mipmap_filter ? RD::SAMPLER_FILTER_NEAREST : RD::SAMPLER_FILTER_LINEAR;
+		float anisotropy_max = float(1 << samplers->anisotropic_filtering_level);
+
+		RD::SamplerState sampler_state = {};
+
+		switch (p_filter) {
+			case RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
+				sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+				sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+				sampler_state.max_lod = 0;
+			} break;
+			case RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
+				sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+				sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+				sampler_state.max_lod = 0;
+			} break;
+			case RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
+				sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+				sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+				sampler_state.mip_filter = mip_filter;
+				sampler_state.lod_bias = samplers->mipmap_bias;
+			} break;
+			case RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
+				sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+				sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+				sampler_state.mip_filter = mip_filter;
+				sampler_state.lod_bias = samplers->mipmap_bias;
+
+			} break;
+			case RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
+				sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+				sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+				sampler_state.mip_filter = mip_filter;
+				sampler_state.lod_bias = samplers->mipmap_bias;
+				sampler_state.use_anisotropy = true;
+				sampler_state.anisotropy_max = anisotropy_max;
+			} break;
+			case RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
+				sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+				sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+				sampler_state.mip_filter = mip_filter;
+				sampler_state.lod_bias = samplers->mipmap_bias;
+				sampler_state.use_anisotropy = true;
+				sampler_state.anisotropy_max = anisotropy_max;
+
+			} break;
+			default: {
+			}
+		}
+		switch (p_repeat) {
+			case RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+				sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+				sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+				sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+
+			} break;
+			case RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
+				sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
+				sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
+				sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
+			} break;
+			case RSE::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
+				sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+				sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+				sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+			} break;
+			default: {
+			}
+		}
+
+		return sampler_state;
+	}
 
 	_FORCE_INLINE_ RID sampler_rd_get_default(RSE::CanvasItemTextureFilter p_filter, RSE::CanvasItemTextureRepeat p_repeat) {
 		return default_samplers.get_sampler(p_filter, p_repeat);
