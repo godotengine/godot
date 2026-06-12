@@ -55,7 +55,7 @@
 			[b]Note:[/b] [member ignore_occlusion_culling] does not affect frustum culling (which is what happens when an object is not visible given the camera's angle). To avoid frustum culling, set [member custom_aabb] to a very large AABB that covers your entire game world such as [code]AABB(-10000, -10000, -10000, 20000, 20000, 20000)[/code].
 		</member>
 		<member name="lod_bias" type="float" setter="set_lod_bias" getter="get_lod_bias" default="1.0">
-			Changes how quickly the mesh transitions to a lower level of detail. A value of 0 will force the mesh to its lowest level of detail, a value of 1 will use the default settings, and larger values will keep the mesh in a higher level of detail at farther distances.
+			Changes how quickly the mesh transitions to a lower level of detail. A value of 0 will force the mesh to its lowest level of detail, a value of 1 will use the default settings, and larger values will keep the mesh in a higher level of detail at farther distances. This can be globally controlled using [member ProjectSettings.rendering/mesh_lod/lod_change/threshold_pixels], [member Viewport.mesh_lod_threshold], and [member ReflectionProbe.mesh_lod_threshold], but keep in mind these work in the opposite direction (higher values are [i]less[/i] detailed at a distance).
 			Useful for testing level of detail transitions in the editor.
 		</member>
 		<member name="material_overlay" type="Material" setter="set_material_overlay" getter="get_material_overlay">
