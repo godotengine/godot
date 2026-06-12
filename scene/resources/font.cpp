@@ -1627,6 +1627,11 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 									r_image_files->push_back(file);
 								}
 
+								if (img->is_compressed()) {
+									err = img->decompress();
+									ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't decompress font texture: %s.", file));
+								}
+
 								if (packed) {
 									if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
 										outline = 0;
