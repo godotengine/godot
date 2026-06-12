@@ -258,7 +258,7 @@ protected:
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
-	void setup(const String &p_base_type, const String &p_selected_type);
+	void setup(const String &p_base_type);
 	virtual void update_property() override;
 	EditorPropertyClassName();
 };

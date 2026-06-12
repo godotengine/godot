@@ -578,7 +578,9 @@ void EditorInterface::popup_create_dialog(const Callable &p_callback, const Stri
 	create_dialog->set_type_blocklist(blocklist);
 
 	String safe_base_type = p_base_type;
-	if (p_base_type.is_empty() || (!ClassDB::class_exists(p_base_type) && !ScriptServer::is_global_class(p_base_type))) {
+	if (safe_base_type.is_empty()) {
+		safe_base_type = "Object";
+	} else if (!ClassDB::class_exists(p_base_type) && !ScriptServer::is_global_class(p_base_type)) {
 		ERR_PRINT(vformat("Invalid base type '%s'. The base type has fallen back to 'Object'.", p_base_type));
 		safe_base_type = "Object";
 	}
