@@ -37,7 +37,6 @@ class TranslationServer : public Object {
 	GDCLASS(TranslationServer, Object);
 
 	String locale = "en";
-	String fallback;
 
 	Ref<TranslationDomain> main_domain;
 #ifdef TOOLS_ENABLED
