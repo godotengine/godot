@@ -1243,6 +1243,11 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			r_classes->insert(next_tag.fields["res_type"]);
 		}
 
+		// A little hack to fetch classes from built-in scripts as well.
+		if (next_tag.fields["type"] == "GDScript" && next_tag.fields.has("id")) {
+			ResourceLoader::get_classes_used(local_path + "::" + String(next_tag.fields["id"]), r_classes);
+		}
+
 		while (true) {
 			String assign;
 			Variant value;
