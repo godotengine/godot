@@ -186,6 +186,7 @@ private:
 	DisplayMode display_mode = DISPLAY_THUMBNAILS;
 	FileSortOption file_sort = FileSortOption::NAME;
 
+	String ext_filter;
 	Vector<String> filters;
 	Vector<String> processed_filters;
 
