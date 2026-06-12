@@ -32,6 +32,7 @@
 
 #include "scene/3d/physics/kinematic_collision_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
+#include "scene/3d/physics/rigid_body_3d.h"
 
 class CharacterBody3D : public PhysicsBody3D {
 	GDCLASS(CharacterBody3D, PhysicsBody3D);
@@ -47,6 +48,7 @@ public:
 		PLATFORM_ON_LEAVE_DO_NOTHING,
 	};
 	bool move_and_slide();
+	bool move_and_push();
 	void apply_floor_snap();
 
 	const Vector3 &get_velocity() const;
@@ -111,6 +113,9 @@ public:
 	void set_platform_on_leave(PlatformOnLeave p_on_leave_velocity);
 	PlatformOnLeave get_platform_on_leave() const;
 
+	void set_collision_push_multiplier(real_t p_multiplier);
+	real_t get_collision_push_multiplier() const;
+
 	CharacterBody3D();
 
 private:
@@ -149,6 +154,7 @@ private:
 	real_t floor_snap_length = 0.1;
 	real_t floor_max_angle = Math::deg_to_rad((real_t)45.0);
 	real_t wall_min_slide_angle = Math::deg_to_rad((real_t)15.0);
+	real_t collision_push_multiplier = 1.0;
 	Vector3 up_direction = Vector3(0.0, 1.0, 0.0);
 	Vector3 velocity;
 	Vector3 floor_normal;
