@@ -4,7 +4,8 @@
 		Represents a screen drag event.
 	</brief_description>
 	<description>
-		Stores information about screen drag events. See [method Node._input].
+		Stores information about screen drag events. See [method Node._input]. See also [InputEventScreenTouch], [InputEventPanGesture], and [InputEventMagnifyGesture].
+		[b]Note:[/b] [InputEventScreenDrag] is only supported on Windows, Android, and Linux (X11 and Wayland). On other platforms, it is never emitted from touch events.
 	</description>
 	<tutorials>
 		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
