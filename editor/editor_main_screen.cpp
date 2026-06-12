@@ -126,32 +126,23 @@ int EditorMainScreen::_get_current_main_editor() const {
 	return 0;
 }
 
-void EditorMainScreen::select_next() {
+int EditorMainScreen::_wrap_selection(int next_pos) {
 	int editor = _get_current_main_editor();
+	const int max = editor_table.size();
 
 	do {
-		if (editor == editor_table.size() - 1) {
-			editor = 0;
-		} else {
-			editor++;
-		}
+		editor = Math::wrapi(editor + next_pos, 0, max);
 	} while (!buttons[editor]->is_visible());
 
-	select(editor);
+	return editor;
+}
+
+void EditorMainScreen::select_next() {
+	select(_wrap_selection(1));
 }
 
 void EditorMainScreen::select_prev() {
-	int editor = _get_current_main_editor();
-
-	do {
-		if (editor == 0) {
-			editor = editor_table.size() - 1;
-		} else {
-			editor--;
-		}
-	} while (!buttons[editor]->is_visible());
-
-	select(editor);
+	select(_wrap_selection(-1));
 }
 
 void EditorMainScreen::select_by_name(const String &p_name) {
