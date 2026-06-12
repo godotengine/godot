@@ -790,6 +790,12 @@ AudioStreamRandomizer::AudioStreamRandomizer() {
 }
 
 void AudioStreamPlaybackRandomizer::start(double p_from_pos) {
+	if (active) {
+		return;
+	}
+
+	active = true;
+
 	playing = playback;
 	{
 		// GH-10238 : Pitch_scale is multiplicative, so picking a random number for it without log
@@ -814,6 +820,10 @@ void AudioStreamPlaybackRandomizer::start(double p_from_pos) {
 }
 
 void AudioStreamPlaybackRandomizer::stop() {
+	if (!active) {
+		return;
+	}
+
 	if (playing.is_valid()) {
 		playing->stop();
 	}
@@ -858,6 +868,10 @@ void AudioStreamPlaybackRandomizer::tag_used_streams() {
 }
 
 int AudioStreamPlaybackRandomizer::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+	if (!active) {
+		return 0;
+	}
+
 	if (playing.is_valid()) {
 		int mixed_samples = playing->mix(p_buffer, p_rate_scale * pitch_scale, p_frames);
 		for (int samp = 0; samp < mixed_samples; samp++) {
@@ -865,6 +879,7 @@ int AudioStreamPlaybackRandomizer::mix(AudioFrame *p_buffer, float p_rate_scale,
 		}
 		return mixed_samples;
 	} else {
+		active = false;
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
