@@ -990,7 +990,7 @@ else:  # GCC, Clang
             # GCC 16 flags type-incompleteness assertions on their intended behavior, see GH-119269.
             env.AppendUnique(CXXFLAGS=["-Wno-sfinae-incomplete"])
     elif methods.using_clang(env) or methods.using_emcc(env):
-        common_warnings += ["-Wshadow-field-in-constructor", "-Wshadow-uncaptured-local"]
+        common_warnings += ["-Wshadow"]
         # We often implement `operator<` for structs of pointers as a requirement
         # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
         common_warnings += ["-Wno-ordered-compare-function-pointers"]
