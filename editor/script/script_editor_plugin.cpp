@@ -4091,6 +4091,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	tab_container->connect("tab_changed", callable_mp(this, &ScriptEditor::_tab_changed));
 
 	erase_tab_confirm = memnew(ConfirmationDialog);
+	erase_tab_confirm->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	erase_tab_confirm->set_ok_button_text(TTRC("Save"));
 	erase_tab_confirm->add_button(TTRC("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	erase_tab_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ScriptEditor::_close_current_tab).bind(true, true));

@@ -2181,6 +2181,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	import_other_theme_items->connect("items_imported", callable_mp(this, &ThemeItemEditorDialog::_update_edit_types));
 
 	confirm_closing_dialog = memnew(ConfirmationDialog);
+	confirm_closing_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	confirm_closing_dialog->set_autowrap(true);
 	add_child(confirm_closing_dialog);
 	confirm_closing_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ThemeItemEditorDialog::_close_dialog));
@@ -2328,6 +2329,7 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_options->connect("item_activated", callable_mp(this, &ThemeTypeDialog::_add_type_dialog_activated));
 
 	add_type_confirmation = memnew(ConfirmationDialog);
+	add_type_confirmation->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_type_confirmation->set_title(TTR("Type name is empty!"));
 	add_type_confirmation->set_text(TTR("Are you sure you want to create an empty type?"));
 	add_type_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &ThemeTypeDialog::_add_type_confirmed));

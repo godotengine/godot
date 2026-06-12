@@ -1570,6 +1570,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	canvas->set_focus_mode(FOCUS_CLICK);
 
 	error = memnew(AcceptDialog);
+	error->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(error);
 }
 
