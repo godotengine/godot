@@ -198,6 +198,15 @@ LineEdit *SpinBox::get_line_edit() {
 void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 	if (drag.enabled) {
 		line_edit->accept_event();
+		return;
+	}
+	Ref<InputEventKey> k = p_event;
+	// Replace numpad decimal separator with a period, as in some languages this may be a comma.
+	if (k.is_valid() && line_edit->is_editing() && line_edit->has_focus()) {
+		if (k->get_keycode() == Key::KP_PERIOD && k->is_pressed()) {
+			line_edit->insert_text_at_caret(".");
+			line_edit->accept_event();
+		}
 	}
 }
 
