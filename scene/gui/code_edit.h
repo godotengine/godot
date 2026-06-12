@@ -532,6 +532,7 @@ public:
 	void join_lines(const String &p_line_ending = " ");
 	void duplicate_selection();
 	void duplicate_lines();
+	void shape_code();
 
 	CodeEdit();
 	~CodeEdit();
