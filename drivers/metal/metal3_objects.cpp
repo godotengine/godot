@@ -1144,7 +1144,21 @@ void MDCommandBuffer::render_next_subpass() {
 		ERR_FAIL_NULL_MSG(tex, "Frame buffer depth / stencil texture is null.");
 		if (attachment.type & MDAttachmentType::Depth) {
 			MTL::RenderPassDepthAttachmentDescriptor *da = desc->depthAttachment();
-			if (attachment.configureDescriptor(da, pf, subpass, tex, render.is_rendering_entire_area, false, false, false)) {
+
+			uint32_t resolveIdx = subpass.depth_resolve_reference.attachment;
+			bool has_resolve = resolveIdx != RDD::AttachmentReference::UNUSED;
+			bool can_resolve = true;
+			if (has_resolve) {
+				MTL::Texture *resolve_tex = fb.get_texture(resolveIdx);
+				can_resolve = flags::all(pf.getCapabilities(resolve_tex->pixelFormat()), kMTLFmtCapsResolve);
+				if (can_resolve) {
+					da->setResolveTexture(resolve_tex);
+				} else {
+					CRASH_NOW_MSG("unimplemented: using a texture format that is not supported for resolve");
+				}
+			}
+
+			if (attachment.configureDescriptor(da, pf, subpass, tex, render.is_rendering_entire_area, has_resolve, can_resolve, false)) {
 				da->setClearDepth(render.clear_values[idx].depth);
 			}
 		}
