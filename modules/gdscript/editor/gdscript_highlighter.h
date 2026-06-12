@@ -106,6 +106,9 @@ private:
 	HashMap<String, CommentMarkerLevel> comment_markers;
 
 	void add_color_region(ColorRegion::Type p_type, const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false, bool p_r_prefix = false);
+	bool is_binary_operation(const String &p_line, int p_position, int p_line_index) const;
+	bool has_left_operand(const String &p_line, int p_position) const;
+	bool has_left_operand_on_previous_lines(int p_line_index) const;
 
 public:
 	virtual void _update_cache() override;
