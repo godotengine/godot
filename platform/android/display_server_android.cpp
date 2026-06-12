@@ -865,6 +865,13 @@ void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
 	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
+void DisplayServerAndroid::process_device_orientation(const Quaternion &p_orientation) {
+	// Android sensor coordinate system to Godot coordinate system:
+	// Negate X and Y to convert from Android's right-handed system to Godot's convention.
+	Quaternion godot_orientation(-p_orientation.x, -p_orientation.y, p_orientation.z, p_orientation.w);
+	Input::get_singleton()->set_device_orientation(godot_orientation);
+}
+
 void DisplayServerAndroid::_mouse_update_mode() {
 	DisplayServerEnums::MouseMode wanted_mouse_mode = mouse_mode_override_enabled
 			? mouse_mode_override

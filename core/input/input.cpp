@@ -165,6 +165,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
 	ClassDB::bind_method(D_METHOD("get_gyroscope"), &Input::get_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_device_orientation"), &Input::get_device_orientation);
 	ClassDB::bind_method(D_METHOD("get_joy_accelerometer", "device"), &Input::get_joy_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_joy_gravity", "device"), &Input::get_joy_gravity);
 	ClassDB::bind_method(D_METHOD("get_joy_gyroscope", "device"), &Input::get_joy_gyroscope);
@@ -183,6 +184,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
+	ClassDB::bind_method(D_METHOD("set_device_orientation", "value"), &Input::set_device_orientation);
 	ClassDB::bind_method(D_METHOD("set_joy_light", "device", "color"), &Input::set_joy_light);
 	ClassDB::bind_method(D_METHOD("has_joy_light", "device"), &Input::has_joy_light);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
@@ -798,6 +800,18 @@ Vector3 Input::get_gyroscope() const {
 	return gyroscope;
 }
 
+Quaternion Input::get_device_orientation() const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
+	if (!device_orientation_enabled) {
+		WARN_PRINT_ONCE("`input_devices/sensors/enable_device_orientation` is not enabled in project settings.");
+	}
+#endif
+
+	return device_orientation;
+}
+
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
 	// This function does the final delivery of the input event to user land.
 	// Regardless where the event came from originally, this has to happen on the main thread.
@@ -1354,6 +1368,12 @@ void Input::set_gyroscope(const Vector3 &p_gyroscope) {
 	_THREAD_SAFE_METHOD_
 
 	gyroscope = p_gyroscope;
+}
+
+void Input::set_device_orientation(const Quaternion &p_orientation) {
+	_THREAD_SAFE_METHOD_
+
+	device_orientation = p_orientation;
 }
 
 void Input::set_mouse_position(const Point2 &p_posf) {
@@ -2371,6 +2391,7 @@ Input::Input() {
 	gravity_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gravity", false);
 	gyroscope_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gyroscope", false);
 	magnetometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_magnetometer", false);
+	device_orientation_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_device_orientation", false);
 	ignore_joypad_on_unfocused_application = GLOBAL_DEF_RST_BASIC("input_devices/joypads/ignore_joypad_on_unfocused_application", false);
 }
 
