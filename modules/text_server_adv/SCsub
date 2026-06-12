@@ -477,6 +477,12 @@ if env["builtin_icu4c"]:
         env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/"])
     else:
         thirdparty_sources += ["icu_data/icudata_stub.cpp"]
+        icudata = env_icu.CommandNoCache(
+            "#thirdparty/icu4c/icudata_min.gen.h",
+            "#thirdparty/icu4c/icudt_godot_min.dat",
+            env.Run(text_server_adv_builders.make_icu_data_min),
+        )
+        env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/"])
 
     env_icu.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
     env_icu.Append(
