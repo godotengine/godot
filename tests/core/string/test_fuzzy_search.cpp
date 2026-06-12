@@ -46,7 +46,7 @@ struct FuzzySearchTestCase {
 // Ideally each of these test queries should represent a different aspect, and potentially bottleneck, of the search process.
 const FuzzySearchTestCase test_cases[] = {
 	// Short query, many matches, few adjacent characters
-	{ "///gd", "./menu/hud/hud.gd" },
+	{ "///gd", "./menu/menu/characters/dead_guy/dead_guy.gd" },
 	// Filename match with typo
 	{ "sm.png", "./entity/blood_sword/sam.png" },
 	// Multipart filename word matches
@@ -58,7 +58,19 @@ const FuzzySearchTestCase test_cases[] = {
 	// Many matches, many short tokens
 	{ "menu menu characters wav", "./menu/menu/characters/smoker/0.wav" },
 	// Maximize total matches
-	{ "entity gd", "./entity/entity_man.gd" }
+	{ "entity gd", "./entity/entity_man.gd" },
+	// End of filename bonus (vs ".menu/widgets/toggle.gd")
+	{ "gg", "./entity/background_freighter/Master.ogg" },
+	// Exact filename start beats exact word boundary in the filename of a shorter path
+	{ "fallback", "./menu/fonts/fallback_font.tres" },
+	// Incomplete exact word at filename start beats exact complete word later in filename
+	{ "me", "./menu/metal_text.tres" },
+	// Exact word boundary in middle of a filename beats exact dirname start
+	{ "floor", "./entity/background_freighter/background/background_floor.png" },
+	// Exact match beats inexact filename start match (vs "./entity/background_zone_2/background/wall_overlay.png")
+	{ "wor", "./entity/blood_sword/data.gd" },
+	// Match starting on filename beats match later in filename (vs "./menu/ui_colors.tres")
+	{ "colo.tres", "./menu/menu/characters/color.tres" }
 };
 
 Vector<String> load_test_data() {
