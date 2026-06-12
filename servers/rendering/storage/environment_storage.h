@@ -142,6 +142,16 @@ private:
 		float ssr_fade_out = 2.0;
 		float ssr_depth_tolerance = 0.5;
 
+		// SSCS
+		bool sscs_enabled = false;
+		RSE::EnvironmentSSCSSampleCount sscs_sample_count = RSE::ENV_SSCS_SAMPLE_COUNT_191;
+		float sscs_bilinear_threshold = 0.02f;
+		float sscs_shadow_contrast = 2.0f;
+		float sscs_surface_thickness = 0.005f;
+		bool sscs_ignore_edge_pixels = false;
+		float sscs_depth_begin = 0.0f;
+		float sscs_depth_end = 1.0f;
+
 		// SSAO
 		bool ssao_enabled = false;
 		float ssao_radius = 1.0;
@@ -290,6 +300,17 @@ public:
 	float environment_get_ssr_fade_in(RID p_env) const;
 	float environment_get_ssr_fade_out(RID p_env) const;
 	float environment_get_ssr_depth_tolerance(RID p_env) const;
+
+	// SSCS
+	void environment_set_sscs(RID p_env, bool p_enable, RSE::EnvironmentSSCSSampleCount p_quality, float p_bilinear_threshold, float p_shadow_contrast, float p_surface_thickness, bool p_ignore_edge_pixels, float p_depth_begin, float p_depth_end);
+	bool environment_get_sscs_enabled(RID p_env) const;
+	RSE::EnvironmentSSCSSampleCount environment_get_sscs_sample_count(RID p_env) const;
+	float environment_get_sscs_bilinear_threshold(RID p_env) const;
+	float environment_get_sscs_shadow_contrast(RID p_env) const;
+	float environment_get_sscs_surface_thickness(RID p_env) const;
+	bool environment_get_sscs_ignore_edge_pixels(RID p_env) const;
+	float environment_get_sscs_depth_begin(RID p_env) const;
+	float environment_get_sscs_depth_end(RID p_env) const;
 
 	// SSAO
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect);

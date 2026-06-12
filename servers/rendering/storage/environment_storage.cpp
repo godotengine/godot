@@ -690,6 +690,74 @@ float RendererEnvironmentStorage::environment_get_ssr_depth_tolerance(RID p_env)
 	return env->ssr_depth_tolerance;
 }
 
+// SSCS
+
+void RendererEnvironmentStorage::environment_set_sscs(RID p_env, bool p_enable, RSE::EnvironmentSSCSSampleCount p_quality, float p_bilinear_threshold, float p_shadow_contrast, float p_surface_thickness, bool p_ignore_edge_pixels, float p_depth_begin, float p_depth_end) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+#ifdef DEBUG_ENABLED
+	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
+		WARN_PRINT_ONCE_ED("Screen-space contact shadows (SSCS) can only be enabled when using the Forward+ renderer.");
+	}
+#endif
+	env->sscs_enabled = p_enable;
+	env->sscs_sample_count = p_quality;
+	env->sscs_bilinear_threshold = p_bilinear_threshold;
+	env->sscs_shadow_contrast = p_shadow_contrast;
+	env->sscs_surface_thickness = p_surface_thickness;
+	env->sscs_ignore_edge_pixels = p_ignore_edge_pixels;
+	env->sscs_depth_begin = p_depth_begin;
+	env->sscs_depth_end = p_depth_end;
+}
+
+bool RendererEnvironmentStorage::environment_get_sscs_enabled(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, false);
+	return env->sscs_enabled;
+}
+
+RSE::EnvironmentSSCSSampleCount RendererEnvironmentStorage::environment_get_sscs_sample_count(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, RSE::ENV_SSCS_SAMPLE_COUNT_191);
+	return env->sscs_sample_count;
+}
+
+float RendererEnvironmentStorage::environment_get_sscs_bilinear_threshold(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.02f);
+	return env->sscs_bilinear_threshold;
+}
+
+float RendererEnvironmentStorage::environment_get_sscs_shadow_contrast(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 2.0f);
+	return env->sscs_shadow_contrast;
+}
+
+float RendererEnvironmentStorage::environment_get_sscs_surface_thickness(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.005f);
+	return env->sscs_surface_thickness;
+}
+
+bool RendererEnvironmentStorage::environment_get_sscs_ignore_edge_pixels(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, false);
+	return env->sscs_ignore_edge_pixels;
+}
+
+float RendererEnvironmentStorage::environment_get_sscs_depth_begin(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.0f);
+	return env->sscs_depth_begin;
+}
+
+float RendererEnvironmentStorage::environment_get_sscs_depth_end(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0f);
+	return env->sscs_depth_end;
+}
+
 // SSAO
 
 void RendererEnvironmentStorage::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) {

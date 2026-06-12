@@ -212,6 +212,17 @@ public:
 	virtual void environment_set_ssr_half_size(bool p_half_size) = 0;
 	virtual void environment_set_ssr_roughness_quality(RSE::EnvironmentSSRRoughnessQuality p_quality) = 0;
 
+	// SSCS
+	void environment_set_sscs(RID p_env, bool p_enable, RSE::EnvironmentSSCSSampleCount p_quality, float p_bilinear_threshold, float p_shadow_contrast, float p_surface_thickness, bool p_ignore_edge_pixels, float p_depth_begin, float p_depth_end);
+	bool environment_get_sscs_enabled(RID p_env) const;
+	RSE::EnvironmentSSCSSampleCount environment_get_sscs_sample_count(RID p_env) const;
+	float environment_get_sscs_bilinear_threshold(RID p_env) const;
+	float environment_get_sscs_shadow_contrast(RID p_env) const;
+	float environment_get_sscs_surface_thickness(RID p_env) const;
+	bool environment_get_sscs_ignore_edge_pixels(RID p_env) const;
+	float environment_get_sscs_depth_begin(RID p_env) const;
+	float environment_get_sscs_depth_end(RID p_env) const;
+
 	// SSAO
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect);
 	bool environment_get_ssao_enabled(RID p_env) const;
