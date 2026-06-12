@@ -845,7 +845,6 @@ bool DisplayServerMacOS::has_feature(DisplayServerEnums::Feature p_feature) cons
 		//case DisplayServerEnums::FEATURE_KEEP_SCREEN_ON:
 		case DisplayServerEnums::FEATURE_SWAP_BUFFERS:
 		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH:
-		case DisplayServerEnums::FEATURE_EXTEND_TO_TITLE:
 		case DisplayServerEnums::FEATURE_SCREEN_CAPTURE:
 		case DisplayServerEnums::FEATURE_STATUS_INDICATOR:
 		case DisplayServerEnums::FEATURE_NATIVE_HELP:
@@ -855,6 +854,17 @@ bool DisplayServerMacOS::has_feature(DisplayServerEnums::Feature p_feature) cons
 		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
 		case DisplayServerEnums::FEATURE_HDR_OUTPUT:
 			return true;
+		case DisplayServerEnums::FEATURE_EXTEND_TO_TITLE: {
+#if defined(__x86_64__)
+			if (@available(macOS 10.15, *)) {
+				return true;
+			} else {
+				return false;
+			}
+#else
+			return true;
+#endif
+		} break;
 		case DisplayServerEnums::FEATURE_ACCESSIBILITY_SCREEN_READER: {
 			return AccessibilityServer::get_singleton()->is_supported();
 		} break;
