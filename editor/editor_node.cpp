@@ -5423,12 +5423,12 @@ void EditorNode::_instantiate_request(const Vector<String> &p_files) {
 }
 
 void EditorNode::_close_messages() {
-	old_split_ofs = center_split->get_split_offset();
-	center_split->set_split_offset(0);
+	old_split_ofs = center_vsplit->get_split_offset();
+	center_vsplit->set_split_offset(0);
 }
 
 void EditorNode::_show_messages() {
-	center_split->set_split_offset(old_split_ofs);
+	center_vsplit->set_split_offset(old_split_ofs);
 }
 
 void EditorNode::_update_prev_closed_scenes(const String &p_scene_path, bool p_add_scene) {
@@ -6277,7 +6277,7 @@ void EditorNode::_copy_warning(const String &p_str) {
 }
 
 void EditorNode::_save_editor_layout() {
-	if (!load_editor_layout_done) {
+	if (!load_editor_layout_done || true) {
 		return;
 	}
 	Ref<ConfigFile> config;
@@ -6903,7 +6903,7 @@ void EditorNode::update_distraction_free_button_theme() {
 }
 
 void EditorNode::set_center_split_offset(int p_offset) {
-	center_split->set_split_offset(p_offset);
+	center_vsplit->set_split_offset(p_offset);
 }
 
 Dictionary EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
@@ -8290,7 +8290,7 @@ void EditorNode::_update_main_menu_type() {
 }
 
 void EditorNode::_bottom_panel_resized() {
-	bottom_panel->set_bottom_panel_offset(center_split->get_split_offset());
+	bottom_panel->set_bottom_panel_offset(center_vsplit->get_split_offset());
 }
 
 #ifdef ANDROID_ENABLED
@@ -8695,8 +8695,9 @@ EditorNode::EditorNode() {
 	title_bar = memnew(EditorTitleBar);
 	main_vbox->add_child(title_bar);
 #endif
+	LocalVector<DockTabContainer *> dock_slots;
 
-	DockSplitContainer *main_vsplit = memnew(DockSplitContainer);
+	main_vsplit = memnew(DockSplitContainer);
 	main_vsplit->set_name("DockVSplitMain");
 	main_vsplit->set_vertical(true);
 	main_vsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -8707,12 +8708,56 @@ EditorNode::EditorNode() {
 	main_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_vsplit->add_child(main_hsplit);
 
+	left_vsplit = memnew(DockSplitContainer);
+	left_vsplit->set_name("DockVSplitLeft");
+	left_vsplit->set_vertical(true);
+	main_hsplit->add_child(left_vsplit);
+
+	left_hsplit = memnew(DockSplitContainer);
+	left_hsplit->set_name("DockHSplitLeft");
+	left_vsplit->add_child(left_hsplit);
+
 	left_l_vsplit = memnew(DockSplitContainer);
 	left_l_vsplit->set_name("DockVSplitLeftL");
 	left_l_vsplit->set_vertical(true);
-	main_hsplit->add_child(left_l_vsplit);
+	left_hsplit->add_child(left_l_vsplit);
 
-	LocalVector<DockTabContainer *> dock_slots;
+	left_r_vsplit = memnew(DockSplitContainer);
+	left_r_vsplit->set_name("DockVSplitLeftR");
+	left_r_vsplit->set_vertical(true);
+	left_hsplit->add_child(left_r_vsplit);
+
+	center_vsplit = memnew(DockSplitContainer);
+	center_vsplit->set_name("DockVSplitCenter");
+	center_vsplit->set_vertical(true);
+	center_vsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	center_vsplit->set_collapsed(true);
+	main_hsplit->add_child(center_vsplit);
+	center_vsplit->connect("drag_ended", callable_mp(this, &EditorNode::_bottom_panel_resized));
+
+	right_vsplit = memnew(DockSplitContainer);
+	right_vsplit->set_name("DockVSplitRight");
+	right_vsplit->set_vertical(true);
+	main_hsplit->add_child(right_vsplit);
+
+	right_hsplit = memnew(DockSplitContainer);
+	right_hsplit->set_name("DockHSplitRight");
+	right_vsplit->add_child(right_hsplit);
+
+	right_l_vsplit = memnew(DockSplitContainer);
+	right_l_vsplit->set_name("DockVSplitRightL");
+	right_l_vsplit->set_vertical(true);
+	right_hsplit->add_child(right_l_vsplit);
+
+	right_r_vsplit = memnew(DockSplitContainer);
+	right_r_vsplit->set_name("DockVSplitRightR");
+	right_r_vsplit->set_vertical(true);
+	right_hsplit->add_child(right_r_vsplit);
+
+	bottom_hsplit = memnew(DockSplitContainer);
+	bottom_hsplit->set_name("DockHSplitBottom");
+	main_vsplit->add_child(bottom_hsplit);
+
 	{
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UL, Rect2i(0, 0, 1, 3)));
 		dock_container->set_name("DockSlotLeftUL");
@@ -8725,11 +8770,6 @@ EditorNode::EditorNode() {
 		left_l_vsplit->add_child(dock_container);
 		dock_slots.push_back(dock_container);
 	}
-
-	left_r_vsplit = memnew(DockSplitContainer);
-	left_r_vsplit->set_name("DockVSplitLeftR");
-	left_r_vsplit->set_vertical(true);
-	main_hsplit->add_child(left_r_vsplit);
 	{
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UR, Rect2i(1, 0, 1, 3)));
 		dock_container->set_name("DockSlotLeftUR");
@@ -8742,23 +8782,6 @@ EditorNode::EditorNode() {
 		left_r_vsplit->add_child(dock_container);
 		dock_slots.push_back(dock_container);
 	}
-
-	VBoxContainer *center_vb = memnew(VBoxContainer);
-	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	main_hsplit->add_child(center_vb);
-
-	center_split = memnew(DockSplitContainer);
-	center_split->set_name("DockVSplitCenter");
-	center_split->set_vertical(true);
-	center_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	center_split->set_collapsed(true);
-	center_vb->add_child(center_split);
-	center_split->connect("drag_ended", callable_mp(this, &EditorNode::_bottom_panel_resized));
-
-	right_l_vsplit = memnew(DockSplitContainer);
-	right_l_vsplit->set_name("DockVSplitRightL");
-	right_l_vsplit->set_vertical(true);
-	main_hsplit->add_child(right_l_vsplit);
 	{
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UL, Rect2i(6, 0, 1, 3)));
 		dock_container->set_name("DockSlotRightUL");
@@ -8771,11 +8794,6 @@ EditorNode::EditorNode() {
 		right_l_vsplit->add_child(dock_container);
 		dock_slots.push_back(dock_container);
 	}
-
-	right_r_vsplit = memnew(DockSplitContainer);
-	right_r_vsplit->set_name("DockVSplitRightR");
-	right_r_vsplit->set_vertical(true);
-	main_hsplit->add_child(right_r_vsplit);
 	{
 		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UR, Rect2i(7, 0, 1, 3)));
 		dock_container->set_name("DockSlotRightUR");
@@ -8788,10 +8806,6 @@ EditorNode::EditorNode() {
 		right_r_vsplit->add_child(dock_container);
 		dock_slots.push_back(dock_container);
 	}
-
-	DockSplitContainer *bottom_hsplit = memnew(DockSplitContainer);
-	bottom_hsplit->set_name("DockHSplitBottom");
-	main_vsplit->add_child(bottom_hsplit);
 	{
 		DockTabContainer *dock_container = memnew(BottomSideDockTabContainer(EditorDock::DOCK_SLOT_BOTTOM_L, Rect2i(0, 6, 4, 2)));
 		dock_container->set_name("DockSlotBottomL");
@@ -8834,7 +8848,7 @@ EditorNode::EditorNode() {
 	add_child(scan_changes_timer);
 
 	top_split = memnew(VSplitContainer);
-	center_split->add_child(top_split);
+	center_vsplit->add_child(top_split);
 	top_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	top_split->set_collapsed(true);
 
@@ -9243,13 +9257,13 @@ EditorNode::EditorNode() {
 
 	bottom_panel = memnew(EditorBottomPanel);
 	editor_dock_manager->register_dock_slot(bottom_panel);
-	center_split->add_child(bottom_panel);
-	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
+	center_vsplit->add_child(bottom_panel);
+	center_vsplit->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
 	log = memnew(EditorLog);
 	editor_dock_manager->add_dock(log);
 
-	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
+	center_vsplit->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
 
 	native_shader_source_visualizer = memnew(EditorNativeShaderSourceVisualizer);
 	gui_base->add_child(native_shader_source_visualizer);

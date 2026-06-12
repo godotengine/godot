@@ -87,6 +87,7 @@ public:
 	virtual bool can_switch_dock() const override;
 	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) override;
 	virtual void load_selected_tab(int p_idx) override;
+	virtual PackedStringArray get_available_expand() const override;
 
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
 	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);

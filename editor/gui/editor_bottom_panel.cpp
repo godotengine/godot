@@ -166,6 +166,10 @@ void EditorBottomPanel::load_selected_tab(int p_idx) {
 	set_block_signals(false);
 }
 
+PackedStringArray EditorBottomPanel::get_available_expand() const {
+	return PackedStringArray{ TTRC("Down") };
+}
+
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
 	Dictionary offsets;
 	for (const KeyValue<String, int> &E : dock_offsets) {
