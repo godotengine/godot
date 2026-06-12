@@ -30,6 +30,8 @@
 
 #include "texture_3d_editor_plugin.h"
 
+#include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
@@ -164,27 +166,40 @@ void Texture3DEditor::_update_gui() {
 	const Image::Format format = texture->get_format();
 	const String format_name = Image::get_format_name(format);
 
+	// Determine export file size. Uses the imported resource path (e.g., .ctex) rather than the source file, as this reflects the size that ends up in the exported PCK.
+	String export_size_text;
+	const String res_path = texture->get_path();
+	if (!res_path.is_empty() && !texture->is_built_in()) {
+		const String imported_path = ResourceLoader::import_remap(res_path);
+		if (!imported_path.is_empty() && FileAccess::exists(imported_path)) {
+			const uint64_t export_size = FileAccess::get_size(imported_path);
+			export_size_text = "\n" + vformat(TTR("Export Size: %s"), String::humanize_size(export_size));
+		}
+	}
+
 	if (texture->has_mipmaps()) {
 		const int mip_count = Image::get_image_required_mipmaps(texture->get_width(), texture->get_height(), format);
 		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), format, true) * texture->get_depth();
 
 		info->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("%s Mipmaps") + "\n" + TTR("Memory: %s"),
-				texture->get_width(),
-				texture->get_height(),
-				texture->get_depth(),
-				format_name,
-				mip_count,
-				String::humanize_size(memory)));
+							   texture->get_width(),
+							   texture->get_height(),
+							   texture->get_depth(),
+							   format_name,
+							   mip_count,
+							   String::humanize_size(memory)) +
+				export_size_text);
 
 	} else {
 		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), format, false) * texture->get_depth();
 
 		info->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("No Mipmaps") + "\n" + TTR("Memory: %s"),
-				texture->get_width(),
-				texture->get_height(),
-				texture->get_depth(),
-				format_name,
-				String::humanize_size(memory)));
+							   texture->get_width(),
+							   texture->get_height(),
+							   texture->get_depth(),
+							   format_name,
+							   String::humanize_size(memory)) +
+				export_size_text);
 	}
 
 	const uint32_t components_mask = Image::get_format_component_mask(format);
