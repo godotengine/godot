@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,7 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 
 #include "../../SDL_hints_c.h"
+// #include "../../misc/SDL_libusb.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
@@ -76,7 +77,8 @@ static bool HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, c
     }
     if (vendor_id == USB_VENDOR_DRAGONRISE &&
         (product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1 ||
-         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2)) {
+         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2 ||
+         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3)) {
         // EVORETRO GameCube Controller Adapter
         return true;
     }
@@ -101,6 +103,83 @@ static void SDLCALL SDL_JoystickGameCubeRumbleBrakeHintChanged(void *userdata, c
     }
 }
 
+static bool HIDAPI_DriverGameCube_EnableAdapter(SDL_HIDAPI_Device *device)
+{
+#ifdef HAVE_LIBUSB
+    // Need to close the device while sending USB commands to it
+    SDL_hid_close(device->dev);
+
+    // This is needed to enable input for Nyko and EVORETRO GameCube adapters
+    SDL_LibUSBContext *libusb_ctx;
+    if (SDL_InitLibUSB(&libusb_ctx)) {
+        libusb_context *context = NULL;
+        libusb_device **devs = NULL;
+        libusb_device_handle *handle = NULL;
+        struct libusb_device_descriptor desc;
+        ssize_t i, num_devs;
+        bool kernel_detached = false;
+
+        if (libusb_ctx->init(&context) == 0) {
+            num_devs = libusb_ctx->get_device_list(context, &devs);
+            for (i = 0; i < num_devs; ++i) {
+                if (libusb_ctx->get_device_descriptor(devs[i], &desc) != 0) {
+                    continue;
+                }
+
+                if (desc.idVendor != USB_VENDOR_NINTENDO ||
+                    desc.idProduct != USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) {
+                    continue;
+                }
+
+                if (libusb_ctx->open(devs[i], &handle) != 0) {
+                    continue;
+                }
+
+                if (libusb_ctx->kernel_driver_active(handle, 0)) {
+                    if (libusb_ctx->detach_kernel_driver(handle, 0) == 0) {
+                        kernel_detached = true;
+                    }
+                }
+
+                if (libusb_ctx->claim_interface(handle, 0) == 0) {
+                    libusb_ctx->control_transfer(handle, 0x21, 11, 0x0001, 0, NULL, 0, 1000);
+                    libusb_ctx->release_interface(handle, 0);
+                }
+
+                if (kernel_detached) {
+                    libusb_ctx->attach_kernel_driver(handle, 0);
+                }
+
+                libusb_ctx->close(handle);
+            }
+
+            libusb_ctx->free_device_list(devs, 1);
+
+            libusb_ctx->exit(context);
+        }
+        SDL_QuitLibUSB();
+    }
+
+    // Reopen the device now that we're done
+    device->dev = SDL_hid_open_path(device->path);
+    if (!device->dev) {
+        return false;
+    }
+#endif // HAVE_LIBUSB
+
+    Uint8 initMagic = 0x13;
+    if (SDL_hid_write(device->dev, &initMagic, sizeof(initMagic)) != sizeof(initMagic)) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     "HIDAPI_DriverGameCube_InitDevice(): Couldn't initialize WUP-028");
+        return false;
+    }
+
+    // Wait for the adapter to initialize
+    SDL_Delay(10);
+
+    return true;
+}
+
 static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGameCube_Context *ctx;
@@ -108,12 +187,7 @@ static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     Uint8 *curSlot;
     Uint8 i;
     int size;
-    Uint8 initMagic = 0x13;
     Uint8 rumbleMagic = 0x11;
-
-#ifdef HAVE_ENABLE_GAMECUBE_ADAPTORS
-    SDL_EnableGameCubeAdaptors();
-#endif
 
     ctx = (SDL_DriverGameCube_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -128,18 +202,20 @@ static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     if (ctx->pc_mode) {
+#ifdef SDL_PLATFORM_WIN32
+        // We get a separate device for each slot
         ResetAxisRange(ctx, 0);
         HIDAPI_JoystickConnected(device, &ctx->joysticks[0]);
+#else
+        for (i = 0; i < MAX_CONTROLLERS; ++i) {
+            ResetAxisRange(ctx, i);
+            HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
+        }
+#endif
     } else {
-        // This is all that's needed to initialize the device. Really!
-        if (SDL_hid_write(device->dev, &initMagic, sizeof(initMagic)) != sizeof(initMagic)) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "HIDAPI_DriverGameCube_InitDevice(): Couldn't initialize WUP-028");
+        if (!HIDAPI_DriverGameCube_EnableAdapter(device)) {
             return false;
         }
-
-        // Wait for the adapter to initialize
-        SDL_Delay(10);
 
         // Add all the applicable joysticks
         while ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
@@ -199,13 +275,24 @@ static void HIDAPI_DriverGameCube_SetDevicePlayerIndex(SDL_HIDAPI_Device *device
 {
 }
 
-static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, const Uint8 *packet, bool invert_c_stick)
+static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, Uint8 slot, const Uint8 *packet, bool invert_c_stick)
 {
     SDL_Joystick *joystick;
-    const Uint8 i = 0;  // We have a separate context for each connected controller in PC mode, just use the first index
+    Uint8 i;
     Uint8 v;
     Sint16 axis_value;
     Uint64 timestamp = SDL_GetTicksNS();
+
+#ifdef SDL_PLATFORM_WIN32
+    // We get a separate device for each slot
+    i = 0;
+#else
+    i = slot;
+    if (i >= MAX_CONTROLLERS) {
+        // Invalid packet?
+        return;
+    }
+#endif
 
     joystick = SDL_GetJoystickFromID(ctx->joysticks[i]);
     if (!joystick) {
@@ -356,11 +443,11 @@ static bool HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
                 // This is the older firmware
                 // The first byte is the index of the connected controller
                 // The C stick has an inverted value range compared to the left stick
-                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, &packet[1], true);
+                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, packet[0] - 1, &packet[1], true);
             } else if (size == 9) {
                 // This is the newer firmware (version 0x7)
                 // The C stick has the same value range compared to the left stick
-                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, packet, false);
+                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, 0, packet, false);
             } else {
                 // How do we handle this packet?
             }

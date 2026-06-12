@@ -1002,7 +1002,7 @@ Files extracted from upstream source:
 ## sdl
 
 - Upstream: https://github.com/libsdl-org/SDL
-- Version: 3.2.28 (7f3ae3d57459e59943a4ecfefc8f6277ec6bf540, 2025)
+- Version: 3.4.8 (d9d5536704d585616d4db3c8ba3c4ff6fc2757e1, 2026)
 - License: Zlib
 - Vendored: hidapi 0.14.0, license BSD-3-Clause
 
@@ -1015,11 +1015,11 @@ Patches:
 - `0001-remove-unnecessary-subsystems.patch` ([GH-106218](https://github.com/godotengine/godot/pull/106218))
 - `0003-std-include.patch` ([GH-108144](https://github.com/godotengine/godot/pull/108144))
 - `0004-errno-include.patch` ([GH-108354](https://github.com/godotengine/godot/pull/108354))
-- `0005-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
 - `0006-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
-- `0007-shield-duplicate-macos.patch` ([GH-115510](https://github.com/godotengine/godot/pull/115510))
-- `0008-fix-linux-joycon-serial-num.patch` ([GH-113873](https://github.com/godotengine/godot/pull/113873))
 - `0009-update-device-blocklist.patch` ([GH-119403](https://github.com/godotengine/godot/pull/119403))
+- `0010-fix-apple-builds.patch` ([GH-119201](https://github.com/godotengine/godot/pull/119201))
+- `0011-macos-joypad-name.patch` ([GH-119201](https://github.com/godotengine/godot/pull/119201))
+- `0012-check-ezfrd64.patch` ([GH-119201](https://github.com/godotengine/godot/pull/119201))
 
 
 ## spirv-cross

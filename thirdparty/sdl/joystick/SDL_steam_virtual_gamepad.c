@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,8 +32,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif
-
-#define SDL_HINT_STEAM_VIRTUAL_GAMEPAD_INFO_FILE    "SteamVirtualGamepadInfo"
 
 static char *SDL_steam_virtual_gamepad_info_file SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static Uint64 SDL_steam_virtual_gamepad_info_file_mtime SDL_GUARDED_BY(SDL_joystick_lock) = 0;
@@ -135,14 +133,14 @@ void SDL_InitSteamVirtualGamepadInfo(void)
         return;
     }
 
-    file = SDL_GetHint(SDL_HINT_STEAM_VIRTUAL_GAMEPAD_INFO_FILE);
+    file = SDL_getenv_unsafe("SteamVirtualGamepadInfo");
     if (file && *file) {
 #ifdef SDL_PLATFORM_LINUX
         // Older versions of Wine will blacklist the Steam Virtual Gamepad if
         // it appears to have the real controller's VID/PID, so ignore this.
         const char *exe = SDL_GetExeName();
         if (exe && SDL_strcmp(exe, "wine64-preloader") == 0) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Wine launched by Steam, ignoring %s", SDL_HINT_STEAM_VIRTUAL_GAMEPAD_INFO_FILE);
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Wine launched by Steam, ignoring SteamVirtualGamepadInfo");
             return;
         }
 #endif

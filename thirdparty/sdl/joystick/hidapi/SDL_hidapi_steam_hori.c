@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,8 +32,6 @@
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_HORI_PROTOCOL*/
 
-#define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
-
 enum
 {
     SDL_GAMEPAD_BUTTON_HORI_QAM = 11,
@@ -51,6 +49,8 @@ typedef struct
     Uint8 last_state[USB_PACKET_LENGTH];
     Uint64 sensor_ticks;
     Uint32 last_tick;
+    Uint64 simulated_sensor_step_ns;
+    Uint64 simulated_sensor_time_stamp;
     bool wireless;
     bool serial_needs_init;
 } SDL_DriverSteamHori_Context;
@@ -114,21 +114,25 @@ static bool HIDAPI_DriverSteamHori_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
     /* Initialize the joystick capabilities */
     joystick->nbuttons = SDL_GAMEPAD_NUM_HORI_BUTTONS;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
-	joystick->nhats = 1;
+    joystick->nhats = 1;
 
-	ctx->wireless = device->product_id == USB_PRODUCT_HORI_STEAM_CONTROLLER_BT;
+    ctx->wireless = device->product_id == USB_PRODUCT_HORI_STEAM_CONTROLLER_BT;
 
-	if (ctx->wireless && device->serial) {
-		joystick->serial = SDL_strdup(device->serial);
-		ctx->serial_needs_init = false;
-	} else if (!ctx->wireless) {
-		// Need to actual read from the device to init the serial
-		HIDAPI_DriverSteamHori_UpdateDevice(device);
-	}
-       
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
+    if (ctx->wireless && device->serial) {
+        joystick->serial = SDL_strdup(device->serial);
+        ctx->serial_needs_init = false;
+    } else if (!ctx->wireless) {
+        // Need to actual read from the device to init the serial
+        HIDAPI_DriverSteamHori_UpdateDevice(device);
+    }
 
+    const float sensorupdaterate = ctx->wireless ? 120.0f : 250.0f;
+
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, sensorupdaterate);
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, sensorupdaterate);
+
+    const Uint64 sensorupdatestep_ms = ctx->wireless ? 8333 : 4000; // Equivalent to 120hz / 250hz respectively
+    ctx->simulated_sensor_step_ns = SDL_US_TO_NS(sensorupdatestep_ms);
     return true;
 }
 
@@ -275,12 +279,13 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_HORI_FL, ((data[7] & 0x80) != 0));
     }
 
-	if (!ctx->wireless && ctx->serial_needs_init) {
+    if (!ctx->wireless && ctx->serial_needs_init) {
         char serial[18];
-		(void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-								data[38], data[39], data[40], data[41], data[42], data[43]);
+        (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                                data[38], data[39], data[40], data[41], data[42], data[43]);
 
-		joystick->serial = SDL_strdup(serial);
+        SDL_AssertJoysticksLocked();
+        joystick->serial = SDL_strdup(serial);
         ctx->serial_needs_init = false;
     }
 
@@ -312,7 +317,11 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
         ctx->sensor_ticks += delta;
 
         /* Sensor timestamp is in 1us units, but there seems to be some issues with the values reported from the device */
-        sensor_timestamp = timestamp; // if the values were good we woudl call SDL_US_TO_NS(ctx->sensor_ticks);
+        // sensor_timestamp = timestamp; // if the values were good we would call SDL_US_TO_NS(ctx->sensor_ticks);
+
+        /* New approach - simulate a fixed rate of 250hz (from observation). This reduces stutter from dropped/racing bluetooth packets.*/
+        ctx->simulated_sensor_time_stamp += ctx->simulated_sensor_step_ns;
+        sensor_timestamp = ctx->simulated_sensor_time_stamp;
 
         const float accelScale = SDL_STANDARD_GRAVITY * 8 / 32768.0f;
         const float gyroScale = DEG2RAD(2048);
@@ -320,7 +329,6 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
         imu_data[1] = RemapValClamped(-1.0f * LOAD16(data[12], data[13]), INT16_MIN, INT16_MAX, -gyroScale, gyroScale);
         imu_data[2] = RemapValClamped(-1.0f * LOAD16(data[14], data[15]), INT16_MIN, INT16_MAX, -gyroScale, gyroScale);
         imu_data[0] = RemapValClamped(-1.0f * LOAD16(data[16], data[17]), INT16_MIN, INT16_MAX, -gyroScale, gyroScale);
-		
 
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, imu_data, 3);
 
@@ -334,8 +342,9 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
     if (ctx->last_state[24] != data[24]) {
         bool bCharging = (data[24] & 0x10) != 0;
         int percent = (data[24] & 0xF) * 10;
-		SDL_PowerState state;
-         if (bCharging) {
+        SDL_PowerState state;
+
+        if (bCharging) {
             state = SDL_POWERSTATE_CHARGING;
         } else if (ctx->wireless) {
              state = SDL_POWERSTATE_ON_BATTERY;

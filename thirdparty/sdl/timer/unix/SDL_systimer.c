@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +53,9 @@
 
 // Use CLOCK_MONOTONIC_RAW, if available, which is not subject to adjustment by NTP
 #ifdef HAVE_CLOCK_GETTIME
-#ifdef CLOCK_MONOTONIC_RAW
+// Older Android phones have a buggy CLOCK_MONOTONIC_RAW, use CLOCK_MONOTONIC
+// See fix: https://github.com/torvalds/linux/commit/dbb236c1ceb697a559e0694ac4c9e7b9131d0b16
+#if defined(CLOCK_MONOTONIC_RAW) && !defined(__ANDROID__)
 #define SDL_MONOTONIC_CLOCK CLOCK_MONOTONIC_RAW
 #else
 #define SDL_MONOTONIC_CLOCK CLOCK_MONOTONIC

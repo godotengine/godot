@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=3.2.28
+VERSION=3.4.8
 
 target=$(dirname "$(realpath $0)")
 pushd $target
@@ -27,7 +27,7 @@ cp -v CREDITS.md LICENSE.txt $target
 # We might reconsider as we make more platforms use SDL.
 cp -rv include $target
 rm -f $target/include/build_config/{*.cmake,SDL_build_config_*.h} $target
-rm -f $target/include/SDL3/SDL_{egl,gpu,oldnames,opengl*,test*,vulkan}.h $target
+rm -f $target/include/SDL3/SDL_{dlopennote,egl,gpu,oldnames,opengl*,test*,vulkan}.h $target
 
 pushd src
 
@@ -48,11 +48,12 @@ cp -v io/SDL_iostream*.{c,h} $target/io
 
 mkdir $target/core
 cp -rv core/{linux,unix,windows} $target/core
+rm -f $target/core/linux/SDL_{fcitx,ibus,ime,progressbar,system_theme}.*
+rm -f $target/core/unix/SDL_{fribidi,gtk,libthai}.*
 rm -f $target/core/windows/version.rc
-rm -f $target/core/linux/SDL_{fcitx,ibus,ime,system_theme}.*
 
 mkdir $target/haptic
-cp -rv haptic/{*.{c,h},darwin,dummy,linux,windows} $target/haptic
+cp -rv haptic/{*.{c,h},darwin,dummy,hidapi,linux,windows} $target/haptic
 
 mkdir $target/joystick
 cp -rv joystick/{*.{c,h},apple,darwin,hidapi,linux,windows} $target/joystick

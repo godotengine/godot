@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -221,7 +221,7 @@ static void hexdump(const uint8_t *ptr, int len)
 
 static void ResetSteamControllerPacketAssembler(SteamControllerPacketAssembler *pAssembler)
 {
-    SDL_memset(pAssembler->uBuffer, 0, sizeof(pAssembler->uBuffer));
+    SDL_zeroa(pAssembler->uBuffer);
     pAssembler->nExpectedSegmentNumber = 0;
 }
 
@@ -320,7 +320,7 @@ static int SetFeatureReport(SDL_HIDAPI_Device *dev, const unsigned char uBuffer[
             nActualDataLen -= nBytesInPacket;
 
             // Construct packet
-            SDL_memset(uPacketBuffer, 0, sizeof(uPacketBuffer));
+            SDL_zeroa(uPacketBuffer);
             uPacketBuffer[0] = BLE_REPORT_NUMBER;
             uPacketBuffer[1] = GetSegmentHeader(nSegmentNumber, nActualDataLen == 0);
             SDL_memcpy(&uPacketBuffer[2], pBufferPtr, nBytesInPacket);
@@ -370,7 +370,7 @@ static int GetFeatureReport(SDL_HIDAPI_Device *dev, unsigned char uBuffer[65])
 #endif
 
         while (nRetries < BLE_MAX_READ_RETRIES) {
-            SDL_memset(uSegmentBuffer, 0, sizeof(uSegmentBuffer));
+            SDL_zeroa(uSegmentBuffer);
             uSegmentBuffer[0] = BLE_REPORT_NUMBER;
             nRet = SDL_hid_get_feature_report(dev->dev, uSegmentBuffer, ucBytesToRead);
 
@@ -457,6 +457,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
 
     DPRINTF("ResetSteamController hid=%p\n", dev);
 
+    SDL_zero(buf);
     buf[0] = 0;
     buf[1] = ID_GET_ATTRIBUTES_VALUES;
     res = SetFeatureReport(dev, buf, 2);
@@ -510,6 +511,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     }
 
     // Clear digital button mappings
+    SDL_zero(buf);
     buf[0] = 0;
     buf[1] = ID_CLEAR_DIGITAL_MAPPINGS;
     res = SetFeatureReport(dev, buf, 2);
@@ -521,7 +523,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     }
 
     // Reset the default settings
-    SDL_memset(buf, 0, 65);
+    SDL_zero(buf);
     buf[1] = ID_LOAD_DEFAULT_SETTINGS;
     buf[2] = 0;
     res = SetFeatureReport(dev, buf, 3);
@@ -539,7 +541,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     buf[3 + nSettings * 3 + 2] = ((uint16_t)VALUE) >> 8;   \
     ++nSettings;
 
-    SDL_memset(buf, 0, 65);
+    SDL_zero(buf);
     buf[1] = ID_SET_SETTINGS_VALUES;
     ADD_SETTING(SETTING_WIRELESS_PACKET_VERSION, 2);
     ADD_SETTING(SETTING_LEFT_TRACKPAD_MODE, TRACKPAD_NONE);
@@ -567,7 +569,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     bool bMappingsCleared = false;
     int iRetry;
     for (iRetry = 0; iRetry < 2; ++iRetry) {
-        SDL_memset(buf, 0, 65);
+        SDL_zero(buf);
         buf[1] = ID_GET_DIGITAL_MAPPINGS;
         buf[2] = 1; // one byte - requesting from index 0
         buf[3] = 0;
@@ -596,7 +598,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     }
 
     // Set our new mappings
-    SDL_memset(buf, 0, 65);
+    SDL_zero(buf);
     buf[1] = ID_SET_DIGITAL_MAPPINGS;
     buf[2] = 6; // 2 settings x 3 bytes
     buf[3] = IO_DIGITAL_BUTTON_RIGHT_TRIGGER;
@@ -634,7 +636,7 @@ static int ReadSteamController(SDL_hid_device *dev, uint8_t *pData, int nDataSiz
 static void SetPairingState(SDL_HIDAPI_Device *dev, bool bEnablePairing)
 {
     unsigned char buf[65];
-    SDL_memset(buf, 0, 65);
+    SDL_zero(buf);
     buf[1] = ID_ENABLE_PAIRING;
     buf[2] = 2; // 2 payload bytes: bool + timeout
     buf[3] = bEnablePairing ? 1 : 0;
@@ -648,7 +650,7 @@ static void SetPairingState(SDL_HIDAPI_Device *dev, bool bEnablePairing)
 static void CommitPairing(SDL_HIDAPI_Device *dev)
 {
     unsigned char buf[65];
-    SDL_memset(buf, 0, 65);
+    SDL_zero(buf);
     buf[1] = ID_DONGLE_COMMIT_DEVICE;
     SetFeatureReport(dev, buf, 2);
 }
@@ -663,18 +665,18 @@ static void CloseSteamController(SDL_HIDAPI_Device *dev)
     int nSettings = 0;
 
     // Reset digital button mappings
-    SDL_memset(buf, 0, 65);
+    SDL_zero(buf);
     buf[1] = ID_SET_DEFAULT_DIGITAL_MAPPINGS;
     SetFeatureReport(dev, buf, 2);
 
     // Reset the default settings
-    SDL_memset(buf, 0, 65);
+    SDL_zero(buf);
     buf[1] = ID_LOAD_DEFAULT_SETTINGS;
     buf[2] = 0;
     SetFeatureReport(dev, buf, 3);
 
     // Reset mouse mode for lizard mode
-    SDL_memset(buf, 0, 65);
+    SDL_zero(buf);
     buf[1] = ID_SET_SETTINGS_VALUES;
     ADD_SETTING(SETTING_RIGHT_TRACKPAD_MODE, TRACKPAD_ABSOLUTE_MOUSE);
     buf[2] = (unsigned char)(nSettings * 3);
@@ -1140,6 +1142,7 @@ static bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
         unsigned char buf[65];
         int res;
 
+        SDL_zero(buf);
         buf[0] = 0;
         buf[1] = ID_DONGLE_GET_WIRELESS_STATE;
         res = SetFeatureReport(device, buf, 2);
@@ -1201,7 +1204,7 @@ static bool SetHomeLED(SDL_HIDAPI_Device *device, Uint8 value)
     unsigned char buf[65];
     int nSettings = 0;
 
-    SDL_memset(buf, 0, 65);
+    SDL_zero(buf);
     buf[1] = ID_SET_SETTINGS_VALUES;
     ADD_SETTING(SETTING_LED_USER_BRIGHTNESS, value);
     buf[2] = (unsigned char)(nSettings * 3);
@@ -1312,7 +1315,7 @@ static bool HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_
     unsigned char buf[65];
     int nSettings = 0;
 
-    SDL_memset(buf, 0, 65);
+    SDL_zero(buf);
     buf[1] = ID_SET_SETTINGS_VALUES;
     if (enabled) {
         ADD_SETTING(SETTING_IMU_MODE, SETTING_GYRO_MODE_SEND_RAW_ACCEL | SETTING_GYRO_MODE_SEND_RAW_GYRO);

@@ -596,7 +596,7 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 
 #ifdef HIDAPI_IGNORE_DEVICE
 	/* See if there are any devices we should skip in enumeration */
-	if (HIDAPI_IGNORE_DEVICE(get_bus_type(dev), dev_vid, dev_pid, usage_page, usage)) {
+	if (HIDAPI_IGNORE_DEVICE(get_bus_type(dev), dev_vid, dev_pid, usage_page, usage, false)) {
 		free(cur_dev);
 		return NULL;
 	}
@@ -1424,7 +1424,7 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 
 	   UPD: The crash part was true in/until some version of macOS.
 	   Starting with macOS 10.15, there is an opposite effect in some environments:
-	   crash happenes if IOHIDDeviceClose() is not called.
+	   crash happens if IOHIDDeviceClose() is not called.
 	   Not leaking a resource in all tested environments.
 	*/
 	if (is_macos_10_10_or_greater || !dev->disconnected) {

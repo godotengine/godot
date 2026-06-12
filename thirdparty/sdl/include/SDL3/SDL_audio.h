@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -577,6 +577,15 @@ extern SDL_DECLSPEC SDL_AudioDeviceID * SDLCALL SDL_GetAudioRecordingDevices(int
 /**
  * Get the human-readable name of a specific audio device.
  *
+ * **WARNING**: this function will work with SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK
+ * and SDL_AUDIO_DEVICE_DEFAULT_RECORDING, returning the current default
+ * physical devices' names. However, as the default device may change at any
+ * time, it is likely better to show a generic name to the user, like "System
+ * default audio device" or perhaps "default [currently %s]". Do not store
+ * this name to disk to reidentify the device in a later run of the program,
+ * as the default might change in general, and the string will be the name of
+ * a specific device and not the abstract system default.
+ *
  * \param devid the instance ID of the device to query.
  * \returns the name of the audio device, or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -1024,7 +1033,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
 /**
  * Query an audio stream for its currently-bound device.
  *
- * This reports the logical audio device that an audio stream is currently bound to.
+ * This reports the logical audio device that an audio stream is currently
+ * bound to.
  *
  * If not bound, or invalid, this returns zero, which is not a valid device
  * ID.
@@ -1066,6 +1076,17 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
 /**
  * Get the properties associated with an audio stream.
  *
+ * The application can hang any data it wants here, but the following
+ * properties are understood by SDL:
+ *
+ * - `SDL_PROP_AUDIOSTREAM_AUTO_CLEANUP_BOOLEAN`: if true (the default), the
+ *   stream be automatically cleaned up when the audio subsystem quits. If set
+ *   to false, the streams will persist beyond that. This property is ignored
+ *   for streams created through SDL_OpenAudioDeviceStream(), and will always
+ *   be cleaned up. Streams that are not cleaned up will still be unbound from
+ *   devices when the audio subsystem quits. This property was added in SDL
+ *   3.4.0.
+ *
  * \param stream the SDL_AudioStream to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -1075,6 +1096,9 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetAudioStreamProperties(SDL_AudioStream *stream);
+
+#define SDL_PROP_AUDIOSTREAM_AUTO_CLEANUP_BOOLEAN "SDL.audiostream.auto_cleanup"
+
 
 /**
  * Query the current format of an audio stream.
@@ -1152,14 +1176,14 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetAudioStreamFrequencyRatio(SDL_AudioStre
  *
  * The frequency ratio is used to adjust the rate at which input data is
  * consumed. Changing this effectively modifies the speed and pitch of the
- * audio. A value greater than 1.0 will play the audio faster, and at a higher
- * pitch. A value less than 1.0 will play the audio slower, and at a lower
- * pitch.
+ * audio. A value greater than 1.0f will play the audio faster, and at a
+ * higher pitch. A value less than 1.0f will play the audio slower, and at a
+ * lower pitch. 1.0f means play at normal speed.
  *
  * This is applied during SDL_GetAudioStreamData, and can be continuously
  * changed to create various effects.
  *
- * \param stream the stream the frequency ratio is being changed.
+ * \param stream the stream on which the frequency ratio is being changed.
  * \param ratio the frequency ratio. 1.0 is normal speed. Must be between 0.01
  *              and 100.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -1321,11 +1345,11 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioSt
  * \threadsafety It is safe to call this function from any thread, as it holds
  *               a stream-specific mutex while running. Don't change the
  *               stream's format to have a different number of channels from a
- *               a different thread at the same time, though!
+ *               different thread at the same time, though!
  *
  * \since This function is available since SDL 3.2.0.
  *
- * \sa SDL_SetAudioStreamInputChannelMap
+ * \sa SDL_SetAudioStreamOutputChannelMap
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamInputChannelMap(SDL_AudioStream *stream, const int *chmap, int count);
 
@@ -1335,7 +1359,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamInputChannelMap(SDL_AudioStre
  * Channel maps are optional; most things do not need them, instead passing
  * data in the [order that SDL expects](CategoryAudio#channel-layouts).
  *
- * The output channel map reorders data that leaving a stream via
+ * The output channel map reorders data that is leaving a stream via
  * SDL_GetAudioStreamData.
  *
  * Each item in the array represents an input channel, and its value is the
@@ -1416,6 +1440,136 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamOutputChannelMap(SDL_AudioStr
  * \sa SDL_GetAudioStreamQueued
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len);
+
+/**
+ * A callback that fires for completed SDL_PutAudioStreamDataNoCopy() data.
+ *
+ * When using SDL_PutAudioStreamDataNoCopy() to provide data to an
+ * SDL_AudioStream, it's not safe to dispose of the data until the stream has
+ * completely consumed it. Often times it's difficult to know exactly when
+ * this has happened.
+ *
+ * This callback fires once when the stream no longer needs the buffer,
+ * allowing the app to easily free or reuse it.
+ *
+ * \param userdata an opaque pointer provided by the app for their personal
+ *                 use.
+ * \param buf the pointer provided to SDL_PutAudioStreamDataNoCopy().
+ * \param buflen the size of buffer, in bytes, provided to
+ *               SDL_PutAudioStreamDataNoCopy().
+ *
+ * \threadsafety This callbacks may run from any thread, so if you need to
+ *               protect shared data, you should use SDL_LockAudioStream to
+ *               serialize access; this lock will be held before your callback
+ *               is called, so your callback does not need to manage the lock
+ *               explicitly.
+ *
+ * \since This datatype is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetAudioStreamGetCallback
+ * \sa SDL_SetAudioStreamPutCallback
+ */
+typedef void (SDLCALL *SDL_AudioStreamDataCompleteCallback)(void *userdata, const void *buf, int buflen);
+
+/**
+ * Add external data to an audio stream without copying it.
+ *
+ * Unlike SDL_PutAudioStreamData(), this function does not make a copy of the
+ * provided data, instead storing the provided pointer. This means that the
+ * put operation does not need to allocate and copy the data, but the original
+ * data must remain available until the stream is done with it, either by
+ * being read from the stream in its entirety, or a call to
+ * SDL_ClearAudioStream() or SDL_DestroyAudioStream().
+ *
+ * The data must match the format/channels/samplerate specified in the latest
+ * call to SDL_SetAudioStreamFormat, or the format specified when creating the
+ * stream if it hasn't been changed.
+ *
+ * An optional callback may be provided, which is called when the stream no
+ * longer needs the data. Once this callback fires, the stream will not access
+ * the data again. This callback will fire for any reason the data is no
+ * longer needed, including clearing or destroying the stream.
+ *
+ * Note that there is still an allocation to store tracking information, so
+ * this function is more efficient for larger blocks of data. If you're
+ * planning to put a few samples at a time, it will be more efficient to use
+ * SDL_PutAudioStreamData(), which allocates and buffers in blocks.
+ *
+ * \param stream the stream the audio data is being added to.
+ * \param buf a pointer to the audio data to add.
+ * \param len the number of bytes to add to the stream.
+ * \param callback the callback function to call when the data is no longer
+ *                 needed by the stream. May be NULL.
+ * \param userdata an opaque pointer provided to the callback for its own
+ *                 personal use.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread, but if the
+ *               stream has a callback set, the caller might need to manage
+ *               extra locking.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_ClearAudioStream
+ * \sa SDL_FlushAudioStream
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_GetAudioStreamQueued
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamDataNoCopy(SDL_AudioStream *stream, const void *buf, int len, SDL_AudioStreamDataCompleteCallback callback, void *userdata);
+
+/**
+ * Add data to the stream with each channel in a separate array.
+ *
+ * This data must match the format/channels/samplerate specified in the latest
+ * call to SDL_SetAudioStreamFormat, or the format specified when creating the
+ * stream if it hasn't been changed.
+ *
+ * The data will be interleaved and queued. Note that SDL_AudioStream only
+ * operates on interleaved data, so this is simply a convenience function for
+ * easily queueing data from sources that provide separate arrays. There is no
+ * equivalent function to retrieve planar data.
+ *
+ * The arrays in `channel_buffers` are ordered as they are to be interleaved;
+ * the first array will be the first sample in the interleaved data. Any
+ * individual array may be NULL; in this case, silence will be interleaved for
+ * that channel.
+ *
+ * `num_channels` specifies how many arrays are in `channel_buffers`. This can
+ * be used as a safety to prevent overflow, in case the stream format has
+ * changed elsewhere. If more channels are specified than the current input
+ * spec, they are ignored. If less channels are specified, the missing arrays
+ * are treated as if they are NULL (silence is written to those channels). If
+ * the count is -1, SDL will assume the array count matches the current input
+ * spec.
+ *
+ * Note that `num_samples` is the number of _samples per array_. This can also
+ * be thought of as the number of _sample frames_ to be queued. A value of 1
+ * with stereo arrays will queue two samples to the stream. This is different
+ * than SDL_PutAudioStreamData, which wants the size of a single array in
+ * bytes.
+ *
+ * \param stream the stream the audio data is being added to.
+ * \param channel_buffers a pointer to an array of arrays, one array per
+ *                        channel.
+ * \param num_channels the number of arrays in `channel_buffers` or -1.
+ * \param num_samples the number of _samples_ per array to write to the
+ *                    stream.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread, but if the
+ *               stream has a callback set, the caller might need to manage
+ *               extra locking.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_ClearAudioStream
+ * \sa SDL_FlushAudioStream
+ * \sa SDL_GetAudioStreamData
+ * \sa SDL_GetAudioStreamQueued
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *channel_buffers, int num_channels, int num_samples);
 
 /**
  * Get converted/resampled data from the stream.
@@ -1586,8 +1740,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PauseAudioStreamDevice(SDL_AudioStream *str
  * previously been paused. Once unpaused, any bound audio streams will begin
  * to progress again, and audio can be generated.
  *
- * Remember, SDL_OpenAudioDeviceStream opens device in a paused state, so this
- * function call is required for audio playback to begin on such device.
+ * SDL_OpenAudioDeviceStream opens audio devices in a paused state, so this
+ * function call is required for audio playback to begin on such devices.
  *
  * \param stream the audio stream associated with the audio device to resume.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -1844,7 +1998,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream)
  * Also unlike other functions, the audio device begins paused. This is to map
  * more closely to SDL2-style behavior, since there is no extra step here to
  * bind a stream to begin audio flowing. The audio device should be resumed
- * with `SDL_ResumeAudioStreamDevice(stream);`
+ * with SDL_ResumeAudioStreamDevice().
  *
  * This function works with both playback and recording devices.
  *

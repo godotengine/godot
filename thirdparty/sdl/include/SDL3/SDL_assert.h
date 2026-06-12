@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -132,14 +132,11 @@ extern "C" {
     #define SDL_TriggerBreakpoint() __debugbreak()
 #elif defined(_MSC_VER) && defined(_M_IX86)
     #define SDL_TriggerBreakpoint() { _asm { int 0x03 }  }
-#elif defined(ANDROID)
-    #include <assert.h>
-    #define SDL_TriggerBreakpoint() assert(0)
 #elif SDL_HAS_BUILTIN(__builtin_debugtrap)
     #define SDL_TriggerBreakpoint() __builtin_debugtrap()
 #elif SDL_HAS_BUILTIN(__builtin_trap)
     #define SDL_TriggerBreakpoint() __builtin_trap()
-#elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
+#elif (defined(__GNUC__) || defined(__clang__) || defined(__TINYC__) || defined(__slimcc__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
 #elif (defined(__GNUC__) || defined(__clang__)) && defined(__riscv)
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "ebreak\n\t" )
@@ -163,7 +160,7 @@ extern "C" {
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
 /**
- * A macro that reports the current function being compiled.
+ * A constant that contains the current function being compiled.
  *
  * If SDL can't figure how the compiler reports this, it will use "???".
  *
@@ -171,20 +168,58 @@ extern "C" {
  */
 #define SDL_FUNCTION __FUNCTION__
 
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */
+#elif !defined(SDL_FUNCTION)
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */
 #   define SDL_FUNCTION __func__
 #elif ((defined(__GNUC__) && (__GNUC__ >= 2)) || defined(_MSC_VER) || defined (__WATCOMC__))
 #   define SDL_FUNCTION __FUNCTION__
 #else
 #   define SDL_FUNCTION "???"
 #endif
+#endif
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
 /**
  * A macro that reports the current file being compiled.
  *
+ * This macro is only defined if it isn't already defined, so to override it
+ * (perhaps with something that doesn't provide path information at all, so
+ * build machine information doesn't leak into public binaries), apps can
+ * define this macro before including SDL.h or SDL_assert.h.
+ *
  * \since This macro is available since SDL 3.2.0.
  */
+#define SDL_FILE    __FILE_NAME__
+
+#elif !defined(SDL_FILE)
+#ifdef __FILE_NAME__
+#define SDL_FILE    __FILE_NAME__
+#else
 #define SDL_FILE    __FILE__
+#endif
+#endif
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * A macro that reports the current file being compiled, for use in
+ * assertions.
+ *
+ * This macro is only defined if it isn't already defined, so to override it
+ * (perhaps with something that doesn't provide path information at all, so
+ * build machine information doesn't leak into public binaries), apps can
+ * define this macro before including SDL_assert.h. For example, defining this
+ * to `""` will make sure no source path information is included in asserts.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ */
+#define SDL_ASSERT_FILE SDL_FILE
+
+#elif !defined(SDL_ASSERT_FILE)
+#define SDL_ASSERT_FILE SDL_FILE
+#endif
+
 
 /**
  * A macro that reports the current line number of the file being compiled.
@@ -363,7 +398,7 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
     do { \
         while ( !(condition) ) { \
             static struct SDL_AssertData sdl_assert_data = { false, 0, #condition, NULL, 0, NULL, NULL }; \
-            const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
+            const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_ASSERT_FILE, SDL_LINE); \
             if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
                 continue; /* go again. */ \
             } else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \

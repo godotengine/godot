@@ -1,0 +1,12 @@
+diff --git a/thirdparty/sdl/SDL_internal.h b/thirdparty/sdl/SDL_internal.h
+index 0136e64379..bdc0fbbbd8 100644
+--- a/thirdparty/sdl/SDL_internal.h
++++ b/thirdparty/sdl/SDL_internal.h
+@@ -267,6 +267,7 @@ extern "C" {
+ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
+ 
+ #ifdef HAVE_LIBC
++#include <stdlib.h>
+ #define SDL_abort() abort()
+ #else
+ #define SDL_abort() do {                                        \

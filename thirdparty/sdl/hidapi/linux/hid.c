@@ -40,37 +40,7 @@
 #include <linux/hidraw.h>
 #include <linux/version.h>
 #include <linux/input.h>
-//#include <libudev.h>
-#include "SDL_udev.h"
-extern SDL_UDEV_PrivateData *SDL_UDEV_PrivateData_this;
-#define udev_device_get_action (SDL_UDEV_PrivateData_this->syms.udev_device_get_action)
-#define udev_device_get_devnode (SDL_UDEV_PrivateData_this->syms.udev_device_get_devnode)
-#define udev_device_get_syspath (SDL_UDEV_PrivateData_this->syms.udev_device_get_syspath)
-#define udev_device_get_subsystem (SDL_UDEV_PrivateData_this->syms.udev_device_get_subsystem)
-#define udev_device_get_parent_with_subsystem_devtype (SDL_UDEV_PrivateData_this->syms.udev_device_get_parent_with_subsystem_devtype)
-#define udev_device_get_property_value (SDL_UDEV_PrivateData_this->syms.udev_device_get_property_value)
-#define udev_device_get_sysattr_value (SDL_UDEV_PrivateData_this->syms.udev_device_get_sysattr_value)
-#define udev_device_new_from_syspath (SDL_UDEV_PrivateData_this->syms.udev_device_new_from_syspath)
-#define udev_device_unref (SDL_UDEV_PrivateData_this->syms.udev_device_unref)
-#define udev_enumerate_add_match_property (SDL_UDEV_PrivateData_this->syms.udev_enumerate_add_match_property)
-#define udev_enumerate_add_match_subsystem (SDL_UDEV_PrivateData_this->syms.udev_enumerate_add_match_subsystem)
-#define udev_enumerate_get_list_entry (SDL_UDEV_PrivateData_this->syms.udev_enumerate_get_list_entry)
-#define udev_enumerate_new (SDL_UDEV_PrivateData_this->syms.udev_enumerate_new)
-#define udev_enumerate_scan_devices (SDL_UDEV_PrivateData_this->syms.udev_enumerate_scan_devices)
-#define udev_enumerate_unref (SDL_UDEV_PrivateData_this->syms.udev_enumerate_unref)
-#define udev_list_entry_get_name (SDL_UDEV_PrivateData_this->syms.udev_list_entry_get_name)
-#define udev_list_entry_get_next (SDL_UDEV_PrivateData_this->syms.udev_list_entry_get_next)
-#define udev_monitor_enable_receiving (SDL_UDEV_PrivateData_this->syms.udev_monitor_enable_receiving)
-#define udev_monitor_filter_add_match_subsystem_devtype (SDL_UDEV_PrivateData_this->syms.udev_monitor_filter_add_match_subsystem_devtype)
-#define udev_monitor_get_fd (SDL_UDEV_PrivateData_this->syms.udev_monitor_get_fd)
-#define udev_monitor_new_from_netlink (SDL_UDEV_PrivateData_this->syms.udev_monitor_new_from_netlink)
-#define udev_monitor_receive_device (SDL_UDEV_PrivateData_this->syms.udev_monitor_receive_device)
-#define udev_monitor_unref (SDL_UDEV_PrivateData_this->syms.udev_monitor_unref)
-#define udev_new (SDL_UDEV_PrivateData_this->syms.udev_new)
-#define udev_unref (SDL_UDEV_PrivateData_this->syms.udev_unref)
-#define udev_device_new_from_devnum (SDL_UDEV_PrivateData_this->syms.udev_device_new_from_devnum)
-#define udev_device_get_devnum (SDL_UDEV_PrivateData_this->syms.udev_device_get_devnum)
-#undef SDL_UDEV_SYM
+#include <libudev.h>
 
 #include "../hidapi/hidapi.h"
 
@@ -177,7 +147,7 @@ static void register_error_str(wchar_t **error_str, const char *msg)
 #endif
 }
 
-/* Semilar to register_error_str, but allows passing a format string with va_list args into this function. */
+/* Similar to register_error_str, but allows passing a format string with va_list args into this function. */
 static void register_error_str_vformat(wchar_t **error_str, const char *format, va_list args)
 {
 	char msg[256];
@@ -936,7 +906,7 @@ static struct hid_device_info * create_device_info_for_device(struct udev_device
 
 		cur_dev = root;
 		while (cur_dev) {
-			if (HIDAPI_IGNORE_DEVICE(cur_dev->bus_type, cur_dev->vendor_id, cur_dev->product_id, cur_dev->usage_page, cur_dev->usage)) {
+			if (HIDAPI_IGNORE_DEVICE(cur_dev->bus_type, cur_dev->vendor_id, cur_dev->product_id, cur_dev->usage_page, cur_dev->usage, false)) {
 				struct hid_device_info *tmp = cur_dev;
 
 				cur_dev = tmp->next;
