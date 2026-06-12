@@ -366,6 +366,8 @@ private:
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 		bool use_subsampled_images = true; // We need to default to true for the warning to be shown if we fallback immediately at startup.
 		bool view_pose_valid = false;
+		bool view_pose_currently_valid = false;
+		bool view_pose_initialized = false;
 
 		double z_near = 0.0;
 		double z_far = 0.0;
