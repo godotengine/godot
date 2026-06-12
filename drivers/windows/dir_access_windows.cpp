@@ -440,25 +440,58 @@ typedef struct {
 } GD_FILE_ID_INFO;
 
 bool DirAccessWindows::is_equivalent(const String &p_path_a, const String &p_path_b) const {
+	GD_FILE_ID_INFO ex1;
+	bool did_fallback1 = false;
+	BY_HANDLE_FILE_INFORMATION fallback1 = {};
+
 	String f1 = fix_path(p_path_a);
-	GD_FILE_ID_INFO st1;
 	HANDLE h1 = ::CreateFileW((LPCWSTR)(f1.utf16().get_data()), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 	if (h1 == INVALID_HANDLE_VALUE) {
 		return DirAccess::is_equivalent(p_path_a, p_path_b);
 	}
-	::GetFileInformationByHandleEx(h1, (FILE_INFO_BY_HANDLE_CLASS)0x12 /*FileIdInfo*/, &st1, sizeof(st1));
-	::CloseHandle(h1);
+	if (!::GetFileInformationByHandleEx(h1, (FILE_INFO_BY_HANDLE_CLASS)0x12 /*FileIdInfo*/, &ex1, sizeof(ex1))) {
+		// Try `GetFileInformationByHandle` since the Ex version is not supported by certain USB and network drives.
+		did_fallback1 = true;
+		if (!::GetFileInformationByHandle(h1, &fallback1)) {
+			::CloseHandle(h1);
+			return DirAccess::is_equivalent(p_path_a, p_path_b);
+		}
+	}
+
+	GD_FILE_ID_INFO ex2;
+	bool did_fallback2 = false;
+	BY_HANDLE_FILE_INFORMATION fallback2 = {};
 
 	String f2 = fix_path(p_path_b);
-	GD_FILE_ID_INFO st2;
 	HANDLE h2 = ::CreateFileW((LPCWSTR)(f2.utf16().get_data()), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 	if (h2 == INVALID_HANDLE_VALUE) {
+		::CloseHandle(h1);
 		return DirAccess::is_equivalent(p_path_a, p_path_b);
 	}
-	::GetFileInformationByHandleEx(h2, (FILE_INFO_BY_HANDLE_CLASS)0x12 /*FileIdInfo*/, &st2, sizeof(st2));
+	if (!::GetFileInformationByHandleEx(h2, (FILE_INFO_BY_HANDLE_CLASS)0x12 /*FileIdInfo*/, &ex2, sizeof(ex2))) {
+		// Try `GetFileInformationByHandle` since the Ex version is not supported by certain USB and network drives.
+		did_fallback2 = true;
+		if (!::GetFileInformationByHandle(h2, &fallback2)) {
+			::CloseHandle(h1);
+			::CloseHandle(h2);
+			return DirAccess::is_equivalent(p_path_a, p_path_b);
+		}
+	}
+
+	// Keep both handles open while retrieving ids, since file ids are only unique for open handles.
+	::CloseHandle(h1);
 	::CloseHandle(h2);
 
-	return (st1.VolumeSerialNumber == st2.VolumeSerialNumber) && (st1.FileId.LowPart == st2.FileId.LowPart) && (st1.FileId.HighPart == st2.FileId.HighPart);
+	if (did_fallback1 != did_fallback2) {
+		// Assuming different drives due to different syscall support.
+		return false;
+	}
+
+	if (did_fallback1) {
+		return fallback1.dwVolumeSerialNumber == fallback2.dwVolumeSerialNumber && fallback1.nFileIndexLow == fallback2.nFileIndexLow && fallback1.nFileIndexHigh == fallback2.nFileIndexHigh;
+	}
+
+	return ex1.VolumeSerialNumber == ex2.VolumeSerialNumber && ex1.FileId.LowPart == ex2.FileId.LowPart && ex1.FileId.HighPart == ex2.FileId.HighPart;
 }
 
 bool DirAccessWindows::is_link(String p_file) {
