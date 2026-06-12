@@ -2126,6 +2126,17 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	String path = ResourceLoader::path_remap(local_path);
 
+	// check if it's already open
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		if (ScriptEditorBase *esb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i)); esb && esb->edited_file_data.path == path) {
+			if (Ref<TextFile> res = esb->get_edited_resource(); res.is_valid()) {
+				if (r_error) {
+					*r_error = OK;
+				}
+				return res;
+			}
+		}
+	}
 	TextFile *text_file = memnew(TextFile);
 	Ref<TextFile> text_res(text_file);
 	Error err = text_file->load_text(path);
