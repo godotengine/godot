@@ -34,6 +34,7 @@
 #include "core/config/engine.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 
 void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "bone_name") {
@@ -78,6 +79,10 @@ PackedStringArray BoneAttachment3D::get_configuration_warnings() const {
 
 	if (bone_idx == -1) {
 		warnings.push_back(RTR("BoneAttachment3D node is not bound to any bones! Please select a bone to attach this node."));
+	}
+
+	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+		warnings.push_back(RTR("BoneAttachment3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 	}
 
 	return warnings;

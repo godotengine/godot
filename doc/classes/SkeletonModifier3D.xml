@@ -58,6 +58,7 @@
 			Sets the influence of the modification.
 			[b]Note:[/b] This value is used by [Skeleton3D] to blend, so the [SkeletonModifier3D] should always apply only 100% of the result without interpolation.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 	</members>
 	<signals>
 		<signal name="modification_processed">

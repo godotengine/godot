@@ -55,6 +55,7 @@
 		<member name="enable" type="int" setter="set_enable_flags" getter="get_enable_flags" enum="RetargetModifier3D.TransformFlag" is_bitfield="true" default="7">
 			Flags to control the process of the transform elements individually when [member use_global_pose] is disabled.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="0" />
 		<member name="profile" type="SkeletonProfile" setter="set_profile" getter="get_profile">
 			[SkeletonProfile] for retargeting bones with names matching the bone list.
 		</member>

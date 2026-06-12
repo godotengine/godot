@@ -105,10 +105,10 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 		if (parent && origin == nullptr) {
 			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
+	}
 
-		if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
-			warnings.push_back(RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
-		}
+	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+		warnings.push_back(RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 	}
 
 	return warnings;
@@ -514,10 +514,10 @@ PackedStringArray XRNode3D::get_configuration_warnings() const {
 		if (pose_name == "") {
 			warnings.push_back(RTR("No pose is set."));
 		}
+	}
 
-		if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
-			warnings.push_back(RTR("XRNode3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
-		}
+	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+		warnings.push_back(RTR("XRNode3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 	}
 
 	return warnings;

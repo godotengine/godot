@@ -18,6 +18,7 @@
 		<member name="hand_tracker" type="StringName" setter="set_hand_tracker" getter="get_hand_tracker" default="&amp;&quot;/user/hand_tracker/left&quot;">
 			The name of the [XRHandTracker] registered with [XRServer] to obtain the hand tracking data from.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="0" />
 	</members>
 	<constants>
 		<constant name="BONE_UPDATE_FULL" value="0" enum="BoneUpdate">
