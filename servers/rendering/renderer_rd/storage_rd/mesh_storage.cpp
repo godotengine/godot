@@ -1595,7 +1595,9 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RSE
 
 	if (multimesh->instances) {
 		uint32_t buffer_size = multimesh->instances * multimesh->stride_cache * sizeof(float);
-		multimesh->buffer = RD::get_singleton()->storage_buffer_create(buffer_size);
+		LocalVector<uint8_t> zeros;
+		zeros.resize_initialized(buffer_size);
+		multimesh->buffer = RD::get_singleton()->storage_buffer_create(buffer_size, zeros.span());
 	}
 
 	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH);
