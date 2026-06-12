@@ -163,16 +163,6 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
-                if (property.IsReadOnly || property.SetMethod!.IsInitOnly)
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        Common.ExportedMemberIsReadOnlyRule,
-                        property.Locations.FirstLocationWithSourceTreeOrDefault(),
-                        property.ToDisplayString()
-                    ));
-                    continue;
-                }
-
                 if (property.ExplicitInterfaceImplementations.Length > 0)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
@@ -285,18 +275,6 @@ namespace Godot.SourceGenerators
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         Common.ExportedMemberIsStaticRule,
-                        field.Locations.FirstLocationWithSourceTreeOrDefault(),
-                        field.ToDisplayString()
-                    ));
-                    continue;
-                }
-
-                // TODO: We should still restore read-only fields after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
-                // Ignore properties without a getter or without a setter. Godot properties must be both readable and writable.
-                if (field.IsReadOnly)
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        Common.ExportedMemberIsReadOnlyRule,
                         field.Locations.FirstLocationWithSourceTreeOrDefault(),
                         field.ToDisplayString()
                     ));
