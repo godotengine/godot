@@ -2006,6 +2006,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	HBoxContainer *edit_add_type_hb = memnew(HBoxContainer);
 	edit_dialog_side_vb->add_child(edit_add_type_hb);
 	edit_add_type_value = memnew(LineEdit);
+	edit_add_type_value->set_accessibility_name(TTRC("Add Type"));
 	edit_add_type_value->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_add_type_value->connect(SceneStringName(text_submitted), callable_mp(this, &ThemeItemEditorDialog::_add_theme_type).unbind(1));
 	edit_add_type_hb->add_child(edit_add_type_value);
@@ -2360,6 +2361,7 @@ VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
 	LineEdit *item_add_edit = memnew(LineEdit);
 	item_add_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	item_add_hb->add_child(item_add_edit);
+	item_add_edit->set_accessibility_name(TTRC("Item Name"));
 	item_add_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ThemeTypeEditor::_item_add_lineedit_cbk).bind(p_data_type, item_add_edit));
 	Button *item_add_button = memnew(Button);
 	item_add_button->set_text(TTR("Add"));
@@ -2527,6 +2529,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 	item_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	item_name->set_clip_text(true);
 	item_name->set_text(p_item_name);
+	item_name->set_focus_mode(FOCUS_ACCESSIBILITY);
 	// `|` separators used in `EditorHelpBit`.
 	item_name->set_tooltip_text("theme_item|" + edited_type + "|" + p_item_name);
 	item_name->set_mouse_filter(Control::MOUSE_FILTER_STOP);
@@ -2536,6 +2539,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		LineEdit *item_name_edit = memnew(LineEdit);
 		item_name_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 		item_name_edit->set_text(p_item_name);
+		item_name_edit->set_accessibility_name(TTRC("Item Name"));
 		item_name_container->add_child(item_name_edit);
 		item_name_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ThemeTypeEditor::_item_rename_entered).bind(p_data_type, p_item_name, item_name_container));
 		item_name_edit->hide();
@@ -2543,6 +2547,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		Button *item_rename_button = memnew(Button);
 		item_rename_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		item_rename_button->set_tooltip_text(TTR("Rename Item"));
+		item_rename_button->set_accessibility_name(vformat(TTRC("Rename Item %s"), p_item_name));
 		item_rename_button->set_flat(true);
 		item_name_container->add_child(item_rename_button);
 		item_rename_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_cbk).bind(p_data_type, p_item_name, item_name_container));
@@ -2550,6 +2555,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		Button *item_remove_button = memnew(Button);
 		item_remove_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		item_remove_button->set_tooltip_text(TTR("Remove Item"));
+		item_remove_button->set_accessibility_name(vformat(TTRC("Remove Item %s"), p_item_name));
 		item_remove_button->set_flat(true);
 		item_name_container->add_child(item_remove_button);
 		item_remove_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_remove_cbk).bind(p_data_type, p_item_name));
@@ -2575,6 +2581,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		Button *item_override_button = memnew(Button);
 		item_override_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		item_override_button->set_tooltip_text(TTR("Override Item"));
+		item_override_button->set_accessibility_name(vformat(TTRC("Override Item %s"), p_item_name));
 		item_override_button->set_flat(true);
 		item_name_container->add_child(item_override_button);
 		item_override_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_override_cbk).bind(p_data_type, p_item_name));
@@ -2604,6 +2611,7 @@ void ThemeTypeEditor::_update_type_items() {
 		for (const KeyValue<StringName, bool> &E : color_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_COLOR, E.key, E.value);
 			ColorPickerButton *item_editor = memnew(ColorPickerButton);
+			item_editor->set_accessibility_name(vformat(TTRC("Color %s"), E.key));
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_control->add_child(item_editor);
 
@@ -2633,6 +2641,7 @@ void ThemeTypeEditor::_update_type_items() {
 		for (const KeyValue<StringName, bool> &E : constant_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT, E.key, E.value);
 			EditorSpinSlider *item_editor = memnew(EditorSpinSlider);
+			item_editor->set_accessibility_name(vformat(TTRC("Constant %s"), E.key));
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_min(-100000);
 			item_editor->set_max(100000);
@@ -2667,6 +2676,7 @@ void ThemeTypeEditor::_update_type_items() {
 		for (const KeyValue<StringName, bool> &E : font_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
+			item_editor->set_accessibility_name(vformat(TTRC("Font %s"), E.key));
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_base_type("Font");
 			item_editor->set_resource_owner(*edited_theme);
@@ -2707,6 +2717,7 @@ void ThemeTypeEditor::_update_type_items() {
 		for (const KeyValue<StringName, bool> &E : font_size_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT_SIZE, E.key, E.value);
 			EditorSpinSlider *item_editor = memnew(EditorSpinSlider);
+			item_editor->set_accessibility_name(vformat(TTRC("Font Size %s"), E.key));
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_min(-100000);
 			item_editor->set_max(100000);
@@ -2741,6 +2752,7 @@ void ThemeTypeEditor::_update_type_items() {
 		for (const KeyValue<StringName, bool> &E : icon_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_ICON, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
+			item_editor->set_accessibility_name(vformat(TTRC("Icon %s"), E.key));
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_base_type("Texture2D");
 			item_editor->set_resource_owner(*edited_theme);
@@ -2780,6 +2792,7 @@ void ThemeTypeEditor::_update_type_items() {
 		if (leading_stylebox.pinned) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_STYLEBOX, leading_stylebox.item_name, true);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
+			item_editor->set_accessibility_name(vformat(TTRC("StyleBox %s"), leading_stylebox.item_name));
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_stretch_ratio(1.5);
 			item_editor->set_base_type("StyleBox");
@@ -2816,6 +2829,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_STYLEBOX, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
+			item_editor->set_accessibility_name(vformat(TTRC("StyleBox %s"), E.key));
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_stretch_ratio(1.5);
 			item_editor->set_base_type("StyleBox");
@@ -3510,6 +3524,14 @@ void ThemeTypeEditor::_notification(int p_what) {
 			data_type_tabs->set_tab_icon(5, get_editor_theme_icon(SNAME("StyleBoxFlat")));
 			data_type_tabs->set_tab_icon(6, get_editor_theme_icon(SNAME("Tools")));
 
+			data_type_tabs->set_tab_accessibility_name(0, TTRC("Colors"));
+			data_type_tabs->set_tab_accessibility_name(1, TTRC("Constants"));
+			data_type_tabs->set_tab_accessibility_name(2, TTRC("Fonts"));
+			data_type_tabs->set_tab_accessibility_name(3, TTRC("Font Sizes"));
+			data_type_tabs->set_tab_accessibility_name(4, TTRC("Icons"));
+			data_type_tabs->set_tab_accessibility_name(5, TTRC("Styleboxes"));
+			data_type_tabs->set_tab_accessibility_name(6, TTRC("Tools"));
+
 			type_variation_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 	}
@@ -3672,6 +3694,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_edit = memnew(LineEdit);
 	type_variation_hb->add_child(type_variation_edit);
 	type_variation_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	type_variation_edit->set_accessibility_name(TTRC("Theme Variation Name"));
 	type_variation_edit->connect(SceneStringName(text_changed), callable_mp(this, &ThemeTypeEditor::_type_variation_changed));
 	type_variation_edit->connect(SceneStringName(focus_exited), callable_mp(this, &ThemeTypeEditor::_update_type_items));
 	type_variation_edit->set_accessibility_name(TTRC("Base Type"));

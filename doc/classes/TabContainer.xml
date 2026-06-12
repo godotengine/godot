@@ -30,6 +30,13 @@
 				Returns the previously active tab index.
 			</description>
 		</method>
+		<method name="get_tab_accessibility_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the human-readable tab name that is reported to assistive apps.
+			</description>
+		</method>
 		<method name="get_tab_bar" qualifiers="const">
 			<return type="TabBar" />
 			<description>
@@ -139,6 +146,14 @@
 				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [TabContainer] (setting it to [code]null[/code] will make it go away). Clicking it will expand the [Popup] node.
 			</description>
 		</method>
+		<method name="set_tab_accessibility_name">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the human-readable tab name that is reported to assistive apps.
+			</description>
+		</method>
 		<method name="set_tab_button_icon">
 			<return type="void" />
 			<param index="0" name="tab_idx" type="int" />
@@ -231,6 +246,9 @@
 		</member>
 		<member name="tab_focus_mode" type="int" setter="set_tab_focus_mode" getter="get_tab_focus_mode" enum="Control.FocusMode" default="2">
 			The focus access mode for the internal [TabBar] node.
+		</member>
+		<member name="tab_{index}/accessibility_name" type="String" setter="" getter="" default="&quot;&quot;">
+			The human-readable tab name that is reported to assistive apps.
 		</member>
 		<member name="tab_{index}/disabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the tab at [code]index[/code] is disabled.

@@ -593,6 +593,9 @@ void TabContainer::add_child_notify(Node *p_child) {
 		if (tab.has_title) {
 			set_tab_title(idx, tab.title);
 		}
+		if (tab.has_ac_name) {
+			set_tab_accessibility_name(idx, tab.ac_name);
+		}
 		set_tab_icon(idx, tab.icon);
 		set_tab_disabled(idx, tab.disabled);
 		set_tab_hidden(idx, tab.hidden);
@@ -873,6 +876,27 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 
 String TabContainer::get_tab_title(int p_tab) const {
 	return tab_bar->get_tab_title(p_tab);
+}
+
+void TabContainer::set_tab_accessibility_name(int p_tab, const String &p_name) {
+	Control *child = get_tab_control(p_tab);
+	if (!child && !is_ready()) {
+		CachedTab &tab = get_pending_tab(p_tab);
+		tab.ac_name = p_name;
+		tab.has_ac_name = true;
+		return;
+	}
+	ERR_FAIL_NULL(child);
+
+	if (tab_bar->get_tab_accessibility_name(p_tab) == p_name) {
+		return;
+	}
+
+	tab_bar->set_tab_accessibility_name(p_tab, p_name);
+}
+
+String TabContainer::get_tab_accessibility_name(int p_tab) const {
+	return tab_bar->get_tab_accessibility_name(p_tab);
 }
 
 void TabContainer::set_tab_tooltip(int p_tab, const String &p_tooltip) {
@@ -1208,6 +1232,8 @@ void TabContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
+	ClassDB::bind_method(D_METHOD("set_tab_accessibility_name", "tab_idx", "name"), &TabContainer::set_tab_accessibility_name);
+	ClassDB::bind_method(D_METHOD("get_tab_accessibility_name", "tab_idx"), &TabContainer::get_tab_accessibility_name);
 	ClassDB::bind_method(D_METHOD("set_tab_tooltip", "tab_idx", "tooltip"), &TabContainer::set_tab_tooltip);
 	ClassDB::bind_method(D_METHOD("get_tab_tooltip", "tab_idx"), &TabContainer::get_tab_tooltip);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabContainer::set_tab_icon);
@@ -1316,6 +1342,7 @@ void TabContainer::_bind_methods() {
 	base_property_helper.set_prefix("tab_");
 	base_property_helper.set_array_length_getter(&TabContainer::get_tab_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "title"), defaults.title, &TabContainer::set_tab_title, &TabContainer::get_tab_title);
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "accessibility_name"), defaults.ac_name, &TabContainer::set_tab_accessibility_name, &TabContainer::get_tab_accessibility_name);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &TabContainer::set_tab_icon, &TabContainer::get_tab_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &TabContainer::set_tab_disabled, &TabContainer::is_tab_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "hidden"), defaults.hidden, &TabContainer::set_tab_hidden, &TabContainer::is_tab_hidden);
