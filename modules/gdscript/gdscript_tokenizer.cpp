@@ -155,6 +155,7 @@ static const char *token_names[] = {
 	// Special
 	"Error", // ERROR,
 	"End of file", // EOF,
+	"?.", // TK_OP_NULL_SAFE
 };
 
 // Avoid desync.
@@ -1446,8 +1447,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 			return make_token(Token::SEMICOLON);
 		case '$':
 			return make_token(Token::DOLLAR);
-		case '?':
-			return make_token(Token::QUESTION_MARK);
 		case '`':
 			return make_token(Token::BACKTICK);
 
@@ -1584,6 +1583,12 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 			} else {
 				return make_token(Token::PIPE);
 			}
+		case '?':
+			if (_peek() == '.') {
+				_advance();
+				return make_token(Token::TK_OP_NULL_SAFE);
+			}
+			return make_token(Token::QUESTION_MARK);
 
 		// Potential VCS conflict markers.
 		case '=':
