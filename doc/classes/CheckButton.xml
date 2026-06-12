@@ -20,6 +20,11 @@
 		<theme_item name="button_unchecked_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The color of the unchecked icon when the checkbox is not pressed.
 		</theme_item>
+		<theme_item name="check_position" data_type="constant" type="int" default="0">
+			If [code]0[/code] [theme_item checked]/[theme_item unchecked] will be drawn in the right for left-to-right layouts or in the left for right-to-left layouts.
+			If [code]1[/code] [theme_item checked]/[theme_item unchecked] will be drawn in the left regardless of the layout direction.
+			If [code]2[/code] [theme_item checked]/[theme_item unchecked] will be drawn in the right regardless of the layout direction.
+		</theme_item>
 		<theme_item name="check_v_offset" data_type="constant" type="int" default="0">
 			The vertical offset used when rendering the toggle icons (in pixels).
 		</theme_item>
