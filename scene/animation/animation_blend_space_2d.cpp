@@ -78,6 +78,8 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 	ERR_FAIL_COND(p_name == StringName());
 #endif
 
+	ERR_FAIL_COND(p_name.is_empty() || String(p_name).contains_char('.') || String(p_name).contains_char('/'));
+	ERR_FAIL_COND_MSG(find_blend_point_by_name(p_name) != -1, "Blend point name must be unique.");
 	if (p_at_index == -1 || p_at_index == blend_points_used) {
 		p_at_index = blend_points_used;
 	} else {
@@ -139,6 +141,8 @@ void AnimationNodeBlendSpace2D::set_blend_point_name(int p_point, const StringNa
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 	String new_name = p_name;
 	ERR_FAIL_COND(new_name.is_empty() || new_name.contains_char('.') || new_name.contains_char('/'));
+	int existing_index = find_blend_point_by_name(p_name);
+	ERR_FAIL_COND_MSG(existing_index != -1 && existing_index != p_point, "Blend point name must be unique.");
 
 	String old_name = blend_points[p_point].name;
 	if (new_name != old_name) {
