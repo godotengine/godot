@@ -170,7 +170,7 @@ void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
 void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	lock_callback();
 
-	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
+	if (!p_state->is_sleeping() && GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
 		_sync_body_state(p_state);
 
 		Transform3D old_transform = get_global_transform();
