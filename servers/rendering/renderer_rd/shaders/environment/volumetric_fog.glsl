@@ -239,9 +239,9 @@ void main() {
 				emission *= clamp(density, 0.0, 1.0);
 				emission = clamp(emission, vec3(0.0), vec3(4.0));
 				// Scale to fit into R11G11B10 with a range of 0-4
-				uvec3 emission_u = uvec3(emission.r * 511.0, emission.g * 511.0, emission.b * 255.0);
-				// R and G have 11 bits each and B has 10. Then pack them into a 32 bit uint
-				uint final_emission = emission_u.r << 21 | emission_u.g << 10 | emission_u.b;
+				uvec3 emission_u = uvec3(emission.r * 255.0, emission.g * 255.0, emission.b * 255.0);
+				// Each color channel has 10 bits allocated, leftmost 2 bits are unused. Then pack them into a 32 bit uint
+				uint final_emission = emission_u.r << 20 | emission_u.g << 10 | emission_u.b;
 #ifdef NO_IMAGE_ATOMICS
 				uint prev_emission = atomicAdd(emissive_only_map[lpos], final_emission);
 #else
@@ -249,14 +249,14 @@ void main() {
 #endif
 
 				// Adding can lead to colors overflowing, so validate
-				uvec3 prev_emission_u = uvec3(prev_emission >> 21, (prev_emission << 11) >> 21, prev_emission % 1024);
+				uvec3 prev_emission_u = uvec3(prev_emission >> 20, (prev_emission << 12) >> 22, prev_emission % 1024);
 				uint add_emission = final_emission + prev_emission;
-				uvec3 add_emission_u = uvec3(add_emission >> 21, (add_emission << 11) >> 21, add_emission % 1024);
+				uvec3 add_emission_u = uvec3(add_emission >> 20, (add_emission << 12) >> 22, add_emission % 1024);
 
 				bvec3 overflowing = lessThan(add_emission_u, prev_emission_u + emission_u);
 
 				if (any(overflowing)) {
-					uvec3 overflow_factor = mix(uvec3(0), uvec3(2047 << 21, 2047 << 10, 1023), overflowing);
+					uvec3 overflow_factor = mix(uvec3(0), uvec3(1023 << 20, 1023 << 10, 1023), overflowing);
 					uint force_max = overflow_factor.r | overflow_factor.g | overflow_factor.b;
 #ifdef NO_IMAGE_ATOMICS
 					atomicOr(emissive_only_map[lpos], force_max);
@@ -270,9 +270,9 @@ void main() {
 			{
 				vec3 scattering = albedo * clamp(density, 0.0, 1.0);
 				scattering = clamp(scattering, vec3(0.0), vec3(1.0));
-				uvec3 scattering_u = uvec3(scattering.r * 2047.0, scattering.g * 2047.0, scattering.b * 1023.0);
-				// R and G have 11 bits each and B has 10. Then pack them into a 32 bit uint
-				uint final_scattering = scattering_u.r << 21 | scattering_u.g << 10 | scattering_u.b;
+				uvec3 scattering_u = uvec3(scattering.r * 1023.0, scattering.g * 1023.0, scattering.b * 1023.0);
+				//Each color channel has 10 bits allocated, leftmost 2 bits are unused. Then pack them into a 32 bit uint
+				uint final_scattering = scattering_u.r << 20 | scattering_u.g << 10 | scattering_u.b;
 #ifdef NO_IMAGE_ATOMICS
 				uint prev_scattering = atomicAdd(light_only_map[lpos], final_scattering);
 #else
@@ -280,14 +280,14 @@ void main() {
 #endif
 
 				// Adding can lead to colors overflowing, so validate
-				uvec3 prev_scattering_u = uvec3(prev_scattering >> 21, (prev_scattering << 11) >> 21, prev_scattering % 1024);
+				uvec3 prev_scattering_u = uvec3(prev_scattering >> 20, (prev_scattering << 12) >> 22, prev_scattering % 1024);
 				uint add_scattering = final_scattering + prev_scattering;
-				uvec3 add_scattering_u = uvec3(add_scattering >> 21, (add_scattering << 11) >> 21, add_scattering % 1024);
+				uvec3 add_scattering_u = uvec3(add_scattering >> 20, (add_scattering << 12) >> 22, add_scattering % 1024);
 
 				bvec3 overflowing = lessThan(add_scattering_u, prev_scattering_u + scattering_u);
 
 				if (any(overflowing)) {
-					uvec3 overflow_factor = mix(uvec3(0), uvec3(2047 << 21, 2047 << 10, 1023), overflowing);
+					uvec3 overflow_factor = mix(uvec3(0), uvec3(1023 << 20, 1023 << 10, 1023), overflowing);
 					uint force_max = overflow_factor.r | overflow_factor.g | overflow_factor.b;
 #ifdef NO_IMAGE_ATOMICS
 					atomicOr(light_only_map[lpos], force_max);
