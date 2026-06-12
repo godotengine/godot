@@ -42,6 +42,15 @@ public:
 	struct CanvasBase {
 	};
 
+	struct ViewportUpscaler {
+		Callable render_callback;
+		bool requires_motion_vectors = false;
+		float mipmap_bias = 0.0;
+		uint32_t jitter_phase_count = 0;
+	};
+
+	mutable RID_Owner<ViewportUpscaler, true> viewport_upscaler_owner;
+
 	struct Viewport {
 		RID self;
 		RID parent;
@@ -57,6 +66,7 @@ public:
 
 		RSE::ViewportScaling3DMode scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 		float scaling_3d_scale = 1.0;
+		RID scaling_3d_custom_upscaler;
 		float fsr_sharpness = 0.2f;
 		float texture_mipmap_bias = 0.0f;
 		RSE::ViewportAnisotropicFiltering anisotropic_filtering_level = RSE::VIEWPORT_ANISOTROPY_4X;
@@ -217,6 +227,19 @@ private:
 	void _resize_occlusion_culling_buffer(const Size2i &p_size);
 
 public:
+	RID viewport_upscaler_allocate();
+	void viewport_upscaler_initialize(RID p_rid);
+
+	void viewport_upscaler_set_render_callback(RID p_viewport_upscaler, const Callable &p_callback);
+	Callable viewport_upscaler_get_render_callback(RID p_viewport_upscaler) const;
+
+	void viewport_upscaler_set_requires_motion_vectors(RID p_viewport_upscaler, bool p_requires_motion_vectors);
+	bool viewport_upscaler_get_requires_motion_vectors(RID p_viewport_upscaler) const;
+	void viewport_upscaler_set_mipmap_bias(RID p_viewport_upscaler, float p_mipmap_bias);
+	float viewport_upscaler_get_mipmap_bias(RID p_viewport_upscaler) const;
+	void viewport_upscaler_set_jitter_phase_count(RID p_viewport_upscaler, uint32_t p_jitter_phase_count);
+	uint32_t viewport_upscaler_get_jitter_phase_count(RID p_viewport_upscaler) const;
+
 	RID viewport_allocate();
 	void viewport_initialize(RID p_rid);
 
@@ -234,6 +257,7 @@ public:
 
 	void viewport_set_scaling_3d_mode(RID p_viewport, RSE::ViewportScaling3DMode p_mode);
 	void viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale);
+	void viewport_set_scaling_3d_custom_upscaler(RID p_viewport, RID p_viewport_upscaler);
 	void viewport_set_fsr_sharpness(RID p_viewport, float p_sharpness);
 	void viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias);
 	void viewport_set_anisotropic_filtering_level(RID p_viewport, RSE::ViewportAnisotropicFiltering p_anisotropic_filtering_level);
