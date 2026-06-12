@@ -106,6 +106,14 @@ int AudioStreamPlayer::get_max_polyphony() const {
 	return internal->max_polyphony;
 }
 
+void AudioStreamPlayer::set_bypass_global_polyphony(bool p_bypass) {
+	internal->set_bypass_global_polyphony(p_bypass);
+}
+
+bool AudioStreamPlayer::is_bypassing_global_polyphony() const {
+	return internal->bypass_global_polyphony;
+}
+
 void AudioStreamPlayer::play(float p_from_pos) {
 	Ref<AudioStreamPlayback> stream_playback = internal->play_basic();
 	if (stream_playback.is_null()) {
@@ -250,6 +258,9 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer::get_pitch_scale);
 
+	ClassDB::bind_method(D_METHOD("set_bypass_global_polyphony", "bypass"), &AudioStreamPlayer::set_bypass_global_polyphony);
+	ClassDB::bind_method(D_METHOD("is_bypassing_global_polyphony"), &AudioStreamPlayer::is_bypassing_global_polyphony);
+
 	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioStreamPlayer::play, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("seek", "to_position"), &AudioStreamPlayer::seek);
 	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayer::stop);
@@ -289,6 +300,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bypass_global_polyphony"), "set_bypass_global_polyphony", "is_bypassing_global_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 

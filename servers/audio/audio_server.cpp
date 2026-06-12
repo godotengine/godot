@@ -733,6 +733,9 @@ void AudioServer::_delete_stream_playback(Ref<AudioStreamPlayback> p_playback) {
 
 void AudioServer::_delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_playback_node) {
 	// Remove the playback from the list, registering a destructor to be run on the main thread.
+	if (!p_playback_node->stream_playback->is_bypassing_global_polyphony()) {
+		playback_count--;
+	}
 	playback_list.erase(p_playback_node, [](AudioStreamPlaybackListNode *p) {
 		delete p->prev_bus_details;
 		delete p->bus_details.load();
@@ -1284,6 +1287,29 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 	playback_node->state.store(AudioStreamPlaybackListNode::PLAYING);
 
 	playback_list.insert(playback_node);
+	if (!p_playback->is_bypassing_global_polyphony()) {
+		playback_count++;
+	}
+
+	ensure_playback_limit();
+}
+
+void AudioServer::ensure_playback_limit() {
+	while (playback_count > get_max_global_polyphony()) {
+		AudioStreamPlaybackListNode *last = nullptr;
+		for (AudioStreamPlaybackListNode *node : playback_list) {
+			if (node->stream_playback->is_bypassing_global_polyphony()) {
+				continue;
+			}
+			last = node;
+		}
+
+		if (!last) {
+			return;
+		}
+
+		stop_playback_stream(last->stream_playback);
+	}
 }
 
 void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
@@ -1960,6 +1986,10 @@ AudioServer::PlaybackType AudioServer::get_default_playback_type() const {
 			return PlaybackType::PLAYBACK_TYPE_STREAM;
 		} break;
 	}
+}
+
+int AudioServer::get_max_global_polyphony() const {
+	return GLOBAL_GET_CACHED(int, "audio/general/max_global_polyphony");
 }
 
 bool AudioServer::is_stream_registered_as_sample(const Ref<AudioStream> &p_stream) {

@@ -469,6 +469,11 @@
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
 		</member>
+		<member name="audio/general/max_global_polyphony" type="int" setter="" getter="" default="1000">
+			The maximum number of sounds that can play globally at the same time. If playing a new sound would cause this limit to be exceeded, the oldest sound will be cut off.
+			Unlike [member AudioStreamPlayer.max_polyphony], this limit considers every sound from every node at once.
+			For playing sounds that should never be cut off, use [member AudioStreamPlayer.bypass_global_polyphony].
+		</member>
 		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="0.5">
 			The base strength of the panning effect for all [AudioStreamPlayer2D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
 			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
