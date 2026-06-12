@@ -3057,12 +3057,15 @@ void ScriptEditor::input(const Ref<InputEvent> &p_event) {
 		// This must be hardcoded as the editor shortcuts dialog doesn't allow assigning
 		// more than one shortcut per action.
 		if (mb.is_valid() && mb->is_pressed() && is_visible_in_tree()) {
-			if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
-				_history_back();
-			}
+			// Only trigger if the mouse is over the script editor panel.
+			if (get_global_rect().has_point(get_global_mouse_position())) {
+				if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
+					_history_back();
+				}
 
-			if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
-				_history_forward();
+				if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
+					_history_forward();
+				}
 			}
 		}
 	}
