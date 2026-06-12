@@ -32,7 +32,9 @@
 
 #include "servers/camera/camera_feed.h"
 
+#ifdef LINUXBSD_ENABLED
 #include <linux/videodev2.h>
+#endif
 
 BufferDecoder::BufferDecoder(CameraFeed *p_camera_feed) {
 	camera_feed = p_camera_feed;
@@ -43,6 +45,7 @@ BufferDecoder::BufferDecoder(CameraFeed *p_camera_feed) {
 
 AbstractYuyvBufferDecoder::AbstractYuyvBufferDecoder(CameraFeed *p_camera_feed) :
 		BufferDecoder(p_camera_feed) {
+#ifdef LINUXBSD_ENABLED
 	switch (camera_feed->get_format().pixel_format) {
 		case V4L2_PIX_FMT_YYUV:
 			component_indexes = new int[4]{ 0, 1, 2, 3 };
@@ -59,6 +62,9 @@ AbstractYuyvBufferDecoder::AbstractYuyvBufferDecoder(CameraFeed *p_camera_feed) 
 		default:
 			component_indexes = new int[4]{ 0, 2, 1, 3 };
 	}
+#else
+	component_indexes = new int[4]{ 0, 2, 1, 3 };
+#endif
 }
 
 AbstractYuyvBufferDecoder::~AbstractYuyvBufferDecoder() {
@@ -73,7 +79,7 @@ SeparateYuyvBufferDecoder::SeparateYuyvBufferDecoder(CameraFeed *p_camera_feed) 
 	cbcr_image.instantiate();
 }
 
-void SeparateYuyvBufferDecoder::decode(StreamingBuffer p_buffer) {
+void SeparateYuyvBufferDecoder::decode(const StreamingBuffer &p_buffer) {
 	uint8_t *y_dst = (uint8_t *)y_image_data.ptrw();
 	uint8_t *uv_dst = (uint8_t *)cbcr_image_data.ptrw();
 	uint8_t *src = (uint8_t *)p_buffer.start;
@@ -97,12 +103,12 @@ void SeparateYuyvBufferDecoder::decode(StreamingBuffer p_buffer) {
 	if (y_image.is_valid()) {
 		y_image->set_data(width, height, false, Image::FORMAT_L8, y_image_data);
 	} else {
-		y_image.instantiate(width, height, false, Image::FORMAT_RGB8, y_image_data);
+		y_image.instantiate(width, height, false, Image::FORMAT_L8, y_image_data);
 	}
 	if (cbcr_image.is_valid()) {
-		cbcr_image->set_data(width, height, false, Image::FORMAT_L8, cbcr_image_data);
+		cbcr_image->set_data(width / 2, height, false, Image::FORMAT_RG8, cbcr_image_data);
 	} else {
-		cbcr_image.instantiate(width, height, false, Image::FORMAT_RGB8, cbcr_image_data);
+		cbcr_image.instantiate(width / 2, height, false, Image::FORMAT_RG8, cbcr_image_data);
 	}
 
 	camera_feed->set_ycbcr_images(y_image, cbcr_image);
@@ -113,7 +119,7 @@ YuyvToGrayscaleBufferDecoder::YuyvToGrayscaleBufferDecoder(CameraFeed *p_camera_
 	image_data.resize(width * height);
 }
 
-void YuyvToGrayscaleBufferDecoder::decode(StreamingBuffer p_buffer) {
+void YuyvToGrayscaleBufferDecoder::decode(const StreamingBuffer &p_buffer) {
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
 	uint8_t *src = (uint8_t *)p_buffer.start;
 	uint8_t *y0_src = src + component_indexes[0];
@@ -130,7 +136,7 @@ void YuyvToGrayscaleBufferDecoder::decode(StreamingBuffer p_buffer) {
 	if (image.is_valid()) {
 		image->set_data(width, height, false, Image::FORMAT_L8, image_data);
 	} else {
-		image.instantiate(width, height, false, Image::FORMAT_RGB8, image_data);
+		image.instantiate(width, height, false, Image::FORMAT_L8, image_data);
 	}
 
 	camera_feed->set_rgb_image(image);
@@ -141,7 +147,7 @@ YuyvToRgbBufferDecoder::YuyvToRgbBufferDecoder(CameraFeed *p_camera_feed) :
 	image_data.resize(width * height * 3);
 }
 
-void YuyvToRgbBufferDecoder::decode(StreamingBuffer p_buffer) {
+void YuyvToRgbBufferDecoder::decode(const StreamingBuffer &p_buffer) {
 	uint8_t *src = (uint8_t *)p_buffer.start;
 	uint8_t *y0_src = src + component_indexes[0];
 	uint8_t *y1_src = src + component_indexes[1];
@@ -179,20 +185,51 @@ void YuyvToRgbBufferDecoder::decode(StreamingBuffer p_buffer) {
 	camera_feed->set_rgb_image(image);
 }
 
-CopyBufferDecoder::CopyBufferDecoder(CameraFeed *p_camera_feed, bool p_rgba) :
+CopyBufferDecoder::CopyBufferDecoder(CameraFeed *p_camera_feed, CopyFormat p_format) :
 		BufferDecoder(p_camera_feed) {
-	rgba = p_rgba;
-	image_data.resize(width * height * (rgba ? 4 : 2));
+	format = p_format.format;
+	convert_bgr = p_format.convert_bgr;
+	image_data.resize(width * height * p_format.stride);
 }
 
-void CopyBufferDecoder::decode(StreamingBuffer p_buffer) {
+void CopyBufferDecoder::decode(const StreamingBuffer &p_buffer) {
+	uint8_t *scan_line0 = (uint8_t *)p_buffer.start;
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
-	memcpy(dst, p_buffer.start, p_buffer.length);
+	int32_t pitch = p_buffer.pitch;
+
+	// If pitch is not set, calculate from buffer length (assumes top-down, contiguous).
+	if (pitch == 0) {
+		pitch = p_buffer.length / height;
+	}
+
+	if (convert_bgr) {
+		// Windows RGB24 uses BGR byte order.
+		// See: https://learn.microsoft.com/en-us/windows/win32/directshow/uncompressed-rgb-video-subtypes
+		for (int y = 0; y < height; y++) {
+			uint8_t *row_src = scan_line0 + y * pitch;
+			for (int x = 0; x < width; x++) {
+				dst[0] = row_src[2];
+				dst[1] = row_src[1];
+				dst[2] = row_src[0];
+				dst += 3;
+				row_src += 3;
+			}
+		}
+	} else {
+		// Copy only the pixel data (width * bytes_per_pixel), not the full
+		// pitch which may include padding from stride alignment.
+		int row_bytes = image_data.size() / height;
+		for (int y = 0; y < height; y++) {
+			uint8_t *row_src = scan_line0 + y * pitch;
+			memcpy(dst, row_src, row_bytes);
+			dst += row_bytes;
+		}
+	}
 
 	if (image.is_valid()) {
-		image->set_data(width, height, false, rgba ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8, image_data);
+		image->set_data(width, height, false, format, image_data);
 	} else {
-		image.instantiate(width, height, false, rgba ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8, image_data);
+		image.instantiate(width, height, false, format, image_data);
 	}
 
 	camera_feed->set_rgb_image(image);
@@ -202,11 +239,62 @@ JpegBufferDecoder::JpegBufferDecoder(CameraFeed *p_camera_feed) :
 		BufferDecoder(p_camera_feed) {
 }
 
-void JpegBufferDecoder::decode(StreamingBuffer p_buffer) {
+void JpegBufferDecoder::decode(const StreamingBuffer &p_buffer) {
 	image_data.resize(p_buffer.length);
 	uint8_t *dst = (uint8_t *)image_data.ptrw();
 	memcpy(dst, p_buffer.start, p_buffer.length);
 	if (image->load_jpg_from_buffer(image_data) == OK) {
 		camera_feed->set_rgb_image(image);
 	}
+}
+
+Nv12BufferDecoder::Nv12BufferDecoder(CameraFeed *p_camera_feed) :
+		BufferDecoder(p_camera_feed) {
+	data_y.resize(width * height);
+	data_uv.resize(width * (height / 2));
+}
+
+void Nv12BufferDecoder::decode(const StreamingBuffer &p_buffer) {
+	// NV12 format: Y plane followed by interleaved UV plane.
+	// Create separate Y and UV images for YCbCr format.
+	uint8_t *y_dst = (uint8_t *)data_y.ptrw();
+	uint8_t *uv_dst = (uint8_t *)data_uv.ptrw();
+
+	uint8_t *src = (uint8_t *)p_buffer.start;
+	int stride = p_buffer.pitch != 0 ? abs(p_buffer.pitch) : width;
+
+	// Copy Y plane row by row (stride may differ from width due to alignment).
+	for (int y = 0; y < height; y++) {
+		memcpy(y_dst + y * width, src + y * stride, width);
+	}
+
+	// Copy UV plane row by row (half height, same stride).
+	uint8_t *uv_src = src + stride * height;
+	for (int y = 0; y < height / 2; y++) {
+		memcpy(uv_dst + y * width, uv_src + y * stride, width);
+	}
+
+	// Create Y image.
+	if (image_y.is_valid()) {
+		image_y->set_data(width, height, false, Image::FORMAT_L8, data_y);
+	} else {
+		image_y.instantiate(width, height, false, Image::FORMAT_L8, data_y);
+	}
+
+	// Create UV image (half resolution).
+	if (image_uv.is_valid()) {
+		image_uv->set_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
+	} else {
+		image_uv.instantiate(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
+	}
+
+	// Set the YCbCr images.
+	camera_feed->set_ycbcr_images(image_y, image_uv);
+}
+
+NullBufferDecoder::NullBufferDecoder(CameraFeed *p_camera_feed) :
+		BufferDecoder(p_camera_feed) {
+}
+
+void NullBufferDecoder::decode(const StreamingBuffer &p_buffer) {
 }
