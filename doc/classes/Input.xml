@@ -47,6 +47,15 @@
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
+		<method name="create_joy_haptic_effect" experimental="">
+			<return type="int" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="effect" type="InputHapticEffect" />
+			<description>
+				Creates a haptic effect for the specified joypad, if supported, otherwise returns [code]-1[/code].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
 		<method name="flush_buffered_events">
 			<return type="void" />
 			<description>
@@ -560,6 +569,15 @@
 				[b]Note:[/b] Calling this function has no influence on the operating system. So for example sending an [InputEventMouseMotion] will not move the OS mouse cursor to the specified position (use [method warp_mouse] instead) and sending [kbd]Alt/Cmd + Tab[/kbd] as [InputEventKey] won't toggle between active windows.
 			</description>
 		</method>
+		<method name="remove_joy_haptic_effect" experimental="">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="effect_id" type="int" />
+			<description>
+				Removes a haptic effect that was created earlier with [method create_joy_haptic_effect] for the specified joypad.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
 		<method name="remove_joy_mapping">
 			<return type="void" />
 			<param index="0" name="guid" type="String" />
@@ -661,6 +679,15 @@
 			<description>
 				Queries whether an input device should be ignored or not. Devices can be ignored by setting the environment variable [code]SDL_GAMECONTROLLER_IGNORE_DEVICES[/code]. Read the [url=https://wiki.libsdl.org/SDL2]SDL documentation[/url] for more information.
 				[b]Note:[/b] Some 3rd party tools can contribute to the list of ignored devices. For example, [i]SteamInput[/i] creates virtual devices from physical devices for remapping purposes. To avoid handling the same input device twice, the original device is added to the ignore list.
+			</description>
+		</method>
+		<method name="start_joy_haptic_effect" experimental="">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="effect_id" type="int" />
+			<description>
+				Starts a haptic effect that was created earlier with [method create_joy_haptic_effect] for the specified joypad.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
 			</description>
 		</method>
 		<method name="start_joy_motion_sensors_calibration" experimental="">
@@ -788,6 +815,15 @@
 				[b]Note:[/b] For macOS, vibration is only supported in macOS 11 and later. When connected via USB, vibration is only supported for major brand controllers (except Xbox One and Xbox Series X/S controllers) due to macOS limitations.
 			</description>
 		</method>
+		<method name="stop_joy_haptic_effect" experimental="">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="effect_id" type="int" />
+			<description>
+				Stops a haptic effect that was created earlier with [method create_joy_haptic_effect] and started with [method start_joy_haptic_effect] for the specified joypad.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
 		<method name="stop_joy_motion_sensors_calibration" experimental="">
 			<return type="void" />
 			<param index="0" name="device" type="int" />
@@ -802,6 +838,17 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Stops the vibration of the joypad started with [method start_joy_vibration].
+			</description>
+		</method>
+		<method name="update_joy_haptic_effect" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="effect_id" type="int" />
+			<param index="2" name="effect" type="InputHapticEffect" />
+			<description>
+				Updates a haptic effect that was created earlier with [method create_joy_haptic_effect] for the specified joypad. Returns [code]true[/code] if the operation was successful.
+				[b]Note:[/b] You can not change the type of a haptic effect using this method after it has been created. If you need to modify the type of a haptic effect, please recreate it with [method remove_joy_haptic_effect] and [method create_joy_haptic_effect].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
 			</description>
 		</method>
 		<method name="vibrate_handheld">
