@@ -6266,6 +6266,16 @@ void AnimationTrackEditor::_clear_selection(bool p_update) {
 }
 
 void AnimationTrackEditor::_update_key_edit() {
+	if (update_key_edit_pending) {
+		return;
+	}
+	update_key_edit_pending = true;
+	callable_mp(this, &AnimationTrackEditor::_update_key_edit_callback).call_deferred();
+}
+
+void AnimationTrackEditor::_update_key_edit_callback() {
+	update_key_edit_pending = false;
+
 	_clear_key_edit();
 	if (animation.is_null()) {
 		return;
