@@ -327,8 +327,8 @@ void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_
 			Vector3 v = p_value;
 			button->set_text(String::num(v.x, 3) + "," + String::num(v.y, 3) + "," + String::num(v.z, 3));
 		} break;
-		case Variant::VECTOR4: {
-			Vector4 v = p_value;
+		case Variant::QUATERNION: {
+			Quaternion v = p_value;
 			button->set_text(String::num(v.x, 3) + "," + String::num(v.y, 3) + "," + String::num(v.z, 3) + "," + String::num(v.w, 3));
 		} break;
 		default: {
@@ -3414,7 +3414,7 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 		case Variant::BASIS:
 			popup_pref_size.width = 320;
 			break;
-		case Variant::VECTOR4:
+		case Variant::QUATERNION:
 		case Variant::PLANE:
 		case Variant::TRANSFORM2D:
 		case Variant::TRANSFORM3D:
