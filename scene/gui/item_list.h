@@ -57,6 +57,12 @@ public:
 		SCROLL_HINT_MODE_BOTTOM,
 	};
 
+	enum NavigationWraparound {
+		NAVIGATION_WRAPAROUND_NONE,
+		NAVIGATION_WRAPAROUND_SAME,
+		NAVIGATION_WRAPAROUND_NEXT,
+	};
+
 private:
 	struct Item {
 		mutable RID accessibility_item_element;
@@ -120,6 +126,9 @@ private:
 	float auto_height_value = 0.0;
 
 	bool wraparound_items = true;
+
+	NavigationWraparound horizontal_navigation_wraparound = NAVIGATION_WRAPAROUND_NONE;
+	NavigationWraparound vertical_navigation_wraparound = NAVIGATION_WRAPAROUND_NONE;
 
 	Vector<Item> items;
 	Vector<int> separators;
@@ -341,6 +350,12 @@ public:
 	void set_wraparound_items(bool p_enable);
 	bool has_wraparound_items() const;
 
+	void set_horizontal_navigation_wraparound(NavigationWraparound p_mode);
+	NavigationWraparound get_horizontal_navigation_wraparound() const;
+
+	void set_vertical_navigation_wraparound(NavigationWraparound p_mode);
+	NavigationWraparound get_vertical_navigation_wraparound() const;
+
 	Size2 get_minimum_size() const override;
 
 	void set_autoscroll_to_bottom(const bool p_enable);
@@ -363,3 +378,4 @@ public:
 VARIANT_ENUM_CAST(ItemList::SelectMode);
 VARIANT_ENUM_CAST(ItemList::IconMode);
 VARIANT_ENUM_CAST(ItemList::ScrollHintMode);
+VARIANT_ENUM_CAST(ItemList::NavigationWraparound);
