@@ -401,23 +401,26 @@ inline void SpinBox::_compute_sizes() {
 #endif
 	int w = min_width_from_icons != 0 ? MAX(buttons_block_icon_enforced_width, buttons_block_wanted_width) : buttons_block_wanted_width;
 
-	if (w != sizing_cache.buttons_block_width) {
+	if (_are_buttons_on_left()) {
+		line_edit->set_offset(SIDE_LEFT, w);
+		line_edit->set_offset(SIDE_RIGHT, 0);
+	} else {
 		line_edit->set_offset(SIDE_LEFT, 0);
 		line_edit->set_offset(SIDE_RIGHT, -w);
-		sizing_cache.buttons_block_width = w;
 	}
+	sizing_cache.buttons_block_width = w;
 
 	Size2i size = get_size();
 
 	sizing_cache.buttons_width = w - theme_cache.field_and_buttons_separation;
 	sizing_cache.buttons_vertical_separation = CLAMP(theme_cache.buttons_vertical_separation, 0, size.height);
-	sizing_cache.buttons_left = is_layout_rtl() ? 0 : size.width - sizing_cache.buttons_width;
+	sizing_cache.buttons_left = _are_buttons_on_left() ? 0 : size.width - sizing_cache.buttons_width;
 	sizing_cache.button_up_height = (size.height - sizing_cache.buttons_vertical_separation) / 2;
 	sizing_cache.button_down_height = size.height - sizing_cache.button_up_height - sizing_cache.buttons_vertical_separation;
 	sizing_cache.second_button_top = size.height - sizing_cache.button_down_height;
 
 	sizing_cache.buttons_separator_top = sizing_cache.button_up_height;
-	sizing_cache.field_and_buttons_separator_left = is_layout_rtl() ? sizing_cache.buttons_width : size.width - sizing_cache.buttons_block_width;
+	sizing_cache.field_and_buttons_separator_left = _are_buttons_on_left() ? sizing_cache.buttons_width : size.width - sizing_cache.buttons_block_width;
 	sizing_cache.field_and_buttons_separator_width = theme_cache.field_and_buttons_separation;
 }
 
@@ -435,6 +438,17 @@ inline int SpinBox::_get_widest_button_icon_width() {
 	max = MAX(max, theme_cache.down_pressed_icon->get_width());
 	max = MAX(max, theme_cache.down_disabled_icon->get_width());
 	return max;
+}
+
+inline bool SpinBox::_are_buttons_on_left() const {
+	switch (button_alignment) {
+		case BUTTON_ALIGNMENT_LEFT:
+			return true;
+		case BUTTON_ALIGNMENT_RIGHT:
+			return false;
+		default:
+			return is_layout_rtl();
+	}
 }
 
 void SpinBox::_notification(int p_what) {
@@ -545,6 +559,7 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			_compute_sizes();
 			queue_redraw();
 		} break;
 	}
@@ -639,6 +654,19 @@ bool SpinBox::is_custom_arrow_rounding() const {
 	return custom_arrow_round;
 }
 
+void SpinBox::set_button_alignment(ButtonAlignment p_side) {
+	if (button_alignment == p_side) {
+		return;
+	}
+	button_alignment = p_side;
+	_compute_sizes();
+	queue_redraw();
+}
+
+SpinBox::ButtonAlignment SpinBox::get_button_alignment() const {
+	return button_alignment;
+}
+
 void SpinBox::_value_changed(double p_value) {
 	_update_buttons_state_for_current_value();
 }
@@ -680,6 +708,12 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_select_all_on_focus"), &SpinBox::is_select_all_on_focus);
 	ClassDB::bind_method(D_METHOD("apply"), &SpinBox::apply);
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &SpinBox::get_line_edit);
+	ClassDB::bind_method(D_METHOD("set_button_alignment", "side"), &SpinBox::set_button_alignment);
+	ClassDB::bind_method(D_METHOD("get_button_alignment"), &SpinBox::get_button_alignment);
+
+	BIND_ENUM_CONSTANT(BUTTON_ALIGNMENT_DEFAULT);
+	BIND_ENUM_CONSTANT(BUTTON_ALIGNMENT_LEFT);
+	BIND_ENUM_CONSTANT(BUTTON_ALIGNMENT_RIGHT);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
@@ -689,6 +723,7 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_arrow_round"), "set_custom_arrow_round", "is_custom_arrow_rounding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_alignment", PROPERTY_HINT_ENUM, "Default,Left,Right"), "set_button_alignment", "get_button_alignment");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_vertical_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, field_and_buttons_separation);
