@@ -1505,6 +1505,13 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 		OS::get_singleton()->benchmark_end_measure("Editor", "First Scan");
 
+		for (const String &arg : OS::get_singleton()->get_cmdline_args()) {
+			if (arg == "--run-upgrade-tool") {
+				project_upgrade_tool->prepare_upgrade();
+				return;
+			}
+		}
+
 		// Reload the global shader variables, but this time
 		// loading textures, as they are now properly imported.
 		RenderingServer::get_singleton()->global_shader_parameters_load_settings(true);
