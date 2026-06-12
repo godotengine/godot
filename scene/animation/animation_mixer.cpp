@@ -52,6 +52,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_undo_redo_manager.h"
+#include "core/object/script_language.h"
 #endif // TOOLS_ENABLED
 
 bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
@@ -896,6 +897,22 @@ bool AnimationMixer::_update_caches() {
 							track_method->object_id = child->get_instance_id();
 						}
 
+#ifdef TOOLS_ENABLED
+						int cnt = anim->track_get_key_count(i);
+						track_method->allowed_to_call_in_editor.resize(cnt);
+						for (int j = 0; j < cnt; ++j) {
+							StringName method = anim->method_track_get_name(i, j);
+							track_method->allowed_to_call_in_editor[j] = _allowed_to_call_in_editor(track_method->object_id, method);
+						}
+						if (Engine::get_singleton()->is_editor_hint()) {
+							Object* target_object = ObjectDB::get_instance(track_method->object_id);
+							Callable callable_clear_cache = callable_mp(this, &AnimationMixer::clear_caches);
+							if (!target_object->is_connected(CoreStringName(script_changed), callable_clear_cache)) {
+								target_object->connect(CoreStringName(script_changed), callable_clear_cache);
+							}
+						}
+#endif
+
 						track = track_method;
 
 					} break;
@@ -1223,7 +1240,7 @@ void AnimationMixer::_blend_calc_total_weight() {
 void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 	// Apply value/transform/blend/bezier blends to track caches and execute method/audio/animation tracks.
 #ifdef TOOLS_ENABLED
-	bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
+	bool can_call = is_inside_tree();
 #endif // TOOLS_ENABLED
 	for (const AnimationInstance &ai : animation_instances) {
 		const Ref<Animation> &a = ai.animation;
@@ -1708,6 +1725,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							continue;
 						}
 						StringName method = a->method_track_get_name(i, idx);
+#ifdef TOOLS_ENABLED
+						if (!t->allowed_to_call_in_editor[idx]) {
+							continue;
+						}
+#endif // TOOLS_ENABLED
 						Vector<Variant> params = a->method_track_get_params(i, idx);
 						_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
 					} else {
@@ -1715,6 +1737,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						a->track_get_key_indices_in_range(i, time, delta, start, end, &indices, looped_flag);
 						for (int &F : indices) {
 							StringName method = a->method_track_get_name(i, F);
+#ifdef TOOLS_ENABLED
+							if (!t->allowed_to_call_in_editor[F]) {
+								continue;
+							}
+#endif // TOOLS_ENABLED
 							Vector<Variant> params = a->method_track_get_params(i, F);
 							_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
 						}
@@ -2073,6 +2100,47 @@ void AnimationMixer::_blend_apply() {
 		}
 	}
 }
+
+#ifdef TOOLS_ENABLED
+bool AnimationMixer::_allowed_to_call_in_editor(ObjectID p_object_id, const StringName& p_method) const {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// We are in the editor, check if this particular method is allowed in this context.
+
+		Object* t_obj = ObjectDB::get_instance(p_object_id);
+		if (!t_obj) {
+			return false;
+		}
+
+		bool allowed = false;
+		bool script_method_found = false;
+
+		ScriptInstance *script_inst = t_obj->get_script_instance();
+		if (script_inst) {
+			Ref<Script> script = script_inst->get_script();
+			while (script.is_valid() && !script_method_found) {
+				MethodInfo mi = script->get_method_info(p_method);
+				if (mi != MethodInfo()) {
+					script_method_found = true;
+					allowed = mi.flags & METHOD_FLAG_EDITOR_ALLOW_ANIMATION_CALL;
+				}
+				script = script->get_base_script();
+			}
+		}
+
+		// We cannot simply check for !allowed - we should only consider the method actually being invoked.
+		// In other words, we should only consider the method in the most derived type.
+		if (!script_method_found) {
+			MethodBind* method = ClassDB::get_method(t_obj->get_class_name(), p_method);
+			if (method) {
+				allowed = method->get_hint_flags() & METHOD_FLAG_EDITOR_ALLOW_ANIMATION_CALL;
+			}
+		}
+
+		return allowed;
+	}
+	return true;
+}
+#endif // TOOLD_ENABLED
 
 void AnimationMixer::_call_object(ObjectID p_object_id, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
 	// Separate function to use alloca() more efficiently
