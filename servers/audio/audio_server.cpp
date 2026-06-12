@@ -278,8 +278,8 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 #endif
 
 	if (channel_count != get_channel_count()) {
-		// Amount of channels changed due to a output_device change
-		// reinitialize the buses channels and buffers
+		// Number of channels changed due to an output_device or speaker_mode change,
+		// reinitialize the buses channels and buffers.
 		init_channels_and_buffers();
 	}
 
@@ -296,8 +296,9 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 		int from = buffer_size - to_mix;
 		int from_buf = p_frames - todo;
 
-		//master master, send to output
-		int cs = master->channels.size();
+		// Channels size from driver and channels used by master.
+		int cs = get_driver_channel_count();
+		int master_cs = master->channels.size();
 
 		// Take away 1 from the stride, as we are manually incrementing by 1 for stereo.
 		uintptr_t stride_minus_one = (cs * 2) - 1;
@@ -307,9 +308,9 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 			int32_t *dest = &p_buffer[from_buf * (cs * 2) + (k * 2)];
 
 #ifdef DEBUG_ENABLED
-			if (!debug_mute && master->channels[k].active) {
+			if (!debug_mute && k < master_cs && master->channels[k].active) {
 #else
-			if (master->channels[k].active) {
+			if (k < master_cs && master->channels[k].active) {
 #endif // DEBUG_ENABLED
 				const AudioFrame *buf = master->channels[k].buffer.ptr();
 
@@ -1499,6 +1500,24 @@ String AudioServer::get_driver_name() const {
 	return AudioDriver::get_singleton()->get_name();
 }
 
+AudioServer::SpeakerMode AudioServer::get_driver_speaker_mode() const {
+	return (AudioServer::SpeakerMode)AudioDriver::get_singleton()->get_speaker_mode();
+}
+
+int AudioServer::get_driver_channel_count() const {
+	switch (get_driver_speaker_mode()) {
+		case SPEAKER_MODE_STEREO:
+			return 1;
+		case SPEAKER_SURROUND_31:
+			return 2;
+		case SPEAKER_SURROUND_51:
+			return 3;
+		case SPEAKER_SURROUND_71:
+			return 4;
+	}
+	ERR_FAIL_V(1);
+}
+
 void AudioServer::notify_listener_changed() {
 	for (CallbackItem *ci : listener_changed_callback_list) {
 		ci->callback(ci->userdata);
@@ -1507,6 +1526,9 @@ void AudioServer::notify_listener_changed() {
 
 void AudioServer::init_channels_and_buffers() {
 	channel_count = get_channel_count();
+
+	print_verbose(vformat("AudioServer: Speaker mode set to %s, initializing %d stereo channel%s", _get_speaker_mode_name(), channel_count, channel_count == 1 ? "" : "s"));
+
 	temp_buffer.resize(channel_count);
 	mix_buffer.resize(buffer_size + LOOKAHEAD_BUFFER_SIZE);
 
@@ -1526,6 +1548,9 @@ void AudioServer::init_channels_and_buffers() {
 void AudioServer::init() {
 	channel_disable_threshold_db = GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_threshold_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 2.0)) * get_mix_rate();
+
+	speaker_mode_config = GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/driver/speaker_mode_override", PROPERTY_HINT_ENUM, "Disabled:-1,Force Stereo:0,Force 3.1 Surround:1,Force 5.1 Surround:2,Force 7.1 Surround:3"), -1);
+
 	// TODO: Buffer size is hardcoded for now. This would be really nice to have as a project setting because currently it limits audio latency to an absolute minimum of 11ms with default mix rate, but there's some additional work required to make that happen. See TODOs in `_mix_step_for_channel`.
 	// When this becomes a project setting, it should be specified in milliseconds rather than raw sample count, because 512 samples at 192khz is shorter than it is at 48khz, for example.
 	buffer_size = 512;
@@ -1546,6 +1571,16 @@ void AudioServer::init() {
 #endif
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/video/video_delay_compensation_ms", PROPERTY_HINT_RANGE, "-1000,1000,1,suffix:ms"), 0);
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &AudioServer::_project_settings_changed_cb));
+	}
+}
+
+void AudioServer::_project_settings_changed_cb() {
+	lock();
+	set_speaker_mode_config(GLOBAL_GET("audio/driver/speaker_mode_override"));
+	unlock();
 }
 
 void AudioServer::update() {
@@ -1672,8 +1707,38 @@ void AudioServer::unlock() {
 	AudioDriver::get_singleton()->unlock();
 }
 
+void AudioServer::set_speaker_mode_config(int p_speaker_mode) {
+	speaker_mode_config = p_speaker_mode;
+}
+
 AudioServer::SpeakerMode AudioServer::get_speaker_mode() const {
-	return (AudioServer::SpeakerMode)AudioDriver::get_singleton()->get_speaker_mode();
+	switch (speaker_mode_config) {
+		case 0:
+			return SPEAKER_MODE_STEREO;
+		case 1:
+			return SPEAKER_SURROUND_31;
+		case 2:
+			return SPEAKER_SURROUND_51;
+		case 3:
+			return SPEAKER_SURROUND_71;
+		default:
+			return get_driver_speaker_mode();
+	}
+}
+
+String AudioServer::_get_speaker_mode_name() const {
+	switch (speaker_mode_config) {
+		case 0:
+			return "Stereo";
+		case 1:
+			return "Surround 3.1";
+		case 2:
+			return "Surround 5.1";
+		case 3:
+			return "Surround 7.1";
+		default:
+			return "Default";
+	}
 }
 
 float AudioServer::get_mix_rate() const {
