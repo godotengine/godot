@@ -18,6 +18,13 @@
 				Returns a new instance of the default MultiplayerAPI.
 			</description>
 		</method>
+		<method name="disconnect_peer">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Disconnects the peer identified by [param id], closing the underlying connection with it.
+			</description>
+		</method>
 		<method name="get_default_interface" qualifiers="static">
 			<return type="StringName" />
 			<description>
