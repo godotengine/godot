@@ -70,6 +70,8 @@ public:
 
 	template <typename... VarArgs>
 	Variant call(VarArgs... p_args) const;
+	template <typename... VarArgs>
+	bool call_with_error(const String &p_error_message, Variant &r_return_value, VarArgs... p_args) const;
 	void callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const;
 	void call_deferredp(const Variant **p_arguments, int p_argcount) const;
 	Variant callv(const Array &p_arguments) const;
