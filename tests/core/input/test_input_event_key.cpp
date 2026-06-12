@@ -76,6 +76,47 @@ TEST_CASE("[InputEventKey] Key correctly stores and retrieves keycode with modif
 	CHECK(key.get_physical_keycode_with_modifiers() != Key::SPACE);
 }
 
+TEST_CASE("[InputEventKey] keycode and modifier matches") {
+	InputEventKey spaceKeyAction;
+	InputEventKey shiftKeyAction;
+	InputEventKey shiftSpaceKeyAction;
+
+	spaceKeyAction.set_keycode(Key::SPACE);
+	shiftKeyAction.set_keycode(Key::SHIFT);
+	shiftKeyAction.set_shift_pressed(true);
+	shiftSpaceKeyAction.set_keycode(Key::SPACE);
+	shiftSpaceKeyAction.set_shift_pressed(true);
+
+	InputEventKey key;
+	bool p_exact_match = false;
+	float deadzone = 0.5;
+	bool r_pressed = false;
+	float r_strength = 0.0;
+	float r_raw_strength = 0.0;
+
+	Ref<InputEventKey> p_event;
+
+	p_event = key.create_reference(Key::SPACE);
+	p_event->set_pressed(true);
+	CHECK(spaceKeyAction.action_match(p_event, p_exact_match, deadzone, &r_pressed, &r_strength, &r_raw_strength) == true);
+
+	p_event = key.create_reference(Key::SHIFT | KeyModifierMask::SHIFT);
+	p_event->set_pressed(true);
+	CHECK(shiftKeyAction.action_match(p_event, p_exact_match, deadzone, &r_pressed, &r_strength, &r_raw_strength) == true);
+
+	p_event = key.create_reference(Key::SPACE | KeyModifierMask::SHIFT);
+	p_event->set_pressed(true);
+	CHECK(shiftSpaceKeyAction.action_match(p_event, p_exact_match, deadzone, &r_pressed, &r_strength, &r_raw_strength) == true);
+
+	p_event = key.create_reference(Key::SHIFT | KeyModifierMask::SHIFT);
+	p_event->set_pressed(false);
+	CHECK(shiftKeyAction.action_match(p_event, p_exact_match, deadzone, &r_pressed, &r_strength, &r_raw_strength) == true);
+
+	p_event = key.create_reference(Key::SPACE);
+	p_event->set_pressed(false);
+	CHECK(spaceKeyAction.action_match(p_event, p_exact_match, deadzone, &r_pressed, &r_strength, &r_raw_strength) == true);
+}
+
 TEST_CASE("[InputEventKey] Key correctly stores and retrieves unicode") {
 	InputEventKey key;
 
