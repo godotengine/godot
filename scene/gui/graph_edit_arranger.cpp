@@ -184,7 +184,7 @@ void GraphEditArranger::arrange_nodes() {
 		Vector2 pos = (new_positions[E]);
 
 		if (graph_edit->is_snapping_enabled()) {
-			float snapping_distance = graph_edit->get_snapping_distance();
+			float snapping_distance = graph_edit->get_snapping_distance() * graph_edit->get_snapping_distance_scale();
 			pos = pos.snappedf(snapping_distance);
 		}
 		graph_node->set_position_offset(pos);
