@@ -540,6 +540,24 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 	return obj->emit_signalp(name, p_arguments, p_argcount);
 }
 
+Error Signal::emitv(const Array &p_arguments) const {
+	Object *obj = ObjectDB::get_instance(object);
+	if (!obj) {
+		return ERR_INVALID_DATA;
+	}
+
+	int argcount = p_arguments.size();
+	const Variant **argptrs = nullptr;
+	if (argcount) {
+		argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		for (int i = 0; i < argcount; i++) {
+			argptrs[i] = &p_arguments[i];
+		}
+	}
+
+	return obj->emit_signalp(name, argptrs, argcount);
+}
+
 Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
 	Object *obj = get_object();
 	ERR_FAIL_NULL_V(obj, ERR_UNCONFIGURED);
