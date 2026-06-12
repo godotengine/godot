@@ -1454,6 +1454,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mouse_get_position"), &DisplayServer::mouse_get_position);
 	ClassDB::bind_method(D_METHOD("mouse_get_button_state"), &DisplayServer::mouse_get_button_state);
 
+	ClassDB::bind_method(D_METHOD("shift_swaps_scroll_axis"), &DisplayServer::shift_swaps_scroll_axis);
+
 	ClassDB::bind_method(D_METHOD("clipboard_set", "clipboard"), &DisplayServer::clipboard_set);
 	ClassDB::bind_method(D_METHOD("clipboard_get"), &DisplayServer::clipboard_get);
 	ClassDB::bind_method(D_METHOD("clipboard_get_image"), &DisplayServer::clipboard_get_image);

@@ -256,6 +256,8 @@ public:
 	virtual void mouse_set_mode_override_enabled(bool p_override_enabled);
 	virtual bool mouse_is_mode_override_enabled() const;
 
+	virtual bool shift_swaps_scroll_axis() const { return false; }
+
 	virtual void warp_mouse(const Point2i &p_position);
 	virtual Point2i mouse_get_position() const;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const;

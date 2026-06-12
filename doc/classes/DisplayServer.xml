@@ -1924,6 +1924,12 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
 			</description>
 		</method>
+		<method name="shift_swaps_scroll_axis" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if holding [kbd]Shift[/kbd] swaps scrolling wheel axis.
+			</description>
+		</method>
 		<method name="show_emoji_and_symbol_picker" qualifiers="const">
 			<return type="void" />
 			<description>
