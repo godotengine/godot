@@ -9669,6 +9669,8 @@ void AnimationMarkerEdit::_insert_marker(float p_ofs) {
 	}
 
 	marker_insert_new_name->set_text(base);
+	marker_insert_new_name->select_all();
+	marker_insert_new_name->grab_focus();
 	_marker_insert_new_name_changed(base);
 	marker_insert_ofs = p_ofs;
 }
