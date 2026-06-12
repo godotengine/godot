@@ -262,6 +262,8 @@ public:
 	void switch_to_clip(int p_index);
 	int get_current_clip_index() const;
 
+	Ref<AudioStreamPlayback> get_clip_playback(int p_index) const;
+
 	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant get_parameter(const StringName &p_name) const override;
 
