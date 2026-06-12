@@ -203,6 +203,12 @@ class SceneTreeDock : public EditorDock {
 		MODE_UNDO
 	};
 
+	enum ItemCheckState {
+		STATE_INDETERMINATE = -1,
+		STATE_UNCHECKED = 0,
+		STATE_CHECKED = 1,
+	};
+
 	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode = MODE_BIDI);
 	void _node_strip_signal_inheritance(Node *p_node);
 	void _load_request(const String &p_path);
@@ -227,7 +233,11 @@ class SceneTreeDock : public EditorDock {
 
 	void _reparent_nodes_to_root(Node *p_root, const Array &p_nodes, Node *p_owner);
 	void _reparent_nodes_to_paths_with_transform_and_name(Node *p_root, const Array &p_nodes, const Array &p_paths, const Array &p_transforms, const Array &p_names, Node *p_owner);
-	void _toggle_editable_children(Node *p_node);
+	void _toggle_editable_children(List<Node *> &p_nodes);
+
+	ItemCheckState _is_editable_children(List<Node *> &p_nodes);
+	ItemCheckState _is_placeholder(List<Node *> &p_nodes);
+	ItemCheckState _is_unique_name(List<Node *> &p_nodes);
 
 	void _toggle_placeholder_from_selection();
 
