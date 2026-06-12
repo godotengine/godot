@@ -54,6 +54,7 @@ class GDScriptAnalyzer {
 	GDScriptParser::LambdaNode *current_lambda = nullptr;
 	List<GDScriptParser::LambdaNode *> pending_body_resolution_lambdas;
 	HashMap<const GDScriptParser::ClassNode *, Ref<GDScriptParserRef>> external_class_parser_cache;
+	HashMap<StringName, GDScriptParser::DataType> type_overrides;
 	bool static_context = false;
 
 	// Tests for detecting invalid overloading of script members
@@ -154,6 +155,7 @@ class GDScriptAnalyzer {
 	void mark_lambda_use_self();
 	void resolve_pending_lambda_bodies();
 	void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
+	void extract_type_tests(GDScriptParser::ExpressionNode *p_expression, HashMap<StringName, GDScriptParser::DataType> &r_overrides);
 	Ref<GDScriptParserRef> ensure_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const GDScriptParser::ClassNode *p_from_class, const char *p_context, const GDScriptParser::Node *p_source);
 	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const Ref<GDScriptParserRef> &p_dependant_parser);
 	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, GDScriptParser *p_dependant_parser);
