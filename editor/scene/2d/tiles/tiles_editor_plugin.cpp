@@ -311,6 +311,7 @@ TilesEditorUtils::TilesEditorUtils() {
 	ED_SHORTCUT("tiles_editor/bucket_tool", TTRC("Bucket Tool"), Key::B);
 	ED_SHORTCUT("tiles_editor/eraser", TTRC("Eraser Tool"), Key::E);
 	ED_SHORTCUT("tiles_editor/picker", TTRC("Picker Tool"), Key::P);
+	ED_SHORTCUT("tiles_editor/paint_on_click", TTRC("Paint On Click"), Key::O);
 }
 
 TilesEditorUtils::~TilesEditorUtils() {

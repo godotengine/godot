@@ -197,6 +197,8 @@ private:
 	// Toolbar
 	HBoxContainer *toolbar = memnew(HBoxContainer);
 	Button *picker_button = nullptr;
+	Button *paint_on_click_button = nullptr;
+	bool paint_on_click = true;
 
 	// UI
 	Ref<Texture2D> tile_bool_checked;
@@ -216,8 +218,11 @@ private:
 	Vector2 drag_last_pos;
 	HashMap<TileMapCell, Variant, TileMapCell> drag_modified;
 	Variant drag_painted_value;
+	Vector2i reference_coords = TileSetSource::INVALID_ATLAS_COORDS;
+	int reference_alternative = 0;
 
 	void _property_value_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field);
+	void _paint_on_click_toggled();
 
 protected:
 	DummyObject *dummy_object = memnew(DummyObject);
