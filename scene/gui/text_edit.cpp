@@ -2684,6 +2684,17 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				_cancel_inertial_scroll();
 			}
 
+			// Checking if minimap is being hit before starting a general touch drag
+			if (draw_minimap) {
+				_update_minimap_click();
+				if (dragging_minimap) {
+					_cancel_inertial_scroll();
+					touch_dragging_starting = false;
+					accept_event();
+					return;
+				}
+			}
+
 			touch_dragging_starting = true;
 			touch_dragging_in_progress = false;
 
@@ -2853,6 +2864,12 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 
 			queue_redraw();
+			accept_event();
+			return;
+		}
+
+		if (dragging_minimap) {
+			_update_minimap_drag();
 			accept_event();
 			return;
 		}
@@ -9389,8 +9406,9 @@ void TextEdit::_update_minimap_click() {
 	Point2 mp = get_local_mouse_pos();
 
 	int xmargin_end = get_size().width - Math::floor(_get_current_stylebox()->get_margin(SIDE_RIGHT));
-	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.x > xmargin_end)) {
+	if (mp.x < xmargin_end - minimap_width || mp.x > xmargin_end) {
 		minimap_clicked = false;
+		dragging_minimap = false;
 		return;
 	}
 	minimap_clicked = true;
