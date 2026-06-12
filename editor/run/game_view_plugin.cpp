@@ -1379,12 +1379,14 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 }
 
 void GameView::_window_close_request() {
+#ifdef MACOS_ENABLED
 	if (window_wrapper->get_window_enabled()) {
 		// Stop the embedded process timer before closing the window wrapper,
 		// so the signal to focus EDITOR_GAME isn't sent when the window is not enabled.
 		embedded_process->reset_timers();
 		window_wrapper->set_window_enabled(false);
 	}
+#endif
 
 	// Before the parent window closed, we close the embedded game. That prevents
 	// the embedded game to be seen without a parent window for a fraction of second.
