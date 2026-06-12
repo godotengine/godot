@@ -222,7 +222,7 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 
 			// We have two choices now, if user has drawn something, we must assume users wants to draw the "mask", so compute the size based on this.
 			// If nothing has been drawn, we just take it over and draw it ourselves.
-			if (ci->canvas_group->fit_empty && (ci->commands == nullptr || (ci->commands->next == nullptr && ci->commands->type == RendererCanvasCull::Item::Command::TYPE_RECT && (static_cast<RendererCanvasCull::Item::CommandRect *>(ci->commands)->flags & RendererCanvasRender::CANVAS_RECT_IS_GROUP)))) {
+			if (ci->canvas_group->fit_empty && (ci->first_command == nullptr || (ci->first_command->next == nullptr && ci->first_command->type == RendererCanvasCull::Item::Command::TYPE_RECT && (static_cast<RendererCanvasCull::Item::CommandRect *>(ci->first_command)->flags & RendererCanvasRender::CANVAS_RECT_IS_GROUP)))) {
 				// No commands, or sole command is the one used to draw, so we (re)create the draw command.
 				ci->clear();
 
@@ -257,14 +257,14 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 		}
 	}
 
-	if (((ci->commands != nullptr || ci->visibility_notifier) && p_clip_rect.intersects(p_global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
+	if (((ci->first_command != nullptr || ci->visibility_notifier) && p_clip_rect.intersects(p_global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
 		// Something to draw?
 
 		if (ci->update_when_visible) {
 			RenderingServerDefault::redraw_request();
 		}
 
-		if (ci->commands != nullptr || ci->copy_back_buffer) {
+		if (ci->first_command != nullptr || ci->copy_back_buffer) {
 			ci->final_transform = !ci->use_identity_transform ? p_transform : _current_camera_transform;
 			ci->final_modulate = p_modulate * ci->self_modulate;
 			ci->global_rect_cache = p_global_rect;
@@ -329,6 +329,12 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	if (modulate.a < 0.007) {
 		return;
 	}
+
+#ifdef DEBUG_ENABLED
+	if (!ci->presort_commands.is_empty()) {
+		WARN_PRINT(vformat("Presort list for canvas item %x was not flushed!", ci->self.get_id()));
+	}
+#endif
 
 	Rect2 rect = ci->get_rect();
 
@@ -460,7 +466,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			}
 		} else {
 			RendererCanvasRender::Item *canvas_group_from = nullptr;
-			bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->commands != nullptr);
+			bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->first_command != nullptr);
 			if (use_canvas_group) {
 				int zidx = p_z - RSE::CANVAS_ITEM_Z_MIN;
 				canvas_group_from = r_z_last_list[zidx];
@@ -470,7 +476,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		}
 	} else {
 		RendererCanvasRender::Item *canvas_group_from = nullptr;
-		bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->commands != nullptr);
+		bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->first_command != nullptr);
 		if (use_canvas_group) {
 			int zidx = p_z - RSE::CANVAS_ITEM_Z_MIN;
 			canvas_group_from = r_z_last_list[zidx];
@@ -744,12 +750,89 @@ float RendererCanvasCull::canvas_item_get_compensated_antialiasing_width(float p
 	return p_width;
 }
 
+void RendererCanvasCull::canvas_item_set_presort_level(RID p_item, int64_t p_order) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+	ERR_FAIL_COND(p_order < 0);
+
+	if (canvas_item->presort_level == -1) {
+		canvas_item->presort_prev_command = canvas_item->last_command;
+		if (!canvas_item->presort_prev_state.is_base_state()) {
+			canvas_item->presort_states.push_back(canvas_item->presort_prev_state);
+			canvas_item->presort_state = 0;
+		}
+	}
+	canvas_item->presort_level = p_order;
+}
+
+void RendererCanvasCull::_update_presort_state(Item *p_canvas_item, int32_t p_old_state, int32_t p_new_state, Item::Command **r_prev_command) {
+	const Item::PresortState &old_state = (p_old_state >= 0) ? p_canvas_item->presort_states[p_old_state] : Item::PresortState();
+	const Item::PresortState &new_state = (p_new_state >= 0) ? p_canvas_item->presort_states[p_new_state] : Item::PresortState();
+	if (old_state.transform != new_state.transform) {
+		Item::CommandTransform *tr = p_canvas_item->alloc_command<Item::CommandTransform>(false);
+		if (tr) {
+			tr->xform = new_state.transform;
+			_insert_command(p_canvas_item, r_prev_command, tr);
+		}
+	}
+	if (old_state.clip_ignore != new_state.clip_ignore) {
+		Item::CommandClipIgnore *ci = p_canvas_item->alloc_command<Item::CommandClipIgnore>(false);
+		if (ci) {
+			ci->ignore = new_state.clip_ignore;
+			_insert_command(p_canvas_item, r_prev_command, ci);
+		}
+	}
+	if (old_state.animation_length != new_state.animation_length || old_state.slice_begin != new_state.slice_begin || old_state.slice_end != new_state.slice_end || old_state.offset != new_state.offset) {
+		Item::CommandAnimationSlice *as = p_canvas_item->alloc_command<Item::CommandAnimationSlice>(false);
+		if (as) {
+			as->animation_length = new_state.animation_length;
+			as->slice_begin = new_state.slice_begin;
+			as->slice_end = new_state.slice_end;
+			as->offset = new_state.offset;
+			_insert_command(p_canvas_item, r_prev_command, as);
+		}
+	}
+}
+
+void RendererCanvasCull::canvas_item_flush_presort(RID p_item) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->presort_commands.sort_custom<Item::PresortDataCompare>();
+	if (!canvas_item->presort_commands.is_empty()) {
+		Item::Command *prev_command = canvas_item->presort_prev_command;
+		int32_t start_presort_state = canvas_item->presort_prev_state.is_base_state() ? -1 : 0;
+		int32_t prev_presort_state = start_presort_state;
+		for (Item::PresortData &pd : canvas_item->presort_commands) {
+			if (prev_presort_state != pd.state) {
+				_update_presort_state(canvas_item, prev_presort_state, pd.state, &prev_command);
+				prev_presort_state = pd.state;
+			}
+			_insert_command(canvas_item, &prev_command, pd.command);
+		}
+		if (start_presort_state != prev_presort_state) {
+			_update_presort_state(canvas_item, prev_presort_state, start_presort_state, &prev_command);
+		}
+		prev_command->next = nullptr;
+		canvas_item->last_command = prev_command;
+	}
+	canvas_item->presort_commands.clear();
+	canvas_item->presort_states.clear();
+	canvas_item->presort_prev_command = nullptr;
+	canvas_item->presort_level = -1;
+	canvas_item->presort_state = -1;
+	canvas_item->presort_prev_state = Item::PresortState();
+}
+
 void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
 	Item::CommandPrimitive *line = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_NULL(line);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ line, canvas_item->presort_level, canvas_item->presort_state });
+	}
 
 	Vector2 diff = (p_from - p_to);
 	Vector2 dir = diff.orthogonal().normalized();
@@ -806,6 +889,9 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		{
 			Item::CommandPrimitive *left_border = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(left_border);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ left_border, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			left_border->points[0] = begin_left;
 			left_border->points[1] = begin_left + border;
@@ -822,6 +908,9 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		{
 			Item::CommandPrimitive *right_border = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(right_border);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ right_border, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			right_border->points[0] = begin_right;
 			right_border->points[1] = begin_right - border;
@@ -838,6 +927,9 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		{
 			Item::CommandPrimitive *top_border = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(top_border);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ top_border, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			top_border->points[0] = begin_left;
 			top_border->points[1] = begin_left + border2;
@@ -854,6 +946,9 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		{
 			Item::CommandPrimitive *bottom_border = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(bottom_border);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ bottom_border, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			bottom_border->points[0] = end_left;
 			bottom_border->points[1] = end_left - border2;
@@ -870,6 +965,9 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		{
 			Item::CommandPrimitive *top_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(top_left_corner);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ top_left_corner, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			top_left_corner->points[0] = begin_left;
 			top_left_corner->points[1] = begin_left + border2;
@@ -886,6 +984,9 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		{
 			Item::CommandPrimitive *top_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(top_right_corner);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ top_right_corner, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			top_right_corner->points[0] = begin_right;
 			top_right_corner->points[1] = begin_right + border2;
@@ -902,6 +1003,9 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		{
 			Item::CommandPrimitive *bottom_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(bottom_left_corner);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ bottom_left_corner, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			bottom_left_corner->points[0] = end_left;
 			bottom_left_corner->points[1] = end_left - border2;
@@ -918,6 +1022,9 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		{
 			Item::CommandPrimitive *bottom_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(bottom_right_corner);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ bottom_right_corner, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			bottom_right_corner->points[0] = end_right;
 			bottom_right_corner->points[1] = end_right - border2;
@@ -989,6 +1096,9 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 	Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_NULL(pline);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ pline, canvas_item->presort_level, canvas_item->presort_state });
+	}
 
 	if (p_antialiased) {
 		p_width = canvas_item_get_compensated_antialiasing_width(p_width);
@@ -1065,9 +1175,15 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 
 		Item::CommandPolygon *pline_left = canvas_item->alloc_command<Item::CommandPolygon>();
 		ERR_FAIL_NULL(pline_left);
+		if (canvas_item->presort_level >= 0) {
+			canvas_item->presort_commands.push_back({ pline_left, canvas_item->presort_level, canvas_item->presort_state });
+		}
 
 		Item::CommandPolygon *pline_right = canvas_item->alloc_command<Item::CommandPolygon>();
 		ERR_FAIL_NULL(pline_right);
+		if (canvas_item->presort_level >= 0) {
+			canvas_item->presort_commands.push_back({ pline_right, canvas_item->presort_level, canvas_item->presort_state });
+		}
 
 		PackedColorArray colors_left;
 		PackedVector2Array points_left;
@@ -1274,6 +1390,10 @@ void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Poin
 
 		Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
 		ERR_FAIL_NULL(pline);
+		if (canvas_item->presort_level >= 0) {
+			canvas_item->presort_commands.push_back({ pline, canvas_item->presort_level, canvas_item->presort_state });
+		}
+
 		pline->primitive = RSE::PRIMITIVE_LINES;
 		pline->polygon.create(Vector<int>(), p_points, colors);
 	} else {
@@ -1306,6 +1426,10 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
 	ERR_FAIL_NULL(rect);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ rect, canvas_item->presort_level, canvas_item->presort_state });
+	}
+
 	rect->modulate = p_color;
 	rect->rect = rect_adjusted;
 
@@ -1336,6 +1460,9 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 		{
 			Item::CommandPrimitive *left_border = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(left_border);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ left_border, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			left_border->points[0] = begin_left;
 			left_border->points[1] = begin_left + border;
@@ -1352,6 +1479,9 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 		{
 			Item::CommandPrimitive *right_border = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(right_border);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ right_border, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			right_border->points[0] = begin_right;
 			right_border->points[1] = begin_right - border;
@@ -1368,6 +1498,9 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 		{
 			Item::CommandPrimitive *top_border = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(top_border);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ top_border, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			top_border->points[0] = begin_left;
 			top_border->points[1] = begin_left + border2;
@@ -1384,6 +1517,9 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 		{
 			Item::CommandPrimitive *bottom_border = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(bottom_border);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ bottom_border, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			bottom_border->points[0] = end_left;
 			bottom_border->points[1] = end_left - border2;
@@ -1400,6 +1536,9 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 		{
 			Item::CommandPrimitive *top_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(top_left_corner);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ top_left_corner, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			top_left_corner->points[0] = begin_left;
 			top_left_corner->points[1] = begin_left + border2;
@@ -1416,6 +1555,9 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 		{
 			Item::CommandPrimitive *top_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(top_right_corner);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ top_right_corner, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			top_right_corner->points[0] = begin_right;
 			top_right_corner->points[1] = begin_right + border2;
@@ -1432,6 +1574,9 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 		{
 			Item::CommandPrimitive *bottom_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(bottom_left_corner);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ bottom_left_corner, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			bottom_left_corner->points[0] = end_left;
 			bottom_left_corner->points[1] = end_left - border2;
@@ -1448,6 +1593,9 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 		{
 			Item::CommandPrimitive *bottom_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
 			ERR_FAIL_NULL(bottom_right_corner);
+			if (canvas_item->presort_level >= 0) {
+				canvas_item->presort_commands.push_back({ bottom_right_corner, canvas_item->presort_level, canvas_item->presort_state });
+			}
 
 			bottom_right_corner->points[0] = end_right;
 			bottom_right_corner->points[1] = end_right - border2;
@@ -1481,6 +1629,9 @@ void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos
 	{
 		Item::CommandPolygon *ellipse = canvas_item->alloc_command<Item::CommandPolygon>();
 		ERR_FAIL_NULL(ellipse);
+		if (canvas_item->presort_level >= 0) {
+			canvas_item->presort_commands.push_back({ ellipse, canvas_item->presort_level, canvas_item->presort_state });
+		}
 
 		ellipse->primitive = RSE::PRIMITIVE_TRIANGLES;
 
@@ -1526,6 +1677,10 @@ void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos
 
 		Item::CommandPolygon *feather = canvas_item->alloc_command<Item::CommandPolygon>();
 		ERR_FAIL_NULL(feather);
+		if (canvas_item->presort_level >= 0) {
+			canvas_item->presort_commands.push_back({ feather, canvas_item->presort_level, canvas_item->presort_state });
+		}
+
 		feather->primitive = RSE::PRIMITIVE_TRIANGLE_STRIP;
 
 		Color transparent = Color(p_color, 0.0);
@@ -1573,6 +1728,10 @@ void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
 	ERR_FAIL_NULL(rect);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ rect, canvas_item->presort_level, canvas_item->presort_state });
+	}
+
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
 	rect->flags = 0;
@@ -1604,6 +1763,10 @@ void RendererCanvasCull::canvas_item_add_msdf_texture_rect_region(RID p_item, co
 
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
 	ERR_FAIL_NULL(rect);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ rect, canvas_item->presort_level, canvas_item->presort_state });
+	}
+
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
 
@@ -1638,6 +1801,10 @@ void RendererCanvasCull::canvas_item_add_lcd_texture_rect_region(RID p_item, con
 
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
 	ERR_FAIL_NULL(rect);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ rect, canvas_item->presort_level, canvas_item->presort_state });
+	}
+
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
 
@@ -1670,6 +1837,10 @@ void RendererCanvasCull::canvas_item_add_texture_rect_region(RID p_item, const R
 
 	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
 	ERR_FAIL_NULL(rect);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ rect, canvas_item->presort_level, canvas_item->presort_state });
+	}
+
 	rect->modulate = p_modulate;
 	rect->rect = p_rect;
 
@@ -1711,6 +1882,9 @@ void RendererCanvasCull::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 
 	Item::CommandNinePatch *style = canvas_item->alloc_command<Item::CommandNinePatch>();
 	ERR_FAIL_NULL(style);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ style, canvas_item->presort_level, canvas_item->presort_state });
+	}
 
 	style->texture = p_texture;
 
@@ -1735,6 +1909,9 @@ void RendererCanvasCull::canvas_item_add_primitive(RID p_item, const Vector<Poin
 
 	Item::CommandPrimitive *prim = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_NULL(prim);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ prim, canvas_item->presort_level, canvas_item->presort_state });
+	}
 
 	for (int i = 0; i < p_points.size(); i++) {
 		prim->points[i] = p_points[i];
@@ -1771,7 +1948,12 @@ void RendererCanvasCull::canvas_item_add_polygon(RID p_item, const Vector<Point2
 
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_NULL(polygon);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ polygon, canvas_item->presort_level, canvas_item->presort_state });
+	}
+
 	polygon->primitive = RSE::PRIMITIVE_TRIANGLES;
+
 	polygon->texture = p_texture;
 	polygon->polygon.create(indices, p_points, p_colors, p_uvs);
 }
@@ -1789,6 +1971,9 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_NULL(polygon);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ polygon, canvas_item->presort_level, canvas_item->presort_state });
+	}
 
 	polygon->texture = p_texture;
 
@@ -1800,10 +1985,28 @@ void RendererCanvasCull::canvas_item_add_triangle_array(RID p_item, const Vector
 void RendererCanvasCull::canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
+	if (canvas_item->presort_level >= 0) {
+		Item::PresortState st;
+		if (canvas_item->presort_state >= 0) {
+			st = canvas_item->presort_states[canvas_item->presort_state];
+		}
+		if (st.transform == p_transform) {
+			return;
+		}
+		st.transform = p_transform;
+		if (st.is_base_state()) {
+			canvas_item->presort_state = -1;
+		} else {
+			canvas_item->presort_states.push_back(st);
+			canvas_item->presort_state = canvas_item->presort_states.size() - 1;
+		}
+		return;
+	}
 
 	Item::CommandTransform *tr = canvas_item->alloc_command<Item::CommandTransform>();
 	ERR_FAIL_NULL(tr);
 	tr->xform = p_transform;
+	canvas_item->presort_prev_state.transform = p_transform;
 }
 
 void RendererCanvasCull::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture) {
@@ -1813,6 +2016,10 @@ void RendererCanvasCull::canvas_item_add_mesh(RID p_item, const RID &p_mesh, con
 
 	Item::CommandMesh *m = canvas_item->alloc_command<Item::CommandMesh>();
 	ERR_FAIL_NULL(m);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ m, canvas_item->presort_level, canvas_item->presort_state });
+	}
+
 	m->mesh = p_mesh;
 	if (canvas_item->skeleton.is_valid()) {
 		m->mesh_instance = RSG::mesh_storage->mesh_instance_create(p_mesh);
@@ -1831,6 +2038,10 @@ void RendererCanvasCull::canvas_item_add_particles(RID p_item, RID p_particles, 
 
 	Item::CommandParticles *part = canvas_item->alloc_command<Item::CommandParticles>();
 	ERR_FAIL_NULL(part);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ part, canvas_item->presort_level, canvas_item->presort_state });
+	}
+
 	part->particles = p_particles;
 
 	part->texture = p_texture;
@@ -1845,6 +2056,10 @@ void RendererCanvasCull::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p
 
 	Item::CommandMultiMesh *mm = canvas_item->alloc_command<Item::CommandMultiMesh>();
 	ERR_FAIL_NULL(mm);
+	if (canvas_item->presort_level >= 0) {
+		canvas_item->presort_commands.push_back({ mm, canvas_item->presort_level, canvas_item->presort_state });
+	}
+
 	mm->multimesh = p_mesh;
 
 	mm->texture = p_texture;
@@ -1853,15 +2068,53 @@ void RendererCanvasCull::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p
 void RendererCanvasCull::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
+	if (canvas_item->presort_level >= 0) {
+		Item::PresortState st;
+		if (canvas_item->presort_state >= 0) {
+			st = canvas_item->presort_states[canvas_item->presort_state];
+		}
+		if (st.clip_ignore == p_ignore) {
+			return;
+		}
+		st.clip_ignore = p_ignore;
+		if (st.is_base_state()) {
+			canvas_item->presort_state = -1;
+		} else {
+			canvas_item->presort_states.push_back(st);
+			canvas_item->presort_state = canvas_item->presort_states.size() - 1;
+		}
+		return;
+	}
 
 	Item::CommandClipIgnore *ci = canvas_item->alloc_command<Item::CommandClipIgnore>();
 	ERR_FAIL_NULL(ci);
 	ci->ignore = p_ignore;
+	canvas_item->presort_prev_state.clip_ignore = p_ignore;
 }
 
 void RendererCanvasCull::canvas_item_add_animation_slice(RID p_item, double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
+	if (canvas_item->presort_level >= 0) {
+		Item::PresortState st;
+		if (canvas_item->presort_state >= 0) {
+			st = canvas_item->presort_states[canvas_item->presort_state];
+		}
+		if (st.animation_length == p_animation_length && st.slice_begin == p_slice_begin && st.slice_end == p_slice_end && st.offset == p_offset) {
+			return;
+		}
+		st.animation_length = p_animation_length;
+		st.slice_begin = p_slice_begin;
+		st.slice_end = p_slice_end;
+		st.offset = p_offset;
+		if (st.is_base_state()) {
+			canvas_item->presort_state = -1;
+		} else {
+			canvas_item->presort_states.push_back(st);
+			canvas_item->presort_state = canvas_item->presort_states.size() - 1;
+		}
+		return;
+	}
 
 	Item::CommandAnimationSlice *as = canvas_item->alloc_command<Item::CommandAnimationSlice>();
 	ERR_FAIL_NULL(as);
@@ -1869,6 +2122,11 @@ void RendererCanvasCull::canvas_item_add_animation_slice(RID p_item, double p_an
 	as->slice_begin = p_slice_begin;
 	as->slice_end = p_slice_end;
 	as->offset = p_offset;
+
+	canvas_item->presort_prev_state.animation_length = p_animation_length;
+	canvas_item->presort_prev_state.slice_begin = p_slice_begin;
+	canvas_item->presort_prev_state.slice_end = p_slice_end;
+	canvas_item->presort_prev_state.offset = p_offset;
 }
 
 void RendererCanvasCull::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
@@ -1904,7 +2162,7 @@ void RendererCanvasCull::canvas_item_attach_skeleton(RID p_item, RID p_skeleton)
 	}
 	canvas_item->skeleton = p_skeleton;
 
-	Item::Command *c = canvas_item->commands;
+	Item::Command *c = canvas_item->first_command;
 
 	while (c) {
 		if (c->type == Item::Command::TYPE_MESH) {
@@ -1946,6 +2204,12 @@ void RendererCanvasCull::canvas_item_clear(RID p_item) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
+	canvas_item->presort_commands.clear();
+	canvas_item->presort_states.clear();
+	canvas_item->presort_prev_command = nullptr;
+	canvas_item->presort_level = -1;
+	canvas_item->presort_state = -1;
+	canvas_item->presort_prev_state = Item::PresortState();
 	canvas_item->clear();
 
 #ifdef DEBUG_ENABLED
