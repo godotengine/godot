@@ -157,7 +157,7 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RSE::ViewportDebugDraw 
 	ubo.flags |= shadow_pass ? SCENE_DATA_FLAGS_IN_SHADOW_PASS : 0;
 
 	if (p_debug_mode == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED) {
-		ubo.flags |= SCENE_DATA_FLAGS_USE_AMBIENT_LIGHT;
+		ubo.flags |= SCENE_DATA_FLAGS_USE_AMBIENT_LIGHT | SCENE_DATA_FLAGS_DEBUG_DRAW_UNSHADED;
 		ubo.ambient_light_color_energy[0] = 1;
 		ubo.ambient_light_color_energy[1] = 1;
 		ubo.ambient_light_color_energy[2] = 1;
