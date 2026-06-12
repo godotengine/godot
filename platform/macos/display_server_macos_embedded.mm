@@ -274,6 +274,94 @@ void DisplayServerMacOSEmbedded::register_embedded_driver() {
 	register_create_function("embedded", create_func, get_rendering_drivers_func);
 }
 
+Error DisplayServerMacOSEmbedded::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
+	int64_t fid = dialog_id++;
+	dialog_cbs[fid] = p_callback;
+
+	Array dlg_data = { p_title, p_description, p_buttons, fid };
+	EngineDebugger::get_singleton()->send_message("game_view:open_dialog", { dlg_data });
+
+	return OK;
+}
+
+Error DisplayServerMacOSEmbedded::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
+	int64_t fid = dialog_id++;
+	dialog_cbs[fid] = p_callback;
+
+	Array dlg_data = { p_title, p_description, p_partial, fid };
+	EngineDebugger::get_singleton()->send_message("game_view:open_input_dialog", { dlg_data });
+
+	return OK;
+}
+
+Error DisplayServerMacOSEmbedded::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+	int64_t fid = dialog_id++;
+	dialog_cbs[fid] = p_callback;
+
+	Array dlg_data = { p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), false, fid };
+	EngineDebugger::get_singleton()->send_message("game_view:open_file_dialog", { dlg_data });
+
+	return OK;
+}
+
+Error DisplayServerMacOSEmbedded::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+	int64_t fid = dialog_id++;
+	dialog_cbs[fid] = p_callback;
+
+	Array dlg_data = { p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, true, fid };
+	EngineDebugger::get_singleton()->send_message("game_view:open_file_dialog", { dlg_data });
+
+	return OK;
+}
+
+void DisplayServerMacOSEmbedded::call_dialog_callback(const Array &p_args) {
+	ERR_FAIL_COND(p_args.size() != 4 && p_args.size() != 5 && p_args.size() != 2);
+
+	int64_t fid = p_args[0];
+	if (!dialog_cbs.has(fid)) {
+		return;
+	}
+	Callable callback = dialog_cbs[fid];
+	dialog_cbs.erase(fid);
+
+	if (p_args.size() == 5) {
+		Variant v_result = p_args[1];
+		Variant v_files = p_args[2];
+		Variant v_index = p_args[3];
+		Variant v_opt = p_args[4];
+		Variant ret;
+		Callable::CallError ce;
+		const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
+
+		callback.callp(args, 4, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+		}
+	} else if (p_args.size() == 4) {
+		Variant v_result = p_args[1];
+		Variant v_files = p_args[2];
+		Variant v_index = p_args[3];
+		Variant ret;
+		Callable::CallError ce;
+		const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+		callback.callp(args, 3, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+		}
+	} else if (p_args.size() == 2) {
+		Variant v_result = p_args[1];
+		Variant ret;
+		Callable::CallError ce;
+		const Variant *args[1] = { &v_result };
+
+		callback.callp(args, 1, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute dialog callback: %s.", Variant::get_callable_error_text(callback, args, 1, ce)));
+		}
+	}
+}
+
 // MARK: - Mouse
 
 void DisplayServerMacOSEmbedded::_mouse_apply_mode(DisplayServerEnums::MouseMode p_prev_mode, DisplayServerEnums::MouseMode p_new_mode) {
@@ -416,7 +504,10 @@ bool DisplayServerMacOSEmbedded::has_feature(DisplayServerEnums::Feature p_featu
 			// case DisplayServerEnums::FEATURE_MOUSE:
 		case DisplayServerEnums::FEATURE_HDR_OUTPUT:
 		case DisplayServerEnums::FEATURE_MOUSE_WARP:
-			// case DisplayServerEnums::FEATURE_NATIVE_DIALOG:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_MIME:
 			// case DisplayServerEnums::FEATURE_NATIVE_ICON:
 			// case DisplayServerEnums::FEATURE_WINDOW_TRANSPARENCY:
 		case DisplayServerEnums::FEATURE_CLIPBOARD:

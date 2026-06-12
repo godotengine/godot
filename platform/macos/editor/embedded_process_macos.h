@@ -125,6 +125,7 @@ public:
 	void reset_timers() override {}
 	void request_close() override;
 	void queue_update_embedded_process() override { update_embedded_process(); }
+	void send_dialog_cb(const Array &p_args);
 
 	Rect2i get_adjusted_embedded_window_rect(const Rect2i &p_rect) const override;
 

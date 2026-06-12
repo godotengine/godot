@@ -114,6 +114,9 @@ class DisplayServerMacOSEmbedded : public DisplayServerMacOSBase {
 	};
 	HashMap<int, Joy> joysticks;
 
+	int64_t dialog_id = 0;
+	HashMap<int64_t, Callable> dialog_cbs;
+
 public:
 	static void register_embedded_driver();
 	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
@@ -136,6 +139,13 @@ public:
 	void send_input_text(const String &p_text, DisplayServerEnums::WindowID p_id = DisplayServerEnums::MAIN_WINDOW_ID) const;
 	virtual void send_window_event_by_id(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
+
+	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
+	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
+
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
+	void call_dialog_callback(const Array &p_args);
 
 	// MARK: - Mouse
 	virtual void warp_mouse(const Point2i &p_position) override;
