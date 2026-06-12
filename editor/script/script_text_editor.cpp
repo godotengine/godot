@@ -890,6 +890,10 @@ void ScriptTextEditor::_validate_script() {
 	_update_errors();
 	_update_background_color();
 
+	Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> code_actions;
+	script->get_language()->get_code_actions(text, script->get_path(), &code_actions);
+	code_editor->set_code_actions(code_actions);
+
 	if (!pending_dragged_exports.is_empty()) {
 		_assign_dragged_export_variables();
 	}

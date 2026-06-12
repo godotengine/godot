@@ -1493,6 +1493,9 @@
 		<member name="text_editor/appearance/whitespace/line_spacing" type="int" setter="" getter="">
 			The space to add between lines (in pixels). Greater line spacing can help improve readability at the cost of displaying fewer lines on screen. Negative values allow for even more compact text, but may look broken with certain fonts.
 		</member>
+		<member name="text_editor/behavior/code_actions/show_code_actions_button" type="bool" setter="" getter="">
+			If [code]true[/code], the script editor displays a lightbulb button when the caret is on a line with code actions available. Clicking the lightbulb button shows available code actions. Code actions can perform automated edits to code that address warnings or fix errors. If [code]false[/code], code actions are only available through the "Show Code Actions" shortcut.
+		</member>
 		<member name="text_editor/behavior/documentation/enable_tooltips" type="bool" setter="" getter="">
 			If [code]true[/code], documentation tooltips will appear when hovering over a symbol.
 		</member>
