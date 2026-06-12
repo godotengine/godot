@@ -45,6 +45,8 @@ public:
 	enum TabPosition {
 		POSITION_TOP,
 		POSITION_BOTTOM,
+		POSITION_LEFT,
+		POSITION_RIGHT,
 		POSITION_MAX,
 	};
 
@@ -89,7 +91,12 @@ private:
 		Ref<Texture2D> increment_hl_icon;
 		Ref<Texture2D> decrement_icon;
 		Ref<Texture2D> decrement_hl_icon;
+		Ref<Texture2D> increment_vertical_icon;
+		Ref<Texture2D> increment_vertical_hl_icon;
+		Ref<Texture2D> decrement_vertical_icon;
+		Ref<Texture2D> decrement_vertical_hl_icon;
 		Ref<Texture2D> drop_mark_icon;
+		Ref<Texture2D> vertical_drop_mark_icon;
 		Color drop_mark_color;
 
 		Color font_selected_color;
@@ -123,12 +130,14 @@ private:
 	HashMap<Node *, RID> tab_panels;
 
 	int _get_tab_height() const;
+	int _get_tab_width() const;
 	Control *_as_tab_control(Node *p_child) const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
 	void _repaint_call_deferred();
 	void _repaint();
 	void _repaint_internal();
+	void _on_tab_header_size_changed();
 	void _refresh_tab_indices();
 	void _refresh_tab_names();
 	void _update_margins();
@@ -148,6 +157,8 @@ private:
 
 	void _popup_button_hovered(bool p_hover);
 	void _popup_button_pressed();
+	void _ensure_popup_button_parent();
+	void _update_vertical_popup_button_layout();
 
 	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
 

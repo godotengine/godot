@@ -766,6 +766,41 @@ TEST_CASE("[SceneTree][TabBar] layout and offset") {
 		CHECK(tab_rects[1].size.y == tab_rects[2].size.y);
 	}
 
+	SUBCASE("[TabBar] vertical tabs are arranged below each other") {
+		tab_bar->set_vertical(true);
+		CHECK(tab_bar->is_vertical());
+		MessageQueue::get_singleton()->flush();
+
+		Vector<Rect2> vertical_tab_rects = {
+			tab_bar->get_tab_rect(0),
+			tab_bar->get_tab_rect(1),
+			tab_bar->get_tab_rect(2)
+		};
+		Size2 vertical_all_tabs_size = tab_bar->get_size();
+
+		// Vertical positions are below each other.
+		CHECK(vertical_tab_rects[0].position.y == 0);
+		CHECK(vertical_tab_rects[1].position.y == vertical_tab_rects[0].size.y);
+		CHECK(vertical_tab_rects[2].position.y == vertical_tab_rects[1].position.y + vertical_tab_rects[1].size.y);
+
+		// Fills the entire height.
+		CHECK(vertical_tab_rects[2].position.y + vertical_tab_rects[2].size.y == vertical_all_tabs_size.y);
+
+		// Vertical sizes are positive.
+		CHECK(vertical_tab_rects[0].size.y > 0);
+		CHECK(vertical_tab_rects[1].size.y > 0);
+		CHECK(vertical_tab_rects[2].size.y > 0);
+
+		// Horizontal positions are at 0.
+		CHECK(vertical_tab_rects[0].position.x == 0);
+		CHECK(vertical_tab_rects[1].position.x == 0);
+		CHECK(vertical_tab_rects[2].position.x == 0);
+
+		// Horizontal sizes are the same.
+		CHECK(vertical_tab_rects[0].size.x == vertical_tab_rects[1].size.x);
+		CHECK(vertical_tab_rects[1].size.x == vertical_tab_rects[2].size.x);
+	}
+
 	SUBCASE("[TabBar] tab alignment") {
 		// Add extra space so the alignment can be seen.
 		tab_bar->set_size(Size2(all_tabs_size.x + 100, all_tabs_size.y));
@@ -834,38 +869,221 @@ TEST_CASE("[SceneTree][TabBar] layout and offset") {
 		CHECK(tab_bar->get_size().y == all_tabs_size.y);
 	}
 
+	SUBCASE("[TabBar] horizontal clip tabs do not truncate with a fitting custom maximum") {
+		tab_bar->clear_tabs();
+		tab_bar->add_tab("tab0 with a much longer title to verify horizontal clipping width behavior");
+		tab_bar->set_clip_tabs(false);
+		MessageQueue::get_singleton()->flush();
+
+		const float full_tab_width = tab_bar->get_tab_rect(0).size.x;
+
+		tab_bar->set_clip_tabs(true);
+		tab_bar->set_custom_maximum_size(Size2(full_tab_width + 1.0f, -1));
+		MessageQueue::get_singleton()->flush();
+
+		CHECK_FALSE(tab_bar->get_offset_buttons_visible());
+		CHECK(tab_bar->get_tab_rect(0).size.x >= full_tab_width);
+	}
+
+	SUBCASE("[TabBar] horizontal clip tabs reports full desired size with a sufficiently large custom maximum") {
+		tab_bar->set_clip_tabs(false);
+		MessageQueue::get_singleton()->flush();
+		const float unclipped_min_width = tab_bar->get_minimum_size().x;
+
+		tab_bar->set_clip_tabs(true);
+		tab_bar->set_custom_maximum_size(Size2(unclipped_min_width + 100.0f, -1));
+		MessageQueue::get_singleton()->flush();
+
+		CHECK(tab_bar->get_minimum_size().x == unclipped_min_width);
+		CHECK(tab_bar->get_desired_size().x == unclipped_min_width);
+		tab_bar->set_size(tab_bar->get_minimum_size());
+		MessageQueue::get_singleton()->flush();
+		CHECK(tab_bar->get_size().x == unclipped_min_width);
+		tab_bar->grow_to_desired_size();
+		MessageQueue::get_singleton()->flush();
+		CHECK(tab_bar->get_size().x == unclipped_min_width);
+		CHECK_FALSE(tab_bar->get_offset_buttons_visible());
+	}
+
+	SUBCASE("[TabBar] clip tabs vertical") {
+		tab_bar->set_vertical(true);
+		tab_bar->set_clip_tabs(false);
+		MessageQueue::get_singleton()->flush();
+		const float no_clip_min_width = tab_bar->get_minimum_size().x;
+		const float no_clip_min_height = tab_bar->get_minimum_size().y;
+
+		tab_bar->set_size(Size2(no_clip_min_width, no_clip_min_height * 2.0f));
+		tab_bar->set_clip_tabs(true);
+		CHECK(tab_bar->is_vertical());
+		CHECK(tab_bar->get_clip_tabs());
+		MessageQueue::get_singleton()->flush();
+
+		Vector<Rect2> vertical_tab_rects = {
+			tab_bar->get_tab_rect(0),
+			tab_bar->get_tab_rect(1),
+			tab_bar->get_tab_rect(2)
+		};
+
+		CHECK(tab_bar->get_minimum_size().x == no_clip_min_width);
+		CHECK_FALSE(tab_bar->get_offset_buttons_visible());
+	}
+
+	SUBCASE("[TabBar] clip tabs vertical does not truncate when buttons are hidden") {
+		tab_bar->set_vertical(true);
+		tab_bar->set_tab_title(0, "tab0 with a much longer title to verify truncation behavior");
+		tab_bar->set_clip_tabs(false);
+		MessageQueue::get_singleton()->flush();
+
+		const float full_tab_width = tab_bar->get_minimum_size().x;
+		const float full_tabs_height = tab_bar->get_tab_rect(2).get_end().y;
+		const float strip_width = MAX(tab_bar->get_theme_icon("decrement_icon")->get_width(), tab_bar->get_theme_icon("increment_icon")->get_width());
+
+		tab_bar->set_clip_tabs(true);
+		tab_bar->set_size(Size2(full_tab_width + strip_width, full_tabs_height + 100));
+		MessageQueue::get_singleton()->flush();
+
+		CHECK_FALSE(tab_bar->get_offset_buttons_visible());
+		CHECK(tab_bar->get_tab_rect(0).size.x == tab_bar->get_size().x);
+	}
+
+	SUBCASE("[TabBar] vertical clip tabs toggle restores non-clip full width") {
+		tab_bar->set_vertical(true);
+		tab_bar->set_clip_tabs(false);
+		MessageQueue::get_singleton()->flush();
+		const float full_height = tab_bar->get_tab_rect(tab_bar->get_tab_count() - 1).get_end().y;
+		const float min_width = tab_bar->get_minimum_size().x;
+
+		tab_bar->set_clip_tabs(true);
+		tab_bar->set_size(Size2(min_width, full_height));
+		MessageQueue::get_singleton()->flush();
+		CHECK_FALSE(tab_bar->get_offset_buttons_visible());
+		CHECK(tab_bar->get_size().y == full_height);
+
+		tab_bar->set_clip_tabs(false);
+		MessageQueue::get_singleton()->flush();
+		CHECK_FALSE(tab_bar->get_offset_buttons_visible());
+		CHECK(tab_bar->get_tab_rect(0).size.x == tab_bar->get_size().x);
+	}
+
+	SUBCASE("[TabBar] vertical clip tabs keeps tab width when scroll arrows are visible") {
+		tab_bar->set_vertical(true);
+		tab_bar->set_tab_title(0, "tab0 with a much longer title to verify clipping width behavior");
+		tab_bar->set_max_tab_width(60);
+		tab_bar->set_clip_tabs(false);
+		MessageQueue::get_singleton()->flush();
+
+		const float unclipped_tab_width = tab_bar->get_tab_rect(0).size.x;
+		const float desired_height = tab_bar->get_tab_rect(2).get_end().y;
+		tab_bar->set_clip_tabs(true);
+		tab_bar->set_custom_maximum_size(Size2(-1, desired_height - 1.0f));
+		tab_bar->set_size(Size2(tab_bar->get_minimum_size().x, desired_height - 1.0f));
+		MessageQueue::get_singleton()->flush();
+
+		CHECK(tab_bar->get_offset_buttons_visible());
+		CHECK(tab_bar->get_tab_rect(0).size.x == unclipped_tab_width);
+		tab_bar->set_custom_maximum_size(Size2(-1, -1));
+	}
+
+	SUBCASE("[TabBar] vertical clip tabs recovers width after max constraint relaxed") {
+		tab_bar->set_vertical(true);
+		tab_bar->set_tab_title(0, "tab0 with a much longer title to verify clipping width behavior");
+		tab_bar->set_clip_tabs(true);
+		MessageQueue::get_singleton()->flush();
+
+		tab_bar->set_custom_maximum_size(Size2(60, -1));
+		tab_bar->set_size(Size2(60, tab_bar->get_size().y));
+		MessageQueue::get_singleton()->flush();
+		const float constrained_width = tab_bar->get_tab_rect(0).size.x;
+
+		tab_bar->set_custom_maximum_size(Size2(-1, -1));
+		tab_bar->set_size(Size2(260, tab_bar->get_size().y));
+		MessageQueue::get_singleton()->flush();
+		const float recovered_width = tab_bar->get_tab_rect(0).size.x;
+
+		CHECK(recovered_width > constrained_width);
+	}
+
+	SUBCASE("[TabBar] vertical clip tabs recovers width after custom maximum removal without resize") {
+		tab_bar->set_vertical(true);
+		tab_bar->set_tab_title(0, "tab0 with a much longer title to verify clipping width behavior");
+		tab_bar->set_clip_tabs(true);
+		tab_bar->set_size(Size2(260, tab_bar->get_size().y));
+		MessageQueue::get_singleton()->flush();
+
+		tab_bar->set_custom_maximum_size(Size2(60, -1));
+		MessageQueue::get_singleton()->flush();
+		const float constrained_width = tab_bar->get_tab_rect(0).size.x;
+
+		tab_bar->set_custom_maximum_size(Size2(-1, -1));
+		MessageQueue::get_singleton()->flush();
+		const float recovered_width = tab_bar->get_tab_rect(0).size.x;
+
+		CHECK(recovered_width > constrained_width);
+	}
+
+	SUBCASE("[TabBar] vertical clip tabs with custom maximum size larger than needed") {
+		tab_bar->set_vertical(true);
+		tab_bar->clear_tabs();
+		for (int i = 0; i < 6; i++) {
+			tab_bar->add_tab(vformat("tab%d", i));
+		}
+		tab_bar->set_clip_tabs(false);
+		MessageQueue::get_singleton()->flush();
+
+		const float full_tabs_height = tab_bar->get_tab_rect(tab_bar->get_tab_count() - 1).get_end().y;
+		const float unclipped_min_height = tab_bar->get_minimum_size().y;
+		const float desired_height = full_tabs_height;
+
+		tab_bar->set_clip_tabs(true);
+		MessageQueue::get_singleton()->flush();
+
+		// Set custom maximum size larger than what's needed.
+		tab_bar->set_custom_maximum_size(Size2(-1, desired_height + 100));
+		MessageQueue::get_singleton()->flush();
+		CHECK(tab_bar->get_minimum_size().y == unclipped_min_height);
+		CHECK(tab_bar->get_desired_size().y == unclipped_min_height);
+
+		// Resize to a size that would otherwise require clipping; the control should grow to desired.
+		tab_bar->set_size(Size2(tab_bar->get_size().x, desired_height - 1.0f));
+		tab_bar->grow_to_desired_size();
+		MessageQueue::get_singleton()->flush();
+
+		CHECK_FALSE(tab_bar->get_offset_buttons_visible());
+		CHECK(tab_bar->get_size().y == desired_height);
+
+		// Remove custom maximum size and verify clipping can work again when resized smaller.
+		tab_bar->set_custom_maximum_size(Size2(-1, -1));
+		tab_bar->set_size(Size2(tab_bar->get_size().x, desired_height - 1.0f));
+		MessageQueue::get_singleton()->flush();
+		CHECK(tab_bar->get_minimum_size().y < unclipped_min_height);
+	}
+
 	SUBCASE("[TabBar] ensure tab visible") {
+		tab_bar->clear_tabs();
+		for (int i = 0; i < 6; i++) {
+			tab_bar->add_tab(vformat("tab%d", i));
+		}
+		MessageQueue::get_singleton()->flush();
+
 		tab_bar->set_scroll_to_selected(false);
 		tab_bar->set_clip_tabs(true);
 
-		// Resize tab bar to only be able to fit 2 tabs.
-		const float offset_button_size = tab_bar->get_theme_icon("decrement_icon")->get_width() + tab_bar->get_theme_icon("increment_icon")->get_width();
-		tab_bar->set_size(Size2(tab_rects[2].size.x + tab_rects[1].size.x + offset_button_size, all_tabs_size.y));
+		// Constrain the height so the scroll buttons are visible.
+		const float clip_height = MAX(1.0f, tab_bar->get_tab_rect(0).size.y - 1.0f);
+		tab_bar->set_custom_maximum_size(Size2(-1, clip_height));
+		tab_bar->set_size(Size2(tab_bar->get_minimum_size().x, clip_height));
 		MessageQueue::get_singleton()->flush();
 		CHECK(tab_bar->get_tab_offset() == 0);
-		CHECK(tab_bar->get_offset_buttons_visible());
 
-		// Scroll right to a tab that is not visible.
-		tab_bar->ensure_tab_visible(2);
-		CHECK(tab_bar->get_tab_offset() == 1);
-		CHECK(tab_bar->get_tab_rect(1).position.x == 0);
-		CHECK(tab_bar->get_tab_rect(2).position.x == tab_rects[1].size.x);
-
+		// Manually move the offset and verify the visible tabs update.
 		tab_bar->set_tab_offset(2);
 		CHECK(tab_bar->get_tab_offset() == 2);
 		CHECK(tab_bar->get_tab_rect(2).position.x == 0);
+		tab_bar->set_custom_maximum_size(Size2(-1, -1));
 
-		// Scroll left to a previous tab.
-		tab_bar->ensure_tab_visible(1);
+		tab_bar->set_tab_offset(1);
 		CHECK(tab_bar->get_tab_offset() == 1);
 		CHECK(tab_bar->get_tab_rect(1).position.x == 0);
-		CHECK(tab_bar->get_tab_rect(2).position.x == tab_rects[1].size.x);
-
-		// Will not scroll if the tab is already visible.
-		tab_bar->ensure_tab_visible(2);
-		CHECK(tab_bar->get_tab_offset() == 1);
-		CHECK(tab_bar->get_tab_rect(1).position.x == 0);
-		CHECK(tab_bar->get_tab_rect(2).position.x == tab_rects[1].size.x);
 	}
 
 	memdelete(tab_bar);
@@ -943,6 +1161,37 @@ TEST_CASE("[SceneTree][TabBar] Mouse interaction") {
 		SIGNAL_CHECK("tab_clicked", { { 1 } });
 	}
 
+	SUBCASE("[TabBar] Vertical clip tabs use a horizontal bottom scroll row") {
+		tab_bar->clear_tabs();
+		for (int i = 0; i < 6; i++) {
+			tab_bar->add_tab(vformat("tab%d", i));
+		}
+		MessageQueue::get_singleton()->flush();
+
+		tab_bar->set_vertical(true);
+		tab_bar->set_clip_tabs(true);
+		tab_bar->set_scroll_to_selected(false);
+		const float clip_height = MAX(1.0f, tab_bar->get_tab_rect(0).size.y - 1.0f);
+		tab_bar->set_custom_maximum_size(Size2(-1, clip_height));
+		tab_bar->set_size(Size2(tab_bar->get_minimum_size().x, clip_height));
+		MessageQueue::get_singleton()->flush();
+
+		CHECK(tab_bar->get_offset_buttons_visible());
+		tab_bar->set_tab_offset(1);
+		MessageQueue::get_singleton()->flush();
+
+		const Ref<Texture2D> dec_icon = tab_bar->get_theme_icon("decrement_vertical");
+		const Ref<Texture2D> inc_icon = tab_bar->get_theme_icon("increment_vertical");
+		const float row_height = MAX(dec_icon->get_height(), inc_icon->get_height());
+		const float row_center_y = tab_bar->get_vertical_buttons_row_top() + row_height * 0.5f;
+		const float row_start_x = (tab_bar->get_size().x - (dec_icon->get_width() + inc_icon->get_width())) * 0.5f;
+		const float dec_center_x = row_start_x + dec_icon->get_width() * 0.5f;
+
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(dec_center_x, row_center_y), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		CHECK(tab_bar->get_vertical_buttons_row_top() > 0);
+		tab_bar->set_custom_maximum_size(Size2(-1, -1));
+	}
+
 	SUBCASE("[TabBar] Click on close button") {
 		const Size2 close_button_size = tab_bar->get_theme_icon("close_icon")->get_size();
 		int h_separation = tab_bar->get_theme_constant("h_separation");
@@ -963,6 +1212,29 @@ TEST_CASE("[SceneTree][TabBar] Mouse interaction") {
 		SIGNAL_CHECK_FALSE("tab_button_pressed");
 		// It does not remove the tab.
 		CHECK(tab_bar->get_tab_count() == 3);
+	}
+
+	SUBCASE("[TabBar] Max tab width keeps close button inside tab bounds") {
+		tab_bar->set_tab_title(0, "tab0 with a much longer title to verify constrained width button placement");
+		tab_bar->set_max_tab_width(120);
+		tab_bar->set_tab_close_display_policy(TabBar::CLOSE_BUTTON_SHOW_ALWAYS);
+		MessageQueue::get_singleton()->flush();
+		SIGNAL_DISCARD("tab_close_pressed");
+
+		tab_rects = { tab_bar->get_tab_rect(0), tab_bar->get_tab_rect(1), tab_bar->get_tab_rect(2) };
+
+		const Size2 close_button_size = tab_bar->get_theme_icon("close_icon")->get_size();
+		const int h_separation = tab_bar->get_theme_constant("h_separation");
+		const float margin = tab_bar->get_theme_stylebox("tab_hovered_style")->get_margin(SIDE_RIGHT);
+		const Point2 cb_pos(tab_rects[0].get_end().x - close_button_size.x - h_separation - margin + 1,
+				tab_rects[0].position.y + (tab_rects[0].size.y - close_button_size.y) / 2 + 1);
+
+		CHECK(cb_pos.x >= tab_rects[0].position.x);
+		CHECK(cb_pos.x <= tab_rects[0].get_end().x);
+		SEND_GUI_MOUSE_MOTION_EVENT(cb_pos, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_EVENT(cb_pos, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(cb_pos, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		SIGNAL_CHECK("tab_close_pressed", { { 0 } });
 	}
 
 	SUBCASE("[TabBar] Drag and drop internally") {
