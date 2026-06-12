@@ -400,11 +400,11 @@ PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 		}
 	}
 
-	if (trail_enabled && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
+	if (trail_enabled && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("Particle trails are only available when using the Forward+ or Mobile renderer."));
 	}
 
-	if (sub_emitter != NodePath() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
+	if (sub_emitter != NodePath() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("Particle sub-emitters are not available when using the Compatibility renderer."));
 	}
 
