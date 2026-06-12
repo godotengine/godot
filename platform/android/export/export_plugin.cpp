@@ -228,8 +228,6 @@ static const char *ANDROID_PERMS[] = {
 	nullptr
 };
 
-static const char *MISMATCHED_VERSIONS_MESSAGE = "Android build version mismatch:\n| Template installed: %s\n| Requested version: %s\nPlease reinstall Android build template from 'Project' menu.";
-
 static const char *GDEXTENSION_LIBS_PATH = "libs/gdextensionlibs.json";
 
 // This template string must be in sync with the content of 'platform/android/java/lib/src/main/java/res/mipmap-anydpi-v26/icon.xml'.
@@ -2985,28 +2983,33 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			err += template_err;
 		}
 	} else {
-		// Validate the custom gradle android source template.
-		bool android_source_template_valid = false;
+		r_missing_templates = false;
+
+		// Validate the gradle android source templates.
 		const String android_source_template = p_preset->get("gradle_build/android_source_template");
 		if (!android_source_template.is_empty()) {
-			android_source_template_valid = FileAccess::exists(android_source_template);
-			if (!android_source_template_valid) {
+			// Custom android build template validation.
+			if (!FileAccess::exists(android_source_template)) {
 				err += TTR("Custom Android source template not found.") + "\n";
+				r_missing_templates = true;
 			}
-		}
-
-		// Validate the installed build template.
-		bool installed_android_build_template = FileAccess::exists(ExportTemplateManager::get_android_build_directory(p_preset).path_join("build.gradle"));
-		if (!installed_android_build_template) {
-			if (!android_source_template_valid) {
-				r_missing_templates = !exists_export_template("android_source.zip", &err);
-			}
-			err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
 		} else {
-			r_missing_templates = false;
+			// Default android build template validation.
+			r_missing_templates = !exists_export_template("android_source.zip", &err);
 		}
 
-		valid = installed_android_build_template && !r_missing_templates;
+		valid = !r_missing_templates;
+
+		if (!r_missing_templates) {
+			if (ExportTemplateManager::is_android_template_installed(p_preset) && !ExportTemplateManager::is_android_build_version_valid(p_preset)) {
+				bool can_automatically_delete_build_dir = EDITOR_GET("export/android/build/automatically_delete_build_directory");
+				if (!can_automatically_delete_build_dir) {
+					// Show an error requesting the user to delete the current build directory manually.
+					err += vformat(TTR("Invalid build directory. Manually delete \"%s\" or enable automatic deletion in the Editor Settings (Export > Android > Build > Automatically Delete Build Directory)."), ExportTemplateManager::get_android_build_directory(p_preset)) + "\n";
+					valid = false;
+				}
+			}
+		}
 	}
 
 	// Validate the rest of the export configuration.
@@ -3153,18 +3156,7 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	}
 
 	bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-	if (gradle_build_enabled) {
-		String build_version_path = ExportTemplateManager::get_android_build_directory(p_preset).get_base_dir().path_join(".build_version");
-		Ref<FileAccess> f = FileAccess::open(build_version_path, FileAccess::READ);
-		if (f.is_valid()) {
-			String current_version = ExportTemplateManager::get_android_template_identifier(p_preset);
-			String installed_version = f->get_line().strip_edges();
-			if (current_version != installed_version) {
-				err += vformat(TTR(MISMATCHED_VERSIONS_MESSAGE), installed_version, current_version);
-				err += "\n";
-			}
-		}
-	} else {
+	if (!gradle_build_enabled) {
 		if (_is_transparency_allowed(p_preset)) {
 			// Warning only, so don't override `valid`.
 			err += vformat(TTR("\"Use Gradle Build\" is required for transparent background on Android"));
@@ -3759,21 +3751,19 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 
 	if (use_gradle_build) {
+		if (ep.step(TTR("Starting gradle build..."), 0)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Starting gradle build...");
 		//test that installed build version is alright
 		{
-			print_verbose("Checking build version...");
-			String gradle_base_directory = gradle_build_directory.get_base_dir();
-			Ref<FileAccess> f = FileAccess::open(gradle_base_directory.path_join(".build_version"), FileAccess::READ);
-			if (f.is_null()) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
-				return ERR_UNCONFIGURED;
+			if (ep.step(TTR("Checking build directory..."), 10)) {
+				return ERR_SKIP;
 			}
-			String current_version = ExportTemplateManager::get_android_template_identifier(p_preset);
-			String installed_version = f->get_line().strip_edges();
-			print_verbose("- build version: " + installed_version);
-			if (installed_version != current_version) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR(MISMATCHED_VERSIONS_MESSAGE), installed_version, current_version));
+			print_verbose("Checking build directory...");
+			err = EditorNode::get_singleton()->setup_android_build_template(p_preset);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unable to set up Android build directory. Please fix by manually deleting the \"%s\" directory and try again. Or enable automatic deletion in the Editor Settings (Export > Android > Build > Automatically Delete Build Directory)."), gradle_build_directory));
 				return ERR_UNCONFIGURED;
 			}
 		}
@@ -3811,6 +3801,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_clear_assets_directory(p_preset);
 		String gdextension_libs_path = gradle_build_directory.path_join(GDEXTENSION_LIBS_PATH);
 		_remove_copied_libs(gdextension_libs_path);
+
+		if (ep.step(TTR("Exporting project files..."), 20)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Exporting project files...");
 		CustomExportData user_data;
 		user_data.assets_directory = assets_directory;
@@ -3851,6 +3845,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			fa->store_string(JSON::stringify(user_data.libs, "\t"));
 		}
 
+		if (ep.step(TTR("Storing command line flags..."), 30)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Storing command line flags...");
 		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 
@@ -3969,6 +3966,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.
 		// Any non-sensitive additions to the command line arguments must be done above this section.
 		// Sensitive additions must be done below the logging statement.
+		if (ep.step(TTR("Build Android project..."), 40)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Build Android project using gradle command: " + String("\n") + build_command + " " + join_list(cmdline, String(" ")));
 
 		if (should_sign) {
@@ -4089,6 +4089,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		print_verbose("Successfully completed Android gradle build.");
 #endif
+		if (ep.step(TTR("Build complete."), 105)) {
+			return ERR_SKIP;
+		}
 		return OK;
 	}
 	// This is the start of the Legacy build system

@@ -170,7 +170,6 @@ public:
 		PROJECT_VERSION_CONTROL,
 		PROJECT_EXPORT,
 		PROJECT_PACK_AS_ZIP,
-		PROJECT_INSTALL_ANDROID_SOURCE,
 		PROJECT_OPEN_USER_DATA_FOLDER,
 		PROJECT_RELOAD_CURRENT_PROJECT,
 		PROJECT_QUIT_TO_PROJECT_MANAGER,
@@ -393,10 +392,6 @@ private:
 	EditorLayoutsDialog *layout_dialog = nullptr;
 
 	ConfirmationDialog *gradle_build_manage_templates = nullptr;
-	ConfirmationDialog *install_android_build_template = nullptr;
-	ConfirmationDialog *remove_android_build_template = nullptr;
-	Label *install_android_build_template_message = nullptr;
-	OptionButton *choose_android_export_profile = nullptr;
 	Ref<EditorExportPreset> android_export_preset;
 
 	PopupMenu *vcs_actions_menu = nullptr;
@@ -541,9 +536,7 @@ private:
 	void _menu_option_confirm(int p_option, bool p_confirmed);
 
 	void _android_build_source_selected(const String &p_file);
-	void _android_export_preset_selected(int p_index);
 	void _android_install_build_template();
-	void _android_explore_build_templates();
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
@@ -1036,6 +1029,8 @@ public:
 	void redo();
 
 	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false, String *r_output = nullptr);
+
+	Error setup_android_build_template(const Ref<EditorExportPreset> &p_preset);
 
 	EditorNode();
 	~EditorNode();
