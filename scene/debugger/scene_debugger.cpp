@@ -284,6 +284,13 @@ Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_override_debug_draw(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	Viewport::DebugDraw debug_draw = p_args[0];
+	SceneTree::get_singleton()->get_root()->set_debug_draw(debug_draw);
+	return OK;
+}
+
 Error SceneDebugger::_msg_set_object_property(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 	_set_object_property(p_args[0], p_args[1], p_args[2]);
@@ -624,6 +631,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["hdr_output_request_state"] = _msg_hdr_output_request_state;
 	message_handlers["hdr_output_toggle_requested"] = _msg_hdr_output_toggle_requested;
 	message_handlers["override_cameras"] = _msg_override_cameras;
+	message_handlers["override_debug_draw"] = _msg_override_debug_draw;
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
 #ifndef _3D_DISABLED
 	message_handlers["transform_camera_3d"] = _msg_transform_camera_3d;

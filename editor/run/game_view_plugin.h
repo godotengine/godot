@@ -54,6 +54,7 @@ private:
 	int select_mode = RuntimeNodeSelect::SELECT_MODE_SINGLE;
 	bool mute_audio = false;
 	EditorDebuggerNode::CameraOverride camera_override_mode = EditorDebuggerNode::OVERRIDE_INGAME;
+	Viewport::DebugDraw debug_draw_override = Viewport::DEBUG_DRAW_DISABLED;
 
 	bool selection_avoid_locked = false;
 	bool selection_prefer_group = false;
@@ -107,6 +108,8 @@ public:
 	void set_camera_manipulate_mode(EditorDebuggerNode::CameraOverride p_mode);
 
 	void report_window_focused(bool p_focused);
+
+	void set_debug_draw_override(Viewport::DebugDraw p_mode);
 
 	void reset_camera_2d_position();
 	void reset_camera_3d_position();
@@ -168,6 +171,7 @@ class GameView : public VBoxContainer {
 	EmbedSizeMode embed_size_mode = SIZE_MODE_FIXED;
 	bool paused = false;
 	Size2 size_paused;
+	Viewport::DebugDraw debug_draw_override = Viewport::DEBUG_DRAW_DISABLED;
 
 	Rect2i floating_window_rect;
 	int floating_window_screen = -1;
@@ -190,6 +194,8 @@ class GameView : public VBoxContainer {
 
 	Button *camera_override_button = nullptr;
 	MenuButton *camera_override_menu = nullptr;
+	MenuButton *debug_draw_override_menu = nullptr;
+	PopupMenu *debug_draw_override_advanced_submenu = nullptr;
 
 	HBoxContainer *embedding_hb = nullptr;
 	MenuButton *game_window_options_menu = nullptr;
@@ -262,6 +268,9 @@ class GameView : public VBoxContainer {
 
 	void _camera_override_button_toggled(bool p_pressed);
 	void _camera_override_menu_id_pressed(int p_id);
+
+	void _debug_draw_override_menu_id_pressed(int p_id);
+	void _set_debug_draw_mode(Viewport::DebugDraw p_mode);
 
 	void _window_close_request();
 	void _update_floating_window_settings();

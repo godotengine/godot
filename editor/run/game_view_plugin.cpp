@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/os/process_id.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -46,6 +47,7 @@
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/embedded_process.h"
 #include "editor/run/run_instances_dialog.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -323,6 +325,11 @@ void GameViewDebugger::report_window_focused(bool p_focused) {
 	}
 }
 
+void GameViewDebugger::set_debug_draw_override(Viewport::DebugDraw p_mode) {
+	debug_draw_override = p_mode;
+	EditorDebuggerNode::get_singleton()->set_debug_draw_override(debug_draw_override);
+}
+
 void GameViewDebugger::reset_camera_2d_position() {
 	for (Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
@@ -558,6 +565,9 @@ void GameView::_play_pressed() {
 	if (!window_wrapper->get_window_enabled()) {
 		screen_index_before_start = EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index();
 	}
+
+	// Reset debug draw indication to Normal, as it doesn't persist across game restarts.
+	_debug_draw_override_menu_id_pressed(Node3DEditorViewport::VIEW_DISPLAY_NORMAL);
 
 	if (embed_on_play && _get_embed_available() == EMBED_AVAILABLE) {
 		// It's important to disable the low power mode when unfocused because otherwise
@@ -1084,6 +1094,14 @@ void GameView::_camera_override_button_toggled(bool p_pressed) {
 	debugger->set_camera_override(p_pressed);
 }
 
+void GameView::_debug_draw_override_menu_id_pressed(int p_id) {
+	Node3DEditorViewport::select_debug_draw_mode(p_id, debug_draw_override_menu, debug_draw_override_advanced_submenu, callable_mp(this, &GameView::_set_debug_draw_mode));
+}
+
+void GameView::_set_debug_draw_mode(Viewport::DebugDraw p_mode) {
+	debugger->set_debug_draw_override(p_mode);
+}
+
 void GameView::_camera_override_menu_id_pressed(int p_id) {
 	PopupMenu *menu = camera_override_menu->get_popup();
 	if (p_id != CAMERA_RESET_2D && p_id != CAMERA_RESET_3D) {
@@ -1122,6 +1140,44 @@ void GameView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_tooltip_text(vformat(TTR("%s+Alt+RMB: Show list of all nodes at position clicked."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)));
+
+			const int item_count = debug_draw_override_advanced_submenu->get_item_count();
+			for (int i = 0; i < item_count; i++) {
+				const Array item_data = debug_draw_override_advanced_submenu->get_item_metadata(i);
+				if (item_data.is_empty()) {
+					continue;
+				}
+
+				Node3DEditorViewport::SupportedRenderingMethods rendering_methods = item_data[0];
+				String base_tooltip = item_data[1];
+
+				bool disabled = false;
+				String disabled_tooltip;
+				switch (rendering_methods) {
+					case Node3DEditorViewport::SupportedRenderingMethods::ALL:
+						break;
+					case Node3DEditorViewport::SupportedRenderingMethods::FORWARD_PLUS_MOBILE:
+						disabled = OS::get_singleton()->get_current_rendering_method() == "gl_compatibility";
+						disabled_tooltip = TTR("This debug draw mode is not supported when using the Compatibility renderer.");
+						break;
+					case Node3DEditorViewport::SupportedRenderingMethods::FORWARD_PLUS:
+						disabled = OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "mobile";
+						disabled_tooltip = TTR("This debug draw mode is not supported when using the Mobile or Compatibility renderer.");
+						break;
+				}
+
+				debug_draw_override_advanced_submenu->set_item_disabled(i, disabled);
+				String tooltip = TTR(base_tooltip);
+				if (disabled) {
+					if (tooltip.is_empty()) {
+						tooltip = disabled_tooltip;
+					} else {
+						tooltip += "\n\n" + disabled_tooltip;
+					}
+				}
+				debug_draw_override_advanced_submenu->set_item_tooltip(i, tooltip);
+			}
+
 			_update_ui();
 		} break;
 
@@ -1153,6 +1209,9 @@ void GameView::_notification(int p_what) {
 
 			_update_speed_state_size();
 			_update_speed_state_color();
+
+			// Debug draw override is mostly relevant for 3D, so use a 3D-colored icon.
+			debug_draw_override_menu->set_button_icon(get_editor_theme_icon(SNAME("MeshInstance3D")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1429,6 +1488,7 @@ void GameView::_feature_profile_changed() {
 		_node_type_pressed(RuntimeNodeSelect::NODE_TYPE_NONE);
 	}
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_visible(is_3d_enabled);
+	debug_draw_override_menu->set_visible(is_3d_enabled);
 }
 
 GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process, WindowWrapper *p_wrapper) {
@@ -1571,16 +1631,23 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 	selection_hb->add_child(memnew(VSeparator));
 
-	HBoxContainer *audio_hb = memnew(HBoxContainer);
-	main_menu_fc->add_child(audio_hb);
+	HBoxContainer *audio_debug_draw_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(audio_debug_draw_hb);
 
 	debug_mute_audio_button = memnew(Button);
-	audio_hb->add_child(debug_mute_audio_button);
+	audio_debug_draw_hb->add_child(debug_mute_audio_button);
 	debug_mute_audio_button->set_theme_type_variation("FlatButton");
 	debug_mute_audio_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_debug_mute_audio_button_pressed));
 	debug_mute_audio_button->set_tooltip_text(debug_mute_audio ? TTRC("Unmute game audio.") : TTRC("Mute game audio."));
 
-	audio_hb->add_child(memnew(VSeparator));
+	debug_draw_override_menu = memnew(MenuButton);
+	audio_debug_draw_hb->add_child(debug_draw_override_menu);
+	debug_draw_override_menu->set_flat(false);
+	debug_draw_override_menu->set_theme_type_variation("FlatMenuButtonNoIconTint");
+	debug_draw_override_menu->set_h_size_flags(SIZE_SHRINK_END);
+	debug_draw_override_menu->set_tooltip_text(TTRC("Debug Draw Options"));
+
+	audio_debug_draw_hb->add_child(memnew(VSeparator));
 
 	HBoxContainer *camera_hb = memnew(HBoxContainer);
 	main_menu_fc->add_child(camera_hb);
@@ -1591,6 +1658,19 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	camera_override_button->set_theme_type_variation(SceneStringName(FlatButton));
 	camera_override_button->set_tooltip_text(TTRC("Override the in-game camera."));
 	camera_override_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_camera_override_button_toggled));
+
+	PopupMenu *debug_draw_override_popup = debug_draw_override_menu->get_popup();
+	debug_draw_override_popup->set_hide_on_checkable_item_selection(false);
+	debug_draw_override_popup->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_debug_draw_override_menu_id_pressed));
+	debug_draw_override_popup->add_radio_check_item(TTRC("Display Normal"), Node3DEditorViewport::VIEW_DISPLAY_NORMAL);
+	debug_draw_override_popup->set_item_checked(debug_draw_override_popup->get_item_index(Node3DEditorViewport::VIEW_DISPLAY_NORMAL), true);
+	debug_draw_override_popup->add_radio_check_item(TTRC("Display Wireframe"), Node3DEditorViewport::VIEW_DISPLAY_WIREFRAME);
+	debug_draw_override_popup->add_radio_check_item(TTRC("Display Overdraw"), Node3DEditorViewport::VIEW_DISPLAY_OVERDRAW);
+	debug_draw_override_popup->add_radio_check_item(TTRC("Display Lighting"), Node3DEditorViewport::VIEW_DISPLAY_LIGHTING);
+	debug_draw_override_popup->add_radio_check_item(TTRC("Display Unshaded"), Node3DEditorViewport::VIEW_DISPLAY_UNSHADED);
+	debug_draw_override_advanced_submenu = Node3DEditorViewport::get_advanced_debug_draw_menu();
+	debug_draw_override_advanced_submenu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_debug_draw_override_menu_id_pressed));
+	debug_draw_override_popup->add_submenu_node_item(TTRC("Display Advanced..."), debug_draw_override_advanced_submenu, Node3DEditorViewport::VIEW_DISPLAY_ADVANCED);
 
 	camera_override_menu = memnew(MenuButton);
 	camera_hb->add_child(camera_override_menu);
