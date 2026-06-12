@@ -3286,6 +3286,16 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			// Reference types are not suited for compile-time construction.
 			// Because in this case they would be the same reference in all constructed values.
 			if (all_is_constant && !Variant::is_type_shared(builtin_type)) {
+				// A workaround for GH-89357.
+				if (builtin_type == Variant::COLOR && !p_call->arguments.is_empty() && p_call->arguments[0]->reduced_value.get_type() == Variant::STRING) {
+					const String code = p_call->arguments[0]->reduced_value;
+					if (!Color::html_is_valid(code) && Color::find_named_color(code) == -1) {
+						push_error(vformat(R"(Invalid color code "%s".)", code), p_call->arguments[0]);
+						p_call->set_datatype(call_type);
+						return;
+					}
+				}
+
 				// Construct here.
 				Vector<const Variant *> args;
 				for (int i = 0; i < p_call->arguments.size(); i++) {
