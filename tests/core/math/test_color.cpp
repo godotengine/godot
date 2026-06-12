@@ -167,6 +167,36 @@ TEST_CASE("[Color] Linear <-> sRGB conversion") {
 			"White converted from linear to sRGB should remain white.");
 }
 
+TEST_CASE("[Color] with_* methods") {
+	constexpr Color start_color = Color(0.5, 0.5, 0.5, 0.5);
+	Color start_color_for_ints = Color::from_rgba8(123, 123, 123, 123);
+	CHECK_MESSAGE(
+			start_color.with_red(.7).is_equal_approx(Color(0.7, 0.5, 0.5, 0.5)),
+			"The color with red should only change the red component");
+	CHECK_MESSAGE(
+			start_color.with_green(.7).is_equal_approx(Color(0.5, 0.7, 0.5, 0.5)),
+			"The color with green should only change the green component");
+	CHECK_MESSAGE(
+			start_color.with_blue(.7).is_equal_approx(Color(0.5, 0.5, 0.7, 0.5)),
+			"The color with blue should only change the blue component");
+	CHECK_MESSAGE(
+			start_color.with_alpha(.7).is_equal_approx(Color(0.5, 0.5, 0.5, 0.7)),
+			"The color with alpha should only change the alpha");
+
+	CHECK_MESSAGE(
+			start_color_for_ints.with_red8(60).is_equal_approx(Color::from_rgba8(60, 123, 123, 123)),
+			"The color with red should only change the red component");
+	CHECK_MESSAGE(
+			start_color_for_ints.with_green8(60).is_equal_approx(Color::from_rgba8(123, 60, 123, 123)),
+			"The color with green should only change the green component");
+	CHECK_MESSAGE(
+			start_color_for_ints.with_blue8(60).is_equal_approx(Color::from_rgba8(123, 123, 60, 123)),
+			"The color with blue should only change the blue component");
+	CHECK_MESSAGE(
+			start_color_for_ints.with_alpha8(60).is_equal_approx(Color::from_rgba8(123, 123, 123, 60)),
+			"The color with alpha should only change the alpha");
+}
+
 TEST_CASE("[Color] Named colors") {
 	CHECK_MESSAGE(
 			Color::named("red").is_equal_approx(Color::hex(0xFF0000FF)),

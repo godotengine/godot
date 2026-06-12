@@ -103,6 +103,16 @@ struct [[nodiscard]] Color {
 	void invert();
 	Color inverted() const;
 
+	Color with_red(float p_r) const;
+	Color with_green(float p_g) const;
+	Color with_blue(float p_b) const;
+	Color with_alpha(float p_a) const;
+
+	Color with_red8(int64_t p_r8) const;
+	Color with_green8(int64_t p_g8) const;
+	Color with_blue8(int64_t p_b8) const;
+	Color with_alpha8(int64_t p_a8) const;
+
 	_FORCE_INLINE_ float get_luminance() const {
 		return 0.2126f * r + 0.7152f * g + 0.0722f * b;
 	}
