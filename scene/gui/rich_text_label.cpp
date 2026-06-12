@@ -5621,6 +5621,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				continue;
 			}
 
+			if ((tag_stack.front()->get() == "indent") || (tag_stack.front()->get() == "ol") || (tag_stack.front()->get() == "ul")) {
+				current_frame->indent_level--;
+			}
+
 			if (txt.is_empty() && after_list_open_tag) {
 				txt = "\n"; // Make empty list have at least one item.
 			}
