@@ -814,7 +814,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		for (const String &arg : p_arguments) {
 			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
 		}
-#if defined(__x86_64__)
+#if defined(__x86_64__) && (__MAC_OS_X_VERSION_MIN_REQUIRED < 110000)
 		if (@available(macOS 10.15, *)) {
 #endif
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
@@ -846,7 +846,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			}
 
 			return err;
-#if defined(__x86_64__)
+#if defined(__x86_64__) && (__MAC_OS_X_VERSION_MIN_REQUIRED < 110000)
 		} else {
 			Error err = ERR_TIMEOUT;
 			NSError *error = nullptr;
@@ -925,7 +925,7 @@ Error OS_MacOS::open_with_program(const String &p_program_path, const List<Strin
 		return ERR_INVALID_PARAMETER;
 	}
 
-#if defined(__x86_64__)
+#if defined(__x86_64__) && (__MAC_OS_X_VERSION_MIN_REQUIRED < 110000)
 	if (@available(macOS 10.15, *)) {
 #endif
 		NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
@@ -948,7 +948,7 @@ Error OS_MacOS::open_with_program(const String &p_program_path, const List<Strin
 		dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
 
 		return err;
-#if defined(__x86_64__)
+#if defined(__x86_64__) && (__MAC_OS_X_VERSION_MIN_REQUIRED < 110000)
 	} else {
 		NSError *error = nullptr;
 		[[NSWorkspace sharedWorkspace] openURLs:urls_to_open withApplicationAtURL:app_url options:NSWorkspaceLaunchDefault configuration:@{} error:&error];
