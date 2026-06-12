@@ -207,6 +207,7 @@ public:
 		return data[p_index];
 	}
 
+	struct ConstIterator;
 	struct Iterator {
 		_FORCE_INLINE_ T &operator*() const {
 			return *elem_ptr;
@@ -227,6 +228,10 @@ public:
 		Iterator(T *p_ptr) { elem_ptr = p_ptr; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { elem_ptr = p_it.elem_ptr; }
+
+		operator ConstIterator() const {
+			return ConstIterator(elem_ptr);
+		}
 
 	private:
 		T *elem_ptr = nullptr;
