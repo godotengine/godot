@@ -59,8 +59,9 @@ protected:
 	Dictionary prepare_base_event() const;
 	Dictionary prepare_success_response(const Dictionary &p_params) const;
 	Dictionary prepare_error_response(const Dictionary &p_params, DAP::ErrorType err_type, const Dictionary &variables = Dictionary()) const;
+	Dictionary prepare_malformed_error_response(const Dictionary &p_params, const String &p_error) const;
 
-	Dictionary ev_stopped() const;
+	Dictionary ev_stopped(Thread::ID p_thread_id) const;
 
 public:
 	// Requests
@@ -92,13 +93,13 @@ public:
 	Dictionary ev_initialized() const;
 	Dictionary ev_process(const String &p_command) const;
 	Dictionary ev_terminated() const;
-	Dictionary ev_exited(const int &p_exitcode) const;
-	Dictionary ev_stopped_paused() const;
-	Dictionary ev_stopped_exception(const String &p_error) const;
-	Dictionary ev_stopped_breakpoint(const int &p_id) const;
-	Dictionary ev_stopped_step() const;
-	Dictionary ev_continued() const;
+	Dictionary ev_exited(int p_exitcode) const;
+	Dictionary ev_stopped_paused(Thread::ID p_thread_id) const;
+	Dictionary ev_stopped_exception(const String &p_error, Thread::ID p_thread_id) const;
+	Dictionary ev_stopped_breakpoint(int p_id, Thread::ID p_thread_id) const;
+	Dictionary ev_stopped_step(Thread::ID p_thread_id) const;
+	Dictionary ev_continued(Thread::ID p_thread_id) const;
 	Dictionary ev_output(const String &p_message, RemoteDebugger::MessageType p_type) const;
 	Dictionary ev_custom_data(const String &p_msg, const Array &p_data) const;
-	Dictionary ev_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) const;
+	Dictionary ev_breakpoint(const DAP::Breakpoint &p_breakpoint, bool p_enabled) const;
 };
