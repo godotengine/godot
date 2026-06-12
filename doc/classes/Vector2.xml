@@ -60,7 +60,7 @@
 				Returns this vector's angle with respect to the positive X axis, or [code](1, 0)[/code] vector, in radians.
 				For example, [code]Vector2.RIGHT.angle()[/code] will return zero, [code]Vector2.DOWN.angle()[/code] will return [code]PI / 2[/code] (a quarter turn, or 90 degrees), and [code]Vector2(1, -1).angle()[/code] will return [code]-PI / 4[/code] (a negative eighth turn, or -45 degrees).
 				This is equivalent to calling [method @GlobalScope.atan2] with [member y] and [member x].
-				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle.png]Illustration of the returned angle.[/url]
+				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle.webp]Illustration of the returned angle.[/url]
 			</description>
 		</method>
 		<method name="angle_to" qualifiers="const">
@@ -68,7 +68,7 @@
 			<param index="0" name="to" type="Vector2" />
 			<description>
 				Returns the signed angle to the given vector, in radians. The result ranges from [code]-PI[/code] to [code]PI[/code] (inclusive).
-				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to.png]Illustration of the returned angle.[/url]
+				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to.webp]Illustration of the returned angle.[/url]
 			</description>
 		</method>
 		<method name="angle_to_point" qualifiers="const">
@@ -77,7 +77,7 @@
 			<description>
 				Returns the signed angle between the X axis and the line from this vector to point [param to], in radians. The result ranges from [code]-PI[/code] to [code]PI[/code] (inclusive).
 				[code]a.angle_to_point(b)[/code] is equivalent to [code](b - a).angle()[/code]. See also [method angle].
-				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to_point.png]Illustration of the returned angle.[/url]
+				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to_point.webp]Illustration of the returned angle.[/url]
 			</description>
 		</method>
 		<method name="aspect" qualifiers="const">
