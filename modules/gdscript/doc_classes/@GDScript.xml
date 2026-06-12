@@ -762,6 +762,45 @@
 				[b]Note:[/b] Avoid storing lambda callables in member variables of [RefCounted]-based classes (e.g. resources), as this can lead to memory leaks. Use only method callables and optionally [method Callable.bind] or [method Callable.unbind].
 			</description>
 		</annotation>
+		<annotation name="@final">
+			<return type="void" />
+			<description>
+				Modifies the following class or method as final. A final class may not be extended, and a final method may not be overridden.
+				You can annotate a class (including anonymous scripts) as final:
+				[codeblock]
+				# A.gd
+				@final class_name A
+
+				# B.gd
+				class_name B extends A # Error: The base class "A" is marked as final and cannot be extended.
+
+				# C.gd
+				@final extends RefCounted
+				[/codeblock]
+				You can also annotate a method as final:
+				[codeblock]
+				# E.gd
+				class_name E extends Node
+
+				@final func my_final_method():
+				    pass
+
+				# F.gd
+				class_name F extends E
+
+				func my_final_method(): # Error: The method "my_final_method" is marked as final and cannot be overridden.
+				    pass
+				[/codeblock]
+				Final scripts cannot be attached to nodes whose types do not match the script base type exactly. For example, given the following script:
+				[codeblock]
+				# MyNode.gd
+				@final extends Node
+				[/codeblock]
+				This script can only be attached to a node whose direct type is [code skip-lint]Node[/code], but not a descendent of Node (e.g., [code skip-lint]Node2D[/code]).
+				[b]Note:[/b] The annotation [code skip-lint]@final[/code] is a modifier, meaning that it is syntax-related instead of engine-specific.
+				[b]Note:[/b] Abstract classes and methods cannot be marked as final, and vice versa.
+			</description>
+		</annotation>
 		<annotation name="@icon">
 			<return type="void" />
 			<param index="0" name="icon_path" type="String" />
