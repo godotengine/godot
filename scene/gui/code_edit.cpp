@@ -926,10 +926,9 @@ void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode, int p_ca
 
 		const char32_t chr[2] = { (char32_t)p_unicode, 0 };
 
-		if (auto_brace_completion_enabled) {
-			int cl = get_caret_line(i);
-			int cc = get_caret_column(i);
-
+		int cl = get_caret_line(i);
+		int cc = get_caret_column(i);
+		if (auto_brace_completion_enabled && is_in_comment(cl, cc) == -1) {
 			if (had_selection) {
 				insert_text_at_caret(chr, i);
 
@@ -1012,7 +1011,7 @@ void CodeEdit::_backspace_internal(int p_caret) {
 
 		merge_gutters(from_line, to_line);
 
-		if (auto_brace_completion_enabled && to_column > 0) {
+		if (auto_brace_completion_enabled && to_column > 0 && is_in_comment(to_line, to_column) == -1) {
 			int idx = _get_auto_brace_pair_open_at_pos(to_line, to_column);
 			if (idx != -1) {
 				from_column = to_column - auto_brace_completion_pairs[idx].open_key.length();
