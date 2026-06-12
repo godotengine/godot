@@ -5894,6 +5894,19 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 	return icon;
 }
 
+void EditorNode::invalidate_class_icon(const String &p_class) {
+	Vector<Pair<String, String>> to_remove;
+	for (const KeyValue<Pair<String, String>, Ref<Texture2D>> &kv : class_icon_cache) {
+		// Remove all entries for the class, regardless of fallback value
+		if (kv.key.first == p_class) {
+			to_remove.push_back(kv.key);
+		}
+	}
+	for (const Pair<String, String> &key : to_remove) {
+		class_icon_cache.erase(key);
+	}
+}
+
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
 	ERR_FAIL_NULL_V(p_object, false);
 
