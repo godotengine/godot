@@ -252,6 +252,14 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 	}
 }
 
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onHdrSdrRatioChanged(JNIEnv *env, jclass clazz, jfloat p_ratio) {
+	if (step.get() <= STEP_SETUP) {
+		return;
+	}
+
+	DisplayServerAndroid::get_singleton()->notify_hdr_changed();
+}
+
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jobject p_surface) {
 	if (os_android) {
 		if (step.get() == STEP_SETUP) {
