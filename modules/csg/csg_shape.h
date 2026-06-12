@@ -145,6 +145,7 @@ public:
 
 	virtual AABB get_aabb() const override;
 
+#ifndef PHYSICS_3D_DISABLED
 	void set_use_collision(bool p_enable);
 	bool is_using_collision() const;
 
@@ -170,6 +171,7 @@ public:
 
 	void set_smoothing_angle(const float p_angle);
 	float get_smoothing_angle() const;
+#endif // PHYSICS_3D_DISABLED
 
 #ifndef DISABLE_DEPRECATED
 	void set_snap(float p_snap);
