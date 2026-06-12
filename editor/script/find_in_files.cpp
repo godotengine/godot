@@ -32,13 +32,17 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/shader/shader_editor_plugin.h"
+#include "editor/shader/text_shader_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -281,23 +285,48 @@ void FindInFilesSearch::_scan_dir(const String &p_path, PackedStringArray &r_out
 	}
 }
 
+CodeEdit *get_code_edit(const String &p_fpath) {
+	if (ResourceLoader::exists(p_fpath) && ResourceCache::has(p_fpath)) {
+		Ref<Resource> res = ResourceLoader::load(p_fpath);
+
+		ShaderEditorPlugin *shader_editor_plugin = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
+		ScriptEditorPlugin *script_editor_plugin = Object::cast_to<ScriptEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Script"));
+
+		if (shader_editor_plugin && shader_editor_plugin->handles(res.ptr())) {
+			if (TextShaderEditor *tse = Object::cast_to<TextShaderEditor>(shader_editor_plugin->get_shader_editor(res))) {
+				return tse->get_code_editor()->get_text_editor();
+			}
+		} else if (script_editor_plugin && script_editor_plugin->handles(res.ptr())) {
+			ScriptEditor *script_editor = ScriptEditor::get_singleton();
+			if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(script_editor->get_script_editor(res))) {
+				return teb->get_code_editor()->get_text_editor();
+			}
+		}
+	}
+	return nullptr;
+}
+
 void FindInFilesSearch::_scan_file(const String &p_fpath) {
-	Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
-	if (f.is_null()) {
-		print_verbose("Cannot open file " + p_fpath);
-		return;
+	Vector<String> lines;
+
+	if (CodeEdit *code_edit = get_code_edit(p_fpath)) {
+		lines = code_edit->get_text().split("\n");
+	} else {
+		Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
+
+		while (!f->eof_reached()) {
+			lines.append(f->get_line());
+		}
 	}
 
 	int line_number = 0;
 
-	while (!f->eof_reached()) {
+	for (String line : lines) {
 		// Line number starts at 1.
 		++line_number;
-
 		int begin = 0;
 		int end = 0;
-
-		String line = f->get_line();
 
 		while (find_next(line, pattern, end, match_case, whole_words, begin, end)) {
 			emit_signal(SNAME("result_found"), p_fpath, line_number, begin, end, line);
@@ -1086,60 +1115,49 @@ private:
 };
 
 void FindInFilesPanel::_apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text) {
-	// If the file is already open, I assume the editor will reload it.
-	// If there are unsaved changes, the user will be asked on focus,
-	// however that means either losing changes or losing replaces.
+	CodeEdit *code_edit = get_code_edit(p_fpath);
+	Ref<FileAccess> f;
+	Vector<String> lines;
 
-	Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
+	if (code_edit) {
+		lines = code_edit->get_text().split("\n");
+	} else {
+		f = FileAccess::open(p_fpath, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
+		lines = f->get_as_text().split("\n");
+	}
 
-	String buffer;
-	int current_line = 1;
-
-	ConservativeGetLine conservative;
-
-	String line = conservative.get_line(f);
 	String search_text = finder->get_search_text();
+	int _;
+	int repl_line_number = 0;
 
-	int offset = 0;
+	// Iterate backwards so changes don't affect the location of the next change in the same line.
+	for (int i = p_locations.size() - 1; i >= 0; i--) {
+		Result location = p_locations[i];
+		repl_line_number = location.line_number - 1;
 
-	for (int i = 0; i < p_locations.size(); ++i) {
-		int repl_line_number = p_locations[i].line_number;
-
-		while (current_line < repl_line_number) {
-			buffer += line;
-			line = conservative.get_line(f);
-			++current_line;
-			offset = 0;
+		if (repl_line_number >= 0 && repl_line_number < lines.size()) {
+			String &line = lines.write[repl_line_number];
+			if (find_next(line, search_text, location.begin, finder->is_match_case(), finder->is_whole_words(), _, _)) {
+				line = line.left(location.begin) + p_new_text + line.substr(location.end);
+			} else {
+				print_verbose(vformat(R"(Occurrence no longer matches, replace will be ignored in "%s": line %d, col %d.)", p_fpath, repl_line_number, location.begin));
+			}
 		}
-
-		int repl_begin = p_locations[i].begin + offset;
-		int repl_end = p_locations[i].end + offset;
-
-		int _;
-		if (!find_next(line, search_text, repl_begin, finder->is_match_case(), finder->is_whole_words(), _, _)) {
-			// Make sure the replace is still valid in case the file was tampered with.
-			print_verbose(vformat(R"(Occurrence no longer matches, replace will be ignored in "%s": line %d, col %d.)", p_fpath, repl_line_number, repl_begin));
-			continue;
-		}
-
-		line = line.left(repl_begin) + p_new_text + line.substr(repl_end);
-		// Keep an offset in case there are successive replaces in the same line.
-		offset += p_new_text.length() - (repl_end - repl_begin);
 	}
 
-	buffer += line;
+	String final_text = String("\n").join(lines);
 
-	while (!f->eof_reached()) {
-		buffer += conservative.get_line(f);
+	if (code_edit) {
+		code_edit->set_text(final_text);
+		// Workaround to call `TextEdit::_text_changed()`
+		code_edit->insert_text("", 0, 0);
+	} else {
+		// Now the modified contents are in the buffer, rewrite the file with our changes.
+		Error err = f->reopen(p_fpath, FileAccess::WRITE);
+		ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + p_fpath + "'.");
+		f->store_string(final_text);
 	}
-
-	// Now the modified contents are in the buffer, rewrite the file with our changes.
-
-	Error err = f->reopen(p_fpath, FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + p_fpath + "'.");
-
-	f->store_string(buffer);
 }
 
 String FindInFilesPanel::_get_replace_text() {
