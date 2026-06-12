@@ -505,6 +505,13 @@ const Vector2 &CharacterBody2D::get_platform_velocity() const {
 	return platform_velocity;
 }
 
+Node *CharacterBody2D::get_physics_process_dependency() const {
+	if (platform_object_id.is_valid()) {
+		return ObjectDB::get_instance<Node>(platform_object_id);
+	}
+	return nullptr;
+}
+
 int CharacterBody2D::get_slide_collision_count() const {
 	return motion_results.size();
 }

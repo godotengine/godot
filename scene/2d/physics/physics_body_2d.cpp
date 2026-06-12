@@ -117,6 +117,15 @@ bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_
 	if (!p_test_only) {
 		Transform2D gt = p_parameters.from;
 		gt.columns[2] += r_result.travel;
+		// Immediately push the new transform to the physics server so that
+		// body_get_direct_state() in the same _physics_process tick returns
+		// current-tick velocity (pending_transform cache). Without this, the
+		// transform update is deferred via xform_change_list and fires after
+		// all _physics_process callbacks, making the pending cache useless.
+		// Gated by the "physics/common/platform_velocity_correction_beta" project setting.
+		if (SceneTree::is_platform_velocity_correction_enabled()) {
+			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, gt);
+		}
 		set_global_transform(gt);
 	}
 

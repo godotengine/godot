@@ -111,6 +111,20 @@ class GodotBody3D : public GodotCollisionObject3D {
 	virtual void _shapes_changed() override;
 	Transform3D new_transform;
 
+	// Pending state: set when a kinematic body writes new_transform during _physics_process.
+	// Consumed by body_get_direct_state() in the same tick so other bodies read current-tick data.
+	// Reset at the END of GodotStep3D::step(), never inside integrate_forces() — because
+	// body_test_motion() also calls integrate_forces() and must not clear the flag mid-frame.
+	real_t last_step = 1.0 / 60.0;
+	bool pending_transform_valid = false;
+	Vector3 pending_linear_velocity;
+	Vector3 pending_angular_velocity;
+
+	_FORCE_INLINE_ bool has_pending_transform() const { return pending_transform_valid; }
+	_FORCE_INLINE_ const Transform3D &get_pending_transform() const { return new_transform; }
+	_FORCE_INLINE_ Vector3 get_pending_linear_velocity() const { return pending_linear_velocity; }
+	_FORCE_INLINE_ Vector3 get_pending_angular_velocity() const { return pending_angular_velocity; }
+
 	HashMap<GodotConstraint3D *, int> constraint_map;
 
 	Vector<AreaCMP> areas;
@@ -150,6 +164,8 @@ class GodotBody3D : public GodotCollisionObject3D {
 	friend class GodotPhysicsDirectBodyState3D; // i give up, too many functions to expose
 
 public:
+	_FORCE_INLINE_ void clear_pending_transform() { pending_transform_valid = false; }
+
 	void set_state_sync_callback(const Callable &p_callable);
 	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 

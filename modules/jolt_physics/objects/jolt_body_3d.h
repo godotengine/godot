@@ -69,6 +69,14 @@ private:
 
 	Transform3D kinematic_transform;
 
+	// Pending state: set when a kinematic body calls set_transform() during _physics_process.
+	// Consumed by body_get_direct_state() in the same tick so other bodies read current-tick data.
+	// Cleared at the START of the next pre_step() — before _move_kinematic runs for the new frame.
+	float last_step = 0.0f;
+	bool pending_transform_valid = false;
+	Vector3 pending_linear_velocity;
+	Vector3 pending_angular_velocity;
+
 	Vector3 inertia;
 	Vector3 center_of_mass_custom;
 	Vector3 constant_force;
@@ -151,6 +159,12 @@ private:
 	void _sleep_allowed_changed();
 
 public:
+	_FORCE_INLINE_ void clear_pending_transform() { pending_transform_valid = false; }
+	_FORCE_INLINE_ bool has_pending_transform() const { return pending_transform_valid; }
+	_FORCE_INLINE_ Transform3D get_pending_transform() const { return kinematic_transform.scaled_local(scale); }
+	_FORCE_INLINE_ Vector3 get_pending_linear_velocity() const { return pending_linear_velocity; }
+	_FORCE_INLINE_ Vector3 get_pending_angular_velocity() const { return pending_angular_velocity; }
+
 	JoltBody3D();
 	virtual ~JoltBody3D() override;
 

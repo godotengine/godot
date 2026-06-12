@@ -75,6 +75,9 @@ Basis JoltPhysicsDirectBodyState3D::get_inverse_inertia_tensor() const {
 }
 
 Vector3 JoltPhysicsDirectBodyState3D::get_linear_velocity() const {
+	if (body->has_pending_transform()) {
+		return body->get_pending_linear_velocity();
+	}
 	return body->get_linear_velocity();
 }
 
@@ -83,6 +86,9 @@ void JoltPhysicsDirectBodyState3D::set_linear_velocity(const Vector3 &p_velocity
 }
 
 Vector3 JoltPhysicsDirectBodyState3D::get_angular_velocity() const {
+	if (body->has_pending_transform()) {
+		return body->get_pending_angular_velocity();
+	}
 	return body->get_angular_velocity();
 }
 
@@ -95,10 +101,17 @@ void JoltPhysicsDirectBodyState3D::set_transform(const Transform3D &p_transform)
 }
 
 Transform3D JoltPhysicsDirectBodyState3D::get_transform() const {
+	if (body->has_pending_transform()) {
+		return body->get_pending_transform();
+	}
 	return body->get_transform_scaled();
 }
 
 Vector3 JoltPhysicsDirectBodyState3D::get_velocity_at_local_position(const Vector3 &p_local_position) const {
+	if (body->has_pending_transform()) {
+		// v = v_linear + ang_vel x r,  r = local_pos - COM_relative (COM relative to body origin)
+		return body->get_pending_linear_velocity() + body->get_pending_angular_velocity().cross(p_local_position - body->get_center_of_mass_relative());
+	}
 	return body->get_velocity_at_position(body->get_position() + p_local_position);
 }
 
