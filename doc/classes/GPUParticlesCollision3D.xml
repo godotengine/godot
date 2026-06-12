@@ -10,6 +10,7 @@
 		[b]Note:[/b] [member ParticleProcessMaterial.collision_mode] must be [constant ParticleProcessMaterial.COLLISION_RIGID] or [constant ParticleProcessMaterial.COLLISION_HIDE_ON_CONTACT] on the [GPUParticles3D]'s process material for collision to work.
 		[b]Note:[/b] Particle collision only affects [GPUParticles3D], not [CPUParticles3D].
 		[b]Note:[/b] Particles pushed by a collider that is being moved will not be interpolated, which can result in visible stuttering. This can be alleviated by setting [member GPUParticles3D.fixed_fps] to [code]0[/code] or a value that matches or exceeds the target framerate.
+		[b]Note:[/b] For technical reasons, a [GPUParticles3D] node may only interact with up to 32 [GPUParticlesCollision3D] nodes at a time. If more colliders are present in the [GPUParticles3D]'s visibility AABB, some of them will be ignored by particles.
 	</description>
 	<tutorials>
 	</tutorials>
