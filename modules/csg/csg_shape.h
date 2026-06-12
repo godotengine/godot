@@ -288,6 +288,9 @@ class CSGBox3D : public CSGPrimitive3D {
 
 	Ref<Material> material;
 	Vector3 size = Vector3(1, 1, 1);
+	Vector3 uv_offset = Vector3(0, 0, 0);
+	Vector3 uv_scale = Vector3(1, 1, 1);
+	bool use_size_as_uv = false;
 
 protected:
 	static void _bind_methods();
@@ -302,6 +305,15 @@ public:
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_uv_scale(const Vector3 &p_uv_scale);
+	Vector3 get_uv_scale() const;
+
+	void set_use_size_as_uv(const bool &p_enabled);
+	bool get_use_size_as_uv() const;
+
+	void set_uv_offset(const Vector3 &p_uv_offset);
+	Vector3 get_uv_offset() const;
 
 	CSGBox3D() {}
 };
