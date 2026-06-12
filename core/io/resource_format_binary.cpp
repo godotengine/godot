@@ -38,6 +38,7 @@
 #include "core/object/script_language.h"
 #include "core/version.h"
 #include "scene/property_utils.h"
+#include "scene/resources/node_binding.h"
 #include "scene/resources/packed_scene.h"
 
 //#define print_bl(m_what) print_line(m_what)
@@ -96,7 +97,8 @@ enum {
 	// Version 4: New string ID for ext/subresources, breaks forward compat.
 	// Version 5: Ability to store script class in the header.
 	// Version 6: Added PackedVector4Array Variant type.
-	FORMAT_VERSION = 6,
+	// Version 7: Added an extra flag to NodePath's for storing NodeBindings
+	FORMAT_VERSION = 7,
 	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
 	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
 };
@@ -366,8 +368,13 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			}
 
 			NodePath np = NodePath(names, subnames, absolute);
-
-			r_v = np;
+			if (ver_format >= FORMAT_VERSION && f->get_8() == 1) {
+				NodeBinding *binding = memnew(NodeBinding);
+				binding->path = np;
+				r_v = binding;
+			} else {
+				r_v = np;
+			}
 
 		} break;
 		case VARIANT_RID: {
@@ -450,6 +457,19 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 						}
 					}
 				} break;
+					//case OBJECT_NODE_BINDING: {
+					//Variant path;
+					//error = parse_variant(path);
+					//if (error != Error::OK) {
+					//return error;
+					//} else if (path.get_type() != Variant::NODE_PATH) {
+					//error = ERR_INVALID_DATA;
+					//ERR_FAIL_V_MSG(error, vformat("Could not load the node path properly, found: %s.", path));
+					//}
+					//NodeBinding *new_binding = memnew(NodeBinding);
+					//new_binding->path = path;
+					//r_v = new_binding;
+				//} break;
 				default: {
 					ERR_FAIL_V(ERR_FILE_CORRUPT);
 				} break;
@@ -1557,6 +1577,32 @@ void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_byt
 	}
 }
 
+void ResourceFormatSaverBinaryInstance::write_node_path(Ref<FileAccess> f, const Variant &p_property, HashMap<StringName, int> &string_map) {
+	f->store_32(VARIANT_NODE_PATH);
+
+	NodePath np = p_property;
+	f->store_16(np.get_name_count());
+	uint16_t snc = np.get_subname_count();
+	if (np.is_absolute()) {
+		snc |= 0x8000;
+	}
+	f->store_16(snc);
+	for (int i = 0; i < np.get_name_count(); i++) {
+		if (string_map.has(np.get_name(i))) {
+			f->store_32(uint32_t(string_map[np.get_name(i)]));
+		} else {
+			save_unicode_string(f, np.get_name(i), true);
+		}
+	}
+	for (int i = 0; i < np.get_subname_count(); i++) {
+		if (string_map.has(np.get_subname(i))) {
+			f->store_32(uint32_t(string_map[np.get_subname(i)]));
+		} else {
+			save_unicode_string(f, np.get_subname(i), true);
+		}
+	}
+}
+
 void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
 	switch (p_property.get_type()) {
 		case Variant::NIL: {
@@ -1774,28 +1820,9 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 		} break;
 
 		case Variant::NODE_PATH: {
-			f->store_32(VARIANT_NODE_PATH);
-			NodePath np = p_property;
-			f->store_16(np.get_name_count());
-			uint16_t snc = np.get_subname_count();
-			if (np.is_absolute()) {
-				snc |= 0x8000;
-			}
-			f->store_16(snc);
-			for (int i = 0; i < np.get_name_count(); i++) {
-				if (string_map.has(np.get_name(i))) {
-					f->store_32(uint32_t(string_map[np.get_name(i)]));
-				} else {
-					save_unicode_string(f, np.get_name(i), true);
-				}
-			}
-			for (int i = 0; i < np.get_subname_count(); i++) {
-				if (string_map.has(np.get_subname(i))) {
-					f->store_32(uint32_t(string_map[np.get_subname(i)]));
-				} else {
-					save_unicode_string(f, np.get_subname(i), true);
-				}
-			}
+			write_node_path(f, p_property, string_map);
+			// stores a zero to signify that this is not a NodeBinding.
+			f->store_8(0);
 
 		} break;
 		case Variant::RID: {
@@ -1805,8 +1832,20 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(uint32_t(val.get_id()));
 		} break;
 		case Variant::OBJECT: {
-			f->store_32(VARIANT_OBJECT);
+			NodeBinding *maybe_node_binding = Object::cast_to<NodeBinding>(p_property.get_validated_object());
+			if (maybe_node_binding) {
+				// this flag signifies a binding
+				write_node_path(f, maybe_node_binding->path, string_map);
+				f->store_8(1);
+				return;
+			}
+
 			Ref<Resource> res = p_property;
+			f->store_32(VARIANT_OBJECT);
+			if (res.is_null() || res->get_meta(SNAME("_skip_save_"), false)) {
+				f->store_32(OBJECT_EMPTY);
+				return; // Don't save it.
+			}
 			if (res.is_null() || res->get_meta(SNAME("_skip_save_"), false)) {
 				f->store_32(OBJECT_EMPTY);
 				return; // Don't save it.
