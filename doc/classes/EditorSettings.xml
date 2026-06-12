@@ -247,6 +247,10 @@
 		<member name="asset_store/available_urls" type="Dictionary" setter="" getter="">
 			A list of the available URLs that can be chosen in the Asset Store to fetch asset data. With the key being the name, and the value being the URL.
 		</member>
+		<member name="asset_store/show_incompatible_assets" type="bool" setter="" getter="">
+			If [code]true[/code], the Asset Store will show asset releases that are not compatible with the current engine version.
+			[b]Warning:[/b] Using such assets may result in errors and crashes.
+		</member>
 		<member name="asset_store/use_threads" type="bool" setter="" getter="">
 			If [code]true[/code], the Asset Store uses multiple threads for its HTTP requests. This prevents the Asset Store from blocking the main thread for every loaded asset.
 		</member>
