@@ -129,4 +129,9 @@
 			Require a press and a subsequent release before considering the button clicked.
 		</constant>
 	</constants>
+	<theme_items>
+		<theme_item name="hit_margin" data_type="constant" type="int" default="0">
+			Defines the margin around the button's area that still counts as a valid click. This is useful to make it easier to click small buttons.
+		</theme_item>
+	</theme_items>
 </class>
