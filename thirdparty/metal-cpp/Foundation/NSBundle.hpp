@@ -1,374 +1,261 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Foundation/NSBundle.hpp
-//
-// Copyright 2020-2024 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #include "NSDefines.hpp"
-#include "NSNotification.hpp"
+#include "NSBlocks.hpp"
+#include "NSStructs.hpp"
+#include "NSBridge.hpp"
 #include "NSObject.hpp"
 #include "NSTypes.hpp"
+#include "NSRange.hpp"
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+namespace NS {
+    class Array;
+    class Dictionary;
+    class Error;
+    class Object;
+    class String;
+    class URL;
+}
 
 namespace NS
 {
-_NS_CONST(NotificationName, BundleDidLoadNotification);
-_NS_CONST(NotificationName, BundleResourceRequestLowDiskSpaceNotification);
 
-class String* LocalizedString(const String* pKey, const String*);
-class String* LocalizedStringFromTable(const String* pKey, const String* pTbl, const String*);
-class String* LocalizedStringFromTableInBundle(const String* pKey, const String* pTbl, const class Bundle* pBdle, const String*);
-class String* LocalizedStringWithDefaultValue(const String* pKey, const String* pTbl, const class Bundle* pBdle, const String* pVal, const String*);
+extern NS::NotificationName const BundleDidLoadNotification __asm__("_NSBundleDidLoadNotification");
+extern NS::String* const LoadedClasses __asm__("_NSLoadedClasses");
+extern NS::NotificationName const BundleResourceRequestLowDiskSpaceNotification __asm__("_NSBundleResourceRequestLowDiskSpaceNotification");
+inline constexpr unsigned int BundleExecutableArchitectureI386 = 0x00000007;
+inline constexpr unsigned int BundleExecutableArchitecturePPC = 0x00000012;
+inline constexpr unsigned int BundleExecutableArchitectureX86_64 = 0x01000007;
+inline constexpr unsigned int BundleExecutableArchitecturePPC64 = 0x01000012;
+inline constexpr unsigned int BundleExecutableArchitectureARM64 = 0x0100000c;
 
-class Bundle : public Referencing<Bundle>
+
+class Bundle : public NS::Referencing<Bundle>
 {
 public:
-    static Bundle*      mainBundle();
+    static Bundle* alloc();
+    Bundle*        init() const;
 
-    static Bundle*      bundle(const class String* pPath);
-    static Bundle*      bundle(const class URL* pURL);
+    static NS::Array*  allBundles();
+    static NS::Array*  allFrameworks();
+    static NS::Bundle* bundle(NS::String* path);
+    static NS::Bundle* bundle(NS::URL* url);
+    static NS::Bundle* mainBundle();
 
-    static class Array* allBundles();
-    static class Array* allFrameworks();
+    NS::URL*        URLForAuxiliaryExecutable(NS::String* executableName);
+    NS::URL*        appStoreReceiptURL() const;
+    NS::String*     builtInPlugInsPath() const;
+    NS::URL*        builtInPlugInsURL() const;
+    NS::String*     bundleIdentifier() const;
+    NS::String*     bundlePath() const;
+    NS::URL*        bundleURL() const;
+    NS::String*     executablePath() const;
+    NS::URL*        executableURL() const;
+    NS::Dictionary* infoDictionary() const;
+    NS::Bundle*     init(NS::String* path);
+    NS::Bundle*     init(NS::URL* url);
+    bool            isLoaded();
+    bool            load();
+    bool            loadAndReturnError(NS::Error** error);
+    NS::Dictionary* localizedInfoDictionary() const;
+    NS::String*     localizedString(NS::String* key, NS::String* value, NS::String* tableName);
+    NS::Object*     object(NS::String* key);
+    NS::String*     path(NS::String* executableName);
+    bool            preflightAndReturnError(NS::Error** error);
+    NS::String*     privateFrameworksPath() const;
+    NS::URL*        privateFrameworksURL() const;
+    NS::String*     resourcePath() const;
+    NS::URL*        resourceURL() const;
+    NS::String*     sharedFrameworksPath() const;
+    NS::URL*        sharedFrameworksURL() const;
+    NS::String*     sharedSupportPath() const;
+    NS::URL*        sharedSupportURL() const;
+    bool            unload();
 
-    static Bundle*      alloc();
-
-    Bundle*             init(const class String* pPath);
-    Bundle*             init(const class URL* pURL);
-
-    bool                load();
-    bool                unload();
-
-    bool                isLoaded() const;
-
-    bool                preflightAndReturnError(class Error** pError) const;
-    bool                loadAndReturnError(class Error** pError);
-
-    class URL*          bundleURL() const;
-    class URL*          resourceURL() const;
-    class URL*          executableURL() const;
-    class URL*          URLForAuxiliaryExecutable(const class String* pExecutableName) const;
-
-    class URL*          privateFrameworksURL() const;
-    class URL*          sharedFrameworksURL() const;
-    class URL*          sharedSupportURL() const;
-    class URL*          builtInPlugInsURL() const;
-    class URL*          appStoreReceiptURL() const;
-
-    class String*       bundlePath() const;
-    class String*       resourcePath() const;
-    class String*       executablePath() const;
-    class String*       pathForAuxiliaryExecutable(const class String* pExecutableName) const;
-
-    class String*       privateFrameworksPath() const;
-    class String*       sharedFrameworksPath() const;
-    class String*       sharedSupportPath() const;
-    class String*       builtInPlugInsPath() const;
-
-    class String*       bundleIdentifier() const;
-    class Dictionary*   infoDictionary() const;
-    class Dictionary*   localizedInfoDictionary() const;
-    class Object*       objectForInfoDictionaryKey(const class String* pKey);
-
-    class String*       localizedString(const class String* pKey, const class String* pValue = nullptr, const class String* pTableName = nullptr) const;
 };
-}
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+} // namespace NS
 
-_NS_PRIVATE_DEF_CONST(NS::NotificationName, BundleDidLoadNotification);
-_NS_PRIVATE_DEF_CONST(NS::NotificationName, BundleResourceRequestLowDiskSpaceNotification);
+// --- Class symbols + inline implementations ---
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::LocalizedString(const String* pKey, const String*)
-{
-    return Bundle::mainBundle()->localizedString(pKey, nullptr, nullptr);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::LocalizedStringFromTable(const String* pKey, const String* pTbl, const String*)
-{
-    return Bundle::mainBundle()->localizedString(pKey, nullptr, pTbl);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::LocalizedStringFromTableInBundle(const String* pKey, const String* pTbl, const Bundle* pBdl, const String*)
-{
-    return pBdl->localizedString(pKey, nullptr, pTbl);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::LocalizedStringWithDefaultValue(const String* pKey, const String* pTbl, const Bundle* pBdl, const String* pVal, const String*)
-{
-    return pBdl->localizedString(pKey, pVal, pTbl);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Bundle* NS::Bundle::mainBundle()
-{
-    return Object::sendMessage<Bundle*>(_NS_PRIVATE_CLS(NSBundle), _NS_PRIVATE_SEL(mainBundle));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Bundle* NS::Bundle::bundle(const class String* pPath)
-{
-    return Object::sendMessage<Bundle*>(_NS_PRIVATE_CLS(NSBundle), _NS_PRIVATE_SEL(bundleWithPath_), pPath);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Bundle* NS::Bundle::bundle(const class URL* pURL)
-{
-    return Object::sendMessage<Bundle*>(_NS_PRIVATE_CLS(NSBundle), _NS_PRIVATE_SEL(bundleWithURL_), pURL);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Array* NS::Bundle::allBundles()
-{
-    return Object::sendMessage<Array*>(_NS_PRIVATE_CLS(NSBundle), _NS_PRIVATE_SEL(allBundles));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Array* NS::Bundle::allFrameworks()
-{
-    return Object::sendMessage<Array*>(_NS_PRIVATE_CLS(NSBundle), _NS_PRIVATE_SEL(allFrameworks));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern "C" void *OBJC_CLASS_$_NSBundle;
 
 _NS_INLINE NS::Bundle* NS::Bundle::alloc()
 {
-    return Object::sendMessage<Bundle*>(_NS_PRIVATE_CLS(NSBundle), _NS_PRIVATE_SEL(alloc));
+    return _NS_msg_NS__Bundlep_alloc((const void*)&OBJC_CLASS_$_NSBundle, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Bundle* NS::Bundle::init(const String* pPath)
+_NS_INLINE NS::Bundle* NS::Bundle::init() const
 {
-    return Object::sendMessage<Bundle*>(this, _NS_PRIVATE_SEL(initWithPath_), pPath);
+    return _NS_msg_NS__Bundlep_init((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Bundle* NS::Bundle::init(const URL* pURL)
+_NS_INLINE NS::Bundle* NS::Bundle::mainBundle()
 {
-    return Object::sendMessage<Bundle*>(this, _NS_PRIVATE_SEL(initWithURL_), pURL);
+    return _NS_msg_NS__Bundlep_mainBundle((const void*)&OBJC_CLASS_$_NSBundle, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::Bundle::load()
+_NS_INLINE NS::Array* NS::Bundle::allBundles()
 {
-    return Object::sendMessage<bool>(this, _NS_PRIVATE_SEL(load));
+    return _NS_msg_NS__Arrayp_allBundles((const void*)&OBJC_CLASS_$_NSBundle, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::Bundle::unload()
+_NS_INLINE NS::Array* NS::Bundle::allFrameworks()
 {
-    return Object::sendMessage<bool>(this, _NS_PRIVATE_SEL(unload));
+    return _NS_msg_NS__Arrayp_allFrameworks((const void*)&OBJC_CLASS_$_NSBundle, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::Bundle::isLoaded() const
+_NS_INLINE NS::Bundle* NS::Bundle::bundle(NS::String* path)
 {
-    return Object::sendMessage<bool>(this, _NS_PRIVATE_SEL(isLoaded));
+    return _NS_msg_NS__Bundlep_bundleWithPath__NS__Stringp((const void*)&OBJC_CLASS_$_NSBundle, nullptr, path);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::Bundle::preflightAndReturnError(Error** pError) const
+_NS_INLINE NS::Bundle* NS::Bundle::bundle(NS::URL* url)
 {
-    return Object::sendMessage<bool>(this, _NS_PRIVATE_SEL(preflightAndReturnError_), pError);
+    return _NS_msg_NS__Bundlep_bundleWithURL__NS__URLp((const void*)&OBJC_CLASS_$_NSBundle, nullptr, url);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::Bundle::loadAndReturnError(Error** pError)
-{
-    return Object::sendMessage<bool>(this, _NS_PRIVATE_SEL(loadAndReturnError_), pError);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::URL* NS::Bundle::bundleURL() const
 {
-    return Object::sendMessage<URL*>(this, _NS_PRIVATE_SEL(bundleURL));
+    return _NS_msg_NS__URLp_bundleURL((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::URL* NS::Bundle::resourceURL() const
 {
-    return Object::sendMessage<URL*>(this, _NS_PRIVATE_SEL(resourceURL));
+    return _NS_msg_NS__URLp_resourceURL((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::URL* NS::Bundle::executableURL() const
 {
-    return Object::sendMessage<URL*>(this, _NS_PRIVATE_SEL(executableURL));
+    return _NS_msg_NS__URLp_executableURL((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::URL* NS::Bundle::URLForAuxiliaryExecutable(const String* pExecutableName) const
-{
-    return Object::sendMessage<URL*>(this, _NS_PRIVATE_SEL(URLForAuxiliaryExecutable_), pExecutableName);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::URL* NS::Bundle::privateFrameworksURL() const
 {
-    return Object::sendMessage<URL*>(this, _NS_PRIVATE_SEL(privateFrameworksURL));
+    return _NS_msg_NS__URLp_privateFrameworksURL((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::URL* NS::Bundle::sharedFrameworksURL() const
 {
-    return Object::sendMessage<URL*>(this, _NS_PRIVATE_SEL(sharedFrameworksURL));
+    return _NS_msg_NS__URLp_sharedFrameworksURL((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::URL* NS::Bundle::sharedSupportURL() const
 {
-    return Object::sendMessage<URL*>(this, _NS_PRIVATE_SEL(sharedSupportURL));
+    return _NS_msg_NS__URLp_sharedSupportURL((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::URL* NS::Bundle::builtInPlugInsURL() const
 {
-    return Object::sendMessage<URL*>(this, _NS_PRIVATE_SEL(builtInPlugInsURL));
+    return _NS_msg_NS__URLp_builtInPlugInsURL((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::URL* NS::Bundle::appStoreReceiptURL() const
 {
-    return Object::sendMessage<URL*>(this, _NS_PRIVATE_SEL(appStoreReceiptURL));
+    return _NS_msg_NS__URLp_appStoreReceiptURL((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Bundle::bundlePath() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(bundlePath));
+    return _NS_msg_NS__Stringp_bundlePath((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Bundle::resourcePath() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(resourcePath));
+    return _NS_msg_NS__Stringp_resourcePath((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Bundle::executablePath() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(executablePath));
+    return _NS_msg_NS__Stringp_executablePath((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::Bundle::pathForAuxiliaryExecutable(const String* pExecutableName) const
-{
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(pathForAuxiliaryExecutable_), pExecutableName);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Bundle::privateFrameworksPath() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(privateFrameworksPath));
+    return _NS_msg_NS__Stringp_privateFrameworksPath((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Bundle::sharedFrameworksPath() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(sharedFrameworksPath));
+    return _NS_msg_NS__Stringp_sharedFrameworksPath((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Bundle::sharedSupportPath() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(sharedSupportPath));
+    return _NS_msg_NS__Stringp_sharedSupportPath((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Bundle::builtInPlugInsPath() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(builtInPlugInsPath));
+    return _NS_msg_NS__Stringp_builtInPlugInsPath((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Bundle::bundleIdentifier() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(bundleIdentifier));
+    return _NS_msg_NS__Stringp_bundleIdentifier((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::Dictionary* NS::Bundle::infoDictionary() const
 {
-    return Object::sendMessage<Dictionary*>(this, _NS_PRIVATE_SEL(infoDictionary));
+    return _NS_msg_NS__Dictionaryp_infoDictionary((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::Dictionary* NS::Bundle::localizedInfoDictionary() const
 {
-    return Object::sendMessage<Dictionary*>(this, _NS_PRIVATE_SEL(localizedInfoDictionary));
+    return _NS_msg_NS__Dictionaryp_localizedInfoDictionary((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Object* NS::Bundle::objectForInfoDictionaryKey(const String* pKey)
+_NS_INLINE NS::Bundle* NS::Bundle::init(NS::String* path)
 {
-    return Object::sendMessage<Object*>(this, _NS_PRIVATE_SEL(objectForInfoDictionaryKey_), pKey);
+    return _NS_msg_NS__Bundlep_initWithPath__NS__Stringp((const void*)this, nullptr, path);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::Bundle::localizedString(const String* pKey, const String* pValue /* = nullptr */, const String* pTableName /* = nullptr */) const
+_NS_INLINE NS::Bundle* NS::Bundle::init(NS::URL* url)
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(localizedStringForKey_value_table_), pKey, pValue, pTableName);
+    return _NS_msg_NS__Bundlep_initWithURL__NS__URLp((const void*)this, nullptr, url);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_NS_INLINE bool NS::Bundle::load()
+{
+    return _NS_msg_bool_load((const void*)this, nullptr);
+}
+
+_NS_INLINE bool NS::Bundle::unload()
+{
+    return _NS_msg_bool_unload((const void*)this, nullptr);
+}
+
+_NS_INLINE bool NS::Bundle::preflightAndReturnError(NS::Error** error)
+{
+    return _NS_msg_bool_preflightAndReturnError__NS__Errorpp((const void*)this, nullptr, error);
+}
+
+_NS_INLINE bool NS::Bundle::loadAndReturnError(NS::Error** error)
+{
+    return _NS_msg_bool_loadAndReturnError__NS__Errorpp((const void*)this, nullptr, error);
+}
+
+_NS_INLINE NS::URL* NS::Bundle::URLForAuxiliaryExecutable(NS::String* executableName)
+{
+    return _NS_msg_NS__URLp_URLForAuxiliaryExecutable__NS__Stringp((const void*)this, nullptr, executableName);
+}
+
+_NS_INLINE NS::String* NS::Bundle::path(NS::String* executableName)
+{
+    return _NS_msg_NS__Stringp_pathForAuxiliaryExecutable__NS__Stringp((const void*)this, nullptr, executableName);
+}
+
+_NS_INLINE NS::String* NS::Bundle::localizedString(NS::String* key, NS::String* value, NS::String* tableName)
+{
+    return _NS_msg_NS__Stringp_localizedStringForKey_value_table__NS__Stringp_NS__Stringp_NS__Stringp((const void*)this, nullptr, key, value, tableName);
+}
+
+_NS_INLINE NS::Object* NS::Bundle::object(NS::String* key)
+{
+    return _NS_msg_NS__Objectp_objectForInfoDictionaryKey__NS__Stringp((const void*)this, nullptr, key);
+}
+
+_NS_INLINE bool NS::Bundle::isLoaded()
+{
+    return _NS_msg_bool_isLoaded((const void*)this, nullptr);
+}

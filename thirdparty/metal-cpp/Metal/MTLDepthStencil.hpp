@@ -1,37 +1,23 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTLDepthStencil.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
 #include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
-#include "MTLTypes.hpp"
-#include <cstdint>
+#include "MTLBlocks.hpp"
+#include "MTLStructs.hpp"
+#include "MTLBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
+
+namespace MTL {
+    class Device;
+}
+namespace NS {
+    class String;
+}
 
 namespace MTL
 {
-class DepthStencilDescriptor;
-class Device;
-class StencilDescriptor;
+
 _MTL_ENUM(NS::UInteger, CompareFunction) {
     CompareFunctionNever = 0,
     CompareFunctionLess = 1,
@@ -54,224 +40,215 @@ _MTL_ENUM(NS::UInteger, StencilOperation) {
     StencilOperationDecrementWrap = 7,
 };
 
+
+class StencilDescriptor;
+class DepthStencilDescriptor;
+class DepthStencilState;
+
 class StencilDescriptor : public NS::Copying<StencilDescriptor>
 {
 public:
     static StencilDescriptor* alloc();
+    StencilDescriptor*        init() const;
 
-    StencilOperation          depthFailureOperation() const;
+    MTL::StencilOperation depthFailureOperation() const;
+    MTL::StencilOperation depthStencilPassOperation() const;
+    uint32_t              readMask() const;
+    void                  setDepthFailureOperation(MTL::StencilOperation depthFailureOperation);
+    void                  setDepthStencilPassOperation(MTL::StencilOperation depthStencilPassOperation);
+    void                  setReadMask(uint32_t readMask);
+    void                  setStencilCompareFunction(MTL::CompareFunction stencilCompareFunction);
+    void                  setStencilFailureOperation(MTL::StencilOperation stencilFailureOperation);
+    void                  setWriteMask(uint32_t writeMask);
+    MTL::CompareFunction  stencilCompareFunction() const;
+    MTL::StencilOperation stencilFailureOperation() const;
+    uint32_t              writeMask() const;
 
-    StencilOperation          depthStencilPassOperation() const;
-
-    StencilDescriptor*        init();
-
-    uint32_t                  readMask() const;
-
-    void                      setDepthFailureOperation(MTL::StencilOperation depthFailureOperation);
-
-    void                      setDepthStencilPassOperation(MTL::StencilOperation depthStencilPassOperation);
-
-    void                      setReadMask(uint32_t readMask);
-
-    void                      setStencilCompareFunction(MTL::CompareFunction stencilCompareFunction);
-
-    void                      setStencilFailureOperation(MTL::StencilOperation stencilFailureOperation);
-
-    void                      setWriteMask(uint32_t writeMask);
-
-    CompareFunction           stencilCompareFunction() const;
-
-    StencilOperation          stencilFailureOperation() const;
-
-    uint32_t                  writeMask() const;
 };
+
 class DepthStencilDescriptor : public NS::Copying<DepthStencilDescriptor>
 {
 public:
     static DepthStencilDescriptor* alloc();
+    DepthStencilDescriptor*        init() const;
 
-    StencilDescriptor*             backFaceStencil() const;
-
-    CompareFunction                depthCompareFunction() const;
-
-    [[deprecated("please use isDepthWriteEnabled instead")]]
+    MTL::StencilDescriptor* backFaceStencil() const;
+    MTL::CompareFunction    depthCompareFunction() const;
     bool                    depthWriteEnabled() const;
-
-    StencilDescriptor*      frontFaceStencil() const;
-
-    DepthStencilDescriptor* init();
-
-    bool                    isDepthWriteEnabled() const;
-
+    MTL::StencilDescriptor* frontFaceStencil() const;
+    bool                    isDepthWriteEnabled();
     NS::String*             label() const;
-
-    void                    setBackFaceStencil(const MTL::StencilDescriptor* backFaceStencil);
-
+    void                    setBackFaceStencil(MTL::StencilDescriptor* backFaceStencil);
     void                    setDepthCompareFunction(MTL::CompareFunction depthCompareFunction);
-
     void                    setDepthWriteEnabled(bool depthWriteEnabled);
+    void                    setFrontFaceStencil(MTL::StencilDescriptor* frontFaceStencil);
+    void                    setLabel(NS::String* label);
 
-    void                    setFrontFaceStencil(const MTL::StencilDescriptor* frontFaceStencil);
-
-    void                    setLabel(const NS::String* label);
 };
+
 class DepthStencilState : public NS::Referencing<DepthStencilState>
 {
 public:
-    Device*     device() const;
+    MTL::Device*    device() const;
+    MTL::ResourceID gpuResourceID() const;
+    NS::String*     label() const;
 
-    ResourceID  gpuResourceID() const;
-
-    NS::String* label() const;
 };
 
-}
+} // namespace MTL
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTLStencilDescriptor;
+extern "C" void *OBJC_CLASS_$_MTLDepthStencilDescriptor;
+extern "C" void *OBJC_CLASS_$_MTLDepthStencilState;
+
 _MTL_INLINE MTL::StencilDescriptor* MTL::StencilDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL::StencilDescriptor>(_MTL_PRIVATE_CLS(MTLStencilDescriptor));
+    return _MTL_msg_MTL__StencilDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTLStencilDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL::StencilOperation MTL::StencilDescriptor::depthFailureOperation() const
+_MTL_INLINE MTL::StencilDescriptor* MTL::StencilDescriptor::init() const
 {
-    return Object::sendMessage<MTL::StencilOperation>(this, _MTL_PRIVATE_SEL(depthFailureOperation));
-}
-
-_MTL_INLINE MTL::StencilOperation MTL::StencilDescriptor::depthStencilPassOperation() const
-{
-    return Object::sendMessage<MTL::StencilOperation>(this, _MTL_PRIVATE_SEL(depthStencilPassOperation));
-}
-
-_MTL_INLINE MTL::StencilDescriptor* MTL::StencilDescriptor::init()
-{
-    return NS::Object::init<MTL::StencilDescriptor>();
-}
-
-_MTL_INLINE uint32_t MTL::StencilDescriptor::readMask() const
-{
-    return Object::sendMessage<uint32_t>(this, _MTL_PRIVATE_SEL(readMask));
-}
-
-_MTL_INLINE void MTL::StencilDescriptor::setDepthFailureOperation(MTL::StencilOperation depthFailureOperation)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setDepthFailureOperation_), depthFailureOperation);
-}
-
-_MTL_INLINE void MTL::StencilDescriptor::setDepthStencilPassOperation(MTL::StencilOperation depthStencilPassOperation)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setDepthStencilPassOperation_), depthStencilPassOperation);
-}
-
-_MTL_INLINE void MTL::StencilDescriptor::setReadMask(uint32_t readMask)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setReadMask_), readMask);
-}
-
-_MTL_INLINE void MTL::StencilDescriptor::setStencilCompareFunction(MTL::CompareFunction stencilCompareFunction)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setStencilCompareFunction_), stencilCompareFunction);
-}
-
-_MTL_INLINE void MTL::StencilDescriptor::setStencilFailureOperation(MTL::StencilOperation stencilFailureOperation)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setStencilFailureOperation_), stencilFailureOperation);
-}
-
-_MTL_INLINE void MTL::StencilDescriptor::setWriteMask(uint32_t writeMask)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setWriteMask_), writeMask);
+    return _MTL_msg_MTL__StencilDescriptorp_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE MTL::CompareFunction MTL::StencilDescriptor::stencilCompareFunction() const
 {
-    return Object::sendMessage<MTL::CompareFunction>(this, _MTL_PRIVATE_SEL(stencilCompareFunction));
+    return _MTL_msg_MTL__CompareFunction_stencilCompareFunction((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::StencilDescriptor::setStencilCompareFunction(MTL::CompareFunction stencilCompareFunction)
+{
+    _MTL_msg_v_setStencilCompareFunction__MTL__CompareFunction((const void*)this, nullptr, stencilCompareFunction);
 }
 
 _MTL_INLINE MTL::StencilOperation MTL::StencilDescriptor::stencilFailureOperation() const
 {
-    return Object::sendMessage<MTL::StencilOperation>(this, _MTL_PRIVATE_SEL(stencilFailureOperation));
+    return _MTL_msg_MTL__StencilOperation_stencilFailureOperation((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::StencilDescriptor::setStencilFailureOperation(MTL::StencilOperation stencilFailureOperation)
+{
+    _MTL_msg_v_setStencilFailureOperation__MTL__StencilOperation((const void*)this, nullptr, stencilFailureOperation);
+}
+
+_MTL_INLINE MTL::StencilOperation MTL::StencilDescriptor::depthFailureOperation() const
+{
+    return _MTL_msg_MTL__StencilOperation_depthFailureOperation((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::StencilDescriptor::setDepthFailureOperation(MTL::StencilOperation depthFailureOperation)
+{
+    _MTL_msg_v_setDepthFailureOperation__MTL__StencilOperation((const void*)this, nullptr, depthFailureOperation);
+}
+
+_MTL_INLINE MTL::StencilOperation MTL::StencilDescriptor::depthStencilPassOperation() const
+{
+    return _MTL_msg_MTL__StencilOperation_depthStencilPassOperation((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::StencilDescriptor::setDepthStencilPassOperation(MTL::StencilOperation depthStencilPassOperation)
+{
+    _MTL_msg_v_setDepthStencilPassOperation__MTL__StencilOperation((const void*)this, nullptr, depthStencilPassOperation);
+}
+
+_MTL_INLINE uint32_t MTL::StencilDescriptor::readMask() const
+{
+    return _MTL_msg_uint32_t_readMask((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::StencilDescriptor::setReadMask(uint32_t readMask)
+{
+    _MTL_msg_v_setReadMask__uint32_t((const void*)this, nullptr, readMask);
 }
 
 _MTL_INLINE uint32_t MTL::StencilDescriptor::writeMask() const
 {
-    return Object::sendMessage<uint32_t>(this, _MTL_PRIVATE_SEL(writeMask));
+    return _MTL_msg_uint32_t_writeMask((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::StencilDescriptor::setWriteMask(uint32_t writeMask)
+{
+    _MTL_msg_v_setWriteMask__uint32_t((const void*)this, nullptr, writeMask);
 }
 
 _MTL_INLINE MTL::DepthStencilDescriptor* MTL::DepthStencilDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL::DepthStencilDescriptor>(_MTL_PRIVATE_CLS(MTLDepthStencilDescriptor));
+    return _MTL_msg_MTL__DepthStencilDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTLDepthStencilDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL::StencilDescriptor* MTL::DepthStencilDescriptor::backFaceStencil() const
+_MTL_INLINE MTL::DepthStencilDescriptor* MTL::DepthStencilDescriptor::init() const
 {
-    return Object::sendMessage<MTL::StencilDescriptor*>(this, _MTL_PRIVATE_SEL(backFaceStencil));
+    return _MTL_msg_MTL__DepthStencilDescriptorp_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE MTL::CompareFunction MTL::DepthStencilDescriptor::depthCompareFunction() const
 {
-    return Object::sendMessage<MTL::CompareFunction>(this, _MTL_PRIVATE_SEL(depthCompareFunction));
-}
-
-_MTL_INLINE bool MTL::DepthStencilDescriptor::depthWriteEnabled() const
-{
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(isDepthWriteEnabled));
-}
-
-_MTL_INLINE MTL::StencilDescriptor* MTL::DepthStencilDescriptor::frontFaceStencil() const
-{
-    return Object::sendMessage<MTL::StencilDescriptor*>(this, _MTL_PRIVATE_SEL(frontFaceStencil));
-}
-
-_MTL_INLINE MTL::DepthStencilDescriptor* MTL::DepthStencilDescriptor::init()
-{
-    return NS::Object::init<MTL::DepthStencilDescriptor>();
-}
-
-_MTL_INLINE bool MTL::DepthStencilDescriptor::isDepthWriteEnabled() const
-{
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(isDepthWriteEnabled));
-}
-
-_MTL_INLINE NS::String* MTL::DepthStencilDescriptor::label() const
-{
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
-}
-
-_MTL_INLINE void MTL::DepthStencilDescriptor::setBackFaceStencil(const MTL::StencilDescriptor* backFaceStencil)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setBackFaceStencil_), backFaceStencil);
+    return _MTL_msg_MTL__CompareFunction_depthCompareFunction((const void*)this, nullptr);
 }
 
 _MTL_INLINE void MTL::DepthStencilDescriptor::setDepthCompareFunction(MTL::CompareFunction depthCompareFunction)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setDepthCompareFunction_), depthCompareFunction);
+    _MTL_msg_v_setDepthCompareFunction__MTL__CompareFunction((const void*)this, nullptr, depthCompareFunction);
+}
+
+_MTL_INLINE bool MTL::DepthStencilDescriptor::depthWriteEnabled() const
+{
+    return _MTL_msg_bool_depthWriteEnabled((const void*)this, nullptr);
 }
 
 _MTL_INLINE void MTL::DepthStencilDescriptor::setDepthWriteEnabled(bool depthWriteEnabled)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setDepthWriteEnabled_), depthWriteEnabled);
+    _MTL_msg_v_setDepthWriteEnabled__bool((const void*)this, nullptr, depthWriteEnabled);
 }
 
-_MTL_INLINE void MTL::DepthStencilDescriptor::setFrontFaceStencil(const MTL::StencilDescriptor* frontFaceStencil)
+_MTL_INLINE MTL::StencilDescriptor* MTL::DepthStencilDescriptor::frontFaceStencil() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setFrontFaceStencil_), frontFaceStencil);
+    return _MTL_msg_MTL__StencilDescriptorp_frontFaceStencil((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL::DepthStencilDescriptor::setLabel(const NS::String* label)
+_MTL_INLINE void MTL::DepthStencilDescriptor::setFrontFaceStencil(MTL::StencilDescriptor* frontFaceStencil)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLabel_), label);
+    _MTL_msg_v_setFrontFaceStencil__MTL__StencilDescriptorp((const void*)this, nullptr, frontFaceStencil);
 }
 
-_MTL_INLINE MTL::Device* MTL::DepthStencilState::device() const
+_MTL_INLINE MTL::StencilDescriptor* MTL::DepthStencilDescriptor::backFaceStencil() const
 {
-    return Object::sendMessage<MTL::Device*>(this, _MTL_PRIVATE_SEL(device));
+    return _MTL_msg_MTL__StencilDescriptorp_backFaceStencil((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::ResourceID MTL::DepthStencilState::gpuResourceID() const
+_MTL_INLINE void MTL::DepthStencilDescriptor::setBackFaceStencil(MTL::StencilDescriptor* backFaceStencil)
 {
-    return Object::sendMessage<MTL::ResourceID>(this, _MTL_PRIVATE_SEL(gpuResourceID));
+    _MTL_msg_v_setBackFaceStencil__MTL__StencilDescriptorp((const void*)this, nullptr, backFaceStencil);
+}
+
+_MTL_INLINE NS::String* MTL::DepthStencilDescriptor::label() const
+{
+    return _MTL_msg_NS__Stringp_label((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::DepthStencilDescriptor::setLabel(NS::String* label)
+{
+    _MTL_msg_v_setLabel__NS__Stringp((const void*)this, nullptr, label);
+}
+
+_MTL_INLINE bool MTL::DepthStencilDescriptor::isDepthWriteEnabled()
+{
+    return _MTL_msg_bool_isDepthWriteEnabled((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::String* MTL::DepthStencilState::label() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    return _MTL_msg_NS__Stringp_label((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::Device* MTL::DepthStencilState::device() const
+{
+    return _MTL_msg_MTL__Devicep_device((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::ResourceID MTL::DepthStencilState::gpuResourceID() const
+{
+    return _MTL_msg_MTL__ResourceID_gpuResourceID((const void*)this, nullptr);
 }

@@ -1,345 +1,284 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTL4Compiler.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
-#include "MTLDefines.hpp"
-#include "MTLDevice.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
+#include "MTL4Defines.hpp"
+#include "MTL4Blocks.hpp"
+#include "MTL4Structs.hpp"
+#include "MTL4Bridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
+#include "MTLBlocks.hpp"
 
-#include <functional>
+namespace MTL {
+    class ComputePipelineState;
+    class Device;
+    class DynamicLibrary;
+    class Library;
+    class RenderPipelineState;
+}
+namespace MTL4 {
+    class BinaryFunction;
+    class BinaryFunctionDescriptor;
+    class CompilerTask;
+    class ComputePipelineDescriptor;
+    class LibraryDescriptor;
+    class MachineLearningPipelineDescriptor;
+    class MachineLearningPipelineState;
+    class PipelineDataSetSerializer;
+    class PipelineDescriptor;
+    class PipelineStageDynamicLinkingDescriptor;
+    class RenderPipelineDynamicLinkingDescriptor;
+}
+namespace NS {
+    class Array;
+    class Error;
+    class String;
+    class URL;
+}
 
 namespace MTL4
 {
-class BinaryFunction;
-class BinaryFunctionDescriptor;
+
 class CompilerDescriptor;
-class CompilerTask;
 class CompilerTaskOptions;
-class ComputePipelineDescriptor;
-class LibraryDescriptor;
-class MachineLearningPipelineDescriptor;
-class MachineLearningPipelineState;
-class PipelineDataSetSerializer;
-class PipelineDescriptor;
-class PipelineStageDynamicLinkingDescriptor;
-class RenderPipelineDynamicLinkingDescriptor;
-}
-
-namespace MTL
-{
-class ComputePipelineState;
-class Device;
-class DynamicLibrary;
-class Library;
-class RenderPipelineState;
-
-using NewDynamicLibraryCompletionHandler = void (^)(MTL::DynamicLibrary*, NS::Error*);
-using NewDynamicLibraryCompletionHandlerFunction = std::function<void(MTL::DynamicLibrary*, NS::Error*)>;
-}
-
-namespace MTL4
-{
-using NewComputePipelineStateCompletionHandler = void (^)(MTL::ComputePipelineState*, NS::Error*);
-using NewComputePipelineStateCompletionHandlerFunction = std::function<void(MTL::ComputePipelineState*, NS::Error*)>;
-using NewRenderPipelineStateCompletionHandler = void (^)(MTL::RenderPipelineState*, NS::Error*);
-using NewRenderPipelineStateCompletionHandlerFunction = std::function<void(MTL::RenderPipelineState*, NS::Error*)>;
-using NewBinaryFunctionCompletionHandler = void (^)(MTL4::BinaryFunction*, NS::Error*);
-using NewBinaryFunctionCompletionHandlerFunction = std::function<void(MTL4::BinaryFunction*, NS::Error*)>;
-using NewMachineLearningPipelineStateCompletionHandler = void (^)(MTL4::MachineLearningPipelineState*, NS::Error*);
-using NewMachineLearningPipelineStateCompletionHandlerFunction = std::function<void(MTL4::MachineLearningPipelineState*, NS::Error*)>;
+class Compiler;
 
 class CompilerDescriptor : public NS::Copying<CompilerDescriptor>
 {
 public:
     static CompilerDescriptor* alloc();
+    CompilerDescriptor*        init() const;
 
-    CompilerDescriptor*        init();
+    NS::String*                      label() const;
+    MTL4::PipelineDataSetSerializer* pipelineDataSetSerializer() const;
+    void                             setLabel(NS::String* label);
+    void                             setPipelineDataSetSerializer(MTL4::PipelineDataSetSerializer* pipelineDataSetSerializer);
 
-    NS::String*                label() const;
-
-    PipelineDataSetSerializer* pipelineDataSetSerializer() const;
-
-    void                       setLabel(const NS::String* label);
-
-    void                       setPipelineDataSetSerializer(const MTL4::PipelineDataSetSerializer* pipelineDataSetSerializer);
 };
+
 class CompilerTaskOptions : public NS::Copying<CompilerTaskOptions>
 {
 public:
     static CompilerTaskOptions* alloc();
+    CompilerTaskOptions*        init() const;
 
-    CompilerTaskOptions*        init();
+    NS::Array* lookupArchives() const;
+    void       setLookupArchives(NS::Array* lookupArchives);
 
-    NS::Array*                  lookupArchives() const;
-    void                        setLookupArchives(const NS::Array* lookupArchives);
 };
+
 class Compiler : public NS::Referencing<Compiler>
 {
 public:
-    MTL::Device*                  device() const;
+    MTL::Device*                        device() const;
+    NS::String*                         label() const;
+    MTL4::BinaryFunction*               newBinaryFunction(MTL4::BinaryFunctionDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error);
+    MTL4::CompilerTask*                 newBinaryFunction(MTL4::BinaryFunctionDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, MTL4::NewBinaryFunctionCompletionHandler completionHandler);
+    MTL4::CompilerTask*                 newBinaryFunction(MTL4::BinaryFunctionDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL4::NewBinaryFunctionCompletionHandlerFunction& completionHandler);
+    MTL::ComputePipelineState*          newComputePipelineState(MTL4::ComputePipelineDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error);
+    MTL::ComputePipelineState*          newComputePipelineState(MTL4::ComputePipelineDescriptor* descriptor, MTL4::PipelineStageDynamicLinkingDescriptor* dynamicLinkingDescriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error);
+    MTL4::CompilerTask*                 newComputePipelineState(MTL4::ComputePipelineDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, MTL::NewComputePipelineStateCompletionHandler completionHandler);
+    MTL4::CompilerTask*                 newComputePipelineState(MTL4::ComputePipelineDescriptor* descriptor, MTL4::PipelineStageDynamicLinkingDescriptor* dynamicLinkingDescriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, MTL::NewComputePipelineStateCompletionHandler completionHandler);
+    MTL::DynamicLibrary*                newDynamicLibrary(MTL::Library* library, NS::Error** error);
+    MTL::DynamicLibrary*                newDynamicLibrary(NS::URL* url, NS::Error** error);
+    MTL4::CompilerTask*                 newDynamicLibrary(MTL::Library* library, MTL::NewDynamicLibraryCompletionHandler completionHandler);
+    MTL4::CompilerTask*                 newDynamicLibrary(NS::URL* url, MTL::NewDynamicLibraryCompletionHandler completionHandler);
+    MTL::Library*                       newLibrary(MTL4::LibraryDescriptor* descriptor, NS::Error** error);
+    MTL4::CompilerTask*                 newLibrary(MTL4::LibraryDescriptor* descriptor, MTL::NewLibraryCompletionHandler completionHandler);
+    MTL4::MachineLearningPipelineState* newMachineLearningPipelineState(MTL4::MachineLearningPipelineDescriptor* descriptor, NS::Error** error);
+    MTL4::CompilerTask*                 newMachineLearningPipelineState(MTL4::MachineLearningPipelineDescriptor* descriptor, MTL4::NewMachineLearningPipelineStateCompletionHandler completionHandler);
+    MTL4::CompilerTask*                 newMachineLearningPipelineState(MTL4::MachineLearningPipelineDescriptor* descriptor, const MTL4::NewMachineLearningPipelineStateCompletionHandlerFunction& completionHandler);
+    MTL::RenderPipelineState*           newRenderPipelineState(MTL4::PipelineDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error);
+    MTL::RenderPipelineState*           newRenderPipelineState(MTL4::PipelineDescriptor* descriptor, MTL4::RenderPipelineDynamicLinkingDescriptor* dynamicLinkingDescriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error);
+    MTL4::CompilerTask*                 newRenderPipelineState(MTL4::PipelineDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, MTL::NewRenderPipelineStateCompletionHandler completionHandler);
+    MTL4::CompilerTask*                 newRenderPipelineState(MTL4::PipelineDescriptor* descriptor, MTL4::RenderPipelineDynamicLinkingDescriptor* dynamicLinkingDescriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, MTL::NewRenderPipelineStateCompletionHandler completionHandler);
+    MTL::RenderPipelineState*           newRenderPipelineStateBySpecialization(MTL4::PipelineDescriptor* descriptor, MTL::RenderPipelineState* pipeline, NS::Error** error);
+    MTL4::CompilerTask*                 newRenderPipelineStateBySpecialization(MTL4::PipelineDescriptor* descriptor, MTL::RenderPipelineState* pipeline, MTL::NewRenderPipelineStateCompletionHandler completionHandler);
+    MTL4::PipelineDataSetSerializer*    pipelineDataSetSerializer() const;
 
-    NS::String*                   label() const;
-
-    BinaryFunction*               newBinaryFunction(const MTL4::BinaryFunctionDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error);
-    CompilerTask*                 newBinaryFunction(const MTL4::BinaryFunctionDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL4::NewBinaryFunctionCompletionHandler completionHandler);
-
-    MTL::ComputePipelineState*    newComputePipelineState(const MTL4::ComputePipelineDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error);
-    MTL::ComputePipelineState*    newComputePipelineState(const MTL4::ComputePipelineDescriptor* descriptor, const MTL4::PipelineStageDynamicLinkingDescriptor* dynamicLinkingDescriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error);
-    CompilerTask*                 newComputePipelineState(const MTL4::ComputePipelineDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL::NewComputePipelineStateCompletionHandler completionHandler);
-    CompilerTask*                 newComputePipelineState(const MTL4::ComputePipelineDescriptor* descriptor, const MTL4::PipelineStageDynamicLinkingDescriptor* dynamicLinkingDescriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL::NewComputePipelineStateCompletionHandler completionHandler);
-    CompilerTask*                 newComputePipelineState(const MTL4::ComputePipelineDescriptor* pDescriptor, const MTL4::CompilerTaskOptions* options, const MTL4::NewComputePipelineStateCompletionHandlerFunction& function);
-
-    MTL::DynamicLibrary*          newDynamicLibrary(const MTL::Library* library, NS::Error** error);
-    MTL::DynamicLibrary*          newDynamicLibrary(const NS::URL* url, NS::Error** error);
-    CompilerTask*                 newDynamicLibrary(const MTL::Library* library, const MTL::NewDynamicLibraryCompletionHandler completionHandler);
-    CompilerTask*                 newDynamicLibrary(const NS::URL* url, const MTL::NewDynamicLibraryCompletionHandler completionHandler);
-    CompilerTask*                 newDynamicLibrary(const MTL::Library* pLibrary, const MTL::NewDynamicLibraryCompletionHandlerFunction& function);
-    CompilerTask*                 newDynamicLibrary(const NS::URL* pURL, const MTL::NewDynamicLibraryCompletionHandlerFunction& function);
-
-    MTL::Library*                 newLibrary(const MTL4::LibraryDescriptor* descriptor, NS::Error** error);
-    CompilerTask*                 newLibrary(const MTL4::LibraryDescriptor* descriptor, const MTL::NewLibraryCompletionHandler completionHandler);
-    CompilerTask*                 newLibrary(const MTL4::LibraryDescriptor* pDescriptor, const MTL::NewLibraryCompletionHandlerFunction& function);
-
-    MachineLearningPipelineState* newMachineLearningPipelineState(const MTL4::MachineLearningPipelineDescriptor* descriptor, NS::Error** error);
-    CompilerTask*                 newMachineLearningPipelineState(const MTL4::MachineLearningPipelineDescriptor* descriptor, const MTL4::NewMachineLearningPipelineStateCompletionHandler completionHandler);
-    CompilerTask*                 newMachineLearningPipelineState(const MTL4::MachineLearningPipelineDescriptor* pDescriptor, const MTL4::NewMachineLearningPipelineStateCompletionHandlerFunction& function);
-
-    MTL::RenderPipelineState*     newRenderPipelineState(const MTL4::PipelineDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error);
-    MTL::RenderPipelineState*     newRenderPipelineState(const MTL4::PipelineDescriptor* descriptor, const MTL4::RenderPipelineDynamicLinkingDescriptor* dynamicLinkingDescriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error);
-    CompilerTask*                 newRenderPipelineState(const MTL4::PipelineDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL::NewRenderPipelineStateCompletionHandler completionHandler);
-    CompilerTask*                 newRenderPipelineState(const MTL4::PipelineDescriptor* descriptor, const MTL4::RenderPipelineDynamicLinkingDescriptor* dynamicLinkingDescriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL::NewRenderPipelineStateCompletionHandler completionHandler);
-    CompilerTask*                 newRenderPipelineState(const MTL4::PipelineDescriptor* pDescriptor, const MTL4::CompilerTaskOptions* options, const MTL4::NewRenderPipelineStateCompletionHandlerFunction& function);
-    MTL::RenderPipelineState*     newRenderPipelineStateBySpecialization(const MTL4::PipelineDescriptor* descriptor, const MTL::RenderPipelineState* pipeline, NS::Error** error);
-    CompilerTask*                 newRenderPipelineStateBySpecialization(const MTL4::PipelineDescriptor* descriptor, const MTL::RenderPipelineState* pipeline, const MTL::NewRenderPipelineStateCompletionHandler completionHandler);
-    CompilerTask*                 newRenderPipelineStateBySpecialization(const MTL4::PipelineDescriptor* pDescriptor, const MTL::RenderPipelineState* pPipeline, const MTL4::NewRenderPipelineStateCompletionHandlerFunction& function);
-
-    PipelineDataSetSerializer*    pipelineDataSetSerializer() const;
 };
 
-}
-_MTL_INLINE MTL4::CompilerDescriptor* MTL4::CompilerDescriptor::alloc()
+} // namespace MTL4
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTL4CompilerDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4CompilerTaskOptions;
+extern "C" void *OBJC_CLASS_$_MTL4Compiler;
+
+_MTL4_INLINE MTL4::CompilerDescriptor* MTL4::CompilerDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::CompilerDescriptor>(_MTL_PRIVATE_CLS(MTL4CompilerDescriptor));
+    return _MTL4_msg_MTL4__CompilerDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4CompilerDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::CompilerDescriptor* MTL4::CompilerDescriptor::init()
+_MTL4_INLINE MTL4::CompilerDescriptor* MTL4::CompilerDescriptor::init() const
 {
-    return NS::Object::init<MTL4::CompilerDescriptor>();
+    return _MTL4_msg_MTL4__CompilerDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::String* MTL4::CompilerDescriptor::label() const
+_MTL4_INLINE NS::String* MTL4::CompilerDescriptor::label() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    return _MTL4_msg_NS__Stringp_label((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::PipelineDataSetSerializer* MTL4::CompilerDescriptor::pipelineDataSetSerializer() const
+_MTL4_INLINE void MTL4::CompilerDescriptor::setLabel(NS::String* label)
 {
-    return Object::sendMessage<MTL4::PipelineDataSetSerializer*>(this, _MTL_PRIVATE_SEL(pipelineDataSetSerializer));
+    _MTL4_msg_v_setLabel__NS__Stringp((const void*)this, nullptr, label);
 }
 
-_MTL_INLINE void MTL4::CompilerDescriptor::setLabel(const NS::String* label)
+_MTL4_INLINE MTL4::PipelineDataSetSerializer* MTL4::CompilerDescriptor::pipelineDataSetSerializer() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLabel_), label);
+    return _MTL4_msg_MTL4__PipelineDataSetSerializerp_pipelineDataSetSerializer((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::CompilerDescriptor::setPipelineDataSetSerializer(const MTL4::PipelineDataSetSerializer* pipelineDataSetSerializer)
+_MTL4_INLINE void MTL4::CompilerDescriptor::setPipelineDataSetSerializer(MTL4::PipelineDataSetSerializer* pipelineDataSetSerializer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setPipelineDataSetSerializer_), pipelineDataSetSerializer);
+    _MTL4_msg_v_setPipelineDataSetSerializer__MTL4__PipelineDataSetSerializerp((const void*)this, nullptr, pipelineDataSetSerializer);
 }
 
-_MTL_INLINE MTL4::CompilerTaskOptions* MTL4::CompilerTaskOptions::alloc()
+_MTL4_INLINE MTL4::CompilerTaskOptions* MTL4::CompilerTaskOptions::alloc()
 {
-    return NS::Object::alloc<MTL4::CompilerTaskOptions>(_MTL_PRIVATE_CLS(MTL4CompilerTaskOptions));
+    return _MTL4_msg_MTL4__CompilerTaskOptionsp_alloc((const void*)&OBJC_CLASS_$_MTL4CompilerTaskOptions, nullptr);
 }
 
-_MTL_INLINE MTL4::CompilerTaskOptions* MTL4::CompilerTaskOptions::init()
+_MTL4_INLINE MTL4::CompilerTaskOptions* MTL4::CompilerTaskOptions::init() const
 {
-    return NS::Object::init<MTL4::CompilerTaskOptions>();
+    return _MTL4_msg_MTL4__CompilerTaskOptionsp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::Array* MTL4::CompilerTaskOptions::lookupArchives() const
+_MTL4_INLINE NS::Array* MTL4::CompilerTaskOptions::lookupArchives() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(lookupArchives));
+    return _MTL4_msg_NS__Arrayp_lookupArchives((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::CompilerTaskOptions::setLookupArchives(const NS::Array* lookupArchives)
+_MTL4_INLINE void MTL4::CompilerTaskOptions::setLookupArchives(NS::Array* lookupArchives)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLookupArchives_), lookupArchives);
+    _MTL4_msg_v_setLookupArchives__NS__Arrayp((const void*)this, nullptr, lookupArchives);
 }
 
-_MTL_INLINE MTL::Device* MTL4::Compiler::device() const
+_MTL4_INLINE MTL::Device* MTL4::Compiler::device() const
 {
-    return Object::sendMessage<MTL::Device*>(this, _MTL_PRIVATE_SEL(device));
+    return _MTL4_msg_MTL__Devicep_device((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::String* MTL4::Compiler::label() const
+_MTL4_INLINE NS::String* MTL4::Compiler::label() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    return _MTL4_msg_NS__Stringp_label((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BinaryFunction* MTL4::Compiler::newBinaryFunction(const MTL4::BinaryFunctionDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error)
+_MTL4_INLINE MTL4::PipelineDataSetSerializer* MTL4::Compiler::pipelineDataSetSerializer() const
 {
-    return Object::sendMessage<MTL4::BinaryFunction*>(this, _MTL_PRIVATE_SEL(newBinaryFunctionWithDescriptor_compilerTaskOptions_error_), descriptor, compilerTaskOptions, error);
+    return _MTL4_msg_MTL4__PipelineDataSetSerializerp_pipelineDataSetSerializer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newBinaryFunction(const MTL4::BinaryFunctionDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL4::NewBinaryFunctionCompletionHandler completionHandler)
+_MTL4_INLINE MTL::Library* MTL4::Compiler::newLibrary(MTL4::LibraryDescriptor* descriptor, NS::Error** error)
 {
-    return Object::sendMessage<MTL4::CompilerTask*>(this, _MTL_PRIVATE_SEL(newBinaryFunctionWithDescriptor_compilerTaskOptions_completionHandler_), descriptor, compilerTaskOptions, completionHandler);
+    return _MTL4_msg_MTL__Libraryp_newLibraryWithDescriptor_error__MTL4__LibraryDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
 }
 
-_MTL_INLINE MTL::ComputePipelineState* MTL4::Compiler::newComputePipelineState(const MTL4::ComputePipelineDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error)
+_MTL4_INLINE MTL::DynamicLibrary* MTL4::Compiler::newDynamicLibrary(MTL::Library* library, NS::Error** error)
 {
-    return Object::sendMessage<MTL::ComputePipelineState*>(this, _MTL_PRIVATE_SEL(newComputePipelineStateWithDescriptor_compilerTaskOptions_error_), descriptor, compilerTaskOptions, error);
+    return _MTL4_msg_MTL__DynamicLibraryp_newDynamicLibrary_error__MTL__Libraryp_NS__Errorpp((const void*)this, nullptr, library, error);
 }
 
-_MTL_INLINE MTL::ComputePipelineState* MTL4::Compiler::newComputePipelineState(const MTL4::ComputePipelineDescriptor* descriptor, const MTL4::PipelineStageDynamicLinkingDescriptor* dynamicLinkingDescriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error)
+_MTL4_INLINE MTL::DynamicLibrary* MTL4::Compiler::newDynamicLibrary(NS::URL* url, NS::Error** error)
 {
-    return Object::sendMessage<MTL::ComputePipelineState*>(this, _MTL_PRIVATE_SEL(newComputePipelineStateWithDescriptor_dynamicLinkingDescriptor_compilerTaskOptions_error_), descriptor, dynamicLinkingDescriptor, compilerTaskOptions, error);
+    return _MTL4_msg_MTL__DynamicLibraryp_newDynamicLibraryWithURL_error__NS__URLp_NS__Errorpp((const void*)this, nullptr, url, error);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newComputePipelineState(const MTL4::ComputePipelineDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL::NewComputePipelineStateCompletionHandler completionHandler)
+_MTL4_INLINE MTL::ComputePipelineState* MTL4::Compiler::newComputePipelineState(MTL4::ComputePipelineDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error)
 {
-    return Object::sendMessage<MTL4::CompilerTask*>(this, _MTL_PRIVATE_SEL(newComputePipelineStateWithDescriptor_compilerTaskOptions_completionHandler_), descriptor, compilerTaskOptions, completionHandler);
+    return _MTL4_msg_MTL__ComputePipelineStatep_newComputePipelineStateWithDescriptor_compilerTaskOptions_error__MTL4__ComputePipelineDescriptorp_MTL4__CompilerTaskOptionsp_NS__Errorpp((const void*)this, nullptr, descriptor, compilerTaskOptions, error);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newComputePipelineState(const MTL4::ComputePipelineDescriptor* descriptor, const MTL4::PipelineStageDynamicLinkingDescriptor* dynamicLinkingDescriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL::NewComputePipelineStateCompletionHandler completionHandler)
+_MTL4_INLINE MTL::ComputePipelineState* MTL4::Compiler::newComputePipelineState(MTL4::ComputePipelineDescriptor* descriptor, MTL4::PipelineStageDynamicLinkingDescriptor* dynamicLinkingDescriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error)
 {
-    return Object::sendMessage<MTL4::CompilerTask*>(this, _MTL_PRIVATE_SEL(newComputePipelineStateWithDescriptor_dynamicLinkingDescriptor_compilerTaskOptions_completionHandler_), descriptor, dynamicLinkingDescriptor, compilerTaskOptions, completionHandler);
+    return _MTL4_msg_MTL__ComputePipelineStatep_newComputePipelineStateWithDescriptor_dynamicLinkingDescriptor_compilerTaskOptions_error__MTL4__ComputePipelineDescriptorp_MTL4__PipelineStageDynamicLinkingDescriptorp_MTL4__CompilerTaskOptionsp_NS__Errorpp((const void*)this, nullptr, descriptor, dynamicLinkingDescriptor, compilerTaskOptions, error);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newComputePipelineState(const MTL4::ComputePipelineDescriptor* pDescriptor, const MTL4::CompilerTaskOptions* options, const MTL4::NewComputePipelineStateCompletionHandlerFunction& function)
+_MTL4_INLINE MTL::RenderPipelineState* MTL4::Compiler::newRenderPipelineState(MTL4::PipelineDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error)
 {
-    __block MTL4::NewComputePipelineStateCompletionHandlerFunction blockFunction = function;
-    return newComputePipelineState(pDescriptor, options, ^(MTL::ComputePipelineState* pPipeline, NS::Error* pError) { blockFunction(pPipeline, pError); });
+    return _MTL4_msg_MTL__RenderPipelineStatep_newRenderPipelineStateWithDescriptor_compilerTaskOptions_error__MTL4__PipelineDescriptorp_MTL4__CompilerTaskOptionsp_NS__Errorpp((const void*)this, nullptr, descriptor, compilerTaskOptions, error);
 }
 
-_MTL_INLINE MTL::DynamicLibrary* MTL4::Compiler::newDynamicLibrary(const MTL::Library* library, NS::Error** error)
+_MTL4_INLINE MTL::RenderPipelineState* MTL4::Compiler::newRenderPipelineState(MTL4::PipelineDescriptor* descriptor, MTL4::RenderPipelineDynamicLinkingDescriptor* dynamicLinkingDescriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error)
 {
-    return Object::sendMessage<MTL::DynamicLibrary*>(this, _MTL_PRIVATE_SEL(newDynamicLibrary_error_), library, error);
+    return _MTL4_msg_MTL__RenderPipelineStatep_newRenderPipelineStateWithDescriptor_dynamicLinkingDescriptor_compilerTaskOptions_error__MTL4__PipelineDescriptorp_MTL4__RenderPipelineDynamicLinkingDescriptorp_MTL4__CompilerTaskOptionsp_NS__Errorpp((const void*)this, nullptr, descriptor, dynamicLinkingDescriptor, compilerTaskOptions, error);
 }
 
-_MTL_INLINE MTL::DynamicLibrary* MTL4::Compiler::newDynamicLibrary(const NS::URL* url, NS::Error** error)
+_MTL4_INLINE MTL::RenderPipelineState* MTL4::Compiler::newRenderPipelineStateBySpecialization(MTL4::PipelineDescriptor* descriptor, MTL::RenderPipelineState* pipeline, NS::Error** error)
 {
-    return Object::sendMessage<MTL::DynamicLibrary*>(this, _MTL_PRIVATE_SEL(newDynamicLibraryWithURL_error_), url, error);
+    return _MTL4_msg_MTL__RenderPipelineStatep_newRenderPipelineStateBySpecializationWithDescriptor_pipeline_error__MTL4__PipelineDescriptorp_MTL__RenderPipelineStatep_NS__Errorpp((const void*)this, nullptr, descriptor, pipeline, error);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newDynamicLibrary(const MTL::Library* library, const MTL::NewDynamicLibraryCompletionHandler completionHandler)
+_MTL4_INLINE MTL4::BinaryFunction* MTL4::Compiler::newBinaryFunction(MTL4::BinaryFunctionDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error)
 {
-    return Object::sendMessage<MTL4::CompilerTask*>(this, _MTL_PRIVATE_SEL(newDynamicLibrary_completionHandler_), library, completionHandler);
+    return _MTL4_msg_MTL4__BinaryFunctionp_newBinaryFunctionWithDescriptor_compilerTaskOptions_error__MTL4__BinaryFunctionDescriptorp_MTL4__CompilerTaskOptionsp_NS__Errorpp((const void*)this, nullptr, descriptor, compilerTaskOptions, error);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newDynamicLibrary(const NS::URL* url, const MTL::NewDynamicLibraryCompletionHandler completionHandler)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newLibrary(MTL4::LibraryDescriptor* descriptor, MTL::NewLibraryCompletionHandler completionHandler)
 {
-    return Object::sendMessage<MTL4::CompilerTask*>(this, _MTL_PRIVATE_SEL(newDynamicLibraryWithURL_completionHandler_), url, completionHandler);
+    return _MTL4_msg_MTL4__CompilerTaskp_newLibraryWithDescriptor_completionHandler__MTL4__LibraryDescriptorp_MTL__NewLibraryCompletionHandler((const void*)this, nullptr, descriptor, completionHandler);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newDynamicLibrary(const MTL::Library* pLibrary, const MTL::NewDynamicLibraryCompletionHandlerFunction& function)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newDynamicLibrary(MTL::Library* library, MTL::NewDynamicLibraryCompletionHandler completionHandler)
 {
-    __block MTL::NewDynamicLibraryCompletionHandlerFunction blockFunction = function;
-    return newDynamicLibrary(pLibrary, ^(MTL::DynamicLibrary* pLibraryRef, NS::Error* pError) { blockFunction(pLibraryRef, pError); });
+    return _MTL4_msg_MTL4__CompilerTaskp_newDynamicLibrary_completionHandler__MTL__Libraryp_MTL__NewDynamicLibraryCompletionHandler((const void*)this, nullptr, library, completionHandler);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newDynamicLibrary(const NS::URL* pURL, const MTL::NewDynamicLibraryCompletionHandlerFunction& function)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newDynamicLibrary(NS::URL* url, MTL::NewDynamicLibraryCompletionHandler completionHandler)
 {
-    __block MTL::NewDynamicLibraryCompletionHandlerFunction blockFunction = function;
-    return newDynamicLibrary(pURL, ^(MTL::DynamicLibrary* pLibrary, NS::Error* pError) { blockFunction(pLibrary, pError); });
+    return _MTL4_msg_MTL4__CompilerTaskp_newDynamicLibraryWithURL_completionHandler__NS__URLp_MTL__NewDynamicLibraryCompletionHandler((const void*)this, nullptr, url, completionHandler);
 }
 
-_MTL_INLINE MTL::Library* MTL4::Compiler::newLibrary(const MTL4::LibraryDescriptor* descriptor, NS::Error** error)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newComputePipelineState(MTL4::ComputePipelineDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, MTL::NewComputePipelineStateCompletionHandler completionHandler)
 {
-    return Object::sendMessage<MTL::Library*>(this, _MTL_PRIVATE_SEL(newLibraryWithDescriptor_error_), descriptor, error);
+    return _MTL4_msg_MTL4__CompilerTaskp_newComputePipelineStateWithDescriptor_compilerTaskOptions_completionHandler__MTL4__ComputePipelineDescriptorp_MTL4__CompilerTaskOptionsp_MTL__NewComputePipelineStateCompletionHandler((const void*)this, nullptr, descriptor, compilerTaskOptions, completionHandler);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newLibrary(const MTL4::LibraryDescriptor* descriptor, const MTL::NewLibraryCompletionHandler completionHandler)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newComputePipelineState(MTL4::ComputePipelineDescriptor* descriptor, MTL4::PipelineStageDynamicLinkingDescriptor* dynamicLinkingDescriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, MTL::NewComputePipelineStateCompletionHandler completionHandler)
 {
-    return Object::sendMessage<MTL4::CompilerTask*>(this, _MTL_PRIVATE_SEL(newLibraryWithDescriptor_completionHandler_), descriptor, completionHandler);
+    return _MTL4_msg_MTL4__CompilerTaskp_newComputePipelineStateWithDescriptor_dynamicLinkingDescriptor_compilerTaskOptions_completionHandler__MTL4__ComputePipelineDescriptorp_MTL4__PipelineStageDynamicLinkingDescriptorp_MTL4__CompilerTaskOptionsp_MTL__NewComputePipelineStateCompletionHandler((const void*)this, nullptr, descriptor, dynamicLinkingDescriptor, compilerTaskOptions, completionHandler);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newLibrary(const MTL4::LibraryDescriptor* pDescriptor, const MTL::NewLibraryCompletionHandlerFunction& function)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newRenderPipelineState(MTL4::PipelineDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, MTL::NewRenderPipelineStateCompletionHandler completionHandler)
 {
-    __block MTL::NewLibraryCompletionHandlerFunction blockFunction = function;
-    return newLibrary(pDescriptor, ^(MTL::Library* pLibrary, NS::Error* pError) { blockFunction(pLibrary, pError); });
+    return _MTL4_msg_MTL4__CompilerTaskp_newRenderPipelineStateWithDescriptor_compilerTaskOptions_completionHandler__MTL4__PipelineDescriptorp_MTL4__CompilerTaskOptionsp_MTL__NewRenderPipelineStateCompletionHandler((const void*)this, nullptr, descriptor, compilerTaskOptions, completionHandler);
 }
 
-_MTL_INLINE MTL4::MachineLearningPipelineState* MTL4::Compiler::newMachineLearningPipelineState(const MTL4::MachineLearningPipelineDescriptor* descriptor, NS::Error** error)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newRenderPipelineState(MTL4::PipelineDescriptor* descriptor, MTL4::RenderPipelineDynamicLinkingDescriptor* dynamicLinkingDescriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, MTL::NewRenderPipelineStateCompletionHandler completionHandler)
 {
-    return Object::sendMessage<MTL4::MachineLearningPipelineState*>(this, _MTL_PRIVATE_SEL(newMachineLearningPipelineStateWithDescriptor_error_), descriptor, error);
+    return _MTL4_msg_MTL4__CompilerTaskp_newRenderPipelineStateWithDescriptor_dynamicLinkingDescriptor_compilerTaskOptions_completionHandler__MTL4__PipelineDescriptorp_MTL4__RenderPipelineDynamicLinkingDescriptorp_MTL4__CompilerTaskOptionsp_MTL__NewRenderPipelineStateCompletionHandler((const void*)this, nullptr, descriptor, dynamicLinkingDescriptor, compilerTaskOptions, completionHandler);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newMachineLearningPipelineState(const MTL4::MachineLearningPipelineDescriptor* descriptor, const MTL4::NewMachineLearningPipelineStateCompletionHandler completionHandler)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newRenderPipelineStateBySpecialization(MTL4::PipelineDescriptor* descriptor, MTL::RenderPipelineState* pipeline, MTL::NewRenderPipelineStateCompletionHandler completionHandler)
 {
-    return Object::sendMessage<MTL4::CompilerTask*>(this, _MTL_PRIVATE_SEL(newMachineLearningPipelineStateWithDescriptor_completionHandler_), descriptor, completionHandler);
+    return _MTL4_msg_MTL4__CompilerTaskp_newRenderPipelineStateBySpecializationWithDescriptor_pipeline_completionHandler__MTL4__PipelineDescriptorp_MTL__RenderPipelineStatep_MTL__NewRenderPipelineStateCompletionHandler((const void*)this, nullptr, descriptor, pipeline, completionHandler);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newMachineLearningPipelineState(const MTL4::MachineLearningPipelineDescriptor* pDescriptor, const MTL4::NewMachineLearningPipelineStateCompletionHandlerFunction& function)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newBinaryFunction(MTL4::BinaryFunctionDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, MTL4::NewBinaryFunctionCompletionHandler completionHandler)
 {
-    __block MTL4::NewMachineLearningPipelineStateCompletionHandlerFunction blockFunction = function;
-    return newMachineLearningPipelineState(pDescriptor, ^(MTL4::MachineLearningPipelineState* pPipeline, NS::Error* pError) { blockFunction(pPipeline, pError); });
+    return _MTL4_msg_MTL4__CompilerTaskp_newBinaryFunctionWithDescriptor_compilerTaskOptions_completionHandler__MTL4__BinaryFunctionDescriptorp_MTL4__CompilerTaskOptionsp_MTL4__NewBinaryFunctionCompletionHandler((const void*)this, nullptr, descriptor, compilerTaskOptions, completionHandler);
 }
 
-_MTL_INLINE MTL::RenderPipelineState* MTL4::Compiler::newRenderPipelineState(const MTL4::PipelineDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newBinaryFunction(MTL4::BinaryFunctionDescriptor* descriptor, MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL4::NewBinaryFunctionCompletionHandlerFunction& completionHandler)
 {
-    return Object::sendMessage<MTL::RenderPipelineState*>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithDescriptor_compilerTaskOptions_error_), descriptor, compilerTaskOptions, error);
+    __block MTL4::NewBinaryFunctionCompletionHandlerFunction blockFunction = completionHandler;
+    return newBinaryFunction(descriptor, compilerTaskOptions, ^(MTL4::BinaryFunction* x0, NS::Error* x1) { blockFunction(x0, x1); });
 }
 
-_MTL_INLINE MTL::RenderPipelineState* MTL4::Compiler::newRenderPipelineState(const MTL4::PipelineDescriptor* descriptor, const MTL4::RenderPipelineDynamicLinkingDescriptor* dynamicLinkingDescriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, NS::Error** error)
+_MTL4_INLINE MTL4::MachineLearningPipelineState* MTL4::Compiler::newMachineLearningPipelineState(MTL4::MachineLearningPipelineDescriptor* descriptor, NS::Error** error)
 {
-    return Object::sendMessage<MTL::RenderPipelineState*>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithDescriptor_dynamicLinkingDescriptor_compilerTaskOptions_error_), descriptor, dynamicLinkingDescriptor, compilerTaskOptions, error);
+    return _MTL4_msg_MTL4__MachineLearningPipelineStatep_newMachineLearningPipelineStateWithDescriptor_error__MTL4__MachineLearningPipelineDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newRenderPipelineState(const MTL4::PipelineDescriptor* descriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL::NewRenderPipelineStateCompletionHandler completionHandler)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newMachineLearningPipelineState(MTL4::MachineLearningPipelineDescriptor* descriptor, MTL4::NewMachineLearningPipelineStateCompletionHandler completionHandler)
 {
-    return Object::sendMessage<MTL4::CompilerTask*>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithDescriptor_compilerTaskOptions_completionHandler_), descriptor, compilerTaskOptions, completionHandler);
+    return _MTL4_msg_MTL4__CompilerTaskp_newMachineLearningPipelineStateWithDescriptor_completionHandler__MTL4__MachineLearningPipelineDescriptorp_MTL4__NewMachineLearningPipelineStateCompletionHandler((const void*)this, nullptr, descriptor, completionHandler);
 }
 
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newRenderPipelineState(const MTL4::PipelineDescriptor* descriptor, const MTL4::RenderPipelineDynamicLinkingDescriptor* dynamicLinkingDescriptor, const MTL4::CompilerTaskOptions* compilerTaskOptions, const MTL::NewRenderPipelineStateCompletionHandler completionHandler)
+_MTL4_INLINE MTL4::CompilerTask* MTL4::Compiler::newMachineLearningPipelineState(MTL4::MachineLearningPipelineDescriptor* descriptor, const MTL4::NewMachineLearningPipelineStateCompletionHandlerFunction& completionHandler)
 {
-    return Object::sendMessage<MTL4::CompilerTask*>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithDescriptor_dynamicLinkingDescriptor_compilerTaskOptions_completionHandler_), descriptor, dynamicLinkingDescriptor, compilerTaskOptions, completionHandler);
-}
-
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newRenderPipelineState(const MTL4::PipelineDescriptor* pDescriptor, const MTL4::CompilerTaskOptions* options, const MTL4::NewRenderPipelineStateCompletionHandlerFunction& function)
-{
-    __block MTL4::NewRenderPipelineStateCompletionHandlerFunction blockFunction = function;
-    return newRenderPipelineState(pDescriptor, options, ^(MTL::RenderPipelineState* pPipeline, NS::Error* pError) { blockFunction(pPipeline, pError); });
-}
-
-_MTL_INLINE MTL::RenderPipelineState* MTL4::Compiler::newRenderPipelineStateBySpecialization(const MTL4::PipelineDescriptor* descriptor, const MTL::RenderPipelineState* pipeline, NS::Error** error)
-{
-    return Object::sendMessage<MTL::RenderPipelineState*>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateBySpecializationWithDescriptor_pipeline_error_), descriptor, pipeline, error);
-}
-
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newRenderPipelineStateBySpecialization(const MTL4::PipelineDescriptor* descriptor, const MTL::RenderPipelineState* pipeline, const MTL::NewRenderPipelineStateCompletionHandler completionHandler)
-{
-    return Object::sendMessage<MTL4::CompilerTask*>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateBySpecializationWithDescriptor_pipeline_completionHandler_), descriptor, pipeline, completionHandler);
-}
-
-_MTL_INLINE MTL4::CompilerTask* MTL4::Compiler::newRenderPipelineStateBySpecialization(const MTL4::PipelineDescriptor* pDescriptor, const MTL::RenderPipelineState* pPipeline, const MTL4::NewRenderPipelineStateCompletionHandlerFunction& function)
-{
-    __block MTL4::NewRenderPipelineStateCompletionHandlerFunction blockFunction = function;
-    return newRenderPipelineStateBySpecialization(pDescriptor, pPipeline, ^(MTL::RenderPipelineState* pPipelineRef, NS::Error* pError) { blockFunction(pPipelineRef, pError); });
-}
-
-_MTL_INLINE MTL4::PipelineDataSetSerializer* MTL4::Compiler::pipelineDataSetSerializer() const
-{
-    return Object::sendMessage<MTL4::PipelineDataSetSerializer*>(this, _MTL_PRIVATE_SEL(pipelineDataSetSerializer));
+    __block MTL4::NewMachineLearningPipelineStateCompletionHandlerFunction blockFunction = completionHandler;
+    return newMachineLearningPipelineState(descriptor, ^(MTL4::MachineLearningPipelineState* x0, NS::Error* x1) { blockFunction(x0, x1); });
 }

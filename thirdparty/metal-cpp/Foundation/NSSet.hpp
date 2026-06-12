@@ -1,87 +1,68 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Foundation/NSSet.hpp
-//
-// Copyright 2020-2024 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#include "NSDefines.hpp"
+#include "NSBlocks.hpp"
+#include "NSStructs.hpp"
+#include "NSBridge.hpp"
 #include "NSObject.hpp"
+#include "NSTypes.hpp"
+#include "NSRange.hpp"
 #include "NSEnumerator.hpp"
 
-/*****Immutable Set*******/
+namespace NS {
+    class Object;
+}
 
 namespace NS
 {
-    class Set : public NS::Copying <Set>
-    {
-        public:
-            UInteger count() const;
-            Enumerator<Object>* objectEnumerator() const;
 
-            static Set* alloc();
-
-            Set* init();
-            Set* init(const Object* const* pObjects, UInteger count);
-            Set* init(const class Coder* pCoder);
-
-    };
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::UInteger NS::Set::count() const
+class Set : public NS::SecureCoding<Set>
 {
-    return NS::Object::sendMessage<NS::UInteger>(this, _NS_PRIVATE_SEL(count));
-}
+public:
+    static Set* alloc();
+    Set*        init() const;
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+    NS::UInteger         count() const;
+    NS::Set*             init(const NS::Object* const * objects, NS::UInteger cnt);
+    NS::Set*             init(void* coder);
+    template <class _Object = Object>
+    Enumerator<_Object>* objectEnumerator();
 
-_NS_INLINE NS::Enumerator<NS::Object>* NS::Set::objectEnumerator() const
-{
-    return NS::Object::sendMessage<Enumerator<NS::Object>*>(this, _NS_PRIVATE_SEL(objectEnumerator));
-}
+};
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+} // namespace NS
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_NSSet;
 
 _NS_INLINE NS::Set* NS::Set::alloc()
 {
-    return NS::Object::alloc<Set>(_NS_PRIVATE_CLS(NSSet));
+    return _NS_msg_NS__Setp_alloc((const void*)&OBJC_CLASS_$_NSSet, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Set* NS::Set::init()
+_NS_INLINE NS::Set* NS::Set::init() const
 {
-    return NS::Object::init<Set>();
+    return _NS_msg_NS__Setp_init((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Set* NS::Set::init(const Object* const* pObjects, NS::UInteger count)
+_NS_INLINE NS::UInteger NS::Set::count() const
 {
-    return NS::Object::sendMessage<Set*>(this, _NS_PRIVATE_SEL(initWithObjects_count_), pObjects, count);
+    return _NS_msg_NS__UInteger_count((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Set* NS::Set::init(const class Coder* pCoder)
+template <class _Object>
+_NS_INLINE NS::Enumerator<_Object>* NS::Set::objectEnumerator()
 {
-    return Object::sendMessage<Set*>(this, _NS_PRIVATE_SEL(initWithCoder_), pCoder);
+    return reinterpret_cast<NS::Enumerator<_Object>*>(_NS_msg_NS__EnumeratorLNS__ObjectGp_objectEnumerator((const void*)this, nullptr));
+}
+
+_NS_INLINE NS::Set* NS::Set::init(const NS::Object* const * objects, NS::UInteger cnt)
+{
+    return _NS_msg_NS__Setp_initWithObjects_count__constNS__Objectpconstp_NS__UInteger((const void*)this, nullptr, objects, cnt);
+}
+
+_NS_INLINE NS::Set* NS::Set::init(void* coder)
+{
+    return _NS_msg_NS__Setp_initWithCoder__voidp((const void*)this, nullptr, coder);
 }

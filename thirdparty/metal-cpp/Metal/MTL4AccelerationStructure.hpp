@@ -1,1395 +1,1261 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTL4AccelerationStructure.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
+#include "MTL4Defines.hpp"
+#include "MTL4Blocks.hpp"
+#include "MTL4Structs.hpp"
+#include "MTL4Bridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 #include "MTLAccelerationStructure.hpp"
-#include "MTLAccelerationStructureTypes.hpp"
-#include "MTLArgument.hpp"
-#include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
-#include "MTLStageInputOutputDescriptor.hpp"
+
+namespace MTL {
+    enum AccelerationStructureInstanceDescriptorType : NS::UInteger;
+    enum AttributeFormat : NS::UInteger;
+    enum CurveBasis : NS::Integer;
+    enum CurveEndCaps : NS::Integer;
+    enum CurveType : NS::Integer;
+    enum IndexType : NS::UInteger;
+    enum MatrixLayout : NS::Integer;
+    enum MotionBorderMode : uint32_t;
+    enum TransformType : NS::Integer;
+}
+namespace NS {
+    class Array;
+    class String;
+}
 
 namespace MTL4
 {
-class AccelerationStructureBoundingBoxGeometryDescriptor;
-class AccelerationStructureCurveGeometryDescriptor;
+
 class AccelerationStructureDescriptor;
 class AccelerationStructureGeometryDescriptor;
-class AccelerationStructureMotionBoundingBoxGeometryDescriptor;
-class AccelerationStructureMotionCurveGeometryDescriptor;
-class AccelerationStructureMotionTriangleGeometryDescriptor;
-class AccelerationStructureTriangleGeometryDescriptor;
-class IndirectInstanceAccelerationStructureDescriptor;
-class InstanceAccelerationStructureDescriptor;
 class PrimitiveAccelerationStructureDescriptor;
+class AccelerationStructureTriangleGeometryDescriptor;
+class AccelerationStructureBoundingBoxGeometryDescriptor;
+class AccelerationStructureMotionTriangleGeometryDescriptor;
+class AccelerationStructureMotionBoundingBoxGeometryDescriptor;
+class AccelerationStructureCurveGeometryDescriptor;
+class AccelerationStructureMotionCurveGeometryDescriptor;
+class InstanceAccelerationStructureDescriptor;
+class IndirectInstanceAccelerationStructureDescriptor;
 
-class AccelerationStructureDescriptor : public NS::Copying<AccelerationStructureDescriptor, MTL::AccelerationStructureDescriptor>
+class AccelerationStructureDescriptor : public NS::Referencing<AccelerationStructureDescriptor, MTL::AccelerationStructureDescriptor>
 {
 public:
     static AccelerationStructureDescriptor* alloc();
+    AccelerationStructureDescriptor*        init() const;
 
-    AccelerationStructureDescriptor*        init();
 };
+
 class AccelerationStructureGeometryDescriptor : public NS::Copying<AccelerationStructureGeometryDescriptor>
 {
 public:
     static AccelerationStructureGeometryDescriptor* alloc();
+    AccelerationStructureGeometryDescriptor*        init() const;
 
-    bool                                            allowDuplicateIntersectionFunctionInvocation() const;
+    bool              allowDuplicateIntersectionFunctionInvocation() const;
+    NS::UInteger      intersectionFunctionTableOffset() const;
+    NS::String*       label() const;
+    bool              opaque() const;
+    MTL4::BufferRange primitiveDataBuffer() const;
+    NS::UInteger      primitiveDataElementSize() const;
+    NS::UInteger      primitiveDataStride() const;
+    void              setAllowDuplicateIntersectionFunctionInvocation(bool allowDuplicateIntersectionFunctionInvocation);
+    void              setIntersectionFunctionTableOffset(NS::UInteger intersectionFunctionTableOffset);
+    void              setLabel(NS::String* label);
+    void              setOpaque(bool opaque);
+    void              setPrimitiveDataBuffer(MTL4::BufferRange primitiveDataBuffer);
+    void              setPrimitiveDataElementSize(NS::UInteger primitiveDataElementSize);
+    void              setPrimitiveDataStride(NS::UInteger primitiveDataStride);
 
-    AccelerationStructureGeometryDescriptor*        init();
-
-    NS::UInteger                                    intersectionFunctionTableOffset() const;
-
-    NS::String*                                     label() const;
-
-    bool                                            opaque() const;
-
-    BufferRange                                     primitiveDataBuffer() const;
-
-    NS::UInteger                                    primitiveDataElementSize() const;
-
-    NS::UInteger                                    primitiveDataStride() const;
-
-    void                                            setAllowDuplicateIntersectionFunctionInvocation(bool allowDuplicateIntersectionFunctionInvocation);
-
-    void                                            setIntersectionFunctionTableOffset(NS::UInteger intersectionFunctionTableOffset);
-
-    void                                            setLabel(const NS::String* label);
-
-    void                                            setOpaque(bool opaque);
-
-    void                                            setPrimitiveDataBuffer(const MTL4::BufferRange primitiveDataBuffer);
-
-    void                                            setPrimitiveDataElementSize(NS::UInteger primitiveDataElementSize);
-
-    void                                            setPrimitiveDataStride(NS::UInteger primitiveDataStride);
 };
-class PrimitiveAccelerationStructureDescriptor : public NS::Copying<PrimitiveAccelerationStructureDescriptor, AccelerationStructureDescriptor>
+
+class PrimitiveAccelerationStructureDescriptor : public NS::Referencing<PrimitiveAccelerationStructureDescriptor, MTL4::AccelerationStructureDescriptor>
 {
 public:
     static PrimitiveAccelerationStructureDescriptor* alloc();
+    PrimitiveAccelerationStructureDescriptor*        init() const;
 
-    NS::Array*                                       geometryDescriptors() const;
+    NS::Array*            geometryDescriptors() const;
+    MTL::MotionBorderMode motionEndBorderMode() const;
+    float                 motionEndTime() const;
+    NS::UInteger          motionKeyframeCount() const;
+    MTL::MotionBorderMode motionStartBorderMode() const;
+    float                 motionStartTime() const;
+    void                  setGeometryDescriptors(NS::Array* geometryDescriptors);
+    void                  setMotionEndBorderMode(MTL::MotionBorderMode motionEndBorderMode);
+    void                  setMotionEndTime(float motionEndTime);
+    void                  setMotionKeyframeCount(NS::UInteger motionKeyframeCount);
+    void                  setMotionStartBorderMode(MTL::MotionBorderMode motionStartBorderMode);
+    void                  setMotionStartTime(float motionStartTime);
 
-    PrimitiveAccelerationStructureDescriptor*        init();
-
-    MTL::MotionBorderMode                            motionEndBorderMode() const;
-
-    float                                            motionEndTime() const;
-
-    NS::UInteger                                     motionKeyframeCount() const;
-
-    MTL::MotionBorderMode                            motionStartBorderMode() const;
-
-    float                                            motionStartTime() const;
-
-    void                                             setGeometryDescriptors(const NS::Array* geometryDescriptors);
-
-    void                                             setMotionEndBorderMode(MTL::MotionBorderMode motionEndBorderMode);
-
-    void                                             setMotionEndTime(float motionEndTime);
-
-    void                                             setMotionKeyframeCount(NS::UInteger motionKeyframeCount);
-
-    void                                             setMotionStartBorderMode(MTL::MotionBorderMode motionStartBorderMode);
-
-    void                                             setMotionStartTime(float motionStartTime);
 };
-class AccelerationStructureTriangleGeometryDescriptor : public NS::Copying<AccelerationStructureTriangleGeometryDescriptor, AccelerationStructureGeometryDescriptor>
+
+class AccelerationStructureTriangleGeometryDescriptor : public NS::Referencing<AccelerationStructureTriangleGeometryDescriptor, MTL4::AccelerationStructureGeometryDescriptor>
 {
 public:
     static AccelerationStructureTriangleGeometryDescriptor* alloc();
+    AccelerationStructureTriangleGeometryDescriptor*        init() const;
 
-    BufferRange                                             indexBuffer() const;
+    MTL4::BufferRange    indexBuffer() const;
+    MTL::IndexType       indexType() const;
+    void                 setIndexBuffer(MTL4::BufferRange indexBuffer);
+    void                 setIndexType(MTL::IndexType indexType);
+    void                 setTransformationMatrixBuffer(MTL4::BufferRange transformationMatrixBuffer);
+    void                 setTransformationMatrixLayout(MTL::MatrixLayout transformationMatrixLayout);
+    void                 setTriangleCount(NS::UInteger triangleCount);
+    void                 setVertexBuffer(MTL4::BufferRange vertexBuffer);
+    void                 setVertexFormat(MTL::AttributeFormat vertexFormat);
+    void                 setVertexStride(NS::UInteger vertexStride);
+    MTL4::BufferRange    transformationMatrixBuffer() const;
+    MTL::MatrixLayout    transformationMatrixLayout() const;
+    NS::UInteger         triangleCount() const;
+    MTL4::BufferRange    vertexBuffer() const;
+    MTL::AttributeFormat vertexFormat() const;
+    NS::UInteger         vertexStride() const;
 
-    MTL::IndexType                                          indexType() const;
-
-    AccelerationStructureTriangleGeometryDescriptor*        init();
-
-    void                                                    setIndexBuffer(const MTL4::BufferRange indexBuffer);
-
-    void                                                    setIndexType(MTL::IndexType indexType);
-
-    void                                                    setTransformationMatrixBuffer(const MTL4::BufferRange transformationMatrixBuffer);
-
-    void                                                    setTransformationMatrixLayout(MTL::MatrixLayout transformationMatrixLayout);
-
-    void                                                    setTriangleCount(NS::UInteger triangleCount);
-
-    void                                                    setVertexBuffer(const MTL4::BufferRange vertexBuffer);
-
-    void                                                    setVertexFormat(MTL::AttributeFormat vertexFormat);
-
-    void                                                    setVertexStride(NS::UInteger vertexStride);
-
-    BufferRange                                             transformationMatrixBuffer() const;
-
-    MTL::MatrixLayout                                       transformationMatrixLayout() const;
-
-    NS::UInteger                                            triangleCount() const;
-
-    BufferRange                                             vertexBuffer() const;
-
-    MTL::AttributeFormat                                    vertexFormat() const;
-
-    NS::UInteger                                            vertexStride() const;
 };
-class AccelerationStructureBoundingBoxGeometryDescriptor : public NS::Copying<AccelerationStructureBoundingBoxGeometryDescriptor, AccelerationStructureGeometryDescriptor>
+
+class AccelerationStructureBoundingBoxGeometryDescriptor : public NS::Referencing<AccelerationStructureBoundingBoxGeometryDescriptor, MTL4::AccelerationStructureGeometryDescriptor>
 {
 public:
     static AccelerationStructureBoundingBoxGeometryDescriptor* alloc();
+    AccelerationStructureBoundingBoxGeometryDescriptor*        init() const;
 
-    BufferRange                                                boundingBoxBuffer() const;
+    MTL4::BufferRange boundingBoxBuffer() const;
+    NS::UInteger      boundingBoxCount() const;
+    NS::UInteger      boundingBoxStride() const;
+    void              setBoundingBoxBuffer(MTL4::BufferRange boundingBoxBuffer);
+    void              setBoundingBoxCount(NS::UInteger boundingBoxCount);
+    void              setBoundingBoxStride(NS::UInteger boundingBoxStride);
 
-    NS::UInteger                                               boundingBoxCount() const;
-
-    NS::UInteger                                               boundingBoxStride() const;
-
-    AccelerationStructureBoundingBoxGeometryDescriptor*        init();
-
-    void                                                       setBoundingBoxBuffer(const MTL4::BufferRange boundingBoxBuffer);
-
-    void                                                       setBoundingBoxCount(NS::UInteger boundingBoxCount);
-
-    void                                                       setBoundingBoxStride(NS::UInteger boundingBoxStride);
 };
-class AccelerationStructureMotionTriangleGeometryDescriptor : public NS::Copying<AccelerationStructureMotionTriangleGeometryDescriptor, AccelerationStructureGeometryDescriptor>
+
+class AccelerationStructureMotionTriangleGeometryDescriptor : public NS::Referencing<AccelerationStructureMotionTriangleGeometryDescriptor, MTL4::AccelerationStructureGeometryDescriptor>
 {
 public:
     static AccelerationStructureMotionTriangleGeometryDescriptor* alloc();
+    AccelerationStructureMotionTriangleGeometryDescriptor*        init() const;
 
-    BufferRange                                                   indexBuffer() const;
+    MTL4::BufferRange    indexBuffer() const;
+    MTL::IndexType       indexType() const;
+    void                 setIndexBuffer(MTL4::BufferRange indexBuffer);
+    void                 setIndexType(MTL::IndexType indexType);
+    void                 setTransformationMatrixBuffer(MTL4::BufferRange transformationMatrixBuffer);
+    void                 setTransformationMatrixLayout(MTL::MatrixLayout transformationMatrixLayout);
+    void                 setTriangleCount(NS::UInteger triangleCount);
+    void                 setVertexBuffers(MTL4::BufferRange vertexBuffers);
+    void                 setVertexFormat(MTL::AttributeFormat vertexFormat);
+    void                 setVertexStride(NS::UInteger vertexStride);
+    MTL4::BufferRange    transformationMatrixBuffer() const;
+    MTL::MatrixLayout    transformationMatrixLayout() const;
+    NS::UInteger         triangleCount() const;
+    MTL4::BufferRange    vertexBuffers() const;
+    MTL::AttributeFormat vertexFormat() const;
+    NS::UInteger         vertexStride() const;
 
-    MTL::IndexType                                                indexType() const;
-
-    AccelerationStructureMotionTriangleGeometryDescriptor*        init();
-
-    void                                                          setIndexBuffer(const MTL4::BufferRange indexBuffer);
-
-    void                                                          setIndexType(MTL::IndexType indexType);
-
-    void                                                          setTransformationMatrixBuffer(const MTL4::BufferRange transformationMatrixBuffer);
-
-    void                                                          setTransformationMatrixLayout(MTL::MatrixLayout transformationMatrixLayout);
-
-    void                                                          setTriangleCount(NS::UInteger triangleCount);
-
-    void                                                          setVertexBuffers(const MTL4::BufferRange vertexBuffers);
-
-    void                                                          setVertexFormat(MTL::AttributeFormat vertexFormat);
-
-    void                                                          setVertexStride(NS::UInteger vertexStride);
-
-    BufferRange                                                   transformationMatrixBuffer() const;
-
-    MTL::MatrixLayout                                             transformationMatrixLayout() const;
-
-    NS::UInteger                                                  triangleCount() const;
-
-    BufferRange                                                   vertexBuffers() const;
-
-    MTL::AttributeFormat                                          vertexFormat() const;
-
-    NS::UInteger                                                  vertexStride() const;
 };
-class AccelerationStructureMotionBoundingBoxGeometryDescriptor : public NS::Copying<AccelerationStructureMotionBoundingBoxGeometryDescriptor, AccelerationStructureGeometryDescriptor>
+
+class AccelerationStructureMotionBoundingBoxGeometryDescriptor : public NS::Referencing<AccelerationStructureMotionBoundingBoxGeometryDescriptor, MTL4::AccelerationStructureGeometryDescriptor>
 {
 public:
     static AccelerationStructureMotionBoundingBoxGeometryDescriptor* alloc();
+    AccelerationStructureMotionBoundingBoxGeometryDescriptor*        init() const;
 
-    BufferRange                                                      boundingBoxBuffers() const;
+    MTL4::BufferRange boundingBoxBuffers() const;
+    NS::UInteger      boundingBoxCount() const;
+    NS::UInteger      boundingBoxStride() const;
+    void              setBoundingBoxBuffers(MTL4::BufferRange boundingBoxBuffers);
+    void              setBoundingBoxCount(NS::UInteger boundingBoxCount);
+    void              setBoundingBoxStride(NS::UInteger boundingBoxStride);
 
-    NS::UInteger                                                     boundingBoxCount() const;
-
-    NS::UInteger                                                     boundingBoxStride() const;
-
-    AccelerationStructureMotionBoundingBoxGeometryDescriptor*        init();
-
-    void                                                             setBoundingBoxBuffers(const MTL4::BufferRange boundingBoxBuffers);
-
-    void                                                             setBoundingBoxCount(NS::UInteger boundingBoxCount);
-
-    void                                                             setBoundingBoxStride(NS::UInteger boundingBoxStride);
 };
-class AccelerationStructureCurveGeometryDescriptor : public NS::Copying<AccelerationStructureCurveGeometryDescriptor, AccelerationStructureGeometryDescriptor>
+
+class AccelerationStructureCurveGeometryDescriptor : public NS::Referencing<AccelerationStructureCurveGeometryDescriptor, MTL4::AccelerationStructureGeometryDescriptor>
 {
 public:
     static AccelerationStructureCurveGeometryDescriptor* alloc();
+    AccelerationStructureCurveGeometryDescriptor*        init() const;
 
-    BufferRange                                          controlPointBuffer() const;
+    MTL4::BufferRange    controlPointBuffer() const;
+    NS::UInteger         controlPointCount() const;
+    MTL::AttributeFormat controlPointFormat() const;
+    NS::UInteger         controlPointStride() const;
+    MTL::CurveBasis      curveBasis() const;
+    MTL::CurveEndCaps    curveEndCaps() const;
+    MTL::CurveType       curveType() const;
+    MTL4::BufferRange    indexBuffer() const;
+    MTL::IndexType       indexType() const;
+    MTL4::BufferRange    radiusBuffer() const;
+    MTL::AttributeFormat radiusFormat() const;
+    NS::UInteger         radiusStride() const;
+    NS::UInteger         segmentControlPointCount() const;
+    NS::UInteger         segmentCount() const;
+    void                 setControlPointBuffer(MTL4::BufferRange controlPointBuffer);
+    void                 setControlPointCount(NS::UInteger controlPointCount);
+    void                 setControlPointFormat(MTL::AttributeFormat controlPointFormat);
+    void                 setControlPointStride(NS::UInteger controlPointStride);
+    void                 setCurveBasis(MTL::CurveBasis curveBasis);
+    void                 setCurveEndCaps(MTL::CurveEndCaps curveEndCaps);
+    void                 setCurveType(MTL::CurveType curveType);
+    void                 setIndexBuffer(MTL4::BufferRange indexBuffer);
+    void                 setIndexType(MTL::IndexType indexType);
+    void                 setRadiusBuffer(MTL4::BufferRange radiusBuffer);
+    void                 setRadiusFormat(MTL::AttributeFormat radiusFormat);
+    void                 setRadiusStride(NS::UInteger radiusStride);
+    void                 setSegmentControlPointCount(NS::UInteger segmentControlPointCount);
+    void                 setSegmentCount(NS::UInteger segmentCount);
 
-    NS::UInteger                                         controlPointCount() const;
-
-    MTL::AttributeFormat                                 controlPointFormat() const;
-
-    NS::UInteger                                         controlPointStride() const;
-
-    MTL::CurveBasis                                      curveBasis() const;
-
-    MTL::CurveEndCaps                                    curveEndCaps() const;
-
-    MTL::CurveType                                       curveType() const;
-
-    BufferRange                                          indexBuffer() const;
-
-    MTL::IndexType                                       indexType() const;
-
-    AccelerationStructureCurveGeometryDescriptor*        init();
-
-    BufferRange                                          radiusBuffer() const;
-
-    MTL::AttributeFormat                                 radiusFormat() const;
-
-    NS::UInteger                                         radiusStride() const;
-
-    NS::UInteger                                         segmentControlPointCount() const;
-
-    NS::UInteger                                         segmentCount() const;
-
-    void                                                 setControlPointBuffer(const MTL4::BufferRange controlPointBuffer);
-
-    void                                                 setControlPointCount(NS::UInteger controlPointCount);
-
-    void                                                 setControlPointFormat(MTL::AttributeFormat controlPointFormat);
-
-    void                                                 setControlPointStride(NS::UInteger controlPointStride);
-
-    void                                                 setCurveBasis(MTL::CurveBasis curveBasis);
-
-    void                                                 setCurveEndCaps(MTL::CurveEndCaps curveEndCaps);
-
-    void                                                 setCurveType(MTL::CurveType curveType);
-
-    void                                                 setIndexBuffer(const MTL4::BufferRange indexBuffer);
-
-    void                                                 setIndexType(MTL::IndexType indexType);
-
-    void                                                 setRadiusBuffer(const MTL4::BufferRange radiusBuffer);
-
-    void                                                 setRadiusFormat(MTL::AttributeFormat radiusFormat);
-
-    void                                                 setRadiusStride(NS::UInteger radiusStride);
-
-    void                                                 setSegmentControlPointCount(NS::UInteger segmentControlPointCount);
-
-    void                                                 setSegmentCount(NS::UInteger segmentCount);
 };
-class AccelerationStructureMotionCurveGeometryDescriptor : public NS::Copying<AccelerationStructureMotionCurveGeometryDescriptor, AccelerationStructureGeometryDescriptor>
+
+class AccelerationStructureMotionCurveGeometryDescriptor : public NS::Referencing<AccelerationStructureMotionCurveGeometryDescriptor, MTL4::AccelerationStructureGeometryDescriptor>
 {
 public:
     static AccelerationStructureMotionCurveGeometryDescriptor* alloc();
+    AccelerationStructureMotionCurveGeometryDescriptor*        init() const;
 
-    BufferRange                                                controlPointBuffers() const;
+    MTL4::BufferRange    controlPointBuffers() const;
+    NS::UInteger         controlPointCount() const;
+    MTL::AttributeFormat controlPointFormat() const;
+    NS::UInteger         controlPointStride() const;
+    MTL::CurveBasis      curveBasis() const;
+    MTL::CurveEndCaps    curveEndCaps() const;
+    MTL::CurveType       curveType() const;
+    MTL4::BufferRange    indexBuffer() const;
+    MTL::IndexType       indexType() const;
+    MTL4::BufferRange    radiusBuffers() const;
+    MTL::AttributeFormat radiusFormat() const;
+    NS::UInteger         radiusStride() const;
+    NS::UInteger         segmentControlPointCount() const;
+    NS::UInteger         segmentCount() const;
+    void                 setControlPointBuffers(MTL4::BufferRange controlPointBuffers);
+    void                 setControlPointCount(NS::UInteger controlPointCount);
+    void                 setControlPointFormat(MTL::AttributeFormat controlPointFormat);
+    void                 setControlPointStride(NS::UInteger controlPointStride);
+    void                 setCurveBasis(MTL::CurveBasis curveBasis);
+    void                 setCurveEndCaps(MTL::CurveEndCaps curveEndCaps);
+    void                 setCurveType(MTL::CurveType curveType);
+    void                 setIndexBuffer(MTL4::BufferRange indexBuffer);
+    void                 setIndexType(MTL::IndexType indexType);
+    void                 setRadiusBuffers(MTL4::BufferRange radiusBuffers);
+    void                 setRadiusFormat(MTL::AttributeFormat radiusFormat);
+    void                 setRadiusStride(NS::UInteger radiusStride);
+    void                 setSegmentControlPointCount(NS::UInteger segmentControlPointCount);
+    void                 setSegmentCount(NS::UInteger segmentCount);
 
-    NS::UInteger                                               controlPointCount() const;
-
-    MTL::AttributeFormat                                       controlPointFormat() const;
-
-    NS::UInteger                                               controlPointStride() const;
-
-    MTL::CurveBasis                                            curveBasis() const;
-
-    MTL::CurveEndCaps                                          curveEndCaps() const;
-
-    MTL::CurveType                                             curveType() const;
-
-    BufferRange                                                indexBuffer() const;
-
-    MTL::IndexType                                             indexType() const;
-
-    AccelerationStructureMotionCurveGeometryDescriptor*        init();
-
-    BufferRange                                                radiusBuffers() const;
-
-    MTL::AttributeFormat                                       radiusFormat() const;
-
-    NS::UInteger                                               radiusStride() const;
-
-    NS::UInteger                                               segmentControlPointCount() const;
-
-    NS::UInteger                                               segmentCount() const;
-
-    void                                                       setControlPointBuffers(const MTL4::BufferRange controlPointBuffers);
-
-    void                                                       setControlPointCount(NS::UInteger controlPointCount);
-
-    void                                                       setControlPointFormat(MTL::AttributeFormat controlPointFormat);
-
-    void                                                       setControlPointStride(NS::UInteger controlPointStride);
-
-    void                                                       setCurveBasis(MTL::CurveBasis curveBasis);
-
-    void                                                       setCurveEndCaps(MTL::CurveEndCaps curveEndCaps);
-
-    void                                                       setCurveType(MTL::CurveType curveType);
-
-    void                                                       setIndexBuffer(const MTL4::BufferRange indexBuffer);
-
-    void                                                       setIndexType(MTL::IndexType indexType);
-
-    void                                                       setRadiusBuffers(const MTL4::BufferRange radiusBuffers);
-
-    void                                                       setRadiusFormat(MTL::AttributeFormat radiusFormat);
-
-    void                                                       setRadiusStride(NS::UInteger radiusStride);
-
-    void                                                       setSegmentControlPointCount(NS::UInteger segmentControlPointCount);
-
-    void                                                       setSegmentCount(NS::UInteger segmentCount);
 };
-class InstanceAccelerationStructureDescriptor : public NS::Copying<InstanceAccelerationStructureDescriptor, AccelerationStructureDescriptor>
+
+class InstanceAccelerationStructureDescriptor : public NS::Referencing<InstanceAccelerationStructureDescriptor, MTL4::AccelerationStructureDescriptor>
 {
 public:
-    static InstanceAccelerationStructureDescriptor*  alloc();
-
-    InstanceAccelerationStructureDescriptor*         init();
+    static InstanceAccelerationStructureDescriptor* alloc();
+    InstanceAccelerationStructureDescriptor*        init() const;
 
     NS::UInteger                                     instanceCount() const;
-
-    BufferRange                                      instanceDescriptorBuffer() const;
-
+    MTL4::BufferRange                                instanceDescriptorBuffer() const;
     NS::UInteger                                     instanceDescriptorStride() const;
-
     MTL::AccelerationStructureInstanceDescriptorType instanceDescriptorType() const;
-
     MTL::MatrixLayout                                instanceTransformationMatrixLayout() const;
-
-    BufferRange                                      motionTransformBuffer() const;
-
+    MTL4::BufferRange                                motionTransformBuffer() const;
     NS::UInteger                                     motionTransformCount() const;
-
     NS::UInteger                                     motionTransformStride() const;
-
     MTL::TransformType                               motionTransformType() const;
-
     void                                             setInstanceCount(NS::UInteger instanceCount);
-
-    void                                             setInstanceDescriptorBuffer(const MTL4::BufferRange instanceDescriptorBuffer);
-
+    void                                             setInstanceDescriptorBuffer(MTL4::BufferRange instanceDescriptorBuffer);
     void                                             setInstanceDescriptorStride(NS::UInteger instanceDescriptorStride);
-
     void                                             setInstanceDescriptorType(MTL::AccelerationStructureInstanceDescriptorType instanceDescriptorType);
-
     void                                             setInstanceTransformationMatrixLayout(MTL::MatrixLayout instanceTransformationMatrixLayout);
-
-    void                                             setMotionTransformBuffer(const MTL4::BufferRange motionTransformBuffer);
-
+    void                                             setMotionTransformBuffer(MTL4::BufferRange motionTransformBuffer);
     void                                             setMotionTransformCount(NS::UInteger motionTransformCount);
-
     void                                             setMotionTransformStride(NS::UInteger motionTransformStride);
-
     void                                             setMotionTransformType(MTL::TransformType motionTransformType);
+
 };
-class IndirectInstanceAccelerationStructureDescriptor : public NS::Copying<IndirectInstanceAccelerationStructureDescriptor, AccelerationStructureDescriptor>
+
+class IndirectInstanceAccelerationStructureDescriptor : public NS::Referencing<IndirectInstanceAccelerationStructureDescriptor, MTL4::AccelerationStructureDescriptor>
 {
 public:
     static IndirectInstanceAccelerationStructureDescriptor* alloc();
+    IndirectInstanceAccelerationStructureDescriptor*        init() const;
 
-    IndirectInstanceAccelerationStructureDescriptor*        init();
+    MTL4::BufferRange                                instanceCountBuffer() const;
+    MTL4::BufferRange                                instanceDescriptorBuffer() const;
+    NS::UInteger                                     instanceDescriptorStride() const;
+    MTL::AccelerationStructureInstanceDescriptorType instanceDescriptorType() const;
+    MTL::MatrixLayout                                instanceTransformationMatrixLayout() const;
+    NS::UInteger                                     maxInstanceCount() const;
+    NS::UInteger                                     maxMotionTransformCount() const;
+    MTL4::BufferRange                                motionTransformBuffer() const;
+    MTL4::BufferRange                                motionTransformCountBuffer() const;
+    NS::UInteger                                     motionTransformStride() const;
+    MTL::TransformType                               motionTransformType() const;
+    void                                             setInstanceCountBuffer(MTL4::BufferRange instanceCountBuffer);
+    void                                             setInstanceDescriptorBuffer(MTL4::BufferRange instanceDescriptorBuffer);
+    void                                             setInstanceDescriptorStride(NS::UInteger instanceDescriptorStride);
+    void                                             setInstanceDescriptorType(MTL::AccelerationStructureInstanceDescriptorType instanceDescriptorType);
+    void                                             setInstanceTransformationMatrixLayout(MTL::MatrixLayout instanceTransformationMatrixLayout);
+    void                                             setMaxInstanceCount(NS::UInteger maxInstanceCount);
+    void                                             setMaxMotionTransformCount(NS::UInteger maxMotionTransformCount);
+    void                                             setMotionTransformBuffer(MTL4::BufferRange motionTransformBuffer);
+    void                                             setMotionTransformCountBuffer(MTL4::BufferRange motionTransformCountBuffer);
+    void                                             setMotionTransformStride(NS::UInteger motionTransformStride);
+    void                                             setMotionTransformType(MTL::TransformType motionTransformType);
 
-    BufferRange                                             instanceCountBuffer() const;
-
-    BufferRange                                             instanceDescriptorBuffer() const;
-
-    NS::UInteger                                            instanceDescriptorStride() const;
-
-    MTL::AccelerationStructureInstanceDescriptorType        instanceDescriptorType() const;
-
-    MTL::MatrixLayout                                       instanceTransformationMatrixLayout() const;
-
-    NS::UInteger                                            maxInstanceCount() const;
-
-    NS::UInteger                                            maxMotionTransformCount() const;
-
-    BufferRange                                             motionTransformBuffer() const;
-
-    BufferRange                                             motionTransformCountBuffer() const;
-
-    NS::UInteger                                            motionTransformStride() const;
-
-    MTL::TransformType                                      motionTransformType() const;
-
-    void                                                    setInstanceCountBuffer(const MTL4::BufferRange instanceCountBuffer);
-
-    void                                                    setInstanceDescriptorBuffer(const MTL4::BufferRange instanceDescriptorBuffer);
-
-    void                                                    setInstanceDescriptorStride(NS::UInteger instanceDescriptorStride);
-
-    void                                                    setInstanceDescriptorType(MTL::AccelerationStructureInstanceDescriptorType instanceDescriptorType);
-
-    void                                                    setInstanceTransformationMatrixLayout(MTL::MatrixLayout instanceTransformationMatrixLayout);
-
-    void                                                    setMaxInstanceCount(NS::UInteger maxInstanceCount);
-
-    void                                                    setMaxMotionTransformCount(NS::UInteger maxMotionTransformCount);
-
-    void                                                    setMotionTransformBuffer(const MTL4::BufferRange motionTransformBuffer);
-
-    void                                                    setMotionTransformCountBuffer(const MTL4::BufferRange motionTransformCountBuffer);
-
-    void                                                    setMotionTransformStride(NS::UInteger motionTransformStride);
-
-    void                                                    setMotionTransformType(MTL::TransformType motionTransformType);
 };
 
-}
-_MTL_INLINE MTL4::AccelerationStructureDescriptor* MTL4::AccelerationStructureDescriptor::alloc()
+} // namespace MTL4
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTL4AccelerationStructureDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4AccelerationStructureGeometryDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4PrimitiveAccelerationStructureDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4AccelerationStructureTriangleGeometryDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4AccelerationStructureBoundingBoxGeometryDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4AccelerationStructureMotionTriangleGeometryDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4AccelerationStructureMotionBoundingBoxGeometryDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4AccelerationStructureCurveGeometryDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4AccelerationStructureMotionCurveGeometryDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4InstanceAccelerationStructureDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4IndirectInstanceAccelerationStructureDescriptor;
+
+_MTL4_INLINE MTL4::AccelerationStructureDescriptor* MTL4::AccelerationStructureDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::AccelerationStructureDescriptor>(_MTL_PRIVATE_CLS(MTL4AccelerationStructureDescriptor));
+    return _MTL4_msg_MTL4__AccelerationStructureDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4AccelerationStructureDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureDescriptor* MTL4::AccelerationStructureDescriptor::init()
+_MTL4_INLINE MTL4::AccelerationStructureDescriptor* MTL4::AccelerationStructureDescriptor::init() const
 {
-    return NS::Object::init<MTL4::AccelerationStructureDescriptor>();
+    return _MTL4_msg_MTL4__AccelerationStructureDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureGeometryDescriptor* MTL4::AccelerationStructureGeometryDescriptor::alloc()
+_MTL4_INLINE MTL4::AccelerationStructureGeometryDescriptor* MTL4::AccelerationStructureGeometryDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::AccelerationStructureGeometryDescriptor>(_MTL_PRIVATE_CLS(MTL4AccelerationStructureGeometryDescriptor));
+    return _MTL4_msg_MTL4__AccelerationStructureGeometryDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4AccelerationStructureGeometryDescriptor, nullptr);
 }
 
-_MTL_INLINE bool MTL4::AccelerationStructureGeometryDescriptor::allowDuplicateIntersectionFunctionInvocation() const
+_MTL4_INLINE MTL4::AccelerationStructureGeometryDescriptor* MTL4::AccelerationStructureGeometryDescriptor::init() const
 {
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(allowDuplicateIntersectionFunctionInvocation));
+    return _MTL4_msg_MTL4__AccelerationStructureGeometryDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureGeometryDescriptor* MTL4::AccelerationStructureGeometryDescriptor::init()
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureGeometryDescriptor::intersectionFunctionTableOffset() const
 {
-    return NS::Object::init<MTL4::AccelerationStructureGeometryDescriptor>();
+    return _MTL4_msg_NS__UInteger_intersectionFunctionTableOffset((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureGeometryDescriptor::intersectionFunctionTableOffset() const
+_MTL4_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setIntersectionFunctionTableOffset(NS::UInteger intersectionFunctionTableOffset)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(intersectionFunctionTableOffset));
+    _MTL4_msg_v_setIntersectionFunctionTableOffset__NS__UInteger((const void*)this, nullptr, intersectionFunctionTableOffset);
 }
 
-_MTL_INLINE NS::String* MTL4::AccelerationStructureGeometryDescriptor::label() const
+_MTL4_INLINE bool MTL4::AccelerationStructureGeometryDescriptor::opaque() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    return _MTL4_msg_bool_opaque((const void*)this, nullptr);
 }
 
-_MTL_INLINE bool MTL4::AccelerationStructureGeometryDescriptor::opaque() const
+_MTL4_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setOpaque(bool opaque)
 {
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(opaque));
+    _MTL4_msg_v_setOpaque__bool((const void*)this, nullptr, opaque);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureGeometryDescriptor::primitiveDataBuffer() const
+_MTL4_INLINE bool MTL4::AccelerationStructureGeometryDescriptor::allowDuplicateIntersectionFunctionInvocation() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(primitiveDataBuffer));
+    return _MTL4_msg_bool_allowDuplicateIntersectionFunctionInvocation((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureGeometryDescriptor::primitiveDataElementSize() const
+_MTL4_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setAllowDuplicateIntersectionFunctionInvocation(bool allowDuplicateIntersectionFunctionInvocation)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(primitiveDataElementSize));
+    _MTL4_msg_v_setAllowDuplicateIntersectionFunctionInvocation__bool((const void*)this, nullptr, allowDuplicateIntersectionFunctionInvocation);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureGeometryDescriptor::primitiveDataStride() const
+_MTL4_INLINE NS::String* MTL4::AccelerationStructureGeometryDescriptor::label() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(primitiveDataStride));
+    return _MTL4_msg_NS__Stringp_label((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setAllowDuplicateIntersectionFunctionInvocation(bool allowDuplicateIntersectionFunctionInvocation)
+_MTL4_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setLabel(NS::String* label)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setAllowDuplicateIntersectionFunctionInvocation_), allowDuplicateIntersectionFunctionInvocation);
+    _MTL4_msg_v_setLabel__NS__Stringp((const void*)this, nullptr, label);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setIntersectionFunctionTableOffset(NS::UInteger intersectionFunctionTableOffset)
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureGeometryDescriptor::primitiveDataBuffer() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setIntersectionFunctionTableOffset_), intersectionFunctionTableOffset);
+    return _MTL4_msg_MTL4__BufferRange_primitiveDataBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setLabel(const NS::String* label)
+_MTL4_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setPrimitiveDataBuffer(MTL4::BufferRange primitiveDataBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLabel_), label);
+    _MTL4_msg_v_setPrimitiveDataBuffer__MTL4__BufferRange((const void*)this, nullptr, primitiveDataBuffer);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setOpaque(bool opaque)
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureGeometryDescriptor::primitiveDataStride() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setOpaque_), opaque);
+    return _MTL4_msg_NS__UInteger_primitiveDataStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setPrimitiveDataBuffer(const MTL4::BufferRange primitiveDataBuffer)
+_MTL4_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setPrimitiveDataStride(NS::UInteger primitiveDataStride)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setPrimitiveDataBuffer_), primitiveDataBuffer);
+    _MTL4_msg_v_setPrimitiveDataStride__NS__UInteger((const void*)this, nullptr, primitiveDataStride);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setPrimitiveDataElementSize(NS::UInteger primitiveDataElementSize)
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureGeometryDescriptor::primitiveDataElementSize() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setPrimitiveDataElementSize_), primitiveDataElementSize);
+    return _MTL4_msg_NS__UInteger_primitiveDataElementSize((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setPrimitiveDataStride(NS::UInteger primitiveDataStride)
+_MTL4_INLINE void MTL4::AccelerationStructureGeometryDescriptor::setPrimitiveDataElementSize(NS::UInteger primitiveDataElementSize)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setPrimitiveDataStride_), primitiveDataStride);
+    _MTL4_msg_v_setPrimitiveDataElementSize__NS__UInteger((const void*)this, nullptr, primitiveDataElementSize);
 }
 
-_MTL_INLINE MTL4::PrimitiveAccelerationStructureDescriptor* MTL4::PrimitiveAccelerationStructureDescriptor::alloc()
+_MTL4_INLINE MTL4::PrimitiveAccelerationStructureDescriptor* MTL4::PrimitiveAccelerationStructureDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::PrimitiveAccelerationStructureDescriptor>(_MTL_PRIVATE_CLS(MTL4PrimitiveAccelerationStructureDescriptor));
+    return _MTL4_msg_MTL4__PrimitiveAccelerationStructureDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4PrimitiveAccelerationStructureDescriptor, nullptr);
 }
 
-_MTL_INLINE NS::Array* MTL4::PrimitiveAccelerationStructureDescriptor::geometryDescriptors() const
+_MTL4_INLINE MTL4::PrimitiveAccelerationStructureDescriptor* MTL4::PrimitiveAccelerationStructureDescriptor::init() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(geometryDescriptors));
+    return _MTL4_msg_MTL4__PrimitiveAccelerationStructureDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::PrimitiveAccelerationStructureDescriptor* MTL4::PrimitiveAccelerationStructureDescriptor::init()
+_MTL4_INLINE NS::Array* MTL4::PrimitiveAccelerationStructureDescriptor::geometryDescriptors() const
 {
-    return NS::Object::init<MTL4::PrimitiveAccelerationStructureDescriptor>();
+    return _MTL4_msg_NS__Arrayp_geometryDescriptors((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::MotionBorderMode MTL4::PrimitiveAccelerationStructureDescriptor::motionEndBorderMode() const
+_MTL4_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setGeometryDescriptors(NS::Array* geometryDescriptors)
 {
-    return Object::sendMessage<MTL::MotionBorderMode>(this, _MTL_PRIVATE_SEL(motionEndBorderMode));
+    _MTL4_msg_v_setGeometryDescriptors__NS__Arrayp((const void*)this, nullptr, geometryDescriptors);
 }
 
-_MTL_INLINE float MTL4::PrimitiveAccelerationStructureDescriptor::motionEndTime() const
+_MTL4_INLINE MTL::MotionBorderMode MTL4::PrimitiveAccelerationStructureDescriptor::motionStartBorderMode() const
 {
-    return Object::sendMessage<float>(this, _MTL_PRIVATE_SEL(motionEndTime));
+    return _MTL4_msg_MTL__MotionBorderMode_motionStartBorderMode((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::PrimitiveAccelerationStructureDescriptor::motionKeyframeCount() const
+_MTL4_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setMotionStartBorderMode(MTL::MotionBorderMode motionStartBorderMode)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(motionKeyframeCount));
+    _MTL4_msg_v_setMotionStartBorderMode__MTL__MotionBorderMode((const void*)this, nullptr, motionStartBorderMode);
 }
 
-_MTL_INLINE MTL::MotionBorderMode MTL4::PrimitiveAccelerationStructureDescriptor::motionStartBorderMode() const
+_MTL4_INLINE MTL::MotionBorderMode MTL4::PrimitiveAccelerationStructureDescriptor::motionEndBorderMode() const
 {
-    return Object::sendMessage<MTL::MotionBorderMode>(this, _MTL_PRIVATE_SEL(motionStartBorderMode));
+    return _MTL4_msg_MTL__MotionBorderMode_motionEndBorderMode((const void*)this, nullptr);
 }
 
-_MTL_INLINE float MTL4::PrimitiveAccelerationStructureDescriptor::motionStartTime() const
+_MTL4_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setMotionEndBorderMode(MTL::MotionBorderMode motionEndBorderMode)
 {
-    return Object::sendMessage<float>(this, _MTL_PRIVATE_SEL(motionStartTime));
+    _MTL4_msg_v_setMotionEndBorderMode__MTL__MotionBorderMode((const void*)this, nullptr, motionEndBorderMode);
 }
 
-_MTL_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setGeometryDescriptors(const NS::Array* geometryDescriptors)
+_MTL4_INLINE float MTL4::PrimitiveAccelerationStructureDescriptor::motionStartTime() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setGeometryDescriptors_), geometryDescriptors);
+    return _MTL4_msg_float_motionStartTime((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setMotionEndBorderMode(MTL::MotionBorderMode motionEndBorderMode)
+_MTL4_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setMotionStartTime(float motionStartTime)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionEndBorderMode_), motionEndBorderMode);
+    _MTL4_msg_v_setMotionStartTime__float((const void*)this, nullptr, motionStartTime);
 }
 
-_MTL_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setMotionEndTime(float motionEndTime)
+_MTL4_INLINE float MTL4::PrimitiveAccelerationStructureDescriptor::motionEndTime() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionEndTime_), motionEndTime);
+    return _MTL4_msg_float_motionEndTime((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setMotionKeyframeCount(NS::UInteger motionKeyframeCount)
+_MTL4_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setMotionEndTime(float motionEndTime)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionKeyframeCount_), motionKeyframeCount);
+    _MTL4_msg_v_setMotionEndTime__float((const void*)this, nullptr, motionEndTime);
 }
 
-_MTL_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setMotionStartBorderMode(MTL::MotionBorderMode motionStartBorderMode)
+_MTL4_INLINE NS::UInteger MTL4::PrimitiveAccelerationStructureDescriptor::motionKeyframeCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionStartBorderMode_), motionStartBorderMode);
+    return _MTL4_msg_NS__UInteger_motionKeyframeCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setMotionStartTime(float motionStartTime)
+_MTL4_INLINE void MTL4::PrimitiveAccelerationStructureDescriptor::setMotionKeyframeCount(NS::UInteger motionKeyframeCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionStartTime_), motionStartTime);
+    _MTL4_msg_v_setMotionKeyframeCount__NS__UInteger((const void*)this, nullptr, motionKeyframeCount);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureTriangleGeometryDescriptor* MTL4::AccelerationStructureTriangleGeometryDescriptor::alloc()
+_MTL4_INLINE MTL4::AccelerationStructureTriangleGeometryDescriptor* MTL4::AccelerationStructureTriangleGeometryDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::AccelerationStructureTriangleGeometryDescriptor>(_MTL_PRIVATE_CLS(MTL4AccelerationStructureTriangleGeometryDescriptor));
+    return _MTL4_msg_MTL4__AccelerationStructureTriangleGeometryDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4AccelerationStructureTriangleGeometryDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureTriangleGeometryDescriptor::indexBuffer() const
+_MTL4_INLINE MTL4::AccelerationStructureTriangleGeometryDescriptor* MTL4::AccelerationStructureTriangleGeometryDescriptor::init() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(indexBuffer));
+    return _MTL4_msg_MTL4__AccelerationStructureTriangleGeometryDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::IndexType MTL4::AccelerationStructureTriangleGeometryDescriptor::indexType() const
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureTriangleGeometryDescriptor::vertexBuffer() const
 {
-    return Object::sendMessage<MTL::IndexType>(this, _MTL_PRIVATE_SEL(indexType));
+    return _MTL4_msg_MTL4__BufferRange_vertexBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureTriangleGeometryDescriptor* MTL4::AccelerationStructureTriangleGeometryDescriptor::init()
+_MTL4_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setVertexBuffer(MTL4::BufferRange vertexBuffer)
 {
-    return NS::Object::init<MTL4::AccelerationStructureTriangleGeometryDescriptor>();
+    _MTL4_msg_v_setVertexBuffer__MTL4__BufferRange((const void*)this, nullptr, vertexBuffer);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setIndexBuffer(const MTL4::BufferRange indexBuffer)
+_MTL4_INLINE MTL::AttributeFormat MTL4::AccelerationStructureTriangleGeometryDescriptor::vertexFormat() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setIndexBuffer_), indexBuffer);
+    return _MTL4_msg_MTL__AttributeFormat_vertexFormat((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setIndexType(MTL::IndexType indexType)
+_MTL4_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setVertexFormat(MTL::AttributeFormat vertexFormat)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setIndexType_), indexType);
+    _MTL4_msg_v_setVertexFormat__MTL__AttributeFormat((const void*)this, nullptr, vertexFormat);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setTransformationMatrixBuffer(const MTL4::BufferRange transformationMatrixBuffer)
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureTriangleGeometryDescriptor::vertexStride() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setTransformationMatrixBuffer_), transformationMatrixBuffer);
+    return _MTL4_msg_NS__UInteger_vertexStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setTransformationMatrixLayout(MTL::MatrixLayout transformationMatrixLayout)
+_MTL4_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setVertexStride(NS::UInteger vertexStride)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setTransformationMatrixLayout_), transformationMatrixLayout);
+    _MTL4_msg_v_setVertexStride__NS__UInteger((const void*)this, nullptr, vertexStride);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setTriangleCount(NS::UInteger triangleCount)
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureTriangleGeometryDescriptor::indexBuffer() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setTriangleCount_), triangleCount);
+    return _MTL4_msg_MTL4__BufferRange_indexBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setVertexBuffer(const MTL4::BufferRange vertexBuffer)
+_MTL4_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setIndexBuffer(MTL4::BufferRange indexBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVertexBuffer_), vertexBuffer);
+    _MTL4_msg_v_setIndexBuffer__MTL4__BufferRange((const void*)this, nullptr, indexBuffer);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setVertexFormat(MTL::AttributeFormat vertexFormat)
+_MTL4_INLINE MTL::IndexType MTL4::AccelerationStructureTriangleGeometryDescriptor::indexType() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVertexFormat_), vertexFormat);
+    return _MTL4_msg_MTL__IndexType_indexType((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setVertexStride(NS::UInteger vertexStride)
+_MTL4_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setIndexType(MTL::IndexType indexType)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVertexStride_), vertexStride);
+    _MTL4_msg_v_setIndexType__MTL__IndexType((const void*)this, nullptr, indexType);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureTriangleGeometryDescriptor::transformationMatrixBuffer() const
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureTriangleGeometryDescriptor::triangleCount() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(transformationMatrixBuffer));
+    return _MTL4_msg_NS__UInteger_triangleCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::MatrixLayout MTL4::AccelerationStructureTriangleGeometryDescriptor::transformationMatrixLayout() const
+_MTL4_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setTriangleCount(NS::UInteger triangleCount)
 {
-    return Object::sendMessage<MTL::MatrixLayout>(this, _MTL_PRIVATE_SEL(transformationMatrixLayout));
+    _MTL4_msg_v_setTriangleCount__NS__UInteger((const void*)this, nullptr, triangleCount);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureTriangleGeometryDescriptor::triangleCount() const
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureTriangleGeometryDescriptor::transformationMatrixBuffer() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(triangleCount));
+    return _MTL4_msg_MTL4__BufferRange_transformationMatrixBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureTriangleGeometryDescriptor::vertexBuffer() const
+_MTL4_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setTransformationMatrixBuffer(MTL4::BufferRange transformationMatrixBuffer)
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(vertexBuffer));
+    _MTL4_msg_v_setTransformationMatrixBuffer__MTL4__BufferRange((const void*)this, nullptr, transformationMatrixBuffer);
 }
 
-_MTL_INLINE MTL::AttributeFormat MTL4::AccelerationStructureTriangleGeometryDescriptor::vertexFormat() const
+_MTL4_INLINE MTL::MatrixLayout MTL4::AccelerationStructureTriangleGeometryDescriptor::transformationMatrixLayout() const
 {
-    return Object::sendMessage<MTL::AttributeFormat>(this, _MTL_PRIVATE_SEL(vertexFormat));
+    return _MTL4_msg_MTL__MatrixLayout_transformationMatrixLayout((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureTriangleGeometryDescriptor::vertexStride() const
+_MTL4_INLINE void MTL4::AccelerationStructureTriangleGeometryDescriptor::setTransformationMatrixLayout(MTL::MatrixLayout transformationMatrixLayout)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(vertexStride));
+    _MTL4_msg_v_setTransformationMatrixLayout__MTL__MatrixLayout((const void*)this, nullptr, transformationMatrixLayout);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureBoundingBoxGeometryDescriptor* MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::alloc()
+_MTL4_INLINE MTL4::AccelerationStructureBoundingBoxGeometryDescriptor* MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::AccelerationStructureBoundingBoxGeometryDescriptor>(_MTL_PRIVATE_CLS(MTL4AccelerationStructureBoundingBoxGeometryDescriptor));
+    return _MTL4_msg_MTL4__AccelerationStructureBoundingBoxGeometryDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4AccelerationStructureBoundingBoxGeometryDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::boundingBoxBuffer() const
+_MTL4_INLINE MTL4::AccelerationStructureBoundingBoxGeometryDescriptor* MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::init() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(boundingBoxBuffer));
+    return _MTL4_msg_MTL4__AccelerationStructureBoundingBoxGeometryDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::boundingBoxCount() const
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::boundingBoxBuffer() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(boundingBoxCount));
+    return _MTL4_msg_MTL4__BufferRange_boundingBoxBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::boundingBoxStride() const
+_MTL4_INLINE void MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::setBoundingBoxBuffer(MTL4::BufferRange boundingBoxBuffer)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(boundingBoxStride));
+    _MTL4_msg_v_setBoundingBoxBuffer__MTL4__BufferRange((const void*)this, nullptr, boundingBoxBuffer);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureBoundingBoxGeometryDescriptor* MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::init()
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::boundingBoxStride() const
 {
-    return NS::Object::init<MTL4::AccelerationStructureBoundingBoxGeometryDescriptor>();
+    return _MTL4_msg_NS__UInteger_boundingBoxStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::setBoundingBoxBuffer(const MTL4::BufferRange boundingBoxBuffer)
+_MTL4_INLINE void MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::setBoundingBoxStride(NS::UInteger boundingBoxStride)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setBoundingBoxBuffer_), boundingBoxBuffer);
+    _MTL4_msg_v_setBoundingBoxStride__NS__UInteger((const void*)this, nullptr, boundingBoxStride);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::setBoundingBoxCount(NS::UInteger boundingBoxCount)
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::boundingBoxCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setBoundingBoxCount_), boundingBoxCount);
+    return _MTL4_msg_NS__UInteger_boundingBoxCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::setBoundingBoxStride(NS::UInteger boundingBoxStride)
+_MTL4_INLINE void MTL4::AccelerationStructureBoundingBoxGeometryDescriptor::setBoundingBoxCount(NS::UInteger boundingBoxCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setBoundingBoxStride_), boundingBoxStride);
+    _MTL4_msg_v_setBoundingBoxCount__NS__UInteger((const void*)this, nullptr, boundingBoxCount);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureMotionTriangleGeometryDescriptor* MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::alloc()
+_MTL4_INLINE MTL4::AccelerationStructureMotionTriangleGeometryDescriptor* MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::AccelerationStructureMotionTriangleGeometryDescriptor>(_MTL_PRIVATE_CLS(MTL4AccelerationStructureMotionTriangleGeometryDescriptor));
+    return _MTL4_msg_MTL4__AccelerationStructureMotionTriangleGeometryDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4AccelerationStructureMotionTriangleGeometryDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::indexBuffer() const
+_MTL4_INLINE MTL4::AccelerationStructureMotionTriangleGeometryDescriptor* MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::init() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(indexBuffer));
+    return _MTL4_msg_MTL4__AccelerationStructureMotionTriangleGeometryDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::IndexType MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::indexType() const
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::vertexBuffers() const
 {
-    return Object::sendMessage<MTL::IndexType>(this, _MTL_PRIVATE_SEL(indexType));
+    return _MTL4_msg_MTL4__BufferRange_vertexBuffers((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureMotionTriangleGeometryDescriptor* MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::init()
+_MTL4_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setVertexBuffers(MTL4::BufferRange vertexBuffers)
 {
-    return NS::Object::init<MTL4::AccelerationStructureMotionTriangleGeometryDescriptor>();
+    _MTL4_msg_v_setVertexBuffers__MTL4__BufferRange((const void*)this, nullptr, vertexBuffers);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setIndexBuffer(const MTL4::BufferRange indexBuffer)
+_MTL4_INLINE MTL::AttributeFormat MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::vertexFormat() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setIndexBuffer_), indexBuffer);
+    return _MTL4_msg_MTL__AttributeFormat_vertexFormat((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setIndexType(MTL::IndexType indexType)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setVertexFormat(MTL::AttributeFormat vertexFormat)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setIndexType_), indexType);
+    _MTL4_msg_v_setVertexFormat__MTL__AttributeFormat((const void*)this, nullptr, vertexFormat);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setTransformationMatrixBuffer(const MTL4::BufferRange transformationMatrixBuffer)
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::vertexStride() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setTransformationMatrixBuffer_), transformationMatrixBuffer);
+    return _MTL4_msg_NS__UInteger_vertexStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setTransformationMatrixLayout(MTL::MatrixLayout transformationMatrixLayout)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setVertexStride(NS::UInteger vertexStride)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setTransformationMatrixLayout_), transformationMatrixLayout);
+    _MTL4_msg_v_setVertexStride__NS__UInteger((const void*)this, nullptr, vertexStride);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setTriangleCount(NS::UInteger triangleCount)
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::indexBuffer() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setTriangleCount_), triangleCount);
+    return _MTL4_msg_MTL4__BufferRange_indexBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setVertexBuffers(const MTL4::BufferRange vertexBuffers)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setIndexBuffer(MTL4::BufferRange indexBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVertexBuffers_), vertexBuffers);
+    _MTL4_msg_v_setIndexBuffer__MTL4__BufferRange((const void*)this, nullptr, indexBuffer);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setVertexFormat(MTL::AttributeFormat vertexFormat)
+_MTL4_INLINE MTL::IndexType MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::indexType() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVertexFormat_), vertexFormat);
+    return _MTL4_msg_MTL__IndexType_indexType((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setVertexStride(NS::UInteger vertexStride)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setIndexType(MTL::IndexType indexType)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVertexStride_), vertexStride);
+    _MTL4_msg_v_setIndexType__MTL__IndexType((const void*)this, nullptr, indexType);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::transformationMatrixBuffer() const
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::triangleCount() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(transformationMatrixBuffer));
+    return _MTL4_msg_NS__UInteger_triangleCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::MatrixLayout MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::transformationMatrixLayout() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setTriangleCount(NS::UInteger triangleCount)
 {
-    return Object::sendMessage<MTL::MatrixLayout>(this, _MTL_PRIVATE_SEL(transformationMatrixLayout));
+    _MTL4_msg_v_setTriangleCount__NS__UInteger((const void*)this, nullptr, triangleCount);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::triangleCount() const
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::transformationMatrixBuffer() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(triangleCount));
+    return _MTL4_msg_MTL4__BufferRange_transformationMatrixBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::vertexBuffers() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setTransformationMatrixBuffer(MTL4::BufferRange transformationMatrixBuffer)
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(vertexBuffers));
+    _MTL4_msg_v_setTransformationMatrixBuffer__MTL4__BufferRange((const void*)this, nullptr, transformationMatrixBuffer);
 }
 
-_MTL_INLINE MTL::AttributeFormat MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::vertexFormat() const
+_MTL4_INLINE MTL::MatrixLayout MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::transformationMatrixLayout() const
 {
-    return Object::sendMessage<MTL::AttributeFormat>(this, _MTL_PRIVATE_SEL(vertexFormat));
+    return _MTL4_msg_MTL__MatrixLayout_transformationMatrixLayout((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::vertexStride() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionTriangleGeometryDescriptor::setTransformationMatrixLayout(MTL::MatrixLayout transformationMatrixLayout)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(vertexStride));
+    _MTL4_msg_v_setTransformationMatrixLayout__MTL__MatrixLayout((const void*)this, nullptr, transformationMatrixLayout);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor* MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::alloc()
+_MTL4_INLINE MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor* MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor>(_MTL_PRIVATE_CLS(MTL4AccelerationStructureMotionBoundingBoxGeometryDescriptor));
+    return _MTL4_msg_MTL4__AccelerationStructureMotionBoundingBoxGeometryDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4AccelerationStructureMotionBoundingBoxGeometryDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::boundingBoxBuffers() const
+_MTL4_INLINE MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor* MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::init() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(boundingBoxBuffers));
+    return _MTL4_msg_MTL4__AccelerationStructureMotionBoundingBoxGeometryDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::boundingBoxCount() const
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::boundingBoxBuffers() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(boundingBoxCount));
+    return _MTL4_msg_MTL4__BufferRange_boundingBoxBuffers((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::boundingBoxStride() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::setBoundingBoxBuffers(MTL4::BufferRange boundingBoxBuffers)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(boundingBoxStride));
+    _MTL4_msg_v_setBoundingBoxBuffers__MTL4__BufferRange((const void*)this, nullptr, boundingBoxBuffers);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor* MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::init()
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::boundingBoxStride() const
 {
-    return NS::Object::init<MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor>();
+    return _MTL4_msg_NS__UInteger_boundingBoxStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::setBoundingBoxBuffers(const MTL4::BufferRange boundingBoxBuffers)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::setBoundingBoxStride(NS::UInteger boundingBoxStride)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setBoundingBoxBuffers_), boundingBoxBuffers);
+    _MTL4_msg_v_setBoundingBoxStride__NS__UInteger((const void*)this, nullptr, boundingBoxStride);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::setBoundingBoxCount(NS::UInteger boundingBoxCount)
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::boundingBoxCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setBoundingBoxCount_), boundingBoxCount);
+    return _MTL4_msg_NS__UInteger_boundingBoxCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::setBoundingBoxStride(NS::UInteger boundingBoxStride)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionBoundingBoxGeometryDescriptor::setBoundingBoxCount(NS::UInteger boundingBoxCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setBoundingBoxStride_), boundingBoxStride);
+    _MTL4_msg_v_setBoundingBoxCount__NS__UInteger((const void*)this, nullptr, boundingBoxCount);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureCurveGeometryDescriptor* MTL4::AccelerationStructureCurveGeometryDescriptor::alloc()
+_MTL4_INLINE MTL4::AccelerationStructureCurveGeometryDescriptor* MTL4::AccelerationStructureCurveGeometryDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::AccelerationStructureCurveGeometryDescriptor>(_MTL_PRIVATE_CLS(MTL4AccelerationStructureCurveGeometryDescriptor));
+    return _MTL4_msg_MTL4__AccelerationStructureCurveGeometryDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4AccelerationStructureCurveGeometryDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureCurveGeometryDescriptor::controlPointBuffer() const
+_MTL4_INLINE MTL4::AccelerationStructureCurveGeometryDescriptor* MTL4::AccelerationStructureCurveGeometryDescriptor::init() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(controlPointBuffer));
+    return _MTL4_msg_MTL4__AccelerationStructureCurveGeometryDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureCurveGeometryDescriptor::controlPointCount() const
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureCurveGeometryDescriptor::controlPointBuffer() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(controlPointCount));
+    return _MTL4_msg_MTL4__BufferRange_controlPointBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::AttributeFormat MTL4::AccelerationStructureCurveGeometryDescriptor::controlPointFormat() const
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setControlPointBuffer(MTL4::BufferRange controlPointBuffer)
 {
-    return Object::sendMessage<MTL::AttributeFormat>(this, _MTL_PRIVATE_SEL(controlPointFormat));
+    _MTL4_msg_v_setControlPointBuffer__MTL4__BufferRange((const void*)this, nullptr, controlPointBuffer);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureCurveGeometryDescriptor::controlPointStride() const
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureCurveGeometryDescriptor::controlPointCount() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(controlPointStride));
+    return _MTL4_msg_NS__UInteger_controlPointCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::CurveBasis MTL4::AccelerationStructureCurveGeometryDescriptor::curveBasis() const
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setControlPointCount(NS::UInteger controlPointCount)
 {
-    return Object::sendMessage<MTL::CurveBasis>(this, _MTL_PRIVATE_SEL(curveBasis));
+    _MTL4_msg_v_setControlPointCount__NS__UInteger((const void*)this, nullptr, controlPointCount);
 }
 
-_MTL_INLINE MTL::CurveEndCaps MTL4::AccelerationStructureCurveGeometryDescriptor::curveEndCaps() const
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureCurveGeometryDescriptor::controlPointStride() const
 {
-    return Object::sendMessage<MTL::CurveEndCaps>(this, _MTL_PRIVATE_SEL(curveEndCaps));
+    return _MTL4_msg_NS__UInteger_controlPointStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::CurveType MTL4::AccelerationStructureCurveGeometryDescriptor::curveType() const
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setControlPointStride(NS::UInteger controlPointStride)
 {
-    return Object::sendMessage<MTL::CurveType>(this, _MTL_PRIVATE_SEL(curveType));
+    _MTL4_msg_v_setControlPointStride__NS__UInteger((const void*)this, nullptr, controlPointStride);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureCurveGeometryDescriptor::indexBuffer() const
+_MTL4_INLINE MTL::AttributeFormat MTL4::AccelerationStructureCurveGeometryDescriptor::controlPointFormat() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(indexBuffer));
+    return _MTL4_msg_MTL__AttributeFormat_controlPointFormat((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::IndexType MTL4::AccelerationStructureCurveGeometryDescriptor::indexType() const
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setControlPointFormat(MTL::AttributeFormat controlPointFormat)
 {
-    return Object::sendMessage<MTL::IndexType>(this, _MTL_PRIVATE_SEL(indexType));
+    _MTL4_msg_v_setControlPointFormat__MTL__AttributeFormat((const void*)this, nullptr, controlPointFormat);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureCurveGeometryDescriptor* MTL4::AccelerationStructureCurveGeometryDescriptor::init()
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureCurveGeometryDescriptor::radiusBuffer() const
 {
-    return NS::Object::init<MTL4::AccelerationStructureCurveGeometryDescriptor>();
+    return _MTL4_msg_MTL4__BufferRange_radiusBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureCurveGeometryDescriptor::radiusBuffer() const
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setRadiusBuffer(MTL4::BufferRange radiusBuffer)
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(radiusBuffer));
+    _MTL4_msg_v_setRadiusBuffer__MTL4__BufferRange((const void*)this, nullptr, radiusBuffer);
 }
 
-_MTL_INLINE MTL::AttributeFormat MTL4::AccelerationStructureCurveGeometryDescriptor::radiusFormat() const
+_MTL4_INLINE MTL::AttributeFormat MTL4::AccelerationStructureCurveGeometryDescriptor::radiusFormat() const
 {
-    return Object::sendMessage<MTL::AttributeFormat>(this, _MTL_PRIVATE_SEL(radiusFormat));
+    return _MTL4_msg_MTL__AttributeFormat_radiusFormat((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureCurveGeometryDescriptor::radiusStride() const
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setRadiusFormat(MTL::AttributeFormat radiusFormat)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(radiusStride));
+    _MTL4_msg_v_setRadiusFormat__MTL__AttributeFormat((const void*)this, nullptr, radiusFormat);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureCurveGeometryDescriptor::segmentControlPointCount() const
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureCurveGeometryDescriptor::radiusStride() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(segmentControlPointCount));
+    return _MTL4_msg_NS__UInteger_radiusStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureCurveGeometryDescriptor::segmentCount() const
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setRadiusStride(NS::UInteger radiusStride)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(segmentCount));
+    _MTL4_msg_v_setRadiusStride__NS__UInteger((const void*)this, nullptr, radiusStride);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setControlPointBuffer(const MTL4::BufferRange controlPointBuffer)
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureCurveGeometryDescriptor::indexBuffer() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setControlPointBuffer_), controlPointBuffer);
+    return _MTL4_msg_MTL4__BufferRange_indexBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setControlPointCount(NS::UInteger controlPointCount)
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setIndexBuffer(MTL4::BufferRange indexBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setControlPointCount_), controlPointCount);
+    _MTL4_msg_v_setIndexBuffer__MTL4__BufferRange((const void*)this, nullptr, indexBuffer);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setControlPointFormat(MTL::AttributeFormat controlPointFormat)
+_MTL4_INLINE MTL::IndexType MTL4::AccelerationStructureCurveGeometryDescriptor::indexType() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setControlPointFormat_), controlPointFormat);
+    return _MTL4_msg_MTL__IndexType_indexType((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setControlPointStride(NS::UInteger controlPointStride)
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setIndexType(MTL::IndexType indexType)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setControlPointStride_), controlPointStride);
+    _MTL4_msg_v_setIndexType__MTL__IndexType((const void*)this, nullptr, indexType);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setCurveBasis(MTL::CurveBasis curveBasis)
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureCurveGeometryDescriptor::segmentCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setCurveBasis_), curveBasis);
+    return _MTL4_msg_NS__UInteger_segmentCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setCurveEndCaps(MTL::CurveEndCaps curveEndCaps)
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setSegmentCount(NS::UInteger segmentCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setCurveEndCaps_), curveEndCaps);
+    _MTL4_msg_v_setSegmentCount__NS__UInteger((const void*)this, nullptr, segmentCount);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setCurveType(MTL::CurveType curveType)
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureCurveGeometryDescriptor::segmentControlPointCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setCurveType_), curveType);
+    return _MTL4_msg_NS__UInteger_segmentControlPointCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setIndexBuffer(const MTL4::BufferRange indexBuffer)
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setSegmentControlPointCount(NS::UInteger segmentControlPointCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setIndexBuffer_), indexBuffer);
+    _MTL4_msg_v_setSegmentControlPointCount__NS__UInteger((const void*)this, nullptr, segmentControlPointCount);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setIndexType(MTL::IndexType indexType)
+_MTL4_INLINE MTL::CurveType MTL4::AccelerationStructureCurveGeometryDescriptor::curveType() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setIndexType_), indexType);
+    return _MTL4_msg_MTL__CurveType_curveType((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setRadiusBuffer(const MTL4::BufferRange radiusBuffer)
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setCurveType(MTL::CurveType curveType)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRadiusBuffer_), radiusBuffer);
+    _MTL4_msg_v_setCurveType__MTL__CurveType((const void*)this, nullptr, curveType);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setRadiusFormat(MTL::AttributeFormat radiusFormat)
+_MTL4_INLINE MTL::CurveBasis MTL4::AccelerationStructureCurveGeometryDescriptor::curveBasis() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRadiusFormat_), radiusFormat);
+    return _MTL4_msg_MTL__CurveBasis_curveBasis((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setRadiusStride(NS::UInteger radiusStride)
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setCurveBasis(MTL::CurveBasis curveBasis)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRadiusStride_), radiusStride);
+    _MTL4_msg_v_setCurveBasis__MTL__CurveBasis((const void*)this, nullptr, curveBasis);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setSegmentControlPointCount(NS::UInteger segmentControlPointCount)
+_MTL4_INLINE MTL::CurveEndCaps MTL4::AccelerationStructureCurveGeometryDescriptor::curveEndCaps() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSegmentControlPointCount_), segmentControlPointCount);
+    return _MTL4_msg_MTL__CurveEndCaps_curveEndCaps((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setSegmentCount(NS::UInteger segmentCount)
+_MTL4_INLINE void MTL4::AccelerationStructureCurveGeometryDescriptor::setCurveEndCaps(MTL::CurveEndCaps curveEndCaps)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSegmentCount_), segmentCount);
+    _MTL4_msg_v_setCurveEndCaps__MTL__CurveEndCaps((const void*)this, nullptr, curveEndCaps);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureMotionCurveGeometryDescriptor* MTL4::AccelerationStructureMotionCurveGeometryDescriptor::alloc()
+_MTL4_INLINE MTL4::AccelerationStructureMotionCurveGeometryDescriptor* MTL4::AccelerationStructureMotionCurveGeometryDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::AccelerationStructureMotionCurveGeometryDescriptor>(_MTL_PRIVATE_CLS(MTL4AccelerationStructureMotionCurveGeometryDescriptor));
+    return _MTL4_msg_MTL4__AccelerationStructureMotionCurveGeometryDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4AccelerationStructureMotionCurveGeometryDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionCurveGeometryDescriptor::controlPointBuffers() const
+_MTL4_INLINE MTL4::AccelerationStructureMotionCurveGeometryDescriptor* MTL4::AccelerationStructureMotionCurveGeometryDescriptor::init() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(controlPointBuffers));
+    return _MTL4_msg_MTL4__AccelerationStructureMotionCurveGeometryDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureMotionCurveGeometryDescriptor::controlPointCount() const
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionCurveGeometryDescriptor::controlPointBuffers() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(controlPointCount));
+    return _MTL4_msg_MTL4__BufferRange_controlPointBuffers((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::AttributeFormat MTL4::AccelerationStructureMotionCurveGeometryDescriptor::controlPointFormat() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setControlPointBuffers(MTL4::BufferRange controlPointBuffers)
 {
-    return Object::sendMessage<MTL::AttributeFormat>(this, _MTL_PRIVATE_SEL(controlPointFormat));
+    _MTL4_msg_v_setControlPointBuffers__MTL4__BufferRange((const void*)this, nullptr, controlPointBuffers);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureMotionCurveGeometryDescriptor::controlPointStride() const
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureMotionCurveGeometryDescriptor::controlPointCount() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(controlPointStride));
+    return _MTL4_msg_NS__UInteger_controlPointCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::CurveBasis MTL4::AccelerationStructureMotionCurveGeometryDescriptor::curveBasis() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setControlPointCount(NS::UInteger controlPointCount)
 {
-    return Object::sendMessage<MTL::CurveBasis>(this, _MTL_PRIVATE_SEL(curveBasis));
+    _MTL4_msg_v_setControlPointCount__NS__UInteger((const void*)this, nullptr, controlPointCount);
 }
 
-_MTL_INLINE MTL::CurveEndCaps MTL4::AccelerationStructureMotionCurveGeometryDescriptor::curveEndCaps() const
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureMotionCurveGeometryDescriptor::controlPointStride() const
 {
-    return Object::sendMessage<MTL::CurveEndCaps>(this, _MTL_PRIVATE_SEL(curveEndCaps));
+    return _MTL4_msg_NS__UInteger_controlPointStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::CurveType MTL4::AccelerationStructureMotionCurveGeometryDescriptor::curveType() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setControlPointStride(NS::UInteger controlPointStride)
 {
-    return Object::sendMessage<MTL::CurveType>(this, _MTL_PRIVATE_SEL(curveType));
+    _MTL4_msg_v_setControlPointStride__NS__UInteger((const void*)this, nullptr, controlPointStride);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionCurveGeometryDescriptor::indexBuffer() const
+_MTL4_INLINE MTL::AttributeFormat MTL4::AccelerationStructureMotionCurveGeometryDescriptor::controlPointFormat() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(indexBuffer));
+    return _MTL4_msg_MTL__AttributeFormat_controlPointFormat((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::IndexType MTL4::AccelerationStructureMotionCurveGeometryDescriptor::indexType() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setControlPointFormat(MTL::AttributeFormat controlPointFormat)
 {
-    return Object::sendMessage<MTL::IndexType>(this, _MTL_PRIVATE_SEL(indexType));
+    _MTL4_msg_v_setControlPointFormat__MTL__AttributeFormat((const void*)this, nullptr, controlPointFormat);
 }
 
-_MTL_INLINE MTL4::AccelerationStructureMotionCurveGeometryDescriptor* MTL4::AccelerationStructureMotionCurveGeometryDescriptor::init()
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionCurveGeometryDescriptor::radiusBuffers() const
 {
-    return NS::Object::init<MTL4::AccelerationStructureMotionCurveGeometryDescriptor>();
+    return _MTL4_msg_MTL4__BufferRange_radiusBuffers((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionCurveGeometryDescriptor::radiusBuffers() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setRadiusBuffers(MTL4::BufferRange radiusBuffers)
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(radiusBuffers));
+    _MTL4_msg_v_setRadiusBuffers__MTL4__BufferRange((const void*)this, nullptr, radiusBuffers);
 }
 
-_MTL_INLINE MTL::AttributeFormat MTL4::AccelerationStructureMotionCurveGeometryDescriptor::radiusFormat() const
+_MTL4_INLINE MTL::AttributeFormat MTL4::AccelerationStructureMotionCurveGeometryDescriptor::radiusFormat() const
 {
-    return Object::sendMessage<MTL::AttributeFormat>(this, _MTL_PRIVATE_SEL(radiusFormat));
+    return _MTL4_msg_MTL__AttributeFormat_radiusFormat((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureMotionCurveGeometryDescriptor::radiusStride() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setRadiusFormat(MTL::AttributeFormat radiusFormat)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(radiusStride));
+    _MTL4_msg_v_setRadiusFormat__MTL__AttributeFormat((const void*)this, nullptr, radiusFormat);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureMotionCurveGeometryDescriptor::segmentControlPointCount() const
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureMotionCurveGeometryDescriptor::radiusStride() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(segmentControlPointCount));
+    return _MTL4_msg_NS__UInteger_radiusStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::AccelerationStructureMotionCurveGeometryDescriptor::segmentCount() const
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setRadiusStride(NS::UInteger radiusStride)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(segmentCount));
+    _MTL4_msg_v_setRadiusStride__NS__UInteger((const void*)this, nullptr, radiusStride);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setControlPointBuffers(const MTL4::BufferRange controlPointBuffers)
+_MTL4_INLINE MTL4::BufferRange MTL4::AccelerationStructureMotionCurveGeometryDescriptor::indexBuffer() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setControlPointBuffers_), controlPointBuffers);
+    return _MTL4_msg_MTL4__BufferRange_indexBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setControlPointCount(NS::UInteger controlPointCount)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setIndexBuffer(MTL4::BufferRange indexBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setControlPointCount_), controlPointCount);
+    _MTL4_msg_v_setIndexBuffer__MTL4__BufferRange((const void*)this, nullptr, indexBuffer);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setControlPointFormat(MTL::AttributeFormat controlPointFormat)
+_MTL4_INLINE MTL::IndexType MTL4::AccelerationStructureMotionCurveGeometryDescriptor::indexType() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setControlPointFormat_), controlPointFormat);
+    return _MTL4_msg_MTL__IndexType_indexType((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setControlPointStride(NS::UInteger controlPointStride)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setIndexType(MTL::IndexType indexType)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setControlPointStride_), controlPointStride);
+    _MTL4_msg_v_setIndexType__MTL__IndexType((const void*)this, nullptr, indexType);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setCurveBasis(MTL::CurveBasis curveBasis)
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureMotionCurveGeometryDescriptor::segmentCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setCurveBasis_), curveBasis);
+    return _MTL4_msg_NS__UInteger_segmentCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setCurveEndCaps(MTL::CurveEndCaps curveEndCaps)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setSegmentCount(NS::UInteger segmentCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setCurveEndCaps_), curveEndCaps);
+    _MTL4_msg_v_setSegmentCount__NS__UInteger((const void*)this, nullptr, segmentCount);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setCurveType(MTL::CurveType curveType)
+_MTL4_INLINE NS::UInteger MTL4::AccelerationStructureMotionCurveGeometryDescriptor::segmentControlPointCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setCurveType_), curveType);
+    return _MTL4_msg_NS__UInteger_segmentControlPointCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setIndexBuffer(const MTL4::BufferRange indexBuffer)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setSegmentControlPointCount(NS::UInteger segmentControlPointCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setIndexBuffer_), indexBuffer);
+    _MTL4_msg_v_setSegmentControlPointCount__NS__UInteger((const void*)this, nullptr, segmentControlPointCount);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setIndexType(MTL::IndexType indexType)
+_MTL4_INLINE MTL::CurveType MTL4::AccelerationStructureMotionCurveGeometryDescriptor::curveType() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setIndexType_), indexType);
+    return _MTL4_msg_MTL__CurveType_curveType((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setRadiusBuffers(const MTL4::BufferRange radiusBuffers)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setCurveType(MTL::CurveType curveType)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRadiusBuffers_), radiusBuffers);
+    _MTL4_msg_v_setCurveType__MTL__CurveType((const void*)this, nullptr, curveType);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setRadiusFormat(MTL::AttributeFormat radiusFormat)
+_MTL4_INLINE MTL::CurveBasis MTL4::AccelerationStructureMotionCurveGeometryDescriptor::curveBasis() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRadiusFormat_), radiusFormat);
+    return _MTL4_msg_MTL__CurveBasis_curveBasis((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setRadiusStride(NS::UInteger radiusStride)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setCurveBasis(MTL::CurveBasis curveBasis)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRadiusStride_), radiusStride);
+    _MTL4_msg_v_setCurveBasis__MTL__CurveBasis((const void*)this, nullptr, curveBasis);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setSegmentControlPointCount(NS::UInteger segmentControlPointCount)
+_MTL4_INLINE MTL::CurveEndCaps MTL4::AccelerationStructureMotionCurveGeometryDescriptor::curveEndCaps() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSegmentControlPointCount_), segmentControlPointCount);
+    return _MTL4_msg_MTL__CurveEndCaps_curveEndCaps((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setSegmentCount(NS::UInteger segmentCount)
+_MTL4_INLINE void MTL4::AccelerationStructureMotionCurveGeometryDescriptor::setCurveEndCaps(MTL::CurveEndCaps curveEndCaps)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSegmentCount_), segmentCount);
+    _MTL4_msg_v_setCurveEndCaps__MTL__CurveEndCaps((const void*)this, nullptr, curveEndCaps);
 }
 
-_MTL_INLINE MTL4::InstanceAccelerationStructureDescriptor* MTL4::InstanceAccelerationStructureDescriptor::alloc()
+_MTL4_INLINE MTL4::InstanceAccelerationStructureDescriptor* MTL4::InstanceAccelerationStructureDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::InstanceAccelerationStructureDescriptor>(_MTL_PRIVATE_CLS(MTL4InstanceAccelerationStructureDescriptor));
+    return _MTL4_msg_MTL4__InstanceAccelerationStructureDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4InstanceAccelerationStructureDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::InstanceAccelerationStructureDescriptor* MTL4::InstanceAccelerationStructureDescriptor::init()
+_MTL4_INLINE MTL4::InstanceAccelerationStructureDescriptor* MTL4::InstanceAccelerationStructureDescriptor::init() const
 {
-    return NS::Object::init<MTL4::InstanceAccelerationStructureDescriptor>();
+    return _MTL4_msg_MTL4__InstanceAccelerationStructureDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::InstanceAccelerationStructureDescriptor::instanceCount() const
+_MTL4_INLINE MTL4::BufferRange MTL4::InstanceAccelerationStructureDescriptor::instanceDescriptorBuffer() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(instanceCount));
+    return _MTL4_msg_MTL4__BufferRange_instanceDescriptorBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::InstanceAccelerationStructureDescriptor::instanceDescriptorBuffer() const
+_MTL4_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setInstanceDescriptorBuffer(MTL4::BufferRange instanceDescriptorBuffer)
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(instanceDescriptorBuffer));
+    _MTL4_msg_v_setInstanceDescriptorBuffer__MTL4__BufferRange((const void*)this, nullptr, instanceDescriptorBuffer);
 }
 
-_MTL_INLINE NS::UInteger MTL4::InstanceAccelerationStructureDescriptor::instanceDescriptorStride() const
+_MTL4_INLINE NS::UInteger MTL4::InstanceAccelerationStructureDescriptor::instanceDescriptorStride() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(instanceDescriptorStride));
+    return _MTL4_msg_NS__UInteger_instanceDescriptorStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::AccelerationStructureInstanceDescriptorType MTL4::InstanceAccelerationStructureDescriptor::instanceDescriptorType() const
+_MTL4_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setInstanceDescriptorStride(NS::UInteger instanceDescriptorStride)
 {
-    return Object::sendMessage<MTL::AccelerationStructureInstanceDescriptorType>(this, _MTL_PRIVATE_SEL(instanceDescriptorType));
+    _MTL4_msg_v_setInstanceDescriptorStride__NS__UInteger((const void*)this, nullptr, instanceDescriptorStride);
 }
 
-_MTL_INLINE MTL::MatrixLayout MTL4::InstanceAccelerationStructureDescriptor::instanceTransformationMatrixLayout() const
+_MTL4_INLINE NS::UInteger MTL4::InstanceAccelerationStructureDescriptor::instanceCount() const
 {
-    return Object::sendMessage<MTL::MatrixLayout>(this, _MTL_PRIVATE_SEL(instanceTransformationMatrixLayout));
+    return _MTL4_msg_NS__UInteger_instanceCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::InstanceAccelerationStructureDescriptor::motionTransformBuffer() const
+_MTL4_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setInstanceCount(NS::UInteger instanceCount)
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(motionTransformBuffer));
+    _MTL4_msg_v_setInstanceCount__NS__UInteger((const void*)this, nullptr, instanceCount);
 }
 
-_MTL_INLINE NS::UInteger MTL4::InstanceAccelerationStructureDescriptor::motionTransformCount() const
+_MTL4_INLINE MTL::AccelerationStructureInstanceDescriptorType MTL4::InstanceAccelerationStructureDescriptor::instanceDescriptorType() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(motionTransformCount));
+    return _MTL4_msg_MTL__AccelerationStructureInstanceDescriptorType_instanceDescriptorType((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::InstanceAccelerationStructureDescriptor::motionTransformStride() const
+_MTL4_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setInstanceDescriptorType(MTL::AccelerationStructureInstanceDescriptorType instanceDescriptorType)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(motionTransformStride));
+    _MTL4_msg_v_setInstanceDescriptorType__MTL__AccelerationStructureInstanceDescriptorType((const void*)this, nullptr, instanceDescriptorType);
 }
 
-_MTL_INLINE MTL::TransformType MTL4::InstanceAccelerationStructureDescriptor::motionTransformType() const
+_MTL4_INLINE MTL4::BufferRange MTL4::InstanceAccelerationStructureDescriptor::motionTransformBuffer() const
 {
-    return Object::sendMessage<MTL::TransformType>(this, _MTL_PRIVATE_SEL(motionTransformType));
+    return _MTL4_msg_MTL4__BufferRange_motionTransformBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setInstanceCount(NS::UInteger instanceCount)
+_MTL4_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setMotionTransformBuffer(MTL4::BufferRange motionTransformBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInstanceCount_), instanceCount);
+    _MTL4_msg_v_setMotionTransformBuffer__MTL4__BufferRange((const void*)this, nullptr, motionTransformBuffer);
 }
 
-_MTL_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setInstanceDescriptorBuffer(const MTL4::BufferRange instanceDescriptorBuffer)
+_MTL4_INLINE NS::UInteger MTL4::InstanceAccelerationStructureDescriptor::motionTransformCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInstanceDescriptorBuffer_), instanceDescriptorBuffer);
+    return _MTL4_msg_NS__UInteger_motionTransformCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setInstanceDescriptorStride(NS::UInteger instanceDescriptorStride)
+_MTL4_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setMotionTransformCount(NS::UInteger motionTransformCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInstanceDescriptorStride_), instanceDescriptorStride);
+    _MTL4_msg_v_setMotionTransformCount__NS__UInteger((const void*)this, nullptr, motionTransformCount);
 }
 
-_MTL_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setInstanceDescriptorType(MTL::AccelerationStructureInstanceDescriptorType instanceDescriptorType)
+_MTL4_INLINE MTL::MatrixLayout MTL4::InstanceAccelerationStructureDescriptor::instanceTransformationMatrixLayout() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInstanceDescriptorType_), instanceDescriptorType);
+    return _MTL4_msg_MTL__MatrixLayout_instanceTransformationMatrixLayout((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setInstanceTransformationMatrixLayout(MTL::MatrixLayout instanceTransformationMatrixLayout)
+_MTL4_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setInstanceTransformationMatrixLayout(MTL::MatrixLayout instanceTransformationMatrixLayout)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInstanceTransformationMatrixLayout_), instanceTransformationMatrixLayout);
+    _MTL4_msg_v_setInstanceTransformationMatrixLayout__MTL__MatrixLayout((const void*)this, nullptr, instanceTransformationMatrixLayout);
 }
 
-_MTL_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setMotionTransformBuffer(const MTL4::BufferRange motionTransformBuffer)
+_MTL4_INLINE MTL::TransformType MTL4::InstanceAccelerationStructureDescriptor::motionTransformType() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionTransformBuffer_), motionTransformBuffer);
+    return _MTL4_msg_MTL__TransformType_motionTransformType((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setMotionTransformCount(NS::UInteger motionTransformCount)
+_MTL4_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setMotionTransformType(MTL::TransformType motionTransformType)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionTransformCount_), motionTransformCount);
+    _MTL4_msg_v_setMotionTransformType__MTL__TransformType((const void*)this, nullptr, motionTransformType);
 }
 
-_MTL_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setMotionTransformStride(NS::UInteger motionTransformStride)
+_MTL4_INLINE NS::UInteger MTL4::InstanceAccelerationStructureDescriptor::motionTransformStride() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionTransformStride_), motionTransformStride);
+    return _MTL4_msg_NS__UInteger_motionTransformStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setMotionTransformType(MTL::TransformType motionTransformType)
+_MTL4_INLINE void MTL4::InstanceAccelerationStructureDescriptor::setMotionTransformStride(NS::UInteger motionTransformStride)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionTransformType_), motionTransformType);
+    _MTL4_msg_v_setMotionTransformStride__NS__UInteger((const void*)this, nullptr, motionTransformStride);
 }
 
-_MTL_INLINE MTL4::IndirectInstanceAccelerationStructureDescriptor* MTL4::IndirectInstanceAccelerationStructureDescriptor::alloc()
+_MTL4_INLINE MTL4::IndirectInstanceAccelerationStructureDescriptor* MTL4::IndirectInstanceAccelerationStructureDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::IndirectInstanceAccelerationStructureDescriptor>(_MTL_PRIVATE_CLS(MTL4IndirectInstanceAccelerationStructureDescriptor));
+    return _MTL4_msg_MTL4__IndirectInstanceAccelerationStructureDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4IndirectInstanceAccelerationStructureDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::IndirectInstanceAccelerationStructureDescriptor* MTL4::IndirectInstanceAccelerationStructureDescriptor::init()
+_MTL4_INLINE MTL4::IndirectInstanceAccelerationStructureDescriptor* MTL4::IndirectInstanceAccelerationStructureDescriptor::init() const
 {
-    return NS::Object::init<MTL4::IndirectInstanceAccelerationStructureDescriptor>();
+    return _MTL4_msg_MTL4__IndirectInstanceAccelerationStructureDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::IndirectInstanceAccelerationStructureDescriptor::instanceCountBuffer() const
+_MTL4_INLINE MTL4::BufferRange MTL4::IndirectInstanceAccelerationStructureDescriptor::instanceDescriptorBuffer() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(instanceCountBuffer));
+    return _MTL4_msg_MTL4__BufferRange_instanceDescriptorBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::IndirectInstanceAccelerationStructureDescriptor::instanceDescriptorBuffer() const
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setInstanceDescriptorBuffer(MTL4::BufferRange instanceDescriptorBuffer)
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(instanceDescriptorBuffer));
+    _MTL4_msg_v_setInstanceDescriptorBuffer__MTL4__BufferRange((const void*)this, nullptr, instanceDescriptorBuffer);
 }
 
-_MTL_INLINE NS::UInteger MTL4::IndirectInstanceAccelerationStructureDescriptor::instanceDescriptorStride() const
+_MTL4_INLINE NS::UInteger MTL4::IndirectInstanceAccelerationStructureDescriptor::instanceDescriptorStride() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(instanceDescriptorStride));
+    return _MTL4_msg_NS__UInteger_instanceDescriptorStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::AccelerationStructureInstanceDescriptorType MTL4::IndirectInstanceAccelerationStructureDescriptor::instanceDescriptorType() const
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setInstanceDescriptorStride(NS::UInteger instanceDescriptorStride)
 {
-    return Object::sendMessage<MTL::AccelerationStructureInstanceDescriptorType>(this, _MTL_PRIVATE_SEL(instanceDescriptorType));
+    _MTL4_msg_v_setInstanceDescriptorStride__NS__UInteger((const void*)this, nullptr, instanceDescriptorStride);
 }
 
-_MTL_INLINE MTL::MatrixLayout MTL4::IndirectInstanceAccelerationStructureDescriptor::instanceTransformationMatrixLayout() const
+_MTL4_INLINE NS::UInteger MTL4::IndirectInstanceAccelerationStructureDescriptor::maxInstanceCount() const
 {
-    return Object::sendMessage<MTL::MatrixLayout>(this, _MTL_PRIVATE_SEL(instanceTransformationMatrixLayout));
+    return _MTL4_msg_NS__UInteger_maxInstanceCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::IndirectInstanceAccelerationStructureDescriptor::maxInstanceCount() const
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMaxInstanceCount(NS::UInteger maxInstanceCount)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(maxInstanceCount));
+    _MTL4_msg_v_setMaxInstanceCount__NS__UInteger((const void*)this, nullptr, maxInstanceCount);
 }
 
-_MTL_INLINE NS::UInteger MTL4::IndirectInstanceAccelerationStructureDescriptor::maxMotionTransformCount() const
+_MTL4_INLINE MTL4::BufferRange MTL4::IndirectInstanceAccelerationStructureDescriptor::instanceCountBuffer() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(maxMotionTransformCount));
+    return _MTL4_msg_MTL4__BufferRange_instanceCountBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::IndirectInstanceAccelerationStructureDescriptor::motionTransformBuffer() const
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setInstanceCountBuffer(MTL4::BufferRange instanceCountBuffer)
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(motionTransformBuffer));
+    _MTL4_msg_v_setInstanceCountBuffer__MTL4__BufferRange((const void*)this, nullptr, instanceCountBuffer);
 }
 
-_MTL_INLINE MTL4::BufferRange MTL4::IndirectInstanceAccelerationStructureDescriptor::motionTransformCountBuffer() const
+_MTL4_INLINE MTL::AccelerationStructureInstanceDescriptorType MTL4::IndirectInstanceAccelerationStructureDescriptor::instanceDescriptorType() const
 {
-    return Object::sendMessage<MTL4::BufferRange>(this, _MTL_PRIVATE_SEL(motionTransformCountBuffer));
+    return _MTL4_msg_MTL__AccelerationStructureInstanceDescriptorType_instanceDescriptorType((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::IndirectInstanceAccelerationStructureDescriptor::motionTransformStride() const
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setInstanceDescriptorType(MTL::AccelerationStructureInstanceDescriptorType instanceDescriptorType)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(motionTransformStride));
+    _MTL4_msg_v_setInstanceDescriptorType__MTL__AccelerationStructureInstanceDescriptorType((const void*)this, nullptr, instanceDescriptorType);
 }
 
-_MTL_INLINE MTL::TransformType MTL4::IndirectInstanceAccelerationStructureDescriptor::motionTransformType() const
+_MTL4_INLINE MTL4::BufferRange MTL4::IndirectInstanceAccelerationStructureDescriptor::motionTransformBuffer() const
 {
-    return Object::sendMessage<MTL::TransformType>(this, _MTL_PRIVATE_SEL(motionTransformType));
+    return _MTL4_msg_MTL4__BufferRange_motionTransformBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setInstanceCountBuffer(const MTL4::BufferRange instanceCountBuffer)
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMotionTransformBuffer(MTL4::BufferRange motionTransformBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInstanceCountBuffer_), instanceCountBuffer);
+    _MTL4_msg_v_setMotionTransformBuffer__MTL4__BufferRange((const void*)this, nullptr, motionTransformBuffer);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setInstanceDescriptorBuffer(const MTL4::BufferRange instanceDescriptorBuffer)
+_MTL4_INLINE NS::UInteger MTL4::IndirectInstanceAccelerationStructureDescriptor::maxMotionTransformCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInstanceDescriptorBuffer_), instanceDescriptorBuffer);
+    return _MTL4_msg_NS__UInteger_maxMotionTransformCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setInstanceDescriptorStride(NS::UInteger instanceDescriptorStride)
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMaxMotionTransformCount(NS::UInteger maxMotionTransformCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInstanceDescriptorStride_), instanceDescriptorStride);
+    _MTL4_msg_v_setMaxMotionTransformCount__NS__UInteger((const void*)this, nullptr, maxMotionTransformCount);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setInstanceDescriptorType(MTL::AccelerationStructureInstanceDescriptorType instanceDescriptorType)
+_MTL4_INLINE MTL4::BufferRange MTL4::IndirectInstanceAccelerationStructureDescriptor::motionTransformCountBuffer() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInstanceDescriptorType_), instanceDescriptorType);
+    return _MTL4_msg_MTL4__BufferRange_motionTransformCountBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setInstanceTransformationMatrixLayout(MTL::MatrixLayout instanceTransformationMatrixLayout)
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMotionTransformCountBuffer(MTL4::BufferRange motionTransformCountBuffer)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInstanceTransformationMatrixLayout_), instanceTransformationMatrixLayout);
+    _MTL4_msg_v_setMotionTransformCountBuffer__MTL4__BufferRange((const void*)this, nullptr, motionTransformCountBuffer);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMaxInstanceCount(NS::UInteger maxInstanceCount)
+_MTL4_INLINE MTL::MatrixLayout MTL4::IndirectInstanceAccelerationStructureDescriptor::instanceTransformationMatrixLayout() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMaxInstanceCount_), maxInstanceCount);
+    return _MTL4_msg_MTL__MatrixLayout_instanceTransformationMatrixLayout((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMaxMotionTransformCount(NS::UInteger maxMotionTransformCount)
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setInstanceTransformationMatrixLayout(MTL::MatrixLayout instanceTransformationMatrixLayout)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMaxMotionTransformCount_), maxMotionTransformCount);
+    _MTL4_msg_v_setInstanceTransformationMatrixLayout__MTL__MatrixLayout((const void*)this, nullptr, instanceTransformationMatrixLayout);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMotionTransformBuffer(const MTL4::BufferRange motionTransformBuffer)
+_MTL4_INLINE MTL::TransformType MTL4::IndirectInstanceAccelerationStructureDescriptor::motionTransformType() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionTransformBuffer_), motionTransformBuffer);
+    return _MTL4_msg_MTL__TransformType_motionTransformType((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMotionTransformCountBuffer(const MTL4::BufferRange motionTransformCountBuffer)
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMotionTransformType(MTL::TransformType motionTransformType)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionTransformCountBuffer_), motionTransformCountBuffer);
+    _MTL4_msg_v_setMotionTransformType__MTL__TransformType((const void*)this, nullptr, motionTransformType);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMotionTransformStride(NS::UInteger motionTransformStride)
+_MTL4_INLINE NS::UInteger MTL4::IndirectInstanceAccelerationStructureDescriptor::motionTransformStride() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionTransformStride_), motionTransformStride);
+    return _MTL4_msg_NS__UInteger_motionTransformStride((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMotionTransformType(MTL::TransformType motionTransformType)
+_MTL4_INLINE void MTL4::IndirectInstanceAccelerationStructureDescriptor::setMotionTransformStride(NS::UInteger motionTransformStride)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMotionTransformType_), motionTransformType);
+    _MTL4_msg_v_setMotionTransformStride__NS__UInteger((const void*)this, nullptr, motionTransformStride);
 }

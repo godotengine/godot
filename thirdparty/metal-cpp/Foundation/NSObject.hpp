@@ -1,37 +1,30 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Foundation/NSObject.hpp
-//
-// Copyright 2020-2024 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// NS::Object — the CRTP root. Emitted by tools/generate.py; was formerly
+// copied verbatim from Apple's metal-cpp/Foundation/NSObject.hpp.
+//
+// Directly-named selectors (retain/release/autorelease/retainCount/copy/
+// hash/isEqual:/description/debugDescription/init/alloc/
+// respondsToSelector:/methodSignatureForSelector:) dispatch through the
+// linker-synthesized `_objc_msgSend$<sel>` trampolines — same shape every
+// other generated class uses. `sendMessage` / `sendMessageSafe` are kept
+// for callers that need to dispatch an arbitrary runtime SEL.
 
 #include "NSDefines.hpp"
-#include "NSPrivate.hpp"
 #include "NSTypes.hpp"
+#include "NSBridge.hpp"
 
 #include <objc/message.h>
 #include <objc/runtime.h>
 
 #include <type_traits>
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+namespace NS
+{
+class Object;
+class String;
+class MethodSignature;
+} // namespace NS
 
 namespace NS
 {
@@ -41,9 +34,7 @@ class _NS_EXPORT Referencing : public _Base
 public:
     _Class*  retain();
     void     release();
-
     _Class*  autorelease();
-
     UInteger retainCount() const;
 };
 
@@ -98,49 +89,39 @@ private:
 
     Object& operator=(const Object&) = delete;
 };
-}
+} // namespace NS
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- Inline implementations ---
 
-template <class _Class, class _Base /* = Object */>
+template <class _Class, class _Base>
 _NS_INLINE _Class* NS::Referencing<_Class, _Base>::retain()
 {
-    return Object::sendMessage<_Class*>(this, _NS_PRIVATE_SEL(retain));
+    return reinterpret_cast<_Class*>(_NS_msg_voidp_retain((const void*)this, nullptr));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-template <class _Class, class _Base /* = Object */>
+template <class _Class, class _Base>
 _NS_INLINE void NS::Referencing<_Class, _Base>::release()
 {
-    Object::sendMessage<void>(this, _NS_PRIVATE_SEL(release));
+    _NS_msg_v_release((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-template <class _Class, class _Base /* = Object */>
+template <class _Class, class _Base>
 _NS_INLINE _Class* NS::Referencing<_Class, _Base>::autorelease()
 {
-    return Object::sendMessage<_Class*>(this, _NS_PRIVATE_SEL(autorelease));
+    return reinterpret_cast<_Class*>(_NS_msg_voidp_autorelease((const void*)this, nullptr));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-template <class _Class, class _Base /* = Object */>
+template <class _Class, class _Base>
 _NS_INLINE NS::UInteger NS::Referencing<_Class, _Base>::retainCount() const
 {
-    return Object::sendMessage<UInteger>(this, _NS_PRIVATE_SEL(retainCount));
+    return _NS_msg_NS__UInteger_retainCount((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-template <class _Class, class _Base /* = Object */>
+template <class _Class, class _Base>
 _NS_INLINE _Class* NS::Copying<_Class, _Base>::copy() const
 {
-    return Object::sendMessage<_Class*>(this, _NS_PRIVATE_SEL(copy));
+    return reinterpret_cast<_Class*>(_NS_msg_voidp_copy((const void*)this, nullptr));
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 template <class _Dst>
 _NS_INLINE _Dst NS::Object::bridgingCast(const void* pObj)
@@ -152,27 +133,21 @@ _NS_INLINE _Dst NS::Object::bridgingCast(const void* pObj)
 #endif // __OBJC__
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 template <typename _Type>
 _NS_INLINE constexpr bool NS::Object::doesRequireMsgSendStret()
 {
 #if (defined(__i386__) || defined(__x86_64__))
     constexpr size_t kStructLimit = (sizeof(std::uintptr_t) << 1);
-
     return sizeof(_Type) > kStructLimit;
 #elif defined(__arm64__)
     return false;
 #elif defined(__arm__)
     constexpr size_t kStructLimit = sizeof(std::uintptr_t);
-
     return std::is_class_v<_Type> && (sizeof(_Type) > kStructLimit);
 #else
 #error "Unsupported architecture!"
 #endif
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 template <>
 _NS_INLINE constexpr bool NS::Object::doesRequireMsgSendStret<void>()
@@ -180,8 +155,9 @@ _NS_INLINE constexpr bool NS::Object::doesRequireMsgSendStret<void>()
     return false;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+// `sendMessage` keeps the upstream architecture-aware dispatch: x86 uses
+// objc_msgSend_fpret for floating-point returns and objc_msgSend_stret
+// for large structs, arm64 always uses regular objc_msgSend.
 template <typename _Ret, typename... _Args>
 _NS_INLINE _Ret NS::Object::sendMessage(const void* pObj, SEL selector, _Args... args)
 {
@@ -189,51 +165,38 @@ _NS_INLINE _Ret NS::Object::sendMessage(const void* pObj, SEL selector, _Args...
     if constexpr (std::is_floating_point<_Ret>())
     {
         using SendMessageProcFpret = _Ret (*)(const void*, SEL, _Args...);
-
         const SendMessageProcFpret pProc = reinterpret_cast<SendMessageProcFpret>(&objc_msgSend_fpret);
-
         return (*pProc)(pObj, selector, args...);
     }
     else
-#endif // ( defined( __i386__ )  || defined( __x86_64__ )  )
+#endif
 #if !defined(__arm64__)
         if constexpr (doesRequireMsgSendStret<_Ret>())
     {
         using SendMessageProcStret = void (*)(_Ret*, const void*, SEL, _Args...);
-
         const SendMessageProcStret pProc = reinterpret_cast<SendMessageProcStret>(&objc_msgSend_stret);
         _Ret                       ret;
-
         (*pProc)(&ret, pObj, selector, args...);
-
         return ret;
     }
     else
-#endif // !defined( __arm64__ )
+#endif
     {
         using SendMessageProc = _Ret (*)(const void*, SEL, _Args...);
-
         const SendMessageProc pProc = reinterpret_cast<SendMessageProc>(&objc_msgSend);
-
         return (*pProc)(pObj, selector, args...);
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 _NS_INLINE NS::MethodSignature* NS::Object::methodSignatureForSelector(const void* pObj, SEL selector)
 {
-    return sendMessage<MethodSignature*>(pObj, _NS_PRIVATE_SEL(methodSignatureForSelector_), selector);
+    return _NS_msg_NS__MethodSignaturep_methodSignatureForSelector__SEL(pObj, nullptr, selector);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE bool NS::Object::respondsToSelector(const void* pObj, SEL selector)
 {
-    return sendMessage<bool>(pObj, _NS_PRIVATE_SEL(respondsToSelector_), selector);
+    return _NS_msg_bool_respondsToSelector__SEL(pObj, nullptr, selector);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 template <typename _Ret, typename... _Args>
 _NS_INLINE _Ret NS::Object::sendMessageSafe(const void* pObj, SEL selector, _Args... args)
@@ -249,56 +212,48 @@ _NS_INLINE _Ret NS::Object::sendMessageSafe(const void* pObj, SEL selector, _Arg
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 template <class _Class>
 _NS_INLINE _Class* NS::Object::alloc(const char* pClassName)
 {
-    return sendMessage<_Class*>(objc_lookUpClass(pClassName), _NS_PRIVATE_SEL(alloc));
+    // objc_lookUpClass returns `Class` (objc_class*). Under ObjC ARC,
+    // bridging a Class to a non-retainable pointer needs `__bridge`;
+    // in pure C++ translation units the macro expands to nothing.
+#if __has_feature(objc_arc)
+    const void* cls = (__bridge const void*)objc_lookUpClass(pClassName);
+#else
+    const void* cls = (const void*)objc_lookUpClass(pClassName);
+#endif
+    return reinterpret_cast<_Class*>(_NS_msg_voidp_alloc(cls, nullptr));
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 template <class _Class>
 _NS_INLINE _Class* NS::Object::alloc(const void* pClass)
 {
-    return sendMessage<_Class*>(pClass, _NS_PRIVATE_SEL(alloc));
+    return reinterpret_cast<_Class*>(_NS_msg_voidp_alloc(pClass, nullptr));
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 template <class _Class>
 _NS_INLINE _Class* NS::Object::init()
 {
-    return sendMessage<_Class*>(this, _NS_PRIVATE_SEL(init));
+    return reinterpret_cast<_Class*>(_NS_msg_voidp_init((const void*)this, nullptr));
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::UInteger NS::Object::hash() const
 {
-    return sendMessage<UInteger>(this, _NS_PRIVATE_SEL(hash));
+    return _NS_msg_NS__UInteger_hash((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE bool NS::Object::isEqual(const Object* pObject) const
 {
-    return sendMessage<bool>(this, _NS_PRIVATE_SEL(isEqual_), pObject);
+    return _NS_msg_bool_isEqual__constNS__Objectp((const void*)this, nullptr, pObject);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Object::description() const
 {
-    return sendMessage<String*>(this, _NS_PRIVATE_SEL(description));
+    return _NS_msg_NS__Stringp_description((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::Object::debugDescription() const
 {
-    return sendMessageSafe<String*>(this, _NS_PRIVATE_SEL(debugDescription));
+    return _NS_msg_NS__Stringp_debugDescription((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
