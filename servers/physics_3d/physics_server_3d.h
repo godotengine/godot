@@ -794,6 +794,9 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const = 0;
 
+	virtual void generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) = 0;
+	virtual Quaternion generic_6dof_joint_get_angular_target_rotation(RID p_joint) const = 0;
+
 	/* QUERY API */
 
 	enum AreaBodyStatus {
