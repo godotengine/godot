@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
+import base64
+import json
 import os
 
-import modules_builders
-
 Import("env")
+Import("py_builder_env")
 
 env_modules = env.Clone()
 
@@ -16,15 +17,30 @@ Export("env_modules")
 
 
 # Header with MODULE_*_ENABLED defines.
-modules_enabled = env.CommandNoCache(
-    "modules_enabled.gen.h", env.Value(env.module_list), env.Run(modules_builders.modules_enabled_builder)
+# Preformat list of modules to pass via source.
+module_name_list = " ".join(env.module_list.keys())
+modules_enabled = py_builder_env.Command(
+    "modules_enabled.gen.h",
+    env.Value(module_name_list),
+    Action(
+        f"$PYTHON_BIN modules/modules_builders.py --method modules_enabled_builder --target $TARGET --source {module_name_list}",
+        "$GENCOMSTR",
+    ),
 )
 
+# Convert modules_detected to base64 encoded json.abs
+# we do this because SCons command line processing would split up the json string
+# into multiple arguments, which would cause the builder to fail.
+json_modules_detected = json.dumps(env.modules_detected)
+jmd_base64 = base64.b64encode(json_modules_detected.encode()).decode()
 
-register_module_types = env.CommandNoCache(
+register_module_types = py_builder_env.Command(
     "register_module_types.gen.cpp",
-    [env.Value(env.modules_detected), modules_enabled],
-    env.Run(modules_builders.register_module_types_builder),
+    Value(jmd_base64),
+    Action(
+        "$PYTHON_BIN modules/modules_builders.py --method register_module_types_builder --target $TARGET --source $SOURCE",
+        "$GENCOMSTR",
+    ),
 )
 
 
@@ -52,7 +68,14 @@ for name, path in env.module_list.items():
 
 # Generate header to be included in `tests/test_main.cpp` to run module-specific tests.
 if env["tests"]:
-    env.CommandNoCache("modules_tests.gen.h", test_headers, env.Run(modules_builders.modules_tests_builder))
+    py_builder_env.Command(
+        "modules_tests.gen.h",
+        test_headers,
+        Action(
+            "$PYTHON_BIN modules/modules_builders.py --method modules_tests_builder --target $TARGET --source $SOURCES",
+            "$GENCOMSTR",
+        ),
+    )
 
 # libmodules.a with only register_module_types.
 # Must be last so that all libmodule_<name>.a libraries are on the right side

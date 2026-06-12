@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
-
-import default_theme_builders
+Import("env", "py_builder_env")
 
 env.add_source_files(env.scene_sources, "*.cpp")
 
 SConscript("icons/SCsub")
 
-env.CommandNoCache(
+py_builder_env.Command(
     "#scene/theme/default_font.gen.h",
     "#thirdparty/fonts/OpenSans_SemiBold.woff2",
-    env.Run(default_theme_builders.make_fonts_header),
+    Action(
+        "$PYTHON_BIN scene/theme/default_theme_builders.py --method make_fonts_header --target $TARGET --source $SOURCE",
+        "$GENCOMSTR",
+    ),
 )

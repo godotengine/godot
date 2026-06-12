@@ -1,6 +1,12 @@
+import argparse
 import difflib
 import json
+import os
+import sys
 from collections import OrderedDict
+
+# Add parent directory to path so we can import methods
+sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
 
 import methods
 
@@ -24,8 +30,8 @@ BASE_TYPES = [
 ]
 
 
-def run(target, source, env):
-    filename = str(source[0])
+def run(target, source):
+    filename = source
     buffer = methods.get_buffer(filename)
     data = json.loads(buffer, object_pairs_hook=OrderedDict)
     check_formatting(buffer.decode("utf-8"), data, filename)
@@ -35,7 +41,7 @@ def run(target, source, env):
     for type in BASE_TYPES:
         valid_data_types[type] = True
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         file.write("""\
 #ifndef __cplusplus
 #include <stddef.h>
@@ -351,3 +357,22 @@ def write_interface(file, interface):
     write_function_type(file, fn)
 
     file.write("\n")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Interface header build tools")
+    parser.add_argument("--target", required=True, help="Target file")
+    parser.add_argument("--source", required=True, help="Source file")
+
+    args = parser.parse_args()
+
+    # Create mock objects
+    target = args.target
+    source = args.source
+
+    # Call the function
+    run(target, source)
+
+
+if __name__ == "__main__":
+    main()
