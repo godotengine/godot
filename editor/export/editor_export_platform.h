@@ -197,6 +197,8 @@ protected:
 
 	virtual void zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);
 
+	Error ensure_folder(Ref<DirAccess> &da, const String &p_path);
+
 	Error _ssh_run_on_remote(const String &p_host, const String &p_port, const Vector<String> &p_ssh_args, const String &p_cmd_args, Array r_output = Array(), int p_port_fwd = -1) const {
 		String pipe;
 		Error err = ssh_run_on_remote(p_host, p_port, p_ssh_args, p_cmd_args, &pipe, p_port_fwd);

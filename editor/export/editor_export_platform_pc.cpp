@@ -153,9 +153,12 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 }
 
 Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	if (!DirAccess::exists(p_path.get_base_dir())) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("The given export path doesn't exist."));
-		return ERR_FILE_BAD_PATH;
+	// Allow exporting to `res://` and `user://` for convenience, but ensure the export folder exists beforehand.
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	const String base_dir = ProjectSettings::get_singleton()->globalize_path(p_path.get_base_dir());
+	Error err = ensure_folder(da, base_dir);
+	if (err != OK) {
+		return err;
 	}
 
 	String custom_debug = p_preset->get("custom_template/debug");
@@ -185,9 +188,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	int con_wrapper_mode = p_preset->get("debug/export_console_wrapper");
 	bool copy_wrapper = (con_wrapper_mode == 1 && p_debug) || (con_wrapper_mode == 2);
 
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->make_dir_recursive(p_path.get_base_dir());
-	Error err = da->copy(template_path, p_path, get_chmod_flags());
+	err = da->copy(template_path, p_path, get_chmod_flags());
 	if (err == OK && copy_wrapper) {
 		for (int i = 0; wrapper_extensions[i]; ++i) {
 			const String wrapper_path = template_path.get_basename() + wrapper_extensions[i];
