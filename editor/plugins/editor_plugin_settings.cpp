@@ -31,7 +31,6 @@
 #include "editor_plugin_settings.h"
 
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -73,7 +72,7 @@ void EditorPluginSettings::update_plugins() {
 	updating = true;
 	TreeItem *root = plugin_list->create_item();
 
-	Vector<String> plugins = _get_plugins("res://addons");
+	Vector<String> plugins = _get_plugins(plugins_path);
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
@@ -101,6 +100,7 @@ void EditorPluginSettings::update_plugins() {
 				String version = cfg->get_value("plugin", "version");
 				String description = cfg->get_value("plugin", "description");
 				String scr = cfg->get_value("plugin", "script");
+				int scope = cfg->get_value("plugin", "scope", 2);
 
 				bool is_enabled = EditorNode::get_singleton()->is_addon_plugin_enabled(path);
 				Color disabled_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
@@ -115,6 +115,7 @@ void EditorPluginSettings::update_plugins() {
 				}
 
 				TreeItem *item = plugin_list->create_item(root);
+				item->set_cell_mode(COLUMN_WARNING, TreeItem::CELL_MODE_ICON);
 				item->set_text(COLUMN_NAME, name);
 				item->set_auto_translate_mode(COLUMN_NAME, AUTO_TRANSLATE_MODE_DISABLED);
 				if (!is_enabled) {
@@ -134,6 +135,24 @@ void EditorPluginSettings::update_plugins() {
 				item->set_checked(COLUMN_STATUS, is_enabled);
 				item->set_editable(COLUMN_STATUS, true);
 				item->add_button(COLUMN_EDIT, get_editor_theme_icon(SNAME("Edit")), BUTTON_PLUGIN_EDIT, false, TTRC("Edit Plugin"));
+
+				if ((scope == 0 && plugins_path != "editor://addons") || (scope == 1 && plugins_path != "res://addons")) {
+					String warning_text;
+
+					if (plugins_path == "editor://addons") {
+						warning_text = TTRC("This plugin is marked as incompatible with editor-wide plugins. It may cause instability or other issues if enabled. Please check the plugin documentation for more details.");
+					} else if (plugins_path == "res://addons") {
+						warning_text = TTRC("This plugin is marked as incompatible with project-wide plugins. It may cause instability or other issues if enabled. Please check the plugin documentation for more details.");
+					}
+					item->set_icon(COLUMN_WARNING, get_editor_theme_icon(SNAME("StatusError")));
+					item->set_tooltip_text(COLUMN_WARNING, warning_text);
+
+					if (is_enabled) {
+						item->set_checked(COLUMN_STATUS, false);
+						_update_plugin_enabled(item);
+					}
+					item->set_editable(COLUMN_STATUS, false);
+				}
 			}
 		}
 	}
@@ -148,6 +167,12 @@ void EditorPluginSettings::_plugin_activity_changed() {
 
 	TreeItem *ti = plugin_list->get_edited();
 	ERR_FAIL_NULL(ti);
+	_update_plugin_enabled(ti);
+}
+
+void EditorPluginSettings::_update_plugin_enabled(Object *p_item) {
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+
 	bool checked = ti->is_checked(COLUMN_STATUS);
 	String name = ti->get_metadata(COLUMN_NAME);
 
@@ -190,7 +215,8 @@ void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, in
 }
 
 Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(p_dir);
+	ERR_FAIL_COND_V_MSG(da.is_null(), Vector<String>(), "Could not create DirAccess for path: " + p_dir);
 	Error err = da->change_dir(p_dir);
 	if (err != OK) {
 		return Vector<String>();
@@ -216,10 +242,21 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 	return plugins;
 }
 
-EditorPluginSettings::EditorPluginSettings() {
-	ProjectSettings::get_singleton()->add_hidden_prefix("editor_plugins/");
+void EditorPluginSettings::set_plugins_path(const String &p_path) {
+	plugins_path = p_path;
+	if (p_path.begins_with("res://")) {
+		installed_plugins_label->set_text(TTRC("Installed Project-wide Plugins:"));
+	} else if (p_path.begins_with("editor://")) {
+		installed_plugins_label->set_text(TTRC("Installed Editor-wide Plugins:"));
+	}
 
+	plugin_config_dialog->set_plugins_path(p_path);
+	update_plugins();
+}
+
+EditorPluginSettings::EditorPluginSettings() {
 	plugin_config_dialog = memnew(PluginConfigDialog);
+	plugin_config_dialog->set_plugins_path(plugins_path);
 	plugin_config_dialog->config("");
 	add_child(plugin_config_dialog);
 
@@ -241,9 +278,9 @@ EditorPluginSettings::EditorPluginSettings() {
 	}
 
 	HBoxContainer *title_hb = memnew(HBoxContainer);
-	Label *label = memnew(Label(TTRC("Installed Plugins:")));
-	label->set_theme_type_variation("HeaderSmall");
-	title_hb->add_child(label);
+	installed_plugins_label = memnew(Label(TTRC("Installed Project-wide Plugins:")));
+	installed_plugins_label->set_theme_type_variation("HeaderSmall");
+	title_hb->add_child(installed_plugins_label);
 	title_hb->add_spacer();
 	Button *create_plugin_button = memnew(Button(TTRC("Create New Plugin")));
 	create_plugin_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPluginSettings::_create_clicked));
@@ -266,16 +303,19 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_column_title_alignment(COLUMN_VERSION, HORIZONTAL_ALIGNMENT_LEFT);
 	plugin_list->set_column_title_alignment(COLUMN_AUTHOR, HORIZONTAL_ALIGNMENT_LEFT);
 	plugin_list->set_column_title_alignment(COLUMN_EDIT, HORIZONTAL_ALIGNMENT_LEFT);
+	plugin_list->set_column_title_alignment(COLUMN_WARNING, HORIZONTAL_ALIGNMENT_LEFT);
 	plugin_list->set_column_expand(COLUMN_STATUS, false);
 	plugin_list->set_column_expand(COLUMN_NAME, true);
 	plugin_list->set_column_expand(COLUMN_VERSION, false);
 	plugin_list->set_column_expand(COLUMN_AUTHOR, false);
 	plugin_list->set_column_expand(COLUMN_EDIT, false);
+	plugin_list->set_column_expand(COLUMN_WARNING, false);
 	plugin_list->set_column_clip_content(COLUMN_STATUS, true);
 	plugin_list->set_column_clip_content(COLUMN_NAME, true);
 	plugin_list->set_column_clip_content(COLUMN_VERSION, true);
 	plugin_list->set_column_clip_content(COLUMN_AUTHOR, true);
 	plugin_list->set_column_clip_content(COLUMN_EDIT, true);
+	plugin_list->set_column_clip_content(COLUMN_WARNING, true);
 	plugin_list->set_column_custom_minimum_width(COLUMN_STATUS, 80 * EDSCALE);
 	plugin_list->set_column_custom_minimum_width(COLUMN_VERSION, 100 * EDSCALE);
 	plugin_list->set_column_custom_minimum_width(COLUMN_AUTHOR, 250 * EDSCALE);
