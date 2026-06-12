@@ -13,6 +13,11 @@
 		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index" enum="JoyButton" default="0">
 			Button identifier. One of the [enum JoyButton] button constants.
 		</member>
+		<member name="echo" type="bool" setter="set_echo" getter="is_echo" default="false">
+			If [code]true[/code], the button was already pressed before this event. An echo event is a repeated button event sent when the user is holding down the button.
+			[b]Note:[/b] To allow the engine to send joypad echo events, make sure [member ProjectSettings.input_devices/joypads/joypad_echo_events/send] is set to [code]true[/code].
+			To control when echo events are sent and how often, see [member ProjectSettings.input_devices/joypads/joypad_echo_events/wait_time] and [member ProjectSettings.input_devices/joypads/joypad_echo_events/count_per_second].
+		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the button's state is pressed. If [code]false[/code], the button's state is released.
 		</member>
