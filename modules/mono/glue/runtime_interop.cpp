@@ -235,6 +235,20 @@ GCHandleIntPtr godotsharp_internal_unmanaged_get_script_instance_managed(Object 
 			*r_has_cs_script_instance = true;
 			return cs_instance->get_gchandle_intptr();
 		}
+
+#ifdef TOOLS_ENABLED
+		// Non-[Tool] C# scripts use a placeholder in the editor and cannot
+		// be accessed as typed managed objects. Error and return null.
+		ScriptInstance *si = p_unmanaged->get_script_instance();
+		if (si->is_placeholder()) {
+			Ref<CSharpScript> cs_script = si->get_script();
+			if (cs_script.is_valid()) {
+				ERR_PRINT(vformat("Cannot access non-[Tool] C# script from the editor. Consider adding the [Tool] attribute to: %s", cs_script->get_path()));
+				*r_has_cs_script_instance = true;
+				return { nullptr };
+			}
+		}
+#endif
 	}
 
 	*r_has_cs_script_instance = false;
