@@ -346,7 +346,7 @@ void LightStorage::light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mo
 	light->bake_mode = p_bake_mode;
 
 	light->version++;
-	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_BAKE_MODE);
 }
 
 void LightStorage::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) {
@@ -737,7 +737,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 		switch (light->type) {
 			case RSE::LIGHT_DIRECTIONAL: {
-				if (r_directional_light_count >= max_directional_lights || light->directional_sky_mode == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+				if (r_directional_light_count >= max_directional_lights || light->directional_sky_mode == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY || light->bake_mode == RSE::LIGHT_BAKE_FULL) {
 					continue;
 				}
 
