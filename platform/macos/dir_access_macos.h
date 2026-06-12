@@ -54,6 +54,8 @@ protected:
 	virtual String get_filesystem_type() const override;
 
 	virtual bool is_bundle(const String &p_file) const override;
+	virtual bool is_bookmark(const String &p_file) const override;
+	virtual String read_bookmark(const String &p_file) const override;
 };
 
 #endif // UNIX ENABLED

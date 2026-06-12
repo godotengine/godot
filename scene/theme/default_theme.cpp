@@ -729,6 +729,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("file_thumbnail", "FileDialog", icons["file_thumbnail"]);
 	theme->set_icon("folder_thumbnail", "FileDialog", icons["folder_thumbnail"]);
+	theme->set_icon("link_overlay", "FileDialog", icons["link_overlay"]);
+	theme->set_icon("link_overlay_thumbnail", "FileDialog", icons["link_overlay_thumbnail"]);
 	theme->set_color("folder_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_disabled_color", "FileDialog", Color(1, 1, 1, 0.25));

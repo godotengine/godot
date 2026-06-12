@@ -115,4 +115,50 @@ bool DirAccessMacOS::is_bundle(const String &p_file) const {
 	return [[NSWorkspace sharedWorkspace] isFilePackageAtPath:[NSString stringWithUTF8String:f.utf8().get_data()]];
 }
 
+bool DirAccessMacOS::is_bookmark(const String &p_file) const {
+	String f = p_file;
+	if (!f.is_absolute_path()) {
+		f = get_current_dir().path_join(f);
+	}
+	f = fix_path(f);
+
+	NSURL *bookmark_url = [NSURL fileURLWithPath:[[NSString alloc] initWithUTF8String:f.utf8().get_data()]];
+	if (!bookmark_url) {
+		return false;
+	}
+
+	NSNumber *isAlias = nil;
+	NSError *error = nil;
+	if (![bookmark_url getResourceValue:&isAlias forKey:NSURLIsAliasFileKey error:&error] || !isAlias) {
+		return false;
+	} else {
+		return [isAlias boolValue];
+	}
+}
+
+String DirAccessMacOS::read_bookmark(const String &p_file) const {
+	String f = p_file;
+	if (!f.is_absolute_path()) {
+		f = get_current_dir().path_join(f);
+	}
+	f = fix_path(f);
+
+	String ret;
+	NSURL *bookmark_url = [NSURL fileURLWithPath:[[NSString alloc] initWithUTF8String:f.utf8().get_data()]];
+	if (!bookmark_url) {
+		return ret;
+	}
+
+	BOOL isStale = NO;
+	NSError *error = nil;
+	NSData *bookmark_data = [NSURL bookmarkDataWithContentsOfURL:bookmark_url error:&error];
+	if (bookmark_data && !error) {
+		NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark_data options:0 relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+		if (url && !error && !isStale) {
+			ret = String::utf8([url.path UTF8String]);
+		}
+	}
+	return ret;
+}
+
 #endif // UNIX_ENABLED

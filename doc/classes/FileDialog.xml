@@ -432,6 +432,12 @@
 		<theme_item name="forward_folder" data_type="icon" type="Texture2D">
 			Custom icon for the forward arrow.
 		</theme_item>
+		<theme_item name="link_overlay" data_type="icon" type="Texture2D">
+			Symbolic link or alias icon overlay.
+		</theme_item>
+		<theme_item name="link_overlay_thumbnail" data_type="icon" type="Texture2D">
+			Symbolic link or alias icon overlay in thumbnail mode.
+		</theme_item>
 		<theme_item name="list_mode" data_type="icon" type="Texture2D">
 			Icon for the button that enables list mode.
 		</theme_item>

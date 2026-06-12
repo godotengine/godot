@@ -248,6 +248,14 @@
 				Returns the available space on the current directory's disk, in bytes. Returns [code]0[/code] if the platform-specific method to query the available space fails.
 			</description>
 		</method>
+		<method name="is_bookmark" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the file or directory is an alias/bookmark.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
 		<method name="is_bundle" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
@@ -330,6 +338,14 @@
 			<description>
 				Creates a new [DirAccess] object and opens an existing directory of the filesystem. The [param path] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
 				Returns [code]null[/code] if opening the directory failed. You can use [method get_open_error] to check the error that occurred.
+			</description>
+		</method>
+		<method name="read_bookmark" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the target of the alias/bookmark.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="read_link">
