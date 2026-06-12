@@ -1519,7 +1519,6 @@ Vector<Vector2> CSGShape3D::get_brush_uvs() {
 }
 
 void CSGShape3D::set_brush_uvs(const Vector<Vector2> &p_uvs) {
-	ERR_FAIL_NULL_MSG(p_uvs, "`p_uvs` is null");
 	ERR_FAIL_COND_MSG(p_uvs.is_empty(), "`p_uvs` is empty");
 
 	CSGBrush *n = _get_brush();
@@ -1528,12 +1527,10 @@ void CSGShape3D::set_brush_uvs(const Vector<Vector2> &p_uvs) {
 
 	ERR_FAIL_COND_MSG(p_uvs.size() != n->faces.size() * 3, "`p_uvs` has an invalid number of elements.");
 
-	Vector2 *p_uvs_ptr = p_uvs.ptr();
-
 	int w = 0;
 	for (int i = 0; i < n->faces.size(); i++) {
 		for (int j = 0; j < 3; j++) {
-			n->faces.write[i].uvs[j] = p_uvs_ptr[w];
+			n->faces.write[i].uvs[j] = p_uvs[w];
 			w++;
 		}
 	}
