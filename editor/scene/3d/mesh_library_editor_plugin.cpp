@@ -64,6 +64,8 @@ bool MeshLibraryEditor::MeshLibraryItem::_set(const StringName &p_name, const Va
 
 	if (p_name == "name") {
 		mesh_library->set_item_name(mesh_id, p_value);
+	} else if (p_name == "category") {
+		mesh_library->set_item_category(mesh_id, p_value);
 	} else if (p_name == "mesh") {
 		mesh_library->set_item_mesh(mesh_id, p_value);
 	} else if (p_name == "mesh_transform") {
@@ -112,6 +114,8 @@ bool MeshLibraryEditor::MeshLibraryItem::_get(const StringName &p_name, Variant 
 
 	if (p_name == "name") {
 		r_ret = mesh_library->get_item_name(mesh_id);
+	} else if (p_name == "category") {
+		r_ret = mesh_library->get_item_category(mesh_id);
 	} else if (p_name == "mesh") {
 		r_ret = mesh_library->get_item_mesh(mesh_id);
 	} else if (p_name == "mesh_transform") {
@@ -143,6 +147,7 @@ void MeshLibraryEditor::MeshLibraryItem::_get_property_list(List<PropertyInfo> *
 	}
 
 	p_list->push_back(PropertyInfo(Variant::STRING, PNAME("name")));
+	p_list->push_back(PropertyInfo(Variant::STRING, PNAME("category")));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()));
 	p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
 	p_list->push_back(PropertyInfo(Variant::INT, PNAME("mesh_cast_shadow"), PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"));
@@ -739,6 +744,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	item_split->add_child(inspector);
 
 	inspector->add_custom_property_description("MeshLibraryItem", "name", TTRC("The item's name, shown in the editor. It can also be used to look up the item later using [method MeshLibrary.find_item_by_name]."));
+	inspector->add_custom_property_description("MeshLibraryItem", "category", TTRC("The item's category, used to organize meshes in the [GridMap] editor. A category can include [code]/[/code] as a delimiter to create sub categories."));
 	inspector->add_custom_property_description("MeshLibraryItem", "mesh", TTRC("The item's mesh. Used by other parts of the engine (e.g. [GridMap], which displays them in a 3D tile)."));
 	inspector->add_custom_property_description("MeshLibraryItem", "mesh_transform", TTRC("The transform to apply to the item's mesh."));
 	inspector->add_custom_property_description("MeshLibraryItem", "mesh_cast_shadow", TTRC("The shadow casting mode used by the item's mesh. See [enum RenderingServer.ShadowCastingSetting]."));
