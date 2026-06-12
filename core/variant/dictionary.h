@@ -33,6 +33,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/pair.h"
+#include "core/templates/vector.h"
 #include "core/variant/variant_deep_duplicate.h"
 
 class Array;
@@ -104,6 +105,10 @@ public:
 
 	void set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type);
 	void set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script);
+	void set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script,
+			const Vector<ContainerTypeValidate> &p_key_nested_types,
+			uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script,
+			const Vector<ContainerTypeValidate> &p_value_nested_types);
 
 	bool is_typed() const;
 	bool is_typed_key() const;
@@ -134,4 +139,8 @@ public:
 	Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init);
 	Dictionary();
 	~Dictionary();
+
+private:
+	static ContainerTypeValidate convert_container_type(const ContainerType &p_container);
+	static ContainerType convert_validator_to_container(const ContainerTypeValidate &p_validator);
 };
