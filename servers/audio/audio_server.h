@@ -375,8 +375,9 @@ public:
 
 #ifdef DEBUG_ENABLED
 	void set_debug_mute(bool p_mute);
-	bool get_debug_mute() const;
 #endif // DEBUG_ENABLED
+	// Getter function is always included, but returns false for non-debug builds.
+	bool get_debug_mute() const;
 
 	void set_bus_count(int p_count);
 	int get_bus_count() const;
