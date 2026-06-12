@@ -162,8 +162,13 @@ public:
 	void rotate_uv(const Vector<int> &p_faces, float p_angle);
 	void flip_x(const Vector<int> &p_faces);
 	void flip_y(const Vector<int> &p_faces);
+	// These are meant to be used to create a UV editor like blender's.
+	Vector<Vector2> get_brush_uvs();
+	void set_brush_uvs(const Vector<Vector2> &p_uvs);
+	// These calculate UVs.
 	void calculate_cube_map(const Vector<int> &p_faces, const Vector3 &uv_scale, bool p_use_global = false);
 	void calculate_cylinder_map(const Vector<int> &p_faces, const Vector3 &uv_scale, bool p_use_global = false);
+	// These change smoothing groups.
 	void set_csg_face_smooth_group(const Vector<int> &p_faces, int p_smooth);
 	int get_csg_face_smooth_group(int p_face);
 	// These change material.

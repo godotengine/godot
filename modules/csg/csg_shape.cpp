@@ -1492,6 +1492,54 @@ void CSGShape3D::flip_y(const Vector<int> &p_faces) {
 	_make_painted(true);
 }
 
+Vector<Vector2> CSGShape3D::get_brush_uvs() {
+	Vector<Vector2> r_uvs;
+
+	CSGBrush *n = _get_brush();
+	if (n == nullptr) {
+		return r_uvs;
+	}
+
+	if (n->faces.is_empty()) {
+		return r_uvs;
+	}
+
+	r_uvs.resize(n->faces.size() * 3);
+	Vector2 *r_uvs_ptrw = r_uvs.ptrw();
+
+	int w = 0;
+	for (int i = 0; i < n->faces.size(); i++) {
+		for (int j = 0; j < 3; j++) {
+			r_uvs_ptrw[w] = n->faces[i].uvs[j];
+			w++;
+		}
+	}
+
+	return r_uvs;
+}
+
+void CSGShape3D::set_brush_uvs(const Vector<Vector2> &p_uvs) {
+	ERR_FAIL_NULL_MSG(p_uvs, "`p_uvs` is null");
+	ERR_FAIL_COND_MSG(p_uvs.is_empty(), "`p_uvs` is empty");
+
+	CSGBrush *n = _get_brush();
+	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
+	ERR_FAIL_COND_MSG(n->faces.is_empty(), "CSGBrush is empty.");
+
+	ERR_FAIL_COND_MSG(p_uvs.size() != n->faces.size() * 3, "`p_uvs` has an invalid number of elements.");
+
+	Vector2 *p_uvs_ptr = p_uvs.ptr();
+
+	int w = 0;
+	for (int i = 0; i < n->faces.size(); i++) {
+		for (int j = 0; j < 3; j++) {
+			n->faces.write[i].uvs[j] = p_uvs_ptr[w];
+			w++;
+		}
+	}
+	_make_painted(true);
+}
+
 void CSGShape3D::calculate_cube_map(const Vector<int> &p_faces, const Vector3 &uv_scale, bool p_use_global) {
 	// Simple cube map unwrapping. Calculates the normal of each face and aligns them with one of three axes.
 	CSGBrush *n = _get_brush();
@@ -2096,6 +2144,8 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rotate_uv", "faces", "angle"), &CSGShape3D::rotate_uv);
 	ClassDB::bind_method(D_METHOD("flip_x", "faces"), &CSGShape3D::flip_x);
 	ClassDB::bind_method(D_METHOD("flip_y", "faces"), &CSGShape3D::flip_y);
+	ClassDB::bind_method(D_METHOD("get_brush_uvs"), &CSGShape3D::get_brush_uvs);
+	ClassDB::bind_method(D_METHOD("set_brush_uvs", "uvs"), &CSGShape3D::set_brush_uvs);
 	ClassDB::bind_method(D_METHOD("calculate_cube_map", "faces", "uv_scale", "use_global"), &CSGShape3D::calculate_cube_map);
 	ClassDB::bind_method(D_METHOD("calculate_cylinder_map", "faces", "uv_scale", "use_global"), &CSGShape3D::calculate_cylinder_map);
 	ClassDB::bind_method(D_METHOD("set_csg_face_smooth_group", "faces", "smooth"), &CSGShape3D::set_csg_face_smooth_group);

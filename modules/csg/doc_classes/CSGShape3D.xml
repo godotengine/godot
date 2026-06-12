@@ -83,6 +83,13 @@
 				Equivalent to doing [code]range(get_csg_num_faces())[/code].
 			</description>
 		</method>
+		<method name="get_brush_uvs">
+			<return type="PackedVector2Array" />
+			<description>
+				Returns a [PackedVector2Array] with the UVs of CSGBrush, where every [code]3[/code] elements represents a face.
+				This is intended for creating a UV editor for more advanced UV unwrapping.
+			</description>
+		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -197,6 +204,14 @@
 				[param angle] must be in radians.
 			</description>
 		</method>
+		<method name="set_brush_uvs">
+			<return type="void" />
+			<param index="0" name="uvs" type="PackedVector2Array" />
+			<description>
+				Sets the UVs of CSGBrush from [param uvs].
+				[b]Note:[/b][param uvs] must be divisible by 3.
+			</description>
+		</method>
 		<method name="set_collision_layer_value">
 			<return type="void" />
 			<param index="0" name="layer_number" type="int" />
@@ -245,12 +260,12 @@
 				[gdscript]
 				# Offset the first and second faces of CSGBrush.
 				var faces = PackedInt32Array([0, 1])
-				set_uv_offsets(faces, get_uv_offsets(faces), Vector2(1.0, 1.0))
+				set_uv_offsets(faces, get_uv_offsets(faces[0]), get_uv_offsets(faces[0]) + Vector2(0.25, 0.0))
 				[/gdscript]
 				[csharp]
 				// Offset the first and second faces of CSGBrush.
 				var faces = new PackedInt32Array([0, 1]);
-				SetUvOffsets(faces, GetUvOffsets(faces), new Vector2(1.0f, 1.0f));
+				SetUvOffsets(faces, GetUvOffsets(faces[0]), GetUvOffsets(faces[0]) + new Vector2(0.1f, 0.0f));
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -269,13 +284,13 @@
 				# Scale the first and second faces of CSGBrush.
 				var faces = PackedInt32Array([0, 1])
 				var curr_scale = get_uv_scale(faces[0])
-				set_uv_scale(faces, curr_scale, Vector2(curr_scale.x * 2.0, curr_scale.y * 2.0))
+				set_uv_scale(faces, curr_scale, Vector2(2.0, 2.0))
 				[/gdscript]
 				[csharp]
 				// Scale the first and second faces of CSGBrush.
 				var faces = new PackedInt32Array([0, 1]);
 				var currentUvScale = GetUvScale(faces[0]);
-				SetUvScale(faces, currentUvScale, new Vector2(currentUvScale.x * 2.0f, currentUvScale.y * 2.0f));
+				SetUvScale(faces, currentUvScale, new Vector2(2.0f, 2.0f));
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Both components of [param scale] must be non-zero.
