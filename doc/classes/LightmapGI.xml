@@ -15,6 +15,20 @@
 	<tutorials>
 		<link title="Using Lightmap global illumination">$DOCS_URL/tutorials/3d/global_illumination/using_lightmap_gi.html</link>
 	</tutorials>
+	<methods>
+		<method name="bake">
+			<return type="int" enum="LightmapGI.BakeError" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="image_data_path" type="String" default="&quot;&quot;" />
+			<param index="2" name="progress_cb" type="Callable" default="Callable()" />
+			<description>
+				Bakes this lightmap using all [MeshInstance3D] and [Light3D] nodes inside the provided root [Node] [param from_node].
+				The [param image_data_path] should point to an output filename, typically ending in [code].lmbake[/code]. The parameter may only be omitted in order to overwrite the existing baked light data on disk.
+				[param progress_cb] may optionally point to a function taking ([float] progress, [String] message, [bool] redraw) and returns whether or not to cancel the bake. A [code]true[/code] return value from the progress function will cancel the bake. Otherwise, the lightmap will continue baking.
+				Returns a status code such as [constant BAKE_ERROR_OK] on success, or any of the other status codes in [enum LightmapGI.BakeError] on failure.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
 			The bias to use when computing shadows. Increasing [member bias] can fix shadow acne on the resulting baked lightmap, but can introduce peter-panning (shadows not connecting to their casters). Real-time [Light3D] shadows are not affected by this [member bias] property.
