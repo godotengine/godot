@@ -1,0 +1,7 @@
+{
+    strategy: "additive"
+    featureFilters: {
+        uemoji: include
+        uprops: include
+    }
+}

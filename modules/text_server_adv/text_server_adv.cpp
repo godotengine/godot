@@ -46,6 +46,8 @@
 
 #ifdef ICU_STATIC_DATA
 #include <icudata.gen.h>
+#else
+#include <icudata_min.gen.h>
 #endif
 
 // Thirdparty headers.
@@ -333,6 +335,7 @@ _FORCE_INLINE_ bool is_connected_to_prev(char32_t p_chr, char32_t p_pchr) {
 /*************************************************************************/
 
 bool TextServerAdvanced::icu_data_loaded = false;
+bool TextServerAdvanced::icu_full_data_loaded = false;
 PackedByteArray TextServerAdvanced::icu_data;
 
 bool TextServerAdvanced::_has_feature(Feature p_feature) const {
@@ -426,26 +429,35 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 		UErrorCode err = U_ZERO_ERROR;
 		u_init(&err); // Do not check for errors, since we only load part of the data.
 		icu_data_loaded = true;
+		icu_full_data_loaded = true;
 	}
 #else
 	if (!icu_data_loaded) {
 		UErrorCode err = U_ZERO_ERROR;
 		String filename = (p_filename.is_empty()) ? String("res://icudt_godot.dat") : p_filename;
 		if (FileAccess::exists(filename)) {
+			// Load full data from file.
 			Ref<FileAccess> f = FileAccess::open(filename, FileAccess::READ);
-			if (f.is_null()) {
-				return false;
-			}
-			uint64_t len = f->get_length();
-			icu_data = f->get_buffer(len);
+			if (f.is_valid()) {
+				uint64_t len = f->get_length();
+				icu_data = f->get_buffer(len);
 
-			udata_setCommonData(icu_data.ptr(), &err);
-			if (U_FAILURE(err)) {
+				udata_setCommonData(icu_data.ptr(), &err);
+				if (U_SUCCESS(err)) {
+					icu_data_loaded = true;
+					icu_full_data_loaded = true;
+				}
+				err = U_ZERO_ERROR;
+			}
+		}
+		if (!icu_data_loaded) {
+			// Load min built-in data.
+			udata_setCommonData(icu_min_data, &err);
+			if (U_SUCCESS(err)) {
+				icu_data_loaded = true;
+			} else {
 				ERR_FAIL_V_MSG(false, u_errorName(err));
 			}
-
-			err = U_ZERO_ERROR;
-			icu_data_loaded = true;
 		}
 
 		u_init(&err);
@@ -7857,7 +7869,7 @@ double TextServerAdvanced::_shaped_text_get_underline_thickness(const RID &p_sha
 
 int64_t TextServerAdvanced::_is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
 #ifndef ICU_STATIC_DATA
-	if (!icu_data_loaded) {
+	if (!icu_full_data_loaded) {
 		return -1;
 	}
 #endif
@@ -7903,7 +7915,7 @@ int64_t TextServerAdvanced::_is_confusable(const String &p_string, const PackedS
 
 bool TextServerAdvanced::_spoof_check(const String &p_string) const {
 #ifndef ICU_STATIC_DATA
-	if (!icu_data_loaded) {
+	if (!icu_full_data_loaded) {
 		return false;
 	}
 #endif
@@ -7929,7 +7941,7 @@ bool TextServerAdvanced::_spoof_check(const String &p_string) const {
 
 String TextServerAdvanced::_strip_diacritics(const String &p_string) const {
 #ifndef ICU_STATIC_DATA
-	if (!icu_data_loaded) {
+	if (!icu_full_data_loaded) {
 		return TextServer::strip_diacritics(p_string);
 	}
 #endif
@@ -7967,7 +7979,7 @@ String TextServerAdvanced::_strip_diacritics(const String &p_string) const {
 
 String TextServerAdvanced::_string_to_upper(const String &p_string, const String &p_language) const {
 #ifndef ICU_STATIC_DATA
-	if (!icu_data_loaded) {
+	if (!icu_full_data_loaded) {
 		return p_string.to_upper();
 	}
 #endif
@@ -7995,7 +8007,7 @@ String TextServerAdvanced::_string_to_upper(const String &p_string, const String
 
 String TextServerAdvanced::_string_to_lower(const String &p_string, const String &p_language) const {
 #ifndef ICU_STATIC_DATA
-	if (!icu_data_loaded) {
+	if (!icu_full_data_loaded) {
 		return p_string.to_lower();
 	}
 #endif
@@ -8022,7 +8034,7 @@ String TextServerAdvanced::_string_to_lower(const String &p_string, const String
 
 String TextServerAdvanced::_string_to_title(const String &p_string, const String &p_language) const {
 #ifndef ICU_STATIC_DATA
-	if (!icu_data_loaded) {
+	if (!icu_full_data_loaded) {
 		return p_string.capitalize();
 	}
 #endif
@@ -8200,7 +8212,7 @@ PackedInt32Array TextServerAdvanced::_string_get_character_breaks(const String &
 
 bool TextServerAdvanced::_is_valid_identifier(const String &p_string) const {
 #ifndef ICU_STATIC_DATA
-	if (!icu_data_loaded) {
+	if (!icu_full_data_loaded) {
 		WARN_PRINT_ONCE("ICU data is not loaded, Unicode security and spoofing detection disabled.");
 		return TextServer::is_valid_identifier(p_string);
 	}
@@ -8392,7 +8404,7 @@ bool TextServerAdvanced::_is_valid_identifier(const String &p_string) const {
 
 bool TextServerAdvanced::_is_valid_letter(uint64_t p_unicode) const {
 #ifndef ICU_STATIC_DATA
-	if (!icu_data_loaded) {
+	if (!icu_full_data_loaded) {
 		return TextServer::is_valid_letter(p_unicode);
 	}
 #endif
