@@ -200,6 +200,9 @@ class VehicleBody3D : public RigidBody3D {
 	real_t engine_force = 0.0;
 	real_t brake = 0.0;
 
+	real_t slope_hold_angle = 0.8029f; 
+	real_t slope_slide_angle = 1.1519f; 
+
 	real_t m_pitchControl = 0.0;
 	real_t m_steeringValue = 0.0;
 	real_t m_currentVehicleSpeedKmHour = 0.0;
@@ -243,6 +246,7 @@ class VehicleBody3D : public RigidBody3D {
 
 protected:
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void _physics_interpolated_changed() override;
 	virtual void fti_pump_xform() override;
@@ -256,6 +260,12 @@ public:
 
 	void set_steering(real_t p_steering);
 	real_t get_steering() const;
+
+	void set_slope_hold_angle(real_t p_radians);
+	real_t get_slope_hold_angle() const;
+
+	void set_slope_slide_angle(real_t p_radians);
+	real_t get_slope_slide_angle() const;
 
 	VehicleBody3D();
 };
