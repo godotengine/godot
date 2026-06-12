@@ -58,7 +58,7 @@
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/visual_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
@@ -112,16 +112,16 @@ EditorUndoRedoManager *EditorInterface::get_editor_undo_redo() const {
 }
 
 AABB EditorInterface::_calculate_aabb_for_scene(Node *p_node, AABB &p_scene_aabb) {
-	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
-	if (mesh_node && mesh_node->get_mesh().is_valid()) {
+	GeometryInstance3D *geom_node = Object::cast_to<GeometryInstance3D>(p_node);
+	if (geom_node != nullptr) {
 		Transform3D accum_xform;
-		Node3D *base = mesh_node;
+		Node3D *base = geom_node;
 		while (base) {
 			accum_xform = base->get_transform() * accum_xform;
 			base = Object::cast_to<Node3D>(base->get_parent());
 		}
 
-		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
+		AABB aabb = accum_xform.xform(geom_node->get_aabb());
 		p_scene_aabb.merge_with(aabb);
 	}
 
@@ -247,7 +247,7 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	ERR_FAIL_NULL_MSG(EditorNode::get_singleton(), "EditorNode doesn't exist.");
 
 	SubViewport *sub_viewport_node = memnew(SubViewport);
-	AABB scene_aabb;
+	AABB scene_aabb = AABB(Vector3(-0.001f, -0.001f, -0.001f), Vector3(0.002f, 0.002f, 0.002f));
 	scene_aabb = _calculate_aabb_for_scene(p_scene, scene_aabb);
 
 	sub_viewport_node->set_update_mode(SubViewport::UPDATE_ALWAYS);
