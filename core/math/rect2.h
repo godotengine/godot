@@ -179,24 +179,39 @@ struct [[nodiscard]] Rect2 {
 		return new_rect;
 	}
 
-	inline bool has_point(const Point2 &p_point) const {
+	inline bool has_point(const Point2 &p_point, bool p_include_all_borders = false) const {
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0)) {
 			ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
 		}
 #endif
-		if (p_point.x < position.x) {
-			return false;
+		if (p_include_all_borders) {
+			if (p_point.x < position.x) {
+				return false;
+			}
+			if (p_point.y < position.y) {
+				return false;
+			}
+			if (p_point.x > (position.x + size.x)) {
+				return false;
+			}
+			if (p_point.y > (position.y + size.y)) {
+				return false;
+			}
 		}
-		if (p_point.y < position.y) {
-			return false;
-		}
-
-		if (p_point.x >= (position.x + size.x)) {
-			return false;
-		}
-		if (p_point.y >= (position.y + size.y)) {
-			return false;
+		else {
+			if (p_point.x < position.x) {
+				return false;
+			}
+			if (p_point.y < position.y) {
+				return false;
+			}
+			if (p_point.x >= (position.x + size.x)) {
+				return false;
+			}
+			if (p_point.y >= (position.y + size.y)) {
+				return false;
+			}
 		}
 
 		return true;
