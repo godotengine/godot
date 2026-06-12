@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This [SkeletonModifier3D] rotates a bone to look at a target. This is helpful for moving a character's head to look at the player, rotating a turret to look at a target, or any other case where you want to make a bone rotate towards something quickly and easily.
-		When applying multiple [LookAtModifier3D]s, the [LookAtModifier3D] assigned to the parent bone must be put above the [LookAtModifier3D] assigned to the child bone in the list in order for the child bone results to be correct.
+		When applying multiple [LookAtModifier3D]s, the [LookAtModifier3D] assigned to the parent bone must be put above the [LookAtModifier3D] assigned to the child bone in the list in order for the child bone results to be correct. In terms of scene tree order, the [LookAtModifier3D] also needs to be placed below any other IK nodes the bone is attached to, such as a [TwoBoneIK3D] or other chain solvers.
 	</description>
 	<tutorials>
 	</tutorials>
