@@ -852,6 +852,9 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 			case RSE::INSTANCE_REFLECTION_PROBE: {
 				InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(instance->base_data);
 				RSG::light_storage->reflection_probe_release_atlas_index(reflection_probe->instance);
+				if (reflection_probe->update_list.in_list()) {
+					reflection_probe_render_list.remove(&reflection_probe->update_list);
+				}
 
 			} break;
 			case RSE::INSTANCE_PARTICLES_COLLISION: {
