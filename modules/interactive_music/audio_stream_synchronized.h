@@ -47,7 +47,7 @@ private:
 
 	int stream_count = 0;
 	Ref<AudioStream> audio_streams[MAX_STREAMS];
-	float audio_stream_volume_db[MAX_STREAMS] = {};
+	float audio_stream_volume_linear[MAX_STREAMS] = {};
 	HashSet<AudioStreamPlaybackSynchronized *> playbacks;
 
 public:
@@ -90,6 +90,8 @@ private:
 	Ref<AudioStreamPlayback> playback[AudioStreamSynchronized::MAX_STREAMS];
 
 	int play_order[AudioStreamSynchronized::MAX_STREAMS];
+
+	float stream_volume_linear_previous[AudioStreamSynchronized::MAX_STREAMS];
 
 	double stream_todo = 0.0;
 	int fade_index = -1;
