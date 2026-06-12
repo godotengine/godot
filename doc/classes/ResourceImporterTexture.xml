@@ -79,6 +79,7 @@
 			[b]Green:[/b] Use the values from the source image's green channel.
 			[b]Blue:[/b] Use the values from the source image's blue channel.
 			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]RGB Average:[/b] Use the averaged value of the RGB channels, i.e. [code](R + G + B) / 3[/code].
 			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
 			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
 			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
@@ -93,6 +94,7 @@
 			[b]Green:[/b] Use the values from the source image's green channel.
 			[b]Blue:[/b] Use the values from the source image's blue channel.
 			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]RGB Average:[/b] Use the averaged value of the RGB channels, i.e. [code](R + G + B) / 3[/code].
 			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
 			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
 			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
@@ -107,6 +109,7 @@
 			[b]Green:[/b] Use the values from the source image's green channel.
 			[b]Blue:[/b] Use the values from the source image's blue channel.
 			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]RGB Average:[/b] Use the averaged value of the RGB channels, i.e. [code](R + G + B) / 3[/code].
 			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
 			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
 			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
@@ -121,6 +124,7 @@
 			[b]Green:[/b] Use the values from the source image's green channel.
 			[b]Blue:[/b] Use the values from the source image's blue channel.
 			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]RGB Average:[/b] Use the averaged value of the RGB channels, i.e. [code](R + G + B) / 3[/code].
 			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
 			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
 			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
