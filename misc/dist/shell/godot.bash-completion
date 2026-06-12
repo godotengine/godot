@@ -89,6 +89,7 @@ _complete_godot_options() {
 --doctool
 --no-docbase
 --build-solutions
+--generate-build-profile
 --dump-gdextension-interface
 --dump-extension-api
 --benchmark
