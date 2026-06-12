@@ -4,7 +4,7 @@
 		Overrides the location sounds are heard from.
 	</brief_description>
 	<description>
-		Once added to the scene tree and enabled using [method make_current], this node will override the location sounds are heard from. This can be used to listen from a location different from the [Camera3D].
+		Once added to the scene tree and enabled using [method make_current], this node will override the location sounds are heard from. This can be used to listen from a location different from the [Camera3D]. The first [AudioListener3D] added to the scene tree will automatically become current, regardless of [code]current[/code] property.
 	</description>
 	<tutorials>
 	</tutorials>
