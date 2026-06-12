@@ -1709,6 +1709,41 @@ struct Workspace {
 	}
 };
 
+struct WorkspaceSymbol {
+	/**
+	 * name of this symbol.
+	 */
+	String name;
+
+	/**
+	 * The kind of this symbol
+	 */
+	int kind;
+
+	/**
+	 * The symbol containing this symbol
+	 */
+	String containerName;
+
+	/**
+	 * The location of this symbol
+	 */
+	Location location;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+
+		dict["name"] = name;
+		dict["kind"] = kind;
+		if (!containerName.is_empty()) {
+			dict["containerName"] = containerName;
+		}
+		dict["location"] = location.to_json();
+
+		return dict;
+	}
+};
+
 struct ServerCapabilities {
 	/**
 	 * Defines how text documents are synced. Is either a detailed structure defining each notification or
@@ -1768,7 +1803,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides workspace symbol support.
 	 */
-	bool workspaceSymbolProvider = false;
+	bool workspaceSymbolProvider = true;
 
 	/**
 	 * The server supports workspace folder.
