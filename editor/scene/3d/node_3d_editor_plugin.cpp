@@ -95,6 +95,7 @@
 #include "scene/3d/decal.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/physics/collision_polygon_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/sprite_3d.h"
@@ -5431,6 +5432,13 @@ void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
 
 	if (co) {
 		rids.insert(co->get_rid());
+	} else if (Object::cast_to<CollisionShape3D>(node) || Object::cast_to<CollisionPolygon3D>(node)) {
+		// Nodes like CollisionShape3D and CollisionPolygon3D do not possess their own RID.
+		// Extract the RID from their parent CollisionObject3D so the raycast doesn't self-hit.
+		CollisionObject3D *parent_co = Object::cast_to<CollisionObject3D>(node->get_parent());
+		if (parent_co) {
+			rids.insert(parent_co->get_rid());
+		}
 	} else if (node->is_class("CSGShape3D")) { // HACK: We should avoid referencing module logic.
 		rids.insert(node->call("_get_root_collision_instance"));
 	}
@@ -5542,8 +5550,30 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, boo
 	}
 
 	const VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(p_parent);
+	const CollisionShape3D *collision_shape = Object::cast_to<CollisionShape3D>(p_parent);
+	const CollisionPolygon3D *collision_polygon = Object::cast_to<CollisionPolygon3D>(p_parent);
+
 	if (visual_instance) {
 		bounds = visual_instance->get_aabb();
+	} else if (collision_shape && collision_shape->get_shape().is_valid()) {
+		// Extract the bounding box from the collision shape's debug mesh.
+		bounds = collision_shape->get_shape()->get_debug_mesh()->get_aabb();
+	} else if (collision_polygon) {
+		// Manually calculate the AABB for the collision polygon using its 2D points and depth.
+		Vector<Vector2> pts = collision_polygon->get_polygon();
+		if (pts.is_empty()) {
+			bounds = AABB();
+		} else {
+			Vector2 min_p = pts[0];
+			Vector2 max_p = pts[0];
+			for (int i = 1; i < pts.size(); i++) {
+				min_p = min_p.min(pts[i]);
+				max_p = max_p.max(pts[i]);
+			}
+			float depth = collision_polygon->get_depth();
+			// Build the AABB using the minimum point and the calculated size.
+			bounds = AABB(Vector3(min_p.x, min_p.y, -depth / 2.0), Vector3(max_p.x - min_p.x, max_p.y - min_p.y, depth));
+		}
 	} else {
 		bounds = AABB();
 	}
