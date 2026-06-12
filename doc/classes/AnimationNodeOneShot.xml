@@ -50,6 +50,17 @@
 		animationTree.Get("parameters/OneShot/internal_active");
 		[/csharp]
 		[/codeblocks]
+		Optionally, signals can be used by setting an [AnimationNodeObserverOneShot] through [AnimationTree].
+		[codeblocks]
+		[gdscript]
+		var observer = tree.get("parameters/OneShot/observer")
+		observer.started.connect(on_one_shot_started)
+		[/gdscript]
+		[csharp]
+		var observer = animationTree.Get("parameters/OneShot/observer").As&lt;AnimationNodeObserverOneShot&gt;();
+		observer.Started += OnOneShotStarted;
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>

@@ -45,6 +45,24 @@ class AnimationNodeEndState;
 class AnimationTree;
 struct AnimationNodeInstance;
 
+class AnimationNodeObserver : public Resource {
+	GDCLASS(AnimationNodeObserver, Resource);
+
+public:
+	AnimationNodeObserver() {
+		set_local_to_scene(true);
+	}
+};
+
+class AnimationNodeObserverBlendSpace : public AnimationNodeObserver {
+	GDCLASS(AnimationNodeObserverBlendSpace, AnimationNodeObserver);
+
+protected:
+	static void _bind_methods() {
+		ADD_SIGNAL(MethodInfo("closest_point_changed", PropertyInfo(Variant::STRING_NAME, "closest_point_name")));
+	}
+};
+
 class AnimationNode : public Resource {
 	GDCLASS(AnimationNode, Resource);
 
@@ -146,6 +164,7 @@ protected:
 	StringName current_length = "current_length";
 	StringName current_position = "current_position";
 	StringName current_delta = "current_delta";
+	StringName observer = "observer";
 
 	NodeTimeInfo process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false);
 	// Virtualizing for especially AnimationNodeAnimation needs to take "backward" into account.
@@ -303,40 +322,41 @@ struct AnimationNodeInstance {
 	X(0, CURRENT_LENGTH, current_length, Variant::FLOAT, double) \
 	X(1, CURRENT_POSITION, current_position, Variant::FLOAT, double) \
 	X(2, CURRENT_DELTA, current_delta, Variant::FLOAT, double) \
+	X(3, OBSERVER, observer, Variant::OBJECT, Ref<AnimationNodeObserver>) \
 	/* AnimationNodeTimeScale. */ \
-	X(3, TIME_SCALE, scale, Variant::FLOAT, double) \
+	X(4, TIME_SCALE, scale, Variant::FLOAT, double) \
 	/* AnimationNodeTimeSeek. */ \
-	X(3, SEEK_REQUEST, seek_request, Variant::FLOAT, double) \
+	X(4, SEEK_REQUEST, seek_request, Variant::FLOAT, double) \
 	/* AnimationNodeAdd2, AnimationNodeAdd3. */ \
-	X(3, ADD_AMOUNT, add_amount, Variant::FLOAT, double) \
+	X(4, ADD_AMOUNT, add_amount, Variant::FLOAT, double) \
 	/* AnimationNodeBlend2, AnimationNodeBlend3. */ \
-	X(3, BLEND_AMOUNT, blend_amount, Variant::FLOAT, double) \
+	X(4, BLEND_AMOUNT, blend_amount, Variant::FLOAT, double) \
 	/* AnimationNodeSub2. */ \
-	X(3, SUB_AMOUNT, sub_amount, Variant::FLOAT, double) \
+	X(4, SUB_AMOUNT, sub_amount, Variant::FLOAT, double) \
 	/* AnimationNodeOneShot. */ \
-	X(3, ONESHOT_TIME_TO_RESTART, time_to_restart, Variant::FLOAT, double) \
-	X(4, ONESHOT_FADE_IN_REMAINING, fade_in_remaining, Variant::FLOAT, double) \
-	X(5, ONESHOT_FADE_OUT_REMAINING, fade_out_remaining, Variant::FLOAT, double) \
-	X(6, ONESHOT_ACTIVE, active, Variant::BOOL, bool) \
-	X(7, ONESHOT_INTERNAL_ACTIVE, internal_active, Variant::BOOL, bool) \
-	X(8, ONESHOT_REQUEST, request, Variant::INT, int) \
+	X(4, ONESHOT_TIME_TO_RESTART, time_to_restart, Variant::FLOAT, double) \
+	X(5, ONESHOT_FADE_IN_REMAINING, fade_in_remaining, Variant::FLOAT, double) \
+	X(6, ONESHOT_FADE_OUT_REMAINING, fade_out_remaining, Variant::FLOAT, double) \
+	X(7, ONESHOT_ACTIVE, active, Variant::BOOL, bool) \
+	X(8, ONESHOT_INTERNAL_ACTIVE, internal_active, Variant::BOOL, bool) \
+	X(9, ONESHOT_REQUEST, request, Variant::INT, int) \
 	/* AnimationNodeAnimation */ \
-	X(3, ANIMATION_BACKWARD, backward, Variant::BOOL, bool) \
+	X(4, ANIMATION_BACKWARD, backward, Variant::BOOL, bool) \
 	/* AnimationNodeTransition TODO: Make ref & */ \
-	X(3, TRANSITION_REQUEST, transition_request, Variant::STRING, String) \
-	X(4, CURRENT_INDEX, current_index, Variant::INT, int) \
-	X(5, PREV_INDEX, prev_index, Variant::INT, int) \
-	X(6, PREV_XFADING, prev_xfading, Variant::FLOAT, double) \
-	X(7, CURRENT_STATE, current_state, Variant::STRING, String) \
+	X(4, TRANSITION_REQUEST, transition_request, Variant::STRING, String) \
+	X(5, CURRENT_INDEX, current_index, Variant::INT, int) \
+	X(6, PREV_INDEX, prev_index, Variant::INT, int) \
+	X(7, PREV_XFADING, prev_xfading, Variant::FLOAT, double) \
+	X(8, CURRENT_STATE, current_state, Variant::STRING, String) \
 	/* AnimationNodeBlendSpace1D and AnimationNodeBlendSpace2D, \
 	We currently cannot do blend_position, due to type same name but different type */ \
-	X(3, CLOSEST, closest, Variant::INT, int)
+	X(4, CLOSEST, closest, Variant::INT, int)
 
 	enum Slot : uint8_t {
 #define SLOT_ENUM(index, e, _member, _variant_type, _native_type) SLOT_##e = index,
 		ANIM_SLOT_LIST(SLOT_ENUM)
 #undef SLOT_ENUM
-				SLOT_MAX = 9
+				SLOT_MAX = 10
 	};
 
 	void maybe_bind_slot_property(const StringName &p_name, Variant *p_property) {
