@@ -1617,15 +1617,15 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	_find_built_in_variants(r_result);
 
-	static const char *_keywords[] = {
-		"true", "false", "PI", "TAU", "INF", "NAN", "null", "self", "super",
-		"break", "breakpoint", "continue", "pass", "return",
-		nullptr
-	};
+	// Keywords that represent constants.
+	for (const char *kw : { "true", "false", "PI", "TAU", "INF", "NAN", "null", "self", "super" }) {
+		ScriptLanguage::CodeCompletionOption option(kw, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+		r_result.insert(option.display, option);
+	}
 
-	const char **kw = _keywords;
-	while (*kw) {
-		ScriptLanguage::CodeCompletionOption option(*kw, ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD);
+	// Regular control flow keywords.
+	for (const char *kw : { "break", "breakpoint", "continue", "pass", "return" }) {
+		ScriptLanguage::CodeCompletionOption option(kw, ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD);
 		r_result.insert(option.display, option);
 		kw++;
 	}
@@ -1672,6 +1672,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 		r_result.insert(option.display, option);
 	}
 
+	// Autoloads.
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
 		if (!E.value.is_singleton) {
 			continue;
@@ -1680,21 +1681,29 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 		r_result.insert(option.display, option);
 	}
 
-	// Native classes and global constants.
-	for (const KeyValue<StringName, int> &E : GDScriptLanguage::get_singleton()->get_global_map()) {
-		ScriptLanguage::CodeCompletionOption option;
-		if (GDScriptAnalyzer::class_exists(E.key) || Engine::get_singleton()->has_singleton(E.key)) {
-			option = ScriptLanguage::CodeCompletionOption(E.key.operator String(), ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
-		} else {
-			option = ScriptLanguage::CodeCompletionOption(E.key.operator String(), ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+	// Native classes.
+	{
+		LocalVector<StringName> native_classes;
+		ClassDB::get_class_list(native_classes);
+		for (const StringName &class_name : native_classes) {
+			if (!GDScriptAnalyzer::class_exists(class_name)) {
+				continue;
+			}
+			ScriptLanguage::CodeCompletionOption option = ScriptLanguage::CodeCompletionOption(class_name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
+			r_result.insert(option.display, option);
 		}
+	}
+
+	// Core constants.
+	for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
+		ScriptLanguage::CodeCompletionOption option = ScriptLanguage::CodeCompletionOption(CoreConstants::get_global_constant_name(i), ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
 		r_result.insert(option.display, option);
 	}
 
-	// Global enums
+	// Global enums.
 	_find_global_enums(r_result);
 
-	// Global classes
+	// Global classes.
 	LocalVector<StringName> global_classes;
 	ScriptServer::get_global_class_list(global_classes);
 	for (const StringName &class_name : global_classes) {
