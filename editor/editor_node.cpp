@@ -1603,7 +1603,9 @@ void EditorNode::_resave_externally_modified_scenes(String p_str) {
 }
 
 void EditorNode::_reload_modified_scenes() {
-	int current_idx = editor_data.get_edited_scene();
+	// Store path instead of index: during the reload loop, scenes are
+	// removed and re-added, which may invalidate a stored index.
+	String current_path = editor_data.get_scene_path(editor_data.get_edited_scene());
 
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		if (editor_data.get_scene_path(i) == "") {
@@ -1626,7 +1628,9 @@ void EditorNode::_reload_modified_scenes() {
 		}
 	}
 
-	_set_current_scene(current_idx);
+	// Resolve back from path — the stored index may be stale after reloads.
+	int current_idx = editor_data.get_edited_scene_from_path(current_path);
+	_set_current_scene(current_idx >= 0 ? current_idx : 0);
 	scene_tabs->update_scene_tabs();
 	disk_changed->hide();
 }
@@ -7147,13 +7151,19 @@ void EditorNode::reload_scene(const String &p_path) {
 		return;
 	}
 
-	// Adjust index so tab is back a the previous position.
-	editor_data.move_scene_to_index(editor_data.get_edited_scene_count() - 1, scene_idx);
-	EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_scene_history_id(scene_idx), false);
+	// Resolve the reloaded scene by path (not the stored index, which may
+	// have become stale if other scenes were added/removed during reload).
+	int new_idx = editor_data.get_edited_scene_from_path(lpath);
+	if (new_idx >= 0 && scene_idx >= 0 && scene_idx < editor_data.get_edited_scene_count()) {
+		editor_data.move_scene_to_index(new_idx, scene_idx);
+		EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_scene_history_id(scene_idx), false);
+	}
 
 	// Recover the current tab.
 	if (is_current_scene) {
-		_set_current_scene_nocheck(current_tab, true);
+		// Use the newly resolved index, not the stored current_tab
+		// which may have shifted during remove/re-add.
+		_set_current_scene_nocheck(new_idx >= 0 ? new_idx : 0, true);
 	} else {
 		editor_data.set_edited_scene(current_tab);
 		scene_tabs->update_scene_tabs();
