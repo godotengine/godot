@@ -539,6 +539,9 @@
 		<member name="auto_brace_completion_highlight_matching" type="bool" setter="set_highlight_matching_braces_enabled" getter="is_highlight_matching_braces_enabled" default="false">
 			If [code]true[/code], highlights brace pairs when the caret is on either one, using [member auto_brace_completion_pairs]. If matching, the pairs will be underlined. If a brace is unmatched, it is colored with [theme_item brace_mismatch_color].
 		</member>
+		<member name="auto_brace_completion_mode" type="int" setter="set_auto_brace_completion_mode" getter="get_auto_brace_completion_mode" enum="CodeEdit.AutoBraceCompletionMode" default="0">
+			Sets the auto brace completion mode.
+		</member>
 		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{ &quot;\&quot;&quot;: &quot;\&quot;&quot;, &quot;&apos;&quot;: &quot;&apos;&quot;, &quot;(&quot;: &quot;)&quot;, &quot;[&quot;: &quot;]&quot;, &quot;{&quot;: &quot;}&quot; }">
 			Sets the brace pairs to be autocompleted. For each entry in the dictionary, the key is the opening brace and the value is the closing brace that matches it. A brace is a [String] made of symbols. See [member auto_brace_completion_enabled] and [member auto_brace_completion_highlight_matching].
 		</member>
@@ -640,6 +643,12 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="AUTO_BRACE_COMPLETION_ALWAYS" value="0" enum="AutoBraceCompletionMode">
+			Automatically close the brace independently of where it is inserted.
+		</constant>
+		<constant name="AUTO_BRACE_COMPLETION_BEFORE_WHITESPACE" value="1" enum="AutoBraceCompletionMode">
+			Automatically close the brace if inserted before a whitespace.
+		</constant>
 		<constant name="KIND_CLASS" value="0" enum="CodeCompletionKind">
 			Marks the option as a class.
 		</constant>
