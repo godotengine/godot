@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SurfaceDataRD" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Read-only data object describing an internal mesh surface for use with [RenderingDevice].
+	</brief_description>
+	<description>
+		[SurfaceDataRD] provides read-only access to the internal [RenderingDevice] buffer RIDs and metadata of a mesh surface. It is returned by [method RenderingServer.mesh_surface_get_rd_data] and allows advanced rendering code to directly access the GPU-side buffers that back a mesh surface.
+		[b]Note:[/b] The buffer RIDs exposed by this object are internal to the rendering server. Modifying them directly may cause rendering artifacts or crashes. Use [method MeshRD.surface_mark_dirty] or [method RenderingServer.mesh_surface_mark_dirty] after writing to these buffers via compute shaders.
+		[b]Note:[/b] This class is only available when using the RenderingDevice backend (Vulkan, D3D12, or Metal).
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="attribute_buffer" type="RID" setter="" getter="get_attribute_buffer">
+			The [RenderingDevice] buffer containing attribute data for this surface.
+		</member>
+		<member name="format" type="int" setter="" getter="get_format">
+			The vertex format flags for this surface.
+		</member>
+		<member name="index_buffer" type="RID" setter="" getter="get_index_buffer">
+			The [RenderingDevice] index buffer for this surface.
+		</member>
+		<member name="index_count" type="int" setter="" getter="get_index_count">
+			The active number of indices in this surface.
+		</member>
+		<member name="indirect_buffer" type="RID" setter="" getter="get_indirect_buffer">
+			The [RenderingDevice] indirect draw buffer for this surface.
+		</member>
+		<member name="indirect_buffer_offset" type="int" setter="" getter="get_indirect_buffer_offset">
+			The byte offset into the indirect draw buffer.
+		</member>
+		<member name="input_mask" type="int" setter="" getter="get_input_mask">
+			The input attribute mask indicating which vertex attributes are present.
+		</member>
+		<member name="lod_index_buffers" type="RID[]" setter="" getter="get_lod_index_buffers">
+			Array of [RenderingDevice] index buffer RIDs for each LOD level.
+		</member>
+		<member name="material" type="RID" setter="" getter="get_material">
+			The [RenderingServer] material RID assigned to this surface.
+		</member>
+		<member name="max_index_count" type="int" setter="" getter="get_max_index_count">
+			The maximum number of indices this surface can hold.
+		</member>
+		<member name="max_vertex_count" type="int" setter="" getter="get_max_vertex_count">
+			The maximum number of vertices this surface can hold.
+		</member>
+		<member name="primitive_type" type="int" setter="" getter="get_primitive_type" enum="RenderingServer.PrimitiveType">
+			The primitive type used by this surface.
+		</member>
+		<member name="skin_buffer" type="RID" setter="" getter="get_skin_buffer">
+			The [RenderingDevice] buffer containing skin data for this surface.
+		</member>
+		<member name="vertex_attributes" type="Array" setter="" getter="get_vertex_attributes">
+			Array of vertex attribute descriptors for this surface.
+		</member>
+		<member name="vertex_buffer" type="RID" setter="" getter="get_vertex_buffer">
+			The [RenderingDevice] vertex buffer containing position data for this surface.
+		</member>
+		<member name="vertex_buffer_offsets" type="PackedInt64Array" setter="" getter="get_vertex_buffer_offsets">
+			Byte offsets for each vertex buffer binding.
+		</member>
+		<member name="vertex_buffers" type="RID[]" setter="" getter="get_vertex_buffers">
+			Array of all [RenderingDevice] vertex buffer RIDs bound for this surface.
+		</member>
+		<member name="vertex_count" type="int" setter="" getter="get_vertex_count">
+			The active number of vertices in this surface.
+		</member>
+	</members>
+</class>

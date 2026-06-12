@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MeshRD" inherits="Mesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		[Mesh] type for direct GPU buffer access via [RenderingDevice].
+	</brief_description>
+	<description>
+		[MeshRD] is a mesh resource that allows direct manipulation of GPU vertex, attribute, and index buffers through [RenderingDevice] RIDs. Unlike [ArrayMesh], which constructs surfaces from CPU-side arrays, [MeshRD] works with pre-existing GPU buffers or creates server-managed storage buffers, making it ideal for GPU-driven rendering workflows such as compute shader–generated geometry.
+		Surfaces can be added in two ways:
+		- [method add_surface]: Attaches externally created [RenderingDevice] buffers. The mesh does not own or serialize these buffers.
+		- [method add_surface_storage]: Creates server-managed buffers that can be serialized and restored. This is useful for persistent meshes whose vertex data is written by compute shaders.
+		[b]Note:[/b] [MeshRD] does not support blend shapes.
+		[b]Note:[/b] [MeshRD] is intended for low-level usage with [RenderingDevice]. For most use cases, use [ArrayMesh] instead.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_surface">
+			<return type="void" />
+			<param index="0" name="format" type="int" enum="Mesh.ArrayFormat" is_bitfield="true" />
+			<param index="1" name="primitive" type="int" enum="Mesh.PrimitiveType" />
+			<param index="2" name="vertex_count" type="int" />
+			<param index="3" name="vertex_buffer" type="RID" />
+			<param index="4" name="attribute_buffer" type="RID" />
+			<param index="5" name="index_count" type="int" />
+			<param index="6" name="index_buffer" type="RID" />
+			<param index="7" name="aabb" type="AABB" />
+			<param index="8" name="material" type="Material" default="null" />
+			<param index="9" name="uv_scale" type="Vector4" default="Vector4(0, 0, 0, 0)" />
+			<description>
+				Adds a new surface using externally created [RenderingDevice] buffers. The [MeshRD] does not take ownership of [param vertex_buffer], [param attribute_buffer], or [param index_buffer]; the caller is responsible for their lifetime.
+				[param format] specifies the vertex attribute format as a combination of [enum Mesh.ArrayFormat] flags.
+				[param primitive] specifies the primitive type used for rendering (e.g., [constant Mesh.PRIMITIVE_TRIANGLES]).
+				[param vertex_count] is the number of vertices in the buffer.
+				[param index_count] is the number of indices. Pass [code]0[/code] if the surface is not indexed.
+				[param aabb] is the axis-aligned bounding box of the surface, used for culling.
+				Surfaces added with this method are not serializable and will not be saved to disk.
+			</description>
+		</method>
+		<method name="add_surface_storage">
+			<return type="void" />
+			<param index="0" name="format" type="int" enum="Mesh.ArrayFormat" is_bitfield="true" />
+			<param index="1" name="primitive" type="int" enum="Mesh.PrimitiveType" />
+			<param index="2" name="vertex_count" type="int" />
+			<param index="3" name="index_count" type="int" />
+			<param index="4" name="aabb" type="AABB" />
+			<param index="5" name="material" type="Material" default="null" />
+			<param index="6" name="uv_scale" type="Vector4" default="Vector4(0, 0, 0, 0)" />
+			<param index="7" name="vertex_buffer_creation_bits" type="int" default="0" />
+			<param index="8" name="attribute_buffer_creation_bits" type="int" default="0" />
+			<param index="9" name="index_buffer_creation_bits" type="int" default="0" />
+			<description>
+				Adds a new surface by creating server-managed GPU buffers. The buffer sizes are determined from [param format], [param vertex_count], and [param index_count]. The buffers are initially empty and can be written to via compute shaders or buffer update methods.
+				[param vertex_buffer_creation_bits], [param attribute_buffer_creation_bits], and [param index_buffer_creation_bits] are passed as [enum RenderingDevice.BufferCreationBits] to control additional buffer usage flags (e.g., enabling storage buffer usage for compute shader access).
+				Surfaces added with this method are serializable and will persist when the resource is saved.
+			</description>
+		</method>
+		<method name="clear_surfaces">
+			<return type="void" />
+			<description>
+				Removes all surfaces from this [MeshRD].
+			</description>
+		</method>
+		<method name="surface_get_active_index_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the number of active indices for the surface at index [param surf_idx]. This may be less than [method surface_get_max_index_count] if [method surface_set_active_range] has been called.
+			</description>
+		</method>
+		<method name="surface_get_active_vertex_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the number of active vertices for the surface at index [param surf_idx]. This may be less than [method surface_get_max_vertex_count] if [method surface_set_active_range] has been called.
+			</description>
+		</method>
+		<method name="surface_get_attribute_buffer" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the [RenderingDevice] attribute buffer [RID] for the surface at index [param surf_idx].
+			</description>
+		</method>
+		<method name="surface_get_index_buffer" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the [RenderingDevice] index buffer [RID] for the surface at index [param surf_idx].
+			</description>
+		</method>
+		<method name="surface_get_indirect_buffer" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the [RenderingDevice] indirect draw buffer [RID] for the surface at index [param surf_idx], or an invalid [RID] if none has been set.
+			</description>
+		</method>
+		<method name="surface_get_indirect_buffer_offset" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the byte offset into the indirect draw buffer for the surface at index [param surf_idx]. See [method surface_set_indirect_buffer].
+			</description>
+		</method>
+		<method name="surface_get_max_index_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the maximum number of indices the surface at index [param surf_idx] can hold. This is the capacity set when the surface was created.
+			</description>
+		</method>
+		<method name="surface_get_max_vertex_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the maximum number of vertices the surface at index [param surf_idx] can hold. This is the capacity set when the surface was created.
+			</description>
+		</method>
+		<method name="surface_get_vertex_buffer" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the [RenderingDevice] vertex buffer [RID] for the surface at index [param surf_idx].
+			</description>
+		</method>
+		<method name="surface_mark_dirty">
+			<return type="void" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Marks the surface at index [param surf_idx] as dirty, forcing the rendering server to re-read its buffer data. Call this after modifying a surface's GPU buffers externally (e.g., via compute shaders) to ensure the changes are reflected in rendering.
+			</description>
+		</method>
+		<method name="surface_remove">
+			<return type="void" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Removes the surface at the given index from the [MeshRD], shifting surfaces with higher index down by one.
+			</description>
+		</method>
+		<method name="surface_set_active_range">
+			<return type="void" />
+			<param index="0" name="surf_idx" type="int" />
+			<param index="1" name="vertex_count" type="int" />
+			<param index="2" name="index_count" type="int" />
+			<description>
+				Sets the active vertex and index counts for the surface at index [param surf_idx]. This allows rendering only a subset of the surface's buffer capacity without reallocating. [param vertex_count] must not exceed [method surface_get_max_vertex_count], and [param index_count] must not exceed [method surface_get_max_index_count].
+				This is useful for dynamically sized geometry where a compute shader writes a variable number of vertices/indices each frame.
+			</description>
+		</method>
+		<method name="surface_set_indirect_buffer">
+			<return type="void" />
+			<param index="0" name="surf_idx" type="int" />
+			<param index="1" name="indirect_buffer" type="RID" />
+			<param index="2" name="offset" type="int" default="0" />
+			<description>
+				Sets an indirect draw buffer for the surface at index [param surf_idx]. When set, the rendering server will use indirect drawing commands, reading draw parameters from [param indirect_buffer] at the given byte [param offset].
+				The indirect buffer should be a [RenderingDevice] buffer containing draw parameters in the format expected by the graphics API (e.g., [code]VkDrawIndexedIndirectCommand[/code] for indexed surfaces or [code]VkDrawIndirectCommand[/code] for non-indexed surfaces).
+				Pass an invalid [RID] to disable indirect drawing for this surface.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_surfaces_data" type="Array" setter="_set_surfaces_data" getter="_get_surfaces_data" default="[]">
+		</member>
+		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
+			Overrides the [AABB] with a custom one defined by the user. If not empty, this AABB is used for culling instead of the automatically computed one.
+		</member>
+	</members>
+</class>
