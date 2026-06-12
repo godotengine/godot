@@ -1472,10 +1472,10 @@ void main() {
 	/////////////////////// DECALS ////////////////////////////////
 
 #ifndef MODE_RENDER_DEPTH
-
 	vec3 vertex_ddx = dFdx(vertex);
 	vec3 vertex_ddy = dFdy(vertex);
 
+#ifndef DECALS_DISABLED
 	uint decal_count = sc_decals(8);
 	uvec2 decal_indices = instances.data[draw_call.instance_index].decals;
 	for (uint i = 0; i < decal_count; i++) {
@@ -1548,7 +1548,9 @@ void main() {
 			}
 		}
 	}
-#endif //!MODE_RENDER_DEPTH
+#endif // !DECALS_DISABLED
+
+#endif // !MODE_RENDER_DEPTH
 
 	/////////////////////// LIGHTING //////////////////////////////
 
