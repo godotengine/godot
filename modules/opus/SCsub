@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_opus = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+if env["builtin_libopus"]:
+    env_opus.Append(
+        CPPDEFINES=[
+            "HAVE_CONFIG_H",
+        ]
+    )
+
+    env_opus.Prepend(
+        CPPPATH=[
+            "#thirdparty/libopus/",
+            "#thirdparty/libopus/opus/",
+            "#thirdparty/libopus/src/",
+            "#thirdparty/libopus/celt/",
+            "#thirdparty/libopus/silk/",
+            "#thirdparty/libopus/silk/fixed/",
+            "#thirdparty/libopus/silk/float/",
+            "#thirdparty/libopusfile/",
+            "#thirdparty/libopusfile/opus/",
+            "#thirdparty/libopusfile/src/",
+        ]
+    )
+
+    # also requires libogg
+    if env["builtin_libogg"]:
+        env_opus.Prepend(CPPPATH=["#thirdparty/libogg"])
+
+    env_thirdparty = env_opus.Clone()
+    env_thirdparty.disable_warnings()
+
+    # Remove /fp:strict flag
+    if env_thirdparty["CCFLAGS"]:
+        if "/fp:strict" in env_thirdparty["CCFLAGS"]:
+            env_thirdparty["CCFLAGS"].remove("/fp:strict")
+            # Add /fp:precise flag
+            env_thirdparty.Append(CCFLAGS=["/fp:precise"])
+
+    env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libopus/src/*.c")
+    env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libopus/celt/*.c")
+    env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libopus/silk/*.c")
+    env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libopusfile/src/*.c")
+
+    env.modules_sources += thirdparty_obj
+
+
+# Godot source files
+
+module_obj = []
+
+env_opus.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

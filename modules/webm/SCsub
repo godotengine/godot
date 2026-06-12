@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_webm = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+env_webm.Prepend(
+    CPPPATH=[
+        "#thirdparty/libsimplewebm/",
+        "#thirdparty/libsimplewebm/libwebm/",
+    ]
+)
+
+# also requires libogg, libvorbis and libopus
+if env["builtin_libogg"]:
+    env_webm.Prepend(CPPPATH=["#thirdparty/libogg"])
+if env["builtin_libvorbis"]:
+    env_webm.Prepend(CPPPATH=["#thirdparty/libvorbis"])
+if env["builtin_libopus"]:
+    env_webm.Prepend(CPPPATH=["#thirdparty/libopus"])
+
+if env["builtin_libvpx"]:
+    env_webm.Prepend(CPPPATH=["#thirdparty/libvpx"])
+    SConscript("libvpx/SCsub")
+
+env_thirdparty = env_webm.Clone()
+env_thirdparty.disable_warnings()
+
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libsimplewebm/libwebm/mkvparser/mkvparser.cc")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libsimplewebm/OpusVorbisDecoder.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libsimplewebm/VPXDecoder.cpp")
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libsimplewebm/WebMDemuxer.cpp")
+
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_webm.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

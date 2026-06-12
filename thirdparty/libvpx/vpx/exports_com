@@ -1,0 +1,16 @@
+text vpx_codec_build_config
+text vpx_codec_control_
+text vpx_codec_destroy
+text vpx_codec_err_to_string
+text vpx_codec_error
+text vpx_codec_error_detail
+text vpx_codec_get_caps
+text vpx_codec_iface_name
+text vpx_codec_version
+text vpx_codec_version_extra_str
+text vpx_codec_version_str
+text vpx_img_alloc
+text vpx_img_flip
+text vpx_img_free
+text vpx_img_set_rect
+text vpx_img_wrap
