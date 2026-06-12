@@ -4,7 +4,7 @@
 		Playback class used for [AudioStreamSynchronized].
 	</brief_description>
 	<description>
-		Playback component of [AudioStreamSynchronized]. Handles the playback of multiple [AudioStream]s in synchrony.
+		Playback component of [AudioStreamSynchronized]. Handles the playback of multiple [AudioStream]s in-sync.
 	</description>
 	<tutorials>
 	</tutorials>
