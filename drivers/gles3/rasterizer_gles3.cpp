@@ -491,8 +491,7 @@ void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, con
 
 	Rect2 screenrect = RenderingServerTypes::get_splash_stretched_screen_rect(p_image->get_size(), win_size, p_stretch_mode);
 
-	if (!screen_flipped_y)
-	{
+	if (!screen_flipped_y) {
 		// Flip Y.
 		screenrect.position.y = win_size.y - screenrect.position.y;
 		screenrect.size.y = -screenrect.size.y;
