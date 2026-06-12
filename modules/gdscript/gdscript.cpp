@@ -2145,7 +2145,7 @@ void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 }
 
 void GDScriptLanguage::init() {
-	//populate global constants
+	// Populate core constants.
 	int gcc = CoreConstants::get_global_constant_count();
 	for (int i = 0; i < gcc; i++) {
 		_add_global(StringName(CoreConstants::get_global_constant_name(i)), CoreConstants::get_global_constant_value(i));
@@ -2156,19 +2156,19 @@ void GDScriptLanguage::init() {
 	_add_global(StringName("INF"), Math::INF);
 	_add_global(StringName("NAN"), Math::NaN);
 
-	//populate native classes
+	// Populate native classes.
 
 	LocalVector<StringName> class_list;
 	ClassDB::get_class_list(class_list);
 	for (const StringName &class_name : class_list) {
-		if (globals.has(class_name)) {
+		if (globals.has(class_name) || !GDScriptAnalyzer::class_exists(class_name)) {
 			continue;
 		}
 		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(class_name));
 		_add_global(class_name, nc);
 	}
 
-	//populate singletons
+	// Populate singletons (overriding the native class registered under the same name).
 
 	List<Engine::Singleton> singletons;
 	Engine::get_singleton()->get_singletons(&singletons);
