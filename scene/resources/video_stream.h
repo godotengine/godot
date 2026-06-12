@@ -49,6 +49,7 @@ protected:
 	GDVIRTUAL0RC(bool, _is_playing);
 	GDVIRTUAL1(_set_paused, bool);
 	GDVIRTUAL0RC(bool, _is_paused);
+	GDVIRTUAL0RC(double, _get_frame_duration);
 	GDVIRTUAL0RC(double, _get_length);
 	GDVIRTUAL0RC(double, _get_playback_position);
 	GDVIRTUAL1(_seek, double);
@@ -71,6 +72,8 @@ public:
 
 	virtual void set_paused(bool p_paused);
 	virtual bool is_paused() const;
+
+	virtual double get_frame_duration() const;
 
 	virtual double get_length() const;
 
