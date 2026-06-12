@@ -1917,6 +1917,9 @@ HashMap<StringName, Color> EditorSettings::get_godot2_text_editor_theme() {
 	colors["text_editor/theme/highlighting/comment_markers/critical_color"] = Color(0.77, 0.35, 0.35);
 	colors["text_editor/theme/highlighting/comment_markers/warning_color"] = Color(0.72, 0.61, 0.48);
 	colors["text_editor/theme/highlighting/comment_markers/notice_color"] = Color(0.56, 0.67, 0.51);
+
+	colors["text_editor/theme/underlining/warning_underline_color"] = Color(0.89, 0.7, 0.2);
+	colors["text_editor/theme/underlining/error_underline_color"] = Color(1.0, 0.0, 0.0);
 	return colors;
 }
 

@@ -307,6 +307,16 @@ private:
 	String ime_text = "";
 	Point2 ime_selection;
 
+	// Underline effects.
+	struct Underline {
+		Color color;
+		int start_line;
+		int start_column;
+		int end_line;
+		int end_column;
+	};
+	LocalVector<Underline> underlines;
+
 	// Placeholder
 	String placeholder_text = "";
 	Array placeholder_bidi_override;
@@ -489,6 +499,7 @@ private:
 	bool _is_line_col_in_range(int p_line, int p_column, int p_from_line, int p_from_column, int p_to_line, int p_to_column, bool p_include_edges = true) const;
 
 	void _offset_carets_after(int p_old_line, int p_old_column, int p_new_line, int p_new_column, bool p_include_selection_begin = true, bool p_include_selection_end = true);
+	void _offset_underlines_after(int p_old_line, int p_old_column, int p_new_line, int p_new_column);
 
 	void _cancel_drag_and_drop_text();
 
@@ -778,6 +789,17 @@ protected:
 	GDVIRTUAL1(_paste_primary_clipboard, int)
 
 public:
+	void clear_underlines() { underlines.clear(); }
+	void add_underline(const Color &p_color, int p_start_line, int p_start_column, int p_end_line, int p_end_column) {
+		Underline u;
+		u.color = p_color;
+		u.start_line = p_start_line;
+		u.start_column = p_start_column;
+		u.end_line = p_end_line;
+		u.end_column = p_end_column;
+		underlines.push_back(u);
+	}
+
 	/* General overrides. */
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
