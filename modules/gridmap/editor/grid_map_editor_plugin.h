@@ -261,6 +261,8 @@ class GridMapEditor : public EditorDock {
 	void _clear_selection_with_undo();
 	void _setup_paste_mode();
 
+	void _emit_cells_modified(const TypedArray<Vector3i> &cells, const String &undo_redo_action_name) const;
+
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
 
 	friend class GridMapEditorPlugin;
