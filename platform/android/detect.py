@@ -4,8 +4,9 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from methods import print_error, print_warning
 from platform_methods import validate_arch
+
+from methods import print_error, print_warning
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
