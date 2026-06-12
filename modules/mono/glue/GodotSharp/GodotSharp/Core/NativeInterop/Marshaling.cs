@@ -364,7 +364,7 @@ namespace Godot.NativeInterop
         internal static T[] ConvertNativeGodotArrayToSystemArrayOfGodotObjectType<T>(in godot_array p_array)
             where T : GodotObject
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Pools.ArrayPoolInstance.Rent(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
@@ -373,12 +373,14 @@ namespace Godot.NativeInterop
             for (int i = 0; i < length; i++)
                 ret[i] = (T)array[i].AsGodotObject();
 
+            Pools.ArrayPoolInstance.Return(array);
+
             return ret;
         }
 
         internal static StringName[] ConvertNativeGodotArrayToSystemArrayOfStringName(in godot_array p_array)
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Pools.ArrayPoolInstance.Rent(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
@@ -387,12 +389,14 @@ namespace Godot.NativeInterop
             for (int i = 0; i < length; i++)
                 ret[i] = array[i].AsStringName();
 
+            Pools.ArrayPoolInstance.Return(array);
+
             return ret;
         }
 
         internal static NodePath[] ConvertNativeGodotArrayToSystemArrayOfNodePath(in godot_array p_array)
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Pools.ArrayPoolInstance.Rent(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
@@ -401,12 +405,14 @@ namespace Godot.NativeInterop
             for (int i = 0; i < length; i++)
                 ret[i] = array[i].AsNodePath();
 
+            Pools.ArrayPoolInstance.Return(array);
+
             return ret;
         }
 
         internal static Rid[] ConvertNativeGodotArrayToSystemArrayOfRid(in godot_array p_array)
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Pools.ArrayPoolInstance.Rent(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
@@ -414,6 +420,8 @@ namespace Godot.NativeInterop
 
             for (int i = 0; i < length; i++)
                 ret[i] = array[i].AsRid();
+
+            Pools.ArrayPoolInstance.Return(array);
 
             return ret;
         }

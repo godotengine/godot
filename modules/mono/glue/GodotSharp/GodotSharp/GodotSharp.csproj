@@ -117,6 +117,7 @@
     <Compile Include="Core\NativeInterop\VariantUtils.generic.cs" />
     <Compile Include="Core\NodePath.cs" />
     <Compile Include="Core\Plane.cs" />
+    <Compile Include="Core\Pools.cs" />
     <Compile Include="Core\Projection.cs" />
     <Compile Include="Core\Quaternion.cs" />
     <Compile Include="Core\Rect2.cs" />
