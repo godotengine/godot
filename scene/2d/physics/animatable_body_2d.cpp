@@ -99,6 +99,12 @@ void AnimatableBody2D::_notification(int p_what) {
 			set_notify_local_transform(false);
 			set_global_transform(last_valid_transform);
 			set_notify_local_transform(true);
+
+#ifdef DEBUG_ENABLED
+			if (unlikely(sync_to_physics && !Engine::get_singleton()->is_in_physics_frame())) {
+				WARN_PRINT("Transform update outside of physics frame is ignored, as sync_to_physics is set to true.");
+			}
+#endif
 		} break;
 	}
 }
