@@ -366,6 +366,8 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	/* clang-format off */
 	{ "ui_accept",                                     TTRC("Accept") },
 	{ "ui_select",                                     TTRC("Select") },
+	{ "ui_dialog_positive_option",                     TTRC("Positive Option") },
+	{ "ui_dialog_negative_option",                     TTRC("Negative Option") },
 	{ "ui_cancel",                                     TTRC("Cancel") },
 	{ "ui_close_dialog",                               TTRC("Close Dialog") },
 	{ "ui_focus_next",                                 TTRC("Focus Next") },
@@ -469,6 +471,14 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::ESCAPE));
 	default_builtin_cache.insert("ui_cancel", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::Y));
+	default_builtin_cache.insert("ui_dialog_positive_option", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::N));
+	default_builtin_cache.insert("ui_dialog_negative_option", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::ESCAPE));
