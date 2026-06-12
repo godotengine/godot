@@ -179,6 +179,7 @@ class CodeTextEditor : public VBoxContainer {
 	bool code_complete_enabled = true;
 	Timer *code_complete_timer = nullptr;
 	int code_complete_timer_line = 0;
+	bool idle_parse_enabled = true;
 
 	float zoom_factor = 1.0f;
 
