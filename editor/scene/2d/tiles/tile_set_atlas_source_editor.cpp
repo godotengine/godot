@@ -805,6 +805,8 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		String editor_name = vformat("custom_data_%d", i);
 		String prop_name = tile_set->get_custom_data_layer_name(i);
 		Variant::Type prop_type = tile_set->get_custom_data_layer_type(i);
+		PropertyHint prop_hint = tile_set->get_custom_data_layer_property_hint(i);
+		String prop_hint_string = tile_set->get_custom_data_layer_property_hint_string(i);
 
 		if (prop_name.is_empty()) {
 			ADD_TILE_DATA_EDITOR(group, vformat(TTR("Custom Data %d"), i), editor_name);
@@ -813,16 +815,22 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 			item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		}
 
-		// If the type of the edited property has been changed, delete the
+		// If the type or hint of the edited property has been changed, delete the
 		// editor and create a new one.
-		if (tile_data_editors.has(editor_name) && ((TileDataDefaultEditor *)tile_data_editors[editor_name])->get_property_type() != prop_type) {
-			tile_data_editors[vformat("custom_data_%d", i)]->queue_free();
-			tile_data_editors.erase(vformat("custom_data_%d", i));
+		if (tile_data_editors.has(editor_name)) {
+			Variant::Type original_type = ((TileDataDefaultEditor *)tile_data_editors[editor_name])->get_property_type();
+			PropertyHint original_hint = ((TileDataDefaultEditor *)tile_data_editors[editor_name])->get_property_hint();
+			String original_hint_string = ((TileDataDefaultEditor *)tile_data_editors[editor_name])->get_property_hint_string();
+
+			if (original_type != prop_type || original_hint != prop_hint || original_hint_string != prop_hint_string) {
+				tile_data_editors[editor_name]->queue_free();
+				tile_data_editors.erase(editor_name);
+			}
 		}
 		if (!tile_data_editors.has(editor_name)) {
 			TileDataDefaultEditor *tile_data_custom_data_editor = memnew(TileDataDefaultEditor());
 			tile_data_custom_data_editor->hide();
-			tile_data_custom_data_editor->setup_property_editor(prop_type, editor_name, prop_name);
+			tile_data_custom_data_editor->setup_property_editor(prop_type, editor_name, prop_name, Variant(), prop_hint, prop_hint_string);
 			tile_data_custom_data_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
 			tile_data_custom_data_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
 			tile_data_editors[editor_name] = tile_data_custom_data_editor;
@@ -2973,12 +2981,14 @@ bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Varia
 		// Custom data layers.
 		int layer_index = components[0].trim_prefix("custom_data_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
-		EditorProperty *ep = EditorInspectorDefaultPlugin::get_editor_for_property(p_object, p_type, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 		const TileSetAtlasSourceEditor::AtlasTileProxyObject *proxy_obj = Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(p_object);
 		const TileSetAtlasSource *atlas_source = *proxy_obj->get_edited_tile_set_atlas_source();
 		ERR_FAIL_NULL_V(atlas_source, false);
 		const TileSet *tile_set = atlas_source->get_tile_set();
 		ERR_FAIL_NULL_V(tile_set, false);
+		PropertyHint hint = tile_set->get_custom_data_layer_property_hint(layer_index);
+		String hint_string = tile_set->get_custom_data_layer_property_hint_string(layer_index);
+		EditorProperty *ep = EditorInspectorDefaultPlugin::get_editor_for_property(p_object, p_type, p_path, hint, hint_string, PROPERTY_USAGE_DEFAULT);
 		add_property_editor(p_path, ep, false, tile_set->get_custom_data_layer_name(layer_index));
 		return true;
 	}

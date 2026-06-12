@@ -1161,6 +1161,34 @@ Variant::Type TileSet::get_custom_data_layer_type(int p_layer_id) const {
 	return custom_data_layers[p_layer_id].type;
 }
 
+void TileSet::set_custom_data_layer_property_hint(int p_layer_id, const PropertyHint p_hint) {
+	ERR_FAIL_INDEX(p_layer_id, custom_data_layers.size());
+	custom_data_layers.write[p_layer_id].property_hint = p_hint;
+	for (KeyValue<int, Ref<TileSetSource>> &E_source : sources) {
+		E_source.value->notify_tile_data_properties_should_change();
+	}
+	emit_changed();
+}
+
+void TileSet::set_custom_data_layer_property_hint_string(int p_layer_id, const String &p_hint_string) {
+	ERR_FAIL_INDEX(p_layer_id, custom_data_layers.size());
+	custom_data_layers.write[p_layer_id].property_hint_string = p_hint_string;
+	for (KeyValue<int, Ref<TileSetSource>> &E_source : sources) {
+		E_source.value->notify_tile_data_properties_should_change();
+	}
+	emit_changed();
+}
+
+PropertyHint TileSet::get_custom_data_layer_property_hint(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, custom_data_layers.size(), PROPERTY_HINT_NONE);
+	return custom_data_layers[p_layer_id].property_hint;
+}
+
+String TileSet::get_custom_data_layer_property_hint_string(int p_layer_id) const {
+	ERR_FAIL_INDEX_V(p_layer_id, custom_data_layers.size(), "");
+	return custom_data_layers[p_layer_id].property_hint_string;
+}
+
 void TileSet::set_source_level_tile_proxy(int p_source_from, int p_source_to) {
 	ERR_FAIL_COND(p_source_from == TileSet::INVALID_SOURCE || p_source_to == TileSet::INVALID_SOURCE);
 
@@ -4350,6 +4378,10 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_data_layer_name", "layer_index"), &TileSet::get_custom_data_layer_name);
 	ClassDB::bind_method(D_METHOD("set_custom_data_layer_type", "layer_index", "layer_type"), &TileSet::set_custom_data_layer_type);
 	ClassDB::bind_method(D_METHOD("get_custom_data_layer_type", "layer_index"), &TileSet::get_custom_data_layer_type);
+	ClassDB::bind_method(D_METHOD("set_custom_data_layer_property_hint", "layer_index", "layer_hint"), &TileSet::set_custom_data_layer_property_hint);
+	ClassDB::bind_method(D_METHOD("get_custom_data_layer_property_hint", "layer_index"), &TileSet::get_custom_data_layer_property_hint);
+	ClassDB::bind_method(D_METHOD("set_custom_data_layer_property_hint_string", "layer_index", "layer_hint_string"), &TileSet::set_custom_data_layer_property_hint_string);
+	ClassDB::bind_method(D_METHOD("get_custom_data_layer_property_hint_string", "layer_index"), &TileSet::get_custom_data_layer_property_hint_string);
 
 	// Tile proxies
 	ClassDB::bind_method(D_METHOD("set_source_level_tile_proxy", "source_from", "source_to"), &TileSet::set_source_level_tile_proxy);

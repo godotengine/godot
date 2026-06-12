@@ -138,6 +138,20 @@
 				Returns the name of the custom data layer identified by the given index.
 			</description>
 		</method>
+		<method name="get_custom_data_layer_property_hint" qualifiers="const">
+			<return type="int" enum="PropertyHint" />
+			<param index="0" name="layer_index" type="int" />
+			<description>
+				Returns the property hint of the custom data layer identified by the given index.
+			</description>
+		</method>
+		<method name="get_custom_data_layer_property_hint_string" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="layer_index" type="int" />
+			<description>
+				Returns the property hint string of the custom data layer identified by the given index.
+			</description>
+		</method>
 		<method name="get_custom_data_layer_type" qualifiers="const">
 			<return type="int" enum="Variant.Type" />
 			<param index="0" name="layer_index" type="int" />
@@ -518,6 +532,22 @@
 			<param index="1" name="layer_name" type="String" />
 			<description>
 				Sets the name of the custom data layer identified by the given index. Names are identifiers of the layer therefore if the name is already taken it will fail and raise an error.
+			</description>
+		</method>
+		<method name="set_custom_data_layer_property_hint">
+			<return type="void" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer_hint" type="int" enum="PropertyHint" />
+			<description>
+				Sets the property hint of the custom data layer identified by the given index.
+			</description>
+		</method>
+		<method name="set_custom_data_layer_property_hint_string">
+			<return type="void" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer_hint_string" type="String" />
+			<description>
+				Sets the property hint string of the custom data layer identified by the given index.
 			</description>
 		</method>
 		<method name="set_custom_data_layer_type">
