@@ -406,7 +406,7 @@ Point2 LineEdit::_get_right_icon_size(Ref<Texture2D> p_right_icon) const {
 			icon_size = Size2(icon_width, icon_height) * right_icon_scale;
 		} break;
 	}
-
+	icon_size = _fit_icon_size(icon_size).round();
 	return icon_size;
 }
 
@@ -1745,6 +1745,18 @@ void LineEdit::_notification(int p_what) {
 	}
 }
 
+Size2 LineEdit::_fit_icon_size(const Size2 &p_size) const {
+	int max_width = theme_cache.icon_max_width;
+	Size2 icon_size = p_size;
+
+	if (max_width > 0 && icon_size.width > max_width) {
+		icon_size.height = icon_size.height * max_width / icon_size.width;
+		icon_size.width = max_width;
+	}
+
+	return icon_size;
+}
+
 void LineEdit::copy_text() {
 	if (selection.enabled && !pass) {
 		DisplayServer::get_singleton()->clipboard_set(get_selected_text());
@@ -2477,12 +2489,16 @@ Size2 LineEdit::get_minimum_size() const {
 	int icon_max_width = 0;
 	if (right_icon.is_valid()) {
 		Point2 right_icon_size = _get_right_icon_size(right_icon);
-		min_size.height = MAX(min_size.height, right_icon_size.height);
+		if (icon_expand_mode != LineEdit::EXPAND_MODE_FIT_TO_LINE_EDIT) {
+			min_size.height = MAX(min_size.height, right_icon_size.height);
+		}
 		icon_max_width = right_icon_size.width;
 	}
 	if (clear_button_enabled) {
 		Point2 right_icon_size = _get_right_icon_size(theme_cache.clear_icon);
-		min_size.height = MAX(min_size.height, right_icon_size.height);
+		if (icon_expand_mode != LineEdit::EXPAND_MODE_FIT_TO_LINE_EDIT) {
+			min_size.height = MAX(min_size.height, right_icon_size.height);
+		}
 		icon_max_width = MAX(icon_max_width, right_icon_size.width);
 	}
 	min_size.width += icon_max_width;
@@ -3560,6 +3576,7 @@ void LineEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, selection_color);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, LineEdit, clear_icon, "clear");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LineEdit, icon_max_width);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, clear_button_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, clear_button_color_pressed);
 
