@@ -1945,11 +1945,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			}
 
 			LocalVector<int> engine_version = { GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR, GODOT_VERSION_PATCH };
-			Array arr = dt;
-			// Iterate backwards, so the newer releases are added first.
-			for (int i = arr.size() - 1; i >= 0; i--) {
-				Dictionary d = arr[i];
-
+			for (const Dictionary d : (Array)dt) {
 				ERR_FAIL_COND(!d.has("download_url"));
 				ERR_FAIL_COND(!d.has("version"));
 				ERR_FAIL_COND(!d.has("stable"));
