@@ -193,6 +193,12 @@
 				Returns a list of the currently selected subgizmos. Can be used to highlight selected elements during [method _redraw].
 			</description>
 		</method>
+		<method name="is_selected" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the gizmo is currently selected. Can be used to only show some gizmos when the node is selected during [method _redraw].
+			</description>
+		</method>
 		<method name="is_subgizmo_selected" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="id" type="int" />
