@@ -150,7 +150,11 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 				if (!ResourceLoader::is_cleaning_tasks()) {
 					if (ResourceLoader::get_abort_on_missing_resources()) {
 						error = ERR_FILE_MISSING_DEPENDENCIES;
-						error_text = "[ext_resource] referenced non-existent resource at: " + path;
+						if (err == ERR_BUSY) {
+							error_text = "[ext_resource] cyclic reference while loading: " + path;
+						} else {
+							error_text = "[ext_resource] referenced non-existent resource at: " + path;
+						}
 						_printerr();
 						err = error;
 					} else {
@@ -289,6 +293,9 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				if (error) {
 					if (error == ERR_FILE_MISSING_DEPENDENCIES) {
 						// Resource loading error, just skip it.
+					} else if (error == ERR_BUSY) {
+						ERR_PRINT(vformat("Cyclic resource reference detected. [Resource file %s:%d]", res_path, lines));
+						return Ref<PackedScene>();
 					} else if (error != ERR_FILE_EOF) {
 						ERR_PRINT(vformat("Parse Error: %s. [Resource file %s:%d]", error_names[error], res_path, lines));
 						return Ref<PackedScene>();
