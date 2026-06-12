@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StreamPeerGZIP" inherits="StreamPeer" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A stream peer that handles GZIP and deflate compression/decompression.
+		A stream peer that handles gzip and zlib compression/decompression.
 	</brief_description>
 	<description>
-		This class allows to compress or decompress data using GZIP/deflate in a streaming fashion. This is particularly useful when compressing or decompressing files that have to be sent through the network without needing to allocate them all in memory.
+		This class allows to compress or decompress data using gzip/zlib in a streaming fashion. This is particularly useful when compressing or decompressing files that have to be sent through the network without needing to allocate them all in memory.
 		After starting the stream via [method start_compression] (or [method start_decompression]), calling [method StreamPeer.put_partial_data] on this stream will compress (or decompress) the data, writing it to the internal buffer. Calling [method StreamPeer.get_available_bytes] will return the pending bytes in the internal buffer, and [method StreamPeer.get_partial_data] will retrieve the compressed (or decompressed) bytes from it. When the stream is over, you must call [method finish] to ensure the internal buffer is properly flushed (make sure to call [method StreamPeer.get_available_bytes] on last time to check if more data needs to be read after that).
 	</description>
 	<tutorials>
@@ -28,7 +28,7 @@
 			<param index="0" name="use_deflate" type="bool" default="false" />
 			<param index="1" name="buffer_size" type="int" default="65535" />
 			<description>
-				Start the stream in compression mode with the given [param buffer_size], if [param use_deflate] is [code]true[/code] uses deflate instead of GZIP.
+				Start the stream in compression mode with the given [param buffer_size], if [param use_deflate] is [code]true[/code] uses zlib instead of gzip.
 			</description>
 		</method>
 		<method name="start_decompression">
@@ -36,7 +36,7 @@
 			<param index="0" name="use_deflate" type="bool" default="false" />
 			<param index="1" name="buffer_size" type="int" default="65535" />
 			<description>
-				Start the stream in decompression mode with the given [param buffer_size], if [param use_deflate] is [code]true[/code] uses deflate instead of GZIP.
+				Start the stream in decompression mode with the given [param buffer_size], if [param use_deflate] is [code]true[/code] uses zlib instead of gzip.
 			</description>
 		</method>
 	</methods>

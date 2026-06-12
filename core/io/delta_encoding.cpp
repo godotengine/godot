@@ -37,7 +37,7 @@
 #include <zstd.h>
 
 #define ERR_FAIL_ZSTD_V_MSG(m_result, m_retval, m_msg) \
-	ERR_FAIL_COND_V_MSG(ZSTD_isError(m_result), m_retval, vformat("%s Zstandard reported error code %d: \"%s\".", m_msg, ZSTD_getErrorCode(m_result), ZSTD_getErrorString(ZSTD_getErrorCode(m_result))))
+	ERR_FAIL_COND_V_MSG(ZSTD_isError(m_result), m_retval, vformat("%s Zstd reported error code %d: \"%s\".", m_msg, ZSTD_getErrorCode(m_result), ZSTD_getErrorString(ZSTD_getErrorCode(m_result))))
 
 struct ZstdCompressionContext {
 	ZSTD_CCtx *context = ZSTD_createCCtx();

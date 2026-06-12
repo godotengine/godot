@@ -1782,7 +1782,7 @@ ProjectExportDialog::ProjectExportDialog() {
 						"Higher positive levels will reduce patch sizes, at the cost of longer export time, but do not affect the time it takes to apply patches.\n"
 						"Negative levels will reduce the time it takes to apply patches, at the cost of worse compression.\n"
 						"Levels above 19 require more memory both during export and when applying patches, usually for very little benefit.\n"
-						"Level 0 will cause Zstandard to use its default compression level, which is currently level %d."),
+						"Level 0 will cause Zstd to use its default compression level, which is currently level %d."),
 					ZSTD_CLEVEL_DEFAULT));
 	patch_delta_zstd_level->connect(SceneStringName(value_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_zstd_level_changed));
 	patch_vb->add_margin_child(TTRC("Delta Encoding Compression Level"), patch_delta_zstd_level);

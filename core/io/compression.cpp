@@ -49,7 +49,7 @@ static int current_zstd_window_log_size;
 int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_src_size, Mode p_mode) {
 	switch (p_mode) {
 		case MODE_BROTLI: {
-			ERR_FAIL_V_MSG(-1, "Only brotli decompression is supported.");
+			ERR_FAIL_V_MSG(-1, "Only Brotli decompression is supported.");
 		} break;
 		case MODE_FASTLZ: {
 			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress a FastLZ/LZ77 file 2 GiB or larger. LZ77 supports larger files, but FastLZ's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
@@ -65,7 +65,7 @@ int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_sr
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
-			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress a Deflate or GZip file 2 GiB or larger. Deflate and GZip are both limited to 4 GiB, and ZLib's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
+			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress a DEFLATE or gzip file 2 GiB or larger. DEFLATE and gzip are both limited to 4 GiB, and zlib's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
 			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
@@ -109,7 +109,7 @@ int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_sr
 int64_t Compression::get_max_compressed_buffer_size(int64_t p_src_size, Mode p_mode) {
 	switch (p_mode) {
 		case MODE_BROTLI: {
-			ERR_FAIL_V_MSG(-1, "Only brotli decompression is supported.");
+			ERR_FAIL_V_MSG(-1, "Only Brotli decompression is supported.");
 		} break;
 		case MODE_FASTLZ: {
 			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress a FastLZ/LZ77 file 2 GiB or larger. LZ77 supports larger files, but FastLZ's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
@@ -122,7 +122,7 @@ int64_t Compression::get_max_compressed_buffer_size(int64_t p_src_size, Mode p_m
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
-			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress a Deflate or GZip file 2 GiB or larger. Deflate and GZip are both limited to 4 GiB, and ZLib's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
+			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress a DEFLATE or gzip file 2 GiB or larger. DEFLATE and gzip are both limited to 4 GiB, and zlib's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
 			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
@@ -154,11 +154,11 @@ int64_t Compression::decompress(uint8_t *p_dst, int64_t p_dst_max_size, const ui
 			ERR_FAIL_COND_V(res != BROTLI_DECODER_RESULT_SUCCESS, -1);
 			return ret_size;
 #else
-			ERR_FAIL_V_MSG(-1, "Godot was compiled without brotli support.");
+			ERR_FAIL_V_MSG(-1, "Godot was compiled without Brotli support.");
 #endif
 		} break;
 		case MODE_FASTLZ: {
-			ERR_FAIL_COND_V_MSG(p_dst_max_size > INT32_MAX, -1, "Cannot decompress a FastLZ/LZ77 file 2 GiB or larger. LZ77 supports larger files, but FastLZ's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
+			ERR_FAIL_COND_V_MSG(p_dst_max_size > INT32_MAX, -1, "Cannot decompress a FastLZ/LZ77 file 2 GiB or larger. LZ77 supports larger files, but FastLZ's implementation uses C++ `int` so is limited to 2 GiB.");
 			int ret_size = 0;
 
 			if (p_dst_max_size < 16) {
@@ -173,7 +173,7 @@ int64_t Compression::decompress(uint8_t *p_dst, int64_t p_dst_max_size, const ui
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
-			ERR_FAIL_COND_V_MSG(p_dst_max_size > INT32_MAX, -1, "Cannot decompress a Deflate or GZip file 2 GiB or larger. Deflate and GZip are both limited to 4 GiB, and ZLib's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
+			ERR_FAIL_COND_V_MSG(p_dst_max_size > INT32_MAX, -1, "Cannot decompress a DEFLATE or gzip file 2 GiB or larger. DEFLATE and gzip are both limited to 4 GiB, and zlib's implementation uses C++ `int` so is limited to 2 GiB.");
 			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
@@ -287,11 +287,11 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int64_t p_max_d
 		BrotliDecoderDestroyInstance(state);
 		return Z_OK;
 #else
-		ERR_FAIL_V_MSG(Z_ERRNO, "Godot was compiled without brotli support.");
+		ERR_FAIL_V_MSG(Z_ERRNO, "Godot was compiled without Brotli support.");
 #endif
 	} else {
-		// This function only supports GZip and Deflate.
-		ERR_FAIL_COND_V_MSG(p_mode != MODE_DEFLATE && p_mode != MODE_GZIP, Z_ERRNO, "Dynamic decompression is only supported with gzip, DEFLATE, and Brotli compression methods.");
+		// This function only supports GZIP and DEFLATE.
+		ERR_FAIL_COND_V_MSG(p_mode != MODE_DEFLATE && p_mode != MODE_GZIP, Z_ERRNO, "Dynamic decompression is only supported with gzip, DEFLATE, and Brotli compression algorithms.");
 
 		int ret;
 		z_stream strm;
