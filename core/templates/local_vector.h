@@ -39,8 +39,16 @@
 #include <initializer_list>
 #include <type_traits>
 
-// If tight, it grows strictly as much as needed.
-// Otherwise, it grows exponentially (the default and what you want in most cases).
+/**
+ * @brief A one-dimensional list-like datatype. Closer to `std::vector` than `Vector`
+ * in semantics, but does not use copy-on-write (COW) so it is faster than `Vector`.
+ *
+ * In most cases, `Vector` may be sufficient.
+ * Prefer `LocalVector` over `Vector` when copying it cheaply is not needed.
+ * @tparam U (Optional) The data type to use for the vector's size and capacity.
+ * @tparam tight (Optional) If `true`, the vector grows strictly as much as needed.
+ * Otherwise, it grows exponentially (the default, and what you want in most cases).
+ */
 template <typename T, typename U = uint32_t, bool force_trivial = false, bool tight = false>
 class LocalVector {
 	static_assert(!force_trivial, "force_trivial is no longer supported. Use resize_uninitialized instead.");

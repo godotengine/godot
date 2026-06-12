@@ -62,6 +62,16 @@ struct HashMapElement {
 			data(p_key, p_value) {}
 };
 
+/**
+ * @brief An implementation of a hash map, roughly equivalent to `std::unordered_map`.
+ *
+ * Defensive (robust but slow) map type. Preserves insertion order.
+ * Pointers to keys and values, as well as iterators, are stable under mutation.
+ * Use this map type when either of these affordances are needed.
+ * Use `AHashMap` otherwise.
+ *
+ * See `core/templates/hash_map.h` for more implementation information.
+ */
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>,
