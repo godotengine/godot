@@ -242,7 +242,9 @@ private:
 	bool setting_scroll_offset = false;
 	bool right_disconnects = false;
 	bool updating = false;
+
 	bool awaiting_scroll_offset_update = false;
+	bool awaiting_top_layer_update = false;
 
 	Vector<Ref<Connection>> connections;
 	HashMap<StringName, List<Ref<Connection>>> connection_map;
