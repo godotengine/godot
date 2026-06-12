@@ -572,7 +572,18 @@ protected:
 	static void _bind_methods();
 	static inline Engine *singleton = nullptr;
 
+#ifndef DISABLE_DEPRECATED
+	double _get_frames_per_second_compat_63356() const;
+	static void _bind_compatibility_methods();
+#endif
+
 public:
+	enum FPSMetric {
+		FPS_METRIC_AVERAGE,
+		FPS_METRIC_ROLLING_AVERAGE,
+		FPS_METRIC_MAX,
+	};
+
 	static Engine *get_singleton() { return singleton; }
 	void set_physics_ticks_per_second(int p_ips);
 	int get_physics_ticks_per_second() const;
@@ -587,7 +598,7 @@ public:
 	void set_max_fps(int p_fps);
 	int get_max_fps() const;
 
-	double get_frames_per_second() const;
+	double get_frames_per_second(FPSMetric p_metric = FPS_METRIC_AVERAGE) const;
 	uint64_t get_physics_frames() const;
 	uint64_t get_process_frames() const;
 
@@ -711,3 +722,5 @@ VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyEndType);
 VARIANT_ENUM_CAST(CoreBind::Thread::Priority);
 
 VARIANT_ENUM_CAST(CoreBind::Special::ClassDB::APIType);
+
+VARIANT_ENUM_CAST(CoreBind::Engine::FPSMetric);
