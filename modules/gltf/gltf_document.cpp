@@ -941,6 +941,16 @@ PackedVector3Array GLTFDocument::_decode_accessor_as_vec3(const Ref<GLTFState> p
 	return _decode_unpack_indexed_data<PackedVector3Array>(vectors, p_packed_vertex_ids);
 }
 
+PackedVector4Array GLTFDocument::_decode_accessor_as_vec4(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids) {
+	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), PackedVector4Array());
+	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
+	PackedVector4Array vectors = accessor->decode_as_vector4s(p_gltf_state);
+	if (p_packed_vertex_ids.is_empty()) {
+		return vectors;
+	}
+	return _decode_unpack_indexed_data<PackedVector4Array>(vectors, p_packed_vertex_ids);
+}
+
 PackedColorArray GLTFDocument::_decode_accessor_as_color(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids) {
 	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), PackedColorArray());
 	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
@@ -1071,7 +1081,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 					attributes["TEXCOORD_1"] = GLTFAccessor::encode_new_accessor_from_vector2s(p_state, a, GLTFBufferView::TARGET_ARRAY_BUFFER);
 				}
 			}
-			for (int custom_i = 0; custom_i < 3; custom_i++) {
+			for (int custom_i = 0; custom_i < 4; custom_i++) {
 				Vector<float> a = array[Mesh::ARRAY_CUSTOM0 + custom_i];
 				if (a.size()) {
 					int num_channels = 4;
@@ -1573,48 +1583,54 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			if (a.has(mat_secondary_texture_coord)) {
 				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a[mat_secondary_texture_coord], indices_mapping);
 			}
-			for (int custom_i = 0; custom_i < 3; custom_i++) {
+			for (int custom_i = 0; custom_i < 4; custom_i++) {
 				Vector<float> cur_custom;
-				Vector<Vector2> texcoord_first;
-				Vector<Vector2> texcoord_second;
-
-				int texcoord_i = 2 + 2 * custom_i;
-				String gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
 				int num_channels = 0;
-				if (a.has(gltf_texcoord_key)) {
-					texcoord_first = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
-					num_channels = 2;
-				}
-				gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
-				if (a.has(gltf_texcoord_key)) {
-					texcoord_second = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
+
+				// Attempt to read from "_CUSTOM" attributes first.
+				String gltf_custom_key = vformat("_CUSTOM%d", custom_i);
+				if (a.has(gltf_custom_key)) {
 					num_channels = 4;
-				}
-				if (!num_channels) {
-					break;
-				}
-				if (num_channels == 2 || num_channels == 4) {
-					cur_custom.resize(vertex_num * num_channels);
-					for (int32_t uv_i = 0; uv_i < texcoord_first.size() && uv_i < vertex_num; uv_i++) {
-						cur_custom.write[uv_i * num_channels + 0] = texcoord_first[uv_i].x;
-						cur_custom.write[uv_i * num_channels + 1] = texcoord_first[uv_i].y;
+					Vector<Vector4> custom_vector4 = _decode_accessor_as_vec4(p_state, a[gltf_custom_key], indices_mapping);
+					cur_custom.resize_initialized(vertex_num * 4);
+					for (int32_t uv_i = 0; uv_i < custom_vector4.size() && uv_i < vertex_num; uv_i++) {
+						cur_custom.write[uv_i * 4 + 0] = custom_vector4[uv_i].x;
+						cur_custom.write[uv_i * 4 + 1] = custom_vector4[uv_i].y;
+						cur_custom.write[uv_i * 4 + 2] = custom_vector4[uv_i].z;
+						cur_custom.write[uv_i * 4 + 3] = custom_vector4[uv_i].w;
 					}
-					// Vector.resize seems to not zero-initialize. Ensure all unused elements are 0:
-					for (int32_t uv_i = texcoord_first.size(); uv_i < vertex_num; uv_i++) {
-						cur_custom.write[uv_i * num_channels + 0] = 0;
-						cur_custom.write[uv_i * num_channels + 1] = 0;
+				} else {
+					// Attempt to read from UVs 3 to 10 as an alternative source for custom data.
+					// Note that Blender has a limit of 8 UV sets; therefore, CUSTOM3 cannot be read this way
+					// for models exported from Blender. Use a custom attribute named "_CUSTOM3" instead.
+					Vector<Vector2> texcoord_first;
+					Vector<Vector2> texcoord_second;
+					int texcoord_i = 2 + 2 * custom_i;
+					String gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
+					if (a.has(gltf_texcoord_key)) {
+						texcoord_first = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
+						num_channels = 2;
 					}
-				}
-				if (num_channels == 4) {
-					for (int32_t uv_i = 0; uv_i < texcoord_second.size() && uv_i < vertex_num; uv_i++) {
-						// num_channels must be 4
-						cur_custom.write[uv_i * num_channels + 2] = texcoord_second[uv_i].x;
-						cur_custom.write[uv_i * num_channels + 3] = texcoord_second[uv_i].y;
+					gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
+					if (a.has(gltf_texcoord_key)) {
+						texcoord_second = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
+						num_channels = 4;
 					}
-					// Vector.resize seems to not zero-initialize. Ensure all unused elements are 0:
-					for (int32_t uv_i = texcoord_second.size(); uv_i < vertex_num; uv_i++) {
-						cur_custom.write[uv_i * num_channels + 2] = 0;
-						cur_custom.write[uv_i * num_channels + 3] = 0;
+					if (!num_channels) {
+						break;
+					}
+					if (num_channels == 2 || num_channels == 4) {
+						cur_custom.resize_initialized(vertex_num * num_channels);
+						for (int32_t uv_i = 0; uv_i < texcoord_first.size() && uv_i < vertex_num; uv_i++) {
+							cur_custom.write[uv_i * num_channels + 0] = texcoord_first[uv_i].x;
+							cur_custom.write[uv_i * num_channels + 1] = texcoord_first[uv_i].y;
+						}
+						if (num_channels == 4) {
+							for (int32_t uv_i = 0; uv_i < texcoord_second.size() && uv_i < vertex_num; uv_i++) {
+								cur_custom.write[uv_i * num_channels + 2] = texcoord_second[uv_i].x;
+								cur_custom.write[uv_i * num_channels + 3] = texcoord_second[uv_i].y;
+							}
+						}
 					}
 				}
 				if (cur_custom.size() > 0) {
