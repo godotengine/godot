@@ -184,6 +184,10 @@ protected:
 		bool force_opaque;
 	};
 
+	String get_package_name(const Ref<EditorExportPreset> &p_preset) const;
+	bool is_project_name_valid(const Ref<EditorExportPreset> &p_preset) const;
+	String get_valid_basename(const Ref<EditorExportPreset> &p_preset) const;
+
 private:
 	void _fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const AppleEmbeddedConfigData &p_config, bool p_debug);
 

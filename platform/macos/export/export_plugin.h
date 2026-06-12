@@ -80,6 +80,10 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	ProcessID ssh_pid = 0;
 	int menu_options = 0;
 
+	String get_package_name(const Ref<EditorExportPreset> &p_preset) const;
+	bool is_project_name_valid(const Ref<EditorExportPreset> &p_preset) const;
+	String get_valid_basename(const Ref<EditorExportPreset> &p_preset) const;
+
 	void _fix_privacy_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist);
 	void _fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary, bool p_lg_icon_exported, const String &p_lg_icon);
 	void _make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
