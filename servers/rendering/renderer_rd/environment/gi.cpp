@@ -3515,6 +3515,8 @@ GI::GI() {
 	sdfgi_ray_count = RSE::EnvironmentSDFGIRayCount(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")), 0, int32_t(RSE::ENV_SDFGI_RAY_COUNT_MAX - 1)));
 	sdfgi_frames_to_converge = RSE::EnvironmentSDFGIFramesToConverge(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")), 0, int32_t(RSE::ENV_SDFGI_CONVERGE_MAX - 1)));
 	sdfgi_frames_to_update_light = RSE::EnvironmentSDFGIFramesToUpdateLight(CLAMP(int32_t(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_update_lights")), 0, int32_t(RSE::ENV_SDFGI_UPDATE_LIGHT_MAX - 1)));
+
+	voxel_gi_max_lights = CLAMP(uint32_t(GLOBAL_GET("rendering/global_illumination/voxel_gi/max_lights")), uint32_t(1), uint32_t(512));
 }
 
 GI::~GI() {
