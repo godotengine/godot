@@ -244,6 +244,7 @@ public:
 	FUNC0RC(RID, texture_drawable_get_default_material)
 
 	FUNC2(texture_replace, RID, RID)
+	FUNC2(texture_replace_compatible, RID, RID)
 
 	FUNC3(texture_set_size_override, RID, int, int)
 // FIXME: Disabled during Vulkan refactoring, should be ported.
@@ -266,6 +267,21 @@ public:
 	FUNCRIDTEX2(texture_rd, const RID &, const RSE::TextureLayeredType)
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
+
+	FUNC2(texture_2d_attach_streaming_state, RID, RID);
+
+	virtual RID texture_2d_create_from_texture_allocate() override {
+		return RSG::texture_storage->texture_2d_create_from_texture_allocate();
+	}
+
+	virtual void texture_2d_create_from_texture_initialize(RID p_texture, RID p_src_texture, int p_new_width, int p_new_height, uint32_t p_copy_mips_count, const Vector<uint8_t> &p_new_mip_data) override {
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {
+			RSG::texture_storage->texture_2d_create_from_texture_initialize(p_texture, p_src_texture, p_new_width, p_new_height, p_copy_mips_count, p_new_mip_data);
+		} else {
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::texture_2d_create_from_texture_initialize, p_texture, p_src_texture, p_new_width, p_new_height, p_copy_mips_count, p_new_mip_data);
+		}
+	}
+	FUNC3(texture_2d_create_from_texture_copy_existing, RID, RID, uint32_t);
 
 	/* SHADER API */
 

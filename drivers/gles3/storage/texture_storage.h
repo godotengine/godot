@@ -582,6 +582,9 @@ public:
 	virtual RID texture_drawable_get_default_material() const override;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override;
+	virtual void texture_replace_compatible(RID p_texture, RID p_by_texture) override {
+		texture_replace(p_texture, p_by_texture);
+	}
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) override;
@@ -764,6 +767,11 @@ public:
 	}
 
 	String get_framebuffer_error(GLenum p_status);
+
+	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) override {}
+	virtual RID texture_2d_create_from_texture_allocate() override { return RID(); }
+	virtual void texture_2d_create_from_texture_initialize(RID p_texture, RID p_src_texture, int p_new_width, int p_new_height, uint32_t p_copy_mips_count, const Vector<uint8_t> &p_new_mip_data = Vector<uint8_t>()) override {}
+	virtual void texture_2d_create_from_texture_copy_existing(RID p_texture, RID p_src_texture, uint32_t p_copy_mips_count) override {}
 };
 
 inline String TextureStorage::get_framebuffer_error(GLenum p_status) {
