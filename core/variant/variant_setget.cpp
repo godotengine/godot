@@ -844,6 +844,45 @@ struct VariantIndexedSetGet_String {
 	static uint64_t get_indexed_size(const Variant *base) { return VariantInternal::get_string(base)->length(); }
 };
 
+struct VariantIndexedSetGet_StringName {
+	static void get(const Variant *base, int64_t index, Variant *value, bool *oob) {
+		int64_t length = VariantInternalAccessor<StringName>::get(base).length();
+		if (index < 0) {
+			index += length;
+		}
+		if (index < 0 || index >= length) {
+			*oob = true;
+			return;
+		}
+		*value = String::chr((VariantInternalAccessor<StringName>::get(base))[index]);
+		*oob = false;
+	}
+	static void ptr_get(const void *base, int64_t index, void *member) {
+		/* avoid ptrconvert for performance*/
+		const StringName &v = *reinterpret_cast<const StringName *>(base);
+		if (index < 0) {
+			index += v.length();
+		}
+		OOB_TEST(index, v.length());
+		PtrToArg<String>::encode(String::chr(v[index]), member);
+	}
+	static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {
+		// StringName points to const data, so any set operation is invalid.
+		*valid = false;
+		*oob = true;
+	}
+	static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {
+		// StringName points to const data, so any set operation is invalid.
+		*oob = true;
+	}
+	static void ptr_set(void *base, int64_t index, const void *member) {
+		// StringName points to const data, so any set operation is invalid.
+	}
+	static Variant::Type get_index_type() { return Variant::STRING; }
+	static uint32_t get_index_usage() { return PROPERTY_USAGE_DEFAULT; }
+	static uint64_t get_indexed_size(const Variant *base) { return VariantInternal::get_string_name(base)->length(); }
+};
+
 INDEXED_SETGET_STRUCT_BUILTIN_NUMERIC(Vector2, double, real_t, 2)
 INDEXED_SETGET_STRUCT_BUILTIN_NUMERIC(Vector2i, int64_t, int32_t, 2)
 INDEXED_SETGET_STRUCT_BUILTIN_NUMERIC(Vector3, double, real_t, 3)
@@ -911,6 +950,7 @@ void register_indexed_setters_getters() {
 #define REGISTER_INDEXED_MEMBER(m_base_type) register_indexed_member<VariantIndexedSetGet_##m_base_type>(GetTypeInfo<m_base_type>::VARIANT_TYPE)
 
 	REGISTER_INDEXED_MEMBER(String);
+	REGISTER_INDEXED_MEMBER(StringName);
 	REGISTER_INDEXED_MEMBER(Vector2);
 	REGISTER_INDEXED_MEMBER(Vector2i);
 	REGISTER_INDEXED_MEMBER(Vector3);

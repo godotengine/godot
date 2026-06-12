@@ -3467,6 +3467,8 @@ bool Variant::is_read_only() const {
 			return reinterpret_cast<const Array *>(_data._mem)->is_read_only();
 		case DICTIONARY:
 			return reinterpret_cast<const Dictionary *>(_data._mem)->is_read_only();
+		case STRING_NAME:
+			return true;
 		default:
 			return false;
 	}
