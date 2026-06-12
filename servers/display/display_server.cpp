@@ -1151,6 +1151,12 @@ void DisplayServer::cursor_set_custom_image(const Ref<Resource> &p_cursor, Displ
 	WARN_PRINT("Custom cursor shape not supported by this display server.");
 }
 
+DisplayServerEnums::NotificationID DisplayServer::send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) {
+	return DisplayServerEnums::INVALID_NOTIFICATION_ID;
+}
+
+void DisplayServer::hide_toast_notification(DisplayServerEnums::NotificationID p_id) {}
+
 bool DisplayServer::get_swap_cancel_ok() {
 	return false;
 }
@@ -1676,6 +1682,9 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
 	ClassDB::bind_method(D_METHOD("cursor_set_custom_image", "cursor", "shape", "hotspot"), &DisplayServer::cursor_set_custom_image, DEFVAL(DisplayServerEnums::CURSOR_ARROW), DEFVAL(Vector2()));
 
+	ClassDB::bind_method(D_METHOD("send_toast_notification", "title", "text", "image", "callback"), &DisplayServer::send_toast_notification);
+	ClassDB::bind_method(D_METHOD("hide_toast_notification", "id"), &DisplayServer::hide_toast_notification);
+
 	ClassDB::bind_method(D_METHOD("get_swap_cancel_ok"), &DisplayServer::get_swap_cancel_ok);
 
 	ClassDB::bind_method(D_METHOD("enable_for_stealing_focus", "process_id"), &DisplayServer::enable_for_stealing_focus);
@@ -1889,6 +1898,7 @@ void DisplayServer::_bind_methods() {
 	BIND_CONSTANT(DisplayServerEnums::MAIN_WINDOW_ID);
 	BIND_CONSTANT(DisplayServerEnums::INVALID_WINDOW_ID);
 	BIND_CONSTANT(DisplayServerEnums::INVALID_INDICATOR_ID);
+	BIND_CONSTANT(DisplayServerEnums::INVALID_NOTIFICATION_ID);
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_LANDSCAPE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_PORTRAIT);
@@ -1979,6 +1989,10 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EDGE_BOTTOM);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EDGE_BOTTOM_RIGHT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EDGE_MAX);
+
+	BIND_ENUM_CONSTANT(DisplayServerEnums::NOTIFICATION_ACTIVATED);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::NOTIFICATION_DISMISSED);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::NOTIFICATION_FAILED);
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::VSYNC_DISABLED);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::VSYNC_ENABLED);

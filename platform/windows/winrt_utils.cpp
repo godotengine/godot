@@ -30,7 +30,13 @@
 
 #include "winrt_utils.h"
 
+#include "core/crypto/crypto_core.h"
+#include "core/io/dir_access.h"
+#include "core/os/mutex.h"
+#include "core/os/os.h"
+#include "core/os/time.h"
 #include "core/typedefs.h"
+#include "scene/resources/texture.h"
 
 #ifdef WINRT_ENABLED
 
@@ -43,10 +49,12 @@ GODOT_CLANG_WARNING_PUSH
 GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
 
 #include <inspectable.h>
+#include <winrt/Windows.Data.Xml.Dom.h>
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.UI.Input.h>
+#include <winrt/Windows.UI.Notifications.h>
 #include <winrt/Windows.UI.ViewManagement.Core.h>
 
 enum DISPATCHERQUEUE_THREAD_APARTMENTTYPE {
@@ -112,6 +120,8 @@ using namespace winrt::Windows::Graphics::Display;
 using namespace winrt::Windows::System;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Metadata;
+using namespace winrt::Windows::Data::Xml::Dom;
+using namespace winrt::Windows::UI::Notifications;
 using namespace winrt::Windows::UI::ViewManagement::Core;
 
 DispatcherQueueController controller{ nullptr };
@@ -126,7 +136,39 @@ class WinRTWindowData {
 	winrt::event_token token{};
 };
 
-bool WinRTUtils::create_queue() {
+class WinRTNotificationData {
+	friend class WinRTUtils;
+
+	ToastNotification nt{ nullptr };
+
+	String temp_file;
+
+	DisplayServerEnums::NotificationID nid = DisplayServerEnums::INVALID_NOTIFICATION_ID;
+	Callable cb;
+	winrt::event_token act_token{};
+	winrt::event_token fail_token{};
+	winrt::event_token dis_token{};
+
+public:
+	~WinRTNotificationData() {
+		if (nt) {
+			nt.Activated(act_token);
+			nt.Dismissed(dis_token);
+			nt.Failed(fail_token);
+			nt = nullptr;
+		}
+		if (!temp_file.is_empty()) {
+			DirAccess::remove_absolute(temp_file);
+		}
+	}
+};
+
+DisplayServerEnums::NotificationID notification_id = 0;
+HashMap<DisplayServerEnums::NotificationID, WinRTNotificationData *> notifications;
+ToastNotifier notifier{ nullptr };
+Mutex noti_mutex;
+
+bool WinRTUtils::create_queue(const String &p_appid) {
 	HMODULE coremessaging = LoadLibraryW(L"coremessaging.dll");
 	if (!coremessaging) {
 		return false;
@@ -138,10 +180,26 @@ bool WinRTUtils::create_queue() {
 
 	DispatcherQueueOptions options{ sizeof(options), DQTYPE_THREAD_CURRENT, DQTAT_COM_NONE };
 	HRESULT res = CreateDispatcherQueueController(options, winrt::put_abi(controller));
+
+	if (SUCCEEDED(res)) {
+		winrt::hstring appid = winrt::hstring((const wchar_t *)p_appid.utf16().get_data());
+		try {
+			notifier = ToastNotificationManager::CreateToastNotifier(appid);
+		} catch (...) {
+			notifier = nullptr;
+		}
+	}
 	return SUCCEEDED(res);
 }
 
 void WinRTUtils::destroy_queue() {
+	// Remove pending notifications.
+	for (const KeyValue<DisplayServerEnums::NotificationID, WinRTNotificationData *> nd : notifications) {
+		memdelete(nd.value);
+	}
+	notifications.clear();
+
+	// Shutdown queue.
 	IAsyncAction action = controller.ShutdownQueueAsync();
 	while (action.Status() == AsyncStatus::Started) {
 		MSG msg = {};
@@ -216,13 +274,118 @@ void WinRTUtils::destroy_wd(WinRTWindowData *p_data) {
 	}
 }
 
+DisplayServerEnums::NotificationID WinRTUtils::send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) {
+	if (!notifier) {
+		return DisplayServerEnums::INVALID_NOTIFICATION_ID;
+	}
+
+	winrt::hstring text = winrt::hstring((const wchar_t *)p_text.utf16().get_data());
+	winrt::hstring title = winrt::hstring((const wchar_t *)p_title.utf16().get_data());
+
+	WinRTNotificationData *nd = memnew(WinRTNotificationData);
+	DisplayServerEnums::NotificationID nid = notification_id++;
+
+	XmlDocument xml = ToastNotificationManager::GetTemplateContent(ToastTemplateType::ToastImageAndText02);
+	if (p_image.is_valid()) {
+		Ref<Image> img = p_image->get_image();
+		if (img->is_compressed()) {
+			img->decompress();
+		}
+		img->convert(Image::FORMAT_RGBA8);
+
+		const String TEMP_DIR = OS::get_singleton()->get_temp_path();
+		uint32_t suffix_i = 0;
+		String img_path;
+		int pid = OS::get_singleton()->get_process_id();
+		while (true) {
+			String datetime = Time::get_singleton()->get_datetime_string_from_system().remove_chars("-T:");
+			datetime += itos(Time::get_singleton()->get_ticks_usec());
+			String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
+			img_path = TEMP_DIR.path_join(vformat("_noti_%x_%s.png", pid, suffix));
+			if (!DirAccess::exists(img_path)) {
+				break;
+			}
+			suffix_i += 1;
+		}
+		img->save_png(img_path);
+
+		nd->temp_file = img_path;
+		winrt::hstring image = winrt::hstring((const wchar_t *)img_path.utf16().get_data());
+		xml.SelectSingleNode(L"//image[@id=\"1\"]").as<XmlElement>().SetAttribute(L"src", image);
+	}
+	xml.SelectSingleNode(L"//text[@id=\"1\"]").InnerText(title);
+	xml.SelectSingleNode(L"//text[@id=\"2\"]").InnerText(text);
+
+	nd->nt = ToastNotification{ xml };
+	nd->nid = nid;
+	nd->cb = p_callback;
+	nd->act_token = nd->nt.Activated([nid](const ToastNotification &p_sender, auto &&) {
+		MutexLock lock(noti_mutex);
+		if (!notifications.has(nid)) {
+			return;
+		}
+		WinRTNotificationData *cur_nd = notifications[nid];
+		if (cur_nd->cb.is_valid()) {
+			cur_nd->cb.call_deferred(nid, DisplayServerEnums::NOTIFICATION_ACTIVATED);
+		}
+		notifications.erase(nid);
+		memdelete(cur_nd);
+	});
+	nd->dis_token = nd->nt.Dismissed([nid](const ToastNotification &p_sender, auto &&) {
+		MutexLock lock(noti_mutex);
+		if (!notifications.has(nid)) {
+			return;
+		}
+		WinRTNotificationData *cur_nd = notifications[nid];
+		if (cur_nd->cb.is_valid()) {
+			cur_nd->cb.call_deferred(nid, DisplayServerEnums::NOTIFICATION_DISMISSED);
+		}
+		notifications.erase(nid);
+		memdelete(cur_nd);
+	});
+	nd->fail_token = nd->nt.Failed([nid](const ToastNotification &p_sender, auto &&) {
+		MutexLock lock(noti_mutex);
+		if (!notifications.has(nid)) {
+			return;
+		}
+		WinRTNotificationData *cur_nd = notifications[nid];
+		if (cur_nd->cb.is_valid()) {
+			cur_nd->cb.call_deferred(nid, DisplayServerEnums::NOTIFICATION_FAILED);
+		}
+		notifications.erase(nid);
+		memdelete(cur_nd);
+	});
+	{
+		MutexLock lock(noti_mutex);
+		notifications[nid] = nd;
+	}
+
+	notifier.Show(nd->nt);
+	return nid;
+}
+
+void WinRTUtils::hide_toast_notification(DisplayServerEnums::NotificationID p_id) {
+	if (!notifier) {
+		return;
+	}
+
+	MutexLock lock(noti_mutex);
+	if (!notifications.has(p_id)) {
+		return;
+	}
+	WinRTNotificationData *nd = notifications[p_id];
+	notifier.Hide(nd->nt);
+	notifications.erase(p_id);
+	memdelete(nd);
+}
+
 #else
 
 bool WinRTUtils::try_show_onecore_emoji_picker() {
 	return false;
 }
 
-bool WinRTUtils::create_queue() {
+bool WinRTUtils::create_queue(const String &p_appid) {
 	return false;
 }
 
@@ -239,5 +402,11 @@ WinRTWindowData *WinRTUtils::create_wd(HWND p_window, const Callable &p_color_cb
 }
 
 void WinRTUtils::destroy_wd(WinRTWindowData *p_data) {}
+
+DisplayServerEnums::NotificationID WinRTUtils::send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) {
+	return DisplayServerEnums::INVALID_NOTIFICATION_ID;
+}
+
+void WinRTUtils::hide_toast_notification(DisplayServerEnums::NotificationID p_id) {}
 
 #endif

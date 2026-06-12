@@ -1576,6 +1576,14 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="hide_toast_notification">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Hides the toast notification with [param id] returned by [method send_toast_notification].
+				[b]Note:[/b] This method is only implemented on Windows.
+			</description>
+		</method>
 		<method name="ime_get_selection" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
@@ -1890,6 +1898,17 @@
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 				[b]Note:[/b] This method is implemented on Android and iOS.
 				[b]Note:[/b] On iOS, this method has no effect if [member ProjectSettings.display/window/handheld/orientation] is not set to [constant SCREEN_SENSOR].
+			</description>
+		</method>
+		<method name="send_toast_notification">
+			<return type="int" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="text" type="String" />
+			<param index="2" name="image" type="Texture2D" />
+			<param index="3" name="callback" type="Callable" />
+			<description>
+				Displays a toast notification with [param title], [param text], and optionally [param image]. [param image] should be square, have maximum edge length of 512 pixels, and should not exceed 4 MB when encoded as PNG. [param callback] should accept two arguments: [int] (notification ID) and [enum NotificationStatus]. Returns notification ID or [constant INVALID_NOTIFICATION_ID] if failed.
+				[b]Note:[/b] This method is only implemented on Windows.
 			</description>
 		</method>
 		<method name="set_hardware_keyboard_connection_change_callback">
@@ -3142,6 +3161,9 @@
 		<constant name="INVALID_INDICATOR_ID" value="-1">
 			The ID that refers to a nonexistent application status indicator.
 		</constant>
+		<constant name="INVALID_NOTIFICATION_ID" value="-1">
+			The ID that refers to a nonexistent toast notification.
+		</constant>
 		<constant name="SCREEN_LANDSCAPE" value="0" enum="ScreenOrientation">
 			Default landscape orientation.
 		</constant>
@@ -3416,6 +3438,15 @@
 		</constant>
 		<constant name="WINDOW_EDGE_MAX" value="8" enum="WindowResizeEdge">
 			Represents the size of the [enum WindowResizeEdge] enum.
+		</constant>
+		<constant name="NOTIFICATION_ACTIVATED" value="0" enum="NotificationStatus">
+			User activates a toast notification through a click or touch.
+		</constant>
+		<constant name="NOTIFICATION_DISMISSED" value="1" enum="NotificationStatus">
+			A toast notification expires or explicitly dismissed by the user.
+		</constant>
+		<constant name="NOTIFICATION_FAILED" value="2" enum="NotificationStatus">
+			Attempts to raise a toast notification failed.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
 			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
