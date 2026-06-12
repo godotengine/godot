@@ -256,10 +256,10 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		if (p_gizmo->is_selected()) {
 			Ref<Material> material = get_material("lines_primary", p_gizmo);
 
-			const int arrow_points = 7;
-			const float arrow_length = 1.5;
+			constexpr int arrow_points = 7;
+			constexpr float arrow_length = 1.5;
 
-			Vector3 arrow[arrow_points] = {
+			const Vector3 arrow[arrow_points] = {
 				Vector3(0, 0, -1),
 				Vector3(0, 0.8, 0),
 				Vector3(0, 0.3, 0),
@@ -269,7 +269,7 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				Vector3(0, -0.8, 0)
 			};
 
-			int arrow_sides = 2;
+			constexpr int arrow_sides = 2;
 
 			Vector<Vector3> lines;
 
