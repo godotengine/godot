@@ -47,6 +47,7 @@ public:
 		PLATFORM_ON_LEAVE_DO_NOTHING,
 	};
 	bool move_and_slide();
+	void teleport(const Vector2 &p_pos);
 	void apply_floor_snap();
 
 	const Vector2 &get_velocity() const;

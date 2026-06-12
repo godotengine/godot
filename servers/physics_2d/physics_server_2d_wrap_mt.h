@@ -218,6 +218,7 @@ public:
 	FUNC2RC(Variant, body_get_param, RID, BodyParameter);
 
 	FUNC1(body_reset_mass_properties, RID);
+	FUNC1(body_teleport, RID);
 
 	FUNC3(body_set_state, RID, BodyState, const Variant &);
 	FUNC2RC(Variant, body_get_state, RID, BodyState);
