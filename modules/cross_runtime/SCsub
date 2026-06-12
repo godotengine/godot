@@ -1,0 +1,14 @@
+# ruff: noqa: F821
+Import("env")
+
+base_sources = [
+    "register_types.cpp",
+]
+
+if env["platform"] == "web":
+    base_sources.extend([
+        "tests/C++/tests_caller.cpp",
+        "command_processor.cpp",
+    ])
+
+env.add_source_files(env.modules_sources, base_sources)
