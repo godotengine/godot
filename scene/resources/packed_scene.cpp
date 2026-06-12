@@ -981,16 +981,27 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			bool is_valid_default = false;
 			Variant default_value = PropertyUtils::get_property_default_value(p_node, name, &is_valid_default, &states_stack, true);
 
-			if (is_valid_default && !PropertyUtils::is_property_value_different(p_node, value, default_value)) {
-				if (value.get_type() == Variant::ARRAY && has_local_resource(value)) {
-					// Save anyway
-				} else if (value.get_type() == Variant::DICTIONARY) {
-					Dictionary dictionary = value;
-					if (!has_local_resource(dictionary.values()) && !has_local_resource(dictionary.keys())) {
-						continue;
+			if (is_valid_default) {
+				if (PropertyUtils::is_property_value_different(p_node, value, default_value)) {
+					if (value.get_type() == Variant::ARRAY && default_value.get_type() == Variant::ARRAY) {
+						Array arr = value;
+						if (arr.is_empty()) {
+							Array default_array = default_value;
+							// Ensure the type is the same as the default array type.
+							value = Array(arr, default_array.get_typed_builtin(), default_array.get_typed_class_name(), default_array.get_typed_script());
+						}
 					}
 				} else {
-					continue;
+					if (value.get_type() == Variant::ARRAY && has_local_resource(value)) {
+						// Save anyway
+					} else if (value.get_type() == Variant::DICTIONARY) {
+						Dictionary dictionary = value;
+						if (!has_local_resource(dictionary.values()) && !has_local_resource(dictionary.keys())) {
+							continue;
+						}
+					} else {
+						continue;
+					}
 				}
 			}
 		}
