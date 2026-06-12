@@ -2166,7 +2166,7 @@ Array TextEdit::_get_selection_handles_pos(int p_cursor) const {
 	}
 
 	Point2i end_pos = end_rect.position;
-	print_line(vformat("selection_from_line | end_pos %d | end_size %d", end_pos.x, end_rect.size.x));
+	//print_line(vformat("selection_from_line | end_pos %d | end_size %d", end_pos.x, end_rect.size.x));
 	if (end_rect.position.x != -1 && selection_to_column > 0) {
 		end_pos.x += end_rect.size.x;
 	}
