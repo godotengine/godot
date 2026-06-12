@@ -49,6 +49,7 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient_texture.h"
@@ -1278,10 +1279,16 @@ EditorAudioBuses *EditorAudioBuses::register_editor() {
 void EditorAudioBuses::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			menu->set_button_icon(get_editor_theme_icon("GuiTabMenuHl"));
+			menu->get_popup()->set_item_icon((int)MenuOption::CREATE, get_editor_theme_icon("New"));
+			menu->get_popup()->set_item_icon((int)MenuOption::LOAD, get_editor_theme_icon("Load"));
+			menu->get_popup()->set_item_icon((int)MenuOption::SAVE_AS, get_editor_theme_icon("Save"));
+
 			bus_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			if (is_visible_in_tree()) {
 				_update_file_label_size();
 			}
+			add->set_button_icon(get_editor_theme_icon("Add"));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1468,6 +1475,26 @@ void EditorAudioBuses::_new_layout() {
 	new_layout = true;
 }
 
+void EditorAudioBuses::_menu_option(int p_option) {
+	switch ((MenuOption)p_option) {
+		case MenuOption::LOAD: {
+			_load_layout();
+		} break;
+
+		case MenuOption::SAVE_AS: {
+			_save_as_layout();
+		} break;
+
+		case MenuOption::LOAD_DEFAULT: {
+			_load_default_layout();
+		} break;
+
+		case MenuOption::CREATE: {
+			_new_layout();
+		} break;
+	}
+}
+
 void EditorAudioBuses::_load_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->set_title(TTR("Open Audio Bus Layout"));
@@ -1523,7 +1550,8 @@ EditorAudioBuses::EditorAudioBuses() {
 	set_icon_name("AudioStreamPlayer");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Dock"), KeyModifierMask::ALT | Key::A));
 	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
-	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_ALL);
+	set_custom_minimum_size(Vector2(150, 150) * EDSCALE);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
@@ -1543,38 +1571,13 @@ EditorAudioBuses::EditorAudioBuses() {
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
 	top_hb->add_child(file);
 
-	add = memnew(Button);
-	top_hb->add_child(add);
-	add->set_text(TTR("Add Bus"));
-	add->set_tooltip_text(TTR("Add a new Audio Bus to this layout."));
-	add->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_add_bus));
-
-	VSeparator *separator = memnew(VSeparator);
-	top_hb->add_child(separator);
-
-	load = memnew(Button);
-	load->set_text(TTR("Load"));
-	load->set_tooltip_text(TTR("Load an existing Bus Layout."));
-	top_hb->add_child(load);
-	load->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_load_layout));
-
-	save_as = memnew(Button);
-	save_as->set_text(TTR("Save As"));
-	save_as->set_tooltip_text(TTR("Save this Bus Layout to a file."));
-	top_hb->add_child(save_as);
-	save_as->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_save_as_layout));
-
-	_default = memnew(Button);
-	_default->set_text(TTR("Load Default"));
-	_default->set_tooltip_text(TTR("Load the default Bus Layout."));
-	top_hb->add_child(_default);
-	_default->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_load_default_layout));
-
-	_new = memnew(Button);
-	_new->set_text(TTR("Create"));
-	_new->set_tooltip_text(TTR("Create a new Bus Layout."));
-	top_hb->add_child(_new);
-	_new->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_new_layout));
+	menu = memnew(MenuButton);
+	menu->get_popup()->add_item(TTRC("New Layout..."), (int)MenuOption::CREATE);
+	menu->get_popup()->add_item(TTRC("Load..."), (int)MenuOption::LOAD);
+	menu->get_popup()->add_item(TTRC("Load Default Layout"), (int)MenuOption::LOAD_DEFAULT);
+	menu->get_popup()->add_item(TTRC("Save As..."), (int)MenuOption::SAVE_AS);
+	top_hb->add_child(menu);
+	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorAudioBuses::_menu_option));
 
 	bus_mc = memnew(MarginContainer);
 	bus_mc->set_theme_type_variation("NoBorderBottomPanel");
@@ -1586,9 +1589,25 @@ EditorAudioBuses::EditorAudioBuses() {
 	bus_scroll->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
 	bus_mc->add_child(bus_scroll);
 
+	HBoxContainer *bus_parent_hb = memnew(HBoxContainer);
+	bus_parent_hb->set_v_size_flags(SIZE_EXPAND_FILL);
+	bus_scroll->add_child(bus_parent_hb);
+
 	bus_hb = memnew(HBoxContainer);
-	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
-	bus_scroll->add_child(bus_hb);
+	bus_parent_hb->add_child(bus_hb);
+
+	PanelContainer *add_bus_container = memnew(PanelContainer);
+	add_bus_container->set_theme_type_variation("EditorAudioBusAddBusPanel");
+	add_bus_container->set_custom_minimum_size(Vector2(144 * EDSCALE, 0));
+	bus_parent_hb->add_child(add_bus_container);
+
+	add = memnew(Button);
+	add->set_text(TTRC("Add Bus"));
+	add->set_tooltip_text(TTRC("Add a new Audio Bus to this layout."));
+	add->set_h_size_flags(SIZE_SHRINK_CENTER);
+	add->set_v_size_flags(SIZE_SHRINK_CENTER);
+	add_bus_container->add_child(add);
+	add->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_add_bus));
 
 	save_timer = memnew(Timer);
 	save_timer->set_wait_time(0.8);
