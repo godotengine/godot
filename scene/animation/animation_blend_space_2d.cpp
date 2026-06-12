@@ -294,6 +294,7 @@ void AnimationNodeBlendSpace2D::add_triangle(int p_x, int p_y, int p_z, int p_at
 	} else {
 		triangles.insert(p_at_index, t);
 	}
+	_node_updated(get_instance_id());
 }
 
 int AnimationNodeBlendSpace2D::get_triangle_point(int p_triangle, int p_point) {
@@ -308,6 +309,7 @@ void AnimationNodeBlendSpace2D::remove_triangle(int p_triangle) {
 	ERR_FAIL_INDEX(p_triangle, triangles.size());
 
 	triangles.remove_at(p_triangle);
+	_node_updated(get_instance_id());
 }
 
 int AnimationNodeBlendSpace2D::get_triangle_count() const {
@@ -459,6 +461,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 	triangles.clear();
 	if (blend_points_used < 3) {
 		emit_signal(SNAME("triangles_updated"));
+		_node_updated(get_instance_id());
 		return;
 	}
 
@@ -474,6 +477,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 		add_triangle(tr[i].points[0], tr[i].points[1], tr[i].points[2]);
 	}
 	emit_signal(SNAME("triangles_updated"));
+	_node_updated(get_instance_id());
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
