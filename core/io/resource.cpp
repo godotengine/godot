@@ -31,6 +31,7 @@
 #include "resource.h"
 
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
 #include "core/math/math_funcs.h"
 #include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
@@ -731,6 +732,7 @@ String Resource::get_id_for_path(const String &p_referrer_path) const {
 }
 
 void Resource::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_uid"), &Resource::get_uid);
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
 	ClassDB::bind_method(D_METHOD("take_over_path", "path"), &Resource::_take_over_path);
 	ClassDB::bind_method(D_METHOD("get_path"), &Resource::get_path);
@@ -773,6 +775,7 @@ void Resource::_bind_methods() {
 	ADD_GROUP("Resource", "resource_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY), "", "get_uid");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_scene_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_unique_id", "get_scene_unique_id");
 
@@ -780,6 +783,10 @@ void Resource::_bind_methods() {
 	GDVIRTUAL_BIND(_get_rid);
 	GDVIRTUAL_BIND(_reset_state);
 	GDVIRTUAL_BIND(_set_path_cache, "path");
+}
+
+String Resource::get_uid() const {
+	return ResourceUID::path_to_uid(get_path());
 }
 
 Resource::Resource() :
