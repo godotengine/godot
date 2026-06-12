@@ -79,8 +79,11 @@ namespace GodotTools.Internals
             else if (!slnParentDir.StartsWith("res://", StringComparison.Ordinal))
                 slnParentDir = "res://" + slnParentDir;
 
-            // The csproj should be in the same folder as project.godot.
-            string csprojParentDir = "res://";
+            string? csprojParentDir = (string?)ProjectSettings.GetSetting("dotnet/project/project_directory");
+            if (string.IsNullOrEmpty(csprojParentDir))
+                csprojParentDir = "res://";
+            else if (!csprojParentDir.StartsWith("res://", StringComparison.Ordinal))
+                csprojParentDir = "res://" + csprojParentDir;
 
             // Set csproj path first and use it to find the sln/slnx file with the assembly
             _projectCsProjPath = Path.Combine(ProjectSettings.GlobalizePath(csprojParentDir),
@@ -182,7 +185,7 @@ namespace GodotTools.Internals
             {
                 if (_projectCsProjPath == null)
                     DetermineProjectLocation();
-                return Path.Combine(Path.GetDirectoryName(_projectCsProjPath)!, ".godot", "mono", "temp", "bin");
+                return Path.Combine(ProjectSettings.GlobalizePath("res://"), ".godot", "mono", "temp", "bin");
             }
         }
 

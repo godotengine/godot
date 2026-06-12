@@ -290,11 +290,16 @@ void PropertyUtils::assign_custom_type_script(Object *p_object, const Ref<Script
 	ERR_FAIL_COND(p_script.is_null());
 
 	const String &path = p_script->get_path();
-	ERR_FAIL_COND(!path.is_resource_file());
+	ERR_FAIL_COND(!path.is_resource_file() && !path.begins_with("csharp://"));
 
-	ResourceUID::ID script_uid = ResourceLoader::get_resource_uid(path);
-	if (script_uid != ResourceUID::INVALID_ID) {
-		p_object->set_meta(SceneStringName(_custom_type_script), ResourceUID::get_singleton()->id_to_text(script_uid));
+	if (path.begins_with("csharp://")) {
+		// Assembly-backed scripts have no UID; store the csharp:// path directly.
+		p_object->set_meta(SceneStringName(_custom_type_script), path);
+	} else {
+		ResourceUID::ID script_uid = ResourceLoader::get_resource_uid(path);
+		if (script_uid != ResourceUID::INVALID_ID) {
+			p_object->set_meta(SceneStringName(_custom_type_script), ResourceUID::get_singleton()->id_to_text(script_uid));
+		}
 	}
 }
 
@@ -308,10 +313,15 @@ Ref<Script> PropertyUtils::get_custom_type_script(const Object *p_object) {
 		return script_object;
 	}
 #endif
+	String custom_script_str = custom_script.operator String();
+	if (custom_script_str.begins_with("csharp://")) {
+		// Assembly-backed scripts store the csharp:// path directly (no UID).
+		return ResourceLoader::load(custom_script_str);
+	}
 	ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(custom_script);
 	if (unlikely(id == ResourceUID::INVALID_ID || !ResourceUID::get_singleton()->has_id(id))) {
 		const_cast<Object *>(p_object)->remove_meta(SceneStringName(_custom_type_script));
-		ERR_FAIL_V_MSG(Ref<Script>(), vformat("Invalid custom type script UID: %s. Removing.", custom_script.operator String()));
+		ERR_FAIL_V_MSG(Ref<Script>(), vformat("Invalid custom type script UID: %s. Removing.", custom_script_str));
 	} else {
 		custom_script = ResourceUID::get_singleton()->get_id_path(id);
 	}

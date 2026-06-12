@@ -45,6 +45,7 @@
 class CSharpScript;
 class CSharpInstance;
 class CSharpLanguage;
+class ResourceFormatLoaderCSharpScript;
 
 template <typename TScriptInstance, typename TScriptLanguage>
 TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
@@ -58,6 +59,7 @@ class CSharpScript : public Script {
 
 	friend class CSharpInstance;
 	friend class CSharpLanguage;
+	friend class ResourceFormatLoaderCSharpScript;
 
 public:
 	struct TypeInfo {
@@ -209,6 +211,7 @@ private:
 	static void GD_CLR_STDCALL _add_property_info_list_callback(CSharpScript *p_script, const String *p_current_class_name, void *p_props, int32_t p_count);
 #ifdef TOOLS_ENABLED
 	static void GD_CLR_STDCALL _add_property_default_values_callback(CSharpScript *p_script, void *p_def_vals, int32_t p_count);
+	static void _register_csharp_global_class(const String &p_script_path, const CSharpScript::TypeInfo &p_type_info);
 #endif
 	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
@@ -434,6 +437,7 @@ class CSharpLanguage : public ScriptLanguage {
 	EditorPlugin *godotsharp_editor = nullptr;
 
 	static void _editor_init_callback();
+	static void _flush_deferred_editor_data_entries();
 #endif
 
 	static void *_instance_binding_create_callback(void *p_token, void *p_instance);
