@@ -18,6 +18,7 @@
 		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
 			A [Vector2] array with the index for polygon's vertices positions.
 		</member>
+		<member name="resource_shared_copy" type="bool" setter="set_use_shared_copy" getter="get_use_shared_copy" overrides="Resource" default="false" />
 	</members>
 	<constants>
 		<constant name="CULL_DISABLED" value="0" enum="CullMode">
