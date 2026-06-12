@@ -376,10 +376,8 @@ bool Tween::step(double p_delta) {
 	bool step_active = false;
 	total_time += rem_delta;
 
-#ifdef DEBUG_ENABLED
 	double initial_delta = rem_delta;
 	bool potential_infinite = false;
-#endif
 
 	while (running && rem_delta > 0) {
 		double step_delta = rem_delta;
@@ -410,17 +408,18 @@ bool Tween::step(double p_delta) {
 					emit_signal(SNAME("loop_finished"), loops_done);
 					current_step = 0;
 					_start_tweeners();
-#ifdef DEBUG_ENABLED
 					if (loops <= 0 && Math::is_equal_approx(rem_delta, initial_delta)) {
 						if (!potential_infinite) {
 							potential_infinite = true;
 						} else {
 							// Looped twice without using any time, this is 100% certain infinite loop.
 							in_step = false;
+#ifdef DEBUG_ENABLED
 							ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
+#endif
+							return false;
 						}
 					}
-#endif
 				}
 			} else {
 				_start_tweeners();
