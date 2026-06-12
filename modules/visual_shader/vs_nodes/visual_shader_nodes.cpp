@@ -6420,6 +6420,9 @@ String get_sampler_hint(VisualShaderNodeTextureParameter::TextureType p_texture_
 			case VisualShaderNodeTextureParameter::TYPE_ANISOTROPY:
 				type_code = "hint_anisotropy";
 				break;
+			case VisualShaderNodeTextureParameter::TYPE_HEIGHT:
+				type_code = "hint_height";
+				break;
 			default:
 				break;
 		}
@@ -6657,7 +6660,7 @@ String VisualShaderNodeTextureParameter::get_warning(Shader::Mode p_mode, Visual
 				break;
 		}
 
-		if (texture_type == TYPE_NORMAL_MAP || texture_type == TYPE_ANISOTROPY) {
+		if (texture_type == TYPE_NORMAL_MAP || texture_type == TYPE_ANISOTROPY || texture_type == TYPE_HEIGHT) {
 			String texture_type_str;
 
 			switch (texture_type) {
@@ -6666,6 +6669,9 @@ String VisualShaderNodeTextureParameter::get_warning(Shader::Mode p_mode, Visual
 				} break;
 				case TYPE_ANISOTROPY: {
 					texture_type_str = "Anisotropic";
+				} break;
+				case TYPE_HEIGHT: {
+					texture_type_str = "Height Map";
 				} break;
 				default:
 					break;
@@ -6723,7 +6729,7 @@ void VisualShaderNodeTextureParameter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_source", "source"), &VisualShaderNodeTextureParameter::set_texture_source);
 	ClassDB::bind_method(D_METHOD("get_texture_source"), &VisualShaderNodeTextureParameter::get_texture_source);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map,Anisotropic"), "set_texture_type", "get_texture_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map,Anisotropic,Height Map"), "set_texture_type", "get_texture_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black,Transparent"), "set_color_default", "get_color_default");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Default,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Default,Enabled,Disabled"), "set_texture_repeat", "get_texture_repeat");
@@ -6733,6 +6739,7 @@ void VisualShaderNodeTextureParameter::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
 	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
 	BIND_ENUM_CONSTANT(TYPE_ANISOTROPY);
+	BIND_ENUM_CONSTANT(TYPE_HEIGHT);
 	BIND_ENUM_CONSTANT(TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_WHITE);
