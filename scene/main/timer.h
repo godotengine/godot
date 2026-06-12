@@ -83,7 +83,7 @@ public:
 
 private:
 	TimerProcessCallback timer_process_callback = TIMER_PROCESS_IDLE;
-	void _set_process(bool p_process, bool p_force = false);
+	void _set_process(bool p_process);
 };
 
 VARIANT_ENUM_CAST(Timer::TimerProcessCallback);
