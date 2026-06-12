@@ -61,11 +61,13 @@
 				print("101".bin_to_int())   # Prints 5
 				print("0b101".bin_to_int()) # Prints 5
 				print("-0b10".bin_to_int()) # Prints -2
+				print("1_0".bin_to_int())   # Prints 0 (number separators are not supported)
 				[/gdscript]
 				[csharp]
 				GD.Print("101".BinToInt());   // Prints 5
 				GD.Print("0b101".BinToInt()); // Prints 5
 				GD.Print("-0b10".BinToInt()); // Prints -2
+				GD.Print("1_0".BinToInt());   // Prints 0 (number separators are not supported)
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -369,10 +371,12 @@
 				[gdscript]
 				print("0xff".hex_to_int()) # Prints 255
 				print("ab".hex_to_int())   # Prints 171
+				print("a_b".hex_to_int())  # Prints 0 (number separators are not supported)
 				[/gdscript]
 				[csharp]
 				GD.Print("0xff".HexToInt()); // Prints 255
 				GD.Print("ab".HexToInt());   // Prints 171
+				GD.Print("a_b".HexToInt());  // Prints 0 (number separators are not supported)
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -462,6 +466,7 @@
 				print("24".is_valid_float())    # Prints true
 				print("7e3".is_valid_float())   # Prints true
 				print("Hello".is_valid_float()) # Prints false
+				print("2_4".is_valid_float())   # Prints false (number separators are not supported)
 				[/codeblock]
 			</description>
 		</method>
@@ -475,6 +480,7 @@
 				print("A08E".is_valid_hex_number())    # Prints true
 				print("-AbCdEf".is_valid_hex_number()) # Prints true
 				print("2.5".is_valid_hex_number())     # Prints false
+				print("2_5".is_valid_hex_number())     # Prints false (number separators are not supported)
 
 				print("0xDEADC0DE".is_valid_hex_number(true)) # Prints true
 				[/codeblock]
@@ -508,6 +514,7 @@
 				print("Hi".is_valid_int())   # Prints false
 				print("+3".is_valid_int())   # Prints true
 				print("-12".is_valid_int())  # Prints true
+				print("1_2".is_valid_int())  # Prints false (number separators are not supported)
 				[/codeblock]
 			</description>
 		</method>
@@ -936,6 +943,7 @@
 				var c = "12xy3".to_float()  # c is 12.0
 				var d = "1e3".to_float()    # d is 1000.0
 				var e = "Hello!".to_float() # e is 0.0
+				var f = "1_2".to_float()    # f is 1.0 (number separators are not supported)
 				[/codeblock]
 			</description>
 		</method>
