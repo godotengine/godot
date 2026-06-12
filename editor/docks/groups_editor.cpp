@@ -450,9 +450,9 @@ void GroupsEditor::_menu_id_pressed(int p_id) {
 				_show_remove_group_dialog();
 			}
 		} break;
-		case RENAME_GROUP: {
+		case EDIT_GROUP: {
 			if (!is_local || scene_groups[group_name]) {
-				_show_rename_group_dialog();
+				_show_edit_group_dialog();
 			}
 		} break;
 		case CONVERT_GROUP: {
@@ -519,7 +519,7 @@ void GroupsEditor::_item_mouse_selected(const Vector2 &p_pos, MouseButton p_mous
 		String group_name = ti->get_meta("__name");
 		if (global_groups.has(group_name) || scene_groups[group_name]) {
 			menu->add_separator();
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("groups_editor/rename"), RENAME_GROUP);
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("groups_editor/edit"), EDIT_GROUP);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("groups_editor/delete"), DELETE_GROUP);
 		}
 
@@ -570,7 +570,7 @@ void GroupsEditor::_confirm_add() {
 	tree->grab_focus(true);
 }
 
-void GroupsEditor::_confirm_rename() {
+void GroupsEditor::_confirm_edit() {
 	TreeItem *ti = tree->get_selected();
 	if (!ti) {
 		return;
@@ -579,12 +579,15 @@ void GroupsEditor::_confirm_rename() {
 	String old_name = ti->get_meta("__name");
 	String new_name = rename_group->get_text().strip_edges();
 
-	if (old_name == new_name) {
+	String old_description = ti->get_meta("__description");
+	String new_description = edit_description->get_text();
+
+	if (old_name == new_name && old_description == new_description) {
 		return;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Rename Group"));
+	undo_redo->create_action(TTR("Edit Group"));
 
 	if (!global_groups.has(old_name)) {
 		undo_redo->add_do_method(this, "_rename_scene_group", old_name, new_name);
@@ -593,13 +596,16 @@ void GroupsEditor::_confirm_rename() {
 		String property_new_name = GLOBAL_GROUP_PREFIX + new_name;
 		String property_old_name = GLOBAL_GROUP_PREFIX + old_name;
 
-		String description = ti->get_meta("__description");
+		if (old_name != new_name) {
+			undo_redo->add_do_property(ProjectSettings::get_singleton(), property_new_name, new_description);
+			undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_new_name, Variant());
 
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), property_new_name, description);
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_new_name, Variant());
-
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), property_old_name, Variant());
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_old_name, description);
+			undo_redo->add_do_property(ProjectSettings::get_singleton(), property_old_name, Variant());
+			undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_old_name, old_description);
+		} else {
+			undo_redo->add_do_property(ProjectSettings::get_singleton(), property_old_name, new_description);
+			undo_redo->add_undo_property(ProjectSettings::get_singleton(), property_old_name, old_description);
+		}
 
 		if (rename_check_box->is_pressed()) {
 			undo_redo->add_do_method(ProjectSettingsEditor::get_singleton()->get_group_settings(), "rename_references", old_name, new_name);
@@ -730,29 +736,40 @@ void GroupsEditor::_show_add_group_dialog() {
 	add_group_name->grab_focus();
 }
 
-void GroupsEditor::_show_rename_group_dialog() {
-	if (!rename_group_dialog) {
-		rename_group_dialog = memnew(ConfirmationDialog);
-		rename_group_dialog->set_title(TTR("Rename Group"));
-		rename_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_rename));
+void GroupsEditor::_show_edit_group_dialog() {
+	if (!edit_group_dialog) {
+		edit_group_dialog = memnew(ConfirmationDialog);
+		edit_group_dialog->set_title(TTR("Edit Group"));
+		edit_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_edit));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
-		rename_group_dialog->add_child(vbc);
+		edit_group_dialog->add_child(vbc);
 
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		hbc->add_child(memnew(Label(TTR("Name:"))));
 
 		rename_group = memnew(LineEdit);
 		rename_group->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
+		rename_group->set_h_size_flags(SIZE_EXPAND_FILL);
 		hbc->add_child(rename_group);
 		vbc->add_child(hbc);
 
-		rename_group_dialog->register_text_enter(rename_group);
+		description_hb = memnew(HBoxContainer);
+		description_hb->add_child(memnew(Label(TTR("Description:"))));
+
+		edit_description = memnew(LineEdit);
+		edit_description->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+		edit_description->set_h_size_flags(SIZE_EXPAND_FILL);
+		description_hb->add_child(edit_description);
+		vbc->add_child(description_hb);
+
+		edit_group_dialog->register_text_enter(rename_group);
+		edit_group_dialog->register_text_enter(edit_description);
 
 		rename_validation_panel = memnew(EditorValidationPanel);
 		rename_validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Group name is valid."));
 		rename_validation_panel->set_update_callback(callable_mp(this, &GroupsEditor::_check_rename));
-		rename_validation_panel->set_accept_button(rename_group_dialog->get_ok_button());
+		rename_validation_panel->set_accept_button(edit_group_dialog->get_ok_button());
 
 		rename_group->connect(SceneStringName(text_changed), callable_mp(rename_validation_panel, &EditorValidationPanel::update).unbind(1));
 
@@ -762,7 +779,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 		rename_check_box->set_text(TTR("Rename references in all scenes"));
 		vbc->add_child(rename_check_box);
 
-		add_child(rename_group_dialog);
+		add_child(edit_group_dialog);
 	}
 
 	TreeItem *ti = tree->get_selected();
@@ -774,15 +791,21 @@ void GroupsEditor::_show_rename_group_dialog() {
 	rename_check_box->set_visible(is_global);
 	rename_check_box->set_pressed(false);
 
+	description_hb->set_visible(is_global);
+
+	String description = ti->get_meta("__description");
+
+	edit_description->set_text(description);
+
 	String name = ti->get_meta("__name");
 
 	rename_group->set_text(name);
-	rename_group_dialog->set_meta("__name", name);
+	edit_group_dialog->set_meta("__name", name);
 
 	rename_validation_panel->update();
 
-	rename_group_dialog->reset_size();
-	rename_group_dialog->popup_centered();
+	edit_group_dialog->reset_size();
+	edit_group_dialog->popup_centered();
 	rename_group->select_all();
 	rename_group->grab_focus();
 }
@@ -828,7 +851,7 @@ void GroupsEditor::_check_add() {
 
 void GroupsEditor::_check_rename() {
 	String group_name = rename_group->get_text().strip_edges();
-	String old_name = rename_group_dialog->get_meta("__name");
+	String old_name = edit_group_dialog->get_meta("__name");
 
 	if (group_name == old_name) {
 		return;
@@ -849,8 +872,8 @@ void GroupsEditor::_groups_gui_input(Ref<InputEvent> p_event) {
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
 		if (ED_IS_SHORTCUT("groups_editor/delete", p_event)) {
 			_menu_id_pressed(DELETE_GROUP);
-		} else if (ED_IS_SHORTCUT("groups_editor/rename", p_event)) {
-			_menu_id_pressed(RENAME_GROUP);
+		} else if (ED_IS_SHORTCUT("groups_editor/edit", p_event)) {
+			_menu_id_pressed(EDIT_GROUP);
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			filter->grab_focus();
 			filter->select_all();
@@ -892,8 +915,8 @@ GroupsEditor::GroupsEditor() {
 	scene_tree = SceneTree::get_singleton();
 
 	ED_SHORTCUT("groups_editor/delete", TTRC("Delete"), Key::KEY_DELETE);
-	ED_SHORTCUT("groups_editor/rename", TTRC("Rename"), Key::F2);
-	ED_SHORTCUT_OVERRIDE("groups_editor/rename", "macos", Key::ENTER);
+	ED_SHORTCUT("groups_editor/edit", TTRC("Edit"), Key::F2);
+	ED_SHORTCUT_OVERRIDE("groups_editor/edit", "macos", Key::ENTER);
 
 	holder = memnew(VBoxContainer);
 	holder->set_v_size_flags(SIZE_EXPAND_FILL);

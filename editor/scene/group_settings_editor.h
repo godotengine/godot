@@ -59,13 +59,14 @@ class GroupSettingsEditor : public VBoxContainer {
 	CheckBox *remove_check_box = nullptr;
 	Label *remove_label = nullptr;
 
-	ConfirmationDialog *rename_group_dialog = nullptr;
+	ConfirmationDialog *edit_group_dialog = nullptr;
 	LineEdit *rename_group = nullptr;
+	LineEdit *edit_description = nullptr;
 	CheckBox *rename_check_box = nullptr;
 	EditorValidationPanel *rename_validation_panel = nullptr;
 
 	void _show_remove_dialog();
-	void _show_rename_dialog();
+	void _show_edit_dialog();
 
 	String _check_new_group_name(const String &p_name);
 	void _check_rename();
@@ -75,7 +76,7 @@ class GroupSettingsEditor : public VBoxContainer {
 
 	void _modify_references(const StringName &p_name, const StringName &p_new_name, bool p_is_rename);
 
-	void _confirm_rename();
+	void _confirm_edit();
 	void _confirm_delete();
 
 	void _text_submitted(const String &p_text);
