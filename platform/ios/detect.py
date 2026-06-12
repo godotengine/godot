@@ -2,7 +2,13 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-from methods import detect_darwin_sdk_path, detect_darwin_toolchain_path, print_error, print_warning
+from methods import (
+    detect_darwin_sdk_path,
+    detect_darwin_toolchain_path,
+    get_compiler_version,
+    print_error,
+    print_warning,
+)
 from platform_methods import validate_arch
 
 if TYPE_CHECKING:
@@ -101,16 +107,32 @@ def configure(env: "SConsEnvironment"):
 
     ## Compile flags
 
-    if env["simulator"]:
-        env["APPLE_PLATFORM"] = "iossimulator"
-        env.Append(ASFLAGS=["-mios-simulator-version-min=14.0"])
-        env.Append(CCFLAGS=["-mios-simulator-version-min=14.0"])
-        env.Append(CPPDEFINES=["IOS_SIMULATOR"])
-        env.extra_suffix = ".simulator" + env.extra_suffix
+    cc_version = get_compiler_version(env)
+    cc_version_major = cc_version["apple_major"]
+    cc_version_minor = cc_version["apple_minor"]
+
+    if (cc_version_major, cc_version_minor) >= (2100, 3):
+        if env["simulator"]:
+            env["APPLE_PLATFORM"] = "iossimulator"
+            env.Append(ASFLAGS=["-mios-simulator-version-min=15.0"])
+            env.Append(CCFLAGS=["-mios-simulator-version-min=15.0"])
+            env.Append(CPPDEFINES=["IOS_SIMULATOR"])
+            env.extra_suffix = ".simulator" + env.extra_suffix
+        else:
+            env["APPLE_PLATFORM"] = "ios"
+            env.Append(ASFLAGS=["-miphoneos-version-min=15.0"])
+            env.Append(CCFLAGS=["-miphoneos-version-min=15.0"])
     else:
-        env["APPLE_PLATFORM"] = "ios"
-        env.Append(ASFLAGS=["-miphoneos-version-min=14.0"])
-        env.Append(CCFLAGS=["-miphoneos-version-min=14.0"])
+        if env["simulator"]:
+            env["APPLE_PLATFORM"] = "iossimulator"
+            env.Append(ASFLAGS=["-mios-simulator-version-min=14.0"])
+            env.Append(CCFLAGS=["-mios-simulator-version-min=14.0"])
+            env.Append(CPPDEFINES=["IOS_SIMULATOR"])
+            env.extra_suffix = ".simulator" + env.extra_suffix
+        else:
+            env["APPLE_PLATFORM"] = "ios"
+            env.Append(ASFLAGS=["-miphoneos-version-min=14.0"])
+            env.Append(CCFLAGS=["-miphoneos-version-min=14.0"])
     detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
@@ -120,7 +142,10 @@ def configure(env: "SConsEnvironment"):
             print_error("Building for iOS with 'arch=x86_64' requires 'simulator=yes'.")
             sys.exit(255)
 
-        env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
+        if (cc_version_major, cc_version_minor) >= (2100, 3):
+            env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
+        else:
+            env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.13"
         env.Append(
             CCFLAGS=(
                 "-fobjc-arc -arch x86_64"
