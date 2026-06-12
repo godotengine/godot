@@ -265,7 +265,7 @@ class PopupMenu : public Popup {
 	bool shrink_width = true;
 
 protected:
-	virtual void _pre_popup() override;
+	virtual void _pre_popup(const Size2i &p_size) override;
 	virtual Rect2i _popup_adjust_rect() const override;
 
 	virtual void add_child_notify(Node *p_child) override;
