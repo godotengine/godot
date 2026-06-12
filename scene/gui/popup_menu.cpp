@@ -1180,16 +1180,13 @@ void PopupMenu::_filter_items(const String &p_query) {
 		}
 	}
 
-	Vector<FuzzySearchResult> results;
 	FuzzySearch fuzzy;
-	fuzzy.max_results = search_candidates.size();
-	fuzzy.max_misses = search_bar_fuzzy_search_max_misses;
-	fuzzy.allow_subsequences = search_bar_fuzzy_search_enabled;
-	fuzzy.set_query(p_query, false);
-	fuzzy.search_all(search_candidates, results);
+	fuzzy.set_max_results(search_candidates.size());
+	fuzzy.set_max_misses(search_bar_fuzzy_search_max_misses);
+	fuzzy.set_use_exact_tokens(!search_bar_fuzzy_search_enabled);
 
-	for (const FuzzySearchResult &result : results) {
-		PopupMenu::Item &item = items.write[search_candidate_to_item[result.original_index]];
+	for (const Ref<FuzzySearchMatch> &result : fuzzy.search_all(p_query, search_candidates)) {
+		PopupMenu::Item &item = items.write[search_candidate_to_item[result->get_original_index()]];
 		item.visible = true;
 		if (item.submenu) {
 			for (PopupMenu::Item &submenu_item : item.submenu->items) {
