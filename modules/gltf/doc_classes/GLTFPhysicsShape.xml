@@ -50,13 +50,13 @@
 			<return type="Shape3D" />
 			<param index="0" name="cache_shapes" type="bool" default="false" />
 			<description>
-				Converts this GLTFPhysicsShape instance into a Godot [Shape3D] resource.
+				Converts this GLTFPhysicsShape instance into a Godot [Shape3D] resource. Capsule and cylinder shapes with different top and bottom radii are approximated using the average radius.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
-			The height of the shape, in meters. This is only used when the shape type is [code]"capsule"[/code] or [code]"cylinder"[/code]. This value should not be negative, and for [code]"capsule"[/code] it should be at least twice the radius.
+			The height of the shape, in meters. This is only used when the shape type is [code]"capsule"[/code] or [code]"cylinder"[/code]. This value should not be negative. For [code]"capsule"[/code], this is the full height, so it should be at least [code]radius_top + radius_bottom[/code].
 		</member>
 		<member name="importer_mesh" type="ImporterMesh" setter="set_importer_mesh" getter="get_importer_mesh">
 			The [ImporterMesh] resource of the shape. This is only used when the shape type is [code]"hull"[/code] (convex hull) or [code]"trimesh"[/code] (concave trimesh).
@@ -69,7 +69,13 @@
 			The index of the shape's mesh in the glTF file. This is only used when the shape type is [code]"hull"[/code] (convex hull) or [code]"trimesh"[/code] (concave trimesh).
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
-			The radius of the shape, in meters. This is only used when the shape type is [code]"capsule"[/code], [code]"cylinder"[/code], or [code]"sphere"[/code]. This value should not be negative.
+			The effective radius of the shape, in meters. This is used when the shape type is [code]"sphere"[/code], and for [code]"capsule"[/code] and [code]"cylinder"[/code] it sets both [member radius_top] and [member radius_bottom]. When [member radius_top] and [member radius_bottom] differ, this returns their average. This value should not be negative.
+		</member>
+		<member name="radius_bottom" type="float" setter="set_radius_bottom" getter="get_radius_bottom" default="0.5">
+			The bottom radius of the shape, in meters. This is only used when the shape type is [code]"capsule"[/code] or [code]"cylinder"[/code]. This value should not be negative.
+		</member>
+		<member name="radius_top" type="float" setter="set_radius_top" getter="get_radius_top" default="0.5">
+			The top radius of the shape, in meters. This is only used when the shape type is [code]"capsule"[/code] or [code]"cylinder"[/code]. This value should not be negative.
 		</member>
 		<member name="shape_type" type="String" setter="set_shape_type" getter="get_shape_type" default="&quot;&quot;">
 			The type of shape this shape represents. Valid values are [code]"box"[/code], [code]"capsule"[/code], [code]"cylinder"[/code], [code]"sphere"[/code], [code]"hull"[/code], and [code]"trimesh"[/code].
