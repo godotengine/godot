@@ -1815,6 +1815,10 @@ void AnimationTimelineEdit::auto_fit() {
 	callable_mp(this, &AnimationTimelineEdit::_scroll_to_start).call_deferred();
 }
 
+String AnimationTimelineEdit::get_filter_text() const {
+	return filter_track->get_text();
+}
+
 void AnimationTimelineEdit::_scroll_to_start() {
 	// Horizontal scroll to get_min which should include keyframes that are before the animation start.
 	hscroll->set_value(hscroll->get_min());
@@ -2264,6 +2268,19 @@ void AnimationTrackEdit::_notification(int p_what) {
 				Vector2 string_pos = Point2(ofs, (get_size().height - font_to_use->get_height(font_size_to_use)) / 2 + font_to_use->get_ascent(font_size_to_use));
 				string_pos = string_pos.floor();
 				draw_string(font_to_use, string_pos, text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - h_separation, font_size_to_use, text_color);
+
+				String filter_text = timeline->get_filter_text();
+				if (!filter_text.is_empty()) {
+					int match_position = text.findn(filter_text);
+					if (match_position != -1) {
+						Size2 offset = font->get_string_size(text.left(match_position), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+						Size2 size = font->get_string_size(filter_text, HORIZONTAL_ALIGNMENT_LEFT, MAX(1, limit - string_pos.x - offset.x - h_separation), font_size);
+
+						const Color highlight_color = get_theme_color(SNAME("selection_color"), EditorStringName(Editor));
+
+						draw_rect(Rect2(Point2(string_pos.x + offset.x, string_pos.y - size.y + 0.5 * font->get_descent(font_size)), size), highlight_color);
+					}
+				}
 
 				draw_line(Point2(limit, 0), Point2(limit, get_size().height), h_line_color, Math::round(EDSCALE));
 			}
@@ -3929,7 +3946,22 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			draw_texture_rect(icon, Rect2(Point2(ofs, (get_size().height - icon_size.y) / 2 + v_margin_offset).round(), icon_size));
 
 			ofs += h_separation + icon_size.x;
-			draw_string(font, Point2(ofs, (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size) + v_margin_offset).round(), node_name, HORIZONTAL_ALIGNMENT_LEFT, timeline->get_name_limit() - ofs, font_size, color);
+
+			Point2 string_pos = Point2(ofs, (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size) + v_margin_offset).round();
+			draw_string(font, string_pos, node_name, HORIZONTAL_ALIGNMENT_LEFT, timeline->get_name_limit() - ofs, font_size, color);
+
+			String filter_text = timeline->get_filter_text();
+			if (!filter_text.is_empty()) {
+				int match_position = node_name.findn(filter_text);
+				if (match_position != -1) {
+					Size2 offset = font->get_string_size(node_name.left(match_position), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+					Size2 size = font->get_string_size(filter_text, HORIZONTAL_ALIGNMENT_LEFT, MAX(1, timeline->get_name_limit() - string_pos.x - offset.x), font_size);
+
+					const Color highlight_color = get_theme_color(SNAME("selection_color"), EditorStringName(Editor));
+
+					draw_rect(Rect2(Point2(string_pos.x + offset.x, string_pos.y - size.y + 0.5 * font->get_descent(font_size)), size), highlight_color);
+				}
+			}
 
 			int px = (-timeline->get_value() + timeline->get_play_position()) * timeline->get_zoom_scale() + timeline->get_name_limit();
 			if (px >= timeline->get_name_limit() && px < limit_end) {
@@ -5265,7 +5297,7 @@ void AnimationTrackEditor::_update_tracks() {
 			}
 		}
 
-		String filter_text = timeline->filter_track->get_text();
+		String filter_text = timeline->get_filter_text();
 
 		if (!filter_text.is_empty()) {
 			String target = String(animation->track_get_path(i));

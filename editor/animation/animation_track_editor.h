@@ -271,6 +271,8 @@ public:
 	Range *get_zoom() const { return zoom; }
 	void auto_fit();
 
+	String get_filter_text() const;
+
 	void set_play_position(float p_pos);
 	float get_play_position() const;
 	void update_play_position();
