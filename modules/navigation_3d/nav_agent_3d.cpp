@@ -395,7 +395,9 @@ void NavAgent3D::set_paused(bool p_paused) {
 		if (paused) {
 			map->remove_agent_as_controlled(this);
 		} else {
-			map->set_agent_as_controlled(this);
+			if (avoidance_enabled) {
+				map->set_agent_as_controlled(this);
+			}
 		}
 	}
 }
