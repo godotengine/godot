@@ -177,9 +177,9 @@ namespace Godot.SourceGenerators
             {
 
                 // Generate SetGodotClassPropertyValue
-
-                bool allPropertiesAreReadOnly = godotClassFields.All(fi => fi.FieldSymbol.IsReadOnly) &&
-                                                godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly || pi.PropertySymbol.SetMethod!.IsInitOnly);
+                bool allPropertiesAreReadOnly = godotClassFields.All(fi => fi.FieldSymbol.IsReadOnly)
+                    && godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly || pi.PropertySymbol.SetMethod?.IsInitOnly is true
+                        || pi.PropertySymbol.OverriddenProperty?.SetMethod?.IsInitOnly is true);
 
                 if (!allPropertiesAreReadOnly)
                 {
@@ -190,8 +190,11 @@ namespace Godot.SourceGenerators
 
                     foreach (var property in godotClassProperties)
                     {
-                        if (property.PropertySymbol.IsReadOnly || property.PropertySymbol.SetMethod!.IsInitOnly)
+                        if (property.PropertySymbol.IsReadOnly || property.PropertySymbol.SetMethod?.IsInitOnly is true
+                            || property.PropertySymbol.OverriddenProperty?.SetMethod?.IsInitOnly is true)
+                        {
                             continue;
+                        }
 
                         GeneratePropertySetter(property.PropertySymbol.Name,
                             property.PropertySymbol.Type, property.Type, source);
