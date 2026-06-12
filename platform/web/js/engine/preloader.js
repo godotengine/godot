@@ -6,6 +6,27 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 					return Promise.resolve();
 				}
 				if (result.value) {
+					if (load_status.loaded == 0) {
+						if (result.value[0] == 31 && result.value[1] == 139) {
+							const decompressor = new DecompressionStream('gzip');
+							const writer = decompressor.writable.getWriter();
+							writer.write(result.value);
+							function pump() {
+								reader.read().then(function (data) {
+									if (data.value) {
+										writer.write(data.value);
+									}
+									if (data.done) {
+										writer.close();
+									} else {
+										pump();
+									}
+								});
+							}
+							pump();
+							return onloadprogress(decompressor.readable.getReader(), controller);
+						}
+					}
 					controller.enqueue(result.value);
 					load_status.loaded += result.value.length;
 				}
