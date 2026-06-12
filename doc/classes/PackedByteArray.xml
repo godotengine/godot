@@ -314,7 +314,7 @@
 			<param index="1" name="value" type="Variant" />
 			<param index="2" name="allow_objects" type="bool" default="false" />
 			<description>
-				Encodes a [Variant] at the index of [param byte_offset] bytes. A sufficient space must be allocated, depending on the encoded variant's size. If [param allow_objects] is [code]false[/code], [Object]-derived values are not permitted and will instead be serialized as ID-only.
+				Encodes a [Variant] at the index of [param byte_offset] bytes and returns the encoded variant's size, or [code]-1[/code] if the [PackedByteArray]'s remaining space is insufficient. If [param allow_objects] is [code]false[/code], [Object]-derived values are not permitted and will instead be serialized as ID-only.
 			</description>
 		</method>
 		<method name="erase">
