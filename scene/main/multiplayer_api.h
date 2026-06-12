@@ -59,6 +59,9 @@ public:
 	static Error encode_and_compress_variants(const Variant **p_variants, int p_count, uint8_t *p_buffer, int &r_len, bool *r_raw = nullptr, bool p_allow_object_decoding = false);
 	static Error decode_and_decompress_variants(Vector<Variant> &r_variants, const uint8_t *p_buffer, int p_len, int &r_len, bool p_raw = false, bool p_allow_object_decoding = false);
 
+	virtual void set_packet_processing_paused(bool p_paused) = 0;
+	virtual bool get_packet_processing_paused() = 0;
+
 	virtual Error poll() = 0;
 	virtual void set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) = 0;
 	virtual Ref<MultiplayerPeer> get_multiplayer_peer() = 0;
@@ -86,6 +89,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void set_packet_processing_paused(bool p_paused) override;
+	virtual bool get_packet_processing_paused() override;
+
 	virtual Error poll() override;
 	virtual void set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) override;
 	virtual Ref<MultiplayerPeer> get_multiplayer_peer() override;
@@ -99,6 +105,8 @@ public:
 	virtual Error object_configuration_remove(Object *p_object, Variant p_config) override;
 
 	// Extensions
+	GDVIRTUAL1(_set_packet_processing_paused, bool);
+	GDVIRTUAL0R(bool, _get_packet_processing_paused);
 	GDVIRTUAL0R(Error, _poll);
 	GDVIRTUAL1(_set_multiplayer_peer, Ref<MultiplayerPeer>);
 	GDVIRTUAL0R(Ref<MultiplayerPeer>, _get_multiplayer_peer);

@@ -78,7 +78,7 @@ Error SceneMultiplayer::poll() {
 		return OK;
 	}
 
-	while (multiplayer_peer->get_available_packet_count()) {
+	while (!packet_processing_paused && multiplayer_peer->get_available_packet_count()) {
 		int sender = multiplayer_peer->get_packet_peer();
 		const uint8_t *packet;
 		int len;
@@ -183,6 +183,14 @@ void SceneMultiplayer::set_root_path(const NodePath &p_path) {
 
 NodePath SceneMultiplayer::get_root_path() const {
 	return root_path;
+}
+
+void SceneMultiplayer::set_packet_processing_paused(bool p_paused) {
+	packet_processing_paused = p_paused;
+}
+
+bool SceneMultiplayer::get_packet_processing_paused() {
+	return packet_processing_paused;
 }
 
 void SceneMultiplayer::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) {
