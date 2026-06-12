@@ -430,13 +430,26 @@ namespace Godot.SourceGenerators
             var exportAttr = memberSymbol.GetAttributes()
                 .FirstOrDefault(a => a.AttributeClass?.IsGodotExportAttribute() ?? false);
 
+            var exportStorageAttr = memberSymbol.GetAttributes()
+                .FirstOrDefault(a => a.AttributeClass?.IsGodotExportStorageAttribute() ?? false);
+
             var exportToolButtonAttr = memberSymbol.GetAttributes()
                 .FirstOrDefault(a => a.AttributeClass?.IsGodotExportToolButtonAttribute() ?? false);
 
-            if (exportAttr != null && exportToolButtonAttr != null)
+            if ((exportAttr != null || exportStorageAttr != null) && exportToolButtonAttr != null)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     Common.ExportToolButtonShouldNotBeUsedWithExportRule,
+                    memberSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                    memberSymbol.ToDisplayString()
+                ));
+                return null;
+            }
+
+            if (exportAttr != null && exportStorageAttr != null)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.ExportStorageShouldNotBeUsedWithExportRule,
                     memberSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
                     memberSymbol.ToDisplayString()
                 ));
@@ -586,11 +599,15 @@ namespace Godot.SourceGenerators
                     hintString: hintString, PropertyUsageFlags.Editor, exported: true);
             }
 
-            if (exportAttr == null)
+            if (exportAttr == null && exportStorageAttr == null)
             {
                 return new PropertyInfo(memberVariantType, memberName, PropertyHint.None,
                     hintString: hintString, PropertyUsageFlags.ScriptVariable, exported: false);
             }
+
+            //Treat [ExportStorage] like an [Export] since the only difference is the PropertyUsageFlags having
+            // PropertyUsageFlags.Storage instead of PropertyUsageFlags.Default
+            exportAttr = exportAttr ?? exportStorageAttr!;
 
             if (!TryGetMemberExportHint(typeCache, memberType, exportAttr, memberVariantType,
                     isTypeArgument: false, out var hint, out hintString))
@@ -619,6 +636,11 @@ namespace Godot.SourceGenerators
             }
 
             var propUsage = PropertyUsageFlags.Default | PropertyUsageFlags.ScriptVariable;
+
+            if (exportStorageAttr != null)
+            {
+                propUsage = PropertyUsageFlags.Storage | PropertyUsageFlags.ScriptVariable;
+            }
 
             if (memberVariantType == VariantType.Nil)
                 propUsage |= PropertyUsageFlags.NilIsVariant;
