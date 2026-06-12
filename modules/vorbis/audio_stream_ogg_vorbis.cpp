@@ -428,10 +428,6 @@ Ref<AudioStreamPlayback> AudioStreamOggVorbis::instantiate_playback() {
 	return nullptr;
 }
 
-String AudioStreamOggVorbis::get_stream_name() const {
-	return ""; //return stream_name;
-}
-
 void AudioStreamOggVorbis::maybe_update_info() {
 	ERR_FAIL_COND(packet_sequence.is_null());
 

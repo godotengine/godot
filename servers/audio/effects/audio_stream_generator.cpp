@@ -78,10 +78,6 @@ Ref<AudioStreamPlayback> AudioStreamGenerator::instantiate_playback() {
 	return playback;
 }
 
-String AudioStreamGenerator::get_stream_name() const {
-	return "UserFeed";
-}
-
 double AudioStreamGenerator::get_length() const {
 	return 0;
 }
