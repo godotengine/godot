@@ -98,7 +98,8 @@ layout(push_constant, std430) uniform Params {
 	float scale;
 
 	float depth_scale;
-	uint pad[3];
+	float taa_frame_count;
+	uint pad[2];
 }
 params;
 
@@ -106,11 +107,19 @@ layout(set = 0, binding = 0) uniform sampler2D source_image;
 layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
 layout(set = 2, binding = 0) uniform sampler2D source_depth;
 
-void do_filter(inout vec3 color_accum, inout vec3 divisor, vec2 uv, vec2 step, bool p_skin) {
+// Interleaved Gradient Noise
+// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+float quick_hash(vec2 pos) {
+	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
+	return fract(magic.z * fract(dot(pos, magic.xy)));
+}
+
+void do_filter(inout vec3 color_accum, inout vec3 divisor, vec2 uv, vec2 step, bool p_skin, float taa_frame_count) {
 	// Accumulate the other samples:
 	for (int i = 1; i < kernel_size; i++) {
 		// Fetch color and depth for current sample:
-		vec2 offset = uv + kernel[i].y * step;
+		float dither = quick_hash(gl_GlobalInvocationID.xy + vec2(taa_frame_count * 5.0, taa_frame_count * 2.0));
+		vec2 offset = uv + kernel[i].y * step + vec2(-0.5 + dither, 0.5 - dither) * 0.005;
 		vec4 color = texture(source_image, offset);
 
 		if (abs(color.a) < 0.001) {
@@ -141,6 +150,7 @@ void main() {
 	vec2 uv = (vec2(ssC) + 0.5) / vec2(params.screen_size);
 
 	// Fetch color of current pixel:
+
 	vec4 base_color = texture(source_image, uv);
 	float strength = abs(base_color.a);
 
@@ -179,8 +189,8 @@ void main() {
 
 		vec3 color = base_color.rgb * divisor;
 
-		do_filter(color, divisor, uv, step, skin);
-		do_filter(color, divisor, uv, -step, skin);
+		do_filter(color, divisor, uv, step, skin, params.taa_frame_count);
+		do_filter(color, divisor, uv, -step, skin, params.taa_frame_count);
 
 		base_color.rgb = color / divisor;
 	}
