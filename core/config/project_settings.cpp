@@ -972,7 +972,10 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			// If we're loading a project.godot from source code, we can operate some
 			// ProjectSettings conversions if need be.
 			_convert_to_last_version(config_version);
+#ifdef TOOLS_ENABLED
 			last_save_time = FileAccess::get_modified_time(get_resource_path().path_join("project.godot"));
+			last_save_md5 = FileAccess::get_md5(get_resource_path().path_join("project.godot"));
+#endif
 			return OK;
 		}
 		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error parsing '%s' at line %d: %s File might be corrupted.", p_path, lines, error_text));
@@ -1068,9 +1071,12 @@ void ProjectSettings::clear(const String &p_name) {
 
 Error ProjectSettings::save() {
 	Error error = save_custom(get_resource_path().path_join("project.godot"));
+#ifdef TOOLS_ENABLED
 	if (error == OK) {
 		last_save_time = FileAccess::get_modified_time(get_resource_path().path_join("project.godot"));
+		last_save_md5 = FileAccess::get_md5(get_resource_path().path_join("project.godot"));
 	}
+#endif
 	return error;
 }
 
