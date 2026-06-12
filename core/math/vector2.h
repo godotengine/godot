@@ -84,6 +84,7 @@ struct [[nodiscard]] Vector2 {
 	}
 
 	void normalize();
+	real_t safe_normalize();
 	Vector2 normalized() const;
 	bool is_normalized() const;
 
