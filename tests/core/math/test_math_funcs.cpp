@@ -338,6 +338,30 @@ TEST_CASE_TEMPLATE("[Math] range_step_decimals", T, float, double) {
 	CHECK(Math::range_step_decimals((T)-0.5) == 16);
 }
 
+TEST_CASE_TEMPLATE("[Math] count_decimals", T, float, double) {
+	CHECK(Math::count_decimals((T)-0.5) == 1);
+	CHECK(Math::count_decimals((T)0) == 0);
+	CHECK(Math::count_decimals((T)1) == 0);
+	CHECK(Math::count_decimals((T)2.1) == 1);
+	CHECK(Math::count_decimals((T)1.21) == 2);
+	CHECK(Math::count_decimals((T)1.121) == 3);
+	CHECK(Math::count_decimals((T)1.1121) == 4);
+	CHECK(Math::count_decimals((T)1.11121) == 5);
+	CHECK(Math::count_decimals((T)0.111121) == 6);
+	// Round digits beyond range
+	CHECK(Math::count_decimals((T)1.111121) == 5);
+	CHECK(Math::count_decimals((T)11.111121) == 4);
+	CHECK(Math::count_decimals((T)111.111121) == 3);
+	CHECK(Math::count_decimals((T)1111.111121) == 2);
+	CHECK(Math::count_decimals((T)11111.111121) == 1);
+	CHECK(Math::count_decimals((T)111111.111121) == 0);
+	CHECK(Math::count_decimals((T)0.1000001) == 1);
+	CHECK(Math::count_decimals((T)0.0000001) == 0);
+	CHECK(Math::count_decimals((T)0.9999994) == 6);
+	CHECK(Math::count_decimals((T)0.9999995) == 0);
+	CHECK(Math::count_decimals((T)0.0000099) == 5);
+}
+
 TEST_CASE_TEMPLATE("[Math] lerp", T, float, double) {
 	CHECK(Math::lerp((T)2.0, (T)5.0, (T)-0.1) == doctest::Approx((T)1.7));
 	CHECK(Math::lerp((T)2.0, (T)5.0, (T)0.0) == doctest::Approx((T)2.0));
