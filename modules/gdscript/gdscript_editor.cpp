@@ -214,6 +214,36 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 	return true;
 }
 
+#ifdef TOOLS_ENABLED
+static void _collect_function_executable_lines(const GDScriptFunction *p_func, HashSet<int> &r_lines) {
+	if (!p_func) {
+		return;
+	}
+	for (int line : p_func->get_executable_lines()) {
+		r_lines.insert(line);
+	}
+	for (const GDScriptFunction *lambda : p_func->get_lambdas()) {
+		_collect_function_executable_lines(lambda, r_lines);
+	}
+}
+
+void GDScriptLanguage::get_breakable_lines(const Ref<Script> &p_script, HashSet<int> &r_lines) const {
+	Ref<GDScript> gdscript = p_script;
+	if (gdscript.is_null()) {
+		return;
+	}
+	for (const KeyValue<StringName, GDScriptFunction *> &kv : gdscript->member_functions) {
+		_collect_function_executable_lines(kv.value, r_lines);
+	}
+	_collect_function_executable_lines(gdscript->implicit_initializer, r_lines);
+	_collect_function_executable_lines(gdscript->implicit_ready, r_lines);
+	_collect_function_executable_lines(gdscript->static_initializer, r_lines);
+	for (const KeyValue<StringName, Ref<GDScript>> &kv : gdscript->subclasses) {
+		get_breakable_lines(kv.value, r_lines);
+	}
+}
+#endif
+
 bool GDScriptLanguage::supports_builtin_mode() const {
 	return true;
 }
