@@ -311,7 +311,7 @@ bool Callable::operator<(const Callable &p_callable) const {
 
 		} else {
 			if (object == p_callable.object) {
-				return method < p_callable.method;
+				return String(method) < String(p_callable.method);
 			} else {
 				return object < p_callable.object;
 			}
@@ -511,7 +511,7 @@ bool Signal::operator!=(const Signal &p_signal) const {
 
 bool Signal::operator<(const Signal &p_signal) const {
 	if (object == p_signal.object) {
-		return name < p_signal.name;
+		return String(name) < String(p_signal.name);
 	} else {
 		return object < p_signal.object;
 	}
