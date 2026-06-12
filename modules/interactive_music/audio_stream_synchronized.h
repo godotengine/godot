@@ -48,6 +48,7 @@ private:
 	int stream_count = 0;
 	Ref<AudioStream> audio_streams[MAX_STREAMS];
 	float audio_stream_volume_db[MAX_STREAMS] = {};
+	float audio_stream_offset[MAX_STREAMS] = {};
 	HashSet<AudioStreamPlaybackSynchronized *> playbacks;
 
 public:
@@ -61,6 +62,8 @@ public:
 	Ref<AudioStream> get_sync_stream(int p_stream_index) const;
 	void set_sync_stream_volume(int p_stream_index, float p_db);
 	float get_sync_stream_volume(int p_stream_index) const;
+	void set_sync_stream_offset(int p_stream_index, float p_offset);
+	float get_sync_stream_offset(int p_stream_index) const;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
@@ -91,15 +94,17 @@ private:
 
 	int play_order[AudioStreamSynchronized::MAX_STREAMS];
 
-	double stream_todo = 0.0;
-	int fade_index = -1;
-	double fade_volume = 1.0;
-	int play_index = 0;
-	double offset = 0.0;
+	// double stream_todo = 0.0;
+	// int fade_index = -1;
+	// double fade_volume = 1.0;
+	// int play_index = 0;
+	// double offset = 0.0;
 
-	int loop_count = 0;
+	// int loop_count = 0;
 
 	bool active = false;
+
+	double playback_position = 0.0;
 
 	void _update_playback_instances();
 
