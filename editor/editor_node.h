@@ -863,7 +863,8 @@ public:
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
 	String get_preview_locale() const;
-	void set_preview_locale(const String &p_locale);
+	bool is_pseudolocalization_enabled() const;
+	void set_preview_locale(const String &p_locale, bool p_pseudolocalization);
 
 	int new_scene();
 	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false, bool p_update_tabs = true);

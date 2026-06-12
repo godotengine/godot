@@ -1036,7 +1036,7 @@ void EditorNode::_notification(int p_what) {
 			// Remember the selected locale to preview node translations.
 			const String preview_locale = EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "preview_locale", String());
 			if (!preview_locale.is_empty() && TranslationServer::get_singleton()->has_translation_for_locale(preview_locale, true)) {
-				set_preview_locale(preview_locale);
+				set_preview_locale(preview_locale, false);
 			}
 
 			if (Engine::get_singleton()->is_recovery_mode_hint()) {
@@ -4616,9 +4616,15 @@ String EditorNode::get_preview_locale() const {
 	return main_domain->is_enabled() ? main_domain->get_locale_override() : String();
 }
 
-void EditorNode::set_preview_locale(const String &p_locale) {
+bool EditorNode::is_pseudolocalization_enabled() const {
+	const Ref<TranslationDomain> &main_domain = TranslationServer::get_singleton()->get_main_domain();
+	return main_domain->is_pseudolocalization_enabled();
+}
+
+void EditorNode::set_preview_locale(const String &p_locale, bool p_pseudolocalization) {
 	const String &prev_locale = get_preview_locale();
-	if (prev_locale == p_locale) {
+	bool prev_pseudo = is_pseudolocalization_enabled();
+	if (prev_locale == p_locale && prev_pseudo == p_pseudolocalization) {
 		return;
 	}
 
@@ -4627,13 +4633,15 @@ void EditorNode::set_preview_locale(const String &p_locale) {
 	Ref<TranslationDomain> main_domain = TranslationServer::get_singleton()->get_main_domain();
 	if (p_locale.is_empty()) {
 		// Disable preview. Use the fallback locale.
-		main_domain->set_enabled(false);
 		main_domain->set_locale_override(TranslationServer::get_singleton()->get_fallback_locale());
 	} else {
 		// Preview a specific locale.
-		main_domain->set_enabled(true);
 		main_domain->set_locale_override(p_locale);
 	}
+	main_domain->set_pseudolocalization_enabled(p_pseudolocalization);
+	// Texts set in the editor could be identifiers that should never be translated.
+	// So we need to disable translation entirely.
+	main_domain->set_enabled(p_pseudolocalization || !p_locale.is_empty());
 
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "preview_locale", p_locale);
 
