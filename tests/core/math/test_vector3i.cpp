@@ -131,6 +131,27 @@ TEST_CASE("[Vector3i] Operators") {
 	CHECK_MESSAGE(
 			Vector3i(Vector3(1.1, 2.9, 3.9)) == Vector3i(1, 2, 3),
 			"Vector3i constructed from Vector3 should work as expected.");
+
+	CHECK_MESSAGE(
+			(Vector3i(1, 2, 3) + 1) == Vector3i(2, 3, 4),
+			"Vector3i + int should give expected results.");
+	CHECK_MESSAGE(
+			(Vector3i(1, 2, 3) - 3) == Vector3i(-2, -1, 0),
+			"Vector3i - int should give expected results.");
+	{
+		Vector3i v(1, 2, 3);
+		v += -5;
+		CHECK_MESSAGE(
+				v == Vector3i(-4, -3, -2),
+				"Vector3i += int should give expected results.");
+	}
+	{
+		Vector3i v(1, 2, 3);
+		v -= -5;
+		CHECK_MESSAGE(
+				v == Vector3i(6, 7, 8),
+				"Vector3i -= int should give expected results.");
+	}
 }
 
 TEST_CASE("[Vector3i] Other methods") {
