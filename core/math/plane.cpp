@@ -44,11 +44,11 @@ void Plane::normalize() {
 	}
 #endif // MATH_CHECKS
 
-	real_t l = normal.length();
-	if (l == 0) {
+	if (normal.is_zero_approx()) {
 		zero();
 		return;
 	}
+	real_t l = normal.length();
 	normal /= l;
 	d /= l;
 }

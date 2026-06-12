@@ -228,7 +228,7 @@
 			<return type="Vector4" />
 			<description>
 				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. Returns [code](0, 0, 0, 0)[/code] if [code]v.length() == 0[/code]. See also [method is_normalized].
-				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
+				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero. See also [method is_zero_approx].
 			</description>
 		</method>
 		<method name="posmod" qualifiers="const">
