@@ -43,8 +43,13 @@ bool Object::_is_class_bind_compat_118582(const String &p_name) const {
 	return false;
 }
 
+Variant Object::_get_bind_compat_118717(const StringName &p_name) const {
+	return _get_bind(p_name, Variant());
+}
+
 void Object::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("is_class", "class"), &Object::_is_class_bind_compat_118582);
+	ClassDB::bind_compatibility_method(D_METHOD("get", "property"), &Object::_get_bind_compat_118717);
 }
 
 #else

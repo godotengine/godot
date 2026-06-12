@@ -478,7 +478,7 @@ private:
 	TypedArray<Dictionary> _get_signal_connection_list(const StringName &p_signal) const;
 	TypedArray<Dictionary> _get_incoming_connections() const;
 	void _set_bind(const StringName &p_set, const Variant &p_value);
-	Variant _get_bind(const StringName &p_name) const;
+	Variant _get_bind(const StringName &p_name, const Variant &p_default) const;
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 	int _get_method_argument_count_bind(const StringName &p_name) const;
@@ -615,6 +615,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	bool _is_class_bind_compat_118582(const String &p_name) const;
+	Variant _get_bind_compat_118717(const StringName &p_name) const;
 #endif
 
 public: // Should be protected, but bug in clang++.
