@@ -84,6 +84,7 @@
 #include "servers/text/text_server_dummy.h"
 
 #include "modules/register_module_types.h"
+#include "modules/visualizer_3d/visualizer_3d.h"
 #include "platform/register_platform_apis.h"
 
 // 2D
@@ -5018,6 +5019,8 @@ bool Main::iteration() {
 		GodotProfileZoneGrouped(_profile_zone, "NavigationServer3D::physics_process");
 		NavigationServer3D::get_singleton()->physics_process(physics_step * time_scale);
 #endif // NAVIGATION_3D_DISABLED
+
+		Visualizer3D::get_singleton()->process(physics_step * time_scale);
 
 		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
 		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);

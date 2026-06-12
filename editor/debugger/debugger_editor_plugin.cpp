@@ -80,6 +80,9 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_avoidance", TTRC("Visible Avoidance")), RUN_DEBUG_AVOIDANCE);
 	debug_menu->set_item_tooltip(-1,
 			TTRC("When this option is enabled, avoidance object shapes, radiuses, and velocities will be visible in the running project."));
+	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_debug_lines", TTRC("Visible Debug Lines")), RUN_DEBUG_LINES);
+	debug_menu->set_item_tooltip(-1,
+			TTRC("When this option is enabled, debug line drawing will be visible in the running project."));
 	debug_menu->add_separator();
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_canvas_redraw", TTRC("Debug CanvasItem Redraws")), RUN_DEBUG_CANVAS_REDRAW);
 	debug_menu->set_item_tooltip(-1,
@@ -178,6 +181,14 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			}
 
 		} break;
+		case RUN_DEBUG_LINES: {
+			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_LINES));
+			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_LINES), !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_lines", !ischecked);
+			}
+
+		} break;
 		case RUN_DEBUG_CANVAS_REDRAW: {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_CANVAS_REDRAW));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_CANVAS_REDRAW), !ischecked);
@@ -233,6 +244,7 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	bool check_debug_avoidance = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_avoidance", false);
+	bool check_debug_lines = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_lines", false);
 	bool check_debug_canvas_redraw = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_canvas_redraw", false);
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
@@ -255,6 +267,9 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	}
 	if (check_debug_avoidance) {
 		_menu_option(RUN_DEBUG_AVOIDANCE);
+	}
+	if (check_debug_lines) {
+		_menu_option(RUN_DEBUG_LINES);
 	}
 	if (check_debug_canvas_redraw) {
 		_menu_option(RUN_DEBUG_CANVAS_REDRAW);

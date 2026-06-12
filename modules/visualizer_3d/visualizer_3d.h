@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  debugger_editor_plugin.h                                              */
+/*  visualizer_3d.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,45 +30,51 @@
 
 #pragma once
 
-#include "editor/plugins/editor_plugin.h"
+#include "core/object/object.h"
+#include "core/templates/local_vector.h"
+#include "scene/resources/material.h"
 
-class EditorFileServer;
-class MenuButton;
-class PopupMenu;
-class RunInstancesDialog;
+class Visualizer3D : public Object {
+	GDCLASS(Visualizer3D, Object);
 
-class DebuggerEditorPlugin : public EditorPlugin {
-	GDCLASS(DebuggerEditorPlugin, EditorPlugin);
+	static Visualizer3D *singleton;
 
-private:
-	PopupMenu *debug_menu = nullptr;
-	EditorFileServer *file_server = nullptr;
-	RunInstancesDialog *run_instances_dialog = nullptr;
-
-	enum MenuOptions {
-		RUN_FILE_SERVER,
-		RUN_LIVE_DEBUG,
-		RUN_DEBUG_COLLISIONS,
-		RUN_DEBUG_PATHS,
-		RUN_DEBUG_NAVIGATION,
-		RUN_DEBUG_AVOIDANCE,
-		RUN_DEBUG_LINES,
-		RUN_DEBUG_CANVAS_REDRAW,
-		RUN_DEPLOY_REMOTE_DEBUG,
-		RUN_RELOAD_SCRIPTS,
-		SERVER_KEEP_OPEN,
-		RUN_MULTIPLE_INSTANCES,
+	struct DebugLine {
+		Vector3 from;
+		Vector3 to;
+		Color color;
+		float width;
+		float remaining_time;
 	};
 
-	bool initializing = true;
+	LocalVector<DebugLine> lines;
 
-	void _update_debug_options();
-	void _notification(int p_what);
-	void _menu_option(int p_option);
+	RID mesh_rid;
+	RID instance_rid;
+	RID scenario_rid;
+	Ref<ShaderMaterial> debug_material;
+	bool rs_initialized = false;
+
+	void _ensure_rs_resources();
+	void _free_rs_resources();
+	void _rebuild_mesh();
+	RID _get_active_scenario() const;
+
+protected:
+	static void _bind_methods();
 
 public:
-	virtual String get_plugin_name() const override { return "Debugger"; }
+	static Visualizer3D *get_singleton();
 
-	DebuggerEditorPlugin(PopupMenu *p_menu);
-	~DebuggerEditorPlugin();
+	void line(const Vector3 &from, const Vector3 &to, float duration = 0.0f, const Color &color = Color(1, 1, 1), float width = 1.0f);
+	void arrow(const Vector3 &from, const Vector3 &to, float duration = 0.0f, const Color &color = Color(1, 1, 1), float width = 1.0f);
+	void wire_box(const Vector3 &position, float size, const Vector3 &rotation = Vector3(), float duration = 0.0f, const Color &color = Color(1, 1, 1), float width = 1.0f);
+	void wire_sphere(const Vector3 &position, float radius, float duration = 0.0f, const Color &color = Color(1, 1, 1), float width = 1.0f);
+
+	void clear();
+
+	virtual void process(double p_delta_time);
+
+	Visualizer3D();
+	~Visualizer3D();
 };
