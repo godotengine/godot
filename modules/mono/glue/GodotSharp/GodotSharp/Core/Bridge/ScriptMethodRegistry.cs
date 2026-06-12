@@ -1,0 +1,29 @@
+using System.Collections.Frozen;
+using System.Collections.Generic;
+
+namespace Godot.Bridge
+{
+    public sealed class ScriptMethodRegistry<T> :
+        ScriptRegistry<T, ScriptMethod, ScriptCache<ScriptMethod>,
+            ScriptMethodRegistry<T>>
+        where T : GodotObject
+    {
+        private static List<string> _mostUsedMethods = [
+            GodotObject.MethodName.Notification,
+            Node.MethodName._Process,
+            Node.MethodName._PhysicsProcess,
+            CanvasItem.MethodName._Draw,
+            Node.MethodName._Input,
+            Node.MethodName._UnhandledInput,
+            Control.MethodName._GuiInput,
+            Node.MethodName._Ready,
+            Node.MethodName._EnterTree,
+            Node.MethodName._ExitTree,
+        ];
+
+        protected override ScriptCache<ScriptMethod> InitializeCache((MethodKey, ScriptMethod)[] methods)
+        {
+            return new ScriptCache<ScriptMethod>(methods, _mostUsedMethods);
+        }
+    }
+}
