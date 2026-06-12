@@ -241,8 +241,6 @@ public:
 	bool area_shape_exited(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id);
 
 	bool shape_exited(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id);
-	void body_exited(const JPH::BodyID &p_body_id, bool p_notify = true);
-	void area_exited(const JPH::BodyID &p_body_id);
 
 	void call_queries();
 

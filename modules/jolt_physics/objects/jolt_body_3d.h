@@ -135,7 +135,7 @@ private:
 
 	void _destroy_joint_constraints();
 
-	void _exit_all_areas();
+	void _clear_areas();
 
 	void _mode_changed();
 	virtual void _shapes_committed() override;
