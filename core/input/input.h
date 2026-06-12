@@ -227,7 +227,9 @@ private:
 	HashMap<int, VelocityTrack> touch_velocity_track;
 	HashMap<int, Joypad> joy_names;
 
+#ifndef DISABLE_DEPRECATED
 	HashSet<uint32_t> ignored_device_ids;
+#endif // DISABLE_DEPRECATED
 
 	int fallback_mapping = -1; // Index of the guid in map_db.
 
@@ -465,7 +467,9 @@ public:
 
 	bool is_joy_known(int p_device);
 	String get_joy_guid(int p_device) const;
+#ifndef DISABLE_DEPRECATED
 	bool should_ignore_device(int p_vendor_id, int p_product_id) const;
+#endif // DISABLE_DEPRECATED
 	Dictionary get_joy_info(int p_device) const;
 	void set_fallback_mapping(const String &p_guid);
 
