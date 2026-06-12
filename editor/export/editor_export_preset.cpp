@@ -333,7 +333,16 @@ bool EditorExportPreset::is_runnable() const {
 }
 
 bool EditorExportPreset::are_advanced_options_enabled() const {
-	return EDITOR_GET("_export_preset_advanced_mode");
+	return options_search_active || EDITOR_GET("_export_preset_advanced_mode");
+}
+
+void EditorExportPreset::set_options_search_active(bool p_active) {
+	if (options_search_active == p_active) {
+		return;
+	}
+
+	options_search_active = p_active;
+	notify_property_list_changed();
 }
 
 void EditorExportPreset::set_dedicated_server(bool p_enable) {
