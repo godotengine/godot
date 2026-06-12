@@ -181,7 +181,7 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitInitialize(audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	if (GLOBAL_GET("audio/driver/enable_input")) {
+	if (GLOBAL_GET("audio/driver/enable_input") && OS::get_singleton()->request_permission("RECORD_AUDIO")) {
 		return init_input_device();
 	}
 	return OK;
