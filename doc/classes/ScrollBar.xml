@@ -23,6 +23,9 @@
 		</signal>
 	</signals>
 	<theme_items>
+		<theme_item name="icon_max_size" data_type="constant" type="int" default="0">
+			The maximum allowed size of the [ScrollBar]'s increase and decrease icons. The texture is scaled down so its widest axis is [theme_item icon_max_size] and the other axis is scaled keeping the original ratio.
+		</theme_item>
 		<theme_item name="decrement" data_type="icon" type="Texture2D">
 			Icon used as a button to scroll the [ScrollBar] left/up. Supports custom step using the [member ScrollBar.custom_step] property.
 		</theme_item>
