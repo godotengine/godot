@@ -202,9 +202,6 @@ struct Texture {
 
 	RenderTarget *render_target = nullptr;
 
-	Ref<Image> image_cache_2d;
-	Vector<Ref<Image>> image_cache_3d;
-
 	bool redraw_if_visible = false;
 
 	RenderingServerTypes::TextureDetectCallback detect_3d_callback = nullptr;
