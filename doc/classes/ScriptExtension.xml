@@ -7,6 +7,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_callp" qualifiers="virtual">
+			<return type="Dictionary" />
+			<param index="0" name="method" type="StringName" />
+			<param index="1" name="args" type="Array" />
+			<description>
+			</description>
+		</method>
 		<method name="_can_instantiate" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>

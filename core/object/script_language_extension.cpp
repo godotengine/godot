@@ -85,6 +85,8 @@ void ScriptExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_get_rpc_config);
 
+	GDVIRTUAL_BIND(_callp, "method", "args");
+
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_instance_has, "object");
 #endif // !DISABLE_DEPRECATED
