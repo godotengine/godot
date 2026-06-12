@@ -45,10 +45,6 @@ Ref<AudioStreamPlayback> AudioStreamSynchronized::instantiate_playback() {
 	return playback_playlist;
 }
 
-String AudioStreamSynchronized::get_stream_name() const {
-	return "Synchronized";
-}
-
 void AudioStreamSynchronized::set_sync_stream(int p_stream_index, Ref<AudioStream> p_stream) {
 	ERR_FAIL_COND(p_stream == this);
 	ERR_FAIL_INDEX(p_stream_index, MAX_STREAMS);

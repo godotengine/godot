@@ -45,7 +45,6 @@ class AudioStreamPolyphonic : public AudioStream {
 
 public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 	virtual bool is_monophonic() const override;
 
 	void set_polyphony(int p_voices);

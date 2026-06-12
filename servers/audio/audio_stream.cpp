@@ -244,11 +244,6 @@ Ref<AudioStreamPlayback> AudioStream::instantiate_playback() {
 	GDVIRTUAL_CALL(_instantiate_playback, ret);
 	return ret;
 }
-String AudioStream::get_stream_name() const {
-	String ret;
-	GDVIRTUAL_CALL(_get_stream_name, ret);
-	return ret;
-}
 
 double AudioStream::get_length() const {
 	double ret = 0;
@@ -340,7 +335,9 @@ void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_meta_stream"), &AudioStream::is_meta_stream);
 
 	GDVIRTUAL_BIND(_instantiate_playback);
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_get_stream_name);
+#endif
 	GDVIRTUAL_BIND(_get_length);
 	GDVIRTUAL_BIND(_is_monophonic);
 	GDVIRTUAL_BIND(_get_bpm)
@@ -365,13 +362,6 @@ Ref<AudioStreamPlayback> AudioStreamMicrophone::instantiate_playback() {
 	playback->active = false;
 
 	return playback;
-}
-
-String AudioStreamMicrophone::get_stream_name() const {
-	//if (audio_stream.is_valid()) {
-	//return "Random: " + audio_stream->get_name();
-	//}
-	return "Microphone";
 }
 
 double AudioStreamMicrophone::get_length() const {
@@ -718,10 +708,6 @@ Ref<AudioStreamPlayback> AudioStreamRandomizer::instantiate_playback() {
 		default:
 			ERR_FAIL_V_MSG(nullptr, "Unhandled playback mode.");
 	}
-}
-
-String AudioStreamRandomizer::get_stream_name() const {
-	return "Randomizer";
 }
 
 double AudioStreamRandomizer::get_length() const {
