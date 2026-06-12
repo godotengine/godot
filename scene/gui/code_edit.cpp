@@ -1294,16 +1294,44 @@ int CodeEdit::_calculate_spaces_till_next_right_indent(int p_column) const {
 	return indent_size - p_column % indent_size;
 }
 
-void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
+void CodeEdit::_new_line(bool p_split_current_line, bool p_above, int p_caret_to_work_from) {
 	if (!is_editable()) {
 		return;
 	}
 
-	begin_complex_operation();
-	begin_multicaret_edit();
+	if (p_above) {
+		begin_complex_operation();
+		begin_multicaret_edit();
+
+		for (int i = get_caret_count() - 1; i >= 0; i--) {
+			const int caret_line = get_caret_line(i);
+			// Special case for the first line
+			if (caret_line == 0) {
+				set_caret_column(0, i == 0, i);
+				_new_line(true, false, i);
+				set_caret_line(caret_line, false, true, -1, i);
+			} else {
+				set_caret_line(caret_line - 1, false, true, -1, i);
+				set_caret_column(get_line(get_caret_line(i)).length(), i == 0, i);
+				_new_line(false, false, i);
+			}
+		}
+		end_multicaret_edit();
+		end_complex_operation();
+		return;
+	}
+
+	// Only make another operation if we did not come from the p_above section above.
+	if (p_caret_to_work_from == -1) {
+		begin_complex_operation();
+		begin_multicaret_edit();
+	}
 
 	for (int i = 0; i < get_caret_count(); i++) {
 		if (multicaret_edit_ignore_caret(i)) {
+			continue;
+		}
+		if (p_caret_to_work_from != -1 && i != p_caret_to_work_from) {
 			continue;
 		}
 		// When not splitting the line, we need to factor in indentation from the end of the current line.
@@ -1312,10 +1340,7 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 
 		const String line = get_line(cl);
 
-		String ins = "";
-		if (!p_above) {
-			ins = "\n";
-		}
+		String ins = "\n";
 
 		// Append current indentation.
 		int space_count = 0;
@@ -1338,16 +1363,13 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 			}
 			break;
 		}
-		if (p_above) {
-			ins += "\n";
-		}
 
 		if (is_line_folded(cl)) {
 			unfold_line(cl);
 		}
 
 		// Indent once again if the previous line needs it, ie ':'.
-		// Then add an addition new line for any closing pairs aka '()'.
+		// Then add an additional new line for any closing pairs aka '()'.
 		// Skip this in comments or if we are going above.
 		bool brace_indent = false;
 		if (auto_indent && !p_above && cc > 0 && is_in_comment(cl) == -1) {
@@ -1401,8 +1423,10 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 		}
 	}
 
-	end_multicaret_edit();
-	end_complex_operation();
+	if (p_caret_to_work_from == -1) {
+		end_multicaret_edit();
+		end_complex_operation();
+	}
 }
 
 /* Auto brace completion */
