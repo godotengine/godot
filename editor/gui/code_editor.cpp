@@ -50,6 +50,10 @@
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
 
+#ifdef ANDROID_ENABLED
+#include "editor/script/coding_symbols_panel.h"
+#endif
+
 void GotoLinePopup::popup_find_line(CodeTextEditor *p_text_editor) {
 	text_editor = p_text_editor;
 
@@ -1945,6 +1949,11 @@ void CodeTextEditor::update_toggle_files_button() {
 	toggle_files_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Files Panel"), ED_GET_SHORTCUT("script_editor/toggle_files_panel")->get_as_text()));
 }
 
+void CodeTextEditor::_on_coding_symbol_selected(const String &p_symbol) {
+	ERR_FAIL_NULL(text_editor);
+	text_editor->insert_text_at_caret(p_symbol);
+}
+
 CodeTextEditor::CodeTextEditor() {
 	code_complete_func = nullptr;
 	ED_SHORTCUT("script_editor/zoom_in", TTRC("Zoom In"), KeyModifierMask::CMD_OR_CTRL | Key::EQUAL);
@@ -1957,6 +1966,12 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	text_editor->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_GDSCRIPT);
 	text_editor->set_draw_bookmarks_gutter(true);
+
+#ifdef ANDROID_ENABLED
+	CodingSymbolsPanel *csp = memnew(CodingSymbolsPanel);
+	add_child(csp);
+	csp->connect("symbol_selected", callable_mp(this, &CodeTextEditor::_on_coding_symbol_selected));
+#endif
 
 	text_editor->set_virtual_keyboard_show_on_focus(false);
 	text_editor->set_draw_line_numbers(true);

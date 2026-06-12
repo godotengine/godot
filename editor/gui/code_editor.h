@@ -224,6 +224,8 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _toggle_files_pressed();
 
+	void _on_coding_symbol_selected(const String &p_symbol);
+
 protected:
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
