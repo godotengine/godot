@@ -1,5 +1,7 @@
 GDTEST_OK
 true
+true
+true
 -2
 -2
 -2
@@ -14,3 +16,7 @@ true
 -255
 256
 2.0
+true
+true
+true
+true
