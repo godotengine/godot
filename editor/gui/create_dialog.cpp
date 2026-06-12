@@ -72,10 +72,10 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 
 	if (p_replace_mode) {
 		set_title(vformat(TTR("Change Type of \"%s\""), p_current_name));
-		set_ok_button_text(TTR("Change"));
+		set_ok_button_text(TTRC("Change"));
 	} else {
 		set_title(vformat(TTR("Create New %s"), base_type));
-		set_ok_button_text(TTR("Create"));
+		set_ok_button_text(TTRC("Create"));
 	}
 
 	_load_favorites_and_history();
@@ -1007,7 +1007,7 @@ CreateDialog::CreateDialog() {
 	favorites->add_theme_constant_override("draw_guides", 1);
 	favorites->set_theme_type_variation("TreeSecondary");
 	SET_DRAG_FORWARDING_GCD(favorites, CreateDialog);
-	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
+	fav_vb->add_margin_child(TTRC("Favorites:"), favorites, true);
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
 	vsc->add_child(rec_vb);
@@ -1017,7 +1017,7 @@ CreateDialog::CreateDialog() {
 	recent = memnew(ItemList);
 	recent->set_accessibility_name(TTRC("Recent:"));
 	recent->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
+	rec_vb->add_margin_child(TTRC("Recent:"), recent, true);
 	recent->set_allow_reselect(true);
 	recent->connect(SceneStringName(item_selected), callable_mp(this, &CreateDialog::_history_selected));
 	recent->connect("item_activated", callable_mp(this, &CreateDialog::_history_activated));
@@ -1040,10 +1040,10 @@ CreateDialog::CreateDialog() {
 
 	favorite = memnew(Button);
 	favorite->set_toggle_mode(true);
-	favorite->set_tooltip_text(TTR("(Un)favorite selected item."));
+	favorite->set_tooltip_text(TTRC("(Un)favorite selected item."));
 	favorite->connect(SceneStringName(pressed), callable_mp(this, &CreateDialog::_favorite_toggled));
 	search_hb->add_child(favorite);
-	vbc->add_margin_child(TTR("Search:"), search_hb);
+	vbc->add_margin_child(TTRC("Search:"), search_hb);
 
 	HBoxContainer *matches_hb = memnew(HBoxContainer);
 	vbc->add_child(matches_hb);
@@ -1094,7 +1094,7 @@ CreateDialog::CreateDialog() {
 
 	VBoxContainer *vbc_desc = memnew(VBoxContainer);
 	vbc_desc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
-	vbc_desc->add_margin_child(TTR("Description:"), help_bit, true);
+	vbc_desc->add_margin_child(TTRC("Description:"), help_bit, true);
 
 	vsc_right->add_child(vbc_desc);
 

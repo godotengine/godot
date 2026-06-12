@@ -8929,7 +8929,7 @@ EditorNode::EditorNode() {
 
 	// Command palette and editor shortcuts.
 	command_palette = EditorCommandPalette::get_singleton();
-	command_palette->set_title(TTR("Command Palette"));
+	command_palette->set_title(TTRC("Command Palette"));
 	gui_base->add_child(command_palette);
 
 	ED_SHORTCUT("editor/next_tab", TTRC("Next Scene Tab"), KeyModifierMask::CTRL + Key::TAB);
@@ -9275,14 +9275,14 @@ EditorNode::EditorNode() {
 	save_confirmation->connect("about_to_popup", callable_mp(this, &EditorNode::_prepare_save_confirmation_popup));
 
 	gradle_build_manage_templates = memnew(ConfirmationDialog);
-	gradle_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
-	gradle_build_manage_templates->set_ok_button_text(TTR("Manage Templates"));
-	gradle_build_manage_templates->add_button(TTR("Install from file"))->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_android_install_build_template));
+	gradle_build_manage_templates->set_text(TTRC("Android build template is missing, please install relevant templates."));
+	gradle_build_manage_templates->set_ok_button_text(TTRC("Manage Templates"));
+	gradle_build_manage_templates->add_button(TTRC("Install from file"))->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_android_install_build_template));
 	gradle_build_manage_templates->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind(EDITOR_MANAGE_EXPORT_TEMPLATES));
 	gui_base->add_child(gradle_build_manage_templates);
 
 	file_android_build_source = memnew(EditorFileDialog);
-	file_android_build_source->set_title(TTR("Select Android sources file"));
+	file_android_build_source->set_title(TTRC("Select Android sources file"));
 	file_android_build_source->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_android_build_source->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_android_build_source->add_filter("*.zip");
@@ -9302,7 +9302,7 @@ EditorNode::EditorNode() {
 		vbox->add_child(choose_android_export_profile);
 
 		install_android_build_template = memnew(ConfirmationDialog);
-		install_android_build_template->set_ok_button_text(TTR("Install"));
+		install_android_build_template->set_ok_button_text(TTRC("Install"));
 		install_android_build_template->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
 		install_android_build_template->add_child(vbox);
 		install_android_build_template->set_min_size(Vector2(500.0 * EDSCALE, 0));
@@ -9315,13 +9315,13 @@ EditorNode::EditorNode() {
 	gui_base->add_child(remove_android_build_template);
 
 	file_templates = memnew(EditorFileDialog);
-	file_templates->set_title(TTR("Import Templates From ZIP File"));
+	file_templates->set_title(TTRC("Import Templates From ZIP File"));
 
 	gui_base->add_child(file_templates);
 	file_templates->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_templates->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_templates->clear_filters();
-	file_templates->add_filter("*.tpz", TTR("Template Package"));
+	file_templates->add_filter("*.tpz", TTRC("Template Package"));
 
 	file = memnew(EditorFileDialog);
 	gui_base->add_child(file);
@@ -9329,11 +9329,11 @@ EditorNode::EditorNode() {
 	file->set_transient_to_focused(true);
 
 	file_export_lib = memnew(EditorFileDialog);
-	file_export_lib->set_title(TTR("Export Library"));
+	file_export_lib->set_title(TTRC("Export Library"));
 	file_export_lib->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_export_lib->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
-	file_export_lib->add_option(TTR("Merge With Existing"), Vector<String>(), true);
-	file_export_lib->add_option(TTR("Apply MeshInstance Transforms"), Vector<String>(), false);
+	file_export_lib->add_option(TTRC("Merge With Existing"), Vector<String>(), true);
+	file_export_lib->add_option(TTRC("Apply MeshInstance Transforms"), Vector<String>(), false);
 	gui_base->add_child(file_export_lib);
 
 	file_pack_zip = memnew(EditorFileDialog);
@@ -9341,7 +9341,7 @@ EditorNode::EditorNode() {
 	file_pack_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_pack_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_pack_zip->add_filter("*.zip", "ZIP Archive");
-	file_pack_zip->set_title(TTR("Pack Project as ZIP..."));
+	file_pack_zip->set_title(TTRC("Pack Project as ZIP..."));
 	gui_base->add_child(file_pack_zip);
 
 	file->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
@@ -9354,13 +9354,13 @@ EditorNode::EditorNode() {
 
 	disk_changed = memnew(ConfirmationDialog);
 	{
-		disk_changed->set_title(TTR("Files have been modified outside Godot"));
+		disk_changed->set_title(TTRC("Files have been modified outside Godot"));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		disk_changed->add_child(vbc);
 
 		Label *dl = memnew(Label);
-		dl->set_text(TTR("The following files are newer on disk:"));
+		dl->set_text(TTRC("The following files are newer on disk:"));
 		vbc->add_child(dl);
 
 		disk_changed_list = memnew(Tree);
@@ -9369,14 +9369,14 @@ EditorNode::EditorNode() {
 		disk_changed_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 		Label *what_action_label = memnew(Label);
-		what_action_label->set_text(TTR("What action should be taken?"));
+		what_action_label->set_text(TTRC("What action should be taken?"));
 		vbc->add_child(what_action_label);
 
 		disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_reload_modified_scenes));
 		disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_reload_project_settings));
-		disk_changed->set_ok_button_text(TTR("Reload from disk"));
+		disk_changed->set_ok_button_text(TTRC("Reload from disk"));
 
-		disk_changed->add_button(TTR("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
+		disk_changed->add_button(TTRC("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_externally_modified_scenes));
 	}
 
@@ -9531,8 +9531,8 @@ EditorNode::EditorNode() {
 	set_process(true);
 
 	open_imported = memnew(ConfirmationDialog);
-	open_imported->set_ok_button_text(TTR("Open Anyway"));
-	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "inherit");
+	open_imported->set_ok_button_text(TTRC("Open Anyway"));
+	new_inherited_button = open_imported->add_button(TTRC("New Inherited"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "inherit");
 	open_imported->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_open_imported));
 	open_imported->connect("custom_action", callable_mp(this, &EditorNode::_inherit_imported));
 	gui_base->add_child(open_imported);
@@ -9551,7 +9551,7 @@ EditorNode::EditorNode() {
 	load_error_dialog = memnew(AcceptDialog);
 	load_error_dialog->set_unparent_when_invisible(true);
 	load_error_dialog->add_child(load_errors);
-	load_error_dialog->set_title(TTR("Load Errors"));
+	load_error_dialog->set_title(TTRC("Load Errors"));
 	load_error_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorNode::_load_error_dialog_visibility_changed));
 
 	execute_outputs = memnew(RichTextLabel);
@@ -9572,9 +9572,9 @@ EditorNode::EditorNode() {
 
 	pick_main_scene = memnew(ConfirmationDialog);
 	gui_base->add_child(pick_main_scene);
-	pick_main_scene->set_ok_button_text(TTR("Select"));
+	pick_main_scene->set_ok_button_text(TTRC("Select"));
 	pick_main_scene->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind(SETTINGS_PICK_MAIN_SCENE));
-	select_current_scene_button = pick_main_scene->add_button(TTR("Select Current"), true, "select_current");
+	select_current_scene_button = pick_main_scene->add_button(TTRC("Select Current"), true, "select_current");
 	pick_main_scene->connect("custom_action", callable_mp(this, &EditorNode::_pick_main_scene_custom_action));
 
 	open_project_settings = memnew(ConfirmationDialog);
