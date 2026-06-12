@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    env.module_add_dependencies("gltf", ["csg", "gridmap"], True)
+    env.module_add_dependencies("gltf", ["csg", "gridmap", "meshoptimizer"], True)
     return not env["disable_3d"]
 
 

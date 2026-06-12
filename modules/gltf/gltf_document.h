@@ -38,6 +38,8 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 
+#include "modules/modules_enabled.gen.h" // For meshoptimizer.
+
 class CSGShape3D;
 class GridMap;
 
@@ -154,6 +156,15 @@ private:
 	PackedColorArray _decode_accessor_as_color(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids = PackedInt32Array());
 	Vector<Quaternion> _decode_accessor_as_quaternion(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index);
 	Array _decode_accessor_as_variants(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, Variant::Type p_variant_type);
+#ifdef GLTF_HAS_DRACO
+	Error _decode_draco_mesh_compression(Ref<GLTFState> p_state);
+	Error _decode_draco_primitive(Ref<GLTFState> p_state, Dictionary &r_mesh_prim);
+	Error _write_decoded_draco_accessor_data(Ref<GLTFState> p_state, GLTFAccessorIndex p_accessor_index, const PackedByteArray &p_data, GLTFBufferView::ArrayBufferTarget p_target);
+#endif // GLTF_HAS_DRACO
+#ifdef MODULE_MESHOPTIMIZER_ENABLED
+	Error _decode_meshopt_compression(Ref<GLTFState> p_state);
+	Error _decode_meshopt_buffer_view(Ref<GLTFState> p_state, Dictionary &r_buffer_view);
+#endif // MODULE_MESHOPTIMIZER_ENABLED
 	Error _parse_meshes(Ref<GLTFState> p_state);
 	Error _serialize_textures(Ref<GLTFState> p_state);
 	Error _serialize_texture_samplers(Ref<GLTFState> p_state);
