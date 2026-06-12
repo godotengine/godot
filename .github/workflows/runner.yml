@@ -37,6 +37,24 @@ jobs:
     with:
       changed-files: ${{ needs.static-checks.outputs.changed-files }}
 
+  freebsd-build:
+    name: 😈 FreeBSD
+    needs: static-checks
+    if: needs.static-checks.outputs.sources-changed == 'true' || github.event_name != 'pull_request'
+    uses: ./.github/workflows/freebsd_builds.yml
+
+  openbsd-build:
+    name: 🐡 OpenBSD
+    needs: static-checks
+    if: needs.static-checks.outputs.sources-changed == 'true' || github.event_name != 'pull_request'
+    uses: ./.github/workflows/openbsd_builds.yml
+
+  netbsd-build:
+    name: 🚩 NetBSD
+    needs: static-checks
+    if: needs.static-checks.outputs.sources-changed == 'true' || github.event_name != 'pull_request'
+    uses: ./.github/workflows/netbsd_builds.yml
+
   macos-build:
     name: 🍎 macOS
     needs: static-checks

@@ -1,0 +1,91 @@
+name: 😈 FreeBSD Builds
+on:
+  workflow_call:
+  workflow_dispatch:
+
+# Global Settings
+env:
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    module_text_server_fb_enabled=yes
+
+jobs:
+  build-freebsd:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (target=editor)
+            cache-name: freebsd-editor
+            target: editor
+            bin: ./bin/godot.linuxbsd.editor.x86_64
+            artifact: true
+
+          - name: Template, release (target=template_release)
+            cache-name: freebsd-template
+            target: template_release
+            bin: ./bin/godot.linuxbsd.template_release.x86_64
+            artifact: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Start VM
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: "13.5"
+          usesh: true
+          copyback: false
+          sync-time: true
+          disable-cache: true
+          mem: 10240
+
+      - name: Setup dependencies
+        shell: freebsd {0}
+        run: |
+          pkg update
+          pkg install -y devel/scons pkgconf xorg-libraries libXcursor libXrandr libXi xorgproto libGLU alsa-lib pulseaudio wayland
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
+          platform: linuxbsd
+          target: ${{ matrix.target }}
+          shell: freebsd {0}
+
+      - name: Copy build output
+        shell: sh
+        run: |
+          /usr/bin/rsync -a --exclude .git -e ssh freebsd:/home/runner/work/ /home/runner/work/
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Prepare artifact
+        if: matrix.artifact
+        run: |
+          rm -rf ./bin/build_deps
+          strip bin/godot.*
+          chmod +x bin/godot.*
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        if: matrix.artifact
+        with:
+          name: ${{ matrix.cache-name }}
