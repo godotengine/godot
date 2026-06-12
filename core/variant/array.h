@@ -138,6 +138,7 @@ public:
 	int bsearch(const Variant &p_value, bool p_before = true) const;
 	int bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before = true) const;
 	void reverse();
+	Array reversed() const;
 
 	int find(const Variant &p_value, int p_from = 0) const;
 	int find_custom(const Callable &p_callable, int p_from = 0) const;
