@@ -460,7 +460,7 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 		}
 
 		if (only_scenes_selected) {
-			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRN("Open Scene", "Open Scenes", selected_items.size()), FILE_MENU_OPEN);
+			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TPL(TTRC("Open Scene"), TTRC("Open Scenes"), selected_items.size()), FILE_MENU_OPEN);
 		} else if (selected_items.size() == 1) {
 			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open"), FILE_MENU_OPEN);
 		} else {

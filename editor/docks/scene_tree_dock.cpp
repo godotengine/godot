@@ -362,7 +362,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action_for_history(TTRN("Instantiate Scene", "Instantiate Scenes", instances.size()), editor_data->get_current_edited_scene_history_id());
+	undo_redo->create_action_for_history(TPL(instances.size(), TTR("Instantiate Scene"), TTR("Instantiate Scenes")), editor_data->get_current_edited_scene_history_id());
 	undo_redo->add_do_method(editor_selection, "clear");
 
 	for (int i = 0; i < instances.size(); i++) {
@@ -435,7 +435,7 @@ void SceneTreeDock::_perform_create_audio_stream_players(const Vector<String> &p
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action_for_history(TTRN("Create AudioStreamPlayer", "Create AudioStreamPlayers", nodes.size()), editor_data->get_current_edited_scene_history_id());
+	undo_redo->create_action_for_history(TPL(nodes.size(), TTR("Create AudioStreamPlayer"), TTR("Create AudioStreamPlayers")), editor_data->get_current_edited_scene_history_id());
 	undo_redo->add_do_method(editor_selection, "clear");
 
 	for (int i = 0; i < nodes.size(); i++) {
