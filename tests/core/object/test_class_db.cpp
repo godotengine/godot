@@ -497,7 +497,7 @@ void validate_class(const Context &p_context, const ExposedClass &p_exposed_clas
 	}
 
 	TEST_FAIL_COND((is_derived_type && !p_context.exposed_classes.has(p_exposed_class.base)),
-			"Base type '", p_exposed_class.base.operator String(), "' does not exist, for class '", p_exposed_class.name, "'.");
+			"Base type '", p_exposed_class.base.string(), "' does not exist, for class '", p_exposed_class.name, "'.");
 
 	for (const PropertyData &F : p_exposed_class.properties) {
 		validate_property(p_context, p_exposed_class, F);

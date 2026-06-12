@@ -298,13 +298,13 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
-		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().get_slicec('/', 1);
+		if (p_name.string().begins_with("autoload/")) {
+			String node_name = p_name.string().get_slicec('/', 1);
 			if (autoloads.has(node_name)) {
 				remove_autoload(node_name);
 			}
-		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slicec('/', 1);
+		} else if (p_name.string().begins_with("global_group/")) {
+			String group_name = p_name.string().get_slicec('/', 1);
 			if (global_groups.has(group_name)) {
 				remove_global_group(group_name);
 			}
@@ -322,9 +322,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		{ // Feature overrides.
-			int dot = p_name.operator String().find_char('.');
+			int dot = p_name.string().find_char('.');
 			if (dot != -1) {
-				Vector<String> s = p_name.operator String().split(".");
+				Vector<String> s = p_name.string().split(".");
 
 				for (int i = 1; i < s.size(); i++) {
 					String feature = s[i].strip_edges();
@@ -344,8 +344,8 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
-		if (p_name.operator String().begins_with("autoload_prepend/")) {
-			String node_name = p_name.operator String().get_slicec('/', 1);
+		if (p_name.string().begins_with("autoload_prepend/")) {
+			String node_name = p_name.string().get_slicec('/', 1);
 			AutoloadInfo autoload;
 			autoload.name = node_name;
 			String path = p_value;
@@ -356,8 +356,8 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				autoload.path = path.simplify_path();
 			}
 			add_autoload(autoload, true);
-		} else if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().get_slicec('/', 1);
+		} else if (p_name.string().begins_with("autoload/")) {
+			String node_name = p_name.string().get_slicec('/', 1);
 			AutoloadInfo autoload;
 			autoload.name = node_name;
 			String path = p_value;
@@ -368,8 +368,8 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				autoload.path = path.simplify_path();
 			}
 			add_autoload(autoload);
-		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slicec('/', 1);
+		} else if (p_name.string().begins_with("global_group/")) {
+			String group_name = p_name.string().get_slicec('/', 1);
 			add_global_group(group_name, p_value);
 		}
 	}
