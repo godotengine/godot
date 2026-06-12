@@ -37,6 +37,8 @@ Adapted to Godot from the Bullet library.
 #include "../godot_joint_3d.h"
 #include "godot_jacobian_entry_3d.h"
 
+#include <cfloat>
+
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -164,11 +166,13 @@ protected:
 	//! Linear_Limit_parameters
 	//!@{
 	GodotG6DOFTranslationalLimitMotor3D m_linearLimits;
+	real_t m_linearDriveForceLimit[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
 	//!@}
 
 	//! hinge_parameters
 	//!@{
 	GodotG6DOFRotationalLimitMotor3D m_angularLimits[3];
+	real_t m_angularDriveTorqueLimit[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
 	//!@}
 
 protected:

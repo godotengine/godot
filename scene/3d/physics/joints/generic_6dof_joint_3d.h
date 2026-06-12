@@ -59,6 +59,8 @@ public:
 		PARAM_ANGULAR_SPRING_STIFFNESS = PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS,
 		PARAM_ANGULAR_SPRING_DAMPING = PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_DAMPING,
 		PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT = PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT,
+		PARAM_LINEAR_DRIVE_FORCE_LIMIT = PhysicsServer3D::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT,
+		PARAM_ANGULAR_DRIVE_TORQUE_LIMIT = PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT,
 		PARAM_MAX = PhysicsServer3D::G6DOF_JOINT_MAX,
 	};
 
@@ -79,9 +81,16 @@ protected:
 	bool flags_y[FLAG_MAX];
 	real_t params_z[PARAM_MAX];
 	bool flags_z[FLAG_MAX];
+	bool linear_drive_force_limit_set[3] = {};
+	bool angular_drive_torque_limit_set[3] = {};
+	bool setting_default_params = true;
 
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
+
+	static void _warn_if_deprecated_param(Param p_param);
+	void _set_drive_limit_explicit(Vector3::Axis p_axis, Param p_param);
+	bool _should_replay_param(Vector3::Axis p_axis, Param p_param) const;
 
 public:
 	void set_param_x(Param p_param, real_t p_value);
