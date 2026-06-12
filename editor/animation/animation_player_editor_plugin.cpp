@@ -53,7 +53,6 @@
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/separator.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/image_texture.h"
 #include "servers/display/display_server.h"
@@ -2520,6 +2519,29 @@ AnimationTrackKeyEditEditorPlugin::AnimationTrackKeyEditEditorPlugin() {
 
 bool AnimationTrackKeyEditEditorPlugin::handles(Object *p_object) const {
 	return p_object->is_class("AnimationTrackKeyEdit");
+}
+
+// AnimationMultiTrackKeyEditEditorPlugin
+
+bool EditorInspectorPluginAnimationMultiTrackKeyEdit::can_handle(Object *p_object) {
+	return Object::cast_to<AnimationMultiTrackKeyEdit>(p_object) != nullptr;
+}
+
+void EditorInspectorPluginAnimationMultiTrackKeyEdit::parse_begin(Object *p_object) {
+	AnimationMultiTrackKeyEdit *amtk = Object::cast_to<AnimationMultiTrackKeyEdit>(p_object);
+	ERR_FAIL_NULL(amtk);
+
+	amtk_editor = memnew(AnimationMultiTrackKeyEditEditor(amtk->animation, amtk->base_map, amtk->key_ofs_map, amtk->use_fps));
+	add_custom_control(amtk_editor);
+}
+
+AnimationMultiTrackKeyEditEditorPlugin::AnimationMultiTrackKeyEditEditorPlugin() {
+	amtk_plugin = memnew(EditorInspectorPluginAnimationMultiTrackKeyEdit);
+	EditorInspector::add_inspector_plugin(amtk_plugin);
+}
+
+bool AnimationMultiTrackKeyEditEditorPlugin::handles(Object *p_object) const {
+	return p_object->is_class("AnimationMultiTrackKeyEdit");
 }
 
 bool EditorInspectorPluginAnimationMarkerKeyEdit::can_handle(Object *p_object) {
