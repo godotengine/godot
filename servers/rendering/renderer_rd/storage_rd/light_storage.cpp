@@ -421,6 +421,20 @@ RSE::LightDirectionalSkyMode LightStorage::light_directional_get_sky_mode(RID p_
 	return light->directional_sky_mode;
 }
 
+void LightStorage::light_directional_set_min_shadow_fov(RID p_light, real_t p_fov) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->directional_min_shadow_fov = p_fov;
+}
+
+real_t LightStorage::light_directional_get_min_shadow_fov(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL_V(light, 0.0);
+
+	return light->directional_min_shadow_fov;
+}
+
 RSE::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL_V(light, RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);

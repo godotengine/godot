@@ -210,7 +210,11 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 	if (is_orthogonal) {
 		vp_he = p_cam_projection.get_viewport_half_extents();
 	} else {
-		fov = p_cam_projection.get_fov(); //this is actually yfov, because set aspect tries to keep it
+		fov = p_cam_projection.get_fovy(p_cam_projection.get_fov(), 1.0 / aspect);
+		real_t min_shadow_fov = RSG::light_storage->light_directional_get_min_shadow_fov(base);
+		if (min_shadow_fov > 0.0) {
+			fov = MAX(fov, min_shadow_fov);
+		}
 	}
 	real_t min_distance = p_cam_projection.get_z_near();
 	real_t max_distance = p_cam_projection.get_z_far();
