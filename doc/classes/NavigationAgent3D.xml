@@ -225,7 +225,7 @@
 			Does not affect normal pathfinding. To change an actor's pathfinding radius bake [NavigationMesh] resources with a different [member NavigationMesh.agent_radius] property and use different navigation maps for each actor size.
 		</member>
 		<member name="simplify_epsilon" type="float" setter="set_simplify_epsilon" getter="get_simplify_epsilon" default="0.0">
-			The path simplification amount in worlds units.
+			The path simplification amount in world units.
 		</member>
 		<member name="simplify_path" type="bool" setter="set_simplify_path" getter="get_simplify_path" default="false">
 			If [code]true[/code] a simplified version of the path will be returned with less critical path points removed. The simplification amount is controlled by [member simplify_epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.

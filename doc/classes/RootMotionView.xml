@@ -15,13 +15,13 @@
 			Path to an [AnimationMixer] node to use as a basis for root motion.
 		</member>
 		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="1.0">
-			The grid's cell size in 3D units.
+			The grid's cell size in meters.
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0.5, 0.5, 1, 1)" keywords="colour">
 			The grid's color.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">
-			The grid's radius in 3D units. The grid's opacity will fade gradually as the distance from the origin increases until this [member radius] is reached.
+			The grid's radius in meters. The grid's opacity will fade gradually as the distance from the origin increases until this [member radius] is reached.
 		</member>
 		<member name="zero_y" type="bool" setter="set_zero_y" getter="get_zero_y" default="true">
 			If [code]true[/code], the grid's points will all be on the same Y coordinate ([i]local[/i] Y = 0). If [code]false[/code], the points' original Y coordinate is preserved.

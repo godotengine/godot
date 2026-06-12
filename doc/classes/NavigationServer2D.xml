@@ -1043,7 +1043,7 @@
 			<param index="0" name="path" type="PackedVector2Array" />
 			<param index="1" name="epsilon" type="float" />
 			<description>
-				Returns a simplified version of [param path] with less critical path points removed. The simplification amount is in worlds units and controlled by [param epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
+				Returns a simplified version of [param path] with less critical path points removed. The simplification amount is in world units and controlled by [param epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
 				Path simplification can be helpful to mitigate various path following issues that can arise with certain agent types and script behaviors. E.g. "steering" agents or avoidance in "open fields".
 			</description>
 		</method>
