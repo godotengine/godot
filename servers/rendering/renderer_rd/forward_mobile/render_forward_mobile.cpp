@@ -2100,7 +2100,7 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 
 		SceneState::InstanceData instance_data;
 
-		if (inst->prev_transform_dirty && frame > inst->prev_transform_change_frame + 1 && inst->prev_transform_change_frame) {
+		if (inst->prev_transform_dirty && frame > inst->prev_transform_change_frame && inst->prev_transform_change_frame) {
 			inst->prev_transform = inst->transform;
 			inst->prev_transform_dirty = false;
 		}
