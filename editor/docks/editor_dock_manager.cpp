@@ -789,23 +789,13 @@ void EditorDockManager::set_tab_icon_max_width(int p_max_width) {
 	}
 }
 
+void EditorDockManager::_register_split(DockSplitContainer **p_var, DockSplitContainer *p_split) {
+	*p_var = p_split;
+	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+}
+
 void EditorDockManager::add_vsplit(DockSplitContainer *p_split) {
 	vsplits.push_back(p_split);
-	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
-}
-
-void EditorDockManager::set_main_vsplit(DockSplitContainer *p_split) {
-	main_vsplit = p_split;
-	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
-}
-
-void EditorDockManager::set_main_hsplit(DockSplitContainer *p_split) {
-	main_hsplit = p_split;
-	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
-}
-
-void EditorDockManager::set_bottom_hsplit(DockSplitContainer *p_split) {
-	bottom_hsplit = p_split;
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
 }
 
