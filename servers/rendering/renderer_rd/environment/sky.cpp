@@ -1050,6 +1050,11 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 			sky->prev_position = p_render_data->scene_data->cam_transform.origin;
 			sky->reflection.dirty = true;
 		}
+
+		// Trigger updating radiance buffers every frame when in real-time mode.
+		if (sky->mode == RS::SKY_MODE_REALTIME) {
+			sky->reflection.dirty = true;
+		}
 	}
 
 	bool sun_scatter_enabled = RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_render_data->environment) && RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
