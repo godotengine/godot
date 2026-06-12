@@ -17,6 +17,7 @@
 			<return type="float" />
 			<description>
 				Returns the distance to the target position, using the agent's global position. The user must set [member target_position] in order for this to be accurate.
+				[b]Note:[/b] This is equivalent of [code]agent_parent.global_position.distance_to(target_position)[/code] where [code]agent_parent[/code] is the parent of this node.
 			</description>
 		</method>
 		<method name="get_avoidance_layer_value" qualifiers="const">
