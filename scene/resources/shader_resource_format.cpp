@@ -51,8 +51,21 @@ Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const Strin
 	Ref<Shader> shader;
 	shader.instantiate();
 
+#ifndef DISABLE_DEPRECATED
+	bool is_deprecated = p_path.has_extension("shader");
+	if (is_deprecated) {
+		shader->_set_deprecated_load(true);
+	}
+#endif
+
 	shader->set_include_path(p_path);
 	shader->set_code(str);
+
+#ifndef DISABLE_DEPRECATED
+	if (is_deprecated) {
+		shader->_set_deprecated_load(false);
+	}
+#endif
 
 	if (r_error) {
 		*r_error = OK;
@@ -62,6 +75,9 @@ Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const Strin
 }
 
 void ResourceFormatLoaderShader::get_recognized_extensions(List<String> *p_extensions) const {
+#ifndef DISABLE_DEPRECATED
+	p_extensions->push_back("shader");
+#endif
 	p_extensions->push_back("gdshader");
 }
 
@@ -73,6 +89,11 @@ String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const
 	if (p_path.has_extension("gdshader")) {
 		return "Shader";
 	}
+#ifndef DISABLE_DEPRECATED
+	if (p_path.has_extension("shader")) {
+		return "Shader";
+	}
+#endif
 	return "";
 }
 
