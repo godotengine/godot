@@ -58,7 +58,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
+			for (const KeyValue<StringName, const MethodBind *> &F : t->gdtype->get_method_map(true)) {
 				String name = F.key.operator String();
 
 				ERR_CONTINUE(name.is_empty());
@@ -78,7 +78,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				Dictionary method_dict;
 				methods.push_back(method_dict);
 
-				MethodBind *mb = t->method_map[F];
+				const MethodBind *mb = t->gdtype->get_method_map(true)[F];
 				method_dict["name"] = mb->get_name();
 				method_dict["argument_count"] = mb->get_argument_count();
 				method_dict["return_type"] = mb->get_argument_type(-1);

@@ -4058,7 +4058,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			PropertyInfo return_info = method_info.return_val;
 
-			MethodBind *m = nullptr;
+			const MethodBind *m = nullptr;
 
 			if (!imethod.is_virtual) {
 				bool method_exists = false;

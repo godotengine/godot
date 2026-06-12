@@ -30,6 +30,7 @@
 
 #include "gdtype.h"
 
+#include "core/object/method_bind.h"
 #include "core/os/memory.h"
 #include "core/os/thread.h"
 
@@ -51,6 +52,9 @@ GDType::~GDType() {
 	for (const KeyValue<StringName, const MethodInfo *> &kv : self_signal_map) {
 		memdelete(const_cast<MethodInfo *>(kv.value));
 	}
+	for (const KeyValue<StringName, const MethodBind *> &kv : self_method_map) {
+		memdelete(const_cast<MethodBind *>(kv.value));
+	}
 }
 
 void GDType::initialize() {
@@ -66,6 +70,7 @@ void GDType::initialize() {
 		constant_map = super_type->constant_map;
 		enum_map = super_type->enum_map;
 		signal_map = super_type->signal_map;
+		method_map = super_type->method_map;
 	}
 
 	init_state = InitState::MUTABLE;
@@ -123,4 +128,31 @@ void GDType::add_signal(MethodInfo p_signal) {
 
 	signal_map[signal_name] = ptr;
 	self_signal_map[signal_name] = ptr;
+}
+
+void GDType::free_method_binds() {
+	for (KeyValue<StringName, const MethodBind *> &F : self_method_map) {
+		memdelete(const_cast<MethodBind *>(F.value));
+	}
+}
+
+bool GDType::bind_method(MethodBind *p_method) {
+	ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+	ERR_FAIL_COND_V(init_state != InitState::MUTABLE, false);
+
+	if (self_method_map.has(p_method->get_name())) {
+		memdelete(p_method);
+		ERR_FAIL_V_MSG(false, vformat("Method already bound '%s::%s'.", name, p_method->get_name()));
+	}
+
+	method_map[p_method->get_name()] = p_method;
+	self_method_map[p_method->get_name()] = p_method;
+	return true;
+}
+
+void GDType::set_method_flags(const StringName &p_method, int p_flags) {
+	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(init_state != InitState::MUTABLE);
+
+	(const_cast<MethodBind *>(self_method_map[p_method]))->set_hint_flags(p_flags);
 }
