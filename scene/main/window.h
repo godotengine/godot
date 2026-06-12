@@ -447,6 +447,8 @@ public:
 	void start_drag();
 	void start_resize(DisplayServerEnums::WindowResizeEdge p_edge);
 
+	void drag_files(const PackedStringArray &p_files);
+
 	Rect2i get_usable_parent_rect() const;
 
 	void set_accessibility_name(const String &p_name);

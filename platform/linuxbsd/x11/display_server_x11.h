@@ -117,6 +117,7 @@ class DisplayServerX11 : public DisplayServer {
 	Atom xdnd_aware;
 	Atom requested = None;
 	int xdnd_version = 5;
+	bool is_dnd_dragging = false;
 
 #if defined(GLES3_ENABLED)
 	GLManager_X11 *gl_manager = nullptr;
@@ -224,6 +225,8 @@ class DisplayServerX11 : public DisplayServer {
 	String internal_clipboard;
 	String internal_clipboard_primary;
 	Window xdnd_source_window = 0;
+	Window xdnd_target_window = 0;
+
 	::Display *x11_display;
 	char *xmbstring = nullptr;
 	int xmblen = 0;
@@ -541,6 +544,8 @@ public:
 
 	virtual void window_start_drag(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual void window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window) override;
+
+	virtual void window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
 	virtual Error embed_process(DisplayServerEnums::WindowID p_window, ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
 	virtual Error request_close_embedded_process(ProcessID p_pid) override;
