@@ -258,6 +258,83 @@ TEST_CASE("[SceneTree][Label] Sizing") {
 	memdelete(test_label);
 }
 
+TEST_CASE("[SceneTree][Label] VisibleRatio") {
+	Label *test_label = memnew(Label);
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(test_label);
+
+	test_label->set_text("Short text");
+	test_label->set_visible_characters(-1);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio is set to 1.0 when visible_characters is set to -1.");
+
+	test_label->set_text("This is a longer text string");
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio remains the same when text changes (from -1).");
+	CHECK_MESSAGE(
+			test_label->get_visible_characters() == -1,
+			"Label visible_characters remains at -1 when text changes (from -1).");
+
+	test_label->set_text("Short text");
+	test_label->set_visible_characters(6);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(0.6),
+			"Label visible_ratio automatically updates when visible_characters is set.");
+
+	test_label->set_text("This is a longer text string");
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(0.6),
+			"Label visible_ratio remains the same when text changes.");
+	CHECK_MESSAGE(
+			test_label->get_visible_characters() == 16,
+			"Label visible_characters is recomputed when text changes.");
+
+	test_label->set_text("Short text");
+	test_label->set_visible_characters(10);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio automatically updates when visible_characters is set to full length.");
+
+	test_label->set_text("This is a longer text string");
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio remains the same when text changes (from full length).");
+	CHECK_MESSAGE(
+			test_label->get_visible_characters() == 28,
+			"Label visible_characters is recomputed when text changes (from full length).");
+
+	test_label->set_text("");
+	test_label->set_visible_characters(3);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio is set to 1.0 when visible_characters is set while text is empty.");
+
+	test_label->set_text("Short text");
+	test_label->set_visible_characters(13);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio is set to 1.0 when visible_characters is set too large.");
+
+	test_label->set_text("Short text");
+	test_label->set_visible_characters(-2);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(0.0),
+			"Label visible_ratio is set to 0.0 when visible_characters is set < -1.");
+
+	memdelete(test_label);
+}
+
 } // namespace TestLabel
 
 #endif // MODULE_TEXT_SERVER_FB_ENABLED || MODULE_TEXT_SERVER_ADV_ENABLED

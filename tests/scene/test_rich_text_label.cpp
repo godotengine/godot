@@ -137,6 +137,102 @@ TEST_CASE("[SceneTree][RichTextLabel] Sizing with fit content") {
 	memdelete(test_label);
 }
 
+TEST_CASE("[SceneTree][RichTextLabel] VisibleRatio") {
+	RichTextLabel *test_label = memnew(RichTextLabel);
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(test_label);
+
+	test_label->set_text("Short text");
+	test_label->set_visible_characters(-1);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio is set to 1.0 when visible_characters is set to -1.");
+
+	test_label->set_text("This is a longer text string");
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio remains the same when text changes (from -1).");
+	CHECK_MESSAGE(
+			test_label->get_visible_characters() == -1,
+			"Label visible_characters remains at -1 when text changes (from -1).");
+
+	test_label->set_text("Short text");
+	test_label->set_visible_characters(6);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(0.6),
+			"Label visible_ratio automatically updates when visible_characters is set.");
+
+	test_label->set_text("This is a longer text string");
+
+	// NOTE: This outcome is *different* to Label, which recomputes visible_characters, not visible_ratio.
+	// See https://github.com/godotengine/godot/issues/119840
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(0.2142857),
+			"Label visible_ratio is recomputed when text changes.");
+	CHECK_MESSAGE(
+			test_label->get_visible_characters() == 6,
+			"Label visible_characters remains the same when text changes.");
+
+	test_label->set_text("Paragraph one\nParagraph two");
+	test_label->set_visible_characters(6);
+	CHECK(test_label->get_visible_ratio() == doctest::Approx(0.2222222));
+	test_label->remove_paragraph(1);
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(0.4285714),
+			"Label visible_ratio is recomputed when paragraph is removed.");
+
+	test_label->set_text("Short text");
+	test_label->set_visible_characters(10);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio automatically updates when visible_characters is set to full length.");
+
+	test_label->set_text("This is a longer text string");
+
+	// NOTE: This outcome is again *different* to Label.
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(0.3571428),
+			"Label visible_ratio is recomputed when text changes (from full length).");
+	CHECK_MESSAGE(
+			test_label->get_visible_characters() == 10,
+			"Label visible_characters remains the same when text changes (from full length).");
+
+	test_label->set_text("");
+	test_label->set_visible_characters(3);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio is set to 1.0 when visible_characters is set while text is empty.");
+
+	test_label->set_text("Short text");
+	test_label->set_visible_characters(13);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(1.0),
+			"Label visible_ratio is set to 1.0 when visible_characters is set too large.");
+
+	test_label->set_text("Short text");
+	test_label->set_visible_characters(-2);
+
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(0.0),
+			"Label visible_ratio is set to 0.0 when visible_characters is set < -1.");
+
+	test_label->set_visible_characters(6);
+	CHECK(test_label->get_visible_ratio() == doctest::Approx(0.6));
+	test_label->set_use_bbcode(true);
+	test_label->set_text("[b]Formatted[/b] text");
+	CHECK_MESSAGE(
+			test_label->get_visible_ratio() == doctest::Approx(0.4285714),
+			"Label visible_ratio is recomputed when text changes in bbcode mode.");
+
+	memdelete(test_label);
+}
+
 } // namespace TestRichTextLabel
 
 #endif // ADVANCED_GUI_DISABLED
