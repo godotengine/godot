@@ -45,7 +45,6 @@
 #include "scene/gui/button.h"
 #include "scene/gui/tree.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
 #define PREVIEW_LIST_MAX_SIZE 10
@@ -533,9 +532,9 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_editable(2, true);
 		item->set_text(2, TTRC("Enable"));
 		item->set_checked(2, info.is_singleton);
-		item->add_button(3, get_editor_theme_icon(SNAME("MoveUp")), BUTTON_MOVE_UP);
-		item->add_button(3, get_editor_theme_icon(SNAME("MoveDown")), BUTTON_MOVE_DOWN);
-		item->add_button(3, get_editor_theme_icon(SNAME("Remove")), BUTTON_DELETE);
+		item->add_button(3, get_editor_theme_icon(SNAME("MoveUp")), BUTTON_MOVE_UP, false, TTRC("Move Up"));
+		item->add_button(3, get_editor_theme_icon(SNAME("MoveDown")), BUTTON_MOVE_DOWN, false, TTRC("Move Down"));
+		item->add_button(3, get_editor_theme_icon(SNAME("Remove")), BUTTON_DELETE, false, TTRC("Remove Autoload"));
 		item->set_selectable(3, false);
 	}
 

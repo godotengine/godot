@@ -315,7 +315,7 @@ void GroupSettingsEditor::update_groups() {
 
 		item->set_text(1, groups_cache[E]);
 		item->set_editable(1, true);
-		item->add_button(2, get_editor_theme_icon(SNAME("Remove")));
+		item->add_button(2, get_editor_theme_icon(SNAME("Remove")), -1, false, TTRC("Remove Group"));
 		item->set_selectable(2, false);
 	}
 
