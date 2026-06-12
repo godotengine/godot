@@ -163,10 +163,6 @@ void PropertyListHelper::get_property_list(List<PropertyInfo> *p_list) const {
 			}
 
 			PropertyInfo info = property.info;
-			if (!(info.usage & PROPERTY_USAGE_STORE_IF_NULL) && _call_getter(&property, i) == property.default_value) {
-				info.usage &= (~PROPERTY_USAGE_STORAGE);
-			}
-
 			info.name = vformat("%s%d/%s", prefix, i, info.name);
 			p_list->push_back(info);
 		}
