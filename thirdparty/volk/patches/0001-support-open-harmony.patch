@@ -1,0 +1,15 @@
+diff --git a/thirdparty/volk/volk.h b/thirdparty/volk/volk.h
+index 4a641ab8ce..ebd7963ff4 100644
+--- a/thirdparty/volk/volk.h
++++ b/thirdparty/volk/volk.h
+@@ -136,6 +136,10 @@ void volkLoadDeviceTable(struct VolkDeviceTable* table, VkDevice device);
+ #include <vulkan/vulkan_android.h>
+ #endif
+ 
++#ifdef VK_USE_PLATFORM_OHOS
++#include <vulkan/vulkan_ohos.h>
++#endif
++
+ #ifdef VK_USE_PLATFORM_FUCHSIA
+ #include <zircon/types.h>
+ #include <vulkan/vulkan_fuchsia.h>
