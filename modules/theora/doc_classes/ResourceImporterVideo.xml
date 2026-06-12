@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterVideo" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Imports a video file for playback.
+	</brief_description>
+	<description>
+		Uses an external FFmpeg command to import from common video container files like mp4, mkv, avi, webm, mov, mpg,
+		mpeg, etc., to Ogg/Theora. The supported video decoders will depend on the FFmpeg version used.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="additional_arguments" type="String" setter="" getter="" default="&quot;&quot;">
+			If filled, it will be added to the command line, after the input file and before any other arguments.
+		</member>
+		<member name="alpha_to_color" type="Color" setter="" getter="" default="Color(0, 0, 0, 1)">
+			Replace the alpha channel with a color for applying the Chroma key effect.
+		</member>
+		<member name="audio_quality" type="float" setter="" getter="" default="0.5">
+			Audio quality setting for lossy Vorbis encoding.
+		</member>
+		<member name="encoding_speed" type="int" setter="" getter="" default="4">
+			Encoding speed level, higher values will speed up imports and decrease compression efficiency.
+		</member>
+		<member name="keyframe_interval" type="int" setter="" getter="" default="64">
+			Max keyframe interval (GOP) used for encoding to Theora.
+		</member>
+		<member name="scale_height" type="int" setter="" getter="" default="-1">
+			Scale height to pixels if width != -1, or keep aspect ratio otherwise.
+		</member>
+		<member name="scale_width" type="int" setter="" getter="" default="-1">
+			Scale width to pixels if width != -1, or keep aspect ratio otherwise.
+		</member>
+		<member name="video_quality" type="float" setter="" getter="" default="0.75">
+			Video quality setting for lossy theora encoding.
+		</member>
+	</members>
+</class>
