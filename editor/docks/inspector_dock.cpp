@@ -42,6 +42,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_object_selector.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -148,7 +149,13 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 
 				unique_resources_list_tree->clear();
-				if (!properties_to_unique.is_empty()) {
+				if (properties_to_unique.size() == 1) {
+					const EditorPropertyNameProcessor::Style name_style = inspector->get_property_name_style();
+					const String propname = EditorPropertyNameProcessor::get_singleton()->process_name(properties_to_unique[0], name_style);
+
+					EditorToaster::get_singleton()->popup_str(vformat(TTR("Resource \"%s\" was made unique."), propname));
+					p_confirmed = true;
+				} else if (!properties_to_unique.is_empty()) {
 					const EditorPropertyNameProcessor::Style name_style = inspector->get_property_name_style();
 
 					TreeItem *root = unique_resources_list_tree->create_item();
@@ -158,14 +165,15 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 						TreeItem *ti = unique_resources_list_tree->create_item(root);
 						ti->set_text(0, propname);
 					}
-
-					unique_resources_label->set_text(TTRC("The following resources will be duplicated and embedded within this resource/object."));
 					unique_resources_confirmation->popup_centered();
 				} else {
 					current_option = -1;
-					EditorNode::get_singleton()->show_warning(TTR("This object has no resources to duplicate."));
+					EditorToaster::get_singleton()->popup_str(TTR("This object has no resources to duplicate."), EditorToaster::SEVERITY_WARNING);
 				}
-			} else {
+			}
+
+			// p_confirmed may be modified above, so needs to be checked again.
+			if (p_confirmed) {
 				editor_data->apply_changes_in_editors();
 
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -834,7 +842,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	VBoxContainer *container = memnew(VBoxContainer);
 	unique_resources_confirmation->add_child(container);
 
-	unique_resources_label = memnew(Label);
+	Label *unique_resources_label = memnew(Label);
+	unique_resources_label->set_text(TTRC("The following resources will be duplicated and embedded within this resource/object:"));
 	unique_resources_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	container->add_child(unique_resources_label);
 
