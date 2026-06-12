@@ -107,13 +107,13 @@ void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewp
 		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 		ERR_FAIL_NULL_MSG(st, "Editor's MainLoop is not a SceneTree. This is a bug.");
 		RID root_vp = st->get_root()->get_viewport_rid();
-		RenderingServer::get_singleton()->viewport_set_active(root_vp, false);
+		RS::get_singleton()->viewport_set_active(root_vp, false);
 
 		RS::get_singleton()->viewport_set_update_mode(p_viewport, RSE::VIEWPORT_UPDATE_ONCE);
 		RS::get_singleton()->draw(false);
 
 		// Let main viewport and children be drawn again.
-		RenderingServer::get_singleton()->viewport_set_active(root_vp, true);
+		RS::get_singleton()->viewport_set_active(root_vp, true);
 	}
 }
 

@@ -4868,7 +4868,7 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 }
 
 void Node3DEditorViewport::_finish_gizmo_instances() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(RS::get_singleton());
 	for (int i = 0; i < 3; i++) {
 		RS::get_singleton()->free_rid(move_gizmo_instance[i]);
 		RS::get_singleton()->free_rid(move_plane_gizmo_instance[i]);
@@ -7489,10 +7489,10 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 	Node3DEditorSelectedItem *si = memnew(Node3DEditorSelectedItem);
 
 	si->sp = sp;
-	si->sbox_instance = RenderingServer::get_singleton()->instance_create2(
+	si->sbox_instance = RS::get_singleton()->instance_create2(
 			selection_box->get_rid(),
 			sp->get_world_3d()->get_scenario());
-	si->sbox_instance_offset = RenderingServer::get_singleton()->instance_create2(
+	si->sbox_instance_offset = RS::get_singleton()->instance_create2(
 			selection_box->get_rid(),
 			sp->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
@@ -7509,10 +7509,10 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_offset, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_offset, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-	si->sbox_instance_xray = RenderingServer::get_singleton()->instance_create2(
+	si->sbox_instance_xray = RS::get_singleton()->instance_create2(
 			selection_box_xray->get_rid(),
 			sp->get_world_3d()->get_scenario());
-	si->sbox_instance_xray_offset = RenderingServer::get_singleton()->instance_create2(
+	si->sbox_instance_xray_offset = RS::get_singleton()->instance_create2(
 			selection_box_xray->get_rid(),
 			sp->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
@@ -8395,15 +8395,15 @@ void fragment() {
 		d.resize(RSE::ARRAY_MAX);
 		d[RSE::ARRAY_VERTEX] = origin_points;
 
-		origin_mesh = RenderingServer::get_singleton()->mesh_create();
+		origin_mesh = RS::get_singleton()->mesh_create();
 
-		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(origin_mesh, RSE::PRIMITIVE_TRIANGLES, d);
-		RenderingServer::get_singleton()->mesh_surface_set_material(origin_mesh, 0, origin_mat->get_rid());
+		RS::get_singleton()->mesh_add_surface_from_arrays(origin_mesh, RSE::PRIMITIVE_TRIANGLES, d);
+		RS::get_singleton()->mesh_surface_set_material(origin_mesh, 0, origin_mat->get_rid());
 
-		origin_multimesh = RenderingServer::get_singleton()->multimesh_create();
-		RenderingServer::get_singleton()->multimesh_set_mesh(origin_multimesh, origin_mesh);
-		RenderingServer::get_singleton()->multimesh_allocate_data(origin_multimesh, 12, RSE::MultimeshTransformFormat::MULTIMESH_TRANSFORM_3D, true, false);
-		RenderingServer::get_singleton()->multimesh_set_visible_instances(origin_multimesh, -1);
+		origin_multimesh = RS::get_singleton()->multimesh_create();
+		RS::get_singleton()->multimesh_set_mesh(origin_multimesh, origin_mesh);
+		RS::get_singleton()->multimesh_allocate_data(origin_multimesh, 12, RSE::MultimeshTransformFormat::MULTIMESH_TRANSFORM_3D, true, false);
+		RS::get_singleton()->multimesh_set_visible_instances(origin_multimesh, -1);
 
 		LocalVector<float> distances;
 		distances.resize(5);
@@ -8442,17 +8442,17 @@ void fragment() {
 					t = t.scaled(axis * distances[j]);
 					t = t.translated(axis * distances[j + 1]);
 				}
-				RenderingServer::get_singleton()->multimesh_instance_set_transform(origin_multimesh, i * 4 + j, t);
-				RenderingServer::get_singleton()->multimesh_instance_set_color(origin_multimesh, i * 4 + j, origin_color);
+				RS::get_singleton()->multimesh_instance_set_transform(origin_multimesh, i * 4 + j, t);
+				RS::get_singleton()->multimesh_instance_set_color(origin_multimesh, i * 4 + j, origin_color);
 			}
 		}
 
-		origin_instance = RenderingServer::get_singleton()->instance_create2(origin_multimesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+		origin_instance = RS::get_singleton()->instance_create2(origin_multimesh, get_tree()->get_root()->get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
 		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, RSE::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, RSE::SHADOW_CASTING_SETTING_OFF);
 
 		Ref<Shader> grid_shader = memnew(Shader);
 		grid_shader->set_code(R"(
@@ -9178,19 +9178,19 @@ void Node3DEditor::_init_grid() {
 		}
 
 		// Create a mesh from the pushed vector points and colors.
-		grid[c] = RenderingServer::get_singleton()->mesh_create();
+		grid[c] = RS::get_singleton()->mesh_create();
 		Array d;
 		d.resize(RSE::ARRAY_MAX);
 		d[RSE::ARRAY_VERTEX] = (Vector<Vector3>)grid_points[c];
 		d[RSE::ARRAY_COLOR] = (Vector<Color>)grid_colors[c];
 		d[RSE::ARRAY_NORMAL] = (Vector<Vector3>)grid_normals[c];
-		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(grid[c], RSE::PRIMITIVE_LINES, d);
-		RenderingServer::get_singleton()->mesh_surface_set_material(grid[c], 0, grid_mat[c]->get_rid());
-		grid_instance[c] = RenderingServer::get_singleton()->instance_create2(grid[c], get_tree()->get_root()->get_world_3d()->get_scenario());
+		RS::get_singleton()->mesh_add_surface_from_arrays(grid[c], RSE::PRIMITIVE_LINES, d);
+		RS::get_singleton()->mesh_surface_set_material(grid[c], 0, grid_mat[c]->get_rid());
+		grid_instance[c] = RS::get_singleton()->instance_create2(grid[c], get_tree()->get_root()->get_world_3d()->get_scenario());
 
 		// Yes, the end of this line is supposed to be a.
-		RenderingServer::get_singleton()->instance_set_visible(grid_instance[c], grid_visible[a]);
-		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_instance[c], RSE::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_visible(grid_instance[c], grid_visible[a]);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_instance[c], RSE::SHADOW_CASTING_SETTING_OFF);
 		RS::get_singleton()->instance_set_layer_mask(grid_instance[c], 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
 		RS::get_singleton()->instance_geometry_set_flag(grid_instance[c], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 		RS::get_singleton()->instance_geometry_set_flag(grid_instance[c], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
