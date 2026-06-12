@@ -132,6 +132,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	struct DescriptorHeap {
 		struct Allocation {
 			uint64_t virtual_alloc_handle = {}; // This is the handle value in "D3D12MA::VirtualAllocation".
+			uint64_t offset = UINT64_MAX;
 			D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = {};
 			D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle = {};
 		};
@@ -168,7 +169,11 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	};
 
 	DescriptorHeap resource_descriptor_heap;
+	BinaryMutex resource_descriptor_heap_mutex;
+
 	DescriptorHeap sampler_descriptor_heap;
+	BinaryMutex sampler_descriptor_heap_mutex;
+
 	CPUDescriptorHeapPool resource_descriptor_heap_pool;
 	CPUDescriptorHeapPool rtv_descriptor_heap_pool;
 	CPUDescriptorHeapPool dsv_descriptor_heap_pool;
@@ -251,6 +256,7 @@ private:
 		D3D12_GPU_VIRTUAL_ADDRESS gpu_virtual_address = {};
 		DataFormat texel_format = DATA_FORMAT_MAX;
 		uint64_t size = 0;
+		DescriptorHeap::Allocation device_address_uav_alloc = {};
 		struct {
 			bool is_dynamic : 1; // Only used for tracking (e.g. Vulkan needs these checks).
 		} flags = {};
