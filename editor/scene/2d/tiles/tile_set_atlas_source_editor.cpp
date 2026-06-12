@@ -500,6 +500,24 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 	}
 }
 
+bool TileSetAtlasSourceEditor::AtlasTileProxyObject::is_editing(TileSetAtlasSource *p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles) const {
+	if (tile_set_atlas_source.ptr() != p_tile_set_atlas_source || tiles.size() != p_tiles.size()) {
+		return false;
+	}
+
+	const RBSet<TileSelection>::Element *edited_tile = tiles.front();
+	const RBSet<TileSelection>::Element *tile = p_tiles.front();
+	while (edited_tile && tile) {
+		if (edited_tile->get().tile != tile->get().tile || edited_tile->get().alternative != tile->get().alternative) {
+			return false;
+		}
+		edited_tile = edited_tile->next();
+		tile = tile->next();
+	}
+
+	return edited_tile == nullptr && tile == nullptr;
+}
+
 void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles) {
 	ERR_FAIL_COND(p_tile_set_atlas_source.is_null());
 	ERR_FAIL_COND(p_tiles.is_empty());
@@ -609,10 +627,20 @@ void TileSetAtlasSourceEditor::_update_tile_inspector() {
 	// Update visibility.
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		if (!selection.is_empty()) {
-			tile_proxy_object.instantiate(this);
-			tile_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
-			tile_proxy_object->edit(tile_set_atlas_source, selection);
-			tile_inspector->edit(tile_proxy_object.ptr());
+			Ref<AtlasTileProxyObject> proxy;
+			Object *edited = tile_inspector->get_edited_object();
+			if (edited) {
+				proxy = Ref<AtlasTileProxyObject>(edited);
+			}
+
+			if (proxy.is_valid() && proxy->is_editing(tile_set_atlas_source, selection)) {
+				proxy->edit(tile_set_atlas_source, selection);
+			} else {
+				tile_proxy_object.instantiate(this);
+				tile_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
+				tile_proxy_object->edit(tile_set_atlas_source, selection);
+				tile_inspector->edit(tile_proxy_object.ptr());
+			}
 		}
 		tile_inspector->set_visible(!selection.is_empty());
 		tile_inspector_no_tile_selected_label->set_visible(selection.is_empty());
