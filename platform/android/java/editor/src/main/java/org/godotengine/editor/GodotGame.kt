@@ -30,12 +30,7 @@
 
 package org.godotengine.editor
 
-import android.app.PictureInPictureParams
-import android.content.pm.PackageManager
-import android.graphics.Rect
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.core.view.isVisible
@@ -43,11 +38,8 @@ import org.godotengine.editor.embed.GameMenuFragment
 import org.godotengine.godot.GodotLib
 import org.godotengine.godot.editor.utils.GameMenuUtils
 import org.godotengine.godot.utils.ProcessPhoenix
-import org.godotengine.godot.utils.isHorizonOSDevice
-import org.godotengine.godot.utils.isNativeXRDevice
-import org.godotengine.godot.xr.HYBRID_APP_PANEL_FEATURE
 import org.godotengine.godot.xr.XRMode
-import org.godotengine.godot.xr.isHybridAppEnabled
+import org.godotengine.openxr.vendors.utils.*
 
 /**
  * Drives the 'run project' window of the Godot Editor.
@@ -58,7 +50,6 @@ open class GodotGame : BaseGodotGame() {
 		private val TAG = GodotGame::class.java.simpleName
 	}
 
-	private val gameViewSourceRectHint = Rect()
 	private val expandGameMenuButton: View? by lazy { findViewById(R.id.game_menu_expand_button) }
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,13 +69,6 @@ open class GodotGame : BaseGodotGame() {
 				gameMenuFragment?.expandGameMenu()
 			}
 		}
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			val gameView = findViewById<View>(R.id.godot_fragment_container)
-			gameView?.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
-				gameView.getGlobalVisibleRect(gameViewSourceRectHint)
-			}
-		}
 	}
 
 	override fun getCommandLine(): MutableList<String> {
@@ -99,27 +83,7 @@ open class GodotGame : BaseGodotGame() {
 		return updatedArgs
 	}
 
-	override fun enterPiPMode() {
-		if (hasPiPSystemFeature()) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				val builder = PictureInPictureParams.Builder().setSourceRectHint(gameViewSourceRectHint)
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-					builder.setSeamlessResizeEnabled(false)
-				}
-				setPictureInPictureParams(builder.build())
-			}
-
-			Log.v(TAG, "Entering PiP mode")
-			enterPictureInPictureMode()
-		}
-	}
-
-	/**
-	 * Returns true the if the device supports picture-in-picture (PiP).
-	 */
-	protected fun hasPiPSystemFeature(): Boolean {
-		return packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
-	}
+	override fun isPiPEnabled() = true
 
 	override fun shouldShowGameMenuBar(): Boolean {
 		return intent.getBooleanExtra(
@@ -130,19 +94,9 @@ open class GodotGame : BaseGodotGame() {
 
 	override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
 		super.onPictureInPictureModeChanged(isInPictureInPictureMode)
-		Log.v(TAG, "onPictureInPictureModeChanged: $isInPictureInPictureMode")
 
 		// Hide the game menu fragment when in PiP.
 		gameMenuContainer?.isVisible = !isInPictureInPictureMode
-	}
-
-	override fun onStop() {
-		super.onStop()
-
-		if (isInPictureInPictureMode && !isFinishing) {
-			// We get in this state when PiP is closed, so we terminate the activity.
-			finish()
-		}
 	}
 
 	override fun getGodotAppLayout() = R.layout.godot_game_layout
@@ -230,6 +184,21 @@ open class GodotGame : BaseGodotGame() {
 		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
 	}
 
+	override fun resetTimeScale() {
+		val actionBundle = Bundle().apply {
+			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_RESET_TIME_SCALE)
+		}
+		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
+	}
+
+	override fun setTimeScale(scale: Double) {
+		val actionBundle = Bundle().apply {
+			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_SET_TIME_SCALE)
+			putDouble(KEY_GAME_MENU_ACTION_PARAM1, scale)
+		}
+		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
+	}
+
 	override fun embedGameOnPlay(embedded: Boolean) {
 		val actionBundle = Bundle().apply {
 			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_EMBED_GAME_ON_PLAY)
@@ -246,7 +215,7 @@ open class GodotGame : BaseGodotGame() {
 
 	override fun isCloseButtonEnabled() = !isHorizonOSDevice(applicationContext)
 
-	override fun isPiPButtonEnabled() = hasPiPSystemFeature()
+	override fun isPiPButtonEnabled() = isPiPModeSupported()
 
 	override fun isMenuBarCollapsable() = true
 

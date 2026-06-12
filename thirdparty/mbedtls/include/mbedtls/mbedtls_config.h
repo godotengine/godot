@@ -2150,7 +2150,19 @@
 /**
  * \def MBEDTLS_THREADING_ALT
  *
- * Provide your own alternate threading implementation.
+ * Provide your own alternate implementation of threading primitives
+ * for mutexes. If you enable this option:
+ *
+ * - Provide a header file `"threading_alt.h"`, defining the
+ *   type `mbedtls_threading_mutex_t` of mutex objects.
+ *
+ * - Call the function mbedtls_threading_set_alt() in your application
+ *   before calling any other library function (in particular before
+ *   calling psa_crypto_init(), performing an asymmetric cryptography
+ *   operation, or starting a TLS connection).
+ *
+ * See mbedtls/threading.h for more details, especially the documentation
+ * of mbedtls_threading_set_alt().
  *
  * Requires: MBEDTLS_THREADING_C
  *

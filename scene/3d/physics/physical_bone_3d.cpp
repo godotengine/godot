@@ -30,7 +30,11 @@
 
 #include "physical_bone_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/3d/physics/physical_bone_simulator_3d.h"
+
 #ifndef DISABLE_DEPRECATED
 #include "scene/3d/skeleton_3d.h"
 #endif //_DISABLE_DEPRECATED
@@ -787,9 +791,12 @@ void PhysicalBone3D::_notification(int p_what) {
 }
 
 void PhysicalBone3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
-	set_ignore_transform_notification(true);
-	set_global_transform(p_state->get_transform());
-	set_ignore_transform_notification(false);
+	Transform3D new_transform = p_state->get_transform();
+	if (likely(new_transform != get_global_transform())) {
+		set_ignore_transform_notification(true);
+		set_global_transform(new_transform);
+		set_ignore_transform_notification(false);
+	}
 
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
@@ -1287,7 +1294,7 @@ PhysicalBone3D::~PhysicalBone3D() {
 		memdelete(joint_data);
 	}
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free(joint);
+	PhysicsServer3D::get_singleton()->free_rid(joint);
 }
 
 void PhysicalBone3D::update_bone_id() {

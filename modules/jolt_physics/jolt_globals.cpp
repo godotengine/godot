@@ -36,11 +36,14 @@
 #include "shapes/jolt_custom_user_data_shape.h"
 
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
 
-#include "Jolt/Jolt.h"
+#ifdef JPH_ENABLE_ASSERTS
+#include "core/variant/variant.h"
+#endif
 
-#include "Jolt/RegisterTypes.h"
+#include <Jolt/Jolt.h>
+
+#include <Jolt/RegisterTypes.h>
 
 #include <cstdarg>
 
@@ -53,6 +56,9 @@ void *jolt_realloc(void *p_mem, size_t p_old_size, size_t p_new_size) {
 }
 
 void jolt_free(void *p_mem) {
+	if (unlikely(p_mem == nullptr)) {
+		return;
+	}
 	Memory::free_static(p_mem);
 }
 
@@ -61,6 +67,9 @@ void *jolt_aligned_alloc(size_t p_size, size_t p_alignment) {
 }
 
 void jolt_aligned_free(void *p_mem) {
+	if (unlikely(p_mem == nullptr)) {
+		return;
+	}
 	Memory::free_aligned_static(p_mem);
 }
 

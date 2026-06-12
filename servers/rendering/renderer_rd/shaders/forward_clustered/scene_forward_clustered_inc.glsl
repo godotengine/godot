@@ -10,6 +10,7 @@
 
 #include "../cluster_data_inc.glsl"
 #include "../decal_data_inc.glsl"
+#include "../oct_inc.glsl"
 #include "../scene_data_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
@@ -137,10 +138,34 @@ bool sc_multimesh_has_custom_data() {
 	return ((sc_packed_1() >> 3) & 1U) != 0;
 }
 
+bool sc_fog_use_legacy_blending() {
+	return ((sc_packed_1() >> 4) & 1U) != 0;
+}
+
+bool sc_cluster_has_area_light() {
+	return ((sc_packed_1() >> 5) & 1U) != 0;
+}
+
 float sc_luminance_multiplier() {
 	// Not used in clustered renderer but we share some code with the mobile renderer that requires this.
 	return 1.0;
 }
+
+layout(constant_id = 2) const bool sc_emulate_point_size = false;
+
+#ifdef POINT_SIZE_USED
+
+#define VERTEX_INDEX (sc_emulate_point_size ? gl_InstanceIndex : gl_VertexIndex)
+#define INSTANCE_INDEX (sc_emulate_point_size ? (gl_VertexIndex / 6) : gl_InstanceIndex)
+
+#else
+
+#define VERTEX_INDEX gl_VertexIndex
+#define INSTANCE_INDEX gl_InstanceIndex
+
+#endif
+
+#define REFLECTION_MULTIPLIER 1.0
 
 #define SDFGI_MAX_CASCADES 8
 
@@ -164,8 +189,10 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
 
-#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO 1
-#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL 2
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO (1 << 0)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL (1 << 1)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR (1 << 2)
+#define SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR (1 << 3)
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
@@ -177,12 +204,17 @@ layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
 }
 spot_lights;
 
-layout(set = 0, binding = 5, std430) restrict readonly buffer ReflectionProbeData {
+layout(set = 0, binding = 5, std430) restrict readonly buffer AreaLights {
+	LightData data[];
+}
+area_lights;
+
+layout(set = 0, binding = 6, std430) restrict readonly buffer ReflectionProbeData {
 	ReflectionData data[];
 }
 reflections;
 
-layout(set = 0, binding = 6, std140) uniform DirectionalLights {
+layout(set = 0, binding = 7, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
@@ -202,7 +234,7 @@ struct Lightmap {
 	uint flags;
 };
 
-layout(set = 0, binding = 7, std140) restrict readonly buffer Lightmaps {
+layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {
 	Lightmap data[];
 }
 lightmaps;
@@ -211,20 +243,20 @@ struct LightmapCapture {
 	vec4 sh[9];
 };
 
-layout(set = 0, binding = 8, std140) restrict readonly buffer LightmapCaptures {
+layout(set = 0, binding = 9, std140) restrict readonly buffer LightmapCaptures {
 	LightmapCapture data[];
 }
 lightmap_captures;
 
-layout(set = 0, binding = 9) uniform texture2D decal_atlas;
-layout(set = 0, binding = 10) uniform texture2D decal_atlas_srgb;
+layout(set = 0, binding = 10) uniform texture2D decal_atlas;
+layout(set = 0, binding = 11) uniform texture2D decal_atlas_srgb;
 
-layout(set = 0, binding = 11, std430) restrict readonly buffer Decals {
+layout(set = 0, binding = 12, std430) restrict readonly buffer Decals {
 	DecalData data[];
 }
 decals;
 
-layout(set = 0, binding = 12, std430) restrict readonly buffer GlobalShaderUniformData {
+layout(set = 0, binding = 13, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
 global_shader_uniforms;
@@ -238,7 +270,7 @@ struct SDFVoxelGICascadeData {
 	float exposure_normalization;
 };
 
-layout(set = 0, binding = 13, std140) uniform SDFGI {
+layout(set = 0, binding = 14, std140) uniform SDFGI {
 	vec3 grid_size;
 	uint max_cascades;
 
@@ -266,12 +298,17 @@ layout(set = 0, binding = 13, std140) uniform SDFGI {
 }
 sdfgi;
 
-layout(set = 0, binding = 14) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
+layout(set = 0, binding = 15) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
 
-layout(set = 0, binding = 15) uniform texture2D best_fit_normal_texture;
+layout(set = 0, binding = 16) uniform texture2D best_fit_normal_texture;
 
-layout(set = 0, binding = 16) uniform texture2D dfg;
+layout(set = 0, binding = 17) uniform texture2D dfg;
 
+layout(set = 0, binding = 18) uniform sampler2D ltc_lut1;
+
+layout(set = 0, binding = 19) uniform sampler2D ltc_lut2;
+
+layout(set = 0, binding = 20) uniform texture2D area_light_atlas;
 /* Set 1: Render Pass (changes per render pass) */
 
 layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
@@ -313,16 +350,20 @@ implementation_data_block;
 #define implementation_data implementation_data_block.data
 
 struct InstanceData {
-	mat4 transform;
-	mat4 prev_transform;
+	mat3x4 transform;
+	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
+	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	vec4 uv_scale;
 	uint flags;
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 	uint layer_mask;
+	mat3x4 prev_transform;
 	vec4 lightmap_uv_scale;
-	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
-	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
-	vec4 uv_scale;
+#ifdef USE_DOUBLE_PRECISION
+	vec4 model_precision;
+	vec4 prev_model_precision;
+#endif
 };
 
 layout(set = 1, binding = 2, std430) buffer restrict readonly InstanceDataBuffer {
@@ -330,17 +371,17 @@ layout(set = 1, binding = 2, std430) buffer restrict readonly InstanceDataBuffer
 }
 instances;
 
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 
-layout(set = 1, binding = 3) uniform textureCubeArray radiance_cubemap;
+layout(set = 1, binding = 3) uniform texture2DArray radiance_octmap;
 
 #else
 
-layout(set = 1, binding = 3) uniform textureCube radiance_cubemap;
+layout(set = 1, binding = 3) uniform texture2D radiance_octmap;
 
 #endif
 
-layout(set = 1, binding = 4) uniform textureCubeArray reflection_atlas;
+layout(set = 1, binding = 4) uniform texture2DArray reflection_atlas;
 
 layout(set = 1, binding = 5) uniform texture2D shadow_atlas;
 
@@ -431,8 +472,12 @@ layout(set = 1, binding = 33) uniform texture3D volumetric_fog_texture;
 
 #ifdef USE_MULTIVIEW
 layout(set = 1, binding = 34) uniform texture2DArray ssil_buffer;
+layout(set = 1, binding = 35) uniform texture2DArray ssr_buffer;
+layout(set = 1, binding = 36) uniform texture2DArray ssr_mip_level_buffer;
 #else
 layout(set = 1, binding = 34) uniform texture2D ssil_buffer;
+layout(set = 1, binding = 35) uniform texture2D ssr_buffer;
+layout(set = 1, binding = 36) uniform texture2D ssr_mip_level_buffer;
 #endif // USE_MULTIVIEW
 
 #endif

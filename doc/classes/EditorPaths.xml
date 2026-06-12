@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorPaths" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorPaths" inherits="Object" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Editor-only singleton that returns paths to various OS-specific data folders and files.
 	</brief_description>
@@ -51,7 +51,7 @@
 		<method name="get_project_settings_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the project-specific editor settings path. Projects all have a unique subdirectory inside the settings path where project-specific editor settings are saved.
+				Returns the relative path to the editor settings for this project. This is usually [code]"res://.godot/editor"[/code]. Projects all have a unique subdirectory inside the settings path where project-specific editor settings are saved.
 			</description>
 		</method>
 		<method name="get_self_contained_file" qualifiers="const">

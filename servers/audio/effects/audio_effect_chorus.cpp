@@ -29,8 +29,10 @@
 /**************************************************************************/
 
 #include "audio_effect_chorus.h"
+
 #include "core/math/math_funcs.h"
-#include "servers/audio_server.h"
+#include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectChorusInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	int todo = p_frame_count;

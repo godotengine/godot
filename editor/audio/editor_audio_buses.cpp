@@ -32,21 +32,28 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/separator.h"
+#include "scene/main/timer.h"
 #include "scene/resources/font.h"
-#include "servers/audio_server.h"
+#include "scene/resources/gradient_texture.h"
+#include "scene/resources/style_box_flat.h"
+#include "servers/audio/audio_server.h"
 
 void EditorAudioBus::_update_visible_channels() {
 	int i = 0;
@@ -57,6 +64,12 @@ void EditorAudioBus::_update_visible_channels() {
 		if (!channel[i].vu_r->is_visible()) {
 			channel[i].vu_r->show();
 		}
+		if (!channel[i].peak_indicator_l->is_visible()) {
+			channel[i].peak_indicator_l->show();
+		}
+		if (!channel[i].peak_indicator_r->is_visible()) {
+			channel[i].peak_indicator_r->show();
+		}
 	}
 
 	for (; i < CHANNELS_MAX; i++) {
@@ -66,30 +79,23 @@ void EditorAudioBus::_update_visible_channels() {
 		if (channel[i].vu_r->is_visible()) {
 			channel[i].vu_r->hide();
 		}
+		if (channel[i].peak_indicator_l->is_visible()) {
+			channel[i].peak_indicator_l->hide();
+		}
+		if (channel[i].peak_indicator_r->is_visible()) {
+			channel[i].peak_indicator_r->hide();
+		}
 	}
 }
 
 void EditorAudioBus::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			Ref<Texture2D> active_bus_texture = get_editor_theme_icon(SNAME("BusVuActive"));
-			for (int i = 0; i < CHANNELS_MAX; i++) {
-				channel[i].vu_l->set_under_texture(active_bus_texture);
-				channel[i].vu_l->set_tint_under(Color(0.75, 0.75, 0.75));
-				channel[i].vu_l->set_progress_texture(active_bus_texture);
-
-				channel[i].vu_r->set_under_texture(active_bus_texture);
-				channel[i].vu_r->set_tint_under(Color(0.75, 0.75, 0.75));
-				channel[i].vu_r->set_progress_texture(active_bus_texture);
-				channel[i].prev_active = true;
-			}
-
-			disabled_vu = get_editor_theme_icon(SNAME("BusVuFrozen"));
-
-			Color solo_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.9, 1.74, 0.83);
-			Color mute_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(2.35, 1.03, 1.03);
-			Color bypass_color = EditorThemeManager::is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(1.03, 2.04, 2.35);
-			float darkening_factor = EditorThemeManager::is_dark_theme() ? 0.15 : 0.65;
+			bool dark_icon_and_font = EditorThemeManager::is_dark_icon_and_font();
+			Color solo_color = dark_icon_and_font ? Color(1.0, 0.89, 0.22) : Color(1.9, 1.74, 0.83);
+			Color mute_color = dark_icon_and_font ? Color(1.0, 0.16, 0.16) : Color(2.35, 1.03, 1.03);
+			Color bypass_color = dark_icon_and_font ? Color(0.13, 0.8, 1.0) : Color(1.03, 2.04, 2.35);
+			float darkening_factor = dark_icon_and_font ? 0.15 : 0.65;
 			Color solo_color_darkened = solo_color.darkened(darkening_factor);
 			Color mute_color_darkened = mute_color.darkened(darkening_factor);
 			Color bypass_color_darkened = bypass_color.darkened(darkening_factor);
@@ -129,14 +135,6 @@ void EditorAudioBus::_notification(int p_what) {
 			set_process(true);
 		} break;
 
-		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
-			RID ae = get_accessibility_element();
-			ERR_FAIL_COND(ae.is_null());
-
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Audio bus editor")));
-		} break;
-
 		case NOTIFICATION_DRAW: {
 			if (is_master) {
 				draw_style_box(get_theme_stylebox(SNAME("master"), SNAME("EditorAudioBus")), Rect2(Vector2(), get_size()));
@@ -169,31 +167,87 @@ void EditorAudioBus::_notification(int p_what) {
 					real_peak[1] = MAX(real_peak[1], AudioServer::get_singleton()->get_bus_peak_volume_right_db(get_index(), i));
 				}
 
-				if (real_peak[0] > channel[i].peak_l) {
+				// Checking if equal too to avoid jitters.
+				if (real_peak[0] >= channel[i].peak_l) {
 					channel[i].peak_l = real_peak[0];
 				} else {
 					channel[i].peak_l -= get_process_delta_time() * 60.0;
 				}
 
-				if (real_peak[1] > channel[i].peak_r) {
+				if (real_peak[1] >= channel[i].peak_r) {
 					channel[i].peak_r = real_peak[1];
 				} else {
 					channel[i].peak_r -= get_process_delta_time() * 60.0;
 				}
 
-				channel[i].vu_l->set_value(channel[i].peak_l);
-				channel[i].vu_r->set_value(channel[i].peak_r);
+				channel[i].vu_l->set_value(_scaled_db_to_normalized_volume(channel[i].peak_l));
+				channel[i].vu_r->set_value(_scaled_db_to_normalized_volume(channel[i].peak_r));
+
+				if (!channel[i].indicator_fall_l) {
+					channel[i].peak_indicator_l->set_position(Point2(0.0, MIN(channel[i].peak_indicator_l->get_position().height, peak_indicator_range - channel[i].vu_l->get_value() * peak_indicator_range)));
+				} else {
+					channel[i].peak_indicator_l->set_position(Point2(0.0, MIN(peak_indicator_range, channel[i].peak_indicator_l->get_position().height + get_process_delta_time() * 60.0)));
+				}
+				if (!channel[i].indicator_fall_r) {
+					channel[i].peak_indicator_r->set_position(Point2(0.0, MIN(channel[i].peak_indicator_r->get_position().height, peak_indicator_range - channel[i].vu_r->get_value() * peak_indicator_range)));
+				} else {
+					channel[i].peak_indicator_r->set_position(Point2(0.0, MIN(peak_indicator_range, channel[i].peak_indicator_r->get_position().height + get_process_delta_time() * 60.0)));
+				}
+
+				double normalized_peak_indicator = (channel[i].peak_indicator_l->get_position().height - peak_indicator_range) / -peak_indicator_range;
+
+				if (channel[i].vu_l->get_value() > normalized_peak_indicator || Math::is_equal_approx(channel[i].vu_l->get_value(), normalized_peak_indicator, 0.01)) {
+					if (!channel[i].peak_timer_l->is_paused() || channel[i].indicator_fall_l) {
+						channel[i].peak_timer_l->set_paused(true);
+						channel[i].indicator_fall_l = false;
+					}
+				} else if (channel[i].peak_timer_l->is_paused()) {
+					channel[i].peak_timer_l->set_paused(false);
+					channel[i].peak_timer_l->start();
+				}
+
+				peak_indicator_stylebox_l->set_bg_color(active_gradient->get_color_at_offset(normalized_peak_indicator));
+
+				normalized_peak_indicator = (channel[i].peak_indicator_r->get_position().height - peak_indicator_range) / -peak_indicator_range;
+
+				if (channel[i].vu_r->get_value() > normalized_peak_indicator || Math::is_equal_approx(channel[i].vu_r->get_value(), normalized_peak_indicator, 0.01)) {
+					if (!channel[i].peak_timer_r->is_paused() || channel[i].indicator_fall_r) {
+						channel[i].peak_timer_r->set_paused(true);
+						channel[i].indicator_fall_r = false;
+					}
+				} else if (channel[i].peak_timer_r->is_paused()) {
+					channel[i].peak_timer_r->set_paused(false);
+					channel[i].peak_timer_r->start();
+				}
+
+				peak_indicator_stylebox_r->set_bg_color(active_gradient->get_color_at_offset(normalized_peak_indicator));
 
 				if (activity_found != channel[i].prev_active) {
 					if (activity_found) {
 						channel[i].vu_l->set_over_texture(Ref<Texture2D>());
 						channel[i].vu_r->set_over_texture(Ref<Texture2D>());
 					} else {
-						channel[i].vu_l->set_over_texture(disabled_vu);
-						channel[i].vu_r->set_over_texture(disabled_vu);
+						channel[i].vu_l->set_over_texture(inactive_bus_texture);
+						channel[i].vu_r->set_over_texture(inactive_bus_texture);
 					}
 
 					channel[i].prev_active = activity_found;
+				}
+
+				if (!activity_found) {
+					if (channel[i].peak_indicator_l->get_position().height > (peak_indicator_range - 2.0) && channel[i].peak_indicator_l->is_visible()) {
+						channel[i].peak_indicator_l->hide();
+					}
+					if (channel[i].peak_indicator_r->get_position().height > (peak_indicator_range - 2.0) && channel[i].peak_indicator_r->is_visible()) {
+						channel[i].peak_indicator_r->hide();
+					}
+				} else {
+					if (!channel[i].peak_indicator_l->is_visible()) {
+						channel[i].peak_indicator_l->show();
+					}
+					if (!channel[i].peak_indicator_r->is_visible()) {
+						channel[i].peak_indicator_r->show();
+					}
 				}
 			}
 		} break;
@@ -202,7 +256,14 @@ void EditorAudioBus::_notification(int p_what) {
 			for (int i = 0; i < CHANNELS_MAX; i++) {
 				channel[i].peak_l = -100;
 				channel[i].peak_r = -100;
-				channel[i].prev_active = true;
+			}
+
+			for (int i = 0; i < cc; i++) {
+				if (AudioServer::get_singleton()->is_bus_channel_active(get_index(), i)) {
+					channel[i].prev_active = false;
+				} else {
+					channel[i].prev_active = true;
+				}
 			}
 
 			set_process(is_visible_in_tree());
@@ -215,6 +276,22 @@ void EditorAudioBus::_notification(int p_what) {
 				queue_redraw();
 			}
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			active_gradient_colors = { EDITOR_GET("editors/audio_buses/active_min_db_color"), EDITOR_GET("editors/audio_buses/active_normalized_db_color"), EDITOR_GET("editors/audio_buses/active_max_db_color") };
+			active_gradient->set_colors(active_gradient_colors);
+
+			inactive_gradient_colors = { EDITOR_GET("editors/audio_buses/inactive_min_db_color"), EDITOR_GET("editors/audio_buses/inactive_normalized_db_color"), EDITOR_GET("editors/audio_buses/inactive_max_db_color") };
+			inactive_gradient->set_colors(inactive_gradient_colors);
+
+			for (int i = 0; i < CHANNELS_MAX; i++) {
+				channel[i].vu_l->set_tint_under(EDITOR_GET("editors/audio_buses/tint_under_color"));
+				channel[i].vu_l->set_tint_over(EDITOR_GET("editors/audio_buses/tint_over_color"));
+
+				channel[i].vu_r->set_tint_under(EDITOR_GET("editors/audio_buses/tint_under_color"));
+				channel[i].vu_r->set_tint_over(EDITOR_GET("editors/audio_buses/tint_over_color"));
+			}
+		}
 	}
 }
 
@@ -222,7 +299,7 @@ void EditorAudioBus::update_send() {
 	send->clear();
 	if (is_master) {
 		send->set_disabled(true);
-		send->set_text(TTR("Speakers"));
+		send->add_item(TTRC("Speakers"));
 	} else {
 		send->set_disabled(false);
 		StringName current_send = AudioServer::get_singleton()->get_bus_send(get_index());
@@ -391,7 +468,7 @@ float EditorAudioBus::_normalized_volume_to_scaled_db(float normalized) {
 
 float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 	/* Inversion of equations found in _normalized_volume_to_scaled_db.
-	 * IMPORTANT: If one function changes, the other much change to reflect it. */
+	 * IMPORTANT: If one function changes, the other must change to reflect it. */
 	if (db > -2.88) {
 		return (db + 16.2f) / 22.22f;
 	} else if (db < -38.602f) {
@@ -437,9 +514,10 @@ void EditorAudioBus::_show_value(float slider_value) {
 	const Vector2 slider_size = slider->get_size();
 	const Vector2 slider_position = slider->get_global_position();
 	const float vert_padding = 10.0f;
-	const Vector2 box_position = Vector2(slider_size.x, (slider_size.y - vert_padding) * (1.0f - slider->get_value()) - vert_padding);
+	const Size2 box_size = audio_value_preview_label->get_size();
+	const Vector2 box_position = Vector2(-box_size.x, (slider_size.y - vert_padding) * (1.0f - slider->get_value()) - vert_padding);
 	audio_value_preview_box->set_position(slider_position + box_position);
-	audio_value_preview_box->set_size(audio_value_preview_label->get_size());
+	audio_value_preview_box->set_size(box_size);
 	if (slider->has_focus() && !audio_value_preview_box->is_visible()) {
 		audio_value_preview_box->show();
 	}
@@ -448,6 +526,17 @@ void EditorAudioBus::_show_value(float slider_value) {
 
 void EditorAudioBus::_hide_value_preview() {
 	audio_value_preview_box->hide();
+}
+
+void EditorAudioBus::_enable_indicator_fall() {
+	for (int i = 0; i < cc; i++) {
+		if (channel[i].peak_timer_l->get_time_left() <= 0.0 && !channel[i].indicator_fall_l && Math::snapped(channel[i].peak_indicator_l->get_position().height, 0.0001) < peak_indicator_range) {
+			channel[i].indicator_fall_l = true;
+		}
+		if (channel[i].peak_timer_r->get_time_left() <= 0.0 && !channel[i].indicator_fall_r && Math::snapped(channel[i].peak_indicator_r->get_position().height, 0.0001) < peak_indicator_range) {
+			channel[i].indicator_fall_r = true;
+		}
+	}
 }
 
 void EditorAudioBus::_solo_toggled() {
@@ -934,26 +1023,90 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	preview_timer->connect("timeout", callable_mp(this, &EditorAudioBus::_hide_value_preview));
 	hb->add_child(slider);
 
+	active_bus_texture = memnew(GradientTexture2D);
+	active_gradient = memnew(Gradient);
+	active_gradient->set_offsets(gradient_offsets);
+	active_gradient_colors = { EDITOR_GET("editors/audio_buses/active_min_db_color"), EDITOR_GET("editors/audio_buses/active_normalized_db_color"), EDITOR_GET("editors/audio_buses/active_max_db_color") };
+	active_gradient->set_colors(active_gradient_colors);
+	active_bus_texture->set_gradient(active_gradient);
+	active_bus_texture->set_width(vu_width * EDSCALE);
+	active_bus_texture->set_height(vu_height * EDSCALE);
+	active_bus_texture->set_fill_from(Vector2(0.0, 1.0));
+	active_bus_texture->set_fill_to(Vector2(0.0, 0.0));
+	inactive_bus_texture = memnew(GradientTexture2D);
+	inactive_gradient = memnew(Gradient);
+	inactive_gradient->set_offsets(gradient_offsets);
+	inactive_gradient_colors = { EDITOR_GET("editors/audio_buses/inactive_min_db_color"), EDITOR_GET("editors/audio_buses/inactive_normalized_db_color"), EDITOR_GET("editors/audio_buses/inactive_max_db_color") };
+	inactive_gradient->set_colors(inactive_gradient_colors);
+	inactive_bus_texture->set_gradient(inactive_gradient);
+	inactive_bus_texture->set_width(vu_width * EDSCALE);
+	inactive_bus_texture->set_height(vu_height * EDSCALE);
+	inactive_bus_texture->set_fill_from(Vector2(0.0, 1.0));
+	inactive_bus_texture->set_fill_to(Vector2(0.0, 0.0));
+
+	peak_indicator_stylebox_l = memnew(StyleBoxFlat);
+	peak_indicator_stylebox_l->set_bg_color(Color(1.0, 1.0, 1.0, 0.75));
+	peak_indicator_stylebox_r = memnew(StyleBoxFlat);
+	peak_indicator_stylebox_r->set_bg_color(Color(1.0, 1.0, 1.0, 0.75));
+
+	peak_indicator_range = vu_height * EDSCALE - 2.0;
+
 	cc = 0;
 	for (int i = 0; i < CHANNELS_MAX; i++) {
 		channel[i].vu_l = memnew(TextureProgressBar);
 		channel[i].vu_l->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
+		channel[i].vu_l->set_custom_minimum_size(Size2(vu_width, vu_height) * EDSCALE);
+		channel[i].vu_l->set_progress_texture(active_bus_texture);
+		channel[i].vu_l->set_under_texture(active_bus_texture);
+		channel[i].vu_l->set_over_texture(inactive_bus_texture);
+		channel[i].vu_l->set_tint_under(EDITOR_GET("editors/audio_buses/tint_under_color"));
+		channel[i].vu_l->set_tint_over(EDITOR_GET("editors/audio_buses/tint_over_color"));
 		hb->add_child(channel[i].vu_l);
-		channel[i].vu_l->set_min(-80);
-		channel[i].vu_l->set_max(24);
-		channel[i].vu_l->set_step(0.1);
+		channel[i].vu_l->set_min(0);
+		channel[i].vu_l->set_max(1);
+		channel[i].vu_l->set_step(0.0001);
 		channel[i].vu_l->set_accessibility_name(vformat(TTR("Channel %d, Left VU"), i));
+
+		channel[i].peak_indicator_l = memnew(Panel);
+		channel[i].peak_indicator_l->set_custom_minimum_size(Size2(vu_width * EDSCALE, 2.0));
+		channel[i].peak_indicator_l->add_theme_style_override(SceneStringName(panel), peak_indicator_stylebox_l);
+		channel[i].vu_l->add_child(channel[i].peak_indicator_l);
+		channel[i].peak_indicator_l->set_position(Point2(0.0, peak_indicator_range));
+		channel[i].peak_timer_l = memnew(Timer);
+		channel[i].peak_timer_l->set_wait_time(1.5f);
+		channel[i].peak_timer_l->set_one_shot(true);
+		channel[i].peak_timer_l->set_paused(true);
+		channel[i].peak_indicator_l->add_child(channel[i].peak_timer_l);
+		channel[i].peak_timer_l->connect("timeout", callable_mp(this, &EditorAudioBus::_enable_indicator_fall));
 
 		channel[i].vu_r = memnew(TextureProgressBar);
 		channel[i].vu_r->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
+		channel[i].vu_r->set_custom_minimum_size(Size2(vu_width, vu_height) * EDSCALE);
+		channel[i].vu_r->set_progress_texture(active_bus_texture);
+		channel[i].vu_r->set_under_texture(active_bus_texture);
+		channel[i].vu_r->set_over_texture(inactive_bus_texture);
+		channel[i].vu_r->set_tint_under(EDITOR_GET("editors/audio_buses/tint_under_color"));
+		channel[i].vu_r->set_tint_over(EDITOR_GET("editors/audio_buses/tint_over_color"));
 		hb->add_child(channel[i].vu_r);
-		channel[i].vu_r->set_min(-80);
-		channel[i].vu_r->set_max(24);
-		channel[i].vu_r->set_step(0.1);
+		channel[i].vu_r->set_min(0);
+		channel[i].vu_r->set_max(1);
+		channel[i].vu_r->set_step(0.0001);
 		channel[i].vu_r->set_accessibility_name(vformat(TTR("Channel %d, Right VU"), i));
 
-		channel[i].peak_l = 0.0f;
-		channel[i].peak_r = 0.0f;
+		channel[i].peak_indicator_r = memnew(Panel);
+		channel[i].peak_indicator_r->set_custom_minimum_size(Size2(vu_width * EDSCALE, 2.0));
+		channel[i].peak_indicator_r->add_theme_style_override(SceneStringName(panel), peak_indicator_stylebox_r);
+		channel[i].vu_r->add_child(channel[i].peak_indicator_r);
+		channel[i].peak_indicator_r->set_position(Point2(0.0, peak_indicator_range));
+		channel[i].peak_timer_r = memnew(Timer);
+		channel[i].peak_timer_r->set_wait_time(1.5f);
+		channel[i].peak_timer_r->set_one_shot(true);
+		channel[i].peak_timer_r->set_paused(true);
+		channel[i].peak_indicator_r->add_child(channel[i].peak_timer_r);
+		channel[i].peak_timer_r->connect("timeout", callable_mp(this, &EditorAudioBus::_enable_indicator_fall));
+
+		channel[i].peak_l = -100.0f;
+		channel[i].peak_r = -100.0f;
 	}
 
 	EditorAudioMeterNotches *scale = memnew(EditorAudioMeterNotches);
@@ -982,7 +1135,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->set_allow_rmb_select(true);
 	effects->set_focus_mode(FOCUS_CLICK);
 	effects->set_allow_reselect(true);
-	effects->set_theme_type_variation("TreeSecondary");
+	effects->set_theme_type_variation("EditorAudioBusEffectsTree");
 	effects->connect(SceneStringName(gui_input), callable_mp(this, &EditorAudioBus::_effects_gui_input));
 
 	send = memnew(OptionButton);
@@ -1074,6 +1227,21 @@ void EditorAudioBusDrop::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dropped"));
 }
 
+void EditorAudioBuses::_update_file_label() {
+	const String filename = ResourceUID::ensure_path(edited_path).get_file();
+	file->set_text(filename);
+	file->set_tooltip_text(filename);
+
+	if (is_visible_in_tree()) {
+		_update_file_label_size();
+	}
+}
+
+void EditorAudioBuses::_update_file_label_size() {
+	int label_min_width = file->get_minimum_size().x + file->get_character_bounds(0).size.x;
+	file->set_custom_minimum_size(Size2(label_min_width, 0));
+}
+
 void EditorAudioBuses::_rebuild_buses() {
 	for (int i = bus_hb->get_child_count() - 1; i >= 0; i--) {
 		EditorAudioBus *audio_bus = Object::cast_to<EditorAudioBus>(bus_hb->get_child(i));
@@ -1103,7 +1271,7 @@ void EditorAudioBuses::_rebuild_buses() {
 
 EditorAudioBuses *EditorAudioBuses::register_editor() {
 	EditorAudioBuses *audio_buses = memnew(EditorAudioBuses);
-	EditorNode::get_bottom_panel()->add_item(TTRC("Audio"), audio_buses, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Bottom Panel"), KeyModifierMask::ALT | Key::A));
+	EditorDockManager::get_singleton()->add_dock(audio_buses);
 	return audio_buses;
 }
 
@@ -1111,6 +1279,9 @@ void EditorAudioBuses::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			bus_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			if (is_visible_in_tree()) {
+				_update_file_label_size();
+			}
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1141,6 +1312,11 @@ void EditorAudioBuses::_notification(int p_what) {
 			if (edited) {
 				AudioServer::get_singleton()->set_edited(false);
 				save_timer->start();
+			}
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				_update_file_label();
 			}
 		} break;
 	}
@@ -1252,17 +1428,34 @@ void EditorAudioBuses::_drop_at_index(int p_bus, int p_index) {
 
 void EditorAudioBuses::_server_save() {
 	Ref<AudioBusLayout> state = AudioServer::get_singleton()->generate_bus_layout();
-	ResourceSaver::save(state, edited_path);
+	if (edited_path.is_empty()) {
+		ResourceSaver::save(state, "res://default_bus_layout.tres");
+		edited_path = ResourceUID::path_to_uid("res://default_bus_layout.tres");
+		ProjectSettings::get_singleton()->set_setting("audio/buses/default_bus_layout", edited_path);
+		_update_file_label();
+	} else if (!edited_path.begins_with("uid://")) {
+		ResourceSaver::save(state, edited_path);
+		edited_path = ResourceUID::path_to_uid(edited_path);
+		ProjectSettings::get_singleton()->set_setting("audio/buses/default_bus_layout", edited_path);
+	} else {
+		ResourceSaver::save(state, ResourceUID::ensure_path(edited_path));
+	}
+}
+
+void EditorAudioBuses::_file_moved(const String &p_old_path, const String &p_new_path) {
+	if (is_visible_in_tree() && !edited_path.is_empty()) {
+		callable_mp(this, &EditorAudioBuses::_update_file_label).call_deferred();
+	}
 }
 
 void EditorAudioBuses::_select_layout() {
-	FileSystemDock::get_singleton()->navigate_to_path(edited_path);
+	FileSystemDock::get_singleton()->navigate_to_path(ResourceUID::ensure_path(edited_path));
 }
 
 void EditorAudioBuses::_save_as_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Save Audio Bus Layout As..."));
-	file_dialog->set_current_path(edited_path);
+	file_dialog->set_current_path(ResourceUID::ensure_path(edited_path));
 	file_dialog->popup_file_dialog();
 	new_layout = false;
 }
@@ -1270,7 +1463,7 @@ void EditorAudioBuses::_save_as_layout() {
 void EditorAudioBuses::_new_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Location for New Layout..."));
-	file_dialog->set_current_path(edited_path);
+	file_dialog->set_current_path("new_bus_layout.tres");
 	file_dialog->popup_file_dialog();
 	new_layout = true;
 }
@@ -1278,7 +1471,7 @@ void EditorAudioBuses::_new_layout() {
 void EditorAudioBuses::_load_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->set_title(TTR("Open Audio Bus Layout"));
-	file_dialog->set_current_path(edited_path);
+	file_dialog->set_current_path(ResourceUID::ensure_path(edited_path));
 	file_dialog->popup_file_dialog();
 	new_layout = false;
 }
@@ -1301,7 +1494,23 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 			return;
 		}
 	}
-	open_layout(p_string);
+	open_layout(ResourceUID::path_to_uid(p_string));
+}
+
+void EditorAudioBuses::update_layout(EditorDock::DockLayout p_layout) {
+	bool new_floating = (p_layout == EditorDock::DOCK_LAYOUT_FLOATING);
+	if (floating == new_floating) {
+		return;
+	}
+	floating = new_floating;
+
+	if (floating) {
+		bus_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
+	} else {
+		bus_mc->set_theme_type_variation("NoBorderBottomPanel");
+		bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
+	}
 }
 
 void EditorAudioBuses::_bind_methods() {
@@ -1310,14 +1519,27 @@ void EditorAudioBuses::_bind_methods() {
 }
 
 EditorAudioBuses::EditorAudioBuses() {
-	top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	set_name(TTRC("Audio"));
+	set_icon_name("AudioStreamPlayer");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Dock"), KeyModifierMask::ALT | Key::A));
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 
-	edited_path = ResourceUID::ensure_path(GLOBAL_GET("audio/buses/default_bus_layout"));
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
+
+	top_hb = memnew(HBoxContainer);
+	main_vb->add_child(top_hb);
+
+	edited_path = GLOBAL_GET("audio/buses/default_bus_layout");
+
+	Label *layout_label = memnew(Label(TTRC("Layout:")));
+	top_hb->add_child(layout_label);
 
 	file = memnew(Label);
-	file->set_text(vformat("%s %s", TTR("Layout:"), edited_path.get_file()));
-	file->set_clip_text(true);
+	file->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	file->set_mouse_filter(MOUSE_FILTER_PASS);
+	file->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
 	top_hb->add_child(file);
 
@@ -1354,10 +1576,16 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb->add_child(_new);
 	_new->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_new_layout));
 
+	bus_mc = memnew(MarginContainer);
+	bus_mc->set_theme_type_variation("NoBorderBottomPanel");
+	bus_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->add_child(bus_mc);
+
 	bus_scroll = memnew(ScrollContainer);
-	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	bus_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	add_child(bus_scroll);
+	bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
+	bus_scroll->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
+	bus_mc->add_child(bus_scroll);
+
 	bus_hb = memnew(HBoxContainer);
 	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
 	bus_scroll->add_child(bus_hb);
@@ -1365,7 +1593,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	save_timer = memnew(Timer);
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
-	add_child(save_timer);
+	main_vb->add_child(save_timer);
 	save_timer->connect("timeout", callable_mp(this, &EditorAudioBuses::_server_save));
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1380,28 +1608,30 @@ EditorAudioBuses::EditorAudioBuses() {
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &EditorAudioBuses::_rebuild_buses));
+	AudioServer::get_singleton()->connect("bus_renamed", callable_mp(this, &EditorAudioBuses::_rebuild_buses).unbind(3));
+	FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &EditorAudioBuses::_file_moved));
 
 	set_process(true);
 }
 
 void EditorAudioBuses::open_layout(const String &p_path) {
-	EditorNode::get_bottom_panel()->make_item_visible(this);
+	make_visible();
 
 	const String path = ResourceUID::ensure_path(p_path);
-
 	if (!ResourceLoader::exists(path)) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR(R"(Can't open audio bus layout: "%s" doesn't exist.)"), path));
 		return;
 	}
 
-	Ref<AudioBusLayout> state = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+	Ref<AudioBusLayout> state = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 	if (state.is_null()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR(R"(Can't open audio bus layout: "%s" is not a valid audio bus layout.)"), path));
 		return;
 	}
 
-	edited_path = path;
-	file->set_text(vformat("%s %s", TTR("Layout:"), path.get_file()));
+	edited_path = ResourceUID::path_to_uid(p_path);
+	_update_file_label();
+
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);
@@ -1409,11 +1639,13 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 }
 
 void AudioBusesEditorPlugin::edit(Object *p_node) {
-	if (Object::cast_to<AudioBusLayout>(p_node)) {
-		String path = Object::cast_to<AudioBusLayout>(p_node)->get_path();
-		if (path.is_resource_file()) {
-			audio_bus_editor->open_layout(path);
-		}
+	Ref<AudioBusLayout> bus_layout(p_node);
+	if (bus_layout.is_null()) {
+		return;
+	}
+	const String path = bus_layout->get_path();
+	if (path.is_resource_file()) {
+		audio_bus_editor->open_layout(ResourceUID::path_to_uid(path));
 	}
 }
 
@@ -1438,11 +1670,12 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 	float font_height = font->get_height(font_size);
 
 	float width = 0;
-	float height = top_padding + btm_padding;
+	float height = 0;
 
 	for (const EditorAudioMeterNotches::AudioNotch &notch : notches) {
 		if (notch.render_db_value) {
-			width = MAX(width, font->get_string_size(String::num(Math::abs(notch.db_value)) + "dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
+			char sign = notch.db_value >= 0 ? '+' : '-';
+			width = MAX(width, font->get_string_size(sign + String::num(Math::abs(notch.db_value), 0) + " dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
 			height += font_height;
 		}
 	}
@@ -1477,16 +1710,17 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 	float font_height = theme_cache.font->get_height(theme_cache.font_size);
 
 	for (const AudioNotch &n : notches) {
-		draw_line(Vector2(0, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
-				Vector2(line_length * EDSCALE, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
+		draw_line(Vector2(0, (1.0f - n.relative_position) * get_size().y),
+				Vector2(line_length * EDSCALE, (1.0f - n.relative_position) * get_size().y),
 				theme_cache.notch_color,
 				Math::round(EDSCALE));
 
 		if (n.render_db_value) {
+			char sign = n.db_value >= 0 ? '+' : '-';
 			draw_string(theme_cache.font,
 					Vector2((line_length + label_space) * EDSCALE,
-							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
-					String::num(Math::abs(n.db_value)) + "dB",
+							(1.0f - n.relative_position) * get_size().y + (font_height / 4)),
+					sign + String::num(Math::abs(n.db_value), 0) + " dB",
 					HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size,
 					theme_cache.notch_color);
 		}

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 
 class InputEvent;
@@ -54,6 +54,7 @@ public:
 		CONTEXT_SLOT_SCRIPT_EDITOR_CODE,
 		CONTEXT_SLOT_SCENE_TABS,
 		CONTEXT_SLOT_2D_EDITOR,
+		CONTEXT_SLOT_INSPECTOR_PROPERTY,
 	};
 	static constexpr int BASE_ID = 2000;
 
@@ -103,7 +104,7 @@ public:
 	void remove_plugin(const Ref<EditorContextMenuPlugin> &p_plugin);
 
 	bool has_plugins_for_slot(ContextMenuSlot p_slot);
-	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths);
+	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths, int p_id_offset = 0);
 	Callable match_custom_shortcut(ContextMenuSlot p_slot, const Ref<InputEvent> &p_event);
 	bool activate_custom_option(ContextMenuSlot p_slot, int p_option, const Variant &p_arg);
 

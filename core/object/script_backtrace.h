@@ -84,5 +84,5 @@ public:
 	Variant get_member_variable_value(int p_frame_index, int p_variable_index) const;
 
 	String format(int p_indent_all = 0, int p_indent_frames = 4) const;
-	virtual String to_string() override { return format(); }
+	virtual String _to_string() override { return format(); }
 };

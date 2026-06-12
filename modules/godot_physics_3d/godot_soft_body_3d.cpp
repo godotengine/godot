@@ -33,7 +33,7 @@
 #include "godot_space_3d.h"
 
 #include "core/math/geometry_3d.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 // Based on Bullet soft body.
 
@@ -136,11 +136,15 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 		return;
 	}
 
+	// TODO: calling RenderingServer::mesh_surface_get_arrays() from the physics thread
+	// is not safe and can deadlock when physics/3d/run_on_separate_thread is enabled.
+	// This method blocks on the main thread to return data, but the main thread may be
+	// blocked waiting on us in PhysicsServer3D::sync().
 	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
 	ERR_FAIL_COND(arrays.is_empty());
 
-	const Vector<int> &indices = arrays[RenderingServer::ARRAY_INDEX];
-	const Vector<Vector3> &vertices = arrays[RenderingServer::ARRAY_VERTEX];
+	const Vector<int> &indices = arrays[RSE::ARRAY_INDEX];
+	const Vector<Vector3> &vertices = arrays[RSE::ARRAY_VERTEX];
 	ERR_FAIL_COND_MSG(indices.is_empty(), "Soft body's mesh needs to have indices");
 	ERR_FAIL_COND_MSG(vertices.is_empty(), "Soft body's mesh needs to have vertices");
 

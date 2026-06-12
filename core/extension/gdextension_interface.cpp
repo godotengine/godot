@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gdextension_interface.h"
+#include "gdextension_interface.gen.h"
 
 #include "core/config/engine.h"
 #include "core/extension/gdextension.h"
@@ -77,7 +77,7 @@ class CallableCustomExtension : public CallableCustom {
 		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
 
 		if (a->call_func != b->call_func) {
-			return a->call_func < b->call_func;
+			return (uintptr_t)a->call_func < (uintptr_t)b->call_func;
 		}
 		return a->userdata < b->userdata;
 	}
@@ -261,6 +261,7 @@ static void gdextension_get_godot_version2(GDExtensionGodotVersion2 *r_godot_ver
 }
 
 // Memory Functions
+#ifndef DISABLE_DEPRECATED
 static void *gdextension_mem_alloc(size_t p_size) {
 	return memalloc(p_size);
 }
@@ -271,6 +272,19 @@ static void *gdextension_mem_realloc(void *p_mem, size_t p_size) {
 
 static void gdextension_mem_free(void *p_mem) {
 	memfree(p_mem);
+}
+#endif
+
+static void *gdextension_mem_alloc2(size_t p_size, GDExtensionBool p_prepad_align) {
+	return Memory::alloc_static(p_size, p_prepad_align);
+}
+
+static void *gdextension_mem_realloc2(void *p_mem, size_t p_size, GDExtensionBool p_prepad_align) {
+	return Memory::realloc_static(p_mem, p_size, p_prepad_align);
+}
+
+static void gdextension_mem_free2(void *p_mem, GDExtensionBool p_prepad_align) {
+	Memory::free_static(p_mem, p_prepad_align);
 }
 
 // Helper print functions.
@@ -531,6 +545,11 @@ static GDObjectInstanceID gdextension_variant_get_object_instance_id(GDExtension
 static void gdextension_variant_get_type_name(GDExtensionVariantType p_type, GDExtensionUninitializedVariantPtr r_ret) {
 	String name = Variant::get_type_name((Variant::Type)p_type);
 	memnew_placement(r_ret, String(name));
+}
+
+static GDExtensionVariantType gdextension_variant_get_type_by_name(GDExtensionConstStringPtr p_type) {
+	const String *type = (const String *)p_type;
+	return static_cast<GDExtensionVariantType>(Variant::get_type_by_name(*type));
 }
 
 static GDExtensionBool gdextension_variant_can_convert(GDExtensionVariantType p_from, GDExtensionVariantType p_to) {
@@ -803,13 +822,11 @@ static GDExtensionPtrOperatorEvaluator gdextension_variant_get_ptr_operator_eval
 }
 static GDExtensionPtrBuiltInMethod gdextension_variant_get_ptr_builtin_method(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_method, GDExtensionInt p_hash) {
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
-	uint32_t hash = Variant::get_builtin_method_hash(Variant::Type(p_type), method);
-	if (hash != p_hash) {
-		ERR_PRINT_ONCE("Error getting method " + method + ", hash mismatch.");
-		return nullptr;
+	GDExtensionPtrBuiltInMethod ptr = (GDExtensionPtrBuiltInMethod)Variant::get_ptr_builtin_method_with_compatibility(Variant::Type(p_type), method, p_hash);
+	if (!ptr) {
+		ERR_PRINT("Error getting method " + method + ", missing or hash mismatch.");
 	}
-
-	return (GDExtensionPtrBuiltInMethod)Variant::get_ptr_builtin_method(Variant::Type(p_type), method);
+	return ptr;
 }
 static GDExtensionPtrConstructor gdextension_variant_get_ptr_constructor(GDExtensionVariantType p_type, int32_t p_constructor) {
 	return (GDExtensionPtrConstructor)Variant::get_ptr_constructor(Variant::Type(p_type), p_constructor);
@@ -1383,6 +1400,7 @@ static GDExtensionBool gdextension_object_get_class_name(GDExtensionConstObjectP
 	return true;
 }
 
+#ifndef DISABLE_DEPRECATED
 static GDExtensionObjectPtr gdextension_object_cast_to(GDExtensionConstObjectPtr p_object, void *p_class_tag) {
 	if (!p_object) {
 		return nullptr;
@@ -1391,6 +1409,7 @@ static GDExtensionObjectPtr gdextension_object_cast_to(GDExtensionConstObjectPtr
 
 	return o->is_class_ptr(p_class_tag) ? (GDExtensionObjectPtr)o : (GDExtensionObjectPtr) nullptr;
 }
+#endif
 
 static GDObjectInstanceID gdextension_object_get_instance_id(GDExtensionConstObjectPtr p_object) {
 	const Object *o = (const Object *)p_object;
@@ -1640,18 +1659,25 @@ static GDExtensionObjectPtr gdextension_classdb_construct_object(GDExtensionCons
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	return (GDExtensionObjectPtr)ClassDB::instantiate_no_placeholders(classname);
 }
-#endif
 
 static GDExtensionObjectPtr gdextension_classdb_construct_object2(GDExtensionConstStringNamePtr p_classname) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	return (GDExtensionObjectPtr)ClassDB::instantiate_without_postinitialization(classname);
 }
+#endif
 
+static GDExtensionObjectPtr gdextension_classdb_construct_object3(GDExtensionConstStringNamePtr p_classname) {
+	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
+	return (GDExtensionObjectPtr)ClassDB::instantiate_without_postinitialization_with_refcount(classname);
+}
+
+#ifndef DISABLE_DEPRECATED
 static void *gdextension_classdb_get_class_tag(GDExtensionConstStringNamePtr p_classname) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(classname);
 	return class_info ? class_info->class_ptr : nullptr;
 }
+#endif
 
 static void gdextension_editor_add_plugin(GDExtensionConstStringNamePtr p_classname) {
 #ifdef TOOLS_ENABLED
@@ -1687,9 +1713,14 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(get_godot_version);
 #endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(get_godot_version2);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(mem_alloc);
 	REGISTER_INTERFACE_FUNC(mem_realloc);
 	REGISTER_INTERFACE_FUNC(mem_free);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(mem_alloc2);
+	REGISTER_INTERFACE_FUNC(mem_realloc2);
+	REGISTER_INTERFACE_FUNC(mem_free2);
 	REGISTER_INTERFACE_FUNC(print_error);
 	REGISTER_INTERFACE_FUNC(print_error_with_message);
 	REGISTER_INTERFACE_FUNC(print_warning);
@@ -1726,6 +1757,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(variant_has_key);
 	REGISTER_INTERFACE_FUNC(variant_get_object_instance_id);
 	REGISTER_INTERFACE_FUNC(variant_get_type_name);
+	REGISTER_INTERFACE_FUNC(variant_get_type_by_name);
 	REGISTER_INTERFACE_FUNC(variant_can_convert);
 	REGISTER_INTERFACE_FUNC(variant_can_convert_strict);
 	REGISTER_INTERFACE_FUNC(get_variant_from_type_constructor);
@@ -1816,7 +1848,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(object_free_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance);
 	REGISTER_INTERFACE_FUNC(object_get_class_name);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(object_cast_to);
+#endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(object_get_instance_from_id);
 	REGISTER_INTERFACE_FUNC(object_get_instance_id);
 	REGISTER_INTERFACE_FUNC(object_has_script_method);
@@ -1839,10 +1873,13 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(callable_custom_get_userdata);
 #ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
-#endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(classdb_construct_object2);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(classdb_construct_object3);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(classdb_get_class_tag);
+#endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(editor_add_plugin);
 	REGISTER_INTERFACE_FUNC(editor_remove_plugin);
 	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars);

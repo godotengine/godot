@@ -845,7 +845,7 @@ static int QuantizeBlock_MSA(int16_t in[16], int16_t out[16],
   const v8i16 maxlevel = __msa_fill_h(MAX_LEVEL);
 
   LD_SH2(&in[0], 8, in0, in1);
-  LD_SH2(&mtx->sharpen_[0], 8, sh0, sh1);
+  LD_SH2(&mtx->sharpen[0], 8, sh0, sh1);
   tmp4 = __msa_add_a_h(in0, zero);
   tmp5 = __msa_add_a_h(in1, zero);
   ILVRL_H2_SH(sh0, tmp4, tmp0, tmp1);
@@ -853,10 +853,10 @@ static int QuantizeBlock_MSA(int16_t in[16], int16_t out[16],
   HADD_SH4_SW(tmp0, tmp1, tmp2, tmp3, s0, s1, s2, s3);
   sign0 = (in0 < zero);
   sign1 = (in1 < zero);                           // sign
-  LD_SH2(&mtx->iq_[0], 8, tmp0, tmp1);            // iq
+  LD_SH2(&mtx->iq[0], 8, tmp0, tmp1);             // iq
   ILVRL_H2_SW(zero, tmp0, t0, t1);
   ILVRL_H2_SW(zero, tmp1, t2, t3);
-  LD_SW4(&mtx->bias_[0], 4, b0, b1, b2, b3);      // bias
+  LD_SW4(&mtx->bias[0], 4, b0, b1, b2, b3);       // bias
   MUL4(t0, s0, t1, s1, t2, s2, t3, s3, t0, t1, t2, t3);
   ADD4(b0, t0, b1, t1, b2, t2, b3, t3, b0, b1, b2, b3);
   SRAI_W4_SW(b0, b1, b2, b3, 17);
@@ -868,7 +868,7 @@ static int QuantizeBlock_MSA(int16_t in[16], int16_t out[16],
   SUB2(zero, tmp2, zero, tmp3, tmp0, tmp1);
   tmp2 = (v8i16)__msa_bmnz_v((v16u8)tmp2, (v16u8)tmp0, (v16u8)sign0);
   tmp3 = (v8i16)__msa_bmnz_v((v16u8)tmp3, (v16u8)tmp1, (v16u8)sign1);
-  LD_SW4(&mtx->zthresh_[0], 4, t0, t1, t2, t3);   // zthresh
+  LD_SW4(&mtx->zthresh[0], 4, t0, t1, t2, t3);    // zthresh
   t0 = (s0 > t0);
   t1 = (s1 > t1);
   t2 = (s2 > t2);
@@ -876,7 +876,7 @@ static int QuantizeBlock_MSA(int16_t in[16], int16_t out[16],
   PCKEV_H2_SH(t1, t0, t3, t2, tmp0, tmp1);
   tmp4 = (v8i16)__msa_bmnz_v((v16u8)zero, (v16u8)tmp2, (v16u8)tmp0);
   tmp5 = (v8i16)__msa_bmnz_v((v16u8)zero, (v16u8)tmp3, (v16u8)tmp1);
-  LD_SH2(&mtx->q_[0], 8, tmp0, tmp1);
+  LD_SH2(&mtx->q[0], 8, tmp0, tmp1);
   MUL2(tmp4, tmp0, tmp5, tmp1, in0, in1);
   VSHF_H2_SH(tmp4, tmp5, tmp4, tmp5, zigzag0, zigzag1, out0, out1);
   ST_SH2(in0, in1, &in[0], 8);

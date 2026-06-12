@@ -33,6 +33,8 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/zip_io.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -43,6 +45,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 
@@ -152,8 +155,8 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 	asset_title_label->set_text(asset_name);
 
 	_check_has_toplevel();
-	// Default to false, unless forced.
-	skip_toplevel = p_autoskip_toplevel;
+	// Default to false, unless forced. Don't skip "addons" by default
+	skip_toplevel = p_autoskip_toplevel && toplevel_prefix != "addons/";
 	skip_toplevel_check->set_block_signals(true);
 	skip_toplevel_check->set_pressed(!skip_toplevel_check->is_disabled() && skip_toplevel);
 	skip_toplevel_check->set_block_signals(false);
@@ -412,8 +415,14 @@ void EditorAssetInstaller::_toggle_source_tree(bool p_visible, bool p_scroll_to_
 
 	if (p_visible) {
 		show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
+		destination_tree_mc->set_theme_type_variation("");
+		destination_tree->set_theme_type_variation("TreeSecondary");
+		destination_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);
 	} else {
 		show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
+		destination_tree_mc->set_theme_type_variation("NoBorderHorizontalWindow");
+		destination_tree->set_theme_type_variation("");
+		destination_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	}
 
 	if (p_visible && p_scroll_to_error && first_file_conflict) {
@@ -697,7 +706,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	remapping_tools->add_child(memnew(VSeparator));
 
 	skip_toplevel_check = memnew(CheckBox);
-	skip_toplevel_check->set_text(TTRC("Ignore asset root"));
+	skip_toplevel_check->set_text(TTRC("Ignore Asset Root"));
 	skip_toplevel_check->set_tooltip_text(TTRC("Ignore the root directory when extracting files."));
 	skip_toplevel_check->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
 	remapping_tools->add_child(skip_toplevel_check);
@@ -707,7 +716,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	asset_conflicts_label = memnew(Label);
 	asset_conflicts_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	asset_conflicts_label->set_theme_type_variation("HeaderSmall");
-	asset_conflicts_label->set_text(TTRC("No files conflict with your project"));
+	asset_conflicts_label->set_text(TTRC("No files conflict with your project."));
 	remapping_tools->add_child(asset_conflicts_label);
 	asset_conflicts_link = memnew(LinkButton);
 	asset_conflicts_link->set_theme_type_variation("HeaderSmallLink");
@@ -750,12 +759,17 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	destination_tree_label->set_theme_type_variation("HeaderSmall");
 	destination_tree_vb->add_child(destination_tree_label);
 
+	destination_tree_mc = memnew(MarginContainer);
+	destination_tree_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	destination_tree_mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	destination_tree_vb->add_child(destination_tree_mc);
+
 	destination_tree = memnew(Tree);
 	destination_tree->set_accessibility_name(TTRC("Destination Files"));
 	destination_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	destination_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	destination_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	destination_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
-	destination_tree_vb->add_child(destination_tree);
+	destination_tree_mc->add_child(destination_tree);
 
 	// Dialog configuration.
 

@@ -66,13 +66,22 @@ static inline Type& StructAtOffsetUnaligned(void *P, unsigned int offset)
 }
 
 /* StructAfter<T>(X) returns the struct T& that is placed after X.
- * Works with X of variable size also.  X must implement get_size() */
-template<typename Type, typename TObject>
-static inline const Type& StructAfter(const TObject &X)
-{ return StructAtOffset<Type>(&X, X.get_size()); }
-template<typename Type, typename TObject>
-static inline Type& StructAfter(TObject &X)
-{ return StructAtOffset<Type>(&X, X.get_size()); }
+ * Works with X of variable size also.  X must implement get_size().
+ * Any extra arguments are forwarded to get_size, so for example
+ * it can work with UnsizedArrayOf<> as well. */
+template <typename Type, typename TObject, typename ...Ts>
+static inline auto StructAfter(const TObject &X, Ts... args) HB_AUTO_RETURN((
+  StructAtOffset<Type>(&X, X.get_size(std::forward<Ts> (args)...))
+))
+/* The is_const shenanigans is to avoid ambiguous overload with gcc-8.
+ * It disables this path when TObject is const.
+ * See: https://github.com/harfbuzz/harfbuzz/issues/5429 */
+template <typename Type, typename TObject, typename ...Ts>
+static inline auto StructAfter(TObject &X, Ts... args) HB_AUTO_RETURN((
+  sizeof(int[std::is_const<TObject>::value ? -1 : +1]) > 0 ?
+  StructAtOffset<Type>(&X, X.get_size(std::forward<Ts> (args)...))
+  : *reinterpret_cast<Type*> (0)
+))
 
 
 /*
@@ -101,7 +110,7 @@ static inline Type& StructAfter(TObject &X)
 
 #define DEFINE_SIZE_STATIC(size) \
   DEFINE_INSTANCE_ASSERTION (sizeof (*this) == (size)) \
-  unsigned int get_size () const { return (size); } \
+  size_t get_size () const { return (size); } \
   static constexpr unsigned null_size = (size); \
   static constexpr unsigned min_size = (size); \
   static constexpr unsigned static_size = (size)
@@ -128,9 +137,8 @@ static inline Type& StructAfter(TObject &X)
   static constexpr unsigned min_size = (size)
 
 #define DEFINE_SIZE_ARRAY_SIZED(size, array) \
-  unsigned int get_size () const { return (size - (array).min_size + (array).get_size ()); } \
+  size_t get_size () const { return (size - (array).min_size + (array).get_size ()); } \
   DEFINE_SIZE_ARRAY(size, array)
-
 
 
 /*

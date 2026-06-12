@@ -31,7 +31,7 @@
 #pragma once
 
 #include "scene/3d/mesh_instance_3d.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class PhysicsBody3D;
 
@@ -40,19 +40,11 @@ class SoftBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHand
 
 	RID mesh;
 	int surface = 0;
-	AABB aabb_prev;
-	AABB aabb_curr;
-	Vector<uint8_t> buffer[2];
-	Vector<uint8_t> *buffer_prev = nullptr;
-	Vector<uint8_t> *buffer_curr = nullptr;
-	Vector<uint8_t> buffer_interp;
-	uint32_t vertex_count = 0;
+	Vector<uint8_t> buffer;
 	uint32_t stride = 0;
 	uint32_t normal_stride = 0;
 	uint32_t offset_vertices = 0;
 	uint32_t offset_normal = 0;
-
-	AABB aabb_last;
 
 	uint8_t *write_buffer = nullptr;
 
@@ -63,8 +55,7 @@ private:
 	void clear();
 	void open();
 	void close();
-	void fti_pump();
-	void commit_changes(real_t p_interpolation_fraction);
+	void commit_changes();
 
 public:
 	void set_vertex(int p_vertex_id, const Vector3 &p_vertex) override;
@@ -116,8 +107,7 @@ private:
 	void _update_pickable();
 
 	void _update_physics_server();
-	void _update_soft_mesh();
-	void _commit_soft_mesh(real_t p_interpolation_fraction);
+	void _draw_soft_mesh();
 
 	void _prepare_physics_server();
 	void _become_mesh_owner();
@@ -133,8 +123,6 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-
-	void _physics_interpolated_changed() override;
 
 #ifndef DISABLE_DEPRECATED
 	void _pin_point_bind_compat_94684(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath());
@@ -189,12 +177,11 @@ public:
 	real_t get_drag_coefficient();
 
 	TypedArray<PhysicsBody3D> get_collision_exceptions();
-	void add_collision_exception_with(Node *p_node);
-	void remove_collision_exception_with(Node *p_node);
+	void add_collision_exception_with(RequiredParam<Node> rp_node);
+	void remove_collision_exception_with(RequiredParam<Node> rp_node);
 
 	Vector3 get_point_transform(int p_point_index);
 
-	void pin_point_toggle(int p_point_index);
 	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1);
 	bool is_point_pinned(int p_point_index) const;
 

@@ -52,7 +52,7 @@ namespace GodotTools.Build
         {
             var plugin = GodotSharpEditor.Instance;
             plugin.ShowErrorDialog(message, "Build error");
-            plugin.MakeBottomPanelItemVisible(plugin.MSBuildPanel);
+            plugin.MSBuildPanel.MakeVisible();
         }
 
         private static string GetLogFilePath(BuildInfo buildInfo)

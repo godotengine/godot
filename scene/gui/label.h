@@ -101,6 +101,7 @@ private:
 	void _update_visible() const;
 	void _shape() const;
 	void _invalidate();
+	void _maximum_size_changed();
 
 protected:
 	RID get_line_rid(int p_line) const;
@@ -115,6 +116,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
 	virtual PackedStringArray get_configuration_warnings() const override;
 
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
@@ -141,7 +143,7 @@ public:
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_autowrap_mode(TextServer::AutowrapMode p_mode);

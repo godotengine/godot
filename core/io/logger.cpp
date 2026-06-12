@@ -32,10 +32,14 @@
 
 #include "core/core_globals.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/object/script_backtrace.h"
 #include "core/os/time.h"
 #include "core/templates/rb_set.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
+
+#include <cstdio>
 
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"

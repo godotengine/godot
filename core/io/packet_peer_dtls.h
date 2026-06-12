@@ -58,8 +58,6 @@ public:
 
 	static PacketPeerDTLS *create(bool p_notify_postinitialize = true);
 	static bool is_available();
-
-	PacketPeerDTLS() {}
 };
 
 VARIANT_ENUM_CAST(PacketPeerDTLS::Status);

@@ -12,6 +12,7 @@
 
 #include "mbedtls/rsa.h"
 #include "mbedtls/bignum.h"
+#include "bignum_internal.h"
 #include "rsa_alt_helpers.h"
 
 /*
@@ -117,7 +118,7 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
         MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&K, primes[attempt]));
 
         /* Check if gcd(K,N) = 1 */
-        MBEDTLS_MPI_CHK(mbedtls_mpi_gcd(P, &K, N));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(P, NULL, &K, N));
         if (mbedtls_mpi_cmp_int(P, 1) != 0) {
             continue;
         }
@@ -136,7 +137,7 @@ int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N,
             }
 
             MBEDTLS_MPI_CHK(mbedtls_mpi_add_int(&K, &K, 1));
-            MBEDTLS_MPI_CHK(mbedtls_mpi_gcd(P, &K, N));
+            MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(P, NULL, &K, N));
 
             if (mbedtls_mpi_cmp_int(P, 1) ==  1 &&
                 mbedtls_mpi_cmp_mpi(P, N) == -1) {
@@ -197,6 +198,10 @@ int mbedtls_rsa_deduce_private_exponent(mbedtls_mpi const *P,
         return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
     }
 
+    if (mbedtls_mpi_get_bit(E, 0) != 1) {
+        return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
+    }
+
     mbedtls_mpi_init(&K);
     mbedtls_mpi_init(&L);
 
@@ -211,8 +216,11 @@ int mbedtls_rsa_deduce_private_exponent(mbedtls_mpi const *P,
     MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&K, &K, &L));
     MBEDTLS_MPI_CHK(mbedtls_mpi_div_mpi(&K, NULL, &K, D));
 
-    /* Compute modular inverse of E in LCM(P-1, Q-1) */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod(D, E, &K));
+    /* Compute modular inverse of E mod LCM(P-1, Q-1)
+     * This is FIPS 186-4 §B.3.1 criterion 3(b).
+     * This will return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if E is not coprime to
+     * (P-1)(Q-1), also validating FIPS 186-4 §B.3.1 criterion 2(a). */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod_even_in_range(D, E, &K));
 
 cleanup:
 
@@ -244,7 +252,7 @@ int mbedtls_rsa_deduce_crt(const mbedtls_mpi *P, const mbedtls_mpi *Q,
 
     /* QP = Q^{-1} mod P */
     if (QP != NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod(QP, Q, P));
+        MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod_odd(QP, Q, P));
     }
 
 cleanup:

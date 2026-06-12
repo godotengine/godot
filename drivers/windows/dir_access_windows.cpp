@@ -31,17 +31,16 @@
 #if defined(WINDOWS_ENABLED)
 
 #include "dir_access_windows.h"
-#include "file_access_windows.h"
 
-#include "core/config/project_settings.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "drivers/windows/file_access_windows.h"
+
+#include <windows.h>
 
 #include <cstdio>
 #include <cwchar>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 typedef struct _NT_IO_STATUS_BLOCK {
 	union {
@@ -136,16 +135,48 @@ void DirAccessWindows::list_dir_end() {
 	}
 }
 
+void DirAccessWindows::_update_drives() {
+	drives.clear();
+	DWORD mask = GetLogicalDrives();
+	for (int i = 0; i < MAX_DRIVES; i++) {
+		if (mask & (1 << i)) {
+			String drive = String::chr('A' + i) + ':';
+			String path = drive + '\\';
+			String label;
+			char16_t wlabel[4096];
+			if (GetVolumeInformationW((LPCWSTR)(path).utf16().get_data(), (LPWSTR)wlabel, 4096, nullptr, nullptr, nullptr, nullptr, 0)) {
+				label = String::utf16(wlabel);
+			}
+			drives.push_back(DriveInfo{ drive, label });
+		}
+	}
+}
+
 int DirAccessWindows::get_drive_count() {
-	return drive_count;
+	if (drives.size() == 0) {
+		_update_drives();
+	}
+	return drives.size();
+}
+
+String DirAccessWindows::get_drive_label(int p_drive) {
+	if (drives.size() == 0) {
+		_update_drives();
+	}
+	if (p_drive < 0 || p_drive >= (int)drives.size()) {
+		return String();
+	}
+	return drives[p_drive].label;
 }
 
 String DirAccessWindows::get_drive(int p_drive) {
-	if (p_drive < 0 || p_drive >= drive_count) {
-		return "";
+	if (drives.size() == 0) {
+		_update_drives();
 	}
-
-	return String::chr(drives[p_drive]) + ":";
+	if (p_drive < 0 || p_drive >= (int)drives.size()) {
+		return String();
+	}
+	return drives[p_drive].path;
 }
 
 Error DirAccessWindows::change_dir(String p_dir) {
@@ -329,7 +360,14 @@ Error DirAccessWindows::remove(String p_path) {
 
 uint64_t DirAccessWindows::get_space_left() {
 	uint64_t bytes = 0;
-	if (!GetDiskFreeSpaceEx(nullptr, (PULARGE_INTEGER)&bytes, nullptr, nullptr)) {
+
+	String path = fix_path(current_dir);
+
+	if (!path.ends_with("\\")) {
+		path += "\\";
+	}
+
+	if (!GetDiskFreeSpaceExW((LPCWSTR)(path.utf16().get_data()), (PULARGE_INTEGER)&bytes, nullptr, nullptr)) {
 		return 0;
 	}
 
@@ -478,16 +516,6 @@ DirAccessWindows::DirAccessWindows() {
 	real_current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(real_current_dir_name.size(), (LPWSTR)real_current_dir_name.ptrw());
 	current_dir = String::utf16((const char16_t *)real_current_dir_name.get_data());
-
-	DWORD mask = GetLogicalDrives();
-
-	for (int i = 0; i < MAX_DRIVES; i++) {
-		if (mask & (1 << i)) { //DRIVE EXISTS
-
-			drives[drive_count] = 'A' + i;
-			drive_count++;
-		}
-	}
 
 	change_dir(".");
 }

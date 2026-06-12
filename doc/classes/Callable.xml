@@ -61,6 +61,7 @@
 		# This will work.
 		tween.tween_callback(Callable.create(dictionary, "clear"))
 		[/codeblock]
+		[b]Note:[/b] In a boolean context, a callable will evaluate to [code]false[/code] if it's null (see [method is_null]). Otherwise, a callable will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>

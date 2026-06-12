@@ -298,7 +298,7 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	  end = start + 2;
 	if (unlikely (!buffer->successful))
 	  break;
-	buffer->merge_out_clusters (start, end);
+	buffer->merge_out_grapheme_clusters (start, end);
 	continue;
       }
     }
@@ -371,7 +371,7 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	  if (i < end)
 	    info[i++].hangul_shaping_feature() = TJMO;
 
-	  buffer->merge_out_clusters (start, end);
+	  buffer->merge_out_grapheme_clusters (start, end);
 	  continue;
 	}
 	else if ((!tindex && buffer->idx + 1 < count && isT (buffer->cur(+1).codepoint)))
@@ -427,7 +427,7 @@ const hb_ot_shaper_t _hb_ot_shaper_hangul =
   HB_TAG_NONE, /* gpos_tag */
   HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
-  false, /* fallback_position */
+  true, /* fallback_position */
 };
 
 

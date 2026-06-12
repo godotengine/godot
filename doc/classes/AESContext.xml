@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AESContext" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AESContext" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides access to AES encryption/decryption of raw data.
 	</brief_description>
@@ -118,10 +118,10 @@
 			AES electronic codebook decryption mode.
 		</constant>
 		<constant name="MODE_CBC_ENCRYPT" value="2" enum="Mode">
-			AES cipher blocker chaining encryption mode.
+			AES cipher block chaining encryption mode.
 		</constant>
 		<constant name="MODE_CBC_DECRYPT" value="3" enum="Mode">
-			AES cipher blocker chaining decryption mode.
+			AES cipher block chaining decryption mode.
 		</constant>
 		<constant name="MODE_MAX" value="4" enum="Mode">
 			Maximum value for the mode enum.

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/thread.h"
 #include "scene/3d/node_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 
@@ -272,18 +273,18 @@ void NavMeshGenerator3D::generator_parse_geometry_node(const Ref<NavigationMesh>
 	}
 }
 
-void NavMeshGenerator3D::set_generator_parsers(LocalVector<NavMeshGeometryParser3D *> p_parsers) {
+void NavMeshGenerator3D::set_generator_parsers(const LocalVector<NavMeshGeometryParser3D *> &p_parsers) {
 	RWLockWrite write_lock(generator_parsers_rwlock);
 	generator_parsers = p_parsers;
 }
 
 void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node) {
-	List<Node *> parse_nodes;
+	Vector<Node *> parse_nodes;
 
 	if (p_navigation_mesh->get_source_geometry_mode() == NavigationMesh::SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
 		parse_nodes.push_back(p_root_node);
 	} else {
-		p_root_node->get_tree()->get_nodes_in_group(p_navigation_mesh->get_source_group_name(), &parse_nodes);
+		parse_nodes = p_root_node->get_tree()->get_nodes_in_group(p_navigation_mesh->get_source_group_name());
 	}
 
 	Transform3D root_node_transform = Transform3D();

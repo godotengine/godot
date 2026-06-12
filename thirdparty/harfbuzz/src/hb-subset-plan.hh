@@ -300,6 +300,7 @@ struct hb_subset_plan_t
 // compile times more reasonable:
 // - hb-subset-plan.cc
 // - hb-subset-plan-layout.cc
+// - hb-subset-plan-var.cc
 //
 // The functions below are those needed to connect the split files
 // above together.
@@ -332,7 +333,7 @@ generate_varstore_inner_maps (const hb_set_t& varidx_set,
                               unsigned subtable_count,
                               hb_vector_t<hb_inc_bimap_t> &inner_maps /* OUT */);
 
-HB_INTERNAL void
+HB_INTERNAL bool
 normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan);
 
 HB_INTERNAL void

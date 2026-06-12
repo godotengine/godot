@@ -1278,7 +1278,7 @@
 #define snd_midi_event_encode snd_midi_event_encode_dylibloader_orig_asound
 #define snd_midi_event_encode_byte snd_midi_event_encode_byte_dylibloader_orig_asound
 #define snd_midi_event_decode snd_midi_event_decode_dylibloader_orig_asound
-#include "thirdparty/linuxbsd_headers/alsa/asoundlib.h"
+#include <thirdparty/linuxbsd_headers/alsa/asoundlib.h> // IWYU pragma: export.
 #undef snd_asoundlib_version
 #undef snd_dlopen
 #undef snd_dlsym

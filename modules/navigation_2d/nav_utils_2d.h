@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include "core/math/vector3.h"
-#include "core/object/ref_counted.h"
-#include "core/templates/hash_map.h"
+#include "core/math/vector2.h"
 #include "core/templates/hashfuncs.h"
-#include "servers/navigation/nav_heap.h"
-#include "servers/navigation/navigation_utilities.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
+
+#include <cfloat> // FLT_MAX
 
 class NavBaseIteration2D;
 
@@ -75,6 +75,7 @@ struct EdgeKey {
 struct ConnectableEdge {
 	EdgeKey ek;
 	uint32_t polygon_index;
+	int edge = -1;
 	Vector2 pathway_start;
 	Vector2 pathway_end;
 };

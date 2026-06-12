@@ -30,12 +30,12 @@
 
 #include "color.h"
 
-#include "color_names.inc"
+#include "core/math/color_names.inc"
 #include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 
-#include "thirdparty/misc/ok_color.h"
+#include <thirdparty/misc/ok_color.h>
 
 uint32_t Color::to_argb32() const {
 	uint32_t c = (uint8_t)Math::round(a * 255.0f);
@@ -432,7 +432,7 @@ int Color::find_named_color(const String &p_name) {
 }
 
 int Color::get_named_color_count() {
-	return std::size(named_colors);
+	return std_size(named_colors);
 }
 
 String Color::get_named_color_name(int p_idx) {

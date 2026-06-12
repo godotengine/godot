@@ -157,9 +157,9 @@ struct CreateRadixTree {
   }
 };
 
-template <typename T, const bool selfCollision, typename Recorder>
+template <typename F, const bool selfCollision, typename Recorder>
 struct FindCollision {
-  VecView<const T> queries;
+  F& f;
   VecView<const Box> nodeBBox_;
   VecView<const std::pair<int, int>> internalChildren_;
   Recorder& recorder;
@@ -167,7 +167,7 @@ struct FindCollision {
   using Local = typename Recorder::Local;
 
   inline int RecordCollision(int node, const int queryIdx, Local& local) {
-    bool overlaps = nodeBBox_[node].DoesOverlap(queries[queryIdx]);
+    bool overlaps = nodeBBox_[node].DoesOverlap(f(queryIdx));
     if (overlaps && IsLeaf(node)) {
       int leafIdx = Node2Leaf(node);
       if (!selfCollision || leafIdx != queryIdx) {
@@ -324,12 +324,25 @@ class Collider {
     ZoneScoped;
     using collider_internal::FindCollision;
     if (internalChildren_.empty()) return;
+    auto f = [queriesIn](const int i) { return queriesIn[i]; };
     for_each_n(parallel ? autoPolicy(queriesIn.size(),
                                      collider_internal::kSequentialThreshold)
                         : ExecutionPolicy::Seq,
                countAt(0), queriesIn.size(),
-               FindCollision<T, selfCollision, Recorder>{
-                   queriesIn, nodeBBox_, internalChildren_, recorder});
+               FindCollision<decltype(f), selfCollision, Recorder>{
+                   f, nodeBBox_, internalChildren_, recorder});
+  }
+
+  template <const bool selfCollision = false, typename F, typename Recorder>
+  void Collisions(F f, int n, Recorder& recorder, bool parallel = true) const {
+    ZoneScoped;
+    using collider_internal::FindCollision;
+    if (internalChildren_.empty()) return;
+    for_each_n(parallel ? autoPolicy(n, collider_internal::kSequentialThreshold)
+                        : ExecutionPolicy::Seq,
+               countAt(0), n,
+               FindCollision<decltype(f), selfCollision, Recorder>{
+                   f, nodeBBox_, internalChildren_, recorder});
   }
 
   static uint32_t MortonCode(vec3 position, Box bBox) {

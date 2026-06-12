@@ -73,9 +73,7 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
     return nullptr;
   }
 
-  unsigned num_axes = hb_ot_var_get_axis_count (face);
-  // https://github.com/harfbuzz/harfbuzz/issues/5163
-  if (num_axes)
+  if (font->num_coords)
   {
     CFMutableDictionaryRef variations =
       CFDictionaryCreateMutable (kCFAllocatorDefault,
@@ -83,15 +81,14 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
 				 &kCFTypeDictionaryKeyCallBacks,
 				 &kCFTypeDictionaryValueCallBacks);
 
-    unsigned count = hb_max (num_axes, font->num_coords);
+    unsigned count = font->num_coords;
     for (unsigned i = 0; i < count; i++)
     {
       hb_ot_var_axis_info_t info;
       unsigned int c = 1;
       hb_ot_var_get_axis_infos (font->face, i, &c, &info);
-      float v = i < font->num_coords ?
-		hb_clamp (font->design_coords[i], info.min_value, info.max_value) :
-		info.default_value;
+
+      float v = hb_clamp (font->design_coords[i], info.min_value, info.max_value);
 
       CFNumberRef tag_number = CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &info.tag);
       CFNumberRef value_number = CFNumberCreate (kCFAllocatorDefault, kCFNumberFloatType, &v);
@@ -202,7 +199,7 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
     hb_glyph_info_t *info = buffer->info;
     for (unsigned int i = 1; i < count; i++)
       if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK (unicode->general_category (info[i].codepoint)))
-	buffer->merge_clusters (i - 1, i + 1);
+	buffer->merge_grapheme_clusters (i - 1, i + 1);
   }
 
   hb_vector_t<range_record_t> range_records;

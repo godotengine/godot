@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/a_hash_map.h"
 
@@ -43,8 +43,6 @@ class AStar3D : public RefCounted {
 	friend class AStar2D;
 
 	struct Point {
-		Point() {}
-
 		int64_t id = 0;
 		Vector3 pos;
 		real_t weight_scale = 0;
@@ -113,8 +111,9 @@ class AStar3D : public RefCounted {
 	AHashMap<int64_t, Point *> points;
 	HashSet<Segment, Segment> segments;
 	Point *last_closest_point = nullptr;
+	bool neighbor_filter_enabled = false;
 
-	bool _solve(Point *begin_point, Point *end_point, bool p_allow_partial_path);
+	bool _solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
@@ -122,6 +121,7 @@ protected:
 	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
+	GDVIRTUAL2RC(bool, _filter_neighbor, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
 
@@ -144,6 +144,9 @@ public:
 	Vector<int64_t> get_point_connections(int64_t p_id);
 	PackedInt64Array get_point_ids();
 
+	bool is_neighbor_filter_enabled() const;
+	void set_neighbor_filter_enabled(bool p_enabled);
+
 	void set_point_disabled(int64_t p_id, bool p_disabled = true);
 	bool is_point_disabled(int64_t p_id) const;
 
@@ -162,7 +165,6 @@ public:
 	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 
-	AStar3D() {}
 	~AStar3D();
 };
 
@@ -170,7 +172,7 @@ class AStar2D : public RefCounted {
 	GDCLASS(AStar2D, RefCounted);
 	AStar3D astar;
 
-	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path);
+	bool _solve(AStar3D::Point *p_begin_point, AStar3D::Point *p_end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
@@ -178,6 +180,7 @@ protected:
 	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
+	GDVIRTUAL2RC(bool, _filter_neighbor, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
 
@@ -200,6 +203,9 @@ public:
 	Vector<int64_t> get_point_connections(int64_t p_id);
 	PackedInt64Array get_point_ids();
 
+	bool is_neighbor_filter_enabled() const;
+	void set_neighbor_filter_enabled(bool p_enabled);
+
 	void set_point_disabled(int64_t p_id, bool p_disabled = true);
 	bool is_point_disabled(int64_t p_id) const;
 
@@ -217,7 +223,4 @@ public:
 
 	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
-
-	AStar2D() {}
-	~AStar2D() {}
 };

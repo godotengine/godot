@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="16"
+    android:viewportHeight="16">
+  <path
+      android:pathData="m8,4h2v2h2V8H8Z"
+      android:fillColor="@color/game_menu_icons_color_state"/>
+  <path
+      android:pathData="M2.289,9L4.703,9A0.289,0.289 0,0 1,4.992 9.289L4.992,14.711A0.289,0.289 0,0 1,4.703 15L2.289,15A0.289,0.289 0,0 1,2 14.711L2,9.289A0.289,0.289 0,0 1,2.289 9z"
+      android:fillColor="@color/game_menu_icons_color_state"/>
+  <path
+      android:pathData="M6.289,9L8.711,9A0.289,0.289 0,0 1,9 9.289L9,14.711A0.289,0.289 0,0 1,8.711 15L6.289,15A0.289,0.289 0,0 1,6 14.711L6,9.289A0.289,0.289 0,0 1,6.289 9z"
+      android:fillColor="@color/game_menu_icons_color_state"/>
+  <path
+      android:pathData="M9,1A6,6 0,0 0,3 7A6,6 0,0 0,3.084 8L5.127,8A4,4 0,0 1,5 7A4,4 0,0 1,9 3A4,4 0,0 1,13 7A4,4 0,0 1,10 10.873L10,12.916A6,6 0,0 0,15 7A6,6 0,0 0,9 1z"
+      android:fillColor="@color/game_menu_icons_color_state"/>
+</vector>

@@ -33,13 +33,13 @@
 #include "../nav_utils_2d.h"
 
 #include "core/templates/a_hash_map.h"
+#include "servers/nav_heap.h"
+#include "servers/navigation_2d/navigation_constants_2d.h"
+#include "servers/navigation_2d/navigation_path_query_parameters_2d.h"
+#include "servers/navigation_2d/navigation_path_query_result_2d.h"
 
-#include "servers/navigation/navigation_globals.h"
-#include "servers/navigation/navigation_path_query_parameters_2d.h"
-#include "servers/navigation/navigation_path_query_result_2d.h"
-#include "servers/navigation/navigation_utilities.h"
-
-using namespace NavigationUtilities;
+using namespace NavigationDefaults2D;
+using namespace NavigationEnums2D;
 
 class NavMap2D;
 struct NavMapIteration2D;

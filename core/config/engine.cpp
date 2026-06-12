@@ -34,26 +34,43 @@
 #include "core/config/project_settings.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
+#include "core/object/object.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
+void Engine::_update_time_scale() {
+	_time_scale = _user_time_scale * _game_time_scale;
+	user_ips = MAX(1, ips * _user_time_scale);
+	max_user_physics_steps_per_frame = MAX(max_physics_steps_per_frame, max_physics_steps_per_frame * _user_time_scale);
+}
+
 void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
+	_update_time_scale();
 }
 
 int Engine::get_physics_ticks_per_second() const {
 	return ips;
 }
 
+int Engine::get_user_physics_ticks_per_second() const {
+	return user_ips;
+}
+
 void Engine::set_max_physics_steps_per_frame(int p_max_physics_steps) {
 	ERR_FAIL_COND_MSG(p_max_physics_steps <= 0, "Maximum number of physics steps per frame must be greater than 0.");
 	max_physics_steps_per_frame = p_max_physics_steps;
+	_update_time_scale();
 }
 
 int Engine::get_max_physics_steps_per_frame() const {
 	return max_physics_steps_per_frame;
+}
+
+int Engine::get_user_max_physics_steps_per_frame() const {
+	return max_user_physics_steps_per_frame;
 }
 
 void Engine::set_physics_jitter_fix(double p_threshold) {
@@ -112,11 +129,21 @@ uint32_t Engine::get_frame_delay() const {
 }
 
 void Engine::set_time_scale(double p_scale) {
-	_time_scale = p_scale;
+	_game_time_scale = p_scale;
+	_update_time_scale();
 }
 
 double Engine::get_time_scale() const {
-	return freeze_time_scale ? 0 : _time_scale;
+	return freeze_time_scale ? 0.0 : _game_time_scale;
+}
+
+void Engine::set_user_time_scale(double p_scale) {
+	_user_time_scale = p_scale;
+	_update_time_scale();
+}
+
+double Engine::get_effective_time_scale() const {
+	return freeze_time_scale ? 0.0 : _time_scale;
 }
 
 double Engine::get_unfrozen_time_scale() const {
@@ -299,6 +326,11 @@ void Engine::print_header_rich(const String &p_string) const {
 
 void Engine::add_singleton(const Singleton &p_singleton) {
 	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), vformat("Can't register singleton '%s' because it already exists.", p_singleton.name));
+#ifdef DEBUG_ENABLED
+	if (p_singleton.ptr && p_singleton.ptr->is_ref_counted()) {
+		WARN_PRINT(vformat("RefCounted singleton '%s' will be disallowed soon; raw pointer will dangle when last Ref is released. Use Object singleton.", p_singleton.name));
+	}
+#endif
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
@@ -418,10 +450,4 @@ Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr, const Stri
 		name(p_name),
 		ptr(p_ptr),
 		class_name(p_class_name) {
-#ifdef DEBUG_ENABLED
-	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
-	if (rc && !rc->is_referenced()) {
-		WARN_PRINT("You must use Ref<> to ensure the lifetime of a RefCounted object intended to be used as a singleton.");
-	}
-#endif
 }

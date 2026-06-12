@@ -32,12 +32,13 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Vector4;
 
 struct [[nodiscard]] Vector4i {
-	static const int AXIS_COUNT = 4;
+	static constexpr int AXIS_COUNT = 4;
 
 	enum Axis {
 		AXIS_X,
@@ -134,6 +135,14 @@ struct [[nodiscard]] Vector4i {
 
 	explicit operator String() const;
 	operator Vector4() const;
+
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_32(uint32_t(x));
+		h = hash_murmur3_one_32(uint32_t(y), h);
+		h = hash_murmur3_one_32(uint32_t(z), h);
+		h = hash_murmur3_one_32(uint32_t(w), h);
+		return hash_fmix32(h);
+	}
 
 	constexpr Vector4i() :
 			x(0), y(0), z(0), w(0) {}

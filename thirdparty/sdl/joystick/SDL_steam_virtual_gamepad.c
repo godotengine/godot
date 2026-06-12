@@ -23,6 +23,9 @@
 #include "SDL_joystick_c.h"
 #include "SDL_steam_virtual_gamepad.h"
 
+#ifdef SDL_PLATFORM_LINUX
+#include "../core/unix/SDL_appid.h"
+#endif
 #ifdef SDL_PLATFORM_WIN32
 #include "../core/windows/SDL_windows.h"
 #else
@@ -134,6 +137,15 @@ void SDL_InitSteamVirtualGamepadInfo(void)
 
     file = SDL_GetHint(SDL_HINT_STEAM_VIRTUAL_GAMEPAD_INFO_FILE);
     if (file && *file) {
+#ifdef SDL_PLATFORM_LINUX
+        // Older versions of Wine will blacklist the Steam Virtual Gamepad if
+        // it appears to have the real controller's VID/PID, so ignore this.
+        const char *exe = SDL_GetExeName();
+        if (exe && SDL_strcmp(exe, "wine64-preloader") == 0) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Wine launched by Steam, ignoring %s", SDL_HINT_STEAM_VIRTUAL_GAMEPAD_INFO_FILE);
+            return;
+        }
+#endif
         SDL_steam_virtual_gamepad_info_file = SDL_strdup(file);
     }
     SDL_UpdateSteamVirtualGamepadInfo();

@@ -49,7 +49,7 @@ hb_paint_extents_push_transform (hb_paint_funcs_t *funcs HB_UNUSED,
 {
   hb_paint_extents_context_t *c = (hb_paint_extents_context_t *) paint_data;
 
-  c->push_transform (hb_transform_t {xx, yx, xy, yy, dx, dy});
+  c->push_transform (hb_transform_t<> {xx, yx, xy, yy, dx, dy});
 }
 
 static void
@@ -71,7 +71,7 @@ hb_paint_extents_push_clip_glyph (hb_paint_funcs_t *funcs HB_UNUSED,
 {
   hb_paint_extents_context_t *c = (hb_paint_extents_context_t *) paint_data;
 
-  hb_extents_t extents;
+  hb_extents_t<> extents;
   hb_draw_funcs_t *draw_extent_funcs = hb_draw_extents_get_funcs ();
   hb_font_draw_glyph (font, glyph, draw_extent_funcs, &extents);
   c->push_clip (extents);
@@ -85,7 +85,7 @@ hb_paint_extents_push_clip_rectangle (hb_paint_funcs_t *funcs HB_UNUSED,
 {
   hb_paint_extents_context_t *c = (hb_paint_extents_context_t *) paint_data;
 
-  hb_extents_t extents = {xmin, ymin, xmax, ymax};
+  hb_extents_t<> extents = {xmin, ymin, xmax, ymax};
   c->push_clip (extents);
 }
 
@@ -136,10 +136,10 @@ hb_paint_extents_paint_image (hb_paint_funcs_t *funcs HB_UNUSED,
   if (!glyph_extents)
     return false; // Happens with SVG images.
 
-  hb_extents_t extents = {(float) glyph_extents->x_bearing,
-			  (float) glyph_extents->y_bearing + glyph_extents->height,
-			  (float) glyph_extents->x_bearing + glyph_extents->width,
-			  (float) glyph_extents->y_bearing};
+  hb_extents_t<> extents = {(float) glyph_extents->x_bearing,
+			    (float) glyph_extents->y_bearing + glyph_extents->height,
+			    (float) glyph_extents->x_bearing + glyph_extents->width,
+			    (float) glyph_extents->y_bearing};
   c->push_clip (extents);
   c->paint ();
   c->pop_clip ();

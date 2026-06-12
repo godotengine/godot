@@ -6,7 +6,7 @@ Import("env_modules")
 
 env_csg = env_modules.Clone()
 
-env_csg.Append(CPPDEFINES=("MANIFOLD_PAR", "-1"))
+env_csg.Append(CPPDEFINES=[("MANIFOLD_PAR", -1)])
 
 # Thirdparty source files
 
@@ -33,7 +33,7 @@ thirdparty_sources = [
 ]
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
-env_csg.Prepend(CPPEXTPATH=[thirdparty_dir + "include"])
+env_csg.Prepend(CPPPATH=[thirdparty_dir + "include"])
 env_thirdparty = env_csg.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)

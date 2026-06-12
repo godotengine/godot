@@ -358,6 +358,23 @@ private:
 		return prev;
 	}
 
+	Element *_lower_bound(const K &p_key) const {
+		Element *node = _data._root->left;
+		Element *result = nullptr;
+		C less;
+
+		while (node != _data._nil) {
+			if (!less(node->_data.key, p_key)) {
+				result = node;
+				node = node->left;
+			} else {
+				node = node->right;
+			}
+		}
+
+		return result;
+	}
+
 	void _insert_rb_fix(Element *p_new_node) {
 		Element *node = p_new_node;
 		Element *nparent = node->parent;
@@ -634,6 +651,20 @@ public:
 		return res;
 	}
 
+	Element *lower_bound(const K &p_key) {
+		if (!_data._root) {
+			return nullptr;
+		}
+		return _lower_bound(p_key);
+	}
+
+	const Element *lower_bound(const K &p_key) const {
+		if (!_data._root) {
+			return nullptr;
+		}
+		return _lower_bound(p_key);
+	}
+
 	bool has(const K &p_key) const {
 		return find(p_key) != nullptr;
 	}
@@ -757,11 +788,32 @@ public:
 	}
 
 	void operator=(const RBMap &p_map) {
+		if (this == &p_map) {
+			return;
+		}
+
 		_copy_from(p_map);
 	}
 
-	RBMap(const RBMap &p_map) {
+	void operator=(RBMap &&p_map) {
+		if (this == &p_map) {
+			return;
+		}
+
+		SWAP(_data._root, p_map._data._root);
+		SWAP(_data.size_cache, p_map._data.size_cache);
+	}
+
+	explicit RBMap(const RBMap &p_map) {
 		_copy_from(p_map);
+	}
+
+	RBMap(RBMap &&p_map) {
+		_data._root = p_map._data._root;
+		_data.size_cache = p_map._data.size_cache;
+
+		p_map._data._root = nullptr;
+		p_map._data.size_cache = 0;
 	}
 
 	RBMap(std::initializer_list<KeyValue<K, V>> p_init) {

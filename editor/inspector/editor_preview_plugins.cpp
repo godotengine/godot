@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
@@ -45,6 +46,7 @@
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "servers/audio/audio_stream.h"
+#include "servers/rendering/rendering_server.h"
 
 void post_process_preview(Ref<Image> p_image) {
 	if (p_image->get_format() != Image::FORMAT_RGBA8) {
@@ -192,7 +194,7 @@ Ref<Texture2D> EditorImagePreviewPlugin::generate(const Ref<Resource> &p_from, c
 	Ref<Image> img = p_from;
 
 	if (img.is_null() || img->is_empty()) {
-		return Ref<Image>();
+		return Ref<Texture2D>();
 	}
 
 	img = img->duplicate();
@@ -200,7 +202,7 @@ Ref<Texture2D> EditorImagePreviewPlugin::generate(const Ref<Resource> &p_from, c
 
 	if (img->is_compressed()) {
 		if (img->decompress() != OK) {
-			return Ref<Image>();
+			return Ref<Texture2D>();
 		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
@@ -231,6 +233,9 @@ bool EditorBitmapPreviewPlugin::handles(const String &p_type) const {
 
 Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const {
 	Ref<BitMap> bm = p_from;
+	if (bm.is_null()) {
+		return Ref<Texture2D>();
+	}
 
 	if (bm->get_size() == Size2()) {
 		return Ref<Texture2D>();
@@ -358,7 +363,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	scenario = RS::get_singleton()->scenario_create();
 
 	viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
 	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
@@ -393,7 +398,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
 	int lats = 32;
 	int lons = 32;
-	const double lat_step = Math::TAU / lats;
+	const double lat_step = Math::PI / lats;
 	const double lon_step = Math::TAU / lons;
 	real_t radius = 1.0;
 
@@ -428,22 +433,27 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 				Vector3(x0 * zr0, z0, y0 * zr0)
 			};
 
-#define ADD_POINT(m_idx)                                                                       \
-	normals.push_back(v[m_idx]);                                                               \
-	vertices.push_back(v[m_idx] * radius);                                                     \
-	{                                                                                          \
-		Vector2 uv(Math::atan2(v[m_idx].x, v[m_idx].z), Math::atan2(-v[m_idx].y, v[m_idx].z)); \
-		uv /= Math::PI;                                                                        \
-		uv *= 4.0;                                                                             \
-		uv = uv * 0.5 + Vector2(0.5, 0.5);                                                     \
-		uvs.push_back(uv);                                                                     \
-	}                                                                                          \
-	{                                                                                          \
-		Vector3 t = tt.xform(v[m_idx]);                                                        \
-		tangents.push_back(t.x);                                                               \
-		tangents.push_back(t.y);                                                               \
-		tangents.push_back(t.z);                                                               \
-		tangents.push_back(1.0);                                                               \
+#define ADD_POINT(m_idx) \
+	normals.push_back(v[m_idx]); \
+	vertices.push_back(v[m_idx] * radius); \
+	{ \
+		Vector2 uv; \
+		if (j >= lons / 2) { \
+			uv = Vector2(Math::atan2(-v[m_idx].x, -v[m_idx].z), Math::atan2(v[m_idx].y, -v[m_idx].z)); \
+		} else { \
+			uv = Vector2(Math::atan2(v[m_idx].x, v[m_idx].z), Math::atan2(-v[m_idx].y, v[m_idx].z)); \
+		} \
+		uv /= Math::PI; \
+		uv *= 4.0; \
+		uv = uv * 0.5 + Vector2(0.5, 0.5); \
+		uvs.push_back(uv); \
+	} \
+	{ \
+		Vector3 t = tt.xform(v[m_idx]); \
+		tangents.push_back(t.x); \
+		tangents.push_back(t.y); \
+		tangents.push_back(t.z); \
+		tangents.push_back(1.0); \
 	}
 
 			ADD_POINT(0);
@@ -457,26 +467,26 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	}
 
 	Array arr;
-	arr.resize(RS::ARRAY_MAX);
-	arr[RS::ARRAY_VERTEX] = vertices;
-	arr[RS::ARRAY_NORMAL] = normals;
-	arr[RS::ARRAY_TANGENT] = tangents;
-	arr[RS::ARRAY_TEX_UV] = uvs;
-	RS::get_singleton()->mesh_add_surface_from_arrays(sphere, RS::PRIMITIVE_TRIANGLES, arr);
+	arr.resize(RSE::ARRAY_MAX);
+	arr[RSE::ARRAY_VERTEX] = vertices;
+	arr[RSE::ARRAY_NORMAL] = normals;
+	arr[RSE::ARRAY_TANGENT] = tangents;
+	arr[RSE::ARRAY_TEX_UV] = uvs;
+	RS::get_singleton()->mesh_add_surface_from_arrays(sphere, RSE::PRIMITIVE_TRIANGLES, arr);
 }
 
 EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(sphere);
-	RS::get_singleton()->free(sphere_instance);
-	RS::get_singleton()->free(viewport);
-	RS::get_singleton()->free(light);
-	RS::get_singleton()->free(light_instance);
-	RS::get_singleton()->free(light2);
-	RS::get_singleton()->free(light_instance2);
-	RS::get_singleton()->free(camera);
-	RS::get_singleton()->free(camera_attributes);
-	RS::get_singleton()->free(scenario);
+	RS::get_singleton()->free_rid(sphere);
+	RS::get_singleton()->free_rid(sphere_instance);
+	RS::get_singleton()->free_rid(viewport);
+	RS::get_singleton()->free_rid(light);
+	RS::get_singleton()->free_rid(light_instance);
+	RS::get_singleton()->free_rid(light2);
+	RS::get_singleton()->free_rid(light_instance2);
+	RS::get_singleton()->free_rid(camera);
+	RS::get_singleton()->free_rid(camera_attributes);
+	RS::get_singleton()->free_rid(scenario);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -773,7 +783,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 	scenario = RS::get_singleton()->scenario_create();
 
 	viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
 	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
@@ -798,7 +808,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
 	light2 = RS::get_singleton()->directional_light_create();
 	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	//RS::get_singleton()->light_set_color(light2, RS::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
+	//RS::get_singleton()->light_set_color(light2, RSE::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
 	light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
 
 	RS::get_singleton()->instance_set_transform(light_instance2, Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
@@ -811,15 +821,15 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	//RS::get_singleton()->free(sphere);
-	RS::get_singleton()->free(mesh_instance);
-	RS::get_singleton()->free(viewport);
-	RS::get_singleton()->free(light);
-	RS::get_singleton()->free(light_instance);
-	RS::get_singleton()->free(light2);
-	RS::get_singleton()->free(light_instance2);
-	RS::get_singleton()->free(camera);
-	RS::get_singleton()->free(camera_attributes);
-	RS::get_singleton()->free(scenario);
+	RS::get_singleton()->free_rid(mesh_instance);
+	RS::get_singleton()->free_rid(viewport);
+	RS::get_singleton()->free_rid(light);
+	RS::get_singleton()->free_rid(light_instance);
+	RS::get_singleton()->free_rid(light2);
+	RS::get_singleton()->free_rid(light_instance2);
+	RS::get_singleton()->free_rid(camera);
+	RS::get_singleton()->free_rid(camera_attributes);
+	RS::get_singleton()->free_rid(scenario);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -889,7 +899,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate(const Ref<Resource> &p_from, co
 
 EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 	viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_DISABLED);
 	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	RS::get_singleton()->viewport_set_active(viewport, true);
 	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
@@ -903,9 +913,9 @@ EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 
 EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(canvas_item);
-	RS::get_singleton()->free(canvas);
-	RS::get_singleton()->free(viewport);
+	RS::get_singleton()->free_rid(canvas_item);
+	RS::get_singleton()->free_rid(canvas);
+	RS::get_singleton()->free_rid(viewport);
 }
 
 ////////////////////////////////////////////////////////////////////////////

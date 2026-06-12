@@ -38,8 +38,7 @@ import org.godotengine.godot.GodotLib
 import org.godotengine.godot.editor.utils.GameMenuUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
-import org.godotengine.godot.xr.HYBRID_APP_FEATURE
-import org.godotengine.godot.xr.isHybridAppEnabled
+import org.godotengine.openxr.vendors.utils.*
 
 /**
  * Base class for the Godot play windows.
@@ -63,20 +62,18 @@ abstract class BaseGodotGame: GodotEditor() {
 
 		// Check if we should be running in XR instead (if available) as it's possible we were
 		// launched from the project manager which doesn't have that information.
-		val launchingArgs = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
-		if (launchingArgs != null) {
-			val editorWindowInfo = retrieveEditorWindowInfo(launchingArgs, getEditorGameEmbedMode())
-			if (editorWindowInfo != getEditorWindowInfo()) {
-				val relaunchIntent = getNewGodotInstanceIntent(editorWindowInfo, launchingArgs)
-				relaunchIntent.putExtra(EXTRA_NEW_LAUNCH, true)
-					.putExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD, intent.getBundleExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD))
+		val launchingArgs = retrieveCommandLineParamsFromLaunchIntent()
+		val editorWindowInfo = retrieveEditorWindowInfo(launchingArgs, getEditorGameEmbedMode())
+		if (editorWindowInfo != getEditorWindowInfo()) {
+			val relaunchIntent = getNewGodotInstanceIntent(editorWindowInfo, launchingArgs)
+			relaunchIntent.putExtra(EXTRA_NEW_LAUNCH, true)
+				.putExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD, intent.getBundleExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD))
 
-				Log.d(TAG, "Relaunching XR project using ${editorWindowInfo.windowClassName} with parameters ${launchingArgs.contentToString()}")
-				Godot.getInstance(applicationContext).destroyAndKillProcess {
-					ProcessPhoenix.triggerRebirth(this, relaunchIntent)
-				}
-				return
+			Log.d(TAG, "Relaunching XR project using ${editorWindowInfo.windowClassName} with parameters ${launchingArgs.contentToString()}")
+			Godot.getInstance(applicationContext).destroyAndKillProcess {
+				ProcessPhoenix.triggerRebirth(this, relaunchIntent)
 			}
+			return
 		}
 
 		// Request project runtime permissions if necessary.
@@ -107,8 +104,8 @@ abstract class BaseGodotGame: GodotEditor() {
 	@CallSuper
 	override fun supportsFeature(featureTag: String): Boolean {
 		if (HYBRID_APP_FEATURE == featureTag) {
-			// Check if hybrid is enabled
-			return isHybridAppEnabled()
+			// Check if hybrid is enabled.
+			return godot?.isXrRuntime == true && isHybridAppEnabled()
 		}
 
 		return super.supportsFeature(featureTag)

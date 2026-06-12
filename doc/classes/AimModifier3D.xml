@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AimModifier3D" inherits="BoneConstraint3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AimModifier3D" inherits="BoneConstraint3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		The [AimModifier3D] rotates a bone to look at a reference bone.
 	</brief_description>
@@ -22,6 +22,13 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the axis of the first rotation. It is enabled only if [method is_using_euler] is [code]true[/code].
+			</description>
+		</method>
+		<method name="is_relative" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the relative option is enabled in the setting at [param index].
 			</description>
 		</method>
 		<method name="is_using_euler" qualifiers="const">
@@ -52,6 +59,16 @@
 			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
 			<description>
 				Sets the axis of the first rotation. It is enabled only if [method is_using_euler] is [code]true[/code].
+			</description>
+		</method>
+		<method name="set_relative">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets relative option in the setting at [param index] to [param enabled].
+				If sets [param enabled] to [code]true[/code], the rotation is applied relative to the pose.
+				If sets [param enabled] to [code]false[/code], the rotation is applied relative to the rest. It means to replace the current pose with the [AimModifier3D]'s result.
 			</description>
 		</method>
 		<method name="set_use_euler">

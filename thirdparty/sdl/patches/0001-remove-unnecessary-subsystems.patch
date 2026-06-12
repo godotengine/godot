@@ -1,5 +1,5 @@
 diff --git a/thirdparty/sdl/SDL.c b/thirdparty/sdl/SDL.c
-index 502f6617a4..dd0b823634 100644
+index 46a74aafdb..3dad7e29ba 100644
 --- a/thirdparty/sdl/SDL.c
 +++ b/thirdparty/sdl/SDL.c
 @@ -40,23 +40,14 @@
@@ -357,222 +357,8 @@ index 5746e2ef98..04e3e9d6b6 100644
      SDL_free(item->touchscreen_data->slots);
      SDL_free(item->touchscreen_data->name);
      SDL_free(item->touchscreen_data);
-diff --git a/thirdparty/sdl/core/linux/SDL_fcitx.c b/thirdparty/sdl/core/linux/SDL_fcitx.c
-index d7a9ed6656..c6bce5f796 100644
---- a/thirdparty/sdl/core/linux/SDL_fcitx.c
-+++ b/thirdparty/sdl/core/linux/SDL_fcitx.c
-@@ -23,8 +23,7 @@
- #include <unistd.h>
- 
- #include "SDL_fcitx.h"
--#include "../../video/SDL_sysvideo.h"
--#include "../../events/SDL_keyboard_c.h"
-+//#include "../../video/SDL_sysvideo.h"
- #include "SDL_dbus.h"
- 
- #ifdef SDL_VIDEO_DRIVER_X11
-@@ -192,7 +191,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
-         dbus->message_iter_init(msg, &iter);
-         dbus->message_iter_get_basic(&iter, &text);
- 
--        SDL_SendKeyboardText(text);
-+        //SDL_SendKeyboardText(text);
- 
-         return DBUS_HANDLER_RESULT_HANDLED;
-     }
-@@ -206,13 +205,13 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
-                 Sint32 byte_pos = Fcitx_GetPreeditCursorByte(dbus, msg);
-                 start_pos = byte_pos >= 0 ? SDL_utf8strnlen(text, byte_pos) : -1;
-             }
--            SDL_SendEditingText(text, start_pos, end_pos >= 0 ? end_pos - start_pos : -1);
-+            //SDL_SendEditingText(text, start_pos, end_pos >= 0 ? end_pos - start_pos : -1);
-             SDL_free(text);
-         } else {
--            SDL_SendEditingText("", 0, 0);
-+            //SDL_SendEditingText("", 0, 0);
-         }
- 
--        SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
-+        //SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
-         return DBUS_HANDLER_RESULT_HANDLED;
-     }
- 
-@@ -394,7 +393,7 @@ bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
-                             DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &mod_state, DBUS_TYPE_BOOLEAN, &is_release, DBUS_TYPE_UINT32, &event_time, DBUS_TYPE_INVALID,
-                             DBUS_TYPE_BOOLEAN, &handled, DBUS_TYPE_INVALID)) {
-         if (handled) {
--            SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
-+            //SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
-             return true;
-         }
-     }
-@@ -402,51 +401,6 @@ bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
-     return false;
- }
- 
--void SDL_Fcitx_UpdateTextInputArea(SDL_Window *window)
--{
--    int x = 0, y = 0;
--    SDL_Rect *cursor = &fcitx_client.cursor_rect;
--
--    if (!window) {
--        return;
--    }
--
--    // We'll use a square at the text input cursor location for the cursor_rect
--    cursor->x = window->text_input_rect.x + window->text_input_cursor;
--    cursor->y = window->text_input_rect.y;
--    cursor->w = window->text_input_rect.h;
--    cursor->h = window->text_input_rect.h;
--
--    SDL_GetWindowPosition(window, &x, &y);
--
--#ifdef SDL_VIDEO_DRIVER_X11
--    {
--        SDL_PropertiesID props = SDL_GetWindowProperties(window);
--        Display *x_disp = (Display *)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
--        int x_screen = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_SCREEN_NUMBER, 0);
--        Window x_win = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
--        Window unused;
--        if (x_disp && x_win) {
--            X11_XTranslateCoordinates(x_disp, x_win, RootWindow(x_disp, x_screen), 0, 0, &x, &y, &unused);
--        }
--    }
--#endif
--
--    if (cursor->x == -1 && cursor->y == -1 && cursor->w == 0 && cursor->h == 0) {
--        // move to bottom left
--        int w = 0, h = 0;
--        SDL_GetWindowSize(window, &w, &h);
--        cursor->x = 0;
--        cursor->y = h;
--    }
--
--    x += cursor->x;
--    y += cursor->y;
--
--    SDL_DBus_CallVoidMethod(FCITX_DBUS_SERVICE, fcitx_client.ic_path, FCITX_IC_DBUS_INTERFACE, "SetCursorRect",
--                            DBUS_TYPE_INT32, &x, DBUS_TYPE_INT32, &y, DBUS_TYPE_INT32, &cursor->w, DBUS_TYPE_INT32, &cursor->h, DBUS_TYPE_INVALID);
--}
--
- void SDL_Fcitx_PumpEvents(void)
- {
-     SDL_DBusContext *dbus = fcitx_client.dbus;
-diff --git a/thirdparty/sdl/core/linux/SDL_ibus.c b/thirdparty/sdl/core/linux/SDL_ibus.c
-index ea58ed5778..3d4bb83694 100644
---- a/thirdparty/sdl/core/linux/SDL_ibus.c
-+++ b/thirdparty/sdl/core/linux/SDL_ibus.c
-@@ -26,7 +26,7 @@
- 
- #ifdef SDL_USE_LIBDBUS
- 
--#include "../../video/SDL_sysvideo.h"
-+//#include "../../video/SDL_sysvideo.h"
- #include "../../events/SDL_keyboard_c.h"
- 
- #ifdef SDL_VIDEO_DRIVER_X11
-@@ -261,7 +261,7 @@ static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *
-             }
-         }
- 
--        SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
-+        //SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
- 
-         return DBUS_HANDLER_RESULT_HANDLED;
-     }
-@@ -484,13 +484,6 @@ static bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
-         dbus->connection_flush(ibus_conn);
-     }
- 
--    SDL_Window *window = SDL_GetKeyboardFocus();
--    if (SDL_TextInputActive(window)) {
--        SDL_IBus_SetFocus(true);
--        SDL_IBus_UpdateTextInputArea(window);
--    } else {
--        SDL_IBus_SetFocus(false);
--    }
-     return result;
- }
- 
-@@ -678,53 +671,11 @@ bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
-         }
-     }
- 
--    SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
-+    //SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
- 
-     return (result != 0);
- }
- 
--void SDL_IBus_UpdateTextInputArea(SDL_Window *window)
--{
--    int x = 0, y = 0;
--    SDL_DBusContext *dbus;
--
--    if (!window) {
--        return;
--    }
--
--    // We'll use a square at the text input cursor location for the ibus_cursor
--    ibus_cursor_rect.x = window->text_input_rect.x + window->text_input_cursor;
--    ibus_cursor_rect.y = window->text_input_rect.y;
--    ibus_cursor_rect.w = window->text_input_rect.h;
--    ibus_cursor_rect.h = window->text_input_rect.h;
--
--    SDL_GetWindowPosition(window, &x, &y);
--
--#ifdef SDL_VIDEO_DRIVER_X11
--    {
--        SDL_PropertiesID props = SDL_GetWindowProperties(window);
--        Display *x_disp = (Display *)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
--        int x_screen = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_SCREEN_NUMBER, 0);
--        Window x_win = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
--        Window unused;
--
--        if (x_disp && x_win) {
--            X11_XTranslateCoordinates(x_disp, x_win, RootWindow(x_disp, x_screen), 0, 0, &x, &y, &unused);
--        }
--    }
--#endif
--
--    x += ibus_cursor_rect.x;
--    y += ibus_cursor_rect.y;
--
--    dbus = SDL_DBus_GetContext();
--
--    if (IBus_CheckConnection(dbus)) {
--        SDL_DBus_CallVoidMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, "SetCursorLocation",
--                                            DBUS_TYPE_INT32, &x, DBUS_TYPE_INT32, &y, DBUS_TYPE_INT32, &ibus_cursor_rect.w, DBUS_TYPE_INT32, &ibus_cursor_rect.h, DBUS_TYPE_INVALID);
--    }
--}
--
- void SDL_IBus_PumpEvents(void)
- {
-     SDL_DBusContext *dbus = SDL_DBus_GetContext();
-diff --git a/thirdparty/sdl/core/linux/SDL_system_theme.c b/thirdparty/sdl/core/linux/SDL_system_theme.c
-index 6d6087db5a..f5ef92dd05 100644
---- a/thirdparty/sdl/core/linux/SDL_system_theme.c
-+++ b/thirdparty/sdl/core/linux/SDL_system_theme.c
-@@ -22,7 +22,7 @@
- 
- #include "SDL_dbus.h"
- #include "SDL_system_theme.h"
--#include "../../video/SDL_sysvideo.h"
-+//#include "../../video/SDL_sysvideo.h"
- 
- #include <unistd.h>
- 
-@@ -99,7 +99,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
-         if (!DBus_ExtractThemeVariant(&signal_iter, &system_theme_data.theme))
-             goto not_our_signal;
- 
--        SDL_SetSystemTheme(system_theme_data.theme);
-+        //SDL_SetSystemTheme(system_theme_data.theme);
-         return DBUS_HANDLER_RESULT_HANDLED;
-     }
- not_our_signal:
 diff --git a/thirdparty/sdl/events/SDL_events.c b/thirdparty/sdl/events/SDL_events.c
-index a151740524..24c2c4270f 100644
+index 81220a1787..7ca683e0eb 100644
 --- a/thirdparty/sdl/events/SDL_events.c
 +++ b/thirdparty/sdl/events/SDL_events.c
 @@ -24,10 +24,7 @@
@@ -631,7 +417,7 @@ index a151740524..24c2c4270f 100644
  #endif
  }
  
-@@ -1420,9 +1406,9 @@ void SDL_PumpEventMaintenance(void)
+@@ -1421,9 +1407,9 @@ void SDL_PumpEventMaintenance(void)
      }
  #endif
  
@@ -643,7 +429,7 @@ index a151740524..24c2c4270f 100644
  }
  
  // Run the system dependent event loops
-@@ -1432,7 +1418,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
+@@ -1433,7 +1419,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
      SDL_FreeTemporaryMemory();
  
      // Release any keys held down from last frame
@@ -652,7 +438,7 @@ index a151740524..24c2c4270f 100644
  
      // Run any pending main thread callbacks
      SDL_RunMainThreadCallbacks();
-@@ -1440,12 +1426,6 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
+@@ -1441,12 +1427,6 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
  #ifdef SDL_PLATFORM_ANDROID
      // Android event processing is independent of the video subsystem
      Android_PumpEvents(0);
@@ -665,7 +451,7 @@ index a151740524..24c2c4270f 100644
  #endif
  
      SDL_PumpEventMaintenance();
-@@ -1476,103 +1456,6 @@ bool SDL_PollEvent(SDL_Event *event)
+@@ -1477,103 +1457,6 @@ bool SDL_PollEvent(SDL_Event *event)
      return SDL_WaitEventTimeoutNS(event, 0);
  }
  
@@ -769,7 +555,7 @@ index a151740524..24c2c4270f 100644
  bool SDL_WaitEvent(SDL_Event *event)
  {
      return SDL_WaitEventTimeoutNS(event, -1);
-@@ -1662,24 +1545,6 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
+@@ -1665,24 +1548,6 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
          Android_PumpEvents(delay);
      }
  #else
@@ -794,7 +580,7 @@ index a151740524..24c2c4270f 100644
      for (;;) {
          SDL_PumpEventsInternal(true);
  
-@@ -1852,7 +1717,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
+@@ -1855,7 +1720,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
          /* turn off drag'n'drop support if we've disabled the events.
             This might change some UI details at the OS level. */
          if (type == SDL_EVENT_DROP_FILE || type == SDL_EVENT_DROP_TEXT) {
@@ -803,7 +589,7 @@ index a151740524..24c2c4270f 100644
          }
      }
  }
-@@ -1944,14 +1809,14 @@ bool SDL_InitEvents(void)
+@@ -1947,14 +1812,14 @@ bool SDL_InitEvents(void)
          return false;
      }
  
@@ -843,7 +629,7 @@ index e56ac475e5..f3a0744d1c 100644
  // Start and stop the event processing loop
  extern bool SDL_StartEventLoop(void);
 diff --git a/thirdparty/sdl/include/SDL3/SDL.h b/thirdparty/sdl/include/SDL3/SDL.h
-index ed1b32483a..f0671c95c3 100644
+index 7ec527b6d0..c99997044b 100644
 --- a/thirdparty/sdl/include/SDL3/SDL.h
 +++ b/thirdparty/sdl/include/SDL3/SDL.h
 @@ -47,7 +47,7 @@
@@ -864,7 +650,7 @@ index ed1b32483a..f0671c95c3 100644
  
  #endif /* SDL_h_ */
 diff --git a/thirdparty/sdl/joystick/SDL_joystick.c b/thirdparty/sdl/joystick/SDL_joystick.c
-index 921576854e..f36ca95baa 100644
+index 5ce36de867..090dc07303 100644
 --- a/thirdparty/sdl/joystick/SDL_joystick.c
 +++ b/thirdparty/sdl/joystick/SDL_joystick.c
 @@ -29,7 +29,7 @@
@@ -876,7 +662,7 @@ index 921576854e..f36ca95baa 100644
  #include "../sensor/SDL_sensor_c.h"
  #include "hidapi/SDL_hidapijoystick_c.h"
  
-@@ -1011,7 +1011,8 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, bool invert_sensors)
+@@ -1014,7 +1014,8 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, bool invert_sensors)
         When a phone is being used as a gamepad, its orientation changes,
         so adjust sensor axes to match.
       */
@@ -886,7 +672,7 @@ index 921576854e..f36ca95baa 100644
          /* When a device in landscape orientation is laid flat, the axes change
             orientation as follows:
              -X to +X becomes -X to +X
-@@ -2068,11 +2069,6 @@ static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
+@@ -2071,11 +2072,6 @@ static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
      if (SDL_joystick_allows_background_events) {
          return false;
      }
@@ -898,20 +684,3 @@ index 921576854e..f36ca95baa 100644
      return false;
  }
  
-diff --git a/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c b/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
-index b00218d969..377992ed9e 100644
---- a/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
-+++ b/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
-@@ -40,11 +40,8 @@
- #define CONVERT_MAGNITUDE(x) (((x)*10000) / 0x7FFF)
- 
- // external variables referenced.
--#ifdef SDL_VIDEO_DRIVER_WINDOWS
- extern HWND SDL_HelperWindow;
--#else
--static const HWND SDL_HelperWindow = NULL;
--#endif
-+
- 
- // local variables
- static bool coinitialized = false;

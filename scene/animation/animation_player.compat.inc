@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "animation_player.h"
+
+#include "core/object/class_db.h"
+
 void AnimationPlayer::_set_process_callback_bind_compat_80813(AnimationPlayer::AnimationProcessCallback p_mode) {
 	set_callback_mode_process(static_cast<AnimationMixer::AnimationCallbackModeProcess>(static_cast<int>(p_mode)));
 }
@@ -58,6 +62,38 @@ void AnimationPlayer::_seek_bind_compat_80813(double p_time, bool p_update) {
 	seek(p_time, p_update, false);
 }
 
+Vector<String> AnimationPlayer::_get_queue_compat_110767() {
+	Vector<String> queue;
+	for (const Variant &E : get_queue()) {
+		queue.push_back(E);
+	}
+	return queue;
+}
+
+String AnimationPlayer::_get_current_animation_compat_110767() const {
+	return get_current_animation();
+}
+
+void AnimationPlayer::_set_current_animation_compat_110767(const String &p_animation) {
+	set_current_animation(p_animation);
+}
+
+String AnimationPlayer::_get_assigned_animation_compat_110767() const {
+	return get_assigned_animation();
+}
+
+void AnimationPlayer::_set_assigned_animation_compat_110767(const String &p_animation) {
+	set_assigned_animation(p_animation);
+}
+
+String AnimationPlayer::_get_autoplay_compat_110767() const {
+	return get_autoplay();
+}
+
+void AnimationPlayer::_set_autoplay_compat_110767(const String &p_name) {
+	set_autoplay(p_name);
+}
+
 void AnimationPlayer::_bind_compatibility_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_callback", "mode"), &AnimationPlayer::_set_process_callback_bind_compat_80813);
 	ClassDB::bind_method(D_METHOD("get_process_callback"), &AnimationPlayer::_get_process_callback_bind_compat_80813);
@@ -65,6 +101,15 @@ void AnimationPlayer::_bind_compatibility_methods() {
 	ClassDB::bind_method(D_METHOD("get_method_call_mode"), &AnimationPlayer::_get_method_call_mode_bind_compat_80813);
 	ClassDB::bind_method(D_METHOD("set_root", "path"), &AnimationPlayer::_set_root_bind_compat_80813);
 	ClassDB::bind_method(D_METHOD("get_root"), &AnimationPlayer::_get_root_bind_compat_80813);
+
+	ClassDB::bind_compatibility_method(D_METHOD("get_queue"), &AnimationPlayer::_get_queue_compat_110767);
+	ClassDB::bind_compatibility_method(D_METHOD("get_current_animation"), &AnimationPlayer::_get_current_animation_compat_110767);
+	ClassDB::bind_compatibility_method(D_METHOD("set_current_animation", "animation"), &AnimationPlayer::_set_current_animation_compat_110767);
+	ClassDB::bind_compatibility_method(D_METHOD("get_assigned_animation"), &AnimationPlayer::_get_assigned_animation_compat_110767);
+	ClassDB::bind_compatibility_method(D_METHOD("set_assigned_animation", "animation"), &AnimationPlayer::_set_assigned_animation_compat_110767);
+	ClassDB::bind_compatibility_method(D_METHOD("get_autoplay"), &AnimationPlayer::_get_autoplay_compat_110767);
+	ClassDB::bind_compatibility_method(D_METHOD("set_autoplay", "name"), &AnimationPlayer::_set_autoplay_compat_110767);
+
 	ClassDB::bind_compatibility_method(D_METHOD("seek", "seconds", "update"), &AnimationPlayer::_seek_bind_compat_80813, DEFVAL(false));
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);

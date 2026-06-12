@@ -368,7 +368,7 @@ namespace Godot
         /// <returns>A <see langword="bool"/> indicating whether or not the vector is normalized.</returns>
         public readonly bool IsNormalized()
         {
-            return Mathf.Abs(LengthSquared() - 1.0f) < Mathf.Epsilon;
+            return Mathf.IsEqualApprox(LengthSquared(), 1, Mathf.Epsilon);
         }
 
         /// <summary>
@@ -525,7 +525,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Moves this vector toward <paramref name="to"/> by the fixed <paramref name="delta"/> amount.
+        /// Returns a new vector moved toward <paramref name="to"/> by the fixed <paramref name="delta"/> amount. Will not go past the final value.
         /// </summary>
         /// <param name="to">The vector to move towards.</param>
         /// <param name="delta">The amount to move towards by.</param>

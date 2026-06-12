@@ -1,0 +1,5 @@
+GH-78328
+--------
+Validate extension JSON: Error: Field 'classes/TileMap/methods/get_used_rect': is_const changed value in new API, from false to true.
+
+Function was made `const`. No adjustments should be necessary.

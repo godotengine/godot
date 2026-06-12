@@ -80,6 +80,13 @@ typedef struct hb_subset_plan_t hb_subset_plan_t;
  * @HB_SUBSET_FLAGS_IFTB_REQUIREMENTS: If set enforce requirements on the output subset
  * to allow it to be used with incremental font transfer IFTB patches. Primarily,
  * this forces all outline data to use long (32 bit) offsets. Since: EXPERIMENTAL
+ * @HB_SUBSET_FLAGS_RETAIN_NUM_GLYPHS: If this flag is set along side
+ * HB_SUBSET_FLAGS_RETAIN_GIDS then the number of glyphs in the font won't
+ * be reduced as a result of subsetting. If necessary empty glyphs will be
+ * included at the end of the font to keep the number of glyphs unchanged.
+ * @HB_SUBSET_FLAGS_DOWNGRADE_CFF2: If set and instantiating a variable font,
+ * convert the output CFF2 table to CFF1. This enables compatibility with older
+ * renderers that don't support CFF2. Since: 13.0.0
  *
  * List of boolean properties that can be configured on the subset input.
  *
@@ -101,7 +108,9 @@ typedef enum { /*< flags >*/
   HB_SUBSET_FLAGS_NO_BIDI_CLOSURE         =  0x00000800u,
 #ifdef HB_EXPERIMENTAL_API
   HB_SUBSET_FLAGS_IFTB_REQUIREMENTS       =  0x00001000u,
+  HB_SUBSET_FLAGS_RETAIN_NUM_GLYPHS  =  0x00002000u,
 #endif
+  HB_SUBSET_FLAGS_DOWNGRADE_CFF2          =  0x00004000u,
 } hb_subset_flags_t;
 
 /**
@@ -234,13 +243,13 @@ hb_subset_input_override_name_table (hb_subset_input_t  *input,
 */
 
 HB_EXTERN hb_blob_t*
-hb_subset_cff_get_charstring_data (hb_face_t* face, hb_codepoint_t glyph_index);
+hb_subset_cff_get_charstring_data (hb_face_t* face, hb_codepoint_t glyph);
 
 HB_EXTERN hb_blob_t*
 hb_subset_cff_get_charstrings_index (hb_face_t* face);
 
 HB_EXTERN hb_blob_t*
-hb_subset_cff2_get_charstring_data (hb_face_t* face, hb_codepoint_t glyph_index);
+hb_subset_cff2_get_charstring_data (hb_face_t* face, hb_codepoint_t glyph);
 
 HB_EXTERN hb_blob_t*
 hb_subset_cff2_get_charstrings_index (hb_face_t* face);
@@ -288,5 +297,13 @@ hb_subset_plan_get_user_data (const hb_subset_plan_t *plan,
 
 
 HB_END_DECLS
+
+
+#if defined(__cplusplus) && defined(HB_CPLUSPLUS_HH)
+namespace hb {
+HB_DEFINE_VTABLE (subset_input, nullptr);
+HB_DEFINE_VTABLE (subset_plan,  nullptr);
+} // namespace hb
+#endif
 
 #endif /* HB_SUBSET_H */

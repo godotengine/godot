@@ -35,6 +35,9 @@
 #include "editor_import_blend_runner.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -42,6 +45,7 @@
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
+#include "servers/display/display_server.h"
 
 #ifdef WINDOWS_ENABLED
 #include <shlwapi.h>
@@ -146,6 +150,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	parameters_map["export_keep_originals"] = unpack_original_images;
 	parameters_map["export_format"] = "GLTF_SEPARATE";
 	parameters_map["export_yup"] = true;
+	parameters_map["export_import_convert_lighting_mode"] = "COMPAT";
 
 	if (p_options.has(SNAME("blender/nodes/custom_properties")) && p_options[SNAME("blender/nodes/custom_properties")]) {
 		parameters_map["export_extras"] = true;
@@ -193,19 +198,29 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_lights"] = false;
 	}
-	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
-		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-			parameters_map["export_vertex_color"] = "MATERIAL";
+	if (p_options.has(SNAME("blender/meshes/vertex_colors"))) {
+		int32_t color_option = p_options["blender/meshes/vertex_colors"];
+		if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
+			switch (color_option) {
+				case BLEND_VERTEX_COLOR_MATERIAL: {
+					parameters_map["export_vertex_color"] = "MATERIAL";
+				} break;
+				case BLEND_VERTEX_COLOR_ACTIVE: {
+					parameters_map["export_vertex_color"] = "ACTIVE";
+				} break;
+				case BLEND_VERTEX_COLOR_NONE: {
+					parameters_map["export_vertex_color"] = "NONE";
+				} break;
+			}
 		} else {
-			parameters_map["export_vertex_color"] = "NONE";
-		}
-	} else {
-		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-			parameters_map["export_colors"] = true;
-		} else {
-			parameters_map["export_colors"] = false;
+			if (color_option == BLEND_VERTEX_COLOR_NONE) {
+				parameters_map["export_colors"] = false;
+			} else {
+				parameters_map["export_colors"] = true;
+			}
 		}
 	}
+
 	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
 		if (visible == BLEND_VISIBLE_VISIBLE_ONLY) {
@@ -246,6 +261,14 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 			parameters_map["export_gn_mesh"] = false;
 		}
 	}
+	if (blender_major_version >= 4) {
+		if (p_options.has(SNAME("blender/meshes/gpu_instances")) && p_options[SNAME("blender/meshes/gpu_instances")]) {
+			parameters_map["export_gpu_instances"] = true;
+		} else {
+			parameters_map["export_gpu_instances"] = false;
+		}
+	}
+
 	if (p_options.has(SNAME("blender/meshes/tangents")) && p_options[SNAME("blender/meshes/tangents")]) {
 		parameters_map["export_tangents"] = true;
 	} else {
@@ -310,6 +333,10 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		int naming_version = p_options["gltf/naming_version"];
 		gltf->set_naming_version(naming_version);
 	}
+	if (p_options.has("gltf/texture_map_mode")) {
+		int texture_map_mode = p_options["gltf/texture_map_mode"];
+		gltf->set_texture_map_mode((GLTFDocument::TextureMapMode)texture_map_mode);
+	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
 	}
@@ -335,7 +362,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 
 Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
 		const HashMap<StringName, Variant> &p_options) {
-	if (p_path.get_extension().to_lower() != "blend") {
+	if (!p_path.has_extension("blend")) {
 		return true;
 	}
 
@@ -349,7 +376,7 @@ Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_pa
 
 void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
 	// Returns all the options when path is empty because that means it's for the Project Settings.
-	if (!p_path.is_empty() && p_path.get_extension().to_lower() != "blend") {
+	if (!p_path.is_empty() && !p_path.has_extension("blend")) {
 		return;
 	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
@@ -363,10 +390,11 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);
 	ADD_OPTION_ENUM("blender/nodes/modifiers", "No Modifiers,All Modifiers", BLEND_MODIFIERS_ALL);
-	ADD_OPTION_BOOL("blender/meshes/colors", false);
+	ADD_OPTION_ENUM("blender/meshes/vertex_colors", "Material,Active,None", BLEND_VERTEX_COLOR_ACTIVE);
 	ADD_OPTION_BOOL("blender/meshes/uvs", true);
 	ADD_OPTION_BOOL("blender/meshes/normals", true);
 	ADD_OPTION_BOOL("blender/meshes/export_geometry_nodes_instances", false);
+	ADD_OPTION_BOOL("blender/meshes/gpu_instances", false);
 	ADD_OPTION_BOOL("blender/meshes/tangents", true);
 	ADD_OPTION_ENUM("blender/meshes/skins", "None,4 Influences (Compatible),All Influences", BLEND_BONE_INFLUENCES_ALL);
 	ADD_OPTION_BOOL("blender/meshes/export_bones_deforming_mesh_only", false);
@@ -377,18 +405,24 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/animation/group_tracks", true);
 
 	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_map_mode", PROPERTY_HINT_ENUM, "Do Not Remap,Remap to StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFDocument::TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL));
 }
 
 void EditorSceneFormatImporterBlend::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
-	if (!p_import_params.has("gltf/naming_version")) {
-		// If a .blend's existing import file is missing the glTF
-		// naming compatibility version, we need to use version 1.
-		// Version 1 is the behavior before this option was added.
-		p_import_params["gltf/naming_version"] = 1;
+	if (p_import_params.has("blender/meshes/colors")) { // Legacy boolean option support.
+		if (bool(p_import_params["blender/meshes/colors"])) {
+			p_import_params["blender/meshes/vertex_colors"] = BLEND_VERTEX_COLOR_MATERIAL;
+		} else {
+			p_import_params["blender/meshes/vertex_colors"] = BLEND_VERTEX_COLOR_NONE;
+		}
+		p_import_params.erase("blender/meshes/colors");
+	}
+	if (!p_import_params.has("gltf/texture_map_mode")) {
+		// If an existing import file is missing the glTF
+		// texture map mode, we need to use "Do Not Remap".
+		p_import_params["gltf/texture_map_mode"] = (int64_t)GLTFDocument::TEXTURE_MAP_MODE_DO_NOT_REMAP;
 	}
 }
-
-///////////////////////////
 
 static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 	int major, minor;
@@ -515,6 +549,8 @@ void EditorFileSystemImportFormatSupportQueryBlend::_update_icons() {
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::query() {
+	ERR_FAIL_COND_V_MSG(DisplayServer::get_singleton()->get_name() == "headless", true, "Blender path is invalid or not set, check your Editor Settings. Cannot configure blender path in headless mode.");
+
 	if (!configure_blender_dialog) {
 		configure_blender_dialog = memnew(ConfirmationDialog);
 		configure_blender_dialog->set_title(TTR("Configure Blender Importer"));

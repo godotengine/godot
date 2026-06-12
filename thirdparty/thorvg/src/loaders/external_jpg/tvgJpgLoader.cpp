@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-#include <memory.h>
 #include <turbojpeg.h>
 #include "tvgJpgLoader.h"
 
@@ -30,12 +29,11 @@
 
 void JpgLoader::clear()
 {
-    if (freeData) free(data);
+    if (freeData) tvg::free(data);
     data = nullptr;
     size = 0;
     freeData = false;
 }
-
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -57,57 +55,30 @@ JpgLoader::~JpgLoader()
 }
 
 
-bool JpgLoader::open(const string& path)
+bool JpgLoader::open(const char* path)
 {
 #ifdef THORVG_FILE_IO_SUPPORT
-    auto jpegFile = fopen(path.c_str(), "rb");
-    if (!jpegFile) return false;
-
-    auto ret = false;
-
-    //determine size
-    if (fseek(jpegFile, 0, SEEK_END) < 0) goto finalize;
-    if (((size = ftell(jpegFile)) < 1)) goto finalize;
-    if (fseek(jpegFile, 0, SEEK_SET)) goto finalize;
-
-    data = (unsigned char *) malloc(size);
-    if (!data) goto finalize;
-
-    freeData = true;
-
-    if (fread(data, size, 1, jpegFile) < 1) goto failure;
+    if (!(data = (unsigned char*) LoadModule::open(path, size))) return false;
 
     int width, height, subSample, colorSpace;
-    if (tjDecompressHeader3(jpegDecompressor, data, size, &width, &height, &subSample, &colorSpace) < 0) {
-        TVGERR("JPG LOADER", "%s", tjGetErrorStr());
-        goto failure;
-    }
-
+    if (tjDecompressHeader3(jpegDecompressor, data, size, &width, &height, &subSample, &colorSpace) < 0) return false;
     w = static_cast<float>(width);
     h = static_cast<float>(height);
-    ret = true;
-
-    goto finalize;
-
-failure:
-    clear();
-
-finalize:
-    fclose(jpegFile);
-    return ret;
+    freeData = true;
+    return true;
 #else
     return false;
 #endif
 }
 
 
-bool JpgLoader::open(const char* data, uint32_t size, bool copy)
+bool JpgLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rpath, bool copy)
 {
     int width, height, subSample, colorSpace;
     if (tjDecompressHeader3(jpegDecompressor, (unsigned char *) data, size, &width, &height, &subSample, &colorSpace) < 0) return false;
 
     if (copy) {
-        this->data = (unsigned char *) malloc(size);
+        this->data = tvg::malloc<unsigned char>(size);
         if (!this->data) return false;
         memcpy((unsigned char *)this->data, data, size);
         freeData = true;

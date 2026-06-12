@@ -20,9 +20,9 @@
     </p>
   </description>
   <screenshots>
-    <screenshot type="default" width="1330" height="720">
+    <screenshot type="default" width="1279" height="758">
       <caption>3D project loaded in the Godot Engine editor</caption>
-      <image>https://download.tuxfamily.org/godotengine/media/screenshots/editor_3d_fracteed-720p.jpg</image>
+      <image>https://docs.godotengine.org/en/stable/_images/introduction_editor.webp</image>
     </screenshot>
   </screenshots>
   <url type="homepage">https://godotengine.org</url>

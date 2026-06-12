@@ -13,20 +13,20 @@ struct Anchor
 {
   protected:
   union {
-  HBUINT16              format;         /* Format identifier */
+  struct { HBUINT16 v; } format;        /* Format identifier */
   AnchorFormat1         format1;
   AnchorFormat2         format2;
   AnchorFormat3         format3;
   } u;
   public:
-  DEFINE_SIZE_UNION (2, format);
+  DEFINE_SIZE_UNION (2, format.v);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (!u.format.sanitize (c)) return_trace (false);
+    if (!u.format.v.sanitize (c)) return_trace (false);
     hb_barrier ();
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: return_trace (u.format1.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
     case 3: return_trace (u.format3.sanitize (c));
@@ -38,7 +38,7 @@ struct Anchor
                    float *x, float *y) const
   {
     *x = *y = 0;
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: u.format1.get_anchor (c, glyph_id, x, y); return;
     case 2: u.format2.get_anchor (c, glyph_id, x, y); return;
     case 3: u.format3.get_anchor (c, glyph_id, x, y); return;
@@ -49,7 +49,7 @@ struct Anchor
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: return_trace (bool (reinterpret_cast<Anchor *> (u.format1.copy (c->serializer))));
     case 2:
       if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
@@ -66,7 +66,7 @@ struct Anchor
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: case 2:
       return;
     case 3:

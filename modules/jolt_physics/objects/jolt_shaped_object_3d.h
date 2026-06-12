@@ -34,10 +34,10 @@
 
 #include "core/templates/self_list.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Body/Body.h"
-#include "Jolt/Physics/Body/BodyCreationSettings.h"
+#include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
 
 class JoltShapedObject3D : public JoltObject3D {
 	friend class JoltShape3D;
@@ -45,6 +45,8 @@ class JoltShapedObject3D : public JoltObject3D {
 protected:
 	SelfList<JoltShapedObject3D> shapes_changed_element;
 	SelfList<JoltShapedObject3D> needs_optimization_element;
+
+	LocalVector<JoltShapeInstance3D> shapes;
 
 	Vector3 scale = Vector3(1, 1, 1);
 

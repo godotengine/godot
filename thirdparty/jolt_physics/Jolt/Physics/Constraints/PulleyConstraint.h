@@ -61,7 +61,7 @@ class JPH_EXPORT PulleyConstraint final : public TwoBodyConstraint
 public:
 	JPH_OVERRIDE_NEW_DELETE
 
-	/// Construct distance constraint
+	/// Construct pulley constraint
 								PulleyConstraint(Body &inBody1, Body &inBody2, const PulleyConstraintSettings &inSettings);
 
 	// Generic interface of a constraint

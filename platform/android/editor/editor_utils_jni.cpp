@@ -30,9 +30,14 @@
 
 #include "editor_utils_jni.h"
 
+#ifdef TOOLS_ENABLED
 #include "jni_utils.h"
 
-#ifdef TOOLS_ENABLED
+#include "core/os/os.h"
+#include "editor/debugger/editor_debugger_node.h"
+#include "editor/debugger/script_editor_debugger.h"
+#include "editor/editor_node.h"
+#include "editor/gui/editor_title_bar.h"
 #include "editor/run/editor_run_bar.h"
 #include "main/main.h"
 #endif
@@ -53,6 +58,17 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runSc
 
 	EditorRunBar *editor_run_bar = EditorRunBar::get_singleton();
 	if (editor_run_bar != nullptr) {
+		editor_run_bar->stop_playing();
+		// Ensure that all ScriptEditorDebugger instances are explicitly stopped.
+		// If not, a closing instance from the previous run session will trigger `_stop_and_notify()`, in turn causing
+		// the closure of the ScriptEditorDebugger instances of the run session we're about to launch.
+		EditorDebuggerNode *dbg_node = EditorDebuggerNode::get_singleton();
+		if (dbg_node != nullptr) {
+			for (int i = 0; ScriptEditorDebugger *dbg = dbg_node->get_debugger(i); i++) {
+				dbg->stop();
+			}
+		}
+
 		if (scene.is_empty()) {
 			editor_run_bar->play_main_scene(false);
 		} else {
@@ -76,6 +92,17 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runSc
 
 		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_toggleTitleBar(JNIEnv *p_env, jclass, jboolean p_visible) {
+#ifdef TOOLS_ENABLED
+	if (EditorNode::get_singleton() != nullptr) {
+		EditorTitleBar *title_bar = EditorNode::get_singleton()->get_title_bar();
+		if (title_bar != nullptr) {
+			title_bar->call_deferred("set_visible", p_visible);
+		}
 	}
 #endif
 }

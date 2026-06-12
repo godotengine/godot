@@ -54,6 +54,7 @@ class TextureRegionEditor : public AcceptDialog {
 	};
 
 	friend class TextureRegionEditorPlugin;
+	friend class TextureRegionEditorOverlay;
 	OptionButton *snap_mode_button = nullptr;
 	Button *zoom_in = nullptr;
 	Button *zoom_reset = nullptr;
@@ -99,6 +100,7 @@ class TextureRegionEditor : public AcceptDialog {
 
 	bool drag = false;
 	bool creating = false;
+	bool moving = false;
 	Vector2 drag_from;
 	int drag_index = -1;
 	bool request_center = false;
@@ -138,6 +140,11 @@ class TextureRegionEditor : public AcceptDialog {
 
 	void _set_grid_parameters_clamping(bool p_enabled);
 
+	int _get_overlapping_selection_handle(const Point2 &p_mouse_pos);
+	int _get_overlapping_margin_line(const Point2 &p_mouse_pos, float *r_margin = nullptr);
+
+	void _commit_drag();
+
 protected:
 	void _notification(int p_what);
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -147,6 +154,8 @@ protected:
 	void _texture_overlay_draw();
 	void _texture_overlay_input(const Ref<InputEvent> &p_input);
 
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
+
 	Vector2 snap_point(Vector2 p_target) const;
 
 public:
@@ -155,7 +164,14 @@ public:
 	TextureRegionEditor();
 };
 
-//
+class TextureRegionEditorOverlay : public Panel {
+	TextureRegionEditor *editor = nullptr;
+
+public:
+	void set_editor(TextureRegionEditor *p_editor) { editor = p_editor; }
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+};
 
 class EditorInspectorPluginTextureRegion : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginTextureRegion, EditorInspectorPlugin);

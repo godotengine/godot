@@ -37,7 +37,12 @@ inline std::string to_hex(const uint8_t* const data, size_t bytes) {
 
 template <typename T>
 inline std::string to_hex(const T& data) {
-    return to_hex(reinterpret_cast<const uint8_t* const>(&data), sizeof(data));
+    return to_hex(reinterpret_cast<const uint8_t* const>(&data), sizeof(T));
+}
+
+template <typename T>
+inline std::string to_hex(T* const data) {
+    return to_hex(reinterpret_cast<const uint8_t* const>(&data), sizeof(T*));
 }
 
 #if XR_PTR_SIZE == 8

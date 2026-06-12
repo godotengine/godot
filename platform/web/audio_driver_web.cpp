@@ -32,9 +32,9 @@
 
 #include "godot_audio.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/engine.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/object/object.h"
-#include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
 #include <emscripten.h>
@@ -129,7 +129,7 @@ Error AudioDriverWeb::init() {
 	}
 	mix_rate = audio_context.mix_rate;
 	channel_count = audio_context.channel_count;
-	buffer_length = closest_power_of_2(uint32_t(latency * mix_rate / 1000));
+	buffer_length = Math::closest_power_of_2(uint32_t(latency * mix_rate / 1000));
 	Error err = create(buffer_length, channel_count);
 	if (err != OK) {
 		return err;

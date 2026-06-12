@@ -31,18 +31,18 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
+#include "scene/resources/shader.h"
 
 class CodeTextEditor;
+class EditorDock;
 class HSplitContainer;
 class ItemList;
 class MenuButton;
 class ShaderCreateDialog;
 class ShaderEditor;
 class TabContainer;
-class TextShaderEditor;
 class VBoxContainer;
 class HBoxContainer;
-class VisualShaderEditor;
 class WindowWrapper;
 
 class ShaderEditorPlugin : public EditorPlugin {
@@ -80,21 +80,16 @@ class ShaderEditorPlugin : public EditorPlugin {
 		CONTEXT,
 		CONTEXT_VALID_ITEM,
 	};
-
-	VBoxContainer *main_container = nullptr;
 	HSplitContainer *files_split = nullptr;
-	HBoxContainer *menu_hb = nullptr;
-	Control *menu_spacer = nullptr;
 
 	ItemList *shader_list = nullptr;
 	TabContainer *shader_tabs = nullptr;
 
-	Button *button = nullptr;
 	MenuButton *file_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 
-	WindowWrapper *window_wrapper = nullptr;
-	Button *make_floating = nullptr;
+	EditorDock *shader_dock = nullptr;
+	Ref<Shortcut> make_floating_shortcut;
 
 	ShaderCreateDialog *shader_create_dialog = nullptr;
 
@@ -102,7 +97,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	Ref<Resource> _get_current_shader();
 	void _update_shader_list();
-	void _shader_selected(int p_index);
+	void _shader_selected(int p_index, bool p_push_item = true);
 	void _shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
 	void _setup_popup_menu(PopupMenuType p_type, PopupMenu *p_menu);
 	void _make_script_list_context_menu();
@@ -123,8 +118,6 @@ class ShaderEditorPlugin : public EditorPlugin {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	void _window_changed(bool p_visible);
-
 	void _set_text_shader_zoom_factor(float p_zoom_factor);
 	void _update_shader_editor_zoom_factor(CodeTextEditor *p_shader_editor) const;
 
@@ -133,12 +126,14 @@ class ShaderEditorPlugin : public EditorPlugin {
 protected:
 	void _notification(int p_what);
 
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
 public:
 	virtual String get_plugin_name() const override { return "Shader"; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
-	virtual void selected_notify() override;
+	virtual void set_current() override;
 
 	ShaderEditor *get_shader_editor(const Ref<Shader> &p_for_shader);
 
@@ -150,4 +145,5 @@ public:
 	virtual void apply_changes() override;
 
 	ShaderEditorPlugin();
+	~ShaderEditorPlugin();
 };

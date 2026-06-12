@@ -33,13 +33,15 @@
 #include "image_loader_libjpeg_turbo.h"
 #include "movie_writer_mjpeg.h"
 
+#include "core/object/class_db.h"
+
 static Ref<ImageLoaderLibJPEGTurbo> image_loader_libjpeg_turbo;
 static MovieWriterMJPEG *writer_mjpeg = nullptr;
 
 void initialize_jpg_module(ModuleInitializationLevel p_level) {
 	switch (p_level) {
 		case MODULE_INITIALIZATION_LEVEL_SERVERS: {
-			if (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
+			if constexpr (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
 				writer_mjpeg = memnew(MovieWriterMJPEG);
 				MovieWriter::add_writer(writer_mjpeg);
 			}
@@ -63,7 +65,7 @@ void uninitialize_jpg_module(ModuleInitializationLevel p_level) {
 		} break;
 
 		case MODULE_INITIALIZATION_LEVEL_SERVERS: {
-			if (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
+			if constexpr (GD_IS_CLASS_ENABLED(MovieWriterMJPEG)) {
 				memdelete(writer_mjpeg);
 			}
 		} break;

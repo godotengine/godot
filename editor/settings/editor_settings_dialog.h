@@ -47,8 +47,6 @@ class TreeItem;
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
-	bool updating = false;
-
 	TabContainer *tabs = nullptr;
 	Control *tab_general = nullptr;
 	Control *tab_shortcuts = nullptr;
@@ -81,7 +79,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	virtual void ok_pressed() override;
 
 	void _settings_changed();
-	void _settings_property_edited(const String &p_name);
+	void _settings_property_edited();
 	void _settings_save();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -89,6 +87,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _update_icons();
 
 	void _event_config_confirmed();
+	bool _is_in_project_manager() const;
 
 	TreeItem *_create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_common, bool p_is_collapsed);
 	Array _event_list_to_array_helper(const List<Ref<InputEvent>> &p_events);
@@ -108,7 +107,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	PropertyInfo _create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name);
 	String _get_shortcut_button_string(const String &p_shortcut_name);
 
-	bool _should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const;
+	bool _should_display_shortcut(const String &p_path, const Array &p_events, const String &p_name = String()) const;
 
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
@@ -132,6 +131,8 @@ protected:
 public:
 	void popup_edit_settings();
 	static void update_navigation_preset();
+	void set_current_section(const String &p_section);
+	void set_advanced_mode_enabled(bool p_enabled);
 
 	EditorSettingsDialog();
 };
@@ -140,17 +141,19 @@ class EditorSettingsPropertyWrapper : public EditorProperty {
 	GDCLASS(EditorSettingsPropertyWrapper, EditorProperty);
 
 	String property;
+	PropertyHint hint;
+	String hint_text;
+	uint32_t usage;
+
 	EditorProperty *editor_property = nullptr;
 
-	BoxContainer *container = nullptr;
-
-	HBoxContainer *override_info = nullptr;
-	Label *override_label = nullptr;
+	HBoxContainer *override_container = nullptr;
+	TextureRect *override_icon = nullptr;
+	EditorProperty *override_editor_property = nullptr;
 	Button *goto_button = nullptr;
 	Button *remove_button = nullptr;
 
-	bool requires_restart = false;
-
+	void _setup_override_info();
 	void _update_override();
 	void _create_override();
 	void _remove_override();
@@ -162,7 +165,7 @@ public:
 	static inline Callable restart_request_callback;
 
 	virtual void update_property() override;
-	void setup(const String &p_property, EditorProperty *p_editor_property, bool p_requires_restart);
+	void setup(const String &p_property, EditorProperty *p_editor_property, PropertyHint p_hint, const String &p_hint_text, uint32_t p_usage);
 };
 
 class EditorSettingsInspectorPlugin : public EditorInspectorPlugin {

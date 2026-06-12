@@ -838,18 +838,18 @@ Quat Mat44::GetQuaternion() const
 Mat44 Mat44::sQuatLeftMultiply(QuatArg inQ)
 {
 	return Mat44(
-		Vec4(1, 1, -1, -1) * inQ.mValue.Swizzle<SWIZZLE_W, SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X>(),
-		Vec4(-1, 1, 1, -1) * inQ.mValue.Swizzle<SWIZZLE_Z, SWIZZLE_W, SWIZZLE_X, SWIZZLE_Y>(),
-		Vec4(1, -1, 1, -1) * inQ.mValue.Swizzle<SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W, SWIZZLE_Z>(),
+		inQ.mValue.Swizzle<SWIZZLE_W, SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X>().FlipSign<1, 1, -1, -1>(),
+		inQ.mValue.Swizzle<SWIZZLE_Z, SWIZZLE_W, SWIZZLE_X, SWIZZLE_Y>().FlipSign<-1, 1, 1, -1>(),
+		inQ.mValue.Swizzle<SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W, SWIZZLE_Z>().FlipSign<1, -1, 1, -1>(),
 		inQ.mValue);
 }
 
 Mat44 Mat44::sQuatRightMultiply(QuatArg inQ)
 {
 	return Mat44(
-		Vec4(1, -1, 1, -1) * inQ.mValue.Swizzle<SWIZZLE_W, SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X>(),
-		Vec4(1, 1, -1, -1) * inQ.mValue.Swizzle<SWIZZLE_Z, SWIZZLE_W, SWIZZLE_X, SWIZZLE_Y>(),
-		Vec4(-1, 1, 1, -1) * inQ.mValue.Swizzle<SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W, SWIZZLE_Z>(),
+		inQ.mValue.Swizzle<SWIZZLE_W, SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X>().FlipSign<1, -1, 1, -1>(),
+		inQ.mValue.Swizzle<SWIZZLE_Z, SWIZZLE_W, SWIZZLE_X, SWIZZLE_Y>().FlipSign<1, 1, -1, -1>(),
+		inQ.mValue.Swizzle<SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W, SWIZZLE_Z>().FlipSign<-1, 1, 1, -1>(),
 		inQ.mValue);
 }
 

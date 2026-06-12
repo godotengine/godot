@@ -31,7 +31,11 @@
 #include "editor_export_platform_pc.h"
 
 #include "core/config/project_settings.h"
-#include "scene/resources/image_texture.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/os/os.h"
+#include "core/os/shared_object.h"
+#include "scene/resources/image_texture.h" // IWYU pragma: keep. Misdetection of `logo`.
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	if (p_preset->get("texture_format/s3tc_bptc")) {
@@ -42,7 +46,8 @@ void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &
 		r_features->push_back("etc2");
 		r_features->push_back("astc");
 	}
-	if (p_preset->get("shader_baker/enabled")) {
+	if (!p_preset->is_dedicated_server() && p_preset->get("shader_baker/enabled")) {
+		// Don't use the shader baker if exporting as a dedicated server, as no rendering is performed.
 		r_features->push_back("shader_baker");
 	}
 	// PC platforms only have one architecture per export, since
@@ -133,8 +138,8 @@ bool EditorExportPlatformPC::has_valid_project_configuration(const Ref<EditorExp
 	return true;
 }
 
-Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
 	Error err = prepare_template(p_preset, p_debug, p_path, p_flags);
 	if (err == OK) {
@@ -277,7 +282,6 @@ void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) const {
 	r_features->push_back("pc"); // Identify PC platforms as such.
-	r_features->push_back(get_os_name().to_lower()); // OS name is a feature.
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {

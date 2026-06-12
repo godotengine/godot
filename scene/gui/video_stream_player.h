@@ -37,18 +37,11 @@
 class VideoStreamPlayer : public Control {
 	GDCLASS(VideoStreamPlayer, Control);
 
-	struct Output {
-		AudioFrame vol;
-		int bus_index = 0;
-		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
-	};
 	Ref<VideoStreamPlayback> playback;
 	Ref<VideoStream> stream;
 
 	int sp_get_channel_count() const;
 	bool mix(AudioFrame *p_buffer, int p_frames);
-
-	RID stream_rid;
 
 	Ref<Texture2D> texture;
 	Size2 texture_size;

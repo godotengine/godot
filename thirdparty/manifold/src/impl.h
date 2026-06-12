@@ -68,6 +68,16 @@ struct Manifold::Impl {
     const uint32_t numVert = meshGL.NumVert();
     const uint32_t numTri = meshGL.NumTri();
 
+    if (numVert == 0 && numTri == 0) {
+      MakeEmpty(Error::NoError);
+      return;
+    }
+
+    if (numVert < 4 || numTri < 4) {
+      MakeEmpty(Error::NotManifold);
+      return;
+    }
+
     if (meshGL.numProp < 3) {
       MakeEmpty(Error::MissingPositionProperties);
       return;
@@ -167,7 +177,8 @@ struct Manifold::Impl {
       runIndex.push_back(runEnd);
     }
 
-    const auto startID = Impl::ReserveIDs(meshGL.runOriginalID.size());
+    const auto startID =
+        Impl::ReserveIDs(std::max(1_uz, meshGL.runOriginalID.size()));
     auto runOriginalID = meshGL.runOriginalID;
     if (runOriginalID.empty()) {
       runOriginalID.push_back(startID);

@@ -32,7 +32,9 @@
 
 #ifdef COREAUDIO_ENABLED
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/os/os.h"
 
 #define kOutputBus 0
@@ -155,7 +157,7 @@ Error AudioDriverCoreAudio::init() {
 
 	uint32_t latency = Engine::get_singleton()->get_audio_output_latency();
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
-	buffer_frames = closest_power_of_2(latency * (uint32_t)mix_rate / (uint32_t)1000);
+	buffer_frames = Math::closest_power_of_2(latency * (uint32_t)mix_rate / (uint32_t)1000);
 
 #ifdef MACOS_ENABLED
 	result = AudioUnitSetProperty(audio_unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, kOutputBus, &buffer_frames, sizeof(UInt32));
@@ -394,6 +396,11 @@ Error AudioDriverCoreAudio::init_input_device() {
 	UInt32 flag = 1;
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, sizeof(flag));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
+#ifdef MACOS_ENABLED
+	flag = 0;
+	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, kOutputBus, &flag, sizeof(flag));
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+#endif
 
 	UInt32 size;
 #ifdef MACOS_ENABLED
@@ -456,7 +463,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 
 	uint32_t latency = Engine::get_singleton()->get_audio_output_latency();
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
-	capture_buffer_frames = closest_power_of_2(latency * (uint32_t)capture_mix_rate / (uint32_t)1000);
+	capture_buffer_frames = Math::closest_power_of_2(latency * (uint32_t)capture_mix_rate / (uint32_t)1000);
 
 	buffer_size = capture_buffer_frames * capture_channels;
 
@@ -515,6 +522,8 @@ void AudioDriverCoreAudio::finish_input_device() {
 }
 
 Error AudioDriverCoreAudio::input_start() {
+	ERR_FAIL_NULL_V(input_unit, FAILED);
+
 	input_buffer_init(capture_buffer_frames);
 
 	OSStatus result = AudioOutputUnitStart(input_unit);

@@ -32,6 +32,8 @@
 
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
 
+class Timer;
+
 class Joint3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Joint3DGizmoPlugin, EditorNode3DGizmoPlugin);
 

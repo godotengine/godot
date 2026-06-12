@@ -33,25 +33,17 @@
 #include "core/variant/variant.h"
 
 void NodePath::_update_hash_cache() const {
-	uint32_t h = data->absolute ? 1 : 0;
-	int pc = data->path.size();
-	const StringName *sn = data->path.ptr();
-	for (int i = 0; i < pc; i++) {
-		h = h ^ sn[i].hash();
-	}
-	int spc = data->subpath.size();
-	const StringName *ssn = data->subpath.ptr();
-	for (int i = 0; i < spc; i++) {
-		h = h ^ ssn[i].hash();
-	}
-
+	StringName path = get_concatenated_names();
+	StringName subpath = get_concatenated_subnames();
+	uint32_t hash = HashMapHasherDefault::hash(Pair<const StringName &, const StringName &>(path, subpath));
+	data->hash_cache = is_absolute() ? hash : ~hash;
 	data->hash_cache_valid = true;
-	data->hash_cache = h;
 }
 
 void NodePath::prepend_period() {
 	if (data->path.size() && data->path[0].operator String() != ".") {
 		data->path.insert(0, ".");
+		data->concatenated_path = StringName();
 		data->hash_cache_valid = false;
 	}
 }
@@ -114,6 +106,12 @@ bool NodePath::operator==(const NodePath &p_path) const {
 
 	if (!data || !p_path.data) {
 		return false;
+	}
+
+	if (data->hash_cache_valid && p_path.data->hash_cache_valid) {
+		if (data->hash_cache != p_path.data->hash_cache) {
+			return false;
+		}
 	}
 
 	if (data->absolute != p_path.data->absolute) {
@@ -179,15 +177,11 @@ NodePath::operator String() const {
 		ret = "/";
 	}
 
-	for (int i = 0; i < data->path.size(); i++) {
-		if (i > 0) {
-			ret += "/";
-		}
-		ret += data->path[i].operator String();
-	}
+	ret += get_concatenated_names();
 
-	for (int i = 0; i < data->subpath.size(); i++) {
-		ret += ":" + data->subpath[i].operator String();
+	String subpath = get_concatenated_subnames();
+	if (!subpath.is_empty()) {
+		ret += ":" + subpath;
 	}
 
 	return ret;
@@ -356,6 +350,7 @@ void NodePath::simplify() {
 			}
 		}
 	}
+	data->concatenated_path = StringName();
 	data->hash_cache_valid = false;
 }
 

@@ -30,7 +30,8 @@
 
 #include "audio_effect_hard_limiter.h"
 
-#include "servers/audio_server.h"
+#include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectHardLimiterInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
@@ -149,10 +150,10 @@ void AudioEffectHardLimiter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ceiling_db", "ceiling"), &AudioEffectHardLimiter::set_ceiling_db);
 	ClassDB::bind_method(D_METHOD("get_ceiling_db"), &AudioEffectHardLimiter::get_ceiling_db);
 
-	ClassDB::bind_method(D_METHOD("set_pre_gain_db", "p_pre_gain"), &AudioEffectHardLimiter::set_pre_gain_db);
+	ClassDB::bind_method(D_METHOD("set_pre_gain_db", "pre_gain"), &AudioEffectHardLimiter::set_pre_gain_db);
 	ClassDB::bind_method(D_METHOD("get_pre_gain_db"), &AudioEffectHardLimiter::get_pre_gain_db);
 
-	ClassDB::bind_method(D_METHOD("set_release", "p_release"), &AudioEffectHardLimiter::set_release);
+	ClassDB::bind_method(D_METHOD("set_release", "release"), &AudioEffectHardLimiter::set_release);
 	ClassDB::bind_method(D_METHOD("get_release"), &AudioEffectHardLimiter::get_release);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pre_gain_db", PROPERTY_HINT_RANGE, "-24,24,0.01,suffix:dB"), "set_pre_gain_db", "get_pre_gain_db");

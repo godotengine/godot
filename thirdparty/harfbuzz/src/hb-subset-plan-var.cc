@@ -42,30 +42,30 @@
                                hb_vector_t<hb_inc_bimap_t> &inner_maps /* OUT */)
  {
    if (varidx_set.is_empty () || subtable_count == 0) return;
- 
+
    if (unlikely (!inner_maps.resize (subtable_count))) return;
    for (unsigned idx : varidx_set)
    {
      uint16_t major = idx >> 16;
      uint16_t minor = idx & 0xFFFF;
- 
+
      if (major >= subtable_count)
        continue;
      inner_maps[major].add (minor);
    }
  }
- 
+
  static inline hb_font_t*
  _get_hb_font_with_variations (const hb_subset_plan_t *plan)
  {
    hb_font_t *font = hb_font_create (plan->source);
- 
+
    hb_vector_t<hb_variation_t> vars;
    if (!vars.alloc (plan->user_axes_location.get_population ())) {
      hb_font_destroy (font);
      return nullptr;
    }
- 
+
    for (auto _ : plan->user_axes_location)
    {
      hb_variation_t var;
@@ -73,11 +73,11 @@
      var.value = _.second.middle;
      vars.push (var);
    }
- 
+
    hb_font_set_variations (font, vars.arrayZ, plan->user_axes_location.get_population ());
    return font;
  }
- 
+
  template<typename ItemVarStore>
  void
  remap_variation_indices (const ItemVarStore &var_store,
@@ -90,7 +90,7 @@
    if (&var_store == &Null (OT::ItemVariationStore)) return;
    unsigned subtable_count = var_store.get_sub_table_count ();
    auto *store_cache = var_store.create_cache ();
- 
+
    unsigned new_major = 0, new_minor = 0;
    unsigned last_major = (variation_indices.get_min ()) >> 16;
    for (unsigned idx : variation_indices)
@@ -99,13 +99,13 @@
      if (calculate_delta)
        delta = roundf (var_store.get_delta (idx, normalized_coords.arrayZ,
                                             normalized_coords.length, store_cache));
- 
+
      if (no_variations)
      {
        variation_idx_delta_map.set (idx, hb_pair_t<unsigned, int> (HB_OT_LAYOUT_NO_VARIATIONS_INDEX, delta));
        continue;
      }
- 
+
      uint16_t major = idx >> 16;
      if (major >= subtable_count) break;
      if (major != last_major)
@@ -113,7 +113,7 @@
        new_minor = 0;
        ++new_major;
      }
- 
+
      unsigned new_idx = (new_major << 16) + new_minor;
      variation_idx_delta_map.set (idx, hb_pair_t<unsigned, int> (new_idx, delta));
      ++new_minor;
@@ -121,7 +121,7 @@
    }
    var_store.destroy_cache (store_cache);
  }
- 
+
  template
  void
  remap_variation_indices<OT::ItemVariationStore> (const OT::ItemVariationStore &var_store,
@@ -130,7 +130,7 @@
                           bool calculate_delta, /* not pinned at default */
                           bool no_variations, /* all axes pinned */
                           hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> &variation_idx_delta_map /* OUT */);
- 
+
  #ifndef HB_NO_BASE
  void
  collect_base_variation_indices (hb_subset_plan_t* plan)
@@ -141,55 +141,62 @@
      base.destroy ();
      return;
    }
- 
+
    hb_set_t varidx_set;
    base->collect_variation_indices (plan, varidx_set);
    const OT::ItemVariationStore &var_store = base->get_var_store ();
    unsigned subtable_count = var_store.get_sub_table_count ();
- 
- 
+
+
    remap_variation_indices (var_store, varidx_set,
                              plan->normalized_coords,
                              !plan->pinned_at_default,
                              plan->all_axes_pinned,
                              plan->base_variation_idx_map);
    generate_varstore_inner_maps (varidx_set, subtable_count, plan->base_varstore_inner_maps);
- 
+
    base.destroy ();
  }
- 
+
  #endif
 
-void
+bool
 normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
 {
   if (plan->user_axes_location.is_empty ())
-    return;
+    return true;
 
   hb_array_t<const OT::AxisRecord> axes = face->table.fvar->get_axes ();
-  plan->normalized_coords.resize (axes.length);
+  if (!plan->check_success (plan->normalized_coords.resize (axes.length)))
+    return false;
 
   bool has_avar = face->table.avar->has_data ();
-  const OT::SegmentMaps *seg_maps = nullptr;
-  unsigned avar_axis_count = 0;
+  hb_vector_t<float> normalized_mins;
+  hb_vector_t<float> normalized_defaults;
+  hb_vector_t<float> normalized_maxs;
   if (has_avar)
   {
-    seg_maps = face->table.avar->get_segment_maps ();
-    avar_axis_count = face->table.avar->get_axis_count();
+    if (!plan->check_success (normalized_mins.resize (axes.length)) ||
+        !plan->check_success (normalized_defaults.resize (axes.length)) ||
+        !plan->check_success (normalized_maxs.resize (axes.length)))
+      return false;
   }
 
   bool axis_not_pinned = false;
-  unsigned old_axis_idx = 0, new_axis_idx = 0;
-  for (const auto& axis : axes)
+  unsigned new_axis_idx = 0;
+  unsigned last_idx = 0;
+  for (const auto& _ : + hb_enumerate (axes))
   {
+    unsigned i = _.first;
+    const OT::AxisRecord &axis = _.second;
     hb_tag_t axis_tag = axis.get_axis_tag ();
-    plan->axes_old_index_tag_map.set (old_axis_idx, axis_tag);
+    plan->axes_old_index_tag_map.set (i, axis_tag);
 
     if (!plan->user_axes_location.has (axis_tag) ||
         !plan->user_axes_location.get (axis_tag).is_point ())
     {
       axis_not_pinned = true;
-      plan->axes_index_map.set (old_axis_idx, new_axis_idx);
+      plan->axes_index_map.set (i, new_axis_idx);
       plan->axis_tags.push (axis_tag);
       new_axis_idx++;
     }
@@ -199,32 +206,83 @@ normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
     {
       plan->axes_triple_distances.set (axis_tag, axis.get_triple_distances ());
 
-      int normalized_min = axis.normalize_axis_value (axis_range->minimum);
-      int normalized_default = axis.normalize_axis_value (axis_range->middle);
-      int normalized_max = axis.normalize_axis_value (axis_range->maximum);
+      float normalized_min = axis.normalize_axis_value (axis_range->minimum);
+      float normalized_default = axis.normalize_axis_value (axis_range->middle);
+      float normalized_max = axis.normalize_axis_value (axis_range->maximum);
 
-      if (has_avar && old_axis_idx < avar_axis_count)
+      // TODO(behdad): Spec says axis normalization should be done in 16.16;
+      // We used to do it in 2.14, but that's not correct.  I fixed this in
+      // the fvar/avar code, but keeping 2.14 here for now to keep tests
+      // happy. We might need to adjust fonttools as well.
+      // I'm only fairly confident in the above statement. Anyway,
+      // we should look deeper into this, and also update fonttools if
+      // needed.
+
+      // Round to 2.14
+      normalized_min = roundf (normalized_min * 16384.f) / 16384.f;
+      normalized_default = roundf (normalized_default * 16384.f) / 16384.f;
+      normalized_max = roundf (normalized_max * 16384.f) / 16384.f;
+
+      if (has_avar)
       {
-        normalized_min = seg_maps->map (normalized_min);
-        normalized_default = seg_maps->map (normalized_default);
-        normalized_max = seg_maps->map (normalized_max);
+        normalized_mins[i] = normalized_min;
+        normalized_defaults[i] = normalized_default;
+        normalized_maxs[i] = normalized_max;
+        last_idx = i;
       }
-      plan->axes_location.set (axis_tag, Triple (static_cast<double> (normalized_min / 16384.0),
-                                                 static_cast<double> (normalized_default / 16384.0),
-                                                 static_cast<double> (normalized_max / 16384.0)));
+      else
+      {
+        plan->axes_location.set (axis_tag, Triple ((double) normalized_min,
+                                                   (double) normalized_default,
+                                                   (double) normalized_max));
+        if (normalized_default == -0.f)
+          normalized_default = 0.f; // Normalize -0 to 0
+        if (normalized_default != 0.f)
+          plan->pinned_at_default = false;
 
-      if (normalized_default != 0)
-        plan->pinned_at_default = false;
-
-      plan->normalized_coords[old_axis_idx] = normalized_default;
+        plan->normalized_coords[i] = roundf (normalized_default * 16384.f);
+      }
     }
-
-    old_axis_idx++;
-
-    if (has_avar && old_axis_idx < avar_axis_count)
-      seg_maps = &StructAfter<OT::SegmentMaps> (*seg_maps);
   }
   plan->all_axes_pinned = !axis_not_pinned;
+
+  // TODO: use avar map_coords_16_16() when normalization is changed to 16.16
+  // in fonttools
+  if (has_avar)
+  {
+    const OT::avar* avar_table = face->table.avar;
+    if (avar_table->has_v2_data () && !plan->all_axes_pinned)
+    {
+      DEBUG_MSG (SUBSET, nullptr, "Partial-instancing avar2 table is not supported.");
+      return false;
+    }
+
+    unsigned coords_len = last_idx + 1;
+    if (!plan->check_success (avar_table->map_coords_2_14 (normalized_mins.arrayZ, coords_len)) ||
+        !plan->check_success (avar_table->map_coords_2_14 (normalized_defaults.arrayZ, coords_len)) ||
+        !plan->check_success (avar_table->map_coords_2_14 (normalized_maxs.arrayZ, coords_len)))
+      return false;
+
+    for (const auto& _ : + hb_enumerate (axes))
+    {
+      unsigned i = _.first;
+      hb_tag_t axis_tag = _.second.get_axis_tag ();
+      if (plan->user_axes_location.has (axis_tag))
+      {
+        plan->axes_location.set (axis_tag, Triple ((double) normalized_mins[i],
+                                                   (double) normalized_defaults[i],
+                                                   (double) normalized_maxs[i]));
+        float normalized_default = normalized_defaults[i];
+        if (normalized_default == -0.f)
+          normalized_default = 0.f; // Normalize -0 to 0
+        if (normalized_default != 0.f)
+          plan->pinned_at_default = false;
+
+        plan->normalized_coords[i] = roundf (normalized_default * 16384.f);
+      }
+    }
+  }
+  return true;
 }
 
 void
@@ -243,12 +301,12 @@ update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan)
 
   hb_glyph_extents_t extents = {0x7FFF, -0x7FFF};
   OT::hmtx_accelerator_t _hmtx (plan->source);
-  OT::ItemVariationStore::cache_t *hvar_store_cache = nullptr;
+  OT::hb_scalar_cache_t *hvar_store_cache = nullptr;
   if (_hmtx.has_data () && _hmtx.var_table.get_length ())
     hvar_store_cache = _hmtx.var_table->get_var_store ().create_cache ();
 
   OT::vmtx_accelerator_t _vmtx (plan->source);
-  OT::ItemVariationStore::cache_t *vvar_store_cache = nullptr;
+  OT::hb_scalar_cache_t *vvar_store_cache = nullptr;
   if (_vmtx.has_data () && _vmtx.var_table.get_length ())
     vvar_store_cache = _vmtx.var_table->get_var_store ().create_cache ();
 
@@ -279,8 +337,7 @@ update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan)
       int lsb = extents.x_bearing;
       if (!has_bounds_info)
       {
-        if (!_hmtx.get_leading_bearing_without_var_unscaled (old_gid, &lsb))
-          continue;
+        _hmtx.get_leading_bearing_without_var_unscaled (old_gid, &lsb);
       }
       plan->hmtx_map.set (new_gid, hb_pair ((unsigned) hori_aw, lsb));
       plan->bounds_width_vec[new_gid] = extents.width;
@@ -292,13 +349,17 @@ update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan)
       if (_vmtx.var_table.get_length ())
         vert_aw += (int) roundf (_vmtx.var_table->get_advance_delta_unscaled (old_gid, font->coords, font->num_coords,
                                                                               vvar_store_cache));
-
-      int tsb = extents.y_bearing;
-      if (!has_bounds_info)
+      hb_position_t vorg_x = 0;
+      hb_position_t vorg_y = 0;
+      int tsb = 0;
+      if (has_bounds_info &&
+           hb_font_get_glyph_v_origin (font, old_gid, &vorg_x, &vorg_y))
       {
-        if (!_vmtx.get_leading_bearing_without_var_unscaled (old_gid, &tsb))
-          continue;
+        tsb = vorg_y - extents.y_bearing;
+      } else {
+        _vmtx.get_leading_bearing_without_var_unscaled (old_gid, &tsb);
       }
+
       plan->vmtx_map.set (new_gid, hb_pair ((unsigned) vert_aw, tsb));
       plan->bounds_height_vec[new_gid] = extents.height;
     }

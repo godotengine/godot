@@ -14,7 +14,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "src/utils/color_cache_utils.h"
+#include "src/webp/types.h"
 #include "src/utils/utils.h"
 
 //------------------------------------------------------------------------------
@@ -24,18 +26,18 @@ int VP8LColorCacheInit(VP8LColorCache* const color_cache, int hash_bits) {
   const int hash_size = 1 << hash_bits;
   assert(color_cache != NULL);
   assert(hash_bits > 0);
-  color_cache->colors_ = (uint32_t*)WebPSafeCalloc(
-      (uint64_t)hash_size, sizeof(*color_cache->colors_));
-  if (color_cache->colors_ == NULL) return 0;
-  color_cache->hash_shift_ = 32 - hash_bits;
-  color_cache->hash_bits_ = hash_bits;
+  color_cache->colors = (uint32_t*)WebPSafeCalloc(
+      (uint64_t)hash_size, sizeof(*color_cache->colors));
+  if (color_cache->colors == NULL) return 0;
+  color_cache->hash_shift = 32 - hash_bits;
+  color_cache->hash_bits = hash_bits;
   return 1;
 }
 
 void VP8LColorCacheClear(VP8LColorCache* const color_cache) {
   if (color_cache != NULL) {
-    WebPSafeFree(color_cache->colors_);
-    color_cache->colors_ = NULL;
+    WebPSafeFree(color_cache->colors);
+    color_cache->colors = NULL;
   }
 }
 
@@ -43,7 +45,7 @@ void VP8LColorCacheCopy(const VP8LColorCache* const src,
                         VP8LColorCache* const dst) {
   assert(src != NULL);
   assert(dst != NULL);
-  assert(src->hash_bits_ == dst->hash_bits_);
-  memcpy(dst->colors_, src->colors_,
-         ((size_t)1u << dst->hash_bits_) * sizeof(*dst->colors_));
+  assert(src->hash_bits == dst->hash_bits);
+  memcpy(dst->colors, src->colors,
+         ((size_t)1u << dst->hash_bits) * sizeof(*dst->colors));
 }

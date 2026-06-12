@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="tablet_unstable_v2">
+<protocol name="tablet_v2">
 
   <copyright>
     Copyright 2014 © Stephen "Lyude" Chandler Paul
-    Copyright 2015-2016 © Red Hat, Inc.
+    Copyright 2015-2024 © Red Hat, Inc.
 
     Permission is hereby granted, free of charge, to any person
     obtaining a copy of this software and associated documentation files
@@ -35,19 +35,19 @@
     More than one tablet may exist, and device-specifics matter. Tablets are
     not represented by a single virtual device like wl_pointer. A client
     binds to the tablet manager object which is just a proxy object. From
-    that, the client requests wp_tablet_manager.get_tablet_seat(wl_seat)
+    that, the client requests zwp_tablet_manager_v2.get_tablet_seat(wl_seat)
     and that returns the actual interface that has all the tablets. With
-    this indirection, we can avoid merging wp_tablet into the actual Wayland
+    this indirection, we can avoid merging zwp_tablet_v2 into the actual Wayland
     protocol, a long-term benefit.
 
-    The wp_tablet_seat sends a "tablet added" event for each tablet
+    The zwp_tablet_seat_v2 sends a "tablet added" event for each tablet
     connected. That event is followed by descriptive events about the
     hardware; currently that includes events for name, vid/pid and
-    a wp_tablet.path event that describes a local path. This path can be
+    a zwp_tablet_v2.path event that describes a local path. This path can be
     used to uniquely identify a tablet or get more information through
     libwacom. Emulated or nested tablets can skip any of those, e.g. a
     virtual tablet may not have a vid/pid. The sequence of descriptive
-    events is terminated by a wp_tablet.done event to signal that a client
+    events is terminated by a zwp_tablet_v2.done event to signal that a client
     may now finalize any initialization for that tablet.
 
     Events from tablets require a tool in proximity. Tools are also managed
@@ -55,15 +55,15 @@
     to the compositor. That event is followed by a number of descriptive
     events about the hardware; currently that includes capabilities,
     hardware id and serial number, and tool type. Similar to the tablet
-    interface, a wp_tablet_tool.done event is sent to terminate that initial
+    interface, a zwp_tablet_tool_v2.done event is sent to terminate that initial
     sequence.
 
-    Any event from a tool happens on the wp_tablet_tool interface. When the
+    Any event from a tool happens on the zwp_tablet_tool_v2 interface. When the
     tool gets into proximity of the tablet, a proximity_in event is sent on
-    the wp_tablet_tool interface, listing the tablet and the surface. That
+    the zwp_tablet_tool_v2 interface, listing the tablet and the surface. That
     event is followed by a motion event with the coordinates. After that,
     it's the usual motion, axis, button, etc. events. The protocol's
-    serialisation means events are grouped by wp_tablet_tool.frame events.
+    serialisation means events are grouped by zwp_tablet_tool_v2.frame events.
 
     Two special events (that don't exist in X) are down and up. They signal
     "tip touching the surface". For tablets without real proximity
@@ -95,7 +95,7 @@
 
     Since tablets work independently of the pointer controlled by the mouse,
     the focus handling is independent too and controlled by proximity.
-    The wp_tablet_tool.set_cursor request sets a tool-specific cursor.
+    The zwp_tablet_tool_v2.set_cursor request sets a tool-specific cursor.
     This cursor surface may be the same as the mouse cursor, and it may be
     the same across tools but it is possible to be more fine-grained. For
     example, a client may set different cursors for the pen and eraser.
@@ -104,27 +104,18 @@
     compositor-specific policy when a tool can be removed. Common approaches
     will likely include some form of removing a tool when all tablets the
     tool was used on are removed.
-
-    Warning! The protocol described in this file is experimental and
-    backward incompatible changes may be made. Backward compatible changes
-    may be added together with the corresponding interface version bump.
-    Backward incompatible changes are done by bumping the version number in
-    the protocol and interface names and resetting the interface version.
-    Once the protocol is to be declared stable, the 'z' prefix and the
-    version number in the protocol and interface names are removed and the
-    interface version number is reset.
   </description>
 
-  <interface name="zwp_tablet_manager_v2" version="1">
+  <interface name="zwp_tablet_manager_v2" version="2">
     <description summary="controller object for graphic tablet devices">
       An object that provides access to the graphics tablets available on this
       system. All tablets are associated with a seat, to get access to the
-      actual tablets, use wp_tablet_manager.get_tablet_seat.
+      actual tablets, use zwp_tablet_manager_v2.get_tablet_seat.
     </description>
 
     <request name="get_tablet_seat">
       <description summary="get the tablet seat">
-	Get the wp_tablet_seat object for the given seat. This object
+	Get the zwp_tablet_seat_v2 object for the given seat. This object
 	provides access to all graphics tablets in this seat.
       </description>
       <arg name="tablet_seat" type="new_id" interface="zwp_tablet_seat_v2"/>
@@ -133,22 +124,22 @@
 
     <request name="destroy" type="destructor">
       <description summary="release the memory for the tablet manager object">
-	Destroy the wp_tablet_manager object. Objects created from this
+	Destroy the zwp_tablet_manager_v2 object. Objects created from this
 	object are unaffected and should be destroyed separately.
       </description>
     </request>
   </interface>
 
-  <interface name="zwp_tablet_seat_v2" version="1">
+  <interface name="zwp_tablet_seat_v2" version="2">
     <description summary="controller object for graphic tablet devices of a seat">
       An object that provides access to the graphics tablets available on this
       seat. After binding to this interface, the compositor sends a set of
-      wp_tablet_seat.tablet_added and wp_tablet_seat.tool_added events.
+      zwp_tablet_seat_v2.tablet_added and zwp_tablet_seat_v2.tool_added events.
     </description>
 
     <request name="destroy" type="destructor">
       <description summary="release the memory for the tablet seat object">
-	Destroy the wp_tablet_seat object. Objects created from this
+	Destroy the zwp_tablet_seat_v2 object. Objects created from this
 	object are unaffected and should be destroyed separately.
       </description>
     </request>
@@ -158,7 +149,7 @@
 	This event is sent whenever a new tablet becomes available on this
 	seat. This event only provides the object id of the tablet, any
 	static information about the tablet (device name, vid/pid, etc.) is
-	sent through the wp_tablet interface.
+	sent through the zwp_tablet_v2 interface.
       </description>
       <arg name="id" type="new_id" interface="zwp_tablet_v2" summary="the newly added graphics tablet"/>
     </event>
@@ -168,7 +159,7 @@
 	This event is sent whenever a tool that has not previously been used
 	with a tablet comes into use. This event only provides the object id
 	of the tool; any static information about the tool (capabilities,
-	type, etc.) is sent through the wp_tablet_tool interface.
+	type, etc.) is sent through the zwp_tablet_tool_v2 interface.
       </description>
       <arg name="id" type="new_id" interface="zwp_tablet_tool_v2" summary="the newly added tablet tool"/>
     </event>
@@ -177,40 +168,40 @@
       <description summary="new pad notification">
 	This event is sent whenever a new pad is known to the system. Typically,
 	pads are physically attached to tablets and a pad_added event is
-	sent immediately after the wp_tablet_seat.tablet_added.
+	sent immediately after the zwp_tablet_seat_v2.tablet_added.
 	However, some standalone pad devices logically attach to tablets at
-	runtime, and the client must wait for wp_tablet_pad.enter to know
+	runtime, and the client must wait for zwp_tablet_pad_v2.enter to know
 	the tablet a pad is attached to.
 
 	This event only provides the object id of the pad. All further
-	features (buttons, strips, rings) are sent through the wp_tablet_pad
+	features (buttons, strips, rings) are sent through the zwp_tablet_pad_v2
 	interface.
       </description>
       <arg name="id" type="new_id" interface="zwp_tablet_pad_v2" summary="the newly added pad"/>
     </event>
   </interface>
 
-  <interface name="zwp_tablet_tool_v2" version="1">
+  <interface name="zwp_tablet_tool_v2" version="2">
     <description summary="a physical tablet tool">
       An object that represents a physical tool that has been, or is
-      currently in use with a tablet in this seat. Each wp_tablet_tool
+      currently in use with a tablet in this seat. Each zwp_tablet_tool_v2
       object stays valid until the client destroys it; the compositor
-      reuses the wp_tablet_tool object to indicate that the object's
+      reuses the zwp_tablet_tool_v2 object to indicate that the object's
       respective physical tool has come into proximity of a tablet again.
 
-      A wp_tablet_tool object's relation to a physical tool depends on the
+      A zwp_tablet_tool_v2 object's relation to a physical tool depends on the
       tablet's ability to report serial numbers. If the tablet supports
       this capability, then the object represents a specific physical tool
       and can be identified even when used on multiple tablets.
 
       A tablet tool has a number of static characteristics, e.g. tool type,
       hardware_serial and capabilities. These capabilities are sent in an
-      event sequence after the wp_tablet_seat.tool_added event before any
+      event sequence after the zwp_tablet_seat_v2.tool_added event before any
       actual events from this tool. This initial event sequence is
-      terminated by a wp_tablet_tool.done event.
+      terminated by a zwp_tablet_tool_v2.done event.
 
-      Tablet tool events are grouped by wp_tablet_tool.frame events.
-      Any events received before a wp_tablet_tool.frame event should be
+      Tablet tool events are grouped by zwp_tablet_tool_v2.frame events.
+      Any events received before a zwp_tablet_tool_v2.frame event should be
       considered part of the same hardware state change.
     </description>
 
@@ -241,9 +232,9 @@
 	and pending input regions become undefined, and the wl_surface is
 	unmapped.
 
-	This request gives the surface the role of a wp_tablet_tool cursor. A
+	This request gives the surface the role of a zwp_tablet_tool_v2 cursor. A
 	surface may only ever be used as the cursor surface for one
-	wp_tablet_tool. If the surface already has another role or has
+	zwp_tablet_tool_v2. If the surface already has another role or has
 	previously been used as cursor surface for a different tool, a
 	protocol error is raised.
       </description>
@@ -287,7 +278,7 @@
 	the interaction expected from this tool.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_tool.done event.
+	zwp_tablet_tool_v2.done event.
       </description>
       <arg name="tool_type" type="uint" enum="type" summary="the physical tool type"/>
     </event>
@@ -304,11 +295,11 @@
 	Otherwise, if the tool has no serial number and this event is
 	missing, the tool is tied to the tablet it first comes into
 	proximity with. Even if the physical tool is used on multiple
-	tablets, separate wp_tablet_tool objects will be created, one per
+	tablets, separate zwp_tablet_tool_v2 objects will be created, one per
 	tablet.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_tool.done event.
+	zwp_tablet_tool_v2.done event.
       </description>
       <arg name="hardware_serial_hi" type="uint" summary="the unique serial number of the tool, most significant bits"/>
       <arg name="hardware_serial_lo" type="uint" summary="the unique serial number of the tool, least significant bits"/>
@@ -325,7 +316,7 @@
 	Pen (a stylus) is 0x802.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_tool.done event.
+	zwp_tablet_tool_v2.done event.
       </description>
       <arg name="hardware_id_hi" type="uint" summary="the hardware id, most significant bits"/>
       <arg name="hardware_id_lo" type="uint" summary="the hardware id, least significant bits"/>
@@ -354,7 +345,7 @@
 	One event is sent for each extra capability available on this tool.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_tool.done event.
+	zwp_tablet_tool_v2.done event.
       </description>
       <arg name="capability" type="uint" enum="capability" summary="the capability"/>
     </event>
@@ -371,17 +362,17 @@
       <description summary="tool removed">
 	This event is sent when the tool is removed from the system and will
 	send no further events. Should the physical tool come back into
-	proximity later, a new wp_tablet_tool object will be created.
+	proximity later, a new zwp_tablet_tool_v2 object will be created.
 
 	It is compositor-dependent when a tool is removed. A compositor may
 	remove a tool on proximity out, tablet removal or any other reason.
 	A compositor may also keep a tool alive until shutdown.
 
 	If the tool is currently in proximity, a proximity_out event will be
-	sent before the removed event. See wp_tablet_tool.proximity_out for
+	sent before the removed event. See zwp_tablet_tool_v2.proximity_out for
 	the handling of any buttons logically down.
 
-	When this event is received, the client must wp_tablet_tool.destroy
+	When this event is received, the client must zwp_tablet_tool_v2.destroy
 	the object.
       </description>
     </event>
@@ -411,7 +402,7 @@
 	When the tablet tool leaves proximity of the tablet, button release
 	events are sent for each button that was held down at the time of
 	leaving proximity. These events are sent before the proximity_out
-	event but within the same wp_tablet.frame.
+	event but within the same zwp_tablet_v2.frame.
 
 	If the tool stays within proximity of the tablet, but the focus
 	changes from one surface to another, a button release event may not
@@ -427,8 +418,8 @@
 
 	If the tool is already in contact with the tablet when entering the
 	input region, the client owning said region will receive a
-	wp_tablet.proximity_in event, followed by a wp_tablet.down
-	event and a wp_tablet.frame event.
+	zwp_tablet_v2.proximity_in event, followed by a zwp_tablet_v2.down
+	event and a zwp_tablet_v2.frame event.
 
 	Note that this event describes logical contact, not physical
 	contact. On some devices, a compositor may not consider a tool in
@@ -447,8 +438,8 @@
 	If the tablet tool moves out of the input region while in contact
 	with the surface of the tablet and the compositor does not have an
 	ongoing grab on the surface, the client owning said region will
-	receive a wp_tablet.up event, followed by a wp_tablet.proximity_out
-	event and a wp_tablet.frame event. If the compositor has an ongoing
+	receive a zwp_tablet_v2.up event, followed by a zwp_tablet_v2.proximity_out
+	event and a zwp_tablet_v2.frame event. If the compositor has an ongoing
 	grab on this device, this event sequence is sent whenever the grab
 	is dismissed in the future.
 
@@ -532,7 +523,7 @@
 	Clients should choose either value and avoid mixing degrees and
 	clicks. The compositor may accumulate values smaller than a logical
 	click and emulate click events when a certain threshold is met.
-	Thus, wl_tablet_tool.wheel events with non-zero clicks values may
+	Thus, zwp_tablet_tool_v2.wheel events with non-zero clicks values may
 	have different degrees values.
       </description>
       <arg name="degrees" type="fixed" summary="The wheel delta in degrees"/>
@@ -553,7 +544,7 @@
 
 	If a button is held down when the tool moves in or out of proximity,
 	button events are generated by the compositor. See
-	wp_tablet_tool.proximity_in and wp_tablet_tool.proximity_out for
+	zwp_tablet_tool_v2.proximity_in and zwp_tablet_tool_v2.proximity_out for
 	details.
       </description>
       <arg name="serial" type="uint"/>
@@ -576,16 +567,16 @@
     </enum>
   </interface>
 
-  <interface name="zwp_tablet_v2" version="1">
+  <interface name="zwp_tablet_v2" version="2">
     <description summary="graphics tablet device">
-      The wp_tablet interface represents one graphics tablet device. The
+      The zwp_tablet_v2 interface represents one graphics tablet device. The
       tablet interface itself does not generate events; all events are
-      generated by wp_tablet_tool objects when in proximity above a tablet.
+      generated by zwp_tablet_tool_v2 objects when in proximity above a tablet.
 
       A tablet has a number of static characteristics, e.g. device name and
       pid/vid. These capabilities are sent in an event sequence after the
-      wp_tablet_seat.tablet_added event. This initial event sequence is
-      terminated by a wp_tablet.done event.
+      zwp_tablet_seat_v2.tablet_added event. This initial event sequence is
+      terminated by a zwp_tablet_v2.done event.
     </description>
 
     <request name="destroy" type="destructor">
@@ -596,29 +587,43 @@
 
     <event name="name">
       <description summary="tablet device name">
+        A descriptive name for the tablet device.
+
+	If the device has no descriptive name, this event is not sent.
+
 	This event is sent in the initial burst of events before the
-	wp_tablet.done event.
+        zwp_tablet_v2.done event.
       </description>
       <arg name="name" type="string" summary="the device name"/>
     </event>
 
     <event name="id">
-      <description summary="tablet device USB vendor/product id">
+      <description summary="tablet device vendor/product id">
+	The vendor and product IDs for the tablet device.
+
+	The interpretation of the id depends on the zwp_tablet_v2.bustype.
+	Prior to version v2 of this protocol, the id was implied to be a USB
+	vendor and product ID. If no zwp_tablet_v2.bustype is sent, the ID
+	is to be interpreted as USB vendor and product ID.
+
+	If the device has no vendor/product ID, this event is not sent.
+	This can happen for virtual devices or non-USB devices, for instance.
+
 	This event is sent in the initial burst of events before the
-	wp_tablet.done event.
+	zwp_tablet_v2.done event.
       </description>
-      <arg name="vid" type="uint" summary="USB vendor id"/>
-      <arg name="pid" type="uint" summary="USB product id"/>
+      <arg name="vid" type="uint" summary="vendor id"/>
+      <arg name="pid" type="uint" summary="product id"/>
     </event>
 
     <event name="path">
       <description summary="path to the device">
 	A system-specific device path that indicates which device is behind
-	this wp_tablet. This information may be used to gather additional
+	this zwp_tablet_v2. This information may be used to gather additional
 	information about the device, e.g. through libwacom.
 
 	A device may have more than one device path. If so, multiple
-	wp_tablet.path events are sent. A device may be emulated and not
+	zwp_tablet_v2.path events are sent. A device may be emulated and not
 	have a device path, and in that case this event will not be sent.
 
 	The format of the path is unspecified, it may be a device node, a
@@ -626,7 +631,7 @@
 	identify the string provided.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet.done event.
+	zwp_tablet_v2.done event.
       </description>
       <arg name="path" type="string" summary="path to local device"/>
     </event>
@@ -645,18 +650,45 @@
 	Sent when the tablet has been removed from the system. When a tablet
 	is removed, some tools may be removed.
 
-	When this event is received, the client must wp_tablet.destroy
+	When this event is received, the client must zwp_tablet_v2.destroy
 	the object.
       </description>
     </event>
+
+    <!-- Version 2 additions -->
+
+    <enum name="bustype" since="2">
+      <description summary="bus type ">
+	Describes the bus types this tablet is connected to.
+      </description>
+      <entry name="usb" value="3" summary="USB"/>
+      <entry name="bluetooth" value="5" summary="Bluetooth"/>
+      <entry name="virtual" value="6" summary="Virtual"/>
+      <entry name="serial" value="17" summary="Serial"/>
+      <entry name="i2c" value="24" summary="I2C"/>
+    </enum>
+
+    <event name="bustype" since="2">
+      <description summary="tablet device bus type">
+	The bustype argument is one of the BUS_ defines in the Linux kernel's
+	linux/input.h
+
+	If the device has no known bustype or the bustype cannot be
+	queried, this event is not sent.
+
+	This event is sent in the initial burst of events before the
+	zwp_tablet_v2.done event.
+      </description>
+      <arg name="bustype" type="uint" enum="bustype" summary="bus type"/>
+    </event>
   </interface>
 
-  <interface name="zwp_tablet_pad_ring_v2" version="1">
+  <interface name="zwp_tablet_pad_ring_v2" version="2">
     <description summary="pad ring">
       A circular interaction area, such as the touch ring on the Wacom Intuos
       Pro series tablets.
 
-      Events on a ring are logically grouped by the wl_tablet_pad_ring.frame
+      Events on a ring are logically grouped by the zwp_tablet_pad_ring_v2.frame
       event.
     </description>
 
@@ -664,9 +696,9 @@
       <description summary="set compositor feedback">
 	Request that the compositor use the provided feedback string
 	associated with this ring. This request should be issued immediately
-	after a wp_tablet_pad_group.mode_switch event from the corresponding
+	after a zwp_tablet_pad_group_v2.mode_switch event from the corresponding
 	group is received, or whenever the ring is mapped to a different
-	action. See wp_tablet_pad_group.mode_switch for more details.
+	action. See zwp_tablet_pad_group_v2.mode_switch for more details.
 
 	Clients are encouraged to provide context-aware descriptions for
 	the actions associated with the ring; compositors may use this
@@ -678,7 +710,7 @@
 	internationalization rules apply.
 
 	The serial argument will be that of the last
-	wp_tablet_pad_group.mode_switch event received for the group of this
+	zwp_tablet_pad_group_v2.mode_switch event received for the group of this
 	ring. Requests providing other serials than the most recent one will be
 	ignored.
       </description>
@@ -707,11 +739,11 @@
 	Source information for ring events.
 
 	This event does not occur on its own. It is sent before a
-	wp_tablet_pad_ring.frame event and carries the source information
+	zwp_tablet_pad_ring_v2.frame event and carries the source information
 	for all events within that frame.
 
 	The source specifies how this event was generated. If the source is
-	wp_tablet_pad_ring.source.finger, a wp_tablet_pad_ring.stop event
+	zwp_tablet_pad_ring_v2.source.finger, a zwp_tablet_pad_ring_v2.stop event
 	will be sent when the user lifts the finger off the device.
 
 	This event is optional. If the source is unknown for an interaction,
@@ -734,13 +766,13 @@
       <description summary="interaction stopped">
 	Stop notification for ring events.
 
-	For some wp_tablet_pad_ring.source types, a wp_tablet_pad_ring.stop
+	For some zwp_tablet_pad_ring_v2.source types, a zwp_tablet_pad_ring_v2.stop
 	event is sent to notify a client that the interaction with the ring
 	has terminated. This enables the client to implement kinetic scrolling.
-	See the wp_tablet_pad_ring.source documentation for information on
+	See the zwp_tablet_pad_ring_v2.source documentation for information on
 	when this event may be generated.
 
-	Any wp_tablet_pad_ring.angle events with the same source after this
+	Any zwp_tablet_pad_ring_v2.angle events with the same source after this
 	event should be considered as the start of a new interaction.
       </description>
     </event>
@@ -751,13 +783,13 @@
 	together. A client is expected to accumulate the data in all events
 	within the frame before proceeding.
 
-	All wp_tablet_pad_ring events before a wp_tablet_pad_ring.frame event belong
+	All zwp_tablet_pad_ring_v2 events before a zwp_tablet_pad_ring_v2.frame event belong
 	logically together. For example, on termination of a finger interaction
-	on a ring the compositor will send a wp_tablet_pad_ring.source event,
-	a wp_tablet_pad_ring.stop event and a wp_tablet_pad_ring.frame event.
+	on a ring the compositor will send a zwp_tablet_pad_ring_v2.source event,
+	a zwp_tablet_pad_ring_v2.stop event and a zwp_tablet_pad_ring_v2.frame event.
 
-	A wp_tablet_pad_ring.frame event is sent for every logical event
-	group, even if the group only contains a single wp_tablet_pad_ring
+	A zwp_tablet_pad_ring_v2.frame event is sent for every logical event
+	group, even if the group only contains a single zwp_tablet_pad_ring_v2
 	event. Specifically, a client may get a sequence: angle, frame,
 	angle, frame, etc.
       </description>
@@ -765,12 +797,12 @@
     </event>
   </interface>
 
-  <interface name="zwp_tablet_pad_strip_v2" version="1">
+  <interface name="zwp_tablet_pad_strip_v2" version="2">
     <description summary="pad strip">
       A linear interaction area, such as the strips found in Wacom Cintiq
       models.
 
-      Events on a strip are logically grouped by the wl_tablet_pad_strip.frame
+      Events on a strip are logically grouped by the zwp_tablet_pad_strip_v2.frame
       event.
     </description>
 
@@ -778,9 +810,9 @@
       <description summary="set compositor feedback">
 	Requests the compositor to use the provided feedback string
 	associated with this strip. This request should be issued immediately
-	after a wp_tablet_pad_group.mode_switch event from the corresponding
+	after a zwp_tablet_pad_group_v2.mode_switch event from the corresponding
 	group is received, or whenever the strip is mapped to a different
-	action. See wp_tablet_pad_group.mode_switch for more details.
+	action. See zwp_tablet_pad_group_v2.mode_switch for more details.
 
 	Clients are encouraged to provide context-aware descriptions for
 	the actions associated with the strip, and compositors may use this
@@ -792,7 +824,7 @@
 	internationalization rules apply.
 
 	The serial argument will be that of the last
-	wp_tablet_pad_group.mode_switch event received for the group of this
+	zwp_tablet_pad_group_v2.mode_switch event received for the group of this
 	strip. Requests providing other serials than the most recent one will be
 	ignored.
       </description>
@@ -821,11 +853,11 @@
 	Source information for strip events.
 
 	This event does not occur on its own. It is sent before a
-	wp_tablet_pad_strip.frame event and carries the source information
+	zwp_tablet_pad_strip_v2.frame event and carries the source information
 	for all events within that frame.
 
 	The source specifies how this event was generated. If the source is
-	wp_tablet_pad_strip.source.finger, a wp_tablet_pad_strip.stop event
+	zwp_tablet_pad_strip_v2.source.finger, a zwp_tablet_pad_strip_v2.stop event
 	will be sent when the user lifts their finger off the device.
 
 	This event is optional. If the source is unknown for an interaction,
@@ -849,13 +881,13 @@
       <description summary="interaction stopped">
 	Stop notification for strip events.
 
-	For some wp_tablet_pad_strip.source types, a wp_tablet_pad_strip.stop
+	For some zwp_tablet_pad_strip_v2.source types, a zwp_tablet_pad_strip_v2.stop
 	event is sent to notify a client that the interaction with the strip
 	has terminated. This enables the client to implement kinetic
-	scrolling. See the wp_tablet_pad_strip.source documentation for
+	scrolling. See the zwp_tablet_pad_strip_v2.source documentation for
 	information on when this event may be generated.
 
-	Any wp_tablet_pad_strip.position events with the same source after this
+	Any zwp_tablet_pad_strip_v2.position events with the same source after this
 	event should be considered as the start of a new interaction.
       </description>
     </event>
@@ -866,14 +898,14 @@
 	hardware strip event. A client is expected to accumulate the data
 	in all events within the frame before proceeding.
 
-	All wp_tablet_pad_strip events before a wp_tablet_pad_strip.frame event belong
+	All zwp_tablet_pad_strip_v2 events before a zwp_tablet_pad_strip_v2.frame event belong
 	logically together. For example, on termination of a finger interaction
-	on a strip the compositor will send a wp_tablet_pad_strip.source event,
-	a wp_tablet_pad_strip.stop event and a wp_tablet_pad_strip.frame
+	on a strip the compositor will send a zwp_tablet_pad_strip_v2.source event,
+	a zwp_tablet_pad_strip_v2.stop event and a zwp_tablet_pad_strip_v2.frame
 	event.
 
-	A wp_tablet_pad_strip.frame event is sent for every logical event
-	group, even if the group only contains a single wp_tablet_pad_strip
+	A zwp_tablet_pad_strip_v2.frame event is sent for every logical event
+	group, even if the group only contains a single zwp_tablet_pad_strip_v2
 	event. Specifically, a client may get a sequence: position, frame,
 	position, frame, etc.
       </description>
@@ -881,7 +913,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_tablet_pad_group_v2" version="1">
+  <interface name="zwp_tablet_pad_group_v2" version="2">
     <description summary="a set of buttons, rings and strips">
       A pad group describes a distinct (sub)set of buttons, rings and strips
       present in the tablet. The criteria of this grouping is usually positional,
@@ -890,40 +922,40 @@
       change on the fly.
 
       Pad groups will announce their features during pad initialization. Between
-      the corresponding wp_tablet_pad.group event and wp_tablet_pad_group.done, the
+      the corresponding zwp_tablet_pad_v2.group event and zwp_tablet_pad_group_v2.done, the
       pad group will announce the buttons, rings and strips contained in it,
       plus the number of supported modes.
 
       Modes are a mechanism to allow multiple groups of actions for every element
       in the pad group. The number of groups and available modes in each is
       persistent across device plugs. The current mode is user-switchable, it
-      will be announced through the wp_tablet_pad_group.mode_switch event both
-      whenever it is switched, and after wp_tablet_pad.enter.
+      will be announced through the zwp_tablet_pad_group_v2.mode_switch event both
+      whenever it is switched, and after zwp_tablet_pad_v2.enter.
 
       The current mode logically applies to all elements in the pad group,
       although it is at clients' discretion whether to actually perform different
       actions, and/or issue the respective .set_feedback requests to notify the
-      compositor. See the wp_tablet_pad_group.mode_switch event for more details.
+      compositor. See the zwp_tablet_pad_group_v2.mode_switch event for more details.
     </description>
 
     <request name="destroy" type="destructor">
       <description summary="destroy the pad object">
-	Destroy the wp_tablet_pad_group object. Objects created from this object
+	Destroy the zwp_tablet_pad_group_v2 object. Objects created from this object
 	are unaffected and should be destroyed separately.
       </description>
     </request>
 
     <event name="buttons">
       <description summary="buttons announced">
-	Sent on wp_tablet_pad_group initialization to announce the available
+	Sent on zwp_tablet_pad_group_v2 initialization to announce the available
 	buttons in the group. Button indices start at 0, a button may only be
 	in one group at a time.
 
 	This event is first sent in the initial burst of events before the
-	wp_tablet_pad_group.done event.
+	zwp_tablet_pad_group_v2.done event.
 
 	Some buttons are reserved by the compositor. These buttons may not be
-	assigned to any wp_tablet_pad_group. Compositors may broadcast this
+	assigned to any zwp_tablet_pad_group_v2. Compositors may broadcast this
 	event in the case of changes to the mapping of these reserved buttons.
 	If the compositor happens to reserve all buttons in a group, this event
 	will be sent with an empty array.
@@ -933,39 +965,39 @@
 
     <event name="ring">
       <description summary="ring announced">
-	Sent on wp_tablet_pad_group initialization to announce available rings.
+	Sent on zwp_tablet_pad_group_v2 initialization to announce available rings.
 	One event is sent for each ring available on this pad group.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_pad_group.done event.
+	zwp_tablet_pad_group_v2.done event.
       </description>
       <arg name="ring" type="new_id" interface="zwp_tablet_pad_ring_v2"/>
     </event>
 
     <event name="strip">
       <description summary="strip announced">
-	Sent on wp_tablet_pad initialization to announce available strips.
+	Sent on zwp_tablet_pad_v2 initialization to announce available strips.
 	One event is sent for each strip available on this pad group.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_pad_group.done event.
+	zwp_tablet_pad_group_v2.done event.
       </description>
       <arg name="strip" type="new_id" interface="zwp_tablet_pad_strip_v2"/>
     </event>
 
     <event name="modes">
       <description summary="mode-switch ability announced">
-	Sent on wp_tablet_pad_group initialization to announce that the pad
+	Sent on zwp_tablet_pad_group_v2 initialization to announce that the pad
 	group may switch between modes. A client may use a mode to store a
 	specific configuration for buttons, rings and strips and use the
-	wl_tablet_pad_group.mode_switch event to toggle between these
+	zwp_tablet_pad_group_v2.mode_switch event to toggle between these
 	configurations. Mode indices start at 0.
 
 	Switching modes is compositor-dependent. See the
-	wp_tablet_pad_group.mode_switch event for more details.
+	zwp_tablet_pad_group_v2.mode_switch event for more details.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_pad_group.done event. This event is only sent when more than
+	zwp_tablet_pad_group_v2.done event. This event is only sent when more than
 	more than one mode is available.
       </description>
       <arg name="modes" type="uint" summary="the number of modes"/>
@@ -984,41 +1016,54 @@
       <description summary="mode switch event">
 	Notification that the mode was switched.
 
-	A mode applies to all buttons, rings and strips in a group
+	A mode applies to all buttons, rings, strips and dials in a group
 	simultaneously, but a client is not required to assign different actions
 	for each mode. For example, a client may have mode-specific button
 	mappings but map the ring to vertical scrolling in all modes. Mode
 	indices start at 0.
 
 	Switching modes is compositor-dependent. The compositor may provide
-	visual cues to the client about the mode, e.g. by toggling LEDs on
+	visual cues to the user about the mode, e.g. by toggling LEDs on
 	the tablet device. Mode-switching may be software-controlled or
 	controlled by one or more physical buttons. For example, on a Wacom
 	Intuos Pro, the button inside the ring may be assigned to switch
 	between modes.
 
-	The compositor will also send this event after wp_tablet_pad.enter on
+	The compositor will also send this event after zwp_tablet_pad_v2.enter on
 	each group in order to notify of the current mode. Groups that only
 	feature one mode will use mode=0 when emitting this event.
 
 	If a button action in the new mode differs from the action in the
 	previous mode, the client should immediately issue a
-	wp_tablet_pad.set_feedback request for each changed button.
+	zwp_tablet_pad_v2.set_feedback request for each changed button.
 
-	If a ring or strip action in the new mode differs from the action
+	If a ring, strip or dial action in the new mode differs from the action
 	in the previous mode, the client should immediately issue a
-	wp_tablet_ring.set_feedback or wp_tablet_strip.set_feedback request
-	for each changed ring or strip.
+	zwp_tablet_ring_v2.set_feedback, zwp_tablet_strip_v2.set_feedback or
+	zwp_tablet_dial_v2.set_feedback request for each changed ring, strip or dial.
       </description>
       <arg name="time" type="uint" summary="the time of the event with millisecond granularity"/>
       <arg name="serial" type="uint"/>
       <arg name="mode" type="uint" summary="the new mode of the pad"/>
     </event>
+
+    <!-- Version 2 additions -->
+
+    <event name="dial" since="2">
+      <description summary="dial announced">
+	Sent on zwp_tablet_pad_v2 initialization to announce available dials.
+	One event is sent for each dial available on this pad group.
+
+	This event is sent in the initial burst of events before the
+	zwp_tablet_pad_group_v2.done event.
+      </description>
+      <arg name="dial" type="new_id" interface="zwp_tablet_pad_dial_v2"/>
+    </event>
   </interface>
 
-  <interface name="zwp_tablet_pad_v2" version="1">
-    <description summary="a set of buttons, rings and strips">
-      A pad device is a set of buttons, rings and strips
+  <interface name="zwp_tablet_pad_v2" version="2">
+    <description summary="a set of buttons, rings, strips and dials">
+      A pad device is a set of buttons, rings, strips and dials
       usually physically present on the tablet device itself. Some
       exceptions exist where the pad device is physically detached, e.g. the
       Wacom ExpressKey Remote.
@@ -1028,14 +1073,14 @@
 
       A pad device has a number of static characteristics, e.g. the number
       of rings. These capabilities are sent in an event sequence after the
-      wp_tablet_seat.pad_added event before any actual events from this pad.
-      This initial event sequence is terminated by a wp_tablet_pad.done
+      zwp_tablet_seat_v2.pad_added event before any actual events from this pad.
+      This initial event sequence is terminated by a zwp_tablet_pad_v2.done
       event.
 
-      All pad features (buttons, rings and strips) are logically divided into
+      All pad features (buttons, rings, strips and dials) are logically divided into
       groups and all pads have at least one group. The available groups are
-      notified through the wp_tablet_pad.group event; the compositor will
-      emit one event per group before emitting wp_tablet_pad.done.
+      notified through the zwp_tablet_pad_v2.group event; the compositor will
+      emit one event per group before emitting zwp_tablet_pad_v2.done.
 
       Groups may have multiple modes. Modes allow clients to map multiple
       actions to a single pad feature. Only one mode can be active per group,
@@ -1046,9 +1091,9 @@
       <description summary="set compositor feedback">
 	Requests the compositor to use the provided feedback string
 	associated with this button. This request should be issued immediately
-	after a wp_tablet_pad_group.mode_switch event from the corresponding
+	after a zwp_tablet_pad_group_v2.mode_switch event from the corresponding
 	group is received, or whenever a button is mapped to a different
-	action. See wp_tablet_pad_group.mode_switch for more details.
+	action. See zwp_tablet_pad_group_v2.mode_switch for more details.
 
 	Clients are encouraged to provide context-aware descriptions for
 	the actions associated with each button, and compositors may use
@@ -1057,7 +1102,7 @@
 
 	Button indices start at 0. Setting the feedback string on a button
 	that is reserved by the compositor (i.e. not belonging to any
-	wp_tablet_pad_group) does not generate an error but the compositor
+	zwp_tablet_pad_group_v2) does not generate an error but the compositor
 	is free to ignore the request.
 
 	The provided string 'description' is a UTF-8 encoded string to be
@@ -1065,7 +1110,7 @@
 	internationalization rules apply.
 
 	The serial argument will be that of the last
-	wp_tablet_pad_group.mode_switch event received for the group of this
+	zwp_tablet_pad_group_v2.mode_switch event received for the group of this
 	button. Requests providing other serials than the most recent one will
 	be ignored.
       </description>
@@ -1076,18 +1121,18 @@
 
     <request name="destroy" type="destructor">
       <description summary="destroy the pad object">
-	Destroy the wp_tablet_pad object. Objects created from this object
+	Destroy the zwp_tablet_pad_v2 object. Objects created from this object
 	are unaffected and should be destroyed separately.
       </description>
     </request>
 
     <event name="group">
       <description summary="group announced">
-	Sent on wp_tablet_pad initialization to announce available groups.
+	Sent on zwp_tablet_pad_v2 initialization to announce available groups.
 	One event is sent for each pad group available.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_pad.done event. At least one group will be announced.
+	zwp_tablet_pad_v2.done event. At least one group will be announced.
       </description>
       <arg name="pad_group" type="new_id" interface="zwp_tablet_pad_group_v2"/>
     </event>
@@ -1095,7 +1140,7 @@
     <event name="path">
       <description summary="path to the device">
 	A system-specific device path that indicates which device is behind
-	this wp_tablet_pad. This information may be used to gather additional
+	this zwp_tablet_pad_v2. This information may be used to gather additional
 	information about the device, e.g. through libwacom.
 
 	The format of the path is unspecified, it may be a device node, a
@@ -1103,18 +1148,18 @@
 	identify the string provided.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_pad.done event.
+	zwp_tablet_pad_v2.done event.
       </description>
       <arg name="path" type="string" summary="path to local device"/>
     </event>
 
     <event name="buttons">
       <description summary="buttons announced">
-	Sent on wp_tablet_pad initialization to announce the available
+	Sent on zwp_tablet_pad_v2 initialization to announce the available
 	buttons.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_pad.done event. This event is only sent when at least one
+	zwp_tablet_pad_v2.done event. This event is only sent when at least one
 	button is available.
       </description>
       <arg name="buttons" type="uint" summary="the number of buttons"/>
@@ -1170,9 +1215,83 @@
 	is removed its pad(s) will be removed too.
 
 	When this event is received, the client must destroy all rings, strips
-	and groups that were offered by this pad, and issue wp_tablet_pad.destroy
+	and groups that were offered by this pad, and issue zwp_tablet_pad_v2.destroy
 	the pad itself.
       </description>
+    </event>
+  </interface>
+
+  <interface name="zwp_tablet_pad_dial_v2" version="2">
+    <description summary="pad dial">
+      A rotary control, e.g. a dial or a wheel.
+
+      Events on a dial are logically grouped by the zwp_tablet_pad_dial_v2.frame
+      event.
+    </description>
+
+    <request name="set_feedback">
+      <description summary="set compositor feedback">
+	Requests the compositor to use the provided feedback string
+	associated with this dial. This request should be issued immediately
+	after a zwp_tablet_pad_group_v2.mode_switch event from the corresponding
+	group is received, or whenever the dial is mapped to a different
+	action. See zwp_tablet_pad_group_v2.mode_switch for more details.
+
+	Clients are encouraged to provide context-aware descriptions for
+	the actions associated with the dial, and compositors may use this
+	information to offer visual feedback about the button layout
+	(eg. on-screen displays).
+
+	The provided string 'description' is a UTF-8 encoded string to be
+	associated with this ring, and is considered user-visible; general
+	internationalization rules apply.
+
+	The serial argument will be that of the last
+	zwp_tablet_pad_group_v2.mode_switch event received for the group of this
+	dial. Requests providing other serials than the most recent one will be
+	ignored.
+      </description>
+      <arg name="description" type="string" summary="dial description"/>
+      <arg name="serial" type="uint" summary="serial of the mode switch event"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the dial object">
+	This destroys the client's resource for this dial object.
+      </description>
+    </request>
+
+    <event name="delta">
+      <description summary="delta movement">
+	Sent whenever the position on a dial changes.
+
+	This event carries the wheel delta as multiples or fractions
+	of 120 with each multiple of 120 representing one logical wheel detent.
+	For example, an axis_value120 of 30 is one quarter of
+	a logical wheel step in the positive direction, a value120 of
+	-240 are two logical wheel steps in the negative direction within the
+	same hardware event. See the wl_pointer.axis_value120 for more details.
+
+	The value120 must not be zero.
+      </description>
+      <arg name="value120" type="int" summary="rotation distance as fraction of 120"/>
+    </event>
+
+    <event name="frame">
+      <description summary="end of a dial event sequence">
+	Indicates the end of a set of events that represent one logical
+	hardware dial event. A client is expected to accumulate the data
+	in all events within the frame before proceeding.
+
+	All zwp_tablet_pad_dial_v2 events before a zwp_tablet_pad_dial_v2.frame event belong
+	logically together.
+
+	A zwp_tablet_pad_dial_v2.frame event is sent for every logical event
+	group, even if the group only contains a single zwp_tablet_pad_dial_v2
+	event. Specifically, a client may get a sequence: delta, frame,
+	delta, frame, etc.
+      </description>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
     </event>
   </interface>
 </protocol>

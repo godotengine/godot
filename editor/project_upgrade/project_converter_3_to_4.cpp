@@ -35,7 +35,9 @@
 #include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
+#include "core/os/keyboard.h"
 #include "core/os/time.h"
 #include "core/templates/list.h"
 #include "editor/project_upgrade/renames_map_3_to_4.h"
@@ -132,16 +134,16 @@ public:
 	RegEx keyword_csharp_mastersync = RegEx("\\[MasterSync(Attribute)?(\\(\\))?\\]");
 
 	// Colors.
-	LocalVector<RegEx *> color_regexes;
+	LocalVector<Ref<RegEx>> color_regexes;
 	LocalVector<String> color_renamed;
 
 	RegEx color_hexadecimal_short_constructor = RegEx("Color\\(\"#?([a-fA-F0-9]{1})([a-fA-F0-9]{3})\\b");
 	RegEx color_hexadecimal_full_constructor = RegEx("Color\\(\"#?([a-fA-F0-9]{2})([a-fA-F0-9]{6})\\b");
 
 	// Classes.
-	LocalVector<RegEx *> class_tscn_regexes;
-	LocalVector<RegEx *> class_gd_regexes;
-	LocalVector<RegEx *> class_shader_regexes;
+	LocalVector<Ref<RegEx>> class_tscn_regexes;
+	LocalVector<Ref<RegEx>> class_gd_regexes;
+	LocalVector<Ref<RegEx>> class_shader_regexes;
 
 	// Keycode.
 	RegEx input_map_keycode = RegEx("\\b,\"((physical_)?)scancode\":(\\d+)\\b");
@@ -155,7 +157,10 @@ public:
 	int joypad_button_mappings[23] = { 0, 1, 2, 3, 9, 10, -1 /*L2*/, -1 /*R2*/, 7, 8, 4, 6, 11, 12, 13, 14, 5, 15, 16, 17, 18, 19, 20 };
 	// Entries for L2 and R2 are -1 since they match to joypad axes and no longer to joypad buttons in Godot 4.
 
-	LocalVector<RegEx *> class_regexes;
+	// Animation suffixes.
+	RegEx animation_suffix = RegEx("([\"'])([a-zA-Z0-9_-]+)(-(?:loop|cycle))([\"'])");
+
+	LocalVector<Ref<RegEx>> class_regexes;
 
 	RegEx class_temp_tscn = RegEx("\\bTEMP_RENAMED_CLASS.tscn\\b");
 	RegEx class_temp_gd = RegEx("\\bTEMP_RENAMED_CLASS.gd\\b");
@@ -166,19 +171,19 @@ public:
 	LocalVector<String> class_temp_shader_renames;
 
 	// Common.
-	LocalVector<RegEx *> enum_regexes;
-	LocalVector<RegEx *> gdscript_function_regexes;
-	LocalVector<RegEx *> project_settings_regexes;
-	LocalVector<RegEx *> project_godot_regexes;
-	LocalVector<RegEx *> input_map_regexes;
-	LocalVector<RegEx *> gdscript_properties_regexes;
-	LocalVector<RegEx *> gdscript_signals_regexes;
-	LocalVector<RegEx *> shaders_regexes;
-	LocalVector<RegEx *> builtin_types_regexes;
-	LocalVector<RegEx *> theme_override_regexes;
-	LocalVector<RegEx *> csharp_function_regexes;
-	LocalVector<RegEx *> csharp_properties_regexes;
-	LocalVector<RegEx *> csharp_signal_regexes;
+	LocalVector<Ref<RegEx>> enum_regexes;
+	LocalVector<Ref<RegEx>> gdscript_function_regexes;
+	LocalVector<Ref<RegEx>> project_settings_regexes;
+	LocalVector<Ref<RegEx>> project_godot_regexes;
+	LocalVector<Ref<RegEx>> input_map_regexes;
+	LocalVector<Ref<RegEx>> gdscript_properties_regexes;
+	LocalVector<Ref<RegEx>> gdscript_signals_regexes;
+	LocalVector<Ref<RegEx>> shaders_regexes;
+	LocalVector<Ref<RegEx>> builtin_types_regexes;
+	LocalVector<Ref<RegEx>> theme_override_regexes;
+	LocalVector<Ref<RegEx>> csharp_function_regexes;
+	LocalVector<Ref<RegEx>> csharp_properties_regexes;
+	LocalVector<Ref<RegEx>> csharp_signal_regexes;
 
 	RegExContainer() {
 		// Common.
@@ -258,56 +263,6 @@ public:
 				class_temp_gd_renames.push_back(class_name + ".gd");
 				class_temp_shader_renames.push_back(class_name + ".shader");
 			}
-		}
-	}
-	~RegExContainer() {
-		for (RegEx *regex : color_regexes) {
-			memdelete(regex);
-		}
-		for (unsigned int i = 0; i < class_tscn_regexes.size(); i++) {
-			memdelete(class_tscn_regexes[i]);
-			memdelete(class_gd_regexes[i]);
-			memdelete(class_shader_regexes[i]);
-			memdelete(class_regexes[i]);
-		}
-		for (RegEx *regex : enum_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : gdscript_function_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : project_settings_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : project_godot_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : input_map_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : gdscript_properties_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : gdscript_signals_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : shaders_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : builtin_types_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : theme_override_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : csharp_function_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : csharp_properties_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : csharp_signal_regexes) {
-			memdelete(regex);
 		}
 	}
 };
@@ -406,6 +361,7 @@ bool ProjectConverter3To4::convert() {
 				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, source_lines);
 				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, source_lines);
 				rename_common(RenamesMap3To4::theme_override_renames, reg_container.theme_override_regexes, source_lines);
+				rename_animation_suffixes(source_lines, reg_container);
 
 				custom_rename(source_lines, "\\.shader", ".gdshader");
 
@@ -428,6 +384,7 @@ bool ProjectConverter3To4::convert() {
 				rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, source_lines);
 				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, source_lines);
 				rename_common(RenamesMap3To4::theme_override_renames, reg_container.theme_override_regexes, source_lines);
+				rename_animation_suffixes(source_lines, reg_container);
 
 				custom_rename(source_lines, "\\.shader", ".gdshader");
 
@@ -598,6 +555,7 @@ bool ProjectConverter3To4::validate_conversion() {
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::theme_override_renames, reg_container.theme_override_regexes, lines));
+				changed_elements.append_array(check_for_rename_animation_suffixes(lines, reg_container));
 
 				changed_elements.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
 			} else if (file_name.ends_with(".tscn")) {
@@ -616,6 +574,7 @@ bool ProjectConverter3To4::validate_conversion() {
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::shaders_renames, reg_container.shaders_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::theme_override_renames, reg_container.theme_override_regexes, lines));
+				changed_elements.append_array(check_for_rename_animation_suffixes(lines, reg_container));
 
 				changed_elements.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
 			} else if (file_name.ends_with(".cs")) {
@@ -763,7 +722,7 @@ bool ProjectConverter3To4::test_conversion_with_regex(const String &name, const 
 	return true;
 }
 
-bool ProjectConverter3To4::test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, const String &what) {
+bool ProjectConverter3To4::test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<Ref<RegEx>> &regex_cache, const String &what) {
 	Vector<SourceLine> got = split_lines(name);
 
 	rename_common(array, regex_cache, got);
@@ -1191,8 +1150,8 @@ bool ProjectConverter3To4::test_array_names() {
 		//	}
 		//}
 
-		List<StringName> classes_list;
-		ClassDB::get_class_list(&classes_list);
+		LocalVector<StringName> classes_list;
+		ClassDB::get_class_list(classes_list);
 		for (StringName &name_of_class : classes_list) {
 			List<MethodInfo> method_list;
 			ClassDB::get_method_list(name_of_class, &method_list, true);
@@ -2832,6 +2791,43 @@ Vector<String> ProjectConverter3To4::check_for_rename_input_map_scancode(Vector<
 	return found_renames;
 }
 
+void ProjectConverter3To4::rename_animation_suffixes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+		String &line = source_line.line;
+		if (uint64_t(line.length()) <= maximum_line_length) {
+			TypedArray<RegExMatch> reg_match = reg_container.animation_suffix.search_all(line);
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				String replacement = strings[1] + strings[2] + strings[4];
+				line = line.replace(strings[0], replacement);
+			}
+		}
+	}
+}
+
+Vector<String> ProjectConverter3To4::check_for_rename_animation_suffixes(Vector<String> &lines, const RegExContainer &reg_container) {
+	Vector<String> found_renames;
+	int current_line = 1;
+
+	for (String &line : lines) {
+		if (uint64_t(line.length()) <= maximum_line_length) {
+			TypedArray<RegExMatch> reg_match = reg_container.animation_suffix.search_all(line);
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				String replacement = strings[1] + strings[2] + strings[4];
+				found_renames.append(line_formatter(current_line, strings[0], replacement, line));
+			}
+		}
+		current_line++;
+	}
+	return found_renames;
+}
+
 void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, const String &from, const String &to) {
 	RegEx reg = RegEx(String("\\b") + from + "\\b");
 	CRASH_COND(!reg.is_valid());
@@ -2866,7 +2862,7 @@ Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lin
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<SourceLine> &source_lines) {
+void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<Ref<RegEx>> &cached_regexes, Vector<SourceLine> &source_lines) {
 	for (SourceLine &source_line : source_lines) {
 		if (source_line.is_comment) {
 			continue;
@@ -2883,7 +2879,7 @@ void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<Reg
 	}
 }
 
-Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines) {
+Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[][2], LocalVector<Ref<RegEx>> &cached_regexes, Vector<String> &lines) {
 	Vector<String> found_renames;
 
 	int current_line = 1;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PCKPacker" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PCKPacker" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Creates packages that can be loaded into a running project.
 	</brief_description>
@@ -32,6 +32,15 @@
 			<param index="2" name="encrypt" type="bool" default="false" />
 			<description>
 				Adds the [param source_path] file to the current PCK package at the [param target_path] internal path. The [code]res://[/code] prefix for [param target_path] is optional and stripped internally. File content is immediately written to the PCK.
+			</description>
+		</method>
+		<method name="add_file_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="target_path" type="String" />
+			<param index="1" name="data" type="PackedByteArray" />
+			<param index="2" name="encrypt" type="bool" default="false" />
+			<description>
+				Adds the [param data] to the current PCK package at the [param target_path] internal path. The [code]res://[/code] prefix for [param target_path] is optional and stripped internally. File content is immediately written to the PCK.
 			</description>
 		</method>
 		<method name="add_file_removal">

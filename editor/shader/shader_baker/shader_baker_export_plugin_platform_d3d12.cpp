@@ -34,7 +34,7 @@
 
 #include <windows.h>
 
-RenderingShaderContainerFormat *ShaderBakerExportPluginPlatformD3D12::create_shader_container_format(const Ref<EditorExportPlatform> &p_platform) {
+RenderingShaderContainerFormat *ShaderBakerExportPluginPlatformD3D12::create_shader_container_format(const Ref<EditorExportPlatform> &p_platform, const Ref<EditorExportPreset> &p_preset) {
 	if (lib_d3d12 == nullptr) {
 		lib_d3d12 = LoadLibraryW(L"D3D12.dll");
 		ERR_FAIL_NULL_V_MSG(lib_d3d12, nullptr, "Unable to load D3D12.dll.");

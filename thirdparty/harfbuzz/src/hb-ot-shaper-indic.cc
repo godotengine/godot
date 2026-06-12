@@ -296,11 +296,6 @@ struct indic_shape_plan_t
   const indic_config_t *config;
 
   bool is_old_spec;
-#ifndef HB_NO_UNISCRIBE_BUG_COMPATIBLE
-  bool uniscribe_bug_compatible;
-#else
-  static constexpr bool uniscribe_bug_compatible = false;
-#endif
   mutable hb_atomic_t<hb_codepoint_t> virama_glyph;
 
   hb_indic_would_substitute_feature_t rphf;
@@ -327,9 +322,6 @@ data_create_indic (const hb_ot_shape_plan_t *plan)
     }
 
   indic_plan->is_old_spec = indic_plan->config->has_old_spec && ((plan->map.chosen_script[0] & 0x000000FFu) != '2');
-#ifndef HB_NO_UNISCRIBE_BUG_COMPATIBLE
-  indic_plan->uniscribe_bug_compatible = hb_options ().uniscribe_bug_compatible;
-#endif
   indic_plan->virama_glyph = -1;
 
   /* Use zero-context would_substitute() matching for new-spec of the main
@@ -943,17 +935,7 @@ initial_reordering_standalone_cluster (const hb_ot_shape_plan_t *plan,
 				       unsigned int start, unsigned int end)
 {
   /* We treat placeholder/dotted-circle as if they are consonants, so we
-   * should just chain.  Only if not in compatibility mode that is... */
-
-  const indic_shape_plan_t *indic_plan = (const indic_shape_plan_t *) plan->data;
-  if (indic_plan->uniscribe_bug_compatible)
-  {
-    /* For dotted-circle, this is what Uniscribe does:
-     * If dotted-circle is the last glyph, it just does nothing.
-     * Ie. It doesn't form Reph. */
-    if (buffer->info[end - 1].indic_category() == I_Cat(DOTTEDCIRCLE))
-      return;
-  }
+   * should just chain... */
 
   initial_reordering_consonant_syllable (plan, face, buffer, start, end);
 }
@@ -1347,8 +1329,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
        * Uniscribe doesn't do this.
        * TEST: U+0930,U+094D,U+0915,U+094B,U+094D
        */
-      if (!indic_plan->uniscribe_bug_compatible &&
-	  unlikely (is_halant (info[new_reph_pos])))
+      if (unlikely (is_halant (info[new_reph_pos])))
       {
 	for (unsigned int i = base + 1; i < new_reph_pos; i++)
 	  if (FLAG_UNSAFE (info[i].indic_category()) & (FLAG (I_Cat(M)) | FLAG (I_Cat(MPst))))
@@ -1451,27 +1432,6 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
     else
       buffer->unsafe_to_break (start - 1, start + 1);
   }
-
-
-  /*
-   * Finish off the clusters and go home!
-   */
-  if (indic_plan->uniscribe_bug_compatible)
-  {
-    switch ((hb_tag_t) plan->props.script)
-    {
-      case HB_SCRIPT_TAMIL:
-	break;
-
-      default:
-	/* Uniscribe merges the entire syllable into a single cluster... Except for Tamil.
-	 * This means, half forms are submerged into the main consonant's cluster.
-	 * This is unnecessary, and makes cursor positioning harder, but that's what
-	 * Uniscribe does. */
-	buffer->merge_clusters (start, end);
-	break;
-    }
-  }
 }
 
 
@@ -1501,9 +1461,7 @@ preprocess_text_indic (const hb_ot_shape_plan_t *plan,
 		       hb_buffer_t              *buffer,
 		       hb_font_t                *font)
 {
-  const indic_shape_plan_t *indic_plan = (const indic_shape_plan_t *) plan->data;
-  if (!indic_plan->uniscribe_bug_compatible)
-    _hb_preprocess_text_vowel_constraints (plan, buffer, font);
+  _hb_preprocess_text_vowel_constraints (plan, buffer, font);
 }
 
 static bool

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Font" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Font" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for fonts and font variations.
 	</brief_description>
@@ -125,6 +125,8 @@
 			<param index="6" name="spacing_space" type="int" default="0" />
 			<param index="7" name="spacing_glyph" type="int" default="0" />
 			<param index="8" name="baseline_offset" type="float" default="0.0" />
+			<param index="9" name="palette_index" type="int" default="0" />
+			<param index="10" name="custom_colors" type="PackedColorArray" default="PackedColorArray()" />
 			<description>
 				Returns [TextServer] RID of the font cache for specific variation.
 			</description>
@@ -133,7 +135,7 @@
 			<return type="float" />
 			<param index="0" name="font_size" type="int" default="16" />
 			<description>
-				Returns the average font ascent (number of pixels above the baseline).
+				Returns the maximum font ascent (number of pixels above the baseline) of this font and all fallback fonts.
 				[b]Note:[/b] Real ascent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the ascent of empty line).
 			</description>
 		</method>
@@ -150,7 +152,7 @@
 			<return type="float" />
 			<param index="0" name="font_size" type="int" default="16" />
 			<description>
-				Returns the average font descent (number of pixels below the baseline).
+				Returns the maximum font descent (number of pixels below the baseline) of this font and all fallback fonts.
 				[b]Note:[/b] Real descent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the descent of empty line).
 			</description>
 		</method>
@@ -224,6 +226,26 @@
 			<return type="Dictionary" />
 			<description>
 				Returns [Dictionary] with OpenType font name strings (localized font names, version, description, license information, sample text, etc.).
+			</description>
+		</method>
+		<method name="get_palette_colors" qualifiers="const">
+			<return type="PackedColorArray" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the array in the predefined color palette at [param index]. Palette contains all colors used to render font glyphs. Each palette has the same number of colors. Colors can be overridden using [FontVariation].
+			</description>
+		</method>
+		<method name="get_palette_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of predefined color palettes. Palette contains all colors used to render font glyphs. Each palette has the same number of colors.
+			</description>
+		</method>
+		<method name="get_palette_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the name of the predefined color palette at [param index]. Palette contains all colors used to render font glyphs. Each palette has the same number of colors.
 			</description>
 		</method>
 		<method name="get_rids" qualifiers="const">
@@ -322,14 +344,14 @@
 			<return type="bool" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
+				Returns [code]true[/code] if the font supports the given language (as a [url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
 			</description>
 		</method>
 		<method name="is_script_supported" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="script" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given script ([url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
+				Returns [code]true[/code] if the font supports the given script (as a [url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
 			</description>
 		</method>
 		<method name="set_cache_capacity">

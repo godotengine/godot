@@ -33,7 +33,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
@@ -124,8 +123,6 @@ private:
 	int total_metrics = 0;
 	int last_metric = -1;
 
-	int max_functions = 0;
-
 	bool updating_frame = false;
 
 	int hover_metric = -1;
@@ -165,7 +162,7 @@ private:
 
 	void _combo_changed(int);
 
-	Metric _get_frame_metric(int index);
+	const Metric &_get_frame_metric(int index) const;
 
 protected:
 	void _notification(int p_what);
