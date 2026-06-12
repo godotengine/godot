@@ -575,6 +575,13 @@
 				Adds a [code skip-lint][p][/code] tag to the tag stack.
 			</description>
 		</method>
+		<method name="push_ruby">
+			<return type="void" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Adds a [code skip-lint][ruby][/code] tag to the tag stack. The [param text] is used to provide the inline ruby/furigana annotation for the upcoming base text.
+			</description>
+		</method>
 		<method name="push_strikethrough">
 			<return type="void" />
 			<param index="0" name="color" type="Color" default="Color(0, 0, 0, 0)" />
