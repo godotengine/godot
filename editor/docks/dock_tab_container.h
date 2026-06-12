@@ -46,11 +46,11 @@ class EditorDockDragHint : public Control {
 	Control *drop_tabbar_parent = nullptr;
 	TabBar *drop_tabbar = nullptr;
 
-	Color valid_drop_color;
 	Ref<StyleBoxFlat> dock_drop_highlight;
 	bool can_drop_dock = false;
 	bool mouse_inside = false;
 	bool mouse_inside_tabbar = false;
+	bool highlighted = false;
 
 	void _drag_move_tab(int p_from_index, int p_to_index);
 	void _drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
@@ -64,6 +64,7 @@ protected:
 
 public:
 	void set_slot(DockTabContainer *p_slot);
+	void set_highlighted(bool p_highlighted);
 
 	EditorDockDragHint();
 };
@@ -111,6 +112,7 @@ public:
 	void set_dock_context_popup(DockContextPopup *p_popup);
 	EditorDock *get_dock(int p_idx) const;
 	void show_drag_hint();
+	EditorDockDragHint *get_drag_hint() const { return drag_hint; }
 
 	static Rect2 get_default_floating_dock_rect(EditorDock *p_dock);
 
