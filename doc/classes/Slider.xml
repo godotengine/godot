@@ -17,6 +17,9 @@
 			If [code]true[/code], the value can be changed using the mouse wheel.
 		</member>
 		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
+		<member name="symmetric_fill" type="bool" setter="set_symmetric_fill" getter="is_symmetric_fill" default="false">
+			If [code]true[/code], the slider's grabber will be filled from the point representing the 0.0 value to the point of the current value.
+		</member>
 		<member name="tick_count" type="int" setter="set_ticks" getter="get_ticks" default="0">
 			Number of ticks displayed on the slider, including border ticks. Ticks are uniformly-distributed value markers.
 		</member>
