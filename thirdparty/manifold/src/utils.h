@@ -34,27 +34,7 @@
 
 #include "parallel.h"
 
-#if __has_include(<tracy/Tracy.hpp>)
-#include <tracy/Tracy.hpp>
-#else
-#define FrameMarkStart(x)
-#define FrameMarkEnd(x)
-// putting ZoneScoped in a function will instrument the function execution when
-// TRACY_ENABLE is set, which allows the profiler to record more accurate
-// timing.
-#define ZoneScoped
-#define ZoneScopedN(name)
-#endif
-
 namespace manifold {
-
-/**
- * Stand-in for C++23's operator""uz (P0330R8)[https://wg21.link/P0330R8].
- */
-[[nodiscard]] constexpr std::size_t operator""_uz(
-    unsigned long long n) noexcept {
-  return n;
-}
 
 constexpr double kPrecision = 1e-12;
 
