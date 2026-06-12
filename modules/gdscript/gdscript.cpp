@@ -70,10 +70,16 @@ GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
 
 bool GDScriptNativeClass::_get(const StringName &p_name, Variant &r_ret) const {
 	bool ok;
-	int64_t v = ClassDB::get_integer_constant(name, p_name, &ok);
 
+	int64_t v = ClassDB::get_integer_constant(name, p_name, &ok);
 	if (ok) {
 		r_ret = v;
+		return true;
+	}
+
+	Variant vv = ClassDB::get_variant_constant(name, p_name, &ok);
+	if (ok) {
+		r_ret = vv;
 		return true;
 	}
 
