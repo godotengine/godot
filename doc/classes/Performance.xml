@@ -232,6 +232,9 @@
 		<constant name="NAVIGATION_OBSTACLE_COUNT" value="33" enum="Monitor">
 			Number of active navigation obstacles in the [NavigationServer2D] and [NavigationServer3D].
 		</constant>
+		<constant name="NAVIGATION_AREA_COUNT" value="60" enum="Monitor">
+			Number of baked navigation areas in the [NavigationServer3D].
+		</constant>
 		<constant name="PIPELINE_COMPILATIONS_CANVAS" value="34" enum="Monitor">
 			Number of pipeline compilations that were triggered by the 2D canvas renderer.
 		</constant>
@@ -307,7 +310,10 @@
 		<constant name="NAVIGATION_3D_OBSTACLE_COUNT" value="58" enum="Monitor">
 			Number of active navigation obstacles in the [NavigationServer3D].
 		</constant>
-		<constant name="MONITOR_MAX" value="59" enum="Monitor">
+		<constant name="NAVIGATION_3D_AREA_COUNT" value="59" enum="Monitor">
+			Number of active navigation areas in the [NavigationServer3D].
+		</constant>
+		<constant name="MONITOR_MAX" value="61" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
 		</constant>
 		<constant name="MONITOR_TYPE_QUANTITY" value="0" enum="MonitorType">

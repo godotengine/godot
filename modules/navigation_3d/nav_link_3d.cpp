@@ -102,6 +102,7 @@ void NavLink3D::set_navigation_layers(uint32_t p_navigation_layers) {
 	request_sync();
 }
 
+#ifndef DISABLE_DEPRECATED
 void NavLink3D::set_enter_cost(real_t p_enter_cost) {
 	real_t new_enter_cost = MAX(p_enter_cost, 0.0);
 	if (enter_cost == new_enter_cost) {
@@ -123,6 +124,7 @@ void NavLink3D::set_travel_cost(real_t p_travel_cost) {
 
 	request_sync();
 }
+#endif // DISABLE_DEPRECATED
 
 void NavLink3D::set_owner_id(ObjectID p_owner_id) {
 	if (owner_id == p_owner_id) {
@@ -162,8 +164,10 @@ void NavLink3D::_build_iteration() {
 	new_iteration.instantiate();
 
 	new_iteration->navigation_layers = get_navigation_layers();
+#ifndef DISABLE_DEPRECATED
 	new_iteration->enter_cost = get_enter_cost();
 	new_iteration->travel_cost = get_travel_cost();
+#endif // DISABLE_DEPRECATED
 	new_iteration->owner_object_id = get_owner_id();
 	new_iteration->owner_type = get_type();
 	new_iteration->owner_rid = get_self();

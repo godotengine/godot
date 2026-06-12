@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationMeshAreaBox3D" inherits="NavigationMeshArea3D" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An axis-aligned box shape to affect the navigation mesh baking.
+	</brief_description>
+	<description>
+		An axis-aligned area that draws a box shape detail onto the baked navigation mesh.
+		[b]Note:[/b] To guarantee that the area affects the intended [NavigationMesh], make sure that
+		1. the area's bounds must intersect with the source geometry, and
+		2. the [member NavigationMeshArea3D.navigation_layers] are different from the [NavigationRegion3D] you intend to bake with.
+		[b]Note:[/b]: Rotation is limited to the y-axis. Scaling should be done uniformly, if at all.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
+			The size of the projected box on the xzy-axis.
+			[b]Note:[/b] Changes require a re-baking of this area to the region.
+		</member>
+	</members>
+</class>

@@ -99,6 +99,11 @@ void NavigationRegion3DEditor::_bake_pressed() {
 			err_dialog->popup_centered();
 			return;
 		}
+		if (region->get_navigation_layers() == 0) {
+			err_dialog->set_text(TTR("At least one navigation layers flag in the region must be active."));
+			err_dialog->popup_centered();
+			return;
+		}
 
 		String path = navmesh->get_path();
 		if (!path.is_resource_file()) {
@@ -214,6 +219,8 @@ void NavigationRegion3DEditor::_clear_pressed() {
 		for (NavigationRegion3D *region : selected_regions) {
 			if (region->get_navigation_mesh().is_valid()) {
 				region->get_navigation_mesh()->clear();
+				// Region's inspector has custom properties. While the clear()-call above also notifies a change, it does not propagate to the region.
+				region->notify_property_list_changed();
 				region->update_gizmos();
 			}
 		}

@@ -116,7 +116,6 @@ void NavRegion3D::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 #endif // DEBUG_ENABLED
 
 	navmesh = p_navigation_mesh;
-
 	iteration_dirty = true;
 
 	request_sync();
@@ -155,6 +154,7 @@ void NavRegion3D::set_navigation_layers(uint32_t p_navigation_layers) {
 	request_sync();
 }
 
+#ifndef DISABLE_DEPRECATED
 void NavRegion3D::set_enter_cost(real_t p_enter_cost) {
 	real_t new_enter_cost = MAX(p_enter_cost, 0.0);
 	if (enter_cost == new_enter_cost) {
@@ -176,6 +176,7 @@ void NavRegion3D::set_travel_cost(real_t p_travel_cost) {
 
 	request_sync();
 }
+#endif // DISABLE_DEPRECATED
 
 void NavRegion3D::set_owner_id(ObjectID p_owner_id) {
 	if (owner_id == p_owner_id) {
@@ -185,6 +186,60 @@ void NavRegion3D::set_owner_id(ObjectID p_owner_id) {
 	iteration_dirty = true;
 
 	request_sync();
+}
+
+Vector<uint16_t> NavRegion3D::get_area_ids() const {
+	RWLockRead read_lock(iteration_rwlock);
+
+	if (navmesh.is_valid()) {
+		return navmesh->get_area_ids();
+	}
+
+	return Vector<uint16_t>();
+}
+
+int NavRegion3D::get_area_count() const {
+	RWLockRead read_lock(iteration_rwlock);
+
+	if (navmesh.is_valid()) {
+		return navmesh->get_area_count();
+	}
+
+	return 0;
+}
+
+void NavRegion3D::set_area_navigation_layers(uint16_t p_area_id, uint32_t layers) {
+	if (!navmesh.is_valid() || navmesh->get_area_navigation_layers(p_area_id) == layers) {
+		return;
+	}
+	navmesh->set_area_navigation_layers(p_area_id, layers);
+	iteration_dirty = true;
+
+	request_sync();
+}
+
+uint32_t NavRegion3D::get_area_navigation_layers(uint16_t p_area_id) const {
+	if (navmesh.is_valid()) {
+		return navmesh->get_area_navigation_layers(p_area_id);
+	}
+	return 0;
+}
+
+void NavRegion3D::set_area_navigation_layers_at_index(uint16_t p_area_index, uint32_t layers) {
+	if (!navmesh.is_valid() || navmesh->get_area_navigation_layers_at_index(p_area_index) == layers) {
+		return;
+	}
+	navmesh->set_area_navigation_layers_at_index(p_area_index, layers);
+	iteration_dirty = true;
+
+	request_sync();
+}
+
+uint32_t NavRegion3D::get_area_navigation_layers_at_index(uint16_t p_area_index) const {
+	if (navmesh.is_valid()) {
+		return navmesh->get_area_navigation_layers_at_index(p_area_index);
+	}
+	return 0;
 }
 
 void NavRegion3D::scratch_polygons() {
@@ -251,7 +306,8 @@ void NavRegion3D::_build_iteration() {
 	iteration_build.reset();
 
 	if (navmesh.is_valid()) {
-		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons);
+		// Read data from latest bake result. Also containing latest changes to navigation layers of area-created polygons.
+		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta, iteration_build.navmesh_data.area_navlayers, iteration_build.navmesh_data.area_indices);
 	}
 
 	iteration_build.map_cell_size = map->get_merge_rasterizer_cell_size();
@@ -259,9 +315,12 @@ void NavRegion3D::_build_iteration() {
 	Ref<NavRegionIteration3D> new_iteration;
 	new_iteration.instantiate();
 
+	// Apply potential changes.
 	new_iteration->navigation_layers = get_navigation_layers();
+#ifndef DISABLE_DEPRECATED
 	new_iteration->enter_cost = get_enter_cost();
 	new_iteration->travel_cost = get_travel_cost();
+#endif // DISABLE_DEPRECATED
 	new_iteration->owner_object_id = get_owner_id();
 	new_iteration->owner_type = get_type();
 	new_iteration->owner_rid = get_self();

@@ -41,6 +41,16 @@ using namespace Nav3D;
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
 
+float NavMeshQueries3D::_get_polygon_travel_cost(const Polygon *p_polygon, const LocalVector<int> &p_layer_cost_indices, const LocalVector<float> &p_layer_cost) {
+	for (uint8_t i = 0; i < p_layer_cost_indices.size(); i++) {
+		uint32_t layer = p_layer_cost_indices[i];
+		if (p_polygon->navigation_layers & 1 << layer) {
+			return p_layer_cost[i];
+		}
+	}
+	return 1.0; // Default cost.
+}
+
 bool NavMeshQueries3D::emit_callback(const Callable &p_callback) {
 	ERR_FAIL_COND_V(!p_callback.is_valid(), false);
 
@@ -153,9 +163,24 @@ void NavMeshQueries3D::map_query_path(NavMap3D *map, const Ref<NavigationPathQue
 	using namespace NavigationDefaults3D;
 
 	NavMeshQueries3D::NavMeshPathQueryTask3D query_task;
+
+	Ref<NavigationLayersCostMap3D> navigation_layers_cost_map = p_query_parameters->get_navigation_layers_cost_map();
+	if (!navigation_layers_cost_map.is_null()) {
+		// Get the changed costs we're interested in.
+		Vector<Pair<uint8_t, float>> _cost_map = navigation_layers_cost_map->get_navigation_layers_cost_map_sorted(p_query_parameters->get_navigation_layers());
+		uint8_t _cost_map_len = uint8_t(_cost_map.size());
+		query_task.layer_cost_indices.resize(_cost_map_len);
+		query_task.layer_cost.resize(_cost_map_len);
+		for (uint8_t i = 0; i < _cost_map_len; i++) {
+			const Pair<uint8_t, float> e = _cost_map[i];
+			query_task.layer_cost_indices[i] = e.first;
+			query_task.layer_cost[i] = e.second;
+		}
+	}
+
 	query_task.start_position = p_query_parameters->get_start_position();
 	query_task.target_position = p_query_parameters->get_target_position();
-	query_task.navigation_layers = p_query_parameters->get_navigation_layers();
+	query_task.navigation_layers = p_query_parameters->get_navigation_layers(); // The navigation layers our agent can walk on.
 	query_task.callback = p_callback;
 
 	const TypedArray<RID> &_excluded_regions = p_query_parameters->get_excluded_regions();
@@ -241,14 +266,14 @@ void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 	const LocalVector<Ref<NavRegionIteration3D>> &regions = p_map_iteration.region_iterations;
 
 	for (const Ref<NavRegionIteration3D> &region : regions) {
-		if (!_query_task_is_connection_owner_usable(p_query_task, region.ptr())) {
+		if (!_query_task_is_connection_owner_usable(p_query_task, region.ptr(), region->get_navigation_layers())) {
 			continue;
 		}
 
 		// Find the initial poly and the end poly on this map.
 		for (const Polygon &p : region->get_navmesh_polygons()) {
-			// Only consider the polygon if it in a region with compatible layers.
-			if ((p_query_task.navigation_layers & p.owner->get_navigation_layers()) == 0) {
+			// Only consider the polygon if there's _any_ overlapping layer.
+			if ((p_query_task.navigation_layers & p.navigation_layers) == 0) {
 				continue;
 			}
 
@@ -276,10 +301,13 @@ void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 	}
 }
 
-void NavMeshQueries3D::_query_task_search_polygon_connections(NavMeshPathQueryTask3D &p_query_task, const Connection &p_connection, uint32_t p_least_cost_id, const NavigationPoly &p_least_cost_poly, real_t p_poly_enter_cost, const Vector3 &p_end_point) {
+void NavMeshQueries3D::_query_task_search_polygon_connections(NavMeshPathQueryTask3D &p_query_task, const Connection &p_connection, uint32_t p_least_cost_id, const NavigationPoly &p_least_cost_poly, const Vector3 &p_end_point) {
+	// Check the neighbor polygon (p_connection.polygon) of this polygon (p_least_cost_poly.poly; could be a NavivationLink).
+	// Add suitable polys to `p_query_task.path_query_slot->traversable_polys` and update traveled_distance as well as distance_to_destination in correspondence with traversal costs.
+
 	const NavBaseIteration3D *connection_owner = p_connection.polygon->owner;
 	ERR_FAIL_NULL(connection_owner);
-	const bool owner_is_usable = _query_task_is_connection_owner_usable(p_query_task, connection_owner);
+	const bool owner_is_usable = _query_task_is_connection_owner_usable(p_query_task, connection_owner, p_connection.polygon->navigation_layers);
 	if (!owner_is_usable) {
 		return;
 	}
@@ -288,10 +316,9 @@ void NavMeshQueries3D::_query_task_search_polygon_connections(NavMeshPathQueryTa
 			&traversable_polys = p_query_task.path_query_slot->traversable_polys;
 	LocalVector<NavigationPoly> &navigation_polys = p_query_task.path_query_slot->path_corridor;
 
-	real_t poly_travel_cost = p_least_cost_poly.poly->owner->get_travel_cost();
-
+	real_t poly_travel_cost = _get_polygon_travel_cost(p_least_cost_poly.poly, p_query_task.layer_cost_indices, p_query_task.layer_cost);
 	Vector3 new_entry = Geometry3D::get_closest_point_to_segment(p_least_cost_poly.entry, p_connection.pathway_start, p_connection.pathway_end);
-	real_t new_traveled_distance = p_least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost + p_poly_enter_cost + p_least_cost_poly.traveled_distance;
+	const real_t new_traveled_distance = p_least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost + p_least_cost_poly.traveled_distance;
 
 	// Check if the neighbor polygon has already been processed.
 	NavigationPoly &neighbor_poly = navigation_polys[p_query_task.path_query_slot->poly_to_id[p_connection.polygon]];
@@ -302,9 +329,8 @@ void NavMeshQueries3D::_query_task_search_polygon_connections(NavMeshPathQueryTa
 		neighbor_poly.back_navigation_edge_pathway_start = p_connection.pathway_start;
 		neighbor_poly.back_navigation_edge_pathway_end = p_connection.pathway_end;
 		neighbor_poly.traveled_distance = new_traveled_distance;
-		neighbor_poly.distance_to_destination =
-				new_entry.distance_to(p_end_point) *
-				connection_owner->get_travel_cost();
+		real_t poly_destination_cost = _get_polygon_travel_cost(p_connection.polygon, p_query_task.layer_cost_indices, p_query_task.layer_cost);
+		neighbor_poly.distance_to_destination = new_entry.distance_to(p_end_point) * poly_destination_cost;
 		neighbor_poly.entry = new_entry;
 
 		if (neighbor_poly.traversable_poly_index != traversable_polys.INVALID_INDEX) {
@@ -333,8 +359,11 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 		polygon.reset();
 	}
 
+	uint32_t least_cost_id = p_query_task.path_query_slot->poly_to_id[begin_poly];
+	bool found_route = false;
+
 	// Initialize the matching navigation polygon.
-	NavigationPoly &begin_navigation_poly = navigation_polys[p_query_task.path_query_slot->poly_to_id[begin_poly]];
+	NavigationPoly &begin_navigation_poly = navigation_polys[least_cost_id];
 	begin_navigation_poly.poly = begin_poly;
 	begin_navigation_poly.entry = begin_point;
 	begin_navigation_poly.back_navigation_edge_pathway_start = begin_point;
@@ -342,13 +371,9 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 	begin_navigation_poly.traveled_distance = 0.f;
 
 	// This is an implementation of the A* algorithm.
-	uint32_t least_cost_id = p_query_task.path_query_slot->poly_to_id[begin_poly];
-	bool found_route = false;
-
 	const Polygon *reachable_end = nullptr;
 	real_t distance_to_reachable_end = FLT_MAX;
 	bool is_reachable = true;
-	real_t poly_enter_cost = 0.0;
 
 	const HashMap<const NavBaseIteration3D *, LocalVector<LocalVector<Nav3D::Connection>>> &navbases_polygons_external_connections = p_map_iteration.navbases_polygons_external_connections;
 
@@ -366,7 +391,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 	while (true) {
 		const NavigationPoly &least_cost_poly = navigation_polys[least_cost_id];
 
-		const NavBaseIteration3D *least_cost_navbase = least_cost_poly.poly->owner;
+		const NavBaseIteration3D *least_cost_navbase = least_cost_poly.poly->owner; // Navigation region or link.
 
 		processed_polygon_count += 1;
 
@@ -376,14 +401,15 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 		if (navbase_polygons_to_connections.size() > 0) {
 			const LocalVector<Connection> &polygon_connections = navbase_polygons_to_connections[navbase_local_polygon_id];
 
+			// Search polygon connections (i.e. that share the same edge) within the same region (navmesh).
 			for (const Connection &connection : polygon_connections) {
-				_query_task_search_polygon_connections(p_query_task, connection, least_cost_id, least_cost_poly, poly_enter_cost, end_point);
+				_query_task_search_polygon_connections(p_query_task, connection, least_cost_id, least_cost_poly, end_point);
 			}
 		}
 
 		// Search region external navmesh polygon connections, aka connections to other regions created by outline edge merge or links.
 		for (const Connection &connection : navbases_polygons_external_connections[least_cost_navbase][navbase_local_polygon_id]) {
-			_query_task_search_polygon_connections(p_query_task, connection, least_cost_id, least_cost_poly, poly_enter_cost, end_point);
+			_query_task_search_polygon_connections(p_query_task, connection, least_cost_id, least_cost_poly, end_point);
 		}
 
 		if (has_path_search_max && !path_search_max_reached) {
@@ -396,7 +422,6 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 			}
 		}
 
-		poly_enter_cost = 0;
 		// When the heap of traversable polygons is empty at this point it means the end polygon is
 		// unreachable.
 		if (traversable_polys.is_empty()) {
@@ -472,11 +497,6 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 			if (navigation_polys[least_cost_id].poly == end_poly) {
 				found_route = true;
 				break;
-			}
-
-			if (navigation_polys[least_cost_id].poly->owner->get_self() != least_cost_poly.poly->owner->get_self()) {
-				ERR_FAIL_NULL(least_cost_poly.poly->owner);
-				poly_enter_cost = least_cost_poly.poly->owner->get_enter_cost();
 			}
 		}
 	}
@@ -1278,18 +1298,18 @@ void NavMeshQueries3D::_query_task_clip_path(NavMeshPathQueryTask3D &p_query_tas
 	}
 }
 
-bool NavMeshQueries3D::_query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner) {
+bool NavMeshQueries3D::_query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner, uint32_t p_navigation_layers) {
 	ERR_FAIL_NULL_V(p_owner, false);
 
-	bool owner_usable = true;
+	bool owner_usable = true; // Check if navigation region or link is usable.
 
 	if (!p_owner->get_enabled()) {
 		owner_usable = false;
 		return owner_usable;
 	}
 
-	if ((p_query_task.navigation_layers & p_owner->get_navigation_layers()) == 0) {
-		// Not usable. No matching bit between task filter bitmask and owner bitmask.
+	if ((p_query_task.navigation_layers & p_navigation_layers) == 0) {
+		// Not usable. No matching bit between task filter bitmask and owner/polygon bitmask.
 		owner_usable = false;
 		return owner_usable;
 	}

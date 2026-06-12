@@ -33,6 +33,8 @@
 #include "core/object/class_db.h"
 
 #ifdef DEBUG_ENABLED
+#include "core/math/random_pcg.h"
+#include "scene/3d/label_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
 
@@ -42,6 +44,11 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 
 	vertices = Vector<Vector3>();
 	polygons.clear();
+	polygons_meta.clear();
+	area_ids.clear();
+	area_bake_ids.clear();
+	area_navlayers.clear();
+	area_indices.clear();
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -339,6 +346,11 @@ Array NavigationMesh::_get_polygons() const {
 void NavigationMesh::set_polygons(const Vector<Vector<int>> &p_polygons) {
 	RWLockWrite write_lock(rwlock);
 	polygons = p_polygons;
+	polygons_meta = Vector<uint32_t>();
+	area_ids = Vector<uint16_t>();
+	area_bake_ids = Vector<String>();
+	area_navlayers = Vector<uint32_t>();
+	area_indices = Vector<Vector<int>>();
 	notify_property_list_changed();
 }
 
@@ -367,11 +379,222 @@ Vector<int> NavigationMesh::get_polygon(int p_idx) {
 void NavigationMesh::clear_polygons() {
 	RWLockWrite write_lock(rwlock);
 	polygons.clear();
+	polygons_meta.clear();
+	area_ids.clear();
+	area_bake_ids.clear();
+	area_navlayers.clear();
+	area_indices.clear();
+}
+
+int NavigationMesh::get_polygon_meta_count() const {
+	RWLockRead read_lock(rwlock);
+	return polygons_meta.size();
+}
+
+uint32_t NavigationMesh::get_polygon_meta(int p_idx) {
+	RWLockRead read_lock(rwlock);
+	ERR_FAIL_INDEX_V(p_idx, polygons_meta.size(), uint32_t(0));
+	return polygons_meta[p_idx];
+}
+
+void NavigationMesh::_set_polygons_meta(const Array &p_polygons_meta) {
+	RWLockWrite write_lock(rwlock);
+
+	polygons_meta.resize(p_polygons_meta.size());
+	for (int i = 0; i < p_polygons_meta.size(); i++) {
+		polygons_meta.write[i] = p_polygons_meta[i];
+	}
+}
+
+Array NavigationMesh::_get_polygons_meta() const {
+	RWLockRead read_lock(rwlock);
+
+	Array ret;
+	ret.resize(polygons_meta.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret[i] = polygons_meta[i];
+	}
+
+	return ret;
+}
+
+int NavigationMesh::get_area_index(String p_bake_id) const {
+	RWLockRead read_lock(rwlock);
+
+	for (int i = 0; i < area_bake_ids.size(); i++) {
+		if (area_bake_ids[i] == p_bake_id) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+uint16_t NavigationMesh::get_area_count() const {
+	RWLockRead read_lock(rwlock);
+	return area_navlayers.size();
+}
+
+void NavigationMesh::_set_area_ids(const Array &p_area_ids) {
+	RWLockWrite write_lock(rwlock);
+
+	area_ids.resize(p_area_ids.size());
+	for (int i = 0; i < p_area_ids.size(); i++) {
+		area_ids.write[i] = p_area_ids[i];
+	}
+}
+
+Array NavigationMesh::_get_area_ids() const {
+	RWLockRead read_lock(rwlock);
+	Array ret;
+	ret.resize(area_ids.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret[i] = area_ids[i];
+	}
+
+	return ret;
+}
+
+Vector<uint16_t> NavigationMesh::get_area_ids() const {
+	RWLockRead read_lock(rwlock);
+	return area_ids;
+}
+
+void NavigationMesh::_set_area_bake_ids(const Array &p_area_bake_ids) {
+	RWLockWrite write_lock(rwlock);
+
+	area_bake_ids.resize(p_area_bake_ids.size());
+	for (int i = 0; i < p_area_bake_ids.size(); i++) {
+		area_bake_ids.write[i] = p_area_bake_ids[i];
+	}
+}
+
+Array NavigationMesh::get_area_bake_ids() const {
+	RWLockRead read_lock(rwlock);
+	Array ret;
+	ret.resize(area_bake_ids.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret[i] = area_bake_ids[i];
+	}
+
+	return ret;
+}
+
+void NavigationMesh::_set_area_navlayers(const Array &p_area_navlayers) {
+	RWLockWrite write_lock(rwlock);
+
+	area_navlayers.resize(p_area_navlayers.size());
+	for (int i = 0; i < p_area_navlayers.size(); i++) {
+		area_navlayers.write[i] = p_area_navlayers[i];
+	}
+}
+
+Array NavigationMesh::_get_area_navlayers() const {
+	RWLockRead read_lock(rwlock);
+	Array ret;
+	ret.resize(area_navlayers.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret[i] = area_navlayers[i];
+	}
+
+	return ret;
+}
+
+void NavigationMesh::_set_area_indices(const Array &p_area_indices) {
+	RWLockWrite write_lock(rwlock);
+
+	area_indices.resize(p_area_indices.size());
+	for (int i = 0; i < p_area_indices.size(); i++) {
+		area_indices.write[i] = p_area_indices[i];
+	}
+}
+
+Array NavigationMesh::_get_area_indices() const {
+	RWLockRead read_lock(rwlock);
+	Array ret;
+	ret.resize(area_indices.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret[i] = area_indices[i];
+	}
+
+	return ret;
+}
+
+void NavigationMesh::_apply_area_navlayers() {
+	// Flush potential changes to navigation layers of area-created polygons from navigation mesh to iteration:
+	int i = 0;
+	for (uint32_t _navlayers : area_navlayers) {
+		for (int polygon_index : area_indices[i]) {
+			polygons_meta.write[polygon_index] = _navlayers;
+		}
+		i++;
+	}
+}
+
+void NavigationMesh::set_area_navigation_layers(uint16_t p_area_id, uint32_t p_navigation_layers) {
+	RWLockWrite write_lock(rwlock);
+	int index = -1;
+
+	for (int i = 0; i < area_ids.size(); i++) {
+		if (area_ids[i] == p_area_id) {
+			index = i;
+			break;
+		}
+	}
+	if (index < 0) {
+		return;
+	}
+
+	area_navlayers.write[index] = p_navigation_layers;
+
+	// Apply (short version of _apply_area_navlayers()).
+	for (int polygon_id : area_indices[index]) {
+		polygons_meta.write[polygon_id] = p_navigation_layers;
+	}
+}
+
+uint32_t NavigationMesh::get_area_navigation_layers(uint16_t p_area_id) const {
+	RWLockRead read_lock(rwlock);
+
+	for (int i = 0; i < area_ids.size(); i++) {
+		if (area_ids[i] == p_area_id) {
+			return area_navlayers[i];
+		}
+	}
+
+	return 0;
+}
+
+void NavigationMesh::set_area_navigation_layers_at_index(uint16_t p_area_index, uint32_t p_navigation_layers) {
+	RWLockWrite write_lock(rwlock);
+	if (p_area_index >= area_navlayers.size()) {
+		return;
+	}
+
+	area_navlayers.write[p_area_index] = p_navigation_layers;
+
+	// Apply (short version of _apply_area_navlayers()).
+	for (int polygon_index : area_indices[p_area_index]) {
+		polygons_meta.write[polygon_index] = p_navigation_layers;
+	}
+}
+
+uint32_t NavigationMesh::get_area_navigation_layers_at_index(uint16_t p_area_index) const {
+	RWLockRead read_lock(rwlock);
+	if (p_area_index >= area_navlayers.size()) {
+		return 0;
+	}
+
+	return area_navlayers[p_area_index];
 }
 
 void NavigationMesh::clear() {
 	RWLockWrite write_lock(rwlock);
 	polygons.clear();
+	polygons_meta.clear();
+	area_ids.clear();
+	area_bake_ids.clear();
+	area_navlayers.clear();
+	area_indices.clear();
 	vertices.clear();
 }
 
@@ -379,16 +602,36 @@ void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Ve
 	RWLockWrite write_lock(rwlock);
 	vertices = p_vertices;
 	polygons = p_polygons;
+	polygons_meta = Vector<uint32_t>();
+	area_ids = Vector<uint16_t>();
+	area_bake_ids = Vector<String>();
+	area_navlayers = Vector<uint32_t>();
+	area_indices = Vector<Vector<int>>();
 }
 
-void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons) {
+void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint16_t> &p_area_ids, const Vector<String> &p_area_bake_ids, const Vector<uint32_t> &p_area_navlayers, const Vector<Vector<int>> &p_area_indices) {
+	RWLockWrite write_lock(rwlock);
+	vertices = p_vertices;
+	polygons = p_polygons;
+	polygons_meta = p_polygons_meta;
+	area_ids = p_area_ids;
+	area_bake_ids = p_area_bake_ids;
+	area_navlayers = p_area_navlayers;
+	area_indices = p_area_indices;
+	_apply_area_navlayers();
+}
+
+void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint32_t> &r_area_navlayers, Vector<Vector<int>> &r_area_indices) {
 	RWLockRead read_lock(rwlock);
 	r_vertices = vertices;
 	r_polygons = polygons;
+	r_polygons_meta = polygons_meta;
+	r_area_navlayers = area_navlayers;
+	r_area_indices = area_indices;
 }
 
 #ifdef DEBUG_ENABLED
-Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
+Ref<ArrayMesh> NavigationMesh::get_debug_mesh(Node *p_parent, uint32_t p_navigation_layers) {
 	if (debug_mesh.is_valid()) {
 		// Blocks further updates for now, code below is intended for dynamic updates e.g. when settings change.
 		return debug_mesh;
@@ -430,16 +673,35 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
 
 	// if enabled add vertex colors to colorize each face individually
+	// NOTE: Cannot color faces, that were generated because of area meshes, differently using vertex colors - no access to region's navigation layers.
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
-	if (enabled_geometry_face_random_color) {
+	bool has_polygon_meta = get_polygon_meta_count() == polygon_count;
+	if (enabled_geometry_face_random_color || has_polygon_meta) {
+		// Face coloring.
 		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+		Color debug_navigation_geometry_face_area_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_area_color();
+		Color hole_color = Color(0, 0, 0, 0);
 		Color polygon_color = debug_navigation_geometry_face_color;
 
+		RandomPCG rand;
 		Vector<Color> face_color_array;
 		face_color_array.resize(polygon_count * 3);
 
 		for (int i = 0; i < polygon_count; i++) {
-			polygon_color = debug_navigation_geometry_face_color * (Color(Math::randf(), Math::randf(), Math::randf()));
+			if (has_polygon_meta && get_polygon_meta(i) != p_navigation_layers) {
+				if (get_polygon_meta(i) == 0) {
+					polygon_color = hole_color; // Temporary hole.
+				} else {
+					// Color faces that were generated because of area meshes differently using vertex colors.
+					polygon_color = debug_navigation_geometry_face_area_color;
+				}
+			} else if (enabled_geometry_face_random_color) {
+				// If enabled add vertex colors to colorize all other faces differently.
+				polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+				polygon_color.a = debug_navigation_geometry_face_color.a;
+			} else {
+				polygon_color = debug_navigation_geometry_face_color;
+			}
 
 			face_color_array.push_back(polygon_color);
 			face_color_array.push_back(polygon_color);
@@ -449,7 +711,8 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	}
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
-	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material();
+	bool use_vertex_color = enabled_geometry_face_random_color || has_polygon_meta;
+	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material(use_vertex_color);
 	debug_mesh->surface_set_material(0, debug_geometry_face_material);
 
 	// if enabled build geometry edge line surface
@@ -478,11 +741,86 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		debug_mesh->surface_set_material(1, debug_geometry_edge_material);
 	}
 
+	Array debug_data = _get_debug_data();
+
+	if (debug_data.size() > 0) {
+		Node3D *debug_holder = Object::cast_to<Node3D>(p_parent->find_child("_debug_holder", false, false));
+		if (debug_holder == nullptr) {
+			debug_holder = memnew(Node3D);
+			debug_holder->set_name("_debug_holder");
+			p_parent->add_child(debug_holder, false, Node::INTERNAL_MODE_BACK);
+			// NOTE: not setting any owner to prevent these debug nodes from being saved.
+		} else {
+			TypedArray<Node> nodes = debug_holder->get_children(true);
+			if (nodes.size() > 0) {
+				for (Variant &v : nodes) {
+					Node *node = Object::cast_to<Node>(v);
+					if (node) {
+						node->queue_free();
+						debug_holder->remove_child(node);
+					}
+				}
+			}
+		}
+
+		Array bake_ids = get_area_bake_ids();
+		bool use_bake_id = bake_ids.size() == debug_data.size();
+
+		for (int i = 0; i < debug_data.size(); i++) {
+			Vector3 pos = debug_data[i];
+
+			Label3D *area_index_label = memnew(Label3D);
+			String text;
+			if (use_bake_id) {
+				text = bake_ids[i];
+				if (!text.is_empty()) {
+					text = vformat("%s (%d)", text, i);
+				}
+			}
+			if (text.is_empty()) {
+				text = vformat("%d", i);
+			}
+			area_index_label->set_text(text);
+			area_index_label->set_draw_flag(Label3D::DrawFlags::FLAG_DISABLE_DEPTH_TEST, true);
+			area_index_label->set_font_size(200);
+			area_index_label->set_outline_size(40);
+			area_index_label->set_position(pos);
+			area_index_label->rotate_x(-(Math::PI / 2)); // -90 degrees.
+			debug_holder->add_child(area_index_label);
+			area_index_label->set_owner(debug_holder);
+		}
+	}
+
 	return debug_mesh;
+}
+
+void NavigationMesh::_set_debug_data(const Array &p_area_origins) {
+	RWLockWrite write_lock(rwlock);
+
+	debug_area_origins.resize(p_area_origins.size());
+	for (int i = 0; i < p_area_origins.size(); i++) {
+		debug_area_origins.write[i] = p_area_origins[i];
+	}
+}
+
+Array NavigationMesh::_get_debug_data() const {
+	RWLockRead read_lock(rwlock);
+	Array ret;
+	ret.resize(debug_area_origins.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret[i] = debug_area_origins[i];
+	}
+
+	return ret;
 }
 #endif // DEBUG_ENABLED
 
 void NavigationMesh::_bind_methods() {
+#ifdef DEBUG_ENABLED
+	ClassDB::bind_method(D_METHOD("_set_debug_data", "debug_area_origins"), &NavigationMesh::_set_debug_data);
+	ClassDB::bind_method(D_METHOD("_get_debug_data"), &NavigationMesh::_get_debug_data);
+#endif // DEBUG_ENABLED
+
 	ClassDB::bind_method(D_METHOD("set_sample_partition_type", "sample_partition_type"), &NavigationMesh::set_sample_partition_type);
 	ClassDB::bind_method(D_METHOD("get_sample_partition_type"), &NavigationMesh::get_sample_partition_type);
 
@@ -569,10 +907,32 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_polygons", "polygons"), &NavigationMesh::_set_polygons);
 	ClassDB::bind_method(D_METHOD("_get_polygons"), &NavigationMesh::_get_polygons);
 
+	ClassDB::bind_method(D_METHOD("_set_polygons_meta", "polygons_meta"), &NavigationMesh::_set_polygons_meta);
+	ClassDB::bind_method(D_METHOD("_get_polygons_meta"), &NavigationMesh::_get_polygons_meta);
+
+	ClassDB::bind_method(D_METHOD("_set_area_ids", "area_baking_ids"), &NavigationMesh::_set_area_ids);
+	ClassDB::bind_method(D_METHOD("_get_area_ids"), &NavigationMesh::_get_area_ids);
+	ClassDB::bind_method(D_METHOD("_set_area_bake_ids", "area_baking_ids"), &NavigationMesh::_set_area_bake_ids);
+	ClassDB::bind_method(D_METHOD("get_area_bake_ids"), &NavigationMesh::get_area_bake_ids);
+	ClassDB::bind_method(D_METHOD("_set_area_navlayers", "area_navlayers"), &NavigationMesh::_set_area_navlayers);
+	ClassDB::bind_method(D_METHOD("_get_area_navlayers"), &NavigationMesh::_get_area_navlayers);
+	ClassDB::bind_method(D_METHOD("_set_area_indices", "area_indices"), &NavigationMesh::_set_area_indices);
+	ClassDB::bind_method(D_METHOD("_get_area_indices"), &NavigationMesh::_get_area_indices);
+
 	ClassDB::bind_method(D_METHOD("clear"), &NavigationMesh::clear);
+
+#ifdef DEBUG_ENABLED
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "debug_area_origins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_debug_data", "_get_debug_data");
+#endif // DEBUG_ENABLED
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons_meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons_meta", "_get_polygons_meta");
+
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_ids", "_get_area_ids");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_baking_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_bake_ids", "get_area_bake_ids");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_navlayers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_navlayers", "_get_area_navlayers");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_indices", "_get_area_indices");
 
 	ADD_GROUP("Sampling", "sample_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type", PROPERTY_HINT_ENUM, "Watershed,Monotone,Layers"), "set_sample_partition_type", "get_sample_partition_type");

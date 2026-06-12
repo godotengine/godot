@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationMesh" inherits="Resource" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A navigation mesh that defines traversable areas and obstacles.
+		A navigation mesh that defines traversable space.
 	</brief_description>
 	<description>
-		A navigation mesh is a collection of polygons that define which areas of an environment are traversable to aid agents in pathfinding through complicated spaces.
+		The [NavigationMesh]'s traversable space consists of a walkable surface which contains obstacles to avoid, and small areas that are either less preferable to walk on - or more preferable!
+		This resource has 2 purposes:
+		1. It acts as a blueprint to create said [NavigationMesh]: Define the source geometry (see [member geometry_source_geometry_mode] and [enum SourceGeometryMode]). Then start baking a navigation mesh. For more information on the baking process, see [method NavigationRegion3D.bake_navigation_mesh] and [method NavigationServer3D.bake_from_source_geometry_data].
+		2. Once the navigation mesh is baked, a collection of polygons is available for pathfinding by [NavigationAgent3D]s.
 	</description>
 	<tutorials>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
@@ -21,13 +24,13 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Clears the internal arrays for vertices and polygon indices.
+				Clears the baked internal arrays for vertices, polygon indices, as well as mesh areas.
 			</description>
 		</method>
 		<method name="clear_polygons">
 			<return type="void" />
 			<description>
-				Clears the array of polygons, but it doesn't clear the array of vertices.
+				Clears the baked array of polygons and mesh areas, but it doesn't clear the array of vertices.
 			</description>
 		</method>
 		<method name="create_from_mesh">
@@ -36,6 +39,12 @@
 			<description>
 				Initializes the navigation mesh by setting the vertices and indices according to a [Mesh].
 				[b]Note:[/b] The given [param mesh] must be of type [constant Mesh.PRIMITIVE_TRIANGLES] and have an index array.
+			</description>
+		</method>
+		<method name="get_area_bake_ids" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an array of all unique [member NavigationMeshArea3D.bake_id] from all areas that affected the final navigation mesh during the baking process.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">

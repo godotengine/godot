@@ -42,8 +42,10 @@ class NavigationRegion3D : public Node3D {
 	RID region;
 	RID map_override;
 	uint32_t navigation_layers = 1;
+#ifndef DISABLE_DEPRECATED
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
+#endif // DISABLE_DEPRECATED
 	Ref<NavigationMesh> navigation_mesh;
 
 	Transform3D current_global_transform;
@@ -67,12 +69,10 @@ private:
 
 protected:
 	void _notification(int p_what);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
-
-#ifndef DISABLE_DEPRECATED
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-#endif // DISABLE_DEPRECATED
 
 public:
 	RID get_rid() const;
@@ -92,13 +92,23 @@ public:
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
 
+	int get_area_index(String p_bake_id) const;
+
+	void set_area_navigation_layers(uint16_t p_area_index, uint32_t p_navigation_layers);
+	uint32_t get_area_navigation_layers(uint16_t p_area_index) const;
+
+	void set_area_navigation_layer_value(uint16_t p_area_index, int p_layer_number, bool p_value);
+	bool get_area_navigation_layer_value(uint16_t p_area_index, int p_layer_number) const;
+
 	RID get_region_rid() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_enter_cost(real_t p_enter_cost);
 	real_t get_enter_cost() const;
 
 	void set_travel_cost(real_t p_travel_cost);
 	real_t get_travel_cost() const;
+#endif // DISABLE_DEPRECATED
 
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navigation_mesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;

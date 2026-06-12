@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "navigation_mesh_generator.h"
+#include "navigation_mesh_generator.compat.inc"
 
 #include "core/object/class_db.h"
 #include "scene/main/node.h"
@@ -54,8 +55,7 @@ void NavigationMeshGenerator::bake(const Ref<NavigationMesh> &p_navigation_mesh,
 
 void NavigationMeshGenerator::clear(Ref<NavigationMesh> p_navigation_mesh) {
 	if (p_navigation_mesh.is_valid()) {
-		p_navigation_mesh->clear_polygons();
-		p_navigation_mesh->set_vertices(Vector<Vector3>());
+		p_navigation_mesh->clear();
 	}
 }
 
@@ -63,8 +63,8 @@ void NavigationMeshGenerator::parse_source_geometry_data(const Ref<NavigationMes
 	NavigationServer3D::get_singleton()->parse_source_geometry_data(p_navigation_mesh, p_source_geometry_data, p_root_node, p_callback);
 }
 
-void NavigationMeshGenerator::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
-	NavigationServer3D::get_singleton()->bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data, p_callback);
+void NavigationMeshGenerator::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, uint32_t p_navigation_layers, const Callable &p_callback) {
+	NavigationServer3D::get_singleton()->bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data, p_navigation_layers, p_callback);
 }
 
 void NavigationMeshGenerator::_bind_methods() {
@@ -72,5 +72,5 @@ void NavigationMeshGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear", "navigation_mesh"), &NavigationMeshGenerator::clear);
 
 	ClassDB::bind_method(D_METHOD("parse_source_geometry_data", "navigation_mesh", "source_geometry_data", "root_node", "callback"), &NavigationMeshGenerator::parse_source_geometry_data, DEFVAL(Callable()));
-	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "callback"), &NavigationMeshGenerator::bake_from_source_geometry_data, DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "navigation_layers", "callback"), &NavigationMeshGenerator::bake_from_source_geometry_data, DEFVAL(Callable()));
 }
