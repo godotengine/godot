@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DistanceJoint3D" inherits="Joint3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A physics constraint which moves two bodies such that their distance is between a minimum and maximum distance.
+	</brief_description>
+	<description>
+		A physics constraint which moves two bodies such that their distance is between a minimum and maximum distance. For example, "Body A" can be a [StaticBody3D] representing a ceiling while "Body B" can be a [RigidBody3D] representing a hanging chandelier which can swing when hit.
+		[b]Note:[/b] This constraint is only supported by the Jolt Physics engine. To switch to Jolt Physics, set [member ProjectSettings.physics/3d/physics_engine] to [b]Jolt Physics[/b].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_global_point" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="point" type="int" enum="DistanceJoint3D.PointParam" />
+			<description>
+				Returns the global position of the point specified.
+			</description>
+		</method>
+		<method name="get_param" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="DistanceJoint3D.Param" />
+			<description>
+				Returns the value of the specified parameter.
+			</description>
+		</method>
+		<method name="get_point_param" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="point" type="int" enum="DistanceJoint3D.PointParam" />
+			<description>
+				Returns the local point on the [PhysicsBody3D] where the constraint is attached.
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="DistanceJoint3D.Param" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Sets the value of the specified parameter.
+			</description>
+		</method>
+		<method name="set_point_param">
+			<return type="void" />
+			<param index="0" name="point" type="int" enum="DistanceJoint3D.PointParam" />
+			<param index="1" name="value" type="Vector3" />
+			<description>
+				Sets the local point on the [PhysicsBody3D] where the constraint is attached.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="anchor/a" type="Vector3" setter="set_point_param" getter="get_point_param" default="Vector3(0, 0, 0)">
+			The local point on Node A where the constraint is attached.
+		</member>
+		<member name="anchor/b" type="Vector3" setter="set_point_param" getter="get_point_param" default="Vector3(0, 0, 0)">
+			The local point on Node B where the constraint is attached.
+		</member>
+		<member name="distance/max" type="float" setter="set_param" getter="get_param" default="inf">
+			The maximum distance between points A and B. If the distance between A and B exceeds [member distance/max] a spring will be used to move the points closer.
+		</member>
+		<member name="distance/min" type="float" setter="set_param" getter="get_param" default="0.0">
+			The minimum distance between points A and B. If the distance between A and B does not exceed [member distance/min] a spring will be used to move the points further apart.
+		</member>
+		<member name="spring/damping" type="float" setter="set_param" getter="get_param" default="0.0">
+			The damping of the spring pulling the bodies together. (0 = no damping, 1 = critical damping). Set to zero if you don't want to pull the bodies together with a spring.
+		</member>
+		<member name="spring/stiffness" type="float" setter="set_param" getter="get_param" default="0.0">
+			The strength of the spring pulling the bodies together. Increase this value to pull the bodies together faster. Set to zero if you don't want to pull the bodies together with a spring.
+		</member>
+	</members>
+	<constants>
+		<constant name="PARAM_LIMITS_SPRING_STIFFNESS" value="0" enum="Param">
+			The strength of the spring pulling the bodies together. Increase this value to pull the bodies together faster. Set to zero if you don't want to pull the bodies together with a spring.
+		</constant>
+		<constant name="PARAM_LIMITS_SPRING_DAMPING" value="1" enum="Param">
+			The damping of the spring pulling the bodies together. (0 = no damping, 1 = critical damping). Set to zero if you don't want to pull the bodies together with a spring.
+		</constant>
+		<constant name="PARAM_DISTANCE_MIN" value="2" enum="Param">
+			The minimum distance of the constraint.
+		</constant>
+		<constant name="PARAM_DISTANCE_MAX" value="3" enum="Param">
+			The maximum distance of the constraint.
+		</constant>
+		<constant name="PARAM_MAX" value="4" enum="Param">
+			Represents the size of the [enum Param] enum.
+		</constant>
+		<constant name="POINT_PARAM_A" value="0" enum="PointParam">
+			The point on Node A where the distance constraint is attached.
+		</constant>
+		<constant name="POINT_PARAM_B" value="1" enum="PointParam">
+			The point on Node B where the distance constraint is attached.
+		</constant>
+	</constants>
+</class>
