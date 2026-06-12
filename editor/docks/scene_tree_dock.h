@@ -327,6 +327,7 @@ public:
 
 	void _focus_node();
 
+	void focus_filter();
 	void add_root_node(Node *p_node);
 	void set_edited_scene(Node *p_scene);
 	void instantiate(const String &p_file);
