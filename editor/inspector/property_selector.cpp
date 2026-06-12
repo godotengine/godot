@@ -325,8 +325,8 @@ void PropertySelector::_confirmed() {
 	if (!ti) {
 		return;
 	}
-	emit_signal(SNAME("selected"), ti->get_metadata(0));
 	hide();
+	emit_signal(SNAME("selected"), ti->get_metadata(0));
 }
 
 void PropertySelector::_item_selected() {
