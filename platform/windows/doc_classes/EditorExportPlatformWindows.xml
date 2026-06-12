@@ -56,8 +56,26 @@
 			Application executable architecture.
 			Supported architectures: [code]x86_32[/code], [code]x86_64[/code], and [code]arm64[/code].
 		</member>
+		<member name="binary_format/compression_enabled" type="bool" setter="" getter="">
+		</member>
+		<member name="binary_format/compression_level" type="int" setter="" getter="">
+		</member>
+		<member name="binary_format/compression_method" type="String" setter="" getter="">
+		</member>
+		<member name="binary_format/compression_type" type="String" setter="" getter="">
+		</member>
+		<member name="binary_format/dictionary_size_mb" type="int" setter="" getter="">
+		</member>
 		<member name="binary_format/embed_pck" type="bool" setter="" getter="">
 			If [code]true[/code], project resources are embedded into the executable.
+		</member>
+		<member name="binary_format/memory_usage_percent" type="int" setter="" getter="">
+		</member>
+		<member name="binary_format/solid_block_size" type="String" setter="" getter="">
+		</member>
+		<member name="binary_format/threads" type="int" setter="" getter="">
+		</member>
+		<member name="binary_format/word_size" type="int" setter="" getter="">
 		</member>
 		<member name="codesign/custom_options" type="PackedStringArray" setter="" getter="">
 			Array of the additional command line arguments passed to the code signing tool. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].

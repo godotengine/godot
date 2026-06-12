@@ -414,6 +414,11 @@ Comment: WebP codec
 Copyright: 2010, Google Inc.
 License: BSD-3-clause
 
+Files: thirdparty/lzma2601/*
+Comment: LZMA SDK (7-Zip SDK)
+Copyright: Igor Pavlov
+License: Public-Domain
+
 Files: thirdparty/manifold/*
 Comment: Manifold
 Copyright: 2020-2025, The Manifold Authors
@@ -2268,6 +2273,13 @@ License: OFL-1.1
  INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
  DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE.
+
+License: Public-Domain
+ LZMA SDK is written and placed in the public domain by Igor Pavlov.
+ .
+ Anyone is free to copy, modify, publish, use, compile, sell, or distribute
+ the original LZMA SDK code, either in source code form or as a compiled
+ binary, for any purpose, commercial or non-commercial, and by any means.
 
 License: Unicode
  COPYRIGHT AND PERMISSION NOTICE (ICU 58 and later)

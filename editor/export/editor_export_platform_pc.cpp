@@ -63,11 +63,16 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) c
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
+	add_pck_7zip_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc_bptc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2_astc"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
+}
+
+bool EditorExportPlatformPC::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	return get_pck_7zip_export_option_visibility(p_preset, p_option);
 }
 
 String EditorExportPlatformPC::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {

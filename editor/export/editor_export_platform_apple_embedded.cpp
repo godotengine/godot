@@ -228,6 +228,9 @@ bool EditorExportPlatformAppleEmbedded::get_export_option_visibility(const Edito
 	if (p_option == "dotnet/embed_build_outputs") {
 		return false;
 	}
+	if (!get_pck_7zip_export_option_visibility(p_preset, p_option)) {
+		return false;
+	}
 
 	if (p_preset == nullptr) {
 		return true;
@@ -255,6 +258,7 @@ bool EditorExportPlatformAppleEmbedded::get_export_option_visibility(const Edito
 void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r_options) const {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	add_pck_7zip_export_options(r_options);
 
 	Vector<ExportArchitecture> architectures = _get_supported_architectures();
 	for (int i = 0; i < architectures.size(); ++i) {

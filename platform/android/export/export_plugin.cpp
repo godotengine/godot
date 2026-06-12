@@ -2190,6 +2190,7 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_options) const {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
+	add_pck_7zip_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gradle_build/use_gradle_build"), false, true, false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/gradle_build_directory", PROPERTY_HINT_PLACEHOLDER_TEXT, "res://android"), "", false, false));
@@ -2288,6 +2289,9 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	if (p_preset == nullptr) {
 		return true;
+	}
+	if (!get_pck_7zip_export_option_visibility(p_preset, p_option)) {
+		return false;
 	}
 
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();

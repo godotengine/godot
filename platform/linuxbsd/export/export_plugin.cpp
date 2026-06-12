@@ -170,6 +170,9 @@ bool EditorExportPlatformLinuxBSD::get_export_option_visibility(const EditorExpo
 	if (p_preset == nullptr) {
 		return true;
 	}
+	if (!EditorExportPlatformPC::get_export_option_visibility(p_preset, p_option)) {
+		return false;
+	}
 
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 
