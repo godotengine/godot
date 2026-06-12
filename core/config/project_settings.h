@@ -71,6 +71,31 @@ public:
 		bool is_singleton = false;
 	};
 
+	struct ArrayElementFormat {
+		PropertyInfo info;
+		Variant v_default;
+
+		ArrayElementFormat(const PropertyInfo &p_info, const Variant &p_default) :
+				info(p_info),
+				v_default(p_default) {
+		}
+	};
+
+	struct ArrayFormat {
+		String prefix;
+		Vector<ArrayElementFormat> format;
+		int array_index = 0;
+
+		ArrayFormat() {
+		}
+
+		ArrayFormat(const String &p_prefix, const Vector<ArrayElementFormat> &p_format, int p_array_index) :
+				prefix(p_prefix),
+				format(p_format),
+				array_index(p_array_index) {
+		}
+	};
+
 protected:
 	struct VariantContainer {
 		int order = 0;
@@ -105,6 +130,10 @@ protected:
 	bool project_loaded = false;
 	List<String> input_presets;
 
+	// Hash map of array formats, with the array's prefix as the key.
+	HashMap<String, ArrayFormat> array_format_map;
+	Vector<ArrayFormat> array_formats;
+
 	HashSet<String> custom_features;
 	HashMap<StringName, LocalVector<Pair<StringName, StringName>>> feature_overrides;
 
@@ -123,6 +152,13 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
+	int _get_array_length(const String &p_prefix) const;
+	void _set_array_length(const String &p_prefix, const int p_length);
+	void _set_array_value(const String &p_prefix, const int p_index, const String &p_key, const Variant &p_value);
+	Variant _get_array_value(const String &p_prefix, const int p_index, const String &p_key) const;
+	bool _get_array_count_variable(const StringName &p_name, String *r_prefix) const;
+	bool _get_array_variable(const StringName &p_name, String *r_prefix, String *r_variable, int *r_index) const;
 
 	void _queue_changed(const StringName &p_name);
 	void _emit_changed();
@@ -178,9 +214,11 @@ public:
 	void set_initial_value(const String &p_name, const Variant &p_value);
 	void set_as_basic(const String &p_name, bool p_basic);
 	void set_as_internal(const String &p_name, bool p_internal);
+	void set_array_format(const String &p_prefix, const Vector<ArrayElementFormat> &p_format);
 	void set_restart_if_changed(const String &p_name, bool p_restart);
 	void set_ignore_value_in_docs(const String &p_name, bool p_ignore);
 	bool get_ignore_value_in_docs(const String &p_name) const;
+	bool get_is_array_internal(const String &p_name) const;
 	void add_hidden_prefix(const String &p_prefix);
 
 	String get_project_data_dir_name() const;
@@ -257,6 +295,8 @@ public:
 // Not a macro any longer.
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false, bool p_internal = false);
 Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false, bool p_internal = false);
+Variant _GLOBAL_DEF_ARRAY(const String &p_var, const Vector<ProjectSettings::ArrayElementFormat> &p_format, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false, bool p_internal = false);
+Variant _GLOBAL_DEF_ARRAY(const PropertyInfo &p_info, const Vector<ProjectSettings::ArrayElementFormat> &p_format, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false, bool p_internal = false);
 
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
@@ -268,6 +308,20 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 #define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)
 #define GLOBAL_DEF_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true, true)
 #define GLOBAL_DEF_RST_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true, true)
+
+// These macros allow for an array of dictionaries to be exposed as a neat list in project settings.
+// The underlying variable will exist at the m_var path.
+// Variable args must be formatted like so: {ProjectSettings::ArrayElementFormat(), [...]}, where each
+// ArrayElementFormat describes an element that will exist in each dictionary.
+#define GLOBAL_DEF_ARRAY(m_var, ...) _GLOBAL_DEF_ARRAY(m_var, Vector<ProjectSettings::ArrayElementFormat>(__VA_ARGS__))
+#define GLOBAL_DEF_ARRAY_RST(m_var, ...) _GLOBAL_DEF_ARRAY(m_var, Vector<ProjectSettings::ArrayElementFormat>(__VA_ARGS__), true)
+#define GLOBAL_DEF_ARRAY_NOVAL(m_var, ...) _GLOBAL_DEF_ARRAY(m_var, Vector<ProjectSettings::ArrayElementFormat>(__VA_ARGS__), false, true)
+#define GLOBAL_DEF_ARRAY_RST_NOVAL(m_var, ...) _GLOBAL_DEF_ARRAY(m_var, Vector<ProjectSettings::ArrayElementFormat>(__VA_ARGS__), true, true)
+
+#define GLOBAL_DEF_ARRAY_BASIC(m_var, ...) _GLOBAL_DEF_ARRAY(m_var, Vector<ProjectSettings::ArrayElementFormat>(__VA_ARGS__), false, false, true)
+#define GLOBAL_DEF_ARRAY_RST_BASIC(m_var, ...) _GLOBAL_DEF_ARRAY(m_var, Vector<ProjectSettings::ArrayElementFormat>(__VA_ARGS__), true, false, true)
+#define GLOBAL_DEF_ARRAY_NOVAL_BASIC(m_var, ...) _GLOBAL_DEF_ARRAY(m_var, Vector<ProjectSettings::ArrayElementFormat>(__VA_ARGS__), false, true, true)
+#define GLOBAL_DEF_ARRAY_RST_NOVAL_BASIC(m_var, ...) _GLOBAL_DEF_ARRAY(m_var, Vector<ProjectSettings::ArrayElementFormat>(__VA_ARGS__), true, true, true)
 
 #define GLOBAL_DEF_INTERNAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, false, true)
 
