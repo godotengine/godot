@@ -44,6 +44,7 @@
 #include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/tree.h"
 
+class BoxContainer;
 class EditorAudioBuses;
 class EditorFileDialog;
 class Gradient;
@@ -51,6 +52,7 @@ class GradientTexture2D;
 class HBoxContainer;
 class StyleBoxFlat;
 class Timer;
+class VSeparator;
 
 class EditorAudioBus : public PanelContainer {
 	GDCLASS(EditorAudioBus, PanelContainer);
@@ -181,7 +183,16 @@ protected:
 class EditorAudioBuses : public EditorDock {
 	GDCLASS(EditorAudioBuses, EditorDock);
 
-	HBoxContainer *top_hb = nullptr;
+	enum class MenuOption {
+		LOAD,
+		SAVE_AS,
+		LOAD_DEFAULT,
+		CREATE,
+	};
+
+	BoxContainer *top_container = nullptr;
+	HBoxContainer *button_container = nullptr;
+	HBoxContainer *menu_container = nullptr;
 
 	MarginContainer *bus_mc = nullptr;
 	ScrollContainer *bus_scroll = nullptr;
@@ -196,14 +207,16 @@ class EditorAudioBuses : public EditorDock {
 	Button *save_as = nullptr;
 	Button *_default = nullptr;
 	Button *_new = nullptr;
+	MenuButton *saveload_menu = nullptr;
 
 	Timer *save_timer = nullptr;
 	String edited_path;
 
-	bool floating = false;
+	real_t button_hb_minimum_size = 0;
 
 	void _update_file_label();
 	void _update_file_label_size();
+	void _button_hb_resized();
 
 	void _rebuild_buses();
 	void _update_bus(int p_index);
@@ -225,6 +238,7 @@ class EditorAudioBuses : public EditorDock {
 	void _save_as_layout();
 	void _load_default_layout();
 	void _new_layout();
+	void _menu_option(int p_option);
 
 	EditorFileDialog *file_dialog = nullptr;
 	bool new_layout = false;
