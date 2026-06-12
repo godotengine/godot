@@ -129,15 +129,15 @@ void AnimationPlayerEditor::_notification(int p_what) {
 						}
 					}
 				}
-				frame->set_value(player->get_current_animation_position());
+				_set_seek_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
 			} else {
 				if (!player->is_valid()) {
 					// Reset timeline when the player has been stopped externally
-					frame->set_value(0);
+					_set_seek_value(0);
 				} else if (last_active) {
 					// Need the last frame after it stopped.
-					frame->set_value(player->get_current_animation_position());
+					_set_seek_value(player->get_current_animation_position());
 					track_editor->set_anim_pos(player->get_current_animation_position());
 				}
 				stop->set_button_icon(stop_icon);
@@ -315,7 +315,7 @@ void AnimationPlayerEditor::go_to_nearest_keyframe(bool p_backward) {
 	}
 
 	player->seek_internal(nearest_key_time, true, true, true);
-	frame->set_value(nearest_key_time);
+	_set_seek_value(nearest_key_time);
 	track_editor->set_anim_pos(nearest_key_time);
 }
 
@@ -436,7 +436,7 @@ void AnimationPlayerEditor::_stop_pressed() {
 		String current = _get_current();
 		player->stop();
 		player->set_assigned_animation(current);
-		frame->set_value(0);
+		_set_seek_value(0);
 		track_editor->set_anim_pos(0);
 	}
 	stop->set_button_icon(stop_icon);
@@ -1436,7 +1436,9 @@ Ref<Animation> AnimationPlayerEditor::_animation_clone(Ref<Animation> p_anim) {
 	return new_anim;
 }
 
-void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_only) {
+void AnimationPlayerEditor::_set_seek_value(float p_value, bool p_timeline_only) {
+	frame->set_value_no_signal(p_value);
+	p_value = frame->get_value();
 	if (updating || !player || player->is_playing()) {
 		return;
 	};
@@ -1463,6 +1465,18 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_o
 	}
 
 	track_editor->set_anim_pos(pos);
+}
+
+void AnimationPlayerEditor::_frame_value_changed(double p_value) {
+	if (track_editor->is_snap_timeline_enabled()) {
+		double delta = p_value - (double)player->get_current_animation_position();
+		if (delta > 0) {
+			p_value = Math::snapped(p_value + _get_editor_step() / 2.0f, _get_editor_step());
+		} else {
+			p_value = Math::snapped(p_value - _get_editor_step() / 2.0f, _get_editor_step());
+		}
+	}
+	_set_seek_value(p_value);
 }
 
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
@@ -1498,7 +1512,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 			return;
 		} else if (p_name.is_empty()) {
 			// Means [stop].
-			frame->set_value(0);
+			_set_seek_value(0);
 			track_editor->set_anim_pos(0);
 			_update_animation();
 			return;
@@ -1578,10 +1592,7 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timel
 		return;
 	}
 
-	updating = true;
-	frame->set_value(track_editor->is_snap_timeline_enabled() ? Math::snapped(p_pos, _get_editor_step()) : p_pos);
-	updating = false;
-	_seek_value_changed(p_pos, p_timeline_only);
+	_set_seek_value(track_editor->is_snap_timeline_enabled() ? Math::snapped(p_pos, _get_editor_step()) : p_pos, p_timeline_only);
 }
 
 void AnimationPlayerEditor::_animation_update_key_frame() {
@@ -2277,7 +2288,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	animation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
-	frame->connect(SceneStringName(value_changed), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(false));
+	frame->connect(SceneStringName(value_changed), callable_mp(this, &AnimationPlayerEditor::_frame_value_changed));
 	scale->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	main_vbox_container->add_child(track_editor);
