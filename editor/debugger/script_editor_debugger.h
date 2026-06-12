@@ -102,6 +102,7 @@ private:
 	Tree *error_tree = nullptr;
 	Button *expand_all_button = nullptr;
 	Button *collapse_all_button = nullptr;
+	Button *copy_all_button = nullptr;
 	Button *clear_button = nullptr;
 	PopupMenu *item_menu = nullptr;
 
@@ -272,6 +273,7 @@ private:
 
 	void _expand_errors_list();
 	void _collapse_errors_list();
+	void _copy_all_errors();
 
 	void _vmem_item_activated();
 	void _vmem_tree_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
