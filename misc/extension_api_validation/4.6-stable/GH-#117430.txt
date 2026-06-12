@@ -1,0 +1,6 @@
+GH-117430
+---------
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/methods/get_mix_target/return_value': type changed value in new API, from "enum::AudioStreamPlayer.MixTarget" to "enum::AudioServer.MixTarget".
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/methods/set_mix_target/arguments/0': type changed value in new API, from "enum::AudioStreamPlayer.MixTarget" to "enum::AudioServer.MixTarget".
+
+Enum moved to AudioServer. Compatibility methods registered.
