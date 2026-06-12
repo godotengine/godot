@@ -225,15 +225,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	_update_shortcuts();
 	set_process_shortcut_input(true);
 
-	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size;
-	if (!_is_in_project_manager()) {
-		saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
-	}
-
-	if (saved_size != Rect2()) {
-		popup(saved_size);
-	} else if (_is_in_project_manager()) {
+	if (_is_in_project_manager()) {
 		popup_centered_clamped(Size2(800, 600) * EDSCALE, 0.8); // Make it smaller that the default Project Manager size.
 	} else {
 		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
@@ -258,7 +250,6 @@ void EditorSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible() && !_is_in_project_manager()) {
-				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
 				set_process_shortcut_input(false);
 			}
 		} break;
