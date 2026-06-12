@@ -1004,6 +1004,24 @@
 		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it. See also [member display/window/size/transparent] and [member rendering/viewport/transparent_background].
 		</member>
+		<member name="display/window/preset" type="int" setter="" getter="" default="0">
+			Window preset to use for the project. Provides quick configuration for common game types and platforms.
+			The options are:
+			- [b]Default[/b]: Default Godot window settings (1152×648)
+			- [b]Desktop Game Non-pixel art 4K[/b]: 3840×2160 resolution, canvas_items stretch mode, expand aspect, fractional scaling
+			- [b]Desktop Game Non-pixel art HD[/b]: 1920×1080 resolution, canvas_items stretch mode, expand aspect, fractional scaling
+			- [b]Desktop Game Pixel art Large[/b]: 640×480 resolution, viewport stretch mode, keep aspect, integer scaling
+			- [b]Desktop Game Pixel art Medium[/b]: 640×360 resolution, viewport stretch mode, keep aspect, integer scaling
+			- [b]Desktop Game Pixel art Small[/b]: 256×224 resolution, viewport stretch mode, keep aspect, integer scaling
+			- [b]Mobile Game Landscape HD[/b]: 1920×1080 resolution, canvas_items stretch mode, expand aspect, fractional scaling, 2.0x theme scale
+			- [b]Mobile Game Landscape[/b]: 1280×720 resolution, canvas_items stretch mode, expand aspect, fractional scaling
+			- [b]Mobile Game Landscape Tablets[/b]: 1280×960 resolution, canvas_items stretch mode, expand aspect, fractional scaling
+			- [b]Mobile Game Portrait HD[/b]: 1080×1920 resolution, canvas_items stretch mode, expand aspect, fractional scaling, 2.0x theme scale
+			- [b]Mobile Game Portrait[/b]: 720×1280 resolution, canvas_items stretch mode, expand aspect, fractional scaling
+			- [b]Mobile Game Portrait Tablets[/b]: 960×1280 resolution, canvas_items stretch mode, expand aspect, fractional scaling
+			- [b]Custom[/b]: Custom settings (automatically selected when settings are modified)
+			[b]Note:[/b] When you modify any window-related setting after selecting a preset, the preset will automatically change to "Custom".
+		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
 			Forces the main window to be always on top.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
