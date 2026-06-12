@@ -265,7 +265,11 @@ void SceneTreeEditor::_update_node_path(Node *p_node, bool p_recursive) {
 		return;
 	}
 
-	I->value.item->set_metadata(0, p_node->get_path());
+	if (p_node->is_inside_tree()) {
+		I->value.item->set_metadata(0, p_node->get_path());
+	} else {
+		I->value.item->set_metadata(0, NodePath());
+	}
 
 	if (!p_recursive) {
 		return;
@@ -415,7 +419,11 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 
 	Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_node);
 	p_item->set_icon(0, icon);
-	p_item->set_metadata(0, p_node->get_path());
+	if (p_node->is_inside_tree()) {
+		p_item->set_metadata(0, p_node->get_path());
+	} else {
+		p_item->set_metadata(0, NodePath());
+	}
 
 	if (!p_node->is_connected("child_order_changed", callable_mp(this, &SceneTreeEditor::_node_child_order_changed))) {
 		p_node->connect("child_order_changed", callable_mp(this, &SceneTreeEditor::_node_child_order_changed).bind(p_node));
@@ -717,10 +725,12 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 	}
 
 	TreeItem *item;
-	if (I->value.item && I->value.item->get_metadata(0) == p_node->get_path()) {
+	if (I->value.item && p_node->is_inside_tree() && I->value.item->get_metadata(0) == p_node->get_path()) {
 		item = I->value.item;
-	} else {
+	} else if (p_node->is_inside_tree()) {
 		item = _find(tree->get_root(), p_node->get_path());
+	} else {
+		item = nullptr;
 	}
 
 	if (!item) {
@@ -1472,7 +1482,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	}
 	selected = p_node;
 
-	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
+	TreeItem *item = (p_node && p_node->is_inside_tree()) ? _find(tree->get_root(), p_node->get_path()) : nullptr;
 	if (item) {
 		if (auto_expand_selected) {
 			// Make visible when it's collapsed.
@@ -1511,8 +1521,10 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 	TreeItem *item;
 	if (p_item) {
 		item = p_item; // During batch rename the paths may change, so using _find() is unreliable.
-	} else {
+	} else if (p_node->is_inside_tree()) {
 		item = _find(tree->get_root(), p_node->get_path());
+	} else {
+		item = nullptr;
 	}
 	ERR_FAIL_NULL(item);
 	bool check_for_unique_name_token = !p_name.is_empty() && p_name[0] == '%';

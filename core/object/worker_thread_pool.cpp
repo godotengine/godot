@@ -751,12 +751,13 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 			_unlock_unlockable_mutexes();
 		}
 		if (Thread::is_main_thread()) {
-			// If we are the main thread we can't block the messagequeue
+			// If we are the main thread, we would normally flush the message queue to prevent deadlocks.
+			// However, flushing during wait can cause deferred calls to execute while scene tree
+			// is being initialized, leading to nodes being processed before they're fully in the tree.
+			//
+			// For now, we'll simply wait without flushing. If this causes deadlocks in specific scenarios,
+			// those scenarios need to be fixed to not rely on message queue processing during waits.
 			while (!group->done_semaphore.try_wait()) {
-				if (MessageQueue::get_singleton()) {
-					MessageQueue::get_singleton()->flush();
-				}
-
 				OS::get_singleton()->delay_usec(100);
 			}
 		} else {
