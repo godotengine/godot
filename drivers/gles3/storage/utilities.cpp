@@ -165,6 +165,8 @@ RSE::InstanceType Utilities::get_base_type(RID p_rid) const {
 		return RSE::INSTANCE_REFLECTION_PROBE;
 	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
 		return RSE::INSTANCE_PARTICLES_COLLISION;
+	} else if (GLES3::TextureStorage::get_singleton()->owns_decal(p_rid)) {
+		return RSE::INSTANCE_DECAL;
 	} else if (owns_visibility_notifier(p_rid)) {
 		return RSE::INSTANCE_VISIBLITY_NOTIFIER;
 	}
@@ -223,6 +225,9 @@ bool Utilities::free(RID p_rid) {
 	} else if (GLES3::MeshStorage::get_singleton()->owns_skeleton(p_rid)) {
 		GLES3::MeshStorage::get_singleton()->skeleton_free(p_rid);
 		return true;
+	} else if (GLES3::TextureStorage::get_singleton()->owns_decal(p_rid)) {
+		GLES3::TextureStorage::get_singleton()->decal_free(p_rid);
+		return true;
 	} else if (owns_visibility_notifier(p_rid)) {
 		visibility_notifier_free(p_rid);
 		return true;
@@ -254,6 +259,9 @@ void Utilities::base_update_dependency(RID p_base, DependencyTracker *p_instance
 		p_instance->update_dependency(dependency);
 	} else if (ParticlesStorage::get_singleton()->owns_particles_collision(p_base)) {
 		Dependency *dependency = ParticlesStorage::get_singleton()->particles_collision_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
+	} else if (TextureStorage::get_singleton()->owns_decal(p_base)) {
+		Dependency *dependency = TextureStorage::get_singleton()->decal_get_dependency(p_base);
 		p_instance->update_dependency(dependency);
 	} else if (owns_visibility_notifier(p_base)) {
 		VisibilityNotifier *vn = get_visibility_notifier(p_base);
@@ -398,6 +406,7 @@ void Utilities::update_dirty_resources() {
 	MeshStorage::get_singleton()->_update_dirty_skeletons();
 	MeshStorage::get_singleton()->_update_dirty_multimeshes();
 	TextureStorage::get_singleton()->update_texture_atlas();
+	TextureStorage::get_singleton()->update_decal_atlas();
 }
 
 void Utilities::set_debug_generate_wireframes(bool p_generate) {
