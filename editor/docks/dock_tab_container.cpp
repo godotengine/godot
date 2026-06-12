@@ -37,6 +37,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
 #include "scene/resources/style_box_flat.h"
 
 bool EditorDockDragHint::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
@@ -222,6 +223,10 @@ void DockTabContainer::load_selected_tab(int p_idx) {
 void DockTabContainer::set_dock_context_popup(DockContextPopup *p_popup) {
 	dock_context_popup = p_popup;
 	set_popup(dock_context_popup);
+	Button *btn = get_popup_button();
+	if (btn) {
+		btn->set_accessibility_name(TTRC("Dock Position"));
+	}
 }
 
 void DockTabContainer::move_dock_index(EditorDock *p_dock, int p_to_index, bool p_set_current) {
