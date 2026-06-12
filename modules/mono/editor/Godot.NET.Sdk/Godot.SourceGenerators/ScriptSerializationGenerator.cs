@@ -63,9 +63,9 @@ namespace Godot.SourceGenerators
         )
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
-            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedNameOmitGlobal() :
-                string.Empty;
+            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace
+                ? namespaceSymbol.FullQualifiedNameOmitGlobal()
+                : string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
@@ -123,7 +123,8 @@ namespace Godot.SourceGenerators
 
             // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
             // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
-            var godotClassProperties = propertySymbols.Where(property => !(property.IsReadOnly || property.IsWriteOnly || property.SetMethod!.IsInitOnly))
+            var godotClassProperties = propertySymbols.Where(property =>
+                    !(property.IsReadOnly || property.IsWriteOnly || property.SetMethod!.IsInitOnly))
                 .WhereIsGodotCompatibleType(typeCache)
                 .ToArray();
             var godotClassFields = fieldSymbols.Where(property => !property.IsReadOnly)
@@ -158,7 +159,14 @@ namespace Godot.SourceGenerators
             }
 
             source.Append("    /// <inheritdoc/>\n");
-            source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+            source.Append(
+                "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+            source.Append("    [global::System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("
+                          + "\"This method is for use by the Godot editor only. "
+                          + "The overriding methods might not be compatible with trimming.\")]\n");
+            source.Append("    [global::System.Diagnostics.CodeAnalysis.RequiresDynamicCode("
+                          + "\"This method is for use by the Godot editor only. The overriding methods might "
+                          + "require dynamic code, for which native code might not be available at runtime.\")]\n");
             source.Append(
                 "    protected override void SaveGodotObjectData(global::Godot.Bridge.GodotSerializationInfo info)\n    {\n");
             source.Append("        base.SaveGodotObjectData(info);\n");
@@ -207,7 +215,14 @@ namespace Godot.SourceGenerators
             source.Append("    }\n");
 
             source.Append("    /// <inheritdoc/>\n");
-            source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+            source.Append(
+                "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+            source.Append("    [global::System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("
+                          + "\"This method is for use by the Godot editor only. "
+                          + "The overriding methods might not be compatible with trimming.\")]\n");
+            source.Append("    [global::System.Diagnostics.CodeAnalysis.RequiresDynamicCode("
+                          + "\"This method is for use by the Godot editor only. The overriding methods might "
+                          + "require dynamic code, for which native code might not be available at runtime.\")]\n");
             source.Append(
                 "    protected override void RestoreGodotObjectData(global::Godot.Bridge.GodotSerializationInfo info)\n    {\n");
             source.Append("        base.RestoreGodotObjectData(info);\n");
