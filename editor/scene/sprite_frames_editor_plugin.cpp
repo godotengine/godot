@@ -2151,6 +2151,9 @@ void SpriteFramesEditor::_autoplay_pressed() {
 
 void SpriteFramesEditor::_step_frame_pressed(int p_step) {
 	if (animated_sprite) {
+		if (animated_sprite->call("is_playing")) {
+			animated_sprite->call("pause");
+		}
 		String current_animation_name = animated_sprite->call("get_animation");
 		int frame_count = frames->get_frame_count(current_animation_name);
 		if (frame_count < 1) {
@@ -2159,10 +2162,8 @@ void SpriteFramesEditor::_step_frame_pressed(int p_step) {
 		int current_frame = animated_sprite->call("get_frame");
 		int new_frame = Math::posmod(current_frame + p_step, frame_count);
 		animated_sprite->call("set_frame", new_frame);
-
-		frame_list->select(new_frame);
-		frame_list->ensure_current_is_visible();
 	}
+	_update_stop_icon();
 }
 
 void SpriteFramesEditor::_bind_methods() {
