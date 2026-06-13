@@ -212,7 +212,7 @@
 			<return type="bool" />
 			<param index="0" name="iter" type="Array" />
 			<description>
-				Initializes the iterator. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
+				Initializes the iterator. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. This array should not be resized. Returns [code]true[/code] so long as the iterator has not reached the end.
 				[codeblock]
 				class MyRange:
 					var _from
@@ -247,7 +247,7 @@
 			<return type="bool" />
 			<param index="0" name="iter" type="Array" />
 			<description>
-				Moves the iterator to the next iteration. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
+				Moves the iterator to the next iteration. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. This array should not be resized. Returns [code]true[/code] so long as the iterator has not reached the end.
 			</description>
 		</method>
 		<method name="_notification" qualifiers="virtual">
