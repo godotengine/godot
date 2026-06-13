@@ -1,8 +1,8 @@
 /**************************************************************************/
-/*  test_jxl.h                                                             */
+/*  test_jxl.h                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
-/*                             GODOT ENGINE                                */
+/*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
@@ -34,7 +34,6 @@
 
 #include "core/io/file_access.h"
 #include "core/io/image.h"
-
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 
