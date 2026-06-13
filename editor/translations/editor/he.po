@@ -1039,9 +1039,6 @@ msgstr "בסוף"
 msgid "Travel"
 msgstr "טיול"
 
-msgid "No playback resource set at path: %s."
-msgstr "לא נקבע משאב לניגון בנתיב: %s."
-
 msgid "Node Removed"
 msgstr "הוסר מפרק"
 
@@ -4622,6 +4619,9 @@ msgstr "הדפסת רשתות"
 
 msgid "Finishing Plot"
 msgstr "מסיים הדפסה"
+
+msgid "No playback resource set at path: %s."
+msgstr "לא נקבע משאב לניגון בנתיב: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "לא נקבע שורש AnimationNode עבור הגרף."

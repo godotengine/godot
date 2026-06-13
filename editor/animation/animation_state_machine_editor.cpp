@@ -72,8 +72,6 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 		connected_nodes.clear();
 		_update_mode();
 		_update_graph();
-	} else {
-		AnimationTreeEditor::get_singleton()->current_playback_error = String();
 	}
 
 	if (read_only) {
@@ -1694,7 +1692,6 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 			const String playback_path = AnimationTreeEditor::get_singleton()->get_base_path() + "playback";
 			Ref<AnimationNodeStateMachinePlayback> playback = tree->get(playback_path);
-			AnimationTreeEditor::get_singleton()->current_playback_error = playback.is_null() ? vformat(TTR("No playback resource set at path: %s."), playback_path) : String();
 
 			for (int i = 0; i < transition_lines.size(); i++) {
 				int tidx = -1;
@@ -1831,8 +1828,6 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			hovered_node_name = StringName();
 			hovered_node_area = HOVER_NODE_NONE;
 			set_process(is_visible_in_tree());
-
-			AnimationTreeEditor::get_singleton()->current_playback_error = String();
 		} break;
 	}
 }

@@ -572,7 +572,16 @@ void AnimationNodeBlendSpace2D::_check_can_sync() {
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	_update_triangles();
 
-	if (!blend_points_used || is_contain_invalid_point) {
+	if (!blend_points_used) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, RTR(ERR_NO_TRIANGLE));
+		}
+		return NodeTimeInfo();
+	}
+	if (is_contain_invalid_point) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, RTR(ERR_INVALID_POINT));
+		}
 		return NodeTimeInfo();
 	}
 
@@ -844,7 +853,12 @@ void AnimationNodeBlendSpace2D::validate_node(const AnimationTree *p_tree, const
 
 	const_cast<AnimationNodeBlendSpace2D *>(this)->_update_triangles();
 	if (get_triangle_count() == 0) {
-		add_validation_error(p_tree, p_path, RTR("No triangles exist, so blending cannot take place."));
+		add_validation_error(p_tree, p_path, RTR(ERR_NO_TRIANGLE));
+	}
+
+	const_cast<AnimationNodeBlendSpace2D *>(this)->_check_can_sync();
+	if (is_contain_invalid_point) {
+		add_validation_error(p_tree, p_path, RTR(ERR_INVALID_POINT));
 	}
 }
 

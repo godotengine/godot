@@ -69,8 +69,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-19 14:03+0000\n"
-"Last-Translator: shortsun <weekenddamehuman@gmail.com>\n"
+"PO-Revision-Date: 2026-06-01 06:14+0000\n"
+"Last-Translator: Chikashi Suzuki <underground.resources823@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -395,6 +395,9 @@ msgstr "一般"
 msgid "Snap Controls to Pixels"
 msgstr "コントロールをピクセル単位でスナップ"
 
+msgid "Show Focus State on Pointer Event"
+msgstr "ポインタイベント時にフォーカスの状態を表示する"
+
 msgid "Fonts"
 msgstr "フォント"
 
@@ -527,6 +530,9 @@ msgstr "事前計算にマルチスレッドを使用"
 msgid "Baking Use High Priority Threads"
 msgstr "ベイク処理に高優先度スレッドを使用する"
 
+msgid "NavMesh Edge Merge Errors"
+msgstr "NavMeshのメッシュ統合エラー"
+
 msgid "Low Processor Usage Mode"
 msgstr "プロセッサー低使用率モード"
 
@@ -538,6 +544,9 @@ msgstr "デルタ時間のスムージング"
 
 msgid "Print Error Messages"
 msgstr "エラーメッセージを表示"
+
+msgid "Print to stdout"
+msgstr "標準出力を表示"
 
 msgid "Physics Ticks per Second"
 msgstr "1 秒あたりの物理ティック数"
@@ -566,6 +575,9 @@ msgstr "タッチでマウス操作をエミュレート"
 msgid "Emulate Touch From Mouse"
 msgstr "マウスでタッチ操作をエミュレート"
 
+msgid "Ignore Joypad on Unfocused Application"
+msgstr "非アクティブなアプリ上でジョイパッドを無効化"
+
 msgid "Legacy Just Pressed Behavior"
 msgstr "従来の押したときの振る舞い"
 
@@ -583,6 +595,9 @@ msgstr "ジャイロスコープを有効にする"
 
 msgid "Enable Magnetometer"
 msgstr "磁力計を有効にする"
+
+msgid "Joypads"
+msgstr "ジョイパッド"
 
 msgid "Device"
 msgstr "デバイス"

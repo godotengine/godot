@@ -458,7 +458,7 @@ void ExportTemplateManager::_initialize_template_data() {
 	{
 		TemplateInfo info;
 		info.name = TTR("Web with Extensions");
-		info.description = TTRC("Web build with support for GDExtextensions. Only useful if you use GDExtensions, otherwise it only increases build size.");
+		info.description = TTRC("Web build with support for GDExtensions. Only useful if you use GDExtensions, otherwise it only increases build size.");
 		info.file_list = { "web_dlink_debug.zip", "web_dlink_release.zip" };
 		template_data[TemplateID::WEB_EXTENSIONS] = info;
 	}
@@ -876,10 +876,8 @@ Ref<Texture2D> ExportTemplateManager::_get_platform_icon(const String &p_platfor
 }
 
 void ExportTemplateManager::_version_selected() {
-	if (!is_downloading()) {
-		file_metadata.clear();
-		_update_template_tree();
-	}
+	file_metadata.clear();
+	_update_template_tree();
 	_update_install_button();
 }
 
@@ -944,6 +942,11 @@ void ExportTemplateManager::_install_templates(TreeItem *p_files) {
 	_update_template_tree();
 	_process_download_queue();
 	_update_install_button();
+
+	// Don't allow changing selected version while downloading.
+	for (int i = 0; i < version_list->get_item_count(); i++) {
+		version_list->set_item_disabled(i, true);
+	}
 
 	ProgressIndicator *indicator = EditorNode::get_bottom_panel()->get_progress_indicator();
 	indicator->set_tooltip_text(TTRC("Downloading export templates..."));
@@ -1015,6 +1018,10 @@ void ExportTemplateManager::_process_download_queue() {
 		set_process_internal(false);
 		_update_install_button();
 		EditorNode::get_bottom_panel()->get_progress_indicator()->hide();
+
+		for (int i = 0; i < version_list->get_item_count(); i++) {
+			version_list->set_item_disabled(i, false);
+		}
 	} else {
 		set_process_internal(true);
 	}
@@ -1305,6 +1312,12 @@ void ExportTemplateManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			EditorNode::get_bottom_panel()->get_progress_indicator()->connect("clicked", callable_mp(this, &ExportTemplateManager::popup_manager));
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				center_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
+			}
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1601,8 +1614,9 @@ ExportTemplateManager::ExportTemplateManager() {
 	side_vb->add_child(version_list);
 	version_list->connect(SceneStringName(item_selected), callable_mp(this, &ExportTemplateManager::_version_selected).unbind(1));
 
-	VSplitContainer *center_split = memnew(VSplitContainer);
+	center_split = memnew(VSplitContainer);
 	center_split->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	center_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
 	main_split->add_child(center_split);
 
 	VBoxContainer *available_templates_container = memnew(VBoxContainer);

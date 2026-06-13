@@ -174,6 +174,12 @@ void ProjectListItemControl::_notification(int p_what) {
 
 			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("ProjectList")));
 		} break;
+
+		case NOTIFICATION_READY: {
+			const Callable callback = callable_mp(this, &ProjectListItemControl::update_title_size);
+			get_window()->connect(SNAME("size_changed"), callback);
+			callback.call_deferred();
+		} break;
 	}
 }
 
@@ -421,6 +427,10 @@ void ProjectListItemControl::set_is_grayed(bool p_grayed) {
 	}
 }
 
+void ProjectListItemControl::update_title_size() {
+	project_title->set_custom_minimum_size(Vector2(get_size().x * 0.5, 0));
+}
+
 void ProjectListItemControl::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("favorite_pressed"));
 	ADD_SIGNAL(MethodInfo("explore_pressed"));
@@ -472,6 +482,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_title->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_title->set_name("ProjectName");
 		project_title->set_h_size_flags(Control::SIZE_FILL);
+		project_title->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 		title_hb->add_child(project_title);
 
 		tag_container = memnew(HFlowContainer);

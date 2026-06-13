@@ -78,13 +78,14 @@
 # CoffeAfterBreak <harithadzka.ramadhan@gmail.com>, 2026.
 # Narada Fox <narada.fox7pc@gmail.com>, 2026.
 # "Oscar :D" <robloxgamingindonesia7@gmail.com>, 2026.
+# Foliage Tree Nicer <foliagetree23@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-26 08:28+0000\n"
-"Last-Translator: \"Oscar :D\" <robloxgamingindonesia7@gmail.com>\n"
+"PO-Revision-Date: 2026-05-28 22:01+0000\n"
+"Last-Translator: Foliage Tree Nicer <foliagetree23@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -785,6 +786,12 @@ msgstr "Tambah Titik Animasi"
 msgid "Remove BlendSpace1D Point"
 msgstr "Hapus Titik BlendSpace1D"
 
+msgid "Reorder BlendSpace1D Point Index"
+msgstr "Bentuk Lagi Titik Indeks BlendSpace1D"
+
+msgid "Change BlendSpace1D Point Name"
+msgstr "Ubah Nama Titik dari BlendSpace1D"
+
 msgid "Continuous"
 msgstr "Lanjut"
 
@@ -793,6 +800,17 @@ msgstr "Berlainan"
 
 msgid "Capture"
 msgstr "Tangkap"
+
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"Memilih dan memindahkan titik-titik.\n"
+"RMB: Menambahkan titik di posisi yang diklik.\n"
+"Shift+LMB+Seret: Atur posisi yang dicampur yang ada di dalam ruangan.\n"
+"Gulir (Scroll): Penambahan atau pengurangan indeks."
 
 msgid "Create points."
 msgstr "Buat titik."
@@ -815,8 +833,45 @@ msgstr "Sinkron"
 msgid "None"
 msgstr "Tidak ada"
 
+msgid "Independent"
+msgstr "Independen (berdiri sendiri)"
+
+msgid "Cyclic Mutable"
+msgstr "Dapat berubahnya siklis (perputaran)"
+
+msgid "Cyclic Constant"
+msgstr "Siklis (perputaran) yang tetap (konstan)"
+
+msgid "Cyclic Length"
+msgstr "Durasi Perputaran"
+
+msgid ""
+"Cycle length in seconds for cyclic sync. All animations are time-scaled to "
+"complete one cycle in this duration."
+msgstr ""
+"Durasi putaran dalam sepersekian detik untuk menyinkronkan perputaran. "
+"Seluruh animasi merupakan waktu yang berskala untuk menuntaskan satu putaran "
+"pada durasi ini."
+
+msgid "Blend"
+msgstr "Pencampuran"
+
 msgid "Open Editor"
 msgstr "Buka Editor"
+
+msgid "Index"
+msgstr "Indeks"
+
+msgid "Blend Point Index"
+msgstr "Pencampuran Titik Indeks"
+
+msgid ""
+"Index of the blend point.\n"
+"Values outside of the valid range will be clamped to the nearest index."
+msgstr ""
+"Indeks dari pencampuran titik.\n"
+"Nilai-nilai yang diluar dari jangkauan yang telah valid ditentukan maka akan "
+"dibatasi pada indeks yang paling terdekat."
 
 msgid "Position"
 msgstr "Posisi"
@@ -834,7 +889,7 @@ msgid "Value"
 msgstr "Nilai"
 
 msgid "Open Animation Node"
-msgstr "Buka Node Animasi"
+msgstr "Buka Animasi Node"
 
 msgid "Triangle already exists."
 msgstr "Segitiga sudah ada."
@@ -842,17 +897,26 @@ msgstr "Segitiga sudah ada."
 msgid "Add Triangle"
 msgstr "Tambah Segitiga"
 
+msgid "Move BlendSpace2D Node Point"
+msgstr "Memindahkan Titik Node BlendSpace2D"
+
 msgid "Change BlendSpace2D Config"
 msgstr "Ubah Konfigurasi BlendSpace2D"
 
 msgid "Change BlendSpace2D Labels"
-msgstr "Ubah Label BlendSpace2D"
+msgstr "Mengubah Label-label BlendSpace2D"
 
 msgid "Remove BlendSpace2D Point"
-msgstr "Hapus Titik BlendSpace2D"
+msgstr "Menghapus Titik BlendSpace2D"
 
 msgid "Remove BlendSpace2D Triangle"
-msgstr "Hapus Segitiga BlendSpace2D"
+msgstr "Menghapus Segitiga BlendSpace2D"
+
+msgid "Reorder BlendSpace2D Point Index"
+msgstr "Menentukan Ulang Titik Indeks BlendSpace2D"
+
+msgid "Change BlendSpace2D Point Name"
+msgstr "Mengubah Nama Titik BlendSpace2D"
 
 msgid "Toggle Auto Triangles"
 msgstr "Jungkitkan Segitiga Otomatis"
@@ -1410,9 +1474,6 @@ msgstr "Pada Akhir"
 
 msgid "Travel"
 msgstr "Menjelajah"
-
-msgid "No playback resource set at path: %s."
-msgstr "Tidak ada resource playback yang diatur di lokasi: %s."
 
 msgid "Node Removed"
 msgstr "Node Dihapus"
@@ -11856,6 +11917,9 @@ msgstr "Memetakan Mesh"
 
 msgid "Finishing Plot"
 msgstr "Menyelesaikan Pemetaan"
+
+msgid "No playback resource set at path: %s."
+msgstr "Tidak ada resource playback yang diatur di lokasi: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Akar AnimationNode untuk grafik belum diatur."

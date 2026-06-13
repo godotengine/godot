@@ -1413,9 +1413,6 @@ msgstr "Al Final"
 msgid "Travel"
 msgstr "Viaje"
 
-msgid "No playback resource set at path: %s."
-msgstr "Ningún recurso de reproducción asignado en la ruta: %s."
-
 msgid "Node Removed"
 msgstr "Nodo Eliminado"
 
@@ -9604,6 +9601,9 @@ msgstr "Trazando Meshes"
 
 msgid "Finishing Plot"
 msgstr "Finalizar Trazado"
+
+msgid "No playback resource set at path: %s."
+msgstr "Ningún recurso de reproducción asignado en la ruta: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "No se ha establecido ningún nodo AnimationNode raíz para el gráfico."

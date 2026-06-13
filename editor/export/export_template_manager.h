@@ -43,6 +43,7 @@ class OptionButton;
 class Texture2D;
 class Tree;
 class TreeItem;
+class VSplitContainer;
 
 class TemplateDownloader : public HTTPRequest {
 	GDCLASS(TemplateDownloader, HTTPRequest);
@@ -190,6 +191,7 @@ class ExportTemplateManager : public AcceptDialog {
 	HashMap<String, int> checked_cache;
 	HashMap<String, bool> folding_cache;
 
+	VSplitContainer *center_split = nullptr;
 	OptionButton *mirrors_list = nullptr;
 	Button *open_mirror = nullptr;
 	ItemList *version_list = nullptr;

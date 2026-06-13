@@ -2817,7 +2817,7 @@ void fragment_shader(in SceneData scene_data) {
 		}
 	}
 
-	{ // area lights
+	if (sc_cluster_has_area_light()) { // area lights
 
 		uint cluster_area_offset = cluster_offset + implementation_data.cluster_type_size * 2;
 

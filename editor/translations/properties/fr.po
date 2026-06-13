@@ -9026,6 +9026,9 @@ msgstr "Montrer derrière le parent"
 msgid "Clip Children"
 msgstr "Associer les enfants"
 
+msgid "Oversampling with Scale"
+msgstr "Sur-échantillonnage avec échelle"
+
 msgid "Light Mask"
 msgstr "Masque de lumières"
 

@@ -287,7 +287,10 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 				if (should_scroll) {
 					// Temporarily set to `false`, to allow caching the unfolds.
 					updating_scene_tree = false;
-					item->uncollapse_tree();
+					// Expand ancestors to make the item visible.
+					if (TreeItem *parent_item = item->get_parent()) {
+						parent_item->uncollapse_tree();
+					}
 					updating_scene_tree = true;
 					scroll_item = item;
 				}

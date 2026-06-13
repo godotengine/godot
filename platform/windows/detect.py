@@ -205,7 +205,7 @@ def get_opts():
 
     # Dependencies folder.
     deps_folder = os.getenv("LOCALAPPDATA")
-    if deps_folder:
+    if deps_folder and not os.getenv("MSYSTEM"):
         deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
     else:
         # Cross-compiling, the deps install script puts things in `bin`.

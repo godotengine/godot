@@ -1099,20 +1099,27 @@ void EditorAssetLibrary::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("asset_library") &&
-					!EditorSettings::get_singleton()->check_changed_settings_in_group("network")) {
-				break;
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("asset_store/use_threads") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("network/http_proxy")) {
+				setup_http_request(request);
 			}
 
-			_update_repository_options();
-			setup_http_request(request);
-
-			const bool loading_blocked_new = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
-			if (loading_blocked_new != loading_blocked) {
-				loading_blocked = loading_blocked_new;
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("asset_store/available_urls")) {
+				_update_repository_options();
 
 				if (!loading_blocked && is_visible()) {
-					_request_current_config(); // Reload config now that the network is available.
+					_request_current_config();
+				}
+			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("network/connection/network_mode")) {
+				const bool loading_blocked_new = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
+				if (loading_blocked_new != loading_blocked) {
+					loading_blocked = loading_blocked_new;
+
+					if (!loading_blocked && is_visible()) {
+						_request_current_config(); // Reload config now that the network is available.
+					}
 				}
 			}
 		} break;
@@ -1408,9 +1415,20 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, int p_asset_id, const St
 void EditorAssetLibrary::_repository_changed(int p_repository_id) {
 	_set_library_message(TTRC("Loading..."));
 
-	asset_top_page->hide();
-	asset_bottom_page->hide();
-	asset_items->hide();
+	if (asset_items) {
+		memdelete(asset_items);
+		asset_items = nullptr;
+	}
+
+	if (asset_top_page) {
+		memdelete(asset_top_page);
+		asset_top_page = nullptr;
+	}
+
+	if (asset_bottom_page) {
+		memdelete(asset_bottom_page);
+		asset_bottom_page = nullptr;
+	}
 
 	filter->set_editable(false);
 	sort->set_disabled(true);
@@ -1425,6 +1443,8 @@ void EditorAssetLibrary::_licenses_id_pressed(int p_id) {
 }
 
 void EditorAssetLibrary::_licenses_popup_hide() {
+	licenses_all_toggled = true;
+
 	bool research = false;
 	PopupMenu *pm = licenses->get_popup();
 	for (unsigned int i = 0; i < licenses_toggled.size(); i++) {
@@ -1432,6 +1452,10 @@ void EditorAssetLibrary::_licenses_popup_hide() {
 		if (toggled != licenses_toggled[i]) {
 			licenses_toggled[i] = toggled;
 			research = true;
+		}
+
+		if (!toggled) {
+			licenses_all_toggled = false;
 		}
 	}
 
@@ -1459,12 +1483,14 @@ void EditorAssetLibrary::_search(int p_page) {
 		args += "." + itos(GODOT_VERSION_PATCH);
 	}
 
-	int license_count = licenses->get_item_count();
-	if (license_count > 0) {
-		PopupMenu *popup = licenses->get_popup();
-		for (int i = 0; i < license_count; i++) {
-			if (popup->is_item_checked(i)) {
-				args += "&licenses=" + (String)popup->get_item_metadata(i);
+	if (!licenses_all_toggled) {
+		int license_count = licenses->get_item_count();
+		if (license_count > 0) {
+			PopupMenu *popup = licenses->get_popup();
+			for (int i = 0; i < license_count; i++) {
+				if (popup->is_item_checked(i)) {
+					args += "&licenses=" + (String)popup->get_item_metadata(i);
+				}
 			}
 		}
 	}
@@ -1714,6 +1740,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 		case REQUESTING_LICENSES: {
 			licenses_toggled.clear();
+			licenses_all_toggled = true;
 
 			Array arr = dt;
 			PopupMenu *popup = licenses->get_popup();
@@ -1736,19 +1763,26 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			if (asset_items) {
 				memdelete(asset_items);
+				asset_items = nullptr;
 			}
 
 			if (asset_top_page) {
 				memdelete(asset_top_page);
+				asset_top_page = nullptr;
 			}
 
 			if (asset_bottom_page) {
 				memdelete(asset_bottom_page);
+				asset_bottom_page = nullptr;
 			}
 
 			Dictionary d = dt;
-			ERR_FAIL_COND(!d.has("count"));
-			ERR_FAIL_COND(!d.has("hits"));
+			if (!d.has("count") || !d.has("hits")) {
+				_set_library_message_with_action(TTRC("Repository returned with invalid data."), TTRC("Retry"), callable_mp(this, &EditorAssetLibrary::_request_current_config));
+				error_hb->show();
+
+				return;
+			}
 
 			int page_len = 24; // API's default batch size.
 			int total_items = d["count"];
@@ -1911,11 +1945,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			}
 
 			LocalVector<int> engine_version = { GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR, GODOT_VERSION_PATCH };
-			Array arr = dt;
-			// Iterate backwards, so the newer releases are added first.
-			for (int i = arr.size() - 1; i >= 0; i--) {
-				Dictionary d = arr[i];
-
+			for (const Dictionary d : (Array)dt) {
 				ERR_FAIL_COND(!d.has("download_url"));
 				ERR_FAIL_COND(!d.has("version"));
 				ERR_FAIL_COND(!d.has("stable"));
@@ -1938,7 +1968,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 						}
 					}
 					if (!is_compat) {
-						continue; // This release is for an older version of Godot.
+						continue; // This release is for a newer version of Godot.
 					}
 				}
 
@@ -1957,7 +1987,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 						}
 					}
 					if (!is_compat) {
-						continue; // This release is for a newer version of Godot.
+						continue; // This release is for an older version of Godot.
 					}
 				}
 
@@ -2012,6 +2042,10 @@ void EditorAssetLibrary::_install_external_asset(const String &p_zip_path, const
 }
 
 void EditorAssetLibrary::_update_asset_items_columns() {
+	if (!asset_items) {
+		return;
+	}
+
 	int new_columns = get_size().x / (450.0 * EDSCALE);
 	new_columns = MAX(1, new_columns);
 

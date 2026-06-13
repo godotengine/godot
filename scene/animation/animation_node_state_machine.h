@@ -164,6 +164,8 @@ protected:
 	virtual void reset_state() override;
 
 public:
+	virtual void validate_node(const AnimationTree *p_tree, const StringName &p_path) const override;
+
 	virtual void get_parameter_list(LocalVector<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 	virtual bool is_parameter_read_only(const StringName &p_parameter) const override;

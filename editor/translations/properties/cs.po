@@ -47,13 +47,14 @@
 # Jan Matějka <controlcommanddev@gmail.com>, 2025.
 # Pixeluted <pixeluted@proton.me>, 2025.
 # Jakub Szydlowski <kubkii27@gmail.com>, 2026.
+# NoNormal <no123normal@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-24 11:13+0000\n"
-"Last-Translator: Jakub Szydlowski <kubkii27@gmail.com>\n"
+"PO-Revision-Date: 2026-05-31 22:43+0000\n"
+"Last-Translator: NoNormal <no123normal@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/cs/>\n"
 "Language: cs\n"
@@ -3505,6 +3506,18 @@ msgstr "Maximální velikost zásobníku volání"
 msgid "Renamed in Godot 4 Hint"
 msgstr "Nápověda přejmenování v Godotu 4"
 
+msgid "Redundant Await"
+msgstr "Nepotřebné Await"
+
+msgid "Assert Always True"
+msgstr "Assert Vždy True"
+
+msgid "Assert Always False"
+msgstr "Assert Vždy False"
+
+msgid "Integer Division"
+msgstr "Dělení Čísel"
+
 msgid "Copyright"
 msgstr "Copyright"
 
@@ -4468,6 +4481,15 @@ msgstr "Povolené funkce"
 msgid "Visibility State"
 msgstr "Stav viditelnosti"
 
+msgid "Install Exported APK"
+msgstr "Spusit exportované APK"
+
+msgid "Java SDK Path"
+msgstr "Cesta Java SDK"
+
+msgid "scrcpy"
+msgstr "scrcpy"
+
 msgid "Force System User"
 msgstr "Vynutit systémového uživatele"
 
@@ -4512,6 +4534,9 @@ msgstr "Adresář Gradle sestavení"
 
 msgid "Android Source Template"
 msgstr "Zdrojová Android šablona"
+
+msgid "Compress Native Libraries"
+msgstr "Komprimovat Nativní Knihovny"
 
 msgid "Export Format"
 msgstr "Formát exportu"
@@ -4588,6 +4613,9 @@ msgstr "Zavřít přejetím prstu"
 msgid "Immersive Mode"
 msgstr "Imerzivní režim"
 
+msgid "Edge to Edge"
+msgstr "Hrana do Hrany"
+
 msgid "Support Small"
 msgstr "Podpora malých"
 
@@ -4617,6 +4645,9 @@ msgstr "Oprávnění"
 
 msgid "Custom Permissions"
 msgstr "Vlastní oprávnění"
+
+msgid "iOS Deploy"
+msgstr "iOS Nasazení"
 
 msgid "Targeted Device Family"
 msgstr "Cílená rodina zařízení"
@@ -4710,6 +4741,9 @@ msgstr "Skript čištění"
 
 msgid "Distribution Type"
 msgstr "Typ distribuce"
+
+msgid "Liquid Glass Icon"
+msgstr "Ikona Liquid Glass"
 
 msgid "Copyright Localized"
 msgstr "Lokalizovaný copyright"
@@ -4984,6 +5018,9 @@ msgstr "Ikona 180 x 180"
 msgid "Icon 512 X 512"
 msgstr "Ikona 512 x 512"
 
+msgid "Emscripten Pool Size"
+msgstr "Velikost Emscripten Pool"
+
 msgid "Identity Type"
 msgstr "Typ identity"
 
@@ -5047,6 +5084,9 @@ msgstr "Překlopit vertikálně"
 msgid "Current"
 msgstr "Aktuální"
 
+msgid "Stream Paused"
+msgstr "Zastavený Stream"
+
 msgid "Max Distance"
 msgstr "Maximální vzdálenost"
 
@@ -5055,6 +5095,9 @@ msgstr "Útlum"
 
 msgid "Max Polyphony"
 msgstr "Maximální polyfonie"
+
+msgid "Area Mask"
+msgstr "Maska Oblasti"
 
 msgid "Copy Mode"
 msgstr "Režim kopírování"
@@ -5082,6 +5125,9 @@ msgstr "Spodní"
 
 msgid "Smoothed"
 msgstr "Vyhlazený"
+
+msgid "Drag"
+msgstr "Táhnout"
 
 msgid "Horizontal Enabled"
 msgstr "Horizontální orientace povolena"
@@ -5777,8 +5823,17 @@ msgstr "Index kosti"
 msgid "Override Pose"
 msgstr "Přepsat pózu"
 
+msgid "Keep Aspect"
+msgstr "Zachovat Aspekt"
+
 msgid "Cull Mask"
 msgstr "Maska vyřazení"
+
+msgid "Attributes"
+msgstr "Vlastnosti"
+
+msgid "Far"
+msgstr "Daleký"
 
 msgid "Visibility AABB"
 msgstr "Přepnout viditelnost AABB"
@@ -6104,6 +6159,9 @@ msgstr "Členění"
 
 msgid "Light Data"
 msgstr "Světelná data"
+
+msgid "Exclude"
+msgstr "Vynechat"
 
 msgid "Target Node"
 msgstr "Cílový uzel"
@@ -6960,14 +7018,26 @@ msgstr "Lesklost"
 msgid "Download File"
 msgstr "Stáhnout soubor"
 
+msgid "Body Size Limit"
+msgstr "Limit velikosti Těla"
+
 msgid "Max Redirects"
 msgstr "Maximální počet přesměrování"
+
+msgid "Owner"
+msgstr "Vlastník"
 
 msgid "Thread Group"
 msgstr "Skupina vláken"
 
 msgid "Multiplayer Poll"
 msgstr "Hlasování více hráčů"
+
+msgid "Shape Color"
+msgstr "Barva Tvaru"
+
+msgid "Geometry Color"
+msgstr "Barva Geometrie"
 
 msgid "Screen Space AA"
 msgstr "Vyhlazování prostoru obrazovky"
@@ -6986,6 +7056,9 @@ msgstr "Přichytit 2D transformace k pixelům"
 
 msgid "Snap 2D Vertices to Pixel"
 msgstr "Přichytit 2D vrcholy k pixelům"
+
+msgid "Lights and Shadows"
+msgstr "Světla a Stíny"
 
 msgid "SDF"
 msgstr "SDF"

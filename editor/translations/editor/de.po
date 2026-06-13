@@ -1492,9 +1492,6 @@ msgstr "Am Ende"
 msgid "Travel"
 msgstr "Reisen"
 
-msgid "No playback resource set at path: %s."
-msgstr "Keine Abspiel-Ressource festgelegt im Pfad: %s."
-
 msgid "Node Removed"
 msgstr "Node entfernt"
 
@@ -21168,6 +21165,9 @@ msgstr ""
 
 msgid "Animation Apply Reset"
 msgstr "Animation Zurücksetzen anwenden"
+
+msgid "No playback resource set at path: %s."
+msgstr "Keine Abspiel-Ressource festgelegt im Pfad: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Für diesen Graphen wurde kein Root-AnimationNode festgelegt."

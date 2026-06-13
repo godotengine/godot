@@ -1364,9 +1364,6 @@ msgstr "Ag deireadh"
 msgid "Travel"
 msgstr "Taisteal"
 
-msgid "No playback resource set at path: %s."
-msgstr "Níl aon acmhainn athsheinm socraithe ag an gcosán: %s."
-
 msgid "Node Removed"
 msgstr "Nód Bainte"
 
@@ -21015,6 +21012,9 @@ msgstr ""
 
 msgid "Animation Apply Reset"
 msgstr "Athshocraigh Feidhmchlár Beochana"
+
+msgid "No playback resource set at path: %s."
+msgstr "Níl aon acmhainn athsheinm socraithe ag an gcosán: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Níl aon fhréamh AnimationNode don ghraf socraithe."

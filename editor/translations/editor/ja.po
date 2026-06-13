@@ -1413,9 +1413,6 @@ msgstr "終りに"
 msgid "Travel"
 msgstr "トラベル"
 
-msgid "No playback resource set at path: %s."
-msgstr "パス: %s に再生リソースが設定されていません。"
-
 msgid "Node Removed"
 msgstr "ノードが削除されました"
 
@@ -19550,6 +19547,9 @@ msgstr ""
 
 msgid "Animation Apply Reset"
 msgstr "アニメーション適用リセット"
+
+msgid "No playback resource set at path: %s."
+msgstr "パス: %s に再生リソースが設定されていません。"
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "グラフのルートAnimationNodeが設定されていません。"

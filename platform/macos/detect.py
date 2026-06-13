@@ -293,6 +293,7 @@ def configure(env: "SConsEnvironment"):
                 env.Append(LINKFLAGS=["-lANGLE.macos." + env["arch"]])
                 env.Append(LINKFLAGS=["-lEGL.macos." + env["arch"]])
                 env.Append(LINKFLAGS=["-lGLES.macos." + env["arch"]])
+                extra_frameworks.add("Metal")
             else:
                 print_warning(
                     "The ANGLE rendering driver requires dependencies to be installed.\n"

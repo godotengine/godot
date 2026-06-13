@@ -9,6 +9,7 @@
 	</description>
 	<tutorials>
 		<link title="HDR output">$DOCS_URL/tutorials/rendering/hdr_output.html</link>
+		<link title="Multiple Windows demo">https://github.com/godotengine/godot-demo-projects/tree/master/misc/multiple_windows</link>
 	</tutorials>
 	<methods>
 		<method name="_get_contents_minimum_size" qualifiers="virtual const">

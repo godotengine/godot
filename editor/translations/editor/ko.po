@@ -1432,9 +1432,6 @@ msgstr "끝에서"
 msgid "Travel"
 msgstr "진행"
 
-msgid "No playback resource set at path: %s."
-msgstr "경로에 설정한 재생 리소스 없음: %s."
-
 msgid "Node Removed"
 msgstr "노드 제거됨"
 
@@ -20415,6 +20412,9 @@ msgstr ""
 
 msgid "Animation Apply Reset"
 msgstr "애니메이션 적용 재설정"
+
+msgid "No playback resource set at path: %s."
+msgstr "경로에 설정한 재생 리소스 없음: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "그래프를 위한 설정된 루트 AnimationNode가 없습니다."

@@ -1271,16 +1271,12 @@ void GI::SDFGI::update_light() {
 
 	RID area_light_atlas_dynamic_uniform_set;
 	{
-		thread_local LocalVector<RD::Uniform> uniforms;
-		uniforms.clear();
-		{
-			RD::Uniform u;
-			u.binding = 0;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
-			uniforms.push_back(u);
-		}
-		area_light_atlas_dynamic_uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_DYNAMIC), 1, uniforms);
+		RD::Uniform u;
+		u.binding = 0;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
+
+		area_light_atlas_dynamic_uniform_set = UniformSetCacheRD::get_singleton()->get_cache(gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_DYNAMIC), 1, u);
 	}
 
 	for (uint32_t i = 0; i < cascades.size(); i++) {
@@ -2584,16 +2580,12 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 
 	RID area_light_atlas_static_uniform_set;
 	{
-		thread_local LocalVector<RD::Uniform> uniforms;
-		uniforms.clear();
-		{
-			RD::Uniform u;
-			u.binding = 0;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.append_id(texture_storage->area_light_atlas_get_texture());
-			uniforms.push_back(u);
-		}
-		area_light_atlas_static_uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_STATIC), 1, uniforms);
+		RD::Uniform u;
+		u.binding = 0;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		u.append_id(texture_storage->area_light_atlas_get_texture());
+
+		area_light_atlas_static_uniform_set = UniformSetCacheRD::get_singleton()->get_cache(gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_STATIC), 1, u);
 	}
 
 	for (uint32_t i = 0; i < p_cascade_count; i++) {
@@ -2718,14 +2710,6 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 							u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 							u.binding = 3;
 							u.append_id(gi->voxel_gi_lights_uniform);
-							copy_uniforms.push_back(u);
-						}
-
-						{
-							RD::Uniform u;
-							u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-							u.binding = 13;
-							u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
 							copy_uniforms.push_back(u);
 						}
 
@@ -2891,13 +2875,6 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 								u.append_id(dmap.depth);
 								uniforms.push_back(u);
 							}
-							{
-								RD::Uniform u;
-								u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-								u.binding = 13;
-								u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
-								uniforms.push_back(u);
-							}
 
 							dmap.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->voxel_gi_lighting_shader_version_shaders[VOXEL_GI_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING], 0);
 						}
@@ -2962,14 +2939,6 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 								u.append_id(mipmaps[dmap.mipmap].texture);
 								uniforms.push_back(u);
 							}
-						}
-
-						{
-							RD::Uniform u;
-							u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-							u.binding = 13;
-							u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
-							uniforms.push_back(u);
 						}
 
 						dmap.uniform_set = RD::get_singleton()->uniform_set_create(
@@ -3133,6 +3102,16 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 			int wg_size = 64;
 			int64_t wg_limit_x = (int64_t)RD::get_singleton()->limit_get(RD::LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X);
 
+			RID compute_light_area_light_atlas_uniform_set;
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 0;
+				u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
+
+				compute_light_area_light_atlas_uniform_set = UniformSetCacheRD::get_singleton()->get_cache(gi->voxel_gi_lighting_shader_version_shaders[VOXEL_GI_SHADER_VERSION_COMPUTE_LIGHT], 1, u);
+			}
+
 			for (int pass = 0; pass < passes; pass++) {
 				if (p_update_light_instances) {
 					for (int i = 0; i < mipmaps.size(); i++) {
@@ -3147,6 +3126,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 						}
 						if (pass == 0 || i > 0) {
 							RD::get_singleton()->compute_list_bind_uniform_set(compute_list, mipmaps[i].uniform_set, 0);
+							if (i == 0) {
+								RD::get_singleton()->compute_list_bind_uniform_set(compute_list, compute_light_area_light_atlas_uniform_set, 1);
+							}
 						} else {
 							RD::get_singleton()->compute_list_bind_uniform_set(compute_list, mipmaps[i].second_bounce_uniform_set, 0);
 						}
@@ -3204,6 +3186,16 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 		Transform3D to_probe_xform = to_world_xform.affine_inverse();
 
 		AABB probe_aabb(Vector3(), octree_size);
+
+		RID dynamic_object_lighting_area_light_atlas_uniform_set;
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 0;
+			u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
+
+			dynamic_object_lighting_area_light_atlas_uniform_set = UniformSetCacheRD::get_singleton()->get_cache(gi->voxel_gi_lighting_shader_version_shaders[VOXEL_GI_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING], 1, u);
+		}
 
 		//this could probably be better parallelized in compute..
 		for (int i = 0; i < (int)p_dynamic_objects.size(); i++) {
@@ -3328,6 +3320,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->voxel_gi_lighting_shader_version_pipelines[VOXEL_GI_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING].get_rid());
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dynamic_maps[0].uniform_set, 0);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dynamic_object_lighting_area_light_atlas_uniform_set, 1);
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VoxelGIDynamicPushConstant));
 				RD::get_singleton()->compute_list_dispatch(compute_list, Math::division_round_up(rect.size.x, 8), Math::division_round_up(rect.size.y, 8), 1);
 				//print_line("rect: " + itos(i) + ": " + rect);
