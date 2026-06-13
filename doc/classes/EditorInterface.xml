@@ -102,12 +102,10 @@
 				Returns the language currently used for the editor interface.
 			</description>
 		</method>
-		<method name="get_editor_main_screen" qualifiers="const">
+		<method name="get_editor_main_screen" qualifiers="const" deprecated="This method no longer returns the main screen. Only used for legacy main screen plugins.">
 			<return type="VBoxContainer" />
 			<description>
-				Returns the editor control responsible for main screen plugins and tools. Use it with plugins that implement [method EditorPlugin._has_main_screen].
-				[b]Note:[/b] This node is a [VBoxContainer], which means that if you add a [Control] child to it, you need to set the child's [member Control.size_flags_vertical] to [constant Control.SIZE_EXPAND_FILL] to make it use the full available space.
-				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
+				Returns the editor control responsible for legacy main screen plugins and tools.
 			</description>
 		</method>
 		<method name="get_editor_paths" qualifiers="const">
@@ -173,6 +171,14 @@
 			<description>
 				Returns the editor's [EditorInspector] instance.
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="get_main_screen_dock">
+			<return type="EditorDock" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns a main screen [EditorDock] with the specified [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], [code]Game[/code], or [code]AssetLib[/code] for default tabs). Returns [code]null[/code] if the dock was not found.
+				[b]Note:[/b] This method can only return docks that are currently docked at the main screen. If a dock is floating or closed, it won't be returned.
 			</description>
 		</method>
 		<method name="get_node_3d_rotate_snap" qualifiers="const">
@@ -496,7 +502,7 @@
 				[b]Note:[/b] The feature profile that gets activated must be located in the [code]feature_profiles[/code] directory, as a file with the [code].profile[/code] extension. If a profile could not be found, an error occurs. The editor configuration folder can be found by using [method EditorPaths.get_config_dir].
 			</description>
 		</method>
-		<method name="set_main_screen_editor">
+		<method name="set_main_screen_editor" deprecated="Use [method get_main_screen_dock] with [method EditorDock.make_visible] instead.">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
