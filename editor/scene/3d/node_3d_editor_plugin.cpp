@@ -114,10 +114,12 @@
 #include "scene/resources/surface_tool.h"
 #include "servers/rendering/rendering_server.h"
 
+constexpr real_t GIZMO_ARROW_RADIUS = 0.065;
 constexpr real_t GIZMO_ARROW_SIZE = 0.35;
 constexpr real_t GIZMO_RING_HALF_WIDTH = 0.1;
-constexpr real_t GIZMO_PLANE_SIZE = 0.2;
-constexpr real_t GIZMO_PLANE_DST = 0.3;
+constexpr real_t GIZMO_PLANE_SIZE = 0.25;
+constexpr real_t GIZMO_PLANE_DST = 0.2;
+constexpr real_t GIZMO_SCALE_SIZE = 0.15;
 constexpr real_t GIZMO_CIRCLE_SIZE = 1.1;
 
 constexpr real_t GIZMO_SCALE_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
@@ -1530,18 +1532,19 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
 		int col_axis = -1;
-		real_t col_d = 1e20;
+		real_t col_cost = 1e20;
 
 		for (int i = 0; i < 3; i++) {
-			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * (GIZMO_ARROW_OFFSET + (GIZMO_ARROW_SIZE * 0.5));
-			const real_t grabber_radius = gizmo_scale * GIZMO_ARROW_SIZE;
+			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * (GIZMO_ARROW_OFFSET + GIZMO_ARROW_SIZE * 0.5);
+			const real_t grabber_radius = gizmo_scale * GIZMO_ARROW_SIZE * 0.5;
 
 			Vector3 r;
 
-			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, grabber_radius, &r)) {
-				const real_t d = r.distance_to(ray_pos);
-				if (d < col_d) {
-					col_d = d;
+			const real_t effective_radius = grabber_radius * 1.5;
+			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, effective_radius, &r)) {
+				const real_t cost = screen_space_selection_cost(grabber_pos, effective_radius, r);
+				if (cost < col_cost) {
+					col_cost = cost;
 					col_axis = i;
 				}
 			}
@@ -1549,28 +1552,36 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 		bool is_plane_translate = false;
 		// plane select
-		if (col_axis == -1) {
-			col_d = 1e20;
+		{
+			// Move transform planes to the camera-facing octant
+			Transform3D pt = Transform3D(gt);
+			if (camera->get_projection() != Camera3D::ProjectionType::PROJECTION_ORTHOGONAL) {
+				const Vector3 dir = camera->get_global_position().direction_to(pt.origin);
+				for (int j = 0; j < 3; j++) {
+					int sign = pt.basis.get_column(j).normalized().dot(dir) > CMP_EPSILON ? -1 : 1;
+					pt.basis.set_column(j, sign * pt.basis.get_column(j));
+				}
+			}
 
 			for (int i = 0; i < 3; i++) {
-				Vector3 ivec2 = gt.basis.get_column((i + 1) % 3).normalized();
-				Vector3 ivec3 = gt.basis.get_column((i + 2) % 3).normalized();
+				Vector3 ivec2 = pt.basis.get_column((i + 1) % 3).normalized();
+				Vector3 ivec3 = pt.basis.get_column((i + 2) % 3).normalized();
 
-				// Allow some tolerance to make the plane easier to click,
-				// even if the click is actually slightly outside the plane.
-				const Vector3 grabber_pos = gt.origin + (ivec2 + ivec3) * gizmo_scale * (GIZMO_PLANE_SIZE + GIZMO_PLANE_DST * 0.6667);
+				const Vector3 grabber_pos = pt.origin + (ivec2 + ivec3) * gizmo_scale * (GIZMO_PLANE_DST + GIZMO_PLANE_SIZE * 0.5);
+				const real_t grabber_size = gizmo_scale * GIZMO_PLANE_SIZE * 0.5;
 
 				Vector3 r;
-				Plane plane(gt.basis.get_column(i).normalized(), gt.origin);
+				Plane plane(pt.basis.get_column(i).normalized(), pt.origin);
 
 				if (plane.intersects_ray(ray_pos, ray, &r)) {
 					const real_t dist = r.distance_to(grabber_pos);
 					// Allow some tolerance to make the plane easier to click,
 					// even if the click is actually slightly outside the plane.
-					if (dist < (gizmo_scale * GIZMO_PLANE_SIZE * 1.5)) {
-						const real_t d = ray_pos.distance_to(r);
-						if (d < col_d) {
-							col_d = d;
+					const real_t effective_size = grabber_size * 1.5;
+					if (dist < effective_size) {
+						const real_t cost = screen_space_selection_cost(grabber_pos, effective_size, r);
+						if (cost < col_cost) {
+							col_cost = cost;
 							col_axis = i;
 
 							is_plane_translate = true;
@@ -1703,18 +1714,19 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
 		int col_axis = -1;
-		float col_d = 1e20;
+		float col_cost = 1e20;
 
 		for (int i = 0; i < 3; i++) {
-			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * GIZMO_SCALE_OFFSET;
-			const real_t grabber_radius = gizmo_scale * GIZMO_ARROW_SIZE;
+			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * (GIZMO_SCALE_OFFSET + GIZMO_SCALE_SIZE * 0.5);
+			const real_t grabber_radius = gizmo_scale * GIZMO_SCALE_SIZE * 0.5;
 
 			Vector3 r;
 
-			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, grabber_radius, &r)) {
-				const real_t d = r.distance_to(ray_pos);
-				if (d < col_d) {
-					col_d = d;
+			const real_t effective_radius = grabber_radius * 1.5;
+			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, effective_radius, &r)) {
+				const real_t cost = screen_space_selection_cost(grabber_pos, effective_radius, r);
+				if (cost < col_cost) {
+					col_cost = cost;
 					col_axis = i;
 				}
 			}
@@ -1722,28 +1734,38 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 		bool is_plane_scale = false;
 		// plane select
-		if (col_axis == -1) {
-			col_d = 1e20;
+		{
+			// Move transform planes to the camera-facing octant
+			Transform3D pt = Transform3D(gt);
+			if (camera->get_projection() != Camera3D::ProjectionType::PROJECTION_ORTHOGONAL) {
+				const Vector3 dir = camera->get_global_position().direction_to(pt.origin);
+				for (int j = 0; j < 3; j++) {
+					int sign = pt.basis.get_column(j).normalized().dot(dir) > CMP_EPSILON ? -1 : 1;
+					pt.basis.set_column(j, sign * pt.basis.get_column(j));
+				}
+			}
 
 			for (int i = 0; i < 3; i++) {
-				const Vector3 ivec2 = gt.basis.get_column((i + 1) % 3).normalized();
-				const Vector3 ivec3 = gt.basis.get_column((i + 2) % 3).normalized();
+				const Vector3 ivec2 = pt.basis.get_column((i + 1) % 3).normalized();
+				const Vector3 ivec3 = pt.basis.get_column((i + 2) % 3).normalized();
 
 				// Allow some tolerance to make the plane easier to click,
 				// even if the click is actually slightly outside the plane.
-				const Vector3 grabber_pos = gt.origin + (ivec2 + ivec3) * gizmo_scale * (GIZMO_PLANE_SIZE + GIZMO_PLANE_DST * 0.6667);
+				const Vector3 grabber_pos = pt.origin + (ivec2 + ivec3) * gizmo_scale * (GIZMO_PLANE_DST + GIZMO_PLANE_SIZE * 0.5);
+				const real_t grabber_size = gizmo_scale * GIZMO_PLANE_SIZE * 0.5;
 
 				Vector3 r;
-				Plane plane(gt.basis.get_column(i).normalized(), gt.origin);
+				Plane plane(pt.basis.get_column(i).normalized(), pt.origin);
 
 				if (plane.intersects_ray(ray_pos, ray, &r)) {
 					const real_t dist = r.distance_to(grabber_pos);
 					// Allow some tolerance to make the plane easier to click,
 					// even if the click is actually slightly outside the plane.
-					if (dist < (gizmo_scale * GIZMO_PLANE_SIZE * 1.5)) {
-						const real_t d = ray_pos.distance_to(r);
-						if (d < col_d) {
-							col_d = d;
+					const real_t effective_size = grabber_size * 1.5;
+					if (dist < effective_size) {
+						const real_t cost = screen_space_selection_cost(grabber_pos, effective_size, r);
+						if (cost < col_cost) {
+							col_cost = cost;
 							col_axis = i;
 
 							is_plane_scale = true;
@@ -5116,15 +5138,26 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		}
 		axis_angle.basis.scale(scale);
 		axis_angle.origin = xform.origin;
+
+		// Move transform planes to the camera-facing octant
+		Transform3D plane_angle = Transform3D(axis_angle);
+		if (camera->get_projection() != Camera3D::ProjectionType::PROJECTION_ORTHOGONAL) {
+			const Vector3 dir = camera_xform.origin.direction_to(_edit.mode == TRANSFORM_NONE ? plane_angle.origin : _edit.original.origin);
+			for (int j = 0; j < 3; j++) {
+				int sign = plane_angle.basis.get_column(j).normalized().dot(dir) > CMP_EPSILON ? -1 : 1;
+				plane_angle.basis.set_column(j, sign * plane_angle.basis.get_column(j));
+			}
+		}
+
 		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
-		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], axis_angle);
+		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], plane_angle);
 		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
 		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_rotate_gizmo && i != arc_replaces_ring);
 		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
-		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], axis_angle);
+		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], plane_angle);
 		RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 		RenderingServer::get_singleton()->instance_set_transform(axis_gizmo_instance[i], xform);
 	}
@@ -6730,6 +6763,17 @@ void Node3DEditorViewport::_load_viewport_inputs() {
 	register_shortcut_action("spatial_editor/freelook_down", TTRC("Freelook Down"), Key::Q, true);
 	register_shortcut_action("spatial_editor/freelook_speed_modifier", TTRC("Freelook Speed Modifier"), Key::SHIFT);
 	register_shortcut_action("spatial_editor/freelook_slow_modifier", TTRC("Freelook Slow Modifier"), Key::ALT);
+}
+
+real_t Node3DEditorViewport::screen_space_selection_cost(const Vector3 &p_center, const float p_radius, const Vector3 &p_pos) {
+	const Vector3 cam_up = camera->get_transform().basis.get_column(1).normalized();
+
+	const Point2 screen_pos = point_to_screen(p_center);
+	const real_t screen_size = screen_pos.distance_to(point_to_screen(p_center + cam_up * p_radius));
+	const real_t screen_dist = screen_pos.distance_to(point_to_screen(p_pos));
+
+	real_t cost = Math::pow(screen_dist / MAX(screen_size, 1.0), 2.0);
+	return cost;
 }
 
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index) {
@@ -8579,7 +8623,7 @@ void fragment() {
 						nivec * 0.0 + ivec * 0.0,
 						nivec * 0.01 + ivec * 0.0,
 						nivec * 0.01 + ivec * GIZMO_ARROW_OFFSET,
-						nivec * 0.065 + ivec * GIZMO_ARROW_OFFSET,
+						nivec * GIZMO_ARROW_RADIUS + ivec * GIZMO_ARROW_OFFSET,
 						nivec * 0.0 + ivec * (GIZMO_ARROW_OFFSET + GIZMO_ARROW_SIZE),
 					};
 
@@ -8799,10 +8843,10 @@ void fragment() {
 					Vector3 arrow[6] = {
 						nivec * 0.0 + ivec * 0.0,
 						nivec * 0.01 + ivec * 0.0,
-						nivec * 0.01 + ivec * 1.0 * GIZMO_SCALE_OFFSET,
-						nivec * 0.07 + ivec * 1.0 * GIZMO_SCALE_OFFSET,
-						nivec * 0.07 + ivec * 1.11 * GIZMO_SCALE_OFFSET,
-						nivec * 0.0 + ivec * 1.11 * GIZMO_SCALE_OFFSET,
+						nivec * 0.01 + ivec * GIZMO_SCALE_OFFSET,
+						nivec * 0.5 * GIZMO_SCALE_SIZE + ivec * GIZMO_SCALE_OFFSET,
+						nivec * 0.5 * GIZMO_SCALE_SIZE + ivec * (GIZMO_SCALE_OFFSET + GIZMO_SCALE_SIZE),
+						nivec * 0.0 + ivec * (GIZMO_SCALE_OFFSET + GIZMO_SCALE_SIZE),
 					};
 
 					int arrow_sides = 4;
