@@ -263,7 +263,8 @@ void EditorPropertyArray::_update_slots_size() {
 
 			Ref<Font> font = theme_cache.font;
 			int font_size = theme_cache.font_size;
-			name_size = slots[0].reorder_button->get_minimum_size().x + theme_cache.horizontal_separation + font->get_string_size(ms, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+			int half_padding = theme_cache.padding / 2;
+			name_size = slots[0].reorder_button->get_minimum_size().x + theme_cache.horizontal_separation + half_padding + font->get_string_size(ms, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 		}
 		slot.prop->set_name_fixed_size(name_size);
 	}
