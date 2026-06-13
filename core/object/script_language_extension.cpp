@@ -30,6 +30,8 @@
 
 #include "script_language_extension.h"
 
+#include "core/object/class_db.h"
+
 void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_editor_can_reload_from_file);
 	GDVIRTUAL_BIND(_placeholder_erased, "placeholder");
@@ -42,8 +44,6 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_instance_base_type);
 	GDVIRTUAL_BIND(_instance_create, "for_object");
 	GDVIRTUAL_BIND(_placeholder_instance_create, "for_object");
-
-	GDVIRTUAL_BIND(_instance_has, "object");
 
 	GDVIRTUAL_BIND(_has_source_code);
 	GDVIRTUAL_BIND(_get_source_code);
@@ -84,6 +84,10 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_is_placeholder_fallback_enabled);
 
 	GDVIRTUAL_BIND(_get_rpc_config);
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND(_instance_has, "object");
+#endif // !DISABLE_DEPRECATED
 }
 
 void ScriptLanguageExtension::_bind_methods() {
@@ -104,8 +108,8 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_validate, "script", "path", "validate_functions", "validate_errors", "validate_warnings", "validate_safe_lines");
 
 	GDVIRTUAL_BIND(_validate_path, "path");
-	GDVIRTUAL_BIND(_create_script);
 #ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND(_create_script);
 	GDVIRTUAL_BIND(_has_named_classes);
 #endif
 	GDVIRTUAL_BIND(_supports_builtin_mode);
@@ -191,5 +195,6 @@ void ScriptLanguageExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_NODE_PATH);
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_FILE_PATH);
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_PLAIN_TEXT);
+	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_KEYWORD);
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_MAX);
 }

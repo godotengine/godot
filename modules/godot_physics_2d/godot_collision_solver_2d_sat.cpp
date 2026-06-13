@@ -374,9 +374,9 @@ public:
 
 /****** SAT TESTS *******/
 
-#define TEST_POINT(m_a, m_b)                                                                \
-	((!separator.test_axis(((m_a) - (m_b)).normalized())) ||                                \
-			(castA && !separator.test_axis(((m_a) + p_motion_a - (m_b)).normalized())) ||   \
+#define TEST_POINT(m_a, m_b) \
+	((!separator.test_axis(((m_a) - (m_b)).normalized())) || \
+			(castA && !separator.test_axis(((m_a) + p_motion_a - (m_b)).normalized())) || \
 			(castB && !separator.test_axis(((m_a) - ((m_b) + p_motion_b)).normalized())) || \
 			(castA && castB && !separator.test_axis(((m_a) + p_motion_a - ((m_b) + p_motion_b)).normalized())))
 

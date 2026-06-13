@@ -9,6 +9,7 @@
 		For a great introduction to quaternions, see [url=https://www.youtube.com/watch?v=d4EgbgTm0Bg]this video by 3Blue1Brown[/url]. You do not need to know the math behind quaternions, as Godot provides several helper methods that handle it for you. These include [method slerp] and [method spherical_cubic_interpolate], as well as the [code]*[/code] operator.
 		[b]Note:[/b] Quaternions must be normalized before being used for rotation (see [method normalized]).
 		[b]Note:[/b] Similarly to [Vector2] and [Vector3], the components of a quaternion use 32-bit precision by default, unlike [float] which is always 64-bit. If double precision is needed, compile the engine with the option [code]precision=double[/code].
+		[b]Note:[/b] In a boolean context, a quaternion will evaluate to [code]false[/code] if it's equal to [constant IDENTITY]. Otherwise, a quaternion will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 		<link title="3Blue1Brown&apos;s video on Quaternions">https://www.youtube.com/watch?v=d4EgbgTm0Bg</link>
@@ -95,7 +96,7 @@
 			<return type="Quaternion" />
 			<param index="0" name="euler" type="Vector3" />
 			<description>
-				Constructs a new [Quaternion] from the given [Vector3] of [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url], in radians. This method always uses the YXZ convention ([constant EULER_ORDER_YXZ]).
+				Constructs a new [Quaternion] from the given [Vector3] of [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url], in radians. In Godot, Euler angles always use intrinsic order. This method always uses the intrinsic YXZ convention ([constant EULER_ORDER_YXZ]).
 			</description>
 		</method>
 		<method name="get_angle" qualifiers="const">
@@ -116,7 +117,7 @@
 			<param index="0" name="order" type="int" default="2" />
 			<description>
 				Returns this quaternion's rotation as a [Vector3] of [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url], in radians.
-				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). By default, the YXZ convention is used ([constant EULER_ORDER_YXZ]): Z (roll) is calculated first, then X (pitch), and lastly Y (yaw). When using the opposite method [method from_euler], this order is reversed.
+				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). In Godot, Euler angles always use intrinsic order. By default, the intrinsic YXZ convention is used ([constant EULER_ORDER_YXZ]): since we are decomposing, local Z (roll) is calculated first, then local X (pitch), and lastly local Y (yaw). When using the opposite method [method from_euler] to compose a rotation, this order is reversed.
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">

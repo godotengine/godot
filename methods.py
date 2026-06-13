@@ -8,7 +8,6 @@ import os
 import re
 import subprocess
 import sys
-import textwrap
 import zlib
 from collections import OrderedDict
 from io import StringIO
@@ -527,12 +526,7 @@ def find_visual_c_batch_file(env):
     from SCons.Tool.MSCommon.vc import find_batch_file, find_vc_pdir, get_default_version, get_host_target
 
     msvc_version = get_default_version(env)
-
-    # Syntax changed in SCons 4.4.0.
-    if env.scons_version >= (4, 4, 0):
-        (host_platform, target_platform, _) = get_host_target(env, msvc_version)
-    else:
-        (host_platform, target_platform, _) = get_host_target(env)
+    host_platform, target_platform, _ = get_host_target(env, msvc_version)
 
     if env.scons_version < (4, 6, 0):
         return find_batch_file(env, msvc_version, host_platform, target_platform)[0]
@@ -673,7 +667,8 @@ def is_apple_clang(env):
         return False
     try:
         version = (
-            subprocess.check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
+            subprocess
+            .check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
             .strip()
             .decode("utf-8")
         )
@@ -724,8 +719,6 @@ def get_compiler_version(env):
                 "-prerelease",
                 "-products",
                 "*",
-                "-requires",
-                "Microsoft.Component.MSBuild",
                 "-utf8",
             ]
             version = subprocess.check_output(args, encoding="utf-8").strip()
@@ -1151,7 +1144,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         sys.modules.pop("msvs")
 
     extensions = {}
-    extensions["headers"] = [".h", ".hh", ".hpp", ".hxx", ".inc"]
+    extensions["headers"] = [".h", ".hh", ".hpp", ".hxx", ".inc", ".inl"]
     extensions["sources"] = [".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".java"]
     extensions["others"] = [".natvis", ".glsl", ".rc"]
 
@@ -1595,14 +1588,8 @@ def compress_buffer(buffer: bytes) -> bytes:
     return zlib.compress(buffer, zlib.Z_BEST_COMPRESSION)
 
 
-def format_buffer(buffer: bytes, indent: int = 0, width: int = 120, initial_indent: bool = False) -> str:
-    return textwrap.fill(
-        ", ".join(str(byte) for byte in buffer),
-        width=width,
-        initial_indent="\t" * indent if initial_indent else "",
-        subsequent_indent="\t" * indent,
-        tabsize=4,
-    )
+def format_buffer(buffer: bytes, indent: int = 0, width: int = 120) -> str:
+    return re.sub(f"(.{{0,{width - indent - 1}}},) ", ("\t" * indent) + "\\g<1>\n", ", ".join(map(str, buffer)))
 
 
 ############################################################

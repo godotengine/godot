@@ -31,18 +31,22 @@
 #pragma once
 
 #include "core/input/input_event.h"
-#include "core/io/resource.h"
-#include "core/string/node_path.h"
+#include "core/object/gdvirtual.gen.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/thread_safe.h"
 #include "core/templates/iterable.h"
-#include "core/variant/typed_array.h"
-#include "scene/main/scene_tree.h"
-#include "scene/scene_string_names.h"
+#include "scene/scene_string_names.h" // IWYU pragma: export. Make available to all Nodes.
 
+class MultiplayerAPI;
+class NodePath;
+class Resource;
+class SceneState;
+class SceneTree;
+class Tween;
 class Viewport;
 class Window;
-class SceneState;
-class Tween;
-class PropertyTweener;
+struct SceneTreeGroup;
 
 SAFE_FLAG_TYPE_PUN_GUARANTEES
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
@@ -168,7 +172,7 @@ public:
 private:
 	struct GroupData {
 		bool persistent = false;
-		SceneTree::Group *group = nullptr;
+		SceneTreeGroup *group = nullptr;
 	};
 
 	struct ComparatorByIndex {
@@ -304,8 +308,6 @@ private:
 	void _validate_child_name(Node *p_child, bool p_force_human_readable = false);
 	void _generate_serial_child_name(const Node *p_child, StringName &name) const;
 
-	void _propagate_reverse_notification(int p_notification);
-	void _propagate_deferred_notification(int p_notification, bool p_reverse);
 	void _propagate_enter_tree();
 	void _propagate_ready();
 	void _propagate_exit_tree();
@@ -412,6 +414,10 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	virtual String _to_string() override;
 
+	// Localization
+
+	virtual StringName _get_translation_context_with_override(const StringName &p_context) const { return p_context; }
+
 	Variant _get_node_rpc_config_bind() const {
 		return get_node_rpc_config().duplicate(true);
 	}
@@ -485,17 +491,21 @@ public:
 		NOTIFICATION_VP_MOUSE_ENTER = 1010,
 		NOTIFICATION_VP_MOUSE_EXIT = 1011,
 		NOTIFICATION_WM_POSITION_CHANGED = 1012,
+		NOTIFICATION_WM_OUTPUT_MAX_LINEAR_VALUE_CHANGED = 1013,
 
-		NOTIFICATION_OS_MEMORY_WARNING = MainLoop::NOTIFICATION_OS_MEMORY_WARNING,
-		NOTIFICATION_TRANSLATION_CHANGED = MainLoop::NOTIFICATION_TRANSLATION_CHANGED,
-		NOTIFICATION_WM_ABOUT = MainLoop::NOTIFICATION_WM_ABOUT,
-		NOTIFICATION_CRASH = MainLoop::NOTIFICATION_CRASH,
-		NOTIFICATION_OS_IME_UPDATE = MainLoop::NOTIFICATION_OS_IME_UPDATE,
-		NOTIFICATION_APPLICATION_RESUMED = MainLoop::NOTIFICATION_APPLICATION_RESUMED,
-		NOTIFICATION_APPLICATION_PAUSED = MainLoop::NOTIFICATION_APPLICATION_PAUSED,
-		NOTIFICATION_APPLICATION_FOCUS_IN = MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN,
-		NOTIFICATION_APPLICATION_FOCUS_OUT = MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT,
-		NOTIFICATION_TEXT_SERVER_CHANGED = MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED,
+		// Keep these in sync with MainLoop.
+		NOTIFICATION_OS_MEMORY_WARNING = 2009,
+		NOTIFICATION_TRANSLATION_CHANGED = 2010,
+		NOTIFICATION_WM_ABOUT = 2011,
+		NOTIFICATION_CRASH = 2012,
+		NOTIFICATION_OS_IME_UPDATE = 2013,
+		NOTIFICATION_APPLICATION_RESUMED = 2014,
+		NOTIFICATION_APPLICATION_PAUSED = 2015,
+		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
+		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
+		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
+		NOTIFICATION_APPLICATION_PIP_MODE_ENTERED = 2019,
+		NOTIFICATION_APPLICATION_PIP_MODE_EXITED = 2020,
 
 		// Editor specific node notifications
 		NOTIFICATION_EDITOR_PRE_SAVE = 9001,
@@ -507,7 +517,7 @@ public:
 	/* NODE/TREE */
 
 	StringName get_name() const;
-	String get_description() const;
+	String get_description(bool p_show_not_in_tree = false) const;
 	void set_name(const StringName &p_name);
 
 	InternalMode get_internal_mode() const;
@@ -715,6 +725,7 @@ public:
 	virtual RID get_accessibility_element() const;
 	virtual RID get_focused_accessibility_element() const;
 	virtual bool accessibility_override_tree_hierarchy() const { return false; }
+	virtual Transform2D get_accessibility_transform() const;
 
 	virtual PackedStringArray get_accessibility_configuration_warnings() const;
 
@@ -752,7 +763,7 @@ public:
 	void set_physics_interpolation_mode(PhysicsInterpolationMode p_mode);
 	PhysicsInterpolationMode get_physics_interpolation_mode() const { return data.physics_interpolation_mode; }
 	_FORCE_INLINE_ bool is_physics_interpolated() const { return data.physics_interpolated; }
-	_FORCE_INLINE_ bool is_physics_interpolated_and_enabled() const { return SceneTree::is_fti_enabled() && is_physics_interpolated(); }
+	bool is_physics_interpolated_and_enabled() const;
 	void reset_physics_interpolation();
 
 	bool is_enabled() const;
@@ -820,10 +831,12 @@ public:
 	virtual void set_translation_domain(const StringName &p_domain) override;
 	void set_translation_domain_inherited();
 
-	_FORCE_INLINE_ String atr(const String &p_message, const StringName &p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
+	_FORCE_INLINE_ String atr(const String &p_message, const StringName &p_context = "") const {
+		return can_auto_translate() ? tr(p_message, _get_translation_context_with_override(p_context)) : p_message;
+	}
 	_FORCE_INLINE_ String atr_n(const String &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const {
 		if (can_auto_translate()) {
-			return tr_n(p_message, p_message_plural, p_n, p_context);
+			return tr_n(p_message, p_message_plural, p_n, _get_translation_context_with_override(p_context));
 		}
 		return p_n == 1 ? p_message : String(p_message_plural);
 	}

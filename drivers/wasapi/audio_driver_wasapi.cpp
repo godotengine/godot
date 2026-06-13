@@ -32,12 +32,12 @@
 
 #include "audio_driver_wasapi.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/engine.h"
 #include "core/os/os.h"
 
 #include <functiondiscoverykeys.h>
-
 #include <wrl/client.h>
+
 using Microsoft::WRL::ComPtr;
 
 // Define IAudioClient3 if not already defined by MinGW headers
@@ -110,10 +110,10 @@ const IID IID_IAudioClient3 = __uuidof(IAudioClient3);
 const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
-#define SAFE_RELEASE(memory)   \
+#define SAFE_RELEASE(memory) \
 	if ((memory) != nullptr) { \
-		(memory)->Release();   \
-		(memory) = nullptr;    \
+		(memory)->Release(); \
+		(memory) = nullptr; \
 	}
 
 #define REFTIMES_PER_SEC 10000000

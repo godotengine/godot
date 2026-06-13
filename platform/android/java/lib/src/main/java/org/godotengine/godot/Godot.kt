@@ -30,7 +30,6 @@
 
 package org.godotengine.godot
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.*
@@ -55,44 +54,36 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.google.android.vending.expansion.downloader.*
-import org.godotengine.godot.error.Error
 import org.godotengine.godot.input.GodotEditText
 import org.godotengine.godot.input.GodotInputHandler
 import org.godotengine.godot.io.FilePicker
+import org.godotengine.godot.io.StorageScope
 import org.godotengine.godot.io.directory.DirectoryAccessHandler
 import org.godotengine.godot.io.file.FileAccessHandler
+import org.godotengine.godot.nativeapi.GodotNativeBridge
 import org.godotengine.godot.plugin.AndroidRuntimePlugin
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.godotengine.godot.tts.GodotTTS
-import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.GodotNetUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.PermissionsUtil.requestPermission
 import org.godotengine.godot.utils.beginBenchmarkMeasure
 import org.godotengine.godot.utils.benchmarkFile
-import org.godotengine.godot.utils.dumpBenchmark
 import org.godotengine.godot.utils.endBenchmarkMeasure
 import org.godotengine.godot.utils.useBenchmark
-import org.godotengine.godot.variant.Callable as GodotCallable
 import org.godotengine.godot.xr.XRMode
-import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
-import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-
 /**
  * Core component used to interface with the native layer of the engine.
  *
- * Can be hosted by [Activity], [Fragment] or [Service] android components, so long as its
- * lifecycle methods are properly invoked.
+ * Can be hosted by [Activity], [androidx.fragment.app.Fragment] or [android.app.Service] android components, so long
+ * as its lifecycle methods are properly invoked.
  */
 class Godot private constructor(val context: Context) {
 
@@ -115,15 +106,30 @@ class Godot private constructor(val context: Context) {
 		private const val TEMPLATE_FLAVOR = "template"
 
 		/**
-		 * @return true if this is an editor build, false if this is a template build
+		 * @return true if this is an editor build, false if this is a template build.
 		 */
 		internal fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
+
+		/**
+		 * @return true if this is a template build, false if this is an editor build.
+		 */
+		internal fun isTemplateBuild() = BuildConfig.FLAVOR == TEMPLATE_FLAVOR
 	}
+
+	/**
+	 * Describes the engine current run status.
+	 */
+	enum class RunStatus {
+		INITIALIZING,
+		STARTED,
+		TERMINATING
+	}
+
+	private val godotNativeBridge = GodotNativeBridge(this)
 
 	private val mSensorManager: SensorManager? by lazy { context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager }
 	private val mClipboard: ClipboardManager? by lazy { context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager }
-	private val vibratorService: Vibrator? by lazy { context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator }
-	private val pluginRegistry: GodotPluginRegistry by lazy { GodotPluginRegistry.getPluginRegistry() }
+	internal val pluginRegistry: GodotPluginRegistry by lazy { GodotPluginRegistry.getPluginRegistry() }
 
 	private val accelerometerEnabled = AtomicBoolean(false)
 	private val mAccelerometer: Sensor? by lazy { mSensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
@@ -143,7 +149,7 @@ class Godot private constructor(val context: Context) {
 	val directoryAccessHandler = DirectoryAccessHandler(context)
 	val fileAccessHandler = FileAccessHandler(context)
 	val netUtils = GodotNetUtils(context)
-	private val godotInputHandler = GodotInputHandler(context, this)
+	val godotInputHandler = GodotInputHandler(context, this)
 
 	private val hasClipboardCallable = Callable {
 		mClipboard?.hasPrimaryClip() == true
@@ -174,8 +180,7 @@ class Godot private constructor(val context: Context) {
 	 * Tracks whether [onInitRenderView] was completed successfully.
 	 */
 	private var renderViewInitialized = false
-	private var primaryHost: GodotHost? = null
-	private var currentConfig = context.resources.configuration
+	internal var primaryHost: GodotHost? = null
 
 	/**
 	 * Tracks whether we're in the RESUMED lifecycle state.
@@ -184,25 +189,30 @@ class Godot private constructor(val context: Context) {
 	private var resumed = false
 
 	/**
-	 * Tracks whether [onGodotSetupCompleted] fired.
+	 * Tracks the engine's run status.
 	 */
-	private val godotMainLoopStarted = AtomicBoolean(false)
+	private val _runStatus = AtomicReference<RunStatus>(RunStatus.INITIALIZING)
+	val runStatus: RunStatus
+		get() = _runStatus.get()
 
 	val io = GodotIO(this)
 
 	private var commandLine : MutableList<String> = ArrayList<String>()
-	private var xrMode = XRMode.REGULAR
+	internal var xrMode = XRMode.REGULAR
 	private val useImmersive = AtomicBoolean(false)
 	private val isEdgeToEdge = AtomicBoolean(false)
 	private var useDebugOpengl = false
-	private var darkMode = false
+	internal var darkMode = false
 	private var backgroundColor: Int = Color.BLACK
+	private var orientation = Configuration.ORIENTATION_UNDEFINED
+	var disableGodotSplash = false
+		private set
 
 	internal var containerLayout: FrameLayout? = null
 	var renderView: GodotRenderView? = null
 
 	/**
-	 * Returns true if the native engine has been initialized through [onInitNativeLayer], false otherwise.
+	 * Returns true if the native engine has been initialized through [initEngine], false otherwise.
 	 */
 	private fun isNativeInitialized() = nativeLayerInitializeCompleted && nativeLayerSetupCompleted
 
@@ -212,7 +222,7 @@ class Godot private constructor(val context: Context) {
 	fun isInitialized() = primaryHost != null && isNativeInitialized() && renderViewInitialized
 
 	/**
-	 * Provides access to the primary host [Activity]
+	 * Provides access to the primary host [Activity].
 	 */
 	fun getActivity() = primaryHost?.activity
 
@@ -222,9 +232,6 @@ class Godot private constructor(val context: Context) {
 	 * This must be followed by [onInitRenderView] to complete initialization of the engine.
 	 *
 	 * @return false if initialization of the native layer fails, true otherwise.
-	 *
-	 * @throws IllegalArgumentException exception if the specified expansion pack (if any)
-	 * is invalid.
 	 */
 	fun initEngine(host: GodotHost?, commandLineParams: List<String>, hostPlugins: Set<GodotPlugin> = Collections.emptySet()): Boolean {
 		if (isNativeInitialized()) {
@@ -232,25 +239,37 @@ class Godot private constructor(val context: Context) {
 			return true
 		}
 
-		Log.v(TAG, "InitEngine with params: $commandLineParams")
-
-		darkMode = context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		val config = context.resources.configuration
+		darkMode = (config.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		orientation = config.orientation
 
 		beginBenchmarkMeasure("Startup", "Godot::initEngine")
 		try {
 			this.primaryHost = host
+			commandLine.addAll(commandLineParams)
 
 			Log.v(TAG, "Initializing Godot plugin registry")
 			val runtimePlugins = mutableSetOf<GodotPlugin>(AndroidRuntimePlugin(this))
 			runtimePlugins.addAll(hostPlugins)
 			GodotPluginRegistry.initializePluginRegistry(this, runtimePlugins)
 
-			// check for apk expansion API
-			commandLine.addAll(commandLineParams)
-			var mainPackMd5: String? = null
-			var mainPackKey: String? = null
-			var useApkExpansion = false
+			// Let the plugins take a peek at the command line params and provide their own params if desired.
+			val originalCommandLineParams = Collections.unmodifiableList(commandLineParams)
+			for (plugin in pluginRegistry.allPlugins) {
+				try {
+					val pluginCommandLineParams = plugin.getCommandLineParams(originalCommandLineParams)
+					if (pluginCommandLineParams != originalCommandLineParams && pluginCommandLineParams.isNotEmpty()) {
+						Log.d(TAG, "Received command line params from plugin $plugin: $pluginCommandLineParams")
+						commandLine.addAll(pluginCommandLineParams)
+					}
+				} catch (e: Exception) {
+					Log.e(TAG, "Unable to get command line params from plugin $plugin", e)
+				}
+			}
+
+			Log.v(TAG, "InitEngine with params: $commandLine")
 			val newArgs: MutableList<String> = ArrayList()
+			var useApkExpansion = false
 			var i = 0
 			while (i < commandLine.size) {
 				val hasExtra: Boolean = i < commandLine.size - 1
@@ -265,23 +284,11 @@ class Godot private constructor(val context: Context) {
 				} else if (commandLine[i] == "--fullscreen") {
 					useImmersive.set(true)
 					newArgs.add(commandLine[i])
-				} else if (commandLine[i] == "--background_color") {
+				} else if (hasExtra && commandLine[i] == "--background_color") {
 					setWindowColor(commandLine[i + 1])
-				} else if (commandLine[i] == "--use_apk_expansion") {
-					useApkExpansion = true
-				} else if (hasExtra && commandLine[i] == "--apk_expansion_md5") {
-					mainPackMd5 = commandLine[i + 1]
 					i++
-				} else if (hasExtra && commandLine[i] == "--apk_expansion_key") {
-					mainPackKey = commandLine[i + 1]
-					val prefs = context.getSharedPreferences(
-							"app_data_keys",
-							Context.MODE_PRIVATE
-					)
-					val editor = prefs.edit()
-					editor.putString("store_public_key", mainPackKey)
-					editor.apply()
-					i++
+				} else if (commandLine[i] == "--disable_godot_splash") {
+					disableGodotSplash = true
 				} else if (commandLine[i] == "--benchmark") {
 					useBenchmark = true
 					newArgs.add(commandLine[i])
@@ -294,49 +301,28 @@ class Godot private constructor(val context: Context) {
 					newArgs.add(commandLine[i + 1])
 
 					i++
-				} else if (commandLine[i].trim().isNotEmpty()) {
+				} else if (hasExtra && commandLine[i] == "--main-pack") {
+					newArgs.add(commandLine[i])
+
+					val mainPackPath = commandLine[i + 1]
+					newArgs.add(commandLine[i + 1])
+					// Check the storage scope of the main pack path. For template builds, `useApkExpansion` is enabled
+					// if the storage scope is APP.
+					val storageScope = fileAccessHandler.storageScopeIdentifier.identifyStorageScope(mainPackPath)
+					if (isTemplateBuild()) {
+						useApkExpansion = storageScope == StorageScope.APP
+					}
+					i++
+				} else if (commandLine[i].trim().isNotEmpty()) { // This block should always be last!
 					newArgs.add(commandLine[i])
 				}
 				i++
 			}
 
-			var expansionPackPath = ""
 			commandLine = if (newArgs.isEmpty()) { mutableListOf() } else { newArgs }
-			if (useApkExpansion && mainPackMd5 != null && mainPackKey != null) {
-				// Build the full path to the app's expansion files
-				try {
-					expansionPackPath = Helpers.getSaveFilePath(context)
-					expansionPackPath += "/main." + context.packageManager.getPackageInfo(
-							context.packageName,
-							0
-					).versionCode + "." + context.packageName + ".obb"
-				} catch (e: java.lang.Exception) {
-					Log.e(TAG, "Unable to build full path to the app's expansion files", e)
-				}
-				val f = File(expansionPackPath)
-				var packValid = true
-				if (!f.exists()) {
-					packValid = false
-				} else if (obbIsCorrupted(expansionPackPath, mainPackMd5)) {
-					packValid = false
-					try {
-						f.delete()
-					} catch (_: java.lang.Exception) {
-					}
-				}
-				if (!packValid) {
-					// Aborting engine initialization
-					throw IllegalArgumentException("Invalid expansion pack")
-				}
-			}
-
-			if (expansionPackPath.isNotEmpty()) {
-				commandLine.add("--main-pack")
-				commandLine.add(expansionPackPath)
-			}
 			if (!nativeLayerInitializeCompleted) {
 				nativeLayerInitializeCompleted = GodotLib.initialize(
-					this,
+					godotNativeBridge,
 					context.assets,
 					io,
 					netUtils,
@@ -348,6 +334,7 @@ class Godot private constructor(val context: Context) {
 			}
 
 			if (nativeLayerInitializeCompleted && !nativeLayerSetupCompleted) {
+				Log.v(TAG, "Setting up native layer with params: $commandLine")
 				nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), tts)
 				if (!nativeLayerSetupCompleted) {
 					throw IllegalStateException("Unable to setup the Godot engine! Aborting...")
@@ -459,20 +446,8 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
-	/**
-	 * Invoked from the render thread to toggle the immersive mode.
-	 */
-	@Keep
-	private fun nativeEnableImmersiveMode(enabled: Boolean) {
-		runOnHostThread {
-			enableImmersiveMode(enabled)
-		}
-	}
-
-	@Keep
 	fun isInImmersiveMode() = useImmersive.get()
 
-	@Keep
 	fun isInEdgeToEdgeMode() = isEdgeToEdge.get()
 
 	fun setSystemBarsAppearance() {
@@ -565,19 +540,14 @@ class Godot private constructor(val context: Context) {
 					!isEditorHint() &&
 					java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed"))
 			Log.d(TAG, "Render view should be transparent: $shouldBeTransparent")
-			renderView = if (usesVulkan()) {
-				if (meetsVulkanRequirements(context.packageManager)) {
-					GodotVulkanRenderView(this, godotInputHandler, shouldBeTransparent)
-				} else if (canFallbackToOpenGL()) {
-					// Fallback to OpenGl.
-					GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
-				} else {
-					throw IllegalStateException(context.getString(R.string.error_missing_vulkan_requirements_message))
-				}
 
+			val nativeRenderer = getNativeRenderer()
+			if (nativeRenderer == "vulkan") {
+				renderView = GodotVulkanRenderView(this, godotInputHandler, shouldBeTransparent)
+			} else if (nativeRenderer == "opengl3") {
+				renderView = GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
 			} else {
-				// Fallback to OpenGl.
-				GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
+				throw IllegalStateException("No native renderer is available.")
 			}
 
 			renderView?.let {
@@ -641,7 +611,7 @@ class Godot private constructor(val context: Context) {
 					// Fixes an issue on Android 10 and older where immersive mode gets auto disabled after the keyboard is hidden on some devices.
 					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 						runOnHostThread {
-							enableImmersiveMode(true, true)
+							enableImmersiveMode(enabled = true, override = true)
 						}
 					}
 				}
@@ -649,6 +619,8 @@ class Godot private constructor(val context: Context) {
 
 			renderView?.queueOnRenderThread {
 				for (plugin in pluginRegistry.allPlugins) {
+					// Plugins should be registered early so they are available as soon as the app starts.
+					// Otherwise, a delay in registration may make them unavailable during _init() of the main script or an autoload.
 					plugin.onRegisterPluginWithGodotNative()
 				}
 				setKeepScreenOn(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")))
@@ -684,6 +656,9 @@ class Godot private constructor(val context: Context) {
 		}
 
 		renderView?.onActivityStarted()
+		for (plugin in pluginRegistry.allPlugins) {
+			plugin.onMainStart()
+		}
 	}
 
 	fun onResume(host: GodotHost) {
@@ -701,7 +676,7 @@ class Godot private constructor(val context: Context) {
 	}
 
 	private fun registerSensorsIfNeeded() {
-		if (!resumed || !godotMainLoopStarted.get()) {
+		if (!resumed || runStatus != RunStatus.STARTED) {
 			return
 		}
 
@@ -719,6 +694,13 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
+	internal fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
+		Log.v(TAG, "onPictureInPictureModeChanged: $isInPictureInPictureMode")
+		runOnRenderThread {
+			GodotLib.onPictureInPictureModeChanged(isInPictureInPictureMode)
+		}
+	}
+
 	fun onPause(host: GodotHost) {
 		Log.v(TAG, "OnPause: $host")
 		resumed = false
@@ -726,11 +708,11 @@ class Godot private constructor(val context: Context) {
 			return
 		}
 
-		renderView?.onActivityPaused()
-		mSensorManager?.unregisterListener(godotInputHandler)
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainPause()
 		}
+		renderView?.onActivityPaused()
+		mSensorManager?.unregisterListener(godotInputHandler)
 	}
 
 	fun onStop(host: GodotHost) {
@@ -739,6 +721,9 @@ class Godot private constructor(val context: Context) {
 			return
 		}
 
+		for (plugin in pluginRegistry.allPlugins) {
+			plugin.onMainStop()
+		}
 		renderView?.onActivityStopped()
 	}
 
@@ -765,7 +750,7 @@ class Godot private constructor(val context: Context) {
 	 * Configuration change callback
 	*/
 	fun onConfigurationChanged(newConfig: Configuration) {
-		renderView?.inputHandler?.onConfigurationChanged(newConfig)
+		godotInputHandler.onConfigurationChanged(newConfig)
 
 		val newDarkMode = newConfig.uiMode.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 		if (darkMode != newDarkMode) {
@@ -775,12 +760,12 @@ class Godot private constructor(val context: Context) {
 			}
 		}
 
-		if (currentConfig.orientation != newConfig.orientation) {
+		if (orientation != newConfig.orientation) {
+			orientation = newConfig.orientation
 			runOnRenderThread {
-				GodotLib.onScreenRotationChange(newConfig.orientation)
+				GodotLib.onOrientationChange(orientation)
 			}
 		}
-		currentConfig = newConfig
 	}
 
 	/**
@@ -790,10 +775,8 @@ class Godot private constructor(val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainActivityResult(requestCode, resultCode, data)
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			runOnRenderThread {
-				FilePicker.handleActivityResult(context, requestCode, resultCode, data)
-			}
+		runOnRenderThread {
+			FilePicker.handleActivityResult(context, requestCode, resultCode, data)
 		}
 	}
 
@@ -821,7 +804,7 @@ class Godot private constructor(val context: Context) {
 	/**
 	 * Invoked on the render thread when the Godot setup is complete.
 	 */
-	private fun onGodotSetupCompleted() {
+	internal fun onGodotSetupCompleted() {
 		Log.v(TAG, "OnGodotSetupCompleted")
 
 		// These properties are defined after Godot setup completion, so we retrieve them here.
@@ -832,7 +815,7 @@ class Godot private constructor(val context: Context) {
 		val scrollDeadzoneDisabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/disable_scroll_deadzone"))
 
 		runOnHostThread {
-			renderView?.inputHandler?.apply {
+			godotInputHandler.apply {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
 				setOverrideVolumeButtons(overrideVolumeButtons)
@@ -854,9 +837,9 @@ class Godot private constructor(val context: Context) {
 	/**
 	 * Invoked on the render thread when the Godot main loop has started.
 	 */
-	private fun onGodotMainLoopStarted() {
+	internal fun onGodotMainLoopStarted() {
 		Log.v(TAG, "OnGodotMainLoopStarted")
-		godotMainLoopStarted.set(true)
+		_runStatus.set(RunStatus.STARTED)
 
 		accelerometerEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_accelerometer")))
 		gravityEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_gravity")))
@@ -876,15 +859,16 @@ class Godot private constructor(val context: Context) {
 	/**
 	 * Invoked on the render thread when the engine is about to terminate.
 	 */
-	@Keep
-	private fun onGodotTerminating() {
+	internal fun onGodotTerminating() {
 		Log.v(TAG, "OnGodotTerminating")
+		_runStatus.set(RunStatus.TERMINATING)
+
+		for (plugin in pluginRegistry.allPlugins) {
+			plugin.onGodotTerminating()
+		}
 		runOnTerminate.get()?.run()
 	}
 
-	private fun restart() {
-		primaryHost?.onGodotRestartRequested(this)
-	}
 
 	fun alert(
 		@StringRes messageResId: Int,
@@ -896,7 +880,6 @@ class Godot private constructor(val context: Context) {
 	}
 
 	@JvmOverloads
-	@Keep
 	fun alert(message: String, title: String, okCallback: Runnable? = null) {
 		val activity = getActivity() ?: return
 		runOnHostThread {
@@ -904,7 +887,7 @@ class Godot private constructor(val context: Context) {
 			builder.setMessage(message).setTitle(title)
 			builder.setPositiveButton(
 				R.string.dialog_ok
-			) { dialog: DialogInterface, id: Int ->
+			) { dialog: DialogInterface, _: Int ->
 				okCallback?.run()
 				dialog.cancel()
 			}
@@ -929,43 +912,25 @@ class Godot private constructor(val context: Context) {
 		primaryHost?.runOnHostThread(action)
 	}
 
-	/**
-	 * Returns true if the call is being made on the Ui thread.
+/**
+	 * Returns the native rendering driver.
 	 */
-	private fun isOnUiThread() = Looper.myLooper() == Looper.getMainLooper()
+	private fun getNativeRenderer(): String {
+		val rendererInfo = GodotLib.getRendererInfo(meetsVulkanRequirements(context.packageManager))
+		val renderingDriverChosen = rendererInfo[0]
+		val renderingDriverOriginal = rendererInfo[1]
+		val renderingMethod = rendererInfo[2]
+		val renderingDriverSource = rendererInfo[3]
+		val renderingMethodSource = rendererInfo[4]
+		Log.d(TAG, """renderingDevice: $renderingDriverChosen (${renderingDriverSource})
+			renderer: $renderingMethod (${renderingMethodSource})""")
 
-	/**
-	 * Returns true if `Vulkan` is used for rendering.
-	 */
-	private fun usesVulkan(): Boolean {
-		val rendererInfo = GodotLib.getRendererInfo()
-		var renderingDeviceSource = "ProjectSettings"
-		var renderingDevice = rendererInfo[0]
-		var rendererSource = "ProjectSettings"
-		var renderer = rendererInfo[1]
-		val cmdline = commandLine
-		var index = cmdline.indexOf("--rendering-method")
-		if (index > -1 && cmdline.size > index + 1) {
-			rendererSource = "CommandLine"
-			renderer = cmdline.get(index + 1)
+		if (renderingDriverOriginal == "vulkan" && renderingDriverChosen == "") {
+			// Throw the exception for the case where Vulkan failed to create and no fallback was available.
+			throw IllegalStateException(context.getString(R.string.error_missing_vulkan_requirements_message))
 		}
-		index = cmdline.indexOf("--rendering-driver")
-		if (index > -1 && cmdline.size > index + 1) {
-			renderingDeviceSource = "CommandLine"
-			renderingDevice = cmdline.get(index + 1)
-		}
-		val result = ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
-		Log.d(TAG, """usesVulkan(): ${result}
-			renderingDevice: ${renderingDevice} (${renderingDeviceSource})
-			renderer: ${renderer} (${rendererSource})""")
-		return result
-	}
 
-	/**
-	 * Returns true if can fallback to OpenGL.
-	 */
-	private fun canFallbackToOpenGL(): Boolean {
-		return java.lang.Boolean.parseBoolean(GodotLib.getGlobal("rendering/rendering_device/fallback_to_opengl3"))
+		return renderingDriverChosen
 	}
 
 	/**
@@ -976,15 +941,15 @@ class Godot private constructor(val context: Context) {
 			return false
 		}
 		if (!packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1)) {
-			// Optional requirements.. log as warning if missing
+			// Optional requirements… log as warning if missing
 			Log.w(TAG, "The vulkan hardware level does not meet the minimum requirement: 1")
 		}
 
-		// Check for api version 1.0
-		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
+		// Check for api version 1.1
+		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x401000)
 	}
 
-	private fun setKeepScreenOn(enabled: Boolean) {
+	internal fun setKeepScreenOn(enabled: Boolean) {
 		runOnHostThread {
 			if (enabled) {
 				getActivity()?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -992,22 +957,6 @@ class Godot private constructor(val context: Context) {
 				getActivity()?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 			}
 		}
-	}
-
-	/**
-	 * Returns true if dark mode is supported, false otherwise.
-	 */
-	@Keep
-	private fun isDarkModeSupported(): Boolean {
-		return context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_UNDEFINED
-	}
-
-	/**
-	 * Returns true if dark mode is supported and enabled, false otherwise.
-	 */
-	@Keep
-	private fun isDarkMode(): Boolean {
-		return darkMode
 	}
 
 	@Keep
@@ -1039,51 +988,6 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
-	@Keep
-	private fun showFilePicker(currentDirectory: String, filename: String, fileMode: Int, filters: Array<String>) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			FilePicker.showFilePicker(context, getActivity(), currentDirectory, filename, fileMode, filters)
-		}
-	}
-
-	/**
-	 * This method shows a dialog with multiple buttons.
-	 *
-	 * @param title The title of the dialog.
-	 * @param message The message displayed in the dialog.
-	 * @param buttons An array of button labels to display.
-	 */
-	@Keep
-	private fun showDialog(title: String, message: String, buttons: Array<String>) {
-		getActivity()?.let { DialogUtils.showDialog(it, title, message, buttons) }
-	}
-
-	/**
-	 * This method shows a dialog with a text input field, allowing the user to input text.
-	 *
-	 * @param title The title of the input dialog.
-	 * @param message The message displayed in the input dialog.
-	 * @param existingText The existing text that will be pre-filled in the input field.
-	 */
-	@Keep
-	private fun showInputDialog(title: String, message: String, existingText: String) {
-		getActivity()?.let { DialogUtils.showInputDialog(it, title, message, existingText) }
-	}
-
-	@Keep
-	private fun getAccentColor(): Int {
-		val value = TypedValue()
-		context.theme.resolveAttribute(android.R.attr.colorAccent, value, true)
-		return value.data
-	}
-
-	@Keep
-	private fun getBaseColor(): Int {
-		val value = TypedValue()
-		context.theme.resolveAttribute(android.R.attr.colorBackground, value, true)
-		return value.data
-	}
-
 	/**
 	 * Destroys the Godot Engine and kill the process it's running in.
 	 */
@@ -1107,8 +1011,7 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
-	@Keep
-	private fun forceQuit(instanceId: Int): Boolean {
+	internal fun forceQuit(instanceId: Int): Boolean {
 		primaryHost?.let {
 			if (instanceId == 0) {
 				it.onGodotForceQuit(this)
@@ -1116,7 +1019,8 @@ class Godot private constructor(val context: Context) {
 			} else {
 				return it.onGodotForceQuit(instanceId)
 			}
-		} ?: return false
+		}
+		return false
 	}
 
 	fun onBackPressed() {
@@ -1124,50 +1028,6 @@ class Godot private constructor(val context: Context) {
 			plugin.onMainBackPressed()
 		}
 		runOnRenderThread { GodotLib.back() }
-	}
-
-	/**
-	 * Used by the native code (java_godot_wrapper.h) to vibrate the device.
-	 * @param durationMs
-	 */
-	@SuppressLint("MissingPermission")
-	@Keep
-	private fun vibrate(durationMs: Int, amplitude: Int) {
-		if (durationMs > 0 && requestPermission("VIBRATE")) {
-			try {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-					if (amplitude <= -1) {
-						vibratorService?.vibrate(
-							VibrationEffect.createOneShot(
-								durationMs.toLong(),
-								VibrationEffect.DEFAULT_AMPLITUDE
-							)
-						)
-					} else {
-						vibratorService?.vibrate(
-							VibrationEffect.createOneShot(
-								durationMs.toLong(),
-								amplitude
-							)
-						)
-					}
-				} else {
-					// deprecated in API 26
-					vibratorService?.vibrate(durationMs.toLong())
-				}
-			} catch (e: SecurityException) {
-				Log.w(TAG, "SecurityException: VIBRATE permission not found. Make sure it is declared in the manifest or enabled in the export preset.")
-			}
-		}
-	}
-
-	/**
-	 * Used by the native code (java_godot_wrapper.h) to access the input fallback mapping.
-	 * @return The input fallback mapping for the current XR mode.
-	 */
-	@Keep
-	private fun getInputFallbackMapping(): String? {
-		return xrMode.inputFallbackMapping
 	}
 
 	fun requestPermission(name: String?): Boolean {
@@ -1202,182 +1062,4 @@ class Godot private constructor(val context: Context) {
 	fun hasFeature(feature: String): Boolean {
 		return GodotLib.hasFeature(feature)
 	}
-
-	/**
-	 * Internal method used to query whether the host or the registered plugins supports a given feature.
-	 *
-	 * This is invoked by the native code, and should not be confused with [hasFeature] which is the Android version of
-	 * https://docs.godotengine.org/en/stable/classes/class_os.html#class-os-method-has-feature
-	 */
-	@Keep
-	private fun checkInternalFeatureSupport(feature: String): Boolean {
-		if (primaryHost?.supportsFeature(feature) == true) {
-			return true
-		}
-
-		for (plugin in pluginRegistry.allPlugins) {
-			if (plugin.supportsFeature(feature)) {
-				return true
-			}
-		}
-		return false
-	}
-
-	/**
-	 * Get the list of gdextension modules to register.
-	 */
-	@Keep
-	private fun getGDExtensionConfigFiles(): Array<String> {
-		val configFiles = mutableSetOf<String>()
-		for (plugin in pluginRegistry.allPlugins) {
-			configFiles.addAll(plugin.pluginGDExtensionLibrariesPaths)
-		}
-
-		return configFiles.toTypedArray()
-	}
-
-	@Keep
-	private fun getCACertificates(): String {
-		return GodotNetUtils.getCACertificates()
-	}
-
-	private fun obbIsCorrupted(f: String, mainPackMd5: String): Boolean {
-		return try {
-			val fis: InputStream = FileInputStream(f)
-
-			// Create MD5 Hash
-			val buffer = ByteArray(16384)
-			val complete = MessageDigest.getInstance("MD5")
-			var numRead: Int
-			do {
-				numRead = fis.read(buffer)
-				if (numRead > 0) {
-					complete.update(buffer, 0, numRead)
-				}
-			} while (numRead != -1)
-			fis.close()
-			val messageDigest = complete.digest()
-
-			// Create Hex String
-			val hexString = StringBuilder()
-			for (b in messageDigest) {
-				var s = Integer.toHexString(0xFF and b.toInt())
-				if (s.length == 1) {
-					s = "0$s"
-				}
-				hexString.append(s)
-			}
-			val md5str = hexString.toString()
-			md5str != mainPackMd5
-		} catch (e: java.lang.Exception) {
-			e.printStackTrace()
-			true
-		}
-	}
-
-	@Keep
-	private fun initInputDevices() {
-		godotInputHandler.initInputDevices()
-	}
-
-	@Keep
-	private fun createNewGodotInstance(args: Array<String>): Int {
-		return primaryHost?.onNewGodotInstanceRequested(args) ?: -1
-	}
-
-	@Keep
-	private fun nativeBeginBenchmarkMeasure(scope: String, label: String) {
-		beginBenchmarkMeasure(scope, label)
-	}
-
-	@Keep
-	private fun nativeEndBenchmarkMeasure(scope: String, label: String) {
-		endBenchmarkMeasure(scope, label)
-	}
-
-	@Keep
-	private fun nativeDumpBenchmark(benchmarkFile: String) {
-		dumpBenchmark(fileAccessHandler, benchmarkFile)
-	}
-
-	@Keep
-	private fun nativeSignApk(inputPath: String,
-							  outputPath: String,
-							  keystorePath: String,
-							  keystoreUser: String,
-							  keystorePassword: String): Int {
-		val signResult = primaryHost?.signApk(inputPath, outputPath, keystorePath, keystoreUser, keystorePassword) ?: Error.ERR_UNAVAILABLE
-		return signResult.toNativeValue()
-	}
-
-	@Keep
-	private fun nativeVerifyApk(apkPath: String): Int {
-		val verifyResult = primaryHost?.verifyApk(apkPath) ?: Error.ERR_UNAVAILABLE
-		return verifyResult.toNativeValue()
-	}
-
-	@Keep
-	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
-		primaryHost?.onEditorWorkspaceSelected(workspace)
-	}
-
-	@Keep
-	private fun nativeBuildEnvConnect(callback: GodotCallable): Boolean {
-		try {
-			val buildProvider = primaryHost?.getBuildProvider()
-			return buildProvider?.buildEnvConnect(callback) ?: false
-		} catch (e: Exception) {
-			Log.e(TAG, "Unable to connect to build environment", e)
-			return false
-		}
-	}
-
-	@Keep
-	private fun nativeBuildEnvDisconnect() {
-		try {
-			val buildProvider = primaryHost?.getBuildProvider()
-			buildProvider?.buildEnvDisconnect()
-		} catch (e: Exception) {
-			Log.e(TAG, "Unable to disconnect from build environment", e)
-		}
-	}
-
-	@Keep
-	private fun nativeBuildEnvExecute(buildTool: String, arguments: Array<String>, projectPath: String, buildDir: String, outputCallback: GodotCallable, resultCallback: GodotCallable): Int {
-		try {
-			val buildProvider = primaryHost?.getBuildProvider()
-			return buildProvider?.buildEnvExecute(
-				buildTool,
-				arguments,
-				projectPath,
-				buildDir,
-				outputCallback,
-				resultCallback
-			) ?: -1
-		} catch (e: Exception) {
-			Log.e(TAG, "Unable to execute Gradle command in build environment", e);
-			return -1
-		}
-	}
-
-	@Keep
-	private fun nativeBuildEnvCancel(jobId: Int) {
-		try {
-			val buildProvider = primaryHost?.getBuildProvider()
-			buildProvider?.buildEnvCancel(jobId)
-		} catch (e: Exception) {
-			Log.e(TAG, "Unable to cancel command in build environment", e)
-		}
-	}
-
-	@Keep
-	private fun nativeBuildEnvCleanProject(projectPath: String, buildDir: String, callback: GodotCallable) {
-		try {
-			val buildProvider = primaryHost?.getBuildProvider()
-			buildProvider?.buildEnvCleanProject(projectPath, buildDir, callback)
-		} catch(e: Exception) {
-			Log.e(TAG, "Unable to clean project in build environment", e)
-		}
-	}
-
 }

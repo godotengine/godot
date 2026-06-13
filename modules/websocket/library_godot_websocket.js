@@ -169,14 +169,9 @@ const GodotWebSocket = {
 	godot_js_websocket_send__proxy: 'sync',
 	godot_js_websocket_send__sig: 'iiiii',
 	godot_js_websocket_send: function (p_id, p_buf, p_buf_len, p_raw) {
-		const bytes_array = new Uint8Array(p_buf_len);
-		let i = 0;
-		for (i = 0; i < p_buf_len; i++) {
-			bytes_array[i] = GodotRuntime.getHeapValue(p_buf + i, 'i8');
-		}
-		let out = bytes_array.buffer;
+		let out = GodotRuntime.heapSlice(HEAPU8, p_buf, p_buf_len);
 		if (!p_raw) {
-			out = new TextDecoder('utf-8').decode(bytes_array);
+			out = new TextDecoder('utf-8').decode(out);
 		}
 		return GodotWebSocket.send(p_id, out);
 	},

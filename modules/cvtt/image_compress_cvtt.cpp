@@ -141,7 +141,7 @@ static void _digest_job_queue(void *p_job_queue, uint32_t p_index) {
 	}
 }
 
-void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
+void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels, Image::BPTCFormat p_bptc_format) {
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	if (p_image->is_compressed()) {
@@ -179,7 +179,17 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 			p_image->convert(Image::FORMAT_RGBH);
 		}
 
-		is_signed = p_image->detect_signed();
+		switch (p_bptc_format) {
+			case Image::BPTC_DETECT:
+				is_signed = p_image->detect_signed();
+				break;
+			case Image::BPTC_FORCE_SIGNED:
+				is_signed = true;
+				break;
+			case Image::BPTC_FORCE_UNSIGNED:
+				is_signed = false;
+				break;
+		}
 		target_format = is_signed ? Image::FORMAT_BPTC_RGBF : Image::FORMAT_BPTC_RGBFU;
 	} else {
 		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert

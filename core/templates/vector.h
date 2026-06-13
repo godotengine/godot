@@ -108,7 +108,7 @@ public:
 		return _cowdata.template resize<!std::is_trivially_constructible_v<T>>(p_size);
 	}
 
-	/// Resize and set all values to 0 / false / nullptr.
+	/// Resize and set new values to 0 / false / nullptr.
 	/// This is only available for zero constructible types.
 	_FORCE_INLINE_ Error resize_initialized(Size p_size) {
 		return _cowdata.template resize<true>(p_size);

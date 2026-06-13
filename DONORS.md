@@ -34,6 +34,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Broken Rules <https://brokenrul.es>
     Chasing Carrots <https://www.chasing-carrots.com>
     Copia Wealth Studios <https://copiawealthstudios.com/>
+    Evil Trout Inc. <https://eviltrout.com/>
     Games by Malcs <https://gamesbymalcs.com/>
     LoadComplete <https://loadcomplete.com/>
     Null <https://null.com/>
@@ -89,6 +90,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Emergo Entertainment
     Eric Burns
     Fabio Alessandrelli
+    Francis Nguyen
     Fresh Fineapple
     GrammAcc
     HP van Braam
@@ -153,6 +155,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Carlo del Mundo
     Chaff Games
     Chamber of Light, Flower and Essence Incorporated*
+    Chet Faliszek
     Chocolate Software
     Chris Backas
     Christian Mauduit
@@ -181,11 +184,11 @@ generous deed immortalized in the next stable release of Godot Engine.
     DullyDev
     Dustuu
     Dylan Dromard
+    Eamonn Irvine
     Edelweiss
     eelSkillz
     Ends
     Eric Brand
-    Evil Trout Inc.
     Fail Forward Games
     Faisal Al-Kubaisi (QatariGameDev)
     Felix Adam
@@ -251,6 +254,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Luca Junge
     Luca Vazzano
     Luke_Username
+    Lyaaaaa Games
     m1n1ster
     Madison Nicole Videogames
     Manul Opus
@@ -342,7 +346,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     zikes
     Zoey Smith
     嗯大爷
-    And 118 anonymous donors
+    And 117 anonymous donors
 
 ## Silver and bronze donors
 

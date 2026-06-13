@@ -30,15 +30,17 @@
 
 #include "openxr_action_set_editor.h"
 
+#include "openxr_action_editor.h"
+
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/themes/editor_scale.h"
-#include "openxr_action_editor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/text_edit.h"
 
 void OpenXRActionSetEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_set_name", "name"), &OpenXRActionSetEditor::_do_set_name);
@@ -49,6 +51,7 @@ void OpenXRActionSetEditor::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("remove", PropertyInfo(Variant::OBJECT, "action_set_editor")));
 	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(Variant::OBJECT, "action")));
+	ADD_SIGNAL(MethodInfo("action_renamed", PropertyInfo(Variant::OBJECT, "action")));
 }
 
 void OpenXRActionSetEditor::_set_fold_icon() {
@@ -77,6 +80,7 @@ void OpenXRActionSetEditor::_notification(int p_what) {
 OpenXRActionEditor *OpenXRActionSetEditor::_add_action_editor(const Ref<OpenXRAction> &p_action) {
 	OpenXRActionEditor *action_editor = memnew(OpenXRActionEditor(p_action));
 	action_editor->connect("remove", callable_mp(this, &OpenXRActionSetEditor::_on_remove_action));
+	action_editor->connect("action_renamed", callable_mp(this, &OpenXRActionSetEditor::_on_rename_action));
 	actions_vb->add_child(action_editor);
 
 	return action_editor;
@@ -105,6 +109,8 @@ void OpenXRActionSetEditor::_on_action_set_name_changed(const String &p_new_text
 			action_set->set_localized_name(p_new_text);
 			action_set_localized_name->set_text(p_new_text);
 		}
+
+		emit_signal("action_renamed", this);
 		action_set->set_name(p_new_text);
 		action_set->set_edited(true);
 	}
@@ -113,6 +119,7 @@ void OpenXRActionSetEditor::_on_action_set_name_changed(const String &p_new_text
 void OpenXRActionSetEditor::_do_set_name(const String &p_new_text) {
 	action_set->set_name(p_new_text);
 	action_set_name->set_text(p_new_text);
+	emit_signal("action_renamed", this);
 }
 
 void OpenXRActionSetEditor::_on_action_set_localized_name_changed(const String &p_new_text) {
@@ -189,6 +196,16 @@ void OpenXRActionSetEditor::_on_remove_action(Object *p_action_editor) {
 	undo_redo->commit_action(true);
 
 	action_set->set_edited(true);
+}
+
+void OpenXRActionSetEditor::_on_rename_action(Object *p_action_editor) {
+	OpenXRActionEditor *action_editor = Object::cast_to<OpenXRActionEditor>(p_action_editor);
+	ERR_FAIL_NULL(action_editor);
+	ERR_FAIL_COND(action_editor->get_parent() != actions_vb);
+	Ref<OpenXRAction> action = action_editor->get_action();
+	ERR_FAIL_COND(action.is_null());
+
+	emit_signal("action_renamed", action);
 }
 
 void OpenXRActionSetEditor::_do_add_action_editor(OpenXRActionEditor *p_action_editor) {

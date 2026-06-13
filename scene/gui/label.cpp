@@ -30,8 +30,12 @@
 
 #include "label.h"
 
-#include "scene/gui/container.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/text/text_server.h"
 
 void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
@@ -49,6 +53,7 @@ void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
+	update_desired_size();
 }
 
 TextServer::AutowrapMode Label::get_autowrap_mode() const {
@@ -70,6 +75,7 @@ void Label::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags)
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
+	update_desired_size();
 }
 
 BitField<TextServer::LineBreakFlag> Label::get_autowrap_trim_flags() const {
@@ -140,6 +146,16 @@ void Label::_shape() const {
 
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int width = (get_size().width - style->get_minimum_size().width);
+	float combined_maximum_width = get_combined_maximum_size().x;
+	bool wrap_with_max_width = autowrap_mode != TextServer::AUTOWRAP_OFF && combined_maximum_width > 0;
+	int maximum_width = -1;
+	if (wrap_with_max_width) {
+		maximum_width = int(combined_maximum_width - style->get_minimum_size().width);
+		if (maximum_width <= 0) {
+			maximum_width = 1;
+		}
+		width = maximum_width;
+	}
 
 	if (text_dirty) {
 		for (Paragraph &para : paragraphs) {
@@ -245,7 +261,7 @@ void Label::_shape() const {
 	bool lines_hidden = visible_lines > 0 && visible_lines < total_line_count;
 
 	int line_index = 0;
-	if (autowrap_mode == TextServer::AUTOWRAP_OFF) {
+	if (autowrap_mode == TextServer::AUTOWRAP_OFF || wrap_with_max_width) {
 		minsize.width = 0.0f;
 	}
 	for (Paragraph &para : paragraphs) {
@@ -255,6 +271,8 @@ void Label::_shape() const {
 					minsize.width = TS->shaped_text_get_size(line_rid).x;
 				}
 			}
+		} else if (wrap_with_max_width) {
+			minsize.width = MAX(minsize.width, TS->shaped_text_get_size(para.text_rid).x);
 		}
 
 		if (para.lines_dirty) {
@@ -333,6 +351,9 @@ void Label::_shape() const {
 			para.lines_dirty = false;
 		}
 		line_index += para.lines_rid.size();
+	}
+	if (wrap_with_max_width && maximum_width > 0) {
+		minsize.width = MIN(minsize.width, maximum_width);
 	}
 
 	_update_visible();
@@ -626,12 +647,8 @@ PackedStringArray Label::get_configuration_warnings() const {
 	// but for now we have to warn about this impossible to resolve combination.
 	// See GH-83546.
 	if (is_inside_tree() && get_tree()->get_edited_scene_root() != this) {
-		// If the Label happens to be the root node of the edited scene, we don't need
-		// to check what its parent is. It's going to be some node from the editor tree
-		// and it can be a container, but that makes no difference to the user.
-		Container *parent_container = Object::cast_to<Container>(get_parent_control());
-		if (parent_container && autowrap_mode != TextServer::AUTOWRAP_OFF && get_custom_minimum_size() == Size2()) {
-			warnings.push_back(RTR("Labels with autowrapping enabled must have a custom minimum size configured to work correctly inside a container."));
+		if (autowrap_mode != TextServer::AUTOWRAP_OFF && get_combined_maximum_size().width <= 0) {
+			warnings.push_back(RTR("Labels with autowrapping enabled must have a positive custom maximum width configured to work correctly."));
 		}
 	}
 
@@ -705,9 +722,9 @@ void Label::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, xl_text);
-			DisplayServer::get_singleton()->accessibility_update_set_text_align(ae, horizontal_alignment);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_STATIC_TEXT);
+			AccessibilityServer::get_singleton()->update_set_value(ae, xl_text);
+			AccessibilityServer::get_singleton()->update_set_text_align(ae, horizontal_alignment);
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -895,6 +912,7 @@ void Label::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			font_dirty = true;
 			queue_redraw();
+			update_desired_size();
 			update_configuration_warnings();
 		} break;
 
@@ -995,6 +1013,20 @@ Size2 Label::get_minimum_size() const {
 		}
 		return min_size + min_style;
 	}
+}
+
+Size2 Label::get_desired_size() const {
+	Size2 combined_max = get_combined_maximum_size();
+	if (combined_max.width < 0) {
+		return Size2();
+	}
+
+	_ensure_shaped();
+	Size2 min_style = theme_cache.normal_style->get_minimum_size();
+	Size2 content_size = minsize + min_style;
+	content_size.width = MIN(content_size.width, int(combined_max.width));
+
+	return content_size;
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -1109,12 +1141,27 @@ void Label::set_text(const String &p_string) {
 	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
+	update_desired_size();
 	update_configuration_warnings();
 }
 
 void Label::_invalidate() {
 	font_dirty = true;
 	queue_redraw();
+	update_configuration_warnings();
+}
+
+void Label::_maximum_size_changed() {
+	if (autowrap_mode == TextServer::AUTOWRAP_OFF && overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) {
+		return;
+	}
+
+	for (Paragraph &para : paragraphs) {
+		para.lines_dirty = true;
+	}
+	queue_redraw();
+	update_minimum_size();
+	update_desired_size();
 	update_configuration_warnings();
 }
 
@@ -1216,6 +1263,7 @@ void Label::set_clip_text(bool p_clip) {
 	clip = p_clip;
 	queue_redraw();
 	update_minimum_size();
+	update_desired_size();
 }
 
 bool Label::is_clipping_text() const {
@@ -1249,6 +1297,7 @@ void Label::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
+	update_desired_size();
 }
 
 TextServer::OverrunBehavior Label::get_text_overrun_behavior() const {
@@ -1272,6 +1321,7 @@ void Label::set_ellipsis_char(const String &p_char) {
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
+	update_desired_size();
 }
 
 String Label::get_ellipsis_char() const {
@@ -1429,7 +1479,7 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_character_bounds", "pos"), &Label::get_character_bounds);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "label_settings", PROPERTY_HINT_RESOURCE_TYPE, "LabelSettings"), "set_label_settings", "get_label_settings");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "label_settings", PROPERTY_HINT_RESOURCE_TYPE, LabelSettings::get_class_static()), "set_label_settings", "get_label_settings");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
@@ -1474,6 +1524,8 @@ void Label::_bind_methods() {
 }
 
 Label::Label(const String &p_text) {
+	connect(SceneStringName(maximum_size_changed), callable_mp(this, &Label::_maximum_size_changed));
+
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	set_text(p_text);
 	set_v_size_flags(SIZE_SHRINK_CENTER);

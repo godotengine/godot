@@ -31,6 +31,7 @@
 #include "a_star_grid_2d.h"
 #include "a_star_grid_2d.compat.inc"
 
+#include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 
 static real_t heuristic_euclidean(const Vector2i &p_from, const Vector2i &p_to) {
@@ -158,7 +159,7 @@ void AStarGrid2D::update() {
 			solid_mask.push_back(false);
 		}
 		solid_mask.push_back(true);
-		points.push_back(line);
+		points.push_back(std::move(line));
 	}
 
 	for (int32_t x = region.position.x; x < end_x + 2; x++) {

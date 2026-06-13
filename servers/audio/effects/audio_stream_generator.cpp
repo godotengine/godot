@@ -30,6 +30,8 @@
 
 #include "audio_stream_generator.h"
 
+#include "core/object/class_db.h"
+
 void AudioStreamGenerator::set_mix_rate(float p_mix_rate) {
 	mix_rate = p_mix_rate;
 }
@@ -71,7 +73,7 @@ Ref<AudioStreamPlayback> AudioStreamGenerator::instantiate_playback() {
 	playback.instantiate();
 	playback->generator = this;
 	uint32_t target_buffer_size = _get_target_rate() * buffer_len;
-	playback->buffer.resize(nearest_shift(target_buffer_size));
+	playback->buffer.resize(Math::nearest_shift(target_buffer_size));
 	playback->buffer.clear();
 	return playback;
 }

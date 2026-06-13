@@ -30,11 +30,13 @@
 
 #include "audio_stream_import_settings.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
+#include "servers/rendering/rendering_server.h"
 
 AudioStreamImportSettingsDialog *AudioStreamImportSettingsDialog::singleton = nullptr;
 
@@ -276,7 +278,9 @@ void AudioStreamImportSettingsDialog::_play() {
 }
 
 void AudioStreamImportSettingsDialog::_stop() {
-	_load_master_state();
+	if (_player->is_playing()) {
+		_load_master_state();
+	}
 
 	_player->stop();
 	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
@@ -286,6 +290,8 @@ void AudioStreamImportSettingsDialog::_stop() {
 }
 
 void AudioStreamImportSettingsDialog::_on_finished() {
+	_load_master_state();
+
 	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	if (!_pausing) {
 		_current = 0;
@@ -469,6 +475,7 @@ void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p
 			int beats = config_file->get_value("params", "beat_count", 0);
 			bpm_edit->set_value(bpm > 0 ? bpm : 120);
 			bpm_enabled->set_pressed(bpm > 0);
+			beats_edit->set_max(99999); // Temporarily disable `max` in case current `beat_count` > previously set `beat_max`. It will be set to the appropriate value in `_settings_changed()` right afterwards.
 			beats_edit->set_value(beats);
 			beats_enabled->set_pressed(beats > 0);
 			loop->set_pressed(config_file->get_value("params", "loop", false));

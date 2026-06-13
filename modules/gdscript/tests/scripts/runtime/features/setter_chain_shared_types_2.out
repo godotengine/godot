@@ -1,0 +1,10 @@
+GDTEST_OK
+get a
+get a
+[2]
+get b
+get b
+[2]
+get c
+get c
+[(2.0, 1.0)]

@@ -30,6 +30,8 @@
 
 #include "udp_server.h"
 
+#include "core/object/class_db.h"
+
 void UDPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
@@ -147,7 +149,6 @@ void UDPServer::set_max_pending_connections(int p_max) {
 		if (!E) {
 			break;
 		}
-		memdelete(E->get().peer);
 		pending.erase(E);
 	}
 }
@@ -190,7 +191,6 @@ void UDPServer::stop() {
 	E = pending.front();
 	while (E) {
 		E->get().peer->disconnect_shared_socket();
-		memdelete(E->get().peer);
 		E = E->next();
 	}
 	peers.clear();

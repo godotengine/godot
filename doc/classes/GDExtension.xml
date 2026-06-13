@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GDExtension" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GDExtension" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A native library for GDExtension.
 	</brief_description>
@@ -8,7 +8,7 @@
 		[b]Note:[/b] GDExtension itself is not a scripting language and has no relation to [GDScript] resources.
 	</description>
 	<tutorials>
-		<link title="GDExtension overview">$DOCS_URL/tutorials/scripting/gdextension/what_is_gdextension.html</link>
+		<link title="GDExtension overview">$DOCS_URL/engine_details/engine_api/gdextension/what_is_gdextension.html</link>
 		<link title="GDExtension example in C++">$DOCS_URL/tutorials/scripting/cpp/gdextension_cpp_example.html</link>
 	</tutorials>
 	<methods>

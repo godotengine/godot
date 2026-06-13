@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "gltf_state.h"
+
+#include "core/object/class_db.h"
+
 // Non-const getters for compatibility.
 int32_t GLTFState::_get_handle_binary_image_bind_compat_113172() {
 	return get_handle_binary_image();

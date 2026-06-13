@@ -34,7 +34,7 @@
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.mutex.h"
+#include <thirdparty/mingw-std-threads/mingw.mutex.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <mutex>
@@ -69,7 +69,7 @@ public:
 };
 
 template <typename MutexT>
-class MutexLock {
+class [[nodiscard]] MutexLock {
 	mutable THREADING_NAMESPACE::unique_lock<typename MutexT::StdMutexType> lock;
 
 public:
@@ -114,7 +114,7 @@ public:
 };
 
 template <typename MutexT>
-class MutexLock {
+class [[nodiscard]] MutexLock {
 public:
 	MutexLock(const MutexT &p_mutex) {}
 

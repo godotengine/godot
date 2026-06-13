@@ -84,11 +84,6 @@ public:
 					unbinds = ccu->get_unbinds();
 					base_callable = ccu->get_callable();
 				}
-
-				// The source object may already be bound, ignore it to prevent display of the source object.
-				if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == binds[0])) {
-					binds.remove_at(0);
-				}
 			} else {
 				base_callable = p_connection.callable;
 			}

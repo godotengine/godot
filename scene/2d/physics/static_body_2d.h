@@ -32,8 +32,12 @@
 
 #include "scene/2d/physics/physics_body_2d.h"
 
+class PhysicsMaterial;
+
+#ifndef NAVIGATION_2D_DISABLED
 class NavigationPolygon;
 class NavigationMeshSourceGeometryData2D;
+#endif
 
 class StaticBody2D : public PhysicsBody2D {
 	GDCLASS(StaticBody2D, PhysicsBody2D);

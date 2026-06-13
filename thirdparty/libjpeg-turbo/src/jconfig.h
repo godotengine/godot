@@ -6,10 +6,10 @@
 #define JPEG_LIB_VERSION  62
 
 /* libjpeg-turbo version */
-#define LIBJPEG_TURBO_VERSION  3.1.0
+#define LIBJPEG_TURBO_VERSION  3.1.3
 
 /* libjpeg-turbo version in integer form */
-#define LIBJPEG_TURBO_VERSION_NUMBER  3001000
+#define LIBJPEG_TURBO_VERSION_NUMBER  3001003
 
 /* Support arithmetic encoding when using 8-bit samples */
 #define C_ARITH_CODING_SUPPORTED 1
@@ -21,7 +21,14 @@
 #define MEM_SRCDST_SUPPORTED  1
 
 /* Use accelerated SIMD routines when using 8-bit samples */
+// Godot: Disabled for simplicity of compiling the library cross-platform.
+// Could be enabled if it's confirmed to be worth the effort.
 //#define WITH_SIMD 1
+
+// Godot: Disable those as they're for forcing different SIMD CPU support
+// via environment variables, that's super niche and we don't build with SIMD.
+#define NO_GETENV
+#define NO_PUTENV
 
 /* This version of libjpeg-turbo supports run-time selection of data precision,
  * so BITS_IN_JSAMPLE is no longer used to specify the data precision at build

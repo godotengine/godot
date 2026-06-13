@@ -144,8 +144,6 @@ private:
 			Color color = Color(1, 1, 1);
 		};
 
-		mutable int64_t next_item_id = 0;
-
 		struct Line {
 			Vector<Gutter> gutters;
 
@@ -457,6 +455,7 @@ private:
 
 	bool setting_caret_line = false;
 	bool caret_pos_dirty = false;
+	void _set_caret_pos_dirty(bool p_dirty);
 
 	int multicaret_edit_count = 0;
 	bool multicaret_edit_merge_queued = false;
@@ -604,6 +603,7 @@ private:
 
 	Vector<Pair<int64_t, Color>> _get_line_syntax_highlighting(int p_line);
 	void _clear_syntax_highlighting_cache();
+	void _syntax_highlighter_changed();
 
 	/* Visual. */
 	struct ThemeCache {
@@ -706,6 +706,8 @@ protected:
 
 	virtual void _draw_guidelines() {}
 	virtual void _update_theme_item_cache() override;
+
+	virtual String _get_accessibility_name() const override;
 
 	/* Internal API for CodeEdit, pending public API. */
 	// Brace matching.
@@ -937,6 +939,7 @@ public:
 	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
 	Point2i get_pos_at_line_column(int p_line, int p_column) const;
 	Rect2i get_rect_at_line_column(int p_line, int p_column) const;
+	int get_line_start_margin() const;
 
 	int get_minimap_line_at_pos(const Point2i &p_pos) const;
 
@@ -1093,6 +1096,7 @@ public:
 	int get_total_visible_line_count() const;
 
 	// Auto Adjust
+	bool is_line_in_viewport(int p_line) const;
 	void adjust_viewport_to_caret(int p_caret = 0);
 	void center_viewport_to_caret(int p_caret = 0);
 

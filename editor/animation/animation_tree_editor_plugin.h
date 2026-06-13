@@ -33,11 +33,13 @@
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_tree.h"
-#include "scene/gui/graph_edit.h"
+#include "scene/gui/box_container.h"
 
 class Button;
 class EditorFileDialog;
+class PanelContainer;
 class ScrollContainer;
+class RichTextLabel;
 
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);
@@ -45,6 +47,9 @@ class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) = 0;
 	virtual void edit(const Ref<AnimationNode> &p_node) = 0;
+
+private:
+	String last_error_key;
 };
 
 class AnimationTreeEditor : public EditorDock {
@@ -52,6 +57,10 @@ class AnimationTreeEditor : public EditorDock {
 
 	ScrollContainer *path_edit = nullptr;
 	HBoxContainer *path_hb = nullptr;
+	RichTextLabel *current_scope_error_label = nullptr;
+	Button *error_button = nullptr;
+	ScrollContainer *error_scroll = nullptr;
+	RichTextLabel *error_label = nullptr;
 
 	AnimationTree *tree = nullptr;
 	MarginContainer *editor_base = nullptr;
@@ -67,9 +76,13 @@ class AnimationTreeEditor : public EditorDock {
 	void _path_button_pressed(int p_path);
 	void _animation_list_changed();
 
-	static Vector<String> get_animation_list();
+	void _toggle_error_panel();
+	void _update_error_message();
+
+	static LocalVector<StringName> get_animation_list();
 
 protected:
+	void _meta_clicked(Variant p_meta);
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 
@@ -100,7 +113,6 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "AnimationTree"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

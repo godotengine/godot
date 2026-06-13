@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "input_map.h"
+
+#include "core/object/class_db.h"
+
 void InputMap::_add_action_bind_compat_97281(const StringName &p_action, float p_deadzone) {
 	add_action(p_action, p_deadzone);
 }

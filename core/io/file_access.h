@@ -36,6 +36,7 @@
 #include "core/os/memory.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
+#include "core/variant/type_info.h"
 
 /**
  * Multi-Platform abstraction for accessing to files.
@@ -87,11 +88,7 @@ public:
 	typedef void (*FileCloseFailNotify)(const String &);
 
 	typedef Ref<FileAccess> (*CreateFunc)();
-#ifdef BIG_ENDIAN_ENABLED
-	bool big_endian = true;
-#else
 	bool big_endian = false;
-#endif
 	bool real_is_double = false;
 
 	virtual BitField<UnixPermissionFlags> _get_unix_permissions(const String &p_file) = 0;
@@ -110,6 +107,7 @@ public:
 protected:
 	static void _bind_methods();
 
+	friend class Main;
 	AccessType get_access_type() const;
 	virtual String fix_path(const String &p_path) const;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) = 0; ///< open a file

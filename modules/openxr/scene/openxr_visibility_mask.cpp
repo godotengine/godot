@@ -32,10 +32,10 @@
 
 #include "../extensions/openxr_visibility_mask_extension.h"
 #include "../openxr_interface.h"
-#include "scene/3d/xr/xr_nodes.h"
 
-void OpenXRVisibilityMask::_bind_methods() {
-}
+#include "core/object/callable_mp.h"
+#include "scene/3d/xr/xr_nodes.h"
+#include "servers/rendering/rendering_server.h"
 
 void OpenXRVisibilityMask::_notification(int p_what) {
 	switch (p_what) {
@@ -94,7 +94,7 @@ OpenXRVisibilityMask::OpenXRVisibilityMask() {
 		openxr_interface->connect("session_stopping", callable_mp(this, &OpenXRVisibilityMask::_on_openxr_session_stopping));
 	}
 
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(get_instance(), RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(get_instance(), RSE::SHADOW_CASTING_SETTING_OFF);
 }
 
 OpenXRVisibilityMask::~OpenXRVisibilityMask() {

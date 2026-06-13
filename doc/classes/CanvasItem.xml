@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasItem" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CanvasItem" inherits="Node" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for everything in 2D space.
 	</brief_description>
@@ -668,6 +668,9 @@
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			The color applied to this [CanvasItem]. This property does affect child [CanvasItem]s, unlike [member self_modulate] which only affects the node itself.
 		</member>
+		<member name="oversampling_with_scale" type="int" setter="set_oversampling_with_scale" getter="get_oversampling_with_scale" enum="CanvasItem.OversamplingWithScale" default="0">
+			If enabled, oversampling for this [CanvasItem] is automatically adjusted with scale.
+		</member>
 		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate" default="Color(1, 1, 1, 1)">
 			The color applied to this [CanvasItem]. This property does [b]not[/b] affect child [CanvasItem]s, unlike [member modulate] which affects both the node itself and its children.
 			[b]Note:[/b] Internal children are also not affected by this property (see the [code]include_internal[/code] parameter in [method Node.add_child]). For built-in nodes this includes sliders in [ColorPicker], and the tab bar in [TabContainer].
@@ -789,7 +792,7 @@
 			Represents the size of the [enum TextureFilter] enum.
 		</constant>
 		<constant name="TEXTURE_REPEAT_PARENT_NODE" value="0" enum="TextureRepeat">
-			The [CanvasItem] will inherit the filter from its parent.
+			The [CanvasItem] will inherit the repeat mode from its parent.
 		</constant>
 		<constant name="TEXTURE_REPEAT_DISABLED" value="1" enum="TextureRepeat">
 			The texture does not repeat. Sampling the texture outside its extents will result in "stretching" of the edge pixels. You can avoid this by ensuring a 1-pixel fully transparent border on each side of the texture.
@@ -814,6 +817,18 @@
 		</constant>
 		<constant name="CLIP_CHILDREN_MAX" value="3" enum="ClipChildrenMode">
 			Represents the size of the [enum ClipChildrenMode] enum.
+		</constant>
+		<constant name="OVERSAMPLING_WITH_SCALE_PARENT_NODE" value="0" enum="OversamplingWithScale">
+			The [CanvasItem] will inherit the oversampling mode from its parent.
+		</constant>
+		<constant name="OVERSAMPLING_WITH_SCALE_DISABLED" value="1" enum="OversamplingWithScale">
+			The oversampling is not affected by [CanvasItem] scale, and is equal to the [Viewport] oversampling.
+		</constant>
+		<constant name="OVERSAMPLING_WITH_SCALE_ENABLED" value="2" enum="OversamplingWithScale">
+			The oversampling is a product of [CanvasItem] scale and [Viewport] oversampling.
+		</constant>
+		<constant name="OVERSAMPLING_WITH_SCALE_MAX" value="3" enum="OversamplingWithScale">
+			Represents the size of the [enum OversamplingWithScale] enum.
 		</constant>
 	</constants>
 </class>

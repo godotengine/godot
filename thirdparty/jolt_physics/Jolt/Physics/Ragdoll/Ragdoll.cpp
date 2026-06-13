@@ -190,6 +190,38 @@ bool RagdollSettings::Stabilize()
 	return true;
 }
 
+void RagdollSettings::CalculateConstraintPriorities(uint32 inBasePriority)
+{
+	JPH_ASSERT(inBasePriority + (uint32)mParts.size() > inBasePriority, "Base priority is too high and will cause overflows");
+	JPH_ASSERT(mSkeleton->AreJointsCorrectlyOrdered());
+
+	// Calculate priority for each part. Start with the base priority and increment towards the root
+	Array<uint32> priorities;
+	priorities.resize(mParts.size(), inBasePriority);
+	for (int i = (int)mParts.size() - 1; i >= 0; --i)
+	{
+		uint32 cur_priority = inBasePriority;
+		int j = i;
+		do
+		{
+			priorities[j] = max(priorities[j], cur_priority);
+			cur_priority++;
+
+			j = mSkeleton->GetJoint(j).mParentJointIndex;
+		}
+		while (j != -1);
+	}
+
+	// Copy the priorities to the constraints
+	for (uint i = 0, n = (uint)mParts.size(); i < n; ++i)
+		if (mParts[i].mToParent != nullptr)
+			mParts[i].mToParent->mConstraintPriority = priorities[i];
+
+	// Use the minimum of the priorities of connected bodies for additional constraints
+	for (AdditionalConstraint &constraint : mAdditionalConstraints)
+		constraint.mConstraint->mConstraintPriority = min(priorities[constraint.mBodyIdx[0]], priorities[constraint.mBodyIdx[1]]);
+}
+
 void RagdollSettings::DisableParentChildCollisions(const Mat44 *inJointMatrices, float inMinSeparationDistance)
 {
 	int joint_count = mSkeleton->GetJointCount();

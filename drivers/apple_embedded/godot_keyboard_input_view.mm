@@ -30,10 +30,9 @@
 
 #import "godot_keyboard_input_view.h"
 
-#import "display_server_apple_embedded.h"
-#import "os_apple_embedded.h"
-
 #include "core/os/keyboard.h"
+#import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/os_apple_embedded.h"
 
 @interface GDTKeyboardInputView () <UITextViewDelegate>
 

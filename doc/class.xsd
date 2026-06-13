@@ -296,7 +296,8 @@
 				</xs:element>
 			</xs:sequence>
 			<xs:attribute type="xs:string" name="name" />
-			<xs:attribute type="xs:string" name="inherits" />
+			<xs:attribute type="xs:string" name="inherits" use="optional" />
+			<xs:attribute type="xs:string" name="api_type" use="optional" />
 			<!-- deprecated -->
 			<xs:attribute type="xs:float" name="version" use="optional" />
 			<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />

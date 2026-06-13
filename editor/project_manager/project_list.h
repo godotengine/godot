@@ -31,12 +31,12 @@
 #pragma once
 
 #include "core/io/config_file.h"
-#include "core/os/time.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/scroll_container.h"
 
 class AcceptDialog;
 class Button;
+class HFlowContainer;
 class Label;
 class PopupMenu;
 class ProjectList;
@@ -56,7 +56,8 @@ class ProjectListItemControl : public HBoxContainer {
 	Label *last_edited_info = nullptr;
 	Label *project_version = nullptr;
 	TextureRect *project_unsupported_features = nullptr;
-	HBoxContainer *tag_container = nullptr;
+	TextureRect *project_different_version = nullptr;
+	HFlowContainer *tag_container = nullptr;
 	Button *touch_menu_button = nullptr;
 
 	Color favorite_focus_color;
@@ -67,6 +68,16 @@ class ProjectListItemControl : public HBoxContainer {
 	bool is_focus_hidden = false;
 	bool is_hovering = false;
 	bool is_favorite = false;
+
+	enum class VersionMatchType {
+		PROJECT_USES_SAME,
+		PROJECT_USES_OLDER_MAJOR,
+		PROJECT_USES_OLDER_MINOR,
+		PROJECT_USES_NEWER_MAJOR,
+		PROJECT_USES_NEWER_MINOR,
+	};
+
+	VersionMatchType version_match_type = VersionMatchType::PROJECT_USES_SAME;
 
 	void _update_favorite_button_focus_color();
 	void _favorite_button_pressed();
@@ -99,6 +110,8 @@ public:
 	void set_is_favorite(bool p_favorite);
 	void set_is_missing(bool p_missing);
 	void set_is_grayed(bool p_grayed);
+
+	void update_title_size();
 
 	ProjectListItemControl();
 };
@@ -192,14 +205,7 @@ public:
 			return path == l.path;
 		}
 
-		String get_last_edited_string() const {
-			if (missing) {
-				return TTR("Missing Date");
-			}
-
-			OS::TimeZoneInfo tz = OS::get_singleton()->get_time_zone_info();
-			return Time::get_singleton()->get_datetime_string_from_unix_time(last_edited + tz.bias * 60, true);
-		}
+		String get_last_edited_string() const;
 	};
 
 private:

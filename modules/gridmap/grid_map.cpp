@@ -30,8 +30,12 @@
 
 #include "grid_map.h"
 
+#include "core/config/engine.h"
 #include "core/io/marshalls.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/templates/a_hash_map.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/surface_tool.h"
@@ -39,7 +43,6 @@
 
 #ifndef PHYSICS_3D_DISABLED
 #include "core/math/convex_hull.h"
-#include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
@@ -216,6 +219,18 @@ real_t GridMap::get_collision_priority() const {
 	return collision_priority;
 }
 
+void GridMap::set_collision_visibility_mode(DebugVisibilityMode p_visibility_mode) {
+	if (collision_visibility_mode == p_visibility_mode) {
+		return;
+	}
+	collision_visibility_mode = p_visibility_mode;
+	_recreate_octant_data();
+}
+
+GridMap::DebugVisibilityMode GridMap::get_collision_visibility_mode() const {
+	return collision_visibility_mode;
+}
+
 void GridMap::set_physics_material(Ref<PhysicsMaterial> p_material) {
 	physics_material = p_material;
 	_update_physics_bodies_characteristics();
@@ -247,6 +262,24 @@ Array GridMap::get_collision_shapes() const {
 	}
 
 	return shapes;
+}
+
+RID GridMap::get_physics_body_from_octant_coord(const Vector3i &p_octant_coords) const {
+	OctantKey octantkey;
+	octantkey.x = p_octant_coords.x;
+	octantkey.y = p_octant_coords.y;
+	octantkey.z = p_octant_coords.z;
+
+	const HashMap<OctantKey, Octant *, OctantKey>::ConstIterator octant_kv = octant_map.find(octantkey);
+
+	if (!octant_kv) {
+		return RID();
+	}
+
+	Octant *g = octant_kv->value;
+	RID body_rid = g->static_body;
+
+	return body_rid;
 }
 #endif // PHYSICS_3D_DISABLED
 
@@ -398,12 +431,23 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
 		}
 #endif // PHYSICS_3D_DISABLED
-		SceneTree *st = SceneTree::get_singleton();
-
-		if (st && st->is_debugging_collisions_hint()) {
-			g->collision_debug = RenderingServer::get_singleton()->mesh_create();
-			g->collision_debug_instance = RenderingServer::get_singleton()->instance_create();
-			RenderingServer::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
+		bool debug_collisions = false;
+		switch (collision_visibility_mode) {
+			case DEBUG_VISIBILITY_MODE_DEFAULT: {
+				SceneTree *st = SceneTree::get_singleton();
+				debug_collisions = st && !Engine::get_singleton()->is_editor_hint() && st->is_debugging_collisions_hint();
+			} break;
+			case DEBUG_VISIBILITY_MODE_FORCE_HIDE: {
+				debug_collisions = false;
+			} break;
+			case DEBUG_VISIBILITY_MODE_FORCE_SHOW: {
+				debug_collisions = true;
+			} break;
+		}
+		if (debug_collisions) {
+			g->collision_debug = RS::get_singleton()->mesh_create();
+			g->collision_debug_instance = RS::get_singleton()->instance_create();
+			RS::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
 		}
 
 		octant_map[octantkey] = g;
@@ -769,7 +813,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			Octant::MultimeshInstance mmi;
 
 			RID mm = RS::get_singleton()->multimesh_create();
-			RS::get_singleton()->multimesh_allocate_data(mm, E.value.size(), RS::MULTIMESH_TRANSFORM_3D);
+			RS::get_singleton()->multimesh_allocate_data(mm, E.value.size(), RSE::MULTIMESH_TRANSFORM_3D);
 			RS::get_singleton()->multimesh_set_mesh(mm, mesh_library->get_item_mesh(E.key)->get_rid());
 
 			int idx = 0;
@@ -796,7 +840,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				RS::get_singleton()->instance_set_transform(instance, get_global_transform());
 			}
 
-			RS::ShadowCastingSetting cast_shadows = (RS::ShadowCastingSetting)mesh_library->get_item_mesh_cast_shadow(E.key);
+			RSE::ShadowCastingSetting cast_shadows = (RSE::ShadowCastingSetting)mesh_library->get_item_mesh_cast_shadow(E.key);
 			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, cast_shadows);
 
 			mmi.multimesh = mm;
@@ -817,11 +861,11 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		}
 
 		Array arr;
-		arr.resize(RS::ARRAY_MAX);
-		arr[RS::ARRAY_VERTEX] = col_debug;
-		arr[RS::ARRAY_COLOR] = colors;
+		arr.resize(RSE::ARRAY_MAX);
+		arr[RSE::ARRAY_VERTEX] = col_debug;
+		arr[RSE::ARRAY_COLOR] = colors;
 
-		RS::get_singleton()->mesh_add_surface_from_arrays(g.collision_debug, RS::PRIMITIVE_LINES, arr);
+		RS::get_singleton()->mesh_add_surface_from_arrays(g.collision_debug, RSE::PRIMITIVE_LINES, arr);
 		if (st) {
 			RS::get_singleton()->mesh_surface_set_material(g.collision_debug, 0, st->get_debug_collision_material()->get_rid());
 		}
@@ -1114,7 +1158,7 @@ void GridMap::_queue_octants_dirty() {
 
 void GridMap::_recreate_octant_data() {
 	recreating_octants = true;
-	HashMap<IndexKey, Cell, IndexKey> cell_copy = cell_map;
+	HashMap<IndexKey, Cell, IndexKey> cell_copy(cell_map);
 	_clear_internal();
 	for (const KeyValue<IndexKey, Cell> &E : cell_copy) {
 		set_cell_item(Vector3i(E.key), E.value.item, E.value.rot);
@@ -1187,6 +1231,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &GridMap::set_collision_priority);
 	ClassDB::bind_method(D_METHOD("get_collision_priority"), &GridMap::get_collision_priority);
 
+	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "visibility_mode"), &GridMap::set_collision_visibility_mode);
+	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &GridMap::get_collision_visibility_mode);
+
 	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &GridMap::set_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_material"), &GridMap::get_physics_material);
 #endif // PHYSICS_3D_DISABLED
@@ -1237,6 +1284,17 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
 	ClassDB::bind_method(D_METHOD("get_used_cells_by_item", "item"), &GridMap::get_used_cells_by_item);
 
+	ClassDB::bind_method(D_METHOD("get_used_octants"), &GridMap::get_used_octants);
+	ClassDB::bind_method(D_METHOD("get_used_octants_by_item", "item"), &GridMap::get_used_octants_by_item);
+
+	ClassDB::bind_method(D_METHOD("get_used_cells_in_octant", "octant_coords"), &GridMap::get_used_cells_in_octant);
+	ClassDB::bind_method(D_METHOD("get_used_cells_in_octant_by_item", "octant_coords", "item"), &GridMap::get_used_cells_in_octant_by_item);
+
+	ClassDB::bind_method(D_METHOD("get_octants_in_bounds", "bounds"), &GridMap::get_octants_in_bounds);
+	ClassDB::bind_method(D_METHOD("get_used_octants_in_bounds", "bounds"), &GridMap::get_used_octants_in_bounds);
+
+	ClassDB::bind_method(D_METHOD("get_octant_coords_from_cell_coords", "cell_coords"), &GridMap::get_octant_coords_from_cell_coords);
+
 	ClassDB::bind_method(D_METHOD("get_meshes"), &GridMap::get_meshes);
 	ClassDB::bind_method(D_METHOD("get_bake_meshes"), &GridMap::get_bake_meshes);
 	ClassDB::bind_method(D_METHOD("get_bake_mesh_instance", "idx"), &GridMap::get_bake_mesh_instance);
@@ -1244,9 +1302,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, MeshLibrary::get_class_static()), "set_mesh_library", "get_mesh_library");
 #ifndef PHYSICS_3D_DISABLED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, PhysicsMaterial::get_class_static()), "set_physics_material", "get_physics_material");
 #endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Cell", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size", PROPERTY_HINT_NONE, "suffix:m"), "set_cell_size", "get_cell_size");
@@ -1260,6 +1318,7 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
 #endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
@@ -1268,6 +1327,10 @@ void GridMap::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
 	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
+
+	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_DEFAULT);
+	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_FORCE_SHOW);
+	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_FORCE_HIDE);
 }
 
 void GridMap::set_cell_scale(float p_scale) {
@@ -1301,6 +1364,193 @@ TypedArray<Vector3i> GridMap::get_used_cells_by_item(int p_item) const {
 	}
 
 	return a;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants() const {
+	TypedArray<Vector3i> octant_coords;
+	octant_coords.resize(octant_map.size());
+	int i = 0;
+	for (const KeyValue<OctantKey, Octant *> &octant_kv : octant_map) {
+		const OctantKey &octant_key = octant_kv.key;
+		Vector3i octant_coord(octant_key.x, octant_key.y, octant_key.z);
+		octant_coords[i++] = octant_coord;
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants_by_item(int p_item) const {
+	TypedArray<Vector3i> octant_coords;
+	for (const KeyValue<OctantKey, Octant *> &octant_kv : octant_map) {
+		const OctantKey &octant_key = octant_kv.key;
+		const Octant &octant = *octant_kv.value;
+		for (const IndexKey &cell_key : octant.cells) {
+			const Cell &cell = cell_map[cell_key];
+			if ((int)cell.item == p_item) {
+				Vector3i octant_coord(octant_key.x, octant_key.y, octant_key.z);
+				octant_coords.push_back(octant_coord);
+				break;
+			}
+		}
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_cells_in_octant(const Vector3i &p_octant_coords) const {
+	TypedArray<Vector3i> cell_coords;
+
+	const OctantKey octantkey = get_octant_key_from_cell_coords(p_octant_coords);
+	if (!octant_map.has(octantkey)) {
+		return cell_coords;
+	}
+
+	const Octant &octant = *octant_map[octantkey];
+
+	for (const IndexKey &cell_key : octant.cells) {
+		Vector3i cell_coord(cell_key.x, cell_key.y, cell_key.z);
+		cell_coords.push_back(cell_coord);
+	}
+
+	return cell_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_cells_in_octant_by_item(const Vector3i &p_octant_coords, int p_item) const {
+	TypedArray<Vector3i> cell_coords;
+
+	const OctantKey octantkey = get_octant_key_from_cell_coords(p_octant_coords);
+	if (!octant_map.has(octantkey)) {
+		return cell_coords;
+	}
+
+	const Octant &octant = *octant_map[octantkey];
+
+	for (const IndexKey &cell_key : octant.cells) {
+		const Cell &cell = cell_map[cell_key];
+		if ((int)cell.item == p_item) {
+			Vector3i cell_coord(cell_key.x, cell_key.y, cell_key.z);
+			cell_coords.push_back(cell_coord);
+		}
+	}
+
+	return cell_coords;
+}
+
+Vector3i GridMap::get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const {
+	return Vector3i(
+			p_cell_coords.x > 0 ? p_cell_coords.x / octant_size : (p_cell_coords.x - (octant_size - 1)) / octant_size,
+			p_cell_coords.y > 0 ? p_cell_coords.y / octant_size : (p_cell_coords.y - (octant_size - 1)) / octant_size,
+			p_cell_coords.z > 0 ? p_cell_coords.z / octant_size : (p_cell_coords.z - (octant_size - 1)) / octant_size);
+}
+
+LocalVector<GridMap::IndexKey> GridMap::get_index_keys_in_bounds(const AABB &p_bounds, bool p_used_only) const {
+	LocalVector<IndexKey> index_keys;
+	if (!p_bounds.has_volume()) {
+		return index_keys;
+	}
+
+	Vector3i cell_coords_start = (p_bounds.position / cell_size).floor();
+	// -CMP_EPSILON because we don't want the octants that are just starting at the edge of the bounds.
+	Vector3i cell_coords_end = ((p_bounds.get_end() - Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON)) / cell_size).floor();
+
+	for (int z = cell_coords_start.z; z < cell_coords_end.z + 1; z++) {
+		for (int y = cell_coords_start.y; y < cell_coords_end.y + 1; y++) {
+			for (int x = cell_coords_start.x; x < cell_coords_end.x + 1; x++) {
+				IndexKey index_key;
+				index_key.x = x;
+				index_key.y = y;
+				index_key.z = z;
+
+				if (p_used_only) {
+					const HashMap<IndexKey, Cell, IndexKey>::ConstIterator index_key_kv = cell_map.find(index_key);
+
+					if (index_key_kv) {
+						index_keys.push_back(index_key);
+					}
+				} else {
+					index_keys.push_back(index_key);
+				}
+			}
+		}
+	}
+
+	return index_keys;
+}
+
+LocalVector<GridMap::OctantKey> GridMap::get_octant_keys_in_bounds(const AABB &p_bounds, bool p_used_only) const {
+	LocalVector<OctantKey> octant_keys;
+	if (!p_bounds.has_volume()) {
+		return octant_keys;
+	}
+
+	Vector3i cell_coords_start = (p_bounds.position / cell_size).floor();
+	// -CMP_EPSILON because we don't want the octants that are just starting at the edge of the bounds.
+	Vector3i cell_coords_end = ((p_bounds.get_end() - Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON)) / cell_size).floor();
+
+	OctantKey octant_coords_start = get_octant_key_from_cell_coords(cell_coords_start);
+	OctantKey octant_coords_end = get_octant_key_from_cell_coords(cell_coords_end);
+
+	for (int z = octant_coords_start.z; z < octant_coords_end.z + 1; z++) {
+		for (int y = octant_coords_start.y; y < octant_coords_end.y + 1; y++) {
+			for (int x = octant_coords_start.x; x < octant_coords_end.x + 1; x++) {
+				OctantKey octant_key;
+				octant_key.x = x;
+				octant_key.y = y;
+				octant_key.z = z;
+
+				if (p_used_only) {
+					const HashMap<OctantKey, Octant *, OctantKey>::ConstIterator octant_kv = octant_map.find(octant_key);
+
+					if (octant_kv) {
+						Vector3i octant_coord(x, y, z);
+						octant_keys.push_back(octant_key);
+					}
+				} else {
+					octant_keys.push_back(octant_key);
+				}
+			}
+		}
+	}
+
+	return octant_keys;
+}
+
+TypedArray<Vector3i> GridMap::get_octants_in_bounds(const AABB &p_bounds) const {
+	TypedArray<Vector3i> octant_coords;
+	if (!p_bounds.has_volume()) {
+		return octant_coords;
+	}
+
+	bool used_only = false;
+
+	const LocalVector<OctantKey> &octant_keys = get_octant_keys_in_bounds(p_bounds, used_only);
+
+	octant_coords.resize(octant_keys.size());
+
+	for (uint32_t i = 0; i < octant_keys.size(); i++) {
+		octant_coords[i] = Vector3i(octant_keys[i].x, octant_keys[i].y, octant_keys[i].z);
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants_in_bounds(const AABB &p_bounds) const {
+	TypedArray<Vector3i> octant_coords;
+	if (!p_bounds.has_volume()) {
+		return octant_coords;
+	}
+
+	bool used_only = true;
+
+	const LocalVector<OctantKey> &octant_keys = get_octant_keys_in_bounds(p_bounds, used_only);
+
+	octant_coords.resize(octant_keys.size());
+
+	for (uint32_t i = 0; i < octant_keys.size(); i++) {
+		octant_coords[i] = Vector3i(octant_keys[i].x, octant_keys[i].y, octant_keys[i].z);
+	}
+
+	return octant_coords;
 }
 
 Array GridMap::get_meshes() const {
@@ -1499,7 +1749,34 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 	}
 #ifndef PHYSICS_3D_DISABLED
 	else if ((parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) && (gridmap->get_collision_layer() & parsed_collision_mask)) {
-		Array shapes = gridmap->get_collision_shapes();
+		Array shapes;
+
+		// If we have a baking AABB set we can skip wasting time on parsing the entire GridMap.
+		AABB baking_aabb = p_navigation_mesh->get_filter_baking_aabb();
+		if (baking_aabb.has_volume()) {
+			Vector3 baking_aabb_offset = p_navigation_mesh->get_filter_baking_aabb_offset();
+			baking_aabb.position = baking_aabb.position + baking_aabb_offset;
+
+			const TypedArray<Vector3i> octant_coords = gridmap->get_used_octants_in_bounds(baking_aabb);
+			for (const Vector3i octant_coord : octant_coords) {
+				RID body = gridmap->get_physics_body_from_octant_coord(octant_coord);
+				if (body.is_null()) {
+					continue;
+				}
+				const Transform3D body_xform = PhysicsServer3D::get_singleton()->body_get_state(body, PhysicsServer3D::BODY_STATE_TRANSFORM);
+				int nshapes = PhysicsServer3D::get_singleton()->body_get_shape_count(body);
+				for (int i = 0; i < nshapes; i++) {
+					RID shape = PhysicsServer3D::get_singleton()->body_get_shape(body, i);
+					Transform3D shape_xform = PhysicsServer3D::get_singleton()->body_get_shape_transform(body, i);
+					Transform3D xform = body_xform * shape_xform;
+					shapes.push_back(xform);
+					shapes.push_back(shape);
+				}
+			}
+		} else {
+			shapes = gridmap->get_collision_shapes();
+		}
+
 		for (int i = 0; i < shapes.size(); i += 2) {
 			RID shape = shapes[i + 1];
 			PhysicsServer3D::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);
@@ -1509,14 +1786,14 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 				case PhysicsServer3D::SHAPE_SPHERE: {
 					real_t radius = data;
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					SphereMesh::create_mesh_array(arr, radius, radius * 2.0);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
 				case PhysicsServer3D::SHAPE_BOX: {
 					Vector3 extents = data;
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					BoxMesh::create_mesh_array(arr, extents * 2.0);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
@@ -1525,7 +1802,7 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 					real_t radius = dict["radius"];
 					real_t height = dict["height"];
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					CapsuleMesh::create_mesh_array(arr, radius, height);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
@@ -1534,7 +1811,7 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 					real_t radius = dict["radius"];
 					real_t height = dict["height"];
 					Array arr;
-					arr.resize(RS::ARRAY_MAX);
+					arr.resize(RSE::ARRAY_MAX);
 					CylinderMesh::create_mesh_array(arr, radius, radius, height);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;

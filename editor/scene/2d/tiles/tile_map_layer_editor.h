@@ -30,15 +30,15 @@
 
 #pragma once
 
-#include "scene/gui/margin_container.h"
-#include "tile_atlas_view.h"
-
+#include "core/math/random_pcg.h"
 #include "core/os/thread.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/scene/2d/tiles/tile_atlas_view.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
@@ -140,6 +140,7 @@ private:
 	void _update_toolbar();
 	void _update_transform_buttons();
 	void _set_transform_buttons_state(const Vector<Button *> &p_enabled_buttons, const Vector<Button *> &p_disabled_buttons, const String &p_why_disabled);
+	void _update_translation();
 
 	///// Tilemap editing. /////
 	bool has_mouse = false;
@@ -180,6 +181,9 @@ private:
 	TypedArray<Vector2i> _get_tile_map_selection() const;
 
 	RBSet<TileMapCell> tile_set_selection;
+
+	RandomPCG pattern_rng;
+	uint64_t rng_base_state = 0;
 
 	void _update_selection_pattern_from_tilemap_selection();
 	void _update_selection_pattern_from_tileset_tiles_selection();
@@ -345,6 +349,7 @@ private:
 	void _update_terrains_tree();
 	void _update_tiles_list();
 	void _update_theme();
+	void _update_translation();
 
 	// Update callback
 	virtual void tile_set_changed() override;
@@ -405,6 +410,7 @@ private:
 	void _clear_all_layers_highlighting();
 	void _update_all_layers_highlighting();
 	void _highlight_selected_layer_button_toggled(bool p_pressed);
+	void _update_layer_selector_layout(bool p_is_vertical);
 
 	Button *toggle_grid_button = nullptr;
 	void _on_grid_toggled(bool p_pressed);

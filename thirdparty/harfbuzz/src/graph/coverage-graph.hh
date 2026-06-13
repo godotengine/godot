@@ -36,7 +36,7 @@ static bool sanitize (
   const OT::Layout::Common::CoverageFormat1_3<OT::Layout::SmallTypes>* thiz,
   graph_t::vertex_t& vertex
 ) {
-  int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+  size_t vertex_len = vertex.obj.tail - vertex.obj.head;
   constexpr unsigned min_size = OT::Layout::Common::CoverageFormat1_3<OT::Layout::SmallTypes>::min_size;
   if (vertex_len < min_size) return false;
   hb_barrier ();
@@ -47,7 +47,7 @@ static bool sanitize (
   const OT::Layout::Common::CoverageFormat2_4<OT::Layout::SmallTypes>* thiz,
   graph_t::vertex_t& vertex
 ) {
-  int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+  size_t vertex_len = vertex.obj.tail - vertex.obj.head;
   constexpr unsigned min_size = OT::Layout::Common::CoverageFormat2_4<OT::Layout::SmallTypes>::min_size;
   if (vertex_len < min_size) return false;
   hb_barrier ();
@@ -158,10 +158,10 @@ struct Coverage : public OT::Layout::Common::Coverage
 
   bool sanitize (graph_t::vertex_t& vertex) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < OT::Layout::Common::Coverage::min_size) return false;
     hb_barrier ();
-    switch (u.format)
+    switch (u.format.v)
     {
     case 1: return graph::sanitize ((const OT::Layout::Common::CoverageFormat1_3<OT::Layout::SmallTypes>*) this, vertex);
     case 2: return graph::sanitize ((const OT::Layout::Common::CoverageFormat2_4<OT::Layout::SmallTypes>*) this, vertex);

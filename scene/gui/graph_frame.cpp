@@ -30,6 +30,8 @@
 
 #include "graph_frame.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/resources/style_box_flat.h"
@@ -103,7 +105,7 @@ void GraphFrame::_notification(int p_what) {
 			Ref<StyleBoxFlat> sb_panel_flat = sb_to_draw_panel;
 			Ref<StyleBoxTexture> sb_panel_texture = sb_to_draw_panel;
 
-			Rect2 titlebar_rect(Point2(), titlebar_hbox->get_combined_minimum_size() + sb_titlebar->get_minimum_size());
+			Rect2 titlebar_rect(Point2(), titlebar_hbox->get_bound_minimum_size() + sb_titlebar->get_minimum_size());
 			Size2 body_size = get_size();
 			titlebar_rect.size.width = body_size.width;
 			body_size.y -= titlebar_rect.size.height;
@@ -154,7 +156,7 @@ void GraphFrame::_resort() {
 	fit_child_in_rect(titlebar_hbox, titlebar_rect);
 
 	// After resort the children of the titlebar container may have changed their height (e.g. Label autowrap).
-	Size2i titlebar_min_size = titlebar_hbox->get_combined_minimum_size();
+	Size2i titlebar_min_size = titlebar_hbox->get_bound_minimum_size();
 
 	Size2 size = get_size() - sb_panel->get_minimum_size() - Size2(0, titlebar_min_size.height + sb_titlebar->get_minimum_size().height);
 	Point2 offset = Point2(sb_panel->get_margin(SIDE_LEFT), sb_panel->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height);
@@ -197,7 +199,7 @@ void GraphFrame::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tint_color_enabled"), "set_tint_color_enabled", "is_tint_color_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
 
-	ADD_SIGNAL(MethodInfo(SNAME("autoshrink_changed")));
+	ADD_SIGNAL(MethodInfo("autoshrink_changed"));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphFrame, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphFrame, panel_selected);
@@ -266,7 +268,7 @@ HBoxContainer *GraphFrame::get_titlebar_hbox() {
 }
 
 Size2 GraphFrame::get_titlebar_size() const {
-	return titlebar_hbox->get_combined_minimum_size() + theme_cache.titlebar->get_minimum_size();
+	return titlebar_hbox->get_bound_minimum_size() + theme_cache.titlebar->get_minimum_size();
 }
 
 void GraphFrame::set_drag_margin(int p_margin) {
@@ -305,7 +307,7 @@ bool GraphFrame::has_point(const Point2 &p_point) const {
 	}
 
 	// For grabbing on the titlebar.
-	int titlebar_height = titlebar_hbox->get_combined_minimum_size().height + sb_titlebar->get_minimum_size().height;
+	int titlebar_height = titlebar_hbox->get_bound_minimum_size().height + sb_titlebar->get_minimum_size().height;
 	if (Rect2(0, 0, get_size().width, titlebar_height).has_point(p_point)) {
 		return true;
 	}
@@ -321,11 +323,11 @@ bool GraphFrame::has_point(const Point2 &p_point) const {
 	return false;
 }
 
-Size2 GraphFrame::get_minimum_size() const {
+Size2 GraphFrame::_get_minimum_size(bool p_use_desired_sizes) const {
 	Ref<StyleBox> sb_panel = theme_cache.panel;
 	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 
-	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
+	Size2 minsize = (p_use_desired_sizes ? titlebar_hbox->get_bound_desired_size() : titlebar_hbox->get_minimum_size()) + sb_titlebar->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false));
@@ -333,7 +335,7 @@ Size2 GraphFrame::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = child->get_combined_minimum_size();
+		Size2i size = p_use_desired_sizes ? child->get_bound_desired_size() : child->get_bound_minimum_size();
 		size.width += sb_panel->get_minimum_size().width;
 
 		minsize.x = MAX(minsize.x, size.x);
@@ -345,15 +347,25 @@ Size2 GraphFrame::get_minimum_size() const {
 	return minsize;
 }
 
+Size2 GraphFrame::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 GraphFrame::get_desired_size() const {
+	return _get_minimum_size(true);
+}
+
 GraphFrame::GraphFrame() {
 	titlebar_hbox = memnew(HBoxContainer);
 	titlebar_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	titlebar_hbox->set_use_parent_material(true);
 	add_child(titlebar_hbox, false, INTERNAL_MODE_FRONT);
 
 	title_label = memnew(Label);
 	title_label->set_theme_type_variation("GraphFrameTitleLabel");
 	title_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	title_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	title_label->set_use_parent_material(true);
 	titlebar_hbox->add_child(title_label);
 
 	set_mouse_filter(MOUSE_FILTER_STOP);

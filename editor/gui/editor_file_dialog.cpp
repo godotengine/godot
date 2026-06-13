@@ -31,9 +31,14 @@
 #include "editor_file_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/settings/editor_settings.h"
+
+#ifndef DISABLE_DEPRECATED
+#include "core/object/class_db.h"
+#endif
 
 void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 	// Use dependency dialog to delete the entry in the editor, but only for project files.
@@ -66,12 +71,12 @@ bool EditorFileDialog::_should_use_native_popup() const {
 	// Native file dialog on Android, returns a file URI instead of a path and does not support res://, user://, or options. This requires editor-side changes to handle properly, so disabling it for now.
 	return false;
 #else
-	return _can_use_native_popup() && (OS::get_singleton()->is_sandboxed() || EDITOR_GET("interface/editor/use_native_file_dialogs").operator bool());
+	return _can_use_native_popup() && (OS::get_singleton()->is_sandboxed() || EDITOR_GET("interface/editor/appearance/use_native_file_dialogs").operator bool());
 #endif
 }
 
 bool EditorFileDialog::_should_hide_file(const String &p_file) const {
-	if (Engine::get_singleton()->is_project_manager_hint()) {
+	if (get_access() != FileDialog::ACCESS_RESOURCES) {
 		return false;
 	}
 	const String full_path = dir_access->get_current_dir().path_join(p_file);
@@ -80,6 +85,10 @@ bool EditorFileDialog::_should_hide_file(const String &p_file) const {
 
 Color EditorFileDialog::_get_folder_color(const String &p_path) const {
 	return FileSystemDock::get_dir_icon_color(p_path, FileDialog::_get_folder_color(p_path));
+}
+
+Vector2i EditorFileDialog::_get_list_mode_icon_size() const {
+	return Vector2i();
 }
 
 void EditorFileDialog::_bind_methods() {
@@ -126,9 +135,33 @@ void EditorFileDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				// Synchronize back favorites and recent directories, in case they have changed.
-				EditorSettings::get_singleton()->set_favorites(get_favorite_list(), false);
-				EditorSettings::get_singleton()->set_recent_dirs(get_recent_list(), false);
+				// Synchronize back favorites and recent directories if they have changed.
+				if (favorites_changed) {
+					Vector<String> settings_favorites = EditorSettings::get_singleton()->get_favorites();
+					Vector<String> current_favorites = get_favorite_list();
+					LocalVector<String> to_erase;
+
+					// The favorite list in EditorSettings may have files in between. They need to be handled properly to preserve order.
+					for (const String &fav : settings_favorites) {
+						if (!fav.ends_with("/")) {
+							continue;
+						}
+						int64_t idx = current_favorites.find(fav);
+						if (idx == -1) {
+							to_erase.push_back(fav);
+						} else {
+							current_favorites.remove_at(idx);
+						}
+					}
+					for (const String &fav : to_erase) {
+						settings_favorites.erase(fav);
+					}
+					settings_favorites.append_array(current_favorites);
+					EditorSettings::get_singleton()->set_favorites(settings_favorites, false);
+				}
+				if (recents_changed) {
+					EditorSettings::get_singleton()->set_recent_dirs(get_recent_list(), false);
+				}
 			}
 		} break;
 

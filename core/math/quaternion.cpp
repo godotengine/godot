@@ -63,6 +63,11 @@ real_t Quaternion::length() const {
 }
 
 void Quaternion::normalize() {
+#ifdef MATH_CHECKS
+	if (!is_finite()) {
+		WARN_PRINT("Quaternion cannot be normalized, the elements should be finite.");
+	}
+#endif // MATH_CHECKS
 	*this /= length();
 }
 

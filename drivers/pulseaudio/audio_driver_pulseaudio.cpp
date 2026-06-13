@@ -32,7 +32,9 @@
 
 #ifdef PULSEAUDIO_ENABLED
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/os/os.h"
 #include "core/version.h"
 
@@ -222,7 +224,7 @@ Error AudioDriverPulseAudio::init_output_device() {
 	}
 
 	int tmp_latency = Engine::get_singleton()->get_audio_output_latency();
-	buffer_frames = closest_power_of_2(tmp_latency * mix_rate / 1000);
+	buffer_frames = Math::closest_power_of_2(tmp_latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
 	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
@@ -371,6 +373,10 @@ Error AudioDriverPulseAudio::init() {
 float AudioDriverPulseAudio::get_latency() {
 	lock();
 
+	if (pa_str == nullptr) {
+		return 0;
+	}
+
 	pa_usec_t pa_lat = 0;
 	if (pa_stream_get_state(pa_str) == PA_STREAM_READY) {
 		int negative = 0;
@@ -395,6 +401,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
 	uint64_t default_device_msec = OS::get_singleton()->get_ticks_msec();
+	int last_reported_errno = PA_OK;
 
 	while (!ad->exit_thread.is_set()) {
 		size_t read_bytes = 0;
@@ -504,7 +511,11 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 					pa_operation_unref(pa_op);
 				} else {
-					ERR_PRINT("pa_context_get_server_info error: " + String(pa_strerror(pa_context_errno(ad->pa_ctx))));
+					int pa_errno = pa_context_errno(ad->pa_ctx);
+					if (pa_errno != last_reported_errno) {
+						last_reported_errno = pa_errno;
+						ERR_PRINT("pa_context_get_server_info error: " + String(pa_strerror(pa_errno)));
+					}
 				}
 
 				if (old_default_device != ad->default_output_device) {
@@ -727,7 +738,7 @@ Error AudioDriverPulseAudio::init_input_device() {
 	spec.rate = mix_rate;
 
 	int input_latency = 30;
-	int input_buffer_frames = closest_power_of_2(input_latency * mix_rate / 1000);
+	int input_buffer_frames = Math::closest_power_of_2(input_latency * mix_rate / 1000);
 	int input_buffer_size = input_buffer_frames * spec.channels;
 
 	pa_buffer_attr attr = {};

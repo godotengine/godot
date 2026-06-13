@@ -32,6 +32,7 @@
 
 #include "gdscript_text_document.h"
 #include "gdscript_workspace.h"
+#include "scene_cache.h"
 
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
@@ -46,9 +47,13 @@
 class GDScriptLanguageProtocol : public JSONRPC {
 	GDCLASS(GDScriptLanguageProtocol, JSONRPC)
 
-#ifdef TESTS_ENABLED
 	friend class TestGDScriptLanguageProtocolInitializer;
-#endif
+
+public:
+	struct ClientBehavior {
+		/** If `true` use snippet insert mode to position the cursor between braces of completion options. If `false` strip braces from completion options since we can't provide good UX for them. */
+		bool use_snippets_for_brace_completion = false;
+	};
 
 private:
 	struct LSPeer : RefCounted {
@@ -64,6 +69,12 @@ private:
 
 		Error handle_data();
 		Error send_data();
+
+		/**
+		 * Represents how the server should behave towards this client in certain situations.
+		 * This gets derived from client capabilities so the configured behavior is guaranteed to be supported by the client.
+		 */
+		ClientBehavior behavior;
 
 		/**
 		 * Tracks all files that the client claimed, however for files deemed not relevant
@@ -92,6 +103,7 @@ private:
 	static GDScriptLanguageProtocol *singleton;
 
 	HashMap<int, Ref<LSPeer>> clients;
+	SceneCache scene_cache;
 	Ref<TCPServer> server;
 	int latest_client_id = LSP_NO_CLIENT;
 	int next_client_id = 0;
@@ -112,13 +124,15 @@ private:
 protected:
 	static void _bind_methods();
 
-	Dictionary initialize(const Dictionary &p_params);
+	Variant initialize(const Dictionary &p_params);
 	void initialized(const Variant &p_params);
 
 public:
 	_FORCE_INLINE_ static GDScriptLanguageProtocol *get_singleton() { return singleton; }
 	_FORCE_INLINE_ Ref<GDScriptWorkspace> get_workspace() { return workspace; }
 	_FORCE_INLINE_ Ref<GDScriptTextDocument> get_text_document() { return text_document; }
+	_FORCE_INLINE_ SceneCache *get_scene_cache() { return &scene_cache; }
+
 	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
 
 	void poll(int p_limit_usec);
@@ -135,6 +149,9 @@ public:
 	void lsp_did_open(const Dictionary &p_params);
 	void lsp_did_change(const Dictionary &p_params);
 	void lsp_did_close(const Dictionary &p_params);
+
+	// Completion
+	Array lsp_completion(const Dictionary &p_params);
 
 	/**
 	 * Returns a list of symbols that might be related to the document position.

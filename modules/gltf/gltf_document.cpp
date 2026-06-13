@@ -36,6 +36,7 @@
 #include "gltf_template_convert.h"
 #include "skin_tool.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
@@ -43,10 +44,11 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/json.h"
+#include "core/io/resource_loader.h"
 #include "core/io/stream_peer.h"
+#include "core/object/class_db.h"
 #include "core/object/object_id.h"
 #include "core/version.h"
-#include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -71,12 +73,6 @@
 #ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
 #endif
-
-// FIXME: Hardcoded to avoid editor dependency.
-#define GLTF_IMPORT_GENERATE_TANGENT_ARRAYS 8
-#define GLTF_IMPORT_USE_NAMED_SKIN_BINDS 16
-#define GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS 32
-#define GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION 64
 
 #include <cstdio>
 #include <cstdlib>
@@ -724,7 +720,6 @@ Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> p_state, const String &p_p
 		if (buffer_data.is_empty()) {
 			return OK;
 		}
-		file->create(FileAccess::ACCESS_RESOURCES);
 		file->store_buffer(buffer_data.ptr(), buffer_data.size());
 		gltf_buffer["uri"] = filename;
 		gltf_buffer["byteLength"] = buffer_data.size();
@@ -756,7 +751,6 @@ Error GLTFDocument::_encode_buffer_bins(Ref<GLTFState> p_state, const String &p_
 		if (buffer_data.is_empty()) {
 			return OK;
 		}
-		file->create(FileAccess::ACCESS_RESOURCES);
 		file->store_buffer(buffer_data.ptr(), buffer_data.size());
 		gltf_buffer["uri"] = filename;
 		gltf_buffer["byteLength"] = buffer_data.size();
@@ -1436,9 +1430,52 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 		TypedArray<Material> instance_materials;
 
 		for (int j = 0; j < primitives.size(); j++) {
-			uint64_t flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+			uint64_t flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			Dictionary mesh_prim = primitives[j];
 
+			// Read the material.
+			Ref<Material> mat;
+			String mat_name;
+			String mat_primary_texture_coord = "TEXCOORD_0";
+			String mat_secondary_texture_coord = "TEXCOORD_1";
+			if (!p_state->discard_meshes_and_materials) {
+				if (mesh_prim.has("material")) {
+					const int material = mesh_prim["material"];
+					ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
+					Ref<Material> mat3d = p_state->materials[material];
+					ERR_FAIL_COND_V(mat3d.is_null(), ERR_FILE_CORRUPT);
+					// Remap the glTF file's UV texture coordinates to Godot's UV and UV2 as best as possible.
+					if (mat3d->has_meta("_gltf_primary_texture_coord")) {
+						const int tex_coord = mat3d->get_meta("_gltf_primary_texture_coord");
+						mat_primary_texture_coord = "TEXCOORD_" + itos(tex_coord);
+						if (tex_coord != 0 && !mat3d->has_meta("_gltf_secondary_texture_coord")) {
+							mat_secondary_texture_coord = "TEXCOORD_0";
+						}
+					}
+					if (mat3d->has_meta("_gltf_secondary_texture_coord")) {
+						const int tex_coord = mat3d->get_meta("_gltf_secondary_texture_coord");
+						mat_secondary_texture_coord = "TEXCOORD_" + itos(tex_coord);
+					}
+					Ref<BaseMaterial3D> base_material = mat3d;
+					if (has_vertex_color && base_material.is_valid()) {
+						base_material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					}
+					mat = mat3d;
+
+				} else {
+					Ref<StandardMaterial3D> mat3d;
+					mat3d.instantiate();
+					if (has_vertex_color) {
+						mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					}
+					mat = mat3d;
+				}
+				ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
+				instance_materials.append(mat);
+				mat_name = mat->get_name();
+			}
+
+			// Read the mesh primitive data into Godot ArrayMesh array data.
 			Array array;
 			array.resize(Mesh::ARRAY_MAX);
 
@@ -1528,11 +1565,13 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			if (a.has("TANGENT")) {
 				array[Mesh::ARRAY_TANGENT] = _decode_accessor_as_float32s(p_state, a["TANGENT"], indices_vec4_mapping);
 			}
-			if (a.has("TEXCOORD_0")) {
-				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_0"], indices_mapping);
+			// Usually mat_primary_texture_coord is "TEXCOORD_0", but in some edge cases it might be different.
+			if (a.has(mat_primary_texture_coord)) {
+				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(p_state, a[mat_primary_texture_coord], indices_mapping);
 			}
-			if (a.has("TEXCOORD_1")) {
-				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_1"], indices_mapping);
+			// Usually mat_secondary_texture_coord is "TEXCOORD_1", but in some edge cases it might be different.
+			if (a.has(mat_secondary_texture_coord)) {
+				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a[mat_secondary_texture_coord], indices_mapping);
 			}
 			for (int custom_i = 0; custom_i < 3; custom_i++) {
 				Vector<float> cur_custom;
@@ -1745,7 +1784,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			}
 
 			if (p_state->force_disable_compression || is_mesh_2d || !a.has("POSITION") || !a.has("NORMAL") || mesh_prim.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
-				flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+				flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
 			Ref<SurfaceTool> mesh_surface_tool;
@@ -1761,19 +1800,19 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			}
 			array = mesh_surface_tool->commit_to_arrays();
 
-			if ((flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && a.has("NORMAL") && (a.has("TANGENT") || generate_tangents)) {
+			if ((flags & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && a.has("NORMAL") && (a.has("TANGENT") || generate_tangents)) {
 				// Compression is enabled, so let's validate that the normals and tangents are correct.
 				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
 				Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
 				if (unlikely(tangents.size() < normals.size() * 4)) {
 					ERR_PRINT("glTF import: Mesh " + itos(i) + " has invalid tangents.");
-					flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+					flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 				} else {
 					for (int vert = 0; vert < normals.size(); vert++) {
 						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
 						if (std::abs(tan.dot(normals[vert])) > 0.0001) {
 							// Tangent is not perpendicular to the normal, so we can't use compression.
-							flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+							flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 						}
 					}
 				}
@@ -1909,34 +1948,6 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 					morphs.push_back(array_copy);
 				}
-			}
-
-			Ref<Material> mat;
-			String mat_name;
-			if (!p_state->discard_meshes_and_materials) {
-				if (mesh_prim.has("material")) {
-					const int material = mesh_prim["material"];
-					ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
-					Ref<Material> mat3d = p_state->materials[material];
-					ERR_FAIL_COND_V(mat3d.is_null(), ERR_FILE_CORRUPT);
-
-					Ref<BaseMaterial3D> base_material = mat3d;
-					if (has_vertex_color && base_material.is_valid()) {
-						base_material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-					}
-					mat = mat3d;
-
-				} else {
-					Ref<StandardMaterial3D> mat3d;
-					mat3d.instantiate();
-					if (has_vertex_color) {
-						mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-					}
-					mat = mat3d;
-				}
-				ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
-				instance_materials.append(mat);
-				mat_name = mat->get_name();
 			}
 			import_mesh->add_surface(primitive, array, morphs,
 					Dictionary(), mat, mat_name, flags);
@@ -2663,14 +2674,14 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			continue;
 		}
 
-		Dictionary mr;
+		Dictionary metal_rough_dict;
 		{
 			const Color c = base_material->get_albedo().srgb_to_linear();
 			Array arr = { c.r, c.g, c.b, c.a };
-			mr["baseColorFactor"] = arr;
+			metal_rough_dict["baseColorFactor"] = arr;
 		}
 		if (_image_format != "None") {
-			Dictionary bct;
+			Dictionary base_color_tex_dict;
 			Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
 			GLTFTextureIndex gltf_texture_index = -1;
 
@@ -2679,18 +2690,18 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				gltf_texture_index = _set_texture(p_state, albedo_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 			if (gltf_texture_index != -1) {
-				bct["index"] = gltf_texture_index;
+				base_color_tex_dict["index"] = gltf_texture_index;
 				Dictionary extensions = _serialize_texture_transform_uv1(material);
 				if (!extensions.is_empty()) {
-					bct["extensions"] = extensions;
+					base_color_tex_dict["extensions"] = extensions;
 					p_state->use_khr_texture_transform = true;
 				}
-				mr["baseColorTexture"] = bct;
+				metal_rough_dict["baseColorTexture"] = base_color_tex_dict;
 			}
 		}
 
-		mr["metallicFactor"] = base_material->get_metallic();
-		mr["roughnessFactor"] = base_material->get_roughness();
+		metal_rough_dict["metallicFactor"] = base_material->get_metallic();
+		metal_rough_dict["roughnessFactor"] = base_material->get_roughness();
 		if (_image_format != "None") {
 			bool has_roughness = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
 			bool has_ao = base_material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
@@ -2812,6 +2823,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				if (has_ao) {
 					Dictionary occt;
 					occt["index"] = orm_texture_index;
+					if (base_material->get_flag(BaseMaterial3D::FLAG_AO_ON_UV2)) {
+						occt["texCoord"] = 1;
+					}
 					mat_dict["occlusionTexture"] = occt;
 				}
 				if (has_roughness || has_metalness) {
@@ -2822,14 +2836,13 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 						mrt["extensions"] = extensions;
 						p_state->use_khr_texture_transform = true;
 					}
-					mr["metallicRoughnessTexture"] = mrt;
+					metal_rough_dict["metallicRoughnessTexture"] = mrt;
 				}
 			}
 		}
 
-		mat_dict["pbrMetallicRoughness"] = mr;
+		mat_dict["pbrMetallicRoughness"] = metal_rough_dict;
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING) && _image_format != "None") {
-			Dictionary nt;
 			Ref<ImageTexture> tex;
 			tex.instantiate();
 			String path;
@@ -2859,37 +2872,40 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				_set_material_texture_name(tex, path, mat_name, "_normal");
 				gltf_texture_index = _set_texture(p_state, tex, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
-			nt["scale"] = base_material->get_normal_scale();
+			Dictionary normal_tex_dict;
+			normal_tex_dict["scale"] = base_material->get_normal_scale();
 			if (gltf_texture_index != -1) {
-				nt["index"] = gltf_texture_index;
-				mat_dict["normalTexture"] = nt;
+				normal_tex_dict["index"] = gltf_texture_index;
+				mat_dict["normalTexture"] = normal_tex_dict;
 			}
 		}
 
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
-			const Color c = base_material->get_emission().linear_to_srgb();
-			Array arr = { c.r, c.g, c.b };
+			const Color emission_color = base_material->get_emission().linear_to_srgb();
+			Array arr = { emission_color.r, emission_color.g, emission_color.b };
 			mat_dict["emissiveFactor"] = arr;
+
+			if (_image_format != "None") {
+				Ref<Texture2D> emission_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
+				GLTFTextureIndex gltf_texture_index = -1;
+				if (emission_texture.is_valid() && emission_texture->get_image().is_valid()) {
+					_set_material_texture_name(emission_texture, emission_texture->get_path(), mat_name, "_emission");
+					gltf_texture_index = _set_texture(p_state, emission_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+				}
+				if (gltf_texture_index != -1) {
+					Dictionary emissive_tex_dict;
+					emissive_tex_dict["index"] = gltf_texture_index;
+					if (base_material->get_flag(BaseMaterial3D::FLAG_EMISSION_ON_UV2)) {
+						emissive_tex_dict["texCoord"] = 1;
+					}
+					mat_dict["emissiveTexture"] = emissive_tex_dict;
+				}
+			}
 		}
 
-		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION) && _image_format != "None") {
-			Dictionary et;
-			Ref<Texture2D> emission_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
-			GLTFTextureIndex gltf_texture_index = -1;
-			if (emission_texture.is_valid() && emission_texture->get_image().is_valid()) {
-				_set_material_texture_name(emission_texture, emission_texture->get_path(), mat_name, "_emission");
-				gltf_texture_index = _set_texture(p_state, emission_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
-			}
-
-			if (gltf_texture_index != -1) {
-				et["index"] = gltf_texture_index;
-				mat_dict["emissiveTexture"] = et;
-			}
-		}
-
-		const bool ds = base_material->get_cull_mode() == BaseMaterial3D::CULL_DISABLED;
-		if (ds) {
-			mat_dict["doubleSided"] = ds;
+		const bool double_sided = base_material->get_cull_mode() == BaseMaterial3D::CULL_DISABLED;
+		if (double_sided) {
+			mat_dict["doubleSided"] = double_sided;
 		}
 
 		if (base_material->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR) {
@@ -2959,14 +2975,15 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			}
 		}
 
+		int primary_texture_coord = -1; // Which UV map to use.
 		if (material_extensions.has("KHR_materials_pbrSpecularGlossiness")) {
 			WARN_PRINT("Material uses a specular and glossiness workflow. Textures will be converted to roughness and metallic workflow, which may not be 100% accurate.");
-			Dictionary sgm = material_extensions["KHR_materials_pbrSpecularGlossiness"];
+			Dictionary spec_gloss_ext_dict = material_extensions["KHR_materials_pbrSpecularGlossiness"];
 
 			Ref<GLTFSpecGloss> spec_gloss;
 			spec_gloss.instantiate();
-			if (sgm.has("diffuseTexture")) {
-				const Dictionary &diffuse_texture_dict = sgm["diffuseTexture"];
+			if (spec_gloss_ext_dict.has("diffuseTexture")) {
+				const Dictionary &diffuse_texture_dict = spec_gloss_ext_dict["diffuseTexture"];
 				if (diffuse_texture_dict.has("index")) {
 					Ref<GLTFTextureSampler> diffuse_sampler = _get_sampler_for_texture(p_state, diffuse_texture_dict["index"]);
 					if (diffuse_sampler.is_valid()) {
@@ -2979,49 +2996,62 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 						material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, diffuse_texture);
 					}
 				}
+				if (diffuse_texture_dict.has("texCoord")) {
+					primary_texture_coord = diffuse_texture_dict["texCoord"];
+				} else {
+					primary_texture_coord = 0;
+				}
 			}
-			if (sgm.has("diffuseFactor")) {
-				const Array &arr = sgm["diffuseFactor"];
+			if (spec_gloss_ext_dict.has("diffuseFactor")) {
+				const Array &arr = spec_gloss_ext_dict["diffuseFactor"];
 				ERR_FAIL_COND_V(arr.size() != 4, ERR_PARSE_ERROR);
 				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).linear_to_srgb();
 				spec_gloss->diffuse_factor = c;
 				material->set_albedo(spec_gloss->diffuse_factor);
 			}
 
-			if (sgm.has("specularFactor")) {
-				const Array &arr = sgm["specularFactor"];
+			if (spec_gloss_ext_dict.has("specularFactor")) {
+				const Array &arr = spec_gloss_ext_dict["specularFactor"];
 				ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
 				spec_gloss->specular_factor = Color(arr[0], arr[1], arr[2]);
 			}
 
-			if (sgm.has("glossinessFactor")) {
-				spec_gloss->gloss_factor = sgm["glossinessFactor"];
+			if (spec_gloss_ext_dict.has("glossinessFactor")) {
+				spec_gloss->gloss_factor = spec_gloss_ext_dict["glossinessFactor"];
 				material->set_roughness(1.0f - CLAMP(spec_gloss->gloss_factor, 0.0f, 1.0f));
 			}
-			if (sgm.has("specularGlossinessTexture")) {
-				const Dictionary &spec_gloss_texture = sgm["specularGlossinessTexture"];
+			if (spec_gloss_ext_dict.has("specularGlossinessTexture")) {
+				const Dictionary &spec_gloss_texture = spec_gloss_ext_dict["specularGlossinessTexture"];
 				if (spec_gloss_texture.has("index")) {
 					const Ref<Texture2D> orig_texture = _get_texture(p_state, spec_gloss_texture["index"], TEXTURE_TYPE_GENERIC);
 					if (orig_texture.is_valid()) {
 						spec_gloss->spec_gloss_img = orig_texture->get_image();
 					}
 				}
+				if (spec_gloss_texture.has("texCoord")) {
+					const int spec_gloss_tex_coord = spec_gloss_texture["texCoord"];
+					if (primary_texture_coord == -1) {
+						primary_texture_coord = spec_gloss_tex_coord;
+					} else if (spec_gloss_tex_coord != primary_texture_coord) {
+						WARN_PRINT("glTF: File uses different UV maps for specular/glossiness and diffuse textures. Godot does not support this. Using diffuse texture's UV map only and ignoring specular/glossiness texture's UV map.");
+					}
+				}
 			}
 			spec_gloss_to_rough_metal(spec_gloss, material);
 
 		} else if (material_dict.has("pbrMetallicRoughness")) {
-			const Dictionary &mr = material_dict["pbrMetallicRoughness"];
-			if (mr.has("baseColorFactor")) {
-				const Array &arr = mr["baseColorFactor"];
+			const Dictionary &metal_rough_dict = material_dict["pbrMetallicRoughness"];
+			if (metal_rough_dict.has("baseColorFactor")) {
+				const Array &arr = metal_rough_dict["baseColorFactor"];
 				ERR_FAIL_COND_V(arr.size() != 4, ERR_PARSE_ERROR);
 				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).linear_to_srgb();
 				material->set_albedo(c);
 			}
 
-			if (mr.has("baseColorTexture")) {
-				const Dictionary &bct = mr["baseColorTexture"];
-				if (bct.has("index")) {
-					const GLTFTextureIndex base_color_texture_index = bct["index"];
+			if (metal_rough_dict.has("baseColorTexture")) {
+				const Dictionary &base_color_tex_dict = metal_rough_dict["baseColorTexture"];
+				if (base_color_tex_dict.has("index")) {
+					const GLTFTextureIndex base_color_texture_index = base_color_tex_dict["index"];
 					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, base_color_texture_index, TEXTURE_TYPE_GENERIC));
 					const Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, base_color_texture_index);
 					if (bct_sampler.is_valid()) {
@@ -3029,58 +3059,89 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 						material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
 					}
 				}
-				if (!mr.has("baseColorFactor")) {
+				if (base_color_tex_dict.has("texCoord")) {
+					primary_texture_coord = base_color_tex_dict["texCoord"];
+				} else {
+					primary_texture_coord = 0;
+				}
+				if (!metal_rough_dict.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));
 				}
-				_set_texture_transform_uv1(bct, material);
+				_set_texture_transform_uv1(base_color_tex_dict, material);
 			}
 
-			if (mr.has("metallicFactor")) {
-				material->set_metallic(mr["metallicFactor"]);
+			if (metal_rough_dict.has("metallicFactor")) {
+				material->set_metallic(metal_rough_dict["metallicFactor"]);
 			} else {
 				material->set_metallic(1.0);
 			}
 
-			if (mr.has("roughnessFactor")) {
-				material->set_roughness(mr["roughnessFactor"]);
+			if (metal_rough_dict.has("roughnessFactor")) {
+				material->set_roughness(metal_rough_dict["roughnessFactor"]);
 			} else {
 				material->set_roughness(1.0);
 			}
 
-			if (mr.has("metallicRoughnessTexture")) {
-				const Dictionary &bct = mr["metallicRoughnessTexture"];
-				if (bct.has("index")) {
-					const Ref<Texture2D> t = _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC);
+			if (metal_rough_dict.has("metallicRoughnessTexture")) {
+				const Dictionary &metal_rough_tex_dict = metal_rough_dict["metallicRoughnessTexture"];
+				if (metal_rough_tex_dict.has("index")) {
+					const Ref<Texture2D> t = _get_texture(p_state, metal_rough_tex_dict["index"], TEXTURE_TYPE_GENERIC);
 					material->set_texture(BaseMaterial3D::TEXTURE_METALLIC, t);
 					material->set_metallic_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
 					material->set_texture(BaseMaterial3D::TEXTURE_ROUGHNESS, t);
 					material->set_roughness_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
-					if (!mr.has("metallicFactor")) {
+					if (!metal_rough_dict.has("metallicFactor")) {
 						material->set_metallic(1);
 					}
-					if (!mr.has("roughnessFactor")) {
+					if (!metal_rough_dict.has("roughnessFactor")) {
 						material->set_roughness(1);
+					}
+				}
+				if (metal_rough_tex_dict.has("texCoord")) {
+					const int metal_rough_tex_coord = metal_rough_tex_dict["texCoord"];
+					if (primary_texture_coord == -1) {
+						primary_texture_coord = metal_rough_tex_coord;
+					} else if (metal_rough_tex_coord != primary_texture_coord) {
+						WARN_PRINT("glTF: File uses different UV maps for metallic/roughness and base color textures. Godot does not support this. Using base color texture's UV map only and ignoring metallic/roughness texture's UV map.");
 					}
 				}
 			}
 		}
 
 		if (material_dict.has("normalTexture")) {
-			const Dictionary &bct = material_dict["normalTexture"];
-			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(p_state, bct["index"], TEXTURE_TYPE_NORMAL));
+			const Dictionary &normal_tex_dict = material_dict["normalTexture"];
+			if (normal_tex_dict.has("index")) {
+				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(p_state, normal_tex_dict["index"], TEXTURE_TYPE_NORMAL));
 				material->set_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING, true);
 			}
-			if (bct.has("scale")) {
-				material->set_normal_scale(bct["scale"]);
+			if (normal_tex_dict.has("texCoord")) {
+				const int normal_tex_coord = normal_tex_dict["texCoord"];
+				if (primary_texture_coord == -1) {
+					primary_texture_coord = normal_tex_coord;
+				} else if (normal_tex_coord != primary_texture_coord) {
+					WARN_PRINT("glTF: File uses different UV maps for normal and base color textures. Godot does not support this. Using base color texture's UV map only and ignoring normal texture's UV map.");
+				}
+			}
+			if (normal_tex_dict.has("scale")) {
+				material->set_normal_scale(normal_tex_dict["scale"]);
 			}
 		}
+		int secondary_texture_coord = -1;
 		if (material_dict.has("occlusionTexture")) {
-			const Dictionary &bct = material_dict["occlusionTexture"];
-			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
+			const Dictionary &occlusion_tex_dict = material_dict["occlusionTexture"];
+			if (occlusion_tex_dict.has("index")) {
+				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, occlusion_tex_dict["index"], TEXTURE_TYPE_GENERIC));
 				material->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
 				material->set_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
+			}
+			if (occlusion_tex_dict.has("texCoord")) {
+				int occlusion_tex_coord = occlusion_tex_dict["texCoord"];
+				if (unlikely(primary_texture_coord == -1)) {
+					primary_texture_coord = occlusion_tex_coord;
+				} else if (occlusion_tex_coord != primary_texture_coord) {
+					secondary_texture_coord = occlusion_tex_coord;
+					material->set_flag(BaseMaterial3D::FLAG_AO_ON_UV2, true);
+				}
 			}
 		}
 
@@ -3094,14 +3155,27 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		}
 
 		if (material_dict.has("emissiveTexture")) {
-			const Dictionary &bct = material_dict["emissiveTexture"];
-			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
+			const Dictionary &emissive_tex_dict = material_dict["emissiveTexture"];
+			if (emissive_tex_dict.has("index")) {
+				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, emissive_tex_dict["index"], TEXTURE_TYPE_GENERIC));
 				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
 				material->set_emission_operator(BaseMaterial3D::EMISSION_OP_MULTIPLY);
 				// glTF spec: emissiveFactor × emissiveTexture. Use WHITE if no factor specified.
 				if (!material_dict.has("emissiveFactor")) {
 					material->set_emission(Color(1, 1, 1));
+				}
+			}
+			if (emissive_tex_dict.has("texCoord")) {
+				int emissive_tex_coord = emissive_tex_dict["texCoord"];
+				if (unlikely(primary_texture_coord == -1)) {
+					primary_texture_coord = emissive_tex_coord;
+				} else if (emissive_tex_coord != primary_texture_coord) {
+					if (emissive_tex_coord == secondary_texture_coord || secondary_texture_coord == -1) {
+						secondary_texture_coord = emissive_tex_coord;
+						material->set_flag(BaseMaterial3D::FLAG_EMISSION_ON_UV2, true);
+					} else {
+						WARN_PRINT("glTF: File uses different UV maps for emission, occlusion, and primary textures (baseColor/normal/etc). Godot does not support this, it only supports up to two UV maps. Using occlusion texture's UV map only and ignoring emission texture's UV map.");
+					}
 				}
 			}
 		}
@@ -3128,6 +3202,14 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 
 		if (material_dict.has("extras")) {
 			_attach_extras_to_meta(material_dict["extras"], material);
+		}
+		if (_texture_map_mode == TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL) {
+			if (primary_texture_coord != -1) {
+				material->set_meta("_gltf_primary_texture_coord", primary_texture_coord);
+			}
+			if (secondary_texture_coord != -1) {
+				material->set_meta("_gltf_secondary_texture_coord", secondary_texture_coord);
+			}
 		}
 		p_state->materials.push_back(material);
 	}
@@ -3517,9 +3599,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 	}
 	for (int32_t player_i = 0; player_i < p_state->animation_players.size(); player_i++) {
 		AnimationPlayer *animation_player = p_state->animation_players[player_i];
-		List<StringName> animations;
-		animation_player->get_animation_list(&animations);
-		for (const StringName &animation_name : animations) {
+		for (const StringName &animation_name : animation_player->get_sorted_animation_list()) {
 			_convert_animation(p_state, animation_player, animation_name);
 		}
 	}
@@ -4290,7 +4370,8 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 #else
 	const Array &cells = p_grid_map->get_used_cells();
 	for (int32_t k = 0; k < cells.size(); k++) {
-		GLTFNode *new_gltf_node = memnew(GLTFNode);
+		Ref<GLTFNode> new_gltf_node;
+		new_gltf_node.instantiate();
 		p_gltf_node->children.push_back(p_state->nodes.size());
 		p_state->nodes.push_back(new_gltf_node);
 		Vector3 cell_location = cells[k];
@@ -5120,11 +5201,29 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 						ret->append_path_to_property(mat_path, "normal_scale");
 						ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
 					}
-				} else if (mat_prop == "occlusionTexture") {
-					if (sub_prop == "strength") {
-						// This is the closest thing Godot has to an occlusion strength property.
-						ret->append_path_to_property(mat_path, "ao_light_affect");
-						ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				} else if (mat_prop == "occlusionTexture" && sub_prop == "strength") {
+					// This is the closest thing Godot has to an occlusion strength property.
+					ret->append_path_to_property(mat_path, "ao_light_affect");
+					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				} else if (mat_prop == "occlusionTexture" || mat_prop == "emissiveTexture") {
+					// Occlusion and/or emission textures can use Godot's UV2, so we need to check if KHR_texture_transform animates them.
+					const Ref<BaseMaterial3D> base_material_3d = pointed_material;
+					if (base_material_3d.is_valid()) {
+						if ((mat_prop == "occlusionTexture" && base_material_3d->get_flag(BaseMaterial3D::FLAG_AO_ON_UV2)) || (mat_prop == "emissiveTexture" && base_material_3d->get_flag(BaseMaterial3D::FLAG_EMISSION_ON_UV2))) {
+							ERR_FAIL_COND_V(split.size() < 5, ret);
+							const String &tex_ext_dict = split[3];
+							const String &tex_ext_name = split[4];
+							const String &tex_ext_prop = split[5];
+							if (tex_ext_dict == "extensions" && tex_ext_name == "KHR_texture_transform") {
+								if (tex_ext_prop == "offset") {
+									ret->append_path_to_property(mat_path, "uv2_offset");
+									ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
+								} else if (tex_ext_prop == "scale") {
+									ret->append_path_to_property(mat_path, "uv2_scale");
+									ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
+								}
+							}
+						}
 					}
 				} else if (mat_prop == "pbrMetallicRoughness") {
 					if (sub_prop == "baseColorFactor") {
@@ -5234,6 +5333,17 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 	return ret;
 }
 
+void GLTFDocument::_append_khr_texture_transform_ext_json_pointer(PackedStringArray &p_split_json_pointer, const String &p_texture_name, const bool p_is_offset) {
+	p_split_json_pointer.append(p_texture_name);
+	p_split_json_pointer.append("extensions");
+	p_split_json_pointer.append("KHR_texture_transform");
+	if (p_is_offset) {
+		p_split_json_pointer.append("offset");
+	} else {
+		p_split_json_pointer.append("scale");
+	}
+}
+
 Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTFState> p_state, const NodePath &p_node_path, const Node *p_godot_node, GLTFNodeIndex p_gltf_node_index) {
 	Ref<GLTFObjectModelProperty> ret;
 	const Object *target_object = p_godot_node;
@@ -5293,16 +5403,54 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 					split_json_pointer.append("pbrMetallicRoughness");
 					split_json_pointer.append("roughnessFactor");
 					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
-				} else if (target_prop == "uv1_offset" || target_prop == "uv1_scale") {
-					split_json_pointer.append("pbrMetallicRoughness");
-					split_json_pointer.append("baseColorTexture");
-					split_json_pointer.append("extensions");
-					split_json_pointer.append("KHR_texture_transform");
-					if (target_prop == "uv1_offset") {
-						split_json_pointer.append("offset");
-					} else {
-						split_json_pointer.append("scale");
+				} else if (target_prop == "uv1_offset" || target_prop == "uv1_scale" || target_prop == "uv2_offset" || target_prop == "uv2_scale") {
+					Array mat_dicts = p_state->json.get("materials", Array());
+					ERR_FAIL_INDEX_V(i, mat_dicts.size(), ret);
+					Dictionary mat_dict = mat_dicts[i];
+					const bool is_offset = target_prop.ends_with("offset");
+					const bool is_uv1 = target_prop.begins_with("uv1");
+					const Ref<BaseMaterial3D> &base_material_3d = p_state->materials[i];
+					if (base_material_3d.is_valid()) {
+						const bool is_uv2 = !is_uv1;
+						// occlusionTexture and emissiveTexture can use Godot's UV2, so we need to check if those are animated.
+						if (mat_dict.has("occlusionTexture")) {
+							if (is_uv2 == base_material_3d->get_flag(BaseMaterial3D::FLAG_AO_ON_UV2)) {
+								PackedStringArray occlusion = split_json_pointer.duplicate();
+								_append_khr_texture_transform_ext_json_pointer(occlusion, "occlusionTexture", is_offset);
+								split_json_pointers.append(occlusion);
+							}
+						}
+						if (mat_dict.has("emissiveTexture")) {
+							if (is_uv2 == base_material_3d->get_flag(BaseMaterial3D::FLAG_EMISSION_ON_UV2)) {
+								PackedStringArray emissive = split_json_pointer.duplicate();
+								_append_khr_texture_transform_ext_json_pointer(emissive, "emissiveTexture", is_offset);
+								split_json_pointers.append(emissive);
+							}
+						}
 					}
+					if (is_uv1) {
+						// normalTexture, pbrMetallicRoughness/baseColorTexture, and pbrMetallicRoughness/metallicRoughnessTexture use only UV1.
+						if (mat_dict.has("normalTexture")) {
+							PackedStringArray normal = split_json_pointer.duplicate();
+							_append_khr_texture_transform_ext_json_pointer(normal, "normalTexture", is_offset);
+							split_json_pointers.append(normal);
+						}
+						if (mat_dict.has("pbrMetallicRoughness")) {
+							Dictionary pbr_metallic_roughness = mat_dict["pbrMetallicRoughness"];
+							split_json_pointer.append("pbrMetallicRoughness");
+							if (pbr_metallic_roughness.has("metallicRoughnessTexture")) {
+								PackedStringArray metal_rough = split_json_pointer.duplicate();
+								_append_khr_texture_transform_ext_json_pointer(metal_rough, "metallicRoughnessTexture", is_offset);
+								split_json_pointers.append(metal_rough);
+							}
+							if (pbr_metallic_roughness.has("baseColorTexture")) {
+								PackedStringArray base_color = split_json_pointer.duplicate();
+								_append_khr_texture_transform_ext_json_pointer(base_color, "baseColorTexture", is_offset);
+								split_json_pointers.append(base_color);
+							}
+						}
+					}
+					split_json_pointer.clear();
 					ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
 				} else {
 					split_json_pointer.clear();
@@ -5406,7 +5554,14 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 	// Additional JSON pointers can be added by GLTFDocumentExtension classes.
 	// We only need this if no mapping has been found yet from GLTFDocument's internal code.
 	// We pass as many pieces of information as we can to the extension to give it lots of context.
-	if (split_json_pointer.is_empty()) {
+	if (!split_json_pointer.is_empty()) {
+		// GLTFDocument's internal code found a mapping, so set it and return it.
+		split_json_pointers.append(split_json_pointer);
+		ret->set_json_pointers(split_json_pointers);
+	} else if (!split_json_pointers.is_empty()) {
+		ret->set_json_pointers(split_json_pointers);
+	} else {
+		// We don't have a mapping, so we need to ask GLTFDocumentExtension classes if they have a mapping.
 		for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 			ret = ext->export_object_model_property(p_state, p_node_path, p_godot_node, p_gltf_node_index, target_object, target_prop_depth);
 			if (ret.is_valid() && ret->has_json_pointers()) {
@@ -5416,10 +5571,6 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 				break;
 			}
 		}
-	} else {
-		// GLTFDocument's internal code found a mapping, so set it and return it.
-		split_json_pointers.append(split_json_pointer);
-		ret->set_json_pointers(split_json_pointers);
 	}
 	return ret;
 }
@@ -5949,6 +6100,16 @@ GLTFNodeIndex GLTFDocument::_node_and_or_bone_to_gltf_node_index(Ref<GLTFState> 
 	ERR_FAIL_V_MSG(-1, vformat("glTF: A node was animated, but it wasn't found in the GLTFState. Ensure that all nodes referenced by the AnimationPlayer are in the scene you are exporting."));
 }
 
+template <typename T>
+static inline Error _try_interpolate_value_track(const Ref<Animation> &p_godot_animation, int32_t p_godot_anim_track_index, double p_time, T &r_value) {
+	Variant val = p_godot_animation->value_track_interpolate(p_godot_anim_track_index, p_time, false);
+	if (val.get_type() != GetTypeInfo<T>::VARIANT_TYPE) {
+		return ERR_INVALID_PARAMETER;
+	}
+	r_value = val;
+	return OK;
+}
+
 bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAnimation::NodeTrack &p_gltf_node_track, const Ref<Animation> &p_godot_animation, int32_t p_godot_anim_track_index, Vector<double> &p_times) {
 	GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::godot_to_gltf_interpolation(p_godot_animation, p_godot_anim_track_index);
 	const Animation::TrackType track_type = p_godot_animation->track_get_type(p_godot_anim_track_index);
@@ -6088,7 +6249,7 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					bool last = false;
 					while (true) {
 						Vector3 position;
-						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
+						Error err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, position);
 						if (err == OK) {
 							p_gltf_node_track.position_track.values.push_back(position);
 							p_gltf_node_track.position_track.times.push_back(time);
@@ -6124,7 +6285,17 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					bool last = false;
 					while (true) {
 						Quaternion rotation;
-						Error err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
+						Error err;
+						if (node_prop == "quaternion") {
+							err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, rotation);
+						} else {
+							Vector3 rotation_euler;
+							err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, rotation_euler);
+							if (node_prop == "rotation_degrees") {
+								rotation_euler *= Math::TAU / 360.0;
+							}
+							rotation = Quaternion::from_euler(rotation_euler);
+						}
 						if (err == OK) {
 							p_gltf_node_track.rotation_track.values.push_back(rotation);
 							p_gltf_node_track.rotation_track.times.push_back(time);
@@ -6170,7 +6341,7 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					bool last = false;
 					while (true) {
 						Vector3 scale;
-						Error err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
+						Error err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, scale);
 						if (err == OK) {
 							p_gltf_node_track.scale_track.values.push_back(scale);
 							p_gltf_node_track.scale_track.times.push_back(time);
@@ -6215,17 +6386,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					double time = 0.0;
 					bool last = false;
 					while (true) {
-						Vector3 position;
-						Quaternion rotation;
-						Vector3 scale;
-						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
+						Transform3D transform;
+						Error err = _try_interpolate_value_track(p_godot_animation, p_godot_anim_track_index, time, transform);
 						if (err == OK) {
-							err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
-							if (err == OK) {
-								err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
-							}
-						}
-						if (err == OK) {
+							Vector3 position = transform.get_origin();
+							Quaternion rotation = transform.basis.get_rotation_quaternion();
+							Vector3 scale = transform.basis.get_scale();
 							p_gltf_node_track.position_track.values.push_back(position);
 							p_gltf_node_track.position_track.times.push_back(time);
 							p_gltf_node_track.rotation_track.values.push_back(rotation);
@@ -6535,9 +6701,13 @@ Error GLTFDocument::_parse(Ref<GLTFState> p_state, const String &p_path, Ref<Fil
 	document_extensions.clear();
 	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		err = ext->import_preflight(p_state, p_state->json["extensionsUsed"]);
+		Ref<GLTFDocumentExtension> ext_dup = ext;
+		if (ClassDB::is_class_exposed(ext->get_class_name())) {
+			ext_dup = ext->duplicate();
+		}
+		err = ext_dup->import_preflight(p_state, p_state->json["extensionsUsed"]);
 		if (err == OK) {
-			document_extensions.push_back(ext);
+			document_extensions.push_back(ext_dup);
 		}
 	}
 
@@ -6649,7 +6819,6 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 		ERR_FAIL_COND_V_MSG(total_file_length > (uint64_t)UINT32_MAX, ERR_CANT_CREATE,
 				"glTF: File size exceeds glTF Binary's maximum of 4 GiB. Cannot serialize as a GLB file.");
 
-		file->create(FileAccess::ACCESS_RESOURCES);
 		file->store_32(magic);
 		file->store_32(p_state->major_version); // version
 		file->store_32(total_file_length);
@@ -6677,7 +6846,6 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 		ERR_FAIL_COND_V(file.is_null(), FAILED);
 
-		file->create(FileAccess::ACCESS_RESOURCES);
 		String json = JSON::stringify(p_state->json, "", true, true);
 		file->store_string(json);
 	}
@@ -6689,9 +6857,17 @@ void GLTFDocument::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_KEEP_ROOT);
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_MULTI_ROOT);
 
+	BIND_ENUM_CONSTANT(TEXTURE_MAP_MODE_DO_NOT_REMAP);
+	BIND_ENUM_CONSTANT(TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL);
+
 	BIND_ENUM_CONSTANT(VISIBILITY_MODE_INCLUDE_REQUIRED);
 	BIND_ENUM_CONSTANT(VISIBILITY_MODE_INCLUDE_OPTIONAL);
 	BIND_ENUM_CONSTANT(VISIBILITY_MODE_EXCLUDE);
+
+	BIND_BITFIELD_FLAG(IMPORT_FLAG_GENERATE_TANGENT_ARRAYS);
+	BIND_BITFIELD_FLAG(IMPORT_FLAG_USE_NAMED_SKIN_BINDS);
+	BIND_BITFIELD_FLAG(IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS);
+	BIND_BITFIELD_FLAG(IMPORT_FLAG_FORCE_DISABLE_MESH_COMPRESSION);
 
 	ClassDB::bind_method(D_METHOD("set_image_format", "image_format"), &GLTFDocument::set_image_format);
 	ClassDB::bind_method(D_METHOD("get_image_format"), &GLTFDocument::get_image_format);
@@ -6703,6 +6879,8 @@ void GLTFDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback_image_quality"), &GLTFDocument::get_fallback_image_quality);
 	ClassDB::bind_method(D_METHOD("set_root_node_mode", "root_node_mode"), &GLTFDocument::set_root_node_mode);
 	ClassDB::bind_method(D_METHOD("get_root_node_mode"), &GLTFDocument::get_root_node_mode);
+	ClassDB::bind_method(D_METHOD("set_texture_map_mode", "texture_map_mode"), &GLTFDocument::set_texture_map_mode);
+	ClassDB::bind_method(D_METHOD("get_texture_map_mode"), &GLTFDocument::get_texture_map_mode);
 	ClassDB::bind_method(D_METHOD("set_visibility_mode", "visibility_mode"), &GLTFDocument::set_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_visibility_mode"), &GLTFDocument::get_visibility_mode);
 	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "base_path"),
@@ -6723,6 +6901,7 @@ void GLTFDocument::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "fallback_image_format"), "set_fallback_image_format", "get_fallback_image_format");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fallback_image_quality"), "set_fallback_image_quality", "get_fallback_image_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_map_mode"), "set_texture_map_mode", "get_texture_map_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode"), "set_visibility_mode", "get_visibility_mode");
 
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("import_object_model_property", "state", "json_pointer"), &GLTFDocument::import_object_model_property);
@@ -7089,10 +7268,10 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 	ERR_FAIL_NULL_V(p_node, FAILED);
 	Ref<GLTFState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
-	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
-	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
-	state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
-	state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
+	state->use_named_skin_binds = p_flags & ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
+	state->force_generate_tangents = p_flags & ImportFlags::IMPORT_FLAG_GENERATE_TANGENT_ARRAYS;
+	state->force_disable_compression = p_flags & ImportFlags::IMPORT_FLAG_FORCE_DISABLE_MESH_COMPRESSION;
 	if (!state->buffers.size()) {
 		state->buffers.push_back(Vector<uint8_t>());
 	}
@@ -7101,9 +7280,13 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 	document_extensions.clear();
 	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		Error err = ext->export_preflight(state, p_node);
+		Ref<GLTFDocumentExtension> ext_dup = ext;
+		if (ClassDB::is_class_exposed(ext->get_class_name())) {
+			ext_dup = ext->duplicate();
+		}
+		Error err = ext_dup->export_preflight(state, p_node);
 		if (err == OK) {
-			document_extensions.push_back(ext);
+			document_extensions.push_back(ext_dup);
 		}
 	}
 	// Add the root node(s) and their descendants to the state.
@@ -7133,10 +7316,10 @@ Error GLTFDocument::append_from_buffer(const PackedByteArray &p_bytes, const Str
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
-	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
-	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
-	state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
-	state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
+	state->use_named_skin_binds = p_flags & ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
+	state->force_generate_tangents = p_flags & ImportFlags::IMPORT_FLAG_GENERATE_TANGENT_ARRAYS;
+	state->force_disable_compression = p_flags & ImportFlags::IMPORT_FLAG_FORCE_DISABLE_MESH_COMPRESSION;
 
 	Ref<FileAccessMemory> file_access;
 	file_access.instantiate();
@@ -7159,10 +7342,10 @@ Error GLTFDocument::append_from_file(const String &p_path, Ref<GLTFState> p_stat
 		state.instantiate();
 	}
 	state->set_filename(p_path.get_file().get_basename());
-	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
-	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
-	state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
-	state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
+	state->use_named_skin_binds = p_flags & ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
+	state->force_generate_tangents = p_flags & ImportFlags::IMPORT_FLAG_GENERATE_TANGENT_ARRAYS;
+	state->force_disable_compression = p_flags & ImportFlags::IMPORT_FLAG_FORCE_DISABLE_MESH_COMPRESSION;
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -7210,6 +7393,10 @@ void GLTFDocument::set_root_node_mode(GLTFDocument::RootNodeMode p_root_node_mod
 
 GLTFDocument::RootNodeMode GLTFDocument::get_root_node_mode() const {
 	return _root_node_mode;
+}
+
+void GLTFDocument::set_texture_map_mode(GLTFDocument::TextureMapMode p_texture_map_mode) {
+	_texture_map_mode = p_texture_map_mode;
 }
 
 void GLTFDocument::set_visibility_mode(VisibilityMode p_visibility_mode) {

@@ -33,11 +33,14 @@
 #include "nav_mesh_generator_2d.h"
 
 #include "core/config/project_settings.h"
+#include "scene/2d/node_2d.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 
-#include "thirdparty/clipper2/include/clipper2/clipper.h"
-#include "thirdparty/misc/polypartition.h"
+#include <thirdparty/clipper2/include/clipper2/clipper.h>
+#include <thirdparty/misc/polypartition.h>
 
 NavMeshGenerator2D *NavMeshGenerator2D::singleton = nullptr;
 Mutex NavMeshGenerator2D::baking_navmesh_mutex;
@@ -240,7 +243,7 @@ void NavMeshGenerator2D::generator_parse_geometry_node(Ref<NavigationPolygon> p_
 	}
 }
 
-void NavMeshGenerator2D::set_generator_parsers(LocalVector<NavMeshGeometryParser2D *> p_parsers) {
+void NavMeshGenerator2D::set_generator_parsers(const LocalVector<NavMeshGeometryParser2D *> &p_parsers) {
 	RWLockWrite write_lock(generator_parsers_rwlock);
 	generator_parsers = p_parsers;
 }

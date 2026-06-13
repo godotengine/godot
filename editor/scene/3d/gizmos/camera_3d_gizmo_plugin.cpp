@@ -30,6 +30,7 @@
 
 #include "camera_3d_gizmo_plugin.h"
 
+#include "core/math/geometry_3d.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -152,25 +153,25 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	const Size2 size_factor = viewport_aspect > 1.0 ? Size2(1.0, 1.0 / viewport_aspect) : Size2(viewport_aspect, 1.0);
 
 #define ADD_TRIANGLE(m_a, m_b, m_c) \
-	{                               \
-		lines.push_back(m_a);       \
-		lines.push_back(m_b);       \
-		lines.push_back(m_b);       \
-		lines.push_back(m_c);       \
-		lines.push_back(m_c);       \
-		lines.push_back(m_a);       \
+	{ \
+		lines.push_back(m_a); \
+		lines.push_back(m_b); \
+		lines.push_back(m_b); \
+		lines.push_back(m_c); \
+		lines.push_back(m_c); \
+		lines.push_back(m_a); \
 	}
 
 #define ADD_QUAD(m_a, m_b, m_c, m_d) \
-	{                                \
-		lines.push_back(m_a);        \
-		lines.push_back(m_b);        \
-		lines.push_back(m_b);        \
-		lines.push_back(m_c);        \
-		lines.push_back(m_c);        \
-		lines.push_back(m_d);        \
-		lines.push_back(m_d);        \
-		lines.push_back(m_a);        \
+	{ \
+		lines.push_back(m_a); \
+		lines.push_back(m_b); \
+		lines.push_back(m_b); \
+		lines.push_back(m_c); \
+		lines.push_back(m_c); \
+		lines.push_back(m_d); \
+		lines.push_back(m_d); \
+		lines.push_back(m_a); \
 	}
 
 	switch (camera->get_projection()) {

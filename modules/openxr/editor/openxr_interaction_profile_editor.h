@@ -33,9 +33,10 @@
 #include "../action_map/openxr_action_map.h"
 #include "../action_map/openxr_interaction_profile.h"
 #include "../action_map/openxr_interaction_profile_metadata.h"
-#include "../editor/openxr_binding_modifiers_dialog.h"
-#include "editor/editor_undo_redo_manager.h"
+#include "openxr_binding_modifiers_dialog.h"
 #include "openxr_select_action_dialog.h"
+
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 
@@ -72,6 +73,7 @@ public:
 	virtual void _theme_changed();
 
 	void _do_update_interaction_profile();
+	void _set_dirty();
 	void _add_binding(const String &p_action, const String &p_path);
 	void _remove_binding(const String &p_action, const String &p_path);
 

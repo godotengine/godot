@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "animation_tree.h"
+
+#include "core/object/class_db.h"
+
 void AnimationTree::_set_process_callback_bind_compat_80813(AnimationTree::AnimationProcessCallback p_mode) {
 	set_callback_mode_process(static_cast<AnimationMixer::AnimationCallbackModeProcess>(static_cast<int>(p_mode)));
 }

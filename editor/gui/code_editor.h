@@ -117,6 +117,7 @@ class FindReplaceBar : public HBoxContainer {
 	void _search_text_changed(const String &p_text);
 	void _search_text_submitted(const String &p_text);
 	void _replace_text_submitted(const String &p_text);
+	void _replace_button_pressed();
 	void _toggle_replace_pressed();
 
 protected:
@@ -169,7 +170,7 @@ class CodeTextEditor : public VBoxContainer {
 	Button *warning_button = nullptr;
 
 	MenuButton *zoom_button = nullptr;
-	Label *line_and_col_txt = nullptr;
+	Button *line_and_col_button = nullptr;
 	Label *indentation_txt = nullptr;
 
 	Timer *idle = nullptr;
@@ -208,6 +209,8 @@ class CodeTextEditor : public VBoxContainer {
 	void _zoom_in();
 	void _zoom_out();
 	void _zoom_to(float p_zoom_factor);
+
+	void _show_goto_popup_request();
 
 	void _update_error_content_height();
 
@@ -254,6 +257,10 @@ public:
 	/// by adding or removing comment delimiter
 	void toggle_inline_comment(const String &delimiter);
 
+	void adjust_viewport_to_caret();
+	void center_viewport_to_caret();
+	void center_viewport_to_caret_if_line_invisible(int p_line);
+
 	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	void goto_line_centered(int p_line, int p_column = 0);
@@ -276,6 +283,8 @@ public:
 	void set_error(const String &p_error);
 	void set_error_pos(int p_line, int p_column);
 	Point2i get_error_pos() const;
+	/// Convert internal position into a user readable format. This means 1 is the first position and the column counts tabs with their tab width.
+	Point2i get_pos_for_display(Point2i p_internal_position) const;
 	void update_line_and_column() { _line_col_changed(); }
 	CodeEdit *get_text_editor() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }

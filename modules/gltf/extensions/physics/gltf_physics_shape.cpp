@@ -30,9 +30,8 @@
 
 #include "gltf_physics_shape.h"
 
-#include "../../gltf_state.h"
-
 #include "core/math/convex_hull.h"
+#include "core/object/class_db.h"
 #include "scene/3d/physics/area_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -73,7 +72,7 @@ void GLTFPhysicsShape::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_trigger"), "set_is_trigger", "get_is_trigger");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mesh_index"), "set_mesh_index", "get_mesh_index");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "importer_mesh", PROPERTY_HINT_RESOURCE_TYPE, "ImporterMesh"), "set_importer_mesh", "get_importer_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "importer_mesh", PROPERTY_HINT_RESOURCE_TYPE, ImporterMesh::get_class_static()), "set_importer_mesh", "get_importer_mesh");
 }
 
 String GLTFPhysicsShape::get_shape_type() const {

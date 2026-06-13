@@ -30,7 +30,11 @@
 
 #include "scene_tree_editor.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
@@ -40,14 +44,18 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
@@ -343,7 +351,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 
 	_update_node(p_node, item, part_of_subscene);
 	I->value.dirty = false;
-	I->value.can_process = p_node->can_process();
+	I->value.can_process = is_scene_tree_dock && p_node->can_process();
 
 	// Force update all our children if we are new or if we were forced to update.
 	bool force_update_children = p_force || is_new;
@@ -467,7 +475,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		p_item->set_text(0, node_name);
 		p_item->set_selectable(0, marked_selectable);
 		_set_item_custom_color(p_item, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
-	} else if (!p_node->can_process()) {
+	} else if (is_scene_tree_dock && !p_node->can_process()) {
 		_set_item_custom_color(p_item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	} else if (!marked_selectable && !marked_children_selectable) {
 		Node *node = p_node;
@@ -637,8 +645,9 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 	if (selected == p_node) {
 		if (!editor_selection) {
 			p_item->select(0);
+		} else {
+			p_item->set_as_cursor(0);
 		}
-		p_item->set_as_cursor(0);
 	}
 }
 
@@ -984,6 +993,17 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 }
 
 bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_selected) {
+	TreeItem *last_selected = nullptr;
+	bool result = _update_filter_helper(p_parent, p_scroll_to_selected, last_selected);
+	if (p_scroll_to_selected && last_selected) {
+		// Scrolling to the first selected in the _update_filter call above followed by the last
+		// selected here is enough to frame all selected items as well as possible.
+		callable_mp(tree, &Tree::scroll_to_item).call_deferred(last_selected, false);
+	}
+	return result;
+}
+
+bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to_selected, TreeItem *&r_last_selected) {
 	if (!p_parent) {
 		p_parent = tree->get_root();
 		filter_term_warning.clear();
@@ -1038,7 +1058,8 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	bool keep_for_children = false;
 	for (TreeItem *child = p_parent->get_first_child(); child; child = child->get_next()) {
 		// Always keep if at least one of the children are kept.
-		keep_for_children = _update_filter(child, p_scroll_to_selected) || keep_for_children;
+		// Only scroll if we haven't already found a child to scroll to.
+		keep_for_children = _update_filter_helper(child, p_scroll_to_selected && !keep_for_children, r_last_selected) || keep_for_children;
 	}
 
 	if (!is_root) {
@@ -1063,11 +1084,13 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		p_parent->set_visible(!hide_filtered_out_parents || is_root);
 
 		if (!p_parent->is_visible()) {
+			TreeItem *candidate_sibling = p_parent;
 			TreeItem *filtered_parent = p_parent->get_parent();
 			while (filtered_parent) {
 				if (filtered_parent == tree->get_root() || (filtered_parent->is_selectable(0) && filtered_parent->is_visible())) {
 					break;
 				}
+				candidate_sibling = filtered_parent;
 				filtered_parent = filtered_parent->get_parent();
 			}
 
@@ -1078,10 +1101,8 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 
 					p_parent->remove_child(ti);
 					filtered_parent->add_child(ti);
-					TreeItem *prev = p_parent->get_prev();
-					if (prev) {
-						ti->move_after(prev);
-					}
+					ti->move_after(candidate_sibling);
+					candidate_sibling = ti;
 
 					if (is_selected) {
 						ti->select(0);
@@ -1110,9 +1131,13 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	if (editor_selection) {
 		Node *n = get_node(p_parent->get_metadata(0));
 		if (selectable) {
-			if (p_scroll_to_selected && n && editor_selection->is_selected(n)) {
-				// Needs to be deferred to account for possible root visibility change.
-				callable_mp(tree, &Tree::scroll_to_item).call_deferred(p_parent, false);
+			if (n && editor_selection->is_selected(n)) {
+				if (p_scroll_to_selected) {
+					// Needs to be deferred to account for possible root visibility change.
+					callable_mp(tree, &Tree::scroll_to_item).call_deferred(Variant(p_parent), false);
+				} else {
+					r_last_selected = p_parent;
+				}
 			}
 		}
 	}
@@ -1370,7 +1395,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			// Wait for the node to be inspected before triggering the unfolding.
-			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000 * 2);
+			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds") * 1000 * 2);
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 			[[fallthrough]];
 		}
@@ -1445,11 +1470,10 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	if (selected == p_node) {
 		return;
 	}
+	selected = p_node;
 
 	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
-
 	if (item) {
-		selected = p_node;
 		if (auto_expand_selected) {
 			// Make visible when it's collapsed.
 			TreeItem *node = item->get_parent();
@@ -1458,7 +1482,6 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 				node = node->get_parent();
 			}
 			item->select(0);
-			item->set_as_cursor(0);
 			tree->ensure_cursor_is_visible();
 		} else {
 			// Ensure the node is selected and visible for the user if the node
@@ -1474,15 +1497,9 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 			}
 			if (!collapsed) {
 				item->select(0);
-				item->set_as_cursor(0);
 				tree->ensure_cursor_is_visible();
 			}
 		}
-	} else {
-		if (!p_node) {
-			selected = nullptr;
-		}
-		selected = p_node;
 	}
 
 	if (p_emit_selected) {
@@ -1897,6 +1914,11 @@ bool SceneTreeEditor::_is_script_type(const StringName &p_type) const {
 	return (script_types->has(p_type));
 }
 
+bool SceneTreeEditor::_has_drop_selection(TreeItem *p_item, const Point2 &p_point) const {
+	int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(p_item).position) : tree->get_drop_section_at_position(p_point);
+	return !(section < -1 || (section == -1 && !p_item->get_parent()));
+}
+
 bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	if (!can_rename) {
 		return false; // Not editable tree.
@@ -1917,11 +1939,6 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		return false;
 	}
 
-	int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(item).position) : tree->get_drop_section_at_position(p_point);
-	if (section < -1 || (section == -1 && !item->get_parent())) {
-		return false;
-	}
-
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
@@ -1931,7 +1948,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(files[0]))) {
 			tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
-			return true;
+			return _has_drop_selection(item, p_point);
 		}
 
 		bool scene_drop = true;
@@ -1948,7 +1965,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		if (scene_drop) {
 			tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
-			return true;
+			return _has_drop_selection(item, p_point);
 		}
 
 		if (audio_drop) {
@@ -1957,15 +1974,14 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 			} else {
 				tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
 			}
-			return true;
+			return _has_drop_selection(item, p_point);
 		}
 
 		if (files.size() > 1) {
 			return false;
 		}
 		tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
-
-		return true;
+		return _has_drop_selection(item, p_point);
 	}
 
 	if (String(d["type"]) == "script_list_element") {
@@ -1974,7 +1990,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 			String sp = se->get_edited_resource()->get_path();
 			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
 				tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
-				return true;
+				return _has_drop_selection(item, p_point);
 			}
 		}
 	}
@@ -1990,7 +2006,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 			}
 		}
 
-		return true;
+		return _has_drop_selection(item, p_point);
 	}
 
 	return false;
@@ -2322,7 +2338,6 @@ void SceneTreeDialog::_notification(int p_what) {
 }
 
 void SceneTreeDialog::_update_valid_type_icons() {
-	filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 	for (TextureRect *trect : valid_type_icons) {
 		trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)), 0));
 		trect->set_texture(trect->get_meta("icon"));
@@ -2349,21 +2364,14 @@ void SceneTreeDialog::_filter_changed(const String &p_filter) {
 	tree->set_filter(p_filter);
 }
 
-void SceneTreeDialog::_on_filter_gui_input(const Ref<InputEvent> &p_event) {
-	// Redirect navigational key events to the tree.
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			tree->get_scene_tree()->gui_input(key);
-			filter->accept_event();
-		}
-	}
-}
-
 void SceneTreeDialog::_bind_methods() {
 	ClassDB::bind_method("_cancel", &SceneTreeDialog::_cancel);
 
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::NODE_PATH, "path")));
+}
+
+LineEdit *SceneTreeDialog::get_filter_line_edit() {
+	return filter;
 }
 
 SceneTreeDialog::SceneTreeDialog() {
@@ -2374,13 +2382,11 @@ SceneTreeDialog::SceneTreeDialog() {
 	HBoxContainer *filter_hbc = memnew(HBoxContainer);
 	content->add_child(filter_hbc);
 
-	filter = memnew(LineEdit);
+	filter = memnew(FilterLineEdit);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTRC("Filter Nodes"));
-	filter->set_clear_button_enabled(true);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect(SceneStringName(text_changed), callable_mp(this, &SceneTreeDialog::_filter_changed));
-	filter->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDialog::_on_filter_gui_input));
 
 	register_text_enter(filter);
 
@@ -2400,6 +2406,7 @@ SceneTreeDialog::SceneTreeDialog() {
 	content->add_child(mc);
 
 	tree = memnew(SceneTreeEditor(false, false, true));
+	filter->set_forward_control(tree->get_scene_tree());
 	tree->set_update_when_invisible(false);
 	tree->get_scene_tree()->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &SceneTreeDialog::_select));

@@ -30,6 +30,7 @@
 
 #include "foldable_container.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
 
@@ -46,11 +47,41 @@ Size2 FoldableContainer::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		ms = ms.max(c->get_combined_minimum_size());
+		ms = ms.max(c->get_bound_minimum_size());
 	}
 	ms += theme_cache.panel_style->get_minimum_size();
 
 	return Size2(MAX(ms.width, title_minimum_size.width), ms.height + title_minimum_size.height);
+}
+
+Size2 FoldableContainer::get_desired_size() const {
+	_update_title_min_size();
+
+	if (folded) {
+		return title_minimum_size;
+	}
+	Size2 ds;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = as_sortable_control(get_child(i));
+		if (!c) {
+			continue;
+		}
+		ds = ds.max(c->get_bound_desired_size());
+	}
+	ds += theme_cache.panel_style->get_minimum_size();
+
+	return Size2(MAX(ds.width, title_minimum_size.width), ds.height + title_minimum_size.height);
+}
+
+Size2 FoldableContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms -= theme_cache.panel_style->get_minimum_size();
+	}
+
+	return ms;
 }
 
 void FoldableContainer::fold() {
@@ -354,7 +385,7 @@ void FoldableContainer::_notification(int p_what) {
 					if (!control->is_visible()) {
 						continue;
 					}
-					Rect2 rect(Vector2(), control->get_combined_minimum_size());
+					Rect2 rect(Vector2(), control->get_bound_minimum_size());
 					rect.position.x = offset;
 					rect.position.y = v_center - rect.size.y * 0.5;
 					fit_child_in_rect(control, rect);
@@ -408,7 +439,7 @@ real_t FoldableContainer::_get_title_controls_width() const {
 	int visible_controls = 0;
 	for (const Control *control : title_controls) {
 		if (control->is_visible()) {
-			width += control->get_combined_minimum_size().x;
+			width += control->get_bound_minimum_size().x;
 			visible_controls++;
 		}
 	}
@@ -466,7 +497,7 @@ void FoldableContainer::_update_title_min_size() const {
 			if (!control->is_visible()) {
 				continue;
 			}
-			Vector2 size = control->get_combined_minimum_size();
+			Vector2 size = control->get_bound_minimum_size();
 			title_minimum_size.width += size.width;
 			controls_height = MAX(controls_height, size.height);
 			visible_controls++;
@@ -560,7 +591,7 @@ void FoldableContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_title_alignment", "get_title_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_title_position", "get_title_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_title_text_overrun_behavior", "get_title_text_overrun_behavior");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "foldable_group", PROPERTY_HINT_RESOURCE_TYPE, "FoldableGroup"), "set_foldable_group", "get_foldable_group");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "foldable_group", PROPERTY_HINT_RESOURCE_TYPE, FoldableGroup::get_class_static()), "set_foldable_group", "get_foldable_group");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_title_text_direction", "get_title_text_direction");
@@ -652,7 +683,7 @@ void FoldableGroup::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_folding_all"), "set_allow_folding_all", "is_allow_folding_all");
 
-	ADD_SIGNAL(MethodInfo("expanded", PropertyInfo(Variant::OBJECT, "container", PROPERTY_HINT_RESOURCE_TYPE, "FoldableContainer")));
+	ADD_SIGNAL(MethodInfo("expanded", PropertyInfo(Variant::OBJECT, "container", PROPERTY_HINT_RESOURCE_TYPE, FoldableContainer::get_class_static())));
 }
 
 FoldableGroup::FoldableGroup() {

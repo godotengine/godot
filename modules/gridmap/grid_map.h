@@ -32,7 +32,6 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/mesh_library.h"
-#include "scene/resources/multimesh.h"
 
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
@@ -42,6 +41,12 @@ class PhysicsMaterial;
 
 class GridMap : public Node3D {
 	GDCLASS(GridMap, Node3D);
+
+	enum DebugVisibilityMode {
+		DEBUG_VISIBILITY_MODE_DEFAULT,
+		DEBUG_VISIBILITY_MODE_FORCE_SHOW,
+		DEBUG_VISIBILITY_MODE_FORCE_HIDE,
+	};
 
 	enum {
 		MAP_DIRTY_TRANSFORMS = 1,
@@ -158,6 +163,7 @@ class GridMap : public Node3D {
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;
+	DebugVisibilityMode collision_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
 	Ref<PhysicsMaterial> physics_material;
 #endif // PHYSICS_3D_DISABLED
 	bool bake_navigation = false;
@@ -183,10 +189,10 @@ class GridMap : public Node3D {
 	void _recreate_octant_data();
 
 	struct BakeLight {
-		RS::LightType type = RS::LightType::LIGHT_DIRECTIONAL;
+		RSE::LightType type = RSE::LightType::LIGHT_DIRECTIONAL;
 		Vector3 pos;
 		Vector3 dir;
-		float param[RS::LIGHT_PARAM_MAX] = {};
+		float param[RSE::LIGHT_PARAM_MAX] = {};
 	};
 
 	_FORCE_INLINE_ Vector3 _octant_get_offset(const OctantKey &p_key) const {
@@ -257,6 +263,9 @@ public:
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
 
+	void set_collision_visibility_mode(DebugVisibilityMode p_visibility_mode);
+	DebugVisibilityMode get_collision_visibility_mode() const;
+
 	void set_physics_material(Ref<PhysicsMaterial> p_material);
 	Ref<PhysicsMaterial> get_physics_material() const;
 
@@ -303,6 +312,25 @@ public:
 	TypedArray<Vector3i> get_used_cells() const;
 	TypedArray<Vector3i> get_used_cells_by_item(int p_item) const;
 
+	TypedArray<Vector3i> get_used_octants() const;
+	TypedArray<Vector3i> get_used_octants_by_item(int p_item) const;
+
+	TypedArray<Vector3i> get_used_cells_in_octant(const Vector3i &p_octant_coords) const;
+	TypedArray<Vector3i> get_used_cells_in_octant_by_item(const Vector3i &p_octant_coords, int p_item) const;
+
+	// Fastpath functions for native modules that do not use Variant/TypedArray.
+	LocalVector<IndexKey> get_index_keys_in_bounds(const AABB &p_bounds, bool p_used_only = true) const;
+	LocalVector<OctantKey> get_octant_keys_in_bounds(const AABB &p_bounds, bool p_used_only = true) const;
+
+	TypedArray<Vector3i> get_octants_in_bounds(const AABB &p_bounds) const;
+	TypedArray<Vector3i> get_used_octants_in_bounds(const AABB &p_bounds) const;
+
+	Vector3i get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const;
+
+#ifndef PHYSICS_3D_DISABLED
+	RID get_physics_body_from_octant_coord(const Vector3i &p_octant_coords) const;
+#endif
+
 	Array get_meshes() const;
 
 	void clear_baked_meshes();
@@ -328,3 +356,5 @@ public:
 	GridMap();
 	~GridMap();
 };
+
+VARIANT_ENUM_CAST(GridMap::DebugVisibilityMode);

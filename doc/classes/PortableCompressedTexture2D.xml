@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PortableCompressedTexture2D" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PortableCompressedTexture2D" inherits="Texture2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides a compressed texture for disk and/or VRAM in a way that is portable.
 	</brief_description>
@@ -29,12 +29,6 @@
 			<return type="int" enum="PortableCompressedTexture2D.CompressionMode" />
 			<description>
 				Return the compression mode used (valid after initialized).
-			</description>
-		</method>
-		<method name="get_format" qualifiers="const">
-			<return type="int" enum="Image.Format" />
-			<description>
-				Return the image format used (valid after initialized).
 			</description>
 		</method>
 		<method name="is_keeping_all_compressed_buffers" qualifiers="static">

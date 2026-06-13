@@ -30,10 +30,12 @@
 
 #pragma once
 
+#include "../action_map/openxr_interaction_profile_metadata.h"
+
 #include "core/error/error_macros.h"
 #include "core/math/projection.h"
-#include "core/object/class_db.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid.h"
 #include "core/variant/native_ptr.h"
@@ -87,6 +89,8 @@ public:
 	virtual void *set_frame_wait_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrWaitFrame
 	virtual void *set_view_locate_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrLocateViews
 	virtual void *set_frame_end_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrEndFrame
+	// This will only be called for extensions registered via OpenXRAPI::register_projection_layer_extension().
+	virtual void *set_projection_layer_and_get_next_pointer(void *p_next_pointer); // Add additional data structures to XrCompositionLayerProjection
 
 	virtual void prepare_view_configuration(uint32_t p_view_count);
 	virtual void *set_view_configuration_and_get_next_pointer(uint32_t p_view, void *p_next_pointer); // Add additional data structures when calling xrEnumerateViewConfiguration
@@ -101,6 +105,7 @@ public:
 	GDVIRTUAL2R(uint64_t, _set_projection_views_and_get_next_pointer, int, GDExtensionPtr<void>);
 	GDVIRTUAL1R(uint64_t, _set_frame_wait_info_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL1R(uint64_t, _set_frame_end_info_and_get_next_pointer, GDExtensionPtr<void>);
+	GDVIRTUAL1R(uint64_t, _set_projection_layer_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL1R(uint64_t, _set_view_locate_info_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL2R(uint64_t, _set_reference_space_create_info_and_get_next_pointer, int, GDExtensionPtr<void>);
 	GDVIRTUAL0R(int, _get_composition_layer_count);
@@ -113,6 +118,7 @@ public:
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL0R_COMPAT(_get_requested_extensions_bind_compat_109302, Dictionary, _get_requested_extensions);
 	GDVIRTUAL1R_COMPAT(_set_instance_create_info_and_get_next_pointer_bind_compat_109302, uint64_t, _set_instance_create_info_and_get_next_pointer, GDExtensionPtr<void>);
+	GDVIRTUAL0_COMPAT(_on_register_metadata_bind_compat_117399, _on_register_metadata);
 #endif
 
 	virtual PackedStringArray get_suggested_tracker_names();
@@ -125,7 +131,7 @@ public:
 	// Also extensions should provide metadata regardless of whether they are supported
 	// on the host system as the controller data is used to setup action maps for users
 	// who may have access to the relevant hardware.
-	virtual void on_register_metadata();
+	virtual void on_register_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata);
 
 	virtual void on_before_instance_created(); // `on_before_instance_created` is called before we create our OpenXR instance.
 	virtual void on_instance_created(const XrInstance p_instance); // `on_instance_created` is called right after we've successfully created our OpenXR instance.
@@ -143,7 +149,7 @@ public:
 	virtual void on_pre_draw_viewport(RID p_render_target); // `on_pre_draw_viewport` is called right before we start rendering this viewport
 	virtual void on_post_draw_viewport(RID p_render_target); // `on_port_draw_viewport` is called right after we start rendering this viewport (note that on Vulkan draw commands may only be queued)
 
-	GDVIRTUAL0(_on_register_metadata);
+	GDVIRTUAL1(_on_register_metadata, OpenXRInteractionProfileMetadata *);
 	GDVIRTUAL0(_on_before_instance_created);
 	GDVIRTUAL1(_on_instance_created, uint64_t);
 	GDVIRTUAL0(_on_instance_destroyed);

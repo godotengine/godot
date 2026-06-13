@@ -130,9 +130,13 @@ struct hb_buffer_t
    */
 
 #ifndef HB_NO_BUFFER_MESSAGE
+  typedef void (*changed_func_t) (hb_buffer_t *buffer, void *user_data);
+
   hb_buffer_message_func_t message_func;
   void *message_data;
   hb_destroy_func_t message_destroy;
+  changed_func_t changed_func;
+  void *changed_data;
   unsigned message_depth; /* How deeply are we inside a message callback? */
 #else
   static constexpr unsigned message_depth = 0u;
@@ -398,10 +402,42 @@ struct hb_buffer_t
   {
     if (end - start < 2)
       return;
+    if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (cluster_level))
+    {
+      unsafe_to_break (start, end);
+      return;
+    }
+    merge_clusters_impl (start, end);
+  }
+  void merge_grapheme_clusters (unsigned int start, unsigned int end)
+  {
+    if (end - start < 2)
+      return;
+    if (!HB_BUFFER_CLUSTER_LEVEL_IS_GRAPHEMES (cluster_level))
+    {
+      unsafe_to_break (start, end);
+      return;
+    }
     merge_clusters_impl (start, end);
   }
   HB_INTERNAL void merge_clusters_impl (unsigned int start, unsigned int end);
-  HB_INTERNAL void merge_out_clusters (unsigned int start, unsigned int end);
+  void merge_out_clusters (unsigned int start, unsigned int end)
+  {
+    if (end - start < 2)
+      return;
+    if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (cluster_level))
+      return;
+    merge_out_clusters_impl (start, end);
+  }
+  void merge_out_grapheme_clusters (unsigned int start, unsigned int end)
+  {
+    if (end - start < 2)
+      return;
+    if (!HB_BUFFER_CLUSTER_LEVEL_IS_GRAPHEMES (cluster_level))
+      return;
+    merge_out_clusters_impl (start, end);
+  }
+  HB_INTERNAL void merge_out_clusters_impl (unsigned int start, unsigned int end);
   /* Merge clusters for deleting current glyph, and skip it. */
   HB_INTERNAL void delete_glyph ();
   HB_INTERNAL void delete_glyphs_inplace (bool (*filter) (const hb_glyph_info_t *info));
@@ -605,6 +641,7 @@ struct hb_buffer_t
 #endif
   }
   HB_INTERNAL bool message_impl (hb_font_t *font, const char *fmt, va_list ap) HB_PRINTF_FUNC(3, 0);
+  HB_INTERNAL void changed ();
 
   static void
   set_cluster (hb_glyph_info_t &inf, unsigned int cluster, unsigned int mask = 0)

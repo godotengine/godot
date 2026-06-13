@@ -30,16 +30,28 @@
 
 #include "image_compress_betsy.h"
 
-#include "core/config/project_settings.h"
-
-#include "betsy_bc1.h"
-
 #include "alpha_stitch.glsl.gen.h"
 #include "bc1.glsl.gen.h"
 #include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
+#include "betsy_bc1.h"
 #include "rgb_to_rgba.glsl.gen.h"
+
+#include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_context_driver.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_binds.h"
+#include "servers/rendering/rendering_server.h"
+
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#endif
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif
 
 static Mutex betsy_mutex;
 static BetsyCompressor *betsy = nullptr;
@@ -852,13 +864,13 @@ void ensure_betsy_exists() {
 	betsy_mutex.unlock();
 }
 
-Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels) {
+Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels, Image::BPTCFormat p_bptc_format) {
 	ensure_betsy_exists();
 	Image::Format format = r_img->get_format();
 	Error result = ERR_UNAVAILABLE;
 
 	if (format >= Image::FORMAT_RF && format <= Image::FORMAT_RGBE9995) {
-		if (r_img->detect_signed()) {
+		if ((p_bptc_format == Image::BPTC_DETECT && r_img->detect_signed()) || p_bptc_format == Image::BPTC_FORCE_SIGNED) {
 			result = betsy->compress(BETSY_FORMAT_BC6_SIGNED, r_img);
 		} else {
 			result = betsy->compress(BETSY_FORMAT_BC6_UNSIGNED, r_img);

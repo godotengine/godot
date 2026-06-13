@@ -35,7 +35,6 @@
 #include "editor/themes/editor_icons.gen.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/dpi_texture.h"
-#include "scene/resources/image_texture.h"
 
 #include "modules/svg/image_loader_svg.h"
 
@@ -105,13 +104,14 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	Dictionary color_conversion_map = p_dark_theme ? color_conversion_map_dark : color_conversion_map_light;
 
 	// The names of the icons to exclude from the standard color conversion.
-	HashSet<StringName> conversion_exceptions = EditorColorMap::get_color_conversion_exceptions();
+	HashSet<StringName> conversion_exceptions(EditorColorMap::get_color_conversion_exceptions());
 
 	// The names of the icons to exclude when adjusting for saturation.
 	HashSet<StringName> saturation_exceptions;
 	saturation_exceptions.insert("DefaultProjectIcon");
 	saturation_exceptions.insert("Godot");
 	saturation_exceptions.insert("Logo");
+	saturation_exceptions.insert("TitleBarLogo");
 
 	// Accent color conversion map.
 	// It is used on some icons (checkbox, radio, toggle, etc.), regardless of the dark
@@ -131,6 +131,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	accent_color_icons.insert("GuiToggleOn");
 	accent_color_icons.insert("GuiToggleOnMirrored");
 	accent_color_icons.insert("PlayOverlay");
+	accent_color_icons.insert("Verified");
 
 	// Generate icons.
 	{

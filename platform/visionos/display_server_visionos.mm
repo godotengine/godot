@@ -34,14 +34,14 @@ DisplayServerVisionOS *DisplayServerVisionOS::get_singleton() {
 	return (DisplayServerVisionOS *)DisplayServerAppleEmbedded::get_singleton();
 }
 
-DisplayServerVisionOS::DisplayServerVisionOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) :
+DisplayServerVisionOS::DisplayServerVisionOS(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) :
 		DisplayServerAppleEmbedded(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error) {
 }
 
 DisplayServerVisionOS::~DisplayServerVisionOS() {
 }
 
-DisplayServer *DisplayServerVisionOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+DisplayServer *DisplayServerVisionOS::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
 	return memnew(DisplayServerVisionOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 }
 
@@ -76,4 +76,20 @@ float DisplayServerVisionOS::screen_get_scale(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
 
 	return 1;
+}
+
+bool DisplayServerVisionOS::_screen_hdr_is_supported() const {
+	return true;
+}
+
+float DisplayServerVisionOS::_screen_potential_edr_headroom() const {
+	// Current Apple Vision Pro hardware supports an EDR headroom of 2.0 (two times the SDR range).
+	// See https://developer.apple.com/videos/play/wwdc2023/10089?time=603
+	return 2.0f;
+}
+
+float DisplayServerVisionOS::_screen_current_edr_headroom() const {
+	// Current Apple Vision Pro hardware  supports an EDR headroom of 2.0 (two times the SDR range).
+	// See https://developer.apple.com/videos/play/wwdc2023/10089?time=603
+	return 2.0f;
 }

@@ -30,10 +30,12 @@
 
 #include "gdextension_library_loader.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/extension/gdextension.h"
 #include "core/io/dir_access.h"
+#include "core/os/os.h"
 #include "core/version.h"
-#include "gdextension.h"
 
 Vector<SharedObject> GDExtensionLibraryLoader::find_extension_dependencies(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature) {
 	Vector<SharedObject> dependencies_shared_objects;
@@ -198,7 +200,10 @@ Error GDExtensionLibraryLoader::open_library(const String &p_path) {
 	// Apple has a complex lookup system which goes beyond looking up the filename, so we try that first.
 	err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
 	if (err != OK) {
+#ifdef APPLE_EMBEDDED_ENABLED
 		err = OS::get_singleton()->open_dynamic_library(String(), library, &data);
+#endif
+
 		if (err != OK) {
 			return err;
 		}

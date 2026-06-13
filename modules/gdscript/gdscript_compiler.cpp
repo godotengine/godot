@@ -38,8 +38,8 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-
-#include "scene/scene_string_names.h"
+#include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
 	if (codegen.function_node && codegen.function_node->is_static) {
@@ -419,7 +419,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
 						// If it's an autoload singleton, we postpone to load it at runtime.
 						// This is so one autoload doesn't try to load another before it's compiled.
-						HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+						HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads(ProjectSettings::get_singleton()->get_autoload_list());
 						if (autoloads.has(identifier) && autoloads[identifier].is_singleton) {
 							GDScriptCodeGenerator::Address global = codegen.add_temporary(_gdtype_from_datatype(in->get_datatype(), codegen.script));
 							int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];
@@ -2169,10 +2169,10 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				}
 
 				if (return_n->void_return) {
-					// Always return "null", even if the expression is a call to a void function.
-					gen->write_return(codegen.add_constant(Variant()));
+					// Always return `null`, even if the expression is a call to a `void` function.
+					gen->write_return(codegen.add_constant(Variant()), false);
 				} else {
-					gen->write_return(return_value);
+					gen->write_return(return_value, return_n->use_conversion);
 				}
 				if (return_value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
@@ -2510,15 +2510,8 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	}
 
 	if (p_func) {
-		// If no `return` statement, then return type is `void`, not `Variant`.
-		if (p_func->body->has_return) {
-			gd_function->return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
-			method_info.return_val = p_func->get_datatype().to_property_info(String());
-		} else {
-			gd_function->return_type = GDScriptDataType();
-			gd_function->return_type.kind = GDScriptDataType::BUILTIN;
-			gd_function->return_type.builtin_type = Variant::NIL;
-		}
+		gd_function->return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
+		method_info.return_val = p_func->get_datatype().to_property_info(String());
 
 		if (p_func->is_vararg()) {
 			gd_function->_vararg_index = vararg_addr.address;
@@ -2796,23 +2789,26 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 					return err;
 				}
 			} else if (!base->is_valid()) {
+				String base_qualified_name = base->fully_qualified_name;
+				String base_path = base->path;
+
 				Error err = OK;
-				Ref<GDScript> base_root = GDScriptCache::get_shallow_script(base->path, err, p_script->path);
+				Ref<GDScript> base_root = GDScriptCache::get_shallow_script(base_path, err, p_script->path);
 				if (err) {
-					_set_error(vformat(R"(Could not parse base class "%s" from "%s": %s)", base->fully_qualified_name, base->path, error_names[err]), nullptr);
+					_set_error(vformat(R"(Could not parse base class "%s" from "%s": %s)", base_qualified_name, base_path, error_names[err]), nullptr);
 					return err;
 				}
 				if (base_root.is_valid()) {
-					base = Ref<GDScript>(base_root->find_class(base->fully_qualified_name));
+					base = Ref<GDScript>(base_root->find_class(base_qualified_name));
 				}
 				if (base.is_null()) {
-					_set_error(vformat(R"(Could not find class "%s" in "%s".)", base->fully_qualified_name, base->path), nullptr);
+					_set_error(vformat(R"(Could not find class "%s" in "%s".)", base_qualified_name, base_path), nullptr);
 					return ERR_COMPILATION_FAILED;
 				}
 
 				err = _prepare_compilation(base.ptr(), p_class->base_type.class_type, p_keep_state);
 				if (err) {
-					_set_error(vformat(R"(Could not populate class members of base class "%s" in "%s".)", base->fully_qualified_name, base->path), nullptr);
+					_set_error(vformat(R"(Could not populate class members of base class "%s" in "%s".)", base_qualified_name, base_path), nullptr);
 					return err;
 				}
 			}
@@ -2860,9 +2856,11 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 						}
 						break;
 				}
-				minfo.data_type = _gdtype_from_datatype(variable->get_datatype(), p_script);
 
-				PropertyInfo prop_info = variable->get_datatype().to_property_info(name);
+				const GDScriptParser::DataType variable_type = variable->get_datatype();
+				minfo.data_type = _gdtype_from_datatype(variable_type, p_script);
+
+				PropertyInfo prop_info = variable_type.to_property_info(name);
 				PropertyInfo export_info = variable->export_info;
 
 				if (variable->exported) {
@@ -2873,6 +2871,28 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 					prop_info.hint = export_info.hint;
 					prop_info.hint_string = export_info.hint_string;
 					prop_info.usage = export_info.usage;
+				} else {
+					// Enum hint doesn't really belong to the data type information, so we don't want to add it to
+					// `GDScriptParser::DataType::to_property_info()`. However, we still want to add this metadata
+					// for unexported properties so they display nicely in the Remote Tree Inspector.
+					if (variable_type.kind == GDScriptParser::DataType::ENUM && !variable_type.is_meta_type) {
+						prop_info.hint = PROPERTY_HINT_ENUM;
+
+						String enum_hint_string;
+						bool first = true;
+						for (const KeyValue<StringName, int64_t> &E : variable_type.enum_values) {
+							if (first) {
+								first = false;
+							} else {
+								enum_hint_string += ",";
+							}
+							enum_hint_string += E.key.operator String().capitalize().xml_escape();
+							enum_hint_string += ":";
+							enum_hint_string += String::num_int64(E.value).xml_escape();
+						}
+
+						prop_info.hint_string = enum_hint_string;
+					}
 				}
 				prop_info.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 				minfo.property_info = prop_info;
@@ -3048,45 +3068,8 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 	//validate instances if keeping state
 
 	if (p_keep_state) {
-		for (RBSet<Object *>::Element *E = p_script->instances.front(); E;) {
-			RBSet<Object *>::Element *N = E->next();
-
-			ScriptInstance *si = E->get()->get_script_instance();
-			if (si->is_placeholder()) {
-#ifdef TOOLS_ENABLED
-				PlaceHolderScriptInstance *psi = static_cast<PlaceHolderScriptInstance *>(si);
-
-				if (p_script->is_tool()) {
-					//re-create as an instance
-					p_script->placeholders.erase(psi); //remove placeholder
-
-					GDScriptInstance *instance = memnew(GDScriptInstance);
-					instance->members.resize(p_script->member_indices.size());
-					instance->script = Ref<GDScript>(p_script);
-					instance->owner = E->get();
-
-					//needed for hot reloading
-					for (const KeyValue<StringName, GDScript::MemberInfo> &F : p_script->member_indices) {
-						instance->member_indices_cache[F.key] = F.value.index;
-					}
-					instance->owner->set_script_instance(instance);
-
-					/* STEP 2, INITIALIZE AND CONSTRUCT */
-
-					Callable::CallError ce;
-					p_script->initializer->call(instance, nullptr, 0, ce);
-
-					if (ce.error != Callable::CallError::CALL_OK) {
-						//well, tough luck, not gonna do anything here
-					}
-				}
-#endif // TOOLS_ENABLED
-			} else {
-				GDScriptInstance *gi = static_cast<GDScriptInstance *>(si);
-				gi->reload_members();
-			}
-
-			E = N;
+		for (SelfList<GDScriptInstance> *E = p_script->instances.first(); E; E = E->next()) {
+			E->self()->reload_members();
 		}
 	}
 #endif //DEBUG_ENABLED

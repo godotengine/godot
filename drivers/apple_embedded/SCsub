@@ -27,6 +27,9 @@ setup_swift_builder(
 vulkan_dir = "#thirdparty/vulkan"
 env_apple_embedded.Prepend(CPPPATH=[vulkan_dir, vulkan_dir + "/include"])
 
+# Use bundled metal-cpp headers
+env_apple_embedded.Prepend(CPPPATH=["#thirdparty/metal-cpp"])
+
 # Driver source files
 env_apple_embedded.add_source_files(env_apple_embedded.drivers_sources, "*.mm")
 env_apple_embedded.add_source_files(env_apple_embedded.drivers_sources, "*.swift")

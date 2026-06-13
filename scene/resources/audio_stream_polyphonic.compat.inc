@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "audio_stream_polyphonic.h"
+
+#include "core/object/class_db.h"
+
 AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::_play_stream_bind_compat_91382(const Ref<AudioStream> &p_stream, float p_from_offset, float p_volume_db, float p_pitch_scale) {
 	return play_stream(p_stream, p_from_offset, p_volume_db, p_pitch_scale, AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT, SceneStringName(Master));
 }
@@ -38,4 +42,4 @@ void AudioStreamPlaybackPolyphonic::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("play_stream", "stream", "from_offset", "volume_db", "pitch_scale"), &AudioStreamPlaybackPolyphonic::_play_stream_bind_compat_91382, DEFVAL(0), DEFVAL(0), DEFVAL(1.0));
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

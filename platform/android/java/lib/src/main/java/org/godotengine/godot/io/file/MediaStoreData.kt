@@ -37,6 +37,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -45,6 +46,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.io.IOException
 import java.nio.channels.FileChannel
 
 
@@ -53,7 +55,7 @@ import java.nio.channels.FileChannel
  * under scoped storage via the MediaStore API.
  */
 @RequiresApi(Build.VERSION_CODES.Q)
-internal class MediaStoreData(context: Context, filePath: String, accessFlag: FileAccessFlags) :
+internal class MediaStoreData(context: Context, private val filePath: String, accessFlag: FileAccessFlags) :
 	DataAccess.FileChannelDataAccess(filePath) {
 
 	private data class DataItem(
@@ -248,6 +250,7 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 	private val id: Long
 	private val uri: Uri
 	override val fileChannel: FileChannel
+	private val parcelFileDescriptor: ParcelFileDescriptor
 
 	init {
 		val contentResolver = context.contentResolver
@@ -282,7 +285,7 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 		id = dataItem.id
 		uri = dataItem.uri
 
-		val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, accessFlag.getMode())
+		parcelFileDescriptor = contentResolver.openFileDescriptor(uri, accessFlag.getMode())
 			?: throw IllegalStateException("Unable to access file descriptor")
 		fileChannel = if (accessFlag == FileAccessFlags.READ) {
 			FileInputStream(parcelFileDescriptor.fileDescriptor).channel
@@ -292,6 +295,20 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 
 		if (accessFlag.shouldTruncate()) {
 			fileChannel.truncate(0)
+		}
+	}
+
+	override fun close() {
+		try {
+			fileChannel.close()
+		} catch (e: IOException) {
+			Log.w(TAG, "Exception when closing file $filePath.", e)
+		} finally {
+			try {
+				parcelFileDescriptor.close()
+			} catch (e: IOException) {
+				Log.w(TAG, "Exception when closing ParcelFileDescriptor for $filePath.", e)
+			}
 		}
 	}
 }

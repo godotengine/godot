@@ -31,6 +31,7 @@
 #include "editor_atlas_packer.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/math/vector2.h"
 #include "core/math/vector2i.h"
 #include "scene/resources/bit_map.h"
@@ -171,8 +172,8 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 	bitmaps.sort();
 
-	int atlas_max_width = nearest_power_of_2_templated(p_atlas_max_size) / divide_by;
-	int atlas_w = nearest_power_of_2_templated(max_w);
+	int atlas_max_width = Math::nearest_power_of_2_templated(p_atlas_max_size) / divide_by;
+	int atlas_w = Math::nearest_power_of_2_templated(max_w);
 	int atlas_h;
 	while (true) {
 		atlas_h = 0;

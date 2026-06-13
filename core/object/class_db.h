@@ -31,13 +31,10 @@
 #pragma once
 
 #include "core/object/method_bind.h"
+#include "core/object/method_bind_common.h"
 #include "core/object/object.h"
 #include "core/os/rw_lock.h"
 #include "core/string/print_string.h"
-
-// Makes callable_mp readily available in all classes connecting signals.
-// Needs to come after method_bind and object have been included.
-#include "core/object/callable_method_pointer.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/hash_set.h"
 
@@ -59,7 +56,7 @@ inline constexpr bool is_class_enabled_v = is_class_enabled<T>::value;
 
 #define GD_IS_CLASS_ENABLED(m_class) is_class_enabled_v<m_class>
 
-#include "core/disabled_classes.gen.h"
+#include "core/disabled_classes.gen.h" // IWYU pragma: keep.
 
 #define DEFVAL(m_defval) (m_defval)
 #define DEFVAL_ARRAY DEFVAL(ClassDB::default_array_arg)
@@ -99,6 +96,7 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 
 class ClassDB {
 	friend class Object;
+	friend class GDType;
 
 public:
 	enum APIType {
@@ -123,25 +121,17 @@ public:
 		APIType api = API_NONE;
 		ClassInfo *inherits_ptr = nullptr;
 		void *class_ptr = nullptr;
-		const GDType *gdtype = nullptr;
+		GDType *gdtype = nullptr;
 
 		ObjectGDExtension *gdextension = nullptr;
 
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
-		AHashMap<StringName, int64_t> constant_map;
-		struct EnumInfo {
-			List<StringName> constants;
-			bool is_bitfield = false;
-		};
 
-		HashMap<StringName, EnumInfo> enum_map;
-		AHashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
 
 #ifdef DEBUG_ENABLED
-		List<StringName> constant_order;
 		List<StringName> method_order;
 		HashSet<StringName> methods_in_properties;
 		List<MethodInfo> virtual_methods;
@@ -157,8 +147,6 @@ public:
 		AHashMap<StringName, PropertySetGet> property_setget;
 		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
-		StringName inherits;
-		StringName name;
 		bool disabled = false;
 		bool exposed = false;
 		bool reloadable = false;
@@ -170,7 +158,8 @@ public:
 
 	template <typename T>
 	static Object *creator(bool p_notify_postinitialize) {
-		Object *ret = new ("") T;
+		// Cannot use memnew here because memnew calls _postinitialize automatically.
+		Object *ret = new (DefaultAllocator{}) T;
 		ret->_initialize();
 		if (p_notify_postinitialize) {
 			ret->_postinitialize();
@@ -219,7 +208,7 @@ public:
 	static APIType current_api;
 	static HashMap<APIType, uint32_t> api_hashes_cache;
 
-	static void _add_class(const GDType &p_class, const GDType *p_inherits);
+	static void _add_class(GDType &p_class, const GDType *p_inherits);
 
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
 	static HashSet<StringName> default_values_cached;
@@ -246,7 +235,8 @@ private:
 	static MethodBind *_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility);
 	static void _bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility);
 
-	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false, bool p_notify_postinitialize = true, bool p_exposed_only = true);
+	static Object *_instantiate_from_gdextension(ObjectGDExtension *p_object_gd_extension, bool p_notify_postinitialize, bool p_with_refcount);
+	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false, bool p_notify_postinitialize = true, bool p_exposed_only = true, bool p_with_refcount = false);
 
 	static bool _can_instantiate(ClassInfo *p_class_info, bool p_exposed_only = true);
 
@@ -351,9 +341,11 @@ public:
 	static bool can_instantiate(const StringName &p_class);
 	static bool is_abstract(const StringName &p_class);
 	static bool is_virtual(const StringName &p_class);
+	static bool is_gdextension(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
 	static Object *instantiate_no_placeholders(const StringName &p_class);
 	static Object *instantiate_without_postinitialization(const StringName &p_class);
+	static Object *instantiate_without_postinitialization_with_refcount(const StringName &p_class);
 	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
 	static APIType get_api_type(const StringName &p_class);
@@ -511,7 +503,6 @@ public:
 	static bool has_integer_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
 	static StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
-	static StringName get_integer_constant_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static void get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance = false);
 	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
 	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
@@ -555,13 +546,13 @@ public:
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), #m_constant, m_constant);
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_enum_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant);
 
 #define BIND_BITFIELD_FLAG(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant), #m_constant, m_constant, true);
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_bitfield_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant, true);
 
 #define BIND_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	get_gdtype_static_mutable().bind_integer_constant(StringName(), __constant_get_enum_value_name(#m_constant), m_constant);
 
 #ifdef DEBUG_ENABLED
 
@@ -574,24 +565,24 @@ public:
 
 #endif // DEBUG_ENABLED
 
-#define GDREGISTER_CLASS(m_class)                 \
+#define GDREGISTER_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
-		::ClassDB::register_class<m_class>();     \
+		::ClassDB::register_class<m_class>(); \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)         \
+#define GDREGISTER_VIRTUAL_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_class<m_class>(true); \
 	}
-#define GDREGISTER_ABSTRACT_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
+#define GDREGISTER_ABSTRACT_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_abstract_class<m_class>(); \
 	}
-#define GDREGISTER_INTERNAL_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
+#define GDREGISTER_INTERNAL_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_internal_class<m_class>(); \
 	}
-#define GDREGISTER_RUNTIME_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {     \
+#define GDREGISTER_RUNTIME_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_runtime_class<m_class>(); \
 	}
 
