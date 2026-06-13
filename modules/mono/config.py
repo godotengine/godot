@@ -16,6 +16,13 @@ def configure(env):
 
     env.add_module_version_string("mono")
 
+    # Web platform specific configuration
+    if env["platform"] == "web":
+        # GDExtensions work with static linking (wasm-split)
+        if env["lto"] != "none":
+            print_error(".NET can't work with lto library on web.")
+            sys.exit(255)
+
 
 def get_doc_classes():
     return [

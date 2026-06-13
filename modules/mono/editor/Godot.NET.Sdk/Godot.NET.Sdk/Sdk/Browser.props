@@ -1,0 +1,40 @@
+<Project>
+<PropertyGroup>
+<CustomLibGodotPath></CustomLibGodotPath>
+</PropertyGroup>
+
+<PropertyGroup>
+<OutputType>exe</OutputType>
+<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+<PublishTrimmed>true</PublishTrimmed>
+<TrimmerSingleWarn>false</TrimmerSingleWarn>
+<WasmBuildNative>true</WasmBuildNative>
+<WasmAppDir>$([System.IO.Path]::Combine($(PublishDir), "AppBundle"))</WasmAppDir>
+<WasmEnableSIMD>true</WasmEnableSIMD>
+<WasmInitialHeapSize>32MB</WasmInitialHeapSize>
+<EmccStackSize>5120KB</EmccStackSize>
+</PropertyGroup>
+
+<ItemGroup>
+<TrimmerRootAssembly Include="GodotSharp" />
+<TrimmerRootAssembly Include="$(TargetName)" />
+<DirectPInvoke Include="libgodot" />
+<NativeLibrary Include="$(_BaseLibGodotPath)\libgodot.a" />
+</ItemGroup>
+
+<ItemGroup Condition="'$(GodotThreadingEnabled)' == 'true'">
+<GodotEmccExtraLDFlag Include="-sPROXY_TO_PTHREAD" />
+<GodotEmccExtraLDFlag Include="-sPTHREAD_POOL_SIZE=4" />
+<GodotEmccExtraLDFlag Include="-sPTHREAD_INITIAL_CHANNEL_SIZE=8" />
+<GodotEmccExtraLDFlag Include="-sMAX_WEB_LOCKS=256" />
+</ItemGroup>
+
+<PropertyGroup>
+<EmccExtraLDFlags>@(GodotEmccExtraLDFlag->'%(Identity)', ' ')</EmccExtraLDFlags>
+</PropertyGroup>
+
+<Target Name="GodotCheckLibGodotPath" BeforeTargets="Build">
+<Error Text="Cannot build with empty 'BaseLibGodotPath'." Condition=" $(_BaseLibGodotPath) == '' " />
+<Error Text="Cannot find 'libgodot.a' in expected place." Condition=" !Exists('$(BaseLibGodotPath)\libgodot.a') " />
+</Target>
+</Project>

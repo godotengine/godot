@@ -423,10 +423,28 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
 
 bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 #ifdef MODULE_MONO_ENABLED
-	// Don't check for additional errors, as this particular error cannot be resolved.
-	r_error += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
-	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
-	return false;
+	String err;
+	bool valid = false;
+	bool extensions = (bool)p_preset->get("variant/extensions_support");
+	bool thread_support = (bool)p_preset->get("variant/thread_support");
+
+	// Web export is experimental for C#/.NET - warn but allow
+	r_error += TTR("Exporting to Web when using C#/.NET is experimental.") + "\n";
+
+	// Threading requires proxy_to_pthread in the export template
+	if (thread_support) {
+		r_error += TTR("C#/.NET web builds with threading: ensure 'proxy_to_pthread' is enabled in export template.") + "\n";
+	}
+
+	// GDExtensions work via static linking with wasm-split
+	if (extensions) {
+		r_error += TTR("GDExtensions on C#/.NET web: using static linking, binary size may increase.") + "\n";
+	}
+
+	// Templates are checked normally (unlike non-mono builds which skip template check)
+	valid = true;
+	r_missing_templates = false;
+	return valid;
 #else
 
 	String err;
