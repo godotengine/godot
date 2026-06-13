@@ -1241,6 +1241,7 @@ void JoltBody3D::set_gravity_scale(float p_scale) {
 		jolt_settings->mGravityFactor = p_scale;
 	} else {
 		jolt_body->GetMotionPropertiesUnchecked()->SetGravityFactor(p_scale);
+		_update_environmental_properties();
 	}
 }
 
