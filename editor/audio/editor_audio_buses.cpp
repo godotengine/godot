@@ -1155,6 +1155,9 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	add_child(effect_options);
 	LocalVector<StringName> effect_list;
 	ClassDB::get_inheriters_from_class("AudioEffect", effect_list);
+#ifndef DISABLE_DEPRECATED
+	effect_list.erase("AudioEffectLimiter");
+#endif
 	effect_list.sort_custom<StringName::AlphCompare>();
 	for (const StringName &E : effect_list) {
 		if (!ClassDB::can_instantiate(E) || ClassDB::is_virtual(E)) {
