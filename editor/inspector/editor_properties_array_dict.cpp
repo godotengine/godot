@@ -539,7 +539,7 @@ void EditorPropertyArray::update_property() {
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
-				new_prop->set_name_split_ratio(0.0);
+				// new_prop->set_name_split_ratio(0.0);
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
 				if (value_type == Variant::OBJECT) {
