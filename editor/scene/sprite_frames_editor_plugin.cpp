@@ -707,6 +707,8 @@ void SpriteFramesEditor::_notification(int p_what) {
 			play_from->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			play_bw->set_button_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
 			play_bw_from->set_button_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
+			step_forward->set_button_icon(get_editor_theme_icon(SNAME("NextFrame")));
+			step_backward->set_button_icon(get_editor_theme_icon(SNAME("PreviousFrame")));
 
 			load->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 			load_sheet->set_button_icon(get_editor_theme_icon(SNAME("SpriteSheet")));
@@ -1552,6 +1554,8 @@ void SpriteFramesEditor::_frame_list_item_selected(int p_index, bool p_selected)
 		return;
 	}
 
+	animated_sprite->call("set_frame", p_index);
+
 	updating = true;
 	frame_duration->set_value(frames->get_frame_duration(edited_anim, selection[0]));
 	updating = false;
@@ -2068,10 +2072,12 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 		_sync_animation();
 		autoplay_container->show();
 		playback_container->show();
+		stepping_container->show();
 	} else {
 		_update_library(); // To init autoplay icon.
 		autoplay_container->hide();
 		playback_container->hide();
+		stepping_container->hide();
 	}
 }
 
@@ -2141,6 +2147,23 @@ void SpriteFramesEditor::_autoplay_pressed() {
 	}
 
 	_update_library();
+}
+
+void SpriteFramesEditor::_step_frame_pressed(int p_step) {
+	if (animated_sprite) {
+		if (animated_sprite->call("is_playing")) {
+			animated_sprite->call("pause");
+		}
+		String current_animation_name = animated_sprite->call("get_animation");
+		int frame_count = frames->get_frame_count(current_animation_name);
+		if (frame_count < 1) {
+			return;
+		}
+		int current_frame = animated_sprite->call("get_frame");
+		int new_frame = Math::posmod(current_frame + p_step, frame_count);
+		animated_sprite->call("set_frame", new_frame);
+	}
+	_update_stop_icon();
 }
 
 void SpriteFramesEditor::_bind_methods() {
@@ -2325,6 +2348,20 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	play_from->set_theme_type_variation(SceneStringName(FlatButton));
 	playback_container->add_child(play_from);
 
+	stepping_container = memnew(HBoxContainer);
+	stepping_container->set_layout_direction(LAYOUT_DIRECTION_LTR);
+	hfc->add_child(stepping_container);
+
+	stepping_container->add_child(memnew(VSeparator));
+
+	step_backward = memnew(Button);
+	step_backward->set_theme_type_variation(SceneStringName(FlatButton));
+	stepping_container->add_child(step_backward);
+
+	step_forward = memnew(Button);
+	step_forward->set_theme_type_variation(SceneStringName(FlatButton));
+	stepping_container->add_child(step_forward);
+
 	hfc->add_child(memnew(VSeparator));
 
 	autoplay->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_autoplay_pressed));
@@ -2334,6 +2371,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	play_bw->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_pressed));
 	play_bw_from->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_play_bw_from_pressed));
 	stop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_stop_pressed));
+	step_forward->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_step_frame_pressed).bind(1));
+	step_backward->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_step_frame_pressed).bind(-1));
 
 	HBoxContainer *hbc_actions = memnew(HBoxContainer);
 	hfc->add_child(hbc_actions);
@@ -2476,6 +2515,9 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	stop->set_shortcut(ED_SHORTCUT("sprite_frames/stop_animation", TTRC("Pause/Stop Animation"), Key::S));
 	play->set_shortcut(ED_SHORTCUT("sprite_frames/play_animation_from_start", TTRC("Play Animation from Start"), KeyModifierMask::SHIFT + Key::D));
 	play_from->set_shortcut(ED_SHORTCUT("sprite_frames/play_animation", TTRC("Play Animation"), Key::D));
+	step_forward->set_shortcut(ED_SHORTCUT("sprite_frames/step_forward", TTRC("Go to Next Frame"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::D));
+	step_backward->set_shortcut(ED_SHORTCUT("sprite_frames/step_backward", TTRC("Go to Previous Frame"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A));
+
 	load->set_shortcut_context(frame_list);
 	load->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_file", TTRC("Add Frame from File"), KeyModifierMask::CMD_OR_CTRL | Key::O));
 	load_sheet->set_shortcut_context(frame_list);
