@@ -568,6 +568,37 @@ Patches:
 - `0003-remove-bmp-ppm-support.patch` ([GH-104347](https://github.com/godotengine/godot/pull/104347))
 
 
+## libjxl
+
+- Upstream: https://github.com/libjxl/libjxl
+- Version: 0.11.2 (2025)
+- License: BSD-3-Clause
+
+Only the decoder is built; the encoder, JPEG transcoding and container box
+support are disabled.
+
+Files extracted from upstream source:
+
+- `lib/include/jxl/` (public headers)
+- `lib/jxl/` headers, plus the `.cc` files of the decoder and `lib/jxl/cms/`
+- `LICENSE`, `PATENTS`, `AUTHORS`
+
+The decoder depends on two of libjxl's own bundled libraries, trimmed to the
+files needed to build and kept under `third_party/`:
+
+- `highway/` (Apache-2.0), the SIMD library libjxl is built on: the `hwy/`
+  headers plus `hwy/{abort,aligned_allocator,nanobenchmark,per_target,print,targets,timer}.cc`
+- `skcms/` (BSD-3-Clause), the color management backend: `skcms.{cc,h}`,
+  `src/` headers and `src/skcms_TransformBaseline.cc`
+
+The following headers are normally produced by upstream's build system. As the
+engine does not run libjxl's CMake, they are generated once and committed here:
+
+- `lib/include/jxl/version.h`
+- `lib/include/jxl/jxl_export.h`
+- `lib/include/jxl/jxl_cms_export.h`
+
+
 ## libktx
 
 - Upstream: https://github.com/KhronosGroup/KTX-Software
