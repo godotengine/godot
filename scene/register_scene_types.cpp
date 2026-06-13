@@ -80,6 +80,8 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/reference_rect.h"
+#include "scene/gui/rich_text_edit.h"
+#include "scene/gui/rich_text_edit_toolbar.h"
 #include "scene/gui/rich_text_effect.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_bar.h"
@@ -536,6 +538,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Tree);
 
 	GDREGISTER_CLASS(TextEdit);
+	GDREGISTER_CLASS(RichTextEdit);
+	GDREGISTER_CLASS(RichTextEditToolbar);
 	GDREGISTER_CLASS(CodeEdit);
 	GDREGISTER_CLASS(SyntaxHighlighter);
 	GDREGISTER_CLASS(CodeHighlighter);
