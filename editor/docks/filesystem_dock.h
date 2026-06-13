@@ -107,6 +107,10 @@ public:
 	};
 
 private:
+	enum FilterMenuItems {
+		FILTER_BY_TYPE,
+	};
+
 	enum FileMenu {
 		FILE_MENU_OPEN,
 		FILE_MENU_INHERIT,
@@ -137,6 +141,7 @@ private:
 		FILE_MENU_NEW_SCRIPT,
 		FILE_MENU_NEW_SCENE,
 		FILE_MENU_RUN_SCRIPT,
+		FILE_MENU_FILTER_TYPE,
 		FILE_MENU_MAX,
 		// Extra shortcuts that don't exist in the menu.
 		EXTRA_FOCUS_PATH,
@@ -190,6 +195,7 @@ private:
 
 	PopupMenu *file_list_popup = nullptr;
 	PopupMenu *tree_popup = nullptr;
+	PopupMenu *filter_quick_menu = nullptr;
 
 	DependencyEditor *deps_editor = nullptr;
 	DependencyEditorOwners *owners_editor = nullptr;
@@ -347,7 +353,10 @@ private:
 	void _split_dragged(int p_offset);
 
 	void _search_changed(const String &p_text, const Control *p_from);
-	bool _matches_all_search_tokens(const String &p_text);
+	bool _matches_all_search_tokens(const String &p_text, const StringName &p_file_type = StringName());
+	void _filter_gui_input(const Ref<InputEvent> &p_event);
+	void _append_filter_options_to(PopupMenu *p_menu);
+	void _filter_option_selected(int p_option);
 
 	MenuButton *_create_file_menu_button();
 	void _file_sort_popup(int p_id);
