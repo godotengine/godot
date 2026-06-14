@@ -301,7 +301,7 @@ Size2 BoxContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 			continue;
 		}
 
-		Size2i size = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
+		Size2i size = p_use_desired_sizes ? c->get_bound_desired_size().ceil() : c->get_bound_minimum_size().ceil();
 
 		if (vertical) { /* VERTICAL */
 
