@@ -459,15 +459,21 @@ bool Fog::VolumetricFog::sync_gi_dependent_sets_validity(bool p_ensure_freed) {
 	return valid;
 }
 
-void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader) {
+
+void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader, uint32_t p_view_count) {
 	width = fog_size.x;
 	height = fog_size.y;
 	depth = fog_size.z;
+	view_count = p_view_count;
+
+	// Doubled (global) width holding all eyes side-by-side in X.
+	const uint32_t buffer_width = (uint32_t)fog_size.x * view_count;
+
 	atomic_type = RD::get_singleton()->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT) ? RD::UNIFORM_TYPE_IMAGE : RD::UNIFORM_TYPE_STORAGE_BUFFER;
 
 	RD::TextureFormat tf;
 	tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-	tf.width = fog_size.x;
+	tf.width = buffer_width;
 	tf.height = fog_size.y;
 	tf.depth = fog_size.z;
 	tf.texture_type = RD::TEXTURE_TYPE_3D;
@@ -489,7 +495,8 @@ void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader) {
 
 	if (atomic_type == RD::UNIFORM_TYPE_STORAGE_BUFFER) {
 		Vector<uint8_t> dm;
-		dm.resize_initialized(fog_size.x * fog_size.y * fog_size.z * 4);
+		// Doubled width here too.
+		dm.resize_initialized(buffer_width * fog_size.y * fog_size.z * 4);
 
 		density_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm);
 		RD::get_singleton()->set_resource_name(density_map, "Fog density map");
@@ -500,6 +507,7 @@ void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader) {
 	} else {
 		tf.format = RD::DATA_FORMAT_R32_UINT;
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_ATOMIC_BIT;
+		// tf.width is still buffer_width from above; format/usage are the only changes.
 		density_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		RD::get_singleton()->set_resource_name(density_map, "Fog density map");
 		RD::get_singleton()->texture_clear(density_map, Color(0, 0, 0, 0), 0, 1, 0, 1);
@@ -1065,31 +1073,104 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	fog->length = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_length(p_settings.env);
 	fog->spread = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_detail_spread(p_settings.env);
 
+
 	VolumetricFogShader::ParamsUBO params;
 
-	Vector2 frustum_near_size = p_cam_projection.get_viewport_half_extents();
-	Vector2 frustum_far_size = p_cam_projection.get_far_plane_half_extents();
+	const uint32_t view_count = MAX(1u, p_settings.view_count);
+
 	float z_near = p_cam_projection.get_z_near();
 	float z_far = p_cam_projection.get_z_far();
 	float fog_end = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_length(p_settings.env);
 
-	Vector2 fog_far_size = frustum_near_size.lerp(frustum_far_size, (fog_end - z_near) / (z_far - z_near));
-	Vector2 fog_near_size;
-	if (p_cam_projection.is_orthogonal()) {
-		fog_near_size = fog_far_size;
-	} else {
-		fog_near_size = frustum_near_size.maxf(0.001);
+	// ---- Per-eye frustum sizes + matrices ----
+	for (uint32_t v = 0; v < view_count; v++) {
+		// Per-eye projection; falls back to the mono cam projection for view 0
+		// if the caller didn't populate per-view data (view_count == 1).
+		const Projection &proj = (view_count > 1) ? p_settings.view_projections[v] : p_cam_projection;
+
+		Vector2 view_frustum_near_size = proj.get_viewport_half_extents();
+		Vector2 view_frustum_far_size = proj.get_far_plane_half_extents();
+
+		Vector2 view_fog_far_size = view_frustum_near_size.lerp(view_frustum_far_size, (fog_end - z_near) / (z_far - z_near));
+		Vector2 view_fog_near_size;
+		if (proj.is_orthogonal()) {
+			view_fog_near_size = view_fog_far_size;
+		} else {
+			view_fog_near_size = view_frustum_near_size.maxf(0.001);
+		}
+
+		params.fog_frustum_size_begin[v][0] = view_fog_near_size.x;
+		params.fog_frustum_size_begin[v][1] = view_fog_near_size.y;
+		params.fog_frustum_size_begin[v][2] = 0.0f;
+		params.fog_frustum_size_begin[v][3] = 0.0f;
+
+		params.fog_frustum_size_end[v][0] = view_fog_far_size.x;
+		params.fog_frustum_size_end[v][1] = view_fog_far_size.y;
+		params.fog_frustum_size_end[v][2] = 0.0f;
+		params.fog_frustum_size_end[v][3] = 0.0f;
+
+		// This eye's world transform = cam transform * eye offset.
+		// For mono, view_eye_offset[0] is identity.
+		Transform3D eye_transform = p_cam_transform;
+		if (view_count > 1) {
+			eye_transform = p_cam_transform * p_settings.view_eye_offset[v];
+		}
+
+		// to_prev_view for THIS eye. We approximate the previous eye transform
+		// by applying the same eye offset to the previous cam transform; the
+		// inverse of (prev_cam * eye_offset) is (eye_offset_inv * prev_cam_inv).
+		Transform3D to_prev_cam_view;
+		if (view_count > 1) {
+			Transform3D prev_eye_inv = p_settings.view_eye_offset[v].affine_inverse() * p_prev_cam_inv_transform;
+			to_prev_cam_view = prev_eye_inv * eye_transform;
+		} else {
+			to_prev_cam_view = p_prev_cam_inv_transform * p_cam_transform;
+		}
+		RendererRD::MaterialStorage::store_transform(to_prev_cam_view, params.to_prev_view[v]);
+
+		// cam_rotation (mat3x4) for this eye.
+		params.cam_rotation[v][0] = eye_transform.basis[0][0];
+		params.cam_rotation[v][1] = eye_transform.basis[1][0];
+		params.cam_rotation[v][2] = eye_transform.basis[2][0];
+		params.cam_rotation[v][3] = 0;
+		params.cam_rotation[v][4] = eye_transform.basis[0][1];
+		params.cam_rotation[v][5] = eye_transform.basis[1][1];
+		params.cam_rotation[v][6] = eye_transform.basis[2][1];
+		params.cam_rotation[v][7] = 0;
+		params.cam_rotation[v][8] = eye_transform.basis[0][2];
+		params.cam_rotation[v][9] = eye_transform.basis[1][2];
+		params.cam_rotation[v][10] = eye_transform.basis[2][2];
+		params.cam_rotation[v][11] = 0;
+
+		// radiance_inverse_xform (mat3, std140 3x vec4) for this eye.
+		Basis sky_basis = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_settings.env);
+		Basis radiance_basis = sky_basis.inverse() * eye_transform.basis;
+		// store_transform_3x3 writes 3 x vec4 (12 floats) in column-major padded form.
+		RendererRD::MaterialStorage::store_transform_3x3(radiance_basis, params.radiance_inverse_xform[v]);
 	}
 
-	params.fog_frustum_size_begin[0] = fog_near_size.x;
-	params.fog_frustum_size_begin[1] = fog_near_size.y;
+	// For mono, fill the unused second eye slot with view 0's data so the
+	// shader never reads garbage if it indexes [1] defensively.
+	if (view_count == 1) {
+		for (int j = 0; j < 4; j++) {
+			params.fog_frustum_size_begin[1][j] = params.fog_frustum_size_begin[0][j];
+			params.fog_frustum_size_end[1][j] = params.fog_frustum_size_end[0][j];
+		}
+		for (int j = 0; j < 12; j++) {
+			params.cam_rotation[1][j] = params.cam_rotation[0][j];
+			params.radiance_inverse_xform[1][j] = params.radiance_inverse_xform[0][j];
+		}
+		for (int j = 0; j < 16; j++) {
+			params.to_prev_view[1][j] = params.to_prev_view[0][j];
+		}
+	}
 
-	params.fog_frustum_size_end[0] = fog_far_size.x;
-	params.fog_frustum_size_end[1] = fog_far_size.y;
+	params.view_count = view_count;
+	params.pad = 0;
 
+	// ---- Eye-independent scalars (unchanged from original) ----
 	params.ambient_inject = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_ambient_inject(p_settings.env) * RendererSceneRenderRD::get_singleton()->environment_get_ambient_light_energy(p_settings.env);
 	params.z_far = z_far;
-
 	params.fog_frustum_end = fog_end;
 
 	Color ambient_color = RendererSceneRenderRD::get_singleton()->environment_get_ambient_light(p_settings.env).srgb_to_linear();
@@ -1098,6 +1179,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	params.ambient_color[2] = ambient_color.b;
 	params.sky_contribution = RendererSceneRenderRD::get_singleton()->environment_get_ambient_sky_contribution(p_settings.env);
 
+	// Single-eye dimensions (NOT doubled) — the shader doubles X itself via view_count.
 	params.fog_volume_size[0] = fog->width;
 	params.fog_volume_size[1] = fog->height;
 	params.fog_volume_size[2] = fog->depth;
@@ -1105,9 +1187,10 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	params.directional_light_count = p_directional_light_count;
 
 	Color emission = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_emission(p_settings.env).srgb_to_linear();
-	params.base_emission[0] = emission.r * RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_emission_energy(p_settings.env);
-	params.base_emission[1] = emission.g * RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_emission_energy(p_settings.env);
-	params.base_emission[2] = emission.b * RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_emission_energy(p_settings.env);
+	float emission_energy = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_emission_energy(p_settings.env);
+	params.base_emission[0] = emission.r * emission_energy;
+	params.base_emission[1] = emission.g * emission_energy;
+	params.base_emission[2] = emission.b * emission_energy;
 	params.base_density = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_density(p_settings.env);
 
 	Color base_scattering = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_scattering(p_settings.env).srgb_to_linear();
@@ -1119,24 +1202,9 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	params.detail_spread = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_detail_spread(p_settings.env);
 	params.gi_inject = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_gi_inject(p_settings.env);
 
-	params.cam_rotation[0] = p_cam_transform.basis[0][0];
-	params.cam_rotation[1] = p_cam_transform.basis[1][0];
-	params.cam_rotation[2] = p_cam_transform.basis[2][0];
-	params.cam_rotation[3] = 0;
-	params.cam_rotation[4] = p_cam_transform.basis[0][1];
-	params.cam_rotation[5] = p_cam_transform.basis[1][1];
-	params.cam_rotation[6] = p_cam_transform.basis[2][1];
-	params.cam_rotation[7] = 0;
-	params.cam_rotation[8] = p_cam_transform.basis[0][2];
-	params.cam_rotation[9] = p_cam_transform.basis[1][2];
-	params.cam_rotation[10] = p_cam_transform.basis[2][2];
-	params.cam_rotation[11] = 0;
 	params.filter_axis = 0;
 	params.max_voxel_gi_instances = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_gi_inject(p_settings.env) > 0.001 ? p_voxel_gi_count : 0;
 	params.temporal_frame = RSG::rasterizer->get_frame_number() % VolumetricFog::MAX_TEMPORAL_FRAMES;
-
-	Transform3D to_prev_cam_view = p_prev_cam_inv_transform * p_cam_transform;
-	RendererRD::MaterialStorage::store_transform(to_prev_cam_view, params.to_prev_view);
 
 	params.use_temporal_reprojection = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_temporal_reprojection(p_settings.env);
 	params.temporal_blend = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_temporal_reprojection_amount(p_settings.env);
@@ -1149,6 +1217,8 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	}
 
 	{
+		// Cluster params stay SINGLE-EYE under Path A: both eyes share one
+		// cluster buffer built for the (mono / left) screen.
 		uint32_t cluster_size = p_settings.cluster_builder->get_cluster_size();
 		params.cluster_shift = Math::get_shift_from_power_of_2(cluster_size);
 
@@ -1162,14 +1232,13 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		params.screen_size[1] = p_settings.rb_size.y;
 	}
 
-	Basis sky_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_settings.env);
-	sky_transform = sky_transform.inverse() * p_cam_transform.basis;
-	RendererRD::MaterialStorage::store_transform_3x3(sky_transform, params.radiance_inverse_xform);
-
 	RD::get_singleton()->draw_command_begin_label("Render Volumetric Fog");
 
 	RENDER_TIMESTAMP("Render Fog");
 	RD::get_singleton()->buffer_update(volumetric_fog.params_ubo, 0, sizeof(VolumetricFogShader::ParamsUBO), &params);
+
+	// Doubled dispatch width: every froxel pass covers all eyes in X.
+	const uint32_t dispatch_width = fog->width * view_count;
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
@@ -1180,14 +1249,14 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	if (using_sdfgi) {
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->sdfgi_uniform_set, 1);
 	}
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, fog->depth);
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_width, fog->height, fog->depth);
 	RD::get_singleton()->compute_list_add_barrier(compute_list);
 
 	// Copy fog to history buffer
 	if (RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_temporal_reprojection(p_settings.env)) {
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY].get_rid());
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->copy_uniform_set, 0);
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, fog->depth);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_width, fog->height, fog->depth);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 	}
 	RD::get_singleton()->draw_command_end_label();
@@ -1199,7 +1268,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FILTER].get_rid());
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.process_uniform_set, 0);
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, fog->depth);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_width, fog->height, fog->depth);
 
 		RD::get_singleton()->compute_list_end();
 		//need restart for buffer update
@@ -1210,7 +1279,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		compute_list = RD::get_singleton()->compute_list_begin();
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FILTER].get_rid());
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.process_uniform_set2, 0);
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, fog->depth);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_width, fog->height, fog->depth);
 
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 		RD::get_singleton()->draw_command_end_label();
@@ -1221,7 +1290,8 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG].get_rid());
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.process_uniform_set, 0);
-	RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, 1);
+	// Integration is per (x,y) column over the doubled width; Z handled in-shader.
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, dispatch_width, fog->height, 1);
 
 	RD::get_singleton()->compute_list_end();
 

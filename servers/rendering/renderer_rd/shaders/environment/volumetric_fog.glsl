@@ -65,6 +65,7 @@ layout(set = 1, binding = 2, std140) uniform SceneParams {
 
 	mat4 to_prev_view;
 	mat4 transform;
+
 }
 scene_params;
 

@@ -1088,14 +1088,25 @@ layout(location = 2) out vec2 motion_vector;
 
 #ifndef MODE_RENDER_DEPTH
 
+vec3 stereo_fog_uvw(vec3 fog_pos) {
+	// scene_data_block.data.view_count is the multiview view count (1 or 2).
+	// ViewIndex is 0 for left, 1 for right.
+	float vc = float(scene_data_block.data.view_count);
+	fog_pos.x = (fog_pos.x + float(ViewIndex)) / vc;
+	return fog_pos;
+}
+
+
 vec4 volumetric_fog_process(vec2 screen_uv, float z) {
 	vec3 fog_pos = vec3(screen_uv, z * implementation_data.volumetric_fog_inv_length);
+	#ifdef MULTIVIEW
+	fog_pos = stereo_fog_uvw(fog_pos);
+	#endif
 	if (fog_pos.z < 0.0) {
 		return vec4(0.0, 0.0, 0.0, 1.0);
 	} else if (fog_pos.z < 1.0) {
 		fog_pos.z = pow(fog_pos.z, implementation_data.volumetric_fog_detail_spread);
 	}
-
 	return texture(sampler3D(volumetric_fog_texture, SAMPLER_LINEAR_CLAMP), fog_pos);
 }
 

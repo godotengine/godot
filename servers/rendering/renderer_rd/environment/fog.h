@@ -40,6 +40,7 @@
 #include "servers/rendering/storage/utilities.h"
 
 #define RB_SCOPE_FOG SNAME("Fog")
+#define MAX_FOG_VIEWS 2
 
 class ClusterBuilderRD;
 
@@ -148,18 +149,19 @@ private:
 		};
 
 		struct ParamsUBO {
-			float fog_frustum_size_begin[2];
-			float fog_frustum_size_end[2];
+			// Per-eye frustum half-extents. [eye][0..1] = xy, [eye][2..3] = padding.
+			float fog_frustum_size_begin[MAX_FOG_VIEWS][4];
+			float fog_frustum_size_end[MAX_FOG_VIEWS][4];
 
 			float fog_frustum_end;
 			float ambient_inject;
 			float z_far;
-			uint32_t filter_axis;
+			int32_t filter_axis;
 
 			float ambient_color[3];
 			float sky_contribution;
 
-			int32_t fog_volume_size[3];
+			int32_t fog_volume_size[3]; // single-eye dimensions
 			uint32_t directional_light_count;
 
 			float base_emission[3];
@@ -178,17 +180,20 @@ private:
 			uint32_t cluster_width;
 
 			uint32_t max_cluster_element_count_div_32;
-			uint32_t use_temporal_reprojection;
+			uint32_t use_temporal_reprojection; // bool packed as uint (std140)
 			uint32_t temporal_frame;
 			float temporal_blend;
 
 			float sky_border_size[2];
-			float pad[2];
+			uint32_t view_count; // 1 = mono, 2 = stereo
+			uint32_t pad;
 
-			float cam_rotation[12];
-			float to_prev_view[16];
-			float radiance_inverse_xform[12];
+			// Per-eye matrices.
+			float cam_rotation[MAX_FOG_VIEWS][12]; // mat3x4 -> 3 cols x vec4 = 12 floats
+			float to_prev_view[MAX_FOG_VIEWS][16]; // mat4
+			float radiance_inverse_xform[MAX_FOG_VIEWS][12]; // mat3 in std140 = 3 x vec4
 		};
+		static_assert(sizeof(VolumeUBO) % 16 == 0, "UBO problem");
 
 		VolumetricFogProcessShaderRD process_shader;
 
@@ -306,6 +311,7 @@ public:
 		uint32_t width = 0;
 		uint32_t height = 0;
 		uint32_t depth = 0;
+		uint32_t view_count = 1;
 
 		float length;
 		float spread;
@@ -339,7 +345,7 @@ public:
 
 		bool sync_gi_dependent_sets_validity(bool p_ensure_freed = false);
 
-		void init(const Vector3i &fog_size, RID p_sky_shader);
+		void init(const Vector3i &fog_size, RID p_sky_shader, uint32_t p_view_count);
 		~VolumetricFog();
 	};
 
@@ -370,6 +376,10 @@ public:
 		Ref<GI::RenderBuffersGI> rbgi;
 		RID env;
 		SkyRD *sky;
+
+		uint32_t view_count = 1;
+		Projection view_projections[MAX_FOG_VIEWS];
+		Transform3D view_eye_offset[MAX_FOG_VIEWS];
 	};
 	void volumetric_fog_update(const VolumetricFogSettings &p_settings, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
 };
