@@ -275,7 +275,7 @@ private:
 	struct ItemImage : public Item {
 		Ref<Texture2D> image;
 		String alt_text;
-		InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
+		InlineAlignment inline_align = (InlineAlignment)(INLINE_ALIGNMENT_CENTER | INLINE_ALIGNMENT_SCOPE_ADJACENT_SPANS);
 		bool pad = false;
 		ImageUnit width_unit = IMAGE_UNIT_PIXEL;
 		ImageUnit height_unit = IMAGE_UNIT_PIXEL;

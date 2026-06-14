@@ -402,6 +402,9 @@ class TextServerFallback : public TextServerExtension {
 			Array fonts;
 			int font_size = 0;
 
+			double ascent = 0.0;
+			double descent = 0.0;
+
 			Variant embedded_key;
 
 			String language;
@@ -435,6 +438,8 @@ class TextServerFallback : public TextServerExtension {
 		bool preserve_invalid = true; // Draw hex code box instead of missing characters.
 		bool preserve_control = false; // Draw control characters.
 
+		double base_ascent = 0.0;
+		double base_descent = 0.0;
 		double ascent = 0.0; // Ascent for horizontal layout, 1/2 of width for vertical.
 		double descent = 0.0; // Descent for horizontal layout, 1/2 of width for vertical.
 		double width = 0.0; // Width for horizontal layout, height for vertical.
