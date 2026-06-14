@@ -36,6 +36,7 @@
 #include "../misc/jolt_stream_wrappers.h"
 #include "../objects/jolt_area_3d.h"
 #include "../objects/jolt_body_3d.h"
+#include "../objects/jolt_soft_body_3d.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "jolt_body_activation_listener_3d.h"
 #include "jolt_contact_listener_3d.h"
@@ -382,6 +383,25 @@ JoltPhysicsDirectSpaceState3D *JoltSpace3D::get_direct_state() {
 	}
 
 	return direct_state;
+}
+
+void JoltSpace3D::notify_all_bodies_default_area_changed() {
+	JPH::BodyIDVector all_body_ids;
+	physics_system->GetBodies(all_body_ids);
+
+	for (const JPH::BodyID &body_id : all_body_ids) {
+		if (JoltArea3D *area = try_get_area(body_id)) {
+			if (area == default_area) {
+				continue;
+			}
+		}
+
+		if (JoltBody3D *body = try_get_body(body_id)) {
+			body->_areas_changed();
+		} else if (JoltSoftBody3D *soft_body = try_get_soft_body(body_id)) {
+			soft_body->_areas_changed();
+		}
+	}
 }
 
 JPH::Body *JoltSpace3D::add_object(const JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping) {

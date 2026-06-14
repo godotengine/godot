@@ -43,6 +43,8 @@ class JoltArea3D;
 class JoltSpace3D;
 
 class JoltSoftBody3D final : public JoltObject3D {
+	friend class JoltSpace3D;
+
 	HashSet<int> pinned_vertices;
 
 	LocalVector<int> mesh_to_physics;

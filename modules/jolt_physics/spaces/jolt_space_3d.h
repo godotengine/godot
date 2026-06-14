@@ -129,6 +129,8 @@ public:
 	JoltArea3D *get_default_area() const { return default_area; }
 	void set_default_area(JoltArea3D *p_area) { default_area = p_area; }
 
+	void notify_all_bodies_default_area_changed();
+
 	float get_last_step() const { return last_step; }
 
 	JPH::Body *add_object(const JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping = false);

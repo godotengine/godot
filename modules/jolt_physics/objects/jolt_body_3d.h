@@ -57,6 +57,7 @@ public:
 
 private:
 	friend class JoltBodyActivationListener3D;
+	friend class JoltSpace3D;
 
 	SelfList<JoltBody3D> call_queries_element;
 
