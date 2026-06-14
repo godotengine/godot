@@ -33,7 +33,7 @@
 #include <jxl/cms.h>
 #include <jxl/decode.h>
 
-static Error _jxl_decode(Image *p_image, JxlDecoder *p_dec, const uint8_t *p_buffer, size_t p_buffer_len) {
+static Error _jxl_decode(Image *p_image, JxlDecoder *p_dec, const uint8_t *p_buffer, size_t p_buffer_len, bool p_force_linear) {
 	ERR_FAIL_COND_V(JxlDecoderSetCms(p_dec, *JxlGetDefaultCms()) != JXL_DEC_SUCCESS, ERR_CANT_OPEN);
 	ERR_FAIL_COND_V(JxlDecoderSubscribeEvents(p_dec, JXL_DEC_BASIC_INFO | JXL_DEC_FULL_IMAGE) != JXL_DEC_SUCCESS, ERR_CANT_OPEN);
 	ERR_FAIL_COND_V(JxlDecoderSetInput(p_dec, p_buffer, p_buffer_len) != JXL_DEC_SUCCESS, ERR_FILE_CORRUPT);
@@ -57,21 +57,26 @@ static Error _jxl_decode(Image *p_image, JxlDecoder *p_dec, const uint8_t *p_buf
 				ERR_FAIL_COND_V(JxlDecoderGetBasicInfo(p_dec, &info) != JXL_DEC_SUCCESS, ERR_FILE_CORRUPT);
 
 				const uint32_t channels = info.num_color_channels + (info.alpha_bits > 0 ? 1 : 0);
-				// Decode high bit depth or floating point originals to half floats, everything else to 8 bits.
-				const bool high_precision = info.exponent_bits_per_sample > 0 || info.bits_per_sample > 8;
 
-				format.num_channels = channels;
-				format.data_type = high_precision ? JXL_TYPE_FLOAT16 : JXL_TYPE_UINT8;
-				format.endianness = JXL_NATIVE_ENDIAN;
-				format.align = 0;
-
-				if (high_precision) {
+				// Preserve the original precision: 8-bit integers stay 8 bits, 32-bit floats
+				// stay 32 bits, and everything in between decodes to half floats.
+				if (info.exponent_bits_per_sample > 0 && info.bits_per_sample > 16) {
+					format.data_type = JXL_TYPE_FLOAT;
+					const Image::Format formats[4] = { Image::FORMAT_RF, Image::FORMAT_RGF, Image::FORMAT_RGBF, Image::FORMAT_RGBAF };
+					dest_format = formats[channels - 1];
+				} else if (info.exponent_bits_per_sample > 0 || info.bits_per_sample > 8) {
+					format.data_type = JXL_TYPE_FLOAT16;
 					const Image::Format formats[4] = { Image::FORMAT_RH, Image::FORMAT_RGH, Image::FORMAT_RGBH, Image::FORMAT_RGBAH };
 					dest_format = formats[channels - 1];
 				} else {
+					format.data_type = JXL_TYPE_UINT8;
 					const Image::Format formats[4] = { Image::FORMAT_L8, Image::FORMAT_LA8, Image::FORMAT_RGB8, Image::FORMAT_RGBA8 };
 					dest_format = formats[channels - 1];
 				}
+
+				format.num_channels = channels;
+				format.endianness = JXL_NATIVE_ENDIAN;
+				format.align = 0;
 			} break;
 
 			case JXL_DEC_NEED_IMAGE_OUT_BUFFER: {
@@ -81,10 +86,20 @@ static Error _jxl_decode(Image *p_image, JxlDecoder *p_dec, const uint8_t *p_buf
 				ERR_FAIL_COND_V(JxlDecoderSetImageOutBuffer(p_dec, &format, data.ptrw(), buffer_size) != JXL_DEC_SUCCESS, ERR_FILE_CORRUPT);
 			} break;
 
-			case JXL_DEC_FULL_IMAGE:
+			case JXL_DEC_FULL_IMAGE: {
 				// Only the first frame is imported, ignoring any animation.
 				p_image->set_data(info.xsize, info.ysize, false, dest_format, data);
+
+				if (p_force_linear) {
+					// Treat the decoded samples as sRGB and convert them to linear, like the EXR loader.
+					for (int y = 0; y < p_image->get_height(); y++) {
+						for (int x = 0; x < p_image->get_width(); x++) {
+							p_image->set_pixel(x, y, p_image->get_pixel(x, y).srgb_to_linear());
+						}
+					}
+				}
 				return OK;
+			}
 
 			default:
 				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Unexpected JXL decoder status.");
@@ -101,7 +116,7 @@ Error ImageLoaderJXL::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 
 	JxlDecoder *dec = JxlDecoderCreate(nullptr);
 	ERR_FAIL_NULL_V(dec, ERR_CANT_CREATE);
-	Error err = _jxl_decode(p_image.ptr(), dec, src_image.ptr(), src_image_len);
+	Error err = _jxl_decode(p_image.ptr(), dec, src_image.ptr(), src_image_len, p_flags & FLAG_FORCE_LINEAR);
 	JxlDecoderDestroy(dec);
 
 	return err;
