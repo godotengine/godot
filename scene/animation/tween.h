@@ -32,6 +32,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/variant/type_info.h"
+#include "core/variant/dictionary.h"
 
 class Tween;
 class Node;
@@ -46,6 +47,8 @@ public:
 	virtual void set_tween(const Ref<Tween> &p_tween);
 	virtual void start();
 	virtual bool step(double &r_delta) = 0;
+	virtual Dictionary snapshot_get_state() const;
+	virtual Error snapshot_set_state(const Dictionary &p_state);
 
 protected:
 	static void _bind_methods();
@@ -191,6 +194,8 @@ public:
 	bool can_process(bool p_tree_paused) const;
 	Node *get_bound_node() const;
 	double get_total_time() const;
+	Dictionary snapshot_get_state() const;
+	Error snapshot_set_state(const Dictionary &p_state);
 
 	Tween();
 	Tween(SceneTree *p_parent_tree);
@@ -218,6 +223,8 @@ public:
 	void set_tween(const Ref<Tween> &p_tween) override;
 	void start() override;
 	bool step(double &r_delta) override;
+	Dictionary snapshot_get_state() const override;
+	Error snapshot_set_state(const Dictionary &p_state) override;
 
 	PropertyTweener(const Object *p_target, const Vector<StringName> &p_property, const Variant &p_to, double p_duration);
 	PropertyTweener();
@@ -251,6 +258,8 @@ class IntervalTweener : public Tweener {
 
 public:
 	bool step(double &r_delta) override;
+	Dictionary snapshot_get_state() const override;
+	Error snapshot_set_state(const Dictionary &p_state) override;
 
 	IntervalTweener(double p_time);
 	IntervalTweener();
@@ -266,6 +275,8 @@ public:
 	RequiredResult<CallbackTweener> set_delay(double p_delay);
 
 	bool step(double &r_delta) override;
+	Dictionary snapshot_get_state() const override;
+	Error snapshot_set_state(const Dictionary &p_state) override;
 
 	CallbackTweener(const Callable &p_callback);
 	CallbackTweener();
@@ -290,6 +301,8 @@ public:
 
 	void set_tween(const Ref<Tween> &p_tween) override;
 	bool step(double &r_delta) override;
+	Dictionary snapshot_get_state() const override;
+	Error snapshot_set_state(const Dictionary &p_state) override;
 
 	MethodTweener(const Callable &p_callback, const Variant &p_from, const Variant &p_to, double p_duration);
 	MethodTweener();
@@ -318,6 +331,8 @@ public:
 	Ref<Tween> subtween;
 	void start() override;
 	bool step(double &r_delta) override;
+	Dictionary snapshot_get_state() const override;
+	Error snapshot_set_state(const Dictionary &p_state) override;
 
 	RequiredResult<SubtweenTweener> set_delay(double p_delay);
 

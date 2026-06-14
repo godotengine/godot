@@ -31,6 +31,7 @@
 #include "tween.h"
 
 #include "core/object/class_db.h"
+#include "core/variant/array.h"
 #include "scene/animation/easing_equations.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
@@ -75,6 +76,20 @@ void Tweener::_finish() {
 
 void Tweener::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("finished"));
+}
+
+Dictionary Tweener::snapshot_get_state() const {
+	Dictionary state;
+	state["elapsed_time"] = elapsed_time;
+	state["finished"] = finished;
+	state["supported"] = true;
+	return state;
+}
+
+Error Tweener::snapshot_set_state(const Dictionary &p_state) {
+	elapsed_time = p_state.get("elapsed_time", 0.0);
+	finished = p_state.get("finished", false);
+	return OK;
 }
 
 void Tween::_start_tweeners() {
@@ -454,6 +469,200 @@ double Tween::get_total_time() const {
 	return total_time;
 }
 
+static Ref<Tweener> _create_tweener_from_snapshot(const Dictionary &p_state, Tween *p_owner, SceneTree *p_parent_tree, Error &r_error) {
+	r_error = OK;
+
+	if (!p_state.get("supported", true)) {
+		r_error = ERR_UNAVAILABLE;
+		return Ref<Tweener>();
+	}
+
+	String type = p_state.get("type", "");
+	Ref<Tweener> tweener;
+
+	if (type == "property") {
+		Variant target_variant = p_state.get("target", Variant());
+		Object *target_object = target_variant;
+		if (target_object == nullptr) {
+			r_error = ERR_INVALID_DATA;
+			return Ref<Tweener>();
+		}
+		NodePath property_path = p_state.get("property", NodePath());
+		Vector<StringName> property = property_path.get_as_property_path().get_subnames();
+		Variant final_val = p_state.get("base_final_val", p_state.get("final_val", Variant()));
+		double duration = p_state.get("duration", 0.0);
+
+		Ref<PropertyTweener> property_tweener;
+		property_tweener.instantiate(target_object, property, final_val, duration);
+		tweener = property_tweener;
+	} else if (type == "interval") {
+		double duration = p_state.get("duration", 0.0);
+
+		Ref<IntervalTweener> interval_tweener;
+		interval_tweener.instantiate(duration);
+		tweener = interval_tweener;
+	} else if (type == "subtween") {
+		Variant subtween_variant = p_state.get("subtween", Variant());
+		if (subtween_variant.get_type() != Variant::DICTIONARY) {
+			r_error = ERR_INVALID_DATA;
+			return Ref<Tweener>();
+		}
+
+		Ref<Tween> subtween;
+		subtween.instantiate(p_parent_tree);
+		r_error = subtween->snapshot_set_state(subtween_variant);
+		if (r_error != OK) {
+			return Ref<Tweener>();
+		}
+
+		Ref<SubtweenTweener> subtween_tweener;
+		subtween_tweener.instantiate(subtween);
+		tweener = subtween_tweener;
+	} else {
+		r_error = ERR_INVALID_DATA;
+		return Ref<Tweener>();
+	}
+
+	tweener->set_tween(p_owner);
+	r_error = tweener->snapshot_set_state(p_state);
+	if (r_error != OK) {
+		return Ref<Tweener>();
+	}
+
+	return tweener;
+}
+
+Dictionary Tween::snapshot_get_state() const {
+	Dictionary state;
+	state["version"] = 1;
+	state["type"] = "tween";
+	state["supported"] = true;
+
+	state["process_mode"] = process_mode;
+	state["pause_mode"] = pause_mode;
+	state["default_transition"] = default_transition;
+	state["default_ease"] = default_ease;
+	state["bound_node"] = get_bound_node();
+	state["is_bound"] = is_bound;
+	state["total_time"] = total_time;
+	state["current_step"] = current_step;
+	state["loops"] = loops;
+	state["loops_done"] = loops_done;
+	state["speed_scale"] = speed_scale;
+	state["ignore_time_scale"] = ignore_time_scale;
+	state["started"] = started;
+	state["running"] = running;
+	state["dead"] = dead;
+	state["valid"] = valid;
+	state["default_parallel"] = default_parallel;
+	state["parallel_enabled"] = parallel_enabled;
+
+	Array steps;
+	for (const List<Ref<Tweener>> &step : tweeners) {
+		Array step_state;
+		for (const Ref<Tweener> &tweener : step) {
+			Dictionary tweener_state = tweener->snapshot_get_state();
+			if (!tweener_state.get("supported", true)) {
+				state["supported"] = false;
+			}
+			step_state.push_back(tweener_state);
+		}
+		steps.push_back(step_state);
+	}
+	state["steps"] = steps;
+
+	if (is_bound && get_bound_node() == nullptr) {
+		state["supported"] = false;
+		state["reason"] = "missing_bound_node";
+	}
+
+	return state;
+}
+
+Error Tween::snapshot_set_state(const Dictionary &p_state) {
+	ERR_FAIL_COND_V_MSG(in_step, ERR_BUSY, "Can't restore Tween snapshot while the Tween is stepping.");
+	ERR_FAIL_COND_V_MSG(!p_state.get("supported", true), ERR_UNAVAILABLE, "Tween snapshot contains unsupported Tweeners.");
+
+	int version = p_state.get("version", 0);
+	ERR_FAIL_COND_V_MSG(version != 1, ERR_INVALID_DATA, "Unsupported Tween snapshot version.");
+
+	int process_mode_int = p_state.get("process_mode", TWEEN_PROCESS_IDLE);
+	int pause_mode_int = p_state.get("pause_mode", TWEEN_PAUSE_BOUND);
+	int transition_int = p_state.get("default_transition", TRANS_LINEAR);
+	int ease_int = p_state.get("default_ease", EASE_IN_OUT);
+	ERR_FAIL_COND_V(process_mode_int < TWEEN_PROCESS_PHYSICS || process_mode_int > TWEEN_PROCESS_IDLE, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(pause_mode_int < TWEEN_PAUSE_BOUND || pause_mode_int > TWEEN_PAUSE_PROCESS, ERR_INVALID_DATA);
+	ERR_FAIL_INDEX_V(transition_int, TRANS_MAX, ERR_INVALID_DATA);
+	ERR_FAIL_INDEX_V(ease_int, EASE_MAX, ERR_INVALID_DATA);
+
+	Array steps = p_state.get("steps", Array());
+	LocalVector<List<Ref<Tweener>>> restored_tweeners;
+	LocalVector<Ref<Tween>> restored_subtweens;
+	restored_tweeners.resize(steps.size());
+	for (int i = 0; i < steps.size(); i++) {
+		Variant step_variant = steps[i];
+		ERR_FAIL_COND_V(step_variant.get_type() != Variant::ARRAY, ERR_INVALID_DATA);
+		Array step = step_variant;
+		for (int j = 0; j < step.size(); j++) {
+			Variant tweener_variant = step[j];
+			ERR_FAIL_COND_V(tweener_variant.get_type() != Variant::DICTIONARY, ERR_INVALID_DATA);
+			Dictionary tweener_state = tweener_variant;
+			Error err = OK;
+			Ref<Tweener> tweener = _create_tweener_from_snapshot(tweener_state, this, parent_tree, err);
+			ERR_FAIL_COND_V(err != OK, err);
+			restored_tweeners[i].push_back(tweener);
+
+			Ref<SubtweenTweener> subtween_tweener = tweener;
+			if (subtween_tweener.is_valid()) {
+				restored_subtweens.push_back(subtween_tweener->subtween);
+			}
+		}
+	}
+
+	bool restored_started = p_state.get("started", false);
+	bool restored_dead = p_state.get("dead", false);
+	int restored_current_step = p_state.get("current_step", -1);
+	if (restored_started && !restored_dead) {
+		ERR_FAIL_COND_V(restored_current_step < 0 || restored_current_step >= (int)restored_tweeners.size(), ERR_INVALID_DATA);
+	}
+
+	process_mode = (TweenProcessMode)process_mode_int;
+	pause_mode = (TweenPauseMode)pause_mode_int;
+	default_transition = (TransitionType)transition_int;
+	default_ease = (EaseType)ease_int;
+
+	is_bound = p_state.get("is_bound", false);
+	bound_node = ObjectID();
+	if (is_bound) {
+		Variant bound_node_variant = p_state.get("bound_node", Variant());
+		Object *bound_object = bound_node_variant;
+		Node *node = Object::cast_to<Node>(bound_object);
+		ERR_FAIL_NULL_V_MSG(node, ERR_INVALID_DATA, "Tween snapshot bound node is missing.");
+		bound_node = node->get_instance_id();
+	}
+
+	tweeners = restored_tweeners;
+	subtweens = restored_subtweens;
+	total_time = p_state.get("total_time", 0.0);
+	current_step = restored_current_step;
+	loops = p_state.get("loops", 1);
+	loops_done = p_state.get("loops_done", 0);
+	speed_scale = p_state.get("speed_scale", 1.0);
+	ignore_time_scale = p_state.get("ignore_time_scale", false);
+	started = restored_started;
+	running = p_state.get("running", true);
+	in_step = false;
+	dead = restored_dead;
+	valid = p_state.get("valid", true);
+	default_parallel = p_state.get("default_parallel", false);
+	parallel_enabled = p_state.get("parallel_enabled", false);
+#ifdef DEBUG_ENABLED
+	is_infinite = false;
+#endif
+
+	return OK;
+}
+
 real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
 	if (p_duration == 0) {
 		// Special case to avoid dividing by 0 in equations.
@@ -496,6 +705,8 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("play"), &Tween::play);
 	ClassDB::bind_method(D_METHOD("kill"), &Tween::kill);
 	ClassDB::bind_method(D_METHOD("get_total_elapsed_time"), &Tween::get_total_time);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &Tween::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &Tween::snapshot_set_state);
 
 	ClassDB::bind_method(D_METHOD("has_tweeners"), &Tween::has_tweeners);
 	ClassDB::bind_method(D_METHOD("is_running"), &Tween::is_running);
@@ -695,6 +906,69 @@ void PropertyTweener::set_tween(const Ref<Tween> &p_tween) {
 	}
 }
 
+Dictionary PropertyTweener::snapshot_get_state() const {
+	Dictionary state = Tweener::snapshot_get_state();
+	state["type"] = "property";
+
+	Object *target_instance = ObjectDB::get_instance(target);
+	if (target_instance == nullptr) {
+		state["supported"] = false;
+		state["reason"] = "missing_property_target";
+		return state;
+	}
+	if (custom_method.is_valid()) {
+		state["supported"] = false;
+		state["reason"] = "custom_property_interpolator";
+		return state;
+	}
+
+	state["target"] = target_instance;
+	state["property"] = NodePath(Vector<StringName>(), property, false);
+	state["initial_val"] = initial_val;
+	state["base_final_val"] = base_final_val;
+	state["final_val"] = final_val;
+	state["delta_val"] = delta_val;
+	state["duration"] = duration;
+	state["trans_type"] = trans_type;
+	state["ease_type"] = ease_type;
+	state["delay"] = delay;
+	state["do_continue"] = do_continue;
+	state["do_continue_delayed"] = do_continue_delayed;
+	state["relative"] = relative;
+	return state;
+}
+
+Error PropertyTweener::snapshot_set_state(const Dictionary &p_state) {
+	ERR_FAIL_COND_V_MSG(!p_state.get("supported", true), ERR_UNAVAILABLE, "PropertyTweener snapshot is unsupported.");
+	Error err = Tweener::snapshot_set_state(p_state);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	Variant target_variant = p_state.get("target", Variant());
+	Object *target_instance = target_variant;
+	ERR_FAIL_NULL_V_MSG(target_instance, ERR_INVALID_DATA, "PropertyTweener snapshot target is missing.");
+
+	NodePath property_path = p_state.get("property", NodePath());
+	target = target_instance->get_instance_id();
+	property = property_path.get_as_property_path().get_subnames();
+	initial_val = p_state.get("initial_val", Variant());
+	base_final_val = p_state.get("base_final_val", Variant());
+	final_val = p_state.get("final_val", base_final_val);
+	delta_val = p_state.get("delta_val", Variant());
+	duration = p_state.get("duration", 0.0);
+	trans_type = (Tween::TransitionType)(int)p_state.get("trans_type", Tween::TRANS_LINEAR);
+	ease_type = (Tween::EaseType)(int)p_state.get("ease_type", Tween::EASE_IN_OUT);
+	delay = p_state.get("delay", 0.0);
+	do_continue = p_state.get("do_continue", true);
+	do_continue_delayed = p_state.get("do_continue_delayed", false);
+	relative = p_state.get("relative", false);
+	custom_method = Callable();
+	ref_copy.unref();
+	if (target_instance->is_ref_counted()) {
+		ref_copy.reference_ptr(Object::cast_to<RefCounted>(target_instance));
+	}
+	return OK;
+}
+
 void PropertyTweener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("from", "value"), &PropertyTweener::from);
 	ClassDB::bind_method(D_METHOD("from_current"), &PropertyTweener::from_current);
@@ -743,6 +1017,20 @@ IntervalTweener::IntervalTweener(double p_time) {
 	duration = p_time;
 }
 
+Dictionary IntervalTweener::snapshot_get_state() const {
+	Dictionary state = Tweener::snapshot_get_state();
+	state["type"] = "interval";
+	state["duration"] = duration;
+	return state;
+}
+
+Error IntervalTweener::snapshot_set_state(const Dictionary &p_state) {
+	Error err = Tweener::snapshot_set_state(p_state);
+	ERR_FAIL_COND_V(err != OK, err);
+	duration = p_state.get("duration", 0.0);
+	return OK;
+}
+
 IntervalTweener::IntervalTweener() {
 	ERR_FAIL_MSG("IntervalTweener can't be created directly. Use the tween_interval() method in Tween.");
 }
@@ -778,6 +1066,19 @@ bool CallbackTweener::step(double &r_delta) {
 
 	r_delta = 0;
 	return true;
+}
+
+Dictionary CallbackTweener::snapshot_get_state() const {
+	Dictionary state = Tweener::snapshot_get_state();
+	state["type"] = "callback";
+	state["supported"] = false;
+	state["reason"] = "callback_tweener";
+	state["delay"] = delay;
+	return state;
+}
+
+Error CallbackTweener::snapshot_set_state(const Dictionary &p_state) {
+	return ERR_UNAVAILABLE;
 }
 
 void CallbackTweener::_bind_methods() {
@@ -868,6 +1169,20 @@ void MethodTweener::set_tween(const Ref<Tween> &p_tween) {
 	}
 }
 
+Dictionary MethodTweener::snapshot_get_state() const {
+	Dictionary state = Tweener::snapshot_get_state();
+	state["type"] = "method";
+	state["supported"] = false;
+	state["reason"] = "method_tweener";
+	state["duration"] = duration;
+	state["delay"] = delay;
+	return state;
+}
+
+Error MethodTweener::snapshot_set_state(const Dictionary &p_state) {
+	return ERR_UNAVAILABLE;
+}
+
 void MethodTweener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_delay", "delay"), &MethodTweener::set_delay);
 	ClassDB::bind_method(D_METHOD("set_trans", "trans"), &MethodTweener::set_trans);
@@ -926,6 +1241,33 @@ bool SubtweenTweener::step(double &r_delta) {
 
 	r_delta = 0;
 	return true;
+}
+
+Dictionary SubtweenTweener::snapshot_get_state() const {
+	Dictionary state = Tweener::snapshot_get_state();
+	state["type"] = "subtween";
+	if (subtween.is_null()) {
+		state["supported"] = false;
+		state["reason"] = "missing_subtween";
+		return state;
+	}
+
+	Dictionary subtween_state = subtween->snapshot_get_state();
+	if (!subtween_state.get("supported", true)) {
+		state["supported"] = false;
+		state["reason"] = "unsupported_subtween";
+	}
+	state["subtween"] = subtween_state;
+	state["delay"] = delay;
+	return state;
+}
+
+Error SubtweenTweener::snapshot_set_state(const Dictionary &p_state) {
+	ERR_FAIL_COND_V_MSG(!p_state.get("supported", true), ERR_UNAVAILABLE, "SubtweenTweener snapshot is unsupported.");
+	Error err = Tweener::snapshot_set_state(p_state);
+	ERR_FAIL_COND_V(err != OK, err);
+	delay = p_state.get("delay", 0.0);
+	return OK;
 }
 
 RequiredResult<SubtweenTweener> SubtweenTweener::set_delay(double p_delay) {
