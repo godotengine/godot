@@ -101,6 +101,7 @@ void main() {
 		return;
 	}
 
+	vec3 debug;
 	vec4 color = vec4(0.0);
 	float mip_level = 0.0;
 
@@ -134,7 +135,7 @@ void main() {
 		pos += geom_normal * (1.0 - pow(clamp(dot(normal, geom_normal), 0.0, 1.0), 8.0));
 		screen_pos = compute_screen_pos(pos);
 
-		vec3 view_dir = params.orthogonal ? vec3(0.0, 0.0, -1.0) : normalize(pos + scene_data.eye_offset[params.view_index].xyz);
+		vec3 view_dir = params.orthogonal ? vec3(0.0, 0.0, -1.0) : normalize(pos - scene_data.eye_offset[params.view_index].xyz);
 		vec3 ray_dir = normalize(reflect(view_dir, normal));
 
 		// Check if the ray is immediately intersecting with itself. If so, bounce!
@@ -248,7 +249,6 @@ void main() {
 				validity = 0.0;
 			}
 		}
-
 		vec3 cur_pos = compute_view_pos(cur_screen_pos);
 		vec3 hit_pos = compute_view_pos(vec3(cur_screen_pos.xy, hit_depth));
 
@@ -324,6 +324,10 @@ void main() {
 		mip_level *= pow(clamp(1.25 - ray_len, 0.0, 1.0), 0.2);
 	}
 
+
+	// Debug
+
+	//imageStore(output_color, pixel_pos, vec4(debug, 1.0));
 	imageStore(output_color, pixel_pos, color);
 	imageStore(output_mip_level, pixel_pos, vec4(mip_level / 14.0, 0.0, 0.0, 0.0));
 }
