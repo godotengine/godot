@@ -1498,6 +1498,7 @@ void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buf
 		correction.set_depth_correction(true);
 
 		Projection projection = correction * p_projections[v];
+
 		reprojections[v] = rb_data->ss_effects_data.ssr_last_frame_projections[v] * Projection(rb_data->ss_effects_data.ssr_last_frame_transform.affine_inverse()) * Projection(p_transform) * projection.inverse();
 
 		rb_data->ss_effects_data.ssr_last_frame_projections[v] = projection;
