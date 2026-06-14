@@ -347,6 +347,39 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 	}
 }
 
+Error DirAccessWindows::replace_file(String p_path, String p_new_path) {
+	String path = fix_path(p_path);
+	String new_path = fix_path(p_new_path);
+
+	const Char16String &path_utf16 = path.utf16();
+	const Char16String &new_path_utf16 = new_path.utf16();
+
+	DWORD source_attr = GetFileAttributesW((LPCWSTR)(path_utf16.get_data()));
+	if (source_attr == INVALID_FILE_ATTRIBUTES) {
+		return ERR_FILE_NOT_FOUND;
+	}
+	if (source_attr & FILE_ATTRIBUTE_DIRECTORY) {
+		return ERR_FILE_CANT_OPEN;
+	}
+
+	for (int i = 0; i < 1000; i++) {
+		DWORD target_attr = GetFileAttributesW((LPCWSTR)(new_path_utf16.get_data()));
+		if (target_attr == INVALID_FILE_ATTRIBUTES) {
+			if (MoveFileW((LPCWSTR)(path_utf16.get_data()), (LPCWSTR)(new_path_utf16.get_data())) != 0) {
+				return OK;
+			}
+		} else if (target_attr & FILE_ATTRIBUTE_DIRECTORY) {
+			return ERR_FILE_CANT_OPEN;
+		} else if (ReplaceFileW((LPCWSTR)(new_path_utf16.get_data()), (LPCWSTR)(path_utf16.get_data()), nullptr, REPLACEFILE_IGNORE_MERGE_ERRORS | REPLACEFILE_IGNORE_ACL_ERRORS, nullptr, nullptr)) {
+			return OK;
+		}
+
+		OS::get_singleton()->delay_usec(1000);
+	}
+
+	return FAILED;
+}
+
 Error DirAccessWindows::remove(String p_path) {
 	String path = fix_path(p_path);
 	const Char16String &path_utf16 = path.utf16();

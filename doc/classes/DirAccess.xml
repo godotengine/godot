@@ -373,6 +373,23 @@
 				Static version of [method rename]. Supports only absolute paths.
 			</description>
 		</method>
+		<method name="replace_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<description>
+				Atomically replaces the [param to] file with the already-written [param from] file when supported by the current platform and filesystem. Both arguments should be paths to files, either relative or absolute. This is intended for save systems that write a temporary file first, then publish it as the final file without a delete-before-rename window.
+				Returns one of the [enum Error] code constants ([constant OK] on success).
+			</description>
+		</method>
+		<method name="replace_file_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<description>
+				Static version of [method replace_file]. Supports only absolute paths.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="include_hidden" type="bool" setter="set_include_hidden" getter="get_include_hidden">

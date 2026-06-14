@@ -111,6 +111,7 @@ public:
 	Error copy_dir(const String &p_from, String p_to, int p_chmod_flags = -1, bool p_copy_links = false);
 	virtual Error copy(const String &p_from, const String &p_to, int p_chmod_flags = -1);
 	virtual Error rename(String p_from, String p_to) = 0;
+	virtual Error replace_file(String p_from, String p_to);
 	virtual Error remove(String p_name) = 0;
 
 	virtual bool is_link(String p_file) = 0;
@@ -155,6 +156,7 @@ public:
 
 	static Error copy_absolute(const String &p_from, const String &p_to, int p_chmod_flags = -1);
 	static Error rename_absolute(const String &p_from, const String &p_to);
+	static Error replace_file_absolute(const String &p_from, const String &p_to);
 	static Error remove_absolute(const String &p_path);
 
 	PackedStringArray get_files();

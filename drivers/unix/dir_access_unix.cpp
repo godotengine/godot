@@ -430,6 +430,38 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 	}
 }
 
+Error DirAccessUnix::replace_file(String p_path, String p_new_path) {
+	if (p_path.is_relative_path()) {
+		p_path = get_current_dir().path_join(p_path);
+	}
+
+	p_path = fix_path(p_path);
+	if (p_path.ends_with("/")) {
+		p_path = p_path.left(-1);
+	}
+
+	if (p_new_path.is_relative_path()) {
+		p_new_path = get_current_dir().path_join(p_new_path);
+	}
+
+	p_new_path = fix_path(p_new_path);
+	if (p_new_path.ends_with("/")) {
+		p_new_path = p_new_path.left(-1);
+	}
+
+	int res = ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data());
+	if (res == 0) {
+		return OK;
+	}
+	if (errno == EXDEV) {
+		return ERR_UNAVAILABLE;
+	}
+	if (errno == ENOENT) {
+		return ERR_FILE_NOT_FOUND;
+	}
+	return FAILED;
+}
+
 Error DirAccessUnix::remove(String p_path) {
 	if (p_path.is_relative_path()) {
 		p_path = get_current_dir().path_join(p_path);

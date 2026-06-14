@@ -305,6 +305,13 @@ Error DirAccess::rename_absolute(const String &p_from, const String &p_to) {
 	return d->rename(from, to);
 }
 
+Error DirAccess::replace_file_absolute(const String &p_from, const String &p_to) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String from = ProjectSettings::get_singleton()->globalize_path(p_from);
+	String to = ProjectSettings::get_singleton()->globalize_path(p_to);
+	return d->replace_file(from, to);
+}
+
 Error DirAccess::remove_absolute(const String &p_path) {
 	Ref<DirAccess> d = DirAccess::create_for_path(p_path);
 	return d->remove(p_path);
@@ -637,6 +644,10 @@ bool DirAccess::is_equivalent(const String &p_path_a, const String &p_path_b) co
 	return p_path_a == p_path_b;
 }
 
+Error DirAccess::replace_file(String p_from, String p_to) {
+	return ERR_UNAVAILABLE;
+}
+
 void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("open", "path"), &DirAccess::_open);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_open_error"), &DirAccess::get_open_error);
@@ -668,6 +679,8 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("copy_absolute", "from", "to", "chmod_flags"), &DirAccess::copy_absolute, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &DirAccess::rename);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("rename_absolute", "from", "to"), &DirAccess::rename_absolute);
+	ClassDB::bind_method(D_METHOD("replace_file", "from", "to"), &DirAccess::replace_file);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("replace_file_absolute", "from", "to"), &DirAccess::replace_file_absolute);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &DirAccess::remove);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("remove_absolute", "path"), &DirAccess::remove_absolute);
 

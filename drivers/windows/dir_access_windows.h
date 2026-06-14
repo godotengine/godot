@@ -81,6 +81,7 @@ public:
 	virtual Error make_dir(String p_dir) override;
 
 	virtual Error rename(String p_path, String p_new_path) override;
+	virtual Error replace_file(String p_path, String p_new_path) override;
 	virtual Error remove(String p_path) override;
 
 	virtual bool is_link(String p_file) override;
