@@ -607,7 +607,7 @@ void OpenXRSpatialMarkerTrackingCapability::do_entity_update(RID p_spatial_conte
 	// And we get our update snapshot, this is NOT async!
 	RID snapshot = se_extension->update_spatial_entities(p_spatial_context, entities, component_types, p_next_snapshot_create);
 	if (snapshot.is_valid()) {
-		_process_snapshot(snapshot, p_spatial_context, false, p_component_data, p_next_snapshot_query, nullptr);
+		_process_snapshot(snapshot, p_spatial_context, false, p_component_data, p_next_snapshot_query);
 	}
 }
 

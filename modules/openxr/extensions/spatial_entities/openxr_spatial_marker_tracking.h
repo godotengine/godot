@@ -273,7 +273,7 @@ private:
 
 	void _on_spatial_discovery_recommended(RID p_spatial_context);
 
-	void _process_snapshot(RID p_snapshot, RID p_spatial_context, bool p_is_discovery, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_query, const Callable &p_user_callback);
+	void _process_snapshot(RID p_snapshot, RID p_spatial_context, bool p_is_discovery, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_query, const Callable &p_user_callback = Callable());
 
 	// Trackers; maps each Spatial Context RID to their marker entities and trackers
 	HashMap<RID, HashMap<XrSpatialEntityIdEXT, Ref<OpenXRMarkerTracker>>> marker_trackers;
