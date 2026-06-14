@@ -263,7 +263,10 @@ void EditorPropertyArray::_update_slots_size() {
 
 			Ref<Font> font = theme_cache.font;
 			int font_size = theme_cache.font_size;
-			name_size = slots[0].reorder_button->get_minimum_size().x + theme_cache.horizontal_separation + font->get_string_size(ms, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+			name_size = slots[0].reorder_button->get_minimum_size().x
+					+ theme_cache.horizontal_separation
+					+ theme_cache.font_offset
+					+ font->get_string_size(ms, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 		}
 		slot.prop->set_name_fixed_size(name_size);
 	}
@@ -539,7 +542,7 @@ void EditorPropertyArray::update_property() {
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
-				// new_prop->set_name_split_ratio(0.0);
+				new_prop->set_name_split_ratio(0.0);
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
 				if (value_type == Variant::OBJECT) {
