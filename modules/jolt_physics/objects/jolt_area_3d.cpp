@@ -206,9 +206,17 @@ void JoltArea3D::_notify_body_exited(const JPH::BodyID &p_body_id) {
 }
 
 void JoltArea3D::_notify_bodies_updated(bool p_priority_changed) {
-	for (KeyValue<JPH::BodyID, Overlap> &E : bodies_by_id) {
-		if (JoltBody3D *body = space->try_get_body(E.key)) {
-			body->update_area(this, p_priority_changed);
+	if (unlikely(!in_space())) {
+		return;
+	}
+
+	if (space->get_default_area() == this) {
+		space->increment_default_area_changed_count();
+	} else {
+		for (KeyValue<JPH::BodyID, Overlap> &E : bodies_by_id) {
+			if (JoltBody3D *body = space->try_get_body(E.key)) {
+				body->update_area(this, p_priority_changed);
+			}
 		}
 	}
 }

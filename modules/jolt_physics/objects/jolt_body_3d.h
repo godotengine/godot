@@ -98,6 +98,8 @@ private:
 
 	uint32_t locked_axes = 0;
 
+	uint16_t default_area_changed_count = 0;
+
 	bool sleep_allowed = true;
 	bool sleep_initially = false;
 	bool custom_center_of_mass = false;
@@ -126,6 +128,7 @@ private:
 	void _on_wake_up();
 
 	void _update_mass_properties();
+	bool _needs_update_environmental_properties() const;
 	void _update_environmental_properties();
 	void _update_kinematic_transform();
 	void _update_group_filter();
