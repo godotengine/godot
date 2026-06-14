@@ -245,7 +245,6 @@ private:
 		Size2 min_size_over = Size2(-1, -1);
 		Size2 max_size_over = Size2(-1, -1);
 		Rect2 padding;
-		int indent_level = 0;
 
 		ItemFrame() {
 			type = ITEM_FRAME;

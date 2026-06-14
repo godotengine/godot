@@ -665,11 +665,25 @@ void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServerEnums::Scre
 	ERR_FAIL_INDEX(p_screen, screen_count);
 
 	screen_orientation = p_orientation;
-	if (@available(iOS 16.0, *)) {
-		[GDTAppDelegateService.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
+#ifdef IOS_ENABLED
+	// Under the SwiftUI app lifecycle, GDTViewController is wrapped by a UIHostingController
+	// that is the window's root VC. iOS queries the root VC for orientation preferences, so we
+	// must install the selectors on the hosting class before requesting an orientation update.
+	GDTViewController *vc = GDTAppDelegateService.viewController;
+	if (!vc) {
+		return;
 	}
-#if !defined(VISIONOS_ENABLED)
-	else {
+	[vc propagateUIPreferencesToRootViewController];
+
+	UIViewController *rootViewController = vc.view.window.rootViewController ?: vc;
+	if (@available(iOS 16.0, *)) {
+		[rootViewController setNeedsUpdateOfSupportedInterfaceOrientations];
+		UIWindowScene *windowScene = rootViewController.view.window.windowScene;
+		if (windowScene) {
+			UIWindowSceneGeometryPreferencesIOS *preferences = [[UIWindowSceneGeometryPreferencesIOS alloc] initWithInterfaceOrientations:[rootViewController supportedInterfaceOrientations]];
+			[windowScene requestGeometryUpdateWithPreferences:preferences errorHandler:nil];
+		}
+	} else {
 		[UIViewController attemptRotationToDeviceOrientation];
 	}
 #endif
@@ -854,12 +868,18 @@ void DisplayServerAppleEmbedded::current_edr_headroom_changed() {
 
 bool DisplayServerAppleEmbedded::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window) const {
 	bool renderer_supports_hdr_output = false;
+	bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
 	if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
 		renderer_supports_hdr_output = true;
+		surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 	}
 #endif
 	if (!renderer_supports_hdr_output) {
+		return false;
+	}
+
+	if (!surface_supports_hdr_output) {
 		return false;
 	}
 
@@ -869,13 +889,20 @@ bool DisplayServerAppleEmbedded::window_is_hdr_output_supported(DisplayServerEnu
 void DisplayServerAppleEmbedded::window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window) {
 	if (p_enabled) {
 		bool renderer_supports_hdr_output = false;
+		bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
 		if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
 			renderer_supports_hdr_output = true;
+			surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 		}
 #endif
 		if (!renderer_supports_hdr_output) {
 			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
+			return;
+		}
+
+		if (!surface_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but the window does not support an HDR format.");
 			return;
 		}
 	}

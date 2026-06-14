@@ -100,7 +100,7 @@ Ref<Image> EditorExportPlatform::_load_icon_or_splash_image(const String &p_path
 	Ref<Image> image;
 
 	if (!p_path.is_empty() && ResourceLoader::exists(p_path) && !ResourceLoader::get_resource_type(p_path).is_empty()) {
-		Ref<Texture2D> texture = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, r_error);
+		Ref<Texture2D> texture = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE, r_error);
 		if (texture.is_valid()) {
 			image = texture->get_image();
 			if (image.is_valid() && image->is_compressed()) {
@@ -795,7 +795,11 @@ HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset>
 	return result;
 }
 
-EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_enabled) {
+	enabled = p_enabled;
+	if (!enabled) {
+		return;
+	}
 	HashSet<String> features = p_platform.get_features(p_preset, p_debug);
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	//initial export plugin callback
@@ -814,6 +818,9 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 }
 
 EditorExportPlatform::ExportNotifier::~ExportNotifier() {
+	if (!enabled) {
+		return;
+	}
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
 		if (GDVIRTUAL_IS_OVERRIDDEN_PTR(export_plugins[i], _export_end)) {
@@ -1699,14 +1706,19 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		} else {
 			// Just store it as it comes.
 
-			// Customization only happens if plugins did not take care of it before.
-			bool force_binary = convert_text_to_binary && (path.has_extension("tres") || path.has_extension("tscn"));
-			String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, force_binary);
+			String export_path;
+			if (type.is_empty()) {
+				export_path = path;
+			} else {
+				// Customization only happens if plugins did not take care of it before.
+				bool force_binary = convert_text_to_binary && (path.has_extension("tres") || path.has_extension("tscn"));
+				export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, force_binary);
 
-			if (export_path != path) {
-				// Add a remap entry.
-				path_remaps.push_back(path);
-				path_remaps.push_back(export_path);
+				if (export_path != path) {
+					// Add a remap entry.
+					path_remaps.push_back(path);
+					path_remaps.push_back(export_path);
+				}
 			}
 
 			Vector<uint8_t> array = FileAccess::get_file_as_bytes(export_path);
@@ -2758,7 +2770,7 @@ void EditorExportPlatform::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("export_project_files", "preset", "debug", "save_cb", "shared_cb"), &EditorExportPlatform::_export_project_files, DEFVAL(Callable()));
 
-	ClassDB::bind_method(D_METHOD("export_project", "preset", "debug", "path", "flags"), &EditorExportPlatform::export_project, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("export_project", "preset", "debug", "path", "flags", "notify"), &EditorExportPlatform::export_project, DEFVAL(0), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("export_pack", "preset", "debug", "path", "flags"), &EditorExportPlatform::export_pack, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("export_zip", "preset", "debug", "path", "flags"), &EditorExportPlatform::export_zip, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("export_pack_patch", "preset", "debug", "path", "patches", "flags"), &EditorExportPlatform::export_pack_patch, DEFVAL(PackedStringArray()), DEFVAL(0));

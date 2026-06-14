@@ -1073,7 +1073,7 @@ void SplitContainer::_update_draggers() {
 	}
 }
 
-Size2 SplitContainer::get_minimum_size() const {
+Size2 SplitContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	const int sep = _get_separation();
 	const int axis = vertical ? 1 : 0;
 	const int other_axis = vertical ? 0 : 1;
@@ -1085,12 +1085,20 @@ Size2 SplitContainer::get_minimum_size() const {
 	}
 
 	for (const Control *child : valid_children) {
-		const Size2 min_size = child->get_bound_minimum_size();
+		const Size2 min_size = p_use_desired_sizes ? child->get_bound_desired_size() : child->get_bound_minimum_size();
 		minimum[axis] += (int)min_size[axis];
 		minimum[other_axis] = (int)MAX(minimum[other_axis], min_size[other_axis]);
 	}
 
 	return minimum;
+}
+
+Size2 SplitContainer::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 SplitContainer::get_desired_size() const {
+	return _get_minimum_size(true);
 }
 
 void SplitContainer::_validate_property(PropertyInfo &p_property) const {

@@ -94,11 +94,6 @@ if env["winrt"]:
     else:
         cc_version = get_compiler_version(env)
         cc_version_major = cc_version["major"]
-        if not env["use_llvm"]:
-            if cc_version_major >= 18:
-                env_winrt.Append(CXXFLAGS=["/await:strict"])  # /await is deprecated in MSVC 2026+
-            else:
-                env_winrt.Append(CXXFLAGS=["/await"])
         if "/std:c++17" in env_winrt["CXXFLAGS"]:
             env_winrt["CXXFLAGS"].remove("/std:c++17")
         env_winrt.Append(CXXFLAGS=["/std:c++20"])

@@ -7029,12 +7029,16 @@ void TextEdit::set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighte
 		return;
 	}
 
+	if (syntax_highlighter.is_valid()) {
+		syntax_highlighter->disconnect_changed(callable_mp(this, &TextEdit::_syntax_highlighter_changed));
+	}
+
 	syntax_highlighter = p_syntax_highlighter;
 	if (syntax_highlighter.is_valid()) {
 		syntax_highlighter->set_text_edit(this);
+		syntax_highlighter->connect_changed(callable_mp(this, &TextEdit::_syntax_highlighter_changed));
 	}
-	_clear_syntax_highlighting_cache();
-	queue_redraw();
+	_syntax_highlighter_changed();
 }
 
 Ref<SyntaxHighlighter> TextEdit::get_syntax_highlighter() const {
@@ -9109,6 +9113,11 @@ void TextEdit::_clear_syntax_highlighting_cache() {
 	syntax_highlighting_cache.clear();
 }
 
+void TextEdit::_syntax_highlighter_changed() {
+	_clear_syntax_highlighting_cache();
+	queue_redraw();
+}
+
 /* Deprecated. */
 #ifndef DISABLE_DEPRECATED
 Vector<int> TextEdit::get_caret_index_edit_order() {
@@ -9364,6 +9373,9 @@ TextEdit::TextEdit(const String &p_placeholder) {
 
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
+
+	h_scroll->set_use_parent_material(true);
+	v_scroll->set_use_parent_material(true);
 
 	add_child(h_scroll, false, INTERNAL_MODE_FRONT);
 	add_child(v_scroll, false, INTERNAL_MODE_FRONT);

@@ -73,6 +73,7 @@ public:
 	virtual void _theme_changed();
 
 	void _do_update_interaction_profile();
+	void _set_dirty();
 	void _add_binding(const String &p_action, const String &p_path);
 	void _remove_binding(const String &p_action, const String &p_path);
 

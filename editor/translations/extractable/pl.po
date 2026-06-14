@@ -19,6 +19,12 @@ msgstr ""
 "|| n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "Open in File Manager"
+msgstr "Otwórz w menedżerze plików"
+
+msgid "Show in File Manager"
+msgstr "Pokaż w menedżerze plików"
+
 msgid "New Code Region"
 msgstr "Nowa region kodu"
 
@@ -200,12 +206,6 @@ msgstr "Nowy folder..."
 
 msgid "Refresh"
 msgstr "Odśwież"
-
-msgid "Open in File Manager"
-msgstr "Otwórz w menedżerze plików"
-
-msgid "Show in File Manager"
-msgstr "Pokaż w menedżerze plików"
 
 msgid "Show Package Contents"
 msgstr "Pokaż zawartość paczki"

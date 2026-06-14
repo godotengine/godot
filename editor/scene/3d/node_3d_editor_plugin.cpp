@@ -2054,10 +2054,10 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid() && k->is_pressed() && EDITOR_GET("editors/3d/navigation/emulate_numpad")) {
-		const Key code = k->get_physical_keycode();
-		if (code >= Key::KEY_0 && code <= Key::KEY_9) {
-			k->set_keycode(code - Key::KEY_0 + Key::KP_0);
+	if (k.is_valid() && k->is_pressed()) {
+		const Key code = view_3d_controller->emulate_numpad_key(k->get_physical_keycode());
+		if (code != k->get_physical_keycode()) {
+			k->set_keycode(code);
 		}
 	}
 
@@ -2198,8 +2198,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 	{
 		EditorNode *en = EditorNode::get_singleton();
+		Camera3D *input_camera = previewing ? previewing : camera;
 
-		switch (en->get_editor_plugins_force_input_forwarding()->forward_3d_gui_input(camera, p_event, true)) {
+		switch (en->get_editor_plugins_force_input_forwarding()->forward_3d_gui_input(input_camera, p_event, true)) {
 			case EditorPlugin::AFTER_GUI_INPUT_PASS: {
 				// Continue processing.
 			} break;
@@ -2213,7 +2214,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} break;
 		}
 
-		switch (en->get_editor_plugins_over()->forward_3d_gui_input(camera, p_event, false)) {
+		switch (en->get_editor_plugins_over()->forward_3d_gui_input(input_camera, p_event, false)) {
 			case EditorPlugin::AFTER_GUI_INPUT_PASS: {
 				// Continue processing.
 			} break;
@@ -2605,6 +2606,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							}
 
 							se->gizmo->commit_subgizmos(ids, restore, false);
+							finish_transform();
 						} else {
 							if (_edit.original_mouse_pos != _edit.mouse_pos) {
 								commit_transform();
@@ -2800,13 +2802,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 
 		Ref<InputEvent> event_mod = p_event;
-		if (EDITOR_GET("editors/3d/navigation/emulate_numpad")) {
-			const Key code = k->get_physical_keycode();
-			if (code >= Key::KEY_0 && code <= Key::KEY_9) {
-				event_mod = p_event->duplicate();
-				Ref<InputEventKey> k_mod = event_mod;
-				k_mod->set_keycode(code - Key::KEY_0 + Key::KP_0);
-			}
+		const Key code = view_3d_controller->emulate_numpad_key(k->get_physical_keycode());
+		if (code != k->get_physical_keycode()) {
+			event_mod = p_event->duplicate();
+			Ref<InputEventKey> k_mod = event_mod;
+			k_mod->set_keycode(code);
 		}
 
 		if (_edit.mode == TRANSFORM_NONE) {
@@ -3040,7 +3040,9 @@ void Node3DEditorViewport::_cursor_interpolated() {
 	last_camera_transform = view_3d_controller->interp_to_camera_transform();
 
 	if (previewing_camera && previewing && pilot_preview_enabled) {
+		_pilot_ensure_undo_session();
 		previewing->set_global_transform(last_camera_transform);
+		pilot_undo_idle_time = 0.0;
 	} else if (!previewing_camera) {
 		camera->set_global_transform(last_camera_transform);
 	}
@@ -3071,6 +3073,45 @@ void Node3DEditorViewport::_cursor_distance_scaled() {
 
 void Node3DEditorViewport::_freelook_changed() {
 	spatial_editor->set_freelook_viewport(view_3d_controller->is_freelook_enabled() ? this : nullptr);
+}
+
+void Node3DEditorViewport::_pilot_ensure_undo_session() {
+	if (pilot_undo_session_active || !previewing) {
+		return;
+	}
+	pilot_undo_initial_transform = previewing->get_global_transform();
+	pilot_undo_session_active = true;
+	pilot_undo_idle_time = 0.0;
+}
+
+void Node3DEditorViewport::_pilot_commit_undo_session() {
+	if (!pilot_undo_session_active) {
+		return;
+	}
+	pilot_undo_session_active = false;
+	pilot_undo_idle_time = 0.0;
+	if (!previewing) {
+		return;
+	}
+	const Transform3D current_transform = previewing->get_global_transform();
+	if (current_transform.is_equal_approx(pilot_undo_initial_transform)) {
+		return;
+	}
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Move Camera \"%s\""), previewing->get_name()), UndoRedo::MERGE_ENDS);
+	undo_redo->add_do_method(previewing, "set_global_transform", current_transform);
+	undo_redo->add_undo_method(previewing, "set_global_transform", pilot_undo_initial_transform);
+	undo_redo->commit_action(false);
+}
+
+void Node3DEditorViewport::_pilot_tick_undo_session(real_t p_delta) {
+	if (!pilot_undo_session_active) {
+		return;
+	}
+	pilot_undo_idle_time += p_delta;
+	if (pilot_undo_idle_time > 0.15) {
+		_pilot_commit_undo_session();
+	}
 }
 
 void Node3DEditorViewport::_freelook_speed_scaled() {
@@ -3245,6 +3286,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_update_name();
 			} else {
 				view_3d_controller->set_freelook_enabled(false);
+				_pilot_commit_undo_session();
 			}
 			callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view).call_deferred();
 		} break;
@@ -3571,6 +3613,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				if (cam != nullptr && cam != previewing) {
 					//then switch the viewport's camera to the scene's viewport camera
 					if (previewing != nullptr) {
+						_pilot_commit_undo_session();
 						previewing->disconnect(SceneStringName(tree_exited), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 						previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 					}
@@ -3584,11 +3627,15 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			if (_camera_moved_externally()) {
 				// If camera moved after this plugin last set it, presumably a tool script has moved it, accept the new camera transform as the cursor position.
+				pilot_undo_session_active = false;
+				pilot_undo_idle_time = 0.0;
 				_apply_camera_transform_to_cursor();
 				view_3d_controller->update_camera();
 			} else {
 				view_3d_controller->update_camera(delta);
 			}
+
+			_pilot_tick_undo_session(delta);
 
 			const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
@@ -4857,6 +4904,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	_update_navigation_controls_visibility();
 
 	if (!p_activate) {
+		_pilot_commit_undo_session();
 		previewing->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 		previewing = nullptr;
@@ -4894,6 +4942,9 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 }
 
 void Node3DEditorViewport::_toggle_pilot_preview(bool p_activate) {
+	if (!p_activate) {
+		_pilot_commit_undo_session();
+	}
 	pilot_preview_enabled = p_activate;
 	if (p_activate && previewing) {
 		_sync_cursor_from_transform(previewing->get_global_transform());
@@ -4956,6 +5007,8 @@ void Node3DEditorViewport::switch_preview_camera(Camera3D *p_new_camera) {
 	if (!previewing_camera || !previewing || !p_new_camera || p_new_camera == previewing) {
 		return;
 	}
+
+	_pilot_commit_undo_session();
 
 	previewing->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 	previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
@@ -6190,7 +6243,8 @@ void Node3DEditorViewport::commit_transform() {
 void Node3DEditorViewport::apply_transform(Vector3 p_motion, double p_snap) {
 	// View-plane translate/scale always uses global coords; rotation and axis operations respect local/global preference.
 	bool local_coords = spatial_editor->are_local_coords_enabled() &&
-			!(_edit.plane == TRANSFORM_VIEW && _edit.mode != TRANSFORM_ROTATE);
+			!(_edit.plane == TRANSFORM_VIEW && _edit.mode != TRANSFORM_ROTATE) &&
+			!_edit.is_trackball;
 
 	bool is_global_view_plane = (_edit.plane == TRANSFORM_VIEW) &&
 			((_edit.mode != TRANSFORM_ROTATE) || !spatial_editor->are_local_coords_enabled());
@@ -9696,6 +9750,9 @@ void Node3DEditor::_notification(int p_what) {
 				update_all_gizmos();
 			}
 			_update_vertex_snap_tooltips();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
+				snap_translate->set_step(EDITOR_GET("interface/inspector/default_float_step"));
+			}
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
@@ -10770,7 +10827,7 @@ Node3DEditor::Node3DEditor() {
 
 	snap_translate = memnew(EditorSpinSlider);
 	snap_translate->set_min(0.0);
-	snap_translate->set_step(0.001);
+	snap_translate->set_step(EDITOR_GET("interface/inspector/default_float_step"));
 	snap_translate->set_max(10.0);
 	snap_translate->set_suffix("m");
 	snap_translate->set_allow_greater(true);

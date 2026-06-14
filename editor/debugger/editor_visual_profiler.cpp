@@ -32,7 +32,6 @@
 
 #include "core/io/image.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/run/editor_run_bar.h"
@@ -435,7 +434,6 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 			node = node->get_parent();
 		}
 		ensure_selected->select(0);
-		ensure_selected->set_as_cursor(0);
 		variables->ensure_cursor_is_visible();
 	}
 	updating_frame = false;

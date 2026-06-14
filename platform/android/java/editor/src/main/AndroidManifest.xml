@@ -111,6 +111,7 @@
             android:label="@string/godot_game_activity_name"
             android:launchMode="singleTask"
             android:process=":GodotGame"
+            android:taskAffinity=":game"
             android:autoRemoveFromRecents="true"
             android:theme="@style/GodotGameTheme"
             android:supportsPictureInPicture="true"

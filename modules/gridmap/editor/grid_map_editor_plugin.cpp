@@ -60,14 +60,6 @@
 #include "scene/main/window.h"
 #include "servers/rendering/rendering_server.h"
 
-void GridMapEditor::_configure() {
-	if (!node) {
-		return;
-	}
-
-	update_grid();
-}
-
 void GridMapEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_PREV_LEVEL: {
@@ -1253,8 +1245,7 @@ void GridMapEditor::update_grid() {
 
 	grid_ofs[edit_axis] = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
 
-	// If there's a valid tile cursor, offset the grid, otherwise move it back to the node.
-	edit_grid_xform.origin = cursor_instance.is_valid() ? grid_ofs : Vector3();
+	edit_grid_xform.origin = grid_ofs;
 	edit_grid_xform.basis = Basis();
 
 	for (int i = 0; i < 3; i++) {
@@ -1338,7 +1329,7 @@ void GridMapEditor::_update_theme() {
 
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
 
 			for (int i = 0; i < 3; i++) {
@@ -1359,28 +1350,6 @@ void GridMapEditor::_notification(int p_what) {
 
 			_update_selection_transform();
 			_update_paste_indicator();
-			_update_theme();
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			_cancel_pending_move();
-			_clear_clipboard_data();
-
-			for (int i = 0; i < 3; i++) {
-				RS::get_singleton()->free_rid(grid_instance[i]);
-				RS::get_singleton()->free_rid(grid[i]);
-				grid_instance[i] = RID();
-				grid[i] = RID();
-				RenderingServer::get_singleton()->free_rid(selection_level_instance[i]);
-			}
-
-			RenderingServer::get_singleton()->free_rid(cursor_instance);
-			RenderingServer::get_singleton()->free_rid(selection_instance);
-			RenderingServer::get_singleton()->free_rid(paste_instance);
-			cursor_instance = RID();
-			cursor_visible = false;
-			selection_instance = RID();
-			paste_instance = RID();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1509,7 +1478,6 @@ void GridMapEditor::_floor_mouse_exited() {
 }
 
 void GridMapEditor::_bind_methods() {
-	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
 
 	ADD_SIGNAL(MethodInfo("overlay_update_requested"));

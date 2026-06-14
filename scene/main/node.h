@@ -725,6 +725,7 @@ public:
 	virtual RID get_accessibility_element() const;
 	virtual RID get_focused_accessibility_element() const;
 	virtual bool accessibility_override_tree_hierarchy() const { return false; }
+	virtual Transform2D get_accessibility_transform() const;
 
 	virtual PackedStringArray get_accessibility_configuration_warnings() const;
 

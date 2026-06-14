@@ -415,12 +415,14 @@ void Polygon2D::_notification(int p_what) {
 
 				if (needs_clear) {
 					RS::get_singleton()->mesh_add_surface(mesh, sd);
+					RS::get_singleton()->mesh_set_custom_aabb(mesh, AABB());
 				} else {
 					RS::get_singleton()->mesh_surface_update_vertex_region(mesh, 0, 0, sd.vertex_data);
 					if (has_uv || has_color) {
 						RS::get_singleton()->mesh_surface_update_attribute_region(mesh, 0, 0, sd.attribute_data);
 					}
 					RS::get_singleton()->mesh_surface_update_index_region(mesh, 0, 0, sd.index_data);
+					RS::get_singleton()->mesh_set_custom_aabb(mesh, sd.aabb);
 				}
 			}
 

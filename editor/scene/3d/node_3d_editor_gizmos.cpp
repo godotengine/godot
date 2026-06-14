@@ -1086,6 +1086,7 @@ void EditorNode3DGizmoPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_priority);
 	GDVIRTUAL_BIND(_can_be_hidden);
 	GDVIRTUAL_BIND(_is_selectable_when_hidden);
+	GDVIRTUAL_BIND(_can_commit_handle_on_click);
 
 	GDVIRTUAL_BIND(_redraw, "gizmo");
 	GDVIRTUAL_BIND(_get_handle_name, "gizmo", "handle_id", "secondary");
@@ -1135,7 +1136,9 @@ bool EditorNode3DGizmoPlugin::is_selectable_when_hidden() const {
 }
 
 bool EditorNode3DGizmoPlugin::can_commit_handle_on_click() const {
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_can_commit_handle_on_click, ret);
+	return ret;
 }
 
 void EditorNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {

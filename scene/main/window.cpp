@@ -1547,6 +1547,25 @@ PackedStringArray Window::get_accessibility_configuration_warnings() const {
 	return warnings;
 }
 
+Transform2D Window::get_accessibility_transform() const {
+	if (is_inside_tree() && get_parent()) {
+		Transform2D parent_tr = get_parent()->get_accessibility_transform();
+		Transform2D window_tr;
+		if (window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
+			window_tr.set_origin(position);
+		} else {
+			Window *np = get_non_popup_window();
+			if (np) {
+				window_tr.set_origin(get_position() - np->get_position());
+			}
+		}
+		window_tr.set_scale(Vector2(1.f, 1.f) * get_content_scale_factor());
+		return parent_tr.affine_inverse() * window_tr;
+	} else {
+		return Transform2D();
+	}
+}
+
 void Window::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_what) {
@@ -1573,19 +1592,8 @@ void Window::_notification(int p_what) {
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !visible);
 
 			if (get_embedder() || is_popup()) {
-				Control *parent_ctrl = Object::cast_to<Control>(get_parent());
-				Transform2D parent_tr = parent_ctrl ? parent_ctrl->get_global_transform() : Transform2D();
-				Transform2D tr;
-				if (window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
-					tr.set_origin(position);
-				} else {
-					Window *np = get_non_popup_window();
-					if (np) {
-						tr.set_origin(get_position() - np->get_position());
-					}
-				}
-				AccessibilityServer::get_singleton()->update_set_transform(ae, parent_tr.affine_inverse() * tr);
-				AccessibilityServer::get_singleton()->update_set_bounds(ae, Rect2(Point2(), size));
+				AccessibilityServer::get_singleton()->update_set_transform(ae, get_accessibility_transform());
+				AccessibilityServer::get_singleton()->update_set_bounds(ae, Rect2(Point2(), Vector2(size) / get_content_scale_factor()));
 
 				if (accessibility_title_element.is_null()) {
 					accessibility_title_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TITLE_BAR);

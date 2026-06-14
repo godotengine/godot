@@ -38,10 +38,12 @@ class EditorExportPreset;
 class EditorFileDialog;
 class ItemList;
 class HBoxContainer;
+class Label;
 class OptionButton;
 class Texture2D;
 class Tree;
 class TreeItem;
+class VSplitContainer;
 
 class TemplateDownloader : public HTTPRequest {
 	GDCLASS(TemplateDownloader, HTTPRequest);
@@ -189,6 +191,7 @@ class ExportTemplateManager : public AcceptDialog {
 	HashMap<String, int> checked_cache;
 	HashMap<String, bool> folding_cache;
 
+	VSplitContainer *center_split = nullptr;
 	OptionButton *mirrors_list = nullptr;
 	Button *open_mirror = nullptr;
 	ItemList *version_list = nullptr;
@@ -199,6 +202,7 @@ class ExportTemplateManager : public AcceptDialog {
 	Button *delete_all_button = nullptr;
 	Button *tpz_button = nullptr;
 	HBoxContainer *offline_container = nullptr;
+	Label *offline_mode_label = nullptr;
 	ConfirmationDialog *confirm_delete = nullptr;
 	EditorFileDialog *tpz_selection_dialog = nullptr;
 

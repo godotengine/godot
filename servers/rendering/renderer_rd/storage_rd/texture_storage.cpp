@@ -1731,12 +1731,12 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 		// Load Target Textures
 		if (i < p_textures.size()) {
 			Texture *tex = get_texture(p_textures[i]);
-			srgb_mask += get_texture(p_textures[i])->drawable_type == RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB ? srgbMaskArray[i] : 0;
 			ERR_FAIL_NULL_MSG(tex, "Drawable Texture target cannot be null.");
 			ERR_FAIL_COND_MSG(p_to_mipmap >= tex->mipmaps || p_to_mipmap >= tex->cached_rd_slices.size(), vformat("Drawable Texture Target does not have mipmap level %d.", p_to_mipmap));
 			if (i > 0) {
 				ERR_FAIL_COND_MSG(texture_2d_get_size(p_textures[i - 1]) != texture_2d_get_size(p_textures[i]), "All Blit_Rect output textures must be same size.");
 			}
+			srgb_mask += tex->drawable_type == RSE::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB ? srgbMaskArray[i] : 0;
 			tar_textures[i] = tex->cached_rd_slices[p_to_mipmap];
 		}
 
@@ -3495,7 +3495,7 @@ void TextureStorage::update_area_light_atlas() {
 			Texture *src_tex = get_texture(E.key);
 			Rect2 uv_rect = t->uv_rect;
 
-			copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm0.fb, uv_rect, draw_list);
+			copy_effects->copy_to_atlas_fb(src_tex->rd_texture_srgb, mm0.fb, uv_rect, draw_list);
 		}
 		RD::get_singleton()->draw_list_end();
 
@@ -3542,7 +3542,7 @@ void TextureStorage::update_area_light_atlas() {
 						Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
 
 						if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-							copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
+							copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size, true);
 						} else {
 							copy_effects->gaussian_blur_raster(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
 						}

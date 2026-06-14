@@ -420,7 +420,7 @@ void EditorSceneFormatImporterBlend::handle_compatibility_options(HashMap<String
 	if (!p_import_params.has("gltf/texture_map_mode")) {
 		// If an existing import file is missing the glTF
 		// texture map mode, we need to use "Do Not Remap".
-		p_import_params["gltf/naming_version"] = (int64_t)GLTFDocument::TEXTURE_MAP_MODE_DO_NOT_REMAP;
+		p_import_params["gltf/texture_map_mode"] = (int64_t)GLTFDocument::TEXTURE_MAP_MODE_DO_NOT_REMAP;
 	}
 }
 

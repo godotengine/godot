@@ -125,7 +125,7 @@ _FORCE_INLINE_ JPH::AABox to_jolt(const AABB &p_aabb) {
 }
 
 _FORCE_INLINE_ JPH::Plane to_jolt(const Plane &p_plane) {
-	return JPH::Plane(to_jolt(p_plane.normal), (float)p_plane.d);
+	return JPH::Plane(to_jolt(p_plane.normal), (float)-p_plane.d);
 }
 
 _FORCE_INLINE_ JPH::RVec3 to_jolt_r(const Vector3 &p_vec) {

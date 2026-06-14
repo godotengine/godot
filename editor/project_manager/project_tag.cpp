@@ -38,6 +38,12 @@ void ProjectTag::_notification(int p_what) {
 	if (display_close && p_what == NOTIFICATION_THEME_CHANGED) {
 		button->set_button_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
 	}
+	// HACK: Can't be set in constructor because `get_size()` would return empty.
+	// This logic should be migrated once `Button` utilizes internal labels.
+	if (p_what == NOTIFICATION_READY) {
+		button->set_custom_minimum_size(get_size());
+		button->set_text_overrun_behavior(TextServer::OverrunBehavior::OVERRUN_TRIM_ELLIPSIS);
+	}
 }
 
 void ProjectTag::connect_button_to(const Callable &p_callable) {

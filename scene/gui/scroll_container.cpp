@@ -40,7 +40,7 @@
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
 
-Size2 ScrollContainer::get_minimum_size() const {
+Size2 ScrollContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	// Calculated in this function, as it needs to traverse all child controls once to calculate;
 	// and needs to be calculated before being used by `_update_scrollbars()`.
 	largest_child_min_size = Size2();
@@ -51,7 +51,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2 child_min_size = c->get_bound_minimum_size();
+		Size2 child_min_size = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
 		largest_child_min_size = largest_child_min_size.max(child_min_size);
 	}
 
@@ -91,6 +91,14 @@ Size2 ScrollContainer::get_minimum_size() const {
 	min_size += margins.position + margins.size;
 
 	return min_size;
+}
+
+Size2 ScrollContainer::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 ScrollContainer::get_desired_size() const {
+	return _get_minimum_size(true);
 }
 
 Size2 ScrollContainer::get_inner_combined_maximum_size() const {
@@ -966,23 +974,27 @@ ScrollContainer::ScrollContainer() {
 	scroll_hint_top_left = memnew(TextureRect);
 	scroll_hint_top_left->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	scroll_hint_top_left->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	scroll_hint_top_left->set_use_parent_material(true);
 	scroll_hint_top_left->hide();
 	add_child(scroll_hint_top_left, false, INTERNAL_MODE_BACK);
 
 	scroll_hint_bottom_right = memnew(TextureRect);
 	scroll_hint_bottom_right->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	scroll_hint_bottom_right->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	scroll_hint_bottom_right->set_use_parent_material(true);
 	scroll_hint_bottom_right->hide();
 	add_child(scroll_hint_bottom_right, false, INTERNAL_MODE_BACK);
 
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
+	h_scroll->set_use_parent_material(true);
 	add_child(h_scroll, false, INTERNAL_MODE_BACK);
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
 	h_scroll->set_focus_mode(FOCUS_NONE);
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
+	v_scroll->set_use_parent_material(true);
 	add_child(v_scroll, false, INTERNAL_MODE_BACK);
 	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
 	v_scroll->set_focus_mode(FOCUS_NONE);

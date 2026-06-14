@@ -161,6 +161,7 @@ void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 	}
 
 	selected_item = -1;
+	inspector->edit(nullptr);
 
 	mesh_library = p_mesh_library;
 	if (mesh_library.is_valid()) {
@@ -235,22 +236,24 @@ void MeshLibraryEditor::_update_mesh_items(bool p_reselect, Ref<MeshLibrary> p_l
 			continue;
 		}
 
-		if (name.is_empty()) {
-			name = "#" + itos(id);
-		}
-
 		mesh_items->add_item("");
 
 		Ref<Texture2D> preview = mesh_library->get_item_preview(id);
 		if (preview.is_valid()) {
 			mesh_items->set_item_icon(item, preview);
-			mesh_items->set_item_tooltip(item, name);
 		} else {
 			Ref<Mesh> mesh = mesh_library->get_item_mesh(id);
 			if (mesh.is_valid()) {
 				// Fallback to the item's mesh preview.
 				EditorResourcePreview::get_singleton()->queue_edited_resource_preview(mesh, callable_mp(this, &MeshLibraryEditor::_update_resource_preview).bind(item));
 			}
+		}
+
+		String idx = "#" + itos(id);
+		if (name.is_empty()) {
+			name = idx;
+		} else {
+			mesh_items->set_item_tooltip(item, name + "\n" + idx);
 		}
 
 		mesh_items->set_item_text(item, name);
@@ -738,7 +741,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	inspector->add_custom_property_description("MeshLibraryItem", "name", TTRC("The item's name, shown in the editor. It can also be used to look up the item later using [method MeshLibrary.find_item_by_name]."));
 	inspector->add_custom_property_description("MeshLibraryItem", "mesh", TTRC("The item's mesh. Used by other parts of the engine (e.g. [GridMap], which displays them in a 3D tile)."));
 	inspector->add_custom_property_description("MeshLibraryItem", "mesh_transform", TTRC("The transform to apply to the item's mesh."));
-	inspector->add_custom_property_description("MeshLibraryItem", "mesh_cast_shadow", TTRC("The shadow casting mode used by the item's mesh. See [enum RenderingServer.ShadowCastingSetting]"));
+	inspector->add_custom_property_description("MeshLibraryItem", "mesh_cast_shadow", TTRC("The shadow casting mode used by the item's mesh. See [enum RenderingServer.ShadowCastingSetting]."));
 	inspector->add_custom_property_description("MeshLibraryItem", "shapes", TTRC("The item's collision shapes.\nThe array should consist of [Shape3D] objects, each followed by a [Transform3D] that will be applied to it. For shapes that should not have a transform, use [constant Transform3D.IDENTITY]."));
 	inspector->add_custom_property_description("MeshLibraryItem", "navigation_mesh", TTRC("The item's navigation mesh."));
 	inspector->add_custom_property_description("MeshLibraryItem", "navigation_mesh_transform", TTRC("The transform to apply to the item's navigation mesh."));
@@ -746,7 +749,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	inspector->add_custom_property_description("MeshLibraryItem", "preview", TTRC("The texture to use as the item's preview icon in the editor."));
 
 	empty_lib = memnew(Label);
-	empty_lib->set_text(TTRC("No items found inside the MeshLibrary.\nYou can add some by using the Add button on the left, or by exporting them from a scene file via the Export menu."));
+	empty_lib->set_text(TTRC("No items found inside the MeshLibrary.\nYou can add some by using the Add button on the left, or by importing them from a scene file via the Import menu."));
 	empty_lib->set_focus_mode(FOCUS_ACCESSIBILITY);
 	empty_lib->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	empty_lib->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
