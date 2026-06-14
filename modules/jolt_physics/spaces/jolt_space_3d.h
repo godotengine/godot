@@ -78,6 +78,8 @@ class JoltSpace3D {
 
 	float last_step = 0.0f;
 
+	uint16_t default_area_changed_count = 0;
+
 	bool active = false;
 	bool stepping = false;
 
@@ -128,6 +130,9 @@ public:
 
 	JoltArea3D *get_default_area() const { return default_area; }
 	void set_default_area(JoltArea3D *p_area) { default_area = p_area; }
+
+	void increment_default_area_changed_count() { default_area_changed_count++; }
+	uint16_t get_default_area_changed_count() const { return default_area_changed_count; }
 
 	float get_last_step() const { return last_step; }
 
