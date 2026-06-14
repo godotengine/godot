@@ -2462,54 +2462,66 @@ void LightStorage::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quad
 }
 
 bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow) {
-	for (int i = p_quadrant_count - 1; i >= 0; i--) {
+	int best_quadrant = -1;
+	int best_shadow = -1;
+	int best_free_count = -1;
+	uint64_t best_min_pass = UINT64_MAX;
+
+	for (int i = 0; i < p_quadrant_count; i++) {
 		int qidx = p_in_quadrants[i];
 
-		if (shadow_atlas->quadrants[qidx].subdivision == (uint32_t)p_current_subdiv) {
-			return false;
-		}
-
-		//look for an empty space
 		int sc = shadow_atlas->quadrants[qidx].shadows.size();
 		const ShadowAtlas::Quadrant::Shadow *sarr = shadow_atlas->quadrants[qidx].shadows.ptr();
 
-		int found_free_idx = -1; //found a free one
-		int found_used_idx = -1; //found existing one, must steal it
-		uint64_t min_pass = 0; // pass of the existing one, try to use the least recently used one (LRU fashion)
+		int found_free_idx = -1;
+		int found_used_idx = -1;
+		uint64_t min_pass = 0;
+		int free_count = 0;
 
 		for (int j = 0; j < sc; j++) {
 			if (!sarr[j].owner.is_valid()) {
-				found_free_idx = j;
-				break;
-			}
-
-			LightInstance *sli = light_instance_owner.get_or_null(sarr[j].owner);
-			ERR_CONTINUE(!sli);
-
-			if (sli->last_scene_pass != RendererSceneRenderRD::get_singleton()->get_scene_pass()) {
-				//was just allocated, don't kill it so soon, wait a bit..
-				if (p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
-					continue;
+				free_count++;
+				if (found_free_idx == -1) {
+					found_free_idx = j;
 				}
+			} else {
+				LightInstance *sli = light_instance_owner.get_or_null(sarr[j].owner);
+				ERR_CONTINUE(!sli);
 
-				if (found_used_idx == -1 || sli->last_scene_pass < min_pass) {
-					found_used_idx = j;
-					min_pass = sli->last_scene_pass;
+				if (sli->last_scene_pass != RendererSceneRenderRD::get_singleton()->get_scene_pass()) {
+					if (p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
+						continue;
+					}
+
+					if (found_used_idx == -1 || sli->last_scene_pass < min_pass) {
+						found_used_idx = j;
+						min_pass = sli->last_scene_pass;
+					}
 				}
 			}
 		}
 
 		if (found_free_idx == -1 && found_used_idx == -1) {
-			continue; //nothing found
+			continue;
 		}
 
-		if (found_free_idx == -1 && found_used_idx != -1) {
-			found_free_idx = found_used_idx;
+		int candidate_idx = (found_free_idx == -1) ? found_used_idx : found_free_idx;
+		bool has_free = (found_free_idx != -1);
+
+		if (best_quadrant == -1 ||
+				(!best_free_count && has_free) ||
+				(has_free && free_count > best_free_count) ||
+				(!has_free && !best_free_count && min_pass < best_min_pass)) {
+			best_quadrant = qidx;
+			best_shadow = candidate_idx;
+			best_free_count = has_free ? free_count : 0;
+			best_min_pass = min_pass;
 		}
+	}
 
-		r_quadrant = qidx;
-		r_shadow = found_free_idx;
-
+	if (best_quadrant != -1) {
+		r_quadrant = best_quadrant;
+		r_shadow = best_shadow;
 		return true;
 	}
 
@@ -2517,36 +2529,41 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 }
 
 bool LightStorage::_shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow) {
-	for (int i = p_quadrant_count - 1; i >= 0; i--) {
+	int best_quadrant = -1;
+	int best_shadow = -1;
+	int best_free_count = -1;
+	uint64_t best_min_pass = UINT64_MAX;
+
+	for (int i = 0; i < p_quadrant_count; i++) {
 		int qidx = p_in_quadrants[i];
 
-		if (shadow_atlas->quadrants[qidx].subdivision == (uint32_t)p_current_subdiv) {
-			return false;
-		}
-
-		//look for an empty space
 		int sc = shadow_atlas->quadrants[qidx].shadows.size();
 		const ShadowAtlas::Quadrant::Shadow *sarr = shadow_atlas->quadrants[qidx].shadows.ptr();
 
 		int found_idx = -1;
-		uint64_t min_pass = 0; // sum of currently selected spots, try to get the least recently used pair
+		uint64_t min_pass = 0;
+		int free_count = 0;
 
 		for (int j = 0; j < sc - 1; j++) {
 			uint64_t pass = 0;
+			bool can_use = true;
 
 			if (sarr[j].owner.is_valid()) {
 				LightInstance *sli = light_instance_owner.get_or_null(sarr[j].owner);
 				ERR_CONTINUE(!sli);
 
 				if (sli->last_scene_pass == RendererSceneRenderRD::get_singleton()->get_scene_pass()) {
-					continue;
+					can_use = false;
 				}
 
-				//was just allocated, don't kill it so soon, wait a bit..
-				if (p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
-					continue;
+				if (can_use && p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
+					can_use = false;
 				}
-				pass += sli->last_scene_pass;
+				if (can_use) {
+					pass += sli->last_scene_pass;
+				}
+			} else {
+				free_count++;
 			}
 
 			if (sarr[j + 1].owner.is_valid()) {
@@ -2554,34 +2571,48 @@ bool LightStorage::_shadow_atlas_find_omni_shadows(ShadowAtlas *shadow_atlas, in
 				ERR_CONTINUE(!sli);
 
 				if (sli->last_scene_pass == RendererSceneRenderRD::get_singleton()->get_scene_pass()) {
-					continue;
+					can_use = false;
 				}
 
-				//was just allocated, don't kill it so soon, wait a bit..
-				if (p_tick - sarr[j + 1].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
-					continue;
+				if (can_use && p_tick - sarr[j + 1].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
+					can_use = false;
 				}
-				pass += sli->last_scene_pass;
+				if (can_use) {
+					pass += sli->last_scene_pass;
+				}
+			} else {
+				free_count++;
+			}
+
+			if (!can_use) {
+				continue;
 			}
 
 			if (found_idx == -1 || pass < min_pass) {
 				found_idx = j;
 				min_pass = pass;
-
-				// we found two empty spots, no need to check the rest
-				if (pass == 0) {
-					break;
-				}
 			}
 		}
 
 		if (found_idx == -1) {
-			continue; //nothing found
+			continue;
 		}
 
-		r_quadrant = qidx;
-		r_shadow = found_idx;
+		bool has_free = (min_pass == 0);
+		if (best_quadrant == -1 ||
+				(!best_free_count && has_free) ||
+				(has_free && free_count > best_free_count) ||
+				(!has_free && !best_free_count && min_pass < best_min_pass)) {
+			best_quadrant = qidx;
+			best_shadow = found_idx;
+			best_free_count = has_free ? free_count : 0;
+			best_min_pass = min_pass;
+		}
+	}
 
+	if (best_quadrant != -1) {
+		r_quadrant = best_quadrant;
+		r_shadow = best_shadow;
 		return true;
 	}
 
@@ -2612,19 +2643,18 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 		int q = shadow_atlas->size_order[i];
 		int sd = shadow_atlas->quadrants[q].subdivision;
 		if (sd == 0) {
-			continue; //unused
+			continue;
 		}
 
 		int max_fit = quad_size / sd;
 
-		if (best_size != -1 && max_fit > best_size) {
-			break; //too large
+		valid_quadrants[valid_quadrant_count++] = q;
+
+		if (best_subdiv == -1) {
+			best_subdiv = sd;
 		}
 
-		valid_quadrants[valid_quadrant_count++] = q;
-		best_subdiv = sd;
-
-		if (max_fit >= desired_fit) {
+		if (max_fit >= desired_fit && best_size == -1) {
 			best_size = max_fit;
 		}
 	}
