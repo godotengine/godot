@@ -32,7 +32,7 @@
 
 #include "core/object/class_db.h"
 
-DTLSServer *DTLSServer::create(bool p_notify_postinitialize) {
+Ref<DTLSServer> DTLSServer::create(bool p_notify_postinitialize) {
 	if (_create) {
 		return _create(p_notify_postinitialize);
 	}

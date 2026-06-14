@@ -49,7 +49,7 @@ private:
 
 	Ref<PacketPeerUDP> base;
 
-	static PacketPeerDTLS *_create_func(bool p_notify_postinitialize);
+	static Ref<PacketPeerDTLS> _create_func(bool p_notify_postinitialize);
 
 	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
 	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
