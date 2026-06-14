@@ -3310,6 +3310,64 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 }
 
+Error TextureStorage::render_target_write_image(RID p_render_target, const Ref<Image> &p_image) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, ERR_INVALID_PARAMETER);
+	if (p_image.is_null() || p_image->is_empty()) {
+		return ERR_INVALID_PARAMETER;
+	}
+	if (rt->size.width <= 0 || rt->size.height <= 0 || rt->color == 0 || rt->direct_to_screen || rt->overridden.color.is_valid() || rt->view_count != 1) {
+		return ERR_UNAVAILABLE;
+	}
+	if (p_image->get_width() != rt->size.width || p_image->get_height() != rt->size.height) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	Texture *texture = get_texture(rt->texture);
+	ERR_FAIL_NULL_V(texture, ERR_UNAVAILABLE);
+	if (texture->target != GL_TEXTURE_2D) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<Image> image = p_image;
+	if (image->is_compressed()) {
+		image = image->duplicate();
+		Error err = image->decompress();
+		if (err != OK) {
+			return err;
+		}
+	}
+	if (image->get_format() != rt->image_format) {
+		if (image == p_image) {
+			image = image->duplicate();
+		}
+		image->convert(rt->image_format);
+	}
+
+	GLenum type;
+	GLenum format;
+	GLenum internal_format;
+	bool compressed = false;
+	Image::Format real_format;
+	Ref<Image> img = _get_gl_image_and_format(image, image->get_format(), real_format, format, internal_format, type, compressed, false);
+	if (img.is_null()) {
+		return ERR_INVALID_DATA;
+	}
+	if (compressed) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Vector<uint8_t> read = img->get_data();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(texture->target, rt->color);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexSubImage2D(texture->target, 0, 0, 0, img->get_width(), img->get_height(), format, type, read.ptr());
+	glBindTexture(texture->target, 0);
+
+	rt->clear_requested = false;
+	return OK;
+}
+
 GLuint TextureStorage::render_target_get_fbo(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, 0);

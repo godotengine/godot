@@ -1418,6 +1418,16 @@ Ref<ViewportTexture> Viewport::get_texture() const {
 	return default_texture;
 }
 
+Error Viewport::snapshot_clear_render_target(const Color &p_color) {
+	ERR_MAIN_THREAD_GUARD_V(ERR_UNAVAILABLE);
+	return RS::get_singleton()->viewport_snapshot_clear_render_target(viewport, p_color);
+}
+
+Error Viewport::snapshot_write_render_target(const Ref<Image> &p_image) {
+	ERR_MAIN_THREAD_GUARD_V(ERR_UNAVAILABLE);
+	return RS::get_singleton()->viewport_snapshot_write_render_target(viewport, p_image);
+}
+
 void Viewport::set_positional_shadow_atlas_size(int p_size) {
 	ERR_MAIN_THREAD_GUARD;
 	positional_shadow_atlas_size = p_size;
@@ -5199,6 +5209,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_render_info", "type", "info"), &Viewport::get_render_info);
 
 	ClassDB::bind_method(D_METHOD("get_texture"), &Viewport::get_texture);
+	ClassDB::bind_method(D_METHOD("snapshot_clear_render_target", "color"), &Viewport::snapshot_clear_render_target, DEFVAL(Color(0, 0, 0, 0)));
+	ClassDB::bind_method(D_METHOD("snapshot_write_render_target", "image"), &Viewport::snapshot_write_render_target);
 
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	ClassDB::bind_method(D_METHOD("set_physics_object_picking", "enable"), &Viewport::set_physics_object_picking);

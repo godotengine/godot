@@ -1231,6 +1231,32 @@ RID RendererViewport::viewport_get_texture(RID p_viewport) const {
 	return RSG::texture_storage->render_target_get_texture(viewport->render_target);
 }
 
+Error RendererViewport::viewport_snapshot_clear_render_target(RID p_viewport, const Color &p_color) {
+	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL_V(viewport, ERR_INVALID_PARAMETER);
+	if (viewport->render_target.is_null() || RSG::texture_storage->render_target_get_direct_to_screen(viewport->render_target)) {
+		return ERR_UNAVAILABLE;
+	}
+	const Size2i rt_size = RSG::texture_storage->render_target_get_size(viewport->render_target);
+	if (rt_size.x <= 0 || rt_size.y <= 0 || RSG::texture_storage->render_target_get_texture(viewport->render_target).is_null()) {
+		return ERR_UNAVAILABLE;
+	}
+
+	RSG::texture_storage->render_target_request_clear(viewport->render_target, p_color);
+	RSG::texture_storage->render_target_do_clear_request(viewport->render_target);
+	return OK;
+}
+
+Error RendererViewport::viewport_snapshot_write_render_target(RID p_viewport, const Ref<Image> &p_image) {
+	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL_V(viewport, ERR_INVALID_PARAMETER);
+	if (viewport->render_target.is_null()) {
+		return ERR_UNAVAILABLE;
+	}
+
+	return RSG::texture_storage->render_target_write_image(viewport->render_target, p_image);
+}
+
 RID RendererViewport::viewport_get_occluder_debug_texture(RID p_viewport) const {
 	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL_V(viewport, RID());

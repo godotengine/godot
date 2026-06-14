@@ -4147,6 +4147,22 @@
 				Returns the viewport's last rendered frame.
 			</description>
 		</method>
+		<method name="viewport_snapshot_clear_render_target">
+			<return type="int" enum="Error" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Clears the viewport render target immediately without changing viewport update or clear modes. Intended for snapshot/save systems.
+			</description>
+		</method>
+		<method name="viewport_snapshot_write_render_target">
+			<return type="int" enum="Error" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="image" type="Image" />
+			<description>
+				Writes [param image] directly into the viewport render target when supported. The image must match the current render-target size.
+			</description>
+		</method>
 		<method name="viewport_get_update_mode" qualifiers="const">
 			<return type="int" enum="RenderingServer.ViewportUpdateMode" />
 			<param index="0" name="viewport" type="RID" />

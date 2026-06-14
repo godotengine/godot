@@ -571,6 +571,8 @@ public:
 	bool is_using_hdr_2d() const;
 
 	Ref<ViewportTexture> get_texture() const;
+	Error snapshot_clear_render_target(const Color &p_color = Color(0, 0, 0, 0));
+	Error snapshot_write_render_target(const Ref<Image> &p_image);
 
 	void set_positional_shadow_atlas_size(int p_size);
 	int get_positional_shadow_atlas_size() const;

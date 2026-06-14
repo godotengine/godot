@@ -4800,6 +4800,40 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	rt->msaa_needs_resolve = false;
 }
 
+Error TextureStorage::render_target_write_image(RID p_render_target, const Ref<Image> &p_image) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, ERR_INVALID_PARAMETER);
+	if (p_image.is_null() || p_image->is_empty()) {
+		return ERR_INVALID_PARAMETER;
+	}
+	if (rt->size.width <= 0 || rt->size.height <= 0 || rt->color.is_null() || rt->overridden.color.is_valid() || rt->view_count != 1) {
+		return ERR_UNAVAILABLE;
+	}
+	if (p_image->get_width() != rt->size.width || p_image->get_height() != rt->size.height) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	Ref<Image> image = p_image;
+	if (image->is_compressed()) {
+		image = image->duplicate();
+		Error err = image->decompress();
+		if (err != OK) {
+			return err;
+		}
+	}
+	if (image->get_format() != rt->image_format) {
+		if (image == p_image) {
+			image = image->duplicate();
+		}
+		image->convert(rt->image_format);
+	}
+
+	RD::get_singleton()->texture_update(rt->color, 0, image->get_data());
+	rt->clear_requested = false;
+	rt->msaa_needs_resolve = false;
+	return OK;
+}
+
 void TextureStorage::render_target_set_sdf_size_and_scale(RID p_render_target, RSE::ViewportSDFOversize p_size, RSE::ViewportSDFScale p_scale) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);

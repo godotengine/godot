@@ -708,6 +708,7 @@ public:
 	Color render_target_get_clear_request_color(RID p_render_target) override;
 	void render_target_disable_clear_request(RID p_render_target) override;
 	void render_target_do_clear_request(RID p_render_target) override;
+	Error render_target_write_image(RID p_render_target, const Ref<Image> &p_image) override;
 
 	GLuint render_target_get_fbo(RID p_render_target) const;
 	GLuint render_target_get_color(RID p_render_target) const;

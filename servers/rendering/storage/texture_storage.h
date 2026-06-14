@@ -177,6 +177,7 @@ public:
 	virtual Color render_target_get_clear_request_color(RID p_render_target) = 0;
 	virtual void render_target_disable_clear_request(RID p_render_target) = 0;
 	virtual void render_target_do_clear_request(RID p_render_target) = 0;
+	virtual Error render_target_write_image(RID p_render_target, const Ref<Image> &p_image) = 0;
 
 	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RSE::ViewportSDFOversize p_size, RSE::ViewportSDFScale p_scale) = 0;
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const = 0;

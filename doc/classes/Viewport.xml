@@ -142,6 +142,22 @@
 				[b]Note:[/b] When [member use_hdr_2d] is [code]true[/code] the returned texture will be an HDR image using linear encoding.
 			</description>
 		</method>
+		<method name="snapshot_clear_render_target">
+			<return type="int" enum="Error" />
+			<param index="0" name="color" type="Color" default="Color(0, 0, 0, 0)" />
+			<description>
+				Clears the viewport's render target immediately without changing the viewport's update mode, clear mode, or child visibility. This is intended for snapshot/save systems that need deterministic render-target state during load.
+				Returns [constant OK] on success. Unsupported renderers, invalid render targets, or unavailable render-target storage return an error.
+			</description>
+		</method>
+		<method name="snapshot_write_render_target">
+			<return type="int" enum="Error" />
+			<param index="0" name="image" type="Image" />
+			<description>
+				Writes [param image] directly into the viewport's render target without drawing a temporary node. This is intended for snapshot/save systems that restore a previously captured render target.
+				The image must match the current render-target size. The image is converted to the render target's internal image format when supported. Unsupported renderers, incompatible render targets, or invalid image data return an error.
+			</description>
+		</method>
 		<method name="get_viewport_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
