@@ -1190,6 +1190,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "	TRANSFORM[2] = vec4(0.0, 0.0, 1.0, 0.0);\n";
 		}
 	} else {
+		code += " params.scale *= vec3(length(TRANSFORM[0].xyz), length(TRANSFORM[1].xyz), length(TRANSFORM[2].xyz));\n";
 		//TODO Fix so 0 scaling on all axes doesn't break during normalization
 		// Orient particle Y towards velocity.
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
