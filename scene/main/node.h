@@ -282,6 +282,7 @@ private:
 
 		bool display_folded : 1;
 		bool editable_instance : 1;
+		bool subtree_processing_suppressed : 1;
 
 		bool ready_notified : 1;
 		bool ready_first : 1;
@@ -759,6 +760,9 @@ public:
 	ProcessMode get_process_mode() const;
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
+	void set_subtree_processing_suppressed(bool p_suppressed);
+	bool is_subtree_processing_suppressed() const;
+	bool is_processing_suppressed() const;
 
 	void set_physics_interpolation_mode(PhysicsInterpolationMode p_mode);
 	PhysicsInterpolationMode get_physics_interpolation_mode() const { return data.physics_interpolation_mode; }

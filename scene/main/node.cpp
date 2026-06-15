@@ -64,6 +64,7 @@ SafeNumeric<uint64_t> Node::total_node_count{ 0 };
 #endif
 
 thread_local Node *Node::current_process_thread_group = nullptr;
+static SafeNumeric<int> node_process_suppression_count{ 0 };
 
 void Node::_notification(int p_notification) {
 	switch (p_notification) {
@@ -908,7 +909,42 @@ bool Node::can_process() const {
 	return is_inside_tree() && !data.tree->is_suspended() && _can_process(data.tree->is_paused());
 }
 
+void Node::set_subtree_processing_suppressed(bool p_suppressed) {
+	ERR_THREAD_GUARD
+	if (data.subtree_processing_suppressed == p_suppressed) {
+		return;
+	}
+	data.subtree_processing_suppressed = p_suppressed;
+	if (p_suppressed) {
+		node_process_suppression_count.increment();
+	} else {
+		node_process_suppression_count.decrement();
+	}
+}
+
+bool Node::is_subtree_processing_suppressed() const {
+	return data.subtree_processing_suppressed;
+}
+
+bool Node::is_processing_suppressed() const {
+	if (node_process_suppression_count.get() <= 0) {
+		return false;
+	}
+	const Node *n = this;
+	while (n != nullptr) {
+		if (n->data.subtree_processing_suppressed) {
+			return true;
+		}
+		n = n->data.parent;
+	}
+	return false;
+}
+
 bool Node::_can_process(bool p_paused) const {
+	if (is_processing_suppressed()) {
+		return false;
+	}
+
 	ProcessMode process_mode;
 
 	if (data.process_mode == PROCESS_MODE_INHERIT) {
@@ -3821,6 +3857,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Node::set_process_mode);
 	ClassDB::bind_method(D_METHOD("get_process_mode"), &Node::get_process_mode);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
+	ClassDB::bind_method(D_METHOD("set_subtree_processing_suppressed", "suppressed"), &Node::set_subtree_processing_suppressed);
+	ClassDB::bind_method(D_METHOD("is_subtree_processing_suppressed"), &Node::is_subtree_processing_suppressed);
+	ClassDB::bind_method(D_METHOD("is_processing_suppressed"), &Node::is_processing_suppressed);
 
 	ClassDB::bind_method(D_METHOD("set_process_thread_group", "mode"), &Node::set_process_thread_group);
 	ClassDB::bind_method(D_METHOD("get_process_thread_group"), &Node::get_process_thread_group);
@@ -4119,6 +4158,7 @@ Node::Node() {
 
 	data.display_folded = false;
 	data.editable_instance = false;
+	data.subtree_processing_suppressed = false;
 
 	data.ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
 	data.ready_first = true;
@@ -4132,6 +4172,9 @@ Node::Node() {
 }
 
 Node::~Node() {
+	if (data.subtree_processing_suppressed) {
+		node_process_suppression_count.decrement();
+	}
 	data.grouped.clear();
 	data.owned.clear();
 	data.children.clear();
