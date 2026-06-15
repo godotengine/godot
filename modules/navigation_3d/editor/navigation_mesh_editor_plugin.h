@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  navigation_mesh_editor_plugin.h                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,64 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "3d/godot_navigation_server_3d.h"
+#include "editor/inspector/editor_inspector.h"
+#include "editor/plugins/editor_plugin.h"
+#include "scene/gui/subviewport_container.h"
 
-#ifndef DISABLE_DEPRECATED
-#include "3d/navigation_mesh_generator.h"
-#endif // DISABLE_DEPRECATED
+class SubViewport;
+class Camera3D;
+class Label;
+class Mesh;
+class MeshInstance3D;
+class NavigationMesh;
 
-#ifdef TOOLS_ENABLED
-#include "editor/navigation_link_3d_editor_plugin.h"
-#include "editor/navigation_mesh_editor_plugin.h"
-#include "editor/navigation_obstacle_3d_editor_plugin.h"
-#include "editor/navigation_region_3d_editor_plugin.h"
-#endif
+class NavigationMeshEditor : public SubViewportContainer {
+	GDCLASS(NavigationMeshEditor, SubViewportContainer);
 
-#include "core/config/engine.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
-#include "servers/navigation_3d/navigation_server_3d.h"
+	float rot_x;
+	float rot_y;
 
-#ifndef DISABLE_DEPRECATED
-NavigationMeshGenerator *_nav_mesh_generator = nullptr;
-#endif // DISABLE_DEPRECATED
+	SubViewport *viewport = nullptr;
+	MeshInstance3D *mesh_instance = nullptr;
+	Node3D *rotation = nullptr;
+	Camera3D *camera = nullptr;
+	Label *metadata_label = nullptr;
 
-static NavigationServer3D *_createGodotNavigation3DCallback() {
-	return memnew(GodotNavigationServer3D);
-}
+	Ref<Mesh> mesh;
+	Ref<NavigationMesh> navigation_mesh;
 
-void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::get_singleton()->register_server("GodotNavigation3D", callable_mp_static(_createGodotNavigation3DCallback));
-		NavigationServer3DManager::get_singleton()->set_default_server("GodotNavigation3D");
+	void _update_rotation();
+	void _navigation_mesh_changed();
 
-#ifndef DISABLE_DEPRECATED
-		_nav_mesh_generator = memnew(NavigationMeshGenerator);
-		GDREGISTER_CLASS(NavigationMeshGenerator);
-		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
-#endif // DISABLE_DEPRECATED
-	}
+protected:
+	void _notification(int p_what);
+	virtual void _update_theme_item_cache() override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<NavigationLink3DEditorPlugin>();
-		EditorPlugins::add_by_type<NavigationRegion3DEditorPlugin>();
-		EditorPlugins::add_by_type<NavigationObstacle3DEditorPlugin>();
-		EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
-	}
-#endif
-}
+public:
+	void edit(Ref<NavigationMesh> p_navigation_mesh);
+	NavigationMeshEditor();
+};
 
-void uninitialize_navigation_3d_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
-	}
+class EditorInspectorPluginNavigationMesh : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginNavigationMesh, EditorInspectorPlugin);
 
-#ifndef DISABLE_DEPRECATED
-	if (_nav_mesh_generator) {
-		memdelete(_nav_mesh_generator);
-	}
-#endif // DISABLE_DEPRECATED
-}
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
+};
+
+class NavigationMeshEditorPlugin : public EditorPlugin {
+	GDCLASS(NavigationMeshEditorPlugin, EditorPlugin);
+
+public:
+	virtual String get_plugin_name() const override { return "NavigationMesh"; }
+
+	NavigationMeshEditorPlugin();
+};
