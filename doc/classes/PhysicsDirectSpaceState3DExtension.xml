@@ -40,10 +40,7 @@
 			<description>
 			</description>
 		</method>
-		<method
-			name="_get_closest_point_to_object_volume"
-			qualifiers="virtual required const"
-		>
+		<method name="_get_closest_point_to_object_volume" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<param index="0" name="object" type="RID" />
 			<param index="1" name="point" type="Vector3" />
