@@ -101,7 +101,6 @@ void main() {
 		return;
 	}
 
-	vec3 debug;
 	vec4 color = vec4(0.0);
 	float mip_level = 0.0;
 
@@ -249,6 +248,7 @@ void main() {
 				validity = 0.0;
 			}
 		}
+
 		vec3 cur_pos = compute_view_pos(cur_screen_pos);
 		vec3 hit_pos = compute_view_pos(vec3(cur_screen_pos.xy, hit_depth));
 
@@ -323,7 +323,7 @@ void main() {
 		// We can fade the mip level near the end to make it significantly less visible.
 		mip_level *= pow(clamp(1.25 - ray_len, 0.0, 1.0), 0.2);
 	}
-	
+
 	imageStore(output_color, pixel_pos, color);
 	imageStore(output_mip_level, pixel_pos, vec4(mip_level / 14.0, 0.0, 0.0, 0.0));
 }
