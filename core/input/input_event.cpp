@@ -30,6 +30,7 @@
 
 #include "input_event.h"
 
+#include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
 #include "core/math/transform_2d.h"
@@ -61,6 +62,10 @@ bool InputEvent::is_action_released(const StringName &p_action, bool p_exact_mat
 	bool pressed_state;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed_state, nullptr, nullptr);
 	return valid && !pressed_state;
+}
+
+bool InputEvent::is_action_just_pressed_or_echo(const StringName &p_action, bool p_exact_match) const {
+	return is_action(p_action, p_exact_match) && (is_echo() || Input::get_singleton()->is_action_just_pressed_by_event(p_action, const_cast<InputEvent *>(this)));
 }
 
 float InputEvent::get_action_strength(const StringName &p_action, bool p_exact_match) const {
