@@ -125,6 +125,7 @@ jobs:
       - name: Prepare artifact
         if: matrix.compiler == 'msvc'
         run: |
+          Remove-Item bin/build_deps -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
 
       - name: Upload artifact
