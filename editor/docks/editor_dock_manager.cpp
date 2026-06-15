@@ -195,6 +195,11 @@ void EditorDockManager::_update_layout() {
 	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
 
+DockTabContainer *EditorDockManager::get_dock_container(int p_slot) const {
+	ERR_FAIL_INDEX_V(p_slot, EditorDock::DOCK_SLOT_MAX, nullptr);
+	return dock_slots[p_slot];
+}
+
 void EditorDockManager::update_docks_menu() {
 	docks_menu->clear();
 	docks_menu->reset_size();
