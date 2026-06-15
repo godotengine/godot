@@ -325,9 +325,6 @@ void main() {
 	}
 
 
-	// Debug
-
-	//imageStore(output_color, pixel_pos, vec4(debug, 1.0));
 	imageStore(output_color, pixel_pos, color);
 	imageStore(output_mip_level, pixel_pos, vec4(mip_level / 14.0, 0.0, 0.0, 0.0));
 }
