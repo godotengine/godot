@@ -323,8 +323,7 @@ void main() {
 		// We can fade the mip level near the end to make it significantly less visible.
 		mip_level *= pow(clamp(1.25 - ray_len, 0.0, 1.0), 0.2);
 	}
-
-
+	
 	imageStore(output_color, pixel_pos, color);
 	imageStore(output_mip_level, pixel_pos, vec4(mip_level / 14.0, 0.0, 0.0, 0.0));
 }
