@@ -5648,28 +5648,24 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (raw->data.keyboard.VKey == VK_SHIFT) {
 					// If multiple Shifts are held down at the same time,
 					// Windows natively only sends a KEYUP for the last one to be released.
+					// Handle all shift key up here for  consistency
 					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
-						// Make sure to check the latest key state since
-						// we're in the middle of the message queue.
-						if (GetAsyncKeyState(VK_SHIFT) < 0) {
-							// A Shift is released, but another Shift is still held
-							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+						ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
-							KeyEvent ke;
-							ke.shift = false;
-							ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
-							ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
-							ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
-							ke.meta = mods.has_flag(WinKeyModifierMask::META);
-							ke.uMsg = WM_KEYUP;
-							ke.window_id = window_id;
+						KeyEvent ke;
+						ke.shift = false;
+						ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+						ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+						ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+						ke.meta = mods.has_flag(WinKeyModifierMask::META);
+						ke.uMsg = WM_KEYUP;
+						ke.window_id = window_id;
 
-							ke.wParam = VK_SHIFT;
-							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
-							// Bit 30 -> key was previously down, bit 31 -> key is being released.
-							ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
-							key_event_buffer[key_event_pos++] = ke;
-						}
+						ke.wParam = VK_SHIFT;
+						// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
+						// Bit 30 -> key was previously down, bit 31 -> key is being released.
+						ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
+						key_event_buffer[key_event_pos++] = ke;
 					}
 				}
 			} else if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED && raw->header.dwType == RIM_TYPEMOUSE) {
@@ -6614,6 +6610,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
+			// Windows handles shift KEYUP inconsistently, handle with WM_INPUT
+			if (wParam == VK_SHIFT) {
+				break;
+			}
+			[[fallthrough]];
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN: {
 			if (windows[window_id].ime_suppress_next_keyup && (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP)) {
