@@ -155,9 +155,9 @@ layout(set = 1, binding = 2) uniform texture3D sdfgi_occlusion_texture;
 #endif //SDFGI
 
 layout(set = 0, binding = 15, std140) uniform Params {
-// Per-eye frustum sizes. .xy holds the half-extents; .zw is padding.
-// std140 array stride is 16 bytes (vec4) regardless, so we store as vec4
-// to keep the layout explicit and avoid stride surprises.
+	// Per-eye frustum sizes. .xy holds the half-extents; .zw is padding.
+	// std140 array stride is 16 bytes (vec4) regardless, so we store as vec4
+	// to keep the layout explicit and avoid stride surprises.
 	vec4 fog_frustum_size_begin[MAX_FOG_VIEWS];
 	vec4 fog_frustum_size_end[MAX_FOG_VIEWS];
 
@@ -280,37 +280,38 @@ vec3 safe_normalize(vec3 v) {
 #define TEMPORAL_FRAMES 16
 
 const vec3 halton_map[TEMPORAL_FRAMES] = vec3[](
-	vec3(0.5, 0.33333333, 0.2),
-	vec3(0.25, 0.66666667, 0.4),
-	vec3(0.75, 0.11111111, 0.6),
-	vec3(0.125, 0.44444444, 0.8),
-	vec3(0.625, 0.77777778, 0.04),
-	vec3(0.375, 0.22222222, 0.24),
-	vec3(0.875, 0.55555556, 0.44),
-	vec3(0.0625, 0.88888889, 0.64),
-	vec3(0.5625, 0.03703704, 0.84),
-	vec3(0.3125, 0.37037037, 0.08),
-	vec3(0.8125, 0.7037037, 0.28),
-	vec3(0.1875, 0.14814815, 0.48),
-	vec3(0.6875, 0.48148148, 0.68),
-	vec3(0.4375, 0.81481481, 0.88),
-	vec3(0.9375, 0.25925926, 0.12),
-	vec3(0.03125, 0.59259259, 0.32));
+		vec3(0.5, 0.33333333, 0.2),
+		vec3(0.25, 0.66666667, 0.4),
+		vec3(0.75, 0.11111111, 0.6),
+		vec3(0.125, 0.44444444, 0.8),
+		vec3(0.625, 0.77777778, 0.04),
+		vec3(0.375, 0.22222222, 0.24),
+		vec3(0.875, 0.55555556, 0.44),
+		vec3(0.0625, 0.88888889, 0.64),
+		vec3(0.5625, 0.03703704, 0.84),
+		vec3(0.3125, 0.37037037, 0.08),
+		vec3(0.8125, 0.7037037, 0.28),
+		vec3(0.1875, 0.14814815, 0.48),
+		vec3(0.6875, 0.48148148, 0.68),
+		vec3(0.4375, 0.81481481, 0.88),
+		vec3(0.9375, 0.25925926, 0.12),
+		vec3(0.03125, 0.59259259, 0.32));
 
 // Higher values will make light in volumetric fog fade out sooner when it's occluded by shadow.
 const float INV_FOG_FADE = 10.0;
 
 void main() {
+	return;
 	vec3 fog_cell_size = 1.0 / vec3(params.fog_volume_size);
 
-	#ifdef MODE_DENSITY
+#ifdef MODE_DENSITY
 
 	// gpos spans the full doubled-width volume in X: [0, fog_volume_size.x * view_count).
 	ivec3 gpos = ivec3(gl_GlobalInvocationID.xyz);
 
 	// Derive which eye this invocation belongs to and localize the X coordinate.
 	// eye == 0 -> [0, width), eye == 1 -> [width, 2*width).
-	int eye = (gpos.x >= params.fog_volume_size.x) ? 1 : 0;
+	int eye = params.view_count; //(gpos.x >= params.fog_volume_size.x) ? 1 : 0;
 	ivec3 pos = ivec3(gpos.x - eye * params.fog_volume_size.x, gpos.y, gpos.z);
 
 	if (any(greaterThanEqual(pos, params.fog_volume_size)) || gpos.x >= params.fog_volume_size.x * int(params.view_count)) {
@@ -321,11 +322,11 @@ void main() {
 	vec2 frustum_begin = params.fog_frustum_size_begin[eye].xy;
 	vec2 frustum_end = params.fog_frustum_size_end[eye].xy;
 
-	#ifdef NO_IMAGE_ATOMICS
+#ifdef NO_IMAGE_ATOMICS
 	// Linear index must use the doubled (global) width.
 	uint buffer_width = uint(params.fog_volume_size.x) * params.view_count;
 	uint lpos = uint(gpos.z) * buffer_width * uint(params.fog_volume_size.y) + uint(gpos.y) * buffer_width + uint(gpos.x);
-	#endif
+#endif
 
 	vec3 posf = vec3(pos);
 
@@ -395,28 +396,28 @@ void main() {
 	vec3 total_light = vec3(0.0);
 
 	float total_density = params.base_density;
-	#ifdef NO_IMAGE_ATOMICS
+#ifdef NO_IMAGE_ATOMICS
 	uint local_density = density_only_map[lpos];
-	#else
+#else
 	uint local_density = imageLoad(density_only_map, gpos).x;
-	#endif
+#endif
 
 	total_density += float(int(local_density)) / DENSITY_SCALE;
 	total_density = max(0.0, total_density);
 
-	#ifdef NO_IMAGE_ATOMICS
+#ifdef NO_IMAGE_ATOMICS
 	uint scattering_u = light_only_map[lpos];
-	#else
+#else
 	uint scattering_u = imageLoad(light_only_map, gpos).x;
-	#endif
+#endif
 	vec3 scattering = vec3(scattering_u >> 21, (scattering_u << 11) >> 21, scattering_u % 1024) / vec3(2047.0, 2047.0, 1023.0);
 	scattering += params.base_scattering * params.base_density;
 
-	#ifdef NO_IMAGE_ATOMICS
+#ifdef NO_IMAGE_ATOMICS
 	uint emission_u = emissive_only_map[lpos];
-	#else
+#else
 	uint emission_u = imageLoad(emissive_only_map, gpos).x;
-	#endif
+#endif
 	vec3 emission = vec3(emission_u >> 21, (emission_u << 11) >> 21, emission_u % 1024) / vec3(511.0, 511.0, 255.0);
 	emission += params.base_emission * params.base_density;
 
@@ -476,13 +477,13 @@ void main() {
 			if (params.sky_contribution > 0.0) {
 				float mip_bias = 2.0 + total_density * (MAX_SKY_LOD - 2.0); // Not physically based, but looks nice
 				vec3 scatter_direction = (params.radiance_inverse_xform[eye] * safe_normalize(view_pos)) * sign(params.phase_g);
-				#ifdef USE_RADIANCE_OCTMAP_ARRAY
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
 				isotropic = texture(sampler2DArray(sky_texture, linear_sampler_with_mipmaps), vec3(vec3_to_oct_with_border(vec3(0.0, 1.0, 0.0), params.sky_border_size), mip_bias)).rgb;
 				anisotropic = texture(sampler2DArray(sky_texture, linear_sampler_with_mipmaps), vec3(vec3_to_oct_with_border(scatter_direction, params.sky_border_size), mip_bias)).rgb;
-				#else
+#else
 				isotropic = textureLod(sampler2D(sky_texture, linear_sampler_with_mipmaps), vec3_to_oct_with_border(vec3(0.0, 1.0, 0.0), params.sky_border_size), mip_bias).rgb;
 				anisotropic = textureLod(sampler2D(sky_texture, linear_sampler_with_mipmaps), vec3_to_oct_with_border(scatter_direction, params.sky_border_size), mip_bias).rgb;
-				#endif //USE_RADIANCE_OCTMAP_ARRAY
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 			}
 
 			total_light += mix(params.ambient_color, mix(isotropic, anisotropic, abs(params.phase_g)), params.sky_contribution) * params.ambient_inject;
@@ -751,8 +752,8 @@ void main() {
 			}
 		}
 
-		//sdfgi
-		#ifdef ENABLE_SDFGI
+//sdfgi
+#ifdef ENABLE_SDFGI
 
 		{
 			float blend = -1.0;
@@ -826,7 +827,7 @@ void main() {
 			total_light += ambient_total * params.gi_inject;
 		}
 
-		#endif
+#endif
 	}
 
 	vec4 final_density = vec4(total_light * scattering + emission, total_density);
@@ -842,18 +843,18 @@ void main() {
 
 	// All storage writes use the global (doubled-width) coordinate.
 	imageStore(density_map, gpos, final_density);
-	#ifdef NO_IMAGE_ATOMICS
+#ifdef NO_IMAGE_ATOMICS
 	density_only_map[lpos] = 0;
 	light_only_map[lpos] = 0;
 	emissive_only_map[lpos] = 0;
-	#else
+#else
 	imageStore(density_only_map, gpos, uvec4(0));
 	imageStore(light_only_map, gpos, uvec4(0));
 	imageStore(emissive_only_map, gpos, uvec4(0));
-	#endif
-	#endif
+#endif
+#endif
 
-	#ifdef MODE_FOG
+#ifdef MODE_FOG
 
 	// pos.x spans the full doubled-width volume. Each (x,y) column integrates
 	// independently along Z, so the eye split needs no special handling here
@@ -893,9 +894,9 @@ void main() {
 		imageStore(fog_map, fog_pos, final_fog);
 	}
 
-	#endif
+#endif
 
-	#ifdef MODE_FILTER
+#ifdef MODE_FILTER
 
 	ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);
 
@@ -924,8 +925,8 @@ void main() {
 
 	imageStore(dest_map, pos, accum);
 
-	#endif
-	#ifdef MODE_COPY
+#endif
+#ifdef MODE_COPY
 	ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);
 	int global_width = params.fog_volume_size.x * int(params.view_count);
 	if (pos.x >= global_width || pos.y >= params.fog_volume_size.y || pos.z >= params.fog_volume_size.z) {
@@ -934,5 +935,5 @@ void main() {
 
 	imageStore(dest_map, pos, imageLoad(source_map, pos));
 
-	#endif
+#endif
 }

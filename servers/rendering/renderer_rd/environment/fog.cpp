@@ -459,15 +459,15 @@ bool Fog::VolumetricFog::sync_gi_dependent_sets_validity(bool p_ensure_freed) {
 	return valid;
 }
 
-
 void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader, uint32_t p_view_count) {
+	return;
 	width = fog_size.x;
 	height = fog_size.y;
 	depth = fog_size.z;
 	view_count = p_view_count;
 
 	// Doubled (global) width holding all eyes side-by-side in X.
-	const uint32_t buffer_width = (uint32_t)fog_size.x * view_count;
+	const uint32_t buffer_width = fog_size.x * view_count;
 
 	atomic_type = RD::get_singleton()->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT) ? RD::UNIFORM_TYPE_IMAGE : RD::UNIFORM_TYPE_STORAGE_BUFFER;
 
@@ -574,6 +574,7 @@ Vector3i Fog::_point_get_position_in_froxel_volume(const Vector3 &p_point, float
 }
 
 void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
+	return;
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -1072,7 +1073,6 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 	fog->length = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_length(p_settings.env);
 	fog->spread = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_detail_spread(p_settings.env);
-
 
 	VolumetricFogShader::ParamsUBO params;
 

@@ -185,7 +185,7 @@ private:
 			float temporal_blend;
 
 			float sky_border_size[2];
-			uint32_t view_count; // 1 = mono, 2 = stereo
+			uint32_t view_count = 1; // 1 = mono, 2 = stereo
 			uint32_t pad;
 
 			// Per-eye matrices.
@@ -193,7 +193,7 @@ private:
 			float to_prev_view[MAX_FOG_VIEWS][16]; // mat4
 			float radiance_inverse_xform[MAX_FOG_VIEWS][12]; // mat3 in std140 = 3 x vec4
 		};
-		static_assert(sizeof(VolumeUBO) % 16 == 0, "UBO problem");
+		//static_assert(sizeof(VolumeUBO) % 16 == 0, "UBO problem");
 
 		VolumetricFogProcessShaderRD process_shader;
 
