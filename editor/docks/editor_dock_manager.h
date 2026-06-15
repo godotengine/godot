@@ -129,6 +129,8 @@ private:
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
 
+	DockTabContainer *get_dock_container(int p_slot) const;
+
 	void update_docks_menu();
 	void update_tab_styles();
 	void set_tab_icon_max_width(int p_max_width);
