@@ -67,6 +67,8 @@ public:
 	real_t get_floor_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
 	const Vector2 &get_platform_velocity() const;
 
+	virtual Node *get_physics_process_dependency() const override;
+
 	int get_slide_collision_count() const;
 	PhysicsServer2D::MotionResult get_slide_collision(int p_bounce) const;
 

@@ -151,6 +151,10 @@ private:
 	// Static so we can get directly instead of via SceneTree pointer.
 	static bool _physics_interpolation_enabled;
 
+	// Project setting: physics/common/platform_velocity_correction_beta (default true).
+	// When true, kinematic platform 1-tick lag fix and adaptive process ordering are active.
+	static bool _platform_velocity_correction_enabled;
+
 	// Note that physics interpolation is hard coded to OFF in the editor,
 	// therefore we have a second bool to enable e.g. configuration warnings
 	// to only take effect when the project is using physics interpolation.
@@ -462,6 +466,7 @@ public:
 	// Different name to disambiguate fast static versions from the user bound versions.
 	static bool is_fti_enabled() { return _physics_interpolation_enabled; }
 	static bool is_fti_enabled_in_project() { return _physics_interpolation_enabled_in_project; }
+	static bool is_platform_velocity_correction_enabled() { return _platform_velocity_correction_enabled; }
 
 #ifndef _3D_DISABLED
 	void client_physics_interpolation_add_node_3d(SelfList<Node3D> *p_elem);
