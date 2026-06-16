@@ -57,7 +57,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-06 10:01+0000\n"
+"PO-Revision-Date: 2026-06-10 12:02+0000\n"
 "Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
@@ -726,6 +726,9 @@ msgstr "Avmarkera alla nycklar"
 
 msgid "Add Animation"
 msgstr "Lägg till animation"
+
+msgid "No available animations"
+msgstr "Inga tillgängliga animationer"
 
 msgid "Add %s"
 msgstr "Lägg till %s"
@@ -6395,6 +6398,13 @@ msgstr ""
 msgid "Web with Extensions"
 msgstr "Webb med tillägg"
 
+msgid ""
+"Web build with support for GDExtensions. Only useful if you use GDExtensions, "
+"otherwise it only increases build size."
+msgstr ""
+"Webb‑build med stöd för GDExtensions. Endast användbart om du använder "
+"GDExtensions, annars ökar det bara byggstorleken."
+
 msgid "Web Single-Threaded"
 msgstr "Webb enkeltrådad"
 
@@ -6591,8 +6601,26 @@ msgstr "Det gick inte att öppna mini‑ZIP för skrivning."
 msgid "ZIP reader could not open mini-ZIP."
 msgstr "ZIP‑läsaren kunde inte öppna mini‑ZIP."
 
+msgid "File does not exist in ZIP archive."
+msgstr "Filen finns inte i ZIP‑arkivet."
+
+msgid "Could not open file within ZIP archive."
+msgstr "Kunde inte öppna filen i ZIP‑arkivet."
+
+msgid "Unable to read file information from ZIP archive."
+msgstr "Det går inte att läsa filinformationen från ZIP‑arkivet."
+
+msgid "IO/zlib error reading file from ZIP archive."
+msgstr "IO/zlib‑fel vid läsning av fil från ZIP‑arkivet."
+
+msgid "CRC error reading file from ZIP archive."
+msgstr "CRC‑fel vid läsning av fil från ZIP‑arkivet."
+
 msgid "Mini-ZIP data was empty."
 msgstr "Mini‑ZIP‑data var tom."
+
+msgid "Failed to open template file for writing."
+msgstr "Det gick inte att öppna mallfilen för skrivning."
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
@@ -10231,6 +10259,13 @@ msgid "Editing instance properties"
 msgstr "Redigerar instansegenskaper"
 
 msgid ""
+"Edited properties will apply to the newly painted instances. They will be "
+"stored locally in the current scene."
+msgstr ""
+"Redigerade egenskaper kommer att tillämpas på de nyss målade instanserna. De "
+"lagras lokalt i den aktuella scenen."
+
+msgid ""
 "Pin the current node.\n"
 "When enabled, the painting parent node will not change when selecting other "
 "nodes in the scene."
@@ -10239,6 +10274,9 @@ msgstr ""
 "När detta är aktiverat kommer den överordnade målningsnoden inte att ändras "
 "när du markerar andra noder i scenen."
 
+msgid "Pinned Node: %s"
+msgstr "Fäst nod: %s"
+
 msgid ""
 "The selected scene could not be found. It may have been moved or deleted."
 msgstr "Den valda scenen kunde inte hittas. Den kan ha flyttats eller raderats."
@@ -10246,11 +10284,34 @@ msgstr "Den valda scenen kunde inte hittas. Den kan ha flyttats eller raderats."
 msgid "Advanced Settings"
 msgstr "Avancerade inställningar"
 
+msgid ""
+"Hold Alt while painting to temporarily switch to the previously used paint "
+"snap mode."
+msgstr ""
+"Håll ned Alt när du målar för att tillfälligt växla till det senast använda "
+"snäpp‑läget för målning."
+
 msgid "Pin Node"
 msgstr "Fastnålad nod"
 
+msgid ""
+"When enabled, the painting parent node will not change when selecting other "
+"nodes in the scene."
+msgstr ""
+"När detta är aktiverat kommer den överordnade målningsnoden inte att ändras "
+"när du markerar andra noder i scenen."
+
 msgid "Scene Picker"
 msgstr "Scenväljare"
+
+msgid ""
+"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
+"2D editor's viewport.\n"
+"Holding Ctrl enables picking from the 2D editor's viewport."
+msgstr ""
+"När detta är aktiverat kan du välja scener från FileSystem‑dockan, "
+"Scene‑dockan eller 2D‑redigerarens vy.\n"
+"Om du håller ned Ctrl kan du välja från 2D‑redigerarens vy."
 
 msgid "Edit Properties"
 msgstr "Redigeringsegenskaper"
@@ -10269,6 +10330,13 @@ msgstr "Fäst mot rutnätscellens mittpunkt"
 
 msgid "Allow Overlapping"
 msgstr "Tillåt överlappning"
+
+msgid ""
+"Allow painting over existing painted scenes.\n"
+"Hold Shift while painting to temporarily toggle this option."
+msgstr ""
+"Tillåt målning ovanpå redan målade scener.\n"
+"Håll ned Shift när du målar för att tillfälligt växla detta alternativ."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Det här skelettet har inga ben, skapa några Bone2D-barnnoder."
@@ -11911,6 +11979,13 @@ msgid "The transform to apply to the item's mesh."
 msgstr "Transformen som ska tillämpas på objektets mesh."
 
 msgid ""
+"The shadow casting mode used by the item's mesh. See [enum "
+"RenderingServer.ShadowCastingSetting]."
+msgstr ""
+"Skuggkastningsläget som används av objektets mesh. Se [enum "
+"RenderingServer.ShadowCastingSetting]."
+
+msgid ""
 "The item's collision shapes.\n"
 "The array should consist of [Shape3D] objects, each followed by a "
 "[Transform3D] that will be applied to it. For shapes that should not have a "
@@ -11933,6 +12008,15 @@ msgstr "Objektets bitmask för navigationslager."
 msgid "The texture to use as the item's preview icon in the editor."
 msgstr ""
 "Texturen som ska användas som objektets förhandsgranskningsikon i redigeraren."
+
+msgid ""
+"No items found inside the MeshLibrary.\n"
+"You can add some by using the Add button on the left, or by importing them "
+"from a scene file via the Import menu."
+msgstr ""
+"Inga objekt hittades i MeshLibrary.\n"
+"Du kan lägga till några genom att använda knappen Lägg till vänster, eller "
+"genom att importera dem från en scenfil via Import-menyn."
 
 msgid "Apply without Transforms"
 msgstr "Tillämpa utan transforms"
@@ -22053,6 +22137,9 @@ msgstr "Återställ animationstillämpning"
 msgid "No playback resource set at path: %s."
 msgstr "Ingen uppspelningsresurs inställd vid sökvägen: %s."
 
+msgid "Nothing connected to input %d."
+msgstr "Inget är anslutet till ingång %d."
+
 msgid "No root AnimationNode for the graph is set."
 msgstr "Ingen rot‑AnimationNode har angetts för grafen."
 
@@ -22170,13 +22257,6 @@ msgstr ""
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s kan inte släppas här. Använd %s för att avbryta."
-
-msgid ""
-"Labels with autowrapping enabled must have a positive custom maximum width "
-"configured to work correctly."
-msgstr ""
-"Labels med automatisk radbrytning aktiverad måste ha en positiv anpassad "
-"maxbredd konfigurerad för att fungera korrekt."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

@@ -116,13 +116,15 @@
 # Rudeus <95301440+7Luminaries@users.noreply.github.com>, 2026.
 # Bocai_BCA <c3204835842@icloud.com>, 2026.
 # 张华 <i1tb@qq.com>, 2026.
+# kexuejiaLv0 <timezhang35@gmail.com>, 2026.
+# Louish <louish666666@outlook.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2026-05-27 19:12+0000\n"
-"Last-Translator: 风青山 <idleman@yeah.net>\n"
+"PO-Revision-Date: 2026-06-10 12:01+0000\n"
+"Last-Translator: 张华 <i1tb@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -130,7 +132,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.6\n"
 
 msgid "OK"
 msgstr "确定"
@@ -789,6 +791,9 @@ msgstr "取消选择关键帧"
 
 msgid "Add Animation"
 msgstr "添加动画"
+
+msgid "No available animations"
+msgstr "无可用动画"
 
 msgid "Add %s"
 msgstr "添加 %s"
@@ -6257,6 +6262,13 @@ msgstr ""
 msgid "Web with Extensions"
 msgstr "支持 Extensions 的 Web 版"
 
+msgid ""
+"Web build with support for GDExtensions. Only useful if you use GDExtensions, "
+"otherwise it only increases build size."
+msgstr ""
+"支持 GDExtensions 的 Web 构建版本。只有在你确实需要用到 GDExtensions 时才选"
+"它，不然只会白白增加构建包的体积。"
+
 msgid "Web Single-Threaded"
 msgstr "Web 单线程版"
 
@@ -6452,8 +6464,26 @@ msgstr "无法打开 mini-ZIP 以进行写入操作。"
 msgid "ZIP reader could not open mini-ZIP."
 msgstr "ZIP 读取器无法打开mini-ZIP。"
 
+msgid "File does not exist in ZIP archive."
+msgstr "ZIP 压缩包中不存在该文件。"
+
+msgid "Could not open file within ZIP archive."
+msgstr "无法打开 ZIP 压缩包内的文件。"
+
+msgid "Unable to read file information from ZIP archive."
+msgstr "无法从 ZIP 压缩包中读取文件信息。"
+
+msgid "IO/zlib error reading file from ZIP archive."
+msgstr "从 ZIP 压缩包中读取文件时发生 IO/zlib 错误。"
+
+msgid "CRC error reading file from ZIP archive."
+msgstr "从 ZIP 压缩包中读取文件时发生 CRC 错误。"
+
 msgid "Mini-ZIP data was empty."
 msgstr "Mini-ZIP 数据为空。"
+
+msgid "Failed to open template file for writing."
+msgstr "无法打开模板文件进行写入。"
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
@@ -9938,12 +9968,20 @@ msgid "Editing instance properties"
 msgstr "编辑实例属性"
 
 msgid ""
+"Edited properties will apply to the newly painted instances. They will be "
+"stored locally in the current scene."
+msgstr "已编辑的属性将应用于新绘制的实例，并会存储在当前场景中。"
+
+msgid ""
 "Pin the current node.\n"
 "When enabled, the painting parent node will not change when selecting other "
 "nodes in the scene."
 msgstr ""
 "固定当前节点。\n"
 "启用后，在场景中选择其他节点时，绘制的父节点将不会改变。"
+
+msgid "Pinned Node: %s"
+msgstr "已固定的节点：%s"
 
 msgid ""
 "The selected scene could not be found. It may have been moved or deleted."
@@ -9952,11 +9990,29 @@ msgstr "所选的场景未找到。该文件可能已被移动或删除。"
 msgid "Advanced Settings"
 msgstr "高级设置"
 
+msgid ""
+"Hold Alt while painting to temporarily switch to the previously used paint "
+"snap mode."
+msgstr "在绘制时按住 Alt 键，可临时切换到上一次使用的绘制吸附模式。"
+
 msgid "Pin Node"
 msgstr "固定节点"
 
+msgid ""
+"When enabled, the painting parent node will not change when selecting other "
+"nodes in the scene."
+msgstr "启用后，在场景中选择其他节点时，绘制的父节点不会发生改变。"
+
 msgid "Scene Picker"
 msgstr "场景拾取器"
+
+msgid ""
+"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
+"2D editor's viewport.\n"
+"Holding Ctrl enables picking from the 2D editor's viewport."
+msgstr ""
+"启用后，你可以从‘文件系统’面板、‘场景’面板或 2D 编辑器的视口中选择场景。\n"
+"按住 Ctrl 键可从 2D 编辑器的视口中进行拾取。"
 
 msgid "Edit Properties"
 msgstr "绘制属性"
@@ -9975,6 +10031,13 @@ msgstr "吸附到网格单元中心"
 
 msgid "Allow Overlapping"
 msgstr "允许重叠"
+
+msgid ""
+"Allow painting over existing painted scenes.\n"
+"Hold Shift while painting to temporarily toggle this option."
+msgstr ""
+"允许在已绘制的场景上进行覆盖绘制。\n"
+"在绘制时按住 Shift 键，可临时切换此选项。"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "该骨架没有骨骼，请创建一些 Bone2D 子节点。"
@@ -11549,6 +11612,13 @@ msgid "The transform to apply to the item's mesh."
 msgstr "应用于该项网格的变换。"
 
 msgid ""
+"The shadow casting mode used by the item's mesh. See [enum "
+"RenderingServer.ShadowCastingSetting]."
+msgstr ""
+"该对象的网格（Mesh）所使用的阴影投射模式。请参阅 [enum "
+"RenderingServer.ShadowCastingSetting]。"
+
+msgid ""
 "The item's collision shapes.\n"
 "The array should consist of [Shape3D] objects, each followed by a "
 "[Transform3D] that will be applied to it. For shapes that should not have a "
@@ -11569,6 +11639,15 @@ msgstr "该项的导航层位掩码。"
 
 msgid "The texture to use as the item's preview icon in the editor."
 msgstr "用作该项在编辑器中预览图标的纹理。"
+
+msgid ""
+"No items found inside the MeshLibrary.\n"
+"You can add some by using the Add button on the left, or by importing them "
+"from a scene file via the Import menu."
+msgstr ""
+"在网格库（MeshLibrary）中未找到任何项目。\n"
+"你可以通过点击左侧的‘添加（Add）’按钮来添加，或者通过‘导入（Import）’菜单从场"
+"景文件中导入。"
 
 msgid "Apply without Transforms"
 msgstr "不带变换应用"
@@ -21199,6 +21278,9 @@ msgstr "动画应用重置"
 msgid "No playback resource set at path: %s."
 msgstr "路径下没有可播放的资源：%s。"
 
+msgid "Nothing connected to input %d."
+msgstr "输入端口 %d 未连接任何内容。"
+
 msgid "No root AnimationNode for the graph is set."
 msgstr "没有为图设置根 AnimationNode。"
 
@@ -21306,11 +21388,6 @@ msgstr "%s 可以在此处放置。使用 %s 放置，使用 %s 取消。"
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s 无法在此处放置。使用 %s 取消。"
-
-msgid ""
-"Labels with autowrapping enabled must have a positive custom maximum width "
-"configured to work correctly."
-msgstr "启用了自动换行的标签必须配置正值的自定义最大宽度才能正常工作。"
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

@@ -153,7 +153,7 @@
 # Mauricio Mazur <mauricio.mazur12@gmail.com>, 2022.
 # ! Zyll <emanueljunior756@gmail.com>, 2022.
 # Kirrby <kirrby.gaming@gmail.com>, 2022.
-# Murilo Gama <murilovsky2030@gmail.com>, 2022, 2023, 2024, 2025.
+# Murilo Gama <murilovsky2030@gmail.com>, 2022, 2023, 2024, 2025, 2026.
 # Kauã Azevedo <Kazevic@pm.me>, 2022.
 # Zer0-Zer0 <dankmemerson@tutanota.com>, 2022.
 # Levi Ferreira <leviferreiramorais@gmail.com>, 2023.
@@ -220,8 +220,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2026-05-30 11:01+0000\n"
-"Last-Translator: Marco André Babinski <mab.babinski@gmail.com>\n"
+"PO-Revision-Date: 2026-06-11 15:01+0000\n"
+"Last-Translator: Murilo Gama <murilovsky2030@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -229,7 +229,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.6\n"
 
 msgid "OK"
 msgstr "OK"
@@ -890,6 +890,9 @@ msgstr "Desselecionar Todas as Chaves"
 msgid "Add Animation"
 msgstr "Adicionar animação"
 
+msgid "No available animations"
+msgstr "Sem animações disponíveis"
+
 msgid "Add %s"
 msgstr "Adicionar %s"
 
@@ -922,6 +925,12 @@ msgstr "Adicionar Ponto de Animação"
 msgid "Remove BlendSpace1D Point"
 msgstr "Remover Ponto BlendSpace1D"
 
+msgid "Reorder BlendSpace1D Point Index"
+msgstr "Reordenar Índice do Ponto do BlendSpace1D"
+
+msgid "Change BlendSpace1D Point Name"
+msgstr "Renomear Ponto do BlendSpace1D"
+
 msgid "Continuous"
 msgstr "Contínua"
 
@@ -930,6 +939,18 @@ msgstr "Discreta"
 
 msgid "Capture"
 msgstr "Captura"
+
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"Selecione e mova pontos.\n"
+"Clique Direito: Adicionar ponto na posição do clique.\n"
+"Shift+Clique Esquerdo+Arrastar: Define a posição de transição entre o "
+"espaço.\n"
+"Rolagem: Aumenta ou diminui o índice."
 
 msgid "Create points."
 msgstr "Criar pontos."
@@ -952,8 +973,20 @@ msgstr "Sincronizar"
 msgid "None"
 msgstr "Nenhum"
 
+msgid "Independent"
+msgstr "Independente"
+
+msgid "Cyclic Mutable"
+msgstr "Cíclico Mutável"
+
+msgid "Cyclic Constant"
+msgstr "Cíclico Constante"
+
 msgid "Open Editor"
 msgstr "Abrir Editor"
+
+msgid "Index"
+msgstr "Índice"
 
 msgid "Position"
 msgstr "Posição"
