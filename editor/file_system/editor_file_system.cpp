@@ -2394,6 +2394,50 @@ void EditorFileSystem::_get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet
 	}
 }
 
+void EditorFileSystem::_collect_theme_dependent_textures(EditorFileSystemDirectory *p_dir, Vector<String> &r_files) const {
+	for (int i = 0; i < p_dir->get_file_count(); i++) {
+		if (p_dir->get_file_type(i) != SNAME("CompressedTexture2D")) {
+			continue;
+		}
+		const String path = p_dir->get_file_path(i);
+		const Variant metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(path);
+		if (metadata.get_type() != Variant::DICTIONARY) {
+			continue;
+		}
+		if (!bool(Dictionary(metadata).get("has_editor_variant", false))) {
+			continue;
+		}
+		// On a theme switch, editor variants are what this reports stale.
+		if (!ResourceFormatImporter::get_singleton()->are_import_settings_valid(path)) {
+			r_files.push_back(path);
+		}
+	}
+
+	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+		_collect_theme_dependent_textures(p_dir->get_subdir(i), r_files);
+	}
+}
+
+void EditorFileSystem::reimport_theme_dependent_textures() {
+	EditorFileSystemDirectory *root = get_filesystem();
+	if (!root) {
+		return;
+	}
+
+	Vector<String> to_reimport;
+	_collect_theme_dependent_textures(root, to_reimport);
+	if (to_reimport.is_empty()) {
+		return;
+	}
+
+	// Not reimport_files(): it pops a modal progress dialog on every theme change.
+	emit_signal(SNAME("resources_reimporting"), to_reimport);
+	for (const String &path : to_reimport) {
+		_reimport_file(path);
+	}
+	emit_signal(SNAME("resources_reimported"), to_reimport);
+}
+
 void EditorFileSystem::update_file(const String &p_file) {
 	ERR_FAIL_COND(p_file.is_empty());
 	update_files({ p_file });

@@ -327,6 +327,7 @@ class EditorFileSystem : public Node {
 	void _update_scene_groups();
 	void _update_pending_scene_groups();
 	void _get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet<String> &r_list);
+	void _collect_theme_dependent_textures(EditorFileSystemDirectory *p_dir, Vector<String> &r_files) const;
 
 	ScriptClassInfo _get_global_script_class(const String &p_type, const String &p_path) const;
 
@@ -397,6 +398,7 @@ public:
 	ResourceUID::ID get_file_uid(const String &p_path) const;
 
 	void reimport_files(const Vector<String> &p_files);
+	void reimport_theme_dependent_textures();
 	Error reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters);
 
 	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params);

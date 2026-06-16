@@ -1114,6 +1114,7 @@ void EditorNode::_notification(int p_what) {
 				_update_theme();
 				_build_icon_type_cache();
 				recent_scenes->reset_size();
+				callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::reimport_theme_dependent_textures).call_deferred();
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/timers/dragging_")) {
