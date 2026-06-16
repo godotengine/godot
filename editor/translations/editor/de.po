@@ -133,13 +133,14 @@
 # Marek J <marek.workspace@gmail.com>, 2026.
 # Daniel Haus <d@danielhaus.de>, 2026.
 # Elia Nitsche <egnrse@gmail.com>, 2026.
+# aerokar | Jonathan <jonathan.t.l.weigele@gmx.de>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-26 03:27+0000\n"
-"Last-Translator: Elia Nitsche <egnrse@gmail.com>\n"
+"PO-Revision-Date: 2026-06-16 19:05+0000\n"
+"Last-Translator: aerokar | Jonathan <jonathan.t.l.weigele@gmx.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
 "Language: de\n"
@@ -147,7 +148,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -166,6 +167,9 @@ msgstr "Nicht autorisiert"
 
 msgid "Parameter out of range"
 msgstr "Parameter außerhalb des Wertebereichs"
+
+msgid "Out of memory"
+msgstr "Zu wenig Arbeitspeicher"
 
 msgid "File not found"
 msgstr "Datei nicht gefunden"
@@ -1521,8 +1525,14 @@ msgstr "Nodes verbinden."
 msgid "Remove selected node or transition."
 msgstr "Ausgewählten Node oder Übergang entfernen."
 
+msgid "Transition"
+msgstr "Übergang"
+
 msgid "New Transitions Should Auto Advance"
 msgstr "Neue Übergänge sollen automatisch fortgeführt werden"
+
+msgid "Play Mode"
+msgstr "Abspielmodus"
 
 msgid "Animation Change Transition"
 msgstr "Animation Übergang verändern"
@@ -1767,6 +1777,9 @@ msgstr "Clamp-Loop-Interpol"
 
 msgid "Wrap Loop Interp"
 msgstr "Wiederhol-Loop-Interpol"
+
+msgid "Failed to lookup method: \"%s\""
+msgstr "Fehler beim Aufrufen der Methode \"%s\""
 
 msgid "Go to Definition"
 msgstr "Zur Definition springen"
@@ -2407,8 +2420,14 @@ msgstr "Titel"
 msgid "Author"
 msgstr "Autor"
 
+msgid "Verified Author"
+msgstr "Verifizierter Author"
+
 msgid "License"
 msgstr "Lizenz"
+
+msgid "No changelog provided for this version."
+msgstr "Für diese Version ist kein Änderungsprotokoll vorhanden."
 
 msgid "Loading..."
 msgstr "Lade …"
@@ -2424,6 +2443,12 @@ msgstr "Installieren …"
 
 msgid "Version:"
 msgstr "Version:"
+
+msgid "Open the web browser to show the asset in the online store page."
+msgstr "Öffne den Webbrowser um das Asset im Online-Shop anzuzeigen."
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "Öffne den Webbrowser um die Seite mit den Quelldateien anzuzeigen."
 
 msgid "Description"
 msgstr "Beschreibung"
@@ -2514,6 +2539,24 @@ msgstr "Erneut versuchen"
 
 msgid "Download Error"
 msgstr "Downloadfehler"
+
+msgid "Relevance"
+msgstr "Relevanz"
+
+msgid "Updated (Oldest First)"
+msgstr "Aktualisiert (Älteste zuerst)"
+
+msgid "Reviews (Highest Score First)"
+msgstr "Rezensionen (Höchst bewerteste zuerst)"
+
+msgid "Reviews (Lowest Score First)"
+msgstr "Bewertungen (Niedrigste Zuerst)"
+
+msgid "Created (Newest First)"
+msgstr "Erstellt am (Neueste Zuerst)"
+
+msgid "Created (Oldest First)"
+msgstr "Erstellt am (Älteste Zuerst)"
 
 msgctxt "Pagination"
 msgid "First"

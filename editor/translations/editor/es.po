@@ -22690,13 +22690,6 @@ msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s no puede soltarse aquí. Usa %s para cancelar."
 
 msgid ""
-"Labels with autowrapping enabled must have a positive custom maximum width "
-"configured to work correctly."
-msgstr ""
-"Las etiquetas con ajuste automático activado deben tener configurado un ancho "
-"máximo personalizado positivo para funcionar correctamente."
-
-msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr ""

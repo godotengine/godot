@@ -47,13 +47,14 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Tallyrald <tally.github@gmail.com>, 2026.
 # Csala Péter <csalapeter@protonmail.com>, 2026.
+# Lenom Tom <lenombusinesshehe69@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-08 20:47+0000\n"
-"Last-Translator: Csala Péter <csalapeter@protonmail.com>\n"
+"PO-Revision-Date: 2026-06-14 07:38+0000\n"
+"Last-Translator: Lenom Tom <lenombusinesshehe69@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -61,7 +62,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -722,6 +723,9 @@ msgstr "Összes Kulcs Kiválasztásának Megszüntetése"
 msgid "Add Animation"
 msgstr "Animáció Hozzáadása"
 
+msgid "No available animations"
+msgstr "Nincs elérhető animáció"
+
 msgid "Add %s"
 msgstr "%s Hozzáadása"
 
@@ -752,6 +756,9 @@ msgstr "Animáció Pont Hozzáadás"
 
 msgid "Remove BlendSpace1D Point"
 msgstr "BlendSpace1D Pont Eltávolítás"
+
+msgid "Reorder BlendSpace1D Point Index"
+msgstr "BlendSpace1D Pont Újrarendezése"
 
 msgid "Change BlendSpace1D Point Name"
 msgstr "BlendSpace1D Pont Név Módosítás"
@@ -825,6 +832,9 @@ msgstr "Szerkesztő megnyitása"
 msgid "Index"
 msgstr "Index"
 
+msgid "Blend Point Index"
+msgstr "Keverési Pont Index"
+
 msgid ""
 "Index of the blend point.\n"
 "Values outside of the valid range will be clamped to the nearest index."
@@ -856,6 +866,9 @@ msgstr "A háromszög már létezik."
 msgid "Add Triangle"
 msgstr "Háromszög hozzáadása"
 
+msgid "Move BlendSpace2D Node Point"
+msgstr "BlendSpace1D Node Pont Mozgatása"
+
 msgid "Change BlendSpace2D Config"
 msgstr "BlendSpace2D Konfig Módosítás"
 
@@ -867,6 +880,12 @@ msgstr "BlendSpace2D Pont Eltávolítás"
 
 msgid "Remove BlendSpace2D Triangle"
 msgstr "BlendSpace2D Háromszög Eltávolítás"
+
+msgid "Reorder BlendSpace2D Point Index"
+msgstr "BlendSpace2D Pont Újrarendezése"
+
+msgid "Change BlendSpace2D Point Name"
+msgstr "BlendSpace2D Pont Módosítása"
 
 msgid "Toggle Auto Triangles"
 msgstr "Automatikus háromszögek be- és kikapcsolása"
@@ -1834,6 +1853,10 @@ msgid "Quad"
 msgstr "Kvad"
 
 msgctxt "Transition Type"
+msgid "Expo"
+msgstr "Exponenciális"
+
+msgctxt "Transition Type"
 msgid "Elastic"
 msgstr "Elasztikus"
 
@@ -1900,6 +1923,18 @@ msgstr "Animáció sávok csak AnimationPlayer node-ra mutathatnak."
 
 msgid "Not possible to add a new track without a root"
 msgstr "Új sáv hozzáadása nem lehetséges gyökér nélkül"
+
+msgid "Pick a node to animate:"
+msgstr "Válassza ki az animálandó node-ot:"
+
+msgid "Pick a node to select method:"
+msgstr "Válasszon egy node-ot a függvény kiválasztásához:"
+
+msgid "Pick a node to play audio:"
+msgstr "Válassza ki a hangot lejátszó node-ot:"
+
+msgid "Pick a node to play animation:"
+msgstr "Válassza ki az animációt lejátszó node-ot:"
 
 msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr "Érvénytelen sáv Bezier számára (nincs megfelelő al-tulajdonság)"
@@ -2305,6 +2340,9 @@ msgstr "SHA-256 hash ellenőrzés megbukot"
 msgid "Asset Download Error:"
 msgstr "Eszköz Letöltési Hiba:"
 
+msgid "Ready to install."
+msgstr "Telepítésre kész."
+
 msgid "Downloading (%s / %s)..."
 msgstr "Letöltés (%s / %s)..."
 
@@ -2469,7 +2507,7 @@ msgid "Toggle Audio Bus Mute"
 msgstr "Hangbusz Némításának Ki-/Bekapcsolása"
 
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "Hangbusz KItérés Effektus Ki-/Bekapcsolása"
+msgstr "Hangbusz-hatások Kihagyásának Váltása"
 
 msgid "Select Audio Bus Send"
 msgstr "Hangbusz Küldésének Kiválasztása"
@@ -2980,6 +3018,9 @@ msgid "This method must be implemented to complete the abstract class."
 msgstr ""
 "Ezt a metódust kötelező implementálni az absztrakt osztály kiteljesítéséhez."
 
+msgid "Code snippet copied to clipboard."
+msgstr "Kódrészlet a vágólapra másolva."
+
 msgid "This value is an integer composed as a bitmask of the following flags."
 msgstr "Ez az érték a következő jelzők bitmaszkjaként összeállított egész szám."
 
@@ -3016,6 +3057,9 @@ msgstr ""
 
 msgid "This operator may be changed or removed in future versions."
 msgstr "Ez az operátor módosulhat vagy törölve is lehet a jövőbeli verziókban."
+
+msgid "Error codes returned:"
+msgstr "Visszaadott hibakódok:"
 
 msgid "There is currently no description for this method."
 msgstr "Jelenleg nincs leírás ehhez a metódushoz."
@@ -3525,6 +3569,9 @@ msgstr "Referenciák törlése minden jelenetből"
 
 msgid "Delete group \"%s\" and all its references?"
 msgstr "\"%s\" csoport törlése minden referenciájával együtt?"
+
+msgid "Group can't be empty."
+msgstr "A csoport nem lehet üres."
 
 msgid "Rename"
 msgstr "Átnevezés"
@@ -4707,6 +4754,9 @@ msgstr "A(z) \"%s\" útvonalon található fájl nem nyitható meg."
 msgid "Packing"
 msgstr "Csomagolás"
 
+msgid "Failed to export project files."
+msgstr "Nem sikerült exportálni a projektfájlokat."
+
 msgid "App Store Team ID not specified."
 msgstr "Nincs megadva az App Store Team ID."
 
@@ -5244,7 +5294,7 @@ msgid "Dependencies:"
 msgstr "Függőségek:"
 
 msgid "Fix Broken"
-msgstr "HIbásak Kijavítása"
+msgstr "Sérülés Javítása"
 
 msgid "Dependency Editor"
 msgstr "Függőség Szerkesztő"
@@ -5452,6 +5502,9 @@ msgstr "Titánium Tagok"
 
 msgid "Thank you for choosing Godot Engine!"
 msgstr "Köszönjük, hogy a Godot Engine-t választotta!"
+
+msgid "Name cannot be empty."
+msgstr "A Név nem lehet üres."
 
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
@@ -5694,7 +5747,7 @@ msgid ""
 "Configure the Beats Per Measure (tempo) used for the interactive streams.\n"
 "This is required in order to configure beat information."
 msgstr ""
-"Ütem (BPM, tempó) beállítása az interaktív folyamokhoz.\n"
+"Ütem (tempó) beállítása az interaktív folyamokhoz.\n"
 "Szükséges az üteminformációk beállításához."
 
 msgid ""
@@ -7131,6 +7184,9 @@ msgstr ""
 "Kényszerített szünet a SceneTree szintjén. Minden feldolgozást megállít, de "
 "továbbra is használható a projekt."
 
+msgid "Change the game speed."
+msgstr "Játéksebesség módosítása."
+
 msgid "Speed State"
 msgstr "Sebesség Állapota"
 
@@ -7474,6 +7530,9 @@ msgstr "Rács Beosztás Y:"
 
 msgid "Sync Bones to Polygon"
 msgstr "Csontok Szinkronizálása Sokszögre"
+
+msgid "Pinned Node: %s"
+msgstr "Rögzített Node: %s"
 
 msgid "Allow Overlapping"
 msgstr "Átfedés Engedélyezése"
@@ -8351,6 +8410,12 @@ msgstr "Nincs mesh a hibakereséshez."
 
 msgid "Create Navigation Mesh"
 msgstr "Navigációs Háló Létrehozása"
+
+msgid "MeshInstance3D lacks a Mesh."
+msgstr "MeshInstance3D-nak nincs Mesh-e."
+
+msgid "Could not create outline."
+msgstr "Körvonalkészítés sikertelen."
 
 msgid "Create Outline"
 msgstr "Körvonal Készítése"
@@ -10036,10 +10101,16 @@ msgid_plural "{num} font sizes"
 msgstr[0] "1 betűtípus méret"
 msgstr[1] "{num} betűtípus méret"
 
+msgid "No font sizes found."
+msgstr "Nem található betűméret."
+
 msgid "1 icon"
 msgid_plural "{num} icons"
 msgstr[0] "1 ikon"
 msgstr[1] "{num} ikon"
+
+msgid "No icons found."
+msgstr "Nem találhatók ikonok."
 
 msgid "1 stylebox"
 msgid_plural "{num} styleboxes"
@@ -10173,6 +10244,9 @@ msgstr "Másik Téma"
 
 msgid "Filter the list of types or create a new custom type:"
 msgstr "A típuslista szűrése vagy új egyedi típus létrehozása:"
+
+msgid "Type name is empty!"
+msgstr "Üres típusnév!"
 
 msgid "Confirm Item Rename"
 msgstr "Elem Átnevezésének Megerősítése"
@@ -10851,6 +10925,12 @@ msgstr ""
 "Téma mentése sikertelen. A fájlnév nem lehet \"Default\", \"Custom\", vagy "
 "\"Godot 2\"."
 
+msgid "Saving theme failed."
+msgstr "Téma mentése sikertelen."
+
+msgid "Error saving file!"
+msgstr "Hiba a fájl mentésekor!"
+
 msgid "New Text File..."
 msgstr "Új szövegfájl..."
 
@@ -11308,6 +11388,9 @@ msgstr "Szöveg Renderelés és Betűtípus Opciók:"
 
 msgid "Reset the edited profile?"
 msgstr "Visszaállítja a szerkesztett profilt?"
+
+msgid "File saving failed."
+msgstr "Fájl mentése sikertelen."
 
 msgid "Create a new profile?"
 msgstr "Új profil létrehozása?"
@@ -11978,6 +12061,9 @@ msgstr "Az érték argumentum egy korábban felszabadított példány."
 msgid "Export Scene to glTF 2.0 File"
 msgstr "Jelenet Exportálása glTF 2.0 Fájlba"
 
+msgid "Couldn't run Blender executable."
+msgstr "A Blender nem indult el."
+
 msgid "Unexpected --version output from Blender executable at: %s."
 msgstr "Váratlan --version kimenet a Blender futtatható állománytól itt: %s."
 
@@ -12483,6 +12569,9 @@ msgstr "Pillanatkép Vizualizálása"
 
 msgid "Take ObjectDB Snapshot"
 msgstr "ObjectDB Pillanatkép Készítése"
+
+msgid "Snapshot rename failed"
+msgstr "Snapshot átnevezése sikertelen"
 
 msgid "Diff Against:"
 msgstr "Különbség:"
@@ -14264,6 +14353,9 @@ msgstr ""
 "Használja a \"chmod +x\" parancsot az exportált .app macOS-re vagy Linux-ra "
 "mozgatása után."
 
+msgid "Could not open \"%s\"."
+msgstr "Nem sikerült megnyitni a(z) \"%s\" fájlt."
+
 msgid ""
 "Requested template binary \"%s\" not found. It might be missing from your "
 "template archive."
@@ -14400,23 +14492,38 @@ msgstr ""
 msgid "Run in Browser"
 msgstr "Böngészőben futtatás"
 
+msgid "Start HTTP Server"
+msgstr "HTTP Kiszolgáló Inditása"
+
 msgid "Stop HTTP Server"
 msgstr "HTTP Szerver Leállítás"
 
 msgid "Run exported HTML in the system's default browser."
 msgstr "Az exportált HTML futtatása az alapértelmezett böngészőben."
 
+msgid "Start the HTTP server."
+msgstr "HTTP-kiszolgálót inditása."
+
 msgid "Export project again to account for updates."
 msgstr "A frissítések figyelembevételéhez exportálja a projektet újra."
 
+msgid "Stop the HTTP server."
+msgstr "HTTP-kiszolgálót leállítása."
+
 msgid "Icon size \"%d\" is missing."
 msgstr "Ikon méret \"%d\" hiányzik."
+
+msgid "Invalid icon file \"%s\"."
+msgstr "Érvénytelen ikon fájl \"%s\"."
 
 msgid "Could not find signtool executable at \"%s\"."
 msgstr "A signtool futtatható állomány nem található itt: \"%s\"."
 
 msgid "Could not find osslsigncode executable at \"%s\"."
 msgstr "Az osslsigncode futtatható állomány nem található itt: \"%s\"."
+
+msgid "No identity found."
+msgstr "Nem található azonosítót."
 
 msgid ""
 "Could not start signtool executable. Configure signtool path in the Editor "

@@ -102,7 +102,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-06 10:01+0000\n"
+"PO-Revision-Date: 2026-06-09 11:32+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
@@ -772,6 +772,9 @@ msgstr "Odznacz wszystkie klucze"
 
 msgid "Add Animation"
 msgstr "Dodaj animację"
+
+msgid "No available animations"
+msgstr "Brak dostępnych animacji"
 
 msgid "Add %s"
 msgstr "Dodaj %s"
@@ -2751,7 +2754,7 @@ msgid "Ignore Asset Root"
 msgstr "Ignoruj folder główny zasobu"
 
 msgid "No files conflict with your project."
-msgstr "Żaden plik nie konfliktuje z twoim projektem"
+msgstr "Żaden plik nie konfliktuje z twoim projektem."
 
 msgid "Show contents of the asset and conflicting files."
 msgstr "Pokaż zawartość zasobu i konfliktujące pliki."
@@ -6470,6 +6473,13 @@ msgstr ""
 msgid "Web with Extensions"
 msgstr "Web z rozszerzeniami"
 
+msgid ""
+"Web build with support for GDExtensions. Only useful if you use GDExtensions, "
+"otherwise it only increases build size."
+msgstr ""
+"Kompilacja webowa ze wsparciem GDExtension. Tylko użyteczne, jeśli używasz "
+"GDExtension, w innym wypadku tylko zwiększa rozmiar kompilacji."
+
 msgid "Web Single-Threaded"
 msgstr "Web jednowątkowy"
 
@@ -6667,8 +6677,26 @@ msgstr "Nie udało się otworzyć mini-ZIP do pisania."
 msgid "ZIP reader could not open mini-ZIP."
 msgstr "Czytnik ZIP nie mógł otworzyć mini-ZIP."
 
+msgid "File does not exist in ZIP archive."
+msgstr "Plik nie istnieje w archiwum ZIP."
+
+msgid "Could not open file within ZIP archive."
+msgstr "Nie udało się otworzyć pliku wewnątrz archiwum ZIP."
+
+msgid "Unable to read file information from ZIP archive."
+msgstr "Nie można wczytać informacji o pliku z archiwum ZIP."
+
+msgid "IO/zlib error reading file from ZIP archive."
+msgstr "Błąd IO/zlib czytając plik z archiwum ZIP."
+
+msgid "CRC error reading file from ZIP archive."
+msgstr "Błąd CRC czytając plik z archiwum ZIP."
+
 msgid "Mini-ZIP data was empty."
 msgstr "Dane mini-ZIP były puste."
+
+msgid "Failed to open template file for writing."
+msgstr "Nie udało się otworzyć pliku szablonu do zapisu."
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
@@ -10319,6 +10347,13 @@ msgid "Editing instance properties"
 msgstr "Edytowanie właściwości instancji"
 
 msgid ""
+"Edited properties will apply to the newly painted instances. They will be "
+"stored locally in the current scene."
+msgstr ""
+"Edytowane właściwości zostaną zastosowane do nowo namalowanych instancji. "
+"Będą przechowane lokalnie w scenie."
+
+msgid ""
 "Pin the current node.\n"
 "When enabled, the painting parent node will not change when selecting other "
 "nodes in the scene."
@@ -10326,6 +10361,9 @@ msgstr ""
 "Przypnij aktualny węzeł.\n"
 "Kiedy włączone, nadrzędny węzeł dla rysowania nie zmieni się przy wybieraniu "
 "innych węzłów na scenie."
+
+msgid "Pinned Node: %s"
+msgstr "Przypięty węzeł: %s"
 
 msgid ""
 "The selected scene could not be found. It may have been moved or deleted."
@@ -10336,11 +10374,34 @@ msgstr ""
 msgid "Advanced Settings"
 msgstr "Ustawienia zaawansowane"
 
+msgid ""
+"Hold Alt while painting to temporarily switch to the previously used paint "
+"snap mode."
+msgstr ""
+"Przytrzymaj Alt podczas malowania, aby tymczasowo przełączyć do poprzednio "
+"używanego trybu przyciągania malowania."
+
 msgid "Pin Node"
 msgstr "Przypnij węzeł"
 
+msgid ""
+"When enabled, the painting parent node will not change when selecting other "
+"nodes in the scene."
+msgstr ""
+"Kiedy włączone, nadrzędny węzeł dla rysowania nie zmieni się przy wybieraniu "
+"innych węzłów na scenie."
+
 msgid "Scene Picker"
 msgstr "Wybieracz scen"
+
+msgid ""
+"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
+"2D editor's viewport.\n"
+"Holding Ctrl enables picking from the 2D editor's viewport."
+msgstr ""
+"Kiedy włączone, możesz wybrać sceny z doku Systemu plików, doku Sceny, lub "
+"widoku edytora 2D.\n"
+"Przytrzymanie Ctrl włącza wybieranie z widoku edytora 2D."
 
 msgid "Edit Properties"
 msgstr "Edytuj właściwości"
@@ -10359,6 +10420,13 @@ msgstr "Przyciągaj do środka komórki siatki"
 
 msgid "Allow Overlapping"
 msgstr "Zezwól na nachodzenie"
+
+msgid ""
+"Allow painting over existing painted scenes.\n"
+"Hold Shift while painting to temporarily toggle this option."
+msgstr ""
+"Zezwalaj na malowanie po namalowanych już scenach.\n"
+"Przytrzymaj Shift podczas malowania, aby tymczasowo przełączyć tę opcję."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Ten szkielet nie ma kości. Stwórz jakieś węzły potomne Bone2D."
@@ -12006,6 +12074,13 @@ msgid "The transform to apply to the item's mesh."
 msgstr "Transformacja dla siatki elementu."
 
 msgid ""
+"The shadow casting mode used by the item's mesh. See [enum "
+"RenderingServer.ShadowCastingSetting]."
+msgstr ""
+"Tryb rzucania cienia używany przez siatkę elementu. Zobacz [enum "
+"RenderingServer.ShadowCastingSetting]."
+
+msgid ""
 "The item's collision shapes.\n"
 "The array should consist of [Shape3D] objects, each followed by a "
 "[Transform3D] that will be applied to it. For shapes that should not have a "
@@ -12027,6 +12102,15 @@ msgstr "Maska bitowa warstw nawigacji elementu."
 
 msgid "The texture to use as the item's preview icon in the editor."
 msgstr "Tekstura używana jako ikona podglądu elementu w edytorze."
+
+msgid ""
+"No items found inside the MeshLibrary.\n"
+"You can add some by using the Add button on the left, or by importing them "
+"from a scene file via the Import menu."
+msgstr ""
+"Nie znaleziono elementów w MeshLibrary.\n"
+"Możesz jakieś dodać używając przycisku Dodaj po lewej, lub importując je z "
+"pliku sceny używając menu Importowanie."
 
 msgid "Apply without Transforms"
 msgstr "Zastosuj bez transformacji"
@@ -22273,6 +22357,9 @@ msgstr "Animacja zastosuj reset"
 msgid "No playback resource set at path: %s."
 msgstr "Nie znaleziono zasobu do odtworzenia w ścieżce: %s."
 
+msgid "Nothing connected to input %d."
+msgstr "Nic nie jest podłączone do wejścia %d."
+
 msgid "No root AnimationNode for the graph is set."
 msgstr "Nie ustawiono korzenia AnimationNode dla grafu."
 
@@ -22386,13 +22473,6 @@ msgstr "%s może być tu upuszczony. Użyj %s, aby upuścić, użyj %s, aby anul
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s nie może być tu upuszczony. Użyj %s, aby anulować."
-
-msgid ""
-"Labels with autowrapping enabled must have a positive custom maximum width "
-"configured to work correctly."
-msgstr ""
-"Labelki z włączonym autozawijaniem muszą mieć skonfigurowaną dodatnia "
-"maksymalną szerokość, aby działać poprawnie."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

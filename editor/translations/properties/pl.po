@@ -105,7 +105,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-06 10:01+0000\n"
+"PO-Revision-Date: 2026-06-09 11:32+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
@@ -9232,6 +9232,9 @@ msgstr "Pokaż za nadrzędnym"
 
 msgid "Clip Children"
 msgstr "Przytnij podrzędne"
+
+msgid "Oversampling with Scale"
+msgstr "Nadpróbkowanie ze skalą"
 
 msgid "Light Mask"
 msgstr "Maska światła"

@@ -218,13 +218,14 @@
 # "Alyx.dev" <alyxdev@ik.me>, 2026.
 # isatis <q.isatis@gmail.com>, 2026.
 # William Bouchard <william.bouchard.2@umontreal.ca>, 2026.
+# phylaine MacKendal <phylaine@mailo.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-04 21:01+0000\n"
-"Last-Translator: William Bouchard <william.bouchard.2@umontreal.ca>\n"
+"PO-Revision-Date: 2026-06-11 15:01+0000\n"
+"Last-Translator: phylaine MacKendal <phylaine@mailo.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -894,6 +895,9 @@ msgstr "Désélectionner toutes les clés"
 msgid "Add Animation"
 msgstr "Ajouter une animation"
 
+msgid "No available animations"
+msgstr "Pas d'animation disponible"
+
 msgid "Add %s"
 msgstr "Ajouter %s"
 
@@ -984,6 +988,9 @@ msgstr "Mutable cyclique"
 msgid "Cyclic Constant"
 msgstr "Constante cyclique"
 
+msgid "Cyclic Length"
+msgstr "Longueur du cycle"
+
 msgid ""
 "Cycle length in seconds for cyclic sync. All animations are time-scaled to "
 "complete one cycle in this duration."
@@ -991,6 +998,9 @@ msgstr ""
 "Durée du cycle en secondes pour la synchronisation cyclique. Toutes les "
 "animations sont ajustées dans le temps afin d’effectuer un cycle complet "
 "pendant cette durée."
+
+msgid "Blend"
+msgstr "Mélange"
 
 msgid "Open Editor"
 msgstr "Ouvrir l’éditeur"
@@ -1000,6 +1010,14 @@ msgstr "Index"
 
 msgid "Blend Point Index"
 msgstr "Index de point de mélange"
+
+msgid ""
+"Index of the blend point.\n"
+"Values outside of the valid range will be clamped to the nearest index."
+msgstr ""
+"Indice du point de mélange\n"
+"Les valeurs hors de l'intervalle de validité seront ramenées à l'indice le "
+"plus proche."
 
 msgid "Position"
 msgstr "Position"
@@ -1025,6 +1043,9 @@ msgstr "Le triangle existe déjà."
 msgid "Add Triangle"
 msgstr "Ajouter un triangle"
 
+msgid "Move BlendSpace2D Node Point"
+msgstr "Déplacer le point du nœud BlendSpace2D"
+
 msgid "Change BlendSpace2D Config"
 msgstr "Modifier la configuration du BlendSpace2D"
 
@@ -1036,6 +1057,12 @@ msgstr "Supprimer le point BlendSpace2D"
 
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Supprimer le triangle BlendSpace2D"
+
+msgid "Reorder BlendSpace2D Point Index"
+msgstr "Réorganiser l'index du point BlendSpace2D"
+
+msgid "Change BlendSpace2D Point Name"
+msgstr "Modifier le nom du point BlendSpace2D"
 
 msgid "Toggle Auto Triangles"
 msgstr "Commutation automatique des triangles"
@@ -1657,44 +1684,50 @@ msgstr "Connecter des nœuds."
 msgid "Remove selected node or transition."
 msgstr "Supprimer le nœud sélectionné ou la transition."
 
+msgid "Transition"
+msgstr "Transition"
+
 msgid "New Transitions Should Auto Advance"
-msgstr "Les nouvelles transitions devraient être en « Auto Advance »"
+msgstr "Les nouvelles transitions devraient avancer automatiquement"
+
+msgid "Play Mode"
+msgstr "Mode d’exécution"
 
 msgid "Animation Change Transition"
-msgstr "Changer l’animation de transition"
+msgstr "Transition de modification de l’animation"
 
 msgid "Animation Change Position3D"
-msgstr "Changer l’animation de Position3D"
+msgstr "Position3D de modification de l’animation"
 
 msgid "Animation Change Rotation3D"
-msgstr "Changer l’animation de Rotation3D"
+msgstr "Rotation3D de modification de l’animation"
 
 msgid "Animation Change Scale3D"
-msgstr "Changer l’animation de Scale3D"
+msgstr "Scale3D de la modification de l’animation"
 
 msgid "Animation Change Keyframe Value"
-msgstr "Changer la valeur de l’image clé d’animation"
+msgstr "Valeur de la clé de modification de l'animation"
 
 msgid "Animation Change Call"
-msgstr "Changer l’appel d’animation"
+msgstr "Appel de la modification de l'animation"
 
 msgid "Animation Multi Change Transition"
-msgstr "Changements multiple d’animations de transition"
+msgstr "Transition de la modification de multiple animations"
 
 msgid "Animation Multi Change Position3D"
-msgstr "Changements multiple d’animations de Position3D"
+msgstr "Position3D de modifications multiples d’une animation"
 
 msgid "Animation Multi Change Rotation3D"
-msgstr "Changements multiple d’animations de Rotation3D"
+msgstr "Rotation3D de modifications multiples d’une animation"
 
 msgid "Animation Multi Change Scale3D"
-msgstr "Changements multiple d’animations de Scale3D"
+msgstr "Scale3D de modifications multiples d’une animation"
 
 msgid "Animation Multi Change Keyframe Value"
-msgstr "Changer la valeur de plusieurs images clés d’animation"
+msgstr "Valeur clé de modifications multiples d'une animation"
 
 msgid "Animation Multi Change Call"
-msgstr "Changer plusieurs appels d’animation"
+msgstr "Appel de modifications multiples d’une animation"
 
 msgid "Change Animation Length"
 msgstr "Modifier la durée de l’animation"
@@ -1765,7 +1798,7 @@ msgid "Animation Playback Track..."
 msgstr "Piste de lecture d’animation…"
 
 msgid "Animation length (frames)"
-msgstr "Durée de l’animation (en images)"
+msgstr "Durée de l’animation (trames)"
 
 msgid "Animation length (seconds)"
 msgstr "Durée de l’animation (en secondes)"
@@ -1814,7 +1847,7 @@ msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
 msgstr "Mode bouclé (fin interpolée avec le début dans la boucle)"
 
 msgid "Remove this track."
-msgstr "Supprime cette piste."
+msgstr "Supprimer cette piste."
 
 msgid "Time (s):"
 msgstr "Temps (s) :"
@@ -1903,6 +1936,9 @@ msgstr "Limiter l’interpolation de la boucle"
 
 msgid "Wrap Loop Interp"
 msgstr "Envelopper l’interp. de la boucle"
+
+msgid "Failed to lookup method: \"%s\""
+msgstr "Impossible de trouver la méthode : « %s »"
 
 msgid "Go to Definition"
 msgstr "Aller à la définition"
@@ -2085,6 +2121,15 @@ msgstr "Impossible d’ajouter une nouvelle piste sans racine"
 
 msgid "Pick a node to animate:"
 msgstr "Choisir le nœud à animer :"
+
+msgid "Pick a node to select method:"
+msgstr "Choisir un nœud pour sélectionner la méthode :"
+
+msgid "Pick a node to play audio:"
+msgstr "Choisir un nœud pour écouter l'audio :"
+
+msgid "Pick a node to play animation:"
+msgstr "Choisir un nœud pour lire l'animation :"
 
 msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr "Piste non valide pour Bézier (aucune sous-propriété appropriée)"
@@ -2350,7 +2395,7 @@ msgid "Apply RESET"
 msgstr "Appliquer la réinitialisation"
 
 msgid "Bake Animation..."
-msgstr "Précalculer l’animation…"
+msgstr "Pré-calculer l’animation…"
 
 msgid "Optimize Animation (no undo)..."
 msgstr "Optimiser l’animation (pas d’annulation)…"
@@ -2526,6 +2571,12 @@ msgstr "Modifier le décalage de début de clip de piste audio"
 msgid "Change Audio Track Clip End Offset"
 msgstr "Modifier le décalage de fin de clip de piste audio"
 
+msgid "%s at "
+msgstr "%s à "
+
+msgid "'%s':"
+msgstr "\"%s\" :"
+
 msgid "Error: "
 msgstr "Erreur : "
 
@@ -2550,8 +2601,14 @@ msgstr "Titre"
 msgid "Author"
 msgstr "Auteur"
 
+msgid "Verified Author"
+msgstr "Auteur vérifié"
+
 msgid "License"
 msgstr "Licence"
+
+msgid "No changelog provided for this version."
+msgstr "Pas de note de version pour cette version."
 
 msgid "Loading..."
 msgstr "Chargement…"
@@ -2567,6 +2624,14 @@ msgstr "Installer…"
 
 msgid "Version:"
 msgstr "Version :"
+
+msgid "Open the web browser to show the asset in the online store page."
+msgstr ""
+"Ouvrir le navigateur web pour voir l'actif sur la page de la boutique en "
+"ligne."
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "Ouvrir le navigateur web pour voir la page avec les fichiers sources."
 
 msgid "Description"
 msgstr "Description"
@@ -2658,6 +2723,18 @@ msgstr "Réessayer"
 msgid "Download Error"
 msgstr "Erreur de téléchargement"
 
+msgid "Updated (Newest First)"
+msgstr "Mis à jour (le plus récent en premier)"
+
+msgid "Updated (Oldest First)"
+msgstr "Mis à jour (le plus ancien d'abord)"
+
+msgid "Reviews (Highest Score First)"
+msgstr "Bilan (meilleur score en premier)"
+
+msgid "Reviews (Lowest Score First)"
+msgstr "Bilan (score le plus bas en premier)"
+
 msgctxt "Pagination"
 msgid "First"
 msgstr "Premier"
@@ -2686,6 +2763,9 @@ msgstr "Tous"
 msgid "No results for \"%s\"."
 msgstr "Aucun résultats pour « %s »."
 
+msgid "Search templates. Use tags by including \"#tagname\"."
+msgstr "Recherche de modèles. Utiliser une étiquette en ajoutant \"#tagname\"."
+
 msgid "Import..."
 msgstr "Importer…"
 
@@ -2703,6 +2783,9 @@ msgstr "Licences"
 
 msgid "Assets ZIP File"
 msgstr "Fichier ZIP de données"
+
+msgid "Asset Store"
+msgstr "Boutique d'actifs"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr ""
@@ -5053,6 +5136,16 @@ msgid "Spins when the editor window redraws."
 msgstr "Tourne lorsque la fenêtre de l’éditeur est redessinée."
 
 msgid ""
+"Cannot save resource at path \"%s\", as it is imported.\n"
+"Imported resources can't be saved. Instead, modify the source file or change "
+"options in the Import dock."
+msgstr ""
+"Impossible de sauvegarder la ressource dans le répertoire \"%s\", car il est "
+"importé.\n"
+"Les ressources importées ne peuvent être sauvegardées. A la place, modifier "
+"le fichier source ou changer les options dans le panneau d'import."
+
+msgid ""
 "The text-based resource at path \"%s\" is large on disk (%s), likely because "
 "it has embedded binary data.\n"
 "This slows down resource saving and loading.\n"
@@ -6048,6 +6141,12 @@ msgstr "Échec de l’exportation avec le code d’erreur %d."
 msgid "Patch Creation"
 msgstr "Création d’un patch"
 
+msgid ""
+"Could not extract assets from Android bundle \"%s\", due to error \"%s\"."
+msgstr ""
+"Impossible d'extraire les actifs du paquet Android \"%s\", à cause de "
+"l'erreur \"%s\"."
+
 msgid "Could not load patch pack with path \"%s\"."
 msgstr "Impossible de charger le pack de patch avec le chemin : « %s »."
 
@@ -6390,21 +6489,104 @@ msgstr "Extraction des modèles d’exportation"
 msgid "Importing:"
 msgstr "Importation :"
 
+msgid "32-bit build for Microsoft Windows, including console wrapper."
+msgstr ""
+"Compilation 32 bit pour Microsoft Windows, y compris le wrapper de console."
+
+msgid "64-bit build for Microsoft Windows, including console wrapper."
+msgstr ""
+"Compilation 64 bits pour Microsoft Windows, y compris le wrapper de console."
+
+msgid ""
+"64-bit build for Microsoft Windows on ARM architecture, including console "
+"wrapper."
+msgstr ""
+"Compilation 64 bits pour Microsoft Windows sur une architecture ARM, y "
+"compris le wrapper de console."
+
 msgid "32-bit build for Linux systems."
 msgstr "Version 32-bit pour systèmes Linux."
 
 msgid "64-bit build for Linux systems."
 msgstr "Version 64-bit pour systèmes Linux."
 
+msgid "32-bit build for Linux systems on ARM architecture."
+msgstr "Compilation 32 bits pour des systèmes Linux sur une architecture ARM."
+
+msgid "64-bit build for Linux systems on ARM architecture."
+msgstr "Compilation 64 bits des systèmes Linux sur une architecture ARM."
+
 msgid "Universal build for macOS."
 msgstr "Version universelle pour macOS."
+
+msgid ""
+"Regular web build with threading support. Threads improve performance, but "
+"require \"cross-origin isolated\" website to run."
+msgstr ""
+"Compilation normale web avec support de thread. Les threads améliorent la "
+"performance, cependant ils requièrent que le site web tourne en mode "
+"\"isolation muti-origine\"."
+
+msgid ""
+"Web build with support for GDExtensions. Only useful if you use GDExtensions, "
+"otherwise it only increases build size."
+msgstr ""
+"Compilation pour le web avec support des GDExtensions. Utile seulement si "
+"vous utilisez des DGExtensions, sinon cela augmente juste la taille de du "
+"programme."
+
+msgid "Web Single-Threaded"
+msgstr "Web mono-thread"
+
+msgid "Web build without threading support."
+msgstr "Compilation pour le web sans support de thread."
+
+msgid "Web with Extensions Single-Threaded"
+msgstr "Web avec extensions mono-thread"
+
+msgid "Web build with GDExtension support and no threading support."
+msgstr ""
+"Compilation pour le web avec support de GDExtensions et sans support de "
+"thread."
+
+msgid "Build for Apple's iOS."
+msgstr "Compilé pour Apple iOS."
+
+msgid "Line breaking dictionaries for TextServer, used by certain languages."
+msgstr ""
+"Dictionnaire de césure de ligne pour TextServer, utilisé par certains "
+"langages."
+
+msgctxt "Platform Group"
+msgid "Desktop"
+msgstr "Bureau"
 
 msgctxt "Platform Group"
 msgid "Mobile"
 msgstr "Mobile"
 
+msgctxt "Platform Group"
+msgid "Web"
+msgstr "Web"
+
 msgid "Common"
 msgstr "Commun"
+
+msgid "Download this missing file."
+msgstr "Télécharger ce fichier manquant."
+
+msgid "Some files have failed to download."
+msgstr "Des fichiers n'ont pas pu être téléchargés."
+
+msgid "Canceled by the user"
+msgstr "Annulé par l'utilisateur"
+
+msgid ""
+"Download failed.\n"
+"Reason: %s."
+msgstr ""
+"Téléchargement échoué\n"
+"Cause : %s."
 
 msgid "Uncompressing Android Build Sources"
 msgstr "Décompresser les sources de compilation Android"
@@ -6426,6 +6608,24 @@ msgstr "Sélectionner le fichier de modèles"
 
 msgid "Godot Export Templates"
 msgstr "Modèles d’exportation Godot"
+
+msgid "Offline mode, some functionality is not available."
+msgstr "Mode hors-ligne, certaines fonctionnalités ne sont pas disponibles."
+
+msgid "Archive fragment too small. Loaded: %d, required: %d."
+msgstr "Morceaux d'archive trop petits. Chargés : %d, requis : %d."
+
+msgid "ZIP reader could not open mini-ZIP."
+msgstr "Le lecteur de ZIP n'a pas pu ouvrir le mini-ZP."
+
+msgid "Unable to read file information from ZIP archive."
+msgstr "Impossible de lire l'information du fichier dans l'archive ZIP."
+
+msgid "IO/zlib error reading file from ZIP archive."
+msgstr "Erreur IO/zlib lors de la lecture de l'archive ZIP."
+
+msgid "CRC error reading file from ZIP archive."
+msgstr "Erreur de CRC lors de la lecture de l'archive ZIP."
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
@@ -6610,6 +6810,9 @@ msgstr "Packs de base :"
 
 msgid "Godot Project Pack"
 msgstr "Pack de projet Godot"
+
+msgid "Android App Bundle"
+msgstr "Lot d'app Android"
 
 msgid "Add Pack"
 msgstr "Ajouter un pack"
@@ -8610,8 +8813,20 @@ msgid "This project was last edited in a different Godot version: "
 msgstr ""
 "Ce projet a été édité pour la dernière fois dans une autre version de Godot : "
 
+msgid "Opening it will upgrade it to Godot %s.%s."
+msgstr "Son ouverture mettra à jour vers Godot %s.%s."
+
+msgid "Opening it will downgrade it to Godot %s.%s."
+msgstr "Son ouverture le ramènera à Godot %s.%s."
+
+msgid "Downgrading projects is not recommended."
+msgstr "Il n'est pas recommander de revenir à une version antérieure du projet."
+
 msgid "Unknown version"
 msgstr "Version inconnue"
+
+msgid "This project uses an unknown version of Godot."
+msgstr "Ce projet utilise une version de Godot inconnue."
 
 msgid "This project uses features unsupported by the current build:"
 msgstr ""
@@ -9178,6 +9393,10 @@ msgstr "Recharger la scène jouée personnalisée."
 msgid "Reload the played main scene."
 msgstr "Recharger la scène principale jouée."
 
+msgid "Failed to run the project because the project.godot file is missing."
+msgstr ""
+"Impossible d'exécuter le projet car le fichier project.godot est manquant."
+
 msgid ""
 "Movie Maker mode is enabled, but no movie file path has been specified.\n"
 "A default movie file path can be specified in the project settings under the "
@@ -9346,6 +9565,9 @@ msgstr "Prochaine trame"
 msgid "Connection impossible to the game process."
 msgstr "Connexion impossible au processus du jeu."
 
+msgid "Window Dynamic Range"
+msgstr "Intervalle dynamique de fenêtre"
+
 msgid "Game starting..."
 msgstr "Lancement du jeu en cours…"
 
@@ -9402,11 +9624,65 @@ msgstr ""
 "Le jeu en mode intégré n’est pas disponible lorsque le jeu démarre en mode "
 "headless."
 
+msgid "HDR"
+msgstr "HDR"
+
+msgid ""
+"Window size: %s\n"
+"Mode: %s\n"
+"Maximum linear value: %.2f%s"
+msgstr ""
+"Taille de fenêtre : %s\n"
+"Mode : %s\n"
+"Valeur linéaire maximale : %.2f%s"
+
+msgid "SDR"
+msgstr "SDR"
+
+msgid ""
+"\n"
+"Reference luminance: %.0f nits\n"
+"Maximum luminance: %.0f nits"
+msgstr ""
+"\n"
+"Luminance de référence : %.0f nits\n"
+"Luminance maximale : %.0f nits"
+
 msgid "Unmute game audio."
 msgstr "Activer le son du jeu."
 
 msgid "Mute game audio."
 msgstr "Couper le son du jeu."
+
+msgid "Request HDR Output"
+msgstr "Demander la sortie HDR"
+
+msgid ""
+"Move the game window to a screen\n"
+"that is operating in HDR mode."
+msgstr ""
+"Déplacer la fenêtre du jeu vers un écran\n"
+"pour qu'ainsi il fonctionne en mode HDR."
+
+msgid ""
+"Change the display/display_server/driver\n"
+"advanced project setting to a driver\n"
+"that supports HDR output."
+msgstr ""
+"Modifier l'affichage/serveur d'affichage/pilote\n"
+"paramètre de projet avancé vers un pilote\n"
+"qui supporte une sortie HDR."
+
+msgid ""
+"Change the rendering/renderer/rendering_method\n"
+"project setting to a renderer that supports HDR output and\n"
+"the rendering/rendering_device/driver advanced project\n"
+"setting to a driver that supports HDR output."
+msgstr ""
+"Modifier le rendu/support/méthode de rendu\n"
+"paramètre du projet vers un support qui supporte la sortie HDR et\n"
+"le rendu/le périphérique/le paramètre de projet avancé de pilote\n"
+"vers un pilote qui supporte la sortie HDR."
 
 msgid "%s+Alt+RMB: Show list of all nodes at position clicked."
 msgstr ""
@@ -9946,8 +10222,59 @@ msgstr "Pas Y de la grille :"
 msgid "Sync Bones to Polygon"
 msgstr "Synchroniser les os avec le polygone"
 
+msgid ""
+"Edited properties will apply to the newly painted instances. They will be "
+"stored locally in the current scene."
+msgstr ""
+"Les propriétés modifiées seront prises en compte dans les instances "
+"nouvellement dessinées. Elles seront stockées localement dans la scène "
+"courante."
+
+msgid ""
+"Pin the current node.\n"
+"When enabled, the painting parent node will not change when selecting other "
+"nodes in the scene."
+msgstr ""
+"Epingler le mode courant.\n"
+"Lorsqu'il est actif, le nœud parent de dessin na changera pas si un autre "
+"nœud de la scène est sélectionné."
+
 msgid "Advanced Settings"
 msgstr "Paramètres avancés"
+
+msgid ""
+"Hold Alt while painting to temporarily switch to the previously used paint "
+"snap mode."
+msgstr ""
+"Maintenir Alt pendant le dessin pour temporairement basculer vers le nœud "
+"rapide de dessin précédent."
+
+msgid ""
+"When enabled, the painting parent node will not change when selecting other "
+"nodes in the scene."
+msgstr ""
+"Si activé, le nœud parent de dessin ne changera pas lors de la sélection "
+"d'autres nœuds dans la scène."
+
+msgid ""
+"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
+"2D editor's viewport.\n"
+"Holding Ctrl enables picking from the 2D editor's viewport."
+msgstr ""
+"Si activé, vous pouvez sélectionner des scènes à partir de la barre d'outils "
+"système de fichiers, ou de la fenêtre d'affichage de l'éditeur 2D.\n"
+"L'appui sur CTRL autorise le choix à partir de la fenêtre d'affichage de "
+"l'éditeur 2D."
+
+msgid "Allow Overlapping"
+msgstr "Autoriser la superposition"
+
+msgid ""
+"Allow painting over existing painted scenes.\n"
+"Hold Shift while painting to temporarily toggle this option."
+msgstr ""
+"Autorise le dessin sur des scènes dessinées existantes.\n"
+"Maintenir MAJ pendant le dessin pour activer cette fonction temporairement."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Ce squelette n'a pas d'os, créez des nœuds Bone2D enfants."
@@ -10171,6 +10498,12 @@ msgstr "Propriété des tuiles de peinture"
 
 msgid "Painting:"
 msgstr "Pointage :"
+
+msgid "One Way"
+msgstr "Unidirectionnel"
+
+msgid "Linear Velocity"
+msgstr "Vitesse linéaire"
 
 msgid "No terrains"
 msgstr "Aucun terrains"

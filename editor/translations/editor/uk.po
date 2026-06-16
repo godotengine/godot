@@ -70,7 +70,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-27 19:12+0000\n"
+"PO-Revision-Date: 2026-06-10 12:01+0000\n"
 "Last-Translator: User2068 <user603849745775@proton.me>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -80,7 +80,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.6\n"
 
 msgid "OK"
 msgstr "Гаразд"
@@ -741,6 +741,9 @@ msgstr "Зняти виділення з усіх ключів"
 
 msgid "Add Animation"
 msgstr "Додати анімацію"
+
+msgid "No available animations"
+msgstr "Анімацій немає"
 
 msgid "Add %s"
 msgstr "Додати %s"
@@ -6444,6 +6447,14 @@ msgstr ""
 msgid "Web with Extensions"
 msgstr "Веб-сайт із розширеннями"
 
+msgid ""
+"Web build with support for GDExtensions. Only useful if you use GDExtensions, "
+"otherwise it only increases build size."
+msgstr ""
+"Складання веб-версії з підтримкою GDExtensions. Це корисно лише в тому "
+"випадку, якщо ви використовуєте GDExtensions; в іншому разі це лише збільшує "
+"розмір збірки."
+
 msgid "Web Single-Threaded"
 msgstr "Веб-додаток з одним потоком"
 
@@ -6641,8 +6652,26 @@ msgstr "Не вдалося відкрити файл mini-ZIP для запис
 msgid "ZIP reader could not open mini-ZIP."
 msgstr "Програма ZIP Reader не змогла відкрити файл у форматі mini-ZIP."
 
+msgid "File does not exist in ZIP archive."
+msgstr "Файл відсутній у ZIP-архіві."
+
+msgid "Could not open file within ZIP archive."
+msgstr "Не вдалося відкрити файл у ZIP-архіві."
+
+msgid "Unable to read file information from ZIP archive."
+msgstr "Не вдалося зчитати інформацію про файл із ZIP-архіву."
+
+msgid "IO/zlib error reading file from ZIP archive."
+msgstr "Помилка IO/zlib під час читання файлу з архіву ZIP."
+
+msgid "CRC error reading file from ZIP archive."
+msgstr "Помилка CRC під час зчитування файлу з архіву ZIP."
+
 msgid "Mini-ZIP data was empty."
 msgstr "Файл Mini-ZIP був порожнім."
+
+msgid "Failed to open template file for writing."
+msgstr "Не вдалося відкрити файл шаблону для запису."
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
@@ -10303,6 +10332,13 @@ msgid "Editing instance properties"
 msgstr "Редагування властивостей екземпляра"
 
 msgid ""
+"Edited properties will apply to the newly painted instances. They will be "
+"stored locally in the current scene."
+msgstr ""
+"Змінені параметри будуть застосовані до новостворених екземплярів. Вони "
+"будуть збережені локально в поточній сцені."
+
+msgid ""
 "Pin the current node.\n"
 "When enabled, the painting parent node will not change when selecting other "
 "nodes in the scene."
@@ -10310,6 +10346,9 @@ msgstr ""
 "Зафіксувати поточний вузол.\n"
 "Якщо ця опція увімкнена, батьківський вузол малювання не змінюватиметься під "
 "час вибору інших вузлів у сцені."
+
+msgid "Pinned Node: %s"
+msgstr "Закріплений вузол: %s"
 
 msgid ""
 "The selected scene could not be found. It may have been moved or deleted."
@@ -10319,11 +10358,34 @@ msgstr ""
 msgid "Advanced Settings"
 msgstr "Додаткові параметри"
 
+msgid ""
+"Hold Alt while painting to temporarily switch to the previously used paint "
+"snap mode."
+msgstr ""
+"Утримуйте клавішу Alt під час малювання, щоб тимчасово перейти до "
+"попереднього режиму прив'язки малювання."
+
 msgid "Pin Node"
 msgstr "Закріпити вузол"
 
+msgid ""
+"When enabled, the painting parent node will not change when selecting other "
+"nodes in the scene."
+msgstr ""
+"Якщо ця опція увімкнена, батьківський вузол малювання не змінюватиметься під "
+"час вибору інших вузлів у сцені."
+
 msgid "Scene Picker"
 msgstr "Вибір сцени"
+
+msgid ""
+"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
+"2D editor's viewport.\n"
+"Holding Ctrl enables picking from the 2D editor's viewport."
+msgstr ""
+"Якщо ця опція увімкнена, ви можете вибирати сцени з панелі «Файлова система», "
+"панелі «Сцени» або робочої області 2D-редактора.\n"
+"Утримуючи клавішу Ctrl, можна вибирати сцени з робочої області 2D-редактора."
 
 msgid "Edit Properties"
 msgstr "Редагувати властивості"
@@ -10342,6 +10404,14 @@ msgstr "Прив'язати до центру комірки сітки"
 
 msgid "Allow Overlapping"
 msgstr "Дозволити накладення"
+
+msgid ""
+"Allow painting over existing painted scenes.\n"
+"Hold Shift while painting to temporarily toggle this option."
+msgstr ""
+"Дозволити малювання поверх існуючих намальованих сцен.\n"
+"Утримуйте клавішу Shift під час малювання, щоб тимчасово увімкнути або "
+"вимкнути цю опцію."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "У цього каркаса немає кісток, створіть хоч якісь дочірні вузли Bone2D."
@@ -11988,6 +12058,13 @@ msgid "The transform to apply to the item's mesh."
 msgstr "Перетворення, яке слід застосувати до сітки об’єкта."
 
 msgid ""
+"The shadow casting mode used by the item's mesh. See [enum "
+"RenderingServer.ShadowCastingSetting]."
+msgstr ""
+"Режим відтворення тіней, що використовується сіткою об’єкта. Див. [enum "
+"RenderingServer.ShadowCastingSetting]."
+
+msgid ""
 "The item's collision shapes.\n"
 "The array should consist of [Shape3D] objects, each followed by a "
 "[Transform3D] that will be applied to it. For shapes that should not have a "
@@ -12011,6 +12088,15 @@ msgid "The texture to use as the item's preview icon in the editor."
 msgstr ""
 "Текстура, яка буде використовуватися як піктограма попереднього перегляду "
 "об’єкта в редакторі."
+
+msgid ""
+"No items found inside the MeshLibrary.\n"
+"You can add some by using the Add button on the left, or by importing them "
+"from a scene file via the Import menu."
+msgstr ""
+"У бібліотеці MeshLibrary не знайдено жодних елементів.\n"
+"Ви можете додати їх за допомогою кнопки «Додати» зліва або імпортувати з "
+"файлу сцени через меню «Імпорт»."
 
 msgid "Apply without Transforms"
 msgstr "Змінити перетворення екземпляра сітки"
@@ -22274,6 +22360,9 @@ msgstr "Скинути застосування анімації"
 msgid "No playback resource set at path: %s."
 msgstr "Не встановлено ресурсу відтворення у шляху: %s."
 
+msgid "Nothing connected to input %d."
+msgstr "До входу %d нічого не підключено."
+
 msgid "No root AnimationNode for the graph is set."
 msgstr "Кореневий елемент AnimationNode для графу не встановлено."
 
@@ -22393,13 +22482,6 @@ msgstr ""
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s не можна скинути сюди. Використайте %s для скасування."
-
-msgid ""
-"Labels with autowrapping enabled must have a positive custom maximum width "
-"configured to work correctly."
-msgstr ""
-"Для правильної роботи міток із увімкненим автоматичним перенесенням рядків "
-"необхідно налаштувати додаткову максимальну ширину з додатковим значенням."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

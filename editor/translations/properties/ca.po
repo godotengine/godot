@@ -28,7 +28,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-08 08:59+0000\n"
+"PO-Revision-Date: 2026-06-15 19:03+0000\n"
 "Last-Translator: Júlia Rosell Saldaña <contacte@juliars.cat>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ca/>\n"
@@ -37,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "Application"
 msgstr "Aplicació"
@@ -9072,3 +9072,3873 @@ msgstr "Tintar"
 
 msgid "Expand Mode"
 msgstr "Mode expansió"
+
+msgid "Custom Minimum Height"
+msgstr "Alçada mínima personalitzada"
+
+msgid "Column Titles Visible"
+msgstr "Títols de columnes visibles"
+
+msgid "Hide Folding"
+msgstr "Amaga el plegat"
+
+msgid "Enable Recursive Folding"
+msgstr "Activa el plegat recursiu"
+
+msgid "Enable Drag Unfolding"
+msgstr "Activa el desplegament d'arrossegar"
+
+msgid "Hide Root"
+msgstr "Amaga l'arrel"
+
+msgid "Drop Mode Flags"
+msgstr "Banderes de mode de caiguda"
+
+msgid "Auto Tooltip"
+msgstr "Informació sobre eines automàtica"
+
+msgid "Scroll Horizontal Enabled"
+msgstr "Desplaçament horitzontal activat"
+
+msgid "Scroll Vertical Enabled"
+msgstr "Desplaçament vertical activat"
+
+msgid "Audio Track"
+msgstr "Pista d'àudio"
+
+msgid "Paused"
+msgstr "En pausa"
+
+msgid "Expand"
+msgstr "Expandir"
+
+msgid "Buffering Msec"
+msgstr "Memòria de msec"
+
+msgid "Joystick Mode"
+msgstr "Mode de joystick"
+
+msgid "Joystick Size"
+msgstr "Mida del joystick"
+
+msgid "Tip Size"
+msgstr "Mida de la punta"
+
+msgid "Deadzone Ratio"
+msgstr "Relació de zones mortes"
+
+msgid "Clampzone Ratio"
+msgstr "Relació Clampzone"
+
+msgid "Initial Offset Ratio"
+msgstr "Relació de compensació inicial"
+
+msgid "Action Left"
+msgstr "Acció Esquerra"
+
+msgid "Action Right"
+msgstr "Dret d'acció"
+
+msgid "Action Up"
+msgstr "Acció amunt"
+
+msgid "Action Down"
+msgstr "Acció avall"
+
+msgid "Self Modulate"
+msgstr "Automodular"
+
+msgid "Show Behind Parent"
+msgstr "Mostra darrere dels pares"
+
+msgid "Clip Children"
+msgstr "Clip Nens"
+
+msgid "Oversampling with Scale"
+msgstr "Sobremostreig amb escala"
+
+msgid "Light Mask"
+msgstr "Màscara de llum"
+
+msgid "Visibility Layer"
+msgstr "Capa de visibilitat"
+
+msgid "Ordering"
+msgstr "Encàrrec"
+
+msgid "Z Index"
+msgstr "Índex Z"
+
+msgid "Z as Relative"
+msgstr "Z com a relatiu"
+
+msgid "Y Sort Enabled"
+msgstr "Ordenació Y activada"
+
+msgid "Use Parent Material"
+msgstr "Utilitzeu el material dels pares"
+
+msgid "Diffuse"
+msgstr "Difús"
+
+msgid "NormalMap"
+msgstr "NormalMap"
+
+msgid "Shininess"
+msgstr "brillantor"
+
+msgid "Download File"
+msgstr "Descarregar fitxer"
+
+msgid "Download Chunk Size"
+msgstr "Descarrega Chunk Size"
+
+msgid "Accept Gzip"
+msgstr "Accepta Gzip"
+
+msgid "Body Size Limit"
+msgstr "Límit de mida corporal"
+
+msgid "Max Redirects"
+msgstr "Redireccions màximes"
+
+msgid "Timeout"
+msgstr "Temps mort"
+
+msgid "Multiplayer Peer"
+msgstr "Peer multijugador"
+
+msgid "Transfer Mode"
+msgstr "Mode de transferència"
+
+msgid "Transfer Channel"
+msgstr "Canal de transferència"
+
+msgid "Node Name Num Separator"
+msgstr "Separador de nombres de noms de nodes"
+
+msgid "Node Name Casing"
+msgstr "Carcassa del nom del node"
+
+msgid "Owner"
+msgstr "Propietari"
+
+msgid "Multiplayer"
+msgstr "Multijugador"
+
+msgid "Physics Priority"
+msgstr "Prioritat de Física"
+
+msgid "Thread Group"
+msgstr "Grup de fils"
+
+msgid "Group"
+msgstr "Grup"
+
+msgid "Group Order"
+msgstr "Ordre de grup"
+
+msgid "Messages"
+msgstr "Missatges"
+
+msgid "Auto Translate"
+msgstr "Traducció automàtica"
+
+msgid "Editor Description"
+msgstr "Descripció de l'editor"
+
+msgid "Time Left"
+msgstr "Queda Temps"
+
+msgid "Debug Collisions Hint"
+msgstr "Suggeriment de col·lisions de depuració"
+
+msgid "Debug Paths Hint"
+msgstr "Suggeriment de camins de depuració"
+
+msgid "Debug Navigation Hint"
+msgstr "Suggeriment de navegació de depuració"
+
+msgid "Edited Scene Root"
+msgstr "Arrel de l'escena editat"
+
+msgid "Current Scene"
+msgstr "Escena actual"
+
+msgid "Root"
+msgstr "Arrel"
+
+msgid "Multiplayer Poll"
+msgstr "Enquesta multijugador"
+
+msgid "Shape Color"
+msgstr "Forma Color"
+
+msgid "Contact Color"
+msgstr "Contacte Color"
+
+msgid "Paths"
+msgstr "Camins"
+
+msgid "Geometry Color"
+msgstr "Geometria Color"
+
+msgid "Geometry Width"
+msgstr "Amplada de la geometria"
+
+msgid "Max Contacts Displayed"
+msgstr "Màxim de contactes mostrats"
+
+msgid "Draw 2D Outlines"
+msgstr "Dibuixa contorns 2D"
+
+msgid "Viewport"
+msgstr "Finestra gràfica"
+
+msgid "Transparent Background"
+msgstr "Fons transparent"
+
+msgid "Anti Aliasing"
+msgstr "Anti aliasing"
+
+msgid "Screen Space AA"
+msgstr "Espai de pantalla AA"
+
+msgid "Use TAA"
+msgstr "Utilitza TAA"
+
+msgid "Use Occlusion Culling"
+msgstr "Utilitzeu l'eliminació d'oclusió"
+
+msgid "Mesh LOD"
+msgstr "Malla LOD"
+
+msgid "LOD Change"
+msgstr "LOD Canvi"
+
+msgid "Threshold Pixels"
+msgstr "Píxels llindar"
+
+msgid "Snap"
+msgstr "Snap"
+
+msgid "Snap 2D Transforms to Pixel"
+msgstr "Ajusta les transformacions 2D a Pixel"
+
+msgid "Snap 2D Vertices to Pixel"
+msgstr "Ajusta els vèrtexs 2D al píxel"
+
+msgid "VRS"
+msgstr "VRS"
+
+msgid "Lights and Shadows"
+msgstr "Llums i ombres"
+
+msgid "Positional Shadow"
+msgstr "Ombra posicional"
+
+msgid "Atlas Size"
+msgstr "Mida de l'atles"
+
+msgid "Atlas Quadrant 0 Subdiv"
+msgstr "Atles Quadrant 0 Subdiv"
+
+msgid "Atlas Quadrant 1 Subdiv"
+msgstr "Atles Quadrant 1 Subdiv"
+
+msgid "Atlas Quadrant 2 Subdiv"
+msgstr "Atles Quadrant 2 Subdiv"
+
+msgid "Atlas Quadrant 3 Subdiv"
+msgstr "Atles Quadrant 3 Subdiv"
+
+msgid "SDF"
+msgstr "SDF"
+
+msgid "Oversize"
+msgstr "Gran mida"
+
+msgid "Default Environment"
+msgstr "Entorn per defecte"
+
+msgid "Enable Object Picking"
+msgstr "Activa la selecció d'objectes"
+
+msgid "Scene Traversal"
+msgstr "Travessia d'escena"
+
+msgid "Menu"
+msgstr "Menú"
+
+msgid "Wait Time"
+msgstr "Temps d'espera"
+
+msgid "Autostart"
+msgstr "Engegada automàtica"
+
+msgid "Ignore Time Scale"
+msgstr "Ignora l'escala de temps"
+
+msgid "Viewport Path"
+msgstr "Camí de la vista"
+
+msgid "Disable 3D"
+msgstr "Desactiva el 3D"
+
+msgid "Use XR"
+msgstr "Utilitza XR"
+
+msgid "Own World 3D"
+msgstr "Món propi 3D"
+
+msgid "World 3D"
+msgstr "Món 3D"
+
+msgid "World 2D"
+msgstr "Món 2D"
+
+msgid "Transparent BG"
+msgstr "Transparent BG"
+
+msgid "Handle Input Locally"
+msgstr "Gestioneu l'entrada localment"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
+
+msgid "Use Debanding"
+msgstr "Utilitzeu Debanding"
+
+msgid "Debug Draw"
+msgstr "Sorteig de depuració"
+
+msgid "Use HDR 2D"
+msgstr "Utilitzeu HDR 2D"
+
+msgid "Scaling 3D"
+msgstr "Escalat 3D"
+
+msgid "Scaling 3D Mode"
+msgstr "Escala el mode 3D"
+
+msgid "Scaling 3D Scale"
+msgstr "Escala d'escala 3D"
+
+msgid "Texture Mipmap Bias"
+msgstr "Texture Mipmap Bias"
+
+msgid "Anisotropic Filtering Level"
+msgstr "Nivell de filtratge anisotròpic"
+
+msgid "FSR Sharpness"
+msgstr "FSR Nitidez"
+
+msgid "Variable Rate Shading"
+msgstr "Ombreig de velocitat variable"
+
+msgid "Canvas Items"
+msgstr "Elements de llenç"
+
+msgid "Audio Listener"
+msgstr "Oient d'àudio"
+
+msgid "Enable 2D"
+msgstr "Activa 2D"
+
+msgid "Enable 3D"
+msgstr "Activa el 3D"
+
+msgid "Object Picking"
+msgstr "Selecció d'objectes"
+
+msgid "Object Picking Sort"
+msgstr "Ordre de selecció d'objectes"
+
+msgid "Object Picking First Only"
+msgstr "Només la selecció d'objectes primer"
+
+msgid "Disable Input"
+msgstr "Desactiva l'entrada"
+
+msgid "Positional Shadow Atlas"
+msgstr "Atles d'ombres posicionals"
+
+msgid "16 Bits"
+msgstr "16 bits"
+
+msgid "Quad 0"
+msgstr "Quad 0"
+
+msgid "Quad 1"
+msgstr "Quad 1"
+
+msgid "Quad 2"
+msgstr "Quad 2"
+
+msgid "Quad 3"
+msgstr "Quad 3"
+
+msgid "Canvas Cull Mask"
+msgstr "Màscara Canvas Cull"
+
+msgid "Oversampling Override"
+msgstr "Anul·lació de sobremostreig"
+
+msgid "Size 2D Override"
+msgstr "Anul·lació de mida 2D"
+
+msgid "Size 2D Override Stretch"
+msgstr "Estirament de substitució 2D de mida"
+
+msgid "View Count"
+msgstr "Recompte de visualitzacions"
+
+msgid "Render Target"
+msgstr "Objectiu de renderització"
+
+msgid "Clear Mode"
+msgstr "Mode clar"
+
+msgid "Current Screen"
+msgstr "Pantalla actual"
+
+msgid "Nonclient Area"
+msgstr "Àrea no client"
+
+msgid "Mouse Passthrough Polygon"
+msgstr "Polígon de pas del ratolí"
+
+msgid "Wrap Controls"
+msgstr "Controls d'embolcall"
+
+msgid "Transient to Focused"
+msgstr "Transitori a enfocat"
+
+msgid "Exclusive"
+msgstr "Exclusiu"
+
+msgid "Unresizable"
+msgstr "Indimensionable"
+
+msgid "Unfocusable"
+msgstr "Desenfocable"
+
+msgid "Popup Window"
+msgstr "Finestra emergent"
+
+msgid "Mouse Passthrough"
+msgstr "Passthrough del ratolí"
+
+msgid "Exclude From Capture"
+msgstr "Exclou de la captura"
+
+msgid "Popup Wm Hint"
+msgstr "Pista emergent Wm"
+
+msgid "Force Native"
+msgstr "Força Nativa"
+
+msgid "Min Size"
+msgstr "Mida mínima"
+
+msgid "Max Size"
+msgstr "Mida màxima"
+
+msgid "Keep Title Visible"
+msgstr "Mantenir el títol visible"
+
+msgid "Content Scale"
+msgstr "Escala de contingut"
+
+msgid "HDR Output"
+msgstr "HDR Sortida"
+
+msgid "Requested"
+msgstr "Sol·licitat"
+
+msgid "Swap Cancel OK"
+msgstr "Cancel·la d'intercanvi OK"
+
+msgid "Layer Names"
+msgstr "Noms de capes"
+
+msgid "2D Render"
+msgstr "Render 2D"
+
+msgid "3D Render"
+msgstr "Render 3D"
+
+msgid "2D Physics"
+msgstr "Física 2D"
+
+msgid "2D Navigation"
+msgstr "Navegació 2D"
+
+msgid "3D Physics"
+msgstr "Física 3D"
+
+msgid "3D Navigation"
+msgstr "Navegació 3D"
+
+msgid "Segments"
+msgstr "Segments"
+
+msgid "Sampling"
+msgstr "Mostreig"
+
+msgid "Partition Type"
+msgstr "Tipus de partició"
+
+msgid "Parsed Geometry Type"
+msgstr "Tipus de geometria analitzada"
+
+msgid "Parsed Collision Mask"
+msgstr "Màscara de col·lisió analitzada"
+
+msgid "Source Geometry Mode"
+msgstr "Mode de geometria font"
+
+msgid "Source Geometry Group Name"
+msgstr "Nom del grup de geometria font"
+
+msgid "Cells"
+msgstr "Cel·les"
+
+msgid "Baking Rect"
+msgstr "Cocció Rect"
+
+msgid "Baking Rect Offset"
+msgstr "Offset Rect de cocció"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Slide on Slope"
+msgstr "Llisca en pendent"
+
+msgid "Custom Solver Bias"
+msgstr "Biaix de solucionador personalitzat"
+
+msgid "Execution Mode"
+msgstr "Mode d'execució"
+
+msgid "Target Nodepath"
+msgstr "Camí del node objectiu"
+
+msgid "Tip Nodepath"
+msgstr "Tip Nodepath"
+
+msgid "CCDIK Data Chain Length"
+msgstr "CCDIK Longitud de la cadena de dades"
+
+msgid "FABRIK Data Chain Length"
+msgstr "FABRIK Longitud de la cadena de dades"
+
+msgid "Jiggle Data Chain Length"
+msgstr "Jiggle Longitud de la cadena de dades"
+
+msgid "Default Joint Settings"
+msgstr "Configuració conjunta predeterminada"
+
+msgid "Use Gravity"
+msgstr "Utilitzeu la gravetat"
+
+msgid "Bone Index"
+msgstr "Índex ossi"
+
+msgid "Bone 2D Node"
+msgstr "Node ossi 2D"
+
+msgid "Physical Bone Chain Length"
+msgstr "Longitud física de la cadena òssia"
+
+msgid "Target Minimum Distance"
+msgstr "Distància mínima objectiu"
+
+msgid "Target Maximum Distance"
+msgstr "Distància màxima objectiu"
+
+msgid "Flip Bend Direction"
+msgstr "Flip Bend Direcció"
+
+msgid "Modification Count"
+msgstr "Recompte de modificacions"
+
+msgid "Right Side"
+msgstr "El costat dret"
+
+msgid "Right Corner"
+msgstr "Cantonada dreta"
+
+msgid "Bottom Right Side"
+msgstr "Part inferior dreta"
+
+msgid "Bottom Right Corner"
+msgstr "Cantonada inferior dreta"
+
+msgid "Bottom Side"
+msgstr "Lateral inferior"
+
+msgid "Bottom Corner"
+msgstr "Cantó inferior"
+
+msgid "Bottom Left Side"
+msgstr "Part inferior esquerra"
+
+msgid "Bottom Left Corner"
+msgstr "Cantonada inferior esquerra"
+
+msgid "Left Side"
+msgstr "Costat Esquerre"
+
+msgid "Left Corner"
+msgstr "Canton Esquerre"
+
+msgid "Top Left Side"
+msgstr "Part superior esquerra"
+
+msgid "Top Left Corner"
+msgstr "Cantonada superior esquerra"
+
+msgid "Top Side"
+msgstr "Lateral superior"
+
+msgid "Top Corner"
+msgstr "Cantó superior"
+
+msgid "Top Right Side"
+msgstr "Part superior dreta"
+
+msgid "Top Right Corner"
+msgstr "Cantonada superior dreta"
+
+msgid "Terrains"
+msgstr "Terrenys"
+
+msgid "Custom Data"
+msgstr "Dades personalitzades"
+
+msgid "Tile Shape"
+msgstr "Forma de rajoles"
+
+msgid "Tile Layout"
+msgstr "Disseny de rajoles"
+
+msgid "Tile Offset Axis"
+msgstr "Eix de compensació de rajoles"
+
+msgid "Tile Size"
+msgstr "Mida de rajoles"
+
+msgid "UV Clipping"
+msgstr "UV Retall"
+
+msgid "Occlusion Layers"
+msgstr "Capes d'oclusió"
+
+msgid "Physics Layers"
+msgstr "Capes de Física"
+
+msgid "Terrain Sets"
+msgstr "Conjunts de terreny"
+
+msgid "Custom Data Layers"
+msgstr "Capes de dades personalitzades"
+
+msgid "Scenes"
+msgstr "Escenes"
+
+msgid "Scene"
+msgstr "Escena"
+
+msgid "Display Placeholder"
+msgstr "Mostra marcador de posició"
+
+msgid "Polygons Count"
+msgstr "Recompte de polígons"
+
+msgid "One Way"
+msgstr "One Way"
+
+msgid "One Way Margin"
+msgstr "Marge unidireccional"
+
+msgid "Terrains Peering Bit"
+msgstr "Terrenys Peering Bit"
+
+msgid "Transpose"
+msgstr "Transposar"
+
+msgid "Texture Origin"
+msgstr "Origen de la textura"
+
+msgid "Terrain Set"
+msgstr "Conjunt del terreny"
+
+msgid "Terrain"
+msgstr "Terreny"
+
+msgid "Miscellaneous"
+msgstr "Miscel·lània"
+
+msgid "Probability"
+msgstr "Probabilitat"
+
+msgid "Distance"
+msgstr "Distància"
+
+msgid "Backface Collision"
+msgstr "Col·lisió de cara posterior"
+
+msgid "Density"
+msgstr "Densitat"
+
+msgid "Height Falloff"
+msgstr "Caiguda d'alçada"
+
+msgid "Edge Fade"
+msgstr "Esvaït de vora"
+
+msgid "Density Texture"
+msgstr "Textura de densitat"
+
+msgid "Map Width"
+msgstr "Amplada del mapa"
+
+msgid "Map Depth"
+msgstr "Profunditat del mapa"
+
+msgid "Map Data"
+msgstr "Dades del mapa"
+
+msgid "Item"
+msgstr "Item"
+
+msgid "Add UV2"
+msgstr "Afegeix UV2"
+
+msgid "UV2 Padding"
+msgstr "UV2 Encoixinat"
+
+msgid "Subdivide Width"
+msgstr "Subdivideix l'amplada"
+
+msgid "Subdivide Height"
+msgstr "Subdivideix l'alçada"
+
+msgid "Subdivide Depth"
+msgstr "Subdivideix la profunditat"
+
+msgid "Top Radius"
+msgstr "Radi superior"
+
+msgid "Bottom Radius"
+msgstr "Radi inferior"
+
+msgid "Cap Top"
+msgstr "Cap Top"
+
+msgid "Cap Bottom"
+msgstr "Cap baix"
+
+msgid "Left to Right"
+msgstr "D'esquerra a dreta"
+
+msgid "Is Hemisphere"
+msgstr "És Hemisferi"
+
+msgid "Ring Segments"
+msgstr "Segments d'anell"
+
+msgid "Radial Steps"
+msgstr "Passos radials"
+
+msgid "Section Length"
+msgstr "Longitud de la secció"
+
+msgid "Section Rings"
+msgstr "Secció Anells"
+
+msgid "Section Segments"
+msgstr "Segments de la secció"
+
+msgid "Curve Step"
+msgstr "Pas de corba"
+
+msgid "Bind Count"
+msgstr "Recompte d'enllaços"
+
+msgid "Bind"
+msgstr "Enllaçar"
+
+msgid "Bone"
+msgstr "Os"
+
+msgid "Sky"
+msgstr "Cel"
+
+msgid "Top Color"
+msgstr "Color superior"
+
+msgid "Horizon Color"
+msgstr "Color de l'horitzó"
+
+msgid "Energy Multiplier"
+msgstr "Multiplicador d'energia"
+
+msgid "Cover"
+msgstr "Portada"
+
+msgid "Cover Modulate"
+msgstr "Portada Modular"
+
+msgid "Ground"
+msgstr "Terra"
+
+msgid "Bottom Color"
+msgstr "Color inferior"
+
+msgid "Sun"
+msgstr "Sol"
+
+msgid "Panorama"
+msgstr "Panorama"
+
+msgid "Rayleigh"
+msgstr "Rayleigh"
+
+msgid "Coefficient"
+msgstr "Coeficient"
+
+msgid "Mie"
+msgstr "Mie"
+
+msgid "Eccentricity"
+msgstr "Excentricitat"
+
+msgid "Turbidity"
+msgstr "Terbolesa"
+
+msgid "Sun Disk Scale"
+msgstr "Escala de disc solar"
+
+msgid "Ground Color"
+msgstr "Color de fons"
+
+msgid "Night Sky"
+msgstr "Cel nocturn"
+
+msgid "Fallback Environment"
+msgstr "Entorn de reserva"
+
+msgid "Direct Space State"
+msgstr "Estat espacial directe"
+
+msgid "Plane"
+msgstr "Avió"
+
+msgid "Frames"
+msgstr "Marcs"
+
+msgid "Pause"
+msgstr "Pausa"
+
+msgid "Atlas"
+msgstr "Atles"
+
+msgid "Filter Clip"
+msgstr "Clip de filtre"
+
+msgid "Polyphony"
+msgstr "Polifonia"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "Mix Rate"
+msgstr "Taxa de mescla"
+
+msgid "Stereo"
+msgstr "estèreo"
+
+msgid "Bonemap"
+msgstr "Mapa d'os"
+
+msgid "Exposure"
+msgstr "Exposició"
+
+msgid "Sensitivity"
+msgstr "Sensibilitat"
+
+msgid "Multiplier"
+msgstr "Multiplicador"
+
+msgid "Auto Exposure"
+msgstr "Exposició automàtica"
+
+msgid "DOF Blur"
+msgstr "DOF Desenfocament"
+
+msgid "Far Enabled"
+msgstr "Activat lluny"
+
+msgid "Far Distance"
+msgstr "Llunyà Distància"
+
+msgid "Far Transition"
+msgstr "Transició llunyana"
+
+msgid "Near Enabled"
+msgstr "Prop d'habilitat"
+
+msgid "Near Distance"
+msgstr "A prop de distància"
+
+msgid "Near Transition"
+msgstr "A prop de la Transició"
+
+msgid "Min Sensitivity"
+msgstr "Sensibilitat mínima"
+
+msgid "Max Sensitivity"
+msgstr "Sensibilitat màxima"
+
+msgid "Frustum"
+msgstr "Frustum"
+
+msgid "Focus Distance"
+msgstr "Distància de focus"
+
+msgid "Focal Length"
+msgstr "Distància focal"
+
+msgid "Aperture"
+msgstr "Abertura"
+
+msgid "Shutter Speed"
+msgstr "Velocitat d'obturació"
+
+msgid "Min Exposure Value"
+msgstr "Valor mínim d'exposició"
+
+msgid "Max Exposure Value"
+msgstr "Valor màxim d'exposició"
+
+msgid "Camera Feed ID"
+msgstr "Feed de càmera ID"
+
+msgid "Which Feed"
+msgstr "Quin Alimentació"
+
+msgid "Camera Is Active"
+msgstr "La càmera està activa"
+
+msgid "Light Mode"
+msgstr "Mode de llum"
+
+msgid "Particles Animation"
+msgstr "Animació de partícules"
+
+msgid "Particles Anim H Frames"
+msgstr "Partícules Anim H Marcs"
+
+msgid "Particles Anim V Frames"
+msgstr "Partícules Anim V Marcs"
+
+msgid "Particles Anim Loop"
+msgstr "Partícules Anim Loop"
+
+msgid "Effect Callback Type"
+msgstr "Tipus de devolució d'efecte"
+
+msgid "Access Resolved Color"
+msgstr "Accés a Color resolt"
+
+msgid "Access Resolved Depth"
+msgstr "Profunditat resolta d'accés"
+
+msgid "Needs Motion Vectors"
+msgstr "Necessita vectors de moviment"
+
+msgid "Needs Normal Roughness"
+msgstr "Necessita una rugositat normal"
+
+msgid "Needs Separate Specular"
+msgstr "Necessita un especular separat"
+
+msgid "Compositor Effects"
+msgstr "Efectes del Compositor"
+
+msgid "Load Path"
+msgstr "Ruta de càrrega"
+
+msgid "Min Domain"
+msgstr "Domini mínim"
+
+msgid "Max Domain"
+msgstr "Domini màxim"
+
+msgid "Bake Resolution"
+msgstr "Resolució de cocció"
+
+msgid "Bake Interval"
+msgstr "Interval de cocció"
+
+msgid "Up Vector"
+msgstr "Vector amunt"
+
+msgid "Curve X"
+msgstr "Corba X"
+
+msgid "Curve Y"
+msgstr "Corba Y"
+
+msgid "Curve Z"
+msgstr "Corba Z"
+
+msgid "Background"
+msgstr "Fons"
+
+msgid "Canvas Max Layer"
+msgstr "Capa màxima de llenç"
+
+msgid "Custom FOV"
+msgstr "Personalitzat FOV"
+
+msgid "Ambient Light"
+msgstr "Llum ambiental"
+
+msgid "Sky Contribution"
+msgstr "Aportació Sky"
+
+msgid "Reflected Light"
+msgstr "Llum reflectida"
+
+msgid "Tonemap"
+msgstr "Mapa de to"
+
+msgid "White"
+msgstr "Blanc"
+
+msgid "Agx White"
+msgstr "Agx Blanc"
+
+msgid "Agx Contrast"
+msgstr "Agx Contrast"
+
+msgid "SSR"
+msgstr "SSR"
+
+msgid "Fade In"
+msgstr "Fade In"
+
+msgid "Fade Out"
+msgstr "Fade Out"
+
+msgid "Depth Tolerance"
+msgstr "Tolerància a la profunditat"
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid "Power"
+msgstr "Poder"
+
+msgid "Detail"
+msgstr "Detall"
+
+msgid "Horizon"
+msgstr "Horitzó"
+
+msgid "Sharpness"
+msgstr "Nitidez"
+
+msgid "Light Affect"
+msgstr "Llum Afecte"
+
+msgid "AO Channel Affect"
+msgstr "AO Afecte del canal"
+
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "Normal Rejection"
+msgstr "Rebuig normal"
+
+msgid "SDFGI"
+msgstr "SDFGI"
+
+msgid "Use Occlusion"
+msgstr "Utilitzeu l'oclusió"
+
+msgid "Read Sky Light"
+msgstr "Llegeix Sky Light"
+
+msgid "Bounce Feedback"
+msgstr "Feedback de rebot"
+
+msgid "Cascades"
+msgstr "Cascades"
+
+msgid "Min Cell Size"
+msgstr "Mida mínima de la cel·la"
+
+msgid "Cascade 0 Distance"
+msgstr "Cascada 0 Distància"
+
+msgid "Y Scale"
+msgstr "Escala Y"
+
+msgid "Probe Bias"
+msgstr "Biaix de la sonda"
+
+msgid "Glow"
+msgstr "resplendor"
+
+msgid "Levels"
+msgstr "Nivells"
+
+msgid "1"
+msgstr "1"
+
+msgid "2"
+msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "4"
+msgstr "4"
+
+msgid "5"
+msgstr "5"
+
+msgid "6"
+msgstr "6"
+
+msgid "7"
+msgstr "7"
+
+msgid "Mix"
+msgstr "Mesclar"
+
+msgid "Bloom"
+msgstr "Floreix"
+
+msgid "HDR Threshold"
+msgstr "HDR Llindar"
+
+msgid "HDR Scale"
+msgstr "HDR Escala"
+
+msgid "HDR Luminance Cap"
+msgstr "HDR Cap de lluminància"
+
+msgid "Map Strength"
+msgstr "Força del mapa"
+
+msgid "Map"
+msgstr "Mapa"
+
+msgid "Fog"
+msgstr "Boira"
+
+msgid "Light Color"
+msgstr "Color clar"
+
+msgid "Light Energy"
+msgstr "Energia Lluminosa"
+
+msgid "Sun Scatter"
+msgstr "Dispersió solar"
+
+msgid "Aerial Perspective"
+msgstr "Perspectiva Aèria"
+
+msgid "Sky Affect"
+msgstr "Cel Afecte"
+
+msgid "Height Density"
+msgstr "Densitat d'alçada"
+
+msgid "Depth Curve"
+msgstr "Corba de profunditat"
+
+msgid "Depth Begin"
+msgstr "Comença la profunditat"
+
+msgid "Depth End"
+msgstr "Final de profunditat"
+
+msgid "Volumetric Fog"
+msgstr "Boira volumètrica"
+
+msgid "GI Inject"
+msgstr "GI Injectar"
+
+msgid "Anisotropy"
+msgstr "Anisotropia"
+
+msgid "Detail Spread"
+msgstr "Detall propagació"
+
+msgid "Ambient Inject"
+msgstr "Ambient Inject"
+
+msgid "Temporal Reprojection"
+msgstr "Reprojecció temporal"
+
+msgid "Adjustments"
+msgstr "Ajustaments"
+
+msgid "Brightness"
+msgstr "Brillantor"
+
+msgid "Color Correction"
+msgstr "Correcció de color"
+
+msgid "Base Font"
+msgstr "Font base"
+
+msgid "Features"
+msgstr "Característiques"
+
+msgid "Extra Spacing"
+msgstr "Espai extra"
+
+msgid "Glyph"
+msgstr "Glif"
+
+msgid "Space"
+msgstr "Espai"
+
+msgid "Baseline"
+msgstr "Línia de base"
+
+msgid "Palette"
+msgstr "Paleta"
+
+msgid "Custom Colors"
+msgstr "Colors personalitzats"
+
+msgid "Font Names"
+msgstr "Noms de fonts"
+
+msgid "Font Italic"
+msgstr "Tipus de lletra cursiva"
+
+msgid "Font Weight"
+msgstr "Pes de la lletra"
+
+msgid "Font Stretch"
+msgstr "Estirament de la lletra"
+
+msgid "Interpolation"
+msgstr "Interpolació"
+
+msgid "Color Space"
+msgstr "Espai de color"
+
+msgid "Raw Data"
+msgstr "Dades en brut"
+
+msgid "Offsets"
+msgstr "Desplaçaments"
+
+msgid "Use HDR"
+msgstr "Utilitza HDR"
+
+msgid "To"
+msgstr "A"
+
+msgid "Paragraph Spacing"
+msgstr "Espaiat de paràgrafs"
+
+msgid "Stacked Effects"
+msgstr "Efectes apilats"
+
+msgid "Stacked Outlines"
+msgstr "Contorns apilats"
+
+msgid "Stacked Shadows"
+msgstr "Ombres apilades"
+
+msgid "Next Pass"
+msgstr "Propera passada"
+
+msgid "Shader"
+msgstr "Shader"
+
+msgid "Depth Draw Mode"
+msgstr "Mode de dibuix de profunditat"
+
+msgid "Depth Test"
+msgstr "Prova de profunditat"
+
+msgid "Shading"
+msgstr "Ombrejat"
+
+msgid "Shading Mode"
+msgstr "Mode d'ombrejat"
+
+msgid "Diffuse Mode"
+msgstr "Mode difús"
+
+msgid "Specular Mode"
+msgstr "Mode especular"
+
+msgid "Disable Ambient Light"
+msgstr "Desactiva la llum ambiental"
+
+msgid "Disable Fog"
+msgstr "Desactiva la boira"
+
+msgid "Disable Specular Occlusion"
+msgstr "Desactiva l'oclusió especular"
+
+msgid "Vertex Color"
+msgstr "Color del vèrtex"
+
+msgid "Use as Albedo"
+msgstr "Utilitza com a albedo"
+
+msgid "Is sRGB"
+msgstr "És sRGB"
+
+msgid "Texture Force sRGB"
+msgstr "Texture Force sRGB"
+
+msgid "Texture MSDF"
+msgstr "Textura MSDF"
+
+msgid "ORM"
+msgstr "ORM"
+
+msgid "Metallic"
+msgstr "Metàl·lic"
+
+msgid "Texture Channel"
+msgstr "Canal de textures"
+
+msgid "On UV2"
+msgstr "A UV2"
+
+msgid "Bent Normal Map"
+msgstr "Mapa normal inclinat"
+
+msgid "Rim"
+msgstr "Rim"
+
+msgid "Clearcoat"
+msgstr "Laca transparent"
+
+msgid "Flowmap"
+msgstr "Mapa de flux"
+
+msgid "Ambient Occlusion"
+msgstr "Oclusió ambiental"
+
+msgid "Deep Parallax"
+msgstr "Paral·laxi profunda"
+
+msgid "Min Layers"
+msgstr "Capes mínimes"
+
+msgid "Max Layers"
+msgstr "Capes màximes"
+
+msgid "Flip Tangent"
+msgstr "Flip Tangent"
+
+msgid "Flip Binormal"
+msgstr "Flip Binormal"
+
+msgid "Flip Texture"
+msgstr "Flip textura"
+
+msgid "Subsurf Scatter"
+msgstr "Subsurf Scatter"
+
+msgid "Skin Mode"
+msgstr "Mode de pell"
+
+msgid "Transmittance"
+msgstr "Transmissió"
+
+msgid "Boost"
+msgstr "Impulsar"
+
+msgid "Back Lighting"
+msgstr "Il·luminació posterior"
+
+msgid "Backlight"
+msgstr "Llum de fons"
+
+msgid "Refraction"
+msgstr "Refracció"
+
+msgid "UV Layer"
+msgstr "UV Capa"
+
+msgid "UV1"
+msgstr "UV1"
+
+msgid "Triplanar"
+msgstr "Triplanar"
+
+msgid "Triplanar Sharpness"
+msgstr "Nitidesa triplanar"
+
+msgid "World Triplanar"
+msgstr "Mundial Triplanar"
+
+msgid "UV2"
+msgstr "UV2"
+
+msgid "Shadows"
+msgstr "Ombres"
+
+msgid "Disable Receive Shadows"
+msgstr "Desactiva la recepció d'ombres"
+
+msgid "Shadow to Opacity"
+msgstr "Ombra a l'opacitat"
+
+msgid "Particles Anim"
+msgstr "Partícules Anim"
+
+msgid "H Frames"
+msgstr "Marcs H"
+
+msgid "V Frames"
+msgstr "V Marcs"
+
+msgid "Grow"
+msgstr "Créixer"
+
+msgid "Use Point Size"
+msgstr "Utilitzeu la mida del punt"
+
+msgid "Point Size"
+msgstr "Mida del punt"
+
+msgid "Use Particle Trails"
+msgstr "Utilitzeu pistes de partícules"
+
+msgid "Use Z Clip Scale"
+msgstr "Utilitzeu l'escala de clip Z"
+
+msgid "Z Clip Scale"
+msgstr "Escala de clip Z"
+
+msgid "Use FOV Override"
+msgstr "Utilitzeu FOV Anul·lació"
+
+msgid "FOV Override"
+msgstr "FOV Anul·lació"
+
+msgid "Proximity Fade"
+msgstr "Esvaïment de proximitat"
+
+msgid "MSDF"
+msgstr "MSDF"
+
+msgid "Pixel Range"
+msgstr "Interval de píxels"
+
+msgid "Compare"
+msgstr "Compara"
+
+msgid "Outline Thickness"
+msgstr "Gruix del contorn"
+
+msgid "Convex Hull Downsampling"
+msgstr "Reducció de mostreig de casc convex"
+
+msgid "Convex Hull Approximation"
+msgstr "Aproximació de casc convex"
+
+msgid "Lightmap Size Hint"
+msgstr "Suggeriment de mida del mapa de llum"
+
+msgid "Blend Shape Mode"
+msgstr "Mode de forma de mescla"
+
+msgid "Shadow Mesh"
+msgstr "Malla d'ombra"
+
+msgid "Base Texture"
+msgstr "Textura base"
+
+msgid "Image Size"
+msgstr "Mida de la imatge"
+
+msgid "Transform Format"
+msgstr "Format de transformació"
+
+msgid "Use Colors"
+msgstr "Utilitzeu colors"
+
+msgid "Use Custom Data"
+msgstr "Utilitzeu dades personalitzades"
+
+msgid "Instance Count"
+msgstr "Recompte d'instàncies"
+
+msgid "Visible Instance Count"
+msgstr "Recompte d'instàncies visibles"
+
+msgid "Source Group Name"
+msgstr "Nom del grup font"
+
+msgid "Cell Height"
+msgstr "Alçada cel·lular"
+
+msgid "Max Climb"
+msgstr "Escalada màxima"
+
+msgid "Max Slope"
+msgstr "Pendent màxim"
+
+msgid "Merge Size"
+msgstr "Combina la mida"
+
+msgid "Max Error"
+msgstr "Error màxim"
+
+msgid "Vertices per Polygon"
+msgstr "Vèrtexs per polígon"
+
+msgid "Details"
+msgstr "Detalls"
+
+msgid "Sample Distance"
+msgstr "Distància de mostra"
+
+msgid "Sample Max Error"
+msgstr "Error màxim de mostra"
+
+msgid "Low Hanging Obstacles"
+msgstr "Obstacles penjats baixos"
+
+msgid "Ledge Spans"
+msgstr "Espais de cornisa"
+
+msgid "Walkable Low Height Spans"
+msgstr "Traves de baixa alçada caminables"
+
+msgid "Baking AABB"
+msgstr "Forn AABB"
+
+msgid "Baking AABB Offset"
+msgstr "Forn AABB Offset"
+
+msgid "Damping as Friction"
+msgstr "Amortiment com a fricció"
+
+msgid "Inherit Emitter Scale"
+msgstr "Hereta l'escala de l'emissor"
+
+msgid "Spawn"
+msgstr "Generar"
+
+msgid "Emission Shape Offset"
+msgstr "Compensació de forma d'emissió"
+
+msgid "Emission Shape Scale"
+msgstr "Escala de forma d'emissió"
+
+msgid "Emission Sphere Radius"
+msgstr "Radi de l'esfera d'emissió"
+
+msgid "Emission Box Extents"
+msgstr "Extensió de la caixa d'emissions"
+
+msgid "Emission Point Texture"
+msgstr "Textura del punt d'emissió"
+
+msgid "Emission Normal Texture"
+msgstr "Emissió Textura normal"
+
+msgid "Emission Color Texture"
+msgstr "Textura de color d'emissió"
+
+msgid "Emission Point Count"
+msgstr "Recompte de punts d'emissió"
+
+msgid "Emission Ring Axis"
+msgstr "Eix de l'anell d'emissió"
+
+msgid "Emission Ring Height"
+msgstr "Alçada de l'anell d'emissió"
+
+msgid "Emission Ring Radius"
+msgstr "Radi de l'anell d'emissió"
+
+msgid "Emission Ring Inner Radius"
+msgstr "Radi interior de l'anell d'emissió"
+
+msgid "Emission Ring Cone Angle"
+msgstr "Angle del con de l'anell d'emissió"
+
+msgid "Rotation 3D"
+msgstr "Rotació 3D"
+
+msgid "Rotation 3D Min"
+msgstr "Rotació 3D mín"
+
+msgid "Rotation 3D Max"
+msgstr "Rotació 3D màx"
+
+msgid "Inherit Velocity Ratio"
+msgstr "Relació de velocitat heretada"
+
+msgid "Velocity Pivot"
+msgstr "Pivot de velocitat"
+
+msgid "Animated Velocity"
+msgstr "Velocitat animada"
+
+msgid "Velocity Limit"
+msgstr "Límit de velocitat"
+
+msgid "Directional Velocity"
+msgstr "Velocitat direccional"
+
+msgid "Radial Velocity"
+msgstr "Velocitat radial"
+
+msgid "Velocity Limit Curve"
+msgstr "Corba límit de velocitat"
+
+msgid "Rotation Velocity 3D"
+msgstr "Velocitat de rotació 3D"
+
+msgid "Rotation Velocity 3D Min"
+msgstr "Velocitat de rotació 3D mín"
+
+msgid "Rotation Velocity 3D Max"
+msgstr "Velocitat de rotació 3D Màx"
+
+msgid "Rotation Velocity 3D Curve"
+msgstr "Corba 3D de velocitat de rotació"
+
+msgid "Accelerations"
+msgstr "Acceleracions"
+
+msgid "Attractor Interaction"
+msgstr "Interacció de l'atractor"
+
+msgid "Use Scale 3D"
+msgstr "Utilitzeu Scale 3D"
+
+msgid "Scale 3D Min"
+msgstr "Escala 3D mín"
+
+msgid "Scale 3D Max"
+msgstr "Escala 3D Max"
+
+msgid "Scale Curve"
+msgstr "Corba d'escala"
+
+msgid "Scale Over Velocity"
+msgstr "Escala sobre la velocitat"
+
+msgid "Scale over Velocity Curve"
+msgstr "Escala sobre la corba de velocitat"
+
+msgid "Color Curves"
+msgstr "Corbes de color"
+
+msgid "Alpha Curve"
+msgstr "Corba Alfa"
+
+msgid "Emission Curve"
+msgstr "Corba d'emissió"
+
+msgid "Turbulence"
+msgstr "Turbulència"
+
+msgid "Noise Strength"
+msgstr "Força del soroll"
+
+msgid "Noise Scale"
+msgstr "Escala de soroll"
+
+msgid "Noise Speed"
+msgstr "Velocitat del soroll"
+
+msgid "Noise Speed Random"
+msgstr "Velocitat del soroll aleatòria"
+
+msgid "Influence over Life"
+msgstr "Influència sobre la Vida"
+
+msgid "Use Scale"
+msgstr "Utilitzeu l'escala"
+
+msgid "Amount at End"
+msgstr "Import al final"
+
+msgid "Amount at Collision"
+msgstr "Import a la col·lisió"
+
+msgid "Amount at Start"
+msgstr "Import a l'inici"
+
+msgid "Keep Velocity"
+msgstr "Mantenir la velocitat"
+
+msgid "Rough"
+msgstr "Aspre"
+
+msgid "Absorbent"
+msgstr "Absorbent"
+
+msgid "Size Override"
+msgstr "Anul·lació de la mida"
+
+msgid "Keep Compressed Buffer"
+msgstr "Mantenir el buffer comprimit"
+
+msgid "Scale Base Bone"
+msgstr "Escala Base Os"
+
+msgid "Group Size"
+msgstr "Mida del grup"
+
+msgid "Bone Size"
+msgstr "Mida dels ossos"
+
+msgid "Sky Material"
+msgstr "Material del cel"
+
+msgid "Process Mode"
+msgstr "Mode de procés"
+
+msgid "Radiance Size"
+msgstr "Mida de la resplendor"
+
+msgid "Content Margins"
+msgstr "Marges de contingut"
+
+msgid "Blend"
+msgstr "Mescla"
+
+msgid "Top Left"
+msgstr "Superior esquerra"
+
+msgid "Top Right"
+msgstr "A dalt a la dreta"
+
+msgid "Bottom Right"
+msgstr "A baix a la dreta"
+
+msgid "Bottom Left"
+msgstr "A baix a l'esquerra"
+
+msgid "Corner Detail"
+msgstr "Detall de cantonada"
+
+msgid "Expand Margins"
+msgstr "Amplieu els marges"
+
+msgid "Grow Begin"
+msgstr "Creix Comença"
+
+msgid "Grow End"
+msgstr "Fin del creixement"
+
+msgid "Texture Margins"
+msgstr "Marges de textura"
+
+msgid "Sub-Region"
+msgstr "Subregió"
+
+msgid "Number Color"
+msgstr "Color del número"
+
+msgid "Symbol Color"
+msgstr "Símbol Color"
+
+msgid "Function Color"
+msgstr "Funció Color"
+
+msgid "Member Variable Color"
+msgstr "Color variable dels membres"
+
+msgid "Keyword Colors"
+msgstr "Colors de paraules clau"
+
+msgid "Member Keyword Colors"
+msgstr "Colors de paraules clau dels membres"
+
+msgid "Color Regions"
+msgstr "Regions de color"
+
+msgid "Preserve Invalid"
+msgstr "Conserva no vàlid"
+
+msgid "Preserve Control"
+msgstr "Preservar el control"
+
+msgid "Custom Punctuation"
+msgstr "Puntuació personalitzada"
+
+msgid "Break Flags"
+msgstr "Trencar banderes"
+
+msgid "Default Base Scale"
+msgstr "Escala base predeterminada"
+
+msgid "Default Font"
+msgstr "Tipus de lletra per defecte"
+
+msgid "Default Font Size"
+msgstr "Mida de lletra per defecte"
+
+msgid "File"
+msgstr "Fitxer"
+
+msgid "Font Pressed Color"
+msgstr "Color de lletra premsat"
+
+msgid "Font Hover Color"
+msgstr "Color de la lletra"
+
+msgid "Font Focus Color"
+msgstr "Color del focus de font"
+
+msgid "Font Hover Pressed Color"
+msgstr "Color premut amb el ratolí de lletra"
+
+msgid "Font Disabled Color"
+msgstr "Color de lletra desactivat"
+
+msgid "Font Outline Color"
+msgstr "Color del contorn del tipus de lletra"
+
+msgid "Icon Normal Color"
+msgstr "Icona Color normal"
+
+msgid "Icon Pressed Color"
+msgstr "Icona Premuda Color"
+
+msgid "Icon Hover Color"
+msgstr "Color de la icona"
+
+msgid "Icon Hover Pressed Color"
+msgstr "Icona de color premut"
+
+msgid "Icon Focus Color"
+msgstr "Icona de color de focus"
+
+msgid "Icon Disabled Color"
+msgstr "Icona de color desactivat"
+
+msgid "H Separation"
+msgstr "H Separació"
+
+msgid "Icon Max Width"
+msgstr "Amplada màxima de la icona"
+
+msgid "Align to Largest Stylebox"
+msgstr "Alinea a la caixa d'estil més gran"
+
+msgid "Underline Spacing"
+msgstr "Espaiat subratllat"
+
+msgid "Normal Mirrored"
+msgstr "Normal reflectit"
+
+msgid "Hover Mirrored"
+msgstr "En passar-hi el cursor reflectit"
+
+msgid "Pressed Mirrored"
+msgstr "Premut reflectit"
+
+msgid "Disabled Mirrored"
+msgstr "Desactivat reflectit"
+
+msgid "Arrow"
+msgstr "Fletxa"
+
+msgid "Arrow Margin"
+msgstr "Marge de la fletxa"
+
+msgid "Modulate Arrow"
+msgstr "Modula la fletxa"
+
+msgid "Hover Pressed"
+msgstr "Premut en passar-hi el cursor"
+
+msgid "Checked Disabled"
+msgstr "Marcat desactivat"
+
+msgid "Unchecked"
+msgstr "Desmarcat"
+
+msgid "Unchecked Disabled"
+msgstr "Desmarcat desactivat"
+
+msgid "Radio Checked"
+msgstr "Botó d'opció marcat"
+
+msgid "Radio Checked Disabled"
+msgstr "Botó d'opció marcat desactivat"
+
+msgid "Radio Unchecked"
+msgstr "Botó d'opció desmarcat"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Botó d'opció desmarcat desactivat"
+
+msgid "Check V Offset"
+msgstr "Desplaçament vertical de la marca"
+
+msgid "Checkbox Checked Color"
+msgstr "Color de casella de selecció marcada"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Color de casella de selecció desmarcada"
+
+msgid "Checked Mirrored"
+msgstr "Marcat reflectit"
+
+msgid "Checked Disabled Mirrored"
+msgstr "Marcat desactivat reflectit"
+
+msgid "Unchecked Mirrored"
+msgstr "Desmarcat reflectit"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "Desmarcat desactivat reflectit"
+
+msgid "Button Checked Color"
+msgstr "Color de botó marcat"
+
+msgid "Button Unchecked Color"
+msgstr "Color de botó desmarcat"
+
+msgid "Font Shadow Color"
+msgstr "Color de l'ombra de la lletra"
+
+msgid "Shadow Offset X"
+msgstr "Desplaçament X de l'ombra"
+
+msgid "Shadow Offset Y"
+msgstr "Desplaçament Y de l'ombra"
+
+msgid "Shadow Outline Size"
+msgstr "Mida del contorn de l'ombra"
+
+msgid "Font Selected Color"
+msgstr "Color de la lletra seleccionada"
+
+msgid "Font Uneditable Color"
+msgstr "Color de la lletra no editable"
+
+msgid "Font Placeholder Color"
+msgstr "Color del text de marcador de posició"
+
+msgid "Caret Color"
+msgstr "Color del cursor"
+
+msgid "Selection Color"
+msgstr "Color de la selecció"
+
+msgid "Clear Button Color"
+msgstr "Color del botó de neteja"
+
+msgid "Clear Button Color Pressed"
+msgstr "Color del botó de neteja premut"
+
+msgid "Minimum Character Width"
+msgstr "Amplada mínima de caràcter"
+
+msgid "Caret Width"
+msgstr "Amplada del cursor"
+
+msgid "Clear"
+msgstr "Neteja"
+
+msgid "Tab"
+msgstr "Pestanya"
+
+msgid "Font Readonly Color"
+msgstr "Color de la lletra de només lectura"
+
+msgid "Current Line Color"
+msgstr "Color de la línia actual"
+
+msgid "Caret Background Color"
+msgstr "Color de fons del cursor"
+
+msgid "Word Highlighted Color"
+msgstr "Color de la paraula ressaltada"
+
+msgid "Search Result Color"
+msgstr "Color del resultat de cerca"
+
+msgid "Search Result Border Color"
+msgstr "Color de la vora del resultat de cerca"
+
+msgid "Wrap Offset"
+msgstr "Desplaçament de l'ajust de línia"
+
+msgid "Breakpoint"
+msgstr "Punt d'interrupció"
+
+msgid "Bookmark"
+msgstr "Marcador"
+
+msgid "Executing Line"
+msgstr "Línia en execució"
+
+msgid "Can Fold"
+msgstr "Es pot plegar"
+
+msgid "Can Fold Code Region"
+msgstr "Es pot plegar la regió de codi"
+
+msgid "Folded Code Region"
+msgstr "Regió de codi plegada"
+
+msgid "Folded EOL Icon"
+msgstr "Icona EOL plegada"
+
+msgid "Completion Color BG"
+msgstr "Color de fons de la compleció"
+
+msgid "Completion Background Color"
+msgstr "Color de fons de la compleció"
+
+msgid "Completion Selected Color"
+msgstr "Color de la compleció seleccionada"
+
+msgid "Completion Existing Color"
+msgstr "Color de la compleció existent"
+
+msgid "Completion Scroll Color"
+msgstr "Color de desplaçament de la compleció"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Color de desplaçament de la compleció en passar-hi el cursor"
+
+msgid "Bookmark Color"
+msgstr "Color del marcador"
+
+msgid "Breakpoint Color"
+msgstr "Color del punt d'interrupció"
+
+msgid "Executing Line Color"
+msgstr "Color de la línia en execució"
+
+msgid "Code Folding Color"
+msgstr "Color del plegat de codi"
+
+msgid "Folded Code Region Color"
+msgstr "Color de la regió de codi plegada"
+
+msgid "Brace Mismatch Color"
+msgstr "Color de claus no coincidents"
+
+msgid "Line Number Color"
+msgstr "Color del número de línia"
+
+msgid "Line Length Guideline Color"
+msgstr "Color de la guia de longitud de línia"
+
+msgid "Completion Lines"
+msgstr "Línies de compleció"
+
+msgid "Completion Max Width"
+msgstr "Amplada màxima de la compleció"
+
+msgid "Completion Scroll Width"
+msgstr "Amplada de desplaçament de la compleció"
+
+msgid "Scroll Focus"
+msgstr "Desplaçament focus"
+
+msgid "Grabber"
+msgstr "Nansa"
+
+msgid "Grabber Highlight"
+msgstr "Ressaltat de la nansa"
+
+msgid "Grabber Pressed"
+msgstr "Nansa premuda"
+
+msgid "Increment"
+msgstr "Increment"
+
+msgid "Increment Highlight"
+msgstr "Ressaltat de l'increment"
+
+msgid "Increment Pressed"
+msgstr "Increment premut"
+
+msgid "Decrement"
+msgstr "Decrement"
+
+msgid "Decrement Highlight"
+msgstr "Ressaltat del decrement"
+
+msgid "Decrement Pressed"
+msgstr "Decrement premut"
+
+msgid "Slider"
+msgstr "Control lliscant"
+
+msgid "Grabber Area"
+msgstr "Àrea de la nansa"
+
+msgid "Grabber Area Highlight"
+msgstr "Ressaltat de l'àrea de la nansa"
+
+msgid "Grabber Disabled"
+msgstr "Nansa desactivada"
+
+msgid "Tick"
+msgstr "Marca"
+
+msgid "Center Grabber"
+msgstr "Centra la nansa"
+
+msgid "Grabber Offset"
+msgstr "Desplaçament de la nansa"
+
+msgid "Tick Offset"
+msgstr "Desplaçament de la marca"
+
+msgid "Updown"
+msgstr "Amunt/avall"
+
+msgid "Up"
+msgstr "Amunt"
+
+msgid "Up Hover"
+msgstr "Amunt en passar-hi el cursor"
+
+msgid "Up Pressed"
+msgstr "Amunt premut"
+
+msgid "Up Disabled"
+msgstr "Amunt desactivat"
+
+msgid "Down"
+msgstr "Avall"
+
+msgid "Down Hover"
+msgstr "Avall en passar-hi el cursor"
+
+msgid "Down Pressed"
+msgstr "Avall premut"
+
+msgid "Down Disabled"
+msgstr "Avall desactivat"
+
+msgid "Up Background"
+msgstr "Fons d'amunt"
+
+msgid "Up Background Hovered"
+msgstr "Fons d'amunt en passar-hi el cursor"
+
+msgid "Up Background Pressed"
+msgstr "Fons d'amunt premut"
+
+msgid "Up Background Disabled"
+msgstr "Fons d'amunt desactivat"
+
+msgid "Down Background"
+msgstr "Fons d'avall"
+
+msgid "Down Background Hovered"
+msgstr "Fons d'avall en passar-hi el cursor"
+
+msgid "Down Background Pressed"
+msgstr "Fons d'avall premut"
+
+msgid "Down Background Disabled"
+msgstr "Fons d'avall desactivat"
+
+msgid "Up Icon Modulate"
+msgstr "Modulació de la icona d'amunt"
+
+msgid "Up Hover Icon Modulate"
+msgstr "Modulació de la icona d'amunt en passar-hi el cursor"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "Modulació de la icona d'amunt premuda"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "Modulació de la icona d'amunt desactivada"
+
+msgid "Down Icon Modulate"
+msgstr "Modulació de la icona d'avall"
+
+msgid "Down Hover Icon Modulate"
+msgstr "Modulació de la icona d'avall en passar-hi el cursor"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "Modulació de la icona d'avall premuda"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Modulació de la icona d'avall desactivada"
+
+msgid "Field and Buttons Separator"
+msgstr "Separador del camp i els botons"
+
+msgid "Up Down Buttons Separator"
+msgstr "Separador dels botons amunt/avall"
+
+msgid "Buttons Vertical Separation"
+msgstr "Separació vertical dels botons"
+
+msgid "Field and Buttons Separation"
+msgstr "Separació del camp i els botons"
+
+msgid "Buttons Width"
+msgstr "Amplada dels botons"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Defineix l'amplada mínima dels botons a partir de les icones"
+
+msgid "Scroll Hint Vertical"
+msgstr "Indicador de desplaçament vertical"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Indicador de desplaçament horitzontal"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "Color de l'indicador de desplaçament vertical"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Color de l'indicador de desplaçament horitzontal"
+
+msgid "Normal Joystick"
+msgstr "Joystick normal"
+
+msgid "Normal Tip"
+msgstr "Punta normal"
+
+msgid "Pressed Joystick"
+msgstr "Joystick premut"
+
+msgid "Pressed Tip"
+msgstr "Punta premuda"
+
+msgid "Embedded Border"
+msgstr "Vora incrustada"
+
+msgid "Embedded Unfocused Border"
+msgstr "Vora incrustada sense focus"
+
+msgid "Title Font"
+msgstr "Lletra del títol"
+
+msgid "Title Font Size"
+msgstr "Mida de la lletra del títol"
+
+msgid "Title Outline Modulate"
+msgstr "Modulació del contorn del títol"
+
+msgid "Title Outline Size"
+msgstr "Mida del contorn del títol"
+
+msgid "Title Height"
+msgstr "Alçada del títol"
+
+msgid "Resize Margin"
+msgstr "Marge de redimensionament"
+
+msgid "Close"
+msgstr "Tancament"
+
+msgid "Close Pressed"
+msgstr "Tancament premut"
+
+msgid "Close H Offset"
+msgstr "Desplaçament H de tancament"
+
+msgid "Close V Offset"
+msgstr "Desplaçament V de tancament"
+
+msgid "Buttons Separation"
+msgstr "Separació dels botons"
+
+msgid "Load"
+msgstr "Carrega"
+
+msgid "Save"
+msgstr "Desa"
+
+msgid "Parent Folder"
+msgstr "Carpeta pare"
+
+msgid "Back Folder"
+msgstr "Carpeta enrere"
+
+msgid "Forward Folder"
+msgstr "Carpeta endavant"
+
+msgid "Reload"
+msgstr "Recarrega"
+
+msgid "Favorite"
+msgstr "Preferit"
+
+msgid "Toggle Hidden"
+msgstr "Commuta ocult"
+
+msgid "Toggle Filename Filter"
+msgstr "Commuta el filtre de nom de fitxer"
+
+msgid "Folder"
+msgstr "Carpeta"
+
+msgid "Thumbnail Mode"
+msgstr "Mode de miniatura"
+
+msgid "List Mode"
+msgstr "Mode de llista"
+
+msgid "Create Folder"
+msgstr "Crea una carpeta"
+
+msgid "Sort"
+msgstr "Ordena"
+
+msgid "Favorite Up"
+msgstr "Preferit amunt"
+
+msgid "Favorite Down"
+msgstr "Preferit avall"
+
+msgid "File Thumbnail"
+msgstr "Miniatura de fitxer"
+
+msgid "Folder Thumbnail"
+msgstr "Miniatura de carpeta"
+
+msgid "Folder Icon Color"
+msgstr "Color de carpeta icona"
+
+msgid "File Icon Color"
+msgstr "Color de fitxer icona"
+
+msgid "File Disabled Color"
+msgstr "Color de fitxer desactivat"
+
+msgid "Separator"
+msgstr "Separador"
+
+msgid "Labeled Separator Left"
+msgstr "Separador etiquetat esquerre"
+
+msgid "Labeled Separator Right"
+msgstr "Separador etiquetat dret"
+
+msgid "Submenu"
+msgstr "Submenú"
+
+msgid "Submenu Mirrored"
+msgstr "Submenú reflectit"
+
+msgid "Search"
+msgstr "Cerca"
+
+msgid "Font Separator"
+msgstr "Separador de lletra"
+
+msgid "Font Separator Size"
+msgstr "Mida de lletra separador"
+
+msgid "Font Accelerator Color"
+msgstr "Color de la lletra de l'accelerador"
+
+msgid "Font Separator Color"
+msgstr "Color de lletra separador"
+
+msgid "Font Separator Outline Color"
+msgstr "Color de lletra separador contorn"
+
+msgid "V Separation"
+msgstr "Separació de V"
+
+msgid "Search Bar Separation"
+msgstr "Separació de la barra de cerca"
+
+msgid "Separator Outline Size"
+msgstr "Mida de separador contorn"
+
+msgid "Item Start Padding"
+msgstr "Farciment inicial de l'element"
+
+msgid "Item End Padding"
+msgstr "Farciment final de l'element"
+
+msgid "Gutter Compact"
+msgstr "Canal compacte"
+
+msgid "Panel Selected"
+msgstr "Tauler seleccionat"
+
+msgid "Panel Focus"
+msgstr "Tauler focus"
+
+msgid "Titlebar"
+msgstr "Barra de títol"
+
+msgid "Titlebar Selected"
+msgstr "Barra de títol seleccionada"
+
+msgid "Slot"
+msgstr "Ranura"
+
+msgid "Slot Selected"
+msgstr "Ranura seleccionada"
+
+msgid "Resizer"
+msgstr "Redimensionador"
+
+msgid "Resizer Color"
+msgstr "Color del redimensionador"
+
+msgid "Port H Offset"
+msgstr "Desplaçament H del port"
+
+msgid "Hovered"
+msgstr "En passar-hi el cursor"
+
+msgid "Hovered Dimmed"
+msgstr "Atenuat en passar-hi el cursor"
+
+msgid "Hovered Selected"
+msgstr "En passar-hi el cursor seleccionat"
+
+msgid "Hovered Selected Focus"
+msgstr "En passar-hi el cursor seleccionat focus"
+
+msgid "Selected Focus"
+msgstr "Seleccionat focus"
+
+msgid "Cursor"
+msgstr "Cursor"
+
+msgid "Cursor Unfocused"
+msgstr "Cursor sense focus"
+
+msgid "Button Hover"
+msgstr "Botó en passar-hi el cursor"
+
+msgid "Title Button Normal"
+msgstr "Títol botó normal"
+
+msgid "Title Button Pressed"
+msgstr "Títol botó premut"
+
+msgid "Title Button Hover"
+msgstr "Títol botó en passar-hi el cursor"
+
+msgid "Custom Button"
+msgstr "Botó de personalitzat"
+
+msgid "Custom Button Pressed"
+msgstr "Personalitzat botó premut"
+
+msgid "Custom Button Hover"
+msgstr "Personalitzat botó en passar-hi el cursor"
+
+msgid "Indeterminate Disabled"
+msgstr "Indeterminat desactivat"
+
+msgid "Select Arrow"
+msgstr "Fletxa de selecció"
+
+msgid "Arrow Collapsed"
+msgstr "Fletxa col·lapsada"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "Fletxa col·lapsada reflectida"
+
+msgid "Title Button Font"
+msgstr "Lletra de títol botó"
+
+msgid "Title Button Font Size"
+msgstr "Mida de títol botó lletra"
+
+msgid "Title Button Color"
+msgstr "Color de títol botó"
+
+msgid "Font Hovered Color"
+msgstr "Color de lletra en passar-hi el cursor"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Color de lletra atenuada en passar-hi el cursor"
+
+msgid "Font Hovered Selected Color"
+msgstr "Color de lletra en passar-hi el cursor seleccionat"
+
+msgid "Guide Color"
+msgstr "Color de guia"
+
+msgid "Drop on Item Color"
+msgstr "Color de deixar anar sobre l'element"
+
+msgid "Drop Position Color"
+msgstr "Color de la posició de deixar anar"
+
+msgid "Relationship Line Color"
+msgstr "Color de la línia de relació"
+
+msgid "Parent HL Line Color"
+msgstr "Color de la línia ressaltada del pare"
+
+msgid "Children HL Line Color"
+msgstr "Color de la línia ressaltada dels fills"
+
+msgid "Custom Button Font Highlight"
+msgstr "Personalitzat botó lletra ressaltat"
+
+msgid "Scroll Hint Color"
+msgstr "Color de desplaçament indicador"
+
+msgid "Item Margin"
+msgstr "Marge de element"
+
+msgid "Inner Item Margin Bottom"
+msgstr "Interior element marge inferior"
+
+msgid "Inner Item Margin Left"
+msgstr "Interior element marge esquerra"
+
+msgid "Inner Item Margin Right"
+msgstr "Interior element marge dreta"
+
+msgid "Inner Item Margin Top"
+msgstr "Interior element marge superior"
+
+msgid "Check H Separation"
+msgstr "Separació H de la marca"
+
+msgid "Icon H Separation"
+msgstr "Separació de icona H"
+
+msgid "Button Margin"
+msgstr "Marge de botó"
+
+msgid "Relationship Line Width"
+msgstr "Amplada de la línia de relació"
+
+msgid "Parent HL Line Width"
+msgstr "Amplada de la línia ressaltada del pare"
+
+msgid "Children HL Line Width"
+msgstr "Amplada de la línia ressaltada dels fills"
+
+msgid "Parent HL Line Margin"
+msgstr "Marge de la línia ressaltada del pare"
+
+msgid "Draw Guides"
+msgstr "Dibuixa les guies"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "Espera per desplegar arrossegant (ms)"
+
+msgid "Scroll Border"
+msgstr "Vora de desplaçament"
+
+msgid "Scroll Speed"
+msgstr "Velocitat de desplaçament"
+
+msgid "Scrollbar Margin Left"
+msgstr "Barra de desplaçament marge esquerra"
+
+msgid "Scrollbar Margin Top"
+msgstr "Barra de desplaçament marge superior"
+
+msgid "Scrollbar Margin Right"
+msgstr "Barra de desplaçament marge dreta"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Barra de desplaçament marge inferior"
+
+msgid "Scrollbar H Separation"
+msgstr "Separació de barra de desplaçament H"
+
+msgid "Scrollbar V Separation"
+msgstr "Separació de barra de desplaçament V"
+
+msgid "Icon Margin"
+msgstr "Marge de icona"
+
+msgid "Tab Selected"
+msgstr "Pestanya seleccionat"
+
+msgid "Tab Hovered"
+msgstr "Pestanya en passar-hi el cursor"
+
+msgid "Tab Unselected"
+msgstr "Pestanya no seleccionada"
+
+msgid "Tab Disabled"
+msgstr "Pestanya desactivat"
+
+msgid "Tab Focus"
+msgstr "Pestanya focus"
+
+msgid "Tabbar Background"
+msgstr "Fons de la barra de pestanyes"
+
+msgid "Drop Mark"
+msgstr "Marca de deixar anar"
+
+msgid "Menu Highlight"
+msgstr "Ressaltat del menú"
+
+msgid "Font Unselected Color"
+msgstr "Color de la lletra no seleccionada"
+
+msgid "Drop Mark Color"
+msgstr "Color de la marca de deixar anar"
+
+msgid "Icon Selected Color"
+msgstr "Color de icona seleccionat"
+
+msgid "Icon Hovered Color"
+msgstr "Color de icona en passar-hi el cursor"
+
+msgid "Icon Unselected Color"
+msgstr "Color de la icona no seleccionada"
+
+msgid "Side Margin"
+msgstr "Marge lateral"
+
+msgid "Icon Separation"
+msgstr "Separació de icona"
+
+msgid "Button Highlight"
+msgstr "Botó ressaltat"
+
+msgid "Hover Switch Wait Msec"
+msgstr "Espera del canvi en passar-hi el cursor (ms)"
+
+msgid "SV Width"
+msgstr "Amplada SV"
+
+msgid "SV Height"
+msgstr "Alçada SV"
+
+msgid "H Width"
+msgstr "Amplada de H"
+
+msgid "Label Width"
+msgstr "Amplada de l'etiqueta"
+
+msgid "Center Slider Grabbers"
+msgstr "Centra les nanses del control lliscant"
+
+msgid "Sample Focus"
+msgstr "Focus de mostra"
+
+msgid "Picker Focus Rectangle"
+msgstr "Rectangle de focus del selector"
+
+msgid "Picker Focus Circle"
+msgstr "Cercle de focus del selector"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "Color del cursor amb focus sense edició"
+
+msgid "Menu Option"
+msgstr "Opció de menú"
+
+msgid "Folded Arrow"
+msgstr "Fletxa de plegat"
+
+msgid "Expanded Arrow"
+msgstr "Fletxa expandida"
+
+msgid "Screen Picker"
+msgstr "Selector de pantalla"
+
+msgid "Shape Circle"
+msgstr "Forma de cercle"
+
+msgid "Shape Rect"
+msgstr "Forma de rectangle"
+
+msgid "Shape Rect Wheel"
+msgstr "Roda de rectangle de forma"
+
+msgid "Add Preset"
+msgstr "Afegeix un predefinit"
+
+msgid "Sample BG"
+msgstr "Fons de mostra"
+
+msgid "Sample Revert"
+msgstr "Reverteix la mostra"
+
+msgid "Overbright Indicator"
+msgstr "Indicador de sobrebrillantor"
+
+msgid "Bar Arrow"
+msgstr "Fletxa de la barra"
+
+msgid "Picker Cursor"
+msgstr "Selector cursor"
+
+msgid "Picker Cursor BG"
+msgstr "Selector cursor fons"
+
+msgid "Color Script"
+msgstr "Script de color"
+
+msgid "Color Copy"
+msgstr "Còpia de color"
+
+msgid "Color Hue"
+msgstr "To del color"
+
+msgid "BG"
+msgstr "BG"
+
+msgid "Preset FG"
+msgstr "Primer pla del predefinit"
+
+msgid "Preset Focus"
+msgstr "Predefinit focus"
+
+msgid "Preset BG"
+msgstr "Predefinit fons"
+
+msgid "Horizontal Rule"
+msgstr "Regla horitzontal"
+
+msgid "Normal Font"
+msgstr "Lletra de normal"
+
+msgid "Bold Font"
+msgstr "Lletra de negreta"
+
+msgid "Italics Font"
+msgstr "Lletra de cursiva"
+
+msgid "Bold Italics Font"
+msgstr "Lletra de negreta cursiva"
+
+msgid "Mono Font"
+msgstr "Lletra monoespai"
+
+msgid "Normal Font Size"
+msgstr "Mida de normal lletra"
+
+msgid "Bold Font Size"
+msgstr "Mida de negreta lletra"
+
+msgid "Italics Font Size"
+msgstr "Mida de cursiva lletra"
+
+msgid "Bold Italics Font Size"
+msgstr "Mida de negreta cursiva lletra"
+
+msgid "Mono Font Size"
+msgstr "Mida de la lletra monoespai"
+
+msgid "Table H Separation"
+msgstr "Separació de taula H"
+
+msgid "Table V Separation"
+msgstr "Separació de taula V"
+
+msgid "Table Odd Row BG"
+msgstr "Fons de fila senar de taula"
+
+msgid "Table Even Row BG"
+msgstr "Fons de fila parell de taula"
+
+msgid "Table Border"
+msgstr "Vora de taula"
+
+msgid "Text Highlight H Padding"
+msgstr "Farciment H del ressaltat de text"
+
+msgid "Text Highlight V Padding"
+msgstr "Farciment V del ressaltat de text"
+
+msgid "Underline Alpha"
+msgstr "Alfa del subratllat"
+
+msgid "Strikethrough Alpha"
+msgstr "Alfa del ratllat"
+
+msgid "Touch Dragger Color"
+msgstr "Color de tàctil arrossegador"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Color de tàctil arrossegador premut"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Color de tàctil arrossegador en passar-hi el cursor"
+
+msgid "H Touch Dragger"
+msgstr "H tàctil arrossegador"
+
+msgid "V Touch Dragger"
+msgstr "V tàctil arrossegador"
+
+msgid "Touch Dragger"
+msgstr "Tàctil arrossegador"
+
+msgid "H Grabber"
+msgstr "H nansa"
+
+msgid "V Grabber"
+msgstr "V nansa"
+
+msgid "Margin Left"
+msgstr "Marge esquerra"
+
+msgid "Margin Top"
+msgstr "Marge superior"
+
+msgid "Margin Right"
+msgstr "Marge dreta"
+
+msgid "Margin Bottom"
+msgstr "Marge inferior"
+
+msgid "Minimum Grab Thickness"
+msgstr "Gruix mínim d'agafada"
+
+msgid "Autohide"
+msgstr "Ocultació automàtica"
+
+msgid "Split Bar Background"
+msgstr "Fons de la barra divisòria"
+
+msgid "Zoom Out"
+msgstr "Allunya"
+
+msgid "Zoom In"
+msgstr "Apropa"
+
+msgid "Zoom Reset"
+msgstr "Restableix el zoom"
+
+msgid "Grid Toggle"
+msgstr "Commuta la graella"
+
+msgid "Minimap Toggle"
+msgstr "Commuta el minimapa"
+
+msgid "Snapping Toggle"
+msgstr "Commuta l'ajust"
+
+msgid "Menu Panel"
+msgstr "Tauler de menú"
+
+msgid "Grid Minor"
+msgstr "Graella menor"
+
+msgid "Grid Major"
+msgstr "Graella major"
+
+msgid "Selection Fill"
+msgstr "Farciment de la selecció"
+
+msgid "Selection Stroke"
+msgstr "Traç de la selecció"
+
+msgid "Activity"
+msgstr "Activitat"
+
+msgid "Connection Hover Tint Color"
+msgstr "Color de tint de la connexió en passar-hi el cursor"
+
+msgid "Connection Hover Thickness"
+msgstr "Gruix de la connexió en passar-hi el cursor"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "Color de tint de destinació vàlida de connexió"
+
+msgid "Connection Rim Color"
+msgstr "Color de la vora de la connexió"
+
+msgid "Title Panel"
+msgstr "Tauler de títol"
+
+msgid "Title Hover Panel"
+msgstr "Tauler de títol en passar-hi el cursor"
+
+msgid "Title Collapsed Panel"
+msgstr "Tauler de títol col·lapsat"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "Tauler de títol col·lapsat en passar-hi el cursor"
+
+msgid "Hover Font Color"
+msgstr "Color de en passar-hi el cursor lletra"
+
+msgid "Collapsed Font Color"
+msgstr "Color de la lletra col·lapsada"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "Fletxa expandida reflectida"
+
+msgid "Folded Arrow Mirrored"
+msgstr "Fletxa plegada reflectida"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "Extensió interior de la zona activa del port"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "Extensió exterior de la zona activa del port"
+
+msgid "Default Theme Scale"
+msgstr "Escala del tema per defecte"
+
+msgid "Custom"
+msgstr "Personalitzat"
+
+msgid "Custom Font"
+msgstr "Lletra de personalitzat"
+
+msgid "Fallback values"
+msgstr "Valors de reserva"
+
+msgid "Stylebox"
+msgstr "Stylebox"
+
+msgid "Enable Input"
+msgstr "Activa l'entrada"
+
+msgid "Channel Disable Threshold dB"
+msgstr "Llindar de desactivació del canal (dB)"
+
+msgid "Channel Disable Time"
+msgstr "Temps de desactivació del canal"
+
+msgid "Video Delay Compensation (ms)"
+msgstr "Compensació del retard de vídeo (ms)"
+
+msgid "Bus Count"
+msgstr "Nombre de busos"
+
+msgid "Output Device"
+msgstr "Dispositiu de sortida"
+
+msgid "Input Device"
+msgstr "Dispositiu d'entrada"
+
+msgid "Playback Speed Scale"
+msgstr "Escala de velocitat de reproducció"
+
+msgid "Playback Mode"
+msgstr "Mode de reproducció"
+
+msgid "Random Pitch Semitones"
+msgstr "Semitons aleatoris del to"
+
+msgid "Random Volume Offset dB"
+msgstr "Desplaçament aleatori del volum (dB)"
+
+msgid "Streams"
+msgstr "Fluxos"
+
+msgid "Buffer Length"
+msgstr "Longitud de la memòria intermèdia"
+
+msgid "Voice Count"
+msgstr "Nombre de veus"
+
+msgid "Dry"
+msgstr "Sec"
+
+msgid "Wet"
+msgstr "Humit"
+
+msgid "Voice"
+msgstr "Veu"
+
+msgid "Delay (ms)"
+msgstr "Retard (ms)"
+
+msgid "Rate Hz"
+msgstr "Freqüència (Hz)"
+
+msgid "Depth (ms)"
+msgstr "Profunditat (ms)"
+
+msgid "Level dB"
+msgstr "Nivell (dB)"
+
+msgid "Pan"
+msgstr "Panoràmica"
+
+msgid "Attack (µs)"
+msgstr "Atac (µs)"
+
+msgid "Release (ms)"
+msgstr "Alliberament (ms)"
+
+msgid "Sidechain"
+msgstr "Cadena lateral"
+
+msgid "Tap 1"
+msgstr "Tap 1"
+
+msgid "Tap 2"
+msgstr "Tap 2"
+
+msgid "Feedback"
+msgstr "Retorn"
+
+msgid "Low-pass"
+msgstr "Passabaix"
+
+msgid "Pre Gain"
+msgstr "Guany previ"
+
+msgid "Keep Hf Hz"
+msgstr "Mantén HF (Hz)"
+
+msgid "Drive"
+msgstr "Saturació"
+
+msgid "Post Gain"
+msgstr "Guany posterior"
+
+msgid "Resonance"
+msgstr "Ressonància"
+
+msgid "Pre Gain dB"
+msgstr "Guany previ (dB)"
+
+msgid "Ceiling dB"
+msgstr "Sostre (dB)"
+
+msgid "Threshold dB"
+msgstr "Llindar dB"
+
+msgid "Soft Clip dB"
+msgstr "Clip suau (dB)"
+
+msgid "Soft Clip Ratio"
+msgstr "Relació de clip suau"
+
+msgid "Range Min Hz"
+msgstr "Interval mínim (Hz)"
+
+msgid "Range Max Hz"
+msgstr "Interval màxim (Hz)"
+
+msgid "FFT Size"
+msgstr "Mida de l'FFT"
+
+msgid "Predelay"
+msgstr "Preretard"
+
+msgid "Msec"
+msgstr "ms"
+
+msgid "Room Size"
+msgstr "Mida de la sala"
+
+msgid "High-pass"
+msgstr "Passaalt"
+
+msgid "Pan Pullout"
+msgstr "Extracció panoràmica"
+
+msgid "Time Pullout (ms)"
+msgstr "Extracció temporal (ms)"
+
+msgid "Surround"
+msgstr "So envoltant"
+
+msgid "Mix Rate Mode"
+msgstr "Mode de freqüència de mescla"
+
+msgid "Feed"
+msgstr "Alimentació"
+
+msgid "Is Active"
+msgstr "Està actiu"
+
+msgid "Monitoring Feeds"
+msgstr "Fluxos de monitoratge"
+
+msgid "Movie Writer"
+msgstr "Escriptor de pel·lícules"
+
+msgid "Speaker Mode"
+msgstr "Mode d'altaveus"
+
+msgid "Video Quality"
+msgstr "Qualitat de vídeo"
+
+msgid "Audio Bit Depth"
+msgstr "Profunditat de bits d'àudio"
+
+msgid "OGV"
+msgstr "OGV"
+
+msgid "Audio Quality"
+msgstr "Qualitat d'àudio"
+
+msgid "Encoding Speed"
+msgstr "Velocitat de codificació"
+
+msgid "Keyframe Interval"
+msgstr "Interval de fotogrames clau"
+
+msgid "Movie File"
+msgstr "Fitxer de pel·lícula"
+
+msgid "Disable V-Sync"
+msgstr "Desactiva V-Sync"
+
+msgid "Metadata Flags"
+msgstr "Indicadors de metadades"
+
+msgid "Excluded Regions"
+msgstr "Regions excloses"
+
+msgid "Included Regions"
+msgstr "Regions incloses"
+
+msgid "Path Types"
+msgstr "Tipus de camí"
+
+msgid "Path Rids"
+msgstr "RID de camí"
+
+msgid "Path Owner IDs"
+msgstr "ID de propietari del camí"
+
+msgid "Path Length"
+msgstr "Longitud de camí"
+
+msgid "Default Cell Size"
+msgstr "Mida de per defecte cel·la"
+
+msgid "Merge Rasterizer Cell Scale"
+msgstr "Fusiona l'escala de cel·la del rasteritzador"
+
+msgid "Default Edge Connection Margin"
+msgstr "Marge de per defecte vora connexió"
+
+msgid "Default Link Connection Radius"
+msgstr "Radi de per defecte enllaç connexió"
+
+msgid "Edge Connection Color"
+msgstr "Color de vora connexió"
+
+msgid "Geometry Edge Color"
+msgstr "Color de geometria vora"
+
+msgid "Geometry Face Color"
+msgstr "Color de geometria cara"
+
+msgid "Geometry Edge Disabled Color"
+msgstr "Color de geometria vora desactivat"
+
+msgid "Geometry Face Disabled Color"
+msgstr "Color de geometria cara desactivat"
+
+msgid "Link Connection Color"
+msgstr "Color de enllaç connexió"
+
+msgid "Link Connection Disabled Color"
+msgstr "Color de enllaç connexió desactivat"
+
+msgid "Agent Path Color"
+msgstr "Color del camí de l'agent"
+
+msgid "Enable Edge Connections"
+msgstr "Activa vora connexions"
+
+msgid "Enable Edge Lines"
+msgstr "Línies de activa vora"
+
+msgid "Enable Geometry Face Random Color"
+msgstr "Color de activa geometria cara aleatori"
+
+msgid "Enable Link Connections"
+msgstr "Activa enllaç connexions"
+
+msgid "Enable Agent Paths"
+msgstr "Activa els camins d'agent"
+
+msgid "Agent Path Point Size"
+msgstr "Mida dels punts del camí d'agent"
+
+msgid "Agents Radius Color"
+msgstr "Color del radi dels agents"
+
+msgid "Obstacles Radius Color"
+msgstr "Obstacles Radi Color"
+
+msgid "Obstacles Static Face Pushin Color"
+msgstr "Color d'entrada de cara estàtica dels obstacles"
+
+msgid "Obstacles Static Edge Pushin Color"
+msgstr "Color d'entrada de vora estàtica dels obstacles"
+
+msgid "Obstacles Static Face Pushout Color"
+msgstr "Color de sortida de cara estàtica dels obstacles"
+
+msgid "Obstacles Static Edge Pushout Color"
+msgstr "Color de sortida de vora estàtica dels obstacles"
+
+msgid "Enable Agents Radius"
+msgstr "Activa el radi dels agents"
+
+msgid "Enable Obstacles Radius"
+msgstr "Activa el radi dels obstacles"
+
+msgid "Enable Obstacles Static"
+msgstr "Activa els obstacles estàtics"
+
+msgid "Navigation Engine"
+msgstr "Motor de navegació"
+
+msgid "Default Cell Height"
+msgstr "Alçada de per defecte cel·la"
+
+msgid "Default Up"
+msgstr "Per defecte amunt"
+
+msgid "Enable Edge Connections X-Ray"
+msgstr "Activa vora connexions X raig"
+
+msgid "Enable Edge Lines X-Ray"
+msgstr "Activa vora línies X raig"
+
+msgid "Enable Link Connections X-Ray"
+msgstr "Activa enllaç connexions X raig"
+
+msgid "Enable Agent Paths X-Ray"
+msgstr "Activa els camins d'agent en raigs X"
+
+msgid "Inverse Mass"
+msgstr "Massa inversa"
+
+msgid "Inverse Inertia"
+msgstr "Inèrcia inversa"
+
+msgid "Total Angular Damp"
+msgstr "Total angular esmorteïment"
+
+msgid "Total Linear Damp"
+msgstr "Total lineal esmorteïment"
+
+msgid "Total Gravity"
+msgstr "Total gravetat"
+
+msgid "Center of Mass Local"
+msgstr "Centre de massa local"
+
+msgid "Collide with Bodies"
+msgstr "Col·lideix amb cossos"
+
+msgid "Collide with Areas"
+msgstr "Col·lideix amb àrees"
+
+msgid "Canvas Instance ID"
+msgstr "ID d'instància del canvas"
+
+msgid "Shape RID"
+msgstr "RID de la forma"
+
+msgid "Collide Separation Ray"
+msgstr "Col·lideix separació raig"
+
+msgid "Exclude Bodies"
+msgstr "Exclou els cossos"
+
+msgid "Exclude Objects"
+msgstr "Exclou els objectes"
+
+msgid "Recovery as Collision"
+msgstr "Recuperació com a col·lisió"
+
+msgid "Default Gravity"
+msgstr "Per defecte gravetat"
+
+msgid "Default Gravity Vector"
+msgstr "Vector de gravetat per defecte"
+
+msgid "Default Linear Damp"
+msgstr "Per defecte lineal esmorteïment"
+
+msgid "Default Angular Damp"
+msgstr "Per defecte angular esmorteïment"
+
+msgid "Sleep Threshold Linear"
+msgstr "Repòs llindar lineal"
+
+msgid "Sleep Threshold Angular"
+msgstr "Repòs llindar angular"
+
+msgid "Time Before Sleep"
+msgstr "Temps abans del repòs"
+
+msgid "Solver Iterations"
+msgstr "Iteracions del solucionador"
+
+msgid "Contact Recycle Radius"
+msgstr "Radi de reciclatge de contactes"
+
+msgid "Contact Max Separation"
+msgstr "Separació màxima de contacte"
+
+msgid "Contact Max Allowed Penetration"
+msgstr "Penetració màxima permesa de contacte"
+
+msgid "Default Contact Bias"
+msgstr "Biaix de contacte per defecte"
+
+msgid "Default Constraint Bias"
+msgstr "Biaix de restricció per defecte"
+
+msgid "Physics Engine"
+msgstr "Motor de física"
+
+msgid "Inverse Inertia Tensor"
+msgstr "Tensor d'inèrcia inversa"
+
+msgid "Principal Inertia Axes"
+msgstr "Principals eixos d'inèrcia"
+
+msgid "Max Collisions"
+msgstr "Col·lisions màximes"
+
+msgid "Debug Redraw Time"
+msgstr "Temps de redibuix de depuració"
+
+msgid "Debug Redraw Color"
+msgstr "Color de redibuix de depuració"
+
+msgid "Tighter Shadow Caster Culling"
+msgstr "Poda més ajustada dels projectors d'ombres"
+
+msgid "Vertex"
+msgstr "Vèrtex"
+
+msgid "Fragment"
+msgstr "Fragment"
+
+msgid "Tesselation Control"
+msgstr "Control de tessel·lació"
+
+msgid "Tesselation Evaluation"
+msgstr "Avaluació de tessel·lació"
+
+msgid "Compute"
+msgstr "Còmput"
+
+msgid "Raygen"
+msgstr "Generació de raigs"
+
+msgid "Any Hit"
+msgstr "Qualsevol impacte"
+
+msgid "Closest Hit"
+msgstr "Impacte més proper"
+
+msgid "Miss"
+msgstr "Errada"
+
+msgid "Intersection"
+msgstr "Intersecció"
+
+msgid "Syntax"
+msgstr "Sintaxi"
+
+msgid "Bytecode"
+msgstr "Bytecode"
+
+msgid "Compile Error"
+msgstr "Error de compilació"
+
+msgid "Base Error"
+msgstr "Error base"
+
+msgid "IDs"
+msgstr "ID"
+
+msgid "Constant ID"
+msgstr "ID de constant"
+
+msgid "Sample Masks"
+msgstr "Màscares de mostra"
+
+msgid "Specialization Constants"
+msgstr "Constants d'especialització"
+
+msgid "Render Loop Enabled"
+msgstr "Bucle de renderització activat"
+
+msgid "VRAM Compression"
+msgstr "Compressió de VRAM"
+
+msgid "Import S3TC BPTC"
+msgstr "Importa S3TC BPTC"
+
+msgid "Import ETC2 ASTC"
+msgstr "Importa ETC2 ASTC"
+
+msgid "Compress with GPU"
+msgstr "Comprimeix amb GPU"
+
+msgid "Cache GPU Compressor"
+msgstr "Desa a la memòria cau el compressor de GPU"
+
+msgid "Lossless Compression"
+msgstr "Compressió sense pèrdua"
+
+msgid "Force PNG"
+msgstr "Força PNG"
+
+msgid "WebP Compression"
+msgstr "Compressió WebP"
+
+msgid "Compression Method"
+msgstr "Mètode de compressió"
+
+msgid "Lossless Compression Factor"
+msgstr "Factor de compressió sense pèrdua"
+
+msgid "Time Rollover Secs"
+msgstr "Segons de reinici del temps"
+
+msgid "Use Physical Light Units"
+msgstr "Usa unitats de llum físiques"
+
+msgid "Soft Shadow Filter Quality"
+msgstr "Qualitat de suau ombra filtre"
+
+msgid "Atlas 16 Bits"
+msgstr "Atles de 16 bits"
+
+msgid "Shadow Atlas"
+msgstr "Atles d'ombres"
+
+msgid "Batching"
+msgstr "Agrupament en lots"
+
+msgid "Item Buffer Size"
+msgstr "Mida de element memòria intermèdia"
+
+msgid "Uniform Set Cache Size"
+msgstr "Mida de la memòria cau de conjunts uniformes"
+
+msgid "Shader Compiler"
+msgstr "Compilador de shaders"
+
+msgid "Shader Cache"
+msgstr "Shader memòria cau"
+
+msgid "Use Zstd Compression"
+msgstr "Usa compressió Zstd"
+
+msgid "Strip Debug"
+msgstr "Elimina la depuració"
+
+msgid "Reflections"
+msgstr "Reflexions"
+
+msgid "Sky Reflections"
+msgstr "Reflexions del cel"
+
+msgid "Roughness Layers"
+msgstr "Capes de rugositat"
+
+msgid "Texture Array Reflections"
+msgstr "Reflexions de matriu de textures"
+
+msgid "GGX Samples"
+msgstr "Mostres GGX"
+
+msgid "Fast Filter High Quality"
+msgstr "Alta qualitat del filtre ràpid"
+
+msgid "Reflection Atlas"
+msgstr "Atles de reflexió"
+
+msgid "Reflection Size"
+msgstr "Mida de reflexió"
+
+msgid "Reflection Count"
+msgstr "Nombre de reflexions"
+
+msgid "Specular Occlusion"
+msgstr "Oclusió especular"
+
+msgid "GI"
+msgstr "GI"
+
+msgid "Use Half Resolution"
+msgstr "Usa mitja resolució"
+
+msgid "Overrides"
+msgstr "Sobreescriptures"
+
+msgid "Force Vertex Shading"
+msgstr "Força l'ombrejat de vèrtexs"
+
+msgid "Force Lambert over Burley"
+msgstr "Força Lambert sobre Burley"
+
+msgid "Depth Prepass"
+msgstr "Prepassada de profunditat"
+
+msgid "Disable for Vendors"
+msgstr "Desactiva per a proveïdors"
+
+msgid "Default Filters"
+msgstr "Filtres per defecte"
+
+msgid "Use Nearest Mipmap Filter"
+msgstr "Usa el filtre mipmap més proper"
+
+msgid "Depth of Field"
+msgstr "Profunditat de camp"
+
+msgid "Depth of Field Bokeh Shape"
+msgstr "Forma de bokeh de la profunditat de camp"
+
+msgid "Depth of Field Bokeh Quality"
+msgstr "Qualitat del bokeh de la profunditat de camp"
+
+msgid "Depth of Field Use Jitter"
+msgstr "Usa jitter en la profunditat de camp"
+
+msgid "Half Size"
+msgstr "Mida de meitat"
+
+msgid "Adaptive Target"
+msgstr "Objectiu adaptatiu"
+
+msgid "Blur Passes"
+msgstr "Passades de desenfocament"
+
+msgid "Fadeout From"
+msgstr "Esvaïment des de"
+
+msgid "Fadeout To"
+msgstr "Esvaïment fins a"
+
+msgid "HDR 2D"
+msgstr "HDR 2D"
+
+msgid "Screen Space Roughness Limiter"
+msgstr "Limitador de rugositat en espai de pantalla"
+
+msgid "SMAA Edge Detection Threshold"
+msgstr "Llindar de detecció de vores SMAA"
+
+msgid "Decals"
+msgstr "Adhesius"
+
+msgid "Light Projectors"
+msgstr "Projectors de llum"
+
+msgid "Occlusion Rays per Thread"
+msgstr "Raigs d'oclusió per fil"
+
+msgid "Upscale Mode"
+msgstr "Mode d'escalat"
+
+msgid "Screen Space Reflection"
+msgstr "Reflexió en espai de pantalla"
+
+msgid "Subsurface Scattering"
+msgstr "Dispersió subsuperficial"
+
+msgid "Subsurface Scattering Quality"
+msgstr "Qualitat de la dispersió subsuperficial"
+
+msgid "Subsurface Scattering Scale"
+msgstr "Escala de la dispersió subsuperficial"
+
+msgid "Subsurface Scattering Depth Scale"
+msgstr "Escala de profunditat de la dispersió subsuperficial"
+
+msgid "Global Shader Variables"
+msgstr "Variables globals de shader"
+
+msgid "Buffer Size"
+msgstr "Mida de memòria intermèdia"
+
+msgid "Probe Capture"
+msgstr "Captura de sonda"
+
+msgid "Update Speed"
+msgstr "Velocitat d'actualització"
+
+msgid "Primitive Meshes"
+msgstr "Malles primitives"
+
+msgid "Texel Size"
+msgstr "Mida del texel"
+
+msgid "Lightmap GI"
+msgstr "GI de lightmap"
+
+msgid "Use Bicubic Filter"
+msgstr "Usa filtre bicúbic"
+
+msgid "Probe Ray Count"
+msgstr "Nombre de raigs de la sonda"
+
+msgid "Frames to Converge"
+msgstr "Fotogrames per convergir"
+
+msgid "Frames to Update Lights"
+msgstr "Fotogrames per actualitzar llums"
+
+msgid "Use Legacy Blending"
+msgstr "Usa mescla antiga"
+
+msgid "Volume Size"
+msgstr "Mida de volum"
+
+msgid "Volume Depth"
+msgstr "Profunditat de volum"
+
+msgid "Spatial Indexer"
+msgstr "Indexador espacial"
+
+msgid "Update Iterations per Frame"
+msgstr "Iteracions d'actualització per fotograma"
+
+msgid "Threaded Cull Minimum Instances"
+msgstr "Instàncies mínimes per a poda amb fils"
+
+msgid "Cluster Builder"
+msgstr "Constructor de clústers"
+
+msgid "Max Clustered Elements"
+msgstr "Elements agrupats màxims"
+
+msgid "OpenGL"
+msgstr "OpenGL"
+
+msgid "Max Renderable Elements"
+msgstr "Elements renderitzables màxims"
+
+msgid "Max Renderable Lights"
+msgstr "Llums renderitzables màxims"
+
+msgid "Max Lights per Object"
+msgstr "Llums màximes per objecte"
+
+msgid "Shaders"
+msgstr "Shaders"
+
+msgid "Shader Language"
+msgstr "Llenguatge de shader"
+
+msgid "Treat Warnings as Errors"
+msgstr "Tracta els avisos com a errors"
+
+msgid "Depth Draw"
+msgstr "Dibuix de profunditat"
+
+msgid "Depth Prepass Alpha"
+msgstr "Alfa de prepassada de profunditat"
+
+msgid "SSS Mode Skin"
+msgstr "Pell en mode SSS"
+
+msgid "Cull"
+msgstr "Poda"
+
+msgid "Unshaded"
+msgstr "Sense ombrejat"
+
+msgid "Wireframe"
+msgstr "Filferro"
+
+msgid "Skip Vertex Transform"
+msgstr "Omet la transformació de vèrtexs"
+
+msgid "World Vertex Coords"
+msgstr "Coordenades de vèrtex del món"
+
+msgid "Ensure Correct Normals"
+msgstr "Assegura normals correctes"
+
+msgid "Shadows Disabled"
+msgstr "Ombres desactivades"
+
+msgid "Ambient Light Disabled"
+msgstr "Llum ambiental desactivada"
+
+msgid "Vertex Lighting"
+msgstr "Il·luminació de vèrtexs"
+
+msgid "Particle Trails"
+msgstr "Esteles de partícules"
+
+msgid "Alpha to Coverage"
+msgstr "Alfa a cobertura"
+
+msgid "Alpha to Coverage and One"
+msgstr "Alfa a cobertura i u"
+
+msgid "Debug Shadow Splits"
+msgstr "Depura divisions d'ombra"
+
+msgid "Fog Disabled"
+msgstr "Boira desactivada"
+
+msgid "Specular Occlusion Disabled"
+msgstr "Oclusió especular desactivada"
+
+msgid "Read"
+msgstr "Lectura"
+
+msgid "Write"
+msgstr "Escriptura"
+
+msgid "Write Depth Fail"
+msgstr "Escriptura si falla la profunditat"
+
+msgid "Light Only"
+msgstr "Només llum"
+
+msgid "Collision Use Scale"
+msgstr "La col·lisió usa escala"
+
+msgid "Disable Force"
+msgstr "Desactiva la força"
+
+msgid "Disable Velocity"
+msgstr "Desactiva la velocitat"
+
+msgid "Keep Data"
+msgstr "Mantén les dades"
+
+msgid "Use Half Res Pass"
+msgstr "Usa passada a mitja resolució"
+
+msgid "Use Quarter Res Pass"
+msgstr "Usa passada a un quart de resolució"
+
+msgid "Float Comparison"
+msgstr "Comparació de flotants"
+
+msgid "Unused Constant"
+msgstr "Constant no utilitzada"
+
+msgid "Unused Function"
+msgstr "Funció no utilitzada"
+
+msgid "Unused Struct"
+msgstr "Struct no utilitzat"
+
+msgid "Unused Uniform"
+msgstr "Uniform no utilitzat"
+
+msgid "Unused Varying"
+msgstr "Varying no utilitzat"
+
+msgid "Unused Local Variable"
+msgstr "Variable local no utilitzada"
+
+msgid "Formatting Error"
+msgstr "Error de format"
+
+msgid "Device Limit Exceeded"
+msgstr "S'ha superat el límit del dispositiu"
+
+msgid "Magic Position Write"
+msgstr "Escriptura de posició màgica"
+
+msgid "Internal Size"
+msgstr "Mida interna"
+
+msgid "Target Size"
+msgstr "Mida de destinació"
+
+msgid "Default Font Antialiasing"
+msgstr "Antialiàsing de la lletra per defecte"
+
+msgid "Default Font Hinting"
+msgstr "Hinting de la lletra per defecte"
+
+msgid "Default Font Subpixel Positioning"
+msgstr "Posicionament subpíxel de la lletra per defecte"
+
+msgid "Default Font Multichannel Signed Distance Field"
+msgstr "Camp de distància signada multicanal de la lletra per defecte"
+
+msgid "Default Font Generate Mipmaps"
+msgstr "Genera mipmaps per a la lletra per defecte"
+
+msgid "LCD Subpixel Layout"
+msgstr "Disposició de subpíxels LCD"
+
+msgid "Include Text Server Data"
+msgstr "Inclou dades del servidor de text"
+
+msgid "Line Breaking Strictness"
+msgstr "Rigor del salt de línia"
+
+msgid "Has Tracking Data"
+msgstr "Té dades de seguiment"
+
+msgid "Body Flags"
+msgstr "Indicadors del cos"
+
+msgid "Blend Shapes"
+msgstr "Formes de mescla"
+
+msgid "Hand Tracking Source"
+msgstr "Origen del seguiment de mans"
+
+msgid "Is Primary"
+msgstr "És primari"
+
+msgid "Play Area Mode"
+msgstr "Mode de l'àrea de joc"
+
+msgid "AR"
+msgstr "AR"
+
+msgid "Is Anchor Detection Enabled"
+msgstr "La detecció d'ancoratges està activada"
+
+msgid "Tracking Confidence"
+msgstr "Confiança del seguiment"
+
+msgid "World Origin"
+msgstr "Origen del món"
+
+msgid "Camera Locked to Origin"
+msgstr "Càmera bloquejada a l'origen"
+
+msgid "Primary Interface"
+msgstr "Interfície principal"
+
+msgid "VRS Min Radius"
+msgstr "Radi de VRS mínim"
+
+msgid "VRS Strength"
+msgstr "Força de VRS"
+
+msgid "VRS Render Region"
+msgstr "Regió de renderització VRS"
