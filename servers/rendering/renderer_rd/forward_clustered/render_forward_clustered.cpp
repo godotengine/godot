@@ -1499,13 +1499,11 @@ void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buf
 
 		Projection projection = correction * p_projections[v];
 
-		Transform3D eye_transform = p_transform;
-		eye_transform.origin += p_transform.basis.xform(p_eye_offsets[v]);
-		reprojections[v] = rb_data->ss_effects_data.ssr_last_frame_projections[v] * Projection(rb_data->ss_effects_data.ssr_last_frame_transform[v].affine_inverse()) * Projection(eye_transform) * projection.inverse();
+		reprojections[v] = rb_data->ss_effects_data.ssr_last_frame_projections[v] * Projection(rb_data->ss_effects_data.ssr_last_frame_transform.affine_inverse()) * Projection(p_transform) * projection.inverse();
 
 		rb_data->ss_effects_data.ssr_last_frame_projections[v] = projection;
-		rb_data->ss_effects_data.ssr_last_frame_transform[v] = eye_transform;
 	}
+	rb_data->ss_effects_data.ssr_last_frame_transform = p_transform;
 
 	ss_effects->screen_space_reflection(p_render_buffers, rb_data->ss_effects_data.ssr, p_normal_slices, environment_get_ssr_max_steps(p_environment), environment_get_ssr_fade_in(p_environment), environment_get_ssr_fade_out(p_environment), environment_get_ssr_depth_tolerance(p_environment), p_projections, reprojections, p_eye_offsets, *copy_effects);
 }

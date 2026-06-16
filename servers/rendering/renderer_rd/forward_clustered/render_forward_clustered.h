@@ -108,7 +108,7 @@ public:
 			Transform3D ssil_last_frame_transform;
 
 			Projection ssr_last_frame_projections[RendererSceneRender::MAX_RENDER_VIEWS];
-			Transform3D ssr_last_frame_transform[RendererSceneRender::MAX_RENDER_VIEWS];
+			Transform3D ssr_last_frame_transform;
 
 			RendererRD::SSEffects::SSILRenderBuffers ssil;
 			RendererRD::SSEffects::SSAORenderBuffers ssao;
