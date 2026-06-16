@@ -46,9 +46,51 @@ float integrate_edge(vec3 p_proj0, vec3 p_proj1, vec3 p0, vec3 p1) {
 		// calculate the point on the line p0 to p1 that is closest to the vertex (origin)
 		vec3 half_point_t = p0 + normalize(p1 - p0) * dot(p0, normalize(p0 - p1));
 		vec3 half_point = normalize(half_point_t);
-		return integrate_edge_hill(p_proj0, half_point).y + integrate_edge_hill(half_point, p_proj1).y;
+
+		// Note: "integrate_edge_hill(p_proj0, half_point).y + integrate_edge_hill(half_point, p_proj1).y" code inlined to work around Adreno 650/660 shader compiler bug. Keep in sync with "modules/lightmapper_rd/lm_area_lights_inc.glsl" and "integrate_edge_hill" method.
+		float theta_sintheta = 0.0;
+		{
+			float cosTheta = dot(p_proj0, half_point);
+
+			float x = cosTheta;
+			float y = abs(x);
+			float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+			float b = 3.45068 + (4.18814 + y) * y;
+			theta_sintheta = a / b;
+			if (x < 0.0) {
+				theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta; // original paper: 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - theta_sintheta
+			}
+		}
+		float aa = (theta_sintheta * cross(p_proj0, half_point)).y;
+		{
+			float cosTheta = dot(half_point, p_proj1);
+
+			float x = cosTheta;
+			float y = abs(x);
+			float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+			float b = 3.45068 + (4.18814 + y) * y;
+			theta_sintheta = a / b;
+			if (x < 0.0) {
+				theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta; // original paper: 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - theta_sintheta
+			}
+		}
+		float bb = (theta_sintheta * cross(half_point, p_proj1)).y;
+		return aa + bb;
+	} else {
+		// Note: "integrate_edge_hill(p_proj0, p_proj1).y" code inlined to work around Adreno 650/660 shader compiler bug. Keep in sync with "modules/lightmapper_rd/lm_area_lights_inc.glsl" and "integrate_edge_hill" method.
+		float cosTheta = dot(p_proj0, p_proj1);
+
+		float x = cosTheta;
+		float y = abs(x);
+		float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+		float b = 3.45068 + (4.18814 + y) * y;
+		float theta_sintheta = a / b;
+
+		if (x < 0.0) {
+			theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta; // original paper: 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - theta_sintheta
+		}
+		return (theta_sintheta * cross(p_proj0, p_proj1)).y;
 	}
-	return integrate_edge_hill(p_proj0, p_proj1).y;
 }
 
 vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[4], float max_mipmap, texture2D area_light_atlas, sampler texture_sampler) {
