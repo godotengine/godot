@@ -128,6 +128,7 @@ void EditorLog::_update_theme() {
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
 	show_non_search_matches_button->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
 	search_case_sensitive_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
+	search_parse_bbcode_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
@@ -224,9 +225,18 @@ void EditorLog::_set_search_case_sensitive(bool p_state) {
 	log->set_scroll_follow(true);
 }
 
+void EditorLog::_set_search_parse_bbcode(bool p_state) {
+	search_parse_bbcode = p_state;
+
+	log->set_scroll_follow(false);
+	_rebuild_log();
+	log->set_scroll_follow(true);
+}
+
 void EditorLog::_set_search_buttons_visibility(bool p_visible) {
 	show_non_search_matches_button->set_visible(p_visible);
 	search_case_sensitive_button->set_visible(p_visible);
+	search_parse_bbcode_button->set_visible(p_visible);
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
@@ -390,22 +400,6 @@ bool EditorLog::_check_display_message(LogMessage &p_message) {
 
 	bool search_match = _contains_case_sensitive(p_message.text, search_text);
 
-	// If not found and message contains BBCode tags, also check the parsed text
-	if (!search_match && p_message.text.contains_char('[')) {
-		// Lazy initialize the BBCode parser
-		if (!bbcode_parser) {
-			bbcode_parser = memnew(RichTextLabel);
-			bbcode_parser->set_use_bbcode(true);
-		}
-
-		// Ensure clean state for each message
-		bbcode_parser->clear();
-		bbcode_parser->parse_bbcode(p_message.text);
-		String parsed_text = bbcode_parser->get_parsed_text();
-
-		search_match = _contains_case_sensitive(parsed_text, search_text);
-	}
-
 	return filter_active && search_match;
 }
 
@@ -470,7 +464,7 @@ void EditorLog::_add_highlighted_log_line(const Color &p_color_regular, const Co
 	// - The pair 1,2 ("u") is not a match
 	// - The pair 2,4 ("ll") is a match once again
 
-	// The last pair always describes a match and in the case p_line does not end with a match, that would cut off p_line after the last match...
+	// The last pair will always describe a match and in the case p_line does not end with a match, that would cut off p_line after the last match...
 	if (positions[positions.size() - 1] != p_line.size() - 1) {
 		positions.append(p_line.size() - 1); // ...so we add a final position. In the case of "Lullaby", it'd append 6 so that positions becomes [0,0,1,2,4,6]. That prevents the mistake described 2 lines up.
 	}
@@ -480,11 +474,11 @@ void EditorLog::_add_highlighted_log_line(const Color &p_color_regular, const Co
 		String substring = p_line.substr(positions[i - 1], positions[i] - positions[i - 1]);
 
 		// Even index means this segment is a match, uneven means the segment is not a match.
-		if (i % 2 == 1) {
+		if (i % 2 == 1) { // Uneven
 			log->push_color(p_color_regular);
 			log->push_normal();
 			log->add_text(substring);
-		} else {
+		} else { // Even
 			log->push_color(p_color_highlighted);
 			log->push_bold();
 			log->add_text(substring);
@@ -497,6 +491,8 @@ void EditorLog::_add_highlighted_log_line(const Color &p_color_regular, const Co
 }
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
+	String filter_keytext = search_box->get_text();
+
 	if (!is_inside_tree()) {
 		// The log will be built all at once when it enters the tree and has its theme items.
 		return;
@@ -516,7 +512,20 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		if (!show_non_search_matches) {
 			return;
 		}
-		log->push_color(Color(1.0, 1.0, 1.0, 0.2));
+	}
+
+	if (search_parse_bbcode && !filter_keytext.is_empty()) {
+		// Lazy initialize the BBCode parser
+		if (!bbcode_parser) {
+			bbcode_parser = memnew(RichTextLabel);
+			bbcode_parser->set_use_bbcode(true);
+		}
+
+		// Ensure clean state for each message
+		bbcode_parser->clear();
+		bbcode_parser->parse_bbcode(p_message.text);
+		String parsed_text = bbcode_parser->get_parsed_text();
+		p_message.text = parsed_text;
 	}
 
 	if (p_replace_previous) {
@@ -562,21 +571,24 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->pop();
 	}
 
-	String filter_keytext = search_box->get_text();
-
 	// Note that errors and warnings only support BBCode in the file part of the message.
-	if (p_message.type == MSG_TYPE_STD_RICH) {
-		log->append_text(p_message.text);
-	} else { // For all other message types
-		if (_check_display_message(p_message) && !filter_keytext.is_empty()) {
+	if (!filter_keytext.is_empty()) {
+		if (_check_display_message(p_message)) {
 			if (p_message.type == MSG_TYPE_ERROR) {
-				_add_highlighted_log_line(theme_cache.error_color * Color(0.8, 0.8, 0.8), Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
+				_add_highlighted_log_line(theme_cache.error_color * Color(1.0, 1.0, 1.0, 0.5), Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
 			} else if (p_message.type == MSG_TYPE_WARNING) {
-				_add_highlighted_log_line(theme_cache.warning_color * Color(0.8, 0.8, 0.8), Color(1.0, 0.35, 0.35), p_message.text, filter_keytext);
+				_add_highlighted_log_line(theme_cache.warning_color * Color(1.0, 1.0, 1.0, 0.5), Color(1.0, 0.35, 0.35), p_message.text, filter_keytext);
 			} else {
 				_add_highlighted_log_line(theme_cache.message_color, Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
 			}
-		} else { // If we aren't doing anything special with filtering, just print it as normal
+		} else {
+			log->push_color(Color(1.0, 1.0, 1.0, 0.2));
+			log->add_text(p_message.text); // Only use add_text instead of append_text for rich messages to force the BBCode tags to be exposed
+		}
+	} else { // If we aren't doing anything special with filtering, just print it as normal
+		if (p_message.type == MSG_TYPE_STD_RICH) {
+			log->append_text(p_message.text);
+		} else {
 			log->add_text(p_message.text);
 		}
 	}
@@ -698,6 +710,15 @@ EditorLog::EditorLog() {
 	search_case_sensitive_button->set_toggle_mode(true);
 	search_case_sensitive_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_case_sensitive));
 	hbox->add_child(search_case_sensitive_button);
+
+	// Parse BBCode button
+	search_parse_bbcode_button = memnew(Button);
+	search_parse_bbcode_button->set_tooltip_text(TTRC("Parse BBCode"));
+	search_parse_bbcode_button->set_accessibility_name(TTRC("Parse BBCode"));
+	search_parse_bbcode_button->set_theme_type_variation(SceneStringName(FlatButton));
+	search_parse_bbcode_button->set_toggle_mode(true);
+	search_parse_bbcode_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_parse_bbcode));
+	hbox->add_child(search_parse_bbcode_button);
 
 	// Make show_non_search_matches_button and search_case_sensitive_button invisible
 	_set_search_buttons_visibility(false);

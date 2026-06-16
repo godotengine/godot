@@ -142,6 +142,10 @@ private:
 	void _set_search_case_sensitive(bool p_state);
 	bool search_case_sensitive = false;
 
+	Button *search_parse_bbcode_button = nullptr;
+	void _set_search_parse_bbcode(bool p_state);
+	bool search_parse_bbcode = false;
+
 	void _set_search_buttons_visibility(bool p_visible);
 
 	Button *collapse_button = nullptr;
