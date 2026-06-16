@@ -32,6 +32,26 @@
 		[/codeblocks]
 		To iterate over all the [TreeItem] objects in a [Tree] object, use [method TreeItem.get_next] and [method TreeItem.get_first_child] after getting the root through [method get_root]. You can use [method Object.free] on a [TreeItem] to remove it from the [Tree].
 		[b]Incremental search:[/b] Like [ItemList] and [PopupMenu], [Tree] supports searching within the list while the control is focused. Press a key that matches the first letter of an item's name to select the first item starting with the given letter. After that point, there are two ways to perform incremental search: 1) Press the same key again before the timeout duration to select the next item starting with the same letter. 2) Press letter keys that match the rest of the word before the timeout duration to match to select the item in question directly. Both of these actions will be reset to the beginning of the list if the timeout duration has passed since the last keystroke was registered. You can adjust the timeout duration by changing [member ProjectSettings.gui/timers/incremental_search_max_interval_msec].
+		[Tree] supports the following screen reader commands:
+		- "Scroll Down", "Scroll Up", "Scroll Left", "Scroll Right" - scrolls [Tree] in the specified direction.
+		- "Set Scroll Offset" - sets the scroll position.
+		[Tree] rows support the following screen reader commands:
+		- "Collapse" - collapes this tree row.
+		- "Expands" - expands this tree row.
+		[Tree] cells support the following screen reader commands:
+		- "Focus" - steals the focus from another cell and becomes the focused cell.
+		- "Blur" - gives up the focus.
+		- "Scroll Into View" - scrolls [Tree] to make this cell visible on screen.
+		- "Collapse" - collapes tree row containing this cell.
+		- "Expands" - expands tree row containing this cell.
+		- "Set Value" (cells with mode [constant TreeItem.CELL_MODE_STRING]) - sets cell text to the specified value.
+		- "Click" (cells with mode [constant TreeItem.CELL_MODE_CHECK]) - toggles cell checked state.
+		- "Click" (cells with mode [constant TreeItem.CELL_MODE_CUSTOM]) - opens custom cell editor, emits [signal custom_popup_edited].
+		- "Decrement" (cells with mode [constant TreeItem.CELL_MODE_RANGE]) - decrements cell value.
+		- "Increment" (cells with mode [constant TreeItem.CELL_MODE_RANGE]) - increments cell value.
+		- "Set Value" (cells with mode [constant TreeItem.CELL_MODE_RANGE]) - sets cell to specified value.
+		[Tree] cell buttons support the following screen reader commands:
+		- "Click" - activates cell button, emits [signal button_clicked], with [code]mouse_button_index[/code] argument set to [constant MOUSE_BUTTON_LEFT].
 	</description>
 	<tutorials>
 	</tutorials>

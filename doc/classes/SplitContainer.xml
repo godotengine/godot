@@ -5,6 +5,10 @@
 	</brief_description>
 	<description>
 		A container that arranges child controls horizontally or vertically and creates grabbers between them. The grabbers can be dragged around to change the size relations between the child controls.
+		[SplitContainer] dragger control supports the following screen reader commands:
+		- "Decrement" - decrements dragger offset by 10%.
+		- "Increment" - increments dragger offset by 10%.
+		- "Set Value" - sets dragger offset to specified value.
 	</description>
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
