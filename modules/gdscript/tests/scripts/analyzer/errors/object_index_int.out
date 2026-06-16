@@ -1,2 +1,0 @@
-GDTEST_ANALYZER_ERROR
->> ERROR at line 3: Only "String" or "StringName" can be used as index for type "Object", but received "int".
