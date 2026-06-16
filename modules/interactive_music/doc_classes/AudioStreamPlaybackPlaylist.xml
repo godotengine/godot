@@ -13,7 +13,7 @@
 			<return type="void" />
 			<param index="0" name="stream_index" type="int" />
 			<description>
-				Changes to a specific stream within the playlist (by index). Sends an error to the console if [param stream_index] is out of bounds.
+				Changes to a specific stream within the playlist (by index). Raises an error if [param stream_index] is out of bounds.
 			</description>
 		</method>
 		<method name="get_current_stream_index" qualifiers="const">
