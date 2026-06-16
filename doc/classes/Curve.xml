@@ -56,7 +56,7 @@
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the left tangent (slope) for the point at [param index].  The left and right tangents may be different if the curve is not continuous at this point.
+				Returns the left tangent (slope) for the point at [param index]. The left and right tangents may be different if the curve is not continuous at this point.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
