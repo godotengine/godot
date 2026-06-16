@@ -362,7 +362,7 @@ bool compute_area_light(uint index, vec3 pos, vec3 normal, inout vec3 light) {
 	vec3 area_height_norm = normalize(area_height);
 	float a_half_len = a_len / 2.0;
 	float b_half_len = b_len / 2.0;
-	vec3 light_center = lights.data[index].position + (area_width + area_height) / 2.0;
+	vec3 light_center = lights.data[index].position;
 	vec3 light_to_vert = vertex - light_center;
 	vec3 pos_local_to_light = vec3(dot(light_to_vert, area_width_norm), dot(light_to_vert, area_height_norm), dot(light_to_vert, -area_direction)); // vertex in LIGHT SPACE
 	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0); // LIGHT SPACE
