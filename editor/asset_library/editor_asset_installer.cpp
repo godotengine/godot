@@ -49,6 +49,14 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 
+static bool _is_zip_entry_symlink(const unz_file_info &p_info) {
+	static constexpr uint32_t UNIX_FILE_TYPE_MASK = 0170000;
+	static constexpr uint32_t UNIX_FILE_TYPE_SYMLINK = 0120000;
+
+	uint32_t unix_mode = p_info.external_fa >> 16;
+	return (unix_mode & UNIX_FILE_TYPE_MASK) == UNIX_FILE_TYPE_SYMLINK;
+}
+
 void EditorAssetInstaller::_item_checked_cbk() {
 	if (updating_source || !source_tree->get_edited()) {
 		return;
@@ -552,18 +560,34 @@ void EditorAssetInstaller::_install_asset() {
 			Vector<uint8_t> uncomp_data;
 			uncomp_data.resize(info.uncompressed_size);
 
-			unzOpenCurrentFile(pkg);
-			unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
-			unzCloseCurrentFile(pkg);
+			ret = unzOpenCurrentFile(pkg);
+			if (ret != UNZ_OK) {
+				failed_files.push_back(target_path);
+				continue;
+			}
+			int bytes_read = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
+			int close_err = unzCloseCurrentFile(pkg);
+			if (bytes_read < 0 || bytes_read != uncomp_data.size() || close_err != UNZ_OK) {
+				failed_files.push_back(target_path);
+				continue;
+			}
 
 			// Ensure that the target folder exists.
 			da->make_dir_recursive(target_path.get_base_dir());
 
-			Ref<FileAccess> f = FileAccess::open(target_path, FileAccess::WRITE);
-			if (f.is_valid()) {
-				f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
+			if (_is_zip_entry_symlink(info)) {
+				String link_target = String::utf8(reinterpret_cast<const char *>(uncomp_data.ptr()), uncomp_data.size());
+				Error err = da->create_link(link_target, target_path);
+				if (err != OK) {
+					failed_files.push_back(target_path);
+				}
 			} else {
-				failed_files.push_back(target_path);
+				Ref<FileAccess> f = FileAccess::open(target_path, FileAccess::WRITE);
+				if (f.is_valid()) {
+					f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
+				} else {
+					failed_files.push_back(target_path);
+				}
 			}
 
 			ProgressDialog::get_singleton()->task_step("uncompress", target_path, idx);
