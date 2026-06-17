@@ -147,9 +147,26 @@ Vector3 closest_capsule_sphere(const Vector3 &head, const Vector3 &tail, const V
 	return head + p * (dot / pls);
 }
 
-real_t closest_capsule_sphere_to_taper(const Vector3 &head, const Vector3 &tail, float radius, const Vector3 &p_bone_little_end, float p_bone_little_end_radius, const Vector3 &p_bone_big_end, float p_bone_big_end_radius, float p_bone_length) {
-	// The collision capsule is (head, tail), radius.
-	// The tapered bone capsule is from (p_bone_little_end, p_bone_little_end_radius) to (p_bone_big_end, p_bone_big_end_radius).
+real_t closest_capsule_sphere_to_taper(const Vector3 &head, const Vector3 &tail, float radius, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
+	// The bone capsule is from (p_current_origin, p_bone_origin_radius) to (p_current, p_bone_radius)
+	Vector3 p_bone_little_end;
+	float p_bone_little_end_radius;
+	Vector3 p_bone_big_end;
+	float p_bone_big_end_radius;
+	if (p_bone_origin_radius <= p_bone_radius) {
+		p_bone_little_end = p_current_origin;
+		p_bone_little_end_radius = p_bone_origin_radius;
+		p_bone_big_end = p_current;
+		p_bone_big_end_radius = p_bone_radius;
+	} else {
+		p_bone_little_end = p_current;
+		p_bone_little_end_radius = p_bone_radius;
+		p_bone_big_end = p_current_origin;
+		p_bone_big_end_radius = p_bone_origin_radius;
+	}
+
+	// The collision capsule is (head, tail), radius. (mu, result)
+	// The tapered bone capsule is from (p_bone_little_end, p_bone_little_end_radius) to (p_bone_big_end, p_bone_big_end_radius). (lam)
 	DEV_ASSERT(p_bone_little_end_radius <= p_bone_big_end_radius);
 
 	Vector3 bone_axis = p_bone_big_end - p_bone_little_end;  // should be length p_bone_length due to calls to limit_length()
@@ -202,9 +219,26 @@ real_t closest_capsule_sphere_to_taper(const Vector3 &head, const Vector3 &tail,
 
 	// handle cylinder case
 	if (p_bone_little_end_radius == p_bone_big_end_radius) {
-		if ((mu < 0.0) || (mu > 1.0)) {
-			return -1.0;
+		if ((lam < 0.0) || (lam > 1.0)) {
+			Vector3 bone_sphere_end = (lam < 0.0 ? p_bone_little_end : p_bone_big_end);
+			mu = (bone_sphere_end - head).dot(p) / pdp;
+			lam = (lam < 0.0 ? 0.0 : 1.0);
 		}
+
+		if (mu < 0.0) {
+			mu = 0.0;
+		} else if (mu > 1.0) {
+			mu = 1.0;
+		}
+
+		// Test agreement with the verification calculation.
+		Vector3 Dcapsule_sphere_center = head * (1.0 - mu) + tail * mu;
+		Vector3 Dbone_sphere_center = p_bone_little_end * (1.0 - lam) + p_bone_big_end * lam;
+		real_t Dvpdist = (Dcapsule_sphere_center - Dbone_sphere_center).length();
+		real_t Dvdist = verify_distance_within_taper(Dcapsule_sphere_center, p_bone_little_end_radius, p_bone_length, p_bone_big_end, p_bone_big_end_radius, p_bone_little_end);
+		if (fabs(Dvpdist - Dvdist) > 0.01) 
+			printf("%d disag %.3f %.3f mu %.3f lam %.3f\n", SpringBoneCollision3D::Dsegmentindexbeingcalculated, Dvpdist, Dvdist, mu, lam);
+
 		return mu;
 	}
 	real_t cone_slope = p_bone_length / (p_bone_big_end_radius - p_bone_little_end_radius);
@@ -283,12 +317,7 @@ Vector3 SpringBoneCollisionCapsule3D::_collide(const Transform3D &p_center, floa
 		return _collide_sphere(capsule_sphere_center, radius, (collide_mode == COLLIDE_MODE_INSIDE), p_bone_radius, p_current);
 	}
 
-	real_t capsule_mu;
-	if (p_bone_origin_radius <= p_bone_radius) {
-		capsule_mu = closest_capsule_sphere_to_taper(head, tail, radius, p_current_origin, p_bone_origin_radius, p_current, p_bone_radius, p_bone_length);
-	} else {
-		capsule_mu = closest_capsule_sphere_to_taper(head, tail, radius, p_current, p_bone_radius, p_current_origin, p_bone_origin_radius, p_bone_length);
-	}
+	real_t capsule_mu = closest_capsule_sphere_to_taper(head, tail, radius, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 	if (capsule_mu == -1.0) {
 		return p_current;
 	}
@@ -304,10 +333,10 @@ Vector3 SpringBoneCollisionCapsule3D::_collide(const Transform3D &p_center, floa
 	real_t Dvdistlo = verify_distance_within_taper(caplo, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 	real_t Dvdisthi = verify_distance_within_taper(caphi, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 	if (Dvdistlo < Dvdist - 0.001) {
-		printf("Non-minimal mu=%.2f  %.3f < %.3f lo\n", capsule_mu, Dvdistlo, Dvdist);
+		printf("%d Non-minimal mu=%.2f  %.3f < %.3f lo\n", SpringBoneCollision3D::Dsegmentindexbeingcalculated, capsule_mu, Dvdistlo, Dvdist);
 	}
 	if (Dvdisthi < Dvdist - 0.001) {
-		printf("Non-minimal mu=%.2f  %.3f < %.3f hi\n", capsule_mu, Dvdisthi, Dvdist);
+		printf("%d Non-minimal mu=%.2f  %.3f < %.3f hi\n", SpringBoneCollision3D::Dsegmentindexbeingcalculated, capsule_mu, Dvdisthi, Dvdist);
 	}
 
 	return _collide_sphere_taper(capsule_sphere_center, radius, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
