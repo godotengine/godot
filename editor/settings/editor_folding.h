@@ -33,6 +33,7 @@
 #include "scene/main/node.h"
 
 class Animation;
+class ConfigFile;
 
 class EditorFolding {
 	Vector<String> _get_unfolds(const Object *p_object);
@@ -46,15 +47,21 @@ class EditorFolding {
 	Vector<String> _get_animation_folds(const Animation *p_animation);
 	void _set_animation_folds(Animation *p_animation, const Vector<String> &p_unfolds);
 
+	Ref<ConfigFile> _build_resource_folding(const Ref<Resource> &p_resource, const String &p_path, String &r_file);
+
+	struct FoldingFileSave {
+		Ref<ConfigFile> config;
+		String file;
+	};
+	void _save_resource_folding(uint32_t p_index, FoldingFileSave *p_files);
+
 public:
 	void save_resource_folding(const Ref<Resource> &p_resource, const String &p_path);
+	void save_resource_foldings(const LocalVector<Pair<Ref<Resource>, String>> &p_resource_paths);
 	void load_resource_folding(Ref<Resource> p_resource, const String &p_path);
 
 	void save_scene_folding(const Node *p_scene, const String &p_path);
 	void load_scene_folding(Node *p_scene, const String &p_path);
-
-	void save_animation_folding(const Ref<Animation> &p_animation, const String &p_path);
-	void load_animation_folding(Ref<Animation> p_animation, const String &p_path);
 
 	void unfold_scene(Node *p_scene);
 

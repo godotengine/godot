@@ -32,6 +32,7 @@
 
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
+#include "core/object/worker_thread_pool.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_inspector.h"
 #include "scene/animation/animation_mixer.h"
@@ -51,7 +52,7 @@ Vector<String> EditorFolding::_get_unfolds(const Object *p_object) {
 	return sections;
 }
 
-void EditorFolding::save_resource_folding(const Ref<Resource> &p_resource, const String &p_path) {
+Ref<ConfigFile> EditorFolding::_build_resource_folding(const Ref<Resource> &p_resource, const String &p_path, String &r_file) {
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Vector<String> unfolds = _get_unfolds(p_resource.ptr());
@@ -64,8 +65,41 @@ void EditorFolding::save_resource_folding(const Ref<Resource> &p_resource, const
 	}
 
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
-	file = EditorPaths::get_singleton()->get_project_settings_dir().path_join(file);
+	r_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join(file);
+	return config;
+}
+
+void EditorFolding::save_resource_folding(const Ref<Resource> &p_resource, const String &p_path) {
+	String file;
+	Ref<ConfigFile> config = _build_resource_folding(p_resource, p_path, file);
 	config->save(file);
+}
+
+void EditorFolding::_save_resource_folding(uint32_t p_index, FoldingFileSave *p_files) {
+	p_files[p_index].config->save(p_files[p_index].file);
+}
+
+void EditorFolding::save_resource_foldings(const LocalVector<Pair<Ref<Resource>, String>> &p_resource_paths) {
+	if (p_resource_paths.is_empty()) {
+		return;
+	}
+
+	LocalVector<FoldingFileSave> files;
+	files.resize(p_resource_paths.size());
+	for (uint32_t i = 0; i < p_resource_paths.size(); i++) {
+		files[i].config = _build_resource_folding(p_resource_paths[i].first, p_resource_paths[i].second, files[i].file);
+	}
+
+	if (files.size() == 1 || WorkerThreadPool::get_singleton()->get_thread_count() <= 1) {
+		for (const FoldingFileSave &E : files) {
+			E.config->save(E.file);
+		}
+		return;
+	}
+
+	WorkerThreadPool::GroupID group_id = WorkerThreadPool::get_singleton()->add_template_group_task(
+			this, &EditorFolding::_save_resource_folding, files.ptr(), files.size(), -1, true, SNAME("SaveResourceFoldings"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_id);
 }
 
 void EditorFolding::_set_unfolds(Object *p_object, const Vector<String> &p_unfolds) {
