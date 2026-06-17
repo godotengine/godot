@@ -508,6 +508,11 @@ public:
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
 		struct zwp_confined_pointer_v1 *wp_confined_pointer = nullptr;
 
+		bool pointer_locked = false;
+
+		bool constraint_warping = false;
+		bool constraint_warp_committed = false;
+
 		struct zwp_pointer_gesture_pinch_v1 *wp_pointer_gesture_pinch = nullptr;
 
 		// NOTE: According to the wp_pointer_gestures protocol specification, there
@@ -824,6 +829,9 @@ private:
 	static void _xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token);
 
 	// wayland-protocols event handlers.
+	static void _zwp_locked_pointer_v1_on_locked(void *data, struct zwp_locked_pointer_v1 *zwp_locked_pointer_v1);
+	static void _zwp_locked_pointer_v1_on_unlocked(void *data, struct zwp_locked_pointer_v1 *zwp_locked_pointer_v1);
+
 	static void _wp_color_manager_on_supported_intent(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t render_intent);
 	static void _wp_color_manager_on_supported_feature(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t feature);
 	static void _wp_color_manager_on_supported_tf_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t tf);
@@ -1027,6 +1035,11 @@ private:
 	};
 
 	// wayland-protocols event listeners.
+	static constexpr struct zwp_locked_pointer_v1_listener zwp_locked_pointer_v1_listener{
+		.locked = _zwp_locked_pointer_v1_on_locked,
+		.unlocked = _zwp_locked_pointer_v1_on_unlocked,
+	};
+
 	static constexpr struct wp_color_manager_v1_listener wp_color_manager_listener = {
 		.supported_intent = _wp_color_manager_on_supported_intent,
 		.supported_feature = _wp_color_manager_on_supported_feature,
@@ -1246,10 +1259,10 @@ public:
 	static EmbeddingCompositorState *godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor);
 
 	void seat_state_unlock_pointer(SeatState *p_ss);
-	void seat_state_lock_pointer(SeatState *p_ss);
+	void seat_state_lock_pointer(SeatState *p_ss, struct wl_surface *p_surface);
 	void seat_state_set_hint(SeatState *p_ss, int p_x, int p_y);
 	void seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y);
-	void seat_state_confine_pointer(SeatState *p_ss);
+	void seat_state_confine_pointer(SeatState *p_ss, struct wl_surface *p_surface);
 
 	static void seat_state_update_cursor(SeatState *p_ss);
 
@@ -1368,6 +1381,8 @@ public:
 	bool get_reset_frame();
 	bool wait_frame_suspend_ms(int p_timeout);
 	bool is_fifo_available() const;
+
+	void main_loop_callback();
 
 	uint64_t window_get_last_frame_time(DisplayServerEnums::WindowID p_window_id) const;
 	bool window_is_suspended(DisplayServerEnums::WindowID p_window_id) const;
