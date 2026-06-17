@@ -717,6 +717,13 @@ void RenderingDeviceDriverVulkan::_check_driver_workarounds(const VkPhysicalDevi
 			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
 			strstr(p_device_properties.deviceName, "Turnip") == nullptr;
 
+	// Don't print pipeline compilation errors on Adreno 660, as they are expected to happen on this device with ubershaders.
+	// Unhandled error cases will still pop up elsewhere in RD. (eg. when attempting to bind an invalid pipeline.)
+	driver_workarounds.dont_print_on_render_pipeline_creation_failure =
+			p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+			p_device_properties.deviceID == 0x6060001 && // Adreno 660
+			strstr(p_device_properties.deviceName, "Turnip") == nullptr;
+
 	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
 	// Which eventually run out of memory. In such case we should not be using linear allocated pools
 	// Bug introduced in driver 512.597.0 and fixed in 512.671.0.
@@ -6216,6 +6223,12 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
 	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
+
+	// Don't print error for VK_ERROR_UNKNOWN on Adreno 660.
+	if (unlikely(err == VK_ERROR_UNKNOWN && driver_workarounds.dont_print_on_render_pipeline_creation_failure)) {
+		return PipelineID();
+	}
+
 	ERR_FAIL_COND_V_MSG(err, PipelineID(), vformat("Couldn't create Vulkan graphics pipelines (VkResult error %d).", err));
 
 #if RECORD_PIPELINE_STATISTICS
