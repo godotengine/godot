@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=3.2.28
+VERSION=3.4.10
 
 target=$(dirname "$(realpath $0)")
 pushd $target
@@ -26,8 +26,8 @@ cp -v CREDITS.md LICENSE.txt $target
 # For build config, we use a single private one in the driver.
 # We might reconsider as we make more platforms use SDL.
 cp -rv include $target
-rm -f $target/include/build_config/{*.cmake,SDL_build_config_*.h} $target
-rm -f $target/include/SDL3/SDL_{egl,gpu,oldnames,opengl*,test*,vulkan}.h $target
+rm -f $target/include/build_config/{*.cmake,SDL_build_config_*.h}
+rm -f $target/include/SDL3/SDL_{egl,gpu,oldnames,opengl*,test*,vulkan}.h
 
 pushd src
 
@@ -49,16 +49,20 @@ cp -v io/SDL_iostream*.{c,h} $target/io
 mkdir $target/core
 cp -rv core/{linux,unix,windows} $target/core
 rm -f $target/core/windows/version.rc
-rm -f $target/core/linux/SDL_{fcitx,ibus,ime,system_theme}.*
+rm -f $target/core/linux/SDL_{fcitx,ibus,ime,system_theme,progressbar}.*
+rm -f $target/core/unix/SDL_{fribidi,gtk,libthai}.*
 
 mkdir $target/haptic
-cp -rv haptic/{*.{c,h},darwin,dummy,linux,windows} $target/haptic
+cp -rv haptic/{*.{c,h},darwin,dummy,hidapi,linux,windows} $target/haptic
 
 mkdir $target/joystick
 cp -rv joystick/{*.{c,h},apple,darwin,hidapi,linux,windows} $target/joystick
 
 mkdir $target/loadso
 cp -rv loadso/{dlopen,dummy} $target/loadso
+
+mkdir $target/misc
+cp -v misc/SDL_libusb.{c,h} $target/misc
 
 mkdir $target/sensor
 cp -rv sensor/{*.{c,h},dummy,windows} $target/sensor
@@ -80,7 +84,7 @@ mkdir -p $target/hidapi
 cp -v hidapi/{*.{c,h},AUTHORS.txt,LICENSE.txt,LICENSE-bsd.txt,VERSION} $target/hidapi
 for dir in hidapi linux mac windows; do
   mkdir $target/hidapi/$dir
-  cp -v hidapi/$dir/*.{c,h} $target/hidapi/$dir
+  cp -v hidapi/$dir/*.{c,h} $target/hidapi/$dir 2>/dev/null || :
 done
 
 popd

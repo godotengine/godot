@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -82,7 +82,6 @@
 #define wcsncpy         SDL_wcslcpy
 
 
-#ifndef SDL_PLATFORM_FREEBSD
 /* this is awkwardly inlined, so we need to re-implement it here
  * so we can override the libusb_control_transfer call */
 static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
@@ -93,7 +92,23 @@ static int SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
                                    data, (uint16_t)length, 1000); /* Endpoint 0 IN */
 }
 #define libusb_get_string_descriptor SDL_libusb_get_string_descriptor
-#endif /* SDL_PLATFORM_FREEBSD */
+
+/* this is inlined, except on FreeBSD, so we need to re-implement it here */
+static void SDL_libusb_fill_interrupt_transfer(
+	struct libusb_transfer *transfer, libusb_device_handle *dev_handle,
+	unsigned char endpoint, unsigned char *buffer, int length,
+	libusb_transfer_cb_fn callback, void *user_data, unsigned int timeout)
+{
+	transfer->dev_handle = dev_handle;
+	transfer->endpoint = endpoint;
+	transfer->type = LIBUSB_TRANSFER_TYPE_INTERRUPT;
+	transfer->timeout = timeout;
+	transfer->buffer = buffer;
+	transfer->length = length;
+	transfer->user_data = user_data;
+	transfer->callback = callback;
+}
+#define libusb_fill_interrupt_transfer SDL_libusb_fill_interrupt_transfer
 
 #define HIDAPI_THREAD_MODEL_INCLUDE "hidapi_thread_sdl.h"
 #ifndef LIBUSB_API_VERSION

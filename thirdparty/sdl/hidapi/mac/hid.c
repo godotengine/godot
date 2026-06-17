@@ -573,6 +573,7 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 {
 	unsigned short dev_vid;
 	unsigned short dev_pid;
+	unsigned short dev_version;
 	int BUF_LEN = 256;
 	wchar_t buf[BUF_LEN];
 	CFTypeRef transport_prop;
@@ -593,12 +594,22 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 
 	dev_vid = get_vendor_id(dev);
 	dev_pid = get_product_id(dev);
+	dev_version = get_int_property(dev, CFSTR(kIOHIDVersionNumberKey));
 
 #ifdef HIDAPI_IGNORE_DEVICE
 	/* See if there are any devices we should skip in enumeration */
-	if (HIDAPI_IGNORE_DEVICE(get_bus_type(dev), dev_vid, dev_pid, usage_page, usage)) {
+	if (HIDAPI_IGNORE_DEVICE(get_bus_type(dev), dev_vid, dev_pid, usage_page, usage, false)) {
 		free(cur_dev);
 		return NULL;
+	}
+#endif
+
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	if (SDL_IsJoystickSteamVirtualGamepad(dev_vid, dev_pid, dev_version)) {
+		if (IOHIDDeviceGetProperty(dev, CFSTR(kIOHIDVirtualHIDevice)) != kCFBooleanTrue) {
+			/* This is a real Xbox 360 controller, adjust the version so it's not detected as a Steam virtual gamepad */
+			dev_version = 1;
+		}
 	}
 #endif
 
@@ -649,7 +660,7 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 	cur_dev->product_id = dev_pid;
 
 	/* Release Number */
-	cur_dev->release_number = get_int_property(dev, CFSTR(kIOHIDVersionNumberKey));
+	cur_dev->release_number = dev_version;
 
 	/* Interface Number.
 	 * We can only retrieve the interface number for USB HID devices.
@@ -1138,6 +1149,8 @@ return_error:
 
 static int set_report(hid_device *dev, IOHIDReportType type, const unsigned char *data, size_t length)
 {
+	const char *pass_through_magic = "MAGIC0";
+	size_t pass_through_magic_length = strlen(pass_through_magic);
 	const unsigned char *data_to_send = data;
 	CFIndex length_to_send = length;
 	IOReturn res;
@@ -1157,6 +1170,11 @@ static int set_report(hid_device *dev, IOHIDReportType type, const unsigned char
 		   Don't send the report number. */
 		data_to_send = data+1;
 		length_to_send = length-1;
+	}
+	else if (length > 6 && memcmp(data, pass_through_magic, pass_through_magic_length) == 0) {
+		report_id = data[pass_through_magic_length];
+		data_to_send = data+pass_through_magic_length;
+		length_to_send = length-pass_through_magic_length;
 	}
 
 	/* Avoid crash if the device has been unplugged. */
@@ -1424,7 +1442,7 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 
 	   UPD: The crash part was true in/until some version of macOS.
 	   Starting with macOS 10.15, there is an opposite effect in some environments:
-	   crash happenes if IOHIDDeviceClose() is not called.
+	   crash happens if IOHIDDeviceClose() is not called.
 	   Not leaking a resource in all tested environments.
 	*/
 	if (is_macos_10_10_or_greater || !dev->disconnected) {

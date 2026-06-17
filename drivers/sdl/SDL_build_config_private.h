@@ -123,6 +123,7 @@
 #define SDL_PLATFORM_PRIVATE_NAME "macOS"
 #define SDL_PLATFORM_UNIX 1
 #define HAVE_STDIO_H 1
+#define HAVE_STDLIB_H 1
 #define HAVE_LIBC 1
 #define SDL_HAPTIC_IOKIT 1
 #define SDL_JOYSTICK_IOKIT 1
@@ -144,6 +145,7 @@
 #define SDL_PLATFORM_UNIX 1
 
 #define HAVE_STDIO_H 1
+#define HAVE_STDLIB_H 1
 #define HAVE_LIBC 1
 
 #define SDL_JOYSTICK_MFI 1

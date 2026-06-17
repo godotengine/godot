@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
 #endif
 
 #include "SDL_assert_c.h"
-//#include "video/SDL_sysvideo.h"
+// #include "video/SDL_sysvideo.h"
 
 #if defined(SDL_PLATFORM_WINDOWS)
 #ifndef WS_OVERLAPPEDWINDOW
@@ -120,23 +120,10 @@ static void SDL_GenerateAssertionReport(void)
     }
 }
 
-/* This is not declared in any header, although it is shared between some
-    parts of SDL, because we don't want anything calling it without an
-    extremely good reason. */
-#ifdef __WATCOMC__
-extern void SDL_ExitProcess(int exitcode);
-#pragma aux SDL_ExitProcess aborts;
-#endif
-extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
-
-#ifdef __WATCOMC__
-static void SDL_AbortAssertion(void);
-#pragma aux SDL_AbortAssertion aborts;
-#endif
 static SDL_NORETURN void SDL_AbortAssertion(void)
 {
     SDL_Quit();
-    SDL_ExitProcess(42);
+    SDL_abort();
 }
 
 static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, void *userdata)
@@ -209,6 +196,18 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
         }
     }
 
+    // Leave fullscreen mode, if possible (scary!)
+    // window = SDL_GetToplevelForKeyboardFocus();
+    // if (window) {
+    //     if (window->fullscreen_exclusive) {
+    //         SDL_MinimizeWindow(window);
+    //     } else {
+    //         // !!! FIXME: ungrab the input if we're not fullscreen?
+    //         // No need to mess with the window
+    //         window = NULL;
+    //     }
+    // }
+
     // Show a messagebox if we can, otherwise fall back to stdio
     SDL_zero(messagebox);
     messagebox.flags = SDL_MESSAGEBOX_WARNING;
@@ -218,7 +217,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
     messagebox.numbuttons = SDL_arraysize(buttons);
     messagebox.buttons = buttons;
 
-    //if (SDL_ShowMessageBox(&messagebox, &selected)) {
+    // if (SDL_ShowMessageBox(&messagebox, &selected)) {
     if (false) {
         if (selected == -1) {
             state = SDL_ASSERTION_IGNORE;
@@ -300,13 +299,13 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
             }
         }
 #else
-        //SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Assertion Failed", message, window);
-#endif // HAVE_STDIO_H
+        // SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Assertion Failed", message, window);
+#endif // SDL_PLATFORM_PRIVATE_ASSERT
     }
 
     // Re-enter fullscreen mode
     if (window) {
-        //SDL_RestoreWindow(window);
+        // SDL_RestoreWindow(window);
     }
 
     if (message != stack_buf) {
@@ -350,7 +349,7 @@ SDL_AssertState SDL_ReportAssertion(SDL_AssertData *data, const char *func, cons
         if (assertion_running == 2) {
             SDL_AbortAssertion();
         } else if (assertion_running == 3) { // Abort asserted!
-            SDL_ExitProcess(42);
+            SDL_abort();
         } else {
             while (1) { // do nothing but spin; what else can you do?!
             }

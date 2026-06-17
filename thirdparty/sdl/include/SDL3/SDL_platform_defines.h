@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -190,7 +190,7 @@
 #if TARGET_OS_VISION
 
 /**
- * A preprocessor macro that is only defined if compiling for VisionOS.
+ * A preprocessor macro that is only defined if compiling for visionOS.
  *
  * \since This macro is available since SDL 3.2.0.
  *
@@ -202,7 +202,7 @@
 #if TARGET_OS_IPHONE
 
 /**
- * A preprocessor macro that is only defined if compiling for iOS.
+ * A preprocessor macro that is only defined if compiling for iOS or visionOS.
  *
  * \since This macro is available since SDL 3.2.0.
  *
@@ -317,7 +317,7 @@
 #define SDL_PLATFORM_CYGWIN 1
 #endif
 
-#if defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+#if (defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)) && !defined(__NGAGE__)
 
 /**
  * A preprocessor macro that is only defined if compiling for Windows.
@@ -471,6 +471,27 @@
  * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_PLATFORM_3DS 1
+#endif
+
+#ifdef __NGAGE__
+
+/**
+ * A preprocessor macro that is only defined if compiling for the Nokia
+ * N-Gage.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ */
+#define SDL_PLATFORM_NGAGE 1
+#endif
+
+#ifdef __GNU__
+
+/**
+ * A preprocessor macro that is only defined if compiling for GNU/Hurd.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ */
+#define SDL_PLATFORM_HURD 1
 #endif
 
 #endif /* SDL_platform_defines_h_ */
