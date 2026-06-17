@@ -448,6 +448,12 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 	ERR_FAIL_COND(shader_rid.is_null());
 
 	RID pipeline = RD::get_singleton()->render_pipeline_create(shader_rid, p_pipeline_key.framebuffer_format_id, p_pipeline_key.vertex_format_id, primitive_rd, raster_state, multisample_state, depth_stencil_state, blend_state, 0, p_pipeline_key.render_pass, specialization_constants);
+
+	// Don't print error when it's expected.
+	if (unlikely(pipeline.is_null() && RD::get_singleton()->get_driver_workarounds().dont_print_on_render_pipeline_creation_failure)) {
+		return;
+	}
+
 	ERR_FAIL_COND(pipeline.is_null());
 
 	pipeline_hash_map.add_compiled_pipeline(p_pipeline_key.hash(), pipeline);

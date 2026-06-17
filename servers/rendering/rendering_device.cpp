@@ -4951,6 +4951,12 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 			fb_format.render_pass,
 			p_for_render_pass,
 			p_specialization_constants);
+
+	// Don't print error when it's expected.
+	if (unlikely(!pipeline.driver_id && driver->get_driver_workarounds().dont_print_on_render_pipeline_creation_failure)) {
+		return RID();
+	}
+
 	ERR_FAIL_COND_V(!pipeline.driver_id, RID());
 
 	if (pipeline_cache_enabled) {
