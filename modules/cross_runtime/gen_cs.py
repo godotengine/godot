@@ -25,7 +25,7 @@ We use the pointers as the id because using the actual instance id has its coomp
 , specifically when long instance ids appear, they need special handling that just adds more
 complexity unlike this one which is a much cleaner approach.
 
-ARGUMENT MARSHALLING
+ARGUMENT MARSHALING
 ────────────────────
 All arguments are packed into object[] before crossing the JS boundary:
   Primitives (bool, double, string)  → passed as is.
@@ -72,27 +72,39 @@ ENUM HANDLING
 Per-class enums are changed to uppercase to avoid colliding with any methods and signals.
 """
 
+from __future__ import annotations
+
 import json
 import re
 from pathlib import Path
-
+from typing import Any
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Constants & Look‑up Tables
 # ═══════════════════════════════════════════════════════════════════════════
 
 PACKED_BUFFER_TYPES: set[str] = {
-    "PackedByteArray", "PackedInt32Array", "PackedInt64Array",
-    "PackedFloat32Array", "PackedFloat64Array",
-    "PackedVector2Array", "PackedVector3Array", "PackedVector4Array",
-    "PackedColorArray"
+    "PackedByteArray",
+    "PackedInt32Array",
+    "PackedInt64Array",
+    "PackedFloat32Array",
+    "PackedFloat64Array",
+    "PackedVector2Array",
+    "PackedVector3Array",
+    "PackedVector4Array",
+    "PackedColorArray",
 }
 
 # Mapping from Godot type names (as they appear in extension_api.json)
 # to their C# equivalents.
 TYPE_MAP: dict[str, str] = {
-    "void": "void", "int": "long", "float": "double", "bool": "bool",
-    "String": "string", "StringName": "string", "NodePath": "string",
+    "void": "void",
+    "int": "long",
+    "float": "double",
+    "bool": "bool",
+    "String": "string",
+    "StringName": "string",
+    "NodePath": "string",
     "Variant": "object",
     "PackedByteArray": "byte[]",
     "PackedInt32Array": "int[]",
@@ -105,74 +117,184 @@ TYPE_MAP: dict[str, str] = {
     "PackedColorArray": "Color[]",
     "Array": "Array",
     "Dictionary": "Dictionary<object, object>",
-    "Rect2": "Rect2", "Rect2i": "Rect2i", "Vector2": "Vector2", "Vector2i": "Vector2i",
-    "Vector3": "Vector3", "Vector3i": "Vector3i", "Vector4": "Vector4",
-    "Vector4i": "Vector4i", "Color": "Color", "RID": "RID", "Callable": "Callable",
-    "Signal": "Signal", "AABB": "AABB", "Basis": "Basis", "Transform2D": "Transform2D",
-    "Transform3D": "Transform3D", "Quaternion": "Quaternion", "Plane": "Plane",
+    "Rect2": "Rect2",
+    "Rect2i": "Rect2i",
+    "Vector2": "Vector2",
+    "Vector2i": "Vector2i",
+    "Vector3": "Vector3",
+    "Vector3i": "Vector3i",
+    "Vector4": "Vector4",
+    "Vector4i": "Vector4i",
+    "Color": "Color",
+    "RID": "RID",
+    "Callable": "Callable",
+    "Signal": "Signal",
+    "AABB": "AABB",
+    "Basis": "Basis",
+    "Transform2D": "Transform2D",
+    "Transform3D": "Transform3D",
+    "Quaternion": "Quaternion",
+    "Plane": "Plane",
     "Projection": "Projection",
 }
 
-# Types that are marshalled “as‑is” (the JS side receives the whole object).
+# Types that are marshaled "as‑is" (the JS side receives the whole object).
 ANY_MARSHAL_TYPES: set[str] = {"Callable", "Signal", "Plane", "Quaternion", "Projection"}
 
 # Fields returned by the JavaScript bridge for each Godot struct.
 # Each entry: (JavaScript property name, C# type used in GetPropertyAs…)
 STRUCT_JS_FIELDS: dict[str, list[tuple[str, str]]] = {
-    "Vector2":     [("X", "float"),  ("Y", "float")],
-    "Vector2i":    [("X", "int"),    ("Y", "int")],
-    "Vector3":     [("X", "float"),  ("Y", "float"),  ("Z", "float")],
-    "Vector3i":    [("X", "int"),    ("Y", "int"),    ("Z", "int")],
-    "Vector4":     [("X", "float"),  ("Y", "float"),  ("Z", "float"),  ("W", "float")],
-    "Vector4i":    [("X", "int"),    ("Y", "int"),    ("Z", "int"),    ("W", "int")],
-    "Color":       [("R", "float"),  ("G", "float"),  ("B", "float"),  ("A", "float")],
-    "Rect2":       [("X", "float"),  ("Y", "float"),  ("Width", "float"),  ("Height", "float")],
-    "Rect2i":      [("X", "int"),    ("Y", "int"),    ("Width", "int"),    ("Height", "int")],
-    "Plane":       [("Normal.X", "float"), ("Normal.Y", "float"), ("Normal.Z", "float"), ("D", "float")],
-    "Quaternion":  [("X", "float"),  ("Y", "float"),  ("Z", "float"),  ("W", "float")],
-    "AABB":        [("Position.X", "float"), ("Position.Y", "float"), ("Position.Z", "float"),
-                    ("Size.X", "float"),     ("Size.Y", "float"),     ("Size.Z", "float")],
-    "Transform2D": [("Column0.X", "float"), ("Column0.Y", "float"),
-                    ("Column1.X", "float"), ("Column1.Y", "float"),
-                    ("Origin.X",  "float"), ("Origin.Y",  "float")],
-    "Basis":       [("Column0.X", "float"), ("Column0.Y", "float"), ("Column0.Z", "float"),
-                    ("Column1.X", "float"), ("Column1.Y", "float"), ("Column1.Z", "float"),
-                    ("Column2.X", "float"), ("Column2.Y", "float"), ("Column2.Z", "float")],
-    "Transform3D": [("Basis.Column0.X", "float"), ("Basis.Column0.Y", "float"), ("Basis.Column0.Z", "float"),
-                    ("Basis.Column1.X", "float"), ("Basis.Column1.Y", "float"), ("Basis.Column1.Z", "float"),
-                    ("Basis.Column2.X", "float"), ("Basis.Column2.Y", "float"), ("Basis.Column2.Z", "float"),
-                    ("Origin.X", "float"),         ("Origin.Y", "float"),         ("Origin.Z", "float")],
+    "Vector2": [("X", "float"), ("Y", "float")],
+    "Vector2i": [("X", "int"), ("Y", "int")],
+    "Vector3": [("X", "float"), ("Y", "float"), ("Z", "float")],
+    "Vector3i": [("X", "int"), ("Y", "int"), ("Z", "int")],
+    "Vector4": [("X", "float"), ("Y", "float"), ("Z", "float"), ("W", "float")],
+    "Vector4i": [("X", "int"), ("Y", "int"), ("Z", "int"), ("W", "int")],
+    "Color": [("R", "float"), ("G", "float"), ("B", "float"), ("A", "float")],
+    "Rect2": [("X", "float"), ("Y", "float"), ("Width", "float"), ("Height", "float")],
+    "Rect2i": [("X", "int"), ("Y", "int"), ("Width", "int"), ("Height", "int")],
+    "Plane": [("Normal.X", "float"), ("Normal.Y", "float"), ("Normal.Z", "float"), ("D", "float")],
+    "Quaternion": [("X", "float"), ("Y", "float"), ("Z", "float"), ("W", "float")],
+    "AABB": [
+        ("Position.X", "float"),
+        ("Position.Y", "float"),
+        ("Position.Z", "float"),
+        ("Size.X", "float"),
+        ("Size.Y", "float"),
+        ("Size.Z", "float"),
+    ],
+    "Transform2D": [
+        ("Column0.X", "float"),
+        ("Column0.Y", "float"),
+        ("Column1.X", "float"),
+        ("Column1.Y", "float"),
+        ("Origin.X", "float"),
+        ("Origin.Y", "float"),
+    ],
+    "Basis": [
+        ("Column0.X", "float"),
+        ("Column0.Y", "float"),
+        ("Column0.Z", "float"),
+        ("Column1.X", "float"),
+        ("Column1.Y", "float"),
+        ("Column1.Z", "float"),
+        ("Column2.X", "float"),
+        ("Column2.Y", "float"),
+        ("Column2.Z", "float"),
+    ],
+    "Transform3D": [
+        ("Basis.Column0.X", "float"),
+        ("Basis.Column0.Y", "float"),
+        ("Basis.Column0.Z", "float"),
+        ("Basis.Column1.X", "float"),
+        ("Basis.Column1.Y", "float"),
+        ("Basis.Column1.Z", "float"),
+        ("Basis.Column2.X", "float"),
+        ("Basis.Column2.Y", "float"),
+        ("Basis.Column2.Z", "float"),
+        ("Origin.X", "float"),
+        ("Origin.Y", "float"),
+        ("Origin.Z", "float"),
+    ],
 }
 
 # C# property layout used for flattening a struct argument into primitives.
 # Each entry: (property name, child type name or None for a leaf).
 STRUCT_LAYOUT: dict[str, list[tuple[str, str | None]]] = {
-    "Vector2":     [("X", None), ("Y", None)],
-    "Vector2i":    [("X", None), ("Y", None)],
-    "Vector3":     [("X", None), ("Y", None), ("Z", None)],
-    "Vector3i":    [("X", None), ("Y", None), ("Z", None)],
-    "Vector4":     [("X", None), ("Y", None), ("Z", None), ("W", None)],
-    "Vector4i":    [("X", None), ("Y", None), ("Z", None), ("W", None)],
-    "Color":       [("R", None), ("G", None), ("B", None), ("A", None)],
-    "Rect2":       [("Position", "Vector2"), ("Size", "Vector2")],
-    "Rect2i":      [("Position", "Vector2i"), ("Size", "Vector2i")],
-    "AABB":        [("Position", "Vector3"), ("Size", "Vector3")],
-    "Basis":       [("X", "Vector3"), ("Y", "Vector3"), ("Z", "Vector3")],
+    "Vector2": [("X", None), ("Y", None)],
+    "Vector2i": [("X", None), ("Y", None)],
+    "Vector3": [("X", None), ("Y", None), ("Z", None)],
+    "Vector3i": [("X", None), ("Y", None), ("Z", None)],
+    "Vector4": [("X", None), ("Y", None), ("Z", None), ("W", None)],
+    "Vector4i": [("X", None), ("Y", None), ("Z", None), ("W", None)],
+    "Color": [("R", None), ("G", None), ("B", None), ("A", None)],
+    "Rect2": [("Position", "Vector2"), ("Size", "Vector2")],
+    "Rect2i": [("Position", "Vector2i"), ("Size", "Vector2i")],
+    "AABB": [("Position", "Vector3"), ("Size", "Vector3")],
+    "Basis": [("X", "Vector3"), ("Y", "Vector3"), ("Z", "Vector3")],
     "Transform2D": [("X", "Vector2"), ("Y", "Vector2"), ("Origin", "Vector2")],
     "Transform3D": [("Basis", "Basis"), ("Origin", "Vector3")],
 }
 
 # C# reserved keywords that must be escaped with '@'.
 CS_KEYWORDS: set[str] = {
-    "abstract","as","base","bool","break","byte","case","catch","char","checked",
-    "class","const","continue","decimal","default","delegate","do","double","else",
-    "enum","event","explicit","extern","false","finally","fixed","float","for",
-    "foreach","goto","if","implicit","in","int","interface","internal","is","lock",
-    "ulong","namespace","new","null","object","operator","out","override","params",
-    "private","protected","public","readonly","ref","return","sbyte","sealed","short",
-    "sizeof","stackalloc","static","string","struct","switch","this","throw","true",
-    "try","typeof","uint","long","unchecked","unsafe","ushort","using","virtual",
-    "void","volatile","while",
+    "abstract",
+    "as",
+    "base",
+    "bool",
+    "break",
+    "byte",
+    "case",
+    "catch",
+    "char",
+    "checked",
+    "class",
+    "const",
+    "continue",
+    "decimal",
+    "default",
+    "delegate",
+    "do",
+    "double",
+    "else",
+    "enum",
+    "event",
+    "explicit",
+    "extern",
+    "false",
+    "finally",
+    "fixed",
+    "float",
+    "for",
+    "foreach",
+    "goto",
+    "if",
+    "implicit",
+    "in",
+    "int",
+    "interface",
+    "internal",
+    "is",
+    "lock",
+    "ulong",
+    "namespace",
+    "new",
+    "null",
+    "object",
+    "operator",
+    "out",
+    "override",
+    "params",
+    "private",
+    "protected",
+    "public",
+    "readonly",
+    "ref",
+    "return",
+    "sbyte",
+    "sealed",
+    "short",
+    "sizeof",
+    "stackalloc",
+    "static",
+    "string",
+    "struct",
+    "switch",
+    "this",
+    "throw",
+    "true",
+    "try",
+    "typeof",
+    "uint",
+    "long",
+    "unchecked",
+    "unsafe",
+    "ushort",
+    "using",
+    "virtual",
+    "void",
+    "volatile",
+    "while",
 }
 
 # Classes excluded from generation.
@@ -186,10 +308,9 @@ _OBJECT_SHADOW_METHODS: set[str] = {"GetType", "ToString", "GetHashCode", "Equal
 # Helper Utilities
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 def _parse_godot_type(raw: str) -> tuple[str, bool, str]:
     """Split a Godot type string into (base type, is_enum, enum_name)."""
-    if not isinstance(raw, str):
-        return raw, False, ""
     if raw.startswith("typedarray::"):
         return "Array", False, ""
     if raw.startswith("enum::") or raw.startswith("bitfield::"):
@@ -200,11 +321,9 @@ def _parse_godot_type(raw: str) -> tuple[str, bool, str]:
 
 def normalize_type_name(t: str) -> str:
     """Strip prefixes (enum::, bitfield::, typedarray::) and namespace qualifiers."""
-    if not isinstance(t, str):
-        return t
     for prefix in ("enum::", "bitfield::", "typedarray::"):
         if t.startswith(prefix):
-            return "Array" if prefix == "typedarray::" else t[len(prefix):]
+            return "Array" if prefix == "typedarray::" else t[len(prefix) :]
     if "::" in t:
         t = t.split("::")[-1]
     return t
@@ -254,9 +373,9 @@ def _property_base_name(method_name: str) -> str | None:
     """If the method is a getter/setter, return the base property name."""
     for prefix in ("get_", "is_"):
         if method_name.startswith(prefix):
-            return method_name[len(prefix):]
+            return method_name[len(prefix) :]
     if method_name.startswith("set_"):
-        return method_name[len("set_"):]
+        return method_name[len("set_") :]
     return None
 
 
@@ -264,8 +383,12 @@ def _types_compatible(getter_cs: str, setter_cs: str) -> bool:
     """Check whether getter and setter types are compatible for a property."""
     if getter_cs.lower() == setter_cs.lower():
         return True
-    collection_types = {"System.Collections.IDictionary", "System.Collections.IList",
-                        "Array", "Dictionary<object, object>"}
+    collection_types = {
+        "System.Collections.IDictionary",
+        "System.Collections.IList",
+        "Array",
+        "Dictionary<object, object>",
+    }
     if getter_cs == "object" and setter_cs not in collection_types:
         return True
     if setter_cs == "object" and getter_cs not in collection_types:
@@ -277,9 +400,8 @@ def _types_compatible(getter_cs: str, setter_cs: str) -> bool:
     return False
 
 
-
 # API JSON Loading
-def load_api(json_path: Path) -> tuple[list, list, list, list]:
+def load_api(json_path: Path) -> tuple[list[Any], list[Any], list[Any], list[Any]]:
     """Load extension_api.json and return (classes, native_structures, global_enums, singletons)."""
     with open(json_path, encoding="utf-8") as f:
         data = json.load(f)
@@ -293,12 +415,12 @@ def load_api(json_path: Path) -> tuple[list, list, list, list]:
     )
 
 
-def build_singleton_set(singletons: list) -> dict[str, str]:
+def build_singleton_set(singletons: list[Any]) -> dict[str, str]:
     """Build a mapping from type name → singleton name."""
     return {s["type"]: s["name"] for s in singletons}
 
 
-def build_enum_to_class_map(class_list: list) -> dict[str, str]:
+def build_enum_to_class_map(class_list: list[Any]) -> dict[str, str]:
     """Map each enum name (possibly qualified) to its owning class."""
     m: dict[str, str] = {}
     for cls in class_list:
@@ -310,12 +432,12 @@ def build_enum_to_class_map(class_list: list) -> dict[str, str]:
     return m
 
 
-def build_global_enum_set(global_enums: list) -> set[str]:
+def build_global_enum_set(global_enums: list[Any]) -> set[str]:
     """Collect all global enum names."""
     return {normalize_type_name(e.get("name", "")) for e in global_enums}
 
 
-def build_global_enum_rename_map(class_list: list) -> dict[tuple[str, str], str]:
+def build_global_enum_rename_map(class_list: list[Any]) -> dict[tuple[str, str], str]:
     """Create a mapping (owning_class, original_name) → new name (UPPERCASE)."""
     global_rename: dict[tuple[str, str], str] = {}
     for cls in class_list:
@@ -327,20 +449,24 @@ def build_global_enum_rename_map(class_list: list) -> dict[tuple[str, str], str]
 
 
 # Type Resolution
-def _qualify_enum(enum_name: str, current_class: str, enum_owner_map: dict[str, str]) -> str:
+def _qualify_enum(enum_name: str, current_class: str, enum_owner_map: dict[str, str] | None) -> str:
     """Fully qualify an enum name when it belongs to a different class."""
     if "." in enum_name:
         p = enum_name.split(".", 1)
         return f"{_sanitize_type(p[0])}.{_sanitize_type(p[1])}"
-    owner = enum_owner_map.get(enum_name)
+    owner = enum_owner_map.get(enum_name) if enum_owner_map else None
     if owner and owner != current_class:
         return f"{_sanitize_type(owner)}.{_sanitize_type(enum_name)}"
     return _sanitize_type(enum_name)
 
 
-def resolve_public_type(raw_type, class_names: set[str],
-                       enum_type=None, current_class=None,
-                       enum_owner_map: dict[str, str] = None) -> str:
+def resolve_public_type(
+    raw_type: Any,
+    class_names: set[str],
+    enum_type: Any = None,
+    current_class: Any = None,
+    enum_owner_map: dict[str, str] | None = None,
+) -> str:
     """Convert a Godot type descriptor into a C# type name."""
     if isinstance(raw_type, str) and "*" in raw_type:
         return "nint"
@@ -370,8 +496,9 @@ def resolve_public_type(raw_type, class_names: set[str],
     return TYPE_MAP.get(raw_type, "object")
 
 
-def _apply_enum_rename(pt: str, cs_class: str, enum_rename: dict[str, str],
-                       global_enum_rename: dict[tuple[str, str], str] = None) -> str:
+def _apply_enum_rename(
+    pt: str, cs_class: str, enum_rename: dict[str, str], global_enum_rename: dict[tuple[str, str], str] | None = None
+) -> str:
     """Apply per‑class or global enum renaming to a type name."""
     if not pt:
         return pt
@@ -393,7 +520,7 @@ def is_struct_type(t: str) -> bool:
     return norm in STRUCT_LAYOUT
 
 
-def is_enum_type(public_type: str, enum_owner_map: dict[str, str], global_enum_set: set[str] = None) -> bool:
+def is_enum_type(public_type: str, enum_owner_map: dict[str, str], global_enum_set: set[str] | None = None) -> bool:
     """Return True if the type is an enum (including qualified enums)."""
     if "." in public_type:
         return True
@@ -406,7 +533,7 @@ def is_enum_type(public_type: str, enum_owner_map: dict[str, str], global_enum_s
 
 
 def is_any_marshal(t: str) -> bool:
-    """Return True if the type is marshalled as an opaque object."""
+    """Return True if the type is marshaled as an opaque object."""
     norm = t.split(".")[-1] if "." in t else t
     return norm in ANY_MARSHAL_TYPES
 
@@ -415,16 +542,29 @@ def is_godot_obj(t: str, class_names: set[str]) -> bool:
     """Return True if the type is a Godot object (not a primitive, struct, or collection)."""
     norm = t.split(".")[-1] if "." in t else t
     _NOT_GODOT_OBJ = {
-        "object", "string", "bool", "double", "float", "ulong", "int", "short",
-        "sbyte", "long", "uint", "ushort", "byte", "nint", "void",
-        "Array", "Dictionary<object, object>",
+        "object",
+        "string",
+        "bool",
+        "double",
+        "float",
+        "ulong",
+        "int",
+        "short",
+        "sbyte",
+        "long",
+        "uint",
+        "ushort",
+        "byte",
+        "nint",
+        "void",
+        "Array",
+        "Dictionary<object, object>",
     }
     if norm in _NOT_GODOT_OBJ:
         return False
     if norm.endswith("[]"):
         return False
     return norm in class_names or norm in {"GodotObject", "Object"}
-
 
 
 # Argument Packing (C# → JS)
@@ -464,8 +604,9 @@ def _cast_expr(expr: str, field_type: str) -> str:
     return expr
 
 
-def pack_arg(name: str, public_type: str, class_names: set[str],
-             enum_owner_map: dict[str, str], global_enum_set: set[str]) -> list[str]:
+def pack_arg(
+    name: str, public_type: str, class_names: set[str], enum_owner_map: dict[str, str], global_enum_set: set[str]
+) -> list[str]:
     """
     Return a list of C# expressions that represent a single argument when packed into object[].
 
@@ -484,7 +625,9 @@ def pack_arg(name: str, public_type: str, class_names: set[str],
     if norm == "Array":
         return [f"new object[] {{ VariantPacker.Flatten({name}.Select(v => v.Obj).ToArray()), (double){name}.Count }}"]
     if norm == "Dictionary<object, object>":
-        return [f"new object[] {{ {name}.Keys.Select(k => k?.ToString() ?? \"\").ToArray(), VariantPacker.Flatten({name}.Values.ToArray()), (double){name}.Count }}"]
+        return [
+            f'new object[] {{ {name}.Keys.Select(k => k?.ToString() ?? "").ToArray(), VariantPacker.Flatten({name}.Values.ToArray()), (double){name}.Count }}'
+        ]
 
     # Arrays of primitives (Packed*Array) are sent as Span<byte> via CallGodotPacked – never hit this branch.
     if norm.endswith("[]"):
@@ -492,10 +635,7 @@ def pack_arg(name: str, public_type: str, class_names: set[str],
 
     # ── Callable: flattened to target pointer + method name ──
     if norm == "Callable":
-        return [
-            f"(double)(ulong){name}.TargetId",
-            f"{name}.Method"
-        ]
+        return [f"(double)(ulong){name}.TargetId", f"{name}.Method"]
 
     # Integer types → cast to double via ulong
     if norm in {"ulong", "int", "short", "sbyte", "long", "uint", "ushort", "byte", "nint"}:
@@ -530,41 +670,65 @@ def pack_arg(name: str, public_type: str, class_names: set[str],
 # Return Value Decoding (JS → C#)
 # ═══════════════════════════════════════════════════════════════════════════
 
-def _get_struct_builder(norm: str):
+
+def _get_struct_builder(norm: str) -> Any:
     """Return a function that writes C# code to reconstruct a specific Godot struct."""
-    def rect2_builder(lines, vars, _):
-        lines.append(f'                    var __pos__ = new Vector2({vars["X"]}, {vars["Y"]});')
-        lines.append(f'                    var __size__ = new Vector2({vars["Width"]}, {vars["Height"]});')
-        lines.append( '                    return new Rect2(__pos__, __size__);')
-    def rect2i_builder(lines, vars, _):
-        lines.append(f'                    var __pos__ = new Vector2i({vars["X"]}, {vars["Y"]});')
-        lines.append(f'                    var __size__ = new Vector2i({vars["Width"]}, {vars["Height"]});')
-        lines.append( '                    return new Rect2i(__pos__, __size__);')
-    def aabb_builder(lines, vars, _):
-        lines.append(f'                    var __pos__ = new Vector3({vars["Position.X"]}, {vars["Position.Y"]}, {vars["Position.Z"]});')
-        lines.append(f'                    var __size__ = new Vector3({vars["Size.X"]}, {vars["Size.Y"]}, {vars["Size.Z"]});')
-        lines.append( '                    return new AABB(__pos__, __size__);')
-    def transform2d_builder(lines, vars, _):
-        lines.append(f'                    var __x__ = new Vector2({vars["Column0.X"]}, {vars["Column0.Y"]});')
-        lines.append(f'                    var __y__ = new Vector2({vars["Column1.X"]}, {vars["Column1.Y"]});')
-        lines.append(f'                    var __orig__ = new Vector2({vars["Origin.X"]}, {vars["Origin.Y"]});')
-        lines.append( '                    return new Transform2D(__x__, __y__, __orig__);')
-    def basis_builder(lines, vars, _):
-        lines.append(f'                    var __col0__ = new Vector3({vars["Column0.X"]}, {vars["Column0.Y"]}, {vars["Column0.Z"]});')
-        lines.append(f'                    var __col1__ = new Vector3({vars["Column1.X"]}, {vars["Column1.Y"]}, {vars["Column1.Z"]});')
-        lines.append(f'                    var __col2__ = new Vector3({vars["Column2.X"]}, {vars["Column2.Y"]}, {vars["Column2.Z"]});')
-        lines.append( '                    return new Basis(__col0__, __col1__, __col2__);')
-    def transform3d_builder(lines, vars, _):
+
+    def rect2_builder(lines: list[str], vars: dict[str, str], _: str) -> None:
+        lines.append(f"                    var __pos__ = new Vector2({vars['X']}, {vars['Y']});")
+        lines.append(f"                    var __size__ = new Vector2({vars['Width']}, {vars['Height']});")
+        lines.append("                    return new Rect2(__pos__, __size__);")
+
+    def rect2i_builder(lines: list[str], vars: dict[str, str], _: str) -> None:
+        lines.append(f"                    var __pos__ = new Vector2i({vars['X']}, {vars['Y']});")
+        lines.append(f"                    var __size__ = new Vector2i({vars['Width']}, {vars['Height']});")
+        lines.append("                    return new Rect2i(__pos__, __size__);")
+
+    def aabb_builder(lines: list[str], vars: dict[str, str], _: str) -> None:
+        lines.append(
+            f"                    var __pos__ = new Vector3({vars['Position.X']}, {vars['Position.Y']}, {vars['Position.Z']});"
+        )
+        lines.append(
+            f"                    var __size__ = new Vector3({vars['Size.X']}, {vars['Size.Y']}, {vars['Size.Z']});"
+        )
+        lines.append("                    return new AABB(__pos__, __size__);")
+
+    def transform2d_builder(lines: list[str], vars: dict[str, str], _: str) -> None:
+        lines.append(f"                    var __x__ = new Vector2({vars['Column0.X']}, {vars['Column0.Y']});")
+        lines.append(f"                    var __y__ = new Vector2({vars['Column1.X']}, {vars['Column1.Y']});")
+        lines.append(f"                    var __orig__ = new Vector2({vars['Origin.X']}, {vars['Origin.Y']});")
+        lines.append("                    return new Transform2D(__x__, __y__, __orig__);")
+
+    def basis_builder(lines: list[str], vars: dict[str, str], _: str) -> None:
+        lines.append(
+            f"                    var __col0__ = new Vector3({vars['Column0.X']}, {vars['Column0.Y']}, {vars['Column0.Z']});"
+        )
+        lines.append(
+            f"                    var __col1__ = new Vector3({vars['Column1.X']}, {vars['Column1.Y']}, {vars['Column1.Z']});"
+        )
+        lines.append(
+            f"                    var __col2__ = new Vector3({vars['Column2.X']}, {vars['Column2.Y']}, {vars['Column2.Z']});"
+        )
+        lines.append("                    return new Basis(__col0__, __col1__, __col2__);")
+
+    def transform3d_builder(lines: list[str], vars: dict[str, str], _: str) -> None:
         basis_vars = {k: vars[k] for k in vars if k.startswith("Basis.")}
-        lines.append('                    var __basis__ = new Basis('
-                     f'new Vector3({basis_vars["Basis.Column0.X"]}, {basis_vars["Basis.Column0.Y"]}, {basis_vars["Basis.Column0.Z"]}),'
-                     f'new Vector3({basis_vars["Basis.Column1.X"]}, {basis_vars["Basis.Column1.Y"]}, {basis_vars["Basis.Column1.Z"]}),'
-                     f'new Vector3({basis_vars["Basis.Column2.X"]}, {basis_vars["Basis.Column2.Y"]}, {basis_vars["Basis.Column2.Z"]}));')
-        lines.append(f'                    var __origin__ = new Vector3({vars["Origin.X"]}, {vars["Origin.Y"]}, {vars["Origin.Z"]});')
-        lines.append( '                    return new Transform3D(__basis__, __origin__);')
-    def plane_builder(lines, vars, _):
-        lines.append(f'                    var __normal__ = new Vector3({vars["Normal.X"]}, {vars["Normal.Y"]}, {vars["Normal.Z"]});')
-        lines.append(f'                    return new Plane(__normal__, {vars["D"]});')
+        lines.append(
+            "                    var __basis__ = new Basis("
+            f"new Vector3({basis_vars['Basis.Column0.X']}, {basis_vars['Basis.Column0.Y']}, {basis_vars['Basis.Column0.Z']}),"
+            f"new Vector3({basis_vars['Basis.Column1.X']}, {basis_vars['Basis.Column1.Y']}, {basis_vars['Basis.Column1.Z']}),"
+            f"new Vector3({basis_vars['Basis.Column2.X']}, {basis_vars['Basis.Column2.Y']}, {basis_vars['Basis.Column2.Z']}));"
+        )
+        lines.append(
+            f"                    var __origin__ = new Vector3({vars['Origin.X']}, {vars['Origin.Y']}, {vars['Origin.Z']});"
+        )
+        lines.append("                    return new Transform3D(__basis__, __origin__);")
+
+    def plane_builder(lines: list[str], vars: dict[str, str], _: str) -> None:
+        lines.append(
+            f"                    var __normal__ = new Vector3({vars['Normal.X']}, {vars['Normal.Y']}, {vars['Normal.Z']});"
+        )
+        lines.append(f"                    return new Plane(__normal__, {vars['D']});")
 
     builders = {
         "Rect2": rect2_builder,
@@ -594,7 +758,7 @@ def _build_struct_return(tmp: str, norm: str, public_ret: str) -> list[str]:
         "                {",
     ]
 
-    field_vars = {}
+    field_vars: dict[str, str] = {}
     for i, (field, ftype) in enumerate(fields):
         vname = f"__f{i}__"
         lines.append(f'                    var {vname} = ({ftype})__js__.GetPropertyAsDouble("{field}");')
@@ -616,9 +780,14 @@ def _build_struct_return(tmp: str, norm: str, public_ret: str) -> list[str]:
     return lines
 
 
-def build_return_statement(native_call: str, public_ret: str,
-                           class_names: set[str], enum_owner_map: dict[str, str],
-                           global_enum_set: set[str], used_names: set[str] = None) -> list[str]:
+def build_return_statement(
+    native_call: str,
+    public_ret: str,
+    class_names: set[str],
+    enum_owner_map: dict[str, str],
+    global_enum_set: set[str],
+    used_names: set[str] | None = None,
+) -> list[str]:
     """
     Generate C# code that takes the result of a CallGodot() invocation and
     converts it to the correct C# return type.
@@ -627,21 +796,31 @@ def build_return_statement(native_call: str, public_ret: str,
     if used_names:
         i = 0
         while tmp in used_names:
-            tmp = f"__ret{i}__"; i += 1
+            tmp = f"__ret{i}__"
+            i += 1
     norm = public_ret.split(".")[-1] if "." in public_ret else public_ret
 
     # ── Packed‑array return types ──────────────────────────────────────
     _PACKED_RETURN = {
-        "byte[]":    (None, False),
-        "int[]":     ("(int)Convert.ToDouble(x)", False),
-        "long[]":    ("(long)Convert.ToDouble(x)", False),
-        "float[]":   ("(float)Convert.ToDouble(x)", False),
-        "double[]":  ("Convert.ToDouble(x)", False),
-        "string[]":  ('x?.ToString() ?? ""', False),
+        "byte[]": (None, False),
+        "int[]": ("(int)Convert.ToDouble(x)", False),
+        "long[]": ("(long)Convert.ToDouble(x)", False),
+        "float[]": ("(float)Convert.ToDouble(x)", False),
+        "double[]": ("Convert.ToDouble(x)", False),
+        "string[]": ('x?.ToString() ?? ""', False),
         "Vector2[]": ('new Vector2((float)js.GetPropertyAsDouble("X"), (float)js.GetPropertyAsDouble("Y"))', True),
-        "Vector3[]": ('new Vector3((float)js.GetPropertyAsDouble("X"), (float)js.GetPropertyAsDouble("Y"), (float)js.GetPropertyAsDouble("Z"))', True),
-        "Vector4[]": ('new Vector4((float)js.GetPropertyAsDouble("X"), (float)js.GetPropertyAsDouble("Y"), (float)js.GetPropertyAsDouble("Z"), (float)js.GetPropertyAsDouble("W"))', True),
-        "Color[]":   ('new Color((float)js.GetPropertyAsDouble("R"), (float)js.GetPropertyAsDouble("G"), (float)js.GetPropertyAsDouble("B"), (float)js.GetPropertyAsDouble("A"))', True),
+        "Vector3[]": (
+            'new Vector3((float)js.GetPropertyAsDouble("X"), (float)js.GetPropertyAsDouble("Y"), (float)js.GetPropertyAsDouble("Z"))',
+            True,
+        ),
+        "Vector4[]": (
+            'new Vector4((float)js.GetPropertyAsDouble("X"), (float)js.GetPropertyAsDouble("Y"), (float)js.GetPropertyAsDouble("Z"), (float)js.GetPropertyAsDouble("W"))',
+            True,
+        ),
+        "Color[]": (
+            'new Color((float)js.GetPropertyAsDouble("R"), (float)js.GetPropertyAsDouble("G"), (float)js.GetPropertyAsDouble("B"), (float)js.GetPropertyAsDouble("A"))',
+            True,
+        ),
     }
 
     if norm in _PACKED_RETURN:
@@ -655,10 +834,10 @@ def build_return_statement(native_call: str, public_ret: str,
         lines.append(f"            var {raw} = {tmp} as object[] ?? new object[0];")
         if needs_js:
             lines.append(f"            return System.Array.ConvertAll({raw}, x =>")
-            lines.append(f"            {{")
-            lines.append(f"                var js = x as System.Runtime.InteropServices.JavaScript.JSObject;")
+            lines.append("            {")
+            lines.append("                var js = x as System.Runtime.InteropServices.JavaScript.JSObject;")
             lines.append(f"                return {conv_expr};")
-            lines.append(f"            }});")
+            lines.append("            });")
         else:
             lines.append(f"            return System.Array.ConvertAll({raw}, x => {conv_expr});")
         return lines
@@ -672,20 +851,21 @@ def build_return_statement(native_call: str, public_ret: str,
             f"            return {tmp} is bool __b__ ? __b__ : System.Convert.ToBoolean({tmp});",
         ]
     if norm == "double":
-        return [f"            var {tmp} = {native_call};",
-                f"            return System.Convert.ToDouble({tmp});"]
+        return [f"            var {tmp} = {native_call};", f"            return System.Convert.ToDouble({tmp});"]
     if norm == "string":
-        return [f"            var {tmp} = {native_call};",
-                f"            return {tmp}?.ToString() ?? string.Empty;"]
+        return [f"            var {tmp} = {native_call};", f"            return {tmp}?.ToString() ?? string.Empty;"]
     if norm == "nint":
-        return [f"            var {tmp} = {native_call};",
-                f"            return (nint)(ulong)System.Convert.ToDouble({tmp});"]
+        return [
+            f"            var {tmp} = {native_call};",
+            f"            return (nint)(ulong)System.Convert.ToDouble({tmp});",
+        ]
     if norm == "ulong":
-        return [f"            var {tmp} = {native_call};",
-                f"            return (ulong)System.Convert.ToDouble({tmp});"]
+        return [f"            var {tmp} = {native_call};", f"            return (ulong)System.Convert.ToDouble({tmp});"]
     if norm == "RID":
-        return [f"            var {tmp} = {native_call};",
-                f"            return new RID(unchecked((ulong)System.Convert.ToDouble({tmp})));"]
+        return [
+            f"            var {tmp} = {native_call};",
+            f"            return new RID(unchecked((ulong)System.Convert.ToDouble({tmp})));",
+        ]
 
     # ── Godot structs ──────────────────────────────────────────────────
     if norm in STRUCT_JS_FIELDS:
@@ -695,18 +875,21 @@ def build_return_statement(native_call: str, public_ret: str,
 
     # ── Godot objects ──────────────────────────────────────────────────
     if is_godot_obj(norm, class_names):
-        return [f"            var {tmp} = {native_call};",
-                f"            return new {norm}(unchecked((ulong)System.Convert.ToDouble({tmp})));"]
+        return [
+            f"            var {tmp} = {native_call};",
+            f"            return new {norm}(unchecked((ulong)System.Convert.ToDouble({tmp})));",
+        ]
 
     # ── Opaque marshal types (Callable, Signal, etc.) ─────────────────
     if is_any_marshal(norm):
-        return [f"            var {tmp} = {native_call};",
-                f"            return ({norm}){tmp};"]
+        return [f"            var {tmp} = {native_call};", f"            return ({norm}){tmp};"]
 
     # ── Enums ──────────────────────────────────────────────────────────
     if is_enum_type(public_ret, enum_owner_map, global_enum_set):
-        return [f"            var {tmp} = {native_call};",
-                f"            return ({public_ret})(ulong)System.Convert.ToDouble({tmp});"]
+        return [
+            f"            var {tmp} = {native_call};",
+            f"            return ({public_ret})(ulong)System.Convert.ToDouble({tmp});",
+        ]
 
     # ── Collections (Array, Dictionary) ────────────────────────────────
     if norm == "Array":
@@ -725,19 +908,19 @@ def build_return_statement(native_call: str, public_ret: str,
             f"            return {tmp}_dict;",
         ]
     if norm == "object":
-        return [f"            var {tmp} = {native_call};",
-                f"            return ({norm}){tmp};"]
+        return [f"            var {tmp} = {native_call};", f"            return ({norm}){tmp};"]
 
-    # Fallback for unrecognised array types
+    # Fallback for unrecognized array types
     if norm.endswith("[]"):
-        return [f"            var {tmp} = {native_call};",
-                f"            return ({norm}){tmp};"]
+        return [f"            var {tmp} = {native_call};", f"            return ({norm}){tmp};"]
 
-    return [f"            var {tmp} = {native_call};",
-            f"            return ({public_ret})(ulong)System.Convert.ToDouble({tmp});"]
+    return [
+        f"            var {tmp} = {native_call};",
+        f"            return ({public_ret})(ulong)System.Convert.ToDouble({tmp});",
+    ]
 
 
-def write_class_enums(lines: list[str], enums: list[dict], enum_rename: dict[str, str]) -> None:
+def write_class_enums(lines: list[str], enums: list[dict[str, Any]], enum_rename: dict[str, str]) -> None:
     """Append C# enum declarations to the class body."""
     for enum_def in enums:
         original_name = enum_def["name"]
@@ -768,11 +951,17 @@ _ENGINE_EXTRA_METHODS = """        public static ulong get_SceneTree_singleton()
 """
 
 
-def _resolve_signal_arg_type(arg, class_names, enum_owner_map, global_enum_set, current_class):
+def _resolve_signal_arg_type(
+    arg: dict[str, Any],
+    class_names: set[str],
+    enum_owner_map: dict[str, str],
+    global_enum_set: set[str],
+    current_class: str,
+) -> str:
     return resolve_public_type(arg.get("type", "Variant"), class_names, None, current_class, enum_owner_map)
 
 
-def _format_method_default(default_value, public_type: str) -> str | None:
+def _format_method_default(default_value: Any, public_type: str) -> str | None:
     """Format a Godot default value as a C# literal expression."""
     if default_value is None:
         return None
@@ -786,7 +975,7 @@ def _format_method_default(default_value, public_type: str) -> str | None:
         lowered = raw.lower()
         return lowered if lowered in ("true", "false") else None
     if norm == "string":
-        if raw in ("", '""', "\"\""):
+        if raw in ("", '""', '""'):
             return '""'
         if raw.startswith('"') and raw.endswith('"'):
             return raw
@@ -817,12 +1006,13 @@ def _format_method_default(default_value, public_type: str) -> str | None:
 # Main Class Wrapper Generator
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 def write_class_wrapper(
     out_dir: Path,
     class_name: str,
-    methods: list[dict],
-    enums: list[dict],
-    signals: list[dict],
+    methods: list[dict[str, Any]],
+    enums: list[dict[str, Any]],
+    signals: list[dict[str, Any]],
     base_class: str,
     class_names: set[str],
     enum_owner_map: dict[str, str],
@@ -830,17 +1020,16 @@ def write_class_wrapper(
     is_singleton: bool = False,
     singleton_name: str = "",
     is_instantiable: bool = False,
-    global_enum_rename: dict[tuple[str, str], str] = None,
+    global_enum_rename: dict[tuple[str, str], str] | None = None,
 ) -> int:
     """Write one C# file for a Godot class. Returns the number of emitted methods."""
 
     class_name = normalize_type_name(class_name)
-    cs_class   = _sanitize_type(class_name)
+    cs_class = _sanitize_type(class_name)
     base_class = normalize_type_name(base_class)
-    base       = "GodotObject" if base_class in ("Object", "") else _sanitize_type(base_class)
+    base = "GodotObject" if base_class in ("Object", "") else _sanitize_type(base_class)
 
-    if global_enum_rename is None:
-        global_enum_rename = {}
+    effective_enum_rename: dict[tuple[str, str], str] = global_enum_rename if global_enum_rename is not None else {}
 
     # ── Local enum rename map (uppercase to avoid collisions) ──────────
     enum_rename: dict[str, str] = {}
@@ -866,14 +1055,14 @@ def write_class_wrapper(
         emitted_method_count += 1
 
     # ── Property detection ─────────────────────────────────────────────
-    property_map: dict[str, dict] = {}
+    property_map: dict[str, dict[str, Any]] = {}
     for m in methods:
         mname = m["name"]
         base_prop = _property_base_name(mname)
         if base_prop is None:
             continue
         prop_pascal = to_pascal(base_prop)
-        if not prop_pascal or not (prop_pascal[0].isalpha() or prop_pascal[0] == '_'):
+        if not prop_pascal or not (prop_pascal[0].isalpha() or prop_pascal[0] == "_"):
             continue
         if prop_pascal not in property_map:
             property_map[prop_pascal] = {"getter": None, "setter": None, "cs_type": None}
@@ -892,10 +1081,12 @@ def write_class_wrapper(
         setter = acc["setter"]
 
         # Collision with signals, built‑in members, class name, or emitted methods
-        if (prop_pascal in signal_pascal_names or
-            prop_pascal == "Id" or
-            prop_pascal == cs_class or
-            prop_pascal in emitted_method_names):
+        if (
+            prop_pascal in signal_pascal_names
+            or prop_pascal == "Id"
+            or prop_pascal == cs_class
+            or prop_pascal in emitted_method_names
+        ):
             props_to_remove.append(prop_pascal)
             continue
 
@@ -905,10 +1096,13 @@ def write_class_wrapper(
 
         ret_info = getter.get("return_value", {})
         getter_cs = resolve_public_type(
-            ret_info.get("type", "void"), class_names,
-            ret_info.get("enum_type"), class_name, enum_owner_map,
+            ret_info.get("type", "void"),
+            class_names,
+            ret_info.get("enum_type"),
+            class_name,
+            enum_owner_map,
         )
-        getter_cs = _apply_enum_rename(getter_cs, cs_class, enum_rename, global_enum_rename)
+        getter_cs = _apply_enum_rename(getter_cs, cs_class, enum_rename, effective_enum_rename)
         if getter_cs == "void":
             props_to_remove.append(prop_pascal)
             continue
@@ -916,10 +1110,13 @@ def write_class_wrapper(
         if setter is not None:
             set_arg = setter["arguments"][0]
             setter_cs = resolve_public_type(
-                set_arg.get("type", ""), class_names,
-                set_arg.get("enum_type"), class_name, enum_owner_map,
+                set_arg.get("type", ""),
+                class_names,
+                set_arg.get("enum_type"),
+                class_name,
+                enum_owner_map,
             )
-            setter_cs = _apply_enum_rename(setter_cs, cs_class, enum_rename, global_enum_rename)
+            setter_cs = _apply_enum_rename(setter_cs, cs_class, enum_rename, effective_enum_rename)
             if not _types_compatible(getter_cs, setter_cs):
                 props_to_remove.append(prop_pascal)
                 continue
@@ -937,18 +1134,12 @@ def write_class_wrapper(
 
     if is_singleton and class_name != "SceneTree":
         sname = singleton_name or class_name
-        ctor_lines.append(
-            f'        public {cs_class}() : base(Engine.get_object_singleton("{sname}")) {{ }}'
-        )
+        ctor_lines.append(f'        public {cs_class}() : base(Engine.get_object_singleton("{sname}")) {{ }}')
     elif is_instantiable and class_name != "SceneTree":
         if class_name != "Object":
-            ctor_lines.append(
-                f'        public {cs_class}() : base(ClassDB.Instantiate("{class_name}")) {{ }}'
-            )
+            ctor_lines.append(f'        public {cs_class}() : base(ClassDB.Instantiate("{class_name}")) {{ }}')
     elif class_name == "SceneTree":
-        ctor_lines.append(
-            f'        public {cs_class}() : base(Engine.get_SceneTree_singleton()) {{ }}'
-        )
+        ctor_lines.append(f"        public {cs_class}() : base(Engine.get_SceneTree_singleton()) {{ }}")
 
     # ── File header ────────────────────────────────────────────────────
     if class_name == "Object":
@@ -988,17 +1179,17 @@ def write_class_wrapper(
     if is_singleton:
         sname = singleton_name or class_name
         lines += [
-            f'        private static ulong _singletonId;',
-            f'        private static ulong SingletonId',
-            f'        {{',
-            f'            get',
-            f'            {{',
-            f'                if (_singletonId == 0)',
+            "        private static ulong _singletonId;",
+            "        private static ulong SingletonId",
+            "        {",
+            "            get",
+            "            {",
+            "                if (_singletonId == 0)",
             f'                    _singletonId = Engine.get_object_singleton("{sname}");',
-            f'                return _singletonId;',
-            f'            }}',
-            f'        }}',
-            f'',
+            "                return _singletonId;",
+            "            }",
+            "        }",
+            "",
         ]
 
     if class_name == "Engine":
@@ -1035,29 +1226,31 @@ def write_class_wrapper(
             continue
 
         is_static = m.get("is_static", False) or is_singleton
-        ret_info  = m.get("return_value", {})
+        ret_info = m.get("return_value", {})
         public_ret = resolve_public_type(
-            ret_info.get("type", "void"), class_names,
-            ret_info.get("enum_type"), class_name, enum_owner_map,
+            ret_info.get("type", "void"),
+            class_names,
+            ret_info.get("enum_type"),
+            class_name,
+            enum_owner_map,
         )
-        public_ret = _apply_enum_rename(public_ret, cs_class, enum_rename, global_enum_rename)
+        public_ret = _apply_enum_rename(public_ret, cs_class, enum_rename, effective_enum_rename)
         is_vararg = m.get("is_vararg", False)
 
         # --- Packed-array bulk methods (1‑6 packed args, void return) ---
         packed_args_info = [
-            (i, a) for i, a in enumerate(m.get("arguments", []))
-            if a.get("type", "") in PACKED_BUFFER_TYPES
+            (i, a) for i, a in enumerate(m.get("arguments", [])) if a.get("type", "") in PACKED_BUFFER_TYPES
         ]
         packed_count = len(packed_args_info)
         ret_is_void = public_ret == "void"
 
         if not is_vararg and ret_is_void and 1 <= packed_count <= 6:
             args_list = m.get("arguments", [])
-            cs_method  = sanitize_param(method_name_cs(mname))
+            cs_method = sanitize_param(method_name_cs(mname))
 
-            public_params = []
-            param_names   = []
-            used = set()
+            public_params: list[str] = []
+            param_names: list[str] = []
+            used: set[str] = set()
             for a in args_list:
                 raw_name = (a.get("name", "") or "").strip() or f"p{len(param_names)}"
                 pname = sanitize_param(raw_name)
@@ -1073,37 +1266,39 @@ def write_class_wrapper(
                     public_params.append(f"{elem_type} {pname}")
                 else:
                     pt = resolve_public_type(
-                        a.get("type", ""), class_names,
-                        a.get("enum_type"), class_name, enum_owner_map,
+                        a.get("type", ""),
+                        class_names,
+                        a.get("enum_type"),
+                        class_name,
+                        enum_owner_map,
                     )
-                    pt = _apply_enum_rename(pt, cs_class, enum_rename, global_enum_rename)
+                    pt = _apply_enum_rename(pt, cs_class, enum_rename, effective_enum_rename)
                     public_params.append(f"{pt} {pname}")
 
             static_kw = "static " if is_static else ""
             lines.append(f"        public {static_kw}void {cs_method}({', '.join(public_params)})")
             lines.append("        {")
 
-            fixed_items = []
+            fixed_items: list[str] = []
             if not is_static:
-                fixed_items.append(
-                    "(double)(ulong)SingletonId" if is_singleton else "(double)(ulong)Id"
-                )
+                fixed_items.append("(double)(ulong)SingletonId" if is_singleton else "(double)(ulong)Id")
 
-            buffer_decls = []
+            buffer_decls: list[str] = []
             buf_idx = 0
             for a, pname in zip(args_list, param_names):
                 if a.get("type", "") in PACKED_BUFFER_TYPES:
                     bname = f"__buf{buf_idx}__"
-                    buffer_decls.append(
-                        f"            Span<byte> {bname} = MemoryMarshal.AsBytes({pname}.AsSpan());"
-                    )
+                    buffer_decls.append(f"            Span<byte> {bname} = MemoryMarshal.AsBytes({pname}.AsSpan());")
                     buf_idx += 1
                 else:
                     pt = resolve_public_type(
-                        a.get("type", ""), class_names,
-                        a.get("enum_type"), class_name, enum_owner_map,
+                        a.get("type", ""),
+                        class_names,
+                        a.get("enum_type"),
+                        class_name,
+                        enum_owner_map,
                     )
-                    pt = _apply_enum_rename(pt, cs_class, enum_rename, global_enum_rename)
+                    pt = _apply_enum_rename(pt, cs_class, enum_rename, effective_enum_rename)
                     fixed_items.extend(pack_arg(pname, pt, class_names, enum_owner_map, global_enum_set))
 
             for decl in buffer_decls:
@@ -1139,14 +1334,14 @@ def write_class_wrapper(
 
         # --- General method ---
         public_params = []
-        arg_meta      = []
+        arg_meta: list[tuple[str, str]] = []
         used = set()
 
-        resolved = []
+        resolved: list[tuple[str, str, str | None]] = []
         for a in m.get("arguments", []):
-            raw_name   = (a.get("name", "") or "").strip() or f"p{len(resolved)}"
+            raw_name = (a.get("name", "") or "").strip() or f"p{len(resolved)}"
             base_pname = sanitize_param(raw_name)
-            pname      = base_pname
+            pname = base_pname
             c = 1
             while pname in used:
                 pname = f"{base_pname}_{c}"
@@ -1154,10 +1349,13 @@ def write_class_wrapper(
             used.add(pname)
 
             pt = resolve_public_type(
-                a.get("type", ""), class_names,
-                a.get("enum_type"), class_name, enum_owner_map,
+                a.get("type", ""),
+                class_names,
+                a.get("enum_type"),
+                class_name,
+                enum_owner_map,
             )
-            pt = _apply_enum_rename(pt, cs_class, enum_rename, global_enum_rename)
+            pt = _apply_enum_rename(pt, cs_class, enum_rename, effective_enum_rename)
             default_expr = _format_method_default(a.get("default_value", None), pt)
             resolved.append((pname, pt, default_expr))
 
@@ -1179,35 +1377,38 @@ def write_class_wrapper(
             vararg_pname = "varargs"
             suffix = 0
             while vararg_pname in used:
-                vararg_pname = f"varargs{suffix}"; suffix += 1
+                vararg_pname = f"varargs{suffix}"
+                suffix += 1
             public_params.append(f"params object[] {vararg_pname}")
             used.add(vararg_pname)
 
-        cs_method  = sanitize_param(method_name_cs(mname))
+        cs_method = sanitize_param(method_name_cs(mname))
         is_virtual = m.get("is_virtual", False)
-        static_kw  = "static " if is_static else ""
+        static_kw = "static " if is_static else ""
         virtual_kw = "virtual " if is_virtual and not is_static else ""
-        new_kw     = "new " if cs_method in _OBJECT_SHADOW_METHODS else ""
+        new_kw = "new " if cs_method in _OBJECT_SHADOW_METHODS else ""
 
-        lines.append(f"        public {new_kw}{static_kw}{virtual_kw}{public_ret} {cs_method}({', '.join(public_params)})")
+        lines.append(
+            f"        public {new_kw}{static_kw}{virtual_kw}{public_ret} {cs_method}({', '.join(public_params)})"
+        )
         lines.append("        {")
 
         fixed_items = []
         if not is_static:
-            fixed_items.append(
-                "(double)(ulong)SingletonId" if is_singleton else "(double)(ulong)Id"
-            )
+            fixed_items.append("(double)(ulong)SingletonId" if is_singleton else "(double)(ulong)Id")
         for pname, pt in arg_meta:
             fixed_items.extend(pack_arg(pname, pt, class_names, enum_owner_map, global_enum_set))
 
         if is_vararg:
-            fixed_literal = ', '.join(fixed_items) if fixed_items else ""
-            lines.append(f"            var __args__ = new System.Collections.Generic.List<object> {{ {fixed_literal} }};")
+            fixed_literal = ", ".join(fixed_items) if fixed_items else ""
+            lines.append(
+                f"            var __args__ = new System.Collections.Generic.List<object> {{ {fixed_literal} }};"
+            )
             lines.append(f"            __args__.Add(VariantPacker.Flatten({vararg_pname}));")
             native_call = f'CallGodot("_{class_name}_{mname}", __args__.ToArray())'
         else:
             args_literal = ", ".join(fixed_items) if fixed_items else ""
-            native_call  = f'CallGodot("_{class_name}_{mname}", new object[] {{ {args_literal} }})'
+            native_call = f'CallGodot("_{class_name}_{mname}", new object[] {{ {args_literal} }})'
 
         for line in build_return_statement(native_call, public_ret, class_names, enum_owner_map, global_enum_set, used):
             lines.append(line)
@@ -1217,9 +1418,9 @@ def write_class_wrapper(
     # ── Properties ─────────────────────────────────────────────────────
     _KNOWN_BASE_MEMBERS = {"Id", "Ready"}
     for prop_pascal, acc in property_map.items():
-        getter      = acc["getter"]
-        setter      = acc["setter"]
-        prop_cs     = acc["cs_type"]
+        getter = acc["getter"]
+        setter = acc["setter"]
+        prop_cs = acc["cs_type"]
         getter_cs_name = sanitize_param(method_name_cs(getter["name"]))
         new_kw = "new " if prop_pascal in _KNOWN_BASE_MEMBERS else ""
 
@@ -1258,16 +1459,44 @@ def write_class_wrapper(
 # ═══════════════════════════════════════════════════════════════════════════
 
 C_TYPE_MAP = {
-    "void":"void","int":"int","unsigned int":"uint","ulong":"ulong",
-    "unsigned ulong":"ulong","ulong ulong":"ulong","unsigned ulong ulong":"ulong",
-    "int8_t":"sbyte","uint8_t":"byte","int16_t":"short","uint16_t":"ushort",
-    "int32_t":"int","uint32_t":"uint","int64_t":"ulong","uint64_t":"ulong",
-    "float":"float","double":"double","real_t":"double","bool":"bool",
-    "char":"char","String":"string","StringName":"string","NodePath":"string",
-    "Variant":"object","Rect2":"Rect2","Rect2i":"Rect2i","Vector2":"Vector2",
-    "Vector2i":"Vector2i","Vector3":"Vector3","Vector3i":"Vector3i",
-    "Vector4":"Vector4","Vector4i":"Vector4i","Color":"Color","RID":"RID",
-    "Callable":"Callable","Signal":"Signal","ObjectID":"ulong","Object *":"nint",
+    "void": "void",
+    "int": "int",
+    "unsigned int": "uint",
+    "ulong": "ulong",
+    "unsigned ulong": "ulong",
+    "ulong ulong": "ulong",
+    "unsigned ulong ulong": "ulong",
+    "int8_t": "sbyte",
+    "uint8_t": "byte",
+    "int16_t": "short",
+    "uint16_t": "ushort",
+    "int32_t": "int",
+    "uint32_t": "uint",
+    "int64_t": "ulong",
+    "uint64_t": "ulong",
+    "float": "float",
+    "double": "double",
+    "real_t": "double",
+    "bool": "bool",
+    "char": "char",
+    "String": "string",
+    "StringName": "string",
+    "NodePath": "string",
+    "Variant": "object",
+    "Rect2": "Rect2",
+    "Rect2i": "Rect2i",
+    "Vector2": "Vector2",
+    "Vector2i": "Vector2i",
+    "Vector3": "Vector3",
+    "Vector3i": "Vector3i",
+    "Vector4": "Vector4",
+    "Vector4i": "Vector4i",
+    "Color": "Color",
+    "RID": "RID",
+    "Callable": "Callable",
+    "Signal": "Signal",
+    "ObjectID": "ulong",
+    "Object *": "nint",
 }
 
 
@@ -1288,37 +1517,42 @@ def parse_native_struct_format(fmt: str) -> list[tuple[str, str, str | None, int
         if not part:
             continue
         default_val = None
-        eq = re.search(r'\s*=\s*(.+)$', part)
+        eq = re.search(r"\s*=\s*(.+)$", part)
         if eq:
             default_val = eq.group(1).strip()
-            part = part[:eq.start()].strip()
+            part = part[: eq.start()].strip()
         array_size = None
-        arr = re.search(r'\[(\d+)\]\s*$', part)
+        arr = re.search(r"\[(\d+)\]\s*$", part)
         if arr:
             array_size = int(arr.group(1))
-            part = part[:arr.start()].strip()
-        m = re.search(r'^(.*?)\s*(\*+)?\s*(\w+)\s*$', part)
+            part = part[: arr.start()].strip()
+        m = re.search(r"^(.*?)\s*(\*+)?\s*(\w+)\s*$", part)
         if not m:
             continue
         type_base = m.group(1).strip()
-        stars      = m.group(2) or ""
-        name       = m.group(3)
-        c_type     = (type_base + " " + stars).strip() if stars else type_base
+        stars = m.group(2) or ""
+        name = m.group(3)
+        c_type = (type_base + " " + stars).strip() if stars else type_base
         cs_type, is_ptr = _resolve_c_type(c_type)
         fields.append((cs_type, name, default_val, array_size, is_ptr))
     return fields
 
 
 def _norm_default(v: str) -> str:
-    return "0" if v in ("0.f","0.","0.0f","0.0") else v
+    return "0" if v in ("0.f", "0.", "0.0f", "0.0") else v
 
 
-def write_native_structs(utilities_dir: Path, native_structs, class_names, enum_owner_map) -> None:
+def write_native_structs(
+    utilities_dir: Path,
+    native_structs: list[Any],
+    class_names: set[str],
+    enum_owner_map: dict[str, str],
+) -> None:
     if not native_structs:
         return
     lines = ["using System;", "using System.Runtime.InteropServices;", "", "namespace Godot", "{"]
     for sd in native_structs:
-        sname  = _sanitize_type(sd["name"])
+        sname = _sanitize_type(sd["name"])
         fields = parse_native_struct_format(sd["format"])
         has_defaults = any(dv is not None for _, _, dv, _, _ in fields)
         lines += [f"    public struct {sname}", "    {"]
@@ -1336,19 +1570,19 @@ def write_native_structs(utilities_dir: Path, native_structs, class_names, enum_
         lines += ["    }", ""]
     lines.append("}")
     (utilities_dir / "NativeStructs.cs").write_text("\n".join(lines))
-    
 
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Entry Point
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 def generate_all(json_path: Path, base_dir: Path) -> None:
     class_list, native_structs, global_enums, singletons = load_api(json_path)
-    class_names        = {normalize_type_name(c["name"]) for c in class_list}
-    enum_owner_map     = build_enum_to_class_map(class_list)
-    global_enum_set    = build_global_enum_set(global_enums)
-    singleton_map      = build_singleton_set(singletons)
+    class_names = {normalize_type_name(c["name"]) for c in class_list}
+    enum_owner_map = build_enum_to_class_map(class_list)
+    global_enum_set = build_global_enum_set(global_enums)
+    singleton_map = build_singleton_set(singletons)
     global_enum_rename = build_global_enum_rename_map(class_list)
 
     godot_api_dir = base_dir / "GodotApi"
@@ -1385,10 +1619,7 @@ def generate_all(json_path: Path, base_dir: Path) -> None:
         generated_methods += emitted
 
 
-
-
 if __name__ == "__main__":
-
     generate_all(
         Path("extension_api.json"),
         Path("NET"),

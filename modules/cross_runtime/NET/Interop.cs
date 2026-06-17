@@ -50,7 +50,7 @@ public static partial class Interop
 
         Console.WriteLine("[NET] Pong initialized");
         _initialized = true;
-        
+
     }
 
     // Called every frame by JS with the engine delta.
@@ -64,7 +64,7 @@ public static partial class Interop
         _ball?.Step(delta);
         _left?.Step(delta);
         _right?.Step(delta);
-        
+
     }
 }
 */

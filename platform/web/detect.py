@@ -304,7 +304,7 @@ def configure(env: "SConsEnvironment"):
         env.extra_suffix = ".dlink" + env.extra_suffix
 
     env.Append(LINKFLAGS=["-sWASM_BIGINT"])
-    env.Append(LINKFLAGS=["--bind"])  
+    env.Append(LINKFLAGS=["--bind"])
     env.Append(CCFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])
     env.Append(LINKFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])
 
@@ -332,11 +332,7 @@ def configure(env: "SConsEnvironment"):
     # us since we don't know requirements at compile-time.
     env.Append(LINKFLAGS=["-sALLOW_MEMORY_GROWTH=1"])
 
-    env.Append(LINKFLAGS=[
-        "-sEXPORT_ALL=1",
-        "-sASSERTIONS=1"
-    ])
-
+    env.Append(LINKFLAGS=["-sEXPORT_ALL=1", "-sASSERTIONS=1"])
 
     # Do not call main immediately when the support code is ready.
     env.Append(LINKFLAGS=["-sINVOKE_RUN=0"])
@@ -360,10 +356,11 @@ def configure(env: "SConsEnvironment"):
     # Disable GDScript LSP (as the Web platform is not compatible with TCP).
     env.Append(CPPDEFINES=["GDSCRIPT_NO_LSP"])
 
-# ── cross_runtime KEEPALIVE exports ──────────────────────────────────────
+    # ── cross_runtime KEEPALIVE exports ──────────────────────────────────────
     # 15k+ symbols cannot be passed inline — use a response file (@path syntax)
     import json
     import subprocess
+
     repo_root = Path(__file__).resolve().parents[2]  # web -> platform -> repo root
     subprocess.run([sys.executable, repo_root / "modules" / "cross_runtime" / "generate_export_symbols.py"], check=True)
     exports_json = repo_root / "modules" / "cross_runtime" / "Exported_Symbols" / "exports.json"

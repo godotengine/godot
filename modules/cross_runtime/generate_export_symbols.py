@@ -9,7 +9,6 @@ all generated method exports).
 import json
 from pathlib import Path
 
-
 # Hand‑written variant helpers that are always needed
 VARIANT_HELPERS = [
     "_malloc",
@@ -17,13 +16,11 @@ VARIANT_HELPERS = [
     "_variant_get_type",
     "_variant_destroy",
     "_variant_free_packed",
-
     "_variant_as_bool",
     "_variant_as_uint64",
     "_variant_as_int64",
     "_variant_as_double",
     "_variant_as_string",
-
     "_variant_as_vector2",
     "_variant_as_vector2i",
     "_variant_as_rect2",
@@ -42,50 +39,37 @@ VARIANT_HELPERS = [
     "_variant_as_color",
     "_variant_as_string_name",
     "_variant_as_node_path",
-
     "_variant_as_rid",
     "_variant_as_object",
     "_variant_as_callable",
     "_variant_as_signal",
     "_variant_as_dictionary",
     "_variant_as_array",
-
     "_variant_as_packed_byte_array",
     "_variant_packed_byte_size",
-
     "_variant_as_packed_int32_array",
     "_variant_packed_int32_size",
-
     "_variant_as_packed_int64_array",
     "_variant_packed_int64_size",
-
     "_variant_as_packed_float32_array",
     "_variant_packed_float32_size",
-
     "_variant_as_packed_float64_array",
     "_variant_packed_float64_size",
-
     "_variant_as_packed_string_array",
     "_variant_packed_string_count",
-
     "_variant_as_packed_vector2_array",
     "_variant_packed_vector2_size",
-
     "_variant_as_packed_vector3_array",
     "_variant_packed_vector3_size",
-
     "_variant_as_packed_color_array",
     "_variant_packed_color_size",
-
     "_variant_as_packed_vector4_array",
     "_variant_packed_vector4_size",
-
     "_variant_new_nil",
     "_variant_new_bool",
     "_variant_new_int64",
     "_variant_new_double",
     "_variant_new_string",
-
     "_variant_new_vector2i",
     "_variant_new_vector3i",
     "_variant_new_vector4i",
@@ -100,23 +84,19 @@ VARIANT_HELPERS = [
     "_variant_new_basis",
     "_variant_new_transform2d",
     "_variant_new_transform3d",
-
     "_variant_new_rid",
     "_variant_new_object_id",
     "_variant_new_node_path",
     "_variant_new_string_name",
-
     "_variant_new_callable",
     "_variant_new_signal",
     "_variant_new_dictionary",
     "_variant_new_array",
-
     "_variant_array_size",
     "_variant_array_get",
     "_variant_dictionary_size",
     "_variant_dictionary_get_key",
     "_variant_dictionary_get_value",
-
     "_callable_get_target_id",
     "_callable_get_method",
 ]

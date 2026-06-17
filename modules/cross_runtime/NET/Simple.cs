@@ -39,7 +39,7 @@ public partial class Main : Control
         MoveButtonRandomly();
     }
 
-    
+
 
     private void MoveButtonRandomly()
     {

@@ -61,55 +61,97 @@ from pathlib import Path
 # Godot struct types that are flattened into scalar fields at the boundary.
 # Each entry maps the type name to an ordered tuple of (field_name, js_kind).
 FLATTENED_STRUCTS = {
-    "Vector2":      (("x", "f32"), ("y", "f32")),
-    "Vector2i":     (("x", "i32"), ("y", "i32")),
-    "Vector3":      (("x", "f32"), ("y", "f32"), ("z", "f32")),
-    "Vector3i":     (("x", "i32"), ("y", "i32"), ("z", "i32")),
-    "Vector4":      (("x", "f32"), ("y", "f32"), ("z", "f32"), ("w", "f32")),
-    "Vector4i":     (("x", "i32"), ("y", "i32"), ("z", "i32"), ("w", "i32")),
-    "Rect2":        (("x", "f32"), ("y", "f32"), ("width", "f32"), ("height", "f32")),
-    "Rect2i":       (("x", "i32"), ("y", "i32"), ("width", "i32"), ("height", "i32")),
-    "Color":        (("r", "f32"), ("g", "f32"), ("b", "f32"), ("a", "f32")),
-    "Plane":        (("nx", "f32"), ("ny", "f32"), ("nz", "f32"), ("d", "f32")),
-    "AABB":         (("px", "f32"), ("py", "f32"), ("pz", "f32"),
-                     ("sx", "f32"), ("sy", "f32"), ("sz", "f32")),
-    "Transform2D":  (("xx", "f32"), ("xy", "f32"),
-                     ("yx", "f32"), ("yy", "f32"),
-                     ("ox", "f32"), ("oy", "f32")),
-    "Transform3D":  (("bxx", "f32"), ("bxy", "f32"), ("bxz", "f32"),
-                     ("byx", "f32"), ("byy", "f32"), ("byz", "f32"),
-                     ("bzx", "f32"), ("bzy", "f32"), ("bzz", "f32"),
-                     ("ox",  "f32"), ("oy",  "f32"), ("oz",  "f32")),
-    "Quaternion":   (("x", "f32"), ("y", "f32"), ("z", "f32"), ("w", "f32")),
-    "Basis":        (("xx", "f32"), ("xy", "f32"), ("xz", "f32"),
-                     ("yx", "f32"), ("yy", "f32"), ("yz", "f32"),
-                     ("zx", "f32"), ("zy", "f32"), ("zz", "f32")),
+    "Vector2": (("x", "f32"), ("y", "f32")),
+    "Vector2i": (("x", "i32"), ("y", "i32")),
+    "Vector3": (("x", "f32"), ("y", "f32"), ("z", "f32")),
+    "Vector3i": (("x", "i32"), ("y", "i32"), ("z", "i32")),
+    "Vector4": (("x", "f32"), ("y", "f32"), ("z", "f32"), ("w", "f32")),
+    "Vector4i": (("x", "i32"), ("y", "i32"), ("z", "i32"), ("w", "i32")),
+    "Rect2": (("x", "f32"), ("y", "f32"), ("width", "f32"), ("height", "f32")),
+    "Rect2i": (("x", "i32"), ("y", "i32"), ("width", "i32"), ("height", "i32")),
+    "Color": (("r", "f32"), ("g", "f32"), ("b", "f32"), ("a", "f32")),
+    "Plane": (("nx", "f32"), ("ny", "f32"), ("nz", "f32"), ("d", "f32")),
+    "AABB": (("px", "f32"), ("py", "f32"), ("pz", "f32"), ("sx", "f32"), ("sy", "f32"), ("sz", "f32")),
+    "Transform2D": (("xx", "f32"), ("xy", "f32"), ("yx", "f32"), ("yy", "f32"), ("ox", "f32"), ("oy", "f32")),
+    "Transform3D": (
+        ("bxx", "f32"),
+        ("bxy", "f32"),
+        ("bxz", "f32"),
+        ("byx", "f32"),
+        ("byy", "f32"),
+        ("byz", "f32"),
+        ("bzx", "f32"),
+        ("bzy", "f32"),
+        ("bzz", "f32"),
+        ("ox", "f32"),
+        ("oy", "f32"),
+        ("oz", "f32"),
+    ),
+    "Quaternion": (("x", "f32"), ("y", "f32"), ("z", "f32"), ("w", "f32")),
+    "Basis": (
+        ("xx", "f32"),
+        ("xy", "f32"),
+        ("xz", "f32"),
+        ("yx", "f32"),
+        ("yy", "f32"),
+        ("yz", "f32"),
+        ("zx", "f32"),
+        ("zy", "f32"),
+        ("zz", "f32"),
+    ),
 }
 
 # Types whose C++ export returns a heap-allocated Variant* rather than a scalar.
 VARIANT_RETURN_TYPES = {
-    "Vector2", "Vector2i", "Vector3", "Vector3i",
-    "Vector4", "Vector4i", "Rect2", "Rect2i",
-    "Color", "Plane", "AABB",
-    "Transform2D", "Transform3D", "Quaternion", "Basis",
-    "RID", "Callable", "Signal",
-    "Dictionary", "Array",
-    "PackedByteArray", "PackedInt32Array", "PackedInt64Array",
-    "PackedFloat32Array", "PackedFloat64Array", "PackedStringArray",
-    "PackedVector2Array", "PackedVector3Array", "PackedColorArray",
-    "PackedVector4Array", "Variant",
+    "Vector2",
+    "Vector2i",
+    "Vector3",
+    "Vector3i",
+    "Vector4",
+    "Vector4i",
+    "Rect2",
+    "Rect2i",
+    "Color",
+    "Plane",
+    "AABB",
+    "Transform2D",
+    "Transform3D",
+    "Quaternion",
+    "Basis",
+    "RID",
+    "Callable",
+    "Signal",
+    "Dictionary",
+    "Array",
+    "PackedByteArray",
+    "PackedInt32Array",
+    "PackedInt64Array",
+    "PackedFloat32Array",
+    "PackedFloat64Array",
+    "PackedStringArray",
+    "PackedVector2Array",
+    "PackedVector3Array",
+    "PackedColorArray",
+    "PackedVector4Array",
+    "Variant",
 }
 
 # Engine-bootstrap functions absent from extension_api.json; emitted first.
 HARDCODED_FIRST = {
-    "_Engine_get_object_singleton":    {"params": ["cstring"], "returns": "i64"},
-    "_Engine_get_SceneTree_singleton": {"params": [],          "returns": "i64"},
+    "_Engine_get_object_singleton": {"params": ["cstring"], "returns": "i64"},
+    "_Engine_get_SceneTree_singleton": {"params": [], "returns": "i64"},
 }
 
 PACKED_ARRAY_TYPES = {
-    "PackedByteArray", "PackedInt32Array", "PackedInt64Array",
-    "PackedFloat32Array", "PackedFloat64Array", "PackedStringArray",
-    "PackedVector2Array", "PackedVector3Array", "PackedColorArray",
+    "PackedByteArray",
+    "PackedInt32Array",
+    "PackedInt64Array",
+    "PackedFloat32Array",
+    "PackedFloat64Array",
+    "PackedStringArray",
+    "PackedVector2Array",
+    "PackedVector3Array",
+    "PackedColorArray",
     "PackedVector4Array",
 }
 
@@ -129,7 +171,7 @@ def is_object_id(godot_type: str) -> bool:
     return True
 
 
-def godot_param_to_jskinds(godot_type: str) -> list:
+def godot_param_to_jskinds(godot_type: str) -> list[str]:
     """Maps a single Godot parameter type to one or more JS bridge kind strings."""
     if godot_type in FLATTENED_STRUCTS:
         return [kind for _, kind in FLATTENED_STRUCTS[godot_type]]
@@ -137,15 +179,22 @@ def godot_param_to_jskinds(godot_type: str) -> list:
         return [godot_type]
     if godot_type in ("String", "StringName", "NodePath"):
         return ["cstring"]
-    if godot_type == "bool":    return ["i32"]
-    if godot_type == "int":     return ["i64"]
-    if godot_type == "float":   return ["f32"]
-    if godot_type == "Variant": return ["varargs"]
+    if godot_type == "bool":
+        return ["i32"]
+    if godot_type == "int":
+        return ["i64"]
+    if godot_type == "float":
+        return ["f32"]
+    if godot_type == "Variant":
+        return ["varargs"]
     if godot_type == "Array" or godot_type.startswith("typedarray::"):
         return ["Array"]
-    if godot_type == "Dictionary": return ["Dictionary"]
-    if godot_type == "Callable":   return ["ptr", "cstring"]
-    if godot_type == "Signal":     return ["Signal"]
+    if godot_type == "Dictionary":
+        return ["Dictionary"]
+    if godot_type == "Callable":
+        return ["ptr", "cstring"]
+    if godot_type == "Signal":
+        return ["Signal"]
     if godot_type.startswith(("enum::", "bitfield::")):
         return ["i64"]
     return ["ptr"]  # object-derived
@@ -153,10 +202,14 @@ def godot_param_to_jskinds(godot_type: str) -> list:
 
 def godot_return_to_jskind(godot_type: str) -> str:
     """Maps a Godot return type to a single JS bridge kind string."""
-    if godot_type == "void":    return "void"
-    if godot_type == "bool":    return "i32"
-    if godot_type == "int":     return "i64"
-    if godot_type == "float":   return "f64"
+    if godot_type == "void":
+        return "void"
+    if godot_type == "bool":
+        return "i32"
+    if godot_type == "int":
+        return "i64"
+    if godot_type == "float":
+        return "f64"
     if godot_type in ("String", "StringName", "NodePath"):
         return "cstring"
     if godot_type.startswith(("enum::", "bitfield::")):
@@ -199,7 +252,7 @@ def generate_export_signatures(api_json_path: Path, output_js_path: Path) -> Non
             return_type = return_info.get("type", "void") if return_info else "void"
 
             signatures[func_name] = {
-                "params":  param_kinds,
+                "params": param_kinds,
                 "returns": godot_return_to_jskind(return_type),
             }
 
@@ -227,6 +280,6 @@ def generate_export_signatures(api_json_path: Path, output_js_path: Path) -> Non
 
 if __name__ == "__main__":
     api_json = Path("extension_api.json")
-    out_js   = Path("bin/.web_zip/Bridge_Functions/export_signatures.js")
+    out_js = Path("bin/.web_zip/Bridge_Functions/export_signatures.js")
     generate_export_signatures(api_json, out_js)
     print("Generated JS signatures")

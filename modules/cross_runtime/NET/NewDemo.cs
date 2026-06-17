@@ -148,5 +148,5 @@ public class DotRunner : Node
         return (_rngState & 0xFFFFFF) / 16777215.0f;
     }
 }
- 
+
  */

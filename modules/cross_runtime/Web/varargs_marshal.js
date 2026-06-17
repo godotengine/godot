@@ -4,15 +4,21 @@
 
 import { constructVariant } from './variant_construct.js';
 
-export function marshalVarargs(M, a, tempPtrs, variantPtrs) {
-    const items = Array.isArray(a) ? a : (a != null ? [a] : []);
-    const ptrsPtr = M._malloc(items.length * 4);
-    const ptrsView = new Uint32Array(M.HEAPU8.buffer, ptrsPtr, items.length);
-    for (let j = 0; j < items.length; j++) {
-        const vptr = constructVariant(M, items[j]);
-        ptrsView[j] = vptr;
-        variantPtrs.push(vptr);
-    }
-    tempPtrs.push(ptrsPtr);
-    return [ptrsPtr, items.length];
+export function marshalVarargs(TheGodotModule, a, tempPtrs, variantPtrs) {
+	let items;
+	if (Array.isArray(a)) {
+		items = a;
+	} else {
+		items = (a != null) ? [a] : [];
+	}
+
+	const ptrsPtr = TheGodotModule._malloc(items.length * 4);
+	const ptrsView = new Uint32Array(TheGodotModule.HEAPU8.buffer, ptrsPtr, items.length);
+	for (let j = 0; j < items.length; j++) {
+		const vptr = constructVariant(TheGodotModule, items[j]);
+		ptrsView[j] = vptr;
+		variantPtrs.push(vptr);
+	}
+	tempPtrs.push(ptrsPtr);
+	return [ptrsPtr, items.length];
 }
