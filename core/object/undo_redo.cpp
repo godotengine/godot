@@ -87,6 +87,62 @@ bool UndoRedo::_redo(bool p_execute) {
 	return true;
 }
 
+void UndoRedo::_add_callable_do_operation(const Callable &p_callable, Operation::Type p_type) {
+	ERR_FAIL_COND(!p_callable.is_valid());
+	ERR_FAIL_COND(action_level <= 0);
+	ERR_FAIL_COND((current_action + 1) >= actions.size());
+
+	ObjectID object_id = p_callable.get_object_id();
+	Object *object = ObjectDB::get_instance(object_id);
+	ERR_FAIL_COND(object_id.is_valid() && object == nullptr);
+
+	Operation do_op;
+	do_op.callable = p_callable;
+	do_op.object = object_id;
+	if (Object::cast_to<RefCounted>(object)) {
+		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(object));
+	}
+	do_op.type = p_type;
+	do_op.name = p_callable.get_method();
+	if (do_op.name == StringName()) {
+		// There's no `get_method()` for custom callables, so use `operator String()` instead.
+		do_op.name = static_cast<String>(p_callable);
+	}
+
+	actions.write[current_action + 1].do_ops.push_back(do_op);
+}
+
+void UndoRedo::_add_callable_undo_operation(const Callable &p_callable, Operation::Type p_type) {
+	ERR_FAIL_COND(!p_callable.is_valid());
+	ERR_FAIL_COND(action_level <= 0);
+	ERR_FAIL_COND((current_action + 1) >= actions.size());
+
+	// No undo if the merge mode is MERGE_ENDS
+	if (!force_keep_in_merge_ends && merge_mode == MERGE_ENDS) {
+		return;
+	}
+
+	ObjectID object_id = p_callable.get_object_id();
+	Object *object = ObjectDB::get_instance(object_id);
+	ERR_FAIL_COND(object_id.is_valid() && object == nullptr);
+
+	Operation undo_op;
+	undo_op.callable = p_callable;
+	undo_op.object = object_id;
+	if (Object::cast_to<RefCounted>(object)) {
+		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(object));
+	}
+	undo_op.type = p_type;
+	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
+	undo_op.name = p_callable.get_method();
+	if (undo_op.name == StringName()) {
+		// There's no `get_method()` for custom callables, so use `operator String()` instead.
+		undo_op.name = static_cast<String>(p_callable);
+	}
+
+	actions.write[current_action + 1].undo_ops.push_back(undo_op);
+}
+
 void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_backward_undo_ops) {
 	uint64_t ticks = OS::get_singleton()->get_ticks_msec();
 
@@ -146,59 +202,11 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 }
 
 void UndoRedo::add_do_method(const Callable &p_callable) {
-	ERR_FAIL_COND(!p_callable.is_valid());
-	ERR_FAIL_COND(action_level <= 0);
-	ERR_FAIL_COND((current_action + 1) >= actions.size());
-
-	ObjectID object_id = p_callable.get_object_id();
-	Object *object = ObjectDB::get_instance(object_id);
-	ERR_FAIL_COND(object_id.is_valid() && object == nullptr);
-
-	Operation do_op;
-	do_op.callable = p_callable;
-	do_op.object = object_id;
-	if (Object::cast_to<RefCounted>(object)) {
-		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(object));
-	}
-	do_op.type = Operation::TYPE_METHOD;
-	do_op.name = p_callable.get_method();
-	if (do_op.name == StringName()) {
-		// There's no `get_method()` for custom callables, so use `operator String()` instead.
-		do_op.name = static_cast<String>(p_callable);
-	}
-
-	actions.write[current_action + 1].do_ops.push_back(do_op);
+	_add_callable_do_operation(p_callable, Operation::TYPE_METHOD);
 }
 
 void UndoRedo::add_undo_method(const Callable &p_callable) {
-	ERR_FAIL_COND(!p_callable.is_valid());
-	ERR_FAIL_COND(action_level <= 0);
-	ERR_FAIL_COND((current_action + 1) >= actions.size());
-
-	// No undo if the merge mode is MERGE_ENDS
-	if (!force_keep_in_merge_ends && merge_mode == MERGE_ENDS) {
-		return;
-	}
-
-	ObjectID object_id = p_callable.get_object_id();
-	Object *object = ObjectDB::get_instance(object_id);
-	ERR_FAIL_COND(object_id.is_valid() && object == nullptr);
-
-	Operation undo_op;
-	undo_op.callable = p_callable;
-	undo_op.object = object_id;
-	if (Object::cast_to<RefCounted>(object)) {
-		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(object));
-	}
-	undo_op.type = Operation::TYPE_METHOD;
-	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
-	undo_op.name = p_callable.get_method();
-	if (undo_op.name == StringName()) {
-		// There's no `get_method()` for custom callables, so use `operator String()` instead.
-		undo_op.name = static_cast<String>(p_callable);
-	}
-
-	actions.write[current_action + 1].undo_ops.push_back(undo_op);
+	_add_callable_undo_operation(p_callable, Operation::TYPE_METHOD);
 }
 
 void UndoRedo::add_do_property(Object *p_object, const StringName &p_property, const Variant &p_value) {
@@ -274,6 +282,16 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
 }
+
+#ifdef TOOLS_ENABLED
+void UndoRedo::add_do_custom_callable(const Callable &p_callable) {
+	_add_callable_do_operation(p_callable, Operation::TYPE_CUSTOM_CALLABLE);
+}
+
+void UndoRedo::add_undo_custom_callable(const Callable &p_callable) {
+	_add_callable_undo_operation(p_callable, Operation::TYPE_CUSTOM_CALLABLE);
+}
+#endif
 
 void UndoRedo::start_force_keep_in_merge_ends() {
 	ERR_FAIL_COND(action_level <= 0);
@@ -360,7 +378,8 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E, bool p_execu
 		}
 
 		switch (op.type) {
-			case Operation::TYPE_METHOD: {
+			case Operation::TYPE_METHOD:
+			case Operation::TYPE_CUSTOM_CALLABLE: {
 				if (p_execute) {
 					Callable::CallError ce;
 					Variant ret;
@@ -376,7 +395,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E, bool p_execu
 #endif
 				}
 
-				if (method_callback) {
+				if (method_callback && op.type == Operation::TYPE_METHOD) {
 					Vector<Variant> binds;
 					if (op.callable.is_custom()) {
 						CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(op.callable.get_custom());

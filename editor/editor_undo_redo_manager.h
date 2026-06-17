@@ -123,6 +123,8 @@ public:
 	void add_undo_property(Object *p_object, const StringName &p_property, const Variant &p_value);
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
+	void add_do_callable(const Callable &p_callable);
+	void add_undo_callable(const Callable &p_callable);
 
 	void commit_action(bool p_execute = true);
 	bool is_committing_action() const;
