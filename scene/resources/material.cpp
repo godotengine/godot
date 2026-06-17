@@ -3905,10 +3905,11 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(STENCIL_COMPARE_GREATER_OR_EQUAL);
 }
 
-BaseMaterial3D::BaseMaterial3D(bool p_orm) :
-		element(this) {
-	orm = p_orm;
-	// Initialize to the same values as the shader
+void BaseMaterial3D::reset_state() {
+	Resource::reset_state();
+	for (int i = 0; i < TEXTURE_MAX; i++) {
+		set_texture(TextureParam(i), Ref<Texture2D>());
+	}
 	set_albedo(Color(1.0, 1.0, 1.0, 1.0));
 	set_specular(0.5);
 	set_roughness(1.0);
@@ -3966,15 +3967,54 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	set_heightmap_deep_parallax_min_layers(8);
 	set_heightmap_deep_parallax_max_layers(32);
-	set_heightmap_deep_parallax_flip_tangent(false); //also sets binormal
+	set_heightmap_deep_parallax_flip_tangent(false);
+	set_heightmap_deep_parallax_flip_binormal(false);
 
 	set_z_clip_scale(1.0);
 	set_fov_override(75.0);
 
 	set_stencil_mode(STENCIL_MODE_DISABLED);
-
+	set_stencil_flags(0);
+	set_stencil_compare(STENCIL_COMPARE_ALWAYS);
+	set_stencil_reference(1);
+	set_stencil_effect_color(Color(0, 0, 0, 1));
+	set_stencil_effect_outline_thickness(0.01f);
+	set_grow_enabled(false);
+	set_heightmap_deep_parallax(false);
+	set_proximity_fade_enabled(false);
+	set_distance_fade(DISTANCE_FADE_DISABLED);
+	set_emission_operator(EMISSION_OP_ADD);
+	// emission_intensity setter rejects calls if PLU is disabled
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
+		set_emission_intensity(1000.0f);
+	}
+	set_texture_filter(TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+	for (int i = 0; i < FLAG_MAX; i++) {
+		set_flag(Flags(i), false);
+	}
 	flags[FLAG_ALBEDO_TEXTURE_MSDF] = false;
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;
+	for (int i = 0; i < FEATURE_MAX; i++) {
+		set_feature(Feature(i), false);
+	}
+	set_shading_mode(SHADING_MODE_PER_PIXEL);
+	set_diffuse_mode(DIFFUSE_BURLEY);
+	set_specular_mode(SPECULAR_SCHLICK_GGX);
+	set_blend_mode(BLEND_MODE_MIX);
+	set_depth_draw_mode(DEPTH_DRAW_OPAQUE_ONLY);
+	set_depth_test(DEPTH_TEST_DEFAULT);
+	set_cull_mode(CULL_BACK);
+	set_detail_blend_mode(BLEND_MODE_MIX);
+	set_detail_uv(DETAIL_UV_1);
+
+	set_render_priority(0);
+	set_next_pass(Ref<Material>());
+}
+
+BaseMaterial3D::BaseMaterial3D(bool p_orm) :
+		element(this) {
+	orm = p_orm;
+	reset_state();
 
 	current_key.invalid_key = 1;
 }
