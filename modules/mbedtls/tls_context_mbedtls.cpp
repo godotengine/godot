@@ -79,6 +79,7 @@ void CookieContextMbedTLS::clear() {
 	mbedtls_ctr_drbg_free(&ctr_drbg);
 	mbedtls_entropy_free(&entropy);
 	mbedtls_ssl_cookie_free(&cookie_ctx);
+	inited = false;
 }
 
 CookieContextMbedTLS::CookieContextMbedTLS() {
