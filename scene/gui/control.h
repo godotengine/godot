@@ -365,8 +365,7 @@ private:
 	void _set_global_position(const Point2 &p_point);
 	void _set_size(const Size2 &p_size);
 
-	void _compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (&r_offsets)[4]);
-	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);
+	void _compute_layout_rect(Rect2 p_rect, bool p_keep_offsets = false);
 
 	void _set_layout_mode(LayoutMode p_mode);
 	void _update_layout_mode();
