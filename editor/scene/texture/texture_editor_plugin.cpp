@@ -244,14 +244,14 @@ void TexturePreview::on_selected_mipmap_changed(double p_value) {
 }
 
 TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
-	set_custom_minimum_size(Size2(0.0, 256.0) * EDSCALE);
+	const float outline_width = Math::round(EDSCALE);
+
+	set_custom_minimum_size(Size2(0.0, 256 * EDSCALE) + Size2(outline_width, outline_width) * 2);
 
 	bg_rect = memnew(ColorRect);
-
 	add_child(bg_rect);
 
 	margin_container = memnew(MarginContainer);
-	const float outline_width = Math::round(EDSCALE);
 	margin_container->add_theme_constant_override("margin_right", outline_width);
 	margin_container->add_theme_constant_override("margin_top", outline_width);
 	margin_container->add_theme_constant_override("margin_left", outline_width);
