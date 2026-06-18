@@ -260,7 +260,6 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_column_title(COLUMN_NAME, TTRC("Name"));
 	plugin_list->set_column_title(COLUMN_VERSION, TTRC("Version"));
 	plugin_list->set_column_title(COLUMN_AUTHOR, TTRC("Author"));
-	plugin_list->set_column_title(COLUMN_EDIT, TTRC("Edit"));
 	plugin_list->set_column_title_alignment(COLUMN_STATUS, HORIZONTAL_ALIGNMENT_LEFT);
 	plugin_list->set_column_title_alignment(COLUMN_NAME, HORIZONTAL_ALIGNMENT_LEFT);
 	plugin_list->set_column_title_alignment(COLUMN_VERSION, HORIZONTAL_ALIGNMENT_LEFT);
@@ -279,7 +278,6 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_column_custom_minimum_width(COLUMN_STATUS, 80 * EDSCALE);
 	plugin_list->set_column_custom_minimum_width(COLUMN_VERSION, 100 * EDSCALE);
 	plugin_list->set_column_custom_minimum_width(COLUMN_AUTHOR, 250 * EDSCALE);
-	plugin_list->set_column_custom_minimum_width(COLUMN_EDIT, 40 * EDSCALE);
 	plugin_list->set_hide_root(true);
 	plugin_list->connect("item_edited", callable_mp(this, &EditorPluginSettings::_plugin_activity_changed), CONNECT_DEFERRED);
 

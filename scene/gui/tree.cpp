@@ -1741,10 +1741,9 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 	const TreeItem::Cell &cell = cells[p_column];
 
 	if (cell.cached_minimum_size_dirty || cell.text_buf->is_dirty() || cell.dirty) {
-		Size2 size = Size2(
-				parent_tree->theme_cache.inner_item_margin_left + parent_tree->theme_cache.inner_item_margin_right,
-				parent_tree->theme_cache.inner_item_margin_top + parent_tree->theme_cache.inner_item_margin_bottom);
+		Size2 size = Size2(0, parent_tree->theme_cache.inner_item_margin_top + parent_tree->theme_cache.inner_item_margin_bottom);
 		int content_height = size.height;
+		bool has_text_or_icon = false;
 
 		// Text.
 		if (!cell.text.is_empty()) {
@@ -1756,6 +1755,7 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 				size.width += text_size.width;
 			}
 			content_height = MAX(content_height, text_size.height);
+			has_text_or_icon = true;
 		}
 
 		// Icon.
@@ -1763,16 +1763,23 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 			Size2i check_size = parent_tree->theme_cache.checked->get_size();
 			size.width += check_size.width + parent_tree->theme_cache.h_separation;
 			content_height = MAX(content_height, check_size.height);
+			has_text_or_icon = true;
 		} else if (cell.mode == CELL_MODE_RANGE) {
 			Ref<Texture2D> icon = cell.text.is_empty() ? parent_tree->theme_cache.updown : parent_tree->theme_cache.select_arrow;
 			Size2i icon_size = icon->get_size();
 			size.width += icon_size.width + parent_tree->theme_cache.h_separation;
 			content_height = MAX(content_height, icon_size.height);
+			has_text_or_icon = true;
 		}
 		if (cell.icon.is_valid()) {
 			Size2i icon_size = parent_tree->_get_cell_icon_size(cell);
 			size.width += icon_size.width + parent_tree->theme_cache.icon_h_separation;
 			content_height = MAX(content_height, icon_size.height);
+			has_text_or_icon = true;
+		}
+
+		if (has_text_or_icon) {
+			size.width += parent_tree->theme_cache.inner_item_margin_left + parent_tree->theme_cache.inner_item_margin_right;
 		}
 
 		// Buttons.
@@ -2457,8 +2464,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 							}
 						}
 					} else if (!drop_mode_flags) {
+						bool cell_has_content = !p_item->cells[i].text.is_empty() || p_item->cells[i].icon.is_valid();
 						if (is_cell_button_hovered) {
-							theme_cache.hovered_dimmed->draw(stylebox_ci, row_rect);
+							// Button-only cells shouldn't show highlight when there is no other content.
+							if (cell_has_content) {
+								theme_cache.hovered_dimmed->draw(ci, row_rect);
+							}
 						} else {
 							theme_cache.hovered->draw(stylebox_ci, row_rect);
 						}
@@ -2472,8 +2483,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				// Cell hover.
 				if (is_cell_hovered && !p_item->cells[i].selected && !drop_mode_flags) {
+					bool cell_has_content = !p_item->cells[i].text.is_empty() || p_item->cells[i].icon.is_valid();
 					if (is_cell_button_hovered) {
-						theme_cache.hovered_dimmed->draw(stylebox_ci, r);
+						// Button-only cells shouldn't show highlight when there is no other content.
+						if (cell_has_content) {
+							theme_cache.hovered_dimmed->draw(ci, r);
+						}
 					} else {
 						theme_cache.hovered->draw(stylebox_ci, r);
 					}
