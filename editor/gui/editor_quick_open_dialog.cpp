@@ -121,7 +121,7 @@ EditorQuickOpenDialog::EditorQuickOpenDialog() {
 
 		search_box = memnew(LineEdit);
 		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		search_box->set_placeholder(TTR("Search files..."));
+		search_box->set_placeholder(TTRC("Search files..."));
 		search_box->set_accessibility_name(TTRC("Search"));
 		search_box->set_clear_button_enabled(true);
 		mc->add_child(search_box);
@@ -450,14 +450,14 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 
 		fuzzy_search_toggle = memnew(CheckButton);
 		style_button(fuzzy_search_toggle);
-		fuzzy_search_toggle->set_text(TTR("Fuzzy Search"));
+		fuzzy_search_toggle->set_text(TTRC("Fuzzy Search"));
 		fuzzy_search_toggle->set_tooltip_text(TTRC("Include approximate matches."));
 		fuzzy_search_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_fuzzy_search));
 		bottom_bar->add_child(fuzzy_search_toggle);
 
 		include_addons_toggle = memnew(CheckButton);
 		style_button(include_addons_toggle);
-		include_addons_toggle->set_text(TTR("Addons"));
+		include_addons_toggle->set_text(TTRC("Addons"));
 		include_addons_toggle->set_tooltip_text(TTR("Include files from addons"));
 		include_addons_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_include_addons));
 		bottom_bar->add_child(include_addons_toggle);
@@ -1060,10 +1060,10 @@ void QuickOpenResultContainer::_set_display_mode(QuickOpenDisplayMode p_display_
 
 	if (content_display_mode == QuickOpenDisplayMode::LIST) {
 		display_mode_toggle->set_button_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
-		display_mode_toggle->set_tooltip_text(TTR("Grid view"));
+		display_mode_toggle->set_tooltip_text(TTRC("Grid view"));
 	} else {
 		display_mode_toggle->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
-		display_mode_toggle->set_tooltip_text(TTR("List view"));
+		display_mode_toggle->set_tooltip_text(TTRC("List view"));
 	}
 }
 

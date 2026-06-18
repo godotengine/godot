@@ -436,7 +436,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 	profile_actions[PROFILE_EXPORT]->set_disabled(selected_profile.is_empty());
 	profile_actions[PROFILE_SET]->set_disabled(selected_profile.is_empty());
 
-	current_profile_name->set_text(!current_profile.is_empty() ? current_profile : TTR("(none)"));
+	current_profile_name->set_text(!current_profile.is_empty() ? current_profile : TTRC("(none)"));
 
 	_update_selected_profile();
 }
@@ -493,12 +493,12 @@ void EditorFeatureProfileManager::_erase_selected_profile() {
 void EditorFeatureProfileManager::_create_new_profile() {
 	String name = new_profile_name->get_text().strip_edges();
 	if (!name.is_valid_filename() || name.contains_char('.')) {
-		EditorNode::get_singleton()->show_warning(TTR("Profile must be a valid filename and must not contain '.'"));
+		EditorNode::get_singleton()->show_warning(TTRC("Profile must be a valid filename and must not contain '.'"));
 		return;
 	}
 	String file = EditorPaths::get_singleton()->get_feature_profiles_dir().path_join(name + ".profile");
 	if (FileAccess::exists(file)) {
-		EditorNode::get_singleton()->show_warning(TTR("Profile with this name already exists."));
+		EditorNode::get_singleton()->show_warning(TTRC("Profile with this name already exists."));
 		return;
 	}
 
@@ -600,7 +600,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 	updating_features = true;
 	TreeItem *root = property_list->create_item();
 	TreeItem *options = property_list->create_item(root);
-	options->set_text(0, TTR("Class Options:"));
+	options->set_text(0, TTRC("Class Options:"));
 
 	{
 		TreeItem *option = property_list->create_item(options);
@@ -608,7 +608,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		option->set_editable(0, true);
 		option->set_selectable(0, true);
 		option->set_checked(0, !edited->is_class_editor_disabled(class_name));
-		option->set_text(0, TTR("Enable Contextual Editor"));
+		option->set_text(0, TTRC("Enable Contextual Editor"));
 		option->set_metadata(0, CLASS_OPTION_DISABLE_EDITOR);
 	}
 
@@ -625,7 +625,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 
 	if (has_editor_props) {
 		TreeItem *properties = property_list->create_item(root);
-		properties->set_text(0, TTR("Class Properties:"));
+		properties->set_text(0, TTRC("Class Properties:"));
 
 		const EditorPropertyNameProcessor::Style text_style = EditorPropertyNameProcessor::get_settings_style();
 		const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(text_style);
@@ -790,7 +790,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 
 	TreeItem *features = class_list->create_item(root);
 	TreeItem *last_feature = nullptr;
-	features->set_text(0, TTR("Main Features:"));
+	features->set_text(0, TTRC("Main Features:"));
 	for (int i = 0; i < EditorFeatureProfile::FEATURE_MAX; i++) {
 		TreeItem *feature;
 		if (i == EditorFeatureProfile::FEATURE_IMPORT_DOCK) {
@@ -814,7 +814,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	}
 
 	TreeItem *classes = class_list->create_item(root);
-	classes->set_text(0, TTR("Nodes and Classes:"));
+	classes->set_text(0, TTRC("Nodes and Classes:"));
 
 	_fill_classes_from(classes, "Node", class_selected);
 	_fill_classes_from(classes, "Resource", class_selected);
@@ -944,15 +944,15 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	current_profile_name = memnew(LineEdit);
 	name_hbc->add_child(current_profile_name);
 	current_profile_name->set_accessibility_name(TTRC("Current Profile:"));
-	current_profile_name->set_text(TTR("(none)"));
+	current_profile_name->set_text(TTRC("(none)"));
 	current_profile_name->set_editable(false);
 	current_profile_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	profile_actions[PROFILE_CLEAR] = memnew(Button(TTR("Reset to Default")));
+	profile_actions[PROFILE_CLEAR] = memnew(Button(TTRC("Reset to Default")));
 	name_hbc->add_child(profile_actions[PROFILE_CLEAR]);
 	profile_actions[PROFILE_CLEAR]->set_disabled(true);
 	profile_actions[PROFILE_CLEAR]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_CLEAR));
 
-	main_vbc->add_margin_child(TTR("Current Profile:"), name_hbc);
+	main_vbc->add_margin_child(TTRC("Current Profile:"), name_hbc);
 
 	main_vbc->add_child(memnew(HSeparator));
 
@@ -964,31 +964,31 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profiles_hbc->add_child(profile_list);
 	profile_list->connect(SceneStringName(item_selected), callable_mp(this, &EditorFeatureProfileManager::_profile_selected));
 
-	profile_actions[PROFILE_NEW] = memnew(Button(TTR("Create Profile")));
+	profile_actions[PROFILE_NEW] = memnew(Button(TTRC("Create Profile")));
 	profiles_hbc->add_child(profile_actions[PROFILE_NEW]);
 	profile_actions[PROFILE_NEW]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_NEW));
 
-	profile_actions[PROFILE_ERASE] = memnew(Button(TTR("Remove Profile")));
+	profile_actions[PROFILE_ERASE] = memnew(Button(TTRC("Remove Profile")));
 	profiles_hbc->add_child(profile_actions[PROFILE_ERASE]);
 	profile_actions[PROFILE_ERASE]->set_disabled(true);
 	profile_actions[PROFILE_ERASE]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_ERASE));
 
-	main_vbc->add_margin_child(TTR("Available Profiles:"), profiles_hbc);
+	main_vbc->add_margin_child(TTRC("Available Profiles:"), profiles_hbc);
 
 	HBoxContainer *current_profile_hbc = memnew(HBoxContainer);
 
-	profile_actions[PROFILE_SET] = memnew(Button(TTR("Make Current")));
+	profile_actions[PROFILE_SET] = memnew(Button(TTRC("Make Current")));
 	current_profile_hbc->add_child(profile_actions[PROFILE_SET]);
 	profile_actions[PROFILE_SET]->set_disabled(true);
 	profile_actions[PROFILE_SET]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_SET));
 
 	current_profile_hbc->add_child(memnew(VSeparator));
 
-	profile_actions[PROFILE_IMPORT] = memnew(Button(TTR("Import")));
+	profile_actions[PROFILE_IMPORT] = memnew(Button(TTRC("Import")));
 	current_profile_hbc->add_child(profile_actions[PROFILE_IMPORT]);
 	profile_actions[PROFILE_IMPORT]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_IMPORT));
 
-	profile_actions[PROFILE_EXPORT] = memnew(Button(TTR("Export")));
+	profile_actions[PROFILE_EXPORT] = memnew(Button(TTRC("Export")));
 	current_profile_hbc->add_child(profile_actions[PROFILE_EXPORT]);
 	profile_actions[PROFILE_EXPORT]->set_disabled(true);
 	profile_actions[PROFILE_EXPORT]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_EXPORT));
@@ -1005,7 +1005,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 
 	class_list = memnew(Tree);
 	class_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	class_list_vbc->add_margin_child(TTR("Configure Selected Profile:"), class_list, true);
+	class_list_vbc->add_margin_child(TTRC("Configure Selected Profile:"), class_list, true);
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	class_list->connect("cell_selected", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_selected));
@@ -1022,10 +1022,10 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	description_bit = memnew(EditorHelpBit);
 	description_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
 	description_bit->connect("request_hide", callable_mp(this, &EditorFeatureProfileManager::_hide_requested));
-	property_list_vbc->add_margin_child(TTR("Description:"), description_bit, false);
+	property_list_vbc->add_margin_child(TTRC("Description:"), description_bit, false);
 
 	property_list = memnew(Tree);
-	property_list_vbc->add_margin_child(TTR("Extra Options:"), property_list, true);
+	property_list_vbc->add_margin_child(TTRC("Extra Options:"), property_list, true);
 	property_list->set_hide_root(true);
 	property_list->set_hide_folding(true);
 	property_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
@@ -1034,7 +1034,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	// It will be displayed once the user creates or chooses a profile.
 	property_list_vbc->hide();
 
-	no_profile_selected_help = memnew(Label(TTR("Create or import a profile to edit available classes and properties.")));
+	no_profile_selected_help = memnew(Label(TTRC("Create or import a profile to edit available classes and properties.")));
 	// Add some spacing above the help label.
 	Ref<StyleBoxEmpty> sb = memnew(StyleBoxEmpty);
 	sb->set_content_margin(SIDE_TOP, 20 * EDSCALE);
@@ -1044,11 +1044,11 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	h_split->add_child(no_profile_selected_help);
 
 	new_profile_dialog = memnew(ConfirmationDialog);
-	new_profile_dialog->set_title(TTR("Create Profile"));
+	new_profile_dialog->set_title(TTRC("Create Profile"));
 	VBoxContainer *new_profile_vb = memnew(VBoxContainer);
 	new_profile_dialog->add_child(new_profile_vb);
 	Label *new_profile_label = memnew(Label);
-	new_profile_label->set_text(TTR("New profile name:"));
+	new_profile_label->set_text(TTRC("New profile name:"));
 	new_profile_vb->add_child(new_profile_label);
 	new_profile_name = memnew(LineEdit);
 	new_profile_vb->add_child(new_profile_name);
@@ -1057,30 +1057,30 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	add_child(new_profile_dialog);
 	new_profile_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFeatureProfileManager::_create_new_profile));
 	new_profile_dialog->register_text_enter(new_profile_name);
-	new_profile_dialog->set_ok_button_text(TTR("Create"));
+	new_profile_dialog->set_ok_button_text(TTRC("Create"));
 
 	erase_profile_dialog = memnew(ConfirmationDialog);
 	add_child(erase_profile_dialog);
-	erase_profile_dialog->set_title(TTR("Remove Profile"));
+	erase_profile_dialog->set_title(TTRC("Remove Profile"));
 	erase_profile_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFeatureProfileManager::_erase_selected_profile));
 
 	import_profiles = memnew(EditorFileDialog);
 	add_child(import_profiles);
 	import_profiles->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
-	import_profiles->add_filter("*.profile", TTR("Godot Feature Profile"));
+	import_profiles->add_filter("*.profile", TTRC("Godot Feature Profile"));
 	import_profiles->connect("files_selected", callable_mp(this, &EditorFeatureProfileManager::_import_profiles));
-	import_profiles->set_title(TTR("Import Profile(s)"));
+	import_profiles->set_title(TTRC("Import Profile(s)"));
 	import_profiles->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_profile->add_filter("*.profile", TTR("Godot Feature Profile"));
+	export_profile->add_filter("*.profile", TTRC("Godot Feature Profile"));
 	export_profile->connect("file_selected", callable_mp(this, &EditorFeatureProfileManager::_export_profile));
-	export_profile->set_title(TTR("Export Profile"));
+	export_profile->set_title(TTRC("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
-	set_title(TTR("Manage Editor Feature Profiles"));
+	set_title(TTRC("Manage Editor Feature Profiles"));
 	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	EDITOR_DEF("_default_feature_profile", "");
 

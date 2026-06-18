@@ -62,10 +62,10 @@ void FBXImporterManager::show_dialog(bool p_exclusive) {
 	set_close_on_escape(!p_exclusive);
 
 	if (is_importing) {
-		get_cancel_button()->set_text(TTR("Disable FBX2glTF & Restart"));
-		get_cancel_button()->set_tooltip_text(TTR("Canceling this dialog will disable the FBX2glTF importer and use the ufbx importer.\nYou can re-enable FBX2glTF in the Project Settings under Filesystem > Import > FBX > Enabled.\n\nThe editor will restart as importers are registered when the editor starts."));
+		get_cancel_button()->set_text(TTRC("Disable FBX2glTF & Restart"));
+		get_cancel_button()->set_tooltip_text(TTRC("Canceling this dialog will disable the FBX2glTF importer and use the ufbx importer.\nYou can re-enable FBX2glTF in the Project Settings under Filesystem > Import > FBX > Enabled.\n\nThe editor will restart as importers are registered when the editor starts."));
 	} else {
-		get_cancel_button()->set_text(TTR("Cancel"));
+		get_cancel_button()->set_text(TTRC("Cancel"));
 		get_cancel_button()->set_tooltip_text("");
 	}
 
@@ -77,9 +77,9 @@ void FBXImporterManager::_validate_path(const String &p_path) {
 	bool success = false;
 
 	if (p_path == "") {
-		error = TTR("Path to FBX2glTF executable is empty.");
+		error = TTRC("Path to FBX2glTF executable is empty.");
 	} else if (!FileAccess::exists(p_path)) {
-		error = TTR("Path to FBX2glTF executable is invalid.");
+		error = TTRC("Path to FBX2glTF executable is invalid.");
 	} else {
 		List<String> args;
 		args.push_back("--version");
@@ -89,12 +89,12 @@ void FBXImporterManager::_validate_path(const String &p_path) {
 		if (err == OK && exitcode == 0) {
 			success = true;
 		} else {
-			error = TTR("Error executing this file (wrong version or architecture).");
+			error = TTRC("Error executing this file (wrong version or architecture).");
 		}
 	}
 
 	if (success) {
-		path_status->set_text(TTR("FBX2glTF executable is valid."));
+		path_status->set_text(TTRC("FBX2glTF executable is valid."));
 		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		get_ok_button()->set_disabled(false);
 	} else {
@@ -139,12 +139,12 @@ FBXImporterManager *FBXImporterManager::singleton = nullptr;
 FBXImporterManager::FBXImporterManager() {
 	singleton = this;
 
-	set_title(TTR("Configure FBX Importer"));
+	set_title(TTRC("Configure FBX Importer"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
-	vb->add_child(memnew(Label(TTR("FBX2glTF is required for importing FBX files if using FBX2glTF.\nAlternatively, you can use ufbx by disabling FBX2glTF.\nPlease download the necessary tool and provide a valid path to the binary:"))));
+	vb->add_child(memnew(Label(TTRC("FBX2glTF is required for importing FBX files if using FBX2glTF.\nAlternatively, you can use ufbx by disabling FBX2glTF.\nPlease download the necessary tool and provide a valid path to the binary:"))));
 	LinkButton *lb = memnew(LinkButton);
-	lb->set_text(TTR("Click this link to download FBX2glTF"));
+	lb->set_text(TTRC("Click this link to download FBX2glTF"));
 	lb->set_uri("https://godotengine.org/fbx-import");
 	vb->add_child(lb);
 
@@ -155,7 +155,7 @@ FBXImporterManager::FBXImporterManager() {
 	fbx_path->set_accessibility_name(TTRC("Path"));
 	hb->add_child(fbx_path);
 	fbx_path_browse = memnew(Button);
-	fbx_path_browse->set_text(TTR("Browse"));
+	fbx_path_browse->set_text(TTRC("Browse"));
 	fbx_path_browse->connect(SceneStringName(pressed), callable_mp(this, &FBXImporterManager::_browse_install));
 	hb->add_child(fbx_path_browse);
 	hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -171,7 +171,7 @@ FBXImporterManager::FBXImporterManager() {
 
 	fbx_path->connect(SceneStringName(text_changed), callable_mp(this, &FBXImporterManager::_validate_path));
 
-	get_ok_button()->set_text(TTR("Confirm Path"));
+	get_ok_button()->set_text(TTRC("Confirm Path"));
 	get_cancel_button()->connect(SceneStringName(pressed), callable_mp(this, &FBXImporterManager::_cancel_setup));
 
 	browse_dialog = memnew(EditorFileDialog);

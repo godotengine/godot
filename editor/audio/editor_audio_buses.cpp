@@ -355,7 +355,7 @@ void EditorAudioBus::update_bus() {
 	add->set_cell_mode(0, TreeItem::CELL_MODE_CUSTOM);
 	add->set_editable(0, true);
 	add->set_selectable(0, false);
-	add->set_text(0, TTR("Add Effect"));
+	add->set_text(0, TTRC("Add Effect"));
 
 	update_send();
 
@@ -912,7 +912,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	buses = p_buses;
 	is_master = p_is_master;
 
-	set_tooltip_text(TTR("Drag & drop to rearrange."));
+	set_tooltip_text(TTRC("Drag & drop to rearrange."));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->add_theme_constant_override("separation", 4 * EDSCALE);
@@ -931,21 +931,21 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	solo = memnew(Button);
 	solo->set_theme_type_variation(SceneStringName(FlatButton));
 	solo->set_toggle_mode(true);
-	solo->set_tooltip_text(TTR("Solo"));
+	solo->set_tooltip_text(TTRC("Solo"));
 	solo->set_focus_mode(FOCUS_ACCESSIBILITY);
 	solo->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_solo_toggled));
 	hbc->add_child(solo);
 	mute = memnew(Button);
 	mute->set_theme_type_variation(SceneStringName(FlatButton));
 	mute->set_toggle_mode(true);
-	mute->set_tooltip_text(TTR("Mute"));
+	mute->set_tooltip_text(TTRC("Mute"));
 	mute->set_focus_mode(FOCUS_ACCESSIBILITY);
 	mute->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_mute_toggled));
 	hbc->add_child(mute);
 	bypass = memnew(Button);
 	bypass->set_theme_type_variation(SceneStringName(FlatButton));
 	bypass->set_toggle_mode(true);
-	bypass->set_tooltip_text(TTR("Bypass"));
+	bypass->set_tooltip_text(TTRC("Bypass"));
 	bypass->set_focus_mode(FOCUS_ACCESSIBILITY);
 	bypass->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_bypass_toggled));
 	hbc->add_child(bypass);
@@ -1168,7 +1168,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_options->set_shortcut_context(this);
 	bus_options->set_h_size_flags(SIZE_SHRINK_END);
 	bus_options->set_anchor(SIDE_RIGHT, 0.0);
-	bus_options->set_tooltip_text(TTR("Bus Options"));
+	bus_options->set_tooltip_text(TTRC("Bus Options"));
 	hbc->add_child(bus_options);
 
 	bus_popup = bus_options->get_popup();
@@ -1179,7 +1179,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_popup->connect("index_pressed", callable_mp(this, &EditorAudioBus::_bus_popup_pressed));
 
 	delete_effect_popup = memnew(PopupMenu);
-	delete_effect_popup->add_item(TTR("Delete Effect"));
+	delete_effect_popup->add_item(TTRC("Delete Effect"));
 	add_child(delete_effect_popup);
 	delete_effect_popup->connect("index_pressed", callable_mp(this, &EditorAudioBus::_delete_effect_pressed));
 }
@@ -1349,7 +1349,7 @@ void EditorAudioBuses::_delete_bus(Object *p_which) {
 	EditorAudioBus *bus = Object::cast_to<EditorAudioBus>(p_which);
 	int index = bus->get_index();
 	if (index == 0) {
-		EditorNode::get_singleton()->show_warning(TTR("Master bus can't be deleted!"));
+		EditorNode::get_singleton()->show_warning(TTRC("Master bus can't be deleted!"));
 		return;
 	}
 
@@ -1454,7 +1454,7 @@ void EditorAudioBuses::_select_layout() {
 
 void EditorAudioBuses::_save_as_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	file_dialog->set_title(TTR("Save Audio Bus Layout As..."));
+	file_dialog->set_title(TTRC("Save Audio Bus Layout As..."));
 	file_dialog->set_current_path(ResourceUID::ensure_path(edited_path));
 	file_dialog->popup_file_dialog();
 	new_layout = false;
@@ -1470,7 +1470,7 @@ void EditorAudioBuses::_new_layout() {
 
 void EditorAudioBuses::_load_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	file_dialog->set_title(TTR("Open Audio Bus Layout"));
+	file_dialog->set_title(TTRC("Open Audio Bus Layout"));
 	file_dialog->set_current_path(ResourceUID::ensure_path(edited_path));
 	file_dialog->popup_file_dialog();
 	new_layout = false;
@@ -1545,34 +1545,34 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	add = memnew(Button);
 	top_hb->add_child(add);
-	add->set_text(TTR("Add Bus"));
-	add->set_tooltip_text(TTR("Add a new Audio Bus to this layout."));
+	add->set_text(TTRC("Add Bus"));
+	add->set_tooltip_text(TTRC("Add a new Audio Bus to this layout."));
 	add->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_add_bus));
 
 	VSeparator *separator = memnew(VSeparator);
 	top_hb->add_child(separator);
 
 	load = memnew(Button);
-	load->set_text(TTR("Load"));
-	load->set_tooltip_text(TTR("Load an existing Bus Layout."));
+	load->set_text(TTRC("Load"));
+	load->set_tooltip_text(TTRC("Load an existing Bus Layout."));
 	top_hb->add_child(load);
 	load->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_load_layout));
 
 	save_as = memnew(Button);
-	save_as->set_text(TTR("Save As"));
-	save_as->set_tooltip_text(TTR("Save this Bus Layout to a file."));
+	save_as->set_text(TTRC("Save As"));
+	save_as->set_tooltip_text(TTRC("Save this Bus Layout to a file."));
 	top_hb->add_child(save_as);
 	save_as->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_save_as_layout));
 
 	_default = memnew(Button);
-	_default->set_text(TTR("Load Default"));
-	_default->set_tooltip_text(TTR("Load the default Bus Layout."));
+	_default->set_text(TTRC("Load Default"));
+	_default->set_tooltip_text(TTRC("Load the default Bus Layout."));
 	top_hb->add_child(_default);
 	_default->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_load_default_layout));
 
 	_new = memnew(Button);
-	_new->set_text(TTR("Create"));
-	_new->set_tooltip_text(TTR("Create a new Bus Layout."));
+	_new->set_text(TTRC("Create"));
+	_new->set_tooltip_text(TTRC("Create a new Bus Layout."));
 	top_hb->add_child(_new);
 	_new->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_new_layout));
 
@@ -1602,7 +1602,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", &ext);
 	for (const String &E : ext) {
-		file_dialog->add_filter("*." + E, TTR("Audio Bus Layout"));
+		file_dialog->add_filter("*." + E, TTRC("Audio Bus Layout"));
 	}
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));

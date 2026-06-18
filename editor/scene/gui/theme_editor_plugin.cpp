@@ -2167,7 +2167,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("Theme", &ext);
 	for (const String &E : ext) {
-		import_another_theme_dialog->add_filter("*." + E, TTR("Theme Resource"));
+		import_another_theme_dialog->add_filter("*." + E, TTRC("Theme Resource"));
 	}
 	import_another_file_hb->add_child(import_another_theme_dialog);
 	import_another_theme_dialog->connect("file_selected", callable_mp(this, &ThemeItemEditorDialog::_select_another_theme_cbk));
@@ -2177,7 +2177,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	import_another_theme_vb->add_child(import_other_theme_items);
 
 	import_tc->add_child(import_another_theme_vb);
-	import_tc->set_tab_title(2, TTR("Another Theme"));
+	import_tc->set_tab_title(2, TTRC("Another Theme"));
 	import_other_theme_items->connect("items_imported", callable_mp(this, &ThemeItemEditorDialog::_update_edit_types));
 
 	confirm_closing_dialog = memnew(ConfirmationDialog);
@@ -4100,7 +4100,7 @@ ThemeEditor::ThemeEditor() {
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &ext);
 	for (const String &E : ext) {
-		preview_scene_dialog->add_filter("*." + E, TTR("Scene"));
+		preview_scene_dialog->add_filter("*." + E, TTRC("Scene"));
 	}
 	main_hs->add_child(preview_scene_dialog);
 	preview_scene_dialog->connect("file_selected", callable_mp(this, &ThemeEditor::_preview_scene_dialog_cbk));
