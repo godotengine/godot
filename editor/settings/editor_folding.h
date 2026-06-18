@@ -53,9 +53,6 @@ public:
 	void save_scene_folding(const Node *p_scene, const String &p_path);
 	void load_scene_folding(Node *p_scene, const String &p_path);
 
-	void save_animation_folding(const Ref<Animation> &p_animation, const String &p_path);
-	void load_animation_folding(Ref<Animation> p_animation, const String &p_path);
-
 	void unfold_scene(Node *p_scene);
 
 	bool has_folding_data(const String &p_path);

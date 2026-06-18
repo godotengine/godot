@@ -2267,6 +2267,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 				HashMap<Node *, NodePath>::Iterator found_root_path = p_renames->find(root);
 				NodePath new_root_path = found_root_path ? found_root_path->value : root->get_path();
 				if (!new_root_path.is_empty()) { // No renaming if root node is deleted.
+					bool update_scene_folding = false;
 					for (const StringName &E : mixer->get_sorted_animation_list()) {
 						Ref<Animation> anim = mixer->get_animation(E);
 						if (!r_rem_anims->has(anim)) {
@@ -2338,6 +2339,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 						//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheOldName
 						// value of p_renames is like:
 						//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheNewName
+						bool folding_changed = false;
 						for (const KeyValue<Node *, NodePath> &rename : *p_renames) {
 							NodePath old_path = rename.key->get_path();
 							NodePath new_path = rename.value;
@@ -2349,19 +2351,27 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 							StringName old_node_name = rename.key->get_name();
 							StringName new_node_name = rel_path[rel_path.size() - 1];
 
-							anim->editor_set_group_folded(new_node_name, anim->editor_is_group_folded(old_node_name));
-							anim->editor_set_group_folded(old_node_name, false);
+							if (anim->editor_is_group_folded(old_node_name)) {
+								anim->editor_set_group_folded(new_node_name, true);
+								anim->editor_set_group_folded(old_node_name, false);
+								folding_changed = true;
+							}
 						}
 
-						if (!anim->get_path().is_resource_file()) {
-							EditorNode::get_editor_folding().save_scene_folding(
-									EditorNode::get_singleton()->get_edited_scene(),
-									EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path());
-						} else {
-							EditorNode::get_editor_folding().save_resource_folding(
-									anim,
-									anim->get_path());
+						if (folding_changed) {
+							if (!anim->get_path().is_resource_file()) {
+								update_scene_folding = true;
+							} else {
+								EditorNode::get_editor_folding().save_resource_folding(
+										anim,
+										anim->get_path());
+							}
 						}
+					}
+					if (update_scene_folding) {
+						EditorNode::get_editor_folding().save_scene_folding(
+								EditorNode::get_singleton()->get_edited_scene(),
+								EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path());
 					}
 				}
 			}
