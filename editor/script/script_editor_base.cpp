@@ -283,7 +283,7 @@ TextEditorBase::EditMenus::EditMenus() {
 void TextEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position, bool p_show) {
 	context_menu->clear();
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
-		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("ui_emoji_and_symbols"), EDIT_EMOJI_AND_SYMBOL);
 		context_menu->add_separator();
 	}
 	context_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
