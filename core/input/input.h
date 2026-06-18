@@ -217,6 +217,8 @@ private:
 		HatMask last_hat = HatMask::CENTER;
 		int mapping = -1;
 		int hat_current = 0;
+		JoyModel model = JoyModel::UNKNOWN;
+		JoyDeviceType device_type = JoyDeviceType::UNKNOWN;
 		Dictionary info;
 		bool has_light = false;
 		bool has_vibration = false;
@@ -301,6 +303,7 @@ private:
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
 	void _update_joypad_features(int p_device);
+	JoyModel _get_joypad_model(const Joypad &p_joypad);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
@@ -385,6 +388,11 @@ public:
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
 
+	JoyModel get_joy_model(int p_device) const;
+	JoyScheme get_joy_scheme(int p_device) const;
+	JoyScheme get_joy_model_scheme(JoyModel p_model) const;
+	JoyDeviceType get_joy_device_type(int p_device) const;
+
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
 	Vector2 get_last_mouse_screen_velocity();
@@ -399,6 +407,9 @@ public:
 	void set_accelerometer(const Vector3 &p_accel);
 	void set_magnetometer(const Vector3 &p_magnetometer);
 	void set_gyroscope(const Vector3 &p_gyroscope);
+
+	void set_joy_device_type(int p_device, JoyDeviceType p_type);
+
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
 	void set_joy_features(int p_device, JoypadFeatures *p_features);
