@@ -111,6 +111,8 @@ public:
 	void set_is_missing(bool p_missing);
 	void set_is_grayed(bool p_grayed);
 
+	void update_title_size();
+
 	ProjectListItemControl();
 };
 

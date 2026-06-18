@@ -33,7 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/os/os.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
@@ -61,6 +60,7 @@ void EditorSceneTabs::_notification(int p_what) {
 			scene_tabs->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 
 			scene_list->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			_update_tab_titles();
 
 			scene_tab_add->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			scene_tab_add->add_theme_color_override("icon_normal_color", Color(0.6f, 0.6f, 0.6f, 0.8f));
@@ -416,12 +416,12 @@ void EditorSceneTabs::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
 			int next_tab = EditorNode::get_editor_data().get_edited_scene() + 1;
 			next_tab %= EditorNode::get_editor_data().get_edited_scene_count();
-			_scene_tab_changed(next_tab);
+			set_current_tab(next_tab);
 		}
 		if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
 			int next_tab = EditorNode::get_editor_data().get_edited_scene() - 1;
 			next_tab = next_tab >= 0 ? next_tab : EditorNode::get_editor_data().get_edited_scene_count() - 1;
-			_scene_tab_changed(next_tab);
+			set_current_tab(next_tab);
 		}
 	}
 }
@@ -500,9 +500,10 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_list->set_accessibility_name(TTRC("Show Opened Scenes List"));
 	scene_list->set_shortcut(ED_SHORTCUT("editor/show_opened_scenes_list", TTRC("Show Opened Scenes List"), KeyModifierMask::ALT | Key::T));
 	scene_list->get_popup()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	scene_list->get_popup()->set_search_bar_enabled_on_item_count(10);
+	scene_list->get_popup()->set_search_bar_enabled(true);
+	scene_list->get_popup()->set_search_bar_min_item_count(10);
 	scene_list->get_popup()->connect("about_to_popup", callable_mp(this, &EditorSceneTabs::_update_scene_list));
-	scene_list->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorSceneTabs::_scene_tab_changed));
+	scene_list->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorSceneTabs::set_current_tab));
 	tabbar_container->add_child(scene_list);
 
 	// On-hover tab preview.

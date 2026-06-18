@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-EnsureSConsVersion(4, 0)
+EnsureSConsVersion(4, 4)
 EnsurePythonVersion(3, 9)
 
 # System
@@ -986,6 +986,9 @@ else:  # GCC, Clang
             common_warnings += ["-Wno-return-type"]
         if cc_version_major >= 11:
             common_warnings += ["-Wenum-conversion"]
+        if cc_version_major >= 16:
+            # GCC 16 flags type-incompleteness assertions on their intended behavior, see GH-119269.
+            env.AppendUnique(CXXFLAGS=["-Wno-sfinae-incomplete"])
     elif methods.using_clang(env) or methods.using_emcc(env):
         common_warnings += ["-Wshadow-field-in-constructor", "-Wshadow-uncaptured-local"]
         # We often implement `operator<` for structs of pointers as a requirement
@@ -1196,10 +1199,6 @@ if env["compiledb"]:
         env["COMPILATIONDB_COMSTR"] = "$GENCOMSTR"
 
 if env["ninja"]:
-    if env.scons_version < (4, 2, 0):
-        print_error(f"The `ninja=yes` option requires SCons 4.2 or later, but your version is {scons_raw_version}.")
-        Exit(255)
-
     SetOption("experimental", "ninja")
     env["NINJA_FILE_NAME"] = env["ninja_file"]
     env["NINJA_DISABLE_AUTO_RUN"] = not env["ninja_auto_run"]

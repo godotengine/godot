@@ -983,6 +983,11 @@ RDD::ColorSpace RenderingDeviceDriverMetal::swap_chain_get_color_space(SwapChain
 	return swap_chain->color_space;
 }
 
+bool RenderingDeviceDriverMetal::swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) {
+	// Our minimum supported version of metal requires support for EDR.
+	return true;
+}
+
 void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	RenderingContextDriverMetal::Surface *metal_surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
@@ -1073,6 +1078,11 @@ static void update_uniform_info(const RenderingShaderContainerMetal::UniformData
 RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) {
 	Ref<RenderingShaderContainerMetal> shader_container = p_shader_container;
 	using RSCM = RenderingShaderContainerMetal;
+
+	if (shader_container->is_invalid()) {
+		WARN_PRINT("Metal shader container is invalid and will be recompiled.");
+		return RDD::ShaderID();
+	}
 
 	CharString shader_name = shader_container->shader_name;
 	RSCM::HeaderData &mtl_reflection_data = shader_container->mtl_reflection_data;
@@ -2509,7 +2519,7 @@ Error RenderingDeviceDriverMetal::_copy_queue_initialize() {
 	copy_queue_buffer.get()->setLabel(MTLSTR("Copy Command Scratch Buffer"));
 
 	if (__builtin_available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 1.0, *)) {
-		if (!OS::get_singleton()->get_processor_name().contains("Virtual")) {
+		if (device_properties->features.supports_residency_sets) {
 			MTL::ResidencySetDescriptor *rs_desc = MTL::ResidencySetDescriptor::alloc()->init();
 			rs_desc->setInitialCapacity(2);
 			rs_desc->setLabel(MTLSTR("Copy Queue Residency Set"));

@@ -32,19 +32,24 @@
 
 #include "scene/gui/dialogs.h"
 
+class EditorValidationPanel;
 class LineEdit;
 class ItemList;
 
 class EditorLayoutsDialog : public ConfirmationDialog {
 	GDCLASS(EditorLayoutsDialog, ConfirmationDialog);
 
+	bool save_mode = true;
+
 	LineEdit *name = nullptr;
+	EditorValidationPanel *validation = nullptr;
 	ItemList *layout_names = nullptr;
 	VBoxContainer *makevb = nullptr;
 
-	void _line_gui_input(const Ref<InputEvent> &p_event);
-	void _update_ok_disable_state();
 	void _deselect_layout_names();
+	void _validate_name();
+	void _multi_selected();
+	void _item_activated();
 
 protected:
 	static void _bind_methods();
@@ -54,5 +59,5 @@ protected:
 public:
 	EditorLayoutsDialog();
 
-	void set_name_line_enabled(bool p_enabled);
+	void set_save_mode_enabled(bool p_enabled);
 };

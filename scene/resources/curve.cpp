@@ -53,8 +53,10 @@ void Curve::set_point_count(int p_count) {
 		_points.resize(p_count);
 		mark_dirty();
 	} else {
+		const real_t default_offset = old_size == 0 ? CLAMP((real_t)0.0, _min_domain, _max_domain) : _max_domain;
+		const real_t default_value = CLAMP((real_t)0.0, _min_value, _max_value);
 		for (int i = p_count - old_size; i > 0; i--) {
-			_add_point(Vector2());
+			_add_point(Vector2(default_offset, default_value));
 		}
 	}
 	notify_property_list_changed();

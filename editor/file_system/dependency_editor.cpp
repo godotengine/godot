@@ -34,7 +34,6 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -1034,7 +1033,7 @@ void DependencyErrorDialog::_check_for_resolved() {
 
 				LocalVector<String> &stored_paths = owner_deps[owner_path];
 				for (const String &dep : deps) {
-					if (!errors_fixed && !FileAccess::exists(_get_resolved_dep_path(dep))) {
+					if (errors_fixed && !FileAccess::exists(_get_resolved_dep_path(dep))) {
 						errors_fixed = false;
 					}
 					stored_paths.push_back(_get_stored_dep_path(dep));

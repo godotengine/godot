@@ -4781,12 +4781,18 @@ bool DisplayServerWindows::window_is_hdr_output_supported(DisplayServerEnums::Wi
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	bool renderer_supports_hdr_output = false;
+	bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
 	if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
 		renderer_supports_hdr_output = true;
+		surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 	}
 #endif
 	if (!renderer_supports_hdr_output) {
+		return false;
+	}
+
+	if (!surface_supports_hdr_output) {
 		return false;
 	}
 
@@ -4801,13 +4807,20 @@ void DisplayServerWindows::window_request_hdr_output(const bool p_enable, Displa
 	ERR_FAIL_COND(!windows.has(p_window));
 	if (p_enable) {
 		bool renderer_supports_hdr_output = false;
+		bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
 		if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
 			renderer_supports_hdr_output = true;
+			surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 		}
 #endif
 		if (!renderer_supports_hdr_output) {
 			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
+			return;
+		}
+
+		if (!surface_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but the window does not support an HDR format.");
 			return;
 		}
 	}

@@ -378,7 +378,7 @@ void GridContainer::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GridContainer, v_separation);
 }
 
-Size2 GridContainer::get_minimum_size() const {
+Size2 GridContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	RBMap<int, int> col_minw;
 	RBMap<int, int> row_minh;
 
@@ -395,7 +395,7 @@ Size2 GridContainer::get_minimum_size() const {
 		int col = valid_controls_index % columns;
 		valid_controls_index++;
 
-		Size2i ms = c->get_bound_minimum_size();
+		Size2i ms = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
 		if (col_minw.has(col)) {
 			col_minw[col] = MAX(col_minw[col], ms.width);
 		} else {
@@ -425,4 +425,12 @@ Size2 GridContainer::get_minimum_size() const {
 	ms.width += theme_cache.h_separation * max_col;
 
 	return ms;
+}
+
+Size2 GridContainer::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 GridContainer::get_desired_size() const {
+	return _get_minimum_size(true);
 }

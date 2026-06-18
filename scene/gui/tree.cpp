@@ -97,9 +97,9 @@ void TreeItem::_changed_notify() {
 	}
 }
 
-void TreeItem::_cell_selected(int p_cell) {
+void TreeItem::_cell_selected(int p_cell, bool p_set_as_cursor) {
 	if (tree) {
-		tree->item_selected(p_cell, this);
+		tree->item_selected(p_cell, this, p_set_as_cursor);
 	}
 }
 
@@ -1358,9 +1358,9 @@ void TreeItem::set_as_cursor(int p_column) {
 	tree->queue_redraw();
 }
 
-void TreeItem::select(int p_column) {
+void TreeItem::select(int p_column, bool p_set_as_cursor) {
 	ERR_FAIL_INDEX(p_column, cells.size());
-	_cell_selected(p_column);
+	_cell_selected(p_column, p_set_as_cursor);
 }
 
 void TreeItem::deselect(int p_column) {
@@ -1927,7 +1927,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_selectable", "column"), &TreeItem::is_selectable);
 
 	ClassDB::bind_method(D_METHOD("is_selected", "column"), &TreeItem::is_selected);
-	ClassDB::bind_method(D_METHOD("select", "column"), &TreeItem::select);
+	ClassDB::bind_method(D_METHOD("select", "column", "set_as_cursor"), &TreeItem::select, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("deselect", "column"), &TreeItem::deselect);
 
 	ClassDB::bind_method(D_METHOD("set_editable", "column", "enabled"), &TreeItem::set_editable);
@@ -2351,6 +2351,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		int skip2 = 0;
 
 		bool is_row_hovered = (!cache.hover_header_row && cache.hover_item == p_item);
+		bool should_draw_row_rect = select_mode == SELECT_ROW;
 
 		for (int i = 0; i < columns.size(); i++) {
 			if (skip2) {
@@ -2435,7 +2436,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				cell_rect.size.x += theme_cache.h_separation;
 			}
 
-			if (i == 0 && select_mode == SELECT_ROW) {
+			if (should_draw_row_rect) {
 				if (p_item->cells[0].selected || is_row_hovered) {
 					const Rect2 content_rect = _get_content_rect();
 					Rect2i row_rect = Rect2i(Point2i(content_rect.position.x, item_rect.position.y), Size2i(content_rect.size.x, item_rect.size.y));
@@ -2463,6 +2464,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						}
 					}
 				}
+				should_draw_row_rect = false;
 			}
 
 			if (select_mode != SELECT_ROW) {
@@ -3833,6 +3835,15 @@ Rect2 Tree::_get_content_rect() const {
 
 void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+
+	using_native_touch = false;
+	if (p_event->get_device() != InputEvent::DEVICE_ID_EMULATION) {
+		Ref<InputEventScreenTouch> touch = p_event;
+		Ref<InputEventScreenDrag> drag = p_event;
+		if (touch.is_valid() || drag.is_valid()) {
+			using_native_touch = true;
+		}
+	}
 
 	Ref<InputEventKey> k = p_event;
 
@@ -5546,7 +5557,7 @@ void Tree::_notification(int p_what) {
 			if (popup_edited_item != nullptr) {
 				Rect2 rect = _get_item_focus_rect(popup_edited_item);
 
-				popup_editor->set_position(get_global_position() + rect.position);
+				popup_editor->set_position(get_screen_position() + rect.position);
 				popup_editor->set_size(rect.size);
 				popup_editor->child_controls_changed();
 			}
@@ -5667,7 +5678,7 @@ void Tree::item_changed(int p_column, TreeItem *p_item) {
 	queue_redraw();
 }
 
-void Tree::item_selected(int p_column, TreeItem *p_item) {
+void Tree::item_selected(int p_column, TreeItem *p_item, bool p_set_as_cursor) {
 	if (select_mode == SELECT_MULTI) {
 		if (!p_item->cells[p_column].selectable) {
 			return;
@@ -5676,9 +5687,11 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 		p_item->cells.write[p_column].selected = true;
 		//emit_signal(SNAME("multi_selected"),p_item,p_column,true); - NO this is for `TreeItem::select`
 
-		selected_col = p_column;
-		selected_item = p_item;
-		selected_button = -1;
+		if (p_set_as_cursor) {
+			selected_col = p_column;
+			selected_item = p_item;
+			selected_button = -1;
+		}
 	} else {
 		select_single_item(p_item, root, p_column);
 	}
@@ -6630,7 +6643,8 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 						}
 					} else if (pos.y < r_height / 4) {
 						// Near top edge.
-						if (current_item_depth > 0) { // Not root, since root cannot have siblings.
+						bool item_can_have_siblings = (p_item != root) && (current_item_depth > 0 || hide_root); // Disqualify root.
+						if (item_can_have_siblings) {
 							r_section = parent_allows_drop ? -1 : COLUMN_NOT_FOUND; // Sibling above.
 						} else {
 							r_section = item_allows_drop ? 0 : COLUMN_NOT_FOUND; // On root, or as last child of root.
@@ -6898,7 +6912,7 @@ int Tree::get_column_at_position(const Point2 &p_pos) const {
 }
 
 int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
-	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos)) {
+	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos) || !drop_mode_flags) {
 		return COLUMN_NOT_FOUND;
 	}
 
@@ -6939,7 +6953,7 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 }
 
 bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (drag_touching) {
+	if (using_native_touch) {
 		// Disable data drag & drop when touch dragging.
 		return false;
 	}
@@ -6948,7 +6962,7 @@ bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 }
 
 Variant Tree::get_drag_data(const Point2 &p_point) {
-	if (drag_touching) {
+	if (using_native_touch) {
 		// Disable data drag & drop when touch dragging.
 		return Variant();
 	}

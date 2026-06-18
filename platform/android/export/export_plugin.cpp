@@ -2106,11 +2106,6 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (!enabled_deprecated_plugins_names.is_empty() && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
 			}
-#ifdef ANDROID_ENABLED
-			if (gradle_build_enabled) {
-				return TTR("Support for \"Use Gradle Build\" on Android is currently experimental.");
-			}
-#endif // ANDROID_ENABLED
 		} else if (p_name == "gradle_build/compress_native_libraries") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (bool(p_preset->get("gradle_build/compress_native_libraries")) && !gradle_build_enabled) {
@@ -3608,7 +3603,7 @@ bool EditorExportPlatformAndroid::_is_clean_build_required(const Ref<EditorExpor
 	return have_plugins_changed || has_build_dir_changed || first_build;
 }
 
-Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	int export_format = int(p_preset->get("gradle_build/export_format"));
 	bool should_sign = p_preset->get("package/signed");
 	return export_project_helper(p_preset, p_debug, p_path, export_format, should_sign, p_flags);

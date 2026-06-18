@@ -36,7 +36,6 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/variant/typed_dictionary.h" // IWYU pragma: keep. For EditorDebuggerRemoteObjects.
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/doc_tools.h"
@@ -251,6 +250,20 @@ Size2 EditorProperty::get_minimum_size() const {
 		ms = ms.max(minsize);
 	}
 
+	if (!label.is_empty()) {
+		ms.width += theme_cache.font_offset + theme_cache.horizontal_separation;
+	}
+
+	// Always take the revert and pin values into account, since their state can be changed at whim
+	// and we don't want to update the min width every time this happens.
+	{
+		if (!is_read_only()) {
+			ms.width += theme_cache.revert_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
+		}
+
+		ms.width += theme_cache.pin_icon->get_width() + theme_cache.horizontal_separation;
+	}
+
 	if (keying) {
 		ms.width += theme_cache.key_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
 	}
@@ -324,7 +337,6 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Property: %s"), label));
-			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Property: %s"), label));
 
 			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorProperty::_accessibility_action_menu));
@@ -346,12 +358,13 @@ void EditorProperty::_notification(int p_what) {
 
 			{
 				int child_room = size.width * (1.0 - split_ratio) - name_fixed_size;
-				int separation = 4 * EDSCALE;
+				int separation = theme_cache.horizontal_separation;
 				int height = theme_cache.inspector_property_height;
+				int minw = 0;
 				int half_padding = theme_cache.padding / 2;
 				bool no_children = true;
 
-				//compute room needed
+				// Compute the room needed.
 				for (int i = 0; i < get_child_count(); i++) {
 					Control *c = as_sortable_control(get_child(i));
 					if (!c) {
@@ -363,7 +376,8 @@ void EditorProperty::_notification(int p_what) {
 
 					Size2 minsize = c->get_combined_minimum_size();
 					if (c != left_container && c != right_container) {
-						child_room = MAX(child_room, minsize.width);
+						minw = MAX(minw, minsize.width);
+						child_room = MAX(child_room, minw);
 						no_children = false;
 					}
 					height = MAX(height, minsize.height);
@@ -412,7 +426,7 @@ void EditorProperty::_notification(int p_what) {
 
 					if (no_children) {
 						// Use full padding to avoid overlapping with the revert button.
-						text_size -= key->get_width() + half_padding * 2 + separation;
+						text_size -= key->get_width() + half_padding * (2 * EDSCALE) + separation;
 					}
 				}
 
@@ -431,16 +445,27 @@ void EditorProperty::_notification(int p_what) {
 				// Account for the space needed on the outer side
 				// when any of the icons are visible.
 				if (keying || deletable) {
-					separation = theme_cache.horizontal_separation;
 					rect.size.x -= separation;
 
 					if (is_layout_rtl()) {
 						rect.position.x += separation;
 					}
 				}
+
+				// Guarantee that the minimum width
+				// of the properties are respected.
+				int diff = rect.size.x - minw;
+				if (diff < 0) {
+					text_size += diff;
+
+					rect.size.x = minw;
+					if (!is_layout_rtl()) {
+						rect.position.x += diff;
+					}
+				}
 			}
 
-			//set children
+			// Set the children's positions.
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = as_sortable_control(get_child(i));
 				if (!c) {
@@ -482,7 +507,7 @@ void EditorProperty::_notification(int p_what) {
 				fit_child_in_rect(left_container, Rect2(0, 0, size.x - right_size, ls.y));
 			}
 
-			queue_redraw(); //need to redraw text
+			queue_redraw(); // Need to redraw the text.
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -530,8 +555,8 @@ void EditorProperty::_notification(int p_what) {
 
 			int ofs = theme_cache.font_offset;
 			int text_limit = text_size - ofs;
-			int half_padding = EDITOR_GET("interface/theme/base_spacing");
-			int padding = half_padding * 2;
+			int padding = theme_cache.padding;
+			int half_padding = theme_cache.padding / 2;
 
 			int left_ofs = left_container->get_combined_minimum_size().x;
 			ofs += left_ofs;
@@ -549,7 +574,7 @@ void EditorProperty::_notification(int p_what) {
 
 				Point2 rtl_pos;
 				if (rtl) {
-					rtl_pos = Point2(size.width - check_rect.position.x - (checkbox->get_width() + padding + (1 * EDSCALE)), check_rect.position.y);
+					rtl_pos = Point2(size.width - check_rect.position.x - (checkbox->get_width() + padding + EDSCALE), check_rect.position.y);
 				}
 
 				Color color2(1, 1, 1);
@@ -581,12 +606,13 @@ void EditorProperty::_notification(int p_what) {
 
 			if (can_revert && !is_read_only()) {
 				const Ref<Texture2D> &reload_icon = theme_cache.revert_icon;
-				text_limit -= reload_icon->get_width() + half_padding + theme_cache.horizontal_separation;
-				revert_rect = Rect2(ofs + text_limit, 0, reload_icon->get_width() + padding + (1 * EDSCALE), size.height);
+				int rectw = reload_icon->get_width() + half_padding + theme_cache.horizontal_separation;
+				text_limit -= rectw;
+				revert_rect = Rect2(ofs + text_limit, 0, rectw, size.height);
 
 				Point2 rtl_pos;
 				if (rtl) {
-					rtl_pos = Point2(size.width - revert_rect.position.x - (reload_icon->get_width() + padding + (1 * EDSCALE)), revert_rect.position.y);
+					rtl_pos = Point2(size.width - revert_rect.position.x - rectw, revert_rect.position.y);
 				}
 
 				Color color2(1, 1, 1);
@@ -1835,7 +1861,6 @@ void EditorInspectorCategory::_notification(int p_what) {
 			}
 
 			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Category: %s"), label));
-			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Category: %s"), label));
 
 			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorInspectorCategory::_accessibility_action_menu));
@@ -1998,10 +2023,6 @@ void EditorInspectorCategory::_handle_menu_option(int p_option) {
 }
 
 void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
-	if (!is_favorite && doc_class_name.is_empty()) {
-		return;
-	}
-
 	if (menu == nullptr) {
 		menu = memnew(PopupMenu);
 
@@ -2011,8 +2032,10 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 			menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Category Values"), MENU_COPY_VALUE);
 			menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Category Values"), MENU_PASTE_VALUE);
 
-			menu->add_item(TTRC("Open Documentation"), MENU_OPEN_DOCS);
-			menu->set_item_disabled(-1, !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
+			if (!doc_class_name.is_empty()) {
+				menu->add_item(TTRC("Open Documentation"), MENU_OPEN_DOCS);
+				menu->set_item_disabled(-1, !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
+			}
 		}
 
 		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorCategory::_handle_menu_option));
@@ -2026,7 +2049,7 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 	if (menu_icon_dirty) {
 		if (is_favorite) {
 			menu->set_item_icon(menu->get_item_index(MENU_UNFAVORITE_ALL), theme_cache.icon_unfavorite);
-		} else {
+		} else if (!doc_class_name.is_empty()) {
 			menu->set_item_icon(menu->get_item_index(MENU_OPEN_DOCS), theme_cache.icon_help);
 		}
 		menu_icon_dirty = false;
@@ -2160,7 +2183,6 @@ void EditorInspectorSection::_notification(int p_what) {
 			}
 
 			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Section: %s"), label));
-			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Section: %s"), label));
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &EditorInspectorSection::_accessibility_action_collapse));
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &EditorInspectorSection::_accessibility_action_expand));
 		} break;
@@ -3531,7 +3553,6 @@ void ArrayPanelContainer::_notification(int p_what) {
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 
 			AccessibilityServer::get_singleton()->update_set_name(ae, get_meta("text"));
-			AccessibilityServer::get_singleton()->update_set_value(ae, get_meta("text"));
 
 			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &ArrayPanelContainer::_accessibility_action_menu));
@@ -3550,7 +3571,6 @@ void EditorInspectorArray::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Array: %s"), get_label()));
-			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Array: %s"), get_label()));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -5169,6 +5189,9 @@ void EditorInspector::update_tree() {
 		get_root_inspector()->set_follow_focus(true);
 	}
 	use_folding = old_use_folding_state;
+
+	// The minimum size of the properties could have changed.
+	update_minimum_size();
 }
 
 void EditorInspector::update_property(const String &p_prop) {

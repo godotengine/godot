@@ -173,7 +173,7 @@ void Range::set_value(double p_val) {
 	double prev_val = shared->val;
 	_set_value_no_signal(p_val);
 
-	if (shared->val != prev_val) {
+	if (shared->val != prev_val && !(Math::is_nan(shared->val) && Math::is_nan(prev_val))) {
 		shared->emit_value_changed();
 	}
 	queue_accessibility_update();
@@ -184,6 +184,10 @@ void Range::_set_value_no_signal(double p_val) {
 }
 
 double Range::_calc_value(double p_val, double p_step) const {
+	if (Math::is_nan(p_val)) {
+		return p_val;
+	}
+
 	if (p_step > 0) {
 		// Subtract min to support cases like min = 0.1, step = 0.2, snaps to 0.1, 0.3, 0.5, etc.
 		p_val = _snapped_r128(p_val - shared->min, p_step) + shared->min;

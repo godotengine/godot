@@ -44,7 +44,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
@@ -563,7 +562,7 @@ void Viewport::_update_viewport_path() {
 
 	for (ViewportTexture *E : viewport_textures) {
 		Node *loc_scene = E->get_local_scene();
-		if (loc_scene) {
+		if (loc_scene && loc_scene->is_inside_tree()) {
 			E->path = loc_scene->get_path_to(this);
 		}
 	}
@@ -1570,17 +1569,6 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 
 	while (p_control) {
 		tooltip = p_control->get_tooltip(pos);
-
-		// Temporary solution for PopupMenus.
-		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
-		if (menu) {
-			Ref<StyleBox> sb = menu->get_theme_stylebox(SceneStringName(panel));
-			if (sb.is_valid()) {
-				pos.y += sb->get_margin(SIDE_TOP);
-			}
-
-			tooltip = menu->get_tooltip(pos);
-		}
 
 		if (r_tooltip_owner) {
 			*r_tooltip_owner = p_control;

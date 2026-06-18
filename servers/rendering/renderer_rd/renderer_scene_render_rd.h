@@ -162,6 +162,9 @@ private:
 
 	uint32_t max_cluster_elements = 512;
 
+	/* Fog */
+	bool fog_use_legacy_blending = false;
+
 	/* Volumetric Fog */
 
 	uint32_t volumetric_fog_size = 128;
@@ -323,6 +326,10 @@ public:
 
 	_FORCE_INLINE_ bool material_use_debanding_get() const {
 		return material_use_debanding;
+	}
+
+	_FORCE_INLINE_ bool fog_use_legacy_blending_get() const {
+		return fog_use_legacy_blending;
 	}
 
 	int get_roughness_layers() const;

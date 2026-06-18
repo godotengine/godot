@@ -109,25 +109,27 @@ void OS_Android::initialize_core() {
 
 #ifdef TOOLS_ENABLED
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
-#else
+#else // TOOLS_ENABLED
+	FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
+#if defined(OVERRIDE_PATH_ENABLED)
 	if (use_apk_expansion) {
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
-	} else {
-		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
 	}
-#endif
+#endif // defined(OVERRIDE_PATH_ENABLED)
+#endif // TOOLS_ENABLED
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessFilesystemJAndroid>(FileAccess::ACCESS_FILESYSTEM);
 
 #ifdef TOOLS_ENABLED
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
-#else
+#else // TOOLS_ENABLED
+	DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
+#if defined(OVERRIDE_PATH_ENABLED)
 	if (use_apk_expansion) {
 		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
-	} else {
-		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
 	}
-#endif
+#endif // defined(OVERRIDE_PATH_ENABLED)
+#endif // TOOLS_ENABLED
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_FILESYSTEM);
 

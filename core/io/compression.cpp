@@ -291,7 +291,7 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int64_t p_max_d
 #endif
 	} else {
 		// This function only supports GZip and Deflate.
-		ERR_FAIL_COND_V(p_mode != MODE_DEFLATE && p_mode != MODE_GZIP, Z_ERRNO);
+		ERR_FAIL_COND_V_MSG(p_mode != MODE_DEFLATE && p_mode != MODE_GZIP, Z_ERRNO, "Dynamic decompression is only supported with gzip, DEFLATE, and Brotli compression methods.");
 
 		int ret;
 		z_stream strm;

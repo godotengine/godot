@@ -67,7 +67,7 @@ void BoxContainer::_resort() {
 		if (propagating_max_size) {
 			c->set_parent_maximum_size_cache(combined_max_size);
 		}
-		Size2i min_size = c->get_combined_minimum_size();
+		Size2i min_size = c->get_combined_minimum_size().ceil();
 		Size2i max_size = c->get_combined_maximum_size();
 		_MinSizeCache msc;
 
@@ -288,7 +288,7 @@ void BoxContainer::_resort() {
 	}
 }
 
-Size2 BoxContainer::get_minimum_size() const {
+Size2 BoxContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
@@ -301,7 +301,7 @@ Size2 BoxContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = c->get_bound_minimum_size();
+		Size2i size = p_use_desired_sizes ? c->get_bound_desired_size().ceil() : c->get_bound_minimum_size().ceil();
 
 		if (vertical) { /* VERTICAL */
 
@@ -324,6 +324,14 @@ Size2 BoxContainer::get_minimum_size() const {
 	}
 
 	return minimum;
+}
+
+Size2 BoxContainer::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 BoxContainer::get_desired_size() const {
+	return _get_minimum_size(true);
 }
 
 void BoxContainer::_notification(int p_what) {

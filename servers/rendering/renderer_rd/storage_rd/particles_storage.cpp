@@ -1394,6 +1394,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		if (particles->particle_buffer.is_null()) {
 			particles->particle_buffer = RD::get_singleton()->storage_buffer_create((sizeof(ParticleData) + userdata_count * sizeof(float) * 4) * total_amount);
 			particles->userdata_count = userdata_count;
+			particles->restart_request = true;
 		}
 
 		PackedByteArray data;

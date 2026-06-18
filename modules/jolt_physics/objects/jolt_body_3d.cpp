@@ -279,6 +279,14 @@ void JoltBody3D::_update_mass_properties() {
 	}
 }
 
+bool JoltBody3D::_needs_update_environmental_properties() const {
+	if (unlikely(!in_space())) {
+		return false;
+	}
+
+	return has_point_gravity || space->get_default_area_changed_count() != default_area_changed_count;
+}
+
 void JoltBody3D::_update_environmental_properties() {
 	if (unlikely(!in_space())) {
 		return;
@@ -349,6 +357,8 @@ void JoltBody3D::_update_environmental_properties() {
 			total_angular_damp = angular_damp;
 		} break;
 	}
+
+	default_area_changed_count = space->get_default_area_changed_count();
 }
 
 void JoltBody3D::_update_kinematic_transform() {
@@ -389,17 +399,12 @@ void JoltBody3D::_destroy_joint_constraints() {
 	}
 }
 
-void JoltBody3D::_exit_all_areas() {
+void JoltBody3D::_clear_areas() {
 	if (!in_space()) {
 		return;
 	}
 
-	for (JoltArea3D *area : areas) {
-		area->body_exited(jolt_body->GetID(), false);
-	}
-
 	areas.clear();
-
 	_areas_changed();
 }
 
@@ -435,7 +440,7 @@ void JoltBody3D::_space_changing() {
 	sleep_initially = is_sleeping();
 
 	_destroy_joint_constraints();
-	_exit_all_areas();
+	_clear_areas();
 	_dequeue_call_queries();
 }
 
@@ -1104,14 +1109,14 @@ void JoltBody3D::pre_step(float p_step) {
 		} break;
 		case PhysicsServer3D::BODY_MODE_RIGID:
 		case PhysicsServer3D::BODY_MODE_RIGID_LINEAR: {
-			if (has_point_gravity) {
+			if (_needs_update_environmental_properties()) {
 				_update_environmental_properties();
 			}
 
 			_integrate_forces(p_step);
 		} break;
 		case PhysicsServer3D::BODY_MODE_KINEMATIC: {
-			if (has_point_gravity) {
+			if (_needs_update_environmental_properties()) {
 				_update_environmental_properties();
 			}
 
@@ -1246,6 +1251,7 @@ void JoltBody3D::set_gravity_scale(float p_scale) {
 		jolt_settings->mGravityFactor = p_scale;
 	} else {
 		jolt_body->GetMotionPropertiesUnchecked()->SetGravityFactor(p_scale);
+		_update_environmental_properties();
 	}
 }
 

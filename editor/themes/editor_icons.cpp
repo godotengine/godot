@@ -131,6 +131,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	accent_color_icons.insert("GuiToggleOn");
 	accent_color_icons.insert("GuiToggleOnMirrored");
 	accent_color_icons.insert("PlayOverlay");
+	accent_color_icons.insert("Verified");
 
 	// Generate icons.
 	{

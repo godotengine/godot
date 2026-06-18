@@ -343,7 +343,7 @@
 			</description>
 		</signal>
 		<signal name="current_animation_changed">
-			<param index="0" name="name" type="StringName" />
+			<param index="0" name="anim_name" type="StringName" />
 			<description>
 				Emitted when [member current_animation] changes.
 			</description>
