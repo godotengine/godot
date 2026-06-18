@@ -449,22 +449,12 @@ bool SDL_DINPUT_JoystickInit(void)
             "C:/Windows/USB Vibration"
         };
         for (int i = 0; i < SDL_arraysize(directories) && !has_broken_EZFRD64DLL; ++i) {
-#ifndef SDL_FILESYSTEM_DUMMY
             int count = 0;
             char **files = SDL_GlobDirectory(directories[i], "*/EZFRD64.DLL", SDL_GLOB_CASEINSENSITIVE, &count);
             if (count > 0) {
                 has_broken_EZFRD64DLL = true;
             }
             SDL_free(files);
-#else
-            char path[128];
-            WIN32_FIND_DATAA file;
-            SDL_snprintf(path, sizeof(path), "%s%s", directories[i], "/EZFRD64.DLL");
-            HANDLE search_handle = FindFirstFileA(path, &file);
-            if (search_handle != INVALID_HANDLE_VALUE) {
-                has_broken_EZFRD64DLL = true;
-            }
-#endif
         }
         if (has_broken_EZFRD64DLL) {
             SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Broken EZFRD64.DLL detected, disabling DirectInput force feedback");

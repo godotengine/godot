@@ -59,7 +59,9 @@
 // #include "video/SDL_pixels_c.h"
 // #include "video/SDL_surface_c.h"
 // #include "video/SDL_video_c.h"
-// #include "filesystem/SDL_filesystem_c.h"
+#ifndef SDL_FILESYSTEM_DUMMY // Godot change
+#include "filesystem/SDL_filesystem_c.h"
+#endif
 // #include "io/SDL_asyncio_c.h"
 #ifdef SDL_PLATFORM_ANDROID
 #include "core/android/SDL_android.h"
@@ -300,8 +302,10 @@ void SDL_InitMainThread(void)
 
     SDL_InitTLSData();
     SDL_InitEnvironment();
-    SDL_InitTicks();
-    // SDL_InitFilesystem();
+	SDL_InitTicks();
+#ifndef SDL_FILESYSTEM_DUMMY // Godot change
+    SDL_InitFilesystem();
+#endif
 
     if (!done_info) {
         const char *value;
@@ -320,7 +324,9 @@ void SDL_InitMainThread(void)
 
 static void SDL_QuitMainThread(void)
 {
-    // SDL_QuitFilesystem();
+#ifndef SDL_FILESYSTEM_DUMMY // Godot change
+    SDL_QuitFilesystem();
+#endif
     SDL_QuitTicks();
     SDL_QuitEnvironment();
     SDL_QuitTLSData();

@@ -52,6 +52,9 @@ rm -f $target/core/windows/version.rc
 rm -f $target/core/linux/SDL_{fcitx,ibus,ime,system_theme,progressbar}.*
 rm -f $target/core/unix/SDL_{fribidi,gtk,libthai}.*
 
+mkdir $target/filesystem
+cp -rv filesystem/{*.{c,h},windows} $target/filesystem
+
 mkdir $target/haptic
 cp -rv haptic/{*.{c,h},darwin,dummy,hidapi,linux,windows} $target/haptic
 
@@ -74,6 +77,9 @@ cp -rv thread/{*.{c,h},pthread,windows} $target/thread
 # systhread_c.h is included by all these, but we should NOT compile the matching .c file.
 mkdir $target/thread/generic
 cp -v thread/generic/SDL_{syssem.c,{syscond,sysrwlock}*.{c,h},systhread_c.h} $target/thread/generic
+
+mkdir $target/time
+cp -rv time/{*.{c,h}} $target/time
 
 mkdir $target/timer
 cp -rv timer/{*.{c,h},unix,windows} $target/timer

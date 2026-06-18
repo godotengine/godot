@@ -1445,3 +1445,55 @@ index a4de28ef7e..1e8ee9d2cd 100644
  
  // An arbitrary limit so we don't have unbounded growth
  #define SDL_MAX_QUEUED_EVENTS 65535
+diff --git a/thirdparty/sdl/SDL.c b/thirdparty/sdl/SDL.c
+index 41216d3fd7..40982f2cfc 100644
+--- a/thirdparty/sdl/SDL.c
++++ b/thirdparty/sdl/SDL.c
+@@ -59,7 +59,9 @@
+ // #include "video/SDL_pixels_c.h"
+ // #include "video/SDL_surface_c.h"
+ // #include "video/SDL_video_c.h"
+-// #include "filesystem/SDL_filesystem_c.h"
++#ifndef SDL_FILESYSTEM_DUMMY // Godot change
++#include "filesystem/SDL_filesystem_c.h"
++#endif
+ // #include "io/SDL_asyncio_c.h"
+ #ifdef SDL_PLATFORM_ANDROID
+ #include "core/android/SDL_android.h"
+@@ -300,8 +302,10 @@ void SDL_InitMainThread(void)
+ 
+     SDL_InitTLSData();
+     SDL_InitEnvironment();
+-    SDL_InitTicks();
+-    // SDL_InitFilesystem();
++	SDL_InitTicks();
++#ifndef SDL_FILESYSTEM_DUMMY // Godot change
++    SDL_InitFilesystem();
++#endif
+ 
+     if (!done_info) {
+         const char *value;
+@@ -320,7 +324,9 @@ void SDL_InitMainThread(void)
+ 
+ static void SDL_QuitMainThread(void)
+ {
+-    // SDL_QuitFilesystem();
++#ifndef SDL_FILESYSTEM_DUMMY // Godot change
++    SDL_QuitFilesystem();
++#endif
+     SDL_QuitTicks();
+     SDL_QuitEnvironment();
+     SDL_QuitTLSData();
+diff --git a/thirdparty/sdl/time/SDL_time.c b/thirdparty/sdl/time/SDL_time.c
+index ba0a2cf7fa..8f1492b3df 100644
+--- a/thirdparty/sdl/time/SDL_time.c
++++ b/thirdparty/sdl/time/SDL_time.c
+@@ -66,7 +66,7 @@ bool SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat
+         *timeFormat = SDL_TIME_FORMAT_24HR;
+     }
+ 
+-    SDL_GetSystemTimeLocalePreferences(dateFormat, timeFormat);
++    // SDL_GetSystemTimeLocalePreferences(dateFormat, timeFormat);
+ 
+     return true;
+ }

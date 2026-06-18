@@ -1017,7 +1017,6 @@ Patches:
 - `0004-errno-include.patch` ([GH-108354](https://github.com/godotengine/godot/pull/108354))
 - `0005-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
 - `0006-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
-- `0010-fix-filesystem-usage.patch` ([GH-120373](https://github.com/godotengine/godot/pull/120373))
 
 
 ## spirv-cross

@@ -177,6 +177,9 @@ if env["builtin_sdl"]:
             "core/windows/SDL_windows.c",
             "core/windows/SDL_xinput.c",
             "core/windows/pch.c",
+            "filesystem/SDL_filesystem.c",  # Only used by Windows joystick driver at the moment.
+            "filesystem/windows/SDL_sysfilesystem.c",
+            "filesystem/windows/SDL_sysfsops.c",
             "haptic/windows/SDL_dinputhaptic.c",
             "haptic/windows/SDL_windowshaptic.c",
             "joystick/windows/SDL_dinputjoystick.c",
@@ -193,6 +196,7 @@ if env["builtin_sdl"]:
             "thread/windows/SDL_syssem.c",
             "thread/windows/SDL_systhread.c",
             "thread/windows/SDL_systls.c",
+            "time/SDL_time.c",  # Only used by Windows filesystem driver at the moment.
             "timer/windows/SDL_systimer.c",
         ]
 
