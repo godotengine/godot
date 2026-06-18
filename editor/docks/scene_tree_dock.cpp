@@ -2241,7 +2241,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 	return false;
 }
 
-void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims) {
+void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims, LocalVector<Pair<StringName, StringName>> *r_folded_group_renames) {
 	HashMap<Ref<Animation>, HashSet<int>> rem_anims;
 	if (!r_rem_anims) {
 		r_rem_anims = &rem_anims;
@@ -2262,6 +2262,28 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 	}
 
 	bool autorename_animation_tracks = bool(EDITOR_GET("editors/animation/autorename_animation_tracks"));
+
+	// key.get_path() of p_renames is like:
+	//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheOldName
+	// value of p_renames is like:
+	//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheNewName
+	LocalVector<Pair<StringName, StringName>> folded_group_renames;
+	if (!r_folded_group_renames) {
+		r_folded_group_renames = &folded_group_renames;
+		if (autorename_animation_tracks) {
+			for (const KeyValue<Node *, NodePath> &rename : *p_renames) {
+				if (rename.value.get_name_count() == 0) {
+					continue; // Node will be deleted (empty path), not renamed.
+				}
+				const StringName old_node_name = rename.key->get_name();
+				const StringName new_node_name = rename.value.get_name(rename.value.get_name_count() - 1);
+				if (old_node_name == new_node_name) {
+					continue; // Only the parent path changed; the name itself didn't.
+				}
+				r_folded_group_renames->push_back(Pair<StringName, StringName>(old_node_name, new_node_name));
+			}
+		}
+	}
 
 	AnimationMixer *mixer = Object::cast_to<AnimationMixer>(p_base);
 	if (autorename_animation_tracks && mixer) {
@@ -2349,33 +2371,14 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 							}
 						}
 
-						// key.get_path() of p_renames is like:
-						//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheOldName
-						// value of p_renames is like:
-						//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheNewName
-						for (const KeyValue<Node *, NodePath> &rename : *p_renames) {
-							NodePath old_path = rename.key->get_path();
-							NodePath new_path = rename.value;
-							if (new_path.is_empty()) {
-								continue;
+						// Prevent to rewrite an editable child's inner fold state by parent renaming.
+						if (p_base == edited_scene || (p_base->get_owner() == edited_scene && p_base->get_scene_file_path().is_empty())) {
+							for (const Pair<StringName, StringName> &group_rename : *r_folded_group_renames) {
+								if (anim->editor_is_group_folded(group_rename.first)) {
+									anim->editor_set_group_folded(group_rename.second, true);
+									anim->editor_set_group_folded(group_rename.first, false);
+								}
 							}
-							Vector<StringName> rel_path = old_path.rel_path_to(new_path).get_names();
-
-							StringName old_node_name = rename.key->get_name();
-							StringName new_node_name = rel_path[rel_path.size() - 1];
-
-							anim->editor_set_group_folded(new_node_name, anim->editor_is_group_folded(old_node_name));
-							anim->editor_set_group_folded(old_node_name, false);
-						}
-
-						if (!anim->get_path().is_resource_file()) {
-							EditorNode::get_editor_folding().save_scene_folding(
-									EditorNode::get_singleton()->get_edited_scene(),
-									EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path());
-						} else {
-							EditorNode::get_editor_folding().save_resource_folding(
-									anim,
-									anim->get_path());
 						}
 					}
 				}
@@ -2387,7 +2390,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 	_check_object_properties_recursive(p_base, p_base, p_renames);
 
 	for (int i = 0; i < p_base->get_child_count(); i++) {
-		perform_node_renames(p_base->get_child(i), p_renames, r_rem_anims);
+		perform_node_renames(p_base->get_child(i), p_renames, r_rem_anims, r_folded_group_renames);
 	}
 }
 
