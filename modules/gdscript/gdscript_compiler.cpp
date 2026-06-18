@@ -256,6 +256,39 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		return codegen.add_constant(p_expression->reduced_value);
 	}
 
+	static thread_local int call_depth = 0;
+
+	++call_depth;
+#ifdef SANITIZERS_ENABLED
+	{
+#else
+	if (unlikely(call_depth > 64)) { // Do not check stack size if call depth is small.
+#endif
+		void *bottom = nullptr;
+		void *top = nullptr;
+		void *frame = nullptr;
+		bool has_overflow = false;
+		if (Thread::get_stack_limits(&bottom, &top, &frame)) {
+#ifdef SANITIZERS_ENABLED
+			uint64_t alloc_size = 400 * 1024;
+#else
+			uint64_t alloc_size = 42 * 1024;
+#endif
+			has_overflow = ((uint64_t)frame - (uint64_t)top < alloc_size);
+		} else if (unlikely(call_depth > 400)) { // Unable to get stack size, use hardcoded call depth limit instead.
+			bottom = nullptr;
+			top = nullptr;
+			frame = nullptr;
+			has_overflow = true;
+		}
+		if (has_overflow) {
+			_set_error(vformat("Stack overflow. Check for infinite recursion in your script. Call depth: %d.", call_depth), p_expression);
+			r_error = ERR_COMPILATION_FAILED;
+			call_depth--;
+			return GDScriptCodeGenerator::Address();
+		}
+	}
+
 	GDScriptCodeGenerator *gen = codegen.generator;
 
 	switch (p_expression->type) {
@@ -274,11 +307,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				case GDScriptParser::IdentifierNode::LOCAL_BIND: {
 					// Try function parameters.
 					if (codegen.parameters.has(identifier)) {
+						call_depth--;
 						return codegen.parameters[identifier];
 					}
 
 					// Try local variables and constants.
 					if (!p_initializer && codegen.locals.has(identifier)) {
+						call_depth--;
 						return codegen.locals[identifier];
 					}
 				} break;
@@ -293,6 +328,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						// Get property.
 						GDScriptCodeGenerator::Address temp = codegen.add_temporary(_gdtype_from_datatype(p_expression->get_datatype(), codegen.script));
 						gen->write_get_member(temp, identifier);
+						call_depth--;
 						return temp;
 					}
 
@@ -305,10 +341,12 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								GDScriptCodeGenerator::Address temp = codegen.add_temporary(codegen.script->member_indices[identifier].data_type);
 								Vector<GDScriptCodeGenerator::Address> args; // No argument needed.
 								gen->write_call_self(temp, codegen.script->member_indices[identifier].getter, args);
+								call_depth--;
 								return temp;
 							} else {
 								// No getter or inside getter: direct member access.
 								int idx = codegen.script->member_indices[identifier].index;
+								call_depth--;
 								return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::MEMBER, idx, codegen.script->get_member_type(identifier));
 							}
 						}
@@ -331,6 +369,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									}
 
 									gen->write_get_named(temp, identifier, base);
+									call_depth--;
 									return temp;
 								}
 							}
@@ -353,6 +392,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
 
 							gen->write_get_named(temp, identifier, self);
+							call_depth--;
 							return temp;
 						}
 					}
@@ -367,6 +407,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 						while (scr) {
 							if (scr->constants.has(identifier)) {
+								call_depth--;
 								return codegen.add_constant(scr->constants[identifier]); // TODO: Get type here.
 							}
 							if (scr->native.is_valid()) {
@@ -380,6 +421,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							bool success = false;
 							int64_t constant = ClassDB::get_integer_constant(nc->get_name(), identifier, &success);
 							if (success) {
+								call_depth--;
 								return codegen.add_constant(constant);
 							}
 						}
@@ -398,6 +440,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								GDScriptCodeGenerator::Address class_addr(GDScriptCodeGenerator::Address::CLASS);
 								Vector<GDScriptCodeGenerator::Address> args; // No argument needed.
 								gen->write_call(temp, class_addr, scr->static_variables_indices[identifier].getter, args);
+								call_depth--;
 								return temp;
 							} else {
 								// No getter or inside getter: direct variable access.
@@ -405,6 +448,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								GDScriptCodeGenerator::Address _class = codegen.add_constant(scr);
 								int index = scr->static_variables_indices[identifier].index;
 								gen->write_get_static_variable(temp, _class, index);
+								call_depth--;
 								return temp;
 							}
 						}
@@ -424,10 +468,12 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							GDScriptCodeGenerator::Address global = codegen.add_temporary(_gdtype_from_datatype(in->get_datatype(), codegen.script));
 							int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];
 							gen->write_store_global(global, idx);
+							call_depth--;
 							return global;
 						} else {
 							int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];
 							Variant global = GDScriptLanguage::get_singleton()->get_global_array()[idx];
+							call_depth--;
 							return codegen.add_constant(global);
 						}
 					}
@@ -452,6 +498,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								if (err != OK) {
 									_set_error("Can't load global class " + String(identifier), p_expression);
 									r_error = ERR_COMPILATION_FAILED;
+									call_depth--;
 									return GDScriptCodeGenerator::Address();
 								}
 							} else {
@@ -459,11 +506,12 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								if (res.is_null()) {
 									_set_error("Can't load global class " + String(identifier) + ", cyclic reference?", p_expression);
 									r_error = ERR_COMPILATION_FAILED;
+									call_depth--;
 									return GDScriptCodeGenerator::Address();
 								}
 							}
 						}
-
+						call_depth--;
 						return codegen.add_constant(res);
 					}
 
@@ -471,6 +519,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(identifier)) {
 						GDScriptCodeGenerator::Address global = codegen.add_temporary(); // TODO: Get type.
 						gen->write_store_named_global(global, identifier);
+						call_depth--;
 						return global;
 					}
 #endif
@@ -481,12 +530,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			// Not found, error.
 			_set_error("Identifier not found: " + String(identifier), p_expression);
 			r_error = ERR_COMPILATION_FAILED;
+			call_depth--;
 			return GDScriptCodeGenerator::Address();
 		} break;
 		case GDScriptParser::Node::LITERAL: {
 			// Return constant.
 			const GDScriptParser::LiteralNode *cn = static_cast<const GDScriptParser::LiteralNode *>(p_expression);
-
+			call_depth--;
 			return codegen.add_constant(cn->value);
 		} break;
 		case GDScriptParser::Node::SELF: {
@@ -494,8 +544,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			if (codegen.function_node && codegen.function_node->is_static) {
 				_set_error("'self' not present in static function.", p_expression);
 				r_error = ERR_COMPILATION_FAILED;
+				call_depth--;
 				return GDScriptCodeGenerator::Address();
 			}
+			call_depth--;
 			return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF);
 		} break;
 		case GDScriptParser::Node::ARRAY: {
@@ -509,6 +561,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			for (int i = 0; i < an->elements.size(); i++) {
 				GDScriptCodeGenerator::Address val = _parse_expression(codegen, r_error, an->elements[i]);
 				if (r_error) {
+					call_depth--;
 					return GDScriptCodeGenerator::Address();
 				}
 				values.push_back(val);
@@ -525,7 +578,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					gen->pop_temporary();
 				}
 			}
-
+			call_depth--;
 			return result;
 		} break;
 		case GDScriptParser::Node::DICTIONARY: {
@@ -544,6 +597,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						// Python-style: key is any expression.
 						element = _parse_expression(codegen, r_error, dn->elements[i].key);
 						if (r_error) {
+							call_depth--;
 							return GDScriptCodeGenerator::Address();
 						}
 						break;
@@ -558,6 +612,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				element = _parse_expression(codegen, r_error, dn->elements[i].value);
 				if (r_error) {
+					call_depth--;
 					return GDScriptCodeGenerator::Address();
 				}
 
@@ -575,7 +630,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					gen->pop_temporary();
 				}
 			}
-
+			call_depth--;
 			return result;
 		} break;
 		case GDScriptParser::Node::CAST: {
@@ -597,7 +652,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			} else {
 				result = _parse_expression(codegen, r_error, cn->operand);
 			}
-
+			call_depth--;
 			return result;
 		} break;
 		case GDScriptParser::Node::CALL: {
@@ -615,6 +670,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			for (int i = 0; i < call->arguments.size(); i++) {
 				GDScriptCodeGenerator::Address arg = _parse_expression(codegen, r_error, call->arguments[i]);
 				if (r_error) {
+					call_depth--;
 					return GDScriptCodeGenerator::Address();
 				}
 				arguments.push_back(arg);
@@ -688,6 +744,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							} else {
 								GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
 								if (r_error) {
+									call_depth--;
 									return GDScriptCodeGenerator::Address();
 								}
 								if (is_awaited) {
@@ -724,11 +781,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						} else {
 							_set_error("Cannot call something that isn't a function.", call->callee);
 							r_error = ERR_COMPILATION_FAILED;
+							call_depth--;
 							return GDScriptCodeGenerator::Address();
 						}
 					} else {
 						_set_error("Compiler bug (please report): incorrect callee type in call node.", call->callee);
 						r_error = ERR_COMPILATION_FAILED;
+						call_depth--;
 						return GDScriptCodeGenerator::Address();
 					}
 				}
@@ -739,6 +798,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					gen->pop_temporary();
 				}
 			}
+			call_depth--;
 			return result;
 		} break;
 		case GDScriptParser::Node::GET_NODE: {
@@ -751,13 +811,14 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			MethodBind *get_node_method = ClassDB::get_method("Node", "get_node");
 			gen->write_call_method_bind_validated(result, GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), get_node_method, args);
-
+			call_depth--;
 			return result;
 		} break;
 		case GDScriptParser::Node::PRELOAD: {
 			const GDScriptParser::PreloadNode *preload = static_cast<const GDScriptParser::PreloadNode *>(p_expression);
 
 			// Add resource as constant.
+			call_depth--;
 			return codegen.add_constant(preload->resource);
 		} break;
 		case GDScriptParser::Node::AWAIT: {
@@ -769,6 +830,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			GDScriptCodeGenerator::Address argument = _parse_expression(codegen, r_error, await->to_await);
 			awaited_node = previous_awaited_node;
 			if (r_error) {
+				call_depth--;
 				return GDScriptCodeGenerator::Address();
 			}
 
@@ -778,6 +840,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				gen->pop_temporary();
 			}
 
+			call_depth--;
 			return result;
 		} break;
 		// Indexing operator.
@@ -787,6 +850,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
 			if (r_error) {
+				call_depth--;
 				return GDScriptCodeGenerator::Address();
 			}
 
@@ -803,6 +867,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						String n = identifier->name;
 						_set_error("Must use '" + n + "' instead of 'self." + n + "' in getter.", identifier);
 						r_error = ERR_COMPILATION_FAILED;
+						call_depth--;
 						return GDScriptCodeGenerator::Address();
 					}
 #endif
@@ -811,6 +876,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						// Remove result temp as we don't need it.
 						gen->pop_temporary();
 						// Faster than indexing self (as if no self. had been used).
+						call_depth--;
 						return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::MEMBER, MI->value.index, _gdtype_from_datatype(subscript->get_datatype(), codegen.script));
 					}
 				}
@@ -826,6 +892,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					// Regular indexing.
 					index = _parse_expression(codegen, r_error, subscript->index);
 					if (r_error) {
+						call_depth--;
 						return GDScriptCodeGenerator::Address();
 					}
 				}
@@ -843,7 +910,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			if (base.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 				gen->pop_temporary();
 			}
-
+			call_depth--;
 			return result;
 		} break;
 		case GDScriptParser::Node::UNARY_OPERATOR: {
@@ -853,6 +920,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			GDScriptCodeGenerator::Address operand = _parse_expression(codegen, r_error, unary->operand);
 			if (r_error) {
+				call_depth--;
 				return GDScriptCodeGenerator::Address();
 			}
 
@@ -861,7 +929,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			if (operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 				gen->pop_temporary();
 			}
-
+			call_depth--;
 			return result;
 		}
 		case GDScriptParser::Node::BINARY_OPERATOR: {
@@ -916,6 +984,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					}
 				}
 			}
+			call_depth--;
 			return result;
 		} break;
 		case GDScriptParser::Node::TERNARY_OPERATOR: {
@@ -927,6 +996,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			GDScriptCodeGenerator::Address condition = _parse_expression(codegen, r_error, ternary->condition);
 			if (r_error) {
+				call_depth--;
 				return GDScriptCodeGenerator::Address();
 			}
 			gen->write_ternary_condition(condition);
@@ -937,6 +1007,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			GDScriptCodeGenerator::Address true_expr = _parse_expression(codegen, r_error, ternary->true_expr);
 			if (r_error) {
+				call_depth--;
 				return GDScriptCodeGenerator::Address();
 			}
 			gen->write_ternary_true_expr(true_expr);
@@ -946,6 +1017,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			GDScriptCodeGenerator::Address false_expr = _parse_expression(codegen, r_error, ternary->false_expr);
 			if (r_error) {
+				call_depth--;
 				return GDScriptCodeGenerator::Address();
 			}
 			gen->write_ternary_false_expr(false_expr);
@@ -954,7 +1026,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			gen->write_end_ternary();
-
+			call_depth--;
 			return result;
 		} break;
 		case GDScriptParser::Node::TYPE_TEST: {
@@ -964,6 +1036,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			GDScriptCodeGenerator::Address operand = _parse_expression(codegen, r_error, type_test->operand);
 			GDScriptDataType test_type = _gdtype_from_datatype(type_test->test_datatype, codegen.script, false);
 			if (r_error) {
+				call_depth--;
 				return GDScriptCodeGenerator::Address();
 			}
 
@@ -976,7 +1049,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			if (operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 				gen->pop_temporary();
 			}
-
+			call_depth--;
 			return result;
 		} break;
 		case GDScriptParser::Node::ASSIGNMENT: {
@@ -992,6 +1065,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						String n = subscript->attribute->name;
 						_set_error("Must use '" + n + "' instead of 'self." + n + "' in setter.", subscript);
 						r_error = ERR_COMPILATION_FAILED;
+						call_depth--;
 						return GDScriptCodeGenerator::Address();
 					}
 				}
@@ -1071,6 +1145,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				const bool base_is_shared = Variant::is_type_shared(base.type.builtin_type);
 
 				if (r_error) {
+					call_depth--;
 					return GDScriptCodeGenerator::Address();
 				}
 
@@ -1110,6 +1185,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					} else {
 						key = _parse_expression(codegen, r_error, subscript_elem->index);
 						if (r_error) {
+							call_depth--;
 							return GDScriptCodeGenerator::Address();
 						}
 						gen->write_get(value, key, prev_base);
@@ -1123,6 +1199,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				// Get value to assign.
 				GDScriptCodeGenerator::Address assigned = _parse_expression(codegen, r_error, assignment->assigned_value);
 				if (r_error) {
+					call_depth--;
 					return GDScriptCodeGenerator::Address();
 				}
 				// Get the key if needed.
@@ -1133,6 +1210,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				} else {
 					key = _parse_expression(codegen, r_error, subscript->index);
 					if (r_error) {
+						call_depth--;
 						return GDScriptCodeGenerator::Address();
 					}
 				}
@@ -1251,6 +1329,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				// Assignment to member property.
 				GDScriptCodeGenerator::Address assigned_value = _parse_expression(codegen, r_error, assignment->assigned_value);
 				if (r_error) {
+					call_depth--;
 					return GDScriptCodeGenerator::Address();
 				}
 
@@ -1281,6 +1360,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				if (assignment->assignee->type != GDScriptParser::Node::IDENTIFIER) {
 					_set_error("Compiler bug (please report): Expected the assignee to be an identifier here.", assignment->assignee);
 					r_error = ERR_COMPILATION_FAILED;
+					call_depth--;
 					return GDScriptCodeGenerator::Address();
 				}
 				GDScriptCodeGenerator::Address member;
@@ -1332,12 +1412,14 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				} else {
 					target = _parse_expression(codegen, r_error, assignment->assignee);
 					if (r_error) {
+						call_depth--;
 						return GDScriptCodeGenerator::Address();
 					}
 				}
 
 				GDScriptCodeGenerator::Address assigned_value = _parse_expression(codegen, r_error, assignment->assigned_value);
 				if (r_error) {
+					call_depth--;
 					return GDScriptCodeGenerator::Address();
 				}
 
@@ -1391,6 +1473,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					gen->pop_temporary(); // Pop the target to assignment.
 				}
 			}
+			call_depth--;
 			return GDScriptCodeGenerator::Address(); // Assignment does not return a value.
 		} break;
 		case GDScriptParser::Node::LAMBDA: {
@@ -1402,12 +1485,14 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			for (int i = 0; i < lambda->captures.size(); i++) {
 				captures.write[i] = _parse_expression(codegen, r_error, lambda->captures[i]);
 				if (r_error) {
+					call_depth--;
 					return GDScriptCodeGenerator::Address();
 				}
 			}
 
 			GDScriptFunction *function = _parse_function(r_error, codegen.script, codegen.class_node, lambda->function, false, true);
 			if (r_error) {
+				call_depth--;
 				return GDScriptCodeGenerator::Address();
 			}
 
@@ -1419,12 +1504,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					gen->pop_temporary();
 				}
 			}
-
+			call_depth--;
 			return result;
 		} break;
 		default: {
 			_set_error("Compiler bug (please report): Unexpected node in parse tree while parsing expression.", p_expression); // Unreachable code.
 			r_error = ERR_COMPILATION_FAILED;
+			call_depth--;
 			return GDScriptCodeGenerator::Address();
 		} break;
 	}
