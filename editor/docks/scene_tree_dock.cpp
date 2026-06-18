@@ -4729,6 +4729,8 @@ void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
 			favorite_node_shortcuts->get_child(i)->queue_free();
 		}
 
+		bool favorite_node_shortcuts_empty = true;
+
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites.Node"), FileAccess::READ);
 		if (f.is_valid()) {
 			while (!f->eof_reached()) {
@@ -4737,6 +4739,7 @@ void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
 				if (!l.is_empty()) {
 					Button *button = memnew(Button);
 					favorite_node_shortcuts->add_child(button);
+					favorite_node_shortcuts_empty = false;
 					button->set_text(l);
 					button->set_clip_text(true);
 					String name = l.get_slicec(' ', 0);
@@ -4749,17 +4752,13 @@ void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
 			}
 		}
 
-		if (!favorite_node_shortcuts->is_visible_in_tree()) {
-			favorite_node_shortcuts->show();
-			beginner_node_shortcuts->hide();
-		}
+		favorite_node_shortcuts->set_visible(!favorite_node_shortcuts_empty);
+		beginner_node_shortcuts->hide();
 	} else {
-		if (!beginner_node_shortcuts->is_visible_in_tree()) {
-			beginner_node_shortcuts->show();
-			favorite_node_shortcuts->hide();
-		}
-		button_clipboard->set_visible(!node_clipboard.is_empty());
+		beginner_node_shortcuts->show();
+		favorite_node_shortcuts->hide();
 	}
+	button_clipboard->set_visible(!node_clipboard.is_empty());
 }
 
 void SceneTreeDock::_favorite_root_selected(const String &p_class) {
