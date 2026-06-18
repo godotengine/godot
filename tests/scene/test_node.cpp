@@ -33,11 +33,12 @@
 TEST_FORCE_LINK(test_node)
 
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
+#include "scene/main/window.h" // IWYU pragma: keep. Needed for get_root()
 #include "scene/resources/packed_scene.h"
 #include "tests/test_utils.h"
 
@@ -916,6 +917,134 @@ TEST_CASE("[SceneTree][Node] Test the process priority") {
 	memdelete(node2);
 	memdelete(node3);
 	memdelete(node4);
+}
+
+bool check_variants_equal(Variant p_original, Variant p_found);
+
+bool check_arrays_equal(Array p_original, Array p_found) {
+	if (p_original.size() != p_found.size()) {
+		return false;
+	}
+	for (int i = 0; i < p_found.size(); i++) {
+		Variant original_elem = p_original[i];
+		Variant found_elem = p_found[i];
+		if (!check_variants_equal(original_elem, found_elem)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool check_dictionaries_equal(Dictionary p_original, Dictionary p_found) {
+	if (p_original.size() != p_found.size()) {
+		return false;
+	}
+	for (KeyValue original_kv : p_original) {
+		bool found_matching = false;
+		for (KeyValue found_kv : p_found) {
+			if (check_variants_equal(original_kv.key, found_kv.key) && check_variants_equal(original_kv.value, found_kv.value)) {
+				found_matching = true;
+			}
+		}
+		if (!found_matching) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool check_variants_equal(Variant p_original, Variant p_found) {
+	Variant::Type type = p_original.get_type();
+	if (type != p_found.get_type()) {
+		return false;
+	}
+	switch (type) {
+		case Variant::ARRAY:
+			return check_arrays_equal(p_original, p_found);
+			break;
+		case Variant::DICTIONARY:
+			return check_dictionaries_equal(p_original, p_found);
+			break;
+		default:
+			return p_original == p_found;
+	}
+}
+
+TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
+	Node *scene = memnew(Node);
+	scene->set_name("TestScene");
+	SceneTree::get_singleton()->get_root()->add_child(scene);
+
+	Node *node_with_props = memnew(Node);
+	node_with_props->set_name("node_with_props");
+
+	Node *node_one = memnew(Node);
+	Node *node_two = memnew(Node);
+
+	scene->add_child(node_with_props);
+	scene->add_child(node_one);
+	scene->add_child(node_two);
+
+	NodePath path = node_with_props->get_path();
+
+	Array array_property;
+	Array inner_array;
+	inner_array.append(node_one->get_path());
+	inner_array.append(node_two);
+	array_property.append(inner_array);
+
+	node_with_props->set_meta("nested_array", array_property);
+
+	Dictionary dictionary_property;
+	Dictionary inner_dictionary;
+
+	inner_dictionary[node_two->get_path()] = node_one;
+	inner_dictionary[node_two->get_path()] = node_one->get_path();
+	inner_dictionary[node_one] = node_two;
+	dictionary_property["inner"] = inner_dictionary;
+
+	node_with_props->set_meta("nested_dictionary", dictionary_property);
+
+	Ref<PackedScene> packed_scene;
+	packed_scene.instantiate();
+	packed_scene->pack(scene);
+
+	String binary_scene_path = TestUtils::get_temp_path("nested_test_scene.scn");
+	ResourceSaver::save(packed_scene, binary_scene_path);
+
+	String text_scene_path = TestUtils::get_temp_path("nested_test_scene.tscn");
+	ResourceSaver::save(packed_scene, text_scene_path);
+#define CHECK_PARSED_SCENE(p_scene) \
+	parsed_node = p_scene->instantiate(); \
+	SceneTree::get_singleton()->get_root()->add_child(parsed_node); \
+	CHECK(parsed_node != nullptr); \
+\
+	parsed_node_with_props = parsed_node->get_node(path); \
+	CHECK(parsed_node_with_props == node_with_props); \
+\
+	parsed_nested_array = parsed_node_with_props->get_meta("nested_array"); \
+	CHECK(check_variants_equal(array_property, parsed_nested_array)); \
+\
+	parsed_nested_dictionary = parsed_node_with_props->get_meta("nested_dictionary"); \
+	CHECK(check_variants_equal(dictionary_property, parsed_nested_dictionary));
+
+	Node *parsed_node;
+	Node *parsed_node_with_props;
+	Dictionary parsed_nested_dictionary;
+	Array parsed_nested_array;
+
+	Ref<PackedScene> text_packed_scene = ResourceLoader::load(text_scene_path, "PackedScene");
+	CHECK(text_packed_scene.is_valid());
+	CHECK_PARSED_SCENE(text_packed_scene);
+
+	Ref<PackedScene> binary_packed_scene = ResourceLoader::load(binary_scene_path, "PackedScene");
+	CHECK(binary_packed_scene.is_valid());
+	CHECK_PARSED_SCENE(binary_packed_scene);
+
+	memdelete(node_with_props);
+	memdelete(node_one);
+	memdelete(node_two);
+	memdelete(scene);
 }
 
 } // namespace TestNode
