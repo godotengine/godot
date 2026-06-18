@@ -232,7 +232,90 @@ static RenderingDeviceCommons::DataFormat spv_image_format_to_data_format(const 
 	return RDC::DATA_FORMAT_MAX;
 }
 
-Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<RDC::ShaderStageSPIRVData> p_spirv, ReflectShader &r_shader) {
+static String spv_reflect_name_or_unnamed(const char *p_name) {
+	return p_name != nullptr ? String::utf8(p_name) : String("<unnamed>");
+}
+
+static RenderingDeviceCommons::ShaderMember spv_block_variable_to_shader_member(const SpvReflectBlockVariable &p_variable) {
+	RenderingDeviceCommons::ShaderMember member;
+	member.name = p_variable.name != nullptr ? String::utf8(p_variable.name) : String();
+	member.offset = p_variable.offset;
+	member.size = p_variable.size;
+	member.padded_size = p_variable.padded_size;
+	if (p_variable.type_description != nullptr) {
+		member.type = uint32_t(p_variable.type_description->op);
+	}
+	member.numeric_width = p_variable.numeric.scalar.width;
+	member.numeric_signedness = p_variable.numeric.scalar.signedness;
+	member.vector_component_count = p_variable.numeric.vector.component_count;
+	member.matrix_column_count = p_variable.numeric.matrix.column_count;
+	member.matrix_row_count = p_variable.numeric.matrix.row_count;
+	member.matrix_stride = p_variable.numeric.matrix.stride;
+	member.array_dimensions.resize(p_variable.array.dims_count);
+	for (uint32_t i = 0; i < p_variable.array.dims_count; i++) {
+		member.array_dimensions.write[i] = p_variable.array.dims[i];
+	}
+	member.members.resize(p_variable.member_count);
+	for (uint32_t i = 0; i < p_variable.member_count; i++) {
+		member.members.write[i] = spv_block_variable_to_shader_member(p_variable.members[i]);
+	}
+	return member;
+}
+
+RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::make_shader_reflection(const ReflectShader &p_reflection) const {
+	RenderingDeviceCommons::ShaderReflection shader_refl;
+	shader_refl.push_constant_name = p_reflection.push_constant_name;
+	shader_refl.push_constant_size = p_reflection.push_constant_size;
+	shader_refl.push_constant_members = p_reflection.push_constant_members;
+	shader_refl.push_constant_stages = p_reflection.push_constant_stages;
+	shader_refl.vertex_input_mask = p_reflection.vertex_input_mask;
+	shader_refl.fragment_output_mask = p_reflection.fragment_output_mask;
+	shader_refl.pipeline_type = p_reflection.pipeline_type;
+	shader_refl.has_multiview = p_reflection.has_multiview;
+	shader_refl.has_dynamic_buffers = p_reflection.has_dynamic_buffers;
+	shader_refl.compute_local_size[0] = p_reflection.compute_local_size[0];
+	shader_refl.compute_local_size[1] = p_reflection.compute_local_size[1];
+	shader_refl.compute_local_size[2] = p_reflection.compute_local_size[2];
+	shader_refl.uniform_sets.resize(p_reflection.uniform_sets.size());
+
+	for (uint32_t i = 0; i < p_reflection.uniform_sets.size(); i++) {
+		Vector<RenderingDeviceCommons::ShaderUniform> &uniform_set = shader_refl.uniform_sets.ptrw()[i];
+		uniform_set.resize(p_reflection.uniform_sets[i].size());
+		for (uint32_t j = 0; j < p_reflection.uniform_sets[i].size(); j++) {
+			const ReflectUniform &reflected_uniform = p_reflection.uniform_sets[i][j];
+			RenderingDeviceCommons::ShaderUniform &uniform = uniform_set.ptrw()[j];
+			uniform.name = reflected_uniform.name;
+			uniform.type = reflected_uniform.type;
+			uniform.writable = reflected_uniform.writable;
+			uniform.length = reflected_uniform.length;
+			uniform.binding = reflected_uniform.binding;
+			uniform.stages = reflected_uniform.stages;
+			uniform.members = reflected_uniform.members;
+		}
+	}
+
+	shader_refl.specialization_constants.resize(p_reflection.specialization_constants.size());
+	for (uint32_t i = 0; i < p_reflection.specialization_constants.size(); i++) {
+		const ReflectSpecializationConstant &reflected_spec = p_reflection.specialization_constants[i];
+		RenderingDeviceCommons::ShaderSpecializationConstant &spec = shader_refl.specialization_constants.ptrw()[i];
+		spec.name = reflected_spec.name;
+		spec.type = reflected_spec.type;
+		spec.constant_id = reflected_spec.constant_id;
+		spec.int_value = reflected_spec.int_value;
+		spec.stages = reflected_spec.stages;
+	}
+
+	for (uint32_t i = 0; i < RenderingDeviceCommons::SHADER_STAGE_MAX; i++) {
+		if (p_reflection.stages_bits.has_flag(RenderingDeviceCommons::ShaderStage(1U << i))) {
+			shader_refl.stages_vector.push_back(RenderingDeviceCommons::ShaderStage(i));
+			shader_refl.stages_bits.set_flag(RenderingDeviceCommons::ShaderStage(1U << i));
+		}
+	}
+
+	return shader_refl;
+}
+
+Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<RDC::ShaderStageSPIRVData> p_spirv, ReflectShader &r_shader, bool p_full_reflection) {
 	ReflectShader &reflection = r_shader;
 
 	shader_name = p_shader_name.utf8();
@@ -339,6 +422,9 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 					const SpvReflectDescriptorBinding &binding = *bindings[j];
 
 					ReflectUniform uniform;
+					if (p_full_reflection) {
+						uniform.name = binding.name != nullptr ? String::utf8(binding.name) : String();
+					}
 					uniform.set_spv_reflect(stage, &binding);
 
 					bool need_array_dimensions = false;
@@ -424,6 +510,12 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 						}
 					} else if (need_block_size) {
 						uniform.length = binding.block.size;
+						if (p_full_reflection) {
+							uniform.members.resize(binding.block.member_count);
+							for (uint32_t k = 0; k < binding.block.member_count; k++) {
+								uniform.members.write[k] = spv_block_variable_to_shader_member(binding.block.members[k]);
+							}
+						}
 					} else {
 						uniform.length = 0;
 					}
@@ -446,7 +538,7 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 					uint32_t set = binding.set;
 
 					ERR_FAIL_COND_V_MSG(set >= RDC::MAX_UNIFORM_SETS, FAILED,
-							"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + binding.name + "' uses a set (" + itos(set) + ") index larger than what is supported (" + itos(RDC::MAX_UNIFORM_SETS) + ").");
+							"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + spv_reflect_name_or_unnamed(binding.name) + "' uses a set (" + itos(set) + ") index larger than what is supported (" + itos(RDC::MAX_UNIFORM_SETS) + ").");
 
 					if (set < (uint32_t)reflection.uniform_sets.size()) {
 						// Check if this already exists.
@@ -455,15 +547,15 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 							if (reflection.uniform_sets[set][k].binding == uniform.binding) {
 								// Already exists, verify that it's the same type.
 								ERR_FAIL_COND_V_MSG(reflection.uniform_sets[set][k].type != uniform.type, FAILED,
-										"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(uniform.binding) + " with different uniform type.");
+										"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + spv_reflect_name_or_unnamed(binding.name) + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(uniform.binding) + " with different uniform type.");
 
 								// Also, verify that it's the same size.
 								ERR_FAIL_COND_V_MSG(reflection.uniform_sets[set][k].length != uniform.length, FAILED,
-										"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(uniform.binding) + " with different uniform size.");
+										"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + spv_reflect_name_or_unnamed(binding.name) + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(uniform.binding) + " with different uniform size.");
 
 								// Also, verify that it has the same writability.
 								ERR_FAIL_COND_V_MSG(reflection.uniform_sets[set][k].writable != uniform.writable, FAILED,
-										"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(uniform.binding) + " with different writability.");
+										"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + spv_reflect_name_or_unnamed(binding.name) + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(uniform.binding) + " with different writability.");
 
 								// Just append stage mask and return.
 								reflection.uniform_sets[set][k].stages.set_flag(uniform_stage_flags);
@@ -507,6 +599,9 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 						int32_t existing = -1;
 						ReflectSpecializationConstant sconst;
 						SpvReflectSpecializationConstant *spc = spec_constants[j];
+						if (p_full_reflection) {
+							sconst.name = spc->name != nullptr ? String::utf8(spc->name) : String();
+						}
 						sconst.set_spv_reflect(stage, spc);
 
 						if (spc->default_value_size != 4) {
@@ -636,6 +731,13 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 						"Reflection of SPIR-V shader stage '" + String(RDC::SHADER_STAGE_NAMES[p_spirv[i].shader_stage]) + "': Push constant block must be the same across shader stages.");
 
 				reflection.push_constant_size = pconstants[0]->size;
+				if (p_full_reflection && reflection.push_constant_members.is_empty()) {
+					reflection.push_constant_name = pconstants[0]->name != nullptr ? String::utf8(pconstants[0]->name) : String();
+					reflection.push_constant_members.resize(pconstants[0]->member_count);
+					for (uint32_t j = 0; j < pconstants[0]->member_count; j++) {
+						reflection.push_constant_members.write[j] = spv_block_variable_to_shader_member(pconstants[0]->members[j]);
+					}
+				}
 				reflection.push_constant_stages.set_flag(uniform_stage_flags);
 
 				//print_line("Stage: " + String(RDC::SHADER_STAGE_NAMES[stage]) + " push constant of size=" + itos(push_constant.push_constant_size));
@@ -711,6 +813,18 @@ bool RenderingShaderContainer::set_code_from_spirv(const String &p_shader_name, 
 	ReflectShader shader;
 	ERR_FAIL_COND_V(reflect_spirv(p_shader_name, p_spirv, shader) != OK, false);
 	return _set_code_from_spirv(shader);
+}
+
+bool RenderingShaderContainer::set_reflection_from_spirv(const String &p_shader_name, Span<RDC::ShaderStageSPIRVData> p_spirv) {
+	ReflectShader shader;
+	ERR_FAIL_COND_V(reflect_spirv(p_shader_name, p_spirv, shader) != OK, false);
+	return true;
+}
+
+RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_reflection_from_spirv(const String &p_shader_name, Span<RDC::ShaderStageSPIRVData> p_spirv) {
+	ReflectShader shader;
+	ERR_FAIL_COND_V(reflect_spirv(p_shader_name, p_spirv, shader, true) != OK, RDC::ShaderReflection());
+	return make_shader_reflection(shader);
 }
 
 RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_shader_reflection() const {

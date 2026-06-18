@@ -244,6 +244,10 @@ void register_server_types() {
 	GDREGISTER_CLASS(RDShaderSource);
 	GDREGISTER_CLASS(RDShaderSPIRV);
 	GDREGISTER_CLASS(RDShaderFile);
+	GDREGISTER_CLASS(RDShaderReflection);
+	GDREGISTER_CLASS(RDShaderReflectionUniform);
+	GDREGISTER_CLASS(RDShaderReflectionSpecializationConstant);
+	GDREGISTER_CLASS(RDShaderReflectionMember);
 	GDREGISTER_CLASS(RDPipelineSpecializationConstant);
 	GDREGISTER_CLASS(RDAccelerationStructureGeometry);
 	GDREGISTER_CLASS(RDAccelerationStructureInstance);

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDShaderReflection" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		SPIR-V shader reflection data for [RenderingDevice].
+	</brief_description>
+	<description>
+		Contains reflection data returned by [method RenderingDevice.shader_reflect_spirv]. This data describes the resources and constants declared by SPIR-V bytecode.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="compute_local_size" type="Vector3i" setter="" getter="get_compute_local_size" default="Vector3i(0, 0, 0)">
+			The local workgroup size declared by a compute shader.
+		</member>
+		<member name="fragment_output_mask" type="int" setter="" getter="get_fragment_output_mask" default="0">
+			Bitmask of fragment output locations used by the shader.
+		</member>
+		<member name="has_dynamic_buffers" type="bool" setter="" getter="get_has_dynamic_buffers" default="false">
+			Whether the shader uses dynamic buffers.
+		</member>
+		<member name="has_multiview" type="bool" setter="" getter="get_has_multiview" default="false">
+			Whether the shader uses multiview.
+		</member>
+		<member name="pipeline_type" type="int" setter="" getter="get_pipeline_type" default="0">
+			The pipeline type used by the shader: [code]0[/code] for rasterization, [code]1[/code] for compute, or [code]2[/code] for ray tracing.
+		</member>
+		<member name="push_constant_members" type="RDShaderReflectionMember[]" setter="" getter="get_push_constant_members" default="[]">
+			Members of the push constant block.
+		</member>
+		<member name="push_constant_name" type="String" setter="" getter="get_push_constant_name" default="&quot;&quot;">
+			Name of the push constant block, if present in the SPIR-V bytecode.
+		</member>
+		<member name="push_constant_size" type="int" setter="" getter="get_push_constant_size" default="0">
+			Size in bytes of the push constant block.
+		</member>
+		<member name="push_constant_stages" type="int" setter="" getter="get_push_constant_stages" default="0">
+			Bitmask of shader stages that use push constants. Use the [code]RenderingDevice.SHADER_STAGE_*_BIT[/code] constants to test the returned value.
+		</member>
+		<member name="specialization_constants" type="RDShaderReflectionSpecializationConstant[]" setter="" getter="get_specialization_constants" default="[]">
+			Specialization constants declared by the shader.
+		</member>
+		<member name="stages" type="int" setter="" getter="get_stages" default="0">
+			Bitmask of shader stages present in the SPIR-V bytecode. Use the [code]RenderingDevice.SHADER_STAGE_*_BIT[/code] constants to test the returned value.
+		</member>
+		<member name="uniforms" type="RDShaderReflectionUniform[]" setter="" getter="get_uniforms" default="[]">
+			Uniform resources declared by the shader.
+		</member>
+		<member name="vertex_input_mask" type="int" setter="" getter="get_vertex_input_mask" default="0">
+			Bitmask of vertex input locations used by the shader.
+		</member>
+	</members>
+</class>
