@@ -540,7 +540,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			}
 		}
 		if (num_groups >= 1) {
-			msg_temp += TTRN("Node is in this group:", "Node is in the following groups:", num_groups) + "\n";
+			msg_temp += TPL(num_groups, TTR("Node is in this group:"), TTR("Node is in the following groups:")) + "\n";
 
 			List<GroupInfo> groups;
 			p_node->get_groups(&groups);
