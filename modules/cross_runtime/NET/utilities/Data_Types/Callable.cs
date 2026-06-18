@@ -10,51 +10,32 @@ namespace Godot
 	/// </summary>
 	[Serializable]
 	[StructLayout(LayoutKind.Sequential)]
-	public readonly partial struct Callable : IEquatable<Callable>
+	public readonly partial struct Callable
 	{
-		private readonly ulong _targetId;
-		private readonly string _method;
+		private readonly GodotObject _target;
+		private readonly StringName _method;
 
 		/// <summary>
 		/// Object id that contains the method.
 		/// </summary>
-		public ulong TargetId => _targetId;
+		public GodotObject Target => _target;
 
 		/// <summary>
 		/// Name of the method that will be called.
 		/// </summary>
-		public string Method => _method;
+		public StringName Method => _method;
 
-		public Callable(ulong id, string method)
+		/// <summary>
+		/// Constructs a new <see cref="Callable"/> for the method called <paramref name="method"/>
+		/// in the specified <paramref name="target"/>.
+		/// </summary>
+		/// <param name="target">Object that contains the method.</param>
+		/// <param name="method">Name of the method that will be called.</param>
+		public Callable(GodotObject target, StringName method)
 		{
-			_targetId = id;
-			_method = method ?? string.Empty;
+			_target = target;
+			_method = method;
 		}
 
-		public static Callable Create(ulong id, string method) => new Callable(id, method);
-
-		public override readonly string ToString()
-		{
-			return $"{_targetId}::{_method}";
-		}
-
-		public readonly bool Equals(Callable other)
-		{
-			return _targetId == other._targetId &&
-				   string.Equals(_method, other._method, StringComparison.Ordinal);
-		}
-
-		public override readonly bool Equals([NotNullWhen(true)] object? obj)
-		{
-			return obj is Callable other && Equals(other);
-		}
-
-		public override readonly int GetHashCode()
-		{
-			return HashCode.Combine(_targetId, _method);
-		}
-
-		public static bool operator ==(Callable left, Callable right) => left.Equals(right);
-		public static bool operator !=(Callable left, Callable right) => !left.Equals(right);
 	}
 }

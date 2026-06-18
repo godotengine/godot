@@ -1,6 +1,6 @@
 using System;
 
-// VariantPacker.cs — flattens C# Godot types into JS-transferable object[]
+// VariantPacker.cs - flattens C# Godot types into JS-transferable object[]
 // for varargs calls across the __callGodot bridge.
 //
 // The JS side (variant_construct.js) reads these tagged arrays and reconstructs
@@ -68,7 +68,7 @@ namespace Godot
 					return new object[] { "Plane",
 						(double)pl.Normal.X, (double)pl.Normal.Y, (double)pl.Normal.Z, (double)pl.D };
 
-				// ── Transforms ───────────────────────────────────────────────
+				// Transforms
 				case Quaternion q:
 					return new object[] { "Quaternion", (double)q.X, (double)q.Y, (double)q.Z, (double)q.W };
 
@@ -91,10 +91,7 @@ namespace Godot
 						(double)t3.Basis.Z.X, (double)t3.Basis.Z.Y, (double)t3.Basis.Z.Z,
 						(double)t3.Origin.X,  (double)t3.Origin.Y,  (double)t3.Origin.Z };
 
-				// ── Godot handles ─────────────────────────────────────────────
-				// RID and GodotObject carry a single uint64 encoded as double.
-				// Precision loss is acceptable here — the C++ side truncates back
-				// to uintptr_t, and all live object IDs fit within a safe integer range.
+
 				case RID rid:
 					return new object[] { "RID", (double)(ulong)rid.Id };
 

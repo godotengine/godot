@@ -1,20 +1,30 @@
-using System;
-
-#nullable enable
 namespace Godot
 {
 	public readonly struct Signal
 	{
-		private readonly long _targetId;
-		private readonly string _name;
+		private readonly GodotObject _owner;
+		private readonly StringName _signalName;
 
-		public long TargetId => _targetId;
-		public string Name => _name;
+		/// <summary>
+		/// Object that contains the signal.
+		/// </summary>
+		public GodotObject Owner => _owner;
 
-		public Signal(long targetId, string name)
+		/// <summary>
+		/// Name of the signal.
+		/// </summary>
+		public StringName Name => _signalName;
+
+		/// <summary>
+		/// Creates a new <see cref="Signal"/> with the name <paramref name="name"/>
+		/// in the specified <paramref name="owner"/>.
+		/// </summary>
+		/// <param name="owner">Object that contains the signal.</param>
+		/// <param name="name">Name of the signal.</param>
+		public Signal(GodotObject owner, StringName name)
 		{
-			_targetId = targetId;
-			_name = name;
+			_owner = owner;
+			_signalName = name;
 		}
 	}
 }

@@ -79,9 +79,8 @@ import re
 from pathlib import Path
 from typing import Any
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Constants & Look‑up Tables
-# ═══════════════════════════════════════════════════════════════════════════
+
 
 PACKED_BUFFER_TYPES: set[str] = {
     "PackedByteArray",
@@ -304,9 +303,7 @@ EXCLUDED: tuple[str, ...] = ()
 _OBJECT_SHADOW_METHODS: set[str] = {"GetType", "ToString", "GetHashCode", "Equals", "MemberwiseClone"}
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Helper Utilities
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _parse_godot_type(raw: str) -> tuple[str, bool, str]:
@@ -613,7 +610,7 @@ def pack_arg(
     - Primitives (bool, double, string) → as‑is.
     - Objects → (double)(ulong)obj.Id.
     - Structs → flattened field by field.
-    - Callable → two primitives: (double)(ulong)obj.TargetId, obj.Method.
+    - Callable → two primitives: (double)(ulong)obj.Target, obj.Method.
     """
     norm = public_type.split(".")[-1] if "." in public_type else public_type
 
@@ -635,7 +632,7 @@ def pack_arg(
 
     # ── Callable: flattened to target pointer + method name ──
     if norm == "Callable":
-        return [f"(double)(ulong){name}.TargetId", f"{name}.Method"]
+        return [f"(double)(ulong){name}.Target?.Id", f"{name}.Method"]
 
     # Integer types → cast to double via ulong
     if norm in {"ulong", "int", "short", "sbyte", "long", "uint", "ushort", "byte", "nint"}:
@@ -666,9 +663,7 @@ def pack_arg(
     return [f"(double)(ulong){name}"]
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Return Value Decoding (JS → C#)
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _get_struct_builder(norm: str) -> Any:
@@ -1002,9 +997,7 @@ def _format_method_default(default_value: Any, public_type: str) -> str | None:
     return None
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Main Class Wrapper Generator
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def write_class_wrapper(
@@ -1394,7 +1387,10 @@ def write_class_wrapper(
         lines.append("        {")
 
         fixed_items = []
-        if not is_static:
+        if is_static:
+            if is_singleton:
+                fixed_items.append("(double)(ulong)SingletonId")
+        else:
             fixed_items.append("(double)(ulong)SingletonId" if is_singleton else "(double)(ulong)Id")
         for pname, pt in arg_meta:
             fixed_items.extend(pack_arg(pname, pt, class_names, enum_owner_map, global_enum_set))
@@ -1454,9 +1450,8 @@ def write_class_wrapper(
     return emitted_method_count
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Native Structure Writer
-# ═══════════════════════════════════════════════════════════════════════════
+
 
 C_TYPE_MAP = {
     "void": "void",
@@ -1572,9 +1567,7 @@ def write_native_structs(
     (utilities_dir / "NativeStructs.cs").write_text("\n".join(lines))
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Entry Point
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def generate_all(json_path: Path, base_dir: Path) -> None:

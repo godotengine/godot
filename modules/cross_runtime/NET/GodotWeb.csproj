@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <NoWarn>CS8602;CS8603;CS8629;CS8620;CS8625;CS8601;CS0660;CS0661;CA1416;CS8600</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 </Project>

@@ -9,6 +9,10 @@ all generated method exports).
 import json
 from pathlib import Path
 
+BOOTSTRAPPED_SYMBOLS = [
+    "_Engine_get_object_singleton",
+    "_Engine_get_SceneTree_singleton",
+]
 # Hand‑written variant helpers that are always needed
 VARIANT_HELPERS = [
     "_malloc",
@@ -116,7 +120,7 @@ def generate_exports(api_json_path: Path, output_dir: Path) -> None:
     else:
         raise ValueError("Unexpected JSON format: expected list or dict with 'classes'")
 
-    all_exports = list(VARIANT_HELPERS)  # start with the hand‑written set
+    all_exports = list(BOOTSTRAPPED_SYMBOLS) + list(VARIANT_HELPERS)
 
     for cls in class_list:
         class_name = cls.get("name")

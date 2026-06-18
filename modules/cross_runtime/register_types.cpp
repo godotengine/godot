@@ -29,12 +29,12 @@
 /**************************************************************************/
 
 #include "register_types.h"
-
+#ifdef WEB_ENABLED
 #include "FrameCallback/DotnetBridge.h"
 #include "Signals/EventSignal.h"
 
 #include "core/object/class_db.h"
-
+#endif
 void initialize_cross_runtime_module(ModuleInitializationLevel p_level) {
 #ifdef WEB_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {

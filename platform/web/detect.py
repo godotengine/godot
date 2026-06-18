@@ -356,12 +356,11 @@ def configure(env: "SConsEnvironment"):
     # Disable GDScript LSP (as the Web platform is not compatible with TCP).
     env.Append(CPPDEFINES=["GDSCRIPT_NO_LSP"])
 
-    # ── cross_runtime KEEPALIVE exports ──────────────────────────────────────
-    # 15k+ symbols cannot be passed inline — use a response file (@path syntax)
+    # cross_runtime KEEPALIVE exports
     import json
     import subprocess
 
-    repo_root = Path(__file__).resolve().parents[2]  # web -> platform -> repo root
+    repo_root = Path(__file__).resolve().parents[2]  
     subprocess.run([sys.executable, repo_root / "modules" / "cross_runtime" / "generate_export_symbols.py"], check=True)
     exports_json = repo_root / "modules" / "cross_runtime" / "Exported_Symbols" / "exports.json"
     if exports_json.is_file():
@@ -374,7 +373,6 @@ def configure(env: "SConsEnvironment"):
             if s not in seen:
                 seen.add(s)
                 deduped.append(s)
-        # Write response file — one symbol per line, avoids ARG_MAX shell limit
         syms_file = repo_root / "modules" / "cross_runtime" / "Exported_Symbols" / "exports.syms"
         syms_file.write_text("\n".join(deduped), encoding="utf-8")
         # Clear the list so SCons doesn't ALSO pass them inline (would still overflow)

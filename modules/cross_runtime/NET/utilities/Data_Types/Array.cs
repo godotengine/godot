@@ -348,7 +348,7 @@ namespace Godot
 
 		public override string ToString()
 		{
-			return "[" + string.Join(", ", _items.Select(x => x.AsString())) + "]";
+			return "[" + string.Join(", ", _items.Select(x => x.Obj?.ToString() ?? "null")) + "]";
 		}
 
 		private static int NormalizeIndex(int index, int count)
@@ -382,14 +382,17 @@ namespace Godot
 
 		private static int CompareVariant(Variant a, Variant b)
 		{
-			if (a.Obj is null && b.Obj is null) return 0;
-			if (a.Obj is null) return -1;
-			if (b.Obj is null) return 1;
+			object? ao = a.Obj;
+			object? bo = b.Obj;
 
-			if (a.Obj is IComparable ca && b.Obj != null && a.Obj.GetType() == b.Obj.GetType())
-				return ca.CompareTo(b.Obj);
+			if (ao is null && bo is null) return 0;
+			if (ao is null) return -1;
+			if (bo is null) return 1;
 
-			return string.Compare(a.AsString(), b.AsString(), StringComparison.Ordinal);
+			if (ao is IComparable ca && bo != null && ao.GetType() == bo.GetType())
+				return ca.CompareTo(bo);
+
+			return string.Compare(ao.ToString(), bo.ToString(), StringComparison.Ordinal);
 		}
 	}
 }

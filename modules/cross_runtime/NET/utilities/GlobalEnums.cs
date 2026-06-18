@@ -4,10 +4,10 @@ namespace Godot
 {
 	public enum Side : long
 	{
-		SIDE_LEFT = 0,
-		SIDE_TOP = 1,
-		SIDE_RIGHT = 2,
-		SIDE_BOTTOM = 3,
+		Left = 0,
+		Top = 1,
+		Right = 2,
+		Bottom = 3,
 	}
 
 	public enum Corner : long
@@ -65,12 +65,12 @@ namespace Godot
 
 	public enum EulerOrder : long
 	{
-		EULER_ORDER_XYZ = 0,
-		EULER_ORDER_XZY = 1,
-		EULER_ORDER_YXZ = 2,
-		EULER_ORDER_YZX = 3,
-		EULER_ORDER_ZXY = 4,
-		EULER_ORDER_ZYX = 5,
+		Xyz = 0,
+		Xzy = 1,
+		Yxz = 2,
+		Yzx = 3,
+		Zxy = 4,
+		Zyx = 5,
 	}
 
 	public enum Key : long
@@ -252,7 +252,7 @@ namespace Godot
 		KEY_T = 84,
 		KEY_U = 85,
 		KEY_V = 86,
-		KEY_W = 87,
+		W = 87,
 		KEY_X = 88,
 		KEY_Y = 89,
 		KEY_Z = 90,
