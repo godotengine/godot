@@ -132,7 +132,8 @@ void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
-		if (scene_tabs->get_hovered_tab() < 0 && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+		int tab_idx = scene_tabs->get_tab_idx_at_point(mb->get_position());
+		if (tab_idx < 0 && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
 			int tab_buttons = 0;
 			if (scene_tabs->get_offset_buttons_visible()) {
 				tab_buttons = get_theme_icon(SNAME("increment"), SNAME("TabBar"))->get_width() + get_theme_icon(SNAME("decrement"), SNAME("TabBar"))->get_width();
@@ -143,7 +144,7 @@ void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			// Context menu.
-			_update_context_menu();
+			_update_context_menu(tab_idx);
 
 			scene_tabs_context_menu->set_position(scene_tabs->get_screen_position() + mb->get_position());
 			scene_tabs_context_menu->reset_size();
@@ -168,7 +169,7 @@ void EditorSceneTabs::_reposition_active_tab(int p_to_index) {
 	update_scene_tabs();
 }
 
-void EditorSceneTabs::_update_context_menu() {
+void EditorSceneTabs::_update_context_menu(int p_index) {
 #define DISABLE_LAST_OPTION_IF(m_condition) \
 	if (m_condition) { \
 		scene_tabs_context_menu->set_item_disabled(-1, true); \
@@ -177,7 +178,7 @@ void EditorSceneTabs::_update_context_menu() {
 	scene_tabs_context_menu->clear();
 	scene_tabs_context_menu->reset_size();
 
-	int tab_id = scene_tabs->get_hovered_tab();
+	int tab_id = p_index;
 	bool no_root_node = !EditorNode::get_editor_data().get_edited_scene_root(tab_id);
 
 	scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_scene"), EditorNode::SCENE_NEW_SCENE);
