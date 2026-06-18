@@ -267,13 +267,30 @@ public:
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
 
-	/* SHADER API */
-
 #undef ServerName
 #undef server_name
 
 #define ServerName RendererMaterialStorage
 #define server_name RSG::material_storage
+	/* BLEND REGISTRY */
+
+	void register_blend_mode(RSE::ShaderMode p_mode, const StringName blend_mode, RDPipelineColorBlendStateAttachment *attachment, RDPipelineColorBlendStateAttachment *transparent_attachment) override {
+		ERR_FAIL_COND_MSG(RenderingServerTypes::is_predefined_blend_mode(blend_mode), "Can not override predefined blend mode");
+
+		RSG::material_storage->register_blend_mode(
+				p_mode,
+				blend_mode,
+				attachment->get_base(),
+				(transparent_attachment == nullptr) ? attachment->get_base() : transparent_attachment->get_base());
+	}
+
+	void unregister_blend_mode(RSE::ShaderMode p_mode, const StringName blend_mode) override {
+		ERR_FAIL_COND_MSG(RenderingServerTypes::is_predefined_blend_mode(blend_mode), "Can not remove predefined blend mode");
+
+		RSG::material_storage->unregister_blend_mode(p_mode, blend_mode);
+	}
+
+	/* SHADER API */
 
 	virtual RID shader_create() override {
 		RID ret = RSG::material_storage->shader_allocate();
