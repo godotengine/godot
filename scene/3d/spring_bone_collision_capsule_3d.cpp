@@ -147,8 +147,10 @@ Vector3 closest_capsule_sphere(const Vector3 &head, const Vector3 &tail, const V
 	return head + p * (dot / pls);
 }
 
-real_t closest_capsule_sphere_to_taper(const Vector3 &head, const Vector3 &tail, float radius, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
+real_t closest_capsule_sphere_to_taper(const Vector3 &head, const Vector3 &tail, float radius, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
 	// The bone capsule is from (p_current_origin, p_bone_origin_radius) to (p_current, p_bone_radius)
+
+	// reorder
 	Vector3 p_bone_little_end;
 	float p_bone_little_end_radius;
 	Vector3 p_bone_big_end;
@@ -262,20 +264,20 @@ real_t closest_capsule_sphere_to_taper(const Vector3 &head, const Vector3 &tail,
 	printf(" compvs %.02f %.02f ", Dcomponenty.dot(p) - pcomponent_y, Dcomponentx.dot(p) - pcomponent_x);
 	real_t capslope = pcomponent_y / pcomponent_x;
 
-	// The collision capsule is assumed to intrude into the tapered bone capsule, 
+	// The collision capsule is assumed to intrude into the tapered bone capsule,
 	// and we can add the radius of the collision capsule to the bone capsule so we can consider it as a line.
-	// So we are looking for value of intrad where 
+	// So we are looking for value of intrad where
 	// The (p_bone_little_end, p_bone_little_end_radius + radius - intrad) to (p_bone_big_end, p_bone_big_end_radius + radius - intrad)
 
 	// The apex of cone in plane is (0, -cone_rad_at_plane_origin/cone_slope)
-	// Relative to this origin in the plane, a point (x,y) in the plane is on the cone (where it intersects the plane) 
-	// when (perp_dist^2 + x^2) = (y*cone_slope)^2, 
+	// Relative to this origin in the plane, a point (x,y) in the plane is on the cone (where it intersects the plane)
+	// when (perp_dist^2 + x^2) = (y*cone_slope)^2,
 	// so: y = sqrt(perp_dist^2 + x^2)/cone_slope which asymtotes to x/cone_slope as x tends to infinity.
 	// The gradient of y at x is:
-	//  dy/dx = (perp_dist^2 + x^2) ^ (-1/2) * x / cone_slope 
+	//  dy/dx = (perp_dist^2 + x^2) ^ (-1/2) * x / cone_slope
 	//  which needs to equal capslope.
 	real_t ccsq = capslope * cone_slope * capslope * cone_slope;
-	// capslope*cone_slope = (perp_dist^2 + x^2) ^ (-1/2) * x 
+	// capslope*cone_slope = (perp_dist^2 + x^2) ^ (-1/2) * x
 	real_t perp_dist_sq = perp_dist * perp_dist;
 	real_t xsq = ccsq * perp_dist_sq / (1.0 - ccsq);
 	if (xsq < 0.0) {
@@ -285,8 +287,8 @@ real_t closest_capsule_sphere_to_taper(const Vector3 &head, const Vector3 &tail,
 	real_t tangent_axis_distance = Math::sqrt(perp_dist_sq + xsq);
 
 	real_t x = Math::sqrt(xsq);
-	real_t y_line = Math::abs(capslope)*x;
-	real_t mu2 = mu + x/pcomponent_x * SIGN(pcomponent_y);
+	real_t y_line = Math::abs(capslope) * x;
+	real_t mu2 = mu + x / pcomponent_x * SIGN(pcomponent_y);
 	// discard if mu2 is outside of unit range
 	real_t lam2 = lam + y_line / bone_axis_length;
 	// discard if lam2 is outside of unit range
