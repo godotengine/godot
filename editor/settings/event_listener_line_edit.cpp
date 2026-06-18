@@ -37,6 +37,7 @@
 #include "servers/display/accessibility_server.h"
 
 // Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
+// See also `_joy_axis_descriptions` in `core\input\input_event.cpp`.
 static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
 	TTRC("Left Stick Left, Joystick 0 Left"),
 	TTRC("Left Stick Right, Joystick 0 Right"),
@@ -47,9 +48,9 @@ static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
 	TTRC("Right Stick Up, Joystick 1 Up"),
 	TTRC("Right Stick Down, Joystick 1 Down"),
 	TTRC("Joystick 2 Left"),
-	TTRC("Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"),
+	TTRC("Left Trigger, Xbox LT, Sony L2, Nintendo ZL, Joystick 2 Right"),
 	TTRC("Joystick 2 Up"),
-	TTRC("Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"),
+	TTRC("Right Trigger, Xbox RT, Sony R2, Nintendo ZR, Joystick 2 Down"),
 	TTRC("Joystick 3 Left"),
 	TTRC("Joystick 3 Right"),
 	TTRC("Joystick 3 Up"),
