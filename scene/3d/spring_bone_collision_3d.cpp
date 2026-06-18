@@ -212,7 +212,7 @@ Vector3 SpringBoneCollision3D::_collide_sphere(const Vector3 &p_origin, float p_
 }
 
 // static
-Vector3 SpringBoneCollision3D::_collide_sphere_taper(const Vector3 &p_origin, float p_radius, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
+Vector3 SpringBoneCollision3D::_collide_sphere_taper(const Vector3 &p_origin, float p_radius, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
 	// (p_origin, p_radius) defines the external collider
 	// The bone capsule is from (p_current_origin, p_bone_origin_radius) to (p_current, p_bone_radius)
 	// where p_current is to be displaced
@@ -229,7 +229,7 @@ Vector3 SpringBoneCollision3D::_collide_sphere_taper(const Vector3 &p_origin, fl
 	DEV_ASSERT(Math::is_equal_approx(bone_axis.length(), p_bone_length));
 	float taper_side = Math::sqrt(1.0 - taper_fore * taper_fore);
 	float bone_axis_sq = bone_axis.dot(bone_axis);
-	float lam = 1.0 - bone_axis.dot(diff) / bone_axis_sq;  // calculated from the tail end
+	float lam = 1.0 - bone_axis.dot(diff) / bone_axis_sq; // calculated from the tail end
 	Vector3 vecside = p_origin - (p_current_origin + bone_axis * lam);
 	// printf(" zz=%f ", vecside.dot(bone_axis)); // should be zero
 	float radial_distance = vecside.length();
@@ -243,16 +243,16 @@ Vector3 SpringBoneCollision3D::_collide_sphere_taper(const Vector3 &p_origin, fl
 	float lamconemin = gapdistance / bone_axis_length * 0.5;
 
 	// case of collide sphere being very large.
-	if (lamconemin > 1.0) {  // apply this case before the beyond origin end to avoid twitchiness
+	if (lamconemin > 1.0) { // apply this case before the beyond origin end to avoid twitchiness
 		return _collide_sphere(p_origin, p_radius, false, p_bone_radius, p_current);
 	}
 
 	float lamd = radial_distance * taper_fore / taper_side / bone_axis_length;
 	float lamcone = lam - lamd;
-	if (lamcone <= 0.0) {  // beyond origin end
+	if (lamcone <= 0.0) { // beyond origin end
 		return p_current;
 	}
-	if (lamcone >= 1.0) {  // beyond tail end
+	if (lamcone >= 1.0) { // beyond tail end
 		return _collide_sphere(p_origin, p_radius, false, p_bone_radius, p_current);
 	}
 
@@ -269,7 +269,7 @@ Vector3 SpringBoneCollision3D::_collide_sphere_taper(const Vector3 &p_origin, fl
 	if (lamcone < lamconemin) {
 		lamcone = lamconemin;
 	}
-	
+
 	// Check collision with this cone
 	Vector3 coneaxispoint = p_current_origin + bone_axis * lamcone;
 	Vector3 conepointdiff = coneaxispoint - p_origin;
@@ -281,7 +281,7 @@ Vector3 SpringBoneCollision3D::_collide_sphere_taper(const Vector3 &p_origin, fl
 	if (distance > 0.0) {
 		return p_current;
 	}
-	//printf(" hh=%f; ", distance); 
+	//printf(" hh=%f; ", distance);
 
 	// We could model a rotation of the bone_axis about p_current_origin to move the (coneaxispoint, coneaxisradius) sphere
 	// away from its intersection with (p_origin, p_radius) [not quite accurate since as it rotates the lamcone position
@@ -295,14 +295,14 @@ Vector3 SpringBoneCollision3D::_collide_sphere_taper(const Vector3 &p_origin, fl
 	// (this isn't necessary since the change it makes is masked by the limit_length() function)
 	// also limit the size of the multiplier to avoid extreme movement when near the joint
 	Vector3 p_current_new = p_current_origin + (p_coneaxispointnew - p_current_origin) / MAX(0.1f, lamcone);
-	
+
 	return p_current_new;
 }
 
-Vector3 SpringBoneCollision3D::collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
+Vector3 SpringBoneCollision3D::collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
 	return _collide(p_center, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 }
 
-Vector3 SpringBoneCollision3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
+Vector3 SpringBoneCollision3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
 	return Vector3(0, 0, 0);
 }
