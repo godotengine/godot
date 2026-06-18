@@ -2469,82 +2469,82 @@
 			An invalid game controller button.
 		</constant>
 		<constant name="JOY_BUTTON_A" value="0" enum="JoyButton">
-			Game controller SDL button A. Corresponds to the bottom action button: Sony Cross, Xbox A, Nintendo B.
+			The button A on a controller. Corresponds to the bottom action button: Xbox A, Sony Cross, Nintendo B.
 		</constant>
 		<constant name="JOY_BUTTON_B" value="1" enum="JoyButton">
-			Game controller SDL button B. Corresponds to the right action button: Sony Circle, Xbox B, Nintendo A.
+			The button B on a controller. Corresponds to the right action button: Xbox B, Sony Circle, Nintendo A.
 		</constant>
 		<constant name="JOY_BUTTON_X" value="2" enum="JoyButton">
-			Game controller SDL button X. Corresponds to the left action button: Sony Square, Xbox X, Nintendo Y.
+			The button X on a controller. Corresponds to the left action button: Xbox X, Sony Square, Nintendo Y.
 		</constant>
 		<constant name="JOY_BUTTON_Y" value="3" enum="JoyButton">
-			Game controller SDL button Y. Corresponds to the top action button: Sony Triangle, Xbox Y, Nintendo X.
+			The button Y on a controller. Corresponds to the top action button: Xbox Y, Sony Triangle, Nintendo X.
 		</constant>
 		<constant name="JOY_BUTTON_BACK" value="4" enum="JoyButton">
-			Game controller SDL back button. Corresponds to the Sony Select, Xbox Back, Nintendo - button.
+			The back button on a controller. Corresponds to the button for Xbox's Back, Sony's Select/Share, Nintendo's - (Minus).
 		</constant>
 		<constant name="JOY_BUTTON_GUIDE" value="5" enum="JoyButton">
-			Game controller SDL guide button. Corresponds to the Sony PS, Xbox Home button.
+			The guide (home) button on a controller. Corresponds to the button for Xbox's Guide/Home, Sony's PS, Nintendo's Home.
 		</constant>
 		<constant name="JOY_BUTTON_START" value="6" enum="JoyButton">
-			Game controller SDL start button. Corresponds to the Sony Options, Xbox Menu, Nintendo + button.
+			The start button on a controller. Corresponds to the button for Xbox's Start/Menu, Sony's Start/Options, Nintendo's + (Plus).
 		</constant>
 		<constant name="JOY_BUTTON_LEFT_STICK" value="7" enum="JoyButton">
-			Game controller SDL left stick button. Corresponds to the Sony L3, Xbox L/LS button.
+			The left stick button on a controller. Corresponds to the button for Xbox's L/LS, Sony's L3, Nintendo's Left Stick.
 		</constant>
 		<constant name="JOY_BUTTON_RIGHT_STICK" value="8" enum="JoyButton">
-			Game controller SDL right stick button. Corresponds to the Sony R3, Xbox R/RS button.
+			The right stick button on a controller. Corresponds to the button for Xbox's R/RS, Sony's R3, Nintendo's Right Stick.
 		</constant>
 		<constant name="JOY_BUTTON_LEFT_SHOULDER" value="9" enum="JoyButton">
-			Game controller SDL left shoulder button. Corresponds to the Sony L1, Xbox LB button.
+			The left shoulder (left bumper) button on a controller. Corresponds to the button for Xbox's LB, Sony's L1, Nintendo's L/SL.
 		</constant>
 		<constant name="JOY_BUTTON_RIGHT_SHOULDER" value="10" enum="JoyButton">
-			Game controller SDL right shoulder button. Corresponds to the Sony R1, Xbox RB button.
+			The right shoulder (right bumper) button on a controller. Corresponds to the button for Xbox's RB, Sony's R1, Nintendo's R/SR.
 		</constant>
 		<constant name="JOY_BUTTON_DPAD_UP" value="11" enum="JoyButton">
-			Game controller D-pad up button.
+			The D-pad up button on a controller.
 		</constant>
 		<constant name="JOY_BUTTON_DPAD_DOWN" value="12" enum="JoyButton">
-			Game controller D-pad down button.
+			The D-pad down button on a controller.
 		</constant>
 		<constant name="JOY_BUTTON_DPAD_LEFT" value="13" enum="JoyButton">
-			Game controller D-pad left button.
+			The D-pad left button on a controller.
 		</constant>
 		<constant name="JOY_BUTTON_DPAD_RIGHT" value="14" enum="JoyButton">
-			Game controller D-pad right button.
+			The D-pad right button on a controller.
 		</constant>
 		<constant name="JOY_BUTTON_MISC1" value="15" enum="JoyButton">
-			Game controller SDL miscellaneous button. Corresponds to Xbox share button, PS5 microphone button, Nintendo Switch capture button.
+			The miscellaneous button 1 on a controller. Corresponds to the button for Xbox's Share, PS5's Microphone, Nintendo's Switch Capture.
 		</constant>
 		<constant name="JOY_BUTTON_PADDLE1" value="16" enum="JoyButton">
-			Game controller SDL paddle 1 button.
+			The upper or primary paddle button, under your right hand on a controller. Corresponds to the button for Xbox Elite's P1, Steam's R4.
 		</constant>
 		<constant name="JOY_BUTTON_PADDLE2" value="17" enum="JoyButton">
-			Game controller SDL paddle 2 button.
+			The upper or primary paddle button, under your left hand on a controller. Corresponds to the button for Xbox Elite's P3, Steam's L4.
 		</constant>
 		<constant name="JOY_BUTTON_PADDLE3" value="18" enum="JoyButton">
-			Game controller SDL paddle 3 button.
+			The lower or secondary paddle button, under your right hand on a controller. Corresponds to the button for Xbox Elite's P2, Steam's R5.
 		</constant>
 		<constant name="JOY_BUTTON_PADDLE4" value="19" enum="JoyButton">
-			Game controller SDL paddle 4 button.
+			The lower or secondary paddle button, under your left hand on a controller. Corresponds to the button for Xbox Elite's P4, Steam's L5.
 		</constant>
 		<constant name="JOY_BUTTON_TOUCHPAD" value="20" enum="JoyButton">
-			Game controller SDL touchpad button.
+			The touchpad button on a controller. Corresponds to the button for Sony's Touchpad, Steam's Left Touchpad.
 		</constant>
 		<constant name="JOY_BUTTON_MISC2" value="21" enum="JoyButton">
-			Game controller SDL miscellaneous button. Used by Nintendo Switch 2 Pro Controller and Horipad Steam controllers.
+			The miscellaneous button 2 on a controller. Corresponds to the button for Steam's Right Touchpad.
 		</constant>
 		<constant name="JOY_BUTTON_MISC3" value="22" enum="JoyButton">
-			Game controller SDL miscellaneous button.
+			The miscellaneous button 3 on a controller.
 		</constant>
 		<constant name="JOY_BUTTON_MISC4" value="23" enum="JoyButton">
-			Game controller SDL miscellaneous button.
+			The miscellaneous button 4 on a controller.
 		</constant>
 		<constant name="JOY_BUTTON_MISC5" value="24" enum="JoyButton">
-			Game controller SDL miscellaneous button.
+			The miscellaneous button 5 on a controller.
 		</constant>
 		<constant name="JOY_BUTTON_MISC6" value="25" enum="JoyButton">
-			Game controller SDL miscellaneous button.
+			The miscellaneous button 6 on a controller.
 		</constant>
 		<constant name="JOY_BUTTON_SDL_MAX" value="26" enum="JoyButton">
 			The number of SDL game controller buttons.
@@ -2559,22 +2559,22 @@
 			An invalid game controller axis.
 		</constant>
 		<constant name="JOY_AXIS_LEFT_X" value="0" enum="JoyAxis">
-			Game controller left joystick x-axis.
+			The left joystick x-axis on a controller.
 		</constant>
 		<constant name="JOY_AXIS_LEFT_Y" value="1" enum="JoyAxis">
-			Game controller left joystick y-axis.
+			The left joystick y-axis on a controller.
 		</constant>
 		<constant name="JOY_AXIS_RIGHT_X" value="2" enum="JoyAxis">
-			Game controller right joystick x-axis.
+			The right joystick x-axis on a controller.
 		</constant>
 		<constant name="JOY_AXIS_RIGHT_Y" value="3" enum="JoyAxis">
-			Game controller right joystick y-axis.
+			The right joystick y-axis on a controller.
 		</constant>
 		<constant name="JOY_AXIS_TRIGGER_LEFT" value="4" enum="JoyAxis">
-			Game controller left trigger axis.
+			The left trigger axis on a controller. Corresponds to the axis for Xbox's LT, Sony's L2, and Nintendo's ZL.
 		</constant>
 		<constant name="JOY_AXIS_TRIGGER_RIGHT" value="5" enum="JoyAxis">
-			Game controller right trigger axis.
+			The right trigger axis on a controller. Corresponds to the axis for Xbox's RT, Sony's R2, and Nintendo's ZR.
 		</constant>
 		<constant name="JOY_AXIS_SDL_MAX" value="6" enum="JoyAxis">
 			The number of SDL game controller axes.
