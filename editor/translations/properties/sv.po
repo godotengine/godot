@@ -41,7 +41,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-04 21:01+0000\n"
+"PO-Revision-Date: 2026-06-10 12:02+0000\n"
 "Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/sv/>\n"
@@ -9166,6 +9166,9 @@ msgstr "Visa bakom förälder"
 
 msgid "Clip Children"
 msgstr "Klipp barn"
+
+msgid "Oversampling with Scale"
+msgstr "Översampling med skala"
 
 msgid "Light Mask"
 msgstr "Ljusmask"

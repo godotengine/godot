@@ -715,7 +715,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	String txt;
 	String txt_sub;
 	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
-	Item *it_prev = l.from ? l.from : current;
+	Item *it_prev = l.from;
 	int remaining_characters = visible_characters - l.char_offset;
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
 		it_prev = it;
@@ -2088,6 +2088,18 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				int stop = text_rect_begin;
 				*r_click_item = _find_indentable(it);
 				while (*r_click_item) {
+					int lvl = 1;
+					if ((*r_click_item)->type == ITEM_INDENT) {
+						ItemIndent *ind = static_cast<ItemIndent *>(*r_click_item);
+						if (ind) {
+							lvl = ind->level;
+						}
+					} else if ((*r_click_item)->type == ITEM_LIST) {
+						ItemList *lst = static_cast<ItemList *>(*r_click_item);
+						if (lst) {
+							lvl = lst->level;
+						}
+					}
 					Ref<Font> font = theme_cache.normal_font;
 					int font_size = theme_cache.normal_font_size;
 					ItemFont *font_it = _find_font(*r_click_item);
@@ -2104,12 +2116,12 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 						font_size = font_size_it->font_size;
 					}
 					if (rtl) {
-						stop += MAX(1, tab_size * (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)));
+						stop += MAX(1, lvl * tab_size * (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)));
 						if (stop > p_click.x) {
 							break;
 						}
 					} else {
-						stop -= MAX(1, tab_size * (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)));
+						stop -= MAX(1, lvl * tab_size * (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)));
 						if (stop < p_click.x) {
 							break;
 						}
@@ -3638,6 +3650,14 @@ int RichTextLabel::_find_list(Item *p_item, Vector<int> &r_index, Vector<int> &r
 
 int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size) {
 	Item *item = p_item;
+	while (item && item->subitems.size()) {
+		Item *si = item->subitems.front()->get();
+		if (si && (si->type == ITEM_INDENT || si->type == ITEM_LIST)) {
+			item = si;
+		} else {
+			break;
+		}
+	}
 
 	float margin = 0.0;
 
@@ -3647,6 +3667,11 @@ int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int 
 		}
 
 		if (item->type == ITEM_INDENT) {
+			int lvl = 1;
+			ItemIndent *ind = static_cast<ItemIndent *>(item);
+			if (ind) {
+				lvl = ind->level;
+			}
 			Ref<Font> font = p_base_font;
 			int font_size = p_base_font_size;
 
@@ -3664,10 +3689,14 @@ int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int 
 				font_size = font_size_it->font_size;
 			}
 			if (tab_size > 0) {
-				margin += MAX(1, tab_size * (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)));
+				margin += MAX(1, lvl * tab_size * (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)));
 			}
-
 		} else if (item->type == ITEM_LIST) {
+			int lvl = 1;
+			ItemList *lst = static_cast<ItemList *>(item);
+			if (lst) {
+				lvl = lst->level;
+			}
 			Ref<Font> font = p_base_font;
 			int font_size = p_base_font_size;
 
@@ -3685,7 +3714,7 @@ int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int 
 				font_size = font_size_it->font_size;
 			}
 			if (tab_size > 0) {
-				margin += MAX(1, tab_size * (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)));
+				margin += MAX(1, lvl * tab_size * (font->get_char_size(' ', font_size).width + font->get_spacing(TextServer::SPACING_SPACE)));
 			}
 		}
 
@@ -3947,7 +3976,7 @@ Color RichTextLabel::_find_fgcolor(Item *p_item) {
 
 bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
 	if (from && from != to) {
-		if (from->type != ITEM_FONT && from->type != ITEM_COLOR && from->type != ITEM_UNDERLINE && from->type != ITEM_STRIKETHROUGH) {
+		if (from->type != ITEM_FONT && from->type != ITEM_COLOR && from->type != ITEM_UNDERLINE && from->type != ITEM_STRIKETHROUGH && from->type != ITEM_INDENT) {
 			return true;
 		}
 
@@ -5582,9 +5611,6 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			if (tag_stack.front()->get() == "i") {
 				in_italics = false;
 			}
-			if ((tag_stack.front()->get() == "indent") || (tag_stack.front()->get() == "ol") || (tag_stack.front()->get() == "ul")) {
-				current_frame->indent_level--;
-			}
 
 			if (!tag_ok) {
 				txt += "[" + tag;
@@ -5886,44 +5912,36 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "ul") {
-			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_DOTS, false);
+			push_list(1, LIST_DOTS, false);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("ul bullet=")) {
 			String bullet = _get_tag_value(tag);
-			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_DOTS, false, bullet);
+			push_list(1, LIST_DOTS, false, bullet);
 			pos = brk_end + 1;
 			tag_stack.push_front("ul");
 		} else if ((tag == "ol") || (tag == "ol type=1")) {
-			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_NUMBERS, false);
+			push_list(1, LIST_NUMBERS, false);
 			pos = brk_end + 1;
 			tag_stack.push_front("ol");
 		} else if (tag == "ol type=a") {
-			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_LETTERS, false);
+			push_list(1, LIST_LETTERS, false);
 			pos = brk_end + 1;
 			tag_stack.push_front("ol");
 		} else if (tag == "ol type=A") {
-			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_LETTERS, true);
+			push_list(1, LIST_LETTERS, true);
 			pos = brk_end + 1;
 			tag_stack.push_front("ol");
 		} else if (tag == "ol type=i") {
-			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_ROMAN, false);
+			push_list(1, LIST_ROMAN, false);
 			pos = brk_end + 1;
 			tag_stack.push_front("ol");
 		} else if (tag == "ol type=I") {
-			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_ROMAN, true);
+			push_list(1, LIST_ROMAN, true);
 			pos = brk_end + 1;
 			tag_stack.push_front("ol");
 		} else if (tag == "indent") {
-			current_frame->indent_level++;
-			push_indent(current_frame->indent_level);
+			push_indent(1);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("lang=")) {

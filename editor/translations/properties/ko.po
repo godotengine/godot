@@ -57,13 +57,14 @@
 # liss22 <liss22@hanmail.net>, 2025.
 # HaeBunYeok <bestfreendover@gmail.com>, 2025.
 # Clover <bestfreendover@gmail.com>, 2025.
+# hw <hywoo325@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-08 08:59+0000\n"
-"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2026-06-15 19:02+0000\n"
+"Last-Translator: hw <hywoo325@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
 "Language: ko\n"
@@ -71,7 +72,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "Application"
 msgstr "애플리케이션"
@@ -2196,7 +2197,7 @@ msgid "Integer Drag Speed"
 msgstr "정수형 드래그 속도"
 
 msgid "Nested Color Mode"
-msgstr "네스팅 색상 모드"
+msgstr "중첩된 색상 모드"
 
 msgid "Delimitate All Container and Resources"
 msgstr "모든 컨테이너와 리소스를 구분"
@@ -2304,7 +2305,7 @@ msgid "Enable Touch Optimizations"
 msgstr "터치 최적화 활성화"
 
 msgid "Haptic on Long Press"
-msgstr "길게 누르기 시 햅틱"
+msgstr "길게 누를 시 햅틱"
 
 msgid "Scale Gizmo Handles"
 msgstr "기즈모 핸들 스케일"
@@ -8929,6 +8930,9 @@ msgstr "드래거 가시성"
 msgid "Touch Dragger Enabled"
 msgstr "터치 드래거 활성화됨"
 
+msgid "Drag Nested Intersections"
+msgstr "중첩된 교차 드래그"
+
 msgid "Drag Area"
 msgstr "드래그 영역"
 
@@ -9158,6 +9162,9 @@ msgstr "팁 크기"
 msgid "Deadzone Ratio"
 msgstr "데드존 비율"
 
+msgid "Clampzone Ratio"
+msgstr "클램프존 비율"
+
 msgid "Initial Offset Ratio"
 msgstr "초기 오프셋 비율"
 
@@ -9182,6 +9189,9 @@ msgstr "부모 뒤에 그리기"
 msgid "Clip Children"
 msgstr "자식 자르기"
 
+msgid "Oversampling with Scale"
+msgstr "스케일로 오버샘플링"
+
 msgid "Light Mask"
 msgstr "조명 마스크"
 
@@ -9195,10 +9205,10 @@ msgid "Z Index"
 msgstr "Z 인덱스"
 
 msgid "Z as Relative"
-msgstr "Z를 상대값으로"
+msgstr "Z를 상대적으로"
 
 msgid "Y Sort Enabled"
-msgstr "Y 정렬 활성화됨"
+msgstr "Y 정렬 활성화"
 
 msgid "Use Parent Material"
 msgstr "부모 머티리얼 사용"
@@ -12484,6 +12494,9 @@ msgstr "가장 가까운 치기"
 
 msgid "Miss"
 msgstr "누락"
+
+msgid "Intersection"
+msgstr "교차"
 
 msgid "Syntax"
 msgstr "문법"
