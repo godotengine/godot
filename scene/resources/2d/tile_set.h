@@ -876,6 +876,7 @@ private:
 			LocalVector<Ref<ConvexPolygonShape2D>> shapes;
 			mutable HashMap<int, LocalVector<Ref<ConvexPolygonShape2D>>> transformed_shapes;
 			bool one_way = false;
+			Vector2 one_way_direction = Vector2(0, 1);
 			float one_way_margin = 1.0;
 		};
 
@@ -997,6 +998,8 @@ public:
 	Vector<Vector2> get_collision_polygon_points(int p_layer_id, int p_polygon_index) const;
 	void set_collision_polygon_one_way(int p_layer_id, int p_polygon_index, bool p_one_way);
 	bool is_collision_polygon_one_way(int p_layer_id, int p_polygon_index) const;
+	void set_collision_polygon_one_way_direction(int p_layer_id, int p_polygon_index, const Vector2 &p_one_way_direction);
+	Vector2 get_collision_polygon_one_way_margin_direction(int p_layer_id, int p_polygon_index) const;
 	void set_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index, float p_one_way_margin);
 	float get_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index) const;
 	int get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_index) const;

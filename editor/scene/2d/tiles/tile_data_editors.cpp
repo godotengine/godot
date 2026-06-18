@@ -1602,11 +1602,17 @@ void TileDataCollisionEditor::_polygons_changed() {
 		add_child(header);
 
 		StringName one_way_property = vformat("polygon_%d_one_way", i);
+		StringName one_way_direction_property = vformat("polygon_%d_one_way_direction", i);
 		StringName one_way_margin_property = vformat("polygon_%d_one_way_margin", i);
 
 		if (!dummy_object->has_dummy_property(one_way_property)) {
 			dummy_object->add_dummy_property(one_way_property);
 			dummy_object->set(one_way_property, false);
+		}
+
+		if (!dummy_object->has_dummy_property(one_way_direction_property)) {
+			dummy_object->add_dummy_property(one_way_direction_property);
+			dummy_object->set(one_way_direction_property, Vector2(0, 1));
 		}
 
 		if (!dummy_object->has_dummy_property(one_way_margin_property)) {
@@ -1627,6 +1633,19 @@ void TileDataCollisionEditor::_polygons_changed() {
 		} else {
 			move_child(property_editors[one_way_property], -1);
 		}
+		if (!property_editors.has(one_way_direction_property)) {
+			EditorProperty *one_way_direction_property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::VECTOR2, one_way_direction_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+			one_way_direction_property_editor->set_object_and_property(dummy_object, one_way_direction_property);
+			one_way_direction_property_editor->set_label(TTRC("One Way Direction"));
+			one_way_direction_property_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
+			one_way_direction_property_editor->connect("selected", callable_mp(this, &TileDataCollisionEditor::_property_selected));
+			one_way_direction_property_editor->set_tooltip_text(one_way_direction_property_editor->get_edited_property());
+			one_way_direction_property_editor->update_property();
+			add_child(one_way_direction_property_editor);
+			property_editors[one_way_direction_property] = one_way_direction_property_editor;
+		} else {
+			move_child(property_editors[one_way_direction_property], -1);
+		}
 		if (!property_editors.has(one_way_margin_property)) {
 			EditorProperty *one_way_margin_property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::FLOAT, one_way_margin_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 			one_way_margin_property_editor->set_object_and_property(dummy_object, one_way_margin_property);
@@ -1646,6 +1665,9 @@ void TileDataCollisionEditor::_polygons_changed() {
 	for (int i = polygon_editor->get_polygon_count(); dummy_object->has_dummy_property(vformat("polygon_%d_one_way", i)); i++) {
 		dummy_object->remove_dummy_property(vformat("polygon_%d_one_way", i));
 	}
+	for (int i = polygon_editor->get_polygon_count(); dummy_object->has_dummy_property(vformat("polygon_%d_one_way_direction", i)); i++) {
+		dummy_object->remove_dummy_property(vformat("polygon_%d_one_way_direction", i));
+	}
 	for (int i = polygon_editor->get_polygon_count(); dummy_object->has_dummy_property(vformat("polygon_%d_one_way_margin", i)); i++) {
 		dummy_object->remove_dummy_property(vformat("polygon_%d_one_way_margin", i));
 	}
@@ -1653,9 +1675,13 @@ void TileDataCollisionEditor::_polygons_changed() {
 		property_editors[vformat("polygon_%d_one_way", i)]->queue_free();
 		property_editors.erase(vformat("polygon_%d_one_way", i));
 	}
-	for (int i = polygon_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way_margin", i)); i++) {
+	for (int i = polygon_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way_direction", i)); i++) {
 		property_editors[vformat("polygon_%d_one_way_margin", i)]->queue_free();
 		property_editors.erase(vformat("polygon_%d_one_way_margin", i));
+	}
+	for (int i = polygon_editor->get_polygon_count(); property_editors.has(vformat("polygon_%d_one_way_direction", i)); i++) {
+		property_editors[vformat("polygon_%d_one_way_direction", i)]->queue_free();
+		property_editors.erase(vformat("polygon_%d_one_way_direction", i));
 	}
 }
 
@@ -1669,6 +1695,7 @@ Variant TileDataCollisionEditor::_get_painted_value() {
 		Dictionary polygon_dict;
 		polygon_dict["points"] = polygon_editor->get_polygon(i);
 		polygon_dict["one_way"] = dummy_object->get(vformat("polygon_%d_one_way", i));
+		polygon_dict["one_way_direction"] = dummy_object->get(vformat("polygon_%d_one_way_direction", i));
 		polygon_dict["one_way_margin"] = dummy_object->get(vformat("polygon_%d_one_way_margin", i));
 		array.push_back(polygon_dict);
 	}
@@ -1694,6 +1721,7 @@ void TileDataCollisionEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_
 	dummy_object->set("angular_velocity", tile_data->get_constant_angular_velocity(physics_layer));
 	for (int i = 0; i < tile_data->get_collision_polygons_count(physics_layer); i++) {
 		dummy_object->set(vformat("polygon_%d_one_way", i), tile_data->is_collision_polygon_one_way(physics_layer, i));
+		dummy_object->set(vformat("polygon_%d_one_way_direction", i), tile_data->get_collision_polygon_one_way_margin_direction(physics_layer, i));
 		dummy_object->set(vformat("polygon_%d_one_way_margin", i), tile_data->get_collision_polygon_one_way_margin(physics_layer, i));
 	}
 	for (const KeyValue<StringName, EditorProperty *> &E : property_editors) {
@@ -1716,6 +1744,7 @@ void TileDataCollisionEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_so
 		Dictionary polygon_dict = array[i];
 		tile_data->set_collision_polygon_points(physics_layer, i, polygon_dict["points"]);
 		tile_data->set_collision_polygon_one_way(physics_layer, i, polygon_dict["one_way"]);
+		tile_data->set_collision_polygon_one_way_direction(physics_layer, i, polygon_dict["one_way_direction"]);
 		tile_data->set_collision_polygon_one_way_margin(physics_layer, i, polygon_dict["one_way_margin"]);
 	}
 
@@ -1734,6 +1763,7 @@ Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas
 		Dictionary polygon_dict;
 		polygon_dict["points"] = tile_data->get_collision_polygon_points(physics_layer, i);
 		polygon_dict["one_way"] = tile_data->is_collision_polygon_one_way(physics_layer, i);
+		polygon_dict["one_way_direction"] = tile_data->get_collision_polygon_one_way_margin_direction(physics_layer, i);
 		polygon_dict["one_way_margin"] = tile_data->get_collision_polygon_one_way_margin(physics_layer, i);
 		array.push_back(polygon_dict);
 	}
@@ -1756,6 +1786,7 @@ void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile
 			Dictionary polygon_dict = old_polygon_array[i];
 			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["points"]);
 			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["one_way"]);
+			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_direction", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["one_way_direction"]);
 			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_margin", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["one_way_margin"]);
 		}
 
@@ -1767,6 +1798,7 @@ void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile
 			Dictionary polygon_dict = new_polygon_array[i];
 			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["points"]);
 			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["one_way"]);
+			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_direction", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["one_way_direction"]);
 			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_margin", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["one_way_margin"]);
 		}
 	}
