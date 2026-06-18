@@ -552,7 +552,16 @@ void HTTPRequest::_notification(int p_what) {
 			if (use_threads.is_set()) {
 				return;
 			}
-			bool done = _update_connection();
+			bool done = false;
+			do {
+				const int downloaded_before = downloaded.get();
+				done = _update_connection();
+				// If no bytes arrived this iteration, the socket buffer is drained
+				// for this frame — don't spin further.
+				if (!done && downloaded.get() == downloaded_before) {
+					break;
+				}
+			} while (!done);
 			if (done) {
 				set_process_internal(false);
 			}
