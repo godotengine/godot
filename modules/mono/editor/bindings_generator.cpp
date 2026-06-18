@@ -148,6 +148,13 @@ const Vector<String> prop_allowed_inherited_member_hiding = {
 	"GltfAccessor.MethodName.GetType",
 };
 
+// We force the following enums to always add the 'Enum' suffix which is usually
+// a disambiguator when there are other members in the class with the same name.
+// This avoids hiding the enum when the property is declared in a derived class,
+// and the need for the 'new' keyword. It can also be used to avoid breaking compat
+// later if a new member is added with the same name as the enum.
+const Vector<String> enums_with_forced_suffix = {};
+
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
 	// any of the changes done here to the 'uint32_t' type interface as well.
@@ -4356,7 +4363,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		for (const KeyValue<StringName, const GDType::EnumInfo *> &kv : enum_map) {
 			StringName enum_proxy_cname = kv.key;
 			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.string());
-			if (itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
+			if (enums_with_forced_suffix.has(itype.proxy_name + "." + enum_proxy_name) || itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
 				// In case the enum name conflicts with other PascalCase members,
 				// we append 'Enum' to the enum name in those cases.
 				// We have several conflicts between enums and PascalCase properties.
