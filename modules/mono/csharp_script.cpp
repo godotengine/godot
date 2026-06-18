@@ -678,7 +678,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			Array serialized_data;
 
-			bool success = GDMonoCache::managed_callbacks.DelegateUtils_TrySerializeDelegateWithGCHandle(
+			bool success = GDMonoCache::tools_managed_callbacks.DelegateUtils_TrySerializeDelegateWithGCHandle(
 					managed_callable->delegate_handle, &serialized_data);
 
 			if (success) {
@@ -765,7 +765,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			Dictionary properties;
 
-			GDMonoCache::managed_callbacks.CSharpInstanceBridge_SerializeState(
+			GDMonoCache::tools_managed_callbacks.CSharpInstanceBridge_SerializeState(
 					csi->get_gchandle_intptr(), &properties, &state.event_signals);
 
 			for (const Variant *s = properties.next(nullptr); s != nullptr; s = properties.next(s)) {
@@ -873,7 +873,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				continue;
 			}
 		} else {
-			bool success = GDMonoCache::managed_callbacks.ScriptManagerBridge_TryReloadRegisteredScriptWithClass(scr.ptr());
+			bool success = GDMonoCache::tools_managed_callbacks.ScriptManagerBridge_TryReloadRegisteredScriptWithClass(scr.ptr());
 
 			if (!success) {
 				// Couldn't reload
@@ -974,7 +974,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			GCHandleIntPtr delegate = { nullptr };
 
-			bool success = GDMonoCache::managed_callbacks.DelegateUtils_TryDeserializeDelegateWithGCHandle(
+			bool success = GDMonoCache::tools_managed_callbacks.DelegateUtils_TryDeserializeDelegateWithGCHandle(
 					&serialized_data, &delegate);
 
 			if (success) {
@@ -1011,7 +1011,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				}
 
 				// Restore serialized state and call OnAfterDeserialize.
-				GDMonoCache::managed_callbacks.CSharpInstanceBridge_DeserializeState(
+				GDMonoCache::tools_managed_callbacks.CSharpInstanceBridge_DeserializeState(
 						csi->get_gchandle_intptr(), &properties, &state_backup.event_signals);
 			}
 		}
@@ -1493,20 +1493,97 @@ Object *CSharpInstance::get_owner() {
 bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 	ERR_FAIL_COND_V(script.is_null(), false);
 
-	return GDMonoCache::managed_callbacks.CSharpInstanceBridge_Set(
-			gchandle.get_intptr(), &p_name, &p_value);
+	const CSharpScript::PropertyTrampolines *trampolines = script->property_trampolines.getptr(p_name);
+	if (trampolines) {
+		if (trampolines->setter.function_pointer == nullptr) {
+			return false;
+		}
+		return GDMonoCache::managed_callbacks.CSharpInstanceBridge_SetViaTrampoline(
+				trampolines->setter, gchandle.get_intptr(), &p_value);
+	}
+
+	if (unlikely(script->should_fallback_to_legacy_trampolines)) {
+		// The legacy CSharpInstanceBridge.Set already calls "_set" as a last resort,
+		// so don't continue after this branch.
+		ERR_FAIL_NULL_LEGACY_CALLBACK_V(CSharpInstanceBridge_LegacySet, false);
+		return GDMonoCache::managed_callbacks.CSharpInstanceBridge_LegacySet(
+				gchandle.get_intptr(), &p_name, &p_value);
+	}
+
+	if (has_method(SNAME("_set"))) {
+		Callable::CallError call_error;
+		const Variant name_arg = p_name;
+		const Variant *args[2]{ &name_arg, &p_value };
+		const Variant ret = _callp(SNAME("_set"), args, 2, call_error);
+
+		if (ret.get_type() == Variant::NIL || call_error.error != Callable::CallError::CALL_OK) {
+			return false;
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 	ERR_FAIL_COND_V(script.is_null(), false);
 
-	Variant ret_value;
+	const CSharpScript::PropertyTrampolines *trampolines = script->property_trampolines.getptr(p_name);
+	if (trampolines) {
+		if (trampolines->getter.function_pointer == nullptr) {
+			return false;
+		}
 
-	bool ret = GDMonoCache::managed_callbacks.CSharpInstanceBridge_Get(
-			gchandle.get_intptr(), &p_name, &ret_value);
+		Variant ret_value;
+		if (likely(GDMonoCache::managed_callbacks.CSharpInstanceBridge_GetViaTrampoline(
+					trampolines->getter, gchandle.get_intptr(), &ret_value))) {
+			r_ret = ret_value;
+			return true;
+		}
 
-	if (ret) {
-		r_ret = ret_value;
+		return false;
+	}
+
+	if (unlikely(script->should_fallback_to_legacy_trampolines)) {
+		// The legacy CSharpInstanceBridge.Get already handles signal and method objects,
+		// and calls "_get" as a last resort, so don't continue after this branch.
+
+		ERR_FAIL_NULL_LEGACY_CALLBACK_V(CSharpInstanceBridge_LegacyGet, false);
+
+		Variant ret_value;
+		if (GDMonoCache::managed_callbacks.CSharpInstanceBridge_LegacyGet(gchandle.get_intptr(), &p_name, &ret_value)) {
+			r_ret = ret_value;
+			return true;
+		}
+
+		return false;
+	}
+
+	for (const KeyValue<CSharpScript::SignalKey, godotsharp::RaiseSignalTrampoline> &kvp : script->raise_signal_trampolines) {
+		if (kvp.key.name == p_name) {
+			r_ret = Signal(owner->get_instance_id(), p_name);
+			return true;
+		}
+	}
+
+	if (script->_has_method_mapping_to_proxy_include_base(p_name)) {
+		r_ret = Callable(owner->get_instance_id(), p_name);
+		return true;
+	}
+
+	if (has_method(SNAME("_get"))) {
+		Callable::CallError call_error;
+		const Variant name_arg = p_name;
+		const Variant *args[1]{ &name_arg };
+		const Variant ret = _callp(SNAME("_get"), args, 1, call_error);
+
+		if (ret.get_type() == Variant::NIL || call_error.error != Callable::CallError::CALL_OK) {
+			r_ret = Variant();
+			return false;
+		}
+
+		r_ret = ret;
 		return true;
 	}
 
@@ -1535,17 +1612,13 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 	StringName method = SNAME("_get_property_list");
 
-	Variant ret;
 	Callable::CallError call_error;
-	bool ok = GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &method, nullptr, 0, &call_error, &ret);
+	Variant ret = _callp(method, nullptr, 0, call_error);
 
 	// CALL_ERROR_INVALID_METHOD would simply mean it was not overridden
 	if (call_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		if (call_error.error != Callable::CallError::CALL_OK) {
 			ERR_PRINT("Error calling '_get_property_list': " + Variant::get_call_error_text(method, nullptr, 0, call_error));
-		} else if (!ok) {
-			ERR_PRINT("Unexpected error calling '_get_property_list'");
 		} else {
 			Array array = ret;
 			for (int i = 0, size = array.size(); i < size; i++) {
@@ -1597,16 +1670,14 @@ bool CSharpInstance::property_can_revert(const StringName &p_name) const {
 	Variant name_arg = p_name;
 	const Variant *args[1] = { &name_arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_property_can_revert"), args, 1, &call_error, &ret);
+	Variant ret = _callp(SNAME("_property_can_revert"), args, 1, call_error);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return false;
 	}
 
-	return (bool)ret;
+	return ret;
 }
 
 void CSharpInstance::validate_property(PropertyInfo &p_property) const {
@@ -1615,10 +1686,8 @@ void CSharpInstance::validate_property(PropertyInfo &p_property) const {
 	Variant property_arg = (Dictionary)p_property;
 	const Variant *args[1] = { &property_arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_validate_property"), args, 1, &call_error, &ret);
+	Variant ret = _callp(SNAME("_validate_property"), args, 1, call_error);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return;
@@ -1633,10 +1702,8 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 	Variant name_arg = p_name;
 	const Variant *args[1] = { &name_arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_property_get_revert"), args, 1, &call_error, &ret);
+	Variant ret = _callp(SNAME("_property_get_revert"), args, 1, call_error);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return false;
@@ -1663,7 +1730,17 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 		return false;
 	}
 
-	return GDMonoCache::managed_callbacks.CSharpInstanceBridge_HasMethodUnknownParams(
+	if (script->_has_method_mapping_to_proxy_include_base(p_method)) {
+		return true;
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		return false;
+	}
+
+	ERR_FAIL_NULL_LEGACY_CALLBACK_V(CSharpInstanceBridge_LegacyHasMethodUnknownParams, false);
+
+	return GDMonoCache::managed_callbacks.CSharpInstanceBridge_LegacyHasMethodUnknownParams(
 			gchandle.get_intptr(), &p_method);
 }
 
@@ -1695,14 +1772,76 @@ int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *
 	return 0;
 }
 
-Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant CSharpInstance::_callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const {
 	ERR_FAIL_COND_V(script.is_null(), Variant());
 
+	const CSharpScript::MethodKey method_key{ p_method, p_argcount };
+
+	const godotsharp::MethodTrampoline *trampoline = script->method_trampolines.getptr(method_key);
+	if (trampoline != nullptr) {
+		Variant ret;
+		GDMonoCache::managed_callbacks.CSharpInstanceBridge_CallViaTrampoline(
+				*trampoline, gchandle.get_intptr(), p_args, p_argcount, &r_error, &ret);
+		if (likely(r_error.error == Callable::CallError::CALL_OK)) {
+			return ret;
+		}
+		return Variant();
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
+	}
+
+	ERR_FAIL_NULL_LEGACY_CALLBACK_V_SET_CALL_ERROR(CSharpInstanceBridge_LegacyCall,
+			Variant(), r_error, CALL_ERROR_INVALID_METHOD);
+
 	Variant ret;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
+	GDMonoCache::managed_callbacks.CSharpInstanceBridge_LegacyCall(
 			gchandle.get_intptr(), &p_method, p_args, p_argcount, &r_error, &ret);
 
 	return ret;
+}
+
+Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	return _callp(p_method, p_args, p_argcount, r_error);
+}
+
+void CSharpInstance::raise_event_signal(const StringName &p_event_signal_name, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const {
+	bool owner_is_null = false;
+
+	const godotsharp::RaiseSignalTrampoline *trampoline = script->raise_signal_trampolines.getptr(
+			CSharpScript::SignalKey{ p_event_signal_name, p_argcount });
+	if (trampoline) {
+		GDMonoCache::managed_callbacks.ScriptManagerBridge_RaiseEventSignalViaTrampoline(
+				*trampoline, gchandle.get_intptr(), p_args, p_argcount, &owner_is_null);
+
+		if (unlikely(owner_is_null)) {
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		} else {
+			r_error.error = Callable::CallError::CALL_OK;
+		}
+
+		return;
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return;
+	}
+
+	ERR_FAIL_NULL_LEGACY_CALLBACK_SET_CALL_ERROR(ScriptManagerBridge_LegacyRaiseEventSignal,
+			r_error, CALL_ERROR_INVALID_METHOD);
+
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_LegacyRaiseEventSignal(
+			gchandle.get_intptr(), &p_event_signal_name,
+			p_args, p_argcount, &owner_is_null);
+
+	if (unlikely(owner_is_null)) {
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+	} else {
+		r_error.error = Callable::CallError::CALL_OK;
+	}
 }
 
 bool CSharpInstance::_reference_owner_unsafe() {
@@ -1748,15 +1887,47 @@ bool CSharpInstance::_unreference_owner_unsafe() {
 	return static_cast<RefCounted *>(owner)->unreference();
 }
 
+bool CSharpScript::_unchecked_create_managed_for_godot_object_script_instance(Object *p_owner, const Variant **p_args, int p_argcount) {
+	// Must be checked by callers.
+	DEV_ASSERT(p_owner != nullptr);
+	DEV_ASSERT(can_instantiate());
+
+	// IMPORTANT:
+	// For compatibility reasons, we only use trampolines for the parameterless constructor.
+	// For constructors with parameters, we cannot guarantee that the overload we got is the
+	// same we would get with the legacy version, and that would be a breaking change.
+	if (p_argcount == 0) {
+		const godotsharp::ConstructorTrampoline *trampoline = constructor_trampolines.getptr(p_argcount);
+		if (trampoline) {
+			return GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline(
+					*trampoline, p_owner, p_args, p_argcount);
+		}
+	}
+
+	ERR_FAIL_NULL_LEGACY_CALLBACK_V(ScriptManagerBridge_LegacyCreateManagedForGodotObjectScriptInstance, false);
+
+	// Legacy version.
+	return GDMonoCache::managed_callbacks.ScriptManagerBridge_LegacyCreateManagedForGodotObjectScriptInstance(
+			this, p_owner, p_args, p_argcount);
+}
+
 bool CSharpInstance::_internal_new_managed() {
 	CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
 
 	ERR_FAIL_NULL_V(owner, false);
 	ERR_FAIL_COND_V(script.is_null(), false);
-	ERR_FAIL_COND_V(!script->can_instantiate(), false);
 
-	bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance(
-			script.ptr(), owner, nullptr, 0);
+	if (unlikely(!script->type_info.can_instantiate())) {
+		ERR_FAIL_COND_V_MSG(script->type_info.is_abstract, false,
+				vformat("Cannot create script instance because the class '%s' is abstract. Script: '%s'.",
+						script->type_info.class_name, script->get_path()));
+		ERR_FAIL_COND_V_MSG(script->type_info.is_generic_type_definition, false,
+				vformat("Cannot create script instance because the class '%s' is a generic type definition. Script: '%s'.",
+						script->type_info.class_name, script->get_path()));
+		ERR_FAIL_V_MSG(false, "Cannot instantiate C# script. Script: '" + script->get_path() + "'.");
+	}
+
+	const bool ok = script->_unchecked_create_managed_for_godot_object_script_instance(owner, nullptr, 0);
 
 	if (!ok) {
 		// Important to clear this before destroying the script instance here
@@ -1953,14 +2124,12 @@ void CSharpInstance::notification(int p_notification, bool p_reversed) {
 	_call_notification(p_notification, p_reversed);
 }
 
-void CSharpInstance::_call_notification(int p_notification, bool p_reversed) {
+void CSharpInstance::_call_notification(int p_notification, bool p_reversed) const {
 	Variant arg = p_notification;
 	const Variant *args[1] = { &arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_notification"), args, 1, &call_error, &ret);
+	_callp(SNAME("_notification"), args, 1, call_error);
 }
 
 String CSharpInstance::to_string(bool *r_valid) {
@@ -2252,6 +2421,63 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
+	p_script->constructor_trampolines.clear();
+	p_script->static_method_trampolines.clear();
+	p_script->method_trampolines.clear();
+	p_script->property_trampolines.clear();
+	p_script->raise_signal_trampolines.clear();
+
+	auto try_add_constructor_tramp = [](CSharpScript *p_scr, int32_t p_argc, godotsharp::ConstructorTrampoline p_trampoline) {
+		p_scr->constructor_trampolines.insert_new(p_argc, p_trampoline);
+	};
+
+	auto try_add_method_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc,
+										godotsharp::MethodTrampoline p_trampoline, bool p_is_static) {
+		MethodKey method_key{ *p_name, p_argc };
+		if (!p_scr->method_trampolines.has(method_key)) {
+			p_scr->method_trampolines.insert_new(method_key, p_trampoline);
+		}
+		if (p_is_static) {
+			p_scr->static_method_trampolines.insert_new(method_key, p_trampoline);
+		}
+	};
+
+	auto try_add_property_tramp = [](CSharpScript *p_scr, const StringName *p_name,
+										  godotsharp::PropertyGetterTrampoline p_getter_trampoline,
+										  godotsharp::PropertySetterTrampoline p_setter_trampoline) {
+		DEV_ASSERT(p_getter_trampoline.function_pointer != nullptr || p_setter_trampoline.function_pointer != nullptr);
+
+		PropertyTrampolines *found = p_scr->property_trampolines.getptr(*p_name);
+		if (found) {
+			// Could not have added an entry where both are null.
+			DEV_ASSERT(found->getter.function_pointer != nullptr || found->setter.function_pointer != nullptr);
+
+			// If an entry already exists, we still replace one of the trampolines if it's null.
+			// This matches the behavior of Get/SetGodotClassPropertyValue, which will continue
+			// looking in base classes if the property in the current class is readonly/writeonly.
+			if (p_getter_trampoline.function_pointer && !found->getter.function_pointer) {
+				found->getter = p_getter_trampoline;
+			} else if (p_setter_trampoline.function_pointer && !found->setter.function_pointer) {
+				found->setter = p_setter_trampoline;
+			}
+		} else {
+			p_scr->property_trampolines.insert_new(*p_name, { p_getter_trampoline, p_setter_trampoline });
+		}
+	};
+
+	auto try_add_raise_signal_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc,
+											  godotsharp::RaiseSignalTrampoline p_trampoline) {
+		SignalKey signal_key{ *p_name, p_argc };
+		if (!p_scr->raise_signal_trampolines.has(signal_key)) {
+			p_scr->raise_signal_trampolines.insert_new(signal_key, p_trampoline);
+		}
+	};
+
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptTrampolines(
+			p_script.ptr(), &p_script->should_fallback_to_legacy_trampolines,
+			try_add_constructor_tramp, try_add_method_tramp,
+			try_add_property_tramp, try_add_raise_signal_tramp);
+
 	TypeInfo type_info;
 
 	// TODO: Use GDExtension godot_dictionary
@@ -2366,7 +2592,15 @@ StringName CSharpScript::get_instance_base_type() const {
 }
 
 CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error) {
-	ERR_FAIL_COND_V_MSG(!type_info.can_instantiate(), nullptr, "Cannot instantiate C# script. Script: '" + get_path() + "'.");
+	if (unlikely(!type_info.can_instantiate())) {
+		ERR_FAIL_COND_V_MSG(type_info.is_abstract, nullptr,
+				vformat("Cannot create script instance because the class '%s' is abstract. Script: '%s'.",
+						type_info.class_name, get_path()));
+		ERR_FAIL_COND_V_MSG(type_info.is_generic_type_definition, nullptr,
+				vformat("Cannot create script instance because the class '%s' is a generic type definition. Script: '%s'.",
+						type_info.class_name, get_path()));
+		ERR_FAIL_V_MSG(nullptr, "Cannot instantiate C# script. Script: '" + get_path() + "'.");
+	}
 
 	/* STEP 1, CREATE */
 
@@ -2398,8 +2632,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 
 	/* STEP 2, INITIALIZE AND CONSTRUCT */
 
-	bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance(
-			this, p_owner, p_args, p_argcount);
+	const bool ok = _unchecked_create_managed_for_godot_object_script_instance(p_owner, p_args, p_argcount);
 
 	if (!ok) {
 		// Important to clear this before destroying the script instance here
@@ -2426,12 +2659,9 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 
 	r_error.error = Callable::CallError::CALL_OK;
 
-	StringName native_name;
-	GDMonoCache::managed_callbacks.ScriptManagerBridge_GetScriptNativeName(this, &native_name);
+	ERR_FAIL_COND_V(type_info.native_base_name == StringName(), Variant());
 
-	ERR_FAIL_COND_V(native_name == StringName(), Variant());
-
-	Object *owner = ClassDB::instantiate(native_name);
+	Object *owner = ClassDB::instantiate(type_info.native_base_name);
 
 	Ref<RefCounted> ref;
 	RefCounted *r = Object::cast_to<RefCounted>(owner);
@@ -2459,18 +2689,15 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 	CRASH_COND(!valid);
 #endif // DEBUG_ENABLED
 
-	StringName native_name;
-	GDMonoCache::managed_callbacks.ScriptManagerBridge_GetScriptNativeName(this, &native_name);
+	ERR_FAIL_COND_V(type_info.native_base_name == StringName(), nullptr);
 
-	ERR_FAIL_COND_V(native_name == StringName(), nullptr);
-
-	if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
+	if (!ClassDB::is_parent_class(p_this->get_class_name(), type_info.native_base_name)) {
 		if (EngineDebugger::is_active()) {
 			CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
-					"Script inherits from native type '" + String(native_name) +
+					"Script inherits from native type '" + String(type_info.native_base_name) +
 							"', so it can't be assigned to an object of type: '" + p_this->get_class() + "'");
 		}
-		ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be assigned to an object of type: '" + p_this->get_class() + "'.");
+		ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(type_info.native_base_name) + "', so it can't be assigned to an object of type: '" + p_this->get_class() + "'.");
 	}
 
 	Callable::CallError unchecked_error;
@@ -2519,6 +2746,16 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 
 		top = top->base_script.ptr();
 	}
+}
+
+bool CSharpScript::_has_method_mapping_to_proxy_include_base(const StringName &p_name) const {
+	for (const KeyValue<MethodKey, godotsharp::MethodTrampoline> &kvp : method_trampolines) {
+		if (kvp.key.name == p_name) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool CSharpScript::has_method(const StringName &p_method) const {
@@ -2579,13 +2816,39 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 	return mi;
 }
 
-Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	if (valid) {
-		Variant ret;
-		bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(this, &p_method, p_args, p_argcount, &r_error, &ret);
-		if (ok) {
-			return ret;
+bool CSharpScript::_callp_static(const CSharpScript *p_script, const StringName &p_method,
+		const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &r_ret) {
+	if (!p_script->valid) {
+		return false;
+	}
+
+	const MethodKey method_key{ p_method, p_argcount };
+
+	const godotsharp::MethodTrampoline *trampoline = p_script->static_method_trampolines.getptr(method_key);
+	if (trampoline != nullptr) {
+		GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStaticWithTrampoline(
+				*trampoline, p_args, p_argcount, &r_error, &r_ret);
+		if (likely(r_error.error == Callable::CallError::CALL_OK)) {
+			return true;
 		}
+		return false;
+	}
+
+	if (likely(!p_script->should_fallback_to_legacy_trampolines)) {
+		return false;
+	}
+
+	ERR_FAIL_NULL_LEGACY_CALLBACK_V(ScriptManagerBridge_LegacyCallStatic, false);
+
+	Variant ret;
+	return GDMonoCache::managed_callbacks.ScriptManagerBridge_LegacyCallStatic(
+			p_script, &p_method, p_args, p_argcount, &r_error, &ret);
+}
+
+Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	Variant ret;
+	if (_callp_static(this, p_method, p_args, p_argcount, r_error, ret)) {
+		return ret;
 	}
 
 	return Script::callp(p_method, p_args, p_argcount, r_error);
@@ -2694,7 +2957,7 @@ void CSharpScript::_get_script_signal_list(List<MethodInfo> *r_signals, bool p_i
 }
 
 void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	_get_script_signal_list(r_signals, true);
+	_get_script_signal_list(r_signals, /* include_base */ true);
 }
 
 bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {

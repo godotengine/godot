@@ -16,7 +16,7 @@ namespace GodotTools.Internals
             using godot_variant defaultValueIn = defaultValue.CopyNativeVariant();
             Internal.godot_icall_Globals_GlobalDef(settingIn, defaultValueIn, restartIfChanged,
                 out godot_variant result);
-            return Variant.CreateTakingOwnershipOfDisposableValue(result);
+            return Variant.CreateConsuming(result);
         }
 
         // ReSharper disable once UnusedMethodReturnValue.Global
@@ -26,7 +26,7 @@ namespace GodotTools.Internals
             using godot_variant defaultValueIn = defaultValue.CopyNativeVariant();
             Internal.godot_icall_Globals_EditorDef(settingIn, defaultValueIn, restartIfChanged,
                 out godot_variant result);
-            return Variant.CreateTakingOwnershipOfDisposableValue(result);
+            return Variant.CreateConsuming(result);
         }
 
         public static Shortcut EditorDefShortcut(string setting, string name, Key keycode = Key.None, bool physical = false)
@@ -34,14 +34,14 @@ namespace GodotTools.Internals
             using godot_string settingIn = Marshaling.ConvertStringToNative(setting);
             using godot_string nameIn = Marshaling.ConvertStringToNative(name);
             Internal.godot_icall_Globals_EditorDefShortcut(settingIn, nameIn, keycode, physical.ToGodotBool(), out godot_variant result);
-            return (Shortcut)Variant.CreateTakingOwnershipOfDisposableValue(result);
+            return (Shortcut)Variant.CreateConsuming(result);
         }
 
         public static Shortcut EditorGetShortcut(string setting)
         {
             using godot_string settingIn = Marshaling.ConvertStringToNative(setting);
             Internal.godot_icall_Globals_EditorGetShortcut(settingIn, out godot_variant result);
-            return (Shortcut)Variant.CreateTakingOwnershipOfDisposableValue(result);
+            return (Shortcut)Variant.CreateConsuming(result);
         }
 
         public static void EditorShortcutOverride(string setting, string feature, Key keycode = Key.None, bool physical = false)

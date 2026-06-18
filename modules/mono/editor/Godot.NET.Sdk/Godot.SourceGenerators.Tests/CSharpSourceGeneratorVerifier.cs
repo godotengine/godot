@@ -58,6 +58,7 @@ where TSourceGenerator : ISourceGenerator, new()
         verifier.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", $"""
         is_global = true
         build_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}
+        build_property.EnableTrimAnalyzer = true
         """));
 
         verifier.TestState.Sources.AddRange(sources.Select(source => (

@@ -199,42 +199,46 @@ namespace Godot.NativeInterop
             return Variant.Type.Nil;
         }
 
-        internal static void GetTypedCollectionParameterInfo<T>(
+        internal static void GetTypedCollectionParameterInfo(
+            Type type,
+            NativeProxyMeta? nativeProxyMeta,
+            Bridge.ScriptTypeMeta? scriptTypeMeta,
             out Variant.Type variantType,
-            out godot_string_name className,
-            out godot_ref script)
+            out godot_string_name borrowedClassName,
+            out godot_ref consumingScript)
         {
-            variantType = ConvertManagedTypeToVariantType(typeof(T), out _);
+            variantType = ConvertManagedTypeToVariantType(type, out _);
 
             if (variantType != Variant.Type.Object)
             {
-                className = default;
-                script = default;
+                borrowedClassName = default;
+                consumingScript = default;
                 return;
             }
 
+            // Type is Object.
+
             godot_ref scriptRef = default;
 
-            if (!GodotObject.IsNativeClass(typeof(T)))
+            if (scriptTypeMeta != null)
             {
                 unsafe
                 {
-                    Godot.Bridge.ScriptManagerBridge.GetOrLoadOrCreateScriptForType(typeof(T), &scriptRef);
+                    Godot.Bridge.ScriptManagerBridge.GetOrLoadOrCreateScriptForType(scriptTypeMeta.Type, &scriptRef);
                 }
 
-                // Don't call GodotObject.InternalGetClassNativeBaseName here!
-                // godot_dictionary_set_typed and godot_array_set_typed will call CSharpScript::get_instance_base_type
-                // when a script is passed, because this is better for performance than using reflection to find the
-                // native base type.
-                className = default;
+                borrowedClassName = (godot_string_name)scriptTypeMeta.NativeName.NativeValue;
+            }
+            else if (nativeProxyMeta != null)
+            {
+                borrowedClassName = (godot_string_name)nativeProxyMeta.NativeName.NativeValue;
             }
             else
             {
-                StringName? nativeBaseName = GodotObject.InternalGetClassNativeBaseName(typeof(T));
-                className = nativeBaseName != null ? (godot_string_name)nativeBaseName.NativeValue : default;
+                throw new InvalidOperationException();
             }
 
-            script = scriptRef;
+            consumingScript = scriptRef;
         }
 
         // String
@@ -324,7 +328,7 @@ namespace Godot.NativeInterop
 
                 return new Callable(
                     InteropUtils.UnmanagedGetManaged(godotObject),
-                    StringName.CreateTakingOwnershipOfDisposableValue(name));
+                    StringName.CreateConsuming(name));
             }
 
             // Some other unsupported callable
@@ -354,7 +358,7 @@ namespace Godot.NativeInterop
         public static Signal ConvertSignalToManaged(in godot_signal p_signal)
         {
             var owner = GodotObject.InstanceFromId(p_signal.ObjectId);
-            var name = StringName.CreateTakingOwnershipOfDisposableValue(
+            var name = StringName.CreateConsuming(
                 NativeFuncs.godotsharp_string_name_new_copy(p_signal.Name));
             return new Signal(owner, name);
         }
@@ -364,7 +368,7 @@ namespace Godot.NativeInterop
         internal static T[] ConvertNativeGodotArrayToSystemArrayOfGodotObjectType<T>(in godot_array p_array)
             where T : GodotObject
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Collections.Array.CreateConsuming(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
@@ -378,7 +382,7 @@ namespace Godot.NativeInterop
 
         internal static StringName[] ConvertNativeGodotArrayToSystemArrayOfStringName(in godot_array p_array)
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Collections.Array.CreateConsuming(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
@@ -392,7 +396,7 @@ namespace Godot.NativeInterop
 
         internal static NodePath[] ConvertNativeGodotArrayToSystemArrayOfNodePath(in godot_array p_array)
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Collections.Array.CreateConsuming(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
@@ -406,7 +410,7 @@ namespace Godot.NativeInterop
 
         internal static Rid[] ConvertNativeGodotArrayToSystemArrayOfRid(in godot_array p_array)
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Collections.Array.CreateConsuming(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
