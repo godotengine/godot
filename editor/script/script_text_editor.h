@@ -39,6 +39,8 @@
 #include "scene/gui/tree.h"
 
 class RichTextLabel;
+class ItemList;
+class Node;
 
 class ConnectionInfoDialog : public AcceptDialog {
 	GDCLASS(ConnectionInfoDialog, AcceptDialog);
@@ -81,6 +83,10 @@ class ScriptTextEditor : public CodeEditorBase {
 
 	ScriptEditorQuickOpen *quick_open = nullptr;
 	ConnectionInfoDialog *connection_info_dialog = nullptr;
+	AcceptDialog *nodepath_select_dialog = nullptr;
+	Label *nodepath_select_label = nullptr;
+	ItemList *nodepath_select_list = nullptr;
+	Vector<Node *> _pending_nodepath_nodes;
 
 	int connection_gutter = -1;
 	void _gutter_clicked(int p_line, int p_gutter);
@@ -194,6 +200,10 @@ protected:
 	void _validate_symbol(const String &p_symbol);
 
 	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column, bool p_shortcut = false);
+
+	bool _navigate_nodepath(int p_row, int p_column);
+	void _navigate_to_scene_node(Node *p_node);
+	void _nodepath_select_confirmed();
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

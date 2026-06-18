@@ -2713,6 +2713,71 @@ String CodeEdit::get_text_with_cursor_char(int p_line, int p_column) const {
 	return result.as_string();
 }
 
+String CodeEdit::get_nodepath_at_pos(int p_line, int p_column) const {
+	if (p_line < 0 || p_column < 0) {
+		return String();
+	}
+	const String &line = get_line(p_line);
+	if (line.is_empty() || p_column < 0 || p_column > line.length()) {
+		return String();
+	}
+
+	// NodePath after $:
+	int left = p_column;
+	bool quoted = false;
+	while (left > 0 && (is_ascii_identifier_char(line[left - 1]) || line[left - 1] == '/' || line[left - 1] == '.' || line[left - 1] == '"')) {
+		left--;
+	}
+
+	if (left > 0 && line[left - 1] == '$') {
+		if (left < line.length() && line[left] == '"') {
+			quoted = true;
+			left++;
+		}
+
+		int right = p_column;
+		while (right < line.length() && (is_ascii_identifier_char(line[right]) || line[right] == '/' || line[right] == '.')) {
+			right++;
+		}
+		if (quoted && right < line.length() && line[right] == '"') {
+			quoted = false;
+		}
+		if (right > left && !quoted) {
+			return line.substr(left, right - left);
+		}
+	}
+
+	// NodePath from get_node("..."):
+	left = p_column;
+	while (left > 0 && (is_ascii_identifier_char(line[left - 1]) || line[left - 1] == '/' || line[left - 1] == '.')) {
+		left--;
+	}
+
+	int start = left;
+	if (start > 0 && line[start - 1] == '"') {
+		start--;
+	} else {
+		return String();
+	}
+	if (start > 0 && line[start - 1] == '^') {
+		start--;
+	}
+
+	static const String get_node_prefix = "get_node(";
+	const int prefix_len = get_node_prefix.length();
+	if (start >= prefix_len && line.substr(start - prefix_len, prefix_len) == get_node_prefix) {
+		int right = p_column;
+		while (right < line.length() && (is_ascii_identifier_char(line[right]) || line[right] == '/' || line[right] == '.')) {
+			right++;
+		}
+		if (right > left) {
+			return line.substr(left, right - left);
+		}
+	}
+
+	return String();
+}
+
 String CodeEdit::get_lookup_word(int p_line, int p_column) const {
 	if (p_line < 0 || p_column < 0) {
 		return String();
@@ -2729,6 +2794,12 @@ String CodeEdit::get_lookup_word(int p_line, int p_column) const {
 			return get_line(start_line).substr(start_column, end_column - start_column - 1);
 		}
 	}
+
+	String nodepath = get_nodepath_at_pos(p_line, p_column);
+	if (!nodepath.is_empty()) {
+		return nodepath;
+	}
+
 	return get_word(p_line, p_column);
 }
 
