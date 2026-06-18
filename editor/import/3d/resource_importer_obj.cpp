@@ -292,6 +292,9 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				c.r = v[4].to_float();
 				c.g = v[5].to_float();
 				c.b = v[6].to_float();
+				if (v.size() >= 8) {
+					c.a = v[7].to_float();
+				}
 				colors.push_back(c);
 			} else if (!colors.is_empty()) {
 				colors.push_back(Color(1.0, 1.0, 1.0));
