@@ -739,7 +739,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 
 	// For compressed images, some formats may not be supported by the current device and will require decompression.
 	bool need_decompress = false;
-	bool decompress_ra_to_rg = false;
 
 	switch (p_format) {
 		case Image::FORMAT_DXT1: {
@@ -905,7 +904,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			{
 				need_decompress = true;
 			}
-			decompress_ra_to_rg = true;
 		} break;
 		case Image::FORMAT_DXT5_RA_AS_RG: {
 #ifndef WEB_ENABLED
@@ -919,7 +917,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			{
 				need_decompress = true;
 			}
-			decompress_ra_to_rg = true;
 		} break;
 		case Image::FORMAT_ASTC_4x4: {
 			if (config->astc_supported) {
@@ -991,11 +988,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			image = image->duplicate();
 			image->decompress();
 			ERR_FAIL_COND_V(image->is_compressed(), image);
-
-			if (decompress_ra_to_rg) {
-				image->convert_ra_rgba8_to_rg();
-				image->convert(Image::FORMAT_RG8);
-			}
 
 			Error err = _get_gl_uncompressed_format(image, image->get_format(), r_real_format, r_gl_format, r_gl_internal_format, r_gl_type);
 			ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("The image format %d is not supported by the Compatibility renderer.", image->get_format()));
