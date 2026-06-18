@@ -211,6 +211,7 @@ public:
 	virtual void goto_line(int p_line, int p_column = 0) { code_editor->goto_line(p_line, p_column); }
 	virtual void goto_line_selection(int p_line, int p_begin, int p_end) { code_editor->goto_line_selection(p_line, p_begin, p_end); }
 	virtual void goto_line_centered(int p_line, int p_column = 0) { code_editor->goto_line_centered(p_line, p_column); }
+	virtual void goto_line_centered_toggle_fold(int p_line, int p_column = 0) { code_editor->goto_line_centered_toggle_fold(p_line, p_column); }
 	virtual void set_executing_line(int p_line) { code_editor->set_executing_line(p_line); }
 	virtual void clear_executing_line() { code_editor->clear_executing_line(); }
 
