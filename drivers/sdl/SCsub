@@ -132,7 +132,6 @@ if env["builtin_sdl"]:
 
     if env["platform"] == "linuxbsd":
         # TODO: Check support for BSD systems.
-        env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_LINUX"])
         thirdparty_sources += [
             "core/linux/SDL_dbus.c",
             "core/linux/SDL_evdev.c",
@@ -156,7 +155,6 @@ if env["builtin_sdl"]:
         env_sdl.Prepend(CPPPATH=[thirdparty_dir + "core/linux"])
 
     elif env["platform"] == "macos":
-        env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_MACOS"])
         thirdparty_sources += [
             "core/unix/SDL_appid.c",
             "core/unix/SDL_poll.c",
@@ -173,7 +171,6 @@ if env["builtin_sdl"]:
         ]
 
     elif env["platform"] == "windows":
-        env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_WINDOWS"])
         thirdparty_sources += [
             "core/windows/SDL_hid.c",
             "core/windows/SDL_immdevice.c",
@@ -200,11 +197,6 @@ if env["builtin_sdl"]:
         ]
 
     elif env["platform"] in ["ios", "visionos"]:
-        if env["platform"] == "ios":
-            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_IOS"])
-        else:
-            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_VISIONOS"])
-
         thirdparty_sources += [
             "core/unix/SDL_appid.c",
             "core/unix/SDL_poll.c",
