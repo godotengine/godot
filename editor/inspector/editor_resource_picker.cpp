@@ -1763,8 +1763,10 @@ void EditorAudioStreamPicker::_preview_draw() {
 		text = audio_stream->get_name();
 	} else if (audio_stream->get_path().is_resource_file()) {
 		text = audio_stream->get_path().get_file();
-	} else {
+	} else if (audio_stream->get_class() != "AudioStream") {
 		text = audio_stream->get_class().replace_first("AudioStream", "");
+	} else {
+		text = audio_stream->get_class();
 	}
 
 	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 4, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
