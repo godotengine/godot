@@ -5699,6 +5699,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			if (columns < 1) {
 				columns = 1;
 			}
+			int row = -1;
 
 			int alignment = INLINE_ALIGNMENT_TOP;
 			if (subtag.size() > 2) {
@@ -5720,6 +5721,23 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				} else if (subtag[2] == "bottom" || subtag[2] == "b") {
 					alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
 				}
+				if (subtag.size() > 3) {
+					if (subtag[3] == "prev" || subtag[3] == "p") {
+						alignment |= INLINE_ALIGNMENT_SCOPE_PREV_SPAN;
+					} else if (subtag[3] == "next" || subtag[3] == "n") {
+						alignment |= INLINE_ALIGNMENT_SCOPE_NEXT_SPAN;
+					} else if (subtag[3] == "adjacent" || subtag[3] == "a") {
+						alignment |= INLINE_ALIGNMENT_SCOPE_ADJACENT_SPANS;
+					} else if (subtag[3] == "line" || subtag[3] == "l") {
+						alignment |= INLINE_ALIGNMENT_SCOPE_LINE;
+					} else {
+						alignment |= INLINE_ALIGNMENT_SCOPE_LINE;
+						row = subtag[3].to_int();
+					}
+				}
+				if (subtag.size() > 4) {
+					row = subtag[4].to_int();
+				}
 			} else if (subtag.size() > 1) {
 				if (subtag[1] == "top" || subtag[1] == "t") {
 					alignment = INLINE_ALIGNMENT_TOP;
@@ -5728,10 +5746,6 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				} else if (subtag[1] == "bottom" || subtag[1] == "b") {
 					alignment = INLINE_ALIGNMENT_BOTTOM;
 				}
-			}
-			int row = -1;
-			if (subtag.size() > 3) {
-				row = subtag[3].to_int();
 			}
 
 			OptionMap::Iterator alt_text_option = bbcode_options.find("name");
@@ -6222,6 +6236,19 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					} else if (subtag[1] == "bottom" || subtag[1] == "b") {
 						alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
 					}
+					if (subtag.size() > 2) {
+						if (subtag[2] == "prev" || subtag[2] == "p") {
+							alignment |= INLINE_ALIGNMENT_SCOPE_PREV_SPAN;
+						} else if (subtag[2] == "next" || subtag[2] == "n") {
+							alignment |= INLINE_ALIGNMENT_SCOPE_NEXT_SPAN;
+						} else if (subtag[2] == "adjacent" || subtag[2] == "a") {
+							alignment |= INLINE_ALIGNMENT_SCOPE_ADJACENT_SPANS;
+						} else if (subtag[2] == "line" || subtag[2] == "l") {
+							alignment |= INLINE_ALIGNMENT_SCOPE_LINE;
+						}
+					} else {
+						alignment |= INLINE_ALIGNMENT_SCOPE_ADJACENT_SPANS;
+					}
 				} else if (!subtag.is_empty()) {
 					if (subtag[0] == "top" || subtag[0] == "t") {
 						alignment = INLINE_ALIGNMENT_TOP;
@@ -6311,6 +6338,19 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 								alignment |= INLINE_ALIGNMENT_TO_BASELINE;
 							} else if (subtag[1] == "bottom" || subtag[1] == "b") {
 								alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
+							}
+							if (subtag.size() > 2) {
+								if (subtag[2] == "prev" || subtag[2] == "p") {
+									alignment |= INLINE_ALIGNMENT_SCOPE_PREV_SPAN;
+								} else if (subtag[2] == "next" || subtag[2] == "n") {
+									alignment |= INLINE_ALIGNMENT_SCOPE_NEXT_SPAN;
+								} else if (subtag[2] == "adjacent" || subtag[2] == "a") {
+									alignment |= INLINE_ALIGNMENT_SCOPE_ADJACENT_SPANS;
+								} else if (subtag[2] == "line" || subtag[2] == "l") {
+									alignment |= INLINE_ALIGNMENT_SCOPE_LINE;
+								}
+							} else {
+								alignment |= INLINE_ALIGNMENT_SCOPE_ADJACENT_SPANS;
 							}
 						} else if (!subtag.is_empty()) {
 							if (subtag[0] == "top" || subtag[0] == "t") {

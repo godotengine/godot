@@ -4724,6 +4724,8 @@ void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *
 	p_shaped->text_trimmed = false;
 	p_shaped->ascent = 0.0;
 	p_shaped->descent = 0.0;
+	p_shaped->base_ascent = 0.0;
+	p_shaped->base_descent = 0.0;
 	p_shaped->width = 0.0;
 	p_shaped->upos = 0.0;
 	p_shaped->uthk = 0.0;
@@ -4733,6 +4735,12 @@ void TextServerAdvanced::invalidate(TextServerAdvanced::ShapedTextDataAdvanced *
 	p_shaped->runs_dirty = true;
 	p_shaped->overrun_trim_data = TrimData();
 	p_shaped->utf16 = Char16String();
+	if (p_shaped->parent == RID()) {
+		for (ShapedTextDataAdvanced::Span &sp : p_shaped->spans) {
+			sp.ascent = 0.0;
+			sp.descent = 0.0;
+		}
+	}
 	for (int i = 0; i < p_shaped->bidi_iter.size(); i++) {
 		ubidi_close(p_shaped->bidi_iter[i]);
 	}
@@ -5381,6 +5389,10 @@ bool TextServerAdvanced::_shaped_text_has_object(const RID &p_shaped, const Vari
 bool TextServerAdvanced::_shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, double p_baseline) {
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_NULL_V(sd, false);
+	if (sd->parent != RID()) {
+		full_copy(sd);
+		invalidate(sd);
+	}
 
 	MutexLock lock(sd->mutex);
 	ERR_FAIL_COND_V(!sd->objects.has(p_key), false);
@@ -5388,29 +5400,17 @@ bool TextServerAdvanced::_shaped_text_resize_object(const RID &p_shaped, const V
 	sd->objects[p_key].inline_align = p_inline_align;
 	sd->objects[p_key].baseline = p_baseline;
 	if (sd->valid.is_set()) {
-		// Recalc string metrics.
-		sd->ascent = 0;
-		sd->descent = 0;
+		// Recalc string width.
 		sd->width = 0;
-		sd->upos = 0;
-		sd->uthk = 0;
-
-		Vector<ShapedTextDataAdvanced::Span> &spans = sd->spans;
-		if (sd->parent != RID()) {
-			ShapedTextDataAdvanced *parent_sd = shaped_owner.get_or_null(sd->parent);
-			ERR_FAIL_COND_V(!parent_sd->valid.is_set(), false);
-			spans = parent_sd->spans;
-		}
 
 		int sd_size = sd->glyphs.size();
-		int span_size = spans.size();
-		const char32_t *ch = sd->text.ptr();
+		int span_size = sd->spans.size();
 
 		for (int i = 0; i < sd_size; i++) {
 			Glyph gl = sd->glyphs[i];
 			Variant key;
 			if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index + sd->first_span >= 0 && gl.span_index + sd->first_span < span_size) {
-				key = spans[gl.span_index + sd->first_span].embedded_key;
+				key = sd->spans[gl.span_index + sd->first_span].embedded_key;
 			}
 			if (key != Variant()) {
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
@@ -5423,26 +5423,6 @@ bool TextServerAdvanced::_shaped_text_resize_object(const RID &p_shaped, const V
 					sd->glyphs[i].advance = sd->objects[key].rect.size.y;
 				}
 			} else {
-				if (gl.font_rid.is_valid()) {
-					if (sd->orientation == ORIENTATION_HORIZONTAL) {
-						sd->ascent = MAX(sd->ascent, MAX(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP), -gl.y_off));
-						sd->descent = MAX(sd->descent, MAX(_font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM), gl.y_off));
-					} else {
-						sd->ascent = MAX(sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
-						sd->descent = MAX(sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
-					}
-					sd->upos = MAX(sd->upos, _font_get_underline_position(gl.font_rid, gl.font_size));
-					sd->uthk = MAX(sd->uthk, _font_get_underline_thickness(gl.font_rid, gl.font_size));
-				} else if (sd->preserve_invalid || (sd->preserve_control && is_control(ch[gl.start - sd->start]))) {
-					// Glyph not found, replace with hex code box.
-					if (sd->orientation == ORIENTATION_HORIZONTAL) {
-						sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.85);
-						sd->descent = MAX(sd->descent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.15);
-					} else {
-						sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
-						sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
-					}
-				}
 				sd->width += gl.advance * gl.repeat;
 			}
 		}
@@ -5455,23 +5435,91 @@ bool TextServerAdvanced::_shaped_text_resize_object(const RID &p_shaped, const V
 
 void TextServerAdvanced::_realign(ShapedTextDataAdvanced *p_sd) const {
 	// Align embedded objects to baseline.
-	double full_ascent = p_sd->ascent;
-	double full_descent = p_sd->descent;
+	Vector<ShapedTextDataAdvanced::Span> &spans = p_sd->spans;
+	if (p_sd->parent != RID()) {
+		ShapedTextDataAdvanced *parent_sd = shaped_owner.get_or_null(p_sd->parent);
+		ERR_FAIL_COND(!parent_sd->valid.is_set());
+		spans = parent_sd->spans;
+	}
+	double full_ascent = p_sd->base_ascent;
+	double full_descent = p_sd->base_descent;
 	for (KeyValue<Variant, ShapedTextDataAdvanced::EmbeddedObject> &E : p_sd->objects) {
 		if ((E.value.start >= p_sd->start) && (E.value.start < p_sd->end)) {
+			double sp_ascent = 0.0;
+			double sp_descent = 0.0;
+			switch (E.value.inline_align & INLINE_ALIGNMENT_SCOPE_MASK) {
+				case INLINE_ALIGNMENT_SCOPE_PREV_SPAN: {
+					int last_valid = -1;
+					for (int i = p_sd->first_span; i < spans.size(); i++) {
+						if (E.value.start == spans[i].start && E.value.end == spans[i].end) {
+							if (last_valid >= 0) {
+								sp_ascent = spans[last_valid].ascent;
+								sp_descent = spans[last_valid].descent;
+							}
+							break;
+						}
+						if (spans[i].embedded_key == Variant()) {
+							last_valid = i;
+						}
+					}
+				} break;
+				case INLINE_ALIGNMENT_SCOPE_NEXT_SPAN: {
+					for (int i = p_sd->first_span; i < spans.size(); i++) {
+						if (E.value.start == spans[i].start && E.value.end == spans[i].end) {
+							int next_valid = -1;
+							for (int j = i + 1; j < spans.size(); j++) {
+								if (spans[j].embedded_key == Variant()) {
+									next_valid = j;
+									break;
+								}
+							}
+							if (next_valid >= 0) {
+								sp_ascent = spans[next_valid].ascent;
+								sp_descent = spans[next_valid].descent;
+							}
+							break;
+						}
+					}
+				} break;
+				case INLINE_ALIGNMENT_SCOPE_ADJACENT_SPANS: {
+					int last_valid = -1;
+					for (int i = p_sd->first_span; i < spans.size(); i++) {
+						if (E.value.start == spans[i].start && E.value.end == spans[i].end) {
+							int next_valid = -1;
+							for (int j = i + 1; j < spans.size(); j++) {
+								if (spans[j].embedded_key == Variant()) {
+									next_valid = j;
+									break;
+								}
+							}
+							sp_ascent = MAX(next_valid >= 0 ? spans[next_valid].ascent : 0.0, last_valid >= 0 ? spans[last_valid].ascent : 0.0);
+							sp_descent = MAX(next_valid >= 0 ? spans[next_valid].descent : 0.0, last_valid >= 0 ? spans[last_valid].descent : 0.0);
+							break;
+						}
+						if (spans[i].embedded_key == Variant()) {
+							last_valid = i;
+						}
+					}
+				} break;
+				case INLINE_ALIGNMENT_SCOPE_LINE: {
+					sp_ascent = p_sd->ascent;
+					sp_descent = p_sd->descent;
+				} break;
+			}
+
 			if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 				switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
 					case INLINE_ALIGNMENT_TO_TOP: {
-						E.value.rect.position.y = -p_sd->ascent;
+						E.value.rect.position.y = -sp_ascent;
 					} break;
 					case INLINE_ALIGNMENT_TO_CENTER: {
-						E.value.rect.position.y = (-p_sd->ascent + p_sd->descent) / 2;
+						E.value.rect.position.y = (-sp_ascent + sp_descent) / 2;
 					} break;
 					case INLINE_ALIGNMENT_TO_BASELINE: {
 						E.value.rect.position.y = 0;
 					} break;
 					case INLINE_ALIGNMENT_TO_BOTTOM: {
-						E.value.rect.position.y = p_sd->descent;
+						E.value.rect.position.y = sp_descent;
 					} break;
 				}
 				switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
@@ -5493,16 +5541,16 @@ void TextServerAdvanced::_realign(ShapedTextDataAdvanced *p_sd) const {
 			} else {
 				switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
 					case INLINE_ALIGNMENT_TO_TOP: {
-						E.value.rect.position.x = -p_sd->ascent;
+						E.value.rect.position.x = -sp_ascent;
 					} break;
 					case INLINE_ALIGNMENT_TO_CENTER: {
-						E.value.rect.position.x = (-p_sd->ascent + p_sd->descent) / 2;
+						E.value.rect.position.x = (-sp_ascent + sp_descent) / 2;
 					} break;
 					case INLINE_ALIGNMENT_TO_BASELINE: {
 						E.value.rect.position.x = 0;
 					} break;
 					case INLINE_ALIGNMENT_TO_BOTTOM: {
-						E.value.rect.position.x = p_sd->descent;
+						E.value.rect.position.x = sp_descent;
 					} break;
 				}
 				switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
@@ -5779,6 +5827,8 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 				}
 			}
 		}
+		p_new_sd->base_ascent = p_new_sd->ascent;
+		p_new_sd->base_descent = p_new_sd->descent;
 
 		_realign(p_new_sd);
 	}
@@ -7071,7 +7121,8 @@ UBreakIterator *TextServerAdvanced::_create_line_break_iterator_for_locale(const
 
 void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, const String &p_language, hb_script_t p_script, hb_direction_t p_direction, FontPriorityList &p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font) {
 	RID f;
-	int fs = p_sd->spans[p_span].font_size;
+	ShapedTextDataAdvanced::Span &span = p_sd->spans.write[p_span];
+	int fs = span.font_size;
 	if (p_fb_index >= 0 && p_fb_index < p_fonts.size()) {
 		// Try font from list.
 		f = p_fonts[p_fb_index];
@@ -7125,19 +7176,26 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 					if (f_rid.is_valid() && _font_has_char(f_rid, p_sd->text[i])) {
 						gl.font_rid = f_rid;
 						gl.index = _font_get_glyph_index(gl.font_rid, fs, p_sd->text[i], 0);
+						double gl_ascent = 0.0;
+						double gl_descent = 0.0;
 						if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 							gl.advance = _font_get_glyph_advance(gl.font_rid, fs, gl.index).x;
 							gl.x_off = 0;
 							gl.y_off = _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
-							p_sd->ascent = MAX(p_sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP));
-							p_sd->descent = MAX(p_sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM));
+							gl_ascent = _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP);
+							gl_descent = _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM);
 						} else {
+							double half = Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5);
 							gl.advance = _font_get_glyph_advance(gl.font_rid, fs, gl.index).y;
-							gl.x_off = -Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5) + _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+							gl.x_off = -half + _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
 							gl.y_off = _font_get_ascent(gl.font_rid, gl.font_size);
-							p_sd->ascent = MAX(p_sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
-							p_sd->descent = MAX(p_sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
+							gl_ascent = half;
+							gl_descent = half;
 						}
+						p_sd->ascent = MAX(p_sd->ascent, gl_ascent);
+						p_sd->descent = MAX(p_sd->descent, gl_descent);
+						span.ascent = MAX(span.ascent, gl_ascent);
+						span.descent = MAX(span.descent, gl_descent);
 						double scale = _font_get_scale(gl.font_rid, fs);
 						bool subpos = (scale != 1.0) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_HALF) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_QUARTER) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_AUTO && fs <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE);
 						if (!subpos) {
@@ -7151,17 +7209,24 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 				if (!found) {
 					gl.font_rid = RID();
 					gl.index = p_sd->text[i];
+					double gl_ascent = 0.0;
+					double gl_descent = 0.0;
 					if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 						gl.advance = get_hex_code_box_size(fs, gl.index).x;
-						p_sd->ascent = MAX(p_sd->ascent, get_hex_code_box_size(fs, gl.index).y * 0.85);
-						p_sd->descent = MAX(p_sd->descent, get_hex_code_box_size(fs, gl.index).y * 0.15);
+						gl_ascent = get_hex_code_box_size(fs, gl.index).y * 0.85;
+						gl_descent = get_hex_code_box_size(fs, gl.index).y * 0.15;
 					} else {
+						double half = Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5);
 						gl.advance = get_hex_code_box_size(fs, gl.index).y;
 						gl.y_off = get_hex_code_box_size(fs, gl.index).y;
-						gl.x_off = -Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5);
-						p_sd->ascent = MAX(p_sd->ascent, Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5));
-						p_sd->descent = MAX(p_sd->descent, Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5));
+						gl.x_off = -half;
+						gl_ascent = half;
+						gl_descent = half;
 					}
+					p_sd->ascent = MAX(p_sd->ascent, gl_ascent);
+					p_sd->descent = MAX(p_sd->descent, gl_descent);
+					span.ascent = MAX(span.ascent, gl_ascent);
+					span.descent = MAX(span.descent, gl_descent);
 				}
 				bool zero_w = (p_sd->preserve_control) ? (p_sd->text[i] == 0x200B || p_sd->text[i] == 0xFEFF) : ((p_sd->text[i] >= 0x200B && p_sd->text[i] <= 0x200D) || p_sd->text[i] == 0x2060 || p_sd->text[i] == 0xFEFF);
 				if (zero_w) {
@@ -7220,7 +7285,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 
 	Vector<hb_feature_t> ftrs;
 	_add_features(_font_get_opentype_feature_overrides(f), ftrs);
-	_add_features(p_sd->spans[p_span].features, ftrs);
+	_add_features(span.features, ftrs);
 
 	hb_shape(hb_font, p_sd->hb_buffer, ftrs.is_empty() ? nullptr : &ftrs[0], ftrs.size());
 
@@ -7404,14 +7469,20 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 				}
 				p_sd->glyphs.reserve(p_sd->glyphs.size() + w[i].count);
 				for (int j = 0; j < w[i].count; j++) {
+					double gl_ascent = 0.0;
+					double gl_descent = 0.0;
 					if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
-						p_sd->ascent = MAX(p_sd->ascent, -w[i + j].y_off);
-						p_sd->descent = MAX(p_sd->descent, w[i + j].y_off);
+						gl_ascent = -w[i + j].y_off;
+						gl_descent = w[i + j].y_off;
 					} else {
 						double gla = Math::round(_font_get_glyph_advance(f, fs, w[i + j].index).x * 0.5);
-						p_sd->ascent = MAX(p_sd->ascent, gla);
-						p_sd->descent = MAX(p_sd->descent, gla);
+						gl_ascent = gla;
+						gl_descent = gla;
 					}
+					p_sd->ascent = MAX(p_sd->ascent, gl_ascent);
+					p_sd->descent = MAX(p_sd->descent, gl_descent);
+					span.ascent = MAX(span.ascent, gl_ascent);
+					span.descent = MAX(span.descent, gl_descent);
 					p_sd->width += w[i + j].advance;
 					w[i + j].start += p_sd->start;
 					w[i + j].end += p_sd->start;
@@ -7431,8 +7502,12 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 		if (failed_subrun_start != p_end + 1) {
 			_shape_run(p_sd, failed_subrun_start, failed_subrun_end, p_language, p_script, p_direction, p_fonts, p_span, p_fb_index + 1, p_start, p_end, (p_fb_index >= p_fonts.size()) ? f : RID());
 		}
-		p_sd->ascent = MAX(p_sd->ascent, _font_get_ascent(f, fs) + _font_get_spacing(f, SPACING_TOP));
-		p_sd->descent = MAX(p_sd->descent, _font_get_descent(f, fs) + _font_get_spacing(f, SPACING_BOTTOM));
+		double gl_ascent = _font_get_ascent(f, fs) + _font_get_spacing(f, SPACING_TOP);
+		double gl_descent = _font_get_descent(f, fs) + _font_get_spacing(f, SPACING_BOTTOM);
+		p_sd->ascent = MAX(p_sd->ascent, gl_ascent);
+		p_sd->descent = MAX(p_sd->descent, gl_descent);
+		span.ascent = MAX(span.ascent, gl_ascent);
+		span.descent = MAX(span.descent, gl_descent);
 		p_sd->upos = MAX(p_sd->upos, _font_get_underline_position(f, fs));
 		p_sd->uthk = MAX(p_sd->uthk, _font_get_underline_thickness(f, fs));
 	} else if (p_start != p_end) {
@@ -7446,8 +7521,12 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 			gl.flags = GRAPHEME_IS_VALID;
 			p_sd->glyphs.push_back(gl);
 
-			p_sd->ascent = MAX(p_sd->ascent, _font_get_ascent(f, fs) + _font_get_spacing(f, SPACING_TOP));
-			p_sd->descent = MAX(p_sd->descent, _font_get_descent(f, fs) + _font_get_spacing(f, SPACING_BOTTOM));
+			double gl_ascent = _font_get_ascent(f, fs) + _font_get_spacing(f, SPACING_TOP);
+			double gl_descent = _font_get_descent(f, fs) + _font_get_spacing(f, SPACING_BOTTOM);
+			p_sd->ascent = MAX(p_sd->ascent, gl_ascent);
+			p_sd->descent = MAX(p_sd->descent, gl_descent);
+			span.ascent = MAX(span.ascent, gl_ascent);
+			span.descent = MAX(span.descent, gl_descent);
 			p_sd->upos = MAX(p_sd->upos, _font_get_underline_position(f, fs));
 			p_sd->uthk = MAX(p_sd->uthk, _font_get_underline_thickness(f, fs));
 		} else {
@@ -7667,6 +7746,8 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 			}
 		}
 	}
+	sd->base_ascent = sd->ascent;
+	sd->base_descent = sd->descent;
 
 	_realign(sd);
 	sd->valid.set();

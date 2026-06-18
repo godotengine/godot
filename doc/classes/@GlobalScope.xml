@@ -1770,11 +1770,26 @@
 		<constant name="INLINE_ALIGNMENT_BOTTOM" value="14" enum="InlineAlignment">
 			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equivalent to [code]INLINE_ALIGNMENT_BOTTOM_TO | INLINE_ALIGNMENT_TO_BOTTOM[/code].
 		</constant>
+		<constant name="INLINE_ALIGNMENT_SCOPE_LINE" value="0" enum="InlineAlignment">
+			Aligns inline object to the height of the entire line of text.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_SCOPE_PREV_SPAN" value="16" enum="InlineAlignment">
+			Aligns inline object to the height of the previous span of text.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_SCOPE_NEXT_SPAN" value="32" enum="InlineAlignment">
+			Aligns inline object to the height of the next span of text.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_SCOPE_ADJACENT_SPANS" value="48" enum="InlineAlignment">
+			Aligns inline object to the height of the previous and next spans of text.
+		</constant>
 		<constant name="INLINE_ALIGNMENT_IMAGE_MASK" value="3" enum="InlineAlignment">
 			A bit mask for [code]INLINE_ALIGNMENT_*_TO[/code] alignment constants.
 		</constant>
 		<constant name="INLINE_ALIGNMENT_TEXT_MASK" value="12" enum="InlineAlignment">
 			A bit mask for [code]INLINE_ALIGNMENT_TO_*[/code] alignment constants.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_SCOPE_MASK" value="48" enum="InlineAlignment">
+			A bit mask for [code]INLINE_ALIGNMENT_SCOPE_*[/code] alignment constants.
 		</constant>
 		<constant name="EULER_ORDER_XYZ" value="0" enum="EulerOrder">
 			Specifies that Euler angles should be in intrinsic XYZ order. When composing, the rotations happen around the local X, Y, and Z axes, in that order. When decomposing, the order is reversed, first Z, then Y, and X last.
