@@ -1009,6 +1009,67 @@ namespace Godot.Bridge
             }
         }
 
+        // Surfaces the /// <summary> XML documentation of exported members so the editor
+        // Inspector can show it as a tooltip/description. Only runs for [Tool] scripts.
+        // The callback receives (scriptPtr, className, memberName, summary); an empty
+        // memberName carries the class-level summary.
+        [UnmanagedCallersOnly]
+        internal static unsafe void GetPropertyDocumentation(IntPtr scriptPtr,
+            delegate* unmanaged<IntPtr, godot_string*, godot_string*, godot_string*, void> addDocFunc)
+        {
+            try
+            {
+                Type scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
+
+                // Requirement: only [Tool] scripts. Mirror the nesting/GodotTools rules used elsewhere.
+                bool isTool = scriptType.IsDefined(typeof(ToolAttribute), inherit: false)
+                    || (scriptType.IsNested && (scriptType.DeclaringType?.IsDefined(typeof(ToolAttribute), false) ?? false))
+                    || scriptType.Assembly.GetName().Name == "GodotTools";
+                if (!isTool)
+                    return;
+
+                using godot_string className =
+                    Marshaling.ConvertStringToNative(ReflectionUtils.ConstructTypeName(scriptType));
+
+                // Class-level summary (optional; used for the category tooltip / brief).
+                string? typeSummary = XmlDocumentationCache.GetTypeSummary(scriptType);
+                if (!string.IsNullOrEmpty(typeSummary))
+                {
+                    using godot_string emptyMember = Marshaling.ConvertStringToNative(string.Empty);
+                    using godot_string summaryNative = Marshaling.ConvertStringToNative(typeSummary);
+                    addDocFunc(scriptPtr, &className, &emptyMember, &summaryNative);
+                }
+
+                const BindingFlags flags = BindingFlags.Instance | BindingFlags.Static
+                    | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+
+                for (Type? t = scriptType; t != null && typeof(GodotObject).IsAssignableFrom(t); t = t.BaseType)
+                {
+                    foreach (var field in t.GetFields(flags))
+                        EmitMemberSummary(scriptPtr, &className, field, field.Name, addDocFunc);
+                    foreach (var property in t.GetProperties(flags))
+                        EmitMemberSummary(scriptPtr, &className, property, property.Name, addDocFunc);
+                }
+            }
+            catch (Exception e)
+            {
+                // Requirement: never throw; on failure behavior stays unchanged (no docs).
+                ExceptionUtils.LogException(e);
+            }
+        }
+
+        private static unsafe void EmitMemberSummary(IntPtr scriptPtr, godot_string* className,
+            MemberInfo member, string memberName,
+            delegate* unmanaged<IntPtr, godot_string*, godot_string*, godot_string*, void> addDocFunc)
+        {
+            string? summary = XmlDocumentationCache.GetSummary(member);
+            if (string.IsNullOrEmpty(summary))
+                return;
+            using godot_string memberNative = Marshaling.ConvertStringToNative(memberName);
+            using godot_string summaryNative = Marshaling.ConvertStringToNative(summary);
+            addDocFunc(scriptPtr, className, &memberNative, &summaryNative);
+        }
+
         private static unsafe void GetPropertyInfoListForType(Type type, IntPtr scriptPtr,
             delegate* unmanaged<IntPtr, godot_string*, void*, int, void> addPropInfoFunc)
         {
