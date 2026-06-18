@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -177,6 +178,25 @@ void ResourcePreloaderEditor::_paste_pressed() {
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 	undo_redo->commit_action();
+}
+
+void ResourcePreloaderEditor::_search_text_changed(const String &p_new_text) const {
+	TreeItem *root = tree->get_root();
+
+	if (root == nullptr) {
+		return;
+	}
+
+	if (p_new_text.is_empty()) {
+		for (TreeItem *child = root->get_first_child(); child; child = child->get_next()) {
+			child->set_visible(true);
+		}
+		return;
+	}
+
+	for (TreeItem *child = root->get_first_child(); child; child = child->get_next()) {
+		child->set_visible(child->get_text(0).containsn(p_new_text));
+	}
 }
 
 void ResourcePreloaderEditor::_update_library() {
@@ -388,6 +408,16 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	paste->set_text(TTRC("Paste"));
 	hbc->add_child(paste);
 
+	search = memnew(FilterLineEdit);
+	search->set_placeholder(TTRC("Search"));
+	search->set_h_size_flags(SIZE_EXPAND_FILL);
+	search->set_stretch_ratio(0.4);
+	hbc->add_child(search);
+
+	Control *dummy = memnew(Control);
+	dummy->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->add_child(dummy);
+
 	file = memnew(EditorFileDialog);
 	add_child(file);
 
@@ -407,6 +437,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 
 	SET_DRAG_FORWARDING_GCD(tree, ResourcePreloaderEditor);
 	mc->add_child(tree);
+	search->set_forward_control(tree);
 
 	dialog = memnew(AcceptDialog);
 	dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
@@ -416,6 +447,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 
 	load->connect(SceneStringName(pressed), callable_mp(this, &ResourcePreloaderEditor::_load_pressed));
 	paste->connect(SceneStringName(pressed), callable_mp(this, &ResourcePreloaderEditor::_paste_pressed));
+	search->connect(SceneStringName(text_changed), callable_mp(this, &ResourcePreloaderEditor::_search_text_changed));
 	file->connect("files_selected", callable_mp(this, &ResourcePreloaderEditor::_files_load_request));
 	tree->connect("item_edited", callable_mp(this, &ResourcePreloaderEditor::_item_edited));
 	loading_scene = false;
