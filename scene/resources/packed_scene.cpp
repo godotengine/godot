@@ -39,6 +39,7 @@
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/callable_bind.h"
+#include "core/variant/container_type_validate.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
@@ -80,6 +81,85 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 	return pinned;
 }
 
+Variant SceneState::_duplicate_recursive(const Variant &p_variant, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_remap_cache, const Variant &p_fallback, Node *p_for_scene) {
+	switch (p_variant.get_type()) {
+		case Variant::OBJECT: {
+			// The local-to-scene subresource instance is preserved, thus maintaining the previous sharing relationship.
+			// This is mainly used when the sub-scene root is reset in the main scene.
+			Ref<Resource> sub_res_of_from = p_variant;
+			if (sub_res_of_from.is_valid() && sub_res_of_from->is_local_to_scene()) {
+				return get_remap_resource(sub_res_of_from, p_remap_cache, p_fallback, p_for_scene);
+			}
+		} break;
+		case Variant::ARRAY: {
+			const Array &src = p_variant;
+			const Array &fallback = p_fallback;
+
+			bool has_fallback = true;
+			Array dst;
+			if (src.is_typed()) {
+				const ContainerType &scr_type = src.get_element_type();
+				dst.set_typed(scr_type);
+				has_fallback = false;
+				if (fallback.is_typed()) {
+					const ContainerType &fallback_type = fallback.get_element_type();
+					has_fallback =
+							scr_type.builtin_type == fallback_type.builtin_type &&
+							scr_type.class_name == fallback_type.class_name &&
+							scr_type.script == fallback_type.script;
+				}
+			}
+			dst.resize(src.size());
+			for (int i = 0; i < src.size(); i++) {
+				Variant ele_fallback;
+				if (has_fallback && fallback.size() > i) {
+					ele_fallback = fallback[i];
+				}
+				dst[i] = _duplicate_recursive(src[i], p_remap_cache, ele_fallback, p_for_scene);
+			}
+			return dst;
+		} break;
+		case Variant::DICTIONARY: {
+			const Dictionary &src = p_variant;
+			const Dictionary &fallback = p_fallback;
+
+			bool has_fallback = true;
+			Dictionary dst;
+			if (src.is_typed()) {
+				dst.set_typed(src.get_typed_key_builtin(), src.get_typed_key_class_name(), src.get_typed_key_script(), src.get_typed_value_builtin(), src.get_typed_value_class_name(), src.get_typed_value_script());
+				has_fallback = false;
+				if (fallback.is_typed()) {
+					has_fallback =
+							src.get_typed_key_builtin() == fallback.get_typed_key_builtin() &&
+							src.get_typed_key_class_name() == fallback.get_typed_key_class_name() &&
+							src.get_typed_key_script() == fallback.get_typed_key_script() &&
+							src.get_typed_value_builtin() == fallback.get_typed_value_builtin() &&
+							src.get_typed_value_class_name() == fallback.get_typed_value_class_name() &&
+							src.get_typed_value_script() == fallback.get_typed_value_script();
+				}
+			}
+
+			for (const KeyValue<Variant, Variant> &KV : src) {
+				const Variant &k = KV.key;
+				const Variant &v = KV.value;
+				Variant val_fallback;
+				// FIXME: as both `src` and `fallback` are remapped values, so if the local-to-scene
+				// resource is used as the key, it is difficult to find its fallback value.
+				if (has_fallback && fallback.has(k)) {
+					val_fallback = fallback[k];
+				}
+				dst.set(
+						_duplicate_recursive(k, p_remap_cache, Variant(), p_for_scene),
+						_duplicate_recursive(v, p_remap_cache, val_fallback, p_for_scene));
+			}
+			return dst;
+		} break;
+		default: {
+		}
+	}
+	return p_variant;
+}
+
 Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene) {
 	ERR_FAIL_COND_V(p_resource.is_null(), Ref<Resource>());
 
@@ -114,14 +194,7 @@ Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, Ha
 				continue; // Do not change path.
 			}
 
-			Variant value = p_resource->get(E.name);
-
-			// The local-to-scene subresource instance is preserved, thus maintaining the previous sharing relationship.
-			// This is mainly used when the sub-scene root is reset in the main scene.
-			Ref<Resource> sub_res_of_from = value;
-			if (sub_res_of_from.is_valid() && sub_res_of_from->is_local_to_scene()) {
-				value = get_remap_resource(sub_res_of_from, remap_cache, p_fallback->get(E.name), p_fallback->get_local_scene());
-			}
+			Variant value = _duplicate_recursive(p_resource->get(E.name), remap_cache, p_fallback->get(E.name), p_for_scene);
 
 			p_fallback->set(E.name, value);
 		}
