@@ -79,6 +79,8 @@ namespace Godot.SourceGenerators
 
             source.Append("using Godot;\n");
             source.Append("using Godot.NativeInterop;\n");
+            source.Append("using Godot.Bridge;\n");
+            source.Append("using System.Runtime.CompilerServices;\n");
             source.Append("\n");
 
             if (hasNamespace)
@@ -212,7 +214,7 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            source.Append("    }\n"); // class GodotInternal
+            source.Append("    }\n\n"); // class GodotInternal
 
             // Generate GetGodotSignalList
 
@@ -248,7 +250,7 @@ namespace Godot.SourceGenerators
                 source.Append("    }\n");
             }
 
-            source.Append("#pragma warning restore CS0109\n");
+            source.Append("#pragma warning restore CS0109\n\n");
 
             // Generate signal event
 
@@ -260,7 +262,7 @@ namespace Godot.SourceGenerators
                 // The reason we have a backing field is to hide the invoke method from the event,
                 // as it doesn't emit the signal, only the event delegates. This can confuse users.
                 // Maybe we should directly connect the delegates, as we do with native signals?
-                source.Append("    private ")
+                source.Append("    protected ")
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
                     .Append(" backing_")
                     .Append(signalName)
@@ -273,14 +275,14 @@ namespace Godot.SourceGenerators
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
                     .Append(" @")
                     .Append(signalName)
-                    .Append(" {\n")
+                    .Append("\n    {\n")
                     .Append("        add => backing_")
                     .Append(signalName)
                     .Append(" += value;\n")
                     .Append("        remove => backing_")
                     .Append(signalName)
                     .Append(" -= value;\n")
-                    .Append("}\n");
+                    .Append("    }\n\n");
 
                 // Generate EmitSignal{EventName} method to raise the event
 
@@ -322,46 +324,59 @@ namespace Godot.SourceGenerators
                     source.Append($"@{paramSymbol.Name}");
                 }
                 source.Append("]);\n");
-                source.Append("    }\n");
+                source.Append("    }\n\n");
             }
 
             // Generate RaiseGodotClassSignalCallbacks
 
-            if (godotSignalDelegates.Count > 0)
+            //if (godotSignalDelegates.Count > 0)
+            if (!symbol.IsStatic)
             {
-                source.Append("    /// <inheritdoc/>\n");
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                var type = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+                var baseType = symbol.BaseType!.FullQualifiedNameIncludeGlobal();
                 source.Append(
-                    "    protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, ");
-                source.Append("NativeVariantPtrArgs args)\n    {\n");
+                    $$"""
+                    #pragma warning disable CS0618 // Type or member is obsolete
+                        {{(symbol.IsSealed ? "private" : "protected")}} new static readonly ScriptSignalRegistry<{{type}}> SignalRegistry = new ScriptSignalRegistry<{{type}}>()
+                            .Register({{baseType}}.SignalRegistry)
+                    """)
+                    .Append("\n");
 
-                foreach (var signal in godotSignalDelegates)
+                foreach (var signalMethod in godotSignalDelegates)
                 {
-                    GenerateSignalEventInvoker(signal, source);
+                    GenerateScriptSignalRegistryEntry(type, signalMethod, source);
                 }
 
-                source.Append("        base.RaiseGodotClassSignalCallbacks(signal, args);\n");
+                source.Append("        .Build();\n");
+                source.Append("#pragma warning restore CS0618 // Type or member is obsolete\n\n");
 
-                source.Append("    }\n");
-            }
-
-            // Generate HasGodotClassSignal
-
-            if (godotSignalDelegates.Count > 0)
-            {
-                source.Append("    /// <inheritdoc/>\n");
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append(
-                    "    protected override bool HasGodotClassSignal(in godot_string_name signal)\n    {\n");
+                    """
+                        /// <inheritdoc/>
+                        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                        protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, NativeVariantPtrArgs args)
+                        {
+                            ref readonly var signalMethod = ref SignalRegistry.GetMethodOrNullRef(in signal, args.Count);
+                            if (!Unsafe.IsNullRef(in signalMethod))
+                            {
+                                signalMethod(this, args);
+                            }
+                        }
+                    """)
+                    .Append("\n\n");
 
-                foreach (var signal in godotSignalDelegates)
-                {
-                    GenerateHasSignalEntry(signal.Name, source);
-                }
+                // Generate HasGodotClassSignal
 
-                source.Append("        return base.HasGodotClassSignal(signal);\n");
-
-                source.Append("    }\n");
+                source.Append(
+                    """
+                        /// <inheritdoc/>
+                        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                        protected override bool HasGodotClassSignal(in godot_string_name signal)
+                        {
+                            return SignalRegistry.ContainsName(signal);
+                        }
+                    """)
+                    .Append("\n");
             }
 
             source.Append("}\n"); // partial class
@@ -384,6 +399,38 @@ namespace Godot.SourceGenerators
             }
 
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
+        }
+
+        private static void GenerateScriptSignalRegistryEntry(string type, GodotSignalDelegateData signalMethod, StringBuilder source)
+        {
+            var signalName = signalMethod.Name;
+            var method = signalMethod.InvokeMethodData;
+
+            source
+                .Append($"        .Register(SignalName.@{signalMethod.Name}, {method.Method.Parameters.Length},\n")
+                .Append("            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]\n")
+                .Append("            static (GodotObject scriptInstance, scoped in NativeVariantPtrArgs args) =>\n")
+                .Append("            {\n")
+                .Append($"                Unsafe.As<GodotObject, {type}>(ref scriptInstance).backing_{signalName}?.Invoke(\n")
+                .Append("                    ");
+
+            for (var i = 0; i < method.ParamTypes.Length; i++)
+            {
+                if (i != 0)
+                {
+                    source.Append(", ");
+                }
+
+                source.AppendNativeVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
+                    method.ParamTypeSymbols[i], method.ParamTypes[i]);
+            }
+
+            source.Append(
+                """
+                );
+                            })
+                """)
+                .Append("\n");
         }
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)
@@ -502,50 +549,6 @@ namespace Godot.SourceGenerators
 
             return new PropertyInfo(memberVariantType, name,
                 PropertyHint.None, string.Empty, propUsage, className, exported: false);
-        }
-
-        private static void GenerateHasSignalEntry(
-            string signalName,
-            StringBuilder source
-        )
-        {
-            source.Append("        ");
-            source.Append("if (signal == SignalName.@");
-            source.Append(signalName);
-            source.Append(") {\n           return true;\n        }\n");
-        }
-
-        private static void GenerateSignalEventInvoker(
-            GodotSignalDelegateData signal,
-            StringBuilder source
-        )
-        {
-            string signalName = signal.Name;
-            var invokeMethodData = signal.InvokeMethodData;
-
-            source.Append("        if (signal == SignalName.@");
-            source.Append(signalName);
-            source.Append(" && args.Count == ");
-            source.Append(invokeMethodData.ParamTypes.Length);
-            source.Append(") {\n");
-            source.Append("            backing_");
-            source.Append(signalName);
-            source.Append("?.Invoke(");
-
-            for (int i = 0; i < invokeMethodData.ParamTypes.Length; i++)
-            {
-                if (i != 0)
-                    source.Append(", ");
-
-                source.AppendNativeVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
-                    invokeMethodData.ParamTypeSymbols[i], invokeMethodData.ParamTypes[i]);
-            }
-
-            source.Append(");\n");
-
-            source.Append("            return;\n");
-
-            source.Append("        }\n");
         }
     }
 }

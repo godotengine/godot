@@ -1,47 +1,68 @@
-using System;
-using System.Runtime.InteropServices;
 using Godot.NativeInterop;
+using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Godot.Bridge
 {
     internal static class CSharpInstanceBridge
     {
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool Call(IntPtr godotObjectGCHandle, godot_string_name* method,
-            godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* ret)
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        internal static unsafe godot_bool Call(
+            IntPtr godotObjectGCHandle,
+            godot_string_name* method,
+            godot_variant** args,
+            int argCount,
+            godot_variant_call_error* refCallError,
+            godot_variant* ret)
+        {
+            var handle = GCHandle.FromIntPtr(godotObjectGCHandle);
+            var godotObject = Unsafe.As<GodotObject>(handle.Target);
+
+            if (godotObject is null)
+            {
+                *ret = default;
+                (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL;
+                return godot_bool.False;
+            }
+
+            godot_variant retValue;
+            var executedMethodSuccessfully = Invoke(godotObject, in method, in args, argCount, in refCallError, out retValue);
+            if (executedMethodSuccessfully)
+            {
+                *ret = retValue;
+                return godot_bool.True;
+            }
+
+            return godot_bool.False;
+        }
+
+        private static unsafe bool Invoke(GodotObject godotObject, scoped in godot_string_name* method, scoped in godot_variant** args, int argCount, scoped in godot_variant_call_error* refCallError, scoped out godot_variant retValue)
         {
             try
             {
-                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
-
-                if (godotObject == null)
+                ref readonly var scriptMethod = ref godotObject.GetGodotClassMethodOrNullRef(in *method, argCount);
+                if (!Unsafe.IsNullRef(in scriptMethod))
                 {
-                    *ret = default;
-                    (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL;
-                    return godot_bool.False;
+                    var argsStruct = new NativeVariantPtrArgs(args, argCount);
+                    retValue = scriptMethod(godotObject, in argsStruct);
+
+                    return true;
                 }
-
-                bool methodInvoked = godotObject.InvokeGodotClassMethod(CustomUnsafe.AsRef(method),
-                    new NativeVariantPtrArgs(args, argCount), out godot_variant retValue);
-
-                if (!methodInvoked)
+                else
                 {
-                    *ret = default;
-                    // This is important, as it tells Object::call that no method was called.
-                    // Otherwise, it would prevent Object::call from calling native methods.
-                    (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD;
-                    return godot_bool.False;
+                    ref var callError = ref *refCallError;
+                    callError.Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD;
                 }
-
-                *ret = retValue;
-                return godot_bool.True;
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *ret = default;
-                return godot_bool.False;
             }
+
+            retValue = default;
+            return false;
         }
 
         [UnmanagedCallersOnly]

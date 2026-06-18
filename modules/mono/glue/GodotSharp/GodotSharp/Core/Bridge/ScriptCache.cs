@@ -1,0 +1,285 @@
+using Godot.NativeInterop;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+
+namespace Godot.Bridge
+{
+#pragma warning disable CA1000 // Do not declare static members on generic types
+
+    public class ScriptCache<TMethod>
+    {
+        private const int MaxProbes = 4;
+        private const double MaxAverageProbes = 1.5;
+        private const int SizeLimit = 8192;
+
+        private readonly IntPtr[] _keys;
+        private readonly byte[] _argCounts;
+        private readonly TMethod[] _methods;
+
+        private readonly int _mask;
+        private readonly int _shift;
+        private readonly bool _useMixer;
+        private readonly int _finalMaxProbes;
+
+        public ScriptCache((MethodKey Key, TMethod Method)[] methods, List<string> mostUsedMethods)
+        {
+            var capacity = methods.Length;
+            var maxProbes = int.MaxValue;
+            double averageProbes = MaxProbes;
+
+            var sortedMethods = SortMethodsOnExpectedCallCountForImprovedPerformance(methods, mostUsedMethods);
+
+            // calculate optimal size (2^n) for optimal masking
+            var requestMoreSize = true;
+            var size = 1;
+            var power = 0;
+            while (size < capacity * 2)
+            {
+                size <<= 1;
+                power++;
+                _shift = 64 - power;
+            }
+
+            while (requestMoreSize)
+            {
+                requestMoreSize = false;
+
+                _mask = size - 1;
+                _keys = new IntPtr[size];
+                _argCounts = new byte[size];
+                _methods = new TMethod[size];
+
+                foreach (var method in methods)
+                {
+                    int currentMaxProbes = 0;
+                    int slot = GetSlot(method.Key.Name.NativeValue.GetIntPtr());
+                    while (_keys[slot] != IntPtr.Zero)
+                    {
+                        currentMaxProbes++;
+                        slot = (slot + 1) & _mask;
+                        if (currentMaxProbes > MaxProbes &&
+                            CanRequestMoreSize(size))
+                        {
+                            requestMoreSize = true;
+                            break;
+                        }
+                    }
+
+                    if (requestMoreSize)
+                    {
+                        break;
+                    }
+
+                    _keys[slot] = method.Key.Name.NativeValue.GetIntPtr();
+                    _argCounts[slot] = (byte)method.Key.ArgCount;
+                    _methods[slot] = method.Method;
+                }
+
+                if (!requestMoreSize)
+                {
+                    // check if amount of probes is still reasonable fast
+                    (averageProbes, maxProbes, _) = CalculateStatistics();
+
+                    if (maxProbes > MaxProbes ||
+                        averageProbes > MaxAverageProbes)
+                    {
+                        if (CanRequestMoreSize(size))
+                        {
+                            requestMoreSize = true;
+                        }
+                    }
+                }
+
+                if (requestMoreSize)
+                {
+                    // requesting more capacity
+                    if (!_useMixer)
+                    {
+                        // mix before enlarging size
+                        _useMixer = true;
+                    }
+                    else
+                    {
+                        // increase size
+                        _useMixer = false;
+                        size <<= 1;
+                        power++;
+                        _shift = 64 - power;
+                    }
+
+                    continue;
+                }
+            }
+
+            var (finalAverageProbes, finalMaxProbes, finalCount) = CalculateStatistics();
+            //GD.Print($"Final: Size: {_keys.Length}, Items: {FinalCount}, Avg Probes: {finalAverageProbes:F2}, Max: {finalMaxProbes}\n");
+            _finalMaxProbes = finalMaxProbes; // this is the real worst count of probes
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool CanRequestMoreSize(int size)
+        {
+            return size < SizeLimit;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public ref readonly TMethod GetOrNullRef(scoped in IntPtr namePtr, int argCount)
+        {
+            int slot = GetSlot(namePtr);
+
+            // avoid field access by localizing fields
+            var keys = _keys;
+            var argCounts = _argCounts;
+            var methods = _methods;
+            var mask = _mask;
+            int max = _finalMaxProbes;
+
+            int currentSlot = slot;
+
+            int i;
+            for (i = 0; i < max; i++)
+            {
+                var key = keys[currentSlot];
+
+                if (key == namePtr &&
+                    argCounts[currentSlot] == argCount)
+                {
+                    return ref methods[currentSlot];
+                }
+
+                if (key == IntPtr.Zero)
+                {
+                    break;
+                }
+
+                currentSlot = (currentSlot + 1) & mask;
+            }
+
+            return ref Unsafe.NullRef<TMethod>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        private int GetSlot(nint namePtr)
+        {
+            ulong x = (ulong)namePtr;
+            if (_useMixer)
+            {
+                // SplitMix64 - extremely fast and cracks open pointer patterns
+                x ^= x >> 30;
+                x *= 0xbf58476d1ce4e5b9uL;
+                x ^= x >> 27;
+                x *= 0x94d049bb133111ebuL;
+                x ^= x >> 31;
+            }
+            else
+            {
+                x >>= 3;
+            }
+
+            // Fibonacci distributes it perfectly over the length of the array
+            return (int)((x * 11400714819323198485uL) >> _shift);
+        }
+
+        public (double AverageProbes, int MaxProbes, int Count) CalculateStatistics()
+        {
+            var totalProbes = 0L;
+            var maxProbes = 0;
+            var count = 0;
+
+            for (int i = 0; i < _keys.Length; i++)
+            {
+                var searchKey = _keys[i];
+                if (searchKey != IntPtr.Zero)
+                {
+                    count++;
+
+                    var idealSlot = GetSlot(_keys[i]);
+                    var searchArgCount = _argCounts[i];
+                    int probesNeeded = 1;
+
+                    int currentSlot = idealSlot;
+                    while (true)
+                    {
+                        if (_keys[currentSlot] == searchKey &&
+                            _argCounts[currentSlot] == searchArgCount)
+                        {
+                            break;
+                        }
+
+                        currentSlot = (currentSlot + 1) & _mask;
+                        probesNeeded++;
+
+                        // safety-check if table is corrupt somehow
+                        if (probesNeeded > _keys.Length)
+                        {
+                            break;
+                        }
+                    }
+
+                    // calculate distance
+                    totalProbes += probesNeeded;
+                    if (probesNeeded > maxProbes)
+                    {
+                        maxProbes = probesNeeded;
+                    }
+                }
+            }
+
+            var averageProbes = count == 0 ? 0 : (double)totalProbes / count;
+
+            //GD.Print($"Size: {_keys.Length}, Items: {count}, Avg Probes: {averageProbes:F2}, Max: {maxProbes}");
+
+            return (averageProbes, maxProbes, count);
+        }
+
+        private static (MethodKey Key, TMethod Method)[] SortMethodsOnExpectedCallCountForImprovedPerformance((MethodKey Key, TMethod Method)[] methods, List<string> mostUsedMethods)
+        {
+            if (mostUsedMethods.Count == 0)
+            {
+                return methods;
+            }
+
+            var mostUsedMethodsIndices = mostUsedMethods
+                .Select((name, i) => (name, i))
+                .ToDictionary(x => x.name, x => x.i);
+
+            return methods
+                .Select(method => new
+                {
+                    method,
+                    Name = StringHelpers.ConvertStringNameToString((godot_string_name)method.Key.Name.NativeValue)
+                })
+                .OrderBy(x =>
+                {
+                    if (mostUsedMethodsIndices.TryGetValue(x.Name, out var index))
+                    {
+                        return index;
+                    }
+
+                    return int.MaxValue;
+                })
+                .Select(x => x.method)
+                .ToArray();
+        }
+
+        private class StringHelpers
+        {
+            internal static string ConvertStringNameToString(in godot_string_name name)
+            {
+                godot_string godotString;
+                NativeFuncs.godotsharp_string_name_as_string(out godotString, in name);
+
+                using (godotString)
+                {
+                    var managedString = Marshaling.ConvertStringToManaged(godotString);
+
+                    return managedString;
+                }
+            }
+        }
+    }
+
+#pragma warning restore CA1000 // Do not declare static members on generic types
+}
