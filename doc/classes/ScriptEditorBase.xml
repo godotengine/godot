@@ -68,13 +68,13 @@
 		</signal>
 		<signal name="request_save_history">
 			<description>
-				Emitted when the user contextual goto and the item is in the same script.
+				Emitted when the editor requests to save a new history navigation point.
 			</description>
 		</signal>
 		<signal name="request_save_previous_state">
 			<param index="0" name="state" type="Dictionary" />
 			<description>
-				Emitted when the user changes current script or moves caret by 10 or more columns within the same script.
+				Emitted when the editor requests an update to its navigation point.
 			</description>
 		</signal>
 		<signal name="search_in_files_requested">
