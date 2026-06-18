@@ -76,6 +76,7 @@
 #include <dwmapi.h>
 #include <propkey.h>
 #include <propvarutil.h>
+#include <psapi.h>
 #include <shellapi.h>
 #include <shellscalingapi.h>
 #include <shlwapi.h>
@@ -840,29 +841,110 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 	}
 }
 
+String DisplayServerWindows::_get_app_id() const {
+	static String appname;
+	if (appname.is_empty()) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
+		} else {
+			String name = GLOBAL_GET("application/config/name");
+			String version = GLOBAL_GET("application/config/version");
+			if (version.is_empty()) {
+				version = "0";
+			}
+			String clean_app_name = name.to_pascal_case();
+			for (int i = 0; i < clean_app_name.length(); i++) {
+				if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
+					clean_app_name[i] = '_';
+				}
+			}
+			clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
+			appname = "Godot." + clean_app_name + "." + version;
+		}
+	}
+	return appname;
+}
+
+String DisplayServerWindows::_get_app_name() const {
+	static String appname;
+	if (appname.is_empty()) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			appname = "Godot";
+		} else {
+			appname = GLOBAL_GET("application/config/name");
+		}
+	}
+	return appname;
+}
+
+bool DisplayServerWindows::_try_create_shortcut() {
+	String path = vformat("%s\\Microsoft\\Windows\\Start Menu\\Programs\\%s.lnk", OS::get_singleton()->get_environment("APPDATA"), _get_app_name());
+	Char16String cs_path = path.utf16();
+	DWORD attributes = GetFileAttributesW((PCWSTR)cs_path.get_data());
+
+	if (attributes < 0xFFFFFFF) {
+		return true;
+	} else {
+		wchar_t exe_path[MAX_PATH];
+		DWORD sz = GetModuleFileNameExW(GetCurrentProcess(), nullptr, exe_path, ARRAYSIZE(exe_path));
+		if (sz == 0) {
+			return false;
+		}
+
+		bool done = false;
+		IShellLinkW *shell_link = nullptr;
+		HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shell_link));
+		if (SUCCEEDED(hr)) {
+			shell_link->SetPath(exe_path);
+			shell_link->SetArguments(L"");
+
+			IPropertyStore *prop_store = nullptr;
+			hr = shell_link->QueryInterface(IID_PPV_ARGS(&prop_store));
+			if (SUCCEEDED(hr)) {
+				PROPVARIANT val;
+				String appid = _get_app_id();
+				InitPropVariantFromString((PCWSTR)appid.utf16().get_data(), &val);
+				prop_store->SetValue(PKEY_AppUserModel_ID, val);
+				prop_store->Commit();
+
+				IPersistFile *persist_file = nullptr;
+				hr = shell_link->QueryInterface(IID_PPV_ARGS(&persist_file));
+				if (SUCCEEDED(hr)) {
+					hr = persist_file->Save((PCWSTR)cs_path.get_data(), true);
+					if (SUCCEEDED(hr)) {
+						done = true;
+					}
+					persist_file->Release();
+				}
+				PropVariantClear(&val);
+				prop_store->Release();
+			}
+			shell_link->Release();
+		}
+		return done;
+	}
+}
+
+DisplayServerEnums::NotificationID DisplayServerWindows::send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) {
+	if (!has_winrt_queue) {
+		return DisplayServerEnums::INVALID_NOTIFICATION_ID;
+	}
+	if (!_try_create_shortcut()) {
+		return DisplayServerEnums::INVALID_NOTIFICATION_ID;
+	}
+	return WinRTUtils::send_toast_notification(p_title, p_text, p_image, p_callback);
+}
+
+void DisplayServerWindows::hide_toast_notification(DisplayServerEnums::NotificationID p_id) {
+	if (has_winrt_queue) {
+		WinRTUtils::hide_toast_notification(p_id);
+	}
+}
+
 Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, DisplayServerEnums::WindowID p_window_id) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), DisplayServerEnums::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
-
-	String appname;
-	if (Engine::get_singleton()->is_editor_hint()) {
-		appname = "Godot.GodotEditor." + String(GODOT_VERSION_BRANCH);
-	} else {
-		String name = GLOBAL_GET("application/config/name");
-		String version = GLOBAL_GET("application/config/version");
-		if (version.is_empty()) {
-			version = "0";
-		}
-		String clean_app_name = name.to_pascal_case();
-		for (int i = 0; i < clean_app_name.length(); i++) {
-			if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
-				clean_app_name[i] = '_';
-			}
-		}
-		clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
-		appname = "Godot." + clean_app_name + "." + version;
-	}
 
 	FileDialogData *fd = memnew(FileDialogData);
 	if (windows.has(p_window_id) && !windows[p_window_id].is_popup) {
@@ -874,7 +956,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 		fd->hwnd_owner = nullptr;
 		fd->wrect = Rect2i(CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT);
 	}
-	fd->appid = appname;
+	fd->appid = _get_app_id();
 	fd->title = p_title;
 	fd->current_directory = p_current_directory;
 	fd->root = p_root;
@@ -7212,25 +7294,8 @@ Error DisplayServerWindows::_create_window(DisplayServerEnums::WindowID p_window
 		HRESULT hr = SHGetPropertyStoreForWindow(wd.hWnd, IID_IPropertyStore, (void **)&prop_store);
 		if (hr == S_OK) {
 			PROPVARIANT val;
-			String appname;
-			if (Engine::get_singleton()->is_editor_hint()) {
-				appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
-			} else {
-				String name = GLOBAL_GET("application/config/name");
-				String version = GLOBAL_GET("application/config/version");
-				if (version.is_empty()) {
-					version = "0";
-				}
-				String clean_app_name = name.to_pascal_case();
-				for (int i = 0; i < clean_app_name.length(); i++) {
-					if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
-						clean_app_name[i] = '_';
-					}
-				}
-				clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
-				appname = "Godot." + clean_app_name + "." + version;
-			}
-			InitPropVariantFromString((PCWSTR)appname.utf16().get_data(), &val);
+			String appid = _get_app_id();
+			InitPropVariantFromString((PCWSTR)appid.utf16().get_data(), &val);
 			prop_store->SetValue(PKEY_AppUserModel_ID, val);
 			prop_store->Release();
 		}
@@ -7641,7 +7706,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 	}
 	native_menu = memnew(NativeMenuWindows);
 
-	has_winrt_queue = WinRTUtils::create_queue();
+	has_winrt_queue = WinRTUtils::create_queue(_get_app_id());
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
