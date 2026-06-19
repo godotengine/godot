@@ -287,6 +287,7 @@ private:
 	/* Text */
 	Text text;
 	RID text_ci;
+	RID clipped_ci;
 	bool setting_text = false;
 
 	enum AltInputMode {
@@ -824,6 +825,7 @@ public:
 	/* Text */
 	// Text properties.
 	RID get_text_canvas_item() const;
+	RID get_clipped_canvas_item() const;
 
 	bool has_ime_text() const;
 	void cancel_ime();
