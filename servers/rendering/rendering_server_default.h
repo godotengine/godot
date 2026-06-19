@@ -420,6 +420,11 @@ public:
 	FUNC2(mesh_surface_remove, RID, int)
 	FUNC1(mesh_clear, RID)
 
+	FUNC2RC(RID, mesh_surface_get_vertex_buffer_rd_rid, RID, int)
+	FUNC2RC(RID, mesh_surface_get_attribute_buffer_rd_rid, RID, int)
+	FUNC2RC(RID, mesh_surface_get_skin_buffer_rd_rid, RID, int)
+	FUNC2RC(RID, mesh_surface_get_index_buffer_rd_rid, RID, int)
+
 	FUNC1(mesh_debug_usage, List<RenderingServerTypes::MeshInfo> *)
 
 	/* MULTIMESH API */

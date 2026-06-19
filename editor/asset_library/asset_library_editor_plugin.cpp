@@ -44,6 +44,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
@@ -274,8 +275,17 @@ EditorAssetLibraryZoomMode::EditorAssetLibraryZoomMode(Control *p_previews) {
 	ERR_FAIL_NULL(p_previews);
 	ERR_FAIL_COND(p_previews->get_parent());
 
+	Ref<Theme> theme;
+	if (EditorNode::get_singleton()) {
+		theme = EditorNode::get_singleton()->get_editor_theme();
+	} else if (ProjectManager::get_singleton()) {
+		theme = ProjectManager::get_singleton()->get_theme();
+	} else {
+		return;
+	}
+
 	ColorRect *dim = memnew(ColorRect);
-	dim->set_color(EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("base_color"), EditorStringName(Editor)));
+	dim->set_color(theme->get_color(SNAME("base_color"), EditorStringName(Editor)));
 	dim->set_anchors_preset(Control::PRESET_FULL_RECT);
 	add_child(dim);
 
@@ -349,6 +359,14 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 			next_preview->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			previews_bg->add_theme_style_override(SceneStringName(panel), previews->get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit")));
 			zoom_button->set_button_icon(get_editor_theme_icon(SNAME("DistractionFree")));
+
+			Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), SNAME("OptionButton"));
+			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("OptionButton"));
+			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("OptionButton"));
+
+			int height = sb->get_minimum_size().height;
+			height += font->get_height(font_size);
+			version->set_custom_minimum_size(Size2(0, height));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -615,9 +633,11 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	contents->add_child(version_label);
 
 	version = memnew(Label);
+	version->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	version->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	version->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	version->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	version->set_theme_type_variation("LabelNoMargin");
 	contents->add_child(version);
 
 	version_list = memnew(OptionButton);
@@ -2161,6 +2181,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sort->set_clip_text(true);
+	sort->set_fit_to_longest_item(false);
 	sort->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
 
 	search_hb2->add_child(memnew(Label(TTRC("Category:"))));
@@ -2172,6 +2193,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	}
 	categories->set_disabled(true);
 	categories->set_clip_text(true);
+	categories->set_fit_to_longest_item(false);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_hb2->add_child(categories);
 	categories->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
@@ -2180,6 +2202,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	repository = memnew(OptionButton);
 	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	repository->set_clip_text(true);
+	repository->set_fit_to_longest_item(false);
 	search_hb2->add_child(repository);
 	repository->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_repository_changed));
 	_update_repository_options();

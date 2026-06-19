@@ -96,10 +96,6 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 		return false;
 	}
 
-	if (binormal != p_vertex.binormal) {
-		return false;
-	}
-
 	if (tangent != p_vertex.tangent) {
 		return false;
 	}
@@ -235,8 +231,7 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 	vtx.uv2 = last_uv2;
 	vtx.weights = last_weights;
 	vtx.bones = last_bones;
-	vtx.tangent = last_tangent.normal;
-	vtx.binormal = last_normal.cross(last_tangent.normal).normalized() * last_tangent.d;
+	vtx.tangent = last_tangent;
 	vtx.smooth_group = last_smooth_group;
 
 	for (int i = 0; i < RSE::ARRAY_CUSTOM_COUNT; i++) {
@@ -317,7 +312,7 @@ void SurfaceTool::set_tangent(const Plane &p_tangent) {
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_TANGENT));
 
 	format |= Mesh::ARRAY_FORMAT_TANGENT;
-	last_tangent = p_tangent;
+	last_tangent = Vector4(p_tangent.normal.x, p_tangent.normal.y, p_tangent.normal.z, p_tangent.d);
 }
 
 void SurfaceTool::set_uv(const Vector2 &p_uv) {
@@ -483,10 +478,7 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx * 4 + 0] = v.tangent.x;
 					w[idx * 4 + 1] = v.tangent.y;
 					w[idx * 4 + 2] = v.tangent.z;
-
-					//float d = v.tangent.dot(v.binormal,v.normal);
-					float d = v.binormal.dot(v.normal.cross(v.tangent));
-					w[idx * 4 + 3] = d < 0 ? -1 : 1;
+					w[idx * 4 + 3] = v.tangent.w;
 				}
 
 				a[i] = array;
@@ -882,9 +874,7 @@ void SurfaceTool::create_vertex_array_from_arrays(const Array &p_arrays, LocalVe
 			v.normal = narr[i];
 		}
 		if (lformat & RSE::ARRAY_FORMAT_TANGENT) {
-			v.tangent = Vector3(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2]);
-			float d = tarr[i * 4 + 3];
-			v.binormal = v.normal.cross(v.tangent).normalized() * d;
+			v.tangent = Vector4(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
 		}
 		if (lformat & RSE::ARRAY_FORMAT_COLOR) {
 			v.color = carr[i];
@@ -1039,6 +1029,7 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 		}
 	}
 	int vfrom = vertex_array.size();
+	float flip = p_xform.basis.determinant() < 0 ? -1.0f : 1.0f;
 
 	for (Vertex &v : nvertices) {
 		v.vertex = p_xform.xform(v.vertex);
@@ -1046,8 +1037,8 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 			v.normal = p_xform.basis.xform(v.normal);
 		}
 		if (nformat & RSE::ARRAY_FORMAT_TANGENT) {
-			v.tangent = p_xform.basis.xform(v.tangent);
-			v.binormal = p_xform.basis.xform(v.binormal);
+			Vector3 tangent = p_xform.basis.xform(Vector3(v.tangent.x, v.tangent.y, v.tangent.z));
+			v.tangent = Vector4(tangent.x, tangent.y, tangent.z, v.tangent.w * flip);
 		}
 
 		vertex_array.push_back(v);
@@ -1148,8 +1139,7 @@ void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, cons
 	}
 
 	if (vtx != nullptr) {
-		vtx->tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
-		vtx->binormal = Vector3(-fvBiTangent[0], -fvBiTangent[1], -fvBiTangent[2]); // for some reason these are reversed, something with the coordinate system in Godot
+		vtx->tangent = Vector4(fvTangent[0], fvTangent[1], fvTangent[2], bIsOrientationPreserving ? 1.0f : -1.0f);
 	}
 }
 
@@ -1172,8 +1162,7 @@ void SurfaceTool::generate_tangents() {
 	TangentGenerationContextUserData triangle_data;
 	triangle_data.vertices = &vertex_array;
 	for (Vertex &vertex : vertex_array) {
-		vertex.binormal = Vector3();
-		vertex.tangent = Vector3();
+		vertex.tangent = Vector4();
 	}
 	triangle_data.indices = &index_array;
 	msc.m_pUserData = &triangle_data;

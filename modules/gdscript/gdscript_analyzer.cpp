@@ -4632,15 +4632,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	}
 
 	if (GDScriptLanguage::get_singleton()->has_any_global_constant(name)) {
-		// We checked for `ClassDB` classes above. Any `ClassDB` class that reaches this point is not exposed and should not be accessible.
-		// TODO: Remove this check once `globals` does only contain publicly available things.
-		if (!ClassDB::class_exists(name)) {
-			Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(name);
-			p_identifier->set_datatype(type_from_variant(constant, p_identifier));
-			p_identifier->is_constant = true;
-			p_identifier->reduced_value = constant;
-			return;
-		}
+		Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(name);
+		p_identifier->set_datatype(type_from_variant(constant, p_identifier));
+		p_identifier->is_constant = true;
+		p_identifier->reduced_value = constant;
+		return;
 	}
 
 	if (CoreConstants::is_global_enum(name)) {

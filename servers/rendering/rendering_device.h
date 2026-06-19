@@ -1864,8 +1864,8 @@ public:
 private:
 	void _free_pending_resources(int p_frame);
 
-	uint64_t texture_memory = 0;
-	uint64_t buffer_memory = 0;
+	SafeNumeric<uint64_t> texture_memory;
+	SafeNumeric<uint64_t> buffer_memory;
 
 protected:
 	void execute_chained_cmds(bool p_present_swap_chain,

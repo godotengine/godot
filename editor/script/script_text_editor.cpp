@@ -38,6 +38,7 @@
 #include "core/math/expression.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/editor_help.h"
@@ -49,6 +50,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -177,7 +179,9 @@ void ScriptTextEditor::EditMenusSTE::_breakpoint_item_pressed(int p_idx) {
 	if (p_idx < 4) { // Any item before the separator.
 		_edit_option(breakpoints_menu->get_item_id(p_idx));
 	} else {
+		ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 		script_text_editor->get_code_editor()->goto_line_centered(breakpoints_menu->get_item_metadata(p_idx));
+		ScriptEditorNavigationMarker::get_singleton()->locate_end();
 	}
 }
 
@@ -460,6 +464,7 @@ void ScriptTextEditor::add_callback(const String &p_function, const PackedString
 	code_editor->get_text_editor()->set_caret_line(pos, true, true, -1);
 	code_editor->get_text_editor()->set_caret_column(indent_column);
 	code_editor->get_text_editor()->end_complex_operation();
+	code_editor->center_viewport_to_caret();
 }
 
 bool ScriptTextEditor::_is_valid_color_info(const Dictionary &p_info) {
@@ -775,6 +780,9 @@ void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 	}
 
 	Dictionary state = p_state;
+	if (state.has("row")) {
+		previous_history_line = state["row"];
+	}
 	if (state.has("syntax_highlighter")) {
 		for (const Ref<EditorSyntaxHighlighter> &highlighter : highlighters) {
 			if (highlighter->_get_name() == String(state["syntax_highlighter"])) {
@@ -1152,7 +1160,7 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		base = _find_node_for_script(base, base, script);
 	}
 	String hint;
-	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
+	Error err = script->get_language()->get_editor_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
 
 	if (err == OK) {
 		code_editor->get_text_editor()->set_code_hint(hint);
@@ -1166,6 +1174,9 @@ void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 }
 
 void ScriptTextEditor::_on_caret_moved() {
+	if (ScriptEditorNavigationMarker::get_singleton()->is_locate_just_occured() || ScriptEditorNavigationMarker::get_singleton()->is_traverse_just_occured() || ScriptEditorNavigationMarker::get_singleton()->is_locating() || ScriptEditorNavigationMarker::get_singleton()->is_traversing()) {
+		return;
+	}
 	if (code_editor->is_previewing_navigation_change()) {
 		return;
 	}
@@ -1173,21 +1184,17 @@ void ScriptTextEditor::_on_caret_moved() {
 		call_on_all_layout_pending_finished(callable_mp(this, &ScriptTextEditor::_on_caret_moved));
 		return;
 	}
-	// When previous_line < 0, it means the user has just switched to this editor from a different one
-	// (which already saved a state in the history). In this case, we should not save this editor's previous state.
 	int current_line = code_editor->get_text_editor()->get_caret_line();
-	if (previous_line >= 0 && Math::abs(current_line - previous_line) >= 10) {
-		Dictionary nav_state = get_navigation_state();
-		nav_state["row"] = previous_line;
-		nav_state["scroll_position"] = -1;
-		nav_state["ensure_caret_visible"] = true;
-		emit_signal(SNAME("request_save_previous_state"), nav_state);
+	if (Math::abs(current_line - previous_history_line) >= 10) {
+		_emit_request_save_new_history();
 		store_previous_state();
+	} else {
+		_emit_request_save_previous_state();
 	}
-	previous_line = current_line;
 }
 
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
+	ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 	Ref<Script> script = edited_res;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
@@ -1206,7 +1213,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			EditorNode::get_singleton()->load_scene_or_resource(p_symbol);
 		}
 	} else if (lc_error == OK) {
-		_goto_line(p_row);
+		goto_line_without_history(p_row, p_column);
 
 		if (!result.class_name.is_empty() && EditorHelp::get_doc_data()->class_list.has(result.class_name) && !EditorHelp::get_doc_data()->class_list[result.class_name].is_script_doc) {
 			switch (result.type) {
@@ -1285,7 +1292,6 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			if (result.script.is_valid()) {
 				emit_signal(SNAME("request_open_script_at_line"), result.script, result.location - 1);
 			} else {
-				emit_signal(SNAME("request_save_history"));
 				goto_line_centered(result.location - 1);
 			}
 		}
@@ -1302,6 +1308,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			EditorNode::get_singleton()->load_scene_or_resource(path);
 		}
 	}
+	ScriptEditorNavigationMarker::get_singleton()->locate_end();
 }
 
 void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
@@ -1458,6 +1465,12 @@ String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
 	String base_path = edited_res->get_path().get_base_dir();
 	String path = base_path.path_join(rel_path);
 	return path.replace("///", "//").simplify_path();
+}
+
+void ScriptTextEditor::_goto_line(int p_line) {
+	ScriptEditorNavigationMarker::get_singleton()->locate_begin();
+	goto_line(p_line);
+	ScriptEditorNavigationMarker::get_singleton()->locate_end();
 }
 
 void ScriptTextEditor::_update_connected_methods() {
@@ -1807,7 +1820,9 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 					bpoint_idx++;
 				}
 			}
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 			code_editor->goto_line_centered(bpoints[bpoint_idx]);
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		} break;
 		case DEBUG_GOTO_PREV_BREAKPOINT: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
@@ -1822,7 +1837,9 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 					bpoint_idx--;
 				}
 			}
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 			code_editor->goto_line_centered(bpoints[bpoint_idx]);
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		} break;
 		case SHOW_TOOLTIP_AT_CARET: {
 			_show_symbol_tooltip(tx->get_word_under_caret(), tx->get_caret_line(), tx->get_caret_column(), true);
@@ -1902,11 +1919,6 @@ void ScriptTextEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAG_END: {
 			drag_info_label->hide();
-		} break;
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible()) {
-				previous_line = -1;
-			}
 		} break;
 	}
 }
@@ -2024,7 +2036,7 @@ static String _get_dropped_resource_as_member(const Ref<Resource> &p_resource, b
 			path = ResourceUID::get_singleton()->id_to_text(id);
 		}
 	}
-	const bool is_script = ClassDB::is_parent_class(p_resource->get_class(), "Script");
+	const bool is_script = p_resource->is_class(SNAME("Script"));
 
 	if (!p_create_field) {
 		return vformat("preload(%s)", _quote_drop_data(path));

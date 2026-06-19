@@ -206,9 +206,17 @@ void JoltArea3D::_notify_body_exited(const JPH::BodyID &p_body_id) {
 }
 
 void JoltArea3D::_notify_bodies_updated(bool p_priority_changed) {
-	for (KeyValue<JPH::BodyID, Overlap> &E : bodies_by_id) {
-		if (JoltBody3D *body = space->try_get_body(E.key)) {
-			body->update_area(this, p_priority_changed);
+	if (unlikely(!in_space())) {
+		return;
+	}
+
+	if (space->get_default_area() == this) {
+		space->increment_default_area_changed_count();
+	} else {
+		for (KeyValue<JPH::BodyID, Overlap> &E : bodies_by_id) {
+			if (JoltBody3D *body = space->try_get_body(E.key)) {
+				body->update_area(this, p_priority_changed);
+			}
 		}
 	}
 }
@@ -609,52 +617,6 @@ bool JoltArea3D::area_shape_exited(const JPH::BodyID &p_body_id, const JPH::SubS
 
 bool JoltArea3D::shape_exited(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id) {
 	return body_shape_exited(p_body_id, p_other_shape_id, p_self_shape_id) || area_shape_exited(p_body_id, p_other_shape_id, p_self_shape_id);
-}
-
-void JoltArea3D::body_exited(const JPH::BodyID &p_body_id, bool p_notify) {
-	Overlap *overlap = bodies_by_id.getptr(p_body_id);
-	if (unlikely(overlap == nullptr)) {
-		return;
-	}
-
-	if (unlikely(overlap->shape_pairs.is_empty())) {
-		return;
-	}
-
-	for (const KeyValue<ShapeIDPair, ShapeIndexPair> &E : overlap->shape_pairs) {
-		if (!overlap->pending_added.erase(E.value)) {
-			overlap->pending_removed.push_back(E.value);
-		}
-	}
-
-	_events_changed();
-
-	overlap->shape_pairs.clear();
-
-	if (p_notify) {
-		_notify_body_exited(p_body_id);
-	}
-}
-
-void JoltArea3D::area_exited(const JPH::BodyID &p_body_id) {
-	Overlap *overlap = areas_by_id.getptr(p_body_id);
-	if (unlikely(overlap == nullptr)) {
-		return;
-	}
-
-	if (unlikely(overlap->shape_pairs.is_empty())) {
-		return;
-	}
-
-	for (const KeyValue<ShapeIDPair, ShapeIndexPair> &E : overlap->shape_pairs) {
-		if (!overlap->pending_added.erase(E.value)) {
-			overlap->pending_removed.push_back(E.value);
-		}
-	}
-
-	_events_changed();
-
-	overlap->shape_pairs.clear();
 }
 
 void JoltArea3D::call_queries() {

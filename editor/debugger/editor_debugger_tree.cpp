@@ -62,6 +62,7 @@ EditorDebuggerTree::EditorDebuggerTree() {
 	add_child(file_dialog);
 
 	accept = memnew(AcceptDialog);
+	accept->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(accept);
 }
 

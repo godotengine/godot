@@ -1085,25 +1085,19 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 
 		switch (bg_mode) {
-			case RSE::ENV_BG_CLEAR_COLOR: {
-				clear_color = p_default_bg_color;
-				clear_color.r *= bg_energy_multiplier;
-				clear_color.g *= bg_energy_multiplier;
-				clear_color.b *= bg_energy_multiplier;
-				if (!p_render_data->transparent_bg && environment_get_fog_enabled(p_render_data->environment)) {
-					draw_sky_fog_only = true;
-					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
-				}
-			} break;
+			case RSE::ENV_BG_CLEAR_COLOR:
 			case RSE::ENV_BG_COLOR: {
-				clear_color = environment_get_bg_color(p_render_data->environment);
+				clear_color = bg_mode == RSE::ENV_BG_CLEAR_COLOR ? p_default_bg_color : environment_get_bg_color(p_render_data->environment);
+
+				if (!p_render_data->transparent_bg && environment_get_fog_enabled(p_render_data->environment)) {
+					draw_sky_fog_only = true;
+					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color));
+				}
+
+				clear_color = clear_color.srgb_to_linear();
 				clear_color.r *= bg_energy_multiplier;
 				clear_color.g *= bg_energy_multiplier;
 				clear_color.b *= bg_energy_multiplier;
-				if (!p_render_data->transparent_bg && environment_get_fog_enabled(p_render_data->environment)) {
-					draw_sky_fog_only = true;
-					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
-				}
 			} break;
 			case RSE::ENV_BG_SKY: {
 				draw_sky = !p_render_data->transparent_bg;
@@ -1146,9 +1140,15 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			}
 			RD::get_singleton()->draw_command_end_label(); // Setup Sky
 		}
+
+		if (bg_mode != RSE::ENV_BG_CLEAR_COLOR && bg_mode != RSE::ENV_BG_COLOR) {
+			clear_color = clear_color.srgb_to_linear();
+		}
 	} else {
-		clear_color = p_default_bg_color;
+		clear_color = p_default_bg_color.srgb_to_linear();
 	}
+
+	// After this point clear_color has linear encoding.
 
 	// We don't have access to any rendered buffers but we may be able to effect mesh data...
 	_process_compositor_effects(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE, p_render_data);
@@ -1234,7 +1234,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		// Set clear colors.
 		Vector<Color> c;
 		if (!load_color) {
-			Color cc = clear_color.srgb_to_linear() * inverse_luminance_multiplier;
+			Color cc = clear_color * inverse_luminance_multiplier;
 			if (rb_data.is_valid()) {
 				cc.a = 0; // For transparent viewport backgrounds.
 			}
@@ -1242,7 +1242,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			c.push_back(cc); // Our render buffer.
 			if (rb_data.is_valid()) {
 				if (use_msaa) {
-					c.push_back(clear_color.srgb_to_linear() * inverse_luminance_multiplier); // Our resolve buffer.
+					c.push_back(clear_color * inverse_luminance_multiplier); // Our resolve buffer.
 				}
 				if (using_subpass_post_process) {
 					c.push_back(Color()); // Our 2D buffer we're copying into.
@@ -2100,7 +2100,7 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 
 		SceneState::InstanceData instance_data;
 
-		if (inst->prev_transform_dirty && frame > inst->prev_transform_change_frame + 1 && inst->prev_transform_change_frame) {
+		if (inst->prev_transform_dirty && frame > inst->prev_transform_change_frame && inst->prev_transform_change_frame) {
 			inst->prev_transform = inst->transform;
 			inst->prev_transform_dirty = false;
 		}
@@ -2564,7 +2564,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		RID pipeline_rd;
 		RID vertex_array_rd;
 		RID index_array_rd;
-		const uint32_t ubershader_iterations = (disable_ubershaders ? 1 : 2);
+		uint32_t ubershader_iterations = (disable_ubershaders ? 1 : 2);
 		bool pipeline_valid = false;
 		while (pipeline_key.ubershader < ubershader_iterations) {
 			// Skeleton and blend shape.
@@ -2589,7 +2589,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 			if (shader != prev_shader || pipeline_hash != prev_pipeline_hash) {
 				RSE::PipelineSource pipeline_source = pipeline_key.ubershader ? RSE::PIPELINE_SOURCE_DRAW : RSE::PIPELINE_SOURCE_SPECIALIZATION;
-				pipeline_rd = shader->pipeline_hash_map.get_pipeline(pipeline_key, pipeline_hash, pipeline_key.ubershader || disable_ubershaders, pipeline_source);
+				pipeline_rd = shader->pipeline_hash_map.get_pipeline(pipeline_key, pipeline_hash, pipeline_key.ubershader == (ubershader_iterations - 1), pipeline_source);
 
 				if (pipeline_rd.is_valid()) {
 					pipeline_valid = true;
@@ -2597,7 +2597,14 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 					prev_pipeline_hash = pipeline_hash;
 					break;
 				} else {
-					pipeline_key.ubershader++;
+					if (pipeline_key.ubershader == 1) {
+						// If ubershader failed to compile, retry specialized shader and wait for it to finish compilation.
+						// This prevents pop-in at the cost of shader compilation stutters.
+						pipeline_key.ubershader = 0;
+						ubershader_iterations = 1;
+					} else {
+						pipeline_key.ubershader++;
+					}
 				}
 			} else {
 				// The same pipeline is bound already.
@@ -2975,7 +2982,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.priority = p_material->priority;
 
 	uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(sdcache->surface);
-	if (p_material->shader_data->uses_tangent && !(format & RSE::ARRAY_FORMAT_TANGENT)) {
+	if (p_material->shader_data->uses_tangent && !p_material->shader_data->writes_tangent && !(format & RSE::ARRAY_FORMAT_TANGENT)) {
 		String shader_path = p_material->shader_data->path.is_empty() ? "" : "(" + p_material->shader_data->path + ")";
 		String mesh_path = mesh_storage->mesh_get_path(p_mesh).is_empty() ? "" : "(" + mesh_storage->mesh_get_path(p_mesh) + ")";
 		WARN_PRINT_ED(vformat("Attempting to use a shader %s that requires tangents with a mesh %s that doesn't contain tangents. Ensure that meshes are imported with the 'ensure_tangents' option. If creating your own meshes, add an `ARRAY_TANGENT` array (when using ArrayMesh) or call `generate_tangents()` (when using SurfaceTool).", shader_path, mesh_path));

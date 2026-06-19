@@ -22613,13 +22613,6 @@ msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s нельзя перетащить сюда. Используйте %s для отмены."
 
 msgid ""
-"Labels with autowrapping enabled must have a positive custom maximum width "
-"configured to work correctly."
-msgstr ""
-"Для корректной работы Label'ов с включенным автоматическим переносом строк "
-"необходимо задать положительную максимальную ширину."
-
-msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr ""

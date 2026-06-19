@@ -3674,7 +3674,7 @@ bool PopupMenu::get_shrink_width() const {
 	return shrink_width;
 }
 
-void PopupMenu::_pre_popup() {
+void PopupMenu::_pre_popup(const Size2i &p_size) {
 	real_t popup_scale = 1.0;
 	bool scale_with_parent = true;
 	Node *parent_node = get_parent();
@@ -3716,6 +3716,9 @@ void PopupMenu::_pre_popup() {
 
 	set_content_scale_factor(popup_scale);
 	if (is_wrapping_controls()) {
+		if (scale_with_parent) {
+			set_size(p_size);
+		}
 		Size2 minsize = get_contents_minimum_size() * popup_scale;
 		Size2 maxsize = get_max_size();
 		if (maxsize.height > 0) {

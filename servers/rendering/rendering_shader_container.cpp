@@ -139,7 +139,22 @@ void RenderingShaderContainer::_set_from_shader_reflection_post(const ReflectSha
 	// Do nothing.
 }
 
-static RenderingDeviceCommons::DataFormat spv_image_format_to_data_format(const SpvImageFormat p_format) {
+static RenderingDeviceCommons::TextureType _spv_image_dim_to_texture_type(SpvDim p_dim, bool p_arrayed) {
+	switch (p_dim) {
+		case SpvDim1D:
+			return p_arrayed ? RenderingDeviceCommons::TEXTURE_TYPE_1D_ARRAY : RenderingDeviceCommons::TEXTURE_TYPE_1D;
+		case SpvDim2D:
+			return p_arrayed ? RenderingDeviceCommons::TEXTURE_TYPE_2D_ARRAY : RenderingDeviceCommons::TEXTURE_TYPE_2D;
+		case SpvDim3D:
+			return RenderingDeviceCommons::TEXTURE_TYPE_3D;
+		case SpvDimCube:
+			return p_arrayed ? RenderingDeviceCommons::TEXTURE_TYPE_CUBE_ARRAY : RenderingDeviceCommons::TEXTURE_TYPE_CUBE;
+		default:
+			return RenderingDeviceCommons::TEXTURE_TYPE_MAX;
+	}
+}
+
+static RenderingDeviceCommons::DataFormat _spv_image_format_to_data_format(const SpvImageFormat p_format) {
 	using RDC = RenderingDeviceCommons;
 	switch (p_format) {
 		case SpvImageFormatUnknown:
@@ -438,8 +453,14 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 						uniform.writable = false;
 					}
 
-					if (is_image) {
-						uniform.image.format = spv_image_format_to_data_format(binding.image.image_format);
+					// Gather the texture type and format for runtime validation when creating uniform sets.
+					// We cannot enforce the type for input attachments since they do not indicate whether the texture is 2D or 2D array for multiview.
+					if (is_image && binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT) {
+						uniform.texture_type = _spv_image_dim_to_texture_type(binding.image.dim, binding.image.arrayed);
+						uniform.texture_format = _spv_image_format_to_data_format(binding.image.image_format);
+
+						ERR_FAIL_COND_V_MSG(uniform.texture_type == RDC::TEXTURE_TYPE_MAX, FAILED,
+								"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + binding.name + "' does not have a valid texture type.");
 					}
 
 					uniform.binding = binding.binding;
@@ -681,6 +702,8 @@ void RenderingShaderContainer::set_from_shader_reflection(const ReflectShader &p
 			binding_data.stages = uint32_t(uniform.stages);
 			binding_data.length = uniform.length;
 			binding_data.writable = uint32_t(uniform.writable);
+			binding_data.texture_type = uniform.texture_type;
+			binding_data.texture_format = uniform.texture_format;
 			reflection_binding_set_uniforms_data.push_back(binding_data);
 		}
 
@@ -743,6 +766,8 @@ RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_shader_re
 			uniform.length = binding.length;
 			uniform.binding = binding.binding;
 			uniform.stages = binding.stages;
+			uniform.texture_type = binding.texture_type;
+			uniform.texture_format = binding.texture_format;
 		}
 	}
 

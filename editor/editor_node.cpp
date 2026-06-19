@@ -127,6 +127,7 @@
 #include "editor/scene/3d/material_3d_conversion_plugins.h"
 #include "editor/scene/3d/mesh_library_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/scene/3d/root_motion_editor_plugin.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/scene/editor_scene_tabs.h"
@@ -1036,7 +1037,7 @@ void EditorNode::_notification(int p_what) {
 			// Remember the selected locale to preview node translations.
 			const String preview_locale = EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "preview_locale", String());
 			if (!preview_locale.is_empty() && TranslationServer::get_singleton()->has_translation_for_locale(preview_locale, true)) {
-				set_preview_locale(preview_locale);
+				set_preview_locale(preview_locale, false);
 			}
 
 			if (Engine::get_singleton()->is_recovery_mode_hint()) {
@@ -4616,9 +4617,15 @@ String EditorNode::get_preview_locale() const {
 	return main_domain->is_enabled() ? main_domain->get_locale_override() : String();
 }
 
-void EditorNode::set_preview_locale(const String &p_locale) {
+bool EditorNode::is_pseudolocalization_enabled() const {
+	const Ref<TranslationDomain> &main_domain = TranslationServer::get_singleton()->get_main_domain();
+	return main_domain->is_pseudolocalization_enabled();
+}
+
+void EditorNode::set_preview_locale(const String &p_locale, bool p_pseudolocalization) {
 	const String &prev_locale = get_preview_locale();
-	if (prev_locale == p_locale) {
+	bool prev_pseudo = is_pseudolocalization_enabled();
+	if (prev_locale == p_locale && prev_pseudo == p_pseudolocalization) {
 		return;
 	}
 
@@ -4627,13 +4634,15 @@ void EditorNode::set_preview_locale(const String &p_locale) {
 	Ref<TranslationDomain> main_domain = TranslationServer::get_singleton()->get_main_domain();
 	if (p_locale.is_empty()) {
 		// Disable preview. Use the fallback locale.
-		main_domain->set_enabled(false);
 		main_domain->set_locale_override(TranslationServer::get_singleton()->get_fallback_locale());
 	} else {
 		// Preview a specific locale.
-		main_domain->set_enabled(true);
 		main_domain->set_locale_override(p_locale);
 	}
+	main_domain->set_pseudolocalization_enabled(p_pseudolocalization);
+	// Texts set in the editor could be identifiers that should never be translated.
+	// So we need to disable translation entirely.
+	main_domain->set_enabled(p_pseudolocalization || !p_locale.is_empty());
 
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "preview_locale", p_locale);
 
@@ -4763,7 +4772,6 @@ void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state) {
 
 	changing_scene = false;
 
-	_edit_current(true);
 	if (EDITOR_GET("interface/scene_tabs/auto_select_current_scene_file")) {
 		FileSystemDock::get_singleton()->navigate_to_path(scene_path);
 	}
@@ -6590,6 +6598,7 @@ void EditorNode::_immediate_dialog_confirmed() {
 }
 bool EditorNode::immediate_confirmation_dialog(const String &p_text, const String &p_ok_text, const String &p_cancel_text, uint32_t p_wrap_width) {
 	ConfirmationDialog *cd = memnew(ConfirmationDialog);
+	cd->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	cd->set_text(p_text);
 	cd->set_ok_button_text(p_ok_text);
 	cd->set_cancel_button_text(p_cancel_text);
@@ -9275,6 +9284,7 @@ EditorNode::EditorNode() {
 	save_confirmation->connect("about_to_popup", callable_mp(this, &EditorNode::_prepare_save_confirmation_popup));
 
 	gradle_build_manage_templates = memnew(ConfirmationDialog);
+	gradle_build_manage_templates->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	gradle_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
 	gradle_build_manage_templates->set_ok_button_text(TTR("Manage Templates"));
 	gradle_build_manage_templates->add_button(TTR("Install from file"))->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_android_install_build_template));
@@ -9302,6 +9312,7 @@ EditorNode::EditorNode() {
 		vbox->add_child(choose_android_export_profile);
 
 		install_android_build_template = memnew(ConfirmationDialog);
+		install_android_build_template->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 		install_android_build_template->set_ok_button_text(TTR("Install"));
 		install_android_build_template->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
 		install_android_build_template->add_child(vbox);
@@ -9383,6 +9394,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(disk_changed);
 
 	project_data_missing = memnew(ConfirmationDialog);
+	project_data_missing->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	project_data_missing->set_text(TTRC("Project data folder (.godot) is missing. Please restart editor."));
 	project_data_missing->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::restart_editor).bind(false));
 	project_data_missing->set_ok_button_text(TTRC("Restart"));
@@ -9531,6 +9543,7 @@ EditorNode::EditorNode() {
 	set_process(true);
 
 	open_imported = memnew(ConfirmationDialog);
+	open_imported->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	open_imported->set_ok_button_text(TTR("Open Anyway"));
 	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "inherit");
 	open_imported->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_open_imported));

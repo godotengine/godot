@@ -34,6 +34,7 @@
 #include "lang_table.h"
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
+#include "winrt_utils.h"
 
 #include "core/config/engine.h"
 #include "core/debugger/engine_debugger.h"
@@ -2289,6 +2290,14 @@ String OS_Windows::get_locale() const {
 	}
 
 	return "en";
+}
+
+Vector<String> OS_Windows::get_preferred_locales() const {
+	Vector<String> out = WinRTUtils::get_preferred_locales();
+	if (out.is_empty()) {
+		out.push_back(get_locale());
+	}
+	return out;
 }
 
 String OS_Windows::get_model_name() const {

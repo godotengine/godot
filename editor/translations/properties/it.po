@@ -108,7 +108,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-07 16:19+0000\n"
+"PO-Revision-Date: 2026-06-16 19:05+0000\n"
 "Last-Translator: Micky <micheledevita2@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
@@ -117,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -399,7 +399,7 @@ msgid "Occlusion Culling"
 msgstr "Occlusion culling"
 
 msgid "BVH Build Quality"
-msgstr "Qualità compilazione BVH"
+msgstr "Qualità di costruzione BVH"
 
 msgid "Jitter Projection"
 msgstr "Tremola proiezione"
@@ -1266,10 +1266,10 @@ msgid "Generate Shadow Mesh"
 msgstr "Genera mesh d'ombra"
 
 msgid "Generate Lightmap UV2"
-msgstr "Genera lightmap UV2"
+msgstr "Genera UV2 per lightmap"
 
 msgid "Generate Lightmap UV2 Texel Size"
-msgstr "Dimensioni dei texel generati della lightmap UV2"
+msgstr "Dimensioni dei texel generati di UV2 per lightmap"
 
 msgid "Scale Mesh"
 msgstr "Scala della mesh"
@@ -1407,7 +1407,7 @@ msgid "Shadow Meshes"
 msgstr "Mesh d'ombra"
 
 msgid "Lightmap UV"
-msgstr "UV della lightmap"
+msgstr "UV per lightmap"
 
 msgid "LODs"
 msgstr "Livelli di dettaglio"
@@ -1716,7 +1716,7 @@ msgid "Roughness"
 msgstr "Rugosità"
 
 msgid "Src Normal"
-msgstr "Sorgente delle normali"
+msgstr "Sorgente di normali"
 
 msgid "Process"
 msgstr "Processo"
@@ -1737,7 +1737,7 @@ msgid "Alpha"
 msgstr "Alfa"
 
 msgid "Normal Map Invert Y"
-msgstr "Inverti Y in normal map"
+msgstr "Inverti Y in mappa di normali"
 
 msgid "HDR as sRGB"
 msgstr "HDR come sRGB"
@@ -1801,10 +1801,10 @@ msgid "Normalize"
 msgstr "Normalizza"
 
 msgid "Loop Begin"
-msgstr "Inizio Loop"
+msgstr "Inizio loop"
 
 msgid "Loop End"
-msgstr "Fine Loop"
+msgstr "Fine loop"
 
 msgid "Draw Label"
 msgstr "Disegna etichetta"
@@ -1976,6 +1976,9 @@ msgstr "Localizzazione"
 
 msgid "Editor Language"
 msgstr "Lingua dell'editor"
+
+msgid "Asset Store"
+msgstr "Asset Store"
 
 msgid "Use Threads"
 msgstr "Usa i thread"
@@ -2407,6 +2410,9 @@ msgstr "Estensioni di file di testo"
 msgid "Other File Extensions"
 msgstr "Altre estensioni di file"
 
+msgid "Ask Before Moving Files"
+msgstr "Chiedi prima di spostare i file"
+
 msgid "Property Editor"
 msgstr "Editor di proprietà"
 
@@ -2414,7 +2420,7 @@ msgid "Auto Refresh Interval"
 msgstr "Intervallo di aggiornamento automatico"
 
 msgid "Subresource Hue Tint"
-msgstr "Tinta tono delle sottorisorse"
+msgstr "Tinta tono delle sotto-risorse"
 
 msgid "Text Editor"
 msgstr "Editor di testo"
@@ -2756,7 +2762,7 @@ msgid "Visibility Notifier"
 msgstr "Notificatore di visibilità"
 
 msgid "Voxel GI"
-msgstr "VoxelGI"
+msgstr "Voxel GI"
 
 msgid "Path Tilt"
 msgstr "Inclinazione percorso"
@@ -3410,7 +3416,7 @@ msgid "Reference Space"
 msgstr "Spazio di riferimento"
 
 msgid "Environment Blend Mode"
-msgstr "Modo di fusione d'ambiente"
+msgstr "Modalità di fusione dell'ambiente"
 
 msgid "Foveation Level"
 msgstr "Livello di foveazione"
@@ -3422,7 +3428,7 @@ msgid "Submit Depth Buffer"
 msgstr "Invia buffer di profondità"
 
 msgid "Startup Alert"
-msgstr "Segnalazione d'inizio"
+msgstr "Segnalazione all'avvio"
 
 msgid "Extensions"
 msgstr "Estensioni"
@@ -5360,19 +5366,19 @@ msgid "Device Bluetooth"
 msgstr "Dispositivo Bluetooth"
 
 msgid "Files Downloads"
-msgstr "File Download"
+msgstr "File in Download"
 
 msgid "Files Pictures"
-msgstr "File Immagini"
+msgstr "File in Immagini"
 
 msgid "Files Music"
-msgstr "File Audio"
+msgstr "File in Musica"
 
 msgid "Files Movies"
-msgstr "File Video"
+msgstr "File in Film"
 
 msgid "Files User Selected"
-msgstr "File Utente selezionato"
+msgstr "File in selezionati dall'utente"
 
 msgid "Helper Executables"
 msgstr "Eseguibili ausiliari"
@@ -5489,7 +5495,7 @@ msgid "For Desktop"
 msgstr "Per il desktop"
 
 msgid "For Mobile"
-msgstr "Per dispositivi mobile"
+msgstr "Per dispositivi mobili"
 
 msgid "HTML"
 msgstr "HTML"
@@ -5501,7 +5507,7 @@ msgid "Custom HTML Shell"
 msgstr "Shell HTML personalizzato"
 
 msgid "Head Include"
-msgstr "Includi head"
+msgstr "Includi in head"
 
 msgid "Canvas Resize Policy"
 msgstr "Regole di ridimensionamento canvas"
@@ -5513,7 +5519,7 @@ msgid "Experimental Virtual Keyboard"
 msgstr "Tastiera virtuale sperimentale"
 
 msgid "Progressive Web App"
-msgstr "Applicazione Web progressiva"
+msgstr "Applicazione Web Progressiva"
 
 msgid "Ensure Cross Origin Isolation Headers"
 msgstr "Garantisci intestazioni di isolamento cross-origin"
@@ -6706,7 +6712,7 @@ msgid "Lower Fade"
 msgstr "Dissolvenza inferiore"
 
 msgid "Distance Fade"
-msgstr "Distanza dissolvenza"
+msgstr "Dissolvenza a distanza"
 
 msgid "Transform Align"
 msgstr "Allineamento trasformazione"
@@ -8674,6 +8680,9 @@ msgstr "Mostra dietro al genitore"
 msgid "Clip Children"
 msgstr "Ritaglia i figli"
 
+msgid "Oversampling with Scale"
+msgstr "Sovracampionamento con scala"
+
 msgid "Light Mask"
 msgstr "Maschera di luce"
 
@@ -8924,7 +8933,7 @@ msgid "Scaling 3D Scale"
 msgstr "Scala di ridimensionamento 3D"
 
 msgid "Texture Mipmap Bias"
-msgstr "Bias del mipmap delle texture"
+msgstr "Bias delle mipmap delle texture"
 
 msgid "Anisotropic Filtering Level"
 msgstr "Livello del filtro anisotropico"
@@ -9260,7 +9269,7 @@ msgid "Transpose"
 msgstr "Trasponi"
 
 msgid "Texture Origin"
-msgstr "Origine della texture"
+msgstr "Origine di texture"
 
 msgid "Terrain Set"
 msgstr "Insieme di terreni"
@@ -12216,7 +12225,7 @@ msgid "Blend Shapes"
 msgstr "Forme di fusione"
 
 msgid "Hand Tracking Source"
-msgstr "Sorgente di tracciamento della mano"
+msgstr "Sorgente di tracciamento delle mani"
 
 msgid "Is Primary"
 msgstr "È primario"

@@ -1052,6 +1052,7 @@ public:
 	// Driver workarounds that require higher level code and cannot be solely implemented in RenderingDeviceDriver.
 	struct DriverWorkarounds {
 		bool avoid_compute_after_draw = false;
+		bool dont_print_on_render_pipeline_creation_failure = false;
 		bool disable_ubershaders = false;
 	};
 
@@ -1115,6 +1116,8 @@ public:
 		uint32_t binding = 0;
 		BitField<ShaderStage> stages = {};
 		uint32_t length = 0; // Size of arrays (in total elements), or ubos (in bytes * total elements).
+		TextureType texture_type = TEXTURE_TYPE_MAX;
+		DataFormat texture_format = DATA_FORMAT_MAX;
 
 		bool operator!=(const ShaderUniform &p_other) const {
 			return binding != p_other.binding || type != p_other.type || writable != p_other.writable || stages != p_other.stages || length != p_other.length;
