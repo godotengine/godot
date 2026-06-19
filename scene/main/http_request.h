@@ -87,6 +87,9 @@ private:
 	bool keep_partial_download = false;
 	bool append_to_download_file = false;
 
+	// 4.2 milliseconds (roughly one quarter of a frame at 60 Hz).
+	uint64_t read_time_limit_usec = 4200;
+
 	Ref<StreamPeerGZIP> decompressor;
 	Ref<FileAccess> file;
 
@@ -154,6 +157,9 @@ public:
 
 	void set_download_chunk_size(int p_chunk_size);
 	int get_download_chunk_size() const;
+
+	void set_read_time_limit(int p_read_time_limit_usec);
+	int get_read_time_limit() const;
 
 	void set_body_size_limit(int p_bytes);
 	int get_body_size_limit() const;
