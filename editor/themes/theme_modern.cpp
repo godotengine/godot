@@ -2351,10 +2351,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// EditorProperty.
 
-		Ref<StyleBoxFlat> style_property_bg = p_config.base_style->duplicate();
-		style_property_bg->set_bg_color(p_config.highlight_color);
-		style_property_bg->set_border_width_all(0);
-
 		Ref<StyleBoxFlat> style_property_bg_selected = p_config.base_style->duplicate();
 		style_property_bg_selected->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.05));
 
@@ -2436,7 +2432,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		p_theme->set_constant("inspector_margin", EditorStringName(Editor), 12 * EDSCALE);
 
-		// Colored EditorProperty.
+		// Colored EditorProperty and EditorInspectorCategory.
 		for (int i = 0; i < 16; i++) {
 			Color si_base_color = p_config.accent_color;
 
@@ -2462,6 +2458,18 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			bg_color->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
 			p_theme->set_stylebox("sub_inspector_property_bg" + itos(i + 1), EditorStringName(EditorStyles), bg_color);
+
+			// EditorInspectorCategory when inside a sub-inspector.
+			Ref<StyleBoxFlat> category_bg_sub = category_bg->duplicate();
+			category_bg_sub->set_content_margin_all(0);
+
+			p_theme->set_stylebox("sub_inspector_category_bg", EditorStringName(EditorStyles), category_bg_sub);
+
+			// The same as above, but colored for nesting.
+			Ref<StyleBoxFlat> category_bg_sub_color = category_bg_sub->duplicate();
+			category_bg_sub_color->set_bg_color(p_config.dark_color_1.lerp(si_base_color, 0.15));
+
+			p_theme->set_stylebox("sub_inspector_color_category_bg" + itos(i + 1), EditorStringName(EditorStyles), category_bg_sub_color);
 
 			// Dictionary editor add item.
 			// Expand to the left and right by 4px to compensate for the dictionary editor margins.
