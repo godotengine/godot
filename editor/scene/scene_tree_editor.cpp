@@ -1189,7 +1189,9 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 	}
 
 	for (int i = 0; i < p_terms.size(); i++) {
-		const String &term = p_terms[i];
+		String term = p_terms[i];
+
+		bool matches = false;
 
 		// Recognize special filter.
 		if (term.contains_char(':') && !term.get_slicec(':', 0).is_empty()) {
@@ -1199,34 +1201,38 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 			if (parameter == "type" || parameter == "t") {
 				// Filter by Type.
 				Node *item_node = get_node(p_item->get_metadata(0));
-				if (!_node_matches_class_term(item_node, argument)) {
-					return false;
-				}
+				matches = _node_matches_class_term(item_node, argument);
 			} else if (parameter == "group" || parameter == "g") {
 				// Filter by Group.
 				Node *node = get_node(p_item->get_metadata(0));
 
 				if (argument.is_empty()) {
 					// When argument is empty, match all Nodes belonging to any exposed group.
-					if (node->get_persistent_group_count() == 0) {
-						return false;
-					}
+					matches = node->get_persistent_group_count() > 0;
 				} else {
 					List<Node::GroupInfo> group_info_list;
 					node->get_groups(&group_info_list);
 
-					bool term_in_groups = false;
 					for (const Node::GroupInfo &group_info : group_info_list) {
 						if (!group_info.persistent) {
 							continue; // Ignore internal groups.
 						}
 						if (String(group_info.name).to_lower().contains(argument)) {
-							term_in_groups = true;
+							matches = true;
 							break;
 						}
 					}
-					if (!term_in_groups) {
-						return false;
+				}
+			} else if (parameter == "child" || parameter == "c") {
+				// Filter by Child Node Type.
+				Node *item_node = get_node(p_item->get_metadata(0));
+				if (item_node) {
+					for (int child_idx = 0; child_idx < item_node->get_child_count(); child_idx++) {
+						Node *child = item_node->get_child(child_idx);
+						if (_node_matches_class_term(child, argument)) {
+							matches = true;
+							break;
+						}
 					}
 				}
 			} else if (filter_term_warning.is_empty()) {
@@ -1234,10 +1240,12 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 				continue;
 			}
 		} else {
-			// Default.
-			if (!p_item->get_text(0).to_lower().contains(term)) {
-				return false;
-			}
+			// Default: filter by node name.
+			matches = p_item->get_text(0).to_lower().contains(term);
+		}
+
+		if (!matches) {
+			return false;
 		}
 	}
 
