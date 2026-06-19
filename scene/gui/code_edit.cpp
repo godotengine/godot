@@ -223,7 +223,7 @@ void CodeEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			RID ci = get_text_canvas_item();
+			RID ci = get_clipped_canvas_item();
 			const bool caret_visible = is_caret_visible();
 			const bool rtl = is_layout_rtl();
 			const int row_height = get_line_height();
@@ -443,7 +443,7 @@ void CodeEdit::_draw_guidelines() {
 		return;
 	}
 
-	RID ci = get_canvas_item();
+	RID ci = get_text_canvas_item();
 	const Size2 size = get_size();
 	const bool rtl = is_layout_rtl();
 
@@ -1584,7 +1584,7 @@ bool CodeEdit::is_drawing_executing_lines_gutter() const {
 
 void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
 	bool hovering = get_hovered_gutter() == Vector2i(main_gutter, p_line);
-	RID ci = get_text_canvas_item();
+	RID ci = get_clipped_canvas_item();
 	if (draw_breakpoints && theme_cache.breakpoint_icon.is_valid()) {
 		bool breakpointed = is_line_breakpointed(p_line);
 		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
@@ -1811,7 +1811,7 @@ void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 
 		number_color = theme_cache.line_number_color;
 	}
 
-	TS->shaped_text_draw(text_rid, get_text_canvas_item(), ofs, -1, -1, number_color);
+	TS->shaped_text_draw(text_rid, get_clipped_canvas_item(), ofs, -1, -1, number_color);
 }
 
 void CodeEdit::_clear_line_number_text_cache() {
@@ -1842,7 +1842,7 @@ void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_regi
 		return;
 	}
 	set_line_gutter_clickable(p_line, fold_gutter, true);
-	RID ci = get_text_canvas_item();
+	RID ci = get_clipped_canvas_item();
 
 	int horizontal_padding = p_region.size.x / 10;
 	int vertical_padding = p_region.size.y / 6;

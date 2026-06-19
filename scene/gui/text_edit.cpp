@@ -1008,12 +1008,6 @@ void TextEdit::_notification(int p_what) {
 
 			_update_scrollbars();
 
-			RS::get_singleton()->canvas_item_clear(text_ci);
-			RS::get_singleton()->canvas_item_set_custom_rect(text_ci, !is_visibility_clip_disabled(), Rect2(Point2(0, 0), size));
-			RS::get_singleton()->canvas_item_set_clip(text_ci, true);
-			RS::get_singleton()->canvas_item_set_visibility_layer(text_ci, get_visibility_layer());
-			RS::get_singleton()->canvas_item_set_default_texture_filter(text_ci, RSE::CanvasItemTextureFilter(get_texture_filter_in_tree()));
-
 			int left_margin = Math::ceil(style->get_margin(SIDE_LEFT));
 			int xmargin_beg = left_margin + gutters_width + gutter_padding;
 
@@ -1021,6 +1015,19 @@ void TextEdit::_notification(int p_what) {
 			if (draw_minimap) {
 				xmargin_end -= minimap_width;
 			}
+
+			RS::get_singleton()->canvas_item_clear(text_ci);
+			RS::get_singleton()->canvas_item_set_custom_rect(text_ci, !is_visibility_clip_disabled(), Rect2(Point2(xmargin_beg, 0), Point2(xmargin_end - xmargin_beg, size.height)));
+			RS::get_singleton()->canvas_item_set_clip(text_ci, true);
+			RS::get_singleton()->canvas_item_set_visibility_layer(text_ci, get_visibility_layer());
+			RS::get_singleton()->canvas_item_set_default_texture_filter(text_ci, RSE::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+
+			RS::get_singleton()->canvas_item_clear(clipped_ci);
+			RS::get_singleton()->canvas_item_set_custom_rect(clipped_ci, !is_visibility_clip_disabled(), Rect2(Point2(0, 0), size));
+			RS::get_singleton()->canvas_item_set_clip(clipped_ci, true);
+			RS::get_singleton()->canvas_item_set_visibility_layer(clipped_ci, get_visibility_layer());
+			RS::get_singleton()->canvas_item_set_default_texture_filter(clipped_ci, RSE::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+
 			if (!editable) {
 				draw_caret = is_drawing_caret_when_editable_disabled();
 			}
@@ -1032,7 +1039,7 @@ void TextEdit::_notification(int p_what) {
 
 #ifndef DISABLE_DEPRECATED
 			if (theme_cache.background_color.a > 0.01) {
-				RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2i(), get_size()), theme_cache.background_color);
+				RS::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), theme_cache.background_color);
 			}
 #endif // DISABLE_DEPRECATED
 
@@ -1238,9 +1245,9 @@ void TextEdit::_notification(int p_what) {
 				}
 
 				if (rtl) {
-					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y, minimap_width, viewport_height), viewport_color);
+					RS::get_singleton()->canvas_item_add_rect(clipped_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y, minimap_width, viewport_height), viewport_color);
 				} else {
-					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), viewport_offset_y, minimap_width, viewport_height), viewport_color);
+					RS::get_singleton()->canvas_item_add_rect(clipped_ci, Rect2((xmargin_end + 2), viewport_offset_y, minimap_width, viewport_height), viewport_color);
 				}
 
 				for (int i = 0; i < minimap_draw_amount; i++) {
@@ -1303,15 +1310,15 @@ void TextEdit::_notification(int p_what) {
 
 						if (highlight_current_line && highlighted_lines.has(Pair<int, int>(minimap_line, line_wrap_index))) {
 							if (rtl) {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), theme_cache.current_line_color);
+								RS::get_singleton()->canvas_item_add_rect(clipped_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), theme_cache.current_line_color);
 							} else {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), theme_cache.current_line_color);
+								RS::get_singleton()->canvas_item_add_rect(clipped_ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), theme_cache.current_line_color);
 							}
 						} else if (line_background_color.a > 0) {
 							if (rtl) {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), line_background_color);
+								RS::get_singleton()->canvas_item_add_rect(clipped_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), line_background_color);
 							} else {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), line_background_color);
+								RS::get_singleton()->canvas_item_add_rect(clipped_ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), line_background_color);
 							}
 						}
 
@@ -1361,9 +1368,9 @@ void TextEdit::_notification(int p_what) {
 
 							if (characters > 0) {
 								if (rtl) {
-									RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2(size.width - xpos - minimap_char_size.x * characters, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
+									RS::get_singleton()->canvas_item_add_rect(clipped_ci, Rect2(Point2(size.width - xpos - minimap_char_size.x * characters, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
 								} else {
-									RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2(xpos, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
+									RS::get_singleton()->canvas_item_add_rect(clipped_ci, Rect2(Point2(xpos, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
 								}
 							}
 
@@ -1482,9 +1489,14 @@ void TextEdit::_notification(int p_what) {
 					// Draw current line highlight.
 					if (highlight_current_line && highlighted_lines.has(Pair<int, int>(line, line_wrap_index))) {
 						if (rtl) {
-							RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - xmargin_end, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
+							RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - xmargin_end, ofs_y, xmargin_end - xmargin_beg, row_height), theme_cache.current_line_color);
 						} else {
-							RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(0, ofs_y, xmargin_end, row_height), theme_cache.current_line_color);
+							RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(xmargin_beg, ofs_y, xmargin_end - xmargin_beg, row_height), theme_cache.current_line_color);
+						}
+						if (rtl) {
+							RS::get_singleton()->canvas_item_add_rect(clipped_ci, Rect2(xmargin_end, ofs_y, size.width - xmargin_end, row_height), theme_cache.current_line_color);
+						} else {
+							RS::get_singleton()->canvas_item_add_rect(clipped_ci, Rect2(0, ofs_y, xmargin_beg, row_height), theme_cache.current_line_color);
 						}
 					}
 
@@ -1514,9 +1526,9 @@ void TextEdit::_notification(int p_what) {
 
 									int yofs = ofs_y + (row_height - tl->get_size().y) / 2;
 									if (theme_cache.outline_size > 0 && theme_cache.outline_color.a > 0) {
-										tl->draw_outline(text_ci, Point2(gutter_offset, yofs), theme_cache.outline_size, theme_cache.outline_color);
+										tl->draw_outline(clipped_ci, Point2(gutter_offset, yofs), theme_cache.outline_size, theme_cache.outline_color);
 									}
-									tl->draw(text_ci, Point2(gutter_offset, yofs), get_line_gutter_item_color(line, g));
+									tl->draw(clipped_ci, Point2(gutter_offset, yofs), get_line_gutter_item_color(line, g));
 								} break;
 								case GUTTER_TYPE_ICON: {
 									const Ref<Texture2D> icon = get_line_gutter_icon(line, g);
@@ -1548,7 +1560,7 @@ void TextEdit::_notification(int p_what) {
 										gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
 									}
 
-									icon->draw_rect(text_ci, gutter_rect, false, get_line_gutter_item_color(line, g));
+									icon->draw_rect(clipped_ci, gutter_rect, false, get_line_gutter_item_color(line, g));
 								} break;
 								case GUTTER_TYPE_CUSTOM: {
 									if (gutter.custom_draw_callback.is_valid()) {
@@ -1720,7 +1732,7 @@ void TextEdit::_notification(int p_what) {
 					if (theme_cache.outline_size > 0 && theme_cache.outline_color.a > 0) {
 						for (int j = 0; j < gl_size; j++) {
 							for (int k = 0; k < glyphs[j].repeat; k++) {
-								if ((char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
+								if ((char_ofs + char_margin + glyphs[j].advance) >= xmargin_beg && (char_ofs + char_margin) <= xmargin_end) {
 									if (glyphs[j].font_rid != RID()) {
 										TS->font_draw_glyph_outline(glyphs[j].font_rid, text_ci, glyphs[j].font_size, theme_cache.outline_size, Vector2(char_margin + char_ofs + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, theme_cache.outline_color);
 									}
@@ -1738,7 +1750,7 @@ void TextEdit::_notification(int p_what) {
 					for (Dictionary k : object_keys) {
 						Rect2 col_rect = TS->shaped_text_get_object_rect(rid, k);
 						col_rect.position += Vector2(char_margin, ofs_y);
-						if (!clipped && (col_rect.position.x) >= xmargin_beg && (col_rect.position.x + col_rect.size.x) <= xmargin_end) {
+						if (!clipped && (col_rect.position.x + col_rect.size.x) >= xmargin_beg && col_rect.position.x <= xmargin_end) {
 							inline_object_drawer.call(k, col_rect);
 						}
 					}
@@ -1768,7 +1780,7 @@ void TextEdit::_notification(int p_what) {
 						}
 
 						float char_pos = char_ofs + char_margin;
-						if (char_pos >= xmargin_beg) {
+						if (char_pos + glyphs[j].advance >= xmargin_beg) {
 							if (highlight_matching_braces_enabled) {
 								for (int c = 0; c < get_caret_count(); c++) {
 									const BraceMatchingData &brace_match = brace_matching[c];
@@ -1804,7 +1816,7 @@ void TextEdit::_notification(int p_what) {
 
 						bool had_glyphs_drawn = false;
 						for (int k = 0; k < glyphs[j].repeat; k++) {
-							if (!clipped && (char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
+							if (!clipped && (char_ofs + char_margin + glyphs[j].advance) >= xmargin_beg && (char_ofs + char_margin) <= xmargin_end) {
 								if (glyphs[j].font_rid != RID()) {
 									TS->font_draw_glyph(glyphs[j].font_rid, text_ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, gl_color);
 									had_glyphs_drawn = true;
@@ -1870,13 +1882,13 @@ void TextEdit::_notification(int p_what) {
 						bool use_top_squiggle = false;
 
 						// Add first point.
-						if (distance >= xmargin_beg && distance <= xmargin_end) {
+						if (distance >= xmargin_beg - char_w && distance <= xmargin_end + char_w) {
 							points.append(Vector2(distance, squiggle_center_y));
 							distance += char_w * 0.25;
 						}
 
 						while (true) {
-							if (distance >= xmargin_beg && distance <= xmargin_end) {
+							if (distance >= xmargin_beg - char_w && distance <= xmargin_end + char_w) {
 								float y_pos = use_top_squiggle ? squiggle_top_y : squiggle_bottom_y;
 								// Ensure the underline ends at the end of the text.
 								if (distance >= end_position) {
@@ -1913,8 +1925,9 @@ void TextEdit::_notification(int p_what) {
 
 					// is_line_folded
 					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && _is_line_hidden(line + 1)) {
-						int xofs = char_ofs + char_margin + (_get_folded_eol_icon()->get_width() / 2);
-						if (xofs >= xmargin_beg && xofs < xmargin_end) {
+						int folded_icon_width = _get_folded_eol_icon()->get_width();
+						int xofs = char_ofs + char_margin + (folded_icon_width / 2);
+						if (xofs + folded_icon_width >= xmargin_beg && xofs < xmargin_end) {
 							int yofs = (text_height - _get_folded_eol_icon()->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
 							Color eol_color = _get_code_folding_color();
 							eol_color.a = 1;
@@ -2226,7 +2239,7 @@ void TextEdit::_draw_selection_handle(Vector2 p_pos) const {
 	RS::get_singleton()->canvas_item_add_line(text_ci, p_pos, p_pos + Vector2(0, line_height), handle_color, handle_line_width);
 
 	Vector2 circle_center = p_pos + Vector2(0, line_height + selection_handle_radius);
-	RS::get_singleton()->canvas_item_add_circle(text_ci, circle_center, selection_handle_radius, handle_color);
+	RS::get_singleton()->canvas_item_add_circle(clipped_ci, circle_center, selection_handle_radius, handle_color);
 }
 
 /*
@@ -7164,6 +7177,10 @@ RID TextEdit::get_text_canvas_item() const {
 	return text_ci;
 }
 
+RID TextEdit::get_clipped_canvas_item() const {
+	return clipped_ci;
+}
+
 VScrollBar *TextEdit::get_v_scroll_bar() const {
 	return v_scroll;
 }
@@ -9397,8 +9414,9 @@ void TextEdit::_update_scrollbars() {
 		total_rows += visible_rows - 1;
 	}
 
+	const int caret_width = theme_cache.caret_width * MAX(1, theme_cache.base_scale);
 	int visible_width = size.width - style->get_minimum_size().width;
-	int total_width = (draw_placeholder ? placeholder_max_width : text.get_max_width()) + gutters_width + gutter_padding;
+	int total_width = (draw_placeholder ? placeholder_max_width : text.get_max_width()) + gutters_width + gutter_padding + caret_width;
 
 	if (draw_minimap) {
 		total_width += minimap_width;
@@ -10090,6 +10108,10 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	RS::get_singleton()->canvas_item_set_parent(text_ci, get_canvas_item());
 	RS::get_singleton()->canvas_item_set_use_parent_material(text_ci, true);
 
+	clipped_ci = RS::get_singleton()->canvas_item_create();
+	RS::get_singleton()->canvas_item_set_parent(clipped_ci, get_canvas_item());
+	RS::get_singleton()->canvas_item_set_use_parent_material(clipped_ci, true);
+
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
 
@@ -10132,4 +10154,5 @@ TextEdit::TextEdit(const String &p_placeholder) {
 
 TextEdit::~TextEdit() {
 	RS::get_singleton()->free_rid(text_ci);
+	RS::get_singleton()->free_rid(clipped_ci);
 }
