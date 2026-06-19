@@ -217,6 +217,7 @@ Config::Config() {
 	}
 
 	max_renderable_elements = GLOBAL_GET("rendering/limits/opengl/max_renderable_elements");
+	max_decals = GLOBAL_GET("rendering/limits/opengl/max_decals");
 	max_renderable_lights = GLOBAL_GET("rendering/limits/opengl/max_renderable_lights");
 	max_lights_per_object = GLOBAL_GET("rendering/limits/opengl/max_lights_per_object");
 
