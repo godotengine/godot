@@ -453,7 +453,9 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 						uniform.writable = false;
 					}
 
-					if (is_image) {
+					// Gather the texture type and format for runtime validation when creating uniform sets.
+					// We cannot enforce the type for input attachments since they do not indicate whether the texture is 2D or 2D array for multiview.
+					if (is_image && binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT) {
 						uniform.texture_type = _spv_image_dim_to_texture_type(binding.image.dim, binding.image.arrayed);
 						uniform.texture_format = _spv_image_format_to_data_format(binding.image.image_format);
 
