@@ -124,6 +124,13 @@
 				Returns a [Color] modulating item's icon at the specified index.
 			</description>
 		</method>
+		<method name="get_item_icon_overlay" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the icon overlay associated with the specified index.
+			</description>
+		</method>
 		<method name="get_item_icon_region" qualifiers="const">
 			<return type="Rect2" />
 			<param index="0" name="idx" type="int" />
@@ -303,6 +310,14 @@
 				Sets a modulating [Color] of the item associated with the specified index.
 			</description>
 		</method>
+		<method name="set_item_icon_overlay">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="icon_overlay" type="Texture2D" />
+			<description>
+				Sets (or replaces) the icon overlay [Texture2D] associated with the specified index. Overlay is drawn on top of icon.
+			</description>
+		</method>
 		<method name="set_item_icon_region">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
@@ -423,6 +438,10 @@
 		</member>
 		<member name="item_{index}/icon" type="Texture2D" setter="" getter="">
 			The icon of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/icon_overlay" type="Texture2D" setter="" getter="">
+			The icon overlay of the item at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
 		</member>
 		<member name="item_{index}/selectable" type="bool" setter="" getter="" default="true">

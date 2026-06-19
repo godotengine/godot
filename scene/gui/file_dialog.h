@@ -281,6 +281,8 @@ private:
 		Ref<Texture2D> favorite_down;
 		Ref<Texture2D> file_thumbnail;
 		Ref<Texture2D> folder_thumbnail;
+		Ref<Texture2D> link_overlay;
+		Ref<Texture2D> link_overlay_thumbnail;
 
 		Ref<Texture2D> menu_copy_path;
 		Ref<Texture2D> menu_delete;
