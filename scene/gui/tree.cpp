@@ -7087,7 +7087,7 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 }
 
 bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (using_native_touch) {
+	if (using_native_touch && drag_touching) {
 		// Disable data drag & drop when touch dragging.
 		return false;
 	}
@@ -7096,7 +7096,7 @@ bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 }
 
 Variant Tree::get_drag_data(const Point2 &p_point) {
-	if (using_native_touch) {
+	if (using_native_touch && drag_touching) {
 		// Disable data drag & drop when touch dragging.
 		return Variant();
 	}
