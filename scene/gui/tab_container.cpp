@@ -1121,6 +1121,10 @@ void TabContainer::set_popup(Node *p_popup) {
 	}
 }
 
+Button *TabContainer::get_popup_button() const {
+	return popup_button;
+}
+
 Popup *TabContainer::get_popup() const {
 	if (popup_obj_id.is_valid()) {
 		Popup *popup = ObjectDB::get_instance<Popup>(popup_obj_id);
