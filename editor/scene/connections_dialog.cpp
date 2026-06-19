@@ -957,6 +957,7 @@ ConnectDialog::ConnectDialog() {
 	cdbinds = memnew(ConnectDialogBinds);
 
 	error = memnew(AcceptDialog);
+	error->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(error);
 	error->set_title(TTR("Cannot connect signal"));
 	error->set_ok_button_text(TTR("Close"));
@@ -1793,6 +1794,7 @@ ConnectionsDock::ConnectionsDock() {
 	holder->add_child(connect_dialog);
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);
+	disconnect_all_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	holder->add_child(disconnect_all_dialog);
 	disconnect_all_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ConnectionsDock::_disconnect_all));
 	disconnect_all_dialog->set_text(TTR("Are you sure you want to remove all connections from this signal?"));

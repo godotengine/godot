@@ -2552,16 +2552,16 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 		if (!is_scanning()) {
 			_process_update_pending();
 		}
-		if (!filesystem_changed_queued) {
-			filesystem_changed_queued = true;
+		if (!filesystem_changed_queued.is_set()) {
+			filesystem_changed_queued.set();
 			callable_mp(this, &EditorFileSystem::_notify_filesystem_changed).call_deferred();
 		}
 	}
 }
 
 void EditorFileSystem::_notify_filesystem_changed() {
-	emit_signal("filesystem_changed");
-	filesystem_changed_queued = false;
+	emit_signal(SNAME("filesystem_changed"));
+	filesystem_changed_queued.clear();
 }
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
@@ -2599,6 +2599,18 @@ void EditorFileSystem::register_global_class_script(const String &p_search_path,
 		EditorFileSystem::get_singleton()->_register_global_class_script(p_search_path, p_target_path, ScriptClassInfoUpdate::from_file_info(fi));
 	} else {
 		ScriptServer::remove_global_class_by_path(p_search_path);
+	}
+}
+
+void EditorFileSystem::filesystem_changed() {
+	if (Thread::is_main_thread()) {
+		_notify_filesystem_changed();
+		return;
+	}
+	// If not already queued, queue a deferred call to notify about filesystem changes.
+	if (!filesystem_changed_queued.is_set()) {
+		filesystem_changed_queued.set();
+		callable_mp(this, &EditorFileSystem::_notify_filesystem_changed).call_deferred();
 	}
 }
 
@@ -3720,7 +3732,7 @@ void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file_type", "path"), &EditorFileSystem::get_file_type);
 	ClassDB::bind_method(D_METHOD("reimport_files", "files"), &EditorFileSystem::reimport_files);
 
-	ADD_SIGNAL(MethodInfo("filesystem_changed"));
+	ADD_SIGNAL(MethodInfo("filesystem_changed")); // May only be emitted on the main thread.
 	ADD_SIGNAL(MethodInfo("script_classes_updated"));
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
 	ADD_SIGNAL(MethodInfo("resources_reimporting", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));

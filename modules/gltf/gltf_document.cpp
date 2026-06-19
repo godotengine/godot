@@ -7187,27 +7187,25 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 }
 
 PackedByteArray GLTFDocument::generate_buffer(Ref<GLTFState> p_state) {
-	Ref<GLTFState> state = p_state;
-	ERR_FAIL_COND_V(state.is_null(), PackedByteArray());
+	ERR_FAIL_COND_V(p_state.is_null(), PackedByteArray());
 	// For buffers, set the state filename to an empty string, but
 	// don't touch the base path, in case the user set it manually.
-	state->filename = "";
-	Error err = _serialize(state);
+	p_state->filename = "";
+	Error err = _serialize(p_state);
 	ERR_FAIL_COND_V(err != OK, PackedByteArray());
-	PackedByteArray bytes = _serialize_glb_buffer(state, &err);
+	PackedByteArray bytes = _serialize_glb_buffer(p_state, &err);
 	return bytes;
 }
 
 Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
-	Ref<GLTFState> state = p_state;
-	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
-	state->set_base_path(p_path.get_base_dir());
-	state->filename = p_path.get_file();
-	Error err = _serialize(state);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+	p_state->set_base_path(p_path.get_base_dir());
+	p_state->filename = p_path.get_file();
+	Error err = _serialize(p_state);
 	if (err != OK) {
 		return err;
 	}
-	err = _serialize_file(state, p_path);
+	err = _serialize_file(p_state, p_path);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -7265,15 +7263,14 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, boo
 }
 
 Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags) {
-	ERR_FAIL_NULL_V(p_node, FAILED);
-	Ref<GLTFState> state = p_state;
-	ERR_FAIL_COND_V(state.is_null(), FAILED);
-	state->use_named_skin_binds = p_flags & ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
-	state->discard_meshes_and_materials = p_flags & ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
-	state->force_generate_tangents = p_flags & ImportFlags::IMPORT_FLAG_GENERATE_TANGENT_ARRAYS;
-	state->force_disable_compression = p_flags & ImportFlags::IMPORT_FLAG_FORCE_DISABLE_MESH_COMPRESSION;
-	if (!state->buffers.size()) {
-		state->buffers.push_back(Vector<uint8_t>());
+	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+	p_state->use_named_skin_binds = p_flags & ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
+	p_state->discard_meshes_and_materials = p_flags & ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
+	p_state->force_generate_tangents = p_flags & ImportFlags::IMPORT_FLAG_GENERATE_TANGENT_ARRAYS;
+	p_state->force_disable_compression = p_flags & ImportFlags::IMPORT_FLAG_FORCE_DISABLE_MESH_COMPRESSION;
+	if (!p_state->buffers.size()) {
+		p_state->buffers.push_back(Vector<uint8_t>());
 	}
 	// Perform export preflight for document extensions. Only extensions that
 	// return OK will be used for the rest of the export steps.
@@ -7284,7 +7281,7 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 		if (ClassDB::is_class_exposed(ext->get_class_name())) {
 			ext_dup = ext->duplicate();
 		}
-		Error err = ext_dup->export_preflight(state, p_node);
+		Error err = ext_dup->export_preflight(p_state, p_node);
 		if (err == OK) {
 			document_extensions.push_back(ext_dup);
 		}
@@ -7293,14 +7290,14 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_MULTI_ROOT) {
 		const int child_count = p_node->get_child_count();
 		for (int i = 0; i < child_count; i++) {
-			_convert_scene_node(state, p_node->get_child(i), -1, -1);
+			_convert_scene_node(p_state, p_node->get_child(i), -1, -1);
 		}
-		state->scene_name = p_node->get_name();
+		p_state->scene_name = p_node->get_name();
 	} else {
 		if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT) {
-			state->extensions_used.append("GODOT_single_root");
+			p_state->extensions_used.append("GODOT_single_root");
 		}
-		_convert_scene_node(state, p_node, -1, -1);
+		_convert_scene_node(p_state, p_node, -1, -1);
 	}
 	// Run post-convert for each extension, in case an extension needs to do something after converting the scene.
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
@@ -7312,40 +7309,36 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 }
 
 Error GLTFDocument::append_from_buffer(const PackedByteArray &p_bytes, const String &p_base_path, Ref<GLTFState> p_state, uint32_t p_flags) {
-	Ref<GLTFState> state = p_state;
-	ERR_FAIL_COND_V(state.is_null(), FAILED);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
-	state->use_named_skin_binds = p_flags & ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
-	state->discard_meshes_and_materials = p_flags & ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
-	state->force_generate_tangents = p_flags & ImportFlags::IMPORT_FLAG_GENERATE_TANGENT_ARRAYS;
-	state->force_disable_compression = p_flags & ImportFlags::IMPORT_FLAG_FORCE_DISABLE_MESH_COMPRESSION;
+	p_state->use_named_skin_binds = p_flags & ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
+	p_state->discard_meshes_and_materials = p_flags & ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
+	p_state->force_generate_tangents = p_flags & ImportFlags::IMPORT_FLAG_GENERATE_TANGENT_ARRAYS;
+	p_state->force_disable_compression = p_flags & ImportFlags::IMPORT_FLAG_FORCE_DISABLE_MESH_COMPRESSION;
 
 	Ref<FileAccessMemory> file_access;
 	file_access.instantiate();
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
-	state->set_base_path(p_base_path.get_base_dir());
-	err = _parse(p_state, state->base_path, file_access);
+	p_state->set_base_path(p_base_path.get_base_dir());
+	err = _parse(p_state, p_state->base_path, file_access);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		err = ext->import_post_parse(state);
+		err = ext->import_post_parse(p_state);
 		ERR_FAIL_COND_V(err != OK, err);
 	}
 	return OK;
 }
 
 Error GLTFDocument::append_from_file(const String &p_path, Ref<GLTFState> p_state, uint32_t p_flags, const String &p_base_path) {
-	Ref<GLTFState> state = p_state;
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
-	if (state == Ref<GLTFState>()) {
-		state.instantiate();
-	}
-	state->set_filename(p_path.get_file().get_basename());
-	state->use_named_skin_binds = p_flags & ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
-	state->discard_meshes_and_materials = p_flags & ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
-	state->force_generate_tangents = p_flags & ImportFlags::IMPORT_FLAG_GENERATE_TANGENT_ARRAYS;
-	state->force_disable_compression = p_flags & ImportFlags::IMPORT_FLAG_FORCE_DISABLE_MESH_COMPRESSION;
+	p_state->set_filename(p_path.get_file().get_basename());
+	p_state->use_named_skin_binds = p_flags & ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
+	p_state->discard_meshes_and_materials = p_flags & ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
+	p_state->force_generate_tangents = p_flags & ImportFlags::IMPORT_FLAG_GENERATE_TANGENT_ARRAYS;
+	p_state->force_disable_compression = p_flags & ImportFlags::IMPORT_FLAG_FORCE_DISABLE_MESH_COMPRESSION;
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -7355,7 +7348,7 @@ Error GLTFDocument::append_from_file(const String &p_path, Ref<GLTFState> p_stat
 	if (base_path.is_empty()) {
 		base_path = p_path.get_base_dir();
 	}
-	state->set_base_path(base_path);
+	p_state->set_base_path(base_path);
 	err = _parse(p_state, base_path, file);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
@@ -7367,7 +7360,7 @@ Error GLTFDocument::append_from_file(const String &p_path, Ref<GLTFState> p_stat
 }
 
 Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
-	ERR_FAIL_COND_V(p_state.is_null(), ERR_PARSE_ERROR);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	if (p_state->json.has("extensionsUsed")) {
 		Vector<String> ext_array = p_state->json["extensionsUsed"];
 		p_state->extensions_used = ext_array;

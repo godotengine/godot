@@ -1978,6 +1978,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_button->set_disabled(true);
 
 	export_all_dialog = memnew(ConfirmationDialog);
+	export_all_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(export_all_dialog);
 	export_all_dialog->set_title(TTRC("Export All"));
 	export_all_dialog->set_text(TTRC("Choose an export mode:"));

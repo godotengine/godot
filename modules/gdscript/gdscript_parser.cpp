@@ -6203,9 +6203,12 @@ void GDScriptParser::TreePrinter::print_match_pattern(PatternNode *p_match_patte
 				if (p_match_pattern->dictionary[i].key != nullptr) {
 					// Key can be null for rest pattern.
 					print_expression(p_match_pattern->dictionary[i].key);
-					push_text(" : ");
+					if (p_match_pattern->dictionary[i].value_pattern != nullptr) {
+						// Value can be null when only matching key.
+						push_text(" : ");
+						print_match_pattern(p_match_pattern->dictionary[i].value_pattern);
+					}
 				}
-				print_match_pattern(p_match_pattern->dictionary[i].value_pattern);
 			}
 			push_text(" }");
 			break;
