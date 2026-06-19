@@ -1786,7 +1786,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				if (saved_category < categories->get_item_count()) {
 					categories->select(saved_category);
 				}
-				
+
 				_search(current_page);
 			}
 		} break;
