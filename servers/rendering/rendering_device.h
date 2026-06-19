@@ -1159,8 +1159,7 @@ private:
 		};
 
 		LocalVector<AttachableTexture> attachable_textures; // Used for validation.
-		Vector<RDG::ResourceTracker *> draw_trackers;
-		Vector<RDG::ResourceUsage> draw_trackers_usage;
+		Vector<RDG::TrackedResource> draw_tracked_resources;
 		HashMap<RID, RDG::ResourceUsage> untracked_usage;
 		LocalVector<SharedTexture> shared_textures_to_update;
 		LocalVector<RID> pending_clear_textures;
