@@ -180,7 +180,7 @@ void AudioStreamPlaybackWAV::decode_samples(const Depth *p_src, AudioFrame *p_ds
 			if (p_qoa->data_ofs != new_data_ofs) {
 				p_qoa->data_ofs = new_data_ofs;
 				const uint8_t *ofs_src = (uint8_t *)p_src + p_qoa->data_ofs;
-				qoa_decode_frame(ofs_src, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec.ptr(), &p_qoa->dec_len);
+				qoa_decode_frame(ofs_src, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec.ptr(), nullptr);
 			}
 
 			uint32_t dec_idx = pos % QOA_FRAME_LEN << (is_stereo ? 1 : 0);
