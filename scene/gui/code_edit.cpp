@@ -2454,6 +2454,10 @@ void CodeEdit::request_code_completion(bool p_force) {
 }
 
 void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const Ref<Resource> &p_icon, const Variant &p_value, int p_location) {
+	_add_code_completion_option(p_type, p_display_text, p_insert_text, p_text_color, p_icon, p_value, p_location, {});
+}
+
+void CodeEdit::_add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const Ref<Resource> &p_icon, const Variant &p_value, int p_location, const LocalVector<ScriptLanguage::TextEdit> &additional_edits) {
 	ScriptLanguage::CodeCompletionOption completion_option;
 	completion_option.kind = (ScriptLanguage::CodeCompletionKind)p_type;
 	completion_option.display = p_display_text;
@@ -2462,6 +2466,7 @@ void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const Strin
 	completion_option.icon = p_icon;
 	completion_option.default_value = p_value;
 	completion_option.location = p_location;
+	completion_option.additional_edits = additional_edits;
 	code_completion_option_submitted.push_back(completion_option);
 }
 
@@ -2539,14 +2544,15 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 	begin_complex_operation();
 	begin_multicaret_edit();
 
+	const ScriptLanguage::CodeCompletionOption &selected_option = code_completion_options[code_completion_current_selected];
+	const String &text_to_insert = selected_option.insert_text;
+	const String &display_text = selected_option.display;
+
 	for (int i = 0; i < get_caret_count(); i++) {
 		if (multicaret_edit_ignore_caret(i)) {
 			continue;
 		}
 		int caret_line = get_caret_line(i);
-
-		const String &insert_text = code_completion_options[code_completion_current_selected].insert_text;
-		const String &display_text = code_completion_options[code_completion_current_selected].display;
 
 		if (p_replace) {
 			// Find end of current section.
@@ -2575,14 +2581,14 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 
 			// Replace.
 			remove_text(caret_line, get_caret_column(i) - code_completion_base.length(), caret_remove_line, caret_col);
-			insert_text_at_caret(insert_text, i);
+			insert_text_at_caret(text_to_insert, i);
 		} else {
 			// Get first non-matching char.
 			const String line = get_line(caret_line);
 			int caret_col = get_caret_column(i);
 			int matching_chars = code_completion_base.length();
-			for (; matching_chars <= insert_text.length(); matching_chars++) {
-				if (caret_col >= line.length() || line[caret_col] != insert_text[matching_chars]) {
+			for (; matching_chars <= text_to_insert.length(); matching_chars++) {
+				if (caret_col >= line.length() || line[caret_col] != text_to_insert[matching_chars]) {
 					break;
 				}
 				caret_col++;
@@ -2592,16 +2598,16 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 			remove_text(caret_line, get_caret_column(i) - code_completion_base.length(), caret_line, get_caret_column(i));
 
 			// Merge with text.
-			insert_text_at_caret(insert_text.substr(0, code_completion_base.length()), i);
+			insert_text_at_caret(text_to_insert.substr(0, code_completion_base.length()), i);
 			set_caret_column(caret_col, false, i);
-			insert_text_at_caret(insert_text.substr(matching_chars), i);
+			insert_text_at_caret(text_to_insert.substr(matching_chars), i);
 		}
 
 		// Handle merging of symbols eg strings, brackets.
 		caret_line = get_caret_line(i);
 		const String line = get_line(caret_line);
 		char32_t next_char = line[get_caret_column(i)];
-		char32_t last_completion_char = insert_text[insert_text.length() - 1];
+		char32_t last_completion_char = text_to_insert[text_to_insert.length() - 1];
 		if (i == 0) {
 			caret_last_completion_char = last_completion_char;
 		}
@@ -2635,6 +2641,14 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 					set_caret_column(get_caret_column(i) + 2, i == 0, i);
 				}
 			}
+		}
+
+		for (const ScriptLanguage::TextEdit &edit : selected_option.additional_edits) {
+			ScriptLanguage::CodePos start = edit.start;
+			ScriptLanguage::CodePos end = edit.end;
+
+			remove_text(start.line, start.column, end.line, end.column);
+			insert_text(edit.new_text, start.line, start.column);
 		}
 	}
 

@@ -1,4 +1,7 @@
 GDTEST_OK
+~~ WARNING at line 5: (IMPLICIT_FUNCTION_OVERRIDE) The method "_to_string()" overrides "RefCounted._to_string()" but does not have the "@override" annotation.
+~~ WARNING at line 8: (IMPLICIT_FUNCTION_OVERRIDE) The method "_notification()" overrides "RefCounted._notification()" but does not have the "@override" annotation.
+~~ WARNING at line 20: (IMPLICIT_FUNCTION_OVERRIDE) The method "_notification()" overrides "RefCounted._notification()" but does not have the "@override" annotation.
 subtest_order begin
 LocalOwner _init
 interrupted_coroutine begin
