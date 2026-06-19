@@ -1191,6 +1191,13 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 	for (int i = 0; i < p_terms.size(); i++) {
 		String term = p_terms[i];
 
+		// Handle negation prefix. Automatically negates any filter term.
+		bool negate = false;
+		if (term.begins_with("-") && term.length() > 1) {
+			negate = true;
+			term = term.substr(1);
+		}
+
 		bool matches = false;
 
 		// Recognize special filter.
@@ -1242,6 +1249,10 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 		} else {
 			// Default: filter by node name.
 			matches = p_item->get_text(0).to_lower().contains(term);
+		}
+
+		if (negate) {
+			matches = !matches;
 		}
 
 		if (!matches) {
