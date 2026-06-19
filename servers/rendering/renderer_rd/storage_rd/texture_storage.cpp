@@ -418,7 +418,7 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
-	{ //create default array white
+	{ // Creates a default 2D texture array filled with a white color.
 
 		RD::TextureFormat tformat;
 		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
@@ -444,7 +444,33 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
-	{ //create default array black
+	{ // Сreates a default 2D texture array filled with a black color.
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.array_layers = 1;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+
+		Vector<uint8_t> pv;
+		pv.resize(16 * 4);
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 0);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+	}
+
+	{ // Creates a default 2D texture array filled with a transparent color.
 
 		RD::TextureFormat tformat;
 		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
@@ -466,7 +492,7 @@ TextureStorage::TextureStorage() {
 		{
 			Vector<Vector<uint8_t>> vpv;
 			vpv.push_back(pv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_TRANSPARENT] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
 	}
 
