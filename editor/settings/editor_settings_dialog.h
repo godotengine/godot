@@ -35,6 +35,7 @@
 
 class CheckButton;
 class EditorEventSearchBar;
+class EditorPluginSettings;
 class EventListenerLineEdit;
 class InputEventConfigurationDialog;
 class PanelContainer;
@@ -50,6 +51,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	TabContainer *tabs = nullptr;
 	Control *tab_general = nullptr;
 	Control *tab_shortcuts = nullptr;
+	EditorPluginSettings *tab_plugins = nullptr;
 
 	LineEdit *search_box = nullptr;
 	CheckButton *advanced_switch = nullptr;
@@ -133,6 +135,8 @@ public:
 	static void update_navigation_preset();
 	void set_current_section(const String &p_section);
 	void set_advanced_mode_enabled(bool p_enabled);
+
+	void update_plugins();
 
 	EditorSettingsDialog();
 };

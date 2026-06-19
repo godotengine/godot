@@ -39,10 +39,11 @@ class EditorPluginSettings : public VBoxContainer {
 	GDCLASS(EditorPluginSettings, VBoxContainer);
 
 	enum {
-		BUTTON_PLUGIN_EDIT
+		BUTTON_PLUGIN_EDIT,
 	};
 
 	enum {
+		COLUMN_WARNING,
 		COLUMN_STATUS,
 		COLUMN_NAME,
 		COLUMN_VERSION,
@@ -53,10 +54,14 @@ class EditorPluginSettings : public VBoxContainer {
 
 	PluginConfigDialog *plugin_config_dialog = nullptr;
 	TextureRect *recovery_mode_icon = nullptr;
+	Label *installed_plugins_label = nullptr;
 	Tree *plugin_list = nullptr;
 	bool updating = false;
 
+	String plugins_path = "res://addons";
+
 	void _plugin_activity_changed();
+	void _update_plugin_enabled(Object *p_item);
 	void _create_clicked();
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
@@ -66,6 +71,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void set_plugins_path(const String &p_path);
 	void update_plugins();
 
 	EditorPluginSettings();

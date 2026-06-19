@@ -37,6 +37,7 @@ class CheckBox;
 class EditorFileDialog;
 class Label;
 class LinkButton;
+class OptionButton;
 
 class EditorAssetInstaller : public ConfirmationDialog {
 	GDCLASS(EditorAssetInstaller, ConfirmationDialog);
@@ -64,6 +65,10 @@ class EditorAssetInstaller : public ConfirmationDialog {
 	Ref<Texture2D> generic_extension_icon;
 	HashMap<String, Ref<Texture2D>> extension_icon_map;
 
+	Button *target_dir_button = nullptr;
+
+	OptionButton *scope_option_button = nullptr;
+
 	bool updating_source = false;
 	String toplevel_prefix;
 	bool skip_toplevel = false;
@@ -74,6 +79,7 @@ class EditorAssetInstaller : public ConfirmationDialog {
 
 	void _open_target_dir_dialog();
 	void _target_dir_selected(const String &p_target_path);
+	void _on_asset_scope_changed(int index);
 
 	void _update_file_mappings();
 	void _rebuild_source_tree();
