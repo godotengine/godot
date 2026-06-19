@@ -56,7 +56,7 @@
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the left tangent (slope) for the point at [param index]. The left and right tangents may be different if the curve is not continuous at this point.
+				Returns the left tangent (slope) for the point at [param index].
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -77,7 +77,7 @@
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the right tangent (slope) for the point at [param index].  The left and right tangents may be different if the curve is not continuous at this point.
+				Returns the right tangent (slope) for the point at [param index].
 			</description>
 		</method>
 		<method name="get_value_range" qualifiers="const">
@@ -120,7 +120,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="tangent" type="float" />
 			<description>
-				Sets the left tangent for the point at [param index] to [param tangent].  The tangent value is the slope of the curve to the left of this point.  The left and right tangents may be different if the curve is not continuous at this point.
+				Sets the left tangent for the point at [param index] to [param tangent].  The tangent value is the slope of the curve to the left of this point.
 			</description>
 		</method>
 		<method name="set_point_offset">
@@ -144,7 +144,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="tangent" type="float" />
 			<description>
-				Sets the right tangent for the point at [param index] to [param tangent].  The tangent value is the slope of the curve to the right of this point.  The left and right tangents may be different if the curve is not continuous at this point.
+				Sets the right tangent for the point at [param index] to [param tangent].  The tangent value is the slope of the curve to the right of this point.
 			</description>
 		</method>
 		<method name="set_point_value">
