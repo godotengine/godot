@@ -44,6 +44,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
@@ -274,8 +275,17 @@ EditorAssetLibraryZoomMode::EditorAssetLibraryZoomMode(Control *p_previews) {
 	ERR_FAIL_NULL(p_previews);
 	ERR_FAIL_COND(p_previews->get_parent());
 
+	Ref<Theme> theme;
+	if (EditorNode::get_singleton()) {
+		theme = EditorNode::get_singleton()->get_editor_theme();
+	} else if (ProjectManager::get_singleton()) {
+		theme = ProjectManager::get_singleton()->get_theme();
+	} else {
+		return;
+	}
+
 	ColorRect *dim = memnew(ColorRect);
-	dim->set_color(EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("base_color"), EditorStringName(Editor)));
+	dim->set_color(theme->get_color(SNAME("base_color"), EditorStringName(Editor)));
 	dim->set_anchors_preset(Control::PRESET_FULL_RECT);
 	add_child(dim);
 
