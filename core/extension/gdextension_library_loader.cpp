@@ -200,7 +200,10 @@ Error GDExtensionLibraryLoader::open_library(const String &p_path) {
 	// Apple has a complex lookup system which goes beyond looking up the filename, so we try that first.
 	err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
 	if (err != OK) {
+#ifdef APPLE_EMBEDDED_ENABLED
 		err = OS::get_singleton()->open_dynamic_library(String(), library, &data);
+#endif
+
 		if (err != OK) {
 			return err;
 		}

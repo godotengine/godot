@@ -206,7 +206,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false" deprecated="Due to internal changes this doesn&apos;t do anything anymore, as they&apos;re always in front.">
+		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" deprecated="Due to internal changes this doesn&apos;t do anything anymore, as they&apos;re always in front.">
 			This doesn't do anything.
 		</member>
 		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">

@@ -256,6 +256,14 @@ private:
 		bool updating_last_minimum_size = false;
 		bool block_minimum_size_adjust = false;
 
+		mutable Size2 desired_size_cache;
+		mutable bool desired_size_valid = false;
+
+		Size2 last_desired_size;
+		bool updating_last_desired_size = false;
+
+		bool expanded_by_desired_size = false;
+
 		bool layout_pending = false;
 
 		bool size_warning = true;
@@ -371,6 +379,9 @@ private:
 	void _update_maximum_size();
 	void _update_minimum_size_cache() const;
 	void _update_minimum_size();
+	void _update_desired_size_cache() const;
+	void _update_desired_size();
+	void _grow_to_desired_size();
 	void _size_changed();
 
 	void _top_level_changed() override {} // Controls don't need to do anything, only other CanvasItems.
@@ -390,7 +401,6 @@ private:
 
 	// Focus.
 
-	bool _is_focusable() const;
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
 	bool _is_focus_mode_enabled() const;
@@ -448,6 +458,9 @@ protected:
 	void _grab_focus_bind_compat_110250();
 	static void _bind_compatibility_methods();
 #endif //DISABLE_DEPRECATED
+
+	// Focus.
+	bool _is_focusable() const;
 
 	// Node overrides.
 
@@ -603,6 +616,9 @@ public:
 
 	void update_maximum_size();
 	void update_minimum_size();
+	void update_desired_size();
+
+	void grow_to_desired_size();
 
 	void set_block_maximum_size_adjust(bool p_block);
 	void set_block_minimum_size_adjust(bool p_block);
@@ -623,6 +639,9 @@ public:
 	Size2 get_custom_minimum_size() const;
 
 	virtual Size2 get_bound_minimum_size() const;
+
+	Size2 get_bound_desired_size() const;
+	virtual Size2 get_desired_size() const;
 
 	bool is_layout_pending() const;
 	bool is_layout_pending_in_tree() const;
@@ -745,6 +764,8 @@ public:
 
 	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
 	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
+
+	virtual Transform2D get_accessibility_transform() const override { return get_transform(); }
 
 	// Rendering.
 

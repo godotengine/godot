@@ -117,8 +117,11 @@ private:
 	bool focus_border_is_drawn = false;
 	bool child_has_focus();
 
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+
 protected:
 	Size2 get_minimum_size() const override;
+	Size2 get_desired_size() const override;
 	Size2 get_inner_combined_maximum_size() const override;
 
 	void _gui_focus_changed(Control *p_control);

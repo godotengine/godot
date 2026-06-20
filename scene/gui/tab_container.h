@@ -54,9 +54,6 @@ private:
 	Button *popup_button = nullptr;
 
 	bool tabs_visible = true;
-#ifndef DISABLE_DEPRECATED
-	bool all_tabs_in_front = false;
-#endif
 	TabPosition tabs_position = POSITION_TOP;
 	mutable ObjectID popup_obj_id;
 	bool use_hidden_tabs_for_min_size = false;
@@ -152,6 +149,8 @@ private:
 	void _popup_button_hovered(bool p_hover);
 	void _popup_button_pressed();
 
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
@@ -236,6 +235,7 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_inner_combined_maximum_size() const override;
+	virtual Size2 get_desired_size() const override;
 
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;

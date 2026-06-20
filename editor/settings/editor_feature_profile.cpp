@@ -1060,6 +1060,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	new_profile_dialog->set_ok_button_text(TTR("Create"));
 
 	erase_profile_dialog = memnew(ConfirmationDialog);
+	erase_profile_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(erase_profile_dialog);
 	erase_profile_dialog->set_title(TTR("Remove Profile"));
 	erase_profile_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFeatureProfileManager::_erase_selected_profile));

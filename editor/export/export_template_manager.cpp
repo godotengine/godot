@@ -458,7 +458,7 @@ void ExportTemplateManager::_initialize_template_data() {
 	{
 		TemplateInfo info;
 		info.name = TTR("Web with Extensions");
-		info.description = TTRC("Web build with support for GDExtextensions. Only useful if you use GDExtensions, otherwise it only increases build size.");
+		info.description = TTRC("Web build with support for GDExtensions. Only useful if you use GDExtensions, otherwise it only increases build size.");
 		info.file_list = { "web_dlink_debug.zip", "web_dlink_release.zip" };
 		template_data[TemplateID::WEB_EXTENSIONS] = info;
 	}
@@ -830,10 +830,10 @@ void ExportTemplateManager::_update_install_button() {
 
 	install_button->set_disabled(!_can_download_templates());
 	if (install_button->is_disabled()) {
-		if (mirrors_empty) {
-			install_button->set_tooltip_text(TTRC("No mirrors available for download."));
-		} else if (!_is_online()) {
+		if (!_is_online()) {
 			install_button->set_tooltip_text(TTRC("Download not available in offline mode."));
+		} else if (mirrors_empty) {
+			install_button->set_tooltip_text(TTRC("No mirrors available for download."));
 		} else {
 			install_button->set_tooltip_text(TTRC("Downloads are only available for the current Godot version."));
 		}
@@ -876,10 +876,8 @@ Ref<Texture2D> ExportTemplateManager::_get_platform_icon(const String &p_platfor
 }
 
 void ExportTemplateManager::_version_selected() {
-	if (!is_downloading()) {
-		file_metadata.clear();
-		_update_template_tree();
-	}
+	file_metadata.clear();
+	_update_template_tree();
 	_update_install_button();
 }
 
@@ -944,6 +942,11 @@ void ExportTemplateManager::_install_templates(TreeItem *p_files) {
 	_update_template_tree();
 	_process_download_queue();
 	_update_install_button();
+
+	// Don't allow changing selected version while downloading.
+	for (int i = 0; i < version_list->get_item_count(); i++) {
+		version_list->set_item_disabled(i, true);
+	}
 
 	ProgressIndicator *indicator = EditorNode::get_bottom_panel()->get_progress_indicator();
 	indicator->set_tooltip_text(TTRC("Downloading export templates..."));
@@ -1015,6 +1018,10 @@ void ExportTemplateManager::_process_download_queue() {
 		set_process_internal(false);
 		_update_install_button();
 		EditorNode::get_bottom_panel()->get_progress_indicator()->hide();
+
+		for (int i = 0; i < version_list->get_item_count(); i++) {
+			version_list->set_item_disabled(i, false);
+		}
 	} else {
 		set_process_internal(true);
 	}
@@ -1307,6 +1314,12 @@ void ExportTemplateManager::_notification(int p_what) {
 			EditorNode::get_bottom_panel()->get_progress_indicator()->connect("clicked", callable_mp(this, &ExportTemplateManager::popup_manager));
 		} break;
 
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				center_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
+			}
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (template_data.is_empty()) {
 				break;
@@ -1330,6 +1343,8 @@ void ExportTemplateManager::_notification(int p_what) {
 			open_mirror->set_button_icon(get_editor_theme_icon("ExternalLink"));
 			delete_all_button->set_button_icon(get_editor_theme_icon("Remove"));
 			tpz_button->set_button_icon(get_editor_theme_icon("FileBrowse"));
+
+			offline_mode_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 			theme_cache.install_icon = get_editor_theme_icon("AssetStore");
 			theme_cache.remove_icon = get_editor_theme_icon("Remove");
@@ -1599,8 +1614,9 @@ ExportTemplateManager::ExportTemplateManager() {
 	side_vb->add_child(version_list);
 	version_list->connect(SceneStringName(item_selected), callable_mp(this, &ExportTemplateManager::_version_selected).unbind(1));
 
-	VSplitContainer *center_split = memnew(VSplitContainer);
+	center_split = memnew(VSplitContainer);
 	center_split->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	center_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
 	main_split->add_child(center_split);
 
 	VBoxContainer *available_templates_container = memnew(VBoxContainer);
@@ -1658,15 +1674,17 @@ ExportTemplateManager::ExportTemplateManager() {
 	offline_container->hide();
 	main_vb->add_child(offline_container);
 
-	Label *offline_mode_label = memnew(Label(TTRC("Offline mode, some functionality is not available.")));
+	offline_mode_label = memnew(Label(TTRC("Offline mode, some functionality is not available.")));
 	offline_container->add_child(offline_mode_label);
 
 	LinkButton *enable_online_button = memnew(LinkButton);
 	enable_online_button->set_text(TTRC("Go Online"));
+	enable_online_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	offline_container->add_child(enable_online_button);
 	enable_online_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_force_online_mode));
 
 	confirm_delete = memnew(ConfirmationDialog);
+	confirm_delete->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(confirm_delete);
 	confirm_delete->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_delete_confirmed));
 
@@ -1891,13 +1909,13 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				// Locate and open the file.
 				err = godot_unzip_locate_file(uzf, file_info.name, true);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("File does not exist in zip archive."));
+					_download_failed(TTR("File does not exist in ZIP archive."));
 					return;
 				}
 
 				err = unzOpenCurrentFile(uzf);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("Could not open file within zip archive."));
+					_download_failed(TTR("Could not open file within ZIP archive."));
 					return;
 				}
 
@@ -1905,7 +1923,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				unz_file_info info;
 				err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("Unable to read file information from zip archive."));
+					_download_failed(TTR("Unable to read file information from ZIP archive."));
 					return;
 				}
 
@@ -1916,7 +1934,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				while (to_read > 0) {
 					int bytes_read = unzReadCurrentFile(uzf, buffer, to_read);
 					if (bytes_read < 0 || (bytes_read == UNZ_EOF && to_read != 0)) {
-						_download_failed(TTR("IO/zlib error reading file from zip archive."));
+						_download_failed(TTR("IO/zlib error reading file from ZIP archive."));
 						return;
 					}
 					buffer += bytes_read;
@@ -1926,7 +1944,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				// Verify the data and return.
 				err = unzCloseCurrentFile(uzf);
 				if (err != UNZ_OK) {
-					_download_failed(TTR("CRC error reading file from zip archive."));
+					_download_failed(TTR("CRC error reading file from ZIP archive."));
 					return;
 				}
 			}
@@ -1940,7 +1958,7 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 
 				f = FileAccess::open(target_directory.path_join(filename), FileAccess::WRITE);
 				if (f.is_null()) {
-					_download_failed(TTR("Failed to template file for writing."));
+					_download_failed(TTR("Failed to open template file for writing."));
 					return;
 				}
 				f->store_buffer(extracted_data);

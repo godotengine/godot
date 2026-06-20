@@ -445,7 +445,11 @@ String OS_AppleEmbedded::get_bundle_resource_dir() const {
 	if (!str) {
 		return OS_Unix::get_bundle_resource_dir();
 	} else {
-		return String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+		String res_path = String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+		if (res_path.is_relative_path()) {
+			res_path = String::utf8([[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSUTF8StringEncoding]).path_join(res_path);
+		}
+		return res_path;
 	}
 }
 
@@ -458,6 +462,18 @@ String OS_AppleEmbedded::get_locale() const {
 
 	NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
 	return String::utf8([localeIdentifier UTF8String]).replace_char('-', '_');
+}
+
+Vector<String> OS_AppleEmbedded::get_preferred_locales() const {
+	Vector<String> out;
+	for (NSString *locale_code in [NSLocale preferredLanguages]) {
+		out.push_back(String([locale_code UTF8String]).replace_char('-', '_'));
+	}
+	if (out.is_empty()) {
+		NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
+		out.push_back(String::utf8([localeIdentifier UTF8String]).replace_char('-', '_'));
+	}
+	return out;
 }
 
 String OS_AppleEmbedded::get_unique_id() const {

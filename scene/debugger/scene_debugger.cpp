@@ -49,7 +49,7 @@
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h" // SceneTree:get_root()
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
@@ -574,9 +574,7 @@ Error SceneDebugger::_msg_report_window_focused(const Array &p_args) {
 
 	bool focused = p_args[0];
 	Input::get_singleton()->embedder_focused = focused;
-	if (Input::get_singleton()->_should_ignore_joypad_events()) {
-		Input::get_singleton()->release_pressed_events();
-	}
+	Input::get_singleton()->release_pressed_events();
 	return OK;
 }
 

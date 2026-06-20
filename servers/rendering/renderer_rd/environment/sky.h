@@ -158,8 +158,8 @@ public:
 
 			float z_far; // 4 - 340
 			uint32_t directional_light_count; // 4 - 344
-			uint32_t pad1; // 4 - 348
-			uint32_t pad2; // 4 - 352
+			uint32_t fog_use_legacy_blending; // 4 - 348
+			uint32_t pad1; // 4 - 352
 		};
 
 		UBO ubo;
@@ -249,6 +249,7 @@ public:
 		static inline const int REAL_TIME_ROUGHNESS_LAYERS = 7;
 
 		RID radiance;
+		RID radiance_first_layer_slice;
 		RID quarter_res_pass;
 		RID quarter_res_framebuffer;
 		Size2i screen_size;
@@ -274,6 +275,8 @@ public:
 		SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position;
 		float prev_time;
+
+		void free_radiance();
 
 		void free();
 

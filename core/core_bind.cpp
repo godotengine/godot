@@ -562,6 +562,10 @@ String OS::get_locale() const {
 	return ::OS::get_singleton()->get_locale();
 }
 
+Vector<String> OS::get_preferred_locales() const {
+	return ::OS::get_singleton()->get_preferred_locales();
+}
+
 String OS::get_locale_language() const {
 	return ::OS::get_singleton()->get_locale_language();
 }
@@ -818,6 +822,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &OS::delay_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &OS::get_locale);
+	ClassDB::bind_method(D_METHOD("get_preferred_locales"), &OS::get_preferred_locales);
 	ClassDB::bind_method(D_METHOD("get_locale_language"), &OS::get_locale_language);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &OS::get_model_name);
 

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/math/vector3.h"
+
 #include <Jolt/Jolt.h>
 
 #include <Jolt/Core/STLLocalAllocator.h>
@@ -37,7 +39,7 @@
 #include <Jolt/Physics/Collision/Shape/Shape.h>
 
 template <typename TBase, int TDefaultCapacity>
-class JoltQueryCollectorAll final : public TBase {
+class JoltQueryCollectorAll : public TBase {
 public:
 	typedef typename TBase::ResultType Hit;
 	typedef JPH::Array<Hit, JPH::STLLocalAllocator<Hit, TDefaultCapacity>> HitArray;
@@ -75,7 +77,7 @@ public:
 };
 
 template <typename TBase>
-class JoltQueryCollectorAny final : public TBase {
+class JoltQueryCollectorAny : public TBase {
 public:
 	typedef typename TBase::ResultType Hit;
 
@@ -106,7 +108,7 @@ public:
 };
 
 template <typename TBase, int TDefaultCapacity>
-class JoltQueryCollectorAnyMulti final : public TBase {
+class JoltQueryCollectorAnyMulti : public TBase {
 public:
 	typedef typename TBase::ResultType Hit;
 	typedef JPH::Array<Hit, JPH::STLLocalAllocator<Hit, TDefaultCapacity>> HitArray;
@@ -154,7 +156,7 @@ public:
 };
 
 template <typename TBase>
-class JoltQueryCollectorClosest final : public TBase {
+class JoltQueryCollectorClosest : public TBase {
 public:
 	typedef typename TBase::ResultType Hit;
 
@@ -189,7 +191,7 @@ public:
 };
 
 template <typename TBase, int TDefaultCapacity>
-class JoltQueryCollectorClosestMulti final : public TBase {
+class JoltQueryCollectorClosestMulti : public TBase {
 public:
 	typedef typename TBase::ResultType Hit;
 	typedef JPH::Array<Hit, JPH::STLLocalAllocator<Hit, TDefaultCapacity + 1>> HitArray;
@@ -238,5 +240,47 @@ public:
 		if ((int)hits.size() > max_hits) {
 			hits.resize(max_hits);
 		}
+	}
+};
+
+template <typename TCollector, int TDefaultCapacity>
+class JoltQueryCollectorMotion : public JoltQueryCollectorClosestMulti<TCollector, TDefaultCapacity> {
+public:
+	typedef JoltQueryCollectorClosestMulti<TCollector, TDefaultCapacity> Base;
+	typedef typename Base::Hit Hit;
+
+private:
+	Vector3 direction;
+	float distance_sq = 0.0f;
+	float margin = 0.0f;
+
+public:
+	JoltQueryCollectorMotion(const Vector3 &p_motion, float p_margin, int p_max_hits = TDefaultCapacity) :
+			Base(p_max_hits),
+			direction(p_motion.normalized()),
+			distance_sq(p_motion.length_squared()),
+			margin(p_margin) {}
+
+	virtual void AddHit(const Hit &p_hit) override {
+		// Ignore hits that are outside of the margin.
+		const float penetration_depth = p_hit.mPenetrationDepth + margin;
+		if (penetration_depth <= 0.0f) {
+			return;
+		}
+
+		// Ignore hits that don't oppose the motion direction.
+		//
+		// This is a deliberate divergence from the Godot Physics reference implementation (which
+		// does not do this type of filtering) and is known to cause issues. However, not having
+		// this results in a problematic amount of ghost collisions with `move_and_slide`, for
+		// reasons that are still unclear as of writing this.
+		if (distance_sq > 0) {
+			const Vector3 normal = to_godot(-p_hit.mPenetrationAxis.Normalized());
+			if (direction.dot(normal) >= -CMP_EPSILON) {
+				return;
+			}
+		}
+
+		Base::AddHit(p_hit);
 	}
 };

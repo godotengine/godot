@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/primitive_meshes.h"
@@ -863,6 +864,7 @@ void EditorNode3DGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorNode3DGizmo::set_hidden);
 	ClassDB::bind_method(D_METHOD("is_subgizmo_selected", "id"), &EditorNode3DGizmo::is_subgizmo_selected);
 	ClassDB::bind_method(D_METHOD("get_subgizmo_selection"), &EditorNode3DGizmo::get_subgizmo_selection);
+	ClassDB::bind_method(D_METHOD("is_selected"), &EditorNode3DGizmo::is_selected);
 
 	GDVIRTUAL_BIND(_redraw);
 	GDVIRTUAL_BIND(_get_handle_name, "id", "secondary");
@@ -1086,6 +1088,7 @@ void EditorNode3DGizmoPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_priority);
 	GDVIRTUAL_BIND(_can_be_hidden);
 	GDVIRTUAL_BIND(_is_selectable_when_hidden);
+	GDVIRTUAL_BIND(_can_commit_handle_on_click);
 
 	GDVIRTUAL_BIND(_redraw, "gizmo");
 	GDVIRTUAL_BIND(_get_handle_name, "gizmo", "handle_id", "secondary");
@@ -1135,7 +1138,9 @@ bool EditorNode3DGizmoPlugin::is_selectable_when_hidden() const {
 }
 
 bool EditorNode3DGizmoPlugin::can_commit_handle_on_click() const {
-	return false;
+	bool ret = false;
+	GDVIRTUAL_CALL(_can_commit_handle_on_click, ret);
+	return ret;
 }
 
 void EditorNode3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
