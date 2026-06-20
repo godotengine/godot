@@ -146,6 +146,10 @@ bool sc_cluster_has_area_light() {
 	return ((sc_packed_1() >> 5) & 1U) != 0;
 }
 
+bool sc_use_lightmap_specular() {
+	return ((sc_packed_1() >> 6) & 1U) != 0;
+}
+
 float sc_luminance_multiplier() {
 	// Not used in clustered renderer but we share some code with the mobile renderer that requires this.
 	return 1.0;

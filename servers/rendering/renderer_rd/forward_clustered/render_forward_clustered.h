@@ -404,6 +404,7 @@ private:
 		LightmapData lightmaps[MAX_LIGHTMAPS];
 		RID lightmap_ids[MAX_LIGHTMAPS];
 		bool lightmap_has_sh[MAX_LIGHTMAPS];
+		bool lightmap_has_specular = false;
 		uint32_t lightmaps_used = 0;
 		uint32_t max_lightmaps;
 		RID lightmap_buffer;
