@@ -600,15 +600,15 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(ProcessState &p_proce
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
 	bool do_start = cur_request == ONE_SHOT_REQUEST_FIRE;
-
-	bool is_reset = Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking;
-	if (is_reset && cur_internal_active) {
-		do_start = true;
-	}
-
 	bool is_abort = cur_request == ONE_SHOT_REQUEST_ABORT;
-	if (is_reset && !do_start && (is_fading_out || (abort_on_reset && cur_active))) {
-		is_abort = true;
+	bool is_reset = Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking;
+	if (is_reset) {
+		if (!do_start && (is_fading_out || (abort_on_reset && cur_active))) {
+			is_abort = true;
+		}
+		if (cur_internal_active) {
+			do_start = true;
+		}
 	}
 
 	if (is_abort) {
