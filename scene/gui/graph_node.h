@@ -62,6 +62,11 @@ class GraphNode : public GraphElement {
 		Color color;
 	};
 
+	struct SlotCache {
+		int left_port_index = -1;
+		int right_port_index = -1;
+	};
+
 	struct _MinSizeCache {
 		int min_size = 0;
 		int max_size = -1;
@@ -87,6 +92,7 @@ class GraphNode : public GraphElement {
 
 	HashMap<int, Slot> slot_table;
 	Vector<int> slot_y_cache;
+	Vector<SlotCache> slot_port_cache;
 
 	Control::FocusMode slots_focus_mode = Control::FOCUS_ACCESSIBILITY;
 	int slot_count = 0;
@@ -192,6 +198,10 @@ public:
 	int get_output_port_type(int p_port_idx);
 	Color get_output_port_color(int p_port_idx);
 	int get_output_port_slot(int p_port_idx);
+
+	int get_slot_count() const;
+	int get_slot_input_port(int p_slot_index);
+	int get_slot_output_port(int p_slot_index);
 
 	void set_slots_focus_mode(Control::FocusMode p_focus_mode);
 	Control::FocusMode get_slots_focus_mode() const;
