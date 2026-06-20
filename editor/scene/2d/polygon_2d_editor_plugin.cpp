@@ -326,6 +326,11 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 	bone_scroll_main_vb->hide();
 	edit_uv_menu->hide();
 
+	bone_paint_strength_label->hide();
+	bone_paint_strength->hide();
+	bone_paint_radius_label->hide();
+	bone_paint_radius->hide();
+
 	switch (current_mode) {
 		case MODE_POINTS: {
 			action_buttons[ACTION_CREATE]->show();
@@ -363,6 +368,12 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 			action_buttons[ACTION_CLEAR_WEIGHT]->show();
 			action_buttons[ACTION_SET_WEIGHT]->show();
 			_set_action(ACTION_PAINT_WEIGHT);
+
+			bone_paint_strength_label->show();
+			bone_paint_strength->show();
+			bone_paint_radius_label->show();
+			bone_paint_radius->show();
+			_select_paint_mode(PAINT_MODE_HARD);
 
 			bone_scroll_main_vb->show();
 			paint_toolbar->show();
@@ -1579,7 +1590,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	edit_uv_menu->get_popup()->add_item(TTR("Clear UV"), MENU_UV_CLEAR);
 	edit_uv_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Polygon2DEditor::_edit_menu_option));
 
-	Label *bone_paint_strength_label = memnew(Label(TTR("Strength:")));
+	bone_paint_strength_label = memnew(Label(TTR("Strength:")));
 	toolbar->add_child(bone_paint_strength_label);
 
 	bone_paint_strength = memnew(SpinBox);
@@ -1592,7 +1603,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	bone_paint_strength->set_accessibility_name(TTRC("Strength"));
 	bone_paint_strength->set_tooltip_text(TTR("By how much the brush changes the vertex weight."));
 
-	Label *bone_paint_radius_label = memnew(Label(TTR("Radius:")));
+	bone_paint_radius_label = memnew(Label(TTR("Radius:")));
 	toolbar->add_child(bone_paint_radius_label);
 
 	bone_paint_radius = memnew(SpinBox);
