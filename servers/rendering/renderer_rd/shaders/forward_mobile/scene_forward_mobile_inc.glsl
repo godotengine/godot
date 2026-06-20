@@ -117,6 +117,10 @@ bool sc_use_lightmap_bicubic_filter() {
 	return ((sc_packed_0() >> 10) & 1U) != 0;
 }
 
+bool sc_use_lightmap_specular() {
+	return ((sc_packed_1() >> 31) & 1U) != 0;
+}
+
 bool sc_use_material_debanding() {
 	return ((sc_packed_0() >> 11) & 1U) != 0;
 }

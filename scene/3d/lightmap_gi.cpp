@@ -1805,6 +1805,7 @@ void LightmapGI::set_light_data(const Ref<LightmapGIData> &p_data) {
 			_assign_lightmaps();
 		}
 		light_data->update_shadowmask_mode(shadowmask_mode);
+		light_data->update_specular_intensity(specular_intensity);
 	}
 
 	update_gizmos();

@@ -40,6 +40,7 @@ RENDER_MATERIAL = false
 SECOND_REFLECTION_PROBE = false
 LIGHTMAP_BICUBIC_FILTER = false
 RENDER_MOTION_VECTORS = false
+USE_LIGHTMAP_SPECULAR = false
 
 
 #[vertex]
@@ -1442,7 +1443,10 @@ uniform lowp uint lightmap_slice;
 uniform highp vec4 lightmap_uv_scale;
 uniform float lightmap_exposure_normalization;
 uniform uint lightmap_shadowmask_mode;
+
+#ifdef USE_LIGHTMAP_SPECULAR
 uniform float lightmap_specular_intensity;
+#endif
 
 #define SHADOWMASK_MODE_NONE uint(0)
 #define SHADOWMASK_MODE_REPLACE uint(1)
@@ -2552,7 +2556,7 @@ void main() {
 
 		ambient_light += sh_light;
 
-		if (lightmap_specular_intensity > 0.0) {
+		#ifdef USE_LIGHTMAP_SPECULAR
 			// Fake specular light to create some direct light specular lobes for directional lightmaps.
 			// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
 			vec3 l1_r = vec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
@@ -2564,7 +2568,7 @@ void main() {
 
 			vec3 lightmap_direction = l1 / l1_len;
 
-			vec3 L_view = normalize(transpose(lightmap_normal_xform) * lightmap_direction);
+			vec3 L_view = normalize(lightmap_direction * lightmap_normal_xform);
 
 			vec3 f0 = F0(metallic, specular, albedo);
 
@@ -2588,7 +2592,7 @@ void main() {
 #endif
 					diffuse_light_discarded,
 					specular_light);
-		}
+		#endif // USE_LIGHTMAP_SPECULAR
 
 #else
 #ifdef LIGHTMAP_BICUBIC_FILTER

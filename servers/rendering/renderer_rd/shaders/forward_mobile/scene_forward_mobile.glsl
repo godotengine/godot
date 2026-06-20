@@ -1752,7 +1752,7 @@ void main() {
 			sh_light *= exposure_normalization;
 			ambient_light += sh_light;
 
-			if (lightmaps.data[ofs].specular_intensity > 0.0) {
+			if (sc_use_lightmap_specular()) {
 				// Fake specular light to create some direct light specular lobes for directional lightmaps.
 				// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
 				hvec3 l1_r = hvec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);

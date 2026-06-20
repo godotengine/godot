@@ -210,7 +210,7 @@ private:
 	LightmapGIData::ShadowmaskMode shadowmask_mode = LightmapGIData::SHADOWMASK_MODE_NONE;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
-	float specular_intensity = 1.0f;
+	float specular_intensity = 0.0f;
 
 	Ref<LightmapGIData> light_data;
 	Node *last_owner = nullptr;
