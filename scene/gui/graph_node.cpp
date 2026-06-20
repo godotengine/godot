@@ -184,7 +184,7 @@ void GraphNode::_resort() {
 			continue;
 		}
 
-		Size2i size = child->get_combined_minimum_size() + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2());
+		Size2i size = child->get_bound_minimum_size() + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2());
 		Size2 max_size = child->get_combined_maximum_size();
 
 		stretch_min += size.height;
@@ -192,9 +192,6 @@ void GraphNode::_resort() {
 		_MinSizeCache msc;
 		msc.min_size = size.height;
 		msc.max_size = max_size.height >= 0 ? int(max_size.height) + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().height : 0) : -1;
-		if (msc.max_size >= 0 && msc.max_size < msc.min_size) {
-			msc.min_size = msc.max_size;
-		}
 		msc.will_stretch = child->get_v_size_flags().has_flag(SIZE_EXPAND);
 		msc.final_size = msc.min_size;
 		min_size_cache[child] = msc;
@@ -296,7 +293,9 @@ void GraphNode::_resort() {
 		int height = to_y_pos - from_y_pos;
 		float margin = sb_panel->get_margin(SIDE_LEFT) + (slot_table[i].draw_stylebox ? sb_slot->get_margin(SIDE_LEFT) : 0);
 		float final_width = width - (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().x : 0);
-		Rect2 rect(margin, from_y_pos, final_width, height);
+		float final_height = height - (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().y : 0);
+		float final_y_pos = from_y_pos + (slot_table[i].draw_stylebox ? sb_slot->get_margin(SIDE_TOP) : 0);
+		Rect2 rect(margin, final_y_pos, final_width, final_height);
 		fit_child_in_rect(child, rect);
 
 		slot_y_cache.push_back(child->get_rect().position.y + child->get_rect().size.height * 0.5);
@@ -711,6 +710,8 @@ void GraphNode::_notification(int p_what) {
 							Rect2 child_rect = child->get_rect();
 							child_rect.position.x = sb_panel->get_margin(SIDE_LEFT);
 							child_rect.size.width = width;
+							child_rect.position.y -= sb_slot->get_margin(SIDE_TOP);
+							child_rect.size.height += sb_slot->get_margin(SIDE_TOP) + sb_slot->get_margin(SIDE_BOTTOM);
 							draw_style_box(sb_slot, child_rect);
 						}
 					}
