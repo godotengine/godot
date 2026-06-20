@@ -447,6 +447,9 @@
 		<member name="editors/3d/manipulator_gizmo_size" type="int" setter="" getter="">
 			Size of the default gizmo for moving, rotating, and scaling 3D nodes.
 		</member>
+		<member name="editors/3d/manipulator_show_translation_preview" type="bool" setter="" getter="">
+			If [code]true[/code], displays a preview line from the original to the current position while translating objects in the 3D viewport.
+		</member>
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.
 			When 3-button mouse emulation mode is enabled, the pan, zoom and orbit modifiers can always be used in the 3D editor viewport, even when not holding down any mouse button.
