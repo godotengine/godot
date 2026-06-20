@@ -59,6 +59,59 @@ public:
 	 */
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
+	// Keep ScriptLanguageExtension::LookupResultType a subset of this.
+	struct LookupResult {
+		enum class Type {
+			SCRIPT_LOCATION, // Use if none of the options below apply.
+			CLASS,
+			CLASS_CONSTANT,
+			CLASS_PROPERTY,
+			CLASS_METHOD,
+			CLASS_SIGNAL,
+			CLASS_ENUM,
+			CLASS_TBD_GLOBALSCOPE [[deprecated]], // Don't bind to ClassDB.
+			CLASS_ANNOTATION,
+			LOCAL_CONSTANT,
+			LOCAL_VARIABLE,
+		};
+
+		Type type;
+
+		// For `CLASS_*`.
+		String class_name;
+		String class_member;
+
+		// For `LOCAL_*`.
+		String description;
+		bool is_deprecated = false;
+		String deprecated_message;
+		bool is_experimental = false;
+		String experimental_message;
+
+		// For `LOCAL_*`.
+		String doc_type;
+		String enumeration;
+		bool is_bitfield = false;
+
+		// For `LOCAL_*`.
+		String value;
+
+		// `SCRIPT_LOCATION` and `LOCAL_*` must have, `CLASS_*` can have.
+		String script_path;
+		int location = -1;
+	};
+
+	/**
+	 * Called by the editor to lookup code at a given position.
+	 *
+	 * @param p_code The current content of the source fragment. Will always contain the special sentinel char 0xFFFF at the requested position. The content might differ from the state on disk, the exact behavior in that case is up to the implementation.
+	 * @param p_symbol The symbol under the cursor position. This parameter is unreliable (sometimes uses the user configured word separators) and will be removed in the future. New implementations should not use it and determine the symbol under the cursor on their own.
+	 * @param p_path The path which identifies the source fragment. Implementations MAY support paths to builtin resources, or return an error for those.
+	 * @param p_owner If the source fragment is somehow tied to an object (e.g. the currently open scene) the editor will pass it to the language. Implementations MAY respect this in their analysis, e.g. for GDScript get node literals.
+	 * @param r_result The returned `LookupResult`.
+	 */
+	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
+
 	virtual ~EditorLanguage() = default;
 };
 

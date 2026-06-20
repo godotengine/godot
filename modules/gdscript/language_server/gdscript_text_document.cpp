@@ -343,7 +343,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 				case LSP::SymbolKind::Function:
 					id = "class_method:" + symbol->native_class + ":" + symbol->name;
 					break;
-				default:
+				default: // Deprecated.
 					id = "class_global:" + symbol->native_class + ":" + symbol->name;
 					break;
 			}

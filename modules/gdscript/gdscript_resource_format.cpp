@@ -36,6 +36,10 @@
 #include "core/io/file_access.h"
 #include "core/object/class_db.h"
 
+#ifdef TOOLS_ENABLED
+#include "modules/gdscript/editor/gdscript_editor_language.h"
+#endif // TOOLS_ENABLED
+
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Error err;
 	bool ignoring = p_cache_mode == CACHE_MODE_IGNORE || p_cache_mode == CACHE_MODE_IGNORE_DEEP;
@@ -91,6 +95,7 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 }
 
 void ResourceFormatLoaderGDScript::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
+#ifdef TOOLS_ENABLED
 	Ref<GDScript> scr = ResourceLoader::load(p_path);
 	if (scr.is_null()) {
 		return;
@@ -113,13 +118,13 @@ void ResourceFormatLoaderGDScript::get_classes_used(const String &p_path, HashSe
 		// Insert the "cursor" character, needed for the lookup to work.
 		const String source_with_cursor = source.insert(insert_idx + current.start_column, String::chr(0xFFFF));
 
-		ScriptLanguage::LookupResult result;
-		if (scr->get_language()->lookup_code(source_with_cursor, current.get_identifier(), p_path, nullptr, result) == OK) {
+		EditorLanguage::LookupResult result;
+		if (GDScriptEditorLanguage::get_singleton()->lookup_code(source_with_cursor, current.get_identifier(), p_path, nullptr, result) == OK) {
 			if (!result.class_name.is_empty() && ClassDB::class_exists(result.class_name)) {
 				r_classes->insert(result.class_name);
 			}
 
-			if (result.type == ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY) {
+			if (result.type == EditorLanguage::LookupResult::Type::CLASS_PROPERTY) {
 				PropertyInfo prop;
 				if (ClassDB::get_property_info(result.class_name, result.class_member, &prop)) {
 					if (!prop.class_name.is_empty() && ClassDB::class_exists(prop.class_name)) {
@@ -129,7 +134,7 @@ void ResourceFormatLoaderGDScript::get_classes_used(const String &p_path, HashSe
 						r_classes->insert(prop.hint_string);
 					}
 				}
-			} else if (result.type == ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD) {
+			} else if (result.type == EditorLanguage::LookupResult::Type::CLASS_METHOD) {
 				MethodInfo met;
 				if (ClassDB::get_method_info(result.class_name, result.class_member, &met)) {
 					if (!met.return_val.class_name.is_empty() && ClassDB::class_exists(met.return_val.class_name)) {
@@ -144,6 +149,7 @@ void ResourceFormatLoaderGDScript::get_classes_used(const String &p_path, HashSe
 
 		current = tokenizer.scan();
 	}
+#endif // TOOLS_ENABLED
 }
 
 Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
