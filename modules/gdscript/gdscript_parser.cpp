@@ -435,45 +435,23 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 	completion_call_stack.back()->get().argument = p_argument;
 }
 
-Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion, bool p_parse_body) {
+Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, EditorOptions p_editor_options, bool p_parse_body) {
 	clear();
 
 	String source = p_source_code;
-	int cursor_line = -1;
-	int cursor_column = -1;
-	for_completion = p_for_completion;
 	parse_body = p_parse_body;
-
-	if (p_for_completion) {
-		// Remove cursor sentinel char.
-		const Vector<String> lines = p_source_code.split("\n");
-		cursor_line = 1;
-		cursor_column = 1;
-		for (int i = 0; i < lines.size(); i++) {
-			bool found = false;
-			const String &line = lines[i];
-			for (int j = 0; j < line.size(); j++) {
-				if (line[j] == char32_t(0xFFFF)) {
-					found = true;
-					break;
-				}
-				cursor_column++;
-			}
-			if (found) {
-				break;
-			}
-			cursor_line++;
-			cursor_column = 1;
-		}
-
-		source = source.replace_first(String::chr(0xFFFF), String());
-	}
 
 	GDScriptTokenizerText *text_tokenizer = memnew(GDScriptTokenizerText);
 	text_tokenizer->set_source_code(source);
 
 	tokenizer = text_tokenizer;
-	tokenizer->set_cursor_position(cursor_line, cursor_column);
+
+	for_completion = p_editor_options.for_completion;
+	if (for_completion) {
+		tokenizer->set_cursor_position(p_editor_options.line + 1, p_editor_options.column + 1);
+	} else {
+		tokenizer->set_cursor_position(-1, -1);
+	}
 
 	script_path = p_script_path.simplify_path();
 

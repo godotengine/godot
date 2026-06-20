@@ -248,8 +248,8 @@ private:
 		ScriptLanguageExtension *script_language = nullptr;
 
 	public:
-		virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) override {
-			return script_language->complete_code(p_code, p_path, p_owner, r_options, r_force, r_call_hint);
+		virtual Error complete_code(const String &p_code, EditorLanguage::Position p_position, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) override {
+			return script_language->complete_code(EditorStringUtils::insert(p_code, p_position, String::chr(0xFFFF)), p_path, p_owner, r_options, r_force, r_call_hint);
 		}
 
 		EditorAdapter(ScriptLanguageExtension *p_script_language) {

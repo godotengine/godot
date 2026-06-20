@@ -565,26 +565,6 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	}
 }
 
-String ExtendGDScriptParser::get_text_for_completion(const LSP::Position &p_cursor) const {
-	String longthing;
-	int len = lines.size();
-	for (int i = 0; i < len; i++) {
-		if (i == p_cursor.line) {
-			longthing += lines[i].substr(0, p_cursor.character);
-			longthing += String::chr(0xFFFF); // Not unicode, represents the cursor.
-			longthing += lines[i].substr(p_cursor.character);
-		} else {
-			longthing += lines[i];
-		}
-
-		if (i != len - 1) {
-			longthing += "\n";
-		}
-	}
-
-	return longthing;
-}
-
 String ExtendGDScriptParser::get_text_for_lookup_symbol(const LSP::Position &p_cursor, const String &p_symbol, bool p_func_required) const {
 	String longthing;
 	int len = lines.size();
@@ -968,7 +948,7 @@ void ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
 	path = p_path;
 	lines = p_code.split("\n");
 
-	parse_result = GDScriptParser::parse(p_code, p_path, false);
+	parse_result = GDScriptParser::parse(p_code, p_path, GDScriptParser::EditorOptions::none());
 	GDScriptAnalyzer analyzer(this);
 
 	if (parse_result == OK) {

@@ -1629,7 +1629,33 @@ private:
 #endif // TOOLS_ENABLED
 
 public:
-	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion, bool p_parse_body = true);
+	struct EditorOptions {
+	public:
+		bool for_completion;
+		uint_fast32_t line;
+		uint_fast32_t column;
+
+	private:
+		EditorOptions() = default;
+
+	public:
+		static EditorOptions completion(uint_fast32_t p_line, uint_fast32_t p_column) {
+			EditorOptions opt;
+			opt.for_completion = true;
+			opt.line = p_line;
+			opt.column = p_column;
+			return opt;
+		}
+		static EditorOptions none() {
+			EditorOptions opt;
+			opt.for_completion = false;
+			opt.line = 0;
+			opt.column = 0;
+			return opt;
+		}
+	};
+
+	Error parse(const String &p_source_code, const String &p_script_path, EditorOptions p_editor_options, bool p_parse_body = true);
 	Error parse_binary(const Vector<uint8_t> &p_binary, const String &p_script_path);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }

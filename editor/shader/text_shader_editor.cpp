@@ -1180,7 +1180,7 @@ static void _complete_include_paths(List<ScriptLanguage::CodeCompletionOption> *
 	_complete_include_paths_search(EditorFileSystem::get_singleton()->get_filesystem(), r_options);
 }
 
-void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) {
+void ShaderTextEditor::_code_complete_script(const String &p_code, EditorLanguage::Position p_position, List<ScriptLanguage::CodeCompletionOption> *r_options) {
 	List<ScriptLanguage::CodeCompletionOption> pp_options;
 	List<ScriptLanguage::CodeCompletionOption> pp_defines;
 	ShaderPreprocessor preprocessor;
@@ -1190,7 +1190,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	if (!complete_from_path.ends_with("/")) {
 		complete_from_path += "/";
 	}
-	preprocessor.preprocess(p_code, resource_path, code, nullptr, nullptr, nullptr, nullptr, &pp_options, &pp_defines, _complete_include_paths);
+	preprocessor.preprocess(EditorStringUtils::insert(p_code, p_position, String::chr(0xFFFF)), resource_path, code, nullptr, nullptr, nullptr, nullptr, &pp_options, &pp_defines, _complete_include_paths);
 	complete_from_path = String();
 	if (pp_options.size()) {
 		for (const ScriptLanguage::CodeCompletionOption &E : pp_options) {

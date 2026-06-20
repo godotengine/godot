@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_editor_language.h                                            */
+/*  string_utils.cpp                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,25 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
-
 #include "core/object/editor_language.h"
+#include "core/string/string_builder.h"
+#include "core/string/ustring.h"
 
-class GDScriptEditorLanguage final : public EditorLanguage {
-	static GDScriptEditorLanguage *singleton;
+String EditorStringUtils::insert(const Vector<String> &p_str, EditorLanguage::Position p_position, const String &p_what) {
+	StringBuilder builder;
 
-public:
-	_FORCE_INLINE_ static GDScriptEditorLanguage *get_singleton() { return singleton; }
-
-	virtual Error complete_code(const String &p_code, Position p_position, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) override;
-
-	GDScriptEditorLanguage() {
-		ERR_FAIL_COND(singleton != nullptr);
-		singleton = this;
-	}
-	~GDScriptEditorLanguage() {
-		if (singleton == this) {
-			singleton = nullptr;
+	for (uint_fast32_t i = 0; i < static_cast<uint_fast32_t>(p_str.size()); i++) {
+		if (i == p_position.line) {
+			builder += p_str[i].insert(p_position.column, p_what);
+		} else {
+			builder += p_str[i];
 		}
 	}
-};
+
+	return builder.as_string();
+}
+
+String EditorStringUtils::insert(const String &p_str, EditorLanguage::Position p_position, const String &p_what) {
+	return EditorStringUtils::insert(p_str.split("\n"), p_position, p_what);
+}
+
+EditorLanguage::Position EditorStringUtils::find_char(const String &p_str, char32_t p_chr) {
+	uint_fast32_t line = 0;
+	uint_fast32_t column = 0;
+	for (int i = 0; i < p_str.length(); i++) {
+		if (p_str[i] == p_chr) {
+			return EditorLanguage::Position(line, column);
+		} else if (p_str[i] == '\n') {
+			column = 0;
+			line += 1;
+		} else {
+			column += 1;
+		}
+	}
+	ERR_FAIL_V(EditorLanguage::Position(0, 0));
+}
