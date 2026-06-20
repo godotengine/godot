@@ -3212,7 +3212,11 @@ GraphEdit::GraphEdit() {
 
 	dragged_connection_line = memnew(Line2D);
 	dragged_connection_line->set_texture_mode(Line2D::LINE_TEXTURE_STRETCH);
-	dragged_connection_line->set_use_parent_material(true);
+	// NOT use_parent_material: the drag draw assigns its own per-line ShaderMaterial
+	// (see _update_top_connection_layer) whose `line_width` param matches the line's
+	// geometric width, so the rim/AA shader softens the edges exactly like an
+	// established connection. Inheriting the parent material left the param
+	// mismatched, rendering the drag preview visibly thicker than the settled wire.
 	top_connection_layer->add_child(dragged_connection_line);
 
 	h_scrollbar = memnew(HScrollBar);
