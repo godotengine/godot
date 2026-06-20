@@ -41,7 +41,9 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/object/editor_language.h"
 #include "core/object/script_language.h"
+#include "core/string/string_builder.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
 #include "editor/settings/editor_settings.h"
@@ -110,11 +112,11 @@ static void test_directory(const String &p_dir) {
 			}
 
 			String code = acc->get_as_utf8_string();
-			// For ease of reading ➡ (0x27A1) acts as sentinel char instead of 0xFFFF in the files.
-			code = code.replace_first(String::chr(0x27A1), String::chr(0xFFFF));
-			// Require pointer sentinel char in scripts.
-			int location = code.find_char(0xFFFF);
-			CHECK(location != -1);
+
+			// ➡ (0x27A1) acts as cursor position indicator.
+			CHECK(code.contains_char(0x27A1));
+			EditorLanguage::Position cursor = EditorStringUtils::find_char(code, 0x27A1);
+			code = code.remove_char(0x27A1);
 
 			String res_path = ProjectSettings::get_singleton()->localize_path(path.path_join(next));
 
@@ -167,25 +169,24 @@ static void test_directory(const String &p_dir) {
 				// Remove the line which contains the sentinel char, to get a valid script.
 				Ref<GDScript> scr;
 				scr.instantiate();
-				int start = location;
-				int end = location;
-				for (; start >= 0; --start) {
-					if (code.get(start) == '\n') {
-						break;
+
+				StringBuilder new_code;
+				int line_iter = 0;
+				for (const String &code_line : code.split("\n")) {
+					if (static_cast<uint_fast32_t>(line_iter) != cursor.line) {
+						new_code += code_line;
+						new_code += "\n";
 					}
+					line_iter += 1;
 				}
-				for (; end < code.size(); ++end) {
-					if (code.get(end) == '\n') {
-						break;
-					}
-				}
-				scr->set_source_code(code.erase(start, end - start));
+
+				scr->set_source_code(new_code.as_string());
 				scr->reload();
 				scr->set_path(res_path);
 				owner->set_script(scr);
 			}
 
-			GDScriptEditorLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
+			GDScriptEditorLanguage::get_singleton()->complete_code(code, cursor, res_path, owner, &options, forced, call_hint);
 			ERR_PRINT_ON;
 
 			String contains_excluded;

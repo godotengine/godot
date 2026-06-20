@@ -522,7 +522,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 		GDScriptParser parser;
 		GDScriptAnalyzer analyzer(&parser);
-		Error err = parser.parse(source, path, false);
+		Error err = parser.parse(source, path, GDScriptParser::EditorOptions::none());
 
 		if (err == OK && analyzer.analyze() == OK) {
 			const GDScriptParser::ClassNode *c = parser.get_tree();
@@ -815,7 +815,7 @@ Error GDScript::reload(bool p_keep_state) {
 	if (!binary_tokens.is_empty()) {
 		err = parser.parse_binary(binary_tokens, path);
 	} else {
-		err = parser.parse(source, path, false);
+		err = parser.parse(source, path, GDScriptParser::EditorOptions::none());
 	}
 	if (err) {
 		if (EngineDebugger::is_active()) {
@@ -2732,7 +2732,7 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 	String source = f->get_as_utf8_string();
 
 	GDScriptParser parser;
-	err = parser.parse(source, p_path, false, false);
+	err = parser.parse(source, p_path, GDScriptParser::EditorOptions::none(), false);
 
 	const GDScriptParser::ClassNode *c = parser.get_tree();
 	if (!c) {
@@ -2782,7 +2782,7 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 							break;
 						}
 
-						if (OK != subparser.parse(subsource, subpath, false)) {
+						if (OK != subparser.parse(subsource, subpath, GDScriptParser::EditorOptions::none())) {
 							break;
 						}
 						path = subpath;

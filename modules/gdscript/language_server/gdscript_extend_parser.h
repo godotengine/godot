@@ -137,7 +137,6 @@ public:
 
 	Error get_left_function_call(const LSP::Position &p_position, LSP::Position &r_func_pos, int &r_arg_index) const;
 
-	String get_text_for_completion(const LSP::Position &p_cursor) const;
 	String get_text_for_lookup_symbol(const LSP::Position &p_cursor, const String &p_symbol = "", bool p_func_required = false) const;
 	/**
 	 * Parses the symbol name at the given position. Returns that name and its full range.
