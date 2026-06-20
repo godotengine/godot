@@ -1193,6 +1193,11 @@
 		<member name="interface/inspector/resources_to_open_in_new_inspector" type="PackedStringArray" setter="" getter="">
 			List of resources that should always be opened in a new inspector view, even if [member interface/inspector/open_resources_in_current_inspector] is [code]true[/code].
 		</member>
+		<member name="interface/inspector/scene_preview_mode" type="int" setter="" getter="">
+			Controls how scene previews are drawn in resource pickers.
+			- [b]Thumbnail:[/b] Only a thumbnail of the scene is shown.
+			- [b]Name:[/b] Only the name of the scene resource is shown.
+		</member>
 		<member name="interface/inspector/show_low_level_opentype_features" type="bool" setter="" getter="">
 			If [code]true[/code], display OpenType features marked as [code]hidden[/code] by the font file in the [Font] editor.
 		</member>
