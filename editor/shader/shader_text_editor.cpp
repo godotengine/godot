@@ -89,7 +89,7 @@ void TextShaderPreviewLineLayer::_notification(int p_what) {
 				const Color polygon_color = Color(line_color, alpha);
 				E.value->update_panel_color(polygon_color);
 
-				Point2i end_pos = code_editor->get_pos_at_line_column(E.key, 0);
+				Point2 end_pos = code_editor->get_column_position(E.key, 0);
 				if (end_pos.x == -1) {
 					continue;
 				}
@@ -97,8 +97,8 @@ void TextShaderPreviewLineLayer::_notification(int p_what) {
 				Point2 preview_size = panel_container->get_size();
 				const Point2 preview_bottom = panel_container->get_global_position() + preview_size;
 				const Point2 preview_top = preview_bottom - Point2(0, preview_size.y);
-				const Point2 line_bottom = code_editor->get_global_position() + Point2(0, end_pos.y);
-				const Point2 line_top = line_bottom - Point2(0, code_editor->get_line_height());
+				const Point2 line_top = code_editor->get_global_position() + Point2(0, end_pos.y);
+				const Point2 line_bottom = line_top + Point2(0, code_editor->get_line_height());
 				const Point2 line_bottom_gutter = line_bottom + Point2(total_gutter_width, 0);
 				const Point2 line_top_gutter = line_top + Point2(total_gutter_width, 0);
 
