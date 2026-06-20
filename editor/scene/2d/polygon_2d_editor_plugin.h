@@ -135,7 +135,9 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	HBoxContainer *paint_toolbar = nullptr;
 	Button *paint_mode_buttons[PAINT_MODE_MAX];
 	PaintMode current_paint_mode = PAINT_MODE_MAX; // Uninitialized.
+	Label *bone_paint_strength_label = nullptr;
 	SpinBox *bone_paint_strength = nullptr;
+	Label *bone_paint_radius_label = nullptr;
 	SpinBox *bone_paint_radius = nullptr;
 	Label *bone_paint_inner_radius_label = nullptr;
 	SpinBox *bone_paint_inner_radius = nullptr;
