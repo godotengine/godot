@@ -69,6 +69,19 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 	return noErr;
 }
 
+OSStatus AudioDriverCoreAudio::input_sample_rate_cb(AudioObjectID inObjectID,
+		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
+		void *inClientData) {
+	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
+
+	// The active input device changed its nominal sample rate (e.g. a Bluetooth
+	// headset switching between the A2DP and HFP profiles). Rebuild the input
+	// AudioUnit so its stream format matches the device's new sample rate.
+	driver->_reconfigure_input_device();
+
+	return noErr;
+}
+
 // Switch to kAudioObjectPropertyElementMain everywhere to remove deprecated warnings.
 #if (TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED < 120000) || (TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED < 150000)
 #define kAudioObjectPropertyElementMain kAudioObjectPropertyElementMaster
@@ -237,6 +250,14 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	if (!ad->active) {
 		return 0;
 	}
+
+#ifdef MACOS_ENABLED
+	// Skip rendering while the input AudioUnit is being reconfigured to a new sample
+	// rate, otherwise AudioUnitRender would fail with kAudioUnitErr_CannotDoInCurrentContext.
+	if (ad->input_reconfig_pending.is_set()) {
+		return 0;
+	}
+#endif
 
 	ad->lock();
 	ad->start_counting_ticks();
@@ -418,7 +439,14 @@ Error AudioDriverCoreAudio::init_input_device() {
 	AudioStreamBasicDescription strdesc;
 	memset(&strdesc, 0, sizeof(strdesc));
 	size = sizeof(strdesc);
+#ifdef MACOS_ENABLED
+	// Read the device's native channel count from the input scope of the input bus
+	// (the hardware side). The output scope only holds the client format we set
+	// ourselves, so it can report a stale/wrong channel count (see _reconfigure_input_device()).
+	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kInputBus, &strdesc, &size);
+#else
 	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, &size);
+#endif
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	switch (strdesc.mChannelsPerFrame) {
@@ -477,7 +505,14 @@ Error AudioDriverCoreAudio::init_input_device() {
 	result = AudioUnitInitialize(input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	print_verbose("CoreAudio: input sampling rate: " + itos(capture_mix_rate) + " Hz");
+#ifdef MACOS_ENABLED
+	// Listen for nominal sample rate changes on the active input device so the input
+	// AudioUnit can be rebuilt when the device switches rate (see input_sample_rate_cb).
+	input_device_id = device_id;
+	_set_input_sample_rate_listener(input_device_id, true);
+#endif
+
+	print_verbose("CoreAudio: input sampling rate: " + itos(capture_mix_rate) + " Hz, channels: " + itos(capture_channels));
 	print_verbose("CoreAudio: input audio buffer frames: " + itos(capture_buffer_frames) + " calculated latency: " + itos(capture_buffer_frames * 1000 / capture_mix_rate) + "ms");
 
 	return OK;
@@ -500,6 +535,9 @@ void AudioDriverCoreAudio::finish_input_device() {
 		}
 
 #ifdef MACOS_ENABLED
+		_set_input_sample_rate_listener(input_device_id, false);
+		input_device_id = 0;
+
 		AudioObjectPropertyAddress prop;
 		prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
 		prop.mScope = kAudioObjectPropertyScopeGlobal;
@@ -530,6 +568,11 @@ Error AudioDriverCoreAudio::input_start() {
 	if (result != noErr) {
 		ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
 	}
+#ifdef MACOS_ENABLED
+	else {
+		input_running = true;
+	}
+#endif
 
 	return OK;
 }
@@ -540,12 +583,131 @@ Error AudioDriverCoreAudio::input_stop() {
 		if (result != noErr) {
 			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
 		}
+#ifdef MACOS_ENABLED
+		else {
+			input_running = false;
+		}
+#endif
 	}
 
 	return OK;
 }
 
 #ifdef MACOS_ENABLED
+
+void AudioDriverCoreAudio::_set_input_sample_rate_listener(AudioDeviceID p_device_id, bool p_add) {
+	if (p_device_id == 0) {
+		return;
+	}
+
+	AudioObjectPropertyAddress sr_addr = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
+	OSStatus result;
+	if (p_add) {
+		result = AudioObjectAddPropertyListener(p_device_id, &sr_addr, &input_sample_rate_cb, this);
+	} else {
+		result = AudioObjectRemovePropertyListener(p_device_id, &sr_addr, &input_sample_rate_cb, this);
+	}
+	if (result != noErr) {
+		ERR_PRINT("AudioObject(Add/Remove)PropertyListener for NominalSampleRate failed, code: " + itos(result));
+	}
+}
+
+void AudioDriverCoreAudio::_reconfigure_input_device() {
+	MutexLock reconfig_lock(input_reconfig_mutex);
+
+	if (input_unit == nullptr) {
+		return;
+	}
+
+	// Signal input_callback to stop rendering while the stream format is rebuilt.
+	input_reconfig_pending.set();
+
+	// Stop the unit *without* holding the mutex: AudioOutputUnitStop blocks until the
+	// current input_callback returns, and that callback may be waiting on the mutex.
+	bool was_running = input_running;
+	if (was_running) {
+		OSStatus result = AudioOutputUnitStop(input_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
+		}
+	}
+
+	lock();
+
+	OSStatus result = AudioUnitUninitialize(input_unit);
+	if (result != noErr) {
+		ERR_PRINT("AudioUnitUninitialize failed, code: " + itos(result));
+	}
+
+	// Read the device currently bound to the input unit and keep the sample rate
+	// listener attached to it (the active device may have changed too).
+	AudioDeviceID device_id = input_device_id;
+	UInt32 dev_id_size = sizeof(device_id);
+	result = AudioUnitGetProperty(input_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &device_id, &dev_id_size);
+	if (result == noErr && device_id != input_device_id) {
+		_set_input_sample_rate_listener(input_device_id, false);
+		_set_input_sample_rate_listener(device_id, true);
+		input_device_id = device_id;
+	}
+
+	// Read the device's native channel count from the input scope of the input bus
+	// (the hardware side). The output scope holds the client format we set ourselves,
+	// so it would report a stale channel count after a previous reconfigure.
+	AudioStreamBasicDescription strdesc;
+	memset(&strdesc, 0, sizeof(strdesc));
+	UInt32 size = sizeof(strdesc);
+	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kInputBus, &strdesc, &size);
+	if (result == noErr) {
+		capture_channels = (strdesc.mChannelsPerFrame == 1) ? 1 : 2;
+	}
+
+	double hw_mix_rate;
+	UInt32 hw_mix_rate_size = sizeof(hw_mix_rate);
+	AudioObjectPropertyAddress property_sr = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
+	result = AudioObjectGetPropertyData(input_device_id, &property_sr, 0, nullptr, &hw_mix_rate_size, &hw_mix_rate);
+	if (result == noErr) {
+		capture_mix_rate = hw_mix_rate;
+	}
+
+	memset(&strdesc, 0, sizeof(strdesc));
+	strdesc.mFormatID = kAudioFormatLinearPCM;
+	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
+	strdesc.mChannelsPerFrame = capture_channels;
+	strdesc.mSampleRate = capture_mix_rate;
+	strdesc.mFramesPerPacket = 1;
+	strdesc.mBitsPerChannel = 16;
+	strdesc.mBytesPerFrame = strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
+	strdesc.mBytesPerPacket = strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
+
+	result = AudioUnitSetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, sizeof(strdesc));
+	if (result != noErr) {
+		ERR_PRINT("AudioUnitSetProperty (StreamFormat) failed, code: " + itos(result));
+	}
+
+	uint32_t latency = Engine::get_singleton()->get_audio_output_latency();
+	capture_buffer_frames = Math::closest_power_of_2(latency * (uint32_t)capture_mix_rate / (uint32_t)1000);
+	buffer_size = capture_buffer_frames * capture_channels;
+
+	result = AudioUnitInitialize(input_unit);
+	if (result != noErr) {
+		ERR_PRINT("AudioUnitInitialize failed, code: " + itos(result));
+	}
+
+	// Reset the capture ring buffer so samples at the previous rate aren't mixed with the new ones.
+	input_buffer_init(capture_buffer_frames);
+
+	if (was_running) {
+		result = AudioOutputUnitStart(input_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
+		}
+	}
+
+	print_verbose("CoreAudio: input device reconfigured, sampling rate: " + itos(capture_mix_rate) + " Hz, channels: " + itos(capture_channels));
+
+	input_reconfig_pending.clear();
+	unlock();
+}
 
 PackedStringArray AudioDriverCoreAudio::_get_device_list(bool input) {
 	PackedStringArray list;
@@ -684,9 +846,10 @@ void AudioDriverCoreAudio::_set_device(const String &output_device, bool input) 
 		ERR_FAIL_COND(result != noErr);
 
 		if (input) {
-			// Reset audio input to keep synchronization.
-			input_position = 0;
-			input_size = 0;
+			// The new device may run at a different sample rate, so rebuild the input
+			// AudioUnit's stream format. This also resets the capture buffer to keep
+			// synchronization (see _reconfigure_input_device).
+			_reconfigure_input_device();
 		}
 	}
 }

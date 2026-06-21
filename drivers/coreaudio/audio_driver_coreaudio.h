@@ -32,6 +32,7 @@
 
 #ifdef COREAUDIO_ENABLED
 
+#include "core/templates/safe_refcount.h"
 #include "servers/audio/audio_server.h"
 
 #import <AudioUnit/AudioUnit.h>
@@ -62,14 +63,32 @@ class AudioDriverCoreAudio : public AudioDriver {
 	unsigned int buffer_size = 0;
 
 #ifdef MACOS_ENABLED
+	// Input device the nominal sample rate listener is currently attached to (0 = none).
+	AudioDeviceID input_device_id = 0;
+	// Set while the input AudioUnit is being reconfigured so input_callback skips rendering.
+	SafeFlag input_reconfig_pending;
+	// Serializes _reconfigure_input_device() calls coming from different threads (the
+	// device-change path and the sample rate listener). Distinct from the render mutex,
+	// which must not be held across AudioOutputUnitStop().
+	Mutex input_reconfig_mutex;
+	// Whether the input AudioUnit has been started (and should be restarted after a reconfigure).
+	bool input_running = false;
+
 	PackedStringArray _get_device_list(bool capture = false);
 	void _set_device(const String &output_device, bool capture = false);
+
+	void _set_input_sample_rate_listener(AudioDeviceID p_device_id, bool p_add);
+	void _reconfigure_input_device();
 
 	static OSStatus input_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 			void *inClientData);
 
 	static OSStatus output_device_address_cb(AudioObjectID inObjectID,
+			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
+			void *inClientData);
+
+	static OSStatus input_sample_rate_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 			void *inClientData);
 #endif
