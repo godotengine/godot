@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/config/project_settings.h"
 #ifdef TOOLS_ENABLED
 
 #ifndef GDSCRIPT_NO_LSP
@@ -54,6 +55,7 @@ public:
 	static void setup_client() {
 		GDScriptLanguageProtocol *proto = GDScriptLanguageProtocol::get_singleton();
 		Ref<GDScriptLanguageProtocol::LSPeer> peer = memnew(GDScriptLanguageProtocol::LSPeer);
+		peer->cannonical_root = ProjectSettings::get_singleton()->get_resource_path();
 		proto->clients.insert(proto->next_client_id, peer);
 		proto->latest_client_id = proto->next_client_id;
 		proto->next_client_id++;
@@ -334,12 +336,11 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		EditorFileSystem *efs = memnew(EditorFileSystem);
 		GDScriptLanguageProtocol *proto = initialize(root);
 		REQUIRE(proto);
-		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 
 		{
 			String path = "res://lsp/local_variables.gd";
 			assert_no_errors_in(path);
-			String uri = workspace->get_file_uri(path);
+			String uri = proto->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			SUBCASE("Can get correct ranges for public variables") {
 				Vector<InlineTestData> test_data = filter_ref_towards(all_test_data, "member");
@@ -358,7 +359,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		SUBCASE("Can get correct ranges for indented variables") {
 			String path = "res://lsp/indentation.gd";
 			assert_no_errors_in(path);
-			String uri = workspace->get_file_uri(path);
+			String uri = proto->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			test_resolve_symbols(uri, all_test_data, all_test_data);
 		}
@@ -366,7 +367,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		SUBCASE("Can get correct ranges for scopes") {
 			String path = "res://lsp/scopes.gd";
 			assert_no_errors_in(path);
-			String uri = workspace->get_file_uri(path);
+			String uri = proto->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			test_resolve_symbols(uri, all_test_data, all_test_data);
 		}
@@ -374,7 +375,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		SUBCASE("Can get correct ranges for lambda") {
 			String path = "res://lsp/lambdas.gd";
 			assert_no_errors_in(path);
-			String uri = workspace->get_file_uri(path);
+			String uri = proto->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			test_resolve_symbols(uri, all_test_data, all_test_data);
 		}
@@ -382,7 +383,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		SUBCASE("Can get correct ranges for inner class") {
 			String path = "res://lsp/class.gd";
 			assert_no_errors_in(path);
-			String uri = workspace->get_file_uri(path);
+			String uri = proto->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			test_resolve_symbols(uri, all_test_data, all_test_data);
 		}
@@ -390,7 +391,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		SUBCASE("Can get correct ranges for inner class") {
 			String path = "res://lsp/enums.gd";
 			assert_no_errors_in(path);
-			String uri = workspace->get_file_uri(path);
+			String uri = proto->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			test_resolve_symbols(uri, all_test_data, all_test_data);
 		}
@@ -398,7 +399,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		SUBCASE("Can get correct ranges for shadowing & shadowed variables") {
 			String path = "res://lsp/shadowing_initializer.gd";
 			assert_no_errors_in(path);
-			String uri = workspace->get_file_uri(path);
+			String uri = proto->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			test_resolve_symbols(uri, all_test_data, all_test_data);
 		}
@@ -406,7 +407,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		SUBCASE("Can get correct ranges for properties and getter/setter") {
 			String path = "res://lsp/properties.gd";
 			assert_no_errors_in(path);
-			String uri = workspace->get_file_uri(path);
+			String uri = proto->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			test_resolve_symbols(uri, all_test_data, all_test_data);
 		}

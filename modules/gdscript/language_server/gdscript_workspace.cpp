@@ -35,27 +35,28 @@
 #include "../gdscript_parser.h"
 #include "gdscript_language_protocol.h"
 
-#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_new_signal", "obj", "function", "args"), &GDScriptWorkspace::apply_new_signal);
-	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
-	ClassDB::bind_method(D_METHOD("get_file_uri", "path"), &GDScriptWorkspace::get_file_uri);
 	ClassDB::bind_method(D_METHOD("generate_script_api", "path"), &GDScriptWorkspace::generate_script_api);
 
 #ifndef DISABLE_DEPRECATED
+	GODOT_PUSH_IGNORE_DEPRECATION();
+	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
+	ClassDB::bind_method(D_METHOD("get_file_uri", "path"), &GDScriptWorkspace::get_file_uri);
 	ClassDB::bind_method(D_METHOD("didDeleteFiles", "params"), &GDScriptWorkspace::didDeleteFiles);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
 	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
 	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
+	GODOT_POP_IGNORE_DEPRECATION();
 #endif
 }
 
@@ -103,7 +104,7 @@ void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStr
 
 	text_edit.newText = function_body;
 
-	String uri = get_file_uri(scr->get_path());
+	String uri = GDScriptLanguageProtocol::get_singleton()->get_file_uri(scr->get_path());
 
 	LSP::ApplyWorkspaceEditParams params;
 	params.edit.add_edit(uri, text_edit);
@@ -421,7 +422,7 @@ bool GDScriptWorkspace::can_rename(const LSP::TextDocumentPositionParams &p_doc_
 		return false;
 	}
 
-	String path = get_file_path(p_doc_pos.textDocument.uri);
+	String path = GDScriptLanguageProtocol::get_singleton()->get_file_path(p_doc_pos.textDocument.uri);
 	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 	if (parser) {
 		_ALLOW_DISCARD_ parser->get_symbol_name_under_position(p_doc_pos.position, r_range);
@@ -447,7 +448,7 @@ Vector<LSP::Location> GDScriptWorkspace::find_usages_in_file(const LSP::Document
 				LSP::TextDocumentPositionParams params;
 
 				LSP::TextDocumentIdentifier text_doc;
-				text_doc.uri = get_file_uri(p_file_path);
+				text_doc.uri = GDScriptLanguageProtocol::get_singleton()->get_file_uri(p_file_path);
 
 				params.textDocument = text_doc;
 				params.position.line = i;
@@ -501,92 +502,11 @@ Vector<LSP::Location> GDScriptWorkspace::find_all_usages(const LSP::DocumentSymb
 }
 
 String GDScriptWorkspace::get_file_path(const String &p_uri) {
-	int port;
-	String scheme;
-	String host;
-	String encoded_path;
-	String fragment;
-
-	// Don't use the returned error, the result isn't OK for URIs that are not valid web URLs.
-	p_uri.parse_url(scheme, host, port, encoded_path, fragment);
-
-	// TODO: Make the parsing RFC-3986 compliant.
-	ERR_FAIL_COND_V_MSG(scheme != "file" && scheme != "file:" && scheme != "file://", String(), "LSP: The language server only supports the file protocol: " + p_uri);
-
-	// Treat host like authority for now and ignore the port. It's an edge case for invalid file URI's anyway.
-	ERR_FAIL_COND_V_MSG(host != "" && host != "localhost", String(), "LSP: The language server does not support nonlocal files: " + p_uri);
-
-	// If query or fragment are present, the URI is not a valid file URI as per RFC-8089.
-	// We currently don't handle the query and it will be part of the path. However,
-	// this should not be a problem for a correct file URI.
-	ERR_FAIL_COND_V_MSG(fragment != "", String(), "LSP: Received malformed file URI: " + p_uri);
-
-	String canonical_res = ProjectSettings::get_singleton()->get_resource_path();
-	String simple_path = encoded_path.uri_file_decode().simplify_path();
-
-	// First try known paths that point to res://, to reduce file system interaction.
-	bool res_adjusted = false;
-	for (const String &res_path : absolute_res_paths) {
-		if (simple_path.begins_with(res_path)) {
-			res_adjusted = true;
-			simple_path = "res://" + simple_path.substr(res_path.size());
-			break;
-		}
-	}
-
-	// Traverse the path and compare each directory with res://
-	if (!res_adjusted) {
-		Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-
-		int offset = 0;
-		while (offset <= simple_path.length()) {
-			offset = simple_path.find_char('/', offset);
-			if (offset == -1) {
-				offset = simple_path.length();
-			}
-
-			String part = simple_path.substr(0, offset);
-
-			if (!part.is_empty()) {
-				bool is_equal = dir->is_equivalent(canonical_res, part);
-
-				if (is_equal) {
-					absolute_res_paths.insert(part);
-					res_adjusted = true;
-					simple_path = "res://" + simple_path.substr(offset + 1);
-					break;
-				}
-			}
-
-			offset += 1;
-		}
-
-		// Could not resolve the path to the project.
-		if (!res_adjusted) {
-			return simple_path;
-		}
-	}
-
-	// Resolve the file inside of the project using EditorFileSystem.
-	EditorFileSystemDirectory *editor_dir;
-	int file_idx;
-	editor_dir = EditorFileSystem::get_singleton()->find_file(simple_path, &file_idx);
-	if (editor_dir) {
-		return editor_dir->get_file_path(file_idx);
-	}
-
-	return simple_path;
+	return GDScriptLanguageProtocol::get_singleton()->get_file_path(p_uri);
 }
 
 String GDScriptWorkspace::get_file_uri(const String &p_path) const {
-	String path = ProjectSettings::get_singleton()->globalize_path(p_path).lstrip("/");
-	LocalVector<String> encoded_parts;
-	for (const String &part : path.split("/")) {
-		encoded_parts.push_back(part.uri_encode());
-	}
-
-	// Always return file URI's with authority part (encoding drive letters with leading slash), to maintain compat with RFC-1738 which required it.
-	return "file:///" + String("/").join(Vector<String>(encoded_parts));
+	return GDScriptLanguageProtocol::get_singleton()->get_file_uri(p_path);
 }
 
 void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
@@ -602,12 +522,12 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 		}
 	}
 	params["diagnostics"] = errors;
-	params["uri"] = get_file_uri(p_path);
+	params["uri"] = GDScriptLanguageProtocol::get_singleton()->get_file_uri(p_path);
 	GDScriptLanguageProtocol::get_singleton()->notify_client("textDocument/publishDiagnostics", params);
 }
 
 void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<ScriptLanguage::CodeCompletionOption> *r_options) {
-	String path = get_file_path(p_params.textDocument.uri);
+	String path = GDScriptLanguageProtocol::get_singleton()->get_file_path(p_params.textDocument.uri);
 	String call_hint;
 	bool forced = false;
 
@@ -645,7 +565,7 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<S
 const LSP::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const LSP::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name, bool p_func_required) {
 	const LSP::DocumentSymbol *symbol = nullptr;
 
-	String path = get_file_path(p_doc_pos.textDocument.uri);
+	String path = GDScriptLanguageProtocol::get_singleton()->get_file_path(p_doc_pos.textDocument.uri);
 
 	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 	if (parser) {
@@ -733,7 +653,7 @@ const LSP::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const LSP::N
 }
 
 void GDScriptWorkspace::resolve_document_links(const String &p_uri, List<LSP::DocumentLink> &r_list) {
-	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(get_file_path(p_uri));
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(GDScriptLanguageProtocol::get_singleton()->get_file_path(p_uri));
 	if (parser && parser->parse_result == Error::OK) {
 		const List<LSP::DocumentLink> &links = parser->get_document_links();
 		for (const LSP::DocumentLink &E : links) {
@@ -753,7 +673,7 @@ Dictionary GDScriptWorkspace::generate_script_api(const String &p_path) {
 }
 
 Error GDScriptWorkspace::resolve_signature(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::SignatureHelp &r_signature) {
-	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(get_file_path(p_doc_pos.textDocument.uri));
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(GDScriptLanguageProtocol::get_singleton()->get_file_path(p_doc_pos.textDocument.uri));
 	if (parser) {
 		LSP::TextDocumentPositionParams text_pos;
 		text_pos.textDocument = p_doc_pos.textDocument;
