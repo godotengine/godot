@@ -296,7 +296,7 @@ void Polygon2DEditor::_paint_bone_weight() {
 				continue;
 			}
 
-			float candidate = set ? Math::lerp(r[i], amount, falloff) : r[i] + amount * falloff;
+			float candidate = set ? Math::lerp(r[i], (float)amount, falloff) : r[i] + amount * falloff;
 			candidate = CLAMP(candidate, 0.0f, 1.0f);
 
 			// Track the most extreme value reached at this vertex over the whole stroke,
