@@ -102,6 +102,8 @@ public:
 		Ref<TileSetAtlasSource> get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; }
 		RBSet<TileSelection> get_edited_tiles() const { return RBSet<TileSelection>(tiles); }
 
+		bool is_different(const Ref<TileSetAtlasSource> &p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles) const;
+
 		// Update the proxied object.
 		void edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles = RBSet<TileSelection>());
 
