@@ -37,25 +37,26 @@
 
 struct _MinSizeCache {
 	int min_size = 0;
+	int desired_size = 0;
 	int max_size = -1;
+	real_t stretch_ratio = 0;
 	bool will_stretch = false;
 	int final_size = 0;
 };
 
 void BoxContainer::_resort() {
-	/** First pass, determine minimum size AND amount of stretchable elements */
-
 	Size2i new_size = get_size();
-	Size2 combined_max_size = get_combined_maximum_size();
+	Size2i combined_max_size = get_combined_maximum_size();
 	bool propagating_max_size = vertical ? is_propagating_maximum_size() && combined_max_size.height >= 0 : is_propagating_maximum_size() && combined_max_size.width >= 0;
 
 	bool rtl = is_layout_rtl();
 
 	bool first = true;
 	int children_count = 0;
-	int stretch_min = 0;
-	int stretch_avail = 0;
+	int combined_min = 0;
+	int stretch_space = 0;
 	float stretch_ratio_total = 0.0;
+	int desired_extra_space = 0;
 	HashMap<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -68,30 +69,31 @@ void BoxContainer::_resort() {
 			c->set_parent_maximum_size_cache(combined_max_size);
 		}
 		Size2i min_size = c->get_bound_minimum_size().ceil();
-		Size2i max_size = c->get_combined_maximum_size();
+		Size2i desired_size = c->get_bound_desired_size().ceil();
+		Size2i max_size = c->get_combined_maximum_size().floor();
 		_MinSizeCache msc;
 
 		if (vertical) { /* VERTICAL */
-			stretch_min += min_size.height;
 			msc.min_size = min_size.height;
+			msc.desired_size = desired_size.height;
 			msc.max_size = max_size.height;
 			msc.will_stretch = c->get_v_size_flags().has_flag(SIZE_EXPAND);
 
 		} else { /* HORIZONTAL */
-			stretch_min += min_size.width;
 			msc.min_size = min_size.width;
+			msc.desired_size = desired_size.width;
 			msc.max_size = max_size.width;
 			msc.will_stretch = c->get_h_size_flags().has_flag(SIZE_EXPAND);
 		}
 
-		if (msc.max_size >= 0 && msc.max_size < msc.min_size) {
-			msc.max_size = msc.min_size;
-		}
-
 		if (msc.will_stretch) {
-			stretch_avail += msc.min_size;
+			stretch_space += msc.min_size;
 			stretch_ratio_total += c->get_stretch_ratio();
 		}
+
+		combined_min += msc.min_size;
+		desired_extra_space += msc.desired_size - msc.min_size;
+
 		msc.final_size = msc.min_size;
 		min_size_cache[c] = msc;
 		children_count++;
@@ -101,27 +103,50 @@ void BoxContainer::_resort() {
 		return;
 	}
 
-	int stretch_max = (vertical ? new_size.height : new_size.width) - (children_count - 1) * theme_cache.separation;
-	int stretch_diff = stretch_max - stretch_min;
+	int max_space = (vertical ? new_size.height : new_size.width);
+	if (propagating_max_size) {
+		max_space = MIN(max_space, vertical ? combined_max_size.height : combined_max_size.width);
+	}
+	max_space -= theme_cache.separation * (children_count - 1);
+	int stretch_diff = max_space - combined_min;
 	if (stretch_diff < 0) {
 		//avoid negative stretch space
 		stretch_diff = 0;
 	}
 
-	stretch_avail += stretch_diff; //available stretch space.
-	/** Second, pass successively to discard elements that can't be stretched, this will run while stretchable
-		elements exist */
+	stretch_space += stretch_diff; //available stretch space.
 
-	if (propagating_max_size) {
-		if (vertical) {
-			stretch_avail = MIN(stretch_avail, combined_max_size.height);
-		} else {
-			stretch_avail = MIN(stretch_avail, combined_max_size.width);
+	// First, allocate extra space to Controls which have a desired size larger than their minimum size, up to their desired size, in proportion to how much extra space they want.
+	if (stretch_space > 0 && desired_extra_space > 0) {
+		real_t space_available_ratio = MIN(real_t(stretch_space) / real_t(desired_extra_space), 1.0);
+
+		for (Node *child : iterate_children()) {
+			Control *c = as_sortable_control(child, SortableVisibilityMode::VISIBLE);
+			if (!c) {
+				continue;
+			}
+
+			_MinSizeCache &msc = min_size_cache[c];
+
+			if (msc.desired_size > msc.min_size) {
+				int desired_size_increase = floor((msc.desired_size - msc.min_size) * space_available_ratio);
+
+				if (msc.will_stretch) {
+					// Increase the minimum size to reflect the desired size allocation, so that the SIZE_EXPAND allocation does not shrink them back down.
+					msc.min_size += desired_size_increase;
+				} else {
+					// If the Control isn't stretchable
+					stretch_space -= desired_size_increase;
+				}
+
+				msc.final_size += desired_size_increase;
+			}
 		}
 	}
 
-	while (stretch_ratio_total > 0) { // first of all, don't even be here if no stretchable objects exist
-		bool refit_successful = true; //assume refit-test will go well
+	// Second, allocate stretch space to Controls with the SIZE_EXPAND flag, in proportion to their stretch ratio.
+	while (stretch_ratio_total > 0) {
+		bool refit_successful = true;
 		float error = 0.0; // Keep track of accumulated error in pixels
 
 		for (int i = 0; i < get_child_count(); i++) {
@@ -133,37 +158,35 @@ void BoxContainer::_resort() {
 			ERR_FAIL_COND(!min_size_cache.has(c));
 			_MinSizeCache &msc = min_size_cache[c];
 
-			if (msc.will_stretch) { //wants to stretch
-				//let's see if it can really stretch
+			if (msc.will_stretch) {
 				float stretch_ratio = c->get_stretch_ratio();
-				float final_pixel_size = stretch_avail * stretch_ratio / stretch_ratio_total;
-				// Add leftover fractional pixels to error accumulator
+				float final_pixel_size = stretch_space * stretch_ratio / stretch_ratio_total;
+
+				// Add leftover fractional pixels to error accumulator and dump if greater than 1.
 				error += final_pixel_size - (int)final_pixel_size;
+				if (error >= 1) {
+					final_pixel_size += 1;
+					error -= 1;
+				}
+
 				if (final_pixel_size < msc.min_size) {
-					//if available stretching area is too small for widget,
-					//then remove it from stretching area
+					// If stretching would make the Control smaller than its minimum size, cap it and redistribute its unused share.
 					msc.will_stretch = false;
 					stretch_ratio_total -= stretch_ratio;
 					refit_successful = false;
-					stretch_avail -= msc.min_size;
+					stretch_space -= msc.min_size;
 					msc.final_size = msc.min_size;
 					break;
 				} else if (msc.max_size >= 0 && final_pixel_size > msc.max_size) {
-					// If stretching would exceed the Control's maximum size,
-					// cap it and redistribute its unused share.
+					// If stretching would exceed the Control's maximum size, cap it and redistribute its unused share.
 					msc.will_stretch = false;
 					stretch_ratio_total -= stretch_ratio;
 					refit_successful = false;
-					stretch_avail -= msc.max_size;
+					stretch_space -= msc.max_size;
 					msc.final_size = msc.max_size;
 					break;
 				} else {
 					msc.final_size = final_pixel_size;
-					// Dump accumulated error if one pixel or more
-					if (error >= 1 && (msc.max_size < 0 || msc.final_size < msc.max_size)) {
-						msc.final_size += 1;
-						error -= 1;
-					}
 				}
 			}
 		}
@@ -176,7 +199,7 @@ void BoxContainer::_resort() {
 	/** Final pass, draw and stretch elements **/
 
 	int ofs = 0;
-	int final_stretch_diff = stretch_max - stretch_min;
+	int final_stretch_diff = max_space - combined_min;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
