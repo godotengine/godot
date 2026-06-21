@@ -500,6 +500,24 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 	}
 }
 
+bool TileSetAtlasSourceEditor::AtlasTileProxyObject::is_different(const Ref<TileSetAtlasSource> &p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles) const {
+	if (p_tile_set_atlas_source != tile_set_atlas_source) {
+		return true;
+	}
+	if (p_tiles.size() != tiles.size()) {
+		return true;
+	}
+	RBSet<TileSetAtlasSourceEditor::TileSelection>::ConstIterator it = tiles.begin();
+	for (const TileSelection &sel : p_tiles) {
+		const TileSelection &other = *it;
+		if (sel.tile != other.tile || sel.alternative || other.alternative) {
+			return true;
+		}
+		++it;
+	}
+	return false;
+}
+
 void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles) {
 	ERR_FAIL_COND(p_tile_set_atlas_source.is_null());
 	ERR_FAIL_COND(p_tiles.is_empty());
@@ -609,8 +627,10 @@ void TileSetAtlasSourceEditor::_update_tile_inspector() {
 	// Update visibility.
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		if (!selection.is_empty()) {
-			tile_proxy_object.instantiate(this);
-			tile_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
+			if (tile_proxy_object.is_null() || tile_proxy_object->is_different(tile_set_atlas_source, selection)) {
+				tile_proxy_object.instantiate(this);
+				tile_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
+			}
 			tile_proxy_object->edit(tile_set_atlas_source, selection);
 			tile_inspector->edit(tile_proxy_object.ptr());
 		}
