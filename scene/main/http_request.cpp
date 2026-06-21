@@ -231,7 +231,7 @@ bool HTTPRequest::_is_method_safe() const {
 	return (method == HTTPClient::METHOD_GET || method == HTTPClient::METHOD_HEAD || method == HTTPClient::METHOD_OPTIONS || method == HTTPClient::METHOD_TRACE);
 }
 
-Error HTTPRequest::_get_redirect_headers(Vector<String> *r_headers) {
+void HTTPRequest::_get_redirect_headers(Vector<String> *r_headers) {
 	for (const String &E : headers) {
 		const String h = E.to_lower();
 		// We strip content headers when changing a redirect to GET.
@@ -239,7 +239,6 @@ Error HTTPRequest::_get_redirect_headers(Vector<String> *r_headers) {
 			r_headers->push_back(E);
 		}
 	}
-	return OK;
 }
 
 bool HTTPRequest::_is_automatic_redirect() const {
