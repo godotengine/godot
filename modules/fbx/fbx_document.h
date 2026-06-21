@@ -78,7 +78,7 @@ private:
 	Error _parse_meshes(Ref<FBXState> p_state);
 	Ref<Image> _parse_image_bytes_into_image(Ref<FBXState> p_state, const Vector<uint8_t> &p_bytes, const String &p_filename, int p_index);
 	GLTFImageIndex _parse_image_save_image(Ref<FBXState> p_state, const Vector<uint8_t> &p_bytes, const String &p_file_extension, int p_index, Ref<Image> p_image);
-	Error _parse_images(Ref<FBXState> p_state, const String &p_base_path);
+	Error _parse_images(Ref<FBXState> p_state);
 	Error _parse_materials(Ref<FBXState> p_state);
 	Error _parse_skins(Ref<FBXState> p_state);
 	Error _parse_animations(Ref<FBXState> p_state);
@@ -95,11 +95,11 @@ private:
 	Error _parse_lights(Ref<FBXState> p_state);
 
 public:
-	Error _parse_fbx_state(Ref<FBXState> p_state, const String &p_search_path);
+	Error _parse_fbx_state(Ref<FBXState> p_state);
 	void _process_mesh_instances(Ref<FBXState> p_state, Node *p_scene_root);
 	void _generate_scene_node(Ref<FBXState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _import_animation(Ref<FBXState> p_state, AnimationPlayer *p_animation_player,
 			const GLTFAnimationIndex p_index, const bool p_trimming, const bool p_remove_immutable_tracks);
-	Error _parse(Ref<FBXState> p_state, const String &p_path, Ref<FileAccess> p_file);
+	Error _parse(Ref<FBXState> p_state, Ref<FileAccess> p_file);
 };
