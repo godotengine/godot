@@ -302,10 +302,13 @@ void Slider::_notification(int p_what) {
 				int widget_width = style->get_minimum_size().width;
 				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
 				int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
+				double grabber_area_size = Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift);
+
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
+
 				// Flip Y to draw texture from bottom to top.
 				draw_set_transform(Point2(0, size.height), 0, Vector2(1, -1));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, 0), Size2i(widget_width, Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift))));
+				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, grabber_area_size), Size2i(widget_width, -grabber_area_size)));
 				draw_set_transform(Point2(), 0, Vector2(1, 1));
 
 				if (ticks > 1) {
