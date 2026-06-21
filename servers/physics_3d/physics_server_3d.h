@@ -119,6 +119,7 @@ public:
 };
 
 class PhysicsRayQueryParameters3D;
+class PhysicsRayQueryResult3D;
 class PhysicsPointQueryParameters3D;
 class PhysicsShapeQueryParameters3D;
 
@@ -127,6 +128,7 @@ class PhysicsDirectSpaceState3D : public Object {
 
 private:
 	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query);
+	bool _intersect_ray_no_alloc(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, RequiredParam<PhysicsRayQueryResult3D> rp_ray_result);
 	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
@@ -867,6 +869,39 @@ public:
 
 	void set_exclude(const TypedArray<RID> &p_exclude);
 	TypedArray<RID> get_exclude() const;
+};
+
+class PhysicsRayQueryResult3D : public RefCounted {
+	GDCLASS(PhysicsRayQueryResult3D, RefCounted);
+
+	PhysicsDirectSpaceState3D::RayResult result;
+
+protected:
+	static void _bind_methods();
+
+public:
+	PhysicsDirectSpaceState3D::RayResult *get_result_ptr() { return &result; }
+
+	void set_position(const Vector3 &p_position) { result.position = p_position; }
+	const Vector3 &get_position() const { return result.position; }
+
+	void set_normal(const Vector3 &p_normal) { result.normal = p_normal; }
+	const Vector3 &get_normal() const { return result.normal; }
+
+	void set_rid(const RID &p_rid) { result.rid = p_rid; }
+	RID get_rid() const { return result.rid; }
+
+	void set_collider_id(ObjectID p_collider_id) { result.collider_id = p_collider_id; }
+	ObjectID get_collider_id() const { return result.collider_id; }
+
+	void set_collider(Object *p_collider) { result.collider = p_collider; }
+	Object *get_collider() const { return result.collider; }
+
+	void set_shape(int p_shape) { result.shape = p_shape; }
+	int get_shape() const { return result.shape; }
+
+	void set_face_index(int p_face_index) { result.face_index = p_face_index; }
+	int get_face_index() const { return result.face_index; }
 };
 
 class PhysicsPointQueryParameters3D : public RefCounted {
