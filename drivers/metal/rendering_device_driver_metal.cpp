@@ -1044,6 +1044,7 @@ void RenderingDeviceDriverMetal::framebuffer_free(FramebufferID p_framebuffer) {
 #pragma mark - Shader
 
 void RenderingDeviceDriverMetal::shader_cache_free_entry(const SHA256Digest &key) {
+	MutexLock lock(_shader_cache_mutex);
 	if (ShaderCacheEntry **pentry = _shader_cache.getptr(key); pentry != nullptr) {
 		ShaderCacheEntry *entry = *pentry;
 		_shader_cache.erase(key);
@@ -1116,6 +1117,8 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 	PipelineType pipeline_type = PIPELINE_TYPE_RASTERIZATION;
 	Vector<uint8_t> decompressed_code;
 	for (uint32_t shader_index = 0; shader_index < shaders.size(); shader_index++) {
+		MutexLock lock(_shader_cache_mutex);
+
 		const RenderingShaderContainer::Shader &shader = shaders[shader_index];
 		const RSCM::StageData &shader_data = mtl_shaders[shader_index];
 

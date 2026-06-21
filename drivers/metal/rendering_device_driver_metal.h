@@ -177,6 +177,7 @@ protected:
 	 * To prevent unbounded growth of the cache, cache entries are automatically freed when
 	 * there are no more references to the MDLibrary associated with the cache entry.
 	 */
+	Mutex _shader_cache_mutex;
 	HashMap<SHA256Digest, ShaderCacheEntry *> _shader_cache;
 	void shader_cache_free_entry(const SHA256Digest &key);
 
