@@ -768,6 +768,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	if (warning_count == 0 && error_count == 0) {
 		expand_all_button->set_disabled(false);
 		collapse_all_button->set_disabled(false);
+		copy_all_button->set_disabled(false);
 		clear_button->set_disabled(false);
 	}
 
@@ -1816,6 +1817,73 @@ void ScriptEditorDebugger::_error_selected() {
 	emit_signal(SNAME("error_selected"), String(meta[0]), int(meta[1]));
 }
 
+void ScriptEditorDebugger::_error_tree_gui_input(const Ref<InputEvent> &p_event) {
+	if (p_event->is_action_pressed("ui_copy")) {
+		_copy_errors(true, true);
+		error_tree->accept_event();
+	}
+}
+
+// Formats a top-level error/warning item the same way it appears in the panel.
+// When `p_detailed` is false, only the summary line is returned; otherwise the
+// child rows (C++ error/source and stack trace) are appended as well.
+String ScriptEditorDebugger::_format_error(TreeItem *p_error, bool p_detailed) const {
+	String type;
+	if (p_error->has_meta("_is_warning")) {
+		type = "W ";
+	} else if (p_error->has_meta("_is_error")) {
+		type = "E ";
+	}
+
+	String text = p_error->get_text(0) + "   ";
+	const int rpad_len = text.length();
+
+	text = type + text + p_error->get_text(1) + "\n";
+
+	if (p_detailed) {
+		TreeItem *ci = p_error->get_first_child();
+		while (ci) {
+			text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
+			ci = ci->get_next();
+		}
+	}
+
+	return text;
+}
+
+bool ScriptEditorDebugger::_is_error_selected(TreeItem *p_error) const {
+	if (p_error->is_selected(0) || p_error->is_selected(1)) {
+		return true;
+	}
+
+	// A child detail row (C++ source, stack frame, etc.) may be the selected cell.
+	for (TreeItem *ci = p_error->get_first_child(); ci; ci = ci->get_next()) {
+		if (ci->is_selected(0) || ci->is_selected(1)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void ScriptEditorDebugger::_copy_errors(bool p_selected_only, bool p_detailed) {
+	TreeItem *root = error_tree->get_root();
+	if (!root) {
+		return;
+	}
+
+	String text;
+	for (TreeItem *error = root->get_first_child(); error; error = error->get_next()) {
+		if (!p_selected_only || _is_error_selected(error)) {
+			text += _format_error(error, p_detailed);
+		}
+	}
+
+	if (!text.is_empty()) {
+		DisplayServer::get_singleton()->clipboard_set(text);
+	}
+}
+
 void ScriptEditorDebugger::_expand_errors_list() {
 	TreeItem *root = error_tree->get_root();
 	if (!root) {
@@ -1902,6 +1970,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 
 	expand_all_button->set_disabled(true);
 	collapse_all_button->set_disabled(true);
+	copy_all_button->set_disabled(true);
 	clear_button->set_disabled(true);
 }
 
@@ -1937,8 +2006,19 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, M
 	item_menu->reset_size();
 
 	if (error_tree->is_anything_selected()) {
+		// "Open C++ Source" acts on a single error, so only offer it when exactly one is selected.
+		int selected_errors = 0;
+		for (TreeItem *e = error_tree->get_root()->get_first_child(); e; e = e->get_next()) {
+			if (_is_error_selected(e)) {
+				selected_errors++;
+			}
+		}
+
 		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTRC("Copy Error"), ACTION_COPY_ERROR);
-		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ExternalLink")), TTRC("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
+		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTRC("Copy Message Only"), ACTION_COPY_MESSAGE);
+		if (selected_errors == 1) {
+			item_menu->add_icon_item(get_editor_theme_icon(SNAME("ExternalLink")), TTRC("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
+		}
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -1950,30 +2030,11 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, M
 void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 	switch (p_option) {
 		case ACTION_COPY_ERROR: {
-			TreeItem *ti = error_tree->get_selected();
-			while (ti->get_parent() != error_tree->get_root()) {
-				ti = ti->get_parent();
-			}
+			_copy_errors(true, true);
+		} break;
 
-			String type;
-
-			if (ti->has_meta("_is_warning")) {
-				type = "W ";
-			} else if (ti->has_meta("_is_error")) {
-				type = "E ";
-			}
-
-			String text = ti->get_text(0) + "   ";
-			int rpad_len = text.length();
-
-			text = type + text + ti->get_text(1) + "\n";
-			TreeItem *ci = ti->get_first_child();
-			while (ci) {
-				text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
-				ci = ci->get_next();
-			}
-
-			DisplayServer::get_singleton()->clipboard_set(text);
+		case ACTION_COPY_MESSAGE: {
+			_copy_errors(true, false);
 		} break;
 
 		case ACTION_OPEN_SOURCE: {
@@ -2300,6 +2361,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		space->set_h_size_flags(SIZE_EXPAND_FILL);
 		error_hbox->add_child(space);
 
+		copy_all_button = memnew(Button);
+		copy_all_button->set_text(TTRC("Copy All"));
+		copy_all_button->set_h_size_flags(0);
+		copy_all_button->set_disabled(true);
+		copy_all_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_copy_errors).bind(false, true));
+		error_hbox->add_child(copy_all_button);
+
 		clear_button = memnew(Button);
 		clear_button->set_text(TTRC("Clear"));
 		clear_button->set_h_size_flags(0);
@@ -2317,15 +2385,17 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_column_expand(1, true);
 		error_tree->set_column_clip_content(1, true);
 
-		error_tree->set_select_mode(Tree::SELECT_ROW);
+		error_tree->set_select_mode(Tree::SELECT_MULTI);
 		error_tree->set_hide_root(true);
 		error_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		error_tree->set_allow_rmb_select(true);
 		error_tree->set_allow_reselect(true);
 		error_tree->set_theme_type_variation("TreeSecondary");
-		error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
+		// SELECT_MULTI emits `cell_selected` rather than `item_selected` (which is SELECT_ROW/SELECT_SINGLE only).
+		error_tree->connect(SNAME("cell_selected"), callable_mp(this, &ScriptEditorDebugger::_error_selected));
 		error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 		error_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
+		error_tree->connect(SceneStringName(gui_input), callable_mp(this, &ScriptEditorDebugger::_error_tree_gui_input));
 		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);

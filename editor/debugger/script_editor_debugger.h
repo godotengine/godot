@@ -77,6 +77,7 @@ private:
 
 	enum Actions {
 		ACTION_COPY_ERROR,
+		ACTION_COPY_MESSAGE,
 		ACTION_OPEN_SOURCE,
 		ACTION_DELETE_BREAKPOINT,
 		ACTION_DELETE_BREAKPOINTS_IN_FILE,
@@ -102,6 +103,7 @@ private:
 	Tree *error_tree = nullptr;
 	Button *expand_all_button = nullptr;
 	Button *collapse_all_button = nullptr;
+	Button *copy_all_button = nullptr;
 	Button *clear_button = nullptr;
 	PopupMenu *item_menu = nullptr;
 
@@ -269,6 +271,11 @@ private:
 
 	void _error_activated();
 	void _error_selected();
+	void _error_tree_gui_input(const Ref<InputEvent> &p_event);
+
+	String _format_error(TreeItem *p_error, bool p_detailed) const;
+	bool _is_error_selected(TreeItem *p_error) const;
+	void _copy_errors(bool p_selected_only, bool p_detailed);
 
 	void _expand_errors_list();
 	void _collapse_errors_list();
