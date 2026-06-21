@@ -82,9 +82,9 @@ class AudioDriverCoreAudio : public AudioDriver {
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 			void *inClientData);
 
-	static OSStatus input_sample_rate_cb(AudioObjectID inObjectID, 
-		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses, 
-		void *inClientData);
+	static OSStatus input_sample_rate_cb(AudioObjectID inObjectID,
+			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
+			void *inClientData);
 #endif
 
 	static OSStatus output_callback(void *inRefCon,

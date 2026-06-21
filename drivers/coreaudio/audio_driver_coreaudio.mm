@@ -69,8 +69,8 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 	return noErr;
 }
 
-OSStatus AudioDriverCoreAudio::input_sample_rate_cb(AudioObjectID inObjectID, 
-		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses, 
+OSStatus AudioDriverCoreAudio::input_sample_rate_cb(AudioObjectID inObjectID,
+		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 		void *inClientData) {
 	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
 
@@ -587,7 +587,7 @@ Error AudioDriverCoreAudio::input_stop() {
 #ifdef MACOS_ENABLED
 
 void AudioDriverCoreAudio::_set_input_sample_rate_listener(AudioDeviceID device_id, bool add) {
-    if (device_id == 0) {
+	if (device_id == 0) {
 		return;
 	}
 
@@ -668,7 +668,6 @@ void AudioDriverCoreAudio::_reconfigure_input_device() {
 	if (result != noErr) {
 		ERR_PRINT("AudioUnitSetProperty (StreamFormat) failed, code: " + itos(result));
 	}
-	
 
 	// update capture buffer size
 	uint32_t latency = Engine::get_singleton()->get_audio_output_latency();
