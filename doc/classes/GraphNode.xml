@@ -228,7 +228,7 @@
 				Ports can be further customized using [param color_left]/[param color_right] and [param custom_icon_left]/[param custom_icon_right]. The color parameter adds a tint to the icon. The custom icon can be used to override the default port dot.
 				Additionally, [param draw_stylebox] can be used to enable or disable drawing of the background stylebox for each slot. See [theme_item slot].
 				Individual properties can also be set using one of the [code]set_slot_*[/code] methods.
-				[b]Note:[/b] This method only sets properties of the slot. To create the slot itself, add a [Control]-derived child to the [GraphNode].
+				[b]Note:[/b] This method only sets properties of the slot. To create the slot itself, add a [Control]-derived child to the GraphNode.
 			</description>
 		</method>
 		<method name="set_slot_color_left">
