@@ -248,7 +248,14 @@ void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column,
 }
 
 void ResourcePreloaderEditor::edit(ResourcePreloader *p_preloader) {
+	const Callable update_lib = callable_mp(this, &ResourcePreloaderEditor::_update_library);
+	if (preloader) {
+		preloader->disconnect("_resource_changed", update_lib);
+	}
 	preloader = p_preloader;
+	if (preloader) {
+		preloader->connect("_resource_changed", update_lib);
+	}
 	_update_library();
 }
 
