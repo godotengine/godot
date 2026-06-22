@@ -446,7 +446,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 		}
 
 		if (ci->skeleton.is_valid()) {
-			const Item::Command *c = ci->commands;
+			const Item::Command *c = ci->first_command;
 
 			while (c) {
 				if (c->type == Item::Command::TYPE_MESH) {
@@ -876,7 +876,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 	}
 
 	const RSE::CanvasItemTextureRepeat base_texture_repeat = p_item->texture_repeat == RSE::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? state.default_repeat : p_item->texture_repeat;
-	const Item::Command *c = p_item->commands;
+	const Item::Command *c = p_item->first_command;
 	while (c) {
 		if (skipping && c->type != Item::Command::TYPE_ANIMATION_SLICE) {
 			c = c->next;
