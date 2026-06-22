@@ -321,7 +321,7 @@ TEST_CASE("[SceneTree][BaseButton] Disabled State Behavior") {
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2i(25, 25), MouseButtonMask::NONE, Key::NONE);
 
 		// Even when disabled, the button should still detect hover state changes (but not pressed state).
-		CHECK(button->is_hovered() == false);
+		CHECK(button->is_hovered() == true);
 	}
 
 	SUBCASE("Should ignore mouse clicks and emit no signals") {
