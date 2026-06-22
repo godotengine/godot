@@ -2502,6 +2502,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Dis
 
 	show_window(DisplayServerEnums::MAIN_WINDOW_ID);
 
+	process_events();
+
 	if (!windows.has(DisplayServerEnums::MAIN_WINDOW_ID) || !windows[DisplayServerEnums::MAIN_WINDOW_ID].visible) {
 		ERR_PRINT("Could not map the main window.");
 		r_error = ERR_CANT_CREATE;
