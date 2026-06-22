@@ -3198,10 +3198,8 @@ GraphEdit::GraphEdit() {
 	connections_layer->set_name("_connection_layer");
 	connections_layer->set_disable_visibility_clip(true); // Necessary, so it can draw freely and be offset.
 	connections_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
-	connections_layer->set_use_parent_material(true);
 
 	top_connection_layer = memnew(GraphEditFilter(this));
-	top_connection_layer->set_use_parent_material(true);
 	add_child(top_connection_layer, false, INTERNAL_MODE_BACK);
 
 	connections_shader = default_connections_shader;
@@ -3212,7 +3210,6 @@ GraphEdit::GraphEdit() {
 
 	dragged_connection_line = memnew(Line2D);
 	dragged_connection_line->set_texture_mode(Line2D::LINE_TEXTURE_STRETCH);
-	dragged_connection_line->set_use_parent_material(true);
 	top_connection_layer->add_child(dragged_connection_line);
 
 	h_scrollbar = memnew(HScrollBar);
