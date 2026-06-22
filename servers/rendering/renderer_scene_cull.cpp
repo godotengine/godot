@@ -3517,7 +3517,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 				Transform3D cam_xf = p_camera_data->main_transform;
 				float zn = p_camera_data->main_projection.get_z_near();
-				Plane p(-cam_xf.basis.get_column(2), cam_xf.origin + cam_xf.basis.get_column(2) * -zn); //camera near plane
+				Transform3D view_matrix = cam_xf.affine_inverse();//Q: is it necessary to use affine_inverse() rather than inverse()?
 
 				// near plane half width and height
 				Vector2 vp_half_extents = p_camera_data->main_projection.get_viewport_half_extents();
@@ -3532,15 +3532,14 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 							ins->transform.origin + cam_xf.basis.get_column(0) * radius
 						};
 
-						if (!p_camera_data->is_orthogonal) {
-							//if using perspetive, map them to near plane
-							for (int j = 0; j < 2; j++) {
-								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
-								}
-
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
-							}
+						for (int j=0; j < 2; j++){
+							points[j] = view_matrix.xform(points[j]);
+							if (points[j].z > -zn){//alternative hack
+								points[j].z = -zn;
+							}//projection on the screen
+							points[j].x = points[j].x * (-zn / points[j].z);
+							points[j].y = points[j].y * (-zn / points[j].z);
+							points[j].z = -zn;
 						}
 
 						float screen_diameter = points[0].distance_to(points[1]) * 2;
@@ -3560,15 +3559,14 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 							base + cam_xf.basis.get_column(0) * w
 						};
 
-						if (!p_camera_data->is_orthogonal) {
-							//if using perspetive, map them to near plane
-							for (int j = 0; j < 2; j++) {
-								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
-								}
-
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
+						for (int j=0; j < 2; j++){
+							points[j] = view_matrix.xform(points[j]);
+							if (points[j].z > -zn){
+								points[j].z = -zn;
 							}
+							points[j].x = points[j].x * (-zn / points[j].z);
+							points[j].y = points[j].y * (-zn / points[j].z);
+							points[j].z = -zn;
 						}
 
 						float screen_diameter = points[0].distance_to(points[1]) * 2;
@@ -3585,15 +3583,14 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 							ins->transform.origin + cam_xf.basis.get_column(0) * radius
 						};
 
-						if (!p_camera_data->is_orthogonal) {
-							//if using perspetive, map them to near plane
-							for (int j = 0; j < 2; j++) {
-								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
-								}
-
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
+						for (int j=0; j < 2; j++){
+							points[j] = view_matrix.xform(points[j]);
+							if (points[j].z > -zn){
+								points[j].z = -zn;
 							}
+							points[j].x = points[j].x * (-zn / points[j].z);
+							points[j].y = points[j].y * (-zn / points[j].z);
+							points[j].z = -zn;
 						}
 
 						float screen_diameter = points[0].distance_to(points[1]) * 2;
