@@ -130,7 +130,7 @@
 				+Y ... -Y: bottom ... top;
 				+Z ... -Z: farther ... closer.
 				The gravity part value is measured as a vector with length of [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS. On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="get_joy_axis" qualifiers="const">
@@ -151,7 +151,7 @@
 				+Y ... -Y: bottom ... top;
 				+Z ... -Z: farther ... closer.
 				The gravity part value is measured as a vector with length of [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS. On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -334,7 +334,6 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns [code]true[/code] if the joypad has motion sensors (gyroscope and/or accelerometer).
-				[b]Note:[/b] On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
