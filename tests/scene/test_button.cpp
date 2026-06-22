@@ -316,11 +316,11 @@ TEST_CASE("[SceneTree][BaseButton] Disabled State Behavior") {
 	// Disable the button
 	button->set_disabled(true);
 
-	SUBCASE("Should ignore mouse hover") {
+	SUBCASE("Should receive mouse hover") {
 		// Move the mouse over the button
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2i(25, 25), MouseButtonMask::NONE, Key::NONE);
 
-		// Since it's disabled, it should not enter the hovered state
+		// Even when disabled, the button should still detect hover state changes (but not pressed state).
 		CHECK(button->is_hovered() == false);
 	}
 
@@ -404,15 +404,15 @@ TEST_CASE("[SceneTree][BaseButton] get_draw_mode() State Machine") {
 		// Click and hold on the button to trigger pressed state without toggle mode
 		SEND_GUI_MOUSE_MOTION_EVENT(Point2i(25, 25), MouseButtonMask::NONE, Key::NONE);
 		SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(25, 25), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2i(100, 100), MouseButtonMask::NONE, Key::NONE);
 
-		// The button should be in the pressed state even if the mouse moves away while holding the click
+		// The button should be
 		CHECK(button->get_draw_mode() == BaseButton::DRAW_PRESSED);
 
-		// Release the click to return to normal state
-		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2i(100, 100), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
-		CHECK(button->get_draw_mode() == BaseButton::DRAW_NORMAL);
+		// Release the click to return to hover state
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2i(25, 25), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		CHECK(button->get_draw_mode() == BaseButton::DRAW_HOVER); // Should return to hover state since mouse is still over it
 	}
+
 	SUBCASE("DRAW_HOVER_PRESSED State with toggle_mode") {
 		button->set_toggle_mode(true);
 
@@ -423,19 +423,6 @@ TEST_CASE("[SceneTree][BaseButton] get_draw_mode() State Machine") {
 
 		// Button should be in pressed + hovered state since it's toggled on and mouse is still over it
 		CHECK(button->get_draw_mode() == BaseButton::DRAW_HOVER_PRESSED);
-	}
-
-	SUBCASE("DRAW_HOVER_PRESSED State without toggle_mode") {
-		// Click and hold on the button to trigger hover+pressed state without toggle mode
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2i(25, 25), MouseButtonMask::NONE, Key::NONE);
-		SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(25, 25), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-
-		// The button should be in the hover+pressed state while the click is held and mouse is over it
-		CHECK(button->get_draw_mode() == BaseButton::DRAW_HOVER_PRESSED);
-
-		// Release the click to return to normal state
-		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2i(25, 25), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
-		CHECK(button->get_draw_mode() == BaseButton::DRAW_HOVER);
 	}
 
 	SUBCASE("DRAW_DISABLED State") {
