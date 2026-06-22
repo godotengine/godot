@@ -1852,14 +1852,13 @@ void ScriptEditor::_update_members_overview() {
 			search_names.append(functions[i].get_slicec(':', 0));
 		}
 
-		Vector<FuzzySearchResult> results;
 		FuzzySearch fuzzy;
-		fuzzy.set_query(filter, false);
-		fuzzy.search_all(search_names, results);
+		fuzzy.set_case_sensitive(false);
+		Vector<Ref<FuzzySearchMatch>> results = fuzzy.search_all(filter, search_names);
 
-		for (const FuzzySearchResult &res : results) {
-			String name = functions[res.original_index].get_slicec(':', 0);
-			int line = functions[res.original_index].get_slicec(':', 1).to_int() - 1;
+		for (const Ref<FuzzySearchMatch> &res : results) {
+			String name = functions[res->get_original_index()].get_slicec(':', 0);
+			int line = functions[res->get_original_index()].get_slicec(':', 1).to_int() - 1;
 			members_overview->add_item(name);
 			members_overview->set_item_metadata(-1, line);
 		}
@@ -2122,13 +2121,12 @@ void ScriptEditor::_update_script_names() {
 			search_names.append(sedata[i].name);
 		}
 
-		Vector<FuzzySearchResult> results;
 		FuzzySearch fuzzy;
-		fuzzy.set_query(filter, false);
-		fuzzy.search_all(search_names, results);
+		fuzzy.set_case_sensitive(false);
+		Vector<Ref<FuzzySearchMatch>> results = fuzzy.search_all(filter, search_names);
 
-		for (const FuzzySearchResult &res : results) {
-			sedata_filtered.push_back(sedata[res.original_index]);
+		for (const Ref<FuzzySearchMatch> &res : results) {
+			sedata_filtered.push_back(sedata[res->get_original_index()]);
 		}
 	}
 
