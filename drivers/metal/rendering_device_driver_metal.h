@@ -36,6 +36,7 @@
 
 #include <Metal/Metal.hpp>
 
+#include <optional>
 #include <variant>
 
 class RenderingShaderContainerFormatMetal;
@@ -178,7 +179,10 @@ protected:
 	 * there are no more references to the MDLibrary associated with the cache entry.
 	 */
 	HashMap<SHA256Digest, ShaderCacheEntry *> _shader_cache;
-	void shader_cache_free_entry(const SHA256Digest &key);
+	Mutex _shader_cache_lock;
+	void shader_cache_free_entry(ShaderCacheEntry *p_entry);
+	std::optional<std::shared_ptr<MDLibrary>> shader_cache_get_library(const SHA256Digest &key);
+	void shader_cache_set_entry(const SHA256Digest &key, ShaderCacheEntry *p_entry);
 
 public:
 	virtual Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override = 0;
