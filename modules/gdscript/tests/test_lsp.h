@@ -106,11 +106,6 @@ GDScriptLanguageProtocol *initialize(const String &p_root) {
 	GDScriptLanguageProtocol *proto = memnew(GDScriptLanguageProtocol);
 	TestGDScriptLanguageProtocolInitializer::setup_client();
 
-	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
-	workspace->root = absolute_root;
-	// On windows: `C:/...` -> `C%3A/...`.
-	workspace->root_uri = "file:///" + absolute_root.lstrip("/").replace_first(":", "%3A");
-
 	return proto;
 }
 
