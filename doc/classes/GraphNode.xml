@@ -120,8 +120,8 @@
 			<return type="int" />
 			<description>
 				Returns the number of slots.
-				[b]Note:[/b] Slots are defined by [Control]-derived children of the [GraphNode]. [method set_slot] method only sets properties of a slot.
-				[b]Note:[/b] Slot count is updated in a deferred call, which means adding/removing a child does not have an immediate effect on result of this function. Only after deferred functions are called slot count will be updated.
+				[b]Note:[/b] Slots are defined by [Control]-derived children of the [GraphNode]. [method set_slot] only sets properties of a slot.
+				[b]Note:[/b] The slot count is updated in a deferred call, which means adding/removing a child does not have an immediate effect on the returned value of this function. The slot count is only updated after deferred functions are called.
 			</description>
 		</method>
 		<method name="get_slot_custom_icon_left" qualifiers="const">
@@ -142,8 +142,8 @@
 			<return type="int" />
 			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns index of the input port associated with given [param slot_index].
-				Returns -1 if slot has no input port.
+				Returns the index of the input port associated with the given [param slot_index].
+				Returns [code]-1[/code] if the slot has no input port.
 			</description>
 		</method>
 		<method name="get_slot_metadata_left" qualifiers="const">
@@ -164,8 +164,8 @@
 			<return type="int" />
 			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns index of the output port associated with given [param slot_index].
-				Returns -1 if slot has no output port.
+				Returns the index of the output port associated with the given [param slot_index].
+				Returns [code]-1[/code] if the slot has no output port.
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
