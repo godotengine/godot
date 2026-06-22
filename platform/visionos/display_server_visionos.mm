@@ -89,7 +89,7 @@ float DisplayServerVisionOS::_screen_potential_edr_headroom() const {
 }
 
 float DisplayServerVisionOS::_screen_current_edr_headroom() const {
-	// Current Apple Vision Pro hardware  supports an EDR headroom of 2.0 (two times the SDR range).
+	// Current Apple Vision Pro hardware supports an EDR headroom of 2.0 (two times the SDR range).
 	// See https://developer.apple.com/videos/play/wwdc2023/10089?time=603
 	return 2.0f;
 }
