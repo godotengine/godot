@@ -289,7 +289,8 @@ void JoypadSDL::process_events() {
 							sdl_event.gtouchpad.touchpad,
 							sdl_event.gtouchpad.finger,
 							Vector2(sdl_event.gtouchpad.x, sdl_event.gtouchpad.y),
-							sdl_event.gtouchpad.pressure);
+							sdl_event.gtouchpad.pressure,
+							sdl_event.type != SDL_EVENT_GAMEPAD_TOUCHPAD_UP);
 					break;
 			}
 		}

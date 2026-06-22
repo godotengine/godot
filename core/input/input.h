@@ -399,10 +399,6 @@ public:
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
 
-	Vector2 get_joy_touchpad_finger_position(int p_device, int p_finger, int p_touchpad = 0) const;
-	float get_joy_touchpad_finger_pressure(int p_device, int p_finger, int p_touchpad = 0) const;
-	PackedInt32Array get_joy_touchpad_fingers(int p_device, int p_touchpad = 0) const;
-
 	int get_joy_num_touchpads(int p_device) const;
 
 	Point2 get_mouse_position() const;
@@ -448,6 +444,10 @@ public:
 
 	void set_joy_motion_sensors_rate(int p_device, float p_rate);
 
+	Vector2 get_joy_touchpad_finger_position(int p_device, int p_finger, int p_touchpad = 0) const;
+	float get_joy_touchpad_finger_pressure(int p_device, int p_finger, int p_touchpad = 0) const;
+	PackedInt32Array get_joy_touchpad_fingers(int p_device, int p_touchpad = 0) const;
+
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
@@ -477,7 +477,7 @@ public:
 	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
 	void joy_hat(int p_device, BitField<HatMask> p_val);
 	void joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, const Vector3 &p_gyroscope);
-	void joy_touchpad(int p_device, int p_touchpad, int p_finger, const Vector2 &p_position, float p_pressure);
+	void joy_touchpad(int p_device, int p_touchpad, int p_finger, const Vector2 &p_position, float p_pressure, bool p_pressed);
 
 	void add_joy_mapping(const String &p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(const String &p_guid);
