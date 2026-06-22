@@ -323,6 +323,9 @@ class EditorHelpBit : public VBoxContainer {
 
 	bool use_class_prefix = false;
 
+	String current_symbol;
+	String current_prologue;
+
 	String symbol_doc_link;
 	String symbol_class_name;
 	String symbol_type;
@@ -354,6 +357,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static void clear_cache();
 	static String get_as_plain_text(const String &p_symbol, const String &p_prologue = String());
 
 	void parse_symbol(const String &p_symbol, const String &p_prologue = String());
@@ -362,7 +366,12 @@ public:
 	void set_content_height_limits(float p_min, float p_max);
 	void update_content_height();
 
-	EditorHelpBit(const String &p_symbol = String(), const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_allow_selection = true, bool p_in_tooltip = false);
+	EditorHelpBit(
+			const String &p_symbol = String(),
+			const String &p_prologue = String(),
+			bool p_use_class_prefix = false,
+			bool p_allow_selection = true,
+			bool p_in_tooltip = false);
 };
 
 // Standard tooltips do not allow you to hover over them.
@@ -388,7 +397,12 @@ protected:
 
 public:
 	// The returned control is an orphan node, which is to make the standard tooltip invisible.
-	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_shortcut = false);
+	[[nodiscard]] static Control *make_tooltip(
+			Control *p_target,
+			const String &p_symbol,
+			const String &p_prologue = String(),
+			bool p_use_class_prefix = false,
+			bool p_shortcut = false);
 
 	void popup_under_position(const Point2 &p_point);
 
@@ -426,7 +440,7 @@ public:
 	static EditorHelpHighlighter *get_singleton();
 
 	void highlight(RichTextLabel *p_rich_text_label, Language p_language, const String &p_source, bool p_use_cache);
-	void reset_cache();
+	void clear_cache();
 
 	EditorHelpHighlighter();
 	virtual ~EditorHelpHighlighter();

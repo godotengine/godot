@@ -656,6 +656,11 @@ void CreateDialog::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			// Update `EditorHelpBit` in case it contains custom text.
+			_update_search();
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			search_options->add_theme_constant_override("icon_max_width", icon_width);

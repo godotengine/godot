@@ -745,7 +745,11 @@ void EditorBuildProfileManager::_notification(int p_what) {
 				edited.instantiate();
 				_update_edited_profile();
 			}
+		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			// Update `EditorHelpBit` in case it contains custom text.
+			_class_list_item_selected();
 		} break;
 	}
 }
