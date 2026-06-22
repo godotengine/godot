@@ -143,6 +143,9 @@ void ProjectManager::_notification(int p_what) {
 			}
 			_update_list_placeholder();
 		} break;
+		case NOTIFICATION_RESIZED: {
+			project_list->resize_project_titles();
+		} break;
 	}
 }
 
