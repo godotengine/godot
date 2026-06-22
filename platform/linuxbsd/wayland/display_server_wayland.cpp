@@ -302,7 +302,6 @@ bool DisplayServerWayland::has_feature(DisplayServerEnums::Feature p_feature) co
 		case DisplayServerEnums::FEATURE_WINDOW_DRAG:
 		case DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY:
 		case DisplayServerEnums::FEATURE_SUBWINDOWS:
-		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
 		case DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS:
 		case DisplayServerEnums::FEATURE_HDR_OUTPUT: {
 			return true;
