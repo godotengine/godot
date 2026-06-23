@@ -425,6 +425,374 @@ namespace GodotTools
             return _editorSettings.GetSetting(Settings.ExternalEditor).As<ExternalEditorId>() != ExternalEditorId.None;
         }
 
+        public Variant GetDocs(Script script)
+        {
+            try
+            {
+                var scriptType = ScriptDoc.GetScriptType(script.NativeInstance);
+                var scriptPathAttr = scriptType?.GetCustomAttributes<ScriptPathAttribute>().FirstOrDefault();
+
+                if (scriptType is null || scriptPathAttr is null)
+                {
+                    return new Godot.Collections.Dictionary();
+                }
+
+                string scriptPath = scriptPathAttr.Path.Replace("res://", "");
+
+                ScriptDoc.XmlDocumentationCache? xmlDocs = ScriptDoc.GetXmlDocumentationCache(scriptType.Assembly);
+
+                string typeDocId = ScriptDoc.GetTypeDocumentationId(scriptType);
+
+                string? briefDescription = ScriptDoc.TryGetDocTag(xmlDocs, scriptType, typeDocId, "summary",
+                    implicitInheritResolver: () => scriptType.BaseType != null ? ScriptDoc.GetTypeDocumentationId(scriptType.BaseType) : null);
+
+                string? fullDescription = ScriptDoc.TryGetDocTag(xmlDocs, scriptType, typeDocId, "remarks",
+                    implicitInheritResolver: () => scriptType.BaseType != null ? ScriptDoc.GetTypeDocumentationId(scriptType.BaseType) : null);
+
+                bool isGlobalClass = scriptType.IsDefined(typeof(GlobalClassAttribute), inherit: false);
+                string classDocName;
+
+                if (isGlobalClass)
+                {
+                    classDocName = scriptType.Name;
+                }
+                else
+                {
+                    classDocName = "\"" + scriptPath + "\"";
+                    if (scriptType.DeclaringType != null)
+                    {
+                        classDocName += scriptType.Name;
+                    }
+                }
+
+                using Godot.Collections.Dictionary docs = new global::Godot.Collections.Dictionary();
+
+                docs.Add("name", classDocName);
+                docs.Add("brief_description", briefDescription ?? "");
+                docs.Add("description", fullDescription ?? "");
+
+                var exportedProperties = scriptType
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                    .Where(p => p.IsDefined(typeof(ExportAttribute), inherit: false))
+                    .ToArray();
+
+                var exportedFields = scriptType
+                    .GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                    .Where(f => !f.IsSpecialName && f.IsDefined(typeof(ExportAttribute), inherit: false))
+                    .ToArray();
+
+                var propertyDocs = new global::Godot.Collections.Array();
+                var enumTypes = new HashSet<Type>();
+
+                // Default values for exported members, as evaluated from their initializers by the
+                // Godot source generators. Passed through as Variant values; the native side
+                // (CSharpScript::get_docs) serializes them with DocData::get_default_value_string
+                // so the rendered format matches GDScript documentation.
+                var defaultValues = ScriptDoc.GetPropertyDefaultValues(scriptType);
+
+                foreach (System.Reflection.PropertyInfo property in exportedProperties)
+                {
+                    Type propertyType = property.PropertyType;
+                    if (propertyType.IsEnum)
+                        enumTypes.Add(propertyType);
+
+                    string propertyDocId = ScriptDoc.GetPropertyDocumentationId(property);
+                    string? propertyDescription = ScriptDoc.TryGetFullDocDescription(xmlDocs, scriptType, propertyDocId,
+                        implicitInheritResolver: () => ScriptDoc.FindInheritedPropertyDocumentationId(property));
+
+                    var propertyDoc = new global::Godot.Collections.Dictionary()
+                    {
+                        { "name", property.Name },
+                        { "type", ScriptDoc.GetPropertyDocTypeName(propertyType) },
+                    };
+
+                    if (defaultValues != null && defaultValues.TryGetValue(property.Name, out Variant defaultValue))
+                    {
+                        propertyDoc["default_value"] = defaultValue;
+                    }
+
+                    if (propertyType.IsEnum)
+                    {
+                        propertyDoc["enumeration"] = propertyType.Name;
+                        // Add full name with namespace for proper documentation lookup
+                        if (!string.IsNullOrEmpty(propertyType.Namespace))
+                            propertyDoc["enumeration_full_name"] = $"{propertyType.Namespace}.{propertyType.Name}";
+                        else
+                            propertyDoc["enumeration_full_name"] = propertyType.Name;
+
+                        if (propertyType.IsDefined(typeof(FlagsAttribute), inherit: false))
+                            propertyDoc["is_bitfield"] = true;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(propertyDescription))
+                        propertyDoc["description"] = propertyDescription;
+
+                    propertyDocs.Add(propertyDoc);
+                }
+
+                foreach (System.Reflection.FieldInfo field in exportedFields)
+                {
+                    Type fieldType = field.FieldType;
+                    if (fieldType.IsEnum)
+                        enumTypes.Add(fieldType);
+
+                    string fieldDocId = ScriptDoc.GetFieldDocumentationId(field);
+                    string? fieldDescription = ScriptDoc.TryGetFullDocDescription(xmlDocs, scriptType, fieldDocId,
+                        implicitInheritResolver: () => ScriptDoc.FindInheritedFieldDocumentationId(field));
+
+                    var propertyDoc = new global::Godot.Collections.Dictionary()
+                    {
+                        { "name", field.Name },
+                        { "type", ScriptDoc.GetPropertyDocTypeName(fieldType) },
+                    };
+
+                    if (defaultValues != null && defaultValues.TryGetValue(field.Name, out Variant fieldDefaultValue))
+                    {
+                        propertyDoc["default_value"] = fieldDefaultValue;
+                    }
+
+                    if (fieldType.IsEnum)
+                    {
+                        propertyDoc["enumeration"] = fieldType.Name;
+                        // Add full name with namespace for proper documentation lookup
+                        if (!string.IsNullOrEmpty(fieldType.Namespace))
+                            propertyDoc["enumeration_full_name"] = $"{fieldType.Namespace}.{fieldType.Name}";
+                        else
+                            propertyDoc["enumeration_full_name"] = fieldType.Name;
+
+                        if (fieldType.IsDefined(typeof(FlagsAttribute), inherit: false))
+                            propertyDoc["is_bitfield"] = true;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(fieldDescription))
+                        propertyDoc["description"] = fieldDescription;
+
+                    propertyDocs.Add(propertyDoc);
+                }
+
+                if (propertyDocs.Count > 0)
+                    docs.Add("properties", propertyDocs);
+
+                var signalDocs = new global::Godot.Collections.Array();
+
+                var nestedSignalTypes = scriptType.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic)
+                    .Where(t => t.IsDefined(typeof(SignalAttribute), inherit: false) && typeof(MulticastDelegate).IsAssignableFrom(t.BaseType))
+                    .ToArray();
+
+                foreach (Type signalType in nestedSignalTypes)
+                {
+                    string signalName = signalType.Name.EndsWith("EventHandler", StringComparison.Ordinal)
+                        ? signalType.Name.Substring(0, signalType.Name.Length - "EventHandler".Length)
+                        : signalType.Name;
+
+                    string signalDocId = ScriptDoc.GetTypeDocumentationId(signalType);
+                    string? signalDescription = ScriptDoc.TryGetFullDocDescription(xmlDocs, scriptType, signalDocId);
+
+                    var signalDoc = new global::Godot.Collections.Dictionary()
+                    {
+                        { "name", signalName },
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(signalDescription))
+                        signalDoc["description"] = signalDescription;
+
+                    signalDocs.Add(signalDoc);
+                }
+
+                if (signalDocs.Count > 0)
+                    docs.Add("signals", signalDocs);
+
+                var methodDocs = new global::Godot.Collections.Array();
+
+                // Collect public instance/static methods declared on this type, mirroring how
+                // GDScript documents functions. We exclude:
+                //   - special-name members (property accessors, operators, event add/remove)
+                //   - Godot virtual callbacks that begin with an underscore (e.g. _Ready)
+                //   - members marked EditorBrowsableState.Never: the Godot source generators tag
+                //     every method they emit (GetGodotMethodList, InvokeGodotClassMethod, etc.)
+                //     with this attribute so they stay hidden from IntelliSense; reusing it here
+                //     keeps generated boilerplate out of the documentation.
+                var exportedMethods = scriptType
+                    .GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                    .Where(m => !m.IsSpecialName
+                                && !m.Name.StartsWith("_", StringComparison.Ordinal)
+                                && !ScriptDoc.IsHiddenFromEditor(m))
+                    .ToArray();
+
+                foreach (System.Reflection.MethodInfo method in exportedMethods)
+                {
+                    string methodDocId = ScriptDoc.GetMethodDocumentationId(method);
+                    string? methodDescription = ScriptDoc.TryGetFullDocDescription(xmlDocs, scriptType, methodDocId);
+
+                    var methodDoc = new global::Godot.Collections.Dictionary()
+                    {
+                        { "name", method.Name },
+                        { "return_type", ScriptDoc.GetPropertyDocTypeName(method.ReturnType) },
+                    };
+
+                    if (method.IsStatic)
+                        methodDoc["qualifiers"] = "static";
+
+                    var arguments = new global::Godot.Collections.Array();
+                    foreach (System.Reflection.ParameterInfo parameter in method.GetParameters())
+                    {
+                        var argumentDoc = new global::Godot.Collections.Dictionary()
+                        {
+                            { "name", parameter.Name ?? string.Empty },
+                            { "type", ScriptDoc.GetPropertyDocTypeName(parameter.ParameterType) },
+                        };
+
+                        // Reflect the parameter's default value when one is declared.
+                        if (parameter.HasDefaultValue && parameter.DefaultValue != null)
+                        {
+                            object defaultValue = parameter.DefaultValue;
+                            string defaultValueString = defaultValue switch
+                            {
+                                bool b => b ? "true" : "false",
+                                string s => "\"" + s + "\"",
+                                _ => defaultValue.ToString() ?? string.Empty,
+                            };
+                            argumentDoc["default_value"] = defaultValueString;
+                        }
+
+                        arguments.Add(argumentDoc);
+                    }
+
+                    if (arguments.Count > 0)
+                        methodDoc["arguments"] = arguments;
+
+                    if (!string.IsNullOrWhiteSpace(methodDescription))
+                        methodDoc["description"] = methodDescription;
+
+                    methodDocs.Add(methodDoc);
+                }
+
+                if (methodDocs.Count > 0)
+                    docs.Add("methods", methodDocs);
+
+                var constantDocs = new global::Godot.Collections.Array();
+
+                // Collect public constant fields (const/static-literal members) declared on this
+                // type, mirroring how GDScript documents `const` declarations. We exclude enum
+                // value fields (those are emitted below under their owning enum) and literals
+                // generated by the source generator.
+                var exportedConstants = scriptType
+                    .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+                    .Where(f => f.IsLiteral && !f.IsSpecialName
+                                && !ScriptDoc.IsHiddenFromEditor(f))
+                    .ToArray();
+
+                foreach (System.Reflection.FieldInfo constField in exportedConstants)
+                {
+                    string constFieldDocId = ScriptDoc.GetFieldDocumentationId(constField);
+                    string? constDescription = ScriptDoc.TryGetFullDocDescription(xmlDocs, scriptType, constFieldDocId);
+
+                    var constantDoc = new Godot.Collections.Dictionary()
+                    {
+                        { "name", constField.Name },
+                        { "value", GetConstantDisplayValue(constField) },
+                        { "is_value_valid", true },
+                        { "type", ScriptDoc.GetPropertyDocTypeName(constField.FieldType) },
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(constDescription))
+                        constantDoc["description"] = constDescription;
+
+                    constantDocs.Add(constantDoc);
+                }
+
+                if (enumTypes.Count > 0)
+                {
+                    var enumDocs = new global::Godot.Collections.Dictionary();
+
+                    foreach (Type enumType in enumTypes)
+                    {
+                        string enumDocId = ScriptDoc.GetTypeDocumentationId(enumType);
+                        string? enumDescription = ScriptDoc.TryGetDocTag(xmlDocs, xmlDocs != null ? enumType : scriptType, enumDocId, "summary");
+
+                        var enumDoc = new global::Godot.Collections.Dictionary();
+
+                        enumDoc["name"] = enumType.Name;
+                        if (!string.IsNullOrWhiteSpace(enumType.Namespace))
+                            enumDoc["full_name"] = $"{enumType.Namespace}.{enumType.Name}";
+                        else
+                            enumDoc["full_name"] = enumType.Name;
+
+                        if (!string.IsNullOrWhiteSpace(enumDescription))
+                            enumDoc["description"] = enumDescription;
+
+                        enumDocs[enumType.Name] = enumDoc;
+
+                        bool isBitfield = enumType.IsDefined(typeof(FlagsAttribute), inherit: false);
+                        foreach (System.Reflection.FieldInfo enumField in enumType.GetFields(BindingFlags.Public | BindingFlags.Static))
+                        {
+                            string enumFieldDocId = ScriptDoc.GetFieldDocumentationId(enumField);
+                            string? enumFieldDescription = ScriptDoc.TryGetDocTag(xmlDocs, enumType, enumFieldDocId, "summary");
+
+                            var constantDoc = new Godot.Collections.Dictionary()
+                            {
+                                { "name", enumField.Name },
+                                { "value", Convert.ToInt64(enumField.GetRawConstantValue(), CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture) },
+                                { "enumeration", enumType.Name },
+                                // Add full name with namespace for proper documentation lookup
+                                { "enumeration_full_name", string.IsNullOrEmpty(enumType.Namespace) ? enumType.Name : $"{enumType.Namespace}.{enumType.Name}" },
+                                { "is_bitfield", isBitfield },
+                            };
+
+                            if (!string.IsNullOrWhiteSpace(enumFieldDescription))
+                                constantDoc["description"] = enumFieldDescription;
+
+                            constantDocs.Add(constantDoc);
+                        }
+                    }
+
+                    if (enumDocs.Count > 0)
+                        docs.Add("enums", enumDocs);
+                }
+
+                if (constantDocs.Count > 0)
+                    docs.Add("constants", constantDocs);
+
+                docs.Add("is_script_doc", true);
+                docs.Add("script_path", scriptPath ?? string.Empty);
+
+                return docs;
+            }
+            catch (Exception e)
+            {
+                GD.PushError(e.ToString());
+                return new Godot.Collections.Dictionary();
+            }
+        }
+
+        /// <summary>
+        /// Renders a constant field's value into a documentation-friendly display string,
+        /// mirroring GDScript's constant serialization (strings quoted, enums by name, etc.).
+        /// </summary>
+        private static string GetConstantDisplayValue(System.Reflection.FieldInfo constField)
+        {
+            object? rawValue = constField.GetRawConstantValue();
+            if (rawValue == null)
+                return "null";
+
+            Type fieldType = constField.FieldType;
+
+            // Enum constants render as their member name (e.g. "Primary") rather than the
+            // underlying integer, which matches how GDScript documents enum-typed constants.
+            if (fieldType.IsEnum)
+                return Enum.GetName(fieldType, rawValue) ?? rawValue.ToString() ?? string.Empty;
+
+            return rawValue switch
+            {
+                bool b => b ? "true" : "false",
+                char c => $"\"{c}\"",
+                string s => "\"" + s.Replace("\"", "\\\"") + "\"",
+                float f => f.ToString("R", CultureInfo.InvariantCulture),
+                double d => d.ToString("R", CultureInfo.InvariantCulture),
+                _ => Convert.ToString(rawValue, CultureInfo.InvariantCulture) ?? string.Empty,
+            };
+        }
+
         public override bool _Build()
         {
             return BuildManager.EditorBuildCallback();
@@ -728,7 +1096,6 @@ namespace GodotTools
         public static GodotSharpEditor Instance { get; private set; }
 #nullable enable
 
-        [UsedImplicitly]
         private static IntPtr InternalCreateInstance(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             Internal.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);

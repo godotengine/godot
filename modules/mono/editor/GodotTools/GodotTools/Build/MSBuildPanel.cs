@@ -82,6 +82,9 @@ namespace GodotTools.Build
             // Notify running game for hot-reload.
             Internal.EditorDebuggerNodeReloadScripts();
 
+            // Clear XML documentation cache before reload
+            ScriptDoc.ClearXmlCache();
+
             // Hot-reload in the editor.
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
 
@@ -102,6 +105,9 @@ namespace GodotTools.Build
 
             // Notify running game for hot-reload.
             Internal.EditorDebuggerNodeReloadScripts();
+
+            // Clear XML documentation cache before reload
+            ScriptDoc.ClearXmlCache();
 
             // Hot-reload in the editor.
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
