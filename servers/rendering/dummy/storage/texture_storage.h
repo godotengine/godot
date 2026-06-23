@@ -127,6 +127,7 @@ public:
 	virtual void texture_set_detect_3d_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override {}
 	virtual void texture_set_detect_normal_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override {}
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) override {}
+	virtual void texture_set_detect_height_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override {}
 
 	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) override {}
 
