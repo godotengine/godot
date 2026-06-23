@@ -400,6 +400,47 @@ static LocalVector<String> _get_skipped_locales() {
 	return locales_to_skip;
 }
 
+static Vector<String> _get_renderable_locales() {
+	// Skip locales which we can't render properly.
+	const LocalVector<String> locales_to_skip = _get_skipped_locales();
+	if (!locales_to_skip.is_empty()) {
+		WARN_PRINT("Some locales are not properly supported by selected Text Server and are disabled.");
+	}
+
+	Vector<String> locales = get_editor_locales();
+
+	for (int i = locales.size() - 1; i >= 0; i--) {
+		const String &locale = locales[i];
+		// Test against language code without regional variants (e.g. ur_PK).
+		String lang_code = locale.get_slicec('_', 0);
+		if (locales_to_skip.has(lang_code)) {
+			locales.remove_at(i);
+			continue;
+		}
+	}
+
+	locales.insert(0, "en");
+	return locales;
+}
+
+static String _get_best_locale(const Vector<String> &locales) {
+	String best = "en";
+	int best_score = 0;
+	for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
+		for (const String &locale : locales) {
+			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+			if (score > best_score) {
+				best = locale;
+				best_score = score;
+			}
+		}
+		if (best_score > 0) {
+			break;
+		}
+	}
+	return best;
+}
+
 void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_THREAD_SAFE_METHOD_
 // Sets up the editor setting with a default value and hint PropertyInfo.
@@ -418,38 +459,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Languages */
 
 	{
-		// Skip locales which we can't render properly.
-		const LocalVector<String> locales_to_skip = _get_skipped_locales();
-		if (!locales_to_skip.is_empty()) {
-			WARN_PRINT("Some locales are not properly supported by selected Text Server and are disabled.");
-		}
-
 		String lang_hint;
-		String best = "en";
-		int best_score = 0;
-		for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
-			for (const String &locale : get_editor_locales()) {
-				// Test against language code without regional variants (e.g. ur_PK).
-				String lang_code = locale.get_slicec('_', 0);
-				if (locales_to_skip.has(lang_code)) {
-					continue;
-				}
 
-				lang_hint += ";";
-				const String lang_name = TranslationServer::get_singleton()->get_locale_name(locale);
-				lang_hint += vformat("%s/[%s] %s", locale, locale, lang_name);
-
-				int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
-				if (score > 0 && score >= best_score) {
-					best = locale;
-					best_score = score;
-				}
-			}
-			if (best_score > 0) {
-				break;
-			}
+		Vector<String> locales = _get_renderable_locales();
+		for (const String &locale : locales) {
+			const String lang_name = TranslationServer::get_singleton()->get_locale_name(locale);
+			lang_hint += vformat(";%s/[%s] %s", locale, locale, lang_name);
 		}
-		lang_hint = vformat(";auto/Auto (%s);en/[en] English", TranslationServer::get_singleton()->get_locale_name(best)) + lang_hint;
+
+		String best = _get_best_locale(locales);
+		lang_hint = vformat(";auto/Auto (%s)", TranslationServer::get_singleton()->get_locale_name(best)) + lang_hint;
 
 		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/localization/editor_language", "auto", lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
 	}
@@ -2039,30 +2058,8 @@ String EditorSettings::get_language() const {
 	}
 
 	if (auto_language.is_empty()) {
-		// Skip locales which we can't render properly.
-		const LocalVector<String> locales_to_skip = _get_skipped_locales();
-
-		String best = "en";
-		int best_score = 0;
-		for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
-			for (const String &locale : get_editor_locales()) {
-				// Test against language code without regional variants (e.g. ur_PK).
-				String lang_code = locale.get_slicec('_', 0);
-				if (locales_to_skip.has(lang_code)) {
-					continue;
-				}
-
-				int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
-				if (score > 0 && score >= best_score) {
-					best = locale;
-					best_score = score;
-				}
-			}
-			if (best_score > 0) {
-				break;
-			}
-		}
-		auto_language = best;
+		const Vector<String> locales = _get_renderable_locales();
+		auto_language = _get_best_locale(locales);
 	}
 	return auto_language;
 }
