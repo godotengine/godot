@@ -153,6 +153,17 @@ void EditorPropertyVariant::update_property() {
 		}
 		ERR_FAIL_NULL(sub_property);
 
+		bool is_bottom = false;
+		EditorPropertyVectorN *vector_prop = Object::cast_to<EditorPropertyVectorN>(sub_property);
+		if (vector_prop) {
+			if (current_type == Variant::VECTOR2 || current_type == Variant::VECTOR2I) {
+				is_bottom = EDITOR_GET("interface/inspector/horizontal_vector2_editing");
+			} else {
+				is_bottom = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+			}
+		}
+		set_bottom_editor(is_bottom ? content : nullptr);
+
 		sub_property->set_object_and_property(get_edited_object(), get_edited_property());
 		sub_property->set_name_split_ratio(0);
 		sub_property->set_selectable(false);
