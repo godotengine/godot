@@ -623,10 +623,8 @@ bool FreeDesktopPortalDesktop::is_inhibit_supported() {
 }
 
 Error FreeDesktopPortalDesktop::make_request_token(String &r_token) {
-	CryptoCore::RandomGenerator rng;
-	ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
 	uint8_t uuid[64];
-	Error rng_err = rng.get_random_bytes(uuid, 64);
+	Error rng_err = CryptoCore::generate_random(uuid, 64);
 	ERR_FAIL_COND_V_MSG(rng_err, rng_err, "Failed to generate unique token.");
 
 	r_token = String::hex_encode_buffer(uuid, 64);

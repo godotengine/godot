@@ -221,6 +221,8 @@ Error StreamPeerMbedTLS::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r
 			// Clean close
 			disconnect_from_stream();
 			return ERR_FILE_EOF;
+		} else if (ret == MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET) {
+			continue; // Re-connection cookies are not currently supported, ignore them.
 		} else if (ret <= 0) {
 			TLSContextMbedTLS::print_mbedtls_error(ret);
 			disconnect_from_stream();
@@ -270,7 +272,7 @@ void StreamPeerMbedTLS::poll() {
 int StreamPeerMbedTLS::get_available_bytes() const {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, 0);
 
-	return mbedtls_ssl_get_bytes_avail(&(tls_ctx->tls));
+	return mbedtls_ssl_get_bytes_avail(tls_ctx->get_context());
 }
 
 StreamPeerMbedTLS::StreamPeerMbedTLS() {
