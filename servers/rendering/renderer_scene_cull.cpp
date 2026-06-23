@@ -3498,6 +3498,11 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		}
 
 		// Positional Shadows
+		
+		Transform3D cam_xf = p_camera_data->main_transform;//taken out of the 'for' loop in 'compute coverage', 
+		float zn = p_camera_data->main_projection.get_z_near();//so as not to calculate for each light source
+		Transform3D view_matrix = cam_xf.affine_inverse();//Q: is it necessary to use affine_inverse() rather than inverse()?
+		
 		for (uint32_t i = 0; i < (uint32_t)scene_cull_result.lights.size(); i++) {
 			Instance *ins = scene_cull_result.lights[i];
 
@@ -3514,11 +3519,6 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			float coverage = 0.f;
 
 			{ //compute coverage
-
-				Transform3D cam_xf = p_camera_data->main_transform;
-				float zn = p_camera_data->main_projection.get_z_near();
-				Transform3D view_matrix = cam_xf.affine_inverse();//Q: is it necessary to use affine_inverse() rather than inverse()?
-
 				// near plane half width and height
 				Vector2 vp_half_extents = p_camera_data->main_projection.get_viewport_half_extents();
 
