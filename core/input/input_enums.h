@@ -46,6 +46,8 @@ enum class InputEventType {
 	MIDI,
 	SHORTCUT,
 	ACTION,
+	JOY_TOUCHPAD_TOUCH,
+	JOY_TOUCHPAD_DRAG,
 	MAX,
 };
 

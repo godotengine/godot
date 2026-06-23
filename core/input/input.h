@@ -196,7 +196,8 @@ private:
 
 	struct TouchpadFingerInfo {
 		Vector2 position;
-		float pressure;
+		float pressure = 0.0f;
+		uint64_t last_timestamp = 0;
 	};
 
 	struct TouchpadInfo {

@@ -802,6 +802,15 @@ Vector3 Input::get_gyroscope() const {
 	return gyroscope;
 }
 
+static uint16_t _combine_joy_touch_id(int p_finger, int p_touchpad) {
+	return p_finger | (p_touchpad << 8);
+}
+
+static void _uncombine_joy_touch_id(uint16_t p_touch_id, int &r_finger, int &r_touchpad) {
+	r_touchpad = p_touch_id >> 8;
+	r_finger = p_touch_id & 0xFF;
+}
+
 Vector2 Input::get_joy_touchpad_finger_position(int p_device, int p_finger, int p_touchpad) const {
 	_THREAD_SAFE_METHOD_
 	const TouchpadInfo *touch = joy_touch.getptr(p_device);
@@ -809,7 +818,7 @@ Vector2 Input::get_joy_touchpad_finger_position(int p_device, int p_finger, int 
 		return Vector2(-1, -1);
 	}
 
-	uint16_t index = p_finger | (p_touchpad << 8);
+	uint16_t index = _combine_joy_touch_id(p_finger, p_touchpad);
 	const TouchpadFingerInfo *finger_info = touch->finger_info.getptr(index);
 	if (finger_info == nullptr) {
 		return Vector2(-1, -1);
@@ -825,7 +834,7 @@ float Input::get_joy_touchpad_finger_pressure(int p_device, int p_finger, int p_
 		return -1.0f;
 	}
 
-	uint16_t index = p_finger | (p_touchpad << 8);
+	uint16_t index = _combine_joy_touch_id(p_finger, p_touchpad);
 	const TouchpadFingerInfo *finger_info = touch->finger_info.getptr(index);
 	if (finger_info == nullptr) {
 		return -1.0f;
@@ -843,9 +852,10 @@ PackedInt32Array Input::get_joy_touchpad_fingers(int p_device, int p_touchpad) c
 
 	PackedInt32Array result;
 	for (const KeyValue<uint16_t, TouchpadFingerInfo> &index : touch->finger_info) {
-		int touchpad = index.key >> 8;
+		int finger, touchpad;
+		_uncombine_joy_touch_id(index.key, finger, touchpad);
 		if (touchpad == p_touchpad) {
-			result.append(index.key & 0xFF);
+			result.append(finger);
 		}
 	}
 	return result;
@@ -1052,6 +1062,39 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	if (jm.is_valid()) {
 		set_joy_axis(jm->get_device(), jm->get_axis(), jm->get_axis_value());
+	}
+
+	Ref<InputEventJoypadTouchpadTouch> jtt = p_event;
+
+	if (jtt.is_valid()) {
+		if (joy_touch.has(jtt->get_device())) {
+			TouchpadInfo &touch = joy_touch[jtt->get_device()];
+			uint16_t index = _combine_joy_touch_id(jtt->get_finger_id(), jtt->get_touchpad_id());
+			if (jtt->is_pressed()) {
+				TouchpadFingerInfo finger_info;
+				finger_info.position = jtt->get_position();
+				finger_info.pressure = jtt->get_pressure();
+				finger_info.last_timestamp = OS::get_singleton()->get_ticks_msec();
+				touch.finger_info[index] = finger_info;
+			} else {
+				touch.finger_info.erase(index);
+			}
+		}
+	}
+
+	Ref<InputEventJoypadTouchpadDrag> jtd = p_event;
+
+	if (jtd.is_valid()) {
+		if (joy_touch.has(jtd->get_device())) {
+			TouchpadInfo &touch = joy_touch[jtd->get_device()];
+			uint16_t index = _combine_joy_touch_id(jtd->get_finger_id(), jtd->get_touchpad_id());
+			if (touch.finger_info.has(index)) {
+				TouchpadFingerInfo &finger_info = touch.finger_info[index];
+				finger_info.position = jtd->get_position();
+				finger_info.pressure = jtd->get_pressure();
+				finger_info.last_timestamp = OS::get_singleton()->get_ticks_msec();
+			}
+		}
 	}
 
 	Ref<InputEventGesture> ge = p_event;
@@ -1896,11 +1939,37 @@ void Input::joy_touchpad(int p_device, int p_touchpad, int p_finger, const Vecto
 	}
 
 	TouchpadInfo &touch = joy_touch[p_device];
-	uint16_t index = p_finger | (p_touchpad << 8);
-	if (p_pressed) {
-		touch.finger_info[index] = TouchpadFingerInfo{ p_position, p_pressure };
-	} else {
-		touch.finger_info.erase(index);
+	uint16_t index = _combine_joy_touch_id(p_finger, p_touchpad);
+
+	if (p_pressed != touch.finger_info.has(index)) {
+		Ref<InputEventJoypadTouchpadTouch> ievent;
+		ievent.instantiate();
+		ievent->set_device(p_device);
+		ievent->set_touchpad_id(p_touchpad);
+		ievent->set_finger_id(p_finger);
+		ievent->set_position(p_position);
+		ievent->set_pressure(p_pressure);
+		ievent->set_pressed(p_pressed);
+
+		parse_input_event(ievent);
+	} else if (p_pressed) {
+		// Must exist since here p_pressed == touch.finger_info.has(index) and p_pressed is true
+		TouchpadFingerInfo &finger_info = touch.finger_info[index];
+		uint64_t new_timestamp = OS::get_singleton()->get_ticks_msec();
+		float delta_time = (new_timestamp - finger_info.last_timestamp) / 1000.0f;
+		Vector2 velocity = (p_position - finger_info.position) / delta_time;
+
+		Ref<InputEventJoypadTouchpadDrag> ievent;
+		ievent.instantiate();
+		ievent->set_device(p_device);
+		ievent->set_touchpad_id(p_touchpad);
+		ievent->set_finger_id(p_finger);
+		ievent->set_position(p_position);
+		ievent->set_relative(p_position - finger_info.position);
+		ievent->set_velocity(velocity);
+		ievent->set_pressure(p_pressure);
+
+		parse_input_event(ievent);
 	}
 }
 
