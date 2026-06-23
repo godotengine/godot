@@ -537,6 +537,62 @@ private:
 	VkDescriptorPool _descriptor_set_pool_create(const DescriptorSetPoolKey &p_key, bool p_linear_pool);
 	void _descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool, int p_linear_pool_index);
 
+	enum DescriptorSetCacheResourceType {
+		DESCRIPTOR_SET_CACHE_RESOURCE_SAMPLER,
+		DESCRIPTOR_SET_CACHE_RESOURCE_TEXTURE,
+		DESCRIPTOR_SET_CACHE_RESOURCE_BUFFER,
+		DESCRIPTOR_SET_CACHE_RESOURCE_ACCELERATION_STRUCTURE,
+	};
+
+	struct DescriptorSetCacheResource {
+		DescriptorSetCacheResourceType type = DESCRIPTOR_SET_CACHE_RESOURCE_BUFFER;
+		uint64_t id = 0;
+
+		bool operator==(const DescriptorSetCacheResource &p_other) const {
+			return type == p_other.type && id == p_other.id;
+		}
+	};
+
+	struct DescriptorSetCacheKey {
+		VkDescriptorSetLayout vk_layout = VK_NULL_HANDLE;
+		uint64_t bindings_hash = 0;
+		int linear_pool_index = -1;
+
+		bool operator==(const DescriptorSetCacheKey &p_other) const {
+			return vk_layout == p_other.vk_layout &&
+					bindings_hash == p_other.bindings_hash &&
+					linear_pool_index == p_other.linear_pool_index;
+		}
+
+		uint32_t hash() const {
+			uint32_t h = hash_murmur3_one_64((uint64_t)vk_layout);
+			h = hash_murmur3_one_64(bindings_hash, h);
+			h = hash_murmur3_one_32((uint32_t)(linear_pool_index + 1), h);
+			return hash_fmix32(h);
+		}
+	};
+
+	struct DescriptorSetCacheEntry {
+		VkDescriptorSet vk_descriptor_set = VK_NULL_HANDLE;
+		VkDescriptorPool vk_descriptor_pool = VK_NULL_HANDLE;
+		DescriptorSetPools::Iterator pool_sets_it;
+		LocalVector<DescriptorSetCacheResource> resources;
+		uint32_t reference_count = 0;
+		uint64_t last_used_frame = 0;
+		bool pending_evict = false;
+	};
+
+	static const uint64_t DESCRIPTOR_SET_CACHE_MAX_FRAME_AGE = 8;
+	BinaryMutex descriptor_set_cache_mutex;
+	HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry> descriptor_set_cache;
+	uint64_t descriptor_set_cache_frame = 0;
+
+	void _descriptor_set_cache_evict_entry(const DescriptorSetCacheKey &p_key, DescriptorSetCacheEntry &p_entry);
+	void _descriptor_set_cache_evict_resource(DescriptorSetCacheResourceType p_type, uint64_t p_id);
+	void _descriptor_set_cache_evict_layout(VkDescriptorSetLayout p_layout);
+	void _descriptor_set_cache_evict_linear_pool(int p_linear_pool_index);
+	void _descriptor_set_cache_gc();
+
 	// Global flag to toggle usage of immutable sampler when creating pipeline layouts.
 	// It cannot change after creating the PSOs, since we need to skipping samplers when creating uniform sets.
 	bool immutable_samplers_enabled = true;
@@ -545,6 +601,8 @@ private:
 		VkDescriptorSet vk_descriptor_set = VK_NULL_HANDLE;
 		VkDescriptorPool vk_descriptor_pool = VK_NULL_HANDLE;
 		VkDescriptorPool vk_linear_descriptor_pool = VK_NULL_HANDLE;
+		DescriptorSetCacheKey descriptor_set_cache_key;
+		bool descriptor_set_cached = false;
 		DescriptorSetPools::Iterator pool_sets_it;
 		TightLocalVector<BufferInfo const *, uint32_t> dynamic_buffers;
 	};

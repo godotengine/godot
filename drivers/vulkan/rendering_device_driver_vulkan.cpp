@@ -2069,6 +2069,8 @@ bool RenderingDeviceDriverVulkan::buffer_set_texel_format(BufferID p_buffer, Dat
 }
 
 void RenderingDeviceDriverVulkan::buffer_free(BufferID p_buffer) {
+	_descriptor_set_cache_evict_resource(DESCRIPTOR_SET_CACHE_RESOURCE_BUFFER, p_buffer.id);
+
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
 	if (buf_info->vk_view) {
 		vkDestroyBufferView(vk_device, buf_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER_VIEW));
@@ -2590,6 +2592,8 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 }
 
 void RenderingDeviceDriverVulkan::texture_free(TextureID p_texture) {
+	_descriptor_set_cache_evict_resource(DESCRIPTOR_SET_CACHE_RESOURCE_TEXTURE, p_texture.id);
+
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
 	vkDestroyImageView(vk_device, tex_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
 	if (tex_info->allocation.handle) {
@@ -2787,6 +2791,8 @@ RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p
 }
 
 void RenderingDeviceDriverVulkan::sampler_free(SamplerID p_sampler) {
+	_descriptor_set_cache_evict_resource(DESCRIPTOR_SET_CACHE_RESOURCE_SAMPLER, p_sampler.id);
+
 	vkDestroySampler(vk_device, (VkSampler)p_sampler.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER));
 }
 
@@ -4506,6 +4512,7 @@ void RenderingDeviceDriverVulkan::shader_free(ShaderID p_shader) {
 	ShaderInfo *shader_info = (ShaderInfo *)p_shader.id;
 
 	for (uint32_t i = 0; i < shader_info->vk_descriptor_set_layouts.size(); i++) {
+		_descriptor_set_cache_evict_layout(shader_info->vk_descriptor_set_layouts[i]);
 		vkDestroyDescriptorSetLayout(vk_device, shader_info->vk_descriptor_set_layouts[i], VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT));
 	}
 
@@ -4661,6 +4668,97 @@ void RenderingDeviceDriverVulkan::_descriptor_set_pool_unreference(DescriptorSet
 	}
 }
 
+void RenderingDeviceDriverVulkan::_descriptor_set_cache_evict_entry(const DescriptorSetCacheKey &p_key, DescriptorSetCacheEntry &p_entry) {
+	if (p_entry.reference_count > 0) {
+		p_entry.pending_evict = true;
+		return;
+	}
+
+	if (p_key.linear_pool_index < 0 && p_entry.vk_descriptor_set != VK_NULL_HANDLE) {
+		VkDescriptorSet vk_descriptor_set = p_entry.vk_descriptor_set;
+		vkFreeDescriptorSets(vk_device, p_entry.vk_descriptor_pool, 1, &vk_descriptor_set);
+		_descriptor_set_pool_unreference(p_entry.pool_sets_it, p_entry.vk_descriptor_pool, -1);
+	}
+
+	descriptor_set_cache.erase(p_key);
+}
+
+void RenderingDeviceDriverVulkan::_descriptor_set_cache_evict_resource(DescriptorSetCacheResourceType p_type, uint64_t p_id) {
+	MutexLock lock(descriptor_set_cache_mutex);
+
+	LocalVector<DescriptorSetCacheKey> keys_to_evict;
+	for (HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry>::Iterator E = descriptor_set_cache.begin(); E; ++E) {
+		for (const DescriptorSetCacheResource &resource : E->value.resources) {
+			if (resource.type == p_type && resource.id == p_id) {
+				keys_to_evict.push_back(E->key);
+				break;
+			}
+		}
+	}
+
+	for (const DescriptorSetCacheKey &key : keys_to_evict) {
+		HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry>::Iterator E = descriptor_set_cache.find(key);
+		if (E) {
+			_descriptor_set_cache_evict_entry(E->key, E->value);
+		}
+	}
+}
+
+void RenderingDeviceDriverVulkan::_descriptor_set_cache_evict_layout(VkDescriptorSetLayout p_layout) {
+	MutexLock lock(descriptor_set_cache_mutex);
+
+	LocalVector<DescriptorSetCacheKey> keys_to_evict;
+	for (HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry>::Iterator E = descriptor_set_cache.begin(); E; ++E) {
+		if (E->key.vk_layout == p_layout) {
+			keys_to_evict.push_back(E->key);
+		}
+	}
+
+	for (const DescriptorSetCacheKey &key : keys_to_evict) {
+		HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry>::Iterator E = descriptor_set_cache.find(key);
+		if (E) {
+			_descriptor_set_cache_evict_entry(E->key, E->value);
+		}
+	}
+}
+
+void RenderingDeviceDriverVulkan::_descriptor_set_cache_evict_linear_pool(int p_linear_pool_index) {
+	MutexLock lock(descriptor_set_cache_mutex);
+
+	LocalVector<DescriptorSetCacheKey> keys_to_evict;
+	for (HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry>::Iterator E = descriptor_set_cache.begin(); E; ++E) {
+		if (E->key.linear_pool_index == p_linear_pool_index) {
+			keys_to_evict.push_back(E->key);
+		}
+	}
+
+	for (const DescriptorSetCacheKey &key : keys_to_evict) {
+		descriptor_set_cache.erase(key);
+	}
+}
+
+void RenderingDeviceDriverVulkan::_descriptor_set_cache_gc() {
+	MutexLock lock(descriptor_set_cache_mutex);
+
+	LocalVector<DescriptorSetCacheKey> keys_to_evict;
+	for (HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry>::Iterator E = descriptor_set_cache.begin(); E; ++E) {
+		if (E->key.linear_pool_index >= 0 || E->value.reference_count > 0) {
+			continue;
+		}
+
+		if (descriptor_set_cache_frame - E->value.last_used_frame > DESCRIPTOR_SET_CACHE_MAX_FRAME_AGE) {
+			keys_to_evict.push_back(E->key);
+		}
+	}
+
+	for (const DescriptorSetCacheKey &key : keys_to_evict) {
+		HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry>::Iterator E = descriptor_set_cache.find(key);
+		if (E) {
+			_descriptor_set_cache_evict_entry(E->key, E->value);
+		}
+	}
+}
+
 RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
 	if (!linear_descriptor_pools_enabled) {
 		p_linear_pool_index = -1;
@@ -4672,11 +4770,31 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 	const BufferInfo *dynamic_buffers[MAX_DYNAMIC_BUFFERS];
 	uint32_t num_dynamic_buffers = 0u;
 
+	uint64_t descriptor_set_cache_bindings_hash = hash_djb2_one_64(p_uniforms.size());
+	LocalVector<DescriptorSetCacheResource> descriptor_set_cache_resources;
+	auto descriptor_set_cache_hash_u64 = [&descriptor_set_cache_bindings_hash](uint64_t p_value) {
+		descriptor_set_cache_bindings_hash = hash_djb2_one_64(p_value, descriptor_set_cache_bindings_hash);
+	};
+	auto descriptor_set_cache_add_resource = [&](DescriptorSetCacheResourceType p_type, uint64_t p_id) {
+		descriptor_set_cache_hash_u64((uint64_t)p_type);
+		descriptor_set_cache_hash_u64(p_id);
+
+		DescriptorSetCacheResource resource;
+		resource.type = p_type;
+		resource.id = p_id;
+		descriptor_set_cache_resources.push_back(resource);
+	};
+
 	// Immutable samplers will be skipped so we need to track the number of vk_writes used.
 	VkWriteDescriptorSet *vk_writes = ALLOCA_ARRAY(VkWriteDescriptorSet, p_uniforms.size());
 	uint32_t writes_amount = 0;
 	for (uint32_t i = 0; i < p_uniforms.size(); i++) {
 		const BoundUniform &uniform = p_uniforms[i];
+
+		descriptor_set_cache_hash_u64(uniform.type);
+		descriptor_set_cache_hash_u64(uniform.binding);
+		descriptor_set_cache_hash_u64(uniform.ids.size());
+		descriptor_set_cache_hash_u64(uniform.immutable_sampler && immutable_samplers_enabled ? 1 : 0);
 
 		vk_writes[writes_amount] = {};
 		vk_writes[writes_amount].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -4689,11 +4807,16 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 				num_descriptors = uniform.ids.size();
 
 				if (uniform.immutable_sampler && immutable_samplers_enabled) {
+					for (uint32_t j = 0; j < num_descriptors; j++) {
+						descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_SAMPLER, uniform.ids[j].id);
+					}
 					add_write = false;
 				} else {
 					VkDescriptorImageInfo *vk_img_infos = ALLOCA_ARRAY(VkDescriptorImageInfo, num_descriptors);
 
 					for (uint32_t j = 0; j < num_descriptors; j++) {
+						descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_SAMPLER, uniform.ids[j].id);
+
 						vk_img_infos[j] = {};
 						vk_img_infos[j].sampler = (VkSampler)uniform.ids[j].id;
 						vk_img_infos[j].imageView = VK_NULL_HANDLE;
@@ -4714,9 +4837,15 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 						ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT texture must not be used for sampling in a shader.");
 					}
 #endif
+					const TextureInfo *tex_info = (const TextureInfo *)uniform.ids[j * 2 + 1].id;
+					descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_SAMPLER, uniform.ids[j * 2 + 0].id);
+					descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_TEXTURE, uniform.ids[j * 2 + 1].id);
+					descriptor_set_cache_hash_u64((uint64_t)tex_info->vk_view);
+					descriptor_set_cache_hash_u64(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
 					vk_img_infos[j] = {};
 					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j * 2 + 0].id;
-					vk_img_infos[j].imageView = ((const TextureInfo *)uniform.ids[j * 2 + 1].id)->vk_view;
+					vk_img_infos[j].imageView = tex_info->vk_view;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				}
 
@@ -4733,8 +4862,13 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 						ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT texture must not be used for sampling in a shader.");
 					}
 #endif
+					const TextureInfo *tex_info = (const TextureInfo *)uniform.ids[j].id;
+					descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_TEXTURE, uniform.ids[j].id);
+					descriptor_set_cache_hash_u64((uint64_t)tex_info->vk_view);
+					descriptor_set_cache_hash_u64(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
 					vk_img_infos[j] = {};
-					vk_img_infos[j].imageView = ((const TextureInfo *)uniform.ids[j].id)->vk_view;
+					vk_img_infos[j].imageView = tex_info->vk_view;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				}
 
@@ -4751,8 +4885,13 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 						ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT texture must not be used for sampling in a shader.");
 					}
 #endif
+					const TextureInfo *tex_info = (const TextureInfo *)uniform.ids[j].id;
+					descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_TEXTURE, uniform.ids[j].id);
+					descriptor_set_cache_hash_u64((uint64_t)tex_info->vk_view);
+					descriptor_set_cache_hash_u64(VK_IMAGE_LAYOUT_GENERAL);
+
 					vk_img_infos[j] = {};
-					vk_img_infos[j].imageView = ((const TextureInfo *)uniform.ids[j].id)->vk_view;
+					vk_img_infos[j].imageView = tex_info->vk_view;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 				}
 
@@ -4766,6 +4905,11 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 
 				for (uint32_t j = 0; j < num_descriptors; j++) {
 					const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[j].id;
+					descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_BUFFER, uniform.ids[j].id);
+					descriptor_set_cache_hash_u64((uint64_t)buf_info->vk_view);
+					descriptor_set_cache_hash_u64((uint64_t)buf_info->vk_buffer);
+					descriptor_set_cache_hash_u64(buf_info->size);
+
 					vk_buf_infos[j] = {};
 					vk_buf_infos[j].buffer = buf_info->vk_buffer;
 					vk_buf_infos[j].range = buf_info->size;
@@ -4788,6 +4932,12 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j * 2 + 0].id;
 
 					const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[j * 2 + 1].id;
+					descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_SAMPLER, uniform.ids[j * 2 + 0].id);
+					descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_BUFFER, uniform.ids[j * 2 + 1].id);
+					descriptor_set_cache_hash_u64((uint64_t)buf_info->vk_view);
+					descriptor_set_cache_hash_u64((uint64_t)buf_info->vk_buffer);
+					descriptor_set_cache_hash_u64(buf_info->size);
+
 					vk_buf_infos[j] = {};
 					vk_buf_infos[j].buffer = buf_info->vk_buffer;
 					vk_buf_infos[j].range = buf_info->size;
@@ -4805,6 +4955,10 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 			} break;
 			case UNIFORM_TYPE_UNIFORM_BUFFER: {
 				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
+				descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_BUFFER, uniform.ids[0].id);
+				descriptor_set_cache_hash_u64((uint64_t)buf_info->vk_buffer);
+				descriptor_set_cache_hash_u64(buf_info->size);
+
 				VkDescriptorBufferInfo *vk_buf_info = ALLOCA_SINGLE(VkDescriptorBufferInfo);
 				*vk_buf_info = {};
 				vk_buf_info->buffer = buf_info->vk_buffer;
@@ -4818,6 +4972,10 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 			} break;
 			case UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC: {
 				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
+				descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_BUFFER, uniform.ids[0].id);
+				descriptor_set_cache_hash_u64((uint64_t)buf_info->vk_buffer);
+				descriptor_set_cache_hash_u64(buf_info->size);
+
 				VkDescriptorBufferInfo *vk_buf_info = ALLOCA_SINGLE(VkDescriptorBufferInfo);
 				*vk_buf_info = {};
 				vk_buf_info->buffer = buf_info->vk_buffer;
@@ -4834,6 +4992,10 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER: {
 				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
+				descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_BUFFER, uniform.ids[0].id);
+				descriptor_set_cache_hash_u64((uint64_t)buf_info->vk_buffer);
+				descriptor_set_cache_hash_u64(buf_info->size);
+
 				VkDescriptorBufferInfo *vk_buf_info = ALLOCA_SINGLE(VkDescriptorBufferInfo);
 				*vk_buf_info = {};
 				vk_buf_info->buffer = buf_info->vk_buffer;
@@ -4847,6 +5009,10 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
+				descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_BUFFER, uniform.ids[0].id);
+				descriptor_set_cache_hash_u64((uint64_t)buf_info->vk_buffer);
+				descriptor_set_cache_hash_u64(buf_info->size);
+
 				VkDescriptorBufferInfo *vk_buf_info = ALLOCA_SINGLE(VkDescriptorBufferInfo);
 				*vk_buf_info = {};
 				vk_buf_info->buffer = buf_info->vk_buffer;
@@ -4866,8 +5032,13 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 				VkDescriptorImageInfo *vk_img_infos = ALLOCA_ARRAY(VkDescriptorImageInfo, num_descriptors);
 
 				for (uint32_t j = 0; j < uniform.ids.size(); j++) {
+					const TextureInfo *tex_info = (const TextureInfo *)uniform.ids[j].id;
+					descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_TEXTURE, uniform.ids[j].id);
+					descriptor_set_cache_hash_u64((uint64_t)tex_info->vk_view);
+					descriptor_set_cache_hash_u64(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
 					vk_img_infos[j] = {};
-					vk_img_infos[j].imageView = ((const TextureInfo *)uniform.ids[j].id)->vk_view;
+					vk_img_infos[j].imageView = tex_info->vk_view;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				}
 
@@ -4876,14 +5047,17 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 			} break;
 			case UNIFORM_TYPE_ACCELERATION_STRUCTURE: {
 				const AccelerationStructureInfo *accel_info = (const AccelerationStructureInfo *)uniform.ids[0].id;
+				descriptor_set_cache_add_resource(DESCRIPTOR_SET_CACHE_RESOURCE_ACCELERATION_STRUCTURE, uniform.ids[0].id);
+				descriptor_set_cache_hash_u64((uint64_t)accel_info->vk_acceleration_structure);
+
 				VkWriteDescriptorSetAccelerationStructureKHR *acceleration_structure_write = ALLOCA_SINGLE(VkWriteDescriptorSetAccelerationStructureKHR);
 				*acceleration_structure_write = {};
 				acceleration_structure_write->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
 				acceleration_structure_write->accelerationStructureCount = 1;
 				acceleration_structure_write->pAccelerationStructures = &accel_info->vk_acceleration_structure;
 
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
-				vk_writes[i].pNext = acceleration_structure_write;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+				vk_writes[writes_amount].pNext = acceleration_structure_write;
 			} break;
 			default: {
 				DEV_ASSERT(false);
@@ -4900,69 +5074,114 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 		pool_key.uniform_type[uniform.type] += num_descriptors;
 	}
 
-	bool linear_pool = p_linear_pool_index >= 0;
-	DescriptorSetPools::Iterator pool_sets_it = linear_pool ? linear_descriptor_set_pools[p_linear_pool_index].find(pool_key) : descriptor_set_pools.find(pool_key);
-	if (!pool_sets_it) {
-		if (linear_pool) {
-			pool_sets_it = linear_descriptor_set_pools[p_linear_pool_index].insert(pool_key, HashMap<VkDescriptorPool, uint32_t>());
-		} else {
-			pool_sets_it = descriptor_set_pools.insert(pool_key, HashMap<VkDescriptorPool, uint32_t>());
-		}
-	}
-
-	VkDescriptorSetAllocateInfo descriptor_set_allocate_info = {};
-	descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	descriptor_set_allocate_info.descriptorSetCount = 1;
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-	descriptor_set_allocate_info.pSetLayouts = &shader_info->vk_descriptor_set_layouts[p_set_index];
+	bool linear_pool = p_linear_pool_index >= 0;
+	DescriptorSetCacheKey descriptor_set_cache_key;
+	descriptor_set_cache_key.vk_layout = shader_info->vk_descriptor_set_layouts[p_set_index];
+	descriptor_set_cache_key.bindings_hash = descriptor_set_cache_bindings_hash;
+	descriptor_set_cache_key.linear_pool_index = p_linear_pool_index;
 
+	DescriptorSetPools::Iterator pool_sets_it;
+	VkDescriptorPool vk_descriptor_pool = VK_NULL_HANDLE;
 	VkDescriptorSet vk_descriptor_set = VK_NULL_HANDLE;
-	for (KeyValue<VkDescriptorPool, uint32_t> &E : pool_sets_it->value) {
-		if (E.value < max_descriptor_sets_per_pool) {
-			descriptor_set_allocate_info.descriptorPool = E.key;
-			VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
+	bool descriptor_set_cached = true;
 
-			// Break early on success.
-			if (res == VK_SUCCESS) {
-				break;
+	{
+		MutexLock lock(descriptor_set_cache_mutex);
+
+		HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry>::Iterator cache_it = descriptor_set_cache.find(descriptor_set_cache_key);
+		if (cache_it && cache_it->value.pending_evict && cache_it->value.reference_count == 0) {
+			_descriptor_set_cache_evict_entry(cache_it->key, cache_it->value);
+			cache_it = descriptor_set_cache.end();
+		}
+
+		if (cache_it && !cache_it->value.pending_evict) {
+			cache_it->value.reference_count++;
+			cache_it->value.last_used_frame = descriptor_set_cache_frame;
+			vk_descriptor_set = cache_it->value.vk_descriptor_set;
+			vk_descriptor_pool = cache_it->value.vk_descriptor_pool;
+			pool_sets_it = cache_it->value.pool_sets_it;
+		} else {
+			if (cache_it) {
+				descriptor_set_cached = false;
 			}
 
-			// "Fragmented pool" and "out of memory pool" errors are handled by creating more pools. Any other error is unexpected.
-			if (res != VK_ERROR_FRAGMENTED_POOL && res != VK_ERROR_OUT_OF_POOL_MEMORY) {
-				ERR_FAIL_V_MSG(UniformSetID(), vformat("Couldn't allocate Vulkan descriptor sets (VkResult error %d).", res));
+			pool_sets_it = linear_pool ? linear_descriptor_set_pools[p_linear_pool_index].find(pool_key) : descriptor_set_pools.find(pool_key);
+			if (!pool_sets_it) {
+				if (linear_pool) {
+					pool_sets_it = linear_descriptor_set_pools[p_linear_pool_index].insert(pool_key, HashMap<VkDescriptorPool, uint32_t>());
+				} else {
+					pool_sets_it = descriptor_set_pools.insert(pool_key, HashMap<VkDescriptorPool, uint32_t>());
+				}
+			}
+
+			VkDescriptorSetAllocateInfo descriptor_set_allocate_info = {};
+			descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			descriptor_set_allocate_info.descriptorSetCount = 1;
+			descriptor_set_allocate_info.pSetLayouts = &shader_info->vk_descriptor_set_layouts[p_set_index];
+
+			for (KeyValue<VkDescriptorPool, uint32_t> &E : pool_sets_it->value) {
+				if (E.value < max_descriptor_sets_per_pool) {
+					descriptor_set_allocate_info.descriptorPool = E.key;
+					VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
+
+					// Break early on success.
+					if (res == VK_SUCCESS) {
+						break;
+					}
+
+					// "Fragmented pool" and "out of memory pool" errors are handled by creating more pools. Any other error is unexpected.
+					if (res != VK_ERROR_FRAGMENTED_POOL && res != VK_ERROR_OUT_OF_POOL_MEMORY) {
+						ERR_FAIL_V_MSG(UniformSetID(), vformat("Couldn't allocate Vulkan descriptor sets (VkResult error %d).", res));
+					}
+				}
+			}
+
+			// Create a new pool when no allocations could be made from the existing pools.
+			if (vk_descriptor_set == VK_NULL_HANDLE) {
+				descriptor_set_allocate_info.descriptorPool = _descriptor_set_pool_create(pool_key, linear_pool);
+				VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
+
+				// All errors are unexpected at this stage.
+				if (res) {
+					vkDestroyDescriptorPool(vk_device, descriptor_set_allocate_info.descriptorPool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
+					ERR_FAIL_V_MSG(UniformSetID(), vformat("Couldn't allocate Vulkan descriptor sets (VkResult error %d).", res));
+				}
+			}
+
+			DEV_ASSERT(descriptor_set_allocate_info.descriptorPool != VK_NULL_HANDLE && vk_descriptor_set != VK_NULL_HANDLE);
+			vk_descriptor_pool = descriptor_set_allocate_info.descriptorPool;
+			pool_sets_it->value[vk_descriptor_pool]++;
+
+			for (uint32_t i = 0; i < writes_amount; i++) {
+				vk_writes[i].dstSet = vk_descriptor_set;
+			}
+			vkUpdateDescriptorSets(vk_device, writes_amount, vk_writes, 0, nullptr);
+
+			if (descriptor_set_cached) {
+				DescriptorSetCacheEntry cache_entry;
+				cache_entry.vk_descriptor_set = vk_descriptor_set;
+				cache_entry.vk_descriptor_pool = vk_descriptor_pool;
+				cache_entry.pool_sets_it = pool_sets_it;
+				cache_entry.resources = descriptor_set_cache_resources;
+				cache_entry.reference_count = 1;
+				cache_entry.last_used_frame = descriptor_set_cache_frame;
+				descriptor_set_cache.insert(descriptor_set_cache_key, cache_entry);
 			}
 		}
 	}
-
-	// Create a new pool when no allocations could be made from the existing pools.
-	if (vk_descriptor_set == VK_NULL_HANDLE) {
-		descriptor_set_allocate_info.descriptorPool = _descriptor_set_pool_create(pool_key, linear_pool);
-		VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
-
-		// All errors are unexpected at this stage.
-		if (res) {
-			vkDestroyDescriptorPool(vk_device, descriptor_set_allocate_info.descriptorPool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
-			ERR_FAIL_V_MSG(UniformSetID(), vformat("Couldn't allocate Vulkan descriptor sets (VkResult error %d).", res));
-		}
-	}
-
-	DEV_ASSERT(descriptor_set_allocate_info.descriptorPool != VK_NULL_HANDLE && vk_descriptor_set != VK_NULL_HANDLE);
-	pool_sets_it->value[descriptor_set_allocate_info.descriptorPool]++;
-
-	for (uint32_t i = 0; i < writes_amount; i++) {
-		vk_writes[i].dstSet = vk_descriptor_set;
-	}
-	vkUpdateDescriptorSets(vk_device, writes_amount, vk_writes, 0, nullptr);
 
 	// Bookkeep.
 
 	UniformSetInfo *usi = VersatileResource::allocate<UniformSetInfo>(resources_allocator);
 	usi->vk_descriptor_set = vk_descriptor_set;
 	if (p_linear_pool_index >= 0) {
-		usi->vk_linear_descriptor_pool = descriptor_set_allocate_info.descriptorPool;
+		usi->vk_linear_descriptor_pool = vk_descriptor_pool;
 	} else {
-		usi->vk_descriptor_pool = descriptor_set_allocate_info.descriptorPool;
+		usi->vk_descriptor_pool = vk_descriptor_pool;
 	}
+	usi->descriptor_set_cache_key = descriptor_set_cache_key;
+	usi->descriptor_set_cached = descriptor_set_cached;
 	usi->pool_sets_it = pool_sets_it;
 	usi->dynamic_buffers.resize(num_dynamic_buffers);
 	for (uint32_t i = 0u; i < num_dynamic_buffers; ++i) {
@@ -4975,7 +5194,19 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 void RenderingDeviceDriverVulkan::uniform_set_free(UniformSetID p_uniform_set) {
 	UniformSetInfo *usi = (UniformSetInfo *)p_uniform_set.id;
 
-	if (usi->vk_linear_descriptor_pool) {
+	if (usi->descriptor_set_cached) {
+		MutexLock lock(descriptor_set_cache_mutex);
+		HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry>::Iterator E = descriptor_set_cache.find(usi->descriptor_set_cache_key);
+		if (E) {
+			DEV_ASSERT(E->value.reference_count > 0);
+			if (E->value.reference_count > 0) {
+				E->value.reference_count--;
+			}
+			if (E->value.reference_count == 0 && E->value.pending_evict) {
+				_descriptor_set_cache_evict_entry(E->key, E->value);
+			}
+		}
+	} else if (usi->vk_linear_descriptor_pool) {
 		// Nothing to do. All sets are freed at once using vkResetDescriptorPool.
 		//
 		// We can NOT decrease the reference count (i.e. call _descriptor_set_pool_unreference())
@@ -5021,6 +5252,8 @@ uint32_t RenderingDeviceDriverVulkan::uniform_sets_get_dynamic_offsets(VectorVie
 
 void RenderingDeviceDriverVulkan::linear_uniform_set_pools_reset(int p_linear_pool_index) {
 	if (linear_descriptor_pools_enabled) {
+		_descriptor_set_cache_evict_linear_pool(p_linear_pool_index);
+
 		DescriptorSetPools &pools_to_reset = linear_descriptor_set_pools[p_linear_pool_index];
 		DescriptorSetPools::Iterator curr_pool = pools_to_reset.begin();
 
@@ -6438,6 +6671,8 @@ void RenderingDeviceDriverVulkan::_acceleration_structure_create(VkAccelerationS
 
 void RenderingDeviceDriverVulkan::acceleration_structure_free(AccelerationStructureID p_acceleration_structure) {
 #if VULKAN_RAYTRACING_ENABLED
+	_descriptor_set_cache_evict_resource(DESCRIPTOR_SET_CACHE_RESOURCE_ACCELERATION_STRUCTURE, p_acceleration_structure.id);
+
 	AccelerationStructureInfo *accel_info = (AccelerationStructureInfo *)p_acceleration_structure.id;
 	ERR_FAIL_NULL_MSG(accel_info, "Vulkan raytracing acceleration structure input parameter is not valid.");
 	if (accel_info->buffer) {
@@ -7145,7 +7380,8 @@ inline String RenderingDeviceDriverVulkan::get_vulkan_result(VkResult err) {
 /********************/
 
 void RenderingDeviceDriverVulkan::begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) {
-	// Per-frame segments are not required in Vulkan.
+	descriptor_set_cache_frame = p_frames_drawn;
+	_descriptor_set_cache_gc();
 }
 
 void RenderingDeviceDriverVulkan::end_segment() {
@@ -7492,6 +7728,15 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 		small_allocs_pools.remove(E);
 	}
 	vmaDestroyAllocator(allocator);
+
+	{
+		MutexLock lock(descriptor_set_cache_mutex);
+		while (descriptor_set_cache.begin()) {
+			HashMap<DescriptorSetCacheKey, DescriptorSetCacheEntry>::Iterator E = descriptor_set_cache.begin();
+			E->value.reference_count = 0;
+			_descriptor_set_cache_evict_entry(E->key, E->value);
+		}
+	}
 
 	// Destroy linearly allocated descriptor pools.
 	for (KeyValue<int, DescriptorSetPools> &pool_map : linear_descriptor_set_pools) {
