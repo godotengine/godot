@@ -108,6 +108,9 @@ public:
 	void set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_value);
 	bool get_flag(PhysicsServer3D::HingeJointFlag p_flag) const;
 
+	float get_applied_force() const;
+	float get_applied_torque() const;
+
 	GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &frameA, const Transform3D &frameB);
 	GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB);
 };

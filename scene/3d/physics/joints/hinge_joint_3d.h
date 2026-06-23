@@ -67,6 +67,9 @@ public:
 	void set_flag(Flag p_flag, bool p_value);
 	bool get_flag(Flag p_flag) const;
 
+	float get_applied_force() const;
+	float get_applied_torque() const;
+
 	HingeJoint3D();
 };
 
