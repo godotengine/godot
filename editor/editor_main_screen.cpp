@@ -266,7 +266,7 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	tb->set_name(p_editor->get_plugin_name());
 	tb->set_text(p_editor->get_plugin_name());
 
-	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut("editor/editor_" + p_editor->get_plugin_name().to_lower());
+	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut("editor/editor_" + p_editor->get_plugin_name().to_lower().replace_char(' ', '_'));
 	if (shortcut.is_valid()) {
 		tb->set_shortcut(shortcut);
 	}
