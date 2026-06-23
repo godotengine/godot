@@ -47,6 +47,8 @@ class Occluder3D : public Resource {
 	mutable Vector<Vector3> debug_lines;
 
 protected:
+	static void _bind_methods();
+
 	void _update();
 	virtual void _update_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices) = 0;
 
