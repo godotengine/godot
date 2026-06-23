@@ -2556,43 +2556,43 @@ void main() {
 
 		ambient_light += sh_light;
 
-		#ifdef USE_LIGHTMAP_SPECULAR
-			// Fake specular light to create some direct light specular lobes for directional lightmaps.
-			// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
-			vec3 l1_r = vec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
-			vec3 l1_g = vec3(lm_light_l1p1.g, lm_light_l1n1.g, lm_light_l1_0.g);
-			vec3 l1_b = vec3(lm_light_l1p1.b, lm_light_l1n1.b, lm_light_l1_0.b);
+#ifdef USE_LIGHTMAP_SPECULAR
+		// Fake specular light to create some direct light specular lobes for directional lightmaps.
+		// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
+		vec3 l1_r = vec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
+		vec3 l1_g = vec3(lm_light_l1p1.g, lm_light_l1n1.g, lm_light_l1_0.g);
+		vec3 l1_b = vec3(lm_light_l1p1.b, lm_light_l1n1.b, lm_light_l1_0.b);
 
-			vec3 l1 = (l1_r + l1_g + l1_b) / 3.0;
-			float l1_len = max(length(l1), 1e-5);
+		vec3 l1 = (l1_r + l1_g + l1_b) / 3.0;
+		float l1_len = max(length(l1), 1e-5);
 
-			vec3 lightmap_direction = l1 / l1_len;
+		vec3 lightmap_direction = l1 / l1_len;
 
-			vec3 L_view = normalize(lightmap_direction * lightmap_normal_xform);
+		vec3 L_view = normalize(lightmap_direction * lightmap_normal_xform);
 
-			vec3 f0 = F0(metallic, specular, albedo);
+		vec3 f0 = F0(metallic, specular, albedo);
 
-			// Discard diffuse light from this fake light, as we're only interested in its specular light output.
-			vec3 diffuse_light_discarded = diffuse_light;
+		// Discard diffuse light from this fake light, as we're only interested in its specular light output.
+		vec3 diffuse_light_discarded = diffuse_light;
 
-			float specular_intensity = l1_len * lightmap_specular_intensity * 150.0;
+		float specular_intensity = l1_len * lightmap_specular_intensity * 150.0;
 
-			light_compute(normal, L_view, view, 0.0, sh_light, false, 1.0, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv,
+		light_compute(normal, L_view, view, 0.0, sh_light, false, 1.0, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
-					backlight,
+				backlight,
 #endif
 #ifdef LIGHT_RIM_USED
-					rim, rim_tint,
+				rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, normalize(normal_interp),
+				clearcoat, clearcoat_roughness, normalize(normal_interp),
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-					binormal, tangent, anisotropy,
+				binormal, tangent, anisotropy,
 #endif
-					diffuse_light_discarded,
-					specular_light);
-		#endif // USE_LIGHTMAP_SPECULAR
+				diffuse_light_discarded,
+				specular_light);
+#endif // USE_LIGHTMAP_SPECULAR
 
 #else
 #ifdef LIGHTMAP_BICUBIC_FILTER
