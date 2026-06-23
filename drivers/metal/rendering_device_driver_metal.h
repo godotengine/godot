@@ -117,10 +117,11 @@ protected:
 		return copy_queue_buffer.get()->length() - copy_queue_buffer_offset;
 	}
 
-	/// Marks p_size bytes as consumed from the copy queue buffer, aligning the offset to 16 bytes.
+	/// Marks p_size bytes as consumed from the copy queue buffer, aligning the new offset to 16 bytes.
 	_FORCE_INLINE_ void _copy_queue_buffer_consume(NS::UInteger p_size) {
-		NS::UInteger aligned_offset = round_up_to_alignment(copy_queue_buffer_offset, 16);
-		copy_queue_buffer_offset = aligned_offset + p_size;
+		// Round up the end of the consumed region so the next copy starts aligned and the offset
+		// never exceeds the buffer length (which would underflow _copy_queue_buffer_available()).
+		copy_queue_buffer_offset = round_up_to_alignment(copy_queue_buffer_offset + p_size, 16);
 	}
 
 	/// Returns a pointer to the current position in the copy queue buffer.
