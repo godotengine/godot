@@ -5,6 +5,10 @@
 	</brief_description>
 	<description>
 		GridMapEditorPlugin provides access to the [GridMap] editor functionality.
+		You can get instance of this plugin using [method EditorInterface.get_editor_plugin] with name [code]"GridMap"[/code].
+		[codeblock]
+		var gridmap_plugin = EditorInterface.get_editor_plugin("GridMap")
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
