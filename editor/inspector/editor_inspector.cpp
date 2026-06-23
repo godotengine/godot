@@ -1573,7 +1573,7 @@ void EditorProperty::menu_option(int p_option) {
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 		} break;
 		default: {
-			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
+			if (p_option >= EditorContextMenuPlugin::BASE_ID && EditorContextMenuPluginManager::get_singleton()) {
 				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, p_option, this);
 			}
 		}
@@ -1744,8 +1744,10 @@ void EditorProperty::_update_popup() {
 		menu->add_icon_item(theme_cache.help_icon, TTR("Open Documentation"), MENU_OPEN_DOCUMENTATION);
 	}
 
-	Vector<String> property_paths = { String::num_int64(get_edited_object()->get_instance_id()), property_path };
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, property_paths);
+	if (EditorContextMenuPluginManager::get_singleton()) {
+		Vector<String> property_paths = { String::num_int64(get_edited_object()->get_instance_id()), property_path };
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, property_paths);
+	}
 }
 
 ////////////////////////////////////////////////
@@ -2032,7 +2034,7 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 			menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Category Values"), MENU_COPY_VALUE);
 			menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Category Values"), MENU_PASTE_VALUE);
 
-			if (!doc_class_name.is_empty()) {
+			if (!doc_class_name.is_empty() && ScriptEditor::get_singleton() && EditorNode::get_singleton() && EditorHelp::get_doc_data()) {
 				menu->add_item(TTRC("Open Documentation"), MENU_OPEN_DOCS);
 				menu->set_item_disabled(-1, !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
 			}
@@ -4776,42 +4778,44 @@ void EditorInspector::update_tree() {
 
 			if (!found) {
 				DocTools *dd = EditorHelp::get_doc_data();
-				// Do not cache the doc path information of scripts.
-				bool is_native_class = ClassDB::class_exists(classname);
+				if (dd) {
+					// Do not cache the doc path information of scripts.
+					bool is_native_class = ClassDB::class_exists(classname);
 
-				HashMap<String, DocData::ClassDoc>::ConstIterator F = dd->class_list.find(classname);
-				while (F) {
-					Vector<String> slices = propname.operator String().split("/");
-					// Check if it's a theme item first.
-					if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
-						for (int i = 0; i < F->value.theme_properties.size(); i++) {
-							String doc_path_current = "class_theme_item:" + F->value.name + ":" + F->value.theme_properties[i].name;
-							if (F->value.theme_properties[i].name == slices[1]) {
-								doc_path = doc_path_current;
-								theme_item_name = F->value.theme_properties[i].name;
+					HashMap<String, DocData::ClassDoc>::ConstIterator F = dd->class_list.find(classname);
+					while (F) {
+						Vector<String> slices = propname.operator String().split("/");
+						// Check if it's a theme item first.
+						if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
+							for (int i = 0; i < F->value.theme_properties.size(); i++) {
+								String doc_path_current = "class_theme_item:" + F->value.name + ":" + F->value.theme_properties[i].name;
+								if (F->value.theme_properties[i].name == slices[1]) {
+									doc_path = doc_path_current;
+									theme_item_name = F->value.theme_properties[i].name;
+								}
+							}
+						} else {
+							for (int i = 0; i < F->value.properties.size(); i++) {
+								String doc_path_current = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
+								if (F->value.properties[i].name == propname.operator String()) {
+									doc_path = doc_path_current;
+								}
 							}
 						}
-					} else {
-						for (int i = 0; i < F->value.properties.size(); i++) {
-							String doc_path_current = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
-							if (F->value.properties[i].name == propname.operator String()) {
-								doc_path = doc_path_current;
-							}
+
+						if (is_native_class) {
+							DocCacheInfo cache_info;
+							cache_info.doc_path = doc_path;
+							cache_info.theme_item_name = theme_item_name;
+							doc_cache[classname][propname] = cache_info;
 						}
-					}
 
-					if (is_native_class) {
-						DocCacheInfo cache_info;
-						cache_info.doc_path = doc_path;
-						cache_info.theme_item_name = theme_item_name;
-						doc_cache[classname][propname] = cache_info;
+						if (!doc_path.is_empty() || F->value.inherits.is_empty()) {
+							break;
+						}
+						// Couldn't find the doc path in the class itself, try its super class.
+						F = dd->class_list.find(F->value.inherits);
 					}
-
-					if (!doc_path.is_empty() || F->value.inherits.is_empty()) {
-						break;
-					}
-					// Couldn't find the doc path in the class itself, try its super class.
-					F = dd->class_list.find(F->value.inherits);
 				}
 			}
 
@@ -5898,12 +5902,15 @@ void EditorInspector::_set_property_favorited(const String &p_path, bool p_favor
 
 		if (!theme_property.is_empty()) { // Deal with theme properties.
 			bool found = false;
-			HashMap<String, DocData::ClassDoc>::ConstIterator F = EditorHelp::get_doc_data()->class_list.find(class_name);
-			if (F) {
-				for (const DocData::ThemeItemDoc &prop : F->value.theme_properties) {
-					if (prop.name == theme_property) {
-						found = true;
-						break;
+			DocTools *dd = EditorHelp::get_doc_data();
+			if (dd) {
+				HashMap<String, DocData::ClassDoc>::ConstIterator F = dd->class_list.find(class_name);
+				if (F) {
+					for (const DocData::ThemeItemDoc &prop : F->value.theme_properties) {
+						if (prop.name == theme_property) {
+							found = true;
+							break;
+						}
 					}
 				}
 			}
