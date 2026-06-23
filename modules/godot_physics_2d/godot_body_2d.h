@@ -249,6 +249,10 @@ public:
 		}
 	}
 
+	_FORCE_INLINE_ void apply_bias_torque_impulse(real_t p_torque) {
+		biased_angular_velocity += _inv_inertia * p_torque;
+	}
+
 	_FORCE_INLINE_ void apply_central_force(const Vector2 &p_force) {
 		applied_force += p_force;
 	}
