@@ -57,6 +57,7 @@ class SceneTreeEditor : public Control {
 		BUTTON_GROUPS = 7,
 		BUTTON_PIN = 8,
 		BUTTON_UNIQUE = 9,
+		BUTTON_EXTENSION_CLASS = 10,
 	};
 
 	struct CachedNode {

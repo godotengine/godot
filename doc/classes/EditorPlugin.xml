@@ -502,6 +502,13 @@
 				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
+		<method name="add_extension_source_code_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorExtensionSourceCodePlugin" />
+			<description>
+				Registers a new [EditorExtensionSourceCodePlugin]. Source code plugins are used to provide source code editing capabilities to GDExtension classes.
+			</description>
+		</method>
 		<method name="add_import_plugin">
 			<return type="void" />
 			<param index="0" name="importer" type="EditorImportPlugin" />
@@ -718,6 +725,13 @@
 			<param index="0" name="plugin" type="EditorExportPlugin" />
 			<description>
 				Removes an export plugin registered by [method add_export_plugin].
+			</description>
+		</method>
+		<method name="remove_extension_source_code_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorExtensionSourceCodePlugin" />
+			<description>
+				Removes a source code plugin registered by [method add_extension_source_code_plugin].
 			</description>
 		</method>
 		<method name="remove_import_plugin">
