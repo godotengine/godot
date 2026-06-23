@@ -1,0 +1,21 @@
+{
+  "asset": { "version": "2.0", "generator": "Godot meshopt import test" },
+  "scene": 0,
+  "scenes": [ { "nodes": [ 0 ] } ],
+  "nodes": [ { "mesh": 0, "name": "MeshoptCube" } ],
+  "meshes": [ { "primitives": [ { "attributes": { "POSITION": 0 }, "indices": 1, "mode": 4 } ] } ],
+  "accessors": [
+    { "bufferView": 0, "componentType": 5126, "count": 8, "type": "VEC3", "min": [ -1, -1, -1 ], "max": [ 1, 1, 1 ] },
+    { "bufferView": 1, "componentType": 5123, "count": 36, "type": "SCALAR" }
+  ],
+  "bufferViews": [
+    { "buffer": 1, "byteOffset": 0, "byteLength": 96, "byteStride": 12, "target": 34962, "extensions": { "EXT_meshopt_compression": { "buffer": 0, "byteOffset": 0, "byteLength": 45, "byteStride": 12, "mode": "ATTRIBUTES" } } },
+    { "buffer": 1, "byteOffset": 96, "byteLength": 72, "target": 34963, "extensions": { "EXT_meshopt_compression": { "buffer": 0, "byteOffset": 45, "byteLength": 32, "byteStride": 2, "count": 36, "mode": "TRIANGLES" } } }
+  ],
+  "buffers": [
+    { "byteLength": 77, "uri": "meshopt_cube.bin" },
+    { "byteLength": 168, "extensions": { "EXT_meshopt_compression": { "fallback": true } } }
+  ],
+  "extensionsUsed": [ "EXT_meshopt_compression" ],
+  "extensionsRequired": [ "EXT_meshopt_compression" ]
+}
