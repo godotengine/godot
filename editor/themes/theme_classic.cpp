@@ -1777,6 +1777,9 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_stylebox(CoreStringName(normal), "EditorAudioBus", style_bottom_panel);
 		p_theme->set_stylebox("master", "EditorAudioBus", p_config.button_style_disabled);
 		p_theme->set_stylebox("focus", "EditorAudioBus", p_config.button_style_focus);
+
+		p_theme->set_type_variation("EditorAudioBusAddBusPanel", "PanelContainer");
+		p_theme->set_stylebox(SceneStringName(panel), "EditorAudioBusAddBusPanel", style_bottom_panel);
 	}
 
 	// Editor GUI widgets.

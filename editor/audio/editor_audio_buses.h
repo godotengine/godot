@@ -181,6 +181,13 @@ protected:
 class EditorAudioBuses : public EditorDock {
 	GDCLASS(EditorAudioBuses, EditorDock);
 
+	enum class MenuOption {
+		LOAD,
+		SAVE_AS,
+		LOAD_DEFAULT,
+		CREATE,
+	};
+
 	HBoxContainer *top_hb = nullptr;
 
 	MarginContainer *bus_mc = nullptr;
@@ -192,10 +199,7 @@ class EditorAudioBuses : public EditorDock {
 	Label *file = nullptr;
 
 	Button *add = nullptr;
-	Button *load = nullptr;
-	Button *save_as = nullptr;
-	Button *_default = nullptr;
-	Button *_new = nullptr;
+	MenuButton *menu = nullptr;
 
 	Timer *save_timer = nullptr;
 	String edited_path;
@@ -225,6 +229,7 @@ class EditorAudioBuses : public EditorDock {
 	void _save_as_layout();
 	void _load_default_layout();
 	void _new_layout();
+	void _menu_option(int p_option);
 
 	EditorFileDialog *file_dialog = nullptr;
 	bool new_layout = false;
