@@ -2889,7 +2889,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 							} else {
 								enum_hint_string += ",";
 							}
-							enum_hint_string += E.key.operator String().capitalize().xml_escape();
+							enum_hint_string += E.key.string().capitalize().xml_escape();
 							enum_hint_string += ":";
 							enum_hint_string += String::num_int64(E.value).xml_escape();
 						}

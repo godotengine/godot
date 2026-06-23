@@ -498,7 +498,7 @@ void EditorDebuggerInspector::clear_stack_variables() {
 
 String EditorDebuggerInspector::get_stack_variable(const String &p_var) {
 	for (KeyValue<StringName, TypedDictionary<uint64_t, Variant>> &E : variables->prop_values) {
-		String v = E.key.operator String();
+		String v = E.key.string();
 		if (v.get_slicec('/', 1) == p_var) {
 			return variables->get_variant(v);
 		}
