@@ -36,6 +36,7 @@
 
 class AtlasTexture;
 class NinePatchRect;
+class NinePatchSprite;
 class OptionButton;
 class PanelContainer;
 class Sprite2D;
@@ -87,6 +88,7 @@ class TextureRegionEditor : public AcceptDialog {
 	Sprite2D *node_sprite_2d = nullptr;
 	Sprite3D *node_sprite_3d = nullptr;
 	NinePatchRect *node_ninepatch = nullptr;
+	NinePatchSprite *node_ninepatch_sprite = nullptr;
 	Ref<StyleBoxTexture> res_stylebox;
 	Ref<AtlasTexture> res_atlas_texture;
 
@@ -194,4 +196,4 @@ public:
 	virtual String get_plugin_name() const override { return "TextureRegion"; }
 
 	TextureRegionEditorPlugin();
-};
+};;
