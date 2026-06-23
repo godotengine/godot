@@ -364,8 +364,8 @@ void JoltConeTwistJoint3D::rebuild() {
 
 	space->add_joint(this);
 
-	_update_enabled();
-	_update_iterations();
+	_update_joint();
+
 	_update_swing_motor_state();
 	_update_twist_motor_state();
 	_update_motor_velocity();

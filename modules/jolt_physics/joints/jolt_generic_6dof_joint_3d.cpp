@@ -714,8 +714,7 @@ void JoltGeneric6DOFJoint3D::rebuild() {
 
 	space->add_joint(this);
 
-	_update_enabled();
-	_update_iterations();
+	_update_joint();
 
 	_update_limit_spring_parameters(AXIS_LINEAR_X);
 	_update_limit_spring_parameters(AXIS_LINEAR_Y);
