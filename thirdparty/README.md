@@ -195,6 +195,10 @@ Files extracted from upstream source:
 - `doctest/doctest.h` as `doctest.h`
 - `LICENSE.txt`
 
+Patches:
+
+- `0001-suppress-binary-op-warnings.patch` ([GH-120184](https://github.com/godotengine/godot/pull/120184))
+
 
 ## dr_libs
 
