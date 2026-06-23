@@ -1051,7 +1051,7 @@ void GraphNode::_port_pos_update() {
 	slot_count = 0; // Reset the slot count, which is the index of the current slot.
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::VISIBLE_IN_TREE);
+		Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::VISIBLE);
 		if (!child) {
 			continue;
 		}
