@@ -230,7 +230,7 @@ Size2 EditorProperty::get_minimum_size() const {
 		return Vector2();
 	}
 
-	Size2 ms = Size2(0, theme_cache.inspector_property_height);
+	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
@@ -250,7 +250,8 @@ Size2 EditorProperty::get_minimum_size() const {
 		ms = ms.max(minsize);
 	}
 
-	if (!label.is_empty()) {
+	bool label_empty = label.is_empty();
+	if (!label_empty) {
 		ms.width += theme_cache.font_offset + theme_cache.horizontal_separation;
 	}
 
@@ -285,11 +286,18 @@ Size2 EditorProperty::get_minimum_size() const {
 	ms.height = MAX(ms.height, rs.y);
 
 	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
-		ms.height += label.is_empty() ? 0 : _get_v_separation();
+		// If the label area is empty, leave the height alone before calculating the bottom editor.
+		if (ms.height > 0 || !label_empty) {
+			ms.height = MAX(ms.height, theme_cache.inspector_property_height);
+		}
+
+		ms.height += label_empty ? 0 : _get_v_separation();
 		Size2 bems = bottom_editor->get_combined_minimum_size();
 		ms.height += bems.height;
 		ms.width = MAX(ms.width, bems.width);
 	}
+
+	ms.height = MAX(ms.height, theme_cache.inspector_property_height);
 
 	return ms;
 }
@@ -407,7 +415,12 @@ void EditorProperty::_notification(int p_what) {
 
 				if (bottom_editor) {
 					int v_offset = label.is_empty() ? 0 : _get_v_separation();
-					bottom_rect = Rect2(0, rect.size.height + v_offset, size.width, bottom_editor->get_combined_minimum_size().height);
+					bottom_rect.size = Size2(size.width, bottom_editor->get_combined_minimum_size().height);
+
+					// If the label area is empty, don't take it into account for the bottom editor position.
+					if (!no_children || !label.is_empty() || left_container->get_child_count() > 0 || right_container->get_child_count() > 0) {
+						bottom_rect.position = Point2(0, rect.size.height + v_offset);
+					}
 				}
 
 				if (keying) {
@@ -1342,6 +1355,10 @@ HBoxContainer *EditorProperty::get_inline_container(InlineControlSide p_side) {
 }
 
 void EditorProperty::set_bottom_editor(Control *p_control) {
+	if (bottom_editor == p_control) {
+		return;
+	}
+
 	bottom_editor = p_control;
 	if (has_borders) {
 		_update_property_bg();

@@ -300,10 +300,12 @@ public:
 
 	void add_inline_control(Control *p_control, InlineControlSide p_side);
 	HBoxContainer *get_inline_container(InlineControlSide p_side);
-	void set_label_overlayed(bool p_overlay);
 
+	void set_label_overlayed(bool p_overlay);
 	void set_label_reference(Control *p_control);
+
 	void set_bottom_editor(Control *p_control);
+	Control *get_bottom_editor() const { return bottom_editor; }
 
 	void set_use_folding(bool p_use_folding);
 	bool is_using_folding() const;
