@@ -756,7 +756,7 @@ EditorProfiler::EditorProfiler() {
 	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	variables = memnew(Tree);
-	variables->set_custom_minimum_size(Size2(320, 0) * EDSCALE);
+	variables->set_custom_minimum_size(Size2(355, 0) * EDSCALE);
 	variables->set_hide_folding(true);
 	h_split->add_child(variables);
 	variables->set_hide_root(true);
@@ -765,15 +765,15 @@ EditorProfiler::EditorProfiler() {
 	variables->set_column_title(0, TTRC("Name"));
 	variables->set_column_expand(0, true);
 	variables->set_column_clip_content(0, true);
-	variables->set_column_custom_minimum_width(0, 60);
+	variables->set_column_custom_minimum_width(0, 200);
 	variables->set_column_title(1, TTRC("Time"));
 	variables->set_column_expand(1, false);
 	variables->set_column_clip_content(1, true);
-	variables->set_column_custom_minimum_width(1, 75 * EDSCALE);
+	variables->set_column_custom_minimum_width(1, 90 * EDSCALE);
 	variables->set_column_title(2, TTRC("Calls"));
 	variables->set_column_expand(2, false);
 	variables->set_column_clip_content(2, true);
-	variables->set_column_custom_minimum_width(2, 50 * EDSCALE);
+	variables->set_column_custom_minimum_width(2, 65 * EDSCALE);
 	variables->set_theme_type_variation("TreeSecondary");
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
 
