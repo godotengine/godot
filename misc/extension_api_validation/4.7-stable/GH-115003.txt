@@ -1,0 +1,9 @@
+GH-115003
+---------
+Validate extension JSON: Error: Field 'classes/Image/methods/compress/arguments/2': default_value changed value in new API, from "0" to "1".
+Validate extension JSON: Error: Field 'classes/Image/methods/compress/arguments/2': type changed value in new API, from "enum::Image.ASTCFormat" to "enum::Image.CompressProfile".
+Validate extension JSON: Error: Field 'classes/Image/methods/compress_from_channels/arguments/2': default_value changed value in new API, from "0" to "1".
+Validate extension JSON: Error: Field 'classes/Image/methods/compress_from_channels/arguments/2': type changed value in new API, from "enum::Image.ASTCFormat" to "enum::Image.CompressProfile".
+
+The ASTCFormat argument has been changed to a more abstract parameter that can be used by more compressors.
+Compatibility methods have been registered.
