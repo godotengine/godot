@@ -3499,9 +3499,9 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 		// Positional Shadows
 		
-		Transform3D cam_xf = p_camera_data->main_transform;//taken out of the 'for' loop in 'compute coverage', 
-		float zn = p_camera_data->main_projection.get_z_near();//so as not to calculate for each light source
-		Transform3D view_matrix = cam_xf.affine_inverse();//Q: is it necessary to use affine_inverse() rather than inverse()?
+		Transform3D cam_xf = p_camera_data->main_transform; //taken out of the 'for' loop in 'compute coverage', 
+		float zn = p_camera_data->main_projection.get_z_near(); //so as not to calculate for each light source
+		Transform3D view_matrix = cam_xf.affine_inverse(); //Q: is it necessary to use affine_inverse() rather than inverse()?
 		
 		for (uint32_t i = 0; i < (uint32_t)scene_cull_result.lights.size(); i++) {
 			Instance *ins = scene_cull_result.lights[i];
@@ -3532,7 +3532,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 							ins->transform.origin + cam_xf.basis.get_column(0) * radius
 						};
 
-						for (int j=0; j < 2; j++){
+						for (int j=0; j < 2; j++) {
 							points[j] = view_matrix.xform(points[j]);
 							if (points[j].z > -zn){//alternative hack
 								points[j].z = -zn;
@@ -3559,7 +3559,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 							base + cam_xf.basis.get_column(0) * w
 						};
 
-						for (int j=0; j < 2; j++){
+						for (int j=0; j < 2; j++) {
 							points[j] = view_matrix.xform(points[j]);
 							if (points[j].z > -zn){
 								points[j].z = -zn;
@@ -3583,7 +3583,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 							ins->transform.origin + cam_xf.basis.get_column(0) * radius
 						};
 
-						for (int j=0; j < 2; j++){
+						for (int j=0; j < 2; j++) {
 							points[j] = view_matrix.xform(points[j]);
 							if (points[j].z > -zn){
 								points[j].z = -zn;
