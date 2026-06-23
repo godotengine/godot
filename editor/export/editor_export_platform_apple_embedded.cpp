@@ -2093,7 +2093,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 			if (appnames.is_empty()) {
 				domain->set_locale_override(lang);
-				const String &name = domain->translate(project_name, String());
+				String name = domain->translate(project_name, String());
 				if (name != project_name) {
 					f->store_line("CFBundleDisplayName = \"" + name.xml_escape(true) + "\";");
 				}
