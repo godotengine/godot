@@ -1,0 +1,37 @@
+diff --git a/thirdparty/doctest/doctest.h b/thirdparty/doctest/doctest.h
+index 72965b558b..8e890ff9fe 100644
+--- a/thirdparty/doctest/doctest.h
++++ b/thirdparty/doctest/doctest.h
+@@ -1735,6 +1735,32 @@ inline bool ge(const char *lhs, const char *rhs) { return String(lhs) >= String(
+ // clang-format on
+ #endif // DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
+ 
++#ifndef DOCTEST_CONFIG_NO_COMPARISON_WARNING_SUPPRESSION
++
++DOCTEST_CLANG_SUPPRESS_WARNING_PUSH
++DOCTEST_CLANG_SUPPRESS_WARNING("-Wsign-conversion")
++DOCTEST_CLANG_SUPPRESS_WARNING("-Wsign-compare")
++// DOCTEST_CLANG_SUPPRESS_WARNING("-Wdouble-promotion")
++// DOCTEST_CLANG_SUPPRESS_WARNING("-Wconversion")
++// DOCTEST_CLANG_SUPPRESS_WARNING("-Wfloat-equal")
++
++DOCTEST_GCC_SUPPRESS_WARNING_PUSH
++DOCTEST_GCC_SUPPRESS_WARNING("-Wsign-conversion")
++DOCTEST_GCC_SUPPRESS_WARNING("-Wsign-compare")
++// DOCTEST_GCC_SUPPRESS_WARNING("-Wdouble-promotion")
++// DOCTEST_GCC_SUPPRESS_WARNING("-Wconversion")
++// DOCTEST_GCC_SUPPRESS_WARNING("-Wfloat-equal")
++
++DOCTEST_MSVC_SUPPRESS_WARNING_PUSH
++// https://stackoverflow.com/questions/39479163 what's the difference between 4018 and 4389
++DOCTEST_MSVC_SUPPRESS_WARNING(4388) // signed/unsigned mismatch
++DOCTEST_MSVC_SUPPRESS_WARNING(4389) // 'operator' : signed/unsigned mismatch
++DOCTEST_MSVC_SUPPRESS_WARNING(4018) // 'expression' : signed/unsigned mismatch
++// DOCTEST_MSVC_SUPPRESS_WARNING(4805) // 'operation' : unsafe mix of type 'type' and type 'type' in
++// operation
++
++#endif // DOCTEST_CONFIG_NO_COMPARISON_WARNING_SUPPRESSION
++
+ #define DOCTEST_RELATIONAL_OP(name, op)                                                                                \
+     template <typename L, typename R>                                                                                  \
+     DOCTEST_COMPARISON_RETURN_TYPE name(const DOCTEST_REF_WRAP(L) lhs, const DOCTEST_REF_WRAP(R) rhs) {                \
