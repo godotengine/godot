@@ -359,6 +359,9 @@ public:
 	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) override {}
 	virtual real_t soft_body_get_drag_coefficient(RID p_body) const override { return 0; }
 
+	virtual void soft_body_set_form(RID p_body, SoftBodyForm p_form) override {}
+	virtual SoftBodyForm soft_body_get_form(RID p_body) const override { return SOFT_BODY_FORM_CLOTH; }
+
 	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) override {}
 	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) const override { return Vector3(); }
 
