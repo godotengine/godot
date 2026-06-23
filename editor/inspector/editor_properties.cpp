@@ -98,7 +98,8 @@ void EditorPropertyVariant::_change_type(int p_to_type) {
 
 void EditorPropertyVariant::_popup_edit_menu() {
 	if (change_type == nullptr) {
-		change_type = memnew(EditorVariantTypePopupMenu(false));
+		bool is_meta = get_edited_property().operator String().begins_with("metadata/");
+		change_type = memnew(EditorVariantTypePopupMenu(false, is_meta));
 		change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyVariant::_change_type));
 		content->add_child(change_type);
 	}
