@@ -547,7 +547,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	// Test parsing.
 	GDScriptParser parser;
 	if (tokenizer_mode == TOKENIZER_TEXT) {
-		err = parser.parse(script->get_source_code(), source_file, false);
+		err = parser.parse(script->get_source_code(), source_file, GDScriptParser::EditorOptions::none());
 	} else {
 		err = parser.parse_binary(script->get_binary_tokens_source(), source_file);
 	}

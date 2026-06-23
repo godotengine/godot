@@ -81,7 +81,7 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 	}
 
 	GDScriptParser parser;
-	if (OK != parser.parse(source, p_path, false)) {
+	if (OK != parser.parse(source, p_path, GDScriptParser::EditorOptions::none())) {
 		return;
 	}
 

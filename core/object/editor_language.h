@@ -46,20 +46,49 @@
 class EditorLanguage {
 public:
 	/**
+	 * Zero based position in code.
+	 */
+	struct Position {
+		uint_fast32_t line;
+		uint_fast32_t column;
+
+		Position(uint_fast32_t p_line, uint_fast32_t p_column) : line(p_line), column(p_column) {}
+	};
+
+	/**
 	 * Called by the editor to request a list of `CodeCompletionOptions` from the language.
 	 *
 	 * The language MAY also calculate a hint for the call signature at the given position. See `r_call_hint` and `r_force` for more details.
 	 *
-	 * @param p_code The current content of the source fragment. Will always contain the special sentinel char 0xFFFF at the cursor position. The content might differ from the state on disk, the exact behavior in that case is up to the implementation.
+	 * @param p_code The current content of the source fragment. The content might differ from the state on disk, the exact behavior in that case is up to the implementation.
+	 * @param p_position The cursor position, where completion was requested.
 	 * @param p_path The path which identifies the source fragment. Implementations MAY support paths to builtin resources, or return an error for those.
 	 * @param p_owner If the source fragment is somehow tied to an object (e.g. the currently open scene) the editor will pass it to the language. Implementations MAY respect this in their analysis, e.g. for GDScript get node literals.
 	 * @param r_options The returned options. Can be empty.
 	 * @param r_force If `false` a non-empty signature hint will take priority over completion. If `true` completion will take priority. Might be removed in the future in favor of showing both.
 	 * @param r_call_hint The returned signature hint. Can be empty.
 	 */
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	virtual Error complete_code(const String &p_code, Position p_position, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
 	virtual ~EditorLanguage() = default;
 };
+
+// Lives here for now, because the EditorLanguage adapter needs it and is located in core.
+namespace EditorStringUtils {
+/**
+ * Insert `p_what` at the given `p_position` of `p_str`.
+ */
+String insert(const Vector<String> &p_str, EditorLanguage::Position p_position, const String &p_what);
+
+/**
+ * Insert `p_what` at the given `p_position` of `p_str`.
+ */
+String insert(const String &p_str, EditorLanguage::Position p_position, const String &p_what);
+
+/**
+ * Find the char in the string. This methods must only be used if it is known that `p_chr` is in `p_str`.
+ */
+EditorLanguage::Position find_char(const String &p_str, char32_t p_chr);
+} //namespace EditorStringUtils
 
 #endif // TOOLS_ENABLED

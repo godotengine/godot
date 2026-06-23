@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "editor/gui/code_editor.h"
 #include "scene/gui/box_container.h"
 
@@ -260,7 +261,7 @@ protected:
 	VSplitContainer *editor_box = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
 
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) = 0;
+	virtual void _code_complete_script(const String &p_code, EditorLanguage::Position p_position, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) = 0;
 	virtual bool _warning_clicked(const Variant &p_line);
 
 public:

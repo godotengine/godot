@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
@@ -155,7 +156,7 @@ public:
 	FindReplaceBar();
 };
 
-typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced);
+typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, EditorLanguage::Position p_position, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
@@ -228,7 +229,7 @@ class CodeTextEditor : public VBoxContainer {
 protected:
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) {}
+	virtual void _code_complete_script(const String &p_code, EditorLanguage::Position p_position, List<ScriptLanguage::CodeCompletionOption> *r_options) {}
 
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
