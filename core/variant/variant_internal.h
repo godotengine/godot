@@ -861,7 +861,7 @@ struct VariantInitializer {
 template <typename T>
 struct VariantInitializer<T, std::enable_if_t<VariantInternalAccessor<T>::is_local>> {
 	static _FORCE_INLINE_ void init(Variant *v) {
-		memnew_placement(&VariantInternalAccessor<T>::get(v), T);
+		memnew_placement(&VariantInternalAccessor<T>::get(v), T());
 		VariantInternal::set_type(*v, GetTypeInfo<T>::VARIANT_TYPE);
 	}
 };
@@ -969,9 +969,9 @@ struct VariantTypeChanger {
 		if (v->get_type() != GetTypeInfo<T>::VARIANT_TYPE || GetTypeInfo<T>::VARIANT_TYPE >= Variant::PACKED_BYTE_ARRAY) { //second condition removed by optimizer
 			VariantInternal::clear(v);
 			VariantInitializer<T>::init(v);
+		} else {
+			VariantDefaultInitializer<T>::init(v);
 		}
-
-		VariantDefaultInitializer<T>::init(v);
 	}
 };
 
