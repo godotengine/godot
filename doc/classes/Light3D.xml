@@ -36,7 +36,7 @@
 	</methods>
 	<members>
 		<member name="distance_fade_begin" type="float" setter="set_distance_fade_begin" getter="get_distance_fade_begin" default="40.0" keywords="lod_begin">
-			The distance from the camera at which the light begins to fade away (in 3D units).
+			The distance from the camera at which the light begins to fade away, in meters.
 			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D].
 		</member>
 		<member name="distance_fade_enabled" type="bool" setter="set_enable_distance_fade" getter="is_distance_fade_enabled" default="false" keywords="lod_enabled">
@@ -48,7 +48,7 @@
 			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D].
 		</member>
 		<member name="distance_fade_shadow" type="float" setter="set_distance_fade_shadow" getter="get_distance_fade_shadow" default="50.0" keywords="lod_shadow">
-			The distance from the camera at which the light's shadow cuts off (in 3D units). Set this to a value lower than [member distance_fade_begin] + [member distance_fade_length] to further improve performance, as shadow rendering is often more expensive than light rendering itself.
+			The distance from the camera at which the light's shadow cuts off, in meters. Set this to a value lower than [member distance_fade_begin] + [member distance_fade_length] to further improve performance, as shadow rendering is often more expensive than light rendering itself.
 			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D], and only when [member shadow_enabled] is [code]true[/code].
 		</member>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">

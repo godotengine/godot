@@ -62,7 +62,7 @@
 			If [code]true[/code], text can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind.
 		</member>
 		<member name="fixed_size" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
-			If [code]true[/code], the label is rendered at the same size regardless of distance. The label's size on screen is the same as if the camera was [code]1.0[/code] units away from the label's origin, regardless of the actual distance from the camera. The [Camera3D]'s field of view (or [member Camera3D.size] when in orthogonal/frustum mode) still affects the size the label is drawn at.
+			If [code]true[/code], the label is rendered at the same size regardless of distance. The label's size on screen is the same as if the camera was [code]1.0[/code] meters away from the label's origin, regardless of the actual distance from the camera. The [Camera3D]'s field of view (or [member Camera3D.size] when in orthogonal/frustum mode) still affects the size the label is drawn at.
 		</member>
 		<member name="font" type="Font" setter="set_font" getter="get_font">
 			Font configuration used to display text.
