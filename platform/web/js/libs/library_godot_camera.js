@@ -59,11 +59,20 @@ const GodotCamera = {
 		cameras: new Map(),
 
 		/**
-		 * Shared barrier that delays the next camera start until the previous
-		 * stop has had a chance to release browser camera resources.
+		 * Serialized operation queue. All camera start/stop/switch operations
+		 * are enqueued here so they never interleave in the JS event loop.
 		 * @type {Promise<void>}
 		 */
-		cameraShutdownBarrier: Promise.resolve(),
+		opQueue: Promise.resolve(),
+
+		/**
+		 * Cancellation generation for each context pointer (C++ CameraFeedWeb*).
+		 * An operation captures the current generation when it starts and is
+		 * canceled only when abort() advances that generation. Future operations
+		 * using the same context are therefore not canceled by an earlier stop.
+		 * @type {Map<number, number>}
+		 */
+		contextGenerations: new Map(),
 
 		/**
 		 * Pixel format codes passed to the C callback.
@@ -350,39 +359,42 @@ const GodotCamera = {
 		},
 
 		/**
-		 * Waits for the previous camera stop barrier to complete.
-		 * @returns {Promise<void>}
+		 * Enqueues an async operation so that start/stop/switch calls never
+		 * interleave in the JS event loop.
+		 * @param {Function} fn Async function to run exclusively
+		 * @returns {Promise<*>}
 		 */
-		waitForCameraShutdown: function () {
-			const barrier = this.cameraShutdownBarrier;
-			if (!barrier || typeof barrier.then !== 'function') {
-				this.cameraShutdownBarrier = Promise.resolve();
-				return this.cameraShutdownBarrier;
+		runExclusive: function (fn) {
+			if (!GodotCamera.opQueue || typeof GodotCamera.opQueue.then !== 'function') {
+				GodotCamera.opQueue = Promise.resolve();
 			}
-			return barrier;
+			const next = GodotCamera.opQueue.then(() => fn());
+			// Prevent a rejection from permanently blocking the queue.
+			GodotCamera.opQueue = next.catch(() => {});
+			return next;
 		},
 
 		/**
-		 * Enqueues a barrier after stopping camera resources so the next
-		 * getUserMedia() does not race the previous camera's teardown.
-		 *
-		 * Rationale (from Gecko/libwebrtc): on Android the device close is
-		 * asynchronous - Gecko's VideoCaptureAndroid.stopCapture() and
-		 * libwebrtc's Camera2Session dispatch CameraDevice.close() to the camera
-		 * thread and return without waiting for StateCallback.onClosed. Opening
-		 * another camera before that completes makes the new open contend for the
-		 * still-held device. 500ms covers that release window (a few hundred ms
-		 * in practice); this is why a manual stop-then-switch never stalls.
-		 * @returns {void}
+		 * Returns the current cancellation generation for a context.
+		 * @param {number} context C++ CameraFeedWeb* context
+		 * @returns {number} Current generation
 		 */
-		queueCameraShutdownBarrier: function () {
-			this.cameraShutdownBarrier = new Promise((resolve) => {
-				setTimeout(resolve, 500);
-			});
+		getContextGeneration: function (context) {
+			return GodotCamera.contextGenerations.get(context) || 0;
 		},
 
 		/**
-		 * Stops all tracks in a stream and queues the next-start barrier once.
+		 * Checks whether an operation was canceled after it started.
+		 * @param {number} context C++ CameraFeedWeb* context
+		 * @param {number} generation Generation captured at operation start
+		 * @returns {boolean} True when the operation is stale
+		 */
+		isContextCanceled: function (context, generation) {
+			return GodotCamera.getContextGeneration(context) !== generation;
+		},
+
+		/**
+		 * Stops all tracks in a stream.
 		 * @param {MediaStream|null} stream Stream to stop
 		 * @returns {boolean} True if a stream was stopped
 		 */
@@ -391,8 +403,31 @@ const GodotCamera = {
 				return false;
 			}
 			stream.getTracks().forEach((track) => track.stop());
-			GodotCamera.queueCameraShutdownBarrier();
 			return true;
+		},
+
+		/**
+		 * Tears down resources for one or all cameras without going through the
+		 * op-queue.  Called internally from within runExclusive() tasks where
+		 * queuing again would deadlock, and from cleanup() at shutdown.
+		 * @param {string|undefined} deviceId Device to stop, or undefined for all
+		 */
+		_stopInternal: function (deviceId) {
+			const cameras = GodotCamera.cameras;
+			if (deviceId && cameras.has(deviceId)) {
+				const camera = cameras.get(deviceId);
+				if (camera) {
+					GodotCamera.cleanupCamera(camera);
+				}
+				cameras.delete(deviceId);
+			} else if (!deviceId) {
+				cameras.forEach((camera) => {
+					if (camera) {
+						GodotCamera.cleanupCamera(camera);
+					}
+				});
+				cameras.clear();
+			}
 		},
 
 		/**
@@ -400,7 +435,7 @@ const GodotCamera = {
 		 * @returns {void}
 		 */
 		cleanup: function () {
-			this.api.stop();
+			GodotCamera._stopInternal();
 
 			// Free cached Wasm heap buffer.
 			if (this._cachedDataPtr) {
@@ -527,15 +562,176 @@ const GodotCamera = {
 		},
 
 		/**
-		 * Stops a stream created by an async startup path that lost ownership.
-		 * @param {CameraResource} camera Camera resource
-		 * @returns {void}
+		 * Creates an empty camera resource.
+		 * @returns {CameraResource} Camera resource
 		 */
-		stopStaleStartupStream: function (camera) {
-			if (camera.stream) {
-				GodotCamera.stopStream(camera.stream);
+		createCameraResource: function () {
+			return {
+				video: null,
+				canvas: null,
+				canvasContext: null,
+				stream: null,
+				animationFrameId: null,
+				permissionListener: null,
+				permissionStatus: null,
+				trackProcessor: null,
+				frameReader: null,
+				useWebCodecs: false,
+				facingMode: 0,
+			};
+		},
+
+		/**
+		 * Creates the hidden video element used by the Canvas 2D fallback.
+		 * @returns {HTMLVideoElement} Video element
+		 */
+		createVideoElement: function () {
+			const video = document.createElement('video');
+			video.style.display = 'none';
+			video.autoplay = true;
+			video.playsInline = true;
+			video.muted = true;
+			document.body.appendChild(video);
+			return video;
+		},
+
+		/**
+		 * Creates getUserMedia constraints for a camera request.
+		 * @param {string|null} deviceId Camera device ID
+		 * @param {number} width Desired width
+		 * @param {number} height Desired height
+		 * @returns {MediaStreamConstraints} Media constraints
+		 */
+		createConstraints: function (deviceId, width, height) {
+			return {
+				video: {
+					deviceId: deviceId ? { exact: deviceId } : undefined,
+					width: width > 0 ? { ideal: width } : undefined,
+					height: height > 0 ? { ideal: height } : undefined,
+					// Prefer a native sensor mode over a cropped/downscaled frame.
+					resizeMode: { ideal: 'none' },
+				},
+			};
+		},
+
+		/**
+		 * Discards a camera resource created by a failed or canceled start.
+		 * @param {string} cameraId Camera identifier
+		 * @param {CameraResource} camera Camera resource
+		 */
+		discardCamera: function (cameraId, camera) {
+			GodotCamera.cleanupCamera(camera);
+			if (GodotCamera.isCurrentCamera(cameraId, camera)) {
+				GodotCamera.cameras.delete(cameraId);
 			}
-			camera.stream = null;
+		},
+
+		/**
+		 * Opens a camera and starts frame capture for both regular activation and
+		 * feed switching.
+		 * @param {Object} request Camera start request
+		 * @returns {Promise<CameraResource|null>} Camera resource, or null if canceled
+		 */
+		startCamera: async function (request) {
+			const {
+				context,
+				operationGeneration,
+				deviceId,
+				width,
+				height,
+				callback,
+				deniedCallback,
+				formatsCallback,
+				timeoutMessage,
+				playTimeoutMessage,
+				attempts = 2,
+			} = request;
+			const cameraId = deviceId || 'default';
+			const cameras = GodotCamera.cameras;
+			let camera = cameras.get(cameraId);
+			if (!camera) {
+				camera = GodotCamera.createCameraResource();
+				cameras.set(cameraId, camera);
+			}
+
+			if (camera.stream) {
+				return camera;
+			}
+
+			try {
+				camera.video = GodotCamera.createVideoElement();
+				const stream = await GodotCamera.getUserMediaWithRetry(
+					GodotCamera.createConstraints(deviceId, width, height),
+					attempts,
+					12000,
+					timeoutMessage
+				);
+				if (GodotCamera.isContextCanceled(context, operationGeneration)
+					|| !GodotCamera.isCurrentCamera(cameraId, camera)) {
+					GodotCamera.stopStream(stream);
+					GodotCamera.discardCamera(cameraId, camera);
+					return null;
+				}
+				camera.stream = stream;
+
+				const [videoTrack] = stream.getVideoTracks();
+				videoTrack.addEventListener('ended', () => {
+					GodotCamera.api.stop(cameraId);
+				});
+
+				if (navigator.permissions && navigator.permissions.query) {
+					try {
+						const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+						camera.permissionStatus = permissionStatus;
+						camera.permissionListener = () => {
+							if (permissionStatus.state === 'denied') {
+								GodotRuntime.print('Camera permission denied, stopping stream');
+								GodotCamera.api.stop(cameraId);
+								deniedCallback(context);
+							}
+						};
+						permissionStatus.addEventListener('change', camera.permissionListener);
+					} catch (e) {
+						// Camera permission queries are not supported by all browsers.
+					}
+				}
+
+				if (GodotCamera.isContextCanceled(context, operationGeneration)
+					|| !GodotCamera.isCurrentCamera(cameraId, camera)) {
+					GodotCamera.discardCamera(cameraId, camera);
+					return null;
+				}
+
+				camera.video.srcObject = stream;
+				await GodotCamera.waitWithTimeout(
+					camera.video.play(),
+					3000,
+					playTimeoutMessage
+				);
+				if (GodotCamera.isContextCanceled(context, operationGeneration)
+					|| !GodotCamera.isCurrentCamera(cameraId, camera)) {
+					GodotCamera.discardCamera(cameraId, camera);
+					return null;
+				}
+
+				camera.facingMode = GodotCamera.getFacingMode(stream);
+				GodotCamera.sendFormatsCallbackResult(
+					formatsCallback,
+					context,
+					GodotCamera.getActiveFormats(videoTrack, camera.facingMode)
+				);
+
+				if (GodotCamera.isWebCodecsSupported()) {
+					camera.useWebCodecs = true;
+					GodotCamera.setupWebCodecsCapture(camera, cameraId, callback, context, deniedCallback);
+				} else {
+					GodotCamera.setupCanvas2DCapture(camera, cameraId, callback, context, deniedCallback);
+				}
+				return camera;
+			} catch (error) {
+				GodotCamera.discardCamera(cameraId, camera);
+				throw error;
+			}
 		},
 
 		/**
@@ -792,133 +988,35 @@ const GodotCamera = {
 				const callback = GodotRuntime.get_func(callbackPtr);
 				const deniedCallback = GodotRuntime.get_func(deniedCallbackPtr);
 				const formatsCallback = GodotRuntime.get_func(formatsCallbackPtr);
-				const cameraId = deviceId || 'default';
-				let camera = null;
+				const operationGeneration = GodotCamera.getContextGeneration(context);
 
-				try {
-					await GodotCamera.waitForCameraShutdown();
-
-					const cameras = GodotCamera.cameras;
-					camera = cameras.get(cameraId);
-					if (!camera) {
-						camera = {
-							video: null,
-							canvas: null,
-							canvasContext: null,
-							stream: null,
-							animationFrameId: null,
-							permissionListener: null,
-							permissionStatus: null,
-							trackProcessor: null,
-							frameReader: null,
-							useWebCodecs: false,
-							facingMode: 0,
-						};
-						cameras.set(cameraId, camera);
-					}
-
-					if (!camera.stream) {
-						// Create video element (needed for Canvas 2D fallback).
-						camera.video = document.createElement('video');
-						camera.video.style.display = 'none';
-						camera.video.autoplay = true;
-						camera.video.playsInline = true;
-						camera.video.muted = true;
-						document.body.appendChild(camera.video);
-
-						const constraints = {
-							video: {
-								deviceId: deviceId ? { exact: deviceId } : undefined,
-								width: width > 0 ? { ideal: width } : undefined,
-								height: height > 0 ? { ideal: height } : undefined,
-								// Prefer a native sensor mode over a cropped/downscaled frame.
-								resizeMode: { ideal: 'none' },
-							},
-						};
-						// 12s timeout exceeds libwebrtc's ~11s open-retry budget so a
-						// busy device rejects cleanly with AbortError (then retried)
-						// instead of a race timeout that leaves the request pending.
-						const stream = await GodotCamera.getUserMediaWithRetry(
-							constraints,
-							2,
-							12000,
-							'Camera start timed out while waiting for getUserMedia().'
-						);
-						if (!GodotCamera.isCurrentCamera(cameraId, camera)) {
-							GodotCamera.stopStream(stream);
+				await GodotCamera.runExclusive(async () => {
+					try {
+						if (GodotCamera.isContextCanceled(context, operationGeneration)) {
 							return;
 						}
-						camera.stream = stream;
-
-						const [videoTrack] = camera.stream.getVideoTracks();
-						videoTrack.addEventListener('ended', () => {
-							GodotCamera.api.stop(cameraId);
-						});
-
-						if (navigator.permissions && navigator.permissions.query) {
-							try {
-								const permissionStatus = await navigator.permissions.query({ name: 'camera' });
-								// eslint-disable-next-line require-atomic-updates
-								camera.permissionStatus = permissionStatus;
-								camera.permissionListener = () => {
-									if (permissionStatus.state === 'denied') {
-										GodotRuntime.print('Camera permission denied, stopping stream');
-										if (camera.permissionListener) {
-											permissionStatus.removeEventListener('change', camera.permissionListener);
-										}
-										GodotCamera.api.stop(cameraId);
-										deniedCallback(context);
-									}
-								};
-								permissionStatus.addEventListener('change', camera.permissionListener);
-							} catch (e) {
-								// Some browsers don't support 'camera' permission query.
-								// This is not critical - we can still use the camera.
-							}
-						}
-						if (!GodotCamera.isCurrentCamera(cameraId, camera)) {
-							GodotCamera.stopStaleStartupStream(camera);
-							return;
-						}
-
-						camera.video.srcObject = camera.stream;
-						await GodotCamera.waitWithTimeout(
-							camera.video.play(),
-							3000,
-							'Camera start timed out while waiting for video.play().'
-						);
-						if (!GodotCamera.isCurrentCamera(cameraId, camera)) {
-							GodotCamera.stopStaleStartupStream(camera);
-							return;
-						}
-
-						// Cache facing mode once (doesn't change during stream).
-						camera.facingMode = GodotCamera.getFacingMode(camera.stream);
-						GodotCamera.sendFormatsCallbackResult(
-							formatsCallback,
+						await GodotCamera.startCamera({
 							context,
-							GodotCamera.getActiveFormats(videoTrack, camera.facingMode)
-						);
-
-						// Choose capture method:
-						// 1. WebCodecs + MediaStreamTrackProcessor when available.
-						// 2. Canvas 2D as the single compatibility fallback.
-						if (GodotCamera.isWebCodecsSupported()) {
-							camera.useWebCodecs = true;
-							GodotCamera.setupWebCodecsCapture(camera, cameraId, callback, context, deniedCallback);
-						} else {
-							GodotCamera.setupCanvas2DCapture(camera, cameraId, callback, context, deniedCallback);
+							operationGeneration,
+							deviceId,
+							width,
+							height,
+							callback,
+							deniedCallback,
+							formatsCallback,
+							timeoutMessage: 'Camera start timed out while waiting for getUserMedia().',
+							playTimeoutMessage: 'Camera start timed out while waiting for video.play().',
+						});
+					} catch (error) {
+						if (GodotCamera.isContextCanceled(context, operationGeneration)) {
+							return;
+						}
+						GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
+						if (error && (error.name === 'SecurityError' || error.name === 'NotAllowedError')) {
+							deniedCallback(context);
 						}
 					}
-				} catch (error) {
-					if (camera) {
-						GodotCamera.cleanupCamera(camera);
-					}
-					GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
-					if (error && (error.name === 'SecurityError' || error.name === 'NotAllowedError')) {
-						deniedCallback(context);
-					}
-				}
+				}); // end runExclusive
 			},
 
 			/**
@@ -927,21 +1025,18 @@ const GodotCamera = {
 			 * @returns {void}
 			 */
 			stop: function (deviceId) {
-				const cameras = GodotCamera.cameras;
+				GodotCamera.runExclusive(() => {
+					GodotCamera._stopInternal(deviceId || undefined);
+				});
+			},
 
-				if (deviceId && cameras.has(deviceId)) {
-					const camera = cameras.get(deviceId);
-					if (camera) {
-						GodotCamera.cleanupCamera(camera);
-					}
-				} else {
-					cameras.forEach((camera) => {
-						if (camera) {
-							GodotCamera.cleanupCamera(camera);
-						}
-					});
-					cameras.clear();
-				}
+			/**
+			 * Cancels any in-flight open for the given context pointer.
+			 * @param {number} context C++ CameraFeedWeb* context
+			 */
+			abort: function (context) {
+				const generation = GodotCamera.getContextGeneration(context);
+				GodotCamera.contextGenerations.set(context, generation + 1);
 			},
 		},
 	},
@@ -981,6 +1076,14 @@ const GodotCamera = {
 	godot_js_camera_stop_stream: function (deviceIdPtr) {
 		const deviceId = deviceIdPtr ? GodotRuntime.parseString(deviceIdPtr) : undefined;
 		GodotCamera.api.stop(deviceId);
+	},
+
+	/**
+	 * Native binding for canceling an in-flight camera open.
+	 * @param {number} context C++ CameraFeedWeb* context
+	 */
+	godot_js_camera_abort: function (context) {
+		GodotCamera.api.abort(context);
 	},
 };
 
