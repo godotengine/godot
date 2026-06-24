@@ -325,9 +325,6 @@ public:
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
 
-	void set_echo(bool p_enable);
-	virtual bool is_echo() const override;
-
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 

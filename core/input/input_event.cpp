@@ -1130,15 +1130,6 @@ float InputEventJoypadMotion::get_axis_value() const {
 	return axis_value;
 }
 
-void InputEventJoypadMotion::set_echo(bool p_enable) {
-	echo = p_enable;
-	emit_changed();
-}
-
-bool InputEventJoypadMotion::is_echo() const {
-	return echo;
-}
-
 bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	Ref<InputEventJoypadMotion> jm = p_event;
 	if (jm.is_null()) {
@@ -1230,11 +1221,8 @@ void InputEventJoypadMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis_value", "axis_value"), &InputEventJoypadMotion::set_axis_value);
 	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEventJoypadMotion::get_axis_value);
 
-	ClassDB::bind_method(D_METHOD("set_echo", "echo"), &InputEventJoypadMotion::set_echo);
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis"), "set_axis", "get_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "axis_value"), "set_axis_value", "get_axis_value");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
 ///////////////////////////////////

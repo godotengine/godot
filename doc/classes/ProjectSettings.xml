@@ -1681,13 +1681,6 @@
 		<member name="input_devices/joypads/ignore_joypad_on_unfocused_application" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], joypad input (including motion sensors) and LED light changes will be ignored and joypad vibration will be stopped when the application is not focused.
 		</member>
-		<member name="input_devices/joypads/joypad_echo_events/axis_echo_events/deadzone" type="float" setter="" getter="" default="0.5">
-			The deadzone that is used by the engine to determine if joypad axis echo events should be sent.
-		</member>
-		<member name="input_devices/joypads/joypad_echo_events/axis_echo_events/send" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the engine will send joypad echo events for axis movement after the user has moved the joypad axes for long enough.
-			[b]Note:[/b] This setting has no effect if [member input_devices/joypads/joypad_echo_events/count_per_second] is set to [code]0[/code] or [member input_devices/joypads/joypad_echo_events/send] is set to [code]false[/code].
-		</member>
 		<member name="input_devices/joypads/joypad_echo_events/count_per_second" type="int" setter="" getter="" default="20">
 			The number of times per second joypad echo events should be sent by the engine after the user has pressed the buttons or kept the axes over the deadzone for long enough.
 		</member>
