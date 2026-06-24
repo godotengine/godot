@@ -618,6 +618,7 @@ public:
 	void update_desired_size();
 
 	void grow_to_desired_size();
+	bool is_expanded_by_desired_size() const;
 
 	void set_block_maximum_size_adjust(bool p_block);
 	void set_block_minimum_size_adjust(bool p_block);
