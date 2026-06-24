@@ -16,6 +16,39 @@ be exported with one click to a number of platforms, including the major desktop
 platforms (Linux, macOS, Windows), mobile platforms (Android, iOS), as well as
 Web-based platforms and [consoles](https://godotengine.org/consoles).
 
+---
+
+## 🪟 Fork addition: run Godot inside a UWP app (in-process `SwapChainPanel` embedding)
+
+This is a fork of Godot Engine that adds the ability to run the engine
+**in-process inside a UWP (AppContainer) application**, rendering into a XAML
+`SwapChainPanel` — no child window, no separate process, no frame streaming.
+
+- Windowless **`embedded`** display driver whose D3D12 composition swap chain is
+  bound to the host panel via `ISwapChainPanelNative::SetSwapChain` (DPI-correct),
+  with all input injected from the host.
+- A flat `godot_uwp_*` C ABI plus a GDScript **`UWPHost`** message-bus singleton
+  for host ⇆ engine communication.
+- **D3D12 only.** Everything is gated behind `GODOT_UWP_EMBED_ENABLED`, defined
+  only for `library_type=shared_library` builds, so standard editor/template
+  builds are completely unaffected.
+
+Build the engine as a shared library:
+
+```sh
+scons platform=windows target=template_release arch=x86_64 \
+      library_type=shared_library disable_path_overrides=no
+```
+
+- **Engine details, build flags & the C ABI:** [`UWP_EMBEDDING.md`](UWP_EMBEDDING.md)
+- **Ready-to-run sample UWP app:** [`platform/windows/uwp_sample/`](platform/windows/uwp_sample/)
+  (a C# host + spinning-cube project, with `INTEGRATION_GUIDE.md` and
+  `EMBEDDING_ARCHITECTURE.md` — package & sequence diagrams, bus protocol).
+
+The rest of this README is the upstream Godot Engine documentation.
+
+---
+
 ## Free, open source and community-driven
 
 Godot is completely free and open source under the very permissive [MIT license](https://godotengine.org/license).
