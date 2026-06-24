@@ -117,6 +117,7 @@ public:
 	virtual RID texture_drawable_get_default_material() const override { return RID(); }
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override { texture_free(p_by_texture); }
+	virtual void texture_replace_compatible(RID p_texture, RID p_by_texture) override { texture_free(p_by_texture); }
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override {}
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) override {}
@@ -230,6 +231,8 @@ public:
 
 	virtual void render_target_set_velocity_target_size(RID p_render_target, const Size2i &p_target_size) override {}
 	virtual Size2i render_target_get_velocity_target_size(RID p_render_target) const override { return Size2i(0, 0); }
+
+	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) override {}
 };
 
 } // namespace RendererDummy
