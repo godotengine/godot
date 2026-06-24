@@ -3049,8 +3049,9 @@
 		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="4096" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is a script variable. [constant PROPERTY_USAGE_SCRIPT_VARIABLE] can be used to distinguish between exported script variables from built-in variables (which don't have this usage flag). By default, [constant PROPERTY_USAGE_SCRIPT_VARIABLE] is [b]not[/b] applied to variables that are created by overriding [method Object._get_property_list] in a script.
 		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags" is_bitfield="true">
-			The property value of type [Object] will be stored even if its value is [code]null[/code].
+		<constant name="PROPERTY_USAGE_STORE_DEFAULT" value="8192" enum="PropertyUsageFlags" is_bitfield="true">
+			The property will always be stored, regardless of whether it is equal to the default value.
+			Without this flag, properties that are equal to their default value are sometimes omitted when serializing. Consider setting this flag if omitting properties causes them to load with unexpected values, which can happen if a property is initialized with a dynamically computed value.
 		</constant>
 		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags" is_bitfield="true">
 			If this property is modified, all inspector fields will be refreshed.
@@ -3111,6 +3112,9 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_EDITOR" value="2" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage but without showing the property in the editor (storage).
+		</constant>
+		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags" is_bitfield="true" deprecated="Historic alias for [constant PROPERTY_USAGE_STORE_DEFAULT].">
+			See [constant PROPERTY_USAGE_STORE_DEFAULT] for the current behavior and use cases of this flag.
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags" is_bitfield="true">
 			Flag for a normal method.
