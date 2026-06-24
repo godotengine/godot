@@ -136,6 +136,18 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="activation_failed">
+			<param index="0" name="error" type="String" />
+			<description>
+				Emitted when asynchronous activation fails. The feed remains inactive.
+			</description>
+		</signal>
+		<signal name="activation_status_changed">
+			<param index="0" name="status" type="int" />
+			<description>
+				Emitted when the feed's activation status changes.
+			</description>
+		</signal>
 		<signal name="format_changed">
 			<description>
 				Emitted when the format has changed.
@@ -171,6 +183,15 @@
 		</constant>
 		<constant name="FEED_BACK" value="2" enum="FeedPosition">
 			Camera is mounted at the back of the device.
+		</constant>
+		<constant name="FEED_INACTIVE" value="0" enum="FeedActivationStatus">
+			The feed is inactive.
+		</constant>
+		<constant name="FEED_ACTIVATING" value="1" enum="FeedActivationStatus">
+			The feed is being activated asynchronously.
+		</constant>
+		<constant name="FEED_ACTIVE" value="2" enum="FeedActivationStatus">
+			The feed is active.
 		</constant>
 	</constants>
 </class>

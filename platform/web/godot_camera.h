@@ -54,6 +54,8 @@ extern void godot_js_camera_get_pixel_data(
 
 extern void godot_js_camera_stop_stream(const char *p_device_id);
 
+extern void godot_js_camera_abort(void *p_context);
+
 #ifdef __cplusplus
 }
 #endif
