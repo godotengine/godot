@@ -1157,6 +1157,7 @@ void MDCommandBuffer::render_next_subpass() {
 		}
 	}
 
+	desc->setRasterizationRateMap(fb.rasterization_rate_map);
 	desc->setRenderTargetWidth(MAX((NS::UInteger)MIN(render.render_area.position.x + render.render_area.size.width, fb.size.width), 1u));
 	desc->setRenderTargetHeight(MAX((NS::UInteger)MIN(render.render_area.position.y + render.render_area.size.height, fb.size.height), 1u));
 
