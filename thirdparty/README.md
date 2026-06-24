@@ -772,7 +772,7 @@ Files extracted from upstream source:
 
 - Upstream: https://github.com/madler/zlib
 - Version: 1.3.2 (da607da739fa6047df13e66a2af6b8bec7c2a498, 2026)
-- License: zlib
+- License: Zlib
 
 Files extracted from the upstream source:
 
@@ -816,7 +816,7 @@ Collection of single-file libraries used in Godot components.
 - `mikktspace.{c,h}`
   * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
   * Version: 1.0 (2011)
-  * License: zlib
+  * License: Zlib
 - `nvapi_minimal.h`
   * Upstream: http://download.nvidia.com/XFree86/nvapi-open-source-sdk
   * Version: R525
@@ -941,7 +941,7 @@ Files extracted from upstream source:
 
 - Upstream: https://github.com/recastnavigation/recastnavigation
 - Version: 1.6.0 (6dc1667f580357e8a2154c28b7867bea7e8ad3a7, 2023)
-- License: zlib
+- License: Zlib
 
 Files extracted from upstream source:
 
@@ -1293,7 +1293,7 @@ Files extracted from upstream source:
 
 - Upstream: https://github.com/madler/zlib
 - Version: 1.3.2 (da607da739fa6047df13e66a2af6b8bec7c2a498, 2026)
-- License: zlib
+- License: Zlib
 
 Files extracted from upstream source:
 

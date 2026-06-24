@@ -172,7 +172,7 @@
 			[url=https://fastlz.org/]FastLZ[/url] compression. This option uses less CPU resources compared to [constant COMPRESS_ZLIB], at the expense of using more bandwidth.
 		</constant>
 		<constant name="COMPRESS_ZLIB" value="3" enum="CompressionMode">
-			[url=https://www.zlib.net/]Zlib[/url] compression. This option uses less bandwidth compared to [constant COMPRESS_FASTLZ], at the expense of using more CPU resources.
+			[url=https://datatracker.ietf.org/doc/html/rfc1950]zlib[/url] compression. This option uses less bandwidth compared to [constant COMPRESS_FASTLZ], at the expense of using more CPU resources.
 		</constant>
 		<constant name="COMPRESS_ZSTD" value="4" enum="CompressionMode">
 			[url=https://facebook.github.io/zstd/]Zstandard[/url] compression. Note that this algorithm is not very efficient on packets smaller than 4 KB. Therefore, it's recommended to use other compression algorithms in most cases.
