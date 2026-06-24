@@ -424,20 +424,22 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			WARN_PRINT("Some locales are not properly supported by selected Text Server and are disabled.");
 		}
 
-		String lang_hint;
 		String best = "en";
 		int best_score = 0;
 		for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
+			if (host_lang.get_slicec('_', 0) == "en") {
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, "en");
+				if (score > 0 && score >= best_score) {
+					best = "en";
+					best_score = score;
+				}
+			}
 			for (const String &locale : get_editor_locales()) {
 				// Test against language code without regional variants (e.g. ur_PK).
 				String lang_code = locale.get_slicec('_', 0);
 				if (locales_to_skip.has(lang_code)) {
 					continue;
 				}
-
-				lang_hint += ";";
-				const String lang_name = TranslationServer::get_singleton()->get_locale_name(locale);
-				lang_hint += vformat("%s/[%s] %s", locale, locale, lang_name);
 
 				int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
 				if (score > 0 && score >= best_score) {
@@ -448,6 +450,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			if (best_score > 0) {
 				break;
 			}
+		}
+
+		String lang_hint;
+		for (const String &locale : get_editor_locales()) {
+			lang_hint += ";";
+			const String lang_name = TranslationServer::get_singleton()->get_locale_name(locale);
+			lang_hint += vformat("%s/[%s] %s", locale, locale, lang_name);
 		}
 		lang_hint = vformat(";auto/Auto (%s);en/[en] English", TranslationServer::get_singleton()->get_locale_name(best)) + lang_hint;
 
@@ -2045,6 +2054,13 @@ String EditorSettings::get_language() const {
 		String best = "en";
 		int best_score = 0;
 		for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
+			if (host_lang.get_slicec('_', 0) == "en") {
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, "en");
+				if (score > 0 && score >= best_score) {
+					best = "en";
+					best_score = score;
+				}
+			}
 			for (const String &locale : get_editor_locales()) {
 				// Test against language code without regional variants (e.g. ur_PK).
 				String lang_code = locale.get_slicec('_', 0);
