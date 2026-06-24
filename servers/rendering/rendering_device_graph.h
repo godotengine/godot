@@ -182,6 +182,8 @@ public:
 	struct ResourceTracker {
 		uint32_t reference_count = 0;
 		int64_t command_frame = -1;
+		int32_t command_index = -1;
+		uint32_t usage_index = UINT32_MAX;
 		BitField<RDD::PipelineStageBits> previous_frame_stages = {};
 		BitField<RDD::PipelineStageBits> current_frame_stages = {};
 		int32_t read_full_command_list_index = -1;
@@ -213,6 +215,8 @@ public:
 		_FORCE_INLINE_ void reset_if_outdated(int64_t new_command_frame) {
 			if (new_command_frame != command_frame) {
 				command_frame = new_command_frame;
+				command_index = -1;
+				usage_index = UINT32_MAX;
 				previous_frame_stages = current_frame_stages;
 				current_frame_stages.clear();
 				read_full_command_list_index = -1;
