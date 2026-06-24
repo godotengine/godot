@@ -120,7 +120,8 @@ String ResourceImporterLayeredTexture::get_resource_type() const {
 
 bool ResourceImporterLayeredTexture::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	if (p_option == "compress/high_quality_mode") {
-		return bool(p_options["compress/high_quality"]);
+		int compress_mode = int(p_options["compress/mode"]);
+		return compress_mode == COMPRESS_VRAM_COMPRESSED && bool(p_options["compress/high_quality"]);
 	}
 	if (p_option == "compress/lossy_quality" && p_options.has("compress/mode")) {
 		return int(p_options["compress/mode"]) == COMPRESS_LOSSY;
