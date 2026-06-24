@@ -154,7 +154,11 @@ void Label::_shape() const {
 		if (maximum_width <= 0) {
 			maximum_width = 1;
 		}
-		width = maximum_width;
+		if (width > 0 && !is_expanded_by_desired_size()) {
+			width = MIN(width, maximum_width);
+		} else {
+			width = maximum_width;
+		}
 	}
 
 	if (text_dirty) {
