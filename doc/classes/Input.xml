@@ -231,8 +231,8 @@
 			<param index="1" name="finger" type="int" />
 			<param index="2" name="touchpad" type="int" default="0" />
 			<description>
-				Returns the position of the specified finger on the specified touchpad on the joypad. The X and Y values are in the range from [code]0.0[/code] to [code]1.0[/code], with [code](0.0, 0.0)[/code] representing the top-left corner of the touchpad and [code](1.0, 1.0)[/code] representing the bottom-right corner.
-				If the joypad doesn't have the specified touchpad or the specified finger is not currently touching the touchpad, this method returns [constant Vector2.ZERO].
+				Returns the position of the specified finger on the specified touchpad on the joypad. The X and Y values, if the specified finger is touching the specified touchpad, are in the range from [code]0.0[/code] to [code]1.0[/code], with [code](0.0, 0.0)[/code] representing the top-left corner of the touchpad and [code](1.0, 1.0)[/code] representing the bottom-right corner.
+				If the joypad doesn't have the specified touchpad or the specified finger is not currently touching the touchpad, this method returns [code]Vector2(-1.0, -1.0)[/code].
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
@@ -242,8 +242,8 @@
 			<param index="1" name="finger" type="int" />
 			<param index="2" name="touchpad" type="int" default="0" />
 			<description>
-				Returns the pressure of the specified finger on the specified touchpad on the joypad. The return value is in the range from [code]0.0[/code] to [code]1.0[/code].
-				If the joypad doesn't have the specified touchpad or the specified finger is not currently touching the touchpad, this method returns [code]0.0[/code].
+				Returns the pressure of the specified finger on the specified touchpad on the joypad. The return value, if the specified finger is touching the specified touchpad, is in the range from [code]0.0[/code] to [code]1.0[/code].
+				If the joypad doesn't have the specified touchpad or the specified finger is not currently touching the touchpad, this method returns [code]-1.0[/code].
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
