@@ -1375,6 +1375,9 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 		return;
 	}
 
+	// Prevent the cursor from being at an incorrect position before any inputs happen.
+	cursor_origin = (Vector3(cursor_gridpos) + Vector3(0.5 * node->get_center_x(), 0.5 * node->get_center_y(), 0.5 * node->get_center_z())) * node->get_cell_size();
+
 	update_palette();
 	_update_cursor_instance();
 
@@ -1567,27 +1570,29 @@ void GridMapEditor::_update_cursor_instance() {
 
 	const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
 
-	if (mode_buttons_group->get_pressed_button() == paint_mode_button) {
-		if (selected_palette >= 0 && node && node->get_mesh_library().is_valid()) {
-			Ref<Mesh> mesh = node->get_mesh_library()->get_item_mesh(selected_palette);
-			if (mesh.is_valid() && mesh->get_rid().is_valid()) {
-				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
-				RSE::ShadowCastingSetting cast_shadows = (RSE::ShadowCastingSetting)node->get_mesh_library()->get_item_mesh_cast_shadow(selected_palette);
-				RS::get_singleton()->instance_geometry_set_cast_shadows_setting(cursor_instance, cast_shadows);
+	if (mesh_library.is_valid()) {
+		if (mode_buttons_group->get_pressed_button() == paint_mode_button) {
+			if (selected_palette >= 0 && node && node->get_mesh_library().is_valid()) {
+				Ref<Mesh> mesh = node->get_mesh_library()->get_item_mesh(selected_palette);
+				if (mesh.is_valid() && mesh->get_rid().is_valid()) {
+					cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
+					RSE::ShadowCastingSetting cast_shadows = (RSE::ShadowCastingSetting)node->get_mesh_library()->get_item_mesh_cast_shadow(selected_palette);
+					RS::get_singleton()->instance_geometry_set_cast_shadows_setting(cursor_instance, cast_shadows);
+				}
 			}
+		} else if (mode_buttons_group->get_pressed_button() == select_mode_button) {
+			cursor_inner_mat->set_albedo(Color(default_color, 0.2));
+			cursor_outer_mat->set_albedo(Color(default_color, 0.8));
+			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
+		} else if (mode_buttons_group->get_pressed_button() == erase_mode_button) {
+			cursor_inner_mat->set_albedo(Color(erase_color, 0.2));
+			cursor_outer_mat->set_albedo(Color(erase_color, 0.8));
+			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
+		} else if (mode_buttons_group->get_pressed_button() == pick_mode_button) {
+			cursor_inner_mat->set_albedo(Color(pick_color, 0.2));
+			cursor_outer_mat->set_albedo(Color(pick_color, 0.8));
+			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 		}
-	} else if (mode_buttons_group->get_pressed_button() == select_mode_button) {
-		cursor_inner_mat->set_albedo(Color(default_color, 0.2));
-		cursor_outer_mat->set_albedo(Color(default_color, 0.8));
-		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
-	} else if (mode_buttons_group->get_pressed_button() == erase_mode_button) {
-		cursor_inner_mat->set_albedo(Color(erase_color, 0.2));
-		cursor_outer_mat->set_albedo(Color(erase_color, 0.8));
-		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
-	} else if (mode_buttons_group->get_pressed_button() == pick_mode_button) {
-		cursor_inner_mat->set_albedo(Color(pick_color, 0.2));
-		cursor_outer_mat->set_albedo(Color(pick_color, 0.8));
-		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 	}
 
 	bool was_visible = cursor_visible;
