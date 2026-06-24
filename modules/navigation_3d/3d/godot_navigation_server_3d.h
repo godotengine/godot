@@ -37,8 +37,6 @@
 #include "../nav_region_3d.h"
 
 #include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
-#include "core/templates/rid_owner.h"
 #include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
 #include "servers/navigation_3d/navigation_path_query_result_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
@@ -92,6 +90,7 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	int pm_edge_connection_count = 0;
 	int pm_edge_free_count = 0;
 	int pm_obstacle_count = 0;
+	int pm_area_count = 0;
 
 public:
 	GodotNavigationServer3D();
@@ -158,10 +157,12 @@ public:
 	COMMAND_2(region_set_use_edge_connections, RID, p_region, bool, p_enabled);
 	virtual bool region_get_use_edge_connections(RID p_region) const override;
 
+#ifndef DISABLE_DEPRECATED
 	COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost);
 	virtual real_t region_get_enter_cost(RID p_region) const override;
 	COMMAND_2(region_set_travel_cost, RID, p_region, real_t, p_travel_cost);
 	virtual real_t region_get_travel_cost(RID p_region) const override;
+#endif // DISABLE_DEPRECATED
 
 	COMMAND_2(region_set_owner_id, RID, p_region, ObjectID, p_owner_id);
 	virtual ObjectID region_get_owner_id(RID p_region) const override;
@@ -171,7 +172,13 @@ public:
 	COMMAND_2(region_set_map, RID, p_region, RID, p_map);
 	virtual RID region_get_map(RID p_region) const override;
 	COMMAND_2(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers);
+	virtual Vector<int> region_get_area_ids(RID p_region) const override;
+	virtual int region_get_area_count(RID p_region) const override;
 	virtual uint32_t region_get_navigation_layers(RID p_region) const override;
+	virtual void region_set_area_navigation_layers(RID p_region, uint16_t p_area_id, uint32_t p_navigation_layers) override;
+	virtual uint32_t region_get_area_navigation_layers(RID p_region, uint16_t p_area_id) const override;
+	virtual void region_set_area_navigation_layers_at_index(RID p_region, uint16_t p_area_index, uint32_t p_navigation_layers) override;
+	virtual uint32_t region_get_area_navigation_layers_at_index(RID p_region, uint16_t p_area_index) const override;
 	COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform);
 	virtual Transform3D region_get_transform(RID p_region) const override;
 	COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navigation_mesh);
@@ -201,10 +208,12 @@ public:
 	virtual Vector3 link_get_start_position(RID p_link) const override;
 	COMMAND_2(link_set_end_position, RID, p_link, Vector3, p_position);
 	virtual Vector3 link_get_end_position(RID p_link) const override;
+#ifndef DISABLE_DEPRECATED
 	COMMAND_2(link_set_enter_cost, RID, p_link, real_t, p_enter_cost);
 	virtual real_t link_get_enter_cost(RID p_link) const override;
 	COMMAND_2(link_set_travel_cost, RID, p_link, real_t, p_travel_cost);
 	virtual real_t link_get_travel_cost(RID p_link) const override;
+#endif // DISABLE_DEPRECATED
 	COMMAND_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id);
 	virtual ObjectID link_get_owner_id(RID p_link) const override;
 
@@ -269,8 +278,8 @@ public:
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const override;
 
 	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override;
-	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
-	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
+	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, uint32_t p_navigation_layers, const Callable &p_callback = Callable()) override;
+	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, uint32_t p_navigation_layers, const Callable &p_callback = Callable()) override;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override;
 	virtual String get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const override;
 

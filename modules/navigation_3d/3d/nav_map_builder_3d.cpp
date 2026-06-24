@@ -292,6 +292,7 @@ void NavMapBuilder3D::_build_step_navlink_connections(NavMapIterationBuild3D &r_
 
 		new_polygon.id = 0;
 		new_polygon.owner = link.ptr();
+		new_polygon.navigation_layers = link->get_navigation_layers();
 
 		const Vector3 link_start_pos = link->get_start_position();
 		const Vector3 link_end_pos = link->get_end_position();

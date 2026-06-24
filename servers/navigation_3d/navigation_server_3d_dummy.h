@@ -77,10 +77,12 @@ public:
 	bool region_get_enabled(RID p_region) const override { return false; }
 	void region_set_use_edge_connections(RID p_region, bool p_enabled) override {}
 	bool region_get_use_edge_connections(RID p_region) const override { return false; }
+#ifndef DISABLE_DEPRECATED
 	void region_set_enter_cost(RID p_region, real_t p_enter_cost) override {}
 	real_t region_get_enter_cost(RID p_region) const override { return 0; }
 	void region_set_travel_cost(RID p_region, real_t p_travel_cost) override {}
 	real_t region_get_travel_cost(RID p_region) const override { return 0; }
+#endif // DISABLE_DEPRECATED
 	void region_set_owner_id(RID p_region, ObjectID p_owner_id) override {}
 	ObjectID region_get_owner_id(RID p_region) const override { return ObjectID(); }
 	bool region_owns_point(RID p_region, const Vector3 &p_point) const override { return false; }
@@ -88,6 +90,12 @@ public:
 	RID region_get_map(RID p_region) const override { return RID(); }
 	void region_set_navigation_layers(RID p_region, uint32_t p_navigation_layers) override {}
 	uint32_t region_get_navigation_layers(RID p_region) const override { return 0; }
+	Vector<int> region_get_area_ids(RID p_region) const override { return Vector<int>(); }
+	int region_get_area_count(RID p_region) const override { return 0; }
+	void region_set_area_navigation_layers(RID p_region, uint16_t p_area_id, uint32_t p_navigation_layers) override {}
+	uint32_t region_get_area_navigation_layers(RID p_region, uint16_t p_area_id) const override { return 0; }
+	void region_set_area_navigation_layers_at_index(RID p_region, uint16_t p_area_index, uint32_t p_navigation_layers) override {}
+	uint32_t region_get_area_navigation_layers_at_index(RID p_region, uint16_t p_area_index) const override { return 0; }
 	void region_set_transform(RID p_region, Transform3D p_transform) override {}
 	Transform3D region_get_transform(RID p_region) const override { return Transform3D(); }
 	void region_set_navigation_mesh(RID p_region, Ref<NavigationMesh> p_navigation_mesh) override {}
@@ -117,10 +125,12 @@ public:
 	Vector3 link_get_start_position(RID p_link) const override { return Vector3(); }
 	void link_set_end_position(RID p_link, Vector3 p_position) override {}
 	Vector3 link_get_end_position(RID p_link) const override { return Vector3(); }
+#ifndef DISABLE_DEPRECATED
 	void link_set_enter_cost(RID p_link, real_t p_enter_cost) override {}
 	real_t link_get_enter_cost(RID p_link) const override { return 0; }
 	void link_set_travel_cost(RID p_link, real_t p_travel_cost) override {}
 	real_t link_get_travel_cost(RID p_link) const override { return 0; }
+#endif // DISABLE_DEPRECATED
 	void link_set_owner_id(RID p_link, ObjectID p_owner_id) override {}
 	ObjectID link_get_owner_id(RID p_link) const override { return ObjectID(); }
 
@@ -188,8 +198,8 @@ public:
 
 #ifndef _3D_DISABLED
 	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override {}
-	void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
-	void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
+	void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, uint32_t p_navigation_layers, const Callable &p_callback = Callable()) override {}
+	void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, uint32_t p_navigation_layers, const Callable &p_callback = Callable()) override {}
 	bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override { return false; }
 	String get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const override { return ""; }
 #endif // _3D_DISABLED

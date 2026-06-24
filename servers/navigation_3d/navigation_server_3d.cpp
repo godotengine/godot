@@ -92,10 +92,12 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_enabled", "region"), &NavigationServer3D::region_get_enabled);
 	ClassDB::bind_method(D_METHOD("region_set_use_edge_connections", "region", "enabled"), &NavigationServer3D::region_set_use_edge_connections);
 	ClassDB::bind_method(D_METHOD("region_get_use_edge_connections", "region"), &NavigationServer3D::region_get_use_edge_connections);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("region_set_enter_cost", "region", "enter_cost"), &NavigationServer3D::region_set_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_get_enter_cost", "region"), &NavigationServer3D::region_get_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_set_travel_cost", "region", "travel_cost"), &NavigationServer3D::region_set_travel_cost);
 	ClassDB::bind_method(D_METHOD("region_get_travel_cost", "region"), &NavigationServer3D::region_get_travel_cost);
+#endif // DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("region_set_owner_id", "region", "owner_id"), &NavigationServer3D::region_set_owner_id);
 	ClassDB::bind_method(D_METHOD("region_get_owner_id", "region"), &NavigationServer3D::region_get_owner_id);
 	ClassDB::bind_method(D_METHOD("region_owns_point", "region", "point"), &NavigationServer3D::region_owns_point);
@@ -103,6 +105,12 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_map", "region"), &NavigationServer3D::region_get_map);
 	ClassDB::bind_method(D_METHOD("region_set_navigation_layers", "region", "navigation_layers"), &NavigationServer3D::region_set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("region_get_navigation_layers", "region"), &NavigationServer3D::region_get_navigation_layers);
+	ClassDB::bind_method(D_METHOD("region_get_area_ids", "region"), &NavigationServer3D::region_get_area_ids);
+	ClassDB::bind_method(D_METHOD("region_get_area_count", "region"), &NavigationServer3D::region_get_area_count);
+	ClassDB::bind_method(D_METHOD("region_set_area_navigation_layers", "region", "area_id", "navigation_layers"), &NavigationServer3D::region_set_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("region_get_area_navigation_layers", "region", "area_id"), &NavigationServer3D::region_get_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("region_set_area_navigation_layers_at_index", "region", "area_index", "navigation_layers"), &NavigationServer3D::region_set_area_navigation_layers_at_index);
+	ClassDB::bind_method(D_METHOD("region_get_area_navigation_layers_at_index", "region", "area_index"), &NavigationServer3D::region_get_area_navigation_layers_at_index);
 	ClassDB::bind_method(D_METHOD("region_set_transform", "region", "transform"), &NavigationServer3D::region_set_transform);
 	ClassDB::bind_method(D_METHOD("region_get_transform", "region"), &NavigationServer3D::region_get_transform);
 	ClassDB::bind_method(D_METHOD("region_set_navigation_mesh", "region", "navigation_mesh"), &NavigationServer3D::region_set_navigation_mesh);
@@ -132,10 +140,12 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("link_get_start_position", "link"), &NavigationServer3D::link_get_start_position);
 	ClassDB::bind_method(D_METHOD("link_set_end_position", "link", "position"), &NavigationServer3D::link_set_end_position);
 	ClassDB::bind_method(D_METHOD("link_get_end_position", "link"), &NavigationServer3D::link_get_end_position);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("link_set_enter_cost", "link", "enter_cost"), &NavigationServer3D::link_set_enter_cost);
 	ClassDB::bind_method(D_METHOD("link_get_enter_cost", "link"), &NavigationServer3D::link_get_enter_cost);
 	ClassDB::bind_method(D_METHOD("link_set_travel_cost", "link", "travel_cost"), &NavigationServer3D::link_set_travel_cost);
 	ClassDB::bind_method(D_METHOD("link_get_travel_cost", "link"), &NavigationServer3D::link_get_travel_cost);
+#endif // DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("link_set_owner_id", "link", "owner_id"), &NavigationServer3D::link_set_owner_id);
 	ClassDB::bind_method(D_METHOD("link_get_owner_id", "link"), &NavigationServer3D::link_get_owner_id);
 
@@ -202,8 +212,8 @@ void NavigationServer3D::_bind_methods() {
 
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("parse_source_geometry_data", "navigation_mesh", "source_geometry_data", "root_node", "callback"), &NavigationServer3D::parse_source_geometry_data, DEFVAL(Callable()));
-	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data, DEFVAL(Callable()));
-	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data_async", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data_async, DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "navigation_layers", "callback"), &NavigationServer3D::bake_from_source_geometry_data, DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data_async", "navigation_mesh", "source_geometry_data", "navigation_layers", "callback"), &NavigationServer3D::bake_from_source_geometry_data_async, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("is_baking_navigation_mesh", "navigation_mesh"), &NavigationServer3D::is_baking_navigation_mesh);
 #endif // _3D_DISABLED
 
@@ -224,6 +234,11 @@ void NavigationServer3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("navigation_debug_changed"));
 	ADD_SIGNAL(MethodInfo("avoidance_debug_changed"));
 
+	BIND_ENUM_CONSTANT(AREA_SHAPE_NONE);
+	BIND_ENUM_CONSTANT(AREA_SHAPE_BOX);
+	BIND_ENUM_CONSTANT(AREA_SHAPE_CYLINDER);
+	BIND_ENUM_CONSTANT(AREA_SHAPE_POLYGON);
+
 	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &NavigationServer3D::get_process_info);
 
 	BIND_ENUM_CONSTANT(INFO_ACTIVE_MAPS);
@@ -236,6 +251,7 @@ void NavigationServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(INFO_EDGE_CONNECTION_COUNT);
 	BIND_ENUM_CONSTANT(INFO_EDGE_FREE_COUNT);
 	BIND_ENUM_CONSTANT(INFO_OBSTACLE_COUNT);
+	BIND_ENUM_CONSTANT(INFO_AREA_COUNT);
 }
 
 NavigationServer3D *NavigationServer3D::get_singleton() {
@@ -311,6 +327,7 @@ NavigationServer3D::NavigationServer3D() {
 	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/3d/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
 	debug_navigation_geometry_edge_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_edge_color", Color(0.5, 1.0, 1.0, 1.0));
 	debug_navigation_geometry_face_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_color", Color(0.5, 1.0, 1.0, 0.4));
+	debug_navigation_geometry_face_area_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_area_color", Color(1.0, 0.0, 0.8, 0.4));
 	debug_navigation_geometry_edge_disabled_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_edge_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
 	debug_navigation_geometry_face_disabled_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_disabled_color", Color(0.5, 0.5, 0.5, 0.4));
 	debug_navigation_link_connection_color = GLOBAL_DEF("debug/shapes/navigation/3d/link_connection_color", Color(1.0, 0.5, 1.0, 1.0));
@@ -433,12 +450,10 @@ void NavigationServer3D::_emit_avoidance_debug_changed_signal() {
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
-Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_geometry_face_material() {
+Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_geometry_face_material(const bool p_use_vertex_color) {
 	if (debug_navigation_geometry_face_material.is_valid()) {
 		return debug_navigation_geometry_face_material;
 	}
-
-	bool enabled_geometry_face_random_color = get_debug_navigation_enable_geometry_face_random_color();
 
 	Ref<StandardMaterial3D> face_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	face_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -446,7 +461,7 @@ Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_geometry_face_m
 	face_material->set_albedo(get_debug_navigation_geometry_face_color());
 	face_material->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 	face_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	if (enabled_geometry_face_random_color) {
+	if (p_use_vertex_color) {
 		face_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		face_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	}
@@ -709,6 +724,48 @@ Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_avoidance_stati
 	return debug_navigation_avoidance_static_obstacle_pushout_edge_material;
 }
 
+Ref<StandardMaterial3D> NavigationServer3D::get_debug_area_edge_material() {
+	if (debug_area_edge_material.is_valid()) {
+		return debug_area_edge_material;
+	}
+
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	material->set_albedo(debug_area_edge_color);
+
+	debug_area_edge_material = material;
+	return debug_area_edge_material;
+}
+
+Ref<StandardMaterial3D> NavigationServer3D::get_debug_area_edge_disabled_material() {
+	if (debug_area_edge_disabled_material.is_valid()) {
+		return debug_area_edge_disabled_material;
+	}
+
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	material->set_albedo(debug_area_edge_disabled_color);
+
+	debug_area_edge_disabled_material = material;
+	return debug_area_edge_disabled_material;
+}
+
+Ref<StandardMaterial3D> NavigationServer3D::get_debug_area_edge_invalid_material() {
+	if (debug_area_edge_invalid_material.is_valid()) {
+		return debug_area_edge_invalid_material;
+	}
+
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	material->set_albedo(debug_area_edge_invalid_color);
+
+	debug_area_edge_invalid_material = material;
+	return debug_area_edge_invalid_material;
+}
+
 void NavigationServer3D::set_debug_navigation_edge_connection_color(const Color &p_color) {
 	debug_navigation_edge_connection_color = p_color;
 	if (debug_navigation_edge_connections_material.is_valid()) {
@@ -740,6 +797,14 @@ void NavigationServer3D::set_debug_navigation_geometry_face_color(const Color &p
 
 Color NavigationServer3D::get_debug_navigation_geometry_face_color() const {
 	return debug_navigation_geometry_face_color;
+}
+
+void NavigationServer3D::set_debug_navigation_geometry_face_area_color(const Color &p_color) {
+	debug_navigation_geometry_face_area_color = p_color;
+}
+
+Color NavigationServer3D::get_debug_navigation_geometry_face_area_color() const {
+	return debug_navigation_geometry_face_area_color;
 }
 
 void NavigationServer3D::set_debug_navigation_geometry_edge_disabled_color(const Color &p_color) {

@@ -118,11 +118,13 @@ public:
 	virtual void region_set_use_edge_connections(RID p_region, bool p_enabled) = 0;
 	virtual bool region_get_use_edge_connections(RID p_region) const = 0;
 
+#ifndef DISABLE_DEPRECATED
 	virtual void region_set_enter_cost(RID p_region, real_t p_enter_cost) = 0;
 	virtual real_t region_get_enter_cost(RID p_region) const = 0;
 
 	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) = 0;
 	virtual real_t region_get_travel_cost(RID p_region) const = 0;
+#endif // DISABLE_DEPRECATED
 
 	virtual void region_set_owner_id(RID p_region, ObjectID p_owner_id) = 0;
 	virtual ObjectID region_get_owner_id(RID p_region) const = 0;
@@ -134,6 +136,13 @@ public:
 
 	virtual void region_set_navigation_layers(RID p_region, uint32_t p_navigation_layers) = 0;
 	virtual uint32_t region_get_navigation_layers(RID p_region) const = 0;
+
+	virtual Vector<int> region_get_area_ids(RID p_region) const = 0; // NOTE: Because bindings don't support Vector<uint16_t>.
+	virtual int region_get_area_count(RID p_region) const = 0;
+	virtual void region_set_area_navigation_layers(RID p_region, uint16_t p_area_id, uint32_t p_navigation_layers) = 0;
+	virtual uint32_t region_get_area_navigation_layers(RID p_region, uint16_t p_area_id) const = 0;
+	virtual void region_set_area_navigation_layers_at_index(RID p_region, uint16_t p_area_index, uint32_t p_navigation_layers) = 0;
+	virtual uint32_t region_get_area_navigation_layers_at_index(RID p_region, uint16_t p_area_index) const = 0;
 
 	virtual void region_set_transform(RID p_region, Transform3D p_transform) = 0;
 	virtual Transform3D region_get_transform(RID p_region) const = 0;
@@ -154,6 +163,14 @@ public:
 	virtual Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
 
 	virtual AABB region_get_bounds(RID p_region) const = 0;
+
+	/* Area API */
+	enum AreaShapeType3D {
+		AREA_SHAPE_NONE = 0,
+		AREA_SHAPE_BOX,
+		AREA_SHAPE_CYLINDER,
+		AREA_SHAPE_POLYGON
+	};
 
 	/* LINK API */
 
@@ -178,11 +195,13 @@ public:
 	virtual void link_set_end_position(RID p_link, Vector3 p_position) = 0;
 	virtual Vector3 link_get_end_position(RID p_link) const = 0;
 
+#ifndef DISABLE_DEPRECATED
 	virtual void link_set_enter_cost(RID p_link, real_t p_enter_cost) = 0;
 	virtual real_t link_get_enter_cost(RID p_link) const = 0;
 
 	virtual void link_set_travel_cost(RID p_link, real_t p_travel_cost) = 0;
 	virtual real_t link_get_travel_cost(RID p_link) const = 0;
+#endif // DISABLE_DEPRECATED
 
 	virtual void link_set_owner_id(RID p_link, ObjectID p_owner_id) = 0;
 	virtual ObjectID link_get_owner_id(RID p_link) const = 0;
@@ -283,8 +302,8 @@ public:
 
 #ifndef _3D_DISABLED
 	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) = 0;
-	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
-	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
+	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, uint32_t p_navigation_layers, const Callable &p_callback = Callable()) = 0;
+	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, uint32_t p_navigation_layers, const Callable &p_callback = Callable()) = 0;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const = 0;
 	virtual String get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const = 0;
 #endif // _3D_DISABLED
@@ -292,7 +311,7 @@ public:
 protected:
 	static RWLock geometry_parser_rwlock;
 	static RID_Owner<NavMeshGeometryParser3D> geometry_parser_owner;
-	static LocalVector<NavMeshGeometryParser3D *> generator_parsers;
+	static LocalVector<NavMeshGeometryParser3D *> generator_parsers; // The Nodes and custom ones created via server.
 
 public:
 	virtual RID source_geometry_parser_create() = 0;
@@ -331,6 +350,7 @@ public:
 		INFO_EDGE_CONNECTION_COUNT,
 		INFO_EDGE_FREE_COUNT,
 		INFO_OBSTACLE_COUNT,
+		INFO_AREA_COUNT,
 	};
 
 	virtual int get_process_info(ProcessInfo p_info) const = 0;
@@ -340,6 +360,8 @@ public:
 
 protected:
 #ifndef DISABLE_DEPRECATED
+	void _bake_from_source_geometry_data_bind_compat_118005(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable());
+	void _bake_from_source_geometry_data_async_bind_compat_118005(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable());
 	Vector<Vector3> _map_get_path_bind_compat_100129(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
 	void _query_path_bind_compat_100129(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const;
 	static void _bind_compatibility_methods();
@@ -362,6 +384,7 @@ private:
 	Color debug_navigation_edge_connection_color = Color(1.0, 0.0, 1.0, 1.0);
 	Color debug_navigation_geometry_edge_color = Color(0.5, 1.0, 1.0, 1.0);
 	Color debug_navigation_geometry_face_color = Color(0.5, 1.0, 1.0, 0.4);
+	Color debug_navigation_geometry_face_area_color = Color(1.0, 0.0, 0.8, 0.4);
 	Color debug_navigation_geometry_edge_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
 	Color debug_navigation_geometry_face_disabled_color = Color(0.5, 0.5, 0.5, 0.4);
 	Color debug_navigation_link_connection_color = Color(1.0, 0.5, 1.0, 1.0);
@@ -377,6 +400,10 @@ private:
 	Color debug_navigation_avoidance_static_obstacle_pushout_face_color = Color(1.0, 1.0, 0.0, 0.5);
 	Color debug_navigation_avoidance_static_obstacle_pushin_edge_color = Color(1.0, 0.0, 0.0, 1.0);
 	Color debug_navigation_avoidance_static_obstacle_pushout_edge_color = Color(1.0, 1.0, 0.0, 1.0);
+
+	Color debug_area_edge_color = Color(0.8, 0.6, 0.4, 1.0);
+	Color debug_area_edge_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
+	Color debug_area_edge_invalid_color = Color(1.0, 0.0, 0.0, 1.0);
 
 	bool debug_navigation_enable_edge_connections = true;
 	bool debug_navigation_enable_edge_connections_xray = true;
@@ -410,6 +437,10 @@ private:
 	Ref<StandardMaterial3D> debug_navigation_agent_path_line_material;
 	Ref<StandardMaterial3D> debug_navigation_agent_path_point_material;
 
+	Ref<StandardMaterial3D> debug_area_edge_material;
+	Ref<StandardMaterial3D> debug_area_edge_disabled_material;
+	Ref<StandardMaterial3D> debug_area_edge_invalid_material;
+
 public:
 	void set_debug_navigation_enabled(bool p_enabled);
 	bool get_debug_navigation_enabled() const;
@@ -425,6 +456,9 @@ public:
 
 	void set_debug_navigation_geometry_face_color(const Color &p_color);
 	Color get_debug_navigation_geometry_face_color() const;
+
+	void set_debug_navigation_geometry_face_area_color(const Color &p_color);
+	Color get_debug_navigation_geometry_face_area_color() const;
 
 	void set_debug_navigation_geometry_edge_disabled_color(const Color &p_color);
 	Color get_debug_navigation_geometry_edge_disabled_color() const;
@@ -498,7 +532,7 @@ public:
 	void set_debug_navigation_avoidance_enable_obstacles_static(const bool p_value);
 	bool get_debug_navigation_avoidance_enable_obstacles_static() const;
 
-	Ref<StandardMaterial3D> get_debug_navigation_geometry_face_material();
+	Ref<StandardMaterial3D> get_debug_navigation_geometry_face_material(const bool p_use_vertex_color);
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_edge_material();
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_face_disabled_material();
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_edge_disabled_material();
@@ -516,6 +550,10 @@ public:
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushout_face_material();
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushin_edge_material();
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushout_edge_material();
+
+	Ref<StandardMaterial3D> get_debug_area_edge_material();
+	Ref<StandardMaterial3D> get_debug_area_edge_disabled_material();
+	Ref<StandardMaterial3D> get_debug_area_edge_invalid_material();
 #endif // DEBUG_ENABLED
 };
 
@@ -578,4 +616,5 @@ public:
 	static NavigationServer3D *create_dummy_server_callback();
 };
 
+VARIANT_ENUM_CAST(NavigationServer3D::AreaShapeType3D);
 VARIANT_ENUM_CAST(NavigationServer3D::ProcessInfo);

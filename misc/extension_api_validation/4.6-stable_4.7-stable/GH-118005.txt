@@ -1,0 +1,14 @@
+GH-118005
+--------------
+
+Validate extension JSON: Error: Field 'classes/NavigationMeshGenerator/methods/bake_from_source_geometry_data/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/NavigationMeshGenerator/methods/bake_from_source_geometry_data/arguments/2': type changed value in new API, from "Callable" to "int".
+Validate extension JSON: Error: Field 'classes/NavigationMeshGenerator/methods/bake_from_source_geometry_data/arguments': default_value was removed.
+Validate extension JSON: Error: Field 'classes/NavigationServer3D/methods/bake_from_source_geometry_data/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/NavigationServer3D/methods/bake_from_source_geometry_data/arguments/2': type changed value in new API, from "Callable" to "int".
+Validate extension JSON: Error: Field 'classes/NavigationServer3D/methods/bake_from_source_geometry_data/arguments': default_value was removed.
+Validate extension JSON: Error: Field 'classes/NavigationServer3D/methods/bake_from_source_geometry_data_async/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/NavigationServer3D/methods/bake_from_source_geometry_data_async/arguments/2': type changed value in new API, from "Callable" to "int".
+Validate extension JSON: Error: Field 'classes/NavigationServer3D/methods/bake_from_source_geometry_data_async/arguments': default_value was removed.
+
+Baking navigation mesh areas is only possible if they are different from the region/navigation mesh. Therefore, a reference navigation layer must be provided.

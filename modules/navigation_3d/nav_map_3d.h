@@ -50,6 +50,11 @@ class NavRegion3D;
 class NavAgent3D;
 class NavObstacle3D;
 
+// Holds regions (holds areas), agents, obstacles, and links.
+// Handles (or delegates to thirdparty library):
+// * map iterations/syncs
+// * path queries for agents
+// * local avoidance
 class NavMap3D : public NavRid3D {
 	/// Map Up
 	Vector3 up = Vector3(0, 1, 0);
@@ -110,6 +115,8 @@ class NavMap3D : public NavRid3D {
 	// Performance Monitor
 	Nav3D::PerformanceData performance_data;
 
+	// To keep track of the different sources that can trigger a map iteration.
+	// Is one of the sources to set `iteration_dirty` to true.
 	struct {
 		struct {
 			RWLock rwlock;
@@ -250,6 +257,7 @@ public:
 	int get_pm_edge_connection_count() const { return performance_data.pm_edge_connection_count; }
 	int get_pm_edge_free_count() const { return performance_data.pm_edge_free_count; }
 	int get_pm_obstacle_count() const { return performance_data.pm_obstacle_count; }
+	int get_pm_area_count() const { return performance_data.pm_area_count; }
 
 	int get_region_connections_count(NavRegion3D *p_region) const;
 	Vector3 get_region_connection_pathway_start(NavRegion3D *p_region, int p_connection_id) const;

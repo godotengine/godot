@@ -38,8 +38,9 @@ TEST_FORCE_LINK(test_navigation_server_3d)
 
 #include "core/object/callable_mp.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/navigation/navigation_mesh_area_3d.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
+#include "scene/main/window.h" // IWYU pragma: keep. For mono.
 #include "scene/resources/3d/primitive_meshes.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #include "tests/signal_watcher.h"
@@ -268,20 +269,24 @@ TEST_SUITE("[Navigation3D]") {
 			bool initial_bidirectional = navigation_server->link_is_bidirectional(link);
 			navigation_server->link_set_bidirectional(link, !initial_bidirectional);
 			navigation_server->link_set_end_position(link, Vector3(7, 7, 7));
+#ifndef DISABLE_DEPRECATED
 			navigation_server->link_set_enter_cost(link, 0.55);
+			navigation_server->link_set_travel_cost(link, 0.66);
+#endif // DISABLE_DEPRECATED
 			navigation_server->link_set_navigation_layers(link, 6);
 			navigation_server->link_set_owner_id(link, ObjectID((int64_t)7));
 			navigation_server->link_set_start_position(link, Vector3(8, 8, 8));
-			navigation_server->link_set_travel_cost(link, 0.66);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 			CHECK_EQ(navigation_server->link_is_bidirectional(link), !initial_bidirectional);
 			CHECK_EQ(navigation_server->link_get_end_position(link), Vector3(7, 7, 7));
+#ifndef DISABLE_DEPRECATED
 			CHECK_EQ(navigation_server->link_get_enter_cost(link), doctest::Approx(0.55));
+			CHECK_EQ(navigation_server->link_get_travel_cost(link), doctest::Approx(0.66));
+#endif // DISABLE_DEPRECATED
 			CHECK_EQ(navigation_server->link_get_navigation_layers(link), 6);
 			CHECK_EQ(navigation_server->link_get_owner_id(link), ObjectID((int64_t)7));
 			CHECK_EQ(navigation_server->link_get_start_position(link), Vector3(8, 8, 8));
-			CHECK_EQ(navigation_server->link_get_travel_cost(link), doctest::Approx(0.66));
 		}
 
 		SUBCASE("'ProcessInfo' should report link with active map") {
@@ -323,17 +328,21 @@ TEST_SUITE("[Navigation3D]") {
 
 		SUBCASE("Setters/getters should work") {
 			bool initial_use_edge_connections = navigation_server->region_get_use_edge_connections(region);
+#ifndef DISABLE_DEPRECATED
 			navigation_server->region_set_enter_cost(region, 0.55);
+			navigation_server->region_set_travel_cost(region, 0.66);
+#endif // DISABLE_DEPRECATED
 			navigation_server->region_set_navigation_layers(region, 5);
 			navigation_server->region_set_owner_id(region, ObjectID((int64_t)7));
-			navigation_server->region_set_travel_cost(region, 0.66);
 			navigation_server->region_set_use_edge_connections(region, !initial_use_edge_connections);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
+#ifndef DISABLE_DEPRECATED
 			CHECK_EQ(navigation_server->region_get_enter_cost(region), doctest::Approx(0.55));
+			CHECK_EQ(navigation_server->region_get_travel_cost(region), doctest::Approx(0.66));
+#endif // DISABLE_DEPRECATED
 			CHECK_EQ(navigation_server->region_get_navigation_layers(region), 5);
 			CHECK_EQ(navigation_server->region_get_owner_id(region), ObjectID((int64_t)7));
-			CHECK_EQ(navigation_server->region_get_travel_cost(region), doctest::Approx(0.66));
 			CHECK_EQ(navigation_server->region_get_use_edge_connections(region), !initial_use_edge_connections);
 		}
 
@@ -557,7 +566,6 @@ TEST_SUITE("[Navigation3D]") {
 		ERR_PRINT_OFF;
 		navigation_server->region_bake_navigation_mesh(navigation_mesh, node_3d);
 		ERR_PRINT_ON;
-		// FIXME: The above line should trigger the update (line below) under the hood.
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh); // Force update.
 		CHECK_EQ(navigation_mesh->get_polygon_count(), 2);
 		CHECK_EQ(navigation_mesh->get_vertices().size(), 4);
@@ -579,7 +587,7 @@ TEST_SUITE("[Navigation3D]") {
 	}
 #endif // DISABLE_DEPRECATED
 
-	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to parse geometry") {
+	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to parse geometry and areas") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 
 		// Prepare scene tree with simple mesh to serve as an input geometry.
@@ -591,6 +599,53 @@ TEST_SUITE("[Navigation3D]") {
 		mesh_instance->set_mesh(plane_mesh);
 		node_3d->add_child(mesh_instance);
 
+		{ // Box Area.
+			NavigationMeshAreaBox3D *area_box = memnew(NavigationMeshAreaBox3D);
+			mesh_instance->add_child(area_box);
+			area_box->set_position(Vector3(4, 0, 0));
+			area_box->set_size(Vector3(2, 1.0, 2));
+			area_box->set_navigation_layers(0);
+			area_box->set_navigation_layer_value(2, true);
+			CHECK_EQ(area_box->get_size(), Vector3(2, 1.0, 2));
+			CHECK_EQ(area_box->get_navigation_layer_value(2), true);
+			CHECK_EQ(area_box->get_navigation_layer_value(1), false);
+		}
+		{ // Box Area: disabled.
+			NavigationMeshAreaBox3D *area_box = memnew(NavigationMeshAreaBox3D);
+			mesh_instance->add_child(area_box);
+			area_box->set_enabled(false);
+			area_box->set_position(Vector3(0, 0, 4));
+			area_box->set_size(Vector3(2, 1.0, 2));
+			area_box->set_navigation_layers(0);
+			area_box->set_navigation_layer_value(2, true);
+		}
+		{ // Cylinder Area.
+			NavigationMeshAreaCylinder3D *area_cyl = memnew(NavigationMeshAreaCylinder3D);
+			mesh_instance->add_child(area_cyl);
+			area_cyl->set_position(Vector3(-4, 0, 0));
+			area_cyl->set_height(2.5);
+			area_cyl->set_radius(2);
+			area_cyl->set_navigation_layers(0);
+			area_cyl->set_navigation_layer_value(2, true);
+			CHECK_EQ(area_cyl->get_height(), 2.5);
+			CHECK_EQ(area_cyl->get_radius(), 2);
+		}
+		{ // Polygon Area.
+			NavigationMeshAreaPolygon3D *area_poly = memnew(NavigationMeshAreaPolygon3D);
+			mesh_instance->add_child(area_poly);
+			area_poly->set_position(Vector3(0, 0, -4));
+			area_poly->set_height(2);
+			PackedVector3Array poly_vertices;
+			poly_vertices.push_back(Vector3(1.5, 0, 0.5));
+			poly_vertices.push_back(Vector3(1.5, 0, 4.5));
+			poly_vertices.push_back(Vector3(-0.5, 0, 4));
+			poly_vertices.push_back(Vector3(-1, 0, 0));
+			area_poly->set_vertices(poly_vertices);
+			area_poly->set_navigation_layers(0);
+			area_poly->set_navigation_layer_value(2, true);
+			CHECK_EQ(area_poly->get_height(), 2);
+		}
+
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
 		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
 		CHECK_EQ(source_geometry->get_vertices().size(), 0);
@@ -599,6 +654,7 @@ TEST_SUITE("[Navigation3D]") {
 		navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, mesh_instance);
 		CHECK_EQ(source_geometry->get_vertices().size(), 12);
 		CHECK_EQ(source_geometry->get_indices().size(), 6);
+		CHECK_EQ(source_geometry->get_projected_areas().size(), 3);
 
 		SUBCASE("By default, parsing should remove any data that was parsed before") {
 			navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, mesh_instance);
@@ -637,6 +693,47 @@ TEST_SUITE("[Navigation3D]") {
 		mesh_instance->set_mesh(plane_mesh);
 		node_3d->add_child(mesh_instance);
 
+		{ // Box Area.
+			NavigationMeshAreaBox3D *area_box = memnew(NavigationMeshAreaBox3D);
+			mesh_instance->add_child(area_box);
+			area_box->set_position(Vector3(4, 0, 0));
+			area_box->set_size(Vector3(2, 1.0, 2));
+			area_box->set_bake_id("box");
+			area_box->set_navigation_layers(0);
+			area_box->set_navigation_layer_value(2, true);
+			CHECK_EQ(area_box->get_size(), Vector3(2, 1.0, 2));
+			CHECK_EQ(area_box->get_navigation_layer_value(2), true);
+			CHECK_EQ(area_box->get_navigation_layer_value(1), false);
+		}
+		{ // Cylinder Area.
+			NavigationMeshAreaCylinder3D *area_cyl = memnew(NavigationMeshAreaCylinder3D);
+			mesh_instance->add_child(area_cyl);
+			area_cyl->set_position(Vector3(-4, 0, 0));
+			area_cyl->set_height(2.5);
+			area_cyl->set_radius(2);
+			area_cyl->set_bake_id("cylinder");
+			area_cyl->set_navigation_layers(0);
+			area_cyl->set_navigation_layer_value(2, true);
+			CHECK_EQ(area_cyl->get_height(), 2.5);
+			CHECK_EQ(area_cyl->get_radius(), 2);
+		}
+		{ // Polygon Area.
+			NavigationMeshAreaPolygon3D *area_poly = memnew(NavigationMeshAreaPolygon3D);
+			mesh_instance->add_child(area_poly);
+			area_poly->set_position(Vector3(0, 0, -4));
+			area_poly->set_height(2);
+			PackedVector3Array poly_vertices;
+			poly_vertices.push_back(Vector3(1.5, 0, 0.5));
+			poly_vertices.push_back(Vector3(1.5, 0, 4.5));
+			poly_vertices.push_back(Vector3(-0.5, 0, 4));
+			poly_vertices.push_back(Vector3(-1, 0, 0));
+			area_poly->set_vertices(poly_vertices);
+			area_poly->set_bake_id("poly");
+			area_poly->set_navigation_layers(0);
+			area_poly->set_navigation_layer_value(2, true);
+			CHECK_EQ(area_poly->get_height(), 2);
+		}
+
 		// Prepare anything necessary to bake navigation mesh.
 		RID map = navigation_server->map_create();
 		RID region = navigation_server->region_create();
@@ -648,16 +745,40 @@ TEST_SUITE("[Navigation3D]") {
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
-		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
-		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
+		Vector<Vector3> vertices;
+		Vector<Vector<int>> polygons;
+		Vector<uint32_t> polygons_meta;
+		Vector<uint32_t> area_navlayers;
+		Vector<Vector<int>> area_indices;
+		navigation_mesh->get_data(vertices, polygons, polygons_meta, area_navlayers, area_indices);
+		CHECK_EQ(vertices.size(), 0);
+		CHECK_EQ(polygons.size(), 0);
+		CHECK_EQ(polygons_meta.size(), 0);
+		CHECK_EQ(area_navlayers.size(), 0);
+		CHECK_EQ(area_indices.size(), 0);
 
 		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
 		navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, node_3d);
-		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
+		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, 1, Callable());
 		// FIXME: The above line should trigger the update (line below) under the hood.
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh); // Force update.
-		CHECK_EQ(navigation_mesh->get_polygon_count(), 2);
-		CHECK_EQ(navigation_mesh->get_vertices().size(), 4);
+
+		navigation_mesh->get_data(vertices, polygons, polygons_meta, area_navlayers, area_indices);
+		// Not much use with areas carving in:
+		// CHECK_EQ(vertices.size(), ??);
+		// CHECK_EQ(polygons.size(), ??);
+		// CHECK_EQ(polygons_meta.size(), ??);
+		CHECK_EQ(area_navlayers.size(), 3);
+		CHECK_EQ(area_indices.size(), 3);
+		CHECK_EQ(navigation_mesh->get_area_bake_ids(), Array({ "box", "cylinder", "poly" }));
+		CHECK_EQ(navigation_mesh->get_area_index("box"), 0);
+		CHECK_EQ(navigation_mesh->get_area_index("cylinder"), 1);
+		CHECK_EQ(navigation_mesh->get_area_index("poly"), 2);
+		CHECK_EQ(navigation_server->region_get_area_ids(region), Vector<int>({ 1, 2, 3 }));
+
+		CHECK_EQ(navigation_mesh->get_area_navigation_layers(1), 2);
+		navigation_mesh->set_area_navigation_layers(1, 3);
+		CHECK_EQ(navigation_mesh->get_area_navigation_layers(1), 3);
 
 		SUBCASE("Map should emit signal and take newly baked navigation mesh into account") {
 			SIGNAL_WATCH(navigation_server, "map_changed");
@@ -675,7 +796,7 @@ TEST_SUITE("[Navigation3D]") {
 		memdelete(node_3d);
 	}
 
-	// This test case does not check precise values on purpose - to not be too sensitivte.
+	// This test case does not check precise values on purpose - to not be too sensitive.
 	TEST_CASE("[NavigationServer3D] Server should respond to queries against valid map properly") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
@@ -685,7 +806,7 @@ TEST_SUITE("[Navigation3D]") {
 		arr.resize(RSE::ARRAY_MAX);
 		BoxMesh::create_mesh_array(arr, Vector3(10.0, 0.001, 10.0));
 		source_geometry->add_mesh_array(arr, Transform3D());
-		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
+		navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, 1, Callable());
 		CHECK_NE(navigation_mesh->get_polygon_count(), 0);
 		CHECK_NE(navigation_mesh->get_vertices().size(), 0);
 

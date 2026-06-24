@@ -45,6 +45,9 @@ class NavMap3D;
 struct NavMapIteration3D;
 
 class NavMeshQueries3D {
+	// Take the first matching layer between the query and the polygon. The cost related parameters are already sorted from highest to lowest cost.
+	static float _get_polygon_travel_cost(const Nav3D::Polygon *p_polygon, const LocalVector<int> &p_layer_cost_indices, const LocalVector<float> &p_layer_cost);
+
 public:
 	struct PathQuerySlot {
 		LocalVector<Nav3D::NavigationPoly> path_corridor;
@@ -77,6 +80,8 @@ public:
 		bool include_regions = false;
 		LocalVector<RID> excluded_regions;
 		LocalVector<RID> included_regions;
+		LocalVector<int> layer_cost_indices; // This and layer_cost are equal in length. Sorted from most to least expensive.
+		LocalVector<float> layer_cost;
 
 		float path_return_max_length = 0.0;
 		float path_return_max_radius = 0.0;
@@ -150,10 +155,10 @@ public:
 	static void _query_task_post_process_nopostprocessing(NavMeshPathQueryTask3D &p_query_task);
 	static void _query_task_clip_path(NavMeshPathQueryTask3D &p_query_task, const Nav3D::NavigationPoly *from_poly, const Vector3 &p_to_point, const Nav3D::NavigationPoly *p_to_poly);
 	static void _query_task_simplified_path_points(NavMeshPathQueryTask3D &p_query_task);
-	static bool _query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner);
+	static bool _query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner, uint32_t p_navigation_layers);
 	static void _query_task_process_path_result_limits(NavMeshPathQueryTask3D &p_query_task);
 
-	static void _query_task_search_polygon_connections(NavMeshPathQueryTask3D &p_query_task, const Nav3D::Connection &p_connection, uint32_t p_least_cost_id, const Nav3D::NavigationPoly &p_least_cost_poly, real_t p_poly_enter_cost, const Vector3 &p_end_point);
+	static void _query_task_search_polygon_connections(NavMeshPathQueryTask3D &p_query_task, const Nav3D::Connection &p_connection, uint32_t p_least_cost_id, const Nav3D::NavigationPoly &p_least_cost_poly, const Vector3 &p_end_point);
 
 	static void simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector3> &p_points, real_t p_epsilon, LocalVector<uint32_t> &r_simplified_path_indices);
 	static LocalVector<uint32_t> get_simplified_path_indices(const LocalVector<Vector3> &p_path, real_t p_epsilon);

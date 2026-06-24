@@ -38,6 +38,7 @@
 class NavAgent3D;
 class NavMap3D;
 
+// Lives inside a NavMap.
 class NavObstacle3D : public NavRid3D {
 	NavAgent3D *agent = nullptr;
 	NavMap3D *map = nullptr;
