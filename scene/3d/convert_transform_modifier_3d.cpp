@@ -69,6 +69,8 @@ bool ConvertTransformModifier3D::_set(const StringName &p_path, const Variant &p
 			} else {
 				return false;
 			}
+		} else if (where == "global") {
+			set_global(which, p_value);
 		} else if (where == "relative") {
 			set_relative(which, p_value);
 		} else if (where == "additive") {
@@ -113,6 +115,8 @@ bool ConvertTransformModifier3D::_get(const StringName &p_path, Variant &r_ret) 
 			} else {
 				return false;
 			}
+		} else if (where == "global") {
+			r_ret = is_global(which);
 		} else if (where == "relative") {
 			r_ret = is_relative(which);
 		} else if (where == "additive") {
@@ -158,6 +162,7 @@ void ConvertTransformModifier3D::_get_property_list(List<PropertyInfo> *p_list) 
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "reference/range_min", PROPERTY_HINT_RANGE, hint_reference_range));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "reference/range_max", PROPERTY_HINT_RANGE, hint_reference_range));
 
+		props.push_back(PropertyInfo(Variant::BOOL, path + "global"));
 		props.push_back(PropertyInfo(Variant::BOOL, path + "relative"));
 		props.push_back(PropertyInfo(Variant::BOOL, path + "additive"));
 	}
@@ -172,8 +177,10 @@ void ConvertTransformModifier3D::_validate_dynamic_prop(PropertyInfo &p_property
 	PackedStringArray split = p_property.name.split("/");
 	if (split.size() > 2 && split[0] == "settings") {
 		int which = split[1].to_int();
-		if (split[2].begins_with("relative") && get_reference_type(which) != REFERENCE_TYPE_BONE) {
-			p_property.usage = PROPERTY_USAGE_NONE;
+		if (get_reference_type(which) != REFERENCE_TYPE_BONE) {
+			if (split[2].begins_with("global") || split[2].begins_with("relative")) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
 		}
 	}
 }
@@ -280,6 +287,18 @@ float ConvertTransformModifier3D::get_reference_range_max(int p_index) const {
 	return setting->reference_range_max;
 }
 
+void ConvertTransformModifier3D::set_global(int p_index, bool p_enabled) {
+	ERR_FAIL_INDEX(p_index, (int)settings.size());
+	ConvertTransform3DSetting *setting = static_cast<ConvertTransform3DSetting *>(settings[p_index]);
+	setting->global = p_enabled;
+}
+
+bool ConvertTransformModifier3D::is_global(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
+	ConvertTransform3DSetting *setting = static_cast<ConvertTransform3DSetting *>(settings[p_index]);
+	return setting->is_global();
+}
+
 void ConvertTransformModifier3D::set_relative(int p_index, bool p_enabled) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	ConvertTransform3DSetting *setting = static_cast<ConvertTransform3DSetting *>(settings[p_index]);
@@ -323,6 +342,8 @@ void ConvertTransformModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_reference_range_max", "index", "range_max"), &ConvertTransformModifier3D::set_reference_range_max);
 	ClassDB::bind_method(D_METHOD("get_reference_range_max", "index"), &ConvertTransformModifier3D::get_reference_range_max);
 
+	ClassDB::bind_method(D_METHOD("set_global", "index", "enabled"), &ConvertTransformModifier3D::set_global);
+	ClassDB::bind_method(D_METHOD("is_global", "index"), &ConvertTransformModifier3D::is_global);
 	ClassDB::bind_method(D_METHOD("set_relative", "index", "enabled"), &ConvertTransformModifier3D::set_relative);
 	ClassDB::bind_method(D_METHOD("is_relative", "index"), &ConvertTransformModifier3D::is_relative);
 	ClassDB::bind_method(D_METHOD("set_additive", "index", "enabled"), &ConvertTransformModifier3D::set_additive);
@@ -337,12 +358,31 @@ void ConvertTransformModifier3D::_bind_methods() {
 
 void ConvertTransformModifier3D::_process_constraint_by_bone(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, int p_reference_bone, float p_amount) {
 	ConvertTransform3DSetting *setting = static_cast<ConvertTransform3DSetting *>(settings[p_index]);
-	Transform3D destination = p_skeleton->get_bone_pose(p_reference_bone);
+	Transform3D destination;
+	Transform3D to_apply_space;
+	bool is_global = setting->is_global();
+	if (is_global) {
+		Transform3D apply_parent_global_pose;
+		int apply_parent = p_skeleton->get_bone_parent(p_apply_bone);
+		if (apply_parent >= 0) {
+			apply_parent_global_pose = p_skeleton->get_bone_global_pose(apply_parent);
+		}
+		to_apply_space = apply_parent_global_pose.affine_inverse();
+		destination = to_apply_space * p_skeleton->get_bone_global_pose(p_reference_bone);
+	} else {
+		destination = p_skeleton->get_bone_pose(p_reference_bone);
+	}
 	if (setting->is_relative()) {
-		Vector3 scl_relative = destination.basis.get_scale() / p_skeleton->get_bone_rest(p_reference_bone).basis.get_scale();
-		destination.basis = p_skeleton->get_bone_rest(p_reference_bone).basis.get_rotation_quaternion().inverse() * destination.basis.get_rotation_quaternion();
+		Transform3D reference_rest;
+		if (is_global) {
+			reference_rest = to_apply_space * p_skeleton->get_bone_global_rest(p_reference_bone);
+		} else {
+			reference_rest = p_skeleton->get_bone_rest(p_reference_bone);
+		}
+		Vector3 scl_relative = destination.basis.get_scale() / reference_rest.basis.get_scale();
+		destination.basis = reference_rest.basis.get_rotation_quaternion().inverse() * destination.basis.get_rotation_quaternion();
 		destination.basis.scale_local(scl_relative);
-		destination.origin = destination.origin - p_skeleton->get_bone_rest(p_reference_bone).origin;
+		destination.origin = destination.origin - reference_rest.origin;
 	}
 	_process_convert(p_index, p_skeleton, p_apply_bone, destination, p_amount);
 }
