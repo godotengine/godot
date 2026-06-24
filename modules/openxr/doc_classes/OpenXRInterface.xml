@@ -24,7 +24,7 @@
 				var capture_tex: RID
 
 				func _ready():
-				    xr = XRServer.find_interface("OpenXR") as OpenXRInterface
+					xr = XRServer.find_interface("OpenXR") as OpenXRInterface
 				    xr.frame_captured.connect(_on_frame_captured)
 
 				func take_screenshot():
