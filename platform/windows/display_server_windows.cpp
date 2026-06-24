@@ -7332,6 +7332,7 @@ Error DisplayServerWindows::_create_rendering_context_window(DisplayServerEnums:
 #ifdef D3D12_ENABLED
 	if (p_rendering_driver == "d3d12") {
 		wpd.d3d12.window = wd.hWnd;
+		wpd.d3d12.swap_chain_panel_native = nullptr;
 	}
 #endif
 

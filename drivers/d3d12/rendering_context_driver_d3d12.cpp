@@ -251,11 +251,24 @@ void RenderingContextDriverD3D12::driver_free(RenderingDeviceDriver *p_driver) {
 	memdelete(p_driver);
 }
 
+RenderingContextDriverD3D12::EmbedUiDispatchFunc RenderingContextDriverD3D12::embed_ui_dispatch = nullptr;
+
 RenderingContextDriver::SurfaceID RenderingContextDriverD3D12::surface_create(const void *p_platform_data) {
 	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
 	Surface *surface = memnew(Surface);
 	surface->hwnd = wpd->window;
+	surface->swap_chain_panel_native = wpd->swap_chain_panel_native;
 	return SurfaceID(surface);
+}
+
+void RenderingContextDriverD3D12::surface_set_composition_scale(SurfaceID p_surface, float p_scale_x, float p_scale_y) {
+	Surface *surface = (Surface *)(p_surface);
+	if (surface->composition_scale_x == p_scale_x && surface->composition_scale_y == p_scale_y) {
+		return;
+	}
+	surface->composition_scale_x = p_scale_x;
+	surface->composition_scale_y = p_scale_y;
+	surface->needs_resize = true; // Reapplies the swap chain matrix transform.
 }
 
 void RenderingContextDriverD3D12::surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) {

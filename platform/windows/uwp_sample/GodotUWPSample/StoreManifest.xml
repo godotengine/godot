@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<StoreManifest xmlns="http://schemas.microsoft.com/appx/2015/StoreManifest">
+    <Dependencies>
+        <DirectXDependency Name="D3D11_HWFL_10_0" />
+    </Dependencies>
+</StoreManifest>

@@ -1,0 +1,32 @@
+[gd_scene load_steps=4 format=3 uid="uid://uwpembedtest1"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_script"]
+
+[sub_resource type="StandardMaterial3D" id="mat_cube"]
+albedo_color = Color(0.91, 0.27, 0.38, 1)
+
+[sub_resource type="ProceduralSkyMaterial" id="mat_sky"]
+sky_top_color = Color(0.12, 0.14, 0.25, 1)
+sky_horizon_color = Color(0.2, 0.22, 0.35, 1)
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Camera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 1.8, 4.5)
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 4, 0)
+shadow_enabled = true
+
+[node name="Cube" type="CSGBox3D" parent="."]
+material = SubResource("mat_cube")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="InfoLabel" type="Label" parent="UI"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 900.0
+offset_bottom = 80.0
+text = "Godot in UWP SwapChainPanel"

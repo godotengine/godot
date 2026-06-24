@@ -1,0 +1,20 @@
+; Engine configuration file.
+; Minimal test project for the UWP in-process embedding (cube sample).
+
+config_version=5
+
+[application]
+
+config/name="UWP Embed Test"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.6", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1024
+window/size/viewport_height=600
+window/size/resizable=true
+
+[rendering]
+
+renderer/rendering_method="forward_plus"

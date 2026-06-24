@@ -1,0 +1,17 @@
+# UWP / .NET build outputs
+[Bb]in/
+[Oo]bj/
+.vs/
+AppPackages/
+BundleArtifacts/
+*.user
+*.appxrecipe
+*.appx
+*.msix
+*.msixupload
+*.appxsym
+*.cer
+*.pfx
+
+# Godot editor cache (regenerated)
+.godot/

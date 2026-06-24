@@ -83,13 +83,32 @@ public:
 	virtual bool is_debug_utils_enabled() const override;
 
 	// Platform-specific data for the Windows embedded in this driver.
+	// NOTE: must stay trivially constructible (used inside anonymous unions);
+	// callers set every field explicitly.
 	struct WindowPlatformData {
 		HWND window;
+		// Optional XAML embedding (UWP/WinUI3): ISwapChainPanelNative as
+		// IUnknown. When set (and window is null), the swap chain is created
+		// for composition and bound to the panel instead of an HWND.
+		IUnknown *swap_chain_panel_native;
 	};
+
+	// Host-provided synchronous UI-thread dispatcher used to bind the swap
+	// chain to a XAML panel (ISwapChainPanelNative::SetSwapChain is UI-thread
+	// affine). Set by the embedding layer before the swap chain is created.
+	typedef void(__cdecl *EmbedWorkFunc)(void *p_userdata);
+	typedef void(__cdecl *EmbedUiDispatchFunc)(EmbedWorkFunc p_work, void *p_userdata);
+	static EmbedUiDispatchFunc embed_ui_dispatch;
 
 	// D3D12-only methods.
 	struct Surface {
 		HWND hwnd = nullptr;
+		Microsoft::WRL::ComPtr<IUnknown> swap_chain_panel_native;
+		// XAML composes panel swap chains in DIPs; the embedding applies the
+		// inverse of this scale via IDXGISwapChain2::SetMatrixTransform so
+		// buffer pixels map 1:1 to physical pixels.
+		float composition_scale_x = 1.0f;
+		float composition_scale_y = 1.0f;
 		uint32_t width = 0;
 		uint32_t height = 0;
 		DisplayServerEnums::VSyncMode vsync_mode = DisplayServerEnums::VSYNC_ENABLED;
@@ -115,6 +134,10 @@ public:
 #ifdef DCOMP_ENABLED
 	HMODULE lib_dcomp = nullptr;
 #endif
+
+	// XAML panel embedding: updates the panel composition scale and marks the
+	// surface for resize so the swap chain transform is reapplied.
+	void surface_set_composition_scale(SurfaceID p_surface, float p_scale_x, float p_scale_y);
 
 	IDXGIAdapter1 *create_adapter(uint32_t p_adapter_index) const;
 	ID3D12DeviceFactory *device_factory_get() const;

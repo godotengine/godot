@@ -1,0 +1,33 @@
+<Page
+    x:Class="Godot.Uwp.Embedding.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Godot.Uwp.Embedding"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    mc:Ignorable="d">
+
+    <Grid>
+        <!-- Godot renders into this panel via an in-process composition
+             swap chain (ISwapChainPanelNative::SetSwapChain). -->
+        <SwapChainPanel x:Name="GodotPanel"
+                        Loaded="OnPanelLoaded"
+                        SizeChanged="OnPanelSizeChanged"
+                        CompositionScaleChanged="OnPanelCompositionScaleChanged"
+                        PointerPressed="OnPointerPressed"
+                        PointerReleased="OnPointerReleased"
+                        PointerMoved="OnPointerMoved"
+                        PointerWheelChanged="OnPointerWheelChanged" />
+
+        <!-- Status overlay (hidden once the engine renders) -->
+        <TextBlock x:Name="StatusText"
+                   Text="Starting Godot engine..."
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="16"
+                   Foreground="#8888AA"
+                   IsHitTestVisible="False" />
+    </Grid>
+</Page>

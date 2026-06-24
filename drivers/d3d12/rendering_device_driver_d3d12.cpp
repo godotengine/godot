@@ -2725,6 +2725,70 @@ void RenderingDeviceDriverD3D12::_determine_swap_chain_format(SwapChain *p_swap_
 	}
 }
 
+// XAML SwapChainPanel binding (UWP/WinUI3 embedding). The interfaces are
+// declared locally to avoid a dependency on the XAML interop SDK headers;
+// only SetSwapChain is needed. UWP and WinUI3 panels expose it under different IIDs.
+MIDL_INTERFACE("f92f19d2-3ade-45a6-a20c-f6f1ea90554b")
+IEmbedSwapChainPanelNativeUWP : public IUnknown {
+	virtual HRESULT STDMETHODCALLTYPE SetSwapChain(IDXGISwapChain * p_swap_chain) = 0;
+};
+
+MIDL_INTERFACE("63aad0b8-7c24-40ff-85a8-640d944cc325")
+IEmbedSwapChainPanelNativeWinUI3 : public IUnknown {
+	virtual HRESULT STDMETHODCALLTYPE SetSwapChain(IDXGISwapChain * p_swap_chain) = 0;
+};
+
+namespace {
+struct EmbedPanelBindCtx {
+	IUnknown *panel = nullptr;
+	IDXGISwapChain *swap_chain = nullptr;
+	HRESULT result = E_FAIL;
+};
+
+void _embed_panel_bind_work(void *p_userdata) {
+	EmbedPanelBindCtx *ctx = (EmbedPanelBindCtx *)p_userdata;
+	ComPtr<IEmbedSwapChainPanelNativeUWP> uwp_panel;
+	if (SUCCEEDED(ctx->panel->QueryInterface(IID_PPV_ARGS(uwp_panel.GetAddressOf())))) {
+		ctx->result = uwp_panel->SetSwapChain(ctx->swap_chain);
+		return;
+	}
+	ComPtr<IEmbedSwapChainPanelNativeWinUI3> winui3_panel;
+	if (SUCCEEDED(ctx->panel->QueryInterface(IID_PPV_ARGS(winui3_panel.GetAddressOf())))) {
+		ctx->result = winui3_panel->SetSwapChain(ctx->swap_chain);
+		return;
+	}
+	ctx->result = E_NOINTERFACE;
+}
+
+HRESULT _embed_bind_swap_chain_to_panel(IUnknown *p_panel, IDXGISwapChain *p_swap_chain) {
+	EmbedPanelBindCtx ctx;
+	ctx.panel = p_panel;
+	ctx.swap_chain = p_swap_chain;
+	if (RenderingContextDriverD3D12::embed_ui_dispatch != nullptr) {
+		RenderingContextDriverD3D12::embed_ui_dispatch(_embed_panel_bind_work, &ctx);
+	} else {
+		_embed_panel_bind_work(&ctx);
+	}
+	return ctx.result;
+}
+
+// XAML composes a SwapChainPanel's buffer in DIPs; apply the inverse of the
+// panel's composition scale so buffer pixels map 1:1 to physical pixels
+// (otherwise content appears scaled up and cropped on high-DPI displays).
+void _embed_apply_panel_scale(const RenderingContextDriverD3D12::Surface *p_surface, IDXGISwapChain3 *p_swap_chain) {
+	if (p_surface->swap_chain_panel_native.Get() == nullptr || p_swap_chain == nullptr) {
+		return;
+	}
+	DXGI_MATRIX_3X2_F transform = {};
+	transform._11 = p_surface->composition_scale_x != 0.0f ? 1.0f / p_surface->composition_scale_x : 1.0f;
+	transform._22 = p_surface->composition_scale_y != 0.0f ? 1.0f / p_surface->composition_scale_y : 1.0f;
+	HRESULT hr = p_swap_chain->SetMatrixTransform(&transform);
+	if (!SUCCEEDED(hr)) {
+		WARN_PRINT_ONCE("SetMatrixTransform on the panel swap chain failed; high-DPI output may be cropped.");
+	}
+}
+} //namespace
+
 RDD::SwapChainID RenderingDeviceDriverD3D12::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
 	DEV_ASSERT(p_surface != 0);
 
@@ -2783,13 +2847,16 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 
 	swap_chain->data_format = new_data_format;
 
+	// XAML panel embedding (UWP/WinUI3) requires a composition swap chain
+	// regardless of transparency, and binds to the panel instead of DComp.
+	bool panel_mode = surface->swap_chain_panel_native.Get() != nullptr;
 #ifdef DCOMP_ENABLED
-	bool create_for_composition = OS::get_singleton()->is_layered_allowed();
+	bool create_for_composition = panel_mode || OS::get_singleton()->is_layered_allowed();
 #else
 	if (OS::get_singleton()->is_layered_allowed()) {
 		WARN_PRINT_ONCE("Window transparency is not supported without DirectComposition on D3D12.");
 	}
-	bool create_for_composition = false;
+	bool create_for_composition = panel_mode;
 #endif
 
 	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
@@ -2797,6 +2864,9 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		_swap_chain_release_buffers(swap_chain);
 		res = swap_chain->d3d_swap_chain->ResizeBuffers(p_desired_framebuffer_count, surface->width, surface->height, DXGI_FORMAT_UNKNOWN, creation_flags);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_UNAVAILABLE);
+		if (panel_mode) {
+			_embed_apply_panel_scale(surface, swap_chain->d3d_swap_chain.Get());
+		}
 	} else {
 		DEV_ASSERT(swap_chain->render_pass.id == 0);
 		swap_chain->render_pass = _swap_chain_create_render_pass(new_data_format);
@@ -2810,8 +2880,12 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		swap_chain_desc.Flags = creation_flags;
 		swap_chain_desc.Scaling = DXGI_SCALING_STRETCH;
 		if (create_for_composition) {
-			swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
-			has_comp_alpha[(uint64_t)p_cmd_queue.id] = true;
+			// Premultiplied alpha makes the compositor blend every pixel with
+			// the page behind the panel — that washes an opaque embed out. Only
+			// use it when the project actually requests transparency.
+			bool composition_alpha = OS::get_singleton()->is_layered_allowed();
+			swap_chain_desc.AlphaMode = composition_alpha ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
+			has_comp_alpha[(uint64_t)p_cmd_queue.id] = composition_alpha;
 		} else {
 			swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 			has_comp_alpha[(uint64_t)p_cmd_queue.id] = false;
@@ -2822,7 +2896,7 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		ComPtr<IDXGISwapChain1> swap_chain_1;
 		if (create_for_composition) {
 			res = context_driver->dxgi_factory_get()->CreateSwapChainForComposition(command_queue->d3d_queue.Get(), &swap_chain_desc, nullptr, swap_chain_1.GetAddressOf());
-			if (!SUCCEEDED(res)) {
+			if (!SUCCEEDED(res) && !panel_mode) {
 				WARN_PRINT_ONCE("Window transparency is not supported without DirectComposition on D3D12.");
 				swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 				has_comp_alpha[(uint64_t)p_cmd_queue.id] = false;
@@ -2839,8 +2913,16 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		swap_chain_1.As(&swap_chain->d3d_swap_chain);
 		ERR_FAIL_NULL_V(swap_chain->d3d_swap_chain, ERR_CANT_CREATE);
 
-		res = context_driver->dxgi_factory_get()->MakeWindowAssociation(surface->hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
-		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+		if (panel_mode) {
+			// Bind the swap chain to the host XAML panel (UI-thread affine, so
+			// hop through the host dispatcher), then apply the inverse-DPI transform.
+			res = _embed_bind_swap_chain_to_panel(surface->swap_chain_panel_native.Get(), swap_chain->d3d_swap_chain.Get());
+			ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "ISwapChainPanelNative::SetSwapChain failed.");
+			_embed_apply_panel_scale(surface, swap_chain->d3d_swap_chain.Get());
+		} else {
+			res = context_driver->dxgi_factory_get()->MakeWindowAssociation(surface->hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
+			ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+		}
 	}
 
 	if (swap_chain->color_space != new_color_space) {
@@ -2851,7 +2933,7 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 	}
 
 #ifdef DCOMP_ENABLED
-	if (create_for_composition) {
+	if (create_for_composition && !panel_mode) {
 		if (surface->composition_device.Get() == nullptr) {
 			using PFN_DCompositionCreateDevice = HRESULT(WINAPI *)(IDXGIDevice *, REFIID, void **);
 			PFN_DCompositionCreateDevice pfn_DCompositionCreateDevice = (PFN_DCompositionCreateDevice)(void *)GetProcAddress(context_driver->lib_dcomp, "DCompositionCreateDevice");

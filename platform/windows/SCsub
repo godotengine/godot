@@ -33,6 +33,12 @@ if env["library_type"] == "executable":
 else:
     common_win += ["libgodot_windows.cpp"]
 
+# XAML SwapChainPanel embedding (UWP/WinUI3): windowless display server and
+# flat C ABI, only meaningful when the engine is built as a shared library.
+if env["library_type"] == "shared_library":
+    env.Append(CPPDEFINES=["GODOT_UWP_EMBED_ENABLED"])
+    common_win += ["display_server_embedded_win.cpp", "godot_uwp_embed.cpp", "uwp_host.cpp"]
+
 if env.msvc:
     common_win += ["crash_handler_windows_seh.cpp"]
 else:

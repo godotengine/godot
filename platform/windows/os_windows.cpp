@@ -31,6 +31,9 @@
 #include "os_windows.h"
 
 #include "display_server_windows.h"
+#ifdef GODOT_UWP_EMBED_ENABLED
+#include "display_server_embedded_win.h"
+#endif
 #include "lang_table.h"
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
@@ -2921,6 +2924,9 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 #endif
 
 	DisplayServerWindows::register_windows_driver();
+#ifdef GODOT_UWP_EMBED_ENABLED
+	DisplayServerEmbeddedWin::register_embedded_driver();
+#endif
 
 	// Enable ANSI escape code support on Windows 10 v1607 (Anniversary Update) and later.
 	// This lets the engine and projects use ANSI escape codes to color text just like on macOS and Linux.
