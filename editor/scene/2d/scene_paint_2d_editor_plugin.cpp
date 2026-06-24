@@ -70,6 +70,7 @@ void ScenePaint2DEditor::_edit(Object *p_object) {
 		} else {
 			grid = CanvasItemEditor::get_singleton()->is_grid_visible();
 			grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
+			grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
 		}
 	}
 
@@ -125,10 +126,10 @@ void ScenePaint2DEditor::_draw_overlay() {
 			for (int i = 1; i < 4; i++) {
 				bounds.expand_to(corners[i]);
 			}
-			int start_x = Math::floor(bounds.position.x / grid_step.x) * grid_step.x;
-			int end_x = Math::ceil((bounds.position.x + bounds.size.x) / grid_step.x) * grid_step.x;
-			int start_y = Math::floor(bounds.position.y / grid_step.y) * grid_step.y;
-			int end_y = Math::ceil((bounds.position.y + bounds.size.y) / grid_step.y) * grid_step.y;
+			int start_x = Math::floor((bounds.position.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x;
+			int end_x = Math::ceil(((bounds.position.x + bounds.size.x) - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x;
+			int start_y = Math::floor((bounds.position.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y;
+			int end_y = Math::ceil(((bounds.position.y + bounds.size.y) - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y;
 			Vector2 hint_distance = xform.get_scale() * grid_step;
 			float scale_fade = MIN(1.0, (MIN(hint_distance.x, hint_distance.y) - 5) / 5);
 			if (scale_fade > 0) {
@@ -152,8 +153,8 @@ void ScenePaint2DEditor::_draw_overlay() {
 			Vector2 mouse_canvas = viewport->get_local_mouse_position();
 			Vector2 mouse_local = xform.affine_inverse().xform(mouse_canvas);
 			Vector2 snapped_local = Vector2(
-					Math::floor(mouse_local.x / grid_step.x) * grid_step.x,
-					Math::floor(mouse_local.y / grid_step.y) * grid_step.y);
+					Math::floor((mouse_local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+					Math::floor((mouse_local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 			Vector2 corners[4] = {
 				snapped_local, snapped_local + Vector2(grid_step.x, 0),
 				snapped_local + Vector2(grid_step.x, grid_step.y),
@@ -189,12 +190,12 @@ void ScenePaint2DEditor::_draw_overlay() {
 			Vector2 snapped_local;
 			if (paint_mode == PAINT_MODE_SNAP_GRID_CELL_CENTER) {
 				snapped_local = Vector2(
-						Math::floor(mouse_local.x / grid_step.x) * grid_step.x,
-						Math::floor(mouse_local.y / grid_step.y) * grid_step.y);
+						Math::floor((mouse_local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+						Math::floor((mouse_local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 			} else if (paint_mode == PAINT_MODE_SNAP_GRID) {
 				snapped_local = Vector2(
-						Math::round(mouse_local.x / grid_step.x) * grid_step.x,
-						Math::round(mouse_local.y / grid_step.y) * grid_step.y);
+						Math::round((mouse_local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+						Math::round((mouse_local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 			}
 			final_local = (paint_mode != PAINT_MODE_FREE)
 					? (paint_mode == PAINT_MODE_SNAP_GRID ? snapped_local : (snapped_local + grid_step / 2.0))
@@ -203,6 +204,7 @@ void ScenePaint2DEditor::_draw_overlay() {
 		instance_container->set_position(xform.xform(final_local));
 		instance_container->set_rotation(xform.get_rotation());
 		instance_container->set_scale(xform.get_scale());
+		instance_container->set_skew(xform.get_skew());
 		_edit_properties();
 	}
 }
@@ -348,7 +350,8 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 			for (const CanvasItemEditor::SelectResult &result : results) {
 				Node2D *root = _get_node_root(result.item);
 				if (_is_scene_painted(root)) {
-					if (pos == root->get_position()) {
+					Vector2 root_pos = node->get_global_transform().xform(root->get_position());
+					if (pos.is_equal_approx(root_pos)) {
 						return;
 					}
 				}
@@ -432,12 +435,12 @@ Vector2 ScenePaint2DEditor::_get_mouse_grid_cell() {
 	Vector2 snapped;
 	if (paint_mode == PAINT_MODE_SNAP_GRID_CELL_CENTER) {
 		snapped = Vector2(
-				Math::floor(local.x / grid_step.x) * grid_step.x,
-				Math::floor(local.y / grid_step.y) * grid_step.y);
+				Math::floor((local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+				Math::floor((local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 	} else if (paint_mode == PAINT_MODE_SNAP_GRID) {
 		snapped = Vector2(
-				Math::round(local.x / grid_step.x) * grid_step.x,
-				Math::round(local.y / grid_step.y) * grid_step.y);
+				Math::round((local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+				Math::round((local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 	}
 
 	return node->get_global_transform().xform(snapped);
@@ -728,6 +731,7 @@ ScenePaint2DEditor::PaintMode ScenePaint2DEditor::_reload_paint_mode() {
 
 void ScenePaint2DEditor::_grid_step_changed() {
 	grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
+	grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
 }
 
 void ScenePaint2DEditor::_bind_methods() {

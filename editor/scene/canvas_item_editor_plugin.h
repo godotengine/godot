@@ -617,6 +617,7 @@ public:
 
 	bool is_grid_visible() const;
 	Vector2 get_grid_step() const { return grid_step; }
+	Vector2 get_grid_offset() const { return grid_offset; }
 
 	void edit(CanvasItem *p_canvas_item);
 

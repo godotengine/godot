@@ -88,6 +88,7 @@ class ScenePaint2DEditor : public Control {
 	InputTool input_tool = INPUT_TOOL_NONE;
 
 	Size2i grid_step = Size2i(16, 16);
+	Size2i grid_offset = Size2i(0, 0);
 
 	int recent_idx = -1;
 
