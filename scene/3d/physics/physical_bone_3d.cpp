@@ -791,9 +791,12 @@ void PhysicalBone3D::_notification(int p_what) {
 }
 
 void PhysicalBone3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
-	set_ignore_transform_notification(true);
-	set_global_transform(p_state->get_transform());
-	set_ignore_transform_notification(false);
+	Transform3D new_transform = p_state->get_transform();
+	if (likely(new_transform != get_global_transform())) {
+		set_ignore_transform_notification(true);
+		set_global_transform(new_transform);
+		set_ignore_transform_notification(false);
+	}
 
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
@@ -838,6 +841,8 @@ void PhysicalBone3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_joint_type", "joint_type"), &PhysicalBone3D::set_joint_type);
 	ClassDB::bind_method(D_METHOD("get_joint_type"), &PhysicalBone3D::get_joint_type);
+
+	ClassDB::bind_method(D_METHOD("get_joint_rid"), &PhysicalBone3D::get_joint_rid);
 
 	ClassDB::bind_method(D_METHOD("set_joint_offset", "offset"), &PhysicalBone3D::set_joint_offset);
 	ClassDB::bind_method(D_METHOD("get_joint_offset"), &PhysicalBone3D::get_joint_offset);

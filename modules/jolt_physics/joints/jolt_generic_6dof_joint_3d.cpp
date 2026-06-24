@@ -208,6 +208,20 @@ void JoltGeneric6DOFJoint3D::_update_spring_equilibrium(int p_axis) {
 	}
 }
 
+void JoltGeneric6DOFJoint3D::_update_angular_target_rotation() {
+	if (!has_angular_target_rotation) {
+		return;
+	}
+
+	JPH::SixDOFConstraint *constraint = static_cast<JPH::SixDOFConstraint *>(jolt_ref.GetPtr());
+	if (unlikely(constraint == nullptr)) {
+		return;
+	}
+
+	const JPH::Quat target_orientation = to_jolt(angular_target_rotation);
+	constraint->SetTargetOrientationBS(target_orientation);
+}
+
 void JoltGeneric6DOFJoint3D::_limits_changed() {
 	rebuild();
 	_wake_up_bodies();
@@ -435,6 +449,7 @@ void JoltGeneric6DOFJoint3D::set_param(Axis p_axis, Param p_param, double p_valu
 		} break;
 		case JoltPhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT: {
 			spring_equilibrium[axis_ang] = p_value;
+			has_angular_target_rotation = false;
 			_spring_equilibrium_changed(axis_ang);
 		} break;
 		default: {
@@ -505,6 +520,36 @@ void JoltGeneric6DOFJoint3D::set_flag(Axis p_axis, Flag p_flag, bool p_enabled) 
 			ERR_FAIL_MSG(vformat("Unhandled flag: '%d'. This should not happen. Please report this.", p_flag));
 		} break;
 	}
+}
+
+void JoltGeneric6DOFJoint3D::set_angular_target_rotation(const Quaternion &p_target_rotation) {
+	ERR_FAIL_COND_MSG(!p_target_rotation.is_finite() || p_target_rotation.length_squared() <= CMP_EPSILON, "Angular target rotation must be a finite, non-zero quaternion.");
+
+	angular_target_rotation = p_target_rotation.normalized();
+	has_angular_target_rotation = true;
+	_update_angular_target_rotation();
+	_wake_up_bodies();
+}
+
+Quaternion JoltGeneric6DOFJoint3D::get_angular_target_rotation() const {
+	if (has_angular_target_rotation) {
+		return angular_target_rotation;
+	}
+
+	const JPH::SixDOFConstraint *constraint = static_cast<const JPH::SixDOFConstraint *>(jolt_ref.GetPtr());
+	if (unlikely(constraint == nullptr)) {
+		return Quaternion();
+	}
+
+	const Basis target_orientation_cs = Basis::from_euler(
+			Vector3(static_cast<real_t>(-spring_equilibrium[AXIS_ANGULAR_X]),
+					static_cast<real_t>(-spring_equilibrium[AXIS_ANGULAR_Y]),
+					static_cast<real_t>(-spring_equilibrium[AXIS_ANGULAR_Z])),
+			EulerOrder::ZYX);
+	const Basis constraint_to_body_1 = to_godot(constraint->GetConstraintToBody1Matrix()).basis;
+	const Basis constraint_to_body_2 = to_godot(constraint->GetConstraintToBody2Matrix()).basis;
+
+	return (constraint_to_body_1 * target_orientation_cs * constraint_to_body_2.inverse()).get_quaternion();
 }
 
 double JoltGeneric6DOFJoint3D::get_jolt_param(Axis p_axis, JoltParam p_param) const {
@@ -669,8 +714,7 @@ void JoltGeneric6DOFJoint3D::rebuild() {
 
 	space->add_joint(this);
 
-	_update_enabled();
-	_update_iterations();
+	_update_joint();
 
 	_update_limit_spring_parameters(AXIS_LINEAR_X);
 	_update_limit_spring_parameters(AXIS_LINEAR_Y);
@@ -683,4 +727,6 @@ void JoltGeneric6DOFJoint3D::rebuild() {
 		_update_spring_parameters(axis);
 		_update_spring_equilibrium(axis);
 	}
+
+	_update_angular_target_rotation();
 }

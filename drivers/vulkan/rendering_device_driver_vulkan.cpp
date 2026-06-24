@@ -615,15 +615,17 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 		}
 	}
 
+	_register_requested_device_extension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+
 	uint32_t device_extension_count = 0;
 	VkResult err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, nullptr);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
-	ERR_FAIL_COND_V_MSG(device_extension_count == 0, ERR_CANT_CREATE, "vkEnumerateDeviceExtensionProperties failed to find any extensions\n\nDo you have a compatible Vulkan installable client driver (ICD) installed?");
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't get Vulkan device extension count (VkResult error %d).", err));
+	ERR_FAIL_COND_V_MSG(device_extension_count == 0, ERR_CANT_CREATE, "Couldn't find any Vulkan device extensions. Do you have a compatible Vulkan installable client driver (ICD) installed?");
 
 	TightLocalVector<VkExtensionProperties> device_extensions;
 	device_extensions.resize(device_extension_count);
 	err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, device_extensions.ptr());
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't get Vulkan device extension properties (VkResult error %d).", err));
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	if (swappy_frame_pacer_enable) {
@@ -658,7 +660,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 
 #ifdef DEV_ENABLED
 	for (uint32_t i = 0; i < device_extension_count; i++) {
-		print_verbose(String("VULKAN: Found device extension ") + String::utf8(device_extensions[i].extensionName));
+		print_verbose(String("Vulkan: Found device extension ") + String::utf8(device_extensions[i].extensionName));
 	}
 #endif
 
@@ -674,14 +676,96 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	for (KeyValue<CharString, bool> &requested_extension : requested_device_extensions) {
 		if (!enabled_device_extension_names.has(requested_extension.key)) {
 			if (requested_extension.value) {
-				ERR_FAIL_V_MSG(ERR_BUG, String("Required extension ") + String::utf8(requested_extension.key) + String(" not found."));
+				ERR_FAIL_V_MSG(ERR_BUG, String("Required Vulkan device extension ") + String::utf8(requested_extension.key) + String(" not found."));
 			} else {
-				print_verbose(String("Optional extension ") + String::utf8(requested_extension.key) + String(" not found"));
+				print_verbose(String("Optional Vulkan device extension ") + String::utf8(requested_extension.key) + String(" not found"));
 			}
 		}
 	}
 
 	return OK;
+}
+
+void RenderingDeviceDriverVulkan::_check_driver_workarounds(const VkPhysicalDeviceProperties &p_device_properties, const VkPhysicalDeviceDriverPropertiesKHR *p_driver_properties) {
+	// Workaround a driver bug on Adreno 5XX GPUs that causes a crash when
+	// there are empty descriptor set layouts placed between non-empty ones.
+	adreno_5xx_empty_descriptor_set_layout_workaround =
+			p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+			p_device_properties.deviceID >= 0x5000000 &&
+			p_device_properties.deviceID < 0x6000000;
+
+	// Workaround for the Adreno 6XX family of devices.
+	//
+	// There's a known issue with the Vulkan driver in this family of devices where it'll crash if a dynamic state for drawing is
+	// used in a command buffer before a dispatch call is issued. As both dynamic scissor and viewport are basic requirements for
+	// the engine to not bake this state into the PSO, the only known way to fix this issue is to reset the command buffer entirely.
+	//
+	// As the render graph has no built in limitations of whether it'll issue compute work before anything needs to draw on the
+	// frame, and there's no guarantee that compute work will never be dependent on rasterization in the future, this workaround
+	// will end recording on the current command buffer any time a compute list is encountered after a draw list was executed.
+	// A new command buffer will be created afterwards and the appropriate synchronization primitives will be inserted.
+	//
+	// Executing this workaround has the added cost of synchronization between all the command buffers that are created as well as
+	// all the individual submissions. This performance hit is accepted for the sake of being able to support these devices without
+	// limiting the design of the renderer.
+	//
+	// This bug was fixed in driver version 512.503.0, so we only enabled it on devices older than this.
+	//
+	driver_workarounds.avoid_compute_after_draw =
+			p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+			p_device_properties.deviceID >= 0x6000000 && // Adreno 6xx
+			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
+			strstr(p_device_properties.deviceName, "Turnip") == nullptr;
+
+	// Don't print pipeline compilation errors on Adreno 660, as they are expected to happen on this device with ubershaders.
+	// Unhandled error cases will still pop up elsewhere in RD. (eg. when attempting to bind an invalid pipeline.)
+	driver_workarounds.dont_print_on_render_pipeline_creation_failure =
+			p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+			p_device_properties.deviceID == 0x6060001 && // Adreno 660
+			strstr(p_device_properties.deviceName, "Turnip") == nullptr;
+
+	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
+	// Which eventually run out of memory. In such case we should not be using linear allocated pools
+	// Bug introduced in driver 512.597.0 and fixed in 512.671.0.
+	// Confirmed by Qualcomm.
+	if (linear_descriptor_pools_enabled) {
+		const uint32_t reset_descriptor_pool_broken_driver_begin = VK_MAKE_VERSION(512u, 597u, 0u);
+		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION(512u, 671u, 0u);
+
+		linear_descriptor_pools_enabled =
+				p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+				(p_device_properties.driverVersion < reset_descriptor_pool_broken_driver_begin || p_device_properties.driverVersion > reset_descriptor_pool_fixed_driver_begin);
+	}
+
+	if (p_driver_properties != nullptr) {
+		// Workaround for Adreno drivers where ubershaders with a lot of constant literals crash the compiler.
+		driver_workarounds.disable_ubershaders =
+				p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+				strstr(p_driver_properties->driverInfo, "Compiler Version: EV031.32.02.") != nullptr;
+	}
+}
+
+void RenderingDeviceDriverVulkan::_get_device_properties() {
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+
+	if (functions.GetPhysicalDeviceProperties2 != nullptr && enabled_device_extension_names.has(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME)) {
+		VkPhysicalDeviceProperties2KHR device_props = {};
+		device_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+
+		VkPhysicalDeviceDriverPropertiesKHR driver_props = {};
+		driver_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
+		device_props.pNext = &driver_props;
+
+		functions.GetPhysicalDeviceProperties2(physical_device, &device_props);
+		physical_device_properties = device_props.properties;
+
+		_check_driver_workarounds(physical_device_properties, &driver_props);
+
+	} else {
+		vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
+
+		_check_driver_workarounds(physical_device_properties, nullptr);
+	}
 }
 
 Error RenderingDeviceDriverVulkan::_check_device_features() {
@@ -1410,10 +1494,10 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 
 	if (VulkanHooks::get_singleton() != nullptr) {
 		bool device_created = VulkanHooks::get_singleton()->create_vulkan_device(&create_info, &vk_device);
-		ERR_FAIL_COND_V(!device_created, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(!device_created, ERR_CANT_CREATE, "Couldn't create a Vulkan device through the VulkanHooks singleton.");
 	} else {
 		VkResult err = vkCreateDevice(physical_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE), &vk_device);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't create Vulkan device (VkResult error %d).", err));
 	}
 
 	for (uint32_t i = 0; i < queue_families.size(); i++) {
@@ -1451,10 +1535,15 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		// Device raytracing extensions.
 		if (enabled_device_extension_names.has(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)) {
 			device_functions.CreateAccelerationStructureKHR = PFN_vkCreateAccelerationStructureKHR(functions.GetDeviceProcAddr(vk_device, "vkCreateAccelerationStructureKHR"));
+			device_functions.DestroyAccelerationStructureKHR = PFN_vkDestroyAccelerationStructureKHR(functions.GetDeviceProcAddr(vk_device, "vkDestroyAccelerationStructureKHR"));
+			device_functions.GetAccelerationStructureBuildSizesKHR = PFN_vkGetAccelerationStructureBuildSizesKHR(functions.GetDeviceProcAddr(vk_device, "vkGetAccelerationStructureBuildSizesKHR"));
+			device_functions.CmdBuildAccelerationStructuresKHR = PFN_vkCmdBuildAccelerationStructuresKHR(functions.GetDeviceProcAddr(vk_device, "vkCmdBuildAccelerationStructuresKHR"));
 		}
 
 		if (enabled_device_extension_names.has(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME)) {
 			device_functions.CreateRaytracingPipelinesKHR = PFN_vkCreateRayTracingPipelinesKHR(functions.GetDeviceProcAddr(vk_device, "vkCreateRayTracingPipelinesKHR"));
+			device_functions.GetRayTracingShaderGroupHandlesKHR = PFN_vkGetRayTracingShaderGroupHandlesKHR(functions.GetDeviceProcAddr(vk_device, "vkGetRayTracingShaderGroupHandlesKHR"));
+			device_functions.CmdTraceRaysKHR = PFN_vkCmdTraceRaysKHR(functions.GetDeviceProcAddr(vk_device, "vkCmdTraceRaysKHR"));
 		}
 	}
 
@@ -1474,7 +1563,7 @@ Error RenderingDeviceDriverVulkan::_initialize_allocator() {
 		allocator_info.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 	}
 	VkResult err = vmaCreateAllocator(&allocator_info, &allocator);
-	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vmaCreateAllocator failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, vformat("Couldn't create Vulkan memory allocator (VkResult error %d).", err));
 
 	return OK;
 }
@@ -1619,7 +1708,7 @@ bool RenderingDeviceDriverVulkan::_recreate_image_semaphore(CommandQueue *p_comm
 	VkSemaphoreCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 	VkResult err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, vformat("Couldn't create Vulkan semaphore (VkResult error %d).", err));
 
 	// Indicate the semaphore is free again and destroy the previous one before storing the new one.
 	vkDestroySemaphore(vk_device, p_command_queue->image_semaphores[p_semaphore_index], VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
@@ -1742,25 +1831,6 @@ void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, u
 Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t p_frame_count) {
 	context_device = context_driver->device_get(p_device_index);
 	physical_device = context_driver->physical_device_get(p_device_index);
-	vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
-
-	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
-	// Which eventually run out of memory. In such case we should not be using linear allocated pools
-	// Bug introduced in driver 512.597.0 and fixed in 512.671.0.
-	// Confirmed by Qualcomm.
-	if (linear_descriptor_pools_enabled) {
-		const uint32_t reset_descriptor_pool_broken_driver_begin = VK_MAKE_VERSION(512u, 597u, 0u);
-		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION(512u, 671u, 0u);
-		linear_descriptor_pools_enabled = physical_device_properties.driverVersion < reset_descriptor_pool_broken_driver_begin || physical_device_properties.driverVersion > reset_descriptor_pool_fixed_driver_begin;
-	}
-
-	// Workaround a driver bug on Adreno 5XX GPUs that causes a crash when
-	// there are empty descriptor set layouts placed between non-empty ones.
-	adreno_5xx_empty_descriptor_set_layout_workaround =
-			physical_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
-			physical_device_properties.deviceID >= 0x5000000 &&
-			physical_device_properties.deviceID < 0x6000000;
-
 	frame_count = p_frame_count;
 
 	// Copy the queue family properties the context already retrieved.
@@ -1771,26 +1841,28 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 	}
 
 	Error err = _initialize_device_extensions();
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't initialize Vulkan device extensions. This may be caused by an incompatible or outdated graphics driver.");
+
+	_get_device_properties();
 
 	err = _check_device_features();
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't initialize Vulkan device features. This may be caused by an incompatible or outdated graphics driver.");
 
 	err = _check_device_capabilities();
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't initialize Vulkan device capabilities. This may be caused by an incompatible or outdated graphics driver.");
 
 	LocalVector<VkDeviceQueueCreateInfo> queue_create_info;
 	err = _add_queue_create_info(queue_create_info);
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't initialize Vulkan device queue. This may be caused by an incompatible or outdated graphics driver.");
 
 	err = _initialize_device(queue_create_info);
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't initialize Vulkan device. This may be caused by an incompatible or outdated graphics driver.");
 
 	err = _initialize_allocator();
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't initialize Vulkan memory allocator. This may be caused by an incompatible or outdated graphics driver.");
 
 	err = _initialize_pipeline_cache();
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't initialize Vulkan pipeline cache. This may be caused by an incompatible or outdated graphics driver.");
 
 	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
 
@@ -1814,7 +1886,7 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 
 #if RECORD_PIPELINE_STATISTICS
 	pipeline_statistics.file_access = FileAccess::open(RECORD_PIPELINE_STATISTICS_PATH, FileAccess::WRITE);
-	ERR_FAIL_NULL_V_MSG(pipeline_statistics.file_access, ERR_CANT_CREATE, "Unable to write pipeline statistics file.");
+	ERR_FAIL_NULL_V_MSG(pipeline_statistics.file_access, ERR_CANT_CREATE, "Couldn't write Vulkan pipeline statistics file.");
 
 	pipeline_statistics.file_access->store_csv_line({ "name", "hash", "stage", "spec", "glslang", "re-spirv", "time" });
 	pipeline_statistics.file_access->flush();
@@ -1848,7 +1920,7 @@ VmaPool RenderingDeviceDriverVulkan::_find_or_create_small_allocs_pool(uint32_t 
 	VmaPool pool = VK_NULL_HANDLE;
 	VkResult res = vmaCreatePool(allocator, &pci, &pool);
 	small_allocs_pools[p_mem_type_index] = pool; // Don't try to create it again if failed the first time.
-	ERR_FAIL_COND_V_MSG(res, pool, "vmaCreatePool failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, pool, vformat("Couldn't create Vulkan memory allocator pool (VkResult error %d)", res));
 
 	return pool;
 }
@@ -1866,6 +1938,7 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_STORAGE_BIT, VK_BUFFER_USAGE_
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDEX_BIT, VK_BUFFER_USAGE_INDEX_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_VERTEX_BIT, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDIRECT_BIT, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_SHADER_BINDING_TABLE_BIT, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT, VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT, VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR));
@@ -1943,14 +2016,14 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 		alloc_create_info.preferredFlags &= ~vma_flags_to_remove;
 		alloc_create_info.usage = vma_usage;
 		VkResult err = vmaCreateBuffer(allocator, &create_info, &alloc_create_info, &vk_buffer, &allocation, &alloc_info);
-		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't create buffer of size: %d (VkResult error %d).", p_size, err));
 	} else {
 		VkResult err = vkCreateBuffer(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER), &vk_buffer);
-		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't create buffer of size: %d (VkResult error %d).", p_size, err));
 		err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
-		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't allocate memory for buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't allocate memory for buffer of size: %d (VkResult error %d).", p_size, err));
 		err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, nullptr);
-		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't bind memory to buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't bind memory to buffer of size: %d (VkResult error %d).", p_size, err));
 	}
 
 	// Bookkeep.
@@ -1958,7 +2031,7 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
 		void *persistent_ptr = nullptr;
 		VkResult err = vmaMapMemory(allocator, allocation, &persistent_ptr);
-		ERR_FAIL_COND_V_MSG(err, BufferID(), "vmaMapMemory failed with error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Couldn't map Vulkan buffer memory (VkResult error %d).", err));
 
 		BufferDynamicInfo *dyn_buffer = VersatileResource::allocate<BufferDynamicInfo>(resources_allocator);
 		buf_info = dyn_buffer;
@@ -1990,7 +2063,7 @@ bool RenderingDeviceDriverVulkan::buffer_set_texel_format(BufferID p_buffer, Dat
 	view_create_info.range = buf_info->allocation.size;
 
 	VkResult res = vkCreateBufferView(vk_device, &view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER_VIEW), &buf_info->vk_view);
-	ERR_FAIL_COND_V_MSG(res, false, "Unable to create buffer view, error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, false, vformat("Couldn't create Vulkan buffer view (VkResult error %d).", res));
 
 	return true;
 }
@@ -2029,7 +2102,7 @@ uint8_t *RenderingDeviceDriverVulkan::buffer_map(BufferID p_buffer) {
 	ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), nullptr, "Buffer must NOT have BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT. Use buffer_persistent_map_advance() instead.");
 	void *data_ptr = nullptr;
 	VkResult err = vmaMapMemory(allocator, buf_info->allocation.handle, &data_ptr);
-	ERR_FAIL_COND_V_MSG(err, nullptr, "vmaMapMemory failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, nullptr, vformat("Couldn't map buffer memory (VkResult error %d).", err));
 	return (uint8_t *)data_ptr;
 }
 
@@ -2042,7 +2115,7 @@ uint8_t *RenderingDeviceDriverVulkan::buffer_persistent_map_advance(BufferID p_b
 	BufferDynamicInfo *buf_info = (BufferDynamicInfo *)p_buffer.id;
 	ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), nullptr, "Buffer must have BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT. Use buffer_map() instead.");
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V_MSG(buf_info->last_frame_mapped == p_frames_drawn, nullptr, "Buffers with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT must only be mapped once per frame. Otherwise there could be race conditions with the GPU. Amalgamate all data uploading into one map(), use an extra buffer or remove the bit.");
+	ERR_FAIL_COND_V_MSG(buf_info->last_frame_mapped == p_frames_drawn, nullptr, "Buffers with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT must only be mapped once per frame. Otherwise there could be race conditions with the GPU. Amalgamate all data uploading into one map(), use an extra buffer, or remove the bit.");
 	buf_info->last_frame_mapped = p_frames_drawn;
 #endif
 	buf_info->frame_idx = (buf_info->frame_idx + 1u) % frame_count;
@@ -2295,14 +2368,14 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
 		alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 		VkResult err = vmaCreateImage(allocator, &create_info, &alloc_create_info, &vk_image, &allocation, &alloc_info);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "vmaCreateImage failed with error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image in memory for use with extra GPU memory tracking (VkResult error %d).", err));
 	} else {
 		VkResult err = vkCreateImage(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE), &vk_image);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImage failed with error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image (VkResult error %d).", err));
 		err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't allocate memory for image, error: " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't allocate memory for Vulkan image (VkResult error %d).", err));
 		err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, nullptr);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't bind memory to image, error: " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't bind memory to Vulkan image (VkResult error %d).", err));
 	}
 
 	// Create view.
@@ -2344,7 +2417,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 			vmaFreeMemory(allocator, allocation);
 		}
 
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image view (VkResult error %d).", err));
 	}
 
 	// Bookkeep.
@@ -2391,7 +2464,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64
 	VkImageView vk_image_view = VK_NULL_HANDLE;
 	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
 	if (err) {
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image view for extension texture (VkResult error %d).", err));
 	}
 
 	// Bookkeep.
@@ -2446,7 +2519,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 
 	VkImageView new_vk_image_view = VK_NULL_HANDLE;
 	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &new_vk_image_view);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image view for shared texture (VkResult error %d).", err));
 
 	// Bookkeep.
 
@@ -2499,7 +2572,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 
 	VkImageView new_vk_image_view = VK_NULL_HANDLE;
 	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &new_vk_image_view);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image view for shared texture from slice (VkResult error %d).", err));
 
 	// Bookkeep.
 
@@ -2573,7 +2646,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::texture_get_data(TextureID p_textur
 
 	void *data_ptr = nullptr;
 	VkResult err = vmaMapMemory(allocator, tex->allocation.handle, &data_ptr);
-	ERR_FAIL_COND_V_MSG(err, Vector<uint8_t>(), "vmaMapMemory failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, Vector<uint8_t>(), vformat("Couldn't map Vulkan memory for texture (VkResult error %d).", err));
 
 	{
 		uint8_t *w = image_data.ptrw();
@@ -2708,7 +2781,7 @@ RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p
 
 	VkSampler vk_sampler = VK_NULL_HANDLE;
 	VkResult res = vkCreateSampler(vk_device, &sampler_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER), &vk_sampler);
-	ERR_FAIL_COND_V_MSG(res, SamplerID(), "vkCreateSampler failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, SamplerID(), vformat("Couldn't create Vulkan sampler (VkResult error %d).", res));
 
 	return SamplerID(vk_sampler);
 }
@@ -2818,6 +2891,16 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACH
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_ACCELERATION_STRUCTURE_READ_BIT, VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT, VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR));
 
+static VkPipelineStageFlags _remove_pipeline_stage_shader_bits(VkPipelineStageFlags p_flags) {
+	p_flags &= ~(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
+			VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
+			VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT |
+			VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT |
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+	return p_flags;
+}
+
 void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		CommandBufferID p_cmd_buffer,
 		BitField<PipelineStageBits> p_src_stages,
@@ -2873,20 +2956,23 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 
 	VkBufferMemoryBarrier *vk_accel_barriers = ALLOCA_ARRAY(VkBufferMemoryBarrier, p_acceleration_structure_barriers.size());
 	for (uint32_t i = 0; i < p_acceleration_structure_barriers.size(); i++) {
-		// If the rayQuery feature is not enabled and a memory barrier srcAccessMask includes
-		// VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR, srcStageMask must not include any of the
-		// VK_PIPELINE_STAGE_*_SHADER_BIT stages except VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR
 		VkAccessFlags src_access = _rd_to_vk_access_flags(p_acceleration_structure_barriers[i].src_access);
-		if ((src_access & VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR) != 0) {
-			accel_src_stages &= ~(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-		}
-
-		// If the rayQuery feature is not enabled and a memory barrier dstAccessMask includes
-		// VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR, dstStageMask must not include any of the
-		// VK_PIPELINE_STAGE_*_SHADER_BIT stages except VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR
 		VkAccessFlags dst_access = _rd_to_vk_access_flags(p_acceleration_structure_barriers[i].dst_access);
-		if ((dst_access & VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR) != 0) {
-			accel_dst_stages &= ~(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+
+		if (!ray_query_support) {
+			// If the rayQuery feature is not enabled and a memory barrier srcAccessMask includes
+			// VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR, srcStageMask must not include any of the
+			// VK_PIPELINE_STAGE_*_SHADER_BIT stages except VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR
+			if ((src_access & VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR) != 0) {
+				accel_src_stages &= _remove_pipeline_stage_shader_bits(accel_src_stages);
+			}
+
+			// If the rayQuery feature is not enabled and a memory barrier dstAccessMask includes
+			// VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR, dstStageMask must not include any of the
+			// VK_PIPELINE_STAGE_*_SHADER_BIT stages except VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR
+			if ((dst_access & VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR) != 0) {
+				accel_dst_stages = _remove_pipeline_stage_shader_bits(accel_dst_stages);
+			}
 		}
 
 		const AccelerationStructureInfo *accel_info = (const AccelerationStructureInfo *)p_acceleration_structure_barriers[i].acceleration_structure.id;
@@ -2953,7 +3039,7 @@ RDD::FenceID RenderingDeviceDriverVulkan::fence_create() {
 	VkFenceCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	VkResult err = vkCreateFence(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FENCE), &vk_fence);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, FenceID());
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FenceID(), vformat("Couldn't create Vulkan fence (VkResult error %d).", err));
 
 	Fence *fence = memnew(Fence);
 	fence->vk_fence = vk_fence;
@@ -2966,11 +3052,11 @@ Error RenderingDeviceDriverVulkan::fence_wait(FenceID p_fence) {
 	VkResult fence_status = vkGetFenceStatus(vk_device, fence->vk_fence);
 	if (fence_status == VK_NOT_READY) {
 		VkResult err = vkWaitForFences(vk_device, 1, &fence->vk_fence, VK_TRUE, UINT64_MAX);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FAILED, vformat("Couldn't wait for Vulkan fence (VkResult error %d).", err));
 	}
 
 	VkResult err = vkResetFences(vk_device, 1, &fence->vk_fence);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FAILED, vformat("Couldn't reset Vulkan fence (VkResult error %d).", err));
 
 	if (fence->queue_signaled_from != nullptr) {
 		// Release all semaphores that the command queue associated to the fence waited on the last time it was submitted.
@@ -3007,7 +3093,7 @@ RDD::SemaphoreID RenderingDeviceDriverVulkan::semaphore_create() {
 	VkSemaphoreCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 	VkResult err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SemaphoreID());
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, SemaphoreID(), vformat("Couldn't create Vulkan semaphore (VkResult error %d).", err));
 
 	return SemaphoreID(semaphore);
 }
@@ -3073,7 +3159,7 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(picked_queue_index >= queue_family.size(), CommandQueueID(), "A queue in the picked family could not be found.");
+	ERR_FAIL_COND_V_MSG(picked_queue_index >= queue_family.size(), CommandQueueID(), "Couldn't find a Vulkan command queue in the picked family.");
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	if (swappy_frame_pacer_enable) {
@@ -3136,7 +3222,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		pending_flushes.allocations.clear();
 		pending_flushes.offsets.clear();
 		pending_flushes.sizes.clear();
-		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FAILED, vformat("Couldn't flush Vulkan memory allocations (VkResult error %d).", err));
 	}
 
 	if (p_cmd_buffers.size() > 0) {
@@ -3179,9 +3265,9 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 
 		if (err == VK_ERROR_DEVICE_LOST) {
 			print_lost_device_info();
-			CRASH_NOW_MSG("Vulkan device was lost.");
+			CRASH_NOW_MSG("Vulkan device was lost. This could be due to a driver issue, a hardware issue, or the driver resetting itself because it was unresponsive for too long (TDR).");
 		}
-		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FAILED, vformat("Couldn't submit to Vulkan queue (VkResult error %d).", err));
 
 		if (fence != nullptr && !command_queue->pending_semaphores_for_fence.is_empty()) {
 			fence->queue_signaled_from = command_queue;
@@ -3270,7 +3356,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		ERR_FAIL_COND_V_MSG(
 				err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR,
 				FAILED,
-				"QueuePresentKHR failed with error: " + get_vulkan_result(err));
+				"Couldn't present to Vulkan queue (VkResult error " + get_vulkan_result(err) + ").");
 	}
 
 	return OK;
@@ -3315,7 +3401,7 @@ RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandQueue
 
 	VkCommandPool vk_command_pool = VK_NULL_HANDLE;
 	VkResult res = vkCreateCommandPool(vk_device, &cmd_pool_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_COMMAND_POOL), &vk_command_pool);
-	ERR_FAIL_COND_V_MSG(res, CommandPoolID(), "vkCreateCommandPool failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, CommandPoolID(), vformat("Couldn't create Vulkan command pool (VkResult error %d).", res));
 
 	CommandPool *command_pool = memnew(CommandPool);
 	command_pool->vk_command_pool = vk_command_pool;
@@ -3328,7 +3414,7 @@ bool RenderingDeviceDriverVulkan::command_pool_reset(CommandPoolID p_cmd_pool) {
 
 	CommandPool *command_pool = (CommandPool *)(p_cmd_pool.id);
 	VkResult err = vkResetCommandPool(vk_device, command_pool->vk_command_pool, 0);
-	ERR_FAIL_COND_V_MSG(err, false, "vkResetCommandPool failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, false, vformat("Couldn't reset Vulkan command pool (VkResult error %d).", err));
 
 	return true;
 }
@@ -3364,7 +3450,7 @@ RDD::CommandBufferID RenderingDeviceDriverVulkan::command_buffer_create(CommandP
 
 	VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
 	VkResult err = vkAllocateCommandBuffers(vk_device, &cmd_buf_info, &vk_command_buffer);
-	ERR_FAIL_COND_V_MSG(err, CommandBufferID(), "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, CommandBufferID(), vformat("Couldn't allocate Vulkan command buffer (VkResult error %d).", err));
 
 	CommandBufferInfo *command_buffer = VersatileResource::allocate<CommandBufferInfo>(resources_allocator);
 	command_buffer->vk_command_buffer = vk_command_buffer;
@@ -3380,7 +3466,7 @@ bool RenderingDeviceDriverVulkan::command_buffer_begin(CommandBufferID p_cmd_buf
 	cmd_buf_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
 	VkResult err = vkBeginCommandBuffer(command_buffer->vk_command_buffer, &cmd_buf_begin_info);
-	ERR_FAIL_COND_V_MSG(err, false, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, false, vformat("Couldn't begin Vulkan command buffer (VkResult error %d).", err));
 
 	return true;
 }
@@ -3402,7 +3488,7 @@ bool RenderingDeviceDriverVulkan::command_buffer_begin_secondary(CommandBufferID
 	cmd_buf_begin_info.pInheritanceInfo = &inheritance_info;
 
 	VkResult err = vkBeginCommandBuffer(command_buffer->vk_command_buffer, &cmd_buf_begin_info);
-	ERR_FAIL_COND_V_MSG(err, false, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, false, vformat("Couldn't begin Vulkan command buffer (VkResult error %d).", err));
 
 	return true;
 }
@@ -3442,13 +3528,21 @@ bool RenderingDeviceDriverVulkan::_determine_swap_chain_format(RenderingContextD
 
 	// Retrieve the formats supported by the surface.
 	uint32_t format_count = 0;
-	VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
-
 	TightLocalVector<VkSurfaceFormatKHR> formats;
+	// Loop until we get the full format list. This shouldn't have to loop more than twice on most systems.
+	while (true) {
+		VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, vformat("Couldn't retrieve Vulkan surface formats (VkResult error %d).", err));
+
+		formats.resize(format_count);
+		err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
+		if (err == VK_SUCCESS) {
+			break;
+		}
+
+		ERR_FAIL_COND_V_MSG(err != VK_INCOMPLETE, false, vformat("Couldn't retrieve Vulkan surface formats (VkResult error %d).", err));
+	}
 	formats.resize(format_count);
-	err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
-	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
 
 	// If the format list includes just one entry of VK_FORMAT_UNDEFINED, the surface has no preferred format.
 	if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
@@ -3588,14 +3682,14 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
 	if (!context_driver->queue_family_supports_present(physical_device, command_queue->queue_family, swap_chain->surface)) {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Surface is not supported by device. Did the GPU go offline? Was the window created on another monitor? Check"
-										"previous errors & try launching with --gpu-validation.");
+										"previous errors and try launching with --gpu-validation.");
 	}
 
 	// Retrieve the surface's capabilities.
 	RenderingContextDriverVulkan::Surface *surface = (RenderingContextDriverVulkan::Surface *)(swap_chain->surface);
 	VkSurfaceCapabilitiesKHR surface_capabilities = {};
 	VkResult err = functions.GetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface->vk_surface, &surface_capabilities);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't get Vulkan surface capabilities (VkResult error %d).", err));
 
 	// No swapchain yet, this is the first time we're creating it.
 	if (!swap_chain->vk_swapchain) {
@@ -3639,11 +3733,11 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	TightLocalVector<VkPresentModeKHR> present_modes;
 	uint32_t present_modes_count = 0;
 	err = functions.GetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface->vk_surface, &present_modes_count, nullptr);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't get Vulkan surface present modes (VkResult error %d).", err));
 
 	present_modes.resize(present_modes_count);
 	err = functions.GetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface->vk_surface, &present_modes_count, present_modes.ptr());
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't get Vulkan surface present modes (VkResult error %d).", err));
 
 	// Choose the present mode based on the display server setting.
 	VkPresentModeKHR present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
@@ -3709,7 +3803,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	RDD::ColorSpace rdd_color_space = COLOR_SPACE_REC709_NONLINEAR_SRGB;
 	if (!_determine_swap_chain_format(swap_chain->surface, format, color_space, rdd_color_space)) {
-		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Surface did not return any valid formats.");
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Vulkan surface did not return any valid formats.");
 	} else {
 		swap_chain->format = format;
 		swap_chain->color_space = color_space;
@@ -3749,7 +3843,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	swap_create_info.presentMode = present_mode;
 	swap_create_info.clipped = true;
 	err = device_functions.CreateSwapchainKHR(vk_device, &swap_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR), &swap_chain->vk_swapchain);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't create Vulkan swapchain (VkResult error %d).", err));
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	if (swappy_frame_pacer_enable) {
@@ -3783,11 +3877,11 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 
 	uint32_t image_count = 0;
 	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, nullptr);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't get Vulkan swapchain images (VkResult error %d).", err));
 
 	swap_chain->images.resize(image_count);
 	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, swap_chain->images.ptr());
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't get Vulkan swapchain images (VkResult error %d).", err));
 
 	VkImageViewCreateInfo view_create_info = {};
 	view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -3807,7 +3901,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	for (uint32_t i = 0; i < image_count; i++) {
 		view_create_info.image = swap_chain->images[i];
 		err = vkCreateImageView(vk_device, &view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &image_view);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't create Vulkan image view for swapchain image (VkResult error %d).", err));
 
 		swap_chain->image_views.push_back(image_view);
 	}
@@ -3845,7 +3939,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 
 	VkRenderPass vk_render_pass = VK_NULL_HANDLE;
 	err = _create_render_pass(vk_device, &pass_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &vk_render_pass);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't create Vulkan render pass for swapchain (VkResult error %d).", err));
 
 	RenderPassInfo *render_pass_info = VersatileResource::allocate<RenderPassInfo>(resources_allocator);
 	render_pass_info->vk_render_pass = vk_render_pass;
@@ -3865,7 +3959,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	for (uint32_t i = 0; i < image_count; i++) {
 		fb_create_info.pAttachments = &swap_chain->image_views[i];
 		err = vkCreateFramebuffer(vk_device, &fb_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER), &vk_framebuffer);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't create Vulkan framebuffer for swapchain image (VkResult error %d).", err));
 
 		Framebuffer *framebuffer = memnew(Framebuffer);
 		framebuffer->vk_framebuffer = vk_framebuffer;
@@ -3880,7 +3974,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 		create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
 		err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &vk_semaphore);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FAILED, vformat("Couldn't create Vulkan semaphore for swapchain image (VkResult error %d).", err));
 
 		swap_chain->present_semaphores.push_back(vk_semaphore);
 	}
@@ -3911,7 +4005,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 		VkSemaphoreCreateInfo create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 		err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
-		ERR_FAIL_COND_V(err != VK_SUCCESS, FramebufferID());
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, FramebufferID(), vformat("Couldn't create Vulkan semaphore for acquiring swapchain image (VkResult error %d).", err));
 
 		semaphore_index = command_queue->image_semaphores.size();
 		command_queue->image_semaphores.push_back(semaphore);
@@ -3933,7 +4027,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 		// Out of date leaves the semaphore in a signaled state that will never finish, so it's necessary to recreate it.
 		bool semaphore_recreated = _recreate_image_semaphore(command_queue, semaphore_index, true);
-		ERR_FAIL_COND_V(!semaphore_recreated, FramebufferID());
+		ERR_FAIL_COND_V_MSG(!semaphore_recreated, FramebufferID(), "Couldn't recreate Vulkan semaphore after swapchain becoming out of date.");
 
 		// Swap chain is out of date and must be recreated.
 		r_resize_required = true;
@@ -3979,10 +4073,6 @@ RDD::DataFormat RenderingDeviceDriverVulkan::swap_chain_get_format(SwapChainID p
 			return DATA_FORMAT_B8G8R8A8_UNORM;
 		case VK_FORMAT_R8G8B8A8_UNORM:
 			return DATA_FORMAT_R8G8B8A8_UNORM;
-		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-			return DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
-		case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-			return DATA_FORMAT_A2R10G10B10_UNORM_PACK32;
 		case VK_FORMAT_R16G16B16A16_SFLOAT:
 			return DATA_FORMAT_R16G16B16A16_SFLOAT;
 		default:
@@ -3996,6 +4086,65 @@ RDD::ColorSpace RenderingDeviceDriverVulkan::swap_chain_get_color_space(SwapChai
 
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	return swap_chain->rdd_color_space;
+}
+
+bool RenderingDeviceDriverVulkan::swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) {
+	DEV_ASSERT(p_swap_chain.id != 0);
+
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	RenderingContextDriverVulkan::Surface *surface = (RenderingContextDriverVulkan::Surface *)(swap_chain->surface);
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+
+	// Retrieve the formats supported by the surface.
+	uint32_t format_count = 0;
+	TightLocalVector<VkSurfaceFormatKHR> formats;
+	while (true) {
+		VkResult err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, nullptr);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, vformat("Couldn't retrieve Vulkan surface formats (VkResult error %d).", err));
+
+		formats.resize(format_count);
+		err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
+		if (err == VK_SUCCESS) {
+			break;
+		}
+
+		ERR_FAIL_COND_V_MSG(err != VK_INCOMPLETE, false, vformat("Couldn't retrieve Vulkan surface formats (VkResult error %d).", err));
+	}
+	formats.resize(format_count);
+
+	// If the format list includes just one entry of VK_FORMAT_UNDEFINED, the surface has no preferred format.
+	// Just to be safe, we assume this means HDR will not be supported.
+	if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
+		return false;
+	}
+
+	bool colorspace_supported = context_driver->is_colorspace_supported();
+
+	// Determine which formats to prefer based on the requested capabilities.
+	// Our preferred HDR format is 16-bit float + extended linear.
+	FixedVector<FormatCandidate, 2> hdr_formats;
+	if (context_driver->is_colorspace_externally_managed()) {
+		// When the colorspace is managed externally to the driver we need to disable its color management.
+		// The colorspace which disables color management is VK_COLOR_SPACE_PASS_THROUGH_EXT.
+		hdr_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_PASS_THROUGH_EXT, COLOR_SPACE_REC709_LINEAR });
+
+		// SRGB_NONLINEAR_KHR is required for some NVIDIA drivers that support HDR output but do not support PASS_THROUGH_EXT.
+		hdr_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR, COLOR_SPACE_REC709_LINEAR });
+	} else if (colorspace_supported) {
+		hdr_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT, COLOR_SPACE_REC709_LINEAR });
+	} else {
+		return false;
+	}
+
+	for (const FormatCandidate &candidate : hdr_formats) {
+		for (uint32_t i = 0; i < format_count; i++) {
+			if (formats[i].format == candidate.format && formats[i].colorSpace == candidate.colorspace) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 void RenderingDeviceDriverVulkan::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
@@ -4048,7 +4197,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID 
 
 	VkFramebuffer vk_framebuffer = VK_NULL_HANDLE;
 	VkResult err = vkCreateFramebuffer(vk_device, &framebuffer_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER), &vk_framebuffer);
-	ERR_FAIL_COND_V_MSG(err, FramebufferID(), "vkCreateFramebuffer failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, FramebufferID(), vformat("Couldn't create Vulkan framebuffer (VkResult error %d).", err));
 
 #if PRINT_NATIVE_COMMANDS
 	print_line(vformat("vkCreateFramebuffer 0x%uX with %d attachments", uint64_t(vk_framebuffer), p_attachments.size()));
@@ -4197,9 +4346,6 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 		shader_info.respv_stage_shaders.reserve(stage_count);
 	}
 
-	// AnyHit and ClosestHit go in the same group.
-	uint32_t hit_group_index = UINT32_MAX;
-
 	for (int i = 0; i < stage_count; i++) {
 		const RenderingShaderContainer::Shader &shader = p_shader_container->shaders[i];
 		bool requires_decompression = (shader.code_decompressed_size > 0);
@@ -4281,52 +4427,6 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 		create_info.module = vk_module;
 		create_info.pName = "main";
 		shader_info.vk_stages_create_info.push_back(create_info);
-
-		ShaderStage stage = shader_refl.stages_vector[i];
-
-		if (stage == ShaderStage::SHADER_STAGE_RAYGEN || stage == ShaderStage::SHADER_STAGE_MISS) {
-			VkRayTracingShaderGroupCreateInfoKHR group_info = {};
-			group_info.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-			group_info.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-			group_info.anyHitShader = VK_SHADER_UNUSED_KHR;
-			group_info.closestHitShader = VK_SHADER_UNUSED_KHR;
-			group_info.intersectionShader = VK_SHADER_UNUSED_KHR;
-			group_info.generalShader = i;
-
-			shader_info.vk_groups_create_info.push_back(group_info);
-		}
-		if (stage == ShaderStage::SHADER_STAGE_ANY_HIT || stage == ShaderStage::SHADER_STAGE_CLOSEST_HIT) {
-			if (hit_group_index == UINT32_MAX) {
-				VkRayTracingShaderGroupCreateInfoKHR group_info = {};
-				group_info.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-				group_info.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
-				group_info.anyHitShader = VK_SHADER_UNUSED_KHR;
-				group_info.closestHitShader = VK_SHADER_UNUSED_KHR;
-				group_info.intersectionShader = VK_SHADER_UNUSED_KHR;
-				group_info.generalShader = VK_SHADER_UNUSED_KHR;
-
-				hit_group_index = shader_info.vk_groups_create_info.size();
-				shader_info.vk_groups_create_info.push_back(group_info);
-			}
-
-			VkRayTracingShaderGroupCreateInfoKHR &group_info = shader_info.vk_groups_create_info[hit_group_index];
-			if (stage == ShaderStage::SHADER_STAGE_ANY_HIT) {
-				group_info.anyHitShader = i;
-			} else if (stage == ShaderStage::SHADER_STAGE_CLOSEST_HIT) {
-				group_info.closestHitShader = i;
-			}
-		}
-		if (stage == ShaderStage::SHADER_STAGE_INTERSECTION) {
-			VkRayTracingShaderGroupCreateInfoKHR group_info = {};
-			group_info.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-			group_info.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR;
-			group_info.anyHitShader = VK_SHADER_UNUSED_KHR;
-			group_info.closestHitShader = VK_SHADER_UNUSED_KHR;
-			group_info.intersectionShader = i;
-			group_info.generalShader = VK_SHADER_UNUSED_KHR;
-
-			shader_info.vk_groups_create_info.push_back(group_info);
-		}
 	}
 
 	// Descriptor sets.
@@ -4380,7 +4480,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 
 		res = vkCreatePipelineLayout(vk_device, &pipeline_layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_LAYOUT), &shader_info.vk_pipeline_layout);
 		if (res != VK_SUCCESS) {
-			error_text = vformat("Error (%d) creating pipeline layout.", res);
+			error_text = vformat("Couldn't create Vulkan pipeline layout (VkResult error %d).", res);
 		}
 	}
 
@@ -4394,30 +4494,6 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 		}
 
 		ERR_FAIL_V_MSG(ShaderID(), error_text);
-	}
-
-	if (shader_refl.pipeline_type == PIPELINE_TYPE_RAYTRACING) {
-		// Regions
-
-		for (ShaderStage stage : shader_refl.stages_vector) {
-			switch (stage) {
-				case ShaderStage::SHADER_STAGE_RAYGEN:
-					shader_info.region_count.raygen_count += 1;
-					break;
-				case ShaderStage::SHADER_STAGE_ANY_HIT:
-				case ShaderStage::SHADER_STAGE_CLOSEST_HIT:
-					shader_info.region_count.hit_count += 1;
-					break;
-				case ShaderStage::SHADER_STAGE_MISS:
-					shader_info.region_count.miss_count += 1;
-					break;
-				default:
-					// nothing
-					break;
-			}
-		}
-
-		shader_info.region_count.group_count = shader_info.region_count.raygen_count + shader_info.region_count.hit_count + shader_info.region_count.miss_count;
 	}
 
 	// Bookkeep.
@@ -4563,7 +4639,7 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_create(const 
 	VkDescriptorPool vk_pool = VK_NULL_HANDLE;
 	VkResult res = vkCreateDescriptorPool(vk_device, &descriptor_set_pool_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL), &vk_pool);
 	if (res) {
-		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateDescriptorPool failed with error " + itos(res) + ".");
+		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, vformat("Couldn't create Vulkan descriptor pool (VkResult error %d).", res));
 	}
 
 	return vk_pool;
@@ -4853,7 +4929,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 
 			// "Fragmented pool" and "out of memory pool" errors are handled by creating more pools. Any other error is unexpected.
 			if (res != VK_ERROR_FRAGMENTED_POOL && res != VK_ERROR_OUT_OF_POOL_MEMORY) {
-				ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+				ERR_FAIL_V_MSG(UniformSetID(), vformat("Couldn't allocate Vulkan descriptor sets (VkResult error %d).", res));
 			}
 		}
 	}
@@ -4866,7 +4942,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 		// All errors are unexpected at this stage.
 		if (res) {
 			vkDestroyDescriptorPool(vk_device, descriptor_set_allocate_info.descriptorPool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
-			ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+			ERR_FAIL_V_MSG(UniformSetID(), vformat("Couldn't allocate Vulkan descriptor sets (VkResult error %d).", res));
 		}
 	}
 
@@ -5264,7 +5340,7 @@ size_t RenderingDeviceDriverVulkan::pipeline_cache_query_size() {
 	// We're letting the cache grow unboundedly. We may want to set at limit and see if implementations use LRU or the like.
 	// If we do, we won't be able to assume any longer that the cache is dirty if, and only if, it has grown.
 	VkResult err = vkGetPipelineCacheData(vk_device, pipelines_cache.vk_cache, &pipelines_cache.current_size, nullptr);
-	ERR_FAIL_COND_V_MSG(err, 0, "vkGetPipelineCacheData failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, 0, vformat("Couldn't get Vulkan pipeline cache data (VkResult error %d).", err));
 
 	return pipelines_cache.current_size;
 }
@@ -5275,7 +5351,8 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::pipeline_cache_serialize() {
 	pipelines_cache.buffer.resize(pipelines_cache.current_size + sizeof(PipelineCacheHeader));
 
 	VkResult err = vkGetPipelineCacheData(vk_device, pipelines_cache.vk_cache, &pipelines_cache.current_size, pipelines_cache.buffer.ptrw() + sizeof(PipelineCacheHeader));
-	ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_INCOMPLETE, Vector<uint8_t>()); // Incomplete is OK because the cache may have grown since the size was queried (unless when exiting).
+	// Incomplete is OK because the cache may have grown since the size was queried (unless when exiting).
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS && err != VK_INCOMPLETE, Vector<uint8_t>(), vformat("Couldn't get Vulkan pipeline cache data (VkResult error %d).", err));
 
 	// The real buffer size may now be bigger than the updated current_size.
 	// We take into account the new size but keep the buffer resized in a worst-case fashion.
@@ -5466,7 +5543,7 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 
 	VkRenderPass vk_render_pass = VK_NULL_HANDLE;
 	VkResult res = _create_render_pass(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &vk_render_pass);
-	ERR_FAIL_COND_V_MSG(res, RenderPassID(), "vkCreateRenderPass2KHR failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, RenderPassID(), vformat("Couldn't create Vulkan render pass (VkResult error %d).", res));
 
 	RenderPassInfo *render_pass = VersatileResource::allocate<RenderPassInfo>(resources_allocator);
 	render_pass->vk_render_pass = vk_render_pass;
@@ -5834,7 +5911,12 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	// Tessellation.
 	VkPipelineTessellationStateCreateInfo tessellation_create_info = {};
 	tessellation_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-	ERR_FAIL_COND_V(physical_device_properties.limits.maxTessellationPatchSize > 0 && (p_rasterization_state.patch_control_points < 1 || p_rasterization_state.patch_control_points > physical_device_properties.limits.maxTessellationPatchSize), PipelineID());
+	ERR_FAIL_COND_V_MSG(
+			physical_device_properties.limits.maxTessellationPatchSize > 0 && (p_rasterization_state.patch_control_points < 1 || p_rasterization_state.patch_control_points > physical_device_properties.limits.maxTessellationPatchSize),
+			PipelineID(),
+			vformat("Invalid Vulkan tessellation patch control point count: %d. It must be between 1 and %d.",
+					p_rasterization_state.patch_control_points,
+					physical_device_properties.limits.maxTessellationPatchSize));
 	tessellation_create_info.patchControlPoints = p_rasterization_state.patch_control_points;
 
 	// Viewport.
@@ -6021,7 +6103,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	pipeline_create_info.stageCount = shader_info->vk_stages_create_info.size();
 
 	ERR_FAIL_COND_V_MSG(pipeline_create_info.stageCount == 0, PipelineID(),
-			"Cannot create pipeline without shader module, please make sure shader modules are destroyed only after all associated pipelines are created.");
+			"Can't create Vulkan pipeline without shader module. Make sure shader modules are destroyed only after all associated pipelines are created.");
 	VkPipelineShaderStageCreateInfo *vk_pipeline_stages = ALLOCA_ARRAY(VkPipelineShaderStageCreateInfo, shader_info->vk_stages_create_info.size());
 
 	thread_local std::vector<uint8_t> respv_optimized_data;
@@ -6146,7 +6228,13 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
 	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
-	ERR_FAIL_COND_V_MSG(err, PipelineID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + ".");
+
+	// Don't print error for VK_ERROR_UNKNOWN on Adreno 660.
+	if (unlikely(err == VK_ERROR_UNKNOWN && driver_workarounds.dont_print_on_render_pipeline_creation_failure)) {
+		return PipelineID();
+	}
+
+	ERR_FAIL_COND_V_MSG(err, PipelineID(), vformat("Couldn't create Vulkan graphics pipelines (VkResult error %d).", err));
 
 #if RECORD_PIPELINE_STATISTICS
 	{
@@ -6182,11 +6270,18 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 /**** RAYTRACING ****/
 /********************/
 
+// RDD::AccelerationStructureFlagBits == VkBuildAccelerationStructureFlagBitsKHR.
+static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT, VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT, VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT, VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT, VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_LOW_MEMORY_BIT, VK_BUILD_ACCELERATION_STRUCTURE_LOW_MEMORY_BIT_KHR));
+
 // RDD::AccelerationStructureGeometryBits == VkGeometryFlagsKHR.
 static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT, VK_GEOMETRY_OPAQUE_BIT_KHR));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT, VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_KHR));
 
-RDD::AccelerationStructureID RenderingDeviceDriverVulkan::blas_create(VectorView<AccelerationStructureGeometry> p_geometries) {
+RDD::AccelerationStructureID RenderingDeviceDriverVulkan::blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) {
 #if VULKAN_RAYTRACING_ENABLED
 	AccelerationStructureInfo *accel_info = VersatileResource::allocate<AccelerationStructureInfo>(resources_allocator);
 
@@ -6236,12 +6331,12 @@ RDD::AccelerationStructureID RenderingDeviceDriverVulkan::blas_create(VectorView
 	accel_info->build_info.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
 	accel_info->build_info.pGeometries = accel_info->geometries.ptr();
 	accel_info->build_info.geometryCount = p_geometries.size();
-	accel_info->build_info.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+	accel_info->build_info.flags = p_flags;
 
 	VkAccelerationStructureBuildSizesInfoKHR size_info = {};
 	size_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
 
-	vkGetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, max_primitive_counts.ptr(), &size_info);
+	device_functions.GetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, max_primitive_counts.ptr(), &size_info);
 	_acceleration_structure_create(VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR, size_info, accel_info);
 
 	return AccelerationStructureID(accel_info);
@@ -6267,76 +6362,51 @@ static _FORCE_INLINE_ void _store_transform_transposed_3x4(const Transform3D &p_
 }
 #endif
 
-uint32_t RenderingDeviceDriverVulkan::tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) {
+RDD::AccelerationStructureID RenderingDeviceDriverVulkan::tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) {
 #if VULKAN_RAYTRACING_ENABLED
-	return p_instance_count * sizeof(VkAccelerationStructureInstanceKHR);
-#else
-	return 0;
-#endif
-}
-
-void RenderingDeviceDriverVulkan::tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) {
-#if VULKAN_RAYTRACING_ENABLED
-	uint32_t blases_count = p_blases.size();
-	ERR_FAIL_COND_MSG(blases_count != p_transforms.size(), "Blases and transforms vectors must have the same size.");
-	ERR_FAIL_COND(blases_count == 0);
-
-	LocalVector<VkAccelerationStructureInstanceKHR> instances;
-	instances.resize(blases_count);
-
-	for (uint32_t i = 0; i < blases_count; ++i) {
-		const AccelerationStructureID &blas = p_blases[i];
-		AccelerationStructureInfo *blas_info = (AccelerationStructureInfo *)blas.id;
-
-		VkAccelerationStructureInstanceKHR &instance = instances[i];
-		_store_transform_transposed_3x4(p_transforms[i], instance.transform);
-		instance.instanceCustomIndex = i;
-		instance.mask = 0xFF;
-		instance.accelerationStructureReference = buffer_get_device_address(blas_info->buffer);
-		instance.instanceShaderBindingTableRecordOffset = 0;
-		instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
-	}
-
-	uint8_t *data_ptr = buffer_map(p_instances_buffer);
-	ERR_FAIL_NULL(data_ptr);
-	uint32_t instances_size = blases_count * sizeof(instances[0]);
-	memcpy(data_ptr, instances.ptr(), instances_size);
-	buffer_unmap(p_instances_buffer);
-#endif
-}
-
-RDD::AccelerationStructureID RenderingDeviceDriverVulkan::tlas_create(BufferID p_instances_buffer) {
-#if VULKAN_RAYTRACING_ENABLED
-	ERR_FAIL_COND_V(p_instances_buffer == BufferID(), AccelerationStructureID());
-
 	AccelerationStructureInfo *accel_info = VersatileResource::allocate<AccelerationStructureInfo>(resources_allocator);
 
 	accel_info->geometries.resize_initialized(1);
 	accel_info->geometries[0].sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
 	accel_info->geometries[0].geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
 	accel_info->geometries[0].geometry.instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
-	accel_info->geometries[0].geometry.instances.data.deviceAddress = buffer_get_device_address(p_instances_buffer);
 
 	accel_info->build_info = {};
 	accel_info->build_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
-	accel_info->build_info.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+	accel_info->build_info.flags = p_flags;
 	accel_info->build_info.geometryCount = 1;
 	accel_info->build_info.pGeometries = &accel_info->geometries[0];
 	accel_info->build_info.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
 	accel_info->build_info.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
 
-	uint32_t instance_count = buffer_get_allocation_size(p_instances_buffer) / sizeof(VkAccelerationStructureInstanceKHR);
 	VkAccelerationStructureBuildSizesInfoKHR size_info = {};
 	size_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
-	vkGetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, &instance_count, &size_info);
+	device_functions.GetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, &p_max_instance_count, &size_info);
 
 	accel_info->range_infos.resize_initialized(1);
-	accel_info->range_infos[0].primitiveCount = instance_count;
 
 	_acceleration_structure_create(VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR, size_info, accel_info);
 	return AccelerationStructureID(accel_info);
 #else
 	return AccelerationStructureID();
+#endif
+}
+
+void RenderingDeviceDriverVulkan::acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) {
+#if VULKAN_RAYTRACING_ENABLED
+	VkAccelerationStructureInstanceKHR *vk_instance = (VkAccelerationStructureInstanceKHR *)r_driver_instance;
+	_store_transform_transposed_3x4(p_instance.transform, vk_instance->transform);
+	vk_instance->instanceCustomIndex = p_instance.id;
+	vk_instance->mask = p_instance.mask;
+	vk_instance->instanceShaderBindingTableRecordOffset = p_instance.hit_sbt_offset;
+	vk_instance->flags = p_instance.flags;
+
+	if (p_instance.blas) {
+		const AccelerationStructureInfo *blas_info = (const AccelerationStructureInfo *)p_instance.blas.id;
+		vk_instance->accelerationStructureReference = buffer_get_device_address(blas_info->buffer);
+	} else {
+		vk_instance->accelerationStructureReference = 0;
+	}
 #endif
 }
 
@@ -6360,8 +6430,8 @@ void RenderingDeviceDriverVulkan::_acceleration_structure_create(VkAccelerationS
 	accel_create_info.type = p_type;
 	accel_create_info.size = p_size_info.accelerationStructureSize;
 	accel_create_info.buffer = ((const BufferInfo *)buffer.id)->vk_buffer;
-	VkResult err = vkCreateAccelerationStructureKHR(vk_device, &accel_create_info, nullptr, &r_accel_info->vk_acceleration_structure);
-	ERR_FAIL_COND_MSG(err, "vkCreateAccelerationStructureKHR failed with error " + itos(err) + ".");
+	VkResult err = device_functions.CreateAccelerationStructureKHR(vk_device, &accel_create_info, nullptr, &r_accel_info->vk_acceleration_structure);
+	ERR_FAIL_COND_MSG(err, vformat("Couldn't create Vulkan raytracing acceleration structure (VkResult error %d).", err));
 	r_accel_info->build_info.dstAccelerationStructure = r_accel_info->vk_acceleration_structure;
 #endif
 }
@@ -6369,15 +6439,12 @@ void RenderingDeviceDriverVulkan::_acceleration_structure_create(VkAccelerationS
 void RenderingDeviceDriverVulkan::acceleration_structure_free(AccelerationStructureID p_acceleration_structure) {
 #if VULKAN_RAYTRACING_ENABLED
 	AccelerationStructureInfo *accel_info = (AccelerationStructureInfo *)p_acceleration_structure.id;
-	ERR_FAIL_NULL_MSG(accel_info, "Acceleration structure input parameter is not valid.");
-	if (accel_info->instances_buffer) {
-		buffer_free(accel_info->instances_buffer);
-	}
+	ERR_FAIL_NULL_MSG(accel_info, "Vulkan raytracing acceleration structure input parameter is not valid.");
 	if (accel_info->buffer) {
 		buffer_free(accel_info->buffer);
 	}
 	if (accel_info->vk_acceleration_structure) {
-		vkDestroyAccelerationStructureKHR(vk_device, accel_info->vk_acceleration_structure, nullptr);
+		device_functions.DestroyAccelerationStructureKHR(vk_device, accel_info->vk_acceleration_structure, nullptr);
 	}
 	VersatileResource::free(resources_allocator, accel_info);
 #endif
@@ -6385,13 +6452,26 @@ void RenderingDeviceDriverVulkan::acceleration_structure_free(AccelerationStruct
 
 uint32_t RenderingDeviceDriverVulkan::acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) {
 	AccelerationStructureInfo *accel_info = (AccelerationStructureInfo *)p_acceleration_structure.id;
-	ERR_FAIL_NULL_V_MSG(accel_info, 0, "Acceleration structure input parameter is not valid.");
+	ERR_FAIL_NULL_V_MSG(accel_info, 0, "Vulkan raytracing acceleration structure input parameter is not valid.");
 	return accel_info->scratch_size;
+}
+
+VkStridedDeviceAddressRegionKHR RenderingDeviceDriverVulkan::_sbt_to_vk_strided_device_address_region(const ShaderBindingTable &p_sbt) {
+	VkStridedDeviceAddressRegionKHR vk_strided_device_address_region = {};
+	if (p_sbt.buffer) {
+		vk_strided_device_address_region.deviceAddress = buffer_get_device_address(p_sbt.buffer) + p_sbt.offset;
+		vk_strided_device_address_region.stride = p_sbt.stride;
+		vk_strided_device_address_region.size = p_sbt.size;
+
+		DEV_ASSERT((vk_strided_device_address_region.deviceAddress & (raytracing_capabilities.shader_group_base_alignment - 1)) == 0 && "Shader binding table address must be aligned to API_TRAIT_SHADER_GROUP_BASE_ALIGNMENT.");
+		DEV_ASSERT((vk_strided_device_address_region.stride & (raytracing_capabilities.shader_group_handle_alignment - 1)) == 0 && "Shader binding table stride must be aligned to API_TRAIT_SHADER_GROUP_HANDLE_ALIGNMENT.");
+	}
+	return vk_strided_device_address_region;
 }
 
 // ----- COMMANDS -----
 
-void RenderingDeviceDriverVulkan::command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
+void RenderingDeviceDriverVulkan::command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
 #if VULKAN_RAYTRACING_ENABLED
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	AccelerationStructureInfo *accel_info = (AccelerationStructureInfo *)p_acceleration_structure.id;
@@ -6402,15 +6482,31 @@ void RenderingDeviceDriverVulkan::command_build_acceleration_structure(CommandBu
 
 	const VkAccelerationStructureBuildRangeInfoKHR *range_infos = accel_info->range_infos.ptr();
 
-	vkCmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_infos);
+	device_functions.CmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_infos);
+#endif
+}
+
+void RenderingDeviceDriverVulkan::command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) {
+#if VULKAN_RAYTRACING_ENABLED
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	AccelerationStructureInfo *accel_info = (AccelerationStructureInfo *)p_acceleration_structure.id;
+
+	accel_info->geometries[0].geometry.instances.data.deviceAddress = buffer_get_device_address(p_instance_buffer) + p_instance_offset;
+	accel_info->range_infos[0].primitiveCount = p_instance_count;
+
+	VkAccelerationStructureBuildGeometryInfoKHR *build_info = &accel_info->build_info;
+	VkDeviceAddress scratch_address = buffer_get_device_address(p_scratch_buffer);
+	build_info->scratchData.deviceAddress = _align_up_address(scratch_address, accel_info->scratch_alignment);
+
+	const VkAccelerationStructureBuildRangeInfoKHR *range_infos = accel_info->range_infos.ptr();
+
+	device_functions.CmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_infos);
 #endif
 }
 
 void RenderingDeviceDriverVulkan::command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) {
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	bound_raytracing_pipeline_id = p_pipeline;
-	const RaytracingPipelineInfo *rpi = (const RaytracingPipelineInfo *)p_pipeline.id;
-	vkCmdBindPipeline(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rpi->vk_pipeline);
+	vkCmdBindPipeline(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, (VkPipeline)p_pipeline.id);
 }
 
 void RenderingDeviceDriverVulkan::command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
@@ -6420,160 +6516,140 @@ void RenderingDeviceDriverVulkan::command_bind_raytracing_uniform_set(CommandBuf
 	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
 }
 
-void RenderingDeviceDriverVulkan::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) {
+void RenderingDeviceDriverVulkan::command_trace_rays(CommandBufferID p_cmd_buffer, const ShaderBindingTable &p_raygen_sbt, const ShaderBindingTable &p_miss_sbt, const ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 #if VULKAN_RAYTRACING_ENABLED
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	ERR_FAIL_COND_MSG(bound_raytracing_pipeline_id == RaytracingPipelineID(), "A raytracing pipeline must have been bound with `command_bind_raytracing_pipeline()`.");
-	const RaytracingPipelineInfo *rpi = (const RaytracingPipelineInfo *)bound_raytracing_pipeline_id.id;
-	vkCmdTraceRaysKHR(command_buffer->vk_command_buffer, &rpi->regions.raygen, &rpi->regions.miss, &rpi->regions.hit, &rpi->regions.call, p_width, p_height, 1);
+	VkStridedDeviceAddressRegionKHR raygen_sbt = _sbt_to_vk_strided_device_address_region(p_raygen_sbt);
+	VkStridedDeviceAddressRegionKHR miss_sbt = _sbt_to_vk_strided_device_address_region(p_miss_sbt);
+	VkStridedDeviceAddressRegionKHR hit_sbt = _sbt_to_vk_strided_device_address_region(p_hit_sbt);
+	VkStridedDeviceAddressRegionKHR callable_sbt = {};
+	device_functions.CmdTraceRaysKHR(command_buffer->vk_command_buffer, &raygen_sbt, &miss_sbt, &hit_sbt, &callable_sbt, p_width, p_height, p_depth);
 #endif
 }
 
 // --- PIPELINE ---
 
-RDD::RaytracingPipelineID RenderingDeviceDriverVulkan::raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+RDD::RaytracingPipelineID RenderingDeviceDriverVulkan::raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) {
 #if VULKAN_RAYTRACING_ENABLED
-	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
+	VkPipelineShaderStageCreateInfo *stages = ALLOCA_ARRAY(VkPipelineShaderStageCreateInfo, p_shaders.size());
+
+	for (uint32_t i = 0; i < p_shaders.size(); i++) {
+		const PipelineShader &shader = p_shaders[i];
+		const ShaderInfo *shader_info = (const ShaderInfo *)shader.shader.id;
+		bool found_shader_stage = false;
+
+		for (uint32_t j = 0; j < shader_info->vk_stages_create_info.size(); j++) {
+			const VkPipelineShaderStageCreateInfo &create_info = shader_info->vk_stages_create_info[j];
+			if (create_info.stage & RD_STAGE_TO_VK_SHADER_STAGE_BITS[shader.shader_stage]) {
+				stages[i] = create_info;
+
+				if (shader.specialization_constants.size()) {
+					VkSpecializationMapEntry *specialization_map_entries = ALLOCA_ARRAY(VkSpecializationMapEntry, shader.specialization_constants.size());
+					for (uint32_t k = 0; k < shader.specialization_constants.size(); k++) {
+						specialization_map_entries[k] = {};
+						specialization_map_entries[k].constantID = shader.specialization_constants[k].constant_id;
+						specialization_map_entries[k].offset = (const char *)&shader.specialization_constants[k].int_value - (const char *)shader.specialization_constants.ptr();
+						specialization_map_entries[k].size = sizeof(uint32_t);
+					}
+
+					VkSpecializationInfo *specialization_info = ALLOCA_SINGLE(VkSpecializationInfo);
+					specialization_info->dataSize = shader.specialization_constants.size() * sizeof(PipelineSpecializationConstant);
+					specialization_info->pData = shader.specialization_constants.ptr();
+					specialization_info->mapEntryCount = shader.specialization_constants.size();
+					specialization_info->pMapEntries = specialization_map_entries;
+
+					stages[i].pSpecializationInfo = specialization_info;
+				}
+
+				found_shader_stage = true;
+				break;
+			}
+		}
+
+		ERR_FAIL_COND_V_MSG(!found_shader_stage, RaytracingPipelineID(), vformat("Shader \"%s\" doesn't have a stage compatible with the specified raytracing PipelineShaderStage.", shader_info->name));
+	}
+
+	uint32_t shader_group_count = p_raygen_shader_indices.size() + p_miss_shader_indices.size() + p_hit_groups.size();
+	VkRayTracingShaderGroupCreateInfoKHR *shader_groups = ALLOCA_ARRAY(VkRayTracingShaderGroupCreateInfoKHR, shader_group_count);
+
+	for (uint32_t i = 0; i < p_raygen_shader_indices.size(); i++) {
+		VkRayTracingShaderGroupCreateInfoKHR &vk_shader_group = shader_groups[i];
+		vk_shader_group = {};
+		vk_shader_group.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+		vk_shader_group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		vk_shader_group.generalShader = p_raygen_shader_indices[i];
+		vk_shader_group.closestHitShader = VK_SHADER_UNUSED_KHR;
+		vk_shader_group.anyHitShader = VK_SHADER_UNUSED_KHR;
+		vk_shader_group.intersectionShader = VK_SHADER_UNUSED_KHR;
+	}
+
+	for (uint32_t i = 0; i < p_miss_shader_indices.size(); i++) {
+		VkRayTracingShaderGroupCreateInfoKHR &vk_shader_group = shader_groups[p_raygen_shader_indices.size() + i];
+		vk_shader_group = {};
+		vk_shader_group.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+		vk_shader_group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		vk_shader_group.generalShader = p_miss_shader_indices[i];
+		vk_shader_group.closestHitShader = VK_SHADER_UNUSED_KHR;
+		vk_shader_group.anyHitShader = VK_SHADER_UNUSED_KHR;
+		vk_shader_group.intersectionShader = VK_SHADER_UNUSED_KHR;
+	}
+
+	for (uint32_t i = 0; i < p_hit_groups.size(); i++) {
+		const HitGroup &hit_group = p_hit_groups[i];
+
+		VkRayTracingShaderGroupCreateInfoKHR &vk_shader_group = shader_groups[p_raygen_shader_indices.size() + p_miss_shader_indices.size() + i];
+		vk_shader_group = {};
+		vk_shader_group.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+		vk_shader_group.type = hit_group.intersection_shader_index != UINT32_MAX ? VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR : VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+		vk_shader_group.generalShader = VK_SHADER_UNUSED_KHR;
+		vk_shader_group.closestHitShader = hit_group.closest_hit_shader_index;
+		vk_shader_group.anyHitShader = hit_group.any_hit_shader_index;
+		vk_shader_group.intersectionShader = hit_group.intersection_shader_index;
+	}
+
+	const ShaderInfo *layout_defining_shader_info = (const ShaderInfo *)p_layout_defining_shader.id;
 
 	VkRayTracingPipelineCreateInfoKHR pipeline_create_info = {};
 	pipeline_create_info.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR;
+	pipeline_create_info.layout = layout_defining_shader_info->vk_pipeline_layout;
+	pipeline_create_info.stageCount = p_shaders.size();
+	pipeline_create_info.pStages = stages;
+	pipeline_create_info.groupCount = shader_group_count;
+	pipeline_create_info.pGroups = shader_groups;
+	pipeline_create_info.maxPipelineRayRecursionDepth = p_max_trace_recursion_depth;
 
-	// Stages.
-	pipeline_create_info.stageCount = shader_info->vk_stages_create_info.size();
+	VkPipeline vk_pipeline = VK_NULL_HANDLE;
+	VkResult err = device_functions.CreateRaytracingPipelinesKHR(vk_device, VK_NULL_HANDLE, pipelines_cache.vk_cache, 1, &pipeline_create_info, nullptr, &vk_pipeline);
+	ERR_FAIL_COND_V_MSG(err, RaytracingPipelineID(), vformat("Couldn't create Vulkan raytracing pipelines (VkResult error %d).", err));
 
-	VkPipelineShaderStageCreateInfo *vk_pipeline_stages = ALLOCA_ARRAY(VkPipelineShaderStageCreateInfo, pipeline_create_info.stageCount);
-
-	for (uint32_t i = 0; i < pipeline_create_info.stageCount; i++) {
-		vk_pipeline_stages[i] = shader_info->vk_stages_create_info[i];
-
-		if (p_specialization_constants.size()) {
-			VkSpecializationMapEntry *specialization_map_entries = ALLOCA_ARRAY(VkSpecializationMapEntry, p_specialization_constants.size());
-			for (uint32_t j = 0; j < p_specialization_constants.size(); j++) {
-				specialization_map_entries[j] = {};
-				specialization_map_entries[j].constantID = p_specialization_constants[j].constant_id;
-				specialization_map_entries[j].offset = (const char *)&p_specialization_constants[j].int_value - (const char *)p_specialization_constants.ptr();
-				specialization_map_entries[j].size = sizeof(uint32_t);
-			}
-
-			VkSpecializationInfo *specialization_info = ALLOCA_SINGLE(VkSpecializationInfo);
-			*specialization_info = {};
-			specialization_info->dataSize = p_specialization_constants.size() * sizeof(PipelineSpecializationConstant);
-			specialization_info->pData = p_specialization_constants.ptr();
-			specialization_info->mapEntryCount = p_specialization_constants.size();
-			specialization_info->pMapEntries = specialization_map_entries;
-
-			vk_pipeline_stages[i].pSpecializationInfo = specialization_info;
-		}
-	}
-
-	// Groups.
-	pipeline_create_info.groupCount = pipeline_create_info.stageCount;
-	VkRayTracingShaderGroupCreateInfoKHR *vk_pipeline_groups = ALLOCA_ARRAY(VkRayTracingShaderGroupCreateInfoKHR, pipeline_create_info.groupCount);
-	for (uint32_t i = 0; i < pipeline_create_info.stageCount; i++) {
-		vk_pipeline_groups[i] = shader_info->vk_groups_create_info[i];
-	}
-
-	// Pipeline.
-	pipeline_create_info.layout = shader_info->vk_pipeline_layout;
-	pipeline_create_info.pStages = vk_pipeline_stages;
-	pipeline_create_info.pGroups = vk_pipeline_groups;
-	pipeline_create_info.maxPipelineRayRecursionDepth = 1;
-
-	RaytracingPipelineInfo *rpi = VersatileResource::allocate<RaytracingPipelineInfo>(resources_allocator);
-
-	VkResult err = vkCreateRayTracingPipelinesKHR(vk_device, VK_NULL_HANDLE, pipelines_cache.vk_cache, 1, &pipeline_create_info, nullptr, &rpi->vk_pipeline);
-	ERR_FAIL_COND_V_MSG(err, RaytracingPipelineID(), "vkCreateRayTracingPipelinesKHR failed with error " + itos(err) + ".");
-
-	RaytracingPipelineID raytracing_pipeline = RaytracingPipelineID(rpi);
-	err = _raytracing_pipeline_stb_create(raytracing_pipeline, p_shader);
-	ERR_FAIL_COND_V_MSG(err, RaytracingPipelineID(), "_raytracing_pipeline_stb_create failed with error " + itos(err) + ".");
-
-	return raytracing_pipeline;
+	return RaytracingPipelineID(vk_pipeline);
 #else
 	return RaytracingPipelineID();
 #endif
 }
 
-VkResult RenderingDeviceDriverVulkan::_raytracing_pipeline_stb_create(RaytracingPipelineID p_pipeline, ShaderID p_shader) {
+void RenderingDeviceDriverVulkan::raytracing_pipeline_free(RaytracingPipelineID p_pipeline) {
 #if VULKAN_RAYTRACING_ENABLED
-	RaytracingPipelineInfo *rpi = (RaytracingPipelineInfo *)p_pipeline.id;
-	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-
-	// Shader group handles.
-	uint32_t handle_size_aligned = raytracing_capabilities.shader_group_handle_size_aligned;
-	uint32_t base_alignment = raytracing_capabilities.shader_group_base_alignment;
-
-	rpi->regions.raygen.stride = _align_up(handle_size_aligned * shader_info->region_count.raygen_count, base_alignment);
-	rpi->regions.raygen.size = rpi->regions.raygen.stride; // odd but ok.
-
-	rpi->regions.hit.stride = handle_size_aligned;
-	rpi->regions.hit.size = _align_up(handle_size_aligned * shader_info->region_count.hit_count, base_alignment);
-
-	rpi->regions.miss.stride = handle_size_aligned;
-	rpi->regions.miss.size = _align_up(handle_size_aligned * shader_info->region_count.miss_count, base_alignment);
-
-	rpi->regions.call.stride = 0;
-	rpi->regions.call.size = 0;
-
-	// Shader binding table.
-	uint32_t sbt_size = rpi->regions.raygen.size + rpi->regions.hit.size + rpi->regions.miss.size + rpi->regions.call.size;
-	rpi->sbt_buffer = buffer_create(sbt_size, BUFFER_USAGE_TRANSFER_FROM_BIT | BUFFER_USAGE_DEVICE_ADDRESS_BIT | BUFFER_USAGE_SHADER_BINDING_TABLE_BIT, MEMORY_ALLOCATION_TYPE_CPU, UINT64_MAX);
-
-	// Update regions addresses.
-	rpi->regions.raygen.deviceAddress = buffer_get_device_address(rpi->sbt_buffer);
-	rpi->regions.hit.deviceAddress = rpi->regions.raygen.deviceAddress + rpi->regions.raygen.size;
-	rpi->regions.miss.deviceAddress = rpi->regions.hit.deviceAddress + rpi->regions.hit.size;
-	rpi->regions.call.deviceAddress = 0;
-
-	// Update shader binding table buffer.
-	uint32_t handle_size = raytracing_capabilities.shader_group_handle_size;
-	uint32_t handles_size = shader_info->region_count.group_count * handle_size;
-	LocalVector<uint8_t> handles_data;
-	handles_data.resize(handles_size);
-	uint8_t *handles_ptr = handles_data.ptr();
-
-	VkResult err = vkGetRayTracingShaderGroupHandlesKHR(vk_device, rpi->vk_pipeline, 0, shader_info->region_count.group_count, handles_size, handles_ptr);
-	ERR_FAIL_COND_V_MSG(err, err, "vkGetRayTracingShaderGroupHandlesKHR failed with error " + itos(err) + ".");
-
-	uint8_t *sbt_ptr = buffer_map(rpi->sbt_buffer);
-	uint8_t *sbt_data = sbt_ptr;
-	uint32_t handle_index = 0;
-
-	// Raygen.
-	memcpy(sbt_data, handles_ptr + handle_index * handle_size, handle_size);
-	++handle_index;
-
-	// Hit.
-	sbt_data = sbt_ptr + rpi->regions.raygen.size;
-	for (uint32_t i = 0; i < shader_info->region_count.hit_count; ++i) {
-		memcpy(sbt_data, handles_ptr + handle_index * handle_size, handle_size);
-		sbt_data += rpi->regions.hit.stride;
-		++handle_index;
-	}
-
-	// Miss.
-	sbt_data = sbt_ptr + rpi->regions.raygen.size + rpi->regions.hit.size;
-	for (uint32_t i = 0; i < shader_info->region_count.miss_count; ++i) {
-		memcpy(sbt_data, handles_ptr + handle_index * handle_size, handle_size);
-		sbt_data += rpi->regions.miss.stride;
-		++handle_index;
-	}
-
-	buffer_unmap(rpi->sbt_buffer);
-
-	return err;
-#else
-	return VK_ERROR_UNKNOWN;
+	vkDestroyPipeline(vk_device, (VkPipeline)p_pipeline.id, nullptr);
 #endif
 }
 
-void RenderingDeviceDriverVulkan::raytracing_pipeline_free(RaytracingPipelineID p_pipeline) {
-	const RaytracingPipelineInfo *rpi = (const RaytracingPipelineInfo *)p_pipeline.id;
-	vkDestroyPipeline(vk_device, rpi->vk_pipeline, nullptr);
-	if (rpi->sbt_buffer) {
-		buffer_free(rpi->sbt_buffer);
+bool RenderingDeviceDriverVulkan::raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data, uint32_t p_data_stride_bytes) {
+#if VULKAN_RAYTRACING_ENABLED
+	ERR_FAIL_COND_V_MSG(
+			p_data_stride_bytes < raytracing_capabilities.shader_group_handle_size,
+			false,
+			vformat("Data stride (%d) must be greater than or equal to the size of the shader group handles (%d).", p_data_stride_bytes, raytracing_capabilities.shader_group_handle_size));
+
+	for (uint32_t i = 0; i < p_group_indices.size(); i++) {
+		VkResult err = device_functions.GetRayTracingShaderGroupHandlesKHR(vk_device, (VkPipeline)p_pipeline.id, p_group_index_offset + p_group_indices[i], 1, raytracing_capabilities.shader_group_handle_size, r_data);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, vformat("Couldn't get Vulkan raytracing shader group handles (VkResult error %d).", err));
+		r_data += p_data_stride_bytes;
 	}
-	VersatileResource::free(resources_allocator, rpi);
+	return true;
+#else
+	return false;
+#endif
 }
 
 /*****************/
@@ -6663,7 +6739,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::compute_pipeline_create(ShaderID p_
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
 	VkResult err = vkCreateComputePipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
-	ERR_FAIL_COND_V_MSG(err, PipelineID(), "vkCreateComputePipelines failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, PipelineID(), vformat("Couldn't create Vulkan compute pipelines (VkResult error %d).", err));
 
 	return PipelineID(vk_pipeline);
 }
@@ -7118,8 +7194,7 @@ void RenderingDeviceDriverVulkan::set_object_name(ObjectType p_type, ID p_driver
 			_set_object_name(VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR, (uint64_t)asi->vk_acceleration_structure, p_name);
 		} break;
 		case OBJECT_TYPE_RAYTRACING_PIPELINE: {
-			const RaytracingPipelineInfo *rpi = (const RaytracingPipelineInfo *)p_driver_id.id;
-			_set_object_name(VK_OBJECT_TYPE_PIPELINE, (uint64_t)rpi->vk_pipeline, p_name);
+			_set_object_name(VK_OBJECT_TYPE_PIPELINE, (uint64_t)p_driver_id.id, p_name);
 		} break;
 		default: {
 			DEV_ASSERT(false);
@@ -7296,6 +7371,14 @@ uint64_t RenderingDeviceDriverVulkan::api_trait_get(ApiTrait p_trait) {
 			return (uint64_t)MAX((uint64_t)16, physical_device_properties.limits.optimalBufferCopyOffsetAlignment);
 		case API_TRAIT_SHADER_CHANGE_INVALIDATION:
 			return (uint64_t)SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE;
+		case API_TRAIT_ACCELERATION_STRUCTURE_INSTANCE_SIZE:
+			return sizeof(VkAccelerationStructureInstanceKHR);
+		case API_TRAIT_SHADER_GROUP_HANDLE_SIZE:
+			return raytracing_capabilities.shader_group_handle_size;
+		case API_TRAIT_SHADER_GROUP_HANDLE_ALIGNMENT:
+			return raytracing_capabilities.shader_group_handle_alignment;
+		case API_TRAIT_SHADER_GROUP_BASE_ALIGNMENT:
+			return raytracing_capabilities.shader_group_base_alignment;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
 	}
@@ -7332,8 +7415,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 			// involving integrated GPU hardware do not function correctly
 			// with HDR output.
 			return false;
-#elif defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
-			// HDR support has not yet been thoroughly tested and validated for Apple platforms.
+#elif defined(APPLE_EMBEDDED_ENABLED)
+			// HDR output with Vulkan currently does not function correctly on iOS. (Tested on iPhone 13 Pro, iOS 26.3.1(a))
 			return false;
 #else
 			return context_driver->is_colorspace_supported();
@@ -7381,6 +7464,10 @@ bool RenderingDeviceDriverVulkan::is_composite_alpha_supported(CommandQueueID p_
 		return has_comp_alpha[(uint64_t)p_queue.id];
 	}
 	return false;
+}
+
+RenderingDeviceDriver::DriverWorkarounds RenderingDeviceDriverVulkan::get_driver_workarounds() const {
+	return driver_workarounds;
 }
 
 /******************/

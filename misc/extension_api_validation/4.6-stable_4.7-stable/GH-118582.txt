@@ -1,0 +1,6 @@
+GH-117399
+--------------
+
+Validate extension JSON: Error: Field 'classes/Object/methods/is_class/arguments/0': type changed value in new API, from "String" to "StringName".
+
+Changed String parameter to StringName. Compatibility method registered.

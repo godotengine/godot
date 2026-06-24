@@ -159,18 +159,18 @@ void EditorResourcePicker::_update_resource() {
 		}
 
 		if (!editable) {
-			tooltip += "\n" + vformat(TTR("The %s cannot be edited in the inspector and can't be made unique directly."), resource_name) + "\n";
+			tooltip += "\n" + vformat(TTR("The %s cannot be edited in the inspector and can't be made unique directly."), resource_name);
 		} else {
 			if (unique_enable) {
-				tooltip += "\n" + TTR("Left-click to make it unique.") + "\n";
+				tooltip += "\n" + TTR("Left-click to make it unique.");
 			}
 
 			if (unique_recursive_enabled) {
-				tooltip += TTR("It is possible to make its subresources unique.") + "\n" + TTR("Right-click to make them unique.");
+				tooltip += "\n" + TTR("It is possible to make its subresources unique.") + "\n" + TTR("Right-click to make them unique.");
 			}
 
 			if (!unique_enable && EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size() == 1) {
-				tooltip += TTR("In order to duplicate it, make its parent Resource unique.") + "\n";
+				tooltip += "\n" + TTR("In order to duplicate it, make its parent Resource unique.");
 			}
 		}
 
@@ -400,12 +400,12 @@ void EditorResourcePicker::_update_menu_items() {
 		edit_menu->add_separator();
 
 		if (edited_resource.is_valid()) {
-			edit_menu->add_item(TTRC("Copy"), OBJ_MENU_COPY);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTRC("Copy"), OBJ_MENU_COPY);
 		}
 
 		if (paste_valid) {
-			edit_menu->add_item(TTRC("Paste"), OBJ_MENU_PASTE);
-			edit_menu->add_item(TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTRC("Paste"), OBJ_MENU_PASTE);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
 		}
 	}
 
@@ -630,15 +630,15 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				obj = EditorNode::get_editor_data().instantiate_custom_type(intype, "Resource");
 			}
 
-			Resource *resp = Object::cast_to<Resource>(obj);
-			ERR_BREAK(!resp);
-			resp->set_path(_get_owner_path() + "::" + resp->generate_scene_unique_id()); // Assign a base path for built-in Resources.
+			Ref<Resource> resp(obj);
+			ERR_BREAK(resp.is_null());
+			EditorNode::setup_built_in_resource(resp, _get_owner_path()); // Assign a base path for built-in Resources.
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
 			// Prevent freeing of the object until the end of the update of the resource (GH-88286).
 			Ref<Resource> old_edited_resource = edited_resource;
-			edited_resource = Ref<Resource>(resp);
+			edited_resource = resp;
 			_resource_changed();
 		} break;
 	}
@@ -746,6 +746,13 @@ String EditorResourcePicker::_get_owner_path() const {
 		Node *p_edited_scene_root = EditorNode::get_singleton()->get_editor_data().get_edited_scene_root();
 		if (node->get_scene_file_path().is_empty()) {
 			node = node->get_owner();
+			// If the owner is not the currently edited scene root, the node is an editable
+			// child from another scene. Use the edited scene's path so the new resource is
+			// not treated as foreign (belonging to the external scene).
+			if (node && p_edited_scene_root != nullptr && node != p_edited_scene_root &&
+					!p_edited_scene_root->get_scene_file_path().is_empty()) {
+				return p_edited_scene_root->get_scene_file_path();
+			}
 		} else if (p_edited_scene_root != nullptr && p_edited_scene_root->get_scene_file_path() != node->get_scene_file_path()) {
 			// PackedScene should use root scene path.
 			return p_edited_scene_root->get_scene_file_path();
@@ -1240,6 +1247,8 @@ void EditorResourcePicker::_ensure_resource_menu() {
 		return;
 	}
 	edit_menu = memnew(PopupMenu);
+	edit_menu->set_search_bar_enabled(true);
+	edit_menu->set_search_bar_min_item_count(10);
 	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
 	edit_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
@@ -1432,7 +1441,8 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 
 	if (p_check_recursive && parent_counter <= 1) {
 		List<Ref<Resource>> nested_resources;
-		en->gather_resources(edited_resource, nested_resources, true, true);
+		HashSet<Object *> scanned_objects;
+		en->gather_resources(edited_resource, nested_resources, scanned_objects, true, true);
 
 		for (Ref<Resource> R : nested_resources) {
 			// Take into account Nested External Resources.
@@ -1753,12 +1763,18 @@ void EditorAudioStreamPicker::_preview_draw() {
 		text = audio_stream->get_name();
 	} else if (audio_stream->get_path().is_resource_file()) {
 		text = audio_stream->get_path().get_file();
-	} else {
+	} else if (audio_stream->get_class() != "AudioStream") {
 		text = audio_stream->get_class().replace_first("AudioStream", "");
+	} else {
+		text = audio_stream->get_class();
 	}
 
 	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 4, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
-	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 4 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width(), font_size, get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
+
+	float text_width = size.width - 4 * EDSCALE - icon->get_width();
+	if (text_width > 0) {
+		stream_preview_rect->draw_string(font, Point2i(size.width - text_width, rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, text_width, font_size, get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
+	}
 }
 
 EditorAudioStreamPicker::EditorAudioStreamPicker() :

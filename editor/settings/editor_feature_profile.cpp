@@ -47,7 +47,7 @@
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("3D Editor"),
 	TTRC("Script Editor"),
-	TTRC("Asset Library"),
+	TTRC("Asset Store"),
 	TTRC("Scene Tree Editing"),
 #ifndef DISABLE_DEPRECATED
 	TTRC("Node Dock (deprecated)"),
@@ -63,7 +63,7 @@ const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
 	TTRC("Allows to view and edit 3D scenes."),
 	TTRC("Allows to edit scripts using the integrated script editor."),
-	TTRC("Provides built-in access to the Asset Library."),
+	TTRC("Provides built-in access to the Asset Store."),
 	TTRC("Allows editing the node hierarchy in the Scene dock."),
 #ifndef DISABLE_DEPRECATED
 	TTRC("Allows to work with signals and groups of the node selected in the Scene dock."),
@@ -1060,6 +1060,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	new_profile_dialog->set_ok_button_text(TTR("Create"));
 
 	erase_profile_dialog = memnew(ConfirmationDialog);
+	erase_profile_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(erase_profile_dialog);
 	erase_profile_dialog->set_title(TTR("Remove Profile"));
 	erase_profile_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorFeatureProfileManager::_erase_selected_profile));

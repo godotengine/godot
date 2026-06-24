@@ -32,8 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/input/input_map.h"
-#include "core/io/resource_loader.h"
 #include "core/math/geometry_3d.h"
 #include "core/math/math_funcs.h"
 #include "core/math/projection.h"
@@ -41,8 +39,6 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/string/translation_server.h"
-#include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_main_screen.h"
@@ -86,30 +82,27 @@
 #include "editor/scene/3d/gizmos/two_bone_ik_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/visible_on_screen_notifier_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/voxel_gi_gizmo_plugin.h"
+#include "editor/scene/3d/node_3d_editor_constants.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/translations/editor_translation_preview_button.h"
 #include "editor/translations/editor_translation_preview_menu.h"
-#include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/decal.h"
 #include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
-#include "scene/3d/sprite_3d.h"
-#include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
-#include "scene/gui/subviewport_container.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/sky_material.h"
-#include "scene/resources/packed_scene.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/rendering/rendering_server.h"
@@ -7275,26 +7268,11 @@ Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
 	main_split->add_child(second_split);
 	add_child(main_split);
 }
+using namespace Node3DEditorConstants;
 
 ///////////////////////////////////////////////////////////////////
 
 Node3DEditor *Node3DEditor::singleton = nullptr;
-
-Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	if (sbox_instance.is_valid()) {
-		RenderingServer::get_singleton()->free_rid(sbox_instance);
-	}
-	if (sbox_instance_offset.is_valid()) {
-		RenderingServer::get_singleton()->free_rid(sbox_instance_offset);
-	}
-	if (sbox_instance_xray.is_valid()) {
-		RenderingServer::get_singleton()->free_rid(sbox_instance_xray);
-	}
-	if (sbox_instance_xray_offset.is_valid()) {
-		RenderingServer::get_singleton()->free_rid(sbox_instance_xray_offset);
-	}
-}
 
 void Node3DEditor::select_gizmo_highlight_axis(int p_axis) {
 	for (int i = 0; i < 3; i++) {
@@ -7486,6 +7464,7 @@ void Node3DEditor::_generate_selection_boxes() {
 	const Color selection_box_color = EDITOR_GET("editors/3d/selection_box_color");
 	const Color active_selection_box_color = EDITOR_GET("editors/3d/active_selection_box_color");
 
+	selection_box_mat.instantiate();
 	selection_box_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	selection_box_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	selection_box_mat->set_albedo(selection_box_color);
@@ -7493,6 +7472,7 @@ void Node3DEditor::_generate_selection_boxes() {
 	st->set_material(selection_box_mat);
 	selection_box = st->commit();
 
+	selection_box_mat_xray.instantiate();
 	selection_box_mat_xray->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	selection_box_mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	selection_box_mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
@@ -7501,6 +7481,7 @@ void Node3DEditor::_generate_selection_boxes() {
 	st_xray->set_material(selection_box_mat_xray);
 	selection_box_xray = st_xray->commit();
 
+	active_selection_box_mat.instantiate();
 	active_selection_box_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	active_selection_box_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	active_selection_box_mat->set_albedo(active_selection_box_color);
@@ -7508,6 +7489,7 @@ void Node3DEditor::_generate_selection_boxes() {
 	active_st->set_material(active_selection_box_mat);
 	active_selection_box = active_st->commit();
 
+	active_selection_box_mat_xray.instantiate();
 	active_selection_box_mat_xray->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	active_selection_box_mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	active_selection_box_mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
@@ -7554,6 +7536,7 @@ Dictionary Node3DEditor::get_state() const {
 	d["viewports"] = vpdata;
 
 	d["vertex_snap_origin_mode"] = vertex_snap_origin_mode;
+	d["vertex_snap_use_collision"] = vertex_snap_use_collision;
 	d["show_grid"] = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_GRID));
 	d["show_origin"] = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN));
 	d["fov"] = get_fov();
@@ -7634,6 +7617,14 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
 		transform_menu->get_popup()->set_item_checked(idx_vertex, !vertex_snap_origin_mode);
 		transform_menu->get_popup()->set_item_checked(idx_origin, vertex_snap_origin_mode);
+	}
+
+	if (d.has("vertex_snap_use_collision")) {
+		vertex_snap_use_collision = d["vertex_snap_use_collision"];
+		int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+		int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+		transform_menu->get_popup()->set_item_checked(idx_mesh, !vertex_snap_use_collision);
+		transform_menu->get_popup()->set_item_checked(idx_collision, vertex_snap_use_collision);
 	}
 
 	if (d.has("local_coords")) {
@@ -7818,6 +7809,10 @@ void Node3DEditor::_update_vertex_snap_tooltips() {
 			vformat(TTR("Hold %s to highlight a vertex on the currently selected node,\nthen drag to move the node and snap it to vertices on neighboring nodes.\n\nFor nodes without a vertex-based representation,\nSnap Origin to Vertex is always used instead."), snap_key));
 	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN),
 			vformat(TTR("Hold %s to highlight another node's vertex,\nthen click to teleport the selected node to the highlighted vertex."), snap_key));
+	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH),
+			TTR("Snap to vertices of visual meshes.\nHold Shift while vertex snapping to temporarily snap to collision shapes instead."));
+	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION),
+			TTR("Snap to vertices of collision shapes.\nHold Shift while vertex snapping to temporarily snap to mesh vertices instead."));
 }
 
 void Node3DEditor::_xform_dialog_action() {
@@ -7978,6 +7973,9 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			tool_mode = (ToolMode)p_option;
 			update_transform_gizmo();
 
+			for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
+				viewports[i]->update_transform_gizmo_highlight();
+			}
 		} break;
 		case MENU_TRANSFORM_CONFIGURE_SNAP: {
 			snap_dialog->popup_centered(Size2(200, 180));
@@ -7995,6 +7993,20 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
 			transform_menu->get_popup()->set_item_checked(idx_vertex, false);
 			transform_menu->get_popup()->set_item_checked(idx_origin, true);
+		} break;
+		case MENU_VERTEX_SNAP_SOURCE_MESH: {
+			vertex_snap_use_collision = false;
+			int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+			int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+			transform_menu->get_popup()->set_item_checked(idx_mesh, true);
+			transform_menu->get_popup()->set_item_checked(idx_collision, false);
+		} break;
+		case MENU_VERTEX_SNAP_SOURCE_COLLISION: {
+			vertex_snap_use_collision = true;
+			int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+			int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+			transform_menu->get_popup()->set_item_checked(idx_mesh, false);
+			transform_menu->get_popup()->set_item_checked(idx_collision, true);
 		} break;
 		case MENU_TRANSFORM_DIALOG: {
 			for (int i = 0; i < 3; i++) {
@@ -8139,6 +8151,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			undo_redo->add_do_method(this, "_refresh_menu_icons");
 			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->add_do_method(this, "update_transform_gizmo");
+			undo_redo->add_undo_method(this, "update_transform_gizmo");
 			undo_redo->commit_action();
 		} break;
 		case MENU_UNLOCK_SELECTED: {
@@ -8160,6 +8174,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			undo_redo->add_do_method(this, "_refresh_menu_icons");
 			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->add_do_method(this, "update_transform_gizmo");
+			undo_redo->add_undo_method(this, "update_transform_gizmo");
 			undo_redo->commit_action();
 		} break;
 		case MENU_GROUP_SELECTED: {
@@ -8562,8 +8578,7 @@ void fragment() {
 				for (int j = 0; j < n; ++j) {
 					Basis basis = Basis(ivec, j * step);
 
-					real_t circle_size = (i == 3) ? gizmo_view_rotation_scale : GIZMO_CIRCLE_SIZE;
-					Vector3 vertex = basis.xform(ivec2 * circle_size);
+					Vector3 vertex = basis.xform(ivec2 * GIZMO_CIRCLE_SIZE);
 
 					for (int k = 0; k < m; ++k) {
 						Vector2 ofs = Vector2(Math::cos((Math::TAU * k) / m), Math::sin((Math::TAU * k) / m));
@@ -9625,6 +9640,8 @@ void Node3DEditor::_notification(int p_what) {
 					active_selection_box_mat_xray->set_albedo(active_selection_box_color * Color(1, 1, 1, 0.15));
 				}
 
+				gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
+
 				// Update grid color by rebuilding grid.
 				_finish_grid();
 				_init_grid();
@@ -9746,6 +9763,14 @@ VSplitContainer *Node3DEditor::get_shader_split() {
 
 Node3DEditorViewport *Node3DEditor::get_last_used_viewport() {
 	return viewports[last_used_viewport];
+}
+
+void Node3DEditor::set_freelook_viewport(Node3DEditorViewport *p_viewport) {
+	freelook_viewport = p_viewport;
+}
+
+Node3DEditorViewport *Node3DEditor::get_freelook_viewport() const {
+	return freelook_viewport;
 }
 
 void Node3DEditor::add_control_to_left_panel(Control *p_control) {
@@ -9978,17 +10003,12 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<AudioListener3DGizmoPlugin>(memnew(AudioListener3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<MeshInstance3DGizmoPlugin>(memnew(MeshInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<OccluderInstance3DGizmoPlugin>(memnew(OccluderInstance3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpriteBase3DGizmoPlugin>(memnew(SpriteBase3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Label3DGizmoPlugin>(memnew(Label3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GeometryInstance3DGizmoPlugin>(memnew(GeometryInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Marker3DGizmoPlugin>(memnew(Marker3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<ShapeCast3DGizmoPlugin>(memnew(ShapeCast3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpringBoneCollision3DGizmoPlugin>(memnew(SpringBoneCollision3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpringBoneSimulator3DGizmoPlugin>(memnew(SpringBoneSimulator3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<VehicleWheel3DGizmoPlugin>(memnew(VehicleWheel3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<VisibleOnScreenNotifier3DGizmoPlugin>(memnew(VisibleOnScreenNotifier3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticles3DGizmoPlugin>(memnew(GPUParticles3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticlesCollision3DGizmoPlugin>(memnew(GPUParticlesCollision3DGizmoPlugin)));
@@ -9999,14 +10019,20 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<VoxelGIGizmoPlugin>(memnew(VoxelGIGizmoPlugin)));
 	add_gizmo_plugin(Ref<LightmapGIGizmoPlugin>(memnew(LightmapGIGizmoPlugin)));
 	add_gizmo_plugin(Ref<LightmapProbeGizmoPlugin>(memnew(LightmapProbeGizmoPlugin)));
+	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
+	add_gizmo_plugin(Ref<TwoBoneIK3DGizmoPlugin>(memnew(TwoBoneIK3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<ChainIK3DGizmoPlugin>(memnew(ChainIK3DGizmoPlugin)));
+	// Physics gizmo plugins.
 	add_gizmo_plugin(Ref<CollisionObject3DGizmoPlugin>(memnew(CollisionObject3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionShape3DGizmoPlugin>(memnew(CollisionShape3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionPolygon3DGizmoPlugin>(memnew(CollisionPolygon3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<ShapeCast3DGizmoPlugin>(memnew(ShapeCast3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
-	add_gizmo_plugin(Ref<TwoBoneIK3DGizmoPlugin>(memnew(TwoBoneIK3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<ChainIK3DGizmoPlugin>(memnew(ChainIK3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<VehicleWheel3DGizmoPlugin>(memnew(VehicleWheel3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
 }
 
 void Node3DEditor::_bind_methods() {
@@ -10021,7 +10047,7 @@ void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("update_all_gizmos", &Node3DEditor::update_all_gizmos);
 	ClassDB::bind_method("update_transform_gizmo", &Node3DEditor::update_transform_gizmo);
 
-	ADD_SIGNAL(MethodInfo("transform_key_request"));
+	ADD_SIGNAL(MethodInfo("transform_3d_key_request"));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
 }
@@ -10356,9 +10382,7 @@ void Node3DEditor::PreviewSunEnvPopup::shortcut_input(const Ref<InputEvent> &p_e
 Node3DEditor::Node3DEditor() {
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
-	float vp_radius = (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
-	gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * vp_radius;
-	gizmo_view_rotation_shrink = 1.0 / vp_radius;
+	gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
 
 	viewport_environment.instantiate();
 	VBoxContainer *vbc = this;
@@ -10611,6 +10635,11 @@ Node3DEditor::Node3DEditor() {
 	p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
 	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
 	p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
+
+	p->add_separator();
+	p->add_radio_check_item(TTRC("Snap to Mesh Vertices"), MENU_VERTEX_SNAP_SOURCE_MESH);
+	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH), true);
+	p->add_radio_check_item(TTRC("Snap to Collision Vertices"), MENU_VERTEX_SNAP_SOURCE_COLLISION);
 	_update_vertex_snap_tooltips();
 
 	p->add_separator();
@@ -11051,6 +11080,15 @@ Node3DEditor::~Node3DEditor() {
 	}
 }
 
+void Node3DEditorPlugin::edited_scene_changed() {
+	for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
+		Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(i);
+		if (viewport->is_visible()) {
+			viewport->notification(Control::NOTIFICATION_VISIBILITY_CHANGED);
+		}
+	}
+}
+
 void Node3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		spatial_editor->show();
@@ -11106,11 +11144,39 @@ Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 	return p_target;
 }
 
+float Node3DEditor::get_znear() const {
+	return settings_znear->get_value();
+}
+
+float Node3DEditor::get_zfar() const {
+	return settings_zfar->get_value();
+}
+
+float Node3DEditor::get_fov() const {
+	return settings_fov->get_value();
+}
+
 bool Node3DEditor::is_gizmo_visible() const {
 	if (selected) {
 		return gizmo.visible && selected->is_transform_gizmo_visible();
 	}
 	return gizmo.visible;
+}
+
+bool Node3DEditor::are_local_coords_enabled() const {
+	return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed();
+}
+
+void Node3DEditor::set_local_coords_enabled(bool on) const {
+	tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on);
+}
+
+bool Node3DEditor::is_preserve_children_transform_enabled() const {
+	return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed();
+}
+
+bool Node3DEditor::is_vertex_snap_use_collision() const {
+	return vertex_snap_use_collision != Input::get_singleton()->is_key_pressed(Key::SHIFT);
 }
 
 real_t Node3DEditor::get_translate_snap() const {

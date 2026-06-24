@@ -223,6 +223,13 @@
 				Returns the editor's [EditorResourcePreview] instance.
 			</description>
 		</method>
+		<method name="get_scene_paint_2d" qualifiers="const">
+			<return type="ScenePaint2DEditor" />
+			<description>
+				Returns the editor's [ScenePaint2DEditor] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
 		<method name="get_script_editor" qualifiers="const">
 			<return type="ScriptEditor" />
 			<description>
@@ -450,7 +457,7 @@
 			<return type="void" />
 			<param index="0" name="scene_filepath" type="String" />
 			<description>
-				Reloads the scene at the given path.
+				Reloads the scene at the given path. Fails if the scene is not open.
 			</description>
 		</method>
 		<method name="restart_editor">
@@ -500,7 +507,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], [code]Game[/code], or [code]AssetLib[/code] for default tabs).
+				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], [code]Game[/code], or [code]Asset Store[/code] for default tabs).
 			</description>
 		</method>
 		<method name="set_object_edited">

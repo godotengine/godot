@@ -69,7 +69,7 @@ static bool can_edit(Node *p_node, const String &p_group) {
 
 struct _GroupInfoComparator {
 	bool operator()(const Node::GroupInfo &p_a, const Node::GroupInfo &p_b) const {
-		return p_a.name.operator String() < p_b.name.operator String();
+		return p_a.name.string() < p_b.name.string();
 	}
 };
 

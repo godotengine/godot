@@ -641,8 +641,8 @@ static const char *SHADER_STAGE_NAMES[] = {
 	"comp", // RDC::SHADER_STAGE_COMPUTE
 };
 
-void ShaderCacheEntry::notify_free() const {
-	owner.shader_cache_free_entry(key);
+void ShaderCacheEntry::notify_free() {
+	owner.shader_cache_free_entry(this);
 }
 
 #pragma mark - MDLibrary

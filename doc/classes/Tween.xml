@@ -226,12 +226,20 @@
 			<description>
 				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s appended after this method.
 				Before this method is called, the default ease type is [constant EASE_IN_OUT].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var tween = create_tween()
 				tween.tween_property(self, "position", Vector2(300, 0), 0.5) # Uses EASE_IN_OUT.
 				tween.set_ease(Tween.EASE_IN)
 				tween.tween_property(self, "rotation_degrees", 45.0, 0.5) # Uses EASE_IN.
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				Tween tween = CreateTween();
+				tween.TweenProperty(this, "position", new Vector2(300, 0), 0.5); // Uses EaseType.InOut.
+				tween.SetEase(Tween.EaseType.In);
+				tween.TweenProperty(this, "rotation_degrees", 45.0, 0.5); // Uses EaseType.In.
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_ignore_time_scale">

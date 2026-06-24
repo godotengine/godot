@@ -39,10 +39,10 @@
 template <typename T>
 class VectorView {
 	const T *_ptr = nullptr;
-	const uint32_t _size = 0;
+	uint32_t _size = 0;
 
 public:
-	const T &operator[](uint32_t p_index) {
+	const T &operator[](uint32_t p_index) const {
 		DEV_ASSERT(p_index < _size);
 		return _ptr[p_index];
 	}
@@ -682,6 +682,23 @@ public:
 			float float_value;
 			bool bool_value;
 		};
+
+		bool operator==(const PipelineSpecializationConstant &p_rhs) const {
+			if (type != p_rhs.type) {
+				return false;
+			}
+			if (constant_id != p_rhs.constant_id) {
+				return false;
+			}
+			if (int_value != p_rhs.int_value) {
+				return false;
+			}
+			return true;
+		}
+
+		bool operator!=(const PipelineSpecializationConstant &p_rhs) const {
+			return !(*this == p_rhs);
+		}
 	};
 
 	/*******************/
@@ -893,9 +910,29 @@ public:
 	/**** RAYTRACING ****/
 	/********************/
 
+	enum AccelerationStructureType {
+		ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL,
+		ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL,
+	};
+
+	enum AccelerationStructureFlagBits {
+		ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT = (1 << 0),
+		ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT = (1 << 1),
+		ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT = (1 << 2),
+		ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT = (1 << 3),
+		ACCELERATION_STRUCTURE_LOW_MEMORY_BIT = (1 << 4),
+	};
+
 	enum AccelerationStructureGeometryFlagBits {
 		ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT = (1 << 0),
 		ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT = (1 << 1),
+	};
+
+	enum AccelerationStructureInstanceFlagBits {
+		ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT = (1 << 0),
+		ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FLIP_FACING_BIT = (1 << 1),
+		ACCELERATION_STRUCTURE_INSTANCE_FORCE_OPAQUE_BIT = (1 << 2),
+		ACCELERATION_STRUCTURE_INSTANCE_FORCE_NO_OPAQUE_BIT = (1 << 3),
 	};
 
 	/**************/
@@ -1012,6 +1049,13 @@ public:
 		SUBGROUP_QUAD_BIT = 128,
 	};
 
+	// Driver workarounds that require higher level code and cannot be solely implemented in RenderingDeviceDriver.
+	struct DriverWorkarounds {
+		bool avoid_compute_after_draw = false;
+		bool dont_print_on_render_pipeline_creation_failure = false;
+		bool disable_ubershaders = false;
+	};
+
 	////////////////////////////////////////////
 	// PROTECTED STUFF
 	// Not exposed by RenderingDevice, but shared
@@ -1034,7 +1078,7 @@ protected:
 
 	static void get_compressed_image_format_block_dimensions(DataFormat p_format, uint32_t &r_w, uint32_t &r_h);
 	uint32_t get_compressed_image_format_block_byte_size(DataFormat p_format) const;
-	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
+	static uint32_t get_compressed_image_format_pixels_shifted(DataFormat p_format, uint32_t p_pixels);
 	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw = nullptr, uint32_t *r_blockh = nullptr, uint32_t *r_depth = nullptr);
 	static uint32_t get_image_required_mipmaps(uint32_t p_width, uint32_t p_height, uint32_t p_depth);
 	static bool format_has_depth(DataFormat p_format);
@@ -1072,6 +1116,8 @@ public:
 		uint32_t binding = 0;
 		BitField<ShaderStage> stages = {};
 		uint32_t length = 0; // Size of arrays (in total elements), or ubos (in bytes * total elements).
+		TextureType texture_type = TEXTURE_TYPE_MAX;
+		DataFormat texture_format = DATA_FORMAT_MAX;
 
 		bool operator!=(const ShaderUniform &p_other) const {
 			return binding != p_other.binding || type != p_other.type || writable != p_other.writable || stages != p_other.stages || length != p_other.length;

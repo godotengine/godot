@@ -4,7 +4,7 @@
  *
  *   Auto-fitter glyph loading routines (body).
  *
- * Copyright (C) 2003-2025 by
+ * Copyright (C) 2003-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -524,16 +524,18 @@
 
       bbox.xMin = FT_PIX_FLOOR( bbox.xMin );
       bbox.yMin = FT_PIX_FLOOR( bbox.yMin );
-      bbox.xMax = FT_PIX_CEIL(  bbox.xMax );
-      bbox.yMax = FT_PIX_CEIL(  bbox.yMax );
+      bbox.xMax = FT_PIX_CEIL_LONG( bbox.xMax );
+      bbox.yMax = FT_PIX_CEIL_LONG( bbox.yMax );
 
-      slot->metrics.width        = bbox.xMax - bbox.xMin;
-      slot->metrics.height       = bbox.yMax - bbox.yMin;
+      slot->metrics.width        = SUB_LONG( bbox.xMax, bbox.xMin );
+      slot->metrics.height       = SUB_LONG( bbox.yMax, bbox.yMin );
       slot->metrics.horiBearingX = bbox.xMin;
       slot->metrics.horiBearingY = bbox.yMax;
 
-      slot->metrics.vertBearingX = FT_PIX_FLOOR( bbox.xMin + vvector.x );
-      slot->metrics.vertBearingY = FT_PIX_FLOOR( bbox.yMax + vvector.y );
+      slot->metrics.vertBearingX = FT_PIX_FLOOR( ADD_LONG( bbox.xMin,
+                                                           vvector.x ) );
+      slot->metrics.vertBearingY = FT_PIX_FLOOR( ADD_LONG( bbox.yMax,
+                                                           vvector.y ) );
 
       /* for mono-width fonts (like Andale, Courier, etc.) we need */
       /* to keep the original rounded advance width; ditto for     */

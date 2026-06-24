@@ -503,7 +503,7 @@
 		</method>
 		<method name="set_coords_level_tile_proxy">
 			<return type="void" />
-			<param index="0" name="p_source_from" type="int" />
+			<param index="0" name="source_from" type="int" />
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="source_to" type="int" />
 			<param index="3" name="coords_to" type="Vector2i" />

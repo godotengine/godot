@@ -167,7 +167,7 @@ void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p_debugger) {
 	if (!p_file.is_resource_file() && !ResourceCache::has(p_file)) {
 		// If it's a built-in script, make sure the scene is opened first.
-		EditorNode::get_singleton()->load_scene(p_file.get_slice("::", 0));
+		EditorNode::get_singleton()->open_scene(p_file.get_slice("::", 0));
 	}
 	Ref<Script> s = ResourceLoader::load(p_file);
 	emit_signal(SNAME("goto_script_line"), s, p_line - 1);
@@ -311,6 +311,17 @@ void EditorDebuggerNode::stop(bool p_force) {
 	inspect_edited_object_wait = false;
 
 	current_uri.clear();
+	// Also close all debugging sessions.
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		// If the server is also still active, let the debugger notify that it stopped.
+		// Otherwise, just stop it silently.
+		if (server.is_valid() || dbg->is_session_active()) {
+			dbg->_stop_and_notify();
+		} else {
+			dbg->stop();
+		}
+	});
+
 	if (server.is_valid()) {
 		server->stop();
 		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
@@ -323,12 +334,6 @@ void EditorDebuggerNode::stop(bool p_force) {
 		server.unref();
 	}
 
-	// Also close all debugging sessions.
-	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-		if (dbg->is_session_active()) {
-			dbg->_stop_and_notify();
-		}
-	});
 	_break_state_changed();
 	breakpoints.clear();
 	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::REMOTE_HISTORY, false);

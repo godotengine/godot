@@ -115,7 +115,7 @@ struct hb_inc_bimap_t
   void clear ()
   {
     forw_map.clear ();
-    back_map.resize (0);
+    back_map.clear ();
   }
 
   /* Add a mapping from lhs to rhs with a unique value if lhs is unknown.

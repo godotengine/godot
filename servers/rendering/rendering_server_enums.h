@@ -191,7 +191,13 @@ enum ArrayFormat : uint64_t {
 	ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 3),
 
 	ARRAY_FLAG_COMPRESS_ATTRIBUTES = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 4),
-	// We leave enough room for up to 5 more compression flags.
+
+	// When set, the surface's vertex, attribute, skin, and index buffers are created with the
+	// `BUFFER_CREATION_AS_STORAGE_BIT` usage bit so they can be bound as storage buffers in
+	// compute shaders. Required to write into them from a compute pipeline through the RIDs
+	// returned by `mesh_surface_get_vertex_buffer_rd_rid` and friends.
+	ARRAY_FLAG_USE_STORAGE_BUFFER = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 5),
+	// We leave enough room for up to 4 more compression flags.
 
 	ARRAY_FLAG_FORMAT_VERSION_BASE = ARRAY_COMPRESS_FLAGS_BASE + 10,
 	ARRAY_FLAG_FORMAT_VERSION_SHIFT = ARRAY_FLAG_FORMAT_VERSION_BASE,
@@ -236,6 +242,7 @@ enum LightType {
 	LIGHT_DIRECTIONAL,
 	LIGHT_OMNI,
 	LIGHT_SPOT,
+	LIGHT_AREA,
 };
 
 enum LightParam {
@@ -587,6 +594,8 @@ enum ViewportDebugDraw {
 	VIEWPORT_DEBUG_DRAW_OCCLUDERS,
 	VIEWPORT_DEBUG_DRAW_MOTION_VECTORS,
 	VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER,
+	VIEWPORT_DEBUG_DRAW_CLUSTER_AREA_LIGHTS,
+	VIEWPORT_DEBUG_DRAW_AREA_LIGHT_ATLAS,
 };
 
 enum ViewportVRSMode {

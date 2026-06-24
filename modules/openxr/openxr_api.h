@@ -69,7 +69,7 @@ public:
 		_FORCE_INLINE_ XrSwapchain get_swapchain() const { return swapchain; }
 		_FORCE_INLINE_ bool is_image_acquired() const { return image_acquired; }
 
-		bool create(XrSwapchainCreateFlags p_create_flags, XrSwapchainUsageFlags p_usage_flags, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size);
+		bool create(XrSwapchainCreateFlags p_create_flags, XrSwapchainUsageFlags p_usage_flags, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, bool p_next_extensions = false);
 		void queue_free();
 		static void free_queued();
 		void free();
@@ -446,7 +446,7 @@ public:
 	static void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
 	static void unregister_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
 	static const Vector<OpenXRExtensionWrapper *> &get_registered_extension_wrappers();
-	static void register_extension_metadata();
+	static void register_extension_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata);
 	static void cleanup_extension_wrappers();
 	static PackedStringArray get_all_requested_extensions(XrVersion p_xr_version);
 

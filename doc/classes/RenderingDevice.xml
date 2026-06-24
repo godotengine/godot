@@ -14,13 +14,6 @@
 		<link title="Using compute shaders">$DOCS_URL/tutorials/shaders/compute_shaders.html</link>
 	</tutorials>
 	<methods>
-		<method name="acceleration_structure_build">
-			<return type="int" enum="Error" />
-			<param index="0" name="acceleration_structure" type="RID" />
-			<description>
-				Builds the [param acceleration_structure].
-			</description>
-		</method>
 		<method name="barrier" deprecated="Barriers are automatically inserted by RenderingDevice.">
 			<return type="void" />
 			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
@@ -29,11 +22,19 @@
 				This method does nothing.
 			</description>
 		</method>
-		<method name="blas_create">
+		<method name="blas_build" experimental="">
+			<return type="int" enum="Error" />
+			<param index="0" name="blas" type="RID" />
+			<description>
+				Builds the [param blas].
+			</description>
+		</method>
+		<method name="blas_create" experimental="">
 			<return type="RID" />
 			<param index="0" name="geometries" type="RDAccelerationStructureGeometry[]" />
+			<param index="1" name="flags" type="int" enum="RenderingDevice.AccelerationStructureFlagBits" is_bitfield="true" />
 			<description>
-				Creates a new Bottom Level Acceleration Structure. It can be accessed with the RID that is returned.
+				Creates a new Bottom-Level Acceleration Structure (BLAS). It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
@@ -716,6 +717,66 @@
 				Returns [code]true[/code] if the [param feature] is supported by the GPU.
 			</description>
 		</method>
+		<method name="hit_sbt_create" experimental="">
+			<return type="RID" />
+			<param index="0" name="raytracing_pipeline" type="RID" />
+			<param index="1" name="initial_hit_group_capacity" type="int" />
+			<description>
+				Creates a new hit shader binding table (SBT). It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param raytracing_pipeline] is freed.
+				The hit SBT resizes itself as needed. [param initial_hit_group_capacity] is used to allocate the initial backing memory.
+			</description>
+		</method>
+		<method name="hit_sbt_range_alloc" experimental="">
+			<return type="int" />
+			<param index="0" name="hit_sbt" type="RID" />
+			<param index="1" name="hit_group_count" type="int" />
+			<description>
+				Allocates a contiguous range of SBT entries from [param hit_sbt].
+				The returned value should be assigned to [member RDAccelerationStructureInstance.hit_sbt_range].
+				During ray traversal, hit group index is computed as:
+					(geometry index in [member RDAccelerationStructureInstance.blas])
+					× (SBT stride used in [code]traceRayEXT[/code])
+					+ (SBT offset used in [code]traceRayEXT[/code])
+					+ (range offset)
+				[param hit_group_count] must be large enough to cover all SBT entries that may be indexed by this equation. This typically corresponds to:
+					(geometry count in [member RDAccelerationStructureInstance.blas])
+					× (SBT stride used in [code]traceRayEXT[/code])
+				The allocated range is uninitialized and must be filled using [method hit_sbt_range_update].
+			</description>
+		</method>
+		<method name="hit_sbt_range_free" experimental="">
+			<return type="int" enum="Error" />
+			<param index="0" name="hit_sbt" type="RID" />
+			<param index="1" name="range" type="int" />
+			<description>
+				Frees a hit SBT range previously allocated with [method hit_sbt_range_alloc].
+				The range must not be in use by any acceleration structure after being freed.
+			</description>
+		</method>
+		<method name="hit_sbt_range_update" experimental="">
+			<return type="int" enum="Error" />
+			<param index="0" name="hit_sbt" type="RID" />
+			<param index="1" name="range" type="int" />
+			<param index="2" name="offset" type="int" />
+			<param index="3" name="hit_group_indices" type="PackedInt32Array" />
+			<description>
+				Updates the contents of a hit SBT range.
+				[param hit_group_indices] specifies indices into the hit group array provided in [method raytracing_pipeline_create].
+				The [param offset] parameter specifies where within the allocated range the writing begins. This allows partial updates of a range. However, the complete range must be fully initialized before it is used in a raytracing dispatch.
+			</description>
+		</method>
+		<method name="hit_sbt_set_pipeline" experimental="">
+			<return type="int" enum="Error" />
+			<param index="0" name="hit_sbt" type="RID" />
+			<param index="1" name="raytracing_pipeline" type="RID" />
+			<description>
+				Sets a new [param raytracing_pipeline] for [param hit_sbt].
+				The new pipeline must be a superset of the previous one. Existing hit groups must keep the same order and new hit groups should be appended to the end. This preserves existing SBT entries.
+				The previous pipeline must remain valid during the call.
+			</description>
+		</method>
 		<method name="index_array_create">
 			<return type="RID" />
 			<param index="0" name="index_buffer" type="RID" />
@@ -747,7 +808,7 @@
 				Limits for various graphics hardware can be found in the [url=https://vulkan.gpuinfo.org/]Vulkan Hardware Database[/url].
 			</description>
 		</method>
-		<method name="raytracing_list_begin">
+		<method name="raytracing_list_begin" experimental="">
 			<return type="int" />
 			<description>
 				Starts a list of raytracing commands. The returned value should be passed to other [code]raytracing_list_*[/code] functions.
@@ -759,15 +820,31 @@
 				assert(rd.has_feature(RenderingDevice.SUPPORTS_RAYTRACING_PIPELINE))
 
 				# Create a BLAS for a mesh.
-				blas = rd.blas_create(geometries)
-				# Create TLAS with BLASs.
-				instances_buffer = rd.tlas_instances_buffer_create(1)
-				rd.tlas_instances_buffer_fill(instances_buffer, [blas], [Transform3D()])
-				tlas = rd.tlas_create(instances_buffer)
+				var geometry = RDAccelerationStructureGeometry.new()
+				geometry.flags = RenderingDevice.ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT
+				geometry.vertex_buffer = vertex_buffer
+				geometry.vertex_stride = 12
+				geometry.vertex_format = RenderingDevice.DATA_FORMAT_R32G32B32_SFLOAT
+				geometry.vertex_count = 3
+				geometry.index_buffer = index_buffer
+				geometry.index_count = 3
+				geometries.push_back(geometry)
+
+				blas = rd.blas_create([geometry], 0)
+
+				# Create TLAS.
+				tlas = rd.tlas_create(1, 0)
 
 				# Build acceleration structures.
-				rd.acceleration_structure_build(blas)
-				rd.acceleration_structure_build(tlas)
+				rd.blas_build(blas)
+
+				var instance = RDAccelerationStructureInstance.new()
+				instance.blas = blas
+
+				instance.hit_sbt_range = rd.hit_sbt_range_alloc(hit_sbt, 1)
+				rd.hit_sbt_range_update(hit_sbt, instance.hit_sbt_range, 0, [0])
+
+				rd.tlas_build(tlas, [instance])
 
 				var raylist = rd.raytracing_list_begin()
 
@@ -778,14 +855,14 @@
 				# Trace rays.
 				var width = get_viewport().size.x
 				var height = get_viewport().size.y
-				rd.raytracing_list_trace_rays(raylist, width, height)
+				rd.raytracing_list_trace_rays(raylist, 0, hit_sbt, width, height, 1)
 
 				rd.raytracing_list_end()
 				[/gdscript]
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="raytracing_list_bind_raytracing_pipeline">
+		<method name="raytracing_list_bind_raytracing_pipeline" experimental="">
 			<return type="void" />
 			<param index="0" name="raytracing_list" type="int" />
 			<param index="1" name="raytracing_pipeline" type="RID" />
@@ -793,7 +870,7 @@
 				Binds [param raytracing_pipeline] to the specified [param raytracing_list].
 			</description>
 		</method>
-		<method name="raytracing_list_bind_uniform_set">
+		<method name="raytracing_list_bind_uniform_set" experimental="">
 			<return type="void" />
 			<param index="0" name="raytracing_list" type="int" />
 			<param index="1" name="uniform_set" type="RID" />
@@ -802,13 +879,13 @@
 				Binds the [param uniform_set] to this [param raytracing_list].
 			</description>
 		</method>
-		<method name="raytracing_list_end">
+		<method name="raytracing_list_end" experimental="">
 			<return type="void" />
 			<description>
 				Finishes a list of raytracing commands created with the [code]raytracing_*[/code] methods.
 			</description>
 		</method>
-		<method name="raytracing_list_set_push_constant">
+		<method name="raytracing_list_set_push_constant" experimental="">
 			<return type="void" />
 			<param index="0" name="raytracing_list" type="int" />
 			<param index="1" name="buffer" type="PackedByteArray" />
@@ -817,26 +894,37 @@
 				Sets the push constant data to [param buffer] for the specified [param raytracing_list]. The shader determines how this binary data is used. The buffer's size in bytes must also be specified in [param size_bytes] (this can be obtained by calling the [method PackedByteArray.size] method on the passed [param buffer]).
 			</description>
 		</method>
-		<method name="raytracing_list_trace_rays">
+		<method name="raytracing_list_trace_rays" experimental="">
 			<return type="void" />
 			<param index="0" name="raytracing_list" type="int" />
-			<param index="1" name="width" type="int" />
-			<param index="2" name="height" type="int" />
+			<param index="1" name="raygen_shader_index" type="int" />
+			<param index="2" name="hit_sbt" type="RID" />
+			<param index="3" name="width" type="int" />
+			<param index="4" name="height" type="int" />
+			<param index="5" name="depth" type="int" />
 			<description>
-				Initializes a ray tracing dispatch for the specified [param raytracing_list] assembling a group of [param width] x [param height] rays.
+				Initializes a raytracing dispatch for [param raytracing_list], launching [param width] × [param height] × [param depth] rays.
+				[param raygen_shader_index] selects the ray generation shader from the pipeline bound with [method raytracing_list_bind_raytracing_pipeline].
+				[param hit_sbt] must use the same pipeline bound to [param raytracing_list].
 			</description>
 		</method>
-		<method name="raytracing_pipeline_create">
+		<method name="raytracing_pipeline_create" experimental="">
 			<return type="RID" />
-			<param index="0" name="shader" type="RID" />
-			<param index="1" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
+			<param index="0" name="raygen_shaders" type="RDPipelineShader[]" />
+			<param index="1" name="miss_shaders" type="RDPipelineShader[]" />
+			<param index="2" name="hit_groups" type="RDHitGroup[]" />
+			<param index="3" name="max_trace_recursion_depth" type="int" />
 			<description>
 				Creates a new raytracing pipeline. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
-				[b]Note:[/b]: Recursive raytracing is not permitted.
+				Each shader must provide the required stage. All stages must use compatible pipeline layouts. The pipeline selects the required stage from each shader.
+				Input order defines stable indices used by the API:
+				- [param raygen_shaders] is indexed in [method raytracing_list_trace_rays].
+				- [param miss_shaders] is indexed in [code]traceRayEXT[/code].
+				- [param hit_groups] is indexed in [method hit_sbt_range_update].
 			</description>
 		</method>
-		<method name="raytracing_pipeline_is_valid">
+		<method name="raytracing_pipeline_is_valid" experimental="">
 			<return type="bool" />
 			<param index="0" name="raytracing_pipeline" type="RID" />
 			<description>
@@ -1029,7 +1117,7 @@
 			<param index="7" name="src_layer" type="int" />
 			<param index="8" name="dst_layer" type="int" />
 			<description>
-				Copies the [param from_texture] to [param to_texture] with the specified [param from_pos], [param to_pos] and [param size] coordinates. The Z axis of the [param from_pos], [param to_pos] and [param size] must be [code]0[/code] for 2-dimensional textures. Source and destination mipmaps/layers must also be specified, with these parameters being [code]0[/code] for textures without mipmaps or single-layer textures. Returns [constant @GlobalScope.OK] if the texture copy was successful or [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
+				Copies the [param from_texture] to [param to_texture] with the specified [param from_pos], [param to_pos] and [param size] coordinates. For 2-dimensional textures, [param from_pos] and [param to_pos] must have a Z axis of [code]0[/code], and [param size] must have a Z axis of [code]1[/code]. Source and destination mipmaps/layers must also be specified, with these parameters being [code]0[/code] for textures without mipmaps or single-layer textures. Returns [constant @GlobalScope.OK] if the texture copy was successful or [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
 				[b]Note:[/b] [param from_texture] texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to copy this texture.
 				[b]Note:[/b] [param from_texture] texture requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved.
 				[b]Note:[/b] [param to_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to copy this texture.
@@ -1200,31 +1288,24 @@
 				[b]Note:[/b] The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.
 			</description>
 		</method>
-		<method name="tlas_create">
-			<return type="RID" />
-			<param index="0" name="instances_buffer" type="RID" />
+		<method name="tlas_build" experimental="">
+			<return type="int" enum="Error" />
+			<param index="0" name="tlas" type="RID" />
+			<param index="1" name="instances" type="RDAccelerationStructureInstance[]" />
 			<description>
-				Creates a new Top Level Acceleration Structure. It can be accessed with the RID that is returned.
-				The instances buffer passed as input is expected to be filled before building the TLAS.
-				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				Builds the [param tlas]. The contents of previous builds are discarded.
+				Any BLAS provided through the [member RDAccelerationStructureInstance.blas] member must already have been built using the [method blas_build] method.
+				The number of instances can be equal to or smaller than the maximum instance count provided in the [method tlas_create] method.
+				[b]Note:[/b] Freeing or rebuilding any of the provided BLASes after this method invalidates the TLAS and requires it to be rebuilt.
 			</description>
 		</method>
-		<method name="tlas_instances_buffer_create">
+		<method name="tlas_create" experimental="">
 			<return type="RID" />
-			<param index="0" name="instance_count" type="int" />
-			<param index="1" name="creation_bits" type="int" enum="RenderingDevice.BufferCreationBits" is_bitfield="true" default="0" />
+			<param index="0" name="max_instance_count" type="int" />
+			<param index="1" name="flags" type="int" enum="RenderingDevice.AccelerationStructureFlagBits" is_bitfield="true" />
 			<description>
-				Creates a new instances buffer which can be used to create a TLAS. It can be accessed with the RID that is returned.
+				Creates a new Top-Level Acceleration Structure (TLAS). It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
-			</description>
-		</method>
-		<method name="tlas_instances_buffer_fill">
-			<return type="void" />
-			<param index="0" name="instances_buffer" type="RID" />
-			<param index="1" name="blases" type="RID[]" />
-			<param index="2" name="transforms" type="Transform3D[]" />
-			<description>
-				Fills the content of an instances buffer. The number of BLASes and transforms passed as input should be the same and should equal the instance count used at instance buffer creation time.
 			</description>
 		</method>
 		<method name="uniform_buffer_create">
@@ -2283,7 +2364,7 @@
 		<constant name="BUFFER_CREATION_AS_STORAGE_BIT" value="2" enum="BufferCreationBits" is_bitfield="true">
 			Set this flag so that it is created as storage. This is useful if Compute Shaders need access (for reading or writing) to the buffer, e.g. skeletal animations are processed in Compute Shaders which need access to vertex buffers, to be later consumed by vertex shaders as part of the regular rasterization pipeline.
 		</constant>
-		<constant name="BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT" value="8" enum="BufferCreationBits" is_bitfield="true">
+		<constant name="BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT" value="8" enum="BufferCreationBits" is_bitfield="true" experimental="">
 			Allows usage of this buffer as input data for an acceleration structure build operation. You must first check that the GPU supports it:
 			[codeblocks]
 			[gdscript]
@@ -2294,11 +2375,38 @@
 			[/gdscript]
 			[/codeblocks]
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT" value="1" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT" value="1" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
+			Allows the acceleration structure to be updated after it has been built.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT" value="2" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
+			Allows the acceleration structure to be compacted to reduce memory usage after it has been built.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT" value="4" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
+			Prioritizes ray traversal performance over build performance when building the acceleration structure.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT" value="8" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
+			Prioritizes build performance over ray traversal performance when building the acceleration structure.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_LOW_MEMORY_BIT" value="16" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
+			Reduces the memory usage of the acceleration structure, potentially at the cost of reduced ray traversal performance.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT" value="1" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true" experimental="">
 			An opaque geometry does not invoke the any hit shaders.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT" value="2" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT" value="2" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true" experimental="">
 			This geometry only calls the any hit shader a single time for each primitive.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT" value="1" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true" experimental="">
+			Disables triangle face culling for this instance during ray traversal.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FLIP_FACING_BIT" value="2" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true" experimental="">
+			Flips the triangle facing direction for this instance during ray traversal.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_FORCE_OPAQUE_BIT" value="4" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true" experimental="">
+			Forces all geometries in this instance to be treated as opaque, preventing any hit shaders from being invoked.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_FORCE_NO_OPAQUE_BIT" value="8" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true" experimental="">
+			Forces all geometries in this instance to be treated as non-opaque, allowing any hit shaders to be invoked.
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
 			Sampler uniform.

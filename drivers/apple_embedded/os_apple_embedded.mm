@@ -48,6 +48,7 @@
 #include "drivers/sdl/joypad_sdl.h"
 #endif
 #include "main/main.h"
+#include "servers/camera/camera_server.h"
 
 #import <AVFoundation/AVFAudio.h>
 #import <AudioToolbox/AudioServices.h>
@@ -444,7 +445,11 @@ String OS_AppleEmbedded::get_bundle_resource_dir() const {
 	if (!str) {
 		return OS_Unix::get_bundle_resource_dir();
 	} else {
-		return String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+		String res_path = String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+		if (res_path.is_relative_path()) {
+			res_path = String::utf8([[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSUTF8StringEncoding]).path_join(res_path);
+		}
+		return res_path;
 	}
 }
 
@@ -457,6 +462,18 @@ String OS_AppleEmbedded::get_locale() const {
 
 	NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
 	return String::utf8([localeIdentifier UTF8String]).replace_char('-', '_');
+}
+
+Vector<String> OS_AppleEmbedded::get_preferred_locales() const {
+	Vector<String> out;
+	for (NSString *locale_code in [NSLocale preferredLanguages]) {
+		out.push_back(String([locale_code UTF8String]).replace_char('-', '_'));
+	}
+	if (out.is_empty()) {
+		NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
+		out.push_back(String::utf8([localeIdentifier UTF8String]).replace_char('-', '_'));
+	}
+	return out;
 }
 
 String OS_AppleEmbedded::get_unique_id() const {
@@ -805,6 +822,11 @@ void OS_AppleEmbedded::on_focus_in() {
 void OS_AppleEmbedded::on_enter_background() {
 	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
 
+	CameraServer *camera_server = CameraServer::get_singleton();
+	if (camera_server) {
+		camera_server->handle_application_pause();
+	}
+
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
@@ -818,6 +840,11 @@ void OS_AppleEmbedded::on_exit_background() {
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
+		}
+
+		CameraServer *camera_server = CameraServer::get_singleton();
+		if (camera_server) {
+			camera_server->handle_application_resume();
 		}
 	}
 }

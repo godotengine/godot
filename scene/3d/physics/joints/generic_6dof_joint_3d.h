@@ -79,9 +79,13 @@ protected:
 	bool flags_y[FLAG_MAX];
 	real_t params_z[PARAM_MAX];
 	bool flags_z[FLAG_MAX];
+	Quaternion angular_target_rotation;
+	bool has_angular_target_rotation = false;
 
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
+
+	static bool _is_valid_angular_target_rotation(const Quaternion &p_target_rotation);
 
 public:
 	void set_param_x(Param p_param, real_t p_value);
@@ -101,6 +105,11 @@ public:
 
 	void set_flag_z(Flag p_flag, bool p_enabled);
 	bool get_flag_z(Flag p_flag) const;
+
+	void set_angular_target_rotation(const Quaternion &p_target_rotation);
+	Quaternion get_angular_target_rotation() const;
+	bool has_target_rotation() const;
+	void clear_angular_target_rotation();
 
 	Generic6DOFJoint3D();
 };

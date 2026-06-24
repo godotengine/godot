@@ -116,7 +116,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 					}
 				} break;
 				case ARG_TYPE_CLASS: {
-					String cn = E.param_sigs[i].operator String();
+					String cn = E.param_sigs[i].string();
 					if (cn.begins_with("L") && cn.ends_with(";")) {
 						cn = cn.substr(1, cn.length() - 2);
 					}
@@ -227,7 +227,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 						if (arr.is_typed() && arr.get_typed_builtin() != Variant::OBJECT) {
 							arg_expected = Variant::ARRAY;
 						} else {
-							String cn = E.param_sigs[i].operator String();
+							String cn = E.param_sigs[i].string();
 							if (cn.begins_with("[L") && cn.ends_with(";")) {
 								cn = cn.substr(2, cn.length() - 3);
 							}
@@ -586,7 +586,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				argv[i].l = jarr;
 			} break;
 			case ARG_ARRAY_BIT | ARG_TYPE_CLASS: {
-				String cn = method->param_sigs[i].operator String();
+				String cn = method->param_sigs[i].string();
 				if (cn.begins_with("[L") && cn.ends_with(";")) {
 					cn = cn.substr(2, cn.length() - 3);
 				}

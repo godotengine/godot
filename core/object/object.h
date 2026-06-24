@@ -110,8 +110,9 @@ struct ObjectGDExtension {
 
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassCreateInstance create_instance;
+	GDExtensionClassCreateInstance2 create_instance2; // Without refcount.
 #endif // DISABLE_DEPRECATED
-	GDExtensionClassCreateInstance2 create_instance2;
+	GDExtensionClassCreateInstance3 create_instance3;
 	GDExtensionClassFreeInstance free_instance;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassGetVirtual get_virtual;
@@ -155,7 +156,7 @@ struct ObjectGDExtension {
  * much alone defines the object model.
  */
 
-/// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
+/// Provides `Object` functionality, such as being able to use `Object::cast_to()`.
 /// Use this for `Object` subclasses that are not registered in `ClassDB` (use `GDCLASS` otherwise).
 #define GDSOFTCLASS(m_class, m_inherits) \
 public: \
@@ -242,8 +243,8 @@ protected: \
 \
 private:
 
-/// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
-/// Use this for `Object` subclasses that are registered in `ObjectDB` (use `GDSOFTCLASS` otherwise).
+/// Provides `Object` functionality, such as being able to use `Object::cast_to()`, and `ClassDB` integration.
+/// Use this for `Object` subclasses that are registered in `ClassDB` (use `GDSOFTCLASS` otherwise).
 #define GDCLASS(m_class, m_inherits) \
 	GDSOFTCLASS(m_class, m_inherits) \
 private: \
@@ -537,7 +538,7 @@ protected:
 	virtual String _to_string();
 
 	static void _bind_methods();
-	static void _bind_compatibility_methods() {}
+	static void _bind_compatibility_methods();
 	bool _set(const StringName &p_name, const Variant &p_property) { return false; }
 	bool _get(const StringName &p_name, Variant &r_property) const { return false; }
 	void _get_property_list(List<PropertyInfo> *p_list) const {}
@@ -612,6 +613,10 @@ protected:
 	mutable VirtualMethodTracker *virtual_method_list = nullptr;
 #endif
 
+#ifndef DISABLE_DEPRECATED
+	bool _is_class_bind_compat_118582(const String &p_name) const;
+#endif
+
 public: // Should be protected, but bug in clang++.
 	static void initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
@@ -669,7 +674,7 @@ public:
 
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 
-	bool is_class(const String &p_class) const;
+	bool is_class(const StringName &p_class) const;
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
 	template <typename T, typename O>
@@ -1019,12 +1024,12 @@ public:
 	}
 
 	template <typename U = T, std::enable_if_t<std::is_base_of_v<RefCounted, U>, int> = 0>
-	_FORCE_INLINE_ element_type *ptr() const {
+	_FORCE_INLINE_ T *ptr() const {
 		return *_value;
 	}
 
 	template <typename U = T, std::enable_if_t<!std::is_base_of_v<RefCounted, U>, int> = 0>
-	_FORCE_INLINE_ element_type *ptr() const {
+	_FORCE_INLINE_ T *ptr() const {
 		return _value;
 	}
 
@@ -1037,11 +1042,11 @@ public:
 		return Ref<T_Other>(_value);
 	}
 
-	_FORCE_INLINE_ element_type *operator*() const {
+	_FORCE_INLINE_ T *operator*() const {
 		return ptr();
 	}
 
-	_FORCE_INLINE_ element_type *operator->() const {
+	_FORCE_INLINE_ T *operator->() const {
 		return ptr();
 	}
 };
@@ -1097,6 +1102,15 @@ public:
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
 	_FORCE_INLINE_ RequiredParam &operator=(const RequiredParam<T_Other> &p_other) {
 		_value = p_other._internal_ptr_dont_use();
+		return *this;
+	}
+
+	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
+	_FORCE_INLINE_ RequiredParam(const RequiredResult<T_Other> &p_other) :
+			_value(p_other.ptr()) {}
+	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
+	_FORCE_INLINE_ RequiredParam &operator=(const RequiredResult<T_Other> &p_other) {
+		_value = p_other.ptr();
 		return *this;
 	}
 

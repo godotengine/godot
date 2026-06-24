@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../
 # Base Godot dependencies path
 # If cross-compiling (no LOCALAPPDATA), we install in `bin`
 deps_folder = os.getenv("LOCALAPPDATA")
-if deps_folder:
+if deps_folder and not os.getenv("MSYSTEM"):
     deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
 else:
     deps_folder = os.path.join("bin", "build_deps")
@@ -35,7 +35,7 @@ if os.path.isfile(winrt_archive):
 
 print(f"Downloading WinRT {winrt_filename} ...")
 urllib.request.urlretrieve(
-    f"https://github.com/bruvzg/winrt_mingw/releases/download/{winrt_version}/{winrt_filename}",
+    f"https://github.com/godotengine/winrt-mingw/releases/download/{winrt_version}/{winrt_filename}",
     winrt_archive,
 )
 if os.path.exists(winrt_folder):

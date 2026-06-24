@@ -121,7 +121,7 @@ struct glyf
 
     if (!use_short_loca)
     {
-      padded_offsets.resize (0);
+      padded_offsets.clear ();
       for (auto &g : glyphs)
 	padded_offsets.push (g.length ());
     }
@@ -226,7 +226,7 @@ struct glyf_accelerator_t
     if (gid >= num_glyphs) return false;
 
     auto &all_points = scratch.all_points;
-    all_points.resize (0);
+    all_points.clear ();
 
     bool phantom_only = !consumer.is_consuming_contour_points ();
     if (unlikely (!glyph_for_gid (gid).get_points (font, *this, all_points, scratch, nullptr, nullptr, nullptr, true, true, phantom_only, coords, gvar_cache)))

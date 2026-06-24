@@ -121,15 +121,13 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 {
 	JPH_PROFILE_FUNCTION();
 
-	// Reset flag prior to collision detection
-	mNeedContactCallback.store(false, memory_order_relaxed);
-
 	struct Collector : public CollideShapeBodyCollector
 	{
-									Collector(const SoftBodyUpdateContext &inContext, const PhysicsSystem &inSystem, const BodyLockInterface &inBodyLockInterface, const AABox &inLocalBounds, SimShapeFilterWrapper &inShapeFilter, Array<CollidingShape> &ioHits, Array<CollidingSensor> &ioSensors) :
+									Collector(const SoftBodyUpdateContext &inContext, const PhysicsSystem &inSystem, const BodyLockInterface &inBodyLockInterface, const AABox &inLocalBounds, const AABox &inWorldBounds, SimShapeFilterWrapper &inShapeFilter, Array<CollidingShape> &ioHits, Array<CollidingSensor> &ioSensors) :
 										mContext(inContext),
 										mInverseTransform(inContext.mCenterOfMassTransform.InversedRotationTranslation()),
 										mLocalBounds(inLocalBounds),
+										mWorldBounds(inWorldBounds),
 										mBodyLockInterface(inBodyLockInterface),
 										mCombineFriction(inSystem.GetCombineFriction()),
 										mCombineRestitution(inSystem.GetCombineRestitution()),
@@ -147,7 +145,8 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 				const Body &soft_body = *mContext.mBody;
 				const Body &body = lock.GetBody();
 				if (body.IsRigidBody() // TODO: We should support soft body vs soft body
-					&& soft_body.GetCollisionGroup().CanCollide(body.GetCollisionGroup()))
+					&& soft_body.GetCollisionGroup().CanCollide(body.GetCollisionGroup())
+					&& mWorldBounds.Overlaps(body.GetWorldSpaceBounds())) // In the broadphase we widen the bounding box when a body moves, do a final check to see if the bounding boxes actually overlap
 				{
 					SoftBodyContactSettings settings;
 					settings.mIsSensor = body.IsSensor();
@@ -227,6 +226,7 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 		const SoftBodyUpdateContext &mContext;
 		RMat44						mInverseTransform;
 		AABox						mLocalBounds;
+		AABox						mWorldBounds;
 		const BodyLockInterface &	mBodyLockInterface;
 		ContactConstraintManager::CombineFunction mCombineFriction;
 		ContactConstraintManager::CombineFunction mCombineRestitution;
@@ -246,7 +246,7 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 	// Create shape filter
 	SimShapeFilterWrapper shape_filter(inContext.mSimShapeFilter, inContext.mBody);
 
-	Collector collector(inContext, inSystem, inBodyLockInterface, local_bounds, shape_filter, mCollidingShapes, mCollidingSensors);
+	Collector collector(inContext, inSystem, inBodyLockInterface, local_bounds, world_bounds, shape_filter, mCollidingShapes, mCollidingSensors);
 	ObjectLayer layer = inContext.mBody->GetObjectLayer();
 	DefaultBroadPhaseLayerFilter broadphase_layer_filter = inSystem.GetDefaultBroadPhaseLayerFilter(layer);
 	DefaultObjectLayerFilter object_layer_filter = inSystem.GetDefaultLayerFilter(layer);
@@ -285,7 +285,7 @@ void SoftBodyMotionProperties::DetermineSensorCollisions(CollidingSensor &ioSens
 
 	// We need a contact callback if one of the sensors collided
 	if (ioSensor.mHasContact)
-		mNeedContactCallback.store(true, memory_order_relaxed);
+		RequestContactCallback();
 }
 
 void SoftBodyMotionProperties::ApplyPressure(const SoftBodyUpdateContext &inContext)
@@ -714,6 +714,7 @@ void SoftBodyMotionProperties::ApplyCollisionConstraintsAndUpdateVelocities(cons
 			v.mVelocity = (v.mPosition - v.mPreviousPosition) / dt;
 
 			// Satisfy collision constraint
+			static_assert(int(BodyID::cBroadPhaseBit) < 0); // CCD contacts should be negative too (see: SoftBodyVertex::MarkCCDContact)
 			if (v.mCollidingShapeIndex >= 0)
 			{
 				// Check if there is a collision
@@ -724,7 +725,7 @@ void SoftBodyMotionProperties::ApplyCollisionConstraintsAndUpdateVelocities(cons
 					v.mHasContact = true;
 
 					// We need a contact callback if one of the vertices collided
-					mNeedContactCallback.store(true, memory_order_relaxed);
+					RequestContactCallback();
 
 					// Note that we already calculated the velocity, so this does not affect the velocity (next iteration starts by setting previous position to current position)
 					CollidingShape &cs = mCollidingShapes[v.mCollidingShapeIndex];
@@ -839,6 +840,8 @@ void SoftBodyMotionProperties::UpdateSoftBodyState(SoftBodyUpdateContext &ioCont
 			}
 
 		ioContext.mContactListener->OnSoftBodyContactAdded(*ioContext.mBody, SoftBodyManifold(this));
+
+		mNeedContactCallback.store(false, memory_order_relaxed);
 	}
 
 	// Loop through vertices once more to update the global state

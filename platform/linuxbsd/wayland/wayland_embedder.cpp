@@ -86,10 +86,19 @@
 #define WL_KEYBOARD_ENTER 1
 #define WL_KEYBOARD_LEAVE 2
 #define WL_KEYBOARD_KEY 3
+#define WL_KEYBOARD_MODIFIERS 4
 
 #define WL_POINTER_ENTER 0
 #define WL_POINTER_LEAVE 1
 #define WL_POINTER_BUTTON 3
+
+#define WL_TOUCH_DOWN 0
+#define WL_TOUCH_UP 1
+#define WL_TOUCH_MOTION 2
+#define WL_TOUCH_FRAME 3
+#define WL_TOUCH_CANCEL 4
+#define WL_TOUCH_SHAPE 5
+#define WL_TOUCH_ORIENTATION 6
 
 #define WL_SHM_FORMAT 0
 
@@ -959,6 +968,9 @@ void WaylandEmbedder::seat_name_enter_surface(uint32_t p_seat_name, uint32_t p_w
 
 	DEBUG_LOG_WAYLAND_EMBED(vformat("KB: Entering surface g0x%x", p_wl_surface_id));
 
+	WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)registry_globals[p_seat_name].data;
+	ERR_FAIL_NULL(global_seat_data);
+
 	for (uint32_t local_seat_id : client->registry_globals_instances[p_seat_name]) {
 		WaylandSeatInstanceData *seat_data = (WaylandSeatInstanceData *)client->get_object(local_seat_id)->data;
 		CRASH_COND(seat_data == nullptr);
@@ -970,7 +982,10 @@ void WaylandEmbedder::seat_name_enter_surface(uint32_t p_seat_name, uint32_t p_w
 			// don't use that in the engine, although we should.
 
 			// wl_keyboard::enter(serial, surface, keys) - keys will be empty for now
-			send_wayland_message(client->socket, local_keyboard_id, 1, { serial_counter++, local_surface_id, 0 });
+			send_wayland_message(client->socket, local_keyboard_id, WL_KEYBOARD_ENTER, { serial_counter++, local_surface_id, 0 });
+
+			// wl_keyboard::modifiers
+			send_wayland_message(client->socket, local_keyboard_id, WL_KEYBOARD_MODIFIERS, { serial_counter++, global_seat_data->mods_depressed, global_seat_data->mods_latched, global_seat_data->mods_locked, global_seat_data->group });
 		}
 	}
 
@@ -1437,7 +1452,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 
 		if (p_opcode == WL_SEAT_GET_KEYBOARD) {
 			ERR_FAIL_COND_V(global_id == INVALID_ID, MessageStatus::ERROR);
-			// [Request] wl_seat::get_pointer(n);
+			// [Request] wl_seat::get_keyboard(n);
 			uint32_t new_local_id = body[0];
 
 			WaylandKeyboardData *new_data = memnew(WaylandKeyboardData);
@@ -1447,6 +1462,24 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 			ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
 
 			instance_data->wl_keyboard_id = new_global_id;
+
+			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
+
+			return MessageStatus::HANDLED;
+		}
+
+		if (p_opcode == WL_SEAT_GET_TOUCH) {
+			ERR_FAIL_COND_V(global_id == INVALID_ID, MessageStatus::ERROR);
+			// [Request] wl_seat::get_touch(n);
+			uint32_t new_local_id = body[0];
+
+			WaylandTouchData *new_data = memnew(WaylandTouchData);
+			new_data->wl_seat_id = global_id;
+
+			uint32_t new_global_id = client->new_object(new_local_id, &wl_touch_interface, object->version, new_data);
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::HANDLED);
+
+			instance_data->wl_touch_id = new_global_id;
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
 
@@ -2202,6 +2235,11 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 			if (global_seat_data->focused_surface_id == surface) {
 				global_seat_data->focused_surface_id = INVALID_ID;
 			}
+
+			global_seat_data->mods_depressed = 0;
+			global_seat_data->mods_latched = 0;
+			global_seat_data->mods_locked = 0;
+			global_seat_data->group = 0;
 		} else if (p_opcode == WL_KEYBOARD_KEY) {
 			// NOTE: modifiers event can be sent even without focus, according to the
 			// spec, so there's no need to skip it.
@@ -2209,6 +2247,12 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Skipped wl_keyboard event due to unfocused surface 0x%x", global_seat_data->focused_surface_id));
 				return MessageStatus::HANDLED;
 			}
+		} else if (p_opcode == WL_KEYBOARD_MODIFIERS) {
+			// uint32_t serial = body[0];
+			global_seat_data->mods_depressed = body[1];
+			global_seat_data->mods_latched = body[2];
+			global_seat_data->mods_locked = body[3];
+			global_seat_data->group = body[4];
 		}
 
 		return MessageStatus::UNHANDLED;
@@ -2274,6 +2318,63 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Pointer (g0x%x seat g0x%x): g0x%x -> g0x%x", p_global_id, data->wl_seat_id, global_seat_data->pointed_surface_id, INVALID_ID));
 				global_seat_data->pointed_surface_id = INVALID_ID;
 			}
+		}
+
+		return MessageStatus::UNHANDLED;
+	}
+
+	if (object->interface == &wl_touch_interface) {
+		WaylandTouchData *data = (WaylandTouchData *)object->data;
+		ERR_FAIL_NULL_V(data, MessageStatus::ERROR);
+
+		uint32_t global_seat_name = registry_globals_names[data->wl_seat_id];
+		RegistryGlobalInfo &global_seat_info = registry_globals[global_seat_name];
+		WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)global_seat_info.data;
+		ERR_FAIL_NULL_V(global_seat_data, MessageStatus::ERROR);
+
+		WaylandSeatInstanceData *seat_data = (WaylandSeatInstanceData *)object->data;
+		ERR_FAIL_NULL_V(seat_data, MessageStatus::ERROR);
+
+		if (p_opcode == WL_TOUCH_DOWN) {
+			// uint32_t serial = body[0];
+			// uint32_t time = body[1];
+			uint32_t surface = body[2];
+			// uint32_t id = body[3];
+			// uint32_t x = body[4];
+			// uint32_t y = body[5];
+
+			++data->touch_point_count;
+
+			if (data->touch_point_count == 1) {
+				if (global_seat_data->focused_surface_id == surface) {
+					return MessageStatus::UNHANDLED;
+				}
+
+				if (!global_surface_is_window(surface)) {
+					return MessageStatus::UNHANDLED;
+				}
+
+				if (global_seat_data->focused_surface_id != INVALID_ID) {
+					seat_name_leave_surface(global_seat_name, global_seat_data->focused_surface_id);
+				}
+
+				global_seat_data->focused_surface_id = surface;
+				seat_name_enter_surface(global_seat_name, surface);
+			}
+
+			return MessageStatus::UNHANDLED;
+		}
+
+		if (p_opcode == WL_TOUCH_UP) {
+			--data->touch_point_count;
+
+			return MessageStatus::UNHANDLED;
+		}
+
+		if (p_opcode == WL_TOUCH_CANCEL) {
+			data->touch_point_count = 0;
+
+			return MessageStatus::UNHANDLED;
 		}
 
 		return MessageStatus::UNHANDLED;

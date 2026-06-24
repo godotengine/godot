@@ -84,6 +84,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	VBoxContainer *settings_vb = nullptr;
 	LineEdit *name = nullptr;
+	LineEdit *options_filter = nullptr;
 	EditorPropertyPath *export_path = nullptr;
 	EditorInspector *parameters = nullptr;
 	CheckButton *runnable = nullptr;
@@ -133,6 +134,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	ProjectExportTextureFormatError *export_texture_format_error = nullptr;
 	Label *export_error = nullptr;
+	Label *export_error2 = nullptr;
 	Label *export_warning = nullptr;
 	HBoxContainer *export_templates_error = nullptr;
 
@@ -141,6 +143,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	bool exporting = false;
 
 	void _advanced_options_pressed();
+	void _options_filter_changed(const String &p_filter);
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
@@ -230,6 +233,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void popup_export();

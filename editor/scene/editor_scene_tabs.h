@@ -83,7 +83,7 @@ private:
 
 	void _update_tab_titles();
 	void _reposition_active_tab(int p_to_index);
-	void _update_context_menu();
+	void _update_context_menu(int p_index);
 	void _custom_menu_option(int p_option);
 	void _update_scene_list();
 
@@ -91,6 +91,8 @@ private:
 
 	void _global_menu_scene(const Variant &p_tag);
 	void _global_menu_new_window(const Variant &p_tag);
+
+	void _project_settings_changed();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 

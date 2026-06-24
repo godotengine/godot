@@ -33,38 +33,28 @@
 #include "core/math/dynamic_bvh.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/margin_container.h"
-#include "scene/gui/spin_box.h"
-#include "scene/resources/gradient.h"
-#include "scene/resources/immediate_mesh.h"
+#include "scene/gui/popup.h"
 
 class AcceptDialog;
-class CheckBox;
+class Button;
 class ColorPickerButton;
 class ConfirmationDialog;
 class DirectionalLight3D;
-class EditorData;
 class EditorSelection;
 class EditorSpinSlider;
 class HSplitContainer;
 class LineEdit;
 class MenuButton;
-class Node3DEditor;
 class Node3DEditorViewport;
+class Node3DEditorViewportContainer;
 class OptionButton;
 class PanelContainer;
 class ProceduralSkyMaterial;
-class RichTextLabel;
-class SplitContainer;
-class SubViewport;
-class SubViewportContainer;
+class SpinBox;
 class VSeparator;
 class VSplitContainer;
-class ViewportNavigationControl;
 class WorldEnvironment;
 class MeshInstance3D;
 
@@ -627,7 +617,6 @@ public:
 	};
 
 	real_t gizmo_view_rotation_scale = 1.0;
-	real_t gizmo_view_rotation_shrink = 1.0;
 
 private:
 	EditorSelection *editor_selection = nullptr;
@@ -683,10 +672,10 @@ private:
 	Ref<ArrayMesh> selection_box_xray;
 	Ref<ArrayMesh> selection_box;
 
-	Ref<StandardMaterial3D> selection_box_mat = memnew(StandardMaterial3D);
-	Ref<StandardMaterial3D> selection_box_mat_xray = memnew(StandardMaterial3D);
-	Ref<StandardMaterial3D> active_selection_box_mat = memnew(StandardMaterial3D);
-	Ref<StandardMaterial3D> active_selection_box_mat_xray = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> selection_box_mat;
+	Ref<StandardMaterial3D> selection_box_mat_xray;
+	Ref<StandardMaterial3D> active_selection_box_mat;
+	Ref<StandardMaterial3D> active_selection_box_mat_xray;
 
 	RID indicators;
 	RID indicators_instance;
@@ -742,6 +731,8 @@ private:
 		MENU_RULER,
 		MENU_VERTEX_SNAP_BASE_VERTEX,
 		MENU_VERTEX_SNAP_BASE_ORIGIN,
+		MENU_VERTEX_SNAP_SOURCE_MESH,
+		MENU_VERTEX_SNAP_SOURCE_COLLISION,
 	};
 
 	Button *tool_button[TOOL_MAX];
@@ -760,6 +751,7 @@ private:
 	bool snap_enabled = false;
 	bool snap_key_enabled = false;
 	bool vertex_snap_origin_mode = false;
+	bool vertex_snap_use_collision = false;
 	EditorSpinSlider *snap_translate = nullptr;
 	EditorSpinSlider *snap_rotate = nullptr;
 	EditorSpinSlider *snap_scale = nullptr;
@@ -933,19 +925,20 @@ public:
 
 	Vector3 snap_point(Vector3 p_target, Vector3 p_start = Vector3(0, 0, 0)) const;
 
-	float get_znear() const { return settings_znear->get_value(); }
-	float get_zfar() const { return settings_zfar->get_value(); }
-	float get_fov() const { return settings_fov->get_value(); }
+	float get_znear() const;
+	float get_zfar() const;
+	float get_fov() const;
 
 	Transform3D get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const;
 
 	ToolMode get_tool_mode() const { return tool_mode; }
-	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
-	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
-	bool is_preserve_children_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed(); }
+	bool are_local_coords_enabled() const;
+	void set_local_coords_enabled(bool on) const;
+	bool is_preserve_children_transform_enabled() const;
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	bool is_vertex_snap_origin_mode() const { return vertex_snap_origin_mode; }
+	bool is_vertex_snap_use_collision() const;
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
 	real_t get_scale_snap() const;
@@ -1024,8 +1017,8 @@ public:
 	}
 	Node3DEditorViewport *get_last_used_viewport();
 
-	void set_freelook_viewport(Node3DEditorViewport *p_viewport) { freelook_viewport = p_viewport; }
-	Node3DEditorViewport *get_freelook_viewport() const { return freelook_viewport; }
+	void set_freelook_viewport(Node3DEditorViewport *p_viewport);
+	Node3DEditorViewport *get_freelook_viewport() const;
 
 	void add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
 	void remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
@@ -1063,29 +1056,4 @@ public:
 	virtual void edited_scene_changed() override;
 
 	Node3DEditorPlugin();
-};
-
-class ViewportNavigationControl : public Control {
-	GDCLASS(ViewportNavigationControl, Control);
-
-	Node3DEditorViewport *viewport = nullptr;
-	Vector2i focused_mouse_start;
-	Vector2 focused_pos;
-	bool hovered = false;
-	int focused_index = -1;
-	View3DController::NavigationMode nav_mode = View3DController::NavigationMode::NAV_MODE_NONE;
-
-	const float AXIS_CIRCLE_RADIUS = 30.0f * EDSCALE;
-
-protected:
-	void _notification(int p_what);
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	void _draw();
-	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
-	void _process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position);
-	void _update_navigation();
-
-public:
-	void set_navigation_mode(View3DController::NavigationMode p_nav_mode);
-	void set_viewport(Node3DEditorViewport *p_viewport);
 };

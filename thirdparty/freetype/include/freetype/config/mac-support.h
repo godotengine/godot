@@ -4,7 +4,7 @@
  *
  *   Mac/OS X support configuration header.
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -24,6 +24,7 @@
    *   This is the only necessary change, so it is defined here instead
    *   providing a new configuration file.
    */
+#ifdef FT_MACINTOSH
 #if defined( __APPLE__ ) || ( defined( __MWERKS__ ) && defined( macintosh ) )
   /* No Carbon frameworks for 64bit 10.4.x.                         */
   /* `AvailabilityMacros.h` is available since Mac OS X 10.2,       */
@@ -36,6 +37,7 @@
     ( MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_4 )
 #undef FT_MACINTOSH
 #endif
+#endif  /* __APPLE__ ... */
 
 #elif defined( __SC__ ) || defined( __MRC__ )
   /* Classic MacOS compilers */

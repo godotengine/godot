@@ -1627,9 +1627,14 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RSE
 	multimesh->visible_instances = MIN(multimesh->visible_instances, multimesh->instances);
 
 	if (multimesh->instances) {
+		uint32_t buffer_size = multimesh->instances * multimesh->stride_cache * sizeof(float);
+
+		LocalVector<uint8_t> zeros;
+		zeros.resize_initialized(buffer_size);
+
 		glGenBuffers(1, &multimesh->buffer[0]);
 		glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer[0]);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, multimesh->buffer[0], multimesh->instances * multimesh->stride_cache * sizeof(float), nullptr, GL_STATIC_DRAW, "MultiMesh buffer");
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, multimesh->buffer[0], buffer_size, zeros.ptr(), GL_STATIC_DRAW, "MultiMesh buffer");
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 

@@ -445,7 +445,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
 			ci->ysort_xform = Transform2D();
-			ci->ysort_modulate = Color(1, 1, 1, 1) / ci->modulate;
+			ci->ysort_modulate = Color(ci->modulate[0] ? 1 / ci->modulate[0] : 0, ci->modulate[1] ? 1 / ci->modulate[1] : 0, ci->modulate[2] ? 1 / ci->modulate[2] : 0, ci->modulate[3] ? 1 / ci->modulate[3] : 0);
 			ci->ysort_index = 0;
 			ci->ysort_parent_abs_z_index = parent_z;
 			child_items[0] = ci;
@@ -493,8 +493,6 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 }
 
 void RendererCanvasCull::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, const Rect2 &p_clip_rect, RSE::CanvasItemTextureFilter p_default_filter, RSE::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel, uint32_t canvas_cull_mask, RenderingServerTypes::RenderInfo *r_render_info) {
-	RENDER_TIMESTAMP("> Render Canvas");
-
 	sdf_used = false;
 	snapping_2d_transforms_to_pixel = p_snap_2d_transforms_to_pixel;
 
@@ -507,8 +505,6 @@ void RendererCanvasCull::render_canvas(RID p_render_target, Canvas *p_canvas, co
 	Canvas::ChildItem *ci = p_canvas->child_items.ptrw();
 
 	_render_canvas_item_tree(p_render_target, ci, l, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
-
-	RENDER_TIMESTAMP("< Render Canvas");
 }
 
 bool RendererCanvasCull::was_sdf_used() {

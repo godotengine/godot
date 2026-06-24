@@ -72,6 +72,7 @@ class EditorProperty : public Container {
 
 	friend class EditorInspector;
 
+protected:
 	struct ThemeCache {
 		Ref<Font> font;
 
@@ -197,7 +198,8 @@ private:
 	int selected_focusable;
 	bool deferred_drag_mode = false;
 
-	float split_ratio;
+	float split_ratio = 0.5;
+	float name_fixed_size = 0.0;
 
 	Vector<Control *> focusables;
 	Control *label_reference = nullptr;
@@ -317,6 +319,7 @@ public:
 
 	void set_name_split_ratio(float p_ratio);
 	float get_name_split_ratio() const;
+	void set_name_fixed_size(float p_size);
 
 	void set_favoritable(bool p_favoritable);
 	bool is_favoritable() const;
@@ -455,7 +458,6 @@ class EditorInspectorSection : public Container {
 
 	String label;
 	String section;
-	String inspector_path;
 	Color bg_color;
 	bool vbox_added = false; // Optimization.
 	bool foldable = false;
@@ -545,10 +547,9 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
-	void setup(const String &p_inspector_path, const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
+	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
 	String get_section() const;
 	String get_label() const { return label; }
-	String get_inspector_path() const { return inspector_path; }
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
@@ -896,6 +897,8 @@ public:
 	static void set_property_clipboard(PropertyClipboard::Type p_type, const Variant &p_value);
 	static PropertyClipboard::Type get_property_clipboard_type() { return property_clipboard.type; }
 	static Variant get_property_clipboard_value() { return property_clipboard.value; }
+
+	static EditorInspector *create_default_inspector(LineEdit *p_filter_line_edit = nullptr);
 
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;

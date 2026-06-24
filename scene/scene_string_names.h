@@ -62,6 +62,7 @@ public:
 
 	const StringName item_rect_changed = "item_rect_changed";
 	const StringName size_flags_changed = "size_flags_changed";
+	const StringName maximum_size_changed = "maximum_size_changed";
 	const StringName minimum_size_changed = "minimum_size_changed";
 	const StringName sleeping_state_changed = "sleeping_state_changed";
 	const StringName node_configuration_warning_changed = "node_configuration_warning_changed";

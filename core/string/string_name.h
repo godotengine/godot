@@ -125,12 +125,13 @@ public:
 		return (void *)_data;
 	}
 
-	_FORCE_INLINE_ operator String() const {
-		if (_data) {
-			return _data->name;
-		}
+	_FORCE_INLINE_ const String &string() const {
+		static const String EMPTY;
+		return _data ? _data->name : EMPTY;
+	}
 
-		return String();
+	_FORCE_INLINE_ operator const String &() const {
+		return string();
 	}
 
 	struct AlphCompare {

@@ -2181,6 +2181,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	import_other_theme_items->connect("items_imported", callable_mp(this, &ThemeItemEditorDialog::_update_edit_types));
 
 	confirm_closing_dialog = memnew(ConfirmationDialog);
+	confirm_closing_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	confirm_closing_dialog->set_autowrap(true);
 	add_child(confirm_closing_dialog);
 	confirm_closing_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ThemeItemEditorDialog::_close_dialog));
@@ -2328,6 +2329,7 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_options->connect("item_activated", callable_mp(this, &ThemeTypeDialog::_add_type_dialog_activated));
 
 	add_type_confirmation = memnew(ConfirmationDialog);
+	add_type_confirmation->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_type_confirmation->set_title(TTR("Type name is empty!"));
 	add_type_confirmation->set_text(TTR("Are you sure you want to create an empty type?"));
 	add_type_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &ThemeTypeDialog::_add_type_confirmed));
@@ -3909,6 +3911,7 @@ void ThemeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Con
 	preview_tabs->set_current_tab(preview_tabs->get_tab_count() - 1);
 	preview_tab->connect("scene_invalidated", callable_mp(this, &ThemeEditor::_remove_preview_tab_invalid).bind(preview_tab));
 	preview_tab->connect("scene_reloaded", callable_mp(this, &ThemeEditor::_update_preview_tab).bind(preview_tab));
+	_preview_tabs_resized();
 }
 
 void ThemeEditor::_preview_tabs_resized() {
@@ -4077,6 +4080,7 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs->connect(SceneStringName(resized), callable_mp(this, &ThemeEditor::_preview_tabs_resized), CONNECT_DEFERRED);
 
 	add_preview_button = memnew(Button);
+	add_preview_button->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	add_preview_button->set_tooltip_text(TTRC("Add Preview"));
 	add_preview_button->set_flat(true);
 	preview_tabs->add_child(add_preview_button);

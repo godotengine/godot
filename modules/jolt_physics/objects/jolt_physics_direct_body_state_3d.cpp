@@ -39,7 +39,7 @@ JoltPhysicsDirectBodyState3D::JoltPhysicsDirectBodyState3D(JoltBody3D *p_body) :
 }
 
 Vector3 JoltPhysicsDirectBodyState3D::get_total_gravity() const {
-	return body->get_gravity();
+	return body->get_total_gravity();
 }
 
 real_t JoltPhysicsDirectBodyState3D::get_total_angular_damp() const {

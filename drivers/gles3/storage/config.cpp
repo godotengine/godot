@@ -37,6 +37,10 @@
 #include "core/string/ustring.h"
 #include "drivers/gles3/rasterizer_util_gles3.h"
 
+#ifdef ANDROID_ENABLED
+#include <platform_egl.h>
+#endif
+
 #ifdef WEB_ENABLED
 #include <emscripten/html5_webgl.h>
 #endif

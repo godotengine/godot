@@ -861,7 +861,7 @@ struct KerxSubTable
 {
   friend struct kerx;
 
-  unsigned int get_size () const { return u.header.length; }
+  size_t get_size () const { return u.header.length; }
   unsigned int get_type () const { return u.header.coverage & u.header.SubtableType; }
 
   template <typename context_t, typename ...Ts>

@@ -868,6 +868,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	if (userdata_count != particles->userdata_count) {
 		// Mismatch userdata, re-create buffers.
 		_particles_free_data(particles);
+		particles->restart_request = true;
 	}
 
 	if (particles->amount > 0 && particles->front_process_buffer == 0) {
@@ -1167,8 +1168,8 @@ void ParticlesStorage::update_particles() {
 			double delta = RSG::rasterizer->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
-			} else if (delta <= 0.0) { //unlikely but..
-				delta = 0.001;
+			} else if (delta < 0.0) {
+				delta = 0.0;
 			}
 			double todo = particles->frame_remainder + delta * time_scale;
 

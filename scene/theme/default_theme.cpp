@@ -729,6 +729,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("file_thumbnail", "FileDialog", icons["file_thumbnail"]);
 	theme->set_icon("folder_thumbnail", "FileDialog", icons["folder_thumbnail"]);
+	theme->set_icon("menu_copy_path", "FileDialog", empty_icon);
+	theme->set_icon("menu_delete", "FileDialog", empty_icon);
+	theme->set_icon("menu_new_folder", "FileDialog", empty_icon);
+	theme->set_icon("menu_refresh", "FileDialog", empty_icon);
+	theme->set_icon("menu_show_in_file_manager", "FileDialog", empty_icon);
+	theme->set_icon("menu_open_bundle", "FileDialog", empty_icon);
 	theme->set_color("folder_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_disabled_color", "FileDialog", Color(1, 1, 1, 0.25));
@@ -970,14 +976,18 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hovered_color", "ItemList", control_font_hover_color);
 	theme->set_color("font_hovered_selected_color", "ItemList", control_font_pressed_color);
 	theme->set_color("font_selected_color", "ItemList", control_font_pressed_color);
+	theme->set_color("font_disabled_color", "ItemList", control_font_disabled_color);
+	theme->set_color("font_disabled_hovered_color", "ItemList", control_font_disabled_color);
 	theme->set_color("font_outline_color", "ItemList", Color(0, 0, 0));
 	theme->set_color("guide_color", "ItemList", Color(0.7, 0.7, 0.7, 0.25));
 	theme->set_color("scroll_hint_color", "ItemList", Color(0, 0, 0));
-	theme->set_stylebox("hovered", "ItemList", make_flat_stylebox(Color(1, 1, 1, 0.07)));
+	theme->set_stylebox("hovered", "ItemList", make_flat_stylebox(style_hover_color));
 	theme->set_stylebox("hovered_selected", "ItemList", make_flat_stylebox(style_hover_selected_color));
 	theme->set_stylebox("hovered_selected_focus", "ItemList", make_flat_stylebox(style_hover_selected_color));
 	theme->set_stylebox("selected", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "ItemList", make_flat_stylebox(style_selected_color));
+	theme->set_stylebox("disabled", "ItemList", make_flat_stylebox(style_disabled_color));
+	theme->set_stylebox("disabled_hovered", "ItemList", make_flat_stylebox(style_hover_color));
 	theme->set_stylebox("cursor", "ItemList", focus);
 	theme->set_stylebox("cursor_unfocused", "ItemList", focus);
 	theme->set_icon("scroll_hint", "ItemList", icons["scroll_hint_vertical"]);

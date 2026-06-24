@@ -53,7 +53,7 @@ static String _get_element_type(Variant::Type builtin_type, const StringName &na
 	if (script_type.is_valid() && script_type->is_valid()) {
 		return GDScript::debug_get_script_name(script_type);
 	} else if (native_type != StringName()) {
-		return native_type.operator String();
+		return native_type.string();
 	} else {
 		return Variant::get_type_name(builtin_type);
 	}
@@ -511,18 +511,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	if (unlikely(++call_depth > MAX_CALL_DEPTH)) {
 		call_depth--;
 #ifdef DEBUG_ENABLED
-		String err_file;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->path.is_empty()) {
-			err_file = p_instance->script->path;
-		} else if (_script) {
-			err_file = _script->path;
-		}
+		String err_file = source;
 		if (err_file.is_empty()) {
 			err_file = "<built-in>";
 		}
 		String err_func = name;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && p_instance->script->local_name != StringName()) {
-			err_func = p_instance->script->local_name.operator String() + "." + err_func;
+		if (!_script->local_name.is_empty()) {
+			err_func = _script->local_name.string() + "." + err_func;
 		}
 		int err_line = _initial_line;
 		const char *err_text = "Stack overflow. Check for infinite recursion in your script.";
@@ -946,7 +941,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-				*dst = object && ClassDB::is_parent_class(object->get_class_name(), native_type);
+				*dst = object && object->is_class(native_type);
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
@@ -1278,7 +1273,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					err_text = "Invalid access to property or key '" + index->operator String() + "' on a base object of type '" + _get_var_type(src) + "'.";
+					err_text = "Invalid access to property or key '" + index->string() + "' on a base object of type '" + _get_var_type(src) + "'.";
 					OPCODE_BREAK;
 				}
 				*dst = ret;
@@ -1553,7 +1548,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-					if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
+					if (src_obj && !src_obj->is_class(nc->get_name())) {
 						err_text = "Trying to assign value of type '" + src_obj->get_class_name() +
 								"' to a variable of type '" + nc->get_name() + "'.";
 						OPCODE_BREAK;
@@ -1674,7 +1669,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 				Object *src_obj = src->operator Object *();
 
-				if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
+				if (src_obj && !src_obj->is_class(nc->get_name())) {
 					*dst = Variant(); // invalid cast, assign NULL
 				} else {
 					*dst = *src;
@@ -2140,7 +2135,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
-					err_text = _get_call_error("static function '" + methodname->operator String() + "' in type '" + Variant::get_type_name(builtin_type) + "'", argptrs, argc, *ret, err);
+					err_text = _get_call_error("static function '" + methodname->string() + "' in type '" + Variant::get_type_name(builtin_type) + "'", argptrs, argc, *ret, err);
 					OPCODE_BREAK;
 				}
 #endif
@@ -2186,7 +2181,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 				if (err.error != Callable::CallError::CALL_OK) {
-					err_text = _get_call_error("static function '" + method->get_name().operator String() + "' in type '" + method->get_instance_class().operator String() + "'", argptrs, argc, *ret, err);
+					err_text = _get_call_error("static function '" + method->get_name().string() + "' in type '" + method->get_instance_class().string() + "'", argptrs, argc, *ret, err);
 					OPCODE_BREAK;
 				}
 
@@ -2948,7 +2943,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #else
 				Object *ret_obj = r->operator Object *();
 #endif // DEBUG_ENABLED
-				if (ret_obj && !ClassDB::is_parent_class(ret_obj->get_class_name(), nc->get_name())) {
+				if (ret_obj && !ret_obj->is_class(nc->get_name())) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
 							_get_var_type(r), nc->get_name());
@@ -3813,7 +3808,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int globalname_idx = _code_ptr[ip + 2];
 				GD_ERR_BREAK(globalname_idx < 0 || globalname_idx >= _global_names_count);
 				const StringName *globalname = &_global_names_ptr[globalname_idx];
-				GD_ERR_BREAK(!GDScriptLanguage::get_singleton()->get_named_globals_map().has(*globalname));
+				if (unlikely(!GDScriptLanguage::get_singleton()->get_named_globals_map().has(*globalname))) {
+					err_text = vformat(R"(Trying to access non-existent autoload singleton "%s".)", *globalname);
+					OPCODE_BREAK;
+				}
 
 				GET_VARIANT_PTR(dst, 0);
 				*dst = GDScriptLanguage::get_singleton()->get_named_globals_map()[*globalname];
@@ -3963,19 +3961,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 		//error
 		// function, file, line, error, explanation
-		String err_file;
-		bool instance_valid_with_script = p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid();
-		if (instance_valid_with_script && !get_script()->path.is_empty()) {
-			err_file = get_script()->path;
-		} else if (script) {
-			err_file = script->path;
-		}
+		String err_file = source;
 		if (err_file.is_empty()) {
 			err_file = "<built-in>";
 		}
 		String err_func = name;
-		if (instance_valid_with_script && p_instance->script->local_name != StringName()) {
-			err_func = p_instance->script->local_name.operator String() + "." + err_func;
+		if (!_script->local_name.is_empty()) {
+			err_func = _script->local_name.string() + "." + err_func;
 		}
 		int err_line = line;
 		if (err_text.is_empty()) {
@@ -4006,12 +3998,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	}
 #endif
 
-	// Check if this is not the last time it was interrupted by `await` or if it's the first time executing.
-	// If that is the case then we exit the function as normal. Otherwise we postpone it until the last `await` is completed.
-	// This ensures the call stack can be properly shown when using `await`, showing what resumed the function.
-	if (!p_state || awaited) {
-		GDScriptLanguage::get_singleton()->exit_function();
+	if (p_state && !awaited) {
+		// This means we have finished executing a resumed function and it was not awaited again.
+		// Exit function only after executing the remaining function states to preserve async call stack.
+		// Postpone the function exiting and the call stack clearing until the last `await` is completed.
+		// This ensures the call stack can be properly shown when using `await`, showing what resumed the function.
+
+		// Signal the next function-state to resume.
+		const Variant *args[1] = { &retvalue };
+		p_state->completed.emit(args, 1);
 	}
+
+	GDScriptLanguage::get_singleton()->exit_function();
 
 	// We deliberately avoid calling the destructor for `ADDR_STACK_CLASS`, since we initialized it
 	// without incrementing any reference count that it might have.
@@ -4023,17 +4021,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	}
 
 	call_depth--;
-
-	if (p_state && !awaited) {
-		// This means we have finished executing a resumed function and it was not awaited again.
-
-		// Signal the next function-state to resume.
-		const Variant *args[1] = { &retvalue };
-		p_state->completed.emit(args, 1);
-
-		// Exit function only after executing the remaining function states to preserve async call stack.
-		GDScriptLanguage::get_singleton()->exit_function();
-	}
 
 	return retvalue;
 }

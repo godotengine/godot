@@ -153,32 +153,41 @@ static void handle_crash(int sig) {
 
 		for (int i = 1; i < lines.size() && i < (int)size; i++) {
 			String output = lines[i];
+			String mod_name = "main";
+			uint64_t mod_off = (uint64_t)load_addr;
 
 			// If atos failed for this address, fall back to dladdr.
-			if (output.substr(0, 2) == "0x" && strings) {
-				char fname[1024];
+			if (strings) {
+				bool atos_fail = output.substr(0, 2) == "0x";
+				if (atos_fail) {
+					Vector<String> fname_spl = String(strings[i]).split(" ", false, 3);
+					output = fname_spl[fname_spl.size() - 1];
+				}
+
 				Dl_info info;
-
-				snprintf(fname, 1024, "%s", strings[i]);
-
-				if (dladdr(bt_buffer[i], &info) && info.dli_sname) {
-					if (info.dli_sname[0] == '_') {
+				if (dladdr(bt_buffer[i], &info)) {
+					mod_off = (uint64_t)info.dli_fbase;
+					if (mod_off != (uint64_t)load_addr) {
+						mod_name = String(info.dli_fname).get_file();
+					}
+					if (atos_fail && info.dli_sname && info.dli_sname[0] == '_') {
 						int status;
 						char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status);
 
 						if (status == 0 && demangled) {
-							snprintf(fname, 1024, "%s", demangled);
+							output = String(demangled);
 						}
 
 						if (demangled) {
 							free(demangled);
 						}
 					}
+				} else {
+					mod_name = "<unknown module>";
 				}
-				output = fname;
 			}
 
-			print_error(vformat("[%d] %x - %s", (int64_t)i, (uint64_t)bt_buffer[i], output));
+			print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
 		}
 
 		if (strings) {
@@ -189,7 +198,35 @@ static void handle_crash(int sig) {
 		char **strings = backtrace_symbols(bt_buffer, size);
 		if (strings) {
 			for (size_t i = 0; i < size; i++) {
-				print_error(vformat("[%d] %x - %s", (int64_t)i, (uint64_t)bt_buffer[i], strings[i]));
+				Vector<String> fname_spl = String(strings[i]).split(" ", false, 3);
+				String output = fname_spl[fname_spl.size() - 1];
+
+				String mod_name = "main";
+				uint64_t mod_off = (uint64_t)load_addr;
+
+				Dl_info info;
+				if (dladdr(bt_buffer[i], &info)) {
+					mod_off = (uint64_t)info.dli_fbase;
+					if (mod_off != (uint64_t)load_addr) {
+						mod_name = String(info.dli_fname).get_file();
+					}
+					if (info.dli_sname && info.dli_sname[0] == '_') {
+						int status;
+						char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status);
+
+						if (status == 0 && demangled) {
+							output = String(demangled);
+						}
+
+						if (demangled) {
+							free(demangled);
+						}
+					}
+				} else {
+					mod_name = "<unknown module>";
+				}
+
+				print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
 			}
 			free(strings);
 		}

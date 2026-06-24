@@ -231,6 +231,7 @@ class DisplayServerX11 : public DisplayServer {
 	::Time last_keyrelease_time = 0;
 	::XIM xim = nullptr;
 	::XIMStyle xim_style;
+	bool warn_xim_just_stopped = true;
 
 	static int _xim_preedit_start_callback(::XIM xim, ::XPointer client_data,
 			::XPointer call_data);

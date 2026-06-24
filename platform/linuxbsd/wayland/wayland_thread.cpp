@@ -404,6 +404,31 @@ void WaylandThread::_set_current_seat(struct wl_seat *p_seat) {
 	pointer_set_constraint(pointer_constraint);
 }
 
+void WaylandThread::_window_hover(DisplayServerEnums::WindowID p_window_id) {
+	if (hovered_window_id == p_window_id) {
+		return;
+	}
+
+	Ref<WindowHoverMessage> winhov_msg;
+	winhov_msg.instantiate();
+	winhov_msg->id = p_window_id;
+
+	push_message(winhov_msg);
+
+	hovered_window_id = p_window_id;
+}
+
+// Most of the times we just want to update the hover to the currently pointed
+// window. Making this the default helps with enforcing the correct behavior.
+void WaylandThread::_window_hover() {
+	DisplayServerEnums::WindowID pointed_id = pointer_get_pointed_window_id();
+	if (window_exists(pointed_id)) {
+		_window_hover(pointed_id);
+	} else {
+		_window_hover(DisplayServerEnums::INVALID_WINDOW_ID);
+	}
+}
+
 // Returns whether it loaded the theme or not.
 bool WaylandThread::_load_cursor_theme(int p_cursor_size) {
 	if (wl_cursor_theme) {
@@ -1550,7 +1575,7 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 	}
 
 	if (height == 0) {
-		height = ws->rect.size.width;
+		height = ws->rect.size.height;
 	}
 
 	window_state_update_size(ws, width, height);
@@ -1742,10 +1767,10 @@ void WaylandThread::libdecor_frame_on_dismiss_popup(struct libdecor_frame *frame
 
 void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
 	SeatState *ss = (SeatState *)data;
-
 	ERR_FAIL_NULL(ss);
 
-	// TODO: Handle touch.
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
 
 	// Pointer handling.
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
@@ -1852,6 +1877,31 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 			ss->wl_keyboard = nullptr;
 		}
 	}
+
+	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
+		if (!ss->wl_touch) {
+			ss->wl_touch = wl_seat_get_touch(wl_seat);
+			wl_touch_add_listener(ss->wl_touch, &wl_touch_listener, ss);
+		}
+
+		wayland_thread->has_touch = true;
+	} else {
+		if (ss->wl_touch) {
+			wl_touch_destroy(ss->wl_touch);
+			ss->wl_touch = nullptr;
+		}
+
+		wayland_thread->has_touch = false;
+		for (struct wl_seat *i : wayland_thread->registry.wl_seats) {
+			SeatState *i_ss = wl_seat_get_seat_state(i);
+			ERR_CONTINUE(i_ss == nullptr);
+
+			if (i_ss->wl_touch != nullptr) {
+				wayland_thread->has_touch = true;
+				break;
+			}
+		}
+	}
 }
 
 void WaylandThread::_wl_seat_on_name(void *data, struct wl_seat *wl_seat, const char *name) {
@@ -1916,7 +1966,6 @@ void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_point
 	DisplayServerEnums::WindowID id = pd.pointed_id;
 
 	pd.pointed_id = DisplayServerEnums::INVALID_WINDOW_ID;
-	pd.pressed_button_mask.clear();
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Pointer left window %d.", id));
 
@@ -2025,240 +2074,238 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 	PointerData &old_pd = ss->pointer_data;
 	PointerData &pd = ss->pointer_data_buffer;
 
-	if (pd.pointed_id != old_pd.pointed_id) {
-		if (old_pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
-			Ref<WindowEventMessage> msg;
-			msg.instantiate();
-			msg->id = old_pd.pointed_id;
-			msg->event = DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT;
-
-			wayland_thread->push_message(msg);
-		}
-
-		if (pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
-			Ref<WindowEventMessage> msg;
-			msg.instantiate();
-			msg->id = pd.pointed_id;
-			msg->event = DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER;
-
-			wayland_thread->push_message(msg);
-		}
-	}
+	bool hover_changed = false;
 
 	WindowState *ws = nullptr;
 
-	// NOTE: At least on sway, with wl_pointer version 5 or greater,
-	// wl_pointer::leave might be emitted with other events (like
-	// wl_pointer::button) within the same wl_pointer::frame. Because of this, we
-	// need to account for when the currently pointed window might be invalid
-	// (third-party or even none) and fall back to the old one.
-	if (pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
-		ws = ss->wayland_thread->window_get_state(pd.pointed_id);
-		ERR_FAIL_NULL(ws);
-	} else if (old_pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
-		ws = ss->wayland_thread->window_get_state(old_pd.pointed_id);
-		ERR_FAIL_NULL(ws);
-	}
-
-	if (ws == nullptr) {
-		// We're probably on a decoration or some other third-party thing. Let's
-		// "commit" the data and call it a day.
-		old_pd = pd;
-		return;
-	}
-
-	double scale = window_state_get_scale_factor(ws);
-
-	wayland_thread->_set_current_seat(ss->wl_seat);
-
-	if (old_pd.motion_time != pd.motion_time || old_pd.relative_motion_time != pd.relative_motion_time) {
-		Ref<InputEventMouseMotion> mm;
-		mm.instantiate();
-
-		// Set all pressed modifiers.
-		mm->set_shift_pressed(ss->shift_pressed);
-		mm->set_ctrl_pressed(ss->ctrl_pressed);
-		mm->set_alt_pressed(ss->alt_pressed);
-		mm->set_meta_pressed(ss->meta_pressed);
-
-		mm->set_window_id(ws->id);
-
-		mm->set_button_mask(pd.pressed_button_mask);
-
-		mm->set_position(pd.position * scale);
-		mm->set_global_position(pd.position * scale);
-
-		Vector2 pos_delta = (pd.position - old_pd.position) * scale;
-
-		if (old_pd.relative_motion_time != pd.relative_motion_time) {
-			uint32_t time_delta = pd.relative_motion_time - old_pd.relative_motion_time;
-
-			mm->set_relative(pd.relative_motion * scale);
-			mm->set_velocity((Vector2)pos_delta / time_delta);
-		} else {
-			// The spec includes the possibility of having motion events without an
-			// associated relative motion event. If that's the case, fallback to a
-			// simple delta of the position. The captured mouse won't report the
-			// relative speed anymore though.
-			uint32_t time_delta = pd.motion_time - old_pd.motion_time;
-
-			mm->set_relative(pos_delta);
-			mm->set_velocity((Vector2)pos_delta / time_delta);
-		}
-		mm->set_relative_screen_position(mm->get_relative());
-		mm->set_screen_velocity(mm->get_velocity());
-
-		Ref<InputEventMessage> msg;
-		msg.instantiate();
-
-		msg->event = mm;
-
-		wayland_thread->push_message(msg);
-	}
-
-	if (pd.discrete_scroll_vector_120 - old_pd.discrete_scroll_vector_120 != Vector2i()) {
-		// This is a discrete scroll (eg. from a scroll wheel), so we'll just emit
-		// scroll wheel buttons.
-		if (pd.scroll_vector.y != 0) {
-			MouseButton button = pd.scroll_vector.y > 0 ? MouseButton::WHEEL_DOWN : MouseButton::WHEEL_UP;
-			pd.pressed_button_mask.set_flag(mouse_button_to_mask(button));
+	if (pd.pointed_id != old_pd.pointed_id) {
+		if (old_pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			// We left a window. Let's release all buttons to not confuse it.
+			pd.pressed_button_mask.clear();
 		}
 
-		if (pd.scroll_vector.x != 0) {
-			MouseButton button = pd.scroll_vector.x > 0 ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT;
-			pd.pressed_button_mask.set_flag(mouse_button_to_mask(button));
+		hover_changed = true;
+
+		// According to the spec, compositors SHOULD emit both leave and enter events
+		// in one frame. Given that the frame event groups logically related events,
+		// it makes sense that all other events outside `enter` are related to the OLD
+		// surface. Additionally, some compositors (e.g. sway) emit other events
+		// alongside a leave event in one single frame, further confirming this
+		// behavior.
+		if (wayland_thread->window_exists(old_pd.pointed_id)) {
+			ws = wayland_thread->window_get_state(old_pd.pointed_id);
+			if (ws == nullptr) {
+				// Not ERR_FAIL_* as we still want to fall through.
+				ERR_PRINT("Invalid window userdata.");
+			}
 		}
-	} else {
-		if (pd.scroll_vector - old_pd.scroll_vector != Vector2()) {
-			// This is a continuous scroll, so we'll emit a pan gesture.
-			Ref<InputEventPanGesture> pg;
-			pg.instantiate();
+	}
+
+	if (ws == nullptr && wayland_thread->window_exists(pd.pointed_id)) {
+		ws = wayland_thread->window_get_state(pd.pointed_id);
+		if (ws == nullptr) {
+			// Not ERR_FAIL_* as we still want to fall through.
+			ERR_PRINT("Invalid window userdata.");
+		}
+	}
+
+	if (ws != nullptr) {
+		double scale = window_state_get_scale_factor(ws);
+
+		wayland_thread->_set_current_seat(ss->wl_seat);
+
+		if (old_pd.motion_time != pd.motion_time || old_pd.relative_motion_time != pd.relative_motion_time) {
+			Ref<InputEventMouseMotion> mm;
+			mm.instantiate();
 
 			// Set all pressed modifiers.
-			pg->set_shift_pressed(ss->shift_pressed);
-			pg->set_ctrl_pressed(ss->ctrl_pressed);
-			pg->set_alt_pressed(ss->alt_pressed);
-			pg->set_meta_pressed(ss->meta_pressed);
+			mm->set_shift_pressed(ss->shift_pressed);
+			mm->set_ctrl_pressed(ss->ctrl_pressed);
+			mm->set_alt_pressed(ss->alt_pressed);
+			mm->set_meta_pressed(ss->meta_pressed);
 
-			pg->set_position(pd.position * scale);
+			mm->set_window_id(ws->id);
 
-			pg->set_window_id(ws->id);
+			mm->set_button_mask(pd.pressed_button_mask);
 
-			pg->set_delta(pd.scroll_vector);
+			mm->set_position(pd.position * scale);
+			mm->set_global_position(pd.position * scale);
+
+			Vector2 pos_delta = (pd.position - old_pd.position) * scale;
+
+			if (old_pd.relative_motion_time != pd.relative_motion_time) {
+				uint32_t time_delta = pd.relative_motion_time - old_pd.relative_motion_time;
+
+				mm->set_relative(pd.relative_motion * scale);
+				mm->set_velocity((Vector2)pos_delta / time_delta);
+			} else {
+				// The spec includes the possibility of having motion events without an
+				// associated relative motion event. If that's the case, fallback to a
+				// simple delta of the position. The captured mouse won't report the
+				// relative speed anymore though.
+				uint32_t time_delta = pd.motion_time - old_pd.motion_time;
+
+				mm->set_relative(pos_delta);
+				mm->set_velocity((Vector2)pos_delta / time_delta);
+			}
+			mm->set_relative_screen_position(mm->get_relative());
+			mm->set_screen_velocity(mm->get_velocity());
 
 			Ref<InputEventMessage> msg;
 			msg.instantiate();
 
-			msg->event = pg;
+			msg->event = mm;
 
 			wayland_thread->push_message(msg);
 		}
-	}
 
-	if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
-		BitField<MouseButtonMask> pressed_mask_delta = old_pd.pressed_button_mask.get_different(pd.pressed_button_mask);
+		if (pd.discrete_scroll_vector_120 - old_pd.discrete_scroll_vector_120 != Vector2i()) {
+			// This is a discrete scroll (eg. from a scroll wheel), so we'll just emit
+			// scroll wheel buttons.
+			if (pd.scroll_vector.y != 0) {
+				MouseButton button = pd.scroll_vector.y > 0 ? MouseButton::WHEEL_DOWN : MouseButton::WHEEL_UP;
+				pd.pressed_button_mask.set_flag(mouse_button_to_mask(button));
+			}
 
-		const MouseButton buttons_to_test[] = {
-			MouseButton::LEFT,
-			MouseButton::MIDDLE,
-			MouseButton::RIGHT,
-			MouseButton::WHEEL_UP,
-			MouseButton::WHEEL_DOWN,
-			MouseButton::WHEEL_LEFT,
-			MouseButton::WHEEL_RIGHT,
-			MouseButton::MB_XBUTTON1,
-			MouseButton::MB_XBUTTON2,
-		};
-
-		for (MouseButton test_button : buttons_to_test) {
-			MouseButtonMask test_button_mask = mouse_button_to_mask(test_button);
-			if (pressed_mask_delta.has_flag(test_button_mask)) {
-				Ref<InputEventMouseButton> mb;
-				mb.instantiate();
+			if (pd.scroll_vector.x != 0) {
+				MouseButton button = pd.scroll_vector.x > 0 ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT;
+				pd.pressed_button_mask.set_flag(mouse_button_to_mask(button));
+			}
+		} else {
+			if (pd.scroll_vector - old_pd.scroll_vector != Vector2()) {
+				// This is a continuous scroll, so we'll emit a pan gesture.
+				Ref<InputEventPanGesture> pg;
+				pg.instantiate();
 
 				// Set all pressed modifiers.
-				mb->set_shift_pressed(ss->shift_pressed);
-				mb->set_ctrl_pressed(ss->ctrl_pressed);
-				mb->set_alt_pressed(ss->alt_pressed);
-				mb->set_meta_pressed(ss->meta_pressed);
+				pg->set_shift_pressed(ss->shift_pressed);
+				pg->set_ctrl_pressed(ss->ctrl_pressed);
+				pg->set_alt_pressed(ss->alt_pressed);
+				pg->set_meta_pressed(ss->meta_pressed);
 
-				mb->set_window_id(ws->id);
-				mb->set_position(pd.position * scale);
-				mb->set_global_position(pd.position * scale);
+				pg->set_position(pd.position * scale);
 
-				if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN) {
-					// If this is a discrete scroll, specify how many "clicks" it did for this
-					// pointer frame.
-					mb->set_factor(Math::abs(pd.discrete_scroll_vector_120.y / (float)120));
-				}
+				pg->set_window_id(ws->id);
 
-				if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
-					// If this is a discrete scroll, specify how many "clicks" it did for this
-					// pointer frame.
-					mb->set_factor(std::abs(pd.discrete_scroll_vector_120.x / (float)120));
-				}
-
-				mb->set_button_mask(pd.pressed_button_mask);
-
-				mb->set_button_index(test_button);
-				mb->set_pressed(pd.pressed_button_mask.has_flag(test_button_mask));
-
-				// We have to set the last position pressed here as we can't take for
-				// granted what the individual events might have seen due to them not having
-				// a guaranteed order.
-				if (mb->is_pressed()) {
-					pd.last_pressed_position = pd.position;
-				}
-
-				if (old_pd.double_click_begun && mb->is_pressed() && pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(old_pd.last_pressed_position * scale).distance_to(Vector2(pd.last_pressed_position * scale)) < 5) {
-					pd.double_click_begun = false;
-					mb->set_double_click(true);
-				}
+				pg->set_delta(pd.scroll_vector);
 
 				Ref<InputEventMessage> msg;
 				msg.instantiate();
 
-				msg->event = mb;
+				msg->event = pg;
 
 				wayland_thread->push_message(msg);
+			}
+		}
 
-				// Send an event resetting immediately the wheel key.
-				// Wayland specification defines axis_stop events as optional and says to
-				// treat all axis events as unterminated. As such, we have to manually do
-				// it ourselves.
-				if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN || test_button == MouseButton::WHEEL_LEFT || test_button == MouseButton::WHEEL_RIGHT) {
-					// FIXME: This is ugly, I can't find a clean way to clone an InputEvent.
-					// This works for now, despite being horrible.
-					Ref<InputEventMouseButton> wh_up;
-					wh_up.instantiate();
+		if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
+			BitField<MouseButtonMask> pressed_mask_delta = old_pd.pressed_button_mask.get_different(pd.pressed_button_mask);
 
-					wh_up->set_window_id(ws->id);
-					wh_up->set_position(pd.position * scale);
-					wh_up->set_global_position(pd.position * scale);
+			const MouseButton buttons_to_test[] = {
+				MouseButton::LEFT,
+				MouseButton::MIDDLE,
+				MouseButton::RIGHT,
+				MouseButton::WHEEL_UP,
+				MouseButton::WHEEL_DOWN,
+				MouseButton::WHEEL_LEFT,
+				MouseButton::WHEEL_RIGHT,
+				MouseButton::MB_XBUTTON1,
+				MouseButton::MB_XBUTTON2,
+			};
 
-					// We have to unset the button to avoid it getting stuck.
-					pd.pressed_button_mask.clear_flag(test_button_mask);
-					wh_up->set_button_mask(pd.pressed_button_mask);
+			for (MouseButton test_button : buttons_to_test) {
+				MouseButtonMask test_button_mask = mouse_button_to_mask(test_button);
+				if (pressed_mask_delta.has_flag(test_button_mask)) {
+					Ref<InputEventMouseButton> mb;
+					mb.instantiate();
 
-					wh_up->set_button_index(test_button);
-					wh_up->set_pressed(false);
+					// Set all pressed modifiers.
+					mb->set_shift_pressed(ss->shift_pressed);
+					mb->set_ctrl_pressed(ss->ctrl_pressed);
+					mb->set_alt_pressed(ss->alt_pressed);
+					mb->set_meta_pressed(ss->meta_pressed);
 
-					Ref<InputEventMessage> msg_up;
-					msg_up.instantiate();
-					msg_up->event = wh_up;
-					wayland_thread->push_message(msg_up);
+					mb->set_window_id(ws->id);
+					mb->set_position(pd.position * scale);
+					mb->set_global_position(pd.position * scale);
+
+					if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN) {
+						// If this is a discrete scroll, specify how many "clicks" it did for this
+						// pointer frame.
+						mb->set_factor(Math::abs(pd.discrete_scroll_vector_120.y / (float)120));
+					}
+
+					if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
+						// If this is a discrete scroll, specify how many "clicks" it did for this
+						// pointer frame.
+						mb->set_factor(std::abs(pd.discrete_scroll_vector_120.x / (float)120));
+					}
+
+					mb->set_button_mask(pd.pressed_button_mask);
+
+					mb->set_button_index(test_button);
+					mb->set_pressed(pd.pressed_button_mask.has_flag(test_button_mask));
+
+					// We have to set the last position pressed here as we can't take for
+					// granted what the individual events might have seen due to them not having
+					// a guaranteed order.
+					if (mb->is_pressed()) {
+						pd.last_pressed_position = pd.position;
+					}
+
+					if (old_pd.double_click_begun && mb->is_pressed() && pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(old_pd.last_pressed_position * scale).distance_to(Vector2(pd.last_pressed_position * scale)) < 5) {
+						pd.double_click_begun = false;
+						mb->set_double_click(true);
+					}
+
+					Ref<InputEventMessage> msg;
+					msg.instantiate();
+
+					msg->event = mb;
+
+					wayland_thread->push_message(msg);
+
+					// Send an event resetting immediately the wheel key.
+					// Wayland specification defines axis_stop events as optional and says to
+					// treat all axis events as unterminated. As such, we have to manually do
+					// it ourselves.
+					if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN || test_button == MouseButton::WHEEL_LEFT || test_button == MouseButton::WHEEL_RIGHT) {
+						// FIXME: This is ugly, I can't find a clean way to clone an InputEvent.
+						// This works for now, despite being horrible.
+						Ref<InputEventMouseButton> wh_up;
+						wh_up.instantiate();
+
+						wh_up->set_window_id(ws->id);
+						wh_up->set_position(pd.position * scale);
+						wh_up->set_global_position(pd.position * scale);
+
+						// We have to unset the button to avoid it getting stuck.
+						pd.pressed_button_mask.clear_flag(test_button_mask);
+						wh_up->set_button_mask(pd.pressed_button_mask);
+
+						wh_up->set_button_index(test_button);
+						wh_up->set_pressed(false);
+
+						Ref<InputEventMessage> msg_up;
+						msg_up.instantiate();
+						msg_up->event = wh_up;
+						wayland_thread->push_message(msg_up);
+					}
 				}
 			}
 		}
 	}
 
-	// Reset the scroll vectors as we already handled them.
 	pd.scroll_vector = Vector2();
 	pd.discrete_scroll_vector_120 = Vector2i();
 
 	// Update the data all getters read. Wayland's specification requires us to do
 	// this, since all pointer actions are sent in individual events.
 	old_pd = pd;
+
+	if (hover_changed) {
+		wayland_thread->_window_hover();
+	}
 }
 
 void WaylandThread::_wl_pointer_on_axis_source(void *data, struct wl_pointer *wl_pointer, uint32_t axis_source) {
@@ -2478,6 +2525,207 @@ void WaylandThread::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *
 
 	ss->repeat_key_delay_msec = rate ? 1000 / rate : 0;
 	ss->repeat_start_delay_msec = delay;
+}
+
+void WaylandThread::_wl_touch_on_down(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, struct wl_surface *surface, int32_t id, wl_fixed_t x, wl_fixed_t y) {
+	WindowState *ws = wl_surface_get_window_state(surface);
+	if (!ws) {
+		return;
+	}
+
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->last_touch_id = id;
+
+	TouchPoint &tp = ss->touch_points_buffer[id];
+
+	tp.down_time = time;
+
+	tp.touched_id = ws->id;
+
+	tp.position.x = wl_fixed_to_double(x);
+	tp.position.y = wl_fixed_to_double(y);
+}
+
+void WaylandThread::_wl_touch_on_up(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, int32_t id) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	if (!ss->touch_points_buffer.has(id)) {
+		return;
+	}
+
+	TouchPoint &tp = ss->touch_points_buffer[id];
+
+	tp.touched_id = DisplayServerEnums::INVALID_WINDOW_ID;
+	ss->touch_points_buffer.erase(id);
+
+	// Some compositors (e.g. mutter) do not send a frame event after "up" events.
+	// AFAICT, this is an acceptable interpretation of the protocol ("No further
+	// events will be sent for this touch point[...]"). Let's just emulate it here.
+	_wl_touch_on_frame(data, wl_touch);
+}
+
+void WaylandThread::_wl_touch_on_motion(void *data, struct wl_touch *wl_touch, uint32_t time, int32_t id, wl_fixed_t x, wl_fixed_t y) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->last_touch_id = id;
+
+	TouchPoint &tp = ss->touch_points_buffer[id];
+
+	tp.motion_time = time;
+
+	tp.position.x = wl_fixed_to_double(x);
+	tp.position.y = wl_fixed_to_double(y);
+}
+
+void WaylandThread::_wl_touch_on_frame(void *data, struct wl_touch *wl_touch) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+
+	bool hover_changed = false;
+
+	// Release handling.
+	for (KeyValue<int32_t, TouchPoint> &pair : ss->touch_points) {
+		int32_t id = pair.key;
+		TouchPoint &tp = pair.value;
+
+		WindowState *ws = wayland_thread->window_get_state(tp.touched_id);
+		if (tp.touched_id == DisplayServerEnums::INVALID_WINDOW_ID || ws == nullptr) {
+			continue;
+		}
+
+		double scale = window_state_get_scale_factor(ws);
+
+		if (!ss->touch_points_buffer.has(id)) {
+			hover_changed = true;
+
+			Ref<InputEventScreenTouch> st;
+			st.instantiate();
+			st->set_index(id);
+			st->set_position(tp.position * scale);
+			st->set_window_id(tp.touched_id);
+			st->set_pressed(false);
+
+			Ref<InputEventMessage> iev_msg;
+			iev_msg.instantiate();
+			iev_msg->event = st;
+
+			wayland_thread->push_message(iev_msg);
+		}
+	}
+
+	for (KeyValue<int32_t, TouchPoint> &pair : ss->touch_points_buffer) {
+		int32_t id = pair.key;
+		TouchPoint &tp = pair.value;
+
+		WindowState *ws = wayland_thread->window_get_state(tp.touched_id);
+		if (tp.touched_id == DisplayServerEnums::INVALID_WINDOW_ID || ws == nullptr) {
+			continue;
+		}
+
+		double scale = window_state_get_scale_factor(ws);
+
+		// Press handling.
+		if (!ss->touch_points.has(id)) {
+			hover_changed = true;
+
+			Ref<InputEventScreenTouch> st;
+			st.instantiate();
+			st->set_index(id);
+			st->set_position(tp.position * scale);
+			st->set_window_id(tp.touched_id);
+			st->set_pressed(true);
+
+			Ref<InputEventMessage> iev_msg;
+			iev_msg.instantiate();
+			iev_msg->event = st;
+
+			wayland_thread->push_message(iev_msg);
+
+			continue;
+		}
+
+		TouchPoint &tp_old = ss->touch_points[id];
+
+		if (tp.touched_id == DisplayServerEnums::INVALID_WINDOW_ID) {
+			ws = wayland_thread->window_get_state(tp.touched_id);
+		}
+
+		if (wayland_thread->window_get_state(tp.touched_id) == nullptr) {
+			continue;
+		}
+
+		if (tp.position != tp_old.position) {
+			Ref<InputEventScreenDrag> sd;
+			sd.instantiate();
+			sd->set_index(id);
+			sd->set_window_id(tp.touched_id);
+			sd->set_position(tp.position * scale);
+			sd->set_relative((tp.position - tp_old.position) * scale);
+			sd->set_relative_screen_position(sd->get_relative());
+
+			Ref<InputEventMessage> iev_msg;
+			iev_msg.instantiate();
+			iev_msg->event = sd;
+
+			wayland_thread->push_message(iev_msg);
+		}
+	}
+
+	ss->touch_points = ss->touch_points_buffer;
+
+	if (hover_changed) {
+		wayland_thread->_window_hover();
+	}
+}
+
+// NOTE: Per the spec, a frame event is not required after this event, so let's
+// assume that it's not going to happen.
+void WaylandThread::_wl_touch_on_cancel(void *data, struct wl_touch *wl_touch) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+
+	for (KeyValue<int32_t, TouchPoint> &pair : ss->touch_points_buffer) {
+		int32_t id = pair.key;
+		TouchPoint &tp = pair.value;
+
+		WindowState *ws = wayland_thread->window_get_state(tp.touched_id);
+		double scale = window_state_get_scale_factor(ws);
+
+		Ref<InputEventScreenTouch> st;
+		st.instantiate();
+		st->set_index(id);
+		st->set_position(tp.position * scale);
+		st->set_window_id(tp.touched_id);
+		st->set_pressed(false);
+		st->set_canceled(true);
+
+		Ref<InputEventMessage> cancel_msg;
+		cancel_msg.instantiate();
+		cancel_msg->event = st;
+
+		wayland_thread->push_message(cancel_msg);
+
+		wayland_thread->_window_hover(DisplayServerEnums::INVALID_WINDOW_ID);
+	}
+
+	ss->touch_points_buffer.clear();
+	ss->touch_points.clear();
+}
+
+void WaylandThread::_wl_touch_on_shape(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t major, wl_fixed_t minor) {
+}
+
+void WaylandThread::_wl_touch_on_orientation(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t orientation) {
 }
 
 // NOTE: Don't forget to `memfree` the offer's state.
@@ -3155,137 +3403,133 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 	TabletToolData &old_td = ts->data;
 	TabletToolData &td = ts->data_pending;
 
+	bool hover_changed = false;
+
 	if (td.proximal_id != old_td.proximal_id) {
 		if (old_td.proximal_id != DisplayServerEnums::INVALID_WINDOW_ID) {
-			Ref<WindowEventMessage> msg;
-			msg.instantiate();
-			msg->id = old_td.proximal_id;
-			msg->event = DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT;
-
-			wayland_thread->push_message(msg);
+			// We left a window. Let's release all buttons to not confuse it.
+			td.pressed_button_mask.clear();
 		}
 
-		if (td.proximal_id != DisplayServerEnums::INVALID_WINDOW_ID) {
-			Ref<WindowEventMessage> msg;
-			msg.instantiate();
-			msg->id = td.proximal_id;
-			msg->event = DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER;
+		hover_changed = true;
+	}
 
-			wayland_thread->push_message(msg);
+	WindowState *ws = nullptr;
+	if (wayland_thread->window_exists(td.proximal_id)) {
+		ws = wayland_thread->window_get_state(td.proximal_id);
+		if (ws == nullptr) {
+			// Not ERR_FAIL_* as we still want to fall through.
+			ERR_PRINT("Invalid window userdata.");
 		}
 	}
 
-	if (td.proximal_id == DisplayServerEnums::INVALID_WINDOW_ID) {
-		// We're probably on a decoration or some other third-party thing. Let's
-		// "commit" the data and call it a day.
-		old_td = td;
-		return;
-	}
+	if (ws != nullptr) {
+		double scale = window_state_get_scale_factor(ws);
+		if (old_td.position != td.position || old_td.tilt != td.tilt || old_td.pressure != td.pressure) {
+			td.motion_time = time;
 
-	WindowState *ws = wayland_thread->window_get_state(td.proximal_id);
-	ERR_FAIL_NULL(ws);
+			Ref<InputEventMouseMotion> mm;
+			mm.instantiate();
 
-	double scale = window_state_get_scale_factor(ws);
-	if (old_td.position != td.position || old_td.tilt != td.tilt || old_td.pressure != td.pressure) {
-		td.motion_time = time;
+			mm->set_window_id(td.proximal_id);
 
-		Ref<InputEventMouseMotion> mm;
-		mm.instantiate();
+			// Set all pressed modifiers.
+			mm->set_shift_pressed(ss->shift_pressed);
+			mm->set_ctrl_pressed(ss->ctrl_pressed);
+			mm->set_alt_pressed(ss->alt_pressed);
+			mm->set_meta_pressed(ss->meta_pressed);
 
-		mm->set_window_id(td.proximal_id);
+			mm->set_button_mask(td.pressed_button_mask);
 
-		// Set all pressed modifiers.
-		mm->set_shift_pressed(ss->shift_pressed);
-		mm->set_ctrl_pressed(ss->ctrl_pressed);
-		mm->set_alt_pressed(ss->alt_pressed);
-		mm->set_meta_pressed(ss->meta_pressed);
+			mm->set_global_position(td.position * scale);
+			mm->set_position(td.position * scale);
 
-		mm->set_button_mask(td.pressed_button_mask);
+			// NOTE: The Godot API expects normalized values and we store them raw,
+			// straight from the compositor, so we have to normalize them here.
 
-		mm->set_global_position(td.position * scale);
-		mm->set_position(td.position * scale);
+			// According to the tablet proto spec, tilt is expressed in degrees relative
+			// to the Z axis of the tablet, so it shouldn't go over 90 degrees either way,
+			// I think. We'll clamp it just in case.
+			td.tilt = td.tilt.clampf(-90, 90);
 
-		// NOTE: The Godot API expects normalized values and we store them raw,
-		// straight from the compositor, so we have to normalize them here.
+			mm->set_tilt(td.tilt / 90);
 
-		// According to the tablet proto spec, tilt is expressed in degrees relative
-		// to the Z axis of the tablet, so it shouldn't go over 90 degrees either way,
-		// I think. We'll clamp it just in case.
-		td.tilt = td.tilt.clampf(-90, 90);
+			// The tablet proto spec explicitly says that pressure is defined as a value
+			// between 0 to 65535.
+			mm->set_pressure(td.pressure / (float)65535);
 
-		mm->set_tilt(td.tilt / 90);
+			mm->set_pen_inverted(ts->is_eraser);
 
-		// The tablet proto spec explicitly says that pressure is defined as a value
-		// between 0 to 65535.
-		mm->set_pressure(td.pressure / (float)65535);
+			Vector2 pos_delta = (td.position - old_td.position) * scale;
 
-		mm->set_pen_inverted(ts->is_eraser);
+			mm->set_relative(pos_delta);
+			mm->set_relative_screen_position(pos_delta);
 
-		Vector2 pos_delta = (td.position - old_td.position) * scale;
+			uint32_t time_delta = td.motion_time - old_td.motion_time;
+			mm->set_velocity((Vector2)pos_delta / time_delta);
 
-		mm->set_relative(pos_delta);
-		mm->set_relative_screen_position(pos_delta);
+			Ref<InputEventMessage> inputev_msg;
+			inputev_msg.instantiate();
 
-		uint32_t time_delta = td.motion_time - old_td.motion_time;
-		mm->set_velocity((Vector2)pos_delta / time_delta);
+			inputev_msg->event = mm;
 
-		Ref<InputEventMessage> inputev_msg;
-		inputev_msg.instantiate();
+			wayland_thread->push_message(inputev_msg);
+		}
 
-		inputev_msg->event = mm;
+		if (old_td.pressed_button_mask != td.pressed_button_mask) {
+			td.button_time = time;
 
-		wayland_thread->push_message(inputev_msg);
-	}
+			BitField<MouseButtonMask> pressed_mask_delta = old_td.pressed_button_mask.get_different(td.pressed_button_mask);
 
-	if (old_td.pressed_button_mask != td.pressed_button_mask) {
-		td.button_time = time;
+			for (MouseButton test_button : { MouseButton::LEFT, MouseButton::RIGHT }) {
+				MouseButtonMask test_button_mask = mouse_button_to_mask(test_button);
 
-		BitField<MouseButtonMask> pressed_mask_delta = old_td.pressed_button_mask.get_different(td.pressed_button_mask);
+				if (pressed_mask_delta.has_flag(test_button_mask)) {
+					Ref<InputEventMouseButton> mb;
+					mb.instantiate();
 
-		for (MouseButton test_button : { MouseButton::LEFT, MouseButton::RIGHT }) {
-			MouseButtonMask test_button_mask = mouse_button_to_mask(test_button);
+					// Set all pressed modifiers.
+					mb->set_shift_pressed(ss->shift_pressed);
+					mb->set_ctrl_pressed(ss->ctrl_pressed);
+					mb->set_alt_pressed(ss->alt_pressed);
+					mb->set_meta_pressed(ss->meta_pressed);
 
-			if (pressed_mask_delta.has_flag(test_button_mask)) {
-				Ref<InputEventMouseButton> mb;
-				mb.instantiate();
+					mb->set_window_id(td.proximal_id);
+					mb->set_position(td.position * scale);
+					mb->set_global_position(td.position * scale);
 
-				// Set all pressed modifiers.
-				mb->set_shift_pressed(ss->shift_pressed);
-				mb->set_ctrl_pressed(ss->ctrl_pressed);
-				mb->set_alt_pressed(ss->alt_pressed);
-				mb->set_meta_pressed(ss->meta_pressed);
+					mb->set_button_mask(td.pressed_button_mask);
+					mb->set_button_index(test_button);
+					mb->set_pressed(td.pressed_button_mask.has_flag(test_button_mask));
 
-				mb->set_window_id(td.proximal_id);
-				mb->set_position(td.position * scale);
-				mb->set_global_position(td.position * scale);
+					// We have to set the last position pressed here as we can't take for
+					// granted what the individual events might have seen due to them not having
+					// a garaunteed order.
+					if (mb->is_pressed()) {
+						td.last_pressed_position = td.position;
+					}
 
-				mb->set_button_mask(td.pressed_button_mask);
-				mb->set_button_index(test_button);
-				mb->set_pressed(td.pressed_button_mask.has_flag(test_button_mask));
+					if (old_td.double_click_begun && mb->is_pressed() && td.last_button_pressed == old_td.last_button_pressed && (td.button_time - old_td.button_time) < 400 && Vector2(td.last_pressed_position * scale).distance_to(Vector2(old_td.last_pressed_position * scale)) < 5) {
+						td.double_click_begun = false;
+						mb->set_double_click(true);
+					}
 
-				// We have to set the last position pressed here as we can't take for
-				// granted what the individual events might have seen due to them not having
-				// a garaunteed order.
-				if (mb->is_pressed()) {
-					td.last_pressed_position = td.position;
+					Ref<InputEventMessage> msg;
+					msg.instantiate();
+
+					msg->event = mb;
+
+					wayland_thread->push_message(msg);
 				}
-
-				if (old_td.double_click_begun && mb->is_pressed() && td.last_button_pressed == old_td.last_button_pressed && (td.button_time - old_td.button_time) < 400 && Vector2(td.last_pressed_position * scale).distance_to(Vector2(old_td.last_pressed_position * scale)) < 5) {
-					td.double_click_begun = false;
-					mb->set_double_click(true);
-				}
-
-				Ref<InputEventMessage> msg;
-				msg.instantiate();
-
-				msg->event = mb;
-
-				wayland_thread->push_message(msg);
 			}
 		}
 	}
 
 	old_td = td;
+
+	if (hover_changed) {
+		wayland_thread->_window_hover();
+	}
 }
 
 void WaylandThread::_wp_text_input_on_enter(void *data, struct zwp_text_input_v3 *wp_text_input_v3, struct wl_surface *surface) {
@@ -4311,6 +4555,17 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 
 	// We can already clean up here, we're done.
 	windows.erase(p_window_id);
+
+	// Let's update the window hover.
+	_window_hover();
+}
+
+bool WaylandThread::window_exists(DisplayServerEnums::WindowID p_window_id) const {
+	if (p_window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
+		return false;
+	}
+
+	return windows.has(p_window_id);
 }
 
 struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServerEnums::WindowID p_window_id) const {
@@ -4360,6 +4615,7 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 		new_size = new_size.min(ws.rect.size);
 	}
 
+#ifdef LIBDECOR_ENABLED
 	// NOTE: Older versions of libdecor (~2022) do not have a way to get the max
 	// content size. Let's also check for its pointer so that we can preserve
 	// compatibility with older distros.
@@ -4376,6 +4632,7 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 			new_size.height = MIN(new_size.height, max_height);
 		}
 	}
+#endif
 
 	window_state_update_size(&ws, new_size.width, new_size.height);
 
@@ -4562,12 +4819,14 @@ bool WaylandThread::window_can_set_mode(DisplayServerEnums::WindowID p_window_id
 		};
 
 		case DisplayServerEnums::WINDOW_MODE_MAXIMIZED: {
+#ifdef LIBDECOR_ENABLED
 			if (ws.libdecor_frame) {
 				// NOTE: libdecor doesn't seem to have a maximize capability query?
 				// The fact that there's a fullscreen one makes me suspicious. Anyways,
 				// let's act as if we always can.
 				return true;
 			}
+#endif
 			return ws.can_maximize;
 		};
 
@@ -5019,10 +5278,16 @@ int WaylandThread::get_screen_count() const {
 	return registry.wl_outputs.size();
 }
 
+bool WaylandThread::input_has_touch() const {
+	return has_touch;
+}
+
 DisplayServerEnums::WindowID WaylandThread::pointer_get_pointed_window_id() const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss) {
+		TouchPoint *tp = ss->touch_points.getptr(ss->last_touch_id);
+
 		// Let's determine the most recently used tablet tool.
 		TabletToolState *max_ts = nullptr;
 		for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
@@ -5043,18 +5308,38 @@ DisplayServerEnums::WindowID WaylandThread::pointer_get_pointed_window_id() cons
 
 		const PointerData &pd = ss->pointer_data;
 
+		Pair<uint32_t, DisplayServerEnums::WindowID> best;
+		best.first = MAX(pd.button_time, pd.motion_time);
+		best.second = pd.pointed_id;
+
 		if (max_ts) {
 			TabletToolData &td = max_ts->data;
-			if (MAX(td.button_time, td.motion_time) > MAX(pd.button_time, pd.motion_time)) {
-				return td.proximal_id;
+
+			Pair<uint32_t, DisplayServerEnums::WindowID> cur;
+			cur.first = MAX(td.button_time, td.motion_time);
+			cur.second = td.proximal_id;
+
+			if (cur.first > best.first && window_exists(cur.second)) {
+				best = cur;
 			}
 		}
 
-		return ss->pointer_data.pointed_id;
+		if (tp) {
+			Pair<uint32_t, DisplayServerEnums::WindowID> cur;
+			cur.first = MAX(tp->down_time, tp->motion_time);
+			cur.second = tp->touched_id;
+
+			if (cur.first > best.first && window_exists(cur.second)) {
+				best = cur;
+			}
+		}
+
+		return best.second;
 	}
 
 	return DisplayServerEnums::INVALID_WINDOW_ID;
 }
+
 DisplayServerEnums::WindowID WaylandThread::pointer_get_last_pointed_window_id() const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
@@ -5254,6 +5539,28 @@ Error WaylandThread::init() {
 
 	thread_data.wl_display = wl_display;
 
+#ifdef LIBDECOR_ENABLED
+	bool libdecor_found = true;
+
+	bool skip_libdecor = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_LIBDECOR") == "1";
+
+#ifdef SOWRAP_ENABLED
+	if (!skip_libdecor && initialize_libdecor(dylibloader_verbose) != 0) {
+		libdecor_found = false;
+	}
+#endif // SOWRAP_ENABLED
+
+	if (skip_libdecor) {
+		print_verbose("Skipping libdecor check because GODOT_WAYLAND_DISABLE_LIBDECOR is set to 1.");
+	} else {
+		if (libdecor_found) {
+			libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
+		} else {
+			print_verbose("libdecor not found. Client-side decorations disabled.");
+		}
+	}
+#endif // LIBDECOR_ENABLED
+
 	wl_registry = wl_display_get_registry(wl_display);
 
 	ERR_FAIL_NULL_V_MSG(wl_registry, ERR_UNAVAILABLE, "Can't obtain the Wayland registry global.");
@@ -5302,28 +5609,6 @@ Error WaylandThread::init() {
 	// Wait for seat capabilities.
 	// TODO: Async?
 	wl_display_roundtrip(wl_display);
-
-#ifdef LIBDECOR_ENABLED
-	bool libdecor_found = true;
-
-	bool skip_libdecor = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_LIBDECOR") == "1";
-
-#ifdef SOWRAP_ENABLED
-	if (!skip_libdecor && initialize_libdecor(dylibloader_verbose) != 0) {
-		libdecor_found = false;
-	}
-#endif // SOWRAP_ENABLED
-
-	if (skip_libdecor) {
-		print_verbose("Skipping libdecor check because GODOT_WAYLAND_DISABLE_LIBDECOR is set to 1.");
-	} else {
-		if (libdecor_found) {
-			libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
-		} else {
-			print_verbose("libdecor not found. Client-side decorations disabled.");
-		}
-	}
-#endif // LIBDECOR_ENABLED
 
 	cursor_theme_name = OS::get_singleton()->get_environment("XCURSOR_THEME");
 

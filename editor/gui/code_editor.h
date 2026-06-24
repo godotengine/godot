@@ -211,6 +211,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _zoom_to(float p_zoom_factor);
 
 	void _show_goto_popup_request();
+	void _emit_request_save_new_history();
 
 	void _update_error_content_height();
 
@@ -260,17 +261,20 @@ public:
 	void adjust_viewport_to_caret();
 	void center_viewport_to_caret();
 	void center_viewport_to_caret_if_line_invisible(int p_line);
+	void trigger_history_save_on_navigate();
 
+	void goto_line_without_history(int p_line, int p_column = 0);
 	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	void goto_line_centered(int p_line, int p_column = 0);
+	void goto_line_and_center_if_necessary(int p_line, int p_column = 0);
 	void set_executing_line(int p_line);
 	void clear_executing_line();
 
-	Variant get_edit_state();
-	void set_edit_state(const Variant &p_state);
-	Variant get_navigation_state();
-	Variant get_previous_state();
+	Dictionary get_edit_state();
+	void set_edit_state(const Dictionary &p_state);
+	Dictionary get_navigation_state();
+	Dictionary get_previous_state();
 	void store_previous_state();
 
 	bool is_previewing_navigation_change() const;
@@ -283,6 +287,8 @@ public:
 	void set_error(const String &p_error);
 	void set_error_pos(int p_line, int p_column);
 	Point2i get_error_pos() const;
+	/// Convert internal position into a user readable format. This means 1 is the first position and the column counts tabs with their tab width.
+	Point2i get_pos_for_display(Point2i p_internal_position) const;
 	void update_line_and_column() { _line_col_changed(); }
 	CodeEdit *get_text_editor() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
