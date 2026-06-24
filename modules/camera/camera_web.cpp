@@ -93,6 +93,14 @@ String CameraFeedWeb::_get_format_name(int p_pixel_format) {
 	}
 }
 
+Size2i CameraFeedWeb::_get_requested_size() const {
+	if (selected_format >= 0 && selected_format < formats.size()) {
+		const CameraFeed::FeedFormat &format = formats[selected_format];
+		return Size2i(format.width, format.height);
+	}
+	return Size2i();
+}
+
 void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_pixel_format, const int p_facing_mode, const char *p_error) {
 	// Validate context first to avoid dereferencing null on error paths.
 	ERR_FAIL_NULL_MSG(p_context, "Camera feed error: Null context received.");
@@ -100,10 +108,11 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 	CameraFeedWeb *feed = reinterpret_cast<CameraFeedWeb *>(p_context);
 
 	if (p_error) {
+		String error_str = String::utf8(p_error);
 		if (feed->is_active()) {
 			feed->set_active(false);
 		}
-		String error_str = String::utf8(p_error);
+		feed->call_deferred("emit_signal", SNAME("activation_failed"), error_str);
 		ERR_PRINT(vformat("Camera feed error from JS: %s", error_str));
 		return;
 	}
@@ -114,6 +123,9 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 		}
 		ERR_PRINT("Camera feed error: Invalid pixel data received.");
 		return;
+	}
+	if (feed->get_activation_status() == CameraFeed::FEED_ACTIVATING) {
+		feed->_set_activation_status(CameraFeed::FEED_ACTIVE);
 	}
 
 	// Update feed position based on facing mode.
@@ -281,24 +293,20 @@ bool CameraFeedWeb::activate_feed() {
 	CameraDriverWeb *driver = CameraDriverWeb::get_singleton();
 	ERR_FAIL_NULL_V_MSG(driver, false, "CameraDriverWeb singleton is not initialized.");
 
-	int width = 0;
-	int height = 0;
-	if (selected_format >= 0 && selected_format < formats.size()) {
-		CameraFeed::FeedFormat f = formats[selected_format];
-		width = f.width;
-		height = f.height;
-	}
+	const Size2i requested_size = _get_requested_size();
+	_set_activation_status(CameraFeed::FEED_ACTIVATING);
 
 	// 'this' is passed as a raw context pointer to JS. This is safe because
-	// Web builds are single-threaded - stop_stream() synchronously cancels all
-	// pending callbacks, so no callback can fire after deactivate_feed() returns.
-	driver->get_pixel_data(this, device_id, width, height, &_on_get_pixel_data, &_on_denied_callback, &_on_formats_callback);
+	// CameraWeb aborts pending operations before its feeds can be destroyed.
+	driver->get_pixel_data(this, device_id, requested_size.x, requested_size.y, &_on_get_pixel_data, &_on_denied_callback, &_on_formats_callback);
 	return true;
 }
 
 void CameraFeedWeb::deactivate_feed() {
 	CameraDriverWeb *driver = CameraDriverWeb::get_singleton();
 	ERR_FAIL_NULL_MSG(driver, "CameraDriverWeb singleton is not initialized.");
+	// Abort any in-flight open for this feed before stopping.
+	driver->abort_stream(this);
 	driver->stop_stream(device_id);
 
 	if (buffer_decoder) {
@@ -421,6 +429,13 @@ void CameraWeb::_update_feeds() {
 void CameraWeb::_cleanup() {
 	request_id++;
 	if (driver != nullptr) {
+		// Abort in-flight opens for each active feed before stopping all streams.
+		for (int i = 0; i < feeds.size(); i++) {
+			CameraFeedWeb *feed = Object::cast_to<CameraFeedWeb>(feeds[i].ptr());
+			if (feed) {
+				driver->abort_stream(feed);
+			}
+		}
 		driver->stop_stream();
 		memdelete(driver);
 		driver = nullptr;

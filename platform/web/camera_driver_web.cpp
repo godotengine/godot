@@ -121,6 +121,10 @@ void CameraDriverWeb::stop_stream(const String &p_device_id) {
 	godot_js_camera_stop_stream(p_device_id.utf8().get_data());
 }
 
+void CameraDriverWeb::abort_stream(void *p_context) {
+	godot_js_camera_abort(p_context);
+}
+
 CameraDriverWeb::CameraDriverWeb() {
 	ERR_FAIL_COND_MSG(singleton != nullptr, "CameraDriverWeb singleton already exists.");
 	singleton = this;

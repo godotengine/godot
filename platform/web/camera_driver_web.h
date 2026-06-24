@@ -47,6 +47,7 @@ public:
 	void get_cameras(void *p_context, CameraDriverWebGetCamerasCallback p_callback);
 	void get_pixel_data(void *p_context, const String &p_device_id, const int p_width, const int p_height, void (*p_callback)(void *, const uint8_t *, const int, const int, const int, const int, const int, const char *), void (*p_denied_callback)(void *), CameraDriverWebFormatsCallback p_formats_callback);
 	void stop_stream(const String &p_device_id = String());
+	void abort_stream(void *p_context);
 
 	CameraDriverWeb();
 	~CameraDriverWeb();
