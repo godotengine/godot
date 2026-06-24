@@ -158,6 +158,23 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 		CHECK(loaded_stream->is_monophonic() == stream->is_monophonic());
 		CHECK(loaded_stream->get_data() == stream->get_data());
 	}
+
+	SUBCASE("Stream can be saved as a WAV buffer") {
+		PackedByteArray wav_buffer = stream->save_to_wav_buffer();
+
+		Dictionary options;
+		Ref<AudioStreamWAV> loaded_stream = AudioStreamWAV::load_from_buffer(wav_buffer, options);
+
+		CHECK(loaded_stream->get_format() == stream->get_format());
+		CHECK(loaded_stream->get_loop_mode() == stream->get_loop_mode());
+		CHECK(loaded_stream->get_loop_begin() == stream->get_loop_begin());
+		CHECK(loaded_stream->get_loop_end() == stream->get_loop_end());
+		CHECK(loaded_stream->get_mix_rate() == stream->get_mix_rate());
+		CHECK(loaded_stream->is_stereo() == stream->is_stereo());
+		CHECK(loaded_stream->get_length() == stream->get_length());
+		CHECK(loaded_stream->is_monophonic() == stream->is_monophonic());
+		CHECK(loaded_stream->get_data() == stream->get_data());
+	}
 }
 
 TEST_CASE("[Audio][AudioStreamWAV] Mono PCM8 format") {
