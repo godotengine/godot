@@ -276,7 +276,7 @@ void ScenePaint2DEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && input_tool != INPUT_TOOL_PAN) {
 		if (input_tool == INPUT_TOOL_PICK || input_tool == INPUT_TOOL_QUICK_PICK) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-				callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_CANVAS_ITEM);
+				callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_CANVAS_ITEM, (Control *)nullptr);
 			}
 		} else if (mb->is_pressed()) {
 			if (mb->get_button_index() == MouseButton::LEFT) {
@@ -468,7 +468,7 @@ void ScenePaint2DEditor::_file_system_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_FILE_SYSTEM);
+		callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_FILE_SYSTEM, (Control *)nullptr);
 	}
 }
 
@@ -481,7 +481,7 @@ void ScenePaint2DEditor::_scene_tree_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_released() && mb->get_button_index() == MouseButton::LEFT) {
-		callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_SCENE_TREE);
+		callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_SCENE_TREE, (Control *)nullptr);
 	}
 }
 
@@ -493,7 +493,41 @@ void ScenePaint2DEditor::_recent_item_selected(int p_idx) {
 		EditorSettings::get_singleton()->set_project_metadata("scene_paint_2d_editor", "recent_scenes", PackedStringArray());
 		return;
 	}
-	callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_RECENT_LIST);
+	callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_RECENT_LIST, (Control *)nullptr);
+}
+
+void ScenePaint2DEditor::_custom_source_input(const Ref<InputEvent> &p_event, Control *p_control) {
+	if (input_tool != INPUT_TOOL_PICK || input_tool == INPUT_TOOL_QUICK_PICK) {
+		input_tool = INPUT_TOOL_NONE;
+		scene_picker_button->set_pressed(false);
+		return;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_CUSTOM_SOURCE, p_control);
+	}
+}
+
+Node2D *ScenePaint2DEditor::_get_scene_from_path(const String &p_path) {
+	if (!ResourceLoader::exists(p_path, "PackedScene")) {
+		EditorNode::get_singleton()->show_warning(TTR("The selected scene could not be found. It may have been moved or deleted."));
+		return nullptr;
+	}
+
+	Ref<PackedScene> scene = ResourceLoader::load(p_path);
+	if (scene.is_null()) {
+		return nullptr;
+	}
+
+	Node *new_node = scene->instantiate();
+	ERR_FAIL_NULL_V_EDMSG(new_node, nullptr, "The selected scene is invalid.");
+	Node2D *node_2d = Object::cast_to<Node2D>(new_node);
+	if (!node_2d) {
+		new_node->queue_free();
+		return nullptr;
+	}
+	return node_2d;
 }
 
 bool ScenePaint2DEditor::_is_selected_scene_valid(Node2D *p_node) const {
@@ -560,7 +594,7 @@ void ScenePaint2DEditor::_scene_changed() {
 	_update_node();
 }
 
-void ScenePaint2DEditor::_update_scene_picker(int p_mode) {
+void ScenePaint2DEditor::_update_scene_picker(int p_mode, Control *p_control) {
 	if (!is_tool_selected) {
 		return;
 	}
@@ -569,23 +603,7 @@ void ScenePaint2DEditor::_update_scene_picker(int p_mode) {
 	PickMode pick_mode = (PickMode)p_mode;
 	switch (pick_mode) {
 		case PICK_FILE_SYSTEM: {
-			String scene_path = FileSystemDock::get_singleton()->get_current_path();
-			Ref<PackedScene> scene = ResourceLoader::load(scene_path);
-			if (scene.is_null()) {
-				return;
-			}
-			Ref<SceneState> scene_state = scene->get_state();
-			String type;
-			while (scene_state.is_valid() && type.is_empty()) {
-				ERR_FAIL_COND(scene_state->get_node_count() < 1);
-				type = scene_state->get_node_type(0);
-				scene_state = scene_state->get_base_scene_state();
-			}
-			ERR_FAIL_COND_EDMSG(type.is_empty(), "The selected scene is invalid.");
-			bool extends_current_class = ClassDB::is_parent_class(type, "Node2D");
-			if (scene.is_valid() && extends_current_class) {
-				node_2d = Object::cast_to<Node2D>(scene->instantiate());
-			}
+			node_2d = _get_scene_from_path(FileSystemDock::get_singleton()->get_current_path());
 		} break;
 		case PICK_SCENE_TREE: {
 			node_2d = Object::cast_to<Node2D>(SceneTreeDock::get_singleton()->get_tree_editor()->get_selected());
@@ -606,21 +624,26 @@ void ScenePaint2DEditor::_update_scene_picker(int p_mode) {
 		} break;
 		case PICK_RECENT_LIST: {
 			String scene_path = recent_scenes_button->get_item_metadata(recent_idx);
-			if (!ResourceLoader::exists(scene_path)) {
-				EditorNode::get_singleton()->show_accept(
-						TTR("The selected scene could not be found. It may have been moved or deleted."),
-						TTR("OK"));
+			node_2d = _get_scene_from_path(scene_path);
+			if (!node_2d) {
 				PackedStringArray rc = EditorSettings::get_singleton()->get_project_metadata("scene_paint_2d_editor", "recent_scenes", PackedStringArray());
 				rc.erase(scene_path);
 				EditorSettings::get_singleton()->set_project_metadata("scene_paint_2d_editor", "recent_scenes", rc);
 				callable_mp(this, &ScenePaint2DEditor::_update_recent_scenes).call_deferred();
 				return;
 			}
-			Ref<PackedScene> scene = ResourceLoader::load(scene_path);
-			if (scene.is_valid()) {
-				node_2d = Object::cast_to<Node2D>(scene->instantiate());
+		} break;
+		case PICK_CUSTOM_SOURCE: {
+			Callable callback = custom_sources[p_control];
+			Callable::CallError ce;
+			Variant ret;
+			const Variant *args[1];
+			callback.callp(args, 0, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Error calling scene provider callback: %s", Variant::get_callable_error_text(callback, args, 1, ce)));
 			}
-		}
+			node_2d = Object::cast_to<Node2D>(ret.get_validated_object());
+		} break;
 	}
 
 	if (_is_selected_scene_valid(node_2d)) {
@@ -705,6 +728,13 @@ ScenePaint2DEditor::PaintMode ScenePaint2DEditor::_reload_paint_mode() {
 
 void ScenePaint2DEditor::_grid_step_changed() {
 	grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
+}
+
+void ScenePaint2DEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("register_scene_provider", "control", "callback"), &ScenePaint2DEditor::register_scene_provider);
+	ClassDB::bind_method(D_METHOD("unregister_scene_provider", "control"), &ScenePaint2DEditor::unregister_scene_provider);
+	ClassDB::bind_method(D_METHOD("set_painted_scene", "scene"), &ScenePaint2DEditor::set_painted_scene);
+	ClassDB::bind_method(D_METHOD("get_painted_scene"), &ScenePaint2DEditor::get_painted_scene);
 }
 
 void ScenePaint2DEditor::_notification(int p_what) {
@@ -812,7 +842,33 @@ void ScenePaint2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 }
 
+void ScenePaint2DEditor::register_scene_provider(Control *p_control, const Callable &p_callback) {
+	ERR_FAIL_COND_MSG(custom_sources.has(p_control), "Provider already registered.");
+	custom_sources[p_control] = p_callback;
+	p_control->connect(SceneStringName(gui_input), callable_mp(this, &ScenePaint2DEditor::_custom_source_input).bind(p_control));
+}
+
+void ScenePaint2DEditor::unregister_scene_provider(Control *p_control) {
+	ERR_FAIL_COND_MSG(!custom_sources.has(p_control), "Provider not found.");
+	custom_sources.erase(p_control);
+	p_control->disconnect(SceneStringName(gui_input), callable_mp(this, &ScenePaint2DEditor::_custom_source_input));
+}
+
+void ScenePaint2DEditor::set_painted_scene(Node2D *p_scene) {
+	if (_is_selected_scene_valid(p_scene)) {
+		_set_picked_scene(p_scene);
+	} else {
+		_set_picked_scene(nullptr);
+	}
+}
+
+Node2D *ScenePaint2DEditor::get_painted_scene() const {
+	return instance;
+}
+
 ScenePaint2DEditor::ScenePaint2DEditor() {
+	singleton = this;
+
 	toolbar = memnew(HBoxContainer);
 	CanvasItemEditor *canvas_item_editor = CanvasItemEditor::get_singleton();
 	canvas_item_editor->add_control_to_menu_panel(toolbar);
