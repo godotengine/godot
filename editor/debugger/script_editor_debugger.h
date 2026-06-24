@@ -102,6 +102,8 @@ private:
 	Tree *error_tree = nullptr;
 	Button *expand_all_button = nullptr;
 	Button *collapse_all_button = nullptr;
+	Button *error_filter_button = nullptr;
+	Button *warning_filter_button = nullptr;
 	Button *clear_button = nullptr;
 	PopupMenu *item_menu = nullptr;
 
@@ -117,6 +119,8 @@ private:
 
 	int error_count;
 	int warning_count;
+	bool error_visible = true;
+	bool warning_visible = true;
 
 	bool skip_breakpoints_value = false;
 	bool ignore_error_breaks_value = false;
@@ -272,6 +276,7 @@ private:
 
 	void _expand_errors_list();
 	void _collapse_errors_list();
+	void _set_errors_list_filter(bool p_active, bool p_is_error);
 
 	void _vmem_item_activated();
 	void _vmem_tree_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
