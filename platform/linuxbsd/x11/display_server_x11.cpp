@@ -7308,23 +7308,23 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 
 	for (int i = 0; i < DisplayServerEnums::CURSOR_MAX; i++) {
 		static const char *cursor_file[] = {
-			"left_ptr",
-			"xterm",
-			"hand2",
-			"cross",
-			"watch",
-			"left_ptr_watch",
-			"fleur",
-			"dnd-move",
-			"crossed_circle",
-			"v_double_arrow",
-			"h_double_arrow",
-			"size_bdiag",
-			"size_fdiag",
-			"move",
-			"row_resize",
-			"col_resize",
-			"question_arrow"
+			"left_ptr", // CURSOR_ARROW
+			"xterm", // CURSOR_IBEAM
+			"hand2", // CURSOR_POINTING_HAND
+			"cross", // CURSOR_CROSS
+			"watch", // CURSOR_WAIT
+			"left_ptr_watch", // CURSOR_BUSY
+			"move", // CURSOR_DRAG
+			"dnd-move", // CURSOR_CAN_DROP
+			"forbidden", // CURSOR_FORBIDDEN
+			"v_double_arrow", // CURSOR_VSIZE
+			"h_double_arrow", // CURSOR_HSIZE
+			"size_bdiag", // CURSOR_BDIAGSIZE
+			"size_fdiag", // CURSOR_FDIAGSIZE
+			"fleur", // CURSOR_MOVE
+			"row_resize", // CURSOR_VSPLIT
+			"col_resize", // CURSOR_HSPLIT
+			"question_arrow" // CURSOR_HELP
 		};
 
 		cursor_img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
@@ -7351,7 +7351,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 					fallback = "hand1";
 					break;
 				case DisplayServerEnums::CURSOR_FORBIDDEN:
-					fallback = "forbidden";
+					fallback = "crossed_circle";
 					break;
 				case DisplayServerEnums::CURSOR_VSIZE:
 					fallback = "ns-resize";
