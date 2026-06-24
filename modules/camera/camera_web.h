@@ -54,6 +54,7 @@ class CameraFeedWeb : public CameraFeed {
 
 	static BufferDecoder *_create_buffer_decoder(CameraFeedWeb *p_feed, int p_pixel_format);
 	static String _get_format_name(int p_pixel_format);
+	Size2i _get_requested_size() const;
 	static void _on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_pixel_format, const int p_facing_mode, const char *p_error);
 	static void _on_denied_callback(void *p_context);
 	static void _on_formats_callback(void *p_context, const char *p_result);

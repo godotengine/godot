@@ -67,6 +67,8 @@ void CameraFeed::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("format_changed"));
+	ADD_SIGNAL(MethodInfo("activation_status_changed", PropertyInfo(Variant::INT, "status", PROPERTY_HINT_ENUM, "Inactive,Activating,Active")));
+	ADD_SIGNAL(MethodInfo("activation_failed", PropertyInfo(Variant::STRING, "error")));
 
 	ADD_GROUP("Feed", "feed_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feed_is_active"), "set_active", "is_active");
@@ -82,6 +84,10 @@ void CameraFeed::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_UNSPECIFIED);
 	BIND_ENUM_CONSTANT(FEED_FRONT);
 	BIND_ENUM_CONSTANT(FEED_BACK);
+
+	BIND_ENUM_CONSTANT(FEED_INACTIVE);
+	BIND_ENUM_CONSTANT(FEED_ACTIVATING);
+	BIND_ENUM_CONSTANT(FEED_ACTIVE);
 }
 
 int CameraFeed::get_id() const {
@@ -92,6 +98,24 @@ bool CameraFeed::is_active() const {
 	return active;
 }
 
+CameraFeed::FeedActivationStatus CameraFeed::get_activation_status() const {
+	return activation_status;
+}
+
+void CameraFeed::_set_activation_status(FeedActivationStatus p_status) {
+	if (activation_status == p_status) {
+		return;
+	}
+
+	activation_status = p_status;
+	if (p_status == FEED_ACTIVE) {
+		active = true;
+	} else if (p_status == FEED_INACTIVE) {
+		active = false;
+	}
+	call_deferred("emit_signal", SNAME("activation_status_changed"), (int)p_status);
+}
+
 void CameraFeed::set_active(bool p_is_active) {
 	if (p_is_active == active) {
 		// all good
@@ -99,11 +123,14 @@ void CameraFeed::set_active(bool p_is_active) {
 		// attempt to activate this feed
 		if (activate_feed()) {
 			active = true;
+			if (activation_status != FEED_ACTIVATING) {
+				_set_activation_status(FEED_ACTIVE);
+			}
 		}
 	} else {
 		// just deactivate it
 		deactivate_feed();
-		active = false;
+		_set_activation_status(FEED_INACTIVE);
 	}
 }
 
