@@ -117,6 +117,7 @@ void ParticleProcessMaterial::init_shaders() {
 	shader_names->emission_texture_points = "emission_texture_points";
 	shader_names->emission_texture_normal = "emission_texture_normal";
 	shader_names->emission_texture_color = "emission_texture_color";
+	shader_names->emission_texture_skin = "emission_texture_skin";
 	shader_names->emission_ring_axis = "emission_ring_axis";
 	shader_names->emission_ring_height = "emission_ring_height";
 	shader_names->emission_ring_radius = "emission_ring_radius";
@@ -304,6 +305,9 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "uniform int emission_texture_point_count;\n";
 			if (emission_color_texture.is_valid()) {
 				code += "uniform sampler2D emission_texture_color : hint_default_white;\n";
+			}
+			if (emission_skin_texture.is_valid()) {
+				code += "uniform sampler2D emission_texture_skin : hint_default_black;\n";
 			}
 		} break;
 		case EMISSION_SHAPE_RING: {
@@ -693,7 +697,7 @@ void ParticleProcessMaterial::_update_shader() {
 	}
 	code += "}\n\n";
 
-	code += "vec3 calculate_initial_position(inout DisplayParameters params, inout uint alt_seed) {\n";
+	code += "vec3 calculate_initial_position(inout DisplayParameters params, inout uint alt_seed, out mat4 bone_matrix) {\n";
 	code += "	float pi = 3.14159;\n";
 	code += "	vec3 pos = vec3(0.0);\n";
 	code += "	{ // Emission shape.\n";
@@ -722,6 +726,18 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "		ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
 		code += "		pos = texelFetch(emission_texture_points, emission_tex_ofs, 0).xyz;\n";
+		if (emission_skin_texture.is_valid()) {
+			code += R"(
+		ivec2 uvp1 = ivec2((point * 2) % emission_tex_size.x, (point * 2) / emission_tex_size.x);
+		ivec2 uvp2 = ivec2((point * 2 + 1) % emission_tex_size.x, (point * 2 + 1) / emission_tex_size.x);;
+		vec4 bones1 = texelFetch(emission_texture_skin, uvp1, 0);
+		vec4 bones2 = texelFetch(emission_texture_skin, uvp2, 0);
+		bone_matrix = get_bone_transform(uint(bones1.x)) * bones1.y;
+		bone_matrix += get_bone_transform(uint(bones1.z)) * bones1.w;
+		bone_matrix += get_bone_transform(uint(bones2.x)) * bones2.y;
+		bone_matrix += get_bone_transform(uint(bones2.z)) * bones2.w;
+		)";
+		}
 	}
 	if (emission_shape == EMISSION_SHAPE_RING) {
 		code += "		float radius_clamped = max(0.001, emission_ring_radius);\n";
@@ -969,7 +985,11 @@ void ParticleProcessMaterial::_update_shader() {
 	}
 
 	code += "	if (RESTART_POSITION) {\n";
-	code += "		TRANSFORM[3].xyz = calculate_initial_position(params, alt_seed);\n";
+	code += "		mat4 bone_transform;\n";
+	code += "		TRANSFORM[3].xyz = calculate_initial_position(params, alt_seed, bone_transform);\n";
+	if (emission_skin_texture.is_valid()) {
+		code += "	TRANSFORM[3].xyz = (bone_transform * vec4(TRANSFORM[3].xyz, 1.0)).xyz;\n";
+	}
 	if (turbulence_enabled) {
 		code += "		float initial_turbulence_displacement = mix(turbulence_initial_displacement_min, turbulence_initial_displacement_max, rand_from_seed(alt_seed));\n";
 		code += "		vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz);\n";
@@ -998,7 +1018,11 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
 			code += "			vec3 tangent = normalize(cross(v0, normal));\n";
 			code += "			vec3 bitangent = normalize(cross(tangent, normal));\n";
-			code += "			USERDATA1.xyz = mat3(tangent, bitangent, normal) * USERDATA1.xyz;\n";
+			if (emission_skin_texture.is_valid()) {
+				code += "			USERDATA1.xyz = bone_transform * mat3(tangent, bitangent, normal) * USERDATA1.xyz;\n";
+			} else {
+				code += "			USERDATA1.xyz = mat3(tangent, bitangent, normal) * USERDATA1.xyz;\n";
+			}
 			code += "		}\n";
 		}
 	}
@@ -1824,6 +1848,13 @@ void ParticleProcessMaterial::set_emission_color_texture(const Ref<Texture2D> &p
 	_queue_shader_change();
 }
 
+void ParticleProcessMaterial::set_emission_skin_texture(const Ref<Texture2D> &p_skin) {
+	emission_skin_texture = p_skin;
+	Variant tex_rid = p_skin.is_valid() ? Variant(p_skin->get_rid()) : Variant();
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_skin, tex_rid);
+	_queue_shader_change();
+}
+
 void ParticleProcessMaterial::set_emission_point_count(int p_count) {
 	emission_point_count = p_count;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_point_count, p_count);
@@ -1896,6 +1927,10 @@ Ref<Texture2D> ParticleProcessMaterial::get_emission_normal_texture() const {
 
 Ref<Texture2D> ParticleProcessMaterial::get_emission_color_texture() const {
 	return emission_color_texture;
+}
+
+Ref<Texture2D> ParticleProcessMaterial::get_emission_skin_texture() const {
+	return emission_skin_texture;
 }
 
 int ParticleProcessMaterial::get_emission_point_count() const {
@@ -2212,7 +2247,7 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 			if (emission_shape != EMISSION_SHAPE_BOX) {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
-		} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") {
+		} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture" || p_property.name == "emission_skin_texture") {
 			if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
@@ -2471,6 +2506,9 @@ void ParticleProcessMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_color_texture", "texture"), &ParticleProcessMaterial::set_emission_color_texture);
 	ClassDB::bind_method(D_METHOD("get_emission_color_texture"), &ParticleProcessMaterial::get_emission_color_texture);
 
+	ClassDB::bind_method(D_METHOD("set_emission_skin_texture", "texture"), &ParticleProcessMaterial::set_emission_skin_texture);
+	ClassDB::bind_method(D_METHOD("get_emission_skin_texture"), &ParticleProcessMaterial::get_emission_skin_texture);
+
 	ClassDB::bind_method(D_METHOD("set_emission_point_count", "point_count"), &ParticleProcessMaterial::set_emission_point_count);
 	ClassDB::bind_method(D_METHOD("get_emission_point_count"), &ParticleProcessMaterial::get_emission_point_count);
 
@@ -2581,6 +2619,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_point_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_emission_point_texture", "get_emission_point_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_normal_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_emission_normal_texture", "get_emission_normal_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_color_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_emission_color_texture", "get_emission_color_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_skin_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_emission_skin_texture", "get_emission_skin_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_point_count", PROPERTY_HINT_RANGE, "0,1000000,1"), "set_emission_point_count", "get_emission_point_count");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_ring_axis"), "set_emission_ring_axis", "get_emission_ring_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_ring_height", PROPERTY_HINT_RANGE, "0,1000,0.01,or_greater"), "set_emission_ring_height", "get_emission_ring_height");

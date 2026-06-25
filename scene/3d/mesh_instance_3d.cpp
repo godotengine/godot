@@ -205,6 +205,7 @@ void MeshInstance3D::_resolve_skeleton_path() {
 	} else {
 		RenderingServer::get_singleton()->instance_attach_skeleton(get_instance(), RID());
 	}
+	emit_signal(SNAME("skin_reference_changed"));
 }
 
 void MeshInstance3D::set_skin(const Ref<Skin> &p_skin) {
@@ -901,6 +902,7 @@ void MeshInstance3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_
 #endif // NAVIGATION_3D_DISABLED
 
 void MeshInstance3D::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("skin_reference_changed"));
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance3D::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &MeshInstance3D::set_skeleton_path);

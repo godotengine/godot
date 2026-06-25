@@ -1227,6 +1227,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(RenderingServerTypes
 					}
 				} break;
 				default: {
+					print_line(p_arrays[i].get_type());
 					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Bones array must be a PackedInt32Array.");
 				} break;
 			}
@@ -2744,6 +2745,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_is_inactive", "particles"), &RenderingServer::particles_is_inactive);
 	ClassDB::bind_method(D_METHOD("particles_request_process", "particles"), &RenderingServer::particles_request_process);
 	ClassDB::bind_method(D_METHOD("particles_restart", "particles"), &RenderingServer::particles_restart);
+
+	ClassDB::bind_method(D_METHOD("particles_set_skeleton", "particles", "skeleton"), &RenderingServer::particles_set_skeleton);
 
 	ClassDB::bind_method(D_METHOD("particles_set_subemitter", "particles", "subemitter_particles"), &RenderingServer::particles_set_subemitter);
 	ClassDB::bind_method(D_METHOD("particles_emit", "particles", "transform", "velocity", "color", "custom", "emit_flags"), &RenderingServer::particles_emit);

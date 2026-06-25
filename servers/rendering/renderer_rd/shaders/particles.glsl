@@ -68,8 +68,8 @@ struct FrameParams {
 
 	uint frame;
 	float amount_ratio;
-	uint pad1;
-	uint pad2;
+	uint skeleton_bone_count;
+	uint skeleton_2d;
 
 	uint random_seed;
 	uint attractor_count;
@@ -77,6 +77,9 @@ struct FrameParams {
 	float particle_size;
 
 	mat4 emission_transform;
+
+	mat4 skeleton_to_particles_transform;
+
 	vec3 emitter_velocity;
 	float interp_to_end;
 
@@ -158,6 +161,11 @@ layout(set = 1, binding = 3, std430) restrict buffer DestEmission {
 }
 dst_particles;
 
+layout(set = 1, binding = 4, std430) buffer restrict readonly SkeletonData {
+	vec4 data[];
+}
+bone_transforms;
+
 /* SET 2: COLLIDER/ATTRACTOR TEXTURES */
 
 #define MAX_3D_TEXTURES 7
@@ -224,6 +232,65 @@ vec3 safe_normalize(vec3 direction) {
 	}
 	return normalize(direction);
 }
+
+mat4 get_bone_transform(uint idx) {
+	mat4 t = mat4(
+			vec4(1.0, 0.0, 0.0, 0.0),
+			vec4(0.0, 1.0, 0.0, 0.0),
+			vec4(0.0, 0.0, 1.0, 0.0),
+			vec4(0.0, 0.0, 0.0, 1.0));
+
+	//if (frame.skeleton_2d) {
+	//} else {
+	uint bone_idx = idx * 3;
+	t = mat4(
+			bone_transforms.data[bone_idx],
+			bone_transforms.data[bone_idx + 1],
+			bone_transforms.data[bone_idx + 2],
+			vec4(0.0, 0.0, 0.0, 1.0));
+	t = transpose(t);
+	//}
+	return t;
+}
+
+/*
+void get_skinned_position(out vec3 position, uint point, uint point_count, sampler2D skin_texture, sampler2D emission_texture){
+
+	int tex_size = 2048;
+	ivec2 uv = ivec2(int(point) % tex_size, int(point)/tex_size);
+	point *= 2;
+	ivec2 uvp1 = ivec2(int(point) % tex_size, int(point)/tex_size);
+	ivec2 uvp2 = ivec2(int(point + 1u) % tex_size, int(point + 1u)/tex_size);
+	vec4 pos = texelFetch(emission_texture, uv, 0);
+	vec4 bones1 = texelFetch(skin_texture, uvp1, 0);
+	vec4 bones2 = texelFetch(skin_texture, uvp2, 0);
+	mat4 bones = get_bone_transform(uint(bones1.x)) * bones1.y;
+	bones += get_bone_transform(uint(bones1.z)) * bones1.w;
+	bones += get_bone_transform(uint(bones2.x)) * bones2.y;
+	bones += get_bone_transform(uint(bones2.z)) * bones2.w;
+	pos = (bones) * pos;
+	position = pos;
+}
+
+void get_skinned_position_and_normal(out vec3 position, out vec3 normal, uint point, uint point_count, sampler2D skin_texture, sampler2D emission_texture, sampler2D normal_texture){
+
+	int tex_size = 2048;
+	ivec2 uv = ivec2(int(point) % tex_size, int(point)/tex_size);
+	point *= 2;
+	ivec2 uvp1 = ivec2(int(point) % tex_size, int(point)/tex_size);
+	ivec2 uvp2 = ivec2(int(point + 1u) % tex_size, int(point + 1u)/tex_size);
+	vec4 pos = texelFetch(emission_texture, uv, 0);
+	vec4 norm = texelFetch(normal_texture, )
+	vec4 bones1 = texelFetch(skin_texture, uvp1, 0);
+	vec4 bones2 = texelFetch(skin_texture, uvp2, 0);
+	mat4 bones = get_bone_transform(uint(bones1.x)) * bones1.y;
+	bones += get_bone_transform(uint(bones1.z)) * bones1.w;
+	bones += get_bone_transform(uint(bones2.x)) * bones2.y;
+	bones += get_bone_transform(uint(bones2.z)) * bones2.w;
+	pos = (bones) * pos;
+	position = pos;
+}
+*/
 
 #GLOBALS
 

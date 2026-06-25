@@ -37,7 +37,6 @@
 #include "editor/scene/scene_tree_editor.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/gpu_particles_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
@@ -104,6 +103,7 @@ void Particles3DEditorPlugin::_node_selected(const NodePath &p_path) {
 	}
 
 	geometry = mi->get_mesh()->get_faces();
+	selected_instance = mi;
 	if (geometry.is_empty()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), sel->get_name()));
 		return;
@@ -149,15 +149,45 @@ void Particles3DEditorPlugin::_add_menu_options(PopupMenu *p_menu) {
 	p_menu->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 }
 
-bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals) {
+bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals, Vector<int> &r_bones, Vector<real_t> &r_weights) {
 	bool use_normals = emission_fill->get_selected() == 1;
+	bool use_skin = true;
+
+	// TODO
+	// If we have a triangle strip primitive, the best way is to convert that to a base triangle
+	// primitive. I doubt triangle strips are actually used to generate particle meshes, especially skinned ones.
+	Ref<Mesh> mesh = selected_instance->get_mesh();
+	for (int i = 0; i < mesh->get_surface_count(); i++) {
+		ERR_FAIL_COND_V_MSG((mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES), false, "Primitive type unsupported");
+	}
+	// Outline mesh combines all surfaces already for us.
+	// We need to remember to flip the normals.
+	mesh = mesh->create_outline(0.0);
+	ERR_FAIL_COND_V_MSG(mesh->get_surface_count() == 0, false, "Mesh failed to generate");
+	Array arr = mesh->surface_get_arrays(0);
+	Array vertex_array = arr[Mesh::ARRAY_VERTEX];
+	Array index_array = arr[Mesh::ARRAY_INDEX];
+	Array bone_array = arr[Mesh::ARRAY_BONES];
+	Array weight_array = arr[Mesh::ARRAY_WEIGHTS];
+	// We know the outline mesh worked at this point and it has one surface.
+	bool bones_uses_eight = mesh->surface_get_format(0) & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+	Vector<Face3> faces;
+	for (int i = 0; i < index_array.size() / 3; i++) {
+		int idx1 = (int)index_array[i * 3];
+		int idx2 = (int)index_array[i * 3 + 1];
+		int idx3 = (int)index_array[i * 3 + 2];
+		faces.push_back(Face3(
+				vertex_array[idx1],
+				vertex_array[idx2],
+				vertex_array[idx3]));
+	}
 
 	if (emission_fill->get_selected() < 2) {
 		float area_accum = 0;
 		RBMap<float, int> triangle_area_map;
 
-		for (int i = 0; i < geometry.size(); i++) {
-			float area = geometry[i].get_area();
+		for (int i = 0; i < faces.size(); i++) {
+			float area = faces[i].get_area();
 			if (area < CMP_EPSILON) {
 				continue;
 			}
@@ -177,19 +207,68 @@ bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector
 
 			RBMap<float, int>::Iterator E = triangle_area_map.find_closest(areapos);
 			ERR_FAIL_COND_V(!E, false);
-			int index = E->value;
-			ERR_FAIL_INDEX_V(index, geometry.size(), false);
+			int face_index = E->value;
+			ERR_FAIL_INDEX_V(face_index, faces.size(), false);
 
 			// ok FINALLY get face
-			Face3 face = geometry[index];
+			Face3 face = faces[face_index];
 			//now compute some position inside the face...
 
-			Vector3 pos = face.get_random_point_inside();
+			real_t a = Math::random(0.0, 1.0);
+			real_t b = Math::random(0.0, 1.0);
+			if (a > b) {
+				SWAP(a, b);
+			}
 
+			Vector3 pos = face.vertex[0] * a + face.vertex[1] * (b - a) + face.vertex[2] * (1.0f - b);
 			r_points.push_back(pos);
+			if (use_skin) {
+				Vector<real_t> lerp_weights = { a, b - a, 1.0f - b };
+
+				int bone_count = bones_uses_eight ? 8 : 4;
+				HashMap<int, real_t> bone_map;
+				for (int j = 0; j < 3; j++) {
+					for (int k = 0; k < bone_count; k++) {
+						// Each face is created in order from the mesh data, so multiplying by 3 gives us the
+						// starting point of the face in the index array
+						int vertex_index = index_array[face_index * 3 + j];
+						int bone_idx = bone_array[vertex_index * bone_count + k];
+						if (!bone_map.has(bone_idx)) {
+							bone_map[bone_idx] = real_t(weight_array[vertex_index * bone_count + k]) * lerp_weights[j];
+						} else {
+							bone_map[bone_idx] += real_t(weight_array[vertex_index * bone_count + k]) * lerp_weights[j];
+						}
+					}
+				}
+				struct WeightSort {
+					bool operator()(const KeyValue<int, real_t> &p_a, const KeyValue<int, real_t> &p_b) {
+						return p_a.value > p_b.value;
+					}
+				};
+				bone_map.sort_custom<WeightSort>();
+
+				HashMap<int, real_t>::Iterator bone_iter = bone_map.begin();
+
+				real_t s = 0.0;
+				// Max 4 bones per point.
+				for (int j = 0; j < 4 && j < (int)bone_map.size(); j++) {
+					s += bone_iter->value;
+					++bone_iter;
+				}
+				bone_iter = bone_map.begin();
+				for (int j = 0; j < 4 && j < (int)bone_map.size(); j++) {
+					r_bones.push_back(bone_iter->key);
+					r_weights.push_back(bone_iter->value / s);
+					++bone_iter;
+				}
+				for (int j = bone_map.size(); j < 4; j++) {
+					r_bones.push_back(0);
+					r_weights.push_back(0.0f);
+				}
+			}
 
 			if (use_normals) {
-				Vector3 normal = face.get_plane().normal;
+				Vector3 normal = -face.get_plane().normal;
 				r_normals.push_back(normal);
 			}
 		}
@@ -344,17 +423,24 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 	/// hacer codigo aca
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
+	Vector<int> bones;
+	Vector<real_t> weights;
 
-	if (!_generate(points, normals)) {
+	if (!_generate(points, normals, bones, weights)) {
 		return;
 	}
-
+	ERR_FAIL_COND_MSG(bones.size() != points.size() * 4u, "Bone array has the wrong size");
+	ERR_FAIL_COND_MSG(weights.size() != points.size() * 4u, "Weight array has the wrong size");
 	int point_count = points.size();
 
 	int w = 2048;
 	int h = (point_count / 2048) + 1;
 
+	//TODO
+	// dump all the skinning stuff in the texture
+
 	Vector<uint8_t> point_img;
+	//int skin_size = 2; // Todot zero if skinning is off, for now it's always on
 	point_img.resize(w * h * 3 * sizeof(float));
 
 	{
@@ -405,6 +491,31 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 		undo_redo->add_do_property(matptr, "emission_shape", ParticleProcessMaterial::EMISSION_SHAPE_POINTS);
 		undo_redo->add_undo_property(matptr, "emission_shape", matptr->get_emission_shape());
 	}
+	Vector<uint8_t> point_img3;
+	h = (point_count * 2) / 2048 + 1;
+	int bw_texture_size = w * h * 4 * sizeof(float);
+	point_img3.resize(bw_texture_size);
+	{
+		uint8_t *iw = point_img3.ptrw();
+		memset(iw, 0, bw_texture_size);
+		const int *b = bones.ptr();
+		const real_t *we = weights.ptr();
+		float *wf = reinterpret_cast<float *>(iw);
+		for (int i = 0; i < point_count; i++) {
+			//make good use of memory and pack 2 bones per RGBA
+			wf[i * 8 + 0] = float(b[i * 4]);
+			wf[i * 8 + 1] = float(we[i * 4]);
+			wf[i * 8 + 2] = float(b[i * 4 + 1]);
+			wf[i * 8 + 3] = float(we[i * 4 + 1]);
+			wf[i * 8 + 4] = float(b[i * 4 + 2]);
+			wf[i * 8 + 5] = float(we[i * 4 + 2]);
+			wf[i * 8 + 6] = float(b[i * 4 + 3]);
+			wf[i * 8 + 7] = float(we[i * 4 + 3]);
+		}
+	}
+	Ref<Image> image3 = memnew(Image(w, h, false, Image::FORMAT_RGBAF, point_img3));
+	undo_redo->add_do_property(matptr, "emission_skin_texture", ImageTexture::create_from_image(image3));
+	undo_redo->add_undo_property(matptr, "emission_skin_texture", matptr->get_emission_skin_texture());
 	undo_redo->add_do_property(matptr, "emission_point_count", point_count);
 	undo_redo->add_undo_property(matptr, "emission_point_count", matptr->get_emission_point_count());
 	undo_redo->add_do_property(matptr, "emission_point_texture", tex);
@@ -435,8 +546,10 @@ void CPUParticles3DEditorPlugin::_generate_emission_points() {
 	/// hacer codigo aca
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
+	Vector<int> bones;
+	Vector<real_t> weights;
 
-	if (!_generate(points, normals)) {
+	if (!_generate(points, normals, bones, weights)) {
 		return;
 	}
 

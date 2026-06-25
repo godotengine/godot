@@ -230,6 +230,7 @@ public:
 	virtual Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const override { return Transform3D(); }
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) override {}
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const override { return Transform2D(); }
+	virtual RID skeleton_get_bones_buffer(RID p_skeleton) const override { return RID(); }
 
 	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override {}
 
