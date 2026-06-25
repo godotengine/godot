@@ -4042,7 +4042,11 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			BEGIN_SECTION()
 			if (can_rename) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
+				if (full_selection.size() > 1) {
+					menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
+				}
 			}
+
 			if (can_replace) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_CHANGE_TYPE);
 			}
@@ -4132,12 +4136,6 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		END_SECTION()
 	}
 
-	if (profile_allow_editing && selection.size() > 1) {
-		//this is not a commonly used action, it makes no sense for it to be where it was nor always present.
-		BEGIN_SECTION()
-		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
-		END_SECTION()
-	}
 	BEGIN_SECTION()
 	// Group "open_in_editor" with "show_in_file_system", if it is available.
 	if (is_tool_scene_open_inherited_available) {
