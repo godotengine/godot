@@ -102,6 +102,7 @@ private:
 	Tree *error_tree = nullptr;
 	Button *expand_all_button = nullptr;
 	Button *collapse_all_button = nullptr;
+	Button *export_button = nullptr;
 	Button *clear_button = nullptr;
 	PopupMenu *item_menu = nullptr;
 
@@ -112,6 +113,7 @@ private:
 	enum FileDialogPurpose {
 		SAVE_MONITORS_CSV,
 		SAVE_VRAM_CSV,
+		SAVE_ERRORS_TXT,
 	};
 	FileDialogPurpose file_dialog_purpose = SAVE_MONITORS_CSV;
 
@@ -272,6 +274,7 @@ private:
 
 	void _expand_errors_list();
 	void _collapse_errors_list();
+	void _export_errors_list();
 
 	void _vmem_item_activated();
 	void _vmem_tree_rmb_selected(const Vector2 &p_pos, MouseButton p_button);

@@ -261,6 +261,39 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 				}
 			}
 		} break;
+		case SAVE_ERRORS_TXT: {
+			Error err;
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+
+			if (err != OK) {
+				ERR_PRINT("Failed to open " + p_file);
+				return;
+			}
+
+			file->store_line(vformat("Errors: %d  Warnings: %d", error_count, warning_count));
+			file->store_line("");
+
+			// Each top-level item is one error/warning; its children carry the full context
+			// (the C++/script error condition, the source location, and every stack-trace frame).
+			TreeItem *root = error_tree->get_root();
+			TreeItem *item = root ? root->get_first_child() : nullptr;
+			while (item) {
+				const bool is_warning = bool(item->get_meta("_is_warning", false));
+				file->store_line(vformat("[%s] %s  %s", is_warning ? "WARNING" : "ERROR", item->get_text(0), item->get_text(1)));
+				for (TreeItem *child = item->get_first_child(); child; child = child->get_next()) {
+					// Column 0 is the context label (e.g. "<Stack Trace>"); column 1 is its detail.
+					// Stack-trace frames after the first carry only column 1, so skip the leading spacer.
+					const String label = child->get_text(0);
+					if (label.is_empty()) {
+						file->store_line("        " + child->get_text(1));
+					} else {
+						file->store_line(vformat("    %s  %s", label, child->get_text(1)));
+					}
+				}
+				file->store_line("");
+				item = item->get_next();
+			}
+		} break;
 	}
 }
 
@@ -767,6 +800,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	if (warning_count == 0 && error_count == 0) {
 		expand_all_button->set_disabled(false);
 		collapse_all_button->set_disabled(false);
+		export_button->set_disabled(false);
 		clear_button->set_disabled(false);
 	}
 
@@ -1841,6 +1875,16 @@ void ScriptEditorDebugger::_collapse_errors_list() {
 	}
 }
 
+void ScriptEditorDebugger::_export_errors_list() {
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog->clear_filters();
+	file_dialog->add_filter("*.txt", TTRC("Text File"));
+	file_dialog->set_current_file("errors.txt");
+	file_dialog_purpose = SAVE_ERRORS_TXT;
+	file_dialog->popup_file_dialog();
+}
+
 void ScriptEditorDebugger::_vmem_item_activated() {
 	TreeItem *selected = vmem_tree->get_selected();
 	if (!selected) {
@@ -1901,6 +1945,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 
 	expand_all_button->set_disabled(true);
 	collapse_all_button->set_disabled(true);
+	export_button->set_disabled(true);
 	clear_button->set_disabled(true);
 }
 
@@ -2298,6 +2343,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		Control *space = memnew(Control);
 		space->set_h_size_flags(SIZE_EXPAND_FILL);
 		error_hbox->add_child(space);
+
+		export_button = memnew(Button);
+		export_button->set_text(TTRC("Export"));
+		export_button->set_h_size_flags(0);
+		export_button->set_disabled(true);
+		export_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_export_errors_list));
+		error_hbox->add_child(export_button);
 
 		clear_button = memnew(Button);
 		clear_button->set_text(TTRC("Clear"));
