@@ -1089,19 +1089,22 @@ layout(location = 2) out vec2 motion_vector;
 #ifndef MODE_RENDER_DEPTH
 
 vec3 stereo_fog_uvw(vec3 fog_pos) {
-	// scene_data_block.data.view_count is the multiview view count (1 or 2).
-	// ViewIndex is 0 for left, 1 for right.
-	float vc = float(scene_data_block.data.view_count);
-	fog_pos.x = (fog_pos.x + float(ViewIndex)) / vc;
+	// The froxel volume is stored side-by-side in X: left eye in [0, 0.5),
+	// right eye in [0.5, 1.0). ViewIndex is 0 for left, 1 for right.
+	// Multiview is always 2 views, so the per-eye scale is a constant 0.5.
+	float u = (fog_pos.x + float(ViewIndex)) * 0.5;
+	// Keep the bilinear kernel inside this eye's half so it never reads across the
+	// seam into the other eye (visible as a wrong-eye band, worst at low fog res).
+	float half_texel = 0.5 / float(textureSize(sampler3D(volumetric_fog_texture, SAMPLER_LINEAR_CLAMP), 0).x);
+	fog_pos.x = clamp(u, float(ViewIndex) * 0.5 + half_texel, (float(ViewIndex) + 1.0) * 0.5 - half_texel);
 	return fog_pos;
 }
 
-
 vec4 volumetric_fog_process(vec2 screen_uv, float z) {
 	vec3 fog_pos = vec3(screen_uv, z * implementation_data.volumetric_fog_inv_length);
-	#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	fog_pos = stereo_fog_uvw(fog_pos);
-	#endif
+#endif
 	if (fog_pos.z < 0.0) {
 		return vec4(0.0, 0.0, 0.0, 1.0);
 	} else if (fog_pos.z < 1.0) {
@@ -1508,11 +1511,10 @@ void fragment_shader(in SceneData scene_data) {
 	}
 
 	if (implementation_data.volumetric_fog_enabled) {
-#ifdef USE_MULTIVIEW
-		vec4 volumetric_fog = volumetric_fog_process(combined_uv, -vertex.z);
-#else
+		// The froxel volume is built per-eye (side-by-side in X), so each eye must be sampled
+		// with its own screen UV, not the shared combined-frustum UV. The per-eye remap into
+		// the correct half of the volume happens inside volumetric_fog_process (USE_MULTIVIEW).
 		vec4 volumetric_fog = volumetric_fog_process(screen_uv, -vertex.z);
-#endif
 		vec4 res = vec4(0.0);
 		if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_FOG)) {
 			//must use the full blending equation here to blend fogs

@@ -95,27 +95,28 @@ private:
 
 		struct FogPushConstant {
 			float position[3];
-			float pad;
+			uint32_t view; // Which eye this dispatch writes to (0 = left, 1 = right).
 
 			float size[3];
 			float pad2;
 
-			int32_t corner[3];
+			int32_t corner[3]; // corner.x already includes the per-eye X offset (view * width).
 			uint32_t shape;
 
 			float transform[16];
 		};
 
 		struct VolumeUBO {
-			float fog_frustum_size_begin[2];
-			float fog_frustum_size_end[2];
+			// Per-eye frustum half-extents. .xy holds the half-extents; .zw is padding.
+			float fog_frustum_size_begin[MAX_FOG_VIEWS][4];
+			float fog_frustum_size_end[MAX_FOG_VIEWS][4];
 
 			float fog_frustum_end;
 			float z_near;
 			float z_far;
 			float time;
 
-			int32_t fog_volume_size[3];
+			int32_t fog_volume_size[3]; // single-eye dimensions
 			uint32_t directional_light_count;
 
 			uint32_t use_temporal_reprojection;
@@ -123,8 +124,14 @@ private:
 			float detail_spread;
 			float temporal_blend;
 
-			float to_prev_view[16];
-			float transform[16];
+			uint32_t view_count; // 1 = mono, 2 = stereo
+			uint32_t pad0;
+			uint32_t pad1;
+			uint32_t pad2;
+
+			// Per-eye matrices.
+			float to_prev_view[MAX_FOG_VIEWS][16];
+			float transform[MAX_FOG_VIEWS][16];
 		};
 
 		ShaderCompiler compiler;
@@ -192,6 +199,12 @@ private:
 			float cam_rotation[MAX_FOG_VIEWS][12]; // mat3x4 -> 3 cols x vec4 = 12 floats
 			float to_prev_view[MAX_FOG_VIEWS][16]; // mat4
 			float radiance_inverse_xform[MAX_FOG_VIEWS][12]; // mat3 in std140 = 3 x vec4
+
+			// Combined (central) projection, shared by both eyes. Used to map a froxel's
+			// central-view-space position into the COMBINED-frustum screen UV that the
+			// shared cluster light buffer is indexed by (stereo). For mono this is just
+			// the camera projection and reduces to the per-eye froxel uv.
+			float combined_projection[16]; // mat4
 		};
 		//static_assert(sizeof(VolumeUBO) % 16 == 0, "UBO problem");
 
@@ -202,7 +215,7 @@ private:
 
 	} volumetric_fog;
 
-	Vector3i _point_get_position_in_froxel_volume(const Vector3 &p_point, float fog_end, const Vector2 &fog_near_size, const Vector2 &fog_far_size, float volumetric_fog_detail_spread, const Vector3 &fog_size, const Transform3D &p_cam_transform);
+	Vector3i _point_get_position_in_froxel_volume(const Vector3 &p_point, float fog_end, const Vector2 &fog_near_size, const Vector2 &fog_far_size, const Vector2 &fog_near_center, const Vector2 &fog_far_center, float volumetric_fog_detail_spread, const Vector3 &fog_size, const Transform3D &p_cam_transform);
 
 	struct FogShaderData : public RendererRD::MaterialStorage::ShaderData {
 		bool valid = false;

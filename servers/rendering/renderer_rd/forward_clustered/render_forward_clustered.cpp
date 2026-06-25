@@ -1315,7 +1315,6 @@ void RenderForwardClustered::_debug_draw_cluster(Ref<RenderSceneBuffersRD> p_ren
 // FOG SHADER
 
 void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets) {
-	return;
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
 	Ref<RenderBufferDataForwardClustered> rb_data = p_render_buffers->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
@@ -1339,7 +1338,9 @@ void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_
 	if (p_render_buffers->has_custom_data(RB_SCOPE_FOG)) {
 		Ref<RendererRD::Fog::VolumetricFog> fog = p_render_buffers->get_custom_data(RB_SCOPE_FOG);
 		//validate
-		if (p_environment.is_null() || !environment_get_volumetric_fog_enabled(p_environment) || fog->width != target_width * view_count || fog->height != target_height || fog->depth != get_volumetric_fog_depth()) {
+		// fog->width stores the single-eye width; the texture itself is widened by view_count
+		// internally (see VolumetricFog::init). Recreate if the size or the view count changed.
+		if (p_environment.is_null() || !environment_get_volumetric_fog_enabled(p_environment) || fog->width != target_width || fog->height != target_height || fog->depth != get_volumetric_fog_depth() || fog->view_count != view_count) {
 			p_render_buffers->set_custom_data(RB_SCOPE_FOG, Ref<RenderBufferCustomDataRD>());
 		}
 	}
@@ -1685,12 +1686,15 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	if (rb_data.is_valid()) {
 		RENDER_TIMESTAMP("Update Volumetric Fog");
 		bool directional_shadows = RendererRD::LightStorage::get_singleton()->has_directional_shadows(directional_light_count);
-		return;
 		uint32_t view_count = p_render_data->scene_data->get_view_count();
 		Projection view_projections[RendererSceneRender::MAX_RENDER_VIEWS];
 		Vector3 view_eye_offsets[RendererSceneRender::MAX_RENDER_VIEWS];
 		for (uint32_t v = 0; v < view_count; v++) {
-			view_projections[v] = p_render_data->scene_data->get_view_projection(v);
+			// Use the RAW per-eye projection (matching the mono path, which uses the raw
+			// cam_projection). get_view_projection() applies the Y-flip/depth/jitter
+			// correction matrix, which corrupts get_viewport_half_extents()/get_z_near()
+			// (halved + Y-negated extents) and collapses the froxel volume.
+			view_projections[v] = p_render_data->scene_data->view_projection[v];
 			view_eye_offsets[v] = p_render_data->scene_data->get_view_eye_offset(v);
 		}
 		_update_volumetric_fog(rb, p_render_data->environment, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform, p_render_data->scene_data->prev_cam_transform.affine_inverse(), p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, p_render_data->voxel_gi_count, *p_render_data->fog_volumes, view_projections, view_eye_offsets);

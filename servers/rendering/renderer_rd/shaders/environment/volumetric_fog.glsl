@@ -12,6 +12,10 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 #define DENSITY_SCALE 1024.0
 
+// Maximum number of stereo views supported by the froxel volume.
+// 1 = mono, 2 = stereo (the froxel volume is laid out side-by-side in X).
+#define MAX_FOG_VIEWS 2
+
 #include "../cluster_data_inc.glsl"
 #include "../light_data_inc.glsl"
 
@@ -26,12 +30,12 @@ global_shader_uniforms;
 
 layout(push_constant, std430) uniform Params {
 	vec3 position;
-	float pad;
+	uint view; // Which eye this dispatch writes to (0 = left, 1 = right).
 
 	vec3 size;
 	float pad2;
 
-	ivec3 corner;
+	ivec3 corner; // corner.x already includes the per-eye X offset (view * width).
 	uint shape;
 
 	mat4 transform;
@@ -47,15 +51,16 @@ layout(r32ui, set = 1, binding = 1) uniform volatile uimage3D emissive_only_map;
 #endif
 
 layout(set = 1, binding = 2, std140) uniform SceneParams {
-	vec2 fog_frustum_size_begin;
-	vec2 fog_frustum_size_end;
+	// Per-eye frustum sizes. .xy holds the half-extents; .zw is padding.
+	vec4 fog_frustum_size_begin[MAX_FOG_VIEWS];
+	vec4 fog_frustum_size_end[MAX_FOG_VIEWS];
 
 	float fog_frustum_end;
 	float z_near; //
 	float z_far; //
 	float time;
 
-	ivec3 fog_volume_size;
+	ivec3 fog_volume_size; // single-eye dimensions
 	uint directional_light_count; //
 
 	bool use_temporal_reprojection;
@@ -63,9 +68,14 @@ layout(set = 1, binding = 2, std140) uniform SceneParams {
 	float detail_spread;
 	float temporal_blend;
 
-	mat4 to_prev_view;
-	mat4 transform;
+	uint view_count; // 1 = mono, 2 = stereo
+	uint pad0;
+	uint pad1;
+	uint pad2;
 
+	// Per-eye matrices.
+	mat4 to_prev_view[MAX_FOG_VIEWS];
+	mat4 transform[MAX_FOG_VIEWS];
 }
 scene_params;
 
@@ -120,12 +130,29 @@ const vec3 halton_map[TEMPORAL_FRAMES] = vec3[](
 void main() {
 	vec3 fog_cell_size = 1.0 / vec3(scene_params.fog_volume_size);
 
-	ivec3 pos = ivec3(gl_GlobalInvocationID.xyz) + params.corner;
-	if (any(greaterThanEqual(pos, scene_params.fog_volume_size))) {
+	// corner.x already carries the per-eye X offset (view * width), so gpos is the
+	// global storage position inside the doubled-width froxel volume.
+	ivec3 gpos = ivec3(gl_GlobalInvocationID.xyz) + params.corner;
+
+	int eye = int(params.view);
+
+	// Localize X back into this eye's [0, width) range for the froxel math.
+	ivec3 pos = gpos - ivec3(eye * scene_params.fog_volume_size.x, 0, 0);
+	if (any(greaterThanEqual(pos, scene_params.fog_volume_size)) || any(lessThan(pos, ivec3(0)))) {
 		return; //do not compute
 	}
+
+	// Per-eye frustum sizes pulled once. .xy = half-extents, .zw = frustum-center
+	// offset in central view space (off-axis skew + eye-offset parallax).
+	vec2 frustum_begin = scene_params.fog_frustum_size_begin[eye].xy;
+	vec2 frustum_end = scene_params.fog_frustum_size_end[eye].xy;
+	vec2 frustum_center_begin = scene_params.fog_frustum_size_begin[eye].zw;
+	vec2 frustum_center_end = scene_params.fog_frustum_size_end[eye].zw;
+
 #ifdef NO_IMAGE_ATOMICS
-	uint lpos = pos.z * scene_params.fog_volume_size.x * scene_params.fog_volume_size.y + pos.y * scene_params.fog_volume_size.x + pos.x;
+	// Linear index must use the doubled (global) width and the global position.
+	uint buffer_width = uint(scene_params.fog_volume_size.x) * scene_params.view_count;
+	uint lpos = uint(gpos.z) * buffer_width * uint(scene_params.fog_volume_size.y) + uint(gpos.y) * buffer_width + uint(gpos.x);
 #endif
 
 	vec3 posf = vec3(pos);
@@ -134,18 +161,21 @@ void main() {
 	fog_unit_pos.z = pow(fog_unit_pos.z, scene_params.detail_spread);
 
 	vec3 view_pos;
-	view_pos.xy = (fog_unit_pos.xy * 2.0 - 1.0) * mix(scene_params.fog_frustum_size_begin, scene_params.fog_frustum_size_end, vec2(fog_unit_pos.z));
+	view_pos.xy = (fog_unit_pos.xy * 2.0 - 1.0) * mix(frustum_begin, frustum_end, vec2(fog_unit_pos.z));
 	view_pos.z = -scene_params.fog_frustum_end * fog_unit_pos.z;
 	view_pos.y = -view_pos.y;
+	view_pos.xy += mix(frustum_center_begin, frustum_center_end, vec2(fog_unit_pos.z));
 
 	if (scene_params.use_temporal_reprojection) {
-		vec3 prev_view = (scene_params.to_prev_view * vec4(view_pos, 1.0)).xyz;
-		//undo transform into prev view
-		prev_view.y = -prev_view.y;
-		//z back to unit size
+		vec3 prev_view = (scene_params.to_prev_view[eye] * vec4(view_pos, 1.0)).xyz;
+		//z back to unit size (needed before evaluating the depth-dependent center/half)
 		prev_view.z /= -scene_params.fog_frustum_end;
-		//xy back to unit size
-		prev_view.xy /= mix(scene_params.fog_frustum_size_begin, scene_params.fog_frustum_size_end, vec2(prev_view.z));
+		//xy back to unit size: undo center, undo y-flip, undo half-extents
+		vec2 prev_half = mix(frustum_begin, frustum_end, vec2(prev_view.z));
+		vec2 prev_center = mix(frustum_center_begin, frustum_center_end, vec2(prev_view.z));
+		prev_view.xy -= prev_center;
+		prev_view.y = -prev_view.y;
+		prev_view.xy /= prev_half;
 		prev_view.xy = prev_view.xy * 0.5 + 0.5;
 		//z back to unspread value
 		prev_view.z = pow(prev_view.z, 1.0 / scene_params.detail_spread);
@@ -158,9 +188,10 @@ void main() {
 			fog_unit_pos = posf * fog_cell_size + fog_cell_size * halton_map[scene_params.temporal_frame]; //center of voxels, offset by halton table
 			fog_unit_pos.z = pow(fog_unit_pos.z, scene_params.detail_spread);
 
-			view_pos.xy = (fog_unit_pos.xy * 2.0 - 1.0) * mix(scene_params.fog_frustum_size_begin, scene_params.fog_frustum_size_end, vec2(fog_unit_pos.z));
+			view_pos.xy = (fog_unit_pos.xy * 2.0 - 1.0) * mix(frustum_begin, frustum_end, vec2(fog_unit_pos.z));
 			view_pos.z = -scene_params.fog_frustum_end * fog_unit_pos.z;
 			view_pos.y = -view_pos.y;
+			view_pos.xy += mix(frustum_center_begin, frustum_center_end, vec2(fog_unit_pos.z));
 		}
 	}
 
@@ -170,7 +201,7 @@ void main() {
 
 	float cell_depth_size = abs(view_pos.z - get_depth_at_pos(fog_cell_size.z, pos.z + 1));
 
-	vec4 world = scene_params.transform * vec4(view_pos, 1.0);
+	vec4 world = scene_params.transform[eye] * vec4(view_pos, 1.0);
 	world.xyz /= world.w;
 
 	vec3 uvw = fog_unit_pos;
@@ -232,7 +263,7 @@ void main() {
 #ifdef NO_IMAGE_ATOMICS
 			atomicAdd(density_only_map[lpos], uint(final_density));
 #else
-			imageAtomicAdd(density_only_map, pos, uint(final_density));
+			imageAtomicAdd(density_only_map, gpos, uint(final_density));
 #endif
 
 #ifdef EMISSION_USED
@@ -246,7 +277,7 @@ void main() {
 #ifdef NO_IMAGE_ATOMICS
 				uint prev_emission = atomicAdd(emissive_only_map[lpos], final_emission);
 #else
-				uint prev_emission = imageAtomicAdd(emissive_only_map, pos, final_emission);
+				uint prev_emission = imageAtomicAdd(emissive_only_map, gpos, final_emission);
 #endif
 
 				// Adding can lead to colors overflowing, so validate
@@ -262,7 +293,7 @@ void main() {
 #ifdef NO_IMAGE_ATOMICS
 					atomicOr(emissive_only_map[lpos], force_max);
 #else
-					imageAtomicOr(emissive_only_map, pos, force_max);
+					imageAtomicOr(emissive_only_map, gpos, force_max);
 #endif
 				}
 			}
@@ -277,7 +308,7 @@ void main() {
 #ifdef NO_IMAGE_ATOMICS
 				uint prev_scattering = atomicAdd(light_only_map[lpos], final_scattering);
 #else
-				uint prev_scattering = imageAtomicAdd(light_only_map, pos, final_scattering);
+				uint prev_scattering = imageAtomicAdd(light_only_map, gpos, final_scattering);
 #endif
 
 				// Adding can lead to colors overflowing, so validate
@@ -293,7 +324,7 @@ void main() {
 #ifdef NO_IMAGE_ATOMICS
 					atomicOr(light_only_map[lpos], force_max);
 #else
-					imageAtomicOr(light_only_map, pos, force_max);
+					imageAtomicOr(light_only_map, gpos, force_max);
 #endif
 				}
 			}

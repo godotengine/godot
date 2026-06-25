@@ -200,6 +200,10 @@ layout(set = 0, binding = 15, std140) uniform Params {
 	mat4 to_prev_view[MAX_FOG_VIEWS];
 
 	mat3 radiance_inverse_xform[MAX_FOG_VIEWS];
+
+	// Combined/central projection, shared by both eyes, used to index the shared
+	// cluster light buffer in combined-frustum screen space.
+	mat4 combined_projection;
 }
 params;
 #ifndef MODE_COPY
@@ -300,8 +304,19 @@ const vec3 halton_map[TEMPORAL_FRAMES] = vec3[](
 // Higher values will make light in volumetric fog fade out sooner when it's occluded by shadow.
 const float INV_FOG_FADE = 10.0;
 
+// Map a central-view-space position to the 2D base offset of its cluster in the shared
+// light cluster buffer. The buffer is built in the COMBINED frustum (shared by both
+// eyes), so we project through the combined projection instead of using this eye's local
+// froxel uv. For mono this reduces to the froxel's own screen uv.
+uint fog_cluster_offset_from_view(vec3 view_pos) {
+	vec4 cc = params.combined_projection * vec4(view_pos, 1.0);
+	vec2 uv = (cc.xy / cc.w) * vec2(0.5, -0.5) + 0.5;
+	uvec2 screen_pos = uvec2(clamp(uv, vec2(0.0), vec2(1.0)) * params.screen_size);
+	uvec2 cluster_pos = screen_pos >> params.cluster_shift;
+	return (params.cluster_width * cluster_pos.y + cluster_pos.x) * (params.max_cluster_element_count_div_32 + 32);
+}
+
 void main() {
-	return;
 	vec3 fog_cell_size = 1.0 / vec3(params.fog_volume_size);
 
 #ifdef MODE_DENSITY
@@ -311,16 +326,19 @@ void main() {
 
 	// Derive which eye this invocation belongs to and localize the X coordinate.
 	// eye == 0 -> [0, width), eye == 1 -> [width, 2*width).
-	int eye = params.view_count; //(gpos.x >= params.fog_volume_size.x) ? 1 : 0;
+	int eye = (params.view_count > 1u && gpos.x >= params.fog_volume_size.x) ? 1 : 0;
 	ivec3 pos = ivec3(gpos.x - eye * params.fog_volume_size.x, gpos.y, gpos.z);
 
 	if (any(greaterThanEqual(pos, params.fog_volume_size)) || gpos.x >= params.fog_volume_size.x * int(params.view_count)) {
 		return; //do not compute
 	}
 
-	// Per-eye frustum sizes pulled once.
+	// Per-eye frustum sizes pulled once. .xy = half-extents, .zw = frustum-center
+	// offset in central view space (off-axis skew + eye-offset parallax).
 	vec2 frustum_begin = params.fog_frustum_size_begin[eye].xy;
 	vec2 frustum_end = params.fog_frustum_size_end[eye].xy;
+	vec2 frustum_center_begin = params.fog_frustum_size_begin[eye].zw;
+	vec2 frustum_center_end = params.fog_frustum_size_end[eye].zw;
 
 #ifdef NO_IMAGE_ATOMICS
 	// Linear index must use the doubled (global) width.
@@ -334,29 +352,32 @@ void main() {
 
 	vec3 fog_unit_pos = posf * fog_cell_size + fog_cell_size * 0.5; //center of voxels
 
-	uvec2 screen_pos = uvec2(fog_unit_pos.xy * params.screen_size);
-	uvec2 cluster_pos = screen_pos >> params.cluster_shift;
-	uint cluster_offset = (params.cluster_width * cluster_pos.y + cluster_pos.x) * (params.max_cluster_element_count_div_32 + 32);
-	//positions in screen are too spread apart, no hopes for optimizing with subgroups
-
 	fog_unit_pos.z = pow(fog_unit_pos.z, params.detail_spread);
 
 	vec3 view_pos;
 	view_pos.xy = (fog_unit_pos.xy * 2.0 - 1.0) * mix(frustum_begin, frustum_end, vec2(fog_unit_pos.z));
 	view_pos.z = -params.fog_frustum_end * fog_unit_pos.z;
 	view_pos.y = -view_pos.y;
+	view_pos.xy += mix(frustum_center_begin, frustum_center_end, vec2(fog_unit_pos.z));
+
+	// Cluster light lookup uses the COMBINED-frustum screen position (shared buffer),
+	// not this eye's local froxel uv. //positions in screen are too spread apart, no
+	// hopes for optimizing with subgroups
+	uint cluster_offset = fog_cluster_offset_from_view(view_pos);
 
 	vec4 reprojected_density = vec4(0.0);
 	float reproject_amount = 0.0;
 
 	if (params.use_temporal_reprojection) {
 		vec3 prev_view = (params.to_prev_view[eye] * vec4(view_pos, 1.0)).xyz;
-		//undo transform into prev view
-		prev_view.y = -prev_view.y;
-		//z back to unit size
+		//z back to unit size (needed before evaluating the depth-dependent center/half)
 		prev_view.z /= -params.fog_frustum_end;
-		//xy back to unit size
-		prev_view.xy /= mix(frustum_begin, frustum_end, vec2(prev_view.z));
+		//xy back to unit size: undo center, undo y-flip, undo half-extents
+		vec2 prev_half = mix(frustum_begin, frustum_end, vec2(prev_view.z));
+		vec2 prev_center = mix(frustum_center_begin, frustum_center_end, vec2(prev_view.z));
+		prev_view.xy -= prev_center;
+		prev_view.y = -prev_view.y;
+		prev_view.xy /= prev_half;
 		prev_view.xy = prev_view.xy * 0.5 + 0.5;
 		//z back to unspread value
 		prev_view.z = pow(prev_view.z, 1.0 / params.detail_spread);
@@ -369,6 +390,12 @@ void main() {
 			// Reprojection is intra-eye: eye N samples eye N's previous frame.
 			vec3 sample_uvw = prev_view;
 			sample_uvw.x = (sample_uvw.x + float(eye)) / float(params.view_count);
+			// Keep the bilinear kernel inside this eye's half so the reprojection never
+			// reads across the seam into the other eye (this is what shows up as a
+			// wrong-eye band swinging across the view while turning the head).
+			float inv_buffer_width = 1.0 / float(params.fog_volume_size.x * int(params.view_count));
+			float half_texel = 0.5 * inv_buffer_width;
+			sample_uvw.x = clamp(sample_uvw.x, float(eye) / float(params.view_count) + half_texel, float(eye + 1) / float(params.view_count) - half_texel);
 
 			reprojected_density = textureLod(sampler3D(prev_density_texture, linear_sampler), sample_uvw, 0.0);
 			reproject_amount = params.temporal_blend;
@@ -378,16 +405,14 @@ void main() {
 
 			fog_unit_pos = posf * fog_cell_size + fog_cell_size * halton_map[params.temporal_frame]; //center of voxels, offset by halton table
 
-			screen_pos = uvec2(fog_unit_pos.xy * params.screen_size);
-			cluster_pos = screen_pos >> params.cluster_shift;
-			cluster_offset = (params.cluster_width * cluster_pos.y + cluster_pos.x) * (params.max_cluster_element_count_div_32 + 32);
-			//positions in screen are too spread apart, no hopes for optimizing with subgroups
-
 			fog_unit_pos.z = pow(fog_unit_pos.z, params.detail_spread);
 
 			view_pos.xy = (fog_unit_pos.xy * 2.0 - 1.0) * mix(frustum_begin, frustum_end, vec2(fog_unit_pos.z));
 			view_pos.z = -params.fog_frustum_end * fog_unit_pos.z;
 			view_pos.y = -view_pos.y;
+			view_pos.xy += mix(frustum_center_begin, frustum_center_end, vec2(fog_unit_pos.z));
+
+			cluster_offset = fog_cluster_offset_from_view(view_pos);
 		}
 	}
 

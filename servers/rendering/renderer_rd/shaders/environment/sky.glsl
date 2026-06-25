@@ -148,11 +148,16 @@ vec3 interleaved_gradient_noise(vec2 pos) {
 #endif
 
 vec4 volumetric_fog_process(vec2 screen_uv) {
-#ifdef USE_MULTIVIEW
-	vec4 reprojected = sky_scene_data.combined_reprojection[ViewIndex] * vec4(screen_uv * 2.0 - 1.0, 0.0, 1.0); // Unproject at the far plane
-	vec3 fog_pos = vec3(reprojected.xy / reprojected.w, 1.0) * 0.5 + 0.5;
-#else
+	// The sky is at the far plane, where each eye's screen UV maps directly to that
+	// eye's froxel XY (the froxel volume is built per-eye), so no combined-frustum
+	// reprojection is needed.
 	vec3 fog_pos = vec3(screen_uv, 1.0);
+#ifdef USE_MULTIVIEW
+	// Per-eye side-by-side froxel volume: remap X into this eye's half, and keep the
+	// bilinear kernel inside that half so it never bleeds across the seam.
+	float u = (fog_pos.x + float(ViewIndex)) * 0.5;
+	float half_texel = 0.5 / float(textureSize(sampler3D(volumetric_fog_texture, SAMPLER_LINEAR_CLAMP), 0).x);
+	fog_pos.x = clamp(u, float(ViewIndex) * 0.5 + half_texel, (float(ViewIndex) + 1.0) * 0.5 - half_texel);
 #endif
 
 	return texture(sampler3D(volumetric_fog_texture, SAMPLER_LINEAR_CLAMP), fog_pos);

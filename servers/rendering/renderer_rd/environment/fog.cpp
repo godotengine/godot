@@ -460,7 +460,6 @@ bool Fog::VolumetricFog::sync_gi_dependent_sets_validity(bool p_ensure_freed) {
 }
 
 void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader, uint32_t p_view_count) {
-	return;
 	width = fog_size.x;
 	height = fog_size.y;
 	depth = fog_size.z;
@@ -556,15 +555,21 @@ Fog::VolumetricFog::~VolumetricFog() {
 	}
 }
 
-Vector3i Fog::_point_get_position_in_froxel_volume(const Vector3 &p_point, float fog_end, const Vector2 &fog_near_size, const Vector2 &fog_far_size, float volumetric_fog_detail_spread, const Vector3 &fog_size, const Transform3D &p_cam_transform) {
+Vector3i Fog::_point_get_position_in_froxel_volume(const Vector3 &p_point, float fog_end, const Vector2 &fog_near_size, const Vector2 &fog_far_size, const Vector2 &fog_near_center, const Vector2 &fog_far_center, float volumetric_fog_detail_spread, const Vector3 &fog_size, const Transform3D &p_cam_transform) {
+	// Inverse of the froxel unprojection used in the shaders (view space is the CENTRAL
+	// camera; the per-eye off-axis + parallax is carried by the frustum center, which is
+	// interpolated with depth exactly like the half-extents).
 	Vector3 view_position = p_cam_transform.affine_inverse().xform(p_point);
 	view_position.z = MIN(view_position.z, -0.01); // Clamp to the front of camera
 	Vector3 fog_position = Vector3(0, 0, 0);
 
-	view_position.y = -view_position.y;
 	fog_position.z = -view_position.z / fog_end;
-	fog_position.x = (view_position.x / (2 * (fog_near_size.x * (1.0 - fog_position.z) + fog_far_size.x * fog_position.z))) + 0.5;
-	fog_position.y = (view_position.y / (2 * (fog_near_size.y * (1.0 - fog_position.z) + fog_far_size.y * fog_position.z))) + 0.5;
+	float half_x = fog_near_size.x * (1.0 - fog_position.z) + fog_far_size.x * fog_position.z;
+	float half_y = fog_near_size.y * (1.0 - fog_position.z) + fog_far_size.y * fog_position.z;
+	float center_x = fog_near_center.x * (1.0 - fog_position.z) + fog_far_center.x * fog_position.z;
+	float center_y = fog_near_center.y * (1.0 - fog_position.z) + fog_far_center.y * fog_position.z;
+	fog_position.x = ((view_position.x - center_x) / (2.0 * half_x)) + 0.5;
+	fog_position.y = ((center_y - view_position.y) / (2.0 * half_y)) + 0.5;
 	fog_position.z = Math::pow(float(fog_position.z), float(1.0 / volumetric_fog_detail_spread));
 	fog_position = fog_position * fog_size - Vector3(0.5, 0.5, 0.5);
 
@@ -574,7 +579,6 @@ Vector3i Fog::_point_get_position_in_froxel_volume(const Vector3 &p_point, float
 }
 
 void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
-	return;
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -590,25 +594,99 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 		VolumetricFogShader::VolumeUBO params;
 
-		Vector2 frustum_near_size = p_cam_projection.get_viewport_half_extents();
-		Vector2 frustum_far_size = p_cam_projection.get_far_plane_half_extents();
+		const uint32_t volume_view_count = MAX(1u, p_settings.view_count);
+
 		float z_near = p_cam_projection.get_z_near();
 		float z_far = p_cam_projection.get_z_far();
 		float fog_end = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_length(p_settings.env);
 
-		Vector2 fog_far_size = frustum_near_size.lerp(frustum_far_size, (fog_end - z_near) / (z_far - z_near));
-		Vector2 fog_near_size;
-		if (p_cam_projection.is_orthogonal()) {
-			fog_near_size = fog_far_size;
-		} else {
-			fog_near_size = Vector2(0.0f, 0.0f);
+		// Per-eye frustum sizes and transforms used both for the UBO and for the
+		// CPU-side froxel bounding of each fog volume.
+		Vector2 eye_frustum_near_size[MAX_FOG_VIEWS];
+		Vector2 eye_fog_near_size[MAX_FOG_VIEWS];
+		Vector2 eye_fog_far_size[MAX_FOG_VIEWS];
+		Vector2 eye_fog_near_center[MAX_FOG_VIEWS];
+		Vector2 eye_fog_far_center[MAX_FOG_VIEWS];
+		Transform3D eye_transform[MAX_FOG_VIEWS];
+
+		for (uint32_t v = 0; v < volume_view_count; v++) {
+			const Projection &proj = (volume_view_count > 1) ? p_settings.view_projections[v] : p_cam_projection;
+
+			Vector2 frustum_near = proj.get_viewport_half_extents();
+			Vector2 frustum_far = proj.get_far_plane_half_extents();
+
+			Vector2 far_size = frustum_near.lerp(frustum_far, (fog_end - z_near) / (z_far - z_near));
+			Vector2 near_size;
+			if (proj.is_orthogonal()) {
+				near_size = far_size;
+			} else {
+				near_size = Vector2(0.0, 0.0);
+			}
+
+			// Per-eye frustum center in central view space (off-axis skew * half + parallax),
+			// matching the environment fog path. Both terms are zero for mono.
+			Vector2 off_axis(0.0, 0.0);
+			Vector2 eye_off(0.0, 0.0);
+			if (volume_view_count > 1) {
+				off_axis = Vector2(proj.columns[2][0], proj.columns[2][1]);
+				Vector3 o = p_settings.view_eye_offset[v].origin;
+				eye_off = Vector2(o.x, o.y);
+			}
+			Vector2 near_center = near_size * off_axis + eye_off;
+			Vector2 far_center = far_size * off_axis + eye_off;
+
+			eye_frustum_near_size[v] = frustum_near;
+			eye_fog_near_size[v] = near_size;
+			eye_fog_far_size[v] = far_size;
+			eye_fog_near_center[v] = near_center;
+			eye_fog_far_center[v] = far_center;
+
+			// The eye's world transform (origin) is used only for the "camera inside volume"
+			// heuristic below; the froxel mapping itself is central (parallax is in the center).
+			Transform3D et = p_cam_transform;
+			if (volume_view_count > 1) {
+				et = p_cam_transform * p_settings.view_eye_offset[v];
+			}
+			eye_transform[v] = et;
+
+			params.fog_frustum_size_begin[v][0] = near_size.x;
+			params.fog_frustum_size_begin[v][1] = near_size.y;
+			params.fog_frustum_size_begin[v][2] = near_center.x;
+			params.fog_frustum_size_begin[v][3] = near_center.y;
+
+			params.fog_frustum_size_end[v][0] = far_size.x;
+			params.fog_frustum_size_end[v][1] = far_size.y;
+			params.fog_frustum_size_end[v][2] = far_center.x;
+			params.fog_frustum_size_end[v][3] = far_center.y;
+
+			// View space is the central camera for both eyes (parallax is carried by the center).
+			Transform3D to_prev_cam_view = p_prev_cam_inv_transform * p_cam_transform;
+			RendererRD::MaterialStorage::store_transform(to_prev_cam_view, params.to_prev_view[v]);
+			RendererRD::MaterialStorage::store_transform(p_cam_transform, params.transform[v]);
 		}
 
-		params.fog_frustum_size_begin[0] = fog_near_size.x;
-		params.fog_frustum_size_begin[1] = fog_near_size.y;
+		// Duplicate eye 0 into the unused slot for mono so the shader never reads garbage.
+		if (volume_view_count == 1) {
+			eye_frustum_near_size[1] = eye_frustum_near_size[0];
+			eye_fog_near_size[1] = eye_fog_near_size[0];
+			eye_fog_far_size[1] = eye_fog_far_size[0];
+			eye_fog_near_center[1] = eye_fog_near_center[0];
+			eye_fog_far_center[1] = eye_fog_far_center[0];
+			eye_transform[1] = eye_transform[0];
+			for (int j = 0; j < 4; j++) {
+				params.fog_frustum_size_begin[1][j] = params.fog_frustum_size_begin[0][j];
+				params.fog_frustum_size_end[1][j] = params.fog_frustum_size_end[0][j];
+			}
+			for (int j = 0; j < 16; j++) {
+				params.to_prev_view[1][j] = params.to_prev_view[0][j];
+				params.transform[1][j] = params.transform[0][j];
+			}
+		}
 
-		params.fog_frustum_size_end[0] = fog_far_size.x;
-		params.fog_frustum_size_end[1] = fog_far_size.y;
+		params.view_count = volume_view_count;
+		params.pad0 = 0;
+		params.pad1 = 0;
+		params.pad2 = 0;
 
 		params.fog_frustum_end = fog_end;
 		params.z_near = z_near;
@@ -623,10 +701,6 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		params.temporal_frame = RSG::rasterizer->get_frame_number() % VolumetricFog::MAX_TEMPORAL_FRAMES;
 		params.detail_spread = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_detail_spread(p_settings.env);
 		params.temporal_blend = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_temporal_reprojection_amount(p_settings.env);
-
-		Transform3D to_prev_cam_view = p_prev_cam_inv_transform * p_cam_transform;
-		RendererRD::MaterialStorage::store_transform(to_prev_cam_view, params.to_prev_view);
-		RendererRD::MaterialStorage::store_transform(p_cam_transform, params.transform);
 
 		RD::get_singleton()->buffer_update(volumetric_fog.volume_ubo, 0, sizeof(VolumetricFogShader::VolumeUBO), &params);
 
@@ -670,8 +744,6 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 		bool any_uses_time = false;
-		Vector3 cam_position = p_cam_transform.get_origin();
-
 		for (int i = 0; i < (int)p_fog_volumes.size(); i++) {
 			FogVolumeInstance *fog_volume_instance = fog_volume_instance_owner.get_or_null(p_fog_volumes[i]);
 			ERR_FAIL_NULL(fog_volume_instance);
@@ -701,99 +773,115 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 			any_uses_time |= shader_data->uses_time;
 
-			Vector3i froxel_min;
-			Vector3i froxel_max;
-			Vector3i kernel_size;
-
 			Vector3 fog_position = fog_volume_instance->transform.get_origin();
 			RSE::FogVolumeShape volume_type = RendererRD::Fog::get_singleton()->fog_volume_get_shape(fog_volume);
-			Vector3 extents = RendererRD::Fog::get_singleton()->fog_volume_get_size(fog_volume) / 2;
+			Vector3 volume_extents = RendererRD::Fog::get_singleton()->fog_volume_get_size(fog_volume) / 2;
 
-			if (volume_type != RSE::FOG_VOLUME_SHAPE_WORLD) {
-				// Local fog volume.
-				Vector3 fog_size = Vector3(fog->width, fog->height, fog->depth);
-				float volumetric_fog_detail_spread = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_detail_spread(p_settings.env);
-				Vector3 corners[8]{
-					fog_volume_instance->transform.xform(Vector3(extents.x, extents.y, extents.z)),
-					fog_volume_instance->transform.xform(Vector3(-extents.x, extents.y, extents.z)),
-					fog_volume_instance->transform.xform(Vector3(extents.x, -extents.y, extents.z)),
-					fog_volume_instance->transform.xform(Vector3(-extents.x, -extents.y, extents.z)),
-					fog_volume_instance->transform.xform(Vector3(extents.x, extents.y, -extents.z)),
-					fog_volume_instance->transform.xform(Vector3(-extents.x, extents.y, -extents.z)),
-					fog_volume_instance->transform.xform(Vector3(extents.x, -extents.y, -extents.z)),
-					fog_volume_instance->transform.xform(Vector3(-extents.x, -extents.y, -extents.z))
-				};
-				Vector3i froxels[8];
-				Vector3 corner_min = corners[0];
-				Vector3 corner_max = corners[0];
-				for (int j = 0; j < 8; j++) {
-					froxels[j] = _point_get_position_in_froxel_volume(corners[j], fog_end, fog_near_size, fog_far_size, volumetric_fog_detail_spread, fog_size, p_cam_transform);
-					corner_min = corner_min.min(corners[j]);
-					corner_max = corner_max.max(corners[j]);
-				}
-
-				froxel_min = Vector3i(int32_t(fog->width) - 1, int32_t(fog->height) - 1, int32_t(fog->depth) - 1);
-				froxel_max = Vector3i(1, 1, 1);
-
-				// Tracking just the corners of the fog volume can result in missing some fog:
-				// when the camera's near plane is inside the fog, we must always consider the entire screen
-				Vector3 near_plane_corner(frustum_near_size.x, frustum_near_size.y, z_near);
-				float expand = near_plane_corner.length();
-				if (cam_position.x > (corner_min.x - expand) && cam_position.x < (corner_max.x + expand) &&
-						cam_position.y > (corner_min.y - expand) && cam_position.y < (corner_max.y + expand) &&
-						cam_position.z > (corner_min.z - expand) && cam_position.z < (corner_max.z + expand)) {
-					froxel_min.x = 0;
-					froxel_min.y = 0;
-					froxel_min.z = 0;
-					froxel_max.x = int32_t(fog->width);
-					froxel_max.y = int32_t(fog->height);
-					for (int j = 0; j < 8; j++) {
-						froxel_max.z = MAX(froxel_max.z, froxels[j].z);
-					}
-				} else {
-					// Camera is guaranteed to be outside the fog volume
-					for (int j = 0; j < 8; j++) {
-						froxel_min = froxel_min.min(froxels[j]);
-						froxel_max = froxel_max.max(froxels[j]);
-					}
-				}
-
-				kernel_size = froxel_max - froxel_min;
-			} else {
-				// Volume type global runs on all cells
-				extents = Vector3(fog->width, fog->height, fog->depth);
-				froxel_min = Vector3i(0, 0, 0);
-				kernel_size = Vector3i(int32_t(fog->width), int32_t(fog->height), int32_t(fog->depth));
-			}
-
-			if (kernel_size.x == 0 || kernel_size.y == 0 || kernel_size.z == 0) {
-				continue;
-			}
-
+			// Push-constant fields shared by all eyes. Only corner.x and view change per eye.
 			VolumetricFogShader::FogPushConstant push_constant;
 			push_constant.position[0] = fog_position.x;
 			push_constant.position[1] = fog_position.y;
 			push_constant.position[2] = fog_position.z;
-			push_constant.size[0] = extents.x * 2;
-			push_constant.size[1] = extents.y * 2;
-			push_constant.size[2] = extents.z * 2;
-			push_constant.corner[0] = froxel_min.x;
-			push_constant.corner[1] = froxel_min.y;
-			push_constant.corner[2] = froxel_min.z;
-			push_constant.shape = uint32_t(RendererRD::Fog::get_singleton()->fog_volume_get_shape(fog_volume));
+			push_constant.pad2 = 0.0f;
+			if (volume_type != RSE::FOG_VOLUME_SHAPE_WORLD) {
+				push_constant.size[0] = volume_extents.x * 2;
+				push_constant.size[1] = volume_extents.y * 2;
+				push_constant.size[2] = volume_extents.z * 2;
+			} else {
+				// World volume runs on the whole froxel grid; matches the original behavior.
+				push_constant.size[0] = float(fog->width) * 2;
+				push_constant.size[1] = float(fog->height) * 2;
+				push_constant.size[2] = float(fog->depth) * 2;
+			}
+			push_constant.shape = uint32_t(volume_type);
 			RendererRD::MaterialStorage::store_transform(fog_volume_instance->transform.affine_inverse(), push_constant.transform);
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, shader_data->pipeline.get_rid());
+			// Inject this fog volume into every eye's half of the froxel volume.
+			for (uint32_t eye = 0; eye < volume_view_count; eye++) {
+				Vector3i froxel_min;
+				Vector3i froxel_max;
+				Vector3i kernel_size;
 
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->fog_uniform_set, VolumetricFogShader::FogSet::FOG_SET_UNIFORMS);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VolumetricFogShader::FogPushConstant));
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, volumetric_fog.base_uniform_set, VolumetricFogShader::FogSet::FOG_SET_BASE);
-			if (material->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(material->uniform_set)) { // Material may not have a uniform set.
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, material->uniform_set, VolumetricFogShader::FogSet::FOG_SET_MATERIAL);
-				material->set_as_used();
+				if (volume_type != RSE::FOG_VOLUME_SHAPE_WORLD) {
+					// Local fog volume.
+					Vector3 fog_size = Vector3(fog->width, fog->height, fog->depth);
+					float volumetric_fog_detail_spread = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_detail_spread(p_settings.env);
+					Vector3 corners[8]{
+						fog_volume_instance->transform.xform(Vector3(volume_extents.x, volume_extents.y, volume_extents.z)),
+						fog_volume_instance->transform.xform(Vector3(-volume_extents.x, volume_extents.y, volume_extents.z)),
+						fog_volume_instance->transform.xform(Vector3(volume_extents.x, -volume_extents.y, volume_extents.z)),
+						fog_volume_instance->transform.xform(Vector3(-volume_extents.x, -volume_extents.y, volume_extents.z)),
+						fog_volume_instance->transform.xform(Vector3(volume_extents.x, volume_extents.y, -volume_extents.z)),
+						fog_volume_instance->transform.xform(Vector3(-volume_extents.x, volume_extents.y, -volume_extents.z)),
+						fog_volume_instance->transform.xform(Vector3(volume_extents.x, -volume_extents.y, -volume_extents.z)),
+						fog_volume_instance->transform.xform(Vector3(-volume_extents.x, -volume_extents.y, -volume_extents.z))
+					};
+					Vector3i froxels[8];
+					Vector3 corner_min = corners[0];
+					Vector3 corner_max = corners[0];
+					for (int j = 0; j < 8; j++) {
+						// Central transform + per-eye center: matches the shader's froxel mapping.
+						froxels[j] = _point_get_position_in_froxel_volume(corners[j], fog_end, eye_fog_near_size[eye], eye_fog_far_size[eye], eye_fog_near_center[eye], eye_fog_far_center[eye], volumetric_fog_detail_spread, fog_size, p_cam_transform);
+						corner_min = corner_min.min(corners[j]);
+						corner_max = corner_max.max(corners[j]);
+					}
+
+					froxel_min = Vector3i(int32_t(fog->width) - 1, int32_t(fog->height) - 1, int32_t(fog->depth) - 1);
+					froxel_max = Vector3i(1, 1, 1);
+
+					// Tracking just the corners of the fog volume can result in missing some fog:
+					// when the camera's near plane is inside the fog, we must always consider the entire screen
+					Vector3 cam_position = eye_transform[eye].get_origin();
+					Vector3 near_plane_corner(eye_frustum_near_size[eye].x, eye_frustum_near_size[eye].y, z_near);
+					float expand = near_plane_corner.length();
+					if (cam_position.x > (corner_min.x - expand) && cam_position.x < (corner_max.x + expand) &&
+							cam_position.y > (corner_min.y - expand) && cam_position.y < (corner_max.y + expand) &&
+							cam_position.z > (corner_min.z - expand) && cam_position.z < (corner_max.z + expand)) {
+						froxel_min.x = 0;
+						froxel_min.y = 0;
+						froxel_min.z = 0;
+						froxel_max.x = int32_t(fog->width);
+						froxel_max.y = int32_t(fog->height);
+						for (int j = 0; j < 8; j++) {
+							froxel_max.z = MAX(froxel_max.z, froxels[j].z);
+						}
+					} else {
+						// Camera is guaranteed to be outside the fog volume
+						for (int j = 0; j < 8; j++) {
+							froxel_min = froxel_min.min(froxels[j]);
+							froxel_max = froxel_max.max(froxels[j]);
+						}
+					}
+
+					kernel_size = froxel_max - froxel_min;
+				} else {
+					// Volume type global runs on all cells
+					froxel_min = Vector3i(0, 0, 0);
+					kernel_size = Vector3i(int32_t(fog->width), int32_t(fog->height), int32_t(fog->depth));
+				}
+
+				if (kernel_size.x == 0 || kernel_size.y == 0 || kernel_size.z == 0) {
+					continue;
+				}
+
+				// corner.x carries the per-eye X offset into the doubled-width froxel volume.
+				push_constant.corner[0] = froxel_min.x + int32_t(eye) * int32_t(fog->width);
+				push_constant.corner[1] = froxel_min.y;
+				push_constant.corner[2] = froxel_min.z;
+				push_constant.view = eye;
+
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, shader_data->pipeline.get_rid());
+
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->fog_uniform_set, VolumetricFogShader::FogSet::FOG_SET_UNIFORMS);
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(VolumetricFogShader::FogPushConstant));
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, volumetric_fog.base_uniform_set, VolumetricFogShader::FogSet::FOG_SET_BASE);
+				if (material->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(material->uniform_set)) { // Material may not have a uniform set.
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, material->uniform_set, VolumetricFogShader::FogSet::FOG_SET_MATERIAL);
+					material->set_as_used();
+				}
+
+				RD::get_singleton()->compute_list_dispatch_threads(compute_list, kernel_size.x, kernel_size.y, kernel_size.z);
 			}
-
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, kernel_size.x, kernel_size.y, kernel_size.z);
 		}
 		if (any_uses_time || RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_temporal_reprojection(p_settings.env)) {
 			RenderingServerDefault::redraw_request();
@@ -1096,55 +1184,58 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		if (proj.is_orthogonal()) {
 			view_fog_near_size = view_fog_far_size;
 		} else {
-			view_fog_near_size = view_frustum_near_size.maxf(0.001);
+			view_fog_near_size = Vector2(0.0, 0.0);
 		}
 
 		params.fog_frustum_size_begin[v][0] = view_fog_near_size.x;
 		params.fog_frustum_size_begin[v][1] = view_fog_near_size.y;
-		params.fog_frustum_size_begin[v][2] = 0.0f;
-		params.fog_frustum_size_begin[v][3] = 0.0f;
 
 		params.fog_frustum_size_end[v][0] = view_fog_far_size.x;
 		params.fog_frustum_size_end[v][1] = view_fog_far_size.y;
-		params.fog_frustum_size_end[v][2] = 0.0f;
-		params.fog_frustum_size_end[v][3] = 0.0f;
 
-		// This eye's world transform = cam transform * eye offset.
-		// For mono, view_eye_offset[0] is identity.
-		Transform3D eye_transform = p_cam_transform;
+		// .zw holds the per-eye XY offset of the frustum center, expressed in CENTRAL
+		// view space, so that the froxel unprojection lands at the position THIS eye
+		// actually sees (the source of stereo parallax):
+		//   center(depth) = half(depth) * off_axis  +  eye_offset
+		// - off_axis (projection columns[2][0..1]) is the frustum skew and scales with
+		//   depth exactly like the half-extents (VR eye frustums are asymmetric).
+		// - eye_offset is this eye's constant translation from the central camera.
+		// Both are zero for mono, so this reduces to the original symmetric mapping.
+		Vector2 off_axis(0.0f, 0.0f);
+		Vector2 eye_off(0.0f, 0.0f);
 		if (view_count > 1) {
-			eye_transform = p_cam_transform * p_settings.view_eye_offset[v];
+			off_axis = Vector2(proj.columns[2][0], proj.columns[2][1]);
+			Vector3 o = p_settings.view_eye_offset[v].origin;
+			eye_off = Vector2(o.x, o.y);
 		}
 
-		// to_prev_view for THIS eye. We approximate the previous eye transform
-		// by applying the same eye offset to the previous cam transform; the
-		// inverse of (prev_cam * eye_offset) is (eye_offset_inv * prev_cam_inv).
-		Transform3D to_prev_cam_view;
-		if (view_count > 1) {
-			Transform3D prev_eye_inv = p_settings.view_eye_offset[v].affine_inverse() * p_prev_cam_inv_transform;
-			to_prev_cam_view = prev_eye_inv * eye_transform;
-		} else {
-			to_prev_cam_view = p_prev_cam_inv_transform * p_cam_transform;
-		}
+		params.fog_frustum_size_begin[v][2] = view_fog_near_size.x * off_axis.x + eye_off.x;
+		params.fog_frustum_size_begin[v][3] = view_fog_near_size.y * off_axis.y + eye_off.y;
+		params.fog_frustum_size_end[v][2] = view_fog_far_size.x * off_axis.x + eye_off.x;
+		params.fog_frustum_size_end[v][3] = view_fog_far_size.y * off_axis.y + eye_off.y;
+
+		// View space is the CENTRAL camera for both eyes; the per-eye parallax lives in
+		// view_pos (via the .zw center above), not in these matrices. So they are central.
+		Transform3D to_prev_cam_view = p_prev_cam_inv_transform * p_cam_transform;
 		RendererRD::MaterialStorage::store_transform(to_prev_cam_view, params.to_prev_view[v]);
 
-		// cam_rotation (mat3x4) for this eye.
-		params.cam_rotation[v][0] = eye_transform.basis[0][0];
-		params.cam_rotation[v][1] = eye_transform.basis[1][0];
-		params.cam_rotation[v][2] = eye_transform.basis[2][0];
+		// cam_rotation (mat3x4) — central camera basis.
+		params.cam_rotation[v][0] = p_cam_transform.basis[0][0];
+		params.cam_rotation[v][1] = p_cam_transform.basis[1][0];
+		params.cam_rotation[v][2] = p_cam_transform.basis[2][0];
 		params.cam_rotation[v][3] = 0;
-		params.cam_rotation[v][4] = eye_transform.basis[0][1];
-		params.cam_rotation[v][5] = eye_transform.basis[1][1];
-		params.cam_rotation[v][6] = eye_transform.basis[2][1];
+		params.cam_rotation[v][4] = p_cam_transform.basis[0][1];
+		params.cam_rotation[v][5] = p_cam_transform.basis[1][1];
+		params.cam_rotation[v][6] = p_cam_transform.basis[2][1];
 		params.cam_rotation[v][7] = 0;
-		params.cam_rotation[v][8] = eye_transform.basis[0][2];
-		params.cam_rotation[v][9] = eye_transform.basis[1][2];
-		params.cam_rotation[v][10] = eye_transform.basis[2][2];
+		params.cam_rotation[v][8] = p_cam_transform.basis[0][2];
+		params.cam_rotation[v][9] = p_cam_transform.basis[1][2];
+		params.cam_rotation[v][10] = p_cam_transform.basis[2][2];
 		params.cam_rotation[v][11] = 0;
 
-		// radiance_inverse_xform (mat3, std140 3x vec4) for this eye.
+		// radiance_inverse_xform (mat3, std140 3x vec4) — central camera basis.
 		Basis sky_basis = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_settings.env);
-		Basis radiance_basis = sky_basis.inverse() * eye_transform.basis;
+		Basis radiance_basis = sky_basis.inverse() * p_cam_transform.basis;
 		// store_transform_3x3 writes 3 x vec4 (12 floats) in column-major padded form.
 		RendererRD::MaterialStorage::store_transform_3x3(radiance_basis, params.radiance_inverse_xform[v]);
 	}
@@ -1167,6 +1258,9 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 	params.view_count = view_count;
 	params.pad = 0;
+
+	// Combined/central projection for the shared cluster light buffer lookup (see ParamsUBO).
+	RendererRD::MaterialStorage::store_camera(p_cam_projection, params.combined_projection);
 
 	// ---- Eye-independent scalars (unchanged from original) ----
 	params.ambient_inject = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_ambient_inject(p_settings.env) * RendererSceneRenderRD::get_singleton()->environment_get_ambient_light_energy(p_settings.env);
