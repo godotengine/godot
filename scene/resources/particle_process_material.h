@@ -133,6 +133,7 @@ private:
 		uint64_t use_rotation_3d : 1;
 		uint64_t use_rotation_velocity_3d : 1;
 		uint64_t use_rotation_velocity_3d_curve : 1;
+		uint64_t use_skinning : 1;
 
 		MaterialKey() {
 			memset(this, 0, sizeof(MaterialKey));
@@ -185,7 +186,7 @@ private:
 			texture = Object::cast_to<CurveXYZTexture>(rotation_velocity_3d_curve.ptr());
 			mk.use_rotation_velocity_3d_curve = texture ? 1 : 0;
 		}
-
+		mk.use_skinning = emission_skin_texture.is_valid() ? 1 : 0;
 		for (int i = 0; i < PARAM_MAX; i++) {
 			if (tex_parameters[i].is_valid()) {
 				mk.texture_mask |= ((uint64_t)1 << i);
@@ -277,6 +278,7 @@ private:
 		StringName emission_texture_points;
 		StringName emission_texture_normal;
 		StringName emission_texture_color;
+		StringName emission_texture_skin;
 		StringName emission_ring_axis;
 		StringName emission_ring_height;
 		StringName emission_ring_radius;
@@ -345,6 +347,7 @@ private:
 	Ref<Texture2D> emission_point_texture;
 	Ref<Texture2D> emission_normal_texture;
 	Ref<Texture2D> emission_color_texture;
+	Ref<Texture2D> emission_skin_texture;
 	Vector3 emission_ring_axis;
 	real_t emission_ring_height = 0.0f;
 	real_t emission_ring_radius = 0.0f;
@@ -466,6 +469,7 @@ public:
 	void set_emission_point_texture(const Ref<Texture2D> &p_points);
 	void set_emission_normal_texture(const Ref<Texture2D> &p_normals);
 	void set_emission_color_texture(const Ref<Texture2D> &p_colors);
+	void set_emission_skin_texture(const Ref<Texture2D> &p_skin);
 	void set_emission_ring_axis(Vector3 p_axis);
 	void set_emission_ring_height(real_t p_height);
 	void set_emission_ring_radius(real_t p_radius);
@@ -479,6 +483,7 @@ public:
 	Ref<Texture2D> get_emission_point_texture() const;
 	Ref<Texture2D> get_emission_normal_texture() const;
 	Ref<Texture2D> get_emission_color_texture() const;
+	Ref<Texture2D> get_emission_skin_texture() const;
 	Vector3 get_emission_ring_axis() const;
 	real_t get_emission_ring_height() const;
 	real_t get_emission_ring_radius() const;
