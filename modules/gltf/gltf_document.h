@@ -205,8 +205,7 @@ private:
 	Error _serialize_nodes(Ref<GLTFState> p_state);
 	Error _serialize_scenes(Ref<GLTFState> p_state);
 	String interpolation_to_string(const GLTFAnimation::Interpolation p_interp);
-	Error _encode_buffer_bins(Ref<GLTFState> p_state);
-	Error _encode_buffer_glb(Ref<GLTFState> p_state);
+	Error _export_encode_buffers(Ref<GLTFState> p_state, bool p_separate_buffers_into_files);
 	PackedByteArray _serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err);
 	Dictionary _serialize_texture_transform_uv1(const Ref<BaseMaterial3D> &p_material);
 	Dictionary _serialize_texture_transform_uv2(const Ref<BaseMaterial3D> &p_material);
