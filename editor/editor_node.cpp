@@ -5864,7 +5864,7 @@ static void _execute_thread(void *p_ud) {
 	eta->done.set();
 }
 
-int EditorNode::execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok, bool p_close_on_errors) {
+int EditorNode::execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok, bool p_close_on_errors, String *r_output) {
 	execute_output_dialog->set_title(p_title);
 	execute_output_dialog->get_ok()->set_disabled(true);
 	execute_outputs->clear();
@@ -5904,6 +5904,9 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 
 	execute_output_dialog->get_ok()->set_disabled(false);
 
+	if (r_output) {
+		*r_output = eta.output;
+	}
 	return eta.exitcode;
 }
 
