@@ -139,7 +139,7 @@ bool PhysicsBody3D::move_and_collide(const PhysicsServer3D::MotionParameters &p_
 			// Check depth of recovery.
 			real_t projected_length = r_result.travel.dot(motion_normal);
 			Vector3 recovery = r_result.travel - motion_normal * projected_length;
-			real_t recovery_length = recovery.length();
+			const real_t recovery_length = recovery.length();
 			// Fixes cases where canceling slide causes the motion to go too deep into the ground,
 			// because we're only taking rest information into account and not general recovery.
 			if (recovery_length < p_parameters.margin + precision) {
