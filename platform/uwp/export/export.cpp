@@ -1311,10 +1311,10 @@ public:
 			return ERR_FILE_BAD_PATH;
 		}
 
-		Error err = OK;
+		Error error = OK;
 
-		FileAccess *fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
+		FileAccess *fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &error);
+		ERR_FAIL_COND_V_MSG(error != OK, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 		AppxPackager packager;
 		packager.init(fa_pack);
@@ -1385,9 +1385,9 @@ public:
 
 			print_line("ADDING: " + path);
 
-			err = packager.add_file(path, data.ptr(), data.size(), template_file_no++, template_files_amount, _should_compress_asset(path, data));
-			if (err != OK) {
-				return err;
+			error = packager.add_file(path, data.ptr(), data.size(), template_file_no++, template_files_amount, _should_compress_asset(path, data));
+			if (error != OK) {
+				return error;
 			}
 
 			ret = unzGoToNextFile(pkg);
@@ -1430,9 +1430,9 @@ public:
 			print_line(itos(i) + " param: " + cl[i]);
 		}
 
-		err = packager.add_file("__cl__.cl", clf.ptr(), clf.size(), -1, -1, false);
-		if (err != OK) {
-			return err;
+		error = packager.add_file("__cl__.cl", clf.ptr(), clf.size(), -1, -1, false);
+		if (error != OK) {
+			return error;
 		}
 
 		if (ep.step("Adding project files...", 3)) {
@@ -1442,7 +1442,7 @@ public:
 		EditorNode::progress_add_task("project_files", "Project Files", 100);
 		packager.set_progress_task("project_files");
 
-		err = export_project_files(p_preset, save_appx_file, &packager, copy_shared_objects);
+		error = export_project_files(p_preset, save_appx_file, &packager, copy_shared_objects);
 
 		EditorNode::progress_end_task("project_files");
 

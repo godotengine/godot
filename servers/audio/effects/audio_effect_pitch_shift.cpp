@@ -76,6 +76,20 @@
 
 void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long fftFrameSize, long osamp, float sampleRate, float *indata, float *outdata,int stride) {
 
+	// Workaround compiler warning.
+	// error: 'void* memset(void*, int, size_t)' specified bound between 18446744065119617024 and
+	// 18446744073709551608 exceeds maximum object size 9223372036854775807
+	// [-Werror=stringop-overflow=]
+
+	// Any negative values become very high numbers.
+	unsigned long fftFrameSize_ul = fftFrameSize;
+	if (fftFrameSize_ul > MAX_FRAME_LENGTH)
+	{
+		ERR_PRINT_ONCE("Invalid FFT frame size for PitchShift. This is a bug, please report.");
+		return;
+	}
+	// May not be necessary, but makes it easier to prevent warnings later with memset.
+	fftFrameSize = fftFrameSize_ul;
 
 	/*
 		Routine smbPitchShift(). See top of file for explanation
