@@ -678,86 +678,66 @@ static inline bool _all_buffers_empty(const Vector<Vector<uint8_t>> &p_buffers, 
 	return true;
 }
 
-Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> p_state) {
-	print_verbose("glTF: Total buffers: " + itos(p_state->buffers.size()));
-
-	if (p_state->buffers.is_empty() || _all_buffers_empty(p_state->buffers)) {
+Error GLTFDocument::_export_encode_buffers(Ref<GLTFState> p_state, bool p_separate_buffers_into_files) {
+	const int64_t buffer_count = p_state->buffers.size();
+	print_verbose("glTF: Total buffers: " + itos(buffer_count));
+	if (buffer_count == 0 || _all_buffers_empty(p_state->buffers)) {
 		ERR_FAIL_COND_V_MSG(!p_state->buffer_views.is_empty(), ERR_INVALID_DATA, "glTF: Buffer views are present, but buffers are empty.");
 		return OK;
 	}
-	Array buffers;
-	Dictionary first_buffer;
-
-	first_buffer["byteLength"] = p_state->buffers[0].size();
-	buffers.push_back(first_buffer);
-
-	for (GLTFBufferIndex i = 1; i < p_state->buffers.size(); i++) {
-		const Vector<uint8_t> &buffer_data = p_state->buffers[i];
-		Dictionary gltf_buffer;
-		if (buffer_data.is_empty()) {
-			if (i < p_state->buffers.size() - 1 && !_all_buffers_empty(p_state->buffers, i + 1)) {
+	Array buffer_dicts;
+	buffer_dicts.resize(buffer_count);
+	// Separate buffers into files if the caller requested it and the base path is available.
+	const bool should_separate_into_files = p_separate_buffers_into_files && !p_state->base_path.is_empty();
+	// Check if the buffer at index 0 should be used as a GLB buffer.
+	GLTFBufferIndex loop_start_index;
+	if (should_separate_into_files || p_state->is_text_file()) {
+		loop_start_index = 0; // Encode all buffers with URIs, don't use a GLB buffer.
+	} else {
+		loop_start_index = 1; // Encode buffers starting at index 1 with URIs, use buffer 0 as a GLB buffer.
+		const PackedByteArray buffer_data = p_state->buffers[0];
+		const int64_t buffer_byte_length = buffer_data.size();
+		if (buffer_byte_length == 0) {
+			// If this buffer is empty and the others were too, this would've returned at the top of the function.
+			ERR_PRINT("glTF export: Buffer 0 is empty, but there are non-empty subsequent buffers. Writing it anyway to preserve buffer indices.");
+		}
+		Dictionary first_gltf_buffer_dict;
+		first_gltf_buffer_dict["byteLength"] = buffer_byte_length;
+		buffer_dicts[0] = first_gltf_buffer_dict;
+	}
+	// Encode the rest of the buffers.
+	for (GLTFBufferIndex buffer_index = loop_start_index; buffer_index < buffer_count; buffer_index++) {
+		const PackedByteArray &buffer_data = p_state->buffers[buffer_index];
+		const int64_t buffer_byte_length = buffer_data.size();
+		Dictionary gltf_buffer_dict;
+		gltf_buffer_dict["byteLength"] = buffer_byte_length;
+		if (buffer_byte_length == 0) {
+			if (buffer_index < buffer_count - 1 && !_all_buffers_empty(p_state->buffers, buffer_index + 1)) {
 				// Have to push back an empty buffer to avoid changing the buffer index, even though this is against spec.
-				WARN_PRINT("glTF: Buffer " + itos(i) + " is empty, but there are non-empty subsequent buffers.");
-				gltf_buffer["byteLength"] = 0;
-				buffers.push_back(gltf_buffer);
+				WARN_PRINT("glTF: Buffer " + itos(buffer_index) + " is empty, but there are non-empty subsequent buffers.");
+				buffer_dicts[buffer_index] = gltf_buffer_dict;
 			}
 			continue;
 		}
-		const String bin_filename = p_state->filename.get_basename() + itos(i) + ".bin";
-		const String bin_path = p_state->base_path.path_join(bin_filename);
-		Error err;
-		Ref<FileAccess> file = FileAccess::open(bin_path, FileAccess::WRITE, &err);
-		if (file.is_null()) {
-			return err;
-		}
-		file->create(FileAccess::ACCESS_RESOURCES);
-		file->store_buffer(buffer_data.ptr(), buffer_data.size());
-		gltf_buffer["uri"] = bin_filename;
-		gltf_buffer["byteLength"] = buffer_data.size();
-		buffers.push_back(gltf_buffer);
-	}
-	p_state->json["buffers"] = buffers;
-
-	return OK;
-}
-
-Error GLTFDocument::_encode_buffer_bins(Ref<GLTFState> p_state) {
-	print_verbose("glTF: Total buffers: " + itos(p_state->buffers.size()));
-
-	if (p_state->buffers.is_empty() || _all_buffers_empty(p_state->buffers)) {
-		ERR_FAIL_COND_V_MSG(!p_state->buffer_views.is_empty(), ERR_INVALID_DATA, "glTF: Buffer views are present, but buffers are empty.");
-		return OK;
-	}
-	Array buffers;
-
-	for (GLTFBufferIndex i = 0; i < p_state->buffers.size(); i++) {
-		const Vector<uint8_t> &buffer_data = p_state->buffers[i];
-		Dictionary gltf_buffer;
-		if (buffer_data.is_empty()) {
-			if (i < p_state->buffers.size() - 1 && !_all_buffers_empty(p_state->buffers, i + 1)) {
-				// Have to push back an empty buffer to avoid changing the buffer index, even though this is against spec.
-				WARN_PRINT("glTF: Buffer " + itos(i) + " is empty, but there are non-empty subsequent buffers.");
-				gltf_buffer["byteLength"] = 0;
-				buffers.push_back(gltf_buffer);
+		if (should_separate_into_files) {
+			// Encode the buffer as a separate file.
+			const String bin_filename = p_state->filename.get_basename() + itos(buffer_index) + ".bin";
+			const String bin_path = p_state->base_path.path_join(bin_filename);
+			Error err;
+			Ref<FileAccess> file = FileAccess::open(bin_path, FileAccess::WRITE, &err);
+			if (file.is_null()) {
+				return err;
 			}
-			continue;
+			file->store_buffer(buffer_data.ptr(), buffer_byte_length);
+			gltf_buffer_dict["uri"] = bin_filename;
+		} else {
+			// Encode the buffer as a base64 data URI.
+			const String base64_data = CryptoCore::b64_encode_str(buffer_data.ptr(), buffer_byte_length);
+			gltf_buffer_dict["uri"] = "data:application/octet-stream;base64," + base64_data;
 		}
-		const String bin_filename = p_state->filename.get_basename() + itos(i) + ".bin";
-		const String bin_path = p_state->base_path.path_join(bin_filename);
-		Error err;
-		Ref<FileAccess> file = FileAccess::open(bin_path, FileAccess::WRITE, &err);
-		if (file.is_null()) {
-			return err;
-		}
-		file->store_buffer(buffer_data.ptr(), buffer_data.size());
-		gltf_buffer["uri"] = bin_filename;
-		gltf_buffer["byteLength"] = buffer_data.size();
-		buffers.push_back(gltf_buffer);
+		buffer_dicts[buffer_index] = gltf_buffer_dict;
 	}
-	if (!buffers.is_empty()) {
-		p_state->json["buffers"] = buffers;
-	}
-
+	p_state->json["buffers"] = buffer_dicts;
 	return OK;
 }
 
@@ -2100,7 +2080,7 @@ Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_i
 		ERR_FAIL_COND_V_MSG(p_image->is_compressed(), image_dict, "glTF: Image was compressed, but could not be decompressed.");
 	}
 
-	if (p_state->filename.to_lower().ends_with("gltf")) {
+	if (p_state->is_text_file()) {
 		String relative_texture_dir = "textures";
 		String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
 		Ref<DirAccess> da = DirAccess::open(p_state->base_path);
@@ -6799,14 +6779,16 @@ Error GLTFDocument::_serialize_asset_header(Ref<GLTFState> p_state) {
 }
 
 Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state) {
-	Error err = FAILED;
-	if (p_state->filename.to_lower().ends_with("glb")) {
-		err = _encode_buffer_glb(p_state);
-		ERR_FAIL_COND_V(err != OK, err);
-		const String gltf_path = p_state->base_path.path_join(p_state->filename);
-		Ref<FileAccess> file = FileAccess::open(gltf_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V(file.is_null(), FAILED);
-
+	const String gltf_path = p_state->base_path.path_join(p_state->filename);
+	Error err = _export_encode_buffers(p_state, p_state->is_text_file());
+	ERR_FAIL_COND_V_MSG(err != OK, err, "glTF: Failed to encode buffers for file: " + gltf_path);
+	Ref<FileAccess> file = FileAccess::open(gltf_path, FileAccess::WRITE, &err);
+	ERR_FAIL_COND_V(file.is_null(), FAILED);
+	if (p_state->is_text_file()) {
+		String json = JSON::stringify(p_state->json, "", true, true);
+		file->store_string(json);
+	} else {
+		// Serialize binary glTF (GLB) file.
 		constexpr uint64_t header_size = 12;
 		constexpr uint64_t chunk_header_size = 8;
 		constexpr uint32_t magic = 0x46546C67; // The byte sequence "glTF" as little-endian.
@@ -6827,7 +6809,7 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state) {
 			// Check if the file length with the buffer is greater than glTF's maximum of 4 GiB.
 			// If it is, we can't write the buffer into the file, but can write it separately.
 			if (unlikely(file_length_with_buffer > (uint64_t)UINT32_MAX)) {
-				err = _encode_buffer_bins(p_state);
+				err = _export_encode_buffers(p_state, true);
 				ERR_FAIL_COND_V(err != OK, err);
 				// Since the buffer bins were re-encoded, we need to re-convert the JSON to string.
 				json_string = JSON::stringify(p_state->json, "", true, true);
@@ -6865,15 +6847,6 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state) {
 				file->store_8(0);
 			}
 		}
-	} else {
-		err = _encode_buffer_bins(p_state);
-		ERR_FAIL_COND_V(err != OK, err);
-		const String gltf_path = p_state->base_path.path_join(p_state->filename);
-		Ref<FileAccess> file = FileAccess::open(gltf_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V(file.is_null(), FAILED);
-
-		String json = JSON::stringify(p_state->json, "", true, true);
-		file->store_string(json);
 	}
 	return err;
 }
@@ -7017,7 +6990,7 @@ HashSet<String> GLTFDocument::get_supported_gltf_extensions_hashset() {
 }
 
 PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err) {
-	Error err = _encode_buffer_glb(p_state);
+	Error err = _export_encode_buffers(p_state, false);
 	if (r_err) {
 		*r_err = err;
 	}
@@ -7042,7 +7015,7 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 		total_file_length = file_length_with_buffer;
 	}
 	ERR_FAIL_COND_V_MSG(total_file_length > (uint64_t)UINT32_MAX, PackedByteArray(),
-			"glTF: File size exceeds glTF Binary's maximum of 4 GiB. Cannot serialize as a single GLB in-memory buffer.");
+			"glTF: File size exceeds glTF Binary's maximum of 4 GiB. Cannot serialize as a single GLB byte array in memory.");
 	const uint32_t binary_chunk_length = binary_data_length;
 
 	Ref<StreamPeerBuffer> buffer;
