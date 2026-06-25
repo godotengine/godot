@@ -442,7 +442,7 @@ void Skeleton3D::_notification(int p_what) {
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
 					Transform3D bind_pose_transform = skin->get_bind_pose(i);
 					if (bonesptr[bone_index].is_skin_scaled) {
-						bind_pose_transform = bind_pose_transform.scaled_local(bonesptr[bone_index].skin_scale);
+						bind_pose_transform = bind_pose_transform.scaled(bonesptr[bone_index].skin_scale);
 					}
 					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].global_pose * bind_pose_transform);
 				}

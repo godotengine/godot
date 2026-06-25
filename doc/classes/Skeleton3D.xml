@@ -373,7 +373,7 @@
 			<param index="1" name="skin_scale" type="Vector3" />
 			<description>
 				Sets the skin scale of the bone at [param bone_idx] to [param skin_scale]. This scale does not affect bone children. This is useful for modifying the visual thickness of a skin.
-				When changing the visual length of a skin, scaling the axis from parent to child, you may need to adjust the origin of the child bone to synchronize its joint position with the scaling.
+				Even if the skin is visually deformed, neither scaling nor repositioning of the bones occurs. It means that you may need to adjust the origin of the child bone to synchronize its joint position with the scaling by using [BoneSpreader3D].
 				[b]Note:[/b] The skin scaling may corrupt the appearance of the gizmo for some SkeletonModifier classes, such as SpringBoneSimulator and IKModifier3D, which rely on bone lengths for skinning.
 			</description>
 		</method>
