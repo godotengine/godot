@@ -224,7 +224,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		Vector3 rpos, rnorm;
 		int fi = -1;
 		if (p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm, fi, true)) {
-			real_t hit_length = local_from.distance_to(rpos);
+			const real_t hit_length = local_from.distance_to(rpos);
 			if (hit_length < segment_hit_length) {
 				segment_support_idx = i;
 				segment_hit_length = hit_length;
