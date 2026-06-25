@@ -2113,13 +2113,14 @@ static inline Ref<Image> _duplicate_and_decompress_image(const Ref<Image> &p_ima
 
 Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_image, const String &p_image_format, float p_lossy_quality, Ref<GLTFDocumentExtension> p_image_save_extension) {
 	Dictionary image_dict;
+	// The name is guaranteed to be set to a non-empty value by all callers of this internal function.
+	const String image_name = p_image->get_name();
+	ERR_FAIL_COND_V_MSG(image_name.is_empty(), image_dict, "glTF: Image name is empty.");
+	image_dict["name"] = image_name;
+	// We can only export uncompressed images, so if the image is compressed, we need to decompress it first.
 	if (p_image->is_compressed()) {
 		p_image = _duplicate_and_decompress_image(p_image);
 		ERR_FAIL_COND_V_MSG(p_image->is_compressed(), image_dict, "glTF: Image was compressed, but could not be decompressed.");
-	}
-
-	if (!p_image->get_name().is_empty()) {
-		image_dict["name"] = p_image->get_name();
 	}
 
 	if (p_state->filename.to_lower().ends_with("gltf")) {
@@ -2131,7 +2132,7 @@ Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_i
 		if (!da->dir_exists(full_texture_dir)) {
 			da->make_dir(full_texture_dir);
 		}
-		String image_file_name = p_image->get_name();
+		String image_file_name = image_name;
 		if (p_image_save_extension.is_valid()) {
 			image_file_name = image_file_name + p_image_save_extension->get_image_file_extension();
 			Error err = p_image_save_extension->save_image_at_path(p_state, p_image, full_texture_dir.path_join(image_file_name), p_image_format, p_lossy_quality);
