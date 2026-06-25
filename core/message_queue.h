@@ -48,11 +48,11 @@ class MessageQueue {
 	};
 
 	struct Message {
-		ObjectID instance_id;
+		ObjectID instance_id = 0;
 		StringName target;
-		int16_t type;
+		int16_t type = 0;
 		union {
-			int16_t notification;
+			int16_t notification = 0;
 			int16_t args;
 		};
 	};
