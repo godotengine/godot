@@ -382,6 +382,13 @@ void ParticlesStorage::particles_restart(RID p_particles) {
 	particles->restart_request = true;
 }
 
+void ParticlesStorage::particles_set_skeleton(RID p_particles, RID p_skeleton) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	particles = nullptr;
+	ERR_FAIL_NULL(particles);
+	// FIXME actually implement this method
+}
+
 void ParticlesStorage::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
 	if (p_subemitter_particles.is_valid()) {
 		WARN_PRINT_ONCE_ED("The Compatibility renderer does not support particle sub-emitters.");

@@ -105,6 +105,7 @@ ParticlesStorage::ParticlesStorage() {
 		actions.renames["RESTART_COLOR"] = "restart_color";
 		actions.renames["RESTART_CUSTOM"] = "restart_custom";
 		actions.renames["emit_subparticle"] = "emit_subparticle";
+		actions.renames["get_bone_transform"] = "get_bone_transform";
 		actions.renames["COLLIDED"] = "collided";
 		actions.renames["COLLISION_NORMAL"] = "collision_normal";
 		actions.renames["COLLISION_DEPTH"] = "collision_depth";
@@ -588,6 +589,14 @@ void ParticlesStorage::_particles_ensure_unused_trail_buffer(Particles *particle
 	}
 }
 
+void ParticlesStorage::_particles_ensure_unused_skeleton_buffer(Particles *particles) {
+	if (particles->unused_skeleton_storage_buffer.is_null()) {
+		// For rendering devices that do not support empty arrays (like C++),
+		// we need to size the buffer with at least 1 element.
+		particles->unused_skeleton_storage_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticleSkeletonBuffer));
+	}
+}
+
 void ParticlesStorage::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
@@ -733,6 +742,22 @@ void ParticlesStorage::particles_set_interp_to_end(RID p_particles, float p_inte
 	particles->interp_to_end = p_interp;
 }
 
+void ParticlesStorage::particles_set_skeleton(RID p_particles, RID p_skeleton) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	if (p_skeleton.is_valid()) {
+		particles->skeleton = p_skeleton;
+	} else if (particles->skeleton.is_valid()) {
+		particles->skeleton = RID(); // Clear skeleton
+	}
+	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
+		//will need to be re-created
+		RD::get_singleton()->free_rid(particles->particles_material_uniform_set);
+	}
+	particles->particles_material_uniform_set = RID();
+}
+
 int ParticlesStorage::particles_get_draw_passes(RID p_particles) const {
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, 0);
@@ -833,6 +858,18 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			}
 			uniforms.push_back(u);
 		}
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 4;
+			if (p_particles->skeleton.is_valid()) {
+				u.append_id(MeshStorage::get_singleton()->skeleton_get_bones_buffer(p_particles->skeleton));
+			} else {
+				_particles_ensure_unused_skeleton_buffer(p_particles);
+				u.append_id(p_particles->unused_skeleton_storage_buffer);
+			}
+			uniforms.push_back(u);
+		}
 
 		p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
 	}
@@ -876,12 +913,18 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	frame_params.cycle = p_particles->cycle_number;
 	frame_params.frame = p_particles->frame_counter++;
 	frame_params.amount_ratio = p_particles->amount_ratio;
-	frame_params.pad1 = 0;
-	frame_params.pad2 = 0;
+
 	frame_params.emitter_velocity[0] = p_particles->emitter_velocity.x;
 	frame_params.emitter_velocity[1] = p_particles->emitter_velocity.y;
 	frame_params.emitter_velocity[2] = p_particles->emitter_velocity.z;
 	frame_params.interp_to_end = p_particles->interp_to_end;
+
+	/*TODO
+	get the transform from particles to skeleton
+	if (p_particles->skeleton.is_valid){
+		if (frame_params.skele)
+		frame_params.skeleton_to_particles_transform = MeshStorage::skeleton_g();
+	}*/
 
 	{ //collision and attractors
 
