@@ -2263,42 +2263,39 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_MENU_OPEN_EXTERNAL: {
-			String fpath = current_path;
-			if (current_path == "Favorites") {
-				if (p_selected.is_empty()) {
-					return;
+			for (const String &fpath : p_selected) {
+				if (fpath.ends_with("/")) {
+					continue;
 				}
-				fpath = p_selected[0];
-			}
+				const String file = ProjectSettings::get_singleton()->globalize_path(fpath);
+				const String extension = file.get_extension();
 
-			const String file = ProjectSettings::get_singleton()->globalize_path(fpath);
-			const String extension = file.get_extension();
+				const String resource_type = ResourceLoader::get_resource_type(fpath);
+				String external_program;
 
-			const String resource_type = ResourceLoader::get_resource_type(fpath);
-			String external_program;
+				if (ClassDB::is_parent_class(resource_type, "Script") || extension == "tres" || extension == "tscn") {
+					external_program = EDITOR_GET("text_editor/external/exec_path");
+				} else if (extension == "res" || extension == "scn") {
+					// Binary resources have no meaningful editor outside Godot, so just fallback to something default.
+				} else if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
+					if (extension == "svg" || extension == "svgz") {
+						external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
+					} else {
+						external_program = EDITOR_GET("filesystem/external_programs/raster_image_editor");
+					}
+				} else if (ClassDB::is_parent_class(resource_type, "AudioStream")) {
+					external_program = EDITOR_GET("filesystem/external_programs/audio_editor");
+				} else if (resource_type == "PackedScene") {
+					external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
+				}
 
-			if (ClassDB::is_parent_class(resource_type, "Script") || extension == "tres" || extension == "tscn") {
-				external_program = EDITOR_GET("text_editor/external/exec_path");
-			} else if (extension == "res" || extension == "scn") {
-				// Binary resources have no meaningful editor outside Godot, so just fallback to something default.
-			} else if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
-				if (extension == "svg" || extension == "svgz") {
-					external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
+				if (external_program.is_empty()) {
+					OS::get_singleton()->shell_open(file);
 				} else {
-					external_program = EDITOR_GET("filesystem/external_programs/raster_image_editor");
+					List<String> paths;
+					paths.push_back(file);
+					OS::get_singleton()->open_with_program(external_program, paths);
 				}
-			} else if (ClassDB::is_parent_class(resource_type, "AudioStream")) {
-				external_program = EDITOR_GET("filesystem/external_programs/audio_editor");
-			} else if (resource_type == "PackedScene") {
-				external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
-			}
-
-			if (external_program.is_empty()) {
-				OS::get_singleton()->shell_open(file);
-			} else {
-				List<String> paths;
-				paths.push_back(file);
-				OS::get_singleton()->open_with_program(external_program, paths);
 			}
 		} break;
 
@@ -3665,6 +3662,13 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
 #endif
 	}
+
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+	if (all_files && p_paths.size() > 1) {
+		p_popup->add_separator();
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_MENU_OPEN_EXTERNAL);
+	}
+#endif
 	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_paths);
 }
 
