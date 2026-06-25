@@ -3231,6 +3231,8 @@ void Image::fix_alpha_edges() {
 	const int alpha_threshold = 20;
 	const int max_dist = 0x7FFFFFFF;
 
+	uint8_t closest_color[3]{};
+
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
 			const uint8_t *rptr = &srcptr[(i * width + j) * 4];
@@ -3241,7 +3243,6 @@ void Image::fix_alpha_edges() {
 			}
 
 			int closest_dist = max_dist;
-			uint8_t closest_color[3];
 
 			int from_x = MAX(0, j - max_radius);
 			int to_x = MIN(width - 1, j + max_radius);

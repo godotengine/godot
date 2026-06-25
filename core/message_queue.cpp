@@ -433,12 +433,13 @@ MessageQueue::~MessageQueue() {
 					args[i].~Variant();
 				}
 			}
-			message->~Message();
 
 			read_pos += sizeof(Message);
 			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
 				read_pos += sizeof(Variant) * message->args;
 			}
+
+			message->~Message();
 		}
 
 	} // for which
