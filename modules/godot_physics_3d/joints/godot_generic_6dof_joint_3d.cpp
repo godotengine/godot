@@ -526,6 +526,12 @@ void GodotGeneric6DOFJoint3D::set_param(Vector3::Axis p_axis, PhysicsServer3D::G
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT: {
 			// Not implemented in GodotPhysics3D backend
 		} break;
+		case PhysicsServer3D::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT: {
+			m_linearDriveForceLimit[p_axis] = p_value;
+		} break;
+		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT: {
+			m_angularDriveTorqueLimit[p_axis] = p_value;
+		} break;
 		case PhysicsServer3D::G6DOF_JOINT_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -612,6 +618,12 @@ real_t GodotGeneric6DOFJoint3D::get_param(Vector3::Axis p_axis, PhysicsServer3D:
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT: {
 			// Not implemented in GodotPhysics3D backend
+		} break;
+		case PhysicsServer3D::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT: {
+			return m_linearDriveForceLimit[p_axis];
+		} break;
+		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT: {
+			return m_angularDriveTorqueLimit[p_axis];
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_MAX:
 			break; // Can't happen, but silences warning
