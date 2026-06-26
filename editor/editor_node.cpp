@@ -206,6 +206,8 @@
 
 #ifdef ANDROID_ENABLED
 #include "editor/gui/touch_actions_panel.h"
+#else
+#include "editor/export/android_sdk_manager.h"
 #endif // ANDROID_ENABLED
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
@@ -3396,6 +3398,37 @@ void EditorNode::_android_remove_build_templates(bool p_prompt_for_removal) {
 	remove_android_build_template->popup_centered_clamped(Size2(600, 200) * EDSCALE, 0.7);
 }
 
+void EditorNode::_setup_android_build(bool p_confirmed) {
+	if (p_confirmed) {
+		setup_android_build_template(android_export_preset, p_confirmed);
+	} else {
+		bool has_custom_gradle_build = false;
+		choose_android_export_profile->clear();
+		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+			Ref<EditorExportPreset> export_preset = EditorExport::get_singleton()->get_export_preset(i);
+			if (export_preset->get_platform()->get_class_name() == "EditorExportPlatformAndroid" && (bool)export_preset->get("gradle_build/use_gradle_build")) {
+				choose_android_export_profile->add_item(export_preset->get_name(), i);
+				String gradle_build_directory = export_preset->get("gradle_build/gradle_build_directory");
+				String android_source_template = export_preset->get("gradle_build/android_source_template");
+				if (!android_source_template.is_empty() || (gradle_build_directory != "" && gradle_build_directory != "res://android")) {
+					has_custom_gradle_build = true;
+				}
+			}
+		}
+		_android_export_preset_selected(choose_android_export_profile->get_item_count() >= 1 ? 0 : -1);
+
+		if (choose_android_export_profile->get_item_count() > 1 && has_custom_gradle_build) {
+			// If there's multiple options and at least one of them uses a custom gradle build then prompt the user to choose.
+			choose_android_export_profile->show();
+			install_android_build_template->popup_centered();
+		} else {
+			choose_android_export_profile->hide();
+
+			setup_android_build_template(android_export_preset, p_confirmed);
+		}
+	}
+}
+
 Error EditorNode::setup_android_build_template(const Ref<EditorExportPreset> &p_preset, bool p_confirmed) {
 	android_export_preset = p_preset;
 	if (export_template_manager->is_android_template_installed(p_preset)) {
@@ -3773,35 +3806,17 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			ScriptEditor::get_singleton()->open_find_in_files_dialog("");
 		} break;
 
-		case PROJECT_INSTALL_ANDROID_SOURCE: {
-			if (p_confirmed) {
-				setup_android_build_template(android_export_preset, p_confirmed);
+		case PROJECT_SETUP_ANDROID_BUILD: {
+#ifndef ANDROID_ENABLED
+			if (!(AndroidSDKManager::is_android_sdk_setup() && AndroidSDKManager::is_java_sdk_setup())) {
+				Callable setup_android_build_callable = callable_mp(this, &EditorNode::_setup_android_build).bind(p_confirmed);
+				android_sdk_manager->run_setup(setup_android_build_callable, setup_android_build_callable);
 			} else {
-				bool has_custom_gradle_build = false;
-				choose_android_export_profile->clear();
-				for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-					Ref<EditorExportPreset> export_preset = EditorExport::get_singleton()->get_export_preset(i);
-					if (export_preset->get_platform()->get_class_name() == "EditorExportPlatformAndroid" && (bool)export_preset->get("gradle_build/use_gradle_build")) {
-						choose_android_export_profile->add_item(export_preset->get_name(), i);
-						String gradle_build_directory = export_preset->get("gradle_build/gradle_build_directory");
-						String android_source_template = export_preset->get("gradle_build/android_source_template");
-						if (!android_source_template.is_empty() || (gradle_build_directory != "" && gradle_build_directory != "res://android")) {
-							has_custom_gradle_build = true;
-						}
-					}
-				}
-				_android_export_preset_selected(choose_android_export_profile->get_item_count() >= 1 ? 0 : -1);
-
-				if (choose_android_export_profile->get_item_count() > 1 && has_custom_gradle_build) {
-					// If there's multiple options and at least one of them uses a custom gradle build then prompt the user to choose.
-					choose_android_export_profile->show();
-					install_android_build_template->popup_centered();
-				} else {
-					choose_android_export_profile->hide();
-
-					setup_android_build_template(android_export_preset, p_confirmed);
-				}
+#endif
+				_setup_android_build(p_confirmed);
+#ifndef ANDROID_ENABLED
 			}
+#endif
 		} break;
 		case PROJECT_OPEN_USER_DATA_FOLDER: {
 			// Ensure_user_data_dir() to prevent the edge case: "Open User Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved.
@@ -8152,7 +8167,7 @@ void EditorNode::_build_project_menu(bool p_dark_mode) {
 	project_menu->add_separator();
 	project_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("ResourcePreloader"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/export"), PROJECT_EXPORT);
 	project_menu->add_item(TTRC("Pack Project as ZIP..."), PROJECT_PACK_AS_ZIP);
-	project_menu->add_item(TTRC("Install Android Build Template..."), PROJECT_INSTALL_ANDROID_SOURCE);
+	project_menu->add_item(TTRC("Setup Android Build..."), PROJECT_SETUP_ANDROID_BUILD);
 #ifndef ANDROID_ENABLED
 	project_menu->add_item(TTRC("Open User Data Folder"), PROJECT_OPEN_USER_DATA_FOLDER);
 #endif
@@ -9019,6 +9034,11 @@ EditorNode::EditorNode() {
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	fbx_importer_manager = memnew(FBXImporterManager);
 	gui_base->add_child(fbx_importer_manager);
+#endif
+
+#ifndef ANDROID_ENABLED
+	android_sdk_manager = memnew(AndroidSDKManager);
+	gui_base->add_child(android_sdk_manager);
 #endif
 
 	warning = memnew(AcceptDialog);
