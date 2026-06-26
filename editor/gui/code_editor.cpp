@@ -1031,7 +1031,6 @@ void CodeTextEditor::_code_complete_timer_timeout() {
 void CodeTextEditor::_complete_request() {
 	List<ScriptLanguage::CodeCompletionOption> entries;
 	String ctext = text_editor->get_text_for_code_completion();
-	_code_complete_script(ctext, &entries);
 	bool forced = false;
 	if (code_complete_func) {
 		code_complete_func(code_complete_ud, ctext, &entries, forced);
@@ -1628,12 +1627,6 @@ Point2i CodeTextEditor::get_pos_for_display(Point2i p_internal_position) const {
 	return Point2(p_internal_position.x + 1, corrected_column + 1);
 }
 
-void CodeTextEditor::goto_error() {
-	if (!error->get_text().is_empty()) {
-		goto_line_centered(error_line, error_column);
-	}
-}
-
 void CodeTextEditor::_update_text_editor_theme() {
 	emit_signal(SNAME("load_theme_settings"));
 
@@ -1720,7 +1713,6 @@ void CodeTextEditor::_update_font_ligatures() {
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {
-	_validate_script();
 	emit_signal(SNAME("validate_script"));
 }
 
@@ -1762,7 +1754,9 @@ void CodeTextEditor::_toggle_files_pressed() {
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		goto_error();
+		if (!error->get_text().is_empty()) {
+			goto_line_centered(error_line, error_column);
+		}
 	}
 }
 

@@ -36,6 +36,7 @@
 class EditorSyntaxHighlighter;
 class MenuButton;
 class VSplitContainer;
+class ScriptEditor;
 
 class ScriptEditorBase : public VBoxContainer {
 	GDCLASS(ScriptEditorBase, VBoxContainer);
@@ -46,18 +47,31 @@ protected:
 	static void _bind_methods();
 
 public:
+	class EditMenusBase : public HBoxContainer {
+		GDCLASS(EditMenusBase, HBoxContainer);
+
+	protected:
+		ScriptEditor *se = nullptr;
+
+	public:
+		virtual bool handles(ScriptEditorBase *p_seb) = 0;
+	};
+
 	struct EditedFileData {
 		String path;
 		uint64_t last_modified_time = -1;
 	} edited_file_data;
 
 	virtual String get_name();
+	virtual String get_doc_url_path() { return "/"; }
 	virtual Ref<Texture2D> get_theme_icon();
 
 	virtual void set_toggle_list_control(Control *p_toggle_list_control) = 0;
 	virtual void update_toggle_files_button() = 0;
 
 	virtual bool show_members_overview() { return false; }
+
+	virtual void ensure_focus() = 0;
 
 	virtual void set_edited_resource(const Ref<Resource> &p_res) = 0;
 	virtual Ref<Resource> get_edited_resource() const { return edited_res; }
@@ -76,8 +90,6 @@ typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resou
 class TextEditorBase : public ScriptEditorBase {
 	GDCLASS(TextEditorBase, ScriptEditorBase);
 
-	void _post_init();
-
 protected:
 	enum {
 		EDIT_UNDO,
@@ -95,6 +107,7 @@ protected:
 		EDIT_INDENT,
 		EDIT_UNINDENT,
 		EDIT_DELETE_LINE,
+		EDIT_JOIN_LINES,
 		EDIT_DUPLICATE_SELECTION,
 		EDIT_DUPLICATE_LINES,
 		EDIT_TO_UPPERCASE,
@@ -120,13 +133,11 @@ protected:
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
 
-		EDIT_JOIN_LINES,
-
 		BASE_ENUM_COUNT,
 	};
 
-	class EditMenus : public HBoxContainer {
-		GDCLASS(EditMenus, HBoxContainer);
+	class EditMenus : public EditMenusBase {
+		GDCLASS(EditMenus, EditMenusBase);
 
 	protected:
 		MenuButton *edit_menu = nullptr;
@@ -149,7 +160,7 @@ protected:
 		void _bookmark_item_pressed(int p_idx);
 
 	public:
-		EditMenus();
+		EditMenus(ScriptEditor *p_se);
 	};
 
 	static void _popup_move_item(int p_target_id, PopupMenu *r_popup, bool p_move_after = true, int p_idx = -1) {
@@ -159,7 +170,7 @@ protected:
 		}
 	}
 
-	static inline EditMenus *edit_menus = nullptr;
+	bool validation_success = true;
 
 	bool editor_enabled = false;
 	CodeTextEditor *code_editor = nullptr;
@@ -169,7 +180,6 @@ protected:
 	LocalVector<Ref<EditorSyntaxHighlighter>> highlighters;
 
 	PopupMenu *context_menu = nullptr;
-	MenuButton *search_menu = nullptr;
 
 	void _make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position = Vector2(0, 0), bool p_show = true);
 	void _show_context_menu(const Vector2 &p_position);
@@ -198,14 +208,14 @@ public:
 	virtual void reload_text();
 	virtual void enable_editor();
 
-	virtual Control *get_edit_menu() = 0;
+	virtual EditMenusBase *create_edit_menu(ScriptEditor *p_se) = 0;
 
 	virtual Control *get_base_editor() const override { return code_editor->get_text_editor(); }
 	virtual CodeTextEditor *get_code_editor() const { return code_editor; }
 
 	virtual void set_tooltip_request_func(const Callable &p_toolip_callback);
 
-	virtual void ensure_focus() { code_editor->get_text_editor()->grab_focus(); }
+	virtual void ensure_focus() override { code_editor->get_text_editor()->grab_focus(); }
 	virtual void convert_indent() { code_editor->get_text_editor()->convert_indent(); }
 
 	virtual void trim_trailing_whitespace() { code_editor->trim_trailing_whitespace(); }
@@ -222,13 +232,14 @@ public:
 	virtual void clear_executing_line() { code_editor->clear_executing_line(); }
 
 	virtual Variant get_edit_state() { return code_editor->get_edit_state(); }
-	virtual void set_edit_state(const Variant &p_state);
+	virtual void set_edit_state(const Variant &p_state, bool p_grab_focus = true);
 	virtual Variant get_navigation_state() { return code_editor->get_navigation_state(); }
 
 	virtual void update_settings() { code_editor->update_editor_settings(); }
 	virtual void set_find_replace_bar(FindReplaceBar *p_bar) { code_editor->set_find_replace_bar(p_bar); }
 
 	virtual void validate_script() override { code_editor->validate_script(); }
+	bool get_validation_success() { return validation_success; }
 
 	virtual void set_toggle_list_control(Control *p_toggle_list_control) override {
 		code_editor->set_toggle_list_control(p_toggle_list_control);
@@ -247,21 +258,41 @@ protected:
 		EDIT_COMPLETE = BASE_ENUM_COUNT,
 		EDIT_TOGGLE_COMMENT,
 
+		DEBUG_TOGGLE_BREAKPOINT,
+		DEBUG_REMOVE_ALL_BREAKPOINTS,
+		DEBUG_GOTO_NEXT_BREAKPOINT,
+		DEBUG_GOTO_PREV_BREAKPOINT,
+
 		CODE_ENUM_COUNT,
 	};
 
 	class EditMenusCEB : public EditMenus {
 		GDCLASS(EditMenusCEB, EditMenus);
 
+	protected:
+		PopupMenu *breakpoints_menu = nullptr;
+
+		virtual void _update_breakpoint_list();
+		void _breakpoint_item_pressed(int p_idx);
+
 	public:
-		EditMenusCEB();
+		EditMenusCEB(ScriptEditor *p_se, String p_breakpoint_menu_name);
 	};
 
 	VSplitContainer *editor_box = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
 
+	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) = 0;
+
+	void _show_warnings_panel(bool p_show);
 	virtual bool _warning_clicked(const Variant &p_line);
+
+	void _make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position = Vector2(0, 0), bool p_show = true);
+
+	virtual bool _edit_option(int p_op) override;
+
+	virtual void _breakpoint_toggled(int p_row) = 0;
 
 public:
 	virtual bool show_members_overview() override { return true; }
@@ -269,7 +300,7 @@ public:
 	virtual Vector<String> get_functions() { return Vector<String>(); }
 
 	virtual PackedInt32Array get_breakpoints() { return PackedInt32Array(); }
-	virtual void set_breakpoint(int p_line, bool p_enabled) {}
+	virtual void set_breakpoint(int p_line, bool p_enabled);
 	virtual void clear_breakpoints() {}
 
 	CodeEditorBase();

@@ -96,6 +96,7 @@ private:
 	DockSlot _get_default_slot_bind() const { return default_slot; }
 
 	void _emit_changed();
+	void _emit_window_visibility_changed(bool p_visible);
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -114,7 +115,7 @@ protected:
 public:
 	void open();
 	void make_visible();
-	void make_floating();
+	void make_floating(int p_screen = -1);
 	void close();
 
 	void set_title(const String &p_title);
