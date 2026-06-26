@@ -166,7 +166,7 @@ private:
 	bool pin_uv = false;
 	real_t _last_pinned_u = 0.0;
 	Vector3 _previous_position;
-	bool _transform_changed;
+	bool _transform_changed = false;
 
 	//Ribbon
 	void _do_rebuild();
