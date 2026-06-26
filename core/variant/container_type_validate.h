@@ -70,7 +70,7 @@ private:
 			}
 
 			if (p_output_errors) {
-				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of type '%s'.", String(p_operation), Variant::get_type_name(inout_variant.get_type()), where, Variant::get_type_name(type)));
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of incompatible type '%s'.", String(p_operation), Variant::get_type_name(inout_variant.get_type()), where, Variant::get_type_name(type)));
 			} else {
 				return false;
 			}
@@ -112,7 +112,13 @@ private:
 		const StringName &obj_class = object->get_class_name();
 		if (obj_class != class_name && !object->is_class(class_name)) {
 			if (p_output_errors) {
-				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object of type '%s' into a %s, which does not inherit from '%s'.", String(p_operation), obj_class, where, String(class_name)));
+				String object_class_name = object->get_class();
+				if (const Ref<Script> other_script = object->get_script(); other_script.is_valid()) {
+					if (const StringName &script_global_name = other_script->get_global_name(); !script_global_name.is_empty()) {
+						object_class_name = script_global_name;
+					}
+				}
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object of type '%s' into a %s of incompatible type '%s'.", String(p_operation), object_class_name, where, String(class_name)));
 			} else {
 				return false;
 			}
@@ -127,14 +133,14 @@ private:
 		// Check base script..
 		if (other_script.is_null()) {
 			if (p_output_errors) {
-				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object into a %s, that does not inherit from '%s'.", String(p_operation), String(where), String(script->get_class_name())));
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object into a %s of incompatible type '%s'.", String(p_operation), String(where), String(script->get_class_name())));
 			} else {
 				return false;
 			}
 		}
 		if (!other_script->inherits_script(script)) {
 			if (p_output_errors) {
-				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object into a %s, that does not inherit from '%s'.", String(p_operation), String(where), String(script->get_class_name())));
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object into a %s of incompatible type '%s'.", String(p_operation), String(where), String(script->get_class_name())));
 			} else {
 				return false;
 			}
