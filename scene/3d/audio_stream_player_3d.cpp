@@ -828,6 +828,14 @@ int AudioStreamPlayer3D::get_max_polyphony() const {
 	return internal->max_polyphony;
 }
 
+void AudioStreamPlayer3D::set_bypass_global_polyphony(bool p_bypass) {
+	internal->set_bypass_global_polyphony(p_bypass);
+}
+
+bool AudioStreamPlayer3D::is_bypassing_global_polyphony() const {
+	return internal->bypass_global_polyphony;
+}
+
 void AudioStreamPlayer3D::set_panning_strength(float p_panning_strength) {
 	ERR_FAIL_COND_MSG(p_panning_strength < 0, "Panning strength must be a positive number.");
 	panning_strength = p_panning_strength;
@@ -875,6 +883,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer3D::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer3D::get_pitch_scale);
+
+	ClassDB::bind_method(D_METHOD("set_bypass_global_polyphony", "bypass"), &AudioStreamPlayer3D::set_bypass_global_polyphony);
+	ClassDB::bind_method(D_METHOD("is_bypassing_global_polyphony"), &AudioStreamPlayer3D::is_bypassing_global_polyphony);
 
 	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioStreamPlayer3D::play, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("seek", "to_position"), &AudioStreamPlayer3D::seek);
@@ -945,6 +956,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater,suffix:m"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bypass_global_polyphony"), "set_bypass_global_polyphony", "is_bypassing_global_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_area_mask", "get_area_mask");
