@@ -247,6 +247,7 @@ void AudioStreamPlaybackPlaylist::start(double p_from_pos) {
 	playback[play_order[play_index]]->start(play_ofs);
 	fade_index = -1;
 	loop_count = 0;
+	offset = p_from_pos;
 
 	active = true;
 }
