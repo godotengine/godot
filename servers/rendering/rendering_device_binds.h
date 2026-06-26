@@ -426,14 +426,14 @@ public:
 	void print_errors(const String &p_file) {
 		if (!base_error.is_empty()) {
 			String error_message = "Error parsing shader '" + p_file + "':\n\n" + base_error;
-			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Error parsing shader.", error_message, false, ERR_HANDLER_SHADER);
+			ERR_PRINT(error_message);
 		} else {
 			for (KeyValue<StringName, Ref<RDShaderSPIRV>> &E : versions) {
 				for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 					String error = E.value->get_stage_compile_error(RD::ShaderStage(i));
 					if (!error.is_empty()) {
-						String error_message = "Error parsing shader '" + p_file + "', version '" + String(E.key) + "', stage '" + RD::get_shader_stage_name(RD::ShaderStage(i)) + "':\n\n" + error;
-						_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Error parsing shader.", error_message, false, ERR_HANDLER_SHADER);
+						String error_message = "Error parsing shader '" + p_file + "', version '" + String(E.key) + "', stage '" + RD::SHADER_STAGE_NAMES[i] + "':\n\n" + error;
+						ERR_PRINT(error_message);
 						E.value->mark_stage_compile_error_printed(RD::ShaderStage(i));
 					}
 				}
