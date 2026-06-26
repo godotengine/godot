@@ -415,6 +415,63 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	return function;
 }
 
+void GDScriptByteCodeGenerator::start_logic_op_cond_jump_success_buffer() {
+	logic_op_cond_jump_success_restore_point.push_back(logic_op_cond_jump_success.size());
+}
+
+void GDScriptByteCodeGenerator::start_logic_op_cond_jump_failure_buffer() {
+	logic_op_cond_jump_failure_restore_point.push_back(logic_op_cond_jump_failure.size());
+}
+
+void GDScriptByteCodeGenerator::flush_logic_op_cond_jump_success() {
+	int target = logic_op_cond_jump_success_restore_point.back()->get();
+
+	while (logic_op_cond_jump_success.size() > target) {
+		patch_jump(logic_op_cond_jump_success.back()->get());
+		logic_op_cond_jump_success.pop_back();
+	}
+	logic_op_cond_jump_success_restore_point.pop_back();
+}
+
+void GDScriptByteCodeGenerator::flush_logic_op_cond_jump_failure() {
+	int target = logic_op_cond_jump_failure_restore_point.back()->get();
+
+	while (logic_op_cond_jump_failure.size() > target) {
+		patch_jump(logic_op_cond_jump_failure.back()->get());
+		logic_op_cond_jump_failure.pop_back();
+	}
+	logic_op_cond_jump_failure_restore_point.pop_back();
+}
+
+void GDScriptByteCodeGenerator::write_logic_op_cond_jump_success(const Address &p_condition) {
+	if (p_condition.mode != Address::NIL) {
+		append_opcode(GDScriptFunction::OPCODE_JUMP_IF);
+		append(p_condition);
+	} else {
+		append_opcode(GDScriptFunction::OPCODE_JUMP);
+	}
+	logic_op_cond_jump_success.push_back(opcodes.size());
+	append(0);
+}
+
+void GDScriptByteCodeGenerator::write_logic_op_cond_jump_failure(const Address &p_condition) {
+	append_opcode(GDScriptFunction::OPCODE_JUMP_IF_NOT);
+	append(p_condition);
+	logic_op_cond_jump_failure.push_back(opcodes.size());
+	append(0);
+}
+
+void GDScriptByteCodeGenerator::write_custom_else() {
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
+	custom_if_jmp_addrs.push_back(opcodes.size());
+	append(0);
+}
+
+void GDScriptByteCodeGenerator::write_custom_endif() {
+	patch_jump(custom_if_jmp_addrs.back()->get());
+	custom_if_jmp_addrs.pop_back();
+}
+
 #ifdef DEBUG_ENABLED
 void GDScriptByteCodeGenerator::set_signature(const String &p_signature) {
 	function->profile.signature = p_signature;

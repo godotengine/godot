@@ -84,6 +84,15 @@ public:
 	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) = 0;
 	virtual GDScriptFunction *write_end() = 0;
 
+	virtual void start_logic_op_cond_jump_success_buffer() = 0;
+	virtual void start_logic_op_cond_jump_failure_buffer() = 0;
+	virtual void flush_logic_op_cond_jump_success() = 0;
+	virtual void flush_logic_op_cond_jump_failure() = 0;
+	virtual void write_logic_op_cond_jump_success(const Address &p_condition) = 0;
+	virtual void write_logic_op_cond_jump_failure(const Address &p_condition) = 0;
+	virtual void write_custom_else() = 0;
+	virtual void write_custom_endif() = 0;
+
 #ifdef DEBUG_ENABLED
 	virtual void set_signature(const String &p_signature) = 0;
 #endif
