@@ -143,8 +143,14 @@ void DirAccessWindows::_update_drives() {
 			String drive = String::chr('A' + i) + ':';
 			String path = drive + '\\';
 			String label;
+			Char16String cs = path.utf16();
+			UINT type = GetDriveTypeW((LPCWSTR)cs.get_data());
+			if (type == DRIVE_REMOTE) {
+				drives.push_back(DriveInfo{ drive, "<network>" });
+				continue;
+			}
 			char16_t wlabel[4096];
-			if (GetVolumeInformationW((LPCWSTR)(path).utf16().get_data(), (LPWSTR)wlabel, 4096, nullptr, nullptr, nullptr, nullptr, 0)) {
+			if (GetVolumeInformationW((LPCWSTR)cs.get_data(), (LPWSTR)wlabel, 4096, nullptr, nullptr, nullptr, nullptr, 0)) {
 				label = String::utf16(wlabel);
 			}
 			drives.push_back(DriveInfo{ drive, label });
