@@ -171,7 +171,9 @@ void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 
 		bool read_only = EditorNode::get_singleton()->is_resource_read_only(mesh_library);
 		add_item->set_disabled(read_only);
-		remove_item->set_disabled(read_only);
+		if (read_only) {
+			remove_item->set_disabled(true);
+		}
 		import_scene->set_disabled(read_only);
 		inspector->set_read_only(read_only);
 	}
