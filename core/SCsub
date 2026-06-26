@@ -161,6 +161,69 @@ if env["builtin_zstd"]:
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zstd_sources)
 
+# ZXC compression codec, can be unbundled
+if env["zxc"] and env["builtin_zxc"]:
+    thirdparty_zxc_dir = "#thirdparty/zxc/"
+
+    # Include paths: public headers for <zxc.h>, plus the library's own internal
+    # and vendored headers needed by the thirdparty translation units.
+    env_thirdparty.Prepend(
+        CPPPATH=[
+            thirdparty_zxc_dir + "include",
+            thirdparty_zxc_dir + "src/lib",
+            thirdparty_zxc_dir + "src/lib/vendors",
+        ]
+    )
+    # <zxc.h> must also be reachable from core/io/compression.cpp.
+    env.Prepend(CPPPATH=[thirdparty_zxc_dir + "include"])
+
+    # Sources compiled once, with no per-ISA variants and no special flags.
+    thirdparty_zxc_sources = [
+        "src/lib/zxc_common.c",
+        "src/lib/zxc_dispatch.c",
+        "src/lib/zxc_dict.c",
+        "src/lib/zxc_seekable.c",
+        "src/lib/zxc_pstream.c",
+        "src/lib/zxc_driver.c",
+    ]
+    thirdparty_zxc_sources = [thirdparty_zxc_dir + file for file in thirdparty_zxc_sources]
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zxc_sources)
+
+    # zxc_compress.c / zxc_decompress.c / zxc_huffman.c are each compiled once per
+    # CPU variant: a distinct ZXC_FUNCTION_SUFFIX mangles the exported symbols and
+    # the matching ISA flags enable the SIMD intrinsics for that translation unit.
+    # zxc_dispatch.c then selects the best variant at runtime (CPUID / getauxval),
+    # so a single binary built without -march=native still uses SIMD when present.
+    # The variant set must match the symbols referenced by zxc_dispatch.c for the
+    # target architecture (x86_64 -> sse2/avx2/avx512, arm -> neon, others -> none).
+    zxc_variant_sources = ["zxc_compress.c", "zxc_decompress.c", "zxc_huffman.c"]
+
+    # (suffix, gcc/clang flags, msvc flags). "_default" (scalar) is always built.
+    zxc_variants = [("_default", [], [])]
+    if env["arch"] == "x86_64":
+        zxc_variants += [
+            ("_sse2", ["-msse2"], []),  # x86_64 baseline; MSVC implies SSE2.
+            ("_avx2", ["-mavx2", "-mfma", "-mbmi", "-mbmi2", "-mlzcnt"], ["/arch:AVX2"]),
+            ("_avx512", ["-mavx512f", "-mavx512bw", "-mbmi", "-mbmi2", "-mlzcnt"], ["/arch:AVX512"]),
+        ]
+    elif env["arch"] == "arm64":
+        # NEON is baseline on AArch64, so the intrinsics compile without extra flags.
+        zxc_variants += [("_neon", [], [])]
+    elif env["arch"] == "arm32":
+        zxc_variants += [("_neon", ["-mfpu=neon"], [])]
+
+    for suffix, gcc_flags, msvc_flags in zxc_variants:
+        env_zxc_variant = env_thirdparty.Clone()
+        env_zxc_variant.Append(CPPDEFINES=[("ZXC_FUNCTION_SUFFIX", suffix)])
+        variant_flags = msvc_flags if env.msvc else gcc_flags
+        if variant_flags:
+            env_zxc_variant.Append(CCFLAGS=variant_flags)
+        for source in zxc_variant_sources:
+            thirdparty_obj += env_zxc_variant.Object(
+                target=thirdparty_zxc_dir + "src/lib/" + source[:-2] + suffix,
+                source=thirdparty_zxc_dir + "src/lib/" + source,
+            )
+
 
 env.core_sources += thirdparty_obj
 

@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_file_access)
 
+#include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "tests/test_utils.h"
@@ -248,6 +249,58 @@ TEST_CASE("[FileAccess] Get/Store floating point half precision values") {
 		reference.resize_initialized(4095);
 		CHECK(reference == partial_data);
 	}
+}
+
+TEST_CASE("[Compression] ZXC round-trip") {
+	// Representative data: enough structure that it actually compresses.
+	PackedByteArray original;
+	original.resize(8192);
+	uint8_t *w = original.ptrw();
+	for (int i = 0; i < original.size(); i++) {
+		w[i] = uint8_t((i * 31 + (i >> 3)) & 0xFF);
+	}
+
+	// Compress via the Compression class (MODE_ZXC).
+	PackedByteArray compressed;
+	compressed.resize(Compression::get_max_compressed_buffer_size(original.size(), Compression::MODE_ZXC));
+	const int64_t compressed_size = Compression::compress(compressed.ptrw(), original.ptr(), original.size(), Compression::MODE_ZXC);
+	REQUIRE(compressed_size > 0);
+	compressed.resize(compressed_size);
+
+	// Decompress back into a buffer of the known original size.
+	PackedByteArray decompressed;
+	decompressed.resize(original.size());
+	const int64_t decompressed_size = Compression::decompress(decompressed.ptrw(), decompressed.size(), compressed.ptr(), compressed.size(), Compression::MODE_ZXC);
+	CHECK(decompressed_size == original.size());
+	CHECK(decompressed == original);
+}
+
+TEST_CASE("[FileAccess] ZXC compressed file round-trip") {
+	const String file_path = TestUtils::get_data_path("zxc_roundtrip.bin");
+
+	PackedByteArray original;
+	original.resize(4096);
+	uint8_t *w = original.ptrw();
+	for (int i = 0; i < original.size(); i++) {
+		w[i] = uint8_t((i * 17) & 0xFF);
+	}
+
+	{
+		Ref<FileAccess> fw = FileAccess::open_compressed(file_path, FileAccess::WRITE, FileAccess::COMPRESSION_ZXC);
+		REQUIRE(fw.is_valid());
+		fw->store_buffer(original);
+		fw->close();
+	}
+
+	{
+		Ref<FileAccess> fr = FileAccess::open_compressed(file_path, FileAccess::READ, FileAccess::COMPRESSION_ZXC);
+		REQUIRE(fr.is_valid());
+		const Vector<uint8_t> read_back = fr->get_buffer(original.size());
+		fr->close();
+		CHECK(read_back == original);
+	}
+
+	DirAccess::remove_file_or_error(file_path);
 }
 
 TEST_CASE("[FileAccess] Cursor positioning") {

@@ -43,13 +43,15 @@ public:
 	static inline bool zstd_long_distance_matching = false;
 	static inline int zstd_window_log_size = 27; // ZSTD_WINDOWLOG_LIMIT_DEFAULT
 	static inline int gzip_chunk = 16384;
+	static inline int zxc_level = 3; // ZXC_LEVEL_DEFAULT
 
 	enum Mode : int32_t {
 		MODE_FASTLZ,
 		MODE_DEFLATE,
 		MODE_ZSTD,
 		MODE_GZIP,
-		MODE_BROTLI
+		MODE_BROTLI,
+		MODE_ZXC
 	};
 
 	static int64_t compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_src_size, Mode p_mode = MODE_ZSTD);

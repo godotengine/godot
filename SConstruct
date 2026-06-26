@@ -193,6 +193,7 @@ opts.Add(
 )
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompression and WOFF2 fonts support", True))
+opts.Add(BoolVariable("zxc", "Enable the ZXC compression codec", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver on supported platforms", False))
 opts.Add(BoolVariable("vulkan", "Enable the Vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
@@ -346,6 +347,7 @@ opts.Add(BoolVariable("builtin_rvo2_3d", "Use the built-in RVO2 3D library", Tru
 opts.Add(BoolVariable("builtin_xatlas", "Use the built-in xatlas library", True))
 opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
 opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
+opts.Add(BoolVariable("builtin_zxc", "Use the built-in ZXC library", True))
 
 # Compilation environment setup
 # CXX, CC, and LINK directly set the equivalent `env` values (which may still
@@ -1094,6 +1096,8 @@ if env["minizip"]:
     env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 if env["brotli"]:
     env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+if env["zxc"]:
+    env.Append(CPPDEFINES=["ZXC_ENABLED"])
 
 if not env["disable_overrides"]:
     env.Append(CPPDEFINES=["OVERRIDE_ENABLED"])

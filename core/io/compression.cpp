@@ -40,6 +40,10 @@
 #include <brotli/decode.h>
 #endif
 
+#ifdef ZXC_ENABLED
+#include <zxc.h>
+#endif
+
 namespace {
 struct ZstdDecompressorContext {
 	ZSTD_DCtx *zstd_d_ctx = nullptr;
@@ -124,6 +128,19 @@ int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_sr
 			ZSTD_freeCCtx(cctx);
 			return (int64_t)ret;
 		} break;
+		case MODE_ZXC: {
+#ifdef ZXC_ENABLED
+			zxc_compress_opts_t opts;
+			memset(&opts, 0, sizeof(opts));
+			opts.level = zxc_level;
+			const int64_t max_dst_size = get_max_compressed_buffer_size(p_src_size, MODE_ZXC);
+			const int64_t ret = zxc_compress(p_src, p_src_size, p_dst, max_dst_size, &opts);
+			ERR_FAIL_COND_V_MSG(ret < 0, -1, vformat("ZXC compression failed: %s.", zxc_error_name((int)ret)));
+			return ret;
+#else
+			ERR_FAIL_V_MSG(-1, "Godot was compiled without ZXC support.");
+#endif
+		} break;
 	}
 
 	ERR_FAIL_V(-1);
@@ -162,6 +179,13 @@ int64_t Compression::get_max_compressed_buffer_size(int64_t p_src_size, Mode p_m
 		} break;
 		case MODE_ZSTD: {
 			return ZSTD_compressBound(p_src_size);
+		} break;
+		case MODE_ZXC: {
+#ifdef ZXC_ENABLED
+			return (int64_t)zxc_compress_bound(p_src_size);
+#else
+			ERR_FAIL_V_MSG(-1, "Godot was compiled without ZXC support.");
+#endif
 		} break;
 	}
 
@@ -225,6 +249,17 @@ int64_t Compression::decompress(uint8_t *p_dst, int64_t p_dst_max_size, const ui
 
 			size_t ret = ZSTD_decompressDCtx(decompressor_ctx.zstd_d_ctx, p_dst, p_dst_max_size, p_src, p_src_size);
 			return (int64_t)ret;
+		} break;
+		case MODE_ZXC: {
+#ifdef ZXC_ENABLED
+			zxc_decompress_opts_t opts;
+			memset(&opts, 0, sizeof(opts));
+			const int64_t ret = zxc_decompress(p_src, p_src_size, p_dst, p_dst_max_size, &opts);
+			ERR_FAIL_COND_V_MSG(ret < 0, -1, vformat("ZXC decompression failed: %s.", zxc_error_name((int)ret)));
+			return ret;
+#else
+			ERR_FAIL_V_MSG(-1, "Godot was compiled without ZXC support.");
+#endif
 		} break;
 	}
 

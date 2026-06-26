@@ -683,6 +683,16 @@ Comment: Zstandard
 Copyright: Meta Platforms, Inc. and affiliates.
 License: BSD-3-clause
 
+Files: thirdparty/zxc/*
+Comment: ZXC
+Copyright: 2025-2026, Bertrand Lebonnois and contributors.
+License: BSD-3-clause
+
+Files: thirdparty/zxc/src/lib/vendors/rapidhash.h
+Comment: rapidhash
+Copyright: 2025, Nicolas De Carli
+License: Expat
+
 
 
 License: Apache-2.0

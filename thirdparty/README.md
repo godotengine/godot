@@ -1311,3 +1311,19 @@ Files extracted from upstream source:
 
 - `lib/{common/,compress/,decompress/,zstd.h,zstd_errors.h}`
 - `LICENSE`
+
+
+## zxc
+
+- Upstream: https://github.com/hellobertrand/zxc
+- Version: 0.12.0 (c8748471f7a6e895e4b9dc0d9063d91e8567c249, 2026)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `include/`
+- `src/lib/` (including `src/lib/vendors/rapidhash.h`, MIT-licensed)
+- `LICENSE`
+
+The CMake/Meson build files, command-line tool, and test suite are not needed
+and were not extracted.
