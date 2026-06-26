@@ -89,6 +89,16 @@ static String _include_function(const String &p_path, void *userpointer) {
 	return file_inc->get_as_utf8_string();
 }
 
+static void _add_shader_import_error_if_needed(const String &p_source_file) {
+	if (!EditorNode::get_singleton()) {
+		return;
+	}
+
+	if (!ShaderFileEditor::singleton || !ShaderFileEditor::singleton->is_visible_in_tree()) {
+		EditorNode::add_io_error(vformat(TTR("Error importing GLSL shader file: '%s'. Open the file in the filesystem dock in order to see the reason."), p_source_file));
+	}
+}
+
 Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_source_file, FileAccess::READ, &err);
@@ -102,9 +112,8 @@ Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const Stri
 	err = shader_file->parse_versions_from_text(file_txt, "", _include_function, &base_path);
 
 	if (err != OK) {
-		if (!ShaderFileEditor::singleton->is_visible_in_tree()) {
-			callable_mp_static(&EditorNode::add_io_error).call_deferred(vformat(TTR("Error importing GLSL shader file: '%s'. Open the file in the filesystem dock in order to see the reason."), p_source_file));
-		}
+		shader_file->print_errors(p_source_file);
+		callable_mp_static(_add_shader_import_error_if_needed).call_deferred(p_source_file);
 	}
 
 	ResourceSaver::save(shader_file, p_save_path + ".res");
