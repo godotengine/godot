@@ -5575,7 +5575,7 @@ void EditorNode::add_io_error(const String &p_error) {
 	// the io errors to prevent the io popup to set it's parent to the progress dialog.
 	if (singleton->progress_dialog->is_visible()) {
 		singleton->load_errors_queued_to_display = true;
-	} else {
+	} else if (!singleton->load_error_dialog->is_inside_tree()) {
 		EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
 	}
 }
@@ -5588,7 +5588,7 @@ void EditorNode::add_io_warning(const String &p_warning) {
 	// the io errors to prevent the io popup to set it's parent to the progress dialog.
 	if (singleton->progress_dialog->is_visible()) {
 		singleton->load_errors_queued_to_display = true;
-	} else {
+	} else if (!singleton->load_error_dialog->is_inside_tree()) {
 		EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
 	}
 }
@@ -6030,7 +6030,9 @@ void EditorNode::progress_end_task_bg(const String &p_task) {
 void EditorNode::_progress_dialog_visibility_changed() {
 	// Open the io errors after the progress dialog is closed.
 	if (load_errors_queued_to_display && !progress_dialog->is_visible()) {
-		EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
+		if (!singleton->load_error_dialog->is_inside_tree()) {
+			EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
+		}
 		load_errors_queued_to_display = false;
 	}
 }
