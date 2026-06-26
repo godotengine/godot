@@ -610,6 +610,26 @@ public:
 		SHADER_STAGE_INTERSECTION_BIT = (1 << SHADER_STAGE_INTERSECTION),
 	};
 
+	static const char *get_shader_stage_name(ShaderStage p_stage) {
+		static constexpr const char *shader_stage_names[SHADER_STAGE_MAX] = {
+			"vertex",
+			"fragment",
+			"tesselation_control",
+			"tesselation_evaluation",
+			"compute",
+			"raygen",
+			"any_hit",
+			"closest_hit",
+			"miss",
+			"intersection",
+		};
+
+		if (p_stage >= 0 && p_stage < SHADER_STAGE_MAX) {
+			return shader_stage_names[p_stage];
+		}
+		return "unknown";
+	}
+
 	enum ShaderLanguage {
 		SHADER_LANGUAGE_GLSL,
 		SHADER_LANGUAGE_HLSL,
