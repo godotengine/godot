@@ -173,6 +173,12 @@ void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 		// Avoid updating multiple times at once.
 		mesh_library->connect_changed(callable_mp(update_items_delay, &Timer::start).bind(UPDATE_ITEMS_DELAY_TIMEOUT));
 		_update_mesh_items();
+
+		bool read_only = EditorNode::get_singleton()->is_resource_read_only(mesh_library);
+		add_item->set_disabled(read_only);
+		remove_item->set_disabled(read_only);
+		import_scene->set_disabled(read_only);
+		inspector->set_read_only(read_only);
 	}
 }
 
