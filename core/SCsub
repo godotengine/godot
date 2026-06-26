@@ -177,6 +177,9 @@ if env["zxc"] and env["builtin_zxc"]:
     # <zxc.h> must also be reachable from core/io/compression.cpp.
     env.Prepend(CPPPATH=[thirdparty_zxc_dir + "include"])
 
+    env_thirdparty.Append(CPPDEFINES=["ZXC_STATIC_DEFINE"])
+    env.Append(CPPDEFINES=["ZXC_STATIC_DEFINE"])
+
     # Sources compiled once, with no per-ISA variants and no special flags.
     thirdparty_zxc_sources = [
         "src/lib/zxc_common.c",
