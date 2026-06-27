@@ -275,7 +275,19 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 			k->set_physical_keycode(Key::NONE);
 			k->set_key_label(Key::NONE);
 		} else if (key_mode->get_selected_id() == KEYMODE_PHY_KEYCODE) {
-			k->set_keycode(Key::NONE);
+			// For modifier keys, preserve keycode to ensure action matching
+			// works across all platforms (modifier keys may have inconsistent
+			// physical_keycode values at runtime depending on the platform).
+			switch (k->get_keycode()) {
+				case Key::SHIFT:
+				case Key::CTRL:
+				case Key::ALT:
+				case Key::META:
+					break;
+				default:
+					k->set_keycode(Key::NONE);
+					break;
+			}
 			k->set_key_label(Key::NONE);
 		} else if (key_mode->get_selected_id() == KEYMODE_UNICODE) {
 			k->set_physical_keycode(Key::NONE);
@@ -534,8 +546,12 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 				k->set_key_label(Key::NONE);
 			} else if (key_mode->get_selected_id() == KEYMODE_PHY_KEYCODE) {
 				k->set_physical_keycode(keycode);
-				k->set_keycode(Key::NONE);
 				k->set_key_label(Key::NONE);
+				// For modifier keys, preserve keycode for reliable action matching.
+				if (keycode != Key::SHIFT && keycode != Key::CTRL &&
+						keycode != Key::ALT && keycode != Key::META) {
+					k->set_keycode(Key::NONE);
+				}
 			}
 
 			_set_event(k, ko, false);
