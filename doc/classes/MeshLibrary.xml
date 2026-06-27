@@ -121,6 +121,12 @@
 				Gets an unused ID for a new item.
 			</description>
 		</method>
+		<method name="get_source_scene" qualifiers="const">
+			<return type="PackedScene" />
+			<description>
+				Gets the scene used for updates in the [MeshLibrary] editor.
+			</description>
+		</method>
 		<method name="remove_item">
 			<return type="void" />
 			<param index="0" name="id" type="int" />
@@ -208,6 +214,13 @@
 			<description>
 				Sets an item's collision shapes.
 				The array should consist of [Shape3D] objects, each followed by a [Transform3D] that will be applied to it. For shapes that should not have a transform, use [constant Transform3D.IDENTITY].
+			</description>
+		</method>
+		<method name="set_source_scene">
+			<return type="void" />
+			<param index="0" name="scene" type="PackedScene" />
+			<description>
+				Sets the scene used when the option to update this library's item is picked in the [MeshLibrary] editor.
 			</description>
 		</method>
 	</methods>
