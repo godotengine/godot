@@ -38,8 +38,8 @@
 class CheckBox;
 class EditorData;
 class EditorSelection;
-class HBoxContainer;
 class MenuButton;
+class PanelContainer;
 class RenameDialog;
 class ReparentDialog;
 class Shader;
@@ -128,7 +128,7 @@ class SceneTreeDock : public EditorDock {
 	Button *button_custom = nullptr;
 	Button *button_clipboard = nullptr;
 
-	HBoxContainer *button_hb = nullptr;
+	PanelContainer *button_panel = nullptr;
 	Button *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree = nullptr;
 	Tree *remote_tree = nullptr;
@@ -195,6 +195,8 @@ class SceneTreeDock : public EditorDock {
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
 
+	void _make_owners_map(Node *p_node, Dictionary &r_owners);
+	void _apply_owners_map(Node *p_node, const Dictionary &p_owners);
 	void _set_owners(Node *p_owner, const Array &p_nodes);
 
 	enum ReplaceOwnerMode {
@@ -243,6 +245,7 @@ class SceneTreeDock : public EditorDock {
 	Node *node_hovered_now = nullptr;
 	Node *node_hovered_previously = nullptr;
 	Object *edited_object_at_drag_start = nullptr;
+	bool scene_tree_drag_active = false;
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -251,8 +254,8 @@ class SceneTreeDock : public EditorDock {
 	void _new_scene_from(const String &p_file);
 	void _set_node_owner_recursive(Node *p_node, Node *p_owner, const HashMap<const Node *, Node *> &p_inverse_duplimap);
 
-	bool _validate_no_foreign();
-	bool _validate_no_instance();
+	bool _validate_no_foreign_selected(const List<Node *> &p_selected);
+	bool _validate_no_instance_selected(const List<Node *> &p_selected);
 	void _selection_changed();
 	void _update_script_button();
 	void _queue_update_script_button();
@@ -269,6 +272,7 @@ class SceneTreeDock : public EditorDock {
 	void _quick_open(const String &p_file_path);
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
+	void _setup_tree_menu();
 	void _update_tree_menu();
 
 	void _filter_changed(const String &p_filter);
@@ -334,7 +338,7 @@ public:
 	void set_selection(const Vector<Node *> &p_nodes);
 	void set_selected(Node *p_node, bool p_emit_selected = false);
 	void fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<Node *, NodePath> *p_renames);
-	void perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims = nullptr);
+	void perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims = nullptr, LocalVector<Pair<StringName, StringName>> *r_folded_group_renames = nullptr);
 	void perform_node_replace(Node *p_base, Node *p_node, Node *p_by_node);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 	EditorData *get_editor_data() { return editor_data; }

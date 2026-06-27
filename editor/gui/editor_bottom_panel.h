@@ -85,6 +85,7 @@ public:
 	virtual void update_visibility() override { show(); } // Never hide bottom panel.
 	virtual TabStyle get_tab_style() const override;
 	virtual bool can_switch_dock() const override;
+	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) override;
 	virtual void load_selected_tab(int p_idx) override;
 
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;

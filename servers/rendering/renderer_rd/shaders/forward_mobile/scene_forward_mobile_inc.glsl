@@ -190,18 +190,23 @@ uint sc_spot_lights(uint bound) {
 	return option_to_count(option, bound);
 }
 
-uint sc_reflection_probes(uint bound) {
+uint sc_area_lights(uint bound) {
 	uint option = (sc_packed_1() >> 16) & 3U;
 	return option_to_count(option, bound);
 }
 
-uint sc_directional_lights(uint bound) {
+uint sc_reflection_probes(uint bound) {
 	uint option = (sc_packed_1() >> 18) & 3U;
 	return option_to_count(option, bound);
 }
 
+uint sc_directional_lights(uint bound) {
+	uint option = (sc_packed_1() >> 20) & 3U;
+	return option_to_count(option, bound);
+}
+
 uint sc_decals(uint bound) {
-	if (((sc_packed_1() >> 20) & 1U) != 0) {
+	if (((sc_packed_1() >> 22) & 1U) != 0) {
 		return bound;
 	} else {
 		return 0;
@@ -209,7 +214,7 @@ uint sc_decals(uint bound) {
 }
 
 bool sc_directional_light_blend_split(uint i) {
-	return ((sc_packed_1() >> (21 + i)) & 1U) != 0;
+	return ((sc_packed_1() >> (23 + i)) & 1U) != 0;
 }
 
 half sc_luminance_multiplier() {
@@ -263,12 +268,17 @@ layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
 }
 spot_lights;
 
-layout(set = 0, binding = 5, std430) restrict readonly buffer ReflectionProbeData {
+layout(set = 0, binding = 5, std430) restrict readonly buffer AreaLights {
+	LightData data[];
+}
+area_lights;
+
+layout(set = 0, binding = 6, std430) restrict readonly buffer ReflectionProbeData {
 	ReflectionData data[];
 }
 reflections;
 
-layout(set = 0, binding = 6, std140) uniform DirectionalLights {
+layout(set = 0, binding = 7, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
@@ -288,7 +298,7 @@ struct Lightmap {
 	uint flags;
 };
 
-layout(set = 0, binding = 7, std140) restrict readonly buffer Lightmaps {
+layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {
 	Lightmap data[];
 }
 lightmaps;
@@ -297,25 +307,31 @@ struct LightmapCapture {
 	vec4 sh[9];
 };
 
-layout(set = 0, binding = 8, std140) restrict readonly buffer LightmapCaptures {
+layout(set = 0, binding = 9, std140) restrict readonly buffer LightmapCaptures {
 	LightmapCapture data[];
 }
 lightmap_captures;
 
-layout(set = 0, binding = 9) uniform texture2D decal_atlas;
-layout(set = 0, binding = 10) uniform texture2D decal_atlas_srgb;
+layout(set = 0, binding = 10) uniform texture2D decal_atlas;
+layout(set = 0, binding = 11) uniform texture2D decal_atlas_srgb;
 
-layout(set = 0, binding = 11, std430) restrict readonly buffer Decals {
+layout(set = 0, binding = 12, std430) restrict readonly buffer Decals {
 	DecalData data[];
 }
 decals;
 
-layout(set = 0, binding = 12, std430) restrict readonly buffer GlobalShaderUniformData {
+layout(set = 0, binding = 13, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
 global_shader_uniforms;
 
-layout(set = 0, binding = 13) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
+layout(set = 0, binding = 14) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
+
+layout(set = 0, binding = 15) uniform sampler2D ltc_lut1;
+
+layout(set = 0, binding = 16) uniform sampler2D ltc_lut2;
+
+layout(set = 0, binding = 17) uniform texture2D area_light_atlas;
 
 /* Set 1: Render Pass (changes per render pass) */
 
@@ -340,7 +356,9 @@ struct InstanceData {
 	uvec2 reflection_probes;
 	uvec2 omni_lights;
 	uvec2 spot_lights;
+	uvec2 area_lights;
 	uvec2 decals;
+	uvec2 padding;
 #ifdef USE_DOUBLE_PRECISION
 	vec4 model_precision;
 	vec4 prev_model_precision;

@@ -61,6 +61,7 @@ private:
 
 	uint32_t cache_entries = 0;
 	bool changed = false;
+	bool cache_initialized = false;
 
 protected:
 	static void _bind_methods();

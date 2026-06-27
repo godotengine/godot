@@ -49,6 +49,9 @@ static inline Color _select_color(const Color &p_override_color, const Color &p_
 
 Size2 TabBar::get_minimum_size() const {
 	Size2 ms;
+	Size2 combined_max = get_combined_maximum_size();
+
+	int buttons_size = get_tab_count() > 1 ? theme_cache.decrement_icon->get_width() + theme_cache.increment_icon->get_width() : 0;
 
 	if (tabs.is_empty()) {
 		return ms;
@@ -121,7 +124,12 @@ Size2 TabBar::get_minimum_size() const {
 	}
 
 	if (clip_tabs) {
-		ms.width = max_tab_width + (get_tab_count() > 1 ? theme_cache.decrement_icon->get_width() + theme_cache.increment_icon->get_width() : 0);
+		ms.width = max_tab_width + buttons_size;
+		if (combined_max.width >= 0) {
+			ms.width = MIN(ms.width, int(combined_max.width));
+		}
+	} else if (combined_max.width >= 0) {
+		ms.width = MIN(ms.width, int(combined_max.width));
 	}
 
 	return ms;
@@ -484,10 +492,21 @@ void TabBar::_notification(int p_what) {
 
 			queue_accessibility_update();
 			queue_redraw();
-			update_minimum_size();
 
-			[[fallthrough]];
-		}
+			int ofs_old = offset;
+			int max_old = max_drawn_tab;
+
+			_update_cache();
+			_ensure_no_over_offset();
+
+			if (scroll_to_selected && (offset != ofs_old || max_drawn_tab != max_old)) {
+				ensure_tab_visible(current);
+			}
+
+			update_desired_size();
+			update_minimum_size();
+		} break;
+
 		case NOTIFICATION_RESIZED: {
 			int ofs_old = offset;
 			int max_old = max_drawn_tab;
@@ -790,6 +809,7 @@ void TabBar::set_tab_count(int p_count) {
 
 	queue_accessibility_update();
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 	notify_property_list_changed();
 }
@@ -920,6 +940,7 @@ void TabBar::set_tab_title(int p_tab, const String &p_title) {
 	}
 	queue_accessibility_update();
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 }
 
@@ -971,6 +992,7 @@ void TabBar::set_tab_language(int p_tab, const String &p_language) {
 		}
 		queue_accessibility_update();
 		queue_redraw();
+		update_desired_size();
 		update_minimum_size();
 	}
 }
@@ -995,6 +1017,7 @@ void TabBar::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 }
 
@@ -1018,6 +1041,7 @@ void TabBar::set_tab_icon_max_width(int p_tab, int p_width) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 }
 
@@ -1073,6 +1097,7 @@ void TabBar::set_tab_disabled(int p_tab, bool p_disabled) {
 	}
 	queue_accessibility_update();
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 }
 
@@ -1097,6 +1122,7 @@ void TabBar::set_tab_hidden(int p_tab, bool p_hidden) {
 	}
 	queue_accessibility_update();
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 }
 
@@ -1130,6 +1156,7 @@ void TabBar::set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 }
 
@@ -1205,7 +1232,11 @@ void TabBar::_update_cache(bool p_update_hover) {
 		return;
 	}
 
-	int limit = get_size().width;
+	Size2 combined_max = get_combined_maximum_size();
+	int combined_max_width = combined_max.width >= 0 ? int(combined_max.width) - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width() : INT_MAX;
+	int effective_max_width = max_width > 0 ? MIN(max_width, combined_max_width) : combined_max_width;
+
+	int limit = combined_max.width > 0 ? MIN(combined_max.width, get_size().width) : get_size().width;
 	int limit_minus_buttons = limit - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
 
 	int w = 0;
@@ -1218,10 +1249,10 @@ void TabBar::_update_cache(bool p_update_hover) {
 		tabs.write[i].size_cache = get_tab_width(i);
 		tabs.write[i].accessibility_item_dirty = true;
 
-		tabs.write[i].truncated = max_width > 0 && tabs[i].size_cache > max_width;
+		tabs.write[i].truncated = effective_max_width > 0 && effective_max_width < INT_MAX && tabs[i].size_cache > effective_max_width;
 		if (tabs[i].truncated) {
 			int size_textless = tabs[i].size_cache - tabs[i].size_text;
-			int mw = MAX(size_textless, max_width);
+			int mw = MAX(size_textless, effective_max_width);
 
 			tabs.write[i].size_text = MAX(mw - size_textless, 1);
 			tabs.write[i].text_buf->set_width(tabs[i].size_text);
@@ -1296,6 +1327,68 @@ void TabBar::_update_cache(bool p_update_hover) {
 	}
 }
 
+Size2 TabBar::get_desired_size() const {
+	if (!clip_tabs || tabs.is_empty()) {
+		return Size2();
+	}
+	Size2 combined_max = get_combined_maximum_size();
+	if (combined_max.width < 0) {
+		return Size2();
+	}
+
+	int buttons_size = tabs.size() > 1 ? theme_cache.decrement_icon->get_width() + theme_cache.increment_icon->get_width() : 0;
+	int limit = int(combined_max.width);
+	int limit_minus_buttons = limit - buttons_size;
+
+	int w = 0;
+	bool overflowed = false;
+
+	// First pass: check if all tabs fit without buttons.
+	for (int i = offset; i < tabs.size(); i++) {
+		if (tabs[i].hidden) {
+			continue;
+		}
+
+		int next_w = w + tabs[i].size_cache;
+		if (i > offset) {
+			next_w += theme_cache.tab_separation;
+		}
+
+		if (next_w > limit) {
+			overflowed = true;
+			break;
+		}
+
+		w = next_w;
+	}
+
+	// If buttons are needed, recompute against the reduced limit.
+	if (offset > 0 || overflowed) {
+		w = 0;
+		for (int i = offset; i < tabs.size(); i++) {
+			if (tabs[i].hidden) {
+				continue;
+			}
+
+			int next_w = w + tabs[i].size_cache;
+			if (i > offset) {
+				next_w += theme_cache.tab_separation;
+			}
+
+			if (next_w > limit_minus_buttons) {
+				break;
+			}
+
+			w = next_w;
+		}
+	}
+
+	int desired = (offset > 0 || overflowed) ? w + buttons_size : w;
+	desired = MIN(desired, limit);
+
+	return Size2(desired, 0);
+}
+
 void TabBar::_hover_switch_timeout() {
 	set_current_tab(hover);
 }
@@ -1325,6 +1418,7 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	}
 	queue_accessibility_update();
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 
 	if (!deselect_enabled && tabs.size() == 1) {
@@ -1356,6 +1450,7 @@ void TabBar::clear_tabs() {
 
 	queue_accessibility_update();
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 	notify_property_list_changed();
 }
@@ -1418,6 +1513,7 @@ void TabBar::remove_tab(int p_idx) {
 
 	queue_accessibility_update();
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 	notify_property_list_changed();
 
@@ -1626,6 +1722,7 @@ void TabBar::_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_in
 	}
 
 	queue_accessibility_update();
+	update_desired_size();
 	update_minimum_size();
 }
 
@@ -1706,6 +1803,7 @@ void TabBar::set_clip_tabs(bool p_clip_tabs) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 }
 
@@ -1961,6 +2059,7 @@ void TabBar::set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 }
 
@@ -1983,6 +2082,7 @@ void TabBar::set_max_tab_width(int p_width) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
+	update_desired_size();
 	update_minimum_size();
 }
 

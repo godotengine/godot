@@ -36,7 +36,6 @@
 #include "core/debugger/script_debugger.h"
 #include "core/doc_data.h"
 #include "core/object/script_language.h"
-#include "core/templates/rb_set.h"
 
 class GDScriptNativeClass : public RefCounted {
 	GDCLASS(GDScriptNativeClass, RefCounted);
@@ -68,15 +67,6 @@ class GDScript : public Script {
 		StringName getter;
 		GDScriptDataType data_type;
 		PropertyInfo property_info;
-	};
-
-	struct ClearData {
-		RBSet<GDScriptFunction *> functions;
-		RBSet<Ref<Script>> scripts;
-		void clear() {
-			functions.clear();
-			scripts.clear();
-		}
 	};
 
 	friend class GDScriptInstance;
@@ -172,7 +162,7 @@ private:
 	Error _static_init();
 	void _static_default_init(); // Initialize static variables with default values based on their types.
 
-	RBSet<Object *> instances;
+	SelfList<GDScriptInstance>::List instances;
 	bool destructing = false;
 	bool clearing = false;
 	//exported members
@@ -285,7 +275,6 @@ public:
 	virtual StringName get_instance_base_type() const override; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) override;
 	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override;
-	virtual bool instance_has(const Object *p_this) const override;
 
 	virtual bool has_source_code() const override;
 	virtual String get_source_code() const override;
@@ -364,6 +353,9 @@ class GDScriptInstance : public ScriptInstance {
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
+	// Replacing `SelfList` with a better implementation could save 16bytes from the self and list pointer.
+	SelfList<GDScriptInstance> script_instance_list; // Linked list of instances with the same script.
+
 	void _call_implicit_ready_recursively(GDScript *p_script);
 
 public:
@@ -400,7 +392,8 @@ public:
 
 	virtual const Variant get_rpc_config() const;
 
-	GDScriptInstance() {}
+	GDScriptInstance() :
+			script_instance_list(this) {}
 	~GDScriptInstance();
 };
 
@@ -587,6 +580,10 @@ public:
 	virtual void finish() override;
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	virtual EditorLanguage *get_editor_language() override;
+#endif // TOOLS_ENABLED
+
 	virtual Vector<String> get_reserved_words() const override;
 	virtual bool is_control_flow_keyword(const String &p_keywords) const override;
 	virtual Vector<String> get_comment_delimiters() const override;
@@ -601,7 +598,6 @@ public:
 	virtual bool can_inherit_from_file() const override { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const override;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) override;
 #ifdef TOOLS_ENABLED
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) override;
 #endif

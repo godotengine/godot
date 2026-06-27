@@ -1143,6 +1143,12 @@
 				Returns the name of the server interface.
 			</description>
 		</method>
+		<method name="_get_short_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Returns the short name of the server interface. By convention, this should return a lowercase string that follows the [code]snake_case[/code] naming scheme.
+			</description>
+		</method>
 		<method name="_get_support_data" qualifiers="virtual const">
 			<return type="PackedByteArray" />
 			<description>
@@ -1485,7 +1491,7 @@
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="position" type="int" />
-			<param index="2" name="caret" type="CaretInfo*" />
+			<param index="2" name="r_caret" type="CaretInfo*" />
 			<description>
 				Returns shapes of the carets corresponding to the character offset [param position] in the text. Returned caret shape is 1 pixel wide rectangle.
 			</description>

@@ -100,11 +100,6 @@ def configure(env: "SConsEnvironment"):
 
     ## Build type
 
-    if env.dev_build:
-        # This is needed for our crash handler to work properly.
-        # gdb works fine without it though, so maybe our crash handler could too.
-        env.Append(LINKFLAGS=["-rdynamic"])
-
     # Cross-compilation
     # TODO: Support cross-compilation on architectures other than x86.
     host_is_64_bit = sys.maxsize > 2**32
@@ -261,7 +256,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config icu-i18n icu-uc --cflags --libs")
 
     if not env["builtin_harfbuzz"]:
-        env.ParseConfig("pkg-config harfbuzz harfbuzz-icu --cflags --libs")
+        env.ParseConfig("pkg-config harfbuzz harfbuzz-icu harfbuzz-raster harfbuzz-vector --cflags --libs")
 
     if not env["builtin_icu4c"] or not env["builtin_harfbuzz"]:
         print_warning(

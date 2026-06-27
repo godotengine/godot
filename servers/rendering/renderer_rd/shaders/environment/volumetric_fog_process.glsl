@@ -18,6 +18,9 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #include "../light_data_inc.glsl"
 #include "../oct_inc.glsl"
 
+#include "../area_lights_inc.glsl"
+
+#define M_TAU 6.28318530718
 #define M_PI 3.14159265359
 
 #define DENSITY_SCALE 1024.0
@@ -35,38 +38,43 @@ layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
 }
 spot_lights;
 
-layout(set = 0, binding = 5, std140) uniform DirectionalLights {
+layout(set = 0, binding = 5, std430) restrict readonly buffer AreaLights {
+	LightData data[];
+}
+area_lights;
+
+layout(set = 0, binding = 6, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
 
-layout(set = 0, binding = 6, std430) buffer restrict readonly ClusterBuffer {
+layout(set = 0, binding = 7, std430) buffer restrict readonly ClusterBuffer {
 	uint data[];
 }
 cluster_buffer;
 
-layout(set = 0, binding = 7) uniform sampler linear_sampler;
+layout(set = 0, binding = 8) uniform sampler linear_sampler;
 
 #ifdef MODE_DENSITY
-layout(rgba16f, set = 0, binding = 8) uniform restrict writeonly image3D density_map;
+layout(rgba16f, set = 0, binding = 9) uniform restrict writeonly image3D density_map;
 #endif
 
 #ifdef MODE_FOG
-layout(rgba16f, set = 0, binding = 8) uniform restrict readonly image3D density_map;
-layout(rgba16f, set = 0, binding = 9) uniform restrict writeonly image3D fog_map;
+layout(rgba16f, set = 0, binding = 9) uniform restrict readonly image3D density_map;
+layout(rgba16f, set = 0, binding = 10) uniform restrict writeonly image3D fog_map;
 #endif
 
 #ifdef MODE_COPY
-layout(rgba16f, set = 0, binding = 8) uniform restrict readonly image3D source_map;
-layout(rgba16f, set = 0, binding = 9) uniform restrict writeonly image3D dest_map;
+layout(rgba16f, set = 0, binding = 9) uniform restrict readonly image3D source_map;
+layout(rgba16f, set = 0, binding = 10) uniform restrict writeonly image3D dest_map;
 #endif
 
 #ifdef MODE_FILTER
-layout(rgba16f, set = 0, binding = 8) uniform restrict readonly image3D source_map;
-layout(rgba16f, set = 0, binding = 9) uniform restrict writeonly image3D dest_map;
+layout(rgba16f, set = 0, binding = 9) uniform restrict readonly image3D source_map;
+layout(rgba16f, set = 0, binding = 10) uniform restrict writeonly image3D dest_map;
 #endif
 
-layout(set = 0, binding = 10) uniform sampler shadow_sampler;
+layout(set = 0, binding = 11) uniform sampler shadow_sampler;
 
 #define MAX_VOXEL_GI_INSTANCES 8
 
@@ -85,14 +93,14 @@ struct VoxelGIData {
 	float exposure_normalization; // 4 - 112
 };
 
-layout(set = 0, binding = 11, std140) uniform VoxelGIs {
+layout(set = 0, binding = 12, std140) uniform VoxelGIs {
 	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
 }
 voxel_gi_instances;
 
-layout(set = 0, binding = 12) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
+layout(set = 0, binding = 13) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
-layout(set = 0, binding = 13) uniform sampler linear_sampler_with_mipmaps;
+layout(set = 0, binding = 14) uniform sampler linear_sampler_with_mipmaps;
 
 #ifdef ENABLE_SDFGI
 
@@ -142,7 +150,7 @@ layout(set = 1, binding = 2) uniform texture3D sdfgi_occlusion_texture;
 
 #endif //SDFGI
 
-layout(set = 0, binding = 14, std140) uniform Params {
+layout(set = 0, binding = 15, std140) uniform Params {
 	vec2 fog_frustum_size_begin;
 	vec2 fog_frustum_size_end;
 
@@ -187,30 +195,32 @@ layout(set = 0, binding = 14, std140) uniform Params {
 }
 params;
 #ifndef MODE_COPY
-layout(set = 0, binding = 15) uniform texture3D prev_density_texture;
+layout(set = 0, binding = 16) uniform texture3D prev_density_texture;
 
 #ifdef NO_IMAGE_ATOMICS
-layout(set = 0, binding = 16) buffer density_only_map_buffer {
+layout(set = 0, binding = 17) buffer density_only_map_buffer {
 	uint density_only_map[];
 };
-layout(set = 0, binding = 17) buffer light_only_map_buffer {
+layout(set = 0, binding = 18) buffer light_only_map_buffer {
 	uint light_only_map[];
 };
-layout(set = 0, binding = 18) buffer emissive_only_map_buffer {
+layout(set = 0, binding = 19) buffer emissive_only_map_buffer {
 	uint emissive_only_map[];
 };
 #else
-layout(r32ui, set = 0, binding = 16) uniform uimage3D density_only_map;
-layout(r32ui, set = 0, binding = 17) uniform uimage3D light_only_map;
-layout(r32ui, set = 0, binding = 18) uniform uimage3D emissive_only_map;
+layout(r32ui, set = 0, binding = 17) uniform uimage3D density_only_map;
+layout(r32ui, set = 0, binding = 18) uniform uimage3D light_only_map;
+layout(r32ui, set = 0, binding = 19) uniform uimage3D emissive_only_map;
 #endif
 
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
-layout(set = 0, binding = 19) uniform texture2DArray sky_texture;
+layout(set = 0, binding = 20) uniform texture2DArray sky_texture;
 #else
-layout(set = 0, binding = 19) uniform texture2D sky_texture;
+layout(set = 0, binding = 20) uniform texture2D sky_texture;
 #endif
 #endif // MODE_COPY
+
+layout(set = 0, binding = 21) uniform texture2D area_light_atlas;
 
 float get_depth_at_pos(float cell_depth_size, int z) {
 	float d = float(z) * cell_depth_size + cell_depth_size * 0.5; //center of voxels
@@ -252,6 +262,11 @@ uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 float henyey_greenstein(float cos_theta, float g) {
 	const float k = 0.0795774715459; // 1 / (4 * PI)
 	return k * (1.0 - g * g) / (pow(1.0 + g * g - 2.0 * g * cos_theta, 1.5));
+}
+
+vec3 safe_normalize(vec3 v) {
+	float length_squared = dot(v, v);
+	return (length_squared > 1e-12) ? v * inversesqrt(length_squared) : vec3(0.0);
 }
 
 #define TEMPORAL_FRAMES 16
@@ -422,7 +437,7 @@ void main() {
 					shadow_attenuation = mix(vec3(1.0 - directional_lights.data[i].shadow_opacity), vec3(1.0), shadow);
 				}
 
-				total_light += shadow_attenuation * directional_lights.data[i].color * directional_lights.data[i].energy * henyey_greenstein(dot(normalize(view_pos), normalize(directional_lights.data[i].direction)), params.phase_g) * directional_lights.data[i].volumetric_fog_energy;
+				total_light += shadow_attenuation * directional_lights.data[i].color * directional_lights.data[i].energy * henyey_greenstein(dot(safe_normalize(view_pos), safe_normalize(directional_lights.data[i].direction)), params.phase_g) * directional_lights.data[i].volumetric_fog_energy;
 			}
 		}
 
@@ -432,7 +447,7 @@ void main() {
 			vec3 anisotropic = vec3(0.0);
 			if (params.sky_contribution > 0.0) {
 				float mip_bias = 2.0 + total_density * (MAX_SKY_LOD - 2.0); // Not physically based, but looks nice
-				vec3 scatter_direction = (params.radiance_inverse_xform * normalize(view_pos)) * sign(params.phase_g);
+				vec3 scatter_direction = (params.radiance_inverse_xform * safe_normalize(view_pos)) * sign(params.phase_g);
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
 				isotropic = texture(sampler2DArray(sky_texture, linear_sampler_with_mipmaps), vec3(vec3_to_oct_with_border(vec3(0.0, 1.0, 0.0), params.sky_border_size), mip_bias)).rgb;
 				anisotropic = texture(sampler2DArray(sky_texture, linear_sampler_with_mipmaps), vec3(vec3_to_oct_with_border(scatter_direction, params.sky_border_size), mip_bias)).rgb;
@@ -490,7 +505,7 @@ void main() {
 							vec3 local_vert = (omni_lights.data[light_index].shadow_matrix * vec4(view_pos, 1.0)).xyz;
 
 							float shadow_len = length(local_vert); //need to remember shadow len from here
-							vec3 shadow_sample = normalize(local_vert);
+							vec3 shadow_sample = safe_normalize(local_vert);
 
 							if (shadow_sample.z >= 0.0) {
 								uv_rect.xy += flip_offset;
@@ -508,7 +523,7 @@ void main() {
 
 							shadow_attenuation = mix(1.0 - omni_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (pos.z - depth)) / omni_lights.data[light_index].inv_radius * INV_FOG_FADE));
 						}
-						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_pos - view_pos), normalize(view_pos)), params.phase_g) * omni_lights.data[light_index].volumetric_fog_energy;
+						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(safe_normalize(light_pos - view_pos), safe_normalize(view_pos)), params.phase_g) * omni_lights.data[light_index].volumetric_fog_energy;
 					}
 				}
 			}
@@ -550,7 +565,7 @@ void main() {
 
 						vec3 spot_dir = spot_lights.data[light_index].direction;
 						float cone_angle = spot_lights.data[light_index].cone_angle;
-						float scos = max(dot(-normalize(light_rel_vec), spot_dir), cone_angle);
+						float scos = max(dot(-safe_normalize(light_rel_vec), spot_dir), cone_angle);
 						float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cone_angle));
 						attenuation *= 1.0 - pow(spot_rim, spot_lights.data[light_index].cone_attenuation);
 
@@ -564,7 +579,8 @@ void main() {
 
 							vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
 							splane.z -= spot_lights.data[light_index].shadow_bias;
-							splane /= splane.w;
+							float safe_w = abs(splane.w) > 1e-6 ? splane.w : (splane.w >= 0.0 ? 1e-6 : -1e-6);
+							splane /= safe_w;
 
 							vec3 pos = vec3(splane.xy * spot_lights.data[light_index].atlas_rect.zw + spot_lights.data[light_index].atlas_rect.xy, splane.z);
 
@@ -572,7 +588,113 @@ void main() {
 
 							shadow_attenuation = mix(1.0 - spot_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (pos.z - depth)) / spot_lights.data[light_index].inv_radius * INV_FOG_FADE));
 						}
-						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_rel_vec), normalize(view_pos)), params.phase_g) * spot_lights.data[light_index].volumetric_fog_energy;
+						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(safe_normalize(light_rel_vec), safe_normalize(view_pos)), params.phase_g) * spot_lights.data[light_index].volumetric_fog_energy;
+					}
+				}
+			}
+		}
+
+		{ //area lights
+
+			uint cluster_area_offset = cluster_offset + params.cluster_type_size * 2;
+
+			uint item_min;
+			uint item_max;
+			uint item_from;
+			uint item_to;
+
+			cluster_get_item_range(cluster_area_offset + params.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+
+			for (uint i = item_from; i < item_to; i++) {
+				uint mask = cluster_buffer.data[cluster_area_offset + i];
+				mask &= cluster_get_range_clip_mask(i, item_min, item_max);
+				uint merged_mask = mask;
+
+				while (merged_mask != 0) {
+					uint bit = findMSB(merged_mask);
+					merged_mask &= ~(1 << bit);
+
+					uint light_index = 32 * i + bit;
+					float shadow_attenuation = 1.0;
+
+					vec3 area_width = area_lights.data[light_index].area_width;
+					vec3 area_height = area_lights.data[light_index].area_height;
+					vec3 area_direction = area_lights.data[light_index].direction;
+					float EPSILON = 1e-4f;
+
+					if (area_lights.data[light_index].volumetric_fog_energy > 0.001 && dot(area_width, area_width) > EPSILON && dot(area_height, area_height) > EPSILON) {
+						float a_len = length(area_width);
+						float b_len = length(area_height);
+						vec3 area_width_norm = normalize(area_width);
+						vec3 area_height_norm = normalize(area_height);
+						float a_half_len = a_len / 2.0;
+						float b_half_len = b_len / 2.0;
+						vec3 light_center = area_lights.data[light_index].position;
+						vec3 light_to_vert = view_pos - light_center;
+						vec3 pos_local_to_light = vec3(dot(light_to_vert, area_width_norm), dot(light_to_vert, area_height_norm), dot(light_to_vert, -area_direction)); // view_pos in LIGHT SPACE
+						vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0.0); // LIGHT SPACE
+						float inv_center_range = area_lights.data[light_index].cone_attenuation;
+						vec3 closest_point_on_light = light_center + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm; // VIEW SPACE
+
+						vec3 light_rel_vec = closest_point_on_light - view_pos;
+						float d = length(light_rel_vec);
+
+						// Due to jitter, we get extreme flickering at voxels intersecting the light.
+						// A quick fix is to set the distance to be at least 1.0. This has the side effect,
+						// that a light with a range of less than 1.0 will not affect fog, but that is an uncommon scenario.
+						vec3 light_vec = light_rel_vec / d;
+						if (d < EPSILON) {
+							light_vec = area_direction;
+						}
+						d = max(d, 1.0);
+
+						if (d * inv_center_range < 1.0) { // view_pos in range
+							// solid angle already decreases by inverse square, but subtracting 1 leads to results closer to spotlight, I'm somewhat unsure why
+							float attenuation = get_omni_attenuation(d, area_lights.data[light_index].inv_radius, area_lights.data[light_index].attenuation - 1.0);
+							vec3 h_area_width = area_width / 2.0;
+							vec3 h_area_height = area_height / 2.0;
+							vec3 light_points[4];
+							light_points[0] = area_lights.data[light_index].position - h_area_width - h_area_height - view_pos;
+							light_points[1] = area_lights.data[light_index].position + h_area_width - h_area_height - view_pos;
+							light_points[2] = area_lights.data[light_index].position + h_area_width + h_area_height - view_pos;
+							light_points[3] = area_lights.data[light_index].position - h_area_width + h_area_height - view_pos;
+
+							float cutoff = smoothstep(0.0, 0.1, dot(area_direction, view_pos - area_lights.data[light_index].position)); // makes light only effective in front
+							float ltc_diffuse = 0.0;
+							vec3 normal = light_vec;
+							float max_mipmap = area_lights.data[light_index].cone_angle;
+							vec3 texture_color = vec3(1.0);
+							ltc_evaluate_diff(normal, light_points, area_lights.data[light_index].projector_rect, max_mipmap, area_light_atlas, linear_sampler_with_mipmaps, ltc_diffuse, texture_color);
+							attenuation *= ltc_diffuse * cutoff;
+							vec3 light_color = area_lights.data[light_index].color * texture_color;
+
+							if (area_lights.data[light_index].shadow_opacity > 0.001) {
+								//has shadow
+								vec4 uv_rect = area_lights.data[light_index].atlas_rect;
+
+								vec3 local_vert = (area_lights.data[light_index].shadow_matrix * vec4(view_pos, 1.0)).xyz;
+
+								float shadow_len = length(local_vert); //need to remember shadow len from here
+								vec3 shadow_sample = normalize(local_vert);
+
+								shadow_sample.z = 1.0 + abs(shadow_sample.z);
+								vec3 pos = vec3(shadow_sample.xy / shadow_sample.z, shadow_len - area_lights.data[light_index].shadow_bias);
+								pos.z *= inv_center_range;
+								pos.z = 1.0 - pos.z;
+
+								pos.xy = pos.xy * 0.5 + 0.5;
+								pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
+
+								float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
+
+								shadow_attenuation = mix(1.0 - area_lights.data[light_index].shadow_opacity, 1.0, exp(min(0.0, (pos.z - depth)) / inv_center_range * INV_FOG_FADE));
+							}
+							float cos_theta = 0.0;
+							if (dot(light_rel_vec, light_rel_vec) > EPSILON) {
+								cos_theta = dot(normalize(light_rel_vec), normalize(view_pos));
+							}
+							total_light += light_color * attenuation * shadow_attenuation * henyey_greenstein(cos_theta, params.phase_g) * area_lights.data[light_index].volumetric_fog_energy;
+						}
 					}
 				}
 			}
@@ -679,8 +801,15 @@ void main() {
 	}
 
 	vec4 final_density = vec4(total_light * scattering + emission, total_density);
+	bool is_reprojected_density_invalid = any(isnan(reprojected_density)) || any(isinf(reprojected_density));
+	bool is_final_density_invalid = any(isnan(final_density)) || any(isinf(final_density));
 
-	final_density = mix(final_density, reprojected_density, reproject_amount);
+	if (is_final_density_invalid) {
+		final_density = is_reprojected_density_invalid ? vec4(0.0) : reprojected_density;
+	} else if (!is_reprojected_density_invalid) {
+		final_density = mix(final_density, reprojected_density, reproject_amount);
+	}
+	final_density = clamp(final_density, vec4(0.0), vec4(65504.0));
 
 	imageStore(density_map, pos, final_density);
 #ifdef NO_IMAGE_ATOMICS
@@ -723,7 +852,11 @@ void main() {
 
 		prev_z = z;
 
-		imageStore(fog_map, fog_pos, vec4(fog_accum.rgb, fog_accum.a));
+		vec4 final_fog = vec4(fog_accum.rgb, fog_accum.a);
+		bool is_final_fog_invalid = any(isnan(final_fog)) || any(isinf(final_fog));
+		final_fog = is_final_fog_invalid ? vec4(0.0) : final_fog;
+		final_fog = clamp(final_fog, vec4(0.0), vec4(65504.0));
+		imageStore(fog_map, fog_pos, final_fog);
 	}
 
 #endif

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<group android:id="@+id/group_menu_selection_options"
+		android:checkableBehavior="all">
+
+		<item
+			android:id="@+id/menu_show_selection_visibility"
+			android:checkable="true"
+			android:checked="true"
+			android:title="@string/show_selection_visibility"
+			tools:ignore="HardcodedText" />
+
+		<item
+			android:id="@+id/menu_dont_select_locked_nodes"
+			android:checkable="true"
+			android:checked="false"
+			android:title="@string/don_t_select_locked_nodes" />
+
+		<item
+			android:id="@+id/menu_select_group_over_children"
+			android:checkable="true"
+			android:checked="false"
+			android:title="@string/select_group_over_children" />
+
+	</group>
+
+</menu>

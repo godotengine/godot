@@ -200,7 +200,7 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 	mp3s.instantiate();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
 
-	int success = drmp3_init_memory(&mp3s->mp3d, data.ptr(), data_len, (drmp3_allocation_callbacks *)&dr_alloc_calls);
+	int success = drmp3_init_memory(&mp3s->mp3d, data.ptr(), data.size(), (drmp3_allocation_callbacks *)&dr_alloc_calls);
 
 	mp3s->frames_mixed = 0;
 	mp3s->active = false;
@@ -211,19 +211,13 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 	return mp3s;
 }
 
-String AudioStreamMP3::get_stream_name() const {
-	return ""; //return stream_name;
-}
-
 void AudioStreamMP3::clear_data() {
 	data.clear();
 }
 
 void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
-	int src_data_len = p_data.size();
-
 	drmp3 *mp3d = memnew(drmp3);
-	int success = drmp3_init_memory(mp3d, p_data.ptr(), src_data_len, (drmp3_allocation_callbacks *)&dr_alloc_calls);
+	int success = drmp3_init_memory(mp3d, p_data.ptr(), p_data.size(), (drmp3_allocation_callbacks *)&dr_alloc_calls);
 	if (!success || mp3d->sampleRate == 0) {
 		memdelete(mp3d);
 		ERR_FAIL_MSG("Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
@@ -237,7 +231,6 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	memdelete(mp3d);
 
 	data = p_data;
-	data_len = src_data_len;
 }
 
 Vector<uint8_t> AudioStreamMP3::get_data() const {
@@ -356,11 +349,4 @@ void AudioStreamMP3::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,1,or_greater"), "set_bar_beats", "get_bar_beats");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
-}
-
-AudioStreamMP3::AudioStreamMP3() {
-}
-
-AudioStreamMP3::~AudioStreamMP3() {
-	clear_data();
 }

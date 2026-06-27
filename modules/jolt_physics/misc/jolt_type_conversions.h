@@ -95,9 +95,12 @@ _FORCE_INLINE_ JPH::Vec3 to_jolt(const Vector3 &p_vec) {
 	return JPH::Vec3((float)p_vec.x, (float)p_vec.y, (float)p_vec.z);
 }
 
+_FORCE_INLINE_ JPH::Quat to_jolt(const Quaternion &p_quat) {
+	return JPH::Quat((float)p_quat.x, (float)p_quat.y, (float)p_quat.z, (float)p_quat.w);
+}
+
 _FORCE_INLINE_ JPH::Quat to_jolt(const Basis &p_basis) {
-	const Quaternion quat = p_basis.get_quaternion().normalized();
-	return JPH::Quat((float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w);
+	return to_jolt(p_basis.get_quaternion().normalized());
 }
 
 _FORCE_INLINE_ JPH::Mat44 to_jolt(const Transform3D &p_transform) {
@@ -125,7 +128,7 @@ _FORCE_INLINE_ JPH::AABox to_jolt(const AABB &p_aabb) {
 }
 
 _FORCE_INLINE_ JPH::Plane to_jolt(const Plane &p_plane) {
-	return JPH::Plane(to_jolt(p_plane.normal), (float)p_plane.d);
+	return JPH::Plane(to_jolt(p_plane.normal), (float)-p_plane.d);
 }
 
 _FORCE_INLINE_ JPH::RVec3 to_jolt_r(const Vector3 &p_vec) {

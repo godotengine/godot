@@ -110,7 +110,9 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	HashSet<StringName> saturation_exceptions;
 	saturation_exceptions.insert("DefaultProjectIcon");
 	saturation_exceptions.insert("Godot");
+	saturation_exceptions.insert("GodotFile");
 	saturation_exceptions.insert("Logo");
+	saturation_exceptions.insert("TitleBarLogo");
 
 	// Accent color conversion map.
 	// It is used on some icons (checkbox, radio, toggle, etc.), regardless of the dark
@@ -130,6 +132,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	accent_color_icons.insert("GuiToggleOn");
 	accent_color_icons.insert("GuiToggleOnMirrored");
 	accent_color_icons.insert("PlayOverlay");
+	accent_color_icons.insert("Verified");
 
 	// Generate icons.
 	{

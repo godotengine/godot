@@ -233,6 +233,27 @@ class GridMap : public Node3D {
 
 	Vector<BakedMesh> baked_meshes;
 
+	bool debug_show_octants = false;
+	Color debug_octant_color = Color(1.0, 1.0, 1.0, 1.0);
+#ifdef DEBUG_ENABLED
+	bool debug_dirty = false;
+	Ref<StandardMaterial3D> debug_octant_line_material;
+
+	void _debug_update();
+	void _debug_update_octants();
+	void _debug_clear_octants();
+
+	RID debug_octant_line_mesh_rid;
+
+	struct OctantDebug {
+		RID debug_line_mesh_rid;
+		RID debug_line_instance_rid;
+	};
+	HashMap<OctantKey, OctantDebug *, OctantKey> debug_octant_map;
+
+	Array _build_octant_line_mesh_arrays() const;
+#endif // DEBUG_ENABLED
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -312,6 +333,25 @@ public:
 	TypedArray<Vector3i> get_used_cells() const;
 	TypedArray<Vector3i> get_used_cells_by_item(int p_item) const;
 
+	TypedArray<Vector3i> get_used_octants() const;
+	TypedArray<Vector3i> get_used_octants_by_item(int p_item) const;
+
+	TypedArray<Vector3i> get_used_cells_in_octant(const Vector3i &p_octant_coords) const;
+	TypedArray<Vector3i> get_used_cells_in_octant_by_item(const Vector3i &p_octant_coords, int p_item) const;
+
+	// Fastpath functions for native modules that do not use Variant/TypedArray.
+	LocalVector<IndexKey> get_index_keys_in_bounds(const AABB &p_bounds, bool p_used_only = true) const;
+	LocalVector<OctantKey> get_octant_keys_in_bounds(const AABB &p_bounds, bool p_used_only = true) const;
+
+	TypedArray<Vector3i> get_octants_in_bounds(const AABB &p_bounds) const;
+	TypedArray<Vector3i> get_used_octants_in_bounds(const AABB &p_bounds) const;
+
+	Vector3i get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const;
+
+#ifndef PHYSICS_3D_DISABLED
+	RID get_physics_body_from_octant_coord(const Vector3i &p_octant_coords) const;
+#endif
+
 	Array get_meshes() const;
 
 	void clear_baked_meshes();
@@ -321,6 +361,12 @@ public:
 
 	Array get_bake_meshes();
 	RID get_bake_mesh_instance(int p_idx);
+
+	void set_debug_show_octants(bool p_enable);
+	bool get_debug_show_octants() const;
+
+	void set_debug_octant_color(const Color &p_color);
+	Color get_debug_octant_color() const;
 
 #ifndef NAVIGATION_3D_DISABLED
 private:

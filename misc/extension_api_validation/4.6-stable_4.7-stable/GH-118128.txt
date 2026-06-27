@@ -1,0 +1,8 @@
+GH-118128
+---------
+Validate extension JSON: Error: Field 'classes/OpenXRSpatialAnchorCapability/methods/create_new_anchor/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/OpenXRSpatialComponentData/methods/_get_structure_data': is_const changed value in new API, from true to false.
+
+Added optional "next" structure when creating a new anchor.  The "next" structure is passed to the XR runtime.
+Made "OpenXRSpatialComponentData::_get_structure_data" (which is the virtual method that GDExtensions can override) non-const, which is consistent with the core virtual "OpenXRSpatialComponentData::get_structure_data" method.
+Compatibility methods registered.

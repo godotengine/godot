@@ -1,5 +1,5 @@
 /* deflate.h -- internal compression state
- * Copyright (C) 1995-2024 Jean-loup Gailly
+ * Copyright (C) 1995-2026 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -281,6 +281,9 @@ typedef struct internal_state {
      * longest match routines access bytes past the input.  This is then
      * updated to the new high water mark.
      */
+
+    int slid;
+    /* True if the hash table has been slid since it was cleared. */
 
 } FAR deflate_state;
 

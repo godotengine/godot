@@ -78,8 +78,8 @@ layout(set = 0, binding = 2, std140) uniform SkySceneData {
 
 	float z_far; // 4 - 52
 	uint directional_light_count; // 4 - 56
-	uint pad1; // 4 - 60
-	uint pad2; // 4 - 64
+	bool fog_use_legacy_blending; // 4 - 60
+	uint pad1; // 4 - 64
 }
 sky_scene_data;
 
@@ -286,8 +286,12 @@ void main() {
 
 	if (sky_scene_data.volumetric_fog_enabled) {
 		vec4 fog = volumetric_fog_process(uv);
-		fog.rgb = frag_color.rgb * fog.a + fog.rgb;
-		frag_color.rgb = mix(frag_color.rgb, fog.rgb, sky_scene_data.volumetric_fog_sky_affect);
+		if (sky_scene_data.fog_use_legacy_blending) {
+			frag_color.rgb = mix(frag_color.rgb, fog.rgb, (1.0 - fog.a) * sky_scene_data.volumetric_fog_sky_affect);
+		} else {
+			fog.rgb = frag_color.rgb * fog.a + fog.rgb;
+			frag_color.rgb = mix(frag_color.rgb, fog.rgb, sky_scene_data.volumetric_fog_sky_affect);
+		}
 	}
 
 	if (custom_fog.a > 0.0) {

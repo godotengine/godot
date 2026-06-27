@@ -1,0 +1,289 @@
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/PhysicsSystem.cpp b/thirdparty/jolt_physics/Jolt/Physics/PhysicsSystem.cpp
+index d972dd2c..0a3f21b8 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/PhysicsSystem.cpp
++++ b/thirdparty/jolt_physics/Jolt/Physics/PhysicsSystem.cpp
+@@ -26,6 +26,7 @@
+ #include <Jolt/Physics/DeterminismLog.h>
+ #include <Jolt/Physics/SoftBody/SoftBodyMotionProperties.h>
+ #include <Jolt/Physics/SoftBody/SoftBodyShape.h>
++#include <Jolt/Physics/SoftBody/SoftBodyContactListener.h>
+ #include <Jolt/Geometry/RayAABox.h>
+ #include <Jolt/Geometry/ClosestPoint.h>
+ #include <Jolt/Core/JobSystem.h>
+@@ -1833,9 +1834,10 @@ void PhysicsSystem::JobFindCCDContacts(const PhysicsUpdateContext *ioContext, Ph
+ 		class CCDNarrowPhaseCollector : public CastShapeCollector
+ 		{
+ 		public:
+-										CCDNarrowPhaseCollector(const BodyManager &inBodyManager, ContactConstraintManager &inContactConstraintManager, CCDBody &inCCDBody, ShapeCastResult &inResult, float inDeltaTime) :
++										CCDNarrowPhaseCollector(const BodyManager &inBodyManager, ContactConstraintManager &inContactConstraintManager, SoftBodyContactListener *inSoftBodyContactListener, CCDBody &inCCDBody, ShapeCastResult &inResult, float inDeltaTime) :
+ 				mBodyManager(inBodyManager),
+ 				mContactConstraintManager(inContactConstraintManager),
++				mSoftBodyContactListener(inSoftBodyContactListener),
+ 				mCCDBody(inCCDBody),
+ 				mResult(inResult),
+ 				mDeltaTime(inDeltaTime)
+@@ -1871,26 +1873,53 @@ void PhysicsSystem::JobFindCCDContacts(const PhysicsUpdateContext *ioContext, Ph
+ 							{
+ 								// Validate the contact result
+ 								const Body &body1 = mBodyManager.GetBody(mCCDBody.mBodyID1);
+-								ValidateResult validate_result = mContactConstraintManager.ValidateContactPoint(body1, body2, body1.GetCenterOfMassPosition(), inResult); // Note that the center of mass of body 1 is the start of the sweep and is used as base offset below
+-								switch (validate_result)
++								if (body2.IsRigidBody())
+ 								{
+-								case ValidateResult::AcceptContact:
+-									// Just continue
+-									break;
+-
+-								case ValidateResult::AcceptAllContactsForThisBodyPair:
+-									// Accept this and all following contacts from this body
+-									mValidateBodyPair = false;
+-									break;
+-
+-								case ValidateResult::RejectContact:
+-									return;
+-
+-								case ValidateResult::RejectAllContactsForThisBodyPair:
+-									// Reject this and all following contacts from this body
+-									mRejectAll = true;
+-									ForceEarlyOut();
+-									return;
++									ValidateResult validate_result = mContactConstraintManager.ValidateContactPoint(body1, body2, body1.GetCenterOfMassPosition(), inResult); // Note that the center of mass of body 1 is the start of the sweep and is used as base offset below
++									switch (validate_result)
++									{
++									case ValidateResult::AcceptContact:
++										// Just continue
++										break;
++
++									case ValidateResult::AcceptAllContactsForThisBodyPair:
++										// Accept this and all following contacts from this body
++										mValidateBodyPair = false;
++										break;
++
++									case ValidateResult::RejectContact:
++										return;
++
++									case ValidateResult::RejectAllContactsForThisBodyPair:
++										// Reject this and all following contacts from this body
++										mRejectAll = true;
++										ForceEarlyOut();
++										return;
++									}
++								}
++								else
++								{
++									SoftBodyContactSettings sb_settings;
++									sb_settings.mIsSensor = false;
++									if ((mSoftBodyContactListener == nullptr
++										|| mSoftBodyContactListener->OnSoftBodyContactValidate(body2, body1, sb_settings) == SoftBodyValidateResult::AcceptContact) // Note reversal, soft body needs to be first parameter
++										&& !sb_settings.mIsSensor) // If the contact listener turned this into a sensor, we want to ignore it
++									{
++										// Convert the soft body contact settings (note bodies are swapped)
++										mCCDBody.mContactSettings.mInvMassScale1 = sb_settings.mInvMassScale2;
++										mCCDBody.mContactSettings.mInvMassScale2 = sb_settings.mInvMassScale1;
++										mCCDBody.mContactSettings.mInvInertiaScale1 = sb_settings.mInvInertiaScale2;
++
++										// Accept this and all following contacts from this body
++										mValidateBodyPair = false;
++									}
++									else
++									{
++										// Reject this and all following contacts from this body
++										mRejectAll = true;
++										ForceEarlyOut();
++										return;
++									}
+ 								}
+ 							}
+ 
+@@ -1927,6 +1956,7 @@ void PhysicsSystem::JobFindCCDContacts(const PhysicsUpdateContext *ioContext, Ph
+ 		private:
+ 			const BodyManager &			mBodyManager;
+ 			ContactConstraintManager &	mContactConstraintManager;
++			SoftBodyContactListener *	mSoftBodyContactListener;
+ 			CCDBody &					mCCDBody;
+ 			ShapeCastResult &			mResult;
+ 			float						mDeltaTime;
+@@ -1935,7 +1965,7 @@ void PhysicsSystem::JobFindCCDContacts(const PhysicsUpdateContext *ioContext, Ph
+ 
+ 		// Narrowphase collector
+ 		ShapeCastResult cast_shape_result;
+-		CCDNarrowPhaseCollector np_collector(mBodyManager, mContactManager, ccd_body, cast_shape_result, ioContext->mStepDeltaTime);
++		CCDNarrowPhaseCollector np_collector(mBodyManager, mContactManager, mSoftBodyContactListener, ccd_body, cast_shape_result, ioContext->mStepDeltaTime);
+ 
+ 		// This collector wraps the narrowphase collector and collects the closest hit
+ 		class CCDBroadPhaseCollector : public CastShapeBodyCollector
+@@ -2058,7 +2088,15 @@ void PhysicsSystem::JobFindCCDContacts(const PhysicsUpdateContext *ioContext, Ph
+ 			manifold.mWorldSpaceNormal = ccd_body.mContactNormal;
+ 
+ 			// Call contact point callbacks
+-			mContactManager.OnCCDContactAdded(contact_allocator, body, body2, manifold, ccd_body.mContactSettings);
++			if (body2.IsRigidBody())
++				mContactManager.OnCCDContactAdded(contact_allocator, body, body2, manifold, ccd_body.mContactSettings);
++			else
++			{
++				// We already have mass and inertia scale from the OnSoftBodyContactValidate callback, but we need to fill in the rest of the contact settings
++				ccd_body.mContactSettings.mCombinedFriction = 0.0f; // Soft bodies CCD contacts don't apply friction
++				ccd_body.mContactSettings.mCombinedRestitution = mContactManager.GetCombineRestitution()(body, SubShapeID(), body2, SubShapeID()); // Soft bodies don't pass sub shape IDs because the restitution is uniform across the entire body
++				ccd_body.mContactSettings.mIsSensor = false; // We've filtered out sensors already
++			}
+ 
+ 			if (ccd_body.mContactSettings.mIsSensor)
+ 			{
+@@ -2281,6 +2319,19 @@ void PhysicsSystem::JobResolveCCDContacts(PhysicsUpdateContext *ioContext, Physi
+ 						vtx0.mVelocity += delta_v2 * vtx0.mInvMass;
+ 						vtx1.mVelocity += delta_v2 * vtx1.mInvMass;
+ 						vtx2.mVelocity += delta_v2 * vtx2.mInvMass;
++
++						// If there's a contact listener, we need to flag this vertex as having had collision and force a contact callback.
++						// Note that during the soft body update that follows this, it is likely that a new collision will be found and that this will be overwritten.
++						if (mSoftBodyContactListener != nullptr)
++						{
++							BodyID body_id = ccd_body->mBodyID1;
++							Vec3 local_normal = inv_body2_transform.Multiply3x3(ccd_body->mContactNormal);
++							Plane contact_plane = Plane::sFromPointAndNormal(local_contact, local_normal);
++							vtx0.MarkCCDContact(body_id, contact_plane);
++							vtx1.MarkCCDContact(body_id, contact_plane);
++							vtx2.MarkCCDContact(body_id, contact_plane);
++							soft_mp->RequestContactCallback();
++						}
+ 					}
+ 
+ 					// Clamp velocity of body 1
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyManifold.h b/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyManifold.h
+index de21ec50..57a244ad 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyManifold.h
++++ b/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyManifold.h
+@@ -36,7 +36,15 @@ public:
+ 	/// Get the body with which the vertex has collided in this update
+ 	JPH_INLINE BodyID				GetContactBodyID(const SoftBodyVertex &inVertex) const
+ 	{
+-		return inVertex.mHasContact? mCollidingShapes[inVertex.mCollidingShapeIndex].mBodyID : BodyID();
++		if (!inVertex.mHasContact)
++			return BodyID();
++
++		// If this is a CCD contact, the BodyID is encoded in mCollidingShapeIndex
++		if (inVertex.mCollidingShapeIndex & int(BodyID::cBroadPhaseBit))
++			return BodyID(uint32(inVertex.mCollidingShapeIndex) ^ BodyID::cBroadPhaseBit);
++
++		// Otherwise we can get it from mCollidingShapes
++		return mCollidingShapes[inVertex.mCollidingShapeIndex].mBodyID;
+ 	}
+ 
+ 	/// Get the number of sensors that are in contact with the soft body
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyMotionProperties.cpp b/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyMotionProperties.cpp
+index 4aa88d20..327145ed 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyMotionProperties.cpp
++++ b/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyMotionProperties.cpp
+@@ -121,15 +121,13 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
+ {
+ 	JPH_PROFILE_FUNCTION();
+ 
+-	// Reset flag prior to collision detection
+-	mNeedContactCallback.store(false, memory_order_relaxed);
+-
+ 	struct Collector : public CollideShapeBodyCollector
+ 	{
+-									Collector(const SoftBodyUpdateContext &inContext, const PhysicsSystem &inSystem, const BodyLockInterface &inBodyLockInterface, const AABox &inLocalBounds, SimShapeFilterWrapper &inShapeFilter, Array<CollidingShape> &ioHits, Array<CollidingSensor> &ioSensors) :
++									Collector(const SoftBodyUpdateContext &inContext, const PhysicsSystem &inSystem, const BodyLockInterface &inBodyLockInterface, const AABox &inLocalBounds, const AABox &inWorldBounds, SimShapeFilterWrapper &inShapeFilter, Array<CollidingShape> &ioHits, Array<CollidingSensor> &ioSensors) :
+ 										mContext(inContext),
+ 										mInverseTransform(inContext.mCenterOfMassTransform.InversedRotationTranslation()),
+ 										mLocalBounds(inLocalBounds),
++										mWorldBounds(inWorldBounds),
+ 										mBodyLockInterface(inBodyLockInterface),
+ 										mCombineFriction(inSystem.GetCombineFriction()),
+ 										mCombineRestitution(inSystem.GetCombineRestitution()),
+@@ -147,7 +145,8 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
+ 				const Body &soft_body = *mContext.mBody;
+ 				const Body &body = lock.GetBody();
+ 				if (body.IsRigidBody() // TODO: We should support soft body vs soft body
+-					&& soft_body.GetCollisionGroup().CanCollide(body.GetCollisionGroup()))
++					&& soft_body.GetCollisionGroup().CanCollide(body.GetCollisionGroup())
++					&& mWorldBounds.Overlaps(body.GetWorldSpaceBounds())) // In the broadphase we widen the bounding box when a body moves, do a final check to see if the bounding boxes actually overlap
+ 				{
+ 					SoftBodyContactSettings settings;
+ 					settings.mIsSensor = body.IsSensor();
+@@ -227,6 +226,7 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
+ 		const SoftBodyUpdateContext &mContext;
+ 		RMat44						mInverseTransform;
+ 		AABox						mLocalBounds;
++		AABox						mWorldBounds;
+ 		const BodyLockInterface &	mBodyLockInterface;
+ 		ContactConstraintManager::CombineFunction mCombineFriction;
+ 		ContactConstraintManager::CombineFunction mCombineRestitution;
+@@ -246,7 +246,7 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
+ 	// Create shape filter
+ 	SimShapeFilterWrapper shape_filter(inContext.mSimShapeFilter, inContext.mBody);
+ 
+-	Collector collector(inContext, inSystem, inBodyLockInterface, local_bounds, shape_filter, mCollidingShapes, mCollidingSensors);
++	Collector collector(inContext, inSystem, inBodyLockInterface, local_bounds, world_bounds, shape_filter, mCollidingShapes, mCollidingSensors);
+ 	ObjectLayer layer = inContext.mBody->GetObjectLayer();
+ 	DefaultBroadPhaseLayerFilter broadphase_layer_filter = inSystem.GetDefaultBroadPhaseLayerFilter(layer);
+ 	DefaultObjectLayerFilter object_layer_filter = inSystem.GetDefaultLayerFilter(layer);
+@@ -285,7 +285,7 @@ void SoftBodyMotionProperties::DetermineSensorCollisions(CollidingSensor &ioSens
+ 
+ 	// We need a contact callback if one of the sensors collided
+ 	if (ioSensor.mHasContact)
+-		mNeedContactCallback.store(true, memory_order_relaxed);
++		RequestContactCallback();
+ }
+ 
+ void SoftBodyMotionProperties::ApplyPressure(const SoftBodyUpdateContext &inContext)
+@@ -714,6 +714,7 @@ void SoftBodyMotionProperties::ApplyCollisionConstraintsAndUpdateVelocities(cons
+ 			v.mVelocity = (v.mPosition - v.mPreviousPosition) / dt;
+ 
+ 			// Satisfy collision constraint
++			static_assert(int(BodyID::cBroadPhaseBit) < 0); // CCD contacts should be negative too (see: SoftBodyVertex::MarkCCDContact)
+ 			if (v.mCollidingShapeIndex >= 0)
+ 			{
+ 				// Check if there is a collision
+@@ -724,7 +725,7 @@ void SoftBodyMotionProperties::ApplyCollisionConstraintsAndUpdateVelocities(cons
+ 					v.mHasContact = true;
+ 
+ 					// We need a contact callback if one of the vertices collided
+-					mNeedContactCallback.store(true, memory_order_relaxed);
++					RequestContactCallback();
+ 
+ 					// Note that we already calculated the velocity, so this does not affect the velocity (next iteration starts by setting previous position to current position)
+ 					CollidingShape &cs = mCollidingShapes[v.mCollidingShapeIndex];
+@@ -839,6 +840,8 @@ void SoftBodyMotionProperties::UpdateSoftBodyState(SoftBodyUpdateContext &ioCont
+ 			}
+ 
+ 		ioContext.mContactListener->OnSoftBodyContactAdded(*ioContext.mBody, SoftBodyManifold(this));
++
++		mNeedContactCallback.store(false, memory_order_relaxed);
+ 	}
+ 
+ 	// Loop through vertices once more to update the global state
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyMotionProperties.h b/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyMotionProperties.h
+index 8768efd6..918ce366 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyMotionProperties.h
++++ b/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyMotionProperties.h
+@@ -176,6 +176,9 @@ public:
+ 	/// Update the velocities of all rigid bodies that we collided with. Not part of the public API.
+ 	void								UpdateRigidBodyVelocities(const SoftBodyUpdateContext &inContext, BodyInterface &inBodyInterface);
+ 
++	/// Set a flag to indicate that the ContactListener::OnSoftBodyContactAdded should be called
++	inline void							RequestContactCallback()					{ mNeedContactCallback.store(true, memory_order_relaxed); }
++
+ private:
+ 	// SoftBodyManifold needs to have access to CollidingShape
+ 	friend class SoftBodyManifold;
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyVertex.h b/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyVertex.h
+index 72d4291e..261362ef 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyVertex.h
++++ b/thirdparty/jolt_physics/Jolt/Physics/SoftBody/SoftBodyVertex.h
+@@ -23,6 +23,14 @@ public:
+ 		mHasContact = false;
+ 	}
+ 
++	/// Mark this vertex as being in contact with inBodyID
++	inline void		MarkCCDContact(const BodyID &inBodyID, const Plane &inContactPlane)
++	{
++		mCollisionPlane = inContactPlane;
++		mCollidingShapeIndex = int(inBodyID.GetIndexAndSequenceNumber() | BodyID::cBroadPhaseBit); // We reuse the broad phase bit to indicate this is a CCD contact
++		mHasContact = true;
++	}
++
+ 	Vec3			mPreviousPosition;					///< Internal use only. Position at the previous time step
+ 	Vec3			mPosition;							///< Position, relative to the center of mass of the soft body
+ 	Vec3			mVelocity;							///< Velocity, relative to the center of mass of the soft body

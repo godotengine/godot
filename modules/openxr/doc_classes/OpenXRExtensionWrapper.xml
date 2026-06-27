@@ -136,6 +136,7 @@
 		</method>
 		<method name="_on_register_metadata" qualifiers="virtual">
 			<return type="void" />
+			<param index="0" name="interaction_profile_metadata" type="OpenXRInteractionProfileMetadata" />
 			<description>
 				Allows extensions to register additional controller metadata. This function is called even when the OpenXR API is not constructed as the metadata needs to be available to the editor.
 				Extensions should also provide metadata regardless of whether they are supported on the host system. The controller data is used to setup action maps for users who may have access to the relevant hardware.

@@ -129,7 +129,12 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 
 		// Raytracing extensions.
 		PFN_vkCreateAccelerationStructureKHR CreateAccelerationStructureKHR = nullptr;
+		PFN_vkDestroyAccelerationStructureKHR DestroyAccelerationStructureKHR = nullptr;
+		PFN_vkGetAccelerationStructureBuildSizesKHR GetAccelerationStructureBuildSizesKHR = nullptr;
+		PFN_vkCmdBuildAccelerationStructuresKHR CmdBuildAccelerationStructuresKHR = nullptr;
 		PFN_vkCreateRayTracingPipelinesKHR CreateRaytracingPipelinesKHR = nullptr;
+		PFN_vkGetRayTracingShaderGroupHandlesKHR GetRayTracingShaderGroupHandlesKHR = nullptr;
+		PFN_vkCmdTraceRaysKHR CmdTraceRaysKHR = nullptr;
 	};
 	// Debug marker extensions.
 	VkDebugReportObjectTypeEXT _convert_to_debug_report_objectType(VkObjectType p_object_type);
@@ -187,9 +192,12 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	};
 
 	PipelineStatistics pipeline_statistics;
+	DriverWorkarounds driver_workarounds;
 
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
 	Error _initialize_device_extensions();
+	void _check_driver_workarounds(const VkPhysicalDeviceProperties &p_device_properties, const VkPhysicalDeviceDriverPropertiesKHR *p_driver_properties);
+	void _get_device_properties();
 	Error _check_device_features();
 	Error _check_device_capabilities();
 	void _choose_vrs_capabilities();
@@ -445,6 +453,7 @@ public:
 	virtual int swap_chain_get_pre_rotation_degrees(SwapChainID p_swap_chain) override final;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override final;
 	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) override final;
+	virtual bool swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) override final;
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) override final;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
 
@@ -473,25 +482,15 @@ public:
 	/**** SHADER ****/
 	/****************/
 private:
-	struct RaytracingShaderRegionCount {
-		uint32_t raygen_count = 0;
-		uint32_t hit_count = 0;
-		uint32_t miss_count = 0;
-		uint32_t group_count = 0;
-	};
-
 	struct ShaderInfo {
 		String name;
 		VkShaderStageFlags vk_push_constant_stages = 0;
 		TightLocalVector<VkPipelineShaderStageCreateInfo> vk_stages_create_info;
-		TightLocalVector<VkRayTracingShaderGroupCreateInfoKHR> vk_groups_create_info;
 		TightLocalVector<VkDescriptorSetLayout> vk_descriptor_set_layouts;
 		TightLocalVector<respv::Shader> respv_stage_shaders;
 		TightLocalVector<Vector<uint8_t>> spirv_stage_bytes;
 		TightLocalVector<uint64_t> original_stage_size;
 		VkPipelineLayout vk_pipeline_layout = VK_NULL_HANDLE;
-		// Used to update the shader binding table buffer.
-		RaytracingShaderRegionCount region_count;
 	};
 
 public:
@@ -714,59 +713,38 @@ public:
 		// Size of the scratch buffer for building the structure
 		uint32_t scratch_size;
 
-		// Buffer used for instances in a TLAS
-		RDD::BufferID instances_buffer;
-
 		// Required for building
-		VkAccelerationStructureGeometryKHR geometry;
-		LocalVector<VkAccelerationStructureInstanceKHR> instances;
+		TightLocalVector<VkAccelerationStructureGeometryKHR> geometries;
 		VkAccelerationStructureBuildGeometryInfoKHR build_info;
-		VkAccelerationStructureBuildRangeInfoKHR range_info;
+		TightLocalVector<VkAccelerationStructureBuildRangeInfoKHR> range_infos;
 	};
 
-	virtual AccelerationStructureID blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset_bytes, uint32_t p_index_count, BitField<AccelerationStructureGeometryBits> p_geometry_bits) override final;
-	virtual uint32_t tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) override final;
-	virtual void tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) override final;
-	virtual AccelerationStructureID tlas_create(BufferID p_instances_buffer) override final;
+	virtual AccelerationStructureID blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) override final;
+	virtual AccelerationStructureID tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) override final;
+	virtual void acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) override final;
 	virtual void acceleration_structure_free(AccelerationStructureID p_acceleration_structure) override final;
 	virtual uint32_t acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) override final;
 
 private:
 	void _acceleration_structure_create(VkAccelerationStructureTypeKHR p_type, VkAccelerationStructureBuildSizesInfoKHR p_size_info, AccelerationStructureInfo *r_accel_info);
 
+private:
+	VkStridedDeviceAddressRegionKHR _sbt_to_vk_strided_device_address_region(const ShaderBindingTable &p_sbt);
+
 public:
 	// ----- COMMANDS -----
-
-	virtual void command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) override final;
+	virtual void command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) override final;
+	virtual void command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) override final;
 	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) override final;
 	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
-	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) override final;
-
-private:
-	RaytracingPipelineID bound_raytracing_pipeline_id;
-
-	// ----- PIPELINE -----
-
-	struct RaytracingShaderRegions {
-		VkStridedDeviceAddressRegionKHR raygen;
-		VkStridedDeviceAddressRegionKHR hit;
-		VkStridedDeviceAddressRegionKHR miss;
-		VkStridedDeviceAddressRegionKHR call;
-	};
-
-	struct RaytracingPipelineInfo {
-		VkPipeline vk_pipeline = VK_NULL_HANDLE;
-		ShaderID shader;
-		// Used vkCmdTraceRaysKHR.
-		RaytracingShaderRegions regions;
-		// Shader binding table.
-		BufferID sbt_buffer;
-	};
+	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, const ShaderBindingTable &p_raygen_sbt, const ShaderBindingTable &p_miss_sbt, const ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) override final;
 
 public:
-	virtual RaytracingPipelineID raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) override final;
-	VkResult _raytracing_pipeline_stb_create(RaytracingPipelineID p_pipeline, ShaderID p_shader);
+	// ----- PIPELINE -----
+	virtual RaytracingPipelineID raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) override final;
 	virtual void raytracing_pipeline_free(RaytracingPipelineID p_pipeline) override final;
+
+	virtual bool raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data, uint32_t p_data_stride_bytes) override final;
 
 	/*****************/
 	/**** QUERIES ****/
@@ -827,6 +805,8 @@ public:
 	virtual const RenderingShaderContainerFormat &get_shader_container_format() const override final;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
+
+	virtual DriverWorkarounds get_driver_workarounds() const override final;
 
 private:
 	/*********************/

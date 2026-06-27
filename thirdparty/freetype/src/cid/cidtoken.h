@@ -4,7 +4,7 @@
  *
  *   CID token definitions (specification only).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -47,7 +47,7 @@
   T1_FIELD_STRING( "FullName",           full_name,           0 )
   T1_FIELD_STRING( "FamilyName",         family_name,         0 )
   T1_FIELD_STRING( "Weight",             weight,              0 )
-  T1_FIELD_NUM   ( "ItalicAngle",        italic_angle,        0 )
+  T1_FIELD_FIXED ( "ItalicAngle",        italic_angle,        0 )
   T1_FIELD_BOOL  ( "isFixedPitch",       is_fixed_pitch,      0 )
   T1_FIELD_NUM   ( "UnderlinePosition",  underline_position,  0 )
   T1_FIELD_NUM   ( "UnderlineThickness", underline_thickness, 0 )

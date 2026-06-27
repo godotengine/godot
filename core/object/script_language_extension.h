@@ -36,6 +36,10 @@
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
 
+#ifdef TOOLS_ENABLED
+#include "core/object/editor_language.h"
+#endif // TOOLS_ENABLED
+
 class ScriptExtension : public Script {
 	GDCLASS(ScriptExtension, Script)
 
@@ -69,7 +73,6 @@ public:
 		return reinterpret_cast<PlaceHolderScriptInstance *>(ret.operator void *());
 	}
 
-	EXBIND1RC(bool, instance_has, const Object *)
 	EXBIND0RC(bool, has_source_code)
 	EXBIND0RC(String, get_source_code)
 	EXBIND1(set_source_code, const String &)
@@ -214,6 +217,10 @@ public:
 		GDVIRTUAL_CALL(_get_rpc_config, ret);
 		return ret;
 	}
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL1RC(bool, _instance_has, const Object *)
+#endif // !DISABLE_DEPRECATED
 };
 
 typedef ScriptLanguage::ProfilingInfo ScriptLanguageExtensionProfilingInfo;
@@ -234,6 +241,28 @@ public:
 	EXBIND0(finish)
 
 	/* EDITOR FUNCTIONS */
+
+#ifdef TOOLS_ENABLED
+private:
+	class EditorAdapter final : public EditorLanguage {
+		ScriptLanguageExtension *script_language = nullptr;
+
+	public:
+		virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) override {
+			return script_language->complete_code(p_code, p_path, p_owner, r_options, r_force, r_call_hint);
+		}
+
+		EditorAdapter(ScriptLanguageExtension *p_script_language) {
+			script_language = p_script_language;
+		}
+	};
+	EditorAdapter *editor_adapter;
+
+public:
+	virtual EditorLanguage *get_editor_language() override {
+		return editor_adapter;
+	}
+#endif // TOOLS_ENABLED
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_reserved_words)
 
@@ -387,7 +416,7 @@ public:
 
 	GDVIRTUAL3RC_REQUIRED(Dictionary, _complete_code, const String &, const String &, Object *)
 
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) override {
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_complete_code, p_code, p_path, p_owner, ret);
 		if (!ret.has("result")) {
@@ -671,6 +700,9 @@ public:
 		}
 		return ret["name"];
 	}
+
+	ScriptLanguageExtension();
+	virtual ~ScriptLanguageExtension();
 };
 
 VARIANT_ENUM_CAST(ScriptLanguageExtension::LookupResultType)

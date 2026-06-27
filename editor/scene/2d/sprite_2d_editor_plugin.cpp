@@ -96,7 +96,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 	Vector2 prev = Vector2(p2[lasti].x, p2[lasti].y);
 	for (uint64_t i = 0; i < p2.size(); i++) {
 		Vector2 cur = Vector2(p2[i].x, p2[i].y);
-		if (cur.distance_to(prev) > 0.5) {
+		if (cur.distance_to(prev) > 0.5f) {
 			outPoints.push_back(cur);
 			prev = cur;
 		}
@@ -580,7 +580,7 @@ void Sprite2DEditor::_notification(int p_what) {
 		}
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(debug_uv_dialog, EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(debug_uv_dialog->get_child(0), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			options->set_button_icon(get_editor_theme_icon(SNAME("Sprite2D")));
@@ -652,6 +652,7 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	// Other elements definition
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(ConfirmationDialog);

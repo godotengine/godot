@@ -1686,6 +1686,8 @@ void LineEdit::_notification(int p_what) {
 			if (editing) {
 				unedit();
 				emit_signal(SNAME("editing_toggled"), false);
+			} else if (deselect_on_focus_loss_enabled && !selection.drag_attempt) {
+				deselect();
 			}
 		} break;
 

@@ -78,6 +78,13 @@ public:
 		CLIP_CHILDREN_MAX,
 	};
 
+	enum OversamplingWithScale {
+		OVERSAMPLING_WITH_SCALE_PARENT_NODE,
+		OVERSAMPLING_WITH_SCALE_DISABLED,
+		OVERSAMPLING_WITH_SCALE_ENABLED,
+		OVERSAMPLING_WITH_SCALE_MAX,
+	};
+
 private:
 	mutable SelfList<Node> xform_change;
 
@@ -119,6 +126,16 @@ private:
 	bool notify_local_transform = false;
 	bool notify_transform = false;
 	bool hide_clip_children = false;
+#ifdef TOOLS_ENABLED
+	mutable HashMap<StringName, StringName> instance_parameter_cache;
+#endif
+	OversamplingWithScale oversampling_with_scale = OVERSAMPLING_WITH_SCALE_PARENT_NODE;
+	double oversampling_override = -1.0;
+	bool is_oversampling_with_scale_cache = false;
+	double oversampling_override_cache = -1.0;
+
+	void _update_oversampling(bool p_propagate = false);
+	bool _is_oversampling_with_scale() const;
 
 	ClipChildrenMode clip_children_mode = CLIP_CHILDREN_DISABLED;
 
@@ -168,6 +185,10 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+#ifdef TOOLS_ENABLED
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+#endif
 
 	virtual void _physics_interpolated_changed() override;
 
@@ -414,6 +435,9 @@ public:
 	TextureFilter get_texture_filter_in_tree() const;
 	TextureRepeat get_texture_repeat_in_tree() const;
 
+	OversamplingWithScale get_oversampling_with_scale() const;
+	void set_oversampling_with_scale(OversamplingWithScale p_mode);
+
 	// Used by control nodes to retrieve the parent's anchorable area
 	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); }
 
@@ -429,6 +453,7 @@ public:
 VARIANT_ENUM_CAST(CanvasItem::TextureFilter)
 VARIANT_ENUM_CAST(CanvasItem::TextureRepeat)
 VARIANT_ENUM_CAST(CanvasItem::ClipChildrenMode)
+VARIANT_ENUM_CAST(CanvasItem::OversamplingWithScale)
 
 class CanvasTexture : public Texture2D {
 	GDCLASS(CanvasTexture, Texture2D);

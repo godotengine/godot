@@ -166,7 +166,7 @@ void GraphNode::_resort() {
 	fit_child_in_rect(titlebar_hbox, titlebar_rect);
 
 	// After resort, the children of the titlebar container may have changed their height (e.g. Label autowrap).
-	Size2i titlebar_min_size = titlebar_hbox->get_combined_minimum_size();
+	Size2i titlebar_min_size = titlebar_hbox->get_bound_minimum_size();
 
 	// First pass, determine minimum size AND amount of stretchable elements.
 	Ref<StyleBox> sb_slot = theme_cache.slot;
@@ -184,12 +184,14 @@ void GraphNode::_resort() {
 			continue;
 		}
 
-		Size2i size = child->get_combined_minimum_size() + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2());
+		Size2i size = child->get_bound_minimum_size() + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2());
+		Size2 max_size = child->get_combined_maximum_size();
 
 		stretch_min += size.height;
 
 		_MinSizeCache msc;
 		msc.min_size = size.height;
+		msc.max_size = max_size.height >= 0 ? int(max_size.height) + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().height : 0) : -1;
 		msc.will_stretch = child->get_v_size_flags().has_flag(SIZE_EXPAND);
 		msc.final_size = msc.min_size;
 		min_size_cache[child] = msc;
@@ -230,15 +232,25 @@ void GraphNode::_resort() {
 			_MinSizeCache &msc = min_size_cache[child];
 
 			if (msc.will_stretch) {
-				int final_pixel_size = available_stretch_space * child->get_stretch_ratio() / stretch_ratio_total;
+				float stretch_ratio = child->get_stretch_ratio();
+				int final_pixel_size = available_stretch_space * stretch_ratio / stretch_ratio_total;
 				if (final_pixel_size < msc.min_size) {
 					// If the available stretching area is too small for a Control,
 					// then remove it from stretching area.
 					msc.will_stretch = false;
-					stretch_ratio_total -= child->get_stretch_ratio();
+					stretch_ratio_total -= stretch_ratio;
 					refit_successful = false;
 					available_stretch_space -= msc.min_size;
 					msc.final_size = msc.min_size;
+					break;
+				} else if (msc.max_size >= 0 && final_pixel_size > msc.max_size) {
+					// If stretching would exceed the Control's maximum size,
+					// cap it and redistribute its unused share.
+					msc.will_stretch = false;
+					stretch_ratio_total -= stretch_ratio;
+					refit_successful = false;
+					available_stretch_space -= msc.max_size;
+					msc.final_size = msc.max_size;
 					break;
 				} else {
 					msc.final_size = final_pixel_size;
@@ -281,7 +293,9 @@ void GraphNode::_resort() {
 		int height = to_y_pos - from_y_pos;
 		float margin = sb_panel->get_margin(SIDE_LEFT) + (slot_table[i].draw_stylebox ? sb_slot->get_margin(SIDE_LEFT) : 0);
 		float final_width = width - (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().x : 0);
-		Rect2 rect(margin, from_y_pos, final_width, height);
+		float final_height = height - (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().y : 0);
+		float final_y_pos = from_y_pos + (slot_table[i].draw_stylebox ? sb_slot->get_margin(SIDE_TOP) : 0);
+		Rect2 rect(margin, final_y_pos, final_width, final_height);
 		fit_child_in_rect(child, rect);
 
 		slot_y_cache.push_back(child->get_rect().position.y + child->get_rect().size.height * 0.5);
@@ -696,6 +710,8 @@ void GraphNode::_notification(int p_what) {
 							Rect2 child_rect = child->get_rect();
 							child_rect.position.x = sb_panel->get_margin(SIDE_LEFT);
 							child_rect.size.width = width;
+							child_rect.position.y -= sb_slot->get_margin(SIDE_TOP);
+							child_rect.size.height += sb_slot->get_margin(SIDE_TOP) + sb_slot->get_margin(SIDE_BOTTOM);
 							draw_style_box(sb_slot, child_rect);
 						}
 					}
@@ -981,13 +997,13 @@ bool GraphNode::is_ignoring_valid_connection_type() const {
 	return ignore_invalid_connection_type;
 }
 
-Size2 GraphNode::get_minimum_size() const {
+Size2 GraphNode::_get_minimum_size(bool p_use_desired_sizes) const {
 	Ref<StyleBox> sb_panel = theme_cache.panel;
 	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 	Ref<StyleBox> sb_slot = theme_cache.slot;
 
 	int separation = theme_cache.separation;
-	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
+	Size2 minsize = (p_use_desired_sizes ? titlebar_hbox->get_bound_desired_size() : titlebar_hbox->get_minimum_size()) + sb_titlebar->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false));
@@ -995,7 +1011,7 @@ Size2 GraphNode::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = child->get_combined_minimum_size();
+		Size2i size = p_use_desired_sizes ? child->get_bound_desired_size() : child->get_bound_minimum_size();
 		size.width += sb_panel->get_minimum_size().width;
 		if (slot_table.has(i)) {
 			size += slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2();
@@ -1012,6 +1028,14 @@ Size2 GraphNode::get_minimum_size() const {
 	minsize.height += sb_panel->get_minimum_size().height;
 
 	return minsize;
+}
+
+Size2 GraphNode::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 GraphNode::get_desired_size() const {
+	return _get_minimum_size(true);
 }
 
 void GraphNode::_port_pos_update() {
@@ -1329,11 +1353,13 @@ void GraphNode::_bind_methods() {
 GraphNode::GraphNode() {
 	titlebar_hbox = memnew(HBoxContainer);
 	titlebar_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	titlebar_hbox->set_use_parent_material(true);
 	add_child(titlebar_hbox, false, INTERNAL_MODE_FRONT);
 
 	title_label = memnew(Label);
 	title_label->set_theme_type_variation("GraphNodeTitleLabel");
 	title_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	titlebar_hbox->set_use_parent_material(true);
 	titlebar_hbox->add_child(title_label);
 
 	set_mouse_filter(MOUSE_FILTER_STOP);

@@ -1665,8 +1665,6 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
-			error_panel->add_theme_style_override(SceneStringName(panel), theme_cache.error_panel_style);
-			error_label->add_theme_color_override(SNAME("default_color"), theme_cache.error_color);
 
 			tool_select->set_button_icon(theme_cache.tool_icon_select);
 			tool_create->set_button_icon(theme_cache.tool_icon_create);
@@ -1692,19 +1690,8 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				return;
 			}
 
-			String error;
-
-			Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
-
-			if (error_time > 0) {
-				error_time -= get_process_delta_time();
-			}
-
-			if (playback.is_null()) {
-				error = vformat(TTR("No playback resource set at path: %s."), AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
-			}
-
-			update_error_message(tree, error_panel, error_label, &error);
+			const String playback_path = AnimationTreeEditor::get_singleton()->get_base_path() + "playback";
+			Ref<AnimationNodeStateMachinePlayback> playback = tree->get(playback_path);
 
 			for (int i = 0; i < transition_lines.size(); i++) {
 				int tidx = -1;
@@ -2108,7 +2095,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	top_hb->add_child(transition_tools_hb);
 	transition_tools_hb->add_child(memnew(VSeparator));
 
-	transition_tools_hb->add_child(memnew(Label(TTR("Transition:"))));
+	transition_tools_hb->add_child(memnew(Label(TTR("Transition"))));
 	switch_mode = memnew(OptionButton);
 	transition_tools_hb->add_child(switch_mode);
 
@@ -2119,11 +2106,9 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	auto_advance->set_pressed(true);
 	transition_tools_hb->add_child(auto_advance);
 
-	//
-
 	top_hb->add_spacer();
 
-	top_hb->add_child(memnew(Label(TTR("Play Mode:"))));
+	top_hb->add_child(memnew(Label(TTR("Play Mode"))));
 	play_mode = memnew(OptionButton);
 	top_hb->add_child(play_mode);
 
@@ -2156,12 +2141,6 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	h_scroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
 	h_scroll->set_offset(SIDE_RIGHT, -v_scroll->get_size().x * EDSCALE);
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeStateMachineEditor::_scroll_changed));
-
-	error_panel = memnew(PanelContainer);
-	add_child(error_panel);
-	error_label = create_error_label_node();
-	error_panel->add_child(error_label);
-	error_panel->hide();
 
 	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
 

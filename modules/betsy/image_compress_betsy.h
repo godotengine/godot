@@ -90,7 +90,7 @@ struct RGBToRGBAPushConstant {
 
 void free_device();
 
-Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels);
+Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels, Image::BPTCFormat p_bptc_format);
 Error _betsy_compress_s3tc(Image *r_img, Image::UsedChannels p_channels);
 
 class BetsyCompressor : public Object {

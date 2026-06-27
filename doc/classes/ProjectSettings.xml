@@ -7,7 +7,7 @@
 		Stores variables that can be accessed from everywhere. Use [method get_setting], [method set_setting] or [method has_setting] to access them. Variables stored in [code]project.godot[/code] are also loaded into [ProjectSettings], making this object very useful for reading custom game configuration options.
 		When naming a Project Settings property, use the full path to the setting including the category. For example, [code]"application/config/name"[/code] for the project name. Category and property names can be viewed in the Project Settings dialog.
 		[b]Feature tags:[/b] Project settings can be overridden for specific platforms and configurations (debug, release, ...) using [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url].
-		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This can also be used in exported projects by placing this file in the same directory as the project binary. Overriding will still take the base project settings' [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url] in account. Therefore, make sure to [i]also[/i] override the setting with the desired feature tags if you want them to override base project settings on all platforms and configurations.
+		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This file is in the same format as [code]project.godot[/code], and can also be written using [ConfigFile]. This can also be used in exported projects by placing this file in the same directory as the project binary. Overriding will still take the base project settings' [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url] in account. Therefore, make sure to [i]also[/i] override the setting with the desired feature tags if you want them to override base project settings on all platforms and configurations.
 	</description>
 	<tutorials>
 		<link title="Project Settings">$DOCS_URL/tutorials/editor/project_settings.html</link>
@@ -189,14 +189,14 @@
 			<return type="int" enum="Error" />
 			<description>
 				Saves the configuration to the [code]project.godot[/code] file.
-				[b]Note:[/b] This method is intended to be used by editor plugins, as modified [ProjectSettings] can't be loaded back in the running app. If you want to change project settings in exported projects, use [method save_custom] to save [code]override.cfg[/code] file.
+				[b]Note:[/b] This method is intended to be used by editor plugins, as modified [ProjectSettings] can't be loaded back in the running app. If you want to change project settings in exported projects, use [method save_custom] to save an [code]override.cfg[/code] file.
 			</description>
 		</method>
 		<method name="save_custom">
 			<return type="int" enum="Error" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format). You can also save [code]override.cfg[/code] file, which is also text, but can be used in exported projects unlike other formats.
+				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format). You can also save an [code]override.cfg[/code] file, which is also text, but can be used in exported projects unlike other formats.
 			</description>
 		</method>
 		<method name="set_as_basic">
@@ -444,13 +444,13 @@
 		</member>
 		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
-			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS' audio mixer.
-			To query the value that is being used at run-time (which may be overridden by command-line arguments or headless mode), use [method AudioServer.get_driver_name].
+			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS's audio mixer.
+			To query the value that is being used at runtime (which may be overridden by command-line arguments or headless mode), use [method AudioServer.get_driver_name].
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
-			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows, make sure that apps are allowed to access the microphone in the OS' privacy settings.
+			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows, make sure that apps are allowed to access the microphone in the OS's privacy settings.
 		</member>
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
 			Target mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
@@ -555,6 +555,9 @@
 		</member>
 		<member name="debug/gdscript/warnings/confusable_local_usage" type="int" setter="" getter="" default="1">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an identifier that will be shadowed below in the block is used.
+		</member>
+		<member name="debug/gdscript/warnings/confusable_temporary_modification" type="int" setter="" getter="" default="1">
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a built-in property of type [code]Packed*Array[/code] is modified using a complex assignment chain or a non-[code]const[/code] method call. In this case, you are only modifying a temporary value, and the property's value remains unchanged.
 		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when deprecated keywords are used.
@@ -762,10 +765,10 @@
 			When set to [code]true[/code], produces a warning when a varying is never used.
 		</member>
 		<member name="debug/shapes/avoidance/2d/agents_radius_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.25)">
-			Color of the avoidance agents radius, visible when "Visible Avoidance" is enabled in the Debug menu.
+			Color of the avoidance agents' radius, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/avoidance/2d/enable_agents_radius" type="bool" setter="" getter="" default="true">
-			If enabled, displays avoidance agents radius when "Visible Avoidance" is enabled in the Debug menu.
+			If enabled, displays avoidance agents' radius when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/avoidance/2d/enable_obstacles_radius" type="bool" setter="" getter="" default="true">
 			If enabled, displays avoidance obstacles radius when "Visible Avoidance" is enabled in the Debug menu.
@@ -789,10 +792,10 @@
 			Color of the static avoidance obstacles faces when their vertices are winded in order to push agents out, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/avoidance/3d/agents_radius_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.25)">
-			Color of the avoidance agents radius, visible when "Visible Avoidance" is enabled in the Debug menu.
+			Color of the avoidance agents' radius, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/avoidance/3d/enable_agents_radius" type="bool" setter="" getter="" default="true">
-			If enabled, displays avoidance agents radius when "Visible Avoidance" is enabled in the Debug menu.
+			If enabled, displays avoidance agents' radius when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/avoidance/3d/enable_obstacles_radius" type="bool" setter="" getter="" default="true">
 			If enabled, displays avoidance obstacles radius when "Visible Avoidance" is enabled in the Debug menu.
@@ -1009,6 +1012,9 @@
 			Forces the main window to be borderless.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
 		</member>
+		<member name="display/window/size/enable_toggle_fullscreen_shortcut" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], allows the user to toggle fullscreen mode by pressing the shortcut defined in [member input/ui_toggle_fullscreen] ([kbd]Alt + Enter[/kbd] by default).
+		</member>
 		<member name="display/window/size/extend_to_title" type="bool" setter="" getter="" default="false">
 			Main window content is expanded to the full size of the window. Unlike a borderless window, the frame is left intact and can be used to resize the window, and the title bar is transparent, but has minimize/maximize/close buttons.
 			[b]Note:[/b] This setting is implemented only on macOS.
@@ -1079,12 +1085,12 @@
 			[code]"keep"[/code]: Keep aspect ratio when stretching the screen. This means that the viewport retains its original size regardless of the screen resolution, and black bars will be added to the top/bottom of the screen ("letterboxing") or the sides ("pillarboxing").
 			[code]"keep_width"[/code]: Keep aspect ratio when stretching the screen. If the screen is wider than the base size, black bars are added at the left and right (pillarboxing). But if the screen is taller than the base resolution, the viewport will be grown in the vertical direction (and more content will be visible at the bottom). You can also think of this as "Expand Vertically".
 			[code]"keep_height"[/code]: Keep aspect ratio when stretching the screen. If the screen is taller than the base size, black bars are added at the top and bottom (letterboxing). But if the screen is wider than the base resolution, the viewport will be grown in the horizontal direction (and more content will be visible to the right). You can also think of this as "Expand Horizontally".
-			[code]"expand"[/code]: Keep aspect ratio when stretching the screen, but keep neither the base width nor height. Depending on the screen aspect ratio, the viewport will either be larger in the horizontal direction (if the screen is wider than the base size) or in the vertical direction (if the screen is taller than the original size).
+			[code]"expand"[/code]: Keep aspect ratio when stretching the screen, but keep neither the base width nor height. Depending on the screen aspect ratio, the viewport will either be larger in the horizontal direction (if the screen is wider than the base size) or in the vertical direction (if the screen is taller than the original size). This is the default for projects created starting in Godot 4.7.
 		</member>
 		<member name="display/window/stretch/mode" type="String" setter="" getter="" default="&quot;disabled&quot;" keywords="disabled, canvas_items, viewport">
 			Defines how the base size is stretched to fit the resolution of the window or screen.
 			[code]"disabled"[/code]: No stretching happens. One unit in the scene corresponds to one pixel on the screen. In this mode, [member display/window/stretch/aspect] has no effect. Recommended for non-game applications.
-			[code]"canvas_items"[/code]: The base size specified in width and height in the project settings is stretched to cover the whole screen (taking [member display/window/stretch/aspect] into account). This means that everything is rendered directly at the target resolution. 3D is unaffected, while in 2D, there is no longer a 1:1 correspondence between sprite pixels and screen pixels, which may result in scaling artifacts. Recommended for most games that don't use a pixel art aesthetic, although it is possible to use this stretch mode for pixel art games too (especially in 3D).
+			[code]"canvas_items"[/code]: The base size specified in width and height in the project settings is stretched to cover the whole screen (taking [member display/window/stretch/aspect] into account). This means that everything is rendered directly at the target resolution. 3D is unaffected, while in 2D, there is no longer a 1:1 correspondence between sprite pixels and screen pixels, which may result in scaling artifacts. Recommended for most games that don't use a pixel art aesthetic, although it is possible to use this stretch mode for pixel art games too (especially in 3D). This is the default for projects created starting in Godot 4.7.
 			[code]"viewport"[/code]: The size of the root [Viewport] is set precisely to the base size specified in the Project Settings' Display section. The scene is rendered to this viewport first. Finally, this viewport is scaled to fit the screen (taking [member display/window/stretch/aspect] into account). Recommended for games that use a pixel art aesthetic.
 		</member>
 		<member name="display/window/stretch/scale" type="float" setter="" getter="" default="1.0">
@@ -1117,7 +1123,7 @@
 		</member>
 		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
-			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
+			Change this value to set up a multi-project scenario where there are multiple [code].csproj[/code] files. Keep in mind that the Godot project is considered one of the C# projects in the workspace and its root directory should contain the [code]project.godot[/code] and [code].csproj[/code] files next to each other.
 		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resource ([code]tres[/code]) and text scene ([code]tscn[/code]) files are converted to their corresponding binary format on export. This decreases file sizes and speeds up loading slightly.
@@ -1292,7 +1298,7 @@
 			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
 		</member>
 		<member name="gui/timers/button_shortcut_feedback_highlight_time" type="float" setter="" getter="" default="0.2">
-			When [member BaseButton.shortcut_feedback] is enabled, this is the time the [BaseButton] will remain highlighted after a shortcut.
+			When [member BaseButton.shortcut_feedback] is enabled, this is the time the [BaseButton] will remain highlighted after a shortcut. This duration is not affected by [member Engine.time_scale].
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).
@@ -1641,6 +1647,13 @@
 		<member name="input/ui_text_toggle_insert_mode" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to toggle [i]insert mode[/i] in a text field. While in insert mode, inserting new text overrides the character after the cursor, unless the next character is a new line.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_toggle_fullscreen" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to toggle fullscreen mode on the main window. This input action is only effective if [member display/window/size/enable_toggle_fullscreen_shortcut] is [code]true[/code]. Game embedding currently does not make use of this shortcut, as it does not support fullscreen mode.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_toggle_fullscreen.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to toggle fullscreen mode on the main window.
 		</member>
 		<member name="input/ui_undo" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to undo the most recent action.
@@ -2919,6 +2932,9 @@
 		<member name="rendering/environment/defaults/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
 			[Environment] that will be used as a fallback environment in case a scene does not specify its own environment. The default environment is loaded in at scene load time regardless of whether you have set an environment or not. If you do not rely on the fallback environment, you do not need to set this property.
 		</member>
+		<member name="rendering/environment/fog/use_legacy_blending" type="bool" setter="" getter="" default="false">
+			Enables legacy fog blending behavior from version 4.5 and earlier. This is intended for users who are developing on pre-4.6 versions and want to upgrade to 4.6 with the smallest possible change to their visuals.
+		</member>
 		<member name="rendering/environment/glow/upscale_mode" type="int" setter="" getter="" default="1" keywords="bicubic">
 			Sets how the glow effect is upscaled before being copied onto the screen. Linear is faster, but looks blocky. Bicubic is slower but looks smooth.
 			[b]Note:[/b] [member rendering/environment/glow/upscale_mode] is only effective when using the Forward+ or Mobile rendering methods, as Compatibility uses a different glow implementation.
@@ -3145,7 +3161,7 @@
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
-			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
+			[b]Note:[/b] The [b]Soft Very Low[/b] option will automatically multiply all [i]constant[/i] shadow blur by [code]0.75[/code] to reduce the amount of noticeable noise. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]'s [member Light3D.light_angular_distance].
 			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply [i]constant[/i] shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
@@ -3174,7 +3190,7 @@
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
-			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
+			[b]Note:[/b] The [b]Soft Very Low[/b] option will automatically multiply all [i]constant[/i] shadow blur by [code]0.75[/code] to reduce the amount of noticeable noise. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]'s [member Light3D.light_angular_distance].
 			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
@@ -3413,6 +3429,7 @@
 		</member>
 		<member name="rendering/scaling_3d/scale" type="float" setter="" getter="" default="1.0">
 			Scales the 3D render buffer based on the viewport size uses an image filter specified in [member rendering/scaling_3d/mode] to scale the output image to the full viewport size. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] are only valid for bilinear mode and can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [member rendering/anti_aliasing/quality/msaa_3d] for multi-sample antialiasing, which is significantly cheaper but only smooths the edges of polygons.
+			[b]Note:[/b] When using the [b]Nearest[/b] scaling mode, to avoid uneven pixel scaling, it's highly recommended to use a value equal to an integer divisor with a dividend of [code]1[/code]. For example, it's best to use a scale of [code]0.5[/code] (1/2), [code]0.3333[/code] (1/3), [code]0.25[/code] (1/4), [code]0.2[/code] (1/5), and so on.
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/compress" type="bool" setter="" getter="" default="true">
 		</member>
@@ -3445,11 +3462,11 @@
 			Specify the compression level for Basis Universal Zstandard supercompression, ranging from [code]1[/code] to [code]22[/code].
 		</member>
 		<member name="rendering/textures/canvas_textures/default_texture_filter" type="int" setter="" getter="" default="1" keywords="nearest, linear">
-			The default texture filtering mode to use for [CanvasItem]s built-in texture. In shaders, this texture is accessed as [code]TEXTURE[/code].
+			The default texture filtering mode to use for [CanvasItem]'s built-in texture. In shaders, this texture is accessed as [code]TEXTURE[/code].
 			[b]Note:[/b] For pixel art aesthetics, see also [member rendering/2d/snap/snap_2d_vertices_to_pixel] and [member rendering/2d/snap/snap_2d_transforms_to_pixel].
 		</member>
 		<member name="rendering/textures/canvas_textures/default_texture_repeat" type="int" setter="" getter="" default="0">
-			The default texture repeating mode to use for [CanvasItem]s built-in texture. In shaders, this texture is accessed as [code]TEXTURE[/code].
+			The default texture repeating mode to use for [CanvasItem]'s built-in texture. In shaders, this texture is accessed as [code]TEXTURE[/code].
 		</member>
 		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3" keywords="nearest, linear, anisotropic">
 			The filtering quality to use for [Decal] nodes. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
@@ -3465,6 +3482,7 @@
 			Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close).
 			Enabling temporal antialiasing ([member rendering/anti_aliasing/quality/use_taa]) will automatically apply a [code]-0.5[/code] offset to this value, while enabling FXAA ([member rendering/anti_aliasing/quality/screen_space_aa]) will automatically apply a [code]-0.25[/code] offset to this value. If both TAA and FXAA are enabled at the same time, an offset of [code]-0.75[/code] is applied to this value.
 			[b]Note:[/b] If [member rendering/scaling_3d/scale] is lower than [code]1.0[/code] (exclusive), [member rendering/textures/default_filters/texture_mipmap_bias] is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]log2(scaling_3d_scale) + mipmap_bias[/code].
+			[b]Note:[/b] This property is only supported in the Forward+ and Mobile renderers, not Compatibility. In Compatibility, this property is always treated as if it was set to [code]0.0[/code].
 		</member>
 		<member name="rendering/textures/default_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
@@ -3627,13 +3645,16 @@
 		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
 		</member>
+		<member name="xr/openxr/foveation_eye_tracked" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] and foveation level is set to anything other than "Disabled", eye-tracked foveation will be used, so long as it's supported by the headset.
+		</member>
 		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
 			Applied foveation level if supported.
 			[b]Note:[/b] On platforms other than Android, if [member rendering/anti_aliasing/quality/msaa_3d] is enabled, this feature will be disabled.
 		</member>
-		<member name="xr/openxr/foveation_with_subsampled_images" type="bool" setter="" getter="" default="false">
+		<member name="xr/openxr/foveation_with_subsampled_images" type="bool" setter="" getter="" default="true">
 			If [code]true[/code] and foveation is also enabled, subsampled images will be used on Vulkan. This can improve the performance gain from foveated rendering, especially when using high foveation levels.
-			[b]Note:[/b]: Using subsampled images is incompatible with many screen-space rendering features or post-processing effects like FXAA or glow. If any such effects are enabled, subsampled images will automatically be disabled and a warning shown in the log.
+			[b]Note:[/b] Using subsampled images is incompatible with many screen-space rendering features or post-processing effects like FXAA or glow. If any such effects are enabled, subsampled images will automatically be disabled and a warning shown in the log.
 		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.

@@ -381,13 +381,12 @@ private:
 	ConfirmationDialog *pick_main_scene = nullptr;
 	ConfirmationDialog *open_project_settings = nullptr;
 	Button *select_current_scene_button = nullptr;
-	AcceptDialog *accept = nullptr;
 	AcceptDialog *save_accept = nullptr;
 	EditorAbout *about = nullptr;
 	AcceptDialog *warning = nullptr;
 	EditorPlugin *plugin_to_save = nullptr;
 
-	int overridden_default_layout = -1;
+	bool overridden_default_layout = false;
 	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts = nullptr;
 	EditorLayoutsDialog *layout_dialog = nullptr;
@@ -451,8 +450,6 @@ private:
 	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
 	bool load_editor_layout_done = false;
-
-	bool select_current_scene_file_requested = false;
 
 	HashSet<Ref<Translation>> tracked_translations;
 	bool pending_translation_notification = false;
@@ -527,6 +524,7 @@ private:
 	static void _resource_saved(Ref<Resource> p_resource, const String &p_path);
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
+	void _update_system_menu_icons(bool p_dark_mode);
 	void _update_theme(bool p_skip_creation = false);
 	void _build_icon_type_cache();
 	void _enable_pending_addons();
@@ -560,7 +558,7 @@ private:
 	void _palette_quick_open_dialog();
 
 	void _remove_plugin_from_enabled(const String &p_name);
-	void _plugin_over_edit(EditorPlugin *p_plugin, Object *p_object);
+	void _plugin_over_edit(EditorPlugin *p_plugin, Object *p_object, bool p_set_current = true);
 	void _plugin_over_self_own(EditorPlugin *p_plugin);
 
 	void _fs_changed();
@@ -587,7 +585,7 @@ private:
 	void _save_scene_silently();
 
 	void _set_current_scene(int p_idx);
-	void _set_current_scene_nocheck(int p_idx);
+	void _set_current_scene_nocheck(int p_idx, bool p_ignore_state = false);
 	void _nav_to_selected_scene();
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
 	void _save_scene(String p_file, int idx = -1);
@@ -637,7 +635,7 @@ private:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	void _remove_edited_scene(bool p_change_tab = true);
-	void _remove_scene(int index, bool p_change_tab = true);
+	void _remove_scene(int p_idx, bool p_change_tab = true);
 	bool _find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
@@ -655,7 +653,8 @@ private:
 	void _restart_editor(bool p_goto_project_manager = false);
 
 	Dictionary _get_main_scene_state();
-	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
+	void _set_main_scene_state(const Dictionary &p_state);
+	Ref<ConfigFile> _load_scene_config(const String &p_scene_path);
 
 	void _save_editor_layout();
 	void _load_editor_layout();
@@ -717,10 +716,10 @@ private:
 	MenuType menu_type = MENU_TYPE_NONE;
 	Vector<PopupMenu *> main_menu_items;
 
-	void _build_file_menu();
-	void _build_project_menu();
-	void _build_settings_menu();
-	void _build_help_menu();
+	void _build_file_menu(bool p_dark_mode);
+	void _build_project_menu(bool p_dark_mode);
+	void _build_settings_menu(bool p_dark_mode);
+	void _build_help_menu(bool p_dark_mode);
 
 	void _update_main_menu_type();
 	void _add_to_main_menu(const String &p_name, PopupMenu *p_menu);
@@ -786,7 +785,7 @@ public:
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);
 
-	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"), uint32_t p_wrap_width = 0);
+	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTRC("OK"), const String &p_cancel_text = TTRC("Cancel"), uint32_t p_wrap_width = 0);
 
 	static bool is_cmdline_mode();
 
@@ -826,7 +825,7 @@ public:
 	void save_resource(const Ref<Resource> &p_resource);
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
 	bool is_resource_internal_to_scene(Ref<Resource> p_resource);
-	void gather_resources(const Variant &p_variant, List<Ref<Resource>> &r_list, bool p_subresources = false, bool p_allow_external = false);
+	void gather_resources(const Variant &p_variant, List<Ref<Resource>> &r_list, HashSet<Object *> &r_scanned_objects, bool p_subresources = false, bool p_allow_external = false);
 	void update_resource_count(Node *p_node, bool p_remove = false);
 	void update_node_reference(const Variant &p_value, Node *p_node, bool p_remove = false);
 	void clear_node_reference(Ref<Resource> p_res);
@@ -838,7 +837,7 @@ public:
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void push_item_no_inspector(Object *p_object);
 	void edit_previous_item();
-	void edit_item(Object *p_object, Object *p_editing_owner);
+	void edit_item(Object *p_object, Object *p_editing_owner, bool p_set_current = true);
 	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);
 
@@ -864,10 +863,12 @@ public:
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
 	String get_preview_locale() const;
-	void set_preview_locale(const String &p_locale);
+	bool is_pseudolocalization_enabled() const;
+	void set_preview_locale(const String &p_locale, bool p_pseudolocalization);
 
 	int new_scene();
-	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false, bool p_silent_change_tab = false);
+	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false, bool p_update_tabs = true);
+	Error open_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 	Error load_scene_or_resource(const String &p_file, bool p_ignore_broken_deps = false, bool p_change_scene_tab_if_already_open = true);
 
@@ -943,6 +944,7 @@ public:
 	bool is_scene_open(const String &p_path);
 	bool is_multi_window_enabled() const;
 
+	static void setup_built_in_resource(const Ref<Resource> &p_resource, const String &p_owner_path);
 	void setup_color_picker(ColorPicker *p_picker);
 	void register_hdr_viewport(Viewport *p_viewport);
 
@@ -966,9 +968,8 @@ public:
 
 	bool is_object_of_custom_type(const Object *p_object, const StringName &p_class);
 
-	void show_accept(const String &p_text, const String &p_title);
-	void show_save_accept(const String &p_text, const String &p_title);
-	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
+	void show_save_accept(const String &p_text, const String &p_ok_text = TTRC("OK"));
+	void show_warning(const String &p_text, const String &p_title = TTRC("Warning!"));
 
 	void _copy_warning(const String &p_str);
 

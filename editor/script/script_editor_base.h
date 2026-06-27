@@ -182,6 +182,10 @@ protected:
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case) { code_editor->convert_case(p_case); }
 
+	int previous_history_line = -1;
+	void _emit_request_save_new_history();
+	void _emit_request_save_previous_state();
+
 public:
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter);
@@ -208,9 +212,12 @@ public:
 	virtual void trim_final_newlines() { code_editor->trim_final_newlines(); }
 	virtual void insert_final_newline() { code_editor->insert_final_newline(); }
 
+	virtual void goto_line_without_history(int p_line, int p_column = 0) { code_editor->goto_line_without_history(p_line, p_column); }
 	virtual void goto_line(int p_line, int p_column = 0) { code_editor->goto_line(p_line, p_column); }
 	virtual void goto_line_selection(int p_line, int p_begin, int p_end) { code_editor->goto_line_selection(p_line, p_begin, p_end); }
 	virtual void goto_line_centered(int p_line, int p_column = 0) { code_editor->goto_line_centered(p_line, p_column); }
+	virtual void goto_line_and_center_if_necessary(int p_line, int p_column = 0) { code_editor->goto_line_and_center_if_necessary(p_line, p_column); }
+	virtual void trigger_history_save_on_navigate() { code_editor->trigger_history_save_on_navigate(); }
 	virtual void set_executing_line(int p_line) { code_editor->set_executing_line(p_line); }
 	virtual void clear_executing_line() { code_editor->clear_executing_line(); }
 

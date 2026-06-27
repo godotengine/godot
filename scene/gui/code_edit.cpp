@@ -455,7 +455,7 @@ void CodeEdit::_draw_guidelines() {
 		const int column_pos = theme_cache.font->get_string_size(String("0").repeat((int)line_length_guideline_columns[i]), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
 		const int xoffset = xmargin_beg + column_pos - get_h_scroll();
 		if (xoffset > xmargin_beg && xoffset < xmargin_end) {
-			Color guideline_color = (i == 0) ? theme_cache.line_length_guideline_color : theme_cache.line_length_guideline_color * Color(1, 1, 1, 0.5);
+			Color guideline_color = (i == 0) ? theme_cache.line_length_guideline_color : theme_cache.line_length_guideline_color * Color(1, 1, 1, 0.6);
 			if (rtl) {
 				RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(size.width - xoffset, 0), Point2(size.width - xoffset, size.height), guideline_color);
 				continue;
@@ -3120,6 +3120,7 @@ void CodeEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(KIND_NODE_PATH);
 	BIND_ENUM_CONSTANT(KIND_FILE_PATH);
 	BIND_ENUM_CONSTANT(KIND_PLAIN_TEXT);
+	BIND_ENUM_CONSTANT(KIND_KEYWORD);
 
 	BIND_ENUM_CONSTANT(LOCATION_LOCAL);
 	BIND_ENUM_CONSTANT(LOCATION_PARENT_MASK);

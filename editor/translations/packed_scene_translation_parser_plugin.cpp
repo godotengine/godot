@@ -156,6 +156,19 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			continue;
 		}
 
+		// Handle translation context
+		String translation_context;
+		if (ClassDB::is_parent_class(node_type, "Control")) {
+			for (int j = 0; j < state->get_node_property_count(i); j++) {
+				String property_name = state->get_node_property_name(i, j);
+
+				if (property_name == "translation_context") {
+					translation_context = String(state->get_node_property_value(i, j));
+					break;
+				}
+			}
+		}
+
 		if (node_type == "TabContainer") {
 			tabcontainer_paths.push_back(String(state->get_node_path(i)));
 		}
@@ -192,7 +205,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				String str_value = String(property_value);
 				// Prevent reading text containing only spaces.
 				if (!str_value.strip_edges().is_empty()) {
-					r_translations->push_back({ str_value });
+					r_translations->push_back({ str_value, translation_context });
 				}
 			}
 		}

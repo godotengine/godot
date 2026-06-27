@@ -258,7 +258,7 @@ void OpenXRFrameSynthesisExtension::on_main_swapchains_created() {
 	}
 }
 
-void OpenXRFrameSynthesisExtension::on_pre_render() {
+void OpenXRFrameSynthesisExtension::on_pre_draw_viewport(RID p_render_target) {
 	if (!frame_synthesis_ext) {
 		return;
 	}
@@ -266,8 +266,7 @@ void OpenXRFrameSynthesisExtension::on_pre_render() {
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 	ERR_FAIL_NULL(openxr_api);
 
-	size_t view_count = render_state.config_views.size();
-	if (!enabled || view_count != 2 || render_state.skip_next_frame) {
+	if (!enabled || render_state.config_views.size() != 2 || render_state.frame_synthesis_info.size() != 2 || render_state.skip_next_frame) {
 		// Unset these just in case.
 		openxr_api->set_velocity_texture(RID());
 		openxr_api->set_velocity_depth_texture(RID());
@@ -299,6 +298,9 @@ void OpenXRFrameSynthesisExtension::on_pre_render() {
 	Quaternion delta_quat = delta_transform.basis.get_quaternion();
 	Vector3 delta_origin = delta_transform.origin;
 
+	float z_far = openxr_api->get_render_state_z_far();
+	float z_near = openxr_api->get_render_state_z_near();
+
 	// Z near/far can change per frame, so make sure we update this.
 	for (XrFrameSynthesisInfoEXT &frame_synthesis_info : render_state.frame_synthesis_info) {
 		frame_synthesis_info.layerFlags = render_state.relax_frame_interval ? XR_FRAME_SYNTHESIS_INFO_REQUEST_RELAXED_FRAME_INTERVAL_BIT_EXT : 0;
@@ -308,9 +310,12 @@ void OpenXRFrameSynthesisExtension::on_pre_render() {
 			{ (float)delta_origin.x, (float)delta_origin.y, (float)delta_origin.z }
 		};
 
-		// Note: reverse-Z.
-		frame_synthesis_info.nearZ = openxr_api->get_render_state_z_far();
-		frame_synthesis_info.farZ = openxr_api->get_render_state_z_near();
+		// Ensure we only use valid near/far Z values.
+		if (z_far != z_near) {
+			// Note: reverse-Z.
+			frame_synthesis_info.nearZ = z_far;
+			frame_synthesis_info.farZ = z_near;
+		}
 	}
 
 	// Remember our transform.
@@ -319,7 +324,7 @@ void OpenXRFrameSynthesisExtension::on_pre_render() {
 
 void OpenXRFrameSynthesisExtension::on_post_draw_viewport(RID p_render_target) {
 	// Check if our extension is supported and enabled.
-	if (!frame_synthesis_ext || !enabled || render_state.config_views.size() != 2 || render_state.skip_next_frame) {
+	if (!frame_synthesis_ext || !enabled || render_state.config_views.size() != 2 || render_state.frame_synthesis_info.size() != 2 || render_state.skip_next_frame) {
 		return;
 	}
 
@@ -331,7 +336,7 @@ void OpenXRFrameSynthesisExtension::on_post_draw_viewport(RID p_render_target) {
 
 void *OpenXRFrameSynthesisExtension::set_projection_views_and_get_next_pointer(int p_view_index, void *p_next_pointer) {
 	// Check if our extension is supported and enabled.
-	if (!frame_synthesis_ext || !enabled || render_state.config_views.size() != 2) {
+	if (!frame_synthesis_ext || !enabled || render_state.config_views.size() != 2 || render_state.frame_synthesis_info.size() != 2) {
 		return nullptr;
 	}
 
@@ -344,14 +349,8 @@ void *OpenXRFrameSynthesisExtension::set_projection_views_and_get_next_pointer(i
 		return nullptr;
 	}
 
-	// Check if we can run frame synthesis.
-	size_t view_count = render_state.config_views.size();
-	if (enabled && view_count == 2) {
-		render_state.frame_synthesis_info[p_view_index].next = p_next_pointer;
-		return &render_state.frame_synthesis_info[p_view_index];
-	}
-
-	return nullptr;
+	render_state.frame_synthesis_info[p_view_index].next = p_next_pointer;
+	return &render_state.frame_synthesis_info[p_view_index];
 }
 
 bool OpenXRFrameSynthesisExtension::is_available() const {

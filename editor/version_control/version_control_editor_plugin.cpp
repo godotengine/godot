@@ -204,6 +204,8 @@ bool VersionControlEditorPlugin::_load_plugin(const String &p_name) {
 	_refresh_branch_list();
 	_refresh_remote_list();
 
+	toggle_amend_commit->set_visible(EditorVCSInterface::get_singleton()->allow_amends());
+
 	return true;
 }
 
@@ -280,6 +282,17 @@ void VersionControlEditorPlugin::_refresh_commit_list() {
 		item->set_text(1, commit.author.strip_edges());
 		item->set_metadata(0, meta_data);
 	}
+
+	toggle_amend_commit->set_disabled(commit_info_list.size() == 0);
+
+	if (commit_info_list.size() > 0) {
+		amend_commit_message = commit_info_list.get(0).msg;
+		if (toggle_amend_commit->is_pressed()) {
+			commit_message->set_text(amend_commit_message);
+		}
+	} else {
+		amend_commit_message = "";
+	}
 }
 
 void VersionControlEditorPlugin::_refresh_remote_list() {
@@ -310,7 +323,7 @@ void VersionControlEditorPlugin::_commit() {
 
 	ERR_FAIL_COND_MSG(msg.is_empty(), "No commit message was provided.");
 
-	EditorVCSInterface::get_singleton()->commit(msg);
+	EditorVCSInterface::get_singleton()->commit(msg, toggle_amend_commit->is_pressed());
 
 	if (version_control_dock->get_current_layout() == EditorDock::DOCK_LAYOUT_HORIZONTAL) {
 		version_control_dock->hide();
@@ -318,12 +331,25 @@ void VersionControlEditorPlugin::_commit() {
 
 	commit_message->release_focus();
 	commit_button->release_focus();
+	toggle_amend_commit->set_pressed_no_signal(false);
 	commit_message->set_text("");
+	previous_commit_message = "";
 
 	_refresh_stage_area();
 	_refresh_commit_list();
 	_refresh_branch_list();
 	_clear_diff();
+}
+
+void VersionControlEditorPlugin::_toggle_amend_commit(bool p_toggled) {
+	if (p_toggled) {
+		previous_commit_message = commit_message->get_text();
+		commit_message->set_text(amend_commit_message);
+	} else {
+		commit_message->set_text(previous_commit_message);
+		previous_commit_message = "";
+	}
+	_update_commit_button();
 }
 
 void VersionControlEditorPlugin::_branch_item_selected(int p_index) {
@@ -586,7 +612,7 @@ void VersionControlEditorPlugin::_cell_button_pressed(Object *p_item, int p_colu
 
 		file_path = "res://" + file_path;
 		if (ResourceLoader::get_resource_type(file_path) == "PackedScene") {
-			EditorNode::get_singleton()->load_scene(file_path);
+			EditorNode::get_singleton()->open_scene(file_path);
 		} else if (file_path.ends_with(".gd")) {
 			EditorNode::get_singleton()->load_resource(file_path);
 			ScriptEditor::get_singleton()->reload_scripts();
@@ -840,6 +866,11 @@ void VersionControlEditorPlugin::_display_diff_unified_view(List<EditorVCSInterf
 
 void VersionControlEditorPlugin::_update_commit_button() {
 	commit_button->set_disabled(commit_message->get_text().strip_edges().is_empty());
+	if (toggle_amend_commit->is_pressed()) {
+		commit_button->set_text(TTR("Amend Commit Changes"));
+	} else {
+		commit_button->set_text(TTR("Commit Changes"));
+	}
 }
 
 void VersionControlEditorPlugin::_remove_branch() {
@@ -1213,6 +1244,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstage_title->add_child(refresh_button);
 
 	discard_all_confirm = memnew(AcceptDialog);
+	discard_all_confirm->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	discard_all_confirm->set_title(TTR("Discard all changes"));
 	discard_all_confirm->set_min_size(Size2i(400, 50));
 	discard_all_confirm->set_text(TTR("This operation is IRREVERSIBLE. Your changes will be deleted FOREVER."));
@@ -1309,11 +1341,21 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	ED_SHORTCUT("version_control/commit", TTRC("Commit"), KeyModifierMask::CMD_OR_CTRL | Key::ENTER);
 
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	commit_area->add_child(hbox);
+
 	commit_button = memnew(Button);
+	commit_button->set_h_size_flags(Tree::SIZE_EXPAND_FILL);
 	commit_button->set_text(TTR("Commit Changes"));
 	commit_button->set_disabled(true);
 	commit_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_commit));
-	commit_area->add_child(commit_button);
+	hbox->add_child(commit_button);
+
+	toggle_amend_commit = memnew(CheckButton);
+	toggle_amend_commit->set_text(TTR("Amend"));
+	toggle_amend_commit->set_pressed_no_signal(false);
+	toggle_amend_commit->connect(SceneStringName(toggled), callable_mp(this, &VersionControlEditorPlugin::_toggle_amend_commit));
+	hbox->add_child(toggle_amend_commit);
 
 	dock_vb->add_child(memnew(HSeparator));
 
@@ -1362,6 +1404,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_select->set_tooltip_text(TTR("Branches"));
 	branch_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	branch_select->set_clip_text(true);
+	branch_select->set_fit_to_longest_item(false);
 	branch_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_branch_item_selected));
 	branch_select->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_branch_list));
 	menu_bar->add_child(branch_select);
@@ -1378,6 +1421,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_create_ok->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_create_branch));
 
 	branch_remove_confirm = memnew(AcceptDialog);
+	branch_remove_confirm->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	branch_remove_confirm->set_title(TTR("Remove Branch"));
 	branch_remove_confirm->add_cancel_button();
 	version_commit_dock->add_child(branch_remove_confirm);
@@ -1409,6 +1453,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_select->set_tooltip_text(TTR("Remotes"));
 	remote_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_select->set_clip_text(true);
+	remote_select->set_fit_to_longest_item(false);
 	remote_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_remote_selected));
 	remote_select->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_remote_list));
 	menu_bar->add_child(remote_select);
@@ -1425,6 +1470,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_create_ok->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_create_remote));
 
 	remote_remove_confirm = memnew(AcceptDialog);
+	remote_remove_confirm->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	remote_remove_confirm->set_title(TTR("Remove Remote"));
 	remote_remove_confirm->add_cancel_button();
 	version_commit_dock->add_child(remote_remove_confirm);

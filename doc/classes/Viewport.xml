@@ -422,7 +422,7 @@
 			The subdivision amount of the fourth quadrant on the shadow atlas.
 		</member>
 		<member name="positional_shadow_atlas_size" type="int" setter="set_positional_shadow_atlas_size" getter="get_positional_shadow_atlas_size" default="2048">
-			The shadow atlas' resolution (used for omni and spot lights). The value is rounded up to the nearest power of 2.
+			The shadow atlas's resolution (used for omni and spot lights). The final value is rounded up to the nearest power of 2.
 			[b]Note:[/b] If this is set to [code]0[/code], no positional shadows will be visible at all. This can improve performance significantly on low-end systems by reducing both the CPU and GPU load (as fewer draw calls are needed to draw the scene without shadows).
 		</member>
 		<member name="scaling_3d_mode" type="int" setter="set_scaling_3d_mode" getter="get_scaling_3d_mode" enum="Viewport.Scaling3DMode" default="0">
@@ -454,8 +454,9 @@
 		<member name="texture_mipmap_bias" type="float" setter="set_texture_mipmap_bias" getter="get_texture_mipmap_bias" default="0.0">
 			Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close).
 			Enabling temporal antialiasing ([member use_taa]) will automatically apply a [code]-0.5[/code] offset to this value, while enabling FXAA ([member screen_space_aa]) will automatically apply a [code]-0.25[/code] offset to this value. If both TAA and FXAA are enabled at the same time, an offset of [code]-0.75[/code] is applied to this value.
-			[b]Note:[/b] If [member scaling_3d_scale] is lower than [code]1.0[/code] (exclusive), [member texture_mipmap_bias] is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]log2(scaling_3d_scale) + mipmap_bias[/code].
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/textures/default_filters/texture_mipmap_bias] project setting.
+			[b]Note:[/b] If [member scaling_3d_scale] is lower than [code]1.0[/code] (exclusive), [member texture_mipmap_bias] is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]log2(scaling_3d_scale) + mipmap_bias[/code].
+			[b]Note:[/b] This property is only supported in the Forward+ and Mobile renderers, not Compatibility. In Compatibility, this property is always treated as if it was set to [code]0.0[/code].
 		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
@@ -574,7 +575,11 @@
 			More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
 			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
 		</constant>
-		<constant name="SCALING_3D_MODE_MAX" value="5" enum="Scaling3DMode">
+		<constant name="SCALING_3D_MODE_NEAREST" value="5" enum="Scaling3DMode">
+			Use nearest-neighbor filtering for the viewport's 3D buffer. This looks crisper than [constant SCALING_3D_MODE_BILINEAR] and has no additional rendering cost. The amount of scaling can be set using [member scaling_3d_scale]. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			[b]Note:[/b] When using the [b]Nearest[/b] scaling mode, to avoid uneven pixel scaling, it's highly recommended to use a value equal to an integer divisor with a dividend of [code]1[/code]. For example, it's best to use a scale of [code]0.5[/code] (1/2), [code]0.3333[/code] (1/3), [code]0.25[/code] (1/4), [code]0.2[/code] (1/5), and so on.
+		</constant>
+		<constant name="SCALING_3D_MODE_MAX" value="6" enum="Scaling3DMode">
 			Represents the size of the [enum Scaling3DMode] enum.
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
@@ -753,6 +758,14 @@
 		<constant name="DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="DebugDraw">
 			Draws the internal resolution buffer of the scene in linear colorspace before tonemapping or post-processing is applied.
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
+		</constant>
+		<constant name="DEBUG_DRAW_CLUSTER_AREA_LIGHTS" value="27" enum="DebugDraw">
+			Draws the cluster used by [AreaLight3D] nodes to optimize light rendering.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
+		</constant>
+		<constant name="DEBUG_DRAW_AREA_LIGHT_ATLAS" value="28" enum="DebugDraw">
+			Draws the atlas used by [AreaLight3D] nodes in the upper left quadrant of the [Viewport].
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering method.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).

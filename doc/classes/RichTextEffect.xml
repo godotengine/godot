@@ -20,7 +20,6 @@
 	</description>
 	<tutorials>
 		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
-		<link title="RichTextEffect test project (third-party)">https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<methods>
 		<method name="_process_custom_fx" qualifiers="virtual const">

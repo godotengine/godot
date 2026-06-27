@@ -31,7 +31,6 @@
 #include "window_wrapper.h"
 
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/progress_dialog.h"
@@ -208,11 +207,6 @@ void WindowWrapper::restore_window_from_saved_position(const Rect2 p_window_rect
 	Rect2 window_rect = p_window_rect;
 	int screen = p_screen;
 	Rect2 restored_screen_rect = p_screen_rect;
-
-	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
-		window_rect = Rect2i();
-		restored_screen_rect = Rect2i();
-	}
 
 	if (screen < 0 || screen >= DisplayServer::get_singleton()->get_screen_count()) {
 		// Fallback to the main window screen if the saved screen is not available.

@@ -360,7 +360,7 @@ private:
 
 	SelfList<GDScriptFunction> function_list{ this };
 	mutable Variant nil;
-	HashMap<int, Variant::Type> temporary_slots;
+	TightLocalVector<Pair<int, Variant::Type>> temporary_slots;
 	List<StackDebug> stack_debug;
 
 	Vector<int> code;
@@ -501,21 +501,22 @@ public:
 
 class GDScriptFunctionState : public RefCounted {
 	GDCLASS(GDScriptFunctionState, RefCounted);
+
 	friend class GDScriptFunction;
+
 	GDScriptFunction *function = nullptr;
 	GDScriptFunction::CallState state;
-	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	SelfList<GDScriptFunctionState> scripts_list;
 	SelfList<GDScriptFunctionState> instances_list;
+
+	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant resume(const Variant &p_arg);
 
 protected:
 	static void _bind_methods();
 
 public:
-	bool is_valid(bool p_extended_check = false) const;
-	Variant resume(const Variant &p_arg = Variant());
-
 #ifdef DEBUG_ENABLED
 	// Returns a human-readable representation of the function.
 	String get_readable_function() {

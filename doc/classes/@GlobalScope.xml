@@ -865,7 +865,7 @@
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				The following BBCode tags are supported: [code]b[/code], [code]i[/code], [code]u[/code], [code]s[/code], [code]indent[/code], [code]code[/code], [code]url[/code], [code]center[/code], [code]right[/code], [code]color[/code], [code]bgcolor[/code], [code]fgcolor[/code].
-				URL tags only support URLs wrapped by a URL tag, not URLs with a different title.
+				URL tags support both URLs wrapped by a URL tag and URLs with a different title ([code skip-lint][url=address]text[/url][/code]). Support for URLs with a different title varies across terminal emulators. Most modern terminal emulators support them, but Terminal.app and conhost (the legacy Windows console) do not.
 				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Support for ANSI escape codes varies across terminal emulators, especially for italic and strikethrough. In standard output, [code]code[/code] is represented with faint text but without any font change. Unsupported tags are left as-is in standard output.
 				[codeblocks]
 				[gdscript skip-lint]
@@ -1777,22 +1777,22 @@
 			A bit mask for [code]INLINE_ALIGNMENT_TO_*[/code] alignment constants.
 		</constant>
 		<constant name="EULER_ORDER_XYZ" value="0" enum="EulerOrder">
-			Specifies that Euler angles should be in XYZ order. When composing, the order is X, Y, Z. When decomposing, the order is reversed, first Z, then Y, and X last.
+			Specifies that Euler angles should be in intrinsic XYZ order. When composing, the rotations happen around the local X, Y, and Z axes, in that order. When decomposing, the order is reversed, first Z, then Y, and X last.
 		</constant>
 		<constant name="EULER_ORDER_XZY" value="1" enum="EulerOrder">
-			Specifies that Euler angles should be in XZY order. When composing, the order is X, Z, Y. When decomposing, the order is reversed, first Y, then Z, and X last.
+			Specifies that Euler angles should be in intrinsic XZY order. When composing, the rotations happen around the local X, Z, and Y axes, in that order. When decomposing, the order is reversed, first Y, then Z, and X last.
 		</constant>
 		<constant name="EULER_ORDER_YXZ" value="2" enum="EulerOrder">
-			Specifies that Euler angles should be in YXZ order. When composing, the order is Y, X, Z. When decomposing, the order is reversed, first Z, then X, and Y last.
+			Specifies that Euler angles should be in intrinsic YXZ order. When composing, the rotations happen around the local Y, X, and Z axes, in that order. When decomposing, the order is reversed, first Z, then X, and Y last.
 		</constant>
 		<constant name="EULER_ORDER_YZX" value="3" enum="EulerOrder">
-			Specifies that Euler angles should be in YZX order. When composing, the order is Y, Z, X. When decomposing, the order is reversed, first X, then Z, and Y last.
+			Specifies that Euler angles should be in intrinsic YZX order. When composing, the rotations happen around the local Y, Z, and X axes, in that order. When decomposing, the order is reversed, first X, then Z, and Y last.
 		</constant>
 		<constant name="EULER_ORDER_ZXY" value="4" enum="EulerOrder">
-			Specifies that Euler angles should be in ZXY order. When composing, the order is Z, X, Y. When decomposing, the order is reversed, first Y, then X, and Z last.
+			Specifies that Euler angles should be in intrinsic ZXY order. When composing, the rotations happen around the local Z, X, and Y axes, in that order. When decomposing, the order is reversed, first Y, then X, and Z last.
 		</constant>
 		<constant name="EULER_ORDER_ZYX" value="5" enum="EulerOrder">
-			Specifies that Euler angles should be in ZYX order. When composing, the order is Z, Y, X. When decomposing, the order is reversed, first X, then Y, and Z last.
+			Specifies that Euler angles should be in intrinsic ZYX order. When composing, the rotations happen around the local Z, Y, and X axes, in that order. When decomposing, the order is reversed, first X, then Y, and Z last.
 		</constant>
 		<constant name="KEY_NONE" value="0" enum="Key">
 			Enum value which doesn't correspond to any key. This is used to initialize [enum Key] properties with a generic state.
@@ -2903,7 +2903,7 @@
 			[csharp]
 			// Array of elemType.
 			hintString = $"{elemType:D}:";
-			hintString = $"{elemType:}/{elemHint:D}:{elemHintString}";
+			hintString = $"{elemType:D}/{elemHint:D}:{elemHintString}";
 			// Two-dimensional array of elemType (array of arrays of elemType).
 			hintString = $"{Variant.Type.Array:D}:{elemType:D}:";
 			hintString = $"{Variant.Type.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";

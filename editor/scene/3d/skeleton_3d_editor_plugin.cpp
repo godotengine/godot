@@ -56,7 +56,7 @@
 
 void BonePropertiesEditor::create_editors() {
 	section = memnew(EditorInspectorSection);
-	section->setup("", "trf_properties", label, this, Color(0.0f, 0.0f, 0.0f), true);
+	section->setup("trf_properties", label, this, Color(0.0f, 0.0f, 0.0f), true);
 	section->unfold();
 	add_child(section);
 
@@ -111,7 +111,7 @@ void BonePropertiesEditor::create_editors() {
 
 	// Transform/Matrix section.
 	rest_section = memnew(EditorInspectorSection);
-	rest_section->setup("", "trf_properties_transform", "Rest", this, Color(0.0f, 0.0f, 0.0f), true);
+	rest_section->setup("trf_properties_transform", "Rest", this, Color(0.0f, 0.0f, 0.0f), true);
 	section->get_vbox()->add_child(rest_section);
 
 	// Transform/Matrix property.
@@ -123,7 +123,7 @@ void BonePropertiesEditor::create_editors() {
 
 	// Bone Metadata property
 	meta_section = memnew(EditorInspectorSection);
-	meta_section->setup("", "bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
+	meta_section->setup("bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
 	section->get_vbox()->add_child(meta_section);
 
 	EditorInspectorActionButton *add_metadata_button = memnew(EditorInspectorActionButton(TTRC("Add Bone Metadata"), SNAME("Add")));
@@ -293,13 +293,13 @@ void BonePropertiesEditor::_property_keyed(const String &p_path, bool p_advance)
 	if (split.size() == 3 && split[0] == "bones") {
 		int bone_idx = split[1].to_int();
 		if (split[2] == "position") {
-			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_POSITION_3D, (Vector3)skeleton->get(p_path) / skeleton->get_motion_scale());
+			te->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_POSITION_3D, (Vector3)skeleton->get(p_path) / skeleton->get_motion_scale());
 		}
 		if (split[2] == "rotation") {
-			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_ROTATION_3D, skeleton->get(p_path));
+			te->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_ROTATION_3D, skeleton->get(p_path));
 		}
 		if (split[2] == "scale") {
-			te->insert_transform_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_SCALE_3D, skeleton->get(p_path));
+			te->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_SCALE_3D, skeleton->get(p_path));
 		}
 	}
 }
@@ -510,14 +510,14 @@ void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
 			continue;
 		}
 
-		if (pos_enabled && (p_all_bones || te->has_track(skeleton, name, Animation::TYPE_POSITION_3D))) {
-			te->insert_transform_key(skeleton, name, Animation::TYPE_POSITION_3D, skeleton->get_bone_pose_position(i) / skeleton->get_motion_scale());
+		if (pos_enabled && (p_all_bones || te->has_transform_3d_track(skeleton, name, Animation::TYPE_POSITION_3D))) {
+			te->insert_transform_3d_key(skeleton, name, Animation::TYPE_POSITION_3D, skeleton->get_bone_pose_position(i) / skeleton->get_motion_scale());
 		}
-		if (rot_enabled && (p_all_bones || te->has_track(skeleton, name, Animation::TYPE_ROTATION_3D))) {
-			te->insert_transform_key(skeleton, name, Animation::TYPE_ROTATION_3D, skeleton->get_bone_pose_rotation(i));
+		if (rot_enabled && (p_all_bones || te->has_transform_3d_track(skeleton, name, Animation::TYPE_ROTATION_3D))) {
+			te->insert_transform_3d_key(skeleton, name, Animation::TYPE_ROTATION_3D, skeleton->get_bone_pose_rotation(i));
 		}
-		if (scl_enabled && (p_all_bones || te->has_track(skeleton, name, Animation::TYPE_SCALE_3D))) {
-			te->insert_transform_key(skeleton, name, Animation::TYPE_SCALE_3D, skeleton->get_bone_pose_scale(i));
+		if (scl_enabled && (p_all_bones || te->has_transform_3d_track(skeleton, name, Animation::TYPE_SCALE_3D))) {
+			te->insert_transform_3d_key(skeleton, name, Animation::TYPE_SCALE_3D, skeleton->get_bone_pose_scale(i));
 		}
 	}
 	te->commit_insert_queue();
@@ -752,13 +752,18 @@ Variant Skeleton3DEditor::get_drag_data_fw(const Point2 &p_point, Control *p_fro
 
 	set_drag_preview(vb);
 	Dictionary drag_data;
-	drag_data["type"] = "nodes";
-	drag_data["node"] = selected;
+	drag_data["type"] = "skeleton_bone";
+	drag_data["source"] = selected->get_instance_id();
 
 	return drag_data;
 }
 
 bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	Dictionary drag_data = p_data;
+	if (!drag_data.has("type") || drag_data["type"] != "skeleton_bone" || !drag_data.has("source")) {
+		return false;
+	}
+
 	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? joint_tree->get_selected() : joint_tree->get_item_at_position(p_point);
 	if (!target) {
 		return false;
@@ -769,13 +774,13 @@ bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 		return false;
 	}
 
-	TreeItem *selected = Object::cast_to<TreeItem>(Dictionary(p_data)["node"]);
-	if (target == selected) {
+	TreeItem *selected = ObjectDB::get_instance<TreeItem>(drag_data["source"]);
+	if (!selected || selected->get_tree() != joint_tree || target == selected) {
 		return false;
 	}
 
-	const String path2 = target->get_metadata(0);
-	if (!path2.begins_with("bones/")) {
+	const String selected_path = selected->get_metadata(0);
+	if (!selected_path.begins_with("bones/")) {
 		return false;
 	}
 
@@ -787,11 +792,22 @@ void Skeleton3DEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		return;
 	}
 
-	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? joint_tree->get_selected() : joint_tree->get_item_at_position(p_point);
-	TreeItem *selected = Object::cast_to<TreeItem>(Dictionary(p_data)["node"]);
+	Dictionary drag_data = p_data;
 
-	const BoneId target_boneidx = String(target->get_metadata(0)).get_slicec('/', 1).to_int();
-	const BoneId selected_boneidx = String(selected->get_metadata(0)).get_slicec('/', 1).to_int();
+	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? joint_tree->get_selected() : joint_tree->get_item_at_position(p_point);
+	TreeItem *selected = ObjectDB::get_instance<TreeItem>(drag_data["source"]);
+	if (!target || !selected || selected->get_tree() != joint_tree || !skeleton) {
+		return;
+	}
+
+	const String target_path = target->get_metadata(0);
+	const String selected_path = selected->get_metadata(0);
+	if (!target_path.begins_with("bones/") || !selected_path.begins_with("bones/")) {
+		return;
+	}
+
+	const BoneId target_boneidx = target_path.get_slicec('/', 1).to_int();
+	const BoneId selected_boneidx = selected_path.get_slicec('/', 1).to_int();
 
 	move_skeleton_bone(skeleton->get_path(), selected_boneidx, target_boneidx);
 }
@@ -958,6 +974,9 @@ void Skeleton3DEditor::_joint_tree_button_clicked(Object *p_item, int p_column, 
 void Skeleton3DEditor::_update_properties() {
 	if (pose_editor) {
 		pose_editor->_update_properties();
+	}
+	if (!skeleton || !skeleton->is_inside_tree()) {
+		return;
 	}
 	Node3DEditor::get_singleton()->update_transform_gizmo();
 }
@@ -1166,7 +1185,7 @@ void Skeleton3DEditor::create_editors() {
 
 	// Bone tree.
 	bones_section = memnew(EditorInspectorSection);
-	bones_section->setup("", "bones", "Bones", skeleton, Color(0.0f, 0.0, 0.0f), true);
+	bones_section->setup("bones", "Bones", skeleton, Color(0.0f, 0.0, 0.0f), true);
 	add_child(bones_section);
 	bones_section->unfold();
 
@@ -1178,7 +1197,6 @@ void Skeleton3DEditor::create_editors() {
 	joint_tree = memnew(Tree);
 	joint_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	joint_tree->set_columns(1);
-	joint_tree->set_focus_mode(Control::FOCUS_NONE);
 	joint_tree->set_select_mode(Tree::SELECT_SINGLE);
 	joint_tree->set_hide_root(true);
 	joint_tree->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1250,6 +1268,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			update_joint_tree();
 		} break;
 		case NOTIFICATION_PREDELETE: {
+			_disconnect_from_tree();
 			if (skeleton) {
 				select_bone(-1); // Requires that the joint_tree has not been deleted.
 				_disconnect_from_skeleton();
@@ -1265,16 +1284,19 @@ void Skeleton3DEditor::_notification(int p_what) {
 }
 
 void Skeleton3DEditor::_node_removed(Node *p_node) {
-	if (skeleton && p_node == skeleton) {
-		_disconnect_from_skeleton();
-		if (pose_editor) {
-			pose_editor->set_skeleton(nullptr);
-			pose_editor->set_visible(false);
-		}
-		edit_mode = false;
-		skeleton = nullptr;
-		skeleton_options->hide();
+	if (!skeleton || p_node != skeleton) {
+		return;
 	}
+
+	_disconnect_from_tree();
+	_disconnect_from_skeleton();
+	if (pose_editor) {
+		pose_editor->set_skeleton(nullptr);
+		pose_editor->set_visible(false);
+	}
+	edit_mode = false;
+	skeleton = nullptr;
+	skeleton_options->hide();
 
 	_update_properties();
 }
@@ -1295,6 +1317,21 @@ void Skeleton3DEditor::_disconnect_from_skeleton() {
 	}
 	if (skeleton->is_connected(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties))) {
 		skeleton->disconnect(SceneStringName(pose_updated), callable_mp(this, &Skeleton3DEditor::_update_properties));
+	}
+}
+
+void Skeleton3DEditor::_disconnect_from_tree() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	SceneTree *tree = get_tree();
+	if (!tree) {
+		return;
+	}
+
+	if (tree->is_connected("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed))) {
+		tree->disconnect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed));
 	}
 }
 

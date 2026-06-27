@@ -48,7 +48,4 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
-	</members>
 </class>

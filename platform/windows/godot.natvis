@@ -242,28 +242,10 @@
 		<StringView Condition="_cowdata._ptr != 0">_cowdata._ptr,s32</StringView>
 	</Type>
 
-	<Type Name="godot::String">
-		<DisplayString>{*reinterpret_cast&lt;void**&gt;(opaque),s32}</DisplayString>
-		<Expand>
-			<Item Name="opaque_ptr">*reinterpret_cast&lt;void**&gt;(opaque)</Item>
-			<Item Name="string">*reinterpret_cast&lt;void**&gt;(opaque),s32</Item>
-		</Expand>
-	</Type>
-
 	<Type Name="StringName">
 		<DisplayString Condition="_data">{_data->name,s32}</DisplayString>
 		<DisplayString Condition="!_data">[empty]</DisplayString>
 		<StringView Condition="_data">_data->name,s32</StringView>
-	</Type>
-
-	<!-- can't cast the opaque to ::StringName because Natvis does not support global namespace specifier? -->
-	<Type Name="godot::StringName">
-		<Intrinsic Name="get_data_ptr" Expression="(*reinterpret_cast&lt;const char32_t***&gt;(opaque))[1]" />
-		<DisplayString Condition="get_data_ptr()">{get_data_ptr(),s32}</DisplayString>
-		<Expand>
-			<Item Name="opaque_ptr">*reinterpret_cast&lt;void**&gt;(opaque)</Item>
-			<Item Name="cname">get_data_ptr(),s32</Item>
-		</Expand>
 	</Type>
 
 	<Type Name="Object::SignalData">

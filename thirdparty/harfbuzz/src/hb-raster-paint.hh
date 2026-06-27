@@ -79,7 +79,22 @@ struct hb_raster_clip_t
       return ((int) x >= rect_x0 && (int) x < rect_x1 &&
 	      (int) y >= rect_y0 && (int) y < rect_y1) ? 255 : 0;
     if (x >= width || y >= height) return 0;
-    return alpha[y * stride + x];
+    if (stride < width) return 0;
+    if (height && stride > (size_t) -1 / height) return 0;
+    size_t idx = (size_t) y * stride + x;
+    if (!alpha.arrayZ || idx >= alpha.length) return 0;
+    return alpha[idx];
+  }
+
+  bool has_valid_alpha_mask () const
+  {
+    if (is_rect)
+      return true;
+    if (!alpha.arrayZ || stride < width)
+      return false;
+    if (height && stride > (size_t) -1 / height)
+      return false;
+    return (size_t) stride * height <= alpha.length;
   }
 };
 
@@ -96,12 +111,9 @@ struct hb_raster_paint_t
   hb_raster_extents_t fixed_extents      = {};
   bool                has_extents  = false;
   hb_color_t          foreground         = HB_COLOR (0, 0, 0, 255);
+  hb_color_t          background         = HB_COLOR (0, 0, 0, 0);
+  unsigned            palette            = 0;
   hb_map_t           *custom_palette     = nullptr;
-
-  /* SVG rendering state */
-  hb_codepoint_t      svg_glyph          = 0;
-  hb_font_t          *svg_font           = nullptr;
-  unsigned            svg_palette        = 0;
 
   /* Stacks */
   hb_vector_t<hb_transform_t<>>     transform_stack;
@@ -153,6 +165,9 @@ struct hb_raster_paint_t
     clip.height = h;
     clip.stride = (w + 3u) & ~3u;
     clip.is_rect = false;
+    clip.rect_x0 = clip.rect_y0 = 0;
+    clip.rect_x1 = clip.rect_y1 = 0;
+    clip.min_x = clip.min_y = clip.max_x = clip.max_y = 0;
     return clip;
   }
 
@@ -178,8 +193,10 @@ struct hb_raster_paint_t
     return clip_stack.tail ();
   }
 
-  hb_transform_t<> &current_transform ()
+  hb_transform_t<> current_transform ()
   {
+    if (unlikely (!transform_stack.length))
+      return {1, 0, 0, 1, 0, 0};
     return transform_stack.tail ();
   }
 
@@ -198,6 +215,18 @@ struct hb_raster_paint_t
     hb_transform_t<> t = current_transform ();
     apply_scale_factor (t);
     return t;
+  }
+
+  bool fetch_color_stops (hb_color_line_t *color_line)
+  {
+    unsigned count = hb_color_line_get_color_stops (color_line, 0, nullptr, nullptr);
+    if (unlikely (!count || !scratch_color_stops.resize (count)))
+    {
+      scratch_color_stops.resize (0);
+      return false;
+    }
+    hb_color_line_get_color_stops (color_line, 0, &count, scratch_color_stops.arrayZ);
+    return true;
   }
 };
 

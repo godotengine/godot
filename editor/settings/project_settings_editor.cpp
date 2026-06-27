@@ -41,6 +41,7 @@
 #include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/settings/gdextension/project_settings_gdextension.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
@@ -843,9 +844,18 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	globals_container->add_child(group_settings);
 
+	TabContainer *addons_container = memnew(TabContainer);
+	addons_container->set_theme_type_variation("TabContainerInner");
+	addons_container->set_name(TTRC("Addons"));
+	tab_container->add_child(addons_container);
+
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTRC("Plugins"));
-	tab_container->add_child(plugin_settings);
+	addons_container->add_child(plugin_settings);
+
+	gdextension_settings = memnew(ProjectSettingsGDExtension);
+	gdextension_settings->set_name(TTRC("GDExtension"));
+	addons_container->add_child(gdextension_settings);
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);

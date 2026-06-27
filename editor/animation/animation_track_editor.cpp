@@ -1461,6 +1461,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			add_track->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
 			time_icon->set_texture(get_editor_theme_icon(SNAME("Time")));
+			time_icon->set_custom_minimum_size(Size2((get_editor_theme_icon(SNAME("Time"))->get_size().width + 16) * EDSCALE, 0));
 			filter_track->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 			add_track->get_popup()->clear();
@@ -1485,7 +1486,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		}
 		case NOTIFICATION_READY: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_RESIZED: {
@@ -1652,8 +1653,8 @@ void AnimationTimelineEdit::_notification(int p_what) {
 						float pos = get_value() + double(i) / scale;
 						float prev = get_value() + (double(i) - 1.0) / scale;
 
-						int frame = pos / step_size;
-						int prev_frame = prev / step_size;
+						int frame = int(Math::floor(pos / step_size));
+						int prev_frame = int(Math::floor(prev / step_size));
 
 						bool sub = Math::floor(prev) == Math::floor(pos);
 
@@ -2081,13 +2082,14 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	len_hb = memnew(HBoxContainer);
 
 	Control *expander = memnew(Control);
-	expander->set_h_size_flags(SIZE_EXPAND_FILL);
+	expander->set_custom_minimum_size(Vector2(2 * EDSCALE, 0));
 	expander->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	len_hb->add_child(expander);
 
 	time_icon = memnew(TextureRect);
-	time_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	time_icon->set_tooltip_text(TTRC("Animation length (seconds)"));
+	time_icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	time_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	len_hb->add_child(time_icon);
 
 	length = memnew(EditorSpinSlider);
@@ -2097,6 +2099,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
 	length->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
+	length->set_h_size_flags(SIZE_EXPAND_FILL);
 	length->set_tooltip_text(TTRC("Animation length (seconds)"));
 	length->set_accessibility_name(TTRC("Animation length (seconds)"));
 	length->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
@@ -3484,7 +3487,7 @@ bool AnimationTrackEdit::_lookup_key(int p_key_idx) const {
 					ScriptEditor::get_singleton()->goto_help(vformat("class_method:%s:%s", target->get_class_name(), method));
 				} else {
 					// Still not found, which means the target doesn't have this method. Warn the user.
-					WARN_PRINT_ED(TTR(vformat("Failed to lookup method: \"%s\"", method)));
+					WARN_PRINT_ED(vformat(TTR("Failed to lookup method: \"%s\""), method));
 				}
 			}
 			return true;
@@ -3981,16 +3984,6 @@ void AnimationTrackEditGroup::gui_input(const Ref<InputEvent> &p_event) {
 			bool current_group_folded = !editor->get_current_animation()->editor_is_group_folded(node_name);
 			editor->get_current_animation()->editor_set_group_folded(node_name, current_group_folded);
 
-			if (!editor->get_current_animation()->get_path().is_resource_file()) {
-				EditorNode::get_editor_folding().save_scene_folding(
-						EditorNode::get_singleton()->get_edited_scene(),
-						EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path());
-			} else {
-				EditorNode::get_editor_folding().save_resource_folding(
-						editor->get_current_animation(),
-						editor->get_current_animation()->get_path());
-			}
-
 			for (AnimationTrackEdit *i : track_edits) {
 				i->set_visible(!current_group_folded);
 			}
@@ -4130,19 +4123,13 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 			}
 		}
 
-		if (bezier_edit->is_visible()) {
+		if (bezier_mc->is_visible()) {
 			for (int i = 0; i < animation->get_track_count(); ++i) {
 				if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
 					_bezier_edit(i);
 					break;
 				}
 			}
-		}
-
-		if (animation->get_path().is_resource_file()) {
-			EditorNode::get_editor_folding().load_resource_folding(
-					animation,
-					animation->get_path());
 		}
 	} else {
 		hscroll->hide();
@@ -4175,7 +4162,7 @@ void AnimationTrackEditor::_check_bezier_exist() {
 	if (is_exist) {
 		bezier_edit_icon->set_disabled(false);
 	} else {
-		if (bezier_edit->is_visible()) {
+		if (bezier_mc->is_visible()) {
 			_cancel_bezier_edit();
 		}
 		bezier_edit_icon->set_disabled(true);
@@ -4549,7 +4536,7 @@ void AnimationTrackEditor::_insert_track(bool p_reset_wanted, bool p_create_bezi
 	}
 }
 
-void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value) {
+void AnimationTrackEditor::insert_transform_3d_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value) {
 	if (read_only) {
 		popup_read_only_dialog();
 		return;
@@ -4597,7 +4584,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	_query_insert(id);
 }
 
-bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type) {
+bool AnimationTrackEditor::has_transform_3d_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type) {
 	ERR_FAIL_NULL_V(root, false);
 	if (!keying) {
 		return false;
@@ -5177,7 +5164,7 @@ void AnimationTrackEditor::resolve_insertion_offset(float &r_offset) const {
 }
 
 bool AnimationTrackEditor::is_bezier_editor_active() const {
-	return bezier_edit->is_visible();
+	return bezier_mc->is_visible();
 }
 
 bool AnimationTrackEditor::can_add_reset_key() const {
@@ -5598,7 +5585,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			}
 
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -5651,7 +5638,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &AnimationTrackEditor::_selection_changed));
 
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -6534,7 +6521,7 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 }
 
 void AnimationTrackEditor::_toggle_bezier_edit() {
-	if (bezier_edit->is_visible()) {
+	if (bezier_mc->is_visible()) {
 		_cancel_bezier_edit();
 	} else {
 		int track_count = animation->get_track_count();
@@ -6599,7 +6586,7 @@ void AnimationTrackEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin,
 }
 
 void AnimationTrackEditor::_cancel_bezier_edit() {
-	bezier_edit->hide();
+	bezier_mc->hide();
 	box_selection_container->show();
 	bezier_edit_icon->set_pressed(false);
 	auto_fit->show();
@@ -6611,7 +6598,7 @@ void AnimationTrackEditor::_bezier_edit(int p_for_track) {
 	bezier_edit->set_root(root);
 	bezier_edit->set_animation_and_track(animation, p_for_track, read_only);
 	box_selection_container->hide();
-	bezier_edit->show();
+	bezier_mc->show();
 	auto_fit->hide();
 	auto_fit_bezier->show();
 	// Search everything within the track and curve - edit it.
@@ -7437,21 +7424,21 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		} break;
 
 		case EDIT_DUPLICATE_SELECTED_KEYS: {
-			if (bezier_edit->is_visible()) {
+			if (bezier_mc->is_visible()) {
 				bezier_edit->duplicate_selected_keys(-1.0, false);
 				break;
 			}
 			_anim_duplicate_keys(-1.0, false, -1.0);
 		} break;
 		case EDIT_CUT_KEYS: {
-			if (bezier_edit->is_visible()) {
+			if (bezier_mc->is_visible()) {
 				bezier_edit->copy_selected_keys(true);
 				break;
 			}
 			_anim_copy_keys(true);
 		} break;
 		case EDIT_COPY_KEYS: {
-			if (bezier_edit->is_visible()) {
+			if (bezier_mc->is_visible()) {
 				bezier_edit->copy_selected_keys(false);
 				break;
 			}
@@ -7560,7 +7547,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		} break;
 		case EDIT_DELETE_SELECTION: {
-			if (bezier_edit->is_visible()) {
+			if (bezier_mc->is_visible()) {
 				bezier_edit->delete_selection();
 				break;
 			}
@@ -7905,7 +7892,7 @@ void AnimationTrackEditor::_auto_fit() {
 void AnimationTrackEditor::_auto_fit_bezier() {
 	timeline->auto_fit();
 
-	if (bezier_edit->is_visible()) {
+	if (bezier_mc->is_visible()) {
 		bezier_edit->auto_fit_vertically();
 	}
 }
@@ -7987,6 +7974,8 @@ void AnimationTrackEditor::_update_timeline_margins() {
 
 	timeline_mc->add_theme_constant_override(SNAME("margin_left"), margin_left);
 	timeline_mc->add_theme_constant_override(SNAME("margin_right"), margin_right);
+
+	bezier_mc->add_theme_constant_override(SNAME("margin_left"), margin_left);
 }
 
 void AnimationTrackEditor::_add_animation_player() {
@@ -8189,12 +8178,16 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	box_selection_container->set_clip_contents(true);
 	timeline_vbox->add_child(box_selection_container);
 
+	bezier_mc = memnew(MarginContainer);
+	bezier_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	bezier_mc->set_theme_type_variation("AnimationBezierMargin");
+	timeline_vbox->add_child(bezier_mc);
+	bezier_mc->hide();
+
 	bezier_edit = memnew(AnimationBezierTrackEdit);
-	timeline_vbox->add_child(bezier_edit);
+	bezier_mc->add_child(bezier_edit);
 	bezier_edit->set_editor(this);
 	bezier_edit->set_timeline(timeline);
-	bezier_edit->hide();
-	bezier_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	bezier_edit->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
 
 	marker_edit = memnew(AnimationMarkerEdit);
@@ -8701,6 +8694,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_COPY_TRACKS_CONFIRM));
 
 	read_only_dialog = memnew(AcceptDialog);
+	read_only_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	read_only_dialog->set_title(TTRC("Key Insertion Error"));
 	read_only_dialog->set_text(TTRC("Imported Animation cannot be edited!"));
 	add_child(read_only_dialog);
@@ -9778,6 +9772,7 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	marker_insert_color->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(marker_insert_color->get_picker()));
 	marker_insert_vbox->add_child(_create_hbox_labeled_control(TTRC("Marker Color"), marker_insert_color));
 	marker_insert_error_dialog = memnew(AcceptDialog);
+	marker_insert_error_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	marker_insert_error_dialog->set_ok_button_text(TTRC("Close"));
 	marker_insert_error_dialog->set_title(TTRC("Error!"));
 	marker_insert_confirm->add_child(marker_insert_error_dialog);
@@ -9800,6 +9795,7 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	marker_rename_vbox->add_child(marker_rename_new_name);
 
 	marker_rename_error_dialog = memnew(AcceptDialog);
+	marker_rename_error_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	marker_rename_error_dialog->set_ok_button_text(TTRC("Close"));
 	marker_rename_error_dialog->set_title(TTRC("Error!"));
 	marker_rename_confirm->add_child(marker_rename_error_dialog);

@@ -102,17 +102,41 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const 
 AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	_update_animation_cache(p_process_state.tree, p_instance);
 	const Ref<Animation> &anim = p_instance.cached_animation;
-	// Should not ever happen due to validation earlier.
-	ERR_FAIL_COND_V(anim.is_null(), NodeTimeInfo());
+	if (unlikely(anim.is_null())) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, vformat(RTR("Animation '%s' not found."), animation));
+		}
+		return NodeTimeInfo();
+	}
 	double anim_size = anim->get_length();
 
-	double cur_len;
+	double cur_len; // The animation length seen in NodeTimeInfo, propagated throughout the tree.
+
+	// The start/end section passed to AnimationMixer, to trim for Discrete/Method/Audio key section.
+	double playback_start; // Start of the current section in AnimationMixer.
+	double playback_end; // End of the current section in AnimationMixer.
 	Animation::LoopMode cur_loop_mode;
 	if (use_custom_timeline) {
 		cur_len = timeline_length;
 		cur_loop_mode = loop_mode;
+		if (stretch_time_scale || cur_loop_mode != Animation::LOOP_NONE) {
+			// When time scale is stretched or looped, the entire animation is played anyway using a time scale based on the timeline length.
+			// Therefore, the end of the animation section is the animation length.
+			playback_start = 0.0;
+			playback_end = anim_size;
+		} else {
+			if (play_mode == PLAY_MODE_FORWARD) {
+				playback_start = start_offset;
+				playback_end = playback_start + timeline_length;
+			} else {
+				playback_end = anim_size - start_offset;
+				playback_start = playback_end - timeline_length;
+			}
+		}
 	} else {
 		cur_len = anim_size;
+		playback_start = 0.0;
+		playback_end = anim_size;
 		cur_loop_mode = anim->get_loop_mode();
 	}
 
@@ -184,13 +208,17 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 	nti.will_end = will_end;
 
 	// 3. Progress for Animation.
-	double prev_playback_time = prev_time + start_offset;
-	double cur_playback_time = cur_time + start_offset;
-	if (stretch_time_scale) {
-		double mlt = anim_size / cur_len;
-		prev_playback_time *= mlt;
-		cur_playback_time *= mlt;
-		cur_delta *= mlt;
+	double prev_playback_time = prev_time;
+	double cur_playback_time = cur_time;
+	if (use_custom_timeline) {
+		prev_playback_time += start_offset;
+		cur_playback_time += start_offset;
+		if (stretch_time_scale) {
+			double mlt = anim_size / timeline_length;
+			prev_playback_time *= mlt;
+			cur_playback_time *= mlt;
+			cur_delta *= mlt;
+		}
 	}
 	if (cur_loop_mode == Animation::LOOP_LINEAR) {
 		if (!Math::is_zero_approx(anim_size)) {
@@ -243,12 +271,12 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 		// Force process first key for Discrete/Method/Audio/AnimationPlayback.
 		if (immediately_after_start) {
 			AnimationMixer::PlaybackInfo pi = p_playback_info;
-			pi.start = 0.0;
-			pi.end = cur_len;
+			pi.start = playback_start;
+			pi.end = playback_end;
 			if (play_mode == PLAY_MODE_FORWARD) {
-				pi.time = 0;
+				pi.time = playback_start;
 			} else {
-				pi.time = anim_size;
+				pi.time = playback_end;
 			}
 			pi.delta = 0;
 			pi.weight = CMP_EPSILON;
@@ -256,8 +284,8 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 		}
 
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
-		pi.start = 0.0;
-		pi.end = cur_len;
+		pi.start = playback_start;
+		pi.end = playback_end;
 		if (play_mode == PLAY_MODE_FORWARD) {
 			pi.time = cur_playback_time;
 		} else {
@@ -572,15 +600,15 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(ProcessState &p_proce
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
 	bool do_start = cur_request == ONE_SHOT_REQUEST_FIRE;
-
-	bool is_reset = Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking;
-	if (is_reset && cur_internal_active) {
-		do_start = true;
-	}
-
 	bool is_abort = cur_request == ONE_SHOT_REQUEST_ABORT;
-	if (is_reset && !do_start && (is_fading_out || (abort_on_reset && cur_active))) {
-		is_abort = true;
+	bool is_reset = Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking;
+	if (is_reset) {
+		if (!do_start && (is_fading_out || (abort_on_reset && cur_active))) {
+			is_abort = true;
+		}
+		if (cur_internal_active) {
+			do_start = true;
+		}
 	}
 
 	if (is_abort) {
@@ -1900,7 +1928,7 @@ void AnimationNodeBlendTree::_bind_methods() {
 	BIND_CONSTANT(CONNECTION_ERROR_SAME_NODE);
 	BIND_CONSTANT(CONNECTION_ERROR_CONNECTION_EXISTS);
 
-	ADD_SIGNAL(MethodInfo(SNAME("node_changed"), PropertyInfo(Variant::STRING_NAME, "node_name")));
+	ADD_SIGNAL(MethodInfo("node_changed", PropertyInfo(Variant::STRING_NAME, "node_name")));
 }
 
 void AnimationNodeBlendTree::_initialize_node_tree() {

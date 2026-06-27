@@ -58,7 +58,7 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 		accesskit_role role = ACCESSKIT_ROLE_UNKNOWN;
 		accesskit_node *node = nullptr;
 	};
-	mutable RID_PtrOwner<AccessibilityElement> rid_owner;
+	mutable RID_PtrOwner<AccessibilityElement> rid_owner{ 65536, 1048576 };
 
 	struct WindowData {
 		// Adapter.
