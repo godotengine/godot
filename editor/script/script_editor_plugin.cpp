@@ -3629,7 +3629,7 @@ void ScriptEditor::_history_back() {
 
 void ScriptEditor::_roll_back_to_pre_tab() {
 	Control *tselected = tab_container->get_current_tab_control();
-	if (history[history_pos].control != tselected) {
+	if (history_pos == -1 || history[history_pos].control != tselected) {
 		return;
 	}
 
