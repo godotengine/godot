@@ -70,6 +70,7 @@ private:
 		int touch_index = -1;
 	} status;
 
+	StringName action;
 	Ref<ButtonGroup> button_group;
 
 	void _unpress_group();
@@ -77,6 +78,9 @@ private:
 	void _toggled(bool p_pressed);
 
 	void on_action_event(Ref<InputEvent> p_event);
+
+	void _action_press();
+	void _action_release();
 
 	Timer *shortcut_feedback_timer = nullptr;
 	bool in_shortcut_feedback = false;
@@ -142,6 +146,9 @@ public:
 	Ref<Shortcut> get_shortcut() const;
 
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
+
+	void set_action(const StringName &p_action);
+	StringName get_action() const;
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;

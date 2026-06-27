@@ -31,10 +31,13 @@
 #include "base_button.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/string/string_name.h"
 #include "scene/gui/label.h"
 #include "scene/main/timer.h"
+#include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
@@ -203,6 +206,7 @@ void BaseButton::_notification(int p_what) {
 			if (status.pressed_down_with_focus) {
 				status.pressed_down_with_focus = false;
 				emit_signal(SNAME("button_up"));
+				_action_release();
 			}
 		} break;
 
@@ -247,6 +251,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 		if (!status.pressed_down_with_focus) {
 			status.pressed_down_with_focus = true;
 			emit_signal(SNAME("button_down"));
+			_action_press();
 		}
 	}
 
@@ -281,10 +286,35 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 		if (status.pressed_down_with_focus) {
 			status.pressed_down_with_focus = false;
 			emit_signal(SNAME("button_up"));
+			_action_release();
 		}
 	}
 
 	queue_redraw();
+}
+
+void BaseButton::_action_press() {
+	if (action == StringName()) {
+		return;
+	}
+	Input::get_singleton()->action_press(action);
+	Ref<InputEventAction> iea;
+	iea.instantiate();
+	iea->set_action(action);
+	iea->set_pressed(true);
+	get_viewport()->push_input(iea, true);
+}
+
+void BaseButton::_action_release() {
+	if (action == StringName()) {
+		return;
+	}
+	Input::get_singleton()->action_release(action);
+	Ref<InputEventAction> iea;
+	iea.instantiate();
+	iea->set_action(action);
+	iea->set_pressed(false);
+	get_viewport()->push_input(iea, true);
 }
 
 void BaseButton::pressed() {
@@ -308,6 +338,7 @@ void BaseButton::set_disabled(bool p_disabled) {
 		if (status.pressed_down_with_focus) {
 			status.pressed_down_with_focus = false;
 			emit_signal(SNAME("button_up"));
+			_action_release();
 		}
 	}
 	queue_accessibility_update();
@@ -554,6 +585,14 @@ Control *BaseButton::make_custom_tooltip(const String &p_text) const {
 	return label;
 }
 
+void BaseButton::set_action(const StringName &p_action) {
+	action = p_action;
+}
+
+StringName BaseButton::get_action() const {
+	return action;
+}
+
 void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
 	if (button_group.is_valid()) {
 		button_group->buttons.erase(this);
@@ -612,6 +651,9 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &BaseButton::set_shortcut);
 	ClassDB::bind_method(D_METHOD("get_shortcut"), &BaseButton::get_shortcut);
 
+	ClassDB::bind_method(D_METHOD("set_action", "action"), &BaseButton::set_action);
+	ClassDB::bind_method(D_METHOD("get_action"), &BaseButton::get_action);
+
 	ClassDB::bind_method(D_METHOD("set_button_group", "button_group"), &BaseButton::set_button_group);
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
 
@@ -629,6 +671,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, ButtonGroup::get_class_static()), "set_button_group", "get_button_group");
 
 	ADD_GROUP("Shortcut", "");
