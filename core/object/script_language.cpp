@@ -870,11 +870,28 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 		}
 		if (!found) {
 			PropertyHint hint = PROPERTY_HINT_NONE;
+			String hint_string;
 			const Object *obj = p_value.get_validated_object();
+			// Temporary hint so Nodes are converted to NodePaths when PackedScene is saved
 			if (obj && obj->is_class("Node")) {
 				hint = PROPERTY_HINT_NODE_TYPE;
+			} else if (p_value.get_type() == Variant::ARRAY) {
+				Array array = p_value;
+				if (array.get_typed_builtin() == Variant::OBJECT && ClassDB::is_parent_class(array.get_typed_class_name(), "Node")) {
+					hint = PROPERTY_HINT_TYPE_STRING;
+					hint_string = vformat("%d/%d:Node", Variant::OBJECT, PROPERTY_HINT_NODE_TYPE);
+				}
+			} else if (p_value.get_type() == Variant::DICTIONARY) {
+				Dictionary dict = p_value;
+				bool is_key_node = dict.get_typed_key_builtin() == Variant::OBJECT && ClassDB::is_parent_class(dict.get_typed_key_class_name(), "Node");
+				bool is_value_node = dict.get_typed_value_builtin() == Variant::OBJECT && ClassDB::is_parent_class(dict.get_typed_value_class_name(), "Node");
+				if (is_key_node || is_value_node) {
+					hint = PROPERTY_HINT_TYPE_STRING;
+					String node_hint_string = vformat("%d/%d:Node", Variant::OBJECT, PROPERTY_HINT_NODE_TYPE);
+					hint_string = (is_key_node ? node_hint_string : "") + ";" + (is_value_node ? node_hint_string : "");
+				}
 			}
-			properties.push_back(PropertyInfo(p_value.get_type(), p_name, hint, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE));
+			properties.push_back(PropertyInfo(p_value.get_type(), p_name, hint, hint_string, PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE));
 		}
 	}
 
