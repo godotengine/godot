@@ -224,7 +224,6 @@ private:
 	ConfirmationDialog *settings_dialog = nullptr;
 
 	bool snap_enabled = false;
-	bool snap_key_enabled = false;
 	bool vertex_snap_origin_mode = false;
 	bool vertex_snap_use_collision = false;
 	EditorSpinSlider *snap_translate = nullptr;
@@ -388,8 +387,6 @@ private:
 
 protected:
 	void _notification(int p_what);
-	//void _gui_input(InputEvent p_event);
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	static void _bind_methods();
 
@@ -411,7 +408,7 @@ public:
 	bool are_local_coords_enabled() const;
 	void set_local_coords_enabled(bool on) const;
 	bool is_preserve_children_transform_enabled() const;
-	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
+	bool is_snap_enabled() const;
 	bool is_vertex_snap_origin_mode() const { return vertex_snap_origin_mode; }
 	bool is_vertex_snap_use_collision() const;
 	real_t get_translate_snap() const;
