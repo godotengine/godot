@@ -127,6 +127,20 @@ String EditorExportPlugin::get_apple_embedded_platform_cpp_code() const {
 	return apple_embedded_platform_cpp_code;
 }
 
+void EditorExportPlugin::add_apple_embedded_platform_spm_package(const String &p_url, const String &p_version, const PackedStringArray &p_products) {
+	AppleEmbeddedSPMPackage package;
+	package.url = p_url;
+	package.version = p_version;
+	for (int i = 0; i < p_products.size(); i++) {
+		package.products.push_back(p_products[i]);
+	}
+	apple_embedded_platform_spm_packages.push_back(package);
+}
+
+Vector<EditorExportPlugin::AppleEmbeddedSPMPackage> EditorExportPlugin::get_apple_embedded_platform_spm_packages() const {
+	return apple_embedded_platform_spm_packages;
+}
+
 void EditorExportPlugin::add_macos_plugin_file(const String &p_path) {
 	macos_plugin_files.push_back(p_path);
 }
@@ -356,6 +370,7 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_linker_flags", "flags"), &EditorExportPlugin::add_apple_embedded_platform_linker_flags);
 	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_bundle_file", "path"), &EditorExportPlugin::add_apple_embedded_platform_bundle_file);
 	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_cpp_code", "code"), &EditorExportPlugin::add_apple_embedded_platform_cpp_code);
+	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_spm_package", "url", "version", "products"), &EditorExportPlugin::add_apple_embedded_platform_spm_package);
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("add_ios_project_static_lib", "path"), &EditorExportPlugin::add_apple_embedded_platform_project_static_lib);
