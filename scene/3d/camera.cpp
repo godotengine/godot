@@ -484,8 +484,9 @@ bool Camera::safe_unproject_position(const Vector3 &p_pos, Point2 &r_result) con
 
 	// Here we return false and let the calling routine handle this error condition.
 	if (Math::absf(p.d) < CMP_EPSILON) {
-		// Bodge some kind of result at infinity from the viewport center.
-		r_result = Point2();
+		// Establish the viewport center as our baseline
+		Point2 center = viewport_size * 0.5f;
+		r_result = center;
 
 		// The viewport size here is irrelevant, we just want a high number
 		// (representing infinity) but not actually close to infinity to prevent
@@ -493,14 +494,17 @@ bool Camera::safe_unproject_position(const Vector3 &p_pos, Point2 &r_result) con
 		// Suffice is for them to be WAY off the main viewport.
 		const float SOME_HIGH_VALUE = 100000.0f;
 		if (p.normal.x > 0) {
-			r_result.x = SOME_HIGH_VALUE;
+			r_result.x += SOME_HIGH_VALUE;
 		} else if (p.normal.x < 0) {
-			r_result.x = -SOME_HIGH_VALUE;
+			r_result.x -= SOME_HIGH_VALUE;
 		}
+
+		// +y is down in 2D viewport,
+		// whereas in 3D, +y is up, so we need to flip here.
 		if (p.normal.y > 0) {
-			r_result.y = SOME_HIGH_VALUE;
+			r_result.y -= SOME_HIGH_VALUE;
 		} else if (p.normal.y < 0) {
-			r_result.y = -SOME_HIGH_VALUE;
+			r_result.y += SOME_HIGH_VALUE;
 		}
 
 		return false;
