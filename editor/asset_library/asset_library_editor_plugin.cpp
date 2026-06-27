@@ -2091,6 +2091,17 @@ void EditorAssetLibrary::_set_library_message(const String &p_message) {
 	library_message_button->hide();
 
 	library_message_box->show();
+
+	// Remove pagination, as an error message is being shown and there are no assets to list.
+	// Pagination is recreated when the next search is performed.
+	if (asset_top_page) {
+		memdelete(asset_top_page);
+		asset_top_page = nullptr;
+	}
+	if (asset_bottom_page) {
+		memdelete(asset_bottom_page);
+		asset_bottom_page = nullptr;
+	}
 }
 
 void EditorAssetLibrary::_set_library_message_with_action(const String &p_message, const String &p_action_text, const Callable &p_action) {
