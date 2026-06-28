@@ -98,6 +98,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static bool is_asset_path_safe(const String &p_path);
+
 	void open_asset(const String &p_path, bool p_autoskip_toplevel = false);
 
 	void set_asset_name(const String &p_asset_name);

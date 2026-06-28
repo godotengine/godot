@@ -57,6 +57,29 @@ static bool _is_zip_entry_symlink(const unz_file_info &p_info) {
 	return (unix_mode & UNIX_FILE_TYPE_MASK) == UNIX_FILE_TYPE_SYMLINK;
 }
 
+bool EditorAssetInstaller::is_asset_path_safe(const String &p_path) {
+	String path = p_path.replace_char('\\', '/');
+	if (path.is_empty() || path.is_absolute_path() || path.contains("://") || path.contains(":") || path.contains("//")) {
+		return false;
+	}
+
+	if (path.ends_with("/")) {
+		path = path.trim_suffix("/");
+	}
+	if (path.is_empty()) {
+		return false;
+	}
+
+	Vector<String> parts = path.split("/", false);
+	for (const String &part : parts) {
+		if (part.is_empty() || part == "." || part == "..") {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void EditorAssetInstaller::_item_checked_cbk() {
 	if (updating_source || !source_tree->get_edited()) {
 		return;
@@ -138,6 +161,11 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String source_name = String::utf8(fname);
+		if (!is_asset_path_safe(source_name)) {
+			WARN_PRINT(vformat("Skipping unsafe asset ZIP entry: %s", source_name));
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
 
 		// Create intermediate directories if they aren't reported by unzip.
 		// We are only interested in subfolders, so skip the root slash.
@@ -537,6 +565,10 @@ void EditorAssetInstaller::_install_asset() {
 		}
 
 		String source_name = String::utf8(fname);
+		if (!is_asset_path_safe(source_name)) {
+			failed_files.push_back(source_name);
+			continue;
+		}
 		if (!_is_item_checked(source_name)) {
 			continue;
 		}
@@ -577,6 +609,11 @@ void EditorAssetInstaller::_install_asset() {
 
 			if (_is_zip_entry_symlink(info)) {
 				String link_target = String::utf8(reinterpret_cast<const char *>(uncomp_data.ptr()), uncomp_data.size());
+				if (!is_asset_path_safe(link_target)) {
+					failed_files.push_back(target_path);
+					continue;
+				}
+
 				Error err = da->create_link(link_target, target_path);
 				if (err != OK) {
 					failed_files.push_back(target_path);
