@@ -371,8 +371,36 @@ void AnimationNodeBlendSpace2D::_set_triangles(const Vector<int> &p_triangles) {
 		return;
 	}
 	ERR_FAIL_COND(p_triangles.size() % 3 != 0);
+
+	triangles.clear();
 	for (int i = 0; i < p_triangles.size(); i += 3) {
-		add_triangle(p_triangles[i + 0], p_triangles[i + 1], p_triangles[i + 2]);
+		BlendTriangle t;
+		t.points[0] = p_triangles[i + 0];
+		t.points[1] = p_triangles[i + 1];
+		t.points[2] = p_triangles[i + 2];
+
+		SortArray<int> sort;
+		sort.sort(t.points, 3);
+
+		bool already_exists = false;
+		for (int j = 0; j < triangles.size(); j++) {
+			bool all_equal = true;
+			for (int k = 0; k < 3; k++) {
+				if (triangles[j].points[k] != t.points[k]) {
+					all_equal = false;
+					break;
+				}
+			}
+			if (all_equal) {
+				already_exists = true;
+				break;
+			}
+		}
+		if (already_exists) {
+			continue;
+		}
+
+		triangles.push_back(t);
 	}
 }
 
