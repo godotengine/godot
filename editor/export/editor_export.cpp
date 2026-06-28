@@ -110,7 +110,7 @@ void EditorExport::_save() {
 			PropertyInfo *prop = preset->properties.getptr(E.key);
 			if (prop && prop->usage & PROPERTY_USAGE_SECRET) {
 				credentials->set_value(option_section, E.key, E.value);
-			} else {
+			} else if (prop && prop->usage & PROPERTY_USAGE_STORAGE) {
 				config->set_value(option_section, E.key, E.value);
 			}
 		}
