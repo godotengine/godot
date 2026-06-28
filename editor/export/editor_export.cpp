@@ -108,9 +108,9 @@ void EditorExport::_save() {
 
 		for (const KeyValue<StringName, Variant> &E : preset->values) {
 			PropertyInfo *prop = preset->properties.getptr(E.key);
-			if (prop && prop->usage & PROPERTY_USAGE_SECRET) {
+			if (prop && prop->usage & PROPERTY_USAGE_SECRET && prop->usage & PROPERTY_USAGE_STORAGE) {
 				credentials->set_value(option_section, E.key, E.value);
-			} else {
+			} else if (prop && prop->usage & PROPERTY_USAGE_STORAGE) {
 				config->set_value(option_section, E.key, E.value);
 			}
 		}
