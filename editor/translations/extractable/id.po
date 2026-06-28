@@ -1,0 +1,128 @@
+# Indonesian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-01-09 13:37+0000\n"
+"Last-Translator: Stephen Gunawan Susilo <gunawanstephen@yahoo.com>\n"
+"Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/id/>\n"
+"Language: id\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "Save"
+msgstr "Simpan"
+
+msgid "Clear"
+msgstr "Bersihkan"
+
+msgid "Add current color as a preset."
+msgstr "Tambahkan warna yang sekarang sebagai preset."
+
+msgid "Network"
+msgstr "Jaringan"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"File \"%s\" sudah ada.\n"
+"Apakah Anda ingin menimpanya?"
+
+msgid "Open"
+msgstr "Buka"
+
+msgid "Select Current Folder"
+msgstr "Pilih Folder Saat Ini"
+
+msgid "Select This Folder"
+msgstr "Pilih Folder Ini"
+
+msgid "All Recognized"
+msgstr "Semua diakui"
+
+msgid "Open a File"
+msgstr "Buka sebuah File"
+
+msgid "Open File(s)"
+msgstr "Buka File (File-file)"
+
+msgid "Open a Directory"
+msgstr "Buka sebuah Direktori"
+
+msgid "Open a File or Directory"
+msgstr "Buka sebuah File atau Direktori"
+
+msgid "Save a File"
+msgstr "Simpan sebuah File"
+
+msgid "Go to previous folder."
+msgstr "Pergi ke direktori sebelumnya."
+
+msgid "Go to next folder."
+msgstr "Pergi ke direktori selanjutnya."
+
+msgid "Go to parent folder."
+msgstr "Pergi ke direktori atasnya."
+
+msgid "Path:"
+msgstr "Jalur:"
+
+msgid "Refresh files."
+msgstr "Segarkan berkas."
+
+msgid "Directories & Files:"
+msgstr "Direktori-direktori & File-file:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Beralih visibilitas berkas yang tersembunyi."
+
+msgid "File:"
+msgstr "File:"
+
+msgid "Create Folder"
+msgstr "Buat berkas"
+
+msgid "Name:"
+msgstr "Nama:"
+
+msgid "Could not create folder."
+msgstr "Tidak dapat membuat folder."
+
+msgid "Zoom Out"
+msgstr "Perkecil Pandangan"
+
+msgid "Zoom Reset"
+msgstr "Reset Perbesaran"
+
+msgid "Zoom In"
+msgstr "Perbesar Pandangan"
+
+msgid "Cut"
+msgstr "Potong"
+
+msgid "Copy"
+msgstr "Salin"
+
+msgid "Paste"
+msgstr "Tempel"
+
+msgid "Select All"
+msgstr "Pilih Semua"
+
+msgid "Undo"
+msgstr "Batal"
+
+msgid "Redo"
+msgstr "Ulangi"
+
+msgid "(Other)"
+msgstr "(Yang Lain)"

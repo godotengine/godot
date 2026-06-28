@@ -1,0 +1,552 @@
+/**************************************************************************/
+/*  test_lsp.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#pragma once
+
+#ifdef TOOLS_ENABLED
+
+#ifndef GDSCRIPT_NO_LSP
+
+#include "../gdscript_analyzer.h"
+#include "../language_server/gdscript_extend_parser.h"
+#include "../language_server/gdscript_language_protocol.h"
+#include "../language_server/gdscript_workspace.h"
+#include "../language_server/godot_lsp.h"
+#include "gdscript_test_runner.h"
+
+#include "core/io/dir_access.h"
+#include "editor/file_system/editor_file_system.h"
+#include "tests/test_macros.h"
+
+#include "modules/regex/regex.h"
+
+#include <thirdparty/doctest/doctest.h>
+
+class TestGDScriptLanguageProtocolInitializer {
+public:
+	static void setup_client() {
+		GDScriptLanguageProtocol *proto = GDScriptLanguageProtocol::get_singleton();
+		Ref<GDScriptLanguageProtocol::LSPeer> peer = memnew(GDScriptLanguageProtocol::LSPeer);
+		proto->clients.insert(proto->next_client_id, peer);
+		proto->latest_client_id = proto->next_client_id;
+		proto->next_client_id++;
+	}
+};
+
+template <>
+struct doctest::StringMaker<LSP::Position> {
+	static doctest::String convert(const LSP::Position &p_val) {
+		return p_val.to_string().utf8().get_data();
+	}
+};
+
+template <>
+struct doctest::StringMaker<LSP::Range> {
+	static doctest::String convert(const LSP::Range &p_val) {
+		return p_val.to_string().utf8().get_data();
+	}
+};
+
+template <>
+struct doctest::StringMaker<GodotPosition> {
+	static doctest::String convert(const GodotPosition &p_val) {
+		return p_val.to_string().utf8().get_data();
+	}
+};
+
+namespace GDScriptTests {
+
+// LSP GDScript test scripts are located inside project of other GDScript tests:
+// Cannot reset `ProjectSettings` (singleton) -> Cannot load another workspace and resources in there.
+// -> Reuse GDScript test project. LSP specific scripts are then placed inside `lsp` folder.
+//    Access via `res://lsp/my_script.gd`.
+const String root = "modules/gdscript/tests/scripts/";
+
+/*
+ * After use:
+ * * `memdelete` returned `GDScriptLanguageProtocol`.
+ * * Call `GDScriptTests::::finish_language`.
+ */
+GDScriptLanguageProtocol *initialize(const String &p_root) {
+	Error err = OK;
+	Ref<DirAccess> dir(DirAccess::open(p_root, &err));
+	REQUIRE_MESSAGE(err == OK, "Could not open specified root directory");
+	String absolute_root = dir->get_current_dir();
+	init_language(absolute_root);
+
+	// Recreate the singleton for each test, to ensure a clean state.
+	memdelete_notnull(GDScriptLanguageProtocol::get_singleton());
+	GDScriptLanguageProtocol *proto = memnew(GDScriptLanguageProtocol);
+	TestGDScriptLanguageProtocolInitializer::setup_client();
+
+	return proto;
+}
+
+LSP::Position pos(const int p_line, const int p_character) {
+	LSP::Position p;
+	p.line = p_line;
+	p.character = p_character;
+	return p;
+}
+
+LSP::Range range(const LSP::Position p_start, const LSP::Position p_end) {
+	LSP::Range r;
+	r.start = p_start;
+	r.end = p_end;
+	return r;
+}
+
+LSP::TextDocumentPositionParams pos_in(const LSP::DocumentUri &p_uri, const LSP::Position p_pos) {
+	LSP::TextDocumentPositionParams params;
+	params.textDocument.uri = p_uri;
+	params.position = p_pos;
+	return params;
+}
+
+const LSP::DocumentSymbol *test_resolve_symbol_at(const String &p_uri, const LSP::Position p_pos, const String &p_expected_uri, const String &p_expected_name, const LSP::Range &p_expected_range) {
+	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
+
+	LSP::TextDocumentPositionParams params = pos_in(p_uri, p_pos);
+	const LSP::DocumentSymbol *symbol = workspace->resolve_symbol(params);
+	CHECK(symbol);
+
+	if (symbol) {
+		CHECK_EQ(symbol->uri, p_expected_uri);
+		CHECK_EQ(symbol->name, p_expected_name);
+		CHECK_EQ(symbol->selectionRange, p_expected_range);
+	}
+
+	return symbol;
+}
+
+struct InlineTestData {
+	LSP::Range range;
+	String text;
+	String name;
+	String ref;
+
+	static bool try_parse(const Vector<String> &p_lines, const int p_line_number, InlineTestData &r_data) {
+		String line = p_lines[p_line_number];
+
+		RegEx regex = RegEx("^\\t*#[ |]*(?<range>(?<left><)?\\^+)(\\s+(?<name>(?!->)\\S+))?(\\s+->\\s+(?<ref>\\S+))?");
+		Ref<RegExMatch> match = regex.search(line);
+		if (match.is_null()) {
+			return false;
+		}
+
+		// Find first line without leading comment above current line.
+		int target_line = p_line_number;
+		while (target_line >= 0) {
+			String dedented = p_lines[target_line].lstrip("\t");
+			if (!dedented.begins_with("#")) {
+				break;
+			}
+			target_line--;
+		}
+		if (target_line < 0) {
+			return false;
+		}
+		r_data.range.start.line = r_data.range.end.line = target_line;
+
+		String marker = match->get_string("range");
+		int i = line.find(marker);
+		REQUIRE(i >= 0);
+		r_data.range.start.character = i;
+		if (!match->get_string("left").is_empty()) {
+			// Include `#` (comment char) in range.
+			r_data.range.start.character--;
+		}
+		r_data.range.end.character = i + marker.length();
+
+		String target = p_lines[target_line];
+		r_data.text = target.substr(r_data.range.start.character, r_data.range.end.character - r_data.range.start.character);
+
+		r_data.name = match->get_string("name");
+		r_data.ref = match->get_string("ref");
+
+		return true;
+	}
+};
+
+Vector<InlineTestData> read_tests(const String &p_path) {
+	Error err;
+	String source = FileAccess::get_file_as_string(p_path, &err);
+	REQUIRE_MESSAGE(err == OK, vformat("Cannot read '%s'", p_path));
+
+	// Format:
+	// ```gdscript
+	// var foo = bar + baz
+	// #   | |   | |   ^^^ name -> ref
+	// #   | |   ^^^ -> ref
+	// #   ^^^ name
+	//
+	// func my_func():
+	// #    ^^^^^^^ name
+	//     var value = foo + 42
+	//     #   ^^^^^ name
+	//     print(value)
+	//     #     ^^^^^ -> ref
+	// ```
+	//
+	// * `^`: Range marker.
+	// * `name`: Unique name. Can contain any characters except whitespace chars.
+	// * `ref`: Reference to unique name.
+	//
+	// Notes:
+	// * If range should include first content-char (which is occupied by `#`): use `<` for next marker.
+	//   -> Range expands 1 to left (-> includes `#`).
+	//   * Note: Means: Range cannot be single char directly marked by `#`, but must be at least two chars (marked with `#<`).
+	// * Comment must start at same ident as line its marked (-> because of tab alignment...).
+	// * Use spaces to align after `#`! -> for correct alignment
+	// * Between `#` and `^` can be spaces or `|` (to better visualize what's marked below).
+	PackedStringArray lines = source.split("\n");
+
+	PackedStringArray names;
+	Vector<InlineTestData> data;
+	for (int i = 0; i < lines.size(); i++) {
+		InlineTestData d;
+		if (InlineTestData::try_parse(lines, i, d)) {
+			if (!d.name.is_empty()) {
+				// Safety check: names must be unique.
+				if (names.has(d.name)) {
+					FAIL(vformat("Duplicated name '%s' in '%s'. Names must be unique!", d.name, p_path));
+				}
+				names.append(d.name);
+			}
+
+			data.append(d);
+		}
+	}
+
+	return data;
+}
+
+void test_resolve_symbol(const String &p_uri, const InlineTestData &p_test_data, const Vector<InlineTestData> &p_all_data) {
+	if (p_test_data.ref.is_empty()) {
+		return;
+	}
+
+	SUBCASE(vformat("Can resolve symbol '%s' at %s to '%s'", p_test_data.text, p_test_data.range.to_string(), p_test_data.ref).utf8().get_data()) {
+		const InlineTestData *target = nullptr;
+		for (int i = 0; i < p_all_data.size(); i++) {
+			if (p_all_data[i].name == p_test_data.ref) {
+				target = &p_all_data[i];
+				break;
+			}
+		}
+		REQUIRE_MESSAGE(target, vformat("No target for ref '%s'", p_test_data.ref));
+
+		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
+		LSP::Position pos = p_test_data.range.start;
+
+		SUBCASE("start of identifier") {
+			pos.character = p_test_data.range.start.character;
+			test_resolve_symbol_at(p_uri, pos, p_uri, target->text, target->range);
+		}
+
+		SUBCASE("inside identifier") {
+			pos.character = (p_test_data.range.end.character + p_test_data.range.start.character) / 2;
+			test_resolve_symbol_at(p_uri, pos, p_uri, target->text, target->range);
+		}
+
+		SUBCASE("end of identifier") {
+			pos.character = p_test_data.range.end.character;
+			test_resolve_symbol_at(p_uri, pos, p_uri, target->text, target->range);
+		}
+	}
+}
+
+Vector<InlineTestData> filter_ref_towards(const Vector<InlineTestData> &p_data, const String &p_name) {
+	Vector<InlineTestData> res;
+
+	for (const InlineTestData &d : p_data) {
+		if (d.ref == p_name) {
+			res.append(d);
+		}
+	}
+
+	return res;
+}
+
+void test_resolve_symbols(const String &p_uri, const Vector<InlineTestData> &p_test_data, const Vector<InlineTestData> &p_all_data) {
+	for (const InlineTestData &d : p_test_data) {
+		test_resolve_symbol(p_uri, d, p_all_data);
+	}
+}
+
+void assert_no_errors_in(const String &p_path) {
+	Error err;
+	String source = FileAccess::get_file_as_string(p_path, &err);
+	REQUIRE_MESSAGE(err == OK, vformat("Cannot read '%s'", p_path));
+
+	GDScriptParser parser;
+	err = parser.parse(source, p_path, true);
+	REQUIRE_MESSAGE(err == OK, vformat("Errors while parsing '%s'", p_path));
+
+	GDScriptAnalyzer analyzer(&parser);
+	err = analyzer.analyze();
+	REQUIRE_MESSAGE(err == OK, vformat("Errors while analyzing '%s'", p_path));
+}
+
+// Note:
+// * Cursor is BETWEEN chars
+//	 * `va|r` -> cursor between `a`&`r`
+//   * `var`
+//        ^
+//      -> Character on `r` -> cursor between `a`&`r`s for tests:
+// * Line & Char:
+//   * LSP: both 0-based
+//   * Godot: both 1-based
+TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
+	TEST_CASE("[workspace][resolve_symbol]") {
+		EditorFileSystem *efs = memnew(EditorFileSystem);
+		GDScriptLanguageProtocol *proto = initialize(root);
+		REQUIRE(proto);
+		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
+
+		{
+			String path = "res://lsp/local_variables.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			SUBCASE("Can get correct ranges for public variables") {
+				Vector<InlineTestData> test_data = filter_ref_towards(all_test_data, "member");
+				test_resolve_symbols(uri, test_data, all_test_data);
+			}
+			SUBCASE("Can get correct ranges for local variables") {
+				Vector<InlineTestData> test_data = filter_ref_towards(all_test_data, "test");
+				test_resolve_symbols(uri, test_data, all_test_data);
+			}
+			SUBCASE("Can get correct ranges for local parameters") {
+				Vector<InlineTestData> test_data = filter_ref_towards(all_test_data, "arg");
+				test_resolve_symbols(uri, test_data, all_test_data);
+			}
+		}
+
+		SUBCASE("Can get correct ranges for indented variables") {
+			String path = "res://lsp/indentation.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
+		SUBCASE("Can get correct ranges for scopes") {
+			String path = "res://lsp/scopes.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
+		SUBCASE("Can get correct ranges for lambda") {
+			String path = "res://lsp/lambdas.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
+		SUBCASE("Can get correct ranges for inner class") {
+			String path = "res://lsp/class.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
+		SUBCASE("Can get correct ranges for inner class") {
+			String path = "res://lsp/enums.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
+		SUBCASE("Can get correct ranges for shadowing & shadowed variables") {
+			String path = "res://lsp/shadowing_initializer.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
+		SUBCASE("Can get correct ranges for properties and getter/setter") {
+			String path = "res://lsp/properties.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
+		memdelete(efs);
+		finish_language();
+	}
+	TEST_CASE("[workspace][document_symbol]") {
+		EditorFileSystem *efs = memnew(EditorFileSystem);
+		GDScriptLanguageProtocol *proto = initialize(root);
+		REQUIRE(proto);
+
+		SUBCASE("selectionRange of root class must be inside range") {
+			LocalVector<String> paths = {
+				"res://lsp/first_line_comment.gd", // Comment on first line
+				"res://lsp/first_line_class_name.gd", // class_name (and thus selection range) before extends
+			};
+
+			for (const String &path : paths) {
+				assert_no_errors_in(path);
+				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+				REQUIRE(parser);
+				LSP::DocumentSymbol cls = parser->get_symbols();
+
+				REQUIRE(((cls.range.start.line == cls.selectionRange.start.line && cls.range.start.character <= cls.selectionRange.start.character) || (cls.range.start.line < cls.selectionRange.start.line)));
+				REQUIRE(((cls.range.end.line == cls.selectionRange.end.line && cls.range.end.character >= cls.selectionRange.end.character) || (cls.range.end.line > cls.selectionRange.end.line)));
+			}
+		}
+
+		SUBCASE("Documentation is correctly set") {
+			String path = "res://lsp/doc_comments.gd";
+			assert_no_errors_in(path);
+			ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+			REQUIRE(parser);
+			LSP::DocumentSymbol cls = parser->get_symbols();
+			REQUIRE(cls.documentation.contains("brief"));
+			REQUIRE(cls.documentation.contains("description"));
+			REQUIRE(cls.documentation.contains("t1"));
+			REQUIRE(cls.documentation.contains("t2"));
+			REQUIRE(cls.documentation.contains("t3"));
+		}
+
+		memdelete(efs);
+		finish_language();
+	}
+
+	TEST_CASE("BBCode to markdown conversion") {
+		// This tests the conversion from BBCode docstrings to the markdown markup sent to
+		// the LSP client on documentation requests
+
+		// Basic formatting
+		CHECK_EQ(LSP::marked_documentation("[b]bold[/b]"), "**bold**");
+		CHECK_EQ(LSP::marked_documentation("[i]italic[/i]"), "*italic*");
+		CHECK_EQ(LSP::marked_documentation("[u]underline[/u]"), "__underline__");
+		CHECK_EQ(LSP::marked_documentation("[s]strikethrough[/s]"), "~~strikethrough~~");
+		CHECK_EQ(LSP::marked_documentation("[code]code[/code]"), "`code`");
+		CHECK_EQ(LSP::marked_documentation("[kbd]Ctrl + S[/kbd]"), "`Ctrl + S`");
+
+		// Line breaks. We insert paragraphs for [br] because the BBCode to
+		// markdown conversion function simply makes the conversion line-wise and
+		// we don't distinguish markdown inline elements and blocks.
+		CHECK_EQ(LSP::marked_documentation("Line1[br]Line2"), "Line1\n\nLine2");
+
+		// These tags (center, color, font) aren't supported in markdown and should be stripped.
+		CHECK_EQ(LSP::marked_documentation("[center]Centered text[/center]"), "Centered text");
+		CHECK_EQ(LSP::marked_documentation("[color=red]red text[/color]"), "red text");
+		CHECK_EQ(LSP::marked_documentation("[font=Arial]Arial text[/font]"), "Arial text");
+
+		// The following tests are for all the link patterns specific to Godot's built-in docs that we render as inline code.
+		CHECK_EQ(LSP::marked_documentation("Class link: [Node2D], [Sprite2D]"), "Class link: `Node2D`, `Sprite2D`");
+		CHECK_EQ(LSP::marked_documentation("Single class [RigidBody2D]"), "Single class `RigidBody2D`");
+		CHECK_EQ(LSP::marked_documentation("[method Node2D.set_position]"), "`Node2D.set_position`");
+		CHECK_EQ(LSP::marked_documentation("[member Node2D.position]"), "`Node2D.position`");
+		CHECK_EQ(LSP::marked_documentation("[signal Node.ready]"), "`Node.ready`");
+		CHECK_EQ(LSP::marked_documentation("[constant Color.RED]"), "`Color.RED`");
+		CHECK_EQ(LSP::marked_documentation("[enum Node.ProcessMode]"), "`Node.ProcessMode`");
+		CHECK_EQ(LSP::marked_documentation("[annotation @GDScript.@export]"), "`@GDScript.@export`");
+		CHECK_EQ(LSP::marked_documentation("[constructor Vector2.Vector2]"), "`Vector2.Vector2`");
+		CHECK_EQ(LSP::marked_documentation("[operator Vector2.operator +]"), "`Vector2.operator +`");
+		CHECK_EQ(LSP::marked_documentation("[theme_item Button.font]"), "`Button.font`");
+		CHECK_EQ(LSP::marked_documentation("[param delta]"), "`delta`");
+
+		// Markdown links
+		CHECK_EQ(LSP::marked_documentation("[url=https://godotengine.org]link to Godot Engine[/url]"),
+				"[link to Godot Engine](https://godotengine.org)");
+		CHECK_EQ(LSP::marked_documentation("[url]https://godotengine.org/[/url]"),
+				"[https://godotengine.org/](https://godotengine.org/)");
+
+		// Code listings
+		CHECK_EQ(LSP::marked_documentation("[codeblock]\nfunc test():\n    print(\"Hello, Godot!\")\n[/codeblock]"),
+				"```gdscript\nfunc test():\n    print(\"Hello, Godot!\")\n```");
+		CHECK_EQ(LSP::marked_documentation("[codeblock lang=csharp]\npublic void Test()\n{\n    GD.Print(\"Hello, Godot!\");\n}\n[/codeblock]"),
+				"```csharp\npublic void Test()\n{\n    GD.Print(\"Hello, Godot!\");\n}\n```");
+		// Code listings with multiple languages (the codeblocks tag is used in the built-in reference)
+		// When [codeblocks] is used, we only convert the [gdscript] tag to a code block like the built-in editor.
+		// NOTE: There is always a GDScript code listing in the built-in class reference.
+		CHECK_EQ(LSP::marked_documentation("[codeblocks]\n[gdscript]\nprint(hash(\"a\")) # Prints 177670\n[/gdscript]\n[csharp]\nGD.Print(GD.Hash(\"a\")); // Prints 177670\n[/csharp]\n[/codeblocks]"),
+				"```gdscript\nprint(hash(\"a\")) # Prints 177670\n```\n");
+
+		// lb and rb are used to insert literal square brackets in markdown.
+		CHECK_EQ(LSP::marked_documentation("[lb]literal brackets[rb]"), "\\[literal brackets\\]");
+		CHECK_EQ(LSP::marked_documentation("[lb]literal[rb] with [ClassName]"), "\\[literal\\] with `ClassName`");
+
+		// We have to be careful that different patterns don't conflict with each
+		// other, especially with urls that use brackets in markdown.
+		CHECK_EQ(LSP::marked_documentation("Class [Sprite2D] with [url=https://godotengine.org]link[/url]"),
+				"Class `Sprite2D` with [link](https://godotengine.org)");
+	}
+	TEST_CASE("get_symbol_name_under_position") {
+		const String code = U"we_do	suPPort Unicöde  and @annotations, numb3rs \n0nly for-continuation #comment\n@start@\na\n b \n";
+		const HashMap<String, LSP::Range> symbols = {
+			{ "we_do", LSP::Range(0, 0, 0, 5) },
+			{ U"suPPort", LSP::Range(0, 6, 0, 13) },
+			{ U"Unicöde", LSP::Range(0, 14, 0, 21) },
+			{ U"and", LSP::Range(0, 23, 0, 26) },
+			{ "@annotations", LSP::Range(0, 27, 0, 39) },
+			{ U"numb3rs", LSP::Range(0, 41, 0, 48) },
+			{ U"nly", LSP::Range(1, 1, 1, 4) },
+			{ U"for", LSP::Range(1, 5, 1, 8) },
+			{ U"continuation", LSP::Range(1, 9, 1, 21) },
+			{ U"comment", LSP::Range(1, 23, 1, 30) },
+			{ U"@start", LSP::Range(2, 0, 2, 6) },
+			{ U"a", LSP::Range(3, 0, 3, 1) },
+			{ U"b", LSP::Range(4, 1, 4, 2) },
+		};
+
+		ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
+		parser->parse(code, "res://dummy.gd");
+
+		for (KeyValue<String, LSP::Range> symbol : symbols) {
+			for (int i = symbol.value.start.character; i <= symbol.value.end.character; i++) {
+				LSP::Range range;
+				const String symbol_name = parser->get_symbol_name_under_position(LSP::Position(symbol.value.start.line, i), range);
+
+				CHECK_EQ(symbol.key, symbol_name);
+				CHECK_EQ(range, symbol.value);
+			}
+		}
+
+		memdelete(parser);
+	}
+}
+
+} // namespace GDScriptTests
+
+#endif // GDSCRIPT_NO_LSP
+
+#endif // TOOLS_ENABLED

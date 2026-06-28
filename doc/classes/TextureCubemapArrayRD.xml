@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureCubemapArrayRD" inherits="TextureLayeredRD" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Texture Array for Cubemaps that is bound to a texture created on the [RenderingDevice].
+	</brief_description>
+	<description>
+		This texture class allows you to use a cubemap array texture created directly on the [RenderingDevice] as a texture for materials, meshes, etc.
+		[b]Note:[/b] [TextureCubemapArrayRD] is intended for low-level usage with [RenderingDevice]. For most use cases, use [CubemapArray] instead.
+	</description>
+	<tutorials>
+		<link title="Compute Texture demo">https://godotengine.org/asset-library/asset/2764</link>
+	</tutorials>
+</class>

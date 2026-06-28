@@ -1,0 +1,54 @@
+diff --git a/thirdparty/misc/smaz.c b/thirdparty/misc/smaz.c
+index aa674c3858..6f9ea20e67 100644
+--- a/thirdparty/misc/smaz.c
++++ b/thirdparty/misc/smaz.c
+@@ -1,7 +1,7 @@
+ #include <string.h>
+ 
+ /* Our compression codebook, used for compression */
+-static char *Smaz_cb[241] = {
++static const char *Smaz_cb[241] = {
+ "\002s,\266", "\003had\232\002leW", "\003on \216", "", "\001yS",
+ "\002ma\255\002li\227", "\003or \260", "", "\002ll\230\003s t\277",
+ "\004fromg\002mel", "", "\003its\332", "\001z\333", "\003ingF", "\001>\336",
+@@ -76,7 +76,7 @@ static char *Smaz_rcb[254] = {
+ "e, ", " it", "whi", " ma", "ge", "x", "e c", "men", ".com"
+ };
+ 
+-int smaz_compress(char *in, int inlen, char *out, int outlen) {
++int smaz_compress(const char *in, int inlen, char *out, int outlen) {
+     unsigned int h1,h2,h3=0;
+     int verblen = 0, _outlen = outlen;
+     char verb[256], *_out = out;
+@@ -154,7 +154,7 @@ out:
+     return out-_out;
+ }
+ 
+-int smaz_decompress(char *in, int inlen, char *out, int outlen) {
++int smaz_decompress(const char *in, int inlen, char *out, int outlen) {
+     unsigned char *c = (unsigned char*) in;
+     char *_out = out;
+     int _outlen = outlen;
+@@ -179,7 +179,7 @@ int smaz_decompress(char *in, int inlen, char *out, int outlen) {
+             inlen -= 2+len;
+         } else {
+             /* Codebook entry */
+-            char *s = Smaz_rcb[*c];
++            const char *s = Smaz_rcb[*c];
+             int len = strlen(s);
+ 
+             if (outlen < len) return _outlen+1;
+diff --git a/thirdparty/misc/smaz.h b/thirdparty/misc/smaz.h
+index ce9c35d6b2..d8e1f8a6a5 100644
+--- a/thirdparty/misc/smaz.h
++++ b/thirdparty/misc/smaz.h
+@@ -1,7 +1,7 @@
+ #ifndef _SMAZ_H
+ #define _SMAZ_H
+ 
+-int smaz_compress(char *in, int inlen, char *out, int outlen);
+-int smaz_decompress(char *in, int inlen, char *out, int outlen);
++int smaz_compress(const char *in, int inlen, char *out, int outlen);
++int smaz_decompress(const char *in, int inlen, char *out, int outlen);
+ 
+ #endif

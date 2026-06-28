@@ -1,0 +1,6 @@
+GH-109892
+---------
+
+Validate extension JSON: Error: Field 'classes/Object/enums/ConnectFlags': is_bitfield changed value in new API, from false to true.
+
+The enum above is now corrected to be a bitfield.

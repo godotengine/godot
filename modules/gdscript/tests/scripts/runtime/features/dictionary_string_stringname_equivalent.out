@@ -1,0 +1,6 @@
+GDTEST_OK
+String key is TYPE_STRING: true
+StringName key is TYPE_STRING_NAME: true
+StringName gets String: 42
+String gets StringName: 24
+String Dictionary == StringName Dictionary: true

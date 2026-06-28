@@ -1,0 +1,41 @@
+GDTEST_OK
+=== Script Methods ===
+--- A ---
+@abstract func test_untyped_1() -> Variant
+@abstract func test_untyped_2() -> Variant
+@abstract func test_untyped_3() -> Variant
+@abstract func test_untyped_4() -> Variant
+@abstract func test_void() -> void
+@abstract func test_variant() -> Variant
+@abstract func test_int() -> int
+--- B ---
+func test_untyped_1() -> Variant
+func test_untyped_2() -> Variant
+func test_untyped_3() -> Variant
+func test_untyped_4() -> Variant
+func test_void() -> void
+func test_variant() -> Variant
+func test_int() -> int
+@abstract func test_untyped_1() -> Variant
+@abstract func test_untyped_2() -> Variant
+@abstract func test_untyped_3() -> Variant
+@abstract func test_untyped_4() -> Variant
+@abstract func test_void() -> void
+@abstract func test_variant() -> Variant
+@abstract func test_int() -> int
+=== Instance Methods ===
+--- B ---
+func test_untyped_1() -> Variant
+func test_untyped_2() -> Variant
+func test_untyped_3() -> Variant
+func test_untyped_4() -> Variant
+func test_void() -> void
+func test_variant() -> Variant
+func test_int() -> int
+@abstract func test_untyped_1() -> Variant
+@abstract func test_untyped_2() -> Variant
+@abstract func test_untyped_3() -> Variant
+@abstract func test_untyped_4() -> Variant
+@abstract func test_void() -> void
+@abstract func test_variant() -> Variant
+@abstract func test_int() -> int

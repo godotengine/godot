@@ -1,0 +1,2 @@
+GDTEST_OK
+~~ WARNING at line 2: (UNUSED_PARAMETER) The parameter "p_arg2" is never used in the function "function_with_unused_argument()". If this is intended, prefix it with an underscore: "_p_arg2".

@@ -1,0 +1,118 @@
+# Bulgarian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2023-07-17 09:43+0000\n"
+"Last-Translator: 100daysummer <bobbydochev@gmail.com>\n"
+"Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/bg/>\n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.0-dev\n"
+
+msgid "Save"
+msgstr "Запазване"
+
+msgid "Clear"
+msgstr "Изчистване"
+
+msgid "Network"
+msgstr "Мрежа"
+
+msgid "Open"
+msgstr "Отваряне"
+
+msgid "Select Current Folder"
+msgstr "Избиране на текущата папка"
+
+msgid "Select This Folder"
+msgstr "Избиране на тази папка"
+
+msgid "All Recognized"
+msgstr "Всички разпознати"
+
+msgid "Open a File"
+msgstr "Отваряне на файл"
+
+msgid "Open File(s)"
+msgstr "Отваряне на файл(ове)"
+
+msgid "Open a Directory"
+msgstr "Отваряне на папка"
+
+msgid "Open a File or Directory"
+msgstr "Отваряне на файл или папка"
+
+msgid "Save a File"
+msgstr "Запазване на файл"
+
+msgid "Go to previous folder."
+msgstr "Преминаване към горната папка."
+
+msgid "Go to next folder."
+msgstr "Преминаване към горната папка."
+
+msgid "Go to parent folder."
+msgstr "Преминаване към горната папка."
+
+msgid "Path:"
+msgstr "Път:"
+
+msgid "Refresh files."
+msgstr "Опресняване на файловете."
+
+msgid "Directories & Files:"
+msgstr "Папки и файлове:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Превключване на видимостта на скритите файлове."
+
+msgid "File:"
+msgstr "Файл:"
+
+msgid "Create Folder"
+msgstr "Създаване на папка"
+
+msgid "Name:"
+msgstr "Име:"
+
+msgid "Could not create folder."
+msgstr "Папката не може да бъде създадена."
+
+msgid "Zoom Out"
+msgstr "Отдалечаване"
+
+msgid "Zoom Reset"
+msgstr "Връщане на оригиналния мащаб"
+
+msgid "Zoom In"
+msgstr "Приближаване"
+
+msgid "Cut"
+msgstr "Изрязване"
+
+msgid "Copy"
+msgstr "Копиране"
+
+msgid "Paste"
+msgstr "Поставяне"
+
+msgid "Select All"
+msgstr "Избиране на всичко"
+
+msgid "Undo"
+msgstr "Отмяна"
+
+msgid "Redo"
+msgstr "Повторение"
+
+msgid "(Other)"
+msgstr "(Други)"

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialPlaneTrackingCapability" inherits="OpenXRExtensionWrapper" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Implementation for handling spatial entity plane tracking logic.
+	</brief_description>
+	<description>
+		This class handles the OpenXR plane tracking spatial entity extension.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if plane tracking is supported by the current device.
+			</description>
+		</method>
+		<method name="start_entity_discovery">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="spatial_context" type="RID" />
+			<param index="1" name="component_data" type="OpenXRSpatialComponentData[]" />
+			<param index="2" name="next_snapshot_create" type="OpenXRStructureBase" default="null" />
+			<param index="3" name="next_snapshot_query" type="OpenXRStructureBase" default="null" />
+			<param index="4" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Calls [method OpenXRSpatialEntityExtension.discover_spatial_entities] and [method OpenXRSpatialEntityExtension.query_snapshot] with the plane entities associated with [param spatial_context].
+				[param component_data] are the [OpenXRSpatialComponentData]s to discover for this plane capability.
+				If [param next_snapshot_create] is non-null, then pass this to the [code]next[/code] parameter in [method OpenXRSpatialEntityExtension.discover_spatial_entities].
+				If [param next_snapshot_query] is non-null, then pass this to the [code]next[/code] parameter in [method OpenXRSpatialEntityExtension.query_snapshot].
+				[param user_callback], when non-null, is called with two parameters usually twice. The first parameter is the [RID] of the discovery snapshot and the second parameter is a boolean where [code]false[/code] indicates the discovery snapshot is about to be processed, and [code]true[/code] indicates the discovery snapshot has been processed and [param component_data] has valid data. The second call is skipped if an error was encountered.
+				The returned [OpenXRFutureResult] is identical to the return from [method OpenXRSpatialEntityExtension.discover_spatial_entities].
+			</description>
+		</method>
+	</methods>
+</class>

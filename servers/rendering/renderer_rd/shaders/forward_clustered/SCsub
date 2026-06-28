@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+if "RD_GLSL" in env["BUILDERS"]:
+    # find all include files
+    gl_include_files = [str(f) for f in Glob("*_inc.glsl")] + [str(f) for f in Glob("../*_inc.glsl")]
+
+    # find all shader code(all glsl files excluding our include files)
+    glsl_files = [str(f) for f in Glob("*.glsl") if str(f) not in gl_include_files]
+
+    # make sure we recompile shaders if include files change
+    env.Depends([f + ".gen.h" for f in glsl_files], gl_include_files + ["#glsl_builders.py"])
+
+    # compile shaders
+    for glsl_file in glsl_files:
+        env.RD_GLSL(glsl_file)

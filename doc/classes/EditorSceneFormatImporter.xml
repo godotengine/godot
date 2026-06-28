@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSceneFormatImporter" inherits="RefCounted" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Imports scenes from third-parties' 3D files.
+	</brief_description>
+	<description>
+		[EditorSceneFormatImporter] allows to define an importer script for a third-party 3D format.
+		To use [EditorSceneFormatImporter], register it using the [method EditorPlugin.add_scene_format_importer_plugin] method first.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_extensions" qualifiers="virtual required const">
+			<return type="PackedStringArray" />
+			<description>
+				Return supported file extensions for this scene importer.
+			</description>
+		</method>
+		<method name="_get_import_options" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Override to add general import options. These will appear in the main import dock on the editor. Add options via [method add_import_option] and [method add_import_option_advanced].
+				[b]Note:[/b] All [EditorSceneFormatImporter] and [EditorScenePostImportPlugin] instances will add options for all files. It is good practice to check the file extension when [param path] is non-empty.
+				When the user is editing project settings, [param path] will be empty. It is recommended to add all options when [param path] is empty to allow the user to customize Import Defaults.
+			</description>
+		</method>
+		<method name="_get_option_visibility" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="for_animation" type="bool" />
+			<param index="2" name="option" type="String" />
+			<description>
+				Should return [code]true[/code] to show the given option, [code]false[/code] to hide the given option, or [code]null[/code] to ignore.
+			</description>
+		</method>
+		<method name="_import_scene" qualifiers="virtual required">
+			<return type="Object" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="flags" type="int" />
+			<param index="2" name="options" type="Dictionary" />
+			<description>
+				Perform the bulk of the scene import logic here, for example using [GLTFDocument] or [FBXDocument].
+			</description>
+		</method>
+		<method name="add_import_option">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Add a specific import option (name and default value only). This function can only be called from [method _get_import_options].
+			</description>
+		</method>
+		<method name="add_import_option_advanced">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="Variant.Type" />
+			<param index="1" name="name" type="String" />
+			<param index="2" name="default_value" type="Variant" />
+			<param index="3" name="hint" type="int" enum="PropertyHint" default="0" />
+			<param index="4" name="hint_string" type="String" default="&quot;&quot;" />
+			<param index="5" name="usage_flags" type="int" default="6" />
+			<description>
+				Add a specific import option. This function can only be called from [method _get_import_options].
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="IMPORT_SCENE" value="1" enum="ImportFlags" is_bitfield="true">
+			Unused flag (this has no effect when enabled).
+		</constant>
+		<constant name="IMPORT_ANIMATION" value="2" enum="ImportFlags" is_bitfield="true">
+			Import animations from the 3D scene. When importing a scene as an [AnimationLibrary], this flag is always enabled.
+		</constant>
+		<constant name="IMPORT_FAIL_ON_MISSING_DEPENDENCIES" value="4" enum="ImportFlags" is_bitfield="true">
+			Unused flag (this has no effect when enabled).
+		</constant>
+		<constant name="IMPORT_GENERATE_TANGENT_ARRAYS" value="8" enum="ImportFlags" is_bitfield="true">
+			If [code]true[/code], generate vertex tangents using [url=http://www.mikktspace.com/]Mikktspace[/url] if the input meshes don't have tangent data. When possible, it's recommended to let the 3D modeling software generate tangents on export instead of relying on this option. Tangents are required for correct display of normal and height maps, along with any material/shader features that require tangents.
+			If you don't need material features that require tangents, disabling this can reduce output file size and speed up importing if the source 3D file doesn't contain tangents.
+		</constant>
+		<constant name="IMPORT_USE_NAMED_SKIN_BINDS" value="16" enum="ImportFlags" is_bitfield="true">
+			If checked, use named [Skin]s for animation. The [MeshInstance3D] node contains 3 properties of relevance here: a skeleton [NodePath] pointing to the [Skeleton3D] node (usually [code]..[/code]), a mesh, and a skin:
+			- The [Skeleton3D] node contains a list of bones with names, their pose and rest, a name, and a parent bone.
+			- The mesh is all of the raw vertex data needed to display a mesh. In terms of the mesh, it knows how vertices are weight-painted and uses some internal numbering often imported from 3D modeling software.
+			- The skin contains the information necessary to bind this mesh onto this Skeleton3D. For each of the internal bone IDs chosen by the 3D modeling software, it contains two things. Firstly, a matrix known as the Bind Pose Matrix, Inverse Bind Matrix, or IBM for short. Secondly, the [Skin] contains each bone's name (if this flag is enabled), or the bone's index within the [Skeleton3D] list (if this flag is disabled).
+			Together, this information is enough to tell Godot how to use the bone poses in the [Skeleton3D] node to render the mesh from each [MeshInstance3D]. Note that each [MeshInstance3D] may share binds, as is common in models exported from Blender, or each [MeshInstance3D] may use a separate [Skin] object, as is common in models exported from other tools such as Maya.
+		</constant>
+		<constant name="IMPORT_DISCARD_MESHES_AND_MATERIALS" value="32" enum="ImportFlags" is_bitfield="true">
+			Ignore meshes and materials on import. When importing a scene as an [AnimationLibrary], this flag is always enabled.
+		</constant>
+		<constant name="IMPORT_FORCE_DISABLE_MESH_COMPRESSION" value="64" enum="ImportFlags" is_bitfield="true">
+			If [code]true[/code], mesh compression will not be used. Consider enabling if you notice blocky artifacts in your mesh normals or UVs, or if you have meshes that are larger than a few thousand meters in each direction.
+		</constant>
+	</constants>
+</class>

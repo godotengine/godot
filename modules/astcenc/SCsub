@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_astcenc = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/astcenc/"
+thirdparty_sources = [
+    "astcenc_averages_and_directions.cpp",
+    "astcenc_block_sizes.cpp",
+    "astcenc_color_quantize.cpp",
+    "astcenc_color_unquantize.cpp",
+    "astcenc_compress_symbolic.cpp",
+    "astcenc_compute_variance.cpp",
+    "astcenc_decompress_symbolic.cpp",
+    "astcenc_diagnostic_trace.cpp",
+    "astcenc_entry.cpp",
+    "astcenc_find_best_partitioning.cpp",
+    "astcenc_ideal_endpoints_and_weights.cpp",
+    "astcenc_image.cpp",
+    "astcenc_integer_sequence.cpp",
+    "astcenc_mathlib.cpp",
+    "astcenc_mathlib_softfloat.cpp",
+    "astcenc_partition_tables.cpp",
+    "astcenc_percentile_tables.cpp",
+    "astcenc_pick_best_endpoint_format.cpp",
+    "astcenc_quantization.cpp",
+    "astcenc_symbolic_physical.cpp",
+    "astcenc_weight_align.cpp",
+    "astcenc_weight_quant_xfer_tables.cpp",
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_astcenc.Prepend(CPPPATH=[thirdparty_dir])
+
+env_thirdparty = env_astcenc.Clone()
+env_thirdparty.disable_warnings()
+
+# Build the encoder only for editor builds
+astc_encoder = env.editor_build
+
+if not astc_encoder:
+    env_thirdparty.Append(CPPDEFINES=[("ASTCENC_DECOMPRESS_ONLY")])
+
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_astcenc.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

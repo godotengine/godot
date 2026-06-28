@@ -1,0 +1,68 @@
+GDTEST_OK
+=== Class Properties ===
+--- A ---
+--- B ---
+static var test_static_var_b1: Variant
+static var test_static_var_b2: Variant
+--- C ---
+static var test_static_var_b1: Variant
+static var test_static_var_b2: Variant
+static var test_static_var_c1: Variant
+static var test_static_var_c2: Variant
+=== Member Properties ===
+--- B ---
+var test_var_b1: Variant
+var test_var_b2: Variant
+--- C ---
+var test_var_c1: Variant
+var test_var_c2: Variant
+var test_var_b1: Variant
+var test_var_b2: Variant
+=== Class Methods ===
+--- A ---
+--- B ---
+--- C ---
+=== Member Methods ===
+--- B ---
+static func test_static_func_b1() -> Variant
+static func test_static_func_b2() -> Variant
+func test_abstract_func_1() -> Variant
+func test_abstract_func_2() -> Variant
+func test_override_func_1() -> Variant
+func test_override_func_2() -> Variant
+func test_func_b1() -> Variant
+func test_func_b2() -> Variant
+@abstract func test_abstract_func_1() -> Variant
+@abstract func test_abstract_func_2() -> Variant
+func test_override_func_1() -> Variant
+func test_override_func_2() -> Variant
+--- C ---
+static func test_static_func_c1() -> Variant
+static func test_static_func_c2() -> Variant
+func test_abstract_func_1() -> Variant
+func test_abstract_func_2() -> Variant
+func test_override_func_1() -> Variant
+func test_override_func_2() -> Variant
+func test_func_c1() -> Variant
+func test_func_c2() -> Variant
+static func test_static_func_b1() -> Variant
+static func test_static_func_b2() -> Variant
+func test_abstract_func_1() -> Variant
+func test_abstract_func_2() -> Variant
+func test_override_func_1() -> Variant
+func test_override_func_2() -> Variant
+func test_func_b1() -> Variant
+func test_func_b2() -> Variant
+@abstract func test_abstract_func_1() -> Variant
+@abstract func test_abstract_func_2() -> Variant
+func test_override_func_1() -> Variant
+func test_override_func_2() -> Variant
+=== Signals ===
+--- B ---
+signal test_signal_b1()
+signal test_signal_b2()
+--- C ---
+signal test_signal_c1()
+signal test_signal_c2()
+signal test_signal_b1()
+signal test_signal_b2()

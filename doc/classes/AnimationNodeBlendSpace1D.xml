@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeBlendSpace1D" inherits="AnimationRootNode" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A set of [AnimationRootNode]s placed on a virtual axis, crossfading between the two adjacent ones. Used by [AnimationTree].
+	</brief_description>
+	<description>
+		A resource used by [AnimationNodeBlendTree].
+		[AnimationNodeBlendSpace1D] represents a virtual axis on which any type of [AnimationRootNode]s can be added using [method add_blend_point]. Outputs the linear blend of the two [AnimationRootNode]s adjacent to the current value.
+		You can set the extents of the axis with [member min_space] and [member max_space].
+	</description>
+	<tutorials>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_blend_point">
+			<return type="void" />
+			<param index="0" name="node" type="AnimationRootNode" />
+			<param index="1" name="pos" type="float" />
+			<param index="2" name="at_index" type="int" default="-1" />
+			<param index="3" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Adds a new point with [param name] that represents a [param node] on the virtual axis at a given position set by [param pos]. You can insert it at a specific index using the [param at_index] argument. If you use the default value for [param at_index], the point is inserted at the end of the blend points array.
+				[b]Note:[/b] If no name is provided, safe index is used as reference. In the future, empty names will be deprecated, so explicitly passing a name is recommended.
+			</description>
+		</method>
+		<method name="find_blend_point_by_name" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the index of the blend point with the given [param name]. Returns [code]-1[/code] if no blend point with that name is found.
+			</description>
+		</method>
+		<method name="get_blend_point_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of points on the blend axis.
+			</description>
+		</method>
+		<method name="get_blend_point_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="point" type="int" />
+			<description>
+				Returns the name of the blend point at index [param point].
+			</description>
+		</method>
+		<method name="get_blend_point_node" qualifiers="const">
+			<return type="AnimationRootNode" />
+			<param index="0" name="point" type="int" />
+			<description>
+				Returns the [AnimationNode] referenced by the point at index [param point].
+			</description>
+		</method>
+		<method name="get_blend_point_position" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="point" type="int" />
+			<description>
+				Returns the position of the point at index [param point].
+			</description>
+		</method>
+		<method name="remove_blend_point">
+			<return type="void" />
+			<param index="0" name="point" type="int" />
+			<description>
+				Removes the point at index [param point] from the blend axis.
+			</description>
+		</method>
+		<method name="reorder_blend_point">
+			<return type="void" />
+			<param index="0" name="from_index" type="int" />
+			<param index="1" name="to_index" type="int" />
+			<description>
+				Swaps the blend points at indices [param from_index] and [param to_index], exchanging their positions and properties.
+			</description>
+		</method>
+		<method name="set_blend_point_name">
+			<return type="void" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="name" type="StringName" />
+			<description>
+				Sets the name of the blend point at index [param point]. If the name conflicts with an existing point, a unique name will be generated automatically.
+			</description>
+		</method>
+		<method name="set_blend_point_node">
+			<return type="void" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="node" type="AnimationRootNode" />
+			<description>
+				Changes the [AnimationNode] referenced by the point at index [param point].
+			</description>
+		</method>
+		<method name="set_blend_point_position">
+			<return type="void" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="pos" type="float" />
+			<description>
+				Updates the position of the point at index [param point] on the blend axis.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="AnimationNodeBlendSpace1D.BlendMode" default="0">
+			Controls the interpolation between animations.
+		</member>
+		<member name="cyclic_length" type="float" setter="set_cyclic_length" getter="get_cyclic_length" default="0.0">
+			The cycle length in seconds used by [constant SYNC_MODE_CYCLIC_CONSTANT]. All animations are time-scaled so they complete one full cycle in this duration. Must be greater than [code]0[/code] for cyclic sync to take effect.
+		</member>
+		<member name="max_space" type="float" setter="set_max_space" getter="get_max_space" default="1.0">
+			The blend space's axis's upper limit for the points' position. See [method add_blend_point].
+		</member>
+		<member name="min_space" type="float" setter="set_min_space" getter="get_min_space" default="-1.0">
+			The blend space's axis's lower limit for the points' position. See [method add_blend_point].
+		</member>
+		<member name="snap" type="float" setter="set_snap" getter="get_snap" default="0.1">
+			Position increment to snap to when moving a point on the axis.
+		</member>
+		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" deprecated="Use [member sync_mode] instead.">
+			If [code]true[/code], sync mode is enabled (equivalent to [constant SYNC_MODE_INDEPENDENT]). This property is kept for backward compatibility.
+		</member>
+		<member name="sync_mode" type="int" setter="set_sync_mode" getter="get_sync_mode" enum="AnimationNodeBlendSpace1D.SyncMode" default="0">
+			Controls how animations are synced when blended. See [enum SyncMode] for available options.
+		</member>
+		<member name="value_label" type="String" setter="set_value_label" getter="get_value_label" default="&quot;value&quot;">
+			Label of the virtual axis of the blend space.
+		</member>
+	</members>
+	<constants>
+		<constant name="BLEND_MODE_INTERPOLATED" value="0" enum="BlendMode">
+			The interpolation between animations is linear.
+		</constant>
+		<constant name="BLEND_MODE_DISCRETE" value="1" enum="BlendMode">
+			The blend space plays the animation of the animation node which blending position is closest to. Useful for frame-by-frame 2D animations.
+		</constant>
+		<constant name="BLEND_MODE_DISCRETE_CARRY" value="2" enum="BlendMode">
+			Similar to [constant BLEND_MODE_DISCRETE], but starts the new animation at the last animation's playback position.
+		</constant>
+		<constant name="SYNC_MODE_NONE" value="0" enum="SyncMode">
+			Inactive animations are frozen and do not advance.
+		</constant>
+		<constant name="SYNC_MODE_INDEPENDENT" value="1" enum="SyncMode">
+			Inactive animations advance with a weight of [code]0[/code]. This is equivalent to the previous [code]sync = true[/code] behavior.
+		</constant>
+		<constant name="SYNC_MODE_CYCLIC_MUTABLE" value="2" enum="SyncMode">
+			All animations are time-scaled so they stay in sync, with the cycle length dynamically computed from active blend weights. This is self-normalizing: a solo animation plays at normal speed.
+			[b]Note:[/b] If you apply [AnimationNodeTimeSeek] to the result when handling animations of different lengths, synchronization will be broken. In such cases, it is recommended to use [member AnimationNodeAnimation.use_custom_timeline] to align the animation lengths.
+		</constant>
+		<constant name="SYNC_MODE_CYCLIC_CONSTANT" value="3" enum="SyncMode">
+			All animations are time-scaled so they complete one cycle in [member cyclic_length] seconds, keeping them in sync regardless of their individual lengths.
+			[b]Note:[/b] If you apply [AnimationNodeTimeSeek] to the result when handling animations of different lengths, synchronization will be broken. In such cases, it is recommended to use [member AnimationNodeAnimation.use_custom_timeline] to align the animation lengths.
+		</constant>
+	</constants>
+</class>

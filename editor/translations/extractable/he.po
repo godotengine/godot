@@ -1,0 +1,119 @@
+# Hebrew translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-14 08:02+0000\n"
+"Last-Translator: Kfir Pshititsky <Kfir4321@gmail.com>\n"
+"Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
+"he/>\n"
+"Language: he\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && n "
+"% 10 == 0) ? 2 : 3));\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "Save"
+msgstr "שמירה"
+
+msgid "Clear"
+msgstr "ניקוי"
+
+msgid "Add current color as a preset."
+msgstr "הוספת הצבע הנוכחי לערכת הצבעים."
+
+msgid "Network"
+msgstr "רשת"
+
+msgid "Open"
+msgstr "פתיחה"
+
+msgid "Select Current Folder"
+msgstr "נא לבחור את התיקייה הנוכחית"
+
+msgid "All Recognized"
+msgstr "כל המוכרים"
+
+msgid "Open a File"
+msgstr "פתיחת קובץ"
+
+msgid "Open File(s)"
+msgstr "פתיחת קבצים"
+
+msgid "Open a Directory"
+msgstr "פתיחת תיקייה"
+
+msgid "Open a File or Directory"
+msgstr "פתיחת קובץ או תיקייה"
+
+msgid "Save a File"
+msgstr "שמירת קובץ"
+
+msgid "Go to previous folder."
+msgstr "מעבר לתיקיה הקודמת."
+
+msgid "Go to next folder."
+msgstr "מעבר לתיקיה הבאה."
+
+msgid "Go to parent folder."
+msgstr "מעבר לתיקיית העל."
+
+msgid "Path:"
+msgstr "נתיב:"
+
+msgid "Refresh files."
+msgstr "ריענון קבצים."
+
+msgid "Directories & Files:"
+msgstr "תיקיות וקבצים:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "הצג/הסתר קבצים מוסתרים."
+
+msgid "File:"
+msgstr "קובץ:"
+
+msgid "Create Folder"
+msgstr "יצירת תיקייה"
+
+msgid "Name:"
+msgstr "שם:"
+
+msgid "Could not create folder."
+msgstr "לא ניתן ליצור תיקייה."
+
+msgid "Zoom Out"
+msgstr "התרחקות"
+
+msgid "Zoom Reset"
+msgstr "איפוס התקריב"
+
+msgid "Zoom In"
+msgstr "התקרבות"
+
+msgid "Cut"
+msgstr "גזירה"
+
+msgid "Copy"
+msgstr "העתקה"
+
+msgid "Paste"
+msgstr "הדבקה"
+
+msgid "Select All"
+msgstr "לבחור הכול"
+
+msgid "Undo"
+msgstr "ביטול"
+
+msgid "Redo"
+msgstr "ביצוע חוזר"
+
+msgid "(Other)"
+msgstr "(אחר)"

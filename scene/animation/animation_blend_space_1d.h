@@ -1,0 +1,166 @@
+/**************************************************************************/
+/*  animation_blend_space_1d.h                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#pragma once
+
+#include "scene/animation/animation_tree.h"
+
+class AnimationNodeBlendSpace1D : public AnimationRootNode {
+	GDCLASS(AnimationNodeBlendSpace1D, AnimationRootNode);
+
+	const String ERR_NO_BLEND_POINT = "No blend points exist, so blending cannot take place.";
+	const String ERR_INVALID_POINT = "Cyclic sync modes require that all blend points in BlendSpace use non-nested Animation nodes with a finite, immutable length.";
+
+public:
+	enum BlendMode {
+		BLEND_MODE_INTERPOLATED,
+		BLEND_MODE_DISCRETE,
+		BLEND_MODE_DISCRETE_CARRY,
+	};
+
+	enum SyncMode {
+		SYNC_MODE_NONE, // Inactive animations are frozen (not advanced).
+		SYNC_MODE_INDEPENDENT, // Inactive animations advance with weight=0 (previous "sync" behavior).
+		SYNC_MODE_CYCLIC_MUTABLE, // Time-scaled with blend-weight-dependent cycle length (self-normalizing).
+		SYNC_MODE_CYCLIC_CONSTANT, // Time-scaled to complete one cycle in cyclic_length seconds.
+	};
+
+protected:
+	enum {
+		MAX_BLEND_POINTS = 64
+	};
+
+	struct BlendPoint {
+		StringName name;
+		Ref<AnimationRootNode> node;
+		float position = 0.0;
+
+		void reset() {
+			name = StringName();
+			node = Ref<AnimationRootNode>();
+			position = 0.0;
+		}
+	};
+
+	BlendPoint blend_points[MAX_BLEND_POINTS];
+	int blend_points_used = 0;
+
+	float max_space = 1.0;
+	float min_space = -1.0;
+
+	float snap = 0.1;
+
+	String value_label = "value";
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	StringName blend_position = "blend_position";
+	StringName closest = "closest";
+
+	BlendMode blend_mode = BLEND_MODE_INTERPOLATED;
+
+	SyncMode sync_mode = SYNC_MODE_NONE;
+	double cyclic_length = 0.0;
+	double inverted_cycle_length = 0.0; // Cached 1/cyclic_length.
+	LocalVector<double> cached_lengths;
+	bool lengths_dirty = true;
+
+	static void _bind_methods();
+
+	virtual void _tree_changed() override;
+	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) override;
+	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node) override;
+
+	bool is_contain_invalid_point = false;
+	void _check_can_sync();
+
+#ifndef DISABLE_DEPRECATED
+	void _add_blend_point_bind_compat_110369(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1);
+	static void _bind_compatibility_methods();
+#endif
+
+public:
+	virtual void validate_node(const AnimationTree *p_tree, const StringName &p_path) const override;
+
+	virtual void get_parameter_list(LocalVector<PropertyInfo> *r_list) const override;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
+
+	virtual void get_child_nodes(LocalVector<ChildNode> *r_child_nodes) override;
+
+	void add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1, const StringName &p_name = "");
+	void set_blend_point_position(int p_point, float p_position);
+	void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
+
+	float get_blend_point_position(int p_point) const;
+	Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
+	void set_blend_point_name(int p_point, const StringName &p_name);
+	const StringName &get_blend_point_name(int p_point) const;
+	int find_blend_point_by_name(const StringName &p_name) const;
+	void remove_blend_point(int p_point);
+	int get_blend_point_count() const;
+
+	void reorder_blend_point(int p_from_index, int p_to_index);
+
+	void set_min_space(float p_min);
+	float get_min_space() const;
+
+	void set_max_space(float p_max);
+	float get_max_space() const;
+
+	void set_snap(float p_snap);
+	float get_snap() const;
+
+	void set_value_label(const String &p_label);
+	String get_value_label() const;
+
+	void set_blend_mode(BlendMode p_blend_mode);
+	BlendMode get_blend_mode() const;
+
+	void set_cyclic_length(double p_length);
+	double get_cyclic_length() const;
+
+#ifndef DISABLE_DEPRECATED
+	void set_use_sync(bool p_sync); // Compat: maps to SYNC_MODE_INDEPENDENT or SYNC_MODE_NONE.
+	bool is_using_sync() const; // Compat: returns sync_mode != SYNC_MODE_NONE.
+#endif // DISABLE_DEPRECATED
+
+	void set_sync_mode(SyncMode p_sync_mode);
+	SyncMode get_sync_mode() const;
+
+	virtual NodeTimeInfo _process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false) override;
+	String get_caption() const override;
+
+	Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
+};
+
+VARIANT_ENUM_CAST(AnimationNodeBlendSpace1D::BlendMode)
+VARIANT_ENUM_CAST(AnimationNodeBlendSpace1D::SyncMode)

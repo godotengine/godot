@@ -1,0 +1,72 @@
+name: Bug report
+description: Report a bug in Godot
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        When reporting bugs, please follow the guidelines in this template. This helps identify the problem precisely and thus enables contributors to fix it faster.
+        - Write a descriptive issue title above.
+        - The golden rule is to **always open *one* issue for *one* bug**. If you notice several bugs and want to report them, make sure to create one new issue for each of them.
+        - Search [open](https://github.com/godotengine/godot/issues) and [closed](https://github.com/godotengine/godot/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported. If you don't find a relevant match or if you're unsure, don't hesitate to **open a new issue**. The bugsquad will handle it from there if it's a duplicate.
+        - Verify that you are using a [supported Godot version](https://docs.godotengine.org/en/latest/about/release_policy.html). Please always check if your issue is reproducible in the latest version – it may already have been fixed!
+        - If you use a custom build, please test if your issue is reproducible in official builds too. Likewise if you use any C++ modules, GDExtensions, or editor plugins, you should check if the bug is reproducible in a project without these.
+
+  - type: textarea
+    attributes:
+      label: Tested versions
+      description: |
+        To properly fix a bug, we need to identify if the bug was recently introduced in the engine, or if it was always present.
+        - Please specify the Godot version you found the issue in, including the **Git commit hash** if using a development or non-official build. The exact Godot version (including the commit hash) can be copied by clicking the version shown in the editor (bottom bar) or in the project manager (top bar).
+        - If you can, **please test earlier Godot versions** (previous stable branch, and development snapshots of the current feature release) and, if applicable, newer versions (development snapshots for the next feature release). Mention whether the bug is reproducible or not in the versions you tested. You can find all Godot releases in our [download archive](https://godotengine.org/download/archive/).
+        - The aim is for us to identify whether a bug is a **regression**, i.e. an issue that didn't exist in a previous version, but was introduced later on, breaking existing functionality. For example, if a bug is reproducible in 4.2.stable but not in 4.1.stable, we would like you to test intermediate 4.2 dev and beta snapshots to find which snapshot is the first one where the issue can be reproduced.
+      placeholder: |
+
+        - Reproducible in: 4.3.dev [d76c1d0e5], 4.2.stable, 4.2.dev5 and later 4.2 snapshots.
+        - Not reproducible in: 4.1.3.stable, 4.2.dev4 and earlier 4.2 snapshots.
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: System information
+      description: |
+        - Specify the OS version, and when relevant hardware information.
+        - For issues that are likely OS-specific and/or graphics-related, please specify the CPU model and architecture.
+        - For graphics-related issues, specify the GPU model, driver version, and the rendering backend (GLES2, GLES3, Vulkan).
+        - **Bug reports not including the required information may be closed at the maintainers' discretion.** If in doubt, always include all the requested information; it's better to include too much information than not enough information.
+        - **Starting from Godot 4.1, you can copy this information to your clipboard by using *Help > Copy System Info* at the top of the editor window.**
+      placeholder: Windows 10 - Godot v4.0.3.stable - Vulkan (Forward+) - dedicated NVIDIA GeForce GTX 970 (nvidia, 510.85.02) - Intel Core i7-10700KF CPU @ 3.80GHz (16 Threads)
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Issue description
+      description: |
+        Describe your issue briefly. What doesn't work, and how do you expect it to work instead?
+        You can include images or videos with drag and drop, and format code blocks or logs with <code>\`\`\`</code> tags, on separate lines before and after the text. (Use <code>\`\`\`gdscript</code> to add GDScript syntax highlighting.)
+        Please do not add code examples or error messages as screenshots, but as text, this helps searching for issues and testing the code. If you are reporting a bug in the editor interface, like the script editor, please provide both a screenshot *and* the text of the code to help with testing.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: |
+        List of steps or sample code that reproduces the issue. Having reproducible issues is a prerequisite for contributors to be able to solve them.
+        If you include a minimal reproduction project below, you can detail how to use it here.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Minimal reproduction project (MRP)
+      description: |
+        - A small Godot project which reproduces the issue, with no unnecessary files included. Be sure to not include the `.godot` folder in the archive (but keep `project.godot`).
+        - Having an MRP is very important for contributors to be able to reproduce the bug in the same way that you are experiencing it. When testing a potential fix for the issue, contributors will use the MRP to validate that the fix is working as intended.
+        - If the reproduction steps are not project dependent (e.g. the bug is visible in a brand new project), you can write "N/A" in the field.
+        - Drag and drop a ZIP archive to upload it (max 10 MB). **Do not select another field until the project is done uploading.**
+        - **Note for C# users:** If your issue is *not* C#-specific, please upload a minimal reproduction project written in GDScript. This will make it easier for contributors to reproduce the issue locally as not everyone has a .NET setup available.
+    validations:
+      required: true

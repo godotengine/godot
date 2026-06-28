@@ -1,0 +1,106 @@
+[tool.mypy]
+disallow_any_generics = true
+explicit_package_bases = true
+ignore_missing_imports = true
+namespace_packages = true
+no_implicit_optional = true
+pretty = true
+show_column_numbers = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+exclude = ["thirdparty/"]
+python_version = "3.9"
+
+[tool.ruff]
+extend-exclude = ["thirdparty"]
+extend-include = ["*SConstruct", "*SCsub"]
+target-version = "py39"
+line-length = 120
+preview = true
+fix = true
+
+[tool.ruff.lint]
+# NOTE: Starting with `0.15.2`, ruff uses a SIGNIFICANTLY expanded set of default rules for
+#  preview builds. While expanding into these new rulesets is something we're interested in,
+#  we'll adopt them gradually, depending on our needs. As such, our base `select` utilizes the
+#  legacy defaults.
+select = ["E4", "E7", "E9", "F"]
+extend-select = [
+	"FA",    # flake8-future-annotations.
+	"I",     # isort.
+	"UP006", # Use {to} instead of {from} for type annotation.
+	"UP007", # Use `X | Y` for type annotations.
+	"UP037", # Remove quotes from type annotation.
+]
+extend-safe-fixes = ["FA", "UP006", "UP007"]
+
+[tool.ruff.lint.per-file-ignores]
+"{SConstruct,SCsub}" = [
+	"E402", # Module level import not at top of file.
+	"F403", # Undefined local with import star.
+	"F405", # Undefined local with import star usage.
+]
+
+[tool.ruff.lint.isort]
+sections = { metadata = ["misc.utility.scons_hints"] }
+section-order = [
+	"future",
+	"metadata",
+	"standard-library",
+	"third-party",
+	"first-party",
+	"local-folder",
+]
+
+[tool.codespell]
+enable-colors = true
+write-changes = true
+check-hidden = true
+quiet-level = 3
+builtin = ["clear", "rare", "en-GB_to_en-US"]
+skip = [
+	".mailmap",
+	"*.desktop",
+	"*.gitignore",
+	"*.po",
+	"*.pot",
+	"*.rc",
+	"AUTHORS.md",
+	"COPYRIGHT.txt",
+	"core/input/gamecontrollerdb.txt",
+	"core/string/locales.h",
+	"DONORS.md",
+	"editor/project_converter_3_to_4.cpp",
+	"platform/android/java/lib/src/main/java/com/*",
+	"platform/web/package-lock.json",
+]
+ignore-words-list = [
+	"breaked",
+	"cancelled",
+	"checkin",
+	"colour",
+	"curvelinear",
+	"doubleclick",
+	"expct",
+	"findn",
+	"gird",
+	"hel",
+	"inout",
+	"labelin",
+	"lod",
+	"masia",
+	"mis",
+	"nd",
+	"numer",
+	"ot",
+	"outin",
+	"parm",
+	"pEvent",
+	"requestor",
+	"streamin",
+	"te",
+	"textin",
+	"thirdparty",
+	"vai",
+]

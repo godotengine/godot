@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+import make_interface_dumper
+import make_interface_header
+import make_wrappers
+
+env.CommandNoCache("ext_wrappers.gen.h", "make_wrappers.py", env.Run(make_wrappers.run))
+env.CommandNoCache(
+    "gdextension_interface_dump.gen.h",
+    ["gdextension_interface.json", "make_interface_dumper.py"],
+    env.Run(make_interface_dumper.run),
+)
+env.CommandNoCache(
+    "gdextension_interface.gen.h",
+    ["gdextension_interface.json", "make_interface_header.py"],
+    env.Run(make_interface_header.run),
+)
+
+env.add_source_files(env.core_sources, "*.cpp")

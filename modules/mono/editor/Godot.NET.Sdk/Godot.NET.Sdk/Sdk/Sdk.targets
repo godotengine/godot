@@ -1,0 +1,54 @@
+<Project>
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition="'$(GodotSdkImportsMicrosoftNetSdk)' == 'true'" />
+
+  <PropertyGroup>
+    <!--
+    Define constant to determine whether the real_t type in Godot is double precision or not.
+    By default this is false, like the official Godot builds. If someone is using a custom
+    Godot build where real_t is double, they can override the GodotFloat64 property.
+    -->
+    <DefineConstants Condition=" '$(GodotFloat64)' == 'true' ">GODOT_REAL_T_IS_DOUBLE;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <!--
+  We are defining ExportDebug and Debug in Sdk.targets to ensure that the user cannot
+  override the DefineConstants property in their csproj file and break the editor functionality.
+  -->
+  <PropertyGroup>
+    <!-- ExportDebug also defines DEBUG like Debug does. -->
+    <DefineConstants Condition=" '$(Configuration)' == 'ExportDebug' ">$(DefineConstants);DEBUG</DefineConstants>
+    <!-- Debug defines TOOLS to differentiate between Debug and ExportDebug configurations. -->
+    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);TOOLS</DefineConstants>
+
+    <DefineConstants>$(_GodotDefineConstants);$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnableGodotDotNetPreview)' == 'true'">
+    <DisableImplicitGodotGeneratorReferences>true</DisableImplicitGodotGeneratorReferences>
+    <DisableImplicitGodotSharpReferences>true</DisableImplicitGodotSharpReferences>
+  </PropertyGroup>
+
+  <!-- GodotSharp references -->
+  <ItemGroup Condition=" '$(DisableImplicitGodotGeneratorReferences)' != 'true' ">
+    <PackageReference Include="Godot.SourceGenerators" IsImplicitlyDefined="true" Version="$(PackageVersion_Godot_SourceGenerators)" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(DisableImplicitGodotSharpReferences)' != 'true' ">
+    <PackageReference Include="GodotSharp" IsImplicitlyDefined="true" Version="$(PackageVersion_GodotSharp)" />
+    <PackageReference Include="GodotSharpEditor" IsImplicitlyDefined="true" Version="$(PackageVersion_GodotSharp)" Condition=" '$(Configuration)' == 'Debug' " />
+  </ItemGroup>
+  <Target Name="CheckGodotDotNetReferences" BeforeTargets="Build" Condition=" '$(EnableGodotDotNetPreview)' != 'true' ">
+    <Error Text="The project or one of its dependencies references Godot .NET packages which are incompatible with the active Godot C# bindings. The active C# bindings is GodotSharp." Condition="$([System.String]::Copy('%(Reference.Identity)').Contains('Godot.Bindings.dll'))" />
+  </Target>
+
+  <!-- Godot .NET references -->
+  <ItemGroup Condition=" '$(EnableGodotDotNetPreview)' == 'true' ">
+    <PackageReference Include="Godot" IsImplicitlyDefined="true" Version="$(PackageVersion_GodotDotNet)" />
+  </ItemGroup>
+  <Target Name="CheckGodotSharpReferences" BeforeTargets="Build" Condition=" '$(EnableGodotDotNetPreview)' == 'true' ">
+    <Error Text="The project or one of its dependencies references GodotSharp packages which is incompatible with the active Godot C# bindings. The active C# bindings is Godot .NET." Condition="$([System.String]::Copy('%(Reference.Identity)').Contains('GodotSharp.dll'))" />
+  </Target>
+
+  <!-- iOS-specific build targets -->
+  <Import Project="$(MSBuildThisFileDirectory)\iOS.targets" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
+
+</Project>

@@ -1,0 +1,15 @@
+GDTEST_OK
+v1: p1=4, p2=3
+v1 is String: true
+v2: true
+v2 is bool: true
+c1: 4
+c1 is int: true
+c2: 44
+c2 is int: true
+E1.V1: 4
+E1.V2: 3
+E2.V: 2
+EV1: 42
+EV2: 44
+EV3: 43

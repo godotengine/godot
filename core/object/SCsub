@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+import make_virtuals
+
+env.CommandNoCache("gdvirtual.gen.h", "make_virtuals.py", env.Run(make_virtuals.run))
+
+env.add_source_files(env.core_sources, "*.cpp")

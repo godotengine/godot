@@ -1,0 +1,108 @@
+/**************************************************************************/
+/*  shader.h                                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#pragma once
+
+#include "core/io/resource.h"
+#include "scene/resources/shader_include.h"
+
+class Texture;
+class Texture2D;
+
+class Shader : public Resource {
+	GDCLASS(Shader, Resource);
+	OBJ_SAVE_TYPE(Shader);
+
+public:
+	// Must be kept in sync with the List<String> of shader types in `servers/rendering/shader_types.cpp`.
+	enum Mode {
+		MODE_SPATIAL,
+		MODE_CANVAS_ITEM,
+		MODE_PARTICLES,
+		MODE_SKY,
+		MODE_FOG,
+		MODE_TEXTURE_BLIT,
+		MODE_MAX
+	};
+
+private:
+	mutable RID shader_rid;
+	mutable String preprocessed_code;
+	mutable Mutex shader_rid_mutex;
+
+	Mode mode = MODE_SPATIAL;
+	HashSet<Ref<ShaderInclude>> include_dependencies;
+	String code;
+	String include_path;
+
+	HashMap<StringName, HashMap<int, Ref<Texture>>> default_textures;
+
+	void _check_shader_rid() const;
+	void _dependency_changed();
+	void _recompile();
+	virtual void _update_shader() const; //used for visual shader
+	Array _get_shader_uniform_list(bool p_get_groups = false);
+
+protected:
+#ifndef DISABLE_DEPRECATED
+	void _set_default_texture_parameter_bind_compat_95126(const StringName &p_name, const Ref<Texture2D> &p_texture, int p_index = 0);
+	Ref<Texture2D> _get_default_texture_parameter_bind_compat_95126(const StringName &p_name, int p_index = 0) const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
+	static void _bind_methods();
+
+public:
+	//void set_mode(Mode p_mode);
+	virtual Mode get_mode() const;
+
+	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	void set_include_path(const String &p_path);
+
+	void set_code(const String &p_code);
+	String get_code() const;
+
+	void inspect_native_shader_code();
+
+	void get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_groups = false) const;
+
+	void set_default_texture_parameter(const StringName &p_name, const Ref<Texture> &p_texture, int p_index = 0);
+	Ref<Texture> get_default_texture_parameter(const StringName &p_name, int p_index = 0) const;
+	void get_default_texture_parameter_list(List<StringName> *r_textures) const;
+
+	virtual bool is_text_shader() const;
+
+	virtual RID get_rid() const override;
+
+	Shader();
+	~Shader();
+};
+
+VARIANT_ENUM_CAST(Shader::Mode);

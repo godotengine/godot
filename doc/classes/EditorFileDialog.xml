@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorFileDialog" inherits="FileDialog" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A modified version of [FileDialog] used by the editor.
+	</brief_description>
+	<description>
+		[EditorFileDialog] is a [FileDialog] tweaked to work in the editor. It automatically handles favorite and recent directory lists, and synchronizes some properties with their corresponding editor settings.
+		[EditorFileDialog] will automatically show a native dialog based on the [member EditorSettings.interface/editor/appearance/use_native_file_dialogs] editor setting and ignores [member FileDialog.use_native_dialog].
+		[b]Note:[/b] [EditorFileDialog] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
+		[b]Note:[/b] On Linux and macOS, sandboxed apps always use native dialogs to access the host file system.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_side_menu" deprecated="This feature is no longer supported.">
+			<return type="void" />
+			<param index="0" name="menu" type="Control" />
+			<param index="1" name="title" type="String" default="&quot;&quot;" />
+			<description>
+				This method is kept for compatibility and does nothing. As an alternative, you can display another dialog after showing the file dialog.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="disable_overwrite_warning" type="bool" setter="set_disable_overwrite_warning" getter="is_overwrite_warning_disabled" default="false" deprecated="Use [member FileDialog.overwrite_warning_enabled] instead.">
+			If [code]true[/code], the [EditorFileDialog] will not warn the user before overwriting files.
+		</member>
+	</members>
+</class>

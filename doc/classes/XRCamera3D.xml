@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRCamera3D" inherits="Camera3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A camera node which automatically positions itself based on XR tracking data.
+	</brief_description>
+	<description>
+		A camera node which automatically positions itself based on XR tracking data.
+		In contrast to [XRController3D], the render thread has access to more up-to-date tracking data, and the location of the [XRCamera3D] node can lag a few milliseconds behind what is used for rendering.
+		[b]Note:[/b] If [member Viewport.use_xr] is [code]true[/code], most of the camera properties are overridden by the active [XRInterface]. The only properties that can be trusted are the near and far planes.
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<members>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
+	</members>
+</class>
