@@ -4836,6 +4836,11 @@ bool DisplayServerX11::mouse_process_popups() {
 			XWindowAttributes root_attrs;
 			XGetWindowAttributes(x11_display, root, &root_attrs);
 			Vector2i pos = Vector2i(root_attrs.x + root_x, root_attrs.y + root_y);
+			//prevent popup to close after engine starts
+			if(last_mouse_monitor_mask == 0){
+				last_mouse_monitor_mask = mask;
+			}
+
 			if (mask != last_mouse_monitor_mask) {
 				if (((mask & Button1Mask) || (mask & Button2Mask) || (mask & Button3Mask) || (mask & Button4Mask) || (mask & Button5Mask))) {
 					List<DisplayServerEnums::WindowID>::Element *C = nullptr;
