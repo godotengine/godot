@@ -4266,6 +4266,21 @@ bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_ty
 			p_value->sint = p_constant->values[0].uint;
 		}
 		return true;
+	} else if (p_constant->datatype == TYPE_BOOL && p_to_type == TYPE_FLOAT) {
+		if (p_value) {
+			p_value->real = p_constant->values[0].boolean ? 1.0f : 0.0f;
+		}
+		return true;
+	} else if (p_constant->datatype == TYPE_BOOL && p_to_type == TYPE_UINT) {
+		if (p_value) {
+			p_value->uint = p_constant->values[0].boolean ? 1U : 0U;
+		}
+		return true;
+	} else if (p_constant->datatype == TYPE_BOOL && p_to_type == TYPE_INT) {
+		if (p_value) {
+			p_value->sint = p_constant->values[0].boolean ? 1 : 0;
+		}
+		return true;
 	} else {
 		return false;
 	}
@@ -4296,6 +4311,7 @@ bool ShaderLanguage::is_float_type(DataType p_type) {
 		}
 	}
 }
+
 bool ShaderLanguage::is_sampler_type(DataType p_type) {
 	return p_type > TYPE_MAT4 && p_type < TYPE_STRUCT;
 }
