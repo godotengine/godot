@@ -147,15 +147,20 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 		Plane boundary_planes[5];
 		{
 			constexpr const int MAX_PLANES = 5;
+			// Orthogonal cameras have fixed max shadow distance, determined by the camera far plane.
+			// That must be accounted for, or else GH-120457 happens.
+			// For perspective cameras, shadow far must also never be further than the camera far plane (otherwise things break).
+			float camera_far = data.camera_projection.get_z_far();
+			float shadow_far = data.camera_projection.is_orthogonal() ? camera_far : MIN(lsource.range, camera_far);
 			real_t plane_distances[MAX_PLANES] = {
 				data.camera_projection.get_z_near(),
-				lsource.cascade_splits[0] * lsource.range,
-				lsource.cascade_splits[1] * lsource.range,
-				lsource.cascade_splits[2] * lsource.range,
-				lsource.range,
+				lsource.cascade_splits[0] * shadow_far,
+				lsource.cascade_splits[1] * shadow_far,
+				lsource.cascade_splits[2] * shadow_far,
+				shadow_far,
 			};
-			//If not 4 cascades, replace last used cascade plane distance with max shadow range (shadow far plane distance).
-			plane_distances[used_planes - 1] = lsource.range;
+			// If not 4 cascades, replace last used cascade plane distance with max shadow range (shadow far plane distance).
+			plane_distances[used_planes - 1] = shadow_far;
 #ifdef LIGHT_CULLER_DEBUG_LOGGING
 			if (is_logging()) {
 				print_line("cascade split planes (first " + itos(used_planes) + " used): " +
