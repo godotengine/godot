@@ -204,6 +204,13 @@
 				Emit it if you want to key a property with a single value.
 			</description>
 		</signal>
+		<signal name="property_local_favorited">
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="favorited" type="bool" />
+			<description>
+				Emit it if you want to mark a property as favorited for the current scene, making it appear at the top of the inspector for that scene.
+			</description>
+		</signal>
 		<signal name="property_overridden">
 			<description>
 				Emitted when a setting override for the current project is requested.

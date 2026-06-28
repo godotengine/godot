@@ -35,6 +35,7 @@
 
 class CheckButton;
 class EditorEventSearchBar;
+class FileSystemDock;
 class EventListenerLineEdit;
 class InputEventConfigurationDialog;
 class PanelContainer;
@@ -133,6 +134,7 @@ public:
 	static void update_3d_navigation_preset();
 	void set_current_section(const String &p_section);
 	void set_advanced_mode_enabled(bool p_enabled);
+	void connect_filesystem_dock_signals(FileSystemDock *p_fs_dock);
 
 	EditorSettingsDialog();
 };
