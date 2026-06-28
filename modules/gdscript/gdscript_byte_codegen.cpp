@@ -415,61 +415,46 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	return function;
 }
 
-void GDScriptByteCodeGenerator::start_logic_op_cond_jump_success_buffer() {
-	logic_op_cond_jump_success_restore_point.push_back(logic_op_cond_jump_success.size());
+void GDScriptByteCodeGenerator::start_expr_cond_buffer(bool success) {
+	expr_cond_buffer_restore_point[success].push_back(expr_cond_jumps[success].size());
 }
 
-void GDScriptByteCodeGenerator::start_logic_op_cond_jump_failure_buffer() {
-	logic_op_cond_jump_failure_restore_point.push_back(logic_op_cond_jump_failure.size());
-}
+void GDScriptByteCodeGenerator::flush_expr_cond_buffer(bool success) {
+	int target = expr_cond_buffer_restore_point[success].back()->get();
 
-void GDScriptByteCodeGenerator::flush_logic_op_cond_jump_success() {
-	int target = logic_op_cond_jump_success_restore_point.back()->get();
-
-	while (logic_op_cond_jump_success.size() > target) {
-		patch_jump(logic_op_cond_jump_success.back()->get());
-		logic_op_cond_jump_success.pop_back();
+	while (expr_cond_jumps[success].size() > target) {
+		patch_jump(expr_cond_jumps[success].back()->get());
+		expr_cond_jumps[success].pop_back();
 	}
-	logic_op_cond_jump_success_restore_point.pop_back();
+	expr_cond_buffer_restore_point[success].pop_back();
 }
 
-void GDScriptByteCodeGenerator::flush_logic_op_cond_jump_failure() {
-	int target = logic_op_cond_jump_failure_restore_point.back()->get();
-
-	while (logic_op_cond_jump_failure.size() > target) {
-		patch_jump(logic_op_cond_jump_failure.back()->get());
-		logic_op_cond_jump_failure.pop_back();
-	}
-	logic_op_cond_jump_failure_restore_point.pop_back();
-}
-
-void GDScriptByteCodeGenerator::write_logic_op_cond_jump_success(const Address &p_condition) {
-	if (p_condition.mode != Address::NIL) {
+void GDScriptByteCodeGenerator::write_expr_cond_jump_if(bool success, const Address &p_condition) {
+	if (success) {
 		append_opcode(GDScriptFunction::OPCODE_JUMP_IF);
-		append(p_condition);
 	} else {
-		append_opcode(GDScriptFunction::OPCODE_JUMP);
+		append_opcode(GDScriptFunction::OPCODE_JUMP_IF_NOT);
 	}
-	logic_op_cond_jump_success.push_back(opcodes.size());
-	append(0);
-}
-
-void GDScriptByteCodeGenerator::write_logic_op_cond_jump_failure(const Address &p_condition) {
-	append_opcode(GDScriptFunction::OPCODE_JUMP_IF_NOT);
 	append(p_condition);
-	logic_op_cond_jump_failure.push_back(opcodes.size());
+	expr_cond_jumps[success].push_back(opcodes.size());
 	append(0);
 }
 
-void GDScriptByteCodeGenerator::write_custom_else() {
+void GDScriptByteCodeGenerator::write_expr_cond_jump(bool success) {
 	append_opcode(GDScriptFunction::OPCODE_JUMP);
-	custom_if_jmp_addrs.push_back(opcodes.size());
+	expr_cond_jumps[success].push_back(opcodes.size());
 	append(0);
 }
 
-void GDScriptByteCodeGenerator::write_custom_endif() {
-	patch_jump(custom_if_jmp_addrs.back()->get());
-	custom_if_jmp_addrs.pop_back();
+void GDScriptByteCodeGenerator::write_expr_cond_jump_end() {
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
+	expr_cond_end_jumps.push_back(opcodes.size());
+	append(0);
+}
+
+void GDScriptByteCodeGenerator::write_expr_cond_end() {
+	patch_jump(expr_cond_end_jumps.back()->get());
+	expr_cond_end_jumps.pop_back();
 }
 
 #ifdef DEBUG_ENABLED

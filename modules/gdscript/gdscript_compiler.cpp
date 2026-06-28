@@ -1442,7 +1442,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 //
 // When this function returns a valid Address, the result of the expression is stored there. Otherwise, success either jump or fall
 // through to the next opcode and all failures take jumps.
-GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression_jump(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression) {
+GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression_cond(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression) {
 	if (p_expression->is_constant && !(p_expression->get_datatype().is_meta_type && p_expression->get_datatype().kind == GDScriptParser::DataType::CLASS)) {
 		return codegen.add_constant(p_expression->reduced_value);
 	}
@@ -1455,28 +1455,28 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression_jump(CodeGen 
 		switch (binary->operation) {
 			case GDScriptParser::BinaryOpNode::OP_LOGIC_AND: {
 				// Short circuit on failure.
-				gen->start_logic_op_cond_jump_success_buffer();
-				GDScriptCodeGenerator::Address left_addr = _parse_expression_jump(codegen, r_error, binary->left_operand);
+				gen->start_expr_cond_buffer(true);
+				GDScriptCodeGenerator::Address left_addr = _parse_expression_cond(codegen, r_error, binary->left_operand);
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
 				// Failure jumps to else branch, success falls through to next expression.
 				if (left_addr.mode != GDScriptCodeGenerator::Address::NIL) {
-					gen->write_logic_op_cond_jump_failure(left_addr);
+					gen->write_expr_cond_jump_if(false, left_addr);
 					if (left_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
 					}
 				}
 				// Check the right expression after left success, so patch all jumps.
-				gen->flush_logic_op_cond_jump_success();
+				gen->flush_expr_cond_buffer(true);
 
-				GDScriptCodeGenerator::Address right_addr = _parse_expression_jump(codegen, r_error, binary->right_operand);
+				GDScriptCodeGenerator::Address right_addr = _parse_expression_cond(codegen, r_error, binary->right_operand);
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
 				// Failure jumps to else branch, success falls through.
 				if (right_addr.mode != GDScriptCodeGenerator::Address::NIL) {
-					gen->write_logic_op_cond_jump_failure(right_addr);
+					gen->write_expr_cond_jump_if(false, right_addr);
 					if (right_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
 					}
@@ -1486,26 +1486,31 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression_jump(CodeGen 
 			} break;
 			case GDScriptParser::BinaryOpNode::OP_LOGIC_OR: {
 				// Short circuit on success.
-				gen->start_logic_op_cond_jump_failure_buffer();
-				GDScriptCodeGenerator::Address left_addr = _parse_expression_jump(codegen, r_error, binary->left_operand);
+				gen->start_expr_cond_buffer(false);
+				GDScriptCodeGenerator::Address left_addr = _parse_expression_cond(codegen, r_error, binary->left_operand);
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
 				// Failure falls through. Success jumps directly, so we do not patch it.
-				gen->write_logic_op_cond_jump_success(left_addr);
-				if (left_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+				if (left_addr.mode == GDScriptCodeGenerator::Address::NIL) {
+					// Success fall-through should jump directly to success case.
+					gen->write_expr_cond_jump(true);
+				} else {
+					gen->write_expr_cond_jump_if(true, left_addr);
+					if (left_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						gen->pop_temporary();
+					}
 				}
 				// Check the right expression after left failure, so patch all jumps.
-				gen->flush_logic_op_cond_jump_failure();
+				gen->flush_expr_cond_buffer(false);
 
-				GDScriptCodeGenerator::Address right_addr = _parse_expression_jump(codegen, r_error, binary->right_operand);
+				GDScriptCodeGenerator::Address right_addr = _parse_expression_cond(codegen, r_error, binary->right_operand);
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
 				// Failure jumps to else branch, success falls through.
 				if (right_addr.mode != GDScriptCodeGenerator::Address::NIL) {
-					gen->write_logic_op_cond_jump_failure(right_addr);
+					gen->write_expr_cond_jump_if(false, right_addr);
 					if (right_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
 					}
@@ -2097,10 +2102,10 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			case GDScriptParser::Node::IF: {
 				const GDScriptParser::IfNode *if_n = static_cast<const GDScriptParser::IfNode *>(s);
 
-				gen->start_logic_op_cond_jump_success_buffer();
-				gen->start_logic_op_cond_jump_failure_buffer();
+				gen->start_expr_cond_buffer(false);
+				gen->start_expr_cond_buffer(true);
 
-				GDScriptCodeGenerator::Address condition = _parse_expression_jump(codegen, err, if_n->condition);
+				GDScriptCodeGenerator::Address condition = _parse_expression_cond(codegen, err, if_n->condition);
 				if (err) {
 					return err;
 				}
@@ -2108,7 +2113,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				if (condition.mode != GDScriptCodeGenerator::Address::NIL) {
 					// If condition is false, go to else block (or end if not exists).
 					// This jump will be patched later.
-					gen->write_logic_op_cond_jump_failure(condition);
+					gen->write_expr_cond_jump_if(false, condition);
 
 					if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						codegen.generator->pop_temporary();
@@ -2116,7 +2121,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				}
 
 				// Our success branch starts here. Patch all success jumps.
-				gen->flush_logic_op_cond_jump_success();
+				gen->flush_expr_cond_buffer(true);
 
 				err = _parse_block(codegen, if_n->true_block);
 				if (err) {
@@ -2125,18 +2130,18 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				if (if_n->false_block) {
 					// Success branch ends, jump to end.
-					gen->write_custom_else();
+					gen->write_expr_cond_jump_end();
 					// Our failure branch starts here. Patch all failure jumps.
-					gen->flush_logic_op_cond_jump_failure();
+					gen->flush_expr_cond_buffer(false);
 
 					err = _parse_block(codegen, if_n->false_block);
 					if (err) {
 						return err;
 					}
-					gen->write_custom_endif();
+					gen->write_expr_cond_end();
 				} else {
 					// Patch all failure jumps to after the statement.
-					gen->flush_logic_op_cond_jump_failure();
+					gen->flush_expr_cond_buffer(false);
 				}
 			} break;
 			case GDScriptParser::Node::FOR: {
