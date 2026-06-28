@@ -549,9 +549,11 @@ JNIEXPORT jobjectArray JNICALL Java_org_godotengine_godot_GodotLib_getRendererIn
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getEditorSetting(JNIEnv *env, jclass clazz, jstring p_setting_key) {
 	String editor_setting_value = "";
 #ifdef TOOLS_ENABLED
-	String godot_setting_key = jstring_to_string(p_setting_key, env);
-	Variant editor_setting = EDITOR_GET(godot_setting_key);
-	editor_setting_value = (editor_setting.get_type() == Variant::NIL) ? "" : editor_setting;
+	if (EditorSettings::get_singleton() != nullptr) {
+		String godot_setting_key = jstring_to_string(p_setting_key, env);
+		Variant editor_setting = EDITOR_GET(godot_setting_key);
+		editor_setting_value = (editor_setting.get_type() == Variant::NIL) ? "" : editor_setting;
+	}
 #else
 	WARN_PRINT("Access to the Editor Settings in only available on Editor builds");
 #endif
