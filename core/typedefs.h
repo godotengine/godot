@@ -62,6 +62,12 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #define GD_HAS_FEATURE(m_feature) 0
 #endif
 
+#if defined(__has_cpp_attribute)
+#define GD_HAS_CPP_ATTRIBUTE(m_feature) __has_cpp_attribute(m_feature)
+#else
+#define GD_HAS_CPP_ATTRIBUTE(m_feature) 0
+#endif
+
 #if (GD_HAS_FEATURE(address_sanitizer) || defined(__SANITIZE_ADDRESS__)) && !defined(ASAN_ENABLED)
 #error Address sanitizer was enabled without defining `ASAN_ENABLED`
 #endif
@@ -125,6 +131,18 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 // we can prevent the warning in specific cases by preceding the call with a cast.
 #ifndef _ALLOW_DISCARD_
 #define _ALLOW_DISCARD_ (void)
+#endif
+
+#if GD_HAS_CPP_ATTRIBUTE(clang::lifetimebound)
+#define _LIFETIME_BOUND_ [[clang::lifetimebound]]
+#elif GD_HAS_CPP_ATTRIBUTE(gnu::lifetimebound)
+#define _LIFETIME_BOUND_ [[gnu::lifetimebound]]
+#elif GD_HAS_CPP_ATTRIBUTE(msvc::lifetimebound)
+#define _LIFETIME_BOUND_ [[msvc::lifetimebound]]
+#elif GD_HAS_CPP_ATTRIBUTE(lifetimebound)
+#define _LIFETIME_BOUND_ [[lifetimebound]]
+#else
+#define _LIFETIME_BOUND_
 #endif
 
 // Make room for our constexpr's below by overriding potential system-specific macros.
