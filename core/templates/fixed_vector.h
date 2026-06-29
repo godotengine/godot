@@ -125,11 +125,11 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ constexpr T *ptr() { return (T *)(_data); }
-	_FORCE_INLINE_ constexpr const T *ptr() const { return (const T *)(_data); }
+	_FORCE_INLINE_ constexpr T *ptr() _LIFETIME_BOUND_ { return (T *)(_data); }
+	_FORCE_INLINE_ constexpr const T *ptr() const _LIFETIME_BOUND_ { return (const T *)(_data); }
 
-	_FORCE_INLINE_ constexpr operator Span<T>() const { return Span<T>(ptr(), size()); }
-	_FORCE_INLINE_ constexpr Span<T> span() const { return operator Span<T>(); }
+	_FORCE_INLINE_ constexpr operator Span<T>() const _LIFETIME_BOUND_ { return Span<T>(ptr(), size()); }
+	_FORCE_INLINE_ constexpr Span<T> span() const _LIFETIME_BOUND_ { return operator Span<T>(); }
 
 	_FORCE_INLINE_ constexpr uint32_t size() const { return _size; }
 	_FORCE_INLINE_ constexpr bool is_empty() const { return !_size; }

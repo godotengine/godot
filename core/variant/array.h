@@ -190,8 +190,8 @@ public:
 	bool is_read_only() const;
 	static Array create_read_only();
 
-	Span<Variant> span() const;
-	operator Span<Variant>() const {
+	Span<Variant> span() const _LIFETIME_BOUND_;
+	operator Span<Variant>() const _LIFETIME_BOUND_ {
 		return this->span();
 	}
 

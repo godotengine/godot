@@ -2401,7 +2401,7 @@ bool Image::is_empty() const {
 	return (data.is_empty());
 }
 
-Vector<uint8_t> Image::get_data() const {
+const Vector<uint8_t> &Image::get_data() const {
 	return data;
 }
 
