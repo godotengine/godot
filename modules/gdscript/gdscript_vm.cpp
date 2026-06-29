@@ -743,7 +743,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 	bool awaited = false;
-	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptrw() : nullptr };
+	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance && p_instance->members.size() > 0 ? &p_instance->members.write[0] : nullptr };
 
 #ifdef DEBUG_ENABLED
 	OPCODE_WHILE(ip < _code_size) {
@@ -1924,8 +1924,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
 				Variant::Type base_type = base->get_type();
-				Object *base_obj = base->get_validated_object();
-				StringName base_class = base_obj ? base_obj->get_class_name() : StringName();
 #endif
 
 				Variant temp_ret;
@@ -1937,9 +1935,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 					if (ret->get_type() == Variant::NIL) {
 						if (base_type == Variant::OBJECT) {
+							if (*methodname == CoreStringName(free_)) {
+								err_text = R"(Trying to get a return value of a method that returns "void")";
+								OPCODE_BREAK;
+							}
+							Object *base_obj = base->get_validated_object();
 							if (base_obj) {
-								MethodBind *method = ClassDB::get_method(base_class, *methodname);
-								if (*methodname == CoreStringName(free_) || (method && !method->has_return())) {
+								MethodBind *method = ClassDB::get_method(base_obj->get_class_name(), *methodname);
+								if (method && !method->has_return()) {
 									err_text = R"(Trying to get a return value of a method that returns "void")";
 									OPCODE_BREAK;
 								}
@@ -1950,15 +1953,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						}
 					}
 
-					if (!call_async && ret->get_type() == Variant::OBJECT) {
-						// Check if getting a function state without await.
-						bool was_freed = false;
-						Object *obj = ret->get_validated_object_with_check(was_freed);
-
-						if (obj && obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
-							err_text = R"(Trying to call an async function without "await".)";
-							OPCODE_BREAK;
-						}
+					// Check if getting a function state without await.
+					if (!call_async && Object::cast_to<GDScriptFunctionState>(ret->get_validated_object())) {
+						err_text = R"(Trying to call an async function without "await".)";
+						OPCODE_BREAK;
 					}
 #endif
 				} else {
@@ -1967,14 +1965,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 
 				if (GDScriptLanguage::get_singleton()->profiling) {
+					Object *base_obj = base->get_validated_object();
 					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
 					if (GDScriptLanguage::get_singleton()->profile_native_calls && _profile_count_as_native(base_obj, *methodname)) {
-						_profile_native_call(t_taken, *methodname, base_class);
+						_profile_native_call(t_taken, *methodname, base_obj->get_class_name());
 					}
 					function_call_time += t_taken;
 				}
 
-				if (err.error != Callable::CallError::CALL_OK) {
+				if (unlikely(err.error != Callable::CallError::CALL_OK)) {
 					String methodstr = *methodname;
 					String basestr = _get_var_type(base);
 					bool is_callable = false;
