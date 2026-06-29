@@ -2045,17 +2045,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_type_variation("NoBorderHorizontalBottom", "NoBorderHorizontal");
 			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottom", margin);
 
-			margin *= 2;
-
-			// Used in nested containers.
-			p_theme->set_type_variation("NoBorderHorizontalWide", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderHorizontalWide", margin);
-			p_theme->set_constant("margin_right", "NoBorderHorizontalWide", margin);
-
-			// Same as above, including the bottom.
-			p_theme->set_type_variation("NoBorderHorizontalBottomWide", "NoBorderHorizontalWide");
-			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottomWide", margin);
-
 			// Used in the asset library. Specifically, the ("bg", "AssetLib") stylebox.
 
 			margin = -p_config.base_margin * EDSCALE;
@@ -2099,6 +2088,19 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
 			p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
 			p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
+
+			// Used in nested containers.
+			p_theme->set_type_variation("NoBorderHorizontalWide", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderHorizontalWide", margin);
+			p_theme->set_constant("margin_right", "NoBorderHorizontalWide", margin);
+
+			// Same as above, including the bottom.
+			p_theme->set_type_variation("NoBorderHorizontalBottomWide", "NoBorderHorizontalWide");
+			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottomWide", 2 * -bottom_panel_margin);
+
+			// Used in the action map editor.
+			p_theme->set_type_variation("NoBorderActionEditor", "NoBorderHorizontalWide");
+			p_theme->set_constant("margin_bottom", "NoBorderActionEditor", -bottom_panel_margin);
 		}
 
 		// Buttons in material previews.
