@@ -63,7 +63,7 @@ void GridContainer::_resort() {
 		if (is_propagating_maximum_size()) {
 			c->set_parent_maximum_size_cache(combined_max_size);
 		}
-		Size2i ms = c->get_combined_minimum_size();
+		Size2i ms = c->get_bound_minimum_size();
 		Size2 max_size = c->get_combined_maximum_size();
 		if (col_minw.has(col)) {
 			col_minw[col] = MAX(col_minw[col], ms.width);

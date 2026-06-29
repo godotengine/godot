@@ -256,7 +256,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config icu-i18n icu-uc --cflags --libs")
 
     if not env["builtin_harfbuzz"]:
-        env.ParseConfig("pkg-config harfbuzz harfbuzz-icu --cflags --libs")
+        env.ParseConfig("pkg-config harfbuzz harfbuzz-icu harfbuzz-raster harfbuzz-vector --cflags --libs")
 
     if not env["builtin_icu4c"] or not env["builtin_harfbuzz"]:
         print_warning(

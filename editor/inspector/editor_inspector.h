@@ -458,7 +458,6 @@ class EditorInspectorSection : public Container {
 
 	String label;
 	String section;
-	String inspector_path;
 	Color bg_color;
 	bool vbox_added = false; // Optimization.
 	bool foldable = false;
@@ -548,10 +547,9 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
-	void setup(const String &p_inspector_path, const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
+	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
 	String get_section() const;
 	String get_label() const { return label; }
-	String get_inspector_path() const { return inspector_path; }
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
