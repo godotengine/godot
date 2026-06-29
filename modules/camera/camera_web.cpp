@@ -75,8 +75,7 @@ BufferDecoder *CameraFeedWeb::_create_buffer_decoder(CameraFeedWeb *p_feed, int 
 			return memnew(CopyBufferDecoder(p_feed, CopyBufferDecoder::rgba));
 		default:
 			// Unknown format - drop frames to avoid mis-sizing the destination image.
-			ERR_PRINT(vformat("Camera feed error: Unknown pixel format code %d.", p_pixel_format));
-			return memnew(NullBufferDecoder(p_feed));
+			ERR_FAIL_V_MSG(memnew(NullBufferDecoder(p_feed)), vformat("Camera feed error: Unknown pixel format code %d.", p_pixel_format));
 	}
 }
 
@@ -113,16 +112,14 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 			feed->set_active(false);
 		}
 		feed->call_deferred("emit_signal", SNAME("activation_failed"), error_str);
-		ERR_PRINT(vformat("Camera feed error from JS: %s", error_str));
-		return;
+		ERR_FAIL_MSG(vformat("Camera feed error from JS: %s.", error_str));
 	}
 
 	if (p_data == nullptr || p_length <= 0 || p_width <= 0 || p_height <= 0) {
 		if (feed->is_active()) {
 			feed->set_active(false);
 		}
-		ERR_PRINT("Camera feed error: Invalid pixel data received.");
-		return;
+		ERR_FAIL_MSG("Camera feed error: Invalid pixel data received.");
 	}
 	if (feed->get_activation_status() == CameraFeed::FEED_ACTIVATING) {
 		feed->_set_activation_status(CameraFeed::FEED_ACTIVE);
@@ -157,8 +154,8 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 			feed->synthesized_format = true;
 			feed->call_deferred("emit_signal", SNAME("format_changed"));
 		} else {
-			for (int i = 0; i < feed->formats.size(); i++) {
-				feed->formats.write[i].format = feed->detected_format_name;
+			for (FeedFormat &feed_format : feed->formats) {
+				feed_format.format = feed->detected_format_name;
 			}
 		}
 
@@ -221,8 +218,7 @@ void CameraFeedWeb::_on_formats_callback(void *p_context, const char *p_result) 
 
 	Vector<FeedFormat> new_formats;
 	Array formats_array = v_formats;
-	for (int i = 0; i < formats_array.size(); i++) {
-		Variant format_variant = formats_array[i];
+	for (Variant format_variant : formats_array) {
 		if (format_variant.get_type() != Variant::DICTIONARY) {
 			continue;
 		}
@@ -319,8 +315,6 @@ void CameraFeedWeb::deactivate_feed() {
 }
 
 bool CameraFeedWeb::set_format(int p_index, const Dictionary &p_parameters) {
-	(void)p_parameters;
-
 	ERR_FAIL_COND_V_MSG(active, false, "Feed is active.");
 	ERR_FAIL_INDEX_V_MSG(p_index, formats.size(), false, "Invalid format index.");
 
@@ -384,8 +378,8 @@ void CameraWeb::_on_get_cameras_callback(void *p_context, const Vector<CameraInf
 
 	// Build a set of new device IDs for quick lookup.
 	HashSet<String> new_device_ids;
-	for (int i = 0; i < p_camera_info.size(); i++) {
-		new_device_ids.insert(p_camera_info[i].device_id);
+	for (const CameraInfo &camera_info : p_camera_info) {
+		new_device_ids.insert(camera_info.device_id);
 	}
 
 	// Remove feeds that are no longer present.
@@ -401,17 +395,16 @@ void CameraWeb::_on_get_cameras_callback(void *p_context, const Vector<CameraInf
 
 	// Build a set of existing device IDs.
 	HashSet<String> existing_device_ids;
-	for (int i = 0; i < server->feeds.size(); i++) {
-		Ref<CameraFeedWeb> feed = server->feeds[i];
+	for (Ref<CameraFeedWeb> feed : server->feeds) {
 		if (feed.is_valid()) {
 			existing_device_ids.insert(feed->get_device_id());
 		}
 	}
 
 	// Add new feeds that don't already exist.
-	for (int i = 0; i < p_camera_info.size(); i++) {
-		if (!existing_device_ids.has(p_camera_info[i].device_id)) {
-			Ref<CameraFeedWeb> feed = memnew(CameraFeedWeb(p_camera_info[i]));
+	for (const CameraInfo &camera_info : p_camera_info) {
+		if (!existing_device_ids.has(camera_info.device_id)) {
+			Ref<CameraFeedWeb> feed = memnew(CameraFeedWeb(camera_info));
 			server->add_feed(feed);
 		}
 	}
