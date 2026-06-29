@@ -32,6 +32,18 @@
 
 #include "core/object/class_db.h"
 
+ScriptLanguageExtension::ScriptLanguageExtension() {
+#ifdef TOOLS_ENABLED
+	editor_adapter = memnew(EditorAdapter(this));
+#endif // TOOLS_ENABLED
+}
+
+ScriptLanguageExtension::~ScriptLanguageExtension() {
+#ifdef TOOLS_ENABLED
+	memdelete(editor_adapter);
+#endif // TOOLS_ENABLED
+}
+
 void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_editor_can_reload_from_file);
 	GDVIRTUAL_BIND(_placeholder_erased, "placeholder");

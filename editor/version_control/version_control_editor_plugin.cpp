@@ -1244,6 +1244,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstage_title->add_child(refresh_button);
 
 	discard_all_confirm = memnew(AcceptDialog);
+	discard_all_confirm->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	discard_all_confirm->set_title(TTR("Discard all changes"));
 	discard_all_confirm->set_min_size(Size2i(400, 50));
 	discard_all_confirm->set_text(TTR("This operation is IRREVERSIBLE. Your changes will be deleted FOREVER."));
@@ -1403,6 +1404,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_select->set_tooltip_text(TTR("Branches"));
 	branch_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	branch_select->set_clip_text(true);
+	branch_select->set_fit_to_longest_item(false);
 	branch_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_branch_item_selected));
 	branch_select->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_branch_list));
 	menu_bar->add_child(branch_select);
@@ -1419,6 +1421,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_create_ok->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_create_branch));
 
 	branch_remove_confirm = memnew(AcceptDialog);
+	branch_remove_confirm->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	branch_remove_confirm->set_title(TTR("Remove Branch"));
 	branch_remove_confirm->add_cancel_button();
 	version_commit_dock->add_child(branch_remove_confirm);
@@ -1450,6 +1453,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_select->set_tooltip_text(TTR("Remotes"));
 	remote_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_select->set_clip_text(true);
+	remote_select->set_fit_to_longest_item(false);
 	remote_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_remote_selected));
 	remote_select->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_remote_list));
 	menu_bar->add_child(remote_select);
@@ -1466,6 +1470,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_create_ok->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_create_remote));
 
 	remote_remove_confirm = memnew(AcceptDialog);
+	remote_remove_confirm->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	remote_remove_confirm->set_title(TTR("Remove Remote"));
 	remote_remove_confirm->add_cancel_button();
 	version_commit_dock->add_child(remote_remove_confirm);

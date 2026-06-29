@@ -126,23 +126,29 @@ private:
 	void _queue_update_tab_style(EditorDock *p_dock);
 	void _update_dirty_dock_tabs();
 
+	void _register_split(DockSplitContainer **p_var, DockSplitContainer *p_split);
+
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
+
+	DockTabContainer *get_dock_container(int p_slot) const;
 
 	void update_docks_menu();
 	void update_tab_styles();
 	void set_tab_icon_max_width(int p_max_width);
 
 	void add_vsplit(DockSplitContainer *p_split);
-	void set_main_vsplit(DockSplitContainer *p_split);
-	void set_main_hsplit(DockSplitContainer *p_split);
-	void set_bottom_hsplit(DockSplitContainer *p_split);
+	void set_main_vsplit(DockSplitContainer *p_split) { _register_split(&main_vsplit, p_split); }
+	void set_main_hsplit(DockSplitContainer *p_split) { _register_split(&main_hsplit, p_split); }
+	void set_bottom_hsplit(DockSplitContainer *p_split) { _register_split(&bottom_hsplit, p_split); }
 	void register_dock_slot(DockTabContainer *p_tab_container);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
 
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	void load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load = false);
+
+	void set_dock_slot_highlighted(int p_slot, bool p_highlighted);
 
 	void set_dock_enabled(EditorDock *p_dock, bool p_enabled);
 	void close_dock(EditorDock *p_dock);

@@ -446,7 +446,13 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 		v = Object::cast_to<EncodedObjectAsID>(v)->get_object_id();
 		h = PROPERTY_HINT_OBJECT_ID;
 		hs = var.type_hint;
+
+		// Makes the call stack select the node in the remote tree. See https://github.com/godotengine/godot/issues/79477
+		if (n == "self") {
+			_object_selected(v);
+		}
 	}
+
 	String type;
 	switch (var.type) {
 		case 0:
@@ -498,7 +504,7 @@ void EditorDebuggerInspector::clear_stack_variables() {
 
 String EditorDebuggerInspector::get_stack_variable(const String &p_var) {
 	for (KeyValue<StringName, TypedDictionary<uint64_t, Variant>> &E : variables->prop_values) {
-		String v = E.key.operator String();
+		String v = E.key.string();
 		if (v.get_slicec('/', 1) == p_var) {
 			return variables->get_variant(v);
 		}

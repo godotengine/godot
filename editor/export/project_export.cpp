@@ -119,7 +119,7 @@ void ProjectExportDialog::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_script_encryption_key_visibility_changed(show_script_key->is_pressed());
-
+			options_filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 			patch_add_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
@@ -142,6 +142,18 @@ void ProjectExportDialog::_notification(int p_what) {
 			connect(SceneStringName(confirmed), callable_mp(this, &ProjectExportDialog::_export_pck_zip));
 			_update_export_all();
 		} break;
+	}
+}
+
+void ProjectExportDialog::shortcut_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> &key = p_event;
+
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			options_filter->grab_focus();
+			options_filter->select_all();
+			options_filter->accept_event();
+		}
 	}
 }
 
@@ -291,6 +303,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	updating = true;
 
 	presets->select(p_index);
+	_options_filter_changed(options_filter->get_text());
 	duplicate_preset->set_disabled(false);
 	delete_preset->set_disabled(false);
 	get_ok_button()->set_disabled(false);
@@ -532,6 +545,26 @@ void ProjectExportDialog::_advanced_options_pressed() {
 		current->notify_property_list_changed();
 	}
 	_update_presets();
+}
+
+void ProjectExportDialog::_options_filter_changed(const String &p_filter) {
+	const bool search_active = !p_filter.is_empty();
+	advanced_options->set_disabled(search_active);
+	if (search_active) {
+		advanced_options->set_pressed_no_signal(true);
+		advanced_options->set_tooltip_text(TTRC("Advanced settings are always shown when searching."));
+	} else {
+		advanced_options->set_pressed_no_signal(EDITOR_GET("_export_preset_advanced_mode"));
+		advanced_options->set_tooltip_text("");
+	}
+
+	const int current_preset = presets->get_current();
+	if (current_preset >= 0 && current_preset < EditorExport::get_singleton()->get_export_preset_count()) {
+		Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(current_preset);
+		if (current.is_valid()) {
+			current->set_options_search_active(search_active);
+		}
+	}
 }
 
 void ProjectExportDialog::_runnable_pressed() {
@@ -1551,6 +1584,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	set_title(TTRC("Export"));
 	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
+	set_process_shortcut_input(true);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
@@ -1662,12 +1696,27 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	// Main preset parameters.
 
+	VBoxContainer *parameters_vb = memnew(VBoxContainer);
+	parameters_vb->set_name(TTRC("Options"));
+	parameters_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	sections->add_child(parameters_vb);
+
+	options_filter = memnew(LineEdit);
+	options_filter->set_placeholder(TTRC("Filter Options"));
+	options_filter->set_accessibility_name(TTRC("Filter Options"));
+	options_filter->set_clear_button_enabled(true);
+	options_filter->set_virtual_keyboard_show_on_focus(false);
+	options_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	options_filter->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_options_filter_changed));
+	parameters_vb->add_child(options_filter);
+
 	parameters = memnew(EditorInspector);
-	parameters->set_name(TTRC("Options"));
 	parameters->set_mark_unsaved(false);
 	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	parameters->set_use_doc_hints(true);
-	sections->add_child(parameters);
+	parameters->register_text_enter(options_filter);
+	parameters->set_use_filter(true);
+	parameters_vb->add_child(parameters);
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
 	EditorExport::get_singleton()->connect("export_presets_updated", callable_mp(this, &ProjectExportDialog::_force_update_current_preset_parameters));
 
@@ -1978,6 +2027,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_button->set_disabled(true);
 
 	export_all_dialog = memnew(ConfirmationDialog);
+	export_all_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(export_all_dialog);
 	export_all_dialog->set_title(TTRC("Export All"));
 	export_all_dialog->set_text(TTRC("Choose an export mode:"));

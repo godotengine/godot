@@ -195,8 +195,8 @@ void TexturePreview::_update_metadata_label_text() {
 	if (format != Image::FORMAT_MAX) {
 		// Avoid signed integer overflow that could occur with huge texture sizes by casting everything to uint64_t.
 		uint64_t memory = uint64_t(resolution.x) * uint64_t(resolution.y) * uint64_t(Image::get_format_pixel_size(format));
-		// Handle VRAM-compressed formats that are stored with 4 bpp.
-		memory >>= Image::get_format_pixel_rshift(format);
+		// Handle VRAM-compressed formats.
+		memory = Image::get_format_pixels_shifted(format, memory);
 
 		float mipmaps_multiplier = 1.0;
 		float mipmap_increase = 0.25;
@@ -244,14 +244,14 @@ void TexturePreview::on_selected_mipmap_changed(double p_value) {
 }
 
 TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
-	set_custom_minimum_size(Size2(0.0, 256.0) * EDSCALE);
+	const float outline_width = Math::round(EDSCALE);
+
+	set_custom_minimum_size(Size2(0.0, 256 * EDSCALE) + Size2(outline_width, outline_width) * 2);
 
 	bg_rect = memnew(ColorRect);
-
 	add_child(bg_rect);
 
 	margin_container = memnew(MarginContainer);
-	const float outline_width = Math::round(EDSCALE);
 	margin_container->add_theme_constant_override("margin_right", outline_width);
 	margin_container->add_theme_constant_override("margin_top", outline_width);
 	margin_container->add_theme_constant_override("margin_left", outline_width);

@@ -251,14 +251,18 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 }
 
 void GDScriptParser::push_error(const String &p_message, const GDScriptTokenizer::Token &p_origin) {
-	panic_mode = true;
+	push_error(p_message, p_origin.start_line, p_origin.start_column, p_origin.end_line, p_origin.end_column);
+}
 
+void GDScriptParser::push_error(const String &p_message, int p_start_line, int p_start_column, int p_end_line, int p_end_column) {
+	panic_mode = true;
 	ParserError err;
 	err.message = p_message;
-	err.start_line = p_origin.start_line;
-	err.start_column = p_origin.start_column;
-	err.end_line = p_origin.end_line;
-	err.end_column = p_origin.end_column;
+
+	err.start_line = p_start_line;
+	err.start_column = p_start_column;
+	err.end_line = p_end_line;
+	err.end_column = p_end_column;
 
 	errors.push_back(err);
 }
@@ -266,6 +270,10 @@ void GDScriptParser::push_error(const String &p_message, const GDScriptTokenizer
 #ifdef DEBUG_ENABLED
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
 	ERR_FAIL_NULL(p_source);
+	push_warning(p_source->start_line, p_source->start_column, p_source->end_line, p_source->end_column, p_code, p_symbols);
+}
+
+void GDScriptParser::push_warning(int p_start_line, int p_start_column, int p_end_line, int p_end_column, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
 	ERR_FAIL_INDEX(p_code, GDScriptWarning::WARNING_MAX);
 
 	if (is_project_ignoring_warnings || is_script_ignoring_warnings) {
@@ -278,7 +286,10 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	}
 
 	PendingWarning pw;
-	pw.source = p_source;
+	pw.start_line = p_start_line;
+	pw.start_column = p_start_column;
+	pw.end_line = p_end_line;
+	pw.end_column = p_end_column;
 	pw.code = p_code;
 	pw.treated_as_error = warn_level == GDScriptWarning::ERROR;
 	pw.symbols = p_symbols;
@@ -288,23 +299,23 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 
 void GDScriptParser::apply_pending_warnings() {
 	for (const PendingWarning &pw : pending_warnings) {
-		if (warning_ignored_lines[pw.code].has(pw.source->start_line)) {
+		if (warning_ignored_lines[pw.code].has(pw.start_line)) {
 			continue;
 		}
-		if (warning_ignore_start_lines[pw.code] <= pw.source->start_line) {
+		if (warning_ignore_start_lines[pw.code] <= pw.start_line) {
 			continue;
 		}
 
 		GDScriptWarning warning;
 		warning.code = pw.code;
 		warning.symbols = pw.symbols;
-		warning.start_line = pw.source->start_line;
-		warning.start_column = pw.source->start_column;
-		warning.end_line = pw.source->end_line;
-		warning.end_column = pw.source->end_column;
+		warning.start_line = pw.start_line;
+		warning.start_column = pw.start_column;
+		warning.end_line = pw.end_line;
+		warning.end_column = pw.end_column;
 
 		if (pw.treated_as_error) {
-			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.source);
+			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.start_line, pw.start_column, pw.end_line, pw.end_column);
 			continue;
 		}
 
@@ -726,9 +737,8 @@ void GDScriptParser::parse_program() {
 						// Some annotations need to be resolved and applied in the parser.
 						// The root class is not in any class, so `head->outer == nullptr`.
 						annotation->apply(this, head, nullptr);
-					} else {
-						head->annotations.push_back(annotation);
 					}
+					head->annotations.push_back(annotation);
 				} else if (annotation->applies_to(AnnotationInfo::STANDALONE)) {
 					if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
 						push_error(R"(Expected newline after a standalone annotation.)");
@@ -1405,6 +1415,9 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 			consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after parameter name.)*");
 			consume(GDScriptTokenizer::Token::COLON, R"*(Expected ":" after ")".)*");
 
+			function->header_end_line = previous.start_line;
+			function->header_end_column = previous.start_column;
+
 			FunctionNode *previous_function = current_function;
 			current_function = function;
 			if (p_variable->setter_parameter != nullptr) {
@@ -1440,6 +1453,9 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 			} else {
 				consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" or "(" after "get".)");
 			}
+
+			function->header_end_line = previous.start_line;
+			function->header_end_column = previous.start_column;
 
 			IdentifierNode *identifier = alloc_node<IdentifierNode>();
 			complete_extents(identifier);
@@ -1765,6 +1781,9 @@ bool GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 		p_function->signature = source_code.substr(p_signature_start, signature_end_pos - p_signature_start).strip_edges(false, true);
 	}
 #endif // TOOLS_ENABLED
+
+	p_function->header_end_line = previous.end_line;
+	p_function->header_end_column = previous.end_column;
 
 	// TODO: Improve token consumption so it synchronizes to a statement boundary. This way we can get into the function body with unrecognized tokens.
 	if (p_type == "lambda") {
@@ -2821,7 +2840,7 @@ GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 #ifdef DEBUG_ENABLED
 	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
 	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
-		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.operator String());
+		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.string());
 	}
 #endif
 	return identifier;
@@ -2834,7 +2853,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 	IdentifierNode *identifier = alloc_node<IdentifierNode>();
 	complete_extents(identifier);
 	identifier->name = previous.get_identifier();
-	if (identifier->name.operator String().is_empty()) {
+	if (identifier->name.string().is_empty()) {
 		print_line("Empty identifier found.");
 	}
 	identifier->suite = current_suite;
@@ -4837,7 +4856,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 						} else {
 							enum_hint_string += ",";
 						}
-						enum_hint_string += E.key.operator String().capitalize().xml_escape();
+						enum_hint_string += E.key.string().capitalize().xml_escape();
 						enum_hint_string += ":";
 						enum_hint_string += String::num_int64(E.value).xml_escape();
 					}
@@ -4914,7 +4933,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 							} else {
 								enum_hint_string += ",";
 							}
-							enum_hint_string += E.key.operator String().capitalize().xml_escape();
+							enum_hint_string += E.key.string().capitalize().xml_escape();
 							enum_hint_string += ":";
 							enum_hint_string += String::num_int64(E.value).xml_escape();
 						}
@@ -5352,15 +5371,15 @@ String GDScriptParser::DataType::to_string() const {
 			if (is_meta_type) {
 				return GDScriptNativeClass::get_class_static();
 			}
-			return native_type.operator String();
+			return native_type.string();
 		case CLASS:
 			if (class_type->identifier != nullptr) {
-				return class_type->identifier->name.operator String();
+				return class_type->identifier->name.string();
 			}
 			return class_type->fqcn;
 		case SCRIPT: {
 			if (is_meta_type) {
-				return script_type.is_valid() ? script_type->get_class_name().operator String() : "";
+				return script_type.is_valid() ? script_type->get_class_name().string() : "";
 			}
 			String name = script_type.is_valid() ? script_type->get_name() : "";
 			if (!name.is_empty()) {
@@ -5370,7 +5389,7 @@ String GDScriptParser::DataType::to_string() const {
 			if (!name.is_empty()) {
 				return name;
 			}
-			return native_type.operator String();
+			return native_type.string();
 		}
 		case ENUM: {
 			// native_type contains either the native class defining the enum
@@ -6106,7 +6125,7 @@ void GDScriptParser::TreePrinter::print_lambda(LambdaNode *p_lambda) {
 		if (i > 0) {
 			push_text(" , ");
 		}
-		push_text(p_lambda->captures[i]->name.operator String());
+		push_text(p_lambda->captures[i]->name.string());
 	}
 	push_line(" ]");
 }
@@ -6203,9 +6222,12 @@ void GDScriptParser::TreePrinter::print_match_pattern(PatternNode *p_match_patte
 				if (p_match_pattern->dictionary[i].key != nullptr) {
 					// Key can be null for rest pattern.
 					print_expression(p_match_pattern->dictionary[i].key);
-					push_text(" : ");
+					if (p_match_pattern->dictionary[i].value_pattern != nullptr) {
+						// Value can be null when only matching key.
+						push_text(" : ");
+						print_match_pattern(p_match_pattern->dictionary[i].value_pattern);
+					}
 				}
-				print_match_pattern(p_match_pattern->dictionary[i].value_pattern);
 			}
 			push_text(" }");
 			break;

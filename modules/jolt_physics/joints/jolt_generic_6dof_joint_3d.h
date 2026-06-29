@@ -70,7 +70,11 @@ class JoltGeneric6DOFJoint3D final : public JoltJoint3D {
 	double spring_frequency[AXIS_COUNT] = {};
 	double spring_damping[AXIS_COUNT] = {};
 	double spring_equilibrium[AXIS_COUNT] = {};
-	double spring_limit[AXIS_COUNT] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+	double drive_limit[AXIS_COUNT] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+	bool drive_limit_set[AXIS_COUNT] = {};
+
+	Quaternion angular_target_rotation;
+	bool has_angular_target_rotation = false;
 
 	bool limit_enabled[AXIS_COUNT] = {};
 
@@ -89,6 +93,7 @@ class JoltGeneric6DOFJoint3D final : public JoltJoint3D {
 	void _update_motor_limit(int p_axis);
 	void _update_spring_parameters(int p_axis);
 	void _update_spring_equilibrium(int p_axis);
+	void _update_angular_target_rotation();
 
 	void _limits_changed();
 	void _limit_spring_parameters_changed(int p_axis);
@@ -98,7 +103,7 @@ class JoltGeneric6DOFJoint3D final : public JoltJoint3D {
 	void _spring_state_changed(int p_axis);
 	void _spring_parameters_changed(int p_axis);
 	void _spring_equilibrium_changed(int p_axis);
-	void _spring_limit_changed(int p_axis);
+	void _drive_limit_changed(int p_axis);
 
 public:
 	JoltGeneric6DOFJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);
@@ -110,6 +115,9 @@ public:
 
 	bool get_flag(Axis p_axis, Flag p_flag) const;
 	void set_flag(Axis p_axis, Flag p_flag, bool p_enabled);
+
+	void set_angular_target_rotation(const Quaternion &p_target_rotation);
+	Quaternion get_angular_target_rotation() const;
 
 	double get_jolt_param(Axis p_axis, JoltParam p_param) const;
 	void set_jolt_param(Axis p_axis, JoltParam p_param, double p_value);

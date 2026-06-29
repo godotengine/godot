@@ -582,7 +582,6 @@ Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture
 	image_data.resize(tight_mip_size);
 
 	uint32_t pixel_size = get_image_format_pixel_size(tex_format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(tex_format);
 	uint32_t blockw = 0, blockh = 0;
 	get_compressed_image_format_block_dimensions(tex_format, blockw, blockh);
 
@@ -592,7 +591,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture
 		uint32_t bw = STEPIFY(tex_w, blockw);
 		uint32_t bh = STEPIFY(tex_h, blockh);
 
-		uint32_t bytes_per_row = (bw * pixel_size) >> pixel_rshift;
+		uint32_t bytes_per_row = get_compressed_image_format_pixels_shifted(tex_format, bw * pixel_size);
 		uint32_t bytes_per_img = bytes_per_row * bh;
 		uint32_t mip_size = bytes_per_img * tex_d;
 
@@ -1043,13 +1042,34 @@ void RenderingDeviceDriverMetal::framebuffer_free(FramebufferID p_framebuffer) {
 
 #pragma mark - Shader
 
-void RenderingDeviceDriverMetal::shader_cache_free_entry(const SHA256Digest &key) {
-	if (ShaderCacheEntry **pentry = _shader_cache.getptr(key); pentry != nullptr) {
-		ShaderCacheEntry *entry = *pentry;
-		_shader_cache.erase(key);
-		entry->library.reset();
-		memdelete(entry);
+void RenderingDeviceDriverMetal::shader_cache_free_entry(ShaderCacheEntry *p_entry) {
+	MutexLock lock(_shader_cache_lock);
+	// Only remove the map slot if it still refers to this exact entry. A concurrent
+	// creation for the same hash may have replaced it, in which case that newer entry
+	// (and its library) must be left untouched.
+	if (ShaderCacheEntry **pentry = _shader_cache.getptr(p_entry->key); pentry != nullptr && *pentry == p_entry) {
+		_shader_cache.erase(p_entry->key);
 	}
+	memdelete(p_entry);
+}
+
+std::optional<std::shared_ptr<MDLibrary>> RenderingDeviceDriverMetal::shader_cache_get_library(const SHA256Digest &key) {
+	MutexLock lock(_shader_cache_lock);
+
+	if (ShaderCacheEntry **p = _shader_cache.getptr(key); p != nullptr) {
+		if (std::shared_ptr<MDLibrary> lib = (*p)->library.lock()) {
+			return lib;
+		}
+		// Library was released; remove stale cache entry and recreate.
+		_shader_cache.erase(key);
+	}
+
+	return std::nullopt;
+}
+
+void RenderingDeviceDriverMetal::shader_cache_set_entry(const SHA256Digest &key, ShaderCacheEntry *p_entry) {
+	MutexLock lock(_shader_cache_lock);
+	_shader_cache[key] = p_entry;
 }
 
 template <typename T, typename U>
@@ -1122,14 +1142,9 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 		if (shader.shader_stage == RDD::ShaderStage::SHADER_STAGE_COMPUTE) {
 			pipeline_type = PIPELINE_TYPE_COMPUTE;
 		}
-
-		if (ShaderCacheEntry **p = _shader_cache.getptr(shader_data.hash); p != nullptr) {
-			if (std::shared_ptr<MDLibrary> lib = (*p)->library.lock()) {
-				libraries[shader.shader_stage] = lib;
-				continue;
-			}
-			// Library was released; remove stale cache entry and recreate.
-			_shader_cache.erase(shader_data.hash);
+		if (std::optional<std::shared_ptr<MDLibrary>> lib = shader_cache_get_library(shader_data.hash); lib) {
+			libraries[shader.shader_stage] = std::move(*lib);
+			continue;
 		}
 
 		if (shader.code_decompressed_size > 0) {
@@ -1167,7 +1182,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 			library = MDLibrary::create(cd, device, source.get(), options.get(), _shader_load_strategy);
 		}
 
-		_shader_cache[shader_data.hash] = cd;
+		shader_cache_set_entry(shader_data.hash, cd);
 		libraries[shader.shader_stage] = library;
 	}
 
@@ -1610,6 +1625,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		subpass.color_references = p_subpasses[i].color_references;
 		subpass.depth_stencil_reference = p_subpasses[i].depth_stencil_reference;
 		subpass.resolve_references = p_subpasses[i].resolve_references;
+		subpass.depth_resolve_reference = p_subpasses[i].depth_resolve_reference;
 	}
 
 	static const MTL::LoadAction LOAD_ACTIONS[] = {
@@ -2691,6 +2707,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return true;
 		case SUPPORTS_POINT_SIZE:
 			return true;
+		case SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE:
+			return device_properties->features.supports_msaa_depth_resolve;
 		default:
 			return false;
 	}

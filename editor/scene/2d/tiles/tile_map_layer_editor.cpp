@@ -113,12 +113,13 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 	_stop_dragging();
 
 	// Show only the correct settings.
-	bool using_select = (tool_buttons_group->get_pressed_button() == select_tool_button);
+	const BaseButton *pressed_tool = tool_buttons_group->get_pressed_button();
+	bool using_select = (pressed_tool == select_tool_button);
 	tools_settings_vsep->set_visible(!using_select);
 	picker_button->set_visible(!using_select);
 	erase_button->set_visible(!using_select);
 	random_tile_toggle->set_visible(!using_select);
-	bucket_contiguous_checkbox->set_visible(!using_select && tool_buttons_group->get_pressed_button() == bucket_tool_button);
+	bucket_contiguous_checkbox->set_visible(!using_select && pressed_tool == bucket_tool_button);
 	scatter_controls_container->set_visible(!using_select && random_tile_toggle->is_pressed());
 	CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
 }
@@ -710,6 +711,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 		Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * edited_layer->get_global_transform_with_canvas();
 		Vector2 mpos = xform.affine_inverse().xform(mb->get_position());
 
+		const BaseButton *pressed_tool = tool_buttons_group->get_pressed_button();
 		if (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT) {
 			if (mb->is_pressed()) {
 				// Pressed
@@ -722,7 +724,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 					if (mb->get_button_index() == MouseButton::RIGHT) {
 						drag_type = DRAG_TYPE_NONE;
 					}
-				} else if (tool_buttons_group->get_pressed_button() == select_tool_button) {
+				} else if (pressed_tool == select_tool_button) {
 					drag_start_mouse_pos = mpos;
 					if (tile_map_selection.has(tile_set->local_to_map(drag_start_mouse_pos)) && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed()) {
 						// Move the selection
@@ -745,7 +747,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 						drag_start_mouse_pos = mpos;
 					} else {
 						// Paint otherwise.
-						if (tool_buttons_group->get_pressed_button() == paint_tool_button && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+						if (pressed_tool == paint_tool_button && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 							drag_type = DRAG_TYPE_PAINT;
 							drag_start_mouse_pos = mpos;
 							drag_modified.clear();
@@ -761,15 +763,15 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 								edited_layer->set_cell(coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 							}
 							_fix_invalid_tiles_in_tile_map_selection();
-						} else if (tool_buttons_group->get_pressed_button() == line_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
+						} else if (pressed_tool == line_tool_button || (pressed_tool == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
 							drag_type = DRAG_TYPE_LINE;
 							drag_start_mouse_pos = mpos;
 							drag_modified.clear();
-						} else if (tool_buttons_group->get_pressed_button() == rect_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
+						} else if (pressed_tool == rect_tool_button || (pressed_tool == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
 							drag_type = DRAG_TYPE_RECT;
 							drag_start_mouse_pos = mpos;
 							drag_modified.clear();
-						} else if (tool_buttons_group->get_pressed_button() == bucket_tool_button) {
+						} else if (pressed_tool == bucket_tool_button) {
 							drag_type = DRAG_TYPE_BUCKET;
 							drag_start_mouse_pos = mpos;
 							drag_modified.clear();
@@ -825,7 +827,8 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 	bool drawing_rect = false;
 
 	// Draw the selection.
-	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_mc->is_visible_in_tree()) && tool_buttons_group->get_pressed_button() == select_tool_button) {
+	const BaseButton *pressed_tool = tool_buttons_group->get_pressed_button();
+	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_mc->is_visible_in_tree()) && pressed_tool == select_tool_button) {
 		// In select mode, we only draw the current selection if we are modifying it (pressing control or shift).
 		if (drag_type == DRAG_TYPE_MOVE || (drag_type == DRAG_TYPE_SELECT && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			// Do nothing.
@@ -899,11 +902,11 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 			}
 		} else if (!picker_button->is_pressed() && !(drag_type == DRAG_TYPE_NONE && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			bool expand_grid = false;
-			if (tool_buttons_group->get_pressed_button() == paint_tool_button && drag_type == DRAG_TYPE_NONE) {
+			if (pressed_tool == paint_tool_button && drag_type == DRAG_TYPE_NONE) {
 				// Preview for a single pattern.
 				preview = _draw_line(mpos, mpos, mpos, erase_button->is_pressed());
 				expand_grid = true;
-			} else if (tool_buttons_group->get_pressed_button() == line_tool_button || drag_type == DRAG_TYPE_LINE) {
+			} else if (pressed_tool == line_tool_button || drag_type == DRAG_TYPE_LINE) {
 				if (drag_type == DRAG_TYPE_NONE) {
 					// Preview for a single pattern.
 					preview = _draw_line(mpos, mpos, mpos, erase_button->is_pressed());
@@ -918,7 +921,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 				preview = _draw_rect(tile_set->local_to_map(drag_start_mouse_pos), tile_set->local_to_map(mpos), drag_erasing);
 				drawing_rect = !preview.is_empty();
 				expand_grid = true;
-			} else if (tool_buttons_group->get_pressed_button() == bucket_tool_button && drag_type == DRAG_TYPE_NONE) {
+			} else if (pressed_tool == bucket_tool_button && drag_type == DRAG_TYPE_NONE) {
 				// Preview for a fill pattern.
 				preview = _draw_bucket_fill(tile_set->local_to_map(mpos), bucket_contiguous_checkbox->is_pressed(), erase_button->is_pressed());
 			}
@@ -2158,8 +2161,8 @@ void TileMapLayerEditorTilesPlugin::edit(ObjectID p_tile_map_layer_id) {
 	edited_tile_map_layer_id = p_tile_map_layer_id;
 }
 
-void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layout) {
-	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
+void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	bool is_vertical = (p_layout == EditorDock::DOCK_LAYOUT_VERTICAL);
 	atlas_sources_split_container->set_vertical(is_vertical);
 	atlas_sources_split_container->move_child(split_container_left_side, is_vertical ? -1 : 0);
 	split_container_left_side->set_vertical(!is_vertical);
@@ -2174,11 +2177,11 @@ void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layou
 	bucket_contiguous_checkbox->reparent(is_vertical ? wide_toolbar : tools_settings);
 	scatter_controls_container->reparent(is_vertical ? wide_toolbar : tools_settings);
 
-	if (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_FLOATING) {
+	if (p_layout == EditorDock::DOCK_LAYOUT_FLOATING || (!is_vertical && p_slot != EditorDock::DOCK_SLOT_BOTTOM)) {
 		patterns_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 		patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
 	} else {
-		patterns_mc->set_theme_type_variation(is_vertical ? "" : "NoBorderBottomPanel");
+		patterns_mc->set_theme_type_variation(is_vertical ? "" : "NoBorderHorizontal");
 		patterns_item_list->set_scroll_hint_mode(is_vertical ? ItemList::SCROLL_HINT_MODE_DISABLED : ItemList::SCROLL_HINT_MODE_BOTH);
 	}
 	patterns_item_list->set_theme_type_variation(is_vertical ? "ItemListSecondary" : "");
@@ -3070,7 +3073,8 @@ bool TileMapLayerEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputE
 					drag_type = DRAG_TYPE_PICK;
 				} else {
 					// Paint otherwise.
-					if (tool_buttons_group->get_pressed_button() == paint_tool_button && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+					const BaseButton *pressed_tool = tool_buttons_group->get_pressed_button();
+					if (pressed_tool == paint_tool_button && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 						if (selected_terrain_set < 0 || selected_terrain < 0 || (selected_type == SELECTED_TYPE_PATTERN && !selected_terrains_pattern.is_valid())) {
 							return true;
 						}
@@ -3085,21 +3089,21 @@ bool TileMapLayerEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputE
 							drag_modified[E.key] = edited_layer->get_cell(E.key);
 							edited_layer->set_cell(E.key, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 						}
-					} else if (tool_buttons_group->get_pressed_button() == line_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
+					} else if (pressed_tool == line_tool_button || (pressed_tool == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
 						if (selected_terrain_set < 0 || selected_terrain < 0 || (selected_type == SELECTED_TYPE_PATTERN && !selected_terrains_pattern.is_valid())) {
 							return true;
 						}
 						drag_type = DRAG_TYPE_LINE;
 						drag_start_mouse_pos = mpos;
 						drag_modified.clear();
-					} else if (tool_buttons_group->get_pressed_button() == rect_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
+					} else if (pressed_tool == rect_tool_button || (pressed_tool == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
 						if (selected_terrain_set < 0 || selected_terrain < 0 || (selected_type == SELECTED_TYPE_PATTERN && !selected_terrains_pattern.is_valid())) {
 							return true;
 						}
 						drag_type = DRAG_TYPE_RECT;
 						drag_start_mouse_pos = mpos;
 						drag_modified.clear();
-					} else if (tool_buttons_group->get_pressed_button() == bucket_tool_button) {
+					} else if (pressed_tool == bucket_tool_button) {
 						if (selected_terrain_set < 0 || selected_terrain < 0 || (selected_type == SELECTED_TYPE_PATTERN && !selected_terrains_pattern.is_valid())) {
 							return true;
 						}
@@ -3165,11 +3169,12 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 			}
 		} else if (!picker_button->is_pressed() && !(drag_type == DRAG_TYPE_NONE && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			bool expand_grid = false;
-			if (tool_buttons_group->get_pressed_button() == paint_tool_button && drag_type == DRAG_TYPE_NONE) {
+			const BaseButton *pressed_tool = tool_buttons_group->get_pressed_button();
+			if (pressed_tool == paint_tool_button && drag_type == DRAG_TYPE_NONE) {
 				// Preview for a single tile.
 				preview.insert(tile_set->local_to_map(mpos));
 				expand_grid = true;
-			} else if (tool_buttons_group->get_pressed_button() == line_tool_button || drag_type == DRAG_TYPE_LINE) {
+			} else if (pressed_tool == line_tool_button || drag_type == DRAG_TYPE_LINE) {
 				if (drag_type == DRAG_TYPE_NONE) {
 					// Preview for a single tile.
 					preview.insert(tile_set->local_to_map(mpos));
@@ -3197,7 +3202,7 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 
 				drawing_rect = !preview.is_empty();
 				expand_grid = true;
-			} else if (tool_buttons_group->get_pressed_button() == bucket_tool_button && drag_type == DRAG_TYPE_NONE) {
+			} else if (pressed_tool == bucket_tool_button && drag_type == DRAG_TYPE_NONE) {
 				// Preview for a fill.
 				preview = _get_cells_for_bucket_fill(tile_set->local_to_map(mpos), bucket_contiguous_checkbox->is_pressed());
 			}
@@ -3500,7 +3505,7 @@ void TileMapLayerEditorTerrainsPlugin::edit(ObjectID p_edited_tile_map_layer_id)
 	}
 }
 
-void TileMapLayerEditorTerrainsPlugin::update_layout(EditorDock::DockLayout p_layout) {
+void TileMapLayerEditorTerrainsPlugin::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
 	// Main Panel.
 	main_box_container->set_vertical(is_vertical);
@@ -4480,7 +4485,7 @@ void TileMapLayerEditor::_update_layer_selector_layout(bool p_is_vertical) {
 	}
 }
 
-void TileMapLayerEditor::update_layout(DockLayout p_layout) {
+void TileMapLayerEditor::update_layout(DockLayout p_layout, DockSlot p_slot) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
 	tile_map_toolbar->set_vertical(is_vertical);
 	layer_selector_separator->set_vertical(is_vertical);
@@ -4506,7 +4511,7 @@ void TileMapLayerEditor::update_layout(DockLayout p_layout) {
 
 	// Propagate layout change to sub plugins
 	for (TileMapLayerSubEditorPlugin *tab_plugin : tabs_plugins) {
-		tab_plugin->update_layout(p_layout);
+		tab_plugin->update_layout(p_layout, p_slot);
 	}
 }
 

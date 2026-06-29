@@ -46,6 +46,7 @@ protected:
 
 	int velocity_iterations = 0;
 	int position_iterations = 0;
+	int solver_priority = 1;
 
 	JPH::Ref<JPH::Constraint> jolt_ref;
 
@@ -63,6 +64,9 @@ protected:
 
 	void _update_enabled();
 	void _update_iterations();
+	void _update_priority();
+
+	void _update_joint();
 
 	void _enabled_changed();
 	void _iterations_changed();
@@ -86,7 +90,7 @@ public:
 	bool is_enabled() const { return enabled; }
 	void set_enabled(bool p_enabled);
 
-	int get_solver_priority() const;
+	int get_solver_priority() const { return solver_priority; }
 	void set_solver_priority(int p_priority);
 
 	int get_solver_velocity_iterations() const { return velocity_iterations; }

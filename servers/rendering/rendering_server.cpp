@@ -2236,7 +2236,7 @@ void RenderingServer::get_argument_options(const StringName &p_function, int p_i
 		if (pf == "global_shader_parameter_set" || pf == "global_shader_parameter_set_override" ||
 				pf == "global_shader_parameter_get" || pf == "global_shader_parameter_get_type" || pf == "global_shader_parameter_remove") {
 			for (const StringName &E : global_shader_parameter_get_list()) {
-				r_options->push_back(E.operator String().quote());
+				r_options->push_back(E.string().quote());
 			}
 		} else if (pf == "has_os_feature") {
 			for (const String E : { "\"rgtc\"", "\"s3tc\"", "\"bptc\"", "\"etc\"", "\"etc2\"", "\"astc\"" }) {
@@ -2386,6 +2386,11 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_surface_update_skin_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_skin_region);
 	ClassDB::bind_method(D_METHOD("mesh_surface_update_index_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_index_region);
 
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_vertex_buffer_rd_rid", "mesh", "surface"), &RenderingServer::mesh_surface_get_vertex_buffer_rd_rid);
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_attribute_buffer_rd_rid", "mesh", "surface"), &RenderingServer::mesh_surface_get_attribute_buffer_rd_rid);
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_skin_buffer_rd_rid", "mesh", "surface"), &RenderingServer::mesh_surface_get_skin_buffer_rd_rid);
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_index_buffer_rd_rid", "mesh", "surface"), &RenderingServer::mesh_surface_get_index_buffer_rd_rid);
+
 	ClassDB::bind_method(D_METHOD("mesh_set_shadow_mesh", "mesh", "shadow_mesh"), &RenderingServer::mesh_set_shadow_mesh);
 
 	BIND_ENUM_CONSTANT(RSE::ARRAY_VERTEX);
@@ -2447,6 +2452,8 @@ void RenderingServer::_bind_methods() {
 	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
 
 	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES);
+
+	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_USE_STORAGE_BUFFER);
 
 	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_FORMAT_VERSION_BASE);
 	BIND_BITFIELD_FLAG(RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);

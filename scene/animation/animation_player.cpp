@@ -359,7 +359,7 @@ void AnimationPlayer::_blend_post_process() {
 					emit_signal(SceneStringName(animation_changed), old, new_name);
 				}
 			} else {
-				_clear_caches();
+				_clear_caches(clear_cache_on_stop);
 				playing = false;
 				_set_process(false);
 				if (end_notify) {
@@ -632,7 +632,7 @@ void AnimationPlayer::set_assigned_animation(const StringName &p_animation) {
 		float speed = playback.current.speed_scale;
 		play(p_animation, -1.0, speed, std::signbit(speed));
 	} else {
-		ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation.operator String()));
+		ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation.string()));
 		playback.current.pos = 0;
 		playback.current.is_enabled = true;
 		playback.current.animation_name = p_animation;
@@ -801,6 +801,14 @@ bool AnimationPlayer::is_movie_quit_on_finish_enabled() const {
 	return movie_quit_on_finish;
 }
 
+void AnimationPlayer::set_clear_cache_on_stop_enabled(bool p_enabled) {
+	clear_cache_on_stop = p_enabled;
+}
+
+bool AnimationPlayer::is_clear_cache_on_stop_enabled() const {
+	return clear_cache_on_stop;
+}
+
 void AnimationPlayer::_animation_changed(const StringName &p_name) {
 	AnimationMixer::_animation_changed(p_name);
 	if (playback.current.is_enabled && playback.current.animation_name == p_name && animation_set.has(p_name)) {
@@ -809,7 +817,7 @@ void AnimationPlayer::_animation_changed(const StringName &p_name) {
 }
 
 void AnimationPlayer::_stop_internal(bool p_reset, bool p_keep_state) {
-	_clear_caches();
+	_clear_caches(clear_cache_on_stop);
 	Playback &c = playback;
 	double start = c.current.is_enabled ? playback.current.get_start_time() : 0;
 	if (p_reset) {
@@ -1038,6 +1046,9 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_movie_quit_on_finish_enabled", "enabled"), &AnimationPlayer::set_movie_quit_on_finish_enabled);
 	ClassDB::bind_method(D_METHOD("is_movie_quit_on_finish_enabled"), &AnimationPlayer::is_movie_quit_on_finish_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_clear_cache_on_stop_enabled", "enabled"), &AnimationPlayer::set_clear_cache_on_stop_enabled);
+	ClassDB::bind_method(D_METHOD("is_clear_cache_on_stop_enabled"), &AnimationPlayer::is_clear_cache_on_stop_enabled);
+
 	ClassDB::bind_method(D_METHOD("get_current_animation_position"), &AnimationPlayer::get_current_animation_position);
 	ClassDB::bind_method(D_METHOD("get_current_animation_length"), &AnimationPlayer::get_current_animation_length);
 
@@ -1066,6 +1077,7 @@ void AnimationPlayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-4,4,0.001,or_less,or_greater"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "movie_quit_on_finish"), "set_movie_quit_on_finish_enabled", "is_movie_quit_on_finish_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clear_cache_on_stop"), "set_clear_cache_on_stop_enabled", "is_clear_cache_on_stop_enabled");
 
 	ADD_SIGNAL(MethodInfo("current_animation_changed", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));

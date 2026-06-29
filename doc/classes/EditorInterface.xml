@@ -223,6 +223,13 @@
 				Returns the editor's [EditorResourcePreview] instance.
 			</description>
 		</method>
+		<method name="get_scene_paint_2d" qualifiers="const">
+			<return type="ScenePaint2DEditor" />
+			<description>
+				Returns the editor's [ScenePaint2DEditor] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
 		<method name="get_script_editor" qualifiers="const">
 			<return type="ScriptEditor" />
 			<description>

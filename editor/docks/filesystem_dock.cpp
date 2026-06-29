@@ -507,8 +507,8 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 			if (horizontal) {
 				toolbar2_hbc->hide();
 
-				tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
-				tree_mc->set_theme_type_variation("NoBorderBottomPanel");
+				tree->set_scroll_hint_mode(touches_bottom ? Tree::SCROLL_HINT_MODE_TOP : Tree::SCROLL_HINT_MODE_BOTH);
+				tree_mc->set_theme_type_variation("NoBorderHorizontal");
 			} else {
 				toolbar2_hbc->show();
 
@@ -561,6 +561,10 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				_update_file_list(!selected_files.is_empty(), selected_files);
 			} else {
 				tree->ensure_cursor_is_visible();
+
+				// Always update to avoid broken icons, as previous updates
+				// could have happened before the dock was inside the tree.
+				update_all();
 			}
 		} break;
 	}
@@ -2259,42 +2263,39 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_MENU_OPEN_EXTERNAL: {
-			String fpath = current_path;
-			if (current_path == "Favorites") {
-				if (p_selected.is_empty()) {
-					return;
+			for (const String &fpath : p_selected) {
+				if (fpath.ends_with("/")) {
+					continue;
 				}
-				fpath = p_selected[0];
-			}
+				const String file = ProjectSettings::get_singleton()->globalize_path(fpath);
+				const String extension = file.get_extension();
 
-			const String file = ProjectSettings::get_singleton()->globalize_path(fpath);
-			const String extension = file.get_extension();
+				const String resource_type = ResourceLoader::get_resource_type(fpath);
+				String external_program;
 
-			const String resource_type = ResourceLoader::get_resource_type(fpath);
-			String external_program;
+				if (ClassDB::is_parent_class(resource_type, "Script") || extension == "tres" || extension == "tscn") {
+					external_program = EDITOR_GET("text_editor/external/exec_path");
+				} else if (extension == "res" || extension == "scn") {
+					// Binary resources have no meaningful editor outside Godot, so just fallback to something default.
+				} else if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
+					if (extension == "svg" || extension == "svgz") {
+						external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
+					} else {
+						external_program = EDITOR_GET("filesystem/external_programs/raster_image_editor");
+					}
+				} else if (ClassDB::is_parent_class(resource_type, "AudioStream")) {
+					external_program = EDITOR_GET("filesystem/external_programs/audio_editor");
+				} else if (resource_type == "PackedScene") {
+					external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
+				}
 
-			if (ClassDB::is_parent_class(resource_type, "Script") || extension == "tres" || extension == "tscn") {
-				external_program = EDITOR_GET("text_editor/external/exec_path");
-			} else if (extension == "res" || extension == "scn") {
-				// Binary resources have no meaningful editor outside Godot, so just fallback to something default.
-			} else if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
-				if (extension == "svg" || extension == "svgz") {
-					external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
+				if (external_program.is_empty()) {
+					OS::get_singleton()->shell_open(file);
 				} else {
-					external_program = EDITOR_GET("filesystem/external_programs/raster_image_editor");
+					List<String> paths;
+					paths.push_back(file);
+					OS::get_singleton()->open_with_program(external_program, paths);
 				}
-			} else if (ClassDB::is_parent_class(resource_type, "AudioStream")) {
-				external_program = EDITOR_GET("filesystem/external_programs/audio_editor");
-			} else if (resource_type == "PackedScene") {
-				external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
-			}
-
-			if (external_program.is_empty()) {
-				OS::get_singleton()->shell_open(file);
-			} else {
-				List<String> paths;
-				paths.push_back(file);
-				OS::get_singleton()->open_with_program(external_program, paths);
 			}
 		} break;
 
@@ -3388,22 +3389,21 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 }
 
 void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options) {
-	// Add options for files and folders.
-	ERR_FAIL_COND_MSG(p_paths.is_empty(), "Path cannot be empty.");
-
 	Vector<String> filenames;
 	Vector<String> foldernames;
 
 	Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 
-	bool all_files = true;
+	bool no_paths = p_paths.is_empty();
+	bool single_path = !no_paths && p_paths.size() == 1;
+
+	bool all_files = !no_paths;
 	bool all_files_scenes = true;
-	bool all_folders = true;
+	bool all_folders = !no_paths;
 	bool all_favorites = true;
 	bool all_not_favorites = true;
 
-	for (int i = 0; i < p_paths.size(); i++) {
-		const String &fpath = p_paths[i];
+	for (const String &fpath : p_paths) {
 		if (fpath.ends_with("/")) {
 			foldernames.push_back(fpath);
 			all_files = false;
@@ -3415,8 +3415,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 
 		// Check if in favorites.
 		bool found = false;
-		for (int j = 0; j < favorites_list.size(); j++) {
-			if (favorites_list[j] == fpath) {
+		for (const String &fav : favorites_list) {
+			if (fav == fpath) {
 				found = true;
 				break;
 			}
@@ -3463,33 +3463,21 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		}
 	}
 
-	if (p_paths.size() == 1 && p_display_path_dependent_options) {
+	if (no_paths) {
+		_add_create_options(p_popup, String());
+	} else if (single_path && p_display_path_dependent_options) {
 		PopupMenu *new_menu = memnew(PopupMenu);
+		_add_create_options(new_menu, p_paths[0].get_base_dir());
 		new_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_generic_rmb_option_selected));
 
 		p_popup->add_submenu_node_item(TTRC("Create New"), new_menu, FILE_MENU_NEW);
-		p_popup->set_item_icon(p_popup->get_item_index(FILE_MENU_NEW), get_editor_theme_icon(SNAME("Add")));
-
-		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("Folder..."), FILE_MENU_NEW_FOLDER);
-		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_folder"));
-		new_menu->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("Scene..."), FILE_MENU_NEW_SCENE);
-		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
-		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("Script..."), FILE_MENU_NEW_SCRIPT);
-		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
-		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("Resource..."), FILE_MENU_NEW_RESOURCE);
-		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
-		new_menu->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("TextFile..."), FILE_MENU_NEW_TEXTFILE);
-		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
-
-		const PackedStringArray folder_path = { p_paths[0].get_base_dir() };
-		// Options for CONTEXT_SLOT_FILESYSTEM_CREATE are added with an offset, to avoid conflicts in case plugins add options for both FileSystem slots.
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(new_menu, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, folder_path, 500);
+		p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("Add")));
 		p_popup->add_separator();
 	}
 
 	// Check if the root path is selected, we must check p_paths[1] because the first string in
 	// the list of paths obtained by _tree_get_selected(...) is not always the root path.
-	bool root_path_not_selected = p_paths[0] != "res://" && (p_paths.size() <= 1 || p_paths[1] != "res://");
+	bool root_path_not_selected = !no_paths && p_paths[0] != "res://" && (p_paths.size() <= 1 || p_paths[1] != "res://");
 
 	if (all_folders && foldernames.size() > 0) {
 		p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
@@ -3523,7 +3511,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	}
 
 	// Add the options that are only available when a single item is selected.
-	if (p_paths.size() == 1) {
+	if (single_path) {
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("filesystem_dock/copy_path"), FILE_MENU_COPY_PATH);
 		p_popup->add_shortcut(ED_GET_SHORTCUT("filesystem_dock/copy_absolute_path"), FILE_MENU_COPY_ABSOLUTE_PATH);
 		if (ResourceLoader::get_resource_uid(p_paths[0]) != ResourceUID::INVALID_ID) {
@@ -3542,7 +3530,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	}
 
 	// Only add a separator if we have actually placed any options in the menu since the last separator.
-	if (p_paths.size() == 1 || root_path_not_selected) {
+	if (single_path || root_path_not_selected) {
 		p_popup->add_separator();
 	}
 
@@ -3622,7 +3610,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		}
 	}
 
-	if (p_paths.size() == 1) {
+	if (single_path) {
 		const String &fpath = p_paths[0];
 
 		[[maybe_unused]] bool added_separator = false;
@@ -3667,8 +3655,37 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 #endif
 
 		current_path = fpath;
+	} else if (no_paths) {
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		tree_popup->add_separator();
+		tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
+		tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
+#endif
 	}
+
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+	if (all_files && p_paths.size() > 1) {
+		p_popup->add_separator();
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_MENU_OPEN_EXTERNAL);
+	}
+#endif
 	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_paths);
+}
+
+void FileSystemDock::_add_create_options(PopupMenu *p_popup, const String &p_base_folder) {
+	bool prefix_new = p_base_folder.is_empty();
+	p_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), prefix_new ? TTRC("New Folder...") : TTRC("Folder..."), FILE_MENU_NEW_FOLDER);
+	p_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_folder"));
+	p_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), prefix_new ? TTRC("New Scene...") : TTRC("Scene..."), FILE_MENU_NEW_SCENE);
+	p_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
+	p_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), prefix_new ? TTRC("New Script...") : TTRC("Script..."), FILE_MENU_NEW_SCRIPT);
+	p_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
+	p_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), prefix_new ? TTRC("New Resource...") : TTRC("Resource..."), FILE_MENU_NEW_RESOURCE);
+	p_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
+	p_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), prefix_new ? TTRC("New TextFile...") : TTRC("TextFile..."), FILE_MENU_NEW_TEXTFILE);
+	p_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
+	// Options for CONTEXT_SLOT_FILESYSTEM_CREATE are added with an offset, to avoid conflicts in case plugins add options for both FileSystem slots.
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, prefix_new ? PackedStringArray() : PackedStringArray{ p_base_folder }, 500);
 }
 
 void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
@@ -3699,27 +3716,7 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	// Right click is pressed in the empty space of the tree.
 	current_path = "res://";
 	tree_popup->clear();
-	tree_popup->reset_size();
-	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("New Folder..."), FILE_MENU_NEW_FOLDER);
-	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_folder"));
-	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("New Scene..."), FILE_MENU_NEW_SCENE);
-	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
-	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
-	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
-	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
-	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
-	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
-	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
-
-	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(tree_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>(), 500);
-#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-	// Opening the system file manager is not supported on the Android and web editors.
-	tree_popup->add_separator();
-	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
-	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
-#endif
-
+	_file_and_folders_fill_popup(tree_popup, PackedStringArray());
 	tree_popup->set_position(tree->get_screen_position() + p_pos);
 	tree_popup->reset_size();
 	tree_popup->popup();
@@ -3782,25 +3779,7 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	}
 
 	file_list_popup->clear();
-	file_list_popup->reset_size();
-
-	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("New Folder..."), FILE_MENU_NEW_FOLDER);
-	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_folder"));
-	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("New Scene..."), FILE_MENU_NEW_SCENE);
-	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
-	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
-	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
-	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
-	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
-	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
-	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
-
-	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(file_list_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>(), 500);
-	file_list_popup->add_separator();
-	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
-	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
-
+	_file_and_folders_fill_popup(file_list_popup, PackedStringArray());
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->reset_size();
 	file_list_popup->popup();
@@ -4192,12 +4171,14 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 	return button;
 }
 
-void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
+void FileSystemDock::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
 	bool new_horizontal = (p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL);
-	if (horizontal == new_horizontal) {
+	bool new_touches_bottom = (p_slot != EditorDock::DOCK_SLOT_BOTTOM);
+	if (horizontal == new_horizontal && touches_bottom == new_touches_bottom) {
 		return;
 	}
 	horizontal = new_horizontal;
+	touches_bottom = new_touches_bottom;
 
 	if (horizontal) {
 		path_hb->reparent(toolbar_hbc);
@@ -4685,6 +4666,7 @@ FileSystemDock::FileSystemDock() {
 	new_resource_dialog->connect("create", callable_mp(this, &FileSystemDock::_resource_created));
 
 	conversion_dialog = memnew(ConfirmationDialog);
+	conversion_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(conversion_dialog);
 	conversion_dialog->set_ok_button_text(TTRC("Convert"));
 	conversion_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_convert_dialog_action));
@@ -4703,6 +4685,7 @@ FileSystemDock::FileSystemDock() {
 	vb->add_child(confirm_before_move_checkbox);
 
 	unrecognized_ext_dialog = memnew(AcceptDialog);
+	unrecognized_ext_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(unrecognized_ext_dialog);
 	unrecognized_ext_dialog->set_text(TTRC("This file extension is not recognized by the editor.\nIf you want to rename it anyway, use your operating system's file manager.\nAfter renaming to an unknown extension, the file won't be shown in the editor anymore.\nTo make the editor recognize this file extension, add it to one of the lists of extensions in Editor Settings > Docks > FileSystem."));
 	Button *settings_button = unrecognized_ext_dialog->add_button(TTRC("Open Editor Settings"), false, "open_editor_settings_docks_filesystem");

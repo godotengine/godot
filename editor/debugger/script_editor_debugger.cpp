@@ -55,6 +55,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -2106,6 +2107,16 @@ void ScriptEditorDebugger::toggle_profiler(const String &p_profiler, bool p_enab
 	_put_msg("profiler:" + p_profiler, msg_data);
 }
 
+void ScriptEditorDebugger::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
+		vmem_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);
+	} else {
+		vmem_mc->set_theme_type_variation("NoBorderHorizontal");
+		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
+	}
+}
+
 ScriptEditorDebugger::ScriptEditorDebugger() {
 	if (unlikely(parse_message_handlers.is_empty())) {
 		_init_parse_message_handlers();
@@ -2414,10 +2425,10 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_refresh->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
 		vmem_export->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
 
-		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderBottomPanel");
-		mc->set_v_size_flags(SIZE_EXPAND_FILL);
-		vmem_vb->add_child(mc);
+		vmem_mc = memnew(MarginContainer);
+		vmem_mc->set_theme_type_variation("NoBorderHorizontal");
+		vmem_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		vmem_vb->add_child(vmem_mc);
 
 		vmem_tree = memnew(Tree);
 		vmem_vb->set_name(TTRC("Video RAM"));
@@ -2436,7 +2447,7 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_tree->set_column_custom_minimum_width(3, 80 * EDSCALE);
 		vmem_tree->set_hide_root(true);
 		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
-		mc->add_child(vmem_tree);
+		vmem_mc->add_child(vmem_tree);
 		vmem_tree->set_allow_rmb_select(true);
 		vmem_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_vmem_item_activated));
 		vmem_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_vmem_tree_rmb_selected));
@@ -2504,9 +2515,6 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 	msgdialog = memnew(AcceptDialog);
 	add_child(msgdialog);
 
-	camera_override = CameraOverride::OVERRIDE_NONE;
-	error_count = 0;
-	warning_count = 0;
 	_update_buttons_state();
 }
 

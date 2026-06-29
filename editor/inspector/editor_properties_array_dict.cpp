@@ -655,7 +655,6 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			return false;
 		}
 
-		String res_type = res->get_class();
 		StringName script_class;
 		if (res->get_script()) {
 			script_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
@@ -663,7 +662,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 		for (String at : allowed_type.split(",", false)) {
 			at = at.strip_edges();
-			if (ClassDB::is_parent_class(res_type, at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
+			if (res->is_class(at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
 				return true;
 			}
 		}
@@ -693,7 +692,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			ERR_FAIL_NULL_V_MSG(dropped_node, false, "Could not get the dropped node by its path.");
 
 			if (allowed_type != "NodePath") {
-				if (!ClassDB::is_parent_class(dropped_node->get_class_name(), allowed_type) &&
+				if (!dropped_node->is_class(allowed_type) &&
 						!EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, allowed_type)) {
 					// Fail if one of the nodes is not of allowed type.
 					return false;
@@ -705,7 +704,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 				if (!allowed_subtype_array.has(dropped_node->get_class_name())) {
 					// The dropped node type was not found in the allowed subtype array, we must check if it inherits one of them.
 					for (const String &ast : allowed_subtype_array) {
-						if (ClassDB::is_parent_class(dropped_node->get_class_name(), ast) ||
+						if (dropped_node->is_class(ast) ||
 								EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, ast)) {
 							is_drop_allowed = true;
 							break;

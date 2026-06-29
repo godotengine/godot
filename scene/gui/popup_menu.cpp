@@ -888,6 +888,7 @@ void PopupMenu::_draw_items() {
 	// In Item::checkable_type enum order (less the non-checkable member), with disabled repeated at the end.
 	Ref<Texture2D> check[] = { theme_cache.checked, theme_cache.radio_checked, theme_cache.checked_disabled, theme_cache.radio_checked_disabled };
 	Ref<Texture2D> uncheck[] = { theme_cache.unchecked, theme_cache.radio_unchecked, theme_cache.unchecked_disabled, theme_cache.radio_unchecked_disabled };
+	Ref<Texture2D> indeterminate[] = { theme_cache.indeterminate, theme_cache.indeterminate_disabled };
 	Ref<Texture2D> submenu;
 	if (rtl) {
 		submenu = theme_cache.submenu_mirrored;
@@ -986,7 +987,13 @@ void PopupMenu::_draw_items() {
 		// Checkboxes
 		if (items[i].checkable_type && !items[i].separator) {
 			int disabled = int(items[i].disabled) * 2;
-			Texture2D *icon = (items[i].checked ? check[items[i].checkable_type - 1 + disabled] : uncheck[items[i].checkable_type - 1 + disabled]).ptr();
+			Texture2D *icon;
+			if (items[i].indeterminate) {
+				icon = indeterminate[disabled].ptr();
+			} else {
+				icon = (items[i].checked ? check[items[i].checkable_type - 1 + disabled] : uncheck[items[i].checkable_type - 1 + disabled]).ptr();
+			}
+
 			if (rtl) {
 				icon->draw(ci, Size2(control->get_size().width - item_ofs.x - icon->get_width(), item_ofs.y) + Point2(0, Math::floor((h - icon->get_height()) / 2.0)), icon_color);
 			} else {
@@ -1180,16 +1187,13 @@ void PopupMenu::_filter_items(const String &p_query) {
 		}
 	}
 
-	Vector<FuzzySearchResult> results;
 	FuzzySearch fuzzy;
-	fuzzy.max_results = search_candidates.size();
-	fuzzy.max_misses = search_bar_fuzzy_search_max_misses;
-	fuzzy.allow_subsequences = search_bar_fuzzy_search_enabled;
-	fuzzy.set_query(p_query, false);
-	fuzzy.search_all(search_candidates, results);
+	fuzzy.set_max_results(search_candidates.size());
+	fuzzy.set_max_misses(search_bar_fuzzy_search_max_misses);
+	fuzzy.set_use_exact_tokens(!search_bar_fuzzy_search_enabled);
 
-	for (const FuzzySearchResult &result : results) {
-		PopupMenu::Item &item = items.write[search_candidate_to_item[result.original_index]];
+	for (const Ref<FuzzySearchMatch> &result : fuzzy.search_all(p_query, search_candidates)) {
+		PopupMenu::Item &item = items.write[search_candidate_to_item[result->get_original_index()]];
 		item.visible = true;
 		if (item.submenu) {
 			for (PopupMenu::Item &submenu_item : item.submenu->items) {
@@ -2282,9 +2286,34 @@ void PopupMenu::set_item_checked(int p_idx, bool p_checked) {
 
 	items.write[p_idx].checked = p_checked;
 	items.write[p_idx].accessibility_item_dirty = true;
+	items.write[p_idx].indeterminate = false;
 
 	if (global_menu.is_valid()) {
 		NativeMenu::get_singleton()->set_item_checked(global_menu, p_idx, p_checked);
+	}
+
+	queue_accessibility_update();
+	control->queue_redraw();
+	child_controls_changed();
+	_menu_changed();
+}
+
+void PopupMenu::set_item_indeterminate(int p_idx, bool p_indeterminate) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].indeterminate == p_indeterminate) {
+		return;
+	}
+
+	items.write[p_idx].indeterminate = p_indeterminate;
+	items.write[p_idx].accessibility_item_dirty = true;
+	items.write[p_idx].checked = false;
+
+	if (global_menu.is_valid()) {
+		NativeMenu::get_singleton()->set_item_indeterminate(global_menu, p_idx, p_indeterminate);
 	}
 
 	queue_accessibility_update();
@@ -2550,6 +2579,11 @@ bool PopupMenu::is_item_disabled(int p_idx) const {
 bool PopupMenu::is_item_checked(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
 	return items[p_idx].checked;
+}
+
+bool PopupMenu::is_item_indeterminate(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
+	return items[p_idx].indeterminate;
 }
 
 int PopupMenu::get_item_id(int p_idx) const {
@@ -3430,6 +3464,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_icon_max_width", "index", "width"), &PopupMenu::set_item_icon_max_width);
 	ClassDB::bind_method(D_METHOD("set_item_icon_modulate", "index", "modulate"), &PopupMenu::set_item_icon_modulate);
 	ClassDB::bind_method(D_METHOD("set_item_checked", "index", "checked"), &PopupMenu::set_item_checked);
+	ClassDB::bind_method(D_METHOD("set_item_indeterminate", "index", "indeterminate"), &PopupMenu::set_item_indeterminate);
 	ClassDB::bind_method(D_METHOD("set_item_id", "index", "id"), &PopupMenu::set_item_id);
 	ClassDB::bind_method(D_METHOD("set_item_accelerator", "index", "accel"), &PopupMenu::set_item_accelerator);
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "index", "metadata"), &PopupMenu::set_item_metadata);
@@ -3458,6 +3493,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_icon_max_width", "index"), &PopupMenu::get_item_icon_max_width);
 	ClassDB::bind_method(D_METHOD("get_item_icon_modulate", "index"), &PopupMenu::get_item_icon_modulate);
 	ClassDB::bind_method(D_METHOD("is_item_checked", "index"), &PopupMenu::is_item_checked);
+	ClassDB::bind_method(D_METHOD("is_item_indeterminate", "index"), &PopupMenu::is_item_indeterminate);
 	ClassDB::bind_method(D_METHOD("get_item_id", "index"), &PopupMenu::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &PopupMenu::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_accelerator", "index"), &PopupMenu::get_item_accelerator);
@@ -3563,6 +3599,8 @@ void PopupMenu::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, checked);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, checked_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, indeterminate);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, indeterminate_disabled);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, unchecked);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, unchecked_disabled);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, radio_checked);
@@ -3598,6 +3636,7 @@ void PopupMenu::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &PopupMenu::set_item_icon, &PopupMenu::get_item_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"), defaults.checkable_type, &PopupMenu::_set_item_checkable_type, &PopupMenu::_get_item_checkable_type);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "checked"), defaults.checked, &PopupMenu::set_item_checked, &PopupMenu::is_item_checked);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "indeterminate"), defaults.indeterminate, &PopupMenu::set_item_indeterminate, &PopupMenu::is_item_indeterminate);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id, &PopupMenu::set_item_id, &PopupMenu::get_item_id);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &PopupMenu::set_item_disabled, &PopupMenu::is_item_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &PopupMenu::set_item_as_separator, &PopupMenu::is_item_separator);
@@ -3674,7 +3713,7 @@ bool PopupMenu::get_shrink_width() const {
 	return shrink_width;
 }
 
-void PopupMenu::_pre_popup() {
+void PopupMenu::_pre_popup(const Size2i &p_size) {
 	real_t popup_scale = 1.0;
 	bool scale_with_parent = true;
 	Node *parent_node = get_parent();
@@ -3716,6 +3755,9 @@ void PopupMenu::_pre_popup() {
 
 	set_content_scale_factor(popup_scale);
 	if (is_wrapping_controls()) {
+		if (scale_with_parent) {
+			set_size(p_size);
+		}
 		Size2 minsize = get_contents_minimum_size() * popup_scale;
 		Size2 maxsize = get_max_size();
 		if (maxsize.height > 0) {

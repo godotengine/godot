@@ -195,6 +195,11 @@ void EditorDockManager::_update_layout() {
 	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
 
+DockTabContainer *EditorDockManager::get_dock_container(int p_slot) const {
+	ERR_FAIL_INDEX_V(p_slot, EditorDock::DOCK_SLOT_MAX, nullptr);
+	return dock_slots[p_slot];
+}
+
 void EditorDockManager::update_docks_menu() {
 	docks_menu->clear();
 	docks_menu->reset_size();
@@ -289,7 +294,7 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 	EditorNode::get_singleton()->get_gui_base()->add_child(wrapper);
 
 	_move_dock(p_dock, nullptr);
-	p_dock->update_layout(EditorDock::DOCK_LAYOUT_FLOATING);
+	p_dock->update_layout(EditorDock::DOCK_LAYOUT_FLOATING, EditorDock::DOCK_SLOT_NONE);
 	p_dock->current_layout = EditorDock::DOCK_LAYOUT_FLOATING;
 	wrapper->set_wrapped_control(p_dock);
 
@@ -369,11 +374,9 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 	p_dock->hide();
 
 	DockTabContainer *dock_tab_container = Object::cast_to<DockTabContainer>(p_target);
-	if (p_target != closed_dock_parent) {
-		if (dock_tab_container->layout != p_dock->current_layout) {
-			p_dock->update_layout(dock_tab_container->layout);
-			p_dock->current_layout = dock_tab_container->layout;
-		}
+	if (p_target != closed_dock_parent && (dock_tab_container->layout != p_dock->current_layout || dock_tab_container->dock_slot != p_dock->dock_slot_index)) {
+		p_dock->update_layout(dock_tab_container->layout, dock_tab_container->dock_slot);
+		p_dock->current_layout = dock_tab_container->layout;
 		p_dock->dock_slot_index = dock_tab_container->dock_slot;
 	}
 
@@ -617,6 +620,16 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 	update_docks_menu();
 }
 
+void EditorDockManager::set_dock_slot_highlighted(int p_slot, bool p_highlighted) {
+	ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
+	if (p_highlighted) {
+		dock_slots[p_slot]->show_drag_hint();
+	} else {
+		dock_slots[p_slot]->get_drag_hint()->hide();
+	}
+	dock_slots[p_slot]->get_drag_hint()->set_highlighted(p_highlighted);
+}
+
 void EditorDockManager::set_dock_enabled(EditorDock *p_dock, bool p_enabled) {
 	ERR_FAIL_NULL(p_dock);
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot set enabled unknown dock '%s'.", p_dock->get_display_title()));
@@ -789,23 +802,13 @@ void EditorDockManager::set_tab_icon_max_width(int p_max_width) {
 	}
 }
 
+void EditorDockManager::_register_split(DockSplitContainer **p_var, DockSplitContainer *p_split) {
+	*p_var = p_split;
+	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
+}
+
 void EditorDockManager::add_vsplit(DockSplitContainer *p_split) {
 	vsplits.push_back(p_split);
-	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
-}
-
-void EditorDockManager::set_main_vsplit(DockSplitContainer *p_split) {
-	main_vsplit = p_split;
-	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
-}
-
-void EditorDockManager::set_main_hsplit(DockSplitContainer *p_split) {
-	main_hsplit = p_split;
-	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
-}
-
-void EditorDockManager::set_bottom_hsplit(DockSplitContainer *p_split) {
-	bottom_hsplit = p_split;
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
 }
 
@@ -1131,6 +1134,7 @@ void DockSlotGrid::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (hovered_slot > -1) {
+				EditorDockManager::get_singleton()->set_dock_slot_highlighted(hovered_slot, false);
 				hovered_slot = -1;
 				queue_redraw();
 			}
@@ -1152,8 +1156,15 @@ void DockSlotGrid::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (over_dock_slot != hovered_slot) {
-			queue_redraw();
+			if (hovered_slot != -1) {
+				EditorDockManager::get_singleton()->set_dock_slot_highlighted(hovered_slot, false);
+			}
 			hovered_slot = over_dock_slot;
+			if (hovered_slot != -1 && hovered_slot != context_dock->dock_slot_index &&
+					context_dock->available_layouts & EditorDockManager::get_singleton()->dock_slots[hovered_slot]->layout) {
+				EditorDockManager::get_singleton()->set_dock_slot_highlighted(hovered_slot, true);
+			}
+			queue_redraw();
 		}
 
 		if (over_dock_slot == -1) {

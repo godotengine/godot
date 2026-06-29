@@ -37,6 +37,7 @@
 #include "core/string/string_builder.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -88,7 +89,9 @@ void GotoLinePopup::_goto_line() {
 }
 
 void GotoLinePopup::_submit() {
+	ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 	_goto_line();
+	ScriptEditorNavigationMarker::get_singleton()->locate_end();
 	hide();
 }
 
@@ -1387,12 +1390,21 @@ void CodeTextEditor::center_viewport_to_caret_if_line_invisible(int p_line) {
 		text_editor->call_on_all_layout_pending_finished(callable_mp(this, &CodeTextEditor::center_viewport_to_caret_if_line_invisible).bind(0));
 		return;
 	}
-	if (!text_editor->is_line_in_viewport(p_line)) {
+	if (!text_editor->is_line_in_viewport(CLAMP(p_line, 0, text_editor->get_line_count() - 1))) {
 		text_editor->center_viewport_to_caret();
 	}
 }
 
-void CodeTextEditor::goto_line(int p_line, int p_column) {
+void CodeTextEditor::trigger_history_save_on_navigate() {
+	if (!ScriptEditorNavigationMarker::get_singleton()->is_initializing() && ScriptEditorNavigationMarker::get_singleton()->is_locating()) {
+		call_on_all_layout_pending_finished(callable_mp(this, &CodeTextEditor::_emit_request_save_new_history));
+		if (ScriptEditorNavigationMarker::get_singleton()->is_locating()) {
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
+		}
+	}
+}
+
+void CodeTextEditor::goto_line_without_history(int p_line, int p_column) {
 	text_editor->remove_secondary_carets();
 	text_editor->deselect();
 	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
@@ -1403,6 +1415,11 @@ void CodeTextEditor::goto_line(int p_line, int p_column) {
 	adjust_viewport_to_caret();
 }
 
+void CodeTextEditor::goto_line(int p_line, int p_column) {
+	goto_line_without_history(p_line, p_column);
+	trigger_history_save_on_navigate();
+}
+
 void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->remove_secondary_carets();
 	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
@@ -1410,6 +1427,7 @@ void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->set_code_hint("");
 	text_editor->cancel_code_completion();
 	adjust_viewport_to_caret();
+	trigger_history_save_on_navigate();
 }
 
 void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
@@ -1421,6 +1439,15 @@ void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
 	text_editor->set_code_hint("");
 	text_editor->cancel_code_completion();
 	center_viewport_to_caret();
+	trigger_history_save_on_navigate();
+}
+
+void CodeTextEditor::goto_line_and_center_if_necessary(int p_line, int p_column) {
+	if (!text_editor->is_line_in_viewport(CLAMP(p_line, 0, text_editor->get_line_count() - 1))) {
+		goto_line_centered(p_line, p_column);
+	} else {
+		goto_line(p_line, p_column);
+	}
 }
 
 void CodeTextEditor::set_executing_line(int p_line) {
@@ -1431,7 +1458,7 @@ void CodeTextEditor::clear_executing_line() {
 	text_editor->clear_executing_lines();
 }
 
-Variant CodeTextEditor::get_edit_state() {
+Dictionary CodeTextEditor::get_edit_state() {
 	Dictionary state;
 	state.merge(get_navigation_state());
 
@@ -1445,7 +1472,7 @@ Variant CodeTextEditor::get_edit_state() {
 	return state;
 }
 
-Variant CodeTextEditor::get_previous_state() {
+Dictionary CodeTextEditor::get_previous_state() {
 	return previous_state;
 }
 
@@ -1467,7 +1494,7 @@ void CodeTextEditor::set_preview_navigation_change(bool p_preview) {
 	}
 }
 
-void CodeTextEditor::set_edit_state(const Variant &p_state) {
+void CodeTextEditor::set_edit_state(const Dictionary &p_state) {
 	Dictionary state = p_state;
 
 	/* update the row first as it sets the column to 0 */
@@ -1478,17 +1505,17 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	} else {
 		text_editor->set_caret_line(state["row"]);
 		text_editor->set_caret_column(state["column"]);
-		if (int(state["scroll_position"]) == -1) {
-			// Special case for previous state.
-			center_viewport_to_caret();
-		} else {
-			text_editor->set_v_scroll(state["scroll_position"]);
-		}
+		text_editor->set_v_scroll(state["scroll_position"]);
 		text_editor->set_h_scroll(state["h_scroll_position"]);
 	}
 
 	if (state.get("selection", false)) {
-		text_editor->select(state["selection_from_line"], state["selection_from_column"], state["selection_to_line"], state["selection_to_column"]);
+		// Selection can be set in two ways, from->to or to->from, so we need to check the order to set it correctly.
+		if (state["row"] < state["selection_to_line"] || state["column"] < state["selection_to_column"]) {
+			text_editor->select(state["selection_to_line"], state["selection_to_column"], state["selection_from_line"], state["selection_from_column"]);
+		} else {
+			text_editor->select(state["selection_from_line"], state["selection_from_column"], state["selection_to_line"], state["selection_to_column"]);
+		}
 	} else {
 		text_editor->deselect();
 	}
@@ -1525,7 +1552,7 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	}
 }
 
-Variant CodeTextEditor::get_navigation_state() {
+Dictionary CodeTextEditor::get_navigation_state() {
 	Dictionary state;
 
 	state["scroll_position"] = text_editor->get_v_scroll();
@@ -1915,6 +1942,10 @@ void CodeTextEditor::_show_goto_popup_request() {
 	emit_signal("show_goto_popup");
 }
 
+void CodeTextEditor::_emit_request_save_new_history() {
+	emit_signal(SNAME("_request_save_new_history"));
+}
+
 void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
@@ -1923,6 +1954,7 @@ void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("show_goto_popup"));
 	ADD_SIGNAL(MethodInfo("navigation_preview_ended"));
 	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "zoom_factor")));
+	ADD_SIGNAL(MethodInfo("_request_save_new_history", PropertyInfo(Variant::DICTIONARY, "state")));
 }
 
 void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud) {

@@ -300,7 +300,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code,
 
 	// Save identifiers.
 	for (const StringName &id : rev_identifier_map) {
-		String s = id.operator String();
+		String s = id.string();
 		int len = s.length();
 
 		contents.resize(buf_pos + (len + 1) * 4);

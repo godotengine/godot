@@ -682,6 +682,9 @@
 		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
 		</member>
+		<member name="fullscreen_shortcut_enabled" type="bool" setter="set_fullscreen_shortcut_enabled" getter="is_fullscreen_shortcut_enabled" default="false">
+			If [code]true[/code], allows the user to toggle fullscreen mode by pressing the shortcut defined in [member ProjectSettings.input/ui_toggle_fullscreen] ([kbd]Alt + Enter[/kbd] by default). This is enabled on the main window according to the [member ProjectSettings.display/window/size/enable_toggle_fullscreen_shortcut] project setting.
+		</member>
 		<member name="hdr_output_requested" type="bool" setter="set_hdr_output_requested" getter="is_hdr_output_requested" default="false">
 			If [code]true[/code], requests HDR output for the [Window], falling back to SDR if not supported, and automatically switching between HDR and SDR as the window moves between screens, screen capabilities change, or system settings are modified. This will internally force [member Viewport.use_hdr_2d] to be enabled on the main [Viewport]. All other [SubViewport] of this [Window] must have their [member Viewport.use_hdr_2d] property enabled to produce HDR output.
 		</member>

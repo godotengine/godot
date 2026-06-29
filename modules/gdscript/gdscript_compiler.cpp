@@ -603,12 +603,15 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		case GDScriptParser::Node::CALL: {
 			const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(p_expression);
 			bool is_awaited = p_expression == awaited_node;
-			GDScriptDataType type = _gdtype_from_datatype(call->get_datatype(), codegen.script);
 			GDScriptCodeGenerator::Address result;
 			if (p_root) {
 				result = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::NIL);
+			} else if (is_awaited) {
+				// When called with await, we need to use an untyped temporary regardless of whether the base
+				// class function is a coroutine, because an inherited class could return a function state object.
+				result = codegen.add_temporary();
 			} else {
-				result = codegen.add_temporary(type);
+				result = codegen.add_temporary(_gdtype_from_datatype(call->get_datatype(), codegen.script));
 			}
 
 			Vector<GDScriptCodeGenerator::Address> arguments;
@@ -2886,7 +2889,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 							} else {
 								enum_hint_string += ",";
 							}
-							enum_hint_string += E.key.operator String().capitalize().xml_escape();
+							enum_hint_string += E.key.string().capitalize().xml_escape();
 							enum_hint_string += ":";
 							enum_hint_string += String::num_int64(E.value).xml_escape();
 						}

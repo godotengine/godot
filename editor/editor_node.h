@@ -381,7 +381,6 @@ private:
 	ConfirmationDialog *pick_main_scene = nullptr;
 	ConfirmationDialog *open_project_settings = nullptr;
 	Button *select_current_scene_button = nullptr;
-	AcceptDialog *accept = nullptr;
 	AcceptDialog *save_accept = nullptr;
 	EditorAbout *about = nullptr;
 	AcceptDialog *warning = nullptr;
@@ -525,6 +524,7 @@ private:
 	static void _resource_saved(Ref<Resource> p_resource, const String &p_path);
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
+	void _update_system_menu_icons(bool p_dark_mode);
 	void _update_theme(bool p_skip_creation = false);
 	void _build_icon_type_cache();
 	void _enable_pending_addons();
@@ -716,10 +716,10 @@ private:
 	MenuType menu_type = MENU_TYPE_NONE;
 	Vector<PopupMenu *> main_menu_items;
 
-	void _build_file_menu();
-	void _build_project_menu();
-	void _build_settings_menu();
-	void _build_help_menu();
+	void _build_file_menu(bool p_dark_mode);
+	void _build_project_menu(bool p_dark_mode);
+	void _build_settings_menu(bool p_dark_mode);
+	void _build_help_menu(bool p_dark_mode);
 
 	void _update_main_menu_type();
 	void _add_to_main_menu(const String &p_name, PopupMenu *p_menu);
@@ -785,7 +785,7 @@ public:
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);
 
-	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"), uint32_t p_wrap_width = 0);
+	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTRC("OK"), const String &p_cancel_text = TTRC("Cancel"), uint32_t p_wrap_width = 0);
 
 	static bool is_cmdline_mode();
 
@@ -863,7 +863,8 @@ public:
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
 	String get_preview_locale() const;
-	void set_preview_locale(const String &p_locale);
+	bool is_pseudolocalization_enabled() const;
+	void set_preview_locale(const String &p_locale, bool p_pseudolocalization);
 
 	int new_scene();
 	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false, bool p_update_tabs = true);
@@ -967,9 +968,8 @@ public:
 
 	bool is_object_of_custom_type(const Object *p_object, const StringName &p_class);
 
-	void show_accept(const String &p_text, const String &p_title);
-	void show_save_accept(const String &p_text, const String &p_title);
-	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
+	void show_save_accept(const String &p_text, const String &p_ok_text = TTRC("OK"));
+	void show_warning(const String &p_text, const String &p_title = TTRC("Warning!"));
 
 	void _copy_warning(const String &p_str);
 

@@ -77,6 +77,7 @@ class PopupMenu : public Popup {
 		int state = 0;
 		bool separator = false;
 		bool disabled = false;
+		bool indeterminate = false;
 		bool dirty = true;
 		int id = 0;
 		Variant metadata;
@@ -218,6 +219,8 @@ class PopupMenu : public Popup {
 		Ref<Texture2D> checked_disabled;
 		Ref<Texture2D> unchecked;
 		Ref<Texture2D> unchecked_disabled;
+		Ref<Texture2D> indeterminate;
+		Ref<Texture2D> indeterminate_disabled;
 		Ref<Texture2D> radio_checked;
 		Ref<Texture2D> radio_checked_disabled;
 		Ref<Texture2D> radio_unchecked;
@@ -265,7 +268,7 @@ class PopupMenu : public Popup {
 	bool shrink_width = true;
 
 protected:
-	virtual void _pre_popup() override;
+	virtual void _pre_popup(const Size2i &p_size) override;
 	virtual Rect2i _popup_adjust_rect() const override;
 
 	virtual void add_child_notify(Node *p_child) override;
@@ -338,6 +341,7 @@ public:
 	void set_item_icon_max_width(int p_idx, int p_width);
 	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
 	void set_item_checked(int p_idx, bool p_checked);
+	void set_item_indeterminate(int p_idx, bool p_indeterminate);
 	void set_item_id(int p_idx, int p_id);
 	void set_item_accelerator(int p_idx, Key p_accel);
 	void set_item_metadata(int p_idx, const Variant &p_meta);
@@ -368,6 +372,7 @@ public:
 	int get_item_icon_max_width(int p_idx) const;
 	Color get_item_icon_modulate(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
+	bool is_item_indeterminate(int p_idx) const;
 	int get_item_id(int p_idx) const;
 	int get_item_index(int p_id) const;
 	Key get_item_accelerator(int p_idx) const;

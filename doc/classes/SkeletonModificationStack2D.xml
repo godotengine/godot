@@ -77,7 +77,7 @@
 	</methods>
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" default="false">
-			If [code]true[/code], the modification's in the stack will be called. This is handled automatically through the [Skeleton2D] node.
+			If [code]true[/code], the modifications in the stack will be called. This is handled automatically through the [Skeleton2D] node.
 		</member>
 		<member name="modification_count" type="int" setter="set_modification_count" getter="get_modification_count" default="0">
 			The number of modifications in the stack.

@@ -36,6 +36,7 @@
 
 #include <Metal/Metal.hpp>
 
+#include <optional>
 #include <variant>
 
 class RenderingShaderContainerFormatMetal;
@@ -116,10 +117,11 @@ protected:
 		return copy_queue_buffer.get()->length() - copy_queue_buffer_offset;
 	}
 
-	/// Marks p_size bytes as consumed from the copy queue buffer, aligning the offset to 16 bytes.
+	/// Marks p_size bytes as consumed from the copy queue buffer, aligning the new offset to 16 bytes.
 	_FORCE_INLINE_ void _copy_queue_buffer_consume(NS::UInteger p_size) {
-		NS::UInteger aligned_offset = round_up_to_alignment(copy_queue_buffer_offset, 16);
-		copy_queue_buffer_offset = aligned_offset + p_size;
+		// Round up the end of the consumed region so the next copy starts aligned and the offset
+		// never exceeds the buffer length (which would underflow _copy_queue_buffer_available()).
+		copy_queue_buffer_offset = round_up_to_alignment(copy_queue_buffer_offset + p_size, 16);
 	}
 
 	/// Returns a pointer to the current position in the copy queue buffer.
@@ -178,7 +180,10 @@ protected:
 	 * there are no more references to the MDLibrary associated with the cache entry.
 	 */
 	HashMap<SHA256Digest, ShaderCacheEntry *> _shader_cache;
-	void shader_cache_free_entry(const SHA256Digest &key);
+	Mutex _shader_cache_lock;
+	void shader_cache_free_entry(ShaderCacheEntry *p_entry);
+	std::optional<std::shared_ptr<MDLibrary>> shader_cache_get_library(const SHA256Digest &key);
+	void shader_cache_set_entry(const SHA256Digest &key, ShaderCacheEntry *p_entry);
 
 public:
 	virtual Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override = 0;

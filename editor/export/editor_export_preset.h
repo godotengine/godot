@@ -88,6 +88,7 @@ private:
 	HashMap<StringName, bool> update_visibility;
 
 	String name;
+	bool options_search_active = false;
 
 	String custom_features;
 
@@ -145,6 +146,7 @@ public:
 	bool is_runnable() const;
 
 	bool are_advanced_options_enabled() const;
+	void set_options_search_active(bool p_active);
 
 	void set_dedicated_server(bool p_enable);
 	bool is_dedicated_server() const;

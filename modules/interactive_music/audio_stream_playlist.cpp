@@ -42,10 +42,6 @@ Ref<AudioStreamPlayback> AudioStreamPlaylist::instantiate_playback() {
 	return playback_playlist;
 }
 
-String AudioStreamPlaylist::get_stream_name() const {
-	return "Playlist";
-}
-
 void AudioStreamPlaylist::set_list_stream(int p_stream_index, Ref<AudioStream> p_stream) {
 	ERR_FAIL_COND(p_stream == this);
 	ERR_FAIL_INDEX(p_stream_index, MAX_STREAMS);
