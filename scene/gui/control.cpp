@@ -2095,6 +2095,11 @@ void Control::grow_to_desired_size() {
 	}
 }
 
+bool Control::is_expanded_by_desired_size() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return data.expanded_by_desired_size;
+}
+
 void Control::add_child_notify(Node *p_child) {
 	CanvasItem::add_child_notify(p_child);
 
