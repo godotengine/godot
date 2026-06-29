@@ -7668,7 +7668,6 @@ Tree::~Tree() {
 	RenderingServer::get_singleton()->free_rid(content_ci);
 	RenderingServer::get_singleton()->free_rid(custom_ci);
 	RenderingServer::get_singleton()->free_rid(header_ci);
-	RenderingServer::get_singleton()->free_rid(custom_ci);
 	RenderingServer::get_singleton()->free_rid(stylebox_ci);
 	RenderingServer::get_singleton()->free_rid(last_sticky_ci);
 }
