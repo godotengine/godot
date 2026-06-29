@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/error/error_list.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
@@ -1736,6 +1737,8 @@ String TemplateDownloader::_get_download_error(int p_result, int p_response_code
 			return TTR("Can't connect to the mirror");
 		case HTTPRequest::RESULT_NO_RESPONSE:
 			return TTR("No response from the mirror");
+		case HTTPRequest::RESULT_TIMEOUT:
+			return TTR("Request timed out");
 		case HTTPRequest::RESULT_REQUEST_FAILED:
 			return TTR("Request failed");
 		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED:
@@ -1833,13 +1836,15 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				return;
 			}
 
-			int start_byte = file_info.offset;
-			int end_byte = file_info.offset + file_info.compressed_size + file_info.raw_record.size();
-
+			fragment_start_byte = file_info.offset;
+			fragment_end_byte = file_info.offset + file_info.compressed_size + file_info.raw_record.size();
+			request_start_partial_size = 0;
+			retry_count = 0;
+			range_restart_attempted = false;
+			_clear_partial_download();
 			current_step = Step::DOWNLOADING;
-			const String data_range = vformat("Range: bytes=%d-%d", start_byte, end_byte);
 
-			Error err = request(url, PackedStringArray{ data_range }, HTTPClient::METHOD_GET);
+			Error err = _request_file_fragment();
 			if (err != OK) {
 				_download_failed(vformat(TTR("Download request failed: %s."), TTR(error_names[err])));
 			}
@@ -1847,126 +1852,32 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 
 		case Step::DOWNLOADING: {
 			if (p_result != HTTPRequest::RESULT_SUCCESS || p_response_code != HTTPClient::RESPONSE_PARTIAL_CONTENT) {
+				if (p_result == HTTPRequest::RESULT_SUCCESS && p_response_code == HTTPClient::RESPONSE_REQUESTED_RANGE_NOT_SATISFIABLE && !range_restart_attempted) {
+					range_restart_attempted = true;
+					retry_count = 0;
+					request_start_partial_size = 0;
+					_clear_partial_download();
+
+					Error err = _request_file_fragment();
+					if (err != OK) {
+						_download_failed(vformat(TTR("Download request failed: %s."), TTR(error_names[err])));
+					}
+					return;
+				}
+
+				if (_is_retryable_result(p_result, p_response_code)) {
+					if (p_result == HTTPRequest::RESULT_SUCCESS) {
+						request_start_partial_size = 0;
+						_clear_partial_download();
+					}
+					_retry_file_fragment(_get_download_error(p_result, p_response_code));
+					return;
+				}
+
 				_download_failed(_get_download_error(p_result, p_response_code));
 				return;
 			}
-			const String mini_zip_path = EditorPaths::get_singleton()->get_temp_dir().path_join(filename + ".zip");
-			const uint8_t *fragment = p_body.ptr();
-
-			int local_name_len = decode_uint16(fragment + 26);
-			int local_extra_len = decode_uint16(fragment + 28);
-			int full_file_chunk_size = 30 + local_name_len + local_extra_len + file_info.compressed_size;
-
-			if (p_body.size() < full_file_chunk_size) {
-				_download_failed(vformat(TTR("Archive fragment too small. Loaded: %d, required: %d."), p_body.size(), full_file_chunk_size));
-				return;
-			}
-
-			const PackedByteArray clean_fragment = p_body.slice(0, full_file_chunk_size);
-
-			PackedByteArray cd_record = file_info.raw_record.duplicate();
-			uint8_t *record_write = cd_record.ptrw();
-			encode_uint32(0, record_write + 42); // IMPORTANT: Set the offset to 0, as the file is at the very beginning of the mini-ZIP.
-
-			// EOCD (End of Central Directory)
-			PackedByteArray eocd;
-			eocd.resize_initialized(22);
-
-			uint8_t *eocd_write = eocd.ptrw();
-			encode_uint32(0x06054b50, eocd_write); // Signature (4 bytes).
-			// Offsets 4-7 remain 0 (disk numbers).
-			encode_uint16(1, eocd_write + 8); // Number of entries on this disk (2 bytes).
-			encode_uint16(1, eocd_write + 10); // Total number of entries (2 bytes).
-			encode_uint32(cd_record.size(), eocd_write + 12); // Central Directory size (4 bytes).
-			encode_uint32(clean_fragment.size(), eocd_write + 16); // CD start offset (after file data) (4 bytes).
-
-			// Write Mini-Zip to a file.
-			Ref<FileAccess> f = FileAccess::open(mini_zip_path, FileAccess::WRITE);
-			if (f.is_null()) {
-				_download_failed(TTR("Failed to open mini-ZIP for writing."));
-				return;
-			}
-			f->store_buffer(clean_fragment);
-			f->store_buffer(cd_record);
-			f->store_buffer(eocd);
-			f.unref();
-
-			PackedByteArray extracted_data;
-			{
-				// Read back the mini-ZIP.
-				Ref<FileAccess> zip_access;
-				zlib_filefunc_def io = zipio_create_io(&zip_access);
-				unzFile uzf = unzOpen2(mini_zip_path.utf8().get_data(), &io);
-				if (!uzf) {
-					_download_failed(TTR("ZIP reader could not open mini-ZIP."));
-					return;
-				}
-
-				// IMPORTANT: The path in the ZIP reader must exactly match the one in the CD.
-
-				int err = UNZ_OK;
-
-				// Locate and open the file.
-				err = godot_unzip_locate_file(uzf, file_info.name, true);
-				if (err != UNZ_OK) {
-					_download_failed(TTR("File does not exist in ZIP archive."));
-					return;
-				}
-
-				err = unzOpenCurrentFile(uzf);
-				if (err != UNZ_OK) {
-					_download_failed(TTR("Could not open file within ZIP archive."));
-					return;
-				}
-
-				// Read the file info.
-				unz_file_info info;
-				err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
-				if (err != UNZ_OK) {
-					_download_failed(TTR("Unable to read file information from ZIP archive."));
-					return;
-				}
-
-				// Read the file data.
-				extracted_data.resize(info.uncompressed_size);
-				uint8_t *buffer = extracted_data.ptrw();
-				int to_read = extracted_data.size();
-				while (to_read > 0) {
-					int bytes_read = unzReadCurrentFile(uzf, buffer, to_read);
-					if (bytes_read < 0 || (bytes_read == UNZ_EOF && to_read != 0)) {
-						_download_failed(TTR("IO/zlib error reading file from ZIP archive."));
-						return;
-					}
-					buffer += bytes_read;
-					to_read -= bytes_read;
-				}
-
-				// Verify the data and return.
-				err = unzCloseCurrentFile(uzf);
-				if (err != UNZ_OK) {
-					_download_failed(TTR("CRC error reading file from ZIP archive."));
-					return;
-				}
-			}
-
-			if (extracted_data.is_empty()) {
-				_download_failed(TTR("Mini-ZIP data was empty."));
-				// The mini-ZIP is not deleted for inspection.
-				return;
-			} else {
-				DirAccess::remove_absolute(mini_zip_path);
-
-				f = FileAccess::open(target_directory.path_join(filename), FileAccess::WRITE);
-				if (f.is_null()) {
-					_download_failed(TTR("Failed to open template file for writing."));
-					return;
-				}
-				f->store_buffer(extracted_data);
-				f.unref();
-
-				current_step = Step::WAITING;
-				emit_signal(SNAME("download_completed"), filename);
-			}
+			_download_completed();
 		} break;
 	}
 }
@@ -1975,6 +1886,255 @@ void TemplateDownloader::_download_failed(const String &p_reason) {
 	const String failed_file = filename;
 	cancel_download();
 	emit_signal(SNAME("download_failed"), failed_file, p_reason);
+}
+
+bool TemplateDownloader::_is_retryable_result(int p_result, int p_response_code) const {
+	switch (p_result) {
+		case HTTPRequest::RESULT_CONNECTION_ERROR:
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
+		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR:
+		case HTTPRequest::RESULT_CANT_CONNECT:
+		case HTTPRequest::RESULT_NO_RESPONSE:
+		case HTTPRequest::RESULT_TIMEOUT:
+			return true;
+	}
+
+	return p_result == HTTPRequest::RESULT_SUCCESS &&
+			(p_response_code == HTTPClient::RESPONSE_REQUEST_TIMEOUT ||
+					p_response_code == HTTPClient::RESPONSE_TOO_MANY_REQUESTS ||
+					p_response_code == HTTPClient::RESPONSE_INTERNAL_SERVER_ERROR ||
+					p_response_code == HTTPClient::RESPONSE_BAD_GATEWAY ||
+					p_response_code == HTTPClient::RESPONSE_SERVICE_UNAVAILABLE ||
+					p_response_code == HTTPClient::RESPONSE_GATEWAY_TIMEOUT);
+}
+
+int64_t TemplateDownloader::_get_fragment_download_size() const {
+	if (fragment_end_byte < fragment_start_byte) {
+		return 0;
+	}
+	return fragment_end_byte - fragment_start_byte + 1;
+}
+
+int64_t TemplateDownloader::_get_partial_download_size() const {
+	if (partial_download_path.is_empty() || !FileAccess::exists(partial_download_path)) {
+		return 0;
+	}
+
+	Ref<FileAccess> f = FileAccess::open(partial_download_path, FileAccess::READ);
+	if (f.is_null()) {
+		return 0;
+	}
+	return MIN((int64_t)f->get_length(), _get_fragment_download_size());
+}
+
+void TemplateDownloader::_clear_partial_download() {
+	if (!partial_download_path.is_empty() && FileAccess::exists(partial_download_path)) {
+		DirAccess::remove_absolute(partial_download_path);
+	}
+}
+
+Error TemplateDownloader::_request_file_fragment() {
+	const int64_t fragment_size = _get_fragment_download_size();
+	if (fragment_size <= 0) {
+		return ERR_INVALID_DATA;
+	}
+
+	int64_t partial_size = _get_partial_download_size();
+	if (partial_size >= fragment_size) {
+		_download_completed();
+		return OK;
+	}
+
+	request_start_partial_size = partial_size;
+	const int64_t request_start_byte = fragment_start_byte + partial_size;
+	const String data_range = vformat("Range: bytes=%d-%d", request_start_byte, fragment_end_byte);
+
+	set_download_file(partial_download_path);
+	set_keep_partial_download(true);
+	set_append_to_download_file(partial_size > 0);
+	return request(url, PackedStringArray{ data_range }, HTTPClient::METHOD_GET);
+}
+
+bool TemplateDownloader::_retry_file_fragment(const String &p_reason) {
+	if (retry_count >= MAX_DOWNLOAD_RETRIES) {
+		_download_failed(vformat(TTR("%s. Download failed after %d retries."), p_reason, MAX_DOWNLOAD_RETRIES));
+		return false;
+	}
+
+	retry_count++;
+	Error err = _request_file_fragment();
+	if (err != OK) {
+		_download_failed(vformat(TTR("Download request failed: %s."), TTR(error_names[err])));
+		return false;
+	}
+	return true;
+}
+
+void TemplateDownloader::_download_completed() {
+	Ref<FileAccess> fragment_file = FileAccess::open(partial_download_path, FileAccess::READ);
+	if (fragment_file.is_null()) {
+		_download_failed(TTR("Failed to open downloaded template fragment."));
+		return;
+	}
+
+	const int64_t fragment_size = fragment_file->get_length();
+	PackedByteArray fragment_data;
+	fragment_data.resize(fragment_size);
+	const uint64_t bytes_read = fragment_file->get_buffer(fragment_data.ptrw(), fragment_data.size());
+	fragment_file.unref();
+	if (bytes_read != (uint64_t)fragment_size) {
+		_download_failed(TTR("Failed to read downloaded template fragment."));
+		return;
+	}
+
+	const String mini_zip_path = EditorPaths::get_singleton()->get_temp_dir().path_join(filename + ".zip");
+	const uint8_t *fragment = fragment_data.ptr();
+
+	const int local_file_header_size = 30;
+	if (fragment_data.size() < local_file_header_size) {
+		_download_failed(vformat(TTR("Archive fragment too small. Loaded: %d, required: %d."), fragment_data.size(), local_file_header_size));
+		return;
+	}
+
+	int local_name_len = decode_uint16(fragment + 26);
+	int local_extra_len = decode_uint16(fragment + 28);
+	int full_file_chunk_size = local_file_header_size + local_name_len + local_extra_len + file_info.compressed_size;
+
+	if (fragment_data.size() < full_file_chunk_size) {
+		_download_failed(vformat(TTR("Archive fragment too small. Loaded: %d, required: %d."), fragment_data.size(), full_file_chunk_size));
+		return;
+	}
+
+	const PackedByteArray clean_fragment = fragment_data.slice(0, full_file_chunk_size);
+
+	PackedByteArray cd_record = file_info.raw_record.duplicate();
+	uint8_t *record_write = cd_record.ptrw();
+	encode_uint32(0, record_write + 42); // IMPORTANT: Set the offset to 0, as the file is at the very beginning of the mini-ZIP.
+
+	// EOCD (End of Central Directory)
+	PackedByteArray eocd;
+	eocd.resize_initialized(22);
+
+	uint8_t *eocd_write = eocd.ptrw();
+	encode_uint32(0x06054b50, eocd_write); // Signature (4 bytes).
+	// Offsets 4-7 remain 0 (disk numbers).
+	encode_uint16(1, eocd_write + 8); // Number of entries on this disk (2 bytes).
+	encode_uint16(1, eocd_write + 10); // Total number of entries (2 bytes).
+	encode_uint32(cd_record.size(), eocd_write + 12); // Central Directory size (4 bytes).
+	encode_uint32(clean_fragment.size(), eocd_write + 16); // CD start offset (after file data) (4 bytes).
+
+	// Write Mini-Zip to a file.
+	Ref<FileAccess> f = FileAccess::open(mini_zip_path, FileAccess::WRITE);
+	if (f.is_null()) {
+		_download_failed(TTR("Failed to open mini-ZIP for writing."));
+		return;
+	}
+	f->store_buffer(clean_fragment);
+	f->store_buffer(cd_record);
+	f->store_buffer(eocd);
+	f.unref();
+
+	PackedByteArray extracted_data;
+	{
+		// Read back the mini-ZIP.
+		Ref<FileAccess> zip_access;
+		zlib_filefunc_def io = zipio_create_io(&zip_access);
+		unzFile uzf = unzOpen2(mini_zip_path.utf8().get_data(), &io);
+		if (!uzf) {
+			_download_failed(TTR("ZIP reader could not open mini-ZIP."));
+			return;
+		}
+
+		// IMPORTANT: The path in the ZIP reader must exactly match the one in the CD.
+
+		int err = UNZ_OK;
+
+		// Locate and open the file.
+		err = godot_unzip_locate_file(uzf, file_info.name, true);
+		if (err != UNZ_OK) {
+			unzClose(uzf);
+			_download_failed(TTR("File does not exist in ZIP archive."));
+			return;
+		}
+
+		err = unzOpenCurrentFile(uzf);
+		if (err != UNZ_OK) {
+			unzClose(uzf);
+			_download_failed(TTR("Could not open file within ZIP archive."));
+			return;
+		}
+
+		// Read the file info.
+		unz_file_info info;
+		err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
+		if (err != UNZ_OK) {
+			unzCloseCurrentFile(uzf);
+			unzClose(uzf);
+			_download_failed(TTR("Unable to read file information from ZIP archive."));
+			return;
+		}
+
+		// Read the file data.
+		extracted_data.resize(info.uncompressed_size);
+		uint8_t *buffer = extracted_data.ptrw();
+		int to_read = extracted_data.size();
+		while (to_read > 0) {
+			int bytes_read_current = unzReadCurrentFile(uzf, buffer, to_read);
+			if (bytes_read_current < 0 || (bytes_read_current == UNZ_EOF && to_read != 0)) {
+				unzCloseCurrentFile(uzf);
+				unzClose(uzf);
+				_download_failed(TTR("IO/zlib error reading file from ZIP archive."));
+				return;
+			}
+			buffer += bytes_read_current;
+			to_read -= bytes_read_current;
+		}
+
+		// Verify the data and return.
+		err = unzCloseCurrentFile(uzf);
+		if (err != UNZ_OK) {
+			unzClose(uzf);
+			_download_failed(TTR("CRC error reading file from ZIP archive."));
+			return;
+		}
+		unzClose(uzf);
+	}
+
+	if (extracted_data.is_empty()) {
+		_download_failed(TTR("Mini-ZIP data was empty."));
+		// The mini-ZIP is not deleted for inspection.
+		return;
+	}
+
+	DirAccess::remove_absolute(mini_zip_path);
+
+	f = FileAccess::open(target_directory.path_join(filename), FileAccess::WRITE);
+	if (f.is_null()) {
+		_download_failed(TTR("Failed to open template file for writing."));
+		return;
+	}
+	f->store_buffer(extracted_data);
+	f.unref();
+
+	const String completed_file = filename;
+	_clear_partial_download();
+	set_download_file(String());
+	set_keep_partial_download(false);
+	set_append_to_download_file(false);
+
+	current_step = Step::WAITING;
+	filename = String();
+	url = String();
+	file_size = 0;
+	file_info = FileInfo();
+	fragment_start_byte = 0;
+	fragment_end_byte = 0;
+	request_start_partial_size = 0;
+	retry_count = 0;
+	range_restart_attempted = false;
+	partial_download_path = String();
+
+	emit_signal(SNAME("download_completed"), completed_file);
 }
 
 void TemplateDownloader::_notification(int p_what) {
@@ -1993,24 +2153,44 @@ void TemplateDownloader::_bind_methods() {
 Error TemplateDownloader::download_template(const String &p_file_name, const String &p_source) {
 	url = p_source;
 	filename = p_file_name;
+	partial_download_path = EditorPaths::get_singleton()->get_temp_dir().path_join((filename + "-" + url).md5_text() + "-" + filename.validate_filename() + ".part");
+	_clear_partial_download();
 
+	set_download_file(String());
+	set_keep_partial_download(false);
+	set_append_to_download_file(false);
+	request_start_partial_size = 0;
+	retry_count = 0;
+	range_restart_attempted = false;
 	current_step = Step::QUERYING;
 	return request(p_source, PackedStringArray(), HTTPClient::METHOD_HEAD);
 }
 
 void TemplateDownloader::cancel_download() {
 	cancel_request();
+	_clear_partial_download();
 
 	current_step = Step::WAITING;
 	filename = String();
 	url = String();
+	partial_download_path = String();
 	file_size = 0;
 	file_info = FileInfo();
+	fragment_start_byte = 0;
+	fragment_end_byte = 0;
+	request_start_partial_size = 0;
+	retry_count = 0;
+	range_restart_attempted = false;
 }
 
 float TemplateDownloader::get_download_progress() const {
 	if (current_step == Step::DOWNLOADING) {
-		return (float)get_downloaded_bytes() / get_body_size();
+		const int64_t fragment_size = _get_fragment_download_size();
+		if (fragment_size <= 0) {
+			return 0.0f;
+		}
+		const int64_t downloaded_size = MIN(request_start_partial_size + get_downloaded_bytes(), fragment_size);
+		return (float)downloaded_size / (float)fragment_size;
 	}
 	return 0.0f;
 }
