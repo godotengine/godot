@@ -866,6 +866,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/files/open_dominant_script_on_scene_change", false, true);
 	_initial_set("text_editor/behavior/files/drop_preload_resources_as_uid", true, true);
 
+	// Behavior: Diagnostics
+	_initial_set("text_editor/behavior/diagnostics/enable_tooltips", true, true);
+
 	// Behavior: Documentation
 	_initial_set("text_editor/behavior/documentation/enable_tooltips", true, true);
 

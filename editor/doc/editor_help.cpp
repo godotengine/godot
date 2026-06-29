@@ -5009,7 +5009,7 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 	}
 }
 
-Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_shortcut) {
+Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_shortcut, const String &p_diagnostics) {
 	ERR_FAIL_NULL_V(p_target, _make_invisible_control());
 
 	// Show the custom tooltip only if it is not already visible.
@@ -5023,7 +5023,20 @@ Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_s
 
 	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target, p_shortcut));
 	help_bit->connect("request_hide", callable_mp(static_cast<Node *>(tooltip), &Node::queue_free));
-	tooltip->add_child(help_bit);
+
+	bool has_diagnostics = !p_diagnostics.is_empty();
+	bool has_doc_tooltip = !p_symbol.is_empty() || !p_prologue.is_empty();
+
+	if (has_diagnostics) {
+		tooltip->diagnostics_label->set_text(p_diagnostics);
+	} else {
+		tooltip->diagnostics_label->hide();
+	}
+
+	if (has_doc_tooltip) {
+		tooltip->vbox->add_child(help_bit);
+	}
+
 	p_target->add_child(tooltip);
 
 	help_bit->update_content_height();
@@ -5087,6 +5100,19 @@ EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target, bool p_shortcut) {
 	_is_shortcut_pressed = p_shortcut;
 
 	set_theme_type_variation("TooltipPanel");
+
+	diagnostics_label = memnew(RichTextLabel);
+	diagnostics_label->set_theme_type_variation("EditorHelpBitTooltipTitle");
+	diagnostics_label->set_custom_minimum_size(Size2(640 * EDSCALE, 0)); // GH-93031. Set the minimum width even if `fit_content` is true.
+	diagnostics_label->set_fit_content(true);
+	diagnostics_label->set_selection_enabled(true);
+	diagnostics_label->set_context_menu_enabled(false);
+	diagnostics_label->set_use_bbcode(true);
+
+	vbox = memnew(VBoxContainer);
+	vbox->add_child(diagnostics_label);
+
+	add_child(vbox);
 
 	timer = memnew(Timer);
 	timer->set_wait_time(0.25);
