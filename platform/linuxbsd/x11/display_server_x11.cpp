@@ -4841,7 +4841,7 @@ bool DisplayServerX11::mouse_process_popups() {
 					List<DisplayServerEnums::WindowID>::Element *C = nullptr;
 					List<DisplayServerEnums::WindowID>::Element *E = popup_list.back();
 					
-					//Prevent engine from false closing popup menu
+					// Prevent premature closing of popup menu.
 					if(last_mouse_monitor_mask == 0){
 						last_mouse_monitor_mask = mask;
 					}
