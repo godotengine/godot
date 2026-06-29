@@ -2227,6 +2227,15 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 			p_theme->set_stylebox("sub_inspector_property_bg" + itos(i + 1), EditorStringName(EditorStyles), bg_color);
 
+			// EditorInspectorCategory when inside a sub-inspector.
+			p_theme->set_stylebox("sub_inspector_category_bg", EditorStringName(EditorStyles), category_bg);
+
+			// The same as above, but colored for nesting.
+			Ref<StyleBoxFlat> category_bg_color = category_bg->duplicate();
+			category_bg_color->set_bg_color(p_config.dark_color_1.lerp(si_base_color, 0.15));
+
+			p_theme->set_stylebox("sub_inspector_color_category_bg" + itos(i + 1), EditorStringName(EditorStyles), category_bg_color);
+
 			// Dictionary editor add item.
 			// Expand to the left and right by 4px to compensate for the dictionary editor margins.
 			Color style_dictionary_bg_color = p_config.dark_color_3.lerp(si_base_color, 0.08);
