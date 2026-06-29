@@ -163,15 +163,35 @@ void AppleEmbedded::alert(const char *p_alert, const char *p_title) {
 	NSString *title = [NSString stringWithUTF8String:p_title];
 	NSString *message = [NSString stringWithUTF8String:p_alert];
 
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
-	UIAlertAction *button = [UIAlertAction actionWithTitle:@"OK"
-													 style:UIAlertActionStyleCancel
-												   handler:^(id){
-												   }];
+	if (![NSThread isMainThread]) {
+		dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+		dispatch_async(dispatch_get_main_queue(), ^{
+			UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+			UIAlertAction *button = [UIAlertAction actionWithTitle:@"OK"
+															 style:UIAlertActionStyleCancel
+														   handler:^(id) {
+															   dispatch_semaphore_signal(semaphore);
+														   }];
+			[alert addAction:button];
+			[GDTAppDelegateService.viewController presentViewController:alert animated:NO completion:nil];
+		});
+		dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+	} else {
+		__block bool alert_closed = false;
+		UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+		UIAlertAction *button = [UIAlertAction actionWithTitle:@"OK"
+														 style:UIAlertActionStyleCancel
+													   handler:^(id) {
+														   alert_closed = true;
+													   }];
 
-	[alert addAction:button];
+		[alert addAction:button];
+		[GDTAppDelegateService.viewController presentViewController:alert animated:NO completion:nil];
 
-	[GDTAppDelegateService.viewController presentViewController:alert animated:YES completion:nil];
+		while (!alert_closed) {
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+		}
+	}
 }
 
 String AppleEmbedded::get_model() const {

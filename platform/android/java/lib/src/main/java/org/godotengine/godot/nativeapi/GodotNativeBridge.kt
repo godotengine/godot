@@ -108,9 +108,22 @@ internal class GodotNativeBridge(private val godot: Godot) {
 	private fun setKeepScreenOn(enabled: Boolean) = godot.setKeepScreenOn(enabled)
 
 	private fun restart() { godot.primaryHost?.onGodotRestartRequested(godot) }
-
+	@Keep
 	private fun alert(message: String, title: String) {
-		godot.alert(message, title)
+		val activity = godot.getActivity()
+		if (activity != null) {
+			val latch = java.util.concurrent.CountDownLatch(1)
+			godot.alert(message, title) {
+				latch.countDown()
+			}
+			try {
+				latch.await()
+			} catch (e: InterruptedException) {
+				Thread.currentThread().interrupt()
+			}
+		} else {
+			godot.alert(message, title)
+		}
 	}
 
 	private fun forceQuit(instanceId: Int) = godot.forceQuit(instanceId)

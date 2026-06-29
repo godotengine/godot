@@ -891,6 +891,9 @@ class Godot private constructor(val context: Context) {
 				okCallback?.run()
 				dialog.cancel()
 			}
+			builder.setOnCancelListener {
+				okCallback?.run()
+			}
 			val dialog = builder.create()
 			dialog.show()
 		}
