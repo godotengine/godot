@@ -682,6 +682,9 @@ void ScriptTextEditor::_inline_object_handle_click(const Dictionary &p_info, con
 	inline_color_start = p_info["column"];
 	inline_color_end = p_info["color_end"];
 
+	// Reset tooltip hover timer.
+	hover_tooltip_timer->stop();
+
 	_update_color_constructor_options();
 	inline_color_options->select(p_info["color_mode"]);
 
@@ -1382,12 +1385,57 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 }
 
 void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column, bool p_shortcut) {
-	if (!EDITOR_GET("text_editor/behavior/documentation/enable_tooltips").booleanize()) {
+	bool enable_docs = EDITOR_GET("text_editor/behavior/documentation/enable_tooltips").booleanize();
+	bool enable_diagnostics = EDITOR_GET("text_editor/behavior/diagnostics/enable_tooltips").booleanize();
+
+	String diagnostic_strings_concatenated;
+	if (enable_diagnostics) {
+		// Look for any errors that include this location.
+		PackedStringArray error_strings;
+		for (const ScriptLanguage::ScriptError &e : errors) {
+			if (_is_line_col_in_range(p_row + 1, p_column + 1, e.start_line, e.start_column, e.end_line, e.end_column)) {
+				error_strings.append(e.message);
+			}
+		}
+
+		// Look for any warnings that include this location.
+		PackedStringArray warning_strings;
+		for (const ScriptLanguage::Warning &w : warnings) {
+			if (_is_line_col_in_range(p_row + 1, p_column + 1, w.start_line, w.start_column, w.end_line, w.end_column)) {
+				warning_strings.append(vformat("(%s): %s", w.string_code, w.message));
+			}
+		}
+
+		if (!error_strings.is_empty()) {
+			const Color error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+			diagnostic_strings_concatenated += vformat("[color=%s]", error_color.to_html());
+			diagnostic_strings_concatenated += String("\n").join(error_strings).replace("[", "[lb]");
+			diagnostic_strings_concatenated += "[/color]";
+		}
+		if (!error_strings.is_empty() && !warning_strings.is_empty()) {
+			diagnostic_strings_concatenated += "\n";
+		}
+		if (!warning_strings.is_empty()) {
+			const Color warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+			diagnostic_strings_concatenated += vformat("[color=%s]", warning_color.to_html());
+			diagnostic_strings_concatenated += String("\n").join(warning_strings).replace("[", "[lb]");
+			diagnostic_strings_concatenated += "[/color]";
+		}
+	}
+
+	// If documentation tooltips aren't enabled, there's no need to process the rest of the method.
+	// We can just pop up the tooltip with the diagnostics, if they are enabled (if not, we don't need
+	// to do anything at all).
+	if (!enable_docs || p_symbol.is_empty()) {
+		if (enable_diagnostics) {
+			Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), String(), String(), true, p_shortcut, diagnostic_strings_concatenated);
+			memdelete(tmp);
+		}
 		return;
 	}
 
 	if (p_symbol.begins_with("res://") || p_symbol.begins_with("uid://")) {
-		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol, String(), false, false, diagnostic_strings_concatenated);
 		memdelete(tmp);
 		return;
 	}
@@ -1499,8 +1547,8 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 		debug_value = TTR("Current value: ") + debug_value.replace("[", "[lb]");
 	}
 
-	if (!doc_symbol.is_empty() || !debug_value.is_empty()) {
-		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true, p_shortcut);
+	if (!doc_symbol.is_empty() || !debug_value.is_empty() || !diagnostic_strings_concatenated.is_empty()) {
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true, p_shortcut, diagnostic_strings_concatenated);
 		memdelete(tmp);
 	}
 }
@@ -1891,8 +1939,16 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	code_editor->toggle_inline_comment(delimiter);
 }
 
+void ScriptTextEditor::_apply_project_settings() {
+	hover_tooltip_timer->set_wait_time(GLOBAL_GET_CACHED(double, "gui/timers/tooltip_delay_sec"));
+}
+
 void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			_apply_project_settings();
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptTextEditor::_apply_project_settings));
+		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_ready() && is_visible_in_tree()) {
 				_update_errors();
@@ -1918,6 +1974,9 @@ void ScriptTextEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAG_END: {
 			drag_info_label->hide();
+		} break;
+		case NOTIFICATION_MOUSE_EXIT: {
+			hover_tooltip_timer->stop();
 		} break;
 	}
 }
@@ -2419,6 +2478,7 @@ void ScriptTextEditor::_assign_dragged_export_variables() {
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	Ref<InputEventKey> k = p_ev;
+	Ref<InputEventMouseMotion> mm = p_ev;
 	Point2 local_pos;
 	bool create_menu = false;
 
@@ -2430,6 +2490,22 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 		tx->adjust_viewport_to_caret(0);
 		local_pos = tx->get_caret_draw_pos(0);
 		create_menu = true;
+	} else if (mm.is_valid() && p_ev->get_device() != InputEvent::DEVICE_ID_EMULATION) {
+		Vector2i mpos = mm->get_position();
+		if (tx->is_layout_rtl()) {
+			mpos.x = tx->get_size().x - mpos.x;
+		}
+
+		Point2i last_hover_tooltip_pos = hover_tooltip_pos;
+		hover_tooltip_pos = tx->get_line_column_at_pos(mpos, false, false);
+		if (hover_tooltip_pos != last_hover_tooltip_pos) {
+			hover_tooltip_timer->start();
+		}
+	}
+
+	// Matching behavior in CodeEdit::gui_input (see GH-121311)
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() != Key::CTRL && k->get_keycode() != Key::ALT && k->get_keycode() != Key::SHIFT && k->get_keycode() != Key::META && k->get_keycode() != Key::CAPSLOCK) {
+		hover_tooltip_timer->stop();
 	}
 
 	if (create_menu) {
@@ -2619,7 +2695,6 @@ void ScriptTextEditor::register_editor() {
 void ScriptTextEditor::_enable_code_editor() {
 	code_editor->connect("show_errors_panel", callable_mp(this, &ScriptTextEditor::_show_errors_panel));
 	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
-	code_editor->get_text_editor()->connect("symbol_hovered", callable_mp(this, &ScriptTextEditor::_show_symbol_tooltip).bind(false));
 	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
@@ -2636,6 +2711,20 @@ void ScriptTextEditor::_enable_code_editor() {
 	add_child(quick_open);
 
 	add_child(connection_info_dialog);
+}
+
+void ScriptTextEditor::_on_hover_tooltip_timer_timeout() {
+	CodeEdit *ce = code_editor->get_text_editor();
+	const String word = ce->get_lookup_word(hover_tooltip_pos.y, hover_tooltip_pos.x);
+	const int line = hover_tooltip_pos.y;
+	const int column = hover_tooltip_pos.x;
+
+	bool is_mouse_over_code_completion_popup = ce->get_code_completion_selected_index() != -1 && ce->get_code_completion_rect().has_point(get_local_mouse_position());
+	if (line < 0 || column < 0 || Input::get_singleton()->is_anything_pressed() || is_mouse_over_code_completion_popup) {
+		return;
+	}
+
+	_show_symbol_tooltip(word, line, column, false);
 }
 
 ScriptTextEditor::ScriptTextEditor() {
@@ -2680,8 +2769,6 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->add_child(drag_info_label);
 	drag_info_label->hide();
 
-	code_editor->get_text_editor()->set_symbol_tooltip_on_hover_enabled(true);
-
 	inline_color_popup = memnew(PopupPanel);
 	add_child(inline_color_popup);
 
@@ -2700,6 +2787,14 @@ ScriptTextEditor::ScriptTextEditor() {
 	inline_color_picker->get_slider_container()->add_sibling(inline_color_options);
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
+
+	// ScriptTextEditor uses its own timer instead of the CodeEdit symbol_hovered signal
+	// so that it can detect hovering over non-symbols for the purposes of warning/error tooltips.
+	hover_tooltip_timer = memnew(Timer);
+	hover_tooltip_timer->set_wait_time(0.5);
+	hover_tooltip_timer->set_one_shot(true);
+	hover_tooltip_timer->connect("timeout", callable_mp(this, &ScriptTextEditor::_on_hover_tooltip_timer_timeout));
+	add_child(hover_tooltip_timer, false, INTERNAL_MODE_FRONT);
 
 	update_settings();
 	set_process_shortcut_input(true);
