@@ -85,8 +85,7 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 
 	Array devices_array = v_devices;
 	Vector<CameraInfo> camera_info;
-	for (int i = 0; i < devices_array.size(); i++) {
-		Variant device_variant = devices_array.get(i);
+	for (Variant device_variant : devices_array) {
 		if (device_variant.get_type() != Variant::DICTIONARY) {
 			continue;
 		}

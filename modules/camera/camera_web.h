@@ -60,11 +60,11 @@ class CameraFeedWeb : public CameraFeed {
 	static void _on_formats_callback(void *p_context, const char *p_result);
 
 public:
-	bool activate_feed() override;
-	void deactivate_feed() override;
-	bool set_format(int p_index, const Dictionary &p_parameters) override;
-	Array get_formats() const override;
-	FeedFormat get_format() const override;
+	virtual bool activate_feed() override;
+	virtual void deactivate_feed() override;
+	virtual bool set_format(int p_index, const Dictionary &p_parameters) override;
+	virtual Array get_formats() const override;
+	virtual FeedFormat get_format() const override;
 	String get_device_id() const { return device_id; }
 
 	CameraFeedWeb(const CameraInfo &info);
@@ -81,7 +81,7 @@ class CameraWeb : public CameraServer {
 	static void _on_get_cameras_callback(void *p_context, const Vector<CameraInfo> &p_camera_info);
 
 public:
-	void set_monitoring_feeds(bool p_monitoring_feeds) override;
+	virtual void set_monitoring_feeds(bool p_monitoring_feeds) override;
 
 	~CameraWeb();
 };
