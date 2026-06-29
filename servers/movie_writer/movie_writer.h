@@ -74,7 +74,7 @@ protected:
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_supported_extensions)
 
 	GDVIRTUAL3R_REQUIRED(Error, _write_begin, const Size2i &, uint32_t, const String &)
-	GDVIRTUAL2R_REQUIRED(Error, _write_frame, const Ref<Image> &, GDExtensionConstPtr<int32_t>)
+	GDVIRTUAL2R_REQUIRED(Error, _write_frame, const Ref<Image> &, GDExtensionPtr<const int32_t>)
 	GDVIRTUAL0_REQUIRED(_write_end)
 
 	static void _bind_methods();
