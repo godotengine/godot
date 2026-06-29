@@ -125,12 +125,12 @@ public:
 		return (void *)_data;
 	}
 
-	_FORCE_INLINE_ const String &string() const {
+	_FORCE_INLINE_ const String &string() const _LIFETIME_BOUND_ {
 		static const String EMPTY;
 		return _data ? _data->name : EMPTY;
 	}
 
-	_FORCE_INLINE_ operator const String &() const {
+	_FORCE_INLINE_ operator const String &() const _LIFETIME_BOUND_ {
 		return string();
 	}
 
