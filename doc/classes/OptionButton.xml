@@ -234,7 +234,7 @@
 			If [code]true[/code], the currently selected item can be selected again.
 		</member>
 		<member name="fit_to_longest_item" type="bool" setter="set_fit_to_longest_item" getter="is_fit_to_longest_item" default="true">
-			If [code]true[/code], minimum size will be determined by the longest item's text, instead of the currently selected one's.
+			If [code]true[/code], minimum size will be determined by the longest item's width, instead of the currently selected one's. It will also take the popup's margins into account, making the button match its total width.
 			[b]Note:[/b] For performance reasons, the minimum size doesn't update immediately when adding, removing or modifying items.
 		</member>
 		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
