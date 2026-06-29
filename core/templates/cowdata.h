@@ -161,13 +161,13 @@ public:
 		p_from._ptr = nullptr;
 	}
 
-	_FORCE_INLINE_ T *ptrw() {
+	_FORCE_INLINE_ T *ptrw() _LIFETIME_BOUND_ {
 		// If forking fails, we can only crash.
 		CRASH_COND(_copy_on_write());
 		return _ptr;
 	}
 
-	_FORCE_INLINE_ const T *ptr() const {
+	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ {
 		return _ptr;
 	}
 
@@ -213,8 +213,8 @@ public:
 	Error insert(Size p_pos, T &&p_val);
 	Error push_back(T &&p_val);
 
-	_FORCE_INLINE_ operator Span<T>() const { return Span<T>(ptr(), size()); }
-	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return Span<T>(ptr(), size()); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return operator Span<T>(); }
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData() { _unref(); }

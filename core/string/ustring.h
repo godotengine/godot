@@ -173,9 +173,9 @@ class [[nodiscard]] CharStringT {
 	static constexpr T _null = 0;
 
 public:
-	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const T *get_data() const { return size() ? ptr() : &_null; }
+	_FORCE_INLINE_ T *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
+	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
+	_FORCE_INLINE_ const T *get_data() const _LIFETIME_BOUND_ { return size() ? ptr() : &_null; }
 
 	// Returns the number of characters in the buffer, including the terminating NUL character.
 	// In most cases, length() should be used instead.
@@ -184,8 +184,8 @@ public:
 	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
-	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
-	_FORCE_INLINE_ Span<T> span() const { return Span(ptr(), length()); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return Span(ptr(), length()); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return Span(ptr(), length()); }
 
 	/// Resizes the string. The given size must include the null terminator.
 	/// New characters are not initialized, and should be set by the caller.
@@ -293,9 +293,9 @@ public:
 		npos = -1 ///<for "some" compatibility with std::string (npos is a huge value in std::string)
 	};
 
-	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const char32_t *get_data() const { return size() ? ptr() : &_null; }
+	_FORCE_INLINE_ char32_t *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
+	_FORCE_INLINE_ const char32_t *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
+	_FORCE_INLINE_ const char32_t *get_data() const _LIFETIME_BOUND_ { return size() ? ptr() : &_null; }
 
 	// Returns the number of characters in the buffer, including the terminating NUL character.
 	// In most cases, length() should be used instead.
@@ -304,8 +304,8 @@ public:
 	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
-	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
-	_FORCE_INLINE_ Span<char32_t> span() const { return Span(ptr(), length()); }
+	_FORCE_INLINE_ operator Span<char32_t>() const _LIFETIME_BOUND_ { return Span(ptr(), length()); }
+	_FORCE_INLINE_ Span<char32_t> span() const _LIFETIME_BOUND_ { return Span(ptr(), length()); }
 
 	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 
