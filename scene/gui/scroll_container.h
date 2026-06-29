@@ -104,6 +104,11 @@ private:
 
 		int scrollbar_h_separation = 0;
 		int scrollbar_v_separation = 0;
+
+		int focus_padding_left = 0;
+		int focus_padding_top = 0;
+		int focus_padding_right = 0;
+		int focus_padding_bottom = 0;
 	} theme_cache;
 
 	void _cancel_drag();
