@@ -13,6 +13,12 @@
 		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
 	</tutorials>
 	<methods>
+		<method name="get_fft" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<description>
+				Returns the result of the last FFT performed. The higher the index, the higher the frequency it represents. The [code]x[/code] components of the return value represent the left stereo channel, and [code]y[/code] represent the right channel.
+			</description>
+		</method>
 		<method name="get_magnitude_for_frequency_range" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="from_hz" type="float" />
