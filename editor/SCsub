@@ -7,25 +7,25 @@ import editor_builders
 
 Import("env")
 
-env.editor_sources = []
+env["EDITOR_SOURCES"] = []
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     # Generate doc data paths
     env.CommandNoCache(
         "doc/doc_data_class_path.gen.h",
-        env.Value(env.doc_class_path),
+        env.Value(env["DOC_CLASS_PATH"]),
         env.Run(editor_builders.doc_data_class_path_builder),
     )
 
     # Register exporters
     gen_exporters = env.CommandNoCache(
         "export/register_exporters.gen.cpp",
-        env.Value(env.platform_exporters),
+        env.Value(env["PLATFORM_EXPORTERS"]),
         env.Run(editor_builders.register_exporters_builder),
     )
-    for e in env.platform_exporters:
+    for e in env["PLATFORM_EXPORTERS"]:
         # Add all .cpp files in export folder
-        env.add_source_files(env.editor_sources, f"../platform/{e}/export/*.cpp")
+        env.add_source_files(env["EDITOR_SOURCES"], f"../platform/{e}/export/*.cpp")
 
     # Core API documentation.
     docs = []
@@ -33,7 +33,7 @@ if env.editor_build:
 
     # Module API documentation.
     module_dirs = []
-    for d in env.doc_class_path.values():
+    for d in env["DOC_CLASS_PATH"].values():
         if d not in module_dirs:
             module_dirs.append(d)
 
@@ -70,9 +70,9 @@ if env.editor_build:
             env.Run(editor_builders.make_translations),
         )
 
-    env.add_source_files(env.editor_sources, "*.cpp")
-    env.add_source_files(env.editor_sources, gen_exporters)
-    env.add_source_files(env.editor_sources, translation_targets.keys())
+    env.add_source_files(env["EDITOR_SOURCES"], "*.cpp")
+    env.add_source_files(env["EDITOR_SOURCES"], gen_exporters)
+    env.add_source_files(env["EDITOR_SOURCES"], translation_targets.keys())
 
     SConscript("animation/SCsub")
     SConscript("asset_library/SCsub")
@@ -98,5 +98,5 @@ if env.editor_build:
     SConscript("translations/SCsub")
     SConscript("version_control/SCsub")
 
-    lib = env.add_library("editor", env.editor_sources)
+    lib = env.add_library("editor", env["EDITOR_SOURCES"])
     env.Prepend(LIBS=[lib])

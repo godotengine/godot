@@ -9,10 +9,10 @@ env_mp = env_modules.Clone()
 module_obj = []
 env_mp.add_source_files(module_obj, "*.cpp")
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     env_mp.add_source_files(module_obj, "editor/*.cpp")
 
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 if env["tests"]:
-    env_mp.add_source_files(env.modules_sources, "./tests/*.cpp")
+    env_mp.add_source_files(env["MODULES_SOURCES"], "./tests/*.cpp")

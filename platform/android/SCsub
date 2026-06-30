@@ -82,15 +82,15 @@ elif sys.platform.startswith("win"):
         host_subpath = "windows"
 
 if lib_arch_dir != "" and host_subpath != "":
-    if env.debug_features:
-        if env.editor_build and env["store_release"]:
+    if env["DEBUG_FEATURES"]:
+        if env["EDITOR_BUILD"] and env["store_release"]:
             lib_type_dir = "release"
         else:
             lib_type_dir = "debug"
     else:  # Release
         lib_type_dir = "release"
 
-    if env.editor_build:
+    if env["EDITOR_BUILD"]:
         lib_tools_dir = "tools/"
     else:
         lib_tools_dir = ""
@@ -104,7 +104,7 @@ if lib_arch_dir != "" and host_subpath != "":
 
     if env["debug_symbols"] and env["separate_debug_symbols"]:
         debug_symbols_zip_file = (
-            ("#bin/android-editor-" if env.editor_build else "#bin/android-template-")
+            ("#bin/android-editor-" if env["EDITOR_BUILD"] else "#bin/android-template-")
             + lib_type_dir
             + "-native-symbols.zip"
         )

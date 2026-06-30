@@ -26,7 +26,7 @@ if env["builtin_libtheora"]:
         "state.c",
     ]
 
-    if env.editor_build:
+    if env["EDITOR_BUILD"]:
         thirdparty_sources += [
             "analyze.c",
             "encfrag.c",
@@ -50,7 +50,7 @@ if env["builtin_libtheora"]:
         "x86/x86state.c",
     ]
 
-    if env.editor_build:
+    if env["EDITOR_BUILD"]:
         thirdparty_sources_x86 += [
             "x86/mmxencfrag.c",
             "x86/mmxfdct.c",
@@ -68,7 +68,7 @@ if env["builtin_libtheora"]:
         "x86_vc/x86state.c",
     ]
 
-    if env.editor_build:
+    if env["EDITOR_BUILD"]:
         thirdparty_sources_x86_vc += [
             "x86_vc/mmxencfrag.c",
             "x86_vc/mmxfdct.c",
@@ -97,7 +97,7 @@ if env["builtin_libtheora"]:
     env_thirdparty = env_theora.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
-    env.modules_sources += thirdparty_obj
+    env["MODULES_SOURCES"] += thirdparty_obj
 
 
 # Godot source files
@@ -106,10 +106,10 @@ module_obj = []
 
 env_theora.add_source_files(module_obj, "*.cpp")
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     env_theora.add_source_files(module_obj, "editor/*.cpp")
 
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

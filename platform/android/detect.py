@@ -120,7 +120,7 @@ def should_enable_perfetto(env: "SConsEnvironment"):
     cmdline_val = ARGUMENTS.get("profiler")
     if cmdline_val is not None:
         return cmdline_val == "perfetto"
-    elif env.debug_features and not (env["store_release"]) and not (env["production"]):
+    elif env["DEBUG_FEATURES"] and not (env["store_release"]) and not (env["production"]):
         return True
     return False
 

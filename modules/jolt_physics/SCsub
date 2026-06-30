@@ -147,10 +147,10 @@ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_jolt.Prepend(CPPPATH=[thirdparty_dir])
 
-if env.dev_build:
+if env["DEV_BUILD"]:
     env_jolt.Append(CPPDEFINES=["JPH_ENABLE_ASSERTS"])
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     env_jolt.Append(CPPDEFINES=["JPH_DEBUG_RENDERER"])
 
 if env["precision"] == "double":
@@ -161,7 +161,7 @@ env_thirdparty.disable_warnings()
 
 thirdparty_obj = []
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
-env.modules_sources += thirdparty_obj
+env["MODULES_SOURCES"] += thirdparty_obj
 
 # Godot source files
 
@@ -173,7 +173,7 @@ env_jolt.add_source_files(module_obj, "misc/*.cpp")
 env_jolt.add_source_files(module_obj, "objects/*.cpp")
 env_jolt.add_source_files(module_obj, "shapes/*.cpp")
 env_jolt.add_source_files(module_obj, "spaces/*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

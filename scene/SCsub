@@ -3,10 +3,10 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-env.scene_sources = []
+env["SCENE_SOURCES"] = []
 
 # Godot source files
-env.add_source_files(env.scene_sources, "*.cpp")
+env.add_source_files(env["SCENE_SOURCES"], "*.cpp")
 
 # Chain load SCsubs
 SConscript("main/SCsub")
@@ -21,5 +21,5 @@ SConscript("debugger/SCsub")
 SConscript("theme/SCsub")
 
 # Build it all as a library
-lib = env.add_library("scene", env.scene_sources)
+lib = env.add_library("scene", env["SCENE_SOURCES"])
 env.Prepend(LIBS=[lib])

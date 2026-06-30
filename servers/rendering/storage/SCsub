@@ -5,7 +5,7 @@ Import("env")
 
 import make_ltc_lut
 
-env.add_source_files(env.servers_sources, "*.cpp")
+env.add_source_files(env["SERVERS_SOURCES"], "*.cpp")
 
 env.CommandNoCache(
     "ltc_lut.gen.h",

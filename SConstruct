@@ -118,10 +118,10 @@ env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
     env["ENV"]["TERM"] = os.environ["TERM"]
 
-env.disabled_modules = set()
-env.module_version_string = ""
-env.msvc = False
-env.scons_version = env._get_major_minor_revision(scons_raw_version)
+env["DISABLED_MODULES"] = set()
+env["MODULE_VERSION_STRING"] = ""
+env["MSVC"] = False
+env["SCONS_VERSION"] = env._get_major_minor_revision(scons_raw_version)
 
 env.__class__.add_module_version_string = methods.add_module_version_string
 
@@ -493,7 +493,7 @@ for name, path in modules_detected.items():
     sys.path.remove(path)
     sys.modules.pop("config")
 
-env.modules_detected = modules_detected
+env["MODULES_DETECTED"] = modules_detected
 
 # Update the environment again after all the module options are added.
 opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
@@ -520,8 +520,8 @@ for tool in custom_tools:
 env.Prepend(CPPPATH=["#"])
 
 # configure ENV for platform
-env.platform_exporters = platform_exporters
-env.platform_apis = platform_apis
+env["PLATFORM_EXPORTERS"] = platform_exporters
+env["PLATFORM_APIS"] = platform_apis
 
 # Configuration of build targets:
 # - Editor or template
@@ -530,30 +530,30 @@ env.platform_apis = platform_apis
 # - Optimization level
 # - Debug symbols for crash traces / debuggers
 
-env.editor_build = env["target"] == "editor"
-env.dev_build = env["dev_build"]
-env.debug_features = env["target"] in ["editor", "template_debug"]
+env["EDITOR_BUILD"] = env["target"] == "editor"
+env["DEV_BUILD"] = env["dev_build"]
+env["DEBUG_FEATURES"] = env["target"] in ["editor", "template_debug"]
 
 if env["optimize"] == "auto":
-    if env.dev_build:
+    if env["DEV_BUILD"]:
         opt_level = "none"
-    elif env.debug_features:
+    elif env["DEBUG_FEATURES"]:
         opt_level = "speed_trace"
     else:  # Release
         opt_level = "speed"
     env["optimize"] = opt_level
 
-env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env.dev_build)
+env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env["DEV_BUILD"])
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     env.Append(CPPDEFINES=["TOOLS_ENABLED"])
 
-if env.debug_features:
+if env["DEBUG_FEATURES"]:
     # DEBUG_ENABLED enables debugging *features* and debug-only code, which is intended
     # to give *users* extra debugging information for their game development.
     env.Append(CPPDEFINES=["DEBUG_ENABLED"])
 
-if env.dev_build:
+if env["DEV_BUILD"]:
     # DEV_ENABLED enables *engine developer* code which should only be compiled for those
     # working on the engine itself.
     env.Append(CPPDEFINES=["DEV_ENABLED"])
@@ -580,7 +580,7 @@ if env["fast_unsafe"]:
 if env["use_precise_math_checks"]:
     env.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     if env["engine_update_check"]:
         env.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
 
@@ -627,10 +627,10 @@ if env.GetOption("num_jobs") == altered_num_jobs:
             )
             env.SetOption("num_jobs", safer_cpu_count)
 
-env.extra_suffix = ""
+env["EXTRA_SUFFIX"] = ""
 
 if env["extra_suffix"] != "":
-    env.extra_suffix += "." + env["extra_suffix"]
+    env["EXTRA_SUFFIX"] += "." + env["extra_suffix"]
 
 # Environment flags
 env.Append(CPPDEFINES=env.get("cppdefines", "").split())
@@ -643,7 +643,7 @@ env.Append(ARFLAGS=env.get("arflags", "").split())
 env.Append(RCFLAGS=env.get("rcflags", "").split())
 
 # Feature build profile
-env.disabled_classes = []
+env["DISABLED_CLASSES"] = []
 if env["build_profile"] != "":
     print(f'Using feature build profile: "{env["build_profile"]}"')
     import json
@@ -651,7 +651,7 @@ if env["build_profile"] != "":
     try:
         ft = json.load(open(env["build_profile"], "r", encoding="utf-8"))
         if "disabled_classes" in ft:
-            env.disabled_classes = ft["disabled_classes"]
+            env["DISABLED_CLASSES"] = ft["disabled_classes"]
         if "disabled_build_options" in ft:
             dbo = ft["disabled_build_options"]
             for c in dbo:
@@ -686,7 +686,7 @@ if env["strict_checks"]:
 if env["scu_build"]:
     env.Append(CPPDEFINES=["SCU_BUILD_ENABLED"])
     max_includes_per_scu = 8
-    if env.dev_build:
+    if env["DEV_BUILD"]:
         max_includes_per_scu = 1024
 
     read_scu_limit = int(env["scu_limit"])
@@ -705,7 +705,7 @@ if env.get("simulator"):
     platform_string += " (simulator)"
 print(f'Building for platform "{platform_string}", architecture "{env["arch"]}", target "{env["target"]}".')
 
-if env.dev_build:
+if env["DEV_BUILD"]:
     print_info("Developer build, with debug optimization level and debug symbols (unless overridden).")
 
 # Enforce our minimal compiler version requirements
@@ -776,7 +776,7 @@ elif methods.using_clang(env):
                 print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
                 env["debug_paths_relative"] = False
 
-elif env.msvc:
+elif env["MSVC"]:
     if cc_version_major == 16 and cc_version_minor < 11:
         # Ensure latest minor build of Visual Studio 2019.
         # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
@@ -797,7 +797,7 @@ if env["arch"] == "x86_64":
     # On 64-bit x86, enable SSE 4.2 and prior instruction sets (SSE3/SSSE3/SSE4/SSE4.1) to improve performance.
     # This is supported on most CPUs released after 2009-2011 (Intel Nehalem, AMD Bulldozer).
     # AVX and AVX2 aren't enabled because they aren't available on more recent low-end Intel CPUs.
-    if env.msvc and not methods.using_clang(env):
+    if env["MSVC"] and not methods.using_clang(env):
         # https://stackoverflow.com/questions/64053597/how-do-i-enable-sse4-1-and-sse3-but-not-avx-in-msvc/69328426
         env.Append(CCFLAGS=["/d2archSSE42"])
     else:
@@ -806,7 +806,7 @@ if env["arch"] == "x86_64":
 elif env["arch"] == "x86_32":
     # Be more conservative with instruction sets on 32-bit x86 to improve compatibility.
     # SSE and SSE2 are present on all CPUs that support 64-bit, even if running a 32-bit OS.
-    if env.msvc and not methods.using_clang(env):
+    if env["MSVC"] and not methods.using_clang(env):
         env.Append(CCFLAGS=["/arch:SSE2"])
     else:
         # Use `-mfpmath=sse` to use SSE for floating-point math, which is more stable than x87.
@@ -823,16 +823,16 @@ elif methods.using_clang(env) or methods.using_emcc(env):
 
 # Attempt to reduce transitive includes.
 if env["limit_transitive_includes"]:
-    if not env.msvc:
+    if not env["MSVC"]:
         # FIXME: This define only affects `libcpp`, but lack of guaranteed, granular detection means
         #  we're better off applying it universally.
         env.AppendUnique(CPPDEFINES=["_LIBCPP_REMOVE_TRANSITIVE_INCLUDES"])
 
 # Set optimize and debug_symbols flags.
 # "custom" means do nothing and let users set their own optimization flags.
-# Needs to happen after configure to have `env.msvc` defined.
+# Needs to happen after configure to have `env["MSVC"]` defined.
 env.AppendUnique(CCFLAGS=["$OPTIMIZELEVEL"])
-if env.msvc:
+if env["MSVC"]:
     if env["debug_symbols"]:
         env.AppendUnique(CCFLAGS=["/Zi", "/FS"])
         env.AppendUnique(LINKFLAGS=["/DEBUG:FULL"])
@@ -868,7 +868,7 @@ else:
             # Emscripten linker needs debug symbols options too.
             env.AppendUnique(LINKFLAGS=["-gdwarf-4"])
             env.AppendUnique(LINKFLAGS=["-g3"])
-        elif env.dev_build:
+        elif env["DEV_BUILD"]:
             env.AppendUnique(CCFLAGS=["-g3"])
         else:
             env.AppendUnique(CCFLAGS=["-g2"])
@@ -908,8 +908,8 @@ if env["lto"] != "none":
 # Set our C and C++ standard requirements.
 # C++17 is required as we need guaranteed copy elision as per GH-36436.
 # Prepending to make it possible to override.
-# This needs to come after `configure`, otherwise we don't have env.msvc.
-if not env.msvc:
+# This needs to come after `configure`, otherwise we don't have env["MSVC"].
+if not env["MSVC"]:
     # Specifying GNU extensions support explicitly, which are supported by
     # both GCC and Clang. Both currently default to gnu17 and gnu++17.
     env.Prepend(CFLAGS=["-std=gnu17"])
@@ -929,16 +929,16 @@ else:
 # Disable exception handling. Godot doesn't use exceptions anywhere, and this
 # saves around 20% of binary size and very significant build time (GH-80513).
 if env["disable_exceptions"]:
-    if env.msvc:
+    if env["MSVC"]:
         env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
     else:
         env.Append(CXXFLAGS=["-fno-exceptions"])
-elif env.msvc:
+elif env["MSVC"]:
     env.Append(CXXFLAGS=["/EHsc"])
 
 # Configure compiler warnings
 env.AppendUnique(CCFLAGS=["$WARNLEVEL"])
-if env.msvc and not methods.using_clang(env):  # MSVC
+if env["MSVC"] and not methods.using_clang(env):  # MSVC
     # Disable warnings which we don't plan to fix.
     disabled_warnings = [
         "/wd4100",  # C4100 (unreferenced formal parameter): Doesn't play nice with polymorphism.
@@ -997,7 +997,7 @@ else:  # GCC, Clang
         common_warnings += ["-Wenum-conversion"]
 
     # clang-cl will interpret `-Wall` as `-Weverything`, workaround with compatibility cast.
-    env["WARNLEVEL"] = "-Wall" if not env.msvc else "-W3"
+    env["WARNLEVEL"] = "-Wall" if not env["MSVC"] else "-W3"
 
     if env["warnings"] == "extra":
         env.AppendUnique(CCFLAGS=["-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
@@ -1037,7 +1037,7 @@ else:
     suffix = "." + env["platform"]
 
 suffix += "." + env["target"]
-if env.dev_build:
+if env["DEV_BUILD"]:
     suffix += ".dev"
 
 if env["precision"] == "double":
@@ -1048,12 +1048,12 @@ suffix += "." + env["arch"]
 if not env["threads"]:
     suffix += ".nothreads"
 
-suffix += env.extra_suffix
+suffix += env["EXTRA_SUFFIX"]
 
 sys.path.remove(tmppath)
 sys.modules.pop("detect")
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     unsupported_opts = []
     for disable_opt in [
         "disable_3d",
@@ -1098,22 +1098,22 @@ if env["brotli"]:
 if not env["disable_overrides"]:
     env.Append(CPPDEFINES=["OVERRIDE_ENABLED"])
 
-if env.editor_build or not env["disable_path_overrides"]:
+if env["EDITOR_BUILD"] or not env["disable_path_overrides"]:
     env.Append(CPPDEFINES=["OVERRIDE_PATH_ENABLED"])
 
 if not env["verbose"]:
     methods.no_verbose(env)
 
 modules_enabled = OrderedDict()
-env.module_dependencies = {}
-env.module_icons_paths = []
-env.doc_class_path = platform_doc_class_path
+env["MODULE_DEPENDENCIES"] = {}
+env["MODULE_ICONS_PATHS"] = []
+env["DOC_CLASS_PATH"] = platform_doc_class_path
 
 for name, path in modules_detected.items():
     if not env[f"module_{name}_enabled"]:
         continue
     sys.path.insert(0, path)
-    env.current_module = name
+    env["CURRENT_MODULE"] = name
     import config
 
     if config.can_build(env, env["platform"]):
@@ -1127,25 +1127,25 @@ for name, path in modules_detected.items():
             doc_classes = config.get_doc_classes()
             doc_path = config.get_doc_path()
             for c in doc_classes:
-                env.doc_class_path[c] = path + "/" + doc_path
+                env["DOC_CLASS_PATH"][c] = path + "/" + doc_path
         except Exception:
             pass
         # Get icon paths (if present)
         try:
             icons_path = config.get_icons_path()
-            env.module_icons_paths.append(path + "/" + icons_path)
+            env["MODULE_ICONS_PATHS"].append(path + "/" + icons_path)
         except Exception:
             # Default path for module icons
-            env.module_icons_paths.append(path + "/" + "icons")
+            env["MODULE_ICONS_PATHS"].append(path + "/" + "icons")
         modules_enabled[name] = path
 
     sys.path.remove(path)
     sys.modules.pop("config")
 
-env.module_list = modules_enabled
+env["MODULE_LIST"] = modules_enabled
 methods.sort_module_list(env)
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     # Add editor-specific dependencies to the dependency graph.
     env.module_add_dependencies("editor", ["freetype", "regex", "svg"])
 
@@ -1154,8 +1154,8 @@ if env.editor_build:
         print_error("Not all modules required by editor builds are enabled.")
         Exit(255)
 
-env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
-env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
+env["PROGSUFFIX_WRAP"] = suffix + env["MODULE_VERSION_STRING"] + ".console" + env["PROGSUFFIX"]
+env["PROGSUFFIX"] = suffix + env["MODULE_VERSION_STRING"] + env["PROGSUFFIX"]
 env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
 # (SH)LIBSUFFIX will be used for our own built libraries
 # LIBSUFFIXES contains LIBSUFFIX and SHLIBSUFFIX by default,
@@ -1229,7 +1229,7 @@ Export("env")
 SConscript("core/SCsub")
 SConscript("servers/SCsub")
 SConscript("scene/SCsub")
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     SConscript("editor/SCsub")
 SConscript("drivers/SCsub")
 

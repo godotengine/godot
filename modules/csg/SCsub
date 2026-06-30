@@ -37,7 +37,7 @@ env_csg.Prepend(CPPPATH=[thirdparty_dir + "include"])
 env_thirdparty = env_csg.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
-env.modules_sources += thirdparty_obj
+env["MODULES_SOURCES"] += thirdparty_obj
 
 # Godot source files
 
@@ -45,10 +45,10 @@ module_obj = []
 
 env_csg.add_source_files(module_obj, "*.cpp")
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     env_csg.add_source_files(module_obj, "editor/*.cpp")
 
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

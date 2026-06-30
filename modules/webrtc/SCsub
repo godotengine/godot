@@ -10,4 +10,4 @@ if env["platform"] == "web":
     # Our JavaScript/C++ interface.
     env.AddJSLibraries(["library_godot_webrtc.js"])
 
-env_webrtc.add_source_files(env.modules_sources, "*.cpp")
+env_webrtc.add_source_files(env["MODULES_SOURCES"], "*.cpp")

@@ -17,5 +17,5 @@ gensource = env.CommandNoCache(
     env.Run(input_builders.make_default_controller_mappings),
 )
 
-env.add_source_files(env.core_sources, "*.cpp")
-env.add_source_files(env.core_sources, gensource)
+env.add_source_files(env["CORE_SOURCES"], "*.cpp")
+env.add_source_files(env["CORE_SOURCES"], gensource)

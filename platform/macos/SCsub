@@ -33,7 +33,7 @@ files = [
 if env["angle"]:
     files += ["gl_manager_macos_angle.mm"]
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     files += [
         "display_server_macos_embedded.mm",
         "embedded_debugger.mm",

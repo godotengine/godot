@@ -31,5 +31,5 @@ env_apple_embedded.Prepend(CPPPATH=[vulkan_dir, vulkan_dir + "/include"])
 env_apple_embedded.Prepend(CPPPATH=["#thirdparty/metal-cpp"])
 
 # Driver source files
-env_apple_embedded.add_source_files(env_apple_embedded.drivers_sources, "*.mm")
-env_apple_embedded.add_source_files(env_apple_embedded.drivers_sources, "*.swift")
+env_apple_embedded.add_source_files(env_apple_embedded["DRIVERS_SOURCES"], "*.mm")
+env_apple_embedded.add_source_files(env_apple_embedded["DRIVERS_SOURCES"], "*.swift")

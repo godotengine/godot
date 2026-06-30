@@ -67,7 +67,7 @@ if env["builtin_msdfgen"]:
 module_obj = []
 
 env_msdfgen.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

@@ -7,11 +7,11 @@ import platform_builders
 
 Import("env")
 
-env.platform_sources = []
+env["PLATFORM_SOURCES"] = []
 
 
 # Generate export icons
-for platform in env.platform_exporters:
+for platform in env["PLATFORM_EXPORTERS"]:
     for path in glob(f"{platform}/export/*.svg"):
         env.CommandNoCache(path.replace(".svg", "_svg.gen.h"), path, env.Run(platform_builders.export_icon_builder))
 
@@ -19,12 +19,12 @@ for platform in env.platform_exporters:
 # Register platform-exclusive APIs
 register_platform_apis = env.CommandNoCache(
     "register_platform_apis.gen.cpp",
-    env.Value(env.platform_apis),
+    env.Value(env["PLATFORM_APIS"]),
     env.Run(platform_builders.register_platform_apis_builder),
 )
-env.add_source_files(env.platform_sources, register_platform_apis)
-for platform in env.platform_apis:
-    env.add_source_files(env.platform_sources, f"{platform}/api/*.cpp")
+env.add_source_files(env["PLATFORM_SOURCES"], register_platform_apis)
+for platform in env["PLATFORM_APIS"]:
+    env.add_source_files(env["PLATFORM_SOURCES"], f"{platform}/api/*.cpp")
 
-lib = env.add_library("platform", env.platform_sources)
+lib = env.add_library("platform", env["PLATFORM_SOURCES"])
 env.Prepend(LIBS=[lib])

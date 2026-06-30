@@ -3,6 +3,6 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-env.add_source_files(env.modules_sources, "*.cpp")
+env.add_source_files(env["MODULES_SOURCES"], "*.cpp")
 
 SConscript("joints/SCsub")

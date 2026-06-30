@@ -8,4 +8,4 @@ module_obj = []
 
 env_openxr.add_source_files(module_obj, "*.cpp")
 
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj

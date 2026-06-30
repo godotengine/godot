@@ -113,7 +113,7 @@ def redirect_emitter(target, source, env):
 
 def disable_warnings(self):
     # 'self' is the environment
-    if self.msvc and not using_clang(self):
+    if self["MSVC"] and not using_clang(self):
         self["WARNLEVEL"] = "/w"
     else:
         self["WARNLEVEL"] = "-w"
@@ -123,14 +123,14 @@ def force_optimization_on_debug(self):
     # 'self' is the environment
     if self["target"] == "template_release":
         return
-    elif self.msvc:
+    elif self["MSVC"]:
         self["OPTIMIZELEVEL"] = "/O2"
     else:
         self["OPTIMIZELEVEL"] = "-O3"
 
 
 def add_module_version_string(self, s):
-    self.module_version_string += "." + s
+    self["MODULE_VERSION_STRING"] += "." + s
 
 
 def get_version_info(module_version_string="", silent=False):
@@ -326,12 +326,12 @@ def module_add_dependencies(self, module, dependencies, optional=False):
     Adds dependencies for a given module.
     Meant to be used in module `can_build` methods.
     """
-    if module not in self.module_dependencies:
-        self.module_dependencies[module] = [[], []]
+    if module not in self["MODULE_DEPENDENCIES"]:
+        self["MODULE_DEPENDENCIES"][module] = [[], []]
     if optional:
-        self.module_dependencies[module][1].extend(dependencies)
+        self["MODULE_DEPENDENCIES"][module][1].extend(dependencies)
     else:
-        self.module_dependencies[module][0].extend(dependencies)
+        self["MODULE_DEPENDENCIES"][module][0].extend(dependencies)
 
 
 def module_check_dependencies(self, module):
@@ -342,29 +342,31 @@ def module_check_dependencies(self, module):
     Returns a boolean (True if dependencies are satisfied).
     """
     missing_deps = set()
-    required_deps = self.module_dependencies[module][0] if module in self.module_dependencies else []
+    required_deps = self["MODULE_DEPENDENCIES"][module][0] if module in self["MODULE_DEPENDENCIES"] else []
     for dep in required_deps:
         opt = "module_{}_enabled".format(dep)
         if opt not in self or not self[opt] or not module_check_dependencies(self, dep):
             missing_deps.add(dep)
 
     if missing_deps:
-        if module not in self.disabled_modules:
+        if module not in self["DISABLED_MODULES"]:
             print_warning(
                 "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
                     module, ", ".join(missing_deps)
                 )
             )
-            self.disabled_modules.add(module)
+            self["DISABLED_MODULES"].add(module)
         return False
     else:
         return True
 
 
 def sort_module_list(env):
-    deps = {k: v[0] + list(filter(lambda x: x in env.module_list, v[1])) for k, v in env.module_dependencies.items()}
+    deps = {
+        k: v[0] + list(filter(lambda x: x in env["MODULE_LIST"], v[1])) for k, v in env["MODULE_DEPENDENCIES"].items()
+    }
 
-    frontier = list(env.module_list.keys())
+    frontier = list(env["MODULE_LIST"].keys())
     explored = []
     while len(frontier):
         cur = frontier.pop()
@@ -375,7 +377,7 @@ def sort_module_list(env):
             continue
         explored.append(cur)
     for k in explored:
-        env.module_list.move_to_end(k)
+        env["MODULE_LIST"].move_to_end(k)
 
 
 def use_windows_spawn_fix(self, platform=None):
@@ -528,7 +530,7 @@ def find_visual_c_batch_file(env):
     msvc_version = get_default_version(env)
     host_platform, target_platform, _ = get_host_target(env, msvc_version)
 
-    if env.scons_version < (4, 6, 0):
+    if env["SCONS_VERSION"] < (4, 6, 0):
         return find_batch_file(env, msvc_version, host_platform, target_platform)[0]
 
     # SCons 4.6.0+ removed passing env, so we need to get the product_dir ourselves first,
@@ -707,7 +709,7 @@ def get_compiler_version(env):
         "apple_patch3": -1,
     }
 
-    if env.msvc and not using_clang(env):
+    if env["MSVC"] and not using_clang(env):
         try:
             # FIXME: `-latest` works for most cases, but there are edge-cases where this would
             # benefit from a more nuanced search.
@@ -1299,7 +1301,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         # The modules_enabled.gen.h header containing the defines is only generated on build, and only for the most recently built
         # platform, which means VS can't properly render code that's inside module-specific ifdefs. This adds those defines to the
         # platform-specific VS props file, so that VS knows which defines are enabled for the selected platform.
-        env.Append(VSHINT_DEFINES=[f"MODULE_{module.upper()}_ENABLED" for module in env.module_list])
+        env.Append(VSHINT_DEFINES=[f"MODULE_{module.upper()}_ENABLED" for module in env["MODULE_LIST"]])
 
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()
@@ -1660,7 +1662,7 @@ def to_raw_cstring(value: str | list[str]) -> str:
 
 
 def get_default_include_paths(env):
-    if env.msvc:
+    if env["MSVC"]:
         return []
     compiler = env.subst("$CXX")
     target = os.path.join(env.Dir("#main").abspath, "main.cpp")

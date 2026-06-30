@@ -14,7 +14,7 @@ thirdparty_obj = []
 thirdparty_dir = "#thirdparty/basis_universal/"
 
 # Only build the encoder for editor builds
-basisu_encoder = env.editor_build
+basisu_encoder = env["EDITOR_BUILD"]
 
 # Sync list with upstream CMakeLists.txt
 if basisu_encoder:
@@ -56,7 +56,7 @@ if env["builtin_zstd"]:
 env_thirdparty = env_basisu.Clone()
 env_thirdparty.disable_warnings()
 
-if not env.msvc:
+if not env["MSVC"]:
     # Required by upstream for GCC. Enabling also for LLVM-based compilers to be consistent.
     env_thirdparty.Append(CCFLAGS=["-fno-strict-aliasing"])
 
@@ -78,14 +78,14 @@ if basisu_encoder:
     env_thirdparty.add_source_files(thirdparty_obj, encoder_sources)
 
 env_thirdparty.add_source_files(thirdparty_obj, transcoder_sources)
-env.modules_sources += thirdparty_obj
+env["MODULES_SOURCES"] += thirdparty_obj
 
 # Godot source files
 
 module_obj = []
 
 env_basisu.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

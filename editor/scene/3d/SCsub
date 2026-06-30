@@ -3,7 +3,7 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-env.add_source_files(env.editor_sources, "*.cpp")
+env.add_source_files(env["EDITOR_SOURCES"], "*.cpp")
 
 SConscript("gizmos/SCsub")
 SConscript("physics/SCsub")
