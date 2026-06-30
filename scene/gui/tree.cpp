@@ -3883,8 +3883,8 @@ Rect2 Tree::_get_content_rect() const {
 void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	using_native_touch = false;
 	if (p_event->get_device() != InputEvent::DEVICE_ID_EMULATION) {
+		using_native_touch = false;
 		Ref<InputEventScreenTouch> touch = p_event;
 		Ref<InputEventScreenDrag> drag = p_event;
 		if (touch.is_valid() || drag.is_valid()) {
@@ -4322,7 +4322,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					drag_accum = 0;
 					drag_from = v_scroll->get_value();
 
-					drag_touching = DisplayServer::get_singleton()->is_touchscreen_available();
+					drag_touching = using_native_touch && DisplayServer::get_singleton()->is_touchscreen_available();
 					drag_touching_deaccel = false;
 					if (drag_touching) {
 						set_process_internal(true);
@@ -7090,7 +7090,7 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 }
 
 bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (using_native_touch && drag_touching) {
+	if (drag_touching) {
 		// Disable data drag & drop when touch dragging.
 		return false;
 	}
@@ -7099,7 +7099,7 @@ bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 }
 
 Variant Tree::get_drag_data(const Point2 &p_point) {
-	if (using_native_touch && drag_touching) {
+	if (drag_touching) {
 		// Disable data drag & drop when touch dragging.
 		return Variant();
 	}
