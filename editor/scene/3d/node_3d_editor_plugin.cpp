@@ -105,6 +105,7 @@
 #include "scene/resources/3d/sky_material.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/physics_3d/physics_server_3d_types.h"
 #include "servers/rendering/rendering_server.h"
 
 using namespace Node3DEditorConstants;
@@ -2223,7 +2224,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 	}
 
 	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::RayResult result;
+	PS3DT::RayResult result;
 
 	// The maximum height an object can travel to be snapped
 	const float max_snap_height = 500.0;
@@ -2242,7 +2243,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 			Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
 			HashSet<RID> excluded = _get_physics_bodies_rid(sp);
 
-			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			PS3DT::RayParameters ray_params;
 			ray_params.from = from;
 			ray_params.to = to;
 			ray_params.exclude = excluded;
@@ -2265,7 +2266,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 				Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
 				HashSet<RID> excluded = _get_physics_bodies_rid(sp);
 
-				PhysicsDirectSpaceState3D::RayParameters ray_params;
+				PS3DT::RayParameters ray_params;
 				ray_params.from = from;
 				ray_params.to = to;
 				ray_params.exclude = excluded;

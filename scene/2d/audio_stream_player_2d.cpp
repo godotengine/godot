@@ -40,6 +40,7 @@
 #include "scene/resources/world_2d.h"
 #include "servers/audio/audio_server.h"
 #include "servers/audio/audio_stream.h"
+#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
 
 #ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/area_2d.h"
@@ -94,9 +95,9 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
 	ERR_FAIL_NULL_V(space_state, SceneStringName(Master));
-	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
+	PS2DT::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-	PhysicsDirectSpaceState2D::PointParameters point_params;
+	PS2DT::PointParameters point_params;
 	point_params.position = global_pos;
 	point_params.collision_mask = area_mask;
 	point_params.collide_with_bodies = false;

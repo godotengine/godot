@@ -32,7 +32,7 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/2d/shape_2d.h"
-#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d_types.h"
 
 class CollisionObject2D;
 
@@ -54,7 +54,7 @@ class ShapeCast2D : public Node2D {
 
 	// Result
 	int max_results = 32;
-	Vector<PhysicsDirectSpaceState2D::ShapeRestInfo> result;
+	Vector<PS2DT::ShapeRestInfo> result;
 	bool collided = false;
 	real_t collision_safe_fraction = 1.0;
 	real_t collision_unsafe_fraction = 1.0;

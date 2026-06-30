@@ -42,14 +42,16 @@
 #include "jolt_physics_direct_body_state_3d.h"
 #include "jolt_soft_body_3d.h"
 
+#include "servers/physics_3d/physics_server_3d_constants.h"
+
 JPH::BroadPhaseLayer JoltBody3D::_get_broad_phase_layer() const {
 	switch (mode) {
-		case PhysicsServer3D::BODY_MODE_STATIC: {
+		case PS3DE::BODY_MODE_STATIC: {
 			return _is_big() ? JoltBroadPhaseLayer::BODY_STATIC_BIG : JoltBroadPhaseLayer::BODY_STATIC;
 		}
-		case PhysicsServer3D::BODY_MODE_KINEMATIC:
-		case PhysicsServer3D::BODY_MODE_RIGID:
-		case PhysicsServer3D::BODY_MODE_RIGID_LINEAR: {
+		case PS3DE::BODY_MODE_KINEMATIC:
+		case PS3DE::BODY_MODE_RIGID:
+		case PS3DE::BODY_MODE_RIGID_LINEAR: {
 			return JoltBroadPhaseLayer::BODY_DYNAMIC;
 		}
 		default: {
@@ -71,14 +73,14 @@ JPH::ObjectLayer JoltBody3D::_get_object_layer() const {
 
 JPH::EMotionType JoltBody3D::_get_motion_type() const {
 	switch (mode) {
-		case PhysicsServer3D::BODY_MODE_STATIC: {
+		case PS3DE::BODY_MODE_STATIC: {
 			return JPH::EMotionType::Static;
 		}
-		case PhysicsServer3D::BODY_MODE_KINEMATIC: {
+		case PS3DE::BODY_MODE_KINEMATIC: {
 			return JPH::EMotionType::Kinematic;
 		}
-		case PhysicsServer3D::BODY_MODE_RIGID:
-		case PhysicsServer3D::BODY_MODE_RIGID_LINEAR: {
+		case PS3DE::BODY_MODE_RIGID:
+		case PS3DE::BODY_MODE_RIGID_LINEAR: {
 			return JPH::EMotionType::Dynamic;
 		}
 		default: {
@@ -189,27 +191,27 @@ JPH::EAllowedDOFs JoltBody3D::_calculate_allowed_dofs() const {
 
 	JPH::EAllowedDOFs allowed_dofs = JPH::EAllowedDOFs::All;
 
-	if (is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_X)) {
+	if (is_axis_locked(PS3DE::BODY_AXIS_LINEAR_X)) {
 		allowed_dofs &= ~JPH::EAllowedDOFs::TranslationX;
 	}
 
-	if (is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Y)) {
+	if (is_axis_locked(PS3DE::BODY_AXIS_LINEAR_Y)) {
 		allowed_dofs &= ~JPH::EAllowedDOFs::TranslationY;
 	}
 
-	if (is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Z)) {
+	if (is_axis_locked(PS3DE::BODY_AXIS_LINEAR_Z)) {
 		allowed_dofs &= ~JPH::EAllowedDOFs::TranslationZ;
 	}
 
-	if (is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_X) || is_rigid_linear()) {
+	if (is_axis_locked(PS3DE::BODY_AXIS_ANGULAR_X) || is_rigid_linear()) {
 		allowed_dofs &= ~JPH::EAllowedDOFs::RotationX;
 	}
 
-	if (is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Y) || is_rigid_linear()) {
+	if (is_axis_locked(PS3DE::BODY_AXIS_ANGULAR_Y) || is_rigid_linear()) {
 		allowed_dofs &= ~JPH::EAllowedDOFs::RotationY;
 	}
 
-	if (is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Z) || is_rigid_linear()) {
+	if (is_axis_locked(PS3DE::BODY_AXIS_ANGULAR_Z) || is_rigid_linear()) {
 		allowed_dofs &= ~JPH::EAllowedDOFs::RotationZ;
 	}
 
@@ -299,8 +301,8 @@ void JoltBody3D::_update_environmental_properties() {
 	const Vector3 position = to_godot(jolt_body->GetPosition());
 
 	bool gravity_done = false;
-	bool linear_damp_done = linear_damp_mode == PhysicsServer3D::BODY_DAMP_MODE_REPLACE;
-	bool angular_damp_done = angular_damp_mode == PhysicsServer3D::BODY_DAMP_MODE_REPLACE;
+	bool linear_damp_done = linear_damp_mode == PS3DE::BODY_DAMP_MODE_REPLACE;
+	bool angular_damp_done = angular_damp_mode == PS3DE::BODY_DAMP_MODE_REPLACE;
 
 	for (const JoltArea3D *area : areas) {
 		if (!gravity_done) {
@@ -341,19 +343,19 @@ void JoltBody3D::_update_environmental_properties() {
 	total_gravity *= jolt_body->GetMotionPropertiesUnchecked()->GetGravityFactor();
 
 	switch (linear_damp_mode) {
-		case PhysicsServer3D::BODY_DAMP_MODE_COMBINE: {
+		case PS3DE::BODY_DAMP_MODE_COMBINE: {
 			total_linear_damp += linear_damp;
 		} break;
-		case PhysicsServer3D::BODY_DAMP_MODE_REPLACE: {
+		case PS3DE::BODY_DAMP_MODE_REPLACE: {
 			total_linear_damp = linear_damp;
 		} break;
 	}
 
 	switch (angular_damp_mode) {
-		case PhysicsServer3D::BODY_DAMP_MODE_COMBINE: {
+		case PS3DE::BODY_DAMP_MODE_COMBINE: {
 			total_angular_damp += angular_damp;
 		} break;
-		case PhysicsServer3D::BODY_DAMP_MODE_REPLACE: {
+		case PS3DE::BODY_DAMP_MODE_REPLACE: {
 			total_angular_damp = angular_damp;
 		} break;
 	}
@@ -539,21 +541,21 @@ void JoltBody3D::set_transform(Transform3D p_transform) {
 	_transform_changed();
 }
 
-Variant JoltBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
+Variant JoltBody3D::get_state(PS3DE::BodyState p_state) const {
 	switch (p_state) {
-		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
+		case PS3DE::BODY_STATE_TRANSFORM: {
 			return get_transform_scaled();
 		}
-		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
+		case PS3DE::BODY_STATE_LINEAR_VELOCITY: {
 			return get_linear_velocity();
 		}
-		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
+		case PS3DE::BODY_STATE_ANGULAR_VELOCITY: {
 			return get_angular_velocity();
 		}
-		case PhysicsServer3D::BODY_STATE_SLEEPING: {
+		case PS3DE::BODY_STATE_SLEEPING: {
 			return is_sleeping();
 		}
-		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
+		case PS3DE::BODY_STATE_CAN_SLEEP: {
 			return is_sleep_allowed();
 		}
 		default: {
@@ -562,21 +564,21 @@ Variant JoltBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
 	}
 }
 
-void JoltBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_value) {
+void JoltBody3D::set_state(PS3DE::BodyState p_state, const Variant &p_value) {
 	switch (p_state) {
-		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
+		case PS3DE::BODY_STATE_TRANSFORM: {
 			set_transform(p_value);
 		} break;
-		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
+		case PS3DE::BODY_STATE_LINEAR_VELOCITY: {
 			set_linear_velocity(p_value);
 		} break;
-		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
+		case PS3DE::BODY_STATE_ANGULAR_VELOCITY: {
 			set_angular_velocity(p_value);
 		} break;
-		case PhysicsServer3D::BODY_STATE_SLEEPING: {
+		case PS3DE::BODY_STATE_SLEEPING: {
 			set_is_sleeping(p_value);
 		} break;
-		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
+		case PS3DE::BODY_STATE_CAN_SLEEP: {
 			set_is_sleep_allowed(p_value);
 		} break;
 		default: {
@@ -585,36 +587,36 @@ void JoltBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_
 	}
 }
 
-Variant JoltBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
+Variant JoltBody3D::get_param(PS3DE::BodyParameter p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::BODY_PARAM_BOUNCE: {
+		case PS3DE::BODY_PARAM_BOUNCE: {
 			return get_bounce();
 		}
-		case PhysicsServer3D::BODY_PARAM_FRICTION: {
+		case PS3DE::BODY_PARAM_FRICTION: {
 			return get_friction();
 		}
-		case PhysicsServer3D::BODY_PARAM_MASS: {
+		case PS3DE::BODY_PARAM_MASS: {
 			return get_mass();
 		}
-		case PhysicsServer3D::BODY_PARAM_INERTIA: {
+		case PS3DE::BODY_PARAM_INERTIA: {
 			return get_inertia();
 		}
-		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
+		case PS3DE::BODY_PARAM_CENTER_OF_MASS: {
 			return get_center_of_mass_custom();
 		}
-		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE: {
+		case PS3DE::BODY_PARAM_GRAVITY_SCALE: {
 			return get_gravity_scale();
 		}
-		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE: {
+		case PS3DE::BODY_PARAM_LINEAR_DAMP_MODE: {
 			return get_linear_damp_mode();
 		}
-		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP_MODE: {
+		case PS3DE::BODY_PARAM_ANGULAR_DAMP_MODE: {
 			return get_angular_damp_mode();
 		}
-		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP: {
+		case PS3DE::BODY_PARAM_LINEAR_DAMP: {
 			return get_linear_damp();
 		}
-		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP: {
+		case PS3DE::BODY_PARAM_ANGULAR_DAMP: {
 			return get_angular_damp();
 		}
 		default: {
@@ -623,36 +625,36 @@ Variant JoltBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
 	}
 }
 
-void JoltBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Variant &p_value) {
+void JoltBody3D::set_param(PS3DE::BodyParameter p_param, const Variant &p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::BODY_PARAM_BOUNCE: {
+		case PS3DE::BODY_PARAM_BOUNCE: {
 			set_bounce(p_value);
 		} break;
-		case PhysicsServer3D::BODY_PARAM_FRICTION: {
+		case PS3DE::BODY_PARAM_FRICTION: {
 			set_friction(p_value);
 		} break;
-		case PhysicsServer3D::BODY_PARAM_MASS: {
+		case PS3DE::BODY_PARAM_MASS: {
 			set_mass(p_value);
 		} break;
-		case PhysicsServer3D::BODY_PARAM_INERTIA: {
+		case PS3DE::BODY_PARAM_INERTIA: {
 			set_inertia(p_value);
 		} break;
-		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
+		case PS3DE::BODY_PARAM_CENTER_OF_MASS: {
 			set_center_of_mass_custom(p_value);
 		} break;
-		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE: {
+		case PS3DE::BODY_PARAM_GRAVITY_SCALE: {
 			set_gravity_scale(p_value);
 		} break;
-		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE: {
+		case PS3DE::BODY_PARAM_LINEAR_DAMP_MODE: {
 			set_linear_damp_mode((DampMode)(int)p_value);
 		} break;
-		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP_MODE: {
+		case PS3DE::BODY_PARAM_ANGULAR_DAMP_MODE: {
 			set_angular_damp_mode((DampMode)(int)p_value);
 		} break;
-		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP: {
+		case PS3DE::BODY_PARAM_LINEAR_DAMP: {
 			set_linear_damp(p_value);
 		} break;
-		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP: {
+		case PS3DE::BODY_PARAM_ANGULAR_DAMP: {
 			set_angular_damp(p_value);
 		} break;
 		default: {
@@ -807,7 +809,7 @@ void JoltBody3D::set_center_of_mass_custom(const Vector3 &p_center_of_mass) {
 }
 
 void JoltBody3D::set_max_contacts_reported(int p_count) {
-	ERR_FAIL_INDEX(p_count, MAX_CONTACTS_REPORTED_3D_MAX);
+	ERR_FAIL_INDEX(p_count, PS3DC::MAX_CONTACTS_REPORTED_3D_MAX);
 
 	if (unlikely((int)contacts.size() == p_count)) {
 		return;
@@ -1104,18 +1106,19 @@ void JoltBody3D::pre_step(float p_step) {
 	JoltObject3D::pre_step(p_step);
 
 	switch (mode) {
-		case PhysicsServer3D::BODY_MODE_STATIC: {
+		case PS3DE::BODY_MODE_STATIC: {
 			// Will never happen.
 		} break;
-		case PhysicsServer3D::BODY_MODE_RIGID:
-		case PhysicsServer3D::BODY_MODE_RIGID_LINEAR: {
+		case PS3DE::BODY_MODE_RIGID:
+		case PS3DE::BODY_MODE_RIGID_LINEAR: {
 			if (_needs_update_environmental_properties()) {
 				_update_environmental_properties();
 			}
 
 			_integrate_forces(p_step);
 		} break;
-		case PhysicsServer3D::BODY_MODE_KINEMATIC: {
+
+		case PS3DE::BODY_MODE_KINEMATIC: {
 			if (_needs_update_environmental_properties()) {
 				_update_environmental_properties();
 			}
@@ -1139,7 +1142,7 @@ JoltPhysicsDirectBodyState3D *JoltBody3D::get_direct_state() {
 	return direct_state;
 }
 
-void JoltBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
+void JoltBody3D::set_mode(PS3DE::BodyMode p_mode) {
 	if (p_mode == mode) {
 		return;
 	}
@@ -1299,11 +1302,11 @@ void JoltBody3D::set_angular_damp_mode(DampMode p_mode) {
 	_update_environmental_properties();
 }
 
-bool JoltBody3D::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
+bool JoltBody3D::is_axis_locked(PS3DE::BodyAxis p_axis) const {
 	return (locked_axes & (uint32_t)p_axis) != 0;
 }
 
-void JoltBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_enabled) {
+void JoltBody3D::set_axis_lock(PS3DE::BodyAxis p_axis, bool p_enabled) {
 	const uint32_t previous_locked_axes = locked_axes;
 
 	if (p_enabled) {

@@ -37,7 +37,7 @@
 
 void Area3D::set_gravity_space_override_mode(SpaceOverride p_mode) {
 	gravity_space_override = p_mode;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE, p_mode);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE, p_mode);
 }
 
 Area3D::SpaceOverride Area3D::get_gravity_space_override_mode() const {
@@ -46,7 +46,7 @@ Area3D::SpaceOverride Area3D::get_gravity_space_override_mode() const {
 
 void Area3D::set_gravity_is_point(bool p_enabled) {
 	gravity_is_point = p_enabled;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT, p_enabled);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_IS_POINT, p_enabled);
 }
 
 bool Area3D::is_gravity_a_point() const {
@@ -55,7 +55,7 @@ bool Area3D::is_gravity_a_point() const {
 
 void Area3D::set_gravity_point_unit_distance(real_t p_scale) {
 	gravity_point_unit_distance = p_scale;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE, p_scale);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE, p_scale);
 }
 
 real_t Area3D::get_gravity_point_unit_distance() const {
@@ -64,7 +64,7 @@ real_t Area3D::get_gravity_point_unit_distance() const {
 
 void Area3D::set_gravity_point_center(const Vector3 &p_center) {
 	gravity_vec = p_center;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, p_center);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_VECTOR, p_center);
 }
 
 const Vector3 &Area3D::get_gravity_point_center() const {
@@ -73,7 +73,7 @@ const Vector3 &Area3D::get_gravity_point_center() const {
 
 void Area3D::set_gravity_direction(const Vector3 &p_direction) {
 	gravity_vec = p_direction;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, p_direction);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_VECTOR, p_direction);
 }
 
 const Vector3 &Area3D::get_gravity_direction() const {
@@ -82,7 +82,7 @@ const Vector3 &Area3D::get_gravity_direction() const {
 
 void Area3D::set_gravity(real_t p_gravity) {
 	gravity = p_gravity;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY, p_gravity);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY, p_gravity);
 }
 
 real_t Area3D::get_gravity() const {
@@ -91,7 +91,7 @@ real_t Area3D::get_gravity() const {
 
 void Area3D::set_linear_damp_space_override_mode(SpaceOverride p_mode) {
 	linear_damp_space_override = p_mode;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE, p_mode);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE, p_mode);
 }
 
 Area3D::SpaceOverride Area3D::get_linear_damp_space_override_mode() const {
@@ -100,7 +100,7 @@ Area3D::SpaceOverride Area3D::get_linear_damp_space_override_mode() const {
 
 void Area3D::set_angular_damp_space_override_mode(SpaceOverride p_mode) {
 	angular_damp_space_override = p_mode;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE, p_mode);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE, p_mode);
 }
 
 Area3D::SpaceOverride Area3D::get_angular_damp_space_override_mode() const {
@@ -109,7 +109,7 @@ Area3D::SpaceOverride Area3D::get_angular_damp_space_override_mode() const {
 
 void Area3D::set_linear_damp(real_t p_linear_damp) {
 	linear_damp = p_linear_damp;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_LINEAR_DAMP, p_linear_damp);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_LINEAR_DAMP, p_linear_damp);
 }
 
 real_t Area3D::get_linear_damp() const {
@@ -118,7 +118,7 @@ real_t Area3D::get_linear_damp() const {
 
 void Area3D::set_angular_damp(real_t p_angular_damp) {
 	angular_damp = p_angular_damp;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP, p_angular_damp);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_ANGULAR_DAMP, p_angular_damp);
 }
 
 real_t Area3D::get_angular_damp() const {
@@ -127,7 +127,7 @@ real_t Area3D::get_angular_damp() const {
 
 void Area3D::set_priority(int p_priority) {
 	priority = p_priority;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_PRIORITY, p_priority);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_PRIORITY, p_priority);
 }
 
 int Area3D::get_priority() const {
@@ -185,10 +185,10 @@ void Area3D::_initialize_wind() {
 	}
 
 	// Set force, source and direction in the physics server.
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR, wind_attenuation_factor);
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_WIND_SOURCE, wind_source);
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_WIND_DIRECTION, wind_direction);
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE, temp_magnitude);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_WIND_ATTENUATION_FACTOR, wind_attenuation_factor);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_WIND_SOURCE, wind_source);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_WIND_DIRECTION, wind_direction);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_WIND_FORCE_MAGNITUDE, temp_magnitude);
 }
 
 void Area3D::_body_enter_tree(ObjectID p_id) {
@@ -222,7 +222,7 @@ void Area3D::_body_exit_tree(ObjectID p_id) {
 }
 
 void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_area_shape) {
-	bool body_in = p_status == PhysicsServer3D::AREA_BODY_ADDED;
+	bool body_in = p_status == PS3DE::AREA_BODY_ADDED;
 	ObjectID objid = p_instance;
 
 	// Exit early if instance is invalid.
@@ -428,7 +428,7 @@ void Area3D::_area_exit_tree(ObjectID p_id) {
 }
 
 void Area3D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, int p_area_shape, int p_self_shape) {
-	bool area_in = p_status == PhysicsServer3D::AREA_BODY_ADDED;
+	bool area_in = p_status == PS3DE::AREA_BODY_ADDED;
 	ObjectID objid = p_instance;
 
 	// Exit if instance is invalid.

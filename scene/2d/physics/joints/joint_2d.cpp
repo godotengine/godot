@@ -34,6 +34,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/2d/physics/physics_body_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void Joint2D::_disconnect_signals() {
 	Node *node_a = get_node_or_null(a);
@@ -114,7 +115,7 @@ void Joint2D::_update_joint(bool p_only_free) {
 
 	ERR_FAIL_COND_MSG(!joint.is_valid(), "Failed to configure the joint.");
 
-	PhysicsServer2D::get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
+	PhysicsServer2D::get_singleton()->joint_set_param(joint, PS2DE::JOINT_PARAM_BIAS, bias);
 
 	ba = body_a->get_rid();
 	bb = body_b->get_rid();
@@ -194,7 +195,7 @@ void Joint2D::_notification(int p_what) {
 void Joint2D::set_bias(real_t p_bias) {
 	bias = p_bias;
 	if (joint.is_valid()) {
-		PhysicsServer2D::get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
+		PhysicsServer2D::get_singleton()->joint_set_param(joint, PS2DE::JOINT_PARAM_BIAS, bias);
 	}
 }
 

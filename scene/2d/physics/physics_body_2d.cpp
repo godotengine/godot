@@ -32,6 +32,8 @@
 
 #include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
+#include "servers/physics_2d/direct_states/physics_direct_body_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
@@ -43,17 +45,17 @@ void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody2D::remove_collision_exception_with);
 }
 
-PhysicsBody2D::PhysicsBody2D(PhysicsServer2D::BodyMode p_mode) :
+PhysicsBody2D::PhysicsBody2D(PS2DE::BodyMode p_mode) :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->body_create(), false) {
 	set_body_mode(p_mode);
 	set_pickable(false);
 }
 
 Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_test_only, real_t p_margin, bool p_recovery_as_collision) {
-	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_motion, p_margin);
+	PS2DT::MotionParameters parameters(get_global_transform(), p_motion, p_margin);
 	parameters.recovery_as_collision = p_recovery_as_collision;
 
-	PhysicsServer2D::MotionResult result;
+	PS2DT::MotionResult result;
 
 	if (move_and_collide(parameters, result, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
@@ -69,7 +71,7 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_t
 	return Ref<KinematicCollision2D>();
 }
 
-bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult &r_result, bool p_test_only, bool p_cancel_sliding) {
+bool PhysicsBody2D::move_and_collide(const PS2DT::MotionParameters &p_parameters, PS2DT::MotionResult &r_result, bool p_test_only, bool p_cancel_sliding) {
 	if (is_only_update_transform_changes_enabled()) {
 		ERR_PRINT("Move functions do not work together with 'sync to physics' option. See the documentation for details.");
 	}
@@ -126,15 +128,15 @@ bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_
 bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision, real_t p_margin, bool p_recovery_as_collision) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	PhysicsServer2D::MotionResult *r = nullptr;
-	PhysicsServer2D::MotionResult temp_result;
+	PS2DT::MotionResult *r = nullptr;
+	PS2DT::MotionResult temp_result;
 	if (r_collision.is_valid()) {
 		r = &r_collision->result;
 	} else {
 		r = &temp_result;
 	}
 
-	PhysicsServer2D::MotionParameters parameters(p_from, p_motion, p_margin);
+	PS2DT::MotionParameters parameters(p_from, p_motion, p_margin);
 	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);

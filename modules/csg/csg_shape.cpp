@@ -106,8 +106,8 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision) {
 		root_collision_shape.instantiate();
 		root_collision_body = PhysicsServer3D::get_singleton()->body_create();
-		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PhysicsServer3D::BODY_MODE_STATIC);
-		PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PS3DE::BODY_MODE_STATIC);
+		PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 		PhysicsServer3D::get_singleton()->body_add_shape(root_collision_body, root_collision_shape->get_rid());
 		PhysicsServer3D::get_singleton()->body_set_space(root_collision_body, get_world_3d()->get_space());
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_body, get_instance_id());
@@ -1035,8 +1035,8 @@ void CSGShape3D::_notification(int p_what) {
 			if (use_collision && is_root_shape()) {
 				root_collision_shape.instantiate();
 				root_collision_body = PhysicsServer3D::get_singleton()->body_create();
-				PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PhysicsServer3D::BODY_MODE_STATIC);
-				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+				PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PS3DE::BODY_MODE_STATIC);
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 				PhysicsServer3D::get_singleton()->body_add_shape(root_collision_body, root_collision_shape->get_rid());
 				PhysicsServer3D::get_singleton()->body_set_space(root_collision_body, get_world_3d()->get_space());
 				PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_body, get_instance_id());
@@ -1059,7 +1059,7 @@ void CSGShape3D::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (use_collision && is_root_shape() && root_collision_body.is_valid()) {
-				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 			}
 			_on_transform_changed();
 		} break;

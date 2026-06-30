@@ -34,7 +34,7 @@
 #include "scene/2d/node_2d.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/2d/shape_2d.h"
-#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d_enums.h"
 
 class CollisionObject2D : public Node2D {
 	GDCLASS(CollisionObject2D, Node2D);
@@ -60,7 +60,7 @@ private:
 
 	DisableMode disable_mode = DISABLE_MODE_REMOVE;
 
-	PhysicsServer2D::BodyMode body_mode = PhysicsServer2D::BODY_MODE_STATIC;
+	PS2DE::BodyMode body_mode = PS2DE::BODY_MODE_STATIC;
 
 	struct ShapeData {
 		ObjectID owner_id;
@@ -110,7 +110,7 @@ protected:
 	void set_only_update_transform_changes(bool p_enable);
 	bool is_only_update_transform_changes_enabled() const;
 
-	void set_body_mode(PhysicsServer2D::BodyMode p_mode);
+	void set_body_mode(PS2DE::BodyMode p_mode);
 
 	virtual void _space_changed(const RID &p_new_space);
 

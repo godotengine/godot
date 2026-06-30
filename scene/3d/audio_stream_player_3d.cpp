@@ -318,9 +318,9 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
 
-	PhysicsDirectSpaceState3D::ShapeResult sr[MAX_INTERSECT_AREAS];
+	PS3DT::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-	PhysicsDirectSpaceState3D::PointParameters point_params;
+	PS3DT::PointParameters point_params;
 	point_params.position = global_pos;
 	point_params.collision_mask = area_mask;
 	point_params.collide_with_bodies = false;
