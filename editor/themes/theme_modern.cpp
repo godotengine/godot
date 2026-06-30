@@ -496,6 +496,14 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_constant("outline_size", "Button", 0);
 		p_theme->set_constant("align_to_largest_stylebox", "Button", 1); // Enabled.
 
+#ifdef ANDROID_ENABLED
+		// Use a larger click margin on the Android editor to improve touchscreen usability.
+		const int click_margin = Math::round(4 * EDSCALE);
+#else
+		const int click_margin = Math::round(2 * EDSCALE);
+#endif
+		p_theme->set_constant("click_margin", "BaseButton", click_margin);
+
 		// MenuBar.
 
 		p_theme->set_stylebox(CoreStringName(normal), "MenuBar", p_config.button_style);
