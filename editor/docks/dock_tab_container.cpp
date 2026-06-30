@@ -166,6 +166,7 @@ void EditorDockDragHint::_notification(int p_what) {
 			can_drop_dock = false;
 			mouse_inside = false;
 			highlighted = false;
+			mouse_margin_index = -1;
 			hide();
 		} break;
 
