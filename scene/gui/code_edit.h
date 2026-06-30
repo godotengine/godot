@@ -231,6 +231,9 @@ private:
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
+	String code_completion_line;
+	int code_completion_caret_line = 0;
+	int code_completion_caret_column = 0;
 
 	void _update_scroll_selected_line(float p_mouse_y);
 	void _filter_code_completion_candidates_impl();
@@ -317,6 +320,7 @@ private:
 
 	void _lines_edited_from(int p_from_line, int p_to_line);
 	void _text_set();
+	void _line_col_changed();
 	void _text_changed();
 
 	void _apply_project_settings();
