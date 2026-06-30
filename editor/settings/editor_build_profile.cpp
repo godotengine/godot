@@ -41,6 +41,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
@@ -1327,7 +1328,11 @@ void EditorBuildProfileManager::_import_profile(const String &p_path) {
 	Error err = profile->load_from_file(p_path);
 	String basefile = p_path.get_file();
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("File '%s' format is invalid, import aborted."), basefile));
+		if (is_visible()) {
+			EditorNode::get_singleton()->show_warning(vformat(TTR("File '%s' format is invalid, import aborted."), basefile));
+		} else {
+			EditorToaster::get_singleton()->popup_str(vformat(TTR("Can't load build profile. File '%s' is invalid."), basefile), EditorToaster::SEVERITY_ERROR);
+		}
 		return;
 	}
 
