@@ -99,6 +99,10 @@ public:
 		m->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 	}
 
+	virtual void mesh_add_surface_from_buffers(RID p_mesh, const RenderingServerTypes::SurfaceBuffers &p_surface) override {
+		ERR_PRINT("MeshRD requires the RenderingDevice backend.");
+	}
+
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_NULL_V(m, 0);
@@ -121,6 +125,8 @@ public:
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
+
+	virtual void mesh_surface_set_indirect_buffer(RID p_mesh, int p_surface, RID p_indirect_buffer, int p_offset) override {}
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override {}
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override { return RID(); }
