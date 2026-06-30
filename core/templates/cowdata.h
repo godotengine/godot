@@ -185,7 +185,7 @@ public:
 		_ptr[p_index] = p_elem;
 	}
 
-	_FORCE_INLINE_ T &get_m(Size p_index) {
+	_FORCE_INLINE_ T &get_m(Size p_index) _LIFETIME_BOUND_ {
 		CRASH_BAD_INDEX(p_index, size());
 		// If we fail to fork, all we can do is crash,
 		// since the caller may write incorrectly to the unforked array.
@@ -193,7 +193,7 @@ public:
 		return _ptr[p_index];
 	}
 
-	_FORCE_INLINE_ const T &get(Size p_index) const {
+	_FORCE_INLINE_ const T &get(Size p_index) const _LIFETIME_BOUND_ {
 		CRASH_BAD_INDEX(p_index, size());
 
 		return _ptr[p_index];

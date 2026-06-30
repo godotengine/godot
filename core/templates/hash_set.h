@@ -380,20 +380,20 @@ public:
 		int32_t _key_idx = -1;
 	};
 
-	_FORCE_INLINE_ Iterator begin() const {
+	_FORCE_INLINE_ Iterator begin() const _LIFETIME_BOUND_ {
 		return _size ? Iterator(_keys, _size, 0) : Iterator();
 	}
-	_FORCE_INLINE_ Iterator end() const {
+	_FORCE_INLINE_ Iterator end() const _LIFETIME_BOUND_ {
 		return Iterator();
 	}
-	_FORCE_INLINE_ Iterator last() const {
+	_FORCE_INLINE_ Iterator last() const _LIFETIME_BOUND_ {
 		if (_size == 0) {
 			return Iterator();
 		}
 		return Iterator(_keys, _size, _size - 1);
 	}
 
-	_FORCE_INLINE_ Iterator find(const TKey &p_key) const {
+	_FORCE_INLINE_ Iterator find(const TKey &p_key) const _LIFETIME_BOUND_ {
 		uint32_t key_idx = 0;
 		bool exists = _lookup_key_idx(p_key, key_idx);
 		if (!exists) {
@@ -410,7 +410,7 @@ public:
 
 	/* Insert */
 
-	Iterator insert(const TKey &p_key) {
+	Iterator insert(const TKey &p_key) _LIFETIME_BOUND_ {
 		uint32_t key_idx = _insert(p_key);
 		return Iterator(_keys, _size, key_idx);
 	}
