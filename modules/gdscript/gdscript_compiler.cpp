@@ -1437,8 +1437,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 // It optimizes the expansion of logical operators to jump directly to where they need to go instead of setting a boolean value.
 // It currently only supports `OP_LOGIC_AND` and `OP_LOGIC_OR`. All other expression types will defer to `_parse_expression`.
 //
-// Use `start_logic_op_cond_jump_success_buffer` and `start_logic_op_cond_jump_failure_buffer` before calling this. And then call
-// `flush_logic_op_cond_jump_success` and `flush_logic_op_cond_jump_failure` to patch all the jump locations.
+// Use `start_expr_cond_buffer` before calling this. Then call `flush_expr_cond_buffer` afterwards to patch all the jump locations.
 //
 // When this function returns a valid Address, the result of the expression is stored there. Otherwise, success either jump or fall
 // through to the next opcode and all failures take jumps.

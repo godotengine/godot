@@ -84,11 +84,17 @@ public:
 	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) = 0;
 	virtual GDScriptFunction *write_end() = 0;
 
+	// Keeps track of the number of jumps so any new ones can be patched later.
 	virtual void start_expr_cond_buffer(bool success) = 0;
+	// Patches all the jumps since calling the appropriate `start_expr_cond_buffer`.
 	virtual void flush_expr_cond_buffer(bool success) = 0;
+	// Writes a conditional jump. Note: the jump negation is also determined by `success`.
 	virtual void write_expr_cond_jump_if(bool success, const Address &p_condition) = 0;
+	// Writes an unconditional jump. Useful to handle fall-throughs.
 	virtual void write_expr_cond_jump(bool success) = 0;
+	// Marks the end of the success block. Similar to `write_else`.
 	virtual void write_expr_cond_jump_end() = 0;
+	// Marks the end of the failure block. Similar to `write_endif`.
 	virtual void write_expr_cond_end() = 0;
 
 #ifdef DEBUG_ENABLED

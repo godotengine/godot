@@ -1,3 +1,8 @@
+func test():
+    print("=== One binary operator ===")
+    one()
+    print("=== Three binary operators ===")
+    three()
 
 
 func one():
@@ -187,10 +192,3 @@ func three():
         fail = fail or if_branch == else_branch or if_branch != ((a or b) or (c or d))
 
     prints("(a or b) or (c or d):", "FAIL" if fail else "SUCCESS")
-
-
-func test():
-    print("=== One binary operator ===")
-    one()
-    print("=== Three binary operators ===")
-    three()
