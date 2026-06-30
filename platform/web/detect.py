@@ -297,7 +297,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
         env.Append(CCFLAGS=["-fvisibility=hidden"])
         env.Append(LINKFLAGS=["-fvisibility=hidden"])
-        env.extra_suffix = ".dlink" + env.extra_suffix
+        env.extra_suffix = ".dlink" + env.extra_suffix  # ty:ignore[unresolved-attribute]
 
     env.Append(LINKFLAGS=["-sWASM_BIGINT"])
     env.Append(CCFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])

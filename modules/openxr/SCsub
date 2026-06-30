@@ -95,16 +95,27 @@ if env["builtin_openxr"]:
 module_obj = []
 
 env_openxr.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
-
-Export("env_openxr")
-
-SConscript("action_map/SCsub")
-SConscript("extensions/SCsub")
-SConscript("scene/SCsub")
+env_openxr.add_source_files(module_obj, "action_map/*.cpp")
+env_openxr.add_source_files(module_obj, "extensions/*.cpp")
+env_openxr.add_source_files(module_obj, "extensions/spatial_entities/*.cpp")
+env_openxr.add_source_files(module_obj, "scene/*.cpp")
 
 if env.editor_build:
-    SConscript("editor/SCsub")
+    env_openxr.add_source_files(module_obj, "editor/*.cpp")
+
+# These are platform dependent
+if env["platform"] == "android":
+    env_openxr.add_source_files(module_obj, "extensions/platform/openxr_android_extension.cpp")
+if env["vulkan"]:
+    env_openxr.add_source_files(module_obj, "extensions/platform/openxr_vulkan_extension.cpp")
+if env["metal"]:
+    env_openxr.add_source_files(module_obj, "extensions/platform/openxr_metal_extension.mm")
+if env["opengl3"] and env["platform"] != "macos":
+    env_openxr.add_source_files(module_obj, "extensions/platform/openxr_opengl_extension.cpp")
+if env["d3d12"]:
+    env_openxr.add_source_files(module_obj, "extensions/platform/openxr_d3d12_extension.cpp")
+
+env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)
