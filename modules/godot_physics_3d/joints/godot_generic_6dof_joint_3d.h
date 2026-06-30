@@ -205,7 +205,7 @@ protected:
 public:
 	GodotGeneric6DOFJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &frameInA, const Transform3D &frameInB, bool useLinearReferenceFrameA);
 
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_6DOF; }
+	virtual PS3DE::JointType get_type() const override { return PS3DE::JOINT_TYPE_6DOF; }
 
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
@@ -315,9 +315,9 @@ public:
 
 	virtual void calcAnchorPos(); // overridable
 
-	void set_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param, real_t p_value);
-	real_t get_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param) const;
+	void set_param(Vector3::Axis p_axis, PS3DE::G6DOFJointAxisParam p_param, real_t p_value);
+	real_t get_param(Vector3::Axis p_axis, PS3DE::G6DOFJointAxisParam p_param) const;
 
-	void set_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag, bool p_value);
-	bool get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const;
+	void set_flag(Vector3::Axis p_axis, PS3DE::G6DOFJointAxisFlag p_flag, bool p_value);
+	bool get_flag(Vector3::Axis p_axis, PS3DE::G6DOFJointAxisFlag p_flag) const;
 };

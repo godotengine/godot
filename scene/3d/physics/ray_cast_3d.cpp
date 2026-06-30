@@ -234,7 +234,7 @@ void RayCast3D::_update_raycast_state() {
 		to = Vector3(0, 0.01, 0);
 	}
 
-	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	PS3DT::RayParameters ray_params;
 	ray_params.from = gt.get_origin();
 	ray_params.to = gt.xform(to);
 	ray_params.exclude = exclude;
@@ -244,7 +244,7 @@ void RayCast3D::_update_raycast_state() {
 	ray_params.hit_from_inside = hit_from_inside;
 	ray_params.hit_back_faces = hit_back_faces;
 
-	PhysicsDirectSpaceState3D::RayResult rr;
+	PS3DT::RayResult rr;
 	if (dss->intersect_ray(ray_params, rr)) {
 		collided = true;
 		against = rr.collider_id;

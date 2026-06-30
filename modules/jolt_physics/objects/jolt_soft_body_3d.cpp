@@ -39,6 +39,7 @@
 #include "jolt_group_filter.h"
 
 #include "core/config/engine.h"
+#include "servers/physics_3d/physics_server_3d_rendering_server_handler.h"
 #include "servers/rendering/rendering_server.h"
 
 #include <Jolt/Physics/SoftBody/SoftBodyMotionProperties.h>
@@ -648,21 +649,21 @@ void JoltSoftBody3D::set_drag(float p_drag) {
 	// Drag is not a thing in Jolt, and not supported by Godot Physics either.
 }
 
-Variant JoltSoftBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
+Variant JoltSoftBody3D::get_state(PS3DE::BodyState p_state) const {
 	switch (p_state) {
-		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
+		case PS3DE::BODY_STATE_TRANSFORM: {
 			return get_transform();
 		}
-		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
+		case PS3DE::BODY_STATE_LINEAR_VELOCITY: {
 			ERR_FAIL_V_MSG(Variant(), "Linear velocity is not supported for soft bodies.");
 		}
-		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
+		case PS3DE::BODY_STATE_ANGULAR_VELOCITY: {
 			ERR_FAIL_V_MSG(Variant(), "Angular velocity is not supported for soft bodies.");
 		}
-		case PhysicsServer3D::BODY_STATE_SLEEPING: {
+		case PS3DE::BODY_STATE_SLEEPING: {
 			return is_sleeping();
 		}
-		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
+		case PS3DE::BODY_STATE_CAN_SLEEP: {
 			return is_sleep_allowed();
 		}
 		default: {
@@ -671,21 +672,21 @@ Variant JoltSoftBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
 	}
 }
 
-void JoltSoftBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_value) {
+void JoltSoftBody3D::set_state(PS3DE::BodyState p_state, const Variant &p_value) {
 	switch (p_state) {
-		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
+		case PS3DE::BODY_STATE_TRANSFORM: {
 			set_transform(p_value);
 		} break;
-		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
+		case PS3DE::BODY_STATE_LINEAR_VELOCITY: {
 			ERR_FAIL_MSG("Linear velocity is not supported for soft bodies.");
 		} break;
-		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
+		case PS3DE::BODY_STATE_ANGULAR_VELOCITY: {
 			ERR_FAIL_MSG("Angular velocity is not supported for soft bodies.");
 		} break;
-		case PhysicsServer3D::BODY_STATE_SLEEPING: {
+		case PS3DE::BODY_STATE_SLEEPING: {
 			set_is_sleeping(p_value);
 		} break;
-		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
+		case PS3DE::BODY_STATE_CAN_SLEEP: {
 			set_is_sleep_allowed(p_value);
 		} break;
 		default: {

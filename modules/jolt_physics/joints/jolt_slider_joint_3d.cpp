@@ -178,72 +178,72 @@ JoltSliderJoint3D::JoltSliderJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D 
 	rebuild();
 }
 
-double JoltSliderJoint3D::get_param(PhysicsServer3D::SliderJointParam p_param) const {
+double JoltSliderJoint3D::get_param(PS3DE::SliderJointParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_UPPER: {
+		case PS3DE::SLIDER_JOINT_LINEAR_LIMIT_UPPER: {
 			return limit_upper;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_LOWER: {
+		case PS3DE::SLIDER_JOINT_LINEAR_LIMIT_LOWER: {
 			return limit_lower;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS: {
 			return SLIDER_DEFAULT_LINEAR_LIMIT_SOFTNESS;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION: {
 			return SLIDER_DEFAULT_LINEAR_LIMIT_RESTITUTION;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_DAMPING: {
+		case PS3DE::SLIDER_JOINT_LINEAR_LIMIT_DAMPING: {
 			return SLIDER_DEFAULT_LINEAR_LIMIT_DAMPING;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_MOTION_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_LINEAR_MOTION_SOFTNESS: {
 			return SLIDER_DEFAULT_LINEAR_MOTION_SOFTNESS;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_MOTION_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_LINEAR_MOTION_RESTITUTION: {
 			return SLIDER_DEFAULT_LINEAR_MOTION_RESTITUTION;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_MOTION_DAMPING: {
+		case PS3DE::SLIDER_JOINT_LINEAR_MOTION_DAMPING: {
 			return SLIDER_DEFAULT_LINEAR_MOTION_DAMPING;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS: {
 			return SLIDER_DEFAULT_LINEAR_ORTHO_SOFTNESS;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION: {
 			return SLIDER_DEFAULT_LINEAR_ORTHO_RESTITUTION;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING: {
+		case PS3DE::SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING: {
 			return SLIDER_DEFAULT_LINEAR_ORTHO_DAMPING;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_UPPER: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_UPPER: {
 			return SLIDER_DEFAULT_ANGULAR_LIMIT_UPPER;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_LOWER: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_LOWER: {
 			return SLIDER_DEFAULT_ANGULAR_LIMIT_LOWER;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS: {
 			return SLIDER_DEFAULT_ANGULAR_LIMIT_SOFTNESS;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION: {
 			return SLIDER_DEFAULT_ANGULAR_LIMIT_RESTITUTION;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING: {
 			return SLIDER_DEFAULT_ANGULAR_LIMIT_DAMPING;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS: {
 			return SLIDER_DEFAULT_ANGULAR_MOTION_SOFTNESS;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION: {
 			return SLIDER_DEFAULT_ANGULAR_MOTION_RESTITUTION;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_MOTION_DAMPING: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_MOTION_DAMPING: {
 			return SLIDER_DEFAULT_ANGULAR_MOTION_DAMPING;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: {
 			return SLIDER_DEFAULT_ANGULAR_ORTHO_SOFTNESS;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: {
 			return SLIDER_DEFAULT_ANGULAR_ORTHO_RESTITUTION;
 		}
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: {
 			return SLIDER_DEFAULT_ANGULAR_ORTHO_DAMPING;
 		}
 		default: {
@@ -252,112 +252,112 @@ double JoltSliderJoint3D::get_param(PhysicsServer3D::SliderJointParam p_param) c
 	}
 }
 
-void JoltSliderJoint3D::set_param(PhysicsServer3D::SliderJointParam p_param, double p_value) {
+void JoltSliderJoint3D::set_param(PS3DE::SliderJointParam p_param, double p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_UPPER: {
+		case PS3DE::SLIDER_JOINT_LINEAR_LIMIT_UPPER: {
 			limit_upper = p_value;
 			_limits_changed();
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_LOWER: {
+		case PS3DE::SLIDER_JOINT_LINEAR_LIMIT_LOWER: {
 			limit_lower = p_value;
 			_limits_changed();
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_LINEAR_LIMIT_SOFTNESS)) {
 				WARN_PRINT(vformat("Slider joint linear limit softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_LINEAR_LIMIT_RESTITUTION)) {
 				WARN_PRINT(vformat("Slider joint linear limit restitution is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_DAMPING: {
+		case PS3DE::SLIDER_JOINT_LINEAR_LIMIT_DAMPING: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_LINEAR_LIMIT_DAMPING)) {
 				WARN_PRINT(vformat("Slider joint linear limit damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_MOTION_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_LINEAR_MOTION_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_LINEAR_MOTION_SOFTNESS)) {
 				WARN_PRINT(vformat("Slider joint linear motion softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_MOTION_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_LINEAR_MOTION_RESTITUTION: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_LINEAR_MOTION_RESTITUTION)) {
 				WARN_PRINT(vformat("Slider joint linear motion restitution is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_MOTION_DAMPING: {
+		case PS3DE::SLIDER_JOINT_LINEAR_MOTION_DAMPING: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_LINEAR_MOTION_DAMPING)) {
 				WARN_PRINT(vformat("Slider joint linear motion damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_LINEAR_ORTHO_SOFTNESS)) {
 				WARN_PRINT(vformat("Slider joint linear ortho softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_LINEAR_ORTHO_RESTITUTION)) {
 				WARN_PRINT(vformat("Slider joint linear ortho restitution is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING: {
+		case PS3DE::SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_LINEAR_ORTHO_DAMPING)) {
 				WARN_PRINT(vformat("Slider joint linear ortho damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_UPPER: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_UPPER: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_LIMIT_UPPER)) {
 				WARN_PRINT(vformat("Slider joint angular limits are not supported when using Jolt Physics. Any such value will be ignored. Try using Generic6DOFJoint3D instead. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_LOWER: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_LOWER: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_LIMIT_LOWER)) {
 				WARN_PRINT(vformat("Slider joint angular limits are not supported when using Jolt Physics. Any such value will be ignored. Try using Generic6DOFJoint3D instead. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_LIMIT_SOFTNESS)) {
 				WARN_PRINT(vformat("Slider joint angular limit softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_LIMIT_RESTITUTION)) {
 				WARN_PRINT(vformat("Slider joint angular limit restitution is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_DAMPING: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_LIMIT_DAMPING)) {
 				WARN_PRINT(vformat("Slider joint angular limit damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_MOTION_SOFTNESS)) {
 				WARN_PRINT(vformat("Slider joint angular motion softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_MOTION_RESTITUTION)) {
 				WARN_PRINT(vformat("Slider joint angular motion restitution is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_MOTION_DAMPING: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_MOTION_DAMPING: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_MOTION_DAMPING)) {
 				WARN_PRINT(vformat("Slider joint angular motion damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_ORTHO_SOFTNESS)) {
 				WARN_PRINT(vformat("Slider joint angular ortho softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_ORTHO_RESTITUTION)) {
 				WARN_PRINT(vformat("Slider joint angular ortho restitution is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: {
+		case PS3DE::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: {
 			if (!Math::is_equal_approx(p_value, SLIDER_DEFAULT_ANGULAR_ORTHO_DAMPING)) {
 				WARN_PRINT(vformat("Slider joint angular ortho damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}

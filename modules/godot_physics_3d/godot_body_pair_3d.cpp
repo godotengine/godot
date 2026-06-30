@@ -268,8 +268,8 @@ bool GodotBodyPair3D::setup(real_t p_step) {
 		return false;
 	}
 
-	collide_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC) && A->collides_with(B);
-	collide_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC) && B->collides_with(A);
+	collide_A = (A->get_mode() > PS3DE::BODY_MODE_KINEMATIC) && A->collides_with(B);
+	collide_B = (B->get_mode() > PS3DE::BODY_MODE_KINEMATIC) && B->collides_with(A);
 
 	report_contacts_only = false;
 	if (!collide_A && !collide_B) {
@@ -701,7 +701,7 @@ bool GodotBodySoftBodyPair3D::setup(real_t p_step) {
 		return false;
 	}
 
-	body_collides = (body->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC) && body->collides_with(soft_body);
+	body_collides = (body->get_mode() > PS3DE::BODY_MODE_KINEMATIC) && body->collides_with(soft_body);
 	soft_body_collides = soft_body->collides_with(body);
 
 	if (!body_collides && !soft_body_collides) {
