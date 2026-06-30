@@ -3837,6 +3837,7 @@ PopupMenu::PopupMenu() {
 	search_bar->set_clear_button_enabled(true);
 	search_bar->set_placeholder(ETR("Search"));
 	search_bar->set_keep_editing_on_text_submit(true);
+	search_bar->set_virtual_keyboard_show_on_focus(false);
 	search_bar->connect(SceneStringName(text_changed), callable_mp(this, &PopupMenu::_search_bar_text_changed));
 	search_bar->connect(SceneStringName(focus_entered), callable_mp(this, &PopupMenu::_search_bar_focus_entered));
 	vbox_container->add_child(search_bar, false, INTERNAL_MODE_FRONT);
