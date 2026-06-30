@@ -1420,7 +1420,7 @@ void ItemList::_notification(int p_what) {
 			Size2 size = get_size();
 			int width = size.width - theme_cache.panel_style->get_minimum_size().width;
 			if (scroll_bar_v->is_visible()) {
-				width -= scroll_bar_v_min.width;
+				width -= scroll_bar_v_min.width + theme_cache.panel_style->get_margin(SIDE_LEFT);
 			}
 
 			draw_style_box(theme_cache.panel_style, Rect2(Point2(), size));
