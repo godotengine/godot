@@ -49,11 +49,11 @@ protected:
 	T *data = nullptr;
 
 public:
-	T *ptr() {
+	T *ptr() _LIFETIME_BOUND_ {
 		return data;
 	}
 
-	const T *ptr() const {
+	const T *ptr() const _LIFETIME_BOUND_ {
 		return data;
 	}
 
@@ -284,8 +284,8 @@ public:
 		return ret;
 	}
 
-	_FORCE_INLINE_ Span<T> span() const { return Span(data, count); }
-	_FORCE_INLINE_ operator Span<T>() const { return span(); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return Span(data, count); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return span(); }
 
 	_FORCE_INLINE_ LocalVector() {}
 	_FORCE_INLINE_ LocalVector(const LocalVector &p_from) {

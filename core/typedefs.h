@@ -40,6 +40,12 @@
 
 #include "platform_config.h"
 
+#if defined(__has_cpp_attribute)
+#define GD_HAS_CPP_ATTRIBUTE(m_feature) __has_cpp_attribute(m_feature)
+#else
+#define GD_HAS_CPP_ATTRIBUTE(m_feature) 0
+#endif
+
 #ifndef _STR
 #define _STR(m_x) #m_x
 #define _MKSTR(m_x) _STR(m_x)
@@ -123,6 +129,18 @@
 #else
 #define _NO_DISCARD_CLASS_
 #endif
+#endif
+
+#if GD_HAS_CPP_ATTRIBUTE(clang::lifetimebound)
+#define _LIFETIME_BOUND_ [[clang::lifetimebound]]
+#elif GD_HAS_CPP_ATTRIBUTE(gnu::lifetimebound)
+#define _LIFETIME_BOUND_ [[gnu::lifetimebound]]
+#elif GD_HAS_CPP_ATTRIBUTE(msvc::lifetimebound)
+#define _LIFETIME_BOUND_ [[msvc::lifetimebound]]
+#elif GD_HAS_CPP_ATTRIBUTE(lifetimebound)
+#define _LIFETIME_BOUND_ [[lifetimebound]]
+#else
+#define _LIFETIME_BOUND_
 #endif
 
 //custom, gcc-safe offsetof, because gcc complains a lot.

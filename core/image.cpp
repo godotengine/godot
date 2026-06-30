@@ -1728,7 +1728,7 @@ bool Image::empty() const {
 	return (data.size() == 0);
 }
 
-PoolVector<uint8_t> Image::get_data() const {
+const PoolVector<uint8_t> &Image::get_data() const {
 	return data;
 }
 

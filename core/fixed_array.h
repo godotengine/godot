@@ -61,7 +61,7 @@ public:
 	bool is_full() const { return _size == CAPACITY; }
 	uint32_t capacity() const { return CAPACITY; }
 
-	T *request(bool p_construct = true) {
+	T *request(bool p_construct = true) _LIFETIME_BOUND_ {
 		if (size() < CAPACITY) {
 			T *ele = &get(_size++);
 			if (CONSTRUCT && p_construct) {

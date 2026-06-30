@@ -80,8 +80,8 @@ class CharString {
 	static const char _null;
 
 public:
-	_FORCE_INLINE_ char *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const char *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ char *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
+	_FORCE_INLINE_ const char *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
@@ -108,7 +108,7 @@ public:
 	bool operator<(const CharString &p_right) const;
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
-	const char *get_data() const;
+	const char *get_data() const _LIFETIME_BOUND_;
 	operator const char *() const { return get_data(); };
 
 protected:
@@ -144,8 +144,8 @@ public:
 		npos = -1 ///<for "some" compatibility with std::string (npos is a huge value in std::string)
 	};
 
-	_FORCE_INLINE_ CharType *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const CharType *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ CharType *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
+	_FORCE_INLINE_ const CharType *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
 
 	void remove(int p_index) { _cowdata.remove(p_index); }
 
@@ -193,7 +193,7 @@ public:
 	signed char nocasecmp_to(const String &p_str) const;
 	signed char naturalnocasecmp_to(const String &p_str) const;
 
-	const CharType *c_str() const;
+	const CharType *c_str() const _LIFETIME_BOUND_;
 	/* standard size stuff */
 
 	_FORCE_INLINE_ int length() const {
