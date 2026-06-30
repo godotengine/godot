@@ -1000,7 +1000,6 @@ Path2DEditor::Path2DEditor() {
 	auto_tangent_torsion->set_step(0.05);
 	auto_tangent_torsion->set_h_size_flags(Control::SIZE_EXPAND);
 	auto_tangent_torsion->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
-	auto_tangent_torsion->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	auto_tangent_torsion->set_tooltip_text(TTRC("Auto Tangent Torsion"));
 	toolbar->add_child(auto_tangent_torsion);
 	auto_tangent_torsion->set_value(0.5);
