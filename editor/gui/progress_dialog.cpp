@@ -179,7 +179,7 @@ void ProgressDialog::_popup() {
 }
 
 void ProgressDialog::_reparent_and_show() {
-	Window *current_window = SceneTree::get_singleton()->get_root()->get_last_exclusive_window();
+	Window *current_window = SceneTree::get_singleton()->get_root()->get_last_exclusive_window(true);
 	ERR_FAIL_NULL(current_window);
 	reparent(current_window);
 
