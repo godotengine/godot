@@ -34,8 +34,11 @@
 
 #include "core/variant/callable.h"
 
+struct SocketMonitorGCDState;
+
 class SocketMonitorGCD {
 	dispatch_source_t _source = nullptr;
+	SocketMonitorGCDState *_state = nullptr;
 	bool _active = false;
 
 public:

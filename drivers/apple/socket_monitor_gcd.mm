@@ -32,6 +32,17 @@
 
 #include "core/variant/variant.h"
 
+#include <atomic>
+
+// State we capture, to prevent use after free
+struct SocketMonitorGCDState {
+	Callable callable;
+	std::atomic<bool> cancelled = false;
+
+	explicit SocketMonitorGCDState(const Callable &p_callable) :
+			callable(p_callable) {}
+};
+
 void SocketMonitorGCD::start(int p_fd, const Callable &p_on_readable) {
 	stop();
 
@@ -40,12 +51,19 @@ void SocketMonitorGCD::start(int p_fd, const Callable &p_on_readable) {
 		return;
 	}
 
-	Callable *cb = memnew(Callable(p_on_readable));
+	SocketMonitorGCDState *state = memnew(SocketMonitorGCDState(p_on_readable));
+	_state = state;
+
 	dispatch_source_set_event_handler(_source, ^{
-		cb->call_deferred();
+		// Once cancellation has been requested, stop delivering: the callable's
+		// target may already be tearing down. 
+		if (!state->cancelled.load()) {
+			state->callable.call_deferred();
+		}
 	});
 	dispatch_source_set_cancel_handler(_source, ^{
-		memdelete(cb);
+		// Runs after the last event handler completes; sole owner that frees state.
+		memdelete(state);
 	});
 
 	dispatch_resume(_source);
@@ -54,6 +72,12 @@ void SocketMonitorGCD::start(int p_fd, const Callable &p_on_readable) {
 
 void SocketMonitorGCD::stop() {
 	if (_source) {
+		if (_state) {
+			// Signal in-flight/queued event handlers before triggering the
+			// asynchronous cancellation that will eventually free the state.
+			_state->cancelled.store(true);
+			_state = nullptr;
+		}
 		dispatch_source_cancel(_source);
 		_source = nullptr;
 	}
