@@ -38,6 +38,7 @@
 class AudioStreamPolyphonic : public AudioStream {
 	GDCLASS(AudioStreamPolyphonic, AudioStream)
 	int polyphony = 32;
+	bool stop_oldest = false;
 
 	AudioServer::PlaybackType playback_type;
 
@@ -49,6 +50,9 @@ public:
 
 	void set_polyphony(int p_voices);
 	int get_polyphony() const;
+
+	void set_stop_oldest(bool p_stop);
+	bool get_stop_oldest() const;
 
 	virtual bool is_meta_stream() const override { return true; }
 
@@ -81,6 +85,9 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 
 	bool active = false;
 	uint32_t id_counter = 1;
+
+	bool stop_oldest_playback;
+	Vector<int64_t> active_ids;
 
 	bool _is_sample = false;
 	Ref<AudioSamplePlayback> sample_playback;

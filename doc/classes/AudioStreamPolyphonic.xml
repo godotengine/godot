@@ -14,5 +14,8 @@
 		<member name="polyphony" type="int" setter="set_polyphony" getter="get_polyphony" default="32">
 			Maximum amount of simultaneous streams that can be played.
 		</member>
+		<member name="stop_oldest" type="bool" setter="set_stop_oldest" getter="get_stop_oldest" default="false">
+			Determines if the oldest active playback will be stopped to play a new stream, if the total of streams playing is equal to [member polyphony]. If [code]false[/code], new streams won't be played in that case.
+		</member>
 	</members>
 </class>
