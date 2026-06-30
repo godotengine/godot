@@ -9,7 +9,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
-from typing import Any, TextIO
+from typing import TextIO
 
 sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
@@ -426,11 +426,10 @@ class State:
 
     def parse_params(self, root: ET.Element, context: str) -> list[ParameterDef]:
         param_elements = root.findall("param")
-        params: Any = [None] * len(param_elements)
+        params: list[ParameterDef] = []
 
         for param_index, param_element in enumerate(param_elements):
             param_name = param_element.attrib["name"]
-            index = int(param_element.attrib["index"])
             type_name = TypeName.from_element(param_element)
             default = param_element.get("default")
 
@@ -440,11 +439,9 @@ class State:
                     self,
                 )
 
-            params[index] = ParameterDef(param_name, type_name, default)
+            params.append(ParameterDef(param_name, type_name, default))
 
-        cast: list[ParameterDef] = params
-
-        return cast
+        return params
 
     def sort_classes(self) -> None:
         self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0].lower()))
@@ -1249,7 +1246,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             index = 0
 
-            for method_list in class_def.annotations.values():  # type: ignore
+            for method_list in class_def.annotations.values():
                 for i, m in enumerate(method_list):
                     if index != 0:
                         f.write(make_separator())
@@ -2136,8 +2133,7 @@ def format_text_block(
 
                     valid_param_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
                     if valid_param_context:
-                        context_params: list[ParameterDef] = context.parameters  # type: ignore
-                        for param_def in context_params:
+                        for param_def in context.parameters:
                             if param_def.name == inside_code_text:
                                 print_warning(
                                     f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the parameters in {context_name}. {code_warning_if_intended_string}',
@@ -2296,9 +2292,8 @@ def format_text_block(
                                 state,
                             )
                         else:
-                            context_params: list[ParameterDef] = context.parameters  # type: ignore
                             found = False
-                            for param_def in context_params:
+                            for param_def in context.parameters:
                                 if param_def.name == link_target:
                                     found = True
                                     break
