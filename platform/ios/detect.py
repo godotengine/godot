@@ -106,7 +106,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(ASFLAGS=["-mios-simulator-version-min=15.0"])
         env.Append(CCFLAGS=["-mios-simulator-version-min=15.0"])
         env.Append(CPPDEFINES=["IOS_SIMULATOR"])
-        env.extra_suffix = ".simulator" + env.extra_suffix
+        env.extra_suffix = ".simulator" + env.extra_suffix  # ty:ignore[unresolved-attribute]
     else:
         env["APPLE_PLATFORM"] = "ios"
         env.Append(ASFLAGS=["-miphoneos-version-min=15.0"])
