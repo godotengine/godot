@@ -1883,6 +1883,7 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value, bool
 			append(class_idx);
 		} break;
 		case GDScriptDataType::SCRIPT:
+		case GDScriptDataType::GDTRAIT:
 		case GDScriptDataType::GDSCRIPT: {
 			Variant script = function->return_type.script_type;
 			int script_idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
