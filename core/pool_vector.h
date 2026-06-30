@@ -335,14 +335,14 @@ public:
 		Write() {}
 	};
 
-	Read read() const {
+	Read read() const _LIFETIME_BOUND_ {
 		Read r;
 		if (alloc) {
 			r._ref(alloc);
 		}
 		return r;
 	}
-	Write write() {
+	Write write() _LIFETIME_BOUND_ {
 		Write w;
 		if (alloc) {
 			_copy_on_write(); //make sure there is only one being accessed
@@ -424,8 +424,8 @@ public:
 		return find(p_val) != -1;
 	}
 
-	_FORCE_INLINE_ Span<T> span() const { return Span(read().ptr(), (uint32_t)size()); }
-	_FORCE_INLINE_ operator Span<T>() const { return span(); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return Span(read().ptr(), (uint32_t)size()); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return span(); }
 
 	inline int size() const;
 	inline bool empty() const;

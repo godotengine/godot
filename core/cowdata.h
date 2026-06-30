@@ -115,12 +115,12 @@ private:
 public:
 	void operator=(const CowData<T> &p_from) { _ref(p_from); }
 
-	_FORCE_INLINE_ T *ptrw() {
+	_FORCE_INLINE_ T *ptrw() _LIFETIME_BOUND_ {
 		_copy_on_write();
 		return _ptr;
 	}
 
-	_FORCE_INLINE_ const T *ptr() const {
+	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ {
 		return _ptr;
 	}
 
@@ -133,8 +133,8 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ operator Span<T>() const { return Span<T>(ptr(), size()); }
-	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return Span<T>(ptr(), size()); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return operator Span<T>(); }
 
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ bool empty() const { return _ptr == nullptr; }

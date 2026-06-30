@@ -90,7 +90,7 @@ void NavigationPolygon::set_vertices(const PoolVector<Vector2> &p_vertices) {
 	rect_cache_dirty = true;
 }
 
-PoolVector<Vector2> NavigationPolygon::get_vertices() const {
+const PoolVector<Vector2> &NavigationPolygon::get_vertices() const {
 	return vertices;
 }
 

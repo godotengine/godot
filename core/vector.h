@@ -75,8 +75,8 @@ public:
 	};
 	void invert();
 
-	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ T *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
+	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ bool empty() const { return _cowdata.empty(); }
 
@@ -85,8 +85,8 @@ public:
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 
-	_FORCE_INLINE_ operator Span<T>() const { return _cowdata.span(); }
-	_FORCE_INLINE_ Span<T> span() const { return _cowdata.span(); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return _cowdata.span(); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return _cowdata.span(); }
 
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 	_FORCE_INLINE_ const T &operator[](int p_index) const { return _cowdata.get(p_index); }
