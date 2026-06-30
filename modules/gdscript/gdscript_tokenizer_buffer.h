@@ -44,13 +44,12 @@ public:
 	static constexpr uint32_t TOKEN_BITS = 8;
 	static constexpr uint32_t TOKEN_MASK = (1 << (TOKEN_BITS - 1)) - 1;
 
-	Vector<StringName> identifiers;
-	Vector<Variant> constants;
-	Vector<int> continuation_lines;
+	TightLocalVector<StringName> identifiers;
+	TightLocalVector<Variant> constants;
 	HashMap<int, int> token_lines;
 	HashMap<int, int> token_columns;
-	Vector<Token> tokens;
-	int current = 0;
+	TightLocalVector<Token> tokens;
+	uint32_t current = 0;
 	uint32_t current_line = 1;
 
 	bool multiline_mode = false;

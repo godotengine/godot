@@ -67,7 +67,7 @@ class GDScriptCompiler {
 		Vector<FunctionLambdaInfo> implicit_ready_info;
 		Vector<FunctionLambdaInfo> static_initializer_info;
 		HashMap<StringName, Vector<FunctionLambdaInfo>> member_function_infos;
-		Vector<FunctionLambdaInfo> other_function_infos;
+		TightLocalVector<FunctionLambdaInfo> other_function_infos;
 		HashMap<StringName, ScriptLambdaInfo> subclass_info;
 	};
 
