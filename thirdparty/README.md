@@ -720,7 +720,7 @@ Update instructions:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 1.1.1 (b22872835dbabc56a6e4a366ea9917f62b7daf1a, 2026)
+- Version: 1.2 (9d9890c73011d75920af614485296d1e03e95448, 2026)
 - License: MIT
 
 Files extracted from upstream repository:
