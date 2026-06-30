@@ -760,7 +760,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			accept_event();
 			return;
 		}
-		if (k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_line_end", true)) {
+		if (k->is_action("ui_text_caret_line_end", true)) {
 			cancel_code_completion();
 		}
 		if (k->is_action("ui_text_completion_replace", true) || k->is_action("ui_text_completion_accept", true)) {
@@ -2469,6 +2469,7 @@ void CodeEdit::update_code_completion_options(bool p_forced) {
 	code_completion_forced = p_forced;
 	code_completion_option_sources = code_completion_option_submitted;
 	code_completion_option_submitted.clear();
+	code_completion_caret_line = get_caret_line();
 	_filter_code_completion_candidates_impl();
 }
 
@@ -3749,6 +3750,11 @@ void CodeEdit::_update_scroll_selected_line(float p_mouse_y) {
 void CodeEdit::_filter_code_completion_candidates_impl() {
 	int line_height = get_line_height();
 
+	const int caret_line = get_caret_line();
+	const int caret_column = get_caret_column();
+	const String line = get_line(caret_line);
+	ERR_FAIL_INDEX_MSG(caret_column, line.length() + 1, "Caret column exceeds line length.");
+
 	if (GDVIRTUAL_IS_OVERRIDDEN(_filter_code_completion_candidates)) {
 		Vector<ScriptLanguage::CodeCompletionOption> code_completion_options_new;
 		code_completion_base = "";
@@ -3816,6 +3822,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		code_completion_options = code_completion_options_new;
 		code_completion_ac_items.resize_initialized(code_completion_options.size());
 
+		code_completion_caret_column = caret_column;
+		code_completion_line = line;
 		code_completion_longest_line = MIN(max_width, theme_cache.code_completion_max_width * theme_cache.font_size);
 		code_completion_force_item_center = -1;
 		code_completion_active = true;
@@ -3823,11 +3831,6 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		queue_redraw();
 		return;
 	}
-
-	const int caret_line = get_caret_line();
-	const int caret_column = get_caret_column();
-	const String line = get_line(caret_line);
-	ERR_FAIL_INDEX_MSG(caret_column, line.length() + 1, "Caret column exceeds line length.");
 
 	if (caret_column > 0 && line[caret_column - 1] == '(' && !code_completion_forced) {
 		cancel_code_completion();
@@ -4043,6 +4046,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	code_completion_options = code_completion_options_new;
 	code_completion_ac_items.resize_initialized(code_completion_options.size());
 
+	code_completion_caret_column = caret_column;
+	code_completion_line = line;
 	code_completion_longest_line = MIN(max_width, theme_cache.code_completion_max_width * theme_cache.font_size);
 	code_completion_force_item_center = -1;
 	code_completion_active = true;
@@ -4086,6 +4091,10 @@ void CodeEdit::_text_set() {
 }
 
 void CodeEdit::_text_changed() {
+	if (code_completion_active && get_line(get_caret_line()) != code_completion_line) {
+		cancel_code_completion();
+	}
+
 	if (lines_edited_from == -1) {
 		return;
 	}
@@ -4121,6 +4130,16 @@ void CodeEdit::_text_changed() {
 	lines_edited_from = -1;
 	lines_edited_to = -1;
 	lines_edited_changed = 0;
+}
+
+void CodeEdit::_line_col_changed() {
+	if (!code_completion_active) {
+		return;
+	}
+
+	if (get_caret_line() != code_completion_caret_line || get_caret_column() != code_completion_caret_column) {
+		cancel_code_completion();
+	}
 }
 
 CodeEdit::CodeEdit() {
@@ -4185,6 +4204,7 @@ CodeEdit::CodeEdit() {
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));
 	connect("text_set", callable_mp(this, &CodeEdit::_text_set));
+	connect("caret_changed", callable_mp(this, &CodeEdit::_line_col_changed));
 	connect(SceneStringName(text_changed), callable_mp(this, &CodeEdit::_text_changed));
 
 	connect("gutter_clicked", callable_mp(this, &CodeEdit::_gutter_clicked));
