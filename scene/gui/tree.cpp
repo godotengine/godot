@@ -3836,8 +3836,8 @@ Rect2 Tree::_get_content_rect() const {
 void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	using_native_touch = false;
 	if (p_event->get_device() != InputEvent::DEVICE_ID_EMULATION) {
+		using_native_touch = false;
 		Ref<InputEventScreenTouch> touch = p_event;
 		Ref<InputEventScreenDrag> drag = p_event;
 		if (touch.is_valid() || drag.is_valid()) {
@@ -4275,7 +4275,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					drag_accum = 0;
 					drag_from = v_scroll->get_value();
 
-					drag_touching = DisplayServer::get_singleton()->is_touchscreen_available();
+					drag_touching = using_native_touch && DisplayServer::get_singleton()->is_touchscreen_available();
 					drag_touching_deaccel = false;
 					if (drag_touching) {
 						set_process_internal(true);
@@ -5125,7 +5125,10 @@ void Tree::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			drag_touching = false;
+			if (!is_visible()) {
+				drag_touching = false;
+				popup_editor->hide();
+			}
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -5554,7 +5557,7 @@ void Tree::_notification(int p_what) {
 
 		case NOTIFICATION_RESIZED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (popup_edited_item != nullptr) {
+			if (popup_edited_item != nullptr && popup_editor->is_visible()) {
 				Rect2 rect = _get_item_focus_rect(popup_edited_item);
 
 				popup_editor->set_position(get_screen_position() + rect.position);
@@ -6083,7 +6086,14 @@ int Tree::get_columns() const {
 void Tree::_scroll_moved(float) {
 	_determine_hovered_item();
 	queue_redraw();
-	popup_editor->hide();
+
+	if (scroll_pending > 0) {
+		// If both vertical and horizontal scroll happen in the same frame,
+		// this condition needs to cancel 2 movements, hence the counter.
+		scroll_pending--;
+	} else {
+		popup_editor->hide();
+	}
 }
 
 Rect2 Tree::get_custom_popup_rect() const {
@@ -6152,6 +6162,7 @@ void Tree::ensure_cursor_is_visible() {
 			v_scroll->set_value(y_offset);
 		} else if (y_offset + cell_h > v_scroll->get_value() + screen_h) {
 			delta_v = y_offset - screen_h + cell_h - v_scroll->get_value();
+			scroll_pending++;
 			callable_mp((Range *)v_scroll, &Range::set_value).call_deferred(y_offset - screen_h + cell_h);
 		} else if (y_offset < v_scroll->get_value()) {
 			delta_v = y_offset - v_scroll->get_value();
@@ -6171,9 +6182,11 @@ void Tree::ensure_cursor_is_visible() {
 
 		if (cell_w > screen_w) {
 			delta_h = x_offset - h_scroll->get_value();
+			scroll_pending++;
 			h_scroll->set_value(x_offset);
 		} else if (x_offset + cell_w > h_scroll->get_value() + screen_w) {
 			delta_h = x_offset - screen_w + cell_w - h_scroll->get_value();
+			scroll_pending++;
 			callable_mp((Range *)h_scroll, &Range::set_value).call_deferred(x_offset - screen_w + cell_w);
 		} else if (x_offset < h_scroll->get_value()) {
 			delta_h = x_offset - h_scroll->get_value();
@@ -6953,7 +6966,7 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 }
 
 bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (using_native_touch && drag_touching) {
+	if (drag_touching) {
 		// Disable data drag & drop when touch dragging.
 		return false;
 	}
@@ -6962,7 +6975,7 @@ bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 }
 
 Variant Tree::get_drag_data(const Point2 &p_point) {
-	if (using_native_touch && drag_touching) {
+	if (drag_touching) {
 		// Disable data drag & drop when touch dragging.
 		return Variant();
 	}
