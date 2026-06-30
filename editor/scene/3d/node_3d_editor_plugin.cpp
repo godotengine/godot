@@ -92,6 +92,7 @@
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/color_picker.h"
@@ -2400,9 +2401,11 @@ void Node3DEditor::_update_theme() {
 	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), get_editor_theme_icon(SNAME("Panels3Alt")));
 	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), get_editor_theme_icon(SNAME("Panels4")));
 
+	snap_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiDropdown")));
+
 	sun_button->set_button_icon(get_editor_theme_icon(SNAME("PreviewSun")));
 	environ_button->set_button_icon(get_editor_theme_icon(SNAME("PreviewEnvironment")));
-	sun_environ_settings->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+	sun_environ_settings->set_button_icon(get_editor_theme_icon(SNAME("GuiDropdown")));
 
 	sun_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
 	environ_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
@@ -3233,6 +3236,9 @@ Node3DEditor::Node3DEditor() {
 	editor_selection->add_editor_plugin(this);
 
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
+	toolbar_margin->add_theme_constant_override("margin_top", 1 * EDSCALE);
+	toolbar_margin->add_theme_constant_override("margin_bottom", 1 * EDSCALE);
+	toolbar_margin->set_custom_maximum_size(Size2(-1, 36 * EDSCALE));
 	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
 	vbc->add_child(toolbar_margin);
 
@@ -3244,8 +3250,15 @@ Node3DEditor::Node3DEditor() {
 	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
 	main_flow->add_child(main_menu_hbox);
 
+	PanelContainer *input_panel = memnew(PanelContainer);
+	input_panel->set_theme_type_variation("PanelContainerButtonGroup");
+	main_menu_hbox->add_child(input_panel);
+
+	HBoxContainer *input_hbox = memnew(HBoxContainer);
+	input_panel->add_child(input_hbox);
+
 	tool_button[TOOL_MODE_TRANSFORM] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_TRANSFORM]);
+	input_hbox->add_child(tool_button[TOOL_MODE_TRANSFORM]);
 	tool_button[TOOL_MODE_TRANSFORM]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_TRANSFORM]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_TRANSFORM]->set_pressed(true);
@@ -3255,7 +3268,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_TRANSFORM]->set_accessibility_name(TTRC("Transform Mode"));
 
 	tool_button[TOOL_MODE_MOVE] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_MOVE]);
+	input_hbox->add_child(tool_button[TOOL_MODE_MOVE]);
 	tool_button[TOOL_MODE_MOVE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_MOVE]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tool_button[TOOL_MODE_MOVE]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -3266,7 +3279,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_MOVE]->set_accessibility_name(TTRC("Move Mode"));
 
 	tool_button[TOOL_MODE_ROTATE] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_ROTATE]);
+	input_hbox->add_child(tool_button[TOOL_MODE_ROTATE]);
 	tool_button[TOOL_MODE_ROTATE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_ROTATE]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tool_button[TOOL_MODE_ROTATE]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -3276,7 +3289,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_ROTATE]->set_accessibility_name(TTRC("Rotate Mode"));
 
 	tool_button[TOOL_MODE_SCALE] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_SCALE]);
+	input_hbox->add_child(tool_button[TOOL_MODE_SCALE]);
 	tool_button[TOOL_MODE_SCALE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SCALE]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tool_button[TOOL_MODE_SCALE]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -3286,7 +3299,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SCALE]->set_accessibility_name(TTRC("Scale Mode"));
 
 	tool_button[TOOL_MODE_SELECT] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
+	input_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
 	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SELECT]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tool_button[TOOL_MODE_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -3297,13 +3310,31 @@ Node3DEditor::Node3DEditor() {
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
+	PanelContainer *select_panel = memnew(PanelContainer);
+	select_panel->set_theme_type_variation("PanelContainerButtonGroup");
+	main_menu_hbox->add_child(select_panel);
+
+	HBoxContainer *select_hbox = memnew(HBoxContainer);
+	select_panel->add_child(select_hbox);
+
 	tool_button[TOOL_MODE_LIST_SELECT] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_LIST_SELECT]);
+	select_hbox->add_child(tool_button[TOOL_MODE_LIST_SELECT]);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_LIST_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_LIST_SELECT));
 	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
 	tool_button[TOOL_MODE_LIST_SELECT]->set_accessibility_name(TTRC("Show List of Selectable Nodes"));
+
+	tool_button[TOOL_RULER] = memnew(Button);
+	select_hbox->add_child(tool_button[TOOL_RULER]);
+	tool_button[TOOL_RULER]->set_toggle_mode(true);
+	tool_button[TOOL_RULER]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_button[TOOL_RULER]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_RULER));
+	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
+	tool_button[TOOL_RULER]->set_shortcut(ED_SHORTCUT("spatial_editor/measure", TTRC("Ruler Mode"), Key::M));
+	tool_button[TOOL_RULER]->set_accessibility_name(TTRC("Ruler Mode"));
+
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_LOCK_SELECTED]);
@@ -3341,15 +3372,6 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/ungroup_selected_nodes"));
 	tool_button[TOOL_UNGROUP_SELECTED]->set_accessibility_name(TTRC("Ungroup"));
 
-	tool_button[TOOL_RULER] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_RULER]);
-	tool_button[TOOL_RULER]->set_toggle_mode(true);
-	tool_button[TOOL_RULER]->set_theme_type_variation("FlatButton");
-	tool_button[TOOL_RULER]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_RULER));
-	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_RULER]->set_shortcut(ED_SHORTCUT("spatial_editor/measure", TTRC("Ruler Mode"), Key::M));
-	tool_button[TOOL_RULER]->set_accessibility_name(TTRC("Ruler Mode"));
-
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	tool_option_button[TOOL_OPT_LOCAL_COORDS] = memnew(Button);
@@ -3360,15 +3382,6 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut(ED_SHORTCUT("spatial_editor/local_coords", TTRC("Use Local Space"), Key::T));
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut_context(this);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_accessibility_name(TTRC("Use Local Space"));
-
-	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(Button);
-	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_theme_type_variation(SceneStringName(FlatButton));
-	tool_option_button[TOOL_OPT_USE_SNAP]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_USE_SNAP));
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTRC("Use Snap"), Key::Y));
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut_context(this);
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_accessibility_name(TTRC("Use Snap"));
 
 	tool_option_button[TOOL_OPT_USE_TRACKBALL] = memnew(Button);
 	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_USE_TRACKBALL]);
@@ -3390,6 +3403,56 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_tooltip_text(TTRC("When enabled, transforming a node will preserve the global transform of its children.\nThis also applies when editing transform properties in the Inspector."));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
+
+	PanelContainer *snap_panel = memnew(PanelContainer);
+	snap_panel->set_theme_type_variation("PanelContainerButtonGroup");
+	main_menu_hbox->add_child(snap_panel);
+
+	HBoxContainer *snap_hbox = memnew(HBoxContainer);
+	snap_panel->add_child(snap_hbox);
+
+	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(Button);
+	snap_hbox->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_option_button[TOOL_OPT_USE_SNAP]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_USE_SNAP));
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTRC("Use Snap"), Key::Y));
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut_context(this);
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_accessibility_name(TTRC("Use Snap"));
+
+	snap_menu = memnew(MenuButton);
+	snap_hbox->add_child(snap_menu);
+	snap_menu->set_flat(false);
+	snap_menu->set_theme_type_variation("FlatMenuButtonNoIconTint");
+	snap_menu->set_h_size_flags(SIZE_SHRINK_END);
+	snap_menu->set_tooltip_text(TTRC("Selection options."));
+
+	PopupMenu *snap_p = snap_menu->get_popup();
+	snap_p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
+	snap_p->set_item_checked(snap_p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
+	snap_p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
+
+	snap_p->add_separator();
+	snap_p->add_radio_check_item(TTRC("Snap to Mesh Vertices"), MENU_VERTEX_SNAP_SOURCE_MESH);
+	snap_p->set_item_checked(snap_p->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH), true);
+	snap_p->add_radio_check_item(TTRC("Snap to Collision Vertices"), MENU_VERTEX_SNAP_SOURCE_COLLISION);
+
+	snap_p->add_separator();
+	snap_p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTRC("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
+	snap_p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
+
+	main_menu_hbox->add_child(memnew(VSeparator));
+
+	PanelContainer *env_panel = memnew(PanelContainer);
+	env_panel->set_theme_type_variation("PanelContainerButtonGroup");
+	main_menu_hbox->add_child(env_panel);
+
+	HBoxContainer *env_hbox = memnew(HBoxContainer);
+	env_hbox->set_custom_minimum_size(Size2(0, 32 * EDSCALE));
+	env_hbox->set_alignment(ALIGNMENT_CENTER);
+	env_hbox->set_v_size_flags(SIZE_SHRINK_CENTER);
+	env_panel->add_child(env_hbox);
+
 	sun_button = memnew(Button);
 	sun_button->set_tooltip_text(TTRC("Toggle preview sunlight.\nIf a DirectionalLight3D node is added to the scene, preview sunlight is disabled."));
 	sun_button->set_toggle_mode(true);
@@ -3399,7 +3462,7 @@ Node3DEditor::Node3DEditor() {
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
 	sun_button->set_pressed(true);
 
-	main_menu_hbox->add_child(sun_button);
+	env_hbox->add_child(sun_button);
 
 	environ_button = memnew(Button);
 	environ_button->set_tooltip_text(TTRC("Toggle preview environment.\nIf a WorldEnvironment node is added to the scene, preview environment is disabled."));
@@ -3410,14 +3473,14 @@ Node3DEditor::Node3DEditor() {
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
 	environ_button->set_pressed(true);
 
-	main_menu_hbox->add_child(environ_button);
+	env_hbox->add_child(environ_button);
 
 	sun_environ_settings = memnew(Button);
 	sun_environ_settings->set_tooltip_text(TTRC("Edit Sun and Environment settings."));
 	sun_environ_settings->set_theme_type_variation(SceneStringName(FlatButton));
 	sun_environ_settings->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_sun_environ_settings_pressed));
 
-	main_menu_hbox->add_child(sun_environ_settings);
+	env_hbox->add_child(sun_environ_settings);
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -3466,22 +3529,8 @@ Node3DEditor::Node3DEditor() {
 	p = transform_menu->get_popup();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTRC("Snap Object to Floor"), Key::PAGEDOWN), MENU_SNAP_TO_FLOOR);
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTRC("Transform Dialog...")), MENU_TRANSFORM_DIALOG);
-
-	p->add_separator();
 	ED_SHORTCUT("spatial_editor/vertex_snap", TTRC("Vertex Snap"), Key::B);
-	p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
-	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
-	p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
-
-	p->add_separator();
-	p->add_radio_check_item(TTRC("Snap to Mesh Vertices"), MENU_VERTEX_SNAP_SOURCE_MESH);
-	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH), true);
-	p->add_radio_check_item(TTRC("Snap to Collision Vertices"), MENU_VERTEX_SNAP_SOURCE_COLLISION);
 	_update_vertex_snap_tooltips();
-
-	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTRC("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
-
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
 	view_layout_menu = memnew(MenuButton);

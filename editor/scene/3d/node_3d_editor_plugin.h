@@ -213,6 +213,7 @@ private:
 	Button *tool_button[TOOL_MAX];
 	Button *tool_option_button[TOOL_OPT_MAX];
 
+	MenuButton *snap_menu = nullptr;
 	MenuButton *transform_menu = nullptr;
 	PopupMenu *gizmos_menu = nullptr;
 	MenuButton *view_layout_menu = nullptr;
