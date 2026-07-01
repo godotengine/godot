@@ -2437,6 +2437,13 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 							}
 						}
 
+						if (instance->array_index >= 0) {
+							int32_t vis_idx = p_scenario->instance_data[instance->array_index].visibility_index;
+							if (vis_idx != -1) {
+								continue;
+							}
+						}
+
 						shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
 					}
 
@@ -2520,6 +2527,13 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 							}
 						}
 
+						if (instance->array_index >= 0) {
+							int32_t vis_idx = p_scenario->instance_data[instance->array_index].visibility_index;
+							if (vis_idx != -1) {
+								continue;
+							}
+						}
+
 						shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
 					}
 
@@ -2589,6 +2603,14 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 						RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
 					}
 				}
+
+				if (instance->array_index >= 0) {
+					int32_t vis_idx = p_scenario->instance_data[instance->array_index].visibility_index;
+					if (vis_idx != -1) {
+						continue;
+					}
+				}
+
 				shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
 			}
 
