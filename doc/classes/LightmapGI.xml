@@ -10,12 +10,15 @@
 		[b]Note:[/b] Due to how lightmaps work, most properties only have a visible effect once lightmaps are baked again.
 		[b]Note:[/b] Lightmap baking on [CSGShape3D]s and [PrimitiveMesh]es is not supported, as these cannot store UV2 data required for baking.
 		[b]Note:[/b] If no custom lightmappers are installed, [LightmapGI] can only be baked from devices that support the Forward+ or Mobile renderers.
-		[b]Note:[/b] The [LightmapGI] node only bakes light data for child nodes of its parent. Nodes further up the hierarchy of the scene will not be baked.
+		[b]Note:[/b] The [LightmapGI] node bakes light data for child nodes of its parent or arbitrary node hierarchies explicitly added to the [member LightmapGI.additional_nodes] array. Nodes further up the hierarchy of the scene will not be baked.
 	</description>
 	<tutorials>
 		<link title="Using Lightmap global illumination">$DOCS_URL/tutorials/3d/global_illumination/using_lightmap_gi.html</link>
 	</tutorials>
 	<members>
+		<member name="additional_nodes" type="NodePath[]" setter="set_additional_nodes" getter="get_additional_nodes" default="[]">
+			A list of additional nodes to be included in the baking process.
+		</member>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
 			The bias to use when computing shadows. Increasing [member bias] can fix shadow acne on the resulting baked lightmap, but can introduce peter-panning (shadows not connecting to their casters). Real-time [Light3D] shadows are not affected by this [member bias] property.
 		</member>
