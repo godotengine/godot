@@ -33,6 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+#include "core/io/file_access_memory.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
@@ -2813,6 +2814,45 @@ Ref<Image> Image::load_from_file(const String &p_path) {
 	return image;
 }
 
+Ref<Image> Image::load_from_buffer(const String &p_extension, const Vector<uint8_t> &p_array) {
+	String extension = p_extension.to_lower();
+	Ref<Image> image;
+	image.instantiate();
+	Error err = OK;
+	if (extension == "png") {
+		err = image->load_png_from_buffer(p_array);
+	} else if (extension == "jpg" || extension == "jpeg") {
+		err = image->load_jpg_from_buffer(p_array);
+	} else if (extension == "webp") {
+		err = image->load_webp_from_buffer(p_array);
+	} else if (extension == "tga") {
+		err = image->load_tga_from_buffer(p_array);
+	} else if (extension == "bmp") {
+		err = image->load_bmp_from_buffer(p_array);
+	} else if (extension == "ktx") {
+		err = image->load_ktx_from_buffer(p_array);
+	} else if (extension == "dds") {
+		err = image->load_dds_from_buffer(p_array);
+	} else if (extension == "exr") {
+		err = image->load_exr_from_buffer(p_array);
+	} else if (extension == "svg") {
+		err = image->load_svg_from_buffer(p_array);
+	}
+	if (err == ERR_UNAVAILABLE) {
+		return Ref<Image>();
+	}
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("Failed to load image format '%s' from buffer", extension));
+
+	Ref<FileAccessMemory> memfile;
+	memfile.instantiate();
+	memfile->open_custom(p_array.ptr(), p_array.size());
+
+	err = ImageLoader::load_image(vformat("i.%s", extension), image, memfile);
+	ERR_FAIL_COND_V_MSG(err == ERR_FILE_UNRECOGNIZED, Ref<Image>(), vformat("Unsupported image format: %s", extension));
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("Failed to load image format '%s' from buffer", extension));
+	return image;
+}
+
 Error Image::save_png(const String &p_path) const {
 	if (save_png_func == nullptr) {
 		return ERR_UNAVAILABLE;
@@ -3903,6 +3943,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
 	ClassDB::bind_static_method("Image", D_METHOD("load_from_file", "path"), &Image::load_from_file);
+	ClassDB::bind_static_method("Image", D_METHOD("load_from_buffer", "extension", "buffer"), &Image::load_from_buffer);
 	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
 	ClassDB::bind_method(D_METHOD("save_png_to_buffer"), &Image::save_png_to_buffer);
 	ClassDB::bind_method(D_METHOD("save_jpg", "path", "quality"), &Image::save_jpg, DEFVAL(0.75));
