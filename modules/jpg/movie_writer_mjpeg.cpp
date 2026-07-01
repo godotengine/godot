@@ -253,7 +253,7 @@ void MovieWriterMJPEG::write_end() {
 
 		uint32_t file_size = f->get_position();
 		f->seek(4);
-		f->store_32(file_size - 78);
+		f->store_32(file_size - 8);
 		f->seek(total_frames_ofs);
 		f->store_32(frame_count);
 		f->seek(total_frames_ofs2);
