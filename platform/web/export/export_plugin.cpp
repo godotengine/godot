@@ -370,6 +370,7 @@ void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> 
 void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) const {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	add_pck_7zip_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/extensions_support"), false)); // GDExtension support.
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/thread_support"), false, true)); // Thread support (i.e. run with or without COEP/COOP headers).
@@ -397,6 +398,10 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 }
 
 bool EditorExportPlatformWeb::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	if (!get_pck_7zip_export_option_visibility(p_preset, p_option)) {
+		return false;
+	}
+
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 	if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
 		return advanced_options_enabled;

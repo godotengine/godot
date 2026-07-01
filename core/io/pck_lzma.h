@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  compression.h                                                         */
+/*  pck_lzma.h                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,31 +30,16 @@
 
 #pragma once
 
+#include "core/error/error_list.h"
 #include "core/templates/vector.h"
-#include "core/typedefs.h"
 
-#include <zlib.h>
-
-class Compression {
-public:
-	static inline int zlib_level = Z_DEFAULT_COMPRESSION;
-	static inline int gzip_level = Z_DEFAULT_COMPRESSION;
-	static inline int zstd_level = 3;
-	static inline bool zstd_long_distance_matching = false;
-	static inline int zstd_window_log_size = 27; // ZSTD_WINDOWLOG_LIMIT_DEFAULT
-	static inline int gzip_chunk = 16384;
-
-	enum Mode : int32_t {
-		MODE_FASTLZ,
-		MODE_DEFLATE,
-		MODE_ZSTD,
-		MODE_GZIP,
-		MODE_BROTLI,
-		MODE_LZMA2
-	};
-
-	static int64_t compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_src_size, Mode p_mode = MODE_ZSTD);
-	static int64_t get_max_compressed_buffer_size(int64_t p_src_size, Mode p_mode = MODE_ZSTD);
-	static int64_t decompress(uint8_t *p_dst, int64_t p_dst_max_size, const uint8_t *p_src, int64_t p_src_size, Mode p_mode = MODE_ZSTD);
-	static int decompress_dynamic(Vector<uint8_t> *p_dst_vect, int64_t p_max_dst_size, const uint8_t *p_src, int64_t p_src_size, Mode p_mode);
+struct PCKLzmaOptions {
+	int compression_level = 9;
+	int dictionary_size_mb = 256;
+	int word_size = 64;
+	int threads = 1;
+	int memory_usage_percent = 80;
 };
+
+Error compress_lzma2(const Vector<uint8_t> &p_src, Vector<uint8_t> &r_dst, const PCKLzmaOptions &p_options);
+Error decompress_lzma2(const uint8_t *p_src, uint64_t p_src_size, uint64_t p_expected_size, Vector<uint8_t> &r_dst);

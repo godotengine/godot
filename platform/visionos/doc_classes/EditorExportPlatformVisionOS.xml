@@ -76,6 +76,24 @@
 		<member name="architectures/arm64" type="bool" setter="" getter="">
 			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.
 		</member>
+		<member name="binary_format/compression_enabled" type="bool" setter="" getter="">
+		</member>
+		<member name="binary_format/compression_level" type="int" setter="" getter="">
+		</member>
+		<member name="binary_format/compression_method" type="String" setter="" getter="">
+		</member>
+		<member name="binary_format/compression_type" type="String" setter="" getter="">
+		</member>
+		<member name="binary_format/dictionary_size_mb" type="int" setter="" getter="">
+		</member>
+		<member name="binary_format/memory_usage_percent" type="int" setter="" getter="">
+		</member>
+		<member name="binary_format/solid_block_size" type="String" setter="" getter="">
+		</member>
+		<member name="binary_format/threads" type="int" setter="" getter="">
+		</member>
+		<member name="binary_format/word_size" type="int" setter="" getter="">
+		</member>
 		<member name="capabilities/access_wifi" type="bool" setter="" getter="">
 			If [code]true[/code], networking features related to Wi-Fi access are enabled. See [url=https://developer.apple.com/support/required-device-capabilities/]Required Device Capabilities[/url].
 		</member>

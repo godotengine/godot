@@ -58,6 +58,7 @@ public:
 	typedef Error (*EditorExportSaveFunction)(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
 	typedef Error (*EditorExportRemoveFunction)(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path);
 	typedef Error (*EditorExportSaveSharedObject)(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
+	struct ExportOption;
 
 	enum DebugFlags {
 		DEBUG_FLAG_DUMB_CLIENT = 1,
@@ -83,7 +84,9 @@ public:
 	struct SavedData {
 		uint64_t ofs = 0;
 		uint64_t size = 0;
+		uint64_t stored_size = 0;
 		bool encrypted = false;
+		bool lzma2 = false;
 		bool removal = false;
 		bool delta = false;
 		Vector<uint8_t> md5;
@@ -102,6 +105,11 @@ public:
 		EditorProgress *ep = nullptr;
 		Vector<SharedObject> *so_files = nullptr;
 		bool use_sparse_pck = false;
+		bool warned_pck_7zip_threads = false;
+		bool warned_pck_7zip_dict = false;
+		bool warned_pck_7zip_memory = false;
+		bool warned_pck_7zip_solid = false;
+		bool warned_pck_7zip_format = false;
 	};
 
 	static bool _store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs, const String &p_salt);
@@ -222,6 +230,8 @@ protected:
 	void _unload_patches();
 
 	Ref<Image> _load_icon_or_splash_image(const String &p_path, Error *r_error) const;
+	void add_pck_7zip_export_options(List<ExportOption> *r_options) const;
+	bool get_pck_7zip_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const;
 
 #ifndef DISABLE_DEPRECATED
 	Error _export_project_bind_compat_118787(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0);

@@ -668,6 +668,27 @@ Patches:
 See `linuxbsd_headers/README.md`.
 
 
+## lzma2601
+
+- Upstream: https://www.7-zip.org/sdk.html
+- Version: 26.01 (2026-04-27)
+- License: Public Domain
+
+Files extracted from upstream source:
+
+- From the SDK root to `thirdparty/lzma2601/`:
+  - Keep only `C/` and `DOC/`
+  - Except top-level folders `Asm/`, `CPP/`, `CS/`, `Java/`
+- From `C/` to `thirdparty/lzma2601/C/`:
+  - `7zAlloc.c`, `7zAlloc.h`, `7zTypes.h`, `7zWindows.h`, `Compiler.h`,
+    `CpuArch.c`, `CpuArch.h`, `LzFind.c`, `LzFind.h`, `LzFindMt.h`,
+    `LzHash.h`, `Lzma2Dec.c`, `Lzma2Dec.h`, `Lzma2Enc.c`, `Lzma2Enc.h`,
+    `LzmaDec.c`, `LzmaDec.h`, `LzmaEnc.c`, `LzmaEnc.h`, `MtCoder.h`,
+    `MtDec.h`, `Precomp.h`, `Threads.h`
+- From `DOC/` to `thirdparty/lzma2601/DOC/`:
+  - `lzma-sdk.txt`
+
+
 ## manifold
 
 - Upstream: https://github.com/elalish/manifold

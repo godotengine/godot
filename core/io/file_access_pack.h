@@ -43,9 +43,10 @@
 #define PACK_FORMAT_VERSION_V2 2
 #define PACK_FORMAT_VERSION_V3 3
 #define PACK_FORMAT_VERSION_V4 4
+#define PACK_FORMAT_VERSION_V5 5
 
 // The current packed file format version number.
-#define PACK_FORMAT_VERSION PACK_FORMAT_VERSION_V4
+#define PACK_FORMAT_VERSION PACK_FORMAT_VERSION_V5
 
 enum PackFlags {
 	PACK_DIR_ENCRYPTED = 1 << 0,
@@ -57,6 +58,7 @@ enum PackFileFlags {
 	PACK_FILE_ENCRYPTED = 1 << 0,
 	PACK_FILE_REMOVAL = 1 << 1,
 	PACK_FILE_DELTA = 1 << 2,
+	PACK_FILE_LZMA2 = 1 << 3,
 };
 
 class PackSource;
@@ -71,12 +73,14 @@ public:
 		String pack;
 		uint64_t offset; //if offset is ZERO, the file was ERASED
 		uint64_t size;
+		uint64_t stored_size = 0;
 		uint8_t md5[16];
 		PackSource *src = nullptr;
-		bool encrypted;
-		bool bundle;
-		bool delta;
+		bool encrypted = false;
+		bool bundle = false;
+		bool delta = false;
 		String salt;
+		bool lzma2 = false;
 	};
 
 private:
@@ -131,7 +135,7 @@ private:
 
 public:
 	void add_pack_source(PackSource *p_source);
-	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false, bool p_bundle = false, bool p_delta = false, const String &p_salt = String()); // for PackSource
+	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, uint64_t p_stored_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false, bool p_bundle = false, bool p_delta = false, const String &p_salt = String(), bool p_lzma2 = false); // for PackSource
 	void remove_path(const String &p_path);
 	uint8_t *get_file_hash(const String &p_path);
 	Vector<PackedFile> get_delta_patches(const String &p_path) const;
@@ -187,6 +191,8 @@ class FileAccessPack : public FileAccess {
 	mutable uint64_t pos;
 	mutable bool eof;
 	uint64_t off;
+	bool use_cached_data = false;
+	Vector<uint8_t> cached_data;
 
 	Ref<FileAccess> f;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override;

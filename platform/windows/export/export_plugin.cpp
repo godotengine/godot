@@ -418,6 +418,9 @@ bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExpor
 	if (p_preset == nullptr) {
 		return true;
 	}
+	if (!EditorExportPlatformPC::get_export_option_visibility(p_preset, p_option)) {
+		return false;
+	}
 
 	// This option is not supported by "osslsigncode", used on non-Windows host.
 	if (!OS::get_singleton()->has_feature("windows") && p_option == "codesign/identity_type") {

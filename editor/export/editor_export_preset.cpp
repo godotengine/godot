@@ -39,10 +39,39 @@
 #include "editor/settings/editor_settings.h"
 
 bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) {
-	values[p_name] = p_value;
+	static const StringName KEY_COMPAT_ARCHIVE_FORMAT = SNAME("pck_7zip/archive_format");
+	static const StringName KEY_COMPAT_COMPRESSION_TYPE = SNAME("pck_7zip/compression_type");
+	static const StringName KEY_COMPRESSION_TYPE = SNAME("binary_format/compression_type");
+
+	StringName value_name = p_name;
+	Variant value = p_value;
+
+	if (p_name == KEY_COMPAT_ARCHIVE_FORMAT) {
+		value_name = KEY_COMPRESSION_TYPE;
+		String compression_type = String(p_value).to_lower();
+		if (compression_type == "pck") {
+			compression_type = "zstd";
+		} else if (compression_type == "7z") {
+			compression_type = "7zip";
+		}
+		value = compression_type;
+	} else if (p_name == KEY_COMPRESSION_TYPE || p_name == KEY_COMPAT_COMPRESSION_TYPE) {
+		if (p_name == KEY_COMPAT_COMPRESSION_TYPE) {
+			value_name = KEY_COMPRESSION_TYPE;
+		}
+		String compression_type = String(p_value).to_lower();
+		if (compression_type == "pck") {
+			compression_type = "zstd";
+		} else if (compression_type == "7z") {
+			compression_type = "7zip";
+		}
+		value = compression_type;
+	}
+
+	values[value_name] = value;
 	EditorExport::singleton->save_presets();
-	if (update_visibility.has(p_name)) {
-		if (update_visibility[p_name]) {
+	if (update_visibility.has(value_name)) {
+		if (update_visibility[value_name]) {
 			update_value_overrides();
 			notify_property_list_changed();
 		}
