@@ -141,6 +141,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="0" />
+	</members>
 	<constants>
 		<constant name="REFERENCE_TYPE_BONE" value="0" enum="ReferenceType">
 			The reference target is a bone. In this case, the reference target space is local space.
