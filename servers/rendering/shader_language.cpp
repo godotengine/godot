@@ -5087,7 +5087,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
 				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
-				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("Texture2D");
+				pi.hint_string = "Texture2D";
 			} else {
 				pi.type = Variant::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
@@ -5102,7 +5102,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
 				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
-				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("TextureLayered");
+				pi.hint_string = "TextureLayered";
 			} else {
 				pi.type = Variant::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
@@ -5115,7 +5115,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
 				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
-				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("Texture3D");
+				pi.hint_string = "Texture3D";
 			} else {
 				pi.type = Variant::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
@@ -5126,7 +5126,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
 				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
-				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("ExternalTexture");
+				pi.hint_string = "ExternalTexture";
 			} else {
 				pi.type = Variant::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;

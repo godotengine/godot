@@ -47,6 +47,11 @@
 	ClassDB::bind_method(D_METHOD("get_" _MKSTR(m_member)), &m_class::get_##m_member); \
 	ADD_PROPERTY(PropertyInfo(m_variant_type, #m_member), "set_" _MKSTR(m_member), "get_" _MKSTR(m_member))
 
+#define RD_BIND_OBJECT(m_property_class, m_class, m_member) \
+	ClassDB::bind_method(D_METHOD("set_" _MKSTR(m_member), "p_" _MKSTR(member)), &m_class::set_##m_member); \
+	ClassDB::bind_method(D_METHOD("get_" _MKSTR(m_member)), &m_class::get_##m_member); \
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, #m_member, PROPERTY_HINT_RESOURCE_TYPE, m_property_class), "set_" _MKSTR(m_member), "get_" _MKSTR(m_member))
+
 #define RD_SETGET_SUB(m_type, m_sub, m_member) \
 	void set_##m_sub##_##m_member(m_type p_##m_member) { \
 		base.m_sub.m_member = p_##m_member; \
@@ -506,7 +511,7 @@ protected:
 		ClassDB::bind_method(D_METHOD("clear_ids"), &RDUniform::clear_ids);
 		ClassDB::bind_method(D_METHOD("_set_ids", "ids"), &RDUniform::_set_ids);
 		ClassDB::bind_method(D_METHOD("get_ids"), &RDUniform::get_ids);
-		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_ids", "get_ids");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_ids", PROPERTY_HINT_ARRAY_TYPE, "RID", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_ids", "get_ids");
 	}
 };
 
@@ -863,8 +868,8 @@ public:
 
 protected:
 	static void _bind_methods() {
-		RD_BIND(Variant::OBJECT, RDHitGroup, closest_hit_shader);
-		RD_BIND(Variant::OBJECT, RDHitGroup, any_hit_shader);
-		RD_BIND(Variant::OBJECT, RDHitGroup, intersection_shader);
+		RD_BIND_OBJECT("RDPipelineShader", RDHitGroup, closest_hit_shader);
+		RD_BIND_OBJECT("RDPipelineShader", RDHitGroup, any_hit_shader);
+		RD_BIND_OBJECT("RDPipelineShader", RDHitGroup, intersection_shader);
 	}
 };
