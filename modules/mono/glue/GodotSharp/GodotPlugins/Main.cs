@@ -78,6 +78,24 @@ namespace GodotPlugins
         private static PluginLoadContextWrapper? _projectLoadContext;
         private static bool _editorHint = false;
 
+        // Cooperative unloading opcodes — keep in sync with gdmono::UnloadOpcode in gd_mono.h.
+        private const int UNLOAD_OPCODE_OK = 0;
+        private const int UNLOAD_OPCODE_ALC_LEAKED = 1;
+        private const int UNLOAD_OPCODE_NOT_COLLECTIBLE = 2;
+        private const int UNLOAD_OPCODE_EXCEPTION = 3;
+
+        // Blittable struct returned across the P/Invoke boundary so the C++ side can
+        // report the opcode AND leaked ALC count via ERR_PRINT_ED / WARN_PRINT_ED.
+        [StructLayout(LayoutKind.Sequential)]
+        private struct UnloadResult
+        {
+            public int Opcode;
+            public int LeakedAlcCount;
+        }
+
+        // Track how many ALCs have leaked so we can report the count to the user.
+        private static int _leakedAlcCount;
+
         private static readonly AssemblyLoadContext MainLoadContext =
             AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()) ??
             AssemblyLoadContext.Default;
@@ -133,7 +151,7 @@ namespace GodotPlugins
         {
             public unsafe delegate* unmanaged<char*, godot_string*, godot_bool> LoadProjectAssemblyCallback;
             public unsafe delegate* unmanaged<char*, IntPtr, int, IntPtr> LoadToolsAssemblyCallback;
-            public unsafe delegate* unmanaged<godot_bool> UnloadProjectPluginCallback;
+            public unsafe delegate* unmanaged<UnloadResult> UnloadProjectPluginCallback;
         }
 
         [UnmanagedCallersOnly]
@@ -216,33 +234,30 @@ namespace GodotPlugins
         }
 
         [UnmanagedCallersOnly]
-        private static godot_bool UnloadProjectPlugin()
+        private static UnloadResult UnloadProjectPlugin()
         {
             try
             {
-                return UnloadPlugin(ref _projectLoadContext).ToGodotBool();
+                return UnloadPlugin(ref _projectLoadContext);
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine(e);
-                return godot_bool.False;
+                return new UnloadResult { Opcode = UNLOAD_OPCODE_EXCEPTION, LeakedAlcCount = _leakedAlcCount };
             }
         }
 
-        private static bool UnloadPlugin(ref PluginLoadContextWrapper? pluginLoadContext)
+        private static UnloadResult UnloadPlugin(ref PluginLoadContextWrapper? pluginLoadContext)
         {
             try
             {
                 if (pluginLoadContext == null)
-                    return true;
+                    return new UnloadResult { Opcode = UNLOAD_OPCODE_OK, LeakedAlcCount = _leakedAlcCount };
 
                 if (!pluginLoadContext.IsCollectible)
                 {
-                    Console.Error.WriteLine("Cannot unload a non-collectible assembly load context.");
-                    return false;
+                    return new UnloadResult { Opcode = UNLOAD_OPCODE_NOT_COLLECTIBLE, LeakedAlcCount = _leakedAlcCount };
                 }
-
-                Console.WriteLine("Unloading assembly load context...");
 
                 pluginLoadContext.Unload();
 
@@ -262,30 +277,27 @@ namespace GodotPlugins
                     if (!takingTooLong && elapsedTimeMs >= 200)
                     {
                         takingTooLong = true;
-
-                        // TODO: How to log from GodotPlugins? (delegate pointer?)
-                        Console.Error.WriteLine("Assembly unloading is taking longer than expected...");
                     }
                     else if (elapsedTimeMs >= 1000)
                     {
-                        // TODO: How to log from GodotPlugins? (delegate pointer?)
-                        Console.Error.WriteLine(
-                            "Failed to unload assemblies. Possible causes: Strong GC handles, running threads, etc.");
+                        // Cooperative unloading: abandon the old ALC (let it leak) and
+                        // proceed to load everything into a brand-new ALC. The C++ side
+                        // will report the leak to the user via ERR_PRINT_ED.
+                        _leakedAlcCount++;
 
-                        return false;
+                        // Abandon the old context — set to null so a new one can be created on next load
+                        pluginLoadContext = null;
+                        return new UnloadResult { Opcode = UNLOAD_OPCODE_ALC_LEAKED, LeakedAlcCount = _leakedAlcCount };
                     }
                 }
 
-                Console.WriteLine("Assembly load context unloaded successfully.");
-
                 pluginLoadContext = null;
-                return true;
+                return new UnloadResult { Opcode = UNLOAD_OPCODE_OK, LeakedAlcCount = _leakedAlcCount };
             }
             catch (Exception e)
             {
-                // TODO: How to log exceptions from GodotPlugins? (delegate pointer?)
                 Console.Error.WriteLine(e);
-                return false;
+                return new UnloadResult { Opcode = UNLOAD_OPCODE_EXCEPTION, LeakedAlcCount = _leakedAlcCount };
             }
         }
     }
