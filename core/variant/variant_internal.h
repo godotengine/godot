@@ -41,9 +41,6 @@
 class RefCounted;
 
 template <typename T>
-struct GDExtensionConstPtr;
-
-template <typename T>
 struct GDExtensionPtr;
 
 class VariantInternal {
@@ -561,10 +558,6 @@ public:
 	template <typename T>
 	_FORCE_INLINE_ static Variant make(const T &v) {
 		return Variant(v);
-	}
-	template <typename T>
-	_FORCE_INLINE_ static Variant make(const GDExtensionConstPtr<T> &v) {
-		return v.operator Variant();
 	}
 	template <typename T>
 	_FORCE_INLINE_ static Variant make(const GDExtensionPtr<T> &v) {
