@@ -1661,7 +1661,7 @@ void EditorNode::_reload_modified_scenes() {
 			editor_data.set_edited_scene(i);
 			_remove_edited_scene(false);
 
-			Error err = open_scene(filename);
+			Error err = open_scene(filename, false, false, true);
 			if (err != OK) {
 				ERR_PRINT(vformat("Failed to load scene: %s", filename));
 			}
