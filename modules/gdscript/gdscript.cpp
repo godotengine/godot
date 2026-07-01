@@ -844,6 +844,19 @@ Error GDScript::reload(bool p_keep_state) {
 		return ERR_PARSE_ERROR;
 	}
 
+#ifdef TOOLS_ENABLED
+	// reload depended scripts if they have been modified since last reload
+	for (const KeyValue<String, Ref<GDScriptParserRef>> &p : parser.get_depended_parsers()) {
+		Ref<GDScript> script = GDScriptCache::get_cached_script(p.key);
+		if (script.is_valid() && script->is_valid() && !script->is_edited() && !script->reloading) {
+			if (FileAccess::exists(p.key) && FileAccess::get_modified_time(p.key) > script->get_last_modified_time() && !script->reloading) {
+				GDScriptCache::get_full_script(p.key, err, path, true);
+				ERR_CONTINUE_MSG(err, "Failed to reload dependent script: " + p.key);
+			}
+		}
+	}
+#endif
+
 	can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
 
 	GDScriptCompiler compiler;
