@@ -252,8 +252,8 @@ public:
 		return result;
 	}
 
-	bool operator==(const Vector<T> &p_arr) const { return span() == p_arr.span(); }
-	bool operator!=(const Vector<T> &p_arr) const { return span() != p_arr.span(); }
+	bool operator==(const Vector<T> &p_arr) const { return _cowdata.ptr() == p_arr._cowdata.ptr() || span() == p_arr.span(); }
+	bool operator!=(const Vector<T> &p_arr) const { return _cowdata.ptr() == p_arr._cowdata.ptr() || span() != p_arr.span(); }
 
 	struct Iterator {
 		_FORCE_INLINE_ T &operator*() const {
