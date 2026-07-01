@@ -263,16 +263,6 @@ public:
 		insert(i, p_val);
 	}
 
-	explicit operator Vector<T>() const {
-		Vector<T> ret;
-		ret.resize(count);
-		T *w = ret.ptrw();
-		if (w) {
-			copy_arr(w, data, count);
-		}
-		return ret;
-	}
-
 	explicit operator PoolVector<T>() const {
 		PoolVector<T> pl;
 		if (size()) {

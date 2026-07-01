@@ -123,6 +123,8 @@ public:
 
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	_FORCE_INLINE_ explicit Vector(Span<T> p_from) :
+			_cowdata(p_from) {}
 	inline Vector &operator=(const Vector &p_from) {
 		_cowdata._ref(p_from._cowdata);
 		return *this;

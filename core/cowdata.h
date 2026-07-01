@@ -190,6 +190,7 @@ public:
 	_FORCE_INLINE_ CowData();
 	_FORCE_INLINE_ ~CowData();
 	_FORCE_INLINE_ CowData(CowData<T> &p_from) { _ref(p_from); }
+	_FORCE_INLINE_ explicit CowData(Span<T> p_span);
 };
 
 template <class T>
@@ -378,6 +379,15 @@ void CowData<T>::_ref(const CowData &p_from) {
 template <class T>
 CowData<T>::CowData() {
 	_ptr = nullptr;
+}
+
+template <typename T>
+CowData<T>::CowData(Span<T> p_span) {
+	CRASH_COND(resize(p_span.size()));
+	for (size_t i = 0; i < p_span.size(); i++) {
+		_ptr[i] = p_span[i];
+	}
+	*_get_size() = p_span.size();
 }
 
 template <class T>
