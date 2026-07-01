@@ -2569,7 +2569,9 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 		return;
 	}
 
+#ifndef IOS_ENABLED
 	Config *config = Config::get_singleton();
+#endif
 
 	if (rt->hdr) {
 		rt->color_internal_format = GL_RGBA16F;
@@ -2597,8 +2599,8 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 
 	{
 		Texture *texture;
-		bool use_multiview = rt->view_count > 1 && config->multiview_supported;
-		GLenum texture_target = use_multiview ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+		bool use_array = rt->view_count > 1;
+		GLenum texture_target = use_array ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
 
 		/* Front FBO */
 
@@ -2619,7 +2621,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 			glGenTextures(1, &rt->color);
 			glBindTexture(texture_target, rt->color);
 
-			if (use_multiview) {
+			if (use_array) {
 				glTexImage3D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, rt->view_count, 0, rt->color_format, rt->color_type, nullptr);
 			} else {
 				glTexImage2D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, 0, rt->color_format, rt->color_type, nullptr);
@@ -2631,7 +2633,11 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->color, rt->size.x * rt->size.y * rt->view_count * rt->color_format_size, "Render target color texture");
 		}
 #ifndef IOS_ENABLED
-		if (use_multiview) {
+		if (use_array && !config->multiview_supported) {
+			// Attach the first layer now so the FBO is complete.
+			// Layer per eye is attached in RasterizerSceneGLES3::render_scene().
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->color, 0, 0);
+		} else if (use_array) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->color, 0, 0, rt->view_count);
 		} else {
 #else
@@ -2651,7 +2657,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 			glGenTextures(1, &rt->depth);
 			glBindTexture(texture_target, rt->depth);
 
-			if (use_multiview) {
+			if (use_array) {
 				glTexImage3D(texture_target, 0, GL_DEPTH24_STENCIL8, rt->size.x, rt->size.y, rt->view_count, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 			} else {
 				glTexImage2D(texture_target, 0, GL_DEPTH24_STENCIL8, rt->size.x, rt->size.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
@@ -2668,7 +2674,9 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 		}
 
 #ifndef IOS_ENABLED
-		if (use_multiview) {
+		if (use_array && !config->multiview_supported) {
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, rt->depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, rt->depth, 0, 0);
+		} else if (use_array) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, rt->depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, rt->depth, 0, 0, rt->view_count);
 		} else {
 #else
@@ -2705,7 +2713,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 			texture->format = rt->image_format;
 			texture->real_format = rt->image_format;
 			texture->target = texture_target;
-			if (rt->view_count > 1 && config->multiview_supported) {
+			if (rt->view_count > 1) {
 				texture->type = Texture::TYPE_LAYERED;
 				texture->layers = rt->view_count;
 			} else {
@@ -2745,7 +2753,9 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 #ifndef IOS_ENABLED
-	if (view_count > 1) {
+	if (view_count > 1 && !GLES3::Config::get_singleton()->multiview_supported) {
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, velocity_texture_id, 0, 0);
+	} else if (view_count > 1) {
 		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, velocity_texture_id, 0, 0, view_count);
 	} else {
 #else
@@ -2762,7 +2772,9 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 #ifndef IOS_ENABLED
-	if (view_count > 1) {
+	if (view_count > 1 && !GLES3::Config::get_singleton()->multiview_supported) {
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, velocity_depth_texture_id, 0, 0);
+	} else if (view_count > 1) {
 		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, velocity_depth_texture_id, 0, 0, view_count);
 	} else {
 #else

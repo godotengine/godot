@@ -200,15 +200,19 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	// Insert multiview extension loading, because it needs to appear before
 	// any non-preprocessor code (like the "precision highp..." lines below).
 	builder.append("#ifdef USE_MULTIVIEW\n");
-	builder.append("#if defined(GL_OVR_multiview2)\n");
-	builder.append("#extension GL_OVR_multiview2 : require\n");
-	builder.append("#elif defined(GL_OVR_multiview)\n");
-	builder.append("#extension GL_OVR_multiview : require\n");
-	builder.append("#endif\n");
-	if (p_stage_type == StageType::STAGE_TYPE_VERTEX) {
-		builder.append("layout(num_views=2) in;\n");
+	if (GLES3::Config::get_singleton()->multiview_supported) {
+		builder.append("#if defined(GL_OVR_multiview2)\n");
+		builder.append("#extension GL_OVR_multiview2 : require\n");
+		builder.append("#elif defined(GL_OVR_multiview)\n");
+		builder.append("#extension GL_OVR_multiview : require\n");
+		builder.append("#endif\n");
+		if (p_stage_type == StageType::STAGE_TYPE_VERTEX) {
+			builder.append("layout(num_views=2) in;\n");
+		}
+		builder.append("#define ViewIndex gl_ViewID_OVR\n");
+	} else {
+		builder.append("#define EMULATE_MULTIVIEW\n");
 	}
-	builder.append("#define ViewIndex gl_ViewID_OVR\n");
 	builder.append("#define MAX_VIEWS 2\n");
 	builder.append("#else\n");
 	builder.append("#define ViewIndex uint(0)\n");

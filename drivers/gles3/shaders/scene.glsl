@@ -480,12 +480,20 @@ struct MultiviewData {
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
+	highp uint view_index;
+	highp uint pad0;
+	highp uint pad1;
+	highp uint pad2;
 };
 
 layout(std140) uniform MultiviewDataBlock { // ubo:9
 	MultiviewData data;
 }
 multiview_data_block;
+
+#ifdef EMULATE_MULTIVIEW
+#define ViewIndex (multiview_data_block.data.view_index)
+#endif
 
 #ifdef RENDER_MOTION_VECTORS
 layout(std140) uniform PrevMultiviewDataBlock { // ubo:14
@@ -1226,12 +1234,20 @@ struct MultiviewData {
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
+	highp uint view_index;
+	highp uint pad0;
+	highp uint pad1;
+	highp uint pad2;
 };
 
 layout(std140) uniform MultiviewDataBlock { // ubo:9
 	MultiviewData data;
 }
 multiview_data_block;
+
+#ifdef EMULATE_MULTIVIEW
+#define ViewIndex (multiview_data_block.data.view_index)
+#endif
 #endif
 
 uniform highp mat4 world_transform;
