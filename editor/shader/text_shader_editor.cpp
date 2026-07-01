@@ -706,7 +706,11 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 	in_comment = p_in_comment;
 	goto_button->set_text(itos(line + 1));
 
-	String shader_type = ShaderLanguage::get_shader_type(p_code);
+	String preprocessed_code;
+	ShaderPreprocessor preprocessor;
+	preprocessor.preprocess(p_code, "", preprocessed_code);
+
+	String shader_type = ShaderLanguage::get_shader_type(preprocessed_code);
 	bool mode_3d = shader_type == "spatial";
 
 	if (shader_type != "canvas_item" && !mode_3d) {
@@ -1125,7 +1129,12 @@ void ShaderTextEditor::_load_theme_settings() {
 }
 
 void ShaderTextEditor::_check_shader_mode() {
-	String type = ShaderLanguage::get_shader_type(get_text_editor()->get_text());
+	String code = get_text_editor()->get_text();
+	String preprocessed_code;
+	ShaderPreprocessor preprocessor;
+	preprocessor.preprocess(code, "", preprocessed_code);
+
+	String type = ShaderLanguage::get_shader_type(preprocessed_code);
 
 	Shader::Mode mode;
 
