@@ -3983,6 +3983,10 @@ static void _process_doc_line(const String &p_line, String &r_text, const String
 				r_text = r_text.left(-4); // `-len("[br]")`.
 				line = "[br]" + line;
 			} else if (!r_text.ends_with("\n")) {
+				if (line.is_empty()) {
+					r_text += "\n";
+					return;
+				}
 				line_join = " ";
 			}
 		} else {
