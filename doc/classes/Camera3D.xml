@@ -21,6 +21,19 @@
 			<return type="Projection" />
 			<description>
 				Returns the projection matrix that this camera uses to render to its associated viewport. The camera must be part of the scene tree to function.
+				[b]Note:[/b] The resulting [Projection] does [i]not[/i] include the depth correction Godot's Vulkan renderer uses internally. To add depth correction, multiply the returned [Projection] by [method Projection.create_depth_correction] with [code]flip_y[/code] set to [code]true[/code]:
+				[codeblocks]
+				[gdscript]
+				var camera_projection: Projection = camera.get_camera_projection()
+				var correction: Projection = Projection.create_depth_correction(true)
+				var corrected_camera_projection = correction * camera_projection
+				[/gdscript]
+				[csharp]
+				var cameraProjection = camera.GetCameraProjection();
+				var correction = Projection.CreateDepthCorrection(true);
+				var correctedCameraProjection = correction * cameraProjection;
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_camera_rid" qualifiers="const">
