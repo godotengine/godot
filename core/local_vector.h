@@ -292,7 +292,12 @@ public:
 		return ret;
 	}
 
-	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return Span(data, count); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ {
+		// Ensure span is unsigned.
+		// NOOP for default LocalVector, but converts any LocalVectors with signed U.
+		using UnsignedType = std::make_unsigned_t<U>;
+		return Span(data, static_cast<UnsignedType>(count));
+	}
 	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return span(); }
 
 	_FORCE_INLINE_ LocalVector() {}
