@@ -793,6 +793,10 @@ Error GDScriptWorkspace::resolve_signature(const LSP::TextDocumentPositionParams
 	return ERR_METHOD_NOT_FOUND;
 }
 
+Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
+	return GDScriptLanguageProtocol::get_singleton()->lsp_symbol(p_params);
+}
+
 GDScriptWorkspace::GDScriptWorkspace() {}
 
 GDScriptWorkspace::~GDScriptWorkspace() {}
