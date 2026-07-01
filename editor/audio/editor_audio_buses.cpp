@@ -144,15 +144,13 @@ void EditorAudioBus::_notification(int p_what) {
 			} else {
 				draw_style_box(get_theme_stylebox(SNAME("normal"), SNAME("EditorAudioBus")), Rect2(Vector2(), get_size()));
 			}
-
-			if (get_index() != 0 && hovering_drop) {
-				Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-				accent.a *= 0.7;
-				draw_rect(Rect2(Point2(), get_size()), accent, false);
-			}
 		} break;
 
 		case NOTIFICATION_PROCESS: {
+			if (is_dragging_bus) {
+				return;
+			}
+
 			if (cc != AudioServer::get_singleton()->get_bus_channels(get_index())) {
 				cc = AudioServer::get_singleton()->get_bus_channels(get_index());
 				_update_visible_channels();
@@ -270,12 +268,13 @@ void EditorAudioBus::_notification(int p_what) {
 			set_process(is_visible_in_tree());
 		} break;
 
-		case NOTIFICATION_MOUSE_EXIT:
+		case NOTIFICATION_DRAG_BEGIN: {
+			const Dictionary d = get_viewport()->gui_get_drag_data();
+			is_dragging_bus = (String)d.get("type", "") == "move_audio_bus";
+		} break;
+
 		case NOTIFICATION_DRAG_END: {
-			if (hovering_drop) {
-				hovering_drop = false;
-				queue_redraw();
-			}
+			show();
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -731,30 +730,9 @@ Variant EditorAudioBus::get_drag_data(const Point2 &p_point) {
 	d["type"] = "move_audio_bus";
 	d["index"] = get_index();
 
-	if (get_index() < AudioServer::get_singleton()->get_bus_count() - 1) {
-		emit_signal(SNAME("drop_end_request"));
-	}
-
+	hide();
+	emit_signal(SNAME("drop_end_request"), get_index());
 	return d;
-}
-
-bool EditorAudioBus::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (get_index() == 0) {
-		return false;
-	}
-
-	Dictionary d = p_data;
-	if (d.has("type") && String(d["type"]) == "move_audio_bus" && (int)d["index"] != get_index()) {
-		hovering_drop = true;
-		return true;
-	}
-
-	return false;
-}
-
-void EditorAudioBus::drop_data(const Point2 &p_point, const Variant &p_data) {
-	Dictionary d = p_data;
-	emit_signal(SNAME("dropped"), d["index"], get_index());
 }
 
 Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -906,7 +884,6 @@ void EditorAudioBus::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("delete_request"));
 	ADD_SIGNAL(MethodInfo("vol_reset_request"));
 	ADD_SIGNAL(MethodInfo("drop_end_request"));
-	ADD_SIGNAL(MethodInfo("dropped"));
 }
 
 EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
@@ -1193,26 +1170,12 @@ void EditorAudioBusDrop::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			draw_style_box(get_theme_stylebox(CoreStringName(normal), SNAME("Button")), Rect2(Vector2(), get_size()));
-
-			if (hovering_drop) {
-				Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-				accent.a *= 0.7;
-				draw_rect(Rect2(Point2(), get_size()), accent, false);
-			}
 		} break;
 
-		case NOTIFICATION_MOUSE_ENTER: {
-			if (!hovering_drop) {
-				hovering_drop = true;
-				queue_redraw();
-			}
-		} break;
-
-		case NOTIFICATION_MOUSE_EXIT:
-		case NOTIFICATION_DRAG_END: {
-			if (hovering_drop) {
-				hovering_drop = false;
-				queue_redraw();
+		case NOTIFICATION_MOUSE_EXIT: {
+			if (!buses_rect.has_point(get_parent_control()->get_local_mouse_position())) {
+				// Only hide if the mouse exited outside the audio buses area.
+				hide();
 			}
 		} break;
 	}
@@ -1220,12 +1183,12 @@ void EditorAudioBusDrop::_notification(int p_what) {
 
 bool EditorAudioBusDrop::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 	Dictionary d = p_data;
-	return (d.has("type") && String(d["type"]) == "move_audio_bus");
+	return String(d.get("type", "")) == "move_audio_bus";
 }
 
 void EditorAudioBusDrop::drop_data(const Point2 &p_point, const Variant &p_data) {
 	Dictionary d = p_data;
-	emit_signal(SNAME("dropped"), d["index"], AudioServer::get_singleton()->get_bus_count());
+	emit_signal(SNAME("dropped"), d["index"], get_index());
 }
 
 void EditorAudioBusDrop::_bind_methods() {
@@ -1270,7 +1233,7 @@ void EditorAudioBuses::_rebuild_buses() {
 		audio_bus->connect("duplicate_request", callable_mp(this, &EditorAudioBuses::_duplicate_bus), CONNECT_DEFERRED);
 		audio_bus->connect("vol_reset_request", callable_mp(this, &EditorAudioBuses::_reset_bus_volume).bind(audio_bus), CONNECT_DEFERRED);
 		audio_bus->connect("drop_end_request", callable_mp(this, &EditorAudioBuses::_request_drop_end));
-		audio_bus->connect("dropped", callable_mp(this, &EditorAudioBuses::_drop_at_index), CONNECT_DEFERRED);
+		audio_bus->connect("mouse_entered", callable_mp(this, &EditorAudioBuses::_bus_hovered).bind(audio_bus));
 	}
 }
 
@@ -1415,13 +1378,35 @@ void EditorAudioBuses::_reset_bus_volume(Object *p_which) {
 	ur->commit_action();
 }
 
-void EditorAudioBuses::_request_drop_end() {
-	if (!drop_end && bus_hb->get_child_count()) {
-		drop_end = memnew(EditorAudioBusDrop);
+void EditorAudioBuses::_request_drop_end(int p_at_index) {
+	if (!drop_end && bus_hb->get_child_count() > 1) {
+		// Rect spanning from the first (non master) bus to the last.
+		Rect2 bus_rect = Object::cast_to<Control>(bus_hb->get_child(1))->get_rect();
+		bus_rect = bus_rect.merge(Object::cast_to<Control>(bus_hb->get_child(-1))->get_rect());
 
+		drop_end = memnew(EditorAudioBusDrop);
+		drop_end->set_buses_rect(bus_rect);
 		bus_hb->add_child(drop_end);
+		bus_hb->move_child(drop_end, p_at_index);
 		drop_end->set_custom_minimum_size(Object::cast_to<Control>(bus_hb->get_child(0))->get_size());
 		drop_end->connect("dropped", callable_mp(this, &EditorAudioBuses::_drop_at_index), CONNECT_DEFERRED);
+	}
+}
+
+void EditorAudioBuses::_bus_hovered(EditorAudioBus *p_bus) {
+	if (drop_end && p_bus->get_index() > 0) {
+		int visible_index = p_bus->get_index() > drop_end->get_index() ? 0 : -1;
+		for (Node *child : bus_hb->iterate_children()) {
+			CanvasItem *ci = Object::cast_to<CanvasItem>(child);
+			if (ci && ci->is_visible()) {
+				visible_index++;
+			}
+			if (child == p_bus) {
+				break;
+			}
+		}
+		drop_end->show();
+		bus_hb->move_child(drop_end, visible_index);
 	}
 }
 
