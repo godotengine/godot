@@ -37,7 +37,11 @@
 #include "servers/rendering/rendering_server.h"
 
 GODOT_GCC_WARNING_PUSH
+#if defined(__GNUC__) && defined(__GNUC_PREREQ)
+#if __GNUC_PREREQ(11, 0)
 GODOT_GCC_WARNING_IGNORE("-Wenum-conversion")
+#endif // __GNUC_PREREQ(11, 0)
+#endif // defined(__GNUC__) && defined(__GNUC_PREREQ)
 GODOT_GCC_WARNING_IGNORE("-Wshadow")
 GODOT_GCC_WARNING_IGNORE("-Wunused-value")
 
