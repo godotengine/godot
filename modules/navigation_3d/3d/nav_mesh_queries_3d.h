@@ -153,7 +153,22 @@ public:
 	static bool _query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner);
 	static void _query_task_process_path_result_limits(NavMeshPathQueryTask3D &p_query_task);
 
+	static void _query_task_reset_path_corridor(NavMeshPathQueryTask3D &p_query_task);
+	static uint32_t _query_task_initialize_path_corridor_search(NavMeshPathQueryTask3D &p_query_task, const Nav3D::Polygon *p_begin_poly, const Vector3 &p_begin_point);
+	static void _query_task_process_polygon_connections(NavMeshPathQueryTask3D &p_query_task, const NavMapIteration3D &p_map_iteration, const Nav3D::NavigationPoly &p_least_cost_poly, uint32_t p_least_cost_id, real_t p_poly_enter_cost, const Vector3 &p_end_point);
+	static bool _query_task_apply_path_search_limits(NavMeshPathQueryTask3D &p_query_task, const Nav3D::NavigationPoly &p_least_cost_poly, const Vector3 &p_begin_point, int p_processed_polygon_count);
+	static void _query_task_update_reachable_end(const LocalVector<Nav3D::NavigationPoly> &p_navigation_polys, uint32_t p_least_cost_id, const Vector3 &p_target_position, const Nav3D::Polygon *&r_reachable_end, real_t &r_distance_to_reachable_end);
+	static Vector3 _query_task_find_closest_point_on_polygon(const Nav3D::Polygon *p_polygon, const Vector3 &p_target_position, real_t &r_distance);
+	static bool _query_task_find_closest_point_on_start_polygon(const Nav3D::Polygon *p_begin_poly, const Vector3 &p_target_position, real_t &r_distance, Vector3 &r_end_point);
+	static void _query_task_finish_path_on_start_polygon(NavMeshPathQueryTask3D &p_query_task, const Vector3 &p_begin_point, const Nav3D::Polygon *p_begin_poly, const Vector3 &p_end_point);
+	static void _query_task_reset_reachable_search(NavMeshPathQueryTask3D &p_query_task, const Nav3D::Polygon *p_begin_poly, uint32_t &r_least_cost_id, const Nav3D::Polygon *&r_reachable_end);
+	static void _query_task_finalize_unfound_path(NavMeshPathQueryTask3D &p_query_task, const Vector3 &p_target_position, const Vector3 &p_begin_point, const Nav3D::Polygon *p_begin_poly);
+	static void _query_task_finalize_found_path(NavMeshPathQueryTask3D &p_query_task, const Vector3 &p_begin_point, const Nav3D::Polygon *p_begin_poly, const Vector3 &p_end_point, const Nav3D::Polygon *p_end_poly, uint32_t p_least_cost_id);
+	static void _query_task_build_path_corridor_graph_search(NavMeshPathQueryTask3D &p_query_task, const NavMapIteration3D &p_map_iteration);
+
 	static void _query_task_search_polygon_connections(NavMeshPathQueryTask3D &p_query_task, const Nav3D::Connection &p_connection, uint32_t p_least_cost_id, const Nav3D::NavigationPoly &p_least_cost_poly, real_t p_poly_enter_cost, const Vector3 &p_end_point);
+
+	static real_t _query_task_calculate_heuristic(PathfindingAlgorithm p_algorithm, const Vector3 &p_entry, const Vector3 &p_end_point, real_t p_travel_cost);
 
 	static void simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector3> &p_points, real_t p_epsilon, LocalVector<uint32_t> &r_simplified_path_indices);
 	static LocalVector<uint32_t> get_simplified_path_indices(const LocalVector<Vector3> &p_path, real_t p_epsilon);
