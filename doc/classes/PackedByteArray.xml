@@ -4,7 +4,7 @@
 		A packed array of bytes.
 	</brief_description>
 	<description>
-		An array specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold bytes (integer values between [code]0[/code] and [code]255[/code] inclusive). Packs data tightly, so it saves memory for large array sizes.
 		[PackedByteArray] also provides methods to encode/decode various types to/from bytes. The way values are encoded is an implementation detail and shouldn't be relied upon when interacting with external apps.
 		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. In these cases the returned packed array is a copy, and changing it will [i]not[/i] affect the original value. To update a built-in property of this type, modify the returned array and then assign it to the property again.
 		[b]Note:[/b] In a boolean context, a packed array will evaluate to [code]false[/code] if it's empty. Otherwise, a packed array will always evaluate to [code]true[/code].
@@ -29,7 +29,17 @@
 			<return type="PackedByteArray" />
 			<param index="0" name="from" type="Array" />
 			<description>
-				Constructs a new [PackedByteArray]. Optionally, you can pass in a generic [Array] that will be converted.
+				Constructs a new [PackedByteArray] from a generic [Array].
+				Boolean [code]false[/code] and [code]true[/code] are converted to 0 and 1 respectively.
+				Integers from the generic Array outside the [code]0-255[/code] range will overflow and roll over. For example, [code]-1[/code] becomes [code]255[/code], [code]256[/code] becomes [code]0[/code], and [code]300[/code] becomes [code]44[/code].
+				Floating-point numbers from the generic Array are converted to integers by truncating the decimal part.
+				Other values from the generic Array that cannot be converted into an integer are initialized to [code]0[/code].
+				[codeblock]
+				print(PackedByteArray([true, false])) # Prints [1, 0]
+				print(PackedByteArray([-1, 0, 255, 256, 300])) # Prints [255, 0, 255, 0, 44]
+				print(PackedByteArray([-1.0, 0.0, 1.0, 1.9, 2.0, 500.0])) # Prints [255, 0, 1, 1, 2, 244]
+				print(PackedByteArray([Object.new(), Callable(), Signal()])) # Prints [0, 0, 0]
+				[/codeblock]
 			</description>
 		</constructor>
 	</constructors>
@@ -314,7 +324,7 @@
 			<param index="1" name="value" type="Variant" />
 			<param index="2" name="allow_objects" type="bool" default="false" />
 			<description>
-				Encodes a [Variant] at the index of [param byte_offset] bytes. A sufficient space must be allocated, depending on the encoded variant's size. If [param allow_objects] is [code]false[/code], [Object]-derived values are not permitted and will instead be serialized as ID-only.
+				Encodes a [Variant] at the index of [param byte_offset] bytes. A sufficient space must be allocated, depending on the encoded variant's size. If [param allow_objects] is [code]false[/code], [Object]-derived values are not permitted and will instead be serialized as ID-only. Returns the length of the encoded data in bytes.
 			</description>
 		</method>
 		<method name="erase">
