@@ -34,6 +34,7 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/file_access_memory.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/file_access_unix_pipe.h"
@@ -172,6 +173,7 @@ void OS_Unix::initialize_core() {
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
 	FileAccess::make_default<FileAccessUnixPipe>(FileAccess::ACCESS_PIPE);
+	FileAccess::make_default<FileAccessMemory>(FileAccess::ACCESS_MEMORY);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
