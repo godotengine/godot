@@ -38,16 +38,57 @@ class CheckBox : public Button {
 	struct ThemeCache {
 		int h_separation = 0;
 		int check_v_offset = 0;
+		int button_on_right = 0;
 		Ref<StyleBox> normal_style;
 
 		Ref<Texture2D> checked;
-		Ref<Texture2D> unchecked;
-		Ref<Texture2D> radio_checked;
-		Ref<Texture2D> radio_unchecked;
+		Ref<Texture2D> checked_hover;
+		Ref<Texture2D> checked_pressed;
+		Ref<Texture2D> checked_hover_pressed;
 		Ref<Texture2D> checked_disabled;
+		
+		Ref<Texture2D> checked_focus;
+		Ref<Texture2D> checked_hover_focus;
+		Ref<Texture2D> checked_pressed_focus;
+		Ref<Texture2D> checked_hover_pressed_focus;
+		Ref<Texture2D> checked_disabled_focus;
+		
+		Ref<Texture2D> unchecked;
+		Ref<Texture2D> unchecked_hover;
+		Ref<Texture2D> unchecked_pressed;
+		Ref<Texture2D> unchecked_hover_pressed;
 		Ref<Texture2D> unchecked_disabled;
+		
+		Ref<Texture2D> unchecked_focus;
+		Ref<Texture2D> unchecked_hover_focus;
+		Ref<Texture2D> unchecked_pressed_focus;
+		Ref<Texture2D> unchecked_hover_pressed_focus;
+		Ref<Texture2D> unchecked_disabled_focus;
+		
+		Ref<Texture2D> radio_checked;
+		Ref<Texture2D> radio_checked_hover;
+		Ref<Texture2D> radio_checked_pressed;
+		Ref<Texture2D> radio_checked_hover_pressed;
 		Ref<Texture2D> radio_checked_disabled;
+		
+		Ref<Texture2D> radio_checked_focus;
+		Ref<Texture2D> radio_checked_hover_focus;
+		Ref<Texture2D> radio_checked_pressed_focus;
+		Ref<Texture2D> radio_checked_hover_pressed_focus;
+		Ref<Texture2D> radio_checked_disabled_focus;
+		
+		Ref<Texture2D> radio_unchecked;
+		Ref<Texture2D> radio_unchecked_hover;
+		Ref<Texture2D> radio_unchecked_pressed;
+		Ref<Texture2D> radio_unchecked_hover_pressed;
 		Ref<Texture2D> radio_unchecked_disabled;
+		
+		Ref<Texture2D> radio_unchecked_focus;
+		Ref<Texture2D> radio_unchecked_hover_focus;
+		Ref<Texture2D> radio_unchecked_pressed_focus;
+		Ref<Texture2D> radio_unchecked_hover_pressed_focus;
+		Ref<Texture2D> radio_unchecked_disabled_focus;
+
 
 		Color checkbox_checked_color;
 		Color checkbox_unchecked_color;
@@ -56,6 +97,8 @@ class CheckBox : public Button {
 protected:
 	Size2 get_icon_size() const;
 	Size2 get_minimum_size() const override;
+	
+	std::tuple<Ref<Texture2D>, Ref<Texture2D>, Ref<Texture2D>, Ref<Texture2D>> _get_current_icon() const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
