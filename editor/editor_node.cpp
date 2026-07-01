@@ -4637,9 +4637,6 @@ void EditorNode::set_edited_scene_root(Node *p_scene, bool p_auto_add) {
 	}
 	get_editor_data().set_edited_scene_root(p_scene);
 
-	if (Object::cast_to<Popup>(p_scene)) {
-		Object::cast_to<Popup>(p_scene)->show();
-	}
 	SceneTreeDock::get_singleton()->set_edited_scene(p_scene);
 	if (get_tree()) {
 		get_tree()->set_edited_scene_root(p_scene);
@@ -4647,6 +4644,10 @@ void EditorNode::set_edited_scene_root(Node *p_scene, bool p_auto_add) {
 
 	if (p_auto_add && p_scene) {
 		scene_root->add_child(p_scene, true);
+	}
+
+	if (Object::cast_to<Popup>(p_scene)) {
+		Object::cast_to<Popup>(p_scene)->show();
 	}
 }
 
