@@ -929,11 +929,38 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		}
 		// Shift Up Selection.
 		if (select_mode == SELECT_MULTI && p_event->is_action("ui_up", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
-			int next = MAX(current - max_columns, 0);
+			int current_col = current % current_columns;
+			int next = current; // Default: stay in position.
+
+			if (current >= current_columns) {
+				// Extend up within the same column.
+				next = MAX(current - current_columns, 0);
+			} else if (vertical_navigation_wraparound == NAVIGATION_WRAPAROUND_SAME) {
+				// Extend to the bottom of the same column.
+				int last_row = (items.size() - 1) / current_columns;
+				next = last_row * current_columns + current_col;
+				if (next >= items.size()) {
+					next -= current_columns;
+				}
+			} else if (vertical_navigation_wraparound == NAVIGATION_WRAPAROUND_NEXT) {
+				if (current_col > 0) {
+					// Extend to the bottom of the previous column.
+					int target_col = current_col - 1;
+					int last_row = (items.size() - 1) / current_columns;
+					next = last_row * current_columns + target_col;
+					if (next >= items.size()) {
+						next -= current_columns;
+					}
+				} else {
+					// Without previous column: stay in position.
+					next = current;
+				}
+			}
+
 			_shift_range_select(current, next);
 			accept_event();
 		}
-
+		// Up Move\Selection
 		else if (p_event->is_action("ui_up", true)) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
@@ -956,31 +983,96 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
+			int current_col = current % current_columns;
+			int next = -1;
+			bool did_search = false;
+
+			// Try to find target above within the same column.
 			if (current >= current_columns) {
-				int next = current - current_columns;
-				while (next >= 0 && !CAN_SELECT(next)) {
-					next = next - current_columns;
+				did_search = true;
+				int i = current - current_columns;
+				while (i >= 0 && !CAN_SELECT(i)) {
+					i -= current_columns;
 				}
-				if (next < 0) {
-					accept_event();
-					return;
+				if (i >= 0) {
+					next = i;
 				}
+			}
+
+			// Wraparound if no target was found.
+			if (next < 0) {
+				if (vertical_navigation_wraparound == NAVIGATION_WRAPAROUND_SAME) {
+					// Wrap to the bottom selectable in the same column.
+					did_search = true;
+					int last_row = (items.size() - 1) / current_columns;
+					int i = last_row * current_columns + current_col;
+					if (i >= items.size()) {
+						i -= current_columns;
+					}
+					int stop = current + current_columns;
+					while (i >= stop && !CAN_SELECT(i)) {
+						i -= current_columns;
+					}
+					if (i >= stop) {
+						next = i;
+					}
+				} else if (vertical_navigation_wraparound == NAVIGATION_WRAPAROUND_NEXT && current_col > 0) {
+					// Wrap to the bottom selectable in the previous columns.
+					did_search = true;
+					int last_row = (items.size() - 1) / current_columns;
+					for (int target_col = current_col - 1; target_col >= 0; target_col--) {
+						int i = last_row * current_columns + target_col;
+						if (i >= items.size()) {
+							i -= current_columns;
+						}
+						while (i >= 0 && !CAN_SELECT(i)) {
+							i -= current_columns;
+						}
+						if (i >= 0) {
+							next = i;
+							break;
+						}
+					}
+				}
+			}
+
+			if (next >= 0) {
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SceneStringName(item_selected), current);
 				}
+			}
+			if (did_search) {
 				accept_event();
 			}
 		}
 
 		// Shift Down Selection.
 		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_down", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
-			int next = MIN(current + max_columns, items.size() - 1);
+			int current_col = current % current_columns;
+			int next = current; // Default: stay in position.
+
+			if (current < items.size() - current_columns) {
+				// Extend down within the same column.
+				next = MIN(current + current_columns, items.size() - 1);
+			} else if (vertical_navigation_wraparound == NAVIGATION_WRAPAROUND_SAME) {
+				// Extend to the top of the same column.
+				next = current_col;
+			} else if (vertical_navigation_wraparound == NAVIGATION_WRAPAROUND_NEXT) {
+				if (current_col + 1 < current_columns && current_col + 1 < items.size()) {
+					// Extend to the top of the next column.
+					next = current_col + 1;
+				} else {
+					// Without next column: stay in position.
+					next = current;
+				}
+			}
+
 			_shift_range_select(current, next);
 			accept_event();
 		}
-
+		// Down Move\Selection
 		else if (p_event->is_action("ui_down", true)) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
@@ -1002,20 +1094,59 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			if (current < items.size() - current_columns) {
-				int next = current + current_columns;
-				while (next < items.size() && !CAN_SELECT(next)) {
-					next = next + current_columns;
+			int current_col = current % current_columns;
+			int next = -1;
+			bool did_search = false;
+
+			// Try to find target below within the same column.
+			if (current + current_columns < items.size()) {
+				did_search = true;
+				int i = current + current_columns;
+				while (i < items.size() && !CAN_SELECT(i)) {
+					i += current_columns;
 				}
-				if (next >= items.size()) {
-					accept_event();
-					return;
+				if (i < items.size()) {
+					next = i;
 				}
+			}
+
+			// Wraparound if no target was found.
+			if (next < 0) {
+				if (vertical_navigation_wraparound == NAVIGATION_WRAPAROUND_SAME) {
+					// Wrap to the top selectable in the same column.
+					did_search = true;
+					int i = current_col;
+					int stop = current - current_columns;
+					while (i <= stop && !CAN_SELECT(i)) {
+						i += current_columns;
+					}
+					if (i <= stop) {
+						next = i;
+					}
+				} else if (vertical_navigation_wraparound == NAVIGATION_WRAPAROUND_NEXT && current_col + 1 < current_columns && current_col + 1 < items.size()) {
+					// Wrap to the top selectable in the next columns.
+					did_search = true;
+					for (int target_col = current_col + 1; target_col < current_columns; target_col++) {
+						int i = target_col;
+						while (i < items.size() && !CAN_SELECT(i)) {
+							i += current_columns;
+						}
+						if (i < items.size()) {
+							next = i;
+							break;
+						}
+					}
+				}
+			}
+
+			if (next >= 0) {
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SceneStringName(item_selected), current);
 				}
+			}
+			if (did_search) {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_page_up", true)) {
@@ -1053,58 +1184,166 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 		// Shift Left Selection.
 		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_left", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
-			int next = MAX(current - 1, 0);
+			int current_row = current / current_columns;
+			int next = current; // Default: stay in position.
+
+			if (current % current_columns != 0) {
+				// Extend left within the same row.
+				next = current - 1;
+			} else if (horizontal_navigation_wraparound == NAVIGATION_WRAPAROUND_SAME) {
+				// Extend to the end of the same row.
+				next = MIN((current_row + 1) * current_columns - 1, items.size() - 1);
+			} else if (horizontal_navigation_wraparound == NAVIGATION_WRAPAROUND_NEXT) {
+				if (current > 0) {
+					// Extend into the previous row.
+					next = current - 1;
+				} else {
+					// Without previous row: stay in position.
+					next = current;
+				}
+			}
+
 			_shift_range_select(current, next);
 			accept_event();
 		}
-
+		// Left Move\Selection
 		else if (p_event->is_action("ui_left", true)) {
 			search_string = ""; //any mousepress cancels
 
+			int current_row = current / current_columns;
+			int next = -1;
+			bool did_search = false;
+
+			// Try to find target on the left within the same row.
 			if (current % current_columns != 0) {
-				int current_row = current / current_columns;
-				int next = current - 1;
-				while (next >= 0 && !CAN_SELECT(next)) {
-					next = next - 1;
+				did_search = true;
+				int i = current - 1;
+				int row_start = current_row * current_columns;
+				while (i >= row_start && !CAN_SELECT(i)) {
+					i--;
 				}
-				if (next < 0 || !IS_SAME_ROW(next, current_row)) {
-					accept_event();
-					return;
+				if (i >= row_start) {
+					next = i;
 				}
+			}
+
+			// Wraparound if no target was found.
+			if (next < 0) {
+				if (horizontal_navigation_wraparound == NAVIGATION_WRAPAROUND_SAME) {
+					// Wrap to the last selectable in the same row.
+					did_search = true;
+					int i = MIN((current_row + 1) * current_columns - 1, items.size() - 1);
+					int stop = current + 1;
+					while (i >= stop && !CAN_SELECT(i)) {
+						i--;
+					}
+					if (i >= stop) {
+						next = i;
+					}
+				} else if (horizontal_navigation_wraparound == NAVIGATION_WRAPAROUND_NEXT && current > 0) {
+					// Wrap into the previous row.
+					did_search = true;
+					int i = current - 1;
+					while (i >= 0 && !CAN_SELECT(i)) {
+						i--;
+					}
+					if (i >= 0) {
+						next = i;
+					}
+				}
+			}
+
+			if (next >= 0) {
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SceneStringName(item_selected), current);
 				}
+			}
+			if (did_search) {
 				accept_event();
 			}
 		}
 
 		// Shift Right Selection.
 		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_right", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
-			int next = MIN(current + 1, items.size() - 1);
+			int current_row = current / current_columns;
+			int next = current; // Default: stay in position.
+
+			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
+				// Extend right within the same row.
+				next = current + 1;
+			} else if (horizontal_navigation_wraparound == NAVIGATION_WRAPAROUND_SAME) {
+				// Extend to the start of the same row.
+				next = current_row * current_columns;
+			} else if (horizontal_navigation_wraparound == NAVIGATION_WRAPAROUND_NEXT) {
+				if (current + 1 < items.size()) {
+					// Extend into the next row.
+					next = current + 1;
+				} else {
+					// Without next row: stay in position.
+					next = current;
+				}
+			}
+
 			_shift_range_select(current, next);
 			accept_event();
 		}
-
+		// Right Move\Selection
 		else if (p_event->is_action("ui_right", true)) {
 			search_string = ""; //any mousepress cancels
 
+			int current_row = current / current_columns;
+			int next = -1;
+			bool did_search = false;
+
+			// Try to find target on the right within the same row.
 			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
-				int current_row = current / current_columns;
-				int next = current + 1;
-				while (next < items.size() && !CAN_SELECT(next)) {
-					next = next + 1;
+				did_search = true;
+				int i = current + 1;
+				int row_end = MIN((current_row + 1) * current_columns - 1, items.size() - 1);
+				while (i <= row_end && !CAN_SELECT(i)) {
+					i++;
 				}
-				if (items.size() <= next || !IS_SAME_ROW(next, current_row)) {
-					accept_event();
-					return;
+				if (i <= row_end) {
+					next = i;
 				}
+			}
+
+			// Wraparound if no target was found.
+			if (next < 0) {
+				if (horizontal_navigation_wraparound == NAVIGATION_WRAPAROUND_SAME) {
+					// Wrap to the first selectable in the same row.
+					did_search = true;
+					int i = current_row * current_columns;
+					int stop = current - 1;
+					while (i <= stop && !CAN_SELECT(i)) {
+						i++;
+					}
+					if (i <= stop) {
+						next = i;
+					}
+				} else if (horizontal_navigation_wraparound == NAVIGATION_WRAPAROUND_NEXT && current + 1 < items.size()) {
+					// Wrap into the next row.
+					did_search = true;
+					int i = current + 1;
+					while (i < items.size() && !CAN_SELECT(i)) {
+						i++;
+					}
+					if (i < items.size()) {
+						next = i;
+					}
+				}
+			}
+
+			if (next >= 0) {
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
 					emit_signal(SceneStringName(item_selected), current);
 				}
+			}
+			if (did_search) {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_cancel", true)) {
@@ -2264,6 +2503,22 @@ bool ItemList::has_wraparound_items() const {
 	return wraparound_items;
 }
 
+void ItemList::set_horizontal_navigation_wraparound(NavigationWraparound p_mode) {
+	horizontal_navigation_wraparound = p_mode;
+}
+
+ItemList::NavigationWraparound ItemList::get_horizontal_navigation_wraparound() const {
+	return horizontal_navigation_wraparound;
+}
+
+void ItemList::set_vertical_navigation_wraparound(NavigationWraparound p_mode) {
+	vertical_navigation_wraparound = p_mode;
+}
+
+ItemList::NavigationWraparound ItemList::get_vertical_navigation_wraparound() const {
+	return vertical_navigation_wraparound;
+}
+
 void ItemList::set_scroll_hint_mode(ScrollHintMode p_mode) {
 	if (scroll_hint_mode == p_mode) {
 		return;
@@ -2444,6 +2699,11 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_wraparound_items", "enable"), &ItemList::set_wraparound_items);
 	ClassDB::bind_method(D_METHOD("has_wraparound_items"), &ItemList::has_wraparound_items);
 
+	ClassDB::bind_method(D_METHOD("set_horizontal_navigation_wraparound", "mode"), &ItemList::set_horizontal_navigation_wraparound);
+	ClassDB::bind_method(D_METHOD("get_horizontal_navigation_wraparound"), &ItemList::get_horizontal_navigation_wraparound);
+	ClassDB::bind_method(D_METHOD("set_vertical_navigation_wraparound", "mode"), &ItemList::set_vertical_navigation_wraparound);
+	ClassDB::bind_method(D_METHOD("get_vertical_navigation_wraparound"), &ItemList::get_vertical_navigation_wraparound);
+
 	ClassDB::bind_method(D_METHOD("force_update_list_size"), &ItemList::force_update_list_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi,Toggle"), "set_select_mode", "get_select_mode");
@@ -2455,6 +2715,8 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wraparound_items"), "set_wraparound_items", "has_wraparound_items");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_navigation_wraparound", PROPERTY_HINT_ENUM, "None,Same Row,Next Row"), "set_horizontal_navigation_wraparound", "get_horizontal_navigation_wraparound");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_navigation_wraparound", PROPERTY_HINT_ENUM, "None,Same Column,Next Column"), "set_vertical_navigation_wraparound", "get_vertical_navigation_wraparound");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_hint_mode", PROPERTY_HINT_ENUM, "Disabled,Both,Top,Bottom"), "set_scroll_hint_mode", "get_scroll_hint_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tile_scroll_hint"), "set_tile_scroll_hint", "is_scroll_hint_tiled");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
@@ -2478,6 +2740,10 @@ void ItemList::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTH);
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_TOP);
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTTOM);
+
+	BIND_ENUM_CONSTANT(NAVIGATION_WRAPAROUND_NONE);
+	BIND_ENUM_CONSTANT(NAVIGATION_WRAPAROUND_SAME);
+	BIND_ENUM_CONSTANT(NAVIGATION_WRAPAROUND_NEXT);
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("empty_clicked", PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
