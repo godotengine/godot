@@ -331,6 +331,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool xshaped_ext_ok = true;
 	bool xwayland = false;
 	bool kde5_embed_workaround = false; // Workaround embedded game visibility on KDE 5 (GH-102043).
+	bool exiting = false; // Used so it doesn't sleep the input events when exiting, thus fixing a frozen bug.
 
 	struct Property {
 		unsigned char *data;
