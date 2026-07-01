@@ -6156,6 +6156,9 @@
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE" value="2" enum="CanvasOccluderPolygonCullMode">
 			Culling of the canvas occluder is counterclockwise.
 		</constant>
+		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_SOLID" value="3" enum="CanvasOccluderPolygonCullMode">
+			The canvas occluder is treated as a solid shape. A positional light inside the polygon is fully blocked. Otherwise, behaves like [constant CANVAS_OCCLUDER_POLYGON_CULL_DISABLED].
+		</constant>
 		<constant name="GLOBAL_VAR_TYPE_BOOL" value="0" enum="GlobalShaderParameterType">
 			Boolean global shader parameter ([code]global uniform bool ...[/code]).
 		</constant>
