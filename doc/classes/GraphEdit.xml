@@ -27,11 +27,11 @@
 			<param index="2" name="mouse_position" type="Vector2" />
 			<description>
 				Returns whether the [param mouse_position] is in the input hot zone.
-				By default, a hot zone is a [Rect2] positioned such that its center is at [param in_node].[method GraphNode.get_input_port_position]([param in_port]) (For output's case, call [method GraphNode.get_output_port_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
+				By default, a hot zone is a [Rect2] positioned such that its center is at [param in_node].[method GraphNode.get_input_port_position]([param in_port]) (For output's case, call [method GraphNode.get_output_port_position] instead). The hot zone's width is twice the theme property [theme_item port_hotzone_inner_extent], and its height is twice the [theme_item port_hotzone_outer_extent].
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_input_hotzone(in_node, in_port, mouse_position):
-					var port_size = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+					var port_size = Vector2(get_theme_constant("port_hotzone_inner_extent"), get_theme_constant("port_hotzone_outer_extent"))
 					var port_pos = in_node.get_position() + in_node.get_input_port_position(in_port) - port_size / 2
 					var rect = Rect2(port_pos, port_size)
 
@@ -49,7 +49,7 @@
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_output_hotzone(in_node, in_port, mouse_position):
-					var port_size = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+					var port_size = Vector2(get_theme_constant("port_hotzone_inner_extent"), get_theme_constant("port_hotzone_outer_extent"))
 					var port_pos = in_node.get_position() + in_node.get_output_port_position(in_port) - port_size / 2
 					var rect = Rect2(port_pos, port_size)
 
