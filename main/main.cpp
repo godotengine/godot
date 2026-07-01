@@ -1497,6 +1497,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
+		} else if (arg == "--session-number") {
+			if (N) {
+				main_args.push_back(arg);
+				main_args.push_back(N->get());
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing session number argument, aborting.\n");
+				goto error;
+			}
+		} else if (arg == "--session-count") {
+			if (N) {
+				main_args.push_back(arg);
+				main_args.push_back(N->get());
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing session count argument, aborting.\n");
+				goto error;
+			}
+
 		} else if (arg == "--headless") { // enable headless mode (no audio, no rendering).
 
 			audio_driver = NULL_AUDIO_DRIVER;
