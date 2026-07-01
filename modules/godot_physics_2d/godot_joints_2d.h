@@ -82,26 +82,40 @@ class GodotPinJoint2D : public GodotJoint2D {
 		GodotBody2D *_arr[2] = { nullptr, nullptr };
 	};
 
+	// Linear solver working variables. Keep them together for cache.
 	Transform2D M;
 	Vector2 rA, rB;
-	Vector2 anchor_A;
-	Vector2 anchor_B;
-	Vector2 bias;
-	real_t initial_angle = 0.0;
-	real_t bias_velocity = 0.0;
-	real_t jn_max = 0.0;
-	real_t j_acc = 0.0;
-	real_t i_sum = 0.0;
+	Vector2 bias_vel;
 	Vector2 P;
 	real_t softness = 0.0;
-	real_t angular_limit_lower = 0.0;
-	real_t angular_limit_upper = 0.0;
+
+	// Angular solver working variables.
+	real_t i_sum;
+	real_t bias_w;
+	real_t motor_w;
+	real_t j_max;
+	real_t j_min;
+	real_t j_acc;
+	real_t j_bias_acc;
+	bool solve_angular_constraint;
+
+	// Setup and configuration members
+	Vector2 anchor_A;
+	Vector2 anchor_B;
+	real_t initial_angle = 0.0;
+	real_t angular_limit_center = 0.0;
+	real_t angular_limit_extent = 0.0;
 	real_t motor_target_velocity = 0.0;
-	bool is_joint_at_limit = false;
-	bool motor_enabled = false;
 	bool angular_limit_enabled = false;
+	bool motor_enabled = false;
 
 public:
+	// TODO: Consider warning the user somehow if they set angular limits
+	// closer than this gap. If limit_high is more than limit_low, then
+	// the joint will lock to the center point (which is a useful function).
+	// If it is less, then the joint will have no limits.
+	const real_t MIN_ANGULAR_LIMIT_SEPERATION = 2.0 * Math::PI / 180.0;
+
 	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_PIN; }
 
 	virtual bool setup(real_t p_step) override;
