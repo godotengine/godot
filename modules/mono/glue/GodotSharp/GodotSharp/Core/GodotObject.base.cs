@@ -29,7 +29,7 @@ namespace Godot
         {
             unsafe
             {
-                ConstructAndInitialize(NativeCtor, NativeName, _cachedType, refCounted: false);
+                ConstructAndInitialize(NativeCtor, NativeName, _cachedType, refCounted: false, isExtensionClass: false);
             }
         }
 
@@ -40,7 +40,7 @@ namespace Godot
             NativePtr = nativePtr;
             unsafe
             {
-                ConstructAndInitialize(NativeCtor, NativeName, _cachedType, refCounted: false);
+                ConstructAndInitialize(NativeCtor, NativeName, _cachedType, refCounted: false, isExtensionClass: false);
             }
         }
 
@@ -48,15 +48,24 @@ namespace Godot
             delegate* unmanaged<godot_bool, IntPtr> nativeCtor,
             StringName nativeName,
             Type cachedType,
-            bool refCounted
+            bool refCounted,
+            bool isExtensionClass
         )
         {
             if (NativePtr == IntPtr.Zero)
             {
-                Debug.Assert(nativeCtor != null);
-
-                // Need postinitialization.
-                NativePtr = nativeCtor(godot_bool.True);
+                if (isExtensionClass)
+                {
+                    var typeSelf = (godot_string_name)nativeName.NativeValue;
+                    NativePtr = NativeFuncs.godotsharp_instantiate_class(typeSelf);
+                    Debug.Assert(NativePtr != IntPtr.Zero);
+                }
+                else
+                {
+                    Debug.Assert(nativeCtor != null);
+                    // Need postinitialization.
+                    NativePtr = nativeCtor(godot_bool.True);
+                }
 
                 InteropUtils.TieManagedToUnmanaged(this, NativePtr,
                     nativeName, refCounted, GetType(), cachedType);
