@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
 #include "servers/audio/audio_stream.h"
 
@@ -134,6 +135,8 @@ class AudioStreamOggVorbis : public AudioStream {
 	int beat_count = 0;
 	int bar_beats = 4;
 	Dictionary tags;
+
+	LocalVector<Ref<AudioStreamPlaybackOggVorbis>> playback_cache;
 
 protected:
 	static void _bind_methods();
