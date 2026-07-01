@@ -81,22 +81,88 @@ if env["builtin_clipper2"]:
 
 # Zlib library, can be unbundled
 if env["builtin_zlib"]:
-    thirdparty_zlib_dir = "#thirdparty/zlib/"
+    thirdparty_zlib_dir = "#thirdparty/zlib-ng/"
     thirdparty_zlib_sources = [
         "adler32.c",
         "compress.c",
         "crc32.c",
+        "crc32_braid_comb.c",
         "deflate.c",
-        "inffast.c",
+        "deflate_fast.c",
+        "deflate_huff.c",
+        "deflate_medium.c",
+        "deflate_quick.c",
+        "deflate_rle.c",
+        "deflate_slow.c",
+        "deflate_stored.c",
         "inflate.c",
         "inftrees.c",
+        "insert_string.c",
+        "insert_string_roll.c",
         "trees.c",
         "uncompr.c",
         "zutil.c",
     ]
+
+    thirdparty_zlib_generic_dir = "arch/generic/"
+    thirdparty_zlib_generic_sources = [
+        "adler32_c.c",
+        "adler32_fold_c.c",
+        "chunkset_c.c",
+        "compare256_c.c",
+        "crc32_braid_c.c",
+        "crc32_chorba_c.c",
+        "crc32_fold_c.c",
+        "slide_hash_c.c",
+    ]
+
+    thirdparty_zlib_arch_dir = ""
+    thirdparty_zlib_arch_sources = []
+
+    if env["arch"].startswith("x86"):
+        thirdparty_zlib_arch_dir = "arch/x86/"
+        thirdparty_zlib_arch_sources = [
+            "chorba_sse2.c",
+            "chunkset_sse2.c",
+            "compare256_sse2.c",
+            "slide_hash_sse2.c",
+        ]
+
+        if env["arch"] == "x86_64":
+            thirdparty_zlib_arch_sources += [
+                "adler32_sse42.c",
+                "adler32_ssse3.c",
+                "chorba_sse41.c",
+                "chunkset_ssse3.c",
+            ]
+
+            env_thirdparty.Append(CPPDEFINES=["X86_SSSE3", "X86_SSE41", "X86_SSE42"])
+        env_thirdparty.Append(CPPDEFINES=["X86_FEATURES", "X86_SSE2"])
+
+    if env["arch"].startswith("arm"):
+        thirdparty_zlib_arch_dir = "arch/arm/"
+        thirdparty_zlib_arch_sources = [
+            "adler32_neon.c",
+            "chunkset_neon.c",
+            "compare256_neon.c",
+            "slide_hash_neon.c",
+        ]
+
+        env_thirdparty.Append(CPPDEFINES=["ARM_FEATURES", "ARM_NEON", "ARM_NEON_HASLD4"])
+
+    thirdparty_zlib_arch_sources = [thirdparty_zlib_arch_dir + file for file in thirdparty_zlib_arch_sources]
+    thirdparty_zlib_generic_sources = [thirdparty_zlib_generic_dir + file for file in thirdparty_zlib_generic_sources]
+    thirdparty_zlib_sources += thirdparty_zlib_generic_sources
+    thirdparty_zlib_sources += thirdparty_zlib_arch_sources
     thirdparty_zlib_sources = [thirdparty_zlib_dir + file for file in thirdparty_zlib_sources]
 
     env_thirdparty.Prepend(CPPPATH=[thirdparty_zlib_dir])
+    env_thirdparty.Append(CPPDEFINES=["ZLIB_COMPAT", "DISABLE_RUNTIME_CPU_DETECTION"])
+    if env["arch"].startswith("x86") or env["arch"].startswith("arm"):
+        if not env.msvc or env["platform"] == "windows" and methods.using_clang(env):
+            # CTZ and CTZLL have to be defined for x86/ARM toolchains that don't use MSVC.
+            env_thirdparty.Append(CPPDEFINES=["HAVE_BUILTIN_CTZ", "HAVE_BUILTIN_CTZLL"])
+
     # Needs to be available in main env too
     env.Prepend(CPPPATH=[thirdparty_zlib_dir])
     if env.dev_build:

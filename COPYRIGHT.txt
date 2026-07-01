@@ -673,9 +673,9 @@ Copyright: 2018-2020, Jonathan Young
   2006, NVIDIA Corporation, Ignacio Castano
 License: Expat
 
-Files: thirdparty/zlib/*
-Comment: zlib
-Copyright: 1995-2026, Jean-loup Gailly and Mark Adler
+Files: thirdparty/zlib-ng/*
+Comment: zlib-ng
+Copyright: 1995-2024, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: thirdparty/zstd/*
