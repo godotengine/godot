@@ -2241,7 +2241,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (result != nullptr) {
+	if (result != nullptr && current_function != nullptr) {
 		MemberDocData doc_data;
 		if (has_comment(result->start_line, true)) {
 			// Inline doc comment.
