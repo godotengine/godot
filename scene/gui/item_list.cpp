@@ -31,6 +31,7 @@
 #include "item_list.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -912,6 +913,8 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_pressed() && items.size() > 0) {
+		Input *input = Input::get_singleton();
+
 		if (p_event->is_action("ui_menu", true)) {
 			if (current != -1 && allow_rmb_select) {
 				int i = current;
@@ -934,7 +937,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		else if (p_event->is_action("ui_up", true)) {
+		else if (p_event->is_action("ui_up", true) && (p_event->is_echo() || input->is_action_just_pressed_by_event("ui_up", p_event))) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
@@ -981,7 +984,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		else if (p_event->is_action("ui_down", true)) {
+		else if (p_event->is_action("ui_down", true) && (p_event->is_echo() || input->is_action_just_pressed_by_event("ui_down", p_event))) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
@@ -1058,7 +1061,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		else if (p_event->is_action("ui_left", true)) {
+		else if (p_event->is_action("ui_left", true) && (p_event->is_echo() || input->is_action_just_pressed_by_event("ui_left", p_event))) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != 0) {
@@ -1087,7 +1090,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		else if (p_event->is_action("ui_right", true)) {
+		else if (p_event->is_action("ui_right", true) && (p_event->is_echo() || input->is_action_just_pressed_by_event("ui_right", p_event))) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
