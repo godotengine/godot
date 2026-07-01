@@ -243,6 +243,17 @@ Config::Config() {
 			//https://github.com/godotengine/godot/issues/92662#issuecomment-2161199477
 			//disable_particles_workaround = false;
 		}
+	} else if (rendering_device_name.begins_with("Adreno (TM) ")) {
+		const String model = rendering_device_name.trim_prefix("Adreno (TM) ").get_slicec(' ', 0);
+		if (model.is_valid_int()) {
+			const int model_number = model.to_int();
+			if (model_number <= 510) {
+				// Work around legacy Adreno drivers crashing in the GLES3 sky radiance draw path.
+				// See also: https://github.com/godotengine/godot/issues/75507
+				use_legacy_adreno_sky_workaround = true;
+				print_line("GLES3: Disabling sky radiance on " + rendering_device_name + " due to driver compatibility issues.");
+			}
+		}
 	} else if (rendering_device_name.contains("PowerVR")) {
 		disable_transform_feedback_shader_cache = true;
 	}
