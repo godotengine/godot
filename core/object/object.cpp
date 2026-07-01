@@ -271,7 +271,13 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	} else {
 		Variant **V = metadata_properties.getptr(p_name);
 		if (V) {
-			**V = p_value;
+			// Don't allow to clear resource metadata, as making it null erases it.
+			if (p_value.get_type() == Variant::OBJECT && p_value.is_null()) {
+				**V = memnew(Resource);
+			} else {
+				**V = p_value;
+			}
+
 			if (r_valid) {
 				*r_valid = true;
 			}
