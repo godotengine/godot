@@ -4041,6 +4041,34 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			prev->select(selected_col);
 		}
 		ensure_cursor_is_visible();
+	} else if (p_event->is_action("ui_home") && p_event->is_pressed()) {
+		if (select_mode == SELECT_MULTI && selected_item && k.is_valid() && k->is_shift_pressed()) {
+			if (!cursor_can_exit_tree) {
+				accept_event();
+			}
+			TreeItem *parent = selected_item->get_parent();
+			if (parent) {
+				TreeItem *first_sibling = parent->get_first_child();
+				while (first_sibling && !first_sibling->is_visible_in_tree()) {
+					first_sibling = first_sibling->get_next();
+				}
+				_shift_select_range(first_sibling);
+			}
+		}
+	} else if (p_event->is_action("ui_end") && p_event->is_pressed()) {
+		if (select_mode == SELECT_MULTI && selected_item && k.is_valid() && k->is_shift_pressed()) {
+			if (!cursor_can_exit_tree) {
+				accept_event();
+			}
+			TreeItem *parent = selected_item->get_parent();
+			if (parent) {
+				TreeItem *last_sibling = parent->get_last_child();
+				while (last_sibling && !last_sibling->is_visible_in_tree()) {
+					last_sibling = last_sibling->get_prev();
+				}
+				_shift_select_range(last_sibling);
+			}
+		}
 	} else if (p_event->is_action("ui_select") && p_event->is_pressed()) {
 		if (select_mode == SELECT_MULTI) {
 			if (!selected_item) {
