@@ -14,6 +14,34 @@ common_linuxbsd = [
 ]
 
 if env["library_type"] == "executable":
+    env_cpp_check = env.Clone()
+    env_cpp_check.add_source_files(common_linuxbsd, ["cpu_feature_validation.c"])
+    if "-msse4.2" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-msse4.2")
+    if "-mpopcnt" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mpopcnt")
+    if "-mavx" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mavx")
+    if "-mavx2" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mavx2")
+    if "-mfma" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mfma")
+    if "-mf16c" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mf16c")
+    if "-mlzcnt" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mlzcnt")
+    if "-mbmi" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mbmi")
+    if "-mbmi2" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mbmi2")
+    if "-mavx512f" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mavx512f")
+    if "-mavx512dq" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mavx512dq")
+    if "-mavx512vl" in env_cpp_check["CCFLAGS"]:
+        env_cpp_check["CCFLAGS"].remove("-mavx512vl")
+
+if env["library_type"] == "executable":
     common_linuxbsd += ["godot_linuxbsd.cpp"]
 else:
     common_linuxbsd += ["libgodot_linuxbsd.cpp"]
