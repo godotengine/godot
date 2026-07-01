@@ -36,8 +36,8 @@
 #define GROUP_SIZE 8
 #define FLT_MIN 0.00000001
 #define FLT_MAX 32767.0
+#define RPC_2 0.5
 #define RPC_9 0.11111111111
-#define RPC_16 0.0625
 
 #define DISOCCLUSION_SCALE 0.01 // Scale the weight of this pixel calculated as (change in velocity - threshold) * scale.
 
@@ -330,7 +330,7 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	color_history = clip_history_3x3(pos_group, color_history, velocity_closest);
 
 	// Compute blend factor
-	float blend_factor = RPC_16; // We want to be able to accumulate as many jitter samples as we generated, that is, 16.
+	float blend_factor = RPC_2; // We want to be able to accumulate as many jitter samples as we generated, that is, 16.
 	{
 		// If re-projected UV is out of screen, converge to current color immediately.
 		float factor_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
