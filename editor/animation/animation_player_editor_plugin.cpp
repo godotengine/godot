@@ -38,6 +38,7 @@
 #include "core/os/os.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
+#include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -2355,8 +2356,48 @@ void AnimationPlayerEditorPlugin::_notification(int p_what) {
 			InspectorDock::get_inspector_singleton()->connect(SNAME("property_keyed"), callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
 			anim_editor->get_track_editor()->connect(SNAME("keying_changed"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_keying));
 			InspectorDock::get_inspector_singleton()->connect(SNAME("edited_object_changed"), callable_mp(anim_editor->get_track_editor(), &AnimationTrackEditor::update_keying));
+			if (FileSystemDock::get_singleton()) {
+				FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &AnimationPlayerEditorPlugin::_file_removed));
+			}
 			set_force_draw_over_forwarding_enabled();
 		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (FileSystemDock::get_singleton()) {
+				FileSystemDock::get_singleton()->disconnect("file_removed", callable_mp(this, &AnimationPlayerEditorPlugin::_file_removed));
+			}
+		} break;
+	}
+}
+
+void AnimationPlayerEditorPlugin::_file_removed(const String &p_file) {
+	// Clear undo history to prevent ghost dependencies from deleted resources.
+	if (!player) {
+		return;
+	}
+
+	// Only clear history if the deleted file is actually a resource type.
+	// This avoids unnecessary clearing for text files, scripts, etc.
+	if (ResourceLoader::get_resource_type(p_file).is_empty()) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	// Clear history for all animations in the player, as any of them might have referencing undo history.
+	List<StringName> anim_list;
+	player->get_animation_list(&anim_list);
+	for (const StringName &anim_name : anim_list) {
+		Ref<Animation> anim = player->get_animation(anim_name);
+		if (anim.is_valid()) {
+			undo_redo->clear_history(undo_redo->get_history_id_for_object(anim.ptr()));
+		}
+	}
+
+	// Also clear the track editor history.
+	AnimationTrackEditor *te = anim_editor->get_track_editor();
+	if (te) {
+		undo_redo->clear_history(undo_redo->get_history_id_for_object(te));
 	}
 }
 
