@@ -1659,6 +1659,8 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 		pbx_id.low_bits = 0;
 
 		HashMap<String, PluginConfigAppleEmbedded::SPMPackage> unique_packages;
+
+		// Collect from .gdip plugin configs
 		for (int i = 0; i < enabled_plugins.size(); i++) {
 			for (const PluginConfigAppleEmbedded::SPMPackage &package : enabled_plugins[i].spm_packages) {
 				if (!unique_packages.has(package.url)) {
@@ -1667,6 +1669,26 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 					for (const String &product : package.products) {
 						if (unique_packages[package.url].products.find(product) == -1) {
 							unique_packages[package.url].products.push_back(product);
+						}
+					}
+				}
+			}
+		}
+
+		// Also collect from EditorExportPlugins (added using add_apple_embedded_platform_spm_package() method)
+		Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+		for (int i = 0; i < export_plugins.size(); i++) {
+			for (const EditorExportPlugin::AppleEmbeddedSPMPackage &ep_package : export_plugins[i]->get_apple_embedded_platform_spm_packages()) {
+				if (!unique_packages.has(ep_package.url)) {
+					PluginConfigAppleEmbedded::SPMPackage package;
+					package.url = ep_package.url;
+					package.version = ep_package.version;
+					package.products = ep_package.products;
+					unique_packages[ep_package.url] = package;
+				} else {
+					for (const String &product : ep_package.products) {
+						if (unique_packages[ep_package.url].products.find(product) == -1) {
+							unique_packages[ep_package.url].products.push_back(product);
 						}
 					}
 				}
