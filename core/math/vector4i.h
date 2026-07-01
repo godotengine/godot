@@ -117,6 +117,10 @@ struct [[nodiscard]] Vector4i {
 	constexpr Vector4i &operator%=(const Vector4i &p_v);
 	constexpr Vector4i operator%(const Vector4i &p_v) const;
 
+	constexpr Vector4i &operator+=(int32_t p_scalar);
+	constexpr Vector4i operator+(int32_t p_scalar) const;
+	constexpr Vector4i &operator-=(int32_t p_scalar);
+	constexpr Vector4i operator-(int32_t p_scalar) const;
 	constexpr Vector4i &operator*=(int32_t p_scalar);
 	constexpr Vector4i operator*(int32_t p_scalar) const;
 	constexpr Vector4i &operator/=(int32_t p_scalar);
@@ -265,6 +269,30 @@ constexpr Vector4i operator*(float p_scalar, const Vector4i &p_vector) {
 
 constexpr Vector4i operator*(double p_scalar, const Vector4i &p_vector) {
 	return p_vector * p_scalar;
+}
+
+constexpr Vector4i &Vector4i::operator+=(int32_t p_scalar) {
+	x += p_scalar;
+	y += p_scalar;
+	z += p_scalar;
+	w += p_scalar;
+	return *this;
+}
+
+constexpr Vector4i Vector4i::operator+(int32_t p_scalar) const {
+	return Vector4i(x + p_scalar, y + p_scalar, z + p_scalar, w + p_scalar);
+}
+
+constexpr Vector4i &Vector4i::operator-=(int32_t p_scalar) {
+	x -= p_scalar;
+	y -= p_scalar;
+	z -= p_scalar;
+	w -= p_scalar;
+	return *this;
+}
+
+constexpr Vector4i Vector4i::operator-(int32_t p_scalar) const {
+	return Vector4i(x - p_scalar, y - p_scalar, z - p_scalar, w - p_scalar);
 }
 
 constexpr Vector4i &Vector4i::operator/=(int32_t p_scalar) {

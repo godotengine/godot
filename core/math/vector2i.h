@@ -108,11 +108,15 @@ struct [[nodiscard]] Vector2i {
 	}
 
 	constexpr Vector2i operator+(const Vector2i &p_v) const;
+	constexpr Vector2i operator+(int32_t p_s) const;
 	constexpr void operator+=(const Vector2i &p_v);
+	constexpr void operator+=(int32_t p_s);
 	constexpr Vector2i operator-(const Vector2i &p_v) const;
+	constexpr Vector2i operator-(int32_t p_s) const;
 	constexpr void operator-=(const Vector2i &p_v);
-	constexpr Vector2i operator*(const Vector2i &p_v1) const;
+	constexpr void operator-=(int32_t p_s);
 
+	constexpr Vector2i operator*(const Vector2i &p_v1) const;
 	constexpr Vector2i operator*(int32_t p_rvalue) const;
 	constexpr void operator*=(int32_t p_rvalue);
 
@@ -171,18 +175,36 @@ constexpr Vector2i Vector2i::operator+(const Vector2i &p_v) const {
 	return Vector2i(x + p_v.x, y + p_v.y);
 }
 
+constexpr Vector2i Vector2i::operator+(int32_t p_s) const {
+	return Vector2i(x + p_s, y + p_s);
+}
+
 constexpr void Vector2i::operator+=(const Vector2i &p_v) {
 	x += p_v.x;
 	y += p_v.y;
+}
+
+constexpr void Vector2i::operator+=(int32_t p_s) {
+	x += p_s;
+	y += p_s;
 }
 
 constexpr Vector2i Vector2i::operator-(const Vector2i &p_v) const {
 	return Vector2i(x - p_v.x, y - p_v.y);
 }
 
+constexpr Vector2i Vector2i::operator-(int32_t p_s) const {
+	return Vector2i(x - p_s, y - p_s);
+}
+
 constexpr void Vector2i::operator-=(const Vector2i &p_v) {
 	x -= p_v.x;
 	y -= p_v.y;
+}
+
+constexpr void Vector2i::operator-=(int32_t p_s) {
+	x -= p_s;
+	y -= p_s;
 }
 
 constexpr Vector2i Vector2i::operator*(const Vector2i &p_v1) const {

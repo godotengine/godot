@@ -134,6 +134,27 @@ TEST_CASE("[Vector4i] Operators") {
 	CHECK_MESSAGE(
 			Vector4i(Vector4(1.1, 2.9, 3.9, 100.5)) == Vector4i(1, 2, 3, 100),
 			"Vector4i constructed from Vector4 should work as expected.");
+
+	CHECK_MESSAGE(
+			(Vector4i(1, 2, 3, 4) + 1) == Vector4i(2, 3, 4, 5),
+			"Vector4i + int should give expected results.");
+	CHECK_MESSAGE(
+			(Vector4i(1, 2, 3, 4) - 3) == Vector4i(-2, -1, 0, 1),
+			"Vector4i - int should give expected results.");
+	{
+		Vector4i v(1, 2, 3, 4);
+		v += -5;
+		CHECK_MESSAGE(
+				v == Vector4i(-4, -3, -2, -1),
+				"Vector4i += int should give expected results.");
+	}
+	{
+		Vector4i v(1, 2, 3, 4);
+		v -= -5;
+		CHECK_MESSAGE(
+				v == Vector4i(6, 7, 8, 9),
+				"Vector4i -= int should give expected results.");
+	}
 }
 
 TEST_CASE("[Vector3i] Other methods") {

@@ -279,6 +279,27 @@ TEST_CASE("[Vector3] Operators") {
 			"Vector3 division with integers should give exact results.");
 
 	CHECK_MESSAGE(
+			(Vector3(1.5f, 2.25f, -1.0f) + 1.5f) == Vector3(3.0f, 3.75f, 0.5f),
+			"Vector3 + float should give expected results.");
+	CHECK_MESSAGE(
+			(Vector3(1.5f, 2.25f, -1.0f) - 1.5f) == Vector3(-0.0f, 0.75f, -2.5f),
+			"Vector3 - float should give expected results.");
+	{
+		Vector3 v(1.5f, 2.25f, -1.0f);
+		v += -5.0f;
+		CHECK_MESSAGE(
+				v == Vector3(-3.5f, -2.75f, -6.0f),
+				"Vector3 += float should give expected results.");
+	}
+	{
+		Vector3 v(1.5f, 2.25f, -1.0f);
+		v -= -1.75f;
+		CHECK_MESSAGE(
+				v == Vector3(3.25f, 4.0f, 0.75f),
+				"Vector3 -= float should give expected results.");
+	}
+
+	CHECK_MESSAGE(
 			((Vector3i)decimal1) == Vector3i(2, 4, 7),
 			"Vector3 cast to Vector3i should work as expected.");
 	CHECK_MESSAGE(
