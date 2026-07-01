@@ -178,7 +178,7 @@ void TilesEditorUtils::synchronize_sources_list(Object *p_current_list, Object *
 			item_list->deselect_all();
 		} else {
 			item_list->set_current(atlas_sources_lists_current);
-			item_list->ensure_current_is_visible();
+			item_list->center_on_current();
 			item_list->emit_signal(SceneStringName(item_selected), atlas_sources_lists_current);
 		}
 	}
