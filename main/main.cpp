@@ -333,6 +333,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --enable-delta-smoothing         When vsync is enabled, enabled frame delta smoothing.\n");
 	OS::get_singleton()->print("  --disable-delta-smoothing        Disable frame delta smoothing.\n");
+	OS::get_singleton()->print("  --allow-gpu-threaded             Override the 'driver_disable_threaded_optimizations' project setting.\n");
 	OS::get_singleton()->print("  --tablet-driver                  Tablet input driver (");
 	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
 		if (i != 0) {
@@ -940,6 +941,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing editor PID argument, aborting.\n");
 				goto error;
 			}
+		} else if (I->get() == "--allow-gpu-threaded") {
+			OS::get_singleton()->_set_gdriver_threaded_optimization_allowed(true);
 		} else if (I->get() == "--disable-render-loop") {
 			disable_render_loop = true;
 		} else if (I->get() == "--fixed-fps") {
@@ -1253,6 +1256,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
 	GLOBAL_DEF("rendering/threads/thread_safe_bvh", false);
+	GLOBAL_DEF_RST("rendering/misc/compatibility/driver_disable_threaded_optimizations", true);
 
 	if (rtm >= 0 && rtm < 3) {
 #ifdef NO_THREADS
