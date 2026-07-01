@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "execution_impl.h"
 #include "iters.h"
 #if (MANIFOLD_PAR == 1)
 #include <tbb/combinable.h>
@@ -70,28 +71,46 @@ using manifold::kSeqThreshold;
 // https://duvanenko.tech.blog/2018/01/14/parallel-merge/
 // https://github.com/DragonSpit/ParallelAlgorithms
 // note that the ranges are now [p, r) to fit our convention.
+// also the implementation in the reference is not stable,
+// and we now changed it to stable.
 template <typename SrcIter, typename DestIter, typename Comp>
 void mergeRec(SrcIter src, DestIter dest, size_t p1, size_t r1, size_t p2,
               size_t r2, size_t p3, Comp comp) {
   size_t length1 = r1 - p1;
   size_t length2 = r2 - p2;
-  if (length1 < length2) {
-    std::swap(p1, p2);
-    std::swap(r1, r2);
-    std::swap(length1, length2);
+  if (length1 == 0) {
+    manifold::copy(src + p2, src + r2, dest + p3);
+    return;
   }
-  if (length1 == 0) return;
+  if (length2 == 0) {
+    manifold::copy(src + p1, src + r1, dest + p3);
+    return;
+  }
   if (length1 + length2 <= kSeqThreshold) {
     std::merge(src + p1, src + r1, src + p2, src + r2, dest + p3, comp);
   } else {
-    size_t q1 = p1 + length1 / 2;
-    size_t q2 =
-        std::distance(src, std::lower_bound(src + p2, src + r2, src[q1], comp));
+    size_t q1, q2;
+    // For stability: equal-keyed elements from the left half must precede
+    // those from the right in the output. Pivot from the larger half and
+    // use the bound that puts equal-to-pivot from the OPPOSITE half on the
+    // pivot's stable side.
+    if (length1 > length2) {
+      // Left pivot: right-side equals belong after pivot. lower_bound on
+      // right places them at q2+ (second sub-merge with pivot).
+      q1 = p1 + length1 / 2;
+      auto end = std::lower_bound(src + p2, src + r2, src[q1], comp);
+      q2 = std::distance(src, end);
+    } else {
+      // Right pivot: left-side equals belong before pivot. upper_bound on
+      // left places them strictly before q1 (first sub-merge).
+      q2 = p2 + length2 / 2;
+      auto end = std::upper_bound(src + p1, src + r1, src[q2], comp);
+      q1 = std::distance(src, end);
+    }
     size_t q3 = p3 + (q1 - p1) + (q2 - p2);
-    dest[q3] = src[q1];
     tbb::parallel_invoke(
         [=] { mergeRec(src, dest, p1, q1, p2, q2, p3, comp); },
-        [=] { mergeRec(src, dest, q1 + 1, r1, q2, r2, q3 + 1, comp); });
+        [=] { mergeRec(src, dest, q1, r1, q2, r2, q3, comp); });
   }
 }
 
@@ -369,9 +388,18 @@ struct SortFunctor<
 
 #endif
 
-// Applies the function `f` to each element in the range `[first, last)`
+// Applies the function `f` to each element in the range `[first, last)`,
+// optionally checking `ctx` for cancellation periodically. `ctx` may be
+// nullptr — the cancel branch is null-short-circuited and folds out at
+// the call site, so non-cancellable callers pay nothing.
+//
+// Cancel granularity: once per parallel chunk, and once per kSeqCancelChunk
+// elements on the sequential branch. Only safe when "skip the rest of the
+// range" produces a result the caller will discard via a post-loop
+// `IsCancelled` check.
 template <typename Iter, typename F>
-void for_each(ExecutionPolicy policy, Iter first, Iter last, F f) {
+void for_each(ExecutionPolicy policy, Iter first, Iter last,
+              ExecutionContext::Impl* ctx, F f) {
   static_assert(std::is_convertible_v<
                     typename std::iterator_traits<Iter>::iterator_category,
                     std::random_access_iterator_tag>,
@@ -381,7 +409,8 @@ void for_each(ExecutionPolicy policy, Iter first, Iter last, F f) {
   if (policy == ExecutionPolicy::Par) {
     tbb::this_task_arena::isolate([&]() {
       tbb::parallel_for(tbb::blocked_range<Iter>(first, last),
-                        [&f](const tbb::blocked_range<Iter>& range) {
+                        [&f, ctx](const tbb::blocked_range<Iter>& range) {
+                          if (IsCancelled(ctx)) return;
                           for (Iter i = range.begin(); i != range.end(); i++)
                             f(*i);
                         });
@@ -389,17 +418,47 @@ void for_each(ExecutionPolicy policy, Iter first, Iter last, F f) {
     return;
   }
 #endif
-  std::for_each(first, last, f);
+  // Sequential branch: check once at start, then every kSeqCancelChunk
+  // elements. Bounded latency for MANIFOLD_PAR=OFF builds and for the
+  // small-input branch under PAR=ON.
+  constexpr size_t kSeqCancelChunk = 1024;
+  if (IsCancelled(ctx)) return;
+  if (ctx == nullptr) {
+    std::for_each(first, last, f);
+    return;
+  }
+  size_t since_check = 0;
+  for (Iter i = first; i != last; ++i) {
+    if (++since_check == kSeqCancelChunk) {
+      if (IsCancelled(ctx)) return;
+      since_check = 0;
+    }
+    f(*i);
+  }
 }
 
-// Applies the function `f` to each element in the range `[first, last)`
+// Non-cancellable shim. Threads `nullptr` through the ctx-aware impl.
 template <typename Iter, typename F>
-void for_each_n(ExecutionPolicy policy, Iter first, size_t n, F f) {
+void for_each(ExecutionPolicy policy, Iter first, Iter last, F f) {
+  for_each(policy, first, last, nullptr, f);
+}
+
+// for_each over [first, first + n).
+template <typename Iter, typename F>
+void for_each_n(ExecutionPolicy policy, Iter first, size_t n,
+                ExecutionContext::Impl* ctx, F f) {
   static_assert(std::is_convertible_v<
                     typename std::iterator_traits<Iter>::iterator_category,
                     std::random_access_iterator_tag>,
                 "You can only parallelize RandomAccessIterator.");
-  for_each(policy, first, first + n, f);
+  using Difference = typename std::iterator_traits<Iter>::difference_type;
+  for_each(policy, first, first + static_cast<Difference>(n), ctx, f);
+}
+
+// Non-cancellable shim.
+template <typename Iter, typename F>
+void for_each_n(ExecutionPolicy policy, Iter first, size_t n, F f) {
+  for_each_n(policy, first, n, nullptr, f);
 }
 
 // Reduce the range `[first, last)` using a binary operation `f` with an initial
@@ -753,7 +812,8 @@ size_t count_if(ExecutionPolicy policy, InputIter first, InputIter last,
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
     return reduce(policy, TransformIterator(first, pred),
-                  TransformIterator(last, pred), 0, std::plus<size_t>());
+                  TransformIterator(last, pred), size_t{0},
+                  std::plus<size_t>());
   }
 #endif
   return std::count_if(first, last, pred);
@@ -1091,7 +1151,7 @@ template <typename InputIterator1, typename InputIterator2,
           typename OutputIterator>
 void scatter(ExecutionPolicy policy, InputIterator1 first, InputIterator1 last,
              InputIterator2 mapFirst, OutputIterator outputFirst) {
-  for_each(policy, countAt(0),
+  for_each(policy, countAt(0_uz),
            countAt(static_cast<size_t>(std::distance(first, last))),
            [first, mapFirst, outputFirst](size_t i) {
              outputFirst[mapFirst[i]] = first[i];
@@ -1123,7 +1183,7 @@ template <typename InputIterator, typename RandomAccessIterator,
 void gather(ExecutionPolicy policy, InputIterator mapFirst,
             InputIterator mapLast, RandomAccessIterator inputFirst,
             OutputIterator outputFirst) {
-  for_each(policy, countAt(0),
+  for_each(policy, countAt(0_uz),
            countAt(static_cast<size_t>(std::distance(mapFirst, mapLast))),
            [mapFirst, inputFirst, outputFirst](size_t i) {
              outputFirst[i] = inputFirst[mapFirst[i]];
@@ -1147,7 +1207,7 @@ void gather(InputIterator mapFirst, InputIterator mapLast,
 // Write `[0, last - first)` to the range `[first, last)`.
 template <typename Iterator>
 void sequence(ExecutionPolicy policy, Iterator first, Iterator last) {
-  for_each(policy, countAt(0),
+  for_each(policy, countAt(0_uz),
            countAt(static_cast<size_t>(std::distance(first, last))),
            [first](size_t i) { first[i] = i; });
 }
