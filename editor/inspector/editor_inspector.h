@@ -460,6 +460,7 @@ class EditorInspectorSection : public Container {
 	enum MenuItems {
 		MENU_COPY_VALUE,
 		MENU_PASTE_VALUE,
+		MENU_PIN_VALUE,
 	};
 
 	String label;
@@ -491,6 +492,9 @@ class EditorInspectorSection : public Container {
 
 	HashSet<StringName> revertable_properties;
 	bool can_revert = false;
+	bool can_pin = false;
+	bool pin_hidden = false;
+	bool pinned = false;
 
 	LocalVector<EditorProperty *> section_properties;
 
@@ -500,6 +504,8 @@ class EditorInspectorSection : public Container {
 	Ref<Texture2D> _get_checkbox();
 
 	EditorInspector *_get_parent_inspector() const;
+
+	void _update_flags();
 
 	struct ThemeCache {
 		int horizontal_separation = 0;
@@ -527,6 +533,7 @@ class EditorInspectorSection : public Container {
 		Ref<Texture2D> arrow;
 		Ref<Texture2D> arrow_collapsed;
 		Ref<Texture2D> arrow_collapsed_mirrored;
+		Ref<Texture2D> icon_gui_pin;
 		Ref<Texture2D> icon_gui_revert;
 		Ref<Texture2D> icon_gui_checked;
 		Ref<Texture2D> icon_gui_unchecked;
@@ -572,7 +579,7 @@ public:
 	void update_property();
 
 	void _update_popup();
-	void menu_option(int p_option) const;
+	void menu_option(int p_option);
 
 	void register_property(EditorProperty *p_property) { section_properties.push_back(p_property); }
 
