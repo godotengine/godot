@@ -24,14 +24,7 @@
 			<param index="0" name="id" type="int" />
 			<description>
 				Mark the authentication step as completed for the remote peer identified by [param id]. The [signal MultiplayerAPI.peer_connected] signal will be emitted for this peer once the remote side also completes the authentication. No further authentication messages are expected to be received from this peer.
-				If a peer disconnects before completing authentication, either due to a network issue, the [member auth_timeout] expiring, or manually calling [method disconnect_peer], the [signal peer_authentication_failed] signal will be emitted instead of [signal MultiplayerAPI.peer_disconnected].
-			</description>
-		</method>
-		<method name="disconnect_peer">
-			<return type="void" />
-			<param index="0" name="id" type="int" />
-			<description>
-				Disconnects the peer identified by [param id], removing it from the list of connected peers, and closing the underlying connection with it.
+				If a peer disconnects before completing authentication, either due to a network issue, the [member auth_timeout] expiring, or manually calling [method MultiplayerAPI.disconnect_peer], the [signal peer_authentication_failed] signal will be emitted instead of [signal MultiplayerAPI.peer_disconnected].
 			</description>
 		</method>
 		<method name="get_authenticating_peers">
