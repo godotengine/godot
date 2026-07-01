@@ -166,6 +166,9 @@ String GDScriptWarning::get_message() const {
 		case NATIVE_METHOD_OVERRIDE:
 			CHECK_SYMBOLS(2);
 			return vformat(R"*(The method "%s()" overrides a method from native class "%s". This won't be called by the engine and may not work as expected.)*", symbols[0], symbols[1]);
+		case STATIC_METHOD_SHADOWS_SCRIPT_METHOD:
+			CHECK_SYMBOLS(2);
+			return vformat(R"*(The static method "%s()" shadows a non-static method from native class "%s". This may not work as expected when calling the method through the script class.)*", symbols[0], symbols[1]);
 		case GET_NODE_DEFAULT_WITHOUT_ONREADY:
 			CHECK_SYMBOLS(1);
 			return vformat(R"*(The default value uses "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
@@ -247,6 +250,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("CONFUSABLE_TEMPORARY_MODIFICATION"),
 		PNAME("INFERENCE_ON_VARIANT"),
 		PNAME("NATIVE_METHOD_OVERRIDE"),
+		PNAME("STATIC_METHOD_SHADOWS_SCRIPT_METHOD"),
 		PNAME("GET_NODE_DEFAULT_WITHOUT_ONREADY"),
 		PNAME("ONREADY_WITH_EXPORT"),
 #ifndef DISABLE_DEPRECATED
