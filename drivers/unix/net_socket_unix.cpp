@@ -350,6 +350,7 @@ Error NetSocketUnix::open(NetSocket::Family p_family, NetSocket::Type p_sock_typ
 
 void NetSocketUnix::close() {
 	if (_sock != -1) {
+		::shutdown(_sock, SHUT_RDWR);
 		::close(_sock);
 
 		if (_family == Family::UNIX) {
