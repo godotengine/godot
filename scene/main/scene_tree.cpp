@@ -45,6 +45,8 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/control.h"
+#include "scene/gui/virtual_controller.h"
+#include "scene/main/canvas_layer.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/node.h"
 #include "scene/main/viewport.h"
@@ -1887,6 +1889,43 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 	return multiplayer_poll;
 }
 
+void SceneTree::set_virtual_controller_visible(bool p_visible) {
+	if (p_visible) {
+		if (virtual_controller_canvas_layer == nullptr) {
+			virtual_controller_canvas_layer = memnew(CanvasLayer);
+			// Begin name with an underscore to avoid conflict with project nodes.
+			virtual_controller_canvas_layer->set_name("_VirtualControllerCanvasLayer");
+			get_root()->add_child(virtual_controller_canvas_layer, false, Node::INTERNAL_MODE_BACK);
+
+			virtual_controller = memnew(VirtualController);
+			virtual_controller->set_name("_VirtualController");
+			virtual_controller_canvas_layer->add_child(virtual_controller, false, Node::INTERNAL_MODE_BACK);
+		} else {
+			ERR_PRINT("Virtual controller already exists.");
+		}
+	} else {
+		if (virtual_controller_canvas_layer != nullptr) {
+			// Free when closing to avoid reserving memory during the project's run duration.
+			virtual_controller_canvas_layer->queue_free();
+			virtual_controller_canvas_layer = nullptr;
+			virtual_controller = nullptr;
+		}
+	}
+}
+
+bool SceneTree::is_virtual_controller_visible() const {
+	if (virtual_controller_canvas_layer) {
+		return virtual_controller_canvas_layer->is_visible();
+	}
+
+	// Licenses dialog isn't created yet. Therefore, it's not visible.
+	return false;
+}
+
+void SceneTree::_project_settings_changed() {
+	set_virtual_controller_visible(ProjectSettings::get_singleton()->get("input_devices/virtual_controller/enable_controller"));
+}
+
 void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
@@ -2177,6 +2216,8 @@ SceneTree::SceneTree() {
 	root->set_sdf_oversize(sdf_oversize);
 	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/2d/sdf/scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), 1)));
 	root->set_sdf_scale(sdf_scale);
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &SceneTree::_project_settings_changed));
 
 #ifndef _3D_DISABLED
 	{ // Load default fallback environment.
