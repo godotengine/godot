@@ -59,6 +59,13 @@ class GameViewDebuggerMacOS : public GameViewDebugger {
 	bool _msg_joy_start(const Array &p_args);
 	bool _msg_joy_stop(const Array &p_args);
 	bool _msg_warp_mouse(const Array &p_args);
+	bool _msg_open_file_dialog(const Array &p_args);
+	bool _msg_open_dialog(const Array &p_args);
+	bool _msg_open_input_dialog(const Array &p_args);
+
+	void _dlg_forward_cb1(const Variant &p_result, int64_t p_id);
+	void _dlg_forward_cb3(const Variant &p_result, const Variant &p_files, const Variant &p_index, int64_t p_id);
+	void _dlg_forward_cb4(const Variant &p_result, const Variant &p_files, const Variant &p_index, const Variant &p_opt, int64_t p_id);
 
 public:
 	virtual bool capture(const String &p_message, const Array &p_data, int p_session) override;
