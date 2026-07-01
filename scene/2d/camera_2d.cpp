@@ -63,7 +63,7 @@ void Camera2D::_update_scroll() {
 		viewport->set_canvas_transform(xform);
 
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5) : Point2());
-		Point2 adj_screen_pos = camera_screen_center - (screen_size * 0.5);
+		Point2 adj_screen_pos = camera_screen_center - (screen_size * 0.5 / zoom);
 
 		// TODO: Remove xform and screen_offset when ParallaxBackground/ParallaxLayer is removed.
 		get_tree()->call_group(group_name, SNAME("_camera_moved"), xform, screen_offset, adj_screen_pos);
