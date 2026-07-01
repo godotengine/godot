@@ -74,7 +74,7 @@ void WebRTCDataChannelJS::_on_message(void *p_obj, const uint8_t *p_data, int p_
 	WebRTCDataChannelJS *peer = static_cast<WebRTCDataChannelJS *>(p_obj);
 	RingBuffer<uint8_t> &in_buffer = peer->in_buffer;
 
-	ERR_FAIL_COND_MSG(in_buffer.space_left() < (int)(p_size + 5), "Buffer full! Dropping data.");
+	ERR_FAIL_COND_MSG(int(in_buffer.space_left()) < (p_size + 5), "Buffer full! Dropping data.");
 
 	uint8_t is_string = p_is_string ? 1 : 0;
 	in_buffer.write((uint8_t *)&p_size, 4);

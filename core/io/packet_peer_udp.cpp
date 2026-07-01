@@ -324,7 +324,7 @@ Error PacketPeerUDP::_poll() {
 }
 
 Error PacketPeerUDP::store_packet(IPAddress p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size) {
-	if (rb.space_left() < p_buf_size + 24) {
+	if (int(rb.space_left()) < p_buf_size + 24) {
 		return ERR_OUT_OF_MEMORY;
 	}
 	rb.write(p_ip.get_ipv6(), 16);
