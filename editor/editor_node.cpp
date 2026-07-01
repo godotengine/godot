@@ -3767,6 +3767,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SCENE_QUIT:
 		case PROJECT_QUIT_TO_PROJECT_MANAGER:
+		case TOOLS_CLEAR_PROJECT_CACHE:
 		case PROJECT_RELOAD_CURRENT_PROJECT: {
 			if (p_confirmed && plugin_to_save) {
 				plugin_to_save->save_external_data();
@@ -3785,9 +3786,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				p_confirmed = false;
 			}
 
+			bool is_restart = (p_option == PROJECT_RELOAD_CURRENT_PROJECT || p_option == TOOLS_CLEAR_PROJECT_CACHE);
 			if (!p_confirmed) {
 				if (!stop_project_confirmation && project_run_bar->is_playing()) {
-					if (p_option == PROJECT_RELOAD_CURRENT_PROJECT) {
+					if (is_restart) {
 						confirmation->set_text(TTR("Stop running project before reloading the current project?"));
 						confirmation->set_ok_button_text(TTR("Stop & Reload"));
 					} else {
@@ -3803,7 +3805,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				if (!stop_download_confirmation && export_template_manager->is_downloading()) {
 					confirmation->set_text(TTR("The export templates are still being downloaded."));
-					if (p_option == PROJECT_RELOAD_CURRENT_PROJECT) {
+					if (is_restart) {
 						confirmation->set_ok_button_text(TTR("Stop & Reload"));
 					} else {
 						confirmation->set_ok_button_text(TTR("Stop & Quit"));
@@ -3818,7 +3820,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				bool save_each = EDITOR_GET("interface/editor/behavior/save_each_scene_on_quit");
 				if (_next_unsaved_scene(!save_each) == -1) {
 					if (EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorUndoRedoManager::GLOBAL_HISTORY)) {
-						if (p_option == PROJECT_RELOAD_CURRENT_PROJECT) {
+						if (is_restart) {
 							save_confirmation->set_ok_button_text(TTR("Save & Reload"));
 							save_confirmation->set_text(TTR("Save modified resources before reloading?"));
 						} else {
@@ -3834,7 +3836,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					for (int i = 0; i < editor_data.get_editor_plugin_count(); i++) {
 						const String unsaved_status = editor_data.get_editor_plugin(i)->get_unsaved_status();
 						if (!unsaved_status.is_empty()) {
-							if (p_option == PROJECT_RELOAD_CURRENT_PROJECT) {
+							if (is_restart) {
 								save_confirmation->set_ok_button_text(TTR("Save & Reload"));
 								save_confirmation->set_text(unsaved_status);
 							} else {
@@ -3869,7 +3871,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						unsaved_scenes += "\n            " + editor_data.get_edited_scene_root(i)->get_scene_file_path();
 						i = _next_unsaved_scene(true, ++i);
 					}
-					if (p_option == PROJECT_RELOAD_CURRENT_PROJECT) {
+					if (is_restart) {
 						save_confirmation->set_ok_button_text(TTR("Save & Reload"));
 						save_confirmation->set_text(TTR("Save changes to the following scene(s) before reloading?") + unsaved_scenes);
 					} else {
@@ -4153,6 +4155,9 @@ void EditorNode::_tool_menu_option(int p_idx) {
 		case TOOLS_PROJECT_UPGRADE: {
 			project_upgrade_tool->popup_dialog();
 		} break;
+		case TOOLS_CLEAR_PROJECT_CACHE: {
+			clear_cache_dialog->popup_centered();
+		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
 				Callable callback = tool_menu->get_item_metadata(p_idx);
@@ -4240,6 +4245,14 @@ void EditorNode::_exit_editor(int p_exit_code) {
 	// Unload addons before quitting to allow cleanup.
 	unload_editor_addons();
 
+	if (!files_to_delete_on_exit.is_empty()) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		for (const String &path : files_to_delete_on_exit) {
+			if (da->file_exists(path) || da->dir_exists(path)) {
+				OS::get_singleton()->move_to_trash(ProjectSettings::get_singleton()->globalize_path(path));
+			}
+		}
+	}
 	get_tree()->quit(p_exit_code);
 }
 
@@ -4285,6 +4298,22 @@ void EditorNode::_discard_changes(const String &p_str) {
 		case PROJECT_RELOAD_CURRENT_PROJECT: {
 			_restart_editor();
 		} break;
+		case TOOLS_CLEAR_PROJECT_CACHE: {
+			files_to_delete_on_exit = LocalVector<String>{
+				"res://.godot/imported",
+				"res://.godot/exported",
+				"res://.godot/mono",
+				"res://.godot/shader_cache",
+				"res://.godot/extension_list.cfg",
+				"res://.godot/global_script_class_cache.cfg",
+				"res://.godot/scene_groups_cache.cfg",
+				"res://.godot/uid_cache.bin",
+				"res://.godot/editor/editor_script_doc_cache.res",
+				"res://.godot/editor/filesystem_cache" + EditorFileSystem::CACHE_FILE_NAME,
+				"res://.godot/editor/filesystem_update4",
+			};
+			_restart_editor(false);
+		} break;
 	}
 }
 
@@ -4309,6 +4338,10 @@ void EditorNode::_update_file_menu_opened() {
 void EditorNode::_palette_quick_open_dialog() {
 	quick_open_color_palette->popup_dialog({ "ColorPalette" }, palette_file_selected_callback);
 	quick_open_color_palette->set_title(TTRC("Quick Open Color Palette..."));
+}
+
+void EditorNode::_clear_cache_confirmed() {
+	_menu_option_confirm(TOOLS_CLEAR_PROJECT_CACHE, false);
 }
 
 void EditorNode::replace_resources_in_object(Object *p_object, const Vector<Ref<Resource>> &p_source_resources, const Vector<Ref<Resource>> &p_target_resource) {
@@ -8123,6 +8156,7 @@ void EditorNode::_build_project_menu(bool p_dark_mode) {
 		tool_menu->add_shortcut(ED_GET_SHORTCUT("editor/orphan_resource_explorer"), TOOLS_ORPHAN_RESOURCES);
 		tool_menu->add_shortcut(ED_GET_SHORTCUT("editor/engine_compilation_configuration_editor"), TOOLS_BUILD_PROFILE_MANAGER);
 		tool_menu->add_shortcut(ED_GET_SHORTCUT("editor/upgrade_project"), TOOLS_PROJECT_UPGRADE);
+		tool_menu->add_shortcut(ED_GET_SHORTCUT("editor/clear_project_cache"), TOOLS_CLEAR_PROJECT_CACHE);
 	}
 	project_menu->add_submenu_node_item(TTRC("Tools"), tool_menu);
 
@@ -8983,6 +9017,14 @@ EditorNode::EditorNode() {
 	warning->add_button(TTRC("Copy Text"), true, "copy");
 	warning->connect("custom_action", callable_mp(this, &EditorNode::_copy_warning));
 
+	clear_cache_dialog = memnew(ConfirmationDialog);
+	clear_cache_dialog->set_autowrap(true);
+	clear_cache_dialog->set_text(TTRC("Clear all caches for the current project, including the cache for imported assets, exported assets, shaders, UIDs, scripts, and scene groups. New caches will be built upon restarting or exporting the project.\n\nNote that clearing the cache is almost always a workaround for a bug. If you can consistently reproduce the invalid cache or unexpected behavior that is solved by clearing the cache, please report this bug (\"Help > Report a Bug\") with reproduction steps."));
+	clear_cache_dialog->set_ok_button_text(TTRC("Clear & Restart"));
+	clear_cache_dialog->get_label()->set_custom_minimum_size(Vector2(600 * EDSCALE, 0));
+	gui_base->add_child(clear_cache_dialog);
+	clear_cache_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_clear_cache_confirmed));
+
 	// Command palette and editor shortcuts.
 	command_palette = EditorCommandPalette::get_singleton();
 	command_palette->set_title(TTR("Command Palette"));
@@ -9025,6 +9067,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/orphan_resource_explorer", TTRC("Orphan Resource Explorer..."));
 	ED_SHORTCUT_AND_COMMAND("editor/engine_compilation_configuration_editor", TTRC("Engine Compilation Configuration Editor..."));
 	ED_SHORTCUT_AND_COMMAND("editor/upgrade_project", TTRC("Upgrade Project Files..."));
+	ED_SHORTCUT_AND_COMMAND("editor/clear_project_cache", TTRC("Clear Project Cache..."));
 
 	ED_SHORTCUT_AND_COMMAND("editor/reload_current_project", TTRC("Reload Current Project"));
 	ED_SHORTCUT_AND_COMMAND("editor/quit_to_project_list", TTRC("Quit to Project List"), KeyModifierMask::CTRL + KeyModifierMask::SHIFT + Key::Q);
