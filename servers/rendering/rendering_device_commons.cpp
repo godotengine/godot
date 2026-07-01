@@ -985,4 +985,9 @@ const char *RenderingDeviceCommons::SHADER_STAGE_NAMES[SHADER_STAGE_MAX] = {
 	"TesselationControl",
 	"TesselationEvaluation",
 	"Compute",
+	"Raygen",
+	"AnyHit",
+	"ClosestHit",
+	"Miss",
+	"Intersection",
 };

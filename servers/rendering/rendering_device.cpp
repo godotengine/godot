@@ -10006,6 +10006,12 @@ Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<
 			Vector<uint8_t> spirv = shader_compile_spirv_from_source(stage, source, p_source->get_language(), &error, p_allow_cache);
 			bytecode->set_stage_bytecode(stage, spirv);
 			bytecode->set_stage_compile_error(stage, error);
+
+			if (!error.is_empty()) {
+				String message = vformat("Stage '%s' compile error:\n\n%s", String(RD::SHADER_STAGE_NAMES[stage]), error);
+				ERR_PRINT("Error compiling shader:\n\n" + message);
+				bytecode->mark_stage_compile_error_printed(stage);
+			}
 		}
 	}
 	return bytecode;
@@ -10020,7 +10026,17 @@ Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDS
 		ShaderStageSPIRVData sd;
 		sd.shader_stage = stage;
 		String error = p_spirv->get_stage_compile_error(stage);
-		ERR_FAIL_COND_V_MSG(!error.is_empty(), Vector<uint8_t>(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		if (!error.is_empty()) {
+			String message;
+			if (p_spirv->was_stage_compile_error_printed(stage)) {
+				message = vformat("Can't create a shader from an errored bytecode. Stage '%s' has compile errors. Check previous shader errors.", String(RD::SHADER_STAGE_NAMES[stage]));
+			} else {
+				message = vformat("Can't create a shader from an errored bytecode. Stage '%s' compile error:\n\n%s", String(RD::SHADER_STAGE_NAMES[stage]), error);
+				p_spirv->mark_stage_compile_error_printed(stage);
+			}
+			ERR_PRINT(message);
+			return Vector<uint8_t>();
+		}
 		sd.spirv = p_spirv->get_stage_bytecode(stage);
 		if (sd.spirv.is_empty()) {
 			continue;
@@ -10040,7 +10056,17 @@ RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv
 		ShaderStageSPIRVData sd;
 		sd.shader_stage = stage;
 		String error = p_spirv->get_stage_compile_error(stage);
-		ERR_FAIL_COND_V_MSG(!error.is_empty(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		if (!error.is_empty()) {
+			String message;
+			if (p_spirv->was_stage_compile_error_printed(stage)) {
+				message = vformat("Can't create a shader from an errored bytecode. Stage '%s' has compile errors. Check previous shader errors.", String(RD::SHADER_STAGE_NAMES[stage]));
+			} else {
+				message = vformat("Can't create a shader from an errored bytecode. Stage '%s' compile error:\n\n%s", String(RD::SHADER_STAGE_NAMES[stage]), error);
+				p_spirv->mark_stage_compile_error_printed(stage);
+			}
+			ERR_PRINT(message);
+			return RID();
+		}
 		sd.spirv = p_spirv->get_stage_bytecode(stage);
 		if (sd.spirv.is_empty()) {
 			continue;
