@@ -409,7 +409,7 @@ private:
 				uint64_t version = 0;
 				uint64_t fog_version = 0; // used for fog
 				uint64_t alloc_tick = 0;
-
+				float li_current_cover = 0.0f;
 				Shadow() {}
 			};
 
