@@ -371,7 +371,7 @@
 		<annotation name="@export_color_no_alpha">
 			<return type="void" />
 			<description>
-				Export a [Color], [Array][lb][Color][rb], or [PackedColorArray] property without allowing its transparency ([member Color.a]) to be edited.
+				Export a [Color], [Array[Color]], or [PackedColorArray] property without allowing its transparency ([member Color.a]) to be edited.
 				See also [constant PROPERTY_HINT_COLOR_NO_ALPHA].
 				[codeblock]
 				@export_color_no_alpha var dye_color: Color
@@ -395,7 +395,7 @@
 		<annotation name="@export_dir">
 			<return type="void" />
 			<description>
-				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property as a path to a directory. The path will be limited to the project folder and its subfolders. See [annotation @export_global_dir] to allow picking from the entire filesystem.
+				Export a [String], [Array[String]], or [PackedStringArray] property as a path to a directory. The path will be limited to the project folder and its subfolders. See [annotation @export_global_dir] to allow picking from the entire filesystem.
 				See also [constant PROPERTY_HINT_DIR].
 				[codeblock]
 				@export_dir var sprite_folder_path: String
@@ -407,7 +407,7 @@
 			<return type="void" />
 			<param index="0" name="names" type="String" />
 			<description>
-				Export an [int], [String], [Array][lb][int][rb], [Array][lb][String][rb], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], or [PackedStringArray] property as an enumerated list of options (or an array of options). If the property is an [int], then the index of the value is stored, in the same order the values are provided. You can add explicit values using a colon. If the property is a [String], then the value is stored.
+				Export an [int], [String], [Array[int]], [Array[String]], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], or [PackedStringArray] property as an enumerated list of options (or an array of options). If the property is an [int], then the index of the value is stored, in the same order the values are provided. You can add explicit values using a colon. If the property is a [String], then the value is stored.
 				See also [constant PROPERTY_HINT_ENUM].
 				[codeblock]
 				@export_enum("Warrior", "Magician", "Thief") var character_class: int
@@ -449,7 +449,7 @@
 			<return type="void" />
 			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
-				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property as a path to a file. The path will be limited to the project folder and its subfolders. See [annotation @export_global_file] to allow picking from the entire filesystem.
+				Export a [String], [Array[String]], or [PackedStringArray] property as a path to a file. The path will be limited to the project folder and its subfolders. See [annotation @export_global_file] to allow picking from the entire filesystem.
 				If [param filter] is provided, only matching files will be available for picking.
 				See also [constant PROPERTY_HINT_FILE].
 				[codeblock]
@@ -490,7 +490,7 @@
 				[codeblock]
 				@export_flags("A:16", "B", "C") var x
 				[/codeblock]
-				You can also use the annotation on [Array][lb][int][rb], [PackedByteArray], [PackedInt32Array], and [PackedInt64Array]
+				You can also use the annotation on [Array[int]], [PackedByteArray], [PackedInt32Array], and [PackedInt64Array]
 				[codeblock]
 				@export_flags("Fire", "Water", "Earth", "Wind") var phase_elements: Array[int]
 				[/codeblock]
@@ -576,7 +576,7 @@
 		<annotation name="@export_global_dir">
 			<return type="void" />
 			<description>
-				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property as an absolute path to a directory. The path can be picked from the entire filesystem. See [annotation @export_dir] to limit it to the project folder and its subfolders.
+				Export a [String], [Array[String]], or [PackedStringArray] property as an absolute path to a directory. The path can be picked from the entire filesystem. See [annotation @export_dir] to limit it to the project folder and its subfolders.
 				See also [constant PROPERTY_HINT_GLOBAL_DIR].
 				[codeblock]
 				@export_global_dir var sprite_folder_path: String
@@ -588,7 +588,7 @@
 			<return type="void" />
 			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
-				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property as an absolute path to a file. The path can be picked from the entire filesystem. See [annotation @export_file] to limit it to the project folder and its subfolders.
+				Export a [String], [Array[String]], or [PackedStringArray] property as an absolute path to a file. The path can be picked from the entire filesystem. See [annotation @export_file] to limit it to the project folder and its subfolders.
 				If [param filter] is provided, only matching files will be available for picking.
 				See also [constant PROPERTY_HINT_GLOBAL_FILE].
 				[codeblock]
@@ -625,7 +625,7 @@
 			<return type="void" />
 			<param index="0" name="hint" type="String" default="&quot;&quot;" />
 			<description>
-				Export a [String], [Array][lb][String][rb], [PackedStringArray], [Dictionary] or [Array][lb][Dictionary][rb] property with a large [TextEdit] widget instead of a [LineEdit]. This adds support for multiline content and makes it easier to edit large amount of text stored in the property.
+				Export a [String], [Array[String]], [PackedStringArray], [Dictionary] or [Array[Dictionary]] property with a large [TextEdit] widget instead of a [LineEdit]. This adds support for multiline content and makes it easier to edit large amount of text stored in the property.
 				See also [constant PROPERTY_HINT_MULTILINE_TEXT].
 				[codeblock]
 				@export_multiline var character_biography
@@ -638,7 +638,7 @@
 			<return type="void" />
 			<param index="0" name="type" type="String" default="&quot;&quot;" />
 			<description>
-				Export a [NodePath] or [Array][lb][NodePath][rb] property with a filter for allowed node types.
+				Export a [NodePath] or [Array[NodePath]] property with a filter for allowed node types.
 				See also [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES].
 				[codeblock]
 				@export_node_path("Button", "TouchScreenButton") var some_button
@@ -651,7 +651,7 @@
 			<return type="void" />
 			<param index="0" name="placeholder" type="String" />
 			<description>
-				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property with a placeholder text displayed in the editor widget when no value is present.
+				Export a [String], [Array[String]], or [PackedStringArray] property with a placeholder text displayed in the editor widget when no value is present.
 				See also [constant PROPERTY_HINT_PLACEHOLDER_TEXT].
 				[codeblock]
 				@export_placeholder("Name in lowercase") var character_id: String
@@ -666,7 +666,7 @@
 			<param index="2" name="step" type="float" default="1.0" />
 			<param index="3" name="extra_hints" type="String" default="&quot;&quot;" />
 			<description>
-				Export an [int], [float], [Array][lb][int][rb], [Array][lb][float][rb], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], or [PackedFloat64Array] property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [member EditorSettings.interface/inspector/default_float_step] setting.
+				Export an [int], [float], [Array[int]], [Array[float]], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], or [PackedFloat64Array] property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [member EditorSettings.interface/inspector/default_float_step] setting.
 				If hints [code]"or_greater"[/code] and [code]"or_less"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"prefer_slider"[/code] hint will make integer values use the slider instead of arrows for editing, while [code]"hide_control"[/code] will hide the element controlling the value of the editor widget.
 				Hints also allow to indicate the units for the edited value. Using [code]"radians_as_degrees"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock (the range values are also in degrees). [code]"degrees"[/code] allows to add a degree sign as a unit suffix (the value is unchanged). Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
 				See also [constant PROPERTY_HINT_RANGE].
