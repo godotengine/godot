@@ -674,6 +674,7 @@ _ALWAYS_INLINE_ float pingpong(float p_value, float p_length) {
 double ease(double p_x, double p_c);
 int step_decimals(double p_step);
 int range_step_decimals(double p_step); // For editor use only.
+int count_decimals(double p_value);
 double snapped(double p_value, double p_step);
 
 uint32_t larger_prime(uint32_t p_val);
