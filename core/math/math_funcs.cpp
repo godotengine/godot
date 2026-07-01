@@ -46,6 +46,10 @@ void Math::seed(uint64_t p_value) {
 	default_rand.seed(p_value);
 }
 
+uint64_t Math::get_seed() {
+	return default_rand.get_seed();
+}
+
 void Math::randomize() {
 	default_rand.randomize();
 }
