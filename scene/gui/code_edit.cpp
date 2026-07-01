@@ -1376,6 +1376,7 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 		// Append current indentation.
 		int space_count = 0;
 		int line_col = 0;
+		const String dedent_words[] = { "return", "break", "continue" };
 		for (; line_col < cc; line_col++) {
 			if (line[line_col] == '\t') {
 				ins += indent_text;
@@ -1391,6 +1392,14 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 					space_count = 0;
 				}
 				continue;
+			} else {
+				// The first word on the line was return, either just "return" or "return some_value".
+				for (const String &word : dedent_words) {
+					if (line.substr(line_col, word.length()) == word && (line_col + word.length() == get_line(get_caret_line(i)).length() || line[line_col + word.length()] == ' ')) {
+						ins = ins.trim_suffix(indent_text);
+						break;
+					}
+				}
 			}
 			break;
 		}
