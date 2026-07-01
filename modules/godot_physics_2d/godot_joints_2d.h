@@ -100,6 +100,16 @@ class GodotPinJoint2D : public GodotJoint2D {
 	bool is_joint_at_limit = false;
 	bool motor_enabled = false;
 	bool angular_limit_enabled = false;
+	// Locks the relative body rotation of A and B at its rest value,
+	// turning the pin into a rigid weld instead of a free hinge.
+	bool angular_lock_enabled = false;
+	real_t initial_relative_rotation = 0.0;
+	real_t angular_lock_bias_velocity = 0.0;
+	real_t angular_lock_j_acc = 0.0;
+	// Weld tuning, see PhysicsServer2D::PinJointParam. Same sense as
+	// softness: 0 = rigid, higher = softer (heal fraction = 1/(1+softness)).
+	real_t angular_lock_softness = 0.0; // 0 = rigid snap-back.
+	real_t angular_lock_play = 0.0; // radians; deadzone left un-healed.
 
 public:
 	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_PIN; }

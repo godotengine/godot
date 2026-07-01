@@ -18,6 +18,15 @@
 		<member name="angular_limit_upper" type="float" setter="set_angular_limit_upper" getter="get_angular_limit_upper" default="0.0">
 			The maximum rotation. Only active if [member angular_limit_enabled] is [code]true[/code].
 		</member>
+		<member name="angular_lock_enabled" type="bool" setter="set_angular_lock_enabled" getter="is_angular_lock_enabled" default="false">
+			If [code]true[/code], the relative rotation of the two pinned bodies is locked to the value it had when the joint was created, turning the pin into a rigid weld instead of a free hinge. The bodies keep their own collision shapes but a fixed relative orientation, so they move and topple as one rigid unit. Unlike [member angular_limit_enabled], which limits the [i]orbital[/i] angle of the bodies around the pin, this locks each body's own rotation.
+		</member>
+		<member name="angular_lock_play" type="float" setter="set_angular_lock_play" getter="get_angular_lock_play" default="0.0">
+			Angular deadzone of the weld, in radians. Only used when [member angular_lock_enabled] is [code]true[/code]. The weld heals a relative-rotation error back toward alignment but stops this much short, leaving a tunable permanent free play (bend). [code]0[/code] heals fully back to the locked orientation.
+		</member>
+		<member name="angular_lock_softness" type="float" setter="set_angular_lock_softness" getter="get_angular_lock_softness" default="0.0">
+			How quickly the weld restores its locked orientation after being knocked out of alignment, when [member angular_lock_enabled] is [code]true[/code]. Follows the same sense as [member softness]: [code]0[/code] is a completely rigid weld that snaps back in a single step, while higher values make it spring back progressively more softly, approaching a plastic weld that holds whatever bend it was left in (the bodies still keep a fixed relative spin in all cases, so the weld never becomes a free hinge).
+		</member>
 		<member name="motor_enabled" type="bool" setter="set_motor_enabled" getter="is_motor_enabled" default="false">
 			When activated, a motor turns the pin.
 		</member>

@@ -203,6 +203,29 @@ bool GodotPinJoint2D::pre_solve(real_t p_step) {
 		bias_velocity = 0.0;
 	}
 
+	// Rigid rotation lock ("weld"): hold A and B at a fixed relative rotation
+	// via a Box2D-style split impulse. solve() zeroes the relative angular
+	// velocity on the real channel; the restoring angle correction is fed to
+	// the biased (split-impulse) channel here so it heals position without
+	// becoming real spin (a real-channel bias would walk the weld past +-PI).
+	if (angular_lock_enabled && B) {
+		real_t rel_rot = B->get_transform().get_rotation() - A->get_transform().get_rotation();
+		real_t rot_error = Math::wrapf(rel_rot - initial_relative_rotation, -Math::PI, Math::PI);
+		// Subtract the play deadzone from the error magnitude (keeping sign).
+		real_t corrected = rot_error;
+		if (angular_lock_play > 0.0) {
+			real_t mag = Math::abs(rot_error) - angular_lock_play;
+			corrected = (mag > 0.0) ? SIGN(rot_error) * mag : 0.0;
+		}
+		// Heal a softness-controlled fraction of the error per step
+		// (0 = rigid snap-back, higher = softer spring-back).
+		real_t heal = 1.0 / (1.0 + angular_lock_softness);
+		angular_lock_bias_velocity = -corrected * heal / p_step;
+	} else {
+		angular_lock_bias_velocity = 0.0;
+	}
+	angular_lock_j_acc = 0.0;
+
 	return true;
 }
 
@@ -244,6 +267,26 @@ void GodotPinJoint2D::solve(real_t p_step) {
 		B->apply_torque_impulse(j * B->get_inv_inertia());
 	}
 
+	// Rigid rotation lock: two coupled solves (see pre_solve for rationale).
+	if (angular_lock_enabled && B) {
+		// Real channel: zero the relative angular velocity (momentum-
+		// conserving, accumulated across iterations; no position bias).
+		real_t wr = B->get_angular_velocity() - A->get_angular_velocity();
+		real_t j = -wr * i_sum;
+		real_t j_old = angular_lock_j_acc;
+		angular_lock_j_acc = j_old + j;
+		j = angular_lock_j_acc - j_old;
+		A->apply_torque_impulse(-j);
+		B->apply_torque_impulse(j);
+
+		// Biased channel: drive the relative biased angular velocity to the
+		// restoring target, healing the residual angle without real spin.
+		real_t wbr = B->get_biased_angular_velocity() - A->get_biased_angular_velocity();
+		real_t jb = (angular_lock_bias_velocity - wbr) * i_sum;
+		A->apply_bias_torque_impulse(-jb);
+		B->apply_bias_torque_impulse(jb);
+	}
+
 	Vector2 impulse = M.basis_xform(bias - rel_vel - Vector2(softness, softness) * P);
 
 	if (dynamic_A) {
@@ -270,6 +313,12 @@ void GodotPinJoint2D::set_param(PhysicsServer2D::PinJointParam p_param, real_t p
 		case PhysicsServer2D::PIN_JOINT_MOTOR_TARGET_VELOCITY: {
 			motor_target_velocity = p_value;
 		} break;
+		case PhysicsServer2D::PIN_JOINT_ANGULAR_LOCK_SOFTNESS: {
+			angular_lock_softness = MAX(p_value, 0.0);
+		} break;
+		case PhysicsServer2D::PIN_JOINT_ANGULAR_LOCK_PLAY: {
+			angular_lock_play = MAX(p_value, 0.0);
+		} break;
 	}
 }
 
@@ -287,6 +336,12 @@ real_t GodotPinJoint2D::get_param(PhysicsServer2D::PinJointParam p_param) const 
 		case PhysicsServer2D::PIN_JOINT_MOTOR_TARGET_VELOCITY: {
 			return motor_target_velocity;
 		}
+		case PhysicsServer2D::PIN_JOINT_ANGULAR_LOCK_SOFTNESS: {
+			return angular_lock_softness;
+		}
+		case PhysicsServer2D::PIN_JOINT_ANGULAR_LOCK_PLAY: {
+			return angular_lock_play;
+		}
 	}
 	ERR_FAIL_V(0);
 }
@@ -299,6 +354,9 @@ void GodotPinJoint2D::set_flag(PhysicsServer2D::PinJointFlag p_flag, bool p_enab
 		case PhysicsServer2D::PIN_JOINT_FLAG_MOTOR_ENABLED: {
 			motor_enabled = p_enabled;
 		} break;
+		case PhysicsServer2D::PIN_JOINT_FLAG_ANGULAR_LOCK_ENABLED: {
+			angular_lock_enabled = p_enabled;
+		} break;
 	}
 }
 
@@ -309,6 +367,9 @@ bool GodotPinJoint2D::get_flag(PhysicsServer2D::PinJointFlag p_flag) const {
 		}
 		case PhysicsServer2D::PIN_JOINT_FLAG_MOTOR_ENABLED: {
 			return motor_enabled;
+		}
+		case PhysicsServer2D::PIN_JOINT_FLAG_ANGULAR_LOCK_ENABLED: {
+			return angular_lock_enabled;
 		}
 	}
 	ERR_FAIL_V(false);
@@ -325,6 +386,7 @@ GodotPinJoint2D::GodotPinJoint2D(const Vector2 &p_pos, GodotBody2D *p_body_a, Go
 	if (p_body_b) {
 		p_body_b->add_constraint(this, 1);
 		initial_angle = A->get_transform().get_origin().angle_to_point(B->get_transform().get_origin());
+		initial_relative_rotation = B->get_transform().get_rotation() - A->get_transform().get_rotation();
 	}
 }
 

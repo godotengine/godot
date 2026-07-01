@@ -43,6 +43,9 @@ class PinJoint2D : public Joint2D {
 	real_t motor_target_velocity = 0.0;
 	bool motor_enabled = false;
 	bool angular_limit_enabled = false;
+	bool angular_lock_enabled = false;
+	real_t angular_lock_softness = 0.0;
+	real_t angular_lock_play = 0.0;
 
 protected:
 	void _notification(int p_what);
@@ -63,6 +66,12 @@ public:
 	bool is_motor_enabled() const;
 	void set_angular_limit_enabled(bool p_angular_limit_enabled);
 	bool is_angular_limit_enabled() const;
+	void set_angular_lock_enabled(bool p_enabled);
+	bool is_angular_lock_enabled() const;
+	void set_angular_lock_softness(real_t p_softness);
+	real_t get_angular_lock_softness() const;
+	void set_angular_lock_play(real_t p_play);
+	real_t get_angular_lock_play() const;
 
 	PinJoint2D();
 };

@@ -567,7 +567,10 @@ public:
 		PIN_JOINT_SOFTNESS,
 		PIN_JOINT_LIMIT_UPPER,
 		PIN_JOINT_LIMIT_LOWER,
-		PIN_JOINT_MOTOR_TARGET_VELOCITY
+		PIN_JOINT_MOTOR_TARGET_VELOCITY,
+		// Angular-lock (weld) tuning; see the docs and PinJoint2D.
+		PIN_JOINT_ANGULAR_LOCK_SOFTNESS,
+		PIN_JOINT_ANGULAR_LOCK_PLAY
 	};
 
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) = 0;
@@ -575,7 +578,8 @@ public:
 
 	enum PinJointFlag {
 		PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED,
-		PIN_JOINT_FLAG_MOTOR_ENABLED
+		PIN_JOINT_FLAG_MOTOR_ENABLED,
+		PIN_JOINT_FLAG_ANGULAR_LOCK_ENABLED
 	};
 
 	virtual void pin_joint_set_flag(RID p_joint, PinJointFlag p_flag, bool p_enabled) = 0;
