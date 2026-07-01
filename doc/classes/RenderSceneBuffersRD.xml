@@ -114,6 +114,12 @@
 				Returns the render target associated with this buffers object.
 			</description>
 		</method>
+		<method name="get_scaling_3d_custom_upscaler" qualifiers="const">
+			<return type="RID" />
+			<description>
+				The custom viewport upscaler being used if [method get_scaling_3d_mode] returns [code]VIEWPORT_SCALING_3D_MODE_CUSTOM[/code].
+			</description>
+		</method>
 		<method name="get_scaling_3d_mode" qualifiers="const">
 			<return type="int" enum="RenderingServer.ViewportScaling3DMode" />
 			<description>
@@ -186,6 +192,19 @@
 			<param index="6" name="view" type="RDTextureView" />
 			<description>
 				Returns a specific view of a slice (layer or mipmap) for a cached texture.
+			</description>
+		</method>
+		<method name="get_upscaled_layer">
+			<return type="RID" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns the specified layer from the upscaled texture used if 3D scaling is set to [code]FSR2[/code], [code]MetalFX (Temporal)[/code], or [code]custom[/code].
+			</description>
+		</method>
+		<method name="get_upscaled_texture" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the upscaled texture used if 3D scaling is set to [code]FSR2[/code], [code]MetalFX (Temporal)[/code], or [code]custom[/code].
 			</description>
 		</method>
 		<method name="get_use_debanding" qualifiers="const">
