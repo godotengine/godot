@@ -45,6 +45,8 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
+// For allowing methods to be called by method call tracks in the editor.
+#include "editor/editor_node.h"
 #endif
 
 #ifdef TESTS_ENABLED
@@ -868,6 +870,14 @@ Error GDScript::reload(bool p_keep_state) {
 	// Done after compilation because it needs the GDScript object's inner class GDScript objects,
 	// which are made by calling make_scripts() within compiler.compile() above.
 	GDScriptDocGen::generate_docs(this, parser.get_tree());
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// method call tracks cache whether each method is allowed to be invoked in the editor
+		EditorNode *editor = EditorNode::get_singleton();
+		if (editor) {
+			editor->force_clear_anim_cache_in_subtree();
+		}
+	}
 #endif
 
 #ifdef DEBUG_ENABLED
