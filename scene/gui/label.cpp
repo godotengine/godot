@@ -735,9 +735,7 @@ void Label::_notification(int p_what) {
 			const String new_text = atr(text);
 			if (new_text != xl_text) {
 				xl_text = new_text;
-				if (visible_ratio < 1) {
-					visible_chars = get_total_character_count() * visible_ratio;
-				}
+				_recalculate_visible_characters();
 			}
 			text_dirty = true; // Language update might change the appearance of some characters.
 
@@ -1139,9 +1137,7 @@ void Label::set_text(const String &p_string) {
 	text = p_string;
 	xl_text = atr(p_string);
 	text_dirty = true;
-	if (visible_ratio < 1) {
-		visible_chars = get_total_character_count() * visible_ratio;
-	}
+	_recalculate_visible_characters();
 	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
@@ -1336,11 +1332,23 @@ String Label::get_text() const {
 	return text;
 }
 
+void Label::_recalculate_visible_characters() {
+	// If visible_chars is -1, prefer to keep it at -1. If it's some other value,
+	// calculate its new value.
+	if (visible_ratio < 1 || visible_chars != -1) {
+		visible_chars = get_total_character_count() * visible_ratio;
+	} else {
+		visible_chars = -1;
+	}
+}
+
 void Label::set_visible_characters(int p_amount) {
 	if (visible_chars != p_amount) {
 		visible_chars = p_amount;
-		if (p_amount == -1 || get_total_character_count() == 0) {
+		if (p_amount == -1 || p_amount >= get_total_character_count()) {
 			visible_ratio = 1.0;
+		} else if (p_amount < 0) {
+			visible_ratio = 0.0;
 		} else {
 			visible_ratio = (float)p_amount / (float)get_total_character_count();
 		}

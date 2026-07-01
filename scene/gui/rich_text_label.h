@@ -1012,6 +1012,7 @@ public:
 	int get_total_character_count() const;
 	int get_total_glyph_count() const;
 
+	void _recalculate_visible_ratio();
 	void set_visible_ratio(float p_ratio);
 	float get_visible_ratio() const;
 
