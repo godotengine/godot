@@ -118,7 +118,11 @@ float DisplayServerIOS::screen_get_scale(int p_screen) const {
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
 
-	return [UIScreen mainScreen].scale;
+	if (@available(iOS 13, *)) {
+		return MAX([UITraitCollection currentTraitCollection].displayScale, 1);
+	} else {
+		return [UIScreen mainScreen].scale;
+	}
 }
 
 bool DisplayServerIOS::_screen_hdr_is_supported() const {
