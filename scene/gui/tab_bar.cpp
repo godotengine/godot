@@ -1540,14 +1540,18 @@ bool TabBar::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 	}
 
 	bool drop_override = Control::can_drop_data(p_point, p_data);
-	if (drop_override) {
-		return drop_override;
+	if (!drop_override && drag_to_rearrange_enabled) {
+		drop_override = _handle_can_drop_data("tab_bar_tab", p_point, p_data);
 	}
 
-	if (drag_to_rearrange_enabled) {
-		return _handle_can_drop_data("tab_bar_tab", p_point, p_data);
+	if(drop_override){
+		if(!dragging_valid_tab) {
+			const_cast<TabBar *>(this)->dragging_valid_tab = true;
+		}
+		const_cast<TabBar *>(this)->queue_redraw();
 	}
-	return false;
+
+	return drop_override;
 }
 
 void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {

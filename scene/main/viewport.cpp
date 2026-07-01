@@ -2071,11 +2071,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 								gui.dragging = true;
 								break;
 							} else {
-								Control *drag_preview = _gui_get_drag_preview();
-								if (drag_preview) {
+								if (_gui_get_drag_preview()) {
 									ERR_PRINT("Don't set a drag preview and return null data. Preview was deleted and drag request ignored.");
-									memdelete(drag_preview);
-									gui.drag_preview_id = ObjectID();
+									_gui_delete_drag_preview();
 								}
 								section_root->gui.global_dragging = false;
 							}
@@ -2192,8 +2190,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (gui.dragging) {
 			// Handle drag & drop. This happens in the viewport where dragging started.
 
+			Window *drag_preview_window = _gui_get_drag_preview_window();
 			Control *drag_preview = _gui_get_drag_preview();
-			if (drag_preview) {
+			if (drag_preview_window) {
+				drag_preview_window->set_position(DisplayServer::get_singleton()->mouse_get_position());
+			} else if (drag_preview) {
 				Vector2 pos = drag_preview->get_canvas_transform().affine_inverse().xform(mpos);
 				drag_preview->set_position(pos);
 			}
@@ -2450,11 +2451,7 @@ void Viewport::gui_perform_drop_at(const Point2 &p_pos, Control *p_control) {
 		gui.drag_successful = false;
 	}
 
-	Control *drag_preview = _gui_get_drag_preview();
-	if (drag_preview) {
-		memdelete(drag_preview);
-		gui.drag_preview_id = ObjectID();
-	}
+	_gui_delete_drag_preview();
 
 	Viewport *section_root = get_section_root_viewport();
 	section_root->gui.drag_data = Variant();
@@ -2520,13 +2517,46 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	ERR_FAIL_COND(p_control->is_inside_tree());
 	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
-	Control *drag_preview = _gui_get_drag_preview();
-	if (drag_preview) {
-		memdelete(drag_preview);
+	_gui_delete_drag_preview();
+
+	Control *root_parent = p_base->get_root_parent_control();
+
+	// Try hosting the preview in a borderless top-level Window so it can render outside the host window.
+	// Requires native subwindows and window transparency; embedded (SubViewport) fallbacks use an in-viewport Control.
+	DisplayServer *ds = DisplayServer::get_singleton();
+	bool try_window = ds && ds->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS) && ds->has_feature(DisplayServerEnums::FEATURE_WINDOW_TRANSPARENCY);
+
+	if (try_window) {
+		Window *preview_window = memnew(Window);
+		preview_window->set_flag(Window::FLAG_BORDERLESS, true);
+		preview_window->set_flag(Window::FLAG_TRANSPARENT, true);
+		preview_window->set_flag(Window::FLAG_NO_FOCUS, true);
+		preview_window->set_flag(Window::FLAG_ALWAYS_ON_TOP, true);
+		preview_window->set_flag(Window::FLAG_MOUSE_PASSTHROUGH, true);
+		preview_window->set_flag(Window::FLAG_POPUP, false);
+		preview_window->set_wrap_controls(true);
+		preview_window->set_force_native(true); // Escape embedded-subwindow containers (e.g., editor).
+
+		preview_window->add_child(p_control);
+		root_parent->add_child(preview_window);
+
+		if (preview_window->is_embedded()) {
+			// Embedded subwindows clip to the parent viewport, which is the problem we're trying to avoid.
+			preview_window->remove_child(p_control);
+			memdelete(preview_window);
+		} else {
+			Vector2i screen_pos = ds->mouse_get_position();
+			preview_window->set_position(screen_pos);
+			gui.drag_preview_window_id = preview_window->get_instance_id();
+			gui.drag_preview_id = p_control->get_instance_id();
+			return;
+		}
 	}
+
+	// Fallback: in-viewport Control (clips at window edge).
 	p_control->set_as_top_level(true);
 	p_control->set_position(gui.last_mouse_pos);
-	p_base->get_root_parent_control()->add_child(p_control); // Add as child of viewport.
+	root_parent->add_child(p_control);
 	p_control->move_to_front();
 
 	gui.drag_preview_id = p_control->get_instance_id();
@@ -2542,6 +2572,33 @@ Control *Viewport::_gui_get_drag_preview() {
 			gui.drag_preview_id = ObjectID();
 		}
 		return drag_preview;
+	}
+}
+
+Window *Viewport::_gui_get_drag_preview_window() {
+	if (gui.drag_preview_window_id.is_null()) {
+		return nullptr;
+	}
+	Window *w = ObjectDB::get_instance<Window>(gui.drag_preview_window_id);
+	if (!w) {
+		gui.drag_preview_window_id = ObjectID();
+	}
+	return w;
+}
+
+void Viewport::_gui_delete_drag_preview() {
+	Window *preview_window = _gui_get_drag_preview_window();
+	if (preview_window) {
+		// Deleting the Window also deletes the preview Control which is its child.
+		memdelete(preview_window);
+		gui.drag_preview_window_id = ObjectID();
+		gui.drag_preview_id = ObjectID();
+		return;
+	}
+	Control *drag_preview = _gui_get_drag_preview();
+	if (drag_preview) {
+		memdelete(drag_preview);
+		gui.drag_preview_id = ObjectID();
 	}
 }
 
