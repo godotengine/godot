@@ -36,8 +36,17 @@ real_t Triangulate::get_area(const Vector<Vector2> &contour) {
 
 	real_t A = 0.0;
 
+	Vector2 center;
+	for (int i = 0; i < n; i++) {
+		center += (c[i] - center) / (i + 1);
+	}
+
+	// Compute the area with vectors from the center of the polygon to
+	// reduce float precision errors with small and/or very offset polygons.
 	for (int p = n - 1, q = 0; q < n; p = q++) {
-		A += c[p].cross(c[q]);
+		Vector2 va = c[p] - center;
+		Vector2 vb = c[q] - center;
+		A += va.cross(vb);
 	}
 	return A * 0.5f;
 }
