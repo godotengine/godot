@@ -1233,6 +1233,11 @@
 		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
+		<member name="gui/common/auto_focus_strategy" type="int" setter="" getter="" default="0">
+			Determines what strategy to use when inferring the next [Control] to focus if no neighbor is defined.
+			- [b]Legacy[/b] is the old focus strategy up until Godot 4.8. It shouldn't be used for new projects, as the new default (Balloon) yields more intuitive results.
+			- [b]Balloon[/b] searches for both the closest and most aligned [Control] node in the input direction, akin to a expanding balloon which stops at the first node it finds.
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
