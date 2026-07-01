@@ -58,7 +58,6 @@ class ScriptTextEditor : public CodeEditorBase {
 	GDCLASS(ScriptTextEditor, CodeEditorBase);
 
 	Variant pending_state;
-	bool script_is_valid = false;
 
 	RichTextLabel *errors_panel = nullptr;
 	Label *drag_info_label = nullptr;
@@ -109,11 +108,6 @@ class ScriptTextEditor : public CodeEditorBase {
 
 		SEARCH_LOCATE_FUNCTION,
 
-		DEBUG_TOGGLE_BREAKPOINT,
-		DEBUG_REMOVE_ALL_BREAKPOINTS,
-		DEBUG_GOTO_NEXT_BREAKPOINT,
-		DEBUG_GOTO_PREV_BREAKPOINT,
-
 		SHOW_TOOLTIP_AT_CARET,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
@@ -129,15 +123,16 @@ class ScriptTextEditor : public CodeEditorBase {
 		MODE_MAX
 	};
 
-	class EditMenusSTE : public EditMenusCEB {
-		GDCLASS(EditMenusSTE, EditMenusCEB);
-		PopupMenu *breakpoints_menu = nullptr;
+	class EditMenusScTE : public EditMenusCEB {
+		GDCLASS(EditMenusScTE, EditMenusCEB);
 
-		void _update_breakpoint_list();
-		void _breakpoint_item_pressed(int p_idx);
+	protected:
+		void _update_breakpoint_list() override;
 
 	public:
-		EditMenusSTE();
+		virtual bool handles(ScriptEditorBase *p_seb) override { return Object::cast_to<ScriptTextEditor>(p_seb); }
+
+		EditMenusScTE(ScriptEditor *p_se);
 	};
 
 	void _enable_code_editor();
@@ -157,19 +152,17 @@ class ScriptTextEditor : public CodeEditorBase {
 	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
 
 protected:
-	void _breakpoint_toggled(int p_row);
+	virtual void _breakpoint_toggled(int p_row) override;
 
 	void _on_caret_moved();
 
 	void _update_warnings();
 	void _update_errors();
 
-	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) override;
 
 	void _set_theme_for_script();
 	void _show_errors_panel(bool p_show);
-	void _show_warnings_panel(bool p_show);
 	void _error_clicked(const Variant &p_line);
 	virtual bool _warning_clicked(const Variant &p_line) override;
 	void _on_mouse_exited();
@@ -220,15 +213,14 @@ public:
 	virtual void enable_editor() override;
 	virtual Vector<String> get_functions() override;
 
-	virtual Control *get_edit_menu() override;
+	virtual EditMenusBase *create_edit_menu(ScriptEditor *p_se) override { return memnew(EditMenusScTE(p_se)); }
 
 	virtual Ref<Texture2D> get_theme_icon() override;
 
 	virtual Variant get_edit_state() override;
-	virtual void set_edit_state(const Variant &p_state) override;
+	virtual void set_edit_state(const Variant &p_state, bool p_grab_focus = true) override;
 
 	virtual PackedInt32Array get_breakpoints() override;
-	virtual void set_breakpoint(int p_line, bool p_enabled) override;
 	virtual void clear_breakpoints() override;
 
 	virtual void add_callback(const String &p_function, const PackedStringArray &p_args);

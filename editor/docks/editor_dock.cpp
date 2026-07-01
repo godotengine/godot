@@ -35,6 +35,7 @@
 #include "core/object/class_db.h"
 #include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock_manager.h"
+#include "editor/gui/window_wrapper.h"
 
 void EditorDock::_set_default_slot_bind(DockSlot p_slot) {
 	ERR_FAIL_COND(p_slot < DOCK_SLOT_NONE || p_slot >= DOCK_SLOT_MAX);
@@ -123,6 +124,7 @@ void EditorDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("opened"));
 	ADD_SIGNAL(MethodInfo("closed"));
 	ADD_SIGNAL(MethodInfo("_tab_style_changed"));
+	ADD_SIGNAL(MethodInfo("_window_visibility_changed", PropertyInfo(Variant::BOOL, "visible")));
 
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_VERTICAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_HORIZONTAL);
@@ -162,8 +164,32 @@ void EditorDock::make_visible() {
 	EditorDockManager::get_singleton()->open_dock(this, true);
 }
 
-void EditorDock::make_floating() {
+void EditorDock::_emit_window_visibility_changed(bool p_visible) {
+	emit_signal("_window_visibility_changed", p_visible);
+}
+
+void EditorDock::make_floating(int p_screen) {
 	EditorDockManager::get_singleton()->make_dock_floating(this);
+
+	if (p_screen == -1) {
+		return;
+	}
+
+	if (Window *current_window = get_window()) {
+		int screen = p_screen < 0 ? current_window->get_current_screen() : p_screen;
+
+		if (current_window->get_current_screen() != screen) {
+			current_window->set_current_screen(p_screen);
+		}
+
+		if (dock_window) {
+			if (!dock_window->is_connected("window_visibility_changed", callable_mp(this, &EditorDock::_emit_window_visibility_changed))) {
+				dock_window->connect("window_visibility_changed", callable_mp(this, &EditorDock::_emit_window_visibility_changed));
+			}
+
+			emit_signal("_window_visibility_changed", true);
+		}
+	}
 }
 
 void EditorDock::close() {

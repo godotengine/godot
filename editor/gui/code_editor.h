@@ -226,10 +226,6 @@ class CodeTextEditor : public VBoxContainer {
 	void _toggle_files_pressed();
 
 protected:
-	virtual void _load_theme_settings() {}
-	virtual void _validate_script() {}
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) {}
-
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
 	void _text_changed();
@@ -294,8 +290,6 @@ public:
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	void set_find_replace_bar(FindReplaceBar *p_bar);
 	void remove_find_replace_bar();
-	virtual void apply_code() {}
-	virtual void goto_error();
 
 	void toggle_bookmark();
 	void goto_next_bookmark();
