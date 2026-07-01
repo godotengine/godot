@@ -5204,7 +5204,7 @@ RenderForwardClustered::RenderForwardClustered() {
 		dfg_lut.pipeline = RD::get_singleton()->compute_pipeline_create(dfg_lut.shader.version_get_shader(dfg_lut.shader_version, 0));
 
 		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tformat.format = RD::DATA_FORMAT_R16G16_SFLOAT;
 		tformat.width = 128;
 		tformat.height = 128;
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;

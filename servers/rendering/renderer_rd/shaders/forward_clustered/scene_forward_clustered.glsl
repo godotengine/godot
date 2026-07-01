@@ -2251,7 +2251,7 @@ void fragment_shader(in SceneData scene_data) {
 #else
 		// Base Layer
 		float NdotV = clamp(dot(normal, view), 0.0001, 1.0);
-		vec2 envBRDF = prefiltered_dfg(roughness, NdotV).xy;
+		vec2 envBRDF = prefiltered_dfg(roughness, NdotV);
 		// Multiscattering
 		energy_compensation = get_energy_compensation(f0, envBRDF.y);
 
