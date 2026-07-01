@@ -249,7 +249,7 @@ void main() {
 
 	color *= sky_energy_multiplier;
 
-#if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
+#if !defined(DISABLE_FOG)
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	if (fog_enabled) {
