@@ -587,128 +587,104 @@ bool EditorFileSystem::_is_test_for_reimport_needed(const String &p_path, uint64
 	return false;
 }
 
-bool EditorFileSystem::_test_for_reimport(const String &p_path, const String &p_expected_import_md5) {
-	if (p_expected_import_md5.is_empty()) {
+bool EditorFileSystem::_test_for_reimport(const String &p_path) {
+	EditorFileSystemDirectory *fs = nullptr;
+	int cpos = -1;
+	String expected_md5;
+
+	String path = p_path;
+	if (path.begins_with("uid://")) {
+		path = ResourceUID::uid_to_path(path);
+	}
+
+	if (_find_file(path, &fs, cpos)) {
+		expected_md5 = fs->files[cpos]->import_md5;
+	}
+	String new_md5 = FileAccess::get_md5(path + ".import");
+	if (new_md5.is_empty()) {
 		// Marked as reimportation needed.
 		return true;
 	}
-	String new_md5 = FileAccess::get_md5(p_path + ".import");
-	if (p_expected_import_md5 != new_md5) {
+	if (!expected_md5.is_empty() && expected_md5 != new_md5) {
 		return true;
 	}
 
-	Error err;
-	Ref<FileAccess> f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
-
-	if (f.is_null()) { // No import file, reimport.
-		return true;
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	const Error load_err = cf->load(path + ".import");
+	if (load_err == ERR_FILE_CORRUPT) {
+		// Parse error, skip and let user attempt manual reimport to avoid reimport loop.
+		return false;
+	} else if (load_err != OK) {
+		return true; // File disappeared or unreadable, reimport.
 	}
 
-	VariantParser::StreamFile stream;
-	stream.f = f;
-
-	String assign;
-	Variant value;
-	VariantParser::Tag next_tag;
-
-	int lines = 0;
-	String error_text;
-
-	Vector<String> to_check;
-
-	String importer_name;
-	String source_file = "";
-	String source_md5 = "";
-	Vector<String> dest_files;
-	String dest_md5 = "";
-	int version = 0;
-	bool found_uid = false;
-	Variant meta;
-
-	while (true) {
-		assign = Variant();
-		next_tag.fields.clear();
-		next_tag.name = String();
-
-		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
-		if (err == ERR_FILE_EOF) {
-			break;
-		} else if (err != OK) {
-			ERR_PRINT("ResourceFormatImporter::load - '" + p_path + ".import:" + itos(lines) + "' error '" + error_text + "'.");
-			// Parse error, skip and let user attempt manual reimport to avoid reimport loop.
-			return false;
-		}
-
-		if (!assign.is_empty()) {
-			if (assign == "valid" && value.operator bool() == false) {
-				// Invalid import (failed previous import), skip and let user attempt manual reimport to avoid reimport loop.
-				return false;
-			}
-			if (assign.begins_with("path")) {
-				to_check.push_back(value);
-			} else if (assign == "files") {
-				Array fa = value;
-				for (const Variant &check_path : fa) {
-					to_check.push_back(check_path);
-				}
-			} else if (assign == "importer_version") {
-				version = value;
-			} else if (assign == "importer") {
-				importer_name = value;
-			} else if (assign == "uid") {
-				found_uid = true;
-			} else if (assign == "source_file") {
-				source_file = value;
-			} else if (assign == "dest_files") {
-				dest_files = value;
-			} else if (assign == "metadata") {
-				meta = value;
-			}
-
-		} else if (next_tag.name != "remap" && next_tag.name != "deps") {
-			break;
-		}
+	if (!bool(cf->get_value("remap", "valid", true))) {
+		// Invalid import (failed previous import), skip and let user attempt manual reimport to avoid reimport loop.
+		return false;
 	}
 
+	const String importer_name = cf->get_value("remap", "importer", String());
 	if (importer_name == "keep" || importer_name == "skip") {
 		return false; // Keep mode, do not reimport.
 	}
 
-	if (!found_uid) {
+	if (!cf->has_section_key("remap", "uid")) {
 		return true; // UID not found, old format, reimport.
 	}
 
-	// Imported files are gone, reimport.
-	for (const String &E : to_check) {
-		if (!FileAccess::exists(E)) {
-			return true;
+	// Check that destination files referenced in [remap] exist.
+	Vector<String> remap_keys = cf->get_section_keys("remap");
+	for (const String &key : remap_keys) {
+		if (key.begins_with("path")) {
+			if (!FileAccess::exists(cf->get_value("remap", key, String()))) {
+				return true;
+			}
 		}
 	}
 
-	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
+	// Check generated files listed in [deps] exist.
+	if (cf->has_section_key("deps", "files")) {
+		Array to_check = cf->get_value("deps", "files", Array());
+		for (const Variant &v : to_check) {
+			if (!FileAccess::exists(v)) {
+				return true;
+			}
+		}
+	}
 
+	const int version = cf->get_value("remap", "importer_version", 0);
+	const Variant meta = cf->get_value("remap", "metadata", Dictionary());
+
+	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 	if (importer.is_null()) {
 		return true; // The importer has possibly changed, try to reimport.
 	}
-
 	if (importer->get_format_version() > version) {
 		return true; // Version changed, reimport.
 	}
-
-	if (!importer->are_import_settings_valid(p_path, meta)) {
-		// Reimport settings are out of sync with project settings, reimport.
-		return true;
+	if (!importer->are_import_settings_valid(path, meta)) {
+		return true; // Reimport settings are out of sync with project settings, reimport.
 	}
 
 	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version).
-	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
+	Error err;
+	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(path);
 	Ref<FileAccess> md5s = FileAccess::open(base_path + ".md5", FileAccess::READ, &err);
-	if (md5s.is_null()) { // No md5's stored for this resource.
-		return true;
+	if (md5s.is_null()) {
+		return true; // No MD5s stored for this resource.
 	}
 
 	VariantParser::StreamFile md5_stream;
 	md5_stream.f = md5s;
+
+	String assign;
+	Variant value;
+	VariantParser::Tag next_tag;
+	int lines = 0;
+	String error_text;
+	String source_md5;
+	String dest_md5;
 
 	while (true) {
 		assign = Variant();
@@ -720,7 +696,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, const String &p_
 		if (err == ERR_FILE_EOF) {
 			break;
 		} else if (err != OK) {
-			ERR_PRINT("ResourceFormatImporter::load - '" + p_path + ".import.md5:" + itos(lines) + "' error '" + error_text + "'.");
+			ERR_PRINT("ResourceFormatImporter::load - '" + path + ".import.md5:" + itos(lines) + "' error '" + error_text + "'.");
 			return false; // Parse error.
 		}
 		if (!assign.is_empty()) {
@@ -733,7 +709,8 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, const String &p_
 	}
 
 	// Check source md5 matching.
-	if (!source_file.is_empty() && source_file != p_path) {
+	const String source_file = cf->get_value("deps", "source_file", String());
+	if (!source_file.is_empty() && source_file != path) {
 		return true; // File was moved, reimport.
 	}
 
@@ -741,14 +718,14 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, const String &p_
 		return true; // Lacks md5, so just reimport.
 	}
 
-	String md5 = FileAccess::get_md5(p_path);
+	String md5 = FileAccess::get_md5(path);
 	if (md5 != source_md5) {
 		return true;
 	}
 
+	const Vector<String> dest_files = cf->get_value("deps", "dest_files", Array());
 	if (!dest_files.is_empty() && !dest_md5.is_empty()) {
-		md5 = FileAccess::get_multiple_md5(dest_files);
-		if (md5 != dest_md5) {
+		if (FileAccess::get_multiple_md5(dest_files) != dest_md5) {
 			return true;
 		}
 	}
@@ -991,14 +968,14 @@ bool EditorFileSystem::_update_scan_actions() {
 				ERR_CONTINUE(idx == -1);
 				String full_path = ia.dir->get_file_path(idx);
 
-				bool need_reimport = _test_for_reimport(full_path, ia.dir->files[idx]->import_md5);
+				bool need_reimport = _test_for_reimport(full_path);
 				if (need_reimport) {
 					// Must reimport.
 					reimports.push_back(full_path);
 					Vector<String> dependencies = _get_dependencies(full_path);
 					for (const String &dep : dependencies) {
 						const String &dependency_path = dep.contains("::") ? dep.get_slice("::", 0) : dep;
-						if (_can_import_file(dep)) {
+						if (_can_import_file(dep) && _test_for_reimport(dependency_path)) {
 							reimports.push_back(dependency_path);
 						}
 					}
