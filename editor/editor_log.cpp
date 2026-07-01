@@ -124,7 +124,7 @@ void EditorLog::_update_theme() {
 	button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
 
-	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
+	clear_button->set_button_icon(get_editor_theme_icon(SNAME("ClearText")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
