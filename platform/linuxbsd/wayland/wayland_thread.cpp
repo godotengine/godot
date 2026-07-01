@@ -4321,7 +4321,17 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 	ws.registry = &registry;
 	ws.wayland_thread = this;
 
-	ws.rect.size = p_size.maxi(1);
+	// Inherit scale from the parent window if available
+	if (p_parent_id != DisplayServerEnums::INVALID_WINDOW_ID && windows.has(p_parent_id)) {
+		WindowState &parent_ws = windows[p_parent_id];
+		ws.preferred_fractional_scale = parent_ws.preferred_fractional_scale;
+		ws.fractional_scale = parent_ws.fractional_scale;
+		ws.buffer_scale = parent_ws.buffer_scale;
+	}
+
+	// Convert physical size to logical size
+	double scale = window_state_get_scale_factor(&ws);
+	ws.rect.size = scale_vector2i(p_size, scale > 0 ? 1.0 / scale : 1.0).maxi(1);
 
 	ws.wl_surface = wl_compositor_create_surface(registry.wl_compositor);
 	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
@@ -5748,7 +5758,11 @@ void WaylandThread::window_set_ime_position(const Point2i &p_pos, DisplayServerE
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss && ss->wp_text_input && ss->ime_enabled) {
-		ss->ime_rect = Rect2i(p_pos, Size2i(1, 10));
+		// Convert physical position to logical position
+		WindowState *ws = window_get_state(p_window_id);
+		double scale = ws ? window_state_get_scale_factor(ws) : 1.0;
+		Point2i logical_pos = scale_vector2i(p_pos, scale > 0 ? 1.0 / scale : 1.0);
+		ss->ime_rect = Rect2i(logical_pos, Size2i(1, 10));
 		zwp_text_input_v3_set_cursor_rectangle(ss->wp_text_input, ss->ime_rect.position.x, ss->ime_rect.position.y, ss->ime_rect.size.x, ss->ime_rect.size.y);
 		zwp_text_input_v3_commit(ss->wp_text_input);
 	}
