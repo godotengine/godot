@@ -215,6 +215,7 @@ void HTTPRequest::cancel_request() {
 	decompressor.unref();
 	client->close();
 	body.clear();
+	request_data.clear();
 	got_response = false;
 	response_code = -1;
 	request_sent = false;
