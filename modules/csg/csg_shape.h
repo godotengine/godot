@@ -39,8 +39,6 @@
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
-#include <thirdparty/misc/mikktspace.h>
-
 class Mesh;
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
@@ -90,24 +88,15 @@ private:
 		Vector<Vector3> vertices;
 		Vector<Vector3> normals;
 		Vector<Vector2> uvs;
-		Vector<real_t> tans;
+		Vector<float> tans;
 		Ref<Material> material;
 		int last_added = 0;
 
 		Vector3 *verticesw = nullptr;
 		Vector3 *normalsw = nullptr;
 		Vector2 *uvsw = nullptr;
-		real_t *tansw = nullptr;
+		float *tansw = nullptr;
 	};
-
-	//mikktspace callbacks
-	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
-	static int mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace);
-	static void mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert);
-	static void mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert);
-	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
-	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
-			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
 #ifndef PHYSICS_3D_DISABLED
 	void _update_collision_faces();
