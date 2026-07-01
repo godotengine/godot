@@ -895,6 +895,15 @@ String InputEventMouseButton::_to_string() {
 	return vformat("InputEventMouseButton: %s, pressed=%s, canceled=%s, position=(%s), button_mask=%d, double_click=%s", index_and_mods, p, canceled_state, String(get_position()), get_button_mask(), d);
 }
 
+Ref<InputEventMouseButton> InputEventMouseButton::create_reference(MouseButton p_button) {
+	Ref<InputEventMouseButton> ie;
+	ie.instantiate();
+	ie->set_button_index(p_button);
+	ie->set_device(DEVICE_ID_MOUSE);
+
+	return ie;
+}
+
 void InputEventMouseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_factor", "factor"), &InputEventMouseButton::set_factor);
 	ClassDB::bind_method(D_METHOD("get_factor"), &InputEventMouseButton::get_factor);
