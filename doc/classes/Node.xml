@@ -553,6 +553,13 @@
 				Returns [code]true[/code] if this node is an instance load placeholder. See [InstancePlaceholder] and [method set_scene_instance_load_placeholder].
 			</description>
 		</method>
+		<method name="get_scene_instance_state" qualifiers="const">
+			<return type="SceneState" />
+			<description>
+				Returns the [SceneState] of the scene that instantiated this node, if it was instantiated from a [PackedScene], otherwise returns [code]null[/code].
+				[b]Note:[/b] Only available in editor builds.
+			</description>
+		</method>
 		<method name="get_tree" qualifiers="const">
 			<return type="SceneTree" />
 			<description>
