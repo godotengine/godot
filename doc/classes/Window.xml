@@ -645,6 +645,10 @@
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the window will have no borders.
 		</member>
+		<member name="clamp_to_embedder" type="bool" setter="set_clamp_to_embedder" getter="is_clamped_to_embedder" default="false">
+			If [code]true[/code], the [Window] position will be clamped so it cannot be dragged outside of the parent viewport.
+			[b]Note:[/b] This property only works with embedded windows.
+		</member>
 		<member name="content_scale_aspect" type="int" setter="set_content_scale_aspect" getter="get_content_scale_aspect" enum="Window.ContentScaleAspect" default="0">
 			Specifies how the content's aspect behaves when the [Window] is resized. The base aspect is determined by [member content_scale_size].
 		</member>
