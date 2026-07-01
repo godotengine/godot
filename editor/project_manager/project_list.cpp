@@ -1082,6 +1082,42 @@ void ProjectList::find_projects_multiple(const PackedStringArray &p_paths) {
 void ProjectList::load_project_list() {
 	_config.load(_config_path);
 	Vector<String> sections = _config.get_sections();
+	Vector<String> old_paths;
+	Vector<String> new_paths;
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	for (const String &path : sections) {
+		String parent = path.get_base_dir();
+		String basename = path.get_file();
+
+		if (da->is_case_sensitive(parent)) {
+			continue;
+		}
+		if (da->change_dir(parent) != OK) {
+			continue;
+		}
+
+		da->list_dir_begin();
+		String n = da->get_next();
+		while (!n.is_empty()) {
+			if (da->current_is_dir() && n.to_lower() == basename.to_lower() && n != basename) {
+				old_paths.append(path);
+				new_paths.append(parent.path_join(n));
+			}
+			n = da->get_next();
+		}
+		da->list_dir_end();
+	}
+
+	for (int i = 0; i < old_paths.size(); i++) {
+		bool favorite = _config.get_value(old_paths[i], "favorite", false);
+		_config.erase_section(old_paths[i]);
+		_config.set_value(new_paths[i], "favorite", favorite);
+	}
+
+	if (!old_paths.is_empty()) {
+		_config.save(_config_path);
+	}
 
 	for (const String &path : sections) {
 		bool favorite = _config.get_value(path, "favorite", false);
