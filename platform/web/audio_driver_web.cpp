@@ -109,14 +109,14 @@ void AudioDriverWeb::_audio_driver_capture(int p_from, int p_samples) {
 	if (read_pos + to_read > max_samples) {
 		const int samples_high = max_samples - read_pos;
 		for (int i = read_pos; i < max_samples; i++) {
-			input_buffer_write(int32_t(input_rb[i] * 32768.f) * (1U << 16));
+			input_buffer_write(int32_t(CLAMP(input_rb[i] * 32767.f, -32768.f, 32767.f)) * (1U << 16));
 		}
 		to_read -= samples_high;
 		read_pos = 0;
 	}
 	// Leftover
 	for (int i = read_pos; i < read_pos + to_read; i++) {
-		input_buffer_write(int32_t(input_rb[i] * 32768.f) * (1U << 16));
+		input_buffer_write(int32_t(CLAMP(input_rb[i] * 32767.f, -32768.f, 32767.f)) * (1U << 16));
 	}
 }
 
