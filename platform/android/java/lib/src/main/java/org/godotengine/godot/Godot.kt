@@ -848,6 +848,10 @@ class Godot private constructor(val context: Context) {
 		magnetometerEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_magnetometer")))
 
 		runOnHostThread {
+			// Used to report 'Time to full display' metrics.
+			// See https://developer.android.com/topic/performance/vitals/launch-time#time-full for more info.
+			getActivity()?.reportFullyDrawn()
+
 			registerSensorsIfNeeded()
 		}
 
