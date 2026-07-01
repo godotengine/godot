@@ -3086,6 +3086,10 @@
 			The number of rays to throw per frame when computing signed distance field global illumination. Higher values lead to a less noisy result, at the cost of performance. See also [member rendering/global_illumination/sdfgi/frames_to_converge] and [member rendering/global_illumination/sdfgi/frames_to_update_lights].
 			[b]Note:[/b] This property is only read when the project starts. To control SDFGI quality at runtime, call [method RenderingServer.environment_set_sdfgi_ray_count] instead.
 		</member>
+		<member name="rendering/global_illumination/voxel_gi/max_lights" type="int" setter="" getter="" default="32">
+			The maximum number of [Light3D]s that can affect [VoxelGI] instances in the scene. If more lights than this number are used within the bounds of [i]all[/i] VoxelGI instances, they will be ignored by VoxelGI but will still render real-time direct light. Setting this lower than the default will slightly reduce memory usage and may decrease shader compile times. To get the best possible performance, only set this value as high as you need it.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
+		</member>
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
 			The VoxelGI quality to use. High quality leads to more precise lighting and better reflections, but is slower to render. This setting does not affect the baked data and doesn't require baking the [VoxelGI] again to apply.
 			[b]Note:[/b] This property is only read when the project starts. To control VoxelGI quality at runtime, call [method RenderingServer.voxel_gi_set_quality] instead.
