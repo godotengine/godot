@@ -2477,6 +2477,10 @@ def format_text_block(
             state,
         )
 
+    # Remove extraneous empty lines.
+    pattern = re.compile(r"(?m)^\n+$")
+    text = pattern.sub("", text).removeprefix("\n").removesuffix("\n")
+
     return text
 
 
