@@ -3189,13 +3189,19 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void ScriptEditor::_script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index) {
+void ScriptEditor::_script_list_clicked(int p_item, const Vector2 &p_local_mouse_pos, MouseButton p_mouse_button_index) {
 	if (p_mouse_button_index == MouseButton::MIDDLE) {
 		script_list->select(p_item);
 		_script_selected(p_item);
 		_menu_option(FILE_MENU_CLOSE);
 	}
 
+	if (p_mouse_button_index == MouseButton::RIGHT) {
+		_make_script_list_context_menu();
+	}
+}
+
+void ScriptEditor::_script_list_empty_clicked(const Vector2 &p_local_mouse_pos, MouseButton p_mouse_button_index) {
 	if (p_mouse_button_index == MouseButton::RIGHT) {
 		_make_script_list_context_menu();
 	}
@@ -3974,6 +3980,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_list->set_allow_rmb_select(true);
 	scripts_vbox->add_child(script_list);
 	script_list->connect("item_clicked", callable_mp(this, &ScriptEditor::_script_list_clicked), CONNECT_DEFERRED);
+	script_list->connect("empty_clicked", callable_mp(this, &ScriptEditor::_script_list_empty_clicked), CONNECT_DEFERRED);
 	SET_DRAG_FORWARDING_GCD(script_list, ScriptEditor);
 
 	context_menu = memnew(PopupMenu);
