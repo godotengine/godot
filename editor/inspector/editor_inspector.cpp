@@ -48,6 +48,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/add_metadata_dialog.h"
 #include "editor/inspector/editor_properties.h"
+#include "editor/inspector/editor_properties_array_dict.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/multi_node_edit.h"
@@ -95,126 +96,6 @@ bool EditorInspector::_property_path_matches(const String &p_property_path, cons
 			return true;
 		}
 	}
-	return false;
-}
-
-bool EditorInspector::_resource_properties_matches(const Ref<Resource> &p_resource, const String &p_filter) {
-	String group;
-	String group_base;
-	String subgroup;
-	String subgroup_base;
-
-	List<PropertyInfo> plist;
-	p_resource->get_property_list(&plist, true);
-
-	// Employ a lighter version of the update_tree() property listing to find a match.
-	for (PropertyInfo &p : plist) {
-		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
-			subgroup = p.name;
-			subgroup_base = p.hint_string.get_slicec(',', 0);
-
-			continue;
-
-		} else if (p.usage & PROPERTY_USAGE_GROUP) {
-			group = p.name;
-			group_base = p.hint_string.get_slicec(',', 0);
-			subgroup = "";
-			subgroup_base = "";
-
-			continue;
-
-		} else if (p.usage & PROPERTY_USAGE_CATEGORY) {
-			group = "";
-			group_base = "";
-			subgroup = "";
-			subgroup_base = "";
-
-			continue;
-
-		} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) ||
-				(p_filter.is_empty() && restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
-			// Ignore properties that are not supposed to be in the inspector.
-			continue;
-		}
-
-		if (p.usage & PROPERTY_USAGE_HIGH_END_GFX && RS::get_singleton()->is_low_end()) {
-			// Do not show this property in low end gfx.
-			continue;
-		}
-
-		if (p.name == "script") {
-			// The script is always hidden in sub inspectors.
-			continue;
-		}
-
-		if (p.name.begins_with("metadata/") && bool(object->call(SNAME("_hide_metadata_from_inspector")))) {
-			// Hide metadata from inspector if required.
-			continue;
-		}
-
-		String path = p.name;
-
-		// Check if we exit or not a subgroup. If there is a prefix, remove it from the property label string.
-		if (!subgroup.is_empty() && !subgroup_base.is_empty()) {
-			if (path.begins_with(subgroup_base)) {
-				path = path.trim_prefix(subgroup_base);
-			} else if (subgroup_base.begins_with(path)) {
-				// Keep it, this is used pretty often.
-			} else {
-				subgroup = ""; // The prefix changed, we are no longer in the subgroup.
-			}
-		}
-
-		// Check if we exit or not a group. If there is a prefix, remove it from the property label string.
-		if (!group.is_empty() && !group_base.is_empty() && subgroup.is_empty()) {
-			if (path.begins_with(group_base)) {
-				path = path.trim_prefix(group_base);
-			} else if (group_base.begins_with(path)) {
-				// Keep it, this is used pretty often.
-			} else {
-				group = ""; // The prefix changed, we are no longer in the group.
-				subgroup = "";
-			}
-		}
-
-		// Add the group and subgroup to the path.
-		if (!subgroup.is_empty()) {
-			path = subgroup + "/" + path;
-		}
-		if (!group.is_empty()) {
-			path = group + "/" + path;
-		}
-
-		// Get the property label's string.
-		String name_override = (path.contains_char('/')) ? path.substr(path.rfind_char('/') + 1) : path;
-		const int dot = name_override.find_char('.');
-		if (dot != -1) {
-			name_override = name_override.substr(0, dot);
-		}
-
-		// Remove the property from the path.
-		int idx = path.rfind_char('/');
-		if (idx > -1) {
-			path = path.left(idx);
-		} else {
-			path = "";
-		}
-
-		// Check if the property matches the filter.
-		const String property_path = (path.is_empty() ? "" : path + "/") + name_override;
-		if (_property_path_matches(property_path, p_filter, property_name_style)) {
-			return true;
-		}
-
-		// Check if the sub-resource has any properties that match the filter.
-		if (p.hint && p.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-			Ref<Resource> res = p_resource->get(p.name);
-			if (res.is_valid() && _resource_properties_matches(res, p_filter)) {
-				return true;
-			}
-		}
-	}
-
 	return false;
 }
 
@@ -4068,6 +3949,215 @@ String EditorInspector::get_selected_path() const {
 	return property_selected;
 }
 
+bool EditorInspector::resource_properties_matches(const Ref<Resource> &p_resource, const String &p_filter) {
+	String group;
+	String group_base;
+	String subgroup;
+	String subgroup_base;
+
+	List<PropertyInfo> plist;
+	p_resource->get_property_list(&plist, true);
+
+	// Employ a lighter version of the update_tree() property listing to find a match.
+	for (PropertyInfo &p : plist) {
+		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
+			subgroup = p.name;
+			subgroup_base = p.hint_string.get_slicec(',', 0);
+
+			continue;
+
+		} else if (p.usage & PROPERTY_USAGE_GROUP) {
+			group = p.name;
+			group_base = p.hint_string.get_slicec(',', 0);
+			subgroup = "";
+			subgroup_base = "";
+
+			continue;
+
+		} else if (p.usage & PROPERTY_USAGE_CATEGORY) {
+			group = "";
+			group_base = "";
+			subgroup = "";
+			subgroup_base = "";
+
+			continue;
+
+		} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) ||
+				(p_filter.is_empty() && restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+			// Ignore properties that are not supposed to be in the inspector.
+			continue;
+		}
+
+		if (p.usage & PROPERTY_USAGE_HIGH_END_GFX && RS::get_singleton()->is_low_end()) {
+			// Do not show this property in low end gfx.
+			continue;
+		}
+
+		if (p.name == "script") {
+			// The script is always hidden in sub inspectors.
+			continue;
+		}
+
+		if (p.name.begins_with("metadata/") && bool(object->call(SNAME("_hide_metadata_from_inspector")))) {
+			// Hide metadata from inspector if required.
+			continue;
+		}
+
+		String path = p.name;
+
+		// Check if we exit or not a subgroup. If there is a prefix, remove it from the property label string.
+		if (!subgroup.is_empty() && !subgroup_base.is_empty()) {
+			if (path.begins_with(subgroup_base)) {
+				path = path.trim_prefix(subgroup_base);
+			} else if (subgroup_base.begins_with(path)) {
+				// Keep it, this is used pretty often.
+			} else {
+				subgroup = ""; // The prefix changed, we are no longer in the subgroup.
+			}
+		}
+
+		// Check if we exit or not a group. If there is a prefix, remove it from the property label string.
+		if (!group.is_empty() && !group_base.is_empty() && subgroup.is_empty()) {
+			if (path.begins_with(group_base)) {
+				path = path.trim_prefix(group_base);
+			} else if (group_base.begins_with(path)) {
+				// Keep it, this is used pretty often.
+			} else {
+				group = ""; // The prefix changed, we are no longer in the group.
+				subgroup = "";
+			}
+		}
+
+		// Add the group and subgroup to the path.
+		if (!subgroup.is_empty()) {
+			path = subgroup + "/" + path;
+		}
+		if (!group.is_empty()) {
+			path = group + "/" + path;
+		}
+
+		// Get the property label's string.
+		String name_override = (path.contains_char('/')) ? path.substr(path.rfind_char('/') + 1) : path;
+		const int dot = name_override.find_char('.');
+		if (dot != -1) {
+			name_override = name_override.substr(0, dot);
+		}
+
+		// Remove the property from the path.
+		int idx = path.rfind_char('/');
+		if (idx > -1) {
+			path = path.left(idx);
+		} else {
+			path = "";
+		}
+
+		// Check if the property matches the filter.
+		const String property_path = (path.is_empty() ? "" : path + "/") + name_override;
+		if (_property_path_matches(property_path, p_filter, property_name_style)) {
+			return true;
+		}
+
+		// Check if the sub-resource has any properties that match the filter.
+		if (p.hint && p.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+			Ref<Resource> res = p_resource->get(p.name);
+			if (res.is_valid() && resource_properties_matches(res, p_filter)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool EditorInspector::array_properties_matches(const Array &p_array, const String &p_filter) {
+	bool found = false;
+	for (int i = 0; i < p_array.size(); i++) {
+		Ref<Resource> res = p_array.get(i);
+		if (res.is_valid()) {
+			if (resource_properties_matches(res, p_filter)) {
+				found = true;
+				break;
+			}
+
+			continue;
+		}
+
+		// Search inside inner arrays.
+		Variant var = p_array.get(i);
+		if (var.is_array()) {
+			const Array &array = var;
+			if (array_properties_matches(array, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+
+		// Search inside inner dictionaries.
+		if (var.get_type() == Variant::DICTIONARY) {
+			const Dictionary &dict = var;
+			if (dict_properties_matches(dict, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+	}
+
+	return found;
+}
+
+bool EditorInspector::dict_properties_matches(const Dictionary &p_dict, const String &p_filter) {
+	bool found = false;
+	for (const Variant &k : p_dict.get_key_list()) {
+		Ref<Resource> res = k;
+		if (res.is_null()) {
+			res = p_dict[k];
+			if (res.is_null()) {
+				continue;
+			}
+		}
+
+		if (resource_properties_matches(res, p_filter)) {
+			found = true;
+			break;
+		}
+
+		// Search inside inner dictionaries.
+		if (k.get_type() == Variant::DICTIONARY) {
+			const Dictionary &dict = k;
+			if (dict_properties_matches(dict, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+		Variant value = p_dict[k];
+		if (value.get_type() == Variant::DICTIONARY) {
+			const Dictionary &dict = value;
+			if (dict_properties_matches(dict, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+
+		// Search inside inner arrays.
+		if (k.is_array()) {
+			const Array &array = k;
+			if (array_properties_matches(array, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+		if (value.is_array()) {
+			const Array &array = value;
+			if (array_properties_matches(array, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+	}
+
+	return found;
+}
+
 void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> p_plugin) {
 	for (const EditorInspectorPlugin::AddedEditor &F : p_plugin->added_editors) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
@@ -4568,21 +4658,32 @@ void EditorInspector::update_tree() {
 		if (use_filter && !filter.is_empty()) {
 			const String property_path = property_prefix + (path.is_empty() ? "" : path + "/") + name_override;
 			if (!_property_path_matches(property_path, filter, property_name_style)) {
-				if (!sub_inspectors_enabled || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+				if (!sub_inspectors_enabled || !(p.hint == PROPERTY_HINT_RESOURCE_TYPE || p.type == Variant::ARRAY || p.type == Variant::DICTIONARY)) {
 					continue;
 				}
 
-				Ref<Resource> res = object->get(p.name);
-				if (res.is_null()) {
-					continue;
+				if (p.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+					Ref<Resource> res = object->get(p.name);
+					if (res.is_valid() && resource_properties_matches(res, filter)) {
+						sub_inspector_use_filter = true;
+					}
+
+				} else if (p.type == Variant::ARRAY) {
+					const Array &array = object->get(p.name);
+					if (array_properties_matches(array, filter)) {
+						sub_inspector_use_filter = true;
+					}
+
+				} else if (p.type == Variant::DICTIONARY) {
+					const Dictionary &dict = object->get(p.name);
+					if (dict_properties_matches(dict, filter)) {
+						sub_inspector_use_filter = true;
+					}
 				}
 
-				// Check if the sub-resource has any properties that match the filter.
-				if (!_resource_properties_matches(res, filter)) {
+				if (!sub_inspector_use_filter) {
 					continue;
 				}
-
-				sub_inspector_use_filter = true;
 			}
 		}
 
@@ -4959,6 +5060,16 @@ void EditorInspector::update_tree() {
 					EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(ep);
 					if (epr) {
 						epr->set_use_filter(true);
+					} else {
+						EditorPropertyArray *epa = Object::cast_to<EditorPropertyArray>(ep);
+						if (epa) {
+							epa->set_use_filter(true);
+						} else {
+							EditorPropertyDictionary *epd = Object::cast_to<EditorPropertyDictionary>(ep);
+							if (epd) {
+								epd->set_use_filter(true);
+							}
+						}
 					}
 				}
 

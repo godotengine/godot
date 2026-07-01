@@ -379,6 +379,17 @@ void EditorPropertyArray::set_preview_value(bool p_preview_value) {
 	preview_value = p_preview_value;
 }
 
+void EditorPropertyArray::set_use_filter(bool p_use) {
+	if (use_filter == p_use) {
+		return;
+	}
+
+	use_filter = p_use;
+	if (is_inside_tree()) {
+		update_property();
+	}
+}
+
 void EditorPropertyArray::update_property() {
 	Variant array = get_edited_property_value();
 
@@ -510,19 +521,51 @@ void EditorPropertyArray::update_property() {
 		paginator->update(page_index, max_page);
 		paginator->set_visible(max_page > 0);
 
+		EditorInspector *parent_inspector = nullptr;
+		String filter;
+		if (use_filter) {
+			parent_inspector = get_parent_inspector();
+			LineEdit *search = parent_inspector->search_box;
+			if (search) {
+				filter = search->get_text();
+				if (!search->is_connected(SceneStringName(text_changed), callable_mp(this, &EditorPropertyArray::update_property))) {
+					search->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyArray::update_property).unbind(1));
+				}
+			}
+		}
+
 		for (Slot &slot : slots) {
 			bool slot_visible = &slot != &reorder_slot && slot.index < size;
-			slot.container->set_visible(slot_visible);
-			// If not visible no need to update it
-			if (!slot_visible) {
-				continue;
-			}
-
 			int idx = slot.index;
-			Variant::Type value_type = subtype;
 
+			Variant::Type value_type = subtype;
 			if (value_type == Variant::NIL) {
 				value_type = array.get(idx).get_type();
+			}
+
+			// Hide if it doesn't match the inspector filter.
+			if (slot_visible && !filter.is_empty()) {
+				bool matches = false;
+				if (value_type == Variant::OBJECT) {
+					Ref<Resource> res = array.get(idx);
+					if (res.is_valid()) {
+						matches = parent_inspector->resource_properties_matches(res, filter);
+					}
+				} else if (value_type == Variant::ARRAY) {
+					Array arr = array.get(idx);
+					matches = parent_inspector->array_properties_matches(arr, filter);
+				} else if (value_type == Variant::DICTIONARY) {
+					Dictionary dict = array.get(idx);
+					matches = parent_inspector->dict_properties_matches(dict, filter);
+				}
+
+				slot_visible = matches;
+			}
+
+			slot.container->set_visible(slot_visible);
+			// If not visible no need to update it.
+			if (!slot_visible) {
+				continue;
 			}
 
 			// Check if the editor property needs to be updated.
@@ -549,7 +592,24 @@ void EditorPropertyArray::update_property() {
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				new_prop->set_read_only(is_read_only());
 
-				if (slot.reorder_button) {
+				if (use_filter) {
+					EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(new_prop);
+					if (epr) {
+						epr->set_use_filter(true);
+					} else {
+						EditorPropertyArray *epa = Object::cast_to<EditorPropertyArray>(new_prop);
+						if (epa) {
+							epa->set_use_filter(true);
+						} else {
+							EditorPropertyDictionary *epd = Object::cast_to<EditorPropertyDictionary>(new_prop);
+							if (epd) {
+								epd->set_use_filter(true);
+							}
+						}
+					}
+				}
+
+				if (slot.reorder_button && filter.is_empty()) {
 					new_prop->add_inline_control(slot.reorder_button, INLINE_CONTROL_LEFT);
 					slot.reorder_button->get_parent()->move_child(slot.reorder_button, 0);
 				}
@@ -1257,6 +1317,17 @@ void EditorPropertyDictionary::set_preview_value(bool p_preview_value) {
 	preview_value = p_preview_value;
 }
 
+void EditorPropertyDictionary::set_use_filter(bool p_use) {
+	if (use_filter == p_use) {
+		return;
+	}
+
+	use_filter = p_use;
+	if (is_inside_tree()) {
+		update_property();
+	}
+}
+
 void EditorPropertyDictionary::update_property() {
 	Variant updated_val = get_edited_property_value();
 
@@ -1386,20 +1457,83 @@ void EditorPropertyDictionary::update_property() {
 
 		add_panel->set_visible(page_index == max_page);
 
+		EditorInspector *parent_inspector = nullptr;
+		String filter;
+		if (use_filter) {
+			parent_inspector = get_parent_inspector();
+			LineEdit *search = parent_inspector->search_box;
+			if (search) {
+				filter = search->get_text();
+				if (!search->is_connected(SceneStringName(text_changed), callable_mp(this, &EditorPropertyDictionary::update_property))) {
+					search->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyDictionary::update_property).unbind(1));
+				}
+			}
+		}
+
 		for (Slot &slot : slots) {
-			bool slot_visible = slot.index < size;
-			slot.container->set_visible(slot_visible);
 			// If not visible no need to update it.
-			if (!slot_visible) {
+			if (slot.index >= size) {
+				slot.container->hide();
 				continue;
 			}
 
+			Variant key;
+			object->get_by_property_name(slot.key_name, key);
+			Variant::Type key_type = key.get_type();
+
+			Variant value;
+			object->get_by_property_name(slot.prop_name, value);
+			Variant::Type value_type;
+			if (dict.is_typed_value() && value_subtype != Variant::NIL && slot.prop_key) {
+				value_type = value_subtype;
+			} else {
+				value_type = value.get_type();
+			}
+
+			// Hide if it doesn't match the inspector filter.
+			if (!filter.is_empty()) {
+				bool matches = false;
+
+				// Check key.
+				if (key_type == Variant::OBJECT) {
+					Ref<Resource> res = key;
+					if (res.is_valid()) {
+						matches = parent_inspector->resource_properties_matches(res, filter);
+					}
+				} else if (key_type == Variant::ARRAY) {
+					Array arr = key;
+					matches = parent_inspector->array_properties_matches(arr, filter);
+				} else if (key_type == Variant::DICTIONARY) {
+					Dictionary subdict = key;
+					matches = parent_inspector->dict_properties_matches(subdict, filter);
+				}
+
+				if (!matches) {
+					// Check value.
+					if (value_type == Variant::OBJECT) {
+						Ref<Resource> res = value;
+						if (res.is_valid()) {
+							matches = parent_inspector->resource_properties_matches(res, filter);
+						}
+					} else if (value_type == Variant::ARRAY) {
+						Array arr = value;
+						matches = parent_inspector->array_properties_matches(arr, filter);
+					} else if (value_type == Variant::DICTIONARY) {
+						Dictionary subdict = value;
+						matches = parent_inspector->dict_properties_matches(subdict, filter);
+					}
+				}
+
+				if (!matches) {
+					slot.container->hide();
+					continue;
+				}
+			}
+
+			slot.container->show();
+
 			// Check if the editor property key needs to be updated.
 			if (slot.prop_key) {
-				Variant key;
-				object->get_by_property_name(slot.key_name, key);
-				Variant::Type key_type = key.get_type();
-
 				bool key_as_id = Object::cast_to<EncodedObjectAsID>(key);
 				if (key_type != slot.key_type || (key_type == Variant::OBJECT && key_as_id != slot.key_as_id)) {
 					slot.key_as_id = key_as_id;
@@ -1412,6 +1546,7 @@ void EditorPropertyDictionary::update_property() {
 					} else {
 						new_prop = EditorInspector::instantiate_property_editor(this, key_type, "", key_subtype_hint, key_subtype_hint_string, PROPERTY_USAGE_NONE);
 					}
+
 					new_prop->set_read_only(true);
 					new_prop->set_selectable(false);
 					new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
@@ -1422,30 +1557,29 @@ void EditorPropertyDictionary::update_property() {
 					new_prop->set_draw_label(false);
 					new_prop->set_mouse_filter(MOUSE_FILTER_PASS);
 					new_prop->set_mouse_behavior_recursive(MOUSE_BEHAVIOR_DISABLED);
-					EditorPropertyArray *arr_prop = Object::cast_to<EditorPropertyArray>(new_prop);
-					if (arr_prop) {
-						arr_prop->set_preview_value(true);
+
+					EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(new_prop);
+					if (epr) {
+						epr->set_use_filter(use_filter);
+					} else {
+						EditorPropertyArray *epa = Object::cast_to<EditorPropertyArray>(new_prop);
+						if (epa) {
+							epa->set_preview_value(true);
+							epa->set_use_filter(use_filter);
+						} else {
+							EditorPropertyDictionary *epd = Object::cast_to<EditorPropertyDictionary>(new_prop);
+							if (epd) {
+								epd->set_preview_value(true);
+								epd->set_use_filter(use_filter);
+							}
+						}
 					}
-					EditorPropertyDictionary *dict_prop = Object::cast_to<EditorPropertyDictionary>(new_prop);
-					if (dict_prop) {
-						dict_prop->set_preview_value(true);
-					}
+
 					slot.set_key_prop(new_prop);
 					if (slot.prop) {
 						slot.prop->add_inline_control(new_prop, INLINE_CONTROL_LEFT);
 					}
 				}
-			}
-
-			Variant value;
-			object->get_by_property_name(slot.prop_name, value);
-
-			Variant::Type value_type;
-
-			if (dict.is_typed_value() && value_subtype != Variant::NIL && slot.prop_key) {
-				value_type = value_subtype;
-			} else {
-				value_type = value.get_type();
 			}
 
 			// Check if the editor property needs to be updated.
@@ -1489,8 +1623,8 @@ void EditorPropertyDictionary::update_property() {
 				slot.set_prop(new_prop);
 
 			} else if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
-				Variant key = dict.get_key_at_index(slot.index);
-				String cs = key.get_construct_string();
+				Variant idx_key = dict.get_key_at_index(slot.index);
+				String cs = idx_key.get_construct_string();
 				slot.prop->set_tooltip_text(cs);
 			}
 

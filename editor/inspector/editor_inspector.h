@@ -736,6 +736,8 @@ class EditorInspector : public ScrollContainer {
 	GDCLASS(EditorInspector, ScrollContainer);
 
 	friend class EditorPropertyResource;
+	friend class EditorPropertyArray;
+	friend class EditorPropertyDictionary;
 
 public:
 	struct PropertyClipboard {
@@ -848,7 +850,6 @@ private:
 	void _property_checked(const String &p_path, bool p_checked);
 	void _property_pinned(const String &p_path, bool p_pinned);
 	bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style);
-	bool _resource_properties_matches(const Ref<Resource> &p_resource, const String &p_filter);
 
 	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 	void _property_selected(const String &p_path, int p_focusable);
@@ -910,6 +911,10 @@ public:
 
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;
+
+	bool resource_properties_matches(const Ref<Resource> &p_resource, const String &p_filter);
+	bool array_properties_matches(const Array &p_array, const String &p_filter);
+	bool dict_properties_matches(const Dictionary &p_dict, const String &p_filter);
 
 	void update_tree();
 	void update_property(const String &p_prop);
