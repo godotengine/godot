@@ -965,6 +965,7 @@ public:
 	StringName get_object_custom_type_name(const Object *p_object) const;
 	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "");
 	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "");
+	void invalidate_class_icon(const String &p_class);
 
 	bool is_object_of_custom_type(const Object *p_object, const StringName &p_class);
 
