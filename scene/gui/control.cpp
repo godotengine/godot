@@ -1777,10 +1777,14 @@ void Control::update_maximum_size() {
 	data.maximum_size_valid = false;
 
 	Size2 parent_max = data.propagate_maximum_size ? get_inner_combined_maximum_size().min(get_combined_maximum_size()) : Size2(-1, -1);
+	parent_max = parent_max.max(Size2(-1, -1));
 
 	for (Node *child : iterate_children()) {
 		Control *child_control = Object::cast_to<Control>(child);
 		if (child_control && !child_control->is_set_as_top_level() && child_control->data.maximum_size_valid) {
+			if (child_control->data.parent_maximum_size_cache == parent_max) {
+				continue;
+			}
 			child_control->data.parent_maximum_size_cache = parent_max;
 			child_control->update_maximum_size();
 		}
@@ -1901,10 +1905,11 @@ Size2 Control::get_inner_combined_maximum_size() const {
 }
 
 void Control::set_parent_maximum_size_cache(const Size2 &p_parent_max) {
-	if (data.parent_maximum_size_cache == p_parent_max) {
+	const Size2 normalized = p_parent_max.max(Size2(-1, -1));
+	if (data.parent_maximum_size_cache == normalized) {
 		return;
 	}
-	data.parent_maximum_size_cache = p_parent_max;
+	data.parent_maximum_size_cache = normalized;
 	update_maximum_size();
 }
 
