@@ -43,7 +43,7 @@ void _split_leaf_sort_groups_simple(int &p_num_a, int &p_num_b, uint16_t *r_grou
 	for (int a = 0; a < p_num_a; a++) {
 		uint32_t ind = r_group_a[a];
 
-		if (r_temp_bounds[ind].min.coord[split_axis] > center.coord[split_axis]) {
+		if (r_temp_bounds[ind].min[split_axis] > center[split_axis]) {
 			// add to b
 			r_group_b[p_num_b++] = ind;
 
@@ -75,7 +75,7 @@ void _split_leaf_sort_groups_simple(int &p_num_a, int &p_num_b, uint16_t *r_grou
 			for (int a = 0; a < p_num_a; a++) {
 				uint32_t ind = r_group_a[a];
 
-				if (r_temp_bounds[ind].min.coord[split_axis] > center.coord[split_axis]) {
+				if (r_temp_bounds[ind].min[split_axis] > center[split_axis]) {
 					count++;
 				}
 			}
@@ -100,7 +100,7 @@ void _split_leaf_sort_groups_simple(int &p_num_a, int &p_num_b, uint16_t *r_grou
 			for (int a = 0; a < p_num_a; a++) {
 				uint32_t ind = r_group_a[a];
 
-				if (r_temp_bounds[ind].min.coord[split_axis] > center.coord[split_axis]) {
+				if (r_temp_bounds[ind].min[split_axis] > center[split_axis]) {
 					// add to b
 					r_group_b[p_num_b++] = ind;
 
