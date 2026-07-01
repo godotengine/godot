@@ -33,6 +33,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/pair.h"
+#include "core/templates/shared_ptr.h"
 #include "core/variant/variant_deep_duplicate.h"
 
 class Array;
@@ -44,10 +45,7 @@ struct DictionaryPrivate;
 struct StringLikeVariantComparator;
 
 class Dictionary {
-	mutable DictionaryPrivate *_p;
-
-	void _ref(const Dictionary &p_from) const;
-	void _unref() const;
+	SharedPtr<DictionaryPrivate> _p;
 
 public:
 	using ConstIterator = HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator;
