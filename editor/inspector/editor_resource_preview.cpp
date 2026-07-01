@@ -166,6 +166,7 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 		item.last_hash = p_hash;
 		item.modified_time = modified_time;
 		item.preview_metadata = p_metadata;
+		item.callable = p_callback; // Cached for the regeneration of edited resource previews triggered by file changes.
 
 		cache[p_path] = item;
 	}
@@ -510,7 +511,7 @@ void EditorResourcePreview::_queue_resource_preview(const String &p_path, Object
 
 void EditorResourcePreview::queue_resource_preview(const String &p_path, const Callable &p_callback) {
 	_update_thumbnail_sizes();
-
+	int count = 0;
 	{
 		MutexLock lock(preview_mutex);
 
@@ -524,8 +525,25 @@ void EditorResourcePreview::queue_resource_preview(const String &p_path, const C
 		item.path = p_path;
 		item.callback = p_callback;
 		queue.push_back(item);
+		count++;
+
+		Ref<Resource> res = ResourceCache::get_ref(p_path);
+		if (res.is_valid()) {
+			String path_id = "ID:" + itos(res->get_instance_id());
+			HashMap<String, EditorResourcePreview::Item>::Iterator I = cache.find(path_id);
+			if (I) {
+				QueueItem cached_res_item;
+				cached_res_item.resource = res;
+				cached_res_item.path = path_id;
+				cached_res_item.callback = I->value.callable;
+				queue.push_back(cached_res_item);
+				count++;
+
+				cache.remove(I); // Erase if exists, since it will be regen.
+			}
+		}
 	}
-	preview_sem.post();
+	preview_sem.post(count);
 }
 
 void EditorResourcePreview::add_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator) {

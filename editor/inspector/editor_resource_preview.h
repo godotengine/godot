@@ -98,6 +98,7 @@ class EditorResourcePreview : public Node {
 		Dictionary preview_metadata;
 		uint32_t last_hash = 0;
 		uint64_t modified_time = 0;
+		Callable callable;
 	};
 
 	HashMap<String, Item> cache;
