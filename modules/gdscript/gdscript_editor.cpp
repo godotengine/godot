@@ -3255,21 +3255,26 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 
 			switch (identifier_node->source) {
 				case GDScriptParser::IdentifierNode::Source::MEMBER_VARIABLE: {
-					if (p_context.current_class != nullptr) {
-						const StringName &member_name = identifier_node->name;
-						const GDScriptParser::ClassNode *current_class = p_context.current_class;
+					const StringName &member_name = identifier_node->name;
 
-						if (current_class->has_member(member_name)) {
-							const GDScriptParser::ClassNode::Member &member = current_class->get_member(member_name);
+					GDScriptParser::ClassNode *cls = p_context.current_class;
+					for (int cycle_guard = 0; cycle_guard < 10 && cls != nullptr; cycle_guard++) {
+						if (!cls->has_member(member_name)) {
+							cls = cls->base_type.class_type;
+							continue;
+						}
 
-							if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
-								const GDScriptParser::VariableNode *variable = static_cast<GDScriptParser::VariableNode *>(member.variable);
+						const GDScriptParser::ClassNode::Member &member = cls->get_member(member_name);
 
-								if (variable->initializer && variable->initializer->type == GDScriptParser::Node::GET_NODE) {
-									get_node = static_cast<GDScriptParser::GetNodeNode *>(variable->initializer);
-								}
+						if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+							const GDScriptParser::VariableNode *variable = static_cast<GDScriptParser::VariableNode *>(member.variable);
+
+							if (variable->initializer && variable->initializer->type == GDScriptParser::Node::GET_NODE) {
+								get_node = static_cast<GDScriptParser::GetNodeNode *>(variable->initializer);
 							}
 						}
+
+						break;
 					}
 				} break;
 				case GDScriptParser::IdentifierNode::Source::LOCAL_VARIABLE: {
