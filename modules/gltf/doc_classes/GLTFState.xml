@@ -169,6 +169,12 @@
 				Returns an array of unique node names. This is used in both the import process and export process.
 			</description>
 		</method>
+		<method name="is_text_file" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member filename] indicates this is a text-based glTF file, meaning that it ends with [code]".gltf"[/code] (case insensitive). Returns [code]false[/code] with any other extension or for an empty filename (indicating this is a byte array in memory).
+			</description>
+		</method>
 		<method name="set_accessors">
 			<return type="void" />
 			<param index="0" name="accessors" type="GLTFAccessor[]" />
@@ -286,6 +292,13 @@
 				Sets the unique node names in the state. This is used in both the import process and export process.
 			</description>
 		</method>
+		<method name="should_separate_resource_files" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if resource files, such as images, should be separated into their own files. Returns [code]false[/code] if they should be embedded in the glTF file. This is determined by the [member external_data_mode] property.
+				Extensions should call this method to determine if they should save their resources in separate files. For example, the [code]KHR_audio_emitter[/code] extension should use this to determine if it should save audio files in separate files such as [code].mp3[/code] files, or if it should embed them in the glTF file in buffer views. For example, any extension handling images should use this to determine if they should save images in separate files such as [code].png[/code] files, or if they should embed them in the glTF file in buffer views.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="bake_fps" type="float" setter="set_bake_fps" getter="get_bake_fps" default="30.0">
@@ -300,6 +313,12 @@
 			The copyright string in the asset header of the glTF file. This is set during import if present and export if non-empty. See the glTF asset header documentation for more information.
 		</member>
 		<member name="create_animations" type="bool" setter="set_create_animations" getter="get_create_animations" default="true">
+		</member>
+		<member name="external_data_mode" type="int" setter="set_external_data_mode" getter="get_external_data_mode" enum="GLTFState.ExternalDataMode" default="0">
+			When exporting a glTF file, this determines where external data, such as images and binary buffers, should be stored.
+			The default value is [constant EXTERNAL_DATA_MODE_AUTOMATIC], which automatically determines if data should be embedded or separated based on the file extension used, embedding for [code].glb[/code] files and separating for [code].gltf[/code] files. If you want different behavior, you can set this to one of the [enum ExternalDataMode] values.
+			Saving resources like images to their own files can be useful for destinations where you need access to these files separately. For example, if the exported glTF is added to the [code]res://[/code] folder of a Godot project, the default behavior of the Godot editor is to extract embedded images to their own files so they can be imported and compressed into GPU-optimized formats.
+			Extensions should respect this setting by calling [method should_separate_resource_files] to determine if they should save their resources in separate files.
 		</member>
 		<member name="filename" type="String" setter="set_filename" getter="get_filename" default="&quot;&quot;">
 			The file name associated with this glTF data. If it ends with [code].gltf[/code], this is text-based glTF, otherwise this is binary GLB. This will be set during import when appending from a file, and will be set during export when writing to a file. If writing to a buffer, this will be an empty string.
@@ -331,6 +350,29 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="EXTERNAL_DATA_MODE_AUTOMATIC" value="0" enum="ExternalDataMode">
+			When exporting a glTF file, automatically determines if data should be embedded or separated based on the file extension used and if [member base_path] is valid. With this option, exporting a [code].gltf[/code] file with a valid [member base_path] will behave like [constant EXTERNAL_DATA_MODE_SEPARATE_ALL_FILES]. If exporting a [code].glb[/code] file, exporting to an in-memory buffer, or exporting with [member base_path] set to an empty string, this will behave like [constant EXTERNAL_DATA_MODE_EMBED_EVERYTHING].
+			This option is suitable for most use cases. It behaves like Blender's "glTF Binary (.glb)" export option for [code].glb[/code] files, and like Blender's "glTF Separate (.gltf + .bin + textures)" export option for [code].gltf[/code] files.
+		</constant>
+		<constant name="EXTERNAL_DATA_MODE_EMBED_EVERYTHING" value="1" enum="ExternalDataMode">
+			When exporting a glTF file, embeds all data in the glTF file, including images and binary buffers. For [code].glb[/code] files, this will use the binary blob chunk at the end of the file to store the data in buffer 0 (if present). For all other buffers, such as buffers in [code].gltf[/code] files, the data will be embedded as a base64-encoded string in the JSON of the buffer.
+			This option is useful when you want a single self-contained file. It behaves like Blender's "glTF Binary (.glb)" export option for [code].glb[/code] files, and like Blender's "glTF Embedded (.gltf)" export option for [code].gltf[/code] files.
+			[b]Note:[/b] This usually results in a single self-contained file, but this is not guaranteed. The glTF binary ([code].glb[/code]) format has a maximum file size of 4 GiB, so if the data exceeds that size, the buffer will be forced to save as a separate file.
+		</constant>
+		<constant name="EXTERNAL_DATA_MODE_SEPARATE_ALL_FILES" value="2" enum="ExternalDataMode">
+			When exporting a glTF file, separates all files that can be saved in their own file formats into their own files, and also save all raw binary blobs, such as glTF buffers, into separate [code].bin[/code] files.
+			This option is useful when having the glTF file's contents spread out over multiple files is desired, resulting in maximum human readability. It behaves like Blender's "glTF Separate (.gltf + .bin + textures)" export option.
+			Extensions should respect this setting by calling [method should_separate_resource_files] to determine if they should save their resources in separate files.
+		</constant>
+		<constant name="EXTERNAL_DATA_MODE_SEPARATE_BINARY_BLOBS" value="3" enum="ExternalDataMode">
+			When exporting a glTF file, separates all raw binary blobs, such as glTF buffers, into separate [code].bin[/code] files. Resources that can be saved in their own file formats, such as images, are embedded within glTF buffers, and are stored in the [code].bin[/code] files.
+			This option is useful if you need efficient storage of binary data while also keeping the number of files low. In the typical case, this option will result in only two files: the glTF file and a single [code].bin[/code] file next to it.
+		</constant>
+		<constant name="EXTERNAL_DATA_MODE_SEPARATE_RESOURCE_FILES" value="4" enum="ExternalDataMode">
+			When exporting a glTF file, separates all resources that can be saved in their own file formats into their own files, such as images. This option does not separate buffers, meaning that binary blob data without a file type, such as mesh data, animation data, skin/skeleton data, and so on, are still embedded in the glTF file.
+			This option is useful if the exported glTF file is intended to be added to the project folder in a game engine, so that the game engine can import the resources files separately, and optionally use them separately. Otherwise, game engines may extract embedded resources to their own files, resulting in duplicate data in the project folder.
+			Extensions should respect this setting by calling [method should_separate_resource_files] to determine if they should save their resources in separate files.
+		</constant>
 		<constant name="HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES" value="0" enum="HandleBinaryImageMode">
 			When importing a glTF file with embedded binary images, discards all images and uses untextured materials in their place. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
 		</constant>

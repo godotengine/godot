@@ -52,6 +52,13 @@ class GLTFState : public Resource {
 	friend class GLTFNode;
 
 public:
+	enum ExternalDataMode {
+		EXTERNAL_DATA_MODE_AUTOMATIC,
+		EXTERNAL_DATA_MODE_EMBED_EVERYTHING,
+		EXTERNAL_DATA_MODE_SEPARATE_ALL_FILES,
+		EXTERNAL_DATA_MODE_SEPARATE_BINARY_BLOBS,
+		EXTERNAL_DATA_MODE_SEPARATE_RESOURCE_FILES,
+	};
 	enum HandleBinaryImageMode {
 		HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES = 0,
 		HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES,
@@ -79,6 +86,7 @@ protected:
 	bool force_disable_compression = false;
 	bool import_as_skeleton_bones = false;
 
+	ExternalDataMode external_data_mode = ExternalDataMode::EXTERNAL_DATA_MODE_AUTOMATIC;
 	HandleBinaryImageMode handle_binary_image_mode = HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES;
 
 	Vector<Ref<GLTFNode>> nodes;
@@ -255,6 +263,12 @@ public:
 
 	String get_filename() const;
 	void set_filename(const String &p_filename);
+	bool is_text_file() const;
+
+	ExternalDataMode get_external_data_mode() const { return external_data_mode; }
+	void set_external_data_mode(ExternalDataMode p_external_data_mode) { external_data_mode = p_external_data_mode; }
+	bool should_separate_binary_blobs() const;
+	bool should_separate_resource_files() const;
 
 	PackedInt32Array get_root_nodes() const;
 	void set_root_nodes(const PackedInt32Array &p_root_nodes);
@@ -326,4 +340,5 @@ public:
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
 
+VARIANT_ENUM_CAST(GLTFState::ExternalDataMode);
 VARIANT_ENUM_CAST(GLTFState::HandleBinaryImageMode);
