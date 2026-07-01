@@ -3606,6 +3606,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after call arguments.)*");
 	complete_extents(call);
 
+	if (call->function_name == SNAME("range") && call->arguments.size() == 3 && call->arguments[2]->type == Node::LITERAL) {
+		LiteralNode *step_node = static_cast<LiteralNode *>(call->arguments[2]);
+
+		if (double(step_node->value) == 0.0) {
+			push_error("The range() step argument must not be equal to 0.", step_node);
+		}
+	}
+
 	return call;
 }
 
