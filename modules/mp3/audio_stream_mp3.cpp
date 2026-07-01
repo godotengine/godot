@@ -51,7 +51,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int beat_length_frames = -1;
 	bool use_loop = looping_override ? looping : mp3_stream->loop;
 
-	bool beat_loop = use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
+	beat_loop = use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
 	if (beat_loop) {
 		beat_length_frames = mp3_stream->get_beat_count() * mp3_stream->sample_rate * 60 / mp3_stream->get_bpm();
 	}
@@ -135,7 +135,10 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 		return;
 	}
 
-	if (p_time >= mp3_stream->get_length()) {
+	double real_length = beat_loop ? 60.0 / mp3_stream->get_bpm() * mp3_stream->beat_count : mp3_stream->get_length();
+
+	if (p_time >= real_length || p_time < 0) {
+		WARN_PRINT_ED("Seeking out of bounds. Setting position to 0.");
 		p_time = 0;
 	}
 
