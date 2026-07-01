@@ -64,7 +64,9 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 		SafeFlag active;
 		SafeFlag pending_play;
 		SafeFlag finish_request;
+		SafeFlag paused;
 		float play_offset = 0;
+		double pause_time = 0;
 		float pitch_scale = 1.0;
 		Ref<AudioStream> stream;
 		Ref<AudioStreamPlayback> stream_playback;
@@ -73,7 +75,7 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 		uint32_t id = 0;
 
 		Stream() :
-				active(false), pending_play(false), finish_request(false) {}
+				active(false), pending_play(false), finish_request(false), paused(false) {}
 	};
 
 	LocalVector<Stream> streams;
@@ -112,10 +114,20 @@ public:
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
+<<<<<<< HEAD:scene/resources/audio/audio_stream_polyphonic.h
 	ID play_stream(const Ref<AudioStream> &p_stream, float p_from_offset = 0, float p_volume_db = 0, float p_pitch_scale = 1.0, AuSE::PlaybackType p_playback_type = AuSE::PlaybackType::PLAYBACK_TYPE_DEFAULT, const StringName &p_bus = SceneStringName(Master));
+=======
+	ID play_stream(const Ref<AudioStream> &p_stream, float p_from_offset = 0, float p_volume_db = 0, float p_pitch_scale = 1.0, AudioServer::PlaybackType p_playback_type = AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT, const StringName &p_bus = SceneStringName(Master));
+	void seek_stream(ID p_stream_id, double p_time);
+	double get_stream_playback_position(ID p_stream_id) const;
+	void set_stream_paused(ID p_stream_id, bool p_pause);
+	bool is_stream_paused(ID p_stream_id) const;
+>>>>>>> bca3aaffd3 (Add new methods to AudioStreamPlaybackPolyphonic):scene/resources/audio_stream_polyphonic.h
 	void set_stream_volume(ID p_stream_id, float p_volume_db);
+	float get_stream_volume(ID p_stream_id) const;
 	void set_stream_pitch_scale(ID p_stream_id, float p_pitch_scale);
-	bool is_stream_playing(ID p_stream_id) const;
+	float get_stream_pitch_scale(ID p_stream_id) const;
+	bool is_id_valid(ID p_stream_id) const;
 	void stop_stream(ID p_stream_id);
 
 	virtual void set_is_sample(bool p_is_sample) override;
@@ -126,6 +138,7 @@ public:
 private:
 #ifndef DISABLE_DEPRECATED
 	ID _play_stream_bind_compat_91382(const Ref<AudioStream> &p_stream, float p_from_offset = 0, float p_volume_db = 0, float p_pitch_scale = 1.0);
+	bool _is_stream_playing_bind_compat_120811(ID p_stream_id) const;
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
