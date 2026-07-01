@@ -1681,6 +1681,16 @@
 		<member name="input_devices/joypads/ignore_joypad_on_unfocused_application" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], joypad input (including motion sensors) and LED light changes will be ignored and joypad vibration will be stopped when the application is not focused.
 		</member>
+		<member name="input_devices/joypads/joypad_echo_events/count_per_second" type="int" setter="" getter="" default="20">
+			The number of times per second joypad echo events should be sent by the engine after the user has pressed the buttons or kept the axes over the deadzone for long enough.
+		</member>
+		<member name="input_devices/joypads/joypad_echo_events/send" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the engine will send joypad echo events after the user has pressed the joypad buttons or moved the joypad axes for long enough.
+			[b]Note:[/b] This setting has no effect if [member input_devices/joypads/joypad_echo_events/count_per_second] is set to [code]0[/code].
+		</member>
+		<member name="input_devices/joypads/joypad_echo_events/wait_time" type="float" setter="" getter="" default="0.5">
+			The amount of time of pressing the joypad buttons or keeping the joypad axes over the deadzone required for the engine to start sending echo events, in seconds.
+		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].

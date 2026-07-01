@@ -314,6 +314,7 @@ class InputEventJoypadMotion : public InputEvent {
 	JoyAxis axis = (JoyAxis)0; ///< Joypad axis
 	float axis_value = 0; ///< -1 to 1
 
+	bool echo = false; /// true if this is an echo key
 protected:
 	static void _bind_methods();
 
@@ -342,6 +343,8 @@ class InputEventJoypadButton : public InputEvent {
 
 	JoyButton button_index = (JoyButton)0;
 	float pressure = 0; //0 to 1
+
+	bool echo = false; /// true if this is an echo key
 protected:
 	static void _bind_methods();
 
@@ -353,6 +356,9 @@ public:
 
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
+
+	void set_echo(bool p_enable);
+	virtual bool is_echo() const override;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;

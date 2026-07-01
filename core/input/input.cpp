@@ -243,6 +243,39 @@ void Input::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "device"), PropertyInfo(Variant::BOOL, "connected")));
 }
 
+// Note: engine time scale is ignored for p_delta here.
+void Input::_process(double p_delta) {
+	if (joy_echo_send_events && joy_echo_count_per_second > 0) {
+		const float delay_between_sending = 1.0 / joy_echo_count_per_second;
+		HashMap<uint16_t, JoyEchoInfo>::Iterator iter = joy_echo.begin();
+		while (iter != joy_echo.end()) {
+			JoyEchoInfo &echo = iter->value;
+			JoyEchoId echo_id;
+			echo_id.value = iter->key;
+
+			int times_to_send = 0;
+			echo.time += p_delta;
+
+			if (echo.waiting && echo.time > joy_echo_wait_time) {
+				echo.waiting = false;
+				echo.time -= joy_echo_wait_time;
+				times_to_send = 1;
+			}
+
+			if (!echo.waiting && echo.time > delay_between_sending) {
+				times_to_send += (int)Math::floor(echo.time / delay_between_sending);
+				echo.time = Math::fmod(echo.time, delay_between_sending);
+			}
+
+			for (int i = 0; i < times_to_send; i++) {
+				_button_event(echo_id.device, (JoyButton)echo_id.input_id, true, true);
+			}
+
+			++iter;
+		}
+	}
+}
+
 #ifdef TOOLS_ENABLED
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
@@ -738,9 +771,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		for (int i = 0; i < (int)JoyButton::MAX; i++) {
 			JoyButton c = _combine_device((JoyButton)i, p_idx);
 			joy_buttons_pressed.erase(c);
-		}
-		for (int i = 0; i < (int)JoyAxis::MAX; i++) {
-			set_joy_axis(p_idx, (JoyAxis)i, 0.0f);
+			joy_echo.erase(JoyEchoId(p_idx, (JoyButton)i).value);
 		}
 		MotionInfo *motion = joy_motion.getptr(p_idx);
 		if (motion != nullptr && motion->gamepad_motion != nullptr) {
@@ -1038,13 +1069,22 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	Ref<InputEventJoypadButton> jb = p_event;
 
-	if (jb.is_valid()) {
+	if (jb.is_valid() && !jb->is_echo()) {
 		JoyButton c = _combine_device(jb->get_button_index(), jb->get_device());
 
 		if (jb->is_pressed()) {
 			joy_buttons_pressed.insert(c);
 		} else {
 			joy_buttons_pressed.erase(c);
+		}
+
+		if (joy_echo_send_events) {
+			uint16_t echo_id = JoyEchoId(jb->get_device(), jb->get_button_index()).value;
+			if (jb->is_pressed()) {
+				joy_echo.insert(echo_id, JoyEchoInfo());
+			} else {
+				joy_echo.erase(echo_id);
+			}
 		}
 	}
 
@@ -1904,12 +1944,13 @@ void Input::joy_touchpad(int p_device, int p_touchpad, int p_finger, const Vecto
 	}
 }
 
-void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed) {
+void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed, bool p_echo) {
 	Ref<InputEventJoypadButton> ievent;
 	ievent.instantiate();
 	ievent->set_device(p_device);
 	ievent->set_button_index(p_index);
 	ievent->set_pressed(p_pressed);
+	ievent->set_echo(p_echo);
 
 	parse_input_event(ievent);
 }
@@ -2456,6 +2497,9 @@ Input::Input() {
 	gyroscope_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gyroscope", false);
 	magnetometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_magnetometer", false);
 	ignore_joypad_on_unfocused_application = GLOBAL_DEF_RST_BASIC("input_devices/joypads/ignore_joypad_on_unfocused_application", false);
+	joy_echo_send_events = GLOBAL_DEF_RST_BASIC("input_devices/joypads/joypad_echo_events/send", false);
+	joy_echo_wait_time = GLOBAL_DEF_RST_BASIC("input_devices/joypads/joypad_echo_events/wait_time", 0.5f);
+	joy_echo_count_per_second = GLOBAL_DEF_RST_BASIC("input_devices/joypads/joypad_echo_events/count_per_second", 20);
 }
 
 Input::~Input() {
