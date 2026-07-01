@@ -3377,9 +3377,9 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 
 		if (sc) {
 			Rect2 sc_r = sc->get_global_rect();
-			bool follow_focus = sc->is_following_focus();
+			const bool allow_focus_shadow = sc->is_allowing_focus_shadow();
 
-			if (result && !follow_focus && !sc_r.intersects(result_rect)) {
+			if (result && !allow_focus_shadow && !sc_r.intersects(result_rect)) {
 				result = nullptr; // Skip invisible control.
 			}
 
@@ -3393,13 +3393,13 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 					sc_mind = sc_begin_d;
 				}
 
-				if (!follow_focus && maxd < sc_mind) {
+				if (!allow_focus_shadow && maxd < sc_mind) {
 					// Reposition to find visible control.
 					maxd = sc_mind;
 					r.set_position(r.get_position() + (sc_mind - maxd) * vdir);
 				}
 
-				if (follow_focus || sc_maxd > maxd) {
+				if (allow_focus_shadow || sc_maxd > maxd) {
 					_window_find_focus_neighbor(vdir, base, r, clamp, maxd, square_of_dist, &result);
 				}
 
@@ -3409,7 +3409,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 					r.set_position(r.get_position() + (sc_maxd - maxd) * vdir);
 				} else {
 					result_rect = result->get_global_rect();
-					if (follow_focus) {
+					if (allow_focus_shadow) {
 						real_t r_begin_d = vdir.dot(result_rect.get_position());
 						real_t r_end_d = vdir.dot(result_rect.get_end());
 						real_t r_maxd = r_begin_d;
@@ -3526,7 +3526,7 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	ScrollContainer *sc = Object::cast_to<ScrollContainer>(c);
 	Rect2 intersection = p_clamp;
 	if (sc) {
-		if (!sc->is_following_focus() || !in_container) {
+		if (!in_container || !sc->is_allowing_focus_shadow()) {
 			intersection = p_clamp.intersection(sc->get_global_rect());
 			if (!intersection.has_area()) {
 				return;
