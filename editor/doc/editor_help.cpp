@@ -1693,7 +1693,7 @@ void EditorHelp::_update_doc() {
 			if (!is_documented && constant.name.begins_with("_")) {
 				continue;
 			}
-			if (!constant.enumeration.is_empty()) {
+			if (!constant.enumeration.is_empty() && !constant.enumeration.contains(".")) {
 				if (!enums.has(constant.enumeration)) {
 					enums[constant.enumeration] = Vector<DocData::ConstantDoc>();
 				}
@@ -1728,16 +1728,6 @@ void EditorHelp::_update_doc() {
 			bool is_first_enum = true;
 			for (KeyValue<String, Vector<DocData::ConstantDoc>> &E : enums) {
 				String key = E.key;
-				if ((key.get_slice_count(".") > 1) && (key.get_slicec('.', 0) == edited_class)) {
-					key = key.get_slicec('.', 1);
-				}
-				if (cd.enums.has(key)) {
-					const bool is_documented = cd.enums[key].is_deprecated || cd.enums[key].is_experimental || !cd.enums[key].description.strip_edges().is_empty();
-					if (!is_documented && cd.is_script_doc && E.key.begins_with("_")) {
-						continue;
-					}
-				}
-
 				class_desc->add_newline();
 				if (is_first_enum) {
 					is_first_enum = false;
