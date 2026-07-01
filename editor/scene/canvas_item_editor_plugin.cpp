@@ -802,7 +802,7 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 	}
 }
 
-bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append) {
+bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, bool p_append) {
 	bool still_selected = true;
 	const List<Node *> &top_node_list = editor_selection->get_top_selected_node_list();
 	if (p_append && !top_node_list.is_empty()) {
@@ -988,7 +988,7 @@ void CanvasItemEditor::_selection_result_pressed(int p_result) {
 	CanvasItem *item = selection_results_menu[p_result].item;
 
 	if (item) {
-		_select_click_on_item(item, Point2(), selection_menu_additive_selection);
+		_select_click_on_item(item, selection_menu_additive_selection);
 	}
 	selection_results_menu.clear();
 }
@@ -2436,7 +2436,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				CanvasItem *item = selection_results[0].item;
 				selection_results.clear();
 
-				_select_click_on_item(item, click, b->is_shift_pressed());
+				_select_click_on_item(item, b->is_shift_pressed());
 
 				return true;
 			} else if (!selection_results.is_empty()) {
@@ -2551,28 +2551,37 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			Vector<SelectResult> selection = Vector<SelectResult>();
 			// Retrieve the canvas items.
 			_get_canvas_items_at_pos(click, selection);
-			if (!selection.is_empty()) {
+			// If an item is already selected, pressing it again will not change the selection; the logic for adjusting the selected item will only be executed when the key is released.
+			if (!b->is_shift_pressed()) {
+				for (const SelectResult &sr : selection) {
+					if (editor_selection->is_selected(sr.item)) {
+						ci = sr.item;
+						break;
+					}
+				}
+			} else if (!selection.is_empty()) {
 				ci = selection[0].item;
 			}
 
 			// Shift also allows forcing box selection when item was clicked.
 			if (!ci || (b->is_shift_pressed() && b->is_pressed())) {
 				// Start a box selection.
-				if (!b->is_shift_pressed()) {
-					// Clear the selection if not additive.
-					editor_selection->clear();
-					viewport->queue_redraw();
-					selected_from_canvas = true;
-				};
 
 				if (b->is_pressed()) {
 					drag_from = click;
-					drag_type = DRAG_BOX_SELECTION;
-					box_selecting_to = drag_from;
+					// If the click does not land on the previously selected item, continue with the original drag logic.
+					// Select the topmost item immediately on the first frame of dragging, to stay as consistent as possible with the original behavior.
+					if (!(b->is_shift_pressed() || selection.is_empty()) && (tool == TOOL_SELECT || tool == TOOL_MOVE)) {
+						drag_start_origin = click;
+						drag_type = DRAG_QUEUED;
+					} else {
+						drag_type = DRAG_BOX_SELECTION;
+						box_selecting_to = drag_from;
+					}
 					return true;
 				}
 			} else {
-				bool still_selected = _select_click_on_item(ci, click, b->is_shift_pressed());
+				bool still_selected = _select_click_on_item(ci, b->is_shift_pressed());
 				// Start dragging.
 				if (still_selected && (tool == TOOL_SELECT || tool == TOOL_MOVE) && b->is_pressed()) {
 					// Drag the node(s) if requested.
@@ -2589,6 +2598,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 	if (drag_type == DRAG_QUEUED) {
 		if (b.is_valid() && !b->is_pressed()) {
+			_click_select(transform.affine_inverse().xform(b->get_position()), b->is_shift_pressed());
 			_reset_drag();
 			return true;
 		}
@@ -2596,6 +2606,27 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			Point2 click = transform.affine_inverse().xform(m->get_position());
 			bool movement_threshold_passed = drag_start_origin.distance_to(click) > (8 * MAX(1, EDSCALE)) / zoom;
 			if (m.is_valid() && movement_threshold_passed) {
+				// If the drag start point is not on the selected item, select the topmost item and start dragging.
+				// Otherwise, perform the DRAG_BOX_SELECTION logic.
+				CanvasItem *ci = nullptr;
+				Vector<SelectResult> selection = Vector<SelectResult>();
+				_get_canvas_items_at_pos(click, selection);
+				for (const SelectResult &sr : selection) {
+					if (editor_selection->is_selected(sr.item)) {
+						ci = sr.item;
+						break;
+					}
+				}
+				if (!ci) {
+					if (selection.is_empty()) {
+						drag_type = DRAG_BOX_SELECTION;
+						box_selecting_to = click;
+						return true;
+					} else {
+						_select_click_on_item(selection[0].item, false);
+					}
+				}
+
 				List<CanvasItem *> selection2 = _get_edited_canvas_items();
 
 				drag_selection.clear();
@@ -2631,12 +2662,16 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					SWAP(bsfrom.y, bsto.y);
 				}
 
-				_find_canvas_items_in_rect(Rect2(bsfrom, bsto - bsfrom), scene, &selitems);
-				if (selitems.size() == 1 && editor_selection->get_selection().is_empty()) {
-					EditorNode::get_singleton()->push_item(selitems.front()->get());
-				}
-				for (CanvasItem *E : selitems) {
-					editor_selection->add_node(E);
+				if (bsfrom.distance_to(bsto) <= DRAG_THRESHOLD) {
+					_click_select(transform.affine_inverse().xform(b->get_position()), b->is_shift_pressed());
+				} else {
+					_find_canvas_items_in_rect(Rect2(bsfrom, bsto - bsfrom), scene, &selitems);
+					if (selitems.size() == 1 && editor_selection->get_selection().is_empty()) {
+						EditorNode::get_singleton()->push_item(selitems.front()->get());
+					}
+					for (CanvasItem *E : selitems) {
+						editor_selection->add_node(E);
+					}
 				}
 			}
 
@@ -5267,6 +5302,40 @@ void CanvasItemEditor::_reset_drag() {
 	message = "";
 	drag_type = DRAG_NONE;
 	drag_selection.clear();
+}
+
+void CanvasItemEditor::_click_select(const Point2 &p_pos, bool p_append) {
+	// Find the item to select.
+	CanvasItem *ci = nullptr;
+
+	Vector<SelectResult> selection = Vector<SelectResult>();
+	// Retrieve the canvas items.
+	_get_canvas_items_at_pos(p_pos, selection);
+
+	if (!selection.is_empty()) {
+		if (p_append) {
+			ci = selection[0].item;
+		} else {
+			// When selecting canvas items by repeated clicking, each click cycles through overlapping items in view order.
+			for (int64_t i = 0; i < selection.size(); i++) {
+				if (editor_selection->is_selected(selection[i].item)) {
+					ci = selection[(i + 1) % selection.size()].item;
+					break;
+				}
+			}
+			if (!ci) {
+				ci = selection[0].item;
+			}
+		}
+	}
+
+	if (ci) {
+		_select_click_on_item(ci, p_append);
+	} else {
+		editor_selection->clear();
+		viewport->queue_redraw();
+		selected_from_canvas = true;
+	}
 }
 
 void CanvasItemEditor::_bind_methods() {
