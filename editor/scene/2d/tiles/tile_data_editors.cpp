@@ -1036,6 +1036,11 @@ void TileDataDefaultEditor::_property_value_changed(const StringName &p_property
 	emit_signal(SNAME("needs_redraw"));
 }
 
+void TileDataDefaultEditor::_paint_on_click_toggled() {
+	paint_on_click = paint_on_click_button->is_pressed();
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_paint_on_click", paint_on_click);
+}
+
 Variant TileDataDefaultEditor::_get_painted_value() {
 	ERR_FAIL_NULL_V(dummy_object, Variant());
 	return dummy_object->get(property);
@@ -1073,6 +1078,14 @@ void TileDataDefaultEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_s
 }
 
 void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
+	if (reference_coords != TileSetSource::INVALID_ATLAS_COORDS && reference_alternative == 0) {
+		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
+		Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.55, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+		p_canvas_item->draw_set_transform_matrix(p_transform);
+		p_canvas_item->draw_rect(p_tile_set_atlas_source->get_tile_texture_region(reference_coords, 0), selection_color, false, Math::round(2 * EDSCALE));
+		p_canvas_item->draw_set_transform_matrix(Transform2D());
+	}
+
 	if (drag_type == DRAG_TYPE_PAINT_RECT) {
 		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 		Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
@@ -1108,6 +1121,13 @@ void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_
 }
 
 void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
+	if (reference_coords != TileSetSource::INVALID_ATLAS_COORDS && reference_alternative > 0) {
+		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
+		Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.55, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+		p_canvas_item->draw_set_transform_matrix(p_transform);
+		p_canvas_item->draw_rect(p_tile_atlas_view->get_alternative_tile_rect(reference_coords, reference_alternative), selection_color, false, Math::round(2 * EDSCALE));
+		p_canvas_item->draw_set_transform_matrix(Transform2D());
+	}
 }
 
 void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, const Ref<InputEvent> &p_event) {
@@ -1142,6 +1162,8 @@ void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_ti
 					coords = p_tile_set_atlas_source->get_tile_at_coords(coords);
 					if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 						_set_painted_value(p_tile_set_atlas_source, coords, 0);
+						reference_coords = coords;
+						reference_alternative = 0;
 						picker_button->set_pressed(false);
 					}
 				} else if (mb->is_command_or_control_pressed() && mb->is_shift_pressed()) {
@@ -1150,11 +1172,21 @@ void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_ti
 					drag_painted_value = _get_painted_value();
 					drag_start_pos = mb->get_position();
 				} else {
+					Vector2i coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position(), true);
+					coords = p_tile_set_atlas_source->get_tile_at_coords(coords);
+					if (!paint_on_click) {
+						if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
+							_set_painted_value(p_tile_set_atlas_source, coords, 0);
+							reference_coords = coords;
+							reference_alternative = 0;
+						}
+						drag_type = DRAG_TYPE_NONE;
+						return;
+					}
+
 					drag_type = DRAG_TYPE_PAINT;
 					drag_modified.clear();
 					drag_painted_value = _get_painted_value();
-					Vector2i coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position(), true);
-					coords = p_tile_set_atlas_source->get_tile_at_coords(coords);
 					if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 						TileMapCell cell;
 						cell.source_id = 0;
@@ -1234,17 +1266,27 @@ void TileDataDefaultEditor::forward_painting_alternatives_gui_input(TileAtlasVie
 					int alternative_tile = tile.z;
 					if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 						_set_painted_value(p_tile_set_atlas_source, coords, alternative_tile);
+						reference_coords = coords;
+						reference_alternative = alternative_tile;
 						picker_button->set_pressed(false);
 					}
 				} else {
-					drag_type = DRAG_TYPE_PAINT;
-					drag_modified.clear();
-					drag_painted_value = _get_painted_value();
-
 					Vector3i tile = p_tile_atlas_view->get_alternative_tile_at_pos(mb->get_position());
 					Vector2i coords = Vector2i(tile.x, tile.y);
 					int alternative_tile = tile.z;
+					if (!paint_on_click) {
+						if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
+							_set_painted_value(p_tile_set_atlas_source, coords, alternative_tile);
+							reference_coords = coords;
+							reference_alternative = alternative_tile;
+						}
+						drag_type = DRAG_TYPE_NONE;
+						return;
+					}
 
+					drag_type = DRAG_TYPE_PAINT;
+					drag_modified.clear();
+					drag_painted_value = _get_painted_value();
 					if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 						TileMapCell cell;
 						cell.source_id = 0;
@@ -1256,10 +1298,12 @@ void TileDataDefaultEditor::forward_painting_alternatives_gui_input(TileAtlasVie
 					drag_last_pos = mb->get_position();
 				}
 			} else {
-				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-				undo_redo->create_action(TTR("Painting Tiles Property"));
-				_setup_undo_redo_action(p_tile_set_atlas_source, drag_modified, drag_painted_value);
-				undo_redo->commit_action(false);
+				if (drag_type == DRAG_TYPE_PAINT) {
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+					undo_redo->create_action(TTR("Painting Tiles Property"));
+					_setup_undo_redo_action(p_tile_set_atlas_source, drag_modified, drag_painted_value);
+					undo_redo->commit_action(false);
+				}
 				drag_type = DRAG_TYPE_NONE;
 			}
 		}
@@ -1366,6 +1410,7 @@ void TileDataDefaultEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_button_icon(get_editor_theme_icon(SNAME("ColorPick")));
+			paint_on_click_button->set_button_icon(get_editor_theme_icon(SNAME("InputEventMouseButton")));
 			tile_bool_checked = get_editor_theme_icon(SNAME("TileChecked"));
 			tile_bool_unchecked = get_editor_theme_icon(SNAME("TileUnchecked"));
 		} break;
@@ -1387,6 +1432,16 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);
+
+	paint_on_click = EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_paint_on_click", true);
+	paint_on_click_button = memnew(Button);
+	paint_on_click_button->set_theme_type_variation(SceneStringName(FlatButton));
+	paint_on_click_button->set_toggle_mode(true);
+	paint_on_click_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/paint_on_click"));
+	paint_on_click_button->set_pressed_no_signal(paint_on_click);
+	paint_on_click_button->set_tooltip_text(TTR("When disabled, click and drag to paint without modifying tiles on single click."));
+	paint_on_click_button->connect(SceneStringName(pressed), callable_mp(this, &TileDataDefaultEditor::_paint_on_click_toggled));
+	toolbar->add_child(paint_on_click_button);
 }
 
 TileDataDefaultEditor::~TileDataDefaultEditor() {
