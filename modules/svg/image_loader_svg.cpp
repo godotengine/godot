@@ -51,11 +51,44 @@ void ImageLoaderSVG::_replace_color_property(const HashMap<Color, Color> &p_colo
 	const int prefix_len = p_prefix.length();
 	int pos = r_string.find(p_prefix);
 	while (pos != -1) {
+		char end;
 		pos += prefix_len; // Skip prefix.
-		int end_pos = r_string.find_char('"', pos);
+		if (r_string[pos] == '=') {
+			pos += 2;
+			end = '"';
+		} else if (r_string[pos] == ':') {
+			pos += 1;
+			end = ';';
+		} else {
+			pos = r_string.find(p_prefix, pos);
+			continue;
+		}
+		int end_pos = r_string.find_char(end, pos);
 		ERR_FAIL_COND_MSG(end_pos == -1, vformat("Malformed SVG string after property \"%s\".", p_prefix));
 		const String color_code = r_string.substr(pos, end_pos - pos);
-		if (color_code != "none" && !color_code.begins_with("url(")) {
+		if (color_code.begins_with("rgb")) {
+			Vector<String> color_comp = color_code.split(",");
+			Color color;
+			if (color_comp.size() == 4) {
+				color = Color((float)color_comp[0].to_int() / 255.0, (float)color_comp[1].to_int() / 255.0, (float)color_comp[2].to_int() / 255.0, color_comp[3].to_float());
+			} else if (color_comp.size() == 3) {
+				color = Color((float)color_comp[0].to_int() / 255.0, (float)color_comp[1].to_int() / 255.0, (float)color_comp[2].to_int() / 255.0);
+			}
+			if (p_color_map.has(color)) {
+				r_string = r_string.left(pos) + "#" + p_color_map[color].to_html(false) + r_string.substr(end_pos);
+			}
+		} else if (color_code.begins_with("hsl")) {
+			Vector<String> color_comp = color_code.split(",");
+			Color color;
+			if (color_comp.size() == 4) {
+				color.set_ok_hsl((float)color_comp[0].to_int() / 360.0, (float)color_comp[1].to_int() / 100.0, (float)color_comp[2].to_int() / 100.0, color_comp[3].to_float());
+			} else if (color_comp.size() == 3) {
+				color.set_ok_hsl((float)color_comp[0].to_int() / 360.0, (float)color_comp[1].to_int() / 100.0, (float)color_comp[2].to_int() / 100.0);
+			}
+			if (p_color_map.has(color)) {
+				r_string = r_string.left(pos) + "#" + p_color_map[color].to_html(false) + r_string.substr(end_pos);
+			}
+		} else if (color_code != "none" && color_code != "currentcolor" && !color_code.begins_with("url(")) {
 			const Color color = Color(color_code); // Handles both HTML codes and named colors.
 			if (p_color_map.has(color)) {
 				r_string = r_string.left(pos) + "#" + p_color_map[color].to_html(false) + r_string.substr(end_pos);
@@ -139,9 +172,9 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const Pa
 
 Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map) {
 	if (p_color_map.size()) {
-		_replace_color_property(p_color_map, "stop-color=\"", p_string);
-		_replace_color_property(p_color_map, "fill=\"", p_string);
-		_replace_color_property(p_color_map, "stroke=\"", p_string);
+		_replace_color_property(p_color_map, "color", p_string);
+		_replace_color_property(p_color_map, "fill", p_string);
+		_replace_color_property(p_color_map, "stroke", p_string);
 	}
 
 	PackedByteArray bytes = p_string.to_utf8_buffer();
