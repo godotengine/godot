@@ -1,8 +1,13 @@
 """Functions used to generate source files during build time"""
 
+import argparse
 import os.path
+import sys
 
-from methods import generated_wrapper, print_error, to_raw_cstring
+# Add parent directory to path so we can import methods
+sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "./"))
+
+from methods import generated_wrapper, print_error, read_args_from_file, to_raw_cstring
 
 
 class RDHeaderStruct:
@@ -244,8 +249,7 @@ public:
 """)
 
 
-def build_rd_headers(target, source, env):
-    env.NoCache(target)
+def build_rd_headers(target, source):
     for src in source:
         build_rd_header(f"{src}.gen.h", str(src))
 
@@ -283,7 +287,47 @@ static const char {os.path.basename(shader).replace(".glsl", "_shader_glsl")}[] 
 """)
 
 
-def build_raw_headers(target, source, env):
-    env.NoCache(target)
+def build_raw_headers(target, source):
     for src in source:
         build_raw_header(f"{src}.gen.h", str(src))
+
+
+def main():
+    # Parse initial arguments to check for argfile
+    initial_parser = argparse.ArgumentParser(add_help=False)
+    initial_parser.add_argument("--argfile", help="File containing additional arguments")
+    initial_args, remaining_args = initial_parser.parse_known_args()
+
+    # If argfile is provided, read arguments from it
+    if initial_args.argfile:
+        file_args = read_args_from_file(initial_args.argfile)
+        # Combine file arguments with remaining command line arguments
+        sys.argv = [sys.argv[0]] + file_args + remaining_args
+
+    # Parse all arguments
+    parser = argparse.ArgumentParser(description="GLSL build tools")
+    parser.add_argument(
+        "--method",
+        required=True,
+        choices=["build_rd_headers", "build_raw_headers"],
+        help="Builder method to execute",
+    )
+    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+
+    args = parser.parse_args()
+
+    target = args.target
+    source = args.source
+
+    if args.method == "build_rd_headers":
+        build_rd_headers(target, source)
+    elif args.method == "build_raw_headers":
+        build_raw_headers(target, source)
+    else:
+        print(f"Unknown method: {args.method}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

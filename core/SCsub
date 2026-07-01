@@ -3,11 +3,9 @@ from misc.utility.scons_hints import *
 
 import os
 
-import core_builders
-
 import methods
 
-Import("env")
+Import("env", "py_builder_env")
 
 env.core_sources = []
 
@@ -169,20 +167,49 @@ env.core_sources += thirdparty_obj
 env.add_source_files(env.core_sources, "*.cpp")
 
 # Generate disabled classes
-env.CommandNoCache(
-    "disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(core_builders.disabled_class_builder)
+py_builder_env.CommandNoCache(
+    "disabled_classes.gen.h",
+    [env.Value(c) for c in env["DISABLED_CLASSES"]],
+    Action(
+        "$PYTHON_BIN core/core_builders.py --method disabled_class_builder --target $TARGET --source $SOURCES",
+        "$GENCOMSTR",
+    ),
 )
 
 # Generate version info
-env.CommandNoCache(
+vinfo = methods.get_version_info(env.module_version_string)
+py_builder_env.CommandNoCache(
     "version_generated.gen.h",
-    env.Value(methods.get_version_info(env.module_version_string)),
-    env.Run(core_builders.version_info_builder),
+    [
+        env.Value(vinfo[k])
+        for k in [
+            "short_name",
+            "name",
+            "major",
+            "minor",
+            "patch",
+            "status",
+            "build",
+            "module_config",
+            "website",
+            "docs_branch",
+        ]
+    ],
+    Action(
+        "$PYTHON_BIN core/core_builders.py --method version_info_builder --target $TARGET --source $SOURCES",
+        "$GENCOMSTR",
+    ),
 )
 
 # Generate version hash
-gen_hash = env.CommandNoCache(
-    "version_hash.gen.cpp", env.Value(methods.get_git_info()), env.Run(core_builders.version_hash_builder)
+git_info = methods.get_git_info()
+gen_hash = py_builder_env.CommandNoCache(
+    "version_hash.gen.cpp",
+    [env.Value(git_info["git_hash"]), env.Value(git_info["git_timestamp"])],
+    Action(
+        "$PYTHON_BIN core/core_builders.py --method version_hash_builder --target $TARGET --source $SOURCES",
+        "$GENCOMSTR",
+    ),
 )
 env.add_source_files(env.core_sources, gen_hash)
 
@@ -193,29 +220,54 @@ if encryption_key:
         "\n*** IMPORTANT: Compiling Godot with custom `SCRIPT_AES256_ENCRYPTION_KEY` set as environment variable."
         "\n*** Make sure to use templates compiled with this key when exporting a project with encryption.\n"
     )
-gen_encrypt = env.CommandNoCache(
+gen_encrypt = py_builder_env.Command(
     "script_encryption_key.gen.cpp",
     env.Value(encryption_key),
-    env.Run(core_builders.encryption_key_builder),
+    Action(
+        f"$PYTHON_BIN core/core_builders.py --method encryption_key_builder --target $TARGET --source {encryption_key}",
+        "$GENCOMSTR",
+    ),
 )
 env.add_source_files(env.core_sources, gen_encrypt)
 
 # Certificates
-env.CommandNoCache(
+py_builder_env.Command(
     "#core/io/certs_compressed.gen.h",
     ["#thirdparty/certs/ca-bundle.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
-    env.Run(core_builders.make_certs_header),
+    Action(
+        '$PYTHON_BIN core/core_builders.py --method make_certs_header --target $TARGET --source ${SOURCES[0]} ${builtin_certs} "${system_certs_path}"',
+        "$GENCOMSTR",
+    ),
 )
 
 # Authors
-env.CommandNoCache("#core/authors.gen.h", "#AUTHORS.md", env.Run(core_builders.make_authors_header))
+py_builder_env.Command(
+    "#core/authors.gen.h",
+    "#AUTHORS.md",
+    Action(
+        "$PYTHON_BIN core/core_builders.py --method make_authors_header --target $TARGET --source $SOURCE",
+        "$GENCOMSTR",
+    ),
+)
 
 # Donors
-env.CommandNoCache("#core/donors.gen.h", "#DONORS.md", env.Run(core_builders.make_donors_header))
+py_builder_env.Command(
+    "#core/donors.gen.h",
+    "#DONORS.md",
+    Action(
+        "$PYTHON_BIN core/core_builders.py --method make_donors_header --target $TARGET --source $SOURCE",
+        "$GENCOMSTR",
+    ),
+)
 
 # License
-env.CommandNoCache(
-    "#core/license.gen.h", ["#COPYRIGHT.txt", "#LICENSE.txt"], env.Run(core_builders.make_license_header)
+py_builder_env.CommandNoCache(
+    "#core/license.gen.h",
+    ["#COPYRIGHT.txt", "#LICENSE.txt"],
+    Action(
+        "$PYTHON_BIN core/core_builders.py --method make_license_header --target $TARGET --source $SOURCES",
+        "$GENCOMSTR",
+    ),
 )
 
 # Chain load SCsubs

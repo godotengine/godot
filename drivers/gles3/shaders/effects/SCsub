@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
+Import("env", "py_builder_env")
 
-if "GLES3_GLSL" in env["BUILDERS"]:
+if "GLES3_GLSL" in py_builder_env["BUILDERS"]:
     # find all include files
     gl_include_files = [str(f) for f in Glob("*_inc.glsl")]
 
@@ -15,4 +15,4 @@ if "GLES3_GLSL" in env["BUILDERS"]:
 
     # compile shaders
     for glsl_file in glsl_files:
-        env.GLES3_GLSL(glsl_file)
+        py_builder_env.GLES3_GLSL(glsl_file)

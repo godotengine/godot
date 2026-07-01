@@ -1,3 +1,5 @@
+import argparse
+
 script_call = """ScriptInstance *_script_instance = ((Object *)(this))->get_script_instance();\\
 		if (_script_instance) {\\
 			Callable::CallError ce;\\
@@ -190,7 +192,7 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
     return s
 
 
-def run(target, source, env):
+def make_virtuals(target):
     max_versions = 12
 
     txt = """/* THIS FILE IS GENERATED DO NOT EDIT */
@@ -228,5 +230,18 @@ void _gdvirtual_set_method_info_args(MethodInfo &p_method_info) {
         txt += generate_version(i, True, False, False, True)
         txt += generate_version(i, True, True, False, True)
 
-    with open(str(target[0]), "w", encoding="utf-8", newline="\n") as f:
+    with open(target, "w", encoding="utf-8", newline="\n") as f:
         f.write(txt)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--target", required=True, help="Target file")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    args = parser.parse_args()
+
+    make_virtuals(args.target)
+
+
+if __name__ == "__main__":
+    main()

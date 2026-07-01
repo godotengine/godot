@@ -1,12 +1,24 @@
 """Functions used to generate source files during build time"""
 
+import argparse
+import hashlib
 import os
 import os.path
+import shutil
 import subprocess
+import sys
 import tempfile
 import uuid
 
+# Add parent directory to path so we can import methods
+sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+
 import methods
+
+
+def hash(buffer):
+    """Generate MD5 hash of buffer for use in make_doc_header"""
+    return hashlib.md5(buffer).hexdigest()
 
 
 def doc_data_class_path_builder(target, source, env):
@@ -29,8 +41,11 @@ inline constexpr _DocDataClassPath _doc_data_class_paths[{len(paths) + 1}] = {{
         )
 
 
-def register_exporters_builder(target, source, env):
-    platforms = source[0].read()
+def register_exporters_builder(target, source):
+    # source is always a list, Command is passing quoted string of all
+    # platforms, so we need to split it before using it.
+    platforms = source[0].split()
+
     exp_inc = "\n".join([f'#include "platform/{p}/export/export.h"' for p in platforms])
     exp_reg = "\n\t".join([f"register_{p}_exporter();" for p in platforms])
     exp_type = "\n\t".join([f"register_{p}_exporter_types();" for p in platforms])
@@ -52,7 +67,7 @@ void register_exporter_types() {{
         )
 
 
-def make_doc_header(target, source, env):
+def make_doc_header(target, source):
     buffer = b"".join([methods.get_buffer(src) for src in map(str, source)])
     decomp_size = len(buffer)
     buffer = methods.compress_buffer(buffer)
@@ -68,14 +83,16 @@ inline constexpr const unsigned char _doc_data_compressed[] = {{
 """)
 
 
-def make_translations(target, source, env):
+def make_translations(target, source):
     target_h, target_cpp = str(target[0]), str(target[1])
 
     category = os.path.basename(target_h).split("_")[0]
-    sorted_paths = sorted([src.abspath for src in source], key=lambda path: os.path.splitext(os.path.basename(path))[0])
+    sorted_paths = sorted(
+        [os.path.abspath(src) for src in source], key=lambda path: os.path.splitext(os.path.basename(path))[0]
+    )
 
     xl_names = []
-    msgfmt = env.Detect("msgfmt")
+    msgfmt = shutil.which("msgfmt")
     if not msgfmt:
         methods.print_warning("msgfmt not found, using .po files instead of .mo")
 
@@ -152,3 +169,56 @@ struct EditorTranslationList {{
 
 extern const EditorTranslationList _{category}_translations[];
 """)
+
+
+def main():
+    # Parse initial arguments to check for argfile
+    initial_parser = argparse.ArgumentParser(add_help=False)
+    initial_parser.add_argument("--argfile", help="File containing additional arguments")
+    initial_args, remaining_args = initial_parser.parse_known_args()
+
+    # If argfile is provided, read arguments from it
+    if initial_args.argfile:
+        file_args = methods.read_args_from_file(initial_args.argfile)
+        # Combine file arguments with remaining command line arguments
+        sys.argv = [sys.argv[0]] + file_args + remaining_args
+
+        # Print arguments to stdout if --verbose is present
+        if "--verbose" in sys.argv:
+            print("Arguments read from file:", initial_args.argfile)
+            print("Combined arguments:", " ".join(file_args + remaining_args))
+
+    # Parse all arguments
+    parser = argparse.ArgumentParser(description="Editor build tools")
+    parser.add_argument(
+        "--method",
+        required=True,
+        choices=["doc_data_class_path_builder", "register_exporters_builder", "make_doc_header", "make_translations"],
+        help="Builder method to execute",
+    )
+    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+
+    args = parser.parse_args()
+
+    # Create mock objects
+    target = args.target
+    source = args.source
+
+    # Call the appropriate function
+    if args.method == "doc_data_class_path_builder":
+        doc_data_class_path_builder(target, source)
+    elif args.method == "register_exporters_builder":
+        register_exporters_builder(target, source)
+    elif args.method == "make_doc_header":
+        make_doc_header(target, source)
+    elif args.method == "make_translations":
+        make_translations(target, source)
+    else:
+        print(f"Unknown method: {args.method}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

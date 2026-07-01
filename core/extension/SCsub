@@ -1,22 +1,31 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
+Import("env", "py_builder_env")
 
-import make_interface_dumper
-import make_interface_header
-import make_wrappers
-
-env.CommandNoCache("ext_wrappers.gen.h", "make_wrappers.py", env.Run(make_wrappers.run))
-env.CommandNoCache(
+py_builder_env.Command(
+    "ext_wrappers.gen.h",
+    "make_wrappers.py",
+    Action(
+        "$PYTHON_BIN $SOURCE --target $TARGET",
+        "$GENCOMSTR",
+    ),
+)
+py_builder_env.Command(
     "gdextension_interface_dump.gen.h",
     ["gdextension_interface.json", "make_interface_dumper.py"],
-    env.Run(make_interface_dumper.run),
+    Action(
+        "$PYTHON_BIN ${SOURCES[1]} --target $TARGET --source ${SOURCES[0]}",
+        "$GENCOMSTR",
+    ),
 )
-env.CommandNoCache(
+py_builder_env.Command(
     "gdextension_interface.gen.h",
     ["gdextension_interface.json", "make_interface_header.py"],
-    env.Run(make_interface_header.run),
+    Action(
+        "$PYTHON_BIN ${SOURCES[1]} --target $TARGET --source ${SOURCES[0]}",
+        "$GENCOMSTR",
+    ),
 )
 
 env.add_source_files(env.core_sources, "*.cpp")

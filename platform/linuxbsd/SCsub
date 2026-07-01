@@ -3,8 +3,6 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-import platform_linuxbsd_builders
-
 common_linuxbsd = [
     "crash_handler_linuxbsd.cpp",
     "os_linuxbsd.cpp",
@@ -48,4 +46,14 @@ else:
     prog = env.add_program("#bin/godot", common_linuxbsd)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
-    env.AddPostAction(prog, env.Run(platform_linuxbsd_builders.make_debug_linuxbsd))
+    env.AddPostAction(
+        prog,
+        Action(
+            [
+                'objcopy --only-keep-debug "$TARGET" "${TARGET}.debugsymbols"',
+                'strip --strip-debug --strip-unneeded "$TARGET"',
+                'objcopy --add-gnu-debuglink="${TARGET}.debugsymbols" "$TARGET"',
+            ],
+            "Generating debug symbols for $TARGET",
+        ),
+    )
