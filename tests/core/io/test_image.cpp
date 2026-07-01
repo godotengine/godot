@@ -487,4 +487,409 @@ TEST_CASE("[Image] Convert image") {
 	CHECK_MESSAGE(image2->get_data() == image_data, "Image conversion to invalid type (Image::FORMAT_MAX + 1) should not alter image.");
 }
 
+TEST_CASE("[Image] Rotate Image 90 degrees") {
+	Color red(1.0f, 0.0f, 0.0f, 1.0f);
+	Color green(0.0f, 1.0f, 0.0f, 1.0f);
+	Color blue(0.0f, 0.0f, 1.0f, 1.0f);
+	Color white(1.0f, 1.0f, 1.0f, 1.0f);
+
+	Ref<Image> image;
+	PackedByteArray rotated_data;
+
+	SUBCASE("[Image] Rotation of simple 3x3 image clockwise") {
+		image.instantiate(3, 3, false, Image::FORMAT_RGBA8);
+		rotated_data.clear();
+		/*
+		initial:
+		123
+		231
+		312
+
+		expected result:
+		321
+		132
+		213
+
+		1: red
+		2: green
+		3: blue
+		*/
+
+		image->set_pixel(0, 0, red);
+		image->set_pixel(1, 0, green);
+		image->set_pixel(2, 0, blue);
+
+		image->set_pixel(0, 1, green);
+		image->set_pixel(1, 1, blue);
+		image->set_pixel(2, 1, red);
+
+		image->set_pixel(0, 2, blue);
+		image->set_pixel(1, 2, red);
+		image->set_pixel(2, 2, green);
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); //
+
+		image->rotate_90(ClockDirection::CLOCKWISE);
+		CHECK(image->get_data() == rotated_data);
+	}
+
+	SUBCASE("[Image] Rotation of simple 3x3 image counterclockwise") {
+		image.instantiate(3, 3, false, Image::FORMAT_RGBA8);
+		rotated_data.clear();
+		/*
+		initial:
+		123
+		231
+		312
+
+		expected result:
+		312
+		231
+		123
+
+		1: red
+		2: green
+		3: blue
+		*/
+
+		image->set_pixel(0, 0, red);
+		image->set_pixel(1, 0, green);
+		image->set_pixel(2, 0, blue);
+
+		image->set_pixel(0, 1, green);
+		image->set_pixel(1, 1, blue);
+		image->set_pixel(2, 1, red);
+
+		image->set_pixel(0, 2, blue);
+		image->set_pixel(1, 2, red);
+		image->set_pixel(2, 2, green);
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		image->rotate_90(ClockDirection::COUNTERCLOCKWISE);
+		CHECK(image->get_data() == rotated_data);
+	}
+
+	SUBCASE("[Image] rotating non-square image") {
+		image.instantiate(4, 2, false, Image::FORMAT_RGBA8);
+
+		// Setting pixels
+		image->set_pixel(0, 0, red);
+		image->set_pixel(1, 0, green);
+		image->set_pixel(2, 0, blue);
+		image->set_pixel(3, 0, white);
+
+		image->set_pixel(0, 1, red);
+		image->set_pixel(1, 1, green);
+		image->set_pixel(2, 1, blue);
+		image->set_pixel(3, 1, white);
+
+		image->rotate_90(CLOCKWISE);
+
+		// check height and width
+		CHECK(image->get_width() == 2);
+		CHECK(image->get_height() == 4);
+
+		// Check pixels
+		CHECK(image->get_pixel(0, 0) == red);
+		CHECK(image->get_pixel(1, 0) == red);
+		CHECK(image->get_pixel(0, 1) == green);
+		CHECK(image->get_pixel(1, 1) == green);
+
+		CHECK(image->get_pixel(0, 2) == blue);
+		CHECK(image->get_pixel(1, 2) == blue);
+		CHECK(image->get_pixel(0, 3) == white);
+		CHECK(image->get_pixel(1, 3) == white);
+	}
+
+	SUBCASE("[Image] Idempotency testing") {
+		image.instantiate(3, 3, false, Image::FORMAT_RGBA8);
+		Ref<Image> temp;
+		Ref<Image> image_copy;
+		// to avoid errors, instantiating with non-zero dimensions
+		temp.instantiate(1, 1, false, Image::FORMAT_RGBA8);
+		image_copy.instantiate(1, 1, false, Image::FORMAT_RGBA8);
+		image->set_pixel(0, 0, red);
+		image->set_pixel(1, 0, red);
+		image->set_pixel(2, 0, blue);
+
+		image->set_pixel(0, 1, blue);
+		image->set_pixel(1, 1, blue);
+		image->set_pixel(2, 1, green);
+
+		image->set_pixel(0, 2, green);
+		image->set_pixel(1, 2, red);
+		image->set_pixel(2, 2, red);
+
+		image_copy->copy_from(image);
+		temp->copy_from(image);
+
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+		CHECK_MESSAGE(image_copy->get_data() == image->get_data(), "Rotating clockwise four times; data should equal original");
+
+		// resetting the copy
+		image_copy->copy_from(image);
+
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+		temp->rotate_180();
+
+		PackedByteArray image_copy_data = image_copy->get_data();
+		PackedByteArray temp_data = temp->get_data();
+		CHECK_MESSAGE(image_copy_data == temp_data, "Rotating clockwise twice; data should equal execution of rotate_180()");
+
+		// resetting copies
+		image_copy->copy_from(image);
+		temp->copy_from(image);
+
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+		image_copy->rotate_90(CLOCKWISE);
+
+		temp->rotate_90(COUNTERCLOCKWISE);
+
+		image_copy_data = image_copy->get_data();
+		temp_data = temp->get_data();
+		CHECK_MESSAGE(image_copy_data == temp_data, "Rotating clockwise three times; data should equal rotating counterclockwise once");
+	}
+}
+
+TEST_CASE("[Image] Rotate Image 180 degrees") {
+	Color red(1.0f, 0.0f, 0.0f, 1.0f);
+	Color green(0.0f, 1.0f, 0.0f, 1.0f);
+	Color blue(0.0f, 0.0f, 1.0f, 1.0f);
+
+	Ref<Image> image;
+	PackedByteArray rotated_data;
+
+	SUBCASE("[Image] Simple flip") {
+		image.instantiate(3, 3, false, Image::FORMAT_RGBA8);
+		rotated_data.clear();
+		/*
+		initial:
+		123
+		231
+		312
+
+		expected result:
+		213
+		132
+		321
+
+		1: red
+		2: green
+		3: blue
+		*/
+
+		image->set_pixel(0, 0, red);
+		image->set_pixel(1, 0, green);
+		image->set_pixel(2, 0, blue);
+
+		image->set_pixel(0, 1, green);
+		image->set_pixel(1, 1, blue);
+		image->set_pixel(2, 1, red);
+
+		image->set_pixel(0, 2, blue);
+		image->set_pixel(1, 2, red);
+		image->set_pixel(2, 2, green);
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 3 (blue)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(255); // B
+		rotated_data.push_back(255); // A
+
+		// color 2 (green)
+		rotated_data.push_back(0); // R
+		rotated_data.push_back(255); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		// color 1 (red)
+		rotated_data.push_back(255); // R
+		rotated_data.push_back(0); // G
+		rotated_data.push_back(0); // B
+		rotated_data.push_back(255); // A
+
+		image->rotate_180();
+		PackedByteArray image_data = image->get_data();
+		CHECK(image_data == rotated_data);
+	}
+}
+
+TEST_CASE("[Image] Decompressing images") {
+	Ref<Image> image;
+
+	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_S3TC)") {
+		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
+		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
+		image->decompress();
+		CHECK_FALSE(image->is_compressed());
+	}
+
+	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_ETC2)") {
+		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
+		image->compress(Image::COMPRESS_ETC2, Image::COMPRESS_SOURCE_GENERIC);
+		image->decompress();
+		CHECK_FALSE(image->is_compressed());
+	}
+
+	SUBCASE("[Image] Simple decompression (Compression format: COMPRESS_BPTC)") {
+		image.instantiate(4, 4, false, Image::FORMAT_RGBA8);
+		image->compress(Image::COMPRESS_BPTC, Image::COMPRESS_SOURCE_GENERIC);
+		image->decompress();
+		CHECK_FALSE(image->is_compressed());
+	}
+
+	SUBCASE("[Image] Mipmapped image decompression") {
+		image.instantiate(4, 4, true, Image::FORMAT_RGBA8);
+		image->compress(Image::COMPRESS_S3TC, Image::COMPRESS_SOURCE_GENERIC);
+		image->decompress();
+		CHECK(image->has_mipmaps());
+	}
+}
+
 } // namespace TestImage
