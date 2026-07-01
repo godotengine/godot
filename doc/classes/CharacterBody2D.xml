@@ -63,7 +63,7 @@
 		<method name="get_real_velocity" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the current real velocity since the last call to [method move_and_slide]. For example, when you climb a slope, you will move diagonally even though the velocity is horizontal. This method returns the diagonal movement, as opposed to [member velocity] which returns the requested velocity.
+				Returns the current real velocity since the last call to [method move_and_slide]. For example, when you climb a slope, you will move diagonally even though the velocity is horizontal. This method returns the diagonal movement, as opposed to [member velocity] which returns the requested velocity. This value is in global coordinates.
 			</description>
 		</method>
 		<method name="get_slide_collision">
@@ -196,7 +196,7 @@
 			Vector pointing upwards, used to determine what is a wall and what is a floor (or a ceiling) when calling [method move_and_slide]. Defaults to [constant Vector2.UP]. As the vector will be normalized it can't be equal to [constant Vector2.ZERO], if you want all collisions to be reported as walls, consider using [constant MOTION_MODE_FLOATING] as [member motion_mode].
 		</member>
 		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
-			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].
+			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide]. This value is in global coordinates.
 			[b]Note:[/b] A common mistake is setting this property to the desired velocity multiplied by [code]delta[/code], which produces a motion vector in pixels.
 		</member>
 		<member name="wall_min_slide_angle" type="float" setter="set_wall_min_slide_angle" getter="get_wall_min_slide_angle" default="0.2617994">
