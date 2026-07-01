@@ -22,7 +22,7 @@ runs:
 
         echo "::group::Installing clangd-tidy"
         # Don't know which python we're using, so just access the global scope.
-        python -m pip install clangd clangd-tidy clang-tidy==22.1.0
+        python -m pip install clangd clangd-tidy clang-tidy==22.1.7
         echo "::endgroup::"
 
         echo "::group::Running clangd-tidy"
