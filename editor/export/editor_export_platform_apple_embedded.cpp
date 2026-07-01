@@ -1722,14 +1722,17 @@ Error EditorExportPlatformAppleEmbedded::export_project(const Ref<EditorExportPr
 Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify, bool p_oneclick) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
-	const String dest_dir = p_path.get_base_dir() + "/";
+	// Allow exporting to `res://` and `user://` for convenience, but ensure the export folder exists beforehand.
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	const String base_dir = ProjectSettings::get_singleton()->globalize_path(p_path.get_base_dir());
+	Error err = ensure_folder(da, base_dir);
+	if (err != OK) {
+		return err;
+	}
+
+	const String dest_dir = base_dir + "/";
 	const String binary_name = p_path.get_file().get_basename();
 	const String binary_dir = dest_dir + binary_name;
-
-	if (!DirAccess::exists(dest_dir)) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), dest_dir));
-		return ERR_FILE_BAD_PATH;
-	}
 
 	bool export_project_only = p_preset->get("application/export_project_only");
 	if (p_oneclick) {
@@ -1749,17 +1752,16 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	}
 
 	if (src_pkg_name.is_empty()) {
-		String err;
-		src_pkg_name = find_export_template(get_platform_name() + ".zip", &err);
+		String error_string;
+		src_pkg_name = find_export_template(get_platform_name() + ".zip", &error_string);
 		if (src_pkg_name.is_empty()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found.") + "\n" + error_string);
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
 
 	{
 		bool delete_old = p_preset->get("application/delete_old_export_files_unconditionally");
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (da.is_valid()) {
 			String current_dir = da->get_current_dir();
 
@@ -1827,7 +1829,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 			da->change_dir(current_dir);
 
 			if (!da->dir_exists(binary_dir)) {
-				Error err = da->make_dir(binary_dir);
+				err = da->make_dir(binary_dir);
 				if (err != OK) {
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Failed to create the directory: \"%s\""), binary_dir));
 					return err;
@@ -1841,7 +1843,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	}
 	String pack_path = binary_dir + ".pck";
 	Vector<SharedObject> libraries;
-	Error err = save_pack(p_preset, p_debug, pack_path, &libraries);
+	err = save_pack(p_preset, p_debug, pack_path, &libraries);
 	if (err) {
 		// Message is supplied by the subroutine method.
 		return err;
