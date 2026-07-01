@@ -99,6 +99,9 @@
 		<theme_item name="h_separation" data_type="constant" type="int" default="2">
 			The horizontal separation between the title's icon and text, and between title bar controls.
 		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the [FoldableContainer]'s icon. The height is adjusted according to the icon's ratio.
+		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The title's font outline size.
 		</theme_item>
