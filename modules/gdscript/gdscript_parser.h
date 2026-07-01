@@ -1099,6 +1099,7 @@ public:
 		};
 
 		bool is_attribute = false;
+		bool is_null_safe = false;
 
 		SubscriptNode() {
 			type = SUBSCRIPT;

@@ -3447,12 +3447,16 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 	if (current.is_node_name()) {
 		current.type = GDScriptTokenizer::Token::IDENTIFIER;
 	}
-	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier after "." for attribute access.)")) {
+
+	bool is_null_safe = previous.type == GDScriptTokenizer::Token::TK_OP_NULL_SAFE;
+
+	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, is_null_safe ? R"(Expected identifier after "?." for attribute access.)" : R"(Expected identifier after "." for attribute access.)")) {
 		complete_extents(attribute);
 		return attribute;
 	}
 
 	attribute->is_attribute = true;
+	attribute->is_null_safe = is_null_safe;
 	attribute->attribute = parse_identifier();
 
 	complete_extents(attribute);
@@ -4392,6 +4396,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		// Special
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ERROR,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // TK_EOF,
+		{ nullptr,                                          &GDScriptParser::parse_attribute,               PREC_ATTRIBUTE }, // TK_OP_NULL_SAFE (?.),
 	};
 	/* clang-format on */
 	// Avoid desync.
