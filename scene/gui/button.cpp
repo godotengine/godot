@@ -189,6 +189,9 @@ Ref<StyleBox> Button::_get_current_stylebox() const {
 Ref<StyleBox> Button::_get_current_stylebox_focus() const {
 	Ref<StyleBox> stylebox = theme_cache.focus;
 	const bool rtl = is_layout_rtl();
+	if (rtl && has_theme_stylebox(SNAME("focus_mirrored"))) {
+		stylebox = theme_cache.focus_mirrored;
+	}
 
 	switch (get_draw_mode()) {
 		case DRAW_NORMAL: {
