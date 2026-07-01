@@ -728,7 +728,7 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPRequest::set_http_proxy);
 	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPRequest::set_https_proxy);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE_PATH), "set_download_file", "get_download_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_SAVE_FILE), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216,suffix:B"), "set_download_chunk_size", "get_download_chunk_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_partial_download"), "set_keep_partial_download", "is_keeping_partial_download");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "append_to_download_file"), "set_append_to_download_file", "is_appending_to_download_file");
