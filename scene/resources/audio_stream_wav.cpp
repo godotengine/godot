@@ -98,7 +98,7 @@ void AudioStreamPlaybackWAV::decode_samples(const Depth *p_src, AudioFrame *p_ds
 	int32_t final = 0, final_r = 0;
 	while (p_amount) {
 		p_amount--;
-		int64_t pos = p_offset << (is_stereo && !is_ima_adpcm && !is_qoa ? 1 : 0);
+		uint64_t pos = p_offset << (is_stereo && !is_ima_adpcm && !is_qoa ? 1 : 0);
 
 		if (is_ima_adpcm) {
 			int64_t sample_pos = pos + p_ima_adpcm[0].window_ofs;
