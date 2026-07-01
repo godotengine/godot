@@ -36,6 +36,7 @@
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/string/fuzzy_search.h"
+#include "core/templates/fixed_vector.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -744,6 +745,22 @@ void QuickOpenResultContainer::_add_candidate(QuickOpenResultCandidate &p_candid
 	}
 
 	String file_path = ResourceUID::get_singleton()->get_id_path(p_candidate.uid);
+
+	// Verify that a PackedScene is actually a "real" Scene if in a Open Scene context.
+	if (base_types[0] == SNAME("PackedScene")) {
+		static FixedVector<String, 3> valid_extensions = { "tscn", "scn", "res" };
+		bool is_valid_type = false;
+		for (const String &ext : valid_extensions) {
+			if (file_path.has_extension(ext)) {
+				is_valid_type = true;
+				break;
+			}
+		}
+		if (!is_valid_type) {
+			return;
+		}
+	}
+
 	EditorResourcePreview::PreviewItem item = EditorResourcePreview::get_singleton()->get_resource_preview_if_available(file_path);
 	if (item.preview.is_valid()) {
 		p_candidate.thumbnail = item.preview;
