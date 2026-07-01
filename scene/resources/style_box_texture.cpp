@@ -105,6 +105,32 @@ float StyleBoxTexture::get_expand_margin(Side p_side) const {
 	return expand_margin[p_side];
 }
 
+void StyleBoxTexture::set_flip_h(bool p_flip) {
+	if (hflip == p_flip) {
+		return;
+	}
+
+	hflip = p_flip;
+	emit_changed();
+}
+
+bool StyleBoxTexture::is_flipped_h() const {
+	return hflip;
+}
+
+void StyleBoxTexture::set_flip_v(bool p_flip) {
+	if (vflip == p_flip) {
+		return;
+	}
+
+	vflip = p_flip;
+	emit_changed();
+}
+
+bool StyleBoxTexture::is_flipped_v() const {
+	return vflip;
+}
+
 void StyleBoxTexture::set_region_rect(const Rect2 &p_region_rect) {
 	if (region_rect == p_region_rect) {
 		return;
@@ -173,6 +199,11 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	texture->get_rect_region(rect, src_rect, rect, src_rect);
 
+	// Normalize negative size before applying expand_margin, track direction for flip.
+	bool rect_flip_h = rect.size.x < 0;
+	bool rect_flip_v = rect.size.y < 0;
+	rect = rect.abs();
+
 	rect.position.x -= expand_margin[SIDE_LEFT];
 	rect.position.y -= expand_margin[SIDE_TOP];
 	rect.size.x += expand_margin[SIDE_LEFT] + expand_margin[SIDE_RIGHT];
@@ -180,6 +211,13 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	Vector2 start_offset = Vector2(texture_margin[SIDE_LEFT], texture_margin[SIDE_TOP]);
 	Vector2 end_offset = Vector2(texture_margin[SIDE_RIGHT], texture_margin[SIDE_BOTTOM]);
+
+	if (hflip != rect_flip_h) {
+		rect.size.x = -rect.size.x;
+	}
+	if (vflip != rect_flip_v) {
+		rect.size.y = -rect.size.y;
+	}
 
 	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_scaled_rid(), start_offset, end_offset, RSE::NinePatchAxisMode(axis_h), RSE::NinePatchAxisMode(axis_v), draw_center, modulate);
 }
@@ -195,6 +233,12 @@ void StyleBoxTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_expand_margin", "margin", "size"), &StyleBoxTexture::set_expand_margin);
 	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxTexture::set_expand_margin_all);
 	ClassDB::bind_method(D_METHOD("get_expand_margin", "margin"), &StyleBoxTexture::get_expand_margin);
+
+	ClassDB::bind_method(D_METHOD("set_flip_h", "flip"), &StyleBoxTexture::set_flip_h);
+	ClassDB::bind_method(D_METHOD("is_flipped_h"), &StyleBoxTexture::is_flipped_h);
+
+	ClassDB::bind_method(D_METHOD("set_flip_v", "flip"), &StyleBoxTexture::set_flip_v);
+	ClassDB::bind_method(D_METHOD("is_flipped_v"), &StyleBoxTexture::is_flipped_v);
 
 	ClassDB::bind_method(D_METHOD("set_region_rect", "region"), &StyleBoxTexture::set_region_rect);
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &StyleBoxTexture::get_region_rect);
@@ -224,6 +268,10 @@ void StyleBoxTexture::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_right", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1,suffix:px"), "set_expand_margin", "get_expand_margin", SIDE_BOTTOM);
+
+	ADD_GROUP("Flip", "flip_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 
 	ADD_GROUP("Axis Stretch", "axis_stretch_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
