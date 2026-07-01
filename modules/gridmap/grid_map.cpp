@@ -1278,6 +1278,10 @@ void GridMap::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_visibility();
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			_recreate_octant_data();
+		} break;
 	}
 }
 
