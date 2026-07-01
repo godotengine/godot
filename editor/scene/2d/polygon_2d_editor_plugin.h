@@ -55,7 +55,12 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		MENU_POLYGON_TO_UV,
 		MENU_UV_TO_POLYGON,
 		MENU_UV_CLEAR,
-		MENU_GRID_SETTINGS,
+	};
+
+	enum {
+		GRID_SHOW,
+		GRID_SNAP,
+		GRID_SETTINGS,
 	};
 
 	enum Mode {
@@ -63,7 +68,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		MODE_POLYGONS,
 		MODE_UV,
 		MODE_BONES,
-		MODE_MAX
+		MODE_MAX,
 	};
 
 	enum Action {
@@ -78,8 +83,18 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		ACTION_REMOVE_POLYGON,
 		ACTION_PAINT_WEIGHT,
 		ACTION_CLEAR_WEIGHT,
-		ACTION_MAX
+		ACTION_SET_WEIGHT,
+		ACTION_MAX,
 	};
+
+	enum PaintMode {
+		PAINT_MODE_HARD,
+		PAINT_MODE_SOFT,
+		PAINT_MODE_MAX,
+	};
+
+	static constexpr int soft_painting_circle_count_per_10_rad = 3;
+	static constexpr int soft_painting_circle_resolution = 32;
 
 	Polygon2D *node = nullptr;
 	Polygon2D *previous_node = nullptr;
@@ -89,9 +104,8 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Button *mode_buttons[MODE_MAX];
 	Action selected_action = ACTION_CREATE;
 	Button *action_buttons[ACTION_MAX];
-	Button *b_snap_enable = nullptr;
-	Button *b_snap_grid = nullptr;
-	MenuButton *edit_menu = nullptr;
+	MenuButton *edit_uv_menu = nullptr;
+	MenuButton *grid_menu = nullptr;
 
 	Control *canvas = nullptr;
 	Panel *canvas_background = nullptr;
@@ -111,14 +125,26 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	ScrollContainer *bone_scroll = nullptr;
 	VBoxContainer *bone_scroll_vb = nullptr;
 	Button *sync_bones = nullptr;
-	HSlider *bone_paint_strength = nullptr;
-	SpinBox *bone_paint_radius = nullptr;
-	Label *bone_paint_radius_label = nullptr;
 	bool bone_painting = false;
 	int bone_painting_bone = 0;
 	Vector<float> prev_weights;
+	Vector<float> bone_paint_stroke_extremes;
 	Vector2 bone_paint_pos;
 	AcceptDialog *grid_settings = nullptr;
+
+	HBoxContainer *paint_toolbar = nullptr;
+	Button *paint_mode_buttons[PAINT_MODE_MAX];
+	PaintMode current_paint_mode = PAINT_MODE_MAX; // Uninitialized.
+	Label *bone_paint_strength_label = nullptr;
+	SpinBox *bone_paint_strength = nullptr;
+	Label *bone_paint_radius_label = nullptr;
+	SpinBox *bone_paint_radius = nullptr;
+	Label *bone_paint_inner_radius_label = nullptr;
+	SpinBox *bone_paint_inner_radius = nullptr;
+	Label *bone_paint_pinch_label = nullptr;
+	SpinBox *bone_paint_pinch = nullptr;
+	Label *bone_paint_bubble_label = nullptr;
+	SpinBox *bone_paint_bubble = nullptr;
 
 	void _sync_bones();
 	void _update_bone_list(const Polygon2D *p_for_node);
@@ -148,10 +174,13 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Vector2 snap_step;
 
 	void _edit_menu_option(int p_option);
+	void _grid_menu_option(int p_option);
 
 	void _cancel_editing();
 	void _update_polygon_editing_state();
 	void _update_available_modes();
+
+	real_t _get_soft_paint_easing(const Vector2 &p_brush_pos, const Vector2 &p_point_pos, real_t p_strength, real_t p_radius, real_t p_inner_radius, real_t p_pinch, real_t p_bubble);
 
 	void _center_view();
 	void _update_zoom_and_pan(bool p_zoom_at_center);
@@ -168,7 +197,9 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	void _set_snap_step_y(real_t p_val);
 
 	void _select_mode(int p_mode);
+	void _select_paint_mode(int p_mode);
 	void _bone_paint_selected(int p_index);
+	void _paint_bone_weight();
 
 	int _get_polygon_count() const override;
 

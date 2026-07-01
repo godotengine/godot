@@ -52,7 +52,6 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/view_panner.h"
@@ -83,7 +82,9 @@ void Polygon2DEditor::_set_node(Node *p_polygon) {
 		_update_bone_list(node);
 		_update_available_modes();
 		if (current_mode == MODE_MAX) {
-			_select_mode(MODE_POINTS); // Initialize when opening the first time.
+			// Initialize when opening the first time.
+			_select_mode(MODE_POINTS);
+			_select_paint_mode(PAINT_MODE_HARD);
 		}
 		if (previous_node != node) {
 			_center_view_on_draw();
@@ -132,11 +133,9 @@ void Polygon2DEditor::_notification(int p_what) {
 			action_buttons[ACTION_SCALE]->set_button_icon(get_editor_theme_icon(SNAME("ToolScale")));
 			action_buttons[ACTION_ADD_POLYGON]->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			action_buttons[ACTION_REMOVE_POLYGON]->set_button_icon(get_editor_theme_icon(SNAME("Close")));
-			action_buttons[ACTION_PAINT_WEIGHT]->set_button_icon(get_editor_theme_icon(SNAME("Bucket")));
-			action_buttons[ACTION_CLEAR_WEIGHT]->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
-
-			b_snap_grid->set_button_icon(get_editor_theme_icon(SNAME("Grid")));
-			b_snap_enable->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			action_buttons[ACTION_PAINT_WEIGHT]->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			action_buttons[ACTION_CLEAR_WEIGHT]->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+			action_buttons[ACTION_SET_WEIGHT]->set_button_icon(get_editor_theme_icon(SNAME("Paint")));
 
 			vscroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
 			hscroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
@@ -261,16 +260,76 @@ void Polygon2DEditor::_bone_paint_selected(int p_index) {
 	canvas->queue_redraw();
 }
 
+void Polygon2DEditor::_paint_bone_weight() {
+	Vector<float> painted_weights = node->get_bone_weights(bone_painting_bone);
+
+	int pc = painted_weights.size();
+	real_t amount = bone_paint_strength->get_value();
+	real_t radius = bone_paint_radius->get_value() * EDSCALE;
+
+	if (selected_action == ACTION_CLEAR_WEIGHT) {
+		amount = -amount;
+	}
+
+	float *w = painted_weights.ptrw();
+	const float *r = prev_weights.ptr();
+	const Vector2 *rv = editing_points.ptr();
+
+	Transform2D mtx;
+	mtx.columns[2] = -draw_offset * draw_zoom;
+	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
+
+	bool set = selected_action == ACTION_SET_WEIGHT;
+
+	if (current_paint_mode == PAINT_MODE_SOFT) {
+		real_t inner_radius = bone_paint_inner_radius->get_value() * EDSCALE;
+		float pinch = bone_paint_pinch->get_value();
+		float bubble = bone_paint_bubble->get_value();
+		bool track_min = selected_action == ACTION_CLEAR_WEIGHT;
+
+		float *extremes = bone_paint_stroke_extremes.ptrw();
+
+		for (int i = 0; i < pc; i++) {
+			Vector2 point_pos = mtx.xform(rv[i]);
+			float falloff = _get_soft_paint_easing(bone_paint_pos, point_pos, 1.0f, radius, inner_radius, pinch, bubble);
+			if (falloff <= 0.0f) {
+				continue;
+			}
+
+			float candidate = set ? Math::lerp(r[i], (float)amount, falloff) : r[i] + amount * falloff;
+			candidate = CLAMP(candidate, 0.0f, 1.0f);
+
+			// Track the most extreme value reached at this vertex over the whole stroke,
+			// so passing through and back out doesn't erase the peak.
+			extremes[i] = track_min ? MIN(extremes[i], candidate) : MAX(extremes[i], candidate);
+			w[i] = extremes[i];
+		}
+	} else {
+		for (int i = 0; i < pc; i++) {
+			if (mtx.xform(rv[i]).distance_to(bone_paint_pos) < radius) {
+				w[i] = CLAMP(set ? amount : r[i] + amount, 0, 1);
+			}
+		}
+	}
+
+	node->set_bone_weights(bone_painting_bone, painted_weights);
+}
+
 void Polygon2DEditor::_select_mode(int p_mode) {
 	current_mode = Mode(p_mode);
 	mode_buttons[current_mode]->set_pressed(true);
 	for (int i = 0; i < ACTION_MAX; i++) {
 		action_buttons[i]->hide();
 	}
+	paint_toolbar->hide();
 	bone_scroll_main_vb->hide();
+	edit_uv_menu->hide();
+
+	bone_paint_strength_label->hide();
 	bone_paint_strength->hide();
-	bone_paint_radius->hide();
 	bone_paint_radius_label->hide();
+	bone_paint_radius->hide();
+
 	switch (current_mode) {
 		case MODE_POINTS: {
 			action_buttons[ACTION_CREATE]->show();
@@ -300,19 +359,51 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 			action_buttons[ACTION_MOVE]->show();
 			action_buttons[ACTION_ROTATE]->show();
 			action_buttons[ACTION_SCALE]->show();
+			edit_uv_menu->show();
 			_set_action(ACTION_EDIT_POINT);
 		} break;
 		case MODE_BONES: {
 			action_buttons[ACTION_PAINT_WEIGHT]->show();
 			action_buttons[ACTION_CLEAR_WEIGHT]->show();
+			action_buttons[ACTION_SET_WEIGHT]->show();
 			_set_action(ACTION_PAINT_WEIGHT);
 
-			bone_scroll_main_vb->show();
+			bone_paint_strength_label->show();
 			bone_paint_strength->show();
-			bone_paint_radius->show();
 			bone_paint_radius_label->show();
+			bone_paint_radius->show();
+			_select_paint_mode(PAINT_MODE_HARD);
+
+			bone_scroll_main_vb->show();
+			paint_toolbar->show();
 			_update_bone_list(node);
 			bone_paint_pos = Vector2(-100000, -100000); // Send brush away when switching.
+		} break;
+		default:
+			break;
+	}
+	canvas->queue_redraw();
+}
+
+void Polygon2DEditor::_select_paint_mode(int p_mode) {
+	current_paint_mode = PaintMode(p_mode);
+	paint_mode_buttons[current_paint_mode]->set_pressed(true);
+
+	bone_paint_inner_radius_label->hide();
+	bone_paint_inner_radius->hide();
+	bone_paint_pinch_label->hide();
+	bone_paint_pinch->hide();
+	bone_paint_bubble_label->hide();
+	bone_paint_bubble->hide();
+
+	switch (current_paint_mode) {
+		case PAINT_MODE_SOFT: {
+			bone_paint_inner_radius_label->show();
+			bone_paint_inner_radius->show();
+			bone_paint_pinch_label->show();
+			bone_paint_pinch->show();
+			bone_paint_bubble_label->show();
+			bone_paint_bubble->show();
 		} break;
 		default:
 			break;
@@ -356,7 +447,25 @@ void Polygon2DEditor::_edit_menu_option(int p_option) {
 			undo_redo->add_undo_method(node, "set_uv", uvs);
 			undo_redo->commit_action();
 		} break;
-		case MENU_GRID_SETTINGS: {
+	}
+}
+
+void Polygon2DEditor::_grid_menu_option(int p_option) {
+	EditorSettings *settings = EditorSettings::get_singleton();
+	PopupMenu *menu = grid_menu->get_popup();
+	switch (p_option) {
+		case GRID_SHOW: {
+			snap_show_grid = !menu->is_item_checked(p_option);
+			menu->set_item_checked(p_option, snap_show_grid);
+			settings->set_project_metadata("polygon_2d_uv_editor", "show_grid", snap_show_grid);
+			canvas->queue_redraw();
+		} break;
+		case GRID_SNAP: {
+			use_snap = menu->is_item_checked(p_option);
+			menu->set_item_checked(p_option, use_snap);
+			settings->set_project_metadata("polygon_2d_uv_editor", "snap_enabled", use_snap);
+		} break;
+		case GRID_SETTINGS: {
 			grid_settings->popup_centered();
 		} break;
 	}
@@ -405,17 +514,6 @@ void Polygon2DEditor::_commit_action() {
 	undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "update_viewport");
 	undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "update_viewport");
 	undo_redo->commit_action();
-}
-
-void Polygon2DEditor::_set_use_snap(bool p_use) {
-	use_snap = p_use;
-	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "snap_enabled", p_use);
-}
-
-void Polygon2DEditor::_set_show_grid(bool p_show) {
-	snap_show_grid = p_show;
-	EditorSettings::get_singleton()->set_project_metadata("polygon_2d_uv_editor", "show_grid", p_show);
-	canvas->queue_redraw();
 }
 
 void Polygon2DEditor::_set_snap_off_x(real_t p_val) {
@@ -734,7 +832,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					}
 				}
 
-				if (current_action == ACTION_PAINT_WEIGHT || current_action == ACTION_CLEAR_WEIGHT) {
+				if (current_action == ACTION_PAINT_WEIGHT || current_action == ACTION_CLEAR_WEIGHT || current_action == ACTION_SET_WEIGHT) {
 					int bone_selected = -1;
 					for (int i = 0; i < bone_scroll_vb->get_child_count(); i++) {
 						CheckBox *c = Object::cast_to<CheckBox>(bone_scroll_vb->get_child(i));
@@ -748,6 +846,12 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 						prev_weights = node->get_bone_weights(bone_selected);
 						bone_painting = true;
 						bone_painting_bone = bone_selected;
+
+						bone_paint_stroke_extremes = prev_weights.duplicate();
+
+						bone_paint_pos = mb->get_position();
+						_paint_bone_weight();
+						canvas->queue_redraw();
 					}
 				}
 			} else {
@@ -918,7 +1022,8 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					}
 				} break;
 				case ACTION_PAINT_WEIGHT:
-				case ACTION_CLEAR_WEIGHT: {
+				case ACTION_CLEAR_WEIGHT:
+				case ACTION_SET_WEIGHT: {
 					bone_paint_pos = mm->get_position();
 				} break;
 				default: {
@@ -926,29 +1031,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 			}
 
 			if (bone_painting) {
-				Vector<float> painted_weights = node->get_bone_weights(bone_painting_bone);
-
-				{
-					int pc = painted_weights.size();
-					real_t amount = bone_paint_strength->get_value();
-					real_t radius = bone_paint_radius->get_value() * EDSCALE;
-
-					if (selected_action == ACTION_CLEAR_WEIGHT) {
-						amount = -amount;
-					}
-
-					float *w = painted_weights.ptrw();
-					const float *r = prev_weights.ptr();
-					const Vector2 *rv = editing_points.ptr();
-
-					for (int i = 0; i < pc; i++) {
-						if (mtx.xform(rv[i]).distance_to(bone_paint_pos) < radius) {
-							w[i] = CLAMP(r[i] + amount, 0, 1);
-						}
-					}
-				}
-
-				node->set_bone_weights(bone_painting_bone, painted_weights);
+				_paint_bone_weight();
 			}
 
 			canvas->queue_redraw();
@@ -956,7 +1039,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 		} else if (polygon_create.size()) {
 			create_to = mtx.affine_inverse().xform(mm->get_position());
 			canvas->queue_redraw();
-		} else if (selected_action == ACTION_PAINT_WEIGHT || selected_action == ACTION_CLEAR_WEIGHT) {
+		} else if (selected_action == ACTION_PAINT_WEIGHT || selected_action == ACTION_CLEAR_WEIGHT || selected_action == ACTION_SET_WEIGHT) {
 			bone_paint_pos = mm->get_position();
 			canvas->queue_redraw();
 		}
@@ -1062,6 +1145,33 @@ void Polygon2DEditor::_center_view_on_draw(bool p_enabled) {
 		// Ensure that the view is centered even if the canvas is redrawn multiple times in the frame.
 		get_tree()->connect("process_frame", callable_mp(this, &Polygon2DEditor::_center_view_on_draw).bind(false), CONNECT_ONE_SHOT);
 	}
+}
+
+real_t Polygon2DEditor::_get_soft_paint_easing(const Vector2 &p_brush_pos, const Vector2 &p_point_pos, real_t p_strength, real_t p_radius, real_t p_inner_radius, real_t p_pinch, real_t p_bubble) {
+	real_t dist = p_point_pos.distance_to(p_brush_pos);
+
+	if (dist <= p_inner_radius) {
+		return p_strength;
+	}
+
+	if (dist >= p_radius || p_radius <= p_inner_radius) {
+		return 0.0f;
+	}
+
+	const real_t t = (dist - p_inner_radius) / (p_radius - p_inner_radius);
+
+	// Simple smoothstep curve.
+	real_t weight = 1.0f - t * t * (3.0f - 2.0f * t);
+
+	// Pinch: Positive narrows/sharpens the peak. Negative flattens it.
+	real_t pinch_exponent = MAX(1.0f - p_pinch, 0.01f);
+	weight = Math::pow(weight, pinch_exponent);
+
+	// Bubble: additive bulge centered at t=0.5, zero at t=0 and t=1.
+	real_t bubble_curve = Math::sin(Math::PI * t);
+	weight += p_bubble * bubble_curve * weight;
+
+	return CLAMP(weight, 0.0f, 1.0f) * p_strength;
 }
 
 void Polygon2DEditor::_canvas_draw() {
@@ -1266,7 +1376,7 @@ void Polygon2DEditor::_canvas_draw() {
 		}
 	}
 
-	if (selected_action == ACTION_PAINT_WEIGHT || selected_action == ACTION_CLEAR_WEIGHT) {
+	if (selected_action == ACTION_PAINT_WEIGHT || selected_action == ACTION_CLEAR_WEIGHT || selected_action == ACTION_SET_WEIGHT) {
 		NodePath bone_path;
 		for (int i = 0; i < bone_scroll_vb->get_child_count(); i++) {
 			CheckBox *c = Object::cast_to<CheckBox>(bone_scroll_vb->get_child(i));
@@ -1320,7 +1430,34 @@ void Polygon2DEditor::_canvas_draw() {
 		}
 
 		//draw paint circle
-		canvas->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
+		if (current_mode != MODE_BONES) {
+			canvas->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
+		} else {
+			switch (current_paint_mode) {
+				case PAINT_MODE_SOFT: {
+					float radius = bone_paint_radius->get_value() * EDSCALE;
+					float inner_radius = bone_paint_inner_radius->get_value() * EDSCALE;
+					int circle_count = Math::ceil((radius - inner_radius) / (10 * EDSCALE)) * soft_painting_circle_count_per_10_rad;
+					float band_width = (radius - inner_radius) / circle_count;
+
+					// Using `draw_circle` causes visual artifacts due to point count mismatch.
+					canvas->draw_arc(bone_paint_pos, inner_radius / 2.0f, 0.0f, Math::TAU, soft_painting_circle_resolution, Color(1, 1, 1, 0.25), inner_radius, true);
+
+					for (int i = 0; i < circle_count; ++i) {
+						float dist_start = inner_radius + band_width * i;
+						float dist_mid = dist_start + band_width * 0.5f;
+						float weight = _get_soft_paint_easing(bone_paint_pos, bone_paint_pos + Vector2::RIGHT * dist_mid, 1.0f, radius, inner_radius, bone_paint_pinch->get_value(), bone_paint_bubble->get_value());
+
+						canvas->draw_arc(bone_paint_pos, dist_mid, 0.0f, Math::TAU, soft_painting_circle_resolution, Color(1, 1, 1, weight * 0.25), band_width, true);
+					}
+
+					canvas->draw_arc(bone_paint_pos, radius, 0.0f, Math::TAU, soft_painting_circle_resolution, Color(1, 0, 0, 0.1), band_width, true);
+				} break;
+				default: {
+					canvas->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
+				} break;
+			}
+		}
 	}
 }
 
@@ -1402,6 +1539,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_REMOVE_POLYGON]->set_tooltip_text(TTR("Remove a custom polygon. If none remain, custom polygon rendering is disabled."));
 	action_buttons[ACTION_PAINT_WEIGHT]->set_tooltip_text(TTR("Paint weights with specified intensity."));
 	action_buttons[ACTION_CLEAR_WEIGHT]->set_tooltip_text(TTR("Unpaint weights with specified intensity."));
+	action_buttons[ACTION_SET_WEIGHT]->set_tooltip_text(TTR("Set weights to specified intensity."));
 
 	action_buttons[ACTION_CREATE]->set_accessibility_name(TTRC("Create Polygon"));
 	action_buttons[ACTION_CREATE_INTERNAL]->set_accessibility_name(TTRC("Create Internal Vertex"));
@@ -1414,27 +1552,10 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_REMOVE_POLYGON]->set_accessibility_name(TTRC("Remove a custom polygon. If none remain, custom polygon rendering is disabled."));
 	action_buttons[ACTION_PAINT_WEIGHT]->set_accessibility_name(TTRC("Paint weights with specified intensity."));
 	action_buttons[ACTION_CLEAR_WEIGHT]->set_accessibility_name(TTRC("Unpaint weights with specified intensity."));
+	action_buttons[ACTION_SET_WEIGHT]->set_accessibility_name(TTRC("Set weights to specified intensity."));
 
-	bone_paint_strength = memnew(HSlider);
-	toolbar->add_child(bone_paint_strength);
-	bone_paint_strength->set_custom_minimum_size(Size2(75 * EDSCALE, 0));
-	bone_paint_strength->set_v_size_flags(SIZE_SHRINK_CENTER);
-	bone_paint_strength->set_min(0);
-	bone_paint_strength->set_max(1);
-	bone_paint_strength->set_step(0.01);
-	bone_paint_strength->set_value(0.5);
-	bone_paint_strength->set_accessibility_name(TTRC("Strength"));
-
-	bone_paint_radius_label = memnew(Label(TTR("Radius:")));
-	toolbar->add_child(bone_paint_radius_label);
-	bone_paint_radius = memnew(SpinBox);
-	toolbar->add_child(bone_paint_radius);
-
-	bone_paint_radius->set_min(1);
-	bone_paint_radius->set_max(100);
-	bone_paint_radius->set_step(1);
-	bone_paint_radius->set_value(32);
-	bone_paint_radius->set_accessibility_name(TTRC("Radius:"));
+	paint_toolbar = memnew(HBoxContainer);
+	edit_vbox->add_child(paint_toolbar);
 
 	HSplitContainer *uv_main_hsc = memnew(HSplitContainer);
 	edit_vbox->add_child(uv_main_hsc);
@@ -1457,40 +1578,108 @@ Polygon2DEditor::Polygon2DEditor() {
 	toolbar->add_child(space);
 	space->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	edit_menu = memnew(MenuButton);
-	toolbar->add_child(edit_menu);
-	edit_menu->set_flat(false);
-	edit_menu->set_theme_type_variation("FlatMenuButton");
-	edit_menu->set_text(TTR("Edit"));
-	edit_menu->get_popup()->add_item(TTR("Copy Polygon to UV"), MENU_POLYGON_TO_UV);
-	edit_menu->get_popup()->add_item(TTR("Copy UV to Polygon"), MENU_UV_TO_POLYGON);
-	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item(TTR("Clear UV"), MENU_UV_CLEAR);
-	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item(TTR("Grid Settings"), MENU_GRID_SETTINGS);
-	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Polygon2DEditor::_edit_menu_option));
+	edit_uv_menu = memnew(MenuButton);
+	toolbar->add_child(edit_uv_menu);
+	edit_uv_menu->set_flat(false);
+	edit_uv_menu->set_theme_type_variation("FlatMenuButton");
+	edit_uv_menu->set_text(TTR("Edit"));
+	edit_uv_menu->get_popup()->add_item(TTR("Copy Polygon to UV"), MENU_POLYGON_TO_UV);
+	edit_uv_menu->get_popup()->add_item(TTR("Copy UV to Polygon"), MENU_UV_TO_POLYGON);
+	edit_uv_menu->get_popup()->add_separator();
+	edit_uv_menu->get_popup()->add_item(TTR("Clear UV"), MENU_UV_CLEAR);
+	edit_uv_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Polygon2DEditor::_edit_menu_option));
+
+	bone_paint_strength_label = memnew(Label(TTR("Strength:")));
+	toolbar->add_child(bone_paint_strength_label);
+
+	bone_paint_strength = memnew(SpinBox);
+	toolbar->add_child(bone_paint_strength);
+	bone_paint_strength->set_v_size_flags(SIZE_SHRINK_CENTER);
+	bone_paint_strength->set_min(0);
+	bone_paint_strength->set_max(1);
+	bone_paint_strength->set_step(0.01);
+	bone_paint_strength->set_value(0.5);
+	bone_paint_strength->set_accessibility_name(TTRC("Strength"));
+	bone_paint_strength->set_tooltip_text(TTR("By how much the brush changes the vertex weight."));
+
+	bone_paint_radius_label = memnew(Label(TTR("Radius:")));
+	toolbar->add_child(bone_paint_radius_label);
+
+	bone_paint_radius = memnew(SpinBox);
+	toolbar->add_child(bone_paint_radius);
+	bone_paint_radius->set_min(1);
+	bone_paint_radius->set_max(100);
+	bone_paint_radius->set_step(1);
+	bone_paint_radius->set_value(32);
+	bone_paint_radius->set_accessibility_name(TTRC("Radius:"));
+	bone_paint_radius->set_tooltip_text(TTR("The size of the weight painting brush."));
 
 	toolbar->add_child(memnew(VSeparator));
 
-	b_snap_enable = memnew(Button);
-	b_snap_enable->set_theme_type_variation(SceneStringName(FlatButton));
-	toolbar->add_child(b_snap_enable);
-	b_snap_enable->set_text(TTR("Snap"));
-	b_snap_enable->set_focus_mode(FOCUS_ACCESSIBILITY);
-	b_snap_enable->set_toggle_mode(true);
-	b_snap_enable->set_pressed(use_snap);
-	b_snap_enable->set_tooltip_text(TTR("Enable Snap"));
-	b_snap_enable->connect(SceneStringName(toggled), callable_mp(this, &Polygon2DEditor::_set_use_snap));
+	grid_menu = memnew(MenuButton);
+	toolbar->add_child(grid_menu);
+	grid_menu->set_flat(false);
+	grid_menu->set_theme_type_variation("FlatMenuButton");
+	grid_menu->set_text(TTR("Grid"));
+	grid_menu->get_popup()->add_check_item(TTR("Show Grid"), GRID_SHOW);
+	grid_menu->get_popup()->add_check_item(TTR("Enable Snap"), GRID_SNAP);
+	grid_menu->get_popup()->add_item(TTR("Grid Settings"), GRID_SETTINGS);
+	grid_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Polygon2DEditor::_grid_menu_option));
 
-	b_snap_grid = memnew(Button);
-	b_snap_grid->set_theme_type_variation(SceneStringName(FlatButton));
-	toolbar->add_child(b_snap_grid);
-	b_snap_grid->set_text(TTR("Grid"));
-	b_snap_grid->set_focus_mode(FOCUS_ACCESSIBILITY);
-	b_snap_grid->set_toggle_mode(true);
-	b_snap_grid->set_pressed(snap_show_grid);
-	b_snap_grid->set_tooltip_text(TTR("Show Grid"));
-	b_snap_grid->connect(SceneStringName(toggled), callable_mp(this, &Polygon2DEditor::_set_show_grid));
+	for (int i = 0; i < PAINT_MODE_MAX; i++) {
+		paint_mode_buttons[i] = memnew(Button);
+		paint_toolbar->add_child(paint_mode_buttons[i]);
+		paint_mode_buttons[i]->set_toggle_mode(true);
+		paint_mode_buttons[i]->set_button_group(mode_button_group);
+		paint_mode_buttons[i]->connect(SceneStringName(pressed), callable_mp(this, &Polygon2DEditor::_select_paint_mode).bind(i));
+	}
+
+	paint_mode_buttons[PAINT_MODE_HARD]->set_text(TTR("Hard"));
+	paint_mode_buttons[PAINT_MODE_SOFT]->set_text(TTR("Soft"));
+
+	paint_mode_buttons[PAINT_MODE_HARD]->set_tooltip_text(TTR("All vertices inside the brush are painted equally."));
+	paint_mode_buttons[PAINT_MODE_SOFT]->set_tooltip_text(TTR("Vertices inside the brush are painted based on the distance from the brush's center."));
+
+	paint_mode_buttons[PAINT_MODE_HARD]->set_accessibility_name(TTRC("Hard Brush"));
+	paint_mode_buttons[PAINT_MODE_SOFT]->set_accessibility_name(TTRC("Soft Brush"));
+
+	paint_toolbar->add_child(memnew(VSeparator));
+
+	bone_paint_inner_radius_label = memnew(Label(TTR("Inner Rad.:")));
+	paint_toolbar->add_child(bone_paint_inner_radius_label);
+
+	bone_paint_inner_radius = memnew(SpinBox);
+	paint_toolbar->add_child(bone_paint_inner_radius);
+	bone_paint_inner_radius->set_min(0);
+	bone_paint_inner_radius->set_max(100);
+	bone_paint_inner_radius->set_step(1);
+	bone_paint_inner_radius->set_value(0);
+	bone_paint_inner_radius->set_accessibility_name(TTRC("Inner Rad.:"));
+	bone_paint_inner_radius->set_tooltip_text(TTR("The size of the inner portion of the soft weight painting brush where vertices are painted at max strength."));
+
+	bone_paint_pinch_label = memnew(Label(TTR("Pinch:")));
+	paint_toolbar->add_child(bone_paint_pinch_label);
+
+	bone_paint_pinch = memnew(SpinBox);
+	paint_toolbar->add_child(bone_paint_pinch);
+	bone_paint_pinch->set_min(-1);
+	bone_paint_pinch->set_max(1);
+	bone_paint_pinch->set_step(0.01);
+	bone_paint_pinch->set_value(0);
+	bone_paint_pinch->set_accessibility_name(TTRC("Pinch:"));
+	bone_paint_pinch->set_tooltip_text(TTR("Modifies the curve near the center / inner radius. Positive, narrows the curve. Negative, flattens the curve."));
+
+	bone_paint_bubble_label = memnew(Label(TTR("Bubble:")));
+	paint_toolbar->add_child(bone_paint_bubble_label);
+
+	bone_paint_bubble = memnew(SpinBox);
+	paint_toolbar->add_child(bone_paint_bubble);
+	bone_paint_bubble->set_min(-1);
+	bone_paint_bubble->set_max(1);
+	bone_paint_bubble->set_step(0.01);
+	bone_paint_bubble->set_value(0);
+	bone_paint_bubble->set_accessibility_name(TTRC("Bubble:"));
+	bone_paint_bubble->set_tooltip_text(TTR("Additive bulge halfway in the brush's radius. Doesn't affect brush borders. Positive inflates the curve, negative deflates the curve."));
 
 	grid_settings = memnew(AcceptDialog);
 	grid_settings->set_title(TTR("Configure Grid:"));
