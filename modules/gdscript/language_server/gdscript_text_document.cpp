@@ -82,7 +82,7 @@ void GDScriptTextDocument::willSaveWaitUntil(const Variant &p_param) {
 	LSP::TextDocumentIdentifier doc;
 	doc.load(dict["textDocument"]);
 
-	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
+	String path = GDScriptLanguageProtocol::get_singleton()->get_file_path(doc.uri);
 	Ref<Script> scr = ResourceLoader::load(path);
 	if (scr.is_valid()) {
 		ScriptEditor::get_singleton()->clear_docs_from_script(scr);
@@ -95,7 +95,7 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 	doc.load(dict["textDocument"]);
 	String text = dict["text"];
 
-	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
+	String path = GDScriptLanguageProtocol::get_singleton()->get_file_path(doc.uri);
 	Ref<GDScript> scr = ResourceLoader::load(path);
 	if (scr.is_valid() && (scr->load_source_code(path) == OK)) {
 		if (scr->is_tool()) {
@@ -142,7 +142,7 @@ Variant GDScriptTextDocument::nativeSymbol(const Dictionary &p_params) {
 Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	Dictionary params = p_params["textDocument"];
 	String uri = params["uri"];
-	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(uri);
+	String path = GDScriptLanguageProtocol::get_singleton()->get_file_path(uri);
 	Array arr;
 
 	ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
@@ -160,7 +160,7 @@ Array GDScriptTextDocument::documentHighlight(const Dictionary &p_params) {
 
 	const LSP::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
 	if (symbol) {
-		String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(params.textDocument.uri);
+		String path = GDScriptLanguageProtocol::get_singleton()->get_file_path(params.textDocument.uri);
 		Vector<LSP::Location> usages = GDScriptLanguageProtocol::get_singleton()->get_workspace()->find_usages_in_file(*symbol, path);
 
 		for (const LSP::Location &usage : usages) {
@@ -387,7 +387,7 @@ Array GDScriptTextDocument::find_symbols(const LSP::TextDocumentPositionParams &
 		location.uri = symbol->uri;
 		if (!location.uri.is_empty()) {
 			location.range = symbol->selectionRange;
-			const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(symbol->uri);
+			const String &path = GDScriptLanguageProtocol::get_singleton()->get_file_path(symbol->uri);
 			if (file_checker->file_exists(path)) {
 				arr.push_back(location.to_json());
 			}
