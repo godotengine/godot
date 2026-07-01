@@ -278,6 +278,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	Noise();
 	// Virtual destructor so we can delete any Noise derived object when referenced as a Noise*.
 	virtual ~Noise() {}
 

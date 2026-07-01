@@ -203,6 +203,7 @@
 		<member name="reflected_light_source" type="int" setter="set_reflection_source" getter="get_reflection_source" enum="Environment.ReflectionSource" default="0">
 			The reflected (specular) light source.
 		</member>
+		<member name="resource_shared_copy" type="bool" setter="set_use_shared_copy" getter="get_use_shared_copy" overrides="Resource" default="false" />
 		<member name="sdfgi_bounce_feedback" type="float" setter="set_sdfgi_bounce_feedback" getter="get_sdfgi_bounce_feedback" default="0.5">
 			The energy multiplier applied to light every time it bounces from a surface when using SDFGI. Values greater than [code]0.0[/code] will simulate multiple bounces, resulting in a more realistic appearance. Increasing [member sdfgi_bounce_feedback] generally has no performance impact. See also [member sdfgi_energy].
 			[b]Note:[/b] Values greater than [code]0.5[/code] can cause infinite feedback loops and should be avoided in scenes with bright materials.
