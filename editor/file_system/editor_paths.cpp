@@ -255,8 +255,7 @@ EditorPaths::EditorPaths() {
 	// including shader cache subdir.
 	if (Engine::get_singleton()->is_project_manager_hint() || (Main::is_cmdline_tool() && !ProjectSettings::get_singleton()->is_project_loaded())) {
 		// Nothing to create, use shared editor data dir for shader cache.
-		Engine::get_singleton()->set_shader_cache_path(data_dir);
-	} else {
+		Engine::get_singleton()->set_shader_cache_path(cache_dir);
 		Ref<DirAccess> dir_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (dir_res->change_dir(project_data_dir) != OK) {
 			dir_res->make_dir_recursive(project_data_dir);
@@ -278,7 +277,9 @@ EditorPaths::EditorPaths() {
 			}
 		}
 
-		Engine::get_singleton()->set_shader_cache_path(project_data_dir);
+		// Use the same shader cache location for the editor and running project,
+		// so that the cache can be reused when running the project from the editor.
+		Engine::get_singleton()->set_shader_cache_path("user://");
 
 		// Editor metadata dir.
 		if (!dir_res->dir_exists("editor")) {
