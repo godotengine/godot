@@ -258,6 +258,8 @@ public:
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override {}
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const override { return Variant(); }
 
+	virtual void body_flush_kinematic_transform(RID p_body) override {}
+
 	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) override {}
 	virtual void body_apply_torque_impulse(RID p_body, real_t p_torque) override {}
 	virtual void body_apply_impulse(RID p_body, const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) override {}
