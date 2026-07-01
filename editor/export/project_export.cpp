@@ -294,6 +294,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		export_warning->hide();
 		export_templates_error->hide();
 		export_texture_format_error->hide();
+		export_warning->hide();
 		return;
 	}
 
