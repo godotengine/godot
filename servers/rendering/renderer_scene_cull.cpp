@@ -3498,6 +3498,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		}
 
 		// Positional Shadows
+		float zn = p_camera_data->main_projection.get_z_near();
 		for (uint32_t i = 0; i < (uint32_t)scene_cull_result.lights.size(); i++) {
 			Instance *ins = scene_cull_result.lights[i];
 
@@ -3510,94 +3511,89 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			if (!RSG::light_storage->light_instance_is_shadow_visible_at_position(light->instance, camera_position)) {
 				continue;
 			}
-
 			float coverage = 0.f;
-
 			{ //compute coverage
-
-				Transform3D cam_xf = p_camera_data->main_transform;
-				float zn = p_camera_data->main_projection.get_z_near();
-				Plane p(-cam_xf.basis.get_column(2), cam_xf.origin + cam_xf.basis.get_column(2) * -zn); //camera near plane
-
 				// near plane half width and height
 				Vector2 vp_half_extents = p_camera_data->main_projection.get_viewport_half_extents();
-
 				switch (RSG::light_storage->light_get_type(ins->base)) {
 					case RSE::LIGHT_OMNI: {
 						float radius = RSG::light_storage->light_get_param(ins->base, RSE::LIGHT_PARAM_RANGE);
-
-						//get two points parallel to near plane
-						Vector3 points[2] = {
-							ins->transform.origin,
-							ins->transform.origin + cam_xf.basis.get_column(0) * radius
-						};
-
 						if (!p_camera_data->is_orthogonal) {
-							//if using perspetive, map them to near plane
-							for (int j = 0; j < 2; j++) {
-								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
-								}
-
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
+							float dist_to_cam = ins->transform.origin.distance_to(camera_position);
+							if (dist_to_cam <= (radius + zn)) {
+								float dist_factor = 1.0f - (dist_to_cam / (radius + zn + 0.001f));
+								coverage = 1.0f + dist_factor;
+							} else {
+								float screen_radius = (radius * zn / dist_to_cam);
+								float coverage_x = screen_radius / vp_half_extents.x;
+								float coverage_y = screen_radius / vp_half_extents.y;
+								//coverage = coverage_x * coverage_y; //Total coverage as part of the screen area
+								//coverage = MAX(coverage_x, coverage_y); //max
+								coverage = (coverage_x + coverage_y) * 0.5f;
 							}
+						} else {
+							float coverage_x = radius / vp_half_extents.x;
+							float coverage_y = radius / vp_half_extents.y;
+							coverage = (coverage_x + coverage_y) * 0.5f;
 						}
-
-						float screen_diameter = points[0].distance_to(points[1]) * 2;
-						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
 					} break;
 					case RSE::LIGHT_SPOT: {
 						float radius = RSG::light_storage->light_get_param(ins->base, RSE::LIGHT_PARAM_RANGE);
 						float angle = RSG::light_storage->light_get_param(ins->base, RSE::LIGHT_PARAM_SPOT_ANGLE);
-
-						float w = radius * Math::sin(Math::deg_to_rad(angle));
-						float d = radius * Math::cos(Math::deg_to_rad(angle));
-
-						Vector3 base = ins->transform.origin - ins->transform.basis.get_column(2).normalized() * d;
-
-						Vector3 points[2] = {
-							base,
-							base + cam_xf.basis.get_column(0) * w
-						};
-
+						float angle_rad = Math::deg_to_rad(angle);
 						if (!p_camera_data->is_orthogonal) {
-							//if using perspetive, map them to near plane
-							for (int j = 0; j < 2; j++) {
-								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
-								}
-
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
+							Vector3 sphere_coord;
+							float sphere_radius;
+							if (angle_rad <= Math::PI / 4.0) { // <=45
+								sphere_radius = radius / (2.0 * Math::cos(angle_rad));
+								sphere_coord = ins->transform.origin - ins->transform.basis.get_column(2).normalized() * sphere_radius;
+							} else { // >45
+								angle_rad = MIN(1.53589f, angle_rad); // 1.53589f is about 88 degrees
+								sphere_radius = radius * Math::sin(angle_rad);
+								sphere_coord = ins->transform.origin - ins->transform.basis.get_column(2).normalized() * (radius * Math::cos(angle_rad));
 							}
+							float dist_to_cam = sphere_coord.distance_to(camera_position);
+							if (dist_to_cam <= (sphere_radius + zn)) {
+								float dist_factor = 1.0f - (dist_to_cam / (sphere_radius + zn + 0.001f));
+								coverage = 1.0f + dist_factor;
+							} else {
+								float screen_radius = (sphere_radius * zn / dist_to_cam);
+								float coverage_x = screen_radius / vp_half_extents.x;
+								float coverage_y = screen_radius / vp_half_extents.y;
+								coverage = (coverage_x + coverage_y) * 0.5f;
+							}
+						} else { //is_orthogonal
+							float sphere_radius;
+							if (angle_rad <= Math::PI / 4.0) { // <=45
+								sphere_radius = radius / (2.0 * Math::cos(angle_rad));
+							} else { // >45
+								angle_rad = MIN(Math::PI / 2.0f, angle_rad); //90 degrees-to secure the calculation of the sin
+								sphere_radius = radius * Math::sin(angle_rad);
+							}
+							float coverage_x = sphere_radius / vp_half_extents.x;
+							float coverage_y = sphere_radius / vp_half_extents.y;
+							coverage = (coverage_x + coverage_y) * 0.5f;
 						}
-
-						float screen_diameter = points[0].distance_to(points[1]) * 2;
-						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
-
 					} break;
 					case RSE::LIGHT_AREA: {
 						float diagonal = RSG::light_storage->light_area_get_size(ins->base).length();
 						float radius = RSG::light_storage->light_get_param(ins->base, RSE::LIGHT_PARAM_RANGE) + diagonal;
-
-						//get two points parallel to near plane
-						Vector3 points[2] = {
-							ins->transform.origin,
-							ins->transform.origin + cam_xf.basis.get_column(0) * radius
-						};
-
 						if (!p_camera_data->is_orthogonal) {
-							//if using perspetive, map them to near plane
-							for (int j = 0; j < 2; j++) {
-								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
-								}
-
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
+							float dist_to_cam = ins->transform.origin.distance_to(camera_position);
+							if (dist_to_cam <= (radius + zn)) {
+								float dist_factor = 1.0f - (dist_to_cam / (radius + zn + 0.0001f));
+								coverage = 1.0f + dist_factor;
+							} else {
+								float screen_radius = (radius * zn / dist_to_cam);
+								float coverage_x = screen_radius / vp_half_extents.x;
+								float coverage_y = screen_radius / vp_half_extents.y;
+								coverage = (coverage_x + coverage_y) * 0.5f;
 							}
+						} else { // Orthogonal
+							float coverage_x = radius / vp_half_extents.x;
+							float coverage_y = radius / vp_half_extents.y;
+							coverage = (coverage_x + coverage_y) * 0.5f;
 						}
-
-						float screen_diameter = points[0].distance_to(points[1]) * 2;
-						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
 					} break;
 					default: {
 						ERR_PRINT("Invalid Light Type");
