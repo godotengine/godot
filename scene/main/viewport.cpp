@@ -2450,12 +2450,6 @@ void Viewport::gui_perform_drop_at(const Point2 &p_pos, Control *p_control) {
 		gui.drag_successful = false;
 	}
 
-	Control *drag_preview = _gui_get_drag_preview();
-	if (drag_preview) {
-		memdelete(drag_preview);
-		gui.drag_preview_id = ObjectID();
-	}
-
 	Viewport *section_root = get_section_root_viewport();
 	section_root->gui.drag_data = Variant();
 	gui.dragging = false;
@@ -2463,6 +2457,18 @@ void Viewport::gui_perform_drop_at(const Point2 &p_pos, Control *p_control) {
 	section_root->gui.global_dragging = false;
 	gui.drag_mouse_over = nullptr;
 	Viewport::_propagate_drag_notification(section_root, NOTIFICATION_DRAG_END);
+
+	Control *drag_preview = _gui_get_drag_preview();
+	if (drag_preview) {
+		gui.drag_preview_id = ObjectID();
+		if (drag_preview->is_inside_tree()) {
+			memdelete(drag_preview);
+		} else {
+			callable_mp(this, &Viewport::update_mouse_cursor_state).call_deferred();
+			return;
+		}
+	}
+
 	// Display the new cursor shape instantly.
 	update_mouse_cursor_state();
 }
@@ -2521,7 +2527,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
 	Control *drag_preview = _gui_get_drag_preview();
-	if (drag_preview) {
+	if (drag_preview && drag_preview->is_inside_tree()) {
 		memdelete(drag_preview);
 	}
 	p_control->set_as_top_level(true);
