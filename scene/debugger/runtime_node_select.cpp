@@ -1363,6 +1363,10 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 	const int num_hits = ss->intersect_shape(shape_params, results, 32);
 	for (int i = 0; i < num_hits; i++) {
 		const PhysicsDirectSpaceState3D::ShapeResult &result = results[i];
+		if (!result.collider) {
+			continue;
+		}
+
 		SelectResult res;
 		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
