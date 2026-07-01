@@ -43,6 +43,7 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/regex.h"
 #include "core/string/string_builder.h"
 #include "core/version.h"
 #include "editor/doc/doc_data_compressed.gen.h"
@@ -74,8 +75,6 @@
 #ifdef MODULE_MONO_ENABLED
 #include "modules/mono/csharp_script.h"
 #endif
-
-#include "modules/regex/regex.h"
 
 #define CONTRIBUTE_URL "https://contributing.godotengine.org/en/latest/documentation/class_reference.html"
 

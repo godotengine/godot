@@ -33,11 +33,10 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
+#include "core/string/regex.h"
 #include "core/string/translation_server.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_plugin.h"
-
-#include "modules/regex/regex.h"
 
 int _get_android_orientation_value(DisplayServerEnums::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {

@@ -36,6 +36,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/string/regex.h"
 #include "core/version_generated.gen.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
@@ -55,8 +56,6 @@
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
-
-#include "modules/regex/regex.h"
 
 /*** SHADER SYNTAX HIGHLIGHTER ****/
 
