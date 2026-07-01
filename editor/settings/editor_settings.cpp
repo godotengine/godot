@@ -826,6 +826,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Behavior
 	// Behavior: General
 	_initial_set("text_editor/behavior/general/empty_selection_clipboard", true);
+	_initial_set("text_editor/behavior/general/fold_comments", false, true);
 
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true, true);
@@ -858,6 +859,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Behavior: Documentation
 	_initial_set("text_editor/behavior/documentation/enable_tooltips", true, true);
+	_initial_set("text_editor/behavior/documentation/fold_doc_comments", false, true);
 
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true, true);
