@@ -368,6 +368,86 @@ public:
 	InputEventType get_type() const final override { return InputEventType::JOY_BUTTON; }
 };
 
+class InputEventJoypadTouchpadTouch : public InputEvent {
+	GDCLASS(InputEventJoypadTouchpadTouch, InputEvent);
+
+	int touchpad_id = 0;
+	int finger_id = 0;
+	Vector2 position;
+	float pressure = 0; //0 to 1
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_pressed(bool p_pressed);
+
+	void set_touchpad_id(int p_touchpad_id);
+	int get_touchpad_id() const;
+
+	void set_finger_id(int finger_id);
+	int get_finger_id() const;
+
+	void set_position(const Vector2 &p_position);
+	Vector2 get_position() const;
+
+	void set_pressure(float p_pressure);
+	float get_pressure() const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
+
+	virtual bool is_action_type() const override { return true; }
+
+	virtual String as_text() const override;
+	virtual String _to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::JOY_TOUCHPAD_TOUCH; }
+};
+
+class InputEventJoypadTouchpadDrag : public InputEvent {
+	GDCLASS(InputEventJoypadTouchpadDrag, InputEvent);
+
+	int touchpad_id = 0;
+	int finger_id = 0;
+	Vector2 position;
+	Vector2 relative;
+	Vector2 velocity;
+	float pressure = 0; //0 to 1
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_touchpad_id(int p_touchpad_id);
+	int get_touchpad_id() const;
+
+	void set_finger_id(int finger_id);
+	int get_finger_id() const;
+
+	void set_position(const Vector2 &p_position);
+	Vector2 get_position() const;
+
+	void set_relative(const Vector2 &p_relative);
+	Vector2 get_relative() const;
+
+	void set_velocity(const Vector2 &p_velocity);
+	Vector2 get_velocity() const;
+
+	void set_pressure(float p_pressure);
+	float get_pressure() const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
+
+	virtual bool is_action_type() const override { return true; }
+
+	virtual String as_text() const override;
+	virtual String _to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::JOY_TOUCHPAD_DRAG; }
+};
+
 class InputEventScreenTouch : public InputEventFromWindow {
 	GDCLASS(InputEventScreenTouch, InputEventFromWindow);
 	int index = 0;
