@@ -41,6 +41,7 @@ class AudioEffectPhaserInstance : public AudioEffectInstance {
 
 	float phase;
 	AudioFrame h;
+	float max_depth;
 
 	class AllpassDelay {
 		float a, h;
