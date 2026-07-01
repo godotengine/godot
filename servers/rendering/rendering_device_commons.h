@@ -539,6 +539,24 @@ public:
 		float max_lod = 1e20; // Something very large should do.
 		SamplerBorderColor border_color = SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 		bool unnormalized_uvw = false;
+
+		_FORCE_INLINE_ bool operator==(const SamplerState &p_other) const {
+			return mag_filter == p_other.mag_filter &&
+					min_filter == p_other.min_filter &&
+					mip_filter == p_other.mip_filter &&
+					repeat_u == p_other.repeat_u &&
+					repeat_v == p_other.repeat_v &&
+					repeat_w == p_other.repeat_w &&
+					lod_bias == p_other.lod_bias &&
+					use_anisotropy == p_other.use_anisotropy &&
+					anisotropy_max == p_other.anisotropy_max &&
+					enable_compare == p_other.enable_compare &&
+					compare_op == p_other.compare_op &&
+					min_lod == p_other.min_lod &&
+					max_lod == p_other.max_lod &&
+					border_color == p_other.border_color &&
+					unnormalized_uvw == p_other.unnormalized_uvw;
+		}
 	};
 
 	/**********************/
@@ -1164,4 +1182,29 @@ public:
 		BitField<ShaderStage> stages_bits = {};
 		BitField<ShaderStage> push_constant_stages = {};
 	};
+};
+
+template <>
+struct HashMapHasherDefaultImpl<RenderingDeviceCommons::SamplerState> {
+	static _FORCE_INLINE_ uint32_t hash(const RenderingDeviceCommons::SamplerState &p_state) {
+		uint32_t h = HASH_MURMUR3_SEED;
+
+		h = hash_murmur3_one_32(p_state.mag_filter, h);
+		h = hash_murmur3_one_32(p_state.min_filter, h);
+		h = hash_murmur3_one_32(p_state.mip_filter, h);
+		h = hash_murmur3_one_32(p_state.repeat_u, h);
+		h = hash_murmur3_one_32(p_state.repeat_v, h);
+		h = hash_murmur3_one_32(p_state.repeat_w, h);
+		h = hash_murmur3_one_float(p_state.lod_bias, h);
+		h = hash_murmur3_one_32(p_state.use_anisotropy, h);
+		h = hash_murmur3_one_float(p_state.anisotropy_max, h);
+		h = hash_murmur3_one_32(p_state.enable_compare, h);
+		h = hash_murmur3_one_32(p_state.compare_op, h);
+		h = hash_murmur3_one_float(p_state.min_lod, h);
+		h = hash_murmur3_one_float(p_state.max_lod, h);
+		h = hash_murmur3_one_32(p_state.border_color, h);
+		h = hash_murmur3_one_32(p_state.unnormalized_uvw, h);
+
+		return hash_fmix32(h);
+	}
 };
