@@ -554,6 +554,21 @@ void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 			if (reset_transform_scale_shortcut.is_valid() && reset_transform_scale_shortcut->matches_event(p_ev)) {
 				_reset_transform(TransformType::SCALE);
 			}
+
+			const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, p_ev);
+			if (custom_callback.is_valid()) {
+				Vector<SelectResult> currently_hovered;
+				_get_canvas_items_at_pos(transform.affine_inverse().xform(viewport->get_local_mouse_position()), currently_hovered, true);
+
+				TypedArray<Node> nodes;
+				nodes.reserve(currently_hovered.size());
+				for (const SelectResult &result : currently_hovered) {
+					nodes.append(result.item);
+				}
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, nodes);
+
+				accept_event();
+			}
 		}
 	}
 }
