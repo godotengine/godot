@@ -3985,7 +3985,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			OS::get_singleton()->shell_open("https://godotengine.org/community");
 		} break;
 		case HELP_ABOUT: {
-			about->popup_centered(Size2(780, 500) * EDSCALE);
+			// The default width is chosen to allow for several developer names per column, as well as unwrapped license texts.
+			// The default height is chosen to show the first developer names (to give a hint that the list can be scrolled).
+			about->popup_centered(Size2(985, 545) * EDSCALE);
 		} break;
 		case HELP_SUPPORT_GODOT_DEVELOPMENT: {
 			OS::get_singleton()->shell_open("https://fund.godotengine.org/?ref=help_menu");
