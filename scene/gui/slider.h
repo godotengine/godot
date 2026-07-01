@@ -59,6 +59,7 @@ private:
 	double custom_step = -1.0;
 	bool editable = true;
 	bool scrollable = true;
+	bool respect_grabber_area_min_size = false;
 
 	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
 	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
@@ -84,6 +85,7 @@ protected:
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
+	Size2i &NewFunction(int p, int widget_height);
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
@@ -107,6 +109,9 @@ public:
 
 	void set_scrollable(bool p_scrollable);
 	bool is_scrollable() const;
+
+	void set_respect_grabber_area_min_size(bool p_respect);
+	bool is_respecting_grabber_area_min_size() const;
 
 	Slider(Orientation p_orientation = VERTICAL);
 };
