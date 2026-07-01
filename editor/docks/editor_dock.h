@@ -61,7 +61,9 @@ public:
 		DOCK_SLOT_BOTTOM,
 		DOCK_SLOT_BOTTOM_L,
 		DOCK_SLOT_BOTTOM_R,
-		DOCK_SLOT_MAX
+		DOCK_SLOT_MAX,
+
+		DOCK_SLOT_BASE_EXTENDED = 1000,
 	};
 
 private:
@@ -161,7 +163,7 @@ public:
 	void update_tab_style();
 	Ref<Texture2D> get_effective_icon(const Callable &p_icon_fetch);
 
-	virtual void update_layout(DockLayout p_layout, DockSlot p_slot) { GDVIRTUAL_CALL(_update_layout, p_layout, p_slot); }
+	virtual void update_layout(DockLayout p_layout, int p_slot) { GDVIRTUAL_CALL(_update_layout, p_layout, p_slot); }
 	DockLayout get_current_layout() const { return current_layout; }
 	DockSlot get_current_slot() const { return (DockSlot)dock_slot_index; }
 

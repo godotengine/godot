@@ -224,7 +224,7 @@ public:
 	void start_search();
 	void stop_search();
 
-	void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot);
+	void update_layout(EditorDock::DockLayout p_layout, int p_slot);
 
 	FindInFilesPanel();
 };
@@ -269,7 +269,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 	FindInFilesPanel *get_panel_for_results(const String &p_label);
 
