@@ -9660,6 +9660,8 @@ void AnimationMarkerEdit::_insert_marker(float p_ofs) {
 	}
 
 	marker_insert_new_name->set_text(base);
+	marker_insert_new_name->select_all();
+	marker_insert_new_name->grab_focus();
 	_marker_insert_new_name_changed(base);
 	marker_insert_ofs = p_ofs;
 }
@@ -9668,6 +9670,8 @@ void AnimationMarkerEdit::_rename_marker(const StringName &p_name) {
 	marker_rename_confirm->popup_centered(Size2i(200, 0) * EDSCALE);
 	marker_rename_prev_name = p_name;
 	marker_rename_new_name->set_text(p_name);
+	marker_rename_new_name->select_all();
+	marker_rename_new_name->grab_focus();
 }
 
 void AnimationMarkerEdit::_marker_insert_confirmed() {
