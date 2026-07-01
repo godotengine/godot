@@ -177,6 +177,7 @@ class CodeTextEditor : public VBoxContainer {
 	float idle_time = 0.0f;
 	float idle_time_with_errors = 0.0f;
 	bool code_complete_enabled = true;
+	bool code_complete_on_period = false;
 	Timer *code_complete_timer = nullptr;
 	int code_complete_timer_line = 0;
 
@@ -209,6 +210,8 @@ class CodeTextEditor : public VBoxContainer {
 	void _zoom_in();
 	void _zoom_out();
 	void _zoom_to(float p_zoom_factor);
+
+	void _code_complete_on_period();
 
 	void _show_goto_popup_request();
 	void _emit_request_save_new_history();
