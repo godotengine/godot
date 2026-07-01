@@ -37,6 +37,7 @@ class EditorHelpBit;
 class FilterLineEdit;
 class ItemList;
 class Tree;
+class CreateDialogTree;
 class TreeItem;
 
 class HBoxContainer;
@@ -66,7 +67,7 @@ class CreateDialog : public ConfirmationDialog {
 	bool types_enabled[TYPE_MAX];
 
 	FilterLineEdit *search_box = nullptr;
-	Tree *search_options = nullptr;
+	CreateDialogTree *search_options = nullptr;
 
 	String base_type;
 	bool is_base_type_node = false;
