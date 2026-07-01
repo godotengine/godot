@@ -96,7 +96,8 @@ const MetalDeviceProfile *MetalDeviceProfile::get_profile(Platform p_platform, G
 				case GPU::Apple6:
 				case GPU::Apple7:
 				case GPU::Apple8:
-				case GPU::Apple9: {
+				case GPU::Apple9:
+				case GPU::Apple10: {
 					res.features.use_argument_buffers = p_min_os_version >= os_version::IOS_16_0;
 					res.features.simdPermute = true;
 				} break;
@@ -114,7 +115,8 @@ const MetalDeviceProfile *MetalDeviceProfile::get_profile(Platform p_platform, G
 
 			switch (p_gpu) {
 				case GPU::Apple8:
-				case GPU::Apple9: {
+				case GPU::Apple9:
+				case GPU::Apple10: {
 					res.features.use_argument_buffers = true;
 					res.features.simdPermute = true;
 				} break;
@@ -126,4 +128,39 @@ const MetalDeviceProfile *MetalDeviceProfile::get_profile(Platform p_platform, G
 	}
 
 	return &profiles.insert(key, res)->value;
+}
+
+MetalDeviceProfile::GPU MetalDeviceProfile::string_to_gpu(const String &val) {
+	if (val == "Apple1") {
+		return GPU::Apple1;
+	}
+	if (val == "Apple2") {
+		return GPU::Apple2;
+	}
+	if (val == "Apple3") {
+		return GPU::Apple3;
+	}
+	if (val == "Apple4") {
+		return GPU::Apple4;
+	}
+	if (val == "Apple5") {
+		return GPU::Apple5;
+	}
+	if (val == "Apple6") {
+		return GPU::Apple6;
+	}
+	if (val == "Apple7") {
+		return GPU::Apple7;
+	}
+	if (val == "Apple8") {
+		return GPU::Apple8;
+	}
+	if (val == "Apple9") {
+		return GPU::Apple9;
+	}
+	if (val == "Apple10") {
+		return GPU::Apple10;
+	}
+
+	ERR_FAIL_V_MSG(GPU::Apple7, "Invalid gpu family: " + val + ". Defaulting to Apple7.");
 }

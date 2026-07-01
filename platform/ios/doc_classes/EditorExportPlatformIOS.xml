@@ -44,6 +44,8 @@
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
+		<member name="application/min_ios_gpu_family" type="String" setter="" getter="">
+		</member>
 		<member name="application/min_ios_version" type="String" setter="" getter="">
 			Minimum version of iOS required for this application to run in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
 		</member>
