@@ -1155,6 +1155,10 @@ int32_t godotsharp_array_resize(Array *p_self, int32_t p_new_size) {
 	return (int32_t)p_self->resize(p_new_size);
 }
 
+int32_t godotsharp_array_reserve(Array *p_self, int32_t p_new_size) {
+	return (int32_t)p_self->reserve(p_new_size);
+}
+
 void godotsharp_array_reverse(Array *p_self) {
 	p_self->reverse();
 }
@@ -1774,6 +1778,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_recursive_equal,
 	(void *)godotsharp_array_remove_at,
 	(void *)godotsharp_array_resize,
+	(void *)godotsharp_array_reserve,
 	(void *)godotsharp_array_reverse,
 	(void *)godotsharp_array_shuffle,
 	(void *)godotsharp_array_slice,
