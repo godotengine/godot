@@ -22,7 +22,7 @@ if env["platform"] in ["macos", "windows", "linuxbsd"]:
 
     env_thirdparty = env.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.drivers_sources, thirdparty_sources)
+    env_thirdparty.add_source_files(env["DRIVERS_SOURCES"], thirdparty_sources)
 
 # Godot source files
-env.add_source_files(env.drivers_sources, "*.cpp")
+env.add_source_files(env["DRIVERS_SOURCES"], "*.cpp")

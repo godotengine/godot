@@ -43,20 +43,20 @@ env_thirdparty = env_astcenc.Clone()
 env_thirdparty.disable_warnings()
 
 # Build the encoder only for editor builds
-astc_encoder = env.editor_build
+astc_encoder = env["EDITOR_BUILD"]
 
 if not astc_encoder:
     env_thirdparty.Append(CPPDEFINES=[("ASTCENC_DECOMPRESS_ONLY")])
 
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
-env.modules_sources += thirdparty_obj
+env["MODULES_SOURCES"] += thirdparty_obj
 
 # Godot source files
 
 module_obj = []
 
 env_astcenc.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

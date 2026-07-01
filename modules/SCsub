@@ -17,28 +17,28 @@ Export("env_modules")
 
 # Header with MODULE_*_ENABLED defines.
 modules_enabled = env.CommandNoCache(
-    "modules_enabled.gen.h", env.Value(env.module_list), env.Run(modules_builders.modules_enabled_builder)
+    "modules_enabled.gen.h", env.Value(env["MODULE_LIST"]), env.Run(modules_builders.modules_enabled_builder)
 )
 
 
 register_module_types = env.CommandNoCache(
     "register_module_types.gen.cpp",
-    [env.Value(env.modules_detected), modules_enabled],
+    [env.Value(env["MODULES_DETECTED"]), modules_enabled],
     env.Run(modules_builders.register_module_types_builder),
 )
 
 
 test_headers = []
 # libmodule_<name>.a for each active module.
-for name, path in env.module_list.items():
-    env.modules_sources = []
+for name, path in env["MODULE_LIST"].items():
+    env["MODULES_SOURCES"] = []
 
     # Name for built-in modules, (absolute) path for custom ones.
     base_path = path if os.path.isabs(path) else name
     SConscript(base_path + "/SCsub")
 
-    if env.modules_sources:
-        lib = env_modules.add_library("module_%s" % name, env.modules_sources)
+    if env["MODULES_SOURCES"]:
+        lib = env_modules.add_library("module_%s" % name, env["MODULES_SOURCES"])
         env.Prepend(LIBS=[lib])
 
     if env["tests"]:
@@ -57,7 +57,7 @@ if env["tests"]:
 # libmodules.a with only register_module_types.
 # Must be last so that all libmodule_<name>.a libraries are on the right side
 # in the linker command.
-env.modules_sources = []
-env_modules.add_source_files(env.modules_sources, register_module_types)
-lib = env_modules.add_library("modules", env.modules_sources)
+env["MODULES_SOURCES"] = []
+env_modules.add_source_files(env["MODULES_SOURCES"], register_module_types)
+lib = env_modules.add_library("modules", env["MODULES_SOURCES"])
 env.Prepend(LIBS=[lib])

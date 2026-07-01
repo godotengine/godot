@@ -126,7 +126,7 @@ def configure(env: "SConsEnvironment"):
     if is_apple_clang(env) and cc_version_major == 1500 and cc_version_minor == 0:
         env.Prepend(LINKFLAGS=["-ld_classic"])
 
-    if env.dev_build:
+    if env["DEV_BUILD"]:
         env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
 
     ccache_path = os.environ.get("CCACHE", "")
@@ -179,7 +179,7 @@ def configure(env: "SConsEnvironment"):
     # Sanitizers
 
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
-        env.extra_suffix += ".san"
+        env["EXTRA_SUFFIX"] += ".san"
 
         if env["use_ubsan"]:
             env.Append(CPPDEFINES=["UBSAN_ENABLED"])

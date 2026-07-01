@@ -11,10 +11,10 @@ env_text_server_adv = env_modules.Clone()
 # Thirdparty source files
 
 thirdparty_obj = []
-freetype_enabled = "freetype" in env.module_list
-msdfgen_enabled = "msdfgen" in env.module_list
+freetype_enabled = "freetype" in env["MODULE_LIST"]
+msdfgen_enabled = "msdfgen" in env["MODULE_LIST"]
 
-if "svg" in env.module_list:
+if "svg" in env["MODULE_LIST"]:
     env_text_server_adv.Prepend(
         CPPPATH=[
             "#thirdparty/thorvg/inc",
@@ -220,7 +220,7 @@ if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
         "src/FileFace.cpp",
         "src/json.cpp",
     ]
-    if not env_graphite.msvc:
+    if not env_graphite["MSVC"]:
         thirdparty_sources += ["src/direct_machine.cpp"]
     else:
         thirdparty_sources += ["src/call_machine.cpp"]
@@ -468,7 +468,7 @@ if env["builtin_icu4c"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    if env.editor_build:
+    if env["EDITOR_BUILD"]:
         icudata = env_icu.CommandNoCache(
             "#thirdparty/icu4c/icudata.gen.h",
             "#thirdparty/icu4c/icudt_godot.dat",
@@ -504,7 +504,7 @@ if env["builtin_icu4c"]:
             ("U_LIB_SUFFIX_C_NAME", "_godot"),
         ]
     )
-    if env.editor_build:
+    if env["EDITOR_BUILD"]:
         env_text_server_adv.Append(CPPDEFINES=["ICU_STATIC_DATA"])
 
     env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
@@ -542,7 +542,7 @@ if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
     env_text_server_adv.Prepend(CPPPATH=["#thirdparty/graphite/include"])
 
 env_text_server_adv.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

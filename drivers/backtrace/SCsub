@@ -32,14 +32,14 @@ env_thirdparty = env_backtrace.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
-env.drivers_sources += thirdparty_obj
+env["DRIVERS_SOURCES"] += thirdparty_obj
 
 # Godot source files
 
 driver_obj = []
 
 env_backtrace.add_source_files(driver_obj, "*.cpp")
-env.drivers_sources += driver_obj
+env["DRIVERS_SOURCES"] += driver_obj
 
 # Needed to force rebuilding the driver files when the thirdparty library is updated.
 env.Depends(driver_obj, thirdparty_obj)

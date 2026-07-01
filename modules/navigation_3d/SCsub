@@ -9,7 +9,7 @@ env_navigation_3d = env_modules.Clone()
 # Thirdparty source files
 
 thirdparty_obj = []
-navigation_2d_enabled = "navigation_2d" in env.module_list
+navigation_2d_enabled = "navigation_2d" in env["MODULE_LIST"]
 
 # Recast Thirdparty source files
 if env["builtin_recastnavigation"]:
@@ -71,7 +71,7 @@ if env["builtin_rvo2_3d"]:
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
 
-env.modules_sources += thirdparty_obj
+env["MODULES_SOURCES"] += thirdparty_obj
 
 # Godot source files
 
@@ -79,9 +79,9 @@ module_obj = []
 
 env_navigation_3d.add_source_files(module_obj, "*.cpp")
 env_navigation_3d.add_source_files(module_obj, "3d/*.cpp")
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     env_navigation_3d.add_source_files(module_obj, "editor/*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

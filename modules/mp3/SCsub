@@ -10,4 +10,4 @@ if not env["mp3_extra_formats"]:
     env_mp3.Append(CPPDEFINES=["DR_MP3_ONLY_MP3"])
 
 # Godot source files
-env_mp3.add_source_files(env.modules_sources, "*.cpp")
+env_mp3.add_source_files(env["MODULES_SOURCES"], "*.cpp")

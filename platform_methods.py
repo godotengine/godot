@@ -179,9 +179,9 @@ def lipo_and_copy_apple_embedded(
 
     # Lipo template libraries.
     #
-    # env.extra_suffix contains ".simulator" when building for simulator,
+    # env["EXTRA_SUFFIX"] contains ".simulator" when building for simulator,
     # but it's undesired when calling lipo()
-    extra_suffix = env.extra_suffix.replace(".simulator", "")
+    extra_suffix = env["EXTRA_SUFFIX"].replace(".simulator", "")
     rel_target_bin = lipo(bin_dir + "/libgodot" + module_prefix + "." + rel_prefix, extra_suffix + ".a")
     dbg_target_bin = lipo(bin_dir + "/libgodot" + module_prefix + "." + dbg_prefix, extra_suffix + ".a")
     rel_target_bin_sim = lipo(
@@ -255,11 +255,11 @@ def lipo_and_copy_apple_embedded(
 
 def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, use_mkv, target, source, env):
     # Template bundle.
-    extra_suffix = env.extra_suffix.replace(".simulator", "")
+    extra_suffix = env["EXTRA_SUFFIX"].replace(".simulator", "")
     app_prefix = "godot." + platform
     rel_prefix = platform + "." + "template_release"
     dbg_prefix = platform + "." + "template_debug"
-    if env.dev_build:
+    if env["DEV_BUILD"]:
         app_prefix += ".dev"
         rel_prefix += ".dev"
         dbg_prefix += ".dev"

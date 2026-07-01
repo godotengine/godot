@@ -9,14 +9,14 @@ thirdparty_obj = []
 
 env_thirdparty = env.Clone()
 env_thirdparty.disable_warnings()
-env.scene_sources += thirdparty_obj
+env["SCENE_SOURCES"] += thirdparty_obj
 
 # Godot source files
 
 scene_obj = []
 
 env.add_source_files(scene_obj, "*.cpp")
-env.scene_sources += scene_obj
+env["SCENE_SOURCES"] += scene_obj
 
 # Needed to force rebuilding the scene files when the thirdparty code is updated.
 env.Depends(scene_obj, thirdparty_obj)

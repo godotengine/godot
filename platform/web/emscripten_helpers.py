@@ -31,7 +31,7 @@ def create_engine_file(env, target, source, externs, threads_enabled):
 
 
 def create_template_zip(env, js, wasm, side):
-    binary_name = "godot.editor" if env.editor_build else "godot"
+    binary_name = "godot.editor" if env["EDITOR_BUILD"] else "godot"
     zip_dir = env.Dir(env.GetTemplateZipPath())
     in_files = [
         js,
@@ -51,7 +51,7 @@ def create_template_zip(env, js, wasm, side):
         out_files.append(zip_dir.File(binary_name + ".side.wasm"))
 
     service_worker = "#misc/dist/html/service-worker.js"
-    if env.editor_build:
+    if env["EDITOR_BUILD"]:
         # HTML
         html = "#misc/dist/html/editor.html"
         cache = [

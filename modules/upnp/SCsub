@@ -38,7 +38,7 @@ if env["builtin_miniupnpc"] and env["platform"] != "web":
     env_thirdparty.Prepend(CPPPATH=[thirdparty_dir + "include/miniupnpc"])
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
-    env.modules_sources += thirdparty_obj
+    env["MODULES_SOURCES"] += thirdparty_obj
 
 
 # Godot source files
@@ -46,7 +46,7 @@ if env["builtin_miniupnpc"] and env["platform"] != "web":
 module_obj = []
 
 env_upnp.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

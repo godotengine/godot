@@ -17,4 +17,4 @@ env.CommandNoCache(
     env.Run(editor_theme_builders.make_fonts_header),
 )
 
-env.add_source_files(env.editor_sources, "*.cpp")
+env.add_source_files(env["EDITOR_SOURCES"], "*.cpp")

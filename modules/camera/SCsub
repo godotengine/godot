@@ -7,16 +7,16 @@ Import("env_modules")
 env_camera = env_modules.Clone()
 
 if env["platform"] in ["windows", "macos", "linuxbsd", "android", "ios", "visionos"]:
-    env_camera.add_source_files(env.modules_sources, "register_types.cpp")
+    env_camera.add_source_files(env["MODULES_SOURCES"], "register_types.cpp")
 
 if env["platform"] == "windows":
-    env_camera.add_source_files(env.modules_sources, "camera_win.cpp")
+    env_camera.add_source_files(env["MODULES_SOURCES"], "camera_win.cpp")
 
 elif env["platform"] == "macos":
-    env_camera.add_source_files(env.modules_sources, "camera_apple.mm")
+    env_camera.add_source_files(env["MODULES_SOURCES"], "camera_apple.mm")
 
 elif env["platform"] == "android":
-    env_camera.add_source_files(env.modules_sources, "camera_android.cpp")
+    env_camera.add_source_files(env["MODULES_SOURCES"], "camera_android.cpp")
     env.Append(LIBS=["camera2ndk", "mediandk"])
 
 elif env["platform"] in ["ios", "visionos"]:
@@ -26,6 +26,6 @@ elif env["platform"] in ["ios", "visionos"]:
     env.Append(MODULES_EXTERNAL=["_camera"])
 
 elif env["platform"] == "linuxbsd":
-    env_camera.add_source_files(env.modules_sources, "camera_linux.cpp")
-    env_camera.add_source_files(env.modules_sources, "camera_feed_linux.cpp")
-    env_camera.add_source_files(env.modules_sources, "buffer_decoder.cpp")
+    env_camera.add_source_files(env["MODULES_SOURCES"], "camera_linux.cpp")
+    env_camera.add_source_files(env["MODULES_SOURCES"], "camera_feed_linux.cpp")
+    env_camera.add_source_files(env["MODULES_SOURCES"], "buffer_decoder.cpp")

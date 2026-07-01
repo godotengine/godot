@@ -11,7 +11,7 @@ import editor_icons_builders
 icon_sources = Glob("*.svg")
 
 # Module icons
-for path in env.module_icons_paths:
+for path in env["MODULE_ICONS_PATHS"]:
     if not os.path.isabs(path):
         icon_sources += Glob(f"#{path}/*.svg")  # Built-in.
     else:

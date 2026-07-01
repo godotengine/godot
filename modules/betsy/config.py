@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    return env.editor_build or env["betsy_export_templates"]
+    return env["EDITOR_BUILD"] or env["betsy_export_templates"]
 
 
 def get_opts(platform):

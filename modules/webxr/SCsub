@@ -9,4 +9,4 @@ if env["platform"] == "web":
     env.AddJSExterns(["native/webxr.externs.js"])
 
 env_webxr = env_modules.Clone()
-env_webxr.add_source_files(env.modules_sources, "*.cpp")
+env_webxr.add_source_files(env["MODULES_SOURCES"], "*.cpp")

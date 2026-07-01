@@ -23,7 +23,7 @@ if is_builtin or not has_module:
 if not has_module:
     # Minimal mbedTLS config file
     config_path = "thirdparty/mbedtls/include/godot_core_mbedtls_config.h"
-    config_path = f"<{config_path}>" if env_crypto["ninja"] and env_crypto.msvc else f'\\"{config_path}\\"'
+    config_path = f"<{config_path}>" if env_crypto["ninja"] and env_crypto["MSVC"] else f'\\"{config_path}\\"'
     env_crypto.Append(CPPDEFINES=[("MBEDTLS_CONFIG_FILE", config_path)])
     # Build minimal mbedTLS library (MD5/SHA/Base64/AES).
     env_thirdparty = env_crypto.Clone()
@@ -45,11 +45,11 @@ if not has_module:
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_mbedtls_sources)
     # Needed to force rebuilding the library when the configuration file is updated.
     env_thirdparty.Depends(thirdparty_obj, "#thirdparty/mbedtls/include/godot_core_mbedtls_config.h")
-    env.core_sources += thirdparty_obj
+    env["CORE_SOURCES"] += thirdparty_obj
 elif is_builtin:
     # Module mbedTLS config file
     config_path = "thirdparty/mbedtls/include/godot_module_mbedtls_config.h"
-    config_path = f"<{config_path}>" if env_crypto["ninja"] and env_crypto.msvc else f'\\"{config_path}\\"'
+    config_path = f"<{config_path}>" if env_crypto["ninja"] and env_crypto["MSVC"] else f'\\"{config_path}\\"'
     env_crypto.Append(CPPDEFINES=[("MBEDTLS_CONFIG_FILE", config_path)])
     # Needed to force rebuilding the core files when the configuration file is updated.
     thirdparty_obj = ["#thirdparty/mbedtls/include/godot_module_mbedtls_config.h"]
@@ -59,7 +59,7 @@ elif is_builtin:
 core_obj = []
 
 env_crypto.add_source_files(core_obj, "*.cpp")
-env.core_sources += core_obj
+env["CORE_SOURCES"] += core_obj
 
 # Needed to force rebuilding the core files when the thirdparty library is updated.
 env.Depends(core_obj, thirdparty_obj)
