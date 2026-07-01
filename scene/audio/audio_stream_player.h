@@ -42,16 +42,18 @@ class AudioStreamPlayer : public Node {
 	GDCLASS(AudioStreamPlayer, Node);
 
 public:
+#ifndef DISABLE_DEPRECATED
 	enum MixTarget {
 		MIX_TARGET_STEREO,
 		MIX_TARGET_SURROUND,
 		MIX_TARGET_CENTER
 	};
+#endif // DISABLE_DEPRECATED
 
 private:
 	AudioStreamPlayerInternal *internal = nullptr;
 
-	MixTarget mix_target = MIX_TARGET_STEREO;
+	AudioServer::MixTarget mix_target = AudioServer::MIX_TARGET_STEREO;
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -100,8 +102,8 @@ public:
 	void set_autoplay(bool p_enable);
 	bool is_autoplay_enabled() const;
 
-	void set_mix_target(MixTarget p_target);
-	MixTarget get_mix_target() const;
+	void set_mix_target(AudioServer::MixTarget p_target);
+	AudioServer::MixTarget get_mix_target() const;
 
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
@@ -116,4 +118,6 @@ public:
 	~AudioStreamPlayer();
 };
 
+#ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(AudioStreamPlayer::MixTarget)
+#endif // DISABLE_DEPRECATED
