@@ -35,6 +35,10 @@
 class GridContainer : public Container {
 	GDCLASS(GridContainer, Container);
 
+#ifdef TOOLS_ENABLED
+	friend class ContainerEditorPlugin;
+#endif
+
 	int columns = 1;
 
 	struct ThemeCache {
@@ -45,6 +49,10 @@ class GridContainer : public Container {
 private:
 	void _resort();
 	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+
+#ifdef TOOLS_ENABLED
+	PackedInt32Array cell_sizes;
+#endif
 
 protected:
 	void _notification(int p_what);
