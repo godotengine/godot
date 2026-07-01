@@ -1008,11 +1008,16 @@ void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode, int p_ca
 				} else if (is_in_comment(cl, cc) != -1 || (is_in_string(cl, cc) != -1 && has_string_delimiter(chr))) {
 					insert_text_at_caret(chr, i);
 				} else {
+					char32_t next_char = (cc < get_line(cl).length()) ? get_line(cl)[cc] : 0;
 					insert_text_at_caret(chr, i);
 
 					int pre_brace_pair = _get_auto_brace_pair_open_at_pos(cl, cc + 1);
-					if (pre_brace_pair != -1) {
+					if (get_auto_brace_completion_mode() == AUTO_BRACE_COMPLETION_ALWAYS && pre_brace_pair != -1) {
 						insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key, i);
+					} else if (get_auto_brace_completion_mode() == AUTO_BRACE_COMPLETION_BEFORE_WHITESPACE && pre_brace_pair != -1) {
+						if (is_whitespace(next_char) || next_char == 0 || post_brace_pair != -1) {
+							insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key, i);
+						}
 					}
 				}
 				set_caret_column(cc + caret_move_offset, i == 0, i);
@@ -1468,6 +1473,14 @@ void CodeEdit::set_auto_brace_completion_enabled(bool p_enabled) {
 
 bool CodeEdit::is_auto_brace_completion_enabled() const {
 	return auto_brace_completion_enabled;
+}
+
+void CodeEdit::set_auto_brace_completion_mode(CodeEdit::AutoBraceCompletionMode p_mode) {
+	auto_brace_completion_mode = p_mode;
+}
+
+CodeEdit::AutoBraceCompletionMode CodeEdit::get_auto_brace_completion_mode() const {
+	return auto_brace_completion_mode;
 }
 
 void CodeEdit::set_highlight_matching_braces_enabled(bool p_enabled) {
@@ -3052,8 +3065,14 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("convert_indent", "from_line", "to_line"), &CodeEdit::convert_indent, DEFVAL(-1), DEFVAL(-1));
 
 	/* Auto brace completion */
+	BIND_ENUM_CONSTANT(AUTO_BRACE_COMPLETION_ALWAYS);
+	BIND_ENUM_CONSTANT(AUTO_BRACE_COMPLETION_BEFORE_WHITESPACE);
+
 	ClassDB::bind_method(D_METHOD("set_auto_brace_completion_enabled", "enable"), &CodeEdit::set_auto_brace_completion_enabled);
 	ClassDB::bind_method(D_METHOD("is_auto_brace_completion_enabled"), &CodeEdit::is_auto_brace_completion_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_auto_brace_completion_mode", "mode"), &CodeEdit::set_auto_brace_completion_mode);
+	ClassDB::bind_method(D_METHOD("get_auto_brace_completion_mode"), &CodeEdit::get_auto_brace_completion_mode);
 
 	ClassDB::bind_method(D_METHOD("set_highlight_matching_braces_enabled", "enable"), &CodeEdit::set_highlight_matching_braces_enabled);
 	ClassDB::bind_method(D_METHOD("is_highlight_matching_braces_enabled"), &CodeEdit::is_highlight_matching_braces_enabled);
@@ -3268,6 +3287,7 @@ void CodeEdit::_bind_methods() {
 
 	ADD_GROUP("Auto Brace Completion", "auto_brace_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_brace_completion_mode", PROPERTY_HINT_ENUM, "Always,Before Whitespace"), "set_auto_brace_completion_mode", "get_auto_brace_completion_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_highlight_matching"), "set_highlight_matching_braces_enabled", "is_highlight_matching_braces_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "auto_brace_completion_pairs", PROPERTY_HINT_TYPE_STRING, "String;String"), "set_auto_brace_completion_pairs", "get_auto_brace_completion_pairs");
 
