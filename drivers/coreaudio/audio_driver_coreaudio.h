@@ -96,6 +96,8 @@ public:
 
 	virtual Error init() override;
 	virtual void start() override;
+	virtual bool can_output_device_sleep() const override { return true; }
+	virtual bool set_output_device_sleep(bool p_enable) override;
 	virtual int get_mix_rate() const override;
 	virtual int get_input_mix_rate() const override;
 	virtual SpeakerMode get_speaker_mode() const override;
