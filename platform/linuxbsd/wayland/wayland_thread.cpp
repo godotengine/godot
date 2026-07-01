@@ -5417,6 +5417,10 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 	}
 }
 
+bool WaylandThread::is_pointer_warp_supported() const {
+	return registry.wp_pointer_warp != nullptr;
+}
+
 void WaylandThread::pointer_warp(const Point2i &p_to) {
 	// NOTE: This is for compositors that don't support the pointer-warp protocol.
 	// It's hacked together and not guaranteed to work.

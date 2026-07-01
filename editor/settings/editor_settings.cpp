@@ -518,6 +518,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/use_native_file_dialogs", false, "", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/expand_to_title", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
+	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		props["interface/editor/appearance/expand_to_title"].hide_from_editor = true;
+	}
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/appearance/max_sticky_tree_items", 6, "0,16")
 
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/fonts/main_font_size", 14, "8,48,1")
@@ -1120,6 +1123,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #endif
 	int default_game_embed_mode = OS::get_singleton()->has_feature("xr_editor") ? -1 : 0;
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/game_embed_mode", default_game_embed_mode, game_embed_mode_hints);
+	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		props["run/window_placement/game_embed_mode"].hide_from_editor = true;
+	}
 
 	// Auto save
 	_initial_set("run/auto_save/save_before_running", true, true);

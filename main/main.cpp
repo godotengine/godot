@@ -115,6 +115,11 @@
 #include "tests/test_main.h"
 #endif
 
+#ifdef WAYLAND_ENABLED
+#include <dlfcn.h>
+#include <wayland-client.h>
+#endif
+
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -208,6 +213,34 @@ static int text_driver_idx = -1;
 static int audio_driver_idx = -1;
 
 // Engine config/tools
+
+#ifdef WAYLAND_ENABLED
+static bool _is_wayland_available() {
+	void *lib = dlopen("libwayland-client.so.0", RTLD_LAZY | RTLD_LOCAL);
+	if (!lib) {
+		lib = dlopen("libwayland-client.so", RTLD_LAZY | RTLD_LOCAL);
+		if (!lib) {
+			return false;
+		}
+	}
+	using ConnectFunc = wl_display *(*)(const char *);
+	using DisconnectFunc = void (*)(wl_display *);
+	ConnectFunc wl_display_connect_fn = (ConnectFunc)dlsym(lib, "wl_display_connect");
+	DisconnectFunc wl_display_disconnect_fn = (DisconnectFunc)dlsym(lib, "wl_display_disconnect");
+	if (!wl_display_connect_fn || !wl_display_disconnect_fn) {
+		dlclose(lib);
+		return false;
+	}
+	wl_display *d = wl_display_connect_fn(nullptr);
+	if (d) {
+		wl_display_disconnect_fn(d);
+		dlclose(lib);
+		return true;
+	}
+	dlclose(lib);
+	return false;
+}
+#endif
 
 static AccessibilityServerEnums::AccessibilityMode accessibility_mode = AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_AUTO;
 static String accessibility_driver_name;
@@ -3139,7 +3172,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 					if (display_driver.is_empty()) {
 						if (prefer_wayland) {
+#ifdef WAYLAND_ENABLED
+							if (_is_wayland_available()) {
+								display_driver = "wayland";
+							}
+#else
 							display_driver = "wayland";
+#endif
 						} else {
 							display_driver = "default";
 						}
@@ -3243,6 +3282,14 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		if (display_driver.is_empty()) {
 			display_driver = GLOBAL_GET("display/display_server/driver");
+		}
+
+		if (display_driver.is_empty() || display_driver == "default") {
+#ifdef WAYLAND_ENABLED
+			if (_is_wayland_available()) {
+				display_driver = "wayland";
+			}
+#endif
 		}
 
 		int display_driver_idx = -1;

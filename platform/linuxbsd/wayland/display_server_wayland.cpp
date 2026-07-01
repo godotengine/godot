@@ -289,7 +289,6 @@ bool DisplayServerWayland::has_feature(DisplayServerEnums::Feature p_feature) co
 #endif
 		case DisplayServerEnums::FEATURE_TOUCHSCREEN:
 		case DisplayServerEnums::FEATURE_MOUSE:
-		case DisplayServerEnums::FEATURE_MOUSE_WARP:
 		case DisplayServerEnums::FEATURE_CLIPBOARD:
 		case DisplayServerEnums::FEATURE_CURSOR_SHAPE:
 		case DisplayServerEnums::FEATURE_CUSTOM_CURSOR_SHAPE:
@@ -302,10 +301,14 @@ bool DisplayServerWayland::has_feature(DisplayServerEnums::Feature p_feature) co
 		case DisplayServerEnums::FEATURE_WINDOW_DRAG:
 		case DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY:
 		case DisplayServerEnums::FEATURE_SUBWINDOWS:
-		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
 		case DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS:
 		case DisplayServerEnums::FEATURE_HDR_OUTPUT: {
 			return true;
+		} break;
+		// This is a dead code (Nothing checks it)
+		// But I prefer to keep functionality so just added proper check
+		case DisplayServerEnums::FEATURE_MOUSE_WARP: {
+			return wayland_thread.is_pointer_warp_supported();
 		} break;
 
 		//case DisplayServerEnums::FEATURE_NATIVE_DIALOG:
@@ -2498,6 +2501,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Dis
 	}
 
 	show_window(DisplayServerEnums::MAIN_WINDOW_ID);
+
+	process_events();
 
 	if (!windows.has(DisplayServerEnums::MAIN_WINDOW_ID) || !windows[DisplayServerEnums::MAIN_WINDOW_ID].visible) {
 		ERR_PRINT("Could not map the main window.");
