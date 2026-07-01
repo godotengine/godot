@@ -35,6 +35,7 @@
 #include "core/safe_refcount.h"
 
 #include <stddef.h>
+#include <string.h>
 #include <type_traits>
 
 #ifndef PAD_ALIGN
@@ -162,6 +163,18 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 	}
 
 	return (T *)mem;
+}
+
+// Convenient alternative to a loop copy pattern.
+template <typename T>
+_FORCE_INLINE_ void copy_arr(T *p_dst, const T *p_src, size_t p_num) {
+	if constexpr (std::is_trivially_copyable<T>::value) {
+		memcpy((uint8_t *)p_dst, (uint8_t *)p_src, p_num * sizeof(T));
+	} else {
+		for (size_t i = 0; i < p_num; i++) {
+			p_dst[i] = p_src[i];
+		}
+	}
 }
 
 /**
