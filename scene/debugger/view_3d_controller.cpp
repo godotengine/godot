@@ -771,7 +771,8 @@ void View3DController::set_auto_orthogonal_allowed(const bool p_enabled) {
 }
 
 Point2 View3DController::get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_event, const Rect2 &p_surface_rect) const {
-	if (warped_mouse_panning) {
+	const bool captured_mode = Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED;
+	if (warped_mouse_panning && !captured_mode) {
 		return Input::get_singleton()->warp_mouse_motion(p_event, p_surface_rect);
 	}
 
