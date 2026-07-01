@@ -36,9 +36,13 @@
 #include "core/math/math_defs.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/object/property_info.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_effect.h"
@@ -5539,6 +5543,35 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 	String bbcode = p_bbcode.replace("\r\n", "\n");
 
+	// replace bbcode mappings
+	if (!bbcode_mapping.is_empty()) {
+		for (const KeyValue<Variant, Variant> &kv : bbcode_mapping) {
+			const String mapping = kv.key;
+			const String tags = kv.value;
+
+			const String formatted_mapping = "[" + mapping + "]";
+			// some code based on https://github.com/godotengine/godot/pull/106651/
+			const String formatted_mapping_end = "[/" + mapping + "]";
+
+			const PackedStringArray tag_list = tags.strip_escapes().remove_char('[').split("]");
+			String closing_tags = "";
+			for (const String &tag : tag_list) {
+				if (!tag.is_empty()) {
+					// Take the first "word" of the tag before any parameters to form the closing tag.
+					// For example, `[font slant=0.3 emb=1.0]`'s closing tag is just `[/font]`.
+					closing_tags = "[/" + tag.get_slicec('=', 0).get_slicec(' ', 0) + "]" + closing_tags;
+				}
+			}
+
+			if (bbcode.contains(formatted_mapping)) {
+				bbcode = bbcode.replace(formatted_mapping, tags);
+			}
+			if (bbcode.contains(formatted_mapping_end)) {
+				bbcode = bbcode.replace(formatted_mapping_end, closing_tags);
+			}
+		}
+	}
+
 	while (pos <= bbcode.length()) {
 		int brk_pos = bbcode.find_char('[', pos);
 
@@ -8005,6 +8038,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_menu_visible"), &RichTextLabel::is_menu_visible);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &RichTextLabel::menu_option);
 
+	ClassDB::bind_method(D_METHOD("set_bbcode_mapping", "mapping"), &RichTextLabel::set_bbcode_mapping);
+	ClassDB::bind_method(D_METHOD("get_bbcode_mapping"), &RichTextLabel::get_bbcode_mapping);
+
 	// Note: set "bbcode_enabled" first, to avoid unnecessary "text" resets.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
@@ -8026,6 +8062,7 @@ void RichTextLabel::_bind_methods() {
 
 	ADD_GROUP("Markup", "");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("RichTextEffect"), (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_effects", "get_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "bbcode_mapping", PROPERTY_HINT_TYPE_STRING, "String;String"), "set_bbcode_mapping", "get_bbcode_mapping");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_underlined"), "set_meta_underline", "is_meta_underlined");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hint_underlined"), "set_hint_underline", "is_hint_underlined");
 
@@ -8396,6 +8433,19 @@ void RichTextLabel::menu_option(int p_option) {
 			select_all();
 		} break;
 	}
+}
+
+void RichTextLabel::set_bbcode_mapping(const TypedDictionary<String, String> &p_mapping) {
+	if (p_mapping == bbcode_mapping) {
+		return;
+	}
+
+	bbcode_mapping = p_mapping;
+	_apply_translation();
+}
+
+TypedDictionary<String, String> RichTextLabel::get_bbcode_mapping() const {
+	return bbcode_mapping;
 }
 
 Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_identifier) {
