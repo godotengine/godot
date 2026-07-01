@@ -291,6 +291,9 @@ private:
 
 		mutable bool is_translation_domain_inherited : 1;
 		mutable bool is_translation_domain_dirty : 1;
+#ifdef TOOLS_ENABLED
+		bool is_debugger_node : 1;
+#endif
 
 		int32_t unique_scene_id = UNIQUE_SCENE_ID_UNASSIGNED;
 
@@ -640,8 +643,11 @@ public:
 	bool is_property_pinned(const StringName &p_property) const;
 	virtual StringName get_property_store_alias(const StringName &p_property) const;
 	bool is_part_of_edited_scene() const;
+	void set_debugger_node(bool p_enabled);
+	bool is_debugger_node() const;
 #else
 	bool is_part_of_edited_scene() const { return false; }
+	bool is_debugger_node() const { return false; }
 #endif
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
 
