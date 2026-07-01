@@ -35,6 +35,8 @@
 #include "core/templates/a_hash_map.h"
 #include "core/templates/vector.h"
 
+class Variant;
+
 class GDType {
 public:
 	enum class InitState {
@@ -55,11 +57,14 @@ protected:
 
 	StringName name;
 	/// Contains all the class names in order:
-	/// `name` is the first element and `Object` is the last.
+	/// `name` is the first element and `Object` is the last (for `Object` types).
 	Vector<StringName> name_hierarchy;
 
 	AHashMap<StringName, int64_t> constant_map;
 	AHashMap<StringName, int64_t> self_constant_map;
+
+	AHashMap<StringName, Variant> variant_constant_map;
+	AHashMap<StringName, Variant> self_variant_constant_map;
 
 	AHashMap<StringName, const EnumInfo *> enum_map;
 	AHashMap<StringName, const EnumInfo *> self_enum_map;
@@ -83,7 +88,9 @@ public:
 	const Vector<StringName> &get_name_hierarchy() const { return name_hierarchy; }
 
 	void bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
+	void bind_variant_constant(const StringName &p_name, const Variant &p_constant);
 	const AHashMap<StringName, int64_t> &get_integer_constant_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_constant_map : constant_map; }
+	const AHashMap<StringName, Variant> &get_variant_constant_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_variant_constant_map : variant_constant_map; }
 	const AHashMap<StringName, const EnumInfo *> &get_enum_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_enum_map : enum_map; }
 	const EnumInfo *get_integer_constant_enum(const StringName &p_name, bool p_no_inheritance = false) const;
 

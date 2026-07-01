@@ -1223,7 +1223,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				case ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT: {
 					StringName cname = result.class_name;
 					while (ClassDB::class_exists(cname)) {
-						if (ClassDB::has_integer_constant(cname, result.class_member, true)) {
+						if (ClassDB::has_integer_constant(cname, result.class_member, true) || ClassDB::has_variant_constant(cname, result.class_member, true)) {
 							result.class_name = cname;
 							break;
 						}
@@ -1367,7 +1367,7 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 			case ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT: {
 				StringName cname = result.class_name;
 				while (ClassDB::class_exists(cname)) {
-					if (ClassDB::has_integer_constant(cname, result.class_member, true)) {
+					if (ClassDB::has_integer_constant(cname, result.class_member, true) || ClassDB::has_variant_constant(cname, result.class_member, true)) {
 						result.class_name = cname;
 						break;
 					}

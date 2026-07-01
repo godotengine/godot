@@ -641,6 +641,24 @@ void GDExtension::_register_extension_class_integer_constant(GDExtensionClassLib
 	ClassDB::bind_integer_constant(class_name, enum_name, constant_name, p_constant_value, p_is_bitfield);
 }
 
+void GDExtension::_register_extension_class_variant_constant(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_constant_name, const GDExtensionVariantPtr *p_constant_value) {
+	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
+
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	StringName constant_name = *reinterpret_cast<const StringName *>(p_constant_name);
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), vformat("Attempt to register extension constant '%s' for unexisting class '%s'.", constant_name, class_name));
+
+#ifdef TOOLS_ENABLED
+	// If the extension is still marked as reloading, that means it failed to register again.
+	Extension *extension = &self->extension_classes[class_name];
+	if (extension->is_reloading) {
+		return;
+	}
+#endif
+
+	ClassDB::bind_variant_constant(class_name, constant_name, *reinterpret_cast<const Variant *>(p_constant_value));
+}
+
 void GDExtension::_register_extension_class_property(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionPropertyInfo *p_info, GDExtensionConstStringNamePtr p_setter, GDExtensionConstStringNamePtr p_getter) {
 	_register_extension_class_property_indexed(p_library, p_class_name, p_info, p_setter, p_getter, -1);
 }
@@ -900,6 +918,7 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("classdb_register_extension_class_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_method);
 	register_interface_function("classdb_register_extension_class_virtual_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_virtual_method);
 	register_interface_function("classdb_register_extension_class_integer_constant", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_integer_constant);
+	register_interface_function("classdb_register_extension_class_variant_constant", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_variant_constant);
 	register_interface_function("classdb_register_extension_class_property", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property);
 	register_interface_function("classdb_register_extension_class_property_indexed", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property_indexed);
 	register_interface_function("classdb_register_extension_class_property_group", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property_group);

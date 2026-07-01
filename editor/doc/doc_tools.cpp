@@ -744,6 +744,19 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				c.constants.push_back(constant);
 			}
 
+			List<String> variant_constant_list;
+			ClassDB::get_variant_constant_list(name, &variant_constant_list, true);
+
+			for (const String &E : variant_constant_list) {
+				DocData::ConstantDoc constant;
+				constant.name = E;
+				Variant value = ClassDB::get_variant_constant(name, E);
+				constant.value = DocData::get_default_value_string(value);
+				constant.is_value_valid = true;
+				constant.type = Variant::get_type_name(value.get_type());
+				c.constants.push_back(constant);
+			}
+
 			// Theme items.
 			{
 				List<ThemeDB::ThemeItemBind> theme_items;

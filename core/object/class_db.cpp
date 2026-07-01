@@ -460,6 +460,22 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 			}
 		}
 
+		{ // variant constants
+
+			List<StringName> snames;
+
+			for (const KeyValue<StringName, Variant> &F : t->gdtype->get_variant_constant_map(true)) {
+				snames.push_back(F.key);
+			}
+
+			snames.sort_custom<StringName::AlphCompare>();
+
+			for (const StringName &F : snames) {
+				hash = hash_murmur3_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(t->gdtype->get_variant_constant_map(true)[F].hash(), hash);
+			}
+		}
+
 		{ //signals
 
 			List<StringName> snames;
@@ -1247,6 +1263,55 @@ bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &
 	return type->gdtype->get_integer_constant_map(p_no_inheritance).has(p_name);
 }
 
+void ClassDB::bind_variant_constant(const StringName &p_class, const StringName &p_name, const Variant &p_constant) {
+	Locker::Lock lock(Locker::STATE_WRITE);
+
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
+
+	type->gdtype->bind_variant_constant(p_name, p_constant);
+}
+
+void ClassDB::get_variant_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance) {
+	Locker::Lock lock(Locker::STATE_READ);
+
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
+
+	for (const KeyValue<StringName, Variant> &E : type->gdtype->get_variant_constant_map(p_no_inheritance)) {
+		p_constants->push_back(E.key);
+	}
+}
+
+Variant ClassDB::get_variant_constant(const StringName &p_class, const StringName &p_name, bool *p_success) {
+	Locker::Lock lock(Locker::STATE_READ);
+
+	ClassInfo *type = classes.getptr(p_class);
+	if (type) {
+		const Variant *constant = type->gdtype->get_variant_constant_map(false).getptr(p_name);
+		if (constant) {
+			if (p_success) {
+				*p_success = true;
+			}
+			return *constant;
+		}
+	}
+
+	if (p_success) {
+		*p_success = false;
+	}
+	return Variant();
+}
+
+bool ClassDB::has_variant_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+	Locker::Lock lock(Locker::STATE_READ);
+
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, false);
+
+	return type->gdtype->get_variant_constant_map(p_no_inheritance).has(p_name);
+}
+
 StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
@@ -1649,6 +1714,12 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 		const int64_t *c = check->gdtype->get_integer_constant_map(true).getptr(p_property); //constants count
 		if (c) {
 			r_value = *c;
+			return true;
+		}
+
+		const Variant *vc = check->gdtype->get_variant_constant_map(true).getptr(p_property); //constants count
+		if (vc) {
+			r_value = *vc;
 			return true;
 		}
 

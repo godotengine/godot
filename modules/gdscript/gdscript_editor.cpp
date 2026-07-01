@@ -612,13 +612,13 @@ static int _get_property_location(Ref<Script> p_script, const StringName &p_prop
 }
 
 static int _get_constant_location(const StringName &p_class, const StringName &p_constant) {
-	if (!ClassDB::has_integer_constant(p_class, p_constant)) {
+	if (!ClassDB::has_integer_constant(p_class, p_constant) && !ClassDB::has_variant_constant(p_class, p_constant)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}
 
 	int depth = 0;
 	StringName class_test = p_class;
-	while (class_test && !ClassDB::has_integer_constant(class_test, p_constant, true)) {
+	while (class_test && !ClassDB::has_integer_constant(class_test, p_constant, true) && !ClassDB::has_variant_constant(class_test, p_constant, true)) {
 		class_test = ClassDB::get_parent_class(class_test);
 		depth++;
 	}
@@ -1426,6 +1426,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				if (!p_only_functions) {
 					List<String> constants;
 					ClassDB::get_integer_constant_list(type, &constants);
+					ClassDB::get_variant_constant_list(type, &constants);
 					for (const String &E : constants) {
 						int location = p_recursion_depth + _get_constant_location(type, StringName(E));
 						ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
@@ -4152,6 +4153,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 				List<String> constants;
 				ClassDB::get_integer_constant_list(class_name, &constants, true);
+				ClassDB::get_variant_constant_list(class_name, &constants, true);
 				for (const String &E : constants) {
 					if (E == p_symbol) {
 						r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
@@ -4343,6 +4345,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 		bool success = false;
 		ClassDB::get_integer_constant(class_name, p_symbol, &success);
+		if (!success) {
+			ClassDB::get_variant_constant(class_name, p_symbol, &success);
+		}
 		if (success) {
 			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
 			r_result.class_name = class_name;
