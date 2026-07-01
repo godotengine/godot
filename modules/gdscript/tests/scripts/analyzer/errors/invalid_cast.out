@@ -1,4 +1,16 @@
 GDTEST_ANALYZER_ERROR
 >> ERROR at line 3: Invalid cast. Cannot convert from "int" to "Array".
 >> ERROR at line 4: Invalid cast. Cannot convert from "int" to "Node".
->> ERROR at line 6: Invalid cast. Cannot convert from "RefCounted" to "int".
+>> ERROR at line 5: Invalid cast. Cannot convert from "int" to "Object".
+>> ERROR at line 8: Invalid cast. Cannot convert from "RefCounted" to "int".
+>> ERROR at line 11: Invalid cast. Cannot convert from "Array[String]" to "Array[RID]".
+>> ERROR at line 14: Invalid cast. Cannot convert from "PackedStringArray" to "PackedVector2Array".
+>> ERROR at line 17: Invalid cast. Cannot convert from "Dictionary[String, String]" to "Dictionary[RID, RID]".
+>> ERROR at line 18: Invalid cast. Cannot convert from "Dictionary[String, String]" to "Dictionary[RID, Variant]".
+>> ERROR at line 19: Invalid cast. Cannot convert from "Dictionary[String, String]" to "Dictionary[Variant, RID]".
+>> ERROR at line 22: Invalid cast. Cannot convert from "Dictionary[String, Variant]" to "Dictionary[RID, RID]".
+>> ERROR at line 23: Invalid cast. Cannot convert from "Dictionary[String, Variant]" to "Dictionary[RID, Variant]".
+>> ERROR at line 24: Invalid cast. Cannot convert from "Dictionary[String, Variant]" to "Dictionary[Variant, RID]".
+>> ERROR at line 27: Invalid cast. Cannot convert from "Dictionary[Variant, String]" to "Dictionary[RID, RID]".
+>> ERROR at line 28: Invalid cast. Cannot convert from "Dictionary[Variant, String]" to "Dictionary[RID, Variant]".
+>> ERROR at line 29: Invalid cast. Cannot convert from "Dictionary[Variant, String]" to "Dictionary[Variant, RID]".

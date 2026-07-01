@@ -487,9 +487,75 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(1);
 				text += " as ";
-				text += Variant::get_type_name(Variant::Type(_code_ptr[ip + 1]));
+				text += Variant::get_type_name(Variant::Type(_code_ptr[ip + 3]));
 
 				incr += 4;
+			} break;
+			case OPCODE_CAST_TO_ARRAY: {
+				text += "cast array ";
+				text += DADDR(2);
+				text += " = ";
+				text += DADDR(1);
+				text += " as Array[";
+
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 3];
+				StringName native_type = get_global_name(_code_ptr[ip + 4]);
+				Ref<Script> script_type = get_constant(_code_ptr[ip + 5] & ADDR_MASK);
+
+				if (script_type.is_valid() && script_type->is_valid()) {
+					text += "script(";
+					text += GDScript::debug_get_script_name(script_type);
+					text += ")";
+				} else if (native_type != StringName()) {
+					text += native_type;
+				} else {
+					text += Variant::get_type_name(builtin_type);
+				}
+
+				text += "]";
+
+				incr += 6;
+			} break;
+			case OPCODE_CAST_TO_DICTIONARY: {
+				text += "cast dictionary ";
+				text += DADDR(2);
+				text += " = ";
+				text += DADDR(1);
+				text += " as Dictionary[";
+
+				Variant::Type key_builtin_type = (Variant::Type)_code_ptr[ip + 3];
+				StringName key_native_type = get_global_name(_code_ptr[ip + 4]);
+				Ref<Script> key_script_type = get_constant(_code_ptr[ip + 5] & ADDR_MASK);
+
+				if (key_script_type.is_valid() && key_script_type->is_valid()) {
+					text += "script(";
+					text += GDScript::debug_get_script_name(key_script_type);
+					text += ")";
+				} else if (key_native_type != StringName()) {
+					text += key_native_type;
+				} else {
+					text += Variant::get_type_name(key_builtin_type);
+				}
+
+				text += ", ";
+
+				Variant::Type value_builtin_type = (Variant::Type)_code_ptr[ip + 6];
+				StringName value_native_type = get_global_name(_code_ptr[ip + 7]);
+				Ref<Script> value_script_type = get_constant(_code_ptr[ip + 8] & ADDR_MASK);
+
+				if (value_script_type.is_valid() && value_script_type->is_valid()) {
+					text += "script(";
+					text += GDScript::debug_get_script_name(value_script_type);
+					text += ")";
+				} else if (value_native_type != StringName()) {
+					text += value_native_type;
+				} else {
+					text += Variant::get_type_name(value_builtin_type);
+				}
+
+				text += "]";
+
+				incr += 9;
 			} break;
 			case OPCODE_CAST_TO_NATIVE: {
 				text += "cast native ";
