@@ -139,6 +139,7 @@
 			<param index="1" name="axis" type="int" enum="JoyAxis" />
 			<description>
 				Returns the current value of the joypad axis at index [param axis].
+				The returned value is usually in the range between [code]-1.0[/code] and [code]1.0[/code], but, if [method is_joy_known] for a joypad returns [code]true[/code], trigger axes ([constant @GlobalScope.JOY_AXIS_TRIGGER_LEFT] and [constant @GlobalScope.JOY_AXIS_TRIGGER_RIGHT]) return values between [code]0.0[/code] and [code]1.0[/code].
 			</description>
 		</method>
 		<method name="get_joy_gravity" qualifiers="const" experimental="">
