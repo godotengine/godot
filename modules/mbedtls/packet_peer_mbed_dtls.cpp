@@ -59,6 +59,7 @@ int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 
 	ERR_FAIL_NULL_V(sp, 0);
 
+	sp->base->poll();
 	int pc = sp->base->get_available_packet_count();
 	if (pc == 0) {
 		return MBEDTLS_ERR_SSL_WANT_READ;
