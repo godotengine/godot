@@ -81,11 +81,6 @@ void RemoteDebuggerPeerWebSocket::poll() {
 	}
 }
 
-int RemoteDebuggerPeerWebSocket::get_max_message_size() const {
-	ERR_FAIL_COND_V(ws_peer.is_null(), 0);
-	return ws_peer->get_max_packet_size();
-}
-
 bool RemoteDebuggerPeerWebSocket::has_message() {
 	return in_queue.size() > 0;
 }

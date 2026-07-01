@@ -88,7 +88,6 @@ public:
 	Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
 	int get_available_packet_count() const override;
-	int get_max_packet_size() const override;
 	void set_broadcast_enabled(bool p_enabled);
 	Error join_multicast_group(IPAddress p_multi_address, const String &p_if_name);
 	Error leave_multicast_group(IPAddress p_multi_address, const String &p_if_name);
