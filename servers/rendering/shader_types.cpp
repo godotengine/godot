@@ -267,9 +267,9 @@ ShaderTypes::ShaderTypes() {
 	/************ CANVAS ITEM **************************/
 
 	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["constants"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["constants"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["constants"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["constants"].built_ins["PI"] = constvt(ShaderLanguage::TYPE_FLOAT, { pi_scalar });
+	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["constants"].built_ins["TAU"] = constvt(ShaderLanguage::TYPE_FLOAT, { tau_scalar });
+	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["constants"].built_ins["E"] = constvt(ShaderLanguage::TYPE_FLOAT, { e_scalar });
 
 	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["VERTEX"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["vertex"].built_ins["UV"] = ShaderLanguage::TYPE_VEC2;
@@ -366,9 +366,9 @@ ShaderTypes::ShaderTypes() {
 	/************ PARTICLES **************************/
 
 	shader_modes[RSE::SHADER_PARTICLES].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_PARTICLES].functions["constants"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_PARTICLES].functions["constants"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_PARTICLES].functions["constants"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RSE::SHADER_PARTICLES].functions["constants"].built_ins["PI"] = constvt(ShaderLanguage::TYPE_FLOAT, { pi_scalar });
+	shader_modes[RSE::SHADER_PARTICLES].functions["constants"].built_ins["TAU"] = constvt(ShaderLanguage::TYPE_FLOAT, { tau_scalar });
+	shader_modes[RSE::SHADER_PARTICLES].functions["constants"].built_ins["E"] = constvt(ShaderLanguage::TYPE_FLOAT, { e_scalar });
 
 	shader_modes[RSE::SHADER_PARTICLES].functions["start"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RSE::SHADER_PARTICLES].functions["start"].built_ins["VELOCITY"] = ShaderLanguage::TYPE_VEC3;
@@ -459,9 +459,9 @@ ShaderTypes::ShaderTypes() {
 	/************ SKY **************************/
 
 	shader_modes[RSE::SHADER_SKY].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_SKY].functions["constants"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_SKY].functions["constants"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_SKY].functions["constants"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RSE::SHADER_SKY].functions["constants"].built_ins["PI"] = constvt(ShaderLanguage::TYPE_FLOAT, { pi_scalar });
+	shader_modes[RSE::SHADER_SKY].functions["constants"].built_ins["TAU"] = constvt(ShaderLanguage::TYPE_FLOAT, { tau_scalar });
+	shader_modes[RSE::SHADER_SKY].functions["constants"].built_ins["E"] = constvt(ShaderLanguage::TYPE_FLOAT, { e_scalar });
 	shader_modes[RSE::SHADER_SKY].functions["global"].built_ins["POSITION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RSE::SHADER_SKY].functions["global"].built_ins["RADIANCE"] = constt(ShaderLanguage::TYPE_SAMPLERCUBE);
 	shader_modes[RSE::SHADER_SKY].functions["global"].built_ins["AT_HALF_RES_PASS"] = constt(ShaderLanguage::TYPE_BOOL);
@@ -510,9 +510,9 @@ ShaderTypes::ShaderTypes() {
 	/************ FOG **************************/
 
 	shader_modes[RSE::SHADER_FOG].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_FOG].functions["constants"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_FOG].functions["constants"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_FOG].functions["constants"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RSE::SHADER_FOG].functions["constants"].built_ins["PI"] = constvt(ShaderLanguage::TYPE_FLOAT, { pi_scalar });
+	shader_modes[RSE::SHADER_FOG].functions["constants"].built_ins["TAU"] = constvt(ShaderLanguage::TYPE_FLOAT, { tau_scalar });
+	shader_modes[RSE::SHADER_FOG].functions["constants"].built_ins["E"] = constvt(ShaderLanguage::TYPE_FLOAT, { e_scalar });
 
 	shader_modes[RSE::SHADER_FOG].functions["fog"].built_ins["WORLD_POSITION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RSE::SHADER_FOG].functions["fog"].built_ins["OBJECT_POSITION"] = constt(ShaderLanguage::TYPE_VEC3);
@@ -527,9 +527,9 @@ ShaderTypes::ShaderTypes() {
 	/************ TEXTURE_BLIT **************************/
 
 	shader_modes[RSE::SHADER_TEXTURE_BLIT].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_TEXTURE_BLIT].functions["constants"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_TEXTURE_BLIT].functions["constants"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RSE::SHADER_TEXTURE_BLIT].functions["constants"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RSE::SHADER_TEXTURE_BLIT].functions["constants"].built_ins["PI"] = constvt(ShaderLanguage::TYPE_FLOAT, { pi_scalar });
+	shader_modes[RSE::SHADER_TEXTURE_BLIT].functions["constants"].built_ins["TAU"] = constvt(ShaderLanguage::TYPE_FLOAT, { tau_scalar });
+	shader_modes[RSE::SHADER_TEXTURE_BLIT].functions["constants"].built_ins["E"] = constvt(ShaderLanguage::TYPE_FLOAT, { e_scalar });
 
 	shader_modes[RSE::SHADER_TEXTURE_BLIT].functions["blit"].built_ins["FRAGCOORD"] = constt(ShaderLanguage::TYPE_VEC4);
 
