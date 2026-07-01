@@ -1,0 +1,10 @@
+GH-80418
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Script/methods/get_script_method_list': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Script/methods/get_script_property_list': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Script/methods/get_script_signal_list': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/ScriptExtension/methods/_get_script_method_list': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/ScriptExtension/methods/_get_script_property_list': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/ScriptExtension/methods/_get_script_signal_list': arguments
+
+Added optional argument. Compatibility methods registered.
