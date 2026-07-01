@@ -365,7 +365,11 @@ private:
 	void _set_global_position(const Point2 &p_point);
 	void _set_size(const Size2 &p_size);
 
-	void _compute_layout_rect(Rect2 p_rect, bool p_keep_offsets = false);
+	void _compute_layout_rect(Rect2 p_rect, bool p_keep_offsets = false, bool p_grow_rect = true);
+
+	void _compute_layout_position(const Rect2 &p_parent_rect, const Size2 &p_size, Point2 &r_point) const;
+	void _compute_edge_positions(const Rect2 &p_parent_rect, real_t (&r_edge_positions)[4]) const;
+	void _compute_position_and_size_with_grow(const Rect2 &p_parent_rect, Point2 &r_position, Size2 &r_size) const;
 
 	void _set_layout_mode(LayoutMode p_mode);
 	void _update_layout_mode();
