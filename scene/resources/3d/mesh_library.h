@@ -35,6 +35,7 @@
 #include "scene/property_list_helper.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
+#include "scene/resources/packed_scene.h"
 #include "servers/rendering/rendering_server_enums.h"
 
 #ifndef PHYSICS_3D_DISABLED
@@ -82,6 +83,8 @@ public:
 
 private:
 	RBMap<int, Item> item_map;
+
+	Ref<PackedScene> source_scene;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -131,6 +134,9 @@ public:
 	Vector<int> get_item_list() const;
 	int get_item_count() const { return item_map.size(); }
 	int get_last_unused_item_id() const;
+
+	void set_source_scene(const Ref<PackedScene> &p_scene) { source_scene = p_scene; }
+	Ref<PackedScene> get_source_scene() const { return source_scene; }
 
 	MeshLibrary();
 };

@@ -33,6 +33,7 @@
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 
+class CheckBox;
 class ConfirmationDialog;
 class EditorFileDialog;
 class EditorInspector;
@@ -65,9 +66,9 @@ class MeshLibraryEditor : public EditorDock {
 	enum {
 		MENU_OPTION_ADD_ITEM,
 		MENU_OPTION_REMOVE_ITEM,
-		MENU_OPTION_UPDATE_FROM_SCENE,
 		MENU_OPTION_IMPORT_FROM_SCENE,
-		MENU_OPTION_IMPORT_FROM_SCENE_APPLY_XFORMS
+		MENU_OPTION_UPDATE_FROM_SCENE,
+		MENU_OPTION_UNSET_SCENE,
 	};
 
 	const float UPDATE_ITEMS_DELAY_TIMEOUT = 0.1;
@@ -89,9 +90,10 @@ class MeshLibraryEditor : public EditorDock {
 
 	EditorFileDialog *file = nullptr;
 	ConfirmationDialog *cd_update = nullptr;
-
-	bool apply_xforms = false;
-	bool import_update = false;
+	Label *cd_label = nullptr;
+	CheckBox *apply_xforms_check = nullptr;
+	CheckBox *create_categories_check = nullptr;
+	ConfirmationDialog *cd_unset = nullptr;
 
 	void _update_mesh_items(bool p_reselect = true, Ref<MeshLibrary> p_lib_check = Ref<MeshLibrary>());
 	void _update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_idx);
@@ -104,11 +106,13 @@ class MeshLibraryEditor : public EditorDock {
 	void _mesh_items_input(const Ref<InputEvent> &p_event);
 
 	void _menu_cbk(int p_option);
-	void _menu_update_confirm(bool p_apply_xforms);
+	void _menu_import_confirm(const String &p_path);
+	void _menu_update_confirm();
+	void _menu_unset_confirm();
 
-	void _import_scene_cbk(const String &p_str);
-	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms);
-	static void _import_scene_parse_node(Ref<MeshLibrary> p_library, HashMap<int, MeshInstance3D *> &p_mesh_instances, Node *p_node, bool p_merge, bool p_apply_xforms);
+	void _import_scene_cbk(const String &p_str, bool p_merge, bool p_apply_xforms, bool p_create_categories);
+	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms, bool p_create_categories);
+	static void _import_scene_parse_node(Ref<MeshLibrary> p_library, HashMap<int, MeshInstance3D *> &p_mesh_instances, Node *p_node, bool p_merge, bool p_apply_xforms, bool p_create_categories);
 
 	void _icon_size_changed(float p_value);
 
@@ -118,7 +122,7 @@ private:
 
 public:
 	void edit(const Ref<MeshLibrary> &p_mesh_library);
-	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false);
+	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false, bool p_create_categories = false);
 
 	MeshLibraryEditor();
 };
