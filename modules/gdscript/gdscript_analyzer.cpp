@@ -4962,6 +4962,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::PACKED_VECTOR4_ARRAY:
 							case Variant::ARRAY:
 							case Variant::STRING:
+							case Variant::STRING_NAME:
 								error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::FLOAT;
 								break;
 							// Expect String only.
@@ -5000,7 +5001,6 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::NIL:
 							case Variant::NODE_PATH:
 							case Variant::SIGNAL:
-							case Variant::STRING_NAME:
 								break;
 							// Support depends on if the dictionary has a typed key, otherwise anything is valid.
 							case Variant::DICTIONARY:
@@ -5068,7 +5068,6 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::NIL:
 					case Variant::NODE_PATH:
 					case Variant::SIGNAL:
-					case Variant::STRING_NAME:
 						result_type.kind = GDScriptParser::DataType::VARIANT;
 						push_error(vformat(R"(Cannot use subscript operator on a base of type "%s".)", base_type.to_string()), p_subscript->base);
 						break;
@@ -5093,7 +5092,9 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					// Return String.
 					case Variant::PACKED_STRING_ARRAY:
 					case Variant::STRING:
+					case Variant::STRING_NAME:
 						result_type.builtin_type = Variant::STRING;
+						result_type.is_read_only = base_type.builtin_type == Variant::STRING_NAME;
 						break;
 					// Return Vector2.
 					case Variant::PACKED_VECTOR2_ARRAY:
