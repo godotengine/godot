@@ -208,6 +208,7 @@
 /modules/zip/                                 @godotengine/core
 /modules/zip/doc_classes/                     @godotengine/core @godotengine/documentation
 /modules/zip/tests/                           @godotengine/core @godotengine/tests
+modules/cross_runtime/                        @godotengine/web @godotengine/dotnet
 
 # Platform
 
