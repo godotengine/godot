@@ -2543,6 +2543,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_directional_set_shadow_mode", "light", "mode"), &RenderingServer::light_directional_set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("light_directional_set_blend_splits", "light", "enable"), &RenderingServer::light_directional_set_blend_splits);
 	ClassDB::bind_method(D_METHOD("light_directional_set_sky_mode", "light", "mode"), &RenderingServer::light_directional_set_sky_mode);
+	ClassDB::bind_method(D_METHOD("light_directional_set_allow_contact_shadows", "light", "enable"), &RenderingServer::light_directional_set_allow_contact_shadows);
 
 	ClassDB::bind_method(D_METHOD("light_area_set_size", "light", "size"), &RenderingServer::light_area_set_size);
 	ClassDB::bind_method(D_METHOD("light_area_set_normalize_energy", "light", "enable"), &RenderingServer::light_area_set_normalize_energy);
