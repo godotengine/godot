@@ -47,7 +47,7 @@
 
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"
-#endif // PHYSICS_3D_DISABLED
+#endif // PHYSICS_2D_DISABLED
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"
@@ -789,11 +789,11 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 	}
 
 	if (!forced_cleanup) {
-		RID space = get_world_2d()->get_space();
+		RID space = physics_space_override.is_valid() ? physics_space_override : get_world_2d()->get_space();
 		Transform2D gl_transform = get_global_transform();
 
 		// List all quadrants to update, recreating them if needed.
-		if (dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || _physics_was_cleaned_up) {
+		if (dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || _physics_was_cleaned_up || dirty.flags[DIRTY_FLAGS_LAYER_PHYSICS_SPACE]) {
 			// Update all cells.
 			for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
 				CellData &cell_data = kv.value;
@@ -1070,7 +1070,7 @@ void TileMapLayer::_physics_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 			// Changes in the tree may cause the space to change (e.g. when reparenting to a SubViewport).
 			if (is_inside_tree()) {
-				RID space = get_world_2d()->get_space();
+				RID space = physics_space_override.is_valid() ? physics_space_override : get_world_2d()->get_space();
 
 				for (KeyValue<Vector2i, Ref<PhysicsQuadrant>> &kv : physics_quadrant_map) {
 					for (const KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : kv.value->bodies) {
@@ -2253,6 +2253,11 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_quadrant_size", "size"), &TileMapLayer::set_physics_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_physics_quadrant_size"), &TileMapLayer::get_physics_quadrant_size);
 
+#ifndef PHYSICS_2D_DISABLED
+	ClassDB::bind_method(D_METHOD("set_physics_space", "space"), &TileMapLayer::set_physics_space);
+	ClassDB::bind_method(D_METHOD("get_physics_space"), &TileMapLayer::get_physics_space);
+#endif // PHYSICS_2D_DISABLED
+
 	ClassDB::bind_method(D_METHOD("set_occlusion_enabled", "enabled"), &TileMapLayer::set_occlusion_enabled);
 	ClassDB::bind_method(D_METHOD("is_occlusion_enabled"), &TileMapLayer::is_occlusion_enabled);
 
@@ -3399,6 +3404,27 @@ void TileMapLayer::set_collision_enabled(bool p_enabled) {
 bool TileMapLayer::is_collision_enabled() const {
 	return collision_enabled;
 }
+
+#ifndef PHYSICS_2D_DISABLED
+void TileMapLayer::set_physics_space(RID p_space) {
+	if (physics_space_override == p_space) {
+		return;
+	}
+	physics_space_override = p_space;
+	dirty.flags[DIRTY_FLAGS_LAYER_PHYSICS_SPACE] = true;
+	_queue_internal_update();
+	emit_signal(CoreStringName(changed));
+}
+
+RID TileMapLayer::get_physics_space() const {
+	if (physics_space_override.is_valid()) {
+		return physics_space_override;
+	} else if (is_inside_tree()) {
+		return get_world_2d()->get_space();
+	}
+	return RID();
+}
+#endif // PHYSICS_2D_DISABLED
 
 void TileMapLayer::set_use_kinematic_bodies(bool p_use_kinematic_bodies) {
 	if (use_kinematic_bodies == p_use_kinematic_bodies) {
