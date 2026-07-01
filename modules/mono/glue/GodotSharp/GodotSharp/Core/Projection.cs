@@ -473,18 +473,27 @@ namespace Godot
         /// <returns>The determinant calculated from this projection.</returns>
         public readonly real_t Determinant()
         {
-            return X.W * Y.Z * Z.Y * W.X - X.Z * Y.W * Z.Y * W.X -
-                   X.W * Y.Y * Z.Z * W.X + X.Y * Y.W * Z.Z * W.X +
-                   X.Z * Y.Y * Z.W * W.X - X.Y * Y.Z * Z.W * W.X -
-                   X.W * Y.Z * Z.X * W.Y + X.Z * Y.W * Z.X * W.Y +
-                   X.W * Y.X * Z.Z * W.Y - X.X * Y.W * Z.Z * W.Y -
-                   X.Z * Y.X * Z.W * W.Y + X.X * Y.Z * Z.W * W.Y +
-                   X.W * Y.Y * Z.X * W.Z - X.Y * Y.W * Z.X * W.Z -
-                   X.W * Y.X * Z.Y * W.Z + X.X * Y.W * Z.Y * W.Z +
-                   X.Y * Y.X * Z.W * W.Z - X.X * Y.Y * Z.W * W.Z -
-                   X.Z * Y.Y * Z.X * W.W + X.Y * Y.Z * Z.X * W.W +
-                   X.Z * Y.X * Z.Y * W.W - X.X * Y.Z * Z.Y * W.W -
-                   X.Y * Y.X * Z.Z * W.W + X.X * Y.Y * Z.Z * W.W;
+            real_t m0 = X.X;
+            real_t m4 = Y.X;
+            real_t m8 = Z.X;
+            real_t m12 = W.X;
+            real_t m1 = X.Y;
+            real_t m5 = Y.Y;
+            real_t m9 = Z.Y;
+            real_t m13 = W.Y;
+            real_t m2 = X.Z;
+            real_t m6 = Y.Z;
+            real_t m10 = Z.Z;
+            real_t m14 = W.Z;
+            real_t m3 = X.W;
+            real_t m7 = Y.W;
+            real_t m11 = Z.W;
+            real_t m15 = W.W;
+
+            return (m0 * ((m5 * (m10 * m15 - m11 * m14) - m9 * (m6 * m15 - m7 * m14) + m13 * (m6 * m11 - m7 * m10))) -
+                    m4 * ((m1 * (m10 * m15 - m11 * m14) - m9 * (m2 * m15 - m3 * m14) + m13 * (m2 * m11 - m3 * m10))) +
+                    m8 * ((m1 * (m6 * m15 - m7 * m14) - m5 * (m2 * m15 - m3 * m14) + m13 * (m2 * m7 - m3 * m6))) -
+                    m12 * ((m1 * (m6 * m11 - m7 * m10) - m5 * (m2 * m11 - m3 * m10) + m9 * (m2 * m7 - m3 * m6))));
         }
 
         /// <summary>
