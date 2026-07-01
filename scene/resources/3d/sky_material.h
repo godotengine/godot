@@ -31,6 +31,8 @@
 #pragma once
 
 #include "core/templates/rid.h"
+#include "scene/resources/gradient.h"
+#include "scene/resources/gradient_texture.h"
 #include "scene/resources/material.h"
 
 class ProceduralSkyMaterial : public Material {
@@ -39,6 +41,8 @@ class ProceduralSkyMaterial : public Material {
 private:
 	Color sky_top_color;
 	Color sky_horizon_color;
+	Ref<Gradient> sky_horizon_gradient;
+	Ref<GradientTexture1D> sky_horizon_gradient_tex;
 	float sky_curve = 0.0f;
 	float sky_energy_multiplier = 0.0f;
 	Ref<Texture2D> sky_cover;
@@ -55,8 +59,8 @@ private:
 	float global_energy_multiplier = 1.0f;
 
 	static Mutex shader_mutex;
-	static RID shader_cache[4];
-	static void _update_shader(bool p_use_debanding, bool p_use_sky_cover);
+	static RID shader_cache[8];
+	static void _update_shader(bool p_use_debanding, bool p_use_sky_cover, bool p_use_sky_horizon_gradient);
 	mutable bool shader_set = false;
 
 	RID get_shader_cache() const;
@@ -71,6 +75,9 @@ public:
 
 	void set_sky_horizon_color(const Color &p_sky_horizon);
 	Color get_sky_horizon_color() const;
+
+	void set_sky_horizon_gradient(const Ref<Gradient> &p_gradient);
+	Ref<Gradient> get_sky_horizon_gradient() const;
 
 	void set_sky_curve(float p_curve);
 	float get_sky_curve() const;
