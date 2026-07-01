@@ -198,11 +198,11 @@ public:
 	/// This is only available for trivially destructible types (otherwise, trivial resize might be UB).
 	_FORCE_INLINE_ void resize_uninitialized(U p_size) { _resize<false>(p_size); }
 
-	_FORCE_INLINE_ const T &operator[](U p_index) const {
+	_FORCE_INLINE_ const T &operator[](U p_index) const _LIFETIME_BOUND_ {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
 		return data[p_index];
 	}
-	_FORCE_INLINE_ T &operator[](U p_index) {
+	_FORCE_INLINE_ T &operator[](U p_index) _LIFETIME_BOUND_ {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
 		return data[p_index];
 	}
@@ -257,17 +257,17 @@ public:
 		const T *elem_ptr = nullptr;
 	};
 
-	_FORCE_INLINE_ Iterator begin() {
+	_FORCE_INLINE_ Iterator begin() _LIFETIME_BOUND_ {
 		return Iterator(data);
 	}
-	_FORCE_INLINE_ Iterator end() {
+	_FORCE_INLINE_ Iterator end() _LIFETIME_BOUND_ {
 		return Iterator(data + size());
 	}
 
-	_FORCE_INLINE_ ConstIterator begin() const {
+	_FORCE_INLINE_ ConstIterator begin() const _LIFETIME_BOUND_ {
 		return ConstIterator(ptr());
 	}
-	_FORCE_INLINE_ ConstIterator end() const {
+	_FORCE_INLINE_ ConstIterator end() const _LIFETIME_BOUND_ {
 		return ConstIterator(ptr() + size());
 	}
 
