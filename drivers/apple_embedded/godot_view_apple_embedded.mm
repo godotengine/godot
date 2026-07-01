@@ -428,6 +428,10 @@ static const float earth_gravity = 9.80665;
 	/// best
 	CMRotationRate rotation = self.motionManager.deviceMotion.rotationRate;
 
+	// Device orientation (attitude) as quaternion.
+	CMQuaternion att = self.motionManager.deviceMotion.attitude.quaternion;
+	Quaternion device_orientation(att.x, att.y, att.z, att.w);
+
 	// Adjust for screen orientation.
 	// [[UIDevice currentDevice] orientation] changes even if we've fixed
 	// our orientation which is not a good thing when you're trying to get
@@ -445,24 +449,28 @@ static const float earth_gravity = 9.80665;
 			DisplayServerAppleEmbedded::get_singleton()->update_accelerometer(Vector3(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z).rotated(Vector3(0, 0, 1), -Math::PI * 0.5));
 			DisplayServerAppleEmbedded::get_singleton()->update_magnetometer(Vector3(magnetic.x, magnetic.y, magnetic.z).rotated(Vector3(0, 0, 1), -Math::PI * 0.5));
 			DisplayServerAppleEmbedded::get_singleton()->update_gyroscope(Vector3(rotation.x, rotation.y, rotation.z).rotated(Vector3(0, 0, 1), -Math::PI * 0.5));
+			DisplayServerAppleEmbedded::get_singleton()->update_device_orientation(Quaternion(Vector3(0, 0, 1), -Math::PI * 0.5) * device_orientation);
 		} break;
 		case UIInterfaceOrientationLandscapeRight: {
 			DisplayServerAppleEmbedded::get_singleton()->update_gravity(Vector3(gravity.x, gravity.y, gravity.z).rotated(Vector3(0, 0, 1), Math::PI * 0.5));
 			DisplayServerAppleEmbedded::get_singleton()->update_accelerometer(Vector3(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z).rotated(Vector3(0, 0, 1), Math::PI * 0.5));
 			DisplayServerAppleEmbedded::get_singleton()->update_magnetometer(Vector3(magnetic.x, magnetic.y, magnetic.z).rotated(Vector3(0, 0, 1), Math::PI * 0.5));
 			DisplayServerAppleEmbedded::get_singleton()->update_gyroscope(Vector3(rotation.x, rotation.y, rotation.z).rotated(Vector3(0, 0, 1), Math::PI * 0.5));
+			DisplayServerAppleEmbedded::get_singleton()->update_device_orientation(Quaternion(Vector3(0, 0, 1), Math::PI * 0.5) * device_orientation);
 		} break;
 		case UIInterfaceOrientationPortraitUpsideDown: {
 			DisplayServerAppleEmbedded::get_singleton()->update_gravity(Vector3(gravity.x, gravity.y, gravity.z).rotated(Vector3(0, 0, 1), Math::PI));
 			DisplayServerAppleEmbedded::get_singleton()->update_accelerometer(Vector3(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z).rotated(Vector3(0, 0, 1), Math::PI));
 			DisplayServerAppleEmbedded::get_singleton()->update_magnetometer(Vector3(magnetic.x, magnetic.y, magnetic.z).rotated(Vector3(0, 0, 1), Math::PI));
 			DisplayServerAppleEmbedded::get_singleton()->update_gyroscope(Vector3(rotation.x, rotation.y, rotation.z).rotated(Vector3(0, 0, 1), Math::PI));
+			DisplayServerAppleEmbedded::get_singleton()->update_device_orientation(Quaternion(Vector3(0, 0, 1), Math::PI) * device_orientation);
 		} break;
 		default: { // assume portrait
 			DisplayServerAppleEmbedded::get_singleton()->update_gravity(Vector3(gravity.x, gravity.y, gravity.z));
 			DisplayServerAppleEmbedded::get_singleton()->update_accelerometer(Vector3(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z));
 			DisplayServerAppleEmbedded::get_singleton()->update_magnetometer(Vector3(magnetic.x, magnetic.y, magnetic.z));
 			DisplayServerAppleEmbedded::get_singleton()->update_gyroscope(Vector3(rotation.x, rotation.y, rotation.z));
+			DisplayServerAppleEmbedded::get_singleton()->update_device_orientation(device_orientation);
 		} break;
 	}
 }
