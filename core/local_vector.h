@@ -89,7 +89,7 @@ public:
 	// Removes the item copying the last value into the position of the one to
 	// remove. It's generally faster than `remove`.
 	void remove_unordered(U p_index) {
-		ERR_FAIL_INDEX(p_index, count);
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
 		count--;
 		if (count > p_index) {
 			data[p_index] = std::move(data[count]);
@@ -117,7 +117,7 @@ public:
 
 	U erase_multiple_unordered(const T &p_val) {
 		U from = 0;
-		U count = 0;
+		U removed = 0;
 		while (true) {
 			int64_t idx = find(p_val, from);
 
@@ -126,9 +126,9 @@ public:
 			}
 			remove_unordered(idx);
 			from = idx;
-			count++;
+			removed++;
 		}
-		return count;
+		return removed;
 	}
 
 	void invert() {
@@ -150,6 +150,12 @@ public:
 	_FORCE_INLINE_ U get_capacity() const { return capacity; }
 
 	_FORCE_INLINE_ void reserve(U p_size, bool p_allow_shrink = false) {
+		if (p_size == 0) {
+			if (p_allow_shrink && empty() && capacity) {
+				reset();
+			}
+			return;
+		}
 		p_size = nearest_power_of_2_templated(p_size);
 		if (!p_allow_shrink ? p_size > capacity : ((p_size >= count) && (p_size != capacity))) {
 			capacity = p_size;
@@ -259,9 +265,11 @@ public:
 
 	explicit operator Vector<T>() const {
 		Vector<T> ret;
-		ret.resize(size());
+		ret.resize(count);
 		T *w = ret.ptrw();
-		memcpy(w, data, sizeof(T) * count);
+		if (w) {
+			copy_arr(w, data, count);
+		}
 		return ret;
 	}
 
@@ -271,7 +279,7 @@ public:
 			pl.resize(size());
 			typename PoolVector<T>::Write w = pl.write();
 			T *dest = w.ptr();
-			memcpy(dest, data, sizeof(T) * count);
+			copy_arr(dest, data, count);
 		}
 		return pl;
 	}
