@@ -106,6 +106,12 @@
 				Sends any queued packets on the host specified to its designated peers.
 			</description>
 		</method>
+		<method name="get_local_address" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the local address to which this peer is bound.
+			</description>
+		</method>
 		<method name="get_local_port" qualifiers="const">
 			<return type="int" />
 			<description>
