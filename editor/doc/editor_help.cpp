@@ -4420,6 +4420,11 @@ void EditorHelpBit::_bind_methods() {
 
 void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+			if (!current_symbol.is_empty()) {
+				parse_symbol(current_symbol, current_prologue);
+			}
+			break;
 		case NOTIFICATION_THEME_CHANGED:
 			content->begin_bulk_theme_override();
 
@@ -4435,6 +4440,17 @@ void EditorHelpBit::_notification(int p_what) {
 			_update_labels();
 			break;
 	}
+}
+
+void EditorHelpBit::clear_cache() {
+	doc_class_cache.clear();
+	doc_enum_cache.clear();
+	doc_constant_cache.clear();
+	doc_property_cache.clear();
+	doc_theme_item_cache.clear();
+	doc_method_cache.clear();
+	doc_signal_cache.clear();
+	doc_annotation_cache.clear();
 }
 
 String EditorHelpBit::get_as_plain_text(const String &p_symbol, const String &p_prologue) {
@@ -4682,11 +4698,15 @@ void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologu
 		item_data = JSON::parse_string(slices[3]);
 	}
 
+	current_symbol = p_symbol;
+	current_prologue = p_prologue;
+
 	symbol_doc_link = String();
 	symbol_class_name = class_name;
 	symbol_type = String();
 	symbol_name = item_name;
 	symbol_hint = SYMBOL_HINT_NONE;
+
 	help_data = HelpData();
 
 	if (item_type == "class") {
@@ -4850,6 +4870,9 @@ void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologu
 }
 
 void EditorHelpBit::set_custom_text(const String &p_type, const String &p_name, const String &p_description) {
+	current_symbol = String();
+	current_prologue = String();
+
 	symbol_doc_link = String();
 	symbol_class_name = String();
 	symbol_type = p_type;
@@ -4883,7 +4906,12 @@ void EditorHelpBit::update_content_height() {
 	content->set_custom_minimum_size(Size2(content->get_custom_minimum_size().x, CLAMP(content_height, content_min_height, content_max_height)));
 }
 
-EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_allow_selection, bool p_in_tooltip) {
+EditorHelpBit::EditorHelpBit(
+		const String &p_symbol,
+		const String &p_prologue,
+		bool p_use_class_prefix,
+		bool p_allow_selection,
+		bool p_in_tooltip) {
 	add_theme_constant_override("separation", 0);
 
 	title = memnew(RichTextLabel);
@@ -5009,7 +5037,12 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 	}
 }
 
-Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_shortcut) {
+Control *EditorHelpBitTooltip::make_tooltip(
+		Control *p_target,
+		const String &p_symbol,
+		const String &p_prologue,
+		bool p_use_class_prefix,
+		bool p_shortcut) {
 	ERR_FAIL_NULL_V(p_target, _make_invisible_control());
 
 	// Show the custom tooltip only if it is not already visible.
@@ -5200,7 +5233,7 @@ void EditorHelpHighlighter::highlight(RichTextLabel *p_rich_text_label, Language
 	}
 }
 
-void EditorHelpHighlighter::reset_cache() {
+void EditorHelpHighlighter::clear_cache() {
 	const Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
 
 #ifdef MODULE_GDSCRIPT_ENABLED
