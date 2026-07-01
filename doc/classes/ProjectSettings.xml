@@ -511,6 +511,7 @@
 		</member>
 		<member name="compression/formats/zstd/compression_level" type="int" setter="" getter="" default="3">
 			The default compression level for Zstandard. Affects compressed scenes and resources. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level.
+			[b]Note:[/b] Levels above [code]19[/code] require significantly more memory during compression and decompression.
 		</member>
 		<member name="compression/formats/zstd/long_distance_matching" type="bool" setter="" getter="" default="false">
 			Enables [url=https://github.com/facebook/zstd/releases/tag/v1.3.2]long-distance matching[/url] in Zstandard.
@@ -3460,6 +3461,7 @@
 		</member>
 		<member name="rendering/textures/basis_universal/zstd_supercompression_level" type="int" setter="" getter="" default="6">
 			Specify the compression level for Basis Universal Zstandard supercompression, ranging from [code]1[/code] to [code]22[/code].
+			[b]Note:[/b] Levels above [code]19[/code] require significantly more memory during compression and decompression.
 		</member>
 		<member name="rendering/textures/canvas_textures/default_texture_filter" type="int" setter="" getter="" default="1" keywords="nearest, linear">
 			The default texture filtering mode to use for [CanvasItem]'s built-in texture. In shaders, this texture is accessed as [code]TEXTURE[/code].
