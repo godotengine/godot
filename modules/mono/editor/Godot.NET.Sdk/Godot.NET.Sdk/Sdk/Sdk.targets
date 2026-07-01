@@ -21,6 +21,7 @@
     <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);TOOLS</DefineConstants>
 
     <DefineConstants>$(_GodotDefineConstants);$(DefineConstants)</DefineConstants>
+    <NoWarn Condition=" '$(EnableDocumentationWarning)' != 'true' ">$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableGodotDotNetPreview)' == 'true'">
