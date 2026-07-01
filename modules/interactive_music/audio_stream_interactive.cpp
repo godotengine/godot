@@ -785,13 +785,13 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 		}
 	}
 
+	if (transition.hold_previous) {
+		return_memory = playback_current;
+	}
+
 	if (return_memory != -1 && stream->clips[p_to_clip_index].auto_advance == AudioStreamInteractive::AUTO_ADVANCE_RETURN_TO_HOLD) {
 		auto_advance_to = return_memory;
 		return_memory = -1;
-	}
-
-	if (transition.hold_previous) {
-		return_memory = playback_current;
 	}
 
 	if (transition.use_filler_clip && transition.filler_clip >= 0 && transition.filler_clip < (int)stream->clip_count && states[transition.filler_clip].playback.is_valid() && playback_current != transition.filler_clip && p_to_clip_index != transition.filler_clip) {
@@ -842,7 +842,9 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 			to_state.fade_speed = fade_speed;
 		}
 
-		to_state.auto_advance = auto_advance_to;
+		if (to_state.auto_advance != auto_advance_to) {
+			to_state.auto_advance = auto_advance_to;
+		}
 	}
 }
 
