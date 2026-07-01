@@ -84,6 +84,9 @@ private:
 	bool auto_height;
 	float auto_height_value;
 
+	bool auto_width;
+	float auto_width_value;
+
 	Vector<Item> items;
 	Vector<int> separators;
 
@@ -227,6 +230,9 @@ public:
 
 	void set_auto_height(bool p_enable);
 	bool has_auto_height() const;
+
+	void set_auto_width(bool p_enable);
+	bool has_auto_width() const;
 
 	Size2 get_minimum_size() const;
 
