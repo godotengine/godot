@@ -577,7 +577,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop_hb->add_theme_constant_override("separation", 4 * EDSCALE);
 	loop = memnew(CheckBox);
 	loop->set_text(TTR("Enable"));
-	loop->set_tooltip_text(TTR("Enable looping."));
+	loop->set_tooltip_text(TTR("Enables looping."));
 	loop->connect(SceneStringName(toggled), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop);
 	loop_hb->add_spacer();
@@ -589,7 +589,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop_offset->set_suffix("s");
 	loop_offset->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	loop_offset->set_stretch_ratio(0.33);
-	loop_offset->set_tooltip_text(TTR("Loop offset (from beginning). Note that if BPM is set, this setting will be ignored."));
+	loop_offset->set_tooltip_text(TTR("The loop start position, in seconds.\nThis is the position the stream's playback will return to when the end of the loop is reached."));
 	loop_offset->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop_offset);
 	main_vbox->add_margin_child(TTR("Loop:"), loop_hb);
@@ -604,7 +604,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	bpm_edit->set_max(400);
 	bpm_edit->set_step(0.01);
 	bpm_edit->set_accessibility_name(TTRC("BPM:"));
-	bpm_edit->set_tooltip_text(TTR("Configure the Beats Per Measure (tempo) used for the interactive streams.\nThis is required in order to configure beat information."));
+	bpm_edit->set_tooltip_text(TTR("The stream's tempo, in beats per minute, used for tempo-synced looping and interactive streams.\nThis is required in order to configure beat and bar information."));
 	bpm_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(bpm_edit);
 	interactive_hb->add_spacer();
@@ -613,7 +613,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	beats_enabled->connect(SceneStringName(toggled), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(beats_enabled);
 	beats_edit = memnew(SpinBox);
-	beats_edit->set_tooltip_text(TTR("Configure the amount of Beats used for music-aware looping. If zero, it will be autodetected from the length.\nIt is recommended to set this value (either manually or by clicking on a beat number in the preview) to ensure looping works properly."));
+	beats_edit->set_tooltip_text(TTR("The stream's length, in number of beats, used for tempo-synced looping and interactive streams.\nIf 0, the stream's duration will be used instead.\nIt is recommended to set this value (either manually or by clicking on a beat number in the preview) to ensure tempo-synced looping works properly."));
 	beats_edit->set_max(99999);
 	beats_edit->set_accessibility_name(TTRC("Beat Count:"));
 	beats_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
@@ -621,13 +621,13 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	bar_beats_label = memnew(Label(TTR("Bar Beats:")));
 	interactive_hb->add_child(bar_beats_label);
 	bar_beats_edit = memnew(SpinBox);
-	bar_beats_edit->set_tooltip_text(TTR("Configure the Beats Per Bar. This used for music-aware transitions between AudioStreams."));
+	bar_beats_edit->set_tooltip_text(TTR("The number of beats in a single bar of the stream, used for beat-synced looping and interactive streams."));
 	bar_beats_edit->set_min(2);
 	bar_beats_edit->set_max(32);
 	bar_beats_edit->set_accessibility_name(TTRC("Bar Beats:"));
 	bar_beats_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(bar_beats_edit);
-	main_vbox->add_margin_child(TTR("Music Playback:"), interactive_hb);
+	main_vbox->add_margin_child(TTR("Music Information:"), interactive_hb);
 
 	color_rect = memnew(ColorRect);
 	main_vbox->add_margin_child(TTR("Preview:"), color_rect, true);
