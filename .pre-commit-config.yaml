@@ -18,7 +18,7 @@ repos:
         exclude: (SConstruct|SCsub)$ # SCons files use shebangs for syntax highlighting only.
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v21.1.7
+    rev: v22.1.5
     hooks:
       - id: clang-format
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
@@ -41,12 +41,12 @@ repos:
         # No unknown warning suppression used for easier compatibility with gcc
         args: [--fix, --quiet, --use-color, -p=compile_commands.json, -extra-arg=-Wno-unknown-warning-option]
         types_or: [text]
-        additional_dependencies: [clang-tidy==21.1.6]
+        additional_dependencies: [clang-tidy==22.1.7]
         require_serial: false
         stages: [manual]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.8
+    rev: v0.15.20
     hooks:
       - id: ruff-check
         args: [--color=always]
@@ -71,7 +71,7 @@ repos:
         additional_dependencies: [tomli]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.34.1
+    rev: 0.37.4
     hooks:
       - id: check-jsonschema
         files: ^core/extension/gdextension_interface\.json$
