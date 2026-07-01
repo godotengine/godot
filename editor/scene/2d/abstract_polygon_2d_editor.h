@@ -130,6 +130,7 @@ protected:
 
 	virtual bool _is_line() const;
 	virtual bool _has_uv() const;
+	virtual bool _has_vertex_color() const;
 	virtual int _get_polygon_count() const;
 	virtual Vector2 _get_offset(int p_idx) const;
 	virtual Variant _get_polygon(int p_idx) const;

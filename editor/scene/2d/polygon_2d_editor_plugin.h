@@ -47,6 +47,7 @@ class SpinBox;
 class TextureRect;
 class ViewPanner;
 class VScrollBar;
+class ColorPickerButton;
 
 class Polygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);
@@ -63,6 +64,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		MODE_POLYGONS,
 		MODE_UV,
 		MODE_BONES,
+		MODE_VCOLOR,
 		MODE_MAX
 	};
 
@@ -78,6 +80,8 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		ACTION_REMOVE_POLYGON,
 		ACTION_PAINT_WEIGHT,
 		ACTION_CLEAR_WEIGHT,
+		ACTION_PAINT_VERTEX_COLOR,
+		ACTION_CLEAR_VERTEX_COLOR,
 		ACTION_MAX
 	};
 
@@ -111,22 +115,25 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	ScrollContainer *bone_scroll = nullptr;
 	VBoxContainer *bone_scroll_vb = nullptr;
 	Button *sync_bones = nullptr;
-	HSlider *bone_paint_strength = nullptr;
-	SpinBox *bone_paint_radius = nullptr;
-	Label *bone_paint_radius_label = nullptr;
+	HSlider *paint_strength = nullptr;
+	SpinBox *paint_radius = nullptr;
+	Label *paint_radius_label = nullptr;
 	bool bone_painting = false;
+	bool vcolor_painting = false;
 	int bone_painting_bone = 0;
 	Vector<float> prev_weights;
-	Vector2 bone_paint_pos;
+	Vector2 paint_pos;
 	AcceptDialog *grid_settings = nullptr;
 
 	void _sync_bones();
 	void _update_bone_list(const Polygon2D *p_for_node);
 
+	ColorPickerButton *vcolor_colorpicker = nullptr;
+
 	Vector<Vector2> editing_points;
 	Vector<Vector2> previous_uv;
 	Vector<Vector2> previous_polygon;
-	Vector<Color> previous_colors;
+	TypedDictionary<int, Color> previous_colors;
 	int previous_internal_vertices = 0;
 	Array previous_bones;
 	Array previous_polygons;
@@ -179,6 +186,7 @@ protected:
 	virtual Vector2 _get_offset(int p_idx) const override;
 
 	virtual bool _has_uv() const override { return true; }
+	virtual bool _has_vertex_color() const override { return true; }
 	virtual void _commit_action() override;
 
 	void _notification(int p_what);

@@ -31,10 +31,12 @@
 #include "polygon_2d_editor_plugin.h"
 
 #include "core/input/input_event.h"
+#include "core/math/color.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/variant/typed_dictionary.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
@@ -46,6 +48,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
@@ -134,6 +137,8 @@ void Polygon2DEditor::_notification(int p_what) {
 			action_buttons[ACTION_REMOVE_POLYGON]->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 			action_buttons[ACTION_PAINT_WEIGHT]->set_button_icon(get_editor_theme_icon(SNAME("Bucket")));
 			action_buttons[ACTION_CLEAR_WEIGHT]->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
+			action_buttons[ACTION_PAINT_VERTEX_COLOR]->set_button_icon(get_editor_theme_icon(SNAME("Bucket")));
+			action_buttons[ACTION_CLEAR_VERTEX_COLOR]->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 
 			b_snap_grid->set_button_icon(get_editor_theme_icon(SNAME("Grid")));
 			b_snap_enable->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
@@ -268,9 +273,11 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 		action_buttons[i]->hide();
 	}
 	bone_scroll_main_vb->hide();
-	bone_paint_strength->hide();
-	bone_paint_radius->hide();
-	bone_paint_radius_label->hide();
+	paint_strength->hide();
+	paint_radius->hide();
+	paint_radius_label->hide();
+	vcolor_colorpicker->hide();
+
 	switch (current_mode) {
 		case MODE_POINTS: {
 			action_buttons[ACTION_CREATE]->show();
@@ -308,11 +315,22 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 			_set_action(ACTION_PAINT_WEIGHT);
 
 			bone_scroll_main_vb->show();
-			bone_paint_strength->show();
-			bone_paint_radius->show();
-			bone_paint_radius_label->show();
+			paint_strength->show();
+			paint_radius->show();
+			paint_radius_label->show();
 			_update_bone_list(node);
-			bone_paint_pos = Vector2(-100000, -100000); // Send brush away when switching.
+			paint_pos = Vector2(-100000, -100000); // Send brush away when switching.
+		} break;
+		case MODE_VCOLOR: {
+			action_buttons[ACTION_PAINT_VERTEX_COLOR]->show();
+			action_buttons[ACTION_CLEAR_VERTEX_COLOR]->show();
+			_set_action(ACTION_PAINT_VERTEX_COLOR);
+
+			paint_strength->show();
+			paint_radius->show();
+			paint_radius_label->show();
+			vcolor_colorpicker->show();
+			paint_pos = Vector2(-100000, -100000); // Send brush away when switching.
 		} break;
 		default:
 			break;
@@ -496,13 +514,14 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 						previous_uv = node->get_uv();
 						previous_polygon = node->get_polygon();
 						previous_internal_vertices = node->get_internal_vertex_count();
-						previous_colors = node->get_vertex_colors();
+						previous_colors = node->get_vertex_colors().duplicate();
 						previous_bones = node->call("_get_bones");
 						previous_polygons = node->get_polygons();
 						disable_polygon_editing(false, String());
 						node->set_polygon(editing_points);
 						node->set_uv(editing_points);
 						node->set_internal_vertex_count(0);
+						node->get_vertex_colors().clear();
 
 						canvas->queue_redraw();
 					} else {
@@ -517,7 +536,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 							undo_redo->add_undo_method(node, "set_polygon", previous_polygon);
 							undo_redo->add_do_method(node, "set_internal_vertex_count", 0);
 							undo_redo->add_undo_method(node, "set_internal_vertex_count", previous_internal_vertices);
-							undo_redo->add_do_method(node, "set_vertex_colors", Vector<Color>());
+							undo_redo->add_do_method(node, "set_vertex_colors", TypedDictionary<int, Color>());
 							undo_redo->add_undo_method(node, "set_vertex_colors", previous_colors);
 							undo_redo->add_do_method(node, "clear_bones");
 							undo_redo->add_undo_method(node, "_set_bones", previous_bones);
@@ -545,7 +564,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				if (current_action == ACTION_CREATE_INTERNAL) {
 					previous_uv = node->get_uv();
 					previous_polygon = node->get_polygon();
-					previous_colors = node->get_vertex_colors();
+					previous_colors = node->get_vertex_colors().duplicate();
 					previous_bones = node->call("_get_bones");
 					int internal_vertices = node->get_internal_vertex_count();
 
@@ -553,9 +572,6 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 					previous_polygon.push_back(pos);
 					previous_uv.push_back(pos);
-					if (previous_colors.size()) {
-						previous_colors.push_back(Color(1, 1, 1));
-					}
 
 					undo_redo->create_action(TTR("Create Internal Vertex"));
 					undo_redo->add_do_method(node, "set_uv", previous_uv);
@@ -580,7 +596,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				if (current_action == ACTION_REMOVE_INTERNAL) {
 					previous_uv = node->get_uv();
 					previous_polygon = node->get_polygon();
-					previous_colors = node->get_vertex_colors();
+					previous_colors = node->get_vertex_colors().duplicate();
 					previous_bones = node->call("_get_bones");
 					int internal_vertices = node->get_internal_vertex_count();
 
@@ -611,7 +627,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					previous_polygon.remove_at(closest);
 					previous_uv.remove_at(closest);
 					if (previous_colors.size()) {
-						previous_colors.remove_at(closest);
+						previous_colors.erase(closest);
 					}
 
 					undo_redo->create_action(TTR("Remove Internal Vertex"));
@@ -750,6 +766,10 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 						bone_painting_bone = bone_selected;
 					}
 				}
+				if (current_action == ACTION_PAINT_VERTEX_COLOR || current_action == ACTION_CLEAR_VERTEX_COLOR) {
+					previous_colors = node->get_vertex_colors().duplicate();
+					vcolor_painting = true;
+				}
 			} else {
 				if (is_dragging && !is_creating) {
 					if (current_mode == MODE_UV) {
@@ -782,6 +802,13 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					undo_redo->add_undo_method(node, "set_bone_weights", bone_painting_bone, prev_weights);
 					undo_redo->commit_action();
 					bone_painting = false;
+				}
+				if (vcolor_painting) {
+					undo_redo->create_action(TTR("Paint Vertex Color"));
+					undo_redo->add_do_method(node, "set_vertex_colors", node->get_vertex_colors());
+					undo_redo->add_undo_method(node, "set_vertex_colors", previous_colors);
+					undo_redo->commit_action();
+					vcolor_painting = false;
 				}
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
@@ -918,8 +945,10 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					}
 				} break;
 				case ACTION_PAINT_WEIGHT:
+				case ACTION_PAINT_VERTEX_COLOR:
+				case ACTION_CLEAR_VERTEX_COLOR:
 				case ACTION_CLEAR_WEIGHT: {
-					bone_paint_pos = mm->get_position();
+					paint_pos = mm->get_position();
 				} break;
 				default: {
 				}
@@ -930,8 +959,8 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 				{
 					int pc = painted_weights.size();
-					real_t amount = bone_paint_strength->get_value();
-					real_t radius = bone_paint_radius->get_value() * EDSCALE;
+					real_t amount = paint_strength->get_value();
+					real_t radius = paint_radius->get_value() * EDSCALE;
 
 					if (selected_action == ACTION_CLEAR_WEIGHT) {
 						amount = -amount;
@@ -942,7 +971,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					const Vector2 *rv = editing_points.ptr();
 
 					for (int i = 0; i < pc; i++) {
-						if (mtx.xform(rv[i]).distance_to(bone_paint_pos) < radius) {
+						if (mtx.xform(rv[i]).distance_to(paint_pos) < radius) {
 							w[i] = CLAMP(r[i] + amount, 0, 1);
 						}
 					}
@@ -950,14 +979,34 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 				node->set_bone_weights(bone_painting_bone, painted_weights);
 			}
+			if (vcolor_painting) {
+				real_t strength = paint_strength->get_value();
+				real_t radius = paint_radius->get_value() * EDSCALE;
+				const Vector2 *rv = editing_points.ptr();
+				Color picked_color = vcolor_colorpicker->get_pick_color();
+
+				for (int i = 0; i < editing_points.size(); i++) {
+					if (mtx.xform(rv[i]).distance_to(paint_pos) < radius) {
+						TypedDictionary<int, Color> new_dict = node->get_vertex_colors().duplicate();
+						if (selected_action == ACTION_CLEAR_VERTEX_COLOR) {
+							new_dict.erase(i);
+						} else {
+							Color old_color = new_dict.get(i, node->get_color());
+							Color new_color = old_color.lerp(picked_color, strength);
+							new_dict.set(i, new_color);
+						}
+						node->set_vertex_colors(new_dict);
+					}
+				}
+			}
 
 			canvas->queue_redraw();
 			CanvasItemEditor::get_singleton()->update_viewport();
 		} else if (polygon_create.size()) {
 			create_to = mtx.affine_inverse().xform(mm->get_position());
 			canvas->queue_redraw();
-		} else if (selected_action == ACTION_PAINT_WEIGHT || selected_action == ACTION_CLEAR_WEIGHT) {
-			bone_paint_pos = mm->get_position();
+		} else if (selected_action == ACTION_PAINT_WEIGHT || selected_action == ACTION_CLEAR_WEIGHT || selected_action == ACTION_PAINT_VERTEX_COLOR || selected_action == ACTION_CLEAR_VERTEX_COLOR) {
+			paint_pos = mm->get_position();
 			canvas->queue_redraw();
 		}
 	}
@@ -972,10 +1021,12 @@ void Polygon2DEditor::_update_available_modes() {
 		mode_buttons[MODE_UV]->set_disabled(true);
 		mode_buttons[MODE_POLYGONS]->set_disabled(true);
 		mode_buttons[MODE_BONES]->set_disabled(true);
+		mode_buttons[MODE_VCOLOR]->set_disabled(true);
 	} else {
 		mode_buttons[MODE_UV]->set_disabled(false);
 		mode_buttons[MODE_POLYGONS]->set_disabled(false);
 		mode_buttons[MODE_BONES]->set_disabled(false);
+		mode_buttons[MODE_VCOLOR]->set_disabled(false);
 	}
 }
 
@@ -1318,9 +1369,11 @@ void Polygon2DEditor::_canvas_draw() {
 				}
 			}
 		}
-
 		//draw paint circle
-		canvas->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
+		canvas->draw_circle(paint_pos, paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
+	}
+	if (selected_action == ACTION_PAINT_VERTEX_COLOR || selected_action == ACTION_CLEAR_VERTEX_COLOR) {
+		canvas->draw_circle(paint_pos, paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
 	}
 }
 
@@ -1376,6 +1429,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	mode_buttons[MODE_POLYGONS]->set_text(TTR("Polygons"));
 	mode_buttons[MODE_UV]->set_text(TTR("UV"));
 	mode_buttons[MODE_BONES]->set_text(TTR("Bones"));
+	mode_buttons[MODE_VCOLOR]->set_text(TTR("Vertex Colors"));
 
 	toolbar->add_child(memnew(VSeparator));
 
@@ -1402,6 +1456,8 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_REMOVE_POLYGON]->set_tooltip_text(TTR("Remove a custom polygon. If none remain, custom polygon rendering is disabled."));
 	action_buttons[ACTION_PAINT_WEIGHT]->set_tooltip_text(TTR("Paint weights with specified intensity."));
 	action_buttons[ACTION_CLEAR_WEIGHT]->set_tooltip_text(TTR("Unpaint weights with specified intensity."));
+	action_buttons[ACTION_PAINT_VERTEX_COLOR]->set_tooltip_text(TTRC("Paint vertices with specified color."));
+	action_buttons[ACTION_CLEAR_VERTEX_COLOR]->set_tooltip_text(TTRC("Unpaint vertices with specified color."));
 
 	action_buttons[ACTION_CREATE]->set_accessibility_name(TTRC("Create Polygon"));
 	action_buttons[ACTION_CREATE_INTERNAL]->set_accessibility_name(TTRC("Create Internal Vertex"));
@@ -1414,27 +1470,34 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_REMOVE_POLYGON]->set_accessibility_name(TTRC("Remove a custom polygon. If none remain, custom polygon rendering is disabled."));
 	action_buttons[ACTION_PAINT_WEIGHT]->set_accessibility_name(TTRC("Paint weights with specified intensity."));
 	action_buttons[ACTION_CLEAR_WEIGHT]->set_accessibility_name(TTRC("Unpaint weights with specified intensity."));
+	action_buttons[ACTION_PAINT_VERTEX_COLOR]->set_accessibility_name(TTRC("Paint vertices with specified color."));
+	action_buttons[ACTION_CLEAR_VERTEX_COLOR]->set_accessibility_name(TTRC("Unpaint vertices with specified color."));
 
-	bone_paint_strength = memnew(HSlider);
-	toolbar->add_child(bone_paint_strength);
-	bone_paint_strength->set_custom_minimum_size(Size2(75 * EDSCALE, 0));
-	bone_paint_strength->set_v_size_flags(SIZE_SHRINK_CENTER);
-	bone_paint_strength->set_min(0);
-	bone_paint_strength->set_max(1);
-	bone_paint_strength->set_step(0.01);
-	bone_paint_strength->set_value(0.5);
-	bone_paint_strength->set_accessibility_name(TTRC("Strength"));
+	paint_strength = memnew(HSlider);
+	toolbar->add_child(paint_strength);
+	paint_strength->set_custom_minimum_size(Size2(75 * EDSCALE, 0));
+	paint_strength->set_v_size_flags(SIZE_SHRINK_CENTER);
+	paint_strength->set_min(0);
+	paint_strength->set_max(1);
+	paint_strength->set_step(0.01);
+	paint_strength->set_value(0.5);
+	paint_strength->set_accessibility_name(TTRC("Strength"));
 
-	bone_paint_radius_label = memnew(Label(TTR("Radius:")));
-	toolbar->add_child(bone_paint_radius_label);
-	bone_paint_radius = memnew(SpinBox);
-	toolbar->add_child(bone_paint_radius);
+	paint_radius_label = memnew(Label(TTR("Radius:")));
+	toolbar->add_child(paint_radius_label);
+	paint_radius = memnew(SpinBox);
+	toolbar->add_child(paint_radius);
 
-	bone_paint_radius->set_min(1);
-	bone_paint_radius->set_max(100);
-	bone_paint_radius->set_step(1);
-	bone_paint_radius->set_value(32);
-	bone_paint_radius->set_accessibility_name(TTRC("Radius:"));
+	paint_radius->set_min(1);
+	paint_radius->set_max(100);
+	paint_radius->set_step(1);
+	paint_radius->set_value(32);
+	paint_radius->set_accessibility_name(TTRC("Radius:"));
+
+	vcolor_colorpicker = memnew(ColorPickerButton);
+	toolbar->add_child(vcolor_colorpicker);
+	vcolor_colorpicker->set_accessibility_name(TTRC("Set Brush Color"));
+	vcolor_colorpicker->set_text(TTRC("Brush Color"));
 
 	HSplitContainer *uv_main_hsc = memnew(HSplitContainer);
 	edit_vbox->add_child(uv_main_hsc);

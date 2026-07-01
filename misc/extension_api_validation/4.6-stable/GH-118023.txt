@@ -1,0 +1,7 @@
+GH-118023
+--------
+Validate extension JSON: Error: Field 'classes/Polygon2D/methods/get_vertex_colors/return_value': type changed value in new API, from "PackedColorArray" to "typeddictionary::int;Color".
+Validate extension JSON: Error: Field 'classes/Polygon2D/methods/set_vertex_colors/arguments/0': type changed value in new API, from "PackedColorArray" to "typeddictionary::int;Color".
+Validate extension JSON: Error: Field 'classes/Polygon2D/properties/vertex_colors': type changed value in new API, from "PackedColorArray" to "typeddictionary::2/1:0,2147483647;Color".
+
+The "vertex_colors" property has changed from type PackedColorArray to typeddictionary::int;Color

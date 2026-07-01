@@ -32,7 +32,11 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
+#include "core/object/object.h"
 #include "core/os/keyboard.h"
+#include "core/templates/vector.h"
+#include "core/variant/typed_dictionary.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -42,6 +46,8 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/main/scene_tree.h"
+
+#include <cstdint>
 
 bool AbstractPolygon2DEditor::Vertex::operator==(const AbstractPolygon2DEditor::Vertex &p_vertex) const {
 	return polygon == p_vertex.polygon && vertex == p_vertex.vertex;
@@ -78,6 +84,9 @@ bool AbstractPolygon2DEditor::_is_line() const {
 }
 
 bool AbstractPolygon2DEditor::_has_uv() const {
+	return false;
+}
+bool AbstractPolygon2DEditor::_has_vertex_color() const {
 	return false;
 }
 
@@ -406,11 +415,28 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 							} else {
 								edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
 								vertices.insert(edited_point.vertex, edited_point.pos);
+
 								pre_move_edit = vertices;
 								selected_point = Vertex(edited_point.polygon, edited_point.vertex);
 								edge_point = PosVertex();
 
 								undo_redo->create_action(TTR("Insert Point"));
+
+								if (_has_vertex_color()) {
+									//re-generate the vertex color dictionary with the key values beyond the inserted vertex incremented by one in order to retain position of vertex colors.
+									TypedDictionary<uint32_t, Color> vcolors = static_cast<TypedDictionary<uint32_t, Color>>(_get_node()->get("vertex_colors"));
+									vcolors.sort();
+									TypedDictionary<uint32_t, Color> new_vcolors;
+									for (int i = 0; i < vertices.size(); i++) {
+										if (vcolors.has(i)) {
+											new_vcolors.set(i + (i >= edited_point.vertex ? 1 : 0), vcolors.get(i, Variant::NIL));
+										}
+									}
+									undo_redo->add_do_method(_get_node(), "set_vertex_colors", new_vcolors);
+									undo_redo->add_undo_method(_get_node(), "set_vertex_colors", vcolors);
+									_get_node()->call("set_vertex_colors", new_vcolors);
+								}
+
 								_action_set_polygon(insert.polygon, vertices);
 								_commit_action();
 								return true;
