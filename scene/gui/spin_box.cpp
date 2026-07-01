@@ -422,19 +422,22 @@ inline void SpinBox::_compute_sizes() {
 }
 
 inline int SpinBox::_get_widest_button_icon_width() {
-	int max = 0;
+	int width = 0;
 #ifndef DISABLE_DEPRECATED
-	max = MAX(max, theme_cache.updown_icon->get_width());
+	width = MAX(width, theme_cache.updown_icon->get_width());
 #endif
-	max = MAX(max, theme_cache.up_icon->get_width());
-	max = MAX(max, theme_cache.up_hover_icon->get_width());
-	max = MAX(max, theme_cache.up_pressed_icon->get_width());
-	max = MAX(max, theme_cache.up_disabled_icon->get_width());
-	max = MAX(max, theme_cache.down_icon->get_width());
-	max = MAX(max, theme_cache.down_hover_icon->get_width());
-	max = MAX(max, theme_cache.down_pressed_icon->get_width());
-	max = MAX(max, theme_cache.down_disabled_icon->get_width());
-	return max;
+	width = MAX(width, theme_cache.up_icon->get_width());
+	width = MAX(width, theme_cache.up_hover_icon->get_width());
+	width = MAX(width, theme_cache.up_pressed_icon->get_width());
+	width = MAX(width, theme_cache.up_disabled_icon->get_width());
+	width = MAX(width, theme_cache.down_icon->get_width());
+	width = MAX(width, theme_cache.down_hover_icon->get_width());
+	width = MAX(width, theme_cache.down_pressed_icon->get_width());
+	width = MAX(width, theme_cache.down_disabled_icon->get_width());
+	if (theme_cache.icon_max_width > 0) {
+		width = MIN(width, theme_cache.icon_max_width);
+	}
+	return width;
 }
 
 void SpinBox::_notification(int p_what) {
@@ -482,11 +485,14 @@ void SpinBox::_notification(int p_what) {
 				down_icon_modulate = theme_cache.down_hover_icon_modulate;
 			}
 
+			Size2 up_icon_size = _fit_icon_size(up_icon->get_size()).round();
+			Size2 down_icon_size = _fit_icon_size(down_icon->get_size()).round();
+
 			// Compute center icon positions once we know which one is used.
-			int up_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - up_icon->get_width()) / 2;
-			int up_icon_top = (sizing_cache.button_up_height - up_icon->get_height()) / 2;
-			int down_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - down_icon->get_width()) / 2;
-			int down_icon_top = sizing_cache.second_button_top + (sizing_cache.button_down_height - down_icon->get_height()) / 2;
+			int up_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - up_icon_size.width) / 2;
+			int up_icon_top = (sizing_cache.button_up_height - up_icon_size.height) / 2;
+			int down_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - down_icon_size.width) / 2;
+			int down_icon_top = sizing_cache.second_button_top + (sizing_cache.button_down_height - down_icon_size.height) / 2;
 
 			// Draw separators.
 			draw_style_box(theme_cache.up_down_buttons_separator, Rect2(sizing_cache.buttons_left, sizing_cache.buttons_separator_top, sizing_cache.buttons_width, sizing_cache.buttons_vertical_separation));
@@ -506,8 +512,8 @@ void SpinBox::_notification(int p_what) {
 			}
 #endif
 			// Draw arrows.
-			draw_texture(up_icon, Point2i(up_icon_left, up_icon_top), up_icon_modulate);
-			draw_texture(down_icon, Point2i(down_icon_left, down_icon_top), down_icon_modulate);
+			draw_texture_rect(up_icon, Rect2(Point2i(up_icon_left, up_icon_top), up_icon_size));
+			draw_texture_rect(down_icon, Rect2(Point2i(down_icon_left, down_icon_top), down_icon_size));
 
 		} break;
 
@@ -548,6 +554,18 @@ void SpinBox::_notification(int p_what) {
 			queue_redraw();
 		} break;
 	}
+}
+
+Size2 SpinBox::_fit_icon_size(const Size2 &p_size) const {
+	int max_width = theme_cache.icon_max_width;
+	Size2 icon_size = p_size;
+
+	if (max_width > 0 && icon_size.width > max_width) {
+		icon_size.height = icon_size.height * max_width / icon_size.width;
+		icon_size.width = max_width;
+	}
+
+	return icon_size;
 }
 
 void SpinBox::set_horizontal_alignment(HorizontalAlignment p_alignment) {
@@ -694,6 +712,7 @@ void SpinBox::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_vertical_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, field_and_buttons_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, icon_max_width);
 #ifndef DISABLE_DEPRECATED
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, set_min_buttons_width_from_icons);
 
