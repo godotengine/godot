@@ -322,6 +322,8 @@ public:
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) :
 			_cowdata(p_init) {}
+	_FORCE_INLINE_ explicit Vector(Span<T> p_span) :
+			_cowdata(p_span) {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) = default;
 	_FORCE_INLINE_ Vector(Vector &&p_from) = default;
 };

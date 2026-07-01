@@ -323,16 +323,6 @@ public:
 		insert(i, p_val);
 	}
 
-	explicit operator Vector<T>() const {
-		Vector<T> ret;
-		ret.resize(count);
-		T *w = ret.ptrw();
-		if (w) {
-			copy_arr_placement(w, data, count);
-		}
-		return ret;
-	}
-
 	Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
 		Vector<uint8_t> ret;
 		ret.resize(count * sizeof(T));
