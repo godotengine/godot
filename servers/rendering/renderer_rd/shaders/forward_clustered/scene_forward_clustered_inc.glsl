@@ -146,6 +146,10 @@ bool sc_cluster_has_area_light() {
 	return ((sc_packed_1() >> 5) & 1U) != 0;
 }
 
+bool sc_use_lightmap_specular() {
+	return ((sc_packed_1() >> 6) & 1U) != 0;
+}
+
 float sc_luminance_multiplier() {
 	// Not used in clustered renderer but we share some code with the mobile renderer that requires this.
 	return 1.0;
@@ -231,7 +235,9 @@ struct Lightmap {
 	mat3 normal_xform;
 	vec2 light_texture_size;
 	float exposure_normalization;
+	float specular_intensity;
 	uint flags;
+	float pad[3];
 };
 
 layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {

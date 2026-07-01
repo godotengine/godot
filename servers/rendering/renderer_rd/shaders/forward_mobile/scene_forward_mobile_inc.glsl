@@ -117,6 +117,10 @@ bool sc_use_lightmap_bicubic_filter() {
 	return ((sc_packed_0() >> 10) & 1U) != 0;
 }
 
+bool sc_use_lightmap_specular() {
+	return ((sc_packed_1() >> 31) & 1U) != 0;
+}
+
 bool sc_use_material_debanding() {
 	return ((sc_packed_0() >> 11) & 1U) != 0;
 }
@@ -295,7 +299,9 @@ struct Lightmap {
 	mat3 normal_xform;
 	vec2 light_texture_size;
 	float exposure_normalization;
+	float specular_intensity;
 	uint flags;
+	float pad[3];
 };
 
 layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {

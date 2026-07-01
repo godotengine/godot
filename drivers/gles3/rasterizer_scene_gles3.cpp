@@ -3583,6 +3583,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 							if (lm->uses_spherical_harmonics) {
 								spec_constants |= SceneShaderGLES3::USE_SH_LIGHTMAP;
+								if (lm->specular_intensity > 0.0f) {
+									spec_constants |= SceneShaderGLES3::USE_LIGHTMAP_SPECULAR;
+								}
 							}
 
 							if (lightmap_bicubic_upscale) {
@@ -3617,6 +3620,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						if (lm->shadowmask_mode != RSE::SHADOWMASK_MODE_NONE) {
 							spec_constants |= SceneShaderGLES3::USE_LIGHTMAP;
 							disable_lightmaps = false;
+
+							if (lm->uses_spherical_harmonics && lm->specular_intensity > 0.0f) {
+								spec_constants |= SceneShaderGLES3::USE_LIGHTMAP_SPECULAR;
+							}
 
 							if (lightmap_bicubic_upscale) {
 								spec_constants |= SceneShaderGLES3::LIGHTMAP_BICUBIC_FILTER;
@@ -3742,6 +3749,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							}
 
 							material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_SHADOWMASK_MODE, (uint32_t)lm->shadowmask_mode, shader->version, instance_variant, spec_constants);
+							if (spec_constants & SceneShaderGLES3::USE_LIGHTMAP_SPECULAR) {
+								material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_SPECULAR_INTENSITY, lm->specular_intensity, shader->version, instance_variant, spec_constants);
+							}
 
 							if (lm->shadow_texture.is_valid()) {
 								tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lm->shadow_texture);
@@ -3798,6 +3808,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							exposure_normalization = enf / lm->baked_exposure;
 						}
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_EXPOSURE_NORMALIZATION, exposure_normalization, shader->version, instance_variant, spec_constants);
+						if (spec_constants & SceneShaderGLES3::USE_LIGHTMAP_SPECULAR) {
+							material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_SPECULAR_INTENSITY, lm->specular_intensity, shader->version, instance_variant, spec_constants);
+						}
 
 						if (lm->uses_spherical_harmonics) {
 							Basis to_lm = li->transform.basis.inverse() * p_render_data->cam_transform.basis;
