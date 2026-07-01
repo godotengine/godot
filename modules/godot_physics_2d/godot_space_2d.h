@@ -44,6 +44,7 @@ public:
 	GodotSpace2D *space = nullptr;
 
 	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override;
+	virtual int intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_results, int p_result_max) override;
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override;
 	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) override;
 	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) override;
