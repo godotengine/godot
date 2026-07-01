@@ -2118,6 +2118,92 @@ void DisplayServerWindows::window_set_drop_files_callback(const Callable &p_call
 	}
 }
 
+void DisplayServerWindows::window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND(!windows.has(p_window));
+	if (p_files.is_empty()) {
+		return;
+	}
+	// Map the files using Wide chars (UTF-16) to ensure cross-platform safety.
+	size_t characters_total_size = 0;
+	for (int i = 0; i < p_files.size(); i++) {
+		characters_total_size += p_files[i].length() + 1; // +1 for string null terminator
+	}
+	characters_total_size += 1; // Extra final null terminator for double-null terminated list
+	size_t total_buffer_bytes = sizeof(DROPFILES) + (characters_total_size * sizeof(WCHAR));
+	// Allocate global unmanaged memory required by OLE/Shell operations
+	HGLOBAL h_global = GlobalAlloc(GHND, total_buffer_bytes);
+	if (!h_global) {
+		return;
+	}
+	DROPFILES *df = (DROPFILES *)GlobalLock(h_global);
+	if (!df) {
+		GlobalFree(h_global);
+		return;
+	}
+	ZeroMemory(df, sizeof(DROPFILES));
+	df->pFiles = sizeof(DROPFILES);
+	df->fWide = TRUE; // Explicitly signaling UTF-16 content strings
+	// Copy all strings into the allocated block sequential block memory
+	WCHAR *write_cursor = (WCHAR *)((BYTE *)df + sizeof(DROPFILES));
+	for (int i = 0; i < p_files.size(); i++) {
+		String native_path = p_files[i].replace("/", "\\"); // Clean paths to Windows native notation
+		int path_len = native_path.length();
+		memcpy(write_cursor, native_path.utf16().ptr(), path_len * sizeof(WCHAR));
+		write_cursor[path_len] = L'\0';
+		write_cursor += path_len + 1;
+	}
+	*write_cursor = L'\0'; // Double-null terminate the sequence
+	GlobalUnlock(h_global);
+	IDataObject *data_object = nullptr;
+	HRESULT hr = SHCreateDataObject(nullptr, 0, nullptr, nullptr, IID_IDataObject, (void **)&data_object);
+	if (FAILED(hr) || !data_object) {
+		GlobalFree(h_global);
+		return;
+	}
+	FORMATETC fmt = { CF_HDROP, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+	STGMEDIUM medium = { TYMED_HGLOBAL, { nullptr }, nullptr };
+	medium.hGlobal = h_global;
+	hr = data_object->SetData(&fmt, &medium, TRUE);
+	if (FAILED(hr)) {
+		GlobalFree(h_global);
+		data_object->Release();
+		return;
+	}
+
+	class DropSource : public IDropSource {
+	public:
+		STDMETHODIMP QueryInterface(REFIID riid, void **ppv) override {
+			if (riid == IID_IUnknown || riid == IID_IDropSource) {
+				*ppv = static_cast<IDropSource *>(this);
+				return S_OK;
+			}
+			*ppv = nullptr;
+			return E_NOINTERFACE;
+		}
+		STDMETHODIMP_(ULONG)
+		AddRef() override { return 1; }
+		STDMETHODIMP_(ULONG)
+		Release() override { return 1; }
+
+		STDMETHODIMP QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState) override {
+			if (fEscapePressed) {
+				return DRAGDROP_S_CANCEL;
+			}
+			if (!(grfKeyState & (MK_LBUTTON | MK_RBUTTON))) {
+				return DRAGDROP_S_DROP;
+			}
+			return S_OK;
+		}
+		STDMETHODIMP GiveFeedback(DWORD dwEffect) override { return DRAGDROP_S_USEDEFAULTCURSORS; }
+	} drop_source;
+
+	DWORD drop_effect = DROPEFFECT_NONE;
+	DoDragDrop(data_object, &drop_source, DROPEFFECT_COPY, &drop_effect);
+	data_object->Release();
+	GlobalFree(h_global);
+}
+
 void DisplayServerWindows::window_set_title(const String &p_title, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
