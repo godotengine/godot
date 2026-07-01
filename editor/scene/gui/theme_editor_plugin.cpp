@@ -3586,6 +3586,8 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	theme_type_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	theme_type_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	theme_type_list->set_accessibility_name(TTRC("Type"));
+	theme_type_list->set_search_bar_enabled(true);
+	theme_type_list->set_search_bar_min_item_count(10);
 	type_list_hb->add_child(theme_type_list);
 	theme_type_list->connect(SceneStringName(item_selected), callable_mp(this, &ThemeTypeEditor::_list_type_selected));
 
