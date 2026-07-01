@@ -3325,7 +3325,7 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 
-	glClearBufferfv(GL_COLOR, 0, rt->clear_color.components);
+	glClearBufferfv(GL_COLOR, 0, reinterpret_cast<const float *>(&rt->clear_color));
 	rt->clear_requested = false;
 	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 }

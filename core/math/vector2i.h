@@ -51,28 +51,22 @@ struct [[nodiscard]] Vector2i {
 	};
 
 	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			int32_t x;
-			int32_t y;
-		};
-
-		struct {
-			int32_t width;
-			int32_t height;
-		};
-
-		int32_t coord[2] = { 0 };
-		// NOLINTEND(modernize-use-default-member-init)
+		int32_t x = 0;
+		int32_t width;
+	};
+	union {
+		int32_t y = 0;
+		int32_t height;
 	};
 
-	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
+	constexpr int32_t &operator[](int p_axis) {
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return p_axis == AXIS_X ? x : y;
 	}
-	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
+
+	constexpr const int32_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return p_axis == AXIS_X ? x : y;
 	}
 
 	_FORCE_INLINE_ Vector2i::Axis min_axis_index() const {
@@ -154,12 +148,9 @@ struct [[nodiscard]] Vector2i {
 		return hash_fmix32(h);
 	}
 
-	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
-	constexpr Vector2i() :
-			x(0), y(0) {}
+	constexpr Vector2i() = default;
 	constexpr Vector2i(int32_t p_x, int32_t p_y) :
 			x(p_x), y(p_y) {}
-	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
 
 inline constexpr Vector2i Vector2i::LEFT = { -1, 0 };

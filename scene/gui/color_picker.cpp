@@ -595,7 +595,7 @@ Color ColorPicker::_color_apply_intensity(const Color &col) const {
 	Color result;
 	float multiplier = Math::pow(2, intensity);
 	for (int i = 0; i < 3; i++) {
-		result.components[i] = linear_color.components[i] * multiplier;
+		result[i] = linear_color[i] * multiplier;
 	}
 	result.a = col.a;
 	return result.linear_to_srgb();
@@ -609,7 +609,7 @@ void ColorPicker::_copy_color_to_normalized_and_intensity() {
 	Color linear_color = color.srgb_to_linear();
 	float multiplier = MAX(1, MAX(MAX(linear_color.r, linear_color.g), linear_color.b));
 	for (int i = 0; i < 3; i++) {
-		color_normalized.components[i] = linear_color.components[i] / multiplier;
+		color_normalized[i] = linear_color[i] / multiplier;
 	}
 	color_normalized.a = linear_color.a;
 	color_normalized = color_normalized.linear_to_srgb();

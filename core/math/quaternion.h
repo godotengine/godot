@@ -35,24 +35,21 @@
 #include "core/string/ustring.h"
 
 struct [[nodiscard]] Quaternion {
-	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			real_t x;
-			real_t y;
-			real_t z;
-			real_t w;
-		};
-		real_t components[4] = { 0, 0, 0, 1.0 };
-		// NOLINTEND(modernize-use-default-member-init)
-	};
+	real_t x = 0.0f;
+	real_t y = 0.0f;
+	real_t z = 0.0f;
+	real_t w = 1.0f;
 
-	_FORCE_INLINE_ real_t &operator[](int p_idx) {
-		return components[p_idx];
+	constexpr real_t &operator[](int p_idx) {
+		DEV_ASSERT((unsigned int)p_idx < 4);
+		return p_idx == 0 ? x : (p_idx == 1 ? y : (p_idx == 2 ? z : w));
 	}
-	_FORCE_INLINE_ const real_t &operator[](int p_idx) const {
-		return components[p_idx];
+
+	constexpr const real_t &operator[](int p_idx) const {
+		DEV_ASSERT((unsigned int)p_idx < 4);
+		return p_idx == 0 ? x : (p_idx == 1 ? y : (p_idx == 2 ? z : w));
 	}
+
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Quaternion &p_quaternion) const;
 	bool is_same(const Quaternion &p_quaternion) const;
@@ -117,23 +114,12 @@ struct [[nodiscard]] Quaternion {
 
 	explicit operator String() const;
 
-	constexpr Quaternion() :
-			x(0), y(0), z(0), w(1) {}
+	constexpr Quaternion() = default;
 
 	constexpr Quaternion(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x), y(p_y), z(p_z), w(p_w) {}
 
 	Quaternion(const Vector3 &p_axis, real_t p_angle);
-
-	constexpr Quaternion(const Quaternion &p_q) :
-			x(p_q.x), y(p_q.y), z(p_q.z), w(p_q.w) {}
-
-	constexpr void operator=(const Quaternion &p_q) {
-		x = p_q.x;
-		y = p_q.y;
-		z = p_q.z;
-		w = p_q.w;
-	}
 
 	Quaternion(const Vector3 &p_v0, const Vector3 &p_v1) { // Shortest arc.
 #ifdef MATH_CHECKS
