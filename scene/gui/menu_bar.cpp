@@ -389,6 +389,32 @@ void MenuBar::_notification(int p_what) {
 				_open_popup(index);
 			}
 		} break;
+		case NOTIFICATION_WM_POSITION_CHANGED: {
+			if (active_menu == -1) {
+				break;
+			}
+			PopupMenu *pm = get_menu_popup(active_menu);
+			if (!pm->is_visible()) {
+				break;
+			}
+
+			Rect2 item_rect = _get_menu_item_rect(active_menu);
+			item_rect.position *= get_screen_transform().get_scale();
+			item_rect.size *= get_screen_transform().get_scale();
+
+			Rect2 rect = get_screen_rect();
+			rect.position.x += item_rect.position.x;
+			rect.position.y += rect.size.height;
+			if (get_viewport()->is_embedding_subwindows() && pm->get_force_native()) {
+				rect = get_viewport()->get_popup_base_transform_native().xform(rect);
+			}
+
+			pm->set_size(Size2(item_rect.size.x, 0));
+			if (is_layout_rtl()) {
+				rect.position.x += rect.size.width - pm->get_size().width;
+			}
+			pm->set_position(rect.position);
+		} break;
 	}
 }
 
