@@ -2143,8 +2143,11 @@ void ResourceImporterScene::_compress_animations(AnimationPlayer *anim, int p_pa
 Error ResourceImporterScene::_save_scene_as_mesh_library(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags) {
 	TypedArray<Node> mesh_instances = p_godot_scene->find_children("*", "MeshInstance3D", true, false);
 	const int mesh_inst_count = mesh_instances.size();
-	HashSet<Ref<Mesh>> unique_meshes;
+	AHashMap<Ref<Mesh>, StringName> unique_meshes;
+
 	const bool use_node_names_as_mesh_names = p_options.has("mesh_library/use_node_names_as_mesh_names") && p_options["mesh_library/use_node_names_as_mesh_names"];
+	const bool create_categories_from_hierarchy = p_options.has("mesh_library/create_categories_from_hierarchy") && p_options["mesh_library/create_categories_from_hierarchy"];
+
 	for (int mesh_inst_i = 0; mesh_inst_i < mesh_inst_count; mesh_inst_i++) {
 		MeshInstance3D *mesh_inst = Object::cast_to<MeshInstance3D>(mesh_instances[mesh_inst_i]);
 		Ref<Mesh> mesh = mesh_inst->get_mesh();
@@ -2152,22 +2155,36 @@ Error ResourceImporterScene::_save_scene_as_mesh_library(const String &p_source_
 			if (unique_meshes.has(mesh)) {
 				continue;
 			}
+
 			if (use_node_names_as_mesh_names) {
 				mesh->set_name(mesh_inst->get_name());
 			}
-			unique_meshes.insert(mesh);
+
+			String category;
+			if (create_categories_from_hierarchy) {
+				Node *parent = mesh_inst->get_parent();
+				while (parent) {
+					category = category.path_join(parent->get_name());
+					parent = parent->get_parent();
+				}
+			}
+
+			unique_meshes.insert(mesh, category);
 		}
 	}
+
 	Ref<MeshLibrary> mesh_library;
 	mesh_library.instantiate();
-	for (Ref<Mesh> mesh : unique_meshes) {
+	for (KeyValue<Ref<Mesh>, StringName> kv : unique_meshes) {
 		// The scene importers guarantee mesh names to be unique and non-empty, so we can use it safely without fallback.
-		const String mesh_name = mesh->get_name();
+		const String mesh_name = kv.key->get_name();
 		const int id = mesh_library->get_last_unused_item_id();
 		mesh_library->create_item(id);
 		mesh_library->set_item_name(id, mesh_name);
-		mesh_library->set_item_mesh(id, mesh);
+		mesh_library->set_item_mesh(id, kv.key);
+		mesh_library->set_item_category(id, kv.value);
 	}
+
 	return ResourceSaver::save(mesh_library, p_save_path + ".res", p_flags);
 }
 
@@ -2610,6 +2627,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	bool trimming_defaults_on = p_path.has_extension("fbx");
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mesh_library/use_node_names_as_mesh_names"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mesh_library/create_categories_from_hierarchy"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "array_mesh/deduplicate_surfaces"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
