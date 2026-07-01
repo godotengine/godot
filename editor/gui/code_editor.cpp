@@ -916,11 +916,13 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 	}
 	if (ED_IS_SHORTCUT("script_text_editor/delete_line", key_event)) {
 		text_editor->delete_lines();
+		text_editor->cancel_code_completion();
 		accept_event();
 		return;
 	}
 	if (ED_IS_SHORTCUT("script_text_editor/join_lines", key_event)) {
 		text_editor->join_lines();
+		text_editor->cancel_code_completion();
 		accept_event();
 		return;
 	}

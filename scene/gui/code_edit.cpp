@@ -816,7 +816,10 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			accept_event();
 			return;
 		}
-		if (k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_line_end", true)) {
+		if (k->is_action("ui_text_caret_line_start", true) ||
+				k->is_action("ui_text_caret_line_end", true) ||
+				k->is_action("ui_text_newline_above", true) ||
+				k->is_action("ui_text_newline_blank", true)) {
 			cancel_code_completion();
 		}
 		if (k->is_action("ui_text_completion_replace", true) || k->is_action("ui_text_completion_accept", true)) {
@@ -896,10 +899,18 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		set_code_hint("");
 	}
 
+	int old_caret_line = get_caret_line();
+	int old_caret_column = get_caret_column();
+
 	TextEdit::gui_input(p_gui_input);
+
+	int new_caret_line = get_caret_line();
+	int new_caret_column = get_caret_column();
 
 	if (update_code_completion) {
 		_filter_code_completion_candidates_impl();
+	} else if (code_completion_active && (old_caret_line != new_caret_line || old_caret_column != new_caret_column)) {
+		cancel_code_completion();
 	}
 }
 
