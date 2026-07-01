@@ -312,7 +312,7 @@ private:
 	EditorSceneTabs *scene_tabs = nullptr;
 
 	int tab_closing_idx = 0;
-	List<String> tabs_to_close;
+	List<int> tabs_to_close;
 	List<int> scenes_to_save_as;
 	int tab_closing_menu_option = -1;
 
