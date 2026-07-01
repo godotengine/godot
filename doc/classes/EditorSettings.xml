@@ -1122,15 +1122,21 @@
 		<member name="interface/editor/localization/ui_layout_direction" type="int" setter="" getter="">
 			Editor UI default layout direction.
 		</member>
+		<member name="interface/editor/timers/custom_low_processor_mode_max_fps" type="int" setter="" getter="">
+			The maximum frames per second that can be rendered when the editor is focused. Lower values will result in reduced CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, lower values also result in a less responsive editor. Only effective if [member interface/editor/timers/low_processor_mode_max_fps_mode] is [b]Custom[/b].
+			[b]Note:[/b] This setting is ignored if [member interface/editor/display/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
+		</member>
 		<member name="interface/editor/timers/dragging_hover_wait_seconds" type="float" setter="" getter="">
 			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
 		</member>
-		<member name="interface/editor/timers/low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			The amount of sleeping between frames in the editor (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/timers/unfocused_low_processor_mode_sleep_usec].
+		<member name="interface/editor/timers/low_processor_mode_max_fps_mode" type="int" setter="" getter="">
+			The policy to use to determine the maximum number of frames per second that can be rendered when the editor is focused.
+			- [b]Automatic:[/b] Automatically determine the sleep duration between frames using the refresh rate of the fastest display connected to the system when the editor starts.
+			- [b]Custom:[/b] The maximum FPS is determined by the value set in [member interface/editor/timers/custom_low_processor_mode_max_fps]. This can be used specify a lower value than what's automatically determined, which can reduce CPU/GPU utilization.
 			[b]Note:[/b] This setting is ignored if [member interface/editor/display/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
-		<member name="interface/editor/timers/unfocused_low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 10 FPS when the editor window is unfocused. See also [member interface/editor/timers/low_processor_mode_sleep_usec].
+		<member name="interface/editor/timers/unfocused_low_processor_mode_max_fps" type="int" setter="" getter="">
+			The maximum frames per second that can be reached when the editor is unfocused. Lower values will result in reduced CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, lower values also result in a less responsive editor.
 			[b]Note:[/b] This setting is ignored if [member interface/editor/display/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
 		<member name="interface/editors/derive_script_globals_by_name" type="bool" setter="" getter="">
