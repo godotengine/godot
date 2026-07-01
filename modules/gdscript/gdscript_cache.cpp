@@ -150,12 +150,8 @@ GDScriptParserRef::~GDScriptParserRef() {
 
 GDScriptCache *GDScriptCache::singleton = nullptr;
 
-SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG> &_get_gdscript_cache_mutex() {
-	return GDScriptCache::mutex;
-}
-
 template <>
-thread_local SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::TLSData SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::tls_data(_get_gdscript_cache_mutex());
+thread_local SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::TLSData SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::tls_data(GDScriptCache::mutex);
 SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG> GDScriptCache::mutex;
 
 void GDScriptCache::move_script(const String &p_from, const String &p_to) {
