@@ -149,6 +149,8 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 	stream_playback = stream->instantiate_playback();
 	ERR_FAIL_COND_V_MSG(stream_playback.is_null(), stream_playback, "Failed to instantiate playback.");
 
+	stream_playback->set_bypass_global_polyphony(bypass_global_polyphony);
+
 	for (const KeyValue<StringName, ParameterData> &K : playback_parameters) {
 		stream_playback->set_parameter(K.value.path, K.value.value);
 	}
@@ -326,6 +328,10 @@ void AudioStreamPlayerInternal::set_max_polyphony(int p_max_polyphony) {
 	if (p_max_polyphony > 0) {
 		max_polyphony = p_max_polyphony;
 	}
+}
+
+void AudioStreamPlayerInternal::set_bypass_global_polyphony(bool p_bypass) {
+	bypass_global_polyphony = p_bypass;
 }
 
 bool AudioStreamPlayerInternal::has_stream_playback() {

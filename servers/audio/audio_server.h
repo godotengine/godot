@@ -222,6 +222,8 @@ private:
 	int channel_count = 0;
 	int to_mix = 0;
 
+	int playback_count = 0;
+
 	float playback_speed_scale = 1.0f;
 
 	bool tag_used_audio_streams = false;
@@ -435,6 +437,7 @@ public:
 	// Expose all parameters.
 	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0);
 	void stop_playback_stream(Ref<AudioStreamPlayback> p_playback);
+	void ensure_playback_limit();
 
 	void set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volumes);
 	void set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes);
@@ -507,6 +510,7 @@ public:
 #endif
 
 	PlaybackType get_default_playback_type() const;
+	int get_max_global_polyphony() const;
 
 	bool is_stream_registered_as_sample(const Ref<AudioStream> &p_stream);
 	void register_stream_as_sample(const Ref<AudioStream> &p_stream);

@@ -116,6 +116,14 @@ Variant AudioStreamPlayback::get_parameter(const StringName &p_name) const {
 	return ret;
 }
 
+void AudioStreamPlayback::set_bypass_global_polyphony(bool p_bypass) {
+	bypass_global_polyphony = p_bypass;
+}
+
+bool AudioStreamPlayback::is_bypassing_global_polyphony() const {
+	return bypass_global_polyphony;
+}
+
 Ref<AudioSamplePlayback> AudioStreamPlayback::get_sample_playback() const {
 	return nullptr;
 }
@@ -141,6 +149,7 @@ void AudioStreamPlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_loop_count"), &AudioStreamPlayback::get_loop_count);
 	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayback::get_playback_position);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayback::is_playing);
+	ClassDB::bind_method(D_METHOD("is_bypassing_global_polyphony"), &AudioStreamPlayback::is_bypassing_global_polyphony);
 }
 
 AudioStreamPlayback::AudioStreamPlayback() {}

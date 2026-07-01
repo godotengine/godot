@@ -77,6 +77,9 @@ public:
 class AudioStreamPlayback : public RefCounted {
 	GDCLASS(AudioStreamPlayback, RefCounted);
 
+private:
+	bool bypass_global_polyphony = false;
+
 protected:
 	static void _bind_methods();
 	PackedVector2Array _mix_audio_bind(float p_rate_scale, int p_frames);
@@ -112,6 +115,9 @@ public:
 	virtual bool get_is_sample() const { return false; }
 	virtual Ref<AudioSamplePlayback> get_sample_playback() const;
 	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {}
+
+	void set_bypass_global_polyphony(bool p_bypass);
+	bool is_bypassing_global_polyphony() const;
 
 	AudioStreamPlayback();
 	~AudioStreamPlayback();

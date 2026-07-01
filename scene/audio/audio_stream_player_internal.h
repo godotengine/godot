@@ -74,6 +74,7 @@ public:
 	float pitch_scale = 1.0;
 	float volume_db = 0.0;
 	bool autoplay = false;
+	bool bypass_global_polyphony = false;
 	StringName bus;
 	int max_polyphony = 1;
 
@@ -89,6 +90,7 @@ public:
 	void set_stream(Ref<AudioStream> p_stream);
 	void set_pitch_scale(float p_pitch_scale);
 	void set_max_polyphony(int p_max_polyphony);
+	void set_bypass_global_polyphony(bool p_bypass);
 
 	StringName get_bus() const;
 
