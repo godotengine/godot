@@ -281,7 +281,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				}
 			}
 
-			if (node_rects[i].edit.has_point(mb->get_position())) { //edit name
+			if (node_rects[i].edit.has_point(mb->get_position())) { // Open editor.
 				callable_mp(this, &AnimationNodeStateMachineEditor::_open_editor).call_deferred(node_rects[i].node_name);
 				return;
 			}
@@ -509,13 +509,13 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	// End box selecting
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed() && box_selecting) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && box_selecting) {
 		box_selecting = false;
 		state_machine_draw->queue_redraw();
 		_update_mode();
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && !tool_connect->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		StringName clicked_node;
 		for (int i = node_rects.size() - 1; i >= 0; i--) {
 			if (node_rects[i].node.has_point(mb->get_position())) {
@@ -705,7 +705,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		}
 
 		// Set transition tooltip or reconnection endpoint.
-		if (tool_select->is_pressed()) {
+		if (tool_select->is_pressed() && !reconnecting) {
 			int closest_for_highlight = -1;
 			int closest_for_tooltip = -1;
 			float closest_d_highlight = 1e20;
@@ -1055,7 +1055,9 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 			updating = false;
 		}
 
-		_select_transition(connecting_from, connecting_to_node);
+		if (tool_select->is_pressed()) {
+			_select_transition(connecting_from, connecting_to_node);
+		}
 
 		if (selected_transition_index >= 0) {
 			if (!state_machine->is_transition_across_group(selected_transition_index)) {
@@ -1966,12 +1968,17 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 
 void AnimationNodeStateMachineEditor::_update_mode() {
 	if (tool_select->is_pressed()) {
-		selection_tools_hb->show();
 		bool nothing_selected = selected_nodes.is_empty() && selected_transition_from == StringName() && selected_transition_to == StringName();
 		bool start_end_selected = selected_nodes.size() == 1 && (*selected_nodes.begin() == SceneStringName(Start) || *selected_nodes.begin() == SceneStringName(End));
 		tool_erase->set_disabled(nothing_selected || start_end_selected || read_only);
-	} else {
-		selection_tools_hb->hide();
+	} else { // Clear selection when not using select tool.
+		selected_transition_from = StringName();
+		selected_transition_to = StringName();
+		selected_transition_index = -1;
+		selected_node = StringName();
+		selected_nodes.clear();
+		connected_nodes.clear();
+		state_machine_draw->queue_redraw();
 	}
 
 	if (read_only) {
@@ -2079,18 +2086,6 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_connect->set_tooltip_text(TTR("Connect nodes."));
 	tool_connect->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
-	// Context-sensitive selection tools:
-	selection_tools_hb = memnew(HBoxContainer);
-	top_hb->add_child(selection_tools_hb);
-	selection_tools_hb->add_child(memnew(VSeparator));
-
-	tool_erase = memnew(Button);
-	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
-	tool_erase->set_tooltip_text(TTR("Remove selected node or transition."));
-	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected).bind(false));
-	tool_erase->set_disabled(true);
-	selection_tools_hb->add_child(tool_erase);
-
 	transition_tools_hb = memnew(HBoxContainer);
 	top_hb->add_child(transition_tools_hb);
 	transition_tools_hb->add_child(memnew(VSeparator));
@@ -2106,11 +2101,20 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	auto_advance->set_pressed(true);
 	transition_tools_hb->add_child(auto_advance);
 
-	top_hb->add_spacer();
+	top_hb->add_child(memnew(VSeparator));
 
 	top_hb->add_child(memnew(Label(TTR("Play Mode"))));
 	play_mode = memnew(OptionButton);
 	top_hb->add_child(play_mode);
+
+	top_hb->add_spacer();
+
+	tool_erase = memnew(Button);
+	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_erase->set_tooltip_text(TTR("Remove selected node or transition."));
+	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected).bind(false));
+	tool_erase->set_disabled(true);
+	top_hb->add_child(tool_erase);
 
 	panel = memnew(PanelContainer);
 	panel->set_clip_contents(true);

@@ -58,7 +58,6 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	Button *tool_blend = nullptr;
 	Button *tool_select = nullptr;
 	Button *tool_create = nullptr;
-	VSeparator *tool_erase_sep = nullptr;
 	Button *tool_erase = nullptr;
 	Button *snap = nullptr;
 	SpinBox *snap_value = nullptr;

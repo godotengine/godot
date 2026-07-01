@@ -86,7 +86,7 @@ void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 	edit_x->set_editable(!read_only);
 	edit_y->set_editable(!read_only);
 	index_edit->set_editable(!read_only);
-	tool_triangle->set_disabled(read_only);
+	tool_triangle->set_disabled(read_only || (blend_space.is_valid() && blend_space->get_auto_triangles()));
 	auto_triangles->set_disabled(read_only);
 	sync->set_disabled(read_only);
 	cyclic_length_value->set_editable(!read_only);
@@ -106,13 +106,19 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
-		if (k->get_keycode() == Key::ESCAPE && editing_point != -1) {
-			_cancel_inline_edit();
+		if (k->get_keycode() == Key::ESCAPE) {
+			if (editing_point != -1) {
+				_cancel_inline_edit();
+			}
+			if (making_triangle.size()) {
+				making_triangle.clear();
+				blend_space_draw->queue_redraw();
+			}
 			accept_event();
 			return;
 		}
 
-		if (tool_select->is_pressed() && k->get_keycode() == Key::KEY_DELETE) {
+		if ((tool_select->is_pressed() || tool_triangle->is_pressed()) && k->get_keycode() == Key::KEY_DELETE) {
 			if (selected_point != -1 || selected_triangle != -1) {
 				if (!read_only) {
 					_erase_selected();
@@ -274,6 +280,25 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 					making_triangle.clear();
 				}
 				return;
+			}
+		}
+
+		// Attempt triangles as well, in case the user wants to erase one.
+		if (!blend_space->get_auto_triangles()) { // Protecting state just in case.
+			for (int i = 0; i < blend_space->get_triangle_count(); i++) {
+				Vector<Vector2> triangle;
+
+				for (int j = 0; j < 3; j++) {
+					int idx = blend_space->get_triangle_point(i, j);
+					ERR_FAIL_INDEX(idx, points.size());
+					triangle.push_back(points[idx]);
+				}
+
+				if (Geometry2D::is_point_in_triangle(mb->get_position(), triangle[0], triangle[1], triangle[2])) {
+					selected_triangle = i;
+					_update_tool_erase();
+					return;
+				}
 			}
 		}
 	}
@@ -503,24 +528,13 @@ void AnimationNodeBlendSpace2DEditor::_update_tool_erase() {
 void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 	making_triangle.clear();
 
-	if (p_tool == 3) {
-		Vector<Vector2> bl_points;
-		for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
-			bl_points.push_back(blend_space->get_blend_point_position(i));
-		}
-		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(bl_points);
-		for (int i = 0; i < tr.size(); i++) {
-			blend_space->add_triangle(tr[i].points[0], tr[i].points[1], tr[i].points[2]);
+	if (p_tool != 0) {
+		_set_selected_point(-1);
+		if (p_tool != 3) {
+			selected_triangle = -1;
 		}
 	}
 
-	if (p_tool == 0) {
-		tool_erase->show();
-		tool_erase_sep->show();
-	} else {
-		tool_erase->hide();
-		tool_erase_sep->hide();
-	}
 	_update_tool_erase();
 	blend_space_draw->queue_redraw();
 }
@@ -755,12 +769,17 @@ void AnimationNodeBlendSpace2DEditor::_update_space() {
 	updating = true;
 
 	if (blend_space->get_auto_triangles()) {
-		tool_triangle->hide();
+		tool_triangle->set_disabled(true);
+		if (tool_triangle->is_pressed()) {
+			tool_select->set_pressed(true);
+			_tool_switch(0);
+		}
 	} else {
-		tool_triangle->show();
+		tool_triangle->set_disabled(false);
 	}
 
 	auto_triangles->set_pressed(blend_space->get_auto_triangles());
+	reset_triangles->set_visible(!blend_space->get_auto_triangles());
 
 	sync->select(blend_space->get_sync_mode());
 	cyclic_length_value->set_value(blend_space->get_cyclic_length());
@@ -1020,6 +1039,7 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 			snap->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 			open_editor->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			auto_triangles->set_button_icon(get_editor_theme_icon(SNAME("AutoTriangle")));
+			reset_triangles->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 			interpolation->clear();
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
@@ -1071,6 +1091,18 @@ void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
 	undo_redo->create_action(TTR("Toggle Auto Triangles"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_auto_triangles", auto_triangles->is_pressed());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_auto_triangles", blend_space->get_auto_triangles());
+	undo_redo->add_do_method(this, "_update_space");
+	undo_redo->add_undo_method(this, "_update_space");
+	undo_redo->commit_action();
+}
+
+void AnimationNodeBlendSpace2DEditor::_reset_triangles() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Reset BlendSpace2D Triangles"));
+	for (int i = blend_space->get_triangle_count() - 1; i >= 0; i--) {
+		undo_redo->add_do_method(blend_space.ptr(), "remove_triangle", i);
+		undo_redo->add_undo_method(blend_space.ptr(), "add_triangle", blend_space->get_triangle_point(i, 0), blend_space->get_triangle_point(i, 1), blend_space->get_triangle_point(i, 2), i);
+	}
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -1228,17 +1260,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_triangle->set_toggle_mode(true);
 	tool_triangle->set_button_group(bg);
 	top_hb->add_child(tool_triangle);
-	tool_triangle->set_tooltip_text(TTR("Create triangles by connecting points."));
+	tool_triangle->set_tooltip_text(TTR("Create triangles manually by connecting points."));
 	tool_triangle->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(3));
-
-	tool_erase_sep = memnew(VSeparator);
-	top_hb->add_child(tool_erase_sep);
-	tool_erase = memnew(Button);
-	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(tool_erase);
-	tool_erase->set_tooltip_text(TTR("Erase points and triangles."));
-	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
-	tool_erase->set_disabled(true);
 
 	top_hb->add_child(memnew(VSeparator));
 
@@ -1247,7 +1270,14 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(auto_triangles);
 	auto_triangles->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled));
 	auto_triangles->set_toggle_mode(true);
-	auto_triangles->set_tooltip_text(TTR("Generate blend triangles automatically (instead of manually)"));
+	auto_triangles->set_tooltip_text(TTR("Generate blend triangles automatically."));
+
+	reset_triangles = memnew(Button);
+	reset_triangles->set_theme_type_variation(SceneStringName(FlatButton));
+	top_hb->add_child(reset_triangles);
+	reset_triangles->set_tooltip_text(TTR("Reset triangles."));
+	reset_triangles->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_reset_triangles));
+	reset_triangles->set_visible(false);
 
 	top_hb->add_child(memnew(VSeparator));
 
@@ -1346,6 +1376,14 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	edit_y->set_step(STEP_UNIT);
 	edit_y->set_accessibility_name(TTRC("Blend Y Value"));
 	edit_y->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
+
+	edit_hb->add_child(memnew(VSeparator));
+	tool_erase = memnew(Button);
+	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
+	top_hb->add_child(tool_erase);
+	tool_erase->set_tooltip_text(TTR("Erase points and triangles."));
+	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
+	tool_erase->set_disabled(true);
 
 	edit_hb->hide();
 	open_editor->hide();
