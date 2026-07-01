@@ -87,6 +87,9 @@ public:
 	bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
 		return false;
 	}
+	String get_property_description(const StringName &p_name) const override {
+		return String();
+	}
 	void get_method_list(List<MethodInfo> *p_list) const override {
 	}
 	bool has_method(const StringName &p_method) const override {

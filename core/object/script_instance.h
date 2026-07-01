@@ -45,6 +45,7 @@ public:
 
 	virtual bool property_can_revert(const StringName &p_name) const = 0;
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const = 0;
+	virtual String get_property_description(const StringName &p_name) const = 0;
 
 	virtual Object *get_owner() { return nullptr; }
 	virtual void get_property_state(List<Pair<StringName, Variant>> &state);
