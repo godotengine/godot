@@ -575,6 +575,13 @@ struct GDScriptCompletionIdentifier {
 	String enumeration;
 	Variant value;
 	const GDScriptParser::ExpressionNode *assigned_expression = nullptr;
+
+	/**
+	 * When the identifier refers to a method, this reflects the expected call signature.
+	 *
+	 * Empty if unresolved or no arguments are expected or this is not a method. The size might mismatch with actual arguments in the AST.
+	 */
+	Vector<PropertyInfo> expected_arguments;
 };
 
 // LOCATION METHODS
@@ -1796,7 +1803,7 @@ static GDScriptCompletionIdentifier _callable_type_from_method_info(const Method
 	ci.type.builtin_type = Variant::CALLABLE;
 	ci.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 	ci.type.is_constant = true;
-	ci.type.method_info = p_method;
+	ci.expected_arguments = p_method.arguments;
 	return ci;
 }
 
@@ -2655,7 +2662,6 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 							r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 							r_type.type.kind = GDScriptParser::DataType::BUILTIN;
 							r_type.type.builtin_type = Variant::SIGNAL;
-							r_type.type.method_info = member.signal->method_info;
 							return true;
 						case GDScriptParser::ClassNode::Member::FUNCTION:
 							if (is_static && !member.function->is_static) {
@@ -2956,8 +2962,8 @@ static bool _guess_expecting_callable(GDScriptParser::CompletionContext &p_conte
 		GDScriptCompletionIdentifier ci;
 		if (_guess_expression_type(p_context, call_node->callee, ci)) {
 			if (ci.type.kind == GDScriptParser::DataType::BUILTIN && ci.type.builtin_type == Variant::CALLABLE) {
-				if (p_context.call.argument >= 0 && p_context.call.argument < ci.type.method_info.arguments.size()) {
-					return ci.type.method_info.arguments.get(p_context.call.argument).type == Variant::CALLABLE;
+				if (p_context.call.argument >= 0 && static_cast<unsigned int>(p_context.call.argument) < ci.expected_arguments.size()) {
+					return ci.expected_arguments[p_context.call.argument].type == Variant::CALLABLE;
 				}
 			}
 		}
