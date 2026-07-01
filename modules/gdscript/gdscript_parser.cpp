@@ -2424,6 +2424,7 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	} else if (match(GDScriptTokenizer::Token::ELSE)) {
 		consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "else".)");
 		n_if->false_block = parse_suite(R"("else" block)");
+		n_if->false_block->parent_if = n_if;
 	}
 	complete_extents(n_if);
 

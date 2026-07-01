@@ -2446,13 +2446,23 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 			}
 		}
 
-		if (suite->parent_if && suite->parent_if->condition && suite->parent_if->condition->type == GDScriptParser::Node::TYPE_TEST) {
+		if (suite->parent_if && suite->parent_if->condition) {
 			// Operator `is` used, check if identifier is in there! this helps resolve in blocks that are (if (identifier is value)): which are very common..
 			// Super dirty hack, but very useful.
 			// Credit: Zylann.
 			// TODO: this could be hacked to detect AND-ed conditions too...
-			const GDScriptParser::TypeTestNode *type_test = static_cast<const GDScriptParser::TypeTestNode *>(suite->parent_if->condition);
-			if (type_test->operand && type_test->test_type && type_test->operand->type == GDScriptParser::Node::IDENTIFIER && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->name == p_identifier->name && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->source == p_identifier->source) {
+
+			const GDScriptParser::TypeTestNode *type_test = nullptr;
+			if (suite->parent_if->true_block == suite && suite->parent_if->condition->type == GDScriptParser::Node::TYPE_TEST) {
+				type_test = static_cast<const GDScriptParser::TypeTestNode *>(suite->parent_if->condition);
+			} else if (suite->parent_if->false_block == suite && suite->parent_if->condition->type == GDScriptParser::Node::UNARY_OPERATOR) {
+				GDScriptParser::UnaryOpNode *op = static_cast<GDScriptParser::UnaryOpNode *>(suite->parent_if->condition);
+				if (op->operation == GDScriptParser::UnaryOpNode::OP_LOGIC_NOT && op->operand->type == GDScriptParser::Node::TYPE_TEST) {
+					type_test = static_cast<const GDScriptParser::TypeTestNode *>(op->operand);
+				}
+			}
+
+			if (type_test && type_test->operand && type_test->test_type && type_test->operand->type == GDScriptParser::Node::IDENTIFIER && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->name == p_identifier->name && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->source == p_identifier->source) {
 				// Bingo.
 				GDScriptParser::CompletionContext c = p_context;
 				c.current_line = type_test->operand->start_line;
