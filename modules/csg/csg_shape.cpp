@@ -1283,7 +1283,19 @@ void CSGPrimitive3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &CSGPrimitive3D::set_flip_faces);
 	ClassDB::bind_method(D_METHOD("get_flip_faces"), &CSGPrimitive3D::get_flip_faces);
 
+	ClassDB::bind_method(D_METHOD("set_uv_match_size", "enabled"), &CSGPrimitive3D::set_uv_match_size);
+	ClassDB::bind_method(D_METHOD("get_uv_match_size"), &CSGPrimitive3D::get_uv_match_size);
+
+	ClassDB::bind_method(D_METHOD("set_uv_offset", "uv_offset"), &CSGPrimitive3D::set_uv_offset);
+	ClassDB::bind_method(D_METHOD("get_uv_offset"), &CSGPrimitive3D::get_uv_offset);
+
+	ClassDB::bind_method(D_METHOD("set_uv_scale", "uv_scale"), &CSGPrimitive3D::set_uv_scale);
+	ClassDB::bind_method(D_METHOD("get_uv_scale"), &CSGPrimitive3D::get_uv_scale);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_match_size"), "set_uv_match_size", "get_uv_match_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv_offset"), "set_uv_offset", "get_uv_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "uv_scale", PROPERTY_HINT_LINK), "set_uv_scale", "get_uv_scale");
 }
 
 void CSGPrimitive3D::set_flip_faces(bool p_invert) {
@@ -1300,8 +1312,49 @@ bool CSGPrimitive3D::get_flip_faces() {
 	return flip_faces;
 }
 
+void CSGPrimitive3D::set_uv_match_size(bool p_enabled) {
+	if (uv_match_size == p_enabled) {
+		return;
+	}
+
+	uv_match_size = p_enabled;
+
+	_make_dirty();
+}
+
+bool CSGPrimitive3D::get_uv_match_size() {
+	return uv_match_size;
+}
+
+void CSGPrimitive3D::set_uv_offset(const Vector2 &p_uv_offset) {
+	if (uv_offset == p_uv_offset) {
+		return;
+	}
+	uv_offset = p_uv_offset;
+	_make_dirty();
+}
+
+Vector2 CSGPrimitive3D::get_uv_offset() const {
+	return uv_offset;
+}
+
+void CSGPrimitive3D::set_uv_scale(const Vector2 &p_uv_scale) {
+	if (uv_scale == p_uv_scale) {
+		return;
+	}
+	uv_scale = p_uv_scale;
+	_make_dirty();
+}
+
+Vector2 CSGPrimitive3D::get_uv_scale() const {
+	return uv_scale;
+}
+
 CSGPrimitive3D::CSGPrimitive3D() {
 	flip_faces = false;
+	uv_match_size = false;
+	uv_offset = Vector2(0, 0);
+	uv_scale = Vector2(1, 1);
 }
 
 /////////////////////
@@ -1540,6 +1593,9 @@ CSGBrush *CSGSphere3D::_build_brush() {
 		const double latitude_step = -Math::PI / rings;
 		const double longitude_step = Math::TAU / radial_segments;
 		int face = 0;
+
+		float uv_size = uv_match_size ? radius * Math::PI : 1.0;
+
 		for (int i = 0; i < rings; i++) {
 			double cos0 = 0;
 			double sin0 = 1;
@@ -1584,10 +1640,10 @@ CSGBrush *CSGSphere3D::_build_brush() {
 				};
 
 				Vector2 u[4] = {
-					Vector2(u0, v0),
-					Vector2(u1, v0),
-					Vector2(u1, v1),
-					Vector2(u0, v1),
+					uv_offset + Vector2(u0, v0) * uv_size * uv_scale,
+					uv_offset + Vector2(u1, v0) * uv_size * uv_scale,
+					uv_offset + Vector2(u1, v1) * uv_size * uv_scale,
+					uv_offset + Vector2(u0, v1) * uv_size * uv_scale,
 				};
 
 				// Draw the first face, but skip this at the north pole (i == 0).
@@ -1716,6 +1772,21 @@ CSGSphere3D::CSGSphere3D() {
 }
 
 ///////////////
+static Vector2 _get_box_uv(const Vector3 &p_normalized, const Vector3 &uv_size, const int side) {
+	const int axis = side % 3;
+
+	const int u_axis = axis == 2 ? 0 : (axis + 2) % 3;
+	const int v_axis = axis == 2 ? 1 : (axis + 1) % 3;
+
+	float u = (p_normalized[u_axis] + 1.0) * 0.5 * uv_size[u_axis];
+	float v = (p_normalized[v_axis] + 1.0) * 0.5 * uv_size[v_axis];
+
+	if (side >= 3) {
+		u = uv_size[u_axis] - u;
+	}
+
+	return Vector2(u, v);
+}
 
 CSGBrush *CSGBox3D::_build_brush() {
 	// set our bounding box
@@ -1751,10 +1822,10 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 		Vector3 vertex_mul = size / 2;
 
+		Vector3 uv_size = uv_match_size ? size : Vector3(1, 1, 1);
 		{
 			for (int i = 0; i < 6; i++) {
 				Vector3 face_points[4];
-				float uv_points[8] = { 0, 0, 0, 1, 1, 1, 1, 0 };
 
 				for (int j = 0; j < 4; j++) {
 					float v[3];
@@ -1773,7 +1844,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 				Vector2 u[4];
 				for (int j = 0; j < 4; j++) {
-					u[j] = Vector2(uv_points[j * 2 + 0], uv_points[j * 2 + 1]);
+					u[j] = uv_offset + _get_box_uv(face_points[j], uv_size, i) * uv_scale;
 				}
 
 				//face 1
@@ -1873,6 +1944,16 @@ Ref<Material> CSGBox3D::get_material() const {
 }
 
 ///////////////
+static Vector2 _get_cylinder_cap_uv(const Vector3 &p_normalized, const Vector2 &p_uv_size, bool p_top) {
+	float u = (p_normalized.x + 1.0f) * p_uv_size.x;
+	float v = (p_normalized.z + 1.0f) * p_uv_size.y;
+
+	if (!p_top) {
+		u = p_uv_size.x * 2.0f - u;
+	}
+
+	return Vector2(u, v);
+}
 
 CSGBrush *CSGCylinder3D::_build_brush() {
 	// set our bounding box
@@ -1907,6 +1988,12 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 		int face = 0;
 
 		Vector3 vertex_mul(radius, height * 0.5, radius);
+		Vector2 uv_cap_size = uv_match_size ? Vector2(radius, radius) : Vector2(1, 1);
+		Vector2 uv_side_size = uv_match_size ? Vector2(radius, height) : Vector2(1, 1);
+
+		//We tile the textures 4 times around the cylinder.
+		float inc_uv = 4.0 / sides * uv_side_size.x * 2.0;
+		float h_inc = inc_uv / 2.0;
 
 		{
 			for (int i = 0; i < sides; i++) {
@@ -1929,12 +2016,18 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					face_base * (cone ? 0.0 : 1.0) + Vector3(0, 1, 0),
 				};
 
+				int inverse_i = sides - i; //Flip UVs horizontally.
+
 				Vector2 u[4] = {
-					Vector2(inc, 0),
-					Vector2(inc_n, 0),
-					Vector2(inc_n, 1),
-					Vector2(inc, 1),
+					uv_offset + Vector2(inc_uv * inverse_i, 0) * uv_scale,
+					uv_offset + Vector2(inc_uv * (inverse_i - 1), 0) * uv_scale,
+					uv_offset + Vector2(inc_uv * (inverse_i - 1), -uv_side_size.y) * uv_scale,
+					uv_offset + Vector2(inc_uv * inverse_i, -uv_side_size.y) * uv_scale,
 				};
+
+				if (cone) {
+					u[2].x -= h_inc;
+				}
 
 				//side face 1
 				facesw[face * 3 + 0] = face_points[0] * vertex_mul;
@@ -1972,9 +2065,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				facesw[face * 3 + 1] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 2] = Vector3(0, -1, 0) * vertex_mul;
 
-				uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-				uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
+				uvsw[face * 3 + 0] = uv_offset + _get_cylinder_cap_uv(face_points[1], uv_cap_size, false) * uv_scale;
+				uvsw[face * 3 + 1] = uv_offset + _get_cylinder_cap_uv(face_points[0], uv_cap_size, false) * uv_scale;
+				uvsw[face * 3 + 2] = uv_offset + _get_cylinder_cap_uv(Vector3(0, -1, 0), uv_cap_size, false) * uv_scale;
 
 				smoothw[face] = false;
 				invertw[face] = invert_val;
@@ -1987,9 +2080,9 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					facesw[face * 3 + 1] = face_points[2] * vertex_mul;
 					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
 
-					uvsw[face * 3 + 0] = Vector2(face_points[1].x, face_points[1].y) * 0.5 + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 1] = Vector2(face_points[0].x, face_points[0].y) * 0.5 + Vector2(0.5, 0.5);
-					uvsw[face * 3 + 2] = Vector2(0.5, 0.5);
+					uvsw[face * 3 + 0] = uv_offset + _get_cylinder_cap_uv(face_points[3], uv_cap_size, true) * uv_scale;
+					uvsw[face * 3 + 1] = uv_offset + _get_cylinder_cap_uv(face_points[2], uv_cap_size, true) * uv_scale;
+					uvsw[face * 3 + 2] = uv_offset + _get_cylinder_cap_uv(Vector3(0, 1, 0), uv_cap_size, true) * uv_scale;
 
 					smoothw[face] = false;
 					invertw[face] = invert_val;
@@ -2151,6 +2244,18 @@ CSGBrush *CSGTorus3D::_build_brush() {
 
 		int face = 0;
 
+		Vector2 uv_size;
+		if (uv_match_size) {
+			const float max = MAX(outer_radius, inner_radius);
+			const float min = MIN(outer_radius, inner_radius);
+			uv_size = Vector2(max, max - min);
+		} else {
+			uv_size = Vector2(1, 1);
+		}
+
+		float inc_uv = Math::TAU * uv_size.x / sides;
+		float inci_uv = Math::PI * uv_size.y / ring_sides;
+
 		{
 			for (int i = 0; i < sides; i++) {
 				float inci = float(i) / sides;
@@ -2186,10 +2291,10 @@ CSGBrush *CSGTorus3D::_build_brush() {
 					};
 
 					Vector2 u[4] = {
-						Vector2(inci, incj),
-						Vector2(inci, incj_n),
-						Vector2(inci_n, incj_n),
-						Vector2(inci_n, incj),
+						uv_offset + Vector2(inc_uv * i, inci_uv * j) * uv_scale,
+						uv_offset + Vector2(inc_uv * i, inci_uv * (j + 1)) * uv_scale,
+						uv_offset + Vector2(inc_uv * (i + 1), inci_uv * (j + 1)) * uv_scale,
+						uv_offset + Vector2(inc_uv * (i + 1), inci_uv * j) * uv_scale,
 					};
 
 					// face 1
@@ -2442,13 +2547,18 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		Transform3D current_xform;
 		Transform3D previous_xform;
 		Transform3D previous_previous_xform;
+
+		double spin_step = Math::deg_to_rad(spin_degrees / spin_sides);
+		double extrusion_step = 1.0 / extrusions;
 		double u_step = 1.0 / extrusions;
+		double v_step = 1.0 / shape_sides;
+		if (uv_match_size && mode == MODE_DEPTH) {
+			u_step *= depth;
+		}
+
 		if (path_u_distance > 0.0) {
 			u_step *= curve_length / path_u_distance;
 		}
-		double v_step = 1.0 / shape_sides;
-		double spin_step = Math::deg_to_rad(spin_degrees / spin_sides);
-		double extrusion_step = 1.0 / extrusions;
 		if (mode == MODE_PATH) {
 			if (path_joined) {
 				extrusion_step = 1.0 / (extrusions - 1);
@@ -2505,14 +2615,19 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					// We need to reverse the rotation of the shape face vertices.
 					int index = shape_faces[face_idx * 3 + 2 - face_vertex_idx];
 					Point2 p = shape_polygon[index];
-					Point2 uv = (p - shape_rect.position) / shape_rect.size;
 
-					// Use the left side of the bottom half of the y-inverted texture.
-					uv.x = uv.x / 2;
-					uv.y = 1 - (uv.y / 2);
+					Vector2 uv;
+					if (uv_match_size) {
+						uv = p;
+					} else {
+						uv = (p - shape_rect.position) / shape_rect.size;
+						// Use the left side of the bottom half of the y-inverted texture.
+						uv.x = uv.x / 2;
+						uv.y = 1 - (uv.y / 2);
+					}
 
 					facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
-					uvsw[face * 3 + face_vertex_idx] = uv;
+					uvsw[face * 3 + face_vertex_idx] = uv_offset + uv * uv_scale;
 				}
 
 				smoothw[face] = false;
@@ -2604,9 +2719,27 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 			for (int y0 = 0; y0 < shape_sides; y0++) {
 				int y1 = (y0 + 1) % shape_sides;
-				// Use the top half of the texture.
-				double v0 = (y0 * v_step) / 2;
-				double v1 = ((y0 + 1) * v_step) / 2;
+
+				double v0;
+				double v1;
+				if (uv_match_size) {
+					Point2 p0 = shape_polygon[y0];
+					Point2 p1 = shape_polygon[y1];
+					real_t distance = p0.distance_to(p1);
+					v0 = y0;
+					v1 = y0 + distance;
+					if (mode == MODE_SPIN) {
+						u0 = 0.0;
+						u1 = ((p0.x + p1.x) * 0.5f) * spin_step;
+					} else if (mode == MODE_PATH) {
+						u0 = x0;
+						u1 = x0 + distance;
+					}
+				} else {
+					// Use the top half of the texture.
+					v0 = (y0 * v_step) / 2;
+					v1 = ((y0 + 1) * v_step) / 2;
+				}
 
 				Vector3 v[4] = {
 					previous_xform.xform(Vector3(shape_polygon[y0].x, shape_polygon[y0].y, 0)),
@@ -2616,10 +2749,10 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				};
 
 				Vector2 u[4] = {
-					Vector2(u0, v0),
-					Vector2(u1, v0),
-					Vector2(u1, v1),
-					Vector2(u0, v1),
+					uv_offset + Vector2(u0, v0) * uv_scale,
+					uv_offset + Vector2(u1, v0) * uv_scale,
+					uv_offset + Vector2(u1, v1) * uv_scale,
+					uv_offset + Vector2(u0, v1) * uv_scale,
 				};
 
 				// Face 1
@@ -2660,14 +2793,19 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				for (int face_vertex_idx = 0; face_vertex_idx < 3; face_vertex_idx++) {
 					int index = shape_faces[face_idx * 3 + face_vertex_idx];
 					Point2 p = shape_polygon[index];
-					Point2 uv = (p - shape_rect.position) / shape_rect.size;
 
-					// Use the x-inverted ride side of the bottom half of the y-inverted texture.
-					uv.x = 1 - uv.x / 2;
-					uv.y = 1 - (uv.y / 2);
+					Vector2 uv;
+					if (uv_match_size) {
+						uv = p;
+					} else {
+						uv = (p - shape_rect.position) / shape_rect.size;
+						// Use the left side of the bottom half of the y-inverted texture.
+						uv.x = uv.x / 2;
+						uv.y = 1 - (uv.y / 2);
+					}
 
 					facesw[face * 3 + face_vertex_idx] = current_xform.xform(Vector3(p.x, p.y, 0));
-					uvsw[face * 3 + face_vertex_idx] = uv;
+					uvsw[face * 3 + face_vertex_idx] = uv_offset + uv * uv_scale;
 				}
 
 				smoothw[face] = false;
