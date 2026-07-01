@@ -1557,6 +1557,13 @@ float V_Kelemen(float LdotH) {
 	return 0.25 / (LdotH * LdotH + 1e-4);
 }
 
+vec3 f0_Clear_Coat_To_Surface(vec3 f0) {
+	// Approximation of iorTof0(f0ToIor(f0), 1.5) but of low quality
+	// This assumes that the clear coat layer has an IOR of 1.5
+	// see https://github.com/google/filament/blob/837b2715a05f4656d4f524bce50d1b23ff8f84c9/shaders/src/surface_material.fs#L54-L62
+	return clamp(f0 * (f0 * 0.526868 + 0.529324) - 0.0482256, 0, 1);
+}
+
 void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_directional, float attenuation, vec3 f0, float roughness, float metallic, float specular_amount, vec3 albedo, inout float alpha, vec2 screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
@@ -1653,7 +1660,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		diffuse_light += light_color * diffuse_brdf_NL * attenuation * cc_attenuation;
 
 #if defined(LIGHT_BACKLIGHT_USED)
-		diffuse_light += light_color * (vec3(1.0 / M_PI) - diffuse_brdf_NL) * backlight * attenuation * cc_attenuation;
+		diffuse_light += light_color * (vec3(1.0 / M_PI) - diffuse_brdf_NL) * backlight * attenuation;
 #endif
 
 #if defined(LIGHT_RIM_USED)
@@ -2043,6 +2050,9 @@ void reflection_process(samplerCube reflection_map,
 		bool use_box_project, vec3 box_extents, vec3 box_offset,
 		bool exterior, float intensity, float blend_distance, int ref_ambient_mode, vec4 ref_ambient_color,
 		float roughness, vec3 ambient, vec3 skybox,
+#ifdef LIGHT_CLEARCOAT_USED
+		vec3 vertex_normal, float cc_roughness, inout highp vec4 cc_reflection_accum,
+#endif
 		inout highp vec4 reflection_accum, inout highp vec4 ambient_accum) {
 	vec4 reflection;
 
@@ -2089,6 +2099,37 @@ void reflection_process(samplerCube reflection_map,
 	reflection.rgb *= blend;
 
 	reflection_accum += reflection;
+
+#ifdef LIGHT_CLEARCOAT_USED
+	vec4 cc_reflection;
+
+	vec3 cc_ref_normal = normalize(reflect(vertex, vertex_normal));
+	cc_ref_normal = (local_matrix * vec4(cc_ref_normal, 0.0)).xyz;
+
+	if (use_box_project) { //box project
+
+		vec3 nrdir = normalize(cc_ref_normal);
+		vec3 rbmax = (box_extents - local_pos) / nrdir;
+		vec3 rbmin = (-box_extents - local_pos) / nrdir;
+
+		vec3 rbminmax = mix(rbmin, rbmax, vec3(greaterThan(nrdir, vec3(0.0, 0.0, 0.0))));
+
+		float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+		vec3 posonbox = local_pos + nrdir * fa;
+		cc_ref_normal = posonbox - box_offset.xyz;
+	}
+
+	cc_reflection.rgb = srgb_to_linear(textureLod(reflection_map, cc_ref_normal, cc_roughness * MAX_ROUGHNESS_LOD).rgb);
+
+	if (exterior) {
+		cc_reflection.rgb = mix(skybox, cc_reflection.rgb, blend);
+	}
+	cc_reflection.rgb *= intensity;
+	cc_reflection.a = blend;
+	cc_reflection.rgb *= blend;
+
+	cc_reflection_accum += cc_reflection;
+#endif // LIGHT_CLEARCOAT_USED
 
 #ifndef USE_LIGHTMAP
 	if (ref_ambient_mode == REFLECTION_AMBIENT_ENVIRONMENT) {
@@ -2404,6 +2445,15 @@ void main() {
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
 
+#ifdef LIGHT_CLEARCOAT_USED
+	vec3 cc_specular_light = vec3(0.0, 0.0, 0.0);
+	// The base layer's f0 is computed assuming an interface from air to an IOR
+	// of 1.5, but the clear coat layer forms an interface from IOR 1.5 to IOR
+	// 1.5. We recompute f0 by first computing its IOR, then reconverting to f0
+	// by using the correct interface
+	f0 = mix(f0, f0_Clear_Coat_To_Surface(f0), clearcoat);
+#endif
+
 #ifdef BASE_PASS
 	/////////////////////// LIGHTING //////////////////////////////
 
@@ -2437,6 +2487,16 @@ void main() {
 		specular_light *= horizon * horizon;
 		specular_light *= scene_data_block.data.ambient_light_color_energy.a;
 	}
+
+#ifdef LIGHT_CLEARCOAT_USED
+	if (scene_data_block.data.use_reflection_cubemap) {
+		vec3 ref_vec = reflect(-view, geo_normal);
+		ref_vec = mix(ref_vec, geo_normal, mix(0.001, 0.1, clearcoat_roughness));
+		ref_vec = mat3(scene_data_block.data.radiance_inverse_xform) * ref_vec;
+		cc_specular_light = textureLod(radiance_map, ref_vec, sqrt(mix(0.001, 0.1, clearcoat_roughness)) * RADIANCE_MAX_LOD).rgb;
+		cc_specular_light = srgb_to_linear(cc_specular_light) * scene_data_block.data.ambient_light_color_energy.a;
+	}
+#endif // LIGHT_CLEARCOAT_USED
 #endif // USE_RADIANCE_MAP
 
 	// Calculate Reflection probes
@@ -2445,23 +2505,41 @@ void main() {
 	{
 		vec4 reflection_accum = vec4(0.0);
 
+#ifdef LIGHT_CLEARCOAT_USED
+		vec4 cc_reflection_accum = vec4(0.0);
+#endif
+
 		reflection_process(refprobe1_texture, indirect_normal, vertex_interp, refprobe1_local_matrix,
 				refprobe1_use_box_project, refprobe1_box_extents, refprobe1_box_offset,
 				refprobe1_exterior, refprobe1_intensity, refprobe1_blend_distance, refprobe1_ambient_mode, refprobe1_ambient_color,
-				roughness, ambient_light, specular_light, reflection_accum, ambient_accum);
+				roughness, ambient_light, specular_light,
+#ifdef LIGHT_CLEARCOAT_USED
+				geo_normal, mix(0.001, 0.1, clearcoat_roughness), cc_reflection_accum,
+#endif
+				reflection_accum, ambient_accum);
 
 #ifdef SECOND_REFLECTION_PROBE
 
 		reflection_process(refprobe2_texture, indirect_normal, vertex_interp, refprobe2_local_matrix,
 				refprobe2_use_box_project, refprobe2_box_extents, refprobe2_box_offset,
 				refprobe2_exterior, refprobe2_intensity, refprobe2_blend_distance, refprobe2_ambient_mode, refprobe2_ambient_color,
-				roughness, ambient_light, specular_light, reflection_accum, ambient_accum);
+				roughness, ambient_light, specular_light,
+#ifdef LIGHT_CLEARCOAT_USED
+				geo_normal, mix(0.001, 0.1, clearcoat_roughness), cc_reflection_accum,
+#endif
+				reflection_accum, ambient_accum);
 
 #endif // SECOND_REFLECTION_PROBE
 
 		if (reflection_accum.a > 0.0) {
 			specular_light = reflection_accum.rgb / reflection_accum.a;
 		}
+
+#ifdef LIGHT_CLEARCOAT_USED
+		if (cc_reflection_accum.a > 0.0) {
+			cc_specular_light = cc_reflection_accum.rgb / cc_reflection_accum.a;
+		}
+#endif
 	}
 #endif // DISABLE_REFLECTION_PROBE
 
@@ -2602,7 +2680,22 @@ void main() {
 		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
 		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
 		specular_light *= env.x * f0 + env.y * clamp(50.0 * f0.g, metallic, 1.0);
-#endif
+#ifdef LIGHT_CLEARCOAT_USED
+		float geo_NdotV = clamp(dot(geo_normal, view), 0.0, 1.0); // We want to use geometric normal, not normal_map
+		// The clearcoat layer assumes an IOR of 1.5 (4% reflectance).
+		// Attenuate underlying diffuse/specular by clearcoat fresnel (ONLY fresnel, hence we don't just invert the BRDF below).
+		float NdotV5 = SchlickFresnel(geo_NdotV);
+		float F = mix(0.04, 1.0, NdotV5) * clearcoat;
+		float cc_attenuation = 1.0 - F;
+
+		ambient_light *= cc_attenuation;
+		specular_light *= cc_attenuation;
+
+		// Clearcoat Layer
+		// We don't need a BRDF approximation for clearcoat, so we can use the fresnel directly.
+		specular_light += cc_specular_light * F;
+#endif // LIGHT_CLEARCOAT_USED
+#endif // DIFFUSE_TOON
 	}
 #endif // !AMBIENT_LIGHT_DISABLED
 
