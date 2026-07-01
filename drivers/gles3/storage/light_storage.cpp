@@ -40,6 +40,7 @@
 #include "drivers/gles3/rasterizer_util_gles3.h"
 #include "drivers/gles3/storage/render_scene_buffers_gles3.h"
 #include "drivers/gles3/storage/utilities.h"
+#include "servers/rendering/rendering_server.h"
 
 using namespace GLES3;
 
@@ -1185,6 +1186,16 @@ void LightStorage::lightmap_set_baked_exposure_normalization(RID p_lightmap, flo
 	lightmap->baked_exposure = p_exposure;
 }
 
+void LightStorage::lightmap_set_modulate(RID p_lightmap, const Color &p_color) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+
+	lightmap->modulate = p_color;
+	for (RID r : lightmap->lightmap_instances) {
+		RS::get_singleton()->instance_lightmap_update_geometries_captures(r);
+	}
+}
+
 PackedVector3Array LightStorage::lightmap_get_probe_capture_points(RID p_lightmap) const {
 	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
 	ERR_FAIL_NULL_V(lightmap, PackedVector3Array());
@@ -1260,7 +1271,7 @@ void LightStorage::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point,
 	for (int i = 0; i < 4; i++) {
 		float c = CLAMP(barycentric[i], 0.0, 1.0);
 		for (int j = 0; j < 9; j++) {
-			r_sh[j] += sh_colors[i][j] * c;
+			r_sh[j] += sh_colors[i][j] * c * lm->modulate;
 		}
 	}
 }
@@ -1277,6 +1288,17 @@ void LightStorage::lightmap_set_probe_capture_update_speed(float p_speed) {
 
 float LightStorage::lightmap_get_probe_capture_update_speed() const {
 	return lightmap_probe_capture_update_speed;
+}
+
+void LightStorage::lightmap_insert_to_lightmap_instances(RID p_lightmap, RID p_instance) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+	lm->lightmap_instances.insert(p_instance);
+}
+void LightStorage::lightmap_erase_from_lightmap_instances(RID p_lightmap, RID p_instance) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+	lm->lightmap_instances.erase(p_instance);
 }
 
 void LightStorage::lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) {

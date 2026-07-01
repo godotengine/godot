@@ -47,6 +47,7 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
 #include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For lightmapper_rd.
 
@@ -287,6 +288,15 @@ float LightmapGIData::get_baked_exposure() const {
 	return baked_exposure;
 }
 
+void LightmapGIData::set_modulate(const Color &p_color) {
+	modulate = p_color;
+	RS::get_singleton()->lightmap_set_modulate(lightmap, p_color.srgb_to_linear());
+}
+
+Color LightmapGIData::get_modulate() const {
+	return modulate;
+}
+
 void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("bounds"));
 	ERR_FAIL_COND(!p_data.has("points"));
@@ -348,6 +358,9 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadowmask_textures", "shadowmask_textures"), &LightmapGIData::set_shadowmask_textures);
 	ClassDB::bind_method(D_METHOD("get_shadowmask_textures"), &LightmapGIData::get_shadowmask_textures);
 
+	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &LightmapGIData::set_modulate);
+	ClassDB::bind_method(D_METHOD("get_modulate"), &LightmapGIData::get_modulate);
+
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &LightmapGIData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &LightmapGIData::is_using_spherical_harmonics);
 
@@ -362,6 +375,7 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
 
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate", PROPERTY_HINT_COLOR_NO_ALPHA), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lightmap_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_lightmap_textures", "get_lightmap_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "shadowmask_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_shadowmask_textures", "get_shadowmask_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
@@ -1713,8 +1727,8 @@ void LightmapGI::_notification(int p_what) {
 				if (last_owner && last_owner != get_owner()) {
 					light_data->clear_users();
 				}
-
 				_assign_lightmaps();
+				RSG::light_storage->lightmap_insert_to_lightmap_instances(light_data->get_rid(), get_instance());
 			}
 		} break;
 
@@ -1723,6 +1737,7 @@ void LightmapGI::_notification(int p_what) {
 
 			if (light_data.is_valid()) {
 				_clear_lightmaps();
+				RSG::light_storage->lightmap_erase_from_lightmap_instances(light_data->get_rid(), get_instance());
 			}
 		} break;
 	}
@@ -1791,6 +1806,7 @@ void LightmapGI::set_light_data(const Ref<LightmapGIData> &p_data) {
 			_clear_lightmaps();
 		}
 		set_base(RID());
+		RSG::light_storage->lightmap_erase_from_lightmap_instances(light_data->get_rid(), get_instance());
 	}
 	light_data = p_data;
 
@@ -1800,6 +1816,7 @@ void LightmapGI::set_light_data(const Ref<LightmapGIData> &p_data) {
 			_assign_lightmaps();
 		}
 		light_data->update_shadowmask_mode(shadowmask_mode);
+		RSG::light_storage->lightmap_insert_to_lightmap_instances(light_data->get_rid(), get_instance());
 	}
 
 	update_gizmos();

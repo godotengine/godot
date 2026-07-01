@@ -1973,6 +1973,13 @@
 				Sets the visibility range values for the given geometry instance. Equivalent to [member GeometryInstance3D.visibility_range_begin] and related properties.
 			</description>
 		</method>
+		<method name="instance_lightmap_update_geometries_captures">
+			<return type="void" />
+			<param index="0" name="lightmap" type="RID" />
+			<description>
+				Updates the lightmap spherical harmonics captures of all [GeometryInstance3D] instances affected by this lightmap.
+			</description>
+		</method>
 		<method name="instance_set_base">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
@@ -2302,6 +2309,14 @@
 			<param index="1" name="baked_exposure" type="float" />
 			<description>
 				Used to inform the renderer what exposure normalization value was used while baking the lightmap. This value will be used and modulated at run time to ensure that the lightmap maintains a consistent level of exposure even if the scene-wide exposure normalization is changed at run time. For more information see [method camera_attributes_set_exposure].
+			</description>
+		</method>
+		<method name="lightmap_set_modulate">
+			<return type="void" />
+			<param index="0" name="lightmap" type="RID" />
+			<param index="1" name="energy_color" type="Color" />
+			<description>
+				Sets a lightmap's modulate color.
 			</description>
 		</method>
 		<method name="lightmap_set_probe_bounds">

@@ -540,6 +540,7 @@ public:
 	FUNC2(lightmap_set_probe_interior, RID, bool)
 	FUNC5(lightmap_set_probe_capture_data, RID, const PackedVector3Array &, const PackedColorArray &, const PackedInt32Array &, const PackedInt32Array &)
 	FUNC2(lightmap_set_baked_exposure_normalization, RID, float)
+	FUNC2(lightmap_set_modulate, RID, const Color &)
 	FUNC1RC(PackedVector3Array, lightmap_get_probe_capture_points, RID)
 	FUNC1RC(PackedColorArray, lightmap_get_probe_capture_sh, RID)
 	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)
@@ -978,6 +979,8 @@ public:
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter_default_value, RID, const StringName &)
 	FUNC2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
+
+	FUNC1(instance_lightmap_update_geometries_captures, RID)
 
 	FUNC3R(TypedArray<Image>, bake_render_uv2, RID, const TypedArray<RID> &, const Size2i &)
 	FUNC4R(PackedByteArray, bake_render_area_light_atlas, const TypedArray<RID> &, const TypedArray<Rect2> &, const Size2i &, int)
