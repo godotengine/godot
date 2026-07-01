@@ -379,6 +379,11 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	snap_target[1] = SNAP_TARGET_NONE;
 
 	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	bool is_tab_pressed = Input::get_singleton()->is_key_pressed(Key::TAB);
+
+	if (is_tab_pressed) {
+		is_snap_active = false;
+	}
 
 	// Smart snap using the canvas position
 	Vector2 output = p_target;
