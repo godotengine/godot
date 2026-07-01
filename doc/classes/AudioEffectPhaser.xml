@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectPhaser" inherits="AudioEffect" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a phaser audio effect to an audio bus.
+		Adds a phaser audio effect.
 		Creates several notch and peak filters that sweep across the spectrum.
 	</brief_description>
 	<description>
