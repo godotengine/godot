@@ -66,6 +66,7 @@ struct Light {
 	RSE::LightDirectionalShadowMode directional_shadow_mode = RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
 	bool directional_blend_splits = false;
 	RSE::LightDirectionalSkyMode directional_sky_mode = RSE::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
+	real_t directional_min_shadow_fov = 0.0;
 	Vector2 area_size = Vector2(1, 1);
 	bool area_normalize_energy = true;
 	RID area_texture;
@@ -343,6 +344,8 @@ public:
 	virtual bool light_directional_get_blend_splits(RID p_light) const override;
 	virtual void light_directional_set_sky_mode(RID p_light, RSE::LightDirectionalSkyMode p_mode) override;
 	virtual RSE::LightDirectionalSkyMode light_directional_get_sky_mode(RID p_light) const override;
+	virtual void light_directional_set_min_shadow_fov(RID p_light, real_t p_fov) override;
+	virtual real_t light_directional_get_min_shadow_fov(RID p_light) const override;
 
 	virtual void light_area_set_size(RID p_light, const Vector2 &p_size) override;
 	virtual Vector2 light_area_get_size(RID p_light) const override;
