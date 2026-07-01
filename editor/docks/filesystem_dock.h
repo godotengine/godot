@@ -174,6 +174,9 @@ private:
 	LineEdit *tree_search_box = nullptr;
 	MenuButton *tree_button_sort = nullptr;
 
+	HBoxContainer *bottom_toolbar_hbc = nullptr;
+	HSlider *thumbnail_size_slider = nullptr;
+
 	LineEdit *file_list_search_box = nullptr;
 	MenuButton *file_list_button_sort = nullptr;
 
@@ -361,6 +364,8 @@ private:
 	void _file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _tree_empty_click(const Vector2 &p_pos, MouseButton p_button);
 	void _tree_empty_selected();
+	void _check_expanded_icon(TreeItem *p_item);
+	void _thumbnail_size_changed(float p_value);
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 

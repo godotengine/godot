@@ -72,6 +72,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/slider.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"
 
@@ -343,6 +344,8 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	} else if (lpath.get_base_dir() == current_path.get_base_dir()) {
 		subdirectory_item->select(0);
 	}
+
+	_check_expanded_icon(subdirectory_item);
 }
 
 Vector<String> FileSystemDock::get_uncollapsed_paths() const {
@@ -2878,7 +2881,7 @@ bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
 	}
 	const String s = p_text.to_lower();
 	for (const String &t : searched_tokens) {
-		if (!s.contains(t)) {
+		if (!s.contains(t) && !s.matchn(t)) {
 			return false;
 		}
 	}
@@ -3732,6 +3735,27 @@ void FileSystemDock::_tree_empty_selected() {
 	_update_selection_changed();
 }
 
+void FileSystemDock::_check_expanded_icon(TreeItem *p_item) {
+	String file_path = p_item->get_metadata(0);
+	bool is_folder = file_path.ends_with("/");
+
+	if (!is_folder || (!p_item->get_first_child() && p_item->get_visible_child_count() == 0)) {
+		return;
+	}
+
+	if (p_item->is_collapsed()) {
+		p_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
+	} else {
+		p_item->set_icon(0, get_editor_theme_icon(SNAME("Load")));
+	}
+}
+
+void FileSystemDock::_thumbnail_size_changed(float p_value) {
+	EditorSettings::get_singleton()->set_setting("docks/filesystem/thumbnail_size", p_value);
+	EditorSettings::get_singleton()->notify_changes();
+	EditorSettings::get_singleton()->save();
+}
+
 void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
 	if (p_mouse_button_index != MouseButton::RIGHT) {
 		return;
@@ -3981,6 +4005,16 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 		}
 
 		accept_event();
+	}
+
+	const Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_ctrl_pressed() && mb->is_pressed()) {
+		float current_size = EditorSettings::get_singleton()->get_setting("docks/filesystem/thumbnail_size");
+		if (mb->get_button_index() == MouseButton::WHEEL_UP) {
+			thumbnail_size_slider->set_value(current_size + 16);
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+			thumbnail_size_slider->set_value(current_size - 16);
+		}
 	}
 }
 
@@ -4545,6 +4579,7 @@ FileSystemDock::FileSystemDock() {
 	tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
 	tree->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_tree_gui_input));
 	tree->connect(SceneStringName(mouse_exited), callable_mp(this, &FileSystemDock::_tree_mouse_exited));
+	tree->connect("item_collapsed", callable_mp(this, &FileSystemDock::_check_expanded_icon));
 	tree->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 
 	file_list_vb = memnew(VBoxContainer);
@@ -4566,15 +4601,31 @@ FileSystemDock::FileSystemDock() {
 	file_list_button_sort = _create_file_menu_button();
 	path_hb->add_child(file_list_button_sort);
 
-	button_file_list_display_mode = memnew(Button);
-	button_file_list_display_mode->set_accessibility_name(TTRC("Display Mode"));
-	button_file_list_display_mode->set_theme_type_variation("FlatMenuButton");
-	path_hb->add_child(button_file_list_display_mode);
-
 	files_mc = memnew(MarginContainer);
 	file_list_vb->add_child(files_mc);
 	files_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 	files_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	bottom_toolbar_hbc = memnew(HBoxContainer);
+	bottom_toolbar_hbc->set_alignment(BoxContainer::ALIGNMENT_END);
+	file_list_vb->add_child(bottom_toolbar_hbc);
+
+	thumbnail_size_slider = memnew(HSlider);
+	thumbnail_size_slider->set_value(EDITOR_GET("docks/filesystem/thumbnail_size"));
+	thumbnail_size_slider->set_min(32);
+	thumbnail_size_slider->set_max(224);
+	thumbnail_size_slider->set_step(16);
+	thumbnail_size_slider->set_custom_minimum_size(Size2(64 * EDSCALE, 0));
+	thumbnail_size_slider->set_custom_maximum_size(Size2(128 * EDSCALE, -1));
+	thumbnail_size_slider->set_v_size_flags(SIZE_SHRINK_CENTER);
+	thumbnail_size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+	thumbnail_size_slider->connect(SceneStringName(value_changed), callable_mp(this, &FileSystemDock::_thumbnail_size_changed));
+	bottom_toolbar_hbc->add_child(thumbnail_size_slider);
+
+	button_file_list_display_mode = memnew(Button);
+	button_file_list_display_mode->set_accessibility_name(TTRC("Display Mode"));
+	button_file_list_display_mode->set_theme_type_variation("FlatMenuButton");
+	bottom_toolbar_hbc->add_child(button_file_list_display_mode);
 
 	files = memnew(FileSystemList);
 	files->set_accessibility_name(TTRC("Files"));
