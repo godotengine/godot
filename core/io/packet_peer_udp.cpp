@@ -355,6 +355,7 @@ int PacketPeerUDP::get_local_port() const {
 
 void PacketPeerUDP::set_dest_address(const IPAddress &p_address, int p_port) {
 	ERR_FAIL_COND_MSG(connected, "Destination address cannot be set for connected sockets");
+	ERR_FAIL_COND_MSG(p_port < 1 || p_port > 65535, vformat("Can't set UDP peer destination address to port %d. The port number must be between 1 and 65535 (inclusive).", p_port));
 	peer_addr = p_address;
 	peer_port = p_port;
 }
