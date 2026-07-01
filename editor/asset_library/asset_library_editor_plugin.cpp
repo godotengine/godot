@@ -352,6 +352,7 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			version_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+			compat_warning->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 			Ref<Texture2D> link_icon = get_editor_theme_icon(SNAME("ExternalLink"));
 			store->set_button_icon(link_icon);
 			source->set_button_icon(link_icon);
@@ -396,9 +397,30 @@ void EditorAssetLibraryItemDescription::_confirmed() {
 }
 
 void EditorAssetLibraryItemDescription::_version_selected(int p_index) {
-	String changes = version_list->get_item_metadata(p_index);
+	String changes = releases[p_index].changes;
 	changelog->clear();
 	changelog->append_text(changes.is_empty() ? TTRC("No changelog provided for this version.") : changes);
+
+	String compat_min = releases[p_index].compat_min;
+	String compat_max = releases[p_index].compat_max;
+	bool show_warning = !compat_min.is_empty() || !compat_max.is_empty();
+
+	if (show_warning) {
+		String tooltip;
+		if (!compat_min.is_empty() && !compat_max.is_empty()) {
+			tooltip += vformat(TTR("This release is only compatible with Godot versions between %s and %s."), compat_min, compat_max);
+		} else if (!compat_min.is_empty()) {
+			tooltip += vformat(TTR("This release is only compatible with Godot version %s and newer."), compat_min);
+		} else {
+			tooltip += vformat(TTR("This release is only compatible with Godot version %s and earlier."), compat_max);
+		}
+
+		tooltip += "\n";
+		tooltip += TTRC("Using it may result in errors and crashes.");
+		compat_warning->set_tooltip_text(tooltip);
+	}
+
+	compat_warning->set_visible(show_warning);
 }
 
 void EditorAssetLibraryItemDescription::_store_pressed() {
@@ -545,22 +567,26 @@ void EditorAssetLibraryItemDescription::set_install_mode(InstallMode p_mode) {
 	install_mode = p_mode;
 }
 
-void EditorAssetLibraryItemDescription::add_release(const String &p_url, const String &p_version, const String &p_changes, const String &p_sha256) {
+void EditorAssetLibraryItemDescription::add_release(const String &p_url, const String &p_version, const String &p_changes, const String &p_compat_min, const String &p_compat_max, const String &p_sha256) {
 	Release release;
 	release.url = p_url;
 	release.version = p_version;
+	release.changes = p_changes;
+	release.compat_min = p_compat_min;
+	release.compat_max = p_compat_max;
 	release.sha256 = p_sha256;
+	releases.append(release);
 
-	if (releases.is_empty()) {
+	version_list->add_item(p_version, releases.size());
+
+	if (releases.size() == 1) {
 		version->set_text(p_version);
 		if (install_mode == MODE_DOWNLOAD) {
 			get_ok_button()->set_disabled(false);
 		}
 
-		changelog->clear();
-		changelog->append_text(p_changes.is_empty() ? TTRC("No changelog provided for this version.") : p_changes);
-
-	} else if (releases.size() == 1) {
+		_version_selected(0);
+	} else if (releases.size() == 2) {
 		version->hide();
 		version_list->set_text(releases[0].version);
 		if (install_mode == MODE_DOWNLOAD) {
@@ -568,11 +594,6 @@ void EditorAssetLibraryItemDescription::add_release(const String &p_url, const S
 		}
 		version_list->show();
 	}
-
-	version_list->add_item(p_version, releases.size());
-	version_list->set_item_metadata(-1, p_changes);
-
-	releases.append(release);
 }
 
 void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, const String &p_url, const String &p_thumbnail) {
@@ -649,6 +670,11 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	version_list->hide(); // Will be shown if multiple versions are available.
 	contents->add_child(version_list);
 	version_list->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibraryItemDescription::_version_selected));
+
+	compat_warning = memnew(TextureRect);
+	compat_warning->set_v_size_flags(Control::SIZE_SHRINK_CENTER); // Necessary for the icon to look correct.
+	compat_warning->hide();
+	contents->add_child(compat_warning);
 
 	store = memnew(Button);
 	store->set_text(TTRC("Store Page"));
@@ -1498,9 +1524,11 @@ void EditorAssetLibrary::_search(int p_page) {
 	args += "&type=" + String(templates_only ? "1" : "0");
 	args += "&sort=" + String(sort_key[sort->get_selected()]);
 
-	args += "&compatibility=" + itos(GODOT_VERSION_MAJOR) + "." + itos(GODOT_VERSION_MINOR);
-	if (GODOT_VERSION_PATCH > 0) {
-		args += "." + itos(GODOT_VERSION_PATCH);
+	if (!EDITOR_GET("asset_store/show_incompatible_assets")) {
+		args += "&compatibility=" + itos(GODOT_VERSION_MAJOR) + "." + itos(GODOT_VERSION_MINOR);
+		if (GODOT_VERSION_PATCH > 0) {
+			args += "." + itos(GODOT_VERSION_PATCH);
+		}
 	}
 
 	if (!licenses_all_toggled) {
@@ -1964,6 +1992,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				return;
 			}
 
+			bool show_incompat_assets = EDITOR_GET("asset_store/show_incompatible_assets");
 			LocalVector<int> engine_version = { GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR, GODOT_VERSION_PATCH };
 			for (const Dictionary d : (Array)dt) {
 				ERR_FAIL_COND(!d.has("download_url"));
@@ -1973,13 +2002,15 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				ERR_FAIL_COND(!d.has("max_godot_version"));
 				ERR_FAIL_COND(!d.has("changes_bbcode"));
 
-				if (d["min_godot_version"].get_type() != Variant::NIL) {
-					Vector<String> compat_version = String(d["min_godot_version"]).split(".", false);
-					compat_version.resize_initialized(3);
+				bool is_compat = true;
 
-					bool is_compat = true;
-					for (int j = 0; j < compat_version.size(); j++) {
-						const int number = compat_version[j].to_int();
+				String compat_min;
+				if (d["min_godot_version"].get_type() != Variant::NIL) {
+					Vector<String> version = String(d["min_godot_version"]).split(".", false);
+					version.resize_initialized(3);
+
+					for (int j = 0; j < version.size(); j++) {
+						const int number = version[j].to_int();
 						if (number != engine_version[j]) {
 							if (number > engine_version[j]) {
 								is_compat = false;
@@ -1987,18 +2018,23 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 							break;
 						}
 					}
+
 					if (!is_compat) {
-						continue; // This release is for a newer version of Godot.
+						if (!show_incompat_assets) {
+							continue; // This release is for a newer version of Godot.
+						}
+
+						compat_min = d["min_godot_version"];
 					}
 				}
 
+				String compat_max;
 				if (d["max_godot_version"].get_type() != Variant::NIL) {
-					Vector<String> compat_version = String(d["max_godot_version"]).split(".", false);
-					compat_version.resize_initialized(3);
+					Vector<String> version = String(d["max_godot_version"]).split(".", false);
+					version.resize_initialized(3);
 
-					bool is_compat = true;
-					for (int j = 0; j < compat_version.size(); j++) {
-						const int number = compat_version[j].to_int();
+					for (int j = 0; j < version.size(); j++) {
+						const int number = version[j].to_int();
 						if (number != engine_version[j]) {
 							if (number < engine_version[j]) {
 								is_compat = false;
@@ -2006,8 +2042,13 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 							break;
 						}
 					}
+
 					if (!is_compat) {
-						continue; // This release is for an older version of Godot.
+						if (!show_incompat_assets) {
+							continue; // This release is for an older version of Godot.
+						}
+
+						compat_max = d["max_godot_version"];
 					}
 				}
 
@@ -2016,7 +2057,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					version += "(" + TTR("Unstable") + ")";
 				}
 
-				description->add_release(d["download_url"], version, d["changes_bbcode"], "");
+				description->add_release(d["download_url"], version, d["changes_bbcode"], compat_min, compat_max, "");
 			}
 		} break;
 
