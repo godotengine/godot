@@ -1329,15 +1329,69 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 	return api_dump;
 }
 
-void GDExtensionAPIDump::generate_extension_json_file(const String &p_path, bool p_include_docs) {
+static bool validate_property_accessors(const Dictionary &p_api) {
+	bool failed = false;
+	Array classes = p_api["classes"];
+
+	HashMap<String, Dictionary> class_map;
+	for (const Variant &v : classes) {
+		Dictionary cls = v;
+		class_map.insert(cls["name"], cls);
+	}
+
+	for (const Variant &v : classes) {
+		Dictionary cls = v;
+		if (!cls.has("properties")) {
+			continue;
+		}
+		String class_name = cls["name"];
+
+		// Collect methods from this class and all ancestors.
+		HashSet<String> methods;
+		for (String c = class_name; !c.is_empty();) {
+			Dictionary *cd = class_map.getptr(c);
+			if (!cd) {
+				break;
+			}
+			if (cd->has("methods")) {
+				for (const Variant &m : (Array)(*cd)["methods"]) {
+					methods.insert(((Dictionary)m)["name"]);
+				}
+			}
+			c = cd->has("inherits") ? (String)(*cd)["inherits"] : String();
+		}
+
+		for (const Variant &pv : (Array)cls["properties"]) {
+			Dictionary prop = pv;
+			String prop_name = prop["name"];
+			String getter = prop.get("getter", String());
+			String setter = prop.get("setter", String());
+			if (!getter.is_empty() && !methods.has(getter)) {
+				print_error(vformat("Validate extension JSON: Property '%s::%s' getter '%s' not found in exported methods.", class_name, prop_name, getter));
+				failed = true;
+			}
+			if (!setter.is_empty() && !methods.has(setter)) {
+				print_error(vformat("Validate extension JSON: Property '%s::%s' setter '%s' not found in exported methods.", class_name, prop_name, setter));
+				failed = true;
+			}
+		}
+	}
+
+	return !failed;
+}
+
+bool GDExtensionAPIDump::generate_extension_json_file(const String &p_path, bool p_include_docs) {
 	Dictionary api = generate_extension_api(p_include_docs);
 	Ref<JSON> json;
 	json.instantiate();
 
+	bool valid = validate_property_accessors(api);
+
 	String text = json->stringify(api, "\t", false) + "\n";
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(fa.is_null(), vformat("Cannot open file '%s' for writing.", p_path));
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot open file '%s' for writing.", p_path));
 	fa->store_string(text);
+	return valid;
 }
 
 static bool compare_value(const String &p_path, const String &p_field, const Variant &p_old_value, const Variant &p_new_value, bool p_allow_name_change) {
