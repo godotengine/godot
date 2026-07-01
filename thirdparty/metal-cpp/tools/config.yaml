@@ -1,0 +1,940 @@
+# yaml-language-server: $schema=./config.schema.json
+
+sdks:
+  - name: macos
+    xcrun_sdk: macosx
+  - name: iphoneos
+    xcrun_sdk: iphoneos
+  - name: tvos
+    xcrun_sdk: appletvos
+  - name: visionos
+    xcrun_sdk: xros
+
+frameworks:
+  # ── Foundation ─────────────────────────────────────────────────────────
+  - name: Foundation
+    namespace: NS
+    prefix: NS
+    strip_prefix: NS
+    # Generate once from the first applicable SDK (macos). Multi-SDK
+    # would otherwise let visionos overwrite macos output, losing methods
+    # whose `API_AVAILABLE(...)` omits visionos (libclang excludes them
+    # from the AST when parsing against the visionOS SDK).
+    shared: true
+    sdks: [macos, iphoneos, tvos, visionos]
+    include:
+      classes:
+        - NSArray
+        - NSAutoreleasePool
+        - NSBundle
+        - NSCondition
+        - NSCopying
+        - NSData
+        - NSDate
+        - NSDictionary
+        - NSEnumerator
+        - NSError
+        - NSFastEnumeration
+        - NSLocking
+        - NSNotification
+        - NSNotificationCenter
+        - NSNumber
+        - NSObject
+        - NSProcessInfo
+        - NSReferencing
+        - NSSecureCoding
+        - NSSet
+        - NSString
+        - NSURL
+        - NSValue
+    exclude:
+      methods: ["(?i)deprecated"]
+      classes:
+        # On-demand-resource API; pulls in a chain of NSBundle internals not
+        # used by Godot. Upstream metal-cpp doesn't wrap it either.
+        - NSBundleResourceRequest
+        # Mutable collection variants are unused by the driver and upstream
+        # metal-cpp doesn't wrap them; skip to keep the surface small.
+        - NSMutableArray
+        - NSMutableData
+        - NSMutableDictionary
+        - NSMutableSet
+    # Hand-written infrastructure copied verbatim from upstream metal-cpp.
+    keep_upstream:
+      - NSDefines       # _NS_EXPORT, _NS_INLINE, _NS_ENUM, _NS_PACKED, ...
+      - NSObjCRuntime   # NS::Integer / NS::UInteger / NS::ComparisonResult
+      - NSRange         # NS::Range struct with hand-written helpers
+      - NSSharedPtr     # NS::SharedPtr / NS::TransferPtr / NS::RetainPtr
+      - NSTypes         # NS::TimeInterval, NS::OperatingSystemVersion
+      # NSObject (CRTP root) and NSEnumerator (templated container) are
+      # both emitted by the generator — see generate_nsobject_header /
+      # generate_nsenumerator_header. They route through the same
+      # `_objc_msgSend$<sel>` stub trampolines as every other wrapper.
+    headers:
+      - NSArray.h
+      - NSAutoreleasePool.h
+      - NSBundle.h
+      - NSData.h
+      - NSDate.h
+      - NSDictionary.h
+      - NSError.h
+      - NSLock.h
+      - NSNotification.h
+      - NSNumber.h
+      - NSValue.h  # actually owns @interface NSNumber : NSValue
+      - NSObject.h
+      - NSProcessInfo.h
+      - NSSet.h
+      - NSString.h
+      - NSURL.h
+    class_overrides:
+      # Upstream metal-cpp keeps the `WithPath` qualifier on NSURL init
+      # selectors (no SwiftName entry to drive the rename); heuristic strips it.
+      NSURL:
+        rename:
+          "initFileURLWithPath:": initFileURLWithPath
+        include:
+          members:
+            - fileSystemRepresentation
+            - 'fileURLWithPath:'
+            - 'initFileURLWithPath:'
+            - 'initWithString:'
+      NSString:
+        include:
+          members:
+            - UTF8String
+            - 'cStringUsingEncoding:'
+            - 'caseInsensitiveCompare:'
+            - 'characterAtIndex:'
+            - fileSystemRepresentation
+            - 'initWithBytes:length:encoding:'
+            - 'initWithBytesNoCopy:length:encoding:freeWhenDone:'
+            - 'initWithCString:encoding:'
+            - 'initWithString:'
+            - 'isEqualToString:'
+            - length
+            - 'lengthOfBytesUsingEncoding:'
+            - 'maximumLengthOfBytesUsingEncoding:'
+            - 'rangeOfString:options:'
+            - string
+            - 'stringByAppendingString:'
+            - 'stringWithCString:encoding:'
+            - 'stringWithString:'
+        append: |
+          /// Create an NS::String* from a string literal.
+          #define MTLSTR(literal) (NS::String*)__builtin___CFStringMakeConstantString("" literal "")
+
+          template <std::size_t _StringLen>
+          [[deprecated("please use MTLSTR(str)")]] constexpr const String* MakeConstantString(const char (&str)[_StringLen])
+          {
+              return reinterpret_cast<const String*>(__CFStringMakeConstantString(str));
+          }
+      # Packed structs — match upstream's `_NS_PACKED` emission. The SDK
+      # doesn't carry __attribute__((packed)) on these, so libclang can't
+      # discover them automatically.
+      # Already defined in kept-upstream NSTypes.hpp; register so cross-refs
+      # resolve, but skip emission so we don't duplicate.
+      NSOperatingSystemVersion: {skip: true}
+      # NSFastEnumerationState lives in upstream's NSEnumerator.hpp, but our
+      # generator replaces that hpp, so the struct must be emitted here.
+      NSFastEnumerationState: {packed: true}
+      NSArray:
+        include:
+          members:
+            - array
+            - 'arrayWithObject:'
+            - 'arrayWithObjects:count:'
+            - count
+            - 'initWithCoder:'
+            - 'initWithObjects:count:'
+            - 'objectAtIndex:'
+            - objectEnumerator
+      NSBundle:
+        include:
+          members:
+            - 'URLForAuxiliaryExecutable:'
+            - allBundles
+            - allFrameworks
+            - alloc
+            - appStoreReceiptURL
+            - builtInPlugInsPath
+            - builtInPlugInsURL
+            - bundleIdentifier
+            - bundlePath
+            - bundleURL
+            - 'bundleWithPath:'
+            - 'bundleWithURL:'
+            - executablePath
+            - executableURL
+            - infoDictionary
+            - 'initWithPath:'
+            - 'initWithURL:'
+            - isLoaded
+            - load
+            - 'loadAndReturnError:'
+            - localizedInfoDictionary
+            - 'localizedStringForKey:value:table:'
+            - mainBundle
+            - 'objectForInfoDictionaryKey:'
+            - 'pathForAuxiliaryExecutable:'
+            - 'preflightAndReturnError:'
+            - privateFrameworksPath
+            - privateFrameworksURL
+            - resourcePath
+            - resourceURL
+            - sharedFrameworksPath
+            - sharedFrameworksURL
+            - sharedSupportPath
+            - sharedSupportURL
+            - unload
+      NSCondition:
+        exclude:
+          members:
+            - name
+      NSData:
+        include:
+          members:
+            - bytes
+            - length
+            - mutableBytes
+      NSDate:
+        include:
+          members:
+            - 'dateWithTimeIntervalSinceNow:'
+      NSDictionary:
+        include:
+          members:
+            - count
+            - dictionary
+            - 'dictionaryWithObject:forKey:'
+            - 'dictionaryWithObjects:forKeys:count:'
+            - 'initWithCoder:'
+            - 'initWithObjects:forKeys:count:'
+            - keyEnumerator
+            - 'objectForKey:'
+      NSError:
+        include:
+          members:
+            - code
+            - domain
+            - 'errorWithDomain:code:userInfo:'
+            - 'initWithDomain:code:userInfo:'
+            - localizedDescription
+            - localizedFailureReason
+            - localizedRecoveryOptions
+            - localizedRecoverySuggestion
+            - userInfo
+      NSFastEnumeration:
+        include:
+          members:
+            - allObjects
+            - 'countByEnumeratingWithState:objects:count:'
+            - nextObject
+      NSNotification:
+        include:
+          members:
+            - name
+            - object
+            - userInfo
+      NSNotificationCenter:
+        include:
+          members:
+            - 'addObserverName:object:queue:block:'
+            - defaultCenter
+            - 'removeObserver:'
+      NSNumber:
+        exclude:
+          members:
+            - 'initWithInteger:'
+            - 'initWithUnsignedInteger:'
+            - 'numberWithInteger:'
+            - 'numberWithUnsignedInteger:'
+      NSObject:
+        include:
+          members:
+            - alloc
+            - debugDescription
+            - description
+            - hash
+            - init
+            - 'isEqual:'
+            - 'methodSignatureForSelector:'
+            - 'respondsToSelector:'
+      NSProcessInfo:
+        exclude:
+          members:
+            - iOSAppOnMac
+            - iOSAppOnVision
+            - isiOSAppOnVision
+            - operatingSystemName
+      NSSet:
+        include:
+          members:
+            - count
+            - 'initWithCoder:'
+            - 'initWithObjects:count:'
+            - objectEnumerator
+      NSValue:
+        include:
+          members:
+            - 'getValue:size:'
+            - 'initWithBytes:objCType:'
+            - 'initWithCoder:'
+            - 'isEqualToValue:'
+            - objCType
+            - pointerValue
+            - 'valueWithBytes:objCType:'
+            - 'valueWithPointer:'
+  - name: Metal
+    namespace: MTL
+    prefix: MTL
+    strip_prefix: MTL
+    shared: true
+    sdks: [macos, iphoneos, tvos, visionos]
+    # Match upstream metal-cpp: Metal.hpp also surfaces MTL4 contents, which
+    # live in Metal/ alongside MTL classes but in the MTL4:: namespace.
+    # MTLDeviceExtras.hpp is a hand-written supplement that adds the
+    # MTL::CreateSystemDefaultDevice free function.
+    extra_umbrella_includes: [Metal4.hpp, MTLDeviceExtras.hpp]
+    include:
+      classes:
+        - MTLAccelerationStructure
+        - MTLAccelerationStructureBoundingBoxGeometryDescriptor
+        - MTLAccelerationStructureCommandEncoder
+        - MTLAccelerationStructureCurveGeometryDescriptor
+        - MTLAccelerationStructureDescriptor
+        - MTLAccelerationStructureGeometryDescriptor
+        - MTLAccelerationStructureMotionBoundingBoxGeometryDescriptor
+        - MTLAccelerationStructureMotionCurveGeometryDescriptor
+        - MTLAccelerationStructureMotionTriangleGeometryDescriptor
+        - MTLAccelerationStructurePassDescriptor
+        - MTLAccelerationStructurePassSampleBufferAttachmentDescriptor
+        - MTLAccelerationStructurePassSampleBufferAttachmentDescriptorArray
+        - MTLAccelerationStructureTriangleGeometryDescriptor
+        - MTLAllocation
+        - MTLArchitecture
+        - MTLArgument
+        - MTLArgumentDescriptor
+        - MTLArgumentEncoder
+        - MTLArrayType
+        - MTLAttribute
+        - MTLAttributeDescriptor
+        - MTLAttributeDescriptorArray
+        - MTLBinaryArchive
+        - MTLBinaryArchiveDescriptor
+        - MTLBinding
+        - MTLBlitCommandEncoder
+        - MTLBlitPassDescriptor
+        - MTLBlitPassSampleBufferAttachmentDescriptor
+        - MTLBlitPassSampleBufferAttachmentDescriptorArray
+        - MTLBuffer
+        - MTLBufferBinding
+        - MTLBufferLayoutDescriptor
+        - MTLBufferLayoutDescriptorArray
+        - MTLCaptureDescriptor
+        - MTLCaptureManager
+        - MTLCaptureScope
+        - MTLCommandBuffer
+        - MTLCommandBufferDescriptor
+        - MTLCommandBufferEncoderInfo
+        - MTLCommandEncoder
+        - MTLCommandQueue
+        - MTLCommandQueueDescriptor
+        - MTLCompileOptions
+        - MTLComputeCommandEncoder
+        - MTLComputePassDescriptor
+        - MTLComputePassSampleBufferAttachmentDescriptor
+        - MTLComputePassSampleBufferAttachmentDescriptorArray
+        - MTLComputePipelineDescriptor
+        - MTLComputePipelineReflection
+        - MTLComputePipelineState
+        - MTLCounter
+        - MTLCounterSampleBuffer
+        - MTLCounterSampleBufferDescriptor
+        - MTLCounterSet
+        - MTLDepthStencilDescriptor
+        - MTLDepthStencilState
+        - MTLDevice
+        - MTLDrawable
+        - MTLDynamicLibrary
+        - MTLEvent
+        - MTLFence
+        - MTLFunction
+        - MTLFunctionConstant
+        - MTLFunctionConstantValues
+        - MTLFunctionDescriptor
+        - MTLFunctionHandle
+        - MTLFunctionLog
+        - MTLFunctionLogDebugLocation
+        - MTLFunctionReflection
+        - MTLFunctionStitchingAttribute
+        - MTLFunctionStitchingAttributeAlwaysInline
+        - MTLFunctionStitchingFunctionNode
+        - MTLFunctionStitchingGraph
+        - MTLFunctionStitchingInputNode
+        - MTLFunctionStitchingNode
+        - MTLHeap
+        - MTLHeapDescriptor
+        - MTLIOCommandBuffer
+        - MTLIOCommandQueue
+        - MTLIOCommandQueueDescriptor
+        - MTLIOFileHandle
+        - MTLIOScratchBuffer
+        - MTLIOScratchBufferAllocator
+        - MTLIndirectCommandBuffer
+        - MTLIndirectCommandBufferDescriptor
+        - MTLIndirectComputeCommand
+        - MTLIndirectInstanceAccelerationStructureDescriptor
+        - MTLIndirectRenderCommand
+        - MTLInstanceAccelerationStructureDescriptor
+        - MTLIntersectionFunctionDescriptor
+        - MTLIntersectionFunctionTable
+        - MTLIntersectionFunctionTableDescriptor
+        - MTLLibrary
+        - MTLLinkedFunctions
+        - MTLLogContainer
+        - MTLLogState
+        - MTLLogStateDescriptor
+        - MTLLogicalToPhysicalColorAttachmentMap
+        - MTLMeshRenderPipelineDescriptor
+        - MTLMotionKeyframeData
+        - MTLObjectPayloadBinding
+        - MTLParallelRenderCommandEncoder
+        - MTLPipelineBufferDescriptor
+        - MTLPipelineBufferDescriptorArray
+        - MTLPointerType
+        - MTLPrimitiveAccelerationStructureDescriptor
+        - MTLRasterizationRateLayerArray
+        - MTLRasterizationRateLayerDescriptor
+        - MTLRasterizationRateMap
+        - MTLRasterizationRateMapDescriptor
+        - MTLRasterizationRateSampleArray
+        - MTLRenderCommandEncoder
+        - MTLRenderPassAttachmentDescriptor
+        - MTLRenderPassColorAttachmentDescriptor
+        - MTLRenderPassColorAttachmentDescriptorArray
+        - MTLRenderPassDepthAttachmentDescriptor
+        - MTLRenderPassDescriptor
+        - MTLRenderPassSampleBufferAttachmentDescriptor
+        - MTLRenderPassSampleBufferAttachmentDescriptorArray
+        - MTLRenderPassStencilAttachmentDescriptor
+        - MTLRenderPipelineColorAttachmentDescriptor
+        - MTLRenderPipelineColorAttachmentDescriptorArray
+        - MTLRenderPipelineDescriptor
+        - MTLRenderPipelineFunctionsDescriptor
+        - MTLRenderPipelineReflection
+        - MTLRenderPipelineState
+        - MTLResidencySet
+        - MTLResidencySetDescriptor
+        - MTLResource
+        - MTLResourceStateCommandEncoder
+        - MTLResourceStatePassDescriptor
+        - MTLResourceStatePassSampleBufferAttachmentDescriptor
+        - MTLResourceStatePassSampleBufferAttachmentDescriptorArray
+        - MTLResourceViewPool
+        - MTLResourceViewPoolDescriptor
+        - MTLSamplerDescriptor
+        - MTLSamplerState
+        - MTLSharedEvent
+        - MTLSharedEventHandle
+        - MTLSharedEventListener
+        - MTLSharedTextureHandle
+        - MTLStageInputOutputDescriptor
+        - MTLStencilDescriptor
+        - MTLStitchedLibraryDescriptor
+        - MTLStructMember
+        - MTLStructType
+        - MTLTensor
+        - MTLTensorBinding
+        - MTLTensorDescriptor
+        - MTLTensorExtents
+        - MTLTensorReferenceType
+        - MTLTexture
+        - MTLTextureBinding
+        - MTLTextureDescriptor
+        - MTLTextureReferenceType
+        - MTLTextureViewDescriptor
+        - MTLTextureViewPool
+        - MTLThreadgroupBinding
+        - MTLTileRenderPipelineColorAttachmentDescriptor
+        - MTLTileRenderPipelineColorAttachmentDescriptorArray
+        - MTLTileRenderPipelineDescriptor
+        - MTLType
+        - MTLVertexAttribute
+        - MTLVertexAttributeDescriptor
+        - MTLVertexAttributeDescriptorArray
+        - MTLVertexBufferLayoutDescriptor
+        - MTLVertexBufferLayoutDescriptorArray
+        - MTLVertexDescriptor
+        - MTLVisibleFunctionTable
+        - MTLVisibleFunctionTableDescriptor
+    exclude:
+      methods: ["(?i)deprecated"]
+    keep_upstream:
+      - MTLDefines                       # _MTL_INLINE / _MTL_ENUM / _MTL_PACKED
+      - MTLGPUAddress                    # GPUAddress typedef
+      # Constructors / operator[] over anonymous-union SIMD layouts the
+      # parser can't introspect (MTL::PackedFloat3, PackedFloat4x3,
+      # AxisAlignedBoundingBox, PackedFloatQuaternion).
+      - MTLAccelerationStructureTypes
+      # Only here because MTLAccelerationStructureTypes.hpp `#include`s it.
+      # Otherwise unused — generated wrappers dispatch via _objc_msgSend$<sel>.
+      - MTLPrivate
+    headers:
+      # Type / pixel-format / enum headers parsed first so enums register
+      # before the headers that reference them.
+      - MTLTypes.h
+      - MTLPixelFormat.h
+      - MTLDataType.h
+      - MTLStageInputOutputDescriptor.h
+      - MTLArgument.h
+      - MTLResource.h
+      - MTLDepthStencil.h
+      - MTLSampler.h
+      - MTLRenderPass.h
+      - MTLRenderPipeline.h
+      - MTLAccelerationStructure.h
+      - MTLAccelerationStructureCommandEncoder.h
+      - MTLAccelerationStructureTypes.h
+      - MTLAllocation.h
+      - MTLArgument.h
+      - MTLArgumentEncoder.h
+      - MTLBinaryArchive.h
+      - MTLBlitCommandEncoder.h
+      - MTLBlitPass.h
+      - MTLBuffer.h
+      - MTLCaptureManager.h
+      - MTLCaptureScope.h
+      - MTLCommandBuffer.h
+      - MTLCommandEncoder.h
+      - MTLCommandQueue.h
+      - MTLComputeCommandEncoder.h
+      - MTLComputePass.h
+      - MTLComputePipeline.h
+      - MTLCounters.h
+      - MTLDataType.h
+      - MTLDepthStencil.h
+      - MTLDevice.h
+      - MTLDeviceCertification.h
+      - MTLDrawable.h
+      - MTLDynamicLibrary.h
+      - MTLEvent.h
+      - MTLFence.h
+      - MTLFunctionConstantValues.h
+      - MTLFunctionDescriptor.h
+      - MTLFunctionHandle.h
+      - MTLFunctionLog.h
+      - MTLFunctionStitching.h
+      - MTLHeap.h
+      - MTLIOCommandBuffer.h
+      - MTLIOCommandQueue.h
+      - MTLIOCompressor.h
+      - MTLIndirectCommandBuffer.h
+      - MTLIndirectCommandEncoder.h
+      - MTLIntersectionFunctionTable.h
+      - MTLLibrary.h
+      - MTLLinkedFunctions.h
+      - MTLLogState.h
+      - MTLParallelRenderCommandEncoder.h
+      - MTLPipeline.h
+      - MTLPixelFormat.h
+      - MTLRasterizationRate.h
+      - MTLRenderCommandEncoder.h
+      - MTLRenderPass.h
+      - MTLRenderPipeline.h
+      - MTLResidencySet.h
+      - MTLResource.h
+      - MTLResourceStateCommandEncoder.h
+      - MTLResourceStatePass.h
+      - MTLResourceViewPool.h
+      - MTLSampler.h
+      - MTLStageInputOutputDescriptor.h
+      - MTLTensor.h
+      - MTLTexture.h
+      - MTLTextureViewPool.h
+      - MTLVertexDescriptor.h
+      - MTLVisibleFunctionTable.h
+    class_overrides:
+      # Apple-style selector groupings where the first word echoes the
+      # first arg (`setBlendColorRed:green:blue:alpha:` — Red/green/blue/
+      # alpha is a color quartet). Upstream metal-cpp drops the Red.
+      # `setStencilFrontReferenceValue:backReferenceValue:` is the same
+      # pattern — front/back is a value pair — and upstream collapses to
+      # the plural noun. Apinotes carries `setBlendColor` already.
+      # `barrierAfterQueueStages:beforeStages:` is one of several MTL4
+      # barrier variants on MTLCommandEncoder (`barrierAfterStages`,
+      # `barrierAfterEncoderStages`, ...). Apinotes maps it to plain
+      # `barrier`, which collides at the call site with the bare `barrier`
+      # selector and obscures which variant is being called. Keep the
+      # descriptive form.
+      MTLCommandEncoder:
+        rename:
+          "barrierAfterQueueStages:beforeStages:": barrierAfterQueueStages
+      MTLRenderCommandEncoder:
+        rename:
+          "setBlendColorRed:green:blue:alpha:": setBlendColor
+          "setStencilFrontReferenceValue:backReferenceValue:": setStencilReferenceValues
+      # `encodeWaitForEvent:value:` — apinotes' SwiftName matches the
+      # selector verbatim, but upstream metal-cpp shortens to `encodeWait`.
+      MTLCommandBuffer:
+        rename:
+          "encodeWaitForEvent:value:": encodeWait
+          # Two `presentDrawable:...` overloads have the same C++ signature
+          # (Drawable*, CFTimeInterval); without distinct names the
+          # signature-dedup pass drops one. Names match upstream metal-cpp.
+          "presentDrawable:atTime:": presentDrawableAtTime
+          "presentDrawable:afterMinimumDuration:": presentDrawableAfterMinimumDuration
+      # Heuristic over-strips `For<Word>` on these selectors; apinotes has
+      # no SwiftName entry so it can't restore them. Match upstream.
+      MTLDevice:
+        rename:
+          "minimumLinearTextureAlignmentForPixelFormat:": minimumLinearTextureAlignmentForPixelFormat
+          "minimumTextureBufferAlignmentForPixelFormat:": minimumTextureBufferAlignmentForPixelFormat
+      # These live in upstream's hand-written MTLAccelerationStructureTypes.hpp
+      # which we keep verbatim — it carries C++ constructors / operator
+      # overloads the SDK headers expose only as anonymous-union magic the
+      # parser can't reach. Register so resolution works; skip emission.
+        exclude:
+          members:
+            - barycentricCoordsSupported
+            - programmableSamplePositionsSupported
+            - rasterOrderGroupsSupported
+            - supportsPlacementSparse
+      MTLPackedFloat3: {skip: true}
+      MTLPackedFloat4x3: {skip: true}
+      MTLAxisAlignedBoundingBox: {skip: true}
+      MTLPackedFloatQuaternion: {skip: true}
+      MTLComponentTransform: {skip: true}
+      # Upstream MTLAccelerationStructureTypes.hpp puts BufferRange in MTL4::
+      # (not MTL::) — pin the resolved cpp name so refs match.
+      MTL4BufferRange: {skip: true, cpp_name: "MTL4::BufferRange"}
+      # Packed structs — every upstream Metal struct ending in `_MTL_PACKED;`.
+      # The SDK doesn't carry __attribute__((packed)), so we declare it here.
+      MTL4UpdateSparseTextureMappingOperation: {packed: true}
+      MTL4CopySparseTextureMappingOperation: {packed: true}
+      MTL4UpdateSparseBufferMappingOperation: {packed: true}
+      MTL4CopySparseBufferMappingOperation: {packed: true}
+      MTL4TimestampHeapEntry: {packed: true}
+      # MTL4BufferRange — see skip entry above; upstream owns it.
+      MTLAccelerationStructureInstanceDescriptor: {packed: true}
+      MTLAccelerationStructureUserIDInstanceDescriptor: {packed: true}
+      MTLAccelerationStructureMotionInstanceDescriptor: {packed: true}
+      MTLIndirectAccelerationStructureInstanceDescriptor: {packed: true}
+      MTLIndirectAccelerationStructureMotionInstanceDescriptor: {packed: true}
+      # MTLPackedFloat3 / 4x3 / Quaternion / AxisAlignedBoundingBox /
+      # ComponentTransform are declared with `skip: true` above —
+      # kept-upstream definitions own them.
+      MTLDispatchThreadgroupsIndirectArguments: {packed: true}
+      MTLDispatchThreadsIndirectArguments: {packed: true}
+      MTLStageInRegionIndirectArguments: {packed: true}
+      MTLCounterResultTimestamp: {packed: true}
+      MTLCounterResultStageUtilization: {packed: true}
+      MTLCounterResultStatistic: {packed: true}
+      MTLAccelerationStructureSizes: {packed: true}
+      MTLSizeAndAlign: {packed: true}
+      MTLIndirectCommandBufferExecutionRange: {packed: true}
+      MTLIntersectionFunctionBufferArguments: {packed: true}
+      MTLScissorRect: {packed: true}
+      MTLViewport: {packed: true}
+      MTLDrawPrimitivesIndirectArguments: {packed: true}
+      MTLDrawIndexedPrimitivesIndirectArguments: {packed: true}
+      MTLVertexAmplificationViewMapping: {packed: true}
+      MTLDrawPatchIndirectArguments: {packed: true}
+      MTLQuadTessellationFactorsHalf: {packed: true}
+      MTLTriangleTessellationFactorsHalf: {packed: true}
+      MTLMapIndirectArguments: {packed: true}
+      # Upstream metal-cpp ships constructors + `Make`/`Default` factories on
+      # these struct types; the SDK only exposes plain C structs so we inject
+      # the convenience members here.
+      MTLTextureSwizzleChannels:
+        packed: true
+        members: |
+          TextureSwizzleChannels() = default;
+          TextureSwizzleChannels(MTL::TextureSwizzle r, MTL::TextureSwizzle g, MTL::TextureSwizzle b, MTL::TextureSwizzle a)
+              : red(r), green(g), blue(b), alpha(a) {}
+          static TextureSwizzleChannels Default() { return TextureSwizzleChannels(); }
+          static TextureSwizzleChannels Make(MTL::TextureSwizzle r, MTL::TextureSwizzle g, MTL::TextureSwizzle b, MTL::TextureSwizzle a) {
+              return TextureSwizzleChannels(r, g, b, a);
+          }
+      MTLOrigin:
+        packed: true
+        members: |
+          Origin() = default;
+          Origin(NS::UInteger x_, NS::UInteger y_, NS::UInteger z_) : x(x_), y(y_), z(z_) {}
+          static Origin Make(NS::UInteger x_, NS::UInteger y_, NS::UInteger z_) { return Origin(x_, y_, z_); }
+      MTLSize:
+        packed: true
+        members: |
+          Size() = default;
+          Size(NS::UInteger w, NS::UInteger h, NS::UInteger d) : width(w), height(h), depth(d) {}
+          static Size Make(NS::UInteger w, NS::UInteger h, NS::UInteger d) { return Size(w, h, d); }
+      MTLRegion:
+        packed: true
+        members: |
+          Region() = default;
+          Region(NS::UInteger x, NS::UInteger width) : origin(x, 0, 0), size(width, 1, 1) {}
+          Region(NS::UInteger x, NS::UInteger y, NS::UInteger width, NS::UInteger height) : origin(x, y, 0), size(width, height, 1) {}
+          Region(NS::UInteger x, NS::UInteger y, NS::UInteger z, NS::UInteger width, NS::UInteger height, NS::UInteger depth)
+              : origin(x, y, z), size(width, height, depth) {}
+          static Region Make1D(NS::UInteger x, NS::UInteger width) { return Region(x, width); }
+          static Region Make2D(NS::UInteger x, NS::UInteger y, NS::UInteger width, NS::UInteger height) { return Region(x, y, width, height); }
+          static Region Make3D(NS::UInteger x, NS::UInteger y, NS::UInteger z, NS::UInteger width, NS::UInteger height, NS::UInteger depth) {
+              return Region(x, y, z, width, height, depth);
+          }
+      MTLSamplePosition:
+        packed: true
+        members: |
+          SamplePosition() = default;
+          SamplePosition(float x_, float y_) : x(x_), y(y_) {}
+          static SamplePosition Make(float x_, float y_) { return SamplePosition(x_, y_); }
+      MTLResourceID: {packed: true}
+      MTLClearColor:
+        packed: true
+        members: |
+          ClearColor() = default;
+          ClearColor(double r, double g, double b, double a) : red(r), green(g), blue(b), alpha(a) {}
+          static ClearColor Make(double r, double g, double b, double a) { return ClearColor(r, g, b, a); }
+
+  # ── Metal4 (virtual framework sharing Metal/ but in MTL4:: namespace) ──
+      MTLCaptureManager:
+        exclude:
+          members:
+            - init
+      MTLCaptureScope:
+        exclude:
+          members:
+            - mtl4CommandQueue
+      MTLFunctionReflection:
+        include:
+          members:
+            - bindings
+      MTLRasterizationRateLayerDescriptor:
+        exclude:
+          members:
+            - init
+      MTLSharedEventListener:
+        exclude:
+          members:
+            - init
+  - name: Metal4
+    namespace: MTL4
+    prefix: MTL4
+    strip_prefix: MTL4
+    shared: true
+    sdk_framework: Metal     # SDK headers come from Metal.framework
+    output_subdir: Metal     # ...but write into metal-cpp/Metal/
+    sdks: [macos, iphoneos, tvos, visionos]
+    include:
+      classes:
+        - MTL4AccelerationStructureBoundingBoxGeometryDescriptor
+        - MTL4AccelerationStructureCurveGeometryDescriptor
+        - MTL4AccelerationStructureDescriptor
+        - MTL4AccelerationStructureGeometryDescriptor
+        - MTL4AccelerationStructureMotionBoundingBoxGeometryDescriptor
+        - MTL4AccelerationStructureMotionCurveGeometryDescriptor
+        - MTL4AccelerationStructureMotionTriangleGeometryDescriptor
+        - MTL4AccelerationStructureTriangleGeometryDescriptor
+        - MTL4Archive
+        - MTL4ArgumentTable
+        - MTL4ArgumentTableDescriptor
+        - MTL4BinaryFunction
+        - MTL4BinaryFunctionDescriptor
+        - MTL4CommandAllocator
+        - MTL4CommandAllocatorDescriptor
+        - MTL4CommandBuffer
+        - MTL4CommandBufferOptions
+        - MTL4CommandEncoder
+        - MTL4CommandQueue
+        - MTL4CommandQueueDescriptor
+        - MTL4CommitFeedback
+        - MTL4CommitOptions
+        - MTL4Compiler
+        - MTL4CompilerDescriptor
+        - MTL4CompilerTask
+        - MTL4CompilerTaskOptions
+        - MTL4ComputeCommandEncoder
+        - MTL4ComputePipelineDescriptor
+        - MTL4CounterHeap
+        - MTL4CounterHeapDescriptor
+        - MTL4FunctionDescriptor
+        - MTL4IndirectInstanceAccelerationStructureDescriptor
+        - MTL4InstanceAccelerationStructureDescriptor
+        - MTL4LibraryDescriptor
+        - MTL4LibraryFunctionDescriptor
+        - MTL4MachineLearningCommandEncoder
+        - MTL4MachineLearningPipelineDescriptor
+        - MTL4MachineLearningPipelineReflection
+        - MTL4MachineLearningPipelineState
+        - MTL4MeshRenderPipelineDescriptor
+        - MTL4PipelineDataSetSerializer
+        - MTL4PipelineDataSetSerializerDescriptor
+        - MTL4PipelineDescriptor
+        - MTL4PipelineOptions
+        - MTL4PipelineStageDynamicLinkingDescriptor
+        - MTL4PrimitiveAccelerationStructureDescriptor
+        - MTL4RenderCommandEncoder
+        - MTL4RenderPassDescriptor
+        - MTL4RenderPipelineBinaryFunctionsDescriptor
+        - MTL4RenderPipelineColorAttachmentDescriptor
+        - MTL4RenderPipelineColorAttachmentDescriptorArray
+        - MTL4RenderPipelineDescriptor
+        - MTL4RenderPipelineDynamicLinkingDescriptor
+        - MTL4SpecializedFunctionDescriptor
+        - MTL4StaticLinkingDescriptor
+        - MTL4StitchedFunctionDescriptor
+        - MTL4TileRenderPipelineDescriptor
+    exclude:
+      methods: ["(?i)deprecated"]
+    class_overrides:
+      MTL4RenderCommandEncoder:
+        rename:
+          "setBlendColorRed:green:blue:alpha:": setBlendColor
+          "setStencilFrontReferenceValue:backReferenceValue:": setStencilReferenceValues
+      # Upstream MTL4::CommandQueue collapses both `waitForEvent:value:` and
+      # `waitForDrawable:` to `wait` (overloaded). Apinotes' SwiftName keeps
+      # the full selector verbatim.
+      MTL4CommandQueue:
+        rename:
+          "waitForEvent:value:": wait
+          "waitForDrawable:": wait
+      # Owned by upstream MTLAccelerationStructureTypes.hpp (in MTL4 namespace).
+      MTL4BufferRange: {skip: true}
+      # Packed structs that need _MTL4_PACKED.
+      MTL4UpdateSparseTextureMappingOperation: {packed: true}
+      MTL4CopySparseTextureMappingOperation: {packed: true}
+      MTL4UpdateSparseBufferMappingOperation: {packed: true}
+      MTL4CopySparseBufferMappingOperation: {packed: true}
+      MTL4TimestampHeapEntry: {packed: true}
+    headers:
+      - MTL4AccelerationStructure.h
+      - MTL4Archive.h
+      - MTL4ArgumentTable.h
+      - MTL4BinaryFunction.h
+      - MTL4BinaryFunctionDescriptor.h
+      - MTL4BufferRange.h
+      - MTL4CommandAllocator.h
+      - MTL4CommandBuffer.h
+      - MTL4CommandEncoder.h
+      - MTL4CommandQueue.h
+      - MTL4CommitFeedback.h
+      - MTL4Compiler.h
+      - MTL4CompilerTask.h
+      - MTL4ComputeCommandEncoder.h
+      - MTL4ComputePipeline.h
+      - MTL4Counters.h
+      - MTL4FunctionDescriptor.h
+      - MTL4LibraryDescriptor.h
+      - MTL4LibraryFunctionDescriptor.h
+      - MTL4LinkingDescriptor.h
+      - MTL4MachineLearningCommandEncoder.h
+      - MTL4MachineLearningPipeline.h
+      - MTL4MeshRenderPipeline.h
+      - MTL4PipelineDataSetSerializer.h
+      - MTL4PipelineState.h
+      - MTL4RenderCommandEncoder.h
+      - MTL4RenderPass.h
+      - MTL4RenderPipeline.h
+      - MTL4SpecializedFunctionDescriptor.h
+      - MTL4StitchedFunctionDescriptor.h
+      - MTL4TileRenderPipeline.h
+
+  # ── MetalFX ────────────────────────────────────────────────────────────
+  - name: MetalFX
+    namespace: MTLFX
+    prefix: MTLFX
+    strip_prefix: MTLFX
+    shared: true
+    sdks: [macos, iphoneos, tvos, visionos]
+    # MetalFX.hpp also surfaces the MTL4FX:: virtual framework so a single
+    # client include exposes both namespaces (mirrors Metal.hpp pulling in
+    # Metal4.hpp).
+    extra_umbrella_includes: [Metal4FX.hpp]
+    include:
+      classes:
+        - MTLFXFrameInterpolatableScaler
+        - MTLFXFrameInterpolator
+        - MTLFXFrameInterpolatorBase
+        - MTLFXFrameInterpolatorDescriptor
+        - MTLFXSpatialScaler
+        - MTLFXSpatialScalerBase
+        - MTLFXSpatialScalerDescriptor
+        - MTLFXTemporalDenoisedScaler
+        - MTLFXTemporalDenoisedScalerBase
+        - MTLFXTemporalDenoisedScalerDescriptor
+        - MTLFXTemporalScaler
+        - MTLFXTemporalScalerBase
+        - MTLFXTemporalScalerDescriptor
+    exclude:
+      methods: ["(?i)deprecated"]
+    keep_upstream:
+      - MTLFXDefines
+    headers:
+      - MTLFXSpatialScaler.h
+      - MTLFXTemporalScaler.h
+      - MTLFXFrameInterpolator.h
+      - MTLFXTemporalDenoisedScaler.h
+
+  # ── Metal4FX (virtual framework sharing MetalFX/ but in MTL4FX:: namespace) ──
+    class_overrides: {}
+  - name: Metal4FX
+    namespace: MTL4FX
+    prefix: MTL4FX
+    strip_prefix: MTL4FX
+    shared: true
+    sdk_framework: MetalFX     # SDK headers come from MetalFX.framework
+    output_subdir: MetalFX     # ...but write into metal-cpp/MetalFX/
+    sdks: [macos, iphoneos, tvos, visionos]
+    include:
+      classes:
+        - MTL4FXFrameInterpolator
+        - MTL4FXSpatialScaler
+        - MTL4FXTemporalDenoisedScaler
+        - MTL4FXTemporalScaler
+    exclude:
+      methods: ["(?i)deprecated"]
+    headers:
+      - MTL4FXSpatialScaler.h
+      - MTL4FXTemporalScaler.h
+      - MTL4FXFrameInterpolator.h
+      - MTL4FXTemporalDenoisedScaler.h
+
+  # ── QuartzCore ─────────────────────────────────────────────────────────
+    class_overrides: {}
+  - name: QuartzCore
+    namespace: CA
+    prefix: CA
+    strip_prefix: CA
+    shared: true
+    sdks: [macos, iphoneos, tvos, visionos]
+    include:
+      classes:
+        - CALayer
+        - CAMetalDrawable
+        - CAMetalLayer
+    exclude:
+      methods: ["(?i)deprecated"]
+    keep_upstream:
+      - CADefines
+    headers:
+      - CAEDRMetadata.h
+      - CALayer.h
+      - CAMetalLayer.h
+    class_overrides:
+      CALayer:
+        include:
+          members:
+            - contentsHeadroom
+            - opaque
+            - preferredDynamicRange
+            - 'setContentsHeadroom:'
+            - 'setOpaque:'
+            - 'setPreferredDynamicRange:'
+            - 'setWantsExtendedDynamicRangeContent:'
+            - wantsExtendedDynamicRangeContent
+      CAMetalLayer:
+        exclude:
+          members:
+            - EDRMetadata
+            - developerHUDProperties
+            - preferredDevice
+            - presentsWithTransaction

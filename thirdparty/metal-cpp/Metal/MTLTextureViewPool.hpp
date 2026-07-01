@@ -1,59 +1,50 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTLTextureViewPool.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
 #include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
+#include "MTLBlocks.hpp"
+#include "MTLStructs.hpp"
+#include "MTLBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 #include "MTLResourceViewPool.hpp"
-#include "MTLTypes.hpp"
+
+namespace MTL {
+    class Buffer;
+    class Texture;
+    class TextureDescriptor;
+    class TextureViewDescriptor;
+}
 
 namespace MTL
 {
-class Buffer;
-class Texture;
-class TextureDescriptor;
-class TextureViewDescriptor;
 
-class TextureViewPool : public NS::Referencing<TextureViewPool, ResourceViewPool>
+class TextureViewPool : public NS::Referencing<TextureViewPool, MTL::ResourceViewPool>
 {
 public:
-    ResourceID setTextureView(const MTL::Texture* texture, NS::UInteger index);
-    ResourceID setTextureView(const MTL::Texture* texture, const MTL::TextureViewDescriptor* descriptor, NS::UInteger index);
-    ResourceID setTextureViewFromBuffer(const MTL::Buffer* buffer, const MTL::TextureDescriptor* descriptor, NS::UInteger offset, NS::UInteger bytesPerRow, NS::UInteger index);
+    MTL::ResourceID setTextureView(MTL::Texture* texture, NS::UInteger index);
+    MTL::ResourceID setTextureView(MTL::Texture* texture, MTL::TextureViewDescriptor* descriptor, NS::UInteger index);
+    MTL::ResourceID setTextureViewFromBuffer(MTL::Buffer* buffer, MTL::TextureDescriptor* descriptor, NS::UInteger offset, NS::UInteger bytesPerRow, NS::UInteger index);
+
 };
 
-}
-_MTL_INLINE MTL::ResourceID MTL::TextureViewPool::setTextureView(const MTL::Texture* texture, NS::UInteger index)
+} // namespace MTL
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTLTextureViewPool;
+
+_MTL_INLINE MTL::ResourceID MTL::TextureViewPool::setTextureView(MTL::Texture* texture, NS::UInteger index)
 {
-    return Object::sendMessage<MTL::ResourceID>(this, _MTL_PRIVATE_SEL(setTextureView_atIndex_), texture, index);
+    return _MTL_msg_MTL__ResourceID_setTextureView_atIndex__MTL__Texturep_NS__UInteger((const void*)this, nullptr, texture, index);
 }
 
-_MTL_INLINE MTL::ResourceID MTL::TextureViewPool::setTextureView(const MTL::Texture* texture, const MTL::TextureViewDescriptor* descriptor, NS::UInteger index)
+_MTL_INLINE MTL::ResourceID MTL::TextureViewPool::setTextureView(MTL::Texture* texture, MTL::TextureViewDescriptor* descriptor, NS::UInteger index)
 {
-    return Object::sendMessage<MTL::ResourceID>(this, _MTL_PRIVATE_SEL(setTextureView_descriptor_atIndex_), texture, descriptor, index);
+    return _MTL_msg_MTL__ResourceID_setTextureView_descriptor_atIndex__MTL__Texturep_MTL__TextureViewDescriptorp_NS__UInteger((const void*)this, nullptr, texture, descriptor, index);
 }
 
-_MTL_INLINE MTL::ResourceID MTL::TextureViewPool::setTextureViewFromBuffer(const MTL::Buffer* buffer, const MTL::TextureDescriptor* descriptor, NS::UInteger offset, NS::UInteger bytesPerRow, NS::UInteger index)
+_MTL_INLINE MTL::ResourceID MTL::TextureViewPool::setTextureViewFromBuffer(MTL::Buffer* buffer, MTL::TextureDescriptor* descriptor, NS::UInteger offset, NS::UInteger bytesPerRow, NS::UInteger index)
 {
-    return Object::sendMessage<MTL::ResourceID>(this, _MTL_PRIVATE_SEL(setTextureViewFromBuffer_descriptor_offset_bytesPerRow_atIndex_), buffer, descriptor, offset, bytesPerRow, index);
+    return _MTL_msg_MTL__ResourceID_setTextureViewFromBuffer_descriptor_offset_bytesPerRow_atIndex__MTL__Bufferp_MTL__TextureDescriptorp_NS__UInteger_NS__UInteger_NS__UInteger((const void*)this, nullptr, buffer, descriptor, offset, bytesPerRow, index);
 }

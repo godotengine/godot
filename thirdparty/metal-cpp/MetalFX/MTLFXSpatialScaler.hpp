@@ -1,397 +1,304 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// MetalFX/MTLFXSpatialScaler.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #include "MTLFXDefines.hpp"
-#include "MTLFXPrivate.hpp"
+#include "MTLFXBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 
-#include "../Metal/Metal.hpp"
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-namespace MTL4FX
-{
+namespace MTL {
+    class CommandBuffer;
+    class Device;
+    class Fence;
+    class Texture;
+    enum PixelFormat : NS::UInteger;
+    using TextureUsage = NS::UInteger;
+}
+namespace MTL4 {
+    class Compiler;
+}
+namespace MTL4FX {
     class SpatialScaler;
 }
 
 namespace MTLFX
 {
-    _MTLFX_ENUM( NS::Integer, SpatialScalerColorProcessingMode )
-    {
-        SpatialScalerColorProcessingModePerceptual  = 0,
-        SpatialScalerColorProcessingModeLinear      = 1,
-        SpatialScalerColorProcessingModeHDR         = 2
-    };
 
-    class SpatialScalerDescriptor : public NS::Copying< SpatialScalerDescriptor >
-    {
-    public:
-        static class SpatialScalerDescriptor*       alloc();
-        class SpatialScalerDescriptor*              init();
+_MTLFX_ENUM(NS::Integer, SpatialScalerColorProcessingMode) {
+    SpatialScalerColorProcessingModePerceptual = 0,
+    SpatialScalerColorProcessingModeLinear = 1,
+    SpatialScalerColorProcessingModeHDR = 2,
+};
 
-        MTL::PixelFormat                            colorTextureFormat() const;
-        void                                        setColorTextureFormat( MTL::PixelFormat format );
 
-        MTL::PixelFormat                            outputTextureFormat() const;
-        void                                        setOutputTextureFormat( MTL::PixelFormat format );
+class SpatialScalerDescriptor;
+class SpatialScalerBase;
+class SpatialScaler;
 
-        NS::UInteger                                inputWidth() const;
-        void                                        setInputWidth( NS::UInteger width );
+class SpatialScalerDescriptor : public NS::Copying<SpatialScalerDescriptor>
+{
+public:
+    static SpatialScalerDescriptor* alloc();
+    SpatialScalerDescriptor*        init() const;
 
-        NS::UInteger                                inputHeight() const;
-        void                                        setInputHeight( NS::UInteger height );
+    static bool supportsDevice(MTL::Device* device);
+    static bool supportsMetal4FX(MTL::Device* device);
 
-        NS::UInteger                                outputWidth() const;
-        void                                        setOutputWidth( NS::UInteger width );
+    MTLFX::SpatialScalerColorProcessingMode colorProcessingMode() const;
+    MTL::PixelFormat                        colorTextureFormat() const;
+    NS::UInteger                            inputHeight() const;
+    NS::UInteger                            inputWidth() const;
+    MTLFX::SpatialScaler*                   newSpatialScaler(MTL::Device* device);
+    MTL4FX::SpatialScaler*                  newSpatialScaler(MTL::Device* device, MTL4::Compiler* compiler);
+    NS::UInteger                            outputHeight() const;
+    MTL::PixelFormat                        outputTextureFormat() const;
+    NS::UInteger                            outputWidth() const;
+    void                                    setColorProcessingMode(MTLFX::SpatialScalerColorProcessingMode colorProcessingMode);
+    void                                    setColorTextureFormat(MTL::PixelFormat colorTextureFormat);
+    void                                    setInputHeight(NS::UInteger inputHeight);
+    void                                    setInputWidth(NS::UInteger inputWidth);
+    void                                    setOutputHeight(NS::UInteger outputHeight);
+    void                                    setOutputTextureFormat(MTL::PixelFormat outputTextureFormat);
+    void                                    setOutputWidth(NS::UInteger outputWidth);
 
-        NS::UInteger                                outputHeight() const;
-        void                                        setOutputHeight( NS::UInteger height );
+};
 
-        SpatialScalerColorProcessingMode            colorProcessingMode() const;
-        void                                        setColorProcessingMode( SpatialScalerColorProcessingMode mode );
+class SpatialScalerBase : public NS::Referencing<SpatialScalerBase>
+{
+public:
+    MTLFX::SpatialScalerColorProcessingMode colorProcessingMode() const;
+    MTL::Texture*                           colorTexture() const;
+    MTL::PixelFormat                        colorTextureFormat() const;
+    MTL::TextureUsage                       colorTextureUsage() const;
+    MTL::Fence*                             fence() const;
+    NS::UInteger                            inputContentHeight() const;
+    NS::UInteger                            inputContentWidth() const;
+    NS::UInteger                            inputHeight() const;
+    NS::UInteger                            inputWidth() const;
+    NS::UInteger                            outputHeight() const;
+    MTL::Texture*                           outputTexture() const;
+    MTL::PixelFormat                        outputTextureFormat() const;
+    MTL::TextureUsage                       outputTextureUsage() const;
+    NS::UInteger                            outputWidth() const;
+    void                                    setColorTexture(MTL::Texture* colorTexture);
+    void                                    setFence(MTL::Fence* fence);
+    void                                    setInputContentHeight(NS::UInteger inputContentHeight);
+    void                                    setInputContentWidth(NS::UInteger inputContentWidth);
+    void                                    setOutputTexture(MTL::Texture* outputTexture);
 
-        class SpatialScaler*                        newSpatialScaler( const MTL::Device* pDevice ) const;
-        MTL4FX::SpatialScaler*                      newSpatialScaler( const MTL::Device* pDevice, const MTL4::Compiler* pCompiler ) const;
+};
 
-        static bool                                 supportsDevice( const MTL::Device* pDevice);
-        static bool                                 supportsMetal4FX( const MTL::Device* pDevice );
-    };
+class SpatialScaler : public NS::Referencing<SpatialScaler, MTLFX::SpatialScalerBase>
+{
+public:
+    void encodeToCommandBuffer(MTL::CommandBuffer* commandBuffer);
 
-    class SpatialScalerBase : public NS::Referencing< SpatialScaler >
-    {
-    public:
-        MTL::TextureUsage                           colorTextureUsage() const;
-        MTL::TextureUsage                           outputTextureUsage() const;
+};
 
-        NS::UInteger                                inputContentWidth() const;
-        void                                        setInputContentWidth( NS::UInteger width );
+} // namespace MTLFX
 
-        NS::UInteger                                inputContentHeight() const;
-        void                                        setInputContentHeight( NS::UInteger height );
+// --- Class symbols + inline implementations ---
 
-        MTL::Texture*                               colorTexture() const;
-        void                                        setColorTexture( MTL::Texture* pTexture );
-
-        MTL::Texture*                               outputTexture() const;
-        void                                        setOutputTexture( MTL::Texture* pTexture );
-
-        MTL::PixelFormat                            colorTextureFormat() const;
-        MTL::PixelFormat                            outputTextureFormat() const;
-        NS::UInteger                                inputWidth() const;
-        NS::UInteger                                inputHeight() const;
-        NS::UInteger                                outputWidth() const;
-        NS::UInteger                                outputHeight() const;
-        SpatialScalerColorProcessingMode            colorProcessingMode() const;
-
-        MTL::Fence*                                 fence() const;
-        void                                        setFence( MTL::Fence* pFence );
-    };
-
-    class SpatialScaler : public NS::Referencing< SpatialScaler, SpatialScalerBase >
-    {
-    public:
-        void                                        encodeToCommandBuffer( MTL::CommandBuffer* pCommandBuffer );
-    };
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern "C" void *OBJC_CLASS_$_MTLFXSpatialScalerDescriptor;
+extern "C" void *OBJC_CLASS_$_MTLFXSpatialScalerBase;
+extern "C" void *OBJC_CLASS_$_MTLFXSpatialScaler;
 
 _MTLFX_INLINE MTLFX::SpatialScalerDescriptor* MTLFX::SpatialScalerDescriptor::alloc()
 {
-    return NS::Object::alloc< SpatialScalerDescriptor >( _MTLFX_PRIVATE_CLS( MTLFXSpatialScalerDescriptor ) );
+    return _MTLFX_msg_MTLFX__SpatialScalerDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTLFXSpatialScalerDescriptor, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTLFX::SpatialScalerDescriptor* MTLFX::SpatialScalerDescriptor::init()
+_MTLFX_INLINE MTLFX::SpatialScalerDescriptor* MTLFX::SpatialScalerDescriptor::init() const
 {
-    return NS::Object::init< SpatialScalerDescriptor >();
+    return _MTLFX_msg_MTLFX__SpatialScalerDescriptorp_init((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_MTLFX_INLINE bool MTLFX::SpatialScalerDescriptor::supportsMetal4FX(MTL::Device* device)
+{
+    return _MTLFX_msg_bool_supportsMetal4FX__MTL__Devicep((const void*)&OBJC_CLASS_$_MTLFXSpatialScalerDescriptor, nullptr, device);
+}
+
+_MTLFX_INLINE bool MTLFX::SpatialScalerDescriptor::supportsDevice(MTL::Device* device)
+{
+    return _MTLFX_msg_bool_supportsDevice__MTL__Devicep((const void*)&OBJC_CLASS_$_MTLFXSpatialScalerDescriptor, nullptr, device);
+}
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::SpatialScalerDescriptor::colorTextureFormat() const
 {
-    return Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( colorTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_colorTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setColorTextureFormat( MTL::PixelFormat format )
+_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setColorTextureFormat(MTL::PixelFormat colorTextureFormat)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setColorTextureFormat_ ), format );
+    _MTLFX_msg_v_setColorTextureFormat__MTL__PixelFormat((const void*)this, nullptr, colorTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::SpatialScalerDescriptor::outputTextureFormat() const
 {
-    return Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( outputTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_outputTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setOutputTextureFormat( MTL::PixelFormat format )
+_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setOutputTextureFormat(MTL::PixelFormat outputTextureFormat)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputTextureFormat_ ), format );
+    _MTLFX_msg_v_setOutputTextureFormat__MTL__PixelFormat((const void*)this, nullptr, outputTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::SpatialScalerDescriptor::inputWidth() const
 {
-    return Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputWidth ) );
+    return _MTLFX_msg_NS__UInteger_inputWidth((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setInputWidth( NS::UInteger width )
+_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setInputWidth(NS::UInteger inputWidth)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputWidth_ ), width );
+    _MTLFX_msg_v_setInputWidth__NS__UInteger((const void*)this, nullptr, inputWidth);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::SpatialScalerDescriptor::inputHeight() const
 {
-    return Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputHeight ) );
+    return _MTLFX_msg_NS__UInteger_inputHeight((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setInputHeight( NS::UInteger height )
+_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setInputHeight(NS::UInteger inputHeight)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputHeight_ ), height );
+    _MTLFX_msg_v_setInputHeight__NS__UInteger((const void*)this, nullptr, inputHeight);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::SpatialScalerDescriptor::outputWidth() const
 {
-    return Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputWidth ) );
+    return _MTLFX_msg_NS__UInteger_outputWidth((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setOutputWidth( NS::UInteger width )
+_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setOutputWidth(NS::UInteger outputWidth)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputWidth_ ), width );
+    _MTLFX_msg_v_setOutputWidth__NS__UInteger((const void*)this, nullptr, outputWidth);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::SpatialScalerDescriptor::outputHeight() const
 {
-    return Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputHeight ) );
+    return _MTLFX_msg_NS__UInteger_outputHeight((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setOutputHeight( NS::UInteger height )
+_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setOutputHeight(NS::UInteger outputHeight)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputHeight_ ), height );
+    _MTLFX_msg_v_setOutputHeight__NS__UInteger((const void*)this, nullptr, outputHeight);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTLFX::SpatialScalerColorProcessingMode MTLFX::SpatialScalerDescriptor::colorProcessingMode() const
 {
-    return Object::sendMessage< SpatialScalerColorProcessingMode >( this, _MTLFX_PRIVATE_SEL( colorProcessingMode ) );
+    return _MTLFX_msg_MTLFX__SpatialScalerColorProcessingMode_colorProcessingMode((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setColorProcessingMode( SpatialScalerColorProcessingMode mode )
+_MTLFX_INLINE void MTLFX::SpatialScalerDescriptor::setColorProcessingMode(MTLFX::SpatialScalerColorProcessingMode colorProcessingMode)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setColorProcessingMode_ ), mode );
+    _MTLFX_msg_v_setColorProcessingMode__MTLFX__SpatialScalerColorProcessingMode((const void*)this, nullptr, colorProcessingMode);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTLFX::SpatialScaler* MTLFX::SpatialScalerDescriptor::newSpatialScaler( const MTL::Device* pDevice ) const
+_MTLFX_INLINE MTLFX::SpatialScaler* MTLFX::SpatialScalerDescriptor::newSpatialScaler(MTL::Device* device)
 {
-    return Object::sendMessage< SpatialScaler* >( this, _MTLFX_PRIVATE_SEL( newSpatialScalerWithDevice_ ), pDevice );
+    return _MTLFX_msg_MTLFX__SpatialScalerp_newSpatialScalerWithDevice__MTL__Devicep((const void*)this, nullptr, device);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTL4FX::SpatialScaler* MTLFX::SpatialScalerDescriptor::newSpatialScaler( const MTL::Device* pDevice, const MTL4::Compiler* pCompiler ) const
+_MTLFX_INLINE MTL4FX::SpatialScaler* MTLFX::SpatialScalerDescriptor::newSpatialScaler(MTL::Device* device, MTL4::Compiler* compiler)
 {
-    return Object::sendMessage< MTL4FX::SpatialScaler* >( this, _MTLFX_PRIVATE_SEL( newSpatialScalerWithDevice_compiler_ ), pDevice, pCompiler );
+    return _MTLFX_msg_MTL4FX__SpatialScalerp_newSpatialScalerWithDevice_compiler__MTL__Devicep_MTL4__Compilerp((const void*)this, nullptr, device, compiler);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::SpatialScalerDescriptor::supportsDevice( const MTL::Device* pDevice )
-{
-    return Object::sendMessageSafe< bool >( _NS_PRIVATE_CLS( MTLFXSpatialScalerDescriptor ), _MTLFX_PRIVATE_SEL( supportsDevice_ ), pDevice );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::SpatialScalerDescriptor::supportsMetal4FX( const MTL::Device* pDevice )
-{
-    return Object::sendMessageSafe< bool >( _NS_PRIVATE_CLS( MTLFXSpatialScalerDescriptor ), _MTLFX_PRIVATE_SEL( supportsMetal4FX_ ), pDevice );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::SpatialScalerBase::colorTextureUsage() const
 {
-    return Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( colorTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_colorTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::SpatialScalerBase::outputTextureUsage() const
 {
-    return Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( outputTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_outputTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::SpatialScalerBase::inputContentWidth() const
 {
-    return Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputContentWidth ) );
+    return _MTLFX_msg_NS__UInteger_inputContentWidth((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerBase::setInputContentWidth( NS::UInteger width )
+_MTLFX_INLINE void MTLFX::SpatialScalerBase::setInputContentWidth(NS::UInteger inputContentWidth)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputContentWidth_ ), width );
+    _MTLFX_msg_v_setInputContentWidth__NS__UInteger((const void*)this, nullptr, inputContentWidth);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::SpatialScalerBase::inputContentHeight() const
 {
-    return Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputContentHeight ) );
+    return _MTLFX_msg_NS__UInteger_inputContentHeight((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerBase::setInputContentHeight( NS::UInteger height )
+_MTLFX_INLINE void MTLFX::SpatialScalerBase::setInputContentHeight(NS::UInteger inputContentHeight)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputContentHeight_ ), height );
+    _MTLFX_msg_v_setInputContentHeight__NS__UInteger((const void*)this, nullptr, inputContentHeight);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::SpatialScalerBase::colorTexture() const
 {
-    return Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( colorTexture ) );
+    return _MTLFX_msg_MTL__Texturep_colorTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerBase::setColorTexture( MTL::Texture* pTexture )
+_MTLFX_INLINE void MTLFX::SpatialScalerBase::setColorTexture(MTL::Texture* colorTexture)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setColorTexture_ ), pTexture );
+    _MTLFX_msg_v_setColorTexture__MTL__Texturep((const void*)this, nullptr, colorTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::SpatialScalerBase::outputTexture() const
 {
-    return Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( outputTexture ) );
+    return _MTLFX_msg_MTL__Texturep_outputTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerBase::setOutputTexture( MTL::Texture* pTexture )
+_MTLFX_INLINE void MTLFX::SpatialScalerBase::setOutputTexture(MTL::Texture* outputTexture)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputTexture_ ), pTexture );
+    _MTLFX_msg_v_setOutputTexture__MTL__Texturep((const void*)this, nullptr, outputTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::SpatialScalerBase::colorTextureFormat() const
 {
-    return Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( colorTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_colorTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::SpatialScalerBase::outputTextureFormat() const
 {
-    return Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( outputTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_outputTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::SpatialScalerBase::inputWidth() const
 {
-    return Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputWidth ) );
+    return _MTLFX_msg_NS__UInteger_inputWidth((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::SpatialScalerBase::inputHeight() const
 {
-    return Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputHeight ) );
+    return _MTLFX_msg_NS__UInteger_inputHeight((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::SpatialScalerBase::outputWidth() const
 {
-    return Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputWidth ) );
+    return _MTLFX_msg_NS__UInteger_outputWidth((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::SpatialScalerBase::outputHeight() const
 {
-    return Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputHeight ) );
+    return _MTLFX_msg_NS__UInteger_outputHeight((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTLFX::SpatialScalerColorProcessingMode MTLFX::SpatialScalerBase::colorProcessingMode() const
 {
-    return Object::sendMessage< SpatialScalerColorProcessingMode >( this, _MTLFX_PRIVATE_SEL( colorProcessingMode ) );
+    return _MTLFX_msg_MTLFX__SpatialScalerColorProcessingMode_colorProcessingMode((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Fence* MTLFX::SpatialScalerBase::fence() const
 {
-    return Object::sendMessage< MTL::Fence* >( this, _MTLFX_PRIVATE_SEL( fence ) );
+    return _MTLFX_msg_MTL__Fencep_fence((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScalerBase::setFence( MTL::Fence* pFence )
+_MTLFX_INLINE void MTLFX::SpatialScalerBase::setFence(MTL::Fence* fence)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setFence_ ), pFence );
+    _MTLFX_msg_v_setFence__MTL__Fencep((const void*)this, nullptr, fence);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::SpatialScaler::encodeToCommandBuffer( MTL::CommandBuffer* pCommandBuffer )
+_MTLFX_INLINE void MTLFX::SpatialScaler::encodeToCommandBuffer(MTL::CommandBuffer* commandBuffer)
 {
-    Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( encodeToCommandBuffer_ ), pCommandBuffer );
+    _MTLFX_msg_v_encodeToCommandBuffer__MTL__CommandBufferp((const void*)this, nullptr, commandBuffer);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,33 +1,26 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTLDynamicLibrary.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
 #include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
+#include "MTLBlocks.hpp"
+#include "MTLStructs.hpp"
+#include "MTLBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
+
+namespace MTL {
+    class Device;
+}
+namespace NS {
+    class Error;
+    class String;
+    class URL;
+}
 
 namespace MTL
 {
-class Device;
+
+extern NS::ErrorDomain const DynamicLibraryDomain __asm__("_MTLDynamicLibraryDomain");
 _MTL_ENUM(NS::UInteger, DynamicLibraryError) {
     DynamicLibraryErrorNone = 0,
     DynamicLibraryErrorInvalidFile = 1,
@@ -37,42 +30,45 @@ _MTL_ENUM(NS::UInteger, DynamicLibraryError) {
     DynamicLibraryErrorUnsupported = 5,
 };
 
+
 class DynamicLibrary : public NS::Referencing<DynamicLibrary>
 {
 public:
-    Device*     device() const;
+    MTL::Device* device() const;
+    NS::String*  installName() const;
+    NS::String*  label() const;
+    bool         serializeToURL(NS::URL* url, NS::Error** error);
+    void         setLabel(NS::String* label);
 
-    NS::String* installName() const;
-
-    NS::String* label() const;
-
-    bool        serializeToURL(const NS::URL* url, NS::Error** error);
-
-    void        setLabel(const NS::String* label);
 };
 
+} // namespace MTL
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTLDynamicLibrary;
+
+_MTL_INLINE NS::String* MTL::DynamicLibrary::label() const
+{
+    return _MTL_msg_NS__Stringp_label((const void*)this, nullptr);
 }
+
+_MTL_INLINE void MTL::DynamicLibrary::setLabel(NS::String* label)
+{
+    _MTL_msg_v_setLabel__NS__Stringp((const void*)this, nullptr, label);
+}
+
 _MTL_INLINE MTL::Device* MTL::DynamicLibrary::device() const
 {
-    return Object::sendMessage<MTL::Device*>(this, _MTL_PRIVATE_SEL(device));
+    return _MTL_msg_MTL__Devicep_device((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::String* MTL::DynamicLibrary::installName() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(installName));
+    return _MTL_msg_NS__Stringp_installName((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::String* MTL::DynamicLibrary::label() const
+_MTL_INLINE bool MTL::DynamicLibrary::serializeToURL(NS::URL* url, NS::Error** error)
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
-}
-
-_MTL_INLINE bool MTL::DynamicLibrary::serializeToURL(const NS::URL* url, NS::Error** error)
-{
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(serializeToURL_error_), url, error);
-}
-
-_MTL_INLINE void MTL::DynamicLibrary::setLabel(const NS::String* label)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLabel_), label);
+    return _MTL_msg_bool_serializeToURL_error__NS__URLp_NS__Errorpp((const void*)this, nullptr, url, error);
 }
