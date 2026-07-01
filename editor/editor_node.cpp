@@ -3190,6 +3190,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 	bool stay_in_script_editor_on_node_selected = bool(EDITOR_GET("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected"));
+	bool auto_switch_workspace_on_node_selected = bool(EDITOR_GET("docks/scene_tree/auto_switch_workspace_on_node_selected"));
 	bool skip_main_plugin = false;
 
 	String editable_info; // None by default.
@@ -3340,7 +3341,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 
 					main_plugin->edit(current_script);
 				}
-			} else if (main_plugin != editor_plugin_screen) {
+			} else if (main_plugin != editor_plugin_screen && (auto_switch_workspace_on_node_selected || !is_node)) {
 				// Unedit previous plugin.
 				editor_plugin_screen->edit(nullptr);
 				active_plugins[editor_owner_id].erase(editor_plugin_screen);
@@ -4697,7 +4698,8 @@ Dictionary EditorNode::_get_main_scene_state() {
 
 void EditorNode::_set_main_scene_state(const Dictionary &p_state) {
 	if (get_edited_scene()) {
-		if (editor_main_screen->can_auto_switch_screens()) {
+		bool auto_switch_workspace_on_node_selected = bool(EDITOR_GET("docks/scene_tree/auto_switch_workspace_on_node_selected"));
+		if (editor_main_screen->can_auto_switch_screens() && auto_switch_workspace_on_node_selected) {
 			// Switch between 2D and 3D if currently in 2D or 3D.
 			Node *selected_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
 			if (!selected_node) {
