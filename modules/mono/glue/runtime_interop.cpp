@@ -1357,6 +1357,14 @@ void godotsharp_string_to_kebab_case(const String *p_self, String *r_kebab_case)
 	memnew_placement(r_kebab_case, String(p_self->to_kebab_case()));
 }
 
+void godotsharp_string_idna_encode(const String *p_self, String *r_idna_encoded) {
+	memnew_placement(r_idna_encoded, String(p_self->idna_encode()));
+}
+
+void godotsharp_string_idna_decode(const String *p_self, String *r_idna_decoded) {
+	memnew_placement(r_idna_decoded, String(p_self->idna_decode()));
+}
+
 void godotsharp_node_path_get_as_property_path(const NodePath *p_ptr, NodePath *r_dest) {
 	memnew_placement(r_dest, NodePath(p_ptr->get_as_property_path()));
 }
@@ -1812,6 +1820,8 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_string_to_pascal_case,
 	(void *)godotsharp_string_to_snake_case,
 	(void *)godotsharp_string_to_kebab_case,
+	(void *)godotsharp_string_idna_encode,
+	(void *)godotsharp_string_idna_decode,
 	(void *)godotsharp_node_path_get_as_property_path,
 	(void *)godotsharp_node_path_get_concatenated_names,
 	(void *)godotsharp_node_path_get_concatenated_subnames,
