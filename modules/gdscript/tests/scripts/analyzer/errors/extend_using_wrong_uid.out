@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 1: Could not resolve super class path "uid://does_not_exist".
