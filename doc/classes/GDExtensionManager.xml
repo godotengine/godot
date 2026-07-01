@@ -68,19 +68,18 @@
 			<param index="0" name="extension" type="GDExtension" />
 			<description>
 				Emitted after the editor has finished loading a new extension.
-				[b]Note:[/b] This signal is only emitted in editor builds.
 			</description>
 		</signal>
 		<signal name="extension_unloading">
 			<param index="0" name="extension" type="GDExtension" />
 			<description>
 				Emitted before the editor starts unloading an extension.
-				[b]Note:[/b] This signal is only emitted in editor builds.
 			</description>
 		</signal>
 		<signal name="extensions_reloaded">
 			<description>
 				Emitted after the editor has finished reloading one or more extensions.
+				[b]Note:[/b] This signal is only emitted in editor builds.
 			</description>
 		</signal>
 	</signals>
