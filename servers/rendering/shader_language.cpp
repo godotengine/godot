@@ -6691,6 +6691,9 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							_set_tkpos(prev_pos);
 						}
 					}
+					if (String(identifier) == "MOTION_VECTOR" && (OS::get_singleton()->get_current_rendering_method() == "mobile" || RS::get_singleton()->is_low_end())) {
+						_add_line_warning(ShaderWarning::MOTION_VECTOR_OUT_FWPLUS);
+					}
 #endif // DEBUG_ENABLED
 					if (is_const) {
 						last_type = IDENTIFIER_CONSTANT;
