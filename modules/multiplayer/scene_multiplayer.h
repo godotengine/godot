@@ -127,6 +127,8 @@ private:
 	Ref<SceneReplicationInterface> replicator;
 	Ref<SceneRPCInterface> rpc;
 
+	bool packet_processing_paused = false;
+
 #ifdef DEBUG_ENABLED
 	_FORCE_INLINE_ void _profile_bandwidth(const String &p_what, int p_value);
 	_FORCE_INLINE_ Error _send(const uint8_t *p_packet, int p_packet_len); // Also profiles.
@@ -149,6 +151,9 @@ protected:
 	void _update_status();
 
 public:
+	virtual void set_packet_processing_paused(bool p_paused) override;
+	virtual bool get_packet_processing_paused() override;
+
 	virtual void set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) override;
 	virtual Ref<MultiplayerPeer> get_multiplayer_peer() override;
 
