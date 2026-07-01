@@ -109,6 +109,11 @@ protected:
 
 	static void _bind_methods();
 
+	virtual bool _can_use_shader() const;
+	virtual bool _can_use_shader_parameters() const;
+
+	void _validate_property(PropertyInfo &p_property) const;
+
 #ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
@@ -118,6 +123,9 @@ protected:
 
 	void _shader_changed();
 	void _check_material_rid() const;
+
+	GDVIRTUAL0RC(bool, _can_use_shader);
+	GDVIRTUAL0RC(bool, _can_use_shader_parameters);
 
 public:
 	void set_shader(const Ref<Shader> &p_shader);
