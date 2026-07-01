@@ -969,6 +969,13 @@ void TextureStorage::texture_free(RID p_texture) {
 
 	t->cleanup();
 
+#ifdef TOOLS_ENABLED
+	if (t->image_cache_2d.is_valid()) {
+		t->image_cache_2d->disconnect_changed(callable_mp_static(&TextureStorage::_image_cache_2d_changed));
+		t->image_cache_2d.unref();
+	}
+#endif
+
 	if (t->is_proxy && t->proxy_to.is_valid()) {
 		Texture *proxy_to = texture_owner.get_or_null(t->proxy_to);
 		if (proxy_to) {
@@ -1635,7 +1642,10 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 	}
 
 #ifdef TOOLS_ENABLED
-	tex->image_cache_2d.unref();
+	if (tex->image_cache_2d.is_valid()) {
+		tex->image_cache_2d->disconnect_changed(callable_mp_static(&TextureStorage::_image_cache_2d_changed));
+		tex->image_cache_2d.unref();
+	}
 #endif
 	TextureToRDFormat f;
 	Ref<Image> validated = _validate_texture_format(p_image, f);
@@ -1938,6 +1948,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() && !tex->is_render_target) {
 		tex->image_cache_2d = image;
+		tex->image_cache_2d->connect_changed(callable_mp_static(&TextureStorage::_image_cache_2d_changed).bind(p_texture));
 	}
 #endif
 

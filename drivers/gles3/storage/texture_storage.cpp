@@ -1027,6 +1027,13 @@ void TextureStorage::texture_free(RID p_texture) {
 		memdelete(t->canvas_texture);
 	}
 
+#ifdef TOOLS_ENABLED
+	if (t->image_cache_2d.is_valid()) {
+		t->image_cache_2d->disconnect_changed(callable_mp_static(&TextureStorage::_image_cache_2d_changed));
+		t->image_cache_2d.unref();
+	}
+#endif
+
 	bool must_free_data = false;
 	if (t->is_proxy) {
 		if (t->proxy_to.is_valid()) {
@@ -1308,7 +1315,10 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 	GLES3::Utilities::get_singleton()->texture_resize_data(tex->tex_id, tex->total_data_size);
 
 #ifdef TOOLS_ENABLED
-	tex->image_cache_2d.unref();
+	if (tex->image_cache_2d.is_valid()) {
+		tex->image_cache_2d->disconnect_changed(callable_mp_static(&TextureStorage::_image_cache_2d_changed));
+		tex->image_cache_2d.unref();
+	}
 #endif
 }
 
@@ -1654,6 +1664,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() && !texture->is_render_target) {
 		texture->image_cache_2d = image;
+		texture->image_cache_2d->connect_changed(callable_mp_static(&TextureStorage::_image_cache_2d_changed).bind(p_texture));
 	}
 #endif
 

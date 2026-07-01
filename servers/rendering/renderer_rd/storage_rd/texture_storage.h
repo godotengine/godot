@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/callable_mp.h"
 #include "core/templates/paged_array.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
@@ -204,6 +205,16 @@ private:
 
 		void cleanup();
 	};
+
+#ifdef TOOLS_ENABLED
+	static void _image_cache_2d_changed(const RID &p_tex) {
+		Texture *tex = get_singleton()->texture_owner.get_or_null(p_tex);
+		if (tex) {
+			tex->image_cache_2d->disconnect_changed(callable_mp_static(&TextureStorage::_image_cache_2d_changed));
+			tex->image_cache_2d.unref();
+		}
+	}
+#endif
 
 	// Textures can be created from threads, so this RID_Owner is thread safe.
 	mutable RID_Owner<Texture, true> texture_owner;
