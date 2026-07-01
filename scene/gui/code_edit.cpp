@@ -762,7 +762,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	// Allow unicode handling if:
 	// No modifiers are pressed (except Shift and CapsLock)
-	bool allow_unicode_handling = !(k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
+	bool allow_unicode_handling = !(k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed() || (k->get_keycode() >= Key::KP_MULTIPLY && k->get_keycode() <= Key::KP_9));
 
 	/* AUTO-COMPLETE */
 	if (code_completion_enabled && k->is_action("ui_text_completion_query", true)) {
