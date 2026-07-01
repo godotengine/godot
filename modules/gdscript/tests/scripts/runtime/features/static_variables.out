@@ -1,6 +1,6 @@
 GDTEST_OK
-Inner._static_init inner
 InnerInner._static_init inner inner
+Inner._static_init inner
 data: data
 perm: 0
 prop: Hello! suffix

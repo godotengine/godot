@@ -1,0 +1,10 @@
+GDTEST_OK
+InnerInnerClass._get_value() 0
+InnerInnerClass._static_init() 1
+InnerClass._get_value() 0
+InnerInnerClass._init() 1
+InnerClass._static_init() 1
+_get_value() 0
+InnerClass._init() 1
+_static_init() 1
+_init() 1
