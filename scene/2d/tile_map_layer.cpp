@@ -880,6 +880,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 							physics_body_key.linear_velocity = linear_velocity;
 							physics_body_key.angular_velocity = angular_velocity;
 							physics_body_key.one_way_collision = tile_data->is_collision_polygon_one_way(tile_set_physics_layer, polygon_index);
+							physics_body_key.one_way_collision_direction = tile_data->get_collision_polygon_one_way_margin_direction(tile_set_physics_layer, polygon_index);
 							physics_body_key.one_way_collision_margin = tile_data->get_collision_polygon_one_way_margin(tile_set_physics_layer, polygon_index);
 							physics_body_key.y_origin = map_to_local(cell_data.coords).y;
 
@@ -943,7 +944,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 						shape.instantiate();
 						shape->set_points(convex_polygon);
 						ps->body_add_shape(kvbody.value.body, shape->get_rid());
-						ps->body_set_shape_as_one_way_collision(kvbody.value.body, body_shape_index, kvbody.key.one_way_collision, kvbody.key.one_way_collision_margin);
+						ps->body_set_shape_as_one_way_collision(kvbody.value.body, body_shape_index, kvbody.key.one_way_collision, kvbody.key.one_way_collision_margin, kvbody.key.one_way_collision_direction);
 						physics_quadrant->shapes.push_back(shape);
 						body_shape_index++;
 					}
