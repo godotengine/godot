@@ -81,7 +81,7 @@
 		<method name="from_euler" qualifiers="static">
 			<return type="Basis" />
 			<param index="0" name="euler" type="Vector3" />
-			<param index="1" name="order" type="int" default="2" />
+			<param index="1" name="order" type="int" enum="EulerOrder" default="2" />
 			<description>
 				Constructs a new [Basis] that only represents rotation from the given [Vector3] of [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url], in radians.
 				- The [member Vector3.x] should contain the angle around the [member x] axis (pitch);
@@ -130,7 +130,7 @@
 		</method>
 		<method name="get_euler" qualifiers="const">
 			<return type="Vector3" />
-			<param index="0" name="order" type="int" default="2" />
+			<param index="0" name="order" type="int" enum="EulerOrder" default="2" />
 			<description>
 				Returns this basis's rotation as a [Vector3] of [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url], in radians. For the returned value:
 				- The [member Vector3.x] contains the angle around the [member x] axis (pitch);

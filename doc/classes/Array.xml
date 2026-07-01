@@ -347,7 +347,7 @@
 		</method>
 		<method name="duplicate_deep" qualifiers="const">
 			<return type="Array" />
-			<param index="0" name="deep_subresources_mode" type="int" default="1" />
+			<param index="0" name="deep_subresources_mode" type="int" enum="Resource.DeepDuplicateMode" default="1" />
 			<description>
 				Duplicates this array, deeply, like [method duplicate] when passing [code]true[/code], with extra control over how subresources are handled.
 				[param deep_subresources_mode] must be one of the values from [enum Resource.DeepDuplicateMode]. By default, only internal resources will be duplicated (recursively).
