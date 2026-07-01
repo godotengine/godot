@@ -48,6 +48,9 @@
 #undef MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
 #undef MBEDTLS_DES_C
 #undef MBEDTLS_DHM_C
+#ifndef DEBUG_ENABLED
+#undef MBEDTLS_DEBUG_C
+#endif
 
 #ifdef THREADS_ENABLED
 // In mbedTLS 3, the PSA subsystem has an implicit shared context, MBEDTLS_THREADING_C is required to make it thread safe.
