@@ -3,10 +3,18 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-env.add_source_files(env.scene_sources, "*.cpp")
-
-# Chain load SCsubs
-if not env["disable_physics_2d"]:
-    SConscript("physics/SCsub")
-if not env["disable_navigation_2d"]:
-    SConscript("navigation/SCsub")
+if env["disable_2d"]:
+    if not env["disable_advanced_gui"]:
+        # GraphEdit has a strong dependency on Line2D, so always compile for advanced GUI builds.
+        # However, these just serve as internal classes, we don't need to expose them, since 2D is supposed to be disabled.
+        env.add_source_files(env.scene_sources, "line_2d.cpp")
+        env.add_source_files(env.scene_sources, "line_builder.cpp")
+        env.add_source_files(env.scene_sources, "node_2d.cpp")
+        env.add_source_files(env.scene_sources, "sprite_2d.cpp")
+else:
+    env.add_source_files(env.scene_sources, "*.cpp")
+    # Chain load SCsubs
+    if not env["disable_navigation_2d"]:
+        SConscript("navigation/SCsub")
+    if not env["disable_physics_2d"]:
+        SConscript("physics/SCsub")
