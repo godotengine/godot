@@ -5406,7 +5406,7 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 
 	// NOTE: It looks like it's not really recommended to convert from
 	// "godot-space" to "wayland-space" and in general I received mixed feelings
-	// discussing about this. I'm not really sure about the maths behind this but,
+	// discussing about this. I'm not really sure about the math behind this but,
 	// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
 	// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
 	int hint_x = Math::round(p_hint.x / window_state_get_scale_factor(ws));
@@ -5443,7 +5443,7 @@ void WaylandThread::pointer_warp(const Point2i &p_to) {
 
 	// NOTE: It looks like it's not really recommended to convert from
 	// "godot-space" to "wayland-space" and in general I received mixed feelings
-	// discussing about this. I'm not really sure about the maths behind this but,
+	// discussing about this. I'm not really sure about the math behind this but,
 	// oh well. ¯\_(ツ)_/¯
 	// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
 	int wl_pos_x = Math::round(p_to.x / window_state_get_scale_factor(ws));

@@ -755,7 +755,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 #endif
 	*/
 
-	// https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
+	// https://www.euclideanspace.com/math/geometry/rotations/conversions/matrixToAngle/index.htm
 	real_t x, y, z; // Variables for result.
 	if (Math::is_zero_approx(rows[0][1] - rows[1][0]) && Math::is_zero_approx(rows[0][2] - rows[2][0]) && Math::is_zero_approx(rows[1][2] - rows[2][1])) {
 		// Singularity found.
