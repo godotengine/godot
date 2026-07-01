@@ -42,6 +42,13 @@
 				Returns the previously active tab index.
 			</description>
 		</method>
+		<method name="get_tab_accessibility_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the human-readable tab name that is reported to assistive apps.
+			</description>
+		</method>
 		<method name="get_tab_button_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="tab_idx" type="int" />
@@ -157,6 +164,14 @@
 			<return type="bool" />
 			<description>
 				Selects the first available tab with lower index than the currently selected. Returns [code]true[/code] if tab selection changed.
+			</description>
+		</method>
+		<method name="set_tab_accessibility_name">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the human-readable tab name that is reported to assistive apps.
 			</description>
 		</method>
 		<method name="set_tab_button_icon">
@@ -281,6 +296,9 @@
 		</member>
 		<member name="tab_count" type="int" setter="set_tab_count" getter="get_tab_count" default="0">
 			The number of tabs currently in the bar.
+		</member>
+		<member name="tab_{index}/accessibility_name" type="String" setter="" getter="" default="&quot;&quot;">
+			The human-readable tab name that is reported to assistive apps.
 		</member>
 		<member name="tab_{index}/disabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the tab at [code]index[/code] is disabled.
