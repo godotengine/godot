@@ -279,6 +279,20 @@
 				Returns [code]true[/code] if the 3D editor currently has snapping mode enabled, and [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="is_node_locked" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Returns [code]true[/code] if the specified [param node] is locked. See [method set_node_locked]
+			</description>
+		</method>
+		<method name="is_node_selection_grouped" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Returns [code]true[/code] if the specified [param node] is in a selection group with its children. See [method set_node_selection_grouped]
+			</description>
+		</method>
 		<method name="is_object_edited" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="object" type="Object" />
@@ -508,6 +522,25 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], [code]Game[/code], or [code]Asset Store[/code] for default tabs).
+			</description>
+		</method>
+		<method name="set_node_locked">
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
+			<param index="1" name="locked" type="bool" />
+			<description>
+				If [param locked] is [code]true[/code], the node can no longer be moved or selected through the editor viewport.
+				[b]Note:[/b] This method is only relevant for [CanvasItem] and [Node3D] based nodes.
+			</description>
+		</method>
+		<method name="set_node_selection_grouped">
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
+			<param index="1" name="grouped" type="bool" />
+			<description>
+				If [param grouped] is [code]true[/code], the node will form a selection group with its children. A selection group will cause the parent to be selected when any of its children are clicked in the editor viewport.
+				[b]Note:[/b] This method is only relevant for [CanvasItem] and [Node3D] based nodes.
+				[b]Note:[/b] 2D nodes are unable to form selection groups with 3D nodes, and vice versa.
 			</description>
 		</method>
 		<method name="set_object_edited">
