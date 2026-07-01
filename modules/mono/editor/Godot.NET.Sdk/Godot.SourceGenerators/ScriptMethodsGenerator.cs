@@ -427,50 +427,63 @@ namespace Godot.SourceGenerators
         )
         {
             string methodName = method.Method.Name;
+            int totalParams = method.ParamTypes.Length;
 
-            source.Append("        if (method == MethodName.@");
-            source.Append(methodName);
-            source.Append(" && args.Count == ");
-            source.Append(method.ParamTypes.Length);
-            source.Append(") {\n");
-
-            if (method.RetType != null)
-                source.Append("            var callRet = ");
-            else
-                source.Append("            ");
-
-            source.Append("@");
-            source.Append(methodName);
-            source.Append("(");
-
-            for (int i = 0; i < method.ParamTypes.Length; i++)
+            int minArgs = totalParams;
+            for (int i = totalParams - 1; i >= 0; i--)
             {
-                if (i != 0)
-                    source.Append(", ");
-
-                source.AppendNativeVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
-                    method.ParamTypeSymbols[i], method.ParamTypes[i]);
+                if (method.Method.Parameters[i].HasExplicitDefaultValue)
+                    minArgs = i;
+                else
+                    break;
             }
 
-            source.Append(");\n");
-
-            if (method.RetType != null)
+            for (int argCount = minArgs; argCount <= totalParams; argCount++)
             {
-                source.Append("            ret = ");
+                source.Append("        if (method == MethodName.@");
+                source.Append(methodName);
+                source.Append(" && args.Count == ");
+                source.Append(argCount);
+                source.Append(") {\n");
 
-                source.AppendManagedToNativeVariantExpr("callRet",
-                    method.RetType.Value.TypeSymbol, method.RetType.Value.MarshalType);
-                source.Append(";\n");
+                if (method.RetType != null)
+                    source.Append("            var callRet = ");
+                else
+                    source.Append("            ");
 
-                source.Append("            return true;\n");
+                source.Append("@");
+                source.Append(methodName);
+                source.Append("(");
+
+                for (int i = 0; i < argCount; i++)
+                {
+                    if (i != 0)
+                        source.Append(", ");
+
+                    source.AppendNativeVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
+                        method.ParamTypeSymbols[i], method.ParamTypes[i]);
+                }
+
+                source.Append(");\n");
+
+                if (method.RetType != null)
+                {
+                    source.Append("            ret = ");
+
+                    source.AppendManagedToNativeVariantExpr("callRet",
+                        method.RetType.Value.TypeSymbol, method.RetType.Value.MarshalType);
+                    source.Append(";\n");
+
+                    source.Append("            return true;\n");
+                }
+                else
+                {
+                    source.Append("            ret = default;\n");
+                    source.Append("            return true;\n");
+                }
+
+                source.Append("        }\n");
             }
-            else
-            {
-                source.Append("            ret = default;\n");
-                source.Append("            return true;\n");
-            }
-
-            source.Append("        }\n");
         }
     }
 }
