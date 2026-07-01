@@ -532,14 +532,16 @@
 		<method name="save_png" qualifiers="const">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
+			<param index="1" name="fast_save" type="bool" default="false" />
 			<description>
-				Saves the image as a PNG file to the file at [param path].
+				Saves the image as a PNG file to the file at [param path]. [param fast_save] optimizes saving speed at the cost of file size.
 			</description>
 		</method>
 		<method name="save_png_to_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
+			<param index="0" name="fast_save" type="bool" default="false" />
 			<description>
-				Saves the image as a PNG file to a byte array.
+				Saves the image as a PNG file to a byte array. [param fast_save] optimizes saving speed at the cost of file size.
 			</description>
 		</method>
 		<method name="save_webp" qualifiers="const">

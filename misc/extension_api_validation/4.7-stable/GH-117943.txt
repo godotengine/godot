@@ -1,0 +1,7 @@
+GH-117943
+--------
+Validate extension JSON: Error: Field 'classes/Image/methods/save_png/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Image/methods/save_png_to_buffer': arguments
+
+Added optional "fast_save" argument to save_png and save_png_to_buffer methods in Image classes with default value.
+Compatibility methods registered.

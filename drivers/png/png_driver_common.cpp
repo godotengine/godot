@@ -125,7 +125,7 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, 
 	return OK;
 }
 
-Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
+Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer, bool p_fast_save) {
 	Ref<Image> source_image = p_image->duplicate();
 
 	if (source_image->is_compressed()) {
@@ -139,6 +139,9 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 	png_img.version = PNG_IMAGE_VERSION;
 	png_img.width = source_image->get_width();
 	png_img.height = source_image->get_height();
+	if (p_fast_save) {
+		png_img.flags = PNG_IMAGE_FLAG_FAST;
+	}
 
 	switch (source_image->get_format()) {
 		case Image::FORMAT_L8:
