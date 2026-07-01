@@ -4064,7 +4064,8 @@ void Viewport::_refresh_texture_filter_cache() const {
 			if (parent_ci) {
 				default_canvas_item_texture_filter_cache = (RenderingServerEnums::CanvasItemTextureFilter)parent_ci->get_texture_filter_in_tree();
 				if (default_canvas_item_texture_filter_cache == RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT) {
-					default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+					Viewport *parent_vp = parent_ci->get_viewport();
+					default_canvas_item_texture_filter_cache = parent_vp ? parent_vp->get_texture_filter_in_tree() : RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 				}
 				break;
 			}
