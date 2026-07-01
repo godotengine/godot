@@ -1,0 +1,404 @@
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherInotify.cpp b/thirdparty/efsw/src/efsw/FileWatcherInotify.cpp
+index 0fa8435f66..b8c821d0d4 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherInotify.cpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherInotify.cpp
+@@ -334,31 +334,15 @@ void FileWatcherInotify::run() {
+ 						}
+ 
+ 						if ( curWatcher ) {
+-							handleAction( curWatcher, (char*)pevent->name, IN_ISDIR & pevent->mask,
+-										  pevent->mask );
+-
++							bool pairProcessed = false;
+ 							// Check if this is the destination of a move
+ 							if ( ( pevent->mask & IN_MOVED_TO ) && currentMoveFrom &&
+ 								 pevent->cookie == currentMoveCookie ) {
++								// OldFileName will be the path, not the filename.
++								curWatcher->OldFileName =
++									currentMoveFrom->Directory + currentMoveFrom->OldFileName;
+ 
+-								// If the move happened between TWO DIFFERENT watched directories
+-								if ( curWatcher != currentMoveFrom ) {
+-									// We need to simulate a delete event, the IN_MOVED_TO will
+-									// generate an add event after
+-									handleAction( currentMoveFrom, currentMoveFrom->OldFileName,
+-												  IN_ISDIR & pevent->mask, IN_DELETE );
+-
+-									// Clear the state on the source watcher so it doesn't
+-									// get processed again or stuck with stale data.
+-									currentMoveFrom->OldFileName = "";
+-								}
+-								// Else: If curWatcher == currentMoveFrom, it's a local rename.
+-								// handleAction() above already detected the OldFileName and
+-								// emitted a 'Moved' event correctly.
+-
+-								/// Pair processed successfully
+-								currentMoveFrom = NULL;
+-								currentMoveCookie = -1;
++								pairProcessed = true;
+ 							} else if ( pevent->mask & IN_MOVED_FROM ) {
+ 								// Previous event was moved from and current event is moved from
+ 								// Treat it as a DELETE or moved outside watches
+@@ -392,7 +376,13 @@ void FileWatcherInotify::run() {
+ 												 prevOldFileName.c_str() );
+ 									}
+ 								}
++								pairProcessed = true;
++							}
++
++							handleAction( curWatcher, (char*)pevent->name, IN_ISDIR & pevent->mask,
++										  pevent->mask );
+ 
++							if ( pairProcessed ) {
+ 								currentMoveFrom = NULL;
+ 								currentMoveCookie = -1;
+ 							}
+@@ -575,13 +565,14 @@ void FileWatcherInotify::handleAction( Watcher* watch, const std::string& filena
+ 
+ 			watch->Listener->handleFileAction( watch->ID, watch->Directory, filename, isDir,
+ 											   Actions::Modified );
+-
+-			checkForNewWatcher( watch, fpath );
+ 		} else {
+ 			watch->Listener->handleFileAction( watch->ID, watch->Directory, filename, isDir,
+ 											   Actions::Moved, watch->OldFileName );
+ 		}
+ 
++		if ( isDir )
++			checkForNewWatcher( watch, fpath );
++
+ 		if ( watch->Recursive && isDir && !watch->OldFileName.empty() ) {
+ 			/// Update the new directory path
+ 			std::string opath( watch->Directory + watch->OldFileName );
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherWin32.cpp b/thirdparty/efsw/src/efsw/FileWatcherWin32.cpp
+index 33c08383b4..c53a8553a8 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherWin32.cpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherWin32.cpp
+@@ -6,6 +6,8 @@
+ 
+ #if EFSW_PLATFORM == EFSW_PLATFORM_WIN32
+ 
++#include <algorithm>
++
+ namespace efsw {
+ 
+ FileWatcherWin32::FileWatcherWin32( FileWatcher* parent ) :
+@@ -142,15 +144,24 @@ void FileWatcherWin32::run() {
+ 			ULONG_PTR compKey = 0;
+ 			BOOL res = FALSE;
+ 
+-			while ( ( res = GetQueuedCompletionStatus( mIOCP, &numOfBytes, &compKey, &ov,
+-													   INFINITE ) ) != FALSE ) {
+-				if ( compKey != 0 && compKey == reinterpret_cast<ULONG_PTR>( this ) ) {
++			while ( true ) {
++				res = GetQueuedCompletionStatus( mIOCP, &numOfBytes, &compKey, &ov, 300 );
++
++				purgeExpiredDeletes();
++
++				if ( !res ) {
++					if ( GetLastError() == WAIT_TIMEOUT ) {
++						continue;
++					}
+ 					break;
+-				} else {
+-					Lock lock( mWatchesLock );
+-					if (mWatches.find( (WatcherStructWin32*)ov ) != mWatches.end())
+-						WatchCallback( numOfBytes, ov );
+ 				}
++
++				if ( compKey != 0 && compKey == reinterpret_cast<ULONG_PTR>( this ) )
++					break;
++
++				Lock lock( mWatchesLock );
++				if ( mWatches.find( (WatcherStructWin32*)ov ) != mWatches.end() )
++					WatchCallback( numOfBytes, ov );
+ 			}
+ 		} else {
+ 			System::sleep( 10 );
+@@ -193,6 +204,7 @@ void FileWatcherWin32::handleAction( Watcher* watch, const std::string& filename
+ 			}
+ 
+ 			std::string folderPath( static_cast<WatcherWin32*>( watch )->DirName );
++			std::string realFolderPath = folderPath;
+ 			std::string realFilename = filename;
+ 			std::size_t sepPos = filename.find_last_of( "/\\" );
+ 			std::string oldFolderPath =
+@@ -200,19 +212,17 @@ void FileWatcherWin32::handleAction( Watcher* watch, const std::string& filename
+ 				watch->OldFileName.substr( 0, watch->OldFileName.find_last_of( "/\\" ) );
+ 
+ 			if ( sepPos != std::string::npos ) {
+-				folderPath +=
++				realFolderPath +=
+ 					filename.substr( 0, sepPos + 1 < filename.size() ? sepPos + 1 : sepPos );
+ 				realFilename = filename.substr( sepPos + 1 );
+ 			}
+ 
+-			if ( folderPath == oldFolderPath ) {
+-				watch->Listener->handleFileAction(
+-					watch->ID, folderPath, realFilename, isDir, fwAction,
+-					FileSystem::fileNameFromPath( watch->OldFileName ) );
++			if ( realFolderPath == oldFolderPath ) {
++				watch->Listener->handleFileAction( watch->ID, realFolderPath, realFilename, isDir,
++												   fwAction, folderPath + watch->OldFileName );
+ 			} else {
+-				watch->Listener->handleFileAction( watch->ID,
+-												   static_cast<WatcherWin32*>( watch )->DirName,
+-												   filename, isDir, fwAction, watch->OldFileName );
++				watch->Listener->handleFileAction( watch->ID, folderPath, filename, isDir, fwAction,
++												   folderPath + watch->OldFileName );
+ 			}
+ 			return;
+ 		}
+@@ -266,6 +276,97 @@ bool FileWatcherWin32::pathInWatches( const std::string& path ) {
+ 	return false;
+ }
+ 
++std::mutex FileWatcherWin32::sPendingMutex;
++std::vector<PendingDelete> FileWatcherWin32::sPendingDeletes;
++
++void FileWatcherWin32::registerPendingDelete( const PendingDelete& pd ) {
++	std::lock_guard<std::mutex> lock( sPendingMutex );
++	sPendingDeletes.push_back( pd );
++}
++
++bool FileWatcherWin32::tryMatchMove( const FileID& fileID, std::string& outDir,
++									 std::string& outFileName, bool isExtended ) {
++	std::lock_guard<std::mutex> lock( sPendingMutex );
++	auto it = std::find_if( sPendingDeletes.begin(), sPendingDeletes.end(),
++							[&]( const PendingDelete& pd ) {
++								if ( pd.isExtended != isExtended ) {
++									return false;
++								}
++								return isExtended ? pd.fileID.ID.QuadPart == fileID.ID.QuadPart
++												  : pd.fileID.Inode == fileID.Inode;
++							} );
++
++	if ( it != sPendingDeletes.end() ) {
++		outDir = it->dirName;
++		outFileName = it->fileName;
++		sPendingDeletes.erase( it );
++		return true;
++	}
++
++	return false;
++}
++
++void FileWatcherWin32::purgeExpiredDeletes() {
++	if ( sPendingDeletes.empty() ) {
++		return;
++	}
++
++	std::vector<PendingDelete> expired;
++
++	{
++		std::lock_guard<std::mutex> lock( sPendingMutex );
++		auto now = std::chrono::steady_clock::now();
++
++		auto it = sPendingDeletes.begin();
++		while ( it != sPendingDeletes.end() ) {
++			if ( std::chrono::duration_cast<std::chrono::milliseconds>( now - it->timestamp )
++					 .count() < 300 ) {
++				++it;
++			} else {
++				expired.push_back( *it );
++				it = sPendingDeletes.erase( it );
++			}
++		}
++	}
++
++	if ( expired.empty() ) {
++		return;
++	}
++
++	for ( auto& pd : expired ) {
++		WatcherWin32* watcher = NULL;
++		std::string folderPath( pd.dirName );
++		std::string filename( pd.fileName );
++		FileSystem::dirAddSlashAtEnd( folderPath );
++
++		Lock lock( mWatchesLock );
++
++		Watches::iterator iter = mWatches.begin();
++
++		for ( ; iter != mWatches.end(); ++iter ) {
++			if ( folderPath == ( *iter )->Watch->DirName ) {
++				watcher = ( *iter )->Watch;
++				break;
++			}
++		}
++		if ( watcher ) {
++			std::string realFilename = filename;
++			std::size_t sepPos = filename.find_last_of( "/\\" );
++
++			if ( sepPos != std::string::npos ) {
++				folderPath +=
++					filename.substr( 0, sepPos + 1 < filename.size() ? sepPos + 1 : sepPos );
++				realFilename = filename.substr( sepPos + 1 );
++			}
++
++			FileSystem::dirAddSlashAtEnd( folderPath );
++
++			watcher->Listener->handleFileAction( watcher->ID, folderPath, realFilename, pd.isDir,
++												 Actions::Delete );
++		}
++	}
++}
++
+ } // namespace efsw
+ 
+ #endif
+diff --git a/thirdparty/efsw/src/efsw/FileWatcherWin32.hpp b/thirdparty/efsw/src/efsw/FileWatcherWin32.hpp
+index 0fdb5edd74..8de5eb08e7 100644
+--- a/thirdparty/efsw/src/efsw/FileWatcherWin32.hpp
++++ b/thirdparty/efsw/src/efsw/FileWatcherWin32.hpp
+@@ -44,6 +44,11 @@ class FileWatcherWin32 : public FileWatcherImpl {
+ 	/// @return Returns a list of the directories that are being watched
+ 	std::vector<std::string> directories() override;
+ 
++	static void registerPendingDelete( const PendingDelete& pd );
++	static bool tryMatchMove( const FileID& fileID, std::string& outDir, std::string& outFileName,
++							  bool isExtended = true );
++	void purgeExpiredDeletes();
++
+   protected:
+ 	HANDLE mIOCP;
+ 	Watches mWatches;
+@@ -62,6 +67,9 @@ class FileWatcherWin32 : public FileWatcherImpl {
+ 
+   private:
+ 	void run();
++
++	static std::mutex sPendingMutex;
++	static std::vector<PendingDelete> sPendingDeletes;
+ };
+ 
+ } // namespace efsw
+diff --git a/thirdparty/efsw/src/efsw/WatcherWin32.cpp b/thirdparty/efsw/src/efsw/WatcherWin32.cpp
+index 4897e3433b..5e081c6b3c 100644
+--- a/thirdparty/efsw/src/efsw/WatcherWin32.cpp
++++ b/thirdparty/efsw/src/efsw/WatcherWin32.cpp
+@@ -1,5 +1,6 @@
+ #include <efsw/Debug.hpp>
+ #include <efsw/FileSystem.hpp>
++#include <efsw/FileWatcherWin32.hpp>
+ #include <efsw/String.hpp>
+ #include <efsw/WatcherWin32.hpp>
+ 
+@@ -83,6 +84,46 @@ void WatchCallbackOld( WatcherWin32* pWatch ) {
+ 
+ 			pWatch->LastModifiedEvent.fileName = nfile;
+ 			pWatch->LastModifiedEvent.file = fifile;
++		} else if ( FILE_ACTION_REMOVED == pNotify->Action ) {
++			FileInfo fifile( std::string( pWatch->DirName ) + nfile );
++			PendingDelete pd;
++			pd.isExtended = false;
++			pd.fileID.Inode = fifile.Inode;
++			pd.fileName = nfile;
++			pd.dirName = std::string( pWatch->DirName );
++			pd.isDir = fifile.isDirectory();
++			pd.timestamp = std::chrono::steady_clock::now();
++
++			FileWatcherWin32::registerPendingDelete( pd );
++			skip = true;
++		} else if ( FILE_ACTION_ADDED == pNotify->Action ) {
++			FileInfo fifile( std::string( pWatch->DirName ) + nfile );
++
++			std::string folderPath( pWatch->DirName );
++			std::string realFilename = nfile;
++			std::size_t sepPos = nfile.find_last_of( "/\\" );
++
++			if ( sepPos != std::string::npos ) {
++				folderPath += nfile.substr( 0, sepPos + 1 < nfile.size() ? sepPos + 1 : sepPos );
++				realFilename = nfile.substr( sepPos + 1 );
++			}
++
++			FileSystem::dirAddSlashAtEnd( folderPath );
++
++			std::string oldDir, oldFileName;
++
++			FileID fileID;
++			fileID.Inode = fifile.Inode;
++
++			if ( FileWatcherWin32::tryMatchMove( fileID, oldDir, oldFileName, false ) ) {
++				pWatch->Listener->handleFileAction( pWatch->ID, folderPath, realFilename,
++													fifile.isDirectory(), Actions::Moved,
++													std::string( oldDir + oldFileName ) );
++			} else {
++				pWatch->Listener->handleFileAction( pWatch->ID, folderPath, realFilename,
++													fifile.isDirectory(), Actions::Add );
++			}
++			skip = true;
+ 		}
+ 
+ 		if ( !skip ) {
+@@ -150,6 +191,45 @@ void WatchCallbackEx( WatcherWin32* pWatch ) {
+ 											 pNotify->FileAttributes & FILE_ATTRIBUTE_DIRECTORY,
+ 											 FILE_ACTION_RENAMED_OLD_NAME );
+ 			}
++		} else if ( FILE_ACTION_REMOVED == pNotify->Action ) {
++			PendingDelete pd;
++			pd.isExtended = true;
++			pd.fileID.ID = pNotify->FileId;
++			pd.fileName = nfile;
++			pd.dirName = std::string( pWatch->DirName );
++			pd.isDir = pNotify->FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
++			pd.timestamp = std::chrono::steady_clock::now();
++
++			FileWatcherWin32::registerPendingDelete( pd );
++			skip = true;
++		} else if ( FILE_ACTION_ADDED == pNotify->Action ) {
++			std::string folderPath( pWatch->DirName );
++			std::string realFilename = nfile;
++			std::size_t sepPos = nfile.find_last_of( "/\\" );
++
++			if ( sepPos != std::string::npos ) {
++				folderPath += nfile.substr( 0, sepPos + 1 < nfile.size() ? sepPos + 1 : sepPos );
++				realFilename = nfile.substr( sepPos + 1 );
++			}
++
++			FileSystem::dirAddSlashAtEnd( folderPath );
++
++			std::string oldDir, oldFileName;
++
++			FileID fileID;
++			fileID.ID = pNotify->FileId;
++
++			if ( FileWatcherWin32::tryMatchMove( fileID, oldDir, oldFileName, true ) ) {
++				pWatch->Listener->handleFileAction(
++					pWatch->ID, folderPath, realFilename,
++					pNotify->FileAttributes & FILE_ATTRIBUTE_DIRECTORY, Actions::Moved,
++					std::string( oldDir + oldFileName ) );
++			} else {
++				pWatch->Listener->handleFileAction(
++					pWatch->ID, folderPath, realFilename,
++					pNotify->FileAttributes & FILE_ATTRIBUTE_DIRECTORY, Actions::Add );
++			}
++			skip = true;
+ 		}
+ 
+ 		if ( !skip ) {
+diff --git a/thirdparty/efsw/src/efsw/WatcherWin32.hpp b/thirdparty/efsw/src/efsw/WatcherWin32.hpp
+index c10f05c1c7..6e96215624 100644
+--- a/thirdparty/efsw/src/efsw/WatcherWin32.hpp
++++ b/thirdparty/efsw/src/efsw/WatcherWin32.hpp
+@@ -35,6 +35,20 @@ struct sLastModifiedEvent {
+ 	std::string fileName;
+ };
+ 
++union FileID {
++	LARGE_INTEGER ID;
++	Uint64 Inode;
++};
++
++struct PendingDelete {
++	bool isExtended;
++	FileID fileID;
++	std::string fileName;
++	std::string dirName;
++	bool isDir;
++	std::chrono::steady_clock::time_point timestamp;
++};
++
+ RefreshResult RefreshWatch( WatcherStructWin32* pWatch );
+ 
+ void CALLBACK WatchCallback( DWORD dwNumberOfBytesTransfered, LPOVERLAPPED lpOverlapped );
