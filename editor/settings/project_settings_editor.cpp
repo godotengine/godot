@@ -52,13 +52,7 @@ void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs
 }
 
 void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
-	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "project_settings", Rect2());
-	if (saved_size != Rect2()) {
-		popup(saved_size);
-	} else {
-		popup_centered_clamped(Size2(1200, 700) * EDSCALE, 0.8);
-	}
+	popup_centered_clamped(Size2(1200, 700) * EDSCALE, 0.8);
 
 	_add_feature_overrides();
 	general_settings_inspector->update_category_list();
@@ -662,7 +656,6 @@ void ProjectSettingsEditor::_notification(int p_what) {
 				}
 				ProjectSettings::get_singleton()->editor_settings_info = editor_settings_info;
 			} else {
-				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", Rect2(get_position(), get_size()));
 				if (settings_changed) {
 					timer->stop();
 					_save();
