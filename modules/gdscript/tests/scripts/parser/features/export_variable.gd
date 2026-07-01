@@ -41,6 +41,7 @@ var test_custom_enum_hard_no_export: CustomEnum
 # Global custom classes.
 @export var test_global_class: ExportVariableTest
 @export var test_preloaded_global_class: PreloadedGlobalClass
+@warning_ignore("EXPORT_OF_UNNAMED_TYPE")
 @export var test_preloaded_unnamed_class: PreloadedUnnamedClass # GH-93168
 
 # Arrays.
