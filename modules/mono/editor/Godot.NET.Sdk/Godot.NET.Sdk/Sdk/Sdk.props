@@ -6,6 +6,15 @@
 
     <!-- Determines if we should import Microsoft.NET.Sdk, if it wasn't already imported. -->
     <GodotSdkImportsMicrosoftNetSdk Condition=" '$(UsingMicrosoftNETSdk)' != 'true' ">true</GodotSdkImportsMicrosoftNetSdk>
+
+    <!--
+    Emit XML documentation next to the assembly (e.g. MyGame.xml beside MyGame.dll) so [Tool]
+    scripts can surface their /// <summary> text as Godot Inspector tooltips.
+    Opt out by setting GodotGenerateXmlDoc=false in the project.
+    -->
+    <GenerateDocumentationFile Condition=" '$(GenerateDocumentationFile)' == '' and '$(GodotGenerateXmlDoc)' != 'false' ">true</GenerateDocumentationFile>
+    <!-- Avoid turning "missing XML comment" into build warnings/noise. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
