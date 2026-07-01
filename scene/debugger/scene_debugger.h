@@ -56,6 +56,7 @@ private:
 	static void _handle_embed_input(const Ref<InputEvent> &p_event, const Dictionary &p_settings);
 	static void _on_window_size_changed();
 	static void _on_output_max_linear_value_changed(float output_max_linear_value);
+	static Error _config_capture(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
 
 	static void _save_node(ObjectID id, const String &p_path);
 	static void _set_node_owner_recursive(Node *p_node, Node *p_owner);
