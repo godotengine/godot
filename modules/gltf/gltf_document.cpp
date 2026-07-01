@@ -429,6 +429,9 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 		} else {
 			node["matrix"] = _xform_to_array(gltf_node->transform);
 		}
+		if (!gltf_node->weights.is_empty()) {
+			node["weights"] = gltf_node->weights;
+		}
 		if (gltf_node->children.size()) {
 			Array children;
 			for (int j = 0; j < gltf_node->children.size(); j++) {
@@ -591,6 +594,9 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 			if (n.has("scale")) {
 				node->set_scale(_arr_to_vec3(n["scale"]));
 			}
+		}
+		if (n.has("weights")) {
+			node->set_weights(n["weights"]);
 		}
 		node->set_additional_data("GODOT_rest_transform", node->transform);
 
@@ -4186,6 +4192,15 @@ ImporterMeshInstance3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> p_s
 		return mi;
 	}
 	mi->set_mesh(import_mesh);
+	if (!gltf_node->weights.is_empty()) {
+		for (int i = 0; i < gltf_node->weights.size(); i++) {
+			mi->set_blend_shape_value(i, gltf_node->weights[i]);
+		}
+	} else if (!mesh->get_blend_weights().is_empty()) {
+		for (int i = 0; i < mesh->get_blend_weights().size(); i++) {
+			mi->set_blend_shape_value(i, mesh->get_blend_weights()[i]);
+		}
+	}
 	import_mesh->merge_meta_from(*mesh);
 	return mi;
 }
@@ -4580,6 +4595,10 @@ void GLTFDocument::_convert_mesh_instance_to_gltf(MeshInstance3D *p_scene_parent
 	GLTFMeshIndex gltf_mesh_index = _convert_mesh_to_gltf(p_state, p_scene_parent);
 	if (gltf_mesh_index != -1) {
 		p_gltf_node->mesh = gltf_mesh_index;
+		p_gltf_node->weights.resize(p_scene_parent->get_blend_shape_count());
+		for (int i = 0; i < p_scene_parent->get_blend_shape_count(); i++) {
+			p_gltf_node->weights.write[i] = p_scene_parent->get_blend_shape_value(i);
+		}
 	}
 }
 
