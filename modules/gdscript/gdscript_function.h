@@ -451,6 +451,10 @@ private:
 	} profile;
 #endif
 
+#ifdef TOOLS_ENABLED
+	HashSet<int> executable_lines;
+#endif
+
 	String _get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	String _get_callable_call_error(const String &p_where, const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
@@ -483,6 +487,10 @@ public:
 	_FORCE_INLINE_ int get_argument_count() const { return _argument_count; }
 	_FORCE_INLINE_ Variant get_rpc_config() const { return rpc_config; }
 	_FORCE_INLINE_ int get_max_stack_size() const { return _stack_size; }
+#ifdef TOOLS_ENABLED
+	_FORCE_INLINE_ const HashSet<int> &get_executable_lines() const { return executable_lines; }
+	_FORCE_INLINE_ const Vector<GDScriptFunction *> &get_lambdas() const { return lambdas; }
+#endif
 
 	Variant get_constant(int p_idx) const;
 	StringName get_global_name(int p_idx) const;
