@@ -3920,7 +3920,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			draw_line(Point2(get_size().width - timeline->get_buttons_width(), 0), Point2(get_size().width - timeline->get_buttons_width(), get_size().height), v_line_color, Math::round(EDSCALE));
 
 			int ofs = stylebox_header->get_margin(SIDE_LEFT);
-			bool is_group_folded = editor->get_current_animation()->editor_is_group_folded(node_name);
+			bool is_group_folded = editor->get_current_animation()->editor_is_group_folded(node);
 			Ref<Texture2D> fold_icon = get_theme_icon(is_group_folded ? SNAME("arrow_collapsed") : SNAME("arrow"), SNAME("Tree"));
 			Size2 fold_icon_size = fold_icon->get_size();
 			draw_texture_rect(fold_icon, Rect2(Point2(ofs, (get_size().height - fold_icon_size.y) / 2 + v_margin_offset).round(), fold_icon_size));
@@ -3975,14 +3975,14 @@ void AnimationTrackEditGroup::gui_input(const Ref<InputEvent> &p_event) {
 		Point2 pos = mb->get_position();
 
 		int left_ofs = get_theme_stylebox(SNAME("header"), SNAME("AnimationTrackEditGroup"))->get_margin(SIDE_LEFT);
-		bool is_group_folded = editor->get_current_animation()->editor_is_group_folded(node_name);
+		bool is_group_folded = editor->get_current_animation()->editor_is_group_folded(node);
 		Ref<Texture2D> fold_icon = get_theme_icon(is_group_folded ? SNAME("arrow_collapsed") : SNAME("arrow"), SNAME("Tree"));
 		int fold_icon_width = fold_icon->get_size().width;
 		Rect2 fold_area_rect = Rect2(0, 0, left_ofs + fold_icon_width, get_size().height);
 
 		if (fold_area_rect.has_point(pos)) {
-			bool current_group_folded = !editor->get_current_animation()->editor_is_group_folded(node_name);
-			editor->get_current_animation()->editor_set_group_folded(node_name, current_group_folded);
+			bool current_group_folded = !editor->get_current_animation()->editor_is_group_folded(node);
+			editor->get_current_animation()->editor_set_group_folded(node, current_group_folded);
 
 			for (AnimationTrackEdit *i : track_edits) {
 				i->set_visible(!current_group_folded);
@@ -5411,7 +5411,7 @@ void AnimationTrackEditor::_update_tracks() {
 			AnimationTrackEditGroup *g = Object::cast_to<AnimationTrackEditGroup>(vb->get_child(0));
 			if (g) {
 				for (AnimationTrackEdit *i : g->track_edits) {
-					i->set_visible(!animation->editor_is_group_folded(g->node_name));
+					i->set_visible(!animation->editor_is_group_folded(g->node));
 				}
 			}
 		}

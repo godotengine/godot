@@ -377,6 +377,39 @@ Vector<String> EditorFolding::_get_animation_folds(const Animation *p_animation)
 
 void EditorFolding::_set_animation_folds(Animation *p_animation, const Vector<String> &p_folds) {
 	p_animation->editor_clear_folded_groups();
+
+	// Folded groups were keyed by node name, but are now keyed by the full node
+	// path. Check if we have some node paths as indicator of the new format.
+	bool legacy = true;
+	for (const String &group_name : p_folds) {
+		if (group_name.contains("/")) {
+			legacy = false;
+			break;
+		}
+	}
+
+	if (legacy) {
+		// The legacy keys are ambiguous when several groups share the same name
+		// (e.g. "char_a/Skeleton3D" and "char_b/Skeleton3D"). If we have multiple
+		// with the same name, we can't distinguish and give up.
+		HashMap<StringName, StringName> seen_names;
+		for (int i = 0; i < p_animation->get_track_count(); i++) {
+			NodePath path = p_animation->track_get_path(i);
+			int name_count = path.get_name_count();
+			if (name_count == 0) {
+				continue;
+			}
+			StringName node_name = path.get_name(name_count - 1);
+			StringName group_key = path.get_concatenated_names();
+			HashMap<StringName, StringName>::Iterator existing = seen_names.find(node_name);
+			if (existing && existing->value != group_key) {
+				// Duplicate node name across different groups, bail out.
+				return;
+			}
+			seen_names.insert(node_name, group_key);
+		}
+	}
+
 	for (const String &group_name : p_folds) {
 		p_animation->editor_add_folded_group(group_name);
 	}

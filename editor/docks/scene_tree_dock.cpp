@@ -2243,7 +2243,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 	return false;
 }
 
-void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims, LocalVector<Pair<StringName, StringName>> *r_folded_group_renames) {
+void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims) {
 	HashMap<Ref<Animation>, HashSet<int>> rem_anims;
 	if (!r_rem_anims) {
 		r_rem_anims = &rem_anims;
@@ -2264,28 +2264,6 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 	}
 
 	bool autorename_animation_tracks = bool(EDITOR_GET("editors/animation/autorename_animation_tracks"));
-
-	// key.get_path() of p_renames is like:
-	//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheOldName
-	// value of p_renames is like:
-	//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheNewName
-	LocalVector<Pair<StringName, StringName>> folded_group_renames;
-	if (!r_folded_group_renames) {
-		r_folded_group_renames = &folded_group_renames;
-		if (autorename_animation_tracks) {
-			for (const KeyValue<Node *, NodePath> &rename : *p_renames) {
-				if (rename.value.get_name_count() == 0) {
-					continue; // Node will be deleted (empty path), not renamed.
-				}
-				const StringName old_node_name = rename.key->get_name();
-				const StringName new_node_name = rename.value.get_name(rename.value.get_name_count() - 1);
-				if (old_node_name == new_node_name) {
-					continue; // Only the parent path changed; the name itself didn't.
-				}
-				r_folded_group_renames->push_back(Pair<StringName, StringName>(old_node_name, new_node_name));
-			}
-		}
-	}
 
 	AnimationMixer *mixer = Object::cast_to<AnimationMixer>(p_base);
 	if (autorename_animation_tracks && mixer) {
@@ -2375,10 +2353,21 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 
 						// Prevent to rewrite an editable child's inner fold state by parent renaming.
 						if (p_base == edited_scene || (p_base->get_owner() == edited_scene && p_base->get_scene_file_path().is_empty())) {
-							for (const Pair<StringName, StringName> &group_rename : *r_folded_group_renames) {
-								if (anim->editor_is_group_folded(group_rename.first)) {
-									anim->editor_set_group_folded(group_rename.second, true);
-									anim->editor_set_group_folded(group_rename.first, false);
+							// key.get_path() of p_renames is like:
+							//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheOldName
+							// value of p_renames is like:
+							//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheNewName
+							for (const KeyValue<Node *, NodePath> &rename : *p_renames) {
+								if (rename.value.is_empty()) {
+									continue; // Node will be deleted (empty path), not renamed.
+								}
+
+								NodePath old_group_path = root->get_path_to(rename.key);
+								NodePath new_group_path = new_root_path.rel_path_to(rename.value);
+
+								if (anim->editor_is_group_folded(old_group_path)) {
+									anim->editor_set_group_folded(new_group_path, true);
+									anim->editor_set_group_folded(old_group_path, false);
 								}
 							}
 						}
@@ -2392,7 +2381,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 	_check_object_properties_recursive(p_base, p_base, p_renames);
 
 	for (int i = 0; i < p_base->get_child_count(); i++) {
-		perform_node_renames(p_base->get_child(i), p_renames, r_rem_anims, r_folded_group_renames);
+		perform_node_renames(p_base->get_child(i), p_renames, r_rem_anims);
 	}
 }
 
