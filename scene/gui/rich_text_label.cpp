@@ -3104,17 +3104,19 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 		bool scroll_value_modified = false;
 		double prev_scroll = vscroll->get_value();
 
-		if (b->get_button_index() == MouseButton::WHEEL_UP) {
-			if (scroll_active) {
-				vscroll->scroll(-vscroll->get_page() * b->get_factor() * 0.5 / 8);
-				scroll_value_modified = true;
+		if ((b->get_button_index() == MouseButton::WHEEL_UP || b->get_button_index() == MouseButton::WHEEL_DOWN) && scroll_active) {
+			const MouseButton button_index = b->get_button_index();
+			const double raw_scroll_amount = vscroll->get_page() * b->get_factor() / (ScrollBar::PAGE_DIVISOR * 2.0);
+			const double step = vscroll->get_step();
+			const double scroll_amount = MAX(Math::snapped(raw_scroll_amount, step), step);
+
+			if (button_index == MouseButton::WHEEL_UP) {
+				vscroll->scroll(-scroll_amount);
+			} else {
+				vscroll->scroll(scroll_amount);
 			}
-		}
-		if (b->get_button_index() == MouseButton::WHEEL_DOWN) {
-			if (scroll_active) {
-				vscroll->scroll(vscroll->get_page() * b->get_factor() * 0.5 / 8);
-				scroll_value_modified = true;
-			}
+
+			scroll_value_modified = true;
 		}
 
 		if (scroll_value_modified && vscroll->get_value() != prev_scroll) {
