@@ -2,7 +2,6 @@
 from misc.utility.scons_hints import *
 
 from platform_ios_builders import generate_bundle
-
 from platform_methods import combine_libs_apple_embedded
 
 Import("env")

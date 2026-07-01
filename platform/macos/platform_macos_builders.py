@@ -4,8 +4,9 @@ import os
 import shutil
 import subprocess
 
-from methods import get_version_info
 from platform_methods import lipo
+
+from methods import get_version_info
 
 
 def generate_bundle(target, source, env):
