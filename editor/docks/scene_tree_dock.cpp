@@ -1398,14 +1398,19 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						break;
 					}
 
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
 					placeholder = !placeholder;
+
+					undo_redo->create_action(TTR("Toggle Load as Placeholder"));
+					undo_redo->add_undo_method(node, "set_scene_instance_load_placeholder", !placeholder);
+					undo_redo->add_do_method(node, "set_scene_instance_load_placeholder", placeholder);
 
 					if (placeholder) {
 						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
 					}
 
-					node->set_scene_instance_load_placeholder(placeholder);
-					scene_tree->update_tree();
+					undo_redo->commit_action();
 				}
 			}
 		} break;
