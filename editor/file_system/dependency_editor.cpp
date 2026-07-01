@@ -49,6 +49,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/tree.h"
+#include "scene/main/scene_tree.h"
 
 static void _setup_search_file_dialog(EditorFileDialog *p_dialog, const String &p_file, const String &p_type) {
 	p_dialog->set_title(vformat(TTR("Search Replacement For: %s"), p_file.get_file()));
@@ -921,6 +922,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 //////////////
 enum {
 	BUTTON_ID_SEARCH,
+	BUTTON_ID_REMOVE,
 	BUTTON_ID_OPEN_DEPS_EDITOR,
 };
 
@@ -937,27 +939,79 @@ void DependencyErrorDialog::show(const String &p_for_file, const HashMap<String,
 		}
 	}
 
+	// Detect if this is a cyclic reference situation.
+	// A cycle exists when a "missing" resource is also an owner of another missing resource
+	// that points back to it (A references B, B references A).
+	bool has_cycles = false;
+	for (const KeyValue<String, HashSet<String>> &E : missing_to_owners) {
+		const String &missing_path = E.key.get_slice("::", 0);
+		if (p_report.has(missing_path)) {
+			for (const String &owner_path : E.value) {
+				for (const String &owner_missing : p_report[missing_path]) {
+					if (owner_missing.get_slice("::", 0) == owner_path) {
+						has_cycles = true;
+						break;
+					}
+				}
+				if (has_cycles) {
+					break;
+				}
+			}
+		}
+		if (has_cycles) {
+			break;
+		}
+	}
+
+	// Update label based on whether cycles were detected.
+	if (has_cycles) {
+		files_label->set_text(TTRC("Load failed due to cyclic references:"));
+	} else {
+		files_label->set_text(TTRC("Load failed due to missing dependencies:"));
+	}
+	files->set_accessibility_name(files_label->get_text());
+
 	files->clear();
 	TreeItem *root = files->create_item(nullptr);
 	Ref<Texture2D> folder_icon = get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
+	Ref<Texture2D> remove_icon = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
 
 	for (const KeyValue<String, HashSet<String>> &E : missing_to_owners) {
 		const String &missing_path = E.key.get_slice("::", 0);
 		const String &missing_type = E.key.get_slice("::", 1);
+
+		// Check if this specific item is part of a cycle.
+		bool is_cyclic = has_cycles && p_report.has(missing_path);
+		if (is_cyclic && missing_path == p_for_file) {
+			// Ignore cyclic reference with itself.
+			continue;
+		}
 
 		TreeItem *missing_ti = root->create_child();
 		missing_ti->set_text(0, missing_path);
 		missing_ti->set_metadata(0, E.key);
 		missing_ti->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		missing_ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(missing_type));
-		missing_ti->set_icon(1, get_editor_theme_icon(icon_name_fail));
+		if (is_cyclic) {
+			missing_ti->set_icon(1, get_editor_theme_icon(icon_name_cyclic));
+		} else {
+			missing_ti->set_icon(1, get_editor_theme_icon(icon_name_fail));
+		}
 		missing_ti->add_button(1, folder_icon, BUTTON_ID_SEARCH, false, TTRC("Search"));
+		if (is_cyclic) {
+			missing_ti->add_button(1, remove_icon, BUTTON_ID_REMOVE, false, TTRC("Remove cycle."));
+		}
 		missing_ti->set_collapsed(true);
 
 		for (const String &owner_path : E.value) {
 			TreeItem *owner_ti = missing_ti->create_child();
-			// TRANSLATORS: The placeholder is a file path.
-			owner_ti->set_text(0, vformat(TTR("Referenced by %s"), owner_path));
+			if (is_cyclic) {
+				// TRANSLATORS: The placeholder is a file path.
+				owner_ti->set_text(0, vformat(TTR("Cyclic reference with %s"), owner_path));
+			} else {
+				// TRANSLATORS: The placeholder is a file path.
+				owner_ti->set_text(0, vformat(TTR("Referenced by %s"), owner_path));
+			}
 			owner_ti->set_metadata(0, owner_path);
 			owner_ti->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 			owner_ti->add_button(1, files->get_editor_theme_icon(SNAME("Edit")), BUTTON_ID_OPEN_DEPS_EDITOR, false, TTRC("Fix Dependencies"));
@@ -987,6 +1041,16 @@ void DependencyErrorDialog::_on_files_button_clicked(TreeItem *p_item, int p_col
 			replacing_item = p_item;
 			_setup_search_file_dialog(replacement_file_dialog, missing_path, missing_type);
 			replacement_file_dialog->popup_file_dialog();
+		} break;
+
+		case BUTTON_ID_REMOVE: {
+			const String missing_path = String(p_item->get_metadata(0)).get_slice("::", 0);
+			for (TreeItem *owner_ti = p_item->get_first_child(); owner_ti; owner_ti = owner_ti->get_next()) {
+				const String &owner_path = owner_ti->get_metadata(0);
+				ResourceLoader::rename_dependencies(owner_path, HashMap<String, String>{ { missing_path, String() } });
+			}
+			get_tree()->queue_delete(p_item);
+			_check_for_resolved();
 		} break;
 
 		case BUTTON_ID_OPEN_DEPS_EDITOR: {
@@ -1056,10 +1120,15 @@ void DependencyErrorDialog::_check_for_resolved() {
 
 DependencyErrorDialog::DependencyErrorDialog() {
 	icon_name_fail = StringName("ImportFail");
+	icon_name_cyclic = StringName("StatusWarning");
 	icon_name_check = StringName("ImportCheck");
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
+
+	files_label = memnew(Label);
+	files_label->set_theme_type_variation("HeaderSmall");
+	vb->add_child(files_label);
 
 	files = memnew(Tree);
 	files->set_hide_root(true);
@@ -1067,8 +1136,8 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	files->set_columns(2);
 	files->set_column_expand(1, false);
 	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(files);
 	files->connect("button_clicked", callable_mp(this, &DependencyErrorDialog::_on_files_button_clicked));
-	vb->add_margin_child(TTRC("Load failed due to missing dependencies:"), files, true);
 
 	set_min_size(Size2(500, 320) * EDSCALE);
 	set_cancel_button_text(TTRC("Close"));
