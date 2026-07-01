@@ -3398,6 +3398,9 @@ bool Variant::identity_compare(const Variant &p_variant) const {
 }
 
 bool StringLikeVariantComparator::compare(const Variant &p_lhs, const Variant &p_rhs) {
+	if (p_lhs.get_type() == Variant::OBJECT && p_rhs.get_type() == Variant::OBJECT) {
+		return p_lhs.identity_compare(p_rhs);
+	}
 	if (p_lhs.hash_compare(p_rhs)) {
 		return true;
 	}
