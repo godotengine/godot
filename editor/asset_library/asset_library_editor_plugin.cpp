@@ -1063,7 +1063,22 @@ void EditorAssetLibrary::_notification(int p_what) {
 #endif
 
 				if (initial_loading) {
-					_repository_changed(0); // Update when shown for the first time.
+					// Remember saved search state, excluding category, and restore it.
+					const String saved_filter = EditorSettings::get_singleton()->get_project_metadata("assetlib", "search_filter", String());
+					if (!saved_filter.is_empty()) {
+						filter->set_text(saved_filter);
+					}
+
+					current_page = EditorSettings::get_singleton()->get_project_metadata("assetlib", "search_page", 1);
+
+					const int saved_sort = EditorSettings::get_singleton()->get_project_metadata("assetlib", "search_sort", 0);
+					sort->select(saved_sort);
+
+					const int saved_source = EditorSettings::get_singleton()->get_project_metadata("assetlib", "search_source", 0);
+					if (saved_source < repository->get_item_count()) {
+						repository->select(saved_source);
+					}
+					_repository_changed(saved_source); // Update when shown for the first time.
 				}
 			}
 		} break;
@@ -1484,6 +1499,14 @@ void EditorAssetLibrary::_licenses_popup_hide() {
 	}
 }
 
+void EditorAssetLibrary::_save_search_state() {
+	EditorSettings::get_singleton()->set_project_metadata("assetlib", "search_filter", filter->get_text());
+	EditorSettings::get_singleton()->set_project_metadata("assetlib", "search_page", current_page);
+	EditorSettings::get_singleton()->set_project_metadata("assetlib", "search_sort", sort->get_selected());
+	EditorSettings::get_singleton()->set_project_metadata("assetlib", "search_category", categories->get_selected());
+	EditorSettings::get_singleton()->set_project_metadata("assetlib", "search_source", repository->get_selected());
+}
+
 void EditorAssetLibrary::_search(int p_page) {
 	ERR_FAIL_COND(p_page <= 0);
 
@@ -1521,6 +1544,10 @@ void EditorAssetLibrary::_search(int p_page) {
 	}
 
 	_api_request("search/query/" + args, REQUESTING_SEARCH);
+
+	if (!initial_loading) {
+		_save_search_state();
+	}
 }
 
 void EditorAssetLibrary::_request_current_config() {
@@ -1719,13 +1746,19 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 		case REQUESTING_CHECK: {
 			if (!templates_only) {
 				_api_request("tags/?featured_only=true", REQUESTING_TAGS, true);
+			} else {
+				if (initial_loading) {
+					_search(current_page);
+				}
 			}
 			_api_request("licenses/", REQUESTING_LICENSES, true);
 
 			filter->set_editable(true);
 			sort->set_disabled(false);
 
-			_search();
+			if (!initial_loading) {
+				_search();
+			}
 		} break;
 
 		case REQUESTING_TAGS: {
@@ -1755,6 +1788,16 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 				categories->add_item(name);
 				categories->set_item_metadata(-1, slug);
+			}
+
+			// Remember saved search category and restore it.
+			if (initial_loading) {
+				const int saved_category = EditorSettings::get_singleton()->get_project_metadata("assetlib", "search_category", 0);
+				if (saved_category < categories->get_item_count()) {
+					categories->select(saved_category);
+				}
+
+				_search(current_page);
 			}
 		} break;
 
