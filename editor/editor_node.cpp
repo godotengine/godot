@@ -8387,6 +8387,7 @@ HashMap<String, Variant> EditorNode::get_initial_settings() {
 	settings["display/window/stretch/mode"] = "canvas_items";
 	settings["physics/3d/physics_engine"] = "Jolt Physics";
 	settings["rendering/rendering_device/driver.windows"] = "d3d12";
+	settings["rendering/lights_and_shadows/multi_bounce_occlusion/enabled"] = true;
 	return settings;
 }
 
