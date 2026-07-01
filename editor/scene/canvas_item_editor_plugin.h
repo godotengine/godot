@@ -47,6 +47,7 @@ class MenuButton;
 class PanelContainer;
 class RichTextLabel;
 class StyleBoxTexture;
+class TextEdit;
 class Timer;
 class ViewPanner;
 class VScrollBar;
@@ -203,6 +204,11 @@ private:
 	Tool tool = TOOL_SELECT;
 	Control *viewport = nullptr;
 	Control *viewport_scrollable = nullptr;
+	TextEdit *control_text_editor;
+	// The Control node whose text is being edited.
+	CanvasItem *control_text_source = nullptr;
+	// If `true`, the Control whose text is being edited is a RichTextLabel with BBCode enabled.
+	bool control_text_editing_bbcode = false;
 
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
@@ -495,10 +501,12 @@ private:
 	void _draw_message();
 
 	void _draw_viewport();
+	void _popup_control_text_editor(CanvasItem *p_canvas_item);
 
 	bool _gui_input_anchors(const Ref<InputEvent> &p_event);
 	bool _gui_input_move(const Ref<InputEvent> &p_event);
 	bool _gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event);
+	bool _gui_input_edit_control_text_on_double_click(const Ref<InputEvent> &p_event);
 	bool _gui_input_scale(const Ref<InputEvent> &p_event);
 	bool _gui_input_pivot(const Ref<InputEvent> &p_event);
 	bool _gui_input_resize(const Ref<InputEvent> &p_event);
@@ -610,6 +618,8 @@ public:
 
 	void find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 
+	void _control_text_editor_text_changed();
+	void _control_text_editor_gui_input(const Ref<InputEvent> &p_event);
 	void update_viewport();
 
 	Tool get_current_tool() { return tool; }
