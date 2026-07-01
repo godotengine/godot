@@ -38,7 +38,7 @@
 #include <vorbis/vorbisenc.h>
 
 class MovieWriterOGV : public MovieWriter {
-	GDCLASS(MovieWriterOGV, MovieWriter)
+	GDSOFTCLASS(MovieWriterOGV, MovieWriter)
 
 	uint32_t mix_rate = 48000;
 	AudioServer::SpeakerMode speaker_mode = AudioServer::SPEAKER_MODE_STEREO;
