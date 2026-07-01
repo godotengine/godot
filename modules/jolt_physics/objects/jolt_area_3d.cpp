@@ -134,11 +134,11 @@ bool JoltArea3D::_remove_shape_pair(Overlap &p_overlap, const JPH::SubShapeID &p
 	return true;
 }
 
-void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callback) {
+void JoltArea3D::_flush_events(OverlapsById &p_objects, Callable &p_callback) {
 	for (OverlapsById::Iterator E = p_objects.begin(); E;) {
 		Overlap &overlap = E->value;
 
-		if (p_callback.is_valid()) {
+		if (!p_callback.is_null()) {
 			for (const ShapeIndexPair &shape_indices : overlap.pending_added) {
 				int &ref_count = overlap.ref_counts[shape_indices];
 				if (ref_count++ == 0) {
@@ -170,8 +170,10 @@ void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callba
 	}
 }
 
-void JoltArea3D::_report_event(const Callable &p_callback, PhysicsServer3D::AreaBodyStatus p_status, const RID &p_other_rid, ObjectID p_other_instance_id, int p_other_shape_index, int p_self_shape_index) const {
-	ERR_FAIL_COND(!p_callback.is_valid());
+void JoltArea3D::_report_event(Callable &p_callback, PhysicsServer3D::AreaBodyStatus p_status, const RID &p_other_rid, ObjectID p_other_instance_id, int p_other_shape_index, int p_self_shape_index) {
+	if (unlikely(p_callback.is_null())) {
+		return;
+	}
 
 	const Variant arg1 = p_status;
 	const Variant arg2 = p_other_rid;
@@ -185,7 +187,13 @@ void JoltArea3D::_report_event(const Callable &p_callback, PhysicsServer3D::Area
 	p_callback.callp(args, 5, ret, ce);
 
 	if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
-		ERR_PRINT_ONCE(vformat("Failed to call area monitor callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(p_callback, args, 5, ce)));
+		if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
+			// Godot Physics effectively silences this error by virtue of doing a `Callable::is_valid` check before the call, so we silently ignore this for compatibility.
+			// There's no point in trying to call this callback again though, so we clear it.
+			p_callback = Callable();
+		} else {
+			ERR_PRINT_ONCE(vformat("Failed to call area monitor callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(p_callback, args, 5, ce)));
+		}
 	}
 }
 

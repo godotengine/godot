@@ -137,9 +137,8 @@ private:
 	void _add_shape_pair(Overlap &p_overlap, const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id);
 	bool _remove_shape_pair(Overlap &p_overlap, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id);
 
-	void _flush_events(OverlapsById &p_objects, const Callable &p_callback);
-
-	void _report_event(const Callable &p_callback, PhysicsServer3D::AreaBodyStatus p_status, const RID &p_other_rid, ObjectID p_other_instance_id, int p_other_shape_index, int p_self_shape_index) const;
+	void _flush_events(OverlapsById &p_objects, Callable &p_callback);
+	void _report_event(Callable &p_callback, PhysicsServer3D::AreaBodyStatus p_status, const RID &p_other_rid, ObjectID p_other_instance_id, int p_other_shape_index, int p_self_shape_index);
 
 	void _notify_body_entered(const JPH::BodyID &p_body_id);
 	void _notify_body_exited(const JPH::BodyID &p_body_id);
@@ -165,10 +164,10 @@ public:
 	Variant get_param(PhysicsServer3D::AreaParameter p_param) const;
 	void set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value);
 
-	bool has_body_monitor_callback() const { return body_monitor_callback.is_valid(); }
+	bool has_body_monitor_callback() const { return !body_monitor_callback.is_null(); }
 	void set_body_monitor_callback(const Callable &p_callback);
 
-	bool has_area_monitor_callback() const { return area_monitor_callback.is_valid(); }
+	bool has_area_monitor_callback() const { return !area_monitor_callback.is_null(); }
 	void set_area_monitor_callback(const Callable &p_callback);
 
 	bool is_monitoring_bodies() const { return has_body_monitor_callback(); }
