@@ -63,6 +63,9 @@ class BonePropertiesEditor : public VBoxContainer {
 	EditorInspectorSection *rest_section = nullptr;
 	EditorPropertyTransform3D *rest_matrix = nullptr;
 
+	EditorInspectorSection *skin_section = nullptr;
+	EditorPropertyVector3 *skin_scale_property = nullptr;
+
 	EditorInspectorSection *meta_section = nullptr;
 	AddMetadataDialog *add_meta_dialog = nullptr;
 
