@@ -6917,8 +6917,12 @@ void EditorNode::set_distraction_free_mode(bool p_enter) {
 		if (editor_dock_manager->are_docks_visible()) {
 			editor_dock_manager->set_docks_visible(false);
 		}
+		bottom_panel->hide_bottom_panel();
 	} else {
 		editor_dock_manager->set_docks_visible(true);
+		if (bottom_panel->get_previous_tab() >= 0) {
+			bottom_panel->set_current_tab(bottom_panel->get_previous_tab());
+		}
 	}
 
 	emit_signal(SNAME("distraction_free_mode_changed"), p_enter);
