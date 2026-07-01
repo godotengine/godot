@@ -40,6 +40,8 @@
 class Callable;
 class StringName;
 class Variant;
+template <typename>
+class Vector;
 
 struct ArrayPrivate;
 struct ContainerType;
@@ -108,6 +110,8 @@ public:
 	int size() const;
 	bool is_empty() const;
 	void clear();
+
+	const Vector<Variant> &as_vector() const;
 
 	bool operator==(const Array &p_array) const;
 	bool operator!=(const Array &p_array) const;
@@ -197,6 +201,7 @@ public:
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
+	explicit Array(Vector<Variant> &&p_from);
 	Array(std::initializer_list<Variant> p_init);
 	Array();
 	~Array();
