@@ -1086,7 +1086,7 @@ Files extracted from upstream source:
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 1.0.3 (d114cd9e3c32d7f77bc9b324ae5c71d7775cb7ae, 2026)
+- Version: 1.0.4 (049f96db4adf792ccc98ce3edb9c7bb2a4691320, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1097,6 +1097,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-let-delete-be-delete.patch` ([GH-116024](https://github.com/godotengine/godot/pull/116024))
+- `0002-remove-tvgLoader.patch` ([GH-118784](https://github.com/godotengine/godot/pull/118784))
 
 
 ## tinyexr

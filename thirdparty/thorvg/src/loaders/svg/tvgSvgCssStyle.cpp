@@ -139,6 +139,12 @@ static void _copyStyle(SvgStyleProperty* to, const SvgStyleProperty* from, bool 
         to->flags |= SvgStyleFlags::Opacity;
         if (from->flagsImportance & SvgStyleFlags::Opacity) to->flagsImportance |= SvgStyleFlags::Opacity;
     }
+    if (((from->flags & SvgStyleFlags::BlendMode) && (overwrite || !(to->flags & SvgStyleFlags::BlendMode))) ||
+        _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::BlendMode)) {
+        to->blendMode = from->blendMode;
+        to->flags |= SvgStyleFlags::BlendMode;
+        if (from->flagsImportance & SvgStyleFlags::BlendMode) to->flagsImportance |= SvgStyleFlags::BlendMode;
+    }
 }
 
 
