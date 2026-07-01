@@ -39,6 +39,14 @@ namespace embree
     return "FreeBSD (32bit)";
 #elif defined(__FREEBSD__) && defined(__64BIT__)
     return "FreeBSD (64bit)";
+#elif defined(__OPENBSD__) && !defined(__64BIT__)
+    return "OpenBSD (32bit)";
+#elif defined(__OPENBSD__) && defined(__64BIT__)
+    return "OpenBSD (64bit)";
+#elif defined(__NETBSD__) && !defined(__64BIT__)
+    return "NetBSD (32bit)";
+#elif defined(__NETBSD__) && defined(__64BIT__)
+    return "NetBSD (64bit)";
 #elif defined(__CYGWIN__) && !defined(__64BIT__)
     return "Cygwin (32bit)";
 #elif defined(__CYGWIN__) && defined(__64BIT__)
@@ -617,6 +625,71 @@ namespace embree
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
+/// OpenBSD Platform
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined (__OPENBSD__)
+
+namespace embree
+{
+  std::string getExecutableFileName()
+  {
+    // Only possible using argv[0]
+    return "";
+  }
+
+  size_t getVirtualMemoryBytes() {
+    return 0;
+  }
+
+  size_t getResidentMemoryBytes() {
+    return 0;
+  }
+}
+
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+/// NetBSD Platform
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined (__NETBSD__)
+
+#include <stdio.h>
+#include <unistd.h>
+
+namespace embree
+{
+  std::string getExecutableFileName()
+  {
+    std::string pid = "/proc/" + toString(getpid()) + "/exe";
+    char buf[4096];
+    memset(buf,0,sizeof(buf));
+    if (readlink(pid.c_str(), buf, sizeof(buf)-1) == -1)
+      return std::string();
+    return std::string(buf);
+  }
+
+  size_t getVirtualMemoryBytes()
+  {
+    size_t virt, resident, shared;
+    std::ifstream buffer("/proc/self/statm");
+    buffer >> virt >> resident >> shared;
+    return virt*sysconf(_SC_PAGE_SIZE);
+  }
+
+  size_t getResidentMemoryBytes()
+  {
+    size_t virt, resident, shared;
+    std::ifstream buffer("/proc/self/statm");
+    buffer >> virt >> resident >> shared;
+    return resident*sysconf(_SC_PAGE_SIZE);
+  }
+}
+
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
 /// Mac OS X Platform
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -672,7 +745,7 @@ namespace embree
     static int nThreads = -1;
     if (nThreads != -1) return nThreads;
 
-#if defined(__MACOSX__) || defined(__ANDROID__)
+#if defined(__MACOSX__) || defined(__ANDROID__) || defined(__OPENBSD__) || defined(__NETBSD__)
     nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
     assert(nThreads);
 #elif defined(__EMSCRIPTEN__)

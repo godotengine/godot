@@ -10,6 +10,10 @@ inputs:
   platform:
     description: Target platform.
     type: string
+  scons-executable:
+    description: Path to the scons executable.
+    default: scons
+    type: string
   scons-flags:
     description: Additional SCons flags.
     type: string
@@ -17,12 +21,16 @@ inputs:
     description: The SCons cache path.
     default: ${{ github.workspace }}/.scons_cache/
     type: string
+  shell:
+    description: The shell used to execute commands.
+    default: sh
+    type: string
 
 runs:
   using: composite
   steps:
     - name: SCons Build
-      shell: sh
+      shell: ${{ inputs.shell }}
       run: |
         echo "Building with flags:" platform=${{ inputs.platform }} target=${{ inputs.target }} ${{ inputs.scons-flags }} "cache_path=${{ inputs.scons-cache }}" redirect_build_objects=no
 
@@ -38,5 +46,5 @@ runs:
           export BUILD_NAME="gh"
         fi
 
-        scons platform=${{ inputs.platform }} target=${{ inputs.target }} ${{ inputs.scons-flags }} "cache_path=${{ inputs.scons-cache }}" redirect_build_objects=no
+        ${{ inputs.scons-executable }} platform=${{ inputs.platform }} target=${{ inputs.target }} ${{ inputs.scons-flags }} "cache_path=${{ inputs.scons-cache }}" redirect_build_objects=no
         ls -l bin/

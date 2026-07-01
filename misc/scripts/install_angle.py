@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import platform
 import shutil
 import sys
 import urllib.request
@@ -36,12 +35,12 @@ archs = [
     "x86_64-gcc",
     "x86_64-llvm",
 ]
-if platform.system() == "Windows":
+if sys.platform == "win32":
     # Only download MSVC libraries if we can build using it.
     archs.append("arm64-msvc")
     archs.append("x86_32-msvc")
     archs.append("x86_64-msvc")
-elif platform.system() == "Darwin":
+elif sys.platform == "darwin":
     # Only download macOS/iOS libraries if we can build for these platforms.
     archs.append("arm64-ios")
     archs.append("arm64-ios-sim")

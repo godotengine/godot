@@ -3,7 +3,7 @@ import platform
 import sys
 from typing import TYPE_CHECKING
 
-from methods import get_compiler_version, print_error, print_info, print_warning, using_gcc
+from methods import get_compiler_version, print_error, print_info, print_warning, using_clang, using_gcc
 from platform_methods import detect_arch, validate_arch
 
 if TYPE_CHECKING:
@@ -117,8 +117,8 @@ def configure(env: "SConsEnvironment"):
 
     ## Compiler configuration
 
-    if "CXX" in env and "clang" in os.path.basename(env["CXX"]):
-        # Convenience check to enforce the use_llvm overrides when CXX is clang(++)
+    if using_clang(env):
+        # Convenience check to enforce the use_llvm overrides when using clang.
         env["use_llvm"] = True
 
     if env["use_llvm"]:
@@ -407,7 +407,7 @@ def configure(env: "SConsEnvironment"):
     else:
         env.Append(CPPDEFINES=["XKB_ENABLED"])
 
-    if platform.system() == "Linux":
+    if sys.platform.startswith("linux"):
         if env["udev"]:
             if not env["use_sowrap"]:
                 if os.system("pkg-config --exists libudev") == 0:  # 0 means found
@@ -424,9 +424,13 @@ def configure(env: "SConsEnvironment"):
     if env["sdl"]:
         if env["builtin_sdl"]:
             env.Append(CPPDEFINES=["SDL_ENABLED"])
+            if not sys.platform.startswith("linux"):  # BSD
+                env.Append(LIBS=["usbhid"])
         elif os.system("pkg-config --exists sdl3") == 0:  # 0 means found
             env.ParseConfig("pkg-config sdl3 --cflags --libs")
             env.Append(CPPDEFINES=["SDL_ENABLED"])
+            if not sys.platform.startswith("linux"):  # BSD
+                env.Append(LIBS=["usbhid"])
         else:
             print_warning(
                 "SDL3 development libraries not found, and `builtin_sdl` was explicitly disabled. Disabling SDL input driver support."
@@ -509,7 +513,10 @@ def configure(env: "SConsEnvironment"):
             env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
 
         env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
-        env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
+
+        # FreeBSD and OpenBSD keep rt functionality in libc
+        if sys.platform.startswith("linux") or sys.platform.startswith("netbsd"):
+            env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
@@ -549,7 +556,7 @@ def configure(env: "SConsEnvironment"):
 
     env.Append(LIBS=["pthread"])
 
-    if platform.system() == "Linux":
+    if sys.platform.startswith("linux"):
         env.Append(LIBS=["dl"])
 
     if platform.libc_ver()[0] != "glibc":
@@ -563,14 +570,25 @@ def configure(env: "SConsEnvironment"):
     else:
         env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
 
-    if platform.system() == "FreeBSD":
+    if sys.platform.startswith("freebsd"):
         env.Append(LINKFLAGS=["-lkvm"])
 
     # Link those statically for portability
     if env["use_static_cpp"]:
-        env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])
-        if env["use_llvm"] and platform.system() != "FreeBSD":
-            env["LINKCOM"] = env["LINKCOM"] + " -l:libatomic.a"
+        if env["use_llvm"] and not sys.platform.startswith("linux"):
+            if sys.platform.startswith("freebsd"):
+                env.Append(LINKFLAGS=["-nostdlib++"])
+                env["LINKCOM"] += " -l:libc++.a"
+                env["LINKCOM"] += " -l:libcxxrt.a"
+            elif sys.platform.startswith("netbsd"):
+                env.Append(LINKFLAGS=["-nostdlib++"])
+                env["LINKCOM"] += " -l:libstdc++.a"
+            # OpenBSD binaries are not portable anyways, so do nothing in that case.
+        else:
+            env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])
+
+        if env["use_llvm"] and sys.platform.startswith("linux"):
+            env["LINKCOM"] += " -l:libatomic.a"
     else:
-        if env["use_llvm"] and platform.system() != "FreeBSD":
+        if env["use_llvm"] and sys.platform.startswith("linux"):
             env.Append(LIBS=["atomic"])
