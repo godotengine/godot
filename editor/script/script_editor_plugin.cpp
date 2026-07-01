@@ -2675,8 +2675,8 @@ void ScriptEditor::_auto_format_text(ScriptEditorBase *p_seb) {
 	}
 }
 
-void ScriptEditor::open_find_in_files_dialog(const String &p_initial_text, bool p_replace) {
-	find_in_files->open_dialog(p_initial_text, p_replace);
+void ScriptEditor::open_find_in_files_dialog(const String &p_initial_text, bool p_replace, const String &p_folder) {
+	find_in_files->open_dialog(p_initial_text, p_replace, p_folder);
 }
 
 void ScriptEditor::open_script_create_dialog(const String &p_base_name, const String &p_base_path) {
