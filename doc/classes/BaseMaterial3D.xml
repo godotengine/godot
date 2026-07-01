@@ -805,10 +805,10 @@
 			Billboard mode is disabled.
 		</constant>
 		<constant name="BILLBOARD_ENABLED" value="1" enum="BillboardMode">
-			The object's Z axis will always face the camera.
+			The object's -Z axis will always face the camera's viewing plane.
 		</constant>
 		<constant name="BILLBOARD_FIXED_Y" value="2" enum="BillboardMode">
-			The object's X axis will always face the camera.
+			The object's X axis will always be aligned with the camera's viewing plane.
 		</constant>
 		<constant name="BILLBOARD_PARTICLES" value="3" enum="BillboardMode">
 			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes (flipbook animation). Enables [code]particles_anim_*[/code] properties.
