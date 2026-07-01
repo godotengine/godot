@@ -460,6 +460,11 @@ class EditorInspectorSection : public Container {
 	enum MenuItems {
 		MENU_COPY_VALUE,
 		MENU_PASTE_VALUE,
+		MENU_COPY_PROPERTY_PATH,
+		MENU_COPY_SECTION,
+		MENU_PASTE_SECTION,
+		MENU_REVERT_VALUE,
+		MENU_OPEN_DOCUMENTATION,
 	};
 
 	String label;
@@ -486,6 +491,8 @@ class EditorInspectorSection : public Container {
 	bool header_hover = false;
 
 	bool checkbox_only = false;
+
+	String doc_path;
 
 	PopupMenu *menu = nullptr;
 
@@ -533,6 +540,8 @@ class EditorInspectorSection : public Container {
 		Ref<Texture2D> icon_gui_animation_key;
 		Ref<Texture2D> icon_copy;
 		Ref<Texture2D> icon_paste;
+		Ref<Texture2D> icon_copy_path;
+		Ref<Texture2D> help_icon;
 
 		Ref<StyleBoxFlat> indent_box;
 		Ref<StyleBoxFlat> icon_hover;
@@ -564,6 +573,7 @@ public:
 	void set_checkable(const String &p_related_check_property, bool p_checkbox_only, bool p_checked);
 	inline bool is_checkable() const { return checkable; }
 	void set_checked(bool p_checked);
+	void set_doc_path(const String &p_doc_path);
 	void set_keying(bool p_keying);
 
 	bool has_revertable_properties() const;
@@ -572,7 +582,7 @@ public:
 	void update_property();
 
 	void _update_popup();
-	void menu_option(int p_option) const;
+	void menu_option(int p_option);
 
 	void register_property(EditorProperty *p_property) { section_properties.push_back(p_property); }
 
