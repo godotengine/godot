@@ -1,0 +1,101 @@
+name: 🚩️ OpenHarmony Builds
+on:
+  workflow_call:
+  workflow_dispatch:
+
+# Global Settings
+env:
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    module_text_server_fb_enabled=yes
+    tests=no
+    generate_bundle=yes
+    OPENHARMONY_SDK_PATH="$HOME/OpenHarmony/"
+
+  NDK_REPO: "Rindbee/OpenHarmony-NDK-public"
+  NDK_VERSION: "5.1.0.107"
+
+jobs:
+  build-openharmony:
+    runs-on: ubuntu-24.04
+    name: ${{ matrix.name }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Template arm64, release (target=template_release, arch=arm64)
+            cache-name: openharmony-template-release-arm64
+            target: template_release
+            scons-flags: arch=arm64
+
+          - name: Template arm64, debug (target=template_debug, arch=arm64)
+            cache-name: openharmony-template-debug-arm64
+            target: template_debug
+            scons-flags: arch=arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Cache OpenHarmony SDK
+        id: cache-ohos
+        uses: actions/cache@v5
+        with:
+          path: ~/OpenHarmony/
+          key: ohos-sdk-${{ env.NDK_VERSION }}
+
+      # Currently, compiling export templates requires only the NDK.
+      - name: Download OpenHarmony NDK (if cache miss)
+        if: steps.cache-ohos.outputs.cache-hit != 'true'
+        uses: step-security/fetch-gh-release-asset@v1
+        with:
+          repo: ${{ env.NDK_REPO }}
+          version: tags/${{ env.NDK_VERSION }}
+          file:  native-linux-x64-${{ env.NDK_VERSION }}-Release.zip
+          target: /tmp/OpenHarmony-NDK-public.zip
+
+      - name: Extract OpenHarmony NDK (if cache miss)
+        if: steps.cache-ohos.outputs.cache-hit != 'true'
+        run: |
+
+          set -euo pipefail
+          mkdir -p $HOME/OpenHarmony/
+
+          echo "::group::Extract..."
+          unzip /tmp/OpenHarmony-NDK-public.zip "native/*" -d $HOME/OpenHarmony/
+          echo "::endgroup::"
+
+          rm /tmp/OpenHarmony-NDK-public.zip
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
+          platform: openharmony
+          target: ${{ matrix.target }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Remove redundant so files
+        run: rm ${{ github.workspace }}/bin/*.so
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}
