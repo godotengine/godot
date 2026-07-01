@@ -245,6 +245,15 @@ void FoldableContainer::remove_title_bar_control(Control *p_control) {
 	remove_child(p_control);
 }
 
+Control *FoldableContainer::get_title_bar_control(int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, title_controls.size(), nullptr);
+	return title_controls[p_index];
+}
+
+int FoldableContainer::get_title_bar_control_count() const {
+	return title_controls.size();
+}
+
 void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -582,6 +591,8 @@ void FoldableContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title_position", "title_position"), &FoldableContainer::set_title_position);
 	ClassDB::bind_method(D_METHOD("get_title_position"), &FoldableContainer::get_title_position);
 	ClassDB::bind_method(D_METHOD("add_title_bar_control", "control"), &FoldableContainer::add_title_bar_control);
+	ClassDB::bind_method(D_METHOD("get_title_bar_control", "index"), &FoldableContainer::get_title_bar_control);
+	ClassDB::bind_method(D_METHOD("get_title_bar_control_count"), &FoldableContainer::get_title_bar_control_count);
 	ClassDB::bind_method(D_METHOD("remove_title_bar_control", "control"), &FoldableContainer::remove_title_bar_control);
 
 	ADD_SIGNAL(MethodInfo("folding_changed", PropertyInfo(Variant::BOOL, "is_folded")));

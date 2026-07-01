@@ -136,6 +136,8 @@ public:
 
 	void add_title_bar_control(Control *p_control);
 	void remove_title_bar_control(Control *p_control);
+	Control *get_title_bar_control(int64_t p_index) const;
+	int get_title_bar_control_count() const;
 
 	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_desired_size() const override;
