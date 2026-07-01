@@ -853,4 +853,48 @@ Error NetSocketUnix::leave_multicast_group(const IPAddress &p_multi_address, con
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
 
+Error NetSocketUnix::set_multicast_send_interface(const String &p_if_name) {
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+
+	HashMap<String, IP::Interface_Info> if_info_list;
+	IP::get_singleton()->get_local_interfaces(&if_info_list);
+
+	const IP::Interface_Info *match = nullptr;
+	for (const KeyValue<String, IP::Interface_Info> &E : if_info_list) {
+		if (E.value.name == p_if_name) {
+			match = &E.value;
+			break;
+		}
+	}
+	ERR_FAIL_NULL_V_MSG(match, ERR_INVALID_PARAMETER, vformat("Network interface %s not found.", p_if_name));
+
+	bool ipv6_success = true; // Using this variable allows attempting IPv4 even if this fails
+	if ((_ip_type == IP::TYPE_IPV6) || (_ip_type == IP::TYPE_ANY)) {
+		const int if_index = match->index.to_int();
+		if (setsockopt(_sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, &if_index, sizeof(if_index)) != 0) {
+			ERR_PRINT("Unable to set IPV6_MULTICAST_IF option.");
+			ipv6_success = false;
+		}
+	}
+
+	if ((_ip_type == IP::TYPE_IPV4) || (_ip_type == IP::TYPE_ANY)) {
+		IPAddress ipv4;
+		for (const IPAddress &ip : match->ip_addresses) {
+			if (ip.is_ipv4()) {
+				ipv4 = ip;
+				break;
+			}
+		}
+		ERR_FAIL_COND_V_MSG(!ipv4.is_valid(), FAILED, vformat("Unable to find the corresponding IPv4 address for interface %s.", p_if_name));
+
+		struct in_addr addr; // in_addr is 4 bytes (uint32_t)
+		memcpy(&addr.s_addr, ipv4.get_ipv4(), sizeof(addr.s_addr));
+		ERR_FAIL_COND_V_MSG(
+				setsockopt(_sock, IPPROTO_IP, IP_MULTICAST_IF, &addr, sizeof(addr)) != 0,
+				FAILED, "Unable to set IP_MULTICAST_IF option.");
+	}
+
+	return ipv6_success ? OK : FAILED;
+}
+
 #endif // UNIX_ENABLED && !UNIX_SOCKET_UNAVAILABLE

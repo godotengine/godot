@@ -68,6 +68,25 @@ Error PacketPeerUDP::leave_multicast_group(IPAddress p_multi_address, const Stri
 	return _sock->leave_multicast_group(p_multi_address, p_if_name);
 }
 
+Error PacketPeerUDP::set_multicast_send_interface(const String &p_if_name) {
+	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(p_if_name.is_empty(), ERR_INVALID_PARAMETER);
+
+	if (!_sock->is_open()) {
+		IP::Type ip_type = IP::TYPE_ANY;
+		if (peer_addr.is_valid()) {
+			ip_type = peer_addr.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+		}
+		Error open_err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
+		ERR_FAIL_COND_V_MSG(open_err != OK, ERR_CANT_CREATE, "Failed to open a new socket.");
+		_sock->set_blocking_enabled(false);
+		_sock->set_broadcasting_enabled(broadcast);
+	}
+
+	return _sock->set_multicast_send_interface(p_if_name);
+}
+
 String PacketPeerUDP::_get_packet_ip() const {
 	return String(get_packet_address());
 }
@@ -373,6 +392,7 @@ void PacketPeerUDP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_broadcast_enabled", "enabled"), &PacketPeerUDP::set_broadcast_enabled);
 	ClassDB::bind_method(D_METHOD("join_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::join_multicast_group);
 	ClassDB::bind_method(D_METHOD("leave_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::leave_multicast_group);
+	ClassDB::bind_method(D_METHOD("set_multicast_send_interface", "interface_name"), &PacketPeerUDP::set_multicast_send_interface);
 }
 
 PacketPeerUDP::PacketPeerUDP() :
