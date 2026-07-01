@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsRayQueryResult3D" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores the result of a ray intersection query.
+	</brief_description>
+	<description>
+		This object contains the intersection information produced by [method PhysicsDirectSpaceState3D.intersect_ray_no_alloc].
+		After calling [method PhysicsDirectSpaceState3D.intersect_ray_no_alloc], the fields of this object will be populated with the hit information if the ray intersects a shape. If no intersection occurred, the values remain unchanged from the previous state.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="collider" type="Object" setter="set_collider" getter="get_collider">
+			The colliding object.
+		</member>
+		<member name="collider_id" type="int" setter="set_collider_id" getter="get_collider_id" default="0">
+			The colliding object's ID.
+		</member>
+		<member name="face_index" type="int" setter="set_face_index" getter="get_face_index" default="-1">
+			The face index at the intersection point.
+			[b]Note:[/b] This value is only valid if the intersected shape is a [ConcavePolygonShape3D]. Otherwise, [code]-1[/code] is returned.
+		</member>
+		<member name="normal" type="Vector3" setter="set_normal" getter="get_normal" default="Vector3(0, 0, 0)">
+			The object's surface normal at the intersection point, or [code]Vector3(0, 0, 0)[/code] if the ray starts inside the shape and [member PhysicsRayQueryParameters3D.hit_from_inside] is [code]true[/code].
+		</member>
+		<member name="position" type="Vector3" setter="set_position" getter="get_position" default="Vector3(0, 0, 0)">
+			The intersection point.
+		</member>
+		<member name="rid" type="RID" setter="set_rid" getter="get_rid" default="RID()">
+			The intersecting object's [RID].
+		</member>
+		<member name="shape" type="int" setter="set_shape" getter="get_shape" default="0">
+			The shape index of the colliding shape.
+		</member>
+	</members>
+</class>
