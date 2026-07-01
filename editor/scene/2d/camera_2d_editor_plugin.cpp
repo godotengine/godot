@@ -244,7 +244,7 @@ void Camera2DEditor::_update_hover(const Vector2 &p_mouse_pos) {
 		}
 	}
 
-	if (hover_type == Drag::NONE && limit_rect.has_point(p_mouse_pos)) {
+	if (hover_type == Drag::NONE && limit_rect.has_point(p_mouse_pos) && selected_camera->get_viewport()) {
 		const Rect2 editor_rect = Rect2(Vector2(), CanvasItemEditor::get_singleton()->get_viewport_control()->get_size());
 		const Rect2 transformed_rect = selected_camera->get_viewport()->get_canvas_transform().xform_inv(limit_rect);
 
