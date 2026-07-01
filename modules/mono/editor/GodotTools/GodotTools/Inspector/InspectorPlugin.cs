@@ -42,12 +42,22 @@ namespace GodotTools.Inspector
                     break;
                 }
 
-                if (scriptPath.StartsWith("csharp://"))
+                if (scriptPath.StartsWith("csharp://", StringComparison.Ordinal))
                 {
-                    // This is a virtual path used by generic types, extract the real path.
                     var scriptPathSpan = scriptPath.AsSpan("csharp://".Length);
-                    scriptPathSpan = scriptPathSpan[..scriptPathSpan.IndexOf(':')];
-                    scriptPath = $"res://{scriptPathSpan}";
+                    int colonIdx = scriptPathSpan.IndexOf(':');
+                    if (colonIdx >= 0)
+                    {
+                        string basePath = $"res://{scriptPathSpan[..colonIdx]}";
+                        string globalBasePath = ProjectSettings.GlobalizePath(basePath);
+                        if (!File.Exists(globalBasePath))
+                            continue;
+                        scriptPath = basePath;
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
 
                 if (File.GetLastWriteTime(scriptPath) > BuildManager.LastValidBuildDateTime)
