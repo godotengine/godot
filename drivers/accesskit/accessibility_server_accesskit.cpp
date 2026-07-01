@@ -34,6 +34,10 @@
 
 #include "servers/text/text_server.h"
 
+#ifdef ANDROID_ENABLED
+#include "platform/android/thread_jandroid.h"
+#endif
+
 _FORCE_INLINE_ accesskit_role AccessibilityServerAccessKit::_accessibility_role(AccessibilityServerEnums::AccessibilityRole p_role) const {
 	if (role_map.has(p_role)) {
 		return role_map[p_role];
@@ -58,6 +62,9 @@ bool AccessibilityServerAccessKit::window_create(DisplayServerEnums::WindowID p_
 	ae->window_id = p_window_id;
 	wd.root_id = rid_owner.make_rid(ae);
 
+#ifdef ANDROID_ENABLED
+	wd.adapter = accesskit_android_adapter_new();
+#endif
 #ifdef WINDOWS_ENABLED
 	wd.adapter = accesskit_windows_subclassing_adapter_new(static_cast<HWND>(p_handle), &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id);
 #endif
@@ -80,12 +87,96 @@ bool AccessibilityServerAccessKit::window_create(DisplayServerEnums::WindowID p_
 	}
 }
 
+void *AccessibilityServerAccessKit::native_create_node_info(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id) {
+	WindowData *wd = windows.getptr(p_window_id);
+	ERR_FAIL_NULL_V(wd, nullptr);
+#ifdef ANDROID_ENABLED
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, nullptr);
+
+	if (wd->host == nullptr && p_host != nullptr) {
+		wd->host = env->NewGlobalRef((jobject)p_host);
+	}
+
+	return accesskit_android_adapter_create_accessibility_node_info(wd->adapter, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, env, (jobject)p_host, p_view_id);
+#else
+	return nullptr;
+#endif
+}
+
+void *AccessibilityServerAccessKit::native_find_focus(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_focus_type) {
+	WindowData *wd = windows.getptr(p_window_id);
+	ERR_FAIL_NULL_V(wd, nullptr);
+#ifdef ANDROID_ENABLED
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, nullptr);
+
+	return accesskit_android_adapter_find_focus(wd->adapter, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, env, (jobject)p_host, p_focus_type);
+#else
+	return nullptr;
+#endif
+}
+
+bool AccessibilityServerAccessKit::native_perform_action(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id, int p_action, void *p_arguments) {
+	WindowData *wd = windows.getptr(p_window_id);
+	ERR_FAIL_NULL_V(wd, false);
+#ifdef ANDROID_ENABLED
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, false);
+
+	accesskit_android_platform_action *platform_action = accesskit_android_platform_action_from_java(env, p_action, (jobject)p_arguments);
+	if (!platform_action) {
+		return false;
+	}
+
+	accesskit_android_queued_events *events = accesskit_android_adapter_perform_action(wd->adapter, &_accessibility_action_callback, (void *)(size_t)p_window_id, p_view_id, platform_action);
+	accesskit_android_platform_action_free(platform_action);
+
+	if (events) {
+		accesskit_android_queued_events_raise(events, env, (jobject)p_host);
+		return true;
+	} else {
+		return false;
+	}
+#else
+	return false;
+#endif
+}
+
+bool AccessibilityServerAccessKit::native_on_hover(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_action, float p_x, float p_y) {
+	WindowData *wd = windows.getptr(p_window_id);
+	ERR_FAIL_NULL_V(wd, false);
+#ifdef ANDROID_ENABLED
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, false);
+
+	accesskit_android_queued_events *events = accesskit_android_adapter_on_hover_event(wd->adapter, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, p_action, p_x, p_y);
+
+	if (events) {
+		accesskit_android_queued_events_raise(events, env, (jobject)p_host);
+		return true;
+	} else {
+		return false;
+	}
+#else
+	return false;
+#endif
+}
+
 void AccessibilityServerAccessKit::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL(wd);
 
 	print_verbose(vformat("Accessibility: window %d adapter destroyed.", p_window_id));
 
+#ifdef ANDROID_ENABLED
+	JNIEnv *env = get_jni_env();
+	if (env && wd->host) {
+		env->DeleteGlobalRef(wd->host);
+		wd->host = nullptr;
+	}
+	accesskit_android_adapter_free(wd->adapter);
+#endif
 #ifdef WINDOWS_ENABLED
 	accesskit_windows_subclassing_adapter_free(wd->adapter);
 #endif
@@ -679,6 +770,12 @@ void AccessibilityServerAccessKit::update_if_active(const Callable &p_callable) 
 	ERR_FAIL_COND(!p_callable.is_valid());
 	update_cb = p_callable;
 	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &window : windows) {
+#ifdef ANDROID_ENABLED
+		accesskit_android_queued_events *events = accesskit_android_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
+		if (events) {
+			accesskit_android_queued_events_raise(events, get_jni_env(), window.value.host);
+		}
+#endif
 #ifdef WINDOWS_ENABLED
 		accesskit_windows_queued_events *events = accesskit_windows_subclassing_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
 		if (events) {
