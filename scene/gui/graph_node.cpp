@@ -1047,6 +1047,7 @@ void GraphNode::_port_pos_update() {
 
 	left_port_cache.clear();
 	right_port_cache.clear();
+	slot_port_cache.clear();
 
 	slot_count = 0; // Reset the slot count, which is the index of the current slot.
 
@@ -1070,14 +1071,20 @@ void GraphNode::_port_pos_update() {
 				port_y = child->get_position().y + size.height * 0.5; // The y centor is calculated from the class object position.
 			}
 
+			SlotCache slot_cache;
+
 			if (slot.enable_left) {
+				slot_cache.left_port_index = left_port_cache.size();
 				PortCache port_cache_left{ Point2i(edgeofs, port_y), slot_count, slot.type_left, slot.color_left };
 				left_port_cache.push_back(port_cache_left);
 			}
 			if (slot.enable_right) {
+				slot_cache.right_port_index = right_port_cache.size();
 				PortCache port_cache_right{ Point2i(get_size().width - edgeofs, port_y), slot_count, slot.type_right, slot.color_right };
 				right_port_cache.push_back(port_cache_right);
 			}
+
+			slot_port_cache.push_back(slot_cache);
 		}
 		vertical_ofs += size.height + separation; // Add the height of the child and the separation to the vertical offset.
 		slot_count++; // Go to the next slot
@@ -1178,6 +1185,28 @@ int GraphNode::get_output_port_slot(int p_port_idx) {
 
 	ERR_FAIL_INDEX_V(p_port_idx, right_port_cache.size(), -1);
 	return right_port_cache[p_port_idx].slot_index;
+}
+
+int GraphNode::get_slot_count() const {
+	return slot_count;
+}
+
+int GraphNode::get_slot_input_port(int p_slot_index) {
+	if (port_pos_dirty) {
+		_port_pos_update();
+	}
+
+	ERR_FAIL_INDEX_V(p_slot_index, slot_port_cache.size(), -1);
+	return slot_port_cache[p_slot_index].left_port_index;
+}
+
+int GraphNode::get_slot_output_port(int p_slot_index) {
+	if (port_pos_dirty) {
+		_port_pos_update();
+	}
+
+	ERR_FAIL_INDEX_V(p_slot_index, slot_port_cache.size(), -1);
+	return slot_port_cache[p_slot_index].right_port_index;
 }
 
 String GraphNode::get_accessibility_container_name(const Node *p_node) const {
@@ -1324,6 +1353,10 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_output_port_type", "port_idx"), &GraphNode::get_output_port_type);
 	ClassDB::bind_method(D_METHOD("get_output_port_color", "port_idx"), &GraphNode::get_output_port_color);
 	ClassDB::bind_method(D_METHOD("get_output_port_slot", "port_idx"), &GraphNode::get_output_port_slot);
+
+	ClassDB::bind_method(D_METHOD("get_slot_count"), &GraphNode::get_slot_count);
+	ClassDB::bind_method(D_METHOD("get_slot_input_port", "slot_index"), &GraphNode::get_slot_input_port);
+	ClassDB::bind_method(D_METHOD("get_slot_output_port", "slot_index"), &GraphNode::get_slot_output_port);
 
 	GDVIRTUAL_BIND(_draw_port, "slot_index", "position", "left", "color")
 
