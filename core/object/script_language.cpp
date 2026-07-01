@@ -682,23 +682,37 @@ bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_v
 		return false;
 	}
 
+	// Convert to the property's declared type if needed.
+	// Matches the logic in GDScriptInstance::set.
+	Variant value = p_value;
+	for (const PropertyInfo &pi : properties) {
+		if (pi.name == p_name) {
+			if (pi.type != Variant::NIL && value.get_type() != pi.type && Variant::can_convert_strict(value.get_type(), pi.type)) {
+				const Variant *args = &p_value;
+				Callable::CallError err;
+				Variant::construct(pi.type, value, &args, 1, err);
+			}
+			break;
+		}
+	}
+
 	if (values.has(p_name)) {
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
 			// The evaluate function ensures that a NIL variant is equal to e.g. an empty Resource.
 			// Simply doing defval == p_value does not do this.
-			if (Variant::evaluate(Variant::OP_EQUAL, defval, p_value)) {
+			if (Variant::evaluate(Variant::OP_EQUAL, defval, value)) {
 				values.erase(p_name);
 				return true;
 			}
 		}
-		values[p_name] = p_value;
+		values[p_name] = value;
 		return true;
 	} else {
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
-			if (Variant::evaluate(Variant::OP_NOT_EQUAL, defval, p_value)) {
-				values[p_name] = p_value;
+			if (Variant::evaluate(Variant::OP_NOT_EQUAL, defval, value)) {
+				values[p_name] = value;
 			}
 			return true;
 		}
