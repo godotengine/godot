@@ -10,7 +10,7 @@
 		To play audio independent of the position of the node, use [AudioStreamPlayer] instead.
 		To handle playback of an audio stream resource at a low level, use the [AudioStreamPlayback] class. To understand how audio files are imported, see [ResourceImporterWAV], [ResourceImporterOggVorbis], and [ResourceImporterMP3].
 		[b]Note:[/b] Hiding an [AudioStreamPlayer3D] node does not mute it. To mute the player, set [member volume_linear] to [code]0.0[/code].
-		[b]Note:[/b] While [AudioStreamPlayer3D] can only hold one [AudioStream], some streams can hold and play multiple sub-streams, like [AudioStreamInteractive].
+		[b]Note:[/b] While [AudioStreamPlayer3D] can only hold one [AudioStream], some streams can hold and play multiple sub-streams, like [AudioStreamInteractive]. See [method AudioStream.is_meta_stream].
 		[b]Note:[/b] Loading [AudioStreamOggVorbis], [AudioStreamMP3], or [AudioStreamInteractive] as a stream adds an additional player parameter in the inspector. For OggVorbis and MP3 streams, that parameter is the loop override. If you enable [code]Looping[/code], then its associated boolean will be checked for loops, instead of the [code]Loop[/code] parameter from import. For [AudioStreamInteractive], the parameter is used to switch clips from the editor, and behaves like [method AudioStreamPlaybackInteractive.switch_to_clip_by_name].
 	</description>
 	<tutorials>
@@ -146,13 +146,13 @@
 	</signals>
 	<constants>
 		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0" enum="AttenuationModel">
-			Attenuation of loudness according to linear distance.
+			Attenuation of loudness according to inverse distance. When using this model, sounds are barely audible at a significant distance, but also significantly increase in volume as it gets closer to the listener.
 		</constant>
 		<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1" enum="AttenuationModel">
-			Attenuation of loudness according to squared distance.
+			Attenuation of loudness according to inverse squared distance. This model is similar to [constant ATTENUATION_INVERSE_DISTANCE], but with a sharper drop-off curve. It is an approximation of how sound behaves in real life.
 		</constant>
 		<constant name="ATTENUATION_LOGARITHMIC" value="2" enum="AttenuationModel">
-			Attenuation of loudness according to logarithmic distance.
+			Attenuation of loudness according to logarithmic distance. When using this model, sounds at a significant distance are still reasonably audible.
 		</constant>
 		<constant name="ATTENUATION_DISABLED" value="3" enum="AttenuationModel">
 			No attenuation of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer]. [constant ATTENUATION_DISABLED] can be combined with a [member max_distance] value greater than [code]0.0[/code] to achieve linear attenuation clamped to a sphere of a defined size.

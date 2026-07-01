@@ -9,7 +9,7 @@
 		To play audio dependent on the position of the node, use [AudioStreamPlayer2D] or [AudioStreamPlayer3D] instead.
 		To handle playback of an audio stream resource at a low level, use the [AudioStreamPlayback] class. To understand how audio files are imported, see [ResourceImporterWAV], [ResourceImporterOggVorbis], and [ResourceImporterMP3].
 		[b]Note:[/b] Hiding an [AudioStreamPlayer] node does not mute it. To mute the player, set [member volume_linear] to [code]0.0[/code].
-		[b]Note:[/b] While [AudioStreamPlayer] can only hold one [AudioStream], some streams can hold and play multiple sub-streams, like [AudioStreamInteractive].
+		[b]Note:[/b] While [AudioStreamPlayer] can only hold one [AudioStream], some streams can hold and play multiple sub-streams, like [AudioStreamInteractive]. See [method AudioStream.is_meta_stream].
 		[b]Note:[/b] Loading [AudioStreamOggVorbis], [AudioStreamMP3], or [AudioStreamInteractive] as a stream adds an additional player parameter in the inspector. For OggVorbis and MP3 streams, that parameter is the loop override. If you enable [code]Looping[/code], then its associated boolean will be checked for loops, instead of the [code]Loop[/code] parameter from import. For [AudioStreamInteractive], the parameter is used to switch clips from the editor, and behaves like [method AudioStreamPlaybackInteractive.switch_to_clip_by_name].
 	</description>
 	<tutorials>
