@@ -61,20 +61,27 @@ class AnimationTreeEditor : public EditorDock {
 	Button *error_button = nullptr;
 	ScrollContainer *error_scroll = nullptr;
 	RichTextLabel *error_label = nullptr;
-
-	AnimationTree *tree = nullptr;
 	MarginContainer *editor_base = nullptr;
 
+	AnimationTree *tree = nullptr;
+	ObjectID current_root;
+
+	// Navigation state.
 	Vector<String> button_path;
 	Vector<String> edited_path;
+	Vector<Vector<String>> path_history;
+	int path_history_pos = -1;
+
 	Vector<AnimationTreeNodeEditorPlugin *> editors;
 
 	void _update_path();
 	void _clear_editors();
-	ObjectID current_root;
-
 	void _path_button_pressed(int p_path);
 	void _animation_list_changed();
+	void _history_forward();
+	void _history_back();
+	void _update_history_pos(int p_new_pos);
+	bool _is_path_valid(const Vector<String> &p_path) const;
 
 	void _toggle_error_panel();
 	void _update_error_message();
@@ -85,6 +92,7 @@ protected:
 	void _meta_clicked(Variant p_meta);
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
+	virtual void input(const Ref<InputEvent> &p_event) override;
 
 	static AnimationTreeEditor *singleton;
 
