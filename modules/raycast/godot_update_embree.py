@@ -100,7 +100,7 @@ subprocess.run(["git", "checkout", git_tag])
 commit_hash = str(subprocess.check_output(["git", "rev-parse", "HEAD"], universal_newlines=True)).strip()
 
 
-def on_rm_error(function: Callable[..., Any], path: str, excinfo: Exception) -> None:
+def on_rm_error(function: Callable[..., Any], path: str, _: Any) -> None:
     """
     Error handler for `shutil.rmtree()`.
 
@@ -116,7 +116,7 @@ def on_rm_error(function: Callable[..., Any], path: str, excinfo: Exception) -> 
 if sys.version_info >= (3, 12):
     shutil.rmtree(".git", onexc=on_rm_error)
 else:
-    shutil.rmtree(".git", onerror=on_rm_error)  # type: ignore
+    shutil.rmtree(".git", onerror=on_rm_error)
 
 all_files = set(cpp_files)
 
