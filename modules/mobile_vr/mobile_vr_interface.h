@@ -67,10 +67,14 @@ private:
 	double k1 = 0.215;
 	double k2 = 0.215;
 	double aspect = 1.0;
+	double z_near = 0.01;
+	double z_far = 4096.0;
 
-	// at a minimum we need a tracker for our head
+	// At a minimum we need a tracker for our head.
 	Ref<XRPositionalTracker> head;
 	Transform3D head_transform;
+	TypedArray<Projection> camera_projections;
+	TypedArray<Transform3D> camera_offsets;
 
 	XRVRS xr_vrs;
 
@@ -163,8 +167,12 @@ public:
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name) override;
+#ifndef DISABLE_DEPRECATED
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+#endif
 	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 
 	virtual void process() override;
