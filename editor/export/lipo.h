@@ -47,6 +47,7 @@ class LipO : public RefCounted {
 	};
 
 	Ref<FileAccess> fa;
+	PackedByteArray buf;
 	Vector<FatArch> archs;
 
 	static inline size_t PAD(size_t s, size_t a) {
@@ -55,11 +56,14 @@ class LipO : public RefCounted {
 
 public:
 	static bool is_lipo(const String &p_path);
+	static bool is_lipo(const PackedByteArray &p_buffer);
 
-	bool create_file(const String &p_output_path, const Vector<String> &p_files);
-	bool create_file(const String &p_output_path, const Vector<String> &p_files, const Vector<Vector2i> &p_cputypes);
+	static bool create_file(const String &p_output_path, const Vector<String> &p_files);
+	static bool create_file(const String &p_output_path, const Vector<String> &p_files, const Vector<Vector2i> &p_cputypes);
 
 	bool open_file(const String &p_path);
+	bool open_buffer(const PackedByteArray &p_buffer);
+
 	int get_arch_count() const;
 	uint32_t get_arch_cputype(int p_index) const;
 	uint32_t get_arch_cpusubtype(int p_index) const;
