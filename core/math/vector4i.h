@@ -47,27 +47,18 @@ struct [[nodiscard]] Vector4i {
 		AXIS_W,
 	};
 
-	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			int32_t x;
-			int32_t y;
-			int32_t z;
-			int32_t w;
-		};
+	int32_t x = 0;
+	int32_t y = 0;
+	int32_t z = 0;
+	int32_t w = 0;
 
-		int32_t coord[4] = { 0 };
-		// NOLINTEND(modernize-use-default-member-init)
-	};
-
-	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
+	constexpr int32_t &operator[](int p_axis) {
 		DEV_ASSERT((unsigned int)p_axis < 4);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
-
-	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
+	constexpr const int32_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 4);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
 
 	Vector4i::Axis min_axis_index() const;
@@ -144,9 +135,7 @@ struct [[nodiscard]] Vector4i {
 		return hash_fmix32(h);
 	}
 
-	constexpr Vector4i() :
-			x(0), y(0), z(0), w(0) {}
-	Vector4i(const Vector4 &p_vec4);
+	constexpr Vector4i() = default;
 	constexpr Vector4i(int32_t p_x, int32_t p_y, int32_t p_z, int32_t p_w) :
 			x(p_x), y(p_y), z(p_z), w(p_w) {}
 };
@@ -373,3 +362,9 @@ void Vector4i::zero() {
 
 template <>
 struct is_zero_constructible<Vector4i> : std::true_type {};
+
+static_assert(offsetof(Vector4i, x) == 0 * sizeof(int32_t));
+static_assert(offsetof(Vector4i, y) == 1 * sizeof(int32_t));
+static_assert(offsetof(Vector4i, z) == 2 * sizeof(int32_t));
+static_assert(offsetof(Vector4i, w) == 3 * sizeof(int32_t));
+static_assert(sizeof(Vector4i) == 4 * sizeof(int32_t));
