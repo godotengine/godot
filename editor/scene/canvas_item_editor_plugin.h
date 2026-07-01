@@ -57,6 +57,7 @@ class CanvasItemEditorSelectedItem : public Object {
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
 
 public:
+	bool prev_drawn = false;
 	Transform2D prev_xform;
 	Rect2 prev_rect;
 	Vector2 prev_pivot;
