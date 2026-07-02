@@ -349,6 +349,14 @@
 				Returns one of the [enum Error] code constants ([constant OK] on success).
 			</description>
 		</method>
+		<method name="erase_contents_recursive">
+			<return type="int" enum="Error" />
+			<description>
+				Recursively deletes all files and directories inside the currently opened directory.
+				The current directory itself is not removed.
+				Returns one of the [enum Error] code constants ([constant OK] on success).
+			</description>
+		</method>
 		<method name="remove_absolute" qualifiers="static">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
