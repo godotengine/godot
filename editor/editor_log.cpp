@@ -218,7 +218,11 @@ void EditorLog::_meta_clicked(const String &p_meta) {
 		if (ResourceLoader::exists(path)) {
 			const Ref<Resource> res = ResourceLoader::load(path);
 			ScriptEditor::get_singleton()->edit(res, line, 0);
-			EditorNode::get_singleton()->push_item(res.ptr(), "", true);
+			EditorNode *editor_node = EditorNode::get_singleton();
+			if (res.is_valid() && editor_node->get_editor_selection_history()->get_current() != res->get_instance_id()) {
+				// Avoid re-editing the current script without the clicked line number.
+				editor_node->push_item(res.ptr(), "", true);
+			}
 		}
 	} else if (path.has_extension("cpp") || path.has_extension("h") || path.has_extension("mm") || path.has_extension("hpp")) {
 		// Godot source file. Try to open it in external editor.
