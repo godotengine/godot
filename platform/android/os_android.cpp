@@ -44,6 +44,7 @@
 #include "core/config/engine.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
+#include "core/io/file_access.h"
 #include "core/io/xml_parser.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -485,6 +486,27 @@ String OS_Android::get_model_name() const {
 	}
 
 	return OS_Unix::get_model_name();
+}
+
+String OS_Android::get_processor_name() const {
+	// The SoC model is only guaranteed to be set on devices launching with Android 12 or later.
+	const String soc_model = get_system_property("ro.soc.model");
+	if (!soc_model.is_empty()) {
+		return soc_model;
+	}
+
+	// Older devices: the SoC name is exposed by the kernel as the "Hardware" line in `/proc/cpuinfo`.
+	Ref<FileAccess> f = FileAccess::open("/proc/cpuinfo", FileAccess::READ);
+	if (f.is_valid()) {
+		while (!f->eof_reached()) {
+			const String line = f->get_line();
+			if (line.begins_with("Hardware")) {
+				return line.get_slicec(':', 1).strip_edges();
+			}
+		}
+	}
+
+	ERR_FAIL_V_MSG(String(), "Couldn't get the SoC model name.");
 }
 
 String OS_Android::get_data_path() const {

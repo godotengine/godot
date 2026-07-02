@@ -471,8 +471,8 @@
 		<method name="get_processor_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the full name of the CPU model on the host machine (e.g. [code]"Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz"[/code]).
-				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android and Web, [method get_processor_name] returns an empty string.
+				Returns the full name of the CPU model on the host machine (e.g. [code]"Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz"[/code]). On Android and iOS, this returns the SoC model instead (e.g. [code]"SM8650"[/code], [code]"Apple A18 Pro"[/code]).
+				[b]Note:[/b] This method is only implemented on Android, iOS, Linux, macOS, and Windows. On Web, [method get_processor_name] returns an empty string.
 			</description>
 		</method>
 		<method name="get_restart_on_exit_arguments" qualifiers="const">
