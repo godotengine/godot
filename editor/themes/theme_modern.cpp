@@ -556,6 +556,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_constant("h_separation", "CheckButton", 8 * EDSCALE);
 		p_theme->set_constant("check_v_offset", "CheckButton", 0);
 		p_theme->set_constant("outline_size", "CheckButton", 0);
+		p_theme->set_constant("button_on_right", "CheckButton", 1);
 
 		// ToggleButton.
 		{
@@ -577,7 +578,6 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_stylebox("hover_pressed_mirrored", "ToggleButton", checkbox_style);
 
 			p_theme->set_icon("checked", "ToggleButton", p_theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
-
 			p_theme->set_icon("unchecked", "ToggleButton", p_theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("checked_disabled", "ToggleButton", p_theme->get_icon(SNAME("GuiCheckedDisabled"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("unchecked_disabled", "ToggleButton", p_theme->get_icon(SNAME("GuiUncheckedDisabled"), EditorStringName(EditorIcons)));
@@ -594,7 +594,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_icon("checked_disabled", "RadioButton", p_theme->get_icon(SNAME("GuiRadioCheckedDisabled"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("unchecked_disabled", "RadioButton", p_theme->get_icon(SNAME("GuiRadioUncheckedDisabled"), EditorStringName(EditorIcons)));
 		}
-		
+
 		// LinkButton.
 
 		p_theme->set_stylebox("focus", "LinkButton", p_config.base_empty_style);

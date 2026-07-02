@@ -42,12 +42,12 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/toggle_button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/toggle_button.h"
 
 static bool _is_zip_entry_symlink(const unz_file_info &p_info) {
 	static constexpr uint32_t UNIX_FILE_TYPE_MASK = 0170000;

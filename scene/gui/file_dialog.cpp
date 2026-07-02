@@ -39,7 +39,6 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/toggle_button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/item_list.h"
@@ -49,6 +48,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"
 

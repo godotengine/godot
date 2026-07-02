@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "scene/gui/toggle_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/toggle_button.h"
 
 class EditorFileDialog;
 class EditorValidationPanel;

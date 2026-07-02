@@ -40,10 +40,10 @@
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/toggle_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
 

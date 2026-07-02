@@ -526,6 +526,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 		p_theme->set_constant("h_separation", "CheckButton", 8 * EDSCALE);
 		p_theme->set_constant("check_v_offset", "CheckButton", 0);
 		p_theme->set_constant("outline_size", "CheckButton", 0);
+		p_theme->set_constant("button_on_right", "CheckButton", 1);
 
 		// ToggleButton.
 		{
@@ -541,7 +542,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_icon("unchecked", "ToggleButton", p_theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("checked_disabled", "ToggleButton", p_theme->get_icon(SNAME("GuiCheckedDisabled"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("unchecked_disabled", "ToggleButton", p_theme->get_icon(SNAME("GuiUncheckedDisabled"), EditorStringName(EditorIcons)));
-			
+
 			p_theme->set_color(SceneStringName(font_color), "ToggleButton", p_config.font_color);
 			p_theme->set_color("font_hover_color", "ToggleButton", p_config.font_hover_color);
 			p_theme->set_color("font_hover_pressed_color", "ToggleButton", p_config.font_hover_pressed_color);
@@ -560,7 +561,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_constant("check_v_offset", "ToggleButton", 0);
 			p_theme->set_constant("outline_size", "ToggleButton", 0);
 		}
-		
+
 		// RadioButton
 		{
 			p_theme->set_icon("checked", "RadioButton", p_theme->get_icon(SNAME("GuiRadioChecked"), EditorStringName(EditorIcons)));

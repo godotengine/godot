@@ -36,13 +36,13 @@
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
-#include "scene/gui/toggle_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/toggle_button.h"
 
 // Inspector controls.
 

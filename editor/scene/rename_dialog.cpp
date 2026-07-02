@@ -36,7 +36,6 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/script/script_editor_plugin.h"
-#include "scene/gui/toggle_button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
@@ -44,6 +43,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/main/scene_tree.h"
 
 #include "modules/regex/regex.h"

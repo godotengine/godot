@@ -43,12 +43,12 @@
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/version_control/editor_vcs_interface.h"
-#include "scene/gui/toggle_button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/toggle_button.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 

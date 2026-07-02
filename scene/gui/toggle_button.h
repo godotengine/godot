@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  check_box.h                                                           */
+/*  toggle_button.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -46,19 +46,19 @@ class ToggleButton : public Button {
 		Ref<Texture2D> checked_pressed;
 		Ref<Texture2D> checked_hover_pressed;
 		Ref<Texture2D> checked_disabled;
-		
+
 		Ref<Texture2D> checked_focus;
 		Ref<Texture2D> checked_hover_focus;
 		Ref<Texture2D> checked_pressed_focus;
 		Ref<Texture2D> checked_hover_pressed_focus;
 		Ref<Texture2D> checked_disabled_focus;
-		
+
 		Ref<Texture2D> unchecked;
 		Ref<Texture2D> unchecked_hover;
 		Ref<Texture2D> unchecked_pressed;
 		Ref<Texture2D> unchecked_hover_pressed;
 		Ref<Texture2D> unchecked_disabled;
-		
+
 		Ref<Texture2D> unchecked_focus;
 		Ref<Texture2D> unchecked_hover_focus;
 		Ref<Texture2D> unchecked_pressed_focus;
@@ -72,14 +72,13 @@ class ToggleButton : public Button {
 protected:
 	Size2 get_icon_size() const;
 	Size2 get_minimum_size() const override;
-	
+
 	std::tuple<Ref<Texture2D>, Ref<Texture2D>> _get_current_icon() const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
 	virtual bool is_radio() const;
-	bool right_aligned;
 
 public:
 	ToggleButton(const String &p_text = String());
@@ -89,21 +88,19 @@ class CheckBox : public ToggleButton {
 	GDCLASS(CheckBox, ToggleButton);
 
 public:
-	CheckBox(const String &p_text = String()) : ToggleButton(p_text){}
+	CheckBox(const String &p_text = String()) : ToggleButton(p_text) {}
 };
 
 class RadioButton : public ToggleButton {
 	GDCLASS(RadioButton, ToggleButton);
 
 public:
-	RadioButton(const String &p_text = String()) : ToggleButton(p_text){}
+	RadioButton(const String &p_text = String()) : ToggleButton(p_text) {}
 };
 
 class CheckButton : public ToggleButton {
 	GDCLASS(CheckButton, ToggleButton);
-	
+
 public:
-	CheckButton(const String &p_text = String()): ToggleButton(p_text) {
-		right_aligned = true;
-	}
+	CheckButton(const String &p_text = String()) : ToggleButton(p_text) {}
 };

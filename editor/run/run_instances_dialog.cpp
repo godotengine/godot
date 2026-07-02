@@ -35,7 +35,6 @@
 #include "core/os/os.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/toggle_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
@@ -43,6 +42,7 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 

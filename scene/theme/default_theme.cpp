@@ -285,11 +285,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("hover_pressed", "ToggleButton", tb_empty);
 	theme->set_stylebox("focus", "ToggleButton", tb_focus);
 
-	theme->set_icon("checked", "ToggleButton", icons["checked"]);
-	theme->set_icon("checked_disabled", "ToggleButton", icons["checked_disabled"]);
-	theme->set_icon("unchecked", "ToggleButton", icons["unchecked"]);
-	theme->set_icon("unchecked_disabled", "ToggleButton", icons["unchecked_disabled"]);
-
 	theme->set_font(SceneStringName(font), "ToggleButton", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "ToggleButton", -1);
 
@@ -304,12 +299,20 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "ToggleButton", Math::round(4 * scale));
 	theme->set_constant("check_v_offset", "ToggleButton", 0);
 	theme->set_constant("outline_size", "ToggleButton", 0);
+	theme->set_constant("button_on_right", "ToggleButton", 0);
 
 	theme->set_color("checkbox_checked_color", "ToggleButton", Color(1, 1, 1));
 	theme->set_color("checkbox_unchecked_color", "ToggleButton", Color(1, 1, 1));
 
+	// CheckBox
+
+	theme->set_icon("checked", "CheckBox", icons["checked"]);
+	theme->set_icon("checked_disabled", "CheckBox", icons["checked_disabled"]);
+	theme->set_icon("unchecked", "CheckBox", icons["unchecked"]);
+	theme->set_icon("unchecked_disabled", "CheckBox", icons["unchecked_disabled"]);
+
 	// RadioButton
-	
+
 	theme->set_icon("checked", "RadioButton", icons["radio_checked"]);
 	theme->set_icon("checked_disabled", "RadioButton", icons["radio_checked_disabled"]);
 	theme->set_icon("unchecked", "RadioButton", icons["radio_unchecked"]);
@@ -351,6 +354,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "CheckButton", Math::round(4 * scale));
 	theme->set_constant("check_v_offset", "CheckButton", 0);
 	theme->set_constant("outline_size", "CheckButton", 0);
+	theme->set_constant("button_on_right", "CheckButton", 1);
 
 	theme->set_color("button_checked_color", "CheckButton", Color(1, 1, 1));
 	theme->set_color("button_unchecked_color", "CheckButton", Color(1, 1, 1));

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RadioButton" inherits="ToggleButton" api_type="core" keywords="switch, toggle" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A button that represents a binary choice.
+	</brief_description>
+	<description>
+		[RadioButton] is a toggle button displayed as a radio button. It's similar to [CheckBox] in functionality, but it has a different appearance. To follow established UX patterns, it's recommended to use [RadioButton] when it must be an exclusive choice through an assigned [member BaseButton.button_group]. For example, it can be used when deciding what rendering method to use on a new project.
+		See also [ToggleButton] and [BaseButton] which contains common properties and methods associated with this node.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

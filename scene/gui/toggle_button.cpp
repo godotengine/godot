@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  check_box.cpp                                                         */
+/*  toggle_button.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -87,19 +87,20 @@ Size2 ToggleButton::get_minimum_size() const {
 }
 
 std::tuple<Ref<Texture2D>, Ref<Texture2D>> ToggleButton::_get_current_icon() const {
-	Ref<Texture2D> icon = theme_cache.checked;
-	if (!is_pressed()) {
-		icon = theme_cache.unchecked;
-	}
-	
-	Ref<Texture2D> icon_focus = theme_cache.checked_focus;
-	if (!is_pressed()) {
-		icon_focus = theme_cache.unchecked_focus;
-	}
+#define APPLY_ICONS(state_name) \
+	if (has_theme_icon(SNAME(#state_name))) \
+		icon = theme_cache.state_name; \
+	if (has_theme_icon(SNAME(#state_name "_focus"))) \
+		icon_focus = theme_cache.state_name##_focus;
 
-	#define APPLY_ICONS(state_name) \
-		if (has_theme_icon(SNAME(#state_name))) icon = theme_cache.state_name; \
-		if (has_theme_icon(SNAME(#state_name "_focus"))) icon_focus = theme_cache.state_name##_focus; \
+	Ref<Texture2D> icon;
+	Ref<Texture2D> icon_focus;
+
+	if (is_pressed()) {
+		APPLY_ICONS(checked)
+	} else {
+		APPLY_ICONS(unchecked)
+	}
 
 	switch (get_draw_mode()) {
 		case DRAW_NORMAL:
@@ -169,6 +170,8 @@ std::tuple<Ref<Texture2D>, Ref<Texture2D>> ToggleButton::_get_current_icon() con
 }
 
 void ToggleButton::_notification(int p_what) {
+	bool rtl = is_layout_rtl();
+
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
@@ -184,8 +187,8 @@ void ToggleButton::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (theme_cache.button_on_right || right_aligned) {
-				if (is_layout_rtl()) {
+			if (theme_cache.button_on_right == 1) {
+				if (rtl) {
 					_set_internal_margin(SIDE_LEFT, get_icon_size().width);
 					_set_internal_margin(SIDE_RIGHT, 0.f);
 				} else {
@@ -193,7 +196,7 @@ void ToggleButton::_notification(int p_what) {
 					_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
 				}
 			} else {
-				if (is_layout_rtl()) {
+				if (rtl) {
 					_set_internal_margin(SIDE_LEFT, 0.f);
 					_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
 				} else {
@@ -211,15 +214,15 @@ void ToggleButton::_notification(int p_what) {
 			Ref<Texture2D> icon_focus = std::get<1>(icons);
 
 			Vector2 ofs;
-			if (theme_cache.button_on_right || right_aligned) {
-				if (is_layout_rtl()) {
+			if (theme_cache.button_on_right == 1) {
+				if (rtl) {
 					ofs.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
 				} else {
 					ofs.x = get_size().width - (get_icon_size().width + theme_cache.normal_style->get_margin(SIDE_RIGHT));
 				}
 				ofs.y = (get_size().height - get_icon_size().height) / 2 + theme_cache.check_v_offset;
 			} else {
-				if (is_layout_rtl()) {
+				if (rtl) {
 					ofs.x = get_size().x - theme_cache.normal_style->get_margin(SIDE_RIGHT) - get_icon_size().width;
 				} else {
 					ofs.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
@@ -260,7 +263,7 @@ void ToggleButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_hover_pressed_focus);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_disabled);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_disabled_focus);
-	
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_hover);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_pressed);
@@ -271,7 +274,7 @@ void ToggleButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_hover_pressed_focus);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_disabled);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_disabled_focus);
-	
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ToggleButton, checkbox_checked_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ToggleButton, checkbox_unchecked_color);
 }
@@ -288,4 +291,3 @@ ToggleButton::ToggleButton(const String &p_text) :
 		_set_internal_margin(SIDE_LEFT, get_icon_size().width);
 	}
 }
-
