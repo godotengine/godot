@@ -660,6 +660,7 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_absolute", "path"), &DirAccess::make_dir_absolute);
 	ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &DirAccess::make_dir_recursive);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_recursive_absolute", "path"), &DirAccess::make_dir_recursive_absolute);
+	ClassDB::bind_method(D_METHOD("erase_contents_recursive"), &DirAccess::erase_contents_recursive);
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &DirAccess::file_exists);
 	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &DirAccess::dir_exists);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("dir_exists_absolute", "path"), &DirAccess::dir_exists_absolute);
