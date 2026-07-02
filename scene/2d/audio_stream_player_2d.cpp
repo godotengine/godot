@@ -66,7 +66,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 			if (setplayback.is_valid() && setplay.get() >= 0) {
 				internal->active.set();
-				AudioServer::get_singleton()->start_playback_stream(setplayback, _get_actual_bus(), volume_vector, setplay.get(), internal->pitch_scale);
+				AudioServer::get_singleton()->start_playback_stream(setplayback, _get_actual_bus(), volume_vector, setplay.get(), internal->pitch_scale, internal->muted);
 				setplayback.unref();
 				setplay.set(-1);
 			}
@@ -227,6 +227,14 @@ void AudioStreamPlayer2D::set_volume_linear(float p_volume) {
 
 float AudioStreamPlayer2D::get_volume_linear() const {
 	return Math::db_to_linear(get_volume_db());
+}
+
+void AudioStreamPlayer2D::set_mute(bool p_mute) {
+	internal->set_mute(p_mute);
+}
+
+bool AudioStreamPlayer2D::is_muted() const {
+	return internal->muted;
 }
 
 void AudioStreamPlayer2D::set_pitch_scale(float p_pitch_scale) {
@@ -390,6 +398,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_linear", "volume_linear"), &AudioStreamPlayer2D::set_volume_linear);
 	ClassDB::bind_method(D_METHOD("get_volume_linear"), &AudioStreamPlayer2D::get_volume_linear);
 
+	ClassDB::bind_method(D_METHOD("set_mute", "mute"), &AudioStreamPlayer2D::set_mute);
+	ClassDB::bind_method(D_METHOD("is_muted"), &AudioStreamPlayer2D::is_muted);
+
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer2D::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer2D::get_pitch_scale);
 
@@ -435,6 +446,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,or_greater,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mute"), "set_mute", "is_muted");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_ONESHOT, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
@@ -448,6 +460,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 
 	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(MethodInfo("mute_toggled"));
 }
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {

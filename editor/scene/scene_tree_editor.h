@@ -57,6 +57,7 @@ class SceneTreeEditor : public Control {
 		BUTTON_GROUPS = 7,
 		BUTTON_PIN = 8,
 		BUTTON_UNIQUE = 9,
+		BUTTON_MUTE = 10,
 	};
 
 	struct CachedNode {
@@ -189,6 +190,11 @@ class SceneTreeEditor : public Control {
 	bool pending_selection_update = false;
 	Timer *update_node_tooltip_delay = nullptr;
 
+	bool mute_drag_value = false;
+	Vector2 mute_drag_start_pos;
+	ObjectID mute_drag_start_node;
+	LocalVector<ObjectID> mute_drag_nodes;
+
 	bool visibility_drag_value = false;
 	Vector2 visibility_drag_start_pos;
 	ObjectID visibility_drag_start_node;
@@ -198,17 +204,20 @@ class SceneTreeEditor : public Control {
 
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
+	void _toggle_mute(Node *p_node);
 	void _toggle_visible(Node *p_node);
 	void _cell_multi_selected(Object *p_object, int p_cell, bool p_selected);
 	void _process_selection_update();
 	void _update_selection(TreeItem *item);
 	void _node_script_changed(Node *p_node);
+	void _node_mute_toggled(Node *p_node);
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 	void _set_item_custom_color(TreeItem *p_item, Color p_color);
 	void _update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _queue_update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _tree_scroll_to_item(ObjectID p_item_id);
+	void _reset_mute_drag();
 	void _reset_visibility_drag();
 
 	void _selection_changed();
