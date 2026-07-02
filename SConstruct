@@ -14,6 +14,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
 
 from SCons import __version__ as scons_raw_version
+from SCons.Action import Action
 from SCons.Builder import ListEmitter
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
@@ -54,8 +55,6 @@ _helper_module("main.main_builders", "main/main_builders.py")
 _helper_module("misc.utility.color", "misc/utility/color.py")
 
 # Local
-import gles3_builders
-import glsl_builders
 import methods
 import scu_builders
 from misc.utility.color import is_stderr_color, print_error, print_info, print_warning
@@ -520,8 +519,8 @@ for tool in custom_tools:
 env.Prepend(CPPPATH=["#"])
 
 # configure ENV for platform
-env.platform_exporters = platform_exporters
-env.platform_apis = platform_apis
+env["PLATFORM_EXPORTERS"] = platform_exporters
+env["PLATFORM_APIS"] = platform_apis
 
 # Configuration of build targets:
 # - Editor or template
@@ -643,7 +642,7 @@ env.Append(ARFLAGS=env.get("arflags", "").split())
 env.Append(RCFLAGS=env.get("rcflags", "").split())
 
 # Feature build profile
-env.disabled_classes = []
+env["DISABLED_CLASSES"] = []
 if env["build_profile"] != "":
     print(f'Using feature build profile: "{env["build_profile"]}"')
     import json
@@ -651,7 +650,7 @@ if env["build_profile"] != "":
     try:
         ft = json.load(open(env["build_profile"], "r", encoding="utf-8"))
         if "disabled_classes" in ft:
-            env.disabled_classes = ft["disabled_classes"]
+            env["DISABLED_CLASSES"] = ft["disabled_classes"]
         if "disabled_build_options" in ft:
             dbo = ft["disabled_build_options"]
             for c in dbo:
@@ -1173,25 +1172,6 @@ env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
 
-GLSL_BUILDERS = {
-    "RD_GLSL": env.Builder(
-        action=env.Run(glsl_builders.build_rd_headers),
-        suffix="glsl.gen.h",
-        src_suffix=".glsl",
-    ),
-    "GLSL_HEADER": env.Builder(
-        action=env.Run(glsl_builders.build_raw_headers),
-        suffix="glsl.gen.h",
-        src_suffix=".glsl",
-    ),
-    "GLES3_GLSL": env.Builder(
-        action=env.Run(gles3_builders.build_gles3_headers),
-        suffix="glsl.gen.h",
-        src_suffix=".glsl",
-    ),
-}
-env.Append(BUILDERS=GLSL_BUILDERS)
-
 if env["compiledb"]:
     env.Tool("compilation_db")
     env.NoCache(env.CompilationDatabase())
@@ -1223,6 +1203,49 @@ if "c_compiler_launcher" in env:
 if "cpp_compiler_launcher" in env:
     env["CXX"] = " ".join([env["cpp_compiler_launcher"], env["CXX"]])
 
+
+# Create a cloned environment where it will add implicit dependencies for the first
+# two items in the Command's action string.
+py_builder_env = env.Clone(IMPLICIT_COMMAND_DEPENDENCIES=2, PYTHON_BIN=sys.executable)
+py_builder_env.Tool("handle_long_lines")
+py_builder_env["TEMPFILE_ARG_COUNT"] = 2
+py_builder_env["MYTEMPFILEPREFIX"] = "--argfile "
+Export("py_builder_env")
+
+py_builder_env["BUILD_RD_HEADERS_COM"] = (
+    "${MYTEMPFILE('$PYTHON_BIN glsl_builders.py --method build_rd_headers --target $TARGET --source $SOURCE','$GENCOMSTR')}"
+)
+py_builder_env["BUILD_RAW_HEADERS_COM"] = (
+    "$PYTHON_BIN glsl_builders.py --method build_raw_headers --target $TARGET --source $SOURCE"
+)
+py_builder_env["BUILD_GLES3_HEADERS_COM"] = (
+    "$PYTHON_BIN gles3_builders.py --method build_gles3_headers --target $TARGET --source $SOURCE"
+)
+GLSL_BUILDERS = {
+    "RD_GLSL": py_builder_env.Builder(
+        action=Action("$BUILD_RD_HEADERS_COM", "$GENCOMSTR"),
+        suffix="glsl.gen.h",
+        src_suffix=".glsl",
+    ),
+    "GLSL_HEADER": py_builder_env.Builder(
+        action=Action(
+            "$BUILD_RAW_HEADERS_COM",
+            "$GENCOMSTR",
+        ),
+        suffix="glsl.gen.h",
+        src_suffix=".glsl",
+    ),
+    "GLES3_GLSL": py_builder_env.Builder(
+        action=Action(
+            "$BUILD_GLES3_HEADERS_COM",
+            "$GENCOMSTR",
+        ),
+        suffix="glsl.gen.h",
+        src_suffix=".glsl",
+    ),
+}
+py_builder_env.Append(BUILDERS=GLSL_BUILDERS)
+
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
@@ -1232,6 +1255,11 @@ SConscript("scene/SCsub")
 if env.editor_build:
     SConscript("editor/SCsub")
 SConscript("drivers/SCsub")
+
+# Now ensure py_builder_env has all the CPPPATH and CPPDEFINES from env
+# which are set by drivers
+py_builder_env.Prepend(CPPPATH=env["CPPPATH"])
+py_builder_env.Append(CPPDEFINES=env["CPPDEFINES"])
 
 SConscript("platform/SCsub")
 SConscript("modules/SCsub")

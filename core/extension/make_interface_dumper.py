@@ -1,12 +1,19 @@
+import argparse
+import os
+import sys
+
+# Add parent directory to path so we can import methods
+sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
+
 import methods
 
 
-def run(target, source, env):
-    buffer = methods.get_buffer(str(source[0]))
+def run(target, source):
+    buffer = methods.get_buffer(source)
     decomp_size = len(buffer)
     buffer = methods.compress_buffer(buffer)
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         file.write(f"""\
 #ifdef TOOLS_ENABLED
 
@@ -42,3 +49,22 @@ class GDExtensionInterfaceDump {{
 
 #endif // TOOLS_ENABLED
 """)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Interface dumper build tools")
+    parser.add_argument("--target", required=True, help="Target file")
+    parser.add_argument("--source", required=True, help="Source file")
+
+    args = parser.parse_args()
+
+    # Create mock objects
+    target = args.target
+    source = args.source
+
+    # Call the function
+    run(target, source)
+
+
+if __name__ == "__main__":
+    main()

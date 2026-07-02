@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
+Import("py_builder_env")
 
-import editor.template_builders as build_template_cs
-
-env.CommandNoCache("templates.gen.h", Glob("*/*.cs"), env.Run(build_template_cs.make_templates))
+py_builder_env.Command(
+    "templates.gen.h",
+    Glob("*/*.cs"),
+    Action(
+        "$PYTHON_BIN editor/template_builders.py --method make_templates --target $TARGET --source $SOURCES",
+        "$GENCOMSTR",
+    ),
+)

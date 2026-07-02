@@ -2,28 +2,32 @@
 from misc.utility.scons_hints import *
 
 import os
+import sys
 
 import editor_builders
 
-Import("env")
+Import("env", "py_builder_env")
 
 env.editor_sources = []
 
 if env.editor_build:
     # Generate doc data paths
-    env.CommandNoCache(
+    env.Command(
         "doc/doc_data_class_path.gen.h",
         env.Value(env.doc_class_path),
         env.Run(editor_builders.doc_data_class_path_builder),
     )
 
     # Register exporters
-    gen_exporters = env.CommandNoCache(
+    gen_exporters = py_builder_env.Command(
         "export/register_exporters.gen.cpp",
-        env.Value(env.platform_exporters),
-        env.Run(editor_builders.register_exporters_builder),
+        env.Value(env["PLATFORM_EXPORTERS"]),
+        Action(
+            '$PYTHON_BIN editor/editor_builders.py --method register_exporters_builder --target $TARGET --source "$PLATFORM_EXPORTERS"',
+            "$GENCOMSTR",
+        ),
     )
-    for e in env.platform_exporters:
+    for e in env["PLATFORM_EXPORTERS"]:
         # Add all .cpp files in export folder
         env.add_source_files(env.editor_sources, f"../platform/{e}/export/*.cpp")
 
@@ -44,11 +48,10 @@ if env.editor_build:
             docs += Glob(d + "/*.xml")  # Custom.
 
     docs = sorted(docs)
-    env.CommandNoCache(
-        "#editor/doc/doc_data_compressed.gen.h",
-        docs,
-        env.Run(editor_builders.make_doc_header),
+    py_builder_env["MAKE_DOC_HEADER_COM"] = (
+        "${MYTEMPFILE('$PYTHON_BIN editor/editor_builders.py --method make_doc_header --target $TARGET --source $SOURCES','$GENCOMSTR')}"
     )
+    py_builder_env.Command("#editor/doc/doc_data_compressed.gen.h", docs, Action("$MAKE_DOC_HEADER_COM", "$GENCOMSTR"))
 
     # Editor interface and class reference translations incur a significant size
     # cost for the editor binary (see godot-proposals#3421).
@@ -64,10 +67,13 @@ if env.editor_build:
     }
     for target_cpp, sources in translation_targets.items():
         target_h = os.path.splitext(target_cpp)[0] + ".h"
-        env.CommandNoCache(
+        py_builder_env.Command(
             [target_h, target_cpp],
             sources,
-            env.Run(editor_builders.make_translations),
+            Action(
+                f"{sys.executable} editor/editor_builders.py --method make_translations --target $TARGETS --source $SOURCES",
+                "$GENCOMSTR",
+            ),
         )
 
     env.add_source_files(env.editor_sources, "*.cpp")

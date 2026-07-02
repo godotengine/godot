@@ -1,3 +1,5 @@
+import argparse
+
 proto_mod = """
 #define MODBIND$VER($RETTYPE m_name$ARG) \\
 virtual $RETVAL _##m_name($FUNCARGS) $CONST; \\
@@ -116,7 +118,7 @@ def generate_ex_version(argcount, const=False, returns=False):
     return s
 
 
-def run(target, source, env):
+def run(target):
     max_versions = 12
 
     txt = "#pragma once"
@@ -137,3 +139,20 @@ def run(target, source, env):
 
     with open(str(target[0]), "w", encoding="utf-8", newline="\n") as f:
         f.write(txt)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Extension wrapper build tools")
+    parser.add_argument("--target", required=True, help="Target file")
+
+    args = parser.parse_args()
+
+    # Create mock objects
+    target = [args.target]  # Convert to list to match expected format
+
+    # Call the function
+    run(target)
+
+
+if __name__ == "__main__":
+    main()

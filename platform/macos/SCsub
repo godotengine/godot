@@ -55,7 +55,15 @@ else:
     prog = env.add_program("#bin/godot", files)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
-    env.AddPostAction(prog, env.Run(platform_macos_builders.make_debug_macos))
+    debug_post_actions = []
+    if env["macports_clang"] != "no":
+        mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
+        mpclangver = env["macports_clang"]
+        debug_post_actions.append(f"{mpprefix}/libexec/llvm-{mpclangver}/bin/llvm-dsymutil $TARGET -o ${TARGET}.dSYM")
+    else:
+        debug_post_actions.append("dsymutil $TARGET -o ${TARGET}.dSYM")
+    debug_post_actions.append("strip -u -r $TARGET")
+    env.AddPostAction(prog, debug_post_actions)
 
 if env["generate_bundle"]:
     env.AlwaysBuild(env.CommandNoCache("generate_bundle", prog, env.Run(platform_macos_builders.generate_bundle)))

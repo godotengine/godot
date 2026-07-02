@@ -1,11 +1,17 @@
 """Functions used to generate source files during build time"""
 
+import argparse
+import os
+import sys
 from collections import OrderedDict
+
+# Add parent directory to path so we can import methods
+sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
 import methods
 
 
-def make_default_controller_mappings(target, source, env):
+def make_default_controller_mappings(target, source):
     with methods.generated_wrapper(str(target[0])) as file:
         file.write("""\
 #include "core/input/default_controller_mappings.h"
@@ -63,3 +69,30 @@ def make_default_controller_mappings(target, source, env):
             file.write(f"#endif // {variable}_ENABLED\n")
 
         file.write("\tnullptr\n};\n")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Input build tools")
+    parser.add_argument(
+        "--method",
+        required=True,
+        choices=["make_default_controller_mappings"],
+        help="Builder method to execute",
+    )
+    parser.add_argument("--target", nargs="+", required=True, help="Target file(s)")
+    parser.add_argument("--source", nargs="+", required=True, help="Source file(s)")
+
+    args = parser.parse_args()
+
+    target = args.target
+    source = args.source
+
+    if args.method == "make_default_controller_mappings":
+        make_default_controller_mappings(target, source)
+    else:
+        print(f"Unknown method: {args.method}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
