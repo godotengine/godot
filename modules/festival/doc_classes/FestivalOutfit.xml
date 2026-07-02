@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalOutfit" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A wearable costume identity in the Festival of Disguises.
+	</brief_description>
+	<description>
+		During the festival, islanders believe a costume identity is real, so the
+		outfit Alex wears is the strongest lever over how NPCs perceive them. The
+		[member role] and [member authority] feed the perception rule evaluated by
+		[FestivalDirector]: a [code]constable[/code] outfit can unlock confessions or
+		fear, a [code]merchant[/code] outfit can change trade access and pricing.
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="authority" type="int" setter="set_authority" getter="get_authority">
+			How much social authority the outfit grants. Higher values unlock higher-access interactions.
+		</member>
+		<member name="display_name" type="String" setter="set_display_name" getter="get_display_name">
+			Human-readable name shown in UI.
+		</member>
+		<member name="id" type="StringName" setter="set_id" getter="get_id">
+			Unique identifier used by the registry and interaction gates.
+		</member>
+		<member name="role" type="StringName" setter="set_role" getter="get_role">
+			The perceived social role, for example [code]constable[/code], [code]merchant[/code] or [code]civilian[/code].
+		</member>
+		<member name="tags" type="PackedStringArray" setter="set_tags" getter="get_tags">
+			Free-form tags for authoring queries.
+		</member>
+	</members>
+</class>

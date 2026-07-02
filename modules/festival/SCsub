@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_festival = env_modules.Clone()
+
+module_obj = []
+
+env_festival.add_source_files(module_obj, "*.cpp")
+
+env.modules_sources += module_obj

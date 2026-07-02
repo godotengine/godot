@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalRegistry" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A lookup table of all authored content, keyed by resource id.
+	</brief_description>
+	<description>
+		Systems resolve ids to resources through the registry, for example mapping the
+		current outfit id to its perceived role and authority. Content can be
+		registered by hand or bulk loaded from a directory with [method scan_directory].
+		Registered as the [code]FestivalRegistry[/code] singleton.
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+</class>

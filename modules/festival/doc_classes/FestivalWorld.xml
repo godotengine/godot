@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalWorld" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		All volatile per-run state: flags, inventory, outfit and presented items.
+	</brief_description>
+	<description>
+		Everything here is wiped by [method reset] at the start of a run; only the
+		[FestivalNotebook] survives. Together with the notebook and the clock and
+		weather this forms the perception equation
+		[code]NPC_Reaction = Outfit + Held_Items + World_State_Flags + Knowledge[/code].
+		Registered as the [code]FestivalWorld[/code] singleton.
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<signals>
+		<signal name="flag_changed">
+			<param index="0" name="flag" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Emitted when a world flag is set or erased.
+			</description>
+		</signal>
+		<signal name="inventory_changed">
+			<description>
+				Emitted when items are added or removed.
+			</description>
+		</signal>
+		<signal name="outfit_changed">
+			<param index="0" name="outfit" type="StringName" />
+			<description>
+				Emitted when Alex changes outfit.
+			</description>
+		</signal>
+		<signal name="presented_changed">
+			<description>
+				Emitted when the set of presented items changes.
+			</description>
+		</signal>
+		<signal name="world_reset">
+			<description>
+				Emitted when [method reset] wipes per-run state.
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalNPC" inherits="Node2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A live islander placed in a scene.
+	</brief_description>
+	<description>
+		Wraps a [FestivalNPCProfile], keeps its current schedule state in sync with
+		[FestivalClock] and [FestivalWeather], and exposes a one-call [method interact]
+		that runs the [FestivalDirector] perception resolver and returns the reaction.
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="profile" type="FestivalNPCProfile" setter="set_profile" getter="get_profile">
+			The authoring data backing this NPC.
+		</member>
+	</members>
+	<signals>
+		<signal name="state_changed">
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Emitted when the NPC's schedule state changes because the phase, weather or run changed.
+			</description>
+		</signal>
+		<signal name="interacted">
+			<param index="0" name="reaction" type="Dictionary" />
+			<description>
+				Emitted after [method interact], carrying the resolved reaction.
+			</description>
+		</signal>
+	</signals>
+</class>

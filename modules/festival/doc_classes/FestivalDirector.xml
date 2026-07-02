@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalDirector" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		The brain that ties every subsystem together; exposed as [code]Festival[/code].
+	</brief_description>
+	<description>
+		Owns the run lifecycle ([method begin_run] and [method end_run]) and evaluates
+		the core rule
+		[code]NPC_Reaction = Outfit + Held_Items + World_State_Flags + Knowledge[/code].
+		[method resolve_reaction] returns what an NPC currently perceives and the
+		interactions it offers; [method apply_interaction] runs the chosen interaction's
+		outcomes, learning knowledge, setting flags and moving items. Registered under
+		the short name [code]Festival[/code].
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<signals>
+		<signal name="run_started">
+			<param index="0" name="weather" type="int" />
+			<description>
+				Emitted by [method begin_run] after per-run state is reset and weather rolled.
+			</description>
+		</signal>
+		<signal name="run_concluded">
+			<description>
+				Emitted by [method end_run] after the notebook is saved.
+			</description>
+		</signal>
+		<signal name="interaction_applied">
+			<param index="0" name="npc" type="StringName" />
+			<param index="1" name="interaction_id" type="StringName" />
+			<param index="2" name="dialogue" type="String" />
+			<description>
+				Emitted after an interaction's outcomes are applied.
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalWeather" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Morning weather, rolled at the start of every run.
+	</brief_description>
+	<description>
+		Weather is randomized each run so repeated runs are never perfectly identical.
+		It feeds NPC schedule variants and interaction gates. Registered as the
+		[code]FestivalWeather[/code] singleton.
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<signals>
+		<signal name="weather_changed">
+			<param index="0" name="weather" type="int" />
+			<description>
+				Emitted when the weather value changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="WEATHER_SUN" value="0" enum="Weather">
+			Clear weather.
+		</constant>
+		<constant name="WEATHER_RAIN" value="1" enum="Weather">
+			Rain, which can move NPCs indoors and change access.
+		</constant>
+	</constants>
+</class>
