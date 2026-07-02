@@ -94,16 +94,18 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mouse_button = p_event;
-	bool ui_accept = p_event->is_action("ui_accept", true) && !p_event->is_echo();
+	bool is_mouse_button_emulated_from_touch = mouse_button.is_valid() && mouse_button->is_emulated_from_touch();
+	bool ui_accept = p_event->is_action("ui_accept", true) && !p_event->is_echo() && !is_mouse_button_emulated_from_touch;
 
-	bool button_masked = mouse_button.is_valid() && button_mask.has_flag(mouse_button_to_mask(mouse_button->get_button_index()));
+	bool button_masked = mouse_button.is_valid() && !is_mouse_button_emulated_from_touch &&
+			button_mask.has_flag(mouse_button_to_mask(mouse_button->get_button_index()));
 	if (button_masked || ui_accept) {
 		was_mouse_pressed = button_masked;
 		on_action_event(p_event);
 		was_mouse_pressed = false;
 	} else {
 		Ref<InputEventMouseMotion> mouse_motion = p_event;
-		if (mouse_motion.is_valid()) {
+		if (mouse_motion.is_valid() && !mouse_motion->is_emulated_from_touch()) {
 			if (status.press_attempt) {
 				bool last_press_inside = status.pressing_inside;
 				status.pressing_inside = has_point(mouse_motion->get_position());

@@ -988,6 +988,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 				button_event->set_position(st->get_position());
 				button_event->set_global_position(st->get_position());
+				button_event->set_emulated_from_touch(true);
 				button_event->set_pressed(st->is_pressed());
 				button_event->set_canceled(st->is_canceled());
 				button_event->set_button_index(MouseButton::LEFT);
@@ -1025,6 +1026,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event->set_pressure(sd->get_pressure());
 			motion_event->set_position(sd->get_position());
 			motion_event->set_global_position(sd->get_position());
+			motion_event->set_emulated_from_touch(true);
 			motion_event->set_relative(sd->get_relative());
 			motion_event->set_relative_screen_position(sd->get_relative_screen_position());
 			motion_event->set_velocity(sd->get_velocity());
@@ -1526,6 +1528,7 @@ void Input::ensure_touch_mouse_raised() {
 		button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 		button_event->set_position(mouse_pos);
 		button_event->set_global_position(mouse_pos);
+		button_event->set_emulated_from_touch(true);
 		button_event->set_pressed(false);
 		button_event->set_button_index(MouseButton::LEFT);
 		BitField<MouseButtonMask> ev_bm = mouse_button_mask;

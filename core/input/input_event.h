@@ -209,6 +209,7 @@ class InputEventMouse : public InputEventWithModifiers {
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
 	BitField<MouseButtonMask> button_mask = MouseButtonMask::NONE;
+	bool emulated_from_touch = false;
 
 	Vector2 pos;
 	Vector2 global_pos;
@@ -225,6 +226,9 @@ public:
 
 	void set_global_position(const Vector2 &p_global_pos);
 	Vector2 get_global_position() const;
+
+	void set_emulated_from_touch(bool p_emulated);
+	bool is_emulated_from_touch() const;
 
 	InputEventMouse();
 };

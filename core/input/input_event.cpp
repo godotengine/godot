@@ -697,6 +697,15 @@ Vector2 InputEventMouse::get_global_position() const {
 	return global_pos;
 }
 
+void InputEventMouse::set_emulated_from_touch(bool p_emulated) {
+	emulated_from_touch = p_emulated;
+	emit_changed();
+}
+
+bool InputEventMouse::is_emulated_from_touch() const {
+	return emulated_from_touch;
+}
+
 void InputEventMouse::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_mask", "button_mask"), &InputEventMouse::set_button_mask);
 	ClassDB::bind_method(D_METHOD("get_button_mask"), &InputEventMouse::get_button_mask);
@@ -764,6 +773,7 @@ RequiredResult<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &
 
 	mb->set_position(l);
 	mb->set_global_position(g);
+	mb->set_emulated_from_touch(is_emulated_from_touch());
 
 	mb->set_button_mask(get_button_mask());
 	mb->set_pressed(pressed);
@@ -987,6 +997,7 @@ RequiredResult<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &
 	mm->set_pen_inverted(get_pen_inverted());
 	mm->set_tilt(get_tilt());
 	mm->set_global_position(get_global_position());
+	mm->set_emulated_from_touch(is_emulated_from_touch());
 
 	mm->set_button_mask(get_button_mask());
 	mm->set_relative(p_xform.basis_xform(get_relative()));
@@ -1047,6 +1058,10 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 	}
 
 	if (get_button_mask() != motion->get_button_mask()) {
+		return false;
+	}
+
+	if (is_emulated_from_touch() != motion->is_emulated_from_touch()) {
 		return false;
 	}
 
