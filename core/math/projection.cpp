@@ -936,7 +936,7 @@ void Projection::add_jitter_offset(const Vector2 &p_offset) {
 
 Projection::operator Transform3D() const {
 	Transform3D tr;
-	const real_t *m = &columns[0][0];
+	const real_t *m = &columns[0].x;
 
 	tr.basis.rows[0][0] = m[0];
 	tr.basis.rows[1][0] = m[1];
@@ -959,7 +959,7 @@ Projection::operator Transform3D() const {
 
 Projection::Projection(const Transform3D &p_transform) {
 	const Transform3D &tr = p_transform;
-	real_t *m = &columns[0][0];
+	real_t *m = &columns[0].x;
 
 	m[0] = tr.basis.rows[0][0];
 	m[1] = tr.basis.rows[1][0];

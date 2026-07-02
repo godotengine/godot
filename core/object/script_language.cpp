@@ -639,7 +639,7 @@ TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_characteristics
 	}
 	charac.push_back(matches.size());
 	charac.push_back((matches[0].first == 0) ? 0 : 1);
-	const char32_t *target_char = &p_base[0];
+	const char32_t *target_char = p_base.ptr();
 	int bad_case = 0;
 	for (const Pair<int, int> &match_segment : matches) {
 		const char32_t *string_to_complete_char = &display[match_segment.first];

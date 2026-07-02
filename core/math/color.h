@@ -36,17 +36,10 @@
 class String;
 
 struct [[nodiscard]] Color {
-	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			float r;
-			float g;
-			float b;
-			float a;
-		};
-		float components[4] = { 0, 0, 0, 1.0 };
-		// NOLINTEND(modernize-use-default-member-init)
-	};
+	float r = 0.0f;
+	float g = 0.0f;
+	float b = 0.0f;
+	float a = 1.0f;
 
 	uint32_t to_rgba32() const;
 	uint32_t to_argb32() const;
@@ -65,11 +58,13 @@ struct [[nodiscard]] Color {
 	void set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	void set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 
-	_FORCE_INLINE_ float &operator[](int p_idx) {
-		return components[p_idx];
+	constexpr float &operator[](int p_idx) {
+		DEV_ASSERT((unsigned int)p_idx < 4);
+		return (&r)[p_idx];
 	}
-	_FORCE_INLINE_ const float &operator[](int p_idx) const {
-		return components[p_idx];
+	constexpr float operator[](int p_idx) const {
+		DEV_ASSERT((unsigned int)p_idx < 4);
+		return (&r)[p_idx];
 	}
 
 	constexpr bool operator==(const Color &p_color) const {
@@ -248,8 +243,7 @@ struct [[nodiscard]] Color {
 		return hash_fmix32(h);
 	}
 
-	constexpr Color() :
-			r(0), g(0), b(0), a(1) {}
+	constexpr Color() = default;
 
 	/**
 	 * RGBA construct parameters.
@@ -270,7 +264,6 @@ struct [[nodiscard]] Color {
 	constexpr Color(const Color &p_c, float p_a) :
 			r(p_c.r), g(p_c.g), b(p_c.b), a(p_a) {}
 
-	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
 	Color(const String &p_code) {
 		if (html_is_valid(p_code)) {
 			*this = html(p_code);
@@ -283,7 +276,6 @@ struct [[nodiscard]] Color {
 		*this = Color(p_code);
 		a = p_a;
 	}
-	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
 
 constexpr Color Color::operator+(const Color &p_color) const {
@@ -403,3 +395,9 @@ constexpr bool Color::operator<(const Color &p_color) const {
 constexpr Color operator*(float p_scalar, const Color &p_color) {
 	return p_color * p_scalar;
 }
+
+static_assert(offsetof(Color, r) == 0 * sizeof(float));
+static_assert(offsetof(Color, g) == 1 * sizeof(float));
+static_assert(offsetof(Color, b) == 2 * sizeof(float));
+static_assert(offsetof(Color, a) == 3 * sizeof(float));
+static_assert(sizeof(Color) == 4 * sizeof(float));

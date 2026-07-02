@@ -7070,7 +7070,7 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 	buffer->put_32((uint32_t)total_file_length); // length
 	buffer->put_32((uint32_t)text_chunk_length);
 	buffer->put_32(text_chunk_type);
-	buffer->put_data((uint8_t *)&cs[0], text_data_length);
+	buffer->put_data((uint8_t *)cs.ptr(), text_data_length);
 	for (uint64_t pad_i = text_data_length; pad_i < text_chunk_length; pad_i++) {
 		buffer->put_8(' ');
 	}

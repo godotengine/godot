@@ -131,7 +131,6 @@ class [[nodiscard]] CharProxy {
 
 	const int _index;
 	CowData<T> &_cowdata;
-	static constexpr T _null = 0;
 
 	_FORCE_INLINE_ CharProxy(const int &p_index, CowData<T> &p_cowdata) :
 			_index(p_index),
@@ -144,7 +143,7 @@ public:
 
 	_FORCE_INLINE_ operator T() const {
 		if (unlikely(_index == _cowdata.size())) {
-			return _null;
+			return T(0);
 		}
 
 		return _cowdata.get(_index);
@@ -170,12 +169,11 @@ public:
 template <typename T>
 class [[nodiscard]] CharStringT {
 	CowData<T> _cowdata;
-	static constexpr T _null = 0;
 
 public:
 	_FORCE_INLINE_ T *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const T *get_data() const _LIFETIME_BOUND_ { return size() ? ptr() : &_null; }
+	_FORCE_INLINE_ const T *get_data() const _LIFETIME_BOUND_ { return ptr(); }
 
 	// Returns the number of characters in the buffer, including the terminating NUL character.
 	// In most cases, length() should be used instead.
@@ -193,9 +191,9 @@ public:
 
 	_FORCE_INLINE_ T get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ const T &operator[](int p_index) const {
+	_FORCE_INLINE_ T operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
-			return _null;
+			return T(0);
 		}
 		return _cowdata.get(p_index);
 	}
@@ -223,7 +221,7 @@ public:
 
 		T *dst = ptrw();
 		dst[lhs_len] = p_char;
-		dst[lhs_len + 1] = _null;
+		dst[lhs_len + 1] = T(0);
 
 		return *this;
 	}
@@ -263,7 +261,6 @@ using Char16String = CharStringT<char16_t>;
 
 class [[nodiscard]] String {
 	CowData<char32_t> _cowdata;
-	static constexpr char32_t _null = 0;
 	static constexpr char32_t _replacement_char = 0xfffd;
 
 	// NULL-terminated c string copy - automatically parse the string to find the length.
@@ -295,7 +292,7 @@ public:
 
 	_FORCE_INLINE_ char32_t *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const char32_t *get_data() const _LIFETIME_BOUND_ { return size() ? ptr() : &_null; }
+	_FORCE_INLINE_ const char32_t *get_data() const _LIFETIME_BOUND_ { return ptr(); }
 
 	// Returns the number of characters in the buffer, including the terminating NUL character.
 	// In most cases, length() should be used instead.
@@ -323,9 +320,9 @@ public:
 		return _cowdata.reserve(p_size);
 	}
 
-	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
+	_FORCE_INLINE_ char32_t operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
-			return _null;
+			return U'\0';
 		}
 
 		return _cowdata.get(p_index);

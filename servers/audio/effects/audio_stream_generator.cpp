@@ -113,7 +113,7 @@ bool AudioStreamGeneratorPlayback::push_frame(const Vector2 &p_frame) {
 		return false;
 	}
 
-	AudioFrame f = p_frame;
+	AudioFrame f(p_frame);
 
 	buffer.write(&f, 1);
 	return true;
@@ -140,7 +140,7 @@ bool AudioStreamGeneratorPlayback::push_buffer(const PackedVector2Array &p_frame
 		while (to_write) {
 			int w = MIN(to_write, 2048);
 			for (int i = 0; i < w; i++) {
-				buf[i] = r[i + ofs];
+				buf[i] = AudioFrame(r[i + ofs]);
 			}
 			buffer.write(buf, w);
 			ofs += w;
