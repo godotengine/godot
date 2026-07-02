@@ -1046,7 +1046,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			HidP_GetCaps(pp_data, &caps);
 			HidD_FreePreparsedData(pp_data);
 		}
-		if (HIDAPI_IGNORE_DEVICE(bus_type, attrib.VendorID, attrib.ProductID, caps.UsagePage, caps.Usage, false)) {
+		if (HIDAPI_IGNORE_DEVICE(bus_type, attrib.VendorID, attrib.ProductID, caps.UsagePage, caps.Usage, false, false)) {
 			goto cont_close;
 		}
 #endif

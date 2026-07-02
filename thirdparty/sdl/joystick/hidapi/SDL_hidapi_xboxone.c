@@ -368,10 +368,12 @@ static bool HIDAPI_DriverXboxOne_IsSupportedDevice(SDL_HIDAPI_Device *device, co
     static const int XBONE_IFACE_PROTOCOL = 208;
 
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_JOYSTICK_MFI)
-    if (!SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, true) &&
+        !SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id) &&
+        (device && SDL_strncmp(device->path, "DevSrvsID", 9) == 0)) {
         // On macOS we get a shortened version of the real report and
         // you can't write output reports for wired controllers, so
-        // we'll just use the GCController support instead.
+        // we'll just use the GCController support instead, if available.
         return false;
     }
 #endif
@@ -403,6 +405,8 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
 
     device->context = ctx;
 
+// The Xbox controller doesn't have real HID report descriptors, but Linux synthesizes them for us
+#ifdef SDL_PLATFORM_LINUX
     Uint8 descriptor[1024];
     int descriptor_len = SDL_hid_get_report_descriptor(device->dev, descriptor, sizeof(descriptor));
     if (descriptor_len > 0) {
@@ -452,6 +456,7 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
     } else {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Xbox report descriptor not available");
     }
+#endif // SDL_PLATFORM_LINUX
 
     ctx->vendor_id = device->vendor_id;
     ctx->product_id = device->product_id;

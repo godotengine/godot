@@ -45,6 +45,7 @@ typedef struct
     Uint8 last_state[USB_PACKET_LENGTH];
 #ifdef SDL_PLATFORM_MACOS
     bool controlled_by_360controller;
+    bool is_steam_virtual_gamepad;
 #endif
 } SDL_DriverXbox360_Context;
 
@@ -112,18 +113,20 @@ static bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device, co
     }
 #endif
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_JOYSTICK_MFI)
-    if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
-        // GCController support doesn't work with the Steam Virtual Gamepad
-        return true;
-    } else {
-        // On macOS when it isn't controlled by the 360Controller driver and
-        // it doesn't look like a Steam virtual gamepad we should rely on
-        // GCController support instead.
-        return false;
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, true)) {
+        if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
+            // GCController support doesn't work with the Steam Virtual Gamepad
+            return true;
+        }
+        if (device && SDL_strncmp(device->path, "DevSrvsID", 9) == 0) {
+            // On macOS when it isn't controlled by the 360Controller driver and
+            // it doesn't look like a Steam virtual gamepad and it's not
+            // available via libusb we should rely on GCController support.
+            return false;
+        }
     }
-#else
-    return (type == SDL_GAMEPAD_TYPE_XBOX360);
 #endif
+    return (type == SDL_GAMEPAD_TYPE_XBOX360);
 }
 
 static bool SetSlotLED(SDL_hid_device *dev, Uint8 slot, bool on)
@@ -172,6 +175,7 @@ static bool HIDAPI_DriverXbox360_InitDevice(SDL_HIDAPI_Device *device)
     ctx->device = device;
 #ifdef SDL_PLATFORM_MACOS
     ctx->controlled_by_360controller = IsControlledBy360ControllerDriverMacOS(device);
+    ctx->is_steam_virtual_gamepad = SDL_IsJoystickSteamVirtualGamepad(device->vendor_id, device->product_id, device->version);
 #endif
 
     device->context = ctx;
@@ -292,7 +296,10 @@ static void HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 {
     Sint16 axis;
 #ifdef SDL_PLATFORM_MACOS
-    const bool invert_y_axes = false;
+    // For backwards compatibility reasons, the 360Controller driver and the Steam Virtual
+    // Gamepad require opposite Y axis inversion on macOS
+    const bool invert_y_axes = (ctx->controlled_by_360controller ||
+                                ctx->is_steam_virtual_gamepad) ? false : true;
 #else
     const bool invert_y_axes = true;
 #endif

@@ -598,7 +598,7 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 
 #ifdef HIDAPI_IGNORE_DEVICE
 	/* See if there are any devices we should skip in enumeration */
-	if (HIDAPI_IGNORE_DEVICE(get_bus_type(dev), dev_vid, dev_pid, usage_page, usage, false)) {
+	if (HIDAPI_IGNORE_DEVICE(get_bus_type(dev), dev_vid, dev_pid, usage_page, usage, false, false)) {
 		free(cur_dev);
 		return NULL;
 	}

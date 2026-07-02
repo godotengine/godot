@@ -673,6 +673,9 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
     case USB_PRODUCT_VOIDGAMING_PS4FIREBIRD:
         HIDAPI_SetDeviceName(device, "Void Gaming PS4 FireBird");
         break;
+    case USB_PRODUCT_VOIDGAMING_GENESIS_SINPUT:
+        HIDAPI_SetDeviceName(device, "Void Gaming Void GENESIS");
+        break;
     case USB_PRODUCT_BONZIRICHANNEL_FIREBIRD:
         HIDAPI_SetDeviceName(device, "Bonziri FireBird");
         break;

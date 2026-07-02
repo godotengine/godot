@@ -644,6 +644,10 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
         in->ofs = DIJOFS_BUTTON(in->num);
         joystick->nbuttons++;
     } else if (pDeviceObject->dwType & DIDFT_POV) {
+        // DIJOYSTATE2.rgdwPOV only has room for 4 POVs, ignore any beyond that.
+        if (joystick->nhats >= 4) {
+            return DIENUM_CONTINUE;
+        }
         in->type = HAT;
         in->num = (Uint8)joystick->nhats;
         in->ofs = DIJOFS_POV(in->num);
@@ -1068,7 +1072,7 @@ static void UpdateDINPUTJoystickState_Polled(SDL_Joystick *joystick)
             break;
         case HAT:
         {
-            Uint8 pos = TranslatePOV(state.rgdwPOV[in->ofs - DIJOFS_POV(0)]);
+            Uint8 pos = TranslatePOV(state.rgdwPOV[in->num]);
             SDL_SendJoystickHat(timestamp, joystick, in->num, pos);
             break;
         }

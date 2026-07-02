@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=3.4.10
+VERSION=3.4.12
 
 target=$(dirname "$(realpath $0)")
 pushd $target
@@ -79,7 +79,7 @@ mkdir $target/thread/generic
 cp -v thread/generic/SDL_{syssem.c,{syscond,sysrwlock}*.{c,h},systhread_c.h} $target/thread/generic
 
 mkdir $target/time
-cp -rv time/{*.{c,h}} $target/time
+cp -v time/*.{c,h} $target/time
 
 mkdir $target/timer
 cp -rv timer/{*.{c,h},unix,windows} $target/timer
