@@ -32,7 +32,7 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "editor/version_control/editor_vcs_interface.h"
-#include "scene/gui/check_button.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"

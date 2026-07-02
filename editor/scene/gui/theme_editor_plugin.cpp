@@ -50,7 +50,7 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/check_button.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/option_button.h"

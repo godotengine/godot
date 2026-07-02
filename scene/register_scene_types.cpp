@@ -51,8 +51,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/color_picker_shape.h"
@@ -484,8 +483,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VSlider);
 	GDREGISTER_CLASS(Popup);
 	GDREGISTER_CLASS(PopupPanel);
+	GDREGISTER_ABSTRACT_CLASS(ToggleButton);
 	GDREGISTER_CLASS(CheckBox);
 	GDREGISTER_CLASS(CheckButton);
+	GDREGISTER_CLASS(RadioButton);
 	GDREGISTER_CLASS(LinkButton);
 	GDREGISTER_CLASS(Panel);
 	GDREGISTER_CLASS(ButtonGroup);

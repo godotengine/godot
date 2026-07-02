@@ -35,7 +35,7 @@
 #include "editor/docks/editor_dock.h"
 #include "editor/scene/2d/tiles/tile_atlas_view.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/check_box.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/margin_container.h"

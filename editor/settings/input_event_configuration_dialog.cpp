@@ -35,7 +35,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/check_box.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"

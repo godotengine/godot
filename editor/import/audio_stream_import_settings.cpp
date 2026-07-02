@@ -35,7 +35,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/check_box.h"
+#include "scene/gui/toggle_button.h"
 #include "servers/rendering/rendering_server.h"
 
 AudioStreamImportSettingsDialog *AudioStreamImportSettingsDialog::singleton = nullptr;

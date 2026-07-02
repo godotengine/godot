@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "check_box.h"
+#include "toggle_button.h"
 
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
-Size2 CheckBox::get_icon_size() const {
+Size2 ToggleButton::get_icon_size() const {
 	Size2 tex_size = Size2(0, 0);
 	if (theme_cache.checked.is_valid()) {
 		tex_size = theme_cache.checked->get_size();
@@ -68,7 +68,7 @@ Size2 CheckBox::get_icon_size() const {
 	return _fit_icon_size(tex_size);
 }
 
-Size2 CheckBox::get_minimum_size() const {
+Size2 ToggleButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
 	const Size2 tex_size = get_icon_size();
 	if (tex_size.width > 0 || tex_size.height > 0) {
@@ -86,7 +86,7 @@ Size2 CheckBox::get_minimum_size() const {
 	return minsize;
 }
 
-std::tuple<Ref<Texture2D>, Ref<Texture2D>, Ref<Texture2D>, Ref<Texture2D>> CheckBox::_get_current_icon() const {
+std::tuple<Ref<Texture2D>, Ref<Texture2D>> ToggleButton::_get_current_icon() const {
 	Ref<Texture2D> icon = theme_cache.checked;
 	if (!is_pressed()) {
 		icon = theme_cache.unchecked;
@@ -96,22 +96,10 @@ std::tuple<Ref<Texture2D>, Ref<Texture2D>, Ref<Texture2D>, Ref<Texture2D>> Check
 	if (!is_pressed()) {
 		icon_focus = theme_cache.unchecked_focus;
 	}
-	
-	Ref<Texture2D> radio_icon = theme_cache.radio_checked;
-	if (!is_pressed()) {
-		radio_icon = theme_cache.radio_unchecked;
-	}
-	
-	Ref<Texture2D> radio_icon_focus = theme_cache.radio_checked_focus;
-	if (!is_pressed()) {
-		radio_icon_focus = theme_cache.radio_unchecked_focus;
-	}
 
 	#define APPLY_ICONS(state_name) \
 		if (has_theme_icon(SNAME(#state_name))) icon = theme_cache.state_name; \
 		if (has_theme_icon(SNAME(#state_name "_focus"))) icon_focus = theme_cache.state_name##_focus; \
-		if (has_theme_icon(SNAME("radio_" #state_name))) radio_icon = theme_cache.radio_##state_name; \
-		if (has_theme_icon(SNAME("radio_" #state_name "_focus"))) radio_icon_focus = theme_cache.radio_##state_name##_focus;
 
 	switch (get_draw_mode()) {
 		case DRAW_NORMAL:
@@ -177,10 +165,10 @@ std::tuple<Ref<Texture2D>, Ref<Texture2D>, Ref<Texture2D>, Ref<Texture2D>> Check
 
 #undef APPLY_ICONS
 
-	return std::make_tuple(icon, icon_focus, radio_icon, radio_icon_focus);
+	return std::make_tuple(icon, icon_focus);
 }
 
-void CheckBox::_notification(int p_what) {
+void ToggleButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
@@ -196,7 +184,7 @@ void CheckBox::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (theme_cache.button_on_right) {
+			if (theme_cache.button_on_right || right_aligned) {
 				if (is_layout_rtl()) {
 					_set_internal_margin(SIDE_LEFT, get_icon_size().width);
 					_set_internal_margin(SIDE_RIGHT, 0.f);
@@ -218,16 +206,12 @@ void CheckBox::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 
-			std::tuple<Ref<Texture2D>, Ref<Texture2D>, Ref<Texture2D>, Ref<Texture2D>> icons = _get_current_icon();
+			std::tuple<Ref<Texture2D>, Ref<Texture2D>> icons = _get_current_icon();
 			Ref<Texture2D> icon = std::get<0>(icons);
 			Ref<Texture2D> icon_focus = std::get<1>(icons);
-			if (is_radio()) {
-				icon = std::get<2>(icons);
-				icon_focus = std::get<3>(icons);
-			}
 
 			Vector2 ofs;
-			if (theme_cache.button_on_right) {
+			if (theme_cache.button_on_right || right_aligned) {
 				if (is_layout_rtl()) {
 					ofs.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
 				} else {
@@ -256,65 +240,43 @@ void CheckBox::_notification(int p_what) {
 	}
 }
 
-bool CheckBox::is_radio() const {
+bool ToggleButton::is_radio() const {
 	return get_button_group().is_valid();
 }
 
-void CheckBox::_bind_methods() {
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckBox, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckBox, check_v_offset);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckBox, button_on_right);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CheckBox, normal_style, "normal");
+void ToggleButton::_bind_methods() {
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ToggleButton, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ToggleButton, check_v_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ToggleButton, button_on_right);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ToggleButton, normal_style, "normal");
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked_hover);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked_hover_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked_pressed);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked_pressed_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked_hover_pressed);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked_hover_pressed_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked_disabled);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked_disabled_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_hover);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_hover_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_pressed_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_hover_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_hover_pressed_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, checked_disabled_focus);
 	
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, unchecked);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, unchecked_hover);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, unchecked_pressed);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, unchecked_hover_pressed);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, unchecked_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, unchecked_hover_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, unchecked_pressed_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, unchecked_hover_pressed_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, unchecked_disabled);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, unchecked_disabled_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_hover);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_hover_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_hover_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_pressed_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_hover_pressed_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ToggleButton, unchecked_disabled_focus);
 	
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_checked);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_checked_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_checked_hover);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_checked_hover_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_checked_pressed);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_checked_pressed_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_checked_hover_pressed);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_checked_hover_pressed_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_checked_disabled);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_checked_disabled_focus);
-	
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_unchecked);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_unchecked_hover);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_unchecked_pressed);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_unchecked_hover_pressed);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_unchecked_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_unchecked_hover_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_unchecked_pressed_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_unchecked_hover_pressed_focus);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_unchecked_disabled);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, radio_unchecked_disabled_focus);
-
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CheckBox, checkbox_checked_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CheckBox, checkbox_unchecked_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ToggleButton, checkbox_checked_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ToggleButton, checkbox_unchecked_color);
 }
 
-CheckBox::CheckBox(const String &p_text) :
+ToggleButton::ToggleButton(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
 
@@ -327,5 +289,3 @@ CheckBox::CheckBox(const String &p_text) :
 	}
 }
 
-CheckBox::~CheckBox() {
-}

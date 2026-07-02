@@ -557,40 +557,44 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_constant("check_v_offset", "CheckButton", 0);
 		p_theme->set_constant("outline_size", "CheckButton", 0);
 
-		// CheckBox.
+		// ToggleButton.
 		{
 			Ref<StyleBoxFlat> checkbox_style = p_config.panel_container_style->duplicate();
 			checkbox_style->set_content_margin_individual(p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 0.75 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 0.75 * EDSCALE);
 			Ref<StyleBoxFlat> checkbox_style_normal = checkbox_style->duplicate();
 			checkbox_style_normal->set_draw_center(false);
 
-			p_theme->set_stylebox(CoreStringName(normal), "CheckBox", checkbox_style_normal);
-			p_theme->set_stylebox(SceneStringName(pressed), "CheckBox", checkbox_style);
-			p_theme->set_stylebox("disabled", "CheckBox", checkbox_style);
-			p_theme->set_stylebox(SceneStringName(hover), "CheckBox", checkbox_style);
-			p_theme->set_stylebox("hover_pressed", "CheckBox", checkbox_style);
+			p_theme->set_stylebox(CoreStringName(normal), "ToggleButton", checkbox_style_normal);
+			p_theme->set_stylebox(SceneStringName(pressed), "ToggleButton", checkbox_style);
+			p_theme->set_stylebox("disabled", "ToggleButton", checkbox_style);
+			p_theme->set_stylebox(SceneStringName(hover), "ToggleButton", checkbox_style);
+			p_theme->set_stylebox("hover_pressed", "ToggleButton", checkbox_style);
 
-			p_theme->set_stylebox("normal_mirrored", "CheckBox", checkbox_style_normal);
-			p_theme->set_stylebox("pressed_mirrored", "CheckBox", checkbox_style);
-			p_theme->set_stylebox("disabled_mirrored", "CheckBox", checkbox_style);
-			p_theme->set_stylebox("hover_mirrored", "CheckBox", checkbox_style);
-			p_theme->set_stylebox("hover_pressed_mirrored", "CheckBox", checkbox_style);
+			p_theme->set_stylebox("normal_mirrored", "ToggleButton", checkbox_style_normal);
+			p_theme->set_stylebox("pressed_mirrored", "ToggleButton", checkbox_style);
+			p_theme->set_stylebox("disabled_mirrored", "ToggleButton", checkbox_style);
+			p_theme->set_stylebox("hover_mirrored", "ToggleButton", checkbox_style);
+			p_theme->set_stylebox("hover_pressed_mirrored", "ToggleButton", checkbox_style);
 
-			p_theme->set_icon("checked", "CheckBox", p_theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("checked", "ToggleButton", p_theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
 
-			p_theme->set_icon("unchecked", "CheckBox", p_theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("radio_checked", "CheckBox", p_theme->get_icon(SNAME("GuiRadioChecked"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("radio_unchecked", "CheckBox", p_theme->get_icon(SNAME("GuiRadioUnchecked"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("checked_disabled", "CheckBox", p_theme->get_icon(SNAME("GuiCheckedDisabled"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("unchecked_disabled", "CheckBox", p_theme->get_icon(SNAME("GuiUncheckedDisabled"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("radio_checked_disabled", "CheckBox", p_theme->get_icon(SNAME("GuiRadioCheckedDisabled"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("radio_unchecked_disabled", "CheckBox", p_theme->get_icon(SNAME("GuiRadioUncheckedDisabled"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("unchecked", "ToggleButton", p_theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("checked_disabled", "ToggleButton", p_theme->get_icon(SNAME("GuiCheckedDisabled"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("unchecked_disabled", "ToggleButton", p_theme->get_icon(SNAME("GuiUncheckedDisabled"), EditorStringName(EditorIcons)));
 
-			p_theme->set_constant("h_separation", "CheckBox", 8 * EDSCALE);
-			p_theme->set_constant("check_v_offset", "CheckBox", 0);
-			p_theme->set_constant("outline_size", "CheckBox", 0);
+			p_theme->set_constant("h_separation", "ToggleButton", 8 * EDSCALE);
+			p_theme->set_constant("check_v_offset", "ToggleButton", 0);
+			p_theme->set_constant("outline_size", "ToggleButton", 0);
 		}
 
+		// Radio Button
+		{
+			p_theme->set_icon("checked", "RadioButton", p_theme->get_icon(SNAME("GuiRadioChecked"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("unchecked", "RadioButton", p_theme->get_icon(SNAME("GuiRadioUnchecked"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("checked_disabled", "RadioButton", p_theme->get_icon(SNAME("GuiRadioCheckedDisabled"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("unchecked_disabled", "RadioButton", p_theme->get_icon(SNAME("GuiRadioUncheckedDisabled"), EditorStringName(EditorIcons)));
+		}
+		
 		// LinkButton.
 
 		p_theme->set_stylebox("focus", "LinkButton", p_config.base_empty_style);

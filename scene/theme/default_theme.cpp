@@ -271,46 +271,49 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "MenuButton", Math::round(4 * scale));
 	theme->set_constant("outline_size", "MenuButton", 0);
 
-	// CheckBox
+	// ToggleButton
 
-	Ref<StyleBox> cbx_empty = memnew(StyleBoxEmpty);
-	cbx_empty->set_content_margin_all(Math::round(4 * scale));
-	Ref<StyleBox> cbx_focus = focus;
-	cbx_focus->set_content_margin_all(Math::round(4 * scale));
+	Ref<StyleBox> tb_empty = memnew(StyleBoxEmpty);
+	tb_empty->set_content_margin_all(Math::round(4 * scale));
+	Ref<StyleBox> tb_focus = focus;
+	tb_focus->set_content_margin_all(Math::round(4 * scale));
 
-	theme->set_stylebox(CoreStringName(normal), "CheckBox", cbx_empty);
-	theme->set_stylebox(SceneStringName(pressed), "CheckBox", cbx_empty);
-	theme->set_stylebox("disabled", "CheckBox", cbx_empty);
-	theme->set_stylebox(SceneStringName(hover), "CheckBox", cbx_empty);
-	theme->set_stylebox("hover_pressed", "CheckBox", cbx_empty);
-	theme->set_stylebox("focus", "CheckBox", cbx_focus);
+	theme->set_stylebox(CoreStringName(normal), "ToggleButton", tb_empty);
+	theme->set_stylebox(SceneStringName(pressed), "ToggleButton", tb_empty);
+	theme->set_stylebox("disabled", "ToggleButton", tb_empty);
+	theme->set_stylebox(SceneStringName(hover), "ToggleButton", tb_empty);
+	theme->set_stylebox("hover_pressed", "ToggleButton", tb_empty);
+	theme->set_stylebox("focus", "ToggleButton", tb_focus);
 
-	theme->set_icon("checked", "CheckBox", icons["checked"]);
-	theme->set_icon("checked_disabled", "CheckBox", icons["checked_disabled"]);
-	theme->set_icon("unchecked", "CheckBox", icons["unchecked"]);
-	theme->set_icon("unchecked_disabled", "CheckBox", icons["unchecked_disabled"]);
-	theme->set_icon("radio_checked", "CheckBox", icons["radio_checked"]);
-	theme->set_icon("radio_checked_disabled", "CheckBox", icons["radio_checked_disabled"]);
-	theme->set_icon("radio_unchecked", "CheckBox", icons["radio_unchecked"]);
-	theme->set_icon("radio_unchecked_disabled", "CheckBox", icons["radio_unchecked_disabled"]);
+	theme->set_icon("checked", "ToggleButton", icons["checked"]);
+	theme->set_icon("checked_disabled", "ToggleButton", icons["checked_disabled"]);
+	theme->set_icon("unchecked", "ToggleButton", icons["unchecked"]);
+	theme->set_icon("unchecked_disabled", "ToggleButton", icons["unchecked_disabled"]);
 
-	theme->set_font(SceneStringName(font), "CheckBox", Ref<Font>());
-	theme->set_font_size(SceneStringName(font_size), "CheckBox", -1);
+	theme->set_font(SceneStringName(font), "ToggleButton", Ref<Font>());
+	theme->set_font_size(SceneStringName(font_size), "ToggleButton", -1);
 
-	theme->set_color(SceneStringName(font_color), "CheckBox", control_font_color);
-	theme->set_color("font_pressed_color", "CheckBox", control_font_pressed_color);
-	theme->set_color("font_hover_color", "CheckBox", control_font_hover_color);
-	theme->set_color("font_hover_pressed_color", "CheckBox", control_font_pressed_color);
-	theme->set_color("font_focus_color", "CheckBox", control_font_focus_color);
-	theme->set_color("font_disabled_color", "CheckBox", control_font_disabled_color);
-	theme->set_color("font_outline_color", "CheckBox", Color(0, 0, 0));
+	theme->set_color(SceneStringName(font_color), "ToggleButton", control_font_color);
+	theme->set_color("font_pressed_color", "ToggleButton", control_font_pressed_color);
+	theme->set_color("font_hover_color", "ToggleButton", control_font_hover_color);
+	theme->set_color("font_hover_pressed_color", "ToggleButton", control_font_pressed_color);
+	theme->set_color("font_focus_color", "ToggleButton", control_font_focus_color);
+	theme->set_color("font_disabled_color", "ToggleButton", control_font_disabled_color);
+	theme->set_color("font_outline_color", "ToggleButton", Color(0, 0, 0));
 
-	theme->set_constant("h_separation", "CheckBox", Math::round(4 * scale));
-	theme->set_constant("check_v_offset", "CheckBox", 0);
-	theme->set_constant("outline_size", "CheckBox", 0);
+	theme->set_constant("h_separation", "ToggleButton", Math::round(4 * scale));
+	theme->set_constant("check_v_offset", "ToggleButton", 0);
+	theme->set_constant("outline_size", "ToggleButton", 0);
 
-	theme->set_color("checkbox_checked_color", "CheckBox", Color(1, 1, 1));
-	theme->set_color("checkbox_unchecked_color", "CheckBox", Color(1, 1, 1));
+	theme->set_color("checkbox_checked_color", "ToggleButton", Color(1, 1, 1));
+	theme->set_color("checkbox_unchecked_color", "ToggleButton", Color(1, 1, 1));
+
+	// RadioButton
+	
+	theme->set_icon("checked", "RadioButton", icons["radio_checked"]);
+	theme->set_icon("checked_disabled", "RadioButton", icons["radio_checked_disabled"]);
+	theme->set_icon("unchecked", "RadioButton", icons["radio_unchecked"]);
+	theme->set_icon("unchecked_disabled", "RadioButton", icons["radio_unchecked_disabled"]);
 
 	// CheckButton
 

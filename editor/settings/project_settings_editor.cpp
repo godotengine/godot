@@ -43,7 +43,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/gdextension/project_settings_gdextension.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/check_button.h"
+#include "scene/gui/toggle_button.h"
 #include "servers/movie_writer/movie_writer.h"
 
 void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {

@@ -41,7 +41,7 @@
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/check_button.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/main/scene_tree.h"

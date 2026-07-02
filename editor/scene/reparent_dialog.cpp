@@ -34,7 +34,7 @@
 #include "core/object/class_db.h"
 #include "editor/scene/scene_tree_editor.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/check_box.h"
+#include "scene/gui/toggle_button.h"
 
 void ReparentDialog::_notification(int p_what) {
 	switch (p_what) {

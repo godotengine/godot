@@ -35,7 +35,7 @@
 #include "core/string/translation_server.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/check_button.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"

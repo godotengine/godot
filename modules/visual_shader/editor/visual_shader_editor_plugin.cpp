@@ -57,7 +57,7 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/animation/tween.h"
 #include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"

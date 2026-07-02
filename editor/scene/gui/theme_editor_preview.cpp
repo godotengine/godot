@@ -37,8 +37,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/label.h"
@@ -339,6 +338,9 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	CheckBox *cbx = memnew(CheckBox);
 	cbx->set_text("CheckBox");
 	first_vb->add_child(cbx);
+	RadioButton *rb = memnew(RadioButton);
+	rb->set_text("RadioButton");
+	first_vb->add_child(rb);
 
 	MenuButton *test_menu_button = memnew(MenuButton);
 	test_menu_button->set_text("MenuButton");
