@@ -75,7 +75,7 @@ void OpenXRActionMapEditor::_notification(int p_what) {
 	}
 }
 
-void OpenXRActionMapEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void OpenXRActionMapEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
 		actionsets_mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
 		actionsets_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);

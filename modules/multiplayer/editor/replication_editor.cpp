@@ -532,7 +532,7 @@ void ReplicationEditor::_update_config() {
 	}
 }
 
-void ReplicationEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void ReplicationEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
 		tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 		tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);

@@ -737,7 +737,7 @@ void FindInFilesPanel::stop_search() {
 	cancel_button->hide();
 }
 
-void FindInFilesPanel::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void FindInFilesPanel::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
 		results_display->set_theme_type_variation("NoBorderHorizontal");
 		results_display->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
@@ -1456,7 +1456,7 @@ void FindInFilesContainer::_bar_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
-void FindInFilesContainer::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void FindInFilesContainer::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	for (Node *node : tabs->iterate_children()) {
 		FindInFilesPanel *panel = Object::cast_to<FindInFilesPanel>(node);
 		if (panel) {

@@ -413,7 +413,7 @@ void TileSetEditor::_notification(int p_what) {
 	}
 }
 
-void TileSetEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void TileSetEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
 		patterns_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 		patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);

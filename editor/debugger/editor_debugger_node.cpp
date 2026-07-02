@@ -236,7 +236,7 @@ void EditorDebuggerNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoints_cleared_in_tree", PropertyInfo(Variant::INT, "debugger")));
 }
 
-void EditorDebuggerNode::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void EditorDebuggerNode::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->update_layout(p_layout, p_slot);
 	});

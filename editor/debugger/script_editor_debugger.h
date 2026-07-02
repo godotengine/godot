@@ -395,7 +395,7 @@ public:
 	void send_message(const String &p_message, const Array &p_args);
 	void toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data);
 
-	void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot);
+	void update_layout(EditorDock::DockLayout p_layout, int p_slot);
 
 	ScriptEditorDebugger();
 	~ScriptEditorDebugger();
