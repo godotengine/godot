@@ -63,7 +63,7 @@ struct _NO_DISCARD_CLASS_ Color {
 	_FORCE_INLINE_ float &operator[](int p_idx) {
 		return components[p_idx];
 	}
-	_FORCE_INLINE_ const float &operator[](int p_idx) const {
+	_FORCE_INLINE_ float operator[](int p_idx) const {
 		return components[p_idx];
 	}
 
