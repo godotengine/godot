@@ -384,7 +384,6 @@ if not env["platform"]:
     # Missing `platform` argument, try to detect platform automatically
     if (
         sys.platform.startswith("linux")
-        or sys.platform.startswith("dragonfly")
         or sys.platform.startswith("freebsd")
         or sys.platform.startswith("netbsd")
         or sys.platform.startswith("openbsd")
