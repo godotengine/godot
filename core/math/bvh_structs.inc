@@ -72,7 +72,7 @@ public:
 		BVH_ASSERT(p_id < MAX_ITEMS);
 		return item_ref_ids[p_id];
 	}
-	const uint32_t &get_item_ref_id(uint32_t p_id) const {
+	uint32_t get_item_ref_id(uint32_t p_id) const {
 		BVH_ASSERT(p_id < MAX_ITEMS);
 		return item_ref_ids[p_id];
 	}

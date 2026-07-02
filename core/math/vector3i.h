@@ -61,7 +61,7 @@ struct [[nodiscard]] Vector3i {
 		DEV_ASSERT((unsigned int)p_axis < 3);
 		return (&x)[p_axis];
 	}
-	constexpr const int32_t &operator[](int p_axis) const {
+	constexpr int32_t operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 3);
 		return (&x)[p_axis];
 	}

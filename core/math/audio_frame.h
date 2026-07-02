@@ -57,7 +57,7 @@ struct AudioFrame {
 		DEV_ASSERT((unsigned int)p_idx < 2);
 		return (&left)[p_idx];
 	}
-	constexpr const float &operator[](int p_idx) const {
+	constexpr float operator[](int p_idx) const {
 		DEV_ASSERT((unsigned int)p_idx < 2);
 		return (&left)[p_idx];
 	}

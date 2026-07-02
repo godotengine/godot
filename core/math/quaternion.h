@@ -44,7 +44,7 @@ struct [[nodiscard]] Quaternion {
 		DEV_ASSERT((unsigned int)p_idx < 4);
 		return (&x)[p_idx];
 	}
-	constexpr const real_t &operator[](int p_idx) const {
+	constexpr real_t operator[](int p_idx) const {
 		DEV_ASSERT((unsigned int)p_idx < 4);
 		return (&x)[p_idx];
 	}

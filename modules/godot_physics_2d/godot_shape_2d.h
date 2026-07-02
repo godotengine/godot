@@ -265,7 +265,7 @@ class GodotCircleShape2D : public GodotShape2D {
 	real_t radius;
 
 public:
-	_FORCE_INLINE_ const real_t &get_radius() const { return radius; }
+	_FORCE_INLINE_ real_t get_radius() const { return radius; }
 
 	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_CIRCLE; }
 
@@ -371,8 +371,8 @@ class GodotCapsuleShape2D : public GodotShape2D {
 	real_t height = 0.0;
 
 public:
-	_FORCE_INLINE_ const real_t &get_radius() const { return radius; }
-	_FORCE_INLINE_ const real_t &get_height() const { return height; }
+	_FORCE_INLINE_ real_t get_radius() const { return radius; }
+	_FORCE_INLINE_ real_t get_height() const { return height; }
 
 	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_CAPSULE; }
 

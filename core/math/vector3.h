@@ -68,7 +68,7 @@ struct [[nodiscard]] Vector3 {
 		DEV_ASSERT((unsigned int)p_axis < 3);
 		return (&x)[p_axis];
 	}
-	constexpr const real_t &operator[](int p_axis) const {
+	constexpr real_t operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 3);
 		return (&x)[p_axis];
 	}

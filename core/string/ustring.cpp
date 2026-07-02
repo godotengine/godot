@@ -225,7 +225,7 @@ void String::append_utf32_unchecked(const Span<char32_t> &p_span) {
 	resize_uninitialized(prev_length + p_span.size() + 1); // + 1 for \0
 	char32_t *dst = ptrw() + prev_length;
 	memcpy(dst, p_span.ptr(), p_span.size() * sizeof(char32_t));
-	*(dst + p_span.size()) = _null;
+	*(dst + p_span.size()) = U'\0';
 }
 
 String String::operator+(const String &p_str) const {
@@ -1744,7 +1744,7 @@ Error String::append_ascii(const Span<char> &p_range) {
 			*dst = chr;
 		}
 	}
-	*dst = _null;
+	*dst = U'\0';
 	return decode_failed ? ERR_INVALID_DATA : OK;
 }
 
@@ -1929,7 +1929,7 @@ CharString String::utf8(Vector<uint8_t> *r_ch_length_map) const {
 		map_ptr = r_ch_length_map->ptrw();
 	}
 
-	const char32_t *d = &operator[](0);
+	const char32_t *d = ptr();
 	int fl = 0;
 	for (int i = 0; i < l; i++) {
 		uint32_t c = d[i];
@@ -2134,7 +2134,7 @@ Char16String String::utf16() const {
 		return Char16String();
 	}
 
-	const char32_t *d = &operator[](0);
+	const char32_t *d = ptr();
 	int fl = 0;
 	for (int i = 0; i < l; i++) {
 		uint32_t c = d[i];
@@ -2937,7 +2937,7 @@ String String::remove_char(char32_t p_char) const {
 		}
 	}
 
-	new_ptr[new_size] = _null;
+	new_ptr[new_size] = U'\0';
 
 	// Shrink new string to fit.
 	new_string.resize_uninitialized(new_size + 1);
@@ -3281,7 +3281,7 @@ bool String::ends_with(const char *p_string) const {
 		return true;
 	}
 
-	const char32_t *s = &operator[](length() - l);
+	const char32_t *s = &ptr()[length() - l];
 
 	for (int i = 0; i < l; i++) {
 		if (static_cast<char32_t>(p_string[i]) != s[i]) {
@@ -3314,7 +3314,7 @@ bool String::begins_with(const char *p_string) const {
 		return *p_string == 0;
 	}
 
-	const char32_t *str = &operator[](0);
+	const char32_t *str = ptr();
 	int i = 0;
 
 	while (*p_string && i < l) {
@@ -3345,7 +3345,7 @@ bool String::is_quoted() const {
 }
 
 bool String::is_lowercase() const {
-	for (const char32_t *str = &operator[](0); *str; str++) {
+	for (const char32_t *str = ptr(); *str; str++) {
 		if (is_unicode_upper_case(*str)) {
 			return false;
 		}
@@ -3450,8 +3450,8 @@ bool String::_base_is_subsequence_of(const String &p_string, bool case_insensiti
 		return false;
 	}
 
-	const char32_t *src = &operator[](0);
-	const char32_t *tgt = &p_string[0];
+	const char32_t *src = ptr();
+	const char32_t *tgt = p_string.ptr();
 
 	for (; *src && *tgt; tgt++) {
 		bool match = false;
@@ -3840,7 +3840,7 @@ String String::replace_char(char32_t p_key, char32_t p_with) const {
 		}
 	}
 
-	new_ptr[index] = _null;
+	new_ptr[index] = U'\0';
 
 	return new_string;
 }
@@ -3938,7 +3938,7 @@ String String::repeat(int p_count) const {
 		offset += stride;
 		stride = MIN(stride * 2, p_count - offset);
 	}
-	dst[p_count * len] = _null;
+	dst[p_count * len] = U'\0';
 	return new_string;
 }
 
@@ -3955,7 +3955,7 @@ String String::reverse() const {
 	for (int i = 0; i < len; i++) {
 		dst[i] = src[len - i - 1];
 	}
-	dst[len] = _null;
+	dst[len] = U'\0';
 	return new_string;
 }
 
@@ -4348,7 +4348,7 @@ bool String::is_valid_ascii_identifier() const {
 		return false;
 	}
 
-	const char32_t *str = &operator[](0);
+	const char32_t *str = ptr();
 
 	for (int i = 0; i < len; i++) {
 		if (!is_ascii_identifier_char(str[i])) {
