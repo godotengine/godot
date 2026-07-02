@@ -228,41 +228,15 @@ Variant GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 		}
 
 		if (ProjectSettings::get_singleton()->localize_path(root) != "res://") {
+			// Show a general warning, which works for all clients.
 			LSP::ShowMessageParams params{
 				LSP::MessageType::Warning,
 				"The GDScript Language Server might not work correctly with other projects than the one opened in Godot."
 			};
 			notify_client("window/showMessage", params.to_json());
-		}
-	}
 
-	String root_uri = p_params["rootUri"];
-	String root = p_params.get("rootPath", "");
-	bool is_same_workspace;
-#ifndef WINDOWS_ENABLED
-	is_same_workspace = root.to_lower() == workspace->root.to_lower();
-#else
-	is_same_workspace = root.replace_char('\\', '/').to_lower() == workspace->root.to_lower();
-#endif
-
-	if (root_uri.length() && is_same_workspace) {
-		workspace->root_uri = root_uri;
-	} else {
-		String r_root = workspace->root;
-		r_root = r_root.lstrip("/");
-		workspace->root_uri = "file:///" + r_root;
-
-		Dictionary params;
-		params["path"] = workspace->root;
-		Dictionary request = make_notification("gdscript_client/changeWorkspace", params);
-
-		ERR_FAIL_COND_V_MSG(!clients.has(latest_client_id), ret.to_json(),
-				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
-		Ref<LSPeer> peer = clients.get(latest_client_id);
-		if (peer.is_valid()) {
-			String msg = Variant(request).to_json_string();
-			msg = format_output(msg);
-			(*peer)->res_queue.push_back(msg.utf8());
+			// Send gdscript_client/changeWorkspace to prompt client side handling, where supported. (Currently known users: VSCode extension, Rider extension).
+			notify_client("gdscript_client/changeWorkspace", Dictionary({ { "path", ProjectSettings::get_singleton()->get_resource_path() } }));
 		}
 	}
 
@@ -275,6 +249,13 @@ Variant GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	Dictionary capabilities = p_params["capabilities"];
 	client->behavior.use_snippets_for_brace_completion = get_deep(capabilities, false,
 			"textDocument", "completion", "completionItem", "snippetSupport");
+
+	Array allowed_tags = get_deep(capabilities, Array(), "general", "markdown", "allowedTags");
+	for (const Variant &tag : allowed_tags) {
+		if (tag.is_string()) {
+			client->behavior.markdown_allowed_html_tags.insert(tag);
+		}
+	}
 
 	return ret.to_json();
 }
@@ -466,6 +447,12 @@ ExtendGDScriptParser *GDScriptLanguageProtocol::get_parse_result(const String &p
 	return *cached_parser;
 }
 
+const HashSet<String> &GDScriptLanguageProtocol::get_client_markdown_allowed_html_tags() const {
+	static const HashSet<String> default_tags = {};
+	LSP_CLIENT_V(default_tags);
+	return client->behavior.markdown_allowed_html_tags;
+}
+
 void GDScriptLanguageProtocol::lsp_did_open(const Dictionary &p_params) {
 	LSP_CLIENT;
 
@@ -546,8 +533,6 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 	List<ScriptLanguage::CodeCompletionOption> options;
 	get_workspace()->completion(params, &options);
 
-	const Vector<String> &lines = get_parse_result(workspace->get_file_path(params.textDocument.uri))->get_lines();
-
 	if (!options.is_empty()) {
 		int i = 0;
 		arr.resize(options.size());
@@ -573,7 +558,7 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 			if (option.text_edit.is_set()) {
 				GodotRange range(GodotPosition(option.text_edit.start_line, option.text_edit.start_column), GodotPosition(option.text_edit.end_line, option.text_edit.end_column));
 				item.textEdit.newText = option.text_edit.new_text;
-				item.textEdit.range = range.to_lsp(lines);
+				item.textEdit.range = range.to_lsp();
 			}
 
 			switch (option.kind) {
@@ -631,12 +616,12 @@ void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPo
 		return;
 	}
 
-	String symbol_identifier;
+	String symbol_name;
 	LSP::Range range;
-	symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, range);
+	symbol_name = parser->get_symbol_name_under_position(p_doc_pos.position, range);
 
 	for (const KeyValue<StringName, ClassMembers> &E : workspace->native_members) {
-		if (const LSP::DocumentSymbol *const *symbol = E.value.getptr(symbol_identifier)) {
+		if (const LSP::DocumentSymbol *const *symbol = E.value.getptr(symbol_name)) {
 			r_list.push_back(*symbol);
 		}
 	}
@@ -644,13 +629,13 @@ void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPo
 	for (const KeyValue<String, ExtendGDScriptParser *> &E : client->parse_results) {
 		const ExtendGDScriptParser *scr = E.value;
 		const ClassMembers &members = scr->get_members();
-		if (const LSP::DocumentSymbol *const *symbol = members.getptr(symbol_identifier)) {
+		if (const LSP::DocumentSymbol *const *symbol = members.getptr(symbol_name)) {
 			r_list.push_back(*symbol);
 		}
 
 		for (const KeyValue<String, ClassMembers> &F : scr->get_inner_classes()) {
 			const ClassMembers *inner_class = &F.value;
-			if (const LSP::DocumentSymbol *const *symbol = inner_class->getptr(symbol_identifier)) {
+			if (const LSP::DocumentSymbol *const *symbol = inner_class->getptr(symbol_name)) {
 				r_list.push_back(*symbol);
 			}
 		}
@@ -689,10 +674,7 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	SET_DOCUMENT_METHOD(rename);
 	SET_DOCUMENT_METHOD(prepareRename);
 	SET_DOCUMENT_METHOD(references);
-	SET_DOCUMENT_METHOD(foldingRange);
-	SET_DOCUMENT_METHOD(codeLens);
 	SET_DOCUMENT_METHOD(documentLink);
-	SET_DOCUMENT_METHOD(colorPresentation);
 	SET_DOCUMENT_METHOD(hover);
 	SET_DOCUMENT_METHOD(definition);
 	SET_DOCUMENT_METHOD(declaration);
@@ -704,8 +686,6 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 
 	set_method("initialize", callable_mp(this, &GDScriptLanguageProtocol::initialize));
 	set_method("initialized", callable_mp(this, &GDScriptLanguageProtocol::initialized));
-
-	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
 }
 
 #undef SET_DOCUMENT_METHOD

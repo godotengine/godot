@@ -45,10 +45,15 @@ void EditorDock::_emit_changed() {
 	emit_signal(SNAME("_tab_style_changed"));
 }
 
+void EditorDock::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "accessibility_name") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void EditorDock::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			set_accessibility_region(true);
 			set_accessibility_name(get_display_title());
 		} break;
 
@@ -138,9 +143,13 @@ void EditorDock::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM_R);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
 
-	GDVIRTUAL_BIND(_update_layout, "layout");
+	GDVIRTUAL_BIND(_update_layout, "layout", "slot");
 	GDVIRTUAL_BIND(_save_layout_to_config, "config", "section");
 	GDVIRTUAL_BIND(_load_layout_from_config, "config", "section");
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_update_layout_, "layout");
+#endif
 }
 
 void EditorDock::open() {
@@ -321,4 +330,8 @@ Ref<Texture2D> EditorDock::get_effective_icon(const Callable &p_icon_fetch) {
 		icon = p_icon_fetch.call(icon_name);
 	}
 	return icon;
+}
+
+EditorDock::EditorDock() {
+	set_accessibility_region(true);
 }

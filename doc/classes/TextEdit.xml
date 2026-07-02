@@ -190,7 +190,7 @@
 			<return type="void" />
 			<param index="0" name="caret_index" type="int" default="-1" />
 			<description>
-				Cut's the current selection. Can be overridden with [method _cut].
+				Cuts the current selection. Can be overridden with [method _cut].
 			</description>
 		</method>
 		<method name="delete_selection">
@@ -675,7 +675,7 @@
 		<method name="get_tab_size" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the [TextEdit]'s' tab size.
+				Returns the [TextEdit]'s tab size.
 			</description>
 		</method>
 		<method name="get_total_gutter_width" qualifiers="const">
@@ -1398,6 +1398,9 @@
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
 			If [code]true[/code], text can be selected.
 			If [code]false[/code], text can not be selected by the user or by the [method select] or [method select_all] methods.
+		</member>
+		<member name="selection_handle_enabled" type="bool" setter="set_selection_handle_enabled" getter="is_selection_handle_enabled" default="true">
+			If [code]true[/code], enables the handles used for text selection. These handles are only visible on touchscreen and can be dragged to adjust the selected text range.
 		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
 			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.

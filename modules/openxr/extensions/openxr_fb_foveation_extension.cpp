@@ -153,7 +153,7 @@ void *OpenXRFBFoveationExtension::set_system_properties_and_get_next_pointer(voi
 
 void *OpenXRFBFoveationExtension::set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) {
 	void *next = p_next_pointer;
-	if (is_enabled()) {
+	if (is_enabled() && foveation_level > 0) {
 		swapchain_create_info_foveation_fb.next = next;
 		next = &swapchain_create_info_foveation_fb;
 
@@ -247,7 +247,7 @@ void OpenXRFBFoveationExtension::set_foveation_with_subsampled_images_enabled(bo
 }
 
 bool OpenXRFBFoveationExtension::is_foveation_with_subsampled_images_enabled() const {
-	return is_enabled() && meta_vulkan_swapchain_create_info_ext && foveation_with_subsampled_images_enabled;
+	return is_enabled() && foveation_level > 0 && meta_vulkan_swapchain_create_info_ext && foveation_with_subsampled_images_enabled;
 }
 
 void OpenXRFBFoveationExtension::set_foveation_with_subsampled_images_active(bool p_active) {

@@ -238,7 +238,7 @@ layout(std140) uniform SceneDataBlock { // ubo:2
 scene_data_block;
 
 #ifdef RENDER_MOTION_VECTORS
-layout(std140) uniform PrevSceneDataBlock { // ubo:12
+layout(std140) uniform PrevSceneDataBlock { // ubo:13
 	SceneData data;
 }
 prev_scene_data_block;
@@ -482,13 +482,13 @@ struct MultiviewData {
 	highp vec4 eye_offset[MAX_VIEWS];
 };
 
-layout(std140) uniform MultiviewDataBlock { // ubo:8
+layout(std140) uniform MultiviewDataBlock { // ubo:9
 	MultiviewData data;
 }
 multiview_data_block;
 
 #ifdef RENDER_MOTION_VECTORS
-layout(std140) uniform PrevMultiviewDataBlock { // ubo:13
+layout(std140) uniform PrevMultiviewDataBlock { // ubo:14
 	MultiviewData data;
 }
 prev_multiview_data_block;
@@ -681,6 +681,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 #ifndef USE_MULTIVIEW
 	mat4 projection_matrix = scene_data_input.projection_matrix;
 	mat4 inv_projection_matrix = scene_data_input.inv_projection_matrix;
+	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
 #endif //!USE_MULTIVIEW
 
 #ifdef USE_INSTANCING
@@ -1227,7 +1228,7 @@ struct MultiviewData {
 	highp vec4 eye_offset[MAX_VIEWS];
 };
 
-layout(std140) uniform MultiviewDataBlock { // ubo:8
+layout(std140) uniform MultiviewDataBlock { // ubo:9
 	MultiviewData data;
 }
 multiview_data_block;

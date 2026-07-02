@@ -42,15 +42,19 @@ class StyleBoxFlat;
 class EditorDockDragHint : public Control {
 	GDCLASS(EditorDockDragHint, Control);
 
+	static constexpr float SIDE_DROP_MARGIN = 0.2;
+
 	DockTabContainer *dock_container = nullptr;
 	Control *drop_tabbar_parent = nullptr;
 	TabBar *drop_tabbar = nullptr;
 
-	Color valid_drop_color;
 	Ref<StyleBoxFlat> dock_drop_highlight;
 	bool can_drop_dock = false;
 	bool mouse_inside = false;
 	bool mouse_inside_tabbar = false;
+	int mouse_margin_index = -1;
+	int mouse_margin_target_slot = -1;
+	bool highlighted = false;
 
 	void _drag_move_tab(int p_from_index, int p_to_index);
 	void _drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
@@ -64,6 +68,7 @@ protected:
 
 public:
 	void set_slot(DockTabContainer *p_slot);
+	void set_highlighted(bool p_highlighted);
 
 	EditorDockDragHint();
 };
@@ -73,7 +78,9 @@ class DockTabContainer : public TabContainer {
 
 	EditorDockDragHint *drag_hint = nullptr;
 
-	void _pre_popup();
+	HashMap<int, int> valid_drop_margins;
+
+	void _pre_popup(const Size2i &p_size);
 	void _tab_rmb_clicked(int p_tab_idx);
 
 protected:
@@ -101,6 +108,9 @@ public:
 	virtual bool can_switch_dock() const;
 	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) { return DockTabContainer::get_default_floating_dock_rect(p_dock); }
 
+	void add_margin_valid_drop(int p_margin, int p_target_dock_slot);
+	int get_margin_drop_slot(int p_margin) const;
+
 	// There is no equivalent load method, because loading needs to handle floating and closing.
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section);
 	virtual void load_selected_tab(int p_idx);
@@ -111,6 +121,7 @@ public:
 	void set_dock_context_popup(DockContextPopup *p_popup);
 	EditorDock *get_dock(int p_idx) const;
 	void show_drag_hint();
+	EditorDockDragHint *get_drag_hint() const { return drag_hint; }
 
 	static Rect2 get_default_floating_dock_rect(EditorDock *p_dock);
 

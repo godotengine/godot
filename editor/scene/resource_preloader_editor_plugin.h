@@ -35,6 +35,7 @@
 
 class AcceptDialog;
 class Button;
+class FilterLineEdit;
 class EditorFileDialog;
 class ResourcePreloader;
 class Tree;
@@ -50,10 +51,10 @@ class ResourcePreloaderEditor : public EditorDock {
 
 	Button *load = nullptr;
 	Button *paste = nullptr;
+	FilterLineEdit *search = nullptr;
 	MarginContainer *mc = nullptr;
 	Tree *tree = nullptr;
 
-	bool horizontal = false;
 	bool loading_scene = false;
 
 	EditorFileDialog *file = nullptr;
@@ -65,6 +66,7 @@ class ResourcePreloaderEditor : public EditorDock {
 	void _load_pressed();
 	void _files_load_request(const Vector<String> &p_paths);
 	void _paste_pressed();
+	void _search_text_changed(const String &p_new_text) const;
 	void _remove_resource(const String &p_to_remove);
 	void _update_library();
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
@@ -78,7 +80,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) override;
 
 public:
 	void edit(ResourcePreloader *p_preloader);

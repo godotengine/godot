@@ -1505,10 +1505,18 @@ void fragment_shader(in SceneData scene_data) {
 		vec4 res = vec4(0.0);
 		if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_FOG)) {
 			//must use the full blending equation here to blend fogs
-			res.a = fog.a * volumetric_fog.a;
-			res.rgb = fog.rgb * volumetric_fog.a + volumetric_fog.rgb;
+			if (sc_fog_use_legacy_blending()) {
+				res.a = mix(0.0, fog.a, volumetric_fog.a);
+				res.rgb = mix(volumetric_fog.rgb, fog.rgb, volumetric_fog.a);
+			} else {
+				res.a = fog.a * volumetric_fog.a;
+				res.rgb = fog.rgb * volumetric_fog.a + volumetric_fog.rgb;
+			}
 		} else {
 			res = volumetric_fog;
+			if (sc_fog_use_legacy_blending()) {
+				res.rgb *= 1.0 - res.a;
+			}
 		}
 		fog = res;
 	}
@@ -2032,7 +2040,7 @@ void fragment_shader(in SceneData scene_data) {
 		vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
 #ifdef LIGHT_CLEARCOAT_USED
-		vec3 cc_reflection_accum = vec3(0.0, 0.0, 0.0);
+		vec4 cc_reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 #endif
 
 		uint cluster_reflection_offset = cluster_offset + implementation_data.cluster_type_size * 4;
@@ -2079,13 +2087,19 @@ void fragment_shader(in SceneData scene_data) {
 					continue; //not masked
 				}
 
+#ifndef LIGHT_CLEARCOAT_USED
 				if (reflection_accum.a >= 1.0 && ambient_accum.a >= 1.0) {
 					break;
 				}
+#else
+				if (reflection_accum.a >= 1.0 && cc_reflection_accum.a >= 1.0 && ambient_accum.a >= 1.0) {
+					break;
+				}
+#endif // LIGHT_CLEARCOAT_USED
 
-				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, indirect_specular_light,
+				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light,
 #ifdef LIGHT_CLEARCOAT_USED
-						cc_specular_light, cc_ref_vec, mix(0.001, 0.1, clearcoat_roughness), cc_reflection_accum,
+						cc_ref_vec, mix(0.001, 0.1, clearcoat_roughness), cc_reflection_accum,
 #endif
 						ambient_accum, reflection_accum);
 			}
@@ -2099,12 +2113,21 @@ void fragment_shader(in SceneData scene_data) {
 			reflection_accum.rgb = indirect_specular_light * (1.0 - reflection_accum.a) + reflection_accum.rgb;
 		}
 
+#ifdef LIGHT_CLEARCOAT_USED
+		if (cc_reflection_accum.a < 1.0) {
+			cc_reflection_accum.rgb = cc_specular_light * (1.0 - cc_reflection_accum.a) + cc_reflection_accum.rgb;
+		}
+#endif
+
 		if (reflection_accum.a > 0.0) {
 			indirect_specular_light = reflection_accum.rgb;
-#ifdef LIGHT_CLEARCOAT_USED
-			cc_specular_light = cc_reflection_accum.rgb;
-#endif
 		}
+
+#ifdef LIGHT_CLEARCOAT_USED
+		if (cc_reflection_accum.a > 0.0) {
+			cc_specular_light = cc_reflection_accum.rgb;
+		}
+#endif
 
 #if !defined(USE_LIGHTMAP)
 		if (ambient_accum.a > 0.0) {
@@ -2228,7 +2251,7 @@ void fragment_shader(in SceneData scene_data) {
 #else
 		// Base Layer
 		float NdotV = clamp(dot(normal, view), 0.0001, 1.0);
-		vec2 envBRDF = prefiltered_dfg(roughness, NdotV).xy;
+		vec2 envBRDF = prefiltered_dfg(roughness, NdotV);
 		// Multiscattering
 		energy_compensation = get_energy_compensation(f0, envBRDF.y);
 
@@ -2794,7 +2817,7 @@ void fragment_shader(in SceneData scene_data) {
 		}
 	}
 
-	{ // area lights
+	if (sc_cluster_has_area_light()) { // area lights
 
 		uint cluster_area_offset = cluster_offset + implementation_data.cluster_type_size * 2;
 

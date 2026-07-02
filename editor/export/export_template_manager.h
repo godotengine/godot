@@ -38,10 +38,12 @@ class EditorExportPreset;
 class EditorFileDialog;
 class ItemList;
 class HBoxContainer;
+class Label;
 class OptionButton;
 class Texture2D;
 class Tree;
 class TreeItem;
+class VSplitContainer;
 
 class TemplateDownloader : public HTTPRequest {
 	GDCLASS(TemplateDownloader, HTTPRequest);
@@ -65,16 +67,31 @@ class TemplateDownloader : public HTTPRequest {
 	String url;
 	String filename;
 	String target_directory;
+	String partial_download_path;
 
 	Step current_step = Step::WAITING;
 	int file_size = 0;
 	FileInfo file_info;
+	int64_t fragment_start_byte = 0;
+	int64_t fragment_end_byte = 0;
+	int64_t request_start_partial_size = 0;
+	int retry_count = 0;
+	bool range_restart_attempted = false;
 
 	int _find_sequence_backwards(const PackedByteArray &p_source, const PackedByteArray &p_target) const;
 	String _get_download_error(int p_result, int p_response_code) const;
 
 	void _request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
 	void _download_failed(const String &p_reason);
+	bool _is_retryable_result(int p_result, int p_response_code) const;
+	int64_t _get_fragment_download_size() const;
+	int64_t _get_partial_download_size() const;
+	void _clear_partial_download();
+	Error _request_file_fragment();
+	bool _retry_file_fragment(const String &p_reason);
+	void _download_completed();
+
+	static constexpr int MAX_DOWNLOAD_RETRIES = 3;
 
 protected:
 	void _notification(int p_what);
@@ -189,6 +206,7 @@ class ExportTemplateManager : public AcceptDialog {
 	HashMap<String, int> checked_cache;
 	HashMap<String, bool> folding_cache;
 
+	VSplitContainer *center_split = nullptr;
 	OptionButton *mirrors_list = nullptr;
 	Button *open_mirror = nullptr;
 	ItemList *version_list = nullptr;
@@ -199,6 +217,7 @@ class ExportTemplateManager : public AcceptDialog {
 	Button *delete_all_button = nullptr;
 	Button *tpz_button = nullptr;
 	HBoxContainer *offline_container = nullptr;
+	Label *offline_mode_label = nullptr;
 	ConfirmationDialog *confirm_delete = nullptr;
 	EditorFileDialog *tpz_selection_dialog = nullptr;
 

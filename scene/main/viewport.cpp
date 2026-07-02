@@ -44,7 +44,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
@@ -563,7 +562,7 @@ void Viewport::_update_viewport_path() {
 
 	for (ViewportTexture *E : viewport_textures) {
 		Node *loc_scene = E->get_local_scene();
-		if (loc_scene) {
+		if (loc_scene && loc_scene->is_inside_tree()) {
 			E->path = loc_scene->get_path_to(this);
 		}
 	}
@@ -1191,6 +1190,14 @@ bool Viewport::_set_size(const Size2i &p_size, const int p_view_count, const Siz
 	Rect2i limit = get_visible_rect();
 	for (int i = 0; i < gui.sub_windows.size(); ++i) {
 		Window *sw = gui.sub_windows[i].window;
+#ifdef TOOLS_ENABLED
+		if (!is_part_of_edited_scene() && sw->is_part_of_edited_scene()) {
+			continue;
+		}
+#endif
+		if (!sw->is_clamped_to_embedder()) {
+			continue;
+		}
 		Rect2i rect = Rect2i(sw->position, sw->size);
 		Rect2i new_rect = sw->fit_rect_in_parent(rect, limit);
 		if (new_rect != rect) {
@@ -1570,17 +1577,6 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 
 	while (p_control) {
 		tooltip = p_control->get_tooltip(pos);
-
-		// Temporary solution for PopupMenus.
-		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
-		if (menu) {
-			Ref<StyleBox> sb = menu->get_theme_stylebox(SceneStringName(panel));
-			if (sb.is_valid()) {
-				pos.y += sb->get_margin(SIDE_TOP);
-			}
-
-			tooltip = menu->get_tooltip(pos);
-		}
 
 		if (r_tooltip_owner) {
 			*r_tooltip_owner = p_control;
@@ -2060,7 +2056,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Viewport *section_root = get_section_root_viewport();
 		if (!gui.drag_attempted && gui.mouse_focus && section_root && !section_root->gui.global_dragging && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 			gui.drag_accum += mm->get_relative();
-			float len = gui.drag_accum.length();
+			real_t len = gui.drag_accum.length();
 			if (len > gui.drag_threshold) {
 				{ // Attempt grab, try parent controls too.
 					CanvasItem *ci = gui.mouse_focus;

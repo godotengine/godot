@@ -161,13 +161,13 @@ public:
 		p_from._ptr = nullptr;
 	}
 
-	_FORCE_INLINE_ T *ptrw() {
+	_FORCE_INLINE_ T *ptrw() _LIFETIME_BOUND_ {
 		// If forking fails, we can only crash.
 		CRASH_COND(_copy_on_write());
 		return _ptr;
 	}
 
-	_FORCE_INLINE_ const T *ptr() const {
+	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ {
 		return _ptr;
 	}
 
@@ -185,7 +185,7 @@ public:
 		_ptr[p_index] = p_elem;
 	}
 
-	_FORCE_INLINE_ T &get_m(Size p_index) {
+	_FORCE_INLINE_ T &get_m(Size p_index) _LIFETIME_BOUND_ {
 		CRASH_BAD_INDEX(p_index, size());
 		// If we fail to fork, all we can do is crash,
 		// since the caller may write incorrectly to the unforked array.
@@ -193,7 +193,7 @@ public:
 		return _ptr[p_index];
 	}
 
-	_FORCE_INLINE_ const T &get(Size p_index) const {
+	_FORCE_INLINE_ const T &get(Size p_index) const _LIFETIME_BOUND_ {
 		CRASH_BAD_INDEX(p_index, size());
 
 		return _ptr[p_index];
@@ -213,12 +213,13 @@ public:
 	Error insert(Size p_pos, T &&p_val);
 	Error push_back(T &&p_val);
 
-	_FORCE_INLINE_ operator Span<T>() const { return Span<T>(ptr(), size()); }
-	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return Span<T>(ptr(), size()); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return operator Span<T>(); }
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData() { _unref(); }
 	_FORCE_INLINE_ CowData(std::initializer_list<T> p_init);
+	_FORCE_INLINE_ explicit CowData(Span<T> p_span);
 	_FORCE_INLINE_ CowData(const CowData<T> &p_from) { _ref(p_from); }
 	_FORCE_INLINE_ CowData(CowData<T> &&p_from) {
 		_ptr = p_from._ptr;
@@ -575,6 +576,14 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 
 	copy_arr_placement(_ptr, p_init.begin(), p_init.size());
 	*_get_size() = p_init.size();
+}
+
+template <typename T>
+CowData<T>::CowData(Span<T> p_span) {
+	CRASH_COND(_alloc_exact(p_span.size()));
+
+	copy_arr_placement(_ptr, p_span.begin(), p_span.size());
+	*_get_size() = p_span.size();
 }
 
 GODOT_GCC_WARNING_POP

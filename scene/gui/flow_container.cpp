@@ -72,7 +72,8 @@ void FlowContainer::_resort() {
 			continue;
 		}
 
-		Size2i child_msc = child->get_combined_minimum_size();
+		// Since we are in a FlowContainer, children will always have up to the full width/height available to them, so we can use the desired size as the minimum size for layout purposes.
+		Size2i child_msc = child->get_bound_desired_size();
 		Size2i child_max_size = child->get_combined_maximum_size();
 
 		if (vertical) { /* VERTICAL */
@@ -332,6 +333,15 @@ void FlowContainer::_resort() {
 			child_rect.position.x = get_rect().size.x - child_rect.position.x - child_rect.size.width;
 		}
 
+		// Ensure that the child does not exceed the container's size in the flow direction.
+		// This will only ever apply in the case of having a single child in a line that is larger than the container's minimum size, i.e. a child with a desired size greater than its own minimum size.
+		// This will result in the child being given a size between its minimum size and its desired size, which is the expected behavior.
+		if (vertical) {
+			child_rect.size.height = MIN(child_rect.size.height, current_container_size - ofs.y);
+		} else {
+			child_rect.size.width = MIN(child_rect.size.width, current_container_size - ofs.x);
+		}
+
 		fit_child_in_rect(child, child_rect);
 
 		if (vertical) { /* VERTICAL */
@@ -347,7 +357,7 @@ void FlowContainer::_resort() {
 	cached_line_max_child_count = lines_data.size() > 0 ? lines_data[0].child_count : 0;
 }
 
-Size2 FlowContainer::get_minimum_size() const {
+Size2 FlowContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	Size2i minimum;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -356,7 +366,7 @@ Size2 FlowContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = c->get_bound_minimum_size();
+		Size2i size = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
 
 		if (vertical) { /* VERTICAL */
 			minimum.height = MAX(minimum.height, size.height);
@@ -369,6 +379,14 @@ Size2 FlowContainer::get_minimum_size() const {
 	}
 
 	return minimum;
+}
+
+Size2 FlowContainer::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 FlowContainer::get_desired_size() const {
+	return _get_minimum_size(true);
 }
 
 Vector<int> FlowContainer::get_allowed_size_flags_horizontal() const {

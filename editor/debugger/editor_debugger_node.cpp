@@ -167,7 +167,7 @@ void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p_debugger) {
 	if (!p_file.is_resource_file() && !ResourceCache::has(p_file)) {
 		// If it's a built-in script, make sure the scene is opened first.
-		EditorNode::get_singleton()->load_scene(p_file.get_slice("::", 0));
+		EditorNode::get_singleton()->open_scene(p_file.get_slice("::", 0));
 	}
 	Ref<Script> s = ResourceLoader::load(p_file);
 	emit_signal(SNAME("goto_script_line"), s, p_line - 1);
@@ -234,6 +234,12 @@ void EditorDebuggerNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 	ADD_SIGNAL(MethodInfo("breakpoint_set_in_tree", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled"), PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("breakpoints_cleared_in_tree", PropertyInfo(Variant::INT, "debugger")));
+}
+
+void EditorDebuggerNode::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->update_layout(p_layout, p_slot);
+	});
 }
 
 void EditorDebuggerNode::register_undo_redo(UndoRedo *p_undo_redo) {

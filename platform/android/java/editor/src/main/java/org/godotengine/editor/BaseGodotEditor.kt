@@ -147,6 +147,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val GAME_MENU_ACTION_SET_NODE_TYPE = "setNodeType"
 		internal const val GAME_MENU_ACTION_SET_SELECT_MODE = "setSelectMode"
 		internal const val GAME_MENU_ACTION_SET_SELECTION_VISIBLE = "setSelectionVisible"
+		internal const val GAME_MENU_ACTION_SET_SELECTION_AVOID_LOCKED = "setSelectionAvoidLocked"
+		internal const val GAME_MENU_ACTION_SET_SELECTION_PREFER_GROUP = "setSelectionPreferGroup"
 		internal const val GAME_MENU_ACTION_SET_CAMERA_OVERRIDE = "setCameraOverride"
 		internal const val GAME_MENU_ACTION_SET_CAMERA_MANIPULATE_MODE = "setCameraManipulateMode"
 		internal const val GAME_MENU_ACTION_RESET_CAMERA_2D_POSITION = "resetCamera2DPosition"
@@ -256,7 +258,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Skip permissions request if running in a device farm (e.g. firebase test lab) or if requested via the launch
 		// intent (e.g. instrumentation tests).
-		val skipPermissionsRequest = isRunningInInstrumentation() || ActivityManager.isRunningInUserTestHarness()
+		val skipPermissionsRequest = isRunningInInstrumentation() ||
+			Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && ActivityManager.isRunningInUserTestHarness()
 		if (!skipPermissionsRequest) {
 			// We exclude certain permissions from the set we request at startup, as they'll be
 			// requested on demand based on use cases.
@@ -804,7 +807,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			}
 
 			PermissionsUtil.REQUEST_INSTALL_PACKAGES_REQ_CODE -> {
-				if (!packageManager.canRequestPackageInstalls()) {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
 					Toast.makeText(
 						this,
 						R.string.denied_install_packages_permission_error_msg,
@@ -979,6 +982,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
 				toggleSelectionVisibility(enabled)
 			}
+			GAME_MENU_ACTION_SET_SELECTION_AVOID_LOCKED -> {
+				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
+				toggleSelectionAvoidLocked(enabled)
+			}
+			GAME_MENU_ACTION_SET_SELECTION_PREFER_GROUP -> {
+				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
+				toggleSelectionPreferGroup(enabled)
+			}
 			GAME_MENU_ACTION_SET_CAMERA_OVERRIDE -> {
 				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
 				overrideCamera(enabled)
@@ -1036,6 +1047,20 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_SELECTION_VISIBLE, enabled)
 		godot?.runOnRenderThread {
 			GameMenuUtils.setSelectionVisible(enabled)
+		}
+	}
+
+	override fun toggleSelectionAvoidLocked(enabled: Boolean) {
+		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_SELECTION_AVOID_LOCKED, enabled)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setSelectionAvoidLocked(enabled)
+		}
+	}
+
+	override fun toggleSelectionPreferGroup(enabled: Boolean) {
+		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_SELECTION_PREFER_GROUP, enabled)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setSelectionPreferGroup(enabled)
 		}
 	}
 

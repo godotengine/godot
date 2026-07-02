@@ -182,6 +182,8 @@ public:
 	struct ResourceTracker {
 		uint32_t reference_count = 0;
 		int64_t command_frame = -1;
+		int32_t command_index = -1;
+		uint32_t usage_index = UINT32_MAX;
 		BitField<RDD::PipelineStageBits> previous_frame_stages = {};
 		BitField<RDD::PipelineStageBits> current_frame_stages = {};
 		int32_t read_full_command_list_index = -1;
@@ -213,6 +215,8 @@ public:
 		_FORCE_INLINE_ void reset_if_outdated(int64_t new_command_frame) {
 			if (new_command_frame != command_frame) {
 				command_frame = new_command_frame;
+				command_index = -1;
+				usage_index = UINT32_MAX;
 				previous_frame_stages = current_frame_stages;
 				current_frame_stages.clear();
 				read_full_command_list_index = -1;
@@ -811,7 +815,7 @@ private:
 	};
 
 	RDD *driver = nullptr;
-	RenderingContextDriver::Device device;
+	RDD::DriverWorkarounds driver_workarounds;
 	RenderPassCreationFunction render_pass_creation_function = nullptr;
 	int64_t tracking_frame = 0;
 	LocalVector<uint8_t> command_data;
@@ -887,7 +891,7 @@ private:
 public:
 	RenderingDeviceGraph();
 	~RenderingDeviceGraph();
-	void initialize(RDD *p_driver, RenderingContextDriver::Device p_device, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame);
+	void initialize(RDD *p_driver, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame);
 	void finalize();
 	void begin();
 	void add_blas_build(RDD::AccelerationStructureID p_blas, RDD::BufferID p_scratch_buffer, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers);

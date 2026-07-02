@@ -36,7 +36,6 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/variant/typed_dictionary.h" // IWYU pragma: keep. For EditorDebuggerRemoteObjects.
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/doc_tools.h"
@@ -251,6 +250,20 @@ Size2 EditorProperty::get_minimum_size() const {
 		ms = ms.max(minsize);
 	}
 
+	if (!label.is_empty()) {
+		ms.width += theme_cache.font_offset + theme_cache.horizontal_separation;
+	}
+
+	// Always take the revert and pin values into account, since their state can be changed at whim
+	// and we don't want to update the min width every time this happens.
+	{
+		if (!is_read_only()) {
+			ms.width += theme_cache.revert_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
+		}
+
+		ms.width += theme_cache.pin_icon->get_width() + theme_cache.horizontal_separation;
+	}
+
 	if (keying) {
 		ms.width += theme_cache.key_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
 	}
@@ -324,7 +337,6 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Property: %s"), label));
-			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Property: %s"), label));
 
 			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorProperty::_accessibility_action_menu));
@@ -346,12 +358,13 @@ void EditorProperty::_notification(int p_what) {
 
 			{
 				int child_room = size.width * (1.0 - split_ratio) - name_fixed_size;
-				int separation = 4 * EDSCALE;
+				int separation = theme_cache.horizontal_separation;
 				int height = theme_cache.inspector_property_height;
+				int minw = 0;
 				int half_padding = theme_cache.padding / 2;
 				bool no_children = true;
 
-				//compute room needed
+				// Compute the room needed.
 				for (int i = 0; i < get_child_count(); i++) {
 					Control *c = as_sortable_control(get_child(i));
 					if (!c) {
@@ -363,7 +376,8 @@ void EditorProperty::_notification(int p_what) {
 
 					Size2 minsize = c->get_combined_minimum_size();
 					if (c != left_container && c != right_container) {
-						child_room = MAX(child_room, minsize.width);
+						minw = MAX(minw, minsize.width);
+						child_room = MAX(child_room, minw);
 						no_children = false;
 					}
 					height = MAX(height, minsize.height);
@@ -412,7 +426,7 @@ void EditorProperty::_notification(int p_what) {
 
 					if (no_children) {
 						// Use full padding to avoid overlapping with the revert button.
-						text_size -= key->get_width() + half_padding * 2 + separation;
+						text_size -= key->get_width() + half_padding * (2 * EDSCALE) + separation;
 					}
 				}
 
@@ -431,16 +445,27 @@ void EditorProperty::_notification(int p_what) {
 				// Account for the space needed on the outer side
 				// when any of the icons are visible.
 				if (keying || deletable) {
-					separation = theme_cache.horizontal_separation;
 					rect.size.x -= separation;
 
 					if (is_layout_rtl()) {
 						rect.position.x += separation;
 					}
 				}
+
+				// Guarantee that the minimum width
+				// of the properties are respected.
+				int diff = rect.size.x - minw;
+				if (diff < 0) {
+					text_size += diff;
+
+					rect.size.x = minw;
+					if (!is_layout_rtl()) {
+						rect.position.x += diff;
+					}
+				}
 			}
 
-			//set children
+			// Set the children's positions.
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = as_sortable_control(get_child(i));
 				if (!c) {
@@ -482,7 +507,7 @@ void EditorProperty::_notification(int p_what) {
 				fit_child_in_rect(left_container, Rect2(0, 0, size.x - right_size, ls.y));
 			}
 
-			queue_redraw(); //need to redraw text
+			queue_redraw(); // Need to redraw the text.
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -530,8 +555,8 @@ void EditorProperty::_notification(int p_what) {
 
 			int ofs = theme_cache.font_offset;
 			int text_limit = text_size - ofs;
-			int half_padding = EDITOR_GET("interface/theme/base_spacing");
-			int padding = half_padding * 2;
+			int padding = theme_cache.padding;
+			int half_padding = theme_cache.padding / 2;
 
 			int left_ofs = left_container->get_combined_minimum_size().x;
 			ofs += left_ofs;
@@ -549,7 +574,7 @@ void EditorProperty::_notification(int p_what) {
 
 				Point2 rtl_pos;
 				if (rtl) {
-					rtl_pos = Point2(size.width - check_rect.position.x - (checkbox->get_width() + padding + (1 * EDSCALE)), check_rect.position.y);
+					rtl_pos = Point2(size.width - check_rect.position.x - (checkbox->get_width() + padding + EDSCALE), check_rect.position.y);
 				}
 
 				Color color2(1, 1, 1);
@@ -581,12 +606,13 @@ void EditorProperty::_notification(int p_what) {
 
 			if (can_revert && !is_read_only()) {
 				const Ref<Texture2D> &reload_icon = theme_cache.revert_icon;
-				text_limit -= reload_icon->get_width() + half_padding + theme_cache.horizontal_separation;
-				revert_rect = Rect2(ofs + text_limit, 0, reload_icon->get_width() + padding + (1 * EDSCALE), size.height);
+				int rectw = reload_icon->get_width() + half_padding + theme_cache.horizontal_separation;
+				text_limit -= rectw;
+				revert_rect = Rect2(ofs + text_limit, 0, rectw, size.height);
 
 				Point2 rtl_pos;
 				if (rtl) {
-					rtl_pos = Point2(size.width - revert_rect.position.x - (reload_icon->get_width() + padding + (1 * EDSCALE)), revert_rect.position.y);
+					rtl_pos = Point2(size.width - revert_rect.position.x - rectw, revert_rect.position.y);
 				}
 
 				Color color2(1, 1, 1);
@@ -1835,7 +1861,6 @@ void EditorInspectorCategory::_notification(int p_what) {
 			}
 
 			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Category: %s"), label));
-			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Category: %s"), label));
 
 			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorInspectorCategory::_accessibility_action_menu));
@@ -1849,7 +1874,14 @@ void EditorInspectorCategory::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			const Ref<StyleBox> &sb = theme_cache.background;
+			Ref<StyleBox> sb;
+			if (color_level == -1) {
+				sb = theme_cache.background;
+			} else if (color_level == 0) {
+				sb = theme_cache.sub_inspector_background;
+			} else {
+				sb = theme_cache.sub_inspector_color_background[color_level];
+			}
 
 			draw_style_box(sb, Rect2(Vector2(), get_size()));
 
@@ -1938,6 +1970,13 @@ void EditorInspectorCategory::set_doc_class_name(const String &p_name) {
 	doc_class_name = p_name;
 }
 
+void EditorInspectorCategory::set_color_level(int p_color_level) {
+	ERR_FAIL_COND(p_color_level < -1 || p_color_level > 16);
+	color_level = p_color_level;
+	update_minimum_size();
+	queue_redraw();
+}
+
 Size2 EditorInspectorCategory::get_minimum_size() const {
 	Size2 ms;
 	if (theme_cache.bold_font.is_valid()) {
@@ -1948,8 +1987,17 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	}
 	ms.height += theme_cache.vertical_separation;
 
-	if (theme_cache.background.is_valid()) {
-		ms.height += theme_cache.background->get_content_margin(SIDE_TOP) + theme_cache.background->get_content_margin(SIDE_BOTTOM);
+	Ref<StyleBox> bg;
+	if (color_level == -1) {
+		bg = theme_cache.background;
+	} else if (color_level == 0) {
+		bg = theme_cache.sub_inspector_background;
+	} else {
+		bg = theme_cache.sub_inspector_color_background[color_level];
+	}
+
+	if (bg.is_valid()) {
+		ms.height += bg->get_content_margin(SIDE_TOP) + bg->get_content_margin(SIDE_BOTTOM);
 	}
 
 	return ms;
@@ -1998,10 +2046,6 @@ void EditorInspectorCategory::_handle_menu_option(int p_option) {
 }
 
 void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
-	if (!is_favorite && doc_class_name.is_empty()) {
-		return;
-	}
-
 	if (menu == nullptr) {
 		menu = memnew(PopupMenu);
 
@@ -2011,8 +2055,10 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 			menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Category Values"), MENU_COPY_VALUE);
 			menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Category Values"), MENU_PASTE_VALUE);
 
-			menu->add_item(TTRC("Open Documentation"), MENU_OPEN_DOCS);
-			menu->set_item_disabled(-1, !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
+			if (!doc_class_name.is_empty()) {
+				menu->add_item(TTRC("Open Documentation"), MENU_OPEN_DOCS);
+				menu->set_item_disabled(-1, !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
+			}
 		}
 
 		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorCategory::_handle_menu_option));
@@ -2026,7 +2072,7 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 	if (menu_icon_dirty) {
 		if (is_favorite) {
 			menu->set_item_icon(menu->get_item_index(MENU_UNFAVORITE_ALL), theme_cache.icon_unfavorite);
-		} else {
+		} else if (!doc_class_name.is_empty()) {
 			menu->set_item_icon(menu->get_item_index(MENU_OPEN_DOCS), theme_cache.icon_help);
 		}
 		menu_icon_dirty = false;
@@ -2160,7 +2206,6 @@ void EditorInspectorSection::_notification(int p_what) {
 			}
 
 			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Section: %s"), label));
-			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Section: %s"), label));
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &EditorInspectorSection::_accessibility_action_collapse));
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &EditorInspectorSection::_accessibility_action_expand));
 		} break;
@@ -2507,10 +2552,9 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 	return nullptr;
 }
 
-void EditorInspectorSection::setup(const String &p_inspector_path, const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
+void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
 	section = p_section;
 	label = p_label;
-	inspector_path = p_inspector_path;
 	object = p_object;
 	bg_color = p_bg_color;
 	foldable = p_foldable;
@@ -2612,7 +2656,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 				fold();
 			}
 		}
-	} else if ((!checkable || checked) && !inspector_path.is_empty() && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+	} else if ((!checkable || checked) && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		accept_event();
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
@@ -3531,7 +3575,6 @@ void ArrayPanelContainer::_notification(int p_what) {
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 
 			AccessibilityServer::get_singleton()->update_set_name(ae, get_meta("text"));
-			AccessibilityServer::get_singleton()->update_set_value(ae, get_meta("text"));
 
 			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &ArrayPanelContainer::_accessibility_action_menu));
@@ -3550,7 +3593,6 @@ void EditorInspectorArray::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Array: %s"), get_label()));
-			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Array: %s"), get_label()));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -3613,7 +3655,7 @@ void EditorInspectorArray::setup_with_move_element_function(Object *p_object, co
 	page_length = p_page_length;
 	numbered = p_numbered;
 
-	EditorInspectorSection::setup(p_category + "/" + p_label.to_lower(), String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
+	EditorInspectorSection::setup(String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
@@ -3630,7 +3672,7 @@ void EditorInspectorArray::setup_with_count_property(Object *p_object, const Str
 	swap_method = p_swap_method;
 
 	add_button->set_text(p_add_item_text);
-	EditorInspectorSection::setup(p_category + "/" + p_label.to_lower(), String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
+	EditorInspectorSection::setup(String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
@@ -3897,6 +3939,14 @@ void EditorInspector::initialize_category_theme(EditorInspectorCategory::ThemeCa
 	p_cache.icon_help = p_control->get_editor_theme_icon(SNAME("Help"));
 
 	p_cache.background = p_control->get_theme_stylebox(SNAME("bg"), SNAME("EditorInspectorCategory"));
+
+	if (p_control == parent_inspector) {
+		// Only initialize for the inspector, as stand-alone categories won't need it.
+		p_cache.sub_inspector_background = p_control->get_theme_stylebox("sub_inspector_category_bg", EditorStringName(EditorStyles));
+		for (int i = 0; i <= 16; i++) {
+			p_cache.sub_inspector_color_background[i] = p_control->get_theme_stylebox("sub_inspector_color_category_bg" + itos(i), EditorStringName(EditorStyles));
+		}
+	}
 }
 
 void EditorInspector::initialize_property_theme(EditorProperty::ThemeCache &p_cache, Control *p_control) {
@@ -4364,6 +4414,7 @@ void EditorInspector::update_tree() {
 			// Create an EditorInspectorCategory and add it to the inspector.
 			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
 			category->set_property_info(p);
+			category->set_color_level(category_color_level);
 			main_vbox->add_child(category);
 			category_vbox = nullptr; // Reset.
 
@@ -4596,7 +4647,7 @@ void EditorInspector::update_tree() {
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup((doc_name.is_empty() ? acc_path : String(doc_name) + (acc_path.is_empty() ? "" : "/" + acc_path)), acc_path, label, object, c, use_folding, section_depth, level);
+				section->setup(acc_path, label, object, c, use_folding, section_depth, level);
 				section->set_tooltip_text(tooltip);
 
 				section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
@@ -4762,7 +4813,7 @@ void EditorInspector::update_tree() {
 
 				HashMap<String, DocData::ClassDoc>::ConstIterator F = dd->class_list.find(classname);
 				while (F) {
-					Vector<String> slices = propname.operator String().split("/");
+					Vector<String> slices = propname.string().split("/");
 					// Check if it's a theme item first.
 					if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
 						for (int i = 0; i < F->value.theme_properties.size(); i++) {
@@ -4775,7 +4826,7 @@ void EditorInspector::update_tree() {
 					} else {
 						for (int i = 0; i < F->value.properties.size(); i++) {
 							String doc_path_current = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
-							if (F->value.properties[i].name == propname.operator String()) {
+							if (F->value.properties[i].name == propname.string()) {
 								doc_path = doc_path_current;
 							}
 						}
@@ -5000,6 +5051,7 @@ void EditorInspector::update_tree() {
 
 	if (!current_favorites.is_empty()) {
 		favorites_section->show();
+		favorites_category->set_color_level(category_color_level);
 
 		// Organize the favorited properties in their sections, to keep context and differentiate from others with the same name.
 		bool is_localized = property_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED;
@@ -5024,7 +5076,7 @@ void EditorInspector::update_tree() {
 				favorites_groups_vbox->add_child(section);
 				parent_vbox = section->get_vbox();
 
-				section->setup("", "", section_name, object, sscolor, false);
+				section->setup("", section_name, object, sscolor, false);
 				section->set_tooltip_text(tooltip);
 
 				if (togglable_editor_inspector_sections.has(section_name)) {
@@ -5063,7 +5115,7 @@ void EditorInspector::update_tree() {
 					get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 					vbox->add_child(section);
 					vbox = section->get_vbox();
-					section->setup("", "", section_name, object, sscolor, false);
+					section->setup("", section_name, object, sscolor, false);
 					section->set_tooltip_text(tooltip);
 
 					if (togglable_editor_inspector_sections.has(KV.key + "/" + section_name)) {
@@ -5169,6 +5221,9 @@ void EditorInspector::update_tree() {
 		get_root_inspector()->set_follow_focus(true);
 	}
 	use_folding = old_use_folding_state;
+
+	// The minimum size of the properties could have changed.
+	update_minimum_size();
 }
 
 void EditorInspector::update_property(const String &p_prop) {
@@ -5324,6 +5379,13 @@ void EditorInspector::set_show_categories(bool p_show_standard, bool p_show_cust
 	show_standard_categories = p_show_standard;
 	show_custom_categories = p_show_custom;
 	update_tree();
+}
+
+void EditorInspector::set_category_color_level(int p_color_level) {
+	if (category_color_level != p_color_level) {
+		category_color_level = p_color_level;
+		update_tree();
+	}
 }
 
 void EditorInspector::set_use_doc_hints(bool p_enable) {
@@ -6235,7 +6297,7 @@ EditorInspector::EditorInspector() {
 	base_vbox->add_child(favorites_section);
 	favorites_section->hide();
 
-	EditorInspectorCategory *favorites_category = memnew(EditorInspectorCategory);
+	favorites_category = memnew(EditorInspectorCategory);
 	favorites_category->set_as_favorite();
 	favorites_category->connect("unfavorite_all", callable_mp(this, &EditorInspector::_clear_current_favorites));
 	favorites_section->add_child(favorites_category);

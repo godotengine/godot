@@ -18,6 +18,33 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "Open in File Manager"
+msgstr "Ouvrir dans le gestionnaire de fichiers"
+
+msgid "Show in File Manager"
+msgstr "Voir dans le gestionnaire de fichiers"
+
+msgid "Open in Files"
+msgstr "Ouvrir dans Fichiers"
+
+msgid "Show in Files"
+msgstr "Voir dans Fichiers"
+
+msgid "Open in Finder"
+msgstr "Ouvrir dans Finder"
+
+msgid "Show in Finder"
+msgstr "Voir dans Finder"
+
+msgid "Open in File Explorer"
+msgstr "Ouvrir dans l'explorateur de fichiers"
+
+msgid "Show in File Explorer"
+msgstr "Voir dans l'explorateur de fichiers"
+
+msgid "Code completion list:"
+msgstr "Liste de complétions de code :"
+
 msgid "New Code Region"
 msgstr "Nouvelle section de code"
 
@@ -101,6 +128,12 @@ msgstr "Valeurs hexadécimales"
 msgid "Hex code or named color"
 msgstr "Code hexadécimal ou nom de couleur"
 
+msgid "Copy the color value."
+msgstr "Copier la valeur de la couleur."
+
+msgid "Copy Color"
+msgstr "Copier la couleur"
+
 msgid "Swatches"
 msgstr "Nuances"
 
@@ -112,6 +145,18 @@ msgstr "Couleurs récentes"
 
 msgid "Add current color as a preset."
 msgstr "Ajouter la couleur courante comme préréglage."
+
+msgid "Screen Recording permission missing!"
+msgstr "Authorisation non accordée pour la capture d'écran !"
+
+msgid ""
+"Screen Recording permission is required to pick colors from the other "
+"application windows.\n"
+"Click here to request access..."
+msgstr ""
+"Une autorisation de capture d'écran est nécessaire pour sélectionner des "
+"couleurs depuis d'autres fenêtres d'applications.\n"
+"Cliquez ici pour demander l'autorisation..."
 
 msgid ""
 "Color: %s\n"
@@ -192,12 +237,6 @@ msgstr "Créer un dossier..."
 
 msgid "Refresh"
 msgstr "Rafraîchir"
-
-msgid "Open in File Manager"
-msgstr "Ouvrir dans le gestionnaire de fichiers"
-
-msgid "Show in File Manager"
-msgstr "Voir dans le gestionnaire de fichiers"
 
 msgid "Show Package Contents"
 msgstr "Voir le contenu du paquet"
@@ -483,6 +522,9 @@ msgstr "Afficher les caractères de contrôle"
 
 msgid "Insert Control Character"
 msgstr "Insérer un caractère de contrôle"
+
+msgid "Search"
+msgstr "Recherche"
 
 msgid "(Other)"
 msgstr "(Autre)"

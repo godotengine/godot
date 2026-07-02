@@ -127,6 +127,7 @@ private:
 	StringName autoplay;
 
 	bool movie_quit_on_finish = false;
+	bool clear_cache_on_stop = true;
 
 	void _play(const StringName &p_name, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void _capture(const StringName &p_name, bool p_from_end = false, double p_duration = -1.0, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);
@@ -230,6 +231,9 @@ public:
 
 	void set_movie_quit_on_finish_enabled(bool p_enabled);
 	bool is_movie_quit_on_finish_enabled() const;
+
+	void set_clear_cache_on_stop_enabled(bool p_enabled);
+	bool is_clear_cache_on_stop_enabled() const;
 
 	void seek_internal(double p_time, bool p_update = false, bool p_update_only = false, bool p_is_internal_seek = false);
 	void seek(double p_time, bool p_update = false, bool p_update_only = false);

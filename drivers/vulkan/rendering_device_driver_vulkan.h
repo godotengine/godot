@@ -129,7 +129,12 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 
 		// Raytracing extensions.
 		PFN_vkCreateAccelerationStructureKHR CreateAccelerationStructureKHR = nullptr;
+		PFN_vkDestroyAccelerationStructureKHR DestroyAccelerationStructureKHR = nullptr;
+		PFN_vkGetAccelerationStructureBuildSizesKHR GetAccelerationStructureBuildSizesKHR = nullptr;
+		PFN_vkCmdBuildAccelerationStructuresKHR CmdBuildAccelerationStructuresKHR = nullptr;
 		PFN_vkCreateRayTracingPipelinesKHR CreateRaytracingPipelinesKHR = nullptr;
+		PFN_vkGetRayTracingShaderGroupHandlesKHR GetRayTracingShaderGroupHandlesKHR = nullptr;
+		PFN_vkCmdTraceRaysKHR CmdTraceRaysKHR = nullptr;
 	};
 	// Debug marker extensions.
 	VkDebugReportObjectTypeEXT _convert_to_debug_report_objectType(VkObjectType p_object_type);
@@ -187,9 +192,12 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	};
 
 	PipelineStatistics pipeline_statistics;
+	DriverWorkarounds driver_workarounds;
 
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
 	Error _initialize_device_extensions();
+	void _check_driver_workarounds(const VkPhysicalDeviceProperties &p_device_properties, const VkPhysicalDeviceDriverPropertiesKHR *p_driver_properties);
+	void _get_device_properties();
 	Error _check_device_features();
 	Error _check_device_capabilities();
 	void _choose_vrs_capabilities();
@@ -445,6 +453,7 @@ public:
 	virtual int swap_chain_get_pre_rotation_degrees(SwapChainID p_swap_chain) override final;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override final;
 	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) override final;
+	virtual bool swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) override final;
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) override final;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
 
@@ -796,6 +805,8 @@ public:
 	virtual const RenderingShaderContainerFormat &get_shader_container_format() const override final;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
+
+	virtual DriverWorkarounds get_driver_workarounds() const override final;
 
 private:
 	/*********************/

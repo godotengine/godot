@@ -582,7 +582,6 @@ Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture
 	image_data.resize(tight_mip_size);
 
 	uint32_t pixel_size = get_image_format_pixel_size(tex_format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(tex_format);
 	uint32_t blockw = 0, blockh = 0;
 	get_compressed_image_format_block_dimensions(tex_format, blockw, blockh);
 
@@ -592,7 +591,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture
 		uint32_t bw = STEPIFY(tex_w, blockw);
 		uint32_t bh = STEPIFY(tex_h, blockh);
 
-		uint32_t bytes_per_row = (bw * pixel_size) >> pixel_rshift;
+		uint32_t bytes_per_row = get_compressed_image_format_pixels_shifted(tex_format, bw * pixel_size);
 		uint32_t bytes_per_img = bytes_per_row * bh;
 		uint32_t mip_size = bytes_per_img * tex_d;
 
@@ -983,6 +982,11 @@ RDD::ColorSpace RenderingDeviceDriverMetal::swap_chain_get_color_space(SwapChain
 	return swap_chain->color_space;
 }
 
+bool RenderingDeviceDriverMetal::swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) {
+	// Our minimum supported version of metal requires support for EDR.
+	return true;
+}
+
 void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	RenderingContextDriverMetal::Surface *metal_surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
@@ -1038,13 +1042,34 @@ void RenderingDeviceDriverMetal::framebuffer_free(FramebufferID p_framebuffer) {
 
 #pragma mark - Shader
 
-void RenderingDeviceDriverMetal::shader_cache_free_entry(const SHA256Digest &key) {
-	if (ShaderCacheEntry **pentry = _shader_cache.getptr(key); pentry != nullptr) {
-		ShaderCacheEntry *entry = *pentry;
-		_shader_cache.erase(key);
-		entry->library.reset();
-		memdelete(entry);
+void RenderingDeviceDriverMetal::shader_cache_free_entry(ShaderCacheEntry *p_entry) {
+	MutexLock lock(_shader_cache_lock);
+	// Only remove the map slot if it still refers to this exact entry. A concurrent
+	// creation for the same hash may have replaced it, in which case that newer entry
+	// (and its library) must be left untouched.
+	if (ShaderCacheEntry **pentry = _shader_cache.getptr(p_entry->key); pentry != nullptr && *pentry == p_entry) {
+		_shader_cache.erase(p_entry->key);
 	}
+	memdelete(p_entry);
+}
+
+std::optional<std::shared_ptr<MDLibrary>> RenderingDeviceDriverMetal::shader_cache_get_library(const SHA256Digest &key) {
+	MutexLock lock(_shader_cache_lock);
+
+	if (ShaderCacheEntry **p = _shader_cache.getptr(key); p != nullptr) {
+		if (std::shared_ptr<MDLibrary> lib = (*p)->library.lock()) {
+			return lib;
+		}
+		// Library was released; remove stale cache entry and recreate.
+		_shader_cache.erase(key);
+	}
+
+	return std::nullopt;
+}
+
+void RenderingDeviceDriverMetal::shader_cache_set_entry(const SHA256Digest &key, ShaderCacheEntry *p_entry) {
+	MutexLock lock(_shader_cache_lock);
+	_shader_cache[key] = p_entry;
 }
 
 template <typename T, typename U>
@@ -1073,6 +1098,11 @@ static void update_uniform_info(const RenderingShaderContainerMetal::UniformData
 RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) {
 	Ref<RenderingShaderContainerMetal> shader_container = p_shader_container;
 	using RSCM = RenderingShaderContainerMetal;
+
+	if (shader_container->is_invalid()) {
+		WARN_PRINT("Metal shader container is invalid and will be recompiled.");
+		return RDD::ShaderID();
+	}
 
 	CharString shader_name = shader_container->shader_name;
 	RSCM::HeaderData &mtl_reflection_data = shader_container->mtl_reflection_data;
@@ -1112,14 +1142,9 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 		if (shader.shader_stage == RDD::ShaderStage::SHADER_STAGE_COMPUTE) {
 			pipeline_type = PIPELINE_TYPE_COMPUTE;
 		}
-
-		if (ShaderCacheEntry **p = _shader_cache.getptr(shader_data.hash); p != nullptr) {
-			if (std::shared_ptr<MDLibrary> lib = (*p)->library.lock()) {
-				libraries[shader.shader_stage] = lib;
-				continue;
-			}
-			// Library was released; remove stale cache entry and recreate.
-			_shader_cache.erase(shader_data.hash);
+		if (std::optional<std::shared_ptr<MDLibrary>> lib = shader_cache_get_library(shader_data.hash); lib) {
+			libraries[shader.shader_stage] = std::move(*lib);
+			continue;
 		}
 
 		if (shader.code_decompressed_size > 0) {
@@ -1157,7 +1182,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 			library = MDLibrary::create(cd, device, source.get(), options.get(), _shader_load_strategy);
 		}
 
-		_shader_cache[shader_data.hash] = cd;
+		shader_cache_set_entry(shader_data.hash, cd);
 		libraries[shader.shader_stage] = library;
 	}
 
@@ -1600,6 +1625,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		subpass.color_references = p_subpasses[i].color_references;
 		subpass.depth_stencil_reference = p_subpasses[i].depth_stencil_reference;
 		subpass.resolve_references = p_subpasses[i].resolve_references;
+		subpass.depth_resolve_reference = p_subpasses[i].depth_resolve_reference;
 	}
 
 	static const MTL::LoadAction LOAD_ACTIONS[] = {
@@ -2509,7 +2535,7 @@ Error RenderingDeviceDriverMetal::_copy_queue_initialize() {
 	copy_queue_buffer.get()->setLabel(MTLSTR("Copy Command Scratch Buffer"));
 
 	if (__builtin_available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 1.0, *)) {
-		if (!OS::get_singleton()->get_processor_name().contains("Virtual")) {
+		if (device_properties->features.supports_residency_sets) {
 			MTL::ResidencySetDescriptor *rs_desc = MTL::ResidencySetDescriptor::alloc()->init();
 			rs_desc->setInitialCapacity(2);
 			rs_desc->setLabel(MTLSTR("Copy Queue Residency Set"));
@@ -2681,6 +2707,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return true;
 		case SUPPORTS_POINT_SIZE:
 			return true;
+		case SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE:
+			return device_properties->features.supports_msaa_depth_resolve;
 		default:
 			return false;
 	}

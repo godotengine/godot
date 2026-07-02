@@ -95,7 +95,6 @@ class AudioStreamMP3 : public AudioStream {
 	friend class AudioStreamPlaybackMP3;
 
 	TightLocalVector<uint8_t> data;
-	uint32_t data_len = 0;
 
 	float sample_rate = 1.0;
 	int channels = 1;
@@ -131,7 +130,6 @@ public:
 	virtual int get_bar_beats() const override;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 
 	void set_data(const Vector<uint8_t> &p_data);
 	Vector<uint8_t> get_data() const;
@@ -146,7 +144,4 @@ public:
 	virtual Ref<AudioSample> generate_sample() const override;
 
 	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
-
-	AudioStreamMP3();
-	virtual ~AudioStreamMP3();
 };

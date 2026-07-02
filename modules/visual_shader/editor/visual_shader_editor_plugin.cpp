@@ -4885,7 +4885,7 @@ void VisualShaderEditor::_delete_nodes_request(const TypedArray<StringName> &p_n
 			int id = String(graph_element->get_name()).to_int();
 			Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, id);
 			if (vsnode->is_deletable() && graph_element->is_selected()) {
-				to_erase.push_back(graph_element->get_name().operator String().to_int());
+				to_erase.push_back(graph_element->get_name().string().to_int());
 			}
 		}
 	} else {
@@ -5419,7 +5419,7 @@ void VisualShaderEditor::_nodes_linked_to_frame_request(const TypedArray<StringN
 	for (int i = 0; i < p_nodes.size(); i++) {
 		node_ids.push_back(p_nodes[i].operator String().to_int());
 	}
-	frame_node_id_to_link_to = p_frame.operator String().to_int();
+	frame_node_id_to_link_to = p_frame.string().to_int();
 	nodes_link_to_frame_buffer = node_ids;
 }
 
@@ -8368,6 +8368,7 @@ EditorPropertyVisualShaderMode::EditorPropertyVisualShaderMode() {
 	options = memnew(OptionButton);
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	add_child(options);
 	add_focusable(options);
 	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyVisualShaderMode::_option_selected));

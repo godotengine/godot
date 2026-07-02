@@ -8,7 +8,7 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-layout(rgba16f, set = 0, binding = 0) uniform restrict writeonly image2D current_image;
+layout(rg16f, set = 0, binding = 0) uniform restrict writeonly image2D current_image;
 
 #define M_PI 3.14159265359
 #define SAMPLE_COUNT 1024
@@ -73,28 +73,7 @@ float geometry_smith(vec3 N, vec3 V, vec3 L, float roughness) {
 	return ggx1 * ggx2;
 }
 
-vec3 importance_uniform_sample(vec2 u) {
-	float phi = 2.0f * M_PI * u.x;
-	float cosTheta = 1 - u.y;
-	float sinTheta = sqrt(1 - cosTheta * cosTheta);
-	return vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
-}
-
-float distribution_charlie(float NoH, float roughness) {
-	// Estevez and Kulla 2017, "Production Friendly Microfacet Sheen BRDF"
-	float a = roughness * roughness;
-	float invAlpha = 1 / a;
-	float cos2h = NoH * NoH;
-	float sin2h = 1 - cos2h;
-	return (2.0f + invAlpha) * pow(sin2h, invAlpha * 0.5f) / (2.0f * M_PI);
-}
-
-float visibility_ashikhmin(float NoV, float NoL) {
-	// Neubelt and Pettineo 2013, "Crafting a Next-gen Material Pipeline for The Order: 1886"
-	return 1 / (4 * (NoL + NoV - NoL * NoV));
-}
-
-void integrate_brdfs(float n_dot_v, float roughness, out vec2 brdf, out float cloth_brdf) {
+vec2 integrate_brdf(float n_dot_v, float roughness) {
 	vec3 v = vec3(sqrt(1.0 - n_dot_v * n_dot_v), 0, n_dot_v);
 	vec3 n = vec3(0.0f, 0.0f, 1.0f);
 	float A = 0.0f;
@@ -120,37 +99,18 @@ void integrate_brdfs(float n_dot_v, float roughness, out vec2 brdf, out float cl
 			A += Fc * G_Vis;
 			B += G_Vis;
 		}
-
-		// Cloth BRDF calculations
-		// https://github.com/google/filament/blob/main/libs/ibl/src/CubemapIBL.cpp#L856-L874
-		vec3 h_cloth = importance_uniform_sample(Xi);
-		vec3 l_cloth = normalize(2.0 * dot(v, h_cloth) * h_cloth - v);
-		float n_dot_l_cloth = saturate(l_cloth.z);
-		float n_dot_h_cloth = saturate(h_cloth.z);
-		float v_dot_h_cloth = saturate(dot(v, h_cloth));
-
-		if (n_dot_l_cloth > 0.0) {
-			float v_cloth = visibility_ashikhmin(n_dot_v, n_dot_l_cloth);
-			float d_cloth = distribution_charlie(n_dot_h_cloth, roughness);
-			C += v_cloth * d_cloth * n_dot_l_cloth * v_dot_h_cloth;
-		}
 	}
 
 	A /= float(SAMPLE_COUNT);
 	B /= float(SAMPLE_COUNT);
-	C *= (4.0 * 2.0 * M_PI / SAMPLE_COUNT);
 
-	brdf = vec2(A, B);
-	cloth_brdf = C;
+	return vec2(A, B);
 }
 
 void main() {
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-	float roughness = float(pos.y + 0.5f) / SIZE;
+	float roughness = float(SIZE - pos.y + 0.5f) / SIZE;
 	float NdotV = float(pos.x + 0.5f) / SIZE;
-	vec2 brdf;
-	float cloth_brdf;
-	integrate_brdfs(NdotV, roughness, brdf, cloth_brdf);
-	ivec2 out_pos = ivec2(pos.x, (SIZE - 1) - pos.y);
-	imageStore(current_image, out_pos, vec4(brdf, cloth_brdf, 1.0));
+	vec2 brdf = integrate_brdf(NdotV, roughness);
+	imageStore(current_image, pos, vec4(brdf, 0.0, 1.0));
 }

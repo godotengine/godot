@@ -75,6 +75,7 @@ import org.godotengine.godot.utils.useBenchmark
 import org.godotengine.godot.xr.XRMode
 import java.util.*
 import java.util.concurrent.Callable
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -284,8 +285,9 @@ class Godot private constructor(val context: Context) {
 				} else if (commandLine[i] == "--fullscreen") {
 					useImmersive.set(true)
 					newArgs.add(commandLine[i])
-				} else if (commandLine[i] == "--background_color") {
+				} else if (hasExtra && commandLine[i] == "--background_color") {
 					setWindowColor(commandLine[i + 1])
+					i++
 				} else if (commandLine[i] == "--disable_godot_splash") {
 					disableGodotSplash = true
 				} else if (commandLine[i] == "--benchmark") {
@@ -301,13 +303,17 @@ class Godot private constructor(val context: Context) {
 
 					i++
 				} else if (hasExtra && commandLine[i] == "--main-pack") {
+					newArgs.add(commandLine[i])
+
 					val mainPackPath = commandLine[i + 1]
+					newArgs.add(commandLine[i + 1])
 					// Check the storage scope of the main pack path. For template builds, `useApkExpansion` is enabled
 					// if the storage scope is APP.
 					val storageScope = fileAccessHandler.storageScopeIdentifier.identifyStorageScope(mainPackPath)
 					if (isTemplateBuild()) {
 						useApkExpansion = storageScope == StorageScope.APP
 					}
+					i++
 				} else if (commandLine[i].trim().isNotEmpty()) { // This block should always be last!
 					newArgs.add(commandLine[i])
 				}
@@ -329,6 +335,7 @@ class Godot private constructor(val context: Context) {
 			}
 
 			if (nativeLayerInitializeCompleted && !nativeLayerSetupCompleted) {
+				Log.v(TAG, "Setting up native layer with params: $commandLine")
 				nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), tts)
 				if (!nativeLayerSetupCompleted) {
 					throw IllegalStateException("Unable to setup the Godot engine! Aborting...")
@@ -612,6 +619,11 @@ class Godot private constructor(val context: Context) {
 			})
 
 			renderView?.queueOnRenderThread {
+				for (plugin in pluginRegistry.allPlugins) {
+					// Plugins should be registered early so they are available as soon as the app starts.
+					// Otherwise, a delay in registration may make them unavailable during _init() of the main script or an autoload.
+					plugin.onRegisterPluginWithGodotNative()
+				}
 				setKeepScreenOn(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")))
 			}
 
@@ -818,7 +830,6 @@ class Godot private constructor(val context: Context) {
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
-			plugin.onRegisterPluginWithGodotNative()
 			plugin.onGodotSetupCompleted()
 		}
 		primaryHost?.onGodotSetupCompleted()
@@ -872,6 +883,8 @@ class Godot private constructor(val context: Context) {
 	@JvmOverloads
 	fun alert(message: String, title: String, okCallback: Runnable? = null) {
 		val activity = getActivity() ?: return
+
+		val renderLatch = CountDownLatch(1)
 		runOnHostThread {
 			val builder = AlertDialog.Builder(activity)
 			builder.setMessage(message).setTitle(title)
@@ -880,9 +893,25 @@ class Godot private constructor(val context: Context) {
 			) { dialog: DialogInterface, _: Int ->
 				okCallback?.run()
 				dialog.cancel()
+				renderLatch.countDown()
+			}
+			builder.setOnCancelListener {
+				renderLatch.countDown()
 			}
 			val dialog = builder.create()
 			dialog.show()
+		}
+
+		// We only block the render thread.
+		val blockerRunnable = Runnable {
+			try {
+				renderLatch.await()
+			} catch (_: InterruptedException) {}
+		}
+		if (Thread.currentThread() == Looper.getMainLooper().thread) {
+			runOnRenderThread(blockerRunnable)
+		} else {
+			blockerRunnable.run()
 		}
 	}
 

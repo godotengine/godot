@@ -77,7 +77,7 @@ private:
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;
 	Ref<ConcavePolygonShape3D> root_collision_shape;
-	RID root_collision_instance;
+	RID root_collision_body;
 	RID root_collision_debug_instance;
 	Transform3D debug_shape_old_transform;
 #endif // PHYSICS_3D_DISABLED
@@ -117,6 +117,9 @@ private:
 	void _on_transform_changed();
 	Vector<Vector3> _get_brush_collision_faces();
 #endif // PHYSICS_3D_DISABLED
+
+	void _build_surfaces_smoothed(CSGBrush *p_brush, Vector<ShapeUpdateSurface> &r_surfaces, Vector<int> &r_face_count);
+	void _build_surfaces_default(CSGBrush *p_brush, Vector<ShapeUpdateSurface> &r_surfaces, Vector<int> &r_face_count);
 
 protected:
 	void _notification(int p_what);

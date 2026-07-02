@@ -10,6 +10,7 @@ sources:
   - .github/{actions/*,workflows}/*.yml
   - "**/{SConstruct,SCsub,*.py}"
   - "**/*.{h,hpp,hh,hxx,c,cpp,cc,cxx,m,mm,inc,glsl}"
+  - misc/extension_api_validation/**
   - modules/mono/**/*.{cs,csproj,sln,props,targets}
   - platform/android/java/{gradle*,**/*.{jar,java,kt,gradle}}
   - platform/web/{package{,-lock}.json,js/**/*.js}

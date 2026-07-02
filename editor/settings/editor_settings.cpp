@@ -91,10 +91,6 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 		emit_signal(SNAME("settings_changed"));
-
-		if (p_name == SNAME("interface/editor/localization/editor_language")) {
-			setup_language(false);
-		}
 	}
 	return true;
 }
@@ -422,9 +418,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Languages */
 
 	{
-		String lang_hint;
-		const String host_lang = OS::get_singleton()->get_locale();
-
 		// Skip locales which we can't render properly.
 		const LocalVector<String> locales_to_skip = _get_skipped_locales();
 		if (!locales_to_skip.is_empty()) {
@@ -433,30 +426,50 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 		String best = "en";
 		int best_score = 0;
-		for (const String &locale : get_editor_locales()) {
-			// Test against language code without regional variants (e.g. ur_PK).
-			String lang_code = locale.get_slicec('_', 0);
-			if (locales_to_skip.has(lang_code)) {
-				continue;
+		for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
+			if (host_lang.get_slicec('_', 0) == "en") {
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, "en");
+				if (score > 0 && score >= best_score) {
+					best = "en";
+					best_score = score;
+				}
 			}
+			for (const String &locale : get_editor_locales()) {
+				// Test against language code without regional variants (e.g. ur_PK).
+				String lang_code = locale.get_slicec('_', 0);
+				if (locales_to_skip.has(lang_code)) {
+					continue;
+				}
 
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+				if (score > 0 && score >= best_score) {
+					best = locale;
+					best_score = score;
+				}
+			}
+			if (best_score > 0) {
+				break;
+			}
+		}
+
+		String lang_hint;
+		for (const String &locale : get_editor_locales()) {
 			lang_hint += ";";
 			const String lang_name = TranslationServer::get_singleton()->get_locale_name(locale);
 			lang_hint += vformat("%s/[%s] %s", locale, locale, lang_name);
-
-			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
-			if (score > 0 && score >= best_score) {
-				best = locale;
-				best_score = score;
-			}
 		}
 		lang_hint = vformat(";auto/Auto (%s);en/[en] English", TranslationServer::get_singleton()->get_locale_name(best)) + lang_hint;
 
 		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/localization/editor_language", "auto", lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
 	}
 
-	// Asset store
-	_initial_set("asset_library/use_threads", true);
+	/* Asset Store */
+
+	_initial_set("asset_store/use_threads", true);
+
+	Dictionary default_urls;
+	default_urls["godotengine.org (Official)"] = "https://store.godotengine.org/api/v1";
+	_initial_set("asset_store/available_urls", default_urls, true);
 
 	/* Interface */
 
@@ -505,6 +518,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/use_native_file_dialogs", false, "", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/expand_to_title", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/appearance/max_sticky_tree_items", 6, "0,16")
 
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/fonts/main_font_size", 14, "8,48,1")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/fonts/code_font_size", 14, "8,48,1")
@@ -596,7 +610,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/accessibility/property_descriptions", true, "")
 
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_mode", (int32_t)ColorPicker::MODE_RGB, "RGB,HSV,RAW,OKHSL")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_OKHSL_CIRCLE, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle,OK HS Rectangle:5,OK HL Rectangle") // `SHAPE_NONE` is 4.
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_VHS_CIRCLE, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle,OK HS Rectangle:5,OK HL Rectangle") // `SHAPE_NONE` is 4.
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/color_picker_show_intensity", true, "");
 
 	// Theme
@@ -974,7 +988,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/zoom_inertia", 0.05, "0,1,0.001")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/angle_snap_threshold", 10.0, "1,20,0.1,degrees")
 	_initial_set("editors/3d/navigation/show_viewport_rotation_gizmo", true);
-	_initial_set("editors/3d/navigation/show_viewport_navigation_gizmo", DisplayServer::get_singleton()->is_touchscreen_available());
+	bool should_show_viewport_navigation_gizmo = false;
+#ifdef ANDROID_ENABLED
+	should_show_viewport_navigation_gizmo = true;
+#endif
+	_initial_set("editors/3d/navigation/show_viewport_navigation_gizmo", should_show_viewport_navigation_gizmo);
 
 	// 3D: Freelook
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_navigation_scheme", 0, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)")
@@ -1273,6 +1291,7 @@ void EditorSettings::_handle_setting_compatibility() {
 	erase("run/output/always_close_output_on_stop");
 	erase("text_editor/theme/line_spacing"); // See GH-106137.
 	erase("interface/editors/show_scene_tree_root_selection");
+	erase("asset_library/available_urls"); // Workaround bugged settings treating the previous default as a modified value (see GH-118755).
 
 	// Handle renamed settings.
 	_rename_setting("interface/editor/editor_language", "interface/editor/localization/editor_language");
@@ -1319,6 +1338,10 @@ void EditorSettings::_handle_setting_compatibility() {
 	_rename_setting("interface/editor/vsync_mode", "interface/editor/display/vsync_mode");
 	_rename_setting("interface/editor/update_continuously", "interface/editor/display/update_continuously");
 	_rename_setting("interface/editor/collapse_main_menu", "interface/editor/appearance/collapse_main_menu");
+	_rename_setting("asset_library/use_threads", "asset_store/use_threads");
+
+	// Handle renamed shortcuts.
+	_rename_shortcut("editor/editor_assetlib", "editor/editor_asset_store");
 }
 
 void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {
@@ -1331,6 +1354,16 @@ void EditorSettings::_rename_setting(const String &p_old_name, const String &p_n
 		ProjectSettings::get_singleton()->set_editor_setting_override(p_old_name, Variant());
 	}
 	compat_map[p_old_name] = p_new_name;
+}
+
+void EditorSettings::_rename_shortcut(const String &p_old_path, const String &p_new_path) {
+	if (!shortcuts.has(p_old_path)) {
+		return;
+	}
+	if (!shortcuts.has(p_new_path)) {
+		shortcuts[p_new_path] = shortcuts[p_old_path];
+	}
+	shortcuts.erase(p_old_path);
 }
 #endif
 
@@ -2022,7 +2055,7 @@ float EditorSettings::get_auto_display_scale() {
 }
 
 String EditorSettings::get_language() const {
-	const String language = has_setting("interface/editor/localization/editor_language") ? get("interface/editor/localization/editor_language") : "auto";
+	const String language = has_setting("interface/editor/localization/editor_language") ? get_setting("interface/editor/localization/editor_language") : "auto";
 	if (language != "auto" && !language.is_empty()) {
 		return language;
 	}
@@ -2030,21 +2063,32 @@ String EditorSettings::get_language() const {
 	if (auto_language.is_empty()) {
 		// Skip locales which we can't render properly.
 		const LocalVector<String> locales_to_skip = _get_skipped_locales();
-		const String host_lang = OS::get_singleton()->get_locale();
 
 		String best = "en";
 		int best_score = 0;
-		for (const String &locale : get_editor_locales()) {
-			// Test against language code without regional variants (e.g. ur_PK).
-			String lang_code = locale.get_slicec('_', 0);
-			if (locales_to_skip.has(lang_code)) {
-				continue;
+		for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
+			if (host_lang.get_slicec('_', 0) == "en") {
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, "en");
+				if (score > 0 && score >= best_score) {
+					best = "en";
+					best_score = score;
+				}
 			}
+			for (const String &locale : get_editor_locales()) {
+				// Test against language code without regional variants (e.g. ur_PK).
+				String lang_code = locale.get_slicec('_', 0);
+				if (locales_to_skip.has(lang_code)) {
+					continue;
+				}
 
-			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
-			if (score > 0 && score >= best_score) {
-				best = locale;
-				best_score = score;
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+				if (score > 0 && score >= best_score) {
+					best = locale;
+					best_score = score;
+				}
+			}
+			if (best_score > 0) {
+				break;
 			}
 		}
 		auto_language = best;
@@ -2353,6 +2397,10 @@ void EditorSettings::notify_changes() {
 		return;
 	}
 	root->propagate_notification(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
+
+	if (check_changed_settings_in_group("interface/editor/localization/editor_language")) {
+		setup_language(false);
+	}
 }
 
 void EditorSettings::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {

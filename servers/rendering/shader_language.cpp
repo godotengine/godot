@@ -3588,6 +3588,7 @@ const ShaderLanguage::BuiltinEntry ShaderLanguage::frag_only_func_defs[] = {
 	{ "fwidth" },
 	{ "fwidthCoarse" },
 	{ "fwidthFine" },
+	{ "textureQueryLod" },
 	{ nullptr }
 };
 
@@ -3602,8 +3603,8 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 
 	ERR_FAIL_COND_V(p_func->arguments[0]->type != Node::NODE_TYPE_VARIABLE, false);
 
-	StringName name = static_cast<VariableNode *>(p_func->arguments[0])->name.operator String();
-	StringName rname = static_cast<VariableNode *>(p_func->arguments[0])->rname.operator String();
+	StringName name = static_cast<VariableNode *>(p_func->arguments[0])->name.string();
+	StringName rname = static_cast<VariableNode *>(p_func->arguments[0])->rname.string();
 
 	for (int i = 1; i < p_func->arguments.size(); i++) {
 		args.push_back(p_func->arguments[i]->get_datatype());
@@ -5421,7 +5422,7 @@ bool ShaderLanguage::_get_completable_identifier(BlockNode *p_block, CompletionT
 		tk = _get_token();
 
 		if (tk.type == TK_IDENTIFIER) {
-			identifier = identifier.operator String() + tk.text.operator String();
+			identifier = identifier.string() + tk.text.string();
 		} else {
 			_set_tkpos(pos);
 		}
@@ -7752,6 +7753,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					_set_error(vformat(RTR("Invalid arguments to unary operator '%s': %s."), get_operator_text(op->op), at));
 					return nullptr;
 				}
+				expression.write[i].node = _reduce_expression(p_block, expression.write[i].node);
 				expression.remove_at(i + 1);
 			}
 
@@ -10055,6 +10057,10 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									new_hint = ShaderNode::Uniform::HINT_SCREEN_TEXTURE;
 									--texture_uniforms;
 									--texture_binding;
+									if (shader_type_identifier != StringName() && !(String(shader_type_identifier) == "spatial" || String(shader_type_identifier) == "canvas_item")) {
+										_set_error(vformat(RTR("'hint_screen_texture' is not supported in '%s' shaders."), shader_type_identifier));
+										return ERR_PARSE_ERROR;
+									}
 								} break;
 								case TK_HINT_NORMAL_ROUGHNESS_TEXTURE: {
 									new_hint = ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE;

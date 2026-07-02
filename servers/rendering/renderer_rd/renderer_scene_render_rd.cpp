@@ -436,7 +436,7 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 		RID depth_back_texture = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, v, 0);
 
 		if (can_use_storage) {
-			copy_effects->copy_to_rect(depth_texture, depth_back_texture, Rect2i(0, 0, size.x, size.y));
+			copy_effects->copy_depth_to_rect(depth_texture, depth_back_texture, Rect2i(0, 0, size.x, size.y));
 		} else {
 			RID depth_back_fb = FramebufferCacheRD::get_singleton()->get_cache(depth_back_texture);
 			if (p_use_msaa) {
@@ -1737,7 +1737,7 @@ PackedByteArray RendererSceneRenderRD::bake_render_area_light_atlas(const TypedA
 			} else {
 				Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
 				if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-					copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
+					copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size, true);
 				} else {
 					copy_effects->gaussian_blur_raster(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
 				}
@@ -1837,6 +1837,7 @@ void RendererSceneRenderRD::init() {
 
 	environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));
+	fog_use_legacy_blending = GLOBAL_GET("rendering/environment/fog/use_legacy_blending");
 
 	decals_set_filter(RSE::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	light_projectors_set_filter(RSE::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));

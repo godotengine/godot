@@ -87,19 +87,19 @@ public:
 
 	void reverse();
 
-	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ T *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
+	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
 	_FORCE_INLINE_ Size size() const { return _cowdata.size(); }
 	_FORCE_INLINE_ USize capacity() const { return _cowdata.capacity(); }
 
-	_FORCE_INLINE_ operator Span<T>() const { return _cowdata.span(); }
-	_FORCE_INLINE_ Span<T> span() const { return _cowdata.span(); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return _cowdata.span(); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return _cowdata.span(); }
 
 	_FORCE_INLINE_ void clear() { _cowdata.clear(); }
 	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
 
-	_FORCE_INLINE_ T get(Size p_index) { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ const T &get(Size p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ T get(Size p_index) _LIFETIME_BOUND_ { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ const T &get(Size p_index) const _LIFETIME_BOUND_ { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(Size p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
 
 	/// Resize the vector.
@@ -141,7 +141,7 @@ public:
 		return _cowdata.reserve_exact(p_size);
 	}
 
-	_FORCE_INLINE_ const T &operator[](Size p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ const T &operator[](Size p_index) const _LIFETIME_BOUND_ { return _cowdata.get(p_index); }
 	// Must take a copy instead of a reference (see GH-31736).
 	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, std::move(p_val)); }
 	Size find(const T &p_val, Size p_from = 0) const {
@@ -305,23 +305,25 @@ public:
 		const T *elem_ptr = nullptr;
 	};
 
-	_FORCE_INLINE_ Iterator begin() {
+	_FORCE_INLINE_ Iterator begin() _LIFETIME_BOUND_ {
 		return Iterator(ptrw());
 	}
-	_FORCE_INLINE_ Iterator end() {
+	_FORCE_INLINE_ Iterator end() _LIFETIME_BOUND_ {
 		return Iterator(ptrw() + size());
 	}
 
-	_FORCE_INLINE_ ConstIterator begin() const {
+	_FORCE_INLINE_ ConstIterator begin() const _LIFETIME_BOUND_ {
 		return ConstIterator(ptr());
 	}
-	_FORCE_INLINE_ ConstIterator end() const {
+	_FORCE_INLINE_ ConstIterator end() const _LIFETIME_BOUND_ {
 		return ConstIterator(ptr() + size());
 	}
 
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) :
 			_cowdata(p_init) {}
+	_FORCE_INLINE_ explicit Vector(Span<T> p_span) :
+			_cowdata(p_span) {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) = default;
 	_FORCE_INLINE_ Vector(Vector &&p_from) = default;
 };

@@ -452,7 +452,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 #ifdef DEBUG_ENABLED
 			if (!parser->_is_tool && ext_parser->get_parser()->_is_tool) {
-				parser->push_warning(p_class, GDScriptWarning::MISSING_TOOL);
+				parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 			}
 #endif // DEBUG_ENABLED
 
@@ -486,7 +486,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 #ifdef DEBUG_ENABLED
 					if (!parser->_is_tool && base_parser->get_parser()->_is_tool) {
-						parser->push_warning(p_class, GDScriptWarning::MISSING_TOOL);
+						parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 					}
 #endif // DEBUG_ENABLED
 
@@ -513,7 +513,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 #ifdef DEBUG_ENABLED
 				if (!parser->_is_tool && info_parser->get_parser()->_is_tool) {
-					parser->push_warning(p_class, GDScriptWarning::MISSING_TOOL);
+					parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 				}
 #endif // DEBUG_ENABLED
 
@@ -1876,7 +1876,21 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
 
 			if (p_function->return_type == nullptr) {
+				// GH-118877. We decided to make an exception to maintain compatibility, since the problem can only be detected at runtime.
+#ifdef DISABLE_DEPRECATED
 				p_function->set_datatype(parent_return_type);
+#else // !DISABLE_DEPRECATED
+				if (function_name == GDScriptLanguage::get_singleton()->strings._get_property_list && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
+					GDScriptParser::DataType array_type;
+					array_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+					array_type.kind = GDScriptParser::DataType::BUILTIN;
+					array_type.builtin_type = Variant::ARRAY;
+
+					p_function->set_datatype(array_type);
+				} else {
+					p_function->set_datatype(parent_return_type);
+				}
+#endif // DISABLE_DEPRECATED
 			} else {
 				// Check return type covariance.
 				GDScriptParser::DataType return_type = p_function->get_datatype();
@@ -1969,7 +1983,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 #ifdef DEBUG_ENABLED
 	if (p_function->return_type == nullptr) {
-		parser->push_warning(p_function, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
+		parser->push_warning(p_function->start_line, p_function->start_column, p_function->header_end_line, p_function->header_end_column, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
 	}
 #endif // DEBUG_ENABLED
 
@@ -2539,8 +2553,8 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 			p_return->void_return = true;
 			const GDScriptParser::DataType &return_type = p_return->return_value->datatype;
 			if (is_call && !return_type.is_hard_type()) {
-				String function_name = parser->current_function->identifier ? parser->current_function->identifier->name.operator String() : String("<anonymous function>");
-				String called_function_name = static_cast<GDScriptParser::CallNode *>(p_return->return_value)->function_name.operator String();
+				String function_name = parser->current_function->identifier ? parser->current_function->identifier->name.string() : String("<anonymous function>");
+				String called_function_name = static_cast<GDScriptParser::CallNode *>(p_return->return_value)->function_name.string();
 #ifdef DEBUG_ENABLED
 				parser->push_warning(p_return, GDScriptWarning::UNSAFE_VOID_RETURN, function_name, called_function_name);
 #endif // DEBUG_ENABLED
@@ -3272,6 +3286,16 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			// Reference types are not suited for compile-time construction.
 			// Because in this case they would be the same reference in all constructed values.
 			if (all_is_constant && !Variant::is_type_shared(builtin_type)) {
+				// A workaround for GH-89357.
+				if (builtin_type == Variant::COLOR && !p_call->arguments.is_empty() && p_call->arguments[0]->reduced_value.get_type() == Variant::STRING) {
+					const String code = p_call->arguments[0]->reduced_value;
+					if (!Color::html_is_valid(code) && Color::find_named_color(code) == -1) {
+						push_error(vformat(R"(Invalid color code "%s".)", code), p_call->arguments[0]);
+						p_call->set_datatype(call_type);
+						return;
+					}
+				}
+
 				// Construct here.
 				Vector<const Variant *> args;
 				for (int i = 0; i < p_call->arguments.size(); i++) {

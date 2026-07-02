@@ -422,6 +422,11 @@ void TileMapEditorPlugin::_edit_tile_map_layer(TileMapLayer *p_tile_map_layer, b
 void TileMapEditorPlugin::_edit_tile_map(TileMap *p_tile_map) {
 	ERR_FAIL_NULL(p_tile_map);
 
+	tile_map_group_id = p_tile_map->get_instance_id();
+	if (!p_tile_map->is_connected(CoreStringName(changed), callable_mp(editor, &TileMapLayerEditor::set_show_layer_selector))) {
+		p_tile_map->connect(CoreStringName(changed), callable_mp(editor, &TileMapLayerEditor::set_show_layer_selector).bind(p_tile_map->get_layers_count()));
+	}
+
 	if (p_tile_map->get_layers_count() > 0) {
 		TileMapLayer *selected_layer = Object::cast_to<TileMapLayer>(p_tile_map->get_child(0));
 		_edit_tile_map_layer(selected_layer, true);
@@ -442,6 +447,11 @@ void TileMapEditorPlugin::edit(Object *p_object) {
 	if (edited_layer) {
 		edited_layer->disconnect(CoreStringName(changed), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_changed));
 		edited_layer->disconnect(SceneStringName(tree_exited), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_removed));
+	}
+
+	TileMap *edited_map = ObjectDB::get_instance<TileMap>(tile_map_group_id);
+	if (edited_map) {
+		edited_map->disconnect(CoreStringName(changed), callable_mp(editor, &TileMapLayerEditor::set_show_layer_selector));
 	}
 
 	tile_map_group_id = ObjectID();
