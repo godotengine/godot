@@ -419,6 +419,7 @@ void ThemeDB::_sort_theme_items() {
 void ThemeDB::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_theme"), &ThemeDB::get_default_theme);
 	ClassDB::bind_method(D_METHOD("get_project_theme"), &ThemeDB::get_project_theme);
+	ClassDB::bind_method(D_METHOD("bind_class_item"), &ThemeDB::bind_class_item);
 
 	ClassDB::bind_method(D_METHOD("set_fallback_base_scale", "base_scale"), &ThemeDB::set_fallback_base_scale);
 	ClassDB::bind_method(D_METHOD("get_fallback_base_scale"), &ThemeDB::get_fallback_base_scale);
