@@ -346,7 +346,7 @@ private:
 	StringName name;
 	StringName source;
 	bool _static = false;
-	Vector<GDScriptDataType> argument_types;
+	LocalVector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;
 	MethodInfo method_info;
 	Variant rpc_config;
@@ -363,24 +363,24 @@ private:
 	TightLocalVector<Pair<int, Variant::Type>> temporary_slots;
 	List<StackDebug> stack_debug;
 
-	Vector<int> code;
-	Vector<int> default_arguments;
-	Vector<Variant> constants;
+	LocalVector<int> code;
+	LocalVector<int> default_arguments;
+	TightLocalVector<Variant> constants;
 	HashMap<StringName, Variant> constant_map;
-	Vector<StringName> global_names;
-	Vector<Variant::ValidatedOperatorEvaluator> operator_funcs;
-	Vector<Variant::ValidatedSetter> setters;
-	Vector<Variant::ValidatedGetter> getters;
-	Vector<Variant::ValidatedKeyedSetter> keyed_setters;
-	Vector<Variant::ValidatedKeyedGetter> keyed_getters;
-	Vector<Variant::ValidatedIndexedSetter> indexed_setters;
-	Vector<Variant::ValidatedIndexedGetter> indexed_getters;
-	Vector<Variant::ValidatedBuiltInMethod> builtin_methods;
-	Vector<Variant::ValidatedConstructor> constructors;
-	Vector<Variant::ValidatedUtilityFunction> utilities;
-	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
-	Vector<MethodBind *> methods;
-	Vector<GDScriptFunction *> lambdas;
+	TightLocalVector<StringName> global_names;
+	TightLocalVector<Variant::ValidatedOperatorEvaluator> operator_funcs;
+	TightLocalVector<Variant::ValidatedSetter> setters;
+	TightLocalVector<Variant::ValidatedGetter> getters;
+	TightLocalVector<Variant::ValidatedKeyedSetter> keyed_setters;
+	TightLocalVector<Variant::ValidatedKeyedGetter> keyed_getters;
+	TightLocalVector<Variant::ValidatedIndexedSetter> indexed_setters;
+	TightLocalVector<Variant::ValidatedIndexedGetter> indexed_getters;
+	TightLocalVector<Variant::ValidatedBuiltInMethod> builtin_methods;
+	TightLocalVector<Variant::ValidatedConstructor> constructors;
+	TightLocalVector<Variant::ValidatedUtilityFunction> utilities;
+	TightLocalVector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
+	TightLocalVector<MethodBind *> methods;
+	TightLocalVector<GDScriptFunction *> lambdas;
 
 	int _code_size = 0;
 	int _default_arg_count = 0;
@@ -466,7 +466,7 @@ public:
 		StringName function_name;
 		String script_path;
 #endif
-		Vector<uint8_t> stack;
+		TightLocalVector<uint8_t> stack;
 		int stack_size = 0;
 		int ip = 0;
 		int line = 0;

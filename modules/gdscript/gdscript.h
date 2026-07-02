@@ -89,7 +89,7 @@ class GDScript : public Script {
 
 	// Only static variables of the current class.
 	HashMap<StringName, MemberInfo> static_variables_indices;
-	Vector<Variant> static_variables; // Static variable values.
+	TightLocalVector<Variant> static_variables; // Static variable values.
 
 	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
@@ -132,7 +132,7 @@ private:
 #ifdef TOOLS_ENABLED
 	// For static data storage during hot-reloading.
 	HashMap<StringName, MemberInfo> old_static_variables_indices;
-	Vector<Variant> old_static_variables;
+	TightLocalVector<Variant> old_static_variables;
 	void _save_old_static_data();
 	void _restore_old_static_data();
 
@@ -404,11 +404,10 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	bool finishing = false;
 
-	Variant *_global_array = nullptr;
-	Vector<Variant> global_array;
+	LocalVector<Variant> global_array;
 	HashMap<StringName, int> globals;
 	HashMap<StringName, Variant> named_globals;
-	Vector<int> global_array_empty_indexes;
+	LocalVector<int> global_array_empty_indexes;
 
 	struct CallLevel {
 		Variant *stack = nullptr;
@@ -562,7 +561,7 @@ public:
 	_FORCE_INLINE_ bool should_track_call_stack() const { return track_call_stack; }
 	_FORCE_INLINE_ bool should_track_locals() const { return track_locals; }
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
-	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
+	_FORCE_INLINE_ Variant *get_global_array() { return global_array.ptr(); }
 	_FORCE_INLINE_ const HashMap<StringName, int> &get_global_map() const { return globals; }
 	_FORCE_INLINE_ const HashMap<StringName, Variant> &get_named_globals_map() const { return named_globals; }
 	// These two functions should be used when behavior needs to be consistent between in-editor and running the scene

@@ -3187,7 +3187,7 @@ GDScriptCompiler::FunctionLambdaInfo GDScriptCompiler::_get_function_replacement
 Vector<GDScriptCompiler::FunctionLambdaInfo> GDScriptCompiler::_get_function_lambda_replacement_info(GDScriptFunction *p_func, int p_depth, GDScriptFunction *p_parent_func) {
 	Vector<FunctionLambdaInfo> result;
 	// Only scrape the lambdas inside p_func.
-	for (int i = 0; i < p_func->lambdas.size(); ++i) {
+	for (uint32_t i = 0; i < p_func->lambdas.size(); ++i) {
 		result.push_back(_get_function_replacement_info(p_func->lambdas[i], i, p_depth + 1, p_func));
 	}
 	return result;
@@ -3265,7 +3265,7 @@ void GDScriptCompiler::_get_function_ptr_replacements(HashMap<GDScriptFunction *
 	for (const KeyValue<StringName, Vector<FunctionLambdaInfo>> &old_kv : p_old_info.member_function_infos) {
 		_get_function_ptr_replacements(r_replacements, old_kv.value, p_new_info != nullptr ? p_new_info->member_function_infos.getptr(old_kv.key) : nullptr);
 	}
-	for (int i = 0; i < p_old_info.other_function_infos.size(); ++i) {
+	for (uint32_t i = 0; i < p_old_info.other_function_infos.size(); ++i) {
 		const FunctionLambdaInfo &old_other_info = p_old_info.other_function_infos[i];
 		const FunctionLambdaInfo *new_other_info = nullptr;
 		if (p_new_info != nullptr && p_new_info->other_function_infos.size() == p_old_info.other_function_infos.size()) {
