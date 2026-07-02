@@ -89,11 +89,11 @@ Size2 ToggleButton::get_minimum_size() const {
 std::tuple<Ref<Texture2D>, Ref<Texture2D>> ToggleButton::_get_current_icon() const {
 #define APPLY_ICONS(state_name) \
 	if (has_theme_icon(SNAME(#state_name))) \
-		icon = theme_cache.state_name; \
+		icon_main = theme_cache.state_name; \
 	if (has_theme_icon(SNAME(#state_name "_focus"))) \
 		icon_focus = theme_cache.state_name##_focus;
 
-	Ref<Texture2D> icon;
+	Ref<Texture2D> icon_main;
 	Ref<Texture2D> icon_focus;
 
 	if (is_pressed()) {
@@ -166,7 +166,7 @@ std::tuple<Ref<Texture2D>, Ref<Texture2D>> ToggleButton::_get_current_icon() con
 
 #undef APPLY_ICONS
 
-	return std::make_tuple(icon, icon_focus);
+	return std::make_tuple(icon_main, icon_focus);
 }
 
 void ToggleButton::_notification(int p_what) {
@@ -210,7 +210,7 @@ void ToggleButton::_notification(int p_what) {
 			RID ci = get_canvas_item();
 
 			std::tuple<Ref<Texture2D>, Ref<Texture2D>> icons = _get_current_icon();
-			Ref<Texture2D> icon = std::get<0>(icons);
+			Ref<Texture2D> icon_main = std::get<0>(icons);
 			Ref<Texture2D> icon_focus = std::get<1>(icons);
 
 			Vector2 ofs;
@@ -235,7 +235,7 @@ void ToggleButton::_notification(int p_what) {
 				color = theme_cache.checkbox_unchecked_color;
 			}
 
-			icon->draw_rect(ci, Rect2(ofs, _fit_icon_size(icon->get_size())), false, color);
+			icon_main->draw_rect(ci, Rect2(ofs, _fit_icon_size(icon_main->get_size())), false, color);
 			if (has_focus(true) && icon_focus.is_valid() && !icon_focus.is_null()) {
 				icon_focus->draw_rect(ci, Rect2(ofs, _fit_icon_size(icon_focus->get_size())), false, color);
 			}
