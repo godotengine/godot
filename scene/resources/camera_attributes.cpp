@@ -419,9 +419,9 @@ void CameraAttributesPractical::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_intensity", PROPERTY_HINT_RANGE, "0.0,1.0,0.01,or_greater"), "set_motion_blur_intensity", "get_motion_blur_intensity");
 
 	ADD_SUBGROUP("Velocity Multipliers", "motion_blur_velocity_multiplier_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_object", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_motion_blur_object_velocity_multiplier", "get_motion_blur_object_velocity_multiplier");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_camera_movement", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_motion_blur_movement_velocity_multiplier", "get_motion_blur_movement_velocity_multiplier");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_camera_rotation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_motion_blur_rotation_velocity_multiplier", "get_motion_blur_rotation_velocity_multiplier");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_object", PROPERTY_HINT_RANGE, "0.0,1.0,0.01,or_greater"), "set_motion_blur_object_velocity_multiplier", "get_motion_blur_object_velocity_multiplier");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_camera_movement", PROPERTY_HINT_RANGE, "0.0,1.0,0.01,or_greater"), "set_motion_blur_movement_velocity_multiplier", "get_motion_blur_movement_velocity_multiplier");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_camera_rotation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01,or_greater"), "set_motion_blur_rotation_velocity_multiplier", "get_motion_blur_rotation_velocity_multiplier");
 
 	ADD_SUBGROUP("Velocity Thresholds", "motion_blur_velocity_threshold_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_threshold_lower", PROPERTY_HINT_RANGE, "0.0,100.0,0.01"), "set_motion_blur_velocity_lower_threshold", "get_motion_blur_velocity_lower_threshold");

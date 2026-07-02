@@ -145,7 +145,7 @@
 			<return type="void" />
 			<param index="0" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], and motion blur is enabled,, it will be be applied in the editor scene view as well. When [code]false[/code], the motion blur will only be applied at runtime. See also [member EditorSettings.editors/3d/viewport_visuals/show_motion_blur_in_editor]
+				If [code]true[/code], and motion blur is enabled, it will be applied in the editor scene view as well. When [code]false[/code], the motion blur will only be applied at runtime. See also [member EditorSettings.editors/3d/viewport_visuals/show_motion_blur_in_editor]
 			</description>
 		</method>
 		<method name="camera_attributes_set_motion_blur_tile_size">

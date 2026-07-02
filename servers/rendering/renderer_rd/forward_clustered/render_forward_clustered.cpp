@@ -1802,7 +1802,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	bool using_upscaling = scale_type != SCALE_NONE;
-	bool using_motion_blur = RSG::camera_attributes->camera_attributes_uses_motion_blur(p_render_data->camera_attributes);
+	bool using_motion_blur = _render_buffers_can_be_storage() && RSG::camera_attributes->camera_attributes_uses_motion_blur(p_render_data->camera_attributes);
 
 	// check if we need motion vectors
 	bool motion_vectors_required;

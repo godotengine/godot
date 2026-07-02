@@ -241,21 +241,25 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 	buffers.tiled_size = tiled_size;
 
 	{
-		float intensity = RSG::camera_attributes->camera_attributes_get_motion_blur_intensity(p_camera_attributes);
 		int reference_framerate = RSG::camera_attributes->camera_attributes_get_motion_blur_reference_framerate();
 		const double time_scale = Engine::get_singleton()->get_effective_time_scale();
-		float time_step = p_time_step / (float)time_scale;
-		switch (RSG::camera_attributes->camera_attributes_get_motion_blur_framerate_mode()) {
-			case RSE::MOTION_BLUR_FRAMERATE_MODE_NATIVE:
-				// Use raw intensity, ignore frame time
-				break;
-			case RSE::MOTION_BLUR_FRAMERATE_MODE_CAPPED:
-				intensity *= MIN(1.f / reference_framerate, time_step) / time_step;
-				break;
-			case RSE::MOTION_BLUR_FRAMERATE_MODE_FIXED:
-				// Scale intensity by frame time
-				intensity /= reference_framerate * time_step;
-				break;
+		float time_step = 0.0f;
+		float intensity = RSG::camera_attributes->camera_attributes_get_motion_blur_intensity(p_camera_attributes);
+		if (time_scale > 0.00001) {
+			time_step = p_time_step / (float)time_scale;
+			switch (RSG::camera_attributes->camera_attributes_get_motion_blur_framerate_mode()) {
+				case RSE::MOTION_BLUR_FRAMERATE_MODE_NATIVE:
+					break;
+				case RSE::MOTION_BLUR_FRAMERATE_MODE_CAPPED:
+					intensity *= MIN(1.f / reference_framerate, time_step) / time_step;
+					break;
+				case RSE::MOTION_BLUR_FRAMERATE_MODE_FIXED:
+					intensity /= reference_framerate * time_step;
+					break;
+			}
+		} else {
+			// If frozen, we effectively have no movement, so we can set intensity to 0 to avoid math issues
+			intensity = 0.0f;
 		}
 
 		int sample_count;
