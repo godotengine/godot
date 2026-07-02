@@ -4041,6 +4041,78 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			prev->select(selected_col);
 		}
 		ensure_cursor_is_visible();
+	} else if (p_event->is_action("ui_home") && p_event->is_pressed()) {
+		if (!cursor_can_exit_tree) {
+			accept_event();
+		}
+
+		if (!root) {
+			return;
+		}
+
+		TreeItem *first = hide_root ? root->get_next_visible() : root;
+		if (!first || first == selected_item) {
+			return;
+		}
+
+		int col = MAX(selected_col, 0);
+
+		if (select_mode == SELECT_MULTI) {
+			selected_item = first;
+			emit_signal(SNAME("cell_selected"));
+			queue_accessibility_update();
+			queue_redraw();
+		} else {
+			while (first && !first->cells[col].selectable) {
+				first = first->get_next_visible();
+			}
+			if (!first) {
+				return; // Do nothing.
+			}
+			first->select(col);
+		}
+
+		ensure_cursor_is_visible();
+	} else if (p_event->is_action("ui_end") && p_event->is_pressed()) {
+		if (!cursor_can_exit_tree) {
+			accept_event();
+		}
+
+		if (!root) {
+			return;
+		}
+
+		TreeItem *last = hide_root ? root->get_next_visible() : root;
+		if (!last) {
+			return;
+		}
+
+		for (TreeItem *next = last->get_next_visible(); next; next = next->get_next_visible()) {
+			last = next;
+		}
+
+		if (last == selected_item) {
+			return;
+		}
+
+		int col = MAX(selected_col, 0);
+
+		if (select_mode == SELECT_MULTI) {
+			selected_item = last;
+			emit_signal(SNAME("cell_selected"));
+			queue_accessibility_update();
+			queue_redraw();
+		} else {
+			while (last && !last->cells[col].selectable) {
+				last = last->get_prev_visible();
+			}
+			if (!last) {
+				return; // Do nothing.
+			}
+			last->select(col);
+		}
+
+		ensure_cursor_is_visible();
 	} else if (p_event->is_action("ui_select") && p_event->is_pressed()) {
 		if (select_mode == SELECT_MULTI) {
 			if (!selected_item) {
