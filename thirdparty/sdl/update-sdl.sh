@@ -49,7 +49,7 @@ cp -v io/SDL_iostream*.{c,h} $target/io
 mkdir $target/core
 cp -rv core/{linux,unix,windows} $target/core
 rm -f $target/core/windows/version.rc
-rm -f $target/core/linux/SDL_{fcitx,ibus,ime,system_theme,progressbar}.*
+rm -f $target/core/linux/SDL_{fcitx,ibus,ime,progressbar,system_theme}.*
 rm -f $target/core/unix/SDL_{fribidi,gtk,libthai}.*
 
 mkdir $target/filesystem
