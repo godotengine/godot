@@ -185,7 +185,7 @@ def combine_libs_ar(target, source, env):
         if isinstance(lib, str) and (lib.endswith(".a") or lib.endswith(".lib")):
             paths.append(lib)
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".mri", delete_on_close=False) as fp:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".mri", delete=False) as fp:
         fp.write(f"create {lib_path}\n")
         for path in paths:
             fp.write(f"addlib {path}\n")
