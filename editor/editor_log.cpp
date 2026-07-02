@@ -38,7 +38,6 @@
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/docks/editor_dock.h"
-#include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/script/script_editor_plugin.h"
