@@ -111,17 +111,10 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 }
 
 ResourceUID::ID ResourceUID::create_id() {
-	// mbedTLS may not be fully initialized when the ResourceUID is created, so we
-	// need to lazily instantiate the random number generator.
-	if (crypto == nullptr) {
-		crypto = memnew(CryptoCore::RandomGenerator);
-		((CryptoCore::RandomGenerator *)crypto)->init();
-	}
-
 	while (true) {
 		ID id = INVALID_ID;
 		MutexLock lock(mutex);
-		Error err = ((CryptoCore::RandomGenerator *)crypto)->get_random_bytes((uint8_t *)&id, sizeof(id));
+		Error err = CryptoCore::generate_random((uint8_t *)&id, sizeof(id));
 		ERR_FAIL_COND_V(err != OK, INVALID_ID);
 		id &= 0x7FFFFFFFFFFFFFFF;
 		bool exists = unique_ids.has(id);
@@ -436,9 +429,4 @@ ResourceUID *ResourceUID::singleton = nullptr;
 ResourceUID::ResourceUID() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
-}
-ResourceUID::~ResourceUID() {
-	if (crypto != nullptr) {
-		memdelete((CryptoCore::RandomGenerator *)crypto);
-	}
 }

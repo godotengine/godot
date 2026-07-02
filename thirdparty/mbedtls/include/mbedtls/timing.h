@@ -23,11 +23,22 @@ extern "C" {
 // Regular implementation
 //
 
+#if defined(MBEDTLS_HAVE_TIME)
+#include <mbedtls/platform_time.h>
+#endif
+
 /**
  * \brief          timer structure
  */
 struct mbedtls_timing_hr_time {
-    uint64_t MBEDTLS_PRIVATE(opaque)[4];
+#if defined(MBEDTLS_HAVE_TIME)
+    mbedtls_ms_time_t ms;
+#else
+    /* Without MBEDTLS_HAVE_TIME, we expose the type definitions and
+     * function declarations, but they can't be implemented. We do
+     * need to write something here. */
+    unsigned MBEDTLS_PRIVATE(unused);
+#endif
 };
 
 /**
@@ -44,7 +55,7 @@ typedef struct mbedtls_timing_delay_context {
 #endif /* MBEDTLS_TIMING_ALT */
 
 /* Internal use */
-unsigned long mbedtls_timing_get_timer(struct mbedtls_timing_hr_time *val, int reset);
+unsigned long long mbedtls_timing_get_timer(struct mbedtls_timing_hr_time *val, int reset);
 
 /**
  * \brief          Set a pair of delays to watch

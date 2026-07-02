@@ -309,12 +309,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config libturbojpeg --cflags --libs")
 
     if not env["builtin_mbedtls"]:
-        # mbedTLS only provides a pkgconfig file since 3.6.0, but we still support 2.28.x,
-        # so fallback to manually specifying LIBS if it fails.
-        if os.system("pkg-config --exists mbedtls") == 0:  # 0 means found
-            env.ParseConfig("pkg-config mbedtls mbedcrypto mbedx509 --cflags --libs")
-        else:
-            env.Append(LIBS=["mbedtls", "mbedcrypto", "mbedx509"])
+        env.ParseConfig("pkg-config mbedtls mbedcrypto mbedx509 --cflags --libs")
 
     if not env["builtin_wslay"]:
         env.ParseConfig("pkg-config libwslay --cflags --libs")

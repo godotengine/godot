@@ -32,9 +32,16 @@
 
 #include "core/crypto/crypto.h"
 
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/entropy.h>
 #include <mbedtls/ssl.h>
+
+#if MBEDTLS_VERSION_MAJOR < 4
+int godot_mbedtls_random_compat(void *p_rng, unsigned char *r_output, size_t p_output_len);
+#define GODOT_MBEDTLS_COMPAT_ARGS(x) x, godot_mbedtls_random_compat, nullptr
+#define GODOT_MBEDTLS_COMPAT_SSL_CONF mbedtls_ssl_conf_rng(&conf, godot_mbedtls_random_compat, nullptr);
+#else
+#define GODOT_MBEDTLS_COMPAT_ARGS(x) x
+#define GODOT_MBEDTLS_COMPAT_SSL_CONF
+#endif
 
 class CryptoMbedTLS;
 class TLSContextMbedTLS;
@@ -42,16 +49,18 @@ class CryptoKeyMbedTLS : public CryptoKey {
 	GDSOFTCLASS(CryptoKeyMbedTLS, CryptoKey);
 
 private:
-	mbedtls_pk_context pkey;
-	int locks = 0;
+	psa_key_id_t pk_slot = PSA_KEY_ID_NULL;
 	bool public_only = true;
 
-	int _parse_key(const uint8_t *p_buf, int p_size);
+	int _parse_key(const uint8_t *p_buf, int p_size, bool p_public_only);
 
 public:
 	static CryptoKey *create(bool p_notify_postinitialize = true);
 	static void make_default() { CryptoKey::_create = create; }
 	static void finalize() { CryptoKey::_create = nullptr; }
+
+	psa_key_id_t reimport(psa_key_usage_t p_usage, psa_algorithm_t p_alg); // You *MUST* call psa_destroy_key when you are done with the key.
+	psa_key_type_t get_key_type() const;
 
 	Error load(const String &p_path, bool p_public_only) override;
 	Error save(const String &p_path, bool p_public_only) override;
@@ -59,16 +68,10 @@ public:
 	Error load_from_string(const String &p_string_key, bool p_public_only) override;
 	bool is_public_only() const override { return public_only; }
 
-	CryptoKeyMbedTLS() {
-		mbedtls_pk_init(&pkey);
-		locks = 0;
-	}
+	CryptoKeyMbedTLS() {}
 	~CryptoKeyMbedTLS() override {
-		mbedtls_pk_free(&pkey);
+		psa_destroy_key(pk_slot);
 	}
-
-	_FORCE_INLINE_ void lock() { locks++; }
-	_FORCE_INLINE_ void unlock() { locks--; }
 
 	friend class CryptoMbedTLS;
 	friend class TLSContextMbedTLS;
@@ -109,16 +112,18 @@ public:
 
 class HMACContextMbedTLS : public HMACContext {
 private:
-	HashingContext::HashType hash_type;
+	psa_mac_operation_t mac_op = PSA_MAC_OPERATION_INIT;
+	psa_key_id_t key_slot = PSA_KEY_ID_NULL;
 	int hash_len = 0;
-	void *ctx = nullptr;
+
+	void _clear();
 
 public:
 	static HMACContext *create(bool p_notify_postinitialize = true);
 	static void make_default() { HMACContext::_create = create; }
 	static void finalize() { HMACContext::_create = nullptr; }
 
-	static bool is_md_type_allowed(mbedtls_md_type_t p_md_type);
+	static bool is_hash_type_allowed(HashingContext::HashType p_hash_type);
 
 	Error start(HashingContext::HashType p_hash_type, const PackedByteArray &p_key) override;
 	Error update(const PackedByteArray &p_data) override;
@@ -130,8 +135,6 @@ public:
 
 class CryptoMbedTLS : public Crypto {
 private:
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
 	static Ref<X509CertificateMbedTLS> default_certs;
 
 public:
@@ -140,10 +143,11 @@ public:
 	static void finalize_crypto();
 	static Ref<X509CertificateMbedTLS> get_default_certificates();
 	static void load_default_certificates(const String &p_path);
+	static psa_algorithm_t psa_alg_from_hashtype(HashingContext::HashType p_hash_type, int &r_size);
 	static mbedtls_md_type_t md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size);
 
 	PackedByteArray generate_random_bytes(int p_bytes) override;
-	Ref<CryptoKey> generate_rsa(int p_bytes) override;
+	Ref<CryptoKey> generate_rsa(int p_bits) override;
 	Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, const String &p_issuer_name, const String &p_not_before, const String &p_not_after) override;
 	Vector<uint8_t> sign(HashingContext::HashType p_hash_type, const Vector<uint8_t> &p_hash, Ref<CryptoKey> p_key) override;
 	bool verify(HashingContext::HashType p_hash_type, const Vector<uint8_t> &p_hash, const Vector<uint8_t> &p_signature, Ref<CryptoKey> p_key) override;
