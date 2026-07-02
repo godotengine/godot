@@ -290,7 +290,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				internal->active.set();
 				HashMap<StringName, Vector<AudioFrame>> bus_map;
 				bus_map[_get_actual_bus()] = volume_vector;
-				AudioServer::get_singleton()->start_playback_stream(setplayback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
+				AudioServer::get_singleton()->start_playback_stream(setplayback, bus_map, setplay.get(), actual_pitch_scale, internal->muted, linear_attenuation, attenuation_filter_cutoff_hz);
 				setplayback.unref();
 				setplay.set(-1);
 			}
@@ -621,6 +621,14 @@ float AudioStreamPlayer3D::get_volume_linear() const {
 	return Math::db_to_linear(get_volume_db());
 }
 
+void AudioStreamPlayer3D::set_mute(bool p_mute) {
+	internal->set_mute(p_mute);
+}
+
+bool AudioStreamPlayer3D::is_muted() const {
+	return internal->muted;
+}
+
 void AudioStreamPlayer3D::set_unit_size(float p_volume) {
 	unit_size = p_volume;
 	update_gizmos();
@@ -867,6 +875,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_linear", "volume_linear"), &AudioStreamPlayer3D::set_volume_linear);
 	ClassDB::bind_method(D_METHOD("get_volume_linear"), &AudioStreamPlayer3D::get_volume_linear);
 
+	ClassDB::bind_method(D_METHOD("set_mute", "mute"), &AudioStreamPlayer3D::set_mute);
+	ClassDB::bind_method(D_METHOD("is_muted"), &AudioStreamPlayer3D::is_muted);
+
 	ClassDB::bind_method(D_METHOD("set_unit_size", "unit_size"), &AudioStreamPlayer3D::set_unit_size);
 	ClassDB::bind_method(D_METHOD("get_unit_size"), &AudioStreamPlayer3D::get_unit_size);
 
@@ -937,6 +948,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Logarithmic,Disabled"), "set_attenuation_model", "get_attenuation_model");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,or_greater,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mute"), "set_mute", "is_muted");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.01,or_greater"), "set_unit_size", "get_unit_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_db", PROPERTY_HINT_RANGE, "-24,6,suffix:dB"), "set_max_db", "get_max_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
@@ -969,6 +981,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP);
 
 	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(MethodInfo("mute_toggled"));
 }
 
 AudioStreamPlayer3D::AudioStreamPlayer3D() {

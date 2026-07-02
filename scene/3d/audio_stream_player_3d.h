@@ -152,6 +152,9 @@ public:
 	void set_volume_linear(float p_volume);
 	float get_volume_linear() const;
 
+	void set_mute(bool p_mute);
+	bool is_muted() const;
+
 	void set_unit_size(float p_volume);
 	float get_unit_size() const;
 

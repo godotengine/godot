@@ -71,6 +71,7 @@ public:
 
 	SafeFlag active;
 
+	bool muted = false;
 	float pitch_scale = 1.0;
 	float volume_db = 0.0;
 	bool autoplay = false;
@@ -87,6 +88,7 @@ public:
 	void get_property_list(List<PropertyInfo> *p_list) const;
 
 	void set_stream(Ref<AudioStream> p_stream);
+	void set_mute(bool p_mute);
 	void set_pitch_scale(float p_pitch_scale);
 	void set_max_polyphony(int p_max_polyphony);
 

@@ -279,16 +279,20 @@ private:
 		// 1. The playback is created and added to the playback list in the playing state.
 		// 2. The playback is (maybe) paused, and the state is set to FADE_OUT_TO_PAUSE.
 		// 2.1. The playback is mixed after being paused, and the audio server thread atomically sets the state to PAUSED after performing a brief fade-out.
-		// 3. The playback is (maybe) deleted, and the state is set to FADE_OUT_TO_DELETION.
-		// 3.1. The playback is mixed after being deleted, and the audio server thread atomically sets the state to AWAITING_DELETION after performing a brief fade-out.
+		// 3. The playback is (maybe) muted, and the state is set to FADE_OUT_TO_MUTE.
+		// 3.1. The playback is mixed after being muted, and the audio server thread atomically sets the state to MUTED after performing a brief fade-out.
+		// 4. The playback is (maybe) deleted, and the state is set to FADE_OUT_TO_DELETION.
+		// 4.1. The playback is mixed after being deleted, and the audio server thread atomically sets the state to AWAITING_DELETION after performing a brief fade-out.
 		// 		NOTE: The playback is not deallocated at this time because allocation and deallocation are not realtime-safe.
-		// 4. The playback is removed and deallocated on the main thread using the SafeList maybe_cleanup method.
+		// 5. The playback is removed and deallocated on the main thread using the SafeList maybe_cleanup method.
 		enum PlaybackState {
 			PAUSED = 0, // Paused. Keep this stream playback around though so it can be restarted.
 			PLAYING = 1, // Playing. Fading may still be necessary if volume changes!
-			FADE_OUT_TO_PAUSE = 2, // About to pause.
-			FADE_OUT_TO_DELETION = 3, // About to stop.
-			AWAITING_DELETION = 4,
+			MUTED = 2, // Playing while muted. Buffer is filled with `AudioFrame(0, 0)`.
+			FADE_OUT_TO_PAUSE = 3, // About to pause.
+			FADE_OUT_TO_MUTE = 4, // About to mute.
+			FADE_OUT_TO_DELETION = 5, // About to stop.
+			AWAITING_DELETION = 6,
 		};
 		// If zero or positive, a place in the stream to seek to during the next mix.
 		SafeNumeric<float> setseek;
@@ -431,21 +435,23 @@ public:
 	float get_playback_speed_scale() const;
 
 	// Convenience method.
-	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time = 0, float p_pitch_scale = 1);
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time = 0, float p_pitch_scale = 1, bool p_muted = false);
 	// Expose all parameters.
-	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0);
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, bool p_muted = false, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0);
 	void stop_playback_stream(Ref<AudioStreamPlayback> p_playback);
 
 	void set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volumes);
 	void set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes);
 	void set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Vector<AudioFrame> p_volumes);
 	void set_playback_pitch_scale(Ref<AudioStreamPlayback> p_playback, float p_pitch_scale);
-	void set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool p_paused);
+	void set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool p_paused, bool p_muted);
+	void set_playback_muted(Ref<AudioStreamPlayback> p_playback, bool p_mute, bool p_paused);
 	void set_playback_highshelf_params(Ref<AudioStreamPlayback> p_playback, float p_gain, float p_attenuation_cutoff_hz);
 
 	bool is_playback_active(Ref<AudioStreamPlayback> p_playback);
 	float get_playback_position(Ref<AudioStreamPlayback> p_playback);
 	bool is_playback_paused(Ref<AudioStreamPlayback> p_playback);
+	bool is_playback_muted(Ref<AudioStreamPlayback> p_playback);
 
 	uint64_t get_mix_count() const;
 	uint64_t get_mixed_frames() const;
