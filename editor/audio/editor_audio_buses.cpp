@@ -1528,7 +1528,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 	open_layout(ResourceUID::path_to_uid(p_string));
 }
 
-void EditorAudioBuses::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void EditorAudioBuses::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
 		bus_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 		bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
