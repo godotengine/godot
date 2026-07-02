@@ -13,6 +13,39 @@
 The paths specified in these examples assume the command is being run from
 the Godot source root.
 
+# Web export templates
+
+The web .NET export path links Godot as a static `libgodot.a` into the .NET
+browser-wasm entry point. Do not build it as a normal web executable.
+
+For a non-threaded debug template:
+
+```sh
+scons platform=web target=template_debug module_mono_enabled=yes arch=wasm32 \
+    library_type=static_library threads=no lto=none disable_crash_handler=yes
+```
+
+This produces a template zip such as:
+
+```text
+bin/godot.web.template_debug.wasm32.nothreads.mono.zip
+```
+
+The zip includes `libgodot/libgodot.a` and the JavaScript support files consumed
+by the browser-wasm SDK through `BaseLibGodotPath`.
+
+For threaded web templates, keep the same static library and crash handler
+settings, but enable proxying to pthread:
+
+```sh
+scons platform=web target=template_debug module_mono_enabled=yes arch=wasm32 \
+    library_type=static_library threads=yes proxy_to_pthread=yes lto=none \
+    disable_crash_handler=yes
+```
+
+These flags are required because the .NET runtime is the web entry point,
+installs its own crash handler, and cannot be linked as a shared `MAIN_MODULE`.
+
 # How to deal with NuGet packages
 
 We distribute the API assemblies, our source generators, and our custom
