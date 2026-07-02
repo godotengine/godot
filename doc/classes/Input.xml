@@ -35,8 +35,9 @@
 			<param index="0" name="mapping" type="String" />
 			<param index="1" name="update_existing" type="bool" default="false" />
 			<description>
-				Adds a new joypad mapping entry (in SDL format) to the mapping database, and optionally updates the already connected devices.
+				Adds a new joypad mapping entry (in SDL format) to the mapping database, and updates the already connected devices.
 				[b]Note:[/b] See [url=https://wiki.libsdl.org/SDL3/SDL_AddGamepadMapping#remarks]SDL documentation[/url] for more information about the SDL controller mapping format.
+				[b]Note:[/b] Since Godot 4.8, [param update_existing] is no longer functional, and the already connected devices, if applicable, will always be updated regardless of the value of this parameter.
 			</description>
 		</method>
 		<method name="clear_joy_motion_sensors_calibration" experimental="">
