@@ -5,3 +5,6 @@ test1 (untyped Array default)
 test2 (typed Array[String] default)
     TestRefCounted released
     end of statement
+test3 (function call)
+    TestRefCounted released
+    end of statement
