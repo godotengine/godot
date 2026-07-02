@@ -561,7 +561,26 @@ void HTTPRequest::_notification(int p_what) {
 			if (use_threads.is_set()) {
 				return;
 			}
-			bool done = _update_connection();
+
+			bool done = false;
+
+			if (read_time_limit_usec > 0) {
+				const int max_chunk_size = client->get_read_chunk_size();
+				const uint64_t time_usec_start = OS::get_singleton()->get_ticks_usec();
+				do {
+					const int size_before_update = downloaded.get();
+					done = _update_connection();
+					if (downloaded.get() - size_before_update < max_chunk_size) {
+						break;
+					}
+					if (OS::get_singleton()->get_ticks_usec() - time_usec_start > read_time_limit_usec) {
+						break;
+					}
+				} while (!done);
+			} else {
+				done = _update_connection();
+			}
+
 			if (done) {
 				set_process_internal(false);
 			}
@@ -687,6 +706,15 @@ void HTTPRequest::set_tls_options(const Ref<TLSOptions> &p_options) {
 	tls_options = p_options;
 }
 
+void HTTPRequest::set_read_time_limit(int p_read_time_limit_usec) {
+	ERR_FAIL_COND_MSG(p_read_time_limit_usec < 0, "Read time limit must not be negative.");
+	read_time_limit_usec = (uint64_t)p_read_time_limit_usec;
+}
+
+int HTTPRequest::get_read_time_limit() const {
+	return (int)read_time_limit_usec;
+}
+
 void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "method", "request_data"), &HTTPRequest::request, DEFVAL(PackedStringArray()), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "method", "request_data_raw"), &HTTPRequest::request_raw, DEFVAL(PackedStringArray()), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PackedByteArray()));
@@ -728,8 +756,12 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPRequest::set_http_proxy);
 	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPRequest::set_https_proxy);
 
+	ClassDB::bind_method(D_METHOD("set_read_time_limit", "time_limit_usec"), &HTTPRequest::set_read_time_limit);
+	ClassDB::bind_method(D_METHOD("get_read_time_limit"), &HTTPRequest::get_read_time_limit);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE_PATH), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216,suffix:B"), "set_download_chunk_size", "get_download_chunk_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "read_time_limit", PROPERTY_HINT_RANGE, U"0,1000000,suffix:µs"), "set_read_time_limit", "get_read_time_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_partial_download"), "set_keep_partial_download", "is_keeping_partial_download");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "append_to_download_file"), "set_append_to_download_file", "is_appending_to_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
