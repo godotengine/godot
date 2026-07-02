@@ -487,6 +487,10 @@ String OS_Android::get_model_name() const {
 	return OS_Unix::get_model_name();
 }
 
+String OS_Android::get_processor_name() const {
+	return get_system_property("ro.soc.model");
+}
+
 String OS_Android::get_data_path() const {
 	return OS::get_user_data_dir();
 }

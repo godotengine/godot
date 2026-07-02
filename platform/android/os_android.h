@@ -151,6 +151,7 @@ public:
 	virtual String get_resource_dir() const override;
 	virtual String get_locale() const override;
 	virtual String get_model_name() const override;
+	virtual String get_processor_name() const override;
 
 	virtual String get_unique_id() const override;
 
