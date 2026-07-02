@@ -53,26 +53,18 @@ struct [[nodiscard]] Vector3i {
 		AXIS_Z,
 	};
 
-	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			int32_t x;
-			int32_t y;
-			int32_t z;
-		};
+	int32_t x = 0;
+	int32_t y = 0;
+	int32_t z = 0;
 
-		int32_t coord[3] = { 0 };
-		// NOLINTEND(modernize-use-default-member-init)
-	};
-
-	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
+	constexpr int32_t &operator[](int p_axis) {
 		DEV_ASSERT((unsigned int)p_axis < 3);
-		return coord[p_axis];
+		return p_axis == AXIS_X ? x : (p_axis == AXIS_Y ? y : z);
 	}
 
-	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
+	constexpr const int32_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 3);
-		return coord[p_axis];
+		return p_axis == AXIS_X ? x : (p_axis == AXIS_Y ? y : z);
 	}
 
 	Vector3i::Axis min_axis_index() const;
@@ -148,8 +140,7 @@ struct [[nodiscard]] Vector3i {
 		return hash_fmix32(h);
 	}
 
-	constexpr Vector3i() :
-			x(0), y(0), z(0) {}
+	constexpr Vector3i() = default;
 	constexpr Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
 };

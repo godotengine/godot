@@ -60,26 +60,18 @@ struct [[nodiscard]] Vector3 {
 		AXIS_Z,
 	};
 
-	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			real_t x;
-			real_t y;
-			real_t z;
-		};
+	real_t x = 0.0f;
+	real_t y = 0.0f;
+	real_t z = 0.0f;
 
-		real_t coord[3] = { 0 };
-		// NOLINTEND(modernize-use-default-member-init)
-	};
-
-	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
+	constexpr real_t &operator[](int p_axis) {
 		DEV_ASSERT((unsigned int)p_axis < 3);
-		return coord[p_axis];
+		return p_axis == AXIS_X ? x : (p_axis == AXIS_Y ? y : z);
 	}
 
-	_FORCE_INLINE_ real_t &operator[](int p_axis) {
+	constexpr const real_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 3);
-		return coord[p_axis];
+		return p_axis == AXIS_X ? x : (p_axis == AXIS_Y ? y : z);
 	}
 
 	_FORCE_INLINE_ Vector3::Axis min_axis_index() const {

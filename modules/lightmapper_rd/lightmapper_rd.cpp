@@ -715,7 +715,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		lights_buffer = rd->storage_buffer_create(lb.size(), lb);
 
 		// Even when there are no seams, the buffer must exist.
-		static const Vector2i empty_seams[2];
+		static const Vector2i empty_seams[2] = {};
 		Span<uint8_t> sb = (seam_buffer_vec.is_empty() ? Span(empty_seams) : seam_buffer_vec.span()).reinterpret<uint8_t>();
 		seams_buffer = rd->storage_buffer_create(sb.size(), sb);
 

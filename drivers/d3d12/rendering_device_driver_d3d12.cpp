@@ -3971,7 +3971,7 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 
 			cmd_buf_info->cmd_list->ClearRenderTargetView(
 					cmd_buf_info->rtv_alloc.cpu_handle,
-					p_color.components,
+					reinterpret_cast<const float *>(&p_color),
 					0,
 					nullptr);
 		}
@@ -4004,7 +4004,7 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 					shader_visible_descriptor_allocation.gpu_handle,
 					cmd_buf_info->uav_alloc.cpu_handle,
 					tex_info->resource,
-					p_color.components,
+					reinterpret_cast<const float *>(&p_color),
 					0,
 					nullptr);
 		}
@@ -4763,7 +4763,7 @@ void RenderingDeviceDriverD3D12::command_render_clear_attachments(CommandBufferI
 				uint32_t color_idx = fb_info->attachments_handle_inds[attachment];
 				cmd_buf_info->cmd_list->ClearRenderTargetView(
 						get_cpu_handle(fb_info->rtv_alloc.cpu_handle, color_idx, rtv_descriptor_heap_pool.increment_size),
-						p_attachment_clears[i].value.color.components,
+						reinterpret_cast<const float *>(&p_attachment_clears[i].value.color),
 						rect_ptr ? 1 : 0,
 						rect_ptr);
 			} else {
@@ -4815,7 +4815,7 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 	}
 
 	if (cmd_buf_info->pending_dyn_params || (cmd_buf_info->dyn_params.blend_constant != render_info.dyn_params.blend_constant)) {
-		cmd_buf_info->cmd_list->OMSetBlendFactor(render_info.dyn_params.blend_constant.components);
+		cmd_buf_info->cmd_list->OMSetBlendFactor(reinterpret_cast<const float *>(&render_info.dyn_params.blend_constant));
 		cmd_buf_info->dyn_params.blend_constant = render_info.dyn_params.blend_constant;
 	}
 
@@ -5005,7 +5005,7 @@ void RenderingDeviceDriverD3D12::_bind_vertex_buffers(CommandBufferInfo *p_cmd_b
 
 void RenderingDeviceDriverD3D12::command_render_set_blend_constants(CommandBufferID p_cmd_buffer, const Color &p_constants) {
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
-	cmd_buf_info->cmd_list->OMSetBlendFactor(p_constants.components);
+	cmd_buf_info->cmd_list->OMSetBlendFactor(reinterpret_cast<const float *>(&p_constants));
 }
 
 void RenderingDeviceDriverD3D12::command_render_set_line_width(CommandBufferID p_cmd_buffer, float p_width) {

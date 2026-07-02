@@ -5162,7 +5162,7 @@ void RenderingDeviceDriverVulkan::command_resolve_texture(CommandBufferID p_cmd_
 
 void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) {
 	VkClearColorValue vk_color = {};
-	memcpy(&vk_color.float32, p_color.components, sizeof(VkClearColorValue::float32));
+	memcpy(&vk_color.float32, reinterpret_cast<const float *>(&p_color), sizeof(VkClearColorValue::float32));
 
 	VkImageSubresourceRange vk_subresources = {};
 	_texture_subresource_range_to_vk(p_subresources, &vk_subresources);
@@ -5792,7 +5792,7 @@ void RenderingDeviceDriverVulkan::command_render_bind_index_buffer(CommandBuffer
 
 void RenderingDeviceDriverVulkan::command_render_set_blend_constants(CommandBufferID p_cmd_buffer, const Color &p_constants) {
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	vkCmdSetBlendConstants(command_buffer->vk_command_buffer, p_constants.components);
+	vkCmdSetBlendConstants(command_buffer->vk_command_buffer, reinterpret_cast<const float *>(&p_constants));
 }
 
 void RenderingDeviceDriverVulkan::command_render_set_line_width(CommandBufferID p_cmd_buffer, float p_width) {
