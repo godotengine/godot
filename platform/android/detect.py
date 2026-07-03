@@ -43,7 +43,7 @@ def get_android_ndk_root(env):
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_ndk_version():
-    return "28.1.13356709"
+    return "29.0.14206865"
 
 
 def get_flags():
