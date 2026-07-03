@@ -1047,3 +1047,17 @@ uint32_t SceneShaderForwardClustered::get_pipeline_compilations(RSE::PipelineSou
 	MutexLock lock(SceneShaderForwardClustered::singleton_mutex);
 	return pipeline_compilations[p_source];
 }
+
+RID SceneShaderForwardClustered::get_default_shader_rd(bool is_multiview) {
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	ERR_FAIL_NULL_V(material_storage, RID());
+	ERR_FAIL_COND_V(!default_material.is_valid(), RID());
+
+	uint32_t flags = 0;
+	if (is_multiview) {
+		flags |= SHADER_COLOR_PASS_FLAG_MULTIVIEW;
+	}
+
+	MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(default_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
+	return md->shader_data->get_shader_variant(PIPELINE_VERSION_COLOR_PASS, flags, false);
+}

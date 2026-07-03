@@ -386,6 +386,7 @@ public:
 	void enable_fp16_shader_group();
 	void enable_multiview_shader_group();
 	bool is_multiview_shader_group_enabled() const;
+	RID get_default_shader_rd(bool is_multiview = false);
 };
 
 } // namespace RendererSceneRenderImplementation
