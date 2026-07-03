@@ -988,18 +988,24 @@ bool SceneShaderForwardMobile::is_multiview_shader_group_enabled() const {
 	return shader.is_group_enabled(SHADER_GROUP_FP32_MULTIVIEW) || shader.is_group_enabled(SHADER_GROUP_FP16_MULTIVIEW);
 }
 
-RID SceneShaderForwardMobile::get_default_shader_rd(bool is_multiview) {
-	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-	ERR_FAIL_NULL_V(material_storage, RID());
-	ERR_FAIL_COND_V(!default_material.is_valid(), RID());
+RID SceneShaderForwardMobile::get_default_shader_rd(bool p_is_multiview) {
+	RID &shader_rd = p_is_multiview ? default_multiview_shader_rd : default_shader_rd;
 
-	int variant = is_multiview ? SHADER_VERSION_COLOR_PASS_MULTIVIEW : SHADER_VERSION_COLOR_PASS;
-	if (use_fp16) {
-		variant += SHADER_VERSION_MAX * 2;
+	if (shader_rd.is_null()) {
+		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+		ERR_FAIL_NULL_V(material_storage, RID());
+		ERR_FAIL_COND_V(!default_material.is_valid(), RID());
+
+		int variant = p_is_multiview ? SHADER_VERSION_COLOR_PASS_MULTIVIEW : SHADER_VERSION_COLOR_PASS;
+		if (use_fp16) {
+			variant += SHADER_VERSION_MAX * 2;
+		}
+
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(default_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
+		shader_rd = shader.version_get_shader(md->shader_data->version, variant);
 	}
 
-	MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(default_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
-	return shader.version_get_shader(md->shader_data->version, variant);
+	return shader_rd;
 }
 
 SceneShaderForwardMobile::~SceneShaderForwardMobile() {
