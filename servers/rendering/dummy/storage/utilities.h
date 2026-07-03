@@ -75,6 +75,10 @@ public:
 	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const override { return 0; }
 	virtual String get_captured_timestamp_name(uint32_t p_index) const override { return String(); }
 
+	/* DEBUG */
+
+	[[nodiscard]] DebugLabel draw_command_label(const Span<char>, const Color &) const final { return DebugLabel(); }
+
 	/* MISC */
 
 	virtual void update_dirty_resources() override {}
