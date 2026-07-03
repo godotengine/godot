@@ -357,6 +357,7 @@ public:
 	RID debug_shadow_splits_material_shader;
 	RID debug_shadow_splits_material;
 	RID default_shader_rd;
+	RID default_multiview_shader_rd; // This is lazily initialized, use "get_default_shader_rd" instead.
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
@@ -386,7 +387,7 @@ public:
 	void enable_fp16_shader_group();
 	void enable_multiview_shader_group();
 	bool is_multiview_shader_group_enabled() const;
-	RID get_default_shader_rd(bool is_multiview = false);
+	RID get_default_shader_rd(bool p_is_multiview = false);
 };
 
 } // namespace RendererSceneRenderImplementation

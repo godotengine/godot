@@ -168,7 +168,7 @@ private:
 
 	/* Render Scene */
 
-	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, const RendererRD::MaterialStorage::Samplers &p_samplers, bool p_use_directional_shadow_atlas = false, uint32_t p_pass_offset = 0u);
+	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, bool p_is_multiview, RID p_radiance_texture, const RendererRD::MaterialStorage::Samplers &p_samplers, bool p_use_directional_shadow_atlas = false, uint32_t p_pass_offset = 0u);
 	void _pre_opaque_render(RenderDataRD *p_render_data);
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;

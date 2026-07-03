@@ -180,7 +180,12 @@ public:
 
 		RID fog_shader;
 		RID fog_material;
+
+		// These are lazily initialized, use "get_fog_only_texture_uniform_set" instead.
 		RID fog_only_texture_uniform_set;
+		RID fog_only_texture_multiview_uniform_set;
+
+		RID get_fog_only_texture_uniform_set(RID p_default_shader_rd, bool p_is_multiview);
 	} sky_scene_state;
 
 	struct ReflectionData {
@@ -231,6 +236,9 @@ public:
 		RID default_shader;
 		RID default_material;
 		RID default_shader_rd;
+		RID default_multiview_shader_rd; // This is lazily initialized, use "get_default_shader_rd" instead.
+
+		RID get_default_shader_rd(bool p_is_multiview = false);
 	} sky_shader;
 
 	struct SkyMaterialData : public RendererRD::MaterialStorage::MaterialData {
@@ -280,7 +288,7 @@ public:
 
 		void free();
 
-		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, Ref<RenderSceneBuffersRD> p_render_buffers);
+		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, bool p_is_multiview, Ref<RenderSceneBuffersRD> p_render_buffers);
 		bool set_radiance_size(int p_radiance_size);
 		int get_radiance_size() const;
 		bool set_mode(RSE::SkyMode p_mode);
