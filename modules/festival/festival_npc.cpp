@@ -30,12 +30,14 @@
 
 #include "festival_npc.h"
 
+#include "core/object/class_db.h"
+
 #include "festival_clock.h"
 #include "festival_director.h"
 #include "festival_weather.h"
 
 #include "core/config/engine.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 
 void FestivalNPC::set_profile(const Ref<FestivalNPCProfile> &p_profile) {
 	profile = p_profile;

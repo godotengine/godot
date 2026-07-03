@@ -19,6 +19,10 @@ def get_doc_classes():
 		"FestivalNotebook",
 		"FestivalRegistry",
 		"FestivalDirector",
+		"FestivalLocation",
+		"FestivalPlotHook",
+		"FestivalEvent",
+		"FestivalCensusImporter",
 	]
 
 

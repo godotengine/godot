@@ -21,6 +21,9 @@
 		<member name="category" type="int" setter="set_category" getter="get_category">
 			One of the [enum Category] values.
 		</member>
+		<member name="census_data" type="Dictionary" setter="set_census_data" getter="get_census_data">
+			The raw Secret Census source record this knowledge was generated from, kept so no exported detail is lost.
+		</member>
 		<member name="id" type="StringName" setter="set_id" getter="get_id">
 			Unique identifier stored by the notebook and referenced by interaction gates.
 		</member>

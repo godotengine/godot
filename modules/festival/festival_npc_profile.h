@@ -64,6 +64,11 @@ class FestivalNPCProfile : public Resource {
 	StringName species;
 	StringName costume; // The outfit id this NPC themselves wears.
 	String surface_personality;
+	String backstory;
+	String workplace;
+	String occupation;
+	String residence;
+	String notes;
 
 	Dictionary schedule_morning;
 	Dictionary schedule_afternoon;
@@ -79,6 +84,17 @@ class FestivalNPCProfile : public Resource {
 
 	Array interactions;
 
+	// Directed NPC->NPC edges: { "targetNpcId": String, "type": String,
+	// "reciprocalType": String } (camelCase keys are part of the Secret Census
+	// import contract).
+	Array relationships;
+	// Arbitrary authored fields: { "id", "label", "value" }.
+	Array custom_fields;
+	PackedStringArray gives_passwords;
+	PackedStringArray linked_plot_hook_ids;
+	// The raw Secret Census record this profile was imported from (verbatim).
+	Dictionary census_data;
+
 protected:
 	static void _bind_methods();
 
@@ -93,6 +109,16 @@ public:
 	StringName get_costume() const;
 	void set_surface_personality(const String &p_surface_personality);
 	String get_surface_personality() const;
+	void set_backstory(const String &p_backstory);
+	String get_backstory() const;
+	void set_workplace(const String &p_workplace);
+	String get_workplace() const;
+	void set_occupation(const String &p_occupation);
+	String get_occupation() const;
+	void set_residence(const String &p_residence);
+	String get_residence() const;
+	void set_notes(const String &p_notes);
+	String get_notes() const;
 
 	void set_schedule_morning(const Dictionary &p_schedule);
 	Dictionary get_schedule_morning() const;
@@ -118,9 +144,23 @@ public:
 	void set_interactions(const Array &p_interactions);
 	Array get_interactions() const;
 
+	void set_relationships(const Array &p_relationships);
+	Array get_relationships() const;
+	void set_custom_fields(const Array &p_custom_fields);
+	Array get_custom_fields() const;
+	void set_gives_passwords(const PackedStringArray &p_passwords);
+	PackedStringArray get_gives_passwords() const;
+	void set_linked_plot_hook_ids(const PackedStringArray &p_ids);
+	PackedStringArray get_linked_plot_hook_ids() const;
+	void set_census_data(const Dictionary &p_census_data);
+	Dictionary get_census_data() const;
+
 	// Convenience: the base schedule Dictionary for a FestivalClock.Phase int.
 	Dictionary get_schedule_for_phase(int p_phase) const;
 	// The schedule for a phase with the matching weather variant merged on top.
+	// Variant keys "morning"/"afternoon"/"night" holding Dictionaries are
+	// phase-scoped: they merge only when that phase is active. Any other
+	// variant key merges for every phase.
 	Dictionary get_state_for(int p_phase, int p_weather) const;
 	// Knowledge ids of the four guarded facts, skipping empty ones.
 	PackedStringArray get_knowledge_ids() const;

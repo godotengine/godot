@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/object.h"
+#include "core/variant/binder_common.h"
 #include "core/templates/hash_set.h"
 
 // The single-day time system. A run always moves Morning -> Afternoon -> Night

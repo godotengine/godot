@@ -6,7 +6,14 @@
 	<description>
 		Systems resolve ids to resources through the registry, for example mapping the
 		current outfit id to its perceived role and authority. Content can be
-		registered by hand or bulk loaded from a directory with [method scan_directory].
+		registered by hand, bulk loaded from a directory with [method scan_directory],
+		or imported from a Secret Census package by [FestivalCensusImporter].
+		Every content type follows the same method family: [code]register_*[/code],
+		[code]get_*[/code], [code]has_*[/code] and [code]get_*_ids[/code], covering
+		NPCs, outfits, items, knowledge, locations ([FestivalLocation]), plot hooks
+		([FestivalPlotHook]) and events ([FestivalEvent]). World-level metadata from
+		an import (game info and settings) is held as a [Dictionary] via
+		[method set_world_info] and [method get_world_info].
 		Registered as the [code]FestivalRegistry[/code] singleton.
 		
 	</description>

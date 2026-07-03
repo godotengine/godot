@@ -30,6 +30,8 @@
 
 #include "festival_notebook.h"
 
+#include "core/object/class_db.h"
+
 #include "core/io/config_file.h"
 
 FestivalNotebook *FestivalNotebook::singleton = nullptr;

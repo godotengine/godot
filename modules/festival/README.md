@@ -30,6 +30,9 @@ persists.**
 | `FestivalItem` | An inventory item; can be held or *presented*. | §3.1, §4 |
 | `FestivalKnowledge` | One discoverable fact (secret / dark secret / rumor / false rumor / password / schedule / route / fact). | §6, §7 |
 | `FestivalNPCProfile` | The complete NPC schema: species, costume, per-phase schedules, weather variants, the four guarded facts, and data-driven interactions. | §8 |
+| `FestivalLocation` | A place on Kraed Maas: hierarchy (`parent_id`), lateral connections, residents, password gating. | §3.2, §6.3 |
+| `FestivalPlotHook` | A quest / narrative thread linking NPCs, locations, items, rumors, events, outfits and NPC secrets. | §4 |
+| `FestivalEvent` | A scripted happening at a location with a cast, optionally fired from a dialogue interaction. | §3.2 |
 
 ### Runtime singletons (globals in GDScript)
 
@@ -39,7 +42,8 @@ persists.**
 | `FestivalWeather` | Sun/Rain, rolled at run start. | **Yes** (re-rolled) | §5.2 |
 | `FestivalWorld` | Per-run flags, inventory, current outfit, presented items. | **Yes** | §6 (Reset table) |
 | `FestivalNotebook` | Everything Alex has ever learned; saved to disk. | **No — persists** | §6, §7 |
-| `FestivalRegistry` | Content database: id → resource lookup. | No | — |
+| `FestivalRegistry` | Content database: id → resource lookup, plus the imported `world_info`. | No | — |
+| `FestivalCensusImporter` | Imports a Secret Census `*.census.json` world package into registry resources and editable `.tres` files. | No | — |
 | `Festival` (`FestivalDirector`) | Run lifecycle + the perception/interaction resolver. | orchestrator | §3.1, §3.2 |
 
 ### Scene node
@@ -91,6 +95,35 @@ An NPC interaction is authored as a plain `Dictionary` on the profile, so writer
 never touch code. Requirement keys gate it and outcome keys fire when it is
 applied — see the `FestivalNPCProfile` class docs for the full schema.
 
+## Importing a Secret Census world
+
+Worlds are authored in the [Secret Census](https://github.com/jxburros/Secret-Census)
+app and exported there via **Export for Godot**, which produces a
+`*.census.json` package. Import it once to materialize the whole world as
+editable resources:
+
+```gdscript
+# One-time (or whenever the world is re-exported):
+var report := FestivalCensusImporter.import_file("res://kraed_maas.census.json", "res://content")
+print(report) # { ok: true, npcs: 42, locations: 17, knowledge: 130, ... }
+
+# Every run afterwards:
+FestivalRegistry.scan_directory("res://content")
+```
+
+Every NPC, location, item, outfit, plot hook and event arrives with its
+connections intact (same ids, same links). NPC secrets, rumors and passwords
+become `FestivalKnowledge` entries with stable derived ids, and each Secret
+Census dialogue entry becomes a director-ready interaction. All imported
+resources are plain `.tres` files: open them in the editor inspector and edit
+anything afterwards. Each resource also keeps its raw source record in
+`census_data`, so nothing authored in Secret Census is ever lost.
+
+The full mapping, and everything that must stay frozen on both sides to keep
+the pipeline working, is specified in
+[`SECRET_CENSUS_COMPATIBILITY.md`](SECRET_CENSUS_COMPATIBILITY.md). Visual and
+audio content are deliberately not part of the format yet.
+
 ## The knowledge loop, concretely (design §6.2)
 
 ```
@@ -135,11 +168,14 @@ dependencies, so it also compiles into template/export builds unchanged.
 ```
 modules/festival/
   festival_outfit.*        FestivalItem  FestivalKnowledge  FestivalNPCProfile
+  festival_location.*      FestivalPlotHook  FestivalEvent
   festival_clock.*         FestivalWeather
   festival_world.*         FestivalNotebook  FestivalRegistry
+  festival_census_importer.*  Secret Census world package importer
   festival_director.*      the Festival singleton + perception resolver
   festival_npc.*           the in-scene NPC node
   register_types.*  config.py  SCsub
+  SECRET_CENSUS_COMPATIBILITY.md  the binding Secret Census interchange contract
   doc_classes/             built-in class reference for every class above
   tests/test_festival.h    doctest unit tests for the pure resource logic
   demo/festival_demo.gd    a runnable two-run knowledge-loop demo

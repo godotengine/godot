@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalCensusImporter" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Imports Secret Census world packages into native festival resources.
+	</brief_description>
+	<description>
+		Imports a [code]secret-census-world[/code] version 1 JSON package exported by
+		the Secret Census app and turns every record into native resources
+		([FestivalNPCProfile], [FestivalLocation], [FestivalItem], [FestivalOutfit],
+		[FestivalPlotHook], [FestivalEvent]) registered in [FestivalRegistry]. NPC
+		secrets, rumors and passwords become [FestivalKnowledge] entries with stable
+		derived ids, and dialogue entries become director-ready interaction
+		dictionaries. Passing a save directory also writes each resource as an
+		editable [code].tres[/code] file (for example
+		[code]save_dir/npcs/&lt;id&gt;.tres[/code]). The full mapping is specified in
+		[code]SECRET_CENSUS_COMPATIBILITY.md[/code] next to the module.
+		Registered as the [code]FestivalCensusImporter[/code] singleton.
+
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="import_file">
+			<return type="Dictionary" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="save_dir" type="String" default="&quot;&quot;" />
+			<description>
+				Reads the [code]*.census.json[/code] package at [param path] and imports it like [method import_text]. Returns a summary [Dictionary] with [code]ok[/code], per-group resource counts, [code]saved_files[/code] and the source [code]game[/code] info, or [code]ok = false[/code] and an [code]error[/code] message.
+			</description>
+		</method>
+		<method name="import_text">
+			<return type="Dictionary" />
+			<param index="0" name="json" type="String" />
+			<param index="1" name="save_dir" type="String" default="&quot;&quot;" />
+			<description>
+				Imports a Secret Census package from a JSON string, registering everything in [FestivalRegistry] and generating [FestivalKnowledge] from NPC secrets, rumors and passwords. If [param save_dir] is not empty, every resource is also saved as a [code].tres[/code] file under it. Returns the same summary [Dictionary] as [method import_file].
+			</description>
+		</method>
+		<method name="password_knowledge_id" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="password" type="String" />
+			<description>
+				Returns the stable [FestivalKnowledge] id derived for a password string (lowercased, slugified, prefixed with [code]password.[/code]). The derivation is LOCKED because [FestivalNotebook] save files persist these ids across runs.
+			</description>
+		</method>
+	</methods>
+</class>

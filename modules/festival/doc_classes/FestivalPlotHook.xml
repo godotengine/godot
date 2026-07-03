@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalPlotHook" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A quest or narrative thread linking NPCs, places, items and events.
+	</brief_description>
+	<description>
+		Plot hooks are the hub entity of an imported Secret Census world: one hook
+		ties NPCs, locations, items, rumors, events, outfits and even specific NPC
+		secrets together into a single storyline. Each entry of
+		[member linked_npc_secrets] is a [Dictionary] with camelCase keys
+		[code]npcId[/code] and [code]secretType[/code] ([code]"secret"[/code] or
+		[code]"darkSecret"[/code]) — part of the import contract in
+		[code]SECRET_CENSUS_COMPATIBILITY.md[/code].
+
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="census_data" type="Dictionary" setter="set_census_data" getter="get_census_data">
+			The raw Secret Census source record, kept so no exported detail is lost.
+		</member>
+		<member name="description" type="String" setter="set_description" getter="get_description">
+			Long description of the storyline.
+		</member>
+		<member name="id" type="StringName" setter="set_id" getter="get_id">
+			Unique identifier used by the registry and by [code]linked_plot_hook_ids[/code] references on other resources.
+		</member>
+		<member name="is_progression" type="bool" setter="set_is_progression" getter="get_is_progression">
+			If [code]true[/code], the plot hook is part of the main progression path.
+		</member>
+		<member name="linked_event_ids" type="PackedStringArray" setter="set_linked_event_ids" getter="get_linked_event_ids">
+			Ids of [FestivalEvent] resources belonging to this storyline.
+		</member>
+		<member name="linked_item_ids" type="PackedStringArray" setter="set_linked_item_ids" getter="get_linked_item_ids">
+			Ids of [FestivalItem] resources involved in this storyline.
+		</member>
+		<member name="linked_location_ids" type="PackedStringArray" setter="set_linked_location_ids" getter="get_linked_location_ids">
+			Ids of [FestivalLocation] resources involved in this storyline.
+		</member>
+		<member name="linked_npc_ids" type="PackedStringArray" setter="set_linked_npc_ids" getter="get_linked_npc_ids">
+			Ids of NPCs involved in this storyline.
+		</member>
+		<member name="linked_npc_secrets" type="Array" setter="set_linked_npc_secrets" getter="get_linked_npc_secrets">
+			Array of [Dictionary] entries [code]{ "npcId": String, "secretType": "secret"|"darkSecret" }[/code] pointing at specific NPC secrets this storyline hinges on.
+		</member>
+		<member name="linked_outfit_ids" type="PackedStringArray" setter="set_linked_outfit_ids" getter="get_linked_outfit_ids">
+			Ids of [FestivalOutfit] resources relevant to this storyline.
+		</member>
+		<member name="linked_rumor_ids" type="PackedStringArray" setter="set_linked_rumor_ids" getter="get_linked_rumor_ids">
+			Ids of rumor [FestivalKnowledge] entries feeding this storyline.
+		</member>
+		<member name="status" type="StringName" setter="set_status" getter="get_status">
+			Storyline state: [code]active[/code], [code]completed[/code] or [code]failed[/code].
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title">
+			Human-readable title shown in UI.
+		</member>
+	</members>
+</class>

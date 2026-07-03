@@ -30,14 +30,18 @@
 
 #include "register_types.h"
 
+#include "festival_census_importer.h"
 #include "festival_clock.h"
 #include "festival_director.h"
+#include "festival_event.h"
 #include "festival_item.h"
 #include "festival_knowledge.h"
+#include "festival_location.h"
 #include "festival_notebook.h"
 #include "festival_npc.h"
 #include "festival_npc_profile.h"
 #include "festival_outfit.h"
+#include "festival_plot_hook.h"
 #include "festival_registry.h"
 #include "festival_weather.h"
 #include "festival_world.h"
@@ -55,6 +59,9 @@ void initialize_festival_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(FestivalItem);
 	GDREGISTER_CLASS(FestivalKnowledge);
 	GDREGISTER_CLASS(FestivalNPCProfile);
+	GDREGISTER_CLASS(FestivalLocation);
+	GDREGISTER_CLASS(FestivalPlotHook);
+	GDREGISTER_CLASS(FestivalEvent);
 
 	// Scene node.
 	GDREGISTER_CLASS(FestivalNPC);
@@ -65,6 +72,7 @@ void initialize_festival_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(FestivalWorld);
 	GDREGISTER_CLASS(FestivalNotebook);
 	GDREGISTER_CLASS(FestivalRegistry);
+	GDREGISTER_CLASS(FestivalCensusImporter);
 	GDREGISTER_CLASS(FestivalDirector);
 
 	Engine *engine = Engine::get_singleton();
@@ -73,6 +81,7 @@ void initialize_festival_module(ModuleInitializationLevel p_level) {
 	engine->add_singleton(Engine::Singleton("FestivalWorld", memnew(FestivalWorld)));
 	engine->add_singleton(Engine::Singleton("FestivalNotebook", memnew(FestivalNotebook)));
 	engine->add_singleton(Engine::Singleton("FestivalRegistry", memnew(FestivalRegistry)));
+	engine->add_singleton(Engine::Singleton("FestivalCensusImporter", memnew(FestivalCensusImporter)));
 	// The director is exposed under the short name `Festival`.
 	engine->add_singleton(Engine::Singleton("Festival", memnew(FestivalDirector)));
 }
@@ -84,6 +93,9 @@ void uninitialize_festival_module(ModuleInitializationLevel p_level) {
 
 	if (FestivalDirector::get_singleton()) {
 		memdelete(FestivalDirector::get_singleton());
+	}
+	if (FestivalCensusImporter::get_singleton()) {
+		memdelete(FestivalCensusImporter::get_singleton());
 	}
 	if (FestivalRegistry::get_singleton()) {
 		memdelete(FestivalRegistry::get_singleton());

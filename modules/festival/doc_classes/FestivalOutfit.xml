@@ -19,14 +19,32 @@
 		<member name="authority" type="int" setter="set_authority" getter="get_authority">
 			How much social authority the outfit grants. Higher values unlock higher-access interactions.
 		</member>
+		<member name="census_data" type="Dictionary" setter="set_census_data" getter="get_census_data">
+			The raw Secret Census source record, kept so no exported detail is lost.
+		</member>
+		<member name="description" type="String" setter="set_description" getter="get_description">
+			Long description shown in UI.
+		</member>
 		<member name="display_name" type="String" setter="set_display_name" getter="get_display_name">
 			Human-readable name shown in UI.
+		</member>
+		<member name="grants_extra_power" type="bool" setter="set_grants_extra_power" getter="get_grants_extra_power">
+			If [code]true[/code], wearing the outfit grants extra powers described by [member powers].
 		</member>
 		<member name="id" type="StringName" setter="set_id" getter="get_id">
 			Unique identifier used by the registry and interaction gates.
 		</member>
+		<member name="linked_dialogue_ids" type="PackedStringArray" setter="set_linked_dialogue_ids" getter="get_linked_dialogue_ids">
+			Ids of dialogue interactions that only unlock while this outfit is worn.
+		</member>
+		<member name="powers" type="String" setter="set_powers" getter="get_powers">
+			Describes the extra powers granted when [member grants_extra_power] is [code]true[/code].
+		</member>
 		<member name="role" type="StringName" setter="set_role" getter="get_role">
 			The perceived social role, for example [code]constable[/code], [code]merchant[/code] or [code]civilian[/code].
+		</member>
+		<member name="stage_availability" type="Array" setter="set_stage_availability" getter="get_stage_availability">
+			Raw StageAvailability records, each a [Dictionary] with camelCase keys [code]gameState[/code], [code]locationType[/code], [code]locationId[/code] and [code]availableByNormalMeans[/code] (part of the Secret Census import contract).
 		</member>
 		<member name="tags" type="PackedStringArray" setter="set_tags" getter="get_tags">
 			Free-form tags for authoring queries.

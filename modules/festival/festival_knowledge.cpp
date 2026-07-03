@@ -30,6 +30,8 @@
 
 #include "festival_knowledge.h"
 
+#include "core/object/class_db.h"
+
 void FestivalKnowledge::set_id(const StringName &p_id) { id = p_id; }
 StringName FestivalKnowledge::get_id() const { return id; }
 
@@ -48,6 +50,9 @@ String FestivalKnowledge::get_body() const { return body; }
 void FestivalKnowledge::set_veracity(bool p_veracity) { veracity = p_veracity; }
 bool FestivalKnowledge::get_veracity() const { return veracity; }
 
+void FestivalKnowledge::set_census_data(const Dictionary &p_census_data) { census_data = p_census_data; }
+Dictionary FestivalKnowledge::get_census_data() const { return census_data; }
+
 void FestivalKnowledge::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_id", "id"), &FestivalKnowledge::set_id);
 	ClassDB::bind_method(D_METHOD("get_id"), &FestivalKnowledge::get_id);
@@ -61,6 +66,8 @@ void FestivalKnowledge::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_body"), &FestivalKnowledge::get_body);
 	ClassDB::bind_method(D_METHOD("set_veracity", "veracity"), &FestivalKnowledge::set_veracity);
 	ClassDB::bind_method(D_METHOD("get_veracity"), &FestivalKnowledge::get_veracity);
+	ClassDB::bind_method(D_METHOD("set_census_data", "census_data"), &FestivalKnowledge::set_census_data);
+	ClassDB::bind_method(D_METHOD("get_census_data"), &FestivalKnowledge::get_census_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "id"), "set_id", "get_id");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "category", PROPERTY_HINT_ENUM, "Secret,Dark Secret,Rumor,False Rumor,Password,Schedule,Route,Fact"), "set_category", "get_category");
@@ -68,6 +75,7 @@ void FestivalKnowledge::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "body", PROPERTY_HINT_MULTILINE_TEXT), "set_body", "get_body");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "veracity"), "set_veracity", "get_veracity");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "census_data"), "set_census_data", "get_census_data");
 
 	BIND_ENUM_CONSTANT(CATEGORY_SECRET);
 	BIND_ENUM_CONSTANT(CATEGORY_DARK_SECRET);

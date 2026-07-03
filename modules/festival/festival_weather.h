@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/object.h"
+#include "core/variant/binder_common.h"
 
 // Morning weather, rolled at the start of every run so repeated runs are never
 // perfectly identical. Weather feeds NPC schedule variants and interaction gates.

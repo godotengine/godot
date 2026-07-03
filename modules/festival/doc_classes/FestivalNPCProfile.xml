@@ -24,8 +24,17 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="backstory" type="String" setter="set_backstory" getter="get_backstory">
+			The NPC's hidden history beneath the charming surface.
+		</member>
+		<member name="census_data" type="Dictionary" setter="set_census_data" getter="get_census_data">
+			The raw Secret Census source record this profile was imported from, kept so no exported detail is lost.
+		</member>
 		<member name="costume" type="StringName" setter="set_costume" getter="get_costume">
 			The outfit id this NPC themselves wears.
+		</member>
+		<member name="custom_fields" type="Array" setter="set_custom_fields" getter="get_custom_fields">
+			Arbitrary authored fields, each a [Dictionary] with keys [code]id[/code], [code]label[/code] and [code]value[/code].
 		</member>
 		<member name="dark_secret" type="StringName" setter="set_dark_secret" getter="get_dark_secret">
 			Knowledge id of the NPC's dark secret.
@@ -36,11 +45,29 @@
 		<member name="false_rumor" type="StringName" setter="set_false_rumor" getter="get_false_rumor">
 			Knowledge id of an untrue belief about the NPC.
 		</member>
+		<member name="gives_passwords" type="PackedStringArray" setter="set_gives_passwords" getter="get_gives_passwords">
+			Password phrases this NPC can reveal; each maps to a [FestivalKnowledge] entry (see [method FestivalCensusImporter.password_knowledge_id]).
+		</member>
 		<member name="id" type="StringName" setter="set_id" getter="get_id">
 			Unique identifier used by the registry.
 		</member>
 		<member name="interactions" type="Array" setter="set_interactions" getter="get_interactions">
 			Array of interaction [Dictionary] definitions evaluated by [FestivalDirector].
+		</member>
+		<member name="linked_plot_hook_ids" type="PackedStringArray" setter="set_linked_plot_hook_ids" getter="get_linked_plot_hook_ids">
+			Ids of [FestivalPlotHook] storylines this NPC takes part in.
+		</member>
+		<member name="notes" type="String" setter="set_notes" getter="get_notes">
+			Free-form authoring notes.
+		</member>
+		<member name="occupation" type="String" setter="set_occupation" getter="get_occupation">
+			What the NPC does for a living.
+		</member>
+		<member name="relationships" type="Array" setter="set_relationships" getter="get_relationships">
+			Directed NPC-to-NPC edges, each a [Dictionary] with camelCase keys [code]targetNpcId[/code], [code]type[/code] and [code]reciprocalType[/code] (part of the Secret Census import contract).
+		</member>
+		<member name="residence" type="String" setter="set_residence" getter="get_residence">
+			Where the NPC lives.
 		</member>
 		<member name="rumor" type="StringName" setter="set_rumor" getter="get_rumor">
 			Knowledge id of a true rumor about the NPC.
@@ -64,10 +91,13 @@
 			Charming-at-first-glance surface description.
 		</member>
 		<member name="weather_variant_rain" type="Dictionary" setter="set_weather_variant_rain" getter="get_weather_variant_rain">
-			Keys merged over the phase schedule when it is raining.
+			Keys merged over the phase schedule when it is raining. Keys [code]morning[/code], [code]afternoon[/code] and [code]night[/code] holding a [Dictionary] are phase-scoped: they are merged only while that phase is active.
 		</member>
 		<member name="weather_variant_sun" type="Dictionary" setter="set_weather_variant_sun" getter="get_weather_variant_sun">
-			Keys merged over the phase schedule when it is sunny.
+			Keys merged over the phase schedule when it is sunny. Keys [code]morning[/code], [code]afternoon[/code] and [code]night[/code] holding a [Dictionary] are phase-scoped: they are merged only while that phase is active.
+		</member>
+		<member name="workplace" type="String" setter="set_workplace" getter="get_workplace">
+			Where the NPC works.
 		</member>
 	</members>
 </class>

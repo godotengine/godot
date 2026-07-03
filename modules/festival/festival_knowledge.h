@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/variant/binder_common.h"
 
 // A single discoverable fact: a secret, rumor, password, schedule, route, etc.
 // Knowledge is the game's real progression currency. It is learned during a run
@@ -57,6 +58,9 @@ private:
 	String title;
 	String body;
 	bool veracity = true; // false => the belief is actually untrue (a false rumor).
+	// The raw Secret Census record (e.g. a Rumor with its source and
+	// verification details) this knowledge was derived from, verbatim.
+	Dictionary census_data;
 
 protected:
 	static void _bind_methods();
@@ -79,6 +83,9 @@ public:
 
 	void set_veracity(bool p_veracity);
 	bool get_veracity() const;
+
+	void set_census_data(const Dictionary &p_census_data);
+	Dictionary get_census_data() const;
 };
 
 VARIANT_ENUM_CAST(FestivalKnowledge::Category);

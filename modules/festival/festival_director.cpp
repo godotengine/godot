@@ -30,6 +30,8 @@
 
 #include "festival_director.h"
 
+#include "core/object/class_db.h"
+
 #include "festival_clock.h"
 #include "festival_notebook.h"
 #include "festival_outfit.h"
