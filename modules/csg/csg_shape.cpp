@@ -37,6 +37,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
+#include "scene/resources/surface_tool.h"
 #include "servers/rendering/rendering_server.h"
 
 #ifdef DEV_ENABLED
@@ -541,58 +542,42 @@ CSGBrush *CSGShape3D::_get_brush() {
 	return brush;
 }
 
-int CSGShape3D::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+static void _generate_tangents_unindexed(float *p_tangents, size_t p_count, const Vector3 *p_positions, const Vector3 *p_normals, const Vector2 *p_uvs) {
+	ERR_FAIL_COND_MSG(!SurfaceTool::generate_tangents_func, "Meshoptimizer library is not initialized.");
+	ERR_FAIL_COND(p_count % 3 != 0);
 
-	return surface.vertices.size() / 3;
-}
+	if (p_count == 0) {
+		return;
+	}
 
-int CSGShape3D::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
-	// always 3
-	return 3;
-}
+	struct TangentVertex {
+		float position[3];
+		float normal[3];
+		float uv[2];
+	};
 
-void CSGShape3D::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+	// We can't operate on input arrays directly because in double-precision builds, vectors use double components
+	// So we convert the inputs to single precision floats before generating tangents.
+	LocalVector<TangentVertex> tangent_vertices;
+	tangent_vertices.resize(p_count);
 
-	Vector3 v = surface.verticesw[iFace * 3 + iVert];
-	fvPosOut[0] = v.x;
-	fvPosOut[1] = v.y;
-	fvPosOut[2] = v.z;
-}
+	for (size_t i = 0; i < p_count; i++) {
+		TangentVertex &tangent_vertex = tangent_vertices[i];
 
-void CSGShape3D::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+		tangent_vertex.position[0] = p_positions[i].x;
+		tangent_vertex.position[1] = p_positions[i].y;
+		tangent_vertex.position[2] = p_positions[i].z;
+		tangent_vertex.normal[0] = p_normals[i].x;
+		tangent_vertex.normal[1] = p_normals[i].y;
+		tangent_vertex.normal[2] = p_normals[i].z;
+		tangent_vertex.uv[0] = p_uvs[i].x;
+		tangent_vertex.uv[1] = p_uvs[i].y;
+	}
 
-	Vector3 n = surface.normalsw[iFace * 3 + iVert];
-	fvNormOut[0] = n.x;
-	fvNormOut[1] = n.y;
-	fvNormOut[2] = n.z;
-}
-
-void CSGShape3D::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
-
-	Vector2 t = surface.uvsw[iFace * 3 + iVert];
-	fvTexcOut[0] = t.x;
-	fvTexcOut[1] = t.y;
-}
-
-void CSGShape3D::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
-		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
-
-	int i = iFace * 3 + iVert;
-	Vector3 normal = surface.normalsw[i];
-	Vector3 tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
-	Vector3 bitangent = Vector3(-fvBiTangent[0], -fvBiTangent[1], -fvBiTangent[2]); // for some reason these are reversed, something with the coordinate system in Godot
-	float d = bitangent.dot(normal.cross(tangent));
-
-	i *= 4;
-	surface.tansw[i++] = tangent.x;
-	surface.tansw[i++] = tangent.y;
-	surface.tansw[i++] = tangent.z;
-	surface.tansw[i++] = d < 0 ? -1 : 1;
+	SurfaceTool::generate_tangents_func(p_tangents, nullptr, p_count,
+			tangent_vertices.ptr()->position, p_count, sizeof(TangentVertex),
+			tangent_vertices.ptr()->normal, sizeof(TangentVertex),
+			tangent_vertices.ptr()->uv, sizeof(TangentVertex), 0);
 }
 
 void CSGShape3D::update_shape() {
@@ -624,21 +609,11 @@ void CSGShape3D::update_shape() {
 
 	for (int i = 0; i < surfaces.size(); i++) {
 		// calculate tangents for this surface
-		bool have_tangents = calculate_tangents;
+		bool have_tangents = calculate_tangents && SurfaceTool::generate_tangents_func;
 		if (have_tangents) {
-			SMikkTSpaceInterface mkif;
-			mkif.m_getNormal = mikktGetNormal;
-			mkif.m_getNumFaces = mikktGetNumFaces;
-			mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
-			mkif.m_getPosition = mikktGetPosition;
-			mkif.m_getTexCoord = mikktGetTexCoord;
-			mkif.m_setTSpace = mikktSetTSpaceDefault;
-			mkif.m_setTSpaceBasic = nullptr;
+			ShapeUpdateSurface &surface = surfaces.write[i];
 
-			SMikkTSpaceContext msc;
-			msc.m_pInterface = &mkif;
-			msc.m_pUserData = &surfaces.write[i];
-			have_tangents = genTangSpaceDefault(&msc);
+			_generate_tangents_unindexed(surface.tansw, surface.vertices.size(), surface.verticesw, surface.normalsw, surface.uvsw);
 		}
 
 		if (surfaces[i].last_added == 0) {
