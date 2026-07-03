@@ -14,20 +14,50 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="census_data" type="Dictionary" setter="set_census_data" getter="get_census_data">
+			The raw Secret Census source record, kept so no exported detail is lost.
+		</member>
 		<member name="description" type="String" setter="set_description" getter="get_description">
 			Long description shown in UI.
 		</member>
 		<member name="display_name" type="String" setter="set_display_name" getter="get_display_name">
 			Human-readable name.
 		</member>
+		<member name="gives_password" type="String" setter="set_gives_password" getter="get_gives_password">
+			Password phrase learned when the item is obtained; maps to a [FestivalKnowledge] entry (see [method FestivalCensusImporter.password_knowledge_id]).
+		</member>
+		<member name="grants_extra_power" type="bool" setter="set_grants_extra_power" getter="get_grants_extra_power">
+			If [code]true[/code], holding the item grants an extra power described by [member power_description].
+		</member>
+		<member name="holder_id" type="StringName" setter="set_holder_id" getter="get_holder_id">
+			Id of the NPC or [FestivalLocation] holding the item at the start of each run; see [member holder_type].
+		</member>
+		<member name="holder_type" type="StringName" setter="set_holder_type" getter="get_holder_type">
+			Where the item starts each run: [code]npc[/code] or [code]location[/code].
+		</member>
 		<member name="id" type="StringName" setter="set_id" getter="get_id">
 			Unique identifier used by inventory and interaction gates.
+		</member>
+		<member name="is_progression" type="bool" setter="set_is_progression" getter="get_is_progression">
+			If [code]true[/code], the item is part of the main progression path.
+		</member>
+		<member name="linked_plot_hook_id" type="StringName" setter="set_linked_plot_hook_id" getter="get_linked_plot_hook_id">
+			Id of the [FestivalPlotHook] storyline the item belongs to, or empty.
+		</member>
+		<member name="power_category" type="String" setter="set_power_category" getter="get_power_category">
+			Free-form category of the extra power, for example [code]access[/code] or [code]social[/code].
+		</member>
+		<member name="power_description" type="String" setter="set_power_description" getter="get_power_description">
+			Describes the extra power granted when [member grants_extra_power] is [code]true[/code].
 		</member>
 		<member name="presentable" type="bool" setter="set_presentable" getter="is_presentable">
 			If [code]true[/code], the item can be visibly presented to influence perception.
 		</member>
 		<member name="stackable" type="bool" setter="set_stackable" getter="is_stackable">
 			If [code]true[/code], multiple copies stack into a single inventory count.
+		</member>
+		<member name="stage_availability" type="Array" setter="set_stage_availability" getter="get_stage_availability">
+			Raw StageAvailability records, each a [Dictionary] with camelCase keys [code]gameState[/code], [code]locationType[/code], [code]locationId[/code] and [code]availableByNormalMeans[/code] (part of the Secret Census import contract).
 		</member>
 		<member name="tags" type="PackedStringArray" setter="set_tags" getter="get_tags">
 			Free-form tags for authoring queries.

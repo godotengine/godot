@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalEvent" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A scripted game event happening at a location with a cast of NPCs.
+	</brief_description>
+	<description>
+		Events describe something that happens somewhere on the island, optionally
+		fired by a specific dialogue interaction: [member trigger_npc_id] and
+		[member trigger_dialogue_id] match an interaction id carried in the
+		triggering NPC's profile. [member script_text] is authored prose or
+		pseudo-script from Secret Census, not executable code.
+
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="census_data" type="Dictionary" setter="set_census_data" getter="get_census_data">
+			The raw Secret Census source record, kept so no exported detail is lost.
+		</member>
+		<member name="character_ids" type="PackedStringArray" setter="set_character_ids" getter="get_character_ids">
+			Ids of the NPCs taking part in the event.
+		</member>
+		<member name="description" type="String" setter="set_description" getter="get_description">
+			Long description of what happens.
+		</member>
+		<member name="display_name" type="String" setter="set_display_name" getter="get_display_name">
+			Human-readable name shown in UI.
+		</member>
+		<member name="game_states" type="PackedStringArray" setter="set_game_states" getter="get_game_states">
+			Free-form game-state labels the event applies to.
+		</member>
+		<member name="id" type="StringName" setter="set_id" getter="get_id">
+			Unique identifier used by the registry and plot hook links.
+		</member>
+		<member name="is_progression" type="bool" setter="set_is_progression" getter="get_is_progression">
+			If [code]true[/code], the event is part of the main progression path.
+		</member>
+		<member name="location_id" type="StringName" setter="set_location_id" getter="get_location_id">
+			Id of the [FestivalLocation] where the event takes place.
+		</member>
+		<member name="script_text" type="String" setter="set_script_text" getter="get_script_text">
+			Authored prose/pseudo-script describing the event beat by beat. Not executable code.
+		</member>
+		<member name="trigger_dialogue_id" type="StringName" setter="set_trigger_dialogue_id" getter="get_trigger_dialogue_id">
+			Id of the dialogue interaction (in the trigger NPC's profile) that fires the event, or empty.
+		</member>
+		<member name="trigger_npc_id" type="StringName" setter="set_trigger_npc_id" getter="get_trigger_npc_id">
+			Id of the NPC whose dialogue fires the event, or empty.
+		</member>
+	</members>
+</class>

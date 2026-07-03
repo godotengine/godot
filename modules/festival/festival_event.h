@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  festival_item.h                                                       */
+/*  festival_event.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,32 +32,24 @@
 
 #include "core/io/resource.h"
 
-// An inventory item. Items are part of an NPC's perception equation, both while
-// simply held and when *presented* (visibly shown) to an NPC.
-class FestivalItem : public Resource {
-	GDCLASS(FestivalItem, Resource);
+// A scripted game event: something that happens at a location, involving a
+// cast of NPCs, optionally fired by a specific dialogue interaction
+// (`trigger_npc_id` + `trigger_dialogue_id` match an interaction id carried in
+// the triggering NPC's profile). `script_text` is authored prose/pseudo-script
+// from Secret Census, not executable code.
+class FestivalEvent : public Resource {
+	GDCLASS(FestivalEvent, Resource);
 
 	StringName id;
 	String display_name;
 	String description;
-	PackedStringArray tags;
-	bool presentable = true; // Can be visibly presented to influence perception.
-	bool stackable = true;
-
-	// Where the item starts each run: at an NPC or at a location.
-	StringName holder_type; // "npc" or "location".
-	StringName holder_id;
-	bool grants_extra_power = false;
-	String power_description;
-	String power_category;
-	String gives_password;
-	StringName linked_plot_hook_id;
+	String script_text;
+	StringName location_id;
+	StringName trigger_npc_id;
+	StringName trigger_dialogue_id;
+	PackedStringArray character_ids;
+	PackedStringArray game_states;
 	bool is_progression = false;
-	// Raw StageAvailability records: { "gameState", "locationType",
-	// "locationId", "availableByNormalMeans" } (camelCase keys are part of the
-	// Secret Census import contract).
-	Array stage_availability;
-	// The raw Secret Census record this item was imported from (verbatim).
 	Dictionary census_data;
 
 protected:
@@ -66,42 +58,24 @@ protected:
 public:
 	void set_id(const StringName &p_id);
 	StringName get_id() const;
-
 	void set_display_name(const String &p_display_name);
 	String get_display_name() const;
-
 	void set_description(const String &p_description);
 	String get_description() const;
-
-	void set_tags(const PackedStringArray &p_tags);
-	PackedStringArray get_tags() const;
-
-	void set_presentable(bool p_presentable);
-	bool is_presentable() const;
-
-	void set_stackable(bool p_stackable);
-	bool is_stackable() const;
-
-	void set_holder_type(const StringName &p_holder_type);
-	StringName get_holder_type() const;
-	void set_holder_id(const StringName &p_holder_id);
-	StringName get_holder_id() const;
-	void set_grants_extra_power(bool p_grants_extra_power);
-	bool get_grants_extra_power() const;
-	void set_power_description(const String &p_power_description);
-	String get_power_description() const;
-	void set_power_category(const String &p_power_category);
-	String get_power_category() const;
-	void set_gives_password(const String &p_gives_password);
-	String get_gives_password() const;
-	void set_linked_plot_hook_id(const StringName &p_id);
-	StringName get_linked_plot_hook_id() const;
+	void set_script_text(const String &p_script_text);
+	String get_script_text() const;
+	void set_location_id(const StringName &p_location_id);
+	StringName get_location_id() const;
+	void set_trigger_npc_id(const StringName &p_trigger_npc_id);
+	StringName get_trigger_npc_id() const;
+	void set_trigger_dialogue_id(const StringName &p_trigger_dialogue_id);
+	StringName get_trigger_dialogue_id() const;
+	void set_character_ids(const PackedStringArray &p_ids);
+	PackedStringArray get_character_ids() const;
+	void set_game_states(const PackedStringArray &p_game_states);
+	PackedStringArray get_game_states() const;
 	void set_is_progression(bool p_is_progression);
 	bool get_is_progression() const;
-	void set_stage_availability(const Array &p_stage_availability);
-	Array get_stage_availability() const;
 	void set_census_data(const Dictionary &p_census_data);
 	Dictionary get_census_data() const;
-
-	bool has_tag(const String &p_tag) const;
 };

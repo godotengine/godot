@@ -30,6 +30,8 @@
 
 #include "festival_clock.h"
 
+#include "core/object/class_db.h"
+
 FestivalClock *FestivalClock::singleton = nullptr;
 
 FestivalClock *FestivalClock::get_singleton() { return singleton; }

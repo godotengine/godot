@@ -30,6 +30,8 @@
 
 #include "festival_world.h"
 
+#include "core/object/class_db.h"
+
 FestivalWorld *FestivalWorld::singleton = nullptr;
 
 FestivalWorld *FestivalWorld::get_singleton() { return singleton; }

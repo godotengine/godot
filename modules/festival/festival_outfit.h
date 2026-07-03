@@ -44,6 +44,15 @@ class FestivalOutfit : public Resource {
 	int authority = 0; // Higher grants more social access (confessions, fear, discounts...).
 	PackedStringArray tags;
 
+	String description;
+	bool grants_extra_power = false;
+	String powers;
+	// Raw StageAvailability records (camelCase keys, see the import contract).
+	Array stage_availability;
+	PackedStringArray linked_dialogue_ids;
+	// The raw Secret Census record this outfit was imported from (verbatim).
+	Dictionary census_data;
+
 protected:
 	static void _bind_methods();
 
@@ -62,6 +71,19 @@ public:
 
 	void set_tags(const PackedStringArray &p_tags);
 	PackedStringArray get_tags() const;
+
+	void set_description(const String &p_description);
+	String get_description() const;
+	void set_grants_extra_power(bool p_grants_extra_power);
+	bool get_grants_extra_power() const;
+	void set_powers(const String &p_powers);
+	String get_powers() const;
+	void set_stage_availability(const Array &p_stage_availability);
+	Array get_stage_availability() const;
+	void set_linked_dialogue_ids(const PackedStringArray &p_ids);
+	PackedStringArray get_linked_dialogue_ids() const;
+	void set_census_data(const Dictionary &p_census_data);
+	Dictionary get_census_data() const;
 
 	bool has_tag(const String &p_tag) const;
 };

@@ -30,6 +30,8 @@
 
 #include "festival_weather.h"
 
+#include "core/object/class_db.h"
+
 #include "core/math/math_funcs.h"
 
 FestivalWeather *FestivalWeather::singleton = nullptr;

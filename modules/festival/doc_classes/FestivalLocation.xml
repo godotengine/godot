@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalLocation" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A place on Kraed Maas, from the overworld down to a single room.
+	</brief_description>
+	<description>
+		Locations form a hierarchy (overworld, building, sub-location,
+		sub-sub-location) through [member parent_id], plus lateral
+		[member connected_location_ids] edges. NPC schedules, items and events refer
+		to locations by id. Locations are imported verbatim from Secret Census (see
+		[code]SECRET_CENSUS_COMPATIBILITY.md[/code]); [member census_data] keeps the
+		raw source record.
+
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="census_data" type="Dictionary" setter="set_census_data" getter="get_census_data">
+			The raw Secret Census source record, kept so no exported detail is lost.
+		</member>
+		<member name="connected_location_ids" type="PackedStringArray" setter="set_connected_location_ids" getter="get_connected_location_ids">
+			Ids of locations directly reachable from this one, outside the parent hierarchy.
+		</member>
+		<member name="description" type="String" setter="set_description" getter="get_description">
+			Long description shown in UI.
+		</member>
+		<member name="display_name" type="String" setter="set_display_name" getter="get_display_name">
+			Human-readable name shown in UI.
+		</member>
+		<member name="id" type="StringName" setter="set_id" getter="get_id">
+			Unique identifier used by the registry, schedules, items and events.
+		</member>
+		<member name="is_progression" type="bool" setter="set_is_progression" getter="get_is_progression">
+			If [code]true[/code], the location is part of the main progression path.
+		</member>
+		<member name="is_residence" type="bool" setter="set_is_residence" getter="get_is_residence">
+			If [code]true[/code], NPCs live here; see [member resident_npc_ids].
+		</member>
+		<member name="is_template" type="bool" setter="set_is_template" getter="get_is_template">
+			If [code]true[/code], this is an authoring template rather than a concrete place in the world.
+		</member>
+		<member name="kind" type="StringName" setter="set_kind" getter="get_kind">
+			Hierarchy level: [code]overworld[/code], [code]building[/code], [code]sub-location[/code] or [code]sub-sub-location[/code].
+		</member>
+		<member name="linked_item_ids" type="PackedStringArray" setter="set_linked_item_ids" getter="get_linked_item_ids">
+			Ids of [FestivalItem] resources found at or tied to this location.
+		</member>
+		<member name="linked_plot_hook_ids" type="PackedStringArray" setter="set_linked_plot_hook_ids" getter="get_linked_plot_hook_ids">
+			Ids of [FestivalPlotHook] storylines this location takes part in.
+		</member>
+		<member name="notes" type="String" setter="set_notes" getter="get_notes">
+			Free-form authoring notes.
+		</member>
+		<member name="parent_id" type="StringName" setter="set_parent_id" getter="get_parent_id">
+			Id of the containing location, or empty for a top-level overworld area.
+		</member>
+		<member name="required_password" type="String" setter="set_required_password" getter="get_required_password">
+			Password phrase required to enter, or empty for open access. Learning it grants the matching [FestivalKnowledge] entry (see [method FestivalCensusImporter.password_knowledge_id]).
+		</member>
+		<member name="resident_npc_ids" type="PackedStringArray" setter="set_resident_npc_ids" getter="get_resident_npc_ids">
+			Ids of NPCs who live at this location.
+		</member>
+	</members>
+</class>
