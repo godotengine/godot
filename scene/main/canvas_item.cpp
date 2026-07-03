@@ -423,7 +423,7 @@ void CanvasItem::_notification(int p_what) {
 			_update_texture_filter_changed(false);
 			_update_texture_repeat_changed(false);
 
-			if (!block_transform_notify && !xform_change.in_list()) {
+			if (notify_transform && !block_transform_notify && !xform_change.in_list()) {
 				get_tree()->xform_change_list.add(&xform_change);
 			}
 
