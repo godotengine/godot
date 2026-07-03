@@ -2883,27 +2883,22 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 			case SuiteNode::Local::CONSTANT:
 				identifier->source = IdentifierNode::LOCAL_CONSTANT;
 				identifier->constant_source = declaration.constant;
-				declaration.constant->usages++;
 				break;
 			case SuiteNode::Local::VARIABLE:
 				identifier->source = IdentifierNode::LOCAL_VARIABLE;
 				identifier->variable_source = declaration.variable;
-				declaration.variable->usages++;
 				break;
 			case SuiteNode::Local::PARAMETER:
 				identifier->source = IdentifierNode::FUNCTION_PARAMETER;
 				identifier->parameter_source = declaration.parameter;
-				declaration.parameter->usages++;
 				break;
 			case SuiteNode::Local::FOR_VARIABLE:
 				identifier->source = IdentifierNode::LOCAL_ITERATOR;
 				identifier->bind_source = declaration.bind;
-				declaration.bind->usages++;
 				break;
 			case SuiteNode::Local::PATTERN_BIND:
 				identifier->source = IdentifierNode::LOCAL_BIND;
 				identifier->bind_source = declaration.bind;
-				declaration.bind->usages++;
 				break;
 			case SuiteNode::Local::UNDEFINED:
 				ERR_FAIL_V_MSG(nullptr, "Undefined local found.");
@@ -3168,37 +3163,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		return parse_expression(false); // Return the following expression.
 	}
 
-	switch (p_previous_operand->type) {
-		case Node::IDENTIFIER: {
-#ifdef DEBUG_ENABLED
-			// Get source to store assignment count.
-			// Also remove one usage since assignment isn't usage.
-			IdentifierNode *id = static_cast<IdentifierNode *>(p_previous_operand);
-			switch (id->source) {
-				case IdentifierNode::LOCAL_VARIABLE:
-					id->variable_source->usages--;
-					break;
-				case IdentifierNode::LOCAL_CONSTANT:
-					id->constant_source->usages--;
-					break;
-				case IdentifierNode::FUNCTION_PARAMETER:
-					id->parameter_source->usages--;
-					break;
-				case IdentifierNode::LOCAL_ITERATOR:
-				case IdentifierNode::LOCAL_BIND:
-					id->bind_source->usages--;
-					break;
-				default:
-					break;
-			}
-#endif
-		} break;
-		case Node::SUBSCRIPT:
-			// Okay.
-			break;
-		default:
-			push_error(R"(Only identifier, attribute access, and subscription access can be used as assignment target.)");
-			return parse_expression(false); // Return the following expression.
+	if (p_previous_operand->type != Node::SUBSCRIPT && p_previous_operand->type != Node::IDENTIFIER) {
+		push_error(R"(Only identifier, attribute access, and subscription access can be used as assignment target.)");
+		return parse_expression(false); // Return the following expression.
 	}
 
 	AssignmentNode *assignment = alloc_node<AssignmentNode>();
