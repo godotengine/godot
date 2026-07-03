@@ -863,7 +863,7 @@ private:
 
 	static void _wp_pointer_gesture_pinch_on_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *wp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers);
 	static void _wp_pointer_gesture_pinch_on_update(void *data, struct zwp_pointer_gesture_pinch_v1 *wp_pointer_gesture_pinch_v1, uint32_t time, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t scale, wl_fixed_t rotation);
-	static void _wp_pointer_gesture_pinch_on_end(void *data, struct zwp_pointer_gesture_pinch_v1 *zp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, int32_t cancelled);
+	static void _wp_pointer_gesture_pinch_on_end(void *data, struct zwp_pointer_gesture_pinch_v1 *zp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, int32_t cancelled); // codespell:ignore cancelled.
 
 	static void _wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer);
 	static void _wp_primary_selection_device_on_selection(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *id);
@@ -1006,7 +1006,7 @@ private:
 	static constexpr struct wl_data_source_listener wl_data_source_listener = {
 		.target = _wl_data_source_on_target,
 		.send = _wl_data_source_on_send,
-		.cancelled = _wl_data_source_on_cancelled,
+		.cancelled = _wl_data_source_on_cancelled, // codespell:ignore cancelled.
 		.dnd_drop_performed = _wl_data_source_on_dnd_drop_performed,
 		.dnd_finished = _wl_data_source_on_dnd_finished,
 		.action = _wl_data_source_on_action,
@@ -1098,7 +1098,7 @@ private:
 
 	static constexpr struct zwp_primary_selection_source_v1_listener wp_primary_selection_source_listener = {
 		.send = _wp_primary_selection_source_on_send,
-		.cancelled = _wp_primary_selection_source_on_cancelled,
+		.cancelled = _wp_primary_selection_source_on_cancelled, // codespell:ignore cancelled.
 	};
 
 	static constexpr struct zwp_tablet_seat_v2_listener wp_tablet_seat_listener = {

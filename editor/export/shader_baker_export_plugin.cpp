@@ -424,7 +424,7 @@ void ShaderBakerExportPlugin::_customize_shader_version(ShaderRD *p_shader, RID 
 
 void ShaderBakerExportPlugin::_process_work_item(WorkItem p_work_item) {
 	if (!tasks_cancelled) {
-		// Only process the item if the tasks haven't been cancelled by the user yet.
+		// Only process the item if the tasks haven't been canceled by the user yet.
 		Vector<RD::ShaderStageSPIRVData> spirv_data = ShaderRD::compile_stages(p_work_item.stage_sources, p_work_item.dynamic_buffers);
 		if (unlikely(spirv_data.is_empty())) {
 			ERR_PRINT("Unable to retrieve SPIR-V data for shader.");

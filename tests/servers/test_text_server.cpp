@@ -795,7 +795,7 @@ TEST_SUITE("[TextServer]") {
 					},
 					{
 							2,
-							{ 0x54, 0x65, 0x2A, 0x73, 0x74, 0, 0, 0, 0, 0 }, // "Te*st"
+							{ 0x54, 0x65, 0x2A, 0x73, 0x74, 0, 0, 0, 0, 0 }, // "Te*st" // codespell:ignore te.
 					},
 					{
 							4,

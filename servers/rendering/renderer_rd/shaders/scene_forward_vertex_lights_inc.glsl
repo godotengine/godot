@@ -39,12 +39,12 @@ void light_compute_vertex(hvec3 N, hvec3 L, hvec3 V, hvec3 light_color, bool is_
 }
 
 half get_omni_attenuation(float distance, float inv_range, float decay) {
-	float nd = distance * inv_range;
-	nd *= nd;
-	nd *= nd; // nd^4
-	nd = max(1.0 - nd, 0.0);
-	nd *= nd; // nd^2
-	return half(nd * pow(max(distance, 0.0001), -decay));
+	float ndist = distance * inv_range;
+	ndist *= ndist;
+	ndist *= ndist; // ndist^4
+	ndist = max(1.0 - ndist, 0.0);
+	ndist *= ndist; // ndist^2
+	return half(ndist * pow(max(distance, 0.0001), -decay));
 }
 
 void light_process_omni_vertex(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, half roughness,

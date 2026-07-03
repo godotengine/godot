@@ -647,7 +647,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		return handleMouseEvent(eventAction, 0, 0f, 0f, 0f, 0f, false, sourceMouseRelative, 1f, 0f, 0f);
 	}
 
-	boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY) {
+	boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY) { // codespell:ignore doubleclick.
 		InputEventRunnable runnable = InputEventRunnable.obtain();
 		if (runnable == null) {
 			return false;
@@ -680,7 +680,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			case MotionEvent.ACTION_HOVER_MOVE:
 			case MotionEvent.ACTION_MOVE:
 			case MotionEvent.ACTION_SCROLL: {
-				runnable.setMouseEvent(eventAction, buttonsMask, x, y, deltaX, deltaY, doubleClick, sourceMouseRelative, pressure, tiltX, tiltY);
+				runnable.setMouseEvent(eventAction, buttonsMask, x, y, deltaX, deltaY, doubleClick, sourceMouseRelative, pressure, tiltX, tiltY); // codespell:ignore doubleclick.
 				dispatchInputEventRunnable(runnable);
 				return true;
 			}

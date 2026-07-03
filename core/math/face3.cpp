@@ -312,18 +312,18 @@ Vector3 Face3::get_closest_point_to(const Vector3 &p_point) const {
 			s = CLAMP(-d / a, 0.f, 1.f);
 			t = 0.f;
 		} else {
-			real_t invDet = 1.f / det;
-			s *= invDet;
-			t *= invDet;
+			real_t inv_det = 1.f / det;
+			s *= inv_det;
+			t *= inv_det;
 		}
 	} else {
 		if (s < 0.f) {
 			real_t tmp0 = b + d;
 			real_t tmp1 = c + e;
 			if (tmp1 > tmp0) {
-				real_t numer = tmp1 - tmp0;
-				real_t denom = a - 2 * b + c;
-				s = CLAMP(numer / denom, 0.f, 1.f);
+				real_t numerator = tmp1 - tmp0;
+				real_t denominator = a - 2 * b + c;
+				s = CLAMP(numerator / denominator, 0.f, 1.f);
 				t = 1 - s;
 			} else {
 				t = CLAMP(-e / c, 0.f, 1.f);
@@ -331,18 +331,18 @@ Vector3 Face3::get_closest_point_to(const Vector3 &p_point) const {
 			}
 		} else if (t < 0.f) {
 			if (a + d > b + e) {
-				real_t numer = c + e - b - d;
-				real_t denom = a - 2 * b + c;
-				s = CLAMP(numer / denom, 0.f, 1.f);
+				real_t numerator = c + e - b - d;
+				real_t denominator = a - 2 * b + c;
+				s = CLAMP(numerator / denominator, 0.f, 1.f);
 				t = 1 - s;
 			} else {
 				s = CLAMP(-d / a, 0.f, 1.f);
 				t = 0.f;
 			}
 		} else {
-			real_t numer = c + e - b - d;
-			real_t denom = a - 2 * b + c;
-			s = CLAMP(numer / denom, 0.f, 1.f);
+			real_t numerator = c + e - b - d;
+			real_t denominator = a - 2 * b + c;
+			s = CLAMP(numerator / denominator, 0.f, 1.f);
 			t = 1.f - s;
 		}
 	}

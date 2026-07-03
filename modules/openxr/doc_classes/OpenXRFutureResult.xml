@@ -46,7 +46,7 @@
 		<signal name="completed">
 			<param index="0" name="result" type="OpenXRFutureResult" />
 			<description>
-				Emitted when the asynchronous function is finished or has been cancelled.
+				Emitted when the asynchronous function is finished or has been canceled.
 			</description>
 		</signal>
 	</signals>
@@ -58,7 +58,7 @@
 			The asynchronous function has finished.
 		</constant>
 		<constant name="RESULT_CANCELLED" value="2" enum="ResultStatus">
-			The asynchronous function has been cancelled.
+			The asynchronous function has been canceled.
 		</constant>
 	</constants>
 </class>

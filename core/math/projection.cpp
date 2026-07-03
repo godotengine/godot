@@ -366,7 +366,7 @@ void Projection::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, rea
 	ERR_FAIL_COND(p_top <= p_bottom);
 	ERR_FAIL_COND(p_far <= p_near);
 
-	real_t *te = &columns[0][0];
+	real_t *matrix = &columns[0][0];
 	real_t x = 2 * p_near / (p_right - p_left);
 	real_t y = 2 * p_near / (p_top - p_bottom);
 
@@ -375,22 +375,22 @@ void Projection::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, rea
 	real_t c = -(p_far + p_near) / (p_far - p_near);
 	real_t d = -2 * p_far * p_near / (p_far - p_near);
 
-	te[0] = x;
-	te[1] = 0;
-	te[2] = 0;
-	te[3] = 0;
-	te[4] = 0;
-	te[5] = y;
-	te[6] = 0;
-	te[7] = 0;
-	te[8] = a;
-	te[9] = b;
-	te[10] = c;
-	te[11] = -1;
-	te[12] = 0;
-	te[13] = 0;
-	te[14] = d;
-	te[15] = 0;
+	matrix[0] = x;
+	matrix[1] = 0;
+	matrix[2] = 0;
+	matrix[3] = 0;
+	matrix[4] = 0;
+	matrix[5] = y;
+	matrix[6] = 0;
+	matrix[7] = 0;
+	matrix[8] = a;
+	matrix[9] = b;
+	matrix[10] = c;
+	matrix[11] = -1;
+	matrix[12] = 0;
+	matrix[13] = 0;
+	matrix[14] = d;
+	matrix[15] = 0;
 }
 
 void Projection::set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov) {

@@ -875,7 +875,7 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	}
 }
 
-void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_uses_motion_vectors, MeshInstance::Surface *mis, int p_current_vertex_buffer, int p_prev_vertex_buffer) {
+void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &p_version, Mesh::Surface *p_mesh_surface, uint64_t p_input_mask, bool p_uses_motion_vectors, MeshInstance::Surface *p_mesh_instance_surface, int p_current_vertex_buffer, int p_prev_vertex_buffer) {
 	Mesh::Surface::Attrib attribs[RSE::ARRAY_MAX];
 
 	int position_stride = 0; // Vertex position only.
@@ -886,7 +886,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 	for (int i = 0; i < RSE::ARRAY_INDEX; i++) {
 		attribs[i].enabled = false;
 		attribs[i].integer = false;
-		if (!(s->format & (1ULL << i))) {
+		if (!(p_mesh_surface->format & (1ULL << i))) {
 			continue;
 		}
 
@@ -901,11 +901,11 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 				attribs[i].offset = 0;
 				attribs[i].type = GL_FLOAT;
 				attribs[i].normalized = GL_FALSE;
-				if (s->format & RSE::ARRAY_FLAG_USE_2D_VERTICES) {
+				if (p_mesh_surface->format & RSE::ARRAY_FLAG_USE_2D_VERTICES) {
 					attribs[i].size = 2;
 					position_stride = attribs[i].size * sizeof(float);
 				} else {
-					if (!mis && (s->format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+					if (!p_mesh_instance_surface && (p_mesh_surface->format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 						attribs[i].size = 4;
 						position_stride = attribs[i].size * sizeof(uint16_t);
 						attribs[i].type = GL_UNSIGNED_SHORT;
@@ -917,7 +917,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 				}
 			} break;
 			case RSE::ARRAY_NORMAL: {
-				if (!mis && (s->format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
+				if (!p_mesh_instance_surface && (p_mesh_surface->format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 					attribs[i].size = 2;
 					normal_tangent_stride += 2 * attribs[i].size;
 				} else {
@@ -925,22 +925,22 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 					// A small trick here: if we are uncompressed and we have normals, but no tangents. We need
 					// the shader to think there are 4 components to "axis_tangent_attrib". So we give a size of 4,
 					// but a stride based on only having 2 elements.
-					if (!(s->format & RSE::ARRAY_FORMAT_TANGENT)) {
-						normal_tangent_stride += (mis ? sizeof(float) : sizeof(uint16_t)) * 2;
+					if (!(p_mesh_surface->format & RSE::ARRAY_FORMAT_TANGENT)) {
+						normal_tangent_stride += (p_mesh_instance_surface ? sizeof(float) : sizeof(uint16_t)) * 2;
 					} else {
-						normal_tangent_stride += (mis ? sizeof(float) : sizeof(uint16_t)) * 4;
+						normal_tangent_stride += (p_mesh_instance_surface ? sizeof(float) : sizeof(uint16_t)) * 4;
 					}
 				}
 
-				if (mis) {
+				if (p_mesh_instance_surface) {
 					// Transform feedback has interleave all or no attributes. It can't mix interleaving.
 					attribs[i].offset = position_stride;
 					normal_tangent_stride += position_stride;
 					position_stride = normal_tangent_stride;
 				} else {
-					attribs[i].offset = position_stride * s->vertex_count;
+					attribs[i].offset = position_stride * p_mesh_surface->vertex_count;
 				}
-				attribs[i].type = (mis ? GL_FLOAT : GL_UNSIGNED_SHORT);
+				attribs[i].type = (p_mesh_instance_surface ? GL_FLOAT : GL_UNSIGNED_SHORT);
 				attribs[i].normalized = GL_TRUE;
 			} break;
 			case RSE::ARRAY_TANGENT: {
@@ -958,7 +958,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			case RSE::ARRAY_TEX_UV: {
 				attribs[i].offset = attributes_stride;
 				attribs[i].size = 2;
-				if (s->format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+				if (p_mesh_surface->format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					attribs[i].type = GL_UNSIGNED_SHORT;
 					attributes_stride += 2 * sizeof(uint16_t);
 					attribs[i].normalized = GL_TRUE;
@@ -971,7 +971,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			case RSE::ARRAY_TEX_UV2: {
 				attribs[i].offset = attributes_stride;
 				attribs[i].size = 2;
-				if (s->format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+				if (p_mesh_surface->format & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					attribs[i].type = GL_UNSIGNED_SHORT;
 					attributes_stride += 2 * sizeof(uint16_t);
 					attribs[i].normalized = GL_TRUE;
@@ -989,7 +989,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 
 				int idx = i - RSE::ARRAY_CUSTOM0;
 				uint32_t fmt_shift[RSE::ARRAY_CUSTOM_COUNT] = { RSE::ARRAY_FORMAT_CUSTOM0_SHIFT, RSE::ARRAY_FORMAT_CUSTOM1_SHIFT, RSE::ARRAY_FORMAT_CUSTOM2_SHIFT, RSE::ARRAY_FORMAT_CUSTOM3_SHIFT };
-				uint32_t fmt = (s->format >> fmt_shift[idx]) & RSE::ARRAY_FORMAT_CUSTOM_MASK;
+				uint32_t fmt = (p_mesh_surface->format >> fmt_shift[idx]) & RSE::ARRAY_FORMAT_CUSTOM_MASK;
 				uint32_t fmtsize[RSE::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
 				GLenum gl_type[RSE::ARRAY_CUSTOM_MAX] = { GL_UNSIGNED_BYTE, GL_BYTE, GL_HALF_FLOAT, GL_HALF_FLOAT, GL_FLOAT, GL_FLOAT, GL_FLOAT, GL_FLOAT };
 				GLboolean norm[RSE::ARRAY_CUSTOM_MAX] = { GL_TRUE, GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE };
@@ -1017,8 +1017,8 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		}
 	}
 
-	glGenVertexArrays(1, &v.vertex_array);
-	glBindVertexArray(v.vertex_array);
+	glGenVertexArrays(1, &p_version.vertex_array);
+	glBindVertexArray(p_version.vertex_array);
 
 	for (int i = 0; i < RSE::ARRAY_INDEX; i++) {
 		if (!attribs[i].enabled) {
@@ -1027,17 +1027,17 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		}
 		if (i <= RSE::ARRAY_TANGENT) {
 			attribs[i].stride = (i == RSE::ARRAY_VERTEX) ? position_stride : normal_tangent_stride;
-			if (mis) {
-				glBindBuffer(GL_ARRAY_BUFFER, mis->vertex_buffers[p_current_vertex_buffer]);
+			if (p_mesh_instance_surface) {
+				glBindBuffer(GL_ARRAY_BUFFER, p_mesh_instance_surface->vertex_buffers[p_current_vertex_buffer]);
 			} else {
-				glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
+				glBindBuffer(GL_ARRAY_BUFFER, p_mesh_surface->vertex_buffer);
 			}
 		} else if (i <= RSE::ARRAY_CUSTOM3) {
 			attribs[i].stride = attributes_stride;
-			glBindBuffer(GL_ARRAY_BUFFER, s->attribute_buffer);
+			glBindBuffer(GL_ARRAY_BUFFER, p_mesh_surface->attribute_buffer);
 		} else {
 			attribs[i].stride = skin_stride;
-			glBindBuffer(GL_ARRAY_BUFFER, s->skin_buffer);
+			glBindBuffer(GL_ARRAY_BUFFER, p_mesh_surface->skin_buffer);
 		}
 
 		if (attribs[i].integer) {
@@ -1050,10 +1050,10 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 
 	if (p_uses_motion_vectors) {
 		for (int i = 0; i < RSE::ARRAY_TANGENT; i++) {
-			if (mis) {
-				glBindBuffer(GL_ARRAY_BUFFER, mis->vertex_buffers[mis->prev_vertex_buffer]);
+			if (p_mesh_instance_surface) {
+				glBindBuffer(GL_ARRAY_BUFFER, p_mesh_instance_surface->vertex_buffers[p_mesh_instance_surface->prev_vertex_buffer]);
 			} else {
-				glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
+				glBindBuffer(GL_ARRAY_BUFFER, p_mesh_surface->vertex_buffer);
 			}
 
 			glVertexAttribPointer(i + 16, attribs[i].size, attribs[i].type, attribs[i].normalized, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
@@ -1066,10 +1066,10 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	v.input_mask = p_input_mask;
-	v.uses_motion_vectors = p_uses_motion_vectors;
-	v.current_vertex_buffer = p_current_vertex_buffer;
-	v.prev_vertex_buffer = p_prev_vertex_buffer;
+	p_version.input_mask = p_input_mask;
+	p_version.uses_motion_vectors = p_uses_motion_vectors;
+	p_version.current_vertex_buffer = p_current_vertex_buffer;
+	p_version.prev_vertex_buffer = p_prev_vertex_buffer;
 }
 
 void MeshStorage::mesh_surface_remove(RID p_mesh, int p_surface) {

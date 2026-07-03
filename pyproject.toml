@@ -72,36 +72,21 @@ skip = [
 	"core/string/locales.h",
 	"DONORS.md",
 	"editor/import/unicode_ranges.inc",
-	"editor/project_converter_3_to_4.cpp",
+	"editor/project_upgrade/renames_map_3_to_4.cpp",
 	"platform/android/java/lib/src/main/java/com/*",
 	"platform/web/package-lock.json",
 ]
 ignore-words-list = [
-	"breaked",
-	"cancelled",
-	"checkin",
-	"colour",
-	"curvelinear",
-	"doubleclick",
-	"expct",
-	"findn",
-	"gird",
-	"hel",
-	"inout",
-	"labelin",
-	"lod",
-	"masia",
-	"mis",
-	"nd",
-	"numer",
-	"ot",
-	"outin",
-	"parm",
+	"breaked",     # Debugger contexts.
+	"checkin",     # Proper name of a database on Android.
+	"findn",       # Our case-insensitive `find` function.
+	"inout",       # Shader attribute.
+	"lod",         # "Level of Detail".
+	"thirdparty",  # Prefer as one word.
+
+	# Allow specific camelCase/PascalCase exceptions for these phrases:
+	"Masia",
+	"OT",
 	"pEvent",
-	"requestor",
-	"streamin",
-	"te",
-	"textin",
-	"thirdparty",
-	"vai",
 ]
+ignore-regex = '\bkeywords\b=".*"'  # Skip documentation's "keywords" field.

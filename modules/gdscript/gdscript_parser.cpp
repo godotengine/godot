@@ -506,11 +506,11 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	// Warn about parsing an empty script file:
 	if (current.type == GDScriptTokenizer::Token::TK_EOF) {
 		// Create a dummy Node for the warning, pointing to the very beginning of the file
-		Node *nd = alloc_node<PassNode>();
-		nd->start_line = 1;
-		nd->start_column = 1;
-		nd->end_line = 1;
-		push_warning(nd, GDScriptWarning::EMPTY_FILE);
+		Node *dummy = alloc_node<PassNode>();
+		dummy->start_line = 1;
+		dummy->start_column = 1;
+		dummy->end_line = 1;
+		push_warning(dummy, GDScriptWarning::EMPTY_FILE);
 	}
 #endif // DEBUG_ENABLED
 

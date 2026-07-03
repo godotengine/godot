@@ -412,7 +412,7 @@ public:
 		TEXTURE_USAGE_VRS_ATTACHMENT_BIT = (1 << 10),
 		// When set, the texture is not backed by actual memory. It only ever lives in the cache.
 		// This is particularly useful for:
-		//	1. Depth/stencil buffers that are not needed after producing the colour output.
+		//	1. Depth/stencil buffers that are not needed after producing the color output.
 		//	2. MSAA surfaces that are immediately resolved (i.e. its raw content isn't needed).
 		//
 		// This flag heavily improves performance & saves memory on TBDR GPUs (e.g. mobile).
