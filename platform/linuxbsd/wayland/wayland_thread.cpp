@@ -30,11 +30,11 @@
 
 #include "wayland_thread.h"
 
+#ifdef WAYLAND_ENABLED
+
 #include "core/config/engine.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
-
-#ifdef WAYLAND_ENABLED
 
 #ifdef __FreeBSD__
 #include <dev/evdev/input-event-codes.h>
