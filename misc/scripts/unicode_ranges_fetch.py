@@ -90,7 +90,7 @@ struct UniRange {{
     source += "#endif // UNICODE_RANGES_INC\n"
 
     unicode_ranges_path: str = os.path.join(os.path.dirname(__file__), "../../editor/import/unicode_ranges.inc")
-    with open(unicode_ranges_path, "w", newline="\n") as f:
+    with open(unicode_ranges_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(source)
 
     print("`unicode_ranges.inc` generated successfully.")
