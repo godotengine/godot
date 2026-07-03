@@ -297,8 +297,9 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 		Color system_accent_color = display_server->get_accent_color();
 
 		if (follow_system_theme) {
-			String dark_theme = "Default";
-			String light_theme = "Light";
+			// Keep the Workshop identity when tracking the OS light/dark preference.
+			String dark_theme = "Workshop Ink";
+			String light_theme = "Workshop Paper";
 
 			config.preset = light_theme; // Assume light theme if we can't detect system theme attributes.
 
@@ -357,6 +358,20 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				preset_accent_color = Color(0.15, 0.55, 0.82);
 				preset_base_color = Color(0.89, 0.86, 0.79);
 				preset_contrast = light_contrast;
+			} else if (config.preset == "Workshop Ink") {
+				// A calm charcoal-and-ink dark room, not black with neon.
+				// One muted marker accent (ink-teal), kept restrained.
+				preset_accent_color = Color(0.36, 0.66, 0.60);
+				preset_base_color = Color(0.133, 0.129, 0.122);
+				preset_contrast = 0.26;
+				preset_icon_saturation = 1.0;
+			} else if (config.preset == "Workshop Paper") {
+				// The default identity: warm paper-white, dark ink text,
+				// a single muted ink-teal accent used like a marker in a notebook.
+				preset_accent_color = Color(0.13, 0.42, 0.40);
+				preset_base_color = Color(0.917, 0.905, 0.878);
+				preset_contrast = light_contrast;
+				preset_icon_saturation = 1.0;
 			} else { // Default
 				preset_accent_color = Color(0.337, 0.62, 1.0);
 				preset_base_color = Color(0.161, 0.161, 0.161);

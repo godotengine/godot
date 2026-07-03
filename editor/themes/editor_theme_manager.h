@@ -86,7 +86,8 @@ public:
 		const float default_icon_saturation = 2.0;
 		const int default_relationship_lines = RELATIONSHIP_SELECTED_ONLY;
 		const float default_contrast = 0.3;
-		const int default_corner_radius = 4;
+		// Workshop identity: a slightly tighter corner for a more editorial, less "pill"-like feel.
+		const int default_corner_radius = 3;
 
 		// Generated properties.
 
