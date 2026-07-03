@@ -134,19 +134,24 @@ void GridContainer::_resort() {
 
 	// Evaluate the remaining space for expanded columns/rows.
 	Size2 remaining_space = get_size();
+	Size2 empty_space = remaining_space;
 	for (const KeyValue<int, int> &E : col_minw) {
 		if (!col_expanded.has(E.key)) {
 			remaining_space.width -= E.value;
 		}
+		empty_space.width -= E.value;
 	}
 
 	for (const KeyValue<int, int> &E : row_minh) {
 		if (!row_expanded.has(E.key)) {
 			remaining_space.height -= E.value;
 		}
+		empty_space.height -= E.value;
 	}
 	remaining_space.height -= theme_cache.v_separation * MAX(max_row - 1, 0);
 	remaining_space.width -= theme_cache.h_separation * MAX(max_col - 1, 0);
+	empty_space.height -= theme_cache.v_separation * MAX(max_row - 1, 0);
+	empty_space.width -= theme_cache.h_separation * MAX(max_col - 1, 0);
 
 	// Distribute the remaining space to cols/rows which have a desired size larger than their minimum size, up to their desired size, in proportion to how much extra space they want.
 	int total_desired_extra_space = 0;
@@ -156,8 +161,8 @@ void GridContainer::_resort() {
 			total_desired_extra_space += desired_extra_space;
 		}
 	}
-	if (remaining_space.width > 0 && total_desired_extra_space > 0) {
-		real_t space_available_ratio = MIN(real_t(remaining_space.width) / real_t(total_desired_extra_space), 1.0);
+	if (empty_space.width > 0 && total_desired_extra_space > 0) {
+		real_t space_available_ratio = MIN(real_t(empty_space.width) / real_t(total_desired_extra_space), 1.0);
 		for (const KeyValue<int, int> &E : col_desiredw) {
 			int desired_extra_space = E.value - col_minw[E.key];
 			if (desired_extra_space > 0) {
@@ -176,8 +181,8 @@ void GridContainer::_resort() {
 			total_desired_extra_space += desired_extra_space;
 		}
 	}
-	if (remaining_space.height > 0 && total_desired_extra_space > 0) {
-		real_t space_available_ratio = MIN(real_t(remaining_space.height) / real_t(total_desired_extra_space), 1.0);
+	if (empty_space.height > 0 && total_desired_extra_space > 0) {
+		real_t space_available_ratio = MIN(real_t(empty_space.height) / real_t(total_desired_extra_space), 1.0);
 		for (const KeyValue<int, int> &E : row_desiredh) {
 			int desired_extra_space = E.value - row_minh[E.key];
 			if (desired_extra_space > 0) {

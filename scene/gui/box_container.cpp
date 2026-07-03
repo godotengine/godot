@@ -117,8 +117,8 @@ void BoxContainer::_resort() {
 	stretch_space += stretch_diff; //available stretch space.
 
 	// First, allocate extra space to Controls which have a desired size larger than their minimum size, up to their desired size, in proportion to how much extra space they want.
-	if (stretch_space > 0 && desired_extra_space > 0) {
-		real_t space_available_ratio = MIN(real_t(stretch_space) / real_t(desired_extra_space), 1.0);
+	if (stretch_diff > 0 && desired_extra_space > 0) {
+		real_t space_available_ratio = MIN(real_t(stretch_diff) / real_t(desired_extra_space), 1.0);
 
 		for (Node *child : iterate_children()) {
 			Control *c = as_sortable_control(child, SortableVisibilityMode::VISIBLE);
