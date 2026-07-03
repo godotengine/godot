@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalKnowledge" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A single discoverable fact: a secret, rumor, password, schedule or route.
+	</brief_description>
+	<description>
+		Knowledge is the game's real progression currency. It is learned during a run
+		but recorded in the [FestivalNotebook], which persists across runs. A password
+		learned too late in one run is already known at Morning of the next, which is
+		exactly what unlocks earlier access and new branches.
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="body" type="String" setter="set_body" getter="get_body">
+			The full text of the fact.
+		</member>
+		<member name="category" type="int" setter="set_category" getter="get_category">
+			One of the [enum Category] values.
+		</member>
+		<member name="id" type="StringName" setter="set_id" getter="get_id">
+			Unique identifier stored by the notebook and referenced by interaction gates.
+		</member>
+		<member name="subject" type="StringName" setter="set_subject" getter="get_subject">
+			Optional id of the NPC this knowledge concerns.
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title">
+			Short title shown in the notebook.
+		</member>
+		<member name="veracity" type="bool" setter="set_veracity" getter="get_veracity">
+			If [code]false[/code], the belief is actually untrue (a false rumor).
+		</member>
+	</members>
+	<constants>
+		<constant name="CATEGORY_SECRET" value="0" enum="Category">
+			A personal truth the subject guards carefully.
+		</constant>
+		<constant name="CATEGORY_DARK_SECRET" value="1" enum="Category">
+			Something disturbing, dangerous or morally significant.
+		</constant>
+		<constant name="CATEGORY_RUMOR" value="2" enum="Category">
+			Something true that others say about the subject.
+		</constant>
+		<constant name="CATEGORY_FALSE_RUMOR" value="3" enum="Category">
+			Something believed about the subject that is not true.
+		</constant>
+		<constant name="CATEGORY_PASSWORD" value="4" enum="Category">
+			A phrase that grants access somewhere.
+		</constant>
+		<constant name="CATEGORY_SCHEDULE" value="5" enum="Category">
+			Knowledge of where or when an NPC will be.
+		</constant>
+		<constant name="CATEGORY_ROUTE" value="6" enum="Category">
+			Knowledge of a path or shortcut.
+		</constant>
+		<constant name="CATEGORY_FACT" value="7" enum="Category">
+			Any other learned fact.
+		</constant>
+	</constants>
+</class>

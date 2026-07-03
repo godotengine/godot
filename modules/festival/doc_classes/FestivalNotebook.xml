@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalNotebook" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		The only state that survives a run: everything Alex has learned.
+	</brief_description>
+	<description>
+		The notebook records which knowledge ids Alex has ever learned and can be
+		saved to and loaded from disk between runs. Progression is entirely
+		knowledge-based, so the notebook is what makes the replay loop meaningful.
+		Registered as the [code]FestivalNotebook[/code] singleton.
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<signals>
+		<signal name="knowledge_learned">
+			<param index="0" name="id" type="StringName" />
+			<description>
+				Emitted the first time a knowledge id is learned.
+			</description>
+		</signal>
+		<signal name="notebook_loaded">
+			<description>
+				Emitted after the notebook is loaded from disk.
+			</description>
+		</signal>
+	</signals>
+</class>

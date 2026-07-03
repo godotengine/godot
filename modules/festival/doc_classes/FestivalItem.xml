@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalItem" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		An inventory item that can be held or visibly presented.
+	</brief_description>
+	<description>
+		Items are part of the perception equation both while simply held and when
+		presented (visibly shown) to an NPC. Per-run inventory lives in
+		[FestivalWorld]; this resource only describes the item.
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="description" type="String" setter="set_description" getter="get_description">
+			Long description shown in UI.
+		</member>
+		<member name="display_name" type="String" setter="set_display_name" getter="get_display_name">
+			Human-readable name.
+		</member>
+		<member name="id" type="StringName" setter="set_id" getter="get_id">
+			Unique identifier used by inventory and interaction gates.
+		</member>
+		<member name="presentable" type="bool" setter="set_presentable" getter="is_presentable">
+			If [code]true[/code], the item can be visibly presented to influence perception.
+		</member>
+		<member name="stackable" type="bool" setter="set_stackable" getter="is_stackable">
+			If [code]true[/code], multiple copies stack into a single inventory count.
+		</member>
+		<member name="tags" type="PackedStringArray" setter="set_tags" getter="get_tags">
+			Free-form tags for authoring queries.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalClock" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		The single-day time system with irreversible phases.
+	</brief_description>
+	<description>
+		A run always moves Morning to Afternoon to Night to Ended and never backwards.
+		Content tied to a phase is lost once it passes. Phase progression is driven by
+		the game raising milestones and then calling [method advance_phase], echoing
+		Majora's Mask style hidden schedule beats. Registered as the [code]FestivalClock[/code]
+		singleton.
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<signals>
+		<signal name="phase_changed">
+			<param index="0" name="from_phase" type="int" />
+			<param index="1" name="to_phase" type="int" />
+			<description>
+				Emitted whenever the phase advances.
+			</description>
+		</signal>
+		<signal name="run_ended">
+			<description>
+				Emitted when the clock advances into the Ended phase.
+			</description>
+		</signal>
+		<signal name="milestone_reached">
+			<param index="0" name="id" type="StringName" />
+			<description>
+				Emitted the first time a milestone id is triggered this run.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="PHASE_MORNING" value="0" enum="Phase">
+			Festival setup, lighter tone, weather is determined.
+		</constant>
+		<constant name="PHASE_AFTERNOON" value="1" enum="Phase">
+			Escalation, secrets emerge, social complexity increases.
+		</constant>
+		<constant name="PHASE_NIGHT" value="2" enum="Phase">
+			Climax, consequences resolve.
+		</constant>
+		<constant name="PHASE_ENDED" value="3" enum="Phase">
+			The run is over.
+		</constant>
+	</constants>
+</class>

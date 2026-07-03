@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FestivalNPCProfile" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		The full authoring schema for one islander.
+	</brief_description>
+	<description>
+		NPCs are layered systems, not one-note quest dispensers. Each profile carries
+		a schedule per phase, weather variants, four kinds of guarded knowledge, and a
+		data-driven list of conditional [member interactions] evaluated by
+		[FestivalDirector]. Each schedule and variant is a [Dictionary] of free-form
+		keys (typically [code]location[/code] and [code]activity[/code]).
+		Each entry of [member interactions] is a [Dictionary] understood by the
+		director, with optional keys such as [code]requires_outfit[/code],
+		[code]requires_role[/code], [code]requires_items[/code],
+		[code]requires_presented[/code], [code]requires_knowledge[/code],
+		[code]requires_flags[/code], [code]requires_phase[/code],
+		[code]requires_weather[/code], and outcome keys [code]grants_knowledge[/code],
+		[code]sets_flags[/code], [code]gives_items[/code], [code]takes_items[/code],
+		[code]advance_phase[/code] and [code]trigger_milestone[/code].
+		
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="costume" type="StringName" setter="set_costume" getter="get_costume">
+			The outfit id this NPC themselves wears.
+		</member>
+		<member name="dark_secret" type="StringName" setter="set_dark_secret" getter="get_dark_secret">
+			Knowledge id of the NPC's dark secret.
+		</member>
+		<member name="display_name" type="String" setter="set_display_name" getter="get_display_name">
+			The NPC's name.
+		</member>
+		<member name="false_rumor" type="StringName" setter="set_false_rumor" getter="get_false_rumor">
+			Knowledge id of an untrue belief about the NPC.
+		</member>
+		<member name="id" type="StringName" setter="set_id" getter="get_id">
+			Unique identifier used by the registry.
+		</member>
+		<member name="interactions" type="Array" setter="set_interactions" getter="get_interactions">
+			Array of interaction [Dictionary] definitions evaluated by [FestivalDirector].
+		</member>
+		<member name="rumor" type="StringName" setter="set_rumor" getter="get_rumor">
+			Knowledge id of a true rumor about the NPC.
+		</member>
+		<member name="schedule_afternoon" type="Dictionary" setter="set_schedule_afternoon" getter="get_schedule_afternoon">
+			State during the Afternoon phase.
+		</member>
+		<member name="schedule_morning" type="Dictionary" setter="set_schedule_morning" getter="get_schedule_morning">
+			State during the Morning phase.
+		</member>
+		<member name="schedule_night" type="Dictionary" setter="set_schedule_night" getter="get_schedule_night">
+			State during the Night phase.
+		</member>
+		<member name="secret" type="StringName" setter="set_secret" getter="get_secret">
+			Knowledge id of the NPC's guarded secret.
+		</member>
+		<member name="species" type="StringName" setter="set_species" getter="get_species">
+			The NPC's animal species.
+		</member>
+		<member name="surface_personality" type="String" setter="set_surface_personality" getter="get_surface_personality">
+			Charming-at-first-glance surface description.
+		</member>
+		<member name="weather_variant_rain" type="Dictionary" setter="set_weather_variant_rain" getter="get_weather_variant_rain">
+			Keys merged over the phase schedule when it is raining.
+		</member>
+		<member name="weather_variant_sun" type="Dictionary" setter="set_weather_variant_sun" getter="get_weather_variant_sun">
+			Keys merged over the phase schedule when it is sunny.
+		</member>
+	</members>
+</class>
