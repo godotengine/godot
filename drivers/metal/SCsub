@@ -42,7 +42,7 @@ env_metal.Append(CXXFLAGS=["-fexceptions"])
 env_thirdparty = env_metal.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
-env_metal.drivers_sources += thirdparty_obj
+env_metal["DRIVERS_SOURCES"] += thirdparty_obj
 
 # Enable C++20 for the Objective-C++ Metal code, which uses C++20 concepts.
 if "-std=gnu++17" in env_metal["CXXFLAGS"]:
@@ -57,7 +57,7 @@ env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 driver_obj = []
 
 env_metal.add_source_files(driver_obj, "*.cpp")
-env.drivers_sources += driver_obj
+env["DRIVERS_SOURCES"] += driver_obj
 
 # Needed to force rebuilding the driver files when the thirdparty library is updated.
 env.Depends(driver_obj, thirdparty_obj)

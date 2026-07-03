@@ -143,7 +143,7 @@ def configure(env: "SConsEnvironment"):
 
     ## Configure assertions.
     if env["use_assertions"] == "auto":
-        env["use_assertions"] = "yes" if env.debug_features else "no"
+        env["use_assertions"] = "yes" if env["DEBUG_FEATURES"] else "no"
     if env["use_assertions"] == "yes":
         print_info("Building with runtime assertions.")
         env.Append(LINKFLAGS=["-sASSERTIONS=1"])
@@ -155,7 +155,7 @@ def configure(env: "SConsEnvironment"):
         # Retain function names for backtraces at the cost of file size.
         env.Append(LINKFLAGS=["--profiling-funcs"])
 
-    if env.editor_build and env["initial_memory"] < 64:
+    if env["EDITOR_BUILD"] and env["initial_memory"] < 64:
         print_info("Forcing `initial_memory=64` as it is required for the web editor.")
         env["initial_memory"] = 64
 
@@ -301,7 +301,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
         env.Append(CCFLAGS=["-fvisibility=hidden"])
         env.Append(LINKFLAGS=["-fvisibility=hidden"])
-        env.extra_suffix = ".dlink" + env.extra_suffix
+        env["EXTRA_SUFFIX"] = ".dlink" + env["EXTRA_SUFFIX"]
 
     env.Append(LINKFLAGS=["-sWASM_BIGINT"])
     env.Append(CCFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])

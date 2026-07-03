@@ -41,7 +41,7 @@ env_ktx.Prepend(CPPPATH=[thirdparty_dir + "other_include"])
 env_ktx.Prepend(CPPPATH=[thirdparty_dir + "external"])
 
 env_ktx.Prepend(CPPPATH=["#thirdparty/basis_universal"])
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     # We already build miniz in the basis_universal module (editor only).
     env_ktx.Append(CPPDEFINES=["MINIZ_HEADER_FILE_ONLY"])
 
@@ -56,13 +56,13 @@ env_ktx.Append(CPPDEFINES=[("KHRONOS_STATIC", 1)])
 env_thirdparty = env_ktx.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
-env.modules_sources += thirdparty_obj
+env["MODULES_SOURCES"] += thirdparty_obj
 
 # Godot source files
 module_obj = []
 
 env_ktx.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

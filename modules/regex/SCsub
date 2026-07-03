@@ -65,7 +65,7 @@ if env["builtin_pcre2"]:
 
     pcre2_builtin("16")
     pcre2_builtin("32")
-    env.modules_sources += thirdparty_obj
+    env["MODULES_SOURCES"] += thirdparty_obj
 
 
 # Godot source files
@@ -74,7 +74,7 @@ module_obj = []
 
 env_regex.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", 0)])
 env_regex.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

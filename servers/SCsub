@@ -3,9 +3,9 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-env.servers_sources = []
+env["SERVERS_SOURCES"] = []
 
-env.add_source_files(env.servers_sources, "register_server_types.cpp")
+env.add_source_files(env["SERVERS_SOURCES"], "register_server_types.cpp")
 
 SConscript("audio/SCsub")
 SConscript("camera/SCsub")
@@ -20,6 +20,6 @@ SConscript("navigation_3d/SCsub")
 SConscript("physics_3d/SCsub")
 SConscript("xr/SCsub")
 
-lib = env.add_library("servers", env.servers_sources)
+lib = env.add_library("servers", env["SERVERS_SOURCES"])
 
 env.Prepend(LIBS=[lib])

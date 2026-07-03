@@ -6,16 +6,16 @@ Import("env_modules")
 
 env_gdscript = env_modules.Clone()
 
-env_gdscript.add_source_files(env.modules_sources, "*.cpp")
+env_gdscript.add_source_files(env["MODULES_SOURCES"], "*.cpp")
 
-if env.editor_build:
-    env_gdscript.add_source_files(env.modules_sources, "./editor/*.cpp")
+if env["EDITOR_BUILD"]:
+    env_gdscript.add_source_files(env["MODULES_SOURCES"], "./editor/*.cpp")
 
     SConscript("editor/script_templates/SCsub")
 
     # Those two modules are required for the language server protocol
     if env["module_jsonrpc_enabled"] and env["module_websocket_enabled"]:
-        env_gdscript.add_source_files(env.modules_sources, "./language_server/*.cpp")
+        env_gdscript.add_source_files(env["MODULES_SOURCES"], "./language_server/*.cpp")
     else:
         # Using a define in the disabled case, to avoid having an extra define
         # in regular builds where all modules are enabled.
@@ -27,4 +27,4 @@ if env.editor_build:
 if env["tests"]:
     # TODO: Handle test creation magic without needing to pass macro.
     env_gdscript.Append(CPPDEFINES=["TESTS_ENABLED"])
-    env_gdscript.add_source_files(env.modules_sources, "./tests/*.cpp")
+    env_gdscript.add_source_files(env["MODULES_SOURCES"], "./tests/*.cpp")

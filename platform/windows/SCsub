@@ -33,7 +33,7 @@ if env["library_type"] == "executable":
 else:
     common_win += ["libgodot_windows.cpp"]
 
-if env.msvc:
+if env["MSVC"]:
     common_win += ["crash_handler_windows_seh.cpp"]
 else:
     common_win += ["crash_handler_windows_signal.cpp"]
@@ -47,7 +47,7 @@ env_wrap = env.Clone()
 if env["arch"] == "x86_64" and env["library_type"] == "executable":
     env_cpp_check = env.Clone()
     env_cpp_check.add_source_files(sources, ["cpu_feature_validation.c"])
-    if env.msvc:
+    if env["MSVC"]:
         if "/d2archSSE42" in env_cpp_check["CCFLAGS"]:
             env_cpp_check["CCFLAGS"].remove("/d2archSSE42")
         env.Append(LINKFLAGS=["/ENTRY:ShimMainCRTStartup"])
@@ -70,7 +70,7 @@ def arrange_program_clean(prog):
 
 
 env["BUILDERS"]["RES"].emitter = redirect_emitter
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     res_file = "godot_res.rc"
     res_target = "godot_res" + env["OBJSUFFIX"]
 else:
@@ -84,7 +84,7 @@ env.add_source_files(sources, common_win)
 env_winrt = env.Clone()
 tts_sources = ["tts_windows.cpp", "tts_driver_sapi.cpp", "winrt_utils.cpp"]
 if env["winrt"]:
-    if not env_winrt.msvc:
+    if not env_winrt["MSVC"]:
         if "-std=gnu++17" in env_winrt["CXXFLAGS"]:
             env_winrt["CXXFLAGS"].remove("-std=gnu++17")
         env_winrt.Append(CXXFLAGS=["-std=gnu++20"])
@@ -100,7 +100,7 @@ if env["winrt"]:
         if "_HAS_EXCEPTIONS" in env_winrt["CPPDEFINES"]:
             env_winrt["CPPDEFINES"].remove("_HAS_EXCEPTIONS")
         env_winrt.Append(CXXFLAGS=["/EHsc"])
-    if not env_winrt.msvc:
+    if not env_winrt["MSVC"]:
         env_winrt.Append(CPPPATH=[env["winrt_path"]])
     env_winrt.AppendUnique(CPPDEFINES=["WINRT_ENABLED"])
     tts_sources += ["tts_driver_onecore.cpp"]
@@ -108,7 +108,7 @@ env_winrt.add_source_files(sources, tts_sources)
 
 sources += res_obj
 
-if env["accesskit"] and not env.msvc:
+if env["accesskit"] and not env["MSVC"]:
     sources += env.DEFLIB("uiautomationcore")
 
 if env["library_type"] == "static_library":
@@ -120,12 +120,12 @@ else:
 arrange_program_clean(prog)
 
 env.Depends(prog, "godot.manifest")
-if env.msvc:
+if env["MSVC"]:
     env.Depends(prog, "godot.natvis")
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
-    if env.editor_build:
+    if env["EDITOR_BUILD"]:
         res_wrap_file = "godot_res_wrap.rc"
         res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
     else:
@@ -134,7 +134,7 @@ if env["windows_subsystem"] == "gui":
     res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)
     env_wrap.Depends(res_wrap_obj, "#core/version_generated.gen.h")
 
-    if env.msvc:
+    if env["MSVC"]:
         env_wrap.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env_wrap.Append(LINKFLAGS=["version.lib"])
     else:
@@ -187,10 +187,10 @@ if env["d3d12"]:
             Copy("$TARGET", "$SOURCE"),
         )
 
-if not env.msvc:
+if not env["MSVC"]:
     if env["debug_symbols"]:
         env.AddPostAction(prog, env.Run(platform_windows_builders.make_debug_mingw))
         if env["windows_subsystem"] == "gui":
             env.AddPostAction(prog_wrap, env.Run(platform_windows_builders.make_debug_mingw))
 
-env.platform_sources += sources
+env["PLATFORM_SOURCES"] += sources

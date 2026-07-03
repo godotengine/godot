@@ -184,10 +184,10 @@ def get_tools(env: "SConsEnvironment"):
         if env.get("msvc_version"):
             msvc_ver = env.get("msvc_version")
 
-        if msvc_ver == "14.3" and env.scons_version < (4, 8, 0):
+        if msvc_ver == "14.3" and env["SCONS_VERSION"] < (4, 8, 0):
             print_error("Visual Studio 2022 requires SCons 4.8.0+, please update your SCons version.")
             sys.exit(255)
-        elif msvc_ver == "14.5" and env.scons_version < (4, 10, 1):
+        elif msvc_ver == "14.5" and env["SCONS_VERSION"] < (4, 10, 1):
             print_error("Visual Studio 2026 requires SCons 4.10.1+, please update your SCons version.")
             sys.exit(255)
 
@@ -323,7 +323,7 @@ def configure_msvc(env: "SConsEnvironment"):
         env["AR"] = "llvm-lib"
 
         env.AppendUnique(CPPDEFINES=["R128_STDC_ONLY"])
-        env.extra_suffix = ".llvm" + env.extra_suffix
+        env["EXTRA_SUFFIX"] = ".llvm" + env["EXTRA_SUFFIX"]
 
         # Ensure intellisense tools like `compile_commands.json` play nice with MSVC syntax.
         env["CPPDEFPREFIX"] = "-D"
@@ -432,7 +432,7 @@ def configure_msvc(env: "SConsEnvironment"):
     # Sanitizers
     prebuilt_lib_extra_suffix = ""
     if env["use_asan"]:
-        env.extra_suffix += ".san"
+        env["EXTRA_SUFFIX"] += ".san"
         prebuilt_lib_extra_suffix = ".san"
         env.Append(CPPDEFINES=["ASAN_ENABLED"])
         env.Append(CCFLAGS=["/fsanitize=address"])
@@ -470,7 +470,7 @@ def configure_msvc(env: "SConsEnvironment"):
         "mincore",
     ]
 
-    if env.debug_features:
+    if env["DEBUG_FEATURES"]:
         LIBS += ["psapi", "dbghelp"]
 
     if env["accesskit"]:
@@ -748,7 +748,7 @@ def configure_mingw(env: "SConsEnvironment"):
         env["RANLIB"] = get_detected(env, "ranlib")
         env["AS"] = get_detected(env, "clang")
         env.Append(ASFLAGS=["-c"])
-        env.extra_suffix = ".llvm" + env.extra_suffix
+        env["EXTRA_SUFFIX"] = ".llvm" + env["EXTRA_SUFFIX"]
     else:
         env["CC"] = get_detected(env, "gcc")
         env["CXX"] = get_detected(env, "g++")
@@ -810,7 +810,7 @@ def configure_mingw(env: "SConsEnvironment"):
             print("Sanitizers are only supported for x86_32 and x86_64.")
             sys.exit(255)
 
-        env.extra_suffix += ".san"
+        env["EXTRA_SUFFIX"] += ".san"
         san_flags = []
         if env["use_asan"]:
             env.Append(CPPDEFINES=["ASAN_ENABLED"])
@@ -932,7 +932,7 @@ def configure_mingw(env: "SConsEnvironment"):
             )
             env["accesskit"] = False
 
-    if env.debug_features:
+    if env["DEBUG_FEATURES"]:
         env.Append(LIBS=["psapi", "dbghelp"])
 
     if env["vulkan"]:
@@ -1044,8 +1044,8 @@ def configure(env: "SConsEnvironment"):
     if env["prefer_high_performance_gpu"]:
         env.Append(CPPDEFINES=["ENABLE_PREFER_HIGH_PERFORMANCE_GPU"])
 
-    env.msvc = "mingw" not in env["TOOLS"]
-    if env.msvc:
+    env["MSVC"] = "mingw" not in env["TOOLS"]
+    if env["MSVC"]:
         configure_msvc(env)
     else:
         configure_mingw(env)

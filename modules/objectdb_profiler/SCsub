@@ -9,12 +9,12 @@ env_objdb = env_modules.Clone()
 module_obj = []
 
 # Only include in editor and debug builds.
-if env_objdb.debug_features:
+if env_objdb["DEBUG_FEATURES"]:
     env_objdb.add_source_files(module_obj, "*.cpp")
 
     # Only the editor needs these files, don't include them in the game.
-    if env.editor_build:
+    if env["EDITOR_BUILD"]:
         env_objdb.add_source_files(module_obj, "editor/*.cpp")
         env_objdb.add_source_files(module_obj, "editor/data_viewers/*.cpp")
 
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj

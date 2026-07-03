@@ -9,7 +9,7 @@ import methods
 
 Import("env")
 
-env.core_sources = []
+env["CORE_SOURCES"] = []
 
 # Add required thirdparty code.
 
@@ -99,7 +99,7 @@ if env["builtin_zlib"]:
     env_thirdparty.Prepend(CPPPATH=[thirdparty_zlib_dir])
     # Needs to be available in main env too
     env.Prepend(CPPPATH=[thirdparty_zlib_dir])
-    if env.dev_build:
+    if env["DEV_BUILD"]:
         env_thirdparty.Append(CPPDEFINES=["ZLIB_DEBUG"])
         # Affects headers so it should also be defined for Godot code
         env.Append(CPPDEFINES=["ZLIB_DEBUG"])
@@ -147,7 +147,7 @@ if env["builtin_zstd"]:
     if (
         env["platform"] in ["android", "ios", "linuxbsd", "macos", "windows"]
         and env["arch"] == "x86_64"
-        and not env.msvc
+        and not env["MSVC"]
     ):
         # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h
         thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
@@ -162,21 +162,21 @@ if env["builtin_zstd"]:
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zstd_sources)
 
 
-env.core_sources += thirdparty_obj
+env["CORE_SOURCES"] += thirdparty_obj
 
 
 # Godot source files
-env.add_source_files(env.core_sources, "*.cpp")
+env.add_source_files(env["CORE_SOURCES"], "*.cpp")
 
 # Generate disabled classes
 env.CommandNoCache(
-    "disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(core_builders.disabled_class_builder)
+    "disabled_classes.gen.h", env.Value(env["DISABLED_CLASSES"]), env.Run(core_builders.disabled_class_builder)
 )
 
 # Generate version info
 env.CommandNoCache(
     "version_generated.gen.h",
-    env.Value(methods.get_version_info(env.module_version_string)),
+    env.Value(methods.get_version_info(env["MODULE_VERSION_STRING"])),
     env.Run(core_builders.version_info_builder),
 )
 
@@ -184,7 +184,7 @@ env.CommandNoCache(
 gen_hash = env.CommandNoCache(
     "version_hash.gen.cpp", env.Value(methods.get_git_info()), env.Run(core_builders.version_hash_builder)
 )
-env.add_source_files(env.core_sources, gen_hash)
+env.add_source_files(env["CORE_SOURCES"], gen_hash)
 
 # Generate AES256 script encryption key
 encryption_key = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")
@@ -198,7 +198,7 @@ gen_encrypt = env.CommandNoCache(
     env.Value(encryption_key),
     env.Run(core_builders.encryption_key_builder),
 )
-env.add_source_files(env.core_sources, gen_encrypt)
+env.add_source_files(env["CORE_SOURCES"], gen_encrypt)
 
 # Certificates
 env.CommandNoCache(
@@ -236,7 +236,7 @@ SConscript("error/SCsub")
 
 
 # Build it all as a library
-lib = env.add_library("core", env.core_sources)
+lib = env.add_library("core", env["CORE_SOURCES"])
 env.Prepend(LIBS=[lib])
 
 # Needed to force rebuilding the core files when the thirdparty code is updated.

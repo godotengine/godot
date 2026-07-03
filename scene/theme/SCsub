@@ -5,7 +5,7 @@ Import("env")
 
 import default_theme_builders
 
-env.add_source_files(env.scene_sources, "*.cpp")
+env.add_source_files(env["SCENE_SOURCES"], "*.cpp")
 
 SConscript("icons/SCsub")
 

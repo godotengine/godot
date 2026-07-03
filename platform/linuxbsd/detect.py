@@ -125,7 +125,7 @@ def configure(env: "SConsEnvironment"):
         if "clang++" not in os.path.basename(env["CXX"]):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
-        env.extra_suffix = ".llvm" + env.extra_suffix
+        env["EXTRA_SUFFIX"] = ".llvm" + env["EXTRA_SUFFIX"]
 
     if env["linker"] != "default":
         print("Using linker program: " + env["linker"])
@@ -160,7 +160,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
-        env.extra_suffix += ".san"
+        env["EXTRA_SUFFIX"] += ".san"
 
         if env["use_ubsan"]:
             env.Append(CPPDEFINES=["UBSAN_ENABLED"])
@@ -284,7 +284,7 @@ def configure(env: "SConsEnvironment"):
     if not env["builtin_libtheora"]:
         env["builtin_libogg"] = False  # Needed to link against system libtheora
         env["builtin_libvorbis"] = False  # Needed to link against system libtheora
-        if env.editor_build:
+        if env["EDITOR_BUILD"]:
             env.ParseConfig("pkg-config theora theoradec theoraenc --cflags --libs")
         else:
             env.ParseConfig("pkg-config theora theoradec --cflags --libs")
@@ -294,7 +294,7 @@ def configure(env: "SConsEnvironment"):
 
     if not env["builtin_libvorbis"]:
         env["builtin_libogg"] = False  # Needed to link against system libvorbis
-        if env.editor_build:
+        if env["EDITOR_BUILD"]:
             env.ParseConfig("pkg-config vorbis vorbisfile vorbisenc --cflags --libs")
         else:
             env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")

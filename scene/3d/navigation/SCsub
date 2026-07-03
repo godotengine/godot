@@ -3,4 +3,4 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-env.add_source_files(env.scene_sources, "*.cpp")
+env.add_source_files(env["SCENE_SOURCES"], "*.cpp")

@@ -67,12 +67,12 @@ if env["builtin_embree"]:
     env_raycast.AppendUnique(CPPDEFINES=["NDEBUG"])  # No assert() even in debug builds.
 
     if env["platform"] == "windows":
-        if env.msvc:
+        if env["MSVC"]:
             env.Append(LINKFLAGS=["psapi.lib"])
         else:
             env.Append(LIBS=["psapi"])
 
-    if env.msvc:  # Disable bogus warning about intentional struct padding.
+    if env["MSVC"]:  # Disable bogus warning about intentional struct padding.
         env_raycast.Append(CCFLAGS=["/wd4324"])
 
     env_thirdparty = env_raycast.Clone()
@@ -84,17 +84,17 @@ if env["builtin_embree"]:
     # Keep this in sync with Godot's main SConstruct file.
     # This is only needed on MSVC, as GCC/Clang will set those defines automatically
     # according to compiler instruction set flags.
-    if env["arch"] != "x86_64" or env.msvc:
+    if env["arch"] != "x86_64" or env["MSVC"]:
         # Embree needs those; it will automatically use SSE2NEON in ARM.
         env_thirdparty.Append(CPPDEFINES=["__SSE__", "__SSE2__"])
 
-    if env["arch"] == "x86_64" and env.msvc:
+    if env["arch"] == "x86_64" and env["MSVC"]:
         env_thirdparty.Append(CPPDEFINES=["__SSE3__", "__SSSE3__", "__SSE4_1__", "__SSE4_2__"])
 
     if env["platform"] == "web":
         env_thirdparty.Append(CXXFLAGS=["-msimd128"])
 
-    if not env.msvc:
+    if not env["MSVC"]:
         # Flags synced with upstream gnu.cmake.
         if env["arch"] == "arm64" and env["platform"] == "linuxbsd" and not env["use_llvm"]:
             env_thirdparty.Append(CXXFLAGS=["-flax-vector-conversions"])
@@ -112,7 +112,7 @@ if env["builtin_embree"]:
             ]
         )
 
-    env.modules_sources += thirdparty_obj
+    env["MODULES_SOURCES"] += thirdparty_obj
 
 
 # Godot source files
@@ -120,7 +120,7 @@ if env["builtin_embree"]:
 module_obj = []
 
 env_raycast.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

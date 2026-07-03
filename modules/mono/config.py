@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    if env.editor_build:
+    if env["EDITOR_BUILD"]:
         env.module_add_dependencies("mono", ["regex"])
 
     return True

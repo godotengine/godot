@@ -85,9 +85,9 @@ if env["builtin_openxr"]:
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_properties.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/manifest_file.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/runtime_interface.cpp")
-        env.modules_sources += khrloader_obj
+        env["MODULES_SOURCES"] += khrloader_obj
 
-    env.modules_sources += thirdparty_obj
+    env["MODULES_SOURCES"] += thirdparty_obj
 
 
 # Godot source files.
@@ -95,7 +95,7 @@ if env["builtin_openxr"]:
 module_obj = []
 
 env_openxr.add_source_files(module_obj, "*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 Export("env_openxr")
 
@@ -103,7 +103,7 @@ SConscript("action_map/SCsub")
 SConscript("extensions/SCsub")
 SConscript("scene/SCsub")
 
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     SConscript("editor/SCsub")
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

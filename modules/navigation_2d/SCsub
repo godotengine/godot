@@ -28,7 +28,7 @@ if env["builtin_rvo2_2d"]:
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
 
-env.modules_sources += thirdparty_obj
+env["MODULES_SOURCES"] += thirdparty_obj
 
 # Godot source files
 
@@ -36,9 +36,9 @@ module_obj = []
 
 env_navigation_2d.add_source_files(module_obj, "*.cpp")
 env_navigation_2d.add_source_files(module_obj, "2d/*.cpp")
-if env.editor_build:
+if env["EDITOR_BUILD"]:
     env_navigation_2d.add_source_files(module_obj, "editor/*.cpp")
-env.modules_sources += module_obj
+env["MODULES_SOURCES"] += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

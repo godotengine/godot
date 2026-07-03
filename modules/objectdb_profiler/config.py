@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    return env.debug_features
+    return env["DEBUG_FEATURES"]
 
 
 def configure(env):

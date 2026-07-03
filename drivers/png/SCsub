@@ -39,7 +39,7 @@ if env["builtin_libpng"]:
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
     if env["arch"].startswith("arm"):
-        if env.msvc:  # Can't compile assembly files with MSVC.
+        if env["MSVC"]:  # Can't compile assembly files with MSVC.
             env_thirdparty.Append(CPPDEFINES=[("PNG_ARM_NEON_OPT", 0)])
         else:
             env_neon = env_thirdparty.Clone()
@@ -61,7 +61,7 @@ if env["builtin_libpng"]:
         env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "powerpc/powerpc_init.c")
         env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "powerpc/filter_vsx_intrinsics.c")
 
-    env.drivers_sources += thirdparty_obj
+    env["DRIVERS_SOURCES"] += thirdparty_obj
 
 
 # Godot source files
@@ -69,7 +69,7 @@ if env["builtin_libpng"]:
 driver_obj = []
 
 env_png.add_source_files(driver_obj, "*.cpp")
-env.drivers_sources += driver_obj
+env["DRIVERS_SOURCES"] += driver_obj
 
 # Needed to force rebuilding the driver files when the thirdparty library is updated.
 env.Depends(driver_obj, thirdparty_obj)

@@ -7,7 +7,7 @@ Import("env_modules")
 env_zip = env_modules.Clone()
 
 # Module files
-env_zip.add_source_files(env.modules_sources, "*.cpp")
+env_zip.add_source_files(env["MODULES_SOURCES"], "*.cpp")
 
 if env["tests"]:
-    env_zip.add_source_files(env.modules_sources, "./tests/*.cpp")
+    env_zip.add_source_files(env["MODULES_SOURCES"], "./tests/*.cpp")

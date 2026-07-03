@@ -19,4 +19,4 @@ env.CommandNoCache(
     env.Run(make_interface_header.run),
 )
 
-env.add_source_files(env.core_sources, "*.cpp")
+env.add_source_files(env["CORE_SOURCES"], "*.cpp")

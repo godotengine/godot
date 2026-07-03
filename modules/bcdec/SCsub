@@ -7,4 +7,4 @@ Import("env_modules")
 env_bcdec = env_modules.Clone()
 
 # Godot source files
-env_bcdec.add_source_files(env.modules_sources, "*.cpp")
+env_bcdec.add_source_files(env["MODULES_SOURCES"], "*.cpp")

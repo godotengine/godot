@@ -5,7 +5,7 @@ from methods import print_error
 
 Import("env")
 
-env.drivers_sources = []
+env["DRIVERS_SOURCES"] = []
 supported = env.get("supported", [])
 
 # OS drivers
@@ -17,7 +17,7 @@ SConscript("alsa/SCsub")
 SConscript("pulseaudio/SCsub")
 if env["platform"] == "windows":
     SConscript("wasapi/SCsub")
-    if not env.msvc:
+    if not env["MSVC"]:
         SConscript("backtrace/SCsub")
 if env["xaudio2"]:
     if "xaudio2" not in supported:
@@ -68,7 +68,7 @@ if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows", "ios", "vi
 # Core dependencies
 SConscript("png/SCsub")
 
-env.add_source_files(env.drivers_sources, "*.cpp")
+env.add_source_files(env["DRIVERS_SOURCES"], "*.cpp")
 
-lib = env.add_library("drivers", env.drivers_sources)
+lib = env.add_library("drivers", env["DRIVERS_SOURCES"])
 env.Prepend(LIBS=[lib])

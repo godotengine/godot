@@ -12,7 +12,7 @@ def get_configurations():
 
 
 def get_build_prefix(env):
-    if not env.msvc:
+    if not env["MSVC"]:
         return []
     batch_file = methods.find_visual_c_batch_file(env)
     return [

@@ -7,6 +7,6 @@ Import("env_modules")
 env_interactive_music = env_modules.Clone()
 
 # Godot's own source files
-env_interactive_music.add_source_files(env.modules_sources, "*.cpp")
-if env.editor_build:
-    env_interactive_music.add_source_files(env.modules_sources, "editor/*.cpp")
+env_interactive_music.add_source_files(env["MODULES_SOURCES"], "*.cpp")
+if env["EDITOR_BUILD"]:
+    env_interactive_music.add_source_files(env["MODULES_SOURCES"], "editor/*.cpp")

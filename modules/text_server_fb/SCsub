@@ -4,12 +4,12 @@ from misc.utility.scons_hints import *
 Import("env")
 Import("env_modules")
 
-freetype_enabled = "freetype" in env.module_list
-msdfgen_enabled = "msdfgen" in env.module_list
+freetype_enabled = "freetype" in env["MODULE_LIST"]
+msdfgen_enabled = "msdfgen" in env["MODULE_LIST"]
 
 env_text_server_fb = env_modules.Clone()
 
-if "svg" in env.module_list:
+if "svg" in env["MODULE_LIST"]:
     env_text_server_fb.Prepend(
         CPPPATH=["#thirdparty/thorvg/inc", "#thirdparty/thorvg/src/common", "#thirdparty/thorvg/src/renderer"]
     )
@@ -24,4 +24,4 @@ if env["builtin_freetype"] and freetype_enabled:
     env_text_server_fb.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
     env_text_server_fb.Prepend(CPPPATH=["#thirdparty/freetype/include"])
 
-env_text_server_fb.add_source_files(env.modules_sources, "*.cpp")
+env_text_server_fb.add_source_files(env["MODULES_SOURCES"], "*.cpp")
